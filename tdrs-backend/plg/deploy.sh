@@ -46,7 +46,7 @@ deploy_grafana() {
     yq eval -i ".datasources[1].url = \"http://loki.apps.internal:8080\""  $DATASOURCES
     yq eval -i ".applications[0].services[0] = \"$1\""  $MANIFEST
 
-    cf push --no-route -f manifest.yml -t 180  --strategy rolling
+    cf push --no-route -f $MANIFEST -t 180  --strategy rolling
     # cf map-route $APP_NAME apps.internal --hostname $APP_NAME
     # Give Grafana a public route for now. Might be able to swap to internal route later.
     cf map-route "$APP_NAME" app.cloud.gov --hostname "${APP_NAME}"

@@ -13,6 +13,7 @@ applications:
       GF_PATHS_PLUGINS: "/conf/provisioning/plugins"
       GF_SERVER_HTTP_PORT: 8080
       GF_DATABASE_TYPE: postgres
+      GF_DATABASE_SSL_MODE: require
     command: |
       HOST=$(echo $VCAP_SERVICES | jq -r '."aws-rds"[0].credentials.host')
       PORT=$(echo $VCAP_SERVICES | jq -r '."aws-rds"[0].credentials.port')
