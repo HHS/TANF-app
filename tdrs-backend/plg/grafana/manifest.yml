@@ -32,3 +32,5 @@ applications:
       cfg:default.paths.provisioning="$GF_PATHS_PROVISIONING"
     buildpacks:
     - https://github.com/cloudfoundry/binary-buildpack
+    services:
+      - {{ rds_service }}
