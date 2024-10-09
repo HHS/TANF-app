@@ -1,10 +1,28 @@
 """Factories for generating test data for parsers."""
 import factory
+from django.utils import timezone
 from tdpservice.parsers.models import DataFileSummary, ParserErrorCategoryChoices
 from faker import Faker
 from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.users.test.factories import UserFactory
 from tdpservice.stts.test.factories import STTFactory
+
+
+class ReparseMetaFactory(factory.django.DjangoModelFactory):
+    """Generate test reparse meta model."""
+
+    class Meta:
+        """Hardcoded meta data for factory."""
+
+        model = "search_indexes.ReparseMeta"
+
+    timeout_at = timezone.now()
+    finished = False
+    success = False
+    num_files_to_reparse = 1
+    files_completed = 1
+    files_failed = 0
+
 
 class ParsingFileFactory(factory.django.DjangoModelFactory):
     """Generate test data for data files."""
@@ -184,43 +202,43 @@ class TanfT2Factory(factory.django.DjangoModelFactory):
     EMPLOYMENT_STATUS = 1
     WORK_ELIGIBLE_INDICATOR = "01"
     WORK_PART_STATUS = "01"
-    UNSUB_EMPLOYMENT = 1
-    SUB_PRIVATE_EMPLOYMENT = 1
-    SUB_PUBLIC_EMPLOYMENT = 1
-    WORK_EXPERIENCE_HOP = 1
-    WORK_EXPERIENCE_EA = 1
-    WORK_EXPERIENCE_HOL = 1
-    OJT = 1
-    JOB_SEARCH_HOP = 1
-    JOB_SEARCH_EA = 1
-    JOB_SEARCH_HOL = 1
-    COMM_SERVICES_HOP = 1
-    COMM_SERVICES_EA = 1
-    COMM_SERVICES_HOL = 1
-    VOCATIONAL_ED_TRAINING_HOP = 1
-    VOCATIONAL_ED_TRAINING_EA = 1
-    VOCATIONAL_ED_TRAINING_HOL = 1
-    JOB_SKILLS_TRAINING_HOP = 1
-    JOB_SKILLS_TRAINING_EA = 1
-    JOB_SKILLS_TRAINING_HOL = 1
-    ED_NO_HIGH_SCHOOL_DIPL_HOP = 1
-    ED_NO_HIGH_SCHOOL_DIPL_EA = 1
-    ED_NO_HIGH_SCHOOL_DIPL_HOL = 1
-    SCHOOL_ATTENDENCE_HOP = 1
-    SCHOOL_ATTENDENCE_EA = 1
-    SCHOOL_ATTENDENCE_HOL = 1
-    PROVIDE_CC_HOP = 1
-    PROVIDE_CC_EA = 1
-    PROVIDE_CC_HOL = 1
-    OTHER_WORK_ACTIVITIES = 1
-    DEEMED_HOURS_FOR_OVERALL = 1
-    DEEMED_HOURS_FOR_TWO_PARENT = 1
-    EARNED_INCOME = 1
-    UNEARNED_INCOME_TAX_CREDIT = 1
-    UNEARNED_SOCIAL_SECURITY = 1
-    UNEARNED_SSI = 1
-    UNEARNED_WORKERS_COMP = 1
-    OTHER_UNEARNED_INCOME = 1
+    UNSUB_EMPLOYMENT = "01"
+    SUB_PRIVATE_EMPLOYMENT = "01"
+    SUB_PUBLIC_EMPLOYMENT = "01"
+    WORK_EXPERIENCE_HOP = "01"
+    WORK_EXPERIENCE_EA = "01"
+    WORK_EXPERIENCE_HOL = "01"
+    OJT = "01"
+    JOB_SEARCH_HOP = "01"
+    JOB_SEARCH_EA = "01"
+    JOB_SEARCH_HOL = "01"
+    COMM_SERVICES_HOP = "01"
+    COMM_SERVICES_EA = "01"
+    COMM_SERVICES_HOL = "01"
+    VOCATIONAL_ED_TRAINING_HOP = "01"
+    VOCATIONAL_ED_TRAINING_EA = "01"
+    VOCATIONAL_ED_TRAINING_HOL = "01"
+    JOB_SKILLS_TRAINING_HOP = "01"
+    JOB_SKILLS_TRAINING_EA = "01"
+    JOB_SKILLS_TRAINING_HOL = "01"
+    ED_NO_HIGH_SCHOOL_DIPL_HOP = "01"
+    ED_NO_HIGH_SCHOOL_DIPL_EA = "01"
+    ED_NO_HIGH_SCHOOL_DIPL_HOL = "01"
+    SCHOOL_ATTENDENCE_HOP = "01"
+    SCHOOL_ATTENDENCE_EA = "01"
+    SCHOOL_ATTENDENCE_HOL = "01"
+    PROVIDE_CC_HOP = "01"
+    PROVIDE_CC_EA = "01"
+    PROVIDE_CC_HOL = "01"
+    OTHER_WORK_ACTIVITIES = "01"
+    DEEMED_HOURS_FOR_OVERALL = "01"
+    DEEMED_HOURS_FOR_TWO_PARENT = "01"
+    EARNED_INCOME = "01"
+    UNEARNED_INCOME_TAX_CREDIT = "01"
+    UNEARNED_SOCIAL_SECURITY = "01"
+    UNEARNED_SSI = "01"
+    UNEARNED_WORKERS_COMP = "01"
+    OTHER_UNEARNED_INCOME = "01"
 
 
 class TanfT3Factory(factory.django.DjangoModelFactory):
@@ -451,10 +469,10 @@ class TribalTanfT2Factory(factory.django.DjangoModelFactory):
     CURRENT_MONTH_STATE_EXEMPT = 1
     EMPLOYMENT_STATUS = 1
     WORK_PART_STATUS = "01"
-    UNSUB_EMPLOYMENT = 1
-    SUB_PRIVATE_EMPLOYMENT = 1
-    SUB_PUBLIC_EMPLOYMENT = 1
-    OJT = 1
+    UNSUB_EMPLOYMENT = "01"
+    SUB_PRIVATE_EMPLOYMENT = "01"
+    SUB_PUBLIC_EMPLOYMENT = "01"
+    OJT = "01"
     JOB_SEARCH = '1'
     COMM_SERVICES = '1'
     VOCATIONAL_ED_TRAINING = '1'

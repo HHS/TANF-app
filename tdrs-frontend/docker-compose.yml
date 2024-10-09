@@ -1,7 +1,7 @@
 version: "3.4"
 services:
   zaproxy:
-    image: softwaresecurityproject/zap-stable:2.14.0
+    image: tdp-docker.dev.raftlabs.tech/dependencies/softwaresecurityproject/zap-stable:2.14.0
     container_name: zap-scan
     command: sleep 3600
     ports:
@@ -14,6 +14,7 @@ services:
   tdp-frontend:
     stdin_open: true # docker run -i
     tty: true        # docker run -t
+    image: tdp-frontend
     build:
       context: .
       target: nginx
@@ -24,16 +25,18 @@ services:
       - default
     volumes:
       - ./:/home/node/app
+      - ~/tdp-logs/nginx:/var/log/nginx
     environment:
       - NGINX_FRONTEND=tdp-frontend
       - BACK_END=web
       - LOCAL_DEV=true
       - KIBANA=kibana
+      - GRAFANA=grafana
       - REACT_APP_DEVAUTH=${REACT_APP_DEVAUTH}
     command: >
       /bin/sh -c
       "echo 'starting nginx' &&
-        envsubst '$${BACK_END} $${KIBANA}' < /etc/nginx/locations.conf > /etc/nginx/locations_.conf &&
+        envsubst '$${BACK_END} $${KIBANA} $${GRAFANA}' < /etc/nginx/locations.conf > /etc/nginx/locations_.conf &&
         rm /etc/nginx/locations.conf &&
         cp /etc/nginx/locations_.conf /etc/nginx/locations.conf &&
        envsubst '

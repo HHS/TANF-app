@@ -395,6 +395,12 @@ def test_private_key():
     yield get_private_key(key)
 
 
+@pytest.fixture()
+def system_user():
+    """Create system user."""
+    return UserFactory.create(username='system')
+
+
 # Register factories with pytest-factoryboy for automatic dependency injection
 # of model-related fixtures into tests.
 register(OwaspZapScanFactory)

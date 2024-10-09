@@ -105,7 +105,8 @@ http {
                                ' Proxy Pass: "$proxy_host" "$upstream_addr"';
 
     access_log /dev/stdout compression;
-    #access_log stderr compression;
+    access_log /var/log/nginx/access_log.log compression;
+    error_log /var/log/nginx/error_log.log warn;
 
     # Content caching
     # saves cached fies in /tmp

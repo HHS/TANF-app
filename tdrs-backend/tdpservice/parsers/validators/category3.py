@@ -386,7 +386,7 @@ def validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
                 "Caught exception in validator: validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE. " +
                 f"With field values: {vals}."
             )
-            logger.error(f'Exception: {e}')
+            logger.debug(f'Exception: {e}')
             # Per conversation with Alex on 03/26/2024, returning the true case during exception handling to avoid
             # confusing the STTs.
             return true_case
