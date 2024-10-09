@@ -1,4 +1,4 @@
-# Stakeholders and Personas
+![image](https://github.com/user-attachments/assets/97e8fbf1-954b-4f3b-9000-ecb3b0f1d0d9)![image](https://github.com/user-attachments/assets/39a7b775-2771-438f-a270-d09dc263ef3c)# Stakeholders and Personas
 
 Last updated for [Issue #3100](https://github.com/raft-tech/TANF-app/issues/3100)
 
@@ -132,14 +132,14 @@ Research up to this point has suggested a need for three working personas; an OF
 | Role                                | OFA Data Portal User, Viewing and Editing Permissions        |
 | Age                                 | 37                                                           |
 | Location                            | USA, Occassionally In Office DC                              |
-| Work Environment                    | Home and Office, Desktop, and Government Furnished Equiptment (GFE) |
+| Work Environment                    | Home and Office, Desktop, and Government Furnished Equipment (GFE) |
 | Goals<br /><br /><br />             | 1. Ensure availability of features and components of the system <br />2. Work with regional OFA staff to confirm who should and shouldn't be granted access to the system<br />3. Access system logs to troubleshoot problems and remediate scans as needed <br />4. Provide access to OCIO staff for security auditing purposes <br />5. Monitoring emails, notifications and answering STT Questions |
-| Pain Points<br /><br /><br /><br /> | 1. "Django doesn't have all the filters I need to efficiently use it for certain admin tasks" <br /> 2. "The system can sometimes log me out with no warning" <br/> 3. Accessing data in relational data bases is only possible by disconnecting the HHS network on site. <br/> 4. The general toolstak as an administrator can be difficult to use on a GFE <br/> 5. Reequesting acess to developer tools can take months at a time to get approved                           |
+| Pain Points<br /><br /><br /><br /> | 1. "Django doesn't have all the filters I need to efficiently use it for certain admin tasks" <br /> 2. "The system can sometimes log me out with no warning" <br/> 3. Accessing data in relational data bases is only possible by disconnecting the HHS network on site. <br/> 4. The general toolstack as an administrator can be difficult to use on a GFE <br/> 5. Requesting access to developer tools can take months at a time to get approved                           |
 | Delights                            | 1. "Django has become a tool that provides me a lot of insights about data in the system rather than solely being a user administration tool" <br/> 2. "Automated notifications have been convenient [so that I am aware of what is happening]" <br/> 3. "Being able to use an interface and see what [actions] users did" <br/> 4. "A point and click experience to see how the system is performing...I use the front end the most"|
 | Tools                               | TDP Portal, Django CSV exports, Excel, SAS, email, reporting/analytics software, Microsoft Suite, Python, Axe Dev Tools |
 | Expectations | 1. TDP should help sys admin do things from an interface as much as possible <br /> 2. We have to have another way to troubleshoot and remediate issues |
 
-To view a further in debth system of the ineteractions and touchpoints used, refer to the ecosystem map in the supporting documents below
+To view a further in depth system of the interactions, primary tasks and touchpoints taken by OFA System Admins, please refer to the ecosystem map in the supporting documents below.
 
 ### Awinita — Grantee Data Analyst
 
