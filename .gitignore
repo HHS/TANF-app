@@ -112,3 +112,6 @@ cypress.env.json
 
 # Logs
 *.log
+
+# DB seeds
+tdrs-backend/*.pg
