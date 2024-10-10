@@ -109,3 +109,4 @@ cypress.env.json
 
 # Patches
 *.patch
+tdrs-backend/*.pg

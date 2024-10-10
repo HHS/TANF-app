@@ -211,11 +211,10 @@ def rollback_records(unsaved_records, datafile):
                                  f"Encountered error while indexing datafile documents: \n{e}",
                                  "error"
                                  )
-            logger.warn("Encountered an Elastic exception, enforcing DB cleanup.")
+            logger.warning("Encountered an Elastic exception, enforcing DB cleanup.")
             num_deleted, models = qset.delete()
-            logger.info("Succesfully performed DB cleanup after elastic failure.")
             log_parser_exception(datafile,
-                                 "Succesfully performed DB cleanup after elastic failure.",
+                                 "Succesfully performed DB cleanup after elastic failure in rollback_records.",
                                  "info"
                                  )
         except DatabaseError as e:
@@ -310,7 +309,7 @@ def delete_serialized_records(duplicate_manager, dfs):
             total_deleted += num_deleted
             dfs.total_number_of_records_created -= num_deleted
             log_parser_exception(dfs.datafile,
-                                 "Succesfully performed DB cleanup after elastic failure.",
+                                 "Succesfully performed DB cleanup after elastic failure in delete_serialized_records.",
                                  "info"
                                  )
         except DatabaseError as e:

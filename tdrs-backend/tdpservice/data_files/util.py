@@ -3,6 +3,7 @@ import base64
 from io import BytesIO
 import xlsxwriter
 import calendar
+from tdpservice.parsers.models import ParserErrorCategoryChoices
 
 
 def get_xls_serialized_file(data):
@@ -48,6 +49,7 @@ def get_xls_serialized_file(data):
         ('item_name', lambda x: ','.join([i for i in chk(x)['fields_json']['friendly_name'].values()])),
         ('internal_variable_name', lambda x: ','.join([i for i in chk(x)['fields_json']['friendly_name'].keys()])),
         ('row_number', lambda x: x['row_number']),
+        ('error_type', lambda x: str(ParserErrorCategoryChoices(x['error_type']).label)),
     ]
 
     # write beta banner

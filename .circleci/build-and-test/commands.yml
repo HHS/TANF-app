@@ -49,6 +49,13 @@
       - run:
           name: Disable npm audit warnings in CI
           command: npm set audit false
-          
+
   # This allows us to use the node orb to install packages within other commands
   install-nodejs-packages: node/install-packages
+
+  docker-login:
+    steps:
+      - run:
+          name: Docker login
+          command: |
+            echo "$CIRCI_DOCKER_LOGIN" | docker login https://tdp-docker.dev.raftlabs.tech -u tdp-circi --password-stdin

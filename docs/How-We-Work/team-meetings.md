@@ -68,12 +68,12 @@ A typical sprint schedule is described in the table below.
       - External factors outside of the author spending time building the ticket (ie need external team's input, see how a feature develops, etc.)
       - Ex. Waiting on X ticket to finish the scope of said unrefined ticket, problem found / unsure how big it is and knows other work will unearth it
       - If we know the ACs but not the tasks, then its unrefined
+      - Release Notes summary is empty or incomplete as applicable, to be provided by UX/Product by default.
    - Refined: Ticket is complete and is ready to be executed.
    - Refined & Ready to Go (Next Sprint)
       - "Earmarked" work for the upcoming sprint.
 - **Labelling:**
    - WIP
-      - Author knows the 5 W's or darn near (90%) 
       - Drafted ticket – either still on the author the finish their part or a short team conversation is needed. 
       - Administrative in nature
       - Ex. Stub, ticket that doesn't feel there's enough to warrant an introduction

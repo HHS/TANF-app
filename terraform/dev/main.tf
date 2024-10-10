@@ -50,8 +50,8 @@ data "cloudfoundry_service" "rds" {
 resource "cloudfoundry_service_instance" "database" {
   name             = "tdp-db-dev"
   space            = data.cloudfoundry_space.space.id
-  service_plan     = data.cloudfoundry_service.rds.service_plans["micro-psql"]
-  json_params      = "{\"version\": \"15\"}"
+  service_plan     = data.cloudfoundry_service.rds.service_plans["medium-gp-psql"]
+  json_params      = "{\"version\": \"15\", \"storage_type\": \"gp3\", \"storage\": 50}"
   recursive_delete = true
   timeouts {
     create = "60m"
@@ -106,7 +106,14 @@ data "cloudfoundry_service" "elasticsearch" {
 }
 
 resource "cloudfoundry_service_instance" "elasticsearch" {
-  name         = "es-dev"
-  space        = data.cloudfoundry_space.space.id
-  service_plan = data.cloudfoundry_service.elasticsearch.service_plans["es-dev"]
+  name                     = "es-dev"
+  space                    = data.cloudfoundry_space.space.id
+  service_plan             = data.cloudfoundry_service.elasticsearch.service_plans["es-dev"]
+  replace_on_params_change = true
+  json_params              = "{\"ElasticsearchVersion\": \"Elasticsearch_7.10\"}"
+  timeouts {
+    create = "60m"
+    update = "60m"
+    delete = "2h"
+  }
 }

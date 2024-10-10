@@ -3,7 +3,7 @@ version: "3.4"
 
 services:
   zaproxy:
-    image: softwaresecurityproject/zap-stable:2.14.0
+    image: tdp-docker.dev.raftlabs.tech/dependencies/softwaresecurityproject/zap-stable:2.14.0
     command: sleep 3600
     depends_on:
       - web
@@ -12,7 +12,7 @@ services:
       - ../scripts/zap-hook.py:/zap/scripts/zap-hook.py:ro
 
   postgres:
-    image: postgres:15.7
+    image: tdp-docker.dev.raftlabs.tech/dependencies/postgres:15.7
     environment:
       - PGDATA=/var/lib/postgresql/data/
       - POSTGRES_DB=tdrs_test
@@ -25,14 +25,14 @@ services:
       - postgres_data:/var/lib/postgresql/data/:rw
 
   clamav-rest:
-    image: rafttech/clamav-rest:0.103.2
+    image: tdp-docker.dev.raftlabs.tech/dependencies/rafttech/clamav-rest:0.103.2
     environment:
       - MAX_FILE_SIZE=200M
     ports:
       - "9000:9000"
 
   localstack:
-    image: localstack/localstack:0.13.3
+    image: tdp-docker.dev.raftlabs.tech/dependencies/localstack/localstack:0.13.3
     environment:
       - SERVICES=s3
       - DATA_DIR=/tmp/localstack/data
@@ -46,7 +46,7 @@ services:
       - ../scripts/localstack-setup.sh:/docker-entrypoint-initaws.d/localstack-setup.sh
 
   kibana:
-    image: docker.elastic.co/kibana/kibana-oss:7.10.2
+    image: tdp-docker.dev.raftlabs.tech/dependencies/docker.elastic.co/kibana/kibana-oss:7.10.2
     ports:
       - 5601:5601
     environment:
@@ -55,11 +55,13 @@ services:
       - SERVER_BASEPATH=/kibana
       - SERVER_SECURITYRESPONSEHEADERS_REFERRERPOLICY=no-referrer
       - CSP_WARNLEGACYBROWSERS=false
+    volumes:
+      - ./search_indexes/kibana_saved_objs.ndjson:/usr/share/kibana/kibana_saved_objs.ndjson
     depends_on:
       - elastic
 
   elastic:
-    image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2
+    image: tdp-docker.dev.raftlabs.tech/dependencies/docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2
     environment:
       - discovery.type=single-node
       - logger.discovery.level=debug
@@ -68,6 +70,71 @@ services:
       - 9300:9300
     volumes:
       - elastic_data:/usr/share/elasticsearch/data
+
+  grafana:
+    restart: always
+    image: grafana/grafana:11.2.0
+    ports:
+      - 9400:9400
+    volumes:
+      - ./plg/grafana/datasources.yml:/etc/grafana/provisioning/datasources/default.yml
+      - ./plg/grafana/dashboards/provider.yml:/etc/grafana/provisioning/dashboards/default.yml
+      - ./plg/grafana/dashboards:/var/lib/grafana/provisioning/dashboards
+      - ./plg/grafana/custom.ini:/etc/grafana/grafana.ini
+      - grafana_data:/var/lib/grafana
+
+  prometheus:
+    restart: always
+    image: prom/prometheus:v2.54.1
+    ports:
+      - 9090:9090
+    volumes:
+      - ./plg/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./plg/prometheus/django_rules.yml:/etc/prometheus/prom_django_rules.yml
+      - prometheus_data:/prometheus
+    depends_on:
+      - web
+      - celery-exporter
+      - postgres-exporter
+
+  promtail:
+    restart: always
+    image: grafana/promtail:3.0.1
+    ports:
+      - 9080:9080
+    volumes:
+      - ./plg/promtail/config.yml:/etc/promtail/config.yml
+      - ~/tdp-logs/nginx:/var/log/nginx
+      - logs:/logs
+    command: -config.file=/etc/promtail/config.yml
+
+  loki:
+    restart: always
+    image: grafana/loki:3.0.1
+    ports:
+      - 3100:3100
+    volumes:
+      - loki_data:/loki
+
+  celery-exporter:
+    restart: always
+    image: ovalmoney/celery-exporter:1.5.1
+    ports:
+      - 9540:9540
+    environment:
+      - CELERY_EXPORTER_BROKER_URL=redis://redis-server:6379/0
+    depends_on:
+      - web
+
+  postgres-exporter:
+    restart: always
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    ports:
+      - 9187:9187
+    environment:
+      - DATA_SOURCE_NAME=postgres://tdpuser:something_secure@postgres:5432/tdrs_test?sslmode=disable
+    depends_on:
+      - web
 
   web:
     restart: always
@@ -97,7 +164,7 @@ services:
       - DJANGO_DEBUG
       - SENDGRID_API_KEY
       - GENERATE_TRAILER_ERRORS=True
-      - BYPASS_KIBANA_AUTH
+      - BYPASS_OFA_AUTH
       - ELASTICSEARCH_REINDEX_THREAD_COUNT
       - ELASTICSEARCH_REINDEX_CHUNK_SIZE
       - ELASTICSEARCH_REINDEX_REQUEST_TIMEOUT
@@ -111,7 +178,8 @@ services:
       - ELASTICSEARCH_LOG_INDEX_SLOW_LEVEL
     volumes:
       - .:/tdpapp
-    image: tdp
+      - logs:/tdpapp
+    image: tdp-backend
     build: .
     command: >
       bash -c "./wait_for_services.sh &&
@@ -130,7 +198,7 @@ services:
       - elastic
 
   redis-server:
-    image: "redis:alpine"
+    image: tdp-docker.dev.raftlabs.tech/dependencies/redis:alpine
     command: redis-server /tdpapp/redis.conf
     ports:
       - "6379:6379"
@@ -141,6 +209,10 @@ volumes:
   localstack_data:
   postgres_data:
   elastic_data:
+  prometheus_data:
+  grafana_data:
+  loki_data:
+  logs:
 
 
 networks:

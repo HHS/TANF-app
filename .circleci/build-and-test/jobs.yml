@@ -3,6 +3,7 @@
     steps:
       - checkout
       - docker-compose-check
+      - docker-login
       - docker-compose-up-backend
       - run:
           name: Run Unit Tests And Create Code Coverage Report
@@ -46,6 +47,7 @@
     steps:
       - checkout
       - docker-compose-check
+      - docker-login
       - docker-compose-up-backend
       - docker-compose-up-frontend
       - install-nodejs-machine
