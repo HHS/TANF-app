@@ -17,6 +17,14 @@ from tdpservice.email.helpers.data_file import send_data_submitted_email
 logger = logging.getLogger(__name__)
 
 
+def set_reparse_file_meta_model_failed_state(file_meta):
+    """Set ReparseFileMeta fields to indicate a parse failure."""
+    file_meta.finished = True
+    file_meta.success = False
+    file_meta.finished_at = timezone.now()
+    file_meta.save()
+
+
 @shared_task
 def parse(data_file_id, reparse_id=None):
     """Send data file for processing."""
@@ -71,10 +79,7 @@ def parse(data_file_id, reparse_id=None):
                              "error"
                              )
         if reparse_id:
-            file_meta.finished = True
-            file_meta.success = False
-            file_meta.finished_at = timezone.now()
-            file_meta.save()
+            set_reparse_file_meta_model_failed_state(file_meta)
     except Exception as e:
         generate_error = make_generate_parser_error(data_file, None)
         error = generate_error(schema=None,
@@ -93,7 +98,4 @@ def parse(data_file_id, reparse_id=None):
                               f"see if manual intervention is required. Exception: \n{e}"),
                              "critical")
         if reparse_id:
-            file_meta.finished = True
-            file_meta.success = False
-            file_meta.finished_at = timezone.now()
-            file_meta.save()
+            set_reparse_file_meta_model_failed_state(file_meta)
