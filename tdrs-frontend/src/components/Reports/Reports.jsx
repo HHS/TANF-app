@@ -244,140 +244,187 @@ function Reports() {
           </div>
         )}
         <form>
-          {(isOFAAdmin || isDIGITTeam || isSystemAdmin) && (
-            <div
-              className={classNames('usa-form-group maxw-mobile margin-top-4', {
-                'usa-form-group--error': formValidation.stt,
-              })}
-            >
-              <STTComboBox
-                selectedStt={sttInputValue}
-                selectStt={selectStt}
-                error={formValidation.stt}
-              />
-            </div>
-          )}
-          {(stt?.ssp ? stt.ssp : false) && (
-            <div className="usa-form-group margin-top-4">
-              <fieldset className="usa-fieldset">
-                <legend className="usa-label text-bold">File Type</legend>
-                <div className="usa-radio">
-                  <input
-                    className="usa-radio__input"
-                    id="tanf"
-                    type="radio"
-                    name="reportType"
-                    value="tanf"
-                    defaultChecked
-                    onChange={() => setFileTypeInputValue('tanf')}
+          <div className="grid-row">
+            <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
+              {(isOFAAdmin || isDIGITTeam || isSystemAdmin) && (
+                <div
+                  className={classNames(
+                    'usa-form-group maxw-mobile margin-top-4',
+                    {
+                      'usa-form-group--error': formValidation.stt,
+                    }
+                  )}
+                >
+                  <STTComboBox
+                    selectedStt={sttInputValue}
+                    selectStt={selectStt}
+                    error={formValidation.stt}
                   />
-                  <label className="usa-radio__label" htmlFor="tanf">
-                    TANF
-                  </label>
-                </div>
-                <div className="usa-radio">
-                  <input
-                    className="usa-radio__input"
-                    id="ssp-moe"
-                    type="radio"
-                    name="reportType"
-                    value="ssp-moe"
-                    onChange={() => setFileTypeInputValue('ssp-moe')}
-                  />
-                  <label className="usa-radio__label" htmlFor="ssp-moe">
-                    SSP-MOE
-                  </label>
-                </div>
-              </fieldset>
-            </div>
-          )}
-          <div
-            className={classNames('usa-form-group maxw-mobile margin-top-4', {
-              'usa-form-group--error': formValidation.year,
-            })}
-          >
-            <label
-              className="usa-label text-bold margin-top-4"
-              htmlFor="reportingYears"
-            >
-              Fiscal Year (October - September)
-              {formValidation.year && (
-                <div className="usa-error-message" id="years-error-alert">
-                  A fiscal year is required
                 </div>
               )}
-              {/* eslint-disable-next-line */}
-              <select
-                className={classNames('usa-select maxw-mobile', {
-                  'usa-combo-box__input--error': formValidation.year,
-                })}
-                name="reportingYears"
-                id="reportingYears"
-                onChange={selectYear}
-                value={yearInputValue}
-                aria-describedby="years-error-alert"
-              >
-                <option value="" disabled hidden>
-                  - Select Fiscal Year -
-                </option>
-                {constructYearOptions()}
-              </select>
-            </label>
+              {(stt?.ssp ? stt.ssp : false) && (
+                <div className="usa-form-group margin-top-4">
+                  <fieldset className="usa-fieldset">
+                    <legend className="usa-label text-bold">File Type</legend>
+                    <div className="usa-radio">
+                      <input
+                        className="usa-radio__input"
+                        id="tanf"
+                        type="radio"
+                        name="reportType"
+                        value="tanf"
+                        defaultChecked
+                        onChange={() => setFileTypeInputValue('tanf')}
+                      />
+                      <label className="usa-radio__label" htmlFor="tanf">
+                        TANF
+                      </label>
+                    </div>
+                    <div className="usa-radio">
+                      <input
+                        className="usa-radio__input"
+                        id="ssp-moe"
+                        type="radio"
+                        name="reportType"
+                        value="ssp-moe"
+                        onChange={() => setFileTypeInputValue('ssp-moe')}
+                      />
+                      <label className="usa-radio__label" htmlFor="ssp-moe">
+                        SSP-MOE
+                      </label>
+                    </div>
+                  </fieldset>
+                </div>
+              )}
+            </div>
           </div>
-          <div
-            className={classNames('usa-form-group maxw-mobile margin-top-4', {
-              'usa-form-group--error': formValidation.quarter,
-            })}
-          >
-            <label
-              className="usa-label text-bold margin-top-4"
-              htmlFor="quarter"
-            >
-              Quarter
-              {formValidation.quarter && (
-                <div className="usa-error-message" id="quarter-error-alert">
-                  A quarter is required
-                </div>
-              )}
-              {/* eslint-disable-next-line */}
-              <select
-                className={classNames('usa-select maxw-mobile', {
-                  'usa-combo-box__input--error': formValidation.quarter,
-                })}
-                name="quarter"
-                id="quarter"
-                onChange={selectQuarter}
-                value={quarterInputValue}
-                aria-describedby="quarter-error-alert"
-              >
-                <option value="" disabled hidden>
-                  - Select Quarter -
-                </option>
-                {Object.entries(quarters).map(
-                  ([quarter, quarterDescription]) => (
-                    <option value={quarter} key={quarter}>
-                      {quarterDescription}
-                    </option>
-                  )
+          <div className="grid-row">
+            <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
+              <div
+                className={classNames(
+                  'usa-form-group maxw-mobile margin-top-4',
+                  {
+                    'usa-form-group--error': formValidation.year,
+                  }
                 )}
-              </select>
-            </label>
+              >
+                <label
+                  className="usa-label text-bold margin-top-4"
+                  htmlFor="reportingYears"
+                >
+                  Fiscal Year (October - September)
+                  {formValidation.year && (
+                    <div className="usa-error-message" id="years-error-alert">
+                      A fiscal year is required
+                    </div>
+                  )}
+                  {/* eslint-disable-next-line */}
+              <select
+                    className={classNames('usa-select maxw-mobile', {
+                      'usa-combo-box__input--error': formValidation.year,
+                    })}
+                    name="reportingYears"
+                    id="reportingYears"
+                    onChange={selectYear}
+                    value={yearInputValue}
+                    aria-describedby="years-error-alert"
+                  >
+                    <option value="" disabled hidden>
+                      - Select Fiscal Year -
+                    </option>
+                    {constructYearOptions()}
+                  </select>
+                </label>
+              </div>
+              <div
+                className={classNames(
+                  'usa-form-group maxw-mobile margin-top-4',
+                  {
+                    'usa-form-group--error': formValidation.quarter,
+                  }
+                )}
+              >
+                <label
+                  className="usa-label text-bold margin-top-4"
+                  htmlFor="quarter"
+                >
+                  Quarter
+                  {formValidation.quarter && (
+                    <div className="usa-error-message" id="quarter-error-alert">
+                      A quarter is required
+                    </div>
+                  )}
+                  {/* eslint-disable-next-line */}
+              <select
+                    className={classNames('usa-select maxw-mobile', {
+                      'usa-combo-box__input--error': formValidation.quarter,
+                    })}
+                    name="quarter"
+                    id="quarter"
+                    onChange={selectQuarter}
+                    value={quarterInputValue}
+                    aria-describedby="quarter-error-alert"
+                  >
+                    <option value="" disabled hidden>
+                      - Select Quarter -
+                    </option>
+                    {Object.entries(quarters).map(
+                      ([quarter, quarterDescription]) => (
+                        <option value={quarter} key={quarter}>
+                          {quarterDescription}
+                        </option>
+                      )
+                    )}
+                  </select>
+                </label>
+              </div>
+              <Button
+                className="margin-y-4"
+                type="button"
+                onClick={() => {
+                  if (uploadedFiles && uploadedFiles.length > 0) {
+                    setErrorModalVisible(true)
+                  } else {
+                    handleSearch()
+                  }
+                }}
+              >
+                Search
+              </Button>
+            </div>
+            <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
+              <table className="usa-table usa-table--striped">
+                <caption>Identifying the right Fiscal Year and Quarter</caption>
+                <thead>
+                  <tr>
+                    <th>Fiscal Quarter</th>
+                    <th>Calendar Period</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Quarter 1</td>
+                    <td>Oct 1 - Dec 31</td>
+                  </tr>
+                  <tr>
+                    <td>Quarter 2</td>
+                    <td>Jan 1 - Mar 31</td>
+                  </tr>
+                  <tr>
+                    <td>Quarter 3</td>
+                    <td>Apr 1 - Jun 30</td>
+                  </tr>
+                  <tr>
+                    <td>Quarter 4</td>
+                    <td>Jul 1 - Sep 30</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-          <Button
-            className="margin-y-4"
-            type="button"
-            onClick={() => {
-              if (uploadedFiles && uploadedFiles.length > 0) {
-                setErrorModalVisible(true)
-              } else {
-                handleSearch()
-              }
-            }}
-          >
-            Search
-          </Button>
         </form>
       </div>
+
       {isUploadReportToggled && (
         <>
           <h2
