@@ -137,7 +137,7 @@ Research up to this point has suggested a need for three working personas; an OF
 | Pain Points<br /><br /><br /><br /> | 1. "Django doesn't have all the filters I need to efficiently use it for certain admin tasks" <br /> 2. "The system can sometimes log me out with no warning" <br/> 3. Accessing data in relational data bases is only possible by disconnecting the HHS network on site. <br/> 4. The general toolstack as an administrator can be difficult to use on a GFE <br/> 5. Requesting access to developer tools can take months at a time to get approved                           |
 | Delights                            | 1. "Django has become a tool that provides me a lot of insights about data in the system rather than solely being a user administration tool" <br/> 2. "Automated notifications have been convenient [so that I am aware of what is happening]" <br/> 3. "Being able to use an interface and see what [actions] users did" <br/> 4. "A point and click experience to see how the system is performing...I use the front end the most"|
 | Tools                               | TDP Portal, Django CSV exports, Excel, SAS, email, reporting/analytics software, Microsoft Suite, Python, Axe Dev Tools |
-| Expectations | 1. TDP should help sys admin do things from an interface as much as possible <br /> 2. We have to have another way to troubleshoot and remediate issues |
+| Expectations | 1. TDP should help sys admin do things from an interface as much as possible <br /> 2. We need to have multiple ways to troubleshoot and remediate issues |
 
 To view a further in depth system of the interactions, primary tasks and touchpoints taken by OFA System Admins, please refer to the ecosystem map in the supporting documents below.
 
