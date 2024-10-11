@@ -39,12 +39,16 @@ class ReparseMeta(models.Model):
     @property
     def is_finished(self):
         """Return True if all associated ReparseFileMeta objects are finished."""
-        return all([r.finished for r in self.reparse_file_metas.all()])
+        if self.num_files > 0:
+            return all([r.finished for r in self.reparse_file_metas.all()])
+        return False
 
     @property
     def is_success(self):
         """Return True if all associated ReparseFileMeta objects are successful."""
-        return all([r.success for r in self.reparse_file_metas.all()])
+        if self.is_finished:
+            return all([r.success for r in self.reparse_file_metas.all()])
+        return False
 
     @property
     def finished_at(self):

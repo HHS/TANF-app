@@ -494,3 +494,25 @@ def test_mm_file_counts_match(big_file):
     fm.finished = True
     fm.save()
     assert ReparseMeta.file_counts_match(meta_model) is True
+
+@pytest.mark.django_db()
+def test_reparse_finished_success_false_before_file_queue(big_file):
+    meta_model = ReparseMeta.objects.create()
+    assert meta_model.is_finished is False
+    assert meta_model.is_success is False
+
+    big_file.reparses.add(meta_model)
+    big_file.save()
+    assert meta_model.is_finished is False
+    assert meta_model.is_success is False
+
+    fm = ReparseFileMeta.objects.get(data_file_id=big_file.pk, reparse_meta_id=meta_model.pk)
+    fm.finished = True
+    fm.save()
+    assert meta_model.is_finished is True
+    assert meta_model.is_success is False
+
+    fm.success = True
+    fm.save()
+    assert meta_model.is_finished is True
+    assert meta_model.is_success is True
