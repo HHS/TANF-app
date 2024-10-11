@@ -13,6 +13,7 @@ def format_error_msg(error_msg, fields_json):
         error_msg = error_msg.replace(key, value) if value else error_msg
     return error_msg
 
+
 def friendly_names(fields_json):
     """Return comma separated string of friendly names."""
     return ','.join([i for i in fields_json['friendly_name'].values()])
