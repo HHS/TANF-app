@@ -4,53 +4,31 @@ from io import BytesIO
 import xlsxwriter
 import calendar
 from tdpservice.parsers.models import ParserErrorCategoryChoices
+from django.conf import settings
+from django.core.paginator import Paginator
+
+def format_error_msg(error_msg, fields_json):
+    """Format error message."""
+    for key, value in fields_json['friendly_name'].items():
+        error_msg = error_msg.replace(key, value) if value else error_msg
+    return error_msg
+
+def friendly_names(fields_json):
+    """Return comma separated string of friendly names."""
+    return ','.join([i for i in fields_json['friendly_name'].values()])
 
 
-def get_xls_serialized_file(data):
+def internal_names(fields_json):
+    """Return comma separated string of internal names."""
+    return ','.join([i for i in fields_json['friendly_name'].keys()])
+
+
+def get_xls_serialized_file(parser_errors):
     """Return xls file created from the error."""
-
-    def chk(x):
-        """Check if fields_json is not None."""
-        x['fields_json'] = x['fields_json'] if x.get('fields_json', None) else {
-            'friendly_name': {
-                x['field_name']: x['field_name']
-            },
-        }
-        x['fields_json']['friendly_name'] = x['fields_json']['friendly_name'] if x['fields_json'].get(
-            'friendly_name', None) else {
-            x['field_name']: x['field_name']
-        }
-        if None in x['fields_json']['friendly_name'].keys():
-            x['fields_json']['friendly_name'].pop(None)
-        if None in x['fields_json']['friendly_name'].values():
-            x['fields_json']['friendly_name'].pop()
-        return x
-
-    def format_error_msg(x):
-        """Format error message."""
-        error_msg = x['error_message']
-        for key, value in x['fields_json']['friendly_name'].items():
-            error_msg = error_msg.replace(key, value) if value else error_msg
-        return error_msg
-
     row, col = 0, 0
     output = BytesIO()
     workbook = xlsxwriter.Workbook(output)
     worksheet = workbook.add_worksheet()
-
-    report_columns = [
-        ('case_number', lambda x: x['case_number']),
-        ('year', lambda x: str(x['rpt_month_year'])[0:4] if x['rpt_month_year'] else None),
-        ('month', lambda x: calendar.month_name[
-            int(str(x['rpt_month_year'])[4:])
-            ] if x['rpt_month_year'] else None),
-        ('error_message', lambda x: format_error_msg(chk(x))),
-        ('item_number', lambda x: x['item_number']),
-        ('item_name', lambda x: ','.join([i for i in chk(x)['fields_json']['friendly_name'].values()])),
-        ('internal_variable_name', lambda x: ','.join([i for i in chk(x)['fields_json']['friendly_name'].keys()])),
-        ('row_number', lambda x: x['row_number']),
-        ('error_type', lambda x: str(ParserErrorCategoryChoices(x['error_type']).label)),
-    ]
 
     # write beta banner
     worksheet.write(
@@ -91,16 +69,34 @@ def get_xls_serialized_file(data):
         return ' '.join([i.capitalize() for i in header_list.split('_')])
 
     # We will write the headers in the first row
-    [worksheet.write(row, col, format_header(key[0]), bold) for col, key in enumerate(report_columns)]
+    columns = ['case_number', 'year', 'month',
+               'error_message', 'item_number', 'item_name',
+               'internal_variable_name', 'row_number', 'error_type',
+               ]
+    for idx, col in enumerate(columns):
+        worksheet.write(row, idx, format_header(col), bold)
 
-    [
-        worksheet.write(row + 6, col, key[1](data_i)) for col, key in enumerate(report_columns)
-        for row, data_i in enumerate(data)
-    ]
+    paginator = Paginator(parser_errors, settings.BULK_CREATE_BATCH_SIZE)
+    row_idx = 6
+    for page in paginator:
+        for record in page.object_list:
+            rpt_month_year = str(getattr(record, 'rpt_month_year', None))
+            fields_json = getattr(record, 'fields_json', {})
+
+            worksheet.write(row_idx, 0, record.case_number)
+            worksheet.write(row_idx, 1, rpt_month_year[:4])
+            worksheet.write(row_idx, 2, calendar.month_name[int(rpt_month_year[4:])] if rpt_month_year[4:] else None)
+            worksheet.write(row_idx, 3, format_error_msg(record.error_message, fields_json))
+            worksheet.write(row_idx, 4, record.item_number)
+            worksheet.write(row_idx, 5, friendly_names(fields_json))
+            worksheet.write(row_idx, 6, internal_names(fields_json))
+            worksheet.write(row_idx, 7, record.row_number)
+            worksheet.write(row_idx, 8, str(ParserErrorCategoryChoices(record.error_type).label))
+            row_idx += 1
 
     # autofit all columns except for the first one
     worksheet.autofit()
     worksheet.set_column(0, 0, 20)
 
     workbook.close()
-    return {"data": data, "xls_report": base64.b64encode(output.getvalue()).decode("utf-8")}
+    return {"xls_report": base64.b64encode(output.getvalue()).decode("utf-8")}

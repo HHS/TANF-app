@@ -21,7 +21,6 @@ from tdpservice.users.permissions import DataFilePermissions, IsApprovedPermissi
 from tdpservice.scheduling import parser_task
 from tdpservice.data_files.s3_client import S3Client
 from tdpservice.parsers.models import ParserError
-from tdpservice.parsers.serializers import ParsingErrorSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -147,9 +146,8 @@ class DataFileViewSet(ModelViewSet):
     def download_error_report(self, request, pk=None):
         """Generate and return the parsing error report xlsx."""
         datafile = self.get_object()
-        parser_errors = ParserError.objects.all().filter(file=datafile)
-        serializer = ParsingErrorSerializer(parser_errors, many=True, context=self.get_serializer_context())
-        return Response(get_xls_serialized_file(serializer.data))
+        parser_errors = ParserError.objects.all().filter(file=datafile).order_by('pk')
+        return Response(get_xls_serialized_file(parser_errors))
 
 
 class GetYearList(APIView):
