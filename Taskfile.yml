@@ -114,6 +114,23 @@ tasks:
     cmds:
       - docker-compose -f docker-compose.yml exec web sh -c "python ./manage.py shell"
 
+  backend-exec:
+    desc: Execute a command in the backend container
+    dir: tdrs-backend
+    vars:
+      CMD: '{{.CMD}}'
+    cmds:
+      - docker-compose -f docker-compose.yml exec web sh -c "python manage.py {{.CMD}}"
+
+  backend-exec-seed-db:
+    desc: Execute seed_db command in the backend container
+    dir: tdrs-backend
+    vars:
+      CMD: '{{.CMD}}'
+    cmds:
+      - docker-compose -f docker-compose.yml up -d
+      - docker-compose -f docker-compose.yml exec web sh -c "python manage.py populate_stts; python ./manage.py seed_db"
+
   backend-pytest:
     desc: 'Run pytest in the backend container E.g: task backend-pytest PYTEST_ARGS="tdpservice/test/ -s -vv"'
     dir: tdrs-backend
