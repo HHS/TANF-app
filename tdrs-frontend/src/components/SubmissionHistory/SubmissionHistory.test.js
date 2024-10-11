@@ -474,4 +474,112 @@ describe('SubmissionHistory', () => {
       }
     }
   )
+
+  it('Shows the outdated submission banner for old submissions', () => {
+    const state = {
+      reports: {
+        files: [
+          {
+            id: '123',
+            fileName: 'test1.txt',
+            fileType: 'TANF',
+            quarter: 'Q1',
+            section: 'Active Case Data',
+            uuid: '123-4-4-321',
+            year: '2023',
+            s3_version_id: '321-0-0-123',
+            createdAt: '08/08/2024 12:12',
+            submittedBy: 'test@teamraft.com',
+            summary: {
+              status: 'Accepted',
+            },
+          },
+          {
+            id: '333',
+            fileName: 'test2.txt',
+            fileType: 'TANF',
+            quarter: 'Q1',
+            section: 'Active Case Data',
+            uuid: '123-4-4-321',
+            year: '2023',
+            s3_version_id: '321-0-0-123',
+            createdAt: '12/12/2012 12:12',
+            submittedBy: 'test@teamraft.com',
+            summary: {
+              status: 'Accepted',
+            },
+          },
+        ],
+      },
+    }
+
+    const store = appConfigureStore(state)
+    const dispatch = jest.fn(store.dispatch)
+    store.dispatch = dispatch
+
+    setup(store)
+
+    expect(screen.queryByText('test1.txt')).toBeInTheDocument()
+    expect(screen.queryByText('test2.txt')).toBeInTheDocument()
+    expect(
+      screen.queryByText(
+        'Please note that error reports and submission history content for files submitted prior to May 31, 2024 may be outdated. Please resubmit to get access to updated information.'
+      )
+    ).toBeInTheDocument()
+    expect(screen.queryByText('Not Available')).toBeInTheDocument()
+  })
+
+  it('Does not show outdated submissions banner if no old submissions', () => {
+    const state = {
+      reports: {
+        files: [
+          {
+            id: '123',
+            fileName: 'test1.txt',
+            fileType: 'TANF',
+            quarter: 'Q1',
+            section: 'Active Case Data',
+            uuid: '123-4-4-321',
+            year: '2023',
+            s3_version_id: '321-0-0-123',
+            createdAt: '08/08/2024 12:12',
+            submittedBy: 'test@teamraft.com',
+            summary: {
+              status: 'Accepted',
+            },
+          },
+          {
+            id: '333',
+            fileName: 'test2.txt',
+            fileType: 'TANF',
+            quarter: 'Q1',
+            section: 'Active Case Data',
+            uuid: '123-4-4-321',
+            year: '2023',
+            s3_version_id: '321-0-0-123',
+            createdAt: '12/12/2024 12:12',
+            submittedBy: 'test@teamraft.com',
+            summary: {
+              status: 'Accepted',
+            },
+          },
+        ],
+      },
+    }
+
+    const store = appConfigureStore(state)
+    const dispatch = jest.fn(store.dispatch)
+    store.dispatch = dispatch
+
+    setup(store)
+
+    expect(screen.queryByText('test1.txt')).toBeInTheDocument()
+    expect(screen.queryByText('test2.txt')).toBeInTheDocument()
+    expect(
+      screen.queryByText(
+        'Please note that error reports and submission history content for files submitted prior to May 31, 2024 may be outdated. Please resubmit to get access to updated information.'
+      )
+    ).not.toBeInTheDocument()
+    expect(screen.queryByText('Not Available')).not.toBeInTheDocument()
+  })
 })
