@@ -1,4 +1,4 @@
-"""ModelAdmin classes for parsed SSP data files."""
+"""ModelAdmin class for the ReparseMeta model."""
 from .mixins import ReadOnlyAdminMixin
 from tdpservice.data_files.admin.admin import DataFileInline
 
