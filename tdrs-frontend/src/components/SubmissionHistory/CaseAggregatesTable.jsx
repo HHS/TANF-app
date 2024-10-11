@@ -22,9 +22,34 @@ const MonthSubRow = ({ data }) =>
     </>
   )
 
-const CaseAggregatesRow = ({ file }) => {
+const CaseAggregatesRow = ({ file, fileIsOutdated }) => {
   const dispatch = useDispatch()
   const errorFileName = `${file.year}-${file.quarter}-${file.section}`
+
+  const getErrorReportStatus = () => {
+    if (
+      file.summary &&
+      file.summary.status &&
+      file.summary.status !== 'Pending'
+    ) {
+      if (fileIsOutdated) {
+        return 'Not Available'
+      } else if (file.hasError) {
+        return (
+          <button
+            className="section-download"
+            onClick={() => downloadErrorReport(file, errorFileName)}
+          >
+            {errorFileName}.xlsx
+          </button>
+        )
+      } else {
+        return 'No Errors'
+      }
+    } else {
+      return 'Pending'
+    }
+  }
 
   return (
     <>
@@ -64,22 +89,7 @@ const CaseAggregatesRow = ({ file }) => {
         </th>
 
         <th scope="rowgroup" rowSpan={3}>
-          {file.summary &&
-          file.summary.status &&
-          file.summary.status !== 'Pending' ? (
-            file.hasError > 0 ? (
-              <button
-                className="section-download"
-                onClick={() => downloadErrorReport(file, errorFileName)}
-              >
-                {errorFileName}.xlsx
-              </button>
-            ) : (
-              'No Errors'
-            )
-          ) : (
-            'Pending'
-          )}
+          {getErrorReportStatus()}
         </th>
       </tr>
       <tr>
@@ -92,7 +102,7 @@ const CaseAggregatesRow = ({ file }) => {
   )
 }
 
-export const CaseAggregatesTable = ({ files }) => (
+export const CaseAggregatesTable = ({ files, fileIsOutdated }) => (
   <>
     <thead>
       <tr>
@@ -127,7 +137,11 @@ export const CaseAggregatesTable = ({ files }) => (
     </thead>
     <tbody>
       {files.map((file) => (
-        <CaseAggregatesRow key={file.id} file={file} />
+        <CaseAggregatesRow
+          key={file.id}
+          file={file}
+          fileIsOutdated={fileIsOutdated(file)}
+        />
       ))}
     </tbody>
   </>

@@ -1,5 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import classNames from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 import { fileUploadSections } from '../../reducers/reports'
 import Paginator from '../Paginator'
@@ -9,7 +10,12 @@ import { useState } from 'react'
 import { CaseAggregatesTable } from './CaseAggregatesTable'
 import { TotalAggregatesTable } from './TotalAggregatesTable'
 
-const SectionSubmissionHistory = ({ section, label, files }) => {
+const SectionSubmissionHistory = ({
+  section,
+  label,
+  files,
+  fileIsOutdated,
+}) => {
   const pageSize = 5
   const [resultsPage, setResultsPage] = useState(1)
 
@@ -30,7 +36,10 @@ const SectionSubmissionHistory = ({ section, label, files }) => {
       <table className="usa-table usa-table--striped">
         <caption>{`Section ${section} - ${label}`}</caption>
         {files && files.length > 0 ? (
-          <TableComponent files={files.slice(pageStart, pageEnd)} />
+          <TableComponent
+            files={files.slice(pageStart, pageEnd)}
+            fileIsOutdated={fileIsOutdated}
+          />
         ) : (
           <span>No data available.</span>
         )}
@@ -57,6 +66,7 @@ SectionSubmissionHistory.propTypes = {
     year: PropTypes.string,
   }),
   files: PropTypes.array,
+  fileIsOutdated: PropTypes.func,
 }
 
 const SubmissionHistory = ({ filterValues }) => {
@@ -71,8 +81,33 @@ const SubmissionHistory = ({ filterValues }) => {
     }
   }, [hasFetchedFiles, files, dispatch, filterValues])
 
+  let submissionThreshold = new Date('05-31-2024')
+  const fileIsOutdated = (f) => {
+    let created_date = new Date(f.createdAt)
+    return created_date < submissionThreshold
+  }
+
+  const hasOutdatedSubmissions = () =>
+    files.some((e, i, a) => fileIsOutdated(e))
+
   return (
     <>
+      {hasOutdatedSubmissions() && (
+        <div
+          className={classNames('usa-alert usa-alert--slim', {
+            [`usa-alert--info`]: true,
+          })}
+        >
+          <div className="usa-alert__body" role="alert">
+            <p className="usa-alert__text">
+              Please note that error reports and submission history content for
+              files submitted prior to May 31, 2024 may be outdated. Please
+              resubmit to get access to updated information.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="margin-top-2">
         <a
           className="usa-link"
@@ -93,6 +128,7 @@ const SubmissionHistory = ({ filterValues }) => {
             label={section}
             filterValues={filterValues}
             files={files.filter((f) => f.section.includes(section))}
+            fileIsOutdated={fileIsOutdated}
           />
         ))}
       </div>
