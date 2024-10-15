@@ -139,7 +139,7 @@ Research up to this point has suggested a need for three working personas; an OF
 | Tools                               | TDP Portal, Django CSV exports, Excel, SAS, email, reporting/analytics software, Microsoft Suite, Python, Axe Dev Tools |
 | Expectations | 1. TDP should help sys admin do things from an interface as much as possible <br /> 2. We need to have multiple ways to troubleshoot and remediate issues |
 
-To view a further in depth system of the interactions, primary tasks and touchpoints taken by OFA System Admins, please refer to the ecosystem map in the supporting documents below.
+To view a further in-depth system of the interactions, primary tasks and touchpoints taken by OFA System Admins, please refer to the ecosystem map in the supporting documents below.
 
 ### Awinita — Grantee Data Analyst
 
