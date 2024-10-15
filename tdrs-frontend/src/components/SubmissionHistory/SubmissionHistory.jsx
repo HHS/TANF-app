@@ -88,7 +88,7 @@ const SubmissionHistory = ({ filterValues }) => {
   }
 
   const hasOutdatedSubmissions = () =>
-    files.some((e, i, a) => fileIsOutdated(e))
+    files.some((element, index, array) => fileIsOutdated(element))
 
   return (
     <>
