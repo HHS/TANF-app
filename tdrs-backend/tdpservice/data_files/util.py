@@ -7,6 +7,7 @@ from tdpservice.parsers.models import ParserErrorCategoryChoices
 from django.conf import settings
 from django.core.paginator import Paginator
 
+
 def format_error_msg(error_msg, fields_json):
     """Format error message."""
     for key, value in fields_json['friendly_name'].items():

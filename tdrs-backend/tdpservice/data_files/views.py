@@ -1,5 +1,6 @@
 """Check if user is authorized."""
 import logging
+from django.db.models import Q
 from django.http import FileResponse
 from django_filters import rest_framework as filters
 from django.conf import settings
@@ -20,7 +21,7 @@ from tdpservice.data_files.models import DataFile, get_s3_upload_path
 from tdpservice.users.permissions import DataFilePermissions, IsApprovedPermission
 from tdpservice.scheduling import parser_task
 from tdpservice.data_files.s3_client import S3Client
-from tdpservice.parsers.models import ParserError
+from tdpservice.parsers.models import ParserError, ParserErrorCategoryChoices
 
 logger = logging.getLogger(__name__)
 
@@ -146,8 +147,76 @@ class DataFileViewSet(ModelViewSet):
     def download_error_report(self, request, pk=None):
         """Generate and return the parsing error report xlsx."""
         datafile = self.get_object()
-        parser_errors = ParserError.objects.all().filter(file=datafile).order_by('pk')
-        return Response(get_xls_serialized_file(parser_errors))
+        all_errors = ParserError.objects.filter(file=datafile).order_by('pk')
+        filtered_errors = None
+        user = self.request.user
+        if not (user.is_ofa_sys_admin or user.is_ofa_admin):
+            error_type_query = Q(error_type=ParserErrorCategoryChoices.PRE_CHECK) | \
+                Q(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
+            filtered_errors = all_errors.filter(error_type_query)
+
+            # All cat2 errors associated with FAMILY_AFFILIATION or CITIZENSHIP_STATUS
+            filtered_errors = filtered_errors.union(all_errors.filter(fields_json__friendly_name__has_any_keys=[
+                "FAMILY_AFFILIATION",
+                "CITIZENSHIP_STATUS"
+                ],
+                error_type=ParserErrorCategoryChoices.FIELD_VALUE))
+
+            # All cat3 errors associated with FAMILY_AFFILIATION and CITIZENSHIP_STATUS
+            filtered_errors = filtered_errors.union(all_errors.filter(fields_json__friendly_name__has_keys=[
+                "FAMILY_AFFILIATION",
+                "CITIZENSHIP_STATUS"
+                ],
+                error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY))
+
+            # All cat3 errors associated with FAMILY_AFFILIATION and SSN
+            filtered_errors = filtered_errors.union(all_errors.filter(fields_json__friendly_name__has_keys=[
+                "FAMILY_AFFILIATION",
+                "SSN"
+                ],
+                error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY))
+
+            if "Active" in datafile.section:
+                # All cat3 errors associated with FAMILY_AFFILIATION and SSN and CITIZENSHIP_STATUS
+                filtered_errors = filtered_errors.union(all_errors.filter(fields_json__friendly_name__has_keys=[
+                    "FAMILY_AFFILIATION",
+                    "SSN",
+                    "CITIZENSHIP_STATUS"
+                    ],
+                    error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY))
+
+                # All cat3 errors associated with FAMILY_AFFILIATION and EDUCATION_LEVEL
+                filtered_errors = filtered_errors.union(all_errors.filter(fields_json__friendly_name__has_keys=[
+                    "FAMILY_AFFILIATION",
+                    "EDUCATION_LEVEL",
+                    ],
+                    error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY))
+
+                # All cat3 errors associated with FAMILY_AFFILIATION and WORK_ELIGIBLE_INDICATOR
+                filtered_errors = filtered_errors.union(all_errors.filter(fields_json__friendly_name__has_keys=[
+                    "FAMILY_AFFILIATION",
+                    "WORK_ELIGIBLE_INDICATOR",
+                    ],
+                    error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY))
+
+                # All cat3 errors associated with CITIZENSHIP_STATUS and WORK_ELIGIBLE_INDICATOR
+                filtered_errors = filtered_errors.union(all_errors.filter(fields_json__friendly_name__has_keys=[
+                    "CITIZENSHIP_STATUS",
+                    "WORK_ELIGIBLE_INDICATOR",
+                    ],
+                    error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY))
+
+                # All cat3 errors associated with summed fields: AMT_FOOD_STAMP_ASSISTANCE, AMT_SUB_CC, CASH_AMOUNT,
+                # CC_AMOUNT, TRANSP_AMOUNT
+                filtered_errors = filtered_errors.union(all_errors.filter(fields_json__friendly_name__has_keys=[
+                    "AMT_FOOD_STAMP_ASSISTANCE", "AMT_SUB_CC", "CASH_AMOUNT", "CC_AMOUNT", "TRANSP_AMOUNT"
+                    ],
+                    error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY))
+
+        else:
+            filtered_errors = all_errors
+
+        return Response(get_xls_serialized_file(filtered_errors))
 
 
 class GetYearList(APIView):

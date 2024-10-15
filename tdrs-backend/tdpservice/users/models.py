@@ -181,6 +181,11 @@ class User(AbstractUser):
         return self.is_in_group("ACF OCIO")
 
     @property
+    def is_ofa_admin(self) -> bool:
+        """Return whether or not the user is in the OFA Admin Group."""
+        return self.is_in_group("OFA Admin")
+
+    @property
     def is_ofa_sys_admin(self) -> bool:
         """Return whether or not the user is in the OFA System Admin Group."""
         return self.is_in_group("OFA System Admin")
