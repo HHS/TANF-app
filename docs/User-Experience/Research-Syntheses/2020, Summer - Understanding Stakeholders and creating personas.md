@@ -109,7 +109,7 @@ respect to TDP, OCIO staff will have access to subsets of the Django Admin exper
 
 ## Personas
 
-Research up to this point has suggested a need for three working personas; an OFA Data Analyst (Grace), an OFA System Admin (Elliott), and an STT data analyst. While these don't reflect the full diversity of  roles, responsibilities, and team makeups on both the grantee and federal levels, the "jobs to be done" for each in the context of TDP have a lot of overlap. A single persona could also have many different combinations of permissions available to them in the data portal. 
+Research up to this point has suggested a need for three working personas: an OFA Data Analyst (Grace), an OFA System Admin (Elliott), and an STT data analyst. While these don't reflect the full diversity of  roles, responsibilities, and team makeups on both the grantee and federal levels, the "jobs to be done" for each in the context of TDP have a lot of overlap. A single persona could also have many different combinations of permissions available to them in the data portal. 
 
 ### Grace — OFA Data Portal User
 
