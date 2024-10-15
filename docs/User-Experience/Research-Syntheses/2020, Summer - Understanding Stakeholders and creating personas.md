@@ -131,7 +131,7 @@ Research up to this point has suggested a need for three working personas; an OF
 | :---------------------------------- | :----------------------------------------------------------- |
 | Role                                | OFA Data Portal User, Viewing and Editing Permissions        |
 | Age                                 | 37                                                           |
-| Location                            | USA, Occassionally In Office DC                              |
+| Location                            | USA, Occasionally In DC Office                              |
 | Work Environment                    | Home and Office, Desktop, and Government Furnished Equipment (GFE) |
 | Goals<br /><br /><br />             | 1. Ensure availability of features and components of the system <br />2. Work with regional OFA staff to confirm who should and shouldn't be granted access to the system<br />3. Access system logs to troubleshoot problems and remediate scans as needed <br />4. Provide access to OCIO (ACF-Tech) staff for security auditing purposes <br />5. Monitoring emails, notifications and answering STT Questions |
 | Pain Points<br /><br /><br /><br /> | 1. "Django doesn't have all the filters I need to efficiently use it for certain admin tasks" <br /> 2. "The system can sometimes log me out with no warning" <br/> 3. Accessing data from cloud.gov-brokered databases is only possible by disconnecting from the HHS network on site and VPN when remote. <br/> 4. The toolstack needed as an administrator can be difficult to use on a Windows GFE <br/> 5. Requesting access to developer tools can take months at a time to get approved                           |
