@@ -4,27 +4,6 @@ from django.utils.translation import ugettext_lazy as _
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 from tdpservice.core.filters import MostRecentVersionFilter
 
-class DataFileSummaryPrgTypeFilter(admin.SimpleListFilter):
-    """Admin class filter for Program Type on datafile model."""
-
-    title = 'Program Type'
-    parameter_name = 'program_type'
-
-    def lookups(self, request, model_admin):
-        """Return a list of tuples."""
-        return [
-            ('TAN', 'TAN'),
-            ('SSP', 'SSP'),
-        ]
-
-    def queryset(self, request, queryset):
-        """Return a queryset."""
-        if self.value():
-            query_set_ids = [df.id for df in queryset if df.prog_type == self.value()]
-            return queryset.filter(id__in=query_set_ids)
-        else:
-            return queryset
-
 
 class LatestReparseEvent(admin.SimpleListFilter):
     """Filter class to filter files based on the latest reparse event."""
