@@ -151,6 +151,7 @@ class DataFileViewSet(ModelViewSet):
         filtered_errors = None
         user = self.request.user
         if not (user.is_ofa_sys_admin or user.is_ofa_admin):
+            # All cat1/4 errors
             error_type_query = Q(error_type=ParserErrorCategoryChoices.PRE_CHECK) | \
                 Q(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
             filtered_errors = all_errors.filter(error_type_query)
