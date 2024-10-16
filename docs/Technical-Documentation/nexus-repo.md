@@ -123,7 +123,7 @@ Now you will no longer have to enter the password when logging in.
 ## Local Docker Login
 After logging into the `tanf-dev` space with the `cf` cli, execute the following commands to authenticate your local docker daemon
 ```
-export NEXUS_DOCKER_PASSWORD=`cf service-key tanf-keys nexus-dev | tail -n +2 | jq .credentials.password`
+export NEXUS_DOCKER_PASSWORD=`cf service-key tanf-keys nexus-dev | tail -n +2 | jq .password`
 echo "$NEXUS_DOCKER_PASSWORD" | docker login https://tdp-docker.dev.raftlabs.tech -u tdp-dev --password-stdin
 ```
 
