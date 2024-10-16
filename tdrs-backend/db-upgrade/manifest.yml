@@ -1,0 +1,12 @@
+version: 1
+applications:
+- name: db-connector
+  instances: 1
+  memory: 512M
+  disk_quota: 2G
+  env:
+    POSTGRES_PASSWORD: password
+  docker:
+    image: postgres:15.7-alpine3.20
+  services:
+    - <DB_SERVICE_TO_CONNECT_TO>

@@ -184,8 +184,6 @@ class DataFile(FileRecord):
         # e.g., 'SSP Closed Case Data'
         if self.section.startswith('SSP'):
             return 'SSP'
-        elif self.section.startswith('Tribal'):
-            return 'TAN'  # problematic, do we need to infer tribal entirely from tribe/fips code?
         else:
             return 'TAN'
 
