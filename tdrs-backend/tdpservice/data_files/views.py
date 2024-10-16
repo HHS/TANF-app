@@ -186,6 +186,13 @@ class DataFileViewSet(ModelViewSet):
                     ],
                     error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY))
 
+                # All cat3 errors associated with FAMILY_AFFILIATION and PARENT_MINOR_CHILD
+                filtered_errors = filtered_errors.union(all_errors.filter(fields_json__friendly_name__has_keys=[
+                    "FAMILY_AFFILIATION",
+                    "PARENT_MINOR_CHILD",
+                    ],
+                    error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY))
+
                 # All cat3 errors associated with FAMILY_AFFILIATION and EDUCATION_LEVEL
                 filtered_errors = filtered_errors.union(all_errors.filter(fields_json__friendly_name__has_keys=[
                     "FAMILY_AFFILIATION",
@@ -213,7 +220,6 @@ class DataFileViewSet(ModelViewSet):
                     "AMT_FOOD_STAMP_ASSISTANCE", "AMT_SUB_CC", "CASH_AMOUNT", "CC_AMOUNT", "TRANSP_AMOUNT"
                     ],
                     error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY))
-
         else:
             filtered_errors = all_errors
 
