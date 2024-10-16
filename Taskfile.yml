@@ -5,7 +5,7 @@ tasks:
   upload-kibana-objs:
     desc: Upload dashboards to Kibana server
     cmds:
-      - curl -X POST localhost:5601/api/saved_objects/_import -H "kbn-xsrf: true" --form file=@tdrs-backend/tdpservice/search_indexes/kibana_saved_objs.ndjson
+      - 'curl -X POST localhost:5601/api/saved_objects/_import -H "kbn-xsrf: true" --form file=@tdrs-backend/tdpservice/search_indexes/kibana_saved_objs.ndjson'
 
   create-network:
     desc: Create the external network
