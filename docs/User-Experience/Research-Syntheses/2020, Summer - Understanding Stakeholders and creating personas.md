@@ -82,7 +82,7 @@ Some grantees segment data preparation and data transmission into two distinct r
 
 ### OFA analysts
 
-OFA analysts review, analyze, and report on STT’s TANF data that’s submitted through TDP. They also help STTs through the transmission process by offering support and guidance around data quality (including fatal/warning edits). 
+OFA analysts review, analyze, and report on STT’s TANF data that’s submitted through TDP. They also help STTs through the transmission process by offering support and guidance around data quality. 
 
 **Supporting Documentation**
 
