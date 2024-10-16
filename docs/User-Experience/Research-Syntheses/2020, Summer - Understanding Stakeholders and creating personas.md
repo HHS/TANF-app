@@ -94,7 +94,7 @@ OFA admins are members of the TANF Data Division. They manage access requests fo
 
 ### Regional program specialists
 
-Regional program specialists are grantee's primary OFA point of contact. They track TANF trends in their region and provide troubleshooting, advice, and reminders to STTs.
+Regional program specialists are STT's primary OFA point of contact. They track TANF trends in their region and provide troubleshooting, advice, and reminders to STTs.
 
 ### OPRE analysts
 
