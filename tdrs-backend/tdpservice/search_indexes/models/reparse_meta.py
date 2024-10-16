@@ -2,6 +2,7 @@
 
 from django.db import models
 from django.db.models import Max
+from tdpservice.search_indexes.util import count_all_records
 import logging
 
 logger = logging.getLogger(__name__)
@@ -116,3 +117,10 @@ class ReparseMeta(models.Model):
         if max_pk.get("pk__max", None) is None:
             return None
         return ReparseMeta.objects.get(pk=max_pk["pk__max"])
+
+    @staticmethod
+    def set_total_num_records_post(meta_model):
+        """Update the total_num_records_post field once reparse has completed."""
+        if meta_model.is_finished:
+            meta_model.total_num_records_post = count_all_records()
+            meta_model.save()

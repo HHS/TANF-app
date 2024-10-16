@@ -12,6 +12,7 @@ from tdpservice.parsers.models import DataFileSummary, ParserErrorCategoryChoice
 from tdpservice.parsers.aggregates import case_aggregates_by_month, total_errors_by_month
 from tdpservice.parsers.util import log_parser_exception, make_generate_parser_error
 from tdpservice.email.helpers.data_file import send_data_submitted_email
+from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 
 
 logger = logging.getLogger(__name__)
@@ -65,6 +66,7 @@ def parse(data_file_id, reparse_id=None):
             file_meta.success = True
             file_meta.finished_at = timezone.now()
             file_meta.save()
+            ReparseMeta.set_total_num_records_post(ReparseMeta.objects.get(pk=reparse_id))
         else:
             recipients = User.objects.filter(
                 stt=data_file.stt,
