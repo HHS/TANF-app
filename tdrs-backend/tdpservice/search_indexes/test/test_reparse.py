@@ -497,6 +497,7 @@ def test_mm_file_counts_match(big_file):
 
 @pytest.mark.django_db()
 def test_reparse_finished_success_false_before_file_queue(big_file):
+    """Test is_finished and is_success are False if no files added."""
     meta_model = ReparseMeta.objects.create()
     assert meta_model.is_finished is False
     assert meta_model.is_success is False
