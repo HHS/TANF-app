@@ -244,7 +244,7 @@ function Reports() {
           </div>
         )}
         <form>
-          <div className="grid-row">
+          <div className="grid-row grid-gap">
             <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
               {(isOFAAdmin || isDIGITTeam || isSystemAdmin) && (
                 <div
@@ -298,8 +298,8 @@ function Reports() {
               )}
             </div>
           </div>
-          <div className="grid-row">
-            <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
+          <div className="grid-row grid-gap">
+            <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-auto">
               <div
                 className={classNames(
                   'usa-form-group maxw-mobile margin-top-4',
@@ -393,7 +393,7 @@ function Reports() {
               </Button>
             </div>
             <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
-              <table className="usa-table usa-table--striped margin-top-4 width-full">
+              <table className="usa-table usa-table--striped margin-top-4 desktop:width-mobile-lg mobile:width-full">
                 <caption>Identifying the right Fiscal Year and Quarter</caption>
                 <thead>
                   <tr>
