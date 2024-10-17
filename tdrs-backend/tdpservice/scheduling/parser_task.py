@@ -2,12 +2,13 @@
 from __future__ import absolute_import
 from celery import shared_task
 import logging
+from django.utils import timezone
 from django.contrib.auth.models import Group
 from django.db.utils import DatabaseError
 from tdpservice.users.models import AccountApprovalStatusChoices, User
-from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.models import DataFile, ReparseFileMeta
 from tdpservice.parsers.parse import parse_datafile
-from tdpservice.parsers.models import DataFileSummary, ParserErrorCategoryChoices
+from tdpservice.parsers.models import DataFileSummary, ParserErrorCategoryChoices, ParserError
 from tdpservice.parsers.aggregates import case_aggregates_by_month, total_errors_by_month
 from tdpservice.parsers.util import log_parser_exception, make_generate_parser_error
 from tdpservice.email.helpers.data_file import send_data_submitted_email
@@ -17,8 +18,16 @@ from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 logger = logging.getLogger(__name__)
 
 
+def set_reparse_file_meta_model_failed_state(file_meta):
+    """Set ReparseFileMeta fields to indicate a parse failure."""
+    file_meta.finished = True
+    file_meta.success = False
+    file_meta.finished_at = timezone.now()
+    file_meta.save()
+
+
 @shared_task
-def parse(data_file_id, should_send_submission_email=True):
+def parse(data_file_id, reparse_id=None):
     """Send data file for processing."""
     # passing the data file FileField across redis was rendering non-serializable failures, doing the below lookup
     # to avoid those. I suppose good practice to not store/serializer large file contents in memory when stored in redis
@@ -26,6 +35,12 @@ def parse(data_file_id, should_send_submission_email=True):
     try:
         data_file = DataFile.objects.get(id=data_file_id)
         logger.info(f"DataFile parsing started for file {data_file.filename}")
+
+        file_meta = None
+        if reparse_id:
+            file_meta = ReparseFileMeta.objects.get(data_file_id=data_file_id, reparse_meta_id=reparse_id)
+            file_meta.started_at = timezone.now()
+            file_meta.save()
 
         dfs = DataFileSummary.objects.create(datafile=data_file, status=DataFileSummary.Status.PENDING)
         errors = parse_datafile(data_file, dfs)
@@ -41,7 +56,18 @@ def parse(data_file_id, should_send_submission_email=True):
         logger.info(f"Parsing finished for file -> {repr(data_file)} with status "
                     f"{dfs.status} and {len(errors)} errors.")
 
-        if should_send_submission_email is True:
+        if reparse_id is not None:
+            file_meta.num_records_created = dfs.total_number_of_records_created
+            file_meta.cat_4_errors_generated = ParserError.objects.filter(
+                file_id=data_file_id,
+                error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY
+            ).count()
+            file_meta.finished = True
+            file_meta.success = True
+            file_meta.finished_at = timezone.now()
+            file_meta.save()
+            ReparseMeta.set_total_num_records_post(ReparseMeta.objects.get(pk=reparse_id))
+        else:
             recipients = User.objects.filter(
                 stt=data_file.stt,
                 account_approval_status=AccountApprovalStatusChoices.APPROVED,
@@ -54,7 +80,8 @@ def parse(data_file_id, should_send_submission_email=True):
                              f"Encountered Database exception in parser_task.py: \n{e}",
                              "error"
                              )
-        ReparseMeta.increment_files_failed(data_file.reparse_meta_models)
+        if reparse_id:
+            set_reparse_file_meta_model_failed_state(file_meta)
     except Exception as e:
         generate_error = make_generate_parser_error(data_file, None)
         error = generate_error(schema=None,
@@ -72,4 +99,5 @@ def parse(data_file_id, should_send_submission_email=True):
                              (f"Uncaught exception while parsing datafile: {data_file.pk}! Please review the logs to "
                               f"see if manual intervention is required. Exception: \n{e}"),
                              "critical")
-        ReparseMeta.increment_files_failed(data_file.reparse_meta_models)
+        if reparse_id:
+            set_reparse_file_meta_model_failed_state(file_meta)
