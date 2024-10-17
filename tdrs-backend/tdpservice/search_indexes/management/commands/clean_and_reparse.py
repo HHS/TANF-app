@@ -182,9 +182,9 @@ class Command(BaseCommand):
         """Delete, re-save, and reparse selected datafiles."""
         for file in files:
             try:
-                file.reparse_meta_models.add(meta_model)
+                file.reparses.add(meta_model)
                 file.save()
-                parser_task.parse.delay(file.pk, should_send_submission_email=False)
+                parser_task.parse.delay(file.pk, reparse_id=meta_model.pk)
             except DatabaseError as e:
                 log('Encountered a DatabaseError while re-creating datafiles. The database '
                     'and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!',
@@ -341,8 +341,7 @@ class Command(BaseCommand):
                                                 fiscal_year=fiscal_year,
                                                 all=reparse_all,
                                                 new_indices=new_indices,
-                                                delete_old_indices=new_indices,
-                                                num_files_to_reparse=num_files)
+                                                delete_old_indices=new_indices)
 
         # Backup the Postgres DB
         backup_file_name += f"_rpv{meta_model.pk}.pg"
