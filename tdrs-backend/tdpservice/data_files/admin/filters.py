@@ -35,7 +35,7 @@ class LatestReparseEvent(admin.SimpleListFilter):
         if self.value() is not None and queryset.exists():
             latest_meta = ReparseMeta.get_latest()
             if latest_meta is not None:
-                queryset = queryset.filter(reparse_meta_models=latest_meta)
+                queryset = queryset.filter(reparses=latest_meta)
         return queryset
 
 
