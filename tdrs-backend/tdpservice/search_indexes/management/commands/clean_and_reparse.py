@@ -33,6 +33,7 @@ class Command(BaseCommand):
         parser.add_argument("-y", "--fiscal_year", type=int, help="Reparse all files in the fiscal year, e.g. 2021.")
         parser.add_argument("-a", "--all", action='store_true', help="Clean and reparse all datafiles. If selected, "
                             "fiscal_year/quarter aren't necessary.")
+        parser.add_argument("-f", "--files", nargs='+', type=str, help="Re-parse specific datafiles by datafile id")
 
     def _get_log_context(self, system_user):
         """Return logger context."""
@@ -263,32 +264,20 @@ class Command(BaseCommand):
                 print('Cancelled.')
                 exit(0)
 
-    def handle(self, *args, **options):
-        """Delete and reparse datafiles matching a query."""
-        fiscal_year = options.get('fiscal_year', None)
-        fiscal_quarter = options.get('fiscal_quarter', None)
-        reparse_all = options.get('all', False)
-        new_indices = reparse_all is True
-
-        # Option that can only be specified by calling `handle` directly and passing it.
-        testing = options.get('testing', False)
-        ##
-
-        args_passed = fiscal_year is not None or fiscal_quarter is not None or reparse_all
-
-        if not args_passed:
-            logger.warn("No arguments supplied.")
-            self.print_help("manage.py", "clean_and_parse")
-            return
-
+    def get_files_to_reparse(case, fiscal_year, fiscal_quarter, selected_files, reparse_all):
+        """Get the files to reparse."""
         backup_file_name = "/tmp/reparsing_backup"
         files = DataFile.objects.all()
         continue_msg = "You have selected to reparse datafiles for FY {fy} and {q}. The reparsed files "
+        if selected_files:
+            files = files.filter(id__in=selected_files)
+            backup_file_name += "_selected_files"
+            continue_msg = continue_msg.format(fy=f"selected files: {str(selected_files)}", q="Q1-4")
         if reparse_all:
             backup_file_name += "_FY_All_Q1-4"
             continue_msg = continue_msg.format(fy="All", q="Q1-4")
         else:
-            if not fiscal_year and not fiscal_quarter:
+            if not fiscal_year and not fiscal_quarter and not selected_files:
                 print(
                     'Options --fiscal_year and --fiscal_quarter not set. '
                     'Provide either option to continue, or --all to wipe all submissions.'
@@ -306,6 +295,38 @@ class Command(BaseCommand):
                 files = files.filter(quarter=fiscal_quarter)
                 backup_file_name += f"_FY_All_{fiscal_quarter}"
                 continue_msg = continue_msg.format(fy="All", q=fiscal_quarter)
+        return files, backup_file_name, continue_msg
+
+    def handle(self, *args, **options):
+        """Delete and reparse datafiles matching a query."""
+        fiscal_year = options.get('fiscal_year', None)
+        fiscal_quarter = options.get('fiscal_quarter', None)
+        reparse_all = options.get('all', False)
+        print(f'************** reparse all {reparse_all}')
+        selected_files = options.get('files', None)
+        selected_files = [int(file) for file in selected_files[0].split(',')] if selected_files else None
+        print(f'************** selected files {selected_files}')
+        new_indices = reparse_all is True
+
+        # Option that can only be specified by calling `handle` directly and passing it.
+        testing = options.get('testing', False)
+        ##
+
+        args_passed = fiscal_year is not None or fiscal_quarter is not None or reparse_all or selected_files
+
+        if not args_passed:
+            logger.warning("No arguments supplied.")
+            self.print_help("manage.py", "clean_and_parse")
+            return
+
+        # Set up the backup file name and continue message
+        files, backup_file_name, continue_msg = self.get_files_to_reparse(
+            fiscal_year,
+            fiscal_quarter,
+            selected_files,
+            reparse_all)
+
+        # end of the if statement
 
         fmt_str = "be" if new_indices else "NOT be"
         continue_msg += "will {new_index} stored in new indices and the old indices ".format(new_index=fmt_str)
@@ -314,7 +335,8 @@ class Command(BaseCommand):
         fmt_str = f"ALL ({num_files})" if reparse_all else f"({num_files})"
         continue_msg += "\nThese options will delete and reparse {0} datafiles.".format(fmt_str)
 
-        self._handle_input(testing, continue_msg)
+        if not selected_files:
+            self._handle_input(testing, continue_msg)
 
         system_user, created = User.objects.get_or_create(username='system')
         if created:
@@ -323,10 +345,16 @@ class Command(BaseCommand):
 
         all_fy = "All"
         all_q = "Q1-4"
-        log(f"Starting clean and reparse command for FY {fiscal_year if fiscal_year else all_fy} and "
-            f"{fiscal_quarter if fiscal_quarter else all_q}",
-            logger_context=log_context,
-            level='info')
+
+        if not selected_files:
+            log(f"Starting clean and reparse command for FY {fiscal_year if fiscal_year else all_fy} and "
+                f"{fiscal_quarter if fiscal_quarter else all_q}",
+                logger_context=log_context,
+                level='info')
+        else:
+            log(f"Starting clean and reparse action for files: {str(selected_files)}",
+                logger_context=log_context,
+                level='info')
 
         if num_files == 0:
             log(f"No files available for the selected Fiscal Year: {fiscal_year if fiscal_year else all_fy} and "
