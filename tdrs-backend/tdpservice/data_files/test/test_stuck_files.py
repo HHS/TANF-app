@@ -33,12 +33,10 @@ def make_summary(datafile, status):
     )
 
 
-def make_reparse_meta(finished, success):
+def make_reparse_meta():
     """Create a test reparse meta model."""
     return ReparseMetaFactory.create(
-        timeout_at=_time_ago(hours=1),
-        finished=finished,
-        success=success
+        timeout_at=_time_ago(hours=1)
     )
 
 
@@ -56,8 +54,8 @@ def test_find_pending_submissions__none_stuck(stt_user, stt):
     df2.created_at = _time_ago(hours=1)
     df2.save()
     make_summary(df2, DataFileSummary.Status.ACCEPTED)
-    rpm = make_reparse_meta(True, True)
-    df2.reparse_meta_models.add(rpm)
+    rpm = make_reparse_meta()
+    df2.reparses.add(rpm, through_defaults={'finished': True, 'success': True})
 
     # a pending standard submission, less than an hour old
     df3 = make_datafile(stt_user, stt, 3)
@@ -83,8 +81,8 @@ def test_find_pending_submissions__non_reparse_stuck(stt_user, stt):
     df2.created_at = _time_ago(hours=1)
     df2.save()
     make_summary(df2, DataFileSummary.Status.ACCEPTED)
-    rpm = make_reparse_meta(True, True)
-    df2.reparse_meta_models.add(rpm)
+    rpm = make_reparse_meta()
+    df2.reparses.add(rpm, through_defaults={'finished': True, 'success': True})
 
     stuck_files = get_stuck_files()
     assert stuck_files.count() == 1
@@ -104,8 +102,8 @@ def test_find_pending_submissions__non_reparse_stuck__no_dfs(stt_user, stt):
     df2.created_at = _time_ago(hours=1)
     df2.save()
     make_summary(df2, DataFileSummary.Status.ACCEPTED)
-    rpm = make_reparse_meta(True, True)
-    df2.reparse_meta_models.add(rpm)
+    rpm = make_reparse_meta()
+    df2.reparses.add(rpm, through_defaults={'finished': True, 'success': True})
 
     stuck_files = get_stuck_files()
     assert stuck_files.count() == 1
@@ -126,8 +124,8 @@ def test_find_pending_submissions__reparse_stuck(stt_user, stt):
     df2.created_at = _time_ago(hours=1)
     df2.save()
     make_summary(df2, DataFileSummary.Status.PENDING)
-    rpm = make_reparse_meta(False, False)
-    df2.reparse_meta_models.add(rpm)
+    rpm = make_reparse_meta()
+    df2.reparses.add(rpm, through_defaults={'finished': False, 'success': False})
 
     stuck_files = get_stuck_files()
     assert stuck_files.count() == 1
@@ -147,8 +145,8 @@ def test_find_pending_submissions__reparse_stuck__no_dfs(stt_user, stt):
     df2 = make_datafile(stt_user, stt, 2)
     df2.created_at = _time_ago(hours=1)
     df2.save()
-    rpm = make_reparse_meta(False, False)
-    df2.reparse_meta_models.add(rpm)
+    rpm = make_reparse_meta()
+    df2.reparses.add(rpm, through_defaults={'finished': False, 'success': False})
 
     stuck_files = get_stuck_files()
     assert stuck_files.count() == 1
@@ -169,8 +167,8 @@ def test_find_pending_submissions__reparse_and_non_reparse_stuck(stt_user, stt):
     df2.created_at = _time_ago(hours=1)
     df2.save()
     make_summary(df2, DataFileSummary.Status.PENDING)
-    rpm = make_reparse_meta(False, False)
-    df2.reparse_meta_models.add(rpm)
+    rpm = make_reparse_meta()
+    df2.reparses.add(rpm, through_defaults={'finished': False, 'success': False})
 
     stuck_files = get_stuck_files()
     assert stuck_files.count() == 2
@@ -190,8 +188,8 @@ def test_find_pending_submissions__reparse_and_non_reparse_stuck_no_dfs(stt_user
     df2 = make_datafile(stt_user, stt, 2)
     df2.created_at = _time_ago(hours=1)
     df2.save()
-    rpm = make_reparse_meta(False, False)
-    df2.reparse_meta_models.add(rpm)
+    rpm = make_reparse_meta()
+    df2.reparses.add(rpm, through_defaults={'finished': False, 'success': False})
 
     stuck_files = get_stuck_files()
     assert stuck_files.count() == 2
@@ -209,8 +207,8 @@ def test_find_pending_submissions__old_reparse_stuck__new_not_stuck(stt_user, st
     dfs1 = make_summary(df1, DataFileSummary.Status.PENDING)
 
     # reparse fails the first time
-    rpm1 = make_reparse_meta(False, False)
-    df1.reparse_meta_models.add(rpm1)
+    rpm1 = make_reparse_meta()
+    df1.reparses.add(rpm1, through_defaults={'finished': False, 'success': False})
 
     stuck_files = get_stuck_files()
     assert stuck_files.count() == 1
@@ -219,8 +217,8 @@ def test_find_pending_submissions__old_reparse_stuck__new_not_stuck(stt_user, st
     dfs1.delete()  # reparse deletes the original dfs and creates the new one
     make_summary(df1, DataFileSummary.Status.ACCEPTED)
 
-    rpm2 = make_reparse_meta(True, True)
-    df1.reparse_meta_models.add(rpm2)
+    rpm2 = make_reparse_meta()
+    df1.reparses.add(rpm2, through_defaults={'finished': True, 'success': True})
 
     stuck_files = get_stuck_files()
     assert stuck_files.count() == 0
@@ -236,8 +234,8 @@ def test_find_pending_submissions__new_reparse_stuck__old_not_stuck(stt_user, st
     dfs1 = make_summary(df1, DataFileSummary.Status.REJECTED)
 
     # reparse succeeds
-    rpm1 = make_reparse_meta(True, True)
-    df1.reparse_meta_models.add(rpm1)
+    rpm1 = make_reparse_meta()
+    df1.reparses.add(rpm1, through_defaults={'finished': True, 'success': True})
 
     # reparse again, fails this time
     dfs1.delete()  # reparse deletes the original dfs and creates the new one
@@ -246,8 +244,8 @@ def test_find_pending_submissions__new_reparse_stuck__old_not_stuck(stt_user, st
         status=DataFileSummary.Status.PENDING,
     )
 
-    rpm2 = make_reparse_meta(False, False)
-    df1.reparse_meta_models.add(rpm2)
+    rpm2 = make_reparse_meta()
+    df1.reparses.add(rpm2, through_defaults={'finished': False, 'success': False})
 
     stuck_files = get_stuck_files()
     assert stuck_files.count() == 1

@@ -159,6 +159,9 @@ def test_ofa_system_admin_permissions(ofa_system_admin):
         'search_indexes.add_reparsemeta',
         'search_indexes.view_reparsemeta',
         'search_indexes.change_reparsemeta',
+        'data_files.add_reparsefilemeta',
+        'data_files.view_reparsefilemeta',
+        'data_files.change_reparsefilemeta',
     }
     group_permissions = ofa_system_admin.get_group_permissions()
     assert group_permissions == expected_permissions

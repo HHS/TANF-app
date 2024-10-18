@@ -8,6 +8,7 @@ from tdpservice.search_indexes.management.commands import clean_and_reparse
 from tdpservice.search_indexes.tasks import prettify_time_delta
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 from tdpservice.users.models import User
+from tdpservice.data_files.models import ReparseFileMeta
 
 from django.conf import settings
 from django.contrib.admin.models import LogEntry, ADDITION
@@ -268,7 +269,7 @@ def test_reparse_dunce():
     assert ReparseMeta.objects.count() == 0
 
 @pytest.mark.django_db
-def test_reparse_sequential(log_context):
+def test_reparse_sequential(log_context, big_file):
     """Test reparse _assert_sequential_execution."""
     cmd = clean_and_reparse.Command()
     assert True is cmd._assert_sequential_execution(log_context)
@@ -281,6 +282,7 @@ def test_reparse_sequential(log_context):
         "safely execute reparse, please fix manually."
     )
 
+    big_file.reparses.add(meta)
     meta.timeout_at = timezone.now() + timedelta(seconds=100)
     meta.save()
     assert False is cmd._assert_sequential_execution(log_context)
@@ -290,6 +292,7 @@ def test_reparse_sequential(log_context):
 
     meta.timeout_at = timezone.now()
     meta.save()
+
     assert True is cmd._assert_sequential_execution(log_context)
     timeout_entry = LogEntry.objects.latest('pk')
     assert timeout_entry.change_message == ("Previous reparse has exceeded the timeout. Allowing "
@@ -311,7 +314,7 @@ def test_reparse_quarter_and_year(mocker, dfs, cat4_edge_case_file, big_file, sm
     cmd.handle(**opts)
 
     latest = ReparseMeta.objects.select_for_update().latest("pk")
-    assert latest.num_files_to_reparse == 1
+    assert latest.num_files == 1
     assert latest.num_records_deleted == 3073
 
 @pytest.mark.django_db()
@@ -330,7 +333,7 @@ def test_reparse_quarter(mocker, dfs, cat4_edge_case_file, big_file, small_ssp_s
     cmd.handle(**opts)
 
     latest = ReparseMeta.objects.select_for_update().latest("pk")
-    assert latest.num_files_to_reparse == 4
+    assert latest.num_files == 4
     assert latest.num_records_deleted == 3104
 
 @pytest.mark.django_db()
@@ -349,7 +352,7 @@ def test_reparse_year(mocker, dfs, cat4_edge_case_file, big_file, small_ssp_sect
     cmd.handle(**opts)
 
     latest = ReparseMeta.objects.select_for_update().latest("pk")
-    assert latest.num_files_to_reparse == 2
+    assert latest.num_files == 2
     assert latest.num_records_deleted == 27
 
 @pytest.mark.django_db()
@@ -368,7 +371,7 @@ def test_reparse_all(mocker, dfs, cat4_edge_case_file, big_file, small_ssp_secti
     cmd.handle(**opts)
 
     latest = ReparseMeta.objects.select_for_update().latest("pk")
-    assert latest.num_files_to_reparse == 4
+    assert latest.num_files == 4
     assert latest.num_records_deleted == 3104
 
 @pytest.mark.django_db()
@@ -390,97 +393,85 @@ def test_reparse_no_files(mocker):
                                                             "Quarter: Q1-4. Nothing to do.")
 
 @pytest.mark.django_db()
-def test_mm_all_files_done():
+def test_mm_all_files_done(big_file):
     """Test meta model all files done."""
     meta_model = ReparseMeta.objects.create()
+    big_file.reparses.add(meta_model)
     assert ReparseMeta.assert_all_files_done(meta_model) is False
 
-    meta_model.finished = True
-    meta_model.files_completed = 1
-    meta_model.num_files_to_reparse = 1
+    fm = ReparseFileMeta.objects.get(data_file_id=big_file.pk, reparse_meta_id=meta_model.pk)
+    fm.finished = True
+    fm.save()
     assert ReparseMeta.assert_all_files_done(meta_model) is True
 
 @pytest.mark.django_db()
-def test_mm_increment_files_completed(big_file):
+def test_mm_files_completed(big_file):
     """Test meta model increment files completed."""
-    meta_model = ReparseMeta.objects.create(num_files_to_reparse=2, all=True)
-    big_file.reparse_meta_models.add(meta_model)
+    meta_model = ReparseMeta.objects.create(all=True)
+    big_file.reparses.add(meta_model)
     big_file.save()
 
-    ReparseMeta.increment_files_completed(big_file.reparse_meta_models)
     meta_model = ReparseMeta.get_latest()
-    assert meta_model.finished is False
-    assert meta_model.files_completed == 1
-    assert meta_model.files_failed == 0
+    assert meta_model.is_finished is False
+    assert meta_model.num_files == 1
+    assert meta_model.num_files_completed == 0
+    assert meta_model.num_files_failed == 0
+    assert ReparseMeta.assert_all_files_done(meta_model) is False
 
-    ReparseMeta.increment_files_completed(big_file.reparse_meta_models)
+    fm = ReparseFileMeta.objects.get(data_file_id=big_file.pk, reparse_meta_id=meta_model.pk)
+    fm.finished = True
+    fm.success = True
+    fm.save()
     meta_model = ReparseMeta.get_latest()
-    assert meta_model.finished is True
-    assert meta_model.files_completed == 2
-    assert meta_model.files_failed == 0
+    assert meta_model.is_finished is True
+    assert meta_model.num_files == 1
+    assert meta_model.num_files_completed == 1
+    assert meta_model.num_files_failed == 0
 
-    assert meta_model.success is True
+    assert meta_model.is_success is True
 
     assert ReparseMeta.assert_all_files_done(meta_model) is True
 
 @pytest.mark.django_db()
-def test_mm_increment_files_failed(big_file):
+def test_mm_files_failed(big_file):
     """Test meta model increment files failed."""
-    meta_model = ReparseMeta.objects.create(num_files_to_reparse=2, all=True)
-    big_file.reparse_meta_models.add(meta_model)
+    meta_model = ReparseMeta.objects.create(all=True)
+    big_file.reparses.add(meta_model)
     big_file.save()
 
-    ReparseMeta.increment_files_failed(big_file.reparse_meta_models)
     meta_model = ReparseMeta.get_latest()
-    assert meta_model.finished is False
-    assert meta_model.files_completed == 0
-    assert meta_model.files_failed == 1
+    assert meta_model.is_finished is False
+    assert meta_model.num_files_completed == 0
+    assert meta_model.num_files_failed == 0
+    assert ReparseMeta.assert_all_files_done(meta_model) is False
 
-    ReparseMeta.increment_files_failed(big_file.reparse_meta_models)
+    fm = ReparseFileMeta.objects.get(data_file_id=big_file.pk, reparse_meta_id=meta_model.pk)
+    fm.finished = True
+    fm.save()
     meta_model = ReparseMeta.get_latest()
-    assert meta_model.finished is True
-    assert meta_model.files_completed == 0
-    assert meta_model.files_failed == 2
+    assert meta_model.is_finished is True
+    assert meta_model.num_files_completed == 1
+    assert meta_model.num_files_failed == 1
 
-    assert meta_model.success is False
-
-    assert ReparseMeta.assert_all_files_done(meta_model) is True
-
-@pytest.mark.django_db()
-def test_mm_increment_files_failed_and_passed(big_file):
-    """Test meta model both increment failed and passed files."""
-    meta_model = ReparseMeta.objects.create(num_files_to_reparse=2, all=True)
-    big_file.reparse_meta_models.add(meta_model)
-    big_file.save()
-
-    ReparseMeta.increment_files_completed(big_file.reparse_meta_models)
-    meta_model = ReparseMeta.get_latest()
-    assert meta_model.finished is False
-    assert meta_model.files_completed == 1
-    assert meta_model.files_failed == 0
-
-    ReparseMeta.increment_files_failed(big_file.reparse_meta_models)
-    meta_model = ReparseMeta.get_latest()
-    assert meta_model.finished is True
-    assert meta_model.files_completed == 1
-    assert meta_model.files_failed == 1
-
-    assert meta_model.success is False
+    assert meta_model.is_success is False
 
     assert ReparseMeta.assert_all_files_done(meta_model) is True
 
 @pytest.mark.django_db()
 def test_mm_increment_records_created(big_file):
     """Test meta model increment records created."""
-    meta_model = ReparseMeta.objects.create(num_files_to_reparse=2, all=True)
-    big_file.reparse_meta_models.add(meta_model)
+    meta_model = ReparseMeta.objects.create(all=True)
+    big_file.reparses.add(meta_model)
     big_file.save()
 
-    ReparseMeta.increment_records_created(big_file.reparse_meta_models, 500)
     meta_model = ReparseMeta.get_latest()
-    assert meta_model.num_records_created == 500
+    assert meta_model.num_records_created == 0
 
-    ReparseMeta.increment_records_created(big_file.reparse_meta_models, 888)
+    fm = ReparseFileMeta.objects.get(data_file_id=big_file.pk, reparse_meta_id=meta_model.pk)
+    fm.finished = True
+    fm.success = True
+    fm.num_records_created = 1388
+    fm.save()
     meta_model = ReparseMeta.get_latest()
     assert meta_model.num_records_created == 1388
 
@@ -495,20 +486,16 @@ def test_mm_get_latest():
     assert ReparseMeta.get_latest() != meta1
 
 @pytest.mark.django_db()
-def test_mm_file_counts_match():
+def test_mm_file_counts_match(big_file):
     """Test meta model file counts match."""
-    meta_model = ReparseMeta.objects.create(num_files_to_reparse=2)
+    meta_model = ReparseMeta.objects.create()
+    big_file.reparses.add(meta_model)
+    big_file.save()
     assert ReparseMeta.file_counts_match(meta_model) is False
 
-    meta_model.files_completed = 2
-    assert ReparseMeta.file_counts_match(meta_model) is True
-
-    meta_model.files_completed = 0
-    meta_model.files_failed = 2
-    assert ReparseMeta.file_counts_match(meta_model) is True
-
-    meta_model.files_completed = 1
-    meta_model.files_failed = 1
+    fm = ReparseFileMeta.objects.get(data_file_id=big_file.pk, reparse_meta_id=meta_model.pk)
+    fm.finished = True
+    fm.save()
     assert ReparseMeta.file_counts_match(meta_model) is True
 
 @pytest.mark.django_db
@@ -530,3 +517,26 @@ def test_db_backup_cloud(mocker):
     with pytest.raises(Exception):
         cmd.handle(**opts)
     settings.USE_LOCALSTACK = True
+
+@pytest.mark.django_db()
+def test_reparse_finished_success_false_before_file_queue(big_file):
+    """Test is_finished and is_success are False if no files added."""
+    meta_model = ReparseMeta.objects.create()
+    assert meta_model.is_finished is False
+    assert meta_model.is_success is False
+
+    big_file.reparses.add(meta_model)
+    big_file.save()
+    assert meta_model.is_finished is False
+    assert meta_model.is_success is False
+
+    fm = ReparseFileMeta.objects.get(data_file_id=big_file.pk, reparse_meta_id=meta_model.pk)
+    fm.finished = True
+    fm.save()
+    assert meta_model.is_finished is True
+    assert meta_model.is_success is False
+
+    fm.success = True
+    fm.save()
+    assert meta_model.is_finished is True
+    assert meta_model.is_success is True
