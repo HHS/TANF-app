@@ -7,6 +7,10 @@ from tdpservice.data_files.admin.filters import LatestReparseEvent, VersionFilte
 from django.conf import settings
 from django.utils.html import format_html
 from datetime import datetime, timedelta, timezone
+from django.shortcuts import redirect
+from django.utils.translation import ngettext
+from django.contrib import messages
+from tdpservice.data_files.tasks import reparse_files
 
 DOMAIN = settings.FRONTEND_BASE_URL
 
@@ -22,10 +26,43 @@ class DataFileInline(admin.TabularInline):
         """Read only permissions."""
         return False
 
-
 @admin.register(DataFile)
 class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     """Admin class for DataFile models."""
+
+    class Media:
+        """Media class for DataFileAdmin."""
+
+        js = ('admin/js/admin/admin_datafile_model.js',)
+
+    actions = ['reparse']
+
+    def reparse(self, request, queryset):
+        """Reparse the selected data files."""
+        files = queryset.values_list("id", flat=True)
+        reparse_files.delay(list(files))
+
+        self.message_user(
+            request,
+            ngettext(
+                "%d file successfully submitted for reparsing.",
+                "%d files successfully submitted for reparsing.",
+                files.count(),
+            )
+            % files.count(),
+            messages.SUCCESS,
+        )
+        return redirect("/admin/search_indexes/reparsemeta/")
+
+    def get_actions(self, request):
+        """Return the actions."""
+        actions = super().get_actions(request)
+        if not request.user.groups.filter(name__in=["OFA System Admin", "OFA Admin"]).exists():
+            actions.pop("reparse", None)
+        else:
+            if "reparse" not in actions:
+                actions["reparse"] = (self.reparse, "reparse", "Reparse selected data files)")
+        return actions
 
     def status(self, obj):
         """Return the status of the data file summary."""

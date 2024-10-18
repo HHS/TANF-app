@@ -4,6 +4,7 @@ from celery import shared_task
 from datetime import timedelta
 from django.utils import timezone
 from django.contrib.auth.models import Group
+from django.core.management import call_command
 from django.db.models import Q, Count
 from tdpservice.users.models import AccountApprovalStatusChoices, User
 from tdpservice.data_files.models import DataFile
@@ -46,3 +47,10 @@ def notify_stuck_files():
         ).values_list('username', flat=True).distinct()
 
         send_stuck_file_email(stuck_files, recipients)
+
+
+@shared_task
+def reparse_files(file_ids):
+    """Call the clean_and_reparse management command with a list of file ids."""
+    file_ids_str = ",".join(map(str, file_ids))
+    call_command("clean_and_reparse", f"-f {file_ids_str}")
