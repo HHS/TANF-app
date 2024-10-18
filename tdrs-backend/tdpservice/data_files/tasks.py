@@ -13,7 +13,7 @@ from tdpservice.email.helpers.data_file import send_stuck_file_email
 
 def get_stuck_files():
     """Return a queryset containing files in a 'stuck' state."""
-    stuck_files = DataFile.objects.annotate(reparse_count=Count('reparse_meta_models')).filter(
+    stuck_files = DataFile.objects.annotate(reparse_count=Count('reparses')).filter(
         # non-reparse submissions over an hour old
         Q(
             reparse_count=0,
@@ -22,9 +22,9 @@ def get_stuck_files():
         # reparse submissions past the timeout, where the reparse did not complete
         Q(
             reparse_count__gt=0,
-            reparse_meta_models__timeout_at__lte=timezone.now(),
-            reparse_meta_models__finished=False,
-            reparse_meta_models__success=False
+            reparses__timeout_at__lte=timezone.now(),
+            reparse_file_metas__finished=False,
+            reparse_file_metas__success=False
         )
     ).filter(
         # where there is NO summary or the summary is in PENDING status

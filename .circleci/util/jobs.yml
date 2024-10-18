@@ -4,6 +4,7 @@
     steps:
       - checkout
       - docker-compose-check
+      - docker-login
       - run:
           name: Run graph_models
           command: |
@@ -13,5 +14,9 @@
             fi
             docker-compose run --rm web bash -c \
             "./manage.py graph_models -a -g -o tdp_erd.png"
+            if [[ ! -f tdp_erd.png ]]; then
+              echo "Entity Relationship Diagram not found."
+              exit 1
+            fi
       - store_artifacts:
           path: tdrs-backend/tdp_erd.png
