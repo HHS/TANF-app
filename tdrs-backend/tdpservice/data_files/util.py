@@ -24,6 +24,12 @@ def internal_names(fields_json):
     """Return comma separated string of internal names."""
     return ','.join([i for i in fields_json['friendly_name'].keys()])
 
+def check_fields_json(fields_json, field_name):
+    """If fields_json is None, impute field name to avoid NoneType errors."""
+    if not fields_json:
+        child_dict = {field_name: field_name} if field_name else {}
+        fields_json = {'friendly_name': child_dict}
+    return fields_json
 
 def get_xls_serialized_file(parser_errors):
     """Return xls file created from the error."""
@@ -83,7 +89,8 @@ def get_xls_serialized_file(parser_errors):
     for page in paginator:
         for record in page.object_list:
             rpt_month_year = str(getattr(record, 'rpt_month_year', None))
-            fields_json = getattr(record, 'fields_json', {})
+
+            fields_json = check_fields_json(getattr(record, 'fields_json', {}), record.field_name)
 
             worksheet.write(row_idx, 0, record.case_number)
             worksheet.write(row_idx, 1, rpt_month_year[:4])
