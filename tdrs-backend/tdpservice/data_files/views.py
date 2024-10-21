@@ -228,7 +228,7 @@ class DataFileViewSet(ModelViewSet):
         else:
             filtered_errors = all_errors
 
-        filtered_errors.order_by('error_message', 'pk')
+        filtered_errors = filtered_errors.order_by('-pk')
         return Response(get_xls_serialized_file(filtered_errors))
 
 
