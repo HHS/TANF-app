@@ -148,6 +148,8 @@ class DataFileViewSet(ModelViewSet):
         """Generate and return the parsing error report xlsx."""
         datafile = self.get_object()
         all_errors = ParserError.objects.filter(file=datafile).order_by('-pk')
+        for e in all_errors:
+            print(e.pk, e.error_message)
         filtered_errors = None
         user = self.request.user
         is_active = "Active" in datafile.section
