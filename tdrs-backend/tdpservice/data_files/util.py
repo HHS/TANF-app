@@ -88,7 +88,8 @@ def get_xls_serialized_file(parser_errors):
     row_idx = 6
     for page in paginator:
         for record in page.object_list:
-            rpt_month_year = str(getattr(record, 'rpt_month_year', None))
+            rpt_month_year = getattr(record, 'rpt_month_year', None)
+            rpt_month_year = str(rpt_month_year) if rpt_month_year else ""
 
             fields_json = check_fields_json(getattr(record, 'fields_json', {}), record.field_name)
 
