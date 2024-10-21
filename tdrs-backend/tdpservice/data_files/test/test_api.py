@@ -104,7 +104,7 @@ class DataFileAPITestBase:
 
         assert ws.cell(row=1, column=1).value == "Please refer to the most recent versions of the coding " \
             + "instructions (linked below) when looking up items and allowable values during the data revision process"
-        assert ws.cell(row=7, column=COL_ERROR_MESSAGE).value == (
+        assert ws.cell(row=8, column=COL_ERROR_MESSAGE).value == (
             "Every T1 record should have at least one corresponding T2 or T3 record with the same Item 4 "
             "(Reporting Year and Month) and Item 6 (Case Number).")
 
@@ -129,7 +129,7 @@ class DataFileAPITestBase:
 
         assert ws.cell(row=1, column=1).value == "Please refer to the most recent versions of the coding " \
             + "instructions (linked below) when looking up items and allowable values during the data revision process"
-        assert ws.cell(row=7, column=COL_ERROR_MESSAGE).value == (
+        assert ws.cell(row=8, column=COL_ERROR_MESSAGE).value == (
             "Every T1 record should have at least one corresponding T2 or T3 record with the same Item 4 "
             "(Reporting Year and Month) and Item 6 (Case Number)."
         )
