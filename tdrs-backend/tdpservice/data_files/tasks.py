@@ -4,6 +4,7 @@ from celery import shared_task
 from datetime import timedelta
 from django.utils import timezone
 from django.contrib.auth.models import Group
+from django.core.management import call_command
 from django.db.models import Q, Count
 from tdpservice.users.models import AccountApprovalStatusChoices, User
 from tdpservice.data_files.models import DataFile
@@ -13,7 +14,7 @@ from tdpservice.email.helpers.data_file import send_stuck_file_email
 
 def get_stuck_files():
     """Return a queryset containing files in a 'stuck' state."""
-    stuck_files = DataFile.objects.annotate(reparse_count=Count('reparse_meta_models')).filter(
+    stuck_files = DataFile.objects.annotate(reparse_count=Count('reparses')).filter(
         # non-reparse submissions over an hour old
         Q(
             reparse_count=0,
@@ -22,9 +23,9 @@ def get_stuck_files():
         # reparse submissions past the timeout, where the reparse did not complete
         Q(
             reparse_count__gt=0,
-            reparse_meta_models__timeout_at__lte=timezone.now(),
-            reparse_meta_models__finished=False,
-            reparse_meta_models__success=False
+            reparses__timeout_at__lte=timezone.now(),
+            reparse_file_metas__finished=False,
+            reparse_file_metas__success=False
         )
     ).filter(
         # where there is NO summary or the summary is in PENDING status
@@ -46,3 +47,10 @@ def notify_stuck_files():
         ).values_list('username', flat=True).distinct()
 
         send_stuck_file_email(stuck_files, recipients)
+
+
+@shared_task
+def reparse_files(file_ids):
+    """Call the clean_and_reparse management command with a list of file ids."""
+    file_ids_str = ",".join(map(str, file_ids))
+    call_command("clean_and_reparse", f"-f {file_ids_str}")
