@@ -158,4 +158,4 @@ To view a further in-depth system of the interactions, primary tasks and touchpo
 
 - [Grantee Attributes](<https://hhsgov.sharepoint.com/:x:/r/sites/TANFDataPortalOFA-UserResearch/_layouts/15/WopiFrame2.aspx?sourcedoc=%7Be83f84f1-71a0-459f-80a4-0d39bc250be9%7D&action=view&cid=f2e656cb-9245-4f02-af6d-2d7e1db6573d>) :lock:
 - [Working Journey Maps & Personas Mural](https://app.mural.co/t/officeoffamilyassistance2744/m/officeoffamilyassistance2744/1608238114372/191c53b8ef538838bc8c179daa238dd5c5dcc9e8) :lock:
-- [Ecosystem Map OFA System Admin](https://app.mural.co/t/raft2792/m/raft2792/1728311825176/74942929a28857c3ef1c401f0d07ccfe1073e882?sender=uf443e00cb4626b8bec157528)
+- [Ecosystem Map OFA System Admin](https://app.mural.co/t/raft2792/m/raft2792/1728311825176/74942929a28857c3ef1c401f0d07ccfe1073e882?sender=uf443e00cb4626b8bec157528) :lock:
