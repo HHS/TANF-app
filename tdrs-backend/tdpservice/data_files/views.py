@@ -52,6 +52,21 @@ class DataFileViewSet(ModelViewSet):
     # Ref: https://github.com/raft-tech/TANF-app/issues/1007
     queryset = DataFile.objects.all()
 
+    PRIORITIZED_CAT2 = (
+        ("FAMILY_AFFILIATION", "CITIZENSHIP_STATUS", "CLOSURE_REASON"),
+    )
+
+    PRIORITIZED_CAT3 = (
+        ("FAMILY_AFFILIATION", "SSN"),
+        ("FAMILY_AFFILIATION", "CITIZENSHIP_STATUS"),
+        ("AMT_FOOD_STAMP_ASSISTANCE", "AMT_SUB_CC", "CASH_AMOUNT", "CC_AMOUNT", "TRANSP_AMOUNT"),
+        ("FAMILY_AFFILIATION", "SSN", "CITIZENSHIP_STATUS"),
+        ("FAMILY_AFFILIATION", "PARENT_MINOR_CHILD"),
+        ("FAMILY_AFFILIATION", "EDUCATION_LEVEL"),
+        ("FAMILY_AFFILIATION", "WORK_ELIGIBLE_INDICATOR"),
+        ("CITIZENSHIP_STATUS", "WORK_ELIGIBLE_INDICATOR"),
+    )
+
     def create(self, request, *args, **kwargs):
         """Override create to upload in case of successful scan."""
         logger.debug(f"{self.__class__.__name__}: {request}")
@@ -143,6 +158,27 @@ class DataFileViewSet(ModelViewSet):
             )
         return response
 
+    def __prioritize_queryset(self, filtered_errors, all_errors):
+        """Generate prioritized queryset of ParserErrors."""
+        # All cat1/4 errors
+        error_type_query = Q(error_type=ParserErrorCategoryChoices.PRE_CHECK) | \
+            Q(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
+        filtered_errors = all_errors.filter(error_type_query)
+
+        for fields in self.PRIORITIZED_CAT2:
+            filtered_errors = filtered_errors.union(all_errors.filter(
+                field_name__in=fields,
+                error_type=ParserErrorCategoryChoices.FIELD_VALUE
+            ))
+
+        for fields in self.PRIORITIZED_CAT3:
+            filtered_errors = filtered_errors.union(all_errors.filter(
+                fields_json__friendly_name__has_keys=fields,
+                error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY
+            ))
+
+        return filtered_errors
+
     @action(methods=["get"], detail=True)
     def download_error_report(self, request, pk=None):
         """Generate and return the parsing error report xlsx."""
@@ -150,81 +186,11 @@ class DataFileViewSet(ModelViewSet):
         all_errors = ParserError.objects.filter(file=datafile)
         filtered_errors = None
         user = self.request.user
-        is_active = "Active" in datafile.section
-        is_closed = "Closed" in datafile.section
+        is_s1_s2 = "Active" in datafile.section or "Closed" in datafile.section
 
         # We only filter Active and Closed submissions. Aggregate and Stratum return all errors.
-        if not (user.is_ofa_sys_admin or user.is_ofa_admin) and (is_active or is_closed):
-            # All cat1/4 errors
-            error_type_query = Q(error_type=ParserErrorCategoryChoices.PRE_CHECK) | \
-                Q(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
-            filtered_errors = all_errors.filter(error_type_query)
-
-            # All cat2 errors associated with FAMILY_AFFILIATION and (CITIZENSHIP_STATUS or CLOSURE_REASON)
-            second_field = "CITIZENSHIP_STATUS" if is_active else "CLOSURE_REASON"
-            field_query = Q(field_name="FAMILY_AFFILIATION") | Q(field_name=second_field)
-            filtered_errors = filtered_errors.union(all_errors.filter(
-                field_query,
-                error_type=ParserErrorCategoryChoices.FIELD_VALUE
-                ))
-
-            # All cat3 errors associated with FAMILY_AFFILIATION and SSN
-            filtered_errors = filtered_errors.union(all_errors.filter(fields_json__friendly_name__has_keys=[
-                "FAMILY_AFFILIATION",
-                "SSN"
-                ],
-                error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY))
-
-            # All cat3 errors associated with FAMILY_AFFILIATION and CITIZENSHIP_STATUS
-            filtered_errors = filtered_errors.union(all_errors.filter(fields_json__friendly_name__has_keys=[
-                "FAMILY_AFFILIATION",
-                "CITIZENSHIP_STATUS"
-                ],
-                error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY))
-
-            if is_active:
-                # All cat3 errors associated with summed fields: AMT_FOOD_STAMP_ASSISTANCE, AMT_SUB_CC, CASH_AMOUNT,
-                # CC_AMOUNT, TRANSP_AMOUNT
-                filtered_errors = filtered_errors.union(all_errors.filter(fields_json__friendly_name__has_keys=[
-                    "AMT_FOOD_STAMP_ASSISTANCE", "AMT_SUB_CC", "CASH_AMOUNT", "CC_AMOUNT", "TRANSP_AMOUNT"
-                    ],
-                    error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY))
-
-                # All cat3 errors associated with FAMILY_AFFILIATION and SSN and CITIZENSHIP_STATUS
-                filtered_errors = filtered_errors.union(all_errors.filter(fields_json__friendly_name__has_keys=[
-                    "FAMILY_AFFILIATION",
-                    "SSN",
-                    "CITIZENSHIP_STATUS"
-                    ],
-                    error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY))
-
-                # All cat3 errors associated with FAMILY_AFFILIATION and PARENT_MINOR_CHILD
-                filtered_errors = filtered_errors.union(all_errors.filter(fields_json__friendly_name__has_keys=[
-                    "FAMILY_AFFILIATION",
-                    "PARENT_MINOR_CHILD",
-                    ],
-                    error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY))
-
-                # All cat3 errors associated with FAMILY_AFFILIATION and EDUCATION_LEVEL
-                filtered_errors = filtered_errors.union(all_errors.filter(fields_json__friendly_name__has_keys=[
-                    "FAMILY_AFFILIATION",
-                    "EDUCATION_LEVEL",
-                    ],
-                    error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY))
-
-                # All cat3 errors associated with FAMILY_AFFILIATION and WORK_ELIGIBLE_INDICATOR
-                filtered_errors = filtered_errors.union(all_errors.filter(fields_json__friendly_name__has_keys=[
-                    "FAMILY_AFFILIATION",
-                    "WORK_ELIGIBLE_INDICATOR",
-                    ],
-                    error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY))
-
-                # All cat3 errors associated with CITIZENSHIP_STATUS and WORK_ELIGIBLE_INDICATOR
-                filtered_errors = filtered_errors.union(all_errors.filter(fields_json__friendly_name__has_keys=[
-                    "CITIZENSHIP_STATUS",
-                    "WORK_ELIGIBLE_INDICATOR",
-                    ],
-                    error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY))
+        if not user.is_an_admin and is_s1_s2:
+            filtered_errors = self.__prioritize_queryset(filtered_errors, all_errors)
         else:
             filtered_errors = all_errors
 
