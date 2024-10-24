@@ -12,24 +12,13 @@ from tdpservice.security.models import ClamAVFileScan
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
 from tdpservice.parsers.serializers import DataFileSummarySerializer
-from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
+
+
 logger = logging.getLogger(__name__)
 
 
-
-# class ReparseMetaSerializer(serializers.ModelSerializer):
-#     """Serializer for ReparseMeta class."""
-
-#     class Meta:
-#         """Meta class."""
-
-#         model = ReparseMeta
-#         fields = ['created_at']
-
 class ReparseFileMetaSerializer(serializers.ModelSerializer):
     """Serializer for ReparseFileMeta class."""
-
-    # reparse_meta = ReparseMetaSerializer(many=False, read_only=True)
 
     class Meta:
         """Meta class."""
@@ -40,8 +29,8 @@ class ReparseFileMetaSerializer(serializers.ModelSerializer):
             'success',
             'started_at',
             'finished_at',
-            # 'reparse_meta',
         ]
+
 
 class DataFileSerializer(serializers.ModelSerializer):
     """Serializer for Data files."""
@@ -52,7 +41,6 @@ class DataFileSerializer(serializers.ModelSerializer):
     ssp = serializers.BooleanField(write_only=True)
     has_error = serializers.SerializerMethodField()
     summary = DataFileSummarySerializer(many=False, read_only=True)
-    # reparse_file_metas = ReparseFileMetaSerializer(many=True, read_only=True)
     reparse_file_metas = serializers.SerializerMethodField()
 
     class Meta:
@@ -89,6 +77,7 @@ class DataFileSerializer(serializers.ModelSerializer):
         return len(parser_errors) > 0
 
     def get_reparse_file_metas(self, instance):
+        """Return related reparse_file_metas, ordered by finished_at decending."""
         reparse_file_metas = instance.reparse_file_metas.all().order_by('-finished_at')  # .first() ?
         return ReparseFileMetaSerializer(reparse_file_metas, many=True, read_only=True).data  # many=False
 

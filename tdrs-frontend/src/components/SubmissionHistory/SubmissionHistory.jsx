@@ -85,19 +85,11 @@ const SubmissionHistory = ({ filterValues }) => {
   const fileIsOutdated = (f) => {
     let created_date = new Date(f.createdAt)
 
-    console.log('testing1')
-
     if (created_date < submissionThreshold) {
-      console.log('testing2')
-      console.log(f)
-
       if (f.hasOwnProperty('reparse_file_metas')) {
-        console.log('testing3')
         for (const rpm of f.reparse_file_metas) {
-          console.log('testing4')
           let finished_date = new Date(rpm.finished_at)
           if (finished_date > submissionThreshold) {
-            console.log('testing5')
             return false
           }
         }
