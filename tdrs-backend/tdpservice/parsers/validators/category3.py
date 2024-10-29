@@ -376,7 +376,7 @@ def validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
                     return true_case
             else:
                 return true_case
-        except Exception as e:
+        except Exception:
             vals = {
                 "WORK_ELIGIBLE_INDICATOR": WORK_ELIGIBLE_INDICATOR,
                 "RELATIONSHIP_HOH": RELATIONSHIP_HOH,
