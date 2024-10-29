@@ -83,7 +83,7 @@ class DataFileSerializer(serializers.ModelSerializer):
     def get_reparse_file_metas(self, instance):
         """Return related reparse_file_metas, ordered by finished_at decending."""
         reparse_file_metas = instance.reparse_file_metas.all().order_by('-finished_at')
-        return ReparseFileMetaSerializer(reparse_file_metas.first(), many=False, read_only=True).data
+        return ReparseFileMetaSerializer(reparse_file_metas, many=True, read_only=True).data
 
     def get_has_outdated_error_report(self, instance):
         """Return a boolean indicating whether the file's error report is outdated."""
