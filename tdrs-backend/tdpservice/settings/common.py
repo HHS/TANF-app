@@ -3,6 +3,7 @@
 import logging
 import logging.handlers
 import os
+from django.utils.dateparse import parse_datetime
 from distutils.util import strtobool
 from os.path import join
 from typing import Any, Optional
@@ -557,3 +558,7 @@ class Common(Configuration):
     BULK_CREATE_BATCH_SIZE = os.getenv("BULK_CREATE_BATCH_SIZE", 10000)
     MEDIAN_LINE_PARSE_TIME = os.getenv("MEDIAN_LINE_PARSE_TIME", 0.0005574226379394531)
     BYPASS_OFA_AUTH = os.getenv("BYPASS_OFA_AUTH", False)
+
+    OUTDATED_SUBMISSION_CUTOFF = parse_datetime(
+        os.getenv('OUTDATED_SUBMISSION_CUTOFF', '2024-05-31T00:00:00')
+    )

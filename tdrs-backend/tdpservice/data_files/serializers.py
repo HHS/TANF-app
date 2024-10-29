@@ -1,5 +1,7 @@
 """Serialize stt data."""
 import logging
+from django.conf import settings
+from django.utils.timezone import make_aware
 from rest_framework import serializers
 from tdpservice.parsers.models import ParserError
 from tdpservice.data_files.errors import ImmutabilityError
@@ -42,6 +44,7 @@ class DataFileSerializer(serializers.ModelSerializer):
     has_error = serializers.SerializerMethodField()
     summary = DataFileSummarySerializer(many=False, read_only=True)
     reparse_file_metas = serializers.SerializerMethodField()
+    has_outdated_error_report = serializers.SerializerMethodField()
 
     class Meta:
         """Metadata."""
@@ -67,6 +70,7 @@ class DataFileSerializer(serializers.ModelSerializer):
             'has_error',
             'summary',
             'reparse_file_metas',
+            'has_outdated_error_report',
         ]
 
         read_only_fields = ("version",)
@@ -78,8 +82,26 @@ class DataFileSerializer(serializers.ModelSerializer):
 
     def get_reparse_file_metas(self, instance):
         """Return related reparse_file_metas, ordered by finished_at decending."""
-        reparse_file_metas = instance.reparse_file_metas.all().order_by('-finished_at')  # .first() ?
-        return ReparseFileMetaSerializer(reparse_file_metas, many=True, read_only=True).data  # many=False
+        reparse_file_metas = instance.reparse_file_metas.all().order_by('-finished_at')
+        return ReparseFileMetaSerializer(reparse_file_metas.first(), many=False, read_only=True).data
+
+    def get_has_outdated_error_report(self, instance):
+        """Return a boolean indicating whether the file's error report is outdated."""
+        original_submission_date = instance.created_at
+
+        cutoff_date = make_aware(settings.OUTDATED_SUBMISSION_CUTOFF)
+
+        if original_submission_date < cutoff_date:
+            reparse_file_metas = instance.reparse_file_metas.all().order_by('-finished_at')
+
+            if reparse_file_metas.count() > 0:
+                last_reparse_date = reparse_file_metas.first().finished_at
+                if last_reparse_date < cutoff_date:
+                    return True
+
+            return True
+
+        return False
 
     def create(self, validated_data):
         """Create a new entry with a new version number."""

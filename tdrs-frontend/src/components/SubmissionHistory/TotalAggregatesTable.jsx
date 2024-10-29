@@ -20,7 +20,7 @@ const MonthSubRow = ({ data }) =>
     </>
   )
 
-const TotalAggregatesRow = ({ file, fileIsOutdated }) => {
+const TotalAggregatesRow = ({ file }) => {
   const dispatch = useDispatch()
   const errorFileName = `${file.year}-${file.quarter}-${file.section}`
 
@@ -30,7 +30,7 @@ const TotalAggregatesRow = ({ file, fileIsOutdated }) => {
       file.summary.status &&
       file.summary.status !== 'Pending'
     ) {
-      if (fileIsOutdated) {
+      if (file.has_outdated_error_report) {
         return 'Not Available'
       } else if (file.hasError) {
         return (
@@ -96,7 +96,7 @@ const TotalAggregatesRow = ({ file, fileIsOutdated }) => {
   )
 }
 
-export const TotalAggregatesTable = ({ files, fileIsOutdated }) => (
+export const TotalAggregatesTable = ({ files }) => (
   <>
     <thead>
       <tr>
@@ -125,11 +125,7 @@ export const TotalAggregatesTable = ({ files, fileIsOutdated }) => (
     </thead>
     <tbody>
       {files.map((file) => (
-        <TotalAggregatesRow
-          key={file.id}
-          file={file}
-          fileIsOutdated={fileIsOutdated(file)}
-        />
+        <TotalAggregatesRow key={file.id} file={file} />
       ))}
     </tbody>
   </>

@@ -10,12 +10,7 @@ import { useState } from 'react'
 import { CaseAggregatesTable } from './CaseAggregatesTable'
 import { TotalAggregatesTable } from './TotalAggregatesTable'
 
-const SectionSubmissionHistory = ({
-  section,
-  label,
-  files,
-  fileIsOutdated,
-}) => {
+const SectionSubmissionHistory = ({ section, label, files }) => {
   const pageSize = 5
   const [resultsPage, setResultsPage] = useState(1)
 
@@ -36,10 +31,7 @@ const SectionSubmissionHistory = ({
       <table className="usa-table usa-table--striped">
         <caption>{`Section ${section} - ${label}`}</caption>
         {files && files.length > 0 ? (
-          <TableComponent
-            files={files.slice(pageStart, pageEnd)}
-            fileIsOutdated={fileIsOutdated}
-          />
+          <TableComponent files={files.slice(pageStart, pageEnd)} />
         ) : (
           <span>No data available.</span>
         )}
@@ -81,28 +73,8 @@ const SubmissionHistory = ({ filterValues }) => {
     }
   }, [hasFetchedFiles, files, dispatch, filterValues])
 
-  let submissionThreshold = new Date('05-31-2024')
-  const fileIsOutdated = (f) => {
-    let created_date = new Date(f.createdAt)
-
-    if (created_date < submissionThreshold) {
-      if (f.hasOwnProperty('reparse_file_metas')) {
-        for (const rpm of f.reparse_file_metas) {
-          let finished_date = new Date(rpm.finished_at)
-          if (finished_date > submissionThreshold) {
-            return false
-          }
-        }
-      }
-
-      return true
-    }
-
-    return false
-  }
-
   const hasOutdatedSubmissions = () =>
-    files.some((element, index, array) => fileIsOutdated(element))
+    files.some((element, index, array) => element.has_outdated_error_report)
 
   return (
     <>
@@ -142,7 +114,6 @@ const SubmissionHistory = ({ filterValues }) => {
             label={section}
             filterValues={filterValues}
             files={files.filter((f) => f.section.includes(section))}
-            fileIsOutdated={fileIsOutdated}
           />
         ))}
       </div>

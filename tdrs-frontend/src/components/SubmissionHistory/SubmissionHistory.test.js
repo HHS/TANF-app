@@ -493,6 +493,7 @@ describe('SubmissionHistory', () => {
             summary: {
               status: 'Accepted',
             },
+            has_outdated_error_report: false,
           },
           {
             id: '333',
@@ -508,6 +509,7 @@ describe('SubmissionHistory', () => {
             summary: {
               status: 'Accepted',
             },
+            has_outdated_error_report: true,
           },
         ],
       },
@@ -561,6 +563,7 @@ describe('SubmissionHistory', () => {
                 finished_at: '2023-10-11T00:00:00+0000',
               },
             ],
+            has_outdated_error_report: true,
           },
           {
             id: '333',
@@ -576,6 +579,7 @@ describe('SubmissionHistory', () => {
             summary: {
               status: 'Accepted',
             },
+            has_outdated_error_report: false,
           },
         ],
       },
@@ -615,6 +619,7 @@ describe('SubmissionHistory', () => {
             summary: {
               status: 'Accepted',
             },
+            has_outdated_error_report: false,
           },
           {
             id: '333',
@@ -630,6 +635,7 @@ describe('SubmissionHistory', () => {
             summary: {
               status: 'Accepted',
             },
+            has_outdated_error_report: false,
           },
         ],
       },
@@ -683,6 +689,7 @@ describe('SubmissionHistory', () => {
                 finished_at: '2023-10-11T00:00:00+0000',
               },
             ],
+            has_outdated_error_report: false,
           },
           {
             id: '333',
@@ -698,6 +705,7 @@ describe('SubmissionHistory', () => {
             summary: {
               status: 'Accepted',
             },
+            has_outdated_error_report: false,
           },
         ],
       },
@@ -715,7 +723,7 @@ describe('SubmissionHistory', () => {
       screen.queryByText(
         'Please note that error reports and submission history content for files submitted prior to May 31, 2024 may be outdated. Please resubmit to get access to updated information.'
       )
-    ).toBeInTheDocument()
-    expect(screen.queryByText('Not Available')).toBeInTheDocument()
+    ).not.toBeInTheDocument()
+    expect(screen.queryByText('Not Available')).not.toBeInTheDocument()
   })
 })
