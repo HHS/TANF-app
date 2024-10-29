@@ -53,7 +53,7 @@ class Field:
                     value = int(value)
                     return value
                 except ValueError:
-                    logger.error(f"Error parsing field value: {value} to integer.")
+                    logger.error(f"Error parsing field {self.name} value to integer.")
                     return None
             case "string":
                 return value
