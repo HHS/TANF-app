@@ -26,6 +26,10 @@ export const downloadErrorReport = async (file, reportName) => {
     console.log(error)
   }
 }
+export const hasReparsed = (f) =>
+  f.reparse_file_metas && f.reparse_file_metas.length > 0
+
+export const getReprocessedDate = (f) => f.reparse_file_metas[0].finished_at
 
 export const SubmissionSummaryStatusIcon = ({ status }) => {
   let icon = null

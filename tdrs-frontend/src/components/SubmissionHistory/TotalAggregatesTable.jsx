@@ -3,6 +3,8 @@ import { useDispatch } from 'react-redux'
 import {
   SubmissionSummaryStatusIcon,
   formatDate,
+  hasReparsed,
+  getReprocessedDate,
   downloadFile,
   downloadErrorReport,
 } from './helpers'
@@ -54,6 +56,17 @@ const TotalAggregatesRow = ({ file }) => {
       <tr>
         <th scope="rowgroup" rowSpan={3}>
           {formatDate(file.createdAt)}
+          {hasReparsed(file) && (
+            <>
+              <br />
+              <br />
+              {'Reprocessed: ' + formatDate(getReprocessedDate(file))}
+            </>
+          )}
+        </th>
+
+        <th scope="rowgroup" rowSpan={3}>
+          {hasReparsed(file) && formatDate(getReprocessedDate(file))}
         </th>
 
         <th scope="rowgroup" rowSpan={3}>
@@ -102,6 +115,9 @@ export const TotalAggregatesTable = ({ files }) => (
       <tr>
         <th scope="col" rowSpan={2}>
           Submitted On
+        </th>
+        <th scope="col" rowSpan={2}>
+          Reprocessed On
         </th>
         <th scope="col" rowSpan={2}>
           Submitted By
