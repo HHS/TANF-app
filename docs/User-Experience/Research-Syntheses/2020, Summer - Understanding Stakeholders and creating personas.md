@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/97e8fbf1-954b-4f3b-9000-ecb3b0f1d0d9)![image](https://github.com/user-attachments/assets/39a7b775-2771-438f-a270-d09dc263ef3c)# Stakeholders and Personas
+# Stakeholders and Personas
 
 Last updated for [Issue #3100](https://github.com/raft-tech/TANF-app/issues/3100)
 
