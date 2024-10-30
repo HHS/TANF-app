@@ -58,7 +58,6 @@ set_cf_envs()
   "LOGGING_LEVEL"
   "REDIS_URI"
   "JWT_KEY"
-  "STAGING_JWT_KEY"
   "SENDGRID_API_KEY"
   )
 
