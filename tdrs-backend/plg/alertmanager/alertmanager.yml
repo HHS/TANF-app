@@ -1,0 +1,71 @@
+global:
+  # The smarthost and SMTP sender used for mail notifications.
+  smtp_smarthost: 'smtp.sendgrid.net:587'
+  smtp_from: 'no-reply@tanfdata.acf.hhs.gov'
+  smtp_auth_username: 'apikey'
+  smtp_auth_password: '{{ sendgrid_api_key }}'
+
+# The directory from which notification templates are read.
+templates:
+  - '/etc/alertmanager/template/*.tmpl'
+
+# The root route on which each incoming alert enters.
+route:
+  # The labels by which incoming alerts are grouped together. For example,
+  # multiple alerts coming in for cluster=A and alertname=LatencyHigh would
+  # be batched into a single group.
+  group_by: ['alertname', 'env', 'service']
+
+  # When a new group of alerts is created by an incoming alert, wait at
+  # least 'group_wait' to send the initial notification.
+  # This way ensures that you get multiple alerts for the same group that start
+  # firing shortly after another are batched together on the first
+  # notification.
+  group_wait: 30s
+
+  # When the first notification was sent, wait 'group_interval' to send a batch
+  # of new alerts that started firing for that group.
+  group_interval: 5m
+
+  # If an alert has successfully been sent, wait 'repeat_interval' to
+  # resend them.
+  repeat_interval: 5m
+
+  # A default receiver
+  receiver: admin-team-emails
+
+  # All the above attributes are inherited by all child routes and can
+  # overwritten on each.
+
+  # The child route trees.
+  routes:
+    # This routes performs a regular expression match on alert labels to
+    # catch alerts that are related to a list of services.
+    - matchers:
+        - alertname=~"UpTime"
+      receiver: dev-team-emails
+      group_wait: 30m
+
+# Inhibition rules allow to mute a set of alerts given that another alert is
+# firing.
+# We use this to mute any warning-level notifications if the same alert is
+# already critical.
+inhibit_rules:
+  - source_matchers: [severity="CRITICAL"]
+    target_matchers: [severity="WARNING"]
+    # Apply inhibition if the alertname is the same.
+    # CAUTION:
+    #   If all label names listed in `equal` are missing
+    #   from both the source and target alerts,
+    #   the inhibition rule will apply!
+    equal: [alertname, env, service]
+
+
+receivers:
+  - name: 'admin-team-emails'
+    email_configs:
+      - to: 'elipe@teamraft.com'
+
+  - name: 'dev-team-emails'
+    email_configs:
+      - to: 'elipe@teamraft.com, ajameson@teamraft.com, jtimpe@teamraft.com, msohani@teamraft.com'

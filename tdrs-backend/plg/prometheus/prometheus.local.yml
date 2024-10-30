@@ -7,18 +7,19 @@ global:
 # Alertmanager configuration
 alerting:
   alertmanagers:
-    - static_configs:
+    - path_prefix: /alerts
+      static_configs:
         - targets:
-          # - alertmanager:9093
+          - alertmanager:9093
 
 # Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
 rule_files:
-  - "django_rules.yml"
+  - "django-rules.yml"
+  - "alerts.yml"
 
 # A scrape configuration containing exactly one endpoint to scrape:
 # Here it's Prometheus itself.
 scrape_configs:
-  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
   - job_name: "prometheus"
     static_configs:
       - targets: ["localhost:9090"]
@@ -27,11 +28,35 @@ scrape_configs:
     metrics_path: "/prometheus/metrics"
     static_configs:
       - targets: ["web:8080"]
+        labels:
+          service: "tdp-backend"
+          env: "local"
 
   - job_name: "celery"
     static_configs:
       - targets: ["celery-exporter:9540"]
+        labels:
+          service: "celery"
+          env: "local"
 
   - job_name: postgres
     static_configs:
       - targets: ["postgres-exporter:9187"]
+        labels:
+          service: "postgres"
+          env: "local"
+
+  - job_name: loki
+    static_configs:
+      - targets: ["loki:3100"]
+        labels:
+          service: "loki"
+          env: "local"
+
+  - job_name: grafana
+    metrics_path: /grafana/metrics
+    static_configs:
+      - targets: ["grafana:9400"]
+        labels:
+          service: "grafana"
+          env: "local"
