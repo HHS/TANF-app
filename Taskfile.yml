@@ -2,11 +2,6 @@ version: '3'
 
 tasks:
 
-  upload-kibana-objs:
-    desc: Upload dashboards to Kibana server
-    cmds:
-      - 'curl -X POST localhost:5601/api/saved_objects/_import -H "kbn-xsrf: true" --form file=@tdrs-backend/tdpservice/search_indexes/kibana_saved_objs.ndjson'
-
   create-network:
     desc: Create the external network
     cmds:
@@ -251,7 +246,7 @@ tasks:
     desc: Open a shell in the frontend container
     dir: tdrs-frontend
     cmds:
-      - docker-compose -f docker-compose.yml exec tdp-frontend sh
+      - docker-compose -f docker-compose.yml exec tdp-frontend bash
 
   up:
     desc: Start both frontend and backend web servers

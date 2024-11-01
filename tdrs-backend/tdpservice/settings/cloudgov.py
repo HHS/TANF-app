@@ -77,7 +77,7 @@ class CloudGov(Common):
 
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql',
+            'ENGINE': 'django_prometheus.db.backends.postgresql',
             'NAME': db_name,
             'USER': database_creds['username'],
             'PASSWORD': database_creds['password'],
@@ -154,7 +154,8 @@ class Development(CloudGov):
     """Settings for applications deployed in the Cloud.gov dev space."""
 
     # https://docs.djangoproject.com/en/2.0/ref/settings/#allowed-hosts
-    ALLOWED_HOSTS = ['.app.cloud.gov']
+    ALLOWED_HOSTS = ['.app.cloud.gov',
+                     '.apps.internal']
     CORS_ORIGIN_ALLOW_ALL = False
     CORS_ALLOWED_ORIGINS = ['https://*.app.cloud.gov']
     CORS_ALLOW_CREDENTIALS = True
@@ -169,7 +170,8 @@ class Staging(CloudGov):
 
     ALLOWED_HOSTS = [
         'tdp-frontend-staging.acf.hhs.gov',
-        'tdp-frontend-develop.acf.hhs.gov'
+        'tdp-frontend-develop.acf.hhs.gov',
+        '.apps.internal'
         ]
     CORS_ALLOWED_ORIGINS = ['https://*.acf.hhs.gov']
     CORS_ORIGIN_ALLOW_ALL = False
@@ -188,7 +190,9 @@ class Production(CloudGov):
     """Settings for applications deployed in the Cloud.gov production space."""
 
     # TODO: Add production ACF domain when known
-    ALLOWED_HOSTS = ['tanfdata.acf.hhs.gov', 'tdp-frontend-prod.app.cloud.gov']
+    ALLOWED_HOSTS = ['tanfdata.acf.hhs.gov',
+                     'tdp-frontend-prod.app.cloud.gov',
+                     '.apps.internal']
 
     LOGIN_GOV_CLIENT_ID = os.getenv(
         'OIDC_RP_CLIENT_ID',

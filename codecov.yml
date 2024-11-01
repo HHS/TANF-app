@@ -43,3 +43,6 @@ flags:
 
 ignore:
   - "tdrs-backend/tdpservice/scheduling/db_backup.py"
+  - "tdrs-backend/tdpservice/search_indexes/admin/mulitselect_filter.py"
+  - "tdrs-backend/tdpservice/email/helpers/account_access_requests.py"
+  - "tdrs-backend/tdpservice/search_indexes/admin/filters.py"
