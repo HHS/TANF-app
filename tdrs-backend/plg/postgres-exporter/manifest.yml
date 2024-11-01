@@ -6,7 +6,6 @@ applications:
     instances: 1
     env:
       DATA_SOURCE_NAME: {{ db_uri }}
-      PG_EXPORTER_METRIC_PREFIX: {{ env }}
     docker:
       image: prometheuscommunity/postgres-exporter:v0.15.0
     services:
