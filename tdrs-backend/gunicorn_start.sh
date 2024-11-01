@@ -36,4 +36,11 @@ fi
 
 gunicorn_cmd="gunicorn $gunicorn_params"
 
+if [[ $1 == "cloud" ]]; then
+    echo "Starting Promtail"
+    wget https://github.com/grafana/loki/releases/download/v3.1.1/promtail-linux-amd64.zip
+    unzip -a promtail-linux-amd64.zip && rm -rf promtail-linux-amd64.zip
+    ./promtail-linux-amd64 -config.file=./plg/promtail/config.yml &
+fi
+
 exec $gunicorn_cmd

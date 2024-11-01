@@ -13,6 +13,7 @@ CF_SPACE=${5}
 ENVIRONMENT=${6}
 
 env=${CF_SPACE#"tanf-"}
+frontend_app_name=$(echo $CGHOSTNAME_FRONTEND | cut -d"-" -f3)
 
 # Update the Kibana name to include the environment
 KIBANA_BASE_URL="${CGAPPNAME_KIBANA}-${env}.apps.internal"
@@ -52,7 +53,7 @@ update_frontend()
 
     cf set-env "$CGHOSTNAME_FRONTEND" BACKEND_HOST "$CGHOSTNAME_BACKEND"
     cf set-env "$CGHOSTNAME_FRONTEND" KIBANA_BASE_URL "$KIBANA_BASE_URL"
-    
+
     npm run build:$ENVIRONMENT
     unlink .env.production
     mkdir deployment
@@ -86,7 +87,7 @@ update_frontend()
     else
         cf map-route "$CGHOSTNAME_FRONTEND" app.cloud.gov --hostname "${CGHOSTNAME_FRONTEND}"
     fi
-    
+
     cd ../..
     rm -r tdrs-frontend/deployment
 }
