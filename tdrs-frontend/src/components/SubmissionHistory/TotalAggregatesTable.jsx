@@ -6,7 +6,7 @@ import {
   hasReparsed,
   getReprocessedDate,
   downloadFile,
-  downloadErrorReport,
+  getErrorReportStatus,
 } from './helpers'
 
 const MonthSubRow = ({ data }) =>
@@ -24,32 +24,6 @@ const MonthSubRow = ({ data }) =>
 
 const TotalAggregatesRow = ({ file }) => {
   const dispatch = useDispatch()
-  const errorFileName = `${file.year}-${file.quarter}-${file.section}`
-
-  const getErrorReportStatus = () => {
-    if (
-      file.summary &&
-      file.summary.status &&
-      file.summary.status !== 'Pending'
-    ) {
-      if (file.has_outdated_error_report) {
-        return 'Not Available'
-      } else if (file.hasError) {
-        return (
-          <button
-            className="section-download"
-            onClick={() => downloadErrorReport(file, errorFileName)}
-          >
-            {errorFileName}.xlsx
-          </button>
-        )
-      } else {
-        return 'No Errors'
-      }
-    } else {
-      return 'Pending'
-    }
-  }
 
   return (
     <>
@@ -63,10 +37,6 @@ const TotalAggregatesRow = ({ file }) => {
               {'Reprocessed: ' + formatDate(getReprocessedDate(file))}
             </>
           )}
-        </th>
-
-        <th scope="rowgroup" rowSpan={3}>
-          {hasReparsed(file) && formatDate(getReprocessedDate(file))}
         </th>
 
         <th scope="rowgroup" rowSpan={3}>
@@ -96,7 +66,7 @@ const TotalAggregatesRow = ({ file }) => {
         </th>
 
         <th scope="rowgroup" rowSpan={3}>
-          {getErrorReportStatus()}
+          {getErrorReportStatus(file)}
         </th>
       </tr>
       <tr>
@@ -115,9 +85,6 @@ export const TotalAggregatesTable = ({ files }) => (
       <tr>
         <th scope="col" rowSpan={2}>
           Submitted On
-        </th>
-        <th scope="col" rowSpan={2}>
-          Reprocessed On
         </th>
         <th scope="col" rowSpan={2}>
           Submitted By

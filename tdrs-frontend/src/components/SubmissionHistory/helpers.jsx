@@ -31,6 +31,32 @@ export const hasReparsed = (f) =>
 
 export const getReprocessedDate = (f) => f.reparse_file_metas[0].finished_at
 
+export const getErrorReportStatus = (file) => {
+  if (
+    file.summary &&
+    file.summary.status &&
+    file.summary.status !== 'Pending'
+  ) {
+    const errorFileName = `${file.year}-${file.quarter}-${file.section}`
+    if (file.has_outdated_error_report) {
+      return 'Unavailable, resubmit to view'
+    } else if (file.hasError) {
+      return (
+        <button
+          className="section-download"
+          onClick={() => downloadErrorReport(file, errorFileName)}
+        >
+          {errorFileName}.xlsx
+        </button>
+      )
+    } else {
+      return 'No Errors'
+    }
+  } else {
+    return 'Pending'
+  }
+}
+
 export const SubmissionSummaryStatusIcon = ({ status }) => {
   let icon = null
   let color = null
