@@ -39,7 +39,7 @@ export const getErrorReportStatus = (file) => {
   ) {
     const errorFileName = `${file.year}-${file.quarter}-${file.section}`
     if (file.has_outdated_error_report) {
-      return 'Unavailable, resubmit to view'
+      return 'This file was submitted prior to May 31, 2024. Please resubmit to get access to updated information.'
     } else if (file.hasError) {
       return (
         <button

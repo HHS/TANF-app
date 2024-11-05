@@ -528,7 +528,11 @@ describe('SubmissionHistory', () => {
         'Please note that error reports and submission history content for files submitted prior to May 31, 2024 may be outdated. Please resubmit to get access to updated information.'
       )
     ).toBeInTheDocument()
-    expect(screen.queryByText('Not Available')).toBeInTheDocument()
+    expect(
+      screen.queryByText(
+        'This file was submitted prior to May 31, 2024. Please resubmit to get access to updated information.'
+      )
+    ).toBeInTheDocument()
   })
 
   it('Shows the outdated submission banner for old submissions with old reparses', () => {
@@ -598,7 +602,11 @@ describe('SubmissionHistory', () => {
         'Please note that error reports and submission history content for files submitted prior to May 31, 2024 may be outdated. Please resubmit to get access to updated information.'
       )
     ).toBeInTheDocument()
-    expect(screen.queryByText('Not Available')).toBeInTheDocument()
+    expect(
+      screen.queryByText(
+        'This file was submitted prior to May 31, 2024. Please resubmit to get access to updated information.'
+      )
+    ).toBeInTheDocument()
   })
 
   it('Does not show outdated submissions banner if no old submissions', () => {
@@ -654,7 +662,11 @@ describe('SubmissionHistory', () => {
         'Please note that error reports and submission history content for files submitted prior to May 31, 2024 may be outdated. Please resubmit to get access to updated information.'
       )
     ).not.toBeInTheDocument()
-    expect(screen.queryByText('Not Available')).not.toBeInTheDocument()
+    expect(
+      screen.queryByText(
+        'This file was submitted prior to May 31, 2024. Please resubmit to get access to updated information.'
+      )
+    ).not.toBeInTheDocument()
   })
 
   it('Does not show the outdated submission banner for old submissions with new reparses', () => {
@@ -724,6 +736,10 @@ describe('SubmissionHistory', () => {
         'Please note that error reports and submission history content for files submitted prior to May 31, 2024 may be outdated. Please resubmit to get access to updated information.'
       )
     ).not.toBeInTheDocument()
-    expect(screen.queryByText('Not Available')).not.toBeInTheDocument()
+    expect(
+      screen.queryByText(
+        'This file was submitted prior to May 31, 2024. Please resubmit to get access to updated information.'
+      )
+    ).not.toBeInTheDocument()
   })
 })
