@@ -238,7 +238,7 @@ class Common(Configuration):
             "file": {
                 "class": "logging.handlers.RotatingFileHandler",
                 "formatter": "verbose",
-                "filename": "django.log",
+                "filename": "/tmp/django.log",
                 "maxBytes": 1024*1024*10, # 10 MiB
                 "backupCount": 5,
             }

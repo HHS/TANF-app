@@ -1,6 +1,7 @@
 [[source]]
 name = "pypi"
-url = "https://pypi.org/simple"
+trusted-host = "https://tdp-nexus.dev.raftlabs.tech/"
+url = "https://tdp-nexus.dev.raftlabs.tech/repository/pypi-proxy/simple"
 verify_ssl = true
 
 [dev-packages]
