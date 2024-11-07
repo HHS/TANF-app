@@ -96,7 +96,7 @@ class DataFileSerializer(serializers.ModelSerializer):
 
             if reparse_file_metas.count() > 0:
                 last_reparse_date = reparse_file_metas.first().finished_at
-                if last_reparse_date < cutoff_date:
+                if last_reparse_date is None or last_reparse_date < cutoff_date:
                     return True
 
             return True
