@@ -14,3 +14,4 @@
 	allowed = .git/config:.*
 	allowed = .gitconfig:.*
 	allowed = .*DJANGO_SECRET_KEY=.*
+	allowed = ./tdrs-backend/plg/loki/manifest.yml:*

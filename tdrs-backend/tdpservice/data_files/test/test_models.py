@@ -82,3 +82,45 @@ def test_data_files_filename_is_expected(user):
                 "stt": stt
             })
             assert new_data_file.filename == stt.filenames[section]
+
+@pytest.mark.django_db
+def test_prog_type(data_file_instance):
+    """Test propert prog_type."""
+    df = DataFile.create_new_version({
+        "year": data_file_instance.year,
+        "quarter": data_file_instance.quarter,
+        "section": data_file_instance.section,
+        "stt": data_file_instance.stt,
+        "original_filename": data_file_instance.original_filename,
+        "slug": data_file_instance.slug,
+        "extension": data_file_instance.extension,
+        "user": data_file_instance.user,
+    })
+
+    assert df.prog_type == "TAN"
+    df.section = "SSP Active Case Data"
+    assert df.prog_type == "SSP"
+    df.section = "Tribal Active Case Data"
+    assert df.prog_type == "TAN"
+
+@pytest.mark.django_db
+def test_fiscal_year(data_file_instance):
+    """Test property fiscal_year."""
+    df = DataFile.create_new_version({
+        "year": data_file_instance.year,
+        "quarter": data_file_instance.quarter,
+        "section": data_file_instance.section,
+        "stt": data_file_instance.stt,
+        "original_filename": data_file_instance.original_filename,
+        "slug": data_file_instance.slug,
+        "extension": data_file_instance.extension,
+        "user": data_file_instance.user,
+    })
+
+    assert df.fiscal_year == "2020 - Q1 (Oct - Dec)"
+    df.quarter = "Q2"
+    assert df.fiscal_year == "2020 - Q2 (Jan - Mar)"
+    df.quarter = "Q3"
+    assert df.fiscal_year == "2020 - Q3 (Apr - Jun)"
+    df.quarter = "Q4"
+    assert df.fiscal_year == "2020 - Q4 (Jul - Sep)"
