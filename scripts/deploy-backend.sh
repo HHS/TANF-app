@@ -75,11 +75,6 @@ set_cf_envs()
         var_value=${!var_name}
         staging_var="STAGING_$var_name"
         if [[ "${!staging_var}" ]]; then
-          echo .
-          echo .
-          echo SETTING UNIQUE VALUE FOR $staging_var SPECIFIC VARIABLE
-          echo .
-          echo .
           var_value=${!staging_var}
         fi
         cf_cmd="cf set-env $CGAPPNAME_BACKEND $var_name ${var_value}"
