@@ -38,9 +38,7 @@ export const getErrorReportStatus = (file) => {
     file.summary.status !== 'Pending'
   ) {
     const errorFileName = `${file.year}-${file.quarter}-${file.section}`
-    if (file.has_outdated_error_report) {
-      return 'This file was submitted prior to May 31, 2024. Please resubmit to get access to updated information.'
-    } else if (file.hasError) {
+    if (file.hasError) {
       return (
         <button
           className="section-download"

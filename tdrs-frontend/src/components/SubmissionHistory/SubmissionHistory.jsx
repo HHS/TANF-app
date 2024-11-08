@@ -73,27 +73,8 @@ const SubmissionHistory = ({ filterValues }) => {
     }
   }, [hasFetchedFiles, files, dispatch, filterValues])
 
-  const hasOutdatedSubmissions = () =>
-    files.some((element, index, array) => element.has_outdated_error_report)
-
   return (
     <>
-      {hasOutdatedSubmissions() && (
-        <div
-          className={classNames('usa-alert usa-alert--slim', {
-            [`usa-alert--info`]: true,
-          })}
-        >
-          <div className="usa-alert__body" role="alert">
-            <p className="usa-alert__text">
-              Please note that error reports and submission history content for
-              files submitted prior to May 31, 2024 may be outdated. Please
-              resubmit to get access to updated information.
-            </p>
-          </div>
-        </div>
-      )}
-
       <div className="margin-top-2">
         <a
           className="usa-link"

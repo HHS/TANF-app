@@ -29,18 +29,8 @@ const TotalAggregatesRow = ({ file }) => {
     <>
       <tr>
         <th scope="rowgroup" rowSpan={3}>
-          {formatDate(file.createdAt)}
-          {hasReparsed(file) && (
-            <>
-              <br />
-              <br />
-              {'Reprocessed: ' + formatDate(getReprocessedDate(file))}
-            </>
-          )}
-        </th>
-
-        <th scope="rowgroup" rowSpan={3}>
-          {file.submittedBy}
+          {formatDate(file.createdAt) + ' by ' + file.submittedBy}
+          {hasReparsed(file) && <></>}
         </th>
 
         <th scope="rowgroup" rowSpan={3}>
@@ -85,9 +75,6 @@ export const TotalAggregatesTable = ({ files }) => (
       <tr>
         <th scope="col" rowSpan={2}>
           Submitted On
-        </th>
-        <th scope="col" rowSpan={2}>
-          Submitted By
         </th>
         <th scope="col" rowSpan={2}>
           File Name

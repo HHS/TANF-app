@@ -43,8 +43,7 @@ class DataFileSerializer(serializers.ModelSerializer):
     ssp = serializers.BooleanField(write_only=True)
     has_error = serializers.SerializerMethodField()
     summary = DataFileSummarySerializer(many=False, read_only=True)
-    reparse_file_metas = serializers.SerializerMethodField()
-    has_outdated_error_report = serializers.SerializerMethodField()
+    latest_reparse_file_meta = serializers.SerializerMethodField()
 
     class Meta:
         """Metadata."""
@@ -69,8 +68,7 @@ class DataFileSerializer(serializers.ModelSerializer):
             's3_versioning_id',
             'has_error',
             'summary',
-            'reparse_file_metas',
-            'has_outdated_error_report',
+            'latest_reparse_file_meta',
         ]
 
         read_only_fields = ("version",)
@@ -80,28 +78,12 @@ class DataFileSerializer(serializers.ModelSerializer):
         parser_errors = ParserError.objects.filter(file=obj.id)
         return len(parser_errors) > 0
 
-    def get_reparse_file_metas(self, instance):
+    def get_latest_reparse_file_meta(self, instance):
         """Return related reparse_file_metas, ordered by finished_at decending."""
         reparse_file_metas = instance.reparse_file_metas.all().order_by('-finished_at')
-        return ReparseFileMetaSerializer(reparse_file_metas, many=True, read_only=True).data
-
-    def get_has_outdated_error_report(self, instance):
-        """Return a boolean indicating whether the file's error report is outdated."""
-        original_submission_date = instance.created_at
-
-        cutoff_date = make_aware(settings.OUTDATED_SUBMISSION_CUTOFF)
-
-        if original_submission_date < cutoff_date:
-            reparse_file_metas = instance.reparse_file_metas.all().order_by('-finished_at')
-
-            if reparse_file_metas.count() > 0:
-                last_reparse_date = reparse_file_metas.first().finished_at
-                if last_reparse_date is None or last_reparse_date < cutoff_date:
-                    return True
-
-            return True
-
-        return False
+        if reparse_file_metas.count() > 0:
+            return ReparseFileMetaSerializer(reparse_file_metas.first(), many=False, read_only=True).data
+        return None
 
     def create(self, validated_data):
         """Create a new entry with a new version number."""
