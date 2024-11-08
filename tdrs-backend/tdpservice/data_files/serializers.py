@@ -1,7 +1,5 @@
 """Serialize stt data."""
 import logging
-from django.conf import settings
-from django.utils.timezone import make_aware
 from rest_framework import serializers
 from tdpservice.parsers.models import ParserError
 from tdpservice.data_files.errors import ImmutabilityError
