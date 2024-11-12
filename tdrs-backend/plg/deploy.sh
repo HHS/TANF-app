@@ -19,6 +19,7 @@ deploy_pg_exporter() {
     cp manifest.yml $MANIFEST
 
     APP_NAME="pg-exporter-$1"
+    EXPORTER_SPACE=$(cf target | grep -Eo "tanf(.*)")
 
     yq eval -i ".applications[0].name = \"$APP_NAME\""  $MANIFEST
     yq eval -i ".applications[0].env.DATA_SOURCE_NAME = \"$2\""  $MANIFEST
@@ -27,9 +28,10 @@ deploy_pg_exporter() {
     cf push --no-route -f $MANIFEST -t 180 --strategy rolling
     cf map-route $APP_NAME apps.internal --hostname $APP_NAME
 
-    # Add policy to allow prometheus to talk to pg-exporter
+    # Add policy to allow prometheus to talk to pg-exporter regardless of environment
     # TODO: this logic needs to be updated to allow routing accross spaces based on where we want PLG to live.
-    cf add-network-policy prometheus $APP_NAME -s "tanf-dev" --protocol tcp --port 9187
+    cf target -o hhs-acf-ofa -s tanf-prod
+    cf add-network-policy prometheus $APP_NAME -s "$EXPORTER_SPACE" --protocol tcp --port 9187
     rm $MANIFEST
     popd
 }
@@ -47,9 +49,9 @@ deploy_grafana() {
     yq eval -i ".applications[0].services[0] = \"$1\""  $MANIFEST
 
     cf push --no-route -f $MANIFEST -t 180  --strategy rolling
-    # cf map-route $APP_NAME apps.internal --hostname $APP_NAME
+    cf map-route $APP_NAME apps.internal --hostname $APP_NAME
     # Give Grafana a public route for now. Might be able to swap to internal route later.
-    cf map-route "$APP_NAME" app.cloud.gov --hostname "${APP_NAME}"
+    # cf map-route "$APP_NAME" app.cloud.gov --hostname "${APP_NAME}"
 
     # Add policy to allow grafana to talk to prometheus and loki
     cf add-network-policy $APP_NAME prometheus --protocol tcp --port 8080
@@ -97,6 +99,7 @@ while getopts ":hap:u:d:" option; do
          DB_SERVICE_NAME=$OPTARG;;
      \?) # Invalid option
          echo "Error: Invalid option"
+         help
          exit;;
    esac
 done
