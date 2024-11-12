@@ -123,7 +123,14 @@ update_plg_networking() {
   cf target -o hhs-acf-ofa -s "$CF_SPACE"
 
   # Promtial needs to send logs to Loki
-  cf add-network-policy "$CGAPPNAME_BACKEND" loki -s "tanf-dev" --protocol tcp --port 8080
+  cf add-network-policy "$CGAPPNAME_BACKEND" loki -s "tanf-prod" --protocol tcp --port 8080
+
+  # Add network policy allowing Grafana to talk to the backend and to allow the backend to talk to Grafana
+  # TODO: to avoid having to target the prod space, move the network policies from grafana to an app to plg/deploy.sh
+  # TODO: make sure netpols tunnel to grafana in poduction after dev testing
+  # cf add-network-policy "$CGAPPNAME_BACKEND" "grafana" --protocol tcp --port 8080
+  cf add-network-policy "$CGAPPNAME_FRONTEND" "grafana" --protocol tcp --port 8080
+  cf add-network-policy "grafana" "$CGAPPNAME_FRONTEND" --protocol tcp --port 80
 }
 
 update_backend()
