@@ -158,7 +158,7 @@ class DataFileViewSet(ModelViewSet):
             )
         return response
 
-    def __prioritize_queryset(self, filtered_errors, all_errors):
+    def __prioritize_queryset(self, all_errors):
         """Generate prioritized queryset of ParserErrors."""
         # All cat1/4 errors
         error_type_query = Q(error_type=ParserErrorCategoryChoices.PRE_CHECK) | \
@@ -183,19 +183,10 @@ class DataFileViewSet(ModelViewSet):
     def download_error_report(self, request, pk=None):
         """Generate and return the parsing error report xlsx."""
         datafile = self.get_object()
-        all_errors = ParserError.objects.filter(file=datafile)
-        filtered_errors = None
-        user = self.request.user
-        is_s1_s2 = "Active" in datafile.section or "Closed" in datafile.section
+        all_errors = ParserError.objects.filter(file=datafile).order_by('-pk')
+        filtered_errors = self.__prioritize_queryset(all_errors)
 
-        # We only filter Active and Closed submissions. Aggregate and Stratum return all errors.
-        if not user.is_an_admin and is_s1_s2:
-            filtered_errors = self.__prioritize_queryset(filtered_errors, all_errors)
-        else:
-            filtered_errors = all_errors
-
-        filtered_errors = filtered_errors.order_by('-pk')
-        return Response(get_xls_serialized_file(filtered_errors))
+        return Response(get_xls_serialized_file(all_errors, filtered_errors))
 
 
 class GetYearList(APIView):
