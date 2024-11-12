@@ -116,7 +116,7 @@ fi
 if [ "$DEPLOY" == "plg" ]; then
     deploy_prometheus
     deploy_loki
-    deploy_grafana
+    deploy_grafana $DB_SERVICE_NAME
 fi
 if [ "$DEPLOY" == "pg-exporter" ]; then
     if [ "$DB_URI" == "" ]; then
