@@ -122,7 +122,7 @@ class DataFileAPITestBase:
         assert priorities.cell(row=1, column=1).value == "Please refer to the most recent versions of the coding " \
             + "instructions (linked below) when looking up items and allowable values during the data revision process"
         assert priorities.cell(row=7, column=COL_ERROR_MESSAGE).value == ("TRAILER: record length is 15 characters "
-                                                                  "but must be 23.")
+                                                                          "but must be 23.")
         assert aggregates.cell(row=7, column=COL_NUM_OCCURRENCES).value == 5
 
     @staticmethod
