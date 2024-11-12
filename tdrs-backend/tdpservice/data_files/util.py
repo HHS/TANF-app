@@ -35,7 +35,7 @@ def check_fields_json(fields_json, field_name):
 
 
 def write_worksheet_banner(worksheet):
-    """Convenience function for banner writing."""
+    """Write worksheet banner."""
     row, col = 0, 0
 
     # write beta banner
@@ -69,8 +69,8 @@ def write_worksheet_banner(worksheet):
 
 
 def format_header(header_list: list):
-        """Format header."""
-        return ' '.join([i.capitalize() for i in header_list.split('_')])
+    """Format header."""
+    return ' '.join([i.capitalize() for i in header_list.split('_')])
 
 
 def write_prioritized_errors(worksheet, prioritized_errors, bold):
@@ -117,7 +117,9 @@ def write_aggregate_errors(worksheet, all_errors, bold):
     for idx, col in enumerate(columns):
         worksheet.write(row, idx, format_header(col), bold)
 
-    aggregates = all_errors.values('rpt_month_year', 'error_message', 'item_number', 'field_name', 'fields_json', 'error_type').annotate(num_occurrences=Count('error_message'))
+    aggregates = all_errors.values('rpt_month_year', 'error_message',
+                                   'item_number', 'field_name',
+                                   'fields_json', 'error_type').annotate(num_occurrences=Count('error_message'))
 
     paginator = Paginator(aggregates.order_by('-num_occurrences'), settings.BULK_CREATE_BATCH_SIZE)
     row_idx = 6
