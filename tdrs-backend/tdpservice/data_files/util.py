@@ -3,10 +3,58 @@ import base64
 from io import BytesIO
 import xlsxwriter
 import calendar
-from tdpservice.parsers.models import ParserErrorCategoryChoices
 from django.conf import settings
 from django.core.paginator import Paginator
-from django.db.models import Count
+from django.db import models
+from django.db.models import Count, Q
+from django.utils.translation import gettext_lazy as _
+
+
+class ParserErrorCategoryChoices(models.TextChoices):
+    """Enum of ParserError error_type."""
+
+    PRE_CHECK = "1", _("File pre-check")
+    FIELD_VALUE = "2", _("Record value invalid")
+    VALUE_CONSISTENCY = "3", _("Record value consistency")
+    CASE_CONSISTENCY = "4", _("Case consistency")
+    SECTION_CONSISTENCY = "5", _("Section consistency")
+    HISTORICAL_CONSISTENCY = "6", _("Historical consistency")
+
+
+def get_prioritized_queryset(parser_errors):
+    """Generate a prioritized queryset of ParserErrors."""
+    PRIORITIZED_CAT2 = (
+        ("FAMILY_AFFILIATION", "CITIZENSHIP_STATUS", "CLOSURE_REASON"),
+    )
+    PRIORITIZED_CAT3 = (
+        ("FAMILY_AFFILIATION", "SSN"),
+        ("FAMILY_AFFILIATION", "CITIZENSHIP_STATUS"),
+        ("AMT_FOOD_STAMP_ASSISTANCE", "AMT_SUB_CC", "CASH_AMOUNT", "CC_AMOUNT", "TRANSP_AMOUNT"),
+        ("FAMILY_AFFILIATION", "SSN", "CITIZENSHIP_STATUS"),
+        ("FAMILY_AFFILIATION", "PARENT_MINOR_CHILD"),
+        ("FAMILY_AFFILIATION", "EDUCATION_LEVEL"),
+        ("FAMILY_AFFILIATION", "WORK_ELIGIBLE_INDICATOR"),
+        ("CITIZENSHIP_STATUS", "WORK_ELIGIBLE_INDICATOR"),
+    )
+
+    # All cat1/4 errors
+    error_type_query = Q(error_type=ParserErrorCategoryChoices.PRE_CHECK) | \
+        Q(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
+    filtered_errors = parser_errors.filter(error_type_query)
+
+    for fields in PRIORITIZED_CAT2:
+        filtered_errors = filtered_errors.union(parser_errors.filter(
+            field_name__in=fields,
+            error_type=ParserErrorCategoryChoices.FIELD_VALUE
+        ))
+
+    for fields in PRIORITIZED_CAT3:
+        filtered_errors = filtered_errors.union(parser_errors.filter(
+            fields_json__friendly_name__has_keys=fields,
+            error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY
+        ))
+
+    return filtered_errors
 
 
 def format_error_msg(error_msg, fields_json):

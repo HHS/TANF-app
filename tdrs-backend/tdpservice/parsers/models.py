@@ -6,19 +6,11 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.util import ParserErrorCategoryChoices, get_prioritized_queryset
+
 import logging
 
 logger = logging.getLogger(__name__)
-
-class ParserErrorCategoryChoices(models.TextChoices):
-    """Enum of ParserError error_type."""
-
-    PRE_CHECK = "1", _("File pre-check")
-    FIELD_VALUE = "2", _("Record value invalid")
-    VALUE_CONSISTENCY = "3", _("Record value consistency")
-    CASE_CONSISTENCY = "4", _("Case consistency")
-    SECTION_CONSISTENCY = "5", _("Section consistency")
-    HISTORICAL_CONSISTENCY = "6", _("Historical consistency")
 
 
 class ParserError(models.Model):
@@ -133,9 +125,12 @@ class DataFileSummary(models.Model):
                                     .filter(field_name="Record_Type")\
                                     .exclude(error_message__icontains="trailer")
 
+        prioritized_errors = get_prioritized_queryset(errors)
+
         if errors is None:
             return DataFileSummary.Status.PENDING
-        elif precheck_errors.count() > 0 or self.total_number_of_records_created == 0:
+        elif (precheck_errors.count() > 0 or self.total_number_of_records_created == 0 or
+              prioritized_errors.count() > 500):
             return DataFileSummary.Status.REJECTED
         elif errors.count() == 0:
             return DataFileSummary.Status.ACCEPTED
