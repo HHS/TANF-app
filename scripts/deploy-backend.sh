@@ -116,21 +116,11 @@ prepare_promtail() {
 }
 
 update_plg_networking() {
-  # Need to switch the space after deploy since we're not always in dev space to handle specific networking from dev
-  # PLG apps to the correct backend app.
-  cf target -o hhs-acf-ofa -s tanf-dev
-  cf add-network-policy prometheus "$CGAPPNAME_BACKEND" -s "$CF_SPACE" --protocol tcp --port 8080
-  cf target -o hhs-acf-ofa -s "$CF_SPACE"
+  # Promtail needs to send logs to Loki
+  cf add-network-policy "$CGAPPNAME_BACKEND" loki -s tanf-prod --protocol tcp --port 8080
 
-  # Promtial needs to send logs to Loki
-  cf add-network-policy "$CGAPPNAME_BACKEND" loki --protocol tcp --port 8080
-
-  # Add network policy allowing Grafana to talk to the backend and to allow the backend to talk to Grafana
-  # TODO: to avoid having to target the prod space, move the network policies from grafana to an app to plg/deploy.sh
-  # TODO: make sure netpols tunnel to grafana in poduction after dev testing
-  # cf add-network-policy "$CGAPPNAME_BACKEND" "grafana" --protocol tcp --port 8080
-  cf add-network-policy "$CGAPPNAME_FRONTEND" "grafana" --protocol tcp --port 8080
-  cf add-network-policy "grafana" "$CGAPPNAME_FRONTEND" --protocol tcp --port 80
+  # Add network policy allowing frontend to talk to Grafana
+  cf add-network-policy "$CGAPPNAME_FRONTEND" "grafana" -s tanf-prod --protocol tcp --port 8080
 }
 
 update_backend()
