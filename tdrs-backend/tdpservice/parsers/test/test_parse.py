@@ -1098,10 +1098,10 @@ def test_parse_ssp_section2_file(ssp_section2_file, dfs):
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
         dfs.datafile, dfs.status)
     for dfs_case_aggregate in dfs.case_aggregates['months']:
-        assert dfs_case_aggregate['accepted_without_errors'] == 0
-        assert dfs_case_aggregate['accepted_with_errors'] in [75, 78]
+        assert dfs_case_aggregate['accepted_without_errors'] == "N/A"
+        assert dfs_case_aggregate['accepted_with_errors'] == "N/A"
         assert dfs_case_aggregate['month'] in ['Oct', 'Nov', 'Dec']
-    assert dfs.get_status() == DataFileSummary.Status.PARTIALLY_ACCEPTED
+    assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
     m4_objs = SSP_M4.objects.all().order_by('id')
     m5_objs = SSP_M5.objects.all().order_by('AMOUNT_EARNED_INCOME')
