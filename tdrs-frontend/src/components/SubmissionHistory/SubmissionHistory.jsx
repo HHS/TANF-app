@@ -58,7 +58,6 @@ SectionSubmissionHistory.propTypes = {
     year: PropTypes.string,
   }),
   files: PropTypes.array,
-  fileIsOutdated: PropTypes.func,
 }
 
 const SubmissionHistory = ({ filterValues }) => {

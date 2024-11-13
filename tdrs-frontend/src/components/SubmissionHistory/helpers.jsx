@@ -27,9 +27,11 @@ export const downloadErrorReport = async (file, reportName) => {
   }
 }
 export const hasReparsed = (f) =>
-  f.reparse_file_metas && f.reparse_file_metas.length > 0
+  f.latest_reparse_file_meta &&
+  f.latest_reparse_file_meta.finished_at &&
+  f.latest_reparse_file_meta.finished_at !== null
 
-export const getReprocessedDate = (f) => f.reparse_file_metas[0].finished_at
+export const getReprocessedDate = (f) => f.latest_reparse_file_meta.finished_at
 
 export const getErrorReportStatus = (file) => {
   if (
