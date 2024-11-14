@@ -21,9 +21,9 @@ RUN apt-get install -y gcc graphviz graphviz-dev libpq-dev python3-dev vim curl 
 # Postgres client setup
 #RUN bash -c 'echo "deb [trusted=yes] https://tdp-nexus.dev.raftlabs.tech/repository/apt-proxy-postgres/ bullseye-pdpg main" >> /etc/apt/sources.list'
 RUN apt-get update -y && apt-get upgrade -y
-RUN apt install -y postgresql-common && install -d /usr/share/postgresql-common/pgdg && \
-sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc trusted=yes] https://tdp-nexus.dev.raftlabs.tech/repository/apt-proxy-postgres/ bullseye-pgdg main" >> /etc/apt/sources.list' && \
+RUN apt --purge remove postgresql postgresql-* && apt install -y postgresql-common curl ca-certificates && install -d /usr/share/postgresql-common/pgdg && \
 curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
+sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt bullseye-pgdg main" > /etc/apt/sources.list.d/pgdg.list' && \
 apt -y update && apt -y upgrade && apt install postgresql-client-15 -y
 
 # Install pipenv
