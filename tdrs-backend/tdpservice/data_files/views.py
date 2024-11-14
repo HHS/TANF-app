@@ -146,7 +146,7 @@ class DataFileViewSet(ModelViewSet):
     def download_error_report(self, request, pk=None):
         """Generate and return the parsing error report xlsx."""
         datafile = self.get_object()
-        all_errors = ParserError.objects.filter(file=datafile).order_by('-pk')
+        all_errors = ParserError.objects.filter(file=datafile)
         filtered_errors = get_prioritized_queryset(all_errors)
 
         return Response(get_xls_serialized_file(all_errors, filtered_errors))

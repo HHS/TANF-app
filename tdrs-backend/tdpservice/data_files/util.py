@@ -133,7 +133,7 @@ def write_prioritized_errors(worksheet, prioritized_errors, bold):
     for idx, col in enumerate(columns):
         worksheet.write(row, idx, format_header(col), bold)
 
-    paginator = Paginator(prioritized_errors.order_by('-pk'), settings.BULK_CREATE_BATCH_SIZE)
+    paginator = Paginator(prioritized_errors.order_by('pk'), settings.BULK_CREATE_BATCH_SIZE)
     row_idx = 6
     for page in paginator:
         for record in page.object_list:
@@ -193,8 +193,8 @@ def get_xls_serialized_file(all_errors, prioritized_errors):
     """Return xls file created from the error."""
     output = BytesIO()
     workbook = xlsxwriter.Workbook(output)
-    prioritized_sheet = workbook.add_worksheet(name="Priorities")
-    aggregate_sheet = workbook.add_worksheet(name="Aggregates")
+    prioritized_sheet = workbook.add_worksheet(name="Critical")
+    aggregate_sheet = workbook.add_worksheet(name="Summary")
 
     write_worksheet_banner(prioritized_sheet)
     write_worksheet_banner(aggregate_sheet)
