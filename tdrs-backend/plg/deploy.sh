@@ -15,7 +15,7 @@ help() {
     echo "Options:"
     echo "h     Print this help message."
     echo "a     Deploy the entire PLG stack."
-    echo "p     Deploy a postgres exporter, expects the environment name (dev, staging, prod) to be passed with switch. Requires -u and -d"
+    echo "p     Deploy a postgres exporter, expects the environment name (dev, staging, production) to be passed with switch. Requires -u and -d"
     echo "u     Requires -p. The database URI the exporter should connect with."
     echo "d     The Cloud Foundry service name of the RDS instance. Should be included with all deployments."
     echo
@@ -37,7 +37,6 @@ deploy_pg_exporter() {
     cf map-route $APP_NAME apps.internal --hostname $APP_NAME
 
     # Add policy to allow prometheus to talk to pg-exporter regardless of environment
-    # TODO: this logic needs to be updated to allow routing accross spaces based on where we want PLG to live.
     cf target -o hhs-acf-ofa -s tanf-prod
     cf add-network-policy prometheus $APP_NAME -s "$EXPORTER_SPACE" --protocol tcp --port 9187
     cf target -o hhs-acf-ofa -s "$EXPORTER_SPACE"
