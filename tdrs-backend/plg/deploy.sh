@@ -1,13 +1,13 @@
 #!/bin/bash
 set -e
 
-DEV_BACKEND_APPS = ("tdp-backend-raft" "tdp-backend-qasp" "tdp-backend-a11y")
-STAGING_BACKEND_APPS = ("tdp-backend-develop" "tdp-backend-staging")
-PROD_BACKEND = "tdp-backend-prod"
+DEV_BACKEND_APPS=("tdp-backend-raft" "tdp-backend-qasp" "tdp-backend-a11y")
+STAGING_BACKEND_APPS=("tdp-backend-develop" "tdp-backend-staging")
+PROD_BACKEND="tdp-backend-prod"
 
-DEV_FRONTEND_APPS = ("tdp-frontend-raft" "tdp-frontend-qasp" "tdp-frontend-a11y")
-STAGING_FRONTEND_APPS = ("tdp-frontend-develop" "tdp-frontend-staging")
-PROD_FRONTEND = "tdp-frontend-prod"
+DEV_FRONTEND_APPS=("tdp-frontend-raft" "tdp-frontend-qasp" "tdp-frontend-a11y")
+STAGING_FRONTEND_APPS=("tdp-frontend-develop" "tdp-frontend-staging")
+PROD_FRONTEND="tdp-frontend-prod"
 
 help() {
     echo "Deploy the PLG stack or a Postgres exporter to the Cloud Foundry space you're currently authenticated in."
@@ -66,12 +66,12 @@ deploy_grafana() {
 
     # Add network policies to allow grafana to talk to all frontend apps in all environments
     for app in ${DEV_FRONTEND_APPS[@]}; do
-        cf add-network-policy "grafana" "$app" -s "tanf-dev" --protocol tcp --port 80
+        cf add-network-policy "grafana" $app -s "tanf-dev" --protocol tcp --port 80
     done
     for app in ${STAGING_FRONTEND_APPS[@]}; do
-        cf add-network-policy "grafana" "$app" -s "tanf-staging" --protocol tcp --port 80
+        cf add-network-policy "grafana" $app -s "tanf-staging" --protocol tcp --port 80
     done
-    cf add-network-policy "grafana" "$PROD_FRONTEND" --protocol tcp --port 80
+    cf add-network-policy "grafana" $PROD_FRONTEND --protocol tcp --port 80
 
     rm $DATASOURCES
     rm $MANIFEST
@@ -85,12 +85,12 @@ deploy_prometheus() {
 
     # Add network policies to allow prometheus to talk to all backend apps in all environments
     for app in ${DEV_BACKEND_APPS[@]}; do
-        cf add-network-policy prometheus "$app" -s "tanf-dev" --protocol tcp --port 8080
+        cf add-network-policy prometheus $app -s "tanf-dev" --protocol tcp --port 8080
     done
     for app in ${STAGING_BACKEND_APPS[@]}; do
-        cf add-network-policy prometheus "$app" -s "tanf-staging" --protocol tcp --port 8080
+        cf add-network-policy prometheus $app -s "tanf-staging" --protocol tcp --port 8080
     done
-    cf add-network-policy prometheus "$PROD_BACKEND" --protocol tcp --port 8080
+    cf add-network-policy prometheus $PROD_BACKEND --protocol tcp --port 8080
 
     popd
 }
@@ -137,7 +137,7 @@ if [ "$#" -eq 0 ]; then
 fi
 
 pushd "$(dirname "$0")"
-if [ "$DB_URI" == "" ] || [ "$DB_SERVICE_NAME" == "" ]; then
+if [ "$DB_SERVICE_NAME" == "" ]; then
     err_help_exit "Error: you must include a database service name."
 fi
 if [ "$DEPLOY" == "plg" ]; then
