@@ -115,14 +115,6 @@ prepare_promtail() {
   popd
 }
 
-update_plg_networking() {
-  # Promtail needs to send logs to Loki
-  cf add-network-policy "$CGAPPNAME_BACKEND" loki -s tanf-prod --protocol tcp --port 8080
-
-  # Add network policy allowing frontend to talk to Grafana
-  cf add-network-policy "$CGAPPNAME_FRONTEND" "grafana" -s tanf-prod --protocol tcp --port 8080
-}
-
 update_backend()
 {
     cd tdrs-backend || exit
@@ -160,9 +152,6 @@ update_backend()
 
     # Add network policy to allow frontend to access backend
     cf add-network-policy "$CGAPPNAME_FRONTEND" "$CGAPPNAME_BACKEND" --protocol tcp --port 8080
-
-    # Add PLG routing
-    update_plg_networking
 
     if [ "$CF_SPACE" = "tanf-prod" ]; then
       # Add network policy to allow backend to access tanf-prod services

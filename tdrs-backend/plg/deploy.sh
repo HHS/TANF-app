@@ -101,6 +101,25 @@ deploy_loki() {
     popd
 }
 
+setup_extra_net_pols() {
+    # Add network policies to allow frontend/backend to talk to grafana/loki
+    cf target -o hhs-acf-ofa -s tanf-dev
+    for i in ${!DEV_BACKEND_APPS[@]}; do
+        cf add-network-policy ${DEV_FRONTEND_APPS[$i]} grafana -s tanf-prod --protocol tcp --port 8080
+        cf add-network-policy ${DEV_BACKEND_APPS[$i]} loki -s tanf-prod --protocol tcp --port 8080
+    done
+
+    cf target -o hhs-acf-ofa -s tanf-staging
+    for i in ${!STAGING_BACKEND_APPS[@]}; do
+        cf add-network-policy ${STAGING_FRONTEND_APPS[$i]} grafana -s tanf-prod --protocol tcp --port 8080
+        cf add-network-policy ${STAGING_BACKEND_APPS[$i]} loki -s tanf-prod --protocol tcp --port 8080
+    done
+
+    cf target -o hhs-acf-ofa -s tanf-prod
+    cf add-network-policy $PROD_FRONTEND grafana -s tanf-prod --protocol tcp --port 8080
+    cf add-network-policy $PROD_BACKEND  loki -s tanf-prod --protocol tcp --port 8080
+}
+
 err_help_exit() {
     echo $1
     echo
@@ -143,6 +162,7 @@ if [ "$DEPLOY" == "plg" ]; then
     deploy_prometheus
     deploy_loki
     deploy_grafana $DB_SERVICE_NAME
+    setup_extra_net_pols
 fi
 if [ "$DEPLOY" == "pg-exporter" ]; then
     if [ "$DB_URI" == "" ]; then
