@@ -66,10 +66,9 @@ class KibanaAuthorizationCheck(APIView):
         user_in_valid_group = user.is_ofa_sys_admin or user.is_digit_team
 
         if (user.hhs_id is not None and user_in_valid_group) or settings.BYPASS_OFA_AUTH:
-            logger.debug(f"User: {user} has correct authentication credentials. Allowing access to Kibana.")
             return HttpResponse(status=200)
         else:
-            logger.debug(f"User: {user} has incorrect authentication credentials. Not allowing access to Kibana.")
+            logger.warning(f"User: {user} has incorrect authentication credentials. Not allowing access to Kibana.")
             return HttpResponse(status=401)
 
 class GrafanaAuthorizationCheck(APIView):
@@ -86,8 +85,7 @@ class GrafanaAuthorizationCheck(APIView):
         user_in_valid_group = user.is_ofa_sys_admin or user.is_developer
 
         if user_in_valid_group:
-            logger.debug(f"User: {user} has correct authentication credentials. Allowing access to Grafana.")
             return HttpResponse(status=200)
         else:
-            logger.debug(f"User: {user} has incorrect authentication credentials. Not allowing access to Grafana.")
+            logger.warning(f"User: {user} has incorrect authentication credentials. Not allowing access to Grafana.")
             return HttpResponse(status=401)
