@@ -9,11 +9,12 @@ alerting:
     - path_prefix: /alerts
       static_configs:
         - targets:
-          # - alertmanager.apps.internal:8080
+          - alertmanager.apps.internal:8080
 
 # Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
 rule_files:
   - "django-rules.yml"
+  - "alert.yml"
 
 scrape_configs:
   # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
@@ -84,7 +85,7 @@ scrape_configs:
 
   - job_name: loki
     static_configs:
-      - targets: ["loki.apps.internal:3100"]
+      - targets: ["loki.apps.internal:8080"]
         labels:
           service: "loki"
           env: "production"
@@ -92,7 +93,7 @@ scrape_configs:
   - job_name: grafana
     metrics_path: /grafana/metrics
     static_configs:
-      - targets: ["grafana.app.cloud.gov:9400"]
+      - targets: ["grafana.app.cloud.gov:8080"]
         labels:
           service: "grafana"
           env: "production"
