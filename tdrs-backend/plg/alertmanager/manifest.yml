@@ -8,8 +8,7 @@ applications:
       mkdir data
       wget https://github.com/prometheus/alertmanager/releases/download/v0.27.0/alertmanager-0.27.0.linux-amd64.tar.gz
       tar -zxvf alertmanager-0.27.0.linux-amd64.tar.gz
-      mv alertmanager-0.27.0.linux-amd64 alertmanager
       rm -rf alertmanager-0.27.0.linux-amd64.tar.gz
-      ./alertmanager --config.file=/home/vcap/app/alertmanager.prod.yml --storage.path=/home/vcap/app/data --log.level=debug --web.external-url=http://alertmanager.apps.internal:8080/alerts --web.route-prefix=/alerts --cluster.listen-address=""
+      ./alertmanager-0.27.0.linux-amd64/alertmanager --config.file=/home/vcap/app/alertmanager.prod.yml --web.listen-address=:8080 --storage.path=/home/vcap/app/data --log.level=debug --web.external-url=http://alertmanager.apps.internal:8080/alerts --web.route-prefix=/alerts --cluster.listen-address=""
     buildpacks:
     - https://github.com/cloudfoundry/binary-buildpack

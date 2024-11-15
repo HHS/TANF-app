@@ -185,6 +185,7 @@ if [ "$DEPLOY" == "plg" ]; then
     deploy_prometheus
     deploy_loki
     deploy_grafana $DB_SERVICE_NAME
+    deploy_alertmanager
     setup_extra_net_pols
 fi
 if [ "$DEPLOY" == "pg-exporter" ]; then
