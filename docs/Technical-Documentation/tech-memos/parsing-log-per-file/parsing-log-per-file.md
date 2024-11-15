@@ -86,7 +86,50 @@ This section should contain sub sections that provide general implementation det
       bulk_create_errors({} , 1, flush=True, logger) # there are many, many of these
       # ... etc etc etc
       ```
+      * Or, create some sort of singleton class so that downstream functions can access the per-parse logger
+         ```python
+         import logging
+
+         def setup_logger(name, filename):
+            handler = logging.FileHandler(filename)
+            logger = logging.getLogger(name)
+            logger.addHandler(handler)
+            logger.setLevel(logging.INFO)  # the min level this will accept logs at
+            return logger, handler
+
+         class ParseLogContextHandler:
+            """Caches an instance of logger for use throughout the parse routine."""
+
+            def __init__(self, logger_instance):
+               self.logger_instance = None
+               self.handler_instance = None
+
+            def set_logger_instance(self, logger_name):
+               """Creates and caches a new instance of logger."""
+               logger, handler = setup_logger(logger_name, f'{logger_name}.log')
+               self.logger_instance = logger
+               self.handler_instance = handler
+
+            def get_logger_instance(self):
+               """Returns the cached instance of logger."""
+               return self.logger_instance
+
+            def clear_logger_instance(self):
+               """Closes and clears the parse logger instance."""
+               self.handler_instance.close()
+               # upload to s3
+
+         # in settings
+         PARSE_LOG_CONTEXT_HANDLER = ParseLogContextHandler()
+
+         # in parser functions
+         settings.PARSE_LOG_CONTEXT_MANAGER.set_logger_instance(f'parse-log-{data_file_id}')
+         logger = settings.PARSE_LOG_CONTEXT_MANAGER.get_logger_instance()
+         ```
+      * memoized factory function
    * Add s3 upload to `tdpservice.scheduling.parser_task.parse`
+      * upload alongside submitted file
+      * include reparse id if applicable
       ```python
       # similar to `tdpservice.search_indexes.tasks.export_queryset_to_s3_csv`
       from botocore.exceptions import ClientError
@@ -106,10 +149,11 @@ This section should contain sub sections that provide general implementation det
          except ClientError as e:
             logger.error('log upload to s3 failed')  # this would get logged to the file unless a new logger instance is created. should also create LogEntry here.
       ```
-   * Create a `ReparseFileMeta` model for every parse run
-      * Rename the reparse meta models to `ParseMeta` and `ParseFileMeta`
+   * (optional or later step) - Create a `ReparseFileMeta` model for every parse run
+      * Rename the reparse meta models to `ParseMeta` and `ParseFileMeta` (migration is possible)
       * Rename the `DataFile` `reparses` to `parses`
       * Remove `file.reparses.add(meta_model)` from `tdpservice.search_indexes.management.commands.clean_and_reparse._handle_datafiles`
+      * would this require a custom/large migration? could create a separate model
       ```python
       # `tdpservice.scheduling.parser_task.parse`
       file_meta = None
