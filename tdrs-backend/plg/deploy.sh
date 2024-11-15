@@ -103,6 +103,10 @@ deploy_loki() {
 
 deploy_alertmanager() {
     pushd alertmanager
+    CONFIG=alertmanager.prod.yml
+    cp alertmanager.yml $CONFIG
+    SENDGRID_API_KEY=$(cf env tdp-backend-prod | grep SENDGRID | cut -d " " -f2-)
+    yq eval -i ".global.smtp_auth_password = \"$SENDGRID_API_KEY\"" $CONFIG
     cf push --no-route -f manifest.yml -t 180  --strategy rolling
     cf map-route alertmanager apps.internal --hostname alertmanager
 
@@ -118,6 +122,7 @@ deploy_alertmanager() {
     done
     cf add-network-policy alertmanager $PROD_FRONTEND --protocol tcp --port 80
     cf add-network-policy $PROD_FRONTEND alertmanager -s tanf-prod --protocol tcp --port 8080
+    rm $CONFIG
     popd
 }
 
