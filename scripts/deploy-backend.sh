@@ -58,7 +58,6 @@ set_cf_envs()
   "LOGGING_LEVEL"
   "REDIS_URI"
   "JWT_KEY"
-  "STAGING_JWT_KEY"
   "SENDGRID_API_KEY"
   )
 
@@ -71,9 +70,13 @@ set_cf_envs()
         cf_cmd="cf unset-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
         $cf_cmd
         continue
-    elif [[ ("$var_name" =~ "STAGING_") && ("$CF_SPACE" = "tanf-staging") ]]; then
-        sed_var_name=$(echo "$var_name" | sed -e 's@STAGING_@@g')
-        cf_cmd="cf set-env $CGAPPNAME_BACKEND $sed_var_name ${!var_name}"
+    elif [[ ("$CF_SPACE" = "tanf-staging") ]]; then
+        var_value=${!var_name}
+        staging_var="STAGING_$var_name"
+        if [[ "${!staging_var}" ]]; then
+          var_value=${!staging_var}
+        fi
+        cf_cmd="cf set-env $CGAPPNAME_BACKEND $var_name ${var_value}"
     else
       cf_cmd="cf set-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
     fi
