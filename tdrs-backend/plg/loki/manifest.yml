@@ -1,7 +1,7 @@
 version: 1
 applications:
   - name: loki
-    memory: 512M
+    memory: 1G
     disk_quota: 7G
     instances: 1
     command: |
