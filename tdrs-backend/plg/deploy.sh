@@ -46,7 +46,6 @@ deploy_pg_exporter() {
 
 deploy_grafana() {
     pushd grafana
-    APP_NAME="grafana"
     DATASOURCES="datasources.yml"
     cp datasources.template.yml $DATASOURCES
     MANIFEST=manifest.tmp.yml
@@ -57,20 +56,21 @@ deploy_grafana() {
     yq eval -i ".applications[0].services[0] = \"$1\""  $MANIFEST
 
     cf push --no-route -f $MANIFEST -t 180  --strategy rolling
-    cf map-route $APP_NAME apps.internal --hostname $APP_NAME
+    cf map-route grafana apps.internal --hostname grafana
 
     # Add policy to allow grafana to talk to prometheus and loki
-    cf add-network-policy $APP_NAME prometheus --protocol tcp --port 8080
-    cf add-network-policy $APP_NAME loki --protocol tcp --port 8080
+    cf add-network-policy grafana prometheus --protocol tcp --port 8080
+    cf add-network-policy grafana loki --protocol tcp --port 8080
 
     # Add network policies to allow grafana to talk to all frontend apps in all environments
     for app in ${DEV_FRONTEND_APPS[@]}; do
-        cf add-network-policy "grafana" $app -s "tanf-dev" --protocol tcp --port 80
+        cf add-network-policy grafana $app -s tanf-dev --protocol tcp --port 80
     done
     for app in ${STAGING_FRONTEND_APPS[@]}; do
-        cf add-network-policy "grafana" $app -s "tanf-staging" --protocol tcp --port 80
+        cf add-network-policy grafana $app -s tanf-staging --protocol tcp --port 80
     done
-    cf add-network-policy "grafana" $PROD_FRONTEND --protocol tcp --port 80
+    cf add-network-policy grafana $PROD_FRONTEND --protocol tcp --port 80
+    cf add-network-policy $PROD_FRONTEND grafana -s tanf-prod --protocol tcp --port 8080
 
     rm $DATASOURCES
     rm $MANIFEST
@@ -84,13 +84,12 @@ deploy_prometheus() {
 
     # Add network policies to allow prometheus to talk to all backend apps in all environments
     for app in ${DEV_BACKEND_APPS[@]}; do
-        cf add-network-policy prometheus $app -s "tanf-dev" --protocol tcp --port 8080
+        cf add-network-policy prometheus $app -s tanf-dev --protocol tcp --port 8080
     done
     for app in ${STAGING_BACKEND_APPS[@]}; do
-        cf add-network-policy prometheus $app -s "tanf-staging" --protocol tcp --port 8080
+        cf add-network-policy prometheus $app -s tanf-staging --protocol tcp --port 8080
     done
     cf add-network-policy prometheus $PROD_BACKEND --protocol tcp --port 8080
-
     popd
 }
 
@@ -98,26 +97,45 @@ deploy_loki() {
     pushd loki
     cf push --no-route -f manifest.yml -t 180  --strategy rolling
     cf map-route loki apps.internal --hostname loki
+    cf add-network-policy $PROD_BACKEND  loki -s tanf-prod --protocol tcp --port 8080
+    popd
+}
+
+deploy_alertmanager() {
+    pushd alertmanager
+    cf push --no-route -f manifest.yml -t 180  --strategy rolling
+    cf map-route alertmanager apps.internal --hostname alertmanager
+
+    # Allow prometheus to talk to alertmanager
+    cf add-network-policy prometheus alertmanager --protocol tcp --port 8080
+
+    # Add network policies to allow alertmanager to talk to all frontend apps in all environments
+    for app in ${DEV_FRONTEND_APPS[@]}; do
+        cf add-network-policy alertmanager $app -s "tanf-dev" --protocol tcp --port 80
+    done
+    for app in ${STAGING_FRONTEND_APPS[@]}; do
+        cf add-network-policy alertmanager $app -s "tanf-staging" --protocol tcp --port 80
+    done
+    cf add-network-policy alertmanager $PROD_FRONTEND --protocol tcp --port 80
+    cf add-network-policy $PROD_FRONTEND alertmanager -s tanf-prod --protocol tcp --port 8080
     popd
 }
 
 setup_extra_net_pols() {
-    # Add network policies to allow frontend/backend to talk to grafana/loki
+    # Add network policies to handle routing traffic from lower envs to the prod env
     cf target -o hhs-acf-ofa -s tanf-dev
     for i in ${!DEV_BACKEND_APPS[@]}; do
         cf add-network-policy ${DEV_FRONTEND_APPS[$i]} grafana -s tanf-prod --protocol tcp --port 8080
         cf add-network-policy ${DEV_BACKEND_APPS[$i]} loki -s tanf-prod --protocol tcp --port 8080
+        cf add-network-policy ${DEV_FRONTEND_APPS[$i]} alertmanager -s tanf-prod --protocol tcp --port 8080
     done
 
     cf target -o hhs-acf-ofa -s tanf-staging
     for i in ${!STAGING_BACKEND_APPS[@]}; do
         cf add-network-policy ${STAGING_FRONTEND_APPS[$i]} grafana -s tanf-prod --protocol tcp --port 8080
         cf add-network-policy ${STAGING_BACKEND_APPS[$i]} loki -s tanf-prod --protocol tcp --port 8080
+        cf add-network-policy ${STAGING_FRONTEND_APPS[$i]} alertmanager -s tanf-prod --protocol tcp --port 8080
     done
-
-    cf target -o hhs-acf-ofa -s tanf-prod
-    cf add-network-policy $PROD_FRONTEND grafana -s tanf-prod --protocol tcp --port 8080
-    cf add-network-policy $PROD_BACKEND  loki -s tanf-prod --protocol tcp --port 8080
 }
 
 err_help_exit() {
