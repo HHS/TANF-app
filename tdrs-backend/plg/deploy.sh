@@ -90,6 +90,9 @@ deploy_alertmanager() {
 }
 
 setup_prod_net_pols() {
+    # Target prod environment just in case
+    cf target -o hhs-acf-ofa -s tanf-prod
+
     # Let grafana talk to prometheus and loki
     cf add-network-policy grafana prometheus --protocol tcp --port 8080
     cf add-network-policy grafana loki --protocol tcp --port 8080
