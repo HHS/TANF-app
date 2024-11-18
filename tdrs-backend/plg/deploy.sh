@@ -58,20 +58,6 @@ deploy_grafana() {
     cf push --no-route -f $MANIFEST -t 180  --strategy rolling
     cf map-route grafana apps.internal --hostname grafana
 
-    # Add policy to allow grafana to talk to prometheus and loki
-    cf add-network-policy grafana prometheus --protocol tcp --port 8080
-    cf add-network-policy grafana loki --protocol tcp --port 8080
-
-    # Add network policies to allow grafana to talk to all frontend apps in all environments
-    for app in ${DEV_FRONTEND_APPS[@]}; do
-        cf add-network-policy grafana $app -s tanf-dev --protocol tcp --port 80
-    done
-    for app in ${STAGING_FRONTEND_APPS[@]}; do
-        cf add-network-policy grafana $app -s tanf-staging --protocol tcp --port 80
-    done
-    cf add-network-policy grafana $PROD_FRONTEND --protocol tcp --port 80
-    cf add-network-policy $PROD_FRONTEND grafana -s tanf-prod --protocol tcp --port 8080
-
     rm $DATASOURCES
     rm $MANIFEST
     popd
@@ -81,6 +67,55 @@ deploy_prometheus() {
     pushd prometheus
     cf push --no-route -f manifest.yml -t 180  --strategy rolling
     cf map-route prometheus apps.internal --hostname prometheus
+    popd
+}
+
+deploy_loki() {
+    pushd loki
+    cf push --no-route -f manifest.yml -t 180  --strategy rolling
+    cf map-route loki apps.internal --hostname loki
+    popd
+}
+
+deploy_alertmanager() {
+    pushd alertmanager
+    CONFIG=alertmanager.prod.yml
+    cp alertmanager.yml $CONFIG
+    SENDGRID_API_KEY=$(cf env tdp-backend-raft | grep SENDGRID | cut -d " " -f2-)
+    yq eval -i ".global.smtp_auth_password = \"$SENDGRID_API_KEY\"" $CONFIG
+    cf push --no-route -f manifest.yml -t 180  --strategy rolling
+    cf map-route alertmanager apps.internal --hostname alertmanager
+    rm $CONFIG
+    popd
+}
+
+setup_prod_net_pols() {
+    # Let grafana talk to prometheus and loki
+    cf add-network-policy grafana prometheus --protocol tcp --port 8080
+    cf add-network-policy grafana loki --protocol tcp --port 8080
+
+    # Let prometheus talk to alertmanager and the prod backend
+    cf add-network-policy prometheus alertmanager --protocol tcp --port 8080
+    cf add-network-policy prometheus $PROD_BACKEND --protocol tcp --port 8080
+
+    # Let alertmanager/grafana talk to the prod frontend and vice versa
+    cf add-network-policy alertmanager $PROD_FRONTEND --protocol tcp --port 80
+    cf add-network-policy grafana $PROD_FRONTEND --protocol tcp --port 80
+    cf add-network-policy $PROD_FRONTEND alertmanager -s tanf-prod --protocol tcp --port 8080
+    cf add-network-policy $PROD_FRONTEND grafana -s tanf-prod --protocol tcp --port 8080
+
+    # Let prod backend send logs to loki
+    cf add-network-policy $PROD_BACKEND  loki -s tanf-prod --protocol tcp --port 8080
+
+    # Add network policies to allow alertmanager/grafana to talk to all frontend apps
+    for app in ${DEV_FRONTEND_APPS[@]}; do
+        cf add-network-policy alertmanager $app -s "tanf-dev" --protocol tcp --port 80
+        cf add-network-policy grafana $app -s tanf-dev --protocol tcp --port 80
+    done
+    for app in ${STAGING_FRONTEND_APPS[@]}; do
+        cf add-network-policy alertmanager $app -s "tanf-staging" --protocol tcp --port 80
+        cf add-network-policy grafana $app -s tanf-staging --protocol tcp --port 80
+    done
 
     # Add network policies to allow prometheus to talk to all backend apps in all environments
     for app in ${DEV_BACKEND_APPS[@]}; do
@@ -89,44 +124,9 @@ deploy_prometheus() {
     for app in ${STAGING_BACKEND_APPS[@]}; do
         cf add-network-policy prometheus $app -s tanf-staging --protocol tcp --port 8080
     done
-    cf add-network-policy prometheus $PROD_BACKEND --protocol tcp --port 8080
-    popd
 }
 
-deploy_loki() {
-    pushd loki
-    cf push --no-route -f manifest.yml -t 180  --strategy rolling
-    cf map-route loki apps.internal --hostname loki
-    cf add-network-policy $PROD_BACKEND  loki -s tanf-prod --protocol tcp --port 8080
-    popd
-}
-
-deploy_alertmanager() {
-    pushd alertmanager
-    CONFIG=alertmanager.prod.yml
-    cp alertmanager.yml $CONFIG
-    SENDGRID_API_KEY=$(cf env tdp-backend-prod | grep SENDGRID | cut -d " " -f2-)
-    yq eval -i ".global.smtp_auth_password = \"$SENDGRID_API_KEY\"" $CONFIG
-    cf push --no-route -f manifest.yml -t 180  --strategy rolling
-    cf map-route alertmanager apps.internal --hostname alertmanager
-
-    # Allow prometheus to talk to alertmanager
-    cf add-network-policy prometheus alertmanager --protocol tcp --port 8080
-
-    # Add network policies to allow alertmanager to talk to all frontend apps in all environments
-    for app in ${DEV_FRONTEND_APPS[@]}; do
-        cf add-network-policy alertmanager $app -s "tanf-dev" --protocol tcp --port 80
-    done
-    for app in ${STAGING_FRONTEND_APPS[@]}; do
-        cf add-network-policy alertmanager $app -s "tanf-staging" --protocol tcp --port 80
-    done
-    cf add-network-policy alertmanager $PROD_FRONTEND --protocol tcp --port 80
-    cf add-network-policy $PROD_FRONTEND alertmanager -s tanf-prod --protocol tcp --port 8080
-    rm $CONFIG
-    popd
-}
-
-setup_extra_net_pols() {
+setup_dev_staging_net_pols() {
     # Add network policies to handle routing traffic from lower envs to the prod env
     cf target -o hhs-acf-ofa -s tanf-dev
     for i in ${!DEV_BACKEND_APPS[@]}; do
@@ -141,6 +141,7 @@ setup_extra_net_pols() {
         cf add-network-policy ${STAGING_BACKEND_APPS[$i]} loki -s tanf-prod --protocol tcp --port 8080
         cf add-network-policy ${STAGING_FRONTEND_APPS[$i]} alertmanager -s tanf-prod --protocol tcp --port 8080
     done
+    cf target -o hhs-acf-ofa -s tanf-prod
 }
 
 err_help_exit() {
@@ -185,7 +186,8 @@ if [ "$DEPLOY" == "plg" ]; then
     deploy_loki
     deploy_grafana $DB_SERVICE_NAME
     deploy_alertmanager
-    setup_extra_net_pols
+    setup_prod_net_pols
+    setup_dev_staging_net_pols
 fi
 if [ "$DEPLOY" == "pg-exporter" ]; then
     if [ "$DB_URI" == "" ]; then
