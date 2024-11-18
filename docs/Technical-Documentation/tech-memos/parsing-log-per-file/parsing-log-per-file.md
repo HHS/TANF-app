@@ -6,9 +6,9 @@
 
 ## Summary
 This technical memorandum discusses the implementation of features to bring more visibility into system behavior during file parsing. This includes:
-* Generating a storing a file for logs generated during the parsing run. The log file should be stored in s3 associated to the submitted data file.
+* Generating a storing a file for logs generated during the parsing run. The log file should be stored in s3, alongside the submitted datafile.
 
-This memo provides a suggested implementation, including describing some refactoring of the parsing process to bring some modularity to the new features.
+This memo discussed various proposed implementations and the benefits/drawbacks of each, then provides a suggested implementation taking these factors into consideration.
 
 ## Background
 TDP currently uses python's `logging` utility to capture debug messages sent by the application to the terminal. These logs are captured by Cloud.gov, Prometheus, and Sentry.
