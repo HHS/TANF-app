@@ -3,8 +3,10 @@ import { useDispatch } from 'react-redux'
 import {
   SubmissionSummaryStatusIcon,
   formatDate,
+  hasReparsed,
+  getReprocessedDate,
   downloadFile,
-  downloadErrorReport,
+  getErrorReportStatus,
 } from './helpers'
 
 const MonthSubRow = ({ data }) =>
@@ -24,17 +26,13 @@ const MonthSubRow = ({ data }) =>
 
 const CaseAggregatesRow = ({ file }) => {
   const dispatch = useDispatch()
-  const errorFileName = `${file.year}-${file.quarter}-${file.section}`
 
   return (
     <>
       <tr>
         <th scope="rowgroup" rowSpan={3}>
-          {formatDate(file.createdAt)}
-        </th>
-
-        <th scope="rowgroup" rowSpan={3}>
-          {file.submittedBy}
+          {formatDate(file.createdAt) + ' by ' + file.submittedBy}
+          {hasReparsed(file) && <></>}
         </th>
 
         <th scope="rowgroup" rowSpan={3}>
@@ -64,22 +62,7 @@ const CaseAggregatesRow = ({ file }) => {
         </th>
 
         <th scope="rowgroup" rowSpan={3}>
-          {file.summary &&
-          file.summary.status &&
-          file.summary.status !== 'Pending' ? (
-            file.hasError > 0 ? (
-              <button
-                className="section-download"
-                onClick={() => downloadErrorReport(file, errorFileName)}
-              >
-                {errorFileName}.xlsx
-              </button>
-            ) : (
-              'No Errors'
-            )
-          ) : (
-            'Pending'
-          )}
+          {getErrorReportStatus(file)}
         </th>
       </tr>
       <tr>
@@ -98,9 +81,6 @@ export const CaseAggregatesTable = ({ files }) => (
       <tr>
         <th scope="col" rowSpan={2}>
           Submitted On
-        </th>
-        <th scope="col" rowSpan={2}>
-          Submitted By
         </th>
         <th scope="col" rowSpan={2}>
           File Name
