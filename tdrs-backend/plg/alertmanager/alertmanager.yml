@@ -64,8 +64,8 @@ inhibit_rules:
 receivers:
   - name: 'admin-team-emails'
     email_configs:
-      - to: 'elipe@teamraft.com'
+      - to: '{{ admin_team_emails }}'
 
   - name: 'dev-team-emails'
     email_configs:
-      - to: 'elipe@teamraft.com, ajameson@teamraft.com, jtimpe@teamraft.com, msohani@teamraft.com'
+      - to: '{{ dev_team_emails }}'
