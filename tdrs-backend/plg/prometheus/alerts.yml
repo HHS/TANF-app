@@ -32,7 +32,7 @@ groups:
           summary: "The {{ $labels.service }} service is down."
           description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 5 minutes."
     - alert: StagingBackendDown
-      expr: last_over_time(up{job=~"tdp-backend-staging""}[1m]) == 0
+      expr: last_over_time(up{job=~"tdp-backend-staging"}[1m]) == 0
       labels:
         severity: ERROR
       annotations:
