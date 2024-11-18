@@ -151,6 +151,8 @@ err_help_exit() {
     exit
 }
 
+pushd "$(dirname "$0")"
+
 while getopts ":hap:u:d:" option; do
    case $option in
       h) # display Help
@@ -166,9 +168,7 @@ while getopts ":hap:u:d:" option; do
       d) # Bind a Postgres exporter or Grafana to $DB_SERVICE_NAME
          DB_SERVICE_NAME=$OPTARG;;
      \?) # Invalid option
-         echo "Error: Invalid option"
-         help
-         exit;;
+         err_help_exit "Error: Invalid option";;
    esac
 done
 
@@ -177,7 +177,6 @@ if [ "$#" -eq 0 ]; then
     exit
 fi
 
-pushd "$(dirname "$0")"
 if [ "$DB_SERVICE_NAME" == "" ]; then
     err_help_exit "Error: you must include a database service name."
 fi
