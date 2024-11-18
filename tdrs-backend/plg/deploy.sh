@@ -83,6 +83,8 @@ deploy_alertmanager() {
     cp alertmanager.yml $CONFIG
     SENDGRID_API_KEY=$(cf env tdp-backend-raft | grep SENDGRID | cut -d " " -f2-)
     yq eval -i ".global.smtp_auth_password = \"$SENDGRID_API_KEY\"" $CONFIG
+    yq eval -i ".receivers[0].email_configs[0].to = \"${ADMIN_EMAILS}\"" $CONFIG
+    yq eval -i ".receivers[1].email_configs[0].to = \"${DEV_EMAILS}\"" $CONFIG
     cf push --no-route -f manifest.yml -t 180  --strategy rolling
     cf map-route alertmanager apps.internal --hostname alertmanager
     rm $CONFIG
@@ -149,6 +151,16 @@ setup_dev_staging_net_pols() {
     cf target -o hhs-acf-ofa -s tanf-prod
 }
 
+check_email_vars() {
+    if [ "${ADMIN_EMAILS}" != "" ] && [ "${DEV_EMAILS}" != "" ]; then
+        echo "${ADMIN_EMAILS}"
+        echo "${DEV_EMAILS}"
+    else
+        echo "Missing definitions for ADMIN_EMAILS or DEV_EMAILS or both."
+        exit 1
+    fi
+}
+
 err_help_exit() {
     echo $1
     echo
@@ -182,6 +194,8 @@ if [ "$#" -eq 0 ]; then
     help
     exit
 fi
+
+check_email_vars
 
 if [ "$DB_SERVICE_NAME" == "" ]; then
     err_help_exit "Error: you must include a database service name."
