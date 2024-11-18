@@ -26,6 +26,36 @@ export const downloadErrorReport = async (file, reportName) => {
     console.log(error)
   }
 }
+export const hasReparsed = (f) =>
+  f.latest_reparse_file_meta &&
+  f.latest_reparse_file_meta.finished_at &&
+  f.latest_reparse_file_meta.finished_at !== null
+
+export const getReprocessedDate = (f) => f.latest_reparse_file_meta.finished_at
+
+export const getErrorReportStatus = (file) => {
+  if (
+    file.summary &&
+    file.summary.status &&
+    file.summary.status !== 'Pending'
+  ) {
+    const errorFileName = `${file.year}-${file.quarter}-${file.section}`
+    if (file.hasError) {
+      return (
+        <button
+          className="section-download"
+          onClick={() => downloadErrorReport(file, errorFileName)}
+        >
+          {errorFileName}.xlsx
+        </button>
+      )
+    } else {
+      return 'No Errors'
+    }
+  } else {
+    return 'Pending'
+  }
+}
 
 export const SubmissionSummaryStatusIcon = ({ status }) => {
   let icon = null
