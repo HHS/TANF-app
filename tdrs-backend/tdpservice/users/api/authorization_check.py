@@ -71,15 +71,15 @@ class KibanaAuthorizationCheck(APIView):
             logger.warning(f"User: {user} has incorrect authentication credentials. Not allowing access to Kibana.")
             return HttpResponse(status=401)
 
-class GrafanaAuthorizationCheck(APIView):
+class PlgAuthorizationCheck(APIView):
     """Check if user is authorized to view Grafana."""
 
     query_string = False
-    pattern_name = "grafana-authorization-check"
+    pattern_name = "plg-authorization-check"
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        """Handle get request and verify user is authorized to access grafana."""
+        """Handle get request and verify user is authorized to access plg apps."""
         user = request.user
 
         user_in_valid_group = user.is_ofa_sys_admin or user.is_developer

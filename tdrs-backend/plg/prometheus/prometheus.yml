@@ -6,24 +6,31 @@ global:
 # Alertmanager configuration
 alerting:
   alertmanagers:
-    - static_configs:
+    - path_prefix: /alerts
+      static_configs:
         - targets:
-          # - alertmanager:9093
+          # - alertmanager.apps.internal:8080
 
 # Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
 rule_files:
-  - "django_rules.yml"
+  - "django-rules.yml"
 
 scrape_configs:
   # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
   - job_name: "prometheus"
     static_configs:
       - targets: ["localhost:8080"]
+        labels:
+          service: "prometheus"
+          env: "production"
 
   - job_name: "tdp-backend-raft"
     metrics_path: "/prometheus/metrics"
     static_configs:
       - targets: ["tdp-backend-raft.apps.internal:8080"]
+        labels:
+          service: "tdp-backend"
+          env: "dev"
 
   - job_name: "tdp-backend-qasp"
     metrics_path: "/prometheus/metrics"
@@ -34,25 +41,58 @@ scrape_configs:
     metrics_path: "/prometheus/metrics"
     static_configs:
       - targets: ["tdp-backend-develop.apps.internal:8080"]
+        labels:
+          service: "tdp-backend"
+          env: "dev"
 
   - job_name: "tdp-backend-staging"
     metrics_path: "/prometheus/metrics"
     static_configs:
       - targets: ["tdp-backend-staging.apps.internal:8080"]
+        labels:
+          service: "tdp-backend"
+          env: "staging"
 
   - job_name: "tdp-backend-prod"
     metrics_path: "/prometheus/metrics"
     static_configs:
       - targets: ["tdp-backend-prod.apps.internal:8080"]
+        labels:
+          service: "tdp-backend"
+          env: "production"
 
   - job_name: postgres-dev
     static_configs:
       - targets: ["pg-exporter-dev.apps.internal:9187"]
+        labels:
+          service: "postgres"
+          env: "dev"
 
   - job_name: postgres-staging
     static_configs:
       - targets: ["pg-exporter-staging.apps.internal:9187"]
+        labels:
+          service: "postgres"
+          env: "staging"
 
   - job_name: postgres-production
     static_configs:
       - targets: ["pg-exporter-production.apps.internal:9187"]
+        labels:
+          service: "postgres"
+          env: "production"
+
+  - job_name: loki
+    static_configs:
+      - targets: ["loki.apps.internal:3100"]
+        labels:
+          service: "loki"
+          env: "production"
+
+  - job_name: grafana
+    metrics_path: /grafana/metrics
+    static_configs:
+      - targets: ["grafana.app.cloud.gov:9400"]
+        labels:
+          service: "grafana"
+          env: "production"
