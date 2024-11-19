@@ -6,7 +6,7 @@
 
 ## Summary
 This technical memorandum discusses the implementation of features to bring more visibility into system behavior during file parsing. This includes:
-* Generating a storing a file for logs generated during the parsing run. The log file should be stored in s3, alongside the submitted datafile.
+* Generating and storing a file for logs generated during the parsing run. The log file should be stored in s3, alongside the submitted datafile.
 
 This memo discussed various proposed implementations and the benefits/drawbacks of each, then provides a suggested implementation taking these factors into consideration.
 
