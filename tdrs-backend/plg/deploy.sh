@@ -81,7 +81,7 @@ deploy_alertmanager() {
     pushd alertmanager
     CONFIG=alertmanager.prod.yml
     cp alertmanager.yml $CONFIG
-    SENDGRID_API_KEY=$(cf env tdp-backend-raft | grep SENDGRID | cut -d " " -f2-)
+    SENDGRID_API_KEY=$(cf env tdp-backend-prod | grep SENDGRID | cut -d " " -f2-)
     yq eval -i ".global.smtp_auth_password = \"$SENDGRID_API_KEY\"" $CONFIG
     yq eval -i ".receivers[0].email_configs[0].to = \"${ADMIN_EMAILS}\"" $CONFIG
     yq eval -i ".receivers[1].email_configs[0].to = \"${DEV_EMAILS}\"" $CONFIG
