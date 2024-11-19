@@ -101,6 +101,15 @@ services:
     command: --config /usr/share/grafana/conf/custom.ini
     depends_on:
       - grafana-pg
+  
+  alertmanager:
+    restart: always
+    image: prom/alertmanager:v0.27.0
+    ports: 
+      - 9093:9093
+    volumes: 
+      - ./plg/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    command: --config.file=/etc/alertmanager/alertmanager.yml --storage.path=/alertmanager --log.level=debug --web.external-url=http://localhost:3000/alerts --web.route-prefix=/alerts --cluster.listen-address=""
 
   prometheus:
     restart: always
@@ -109,12 +118,14 @@ services:
       - 9090:9090
     volumes:
       - ./plg/prometheus/prometheus.local.yml:/etc/prometheus/prometheus.yml
-      - ./plg/prometheus/django_rules.yml:/etc/prometheus/django_rules.yml
+      - ./plg/prometheus/django-rules.yml:/etc/prometheus/django-rules.yml
+      - ./plg/prometheus/alerts.local.yml:/etc/prometheus/alerts.yml
       - prometheus_data:/prometheus
     depends_on:
       - web
       - celery-exporter
       - postgres-exporter
+      - alertmanager
 
   promtail:
     restart: always
