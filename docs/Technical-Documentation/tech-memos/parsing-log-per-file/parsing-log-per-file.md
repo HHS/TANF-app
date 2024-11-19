@@ -56,7 +56,10 @@ In general, this solution requires two simple parts:
    * This step can be accomplished using a custom-built file logger. However, since `logging` is already used extensively throughout the project, we chose to extend this existing functionality rather than have to replace it for a single use-case.
    * This comes with the drawback that `logging.FileHandler` doesn't compress the resulting file by default. We could potentially address this by overriding or creating a custom version of `logging.FileHandler`.
 
-2. Upload the resulting file to s3 once parsing completes
+2. Persist the resulting file once parsing completes
+   * s3 is a popular file storage location, already in use throughout our application.
+      * s3 provides familiarity for end users, as well as allowing them to access log files alongside the datafile for which they are associated.
+      * s3 has a 5TB file limit; large datafiles and log files, as well as frequent reparsing, increase our usage. We may consider implementing an infrequent-access tier bucket for log files if they aren't expected to be downloaded often.
    * Once parsing completes and a file containing logs is written to disk, we can use existing tooling in our application to upload the resulting file to s3. An example of this is already implemented in `tdpservice.search_indexes.tasks.export_queryset_to_s3_csv`
    * Example
       ```python
