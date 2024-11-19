@@ -31,7 +31,7 @@ Call out what is out of scope for this technical memorandum and should be consid
 
 In general, this solution requires two simple parts:
 
-1. Captures the log output during parsing of a datafile and write it to a file on disk
+1. Capture the log output during parsing of a datafile and write it to a file on disk
    * This solution utilizes the `FileHandler` already included as part of python's `logging` utility, which we use extensively throughout TDP (including throughout the parser). `FileHandler` allows log output to be written to a file on disk
       * [Documentation](https://docs.python.org/3/howto/logging.html#logging-to-a-file)
       * Example:
