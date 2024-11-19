@@ -68,6 +68,7 @@ export const serializeApiDataFile = (dataFile) => ({
   submittedBy: dataFile.submitted_by,
   hasError: dataFile.has_error,
   summary: dataFile.summary,
+  latest_reparse_file_meta: dataFile.latest_reparse_file_meta,
 })
 
 const initialState = {
