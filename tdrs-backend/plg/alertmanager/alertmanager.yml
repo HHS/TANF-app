@@ -65,7 +65,9 @@ receivers:
   - name: 'admin-team-emails'
     email_configs:
       - to: '{{ admin_team_emails }}'
+        send_resolved: true
 
   - name: 'dev-team-emails'
     email_configs:
       - to: '{{ dev_team_emails }}'
+        send_resolved: true
