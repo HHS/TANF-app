@@ -2,7 +2,7 @@
 import logging
 
 from django.db.models import Prefetch
-from rest_framework import generics
+from rest_framework import generics, mixins, viewsets
 from rest_framework.permissions import IsAuthenticated
 from tdpservice.stts.models import Region, STT
 from .serializers import RegionSerializer, STTSerializer
@@ -30,7 +30,9 @@ class STTApiAlphaView(generics.ListAPIView):
     serializer_class = STTSerializer
 
 
-class STTApiView(generics.ListAPIView):
+class STTApiViewSet(mixins.ListModelMixin,
+                 mixins.RetrieveModelMixin,
+                 viewsets.GenericViewSet):
     """Simple view to get all STTs."""
 
     pagination_class = None
