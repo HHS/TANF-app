@@ -7,6 +7,7 @@ import Button from '../Button'
 
 import FileUpload from '../FileUpload'
 import { submit } from '../../actions/reports'
+import { defaultFileUploadSections } from '../../reducers/reports'
 import { useEventLogger } from '../../utils/eventLogger'
 
 function UploadReport({ handleCancel, stt }) {
@@ -44,7 +45,7 @@ function UploadReport({ handleCancel, stt }) {
   const uploadedFiles = files?.filter((file) => file.fileName && !file.id)
   const uploadedSections = uploadedFiles
     ? uploadedFiles
-        .map((file) => fileUploadSections.indexOf(file.section) + 1)
+        .map((file) => defaultFileUploadSections.indexOf(file.section) + 1)
         .join(', ')
         .split(' ')
     : []
@@ -110,10 +111,13 @@ function UploadReport({ handleCancel, stt }) {
         </div>
       )}
       <form onSubmit={onSubmit}>
-        {fileUploadSections.map((name, index) => (
+        {fileUploadSections.map((section) => (
           <FileUpload
-            key={name}
-            section={`${index + 1} - ${name}`}
+            key={section}
+            section={`${
+              defaultFileUploadSections.indexOf(section) + 1
+            } - ${section}
+              `}
             setLocalAlertState={setLocalAlertState}
           />
         ))}

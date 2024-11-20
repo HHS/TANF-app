@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
 import Paginator from '../Paginator'
 import { getAvailableFileList } from '../../actions/reports'
+import { defaultFileUploadSections } from '../../reducers/reports'
 import { useEffect } from 'react'
 import { useState } from 'react'
 import { CaseAggregatesTable } from './CaseAggregatesTable'
@@ -88,10 +89,10 @@ const SubmissionHistory = ({ filterValues }) => {
         </a>
       </div>
       <div>
-        {fileUploadSections.map((section, index) => (
+        {fileUploadSections.map((section) => (
           <SectionSubmissionHistory
             key={section}
-            section={index + 1}
+            section={defaultFileUploadSections.indexOf(section) + 1}
             label={section}
             filterValues={filterValues}
             files={files.filter((f) => f.section.includes(section))}
