@@ -269,13 +269,8 @@ export const SET_SELECTED_YEAR = 'SET_SELECTED_YEAR'
 export const SET_SELECTED_QUARTER = 'SET_SELECTED_QUARTER'
 export const SET_FILE_TYPE = 'SET_FILE_TYPE'
 
-export const setStt = (stt) => async (dispatch) => {
-  const URL = `${process.env.REACT_APP_BACKEND_URL}/stts/${stt}`
-  const { data } = await axiosInstance.get(URL, {
-    withCredentials: true,
-  })
-  const newUploadSections = Object.keys(data.filenames)
-  dispatch({ type: SET_SELECTED_STT, payload: { stt, newUploadSections } })
+export const setStt = (stt) => (dispatch) => {
+  dispatch({ type: SET_SELECTED_STT, payload: { stt } })
 }
 export const setYear = (year) => (dispatch) => {
   dispatch({ type: SET_SELECTED_YEAR, payload: { year } })

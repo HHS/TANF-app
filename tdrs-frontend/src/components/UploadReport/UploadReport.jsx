@@ -8,6 +8,7 @@ import Button from '../Button'
 import FileUpload from '../FileUpload'
 import { submit } from '../../actions/reports'
 import { useEventLogger } from '../../utils/eventLogger'
+import { fileUploadSections } from '../../reducers/reports'
 
 function UploadReport({ handleCancel, stt }) {
   // The currently selected year from the reportingYears dropdown
@@ -19,12 +20,6 @@ function UploadReport({ handleCancel, stt }) {
 
   // The set of uploaded files in our Redux state
   const files = useSelector((state) => state.reports.submittedFiles)
-
-  // The set of sections the STT can report for
-  const fileUploadSections = useSelector(
-    (state) => state.reports.fileUploadSections
-  )
-
   // The logged in user in our Redux state
   const user = useSelector((state) => state.auth.user)
 

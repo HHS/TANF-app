@@ -23,7 +23,7 @@ const getFile = (files, section) =>
     .sort((a, b) => b.id - a.id)
     .find((currentFile) => currentFile.section.includes(section))
 
-export const defaultFileUploadSections = [
+export const fileUploadSections = [
   'Active Case Data',
   'Closed Case Data',
   'Aggregate Data',
@@ -73,8 +73,7 @@ export const serializeApiDataFile = (dataFile) => ({
 
 const initialState = {
   files: [],
-  fileUploadSections: defaultFileUploadSections,
-  submittedFiles: defaultFileUploadSections.map((section) => ({
+  submittedFiles: fileUploadSections.map((section) => ({
     section,
     fileName: null,
     error: null,
@@ -117,7 +116,7 @@ const reports = (state = initialState, action) => {
         ...state,
         isLoadingCurrentSubmission: false,
         currentSubmissionError: null,
-        submittedFiles: state.fileUploadSections.map((section) => {
+        submittedFiles: fileUploadSections.map((section) => {
           const file = getFile(data, section)
           if (file) {
             return serializeApiDataFile(file)
@@ -202,8 +201,8 @@ const reports = (state = initialState, action) => {
       return { ...state, year }
     }
     case SET_SELECTED_STT: {
-      const { stt, newUploadSections } = payload
-      return { ...state, stt, fileUploadSections: newUploadSections }
+      const { stt } = payload
+      return { ...state, stt }
     }
     case SET_SELECTED_QUARTER: {
       const { quarter } = payload
