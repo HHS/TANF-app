@@ -2,8 +2,9 @@
 import logging
 
 from django.db.models import Prefetch
-from rest_framework import generics, mixins, viewsets
+from rest_framework import generics, mixins, status, viewsets
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from tdpservice.stts.models import Region, STT
 from .serializers import RegionSerializer, STTSerializer
 
@@ -39,3 +40,14 @@ class STTApiViewSet(mixins.ListModelMixin,
     permission_classes = [IsAuthenticated]
     queryset = STT.objects
     serializer_class = STTSerializer
+
+    def retrieve(self, request, pk=None):
+        """Return a specific user."""
+        try:
+            stt = self.queryset.get(name=pk)
+            self.check_object_permissions(request, stt)
+            serializer = self.get_serializer_class()(stt)
+            return Response(serializer.data)
+        except Exception:
+            logger.exception(f"Caught exception trying to get STT with name {pk}.")
+            return Response(status=status.HTTP_404_NOT_FOUND)
