@@ -1,8 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import classNames from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
-import { fileUploadSections } from '../../reducers/reports'
 import Paginator from '../Paginator'
 import { getAvailableFileList } from '../../actions/reports'
 import { useEffect } from 'react'
@@ -64,6 +62,9 @@ const SubmissionHistory = ({ filterValues }) => {
   const dispatch = useDispatch()
   const [hasFetchedFiles, setHasFetchedFiles] = useState(false)
   const { files } = useSelector((state) => state.reports)
+  const fileUploadSections = useSelector(
+    (state) => state.reports.fileUploadSections
+  )
 
   useEffect(() => {
     if (!hasFetchedFiles) {
