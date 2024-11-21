@@ -238,6 +238,7 @@ describe('actions/reports', () => {
     expect(actions[0].type).toBe(SET_SELECTED_STT)
     expect(actions[0].payload).toStrictEqual({
       stt: 'florida',
+      newUploadSections: [],
     })
   })
 

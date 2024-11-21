@@ -411,6 +411,7 @@ describe('reducers/reports', () => {
         type: SET_SELECTED_STT,
         payload: {
           stt: 'florida',
+          newUploadSections: [],
         },
       })
     ).toEqual({
