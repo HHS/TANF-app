@@ -32,8 +32,8 @@ class STTApiAlphaView(generics.ListAPIView):
 
 
 class STTApiViewSet(mixins.ListModelMixin,
-                 mixins.RetrieveModelMixin,
-                 viewsets.GenericViewSet):
+                    mixins.RetrieveModelMixin,
+                    viewsets.GenericViewSet):
     """Simple view to get all STTs."""
 
     pagination_class = None
