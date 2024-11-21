@@ -271,7 +271,7 @@ export const SET_FILE_TYPE = 'SET_FILE_TYPE'
 
 export const setStt = (stt) => async (dispatch) => {
   const URL = `${process.env.REACT_APP_BACKEND_URL}/stts/${stt}`
-  const { data } = await axiosInstance.get(URL, {
+  const data = await axiosInstance.get(URL, {
     withCredentials: true,
   })
   const newUploadSections = Object.keys(data.filenames)
