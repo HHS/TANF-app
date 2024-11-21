@@ -6,7 +6,7 @@ from . import views
 
 router = DefaultRouter()
 
-router.register("", views.STTApiViewSet)
+router.register("", views.STTApiViewSet, basename="stts")
 
 urlpatterns = [
     path("by_region", views.RegionAPIView.as_view(), name="stts-by-region"),
