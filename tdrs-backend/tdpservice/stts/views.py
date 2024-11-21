@@ -42,7 +42,7 @@ class STTApiViewSet(mixins.ListModelMixin,
     serializer_class = STTSerializer
 
     def retrieve(self, request, pk=None):
-        """Return a specific user."""
+        """Return a specific stt based on stt name."""
         try:
             stt = self.queryset.get(name=pk)
             self.check_object_permissions(request, stt)
