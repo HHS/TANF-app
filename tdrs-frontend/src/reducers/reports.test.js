@@ -278,8 +278,8 @@ describe('reducers/reports', () => {
       reducer(undefined, {
         type: FILE_EXT_ERROR,
         payload: {
-          error: { message: "Test invalid ext." },
-          section: "Active Case Data",
+          error: { message: 'Test invalid ext.' },
+          section: 'Active Case Data',
         },
       })
     ).toEqual({
@@ -290,31 +290,31 @@ describe('reducers/reports', () => {
           file: null,
           section: 'Active Case Data',
           fileName: undefined,
-          error: { message: "Test invalid ext." },
+          error: { message: 'Test invalid ext.' },
           uuid: null,
-          fileType: null
+          fileType: null,
         },
         {
           section: 'Closed Case Data',
           fileName: null,
           error: null,
           uuid: null,
-          fileType: null
+          fileType: null,
         },
         {
           section: 'Aggregate Data',
           fileName: null,
           error: null,
           uuid: null,
-          fileType: null
+          fileType: null,
         },
         {
           section: 'Stratum Data',
           fileName: null,
           error: null,
           uuid: null,
-          fileType: null
-        }
+          fileType: null,
+        },
       ],
     })
   })
