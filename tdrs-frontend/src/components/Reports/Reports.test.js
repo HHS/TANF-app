@@ -7,10 +7,12 @@ import configureStore from 'redux-mock-store'
 import appConfigureStore from '../../configureStore'
 import Reports from './Reports'
 import { SET_FILE, upload } from '../../actions/reports'
+import { defaultFileUploadSections } from '../../reducers/reports'
 
 describe('Reports', () => {
   const initialState = {
     reports: {
+      fileUploadSections: defaultFileUploadSections,
       files: [
         {
           section: 'Active Case Data',

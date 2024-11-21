@@ -4,6 +4,7 @@ import axios from 'axios'
 import axiosInstance from '../axios-instance'
 import { logErrorToServer } from '../utils/eventLogger'
 import removeFileInputErrorState from '../utils/removeFileInputErrorState'
+import { defaultFileUploadSections } from '../reducers/reports'
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
 
@@ -274,8 +275,17 @@ export const setStt = (stt) => async (dispatch) => {
   const response = await axiosInstance.get(URL, {
     withCredentials: true,
   })
-  const data =
-    typeof response !== 'undefined' ? response.data : { filenames: [] }
+
+  var data = {}
+  if (typeof response !== 'undefined') {
+    data = response.data
+  } else {
+    var sectionMap = {}
+    defaultFileUploadSections.forEach((section, index) => {
+      return (sectionMap[section] = defaultFileUploadSections.length - index)
+    })
+    data = { filenames: sectionMap }
+  }
   const newUploadSections = Object.keys(data.filenames)
   dispatch({ type: SET_SELECTED_STT, payload: { stt, newUploadSections } })
 }
