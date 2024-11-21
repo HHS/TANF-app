@@ -271,11 +271,12 @@ export const SET_FILE_TYPE = 'SET_FILE_TYPE'
 
 export const setStt = (stt) => async (dispatch) => {
   const URL = `${process.env.REACT_APP_BACKEND_URL}/stts/${stt}`
-  const data = await axiosInstance.get(URL, {
+  const response = await axiosInstance.get(URL, {
     withCredentials: true,
   })
-  const newUploadSections =
-    typeof data !== 'undefined' ? Object.keys(data.filenames) : []
+  const data =
+    typeof response !== 'undefined' ? response.data : { filenames: [] }
+  const newUploadSections = Object.keys(data.filenames)
   dispatch({ type: SET_SELECTED_STT, payload: { stt, newUploadSections } })
 }
 export const setYear = (year) => (dispatch) => {
