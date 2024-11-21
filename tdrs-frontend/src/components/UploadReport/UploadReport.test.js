@@ -169,6 +169,7 @@ describe('UploadReport', () => {
     const store = mockStore({
       ...initialState,
       reports: {
+        fileUploadSections: defaultFileUploadSections,
         submittedFiles: [
           {
             section: 'Active Case Data',
