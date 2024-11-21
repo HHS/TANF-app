@@ -89,15 +89,19 @@ const SubmissionHistory = ({ filterValues }) => {
         </a>
       </div>
       <div>
-        {fileUploadSections.map((section) => (
-          <SectionSubmissionHistory
-            key={section}
-            section={defaultFileUploadSections.indexOf(section) + 1}
-            label={section}
-            filterValues={filterValues}
-            files={files.filter((f) => f.section.includes(section))}
-          />
-        ))}
+        {defaultFileUploadSections.map((section, index) => {
+          if (fileUploadSections.includes(section)) {
+            return (
+              <SectionSubmissionHistory
+                key={section}
+                section={index + 1}
+                label={section}
+                filterValues={filterValues}
+                files={files.filter((f) => f.section.includes(section))}
+              />
+            )
+          }
+        })}
       </div>
     </>
   )

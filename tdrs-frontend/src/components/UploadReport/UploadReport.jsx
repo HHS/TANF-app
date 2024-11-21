@@ -111,16 +111,17 @@ function UploadReport({ handleCancel, stt }) {
         </div>
       )}
       <form onSubmit={onSubmit}>
-        {fileUploadSections.map((section) => (
-          <FileUpload
-            key={section}
-            section={`${
-              defaultFileUploadSections.indexOf(section) + 1
-            } - ${section}
-              `}
-            setLocalAlertState={setLocalAlertState}
-          />
-        ))}
+        {defaultFileUploadSections.map((section, index) => {
+          if (fileUploadSections.includes(section)) {
+            return (
+              <FileUpload
+                key={section}
+                section={`${index + 1} - ${section}`}
+                setLocalAlertState={setLocalAlertState}
+              />
+            )
+          }
+        })}
 
         <div className="buttonContainer margin-y-4">
           <Button className="card:margin-y-1" type="submit">
