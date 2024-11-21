@@ -274,7 +274,8 @@ export const setStt = (stt) => async (dispatch) => {
   const data = await axiosInstance.get(URL, {
     withCredentials: true,
   })
-  const newUploadSections = Object.keys(data.filenames)
+  const newUploadSections =
+    typeof data !== 'undefined' ? Object.keys(data.filenames) : []
   dispatch({ type: SET_SELECTED_STT, payload: { stt, newUploadSections } })
 }
 export const setYear = (year) => (dispatch) => {

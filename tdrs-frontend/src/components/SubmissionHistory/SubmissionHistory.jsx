@@ -90,7 +90,7 @@ const SubmissionHistory = ({ filterValues }) => {
       </div>
       <div>
         {defaultFileUploadSections.map((section, index) => {
-          if (fileUploadSections.includes(section)) {
+          if (fileUploadSections?.includes(section)) {
             return (
               <SectionSubmissionHistory
                 key={section}
