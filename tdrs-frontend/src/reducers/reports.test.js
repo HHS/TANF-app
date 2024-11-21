@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid'
-import reducer, { getUpdatedFiles } from './reports'
+import reducer, { defaultFileUploadSections, getUpdatedFiles } from './reports'
 import {
   CLEAR_ERROR,
   SET_FILE,
@@ -14,6 +14,7 @@ import {
 
 const initialState = {
   files: [],
+  fileUploadSections: defaultFileUploadSections,
   submittedFiles: [
     {
       section: 'Active Case Data',
