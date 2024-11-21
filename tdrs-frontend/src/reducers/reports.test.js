@@ -82,6 +82,7 @@ describe('reducers/reports', () => {
       submittedFiles: initialState.submittedFiles,
       isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
       currentSubmissionError: initialState.currentSubmissionError,
+      fileUploadSections: initialState.fileUploadSections,
       files: [
         {
           fileName: 'test.txt',
@@ -118,6 +119,7 @@ describe('reducers/reports', () => {
       files: initialState.files,
       isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
       currentSubmissionError: initialState.currentSubmissionError,
+      fileUploadSections: initialState.fileUploadSections,
       submittedFiles: [
         {
           section: 'Active Case Data',
@@ -178,6 +180,7 @@ describe('reducers/reports', () => {
       files: initialState.files,
       isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
       currentSubmissionError: initialState.currentSubmissionError,
+      fileUploadSections: initialState.fileUploadSections,
       submittedFiles: [
         {
           section: 'Active Case Data',
@@ -229,6 +232,7 @@ describe('reducers/reports', () => {
       files: initialState.files,
       isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
       currentSubmissionError: initialState.currentSubmissionError,
+      fileUploadSections: initialState.fileUploadSections,
       submittedFiles: [
         {
           section: 'Active Case Data',
@@ -282,6 +286,7 @@ describe('reducers/reports', () => {
       files: initialState.files,
       isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
       currentSubmissionError: initialState.currentSubmissionError,
+      fileUploadSections: initialState.fileUploadSections,
       submittedFiles: [
         {
           section: 'Active Case Data',
@@ -420,6 +425,7 @@ describe('reducers/reports', () => {
       isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
       currentSubmissionError: initialState.currentSubmissionError,
       submittedFiles: initialState.submittedFiles,
+      fileUploadSections: [],
       year: '',
       stt: 'florida',
       quarter: '',
@@ -440,6 +446,7 @@ describe('reducers/reports', () => {
       isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
       currentSubmissionError: initialState.currentSubmissionError,
       submittedFiles: initialState.submittedFiles,
+      fileUploadSections: initialState.fileUploadSections,
       year: '',
       stt: '',
       quarter: 'Q1',
@@ -458,6 +465,7 @@ describe('reducers/reports', () => {
       isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
       currentSubmissionError: initialState.currentSubmissionError,
       submittedFiles: initialState.submittedFiles,
+      fileUploadSections: initialState.fileUploadSections,
       year: '',
       stt: '',
       quarter: 'Q2',
@@ -476,6 +484,7 @@ describe('reducers/reports', () => {
       isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
       currentSubmissionError: initialState.currentSubmissionError,
       submittedFiles: initialState.submittedFiles,
+      fileUploadSections: initialState.fileUploadSections,
       year: '',
       stt: '',
       quarter: 'Q3',
@@ -493,6 +502,7 @@ describe('reducers/reports', () => {
       isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
       currentSubmissionError: initialState.currentSubmissionError,
       submittedFiles: initialState.submittedFiles,
+      fileUploadSections: initialState.fileUploadSections,
       year: '',
       stt: '',
       quarter: 'Q4',
@@ -513,6 +523,7 @@ describe('reducers/reports', () => {
       isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
       currentSubmissionError: initialState.currentSubmissionError,
       submittedFiles: initialState.submittedFiles,
+      fileUploadSections: initialState.fileUploadSections,
       year: '2021',
       stt: '',
       quarter: '',
