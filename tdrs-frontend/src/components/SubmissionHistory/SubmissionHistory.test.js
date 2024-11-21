@@ -3,11 +3,13 @@ import { render, screen, fireEvent, within } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import appConfigureStore from '../../configureStore'
 import SubmissionHistory from './SubmissionHistory'
+import { defaultFileUploadSections } from '../../reducers/reports'
 
 describe('SubmissionHistory', () => {
   const initialState = {
     reports: {
       files: [],
+      fileUploadSections: defaultFileUploadSections,
     },
   }
 
@@ -18,7 +20,7 @@ describe('SubmissionHistory', () => {
   const defaultFilterValues = {
     quarter: 'Q1',
     year: '2023',
-    stt: { id: 4 },
+    stt: { id: 5 },
     file_type: 'TANF',
   }
 
@@ -51,6 +53,7 @@ describe('SubmissionHistory', () => {
   it('Shows first five results on first page', () => {
     const state = {
       reports: {
+        fileUploadSections: defaultFileUploadSections,
         files: [
           {
             id: '123',
@@ -145,6 +148,7 @@ describe('SubmissionHistory', () => {
   it('Shows next five results on next page', () => {
     const state = {
       reports: {
+        fileUploadSections: defaultFileUploadSections,
         files: [
           {
             id: '123',
@@ -247,6 +251,7 @@ describe('SubmissionHistory', () => {
   it('Shows SSP results when SSP-MOE file type selected', () => {
     const state = {
       reports: {
+        fileUploadSections: defaultFileUploadSections,
         files: [
           {
             id: '123',
@@ -324,7 +329,7 @@ describe('SubmissionHistory', () => {
 
     setup(store, {
       ...defaultFilterValues,
-      stt: { id: 48 },
+      stt: { id: 5 },
       file_type: 'SSP',
     })
 
@@ -354,6 +359,7 @@ describe('SubmissionHistory', () => {
     (status, section) => {
       const state = {
         reports: {
+          fileUploadSections: defaultFileUploadSections,
           files: [
             {
               id: '123',
@@ -430,6 +436,7 @@ describe('SubmissionHistory', () => {
     (status, section) => {
       const state = {
         reports: {
+          fileUploadSections: defaultFileUploadSections,
           files: [
             {
               id: '123',

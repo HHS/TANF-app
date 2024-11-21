@@ -112,7 +112,7 @@ function UploadReport({ handleCancel, stt }) {
       )}
       <form onSubmit={onSubmit}>
         {defaultFileUploadSections.map((section, index) => {
-          if (fileUploadSections?.includes(section)) {
+          if (fileUploadSections.includes(section)) {
             return (
               <FileUpload
                 key={section}
