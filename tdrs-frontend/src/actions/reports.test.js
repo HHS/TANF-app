@@ -243,6 +243,19 @@ describe('actions/reports', () => {
     })
   })
 
+  it('should dispatch SET_SELECTED_STT with empty stt', async () => {
+    const store = mockStore()
+
+    await store.dispatch(setStt(''))
+
+    const actions = store.getActions()
+    expect(actions[0].type).toBe(SET_SELECTED_STT)
+    expect(actions[0].payload).toStrictEqual({
+      stt: '',
+      newUploadSections: defaultFileUploadSections,
+    })
+  })
+
   it('should dispatch SET_SELECTED_QUARTER', async () => {
     const store = mockStore()
 
