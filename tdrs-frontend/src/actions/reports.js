@@ -276,8 +276,8 @@ export const setStt = (stt) => async (dispatch) => {
     withCredentials: true,
   })
 
-  var data = response?.data
-  if (typeof data === 'undefined') {
+  var data = typeof response === 'undefined' ? undefined : response.data
+  if (typeof data === 'undefined' || stt === '') {
     var sectionMap = {}
     defaultFileUploadSections.forEach((section, index) => {
       return (sectionMap[section] = defaultFileUploadSections.length - index)
