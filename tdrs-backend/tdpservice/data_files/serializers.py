@@ -3,7 +3,7 @@ import logging
 from rest_framework import serializers
 from tdpservice.parsers.models import ParserError
 from tdpservice.data_files.errors import ImmutabilityError
-from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.models import DataFile, ReparseFileMeta
 from tdpservice.data_files.validators import (
     validate_file_extension,
     validate_file_infection,
@@ -12,7 +12,25 @@ from tdpservice.security.models import ClamAVFileScan
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
 from tdpservice.parsers.serializers import DataFileSummarySerializer
+
+
 logger = logging.getLogger(__name__)
+
+
+class ReparseFileMetaSerializer(serializers.ModelSerializer):
+    """Serializer for ReparseFileMeta class."""
+
+    class Meta:
+        """Meta class."""
+
+        model = ReparseFileMeta
+        fields = [
+            'finished',
+            'success',
+            'started_at',
+            'finished_at',
+        ]
+
 
 class DataFileSerializer(serializers.ModelSerializer):
     """Serializer for Data files."""
@@ -23,6 +41,7 @@ class DataFileSerializer(serializers.ModelSerializer):
     ssp = serializers.BooleanField(write_only=True)
     has_error = serializers.SerializerMethodField()
     summary = DataFileSummarySerializer(many=False, read_only=True)
+    latest_reparse_file_meta = serializers.SerializerMethodField()
 
     class Meta:
         """Metadata."""
@@ -46,7 +65,8 @@ class DataFileSerializer(serializers.ModelSerializer):
             's3_location',
             's3_versioning_id',
             'has_error',
-            'summary'
+            'summary',
+            'latest_reparse_file_meta',
         ]
 
         read_only_fields = ("version",)
@@ -55,6 +75,13 @@ class DataFileSerializer(serializers.ModelSerializer):
         """Return whether the file has an error."""
         parser_errors = ParserError.objects.filter(file=obj.id)
         return len(parser_errors) > 0
+
+    def get_latest_reparse_file_meta(self, instance):
+        """Return related reparse_file_metas, ordered by finished_at decending."""
+        reparse_file_metas = instance.reparse_file_metas.all().order_by('-finished_at')
+        if reparse_file_metas.count() > 0:
+            return ReparseFileMetaSerializer(reparse_file_metas.first(), many=False, read_only=True).data
+        return None
 
     def create(self, validated_data):
         """Create a new entry with a new version number."""

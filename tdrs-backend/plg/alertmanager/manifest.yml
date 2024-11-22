@@ -1,0 +1,10 @@
+version: 1
+applications:
+  - name: alertmanager
+    memory: 512M
+    disk_quota: 1G
+    instances: 1
+    command: |
+      mkdir /tmp
+    buildpacks:
+    - https://github.com/cloudfoundry/binary-buildpack
