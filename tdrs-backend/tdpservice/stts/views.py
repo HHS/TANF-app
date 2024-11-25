@@ -3,6 +3,7 @@ import logging
 
 from django.db.models import Prefetch
 from rest_framework import generics, mixins, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from tdpservice.stts.models import Region, STT
@@ -32,7 +33,6 @@ class STTApiAlphaView(generics.ListAPIView):
 
 
 class STTApiViewSet(mixins.ListModelMixin,
-                    mixins.RetrieveModelMixin,
                     viewsets.GenericViewSet):
     """Simple view to get all STTs."""
 
@@ -40,14 +40,16 @@ class STTApiViewSet(mixins.ListModelMixin,
     permission_classes = [IsAuthenticated]
     queryset = STT.objects
     serializer_class = STTSerializer
+    lookup_field = "name"
 
-    def retrieve(self, request, pk=None):
-        """Return a specific stt based on stt name."""
+    @action(methods=["get"], detail=True)
+    def num_sections(self, request, name=None):
+        """Return number of sections an stt submits based on stt name."""
         try:
-            stt = self.queryset.get(name=pk)
+            stt = self.queryset.get(name=name)
             self.check_object_permissions(request, stt)
-            serializer = self.get_serializer_class()(stt)
-            return Response(serializer.data)
+            divisor = int(stt.ssp) + 1
+            return Response({"num_sections": len(stt.filenames) // divisor})
         except Exception:
-            logger.exception(f"Caught exception trying to get STT with name {pk}.")
+            logger.exception(f"Caught exception trying to get STT with name {stt}.")
             return Response(status=status.HTTP_404_NOT_FOUND)

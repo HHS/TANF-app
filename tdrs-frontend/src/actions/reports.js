@@ -271,20 +271,15 @@ export const SET_SELECTED_QUARTER = 'SET_SELECTED_QUARTER'
 export const SET_FILE_TYPE = 'SET_FILE_TYPE'
 
 export const setStt = (stt) => async (dispatch) => {
-  const URL = `${process.env.REACT_APP_BACKEND_URL}/stts/${stt}`
+  const URL = `${process.env.REACT_APP_BACKEND_URL}/stts/${stt}/num_sections`
   const response = await axiosInstance.get(URL, {
     withCredentials: true,
   })
 
-  var data = response?.data
-  if (typeof data === 'undefined' || stt === '') {
-    var sectionMap = {}
-    defaultFileUploadSections.forEach((section, index) => {
-      return (sectionMap[section] = defaultFileUploadSections.length - index)
-    })
-    data = { filenames: sectionMap }
+  var newUploadSections = defaultFileUploadSections
+  if (typeof response !== 'undefined') {
+    newUploadSections = newUploadSections.slice(0, response.data.num_sections)
   }
-  const newUploadSections = Object.keys(data.filenames)
   dispatch({ type: SET_SELECTED_STT, payload: { stt, newUploadSections } })
 }
 export const setYear = (year) => (dispatch) => {
