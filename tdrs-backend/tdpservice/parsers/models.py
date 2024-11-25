@@ -124,16 +124,13 @@ class DataFileSummary(models.Model):
                                     .filter(field_name="Record_Type")\
                                     .exclude(error_message__icontains="trailer")
 
-        prioritized_errors = get_prioritized_queryset(errors)
-
         if errors is None:
             return DataFileSummary.Status.PENDING
         elif precheck_errors.count() > 0 or self.total_number_of_records_created == 0:
             return DataFileSummary.Status.REJECTED
         elif errors.count() == 0:
             return DataFileSummary.Status.ACCEPTED
-        elif (row_precheck_errors.count() > 0 or case_consistency_errors.count() > 0 or
-              prioritized_errors.count() > 500):
+        elif (row_precheck_errors.count() > 0 or case_consistency_errors.count()):
             return DataFileSummary.Status.PARTIALLY_ACCEPTED
         else:
             return DataFileSummary.Status.ACCEPTED_WITH_ERRORS
