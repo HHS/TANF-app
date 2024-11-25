@@ -5,7 +5,6 @@ from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from tdpservice.data_files.models import DataFile
-from tdpservice.data_files.util import ParserErrorCategoryChoices, get_prioritized_queryset
 
 import logging
 
