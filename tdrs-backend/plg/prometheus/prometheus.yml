@@ -61,13 +61,6 @@ scrape_configs:
           service: "tdp-backend"
           env: "production"
 
-  - job_name: "celery-exporter-raft"
-    static_configs:
-      - targets: ["celery-exporter-raft.apps.internal:9540"]
-        labels:
-          service: "celery"
-          env: "dev"
-
   - job_name: postgres-dev
     static_configs:
       - targets: ["pg-exporter-dev.apps.internal:9187"]
@@ -95,7 +88,7 @@ scrape_configs:
         labels:
           service: "loki"
           env: "production"
-  
+
   - job_name: grafana
     metrics_path: /grafana/metrics
     static_configs:
