@@ -1,0 +1,30 @@
+version: 1
+applications:
+  - name: loki
+    memory: 512M
+    disk_quota: 7G
+    instances: 1
+    command: |
+      mkdir /home/vcap/app/loki-data
+      S3_URI=$(echo $VCAP_SERVICES | jq -r .s3[0].credentials.uri)
+      S3_ENDPOINT=$(echo $VCAP_SERVICES | jq -r .s3[0].credentials.endpoint)
+      S3_REGION=$(echo $VCAP_SERVICES | jq -r .s3[0].credentials.region)
+      S3_ACCESS_KEY=$(echo $VCAP_SERVICES | jq -r .s3[0].credentials.access_key_id)
+      S3_SECRET_KEY=$(echo $VCAP_SERVICES | jq -r .s3[0].credentials.secret_access_key)
+      S3_BUCKET=$(echo $VCAP_SERVICES | jq -r .s3[0].credentials.bucket)
+      wget https://tdp-nexus.dev.raftlabs.tech/repository/tdp-bin/linux/bin/yq_linux_amd64.tar.gz
+      tar -zxvf yq_linux_amd64.tar.gz
+      rm yq_linux_amd64.tar.gz && rm yq.1 && rm install-man-page.sh
+      ./yq_linux_amd64 eval -i ".storage_config.aws.s3 = \"$S3_URI\"" loki.yml
+      ./yq_linux_amd64 eval -i ".storage_config.aws.endpoint = \"$S3_ENDPOINT\"" loki.yml
+      ./yq_linux_amd64 eval -i ".storage_config.aws.region = \"$S3_REGION\"" loki.yml
+      ./yq_linux_amd64 eval -i ".storage_config.aws.access_key_id = \"$S3_ACCESS_KEY\"" loki.yml
+      ./yq_linux_amd64 eval -i ".storage_config.aws.secret_access_key = \"$S3_SECRET_KEY\"" loki.yml
+      ./yq_linux_amd64 eval -i ".storage_config.aws.bucketnames = \"$S3_BUCKET\"" loki.yml
+      wget https://github.com/grafana/loki/releases/download/v3.1.1/loki-linux-amd64.zip
+      unzip -a loki-linux-amd64.zip && rm -rf loki-linux-amd64.zip
+      ./loki-linux-amd64 -config.file=/home/vcap/app/loki.yml
+    buildpacks:
+    - https://github.com/cloudfoundry/binary-buildpack
+    services:
+      - tdp-loki-logs
