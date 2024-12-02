@@ -8,7 +8,7 @@ import {
   accountIsInReview,
   accountCanViewAdmin,
   accountCanViewKibana,
-  accountCanViewGrafana,
+  accountCanViewPlg,
 } from '../../selectors/auth'
 
 import NavItem from '../NavItem/NavItem'
@@ -32,7 +32,7 @@ function Header() {
   const userAccessRequestApproved = useSelector(accountStatusIsApproved)
   const userIsAdmin = useSelector(accountCanViewAdmin)
   const userViewKibana = useSelector(accountCanViewKibana)
-  const userViewGrafana = useSelector(accountCanViewGrafana)
+  const userViewPlg = useSelector(accountCanViewPlg)
 
   const menuRef = useRef()
 
@@ -148,12 +148,19 @@ function Header() {
                       href={`${process.env.REACT_APP_BACKEND_HOST}/kibana/`}
                     />
                   )}
-                  {userViewGrafana && (
-                    <NavItem
-                      pathname={pathname}
-                      tabTitle="Grafana"
-                      href={`${process.env.REACT_APP_BACKEND_HOST}/grafana/`}
-                    />
+                  {userViewPlg && (
+                    <>
+                      <NavItem
+                        pathname={pathname}
+                        tabTitle="Grafana"
+                        href={`${process.env.REACT_APP_BACKEND_HOST}/grafana/`}
+                      />
+                      <NavItem
+                        pathname={pathname}
+                        tabTitle="Alerts"
+                        href={`${process.env.REACT_APP_BACKEND_HOST}/alerts/`}
+                      />
+                    </>
                   )}
                 </>
               )}
