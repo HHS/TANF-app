@@ -22,7 +22,6 @@ import {
   submit,
   SET_FILE_SUBMITTED,
 } from './reports'
-import { defaultFileUploadSections } from '../reducers/reports'
 
 describe('actions/reports', () => {
   const mockStore = configureStore([thunk])
@@ -239,7 +238,6 @@ describe('actions/reports', () => {
     expect(actions[0].type).toBe(SET_SELECTED_STT)
     expect(actions[0].payload).toStrictEqual({
       stt: 'florida',
-      newUploadSections: defaultFileUploadSections,
     })
   })
 
@@ -252,7 +250,6 @@ describe('actions/reports', () => {
     expect(actions[0].type).toBe(SET_SELECTED_STT)
     expect(actions[0].payload).toStrictEqual({
       stt: '',
-      newUploadSections: defaultFileUploadSections,
     })
   })
 

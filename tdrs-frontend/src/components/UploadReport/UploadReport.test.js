@@ -10,13 +10,11 @@ import { v4 as uuidv4 } from 'uuid'
 import { PREVIEW_HEADING_CLASS } from '../FileUpload/utils'
 
 import UploadReport from './UploadReport'
-import { defaultFileUploadSections } from '../../reducers/reports'
 
 describe('UploadReport', () => {
   const initialState = {
     auth: { user: { email: 'test@test.com' }, authenticated: true },
     reports: {
-      fileUploadSections: defaultFileUploadSections,
       submittedFiles: [
         {
           fileName: 'test.txt',
@@ -169,7 +167,6 @@ describe('UploadReport', () => {
     const store = mockStore({
       ...initialState,
       reports: {
-        fileUploadSections: defaultFileUploadSections,
         submittedFiles: [
           {
             section: 'Active Case Data',

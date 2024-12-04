@@ -4,7 +4,7 @@ import axios from 'axios'
 import axiosInstance from '../axios-instance'
 import { logErrorToServer } from '../utils/eventLogger'
 import removeFileInputErrorState from '../utils/removeFileInputErrorState'
-import { defaultFileUploadSections } from '../reducers/reports'
+import { fileUploadSections } from '../reducers/reports'
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
 
@@ -271,19 +271,7 @@ export const SET_SELECTED_QUARTER = 'SET_SELECTED_QUARTER'
 export const SET_FILE_TYPE = 'SET_FILE_TYPE'
 
 export const setStt = (stt) => async (dispatch) => {
-  var response = undefined
-  if (stt !== '') {
-    const URL = `${process.env.REACT_APP_BACKEND_URL}/stts/${stt}/num_sections`
-    response = await axiosInstance.get(URL, {
-      withCredentials: true,
-    })
-  }
-
-  var newUploadSections = defaultFileUploadSections
-  if (typeof response !== 'undefined') {
-    newUploadSections = newUploadSections.slice(0, response.data.num_sections)
-  }
-  dispatch({ type: SET_SELECTED_STT, payload: { stt, newUploadSections } })
+  dispatch({ type: SET_SELECTED_STT, payload: { stt } })
 }
 export const setYear = (year) => (dispatch) => {
   dispatch({ type: SET_SELECTED_YEAR, payload: { year } })

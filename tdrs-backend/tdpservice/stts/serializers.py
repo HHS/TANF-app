@@ -14,7 +14,7 @@ class STTSerializer(serializers.ModelSerializer):
         """Metadata."""
 
         model = STT
-        fields = ["id", "type", "postal_code", "name", "region", "filenames", "stt_code", "ssp",]
+        fields = ["id", "type", "postal_code", "name", "region", "filenames", "stt_code", "ssp", 'num_sections']
 
     def get_postal_code(self, obj):
         """Return the state postal_code."""

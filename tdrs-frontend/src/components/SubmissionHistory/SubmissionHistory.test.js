@@ -3,13 +3,11 @@ import { render, screen, fireEvent, within } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import appConfigureStore from '../../configureStore'
 import SubmissionHistory from './SubmissionHistory'
-import { defaultFileUploadSections } from '../../reducers/reports'
 
 describe('SubmissionHistory', () => {
   const initialState = {
     reports: {
       files: [],
-      fileUploadSections: defaultFileUploadSections,
     },
   }
 
@@ -53,7 +51,6 @@ describe('SubmissionHistory', () => {
   it('Shows first five results on first page', () => {
     const state = {
       reports: {
-        fileUploadSections: defaultFileUploadSections,
         files: [
           {
             id: '123',
@@ -148,7 +145,6 @@ describe('SubmissionHistory', () => {
   it('Shows next five results on next page', () => {
     const state = {
       reports: {
-        fileUploadSections: defaultFileUploadSections,
         files: [
           {
             id: '123',
@@ -251,7 +247,6 @@ describe('SubmissionHistory', () => {
   it('Shows SSP results when SSP-MOE file type selected', () => {
     const state = {
       reports: {
-        fileUploadSections: defaultFileUploadSections,
         files: [
           {
             id: '123',
@@ -359,7 +354,6 @@ describe('SubmissionHistory', () => {
     (status, section) => {
       const state = {
         reports: {
-          fileUploadSections: defaultFileUploadSections,
           files: [
             {
               id: '123',
@@ -436,7 +430,6 @@ describe('SubmissionHistory', () => {
     (status, section) => {
       const state = {
         reports: {
-          fileUploadSections: defaultFileUploadSections,
           files: [
             {
               id: '123',

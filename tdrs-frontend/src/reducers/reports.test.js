@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid'
-import reducer, { defaultFileUploadSections, getUpdatedFiles } from './reports'
+import reducer, { getUpdatedFiles } from './reports'
 import {
   CLEAR_ERROR,
   SET_FILE,
@@ -15,7 +15,6 @@ import {
 
 const initialState = {
   files: [],
-  fileUploadSections: defaultFileUploadSections,
   submittedFiles: [
     {
       section: 'Active Case Data',
@@ -83,7 +82,6 @@ describe('reducers/reports', () => {
       submittedFiles: initialState.submittedFiles,
       isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
       currentSubmissionError: initialState.currentSubmissionError,
-      fileUploadSections: initialState.fileUploadSections,
       files: [
         {
           fileName: 'test.txt',
@@ -120,7 +118,6 @@ describe('reducers/reports', () => {
       files: initialState.files,
       isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
       currentSubmissionError: initialState.currentSubmissionError,
-      fileUploadSections: initialState.fileUploadSections,
       submittedFiles: [
         {
           section: 'Active Case Data',
@@ -181,7 +178,6 @@ describe('reducers/reports', () => {
       files: initialState.files,
       isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
       currentSubmissionError: initialState.currentSubmissionError,
-      fileUploadSections: initialState.fileUploadSections,
       submittedFiles: [
         {
           section: 'Active Case Data',
@@ -233,7 +229,6 @@ describe('reducers/reports', () => {
       files: initialState.files,
       isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
       currentSubmissionError: initialState.currentSubmissionError,
-      fileUploadSections: initialState.fileUploadSections,
       submittedFiles: [
         {
           section: 'Active Case Data',
@@ -333,7 +328,6 @@ describe('reducers/reports', () => {
       files: initialState.files,
       isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
       currentSubmissionError: initialState.currentSubmissionError,
-      fileUploadSections: initialState.fileUploadSections,
       submittedFiles: [
         {
           section: 'Active Case Data',
@@ -464,7 +458,6 @@ describe('reducers/reports', () => {
         type: SET_SELECTED_STT,
         payload: {
           stt: 'florida',
-          newUploadSections: [],
         },
       })
     ).toEqual({
@@ -472,7 +465,6 @@ describe('reducers/reports', () => {
       isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
       currentSubmissionError: initialState.currentSubmissionError,
       submittedFiles: initialState.submittedFiles,
-      fileUploadSections: [],
       year: '',
       stt: 'florida',
       quarter: '',
@@ -493,7 +485,6 @@ describe('reducers/reports', () => {
       isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
       currentSubmissionError: initialState.currentSubmissionError,
       submittedFiles: initialState.submittedFiles,
-      fileUploadSections: initialState.fileUploadSections,
       year: '',
       stt: '',
       quarter: 'Q1',
@@ -512,7 +503,6 @@ describe('reducers/reports', () => {
       isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
       currentSubmissionError: initialState.currentSubmissionError,
       submittedFiles: initialState.submittedFiles,
-      fileUploadSections: initialState.fileUploadSections,
       year: '',
       stt: '',
       quarter: 'Q2',
@@ -531,7 +521,6 @@ describe('reducers/reports', () => {
       isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
       currentSubmissionError: initialState.currentSubmissionError,
       submittedFiles: initialState.submittedFiles,
-      fileUploadSections: initialState.fileUploadSections,
       year: '',
       stt: '',
       quarter: 'Q3',
@@ -549,7 +538,6 @@ describe('reducers/reports', () => {
       isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
       currentSubmissionError: initialState.currentSubmissionError,
       submittedFiles: initialState.submittedFiles,
-      fileUploadSections: initialState.fileUploadSections,
       year: '',
       stt: '',
       quarter: 'Q4',
@@ -570,7 +558,6 @@ describe('reducers/reports', () => {
       isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
       currentSubmissionError: initialState.currentSubmissionError,
       submittedFiles: initialState.submittedFiles,
-      fileUploadSections: initialState.fileUploadSections,
       year: '2021',
       stt: '',
       quarter: '',

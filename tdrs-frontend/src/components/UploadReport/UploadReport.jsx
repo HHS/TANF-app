@@ -7,7 +7,7 @@ import Button from '../Button'
 
 import FileUpload from '../FileUpload'
 import { submit } from '../../actions/reports'
-import { defaultFileUploadSections } from '../../reducers/reports'
+import { fileUploadSections } from '../../reducers/reports'
 import { useEventLogger } from '../../utils/eventLogger'
 
 function UploadReport({ handleCancel, stt }) {
@@ -21,13 +21,12 @@ function UploadReport({ handleCancel, stt }) {
   // The set of uploaded files in our Redux state
   const files = useSelector((state) => state.reports.submittedFiles)
 
-  // The set of sections the STT can report for
-  const fileUploadSections = useSelector(
-    (state) => state.reports.fileUploadSections
-  )
-
   // The logged in user in our Redux state
   const user = useSelector((state) => state.auth.user)
+
+  // The number of sections this stt submits data for and it's ID
+  const stt_id = stt === undefined ? undefined : stt.id
+  const num_sections = stt === undefined ? 4 : stt.num_sections
 
   // TODO: Move this to Redux state so we can modify this value outside of
   // this component without having to pass the setter function around
@@ -45,7 +44,7 @@ function UploadReport({ handleCancel, stt }) {
   const uploadedFiles = files?.filter((file) => file.fileName && !file.id)
   const uploadedSections = uploadedFiles
     ? uploadedFiles
-        .map((file) => defaultFileUploadSections.indexOf(file.section) + 1)
+        .map((file) => fileUploadSections.indexOf(file.section) + 1)
         .join(', ')
         .split(' ')
     : []
@@ -76,7 +75,7 @@ function UploadReport({ handleCancel, stt }) {
         formattedSections,
         logger,
         setLocalAlertState,
-        stt,
+        stt_id,
         uploadedFiles,
         user,
         ssp: selectedFileType === 'ssp-moe',
@@ -111,7 +110,7 @@ function UploadReport({ handleCancel, stt }) {
         </div>
       )}
       <form onSubmit={onSubmit}>
-        {fileUploadSections.map((section, index) => {
+        {fileUploadSections.slice(0, num_sections).map((section, index) => {
           return (
             <FileUpload
               key={section}
@@ -137,7 +136,7 @@ function UploadReport({ handleCancel, stt }) {
 
 UploadReport.propTypes = {
   handleCancel: PropTypes.func.isRequired,
-  stt: PropTypes.number,
+  stt: PropTypes.object,
 }
 
 export default UploadReport

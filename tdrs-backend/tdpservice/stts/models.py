@@ -39,6 +39,14 @@ class STT(models.Model):
     ssp = models.BooleanField(default=False, null=True)
     sample = models.BooleanField(default=False, null=True)
 
+    @property
+    def num_sections(self):
+        """The number of sections this STT submits."""
+        if self.filenames is None:
+            return 4
+        divisor = int(self.ssp) + 1
+        return len(self.filenames) // divisor
+
     class Meta:
         """Metadata."""
 

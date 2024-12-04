@@ -12,14 +12,14 @@ User = get_user_model()
 def test_stts_is_valid_endpoint(api_client, stt_user):
     """Test an authorized user can successfully query the STT endpoint."""
     api_client.login(username=stt_user.username, password="test_password")
-    response = api_client.get(reverse("stts-list"))
+    response = api_client.get(reverse("stts"))
     assert response.status_code == status.HTTP_200_OK
 
 
 @pytest.mark.django_db
 def test_stts_blocks_unauthorized(api_client, stt_user):
     """Test an unauthorized user cannot successfully query the STT endpoint."""
-    response = api_client.get(reverse("stts-list"))
+    response = api_client.get(reverse("stts"))
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
@@ -57,7 +57,7 @@ def test_stts_by_region_blocks_unauthorized(api_client, stt_user):
 def test_can_get_stts(api_client, stt_user, stts):
     """Test endpoint returns a listing of states, tribes and territories."""
     api_client.login(username=stt_user.username, password="test_password")
-    response = api_client.get(reverse("stts-list"))
+    response = api_client.get(reverse("stts"))
     assert response.status_code == status.HTTP_200_OK
     assert len(response.data) == STT.objects.count()
 
@@ -117,5 +117,5 @@ def test_stts_and_stts_alpha_are_dissimilar(api_client, stt_user, stts):
     """The default STTs endpoint is not sorted the same as the alpha."""
     api_client.login(username=stt_user.username, password="test_password")
     alpha_response = api_client.get(reverse("stts-alpha"))
-    default_response = api_client.get(reverse("stts-list"))
+    default_response = api_client.get(reverse("stts"))
     assert not alpha_response.data == default_response.data
