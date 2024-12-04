@@ -270,7 +270,7 @@ export const SET_SELECTED_YEAR = 'SET_SELECTED_YEAR'
 export const SET_SELECTED_QUARTER = 'SET_SELECTED_QUARTER'
 export const SET_FILE_TYPE = 'SET_FILE_TYPE'
 
-export const setStt = (stt) => async (dispatch) => {
+export const setStt = (stt) => (dispatch) => {
   dispatch({ type: SET_SELECTED_STT, payload: { stt } })
 }
 export const setYear = (year) => (dispatch) => {

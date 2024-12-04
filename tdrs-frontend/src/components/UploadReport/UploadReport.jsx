@@ -25,7 +25,7 @@ function UploadReport({ handleCancel, stt }) {
   const user = useSelector((state) => state.auth.user)
 
   // The number of sections this stt submits data for and it's ID
-  const stt_id = stt === undefined ? undefined : stt.id
+  const stt_id = stt?.id
   const num_sections = stt === undefined ? 4 : stt.num_sections
 
   // TODO: Move this to Redux state so we can modify this value outside of
@@ -75,7 +75,7 @@ function UploadReport({ handleCancel, stt }) {
         formattedSections,
         logger,
         setLocalAlertState,
-        stt_id,
+        stt: stt_id,
         uploadedFiles,
         user,
         ssp: selectedFileType === 'ssp-moe',
