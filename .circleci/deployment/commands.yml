@@ -226,15 +226,7 @@
         default: CF_APP
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            apk update
-            apk add jq
-            apk add curl
-            # TODO: Add Signature check
-            curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=v7&source=github" | tar -zx
-            mv cf7 /usr/local/bin/cf
+      - cf-check
       - login-cloud-dot-gov:
           cf-password: <<parameters.cf-password>>
           cf-username: <<parameters.cf-username>>
