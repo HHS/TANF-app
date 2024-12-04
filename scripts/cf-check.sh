@@ -4,7 +4,7 @@ if command -v cf /dev/null 2>&1; then
     echo The command cf is available
 else
     apt-get update
-    apt-get install wget gnupg2 apt-transport-https
+    apt-get install wget gnupg2 apt-transport-https jq
 
     NEXUS_ARCHIVE="cf7-cli_7.7.13_linux_x86-64.tgz"
     NEXUS_URL="https://tdp-nexus.dev.raftlabs.tech/repository/tdp-bin/cloudfoundry-cli/$NEXUS_ARCHIVE"
