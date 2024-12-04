@@ -285,16 +285,7 @@
         type: string
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            sudo apt update
-            sudo apt install jq
-            sudo apt install curl
-            # TODO: Add Signature check
-            curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=v7&source=github" | tar -zx
-            sudo mv cf7 /usr/local/bin/cf
-            sudo chmod +x /usr/local/bin/cf
+      - cf-check
       - login-cloud-dot-gov:
           cf-password: <<parameters.cf-password>>
           cf-username: <<parameters.cf-username>>
