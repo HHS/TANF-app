@@ -82,7 +82,7 @@ category3.ifThenAlso(
 )
 ```
 
-The existence of this error, with these fields, is uniquely defined in the appropriate schemas. The same can be said for the remaining high priority category three errors. Thus, to define the high priority errors we need only know the required field(s) and their error type. Given those pieces of information, queries of the form below can be used to filter STT error reports to only show the highest priority errors.
+The existence of this error, with these fields, is uniquely defined in the appropriate schemas. The same can be said for the remaining critical category three errors. Thus, to define the high priority errors we need only know the required field(s) and their error type. Given those pieces of information, queries of the form below can be used to filter STT error reports to only show the highest priority errors.
 
 ```python
 errors.filter(fields_json__friendly_name__has_keys=[FIELD_NAME, FIELD_NAME, ETC...],
