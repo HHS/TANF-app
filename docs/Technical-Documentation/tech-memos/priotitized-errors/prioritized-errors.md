@@ -96,6 +96,5 @@ By unioning the category two queries from above with the remainder of the catego
 - TDP frontend: latency time incurred while generating report
 
 ## Use and Test cases to consider
-- Admin can get both prioritized and un-prioritized report
-- STT only recieves prioritized report
+- Admin and STT receive the same report
 - Existing tests leveraging ParserError querysets are updated and re-validated for correctness
