@@ -93,7 +93,7 @@
           "type": 1
         },
         "refresh": 1,
-        "regex": "",
+        "regex": "^(?!.*[-]prod$).*$",
         "skipUrlSync": false,
         "sort": 0,
         "type": "query"
@@ -106,8 +106,8 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Logs",
-  "uid": "cdyz6flmh0ttsx",
+  "title": "Dev Logs",
+  "uid": "cdyz6flmh0ttsy",
   "version": 1,
   "weekStart": ""
 }

@@ -13,7 +13,6 @@ CF_SPACE=${5}
 ENVIRONMENT=${6}
 
 env=${CF_SPACE#"tanf-"}
-frontend_app_name=$(echo $CGHOSTNAME_FRONTEND | cut -d"-" -f3)
 
 # Update the Kibana name to include the environment
 KIBANA_BASE_URL="${CGAPPNAME_KIBANA}-${env}.apps.internal"

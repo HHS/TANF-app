@@ -53,7 +53,7 @@ class Field:
                     value = int(value)
                     return value
                 except ValueError:
-                    logger.error(f"Error parsing field value: {value} to integer.")
+                    logger.error(f"Error parsing field {self.name} value to integer.")
                     return None
             case "string":
                 return value
@@ -83,4 +83,8 @@ class TransformField(Field):
     def parse_value(self, line):
         """Parse and transform the value for a field given a line, startIndex, endIndex, and field type."""
         value = super().parse_value(line)
-        return self.transform_func(value, **self.kwargs)
+        try:
+            return_value = self.transform_func(value, **self.kwargs)
+            return return_value
+        except Exception:
+            raise ValueError(f"Error transforming field value for field: {self.name}.")
