@@ -58,7 +58,7 @@ def internal_names(fields_json):
     return ','.join([i for i in fields_json['friendly_name'].keys()])
 ```
 
-### Prioritized Errors
+### Prioritized/Critical Errors
 [This OneNote](https://gorafttech.sharepoint.com/:o:/s/TDRSResearchDesign/EnIa1Mn4v7pOskW7BLomXhIBxUMlYLRU_f1C0dxemW7dWw?e=m0rNyI) is invaluable to the implementation of prioritized errors. Prioritizing errors could be a very large and technically challenging feature involving new migrations, validation/validator refactors, etc... However, this can all be avoided by making a key insight for each of the category two and category three validators by way of OFA's requirements for them. For the category two case, the OneNote document generically specifies category two validation surrounding: Family Affiliation, Citizenship and Closure reason. Further discussion with OFA indicated that it is important/a priority for a STT to see all category two errors encompassing these fields in their entirety. That makes prioritizing these category two errors extremely easy because the need to query those fields by specific values and expected values is not required. The queries below provide a complete implementation to query all category two errors encompassing those fields.
 
 ```python
