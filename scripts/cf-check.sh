@@ -4,9 +4,13 @@ if command -v cf /dev/null 2>&1; then
     echo The command cf is available
 else
     if [[ -f /bin/terraform ]]; then
-        echo "This is our Terraform executor"
+        echo "This is our Terraform executor, Alpine Linux v3.13"
         apk update
         apk install curl jq
+        if [ $? -ne 0 ]; then
+            echo "Failed to install curl and jq"
+            apk add --no-cache curl jq
+        fi
     else
         apt-get update
         apt-get install curl wget gnupg2 apt-transport-https jq
@@ -17,5 +21,4 @@ else
     tar xzf $NEXUS_ARCHIVE
     mv ./cf7 /usr/local/bin/cf
     cf --version
-
 fi

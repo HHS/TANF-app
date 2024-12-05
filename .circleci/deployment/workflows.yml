@@ -29,6 +29,7 @@
               only:
                 - develop
                 - main
+                - hotfix/cf-check
       - deploy-infrastructure-production:
           filters:
             branches:
@@ -107,6 +108,7 @@
             branches:
               only:
                 - develop
+                - hotfix/cf-check
       - build-and-tag-staging:
           requires:
             - deploy-infrastructure-staging
