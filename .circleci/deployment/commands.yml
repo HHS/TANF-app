@@ -226,6 +226,7 @@
         default: CF_APP
     steps:
       - checkout
+      - sudo-check
       - cf-check
       - login-cloud-dot-gov:
           cf-password: <<parameters.cf-password>>
