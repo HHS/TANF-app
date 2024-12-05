@@ -89,7 +89,7 @@ errors.filter(fields_json__friendly_name__has_keys=[FIELD_NAME, FIELD_NAME, ETC.
               error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY)
 ```
 
-By unioning the category two queries from above with the remainder of the category three queries, a queryset containing only the highest priority errors can be generated and subsequently passed to `get_xls_serialized_file` generate and return the prioritized error report to the requesting STT.
+By unioning the category two queries from above with the remainder of the category three queries, a queryset containing only the critical errors can be generated and subsequently passed to `get_xls_serialized_file` generate and return the prioritized error report to the requesting STT.
 
 ## Affected Systems
 - TDP backend
