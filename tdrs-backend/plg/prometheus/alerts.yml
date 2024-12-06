@@ -1,0 +1,73 @@
+groups:
+  - name: database.alerts
+    rules:
+      - alert: DevDatabaseDown
+        expr: last_over_time(pg_up{job="postgres-dev"}[1m]) == 0
+        labels:
+          severity: ERROR
+        annotations:
+          summary: "The {{ $labels.service }} service is down."
+          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 1 minute."
+      - alert: StagingDatabaseDown
+        expr: last_over_time(pg_up{job="postgres-staging"}[1m]) == 0
+        labels:
+          severity: ERROR
+        annotations:
+          summary: "The {{ $labels.service }} service is down."
+          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 1 minute."
+      - alert: ProductionDatabaseDown
+        expr: last_over_time(pg_up{job="postgres-production"}[1m]) == 0
+        labels:
+          severity: CRITICAL
+        annotations:
+          summary: "The {{ $labels.service }} service is down."
+          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 1 minute."
+  - name: backend.alerts
+    rules:
+    - alert: DevEnvironmentBackendDown
+      expr: last_over_time(up{job=~"tdp-backend.*", job!~".*prod", job!~".*staging"}[5m]) == 0
+      labels:
+        severity: ERROR
+      annotations:
+          summary: "The {{ $labels.service }} service is down."
+          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 5 minutes."
+    - alert: StagingBackendDown
+      expr: last_over_time(up{job=~"tdp-backend-staging""}[1m]) == 0
+      labels:
+        severity: ERROR
+      annotations:
+          summary: "The {{ $labels.service }} service is down."
+          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 1 minute."
+    - alert: ProductionBackendDown
+      expr: last_over_time(up{job=~"tdp-backend-prod"}[1m]) == 0
+      labels:
+        severity: CRITICAL
+      annotations:
+          summary: "The {{ $labels.service }} service is down."
+          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 1 minute."
+  - name: plg.alerts
+    rules:
+    - alert: LokiDown
+      expr: last_over_time(up{job="loki"}[1m]) == 0
+      labels:
+        severity: ERROR
+      annotations:
+          summary: "The {{ $labels.service }} service is down."
+          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 1 minute."
+    - alert: GrafanaDown
+      expr: last_over_time(up{job="grafana"}[1m]) == 0
+      labels:
+        severity: ERROR
+      annotations:
+          summary: "The {{ $labels.service }} service is down."
+          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 1 minute."
+  - name: app.alerts
+    rules:
+    - alert: UpTime
+      expr: avg_over_time(up[1d]) < 0.95
+      for: 30m
+      labels:
+        severity: WARNING
+      annotations:
+          summary: "The {{ $labels.service }} service has a uptime warning."
+          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment is not maintaining 95% uptime."

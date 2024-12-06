@@ -52,7 +52,7 @@ update_frontend()
 
     cf set-env "$CGHOSTNAME_FRONTEND" BACKEND_HOST "$CGHOSTNAME_BACKEND"
     cf set-env "$CGHOSTNAME_FRONTEND" KIBANA_BASE_URL "$KIBANA_BASE_URL"
-    
+
     npm run build:$ENVIRONMENT
     unlink .env.production
     mkdir deployment
@@ -86,7 +86,7 @@ update_frontend()
     else
         cf map-route "$CGHOSTNAME_FRONTEND" app.cloud.gov --hostname "${CGHOSTNAME_FRONTEND}"
     fi
-    
+
     cd ../..
     rm -r tdrs-frontend/deployment
 }

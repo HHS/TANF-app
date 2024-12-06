@@ -58,7 +58,6 @@ set_cf_envs()
   "LOGGING_LEVEL"
   "REDIS_URI"
   "JWT_KEY"
-  "STAGING_JWT_KEY"
   "SENDGRID_API_KEY"
   )
 
@@ -71,9 +70,13 @@ set_cf_envs()
         cf_cmd="cf unset-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
         $cf_cmd
         continue
-    elif [[ ("$var_name" =~ "STAGING_") && ("$CF_SPACE" = "tanf-staging") ]]; then
-        sed_var_name=$(echo "$var_name" | sed -e 's@STAGING_@@g')
-        cf_cmd="cf set-env $CGAPPNAME_BACKEND $sed_var_name ${!var_name}"
+    elif [[ ("$CF_SPACE" = "tanf-staging") ]]; then
+        var_value=${!var_name}
+        staging_var="STAGING_$var_name"
+        if [[ "${!staging_var}" ]]; then
+          var_value=${!staging_var}
+        fi
+        cf_cmd="cf set-env $CGAPPNAME_BACKEND $var_name ${var_value}"
     else
       cf_cmd="cf set-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
     fi
@@ -103,6 +106,16 @@ update_kibana()
   # Upload dashboards to Kibana
   CMD="curl -X POST $CGAPPNAME_KIBANA.apps.internal:5601/api/saved_objects/_import -H 'kbn-xsrf: true' --form file=@/home/vcap/app/tdpservice/search_indexes/kibana_saved_objs.ndjson"
   cf run-task $CGAPPNAME_BACKEND --command "$CMD" --name kibana-obj-upload
+}
+
+prepare_promtail() {
+  pushd tdrs-backend/plg/promtail
+  CONFIG=config.yml
+  yq eval -i ".scrape_configs[0].job_name = \"system-$backend_app_name\""  $CONFIG
+  yq eval -i ".scrape_configs[0].static_configs[0].labels.job = \"system-$backend_app_name\""  $CONFIG
+  yq eval -i ".scrape_configs[1].job_name = \"backend-$backend_app_name\""  $CONFIG
+  yq eval -i ".scrape_configs[1].static_configs[0].labels.job = \"backend-$backend_app_name\""  $CONFIG
+  popd
 }
 
 update_backend()
@@ -229,6 +242,7 @@ else
   CYPRESS_TOKEN=$CYPRESS_TOKEN
 fi
 
+prepare_promtail
 if [ "$DEPLOY_STRATEGY" = "rolling" ] ; then
     # Perform a rolling update for the backend and frontend deployments if
     # specified, otherwise perform a normal deployment

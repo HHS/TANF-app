@@ -1,0 +1,39 @@
+groups:
+  - name: database.alerts
+    rules:
+      - alert: LocalDatabaseDown
+        expr: last_over_time(pg_up{job="postgres"}[1m]) == 0
+        for: 1m
+        labels:
+          severity: CRITICAL
+        annotations:
+          summary: "The {{ $labels.service }} service is down."
+          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 1 minute."
+  - name: backend.alerts
+    rules:
+    - alert: LocalBackendDown
+      expr: last_over_time(up{job=~"tdp-backend.*"}[1m]) == 0
+      for: 1m
+      labels:
+        severity: ERROR
+      annotations:
+          summary: "The {{ $labels.service }} service is down."
+          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 1 minute."
+  - name: plg.alerts
+    rules:
+    - alert: LocalLokiDown
+      expr: last_over_time(up{job="loki"}[1m]) == 0
+      labels:
+        severity: ERROR
+      annotations:
+          summary: "The {{ $labels.service }} service is down."
+          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 1 minute."
+  - name: app.alerts
+    rules:
+    - alert: UpTime
+      expr: avg_over_time(up[1m]) < 0.95
+      labels:
+        severity: WARNING
+      annotations:
+          summary: "The {{ $labels.service }} service has a uptime warning."
+          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment is not maintaining 95% uptime."

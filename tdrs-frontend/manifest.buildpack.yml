@@ -8,4 +8,3 @@ applications:
   instances: 1
   disk_quota: 256M
   timeout: 180
-

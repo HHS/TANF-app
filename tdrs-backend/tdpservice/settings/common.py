@@ -3,6 +3,7 @@
 import logging
 import logging.handlers
 import os
+from django.utils.dateparse import parse_datetime
 from distutils.util import strtobool
 from os.path import join
 from typing import Any, Optional
@@ -237,7 +238,7 @@ class Common(Configuration):
             "file": {
                 "class": "logging.handlers.RotatingFileHandler",
                 "formatter": "verbose",
-                "filename": "django.log",
+                "filename": "/tmp/django.log",
                 "maxBytes": 1024*1024*10, # 10 MiB
                 "backupCount": 5,
             }
