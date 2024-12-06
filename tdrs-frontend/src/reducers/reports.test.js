@@ -4,6 +4,7 @@ import {
   CLEAR_ERROR,
   SET_FILE,
   CLEAR_FILE,
+  FILE_EXT_ERROR,
   SET_FILE_ERROR,
   SET_SELECTED_YEAR,
   SET_SELECTED_STT,
@@ -264,6 +265,52 @@ describe('reducers/reports', () => {
       year: '',
       quarter: '',
       fileType: 'tanf',
+    })
+  })
+
+  it('should handle FILE_EXT_ERROR', () => {
+    expect(
+      reducer(undefined, {
+        type: FILE_EXT_ERROR,
+        payload: {
+          error: { message: 'Test invalid ext.' },
+          section: 'Active Case Data',
+        },
+      })
+    ).toEqual({
+      ...initialState,
+      submittedFiles: [
+        {
+          id: null,
+          file: null,
+          section: 'Active Case Data',
+          fileName: undefined,
+          error: { message: 'Test invalid ext.' },
+          uuid: null,
+          fileType: null,
+        },
+        {
+          section: 'Closed Case Data',
+          fileName: null,
+          error: null,
+          uuid: null,
+          fileType: null,
+        },
+        {
+          section: 'Aggregate Data',
+          fileName: null,
+          error: null,
+          uuid: null,
+          fileType: null,
+        },
+        {
+          section: 'Stratum Data',
+          fileName: null,
+          error: null,
+          uuid: null,
+          fileType: null,
+        },
+      ],
     })
   })
 

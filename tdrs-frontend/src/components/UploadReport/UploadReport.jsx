@@ -7,8 +7,8 @@ import Button from '../Button'
 
 import FileUpload from '../FileUpload'
 import { submit } from '../../actions/reports'
-import { useEventLogger } from '../../utils/eventLogger'
 import { fileUploadSections } from '../../reducers/reports'
+import { useEventLogger } from '../../utils/eventLogger'
 
 function UploadReport({ handleCancel, stt }) {
   // The currently selected year from the reportingYears dropdown
@@ -20,8 +20,13 @@ function UploadReport({ handleCancel, stt }) {
 
   // The set of uploaded files in our Redux state
   const files = useSelector((state) => state.reports.submittedFiles)
+
   // The logged in user in our Redux state
   const user = useSelector((state) => state.auth.user)
+
+  // The number of sections this stt submits data for and it's ID
+  const stt_id = stt?.id
+  const num_sections = stt === undefined ? 4 : stt.num_sections
 
   // TODO: Move this to Redux state so we can modify this value outside of
   // this component without having to pass the setter function around
@@ -70,7 +75,7 @@ function UploadReport({ handleCancel, stt }) {
         formattedSections,
         logger,
         setLocalAlertState,
-        stt,
+        stt: stt_id,
         uploadedFiles,
         user,
         ssp: selectedFileType === 'ssp-moe',
@@ -105,13 +110,15 @@ function UploadReport({ handleCancel, stt }) {
         </div>
       )}
       <form onSubmit={onSubmit}>
-        {fileUploadSections.map((name, index) => (
-          <FileUpload
-            key={name}
-            section={`${index + 1} - ${name}`}
-            setLocalAlertState={setLocalAlertState}
-          />
-        ))}
+        {fileUploadSections.slice(0, num_sections).map((section, index) => {
+          return (
+            <FileUpload
+              key={section}
+              section={`${index + 1} - ${section}`}
+              setLocalAlertState={setLocalAlertState}
+            />
+          )
+        })}
 
         <div className="buttonContainer margin-y-4">
           <Button className="card:margin-y-1" type="submit">
@@ -129,7 +136,7 @@ function UploadReport({ handleCancel, stt }) {
 
 UploadReport.propTypes = {
   handleCancel: PropTypes.func.isRequired,
-  stt: PropTypes.number,
+  stt: PropTypes.object,
 }
 
 export default UploadReport

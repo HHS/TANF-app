@@ -4,6 +4,9 @@ from django.db import models
 from django.db.models import constraints
 
 
+DEFAULT_NUMBER_OF_SECTIONS = 4
+
+
 class Region(models.Model):
     """A model representing a US region."""
 
@@ -38,6 +41,14 @@ class STT(models.Model):
     state = models.ForeignKey("self", on_delete=models.CASCADE, blank=True, null=True)
     ssp = models.BooleanField(default=False, null=True)
     sample = models.BooleanField(default=False, null=True)
+
+    @property
+    def num_sections(self):
+        """The number of sections this STT submits."""
+        if self.filenames is None:
+            return DEFAULT_NUMBER_OF_SECTIONS
+        divisor = int(self.ssp) + 1
+        return len(self.filenames) // divisor
 
     class Meta:
         """Metadata."""

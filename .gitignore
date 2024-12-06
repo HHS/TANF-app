@@ -115,3 +115,6 @@ cypress.env.json
 
 # DB seeds
 tdrs-backend/*.pg
+
+# Log files
+*.log
