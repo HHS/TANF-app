@@ -8,6 +8,7 @@ import {
   downloadFile,
   getErrorReportStatus,
 } from './helpers'
+import ReprocessedModal from './ReprocessedModal'
 
 const MonthSubRow = ({ data }) =>
   data ? (
@@ -24,15 +25,28 @@ const MonthSubRow = ({ data }) =>
     </>
   )
 
+const Message = ({ date }) => {
+  return (
+    <>
+      We've reprocessed your submission with updated validation criteria, based
+      on system improvements, to improve accuracy of error reports. No changes
+      have been made to your original data submission.
+      <br />
+      <br />
+      Data was reprocessed on: {date}
+    </>
+  )
+}
+
 const CaseAggregatesRow = ({ file }) => {
   const dispatch = useDispatch()
-
+  const reprocessedOn = formatDate(getReprocessedDate(file))
   return (
     <>
       <tr>
-        <th scope="rowgroup" rowSpan={3}>
+        <th scope="rowgroup" rowSpan={5}>
           {formatDate(file.createdAt) + ' by ' + file.submittedBy}
-          {hasReparsed(file) && <></>}
+          {hasReparsed(file) && <ReprocessedModal date={reprocessedOn} />}
         </th>
 
         <th scope="rowgroup" rowSpan={3}>

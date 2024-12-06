@@ -8,6 +8,7 @@ import {
   downloadFile,
   getErrorReportStatus,
 } from './helpers'
+import ReprocessedModal from './ReprocessedModal'
 
 const MonthSubRow = ({ data }) =>
   data ? (
@@ -24,13 +25,13 @@ const MonthSubRow = ({ data }) =>
 
 const TotalAggregatesRow = ({ file }) => {
   const dispatch = useDispatch()
-
+  const reprocessedOn = formatDate(getReprocessedDate(file))
   return (
     <>
       <tr>
         <th scope="rowgroup" rowSpan={3}>
           {formatDate(file.createdAt) + ' by ' + file.submittedBy}
-          {hasReparsed(file) && <></>}
+          {hasReparsed(file) && <ReprocessedModal date={reprocessedOn} />}
         </th>
 
         <th scope="rowgroup" rowSpan={3}>
