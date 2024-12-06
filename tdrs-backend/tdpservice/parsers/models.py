@@ -2,23 +2,14 @@
 
 import datetime
 from django.db import models
-from django.utils.translation import gettext_lazy as _
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.util import ParserErrorCategoryChoices
+
 import logging
 
 logger = logging.getLogger(__name__)
-
-class ParserErrorCategoryChoices(models.TextChoices):
-    """Enum of ParserError error_type."""
-
-    PRE_CHECK = "1", _("File pre-check")
-    FIELD_VALUE = "2", _("Record value invalid")
-    VALUE_CONSISTENCY = "3", _("Record value consistency")
-    CASE_CONSISTENCY = "4", _("Case consistency")
-    SECTION_CONSISTENCY = "5", _("Section consistency")
-    HISTORICAL_CONSISTENCY = "6", _("Historical consistency")
 
 
 class ParserError(models.Model):
@@ -139,7 +130,7 @@ class DataFileSummary(models.Model):
             return DataFileSummary.Status.REJECTED
         elif errors.count() == 0:
             return DataFileSummary.Status.ACCEPTED
-        elif row_precheck_errors.count() > 0 or case_consistency_errors.count() > 0:
+        elif (row_precheck_errors.count() > 0 or case_consistency_errors.count()):
             return DataFileSummary.Status.PARTIALLY_ACCEPTED
         else:
             return DataFileSummary.Status.ACCEPTED_WITH_ERRORS

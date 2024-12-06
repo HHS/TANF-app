@@ -24,7 +24,7 @@ assignees: ''
 - [ ] Documentation work for the following has occurred:
    - [ ] Relevant User stories.
    - [ ] Recommended pa11y checks.
-   - [ ] Updating living UX documents, e.g. User Flows or Personas(if relevant).
+   - [ ] Updating living UX documents, e.g. User Flows, Personas, [Service Blueprint](https://www.figma.com/design/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=9080-4762) (if relevant).
 - [ ] Internal Raft Review has occurred to ensure DoD standards and QA
 - [ ] Dev/Design sync has occurred; resulting tickets created
 - [ ] The design is usable and accessible, meaning it adheres to definition of done standards for design work.

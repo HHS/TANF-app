@@ -18,7 +18,7 @@ describe('SubmissionHistory', () => {
   const defaultFilterValues = {
     quarter: 'Q1',
     year: '2023',
-    stt: { id: 4 },
+    stt: { id: 5 },
     file_type: 'TANF',
   }
 
@@ -324,7 +324,7 @@ describe('SubmissionHistory', () => {
 
     setup(store, {
       ...defaultFilterValues,
-      stt: { id: 48 },
+      stt: { id: 5 },
       file_type: 'SSP',
     })
 
