@@ -60,7 +60,3 @@ else
   echo "git-secrets-check.sh: Issues found with return code $retVal, please remediate."
   return 1
 fi
-
-#cleanup for testing
-rm -rf /tmp/git-secrets
-sudo rm -f $gs_path/git-secrets
