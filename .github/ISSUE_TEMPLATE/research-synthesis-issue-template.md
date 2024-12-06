@@ -13,7 +13,8 @@ assignees: ''
 
 **AC:**
 
-- [ ] A hack.md with the drafted synthesis has been reviewed.
+- [ ] A Gitbook with the drafted synthesis has been reviewed.
+- [ ] [TDP Service Blueprint](https://www.figma.com/design/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=9080-4762) has been updated, as appplicable
 - [ ] PR has been opened containing the final draft of the synthesis.
 - [ ] Internal Raft Review has occurred to ensure DoD standards and QA
 - [ ] The content is usable and accessible, meaning it adheres to definition of done standards for design work.
@@ -35,4 +36,4 @@ assignees: ''
 
 **Supporting Documentation:**
 
-- --Link to hack.md--
+- --Link to the gitbook page--

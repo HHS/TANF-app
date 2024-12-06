@@ -118,17 +118,6 @@ prepare_promtail() {
   popd
 }
 
-update_plg_networking() {
-  # Need to switch the space after deploy since we're not always in dev space to handle specific networking from dev
-  # PLG apps to the correct backend app.
-  cf target -o hhs-acf-ofa -s tanf-dev
-  cf add-network-policy prometheus "$CGAPPNAME_BACKEND" -s "$CF_SPACE" --protocol tcp --port 8080
-  cf target -o hhs-acf-ofa -s "$CF_SPACE"
-
-  # Promtial needs to send logs to Loki
-  cf add-network-policy "$CGAPPNAME_BACKEND" loki -s "tanf-dev" --protocol tcp --port 8080
-}
-
 update_backend()
 {
     cd tdrs-backend || exit
@@ -166,9 +155,6 @@ update_backend()
 
     # Add network policy to allow frontend to access backend
     cf add-network-policy "$CGAPPNAME_FRONTEND" "$CGAPPNAME_BACKEND" --protocol tcp --port 8080
-
-    # Add PLG routing
-    update_plg_networking
 
     if [ "$CF_SPACE" = "tanf-prod" ]; then
       # Add network policy to allow backend to access tanf-prod services
