@@ -68,12 +68,6 @@ t1 = SchemaManager(
                 ),
                 category3.ifThenAlso(
                     condition_field_name="SANC_REDUCTION_AMT",
-                    condition_function=category3.isGreaterThan(0, inclusive=True),
-                    result_field_name="FAMILY_SANC_ADULT",
-                    result_function=category3.isOneOf((1, 2)),
-                ),
-                category3.ifThenAlso(
-                    condition_field_name="SANC_REDUCTION_AMT",
                     condition_function=category3.isGreaterThan(0),
                     result_field_name="SANC_TEEN_PARENT",
                     result_function=category3.isOneOf((1, 2)),
