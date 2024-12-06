@@ -84,8 +84,6 @@ class PlgAuthorizationCheck(APIView):
 
         user_in_valid_group = user.is_ofa_sys_admin or user.is_developer
 
-        print("\n\nINSIDE AUTH CHECK\n\n")
-
         if user_in_valid_group:
             return HttpResponse(status=200)
         else:
