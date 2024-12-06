@@ -1,0 +1,14 @@
+#!/bin/bash
+set -e
+
+task frontend-lint 2>/dev/null
+if [ $? != "0" ]; then
+  echo "Frontend lint failed"
+  exit 1
+fi
+
+task backend-lint 2>/dev/null
+if [ $? != "0" ]; then
+  echo "Backend lint failed"
+  exit 1
+fi
