@@ -25,19 +25,6 @@ const MonthSubRow = ({ data }) =>
     </>
   )
 
-const Message = ({ date }) => {
-  return (
-    <>
-      We've reprocessed your submission with updated validation criteria, based
-      on system improvements, to improve accuracy of error reports. No changes
-      have been made to your original data submission.
-      <br />
-      <br />
-      Data was reprocessed on: {date}
-    </>
-  )
-}
-
 const CaseAggregatesRow = ({ file }) => {
   const dispatch = useDispatch()
   const reprocessedOn = formatDate(getReprocessedDate(file))
