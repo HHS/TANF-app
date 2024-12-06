@@ -9,7 +9,7 @@ ENV DJANGO_SETTINGS_MODULE=tdpservice.settings.local
 ENV DJANGO_CONFIGURATION=Local
 # Allows docker to cache installed dependencies between builds
 COPY Pipfile Pipfile.lock /tdpapp/
-COPY sources.list /etc/apt/sources.list
+# COPY sources.list /etc/apt/sources.list
 WORKDIR /tdpapp/
 # Download latest listing of available packages:
 RUN apt-get -y update

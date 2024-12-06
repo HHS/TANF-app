@@ -3,54 +3,88 @@ import base64
 from io import BytesIO
 import xlsxwriter
 import calendar
-from tdpservice.parsers.models import ParserErrorCategoryChoices
+from django.conf import settings
+from django.core.paginator import Paginator
+from django.db import models
+from django.db.models import Count, Q
+from django.utils.translation import gettext_lazy as _
 
 
-def get_xls_serialized_file(data):
-    """Return xls file created from the error."""
+class ParserErrorCategoryChoices(models.TextChoices):
+    """Enum of ParserError error_type."""
 
-    def chk(x):
-        """Check if fields_json is not None."""
-        x['fields_json'] = x['fields_json'] if x.get('fields_json', None) else {
-            'friendly_name': {
-                x['field_name']: x['field_name']
-            },
-        }
-        x['fields_json']['friendly_name'] = x['fields_json']['friendly_name'] if x['fields_json'].get(
-            'friendly_name', None) else {
-            x['field_name']: x['field_name']
-        }
-        if None in x['fields_json']['friendly_name'].keys():
-            x['fields_json']['friendly_name'].pop(None)
-        if None in x['fields_json']['friendly_name'].values():
-            x['fields_json']['friendly_name'].pop()
-        return x
+    PRE_CHECK = "1", _("File pre-check")
+    FIELD_VALUE = "2", _("Record value invalid")
+    VALUE_CONSISTENCY = "3", _("Record value consistency")
+    CASE_CONSISTENCY = "4", _("Case consistency")
+    SECTION_CONSISTENCY = "5", _("Section consistency")
+    HISTORICAL_CONSISTENCY = "6", _("Historical consistency")
 
-    def format_error_msg(x):
-        """Format error message."""
-        error_msg = x['error_message']
-        for key, value in x['fields_json']['friendly_name'].items():
-            error_msg = error_msg.replace(key, value) if value else error_msg
-        return error_msg
 
+def get_prioritized_queryset(parser_errors):
+    """Generate a prioritized queryset of ParserErrors."""
+    PRIORITIZED_CAT2 = (
+        ("FAMILY_AFFILIATION", "CITIZENSHIP_STATUS", "CLOSURE_REASON"),
+    )
+    PRIORITIZED_CAT3 = (
+        ("FAMILY_AFFILIATION", "SSN"),
+        ("FAMILY_AFFILIATION", "CITIZENSHIP_STATUS"),
+        ("AMT_FOOD_STAMP_ASSISTANCE", "AMT_SUB_CC", "CASH_AMOUNT", "CC_AMOUNT", "TRANSP_AMOUNT"),
+        ("FAMILY_AFFILIATION", "SSN", "CITIZENSHIP_STATUS"),
+        ("FAMILY_AFFILIATION", "PARENT_MINOR_CHILD"),
+        ("FAMILY_AFFILIATION", "EDUCATION_LEVEL"),
+        ("FAMILY_AFFILIATION", "WORK_ELIGIBLE_INDICATOR"),
+        ("CITIZENSHIP_STATUS", "WORK_ELIGIBLE_INDICATOR"),
+    )
+
+    # All cat1/4 errors
+    error_type_query = Q(error_type=ParserErrorCategoryChoices.PRE_CHECK) | \
+        Q(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
+    filtered_errors = parser_errors.filter(error_type_query)
+
+    for fields in PRIORITIZED_CAT2:
+        filtered_errors = filtered_errors.union(parser_errors.filter(
+            field_name__in=fields,
+            error_type=ParserErrorCategoryChoices.FIELD_VALUE
+        ))
+
+    for fields in PRIORITIZED_CAT3:
+        filtered_errors = filtered_errors.union(parser_errors.filter(
+            fields_json__friendly_name__has_keys=fields,
+            error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY
+        ))
+
+    return filtered_errors
+
+
+def format_error_msg(error_msg, fields_json):
+    """Format error message."""
+    for key, value in fields_json['friendly_name'].items():
+        error_msg = error_msg.replace(key, value) if value else error_msg
+    return error_msg
+
+
+def friendly_names(fields_json):
+    """Return comma separated string of friendly names."""
+    return ','.join([i for i in fields_json['friendly_name'].values()])
+
+
+def internal_names(fields_json):
+    """Return comma separated string of internal names."""
+    return ','.join([i for i in fields_json['friendly_name'].keys()])
+
+
+def check_fields_json(fields_json, field_name):
+    """If fields_json is None, impute field name to avoid NoneType errors."""
+    if not fields_json:
+        child_dict = {field_name: field_name} if field_name else {}
+        fields_json = {'friendly_name': child_dict}
+    return fields_json
+
+
+def write_worksheet_banner(worksheet):
+    """Write worksheet banner."""
     row, col = 0, 0
-    output = BytesIO()
-    workbook = xlsxwriter.Workbook(output)
-    worksheet = workbook.add_worksheet()
-
-    report_columns = [
-        ('case_number', lambda x: x['case_number']),
-        ('year', lambda x: str(x['rpt_month_year'])[0:4] if x['rpt_month_year'] else None),
-        ('month', lambda x: calendar.month_name[
-            int(str(x['rpt_month_year'])[4:])
-            ] if x['rpt_month_year'] else None),
-        ('error_message', lambda x: format_error_msg(chk(x))),
-        ('item_number', lambda x: x['item_number']),
-        ('item_name', lambda x: ','.join([i for i in chk(x)['fields_json']['friendly_name'].values()])),
-        ('internal_variable_name', lambda x: ','.join([i for i in chk(x)['fields_json']['friendly_name'].keys()])),
-        ('row_number', lambda x: x['row_number']),
-        ('error_type', lambda x: str(ParserErrorCategoryChoices(x['error_type']).label)),
-    ]
 
     # write beta banner
     worksheet.write(
@@ -81,26 +115,99 @@ def get_xls_serialized_file(data):
         string='Visit the Knowledge Center for further guidance on reviewing error reports'
     )
 
+
+def format_header(header_list: list):
+    """Format header."""
+    return ' '.join([i.capitalize() for i in header_list.split('_')])
+
+
+def write_prioritized_errors(worksheet, prioritized_errors, bold):
+    """Write prioritized errors to spreadsheet."""
     row, col = 5, 0
 
-    # write csv header
-    bold = workbook.add_format({'bold': True})
+    # We will write the headers in the first row
+    columns = ['case_number', 'year', 'month',
+               'error_message', 'item_number', 'item_name',
+               'internal_variable_name', 'row_number', 'error_type',
+               ]
+    for idx, col in enumerate(columns):
+        worksheet.write(row, idx, format_header(col), bold)
 
-    def format_header(header_list: list):
-        """Format header."""
-        return ' '.join([i.capitalize() for i in header_list.split('_')])
+    paginator = Paginator(prioritized_errors.order_by('pk'), settings.BULK_CREATE_BATCH_SIZE)
+    row_idx = 6
+    for page in paginator:
+        for record in page.object_list:
+            rpt_month_year = getattr(record, 'rpt_month_year', None)
+            rpt_month_year = str(rpt_month_year) if rpt_month_year else ""
+
+            fields_json = check_fields_json(getattr(record, 'fields_json', {}), record.field_name)
+
+            worksheet.write(row_idx, 0, record.case_number)
+            worksheet.write(row_idx, 1, rpt_month_year[:4])
+            worksheet.write(row_idx, 2, calendar.month_name[int(rpt_month_year[4:])] if rpt_month_year[4:] else None)
+            worksheet.write(row_idx, 3, format_error_msg(record.error_message, fields_json))
+            worksheet.write(row_idx, 4, record.item_number)
+            worksheet.write(row_idx, 5, friendly_names(fields_json))
+            worksheet.write(row_idx, 6, internal_names(fields_json))
+            worksheet.write(row_idx, 7, record.row_number)
+            worksheet.write(row_idx, 8, str(ParserErrorCategoryChoices(record.error_type).label))
+            row_idx += 1
+
+
+def write_aggregate_errors(worksheet, all_errors, bold):
+    """Aggregate by error message and write."""
+    row, col = 5, 0
 
     # We will write the headers in the first row
-    [worksheet.write(row, col, format_header(key[0]), bold) for col, key in enumerate(report_columns)]
+    columns = ['year', 'month', 'error_message', 'item_number', 'item_name',
+               'internal_variable_name', 'error_type', 'number_of_occurrences'
+               ]
+    for idx, col in enumerate(columns):
+        worksheet.write(row, idx, format_header(col), bold)
 
-    [
-        worksheet.write(row + 6, col, key[1](data_i)) for col, key in enumerate(report_columns)
-        for row, data_i in enumerate(data)
-    ]
+    aggregates = all_errors.values('rpt_month_year', 'error_message',
+                                   'item_number', 'field_name',
+                                   'fields_json', 'error_type').annotate(num_occurrences=Count('error_message'))
+
+    paginator = Paginator(aggregates.order_by('-num_occurrences'), settings.BULK_CREATE_BATCH_SIZE)
+    row_idx = 6
+    for page in paginator:
+        for record in page.object_list:
+            rpt_month_year = record['rpt_month_year']
+            rpt_month_year = str(rpt_month_year) if rpt_month_year else ""
+
+            fields_json = check_fields_json(record['fields_json'], record['field_name'])
+
+            worksheet.write(row_idx, 0, rpt_month_year[:4])
+            worksheet.write(row_idx, 1, calendar.month_name[int(rpt_month_year[4:])] if rpt_month_year[4:] else None)
+            worksheet.write(row_idx, 2, format_error_msg(record['error_message'], fields_json))
+            worksheet.write(row_idx, 3, record['item_number'])
+            worksheet.write(row_idx, 4, friendly_names(fields_json))
+            worksheet.write(row_idx, 5, internal_names(fields_json))
+            worksheet.write(row_idx, 6, str(ParserErrorCategoryChoices(record['error_type']).label))
+            worksheet.write(row_idx, 7, record['num_occurrences'])
+            row_idx += 1
+
+
+def get_xls_serialized_file(all_errors, prioritized_errors):
+    """Return xls file created from the error."""
+    output = BytesIO()
+    workbook = xlsxwriter.Workbook(output)
+    prioritized_sheet = workbook.add_worksheet(name="Critical")
+    aggregate_sheet = workbook.add_worksheet(name="Summary")
+
+    write_worksheet_banner(prioritized_sheet)
+    write_worksheet_banner(aggregate_sheet)
+
+    bold = workbook.add_format({'bold': True})
+    write_prioritized_errors(prioritized_sheet, prioritized_errors, bold)
+    write_aggregate_errors(aggregate_sheet, all_errors, bold)
 
     # autofit all columns except for the first one
-    worksheet.autofit()
-    worksheet.set_column(0, 0, 20)
+    prioritized_sheet.autofit()
+    prioritized_sheet.set_column(0, 0, 20)
+    aggregate_sheet.autofit()
+    aggregate_sheet.set_column(0, 0, 20)
 
     workbook.close()
-    return {"data": data, "xls_report": base64.b64encode(output.getvalue()).decode("utf-8")}
+    return {"xls_report": base64.b64encode(output.getvalue()).decode("utf-8")}
