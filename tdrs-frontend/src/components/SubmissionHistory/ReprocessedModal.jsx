@@ -21,7 +21,7 @@ const ReprocessedModal = ({ date }) => {
     <div>
       <br />
       <button className="reprocessed" onClick={() => setModalVisible(true)}>
-        Reprocessed <span>&#9432;</span>
+        Reprocessed &#9432;
       </button>
       <br />
       <br />
