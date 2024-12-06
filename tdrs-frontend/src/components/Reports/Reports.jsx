@@ -455,7 +455,7 @@ function Reports() {
 
           {selectedSubmissionTab === 1 && (
             <UploadReport
-              stt={stt?.id}
+              stt={stt}
               handleCancel={() => {
                 setIsToggled(false)
                 resetPreviousValues()
