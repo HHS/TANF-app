@@ -31,7 +31,7 @@ const CaseAggregatesRow = ({ file }) => {
   return (
     <>
       <tr>
-        <th scope="rowgroup" rowSpan={5}>
+        <th scope="rowgroup" rowSpan={3}>
           {formatDate(file.createdAt) + ' by ' + file.submittedBy}
           {hasReparsed(file) && <ReprocessedModal date={reprocessedOn} />}
         </th>

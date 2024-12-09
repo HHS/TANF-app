@@ -19,12 +19,9 @@ const ReprocessedModal = ({ date }) => {
   const message = <Message date={date} />
   return (
     <div>
-      <br />
       <button className="reprocessed" onClick={() => setModalVisible(true)}>
         Reprocessed &#9432;
       </button>
-      <br />
-      <br />
       <Modal
         title="Most Recent Reprocessed Date"
         message={message}
