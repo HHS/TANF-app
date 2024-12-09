@@ -39,12 +39,21 @@ route:
 
   # The child route trees.
   routes:
-    # This routes performs a regular expression match on alert labels to
-    # catch alerts that are related to a list of services.
+    # Only alert dev team of uptime issues
     - matchers:
         - alertname=~"UpTime"
       receiver: dev-team-emails
       group_wait: 30m
+
+    # Send all severity CRITICAL/ERROR alerts to OFA admins and TDP Devs
+    - matchers:
+      - severity=~"ERROR|CRITICAL"
+      receiver: admin-team-emails
+      continue: true
+    - matchers:
+      - severity=~"ERROR|CRITICAL"
+      receiver: dev-team-emails
+      continue: true
 
 # Inhibition rules allow to mute a set of alerts given that another alert is
 # firing.
