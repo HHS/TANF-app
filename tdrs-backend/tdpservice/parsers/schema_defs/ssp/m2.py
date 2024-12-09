@@ -317,7 +317,7 @@ m2 = SchemaManager(
                     startIndex=48,
                     endIndex=49,
                     required=False,
-                    validators=[category2.isGreaterThan(0)]
+                    validators=[category2.isGreaterThan(0, inclusive=True)]
                 ),
                 Field(
                     item="32E",
