@@ -69,12 +69,6 @@ t1 = SchemaManager(
                 category3.ifThenAlso(
                     condition_field_name="SANC_REDUCTION_AMT",
                     condition_function=category3.isGreaterThan(0),
-                    result_field_name="FAMILY_SANC_ADULT",
-                    result_function=category3.isOneOf((1, 2)),
-                ),
-                category3.ifThenAlso(
-                    condition_field_name="SANC_REDUCTION_AMT",
-                    condition_function=category3.isGreaterThan(0),
                     result_field_name="SANC_TEEN_PARENT",
                     result_function=category3.isOneOf((1, 2)),
                 ),
@@ -635,7 +629,7 @@ t1 = SchemaManager(
                     endIndex=114,
                     required=False,
                     validators=[
-                        category2.isOneOf(["9", " "]),
+                        category2.isOneOf(["9", "0", " "]),
                         category2.isAlphaNumeric(),
                     ],
                 ),
@@ -658,7 +652,7 @@ t1 = SchemaManager(
                     endIndex=117,
                     required=False,
                     validators=[
-                        category2.isOneOf([1, 2]),
+                        category2.isOneOf([0, 1, 2]),
                     ],
                 ),
                 Field(
