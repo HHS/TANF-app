@@ -491,11 +491,11 @@ describe('SubmissionHistory', () => {
             createdAt: '12/12/2012 12:12',
             submittedBy: 'test@teamraft.com',
             latest_reparse_file_meta: {
-              'finished': true,
-              'success': true,
-              'started_at': '2024-12-09T18:38:14+0000',
-              'finished_at': '2024-12-09T18:38:16+0000'
-            }
+              finished: true,
+              success: true,
+              started_at: '2024-12-09T18:38:14+0000',
+              finished_at: '2024-12-09T18:38:16+0000',
+            },
           },
         ],
       },
