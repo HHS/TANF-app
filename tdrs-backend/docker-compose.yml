@@ -24,6 +24,19 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/:rw
 
+  grafana-pg:
+    image: tdp-docker.dev.raftlabs.tech/dependencies/postgres:15.7
+    environment:
+      - PGDATA=/var/lib/postgresql/data/
+      - POSTGRES_DB=grafana
+      - POSTGRES_PASSWORD=something_secure
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=grafana
+    ports:
+      - "5433:5432"
+    volumes:
+      - grafana_pg_data:/var/lib/postgresql/data/:rw
+
   clamav-rest:
     image: tdp-docker.dev.raftlabs.tech/dependencies/rafttech/clamav-rest:0.103.2
     environment:
@@ -76,12 +89,27 @@ services:
     image: grafana/grafana:11.2.0
     ports:
       - 9400:9400
+    environment:
+      - GF_PATHS_PROVISIONING=/usr/share/grafana/conf/provisioning
+      - GF_SERVER_HTTP_PORT=9400
     volumes:
-      - ./plg/grafana/datasources.yml:/etc/grafana/provisioning/datasources/default.yml
-      - ./plg/grafana/dashboards/provider.yml:/etc/grafana/provisioning/dashboards/default.yml
-      - ./plg/grafana/dashboards:/var/lib/grafana/provisioning/dashboards
-      - ./plg/grafana/custom.ini:/etc/grafana/grafana.ini
+      - ./plg/grafana/datasources.local.yml:/usr/share/grafana/conf/provisioning/datasources/datasources.yml
+      - ./plg/grafana/providers.local.yml:/usr/share/grafana/conf/provisioning/dashboards/providers.yml
+      - ./plg/grafana/dashboards:/var/lib/grafana/dashboards
+      - ./plg/grafana/custom.local.ini:/usr/share/grafana/conf/custom.ini
       - grafana_data:/var/lib/grafana
+    command: --config /usr/share/grafana/conf/custom.ini
+    depends_on:
+      - grafana-pg
+  
+  alertmanager:
+    restart: always
+    image: prom/alertmanager:v0.27.0
+    ports: 
+      - 9093:9093
+    volumes: 
+      - ./plg/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    command: --config.file=/etc/alertmanager/alertmanager.yml --storage.path=/alertmanager --log.level=debug --web.external-url=http://localhost:3000/alerts --web.route-prefix=/alerts --cluster.listen-address=""
 
   prometheus:
     restart: always
@@ -89,32 +117,36 @@ services:
     ports:
       - 9090:9090
     volumes:
-      - ./plg/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./plg/prometheus/django_rules.yml:/etc/prometheus/prom_django_rules.yml
+      - ./plg/prometheus/prometheus.local.yml:/etc/prometheus/prometheus.yml
+      - ./plg/prometheus/django-rules.yml:/etc/prometheus/django-rules.yml
+      - ./plg/prometheus/alerts.local.yml:/etc/prometheus/alerts.yml
       - prometheus_data:/prometheus
     depends_on:
       - web
       - celery-exporter
       - postgres-exporter
+      - alertmanager
 
   promtail:
     restart: always
-    image: grafana/promtail:3.0.1
+    image: grafana/promtail:3.1.1
     ports:
       - 9080:9080
     volumes:
-      - ./plg/promtail/config.yml:/etc/promtail/config.yml
+      - ./plg/promtail/config.local.yml:/etc/promtail/config.yml
       - ~/tdp-logs/nginx:/var/log/nginx
       - logs:/logs
     command: -config.file=/etc/promtail/config.yml
 
   loki:
     restart: always
-    image: grafana/loki:3.0.1
+    image: grafana/loki:3.1.1
     ports:
       - 3100:3100
     volumes:
       - loki_data:/loki
+      - ./plg/loki/loki.local.yml:/loki/loki.yml
+    command: -config.file=/loki/loki.yml
 
   celery-exporter:
     restart: always
@@ -208,6 +240,7 @@ services:
 volumes:
   localstack_data:
   postgres_data:
+  grafana_pg_data:
   elastic_data:
   prometheus_data:
   grafana_data:

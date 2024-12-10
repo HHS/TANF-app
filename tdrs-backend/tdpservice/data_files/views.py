@@ -15,13 +15,12 @@ from wsgiref.util import FileWrapper
 from rest_framework import status
 
 from tdpservice.data_files.serializers import DataFileSerializer
-from tdpservice.data_files.util import get_xls_serialized_file
+from tdpservice.data_files.util import get_xls_serialized_file, get_prioritized_queryset
 from tdpservice.data_files.models import DataFile, get_s3_upload_path
 from tdpservice.users.permissions import DataFilePermissions, IsApprovedPermission
 from tdpservice.scheduling import parser_task
 from tdpservice.data_files.s3_client import S3Client
 from tdpservice.parsers.models import ParserError
-from tdpservice.parsers.serializers import ParsingErrorSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -147,9 +146,10 @@ class DataFileViewSet(ModelViewSet):
     def download_error_report(self, request, pk=None):
         """Generate and return the parsing error report xlsx."""
         datafile = self.get_object()
-        parser_errors = ParserError.objects.all().filter(file=datafile)
-        serializer = ParsingErrorSerializer(parser_errors, many=True, context=self.get_serializer_context())
-        return Response(get_xls_serialized_file(serializer.data))
+        all_errors = ParserError.objects.filter(file=datafile)
+        filtered_errors = get_prioritized_queryset(all_errors)
+
+        return Response(get_xls_serialized_file(all_errors, filtered_errors))
 
 
 class GetYearList(APIView):

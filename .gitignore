@@ -109,4 +109,12 @@ cypress.env.json
 
 # Patches
 *.patch
+
+# Logs
+*.log
+
+# DB seeds
 tdrs-backend/*.pg
+
+# Log files
+*.log

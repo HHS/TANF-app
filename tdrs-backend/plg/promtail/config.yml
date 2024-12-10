@@ -1,32 +1,26 @@
 server:
   http_listen_port: 9080
   grpc_listen_port: 0
+  log_level: info
 
 positions:
   filename: /tmp/positions.yaml
 
 clients:
-  - url: http://loki:3100/loki/api/v1/push
+  - url: http://loki.apps.internal:8080/loki/api/v1/push
 
 scrape_configs:
-  - job_name: system
+  - job_name: {{ system_env_name }}
     static_configs:
     - targets:
         - localhost
       labels:
-        job: varlogs
+        job: {{ system_env_name }}
         __path__: /var/log/*log
-  - job_name: django
+  - job_name: {{ backend_env_name }}
     static_configs:
       - targets:
         - localhost
         labels:
-          job: django
-          __path__: /logs/django.log
-  - job_name: nginx
-    static_configs:
-      - targets:
-        - localhost
-        labels:
-          job: nginx
-          __path__: /var/log/nginx/*log
+          job: {{ backend_env_name }}
+          __path__: /tmp/django.log

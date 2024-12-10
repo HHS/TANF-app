@@ -118,9 +118,11 @@ class User(AbstractUser):
         """Return the username as the string representation of the object."""
         return self.username
 
-    def is_in_group(self, group_name: str) -> bool:
-        """Return whether or not the user is a member of the specified Group."""
-        return self.groups.filter(name=group_name).exists()
+    def is_in_group(self, group_names: list) -> bool:
+        """Return whether or not the user is a member of the specified Group(s)."""
+        if type(group_names) == str:
+            group_names = [group_names]
+        return self.groups.filter(name__in=group_names).exists()
 
     def validate_location(self):
         """Throw a validation error if a user has a location type incompatable with their role."""
@@ -179,6 +181,11 @@ class User(AbstractUser):
     def is_ocio_staff(self) -> bool:
         """Return whether or not the user is in the ACF OCIO Group."""
         return self.is_in_group("ACF OCIO")
+
+    @property
+    def is_an_admin(self) -> bool:
+        """Return whether or not the user is in the OFA Admin Group or OFA System Admin."""
+        return self.is_in_group(["OFA Admin", "OFA System Admin"])
 
     @property
     def is_ofa_sys_admin(self) -> bool:

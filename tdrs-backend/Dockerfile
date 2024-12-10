@@ -9,18 +9,23 @@ ENV DJANGO_SETTINGS_MODULE=tdpservice.settings.local
 ENV DJANGO_CONFIGURATION=Local
 # Allows docker to cache installed dependencies between builds
 COPY Pipfile Pipfile.lock /tdpapp/
+# COPY sources.list /etc/apt/sources.list
 WORKDIR /tdpapp/
 # Download latest listing of available packages:
 RUN apt-get -y update
 # Upgrade already installed packages:
 RUN apt-get -y upgrade
+# Install packages:
+RUN apt-get install -y gcc graphviz graphviz-dev libpq-dev python3-dev vim curl ca-certificates
+
 # Postgres client setup
+#RUN bash -c 'echo "deb [trusted=yes] https://tdp-nexus.dev.raftlabs.tech/repository/apt-proxy-postgres/ bullseye-pdpg main" >> /etc/apt/sources.list'
+RUN apt-get update -y && apt-get upgrade -y
 RUN apt --purge remove postgresql postgresql-* && apt install -y postgresql-common curl ca-certificates && install -d /usr/share/postgresql-common/pgdg && \
 curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
 sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt bullseye-pgdg main" > /etc/apt/sources.list.d/pgdg.list' && \
-apt -y update && apt install postgresql-client-15 -y
-# Install packages:
-RUN apt install -y gcc graphviz graphviz-dev libpq-dev python3-dev vim
+apt -y update && apt -y upgrade && apt install postgresql-client-15 -y
+
 # Install pipenv
 RUN pip install --upgrade pip pipenv
 RUN pipenv install --dev --system --deploy

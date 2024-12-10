@@ -3,10 +3,11 @@ applications:
 - name: tdp-backend
   memory: 2G
   instances: 1
-  disk_quota: 2G
+  disk_quota: 4G
+  command: "./gunicorn_start.sh cloud"
   env:
     REDIS_URI: redis://localhost:6379
   buildpacks:
   - https://github.com/cloudfoundry/apt-buildpack
   - https://github.com/cloudfoundry/python-buildpack.git#v1.8.3
-  command: "./gunicorn_start.sh"
+  - https://github.com/cloudfoundry/binary-buildpack

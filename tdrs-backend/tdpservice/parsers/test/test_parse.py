@@ -501,7 +501,7 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile, dfs):
     assert cat4_errors[1].error_message == "Duplicate record detected with record type M3 at line 3273. " + \
         "Record is a duplicate of the record at line number 3272."
 
-    assert parser_errors.count() == 32488
+    assert parser_errors.count() == 32455
 
     assert SSP_M1.objects.count() == expected_m1_record_count
     assert SSP_M2.objects.count() == expected_m2_record_count

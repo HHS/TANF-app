@@ -1,9 +1,9 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
-import { fileUploadSections } from '../../reducers/reports'
 import Paginator from '../Paginator'
 import { getAvailableFileList } from '../../actions/reports'
+import { fileUploadSections } from '../../reducers/reports'
 import { useEffect } from 'react'
 import { useState } from 'react'
 import { CaseAggregatesTable } from './CaseAggregatesTable'
@@ -63,6 +63,7 @@ const SubmissionHistory = ({ filterValues }) => {
   const dispatch = useDispatch()
   const [hasFetchedFiles, setHasFetchedFiles] = useState(false)
   const { files } = useSelector((state) => state.reports)
+  const num_sections = filterValues.stt.num_sections
 
   useEffect(() => {
     if (!hasFetchedFiles) {
@@ -86,15 +87,17 @@ const SubmissionHistory = ({ filterValues }) => {
         </a>
       </div>
       <div>
-        {fileUploadSections.map((section, index) => (
-          <SectionSubmissionHistory
-            key={section}
-            section={index + 1}
-            label={section}
-            filterValues={filterValues}
-            files={files.filter((f) => f.section.includes(section))}
-          />
-        ))}
+        {fileUploadSections.slice(0, num_sections).map((section, index) => {
+          return (
+            <SectionSubmissionHistory
+              key={section}
+              section={index + 1}
+              label={section}
+              filterValues={filterValues}
+              files={files.filter((f) => f.section.includes(section))}
+            />
+          )
+        })}
       </div>
     </>
   )
