@@ -120,7 +120,7 @@ class User(AbstractUser):
 
     def is_in_group(self, group_names: list) -> bool:
         """Return whether or not the user is a member of the specified Group(s)."""
-        if type(group_names) == str:
+        if type(group_names) is str:
             group_names = [group_names]
         return self.groups.filter(name__in=group_names).exists()
 
