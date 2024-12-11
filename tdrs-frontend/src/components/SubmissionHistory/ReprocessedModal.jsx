@@ -14,29 +14,39 @@ const Message = ({ date }) => {
   )
 }
 
-const ReprocessedModal = ({ date }) => {
-  const [modalVisible, setModalVisible] = useState(false)
-  const message = <Message date={date} />
+export const ReprocessedButton = ({ date, reprocessedState }) => {
   return (
     <div>
-      <button className="reprocessed" onClick={() => setModalVisible(true)}>
+      <button
+        className="reprocessed"
+        onClick={() => {
+          reprocessedState.setDate(date)
+          reprocessedState.setModalVisible(true)
+        }}
+      >
         Reprocessed &#9432;
       </button>
-      <Modal
-        title="Most Recent Reprocessed Date"
-        message={message}
-        isVisible={modalVisible}
-        buttons={[
-          {
-            key: '1',
-            text: 'Close',
-            onClick: () => {
-              setModalVisible(false)
-            },
-          },
-        ]}
-      />
     </div>
+  )
+}
+
+const ReprocessedModal = ({ date, isVisible, setModalVisible }) => {
+  const message = <Message date={date} />
+  return (
+    <Modal
+      title="Most Recent Reprocessed Date"
+      message={message}
+      isVisible={isVisible}
+      buttons={[
+        {
+          key: '1',
+          text: 'Close',
+          onClick: () => {
+            setModalVisible(false)
+          },
+        },
+      ]}
+    />
   )
 }
 
