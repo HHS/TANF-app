@@ -22,10 +22,15 @@ describe('SubmissionHistory', () => {
     file_type: 'TANF',
   }
 
-  const setup = (store = appStore, filterValues = defaultFilterValues) =>
+  const defaultReprocessedState = {
+    setDate: () => {},
+    setModalVisible: () => {}
+  }
+
+  const setup = (store = appStore, filterValues = defaultFilterValues, reprocessedState = defaultReprocessedState) =>
     render(
       <Provider store={store}>
-        <SubmissionHistory filterValues={filterValues} />
+        <SubmissionHistory filterValues={filterValues} reprocessedState={reprocessedState} />
       </Provider>
     )
 
@@ -511,8 +516,5 @@ describe('SubmissionHistory', () => {
 
     const reprocessedBtn = screen.queryByText('Reprocessed ⓘ')
     expect(reprocessedBtn).toBeInTheDocument()
-
-    fireEvent.click(reprocessedBtn)
-    expect(screen.queryByText('Data was reprocessed on: 12/9/2024, 1:38:16 PM'))
   })
 })
