@@ -24,13 +24,20 @@ describe('SubmissionHistory', () => {
 
   const defaultReprocessedState = {
     setDate: () => {},
-    setModalVisible: () => {}
+    setModalVisible: () => {},
   }
 
-  const setup = (store = appStore, filterValues = defaultFilterValues, reprocessedState = defaultReprocessedState) =>
+  const setup = (
+    store = appStore,
+    filterValues = defaultFilterValues,
+    reprocessedState = defaultReprocessedState
+  ) =>
     render(
       <Provider store={store}>
-        <SubmissionHistory filterValues={filterValues} reprocessedState={reprocessedState} />
+        <SubmissionHistory
+          filterValues={filterValues}
+          reprocessedState={reprocessedState}
+        />
       </Provider>
     )
 
