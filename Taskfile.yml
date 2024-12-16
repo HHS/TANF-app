@@ -246,8 +246,9 @@ tasks:
     dir: performance-tests
     vars:
       SCRIPT: '{{.SCRIPT}}'
+      CYPRESS_TOKEN: '{{.CYPRESS_TOKEN | default "local-cypress-token"}}'
     cmds:
-      - k6 run -e BASE_URL=http://localhost:3000 -e CYPRESS_TOKEN=local-cypress-token {{.SCRIPT}}
+      - k6 run -e BASE_URL=http://localhost:3000 -e CYPRESS_TOKEN={{.CYPRESS_TOKEN}} {{.SCRIPT}}
 
 
   frontend-lint:
