@@ -247,8 +247,9 @@ tasks:
     vars:
       SCRIPT: '{{.SCRIPT}}'
       CYPRESS_TOKEN: '{{.CYPRESS_TOKEN | default "local-cypress-token"}}'
+      BASE_URL: '{{.BASE_URL | default "http://localhost:3000"}}'
     cmds:
-      - k6 run -e BASE_URL=http://localhost:3000 -e CYPRESS_TOKEN={{.CYPRESS_TOKEN}} {{.SCRIPT}}
+      - k6 run -e BASE_URL={{.BASE_URL}} -e CYPRESS_TOKEN={{.CYPRESS_TOKEN}} {{.SCRIPT}}
 
 
   frontend-lint:
