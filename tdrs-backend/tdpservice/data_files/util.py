@@ -46,7 +46,9 @@ def get_prioritized_queryset(parser_errors, is_s3_s4):
     if is_s3_s4:
         all_cat2_cat3 = Q(error_type=ParserErrorCategoryChoices.FIELD_VALUE) | \
             Q(error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY)
-        filtered_errors = filtered_errors.union(parser_errors.filter(all_cat2_cat3))
+        filtered_errors = filtered_errors.union(parser_errors.filter(all_cat2_cat3).exclude(
+            error_message__contains="HEADER Update Indicator")
+        )
         return filtered_errors
 
     for fields in PRIORITIZED_CAT2:
