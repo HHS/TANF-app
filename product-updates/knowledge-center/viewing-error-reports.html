@@ -717,9 +717,9 @@ Family-level data for a specific month the family is receiving assistance.
 
 
     <table class="usa-table">
+      <caption>TANF Record Layouts</caption>
       <thead>
         <tr>
-          <th scope="col">Program</th>
           <th scope="col">Record Type</th>
           <th scope="col">Min Length</th>
           <th scope="col">Max Length</th>
@@ -728,7 +728,6 @@ Family-level data for a specific month the family is receiving assistance.
       </thead>
       <tbody>
         <tr>
-          <th scope="row">TANF</th>
           <td>T1</td>
           <td>117</td>
           <td>156</td>
@@ -736,7 +735,6 @@ Family-level data for a specific month the family is receiving assistance.
         </tr>
 
         <tr>
-          <th scope="row"></th>
           <td>T2</td>
           <td>156</td>
           <td>156</td>
@@ -744,15 +742,14 @@ Family-level data for a specific month the family is receiving assistance.
         </tr>
 
         <tr>
-          <th scope="row"></th>
           <td>T3</td>
           <td>60</td>
           <td>156</td>
-          <td>T3 records with one child must have a record length >= 60. T3 records with two children are must have 101 <= record length <= 156. If any value is in the 2nd child positions (61 to 101), the 2nd child record will be processed, unless it is completely zero-filled or space-filled.</td>
+          <td>T3 records with one child must have a record length ≥ 60. T3 records with two children are must have 101 ≤ record length ≤ 156. If any value is in the 2nd child positions (61 to 101), the 2nd child record will be processed, unless it is completely zero-filled or space-filled.</td>
         </tr>
 
         <tr>
-          <th scope="row"></th>
+
           <td>T4</td>
           <td>36</td>
           <td>71</td>
@@ -760,7 +757,7 @@ Family-level data for a specific month the family is receiving assistance.
         </tr>
 
         <tr>
-          <th scope="row"></th>
+
           <td>T5</td>
           <td>71</td>
           <td>71</td>
@@ -768,7 +765,7 @@ Family-level data for a specific month the family is receiving assistance.
         </tr>
 
         <tr>
-          <th scope="row"></th>
+
           <td>T6</td>
           <td>379</td>
           <td>379</td>
@@ -776,15 +773,31 @@ Family-level data for a specific month the family is receiving assistance.
         </tr>
 
         <tr>
-          <th scope="row"></th>
+
           <td>T7</td>
           <td>247</td>
           <td>247</td>
           <td>Please space-fill to max length after last stratum reported.</td>
         </tr>
 
+              </tbody>
+    </table>
+
+
+    <table class="usa-table">
+            <caption>Tribal Record Layouts</caption>
+
+      <thead>
         <tr>
-          <th scope="row">Tribal</th>
+          <th scope="col">Record Type</th>
+          <th scope="col">Min Length</th>
+          <th scope="col">Max Length</th>
+          <th scope="col">Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+
           <td>T1</td>
           <td>117</td>
           <td>122</td>
@@ -792,7 +805,7 @@ Family-level data for a specific month the family is receiving assistance.
         </tr>
 
         <tr>
-          <th scope="row"></th>
+
           <td>T2</td>
           <td>122</td>
           <td>122</td>
@@ -800,15 +813,15 @@ Family-level data for a specific month the family is receiving assistance.
         </tr>
 
         <tr>
-          <th scope="row"></th>
+
           <td>T3</td>
           <td>60</td>
           <td>122</td>
-          <td>T3 records with one child must have a record length >= 60. T3 records with two children are must have 101 <= record length <= 122 If any value is in the 2nd child positions (61 to 101), the 2nd child record will be processed, unless it is completely zero-filled or space-filled.</td>
+          <td>T3 records with one child must have a record length ≥ 60. T3 records with two children are must have 101 ≤ record length ≤ 122 If any value is in the 2nd child positions (61 to 101), the 2nd child record will be processed, unless it is completely zero-filled or space-filled.</td>
         </tr>
 
         <tr>
-          <th scope="row"></th>
+
           <td>T4</td>
           <td>36</td>
           <td>71</td>
@@ -816,7 +829,7 @@ Family-level data for a specific month the family is receiving assistance.
         </tr>
 
         <tr>
-          <th scope="row"></th>
+
           <td>T5</td>
           <td>71</td>
           <td>71</td>
@@ -824,15 +837,31 @@ Family-level data for a specific month the family is receiving assistance.
         </tr>
 
         <tr>
-          <th scope="row"></th>
+
           <td>T6</td>
           <td>379</td>
           <td>379</td>
           <td></td>
         </tr>
 
+              </tbody>
+    </table>
+
+            <table class="usa-table">
+                    <caption>SSP Record Layouts</caption>
+
+      <thead>
         <tr>
-          <th scope="row">SSP</th>
+          <th scope="col">Record Type</th>
+          <th scope="col">Min Length</th>
+          <th scope="col">Max Length</th>
+          <th scope="col">Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr>
+
           <td>M1</td>
           <td>113</td>
           <td>150</td>
@@ -840,7 +869,7 @@ Family-level data for a specific month the family is receiving assistance.
         </tr>
 
         <tr>
-          <th scope="row"></th>
+
           <td>M2</td>
           <td>150</td>
           <td>150</td>
@@ -849,15 +878,14 @@ Family-level data for a specific month the family is receiving assistance.
 
 
         <tr>
-          <th scope="row"></th>
+
           <td>M3</td>
           <td>60</td>
           <td>150</td>
-          <td>M3 records with one child must have a record length >= 60. M3 records with two children are must have 101 <= record length <= 150. If any value is in the 2nd child positions (61 to 101), the 2nd child record will be processed, unless it is completely zero-filled or space-filled.</td>
+          <td>M3 records with one child must have a record length ≥ 60. M3 records with two children are must have 101 ≤ record length ≤ 150. If any value is in the 2nd child positions (61 to 101), the 2nd child record will be processed, unless it is completely zero-filled or space-filled.</td>
         </tr>
 
         <tr>
-          <th scope="row"></th>
           <td>M4</td>
           <td>36</td>
           <td>66</td>
@@ -865,7 +893,6 @@ Family-level data for a specific month the family is receiving assistance.
         </tr>
 
         <tr>
-          <th scope="row"></th>
           <td>M5</td>
           <td>66</td>
           <td>66</td>
@@ -873,7 +900,6 @@ Family-level data for a specific month the family is receiving assistance.
         </tr>
 
         <tr>
-          <th scope="row"></th>
           <td>M6</td>
           <td>259</td>
           <td>259</td>
@@ -881,7 +907,6 @@ Family-level data for a specific month the family is receiving assistance.
         </tr>
 
         <tr>
-          <th scope="row"></th>
           <td>M7</td>
           <td>247</td>
           <td>247</td>
