@@ -22,10 +22,22 @@ describe('SubmissionHistory', () => {
     file_type: 'TANF',
   }
 
-  const setup = (store = appStore, filterValues = defaultFilterValues) =>
+  const defaultReprocessedState = {
+    setDate: () => {},
+    setModalVisible: () => {},
+  }
+
+  const setup = (
+    store = appStore,
+    filterValues = defaultFilterValues,
+    reprocessedState = defaultReprocessedState
+  ) =>
     render(
       <Provider store={store}>
-        <SubmissionHistory filterValues={filterValues} />
+        <SubmissionHistory
+          filterValues={filterValues}
+          reprocessedState={reprocessedState}
+        />
       </Provider>
     )
 
@@ -474,4 +486,42 @@ describe('SubmissionHistory', () => {
       }
     }
   )
+
+  it('Shows Reprocessed button', () => {
+    const state = {
+      reports: {
+        files: [
+          {
+            id: '123',
+            fileName: 'test1.txt',
+            fileType: 'TANF',
+            quarter: 'Q1',
+            section: 'Active Case Data',
+            uuid: '123-4-4-321',
+            year: '2023',
+            s3_version_id: '321-0-0-123',
+            createdAt: '12/12/2012 12:12',
+            submittedBy: 'test@teamraft.com',
+            latest_reparse_file_meta: {
+              finished: true,
+              success: true,
+              started_at: '2024-12-09T18:38:14+0000',
+              finished_at: '2024-12-09T18:38:16+0000',
+            },
+          },
+        ],
+      },
+    }
+
+    const store = appConfigureStore(state)
+    const dispatch = jest.fn(store.dispatch)
+    store.dispatch = dispatch
+
+    setup(store)
+
+    expect(screen.queryByText('test1.txt')).toBeInTheDocument()
+
+    const reprocessedBtn = screen.queryByText('Reprocessed ⓘ')
+    expect(reprocessedBtn).toBeInTheDocument()
+  })
 })
