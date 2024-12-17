@@ -42,7 +42,7 @@ def get_prioritized_queryset(parser_errors, is_s3_s4):
         Q(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
     filtered_errors = parser_errors.filter(error_type_query)
 
-    # If we are a Stratum or Aggregate file, we want all cat2 and cat3 errors.
+    # If we are a Aggregate or Stratum file, we want all cat2 and cat3 errors.
     if is_s3_s4:
         all_cat2_cat3 = Q(error_type=ParserErrorCategoryChoices.FIELD_VALUE) | \
             Q(error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY)

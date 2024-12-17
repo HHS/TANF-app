@@ -147,8 +147,8 @@ class DataFileViewSet(ModelViewSet):
         """Generate and return the parsing error report xlsx."""
         datafile = self.get_object()
         all_errors = ParserError.objects.filter(file=datafile)
-        is_s3_s4 = (DataFile.Section.STRATUM_DATA in datafile.section or
-                    DataFile.Section.AGGREGATE_DATA in datafile.section)
+        is_s3_s4 = (DataFile.Section.AGGREGATE_DATA in datafile.section or
+                    DataFile.Section.STRATUM_DATA in datafile.section)
         filtered_errors = get_prioritized_queryset(all_errors, is_s3_s4)
 
         return Response(get_xls_serialized_file(all_errors, filtered_errors))
