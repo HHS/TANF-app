@@ -548,8 +548,15 @@ Family-level data for a specific month the family is receiving assistance.
 
 <h2 id="overview-of-the-error-report">Overview of the Error Report</h2>
 <div style="min-height: 22px;"></div> 
-<p>TDP's error reports are designed to provide you with key information you may need to quickly identify records that have been flagged for data quality issues. This includes the following:</p>
+<p>TDP's error reports are designed to provide you with key information you may need to quickly identify records that have been flagged for data quality issues.</p>
+<br>
+<p>The error report has two tabs:</p>
+<ul>
+  <li>Critical: Displays detailed information about only the most critical errors that prevent acceptance or impact data integrity.</li>
+  <li>Summary: Groups all errors by type, month, and year with a count of how frequently that error occurs. </li>
+</ul>
 <div style="min-height: 22px;"></div> 
+<p><b>Critical Tab:</b></p>
 <ul style="">
   <li style="max-width: auto;">Case Number, Year, and Month — which can be used to identify which cases have errors and the reporting period those errors are specific to  (if applicable).</li>
   <li>Error Message — which describes the error and how the related items are logically connected.</li>
@@ -558,12 +565,27 @@ Family-level data for a specific month the family is receiving assistance.
   <li>Row Number — identifying which row of the submitted file contains the record associated with a given error.</li>
   <li>Error Type — indicates the category of error and is related to both the cause of the error, and its effect on whether records are accepted into the database.</li>
 </ul>
+
+<a href="../img/error-reports/error-report-critical.png" data-lity data-lity-desc="TDP error report critical tab containing some of the  error examples above opened in Excel">
+  <img src="../img/error-reports/error-report-critical.png" alt="TDP error report critical tab containing some of the error examples above in Excel">
+  </a>
+
 <div style="min-height: 22px;"></div> 
 
+<div style="min-height: 22px;"></div> 
+<p><b>Summary Tab:</b></p>
+<ul style="">
+  <li style="max-width: auto;">Case Number, Year, and Month — which can be used to identify which cases have errors and the reporting period those errors are specific to  (if applicable).</li>
+  <li>Item Number and Item Name </li>
+  <li>Internal Variable Name</li>
+  <li>Error Type</li>
+  <li>Number Of Occurrences: Total number of times the error appears; this number will include all errors in the file, even when there are more than 500 critical errors.</li>
+</ul>
 
-  <a href="../img/error-reports/error-report.png" data-lity data-lity-desc="TDP error report containing some of the error examples below opened in Excel">
-      <img src="../img/error-reports/error-report.png" alt="TDP error report containing some of the error examples below opened in Excel">
-      </a>
+<a href="../img/error-reports/error-report.png" data-lity data-lity-desc="TDP error report summary tab containing some of the error examples above opened in Excel">
+  <img src="../img/error-reports/error-report.png" alt="TDP error report summary tab containing some of the error examples above opened in Excel">
+  </a>
+
 
       <div style="min-height: 22px;"></div> <div style="min-height: 22px;"></div> 
       <h3 id="interpreting-error-types">Interpreting Error Types</h3>
@@ -692,6 +714,182 @@ Family-level data for a specific month the family is receiving assistance.
     <div style="min-height: 22px;"></div>
 
     <p>Please refer to the <a href="https://www.acf.hhs.gov/ofa/policy-guidance/final-tanf-ssp-moe-data-reporting-system-transmission-files-layouts-and-edits">Transmission File Layout documents</a> to compare your records against their expected layouts.</p>
+
+
+    <table class="usa-table">
+      <thead>
+        <tr>
+          <th scope="col">Program</th>
+          <th scope="col">Record Type</th>
+          <th scope="col">Min Length</th>
+          <th scope="col">Max Length</th>
+          <th scope="col">Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">TANF</th>
+          <td>T1</td>
+          <td>117</td>
+          <td>156</td>
+          <td></td>
+        </tr>
+
+        <tr>
+          <th scope="row"></th>
+          <td>T2</td>
+          <td>156</td>
+          <td>156</td>
+          <td></td>
+        </tr>
+
+        <tr>
+          <th scope="row"></th>
+          <td>T3</td>
+          <td>60</td>
+          <td>156</td>
+          <td>T3 records with one child must have a record length >= 60. T3 records with two children are must have 101 <= record length <= 156. If any value is in the 2nd child positions (61 to 101), the 2nd child record will be processed, unless it is completely zero-filled or space-filled.</td>
+        </tr>
+
+        <tr>
+          <th scope="row"></th>
+          <td>T4</td>
+          <td>36</td>
+          <td>71</td>
+          <td></td>
+        </tr>
+
+        <tr>
+          <th scope="row"></th>
+          <td>T5</td>
+          <td>71</td>
+          <td>71</td>
+          <td></td>
+        </tr>
+
+        <tr>
+          <th scope="row"></th>
+          <td>T6</td>
+          <td>379</td>
+          <td>379</td>
+          <td></td>
+        </tr>
+
+        <tr>
+          <th scope="row"></th>
+          <td>T7</td>
+          <td>247</td>
+          <td>247</td>
+          <td>Please space-fill to max length after last stratum reported.</td>
+        </tr>
+
+        <tr>
+          <th scope="row">Tribal</th>
+          <td>T1</td>
+          <td>117</td>
+          <td>122</td>
+          <td></td>
+        </tr>
+
+        <tr>
+          <th scope="row"></th>
+          <td>T2</td>
+          <td>122</td>
+          <td>122</td>
+          <td></td>
+        </tr>
+
+        <tr>
+          <th scope="row"></th>
+          <td>T3</td>
+          <td>60</td>
+          <td>122</td>
+          <td>T3 records with one child must have a record length >= 60. T3 records with two children are must have 101 <= record length <= 122 If any value is in the 2nd child positions (61 to 101), the 2nd child record will be processed, unless it is completely zero-filled or space-filled.</td>
+        </tr>
+
+        <tr>
+          <th scope="row"></th>
+          <td>T4</td>
+          <td>36</td>
+          <td>71</td>
+          <td></td>
+        </tr>
+
+        <tr>
+          <th scope="row"></th>
+          <td>T5</td>
+          <td>71</td>
+          <td>71</td>
+          <td></td>
+        </tr>
+
+        <tr>
+          <th scope="row"></th>
+          <td>T6</td>
+          <td>379</td>
+          <td>379</td>
+          <td></td>
+        </tr>
+
+        <tr>
+          <th scope="row">SSP</th>
+          <td>M1</td>
+          <td>113</td>
+          <td>150</td>
+          <td></td>
+        </tr>
+
+        <tr>
+          <th scope="row"></th>
+          <td>M2</td>
+          <td>150</td>
+          <td>150</td>
+          <td></td>
+        </tr>
+
+
+        <tr>
+          <th scope="row"></th>
+          <td>M3</td>
+          <td>60</td>
+          <td>150</td>
+          <td>M3 records with one child must have a record length >= 60. M3 records with two children are must have 101 <= record length <= 150. If any value is in the 2nd child positions (61 to 101), the 2nd child record will be processed, unless it is completely zero-filled or space-filled.</td>
+        </tr>
+
+        <tr>
+          <th scope="row"></th>
+          <td>M4</td>
+          <td>36</td>
+          <td>66</td>
+          <td></td>
+        </tr>
+
+        <tr>
+          <th scope="row"></th>
+          <td>M5</td>
+          <td>66</td>
+          <td>66</td>
+          <td></td>
+        </tr>
+
+        <tr>
+          <th scope="row"></th>
+          <td>M6</td>
+          <td>259</td>
+          <td>259</td>
+          <td></td>
+        </tr>
+
+        <tr>
+          <th scope="row"></th>
+          <td>M7</td>
+          <td>247</td>
+          <td>247</td>
+          <td></td>
+        </tr>
+
+      </tbody>
+    </table>
 
     <div style="min-height: 22px;"></div><div style="min-height: 22px;"></div> <div style="min-height: 22px;"></div> 
   <h4 id="related-records">Case Consistency: Errors related to inconsistent values across related records:</h4>
