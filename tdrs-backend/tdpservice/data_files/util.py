@@ -21,7 +21,7 @@ class ParserErrorCategoryChoices(models.TextChoices):
     HISTORICAL_CONSISTENCY = "6", _("Historical consistency")
 
 
-def get_prioritized_queryset(parser_errors):
+def get_prioritized_queryset(parser_errors, is_s3_s4):
     """Generate a prioritized queryset of ParserErrors."""
     PRIORITIZED_CAT2 = (
         ("FAMILY_AFFILIATION", "CITIZENSHIP_STATUS", "CLOSURE_REASON"),
@@ -41,6 +41,13 @@ def get_prioritized_queryset(parser_errors):
     error_type_query = Q(error_type=ParserErrorCategoryChoices.PRE_CHECK) | \
         Q(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
     filtered_errors = parser_errors.filter(error_type_query)
+
+    # If we are a Stratum or Aggregate file, we want all cat2 and cat3 errors.
+    if is_s3_s4:
+        all_cat2_cat3 = Q(error_type=ParserErrorCategoryChoices.FIELD_VALUE) | \
+            Q(error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY)
+        filtered_errors = filtered_errors.union(parser_errors.filter(all_cat2_cat3))
+        return filtered_errors
 
     for fields in PRIORITIZED_CAT2:
         filtered_errors = filtered_errors.union(parser_errors.filter(
