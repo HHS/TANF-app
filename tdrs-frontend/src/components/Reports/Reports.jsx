@@ -17,6 +17,7 @@ import { fetchSttList } from '../../actions/sttList'
 import Modal from '../Modal'
 import SegmentedControl from '../SegmentedControl'
 import SubmissionHistory from '../SubmissionHistory'
+import ReprocessedModal from '../SubmissionHistory/ReprocessedModal'
 import { selectPrimaryUserRole } from '../../selectors/auth'
 
 /**
@@ -54,6 +55,9 @@ function Reports() {
 
   const [formValidation, setFormValidationState] = useState({})
   const [touched, setTouched] = useState({})
+
+  const [reprocessedModalVisible, setReprocessedModalVisible] = useState(false)
+  const [reprocessedDate, setReprocessedDate] = useState('')
 
   const quarters = {
     Q1: 'Quarter 1 (October - December)',
@@ -455,7 +459,7 @@ function Reports() {
 
           {selectedSubmissionTab === 1 && (
             <UploadReport
-              stt={stt?.id}
+              stt={stt}
               handleCancel={() => {
                 setIsToggled(false)
                 resetPreviousValues()
@@ -471,6 +475,10 @@ function Reports() {
                 year: yearInputValue,
                 stt: stt,
                 file_type: fileTypeInputValue,
+              }}
+              reprocessedState={{
+                setModalVisible: setReprocessedModalVisible,
+                setDate: setReprocessedDate,
               }}
             />
           )}
@@ -498,6 +506,11 @@ function Reports() {
             },
           },
         ]}
+      />
+      <ReprocessedModal
+        date={reprocessedDate}
+        isVisible={reprocessedModalVisible}
+        setModalVisible={setReprocessedModalVisible}
       />
     </>
   )

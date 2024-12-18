@@ -11,6 +11,6 @@ applications:
       mv ./prometheus-2.54.1.linux-amd64/prometheus ./prometheus &&
       mv ./prometheus-2.54.1.linux-amd64/promtool ./promtool &&
       rm -rf ./prometheus-2.54.1.linux-amd64 && rm -rf prometheus-2.54.1.linux-amd64.tar.gz &&
-      ./prometheus --config.file=/home/vcap/app/prometheus.yml --storage.tsdb.path=/home/vcap/app/prometheus-data --storage.tsdb.retention.time=30d --storage.tsdb.retention.size=6GB  --web.listen-address="0.0.0.0:8080"
+      ./prometheus --config.file=/home/vcap/app/prometheus.yml --storage.tsdb.path=/home/vcap/app/prometheus-data --storage.tsdb.retention.time=30d --storage.tsdb.retention.size=6GB  --web.listen-address="0.0.0.0:8080" --web.enable-lifecycle
     buildpacks:
     - https://github.com/cloudfoundry/binary-buildpack

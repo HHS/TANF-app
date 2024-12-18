@@ -8,6 +8,7 @@ import {
   downloadFile,
   getErrorReportStatus,
 } from './helpers'
+import { ReprocessedButton } from './ReprocessedModal'
 
 const MonthSubRow = ({ data }) =>
   data ? (
@@ -22,15 +23,20 @@ const MonthSubRow = ({ data }) =>
     </>
   )
 
-const TotalAggregatesRow = ({ file }) => {
+const TotalAggregatesRow = ({ file, reprocessedState }) => {
   const dispatch = useDispatch()
-
+  const reprocessedDate = formatDate(getReprocessedDate(file))
   return (
     <>
       <tr>
         <th scope="rowgroup" rowSpan={3}>
           {formatDate(file.createdAt) + ' by ' + file.submittedBy}
-          {hasReparsed(file) && <></>}
+          {hasReparsed(file) && (
+            <ReprocessedButton
+              date={reprocessedDate}
+              reprocessedState={reprocessedState}
+            />
+          )}
         </th>
 
         <th scope="rowgroup" rowSpan={3}>
@@ -69,7 +75,7 @@ const TotalAggregatesRow = ({ file }) => {
   )
 }
 
-export const TotalAggregatesTable = ({ files }) => (
+export const TotalAggregatesTable = ({ files, reprocessedState }) => (
   <>
     <thead>
       <tr>
@@ -95,7 +101,11 @@ export const TotalAggregatesTable = ({ files }) => (
     </thead>
     <tbody>
       {files.map((file) => (
-        <TotalAggregatesRow key={file.id} file={file} />
+        <TotalAggregatesRow
+          key={file.id}
+          file={file}
+          reprocessedState={reprocessedState}
+        />
       ))}
     </tbody>
   </>

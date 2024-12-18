@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- Body copy -->
+<p style="color: #000000;">
+
+{% if action == "added" %}
+<p>The following user account for the TANF Data Portal (TDP) has been assigned to OFA System Admin group:</p>
+
+{% elif action == "removed" %}
+<p>The following user account for the TANF Data Portal (TDP) has been removed from OFA System Admin group:</p>
+
+{% elif action == "is_staff_assigned" %}
+<p>The following user account for the TANF Data Portal (TDP) has been assigned to OFA Staff group:</p>
+
+{% elif action == "is_staff_removed" %}
+<p>The following user account for the TANF Data Portal (TDP) has been removed from OFA Staff group:</p>
+
+{% elif action == "is_superuser_assigned" %}
+<p>The following user account for the TANF Data Portal (TDP) has been assigned to OFA Superuser group:</p>
+
+{% elif action == "is_superuser_removed" %}
+<p>The following user account for the TANF Data Portal (TDP) has been removed from OFA Superuser group:</p>
+
+{% endif %}
+
+</p>
+    <p>Account Information:</p>
+    <ul>
+        <li>Name: {{ user.first_name }}</li>
+        <li>Last name: {{ user.last_name }}</li>
+        <li>Email: {{ user.email }}</li>
+    </ul>
+
+    <p>Thank you,</p>
+    TDP Team
+{% endblock %}

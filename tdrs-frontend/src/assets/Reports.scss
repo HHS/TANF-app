@@ -42,6 +42,20 @@
   cursor: pointer;
 }
 
+.reprocessed {
+  background-color: transparent;
+  border: none;
+  color: #264A64;
+  text-align: left;
+  text-decoration: underline;
+  margin: 0;
+  padding: 0;
+}
+
+.reprocessed:hover {
+  cursor: pointer;
+}
+
 .usa-table caption {
   width: 100%;
 }

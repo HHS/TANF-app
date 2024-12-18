@@ -1,0 +1,4 @@
+#!/bin/bash
+set -e
+
+zsh ./scripts/git-secrets-check.sh local
