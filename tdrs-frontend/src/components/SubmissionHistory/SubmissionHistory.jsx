@@ -1,16 +1,20 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import classNames from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
-import { fileUploadSections } from '../../reducers/reports'
 import Paginator from '../Paginator'
 import { getAvailableFileList } from '../../actions/reports'
+import { fileUploadSections } from '../../reducers/reports'
 import { useEffect } from 'react'
 import { useState } from 'react'
 import { CaseAggregatesTable } from './CaseAggregatesTable'
 import { TotalAggregatesTable } from './TotalAggregatesTable'
 
-const SectionSubmissionHistory = ({ section, label, files }) => {
+const SectionSubmissionHistory = ({
+  section,
+  label,
+  files,
+  reprocessedState,
+}) => {
   const pageSize = 5
   const [resultsPage, setResultsPage] = useState(1)
 
@@ -31,7 +35,10 @@ const SectionSubmissionHistory = ({ section, label, files }) => {
       <table className="usa-table usa-table--striped">
         <caption>{`Section ${section} - ${label}`}</caption>
         {files && files.length > 0 ? (
-          <TableComponent files={files.slice(pageStart, pageEnd)} />
+          <TableComponent
+            files={files.slice(pageStart, pageEnd)}
+            reprocessedState={reprocessedState}
+          />
         ) : (
           <span>No data available.</span>
         )}
@@ -58,12 +65,17 @@ SectionSubmissionHistory.propTypes = {
     year: PropTypes.string,
   }),
   files: PropTypes.array,
+  reprocessedState: PropTypes.shape({
+    setModalVisible: PropTypes.func,
+    setDate: PropTypes.func,
+  }),
 }
 
-const SubmissionHistory = ({ filterValues }) => {
+const SubmissionHistory = ({ filterValues, reprocessedState }) => {
   const dispatch = useDispatch()
   const [hasFetchedFiles, setHasFetchedFiles] = useState(false)
   const { files } = useSelector((state) => state.reports)
+  const num_sections = filterValues.stt.num_sections
 
   useEffect(() => {
     if (!hasFetchedFiles) {
@@ -87,15 +99,18 @@ const SubmissionHistory = ({ filterValues }) => {
         </a>
       </div>
       <div>
-        {fileUploadSections.map((section, index) => (
-          <SectionSubmissionHistory
-            key={section}
-            section={index + 1}
-            label={section}
-            filterValues={filterValues}
-            files={files.filter((f) => f.section.includes(section))}
-          />
-        ))}
+        {fileUploadSections.slice(0, num_sections).map((section, index) => {
+          return (
+            <SectionSubmissionHistory
+              key={section}
+              section={index + 1}
+              label={section}
+              filterValues={filterValues}
+              files={files.filter((f) => f.section.includes(section))}
+              reprocessedState={reprocessedState}
+            />
+          )
+        })}
       </div>
     </>
   )

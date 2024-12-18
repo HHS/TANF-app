@@ -43,6 +43,7 @@ compliance/opencontrols/
 compliance/exports/
 tdrs-backend/tdpservice/static/*
 *gunicorn.log
+*.log
 
 # don't ignore requirements.txt
 !requirements.txt
@@ -115,3 +116,4 @@ cypress.env.json
 
 # DB seeds
 tdrs-backend/*.pg
+tdrs-backend/django.log

@@ -46,7 +46,6 @@ deploy_pg_exporter() {
 
 deploy_grafana() {
     pushd grafana
-    APP_NAME="grafana"
     DATASOURCES="datasources.yml"
     cp datasources.template.yml $DATASOURCES
     MANIFEST=manifest.tmp.yml
@@ -57,20 +56,7 @@ deploy_grafana() {
     yq eval -i ".applications[0].services[0] = \"$1\""  $MANIFEST
 
     cf push --no-route -f $MANIFEST -t 180  --strategy rolling
-    cf map-route $APP_NAME apps.internal --hostname $APP_NAME
-
-    # Add policy to allow grafana to talk to prometheus and loki
-    cf add-network-policy $APP_NAME prometheus --protocol tcp --port 8080
-    cf add-network-policy $APP_NAME loki --protocol tcp --port 8080
-
-    # Add network policies to allow grafana to talk to all frontend apps in all environments
-    for app in ${DEV_FRONTEND_APPS[@]}; do
-        cf add-network-policy "grafana" $app -s "tanf-dev" --protocol tcp --port 80
-    done
-    for app in ${STAGING_FRONTEND_APPS[@]}; do
-        cf add-network-policy "grafana" $app -s "tanf-staging" --protocol tcp --port 80
-    done
-    cf add-network-policy "grafana" $PROD_FRONTEND --protocol tcp --port 80
+    cf map-route grafana apps.internal --hostname grafana
 
     rm $DATASOURCES
     rm $MANIFEST
@@ -81,16 +67,6 @@ deploy_prometheus() {
     pushd prometheus
     cf push --no-route -f manifest.yml -t 180  --strategy rolling
     cf map-route prometheus apps.internal --hostname prometheus
-
-    # Add network policies to allow prometheus to talk to all backend apps in all environments
-    for app in ${DEV_BACKEND_APPS[@]}; do
-        cf add-network-policy prometheus $app -s "tanf-dev" --protocol tcp --port 8080
-    done
-    for app in ${STAGING_BACKEND_APPS[@]}; do
-        cf add-network-policy prometheus $app -s "tanf-staging" --protocol tcp --port 8080
-    done
-    cf add-network-policy prometheus $PROD_BACKEND --protocol tcp --port 8080
-
     popd
 }
 
@@ -101,23 +77,88 @@ deploy_loki() {
     popd
 }
 
-setup_extra_net_pols() {
-    # Add network policies to allow frontend/backend to talk to grafana/loki
+deploy_alertmanager() {
+    pushd alertmanager
+    CONFIG=alertmanager.prod.yml
+    cp alertmanager.yml $CONFIG
+    SENDGRID_API_KEY=$(cf env tdp-backend-prod | grep SENDGRID | cut -d " " -f2-)
+    yq eval -i ".global.smtp_auth_password = \"$SENDGRID_API_KEY\"" $CONFIG
+    yq eval -i ".receivers[0].email_configs[0].to = \"${ADMIN_EMAILS}\"" $CONFIG
+    yq eval -i ".receivers[1].email_configs[0].to = \"${DEV_EMAILS}\"" $CONFIG
+    cf push --no-route -f manifest.yml -t 180  --strategy rolling
+    cf map-route alertmanager apps.internal --hostname alertmanager
+    rm $CONFIG
+    popd
+}
+
+setup_prod_net_pols() {
+    # Target prod environment just in case
+    cf target -o hhs-acf-ofa -s tanf-prod
+
+    # Let grafana talk to prometheus and loki
+    cf add-network-policy grafana prometheus --protocol tcp --port 8080
+    cf add-network-policy grafana loki --protocol tcp --port 8080
+
+    # Let prometheus talk to alertmanager/grafana/loki/prod backend
+    cf add-network-policy prometheus alertmanager --protocol tcp --port 8080
+    cf add-network-policy prometheus $PROD_BACKEND --protocol tcp --port 8080
+    cf add-network-policy prometheus grafana --protocol tcp --port 8080
+    cf add-network-policy prometheus loki --protocol tcp --port 8080
+
+    # Let alertmanager/grafana talk to the prod frontend and vice versa
+    cf add-network-policy alertmanager $PROD_FRONTEND --protocol tcp --port 80
+    cf add-network-policy grafana $PROD_FRONTEND --protocol tcp --port 80
+    cf add-network-policy $PROD_FRONTEND alertmanager -s tanf-prod --protocol tcp --port 8080
+    cf add-network-policy $PROD_FRONTEND grafana -s tanf-prod --protocol tcp --port 8080
+
+    # Let prod backend send logs to loki
+    cf add-network-policy $PROD_BACKEND  loki -s tanf-prod --protocol tcp --port 8080
+
+    # Add network policies to allow alertmanager/grafana to talk to all frontend apps
+    for app in ${DEV_FRONTEND_APPS[@]}; do
+        cf add-network-policy alertmanager $app -s "tanf-dev" --protocol tcp --port 80
+        cf add-network-policy grafana $app -s tanf-dev --protocol tcp --port 80
+    done
+    for app in ${STAGING_FRONTEND_APPS[@]}; do
+        cf add-network-policy alertmanager $app -s "tanf-staging" --protocol tcp --port 80
+        cf add-network-policy grafana $app -s tanf-staging --protocol tcp --port 80
+    done
+
+    # Add network policies to allow prometheus to talk to all backend apps in all environments
+    for app in ${DEV_BACKEND_APPS[@]}; do
+        cf add-network-policy prometheus $app -s tanf-dev --protocol tcp --port 8080
+    done
+    for app in ${STAGING_BACKEND_APPS[@]}; do
+        cf add-network-policy prometheus $app -s tanf-staging --protocol tcp --port 8080
+    done
+}
+
+setup_dev_staging_net_pols() {
+    # Add network policies to handle routing traffic from lower envs to the prod env
     cf target -o hhs-acf-ofa -s tanf-dev
     for i in ${!DEV_BACKEND_APPS[@]}; do
         cf add-network-policy ${DEV_FRONTEND_APPS[$i]} grafana -s tanf-prod --protocol tcp --port 8080
         cf add-network-policy ${DEV_BACKEND_APPS[$i]} loki -s tanf-prod --protocol tcp --port 8080
+        cf add-network-policy ${DEV_FRONTEND_APPS[$i]} alertmanager -s tanf-prod --protocol tcp --port 8080
     done
 
     cf target -o hhs-acf-ofa -s tanf-staging
     for i in ${!STAGING_BACKEND_APPS[@]}; do
         cf add-network-policy ${STAGING_FRONTEND_APPS[$i]} grafana -s tanf-prod --protocol tcp --port 8080
         cf add-network-policy ${STAGING_BACKEND_APPS[$i]} loki -s tanf-prod --protocol tcp --port 8080
+        cf add-network-policy ${STAGING_FRONTEND_APPS[$i]} alertmanager -s tanf-prod --protocol tcp --port 8080
     done
-
     cf target -o hhs-acf-ofa -s tanf-prod
-    cf add-network-policy $PROD_FRONTEND grafana -s tanf-prod --protocol tcp --port 8080
-    cf add-network-policy $PROD_BACKEND  loki -s tanf-prod --protocol tcp --port 8080
+}
+
+check_email_vars() {
+    if [ "${ADMIN_EMAILS}" != "" ] && [ "${DEV_EMAILS}" != "" ]; then
+        echo "${ADMIN_EMAILS}"
+        echo "${DEV_EMAILS}"
+    else
+        echo "Missing definitions for ADMIN_EMAILS or DEV_EMAILS or both."
+        exit 1
+    fi
 }
 
 err_help_exit() {
@@ -127,6 +168,8 @@ err_help_exit() {
     popd
     exit
 }
+
+pushd "$(dirname "$0")"
 
 while getopts ":hap:u:d:" option; do
    case $option in
@@ -143,9 +186,7 @@ while getopts ":hap:u:d:" option; do
       d) # Bind a Postgres exporter or Grafana to $DB_SERVICE_NAME
          DB_SERVICE_NAME=$OPTARG;;
      \?) # Invalid option
-         echo "Error: Invalid option"
-         help
-         exit;;
+         err_help_exit "Error: Invalid option";;
    esac
 done
 
@@ -154,7 +195,8 @@ if [ "$#" -eq 0 ]; then
     exit
 fi
 
-pushd "$(dirname "$0")"
+check_email_vars
+
 if [ "$DB_SERVICE_NAME" == "" ]; then
     err_help_exit "Error: you must include a database service name."
 fi
@@ -162,7 +204,9 @@ if [ "$DEPLOY" == "plg" ]; then
     deploy_prometheus
     deploy_loki
     deploy_grafana $DB_SERVICE_NAME
-    setup_extra_net_pols
+    deploy_alertmanager
+    setup_prod_net_pols
+    setup_dev_staging_net_pols
 fi
 if [ "$DEPLOY" == "pg-exporter" ]; then
     if [ "$DB_URI" == "" ]; then
