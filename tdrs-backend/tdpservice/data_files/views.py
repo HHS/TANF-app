@@ -151,7 +151,7 @@ class DataFileViewSet(ModelViewSet):
                     DataFile.Section.STRATUM_DATA in datafile.section)
         filtered_errors = get_prioritized_queryset(all_errors, is_s3_s4)
 
-        return Response(get_xls_serialized_file(all_errors, filtered_errors))
+        return Response(get_xls_serialized_file(all_errors, filtered_errors, is_s3_s4))
 
 
 class GetYearList(APIView):
