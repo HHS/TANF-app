@@ -31,13 +31,14 @@ def make_validator(validator_func, error_func):
 
 def deprecate_validator(validator):
     """
-    Decorator which deprecates an entire validator function.
+    Deprecate entire validator function.
 
     This decorator should ONLY be used on validator functions that return an instance of 'make_validator'.
     """
     def wrapper(*args, **kwargs):
         wrapper_args = args
         wrapper_kwargs = kwargs
+
         def deprecated_validator(*args, **kwargs):
             make_val = validator(*wrapper_args, **wrapper_kwargs)
             is_valid, error, _ = make_val(*args, **kwargs)
@@ -47,8 +48,7 @@ def deprecate_validator(validator):
 
 
 def deprecate_call(validator):
-    """
-    Function that deprecates a top level, evaluated validator.
+    """Deprecate top level, evaluated validator.
 
     This function should wrap invocations of validators in a schema. E.g.:
     `deprecate_call(category1.recordHasLengthBetween(117, 156))`.

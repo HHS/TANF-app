@@ -147,8 +147,8 @@ def calendarQuarterIsValid(start=0, end=None):
 
 
 # file pre-check validators
-## TODO: the validators below are called explicitly with the ability to generate an error. They need a different method
-## to deprecate themselves if we ever choose to.
+# TODO: the validators below are called explicitly with the ability to generate an error. They need a different method
+# to deprecate themselves if we ever choose to.
 def validate_tribe_fips_program_agree(program_type, tribe_code, state_fips_code, generate_error):
     """Validate tribe code, fips code, and program type all agree with eachother."""
     is_valid = False
