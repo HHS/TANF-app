@@ -16,3 +16,4 @@ class EmailType(Enum):
     ACCOUNT_DEACTIVATED_ADMIN = 'account-deactivated-admin.html'
     UPCOMING_SUBMISSION_DEADLINE = 'upcoming-submission-deadline.html'
     STUCK_FILE_LIST = 'stuck-file-list.html'
+    SYSTEM_ADMIN_ROLE_CHANGED = 'system-admin-role-changed.html'
