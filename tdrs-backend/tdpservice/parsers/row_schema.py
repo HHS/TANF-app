@@ -98,7 +98,7 @@ class RowSchema:
                 friendly_name=field.friendly_name if field else 'record type',
                 item_num=field.item if field else '0',
             )
-            validator_is_valid, validator_error = validator(line, eargs)
+            validator_is_valid, validator_error, is_deprecated = validator(line, eargs)
             is_valid = False if not validator_is_valid else is_valid
 
             is_quiet_preparser_errors = (
@@ -113,7 +113,8 @@ class RowSchema:
                         error_category=ParserErrorCategoryChoices.PRE_CHECK,
                         error_message=validator_error,
                         record=None,
-                        field="Record_Type"
+                        field="Record_Type",
+                        deprecated=is_deprecated,
                     )
                 )
 
@@ -152,7 +153,7 @@ class RowSchema:
             should_validate = not field.required and not is_empty
             if (field.required and not is_empty) or should_validate:
                 for validator in field.validators:
-                    validator_is_valid, validator_error = validator(value, eargs)
+                    validator_is_valid, validator_error, is_deprecated = validator(value, eargs)
                     is_valid = False if (not validator_is_valid and not field.ignore_errors) else is_valid
                     if validator_error:
                         errors.append(
@@ -161,7 +162,8 @@ class RowSchema:
                                 error_category=ParserErrorCategoryChoices.FIELD_VALUE,
                                 error_message=validator_error,
                                 record=instance,
-                                field=field
+                                field=field,
+                                deprecated=is_deprecated
                             )
                         )
             elif field.required:
@@ -187,7 +189,7 @@ class RowSchema:
         errors = []
 
         for validator in self.postparsing_validators:
-            validator_is_valid, validator_error, field_names = validator(instance, self)
+            validator_is_valid, validator_error, field_names, is_deprecated = validator(instance, self)
             is_valid = False if not validator_is_valid else is_valid
             if validator_error:
                 # get field from field name
@@ -199,6 +201,7 @@ class RowSchema:
                         error_message=validator_error,
                         record=instance,
                         field=fields,
+                        deprecated=is_deprecated
                     )
                 )
 

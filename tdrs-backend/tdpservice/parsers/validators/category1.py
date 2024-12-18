@@ -63,10 +63,10 @@ def or_priority_validators(validators=[]):
     """
     def or_priority_validators_func(value, eargs):
         for validator in validators:
-            result, msg = validator(value, eargs)
+            result, msg, _ = validator(value, eargs)
             if not result:
-                return (result, msg)
-        return (True, None)
+                return (result, msg, False)
+        return (True, None, False)
 
     return or_priority_validators_func
 
@@ -85,12 +85,13 @@ def validate_fieldYearMonth_with_headerYearQuarter():
         file_calendar_year, file_calendar_qtr = fiscal_to_calendar(df_year, f"{df_quarter}")
 
         if str(file_calendar_year) == str(field_year) and file_calendar_qtr == field_quarter:
-            return (True, None)
+            return (True, None, False)
 
         return (
             False,
             f"{row_schema.record_type}: Reporting month year {field_month_year} " +
             f"does not match file reporting year:{df_year}, quarter:{df_quarter}.",
+            False
         )
 
     return validate_reporting_month_year_fields_header
@@ -112,23 +113,25 @@ def t3_m3_child_validator(which_child):
     """T3 child validator."""
     def t3_first_child_validator_func(line, eargs):
         if not _is_empty(line, 1, 60) and len(line) >= 60:
-            return (True, None)
+            return (True, None, False)
         elif not len(line) >= 60:
             return (False, f"The first child record is too short at {len(line)} "
-                    "characters and must be at least 60 characters.")
+                    "characters and must be at least 60 characters.",
+                    False)
         else:
-            return (False, "The first child record is empty.")
+            return (False, "The first child record is empty.", False)
 
     def t3_second_child_validator_func(line, eargs):
         if not _is_empty(line, 60, 101) and len(line) >= 101 and \
                 not _is_empty(line, 8, 19) and \
                 not _is_all_zeros(line, 60, 101):
-            return (True, None)
+            return (True, None, False)
         elif not len(line) >= 101:
             return (False, f"The second child record is too short at {len(line)} "
-                    "characters and must be at least 101 characters.")
+                    "characters and must be at least 101 characters.",
+                    False)
         else:
-            return (False, "The second child record is empty.")
+            return (False, "The second child record is empty.", False)
 
     return t3_first_child_validator_func if which_child == 1 else t3_second_child_validator_func
 
@@ -144,6 +147,8 @@ def calendarQuarterIsValid(start=0, end=None):
 
 
 # file pre-check validators
+## TODO: the validators below are called explicitly with the ability to generate an error. They need a different method
+## to deprecate themselves if we ever choose to.
 def validate_tribe_fips_program_agree(program_type, tribe_code, state_fips_code, generate_error):
     """Validate tribe code, fips code, and program type all agree with eachother."""
     is_valid = False
@@ -165,7 +170,7 @@ def validate_tribe_fips_program_agree(program_type, tribe_code, state_fips_code,
             field=None
         )
 
-    return is_valid, error
+    return is_valid, error, False
 
 
 def validate_header_section_matches_submission(datafile, section, generate_error):
@@ -182,7 +187,7 @@ def validate_header_section_matches_submission(datafile, section, generate_error
             field=None,
         )
 
-    return is_valid, error
+    return is_valid, error, False
 
 
 def validate_header_rpt_month_year(datafile, header, generate_error):
@@ -205,4 +210,4 @@ def validate_header_rpt_month_year(datafile, header, generate_error):
             record=None,
             field=None,
         )
-    return is_valid, error
+    return is_valid, error, False

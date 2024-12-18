@@ -61,7 +61,7 @@ def parse_datafile(datafile, dfs):
 
     # Validate tribe code in submission across program type and fips code
     generate_error = util.make_generate_parser_error(datafile, 1)
-    tribe_is_valid, tribe_error = category1.validate_tribe_fips_program_agree(
+    tribe_is_valid, tribe_error, _ = category1.validate_tribe_fips_program_agree(
         header['program_type'],
         field_values["tribe_code"],
         field_values["state_fips"],
@@ -76,7 +76,7 @@ def parse_datafile(datafile, dfs):
         return errors
 
     # Ensure file section matches upload section
-    section_is_valid, section_error = category1.validate_header_section_matches_submission(
+    section_is_valid, section_error, _ = category1.validate_header_section_matches_submission(
         datafile,
         get_section_reference(program_type, section),
         util.make_generate_parser_error(datafile, 1)
@@ -89,7 +89,7 @@ def parse_datafile(datafile, dfs):
         bulk_create_errors(unsaved_parser_errors, 1, flush=True)
         return errors
 
-    rpt_month_year_is_valid, rpt_month_year_error = category1.validate_header_rpt_month_year(
+    rpt_month_year_is_valid, rpt_month_year_error, _ = category1.validate_header_rpt_month_year(
         datafile,
         header,
         util.make_generate_parser_error(datafile, 1)
