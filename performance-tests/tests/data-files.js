@@ -95,6 +95,8 @@ export const dataFileApiSubmission = async () => {
       return r.status === 201
     }
   })
+
+  sleep(1)
 }
 
 export const dataFileBrowserSubmission = async () => {
