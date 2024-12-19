@@ -489,7 +489,7 @@ def test_sumIsLarger():
     assert result == (
         False,
         "T1: The sum of ['TestField1', 'TestField3'] is not larger than 10.",
-        ['TestField1', 'TestField3'], 
+        ['TestField1', 'TestField3'],
         False
     )
     instance['TestField3'] = 9
