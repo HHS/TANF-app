@@ -33,7 +33,8 @@ def deprecate_validator(validator):
     """
     Deprecate entire validator function.
 
-    This decorator should ONLY be used on validator functions that return an instance of 'make_validator'.
+    This decorator should ONLY be used on validator functions that return another
+    validator function, i.e. make_validator.
     """
     def wrapper(*args, **kwargs):
         wrapper_args = args
