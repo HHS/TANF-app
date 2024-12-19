@@ -3,7 +3,7 @@
 
 import pytest
 from .. import category1
-from ..util import ValidationErrorArgs
+from ..util import ValidationErrorArgs, deprecate_call
 from ...row_schema import RowSchema
 
 test_schema = RowSchema(
@@ -24,10 +24,11 @@ def _make_eargs(line):
     )
 
 
-def _validate_and_assert(validator, line, exp_result, exp_message):
+def _validate_and_assert(validator, line, exp_result, exp_message, exp_deprecated=False):
     result, msg, deprecated = validator(line, _make_eargs(line))
     assert result == exp_result
     assert msg == exp_message
+    assert deprecated == exp_deprecated
 
 
 @pytest.mark.parametrize('line, kwargs, exp_result, exp_message', [
@@ -88,3 +89,14 @@ def test_caseNumberNotEmpty(line, start, end, kwargs, exp_result, exp_message):
     """Test caseNumberNotEmpty error messages."""
     _validator = category1.caseNumberNotEmpty(start, end, **kwargs)
     _validate_and_assert(_validator, line, exp_result, exp_message)
+
+
+@pytest.mark.parametrize('line, validator, kwargs, exp_result, exp_message', [
+    ('1234', category1.recordHasLength, {"length": 4}, True, None),
+    ('    ', category1.recordIsNotEmpty, {}, False, ('Test Item 1 (test field):      contains blanks '
+                                                     'between positions 0 and 4.')),
+    ('1  4', category1.recordStartsWith, {"substr": "x"}, False, '1  4 must start with x.'),
+])
+def test_deprecated_cat1_validator(line, validator, kwargs, exp_result, exp_message):
+    deprecated_validator = deprecate_call(validator(**kwargs))
+    _validate_and_assert(deprecated_validator, line, exp_result, exp_message, exp_deprecated=True)

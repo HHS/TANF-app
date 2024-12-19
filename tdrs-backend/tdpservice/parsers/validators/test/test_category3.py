@@ -4,7 +4,7 @@
 import pytest
 import datetime
 from .. import category3
-from ..util import ValidationErrorArgs
+from ..util import ValidationErrorArgs, deprecate_call
 from ...row_schema import RowSchema
 from ...fields import Field
 
@@ -30,9 +30,9 @@ def _make_eargs(val):
 
 def _validate_and_assert(validator, val, exp_result, exp_message):
     result, msg, deprecated = validator(val, _make_eargs(val))
-    print(f'result: {result}; msg: {msg}')
     assert result == exp_result
     assert msg == exp_message
+    assert deprecated == False
 
 
 @pytest.mark.parametrize('val, option, kwargs, exp_result, exp_message', [
@@ -600,3 +600,119 @@ def test_validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
     instance['DATE_OF_BIRTH'] = '19950101'
     result = category3.validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE()(instance, schema)
     assert result == (True, None, ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH'], False)
+
+
+def test_deprecate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
+    """Test deprecated `validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE` gives a valid result."""
+    schema = RowSchema(
+        fields=[
+            Field(
+                item='1',
+                name='WORK_ELIGIBLE_INDICATOR',
+                friendly_name='work eligible indicator',
+                type='string',
+                startIndex=0,
+                endIndex=1
+            ),
+            Field(
+                item='2',
+                name='RELATIONSHIP_HOH',
+                friendly_name='relationship w/ head of household',
+                type='string',
+                startIndex=1,
+                endIndex=2
+            ),
+            Field(
+                item='3',
+                name='DATE_OF_BIRTH',
+                friendly_name='date of birth',
+                type='string',
+                startIndex=2,
+                endIndex=10
+            ),
+            Field(
+                item='4',
+                name='RPT_MONTH_YEAR',
+                friendly_name='report month/year',
+                type='string',
+                startIndex=10,
+                endIndex=16
+            )
+        ]
+    )
+    instance = {
+        'WORK_ELIGIBLE_INDICATOR': '11',
+        'RELATIONSHIP_HOH': '1',
+        'DATE_OF_BIRTH': '20200101',
+        'RPT_MONTH_YEAR': '202010',
+    }
+    result = deprecate_call(category3.validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE())(instance, schema)
+    print(result)
+    assert result == [
+        False,
+        'T1: Since Item 1 (work eligible indicator) is 11 and Item 3 (Age) is less than 19, '
+        'then Item 2 (relationship w/ head of household) must not be 1.',
+        ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH'],
+        True
+    ]
+    instance['DATE_OF_BIRTH'] = '19950101'
+    result = category3.validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE()(instance, schema)
+    assert result == (True, None, ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH'], False)
+
+
+@pytest.mark.parametrize('condition_val, result_val, exp_result, exp_message, exp_fields', [
+    (1, 1, True, None, ['TestField3', 'TestField1']),  # condition fails, valid
+    (10, 1, True, None, ['TestField1', 'TestField3']),  # condition pass, result pass
+    # condition pass, result fail
+    (
+        10, 20, False,
+        'Since Item 1 (test1) is 10, then Item 3 (test3) 20 must be less than 10',
+        ['TestField1', 'TestField3']
+    ),
+])
+def test_deprecate_ifThenAlso(condition_val, result_val, exp_result, exp_message, exp_fields):
+    """Test deprecate ifThenAlso validator error messages."""
+    schema = RowSchema(
+        fields=[
+            Field(
+                item='1',
+                name='TestField1',
+                friendly_name='test1',
+                type='number',
+                startIndex=0,
+                endIndex=1
+            ),
+            Field(
+                item='2',
+                name='TestField2',
+                friendly_name='test2',
+                type='number',
+                startIndex=1,
+                endIndex=2
+            ),
+            Field(
+                item='3',
+                name='TestField3',
+                friendly_name='test3',
+                type='number',
+                startIndex=2,
+                endIndex=3
+            )
+        ]
+    )
+    instance = {
+        'TestField1': condition_val,
+        'TestField2': 1,
+        'TestField3': result_val,
+    }
+    _validator = deprecate_call(category3.ifThenAlso(
+        condition_field_name='TestField1',
+        condition_function=category3.isEqual(10),
+        result_field_name='TestField3',
+        result_function=category3.isLessThan(10)
+    ))
+    is_valid, error_msg, fields, deprecated = _validator(instance, schema)
+    assert is_valid == exp_result
+    assert error_msg == exp_message
+    assert fields == exp_fields
+    assert deprecated == True
