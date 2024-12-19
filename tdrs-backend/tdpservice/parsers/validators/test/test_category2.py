@@ -26,7 +26,7 @@ def _make_eargs(val):
 
 
 def _validate_and_assert(validator, val, exp_result, exp_message):
-    result, msg = validator(val, _make_eargs(val))
+    result, msg, deprecated = validator(val, _make_eargs(val))
     assert result == exp_result
     assert msg == exp_message
 
