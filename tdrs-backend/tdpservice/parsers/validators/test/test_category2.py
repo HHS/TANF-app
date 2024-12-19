@@ -273,5 +273,6 @@ def test_quarterIsValid(val, kwargs, exp_result, exp_message):
                                                                   'Using FTANF in the Knowledge Center.')),
 ])
 def test_deprecated_cat2_validator(val, validator, kwargs, exp_result, exp_message):
+    """Test deprecated cat2 validators."""
     deprecated_validator = deprecate_call(validator(**kwargs))
     _validate_and_assert(deprecated_validator, val, exp_result, exp_message, exp_deprecated=True)

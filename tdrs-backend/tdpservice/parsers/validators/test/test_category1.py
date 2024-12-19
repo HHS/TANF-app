@@ -98,5 +98,6 @@ def test_caseNumberNotEmpty(line, start, end, kwargs, exp_result, exp_message):
     ('1  4', category1.recordStartsWith, {"substr": "x"}, False, '1  4 must start with x.'),
 ])
 def test_deprecated_cat1_validator(line, validator, kwargs, exp_result, exp_message):
+    """Test deprecated cat1 validators."""
     deprecated_validator = deprecate_call(validator(**kwargs))
     _validate_and_assert(deprecated_validator, line, exp_result, exp_message, exp_deprecated=True)

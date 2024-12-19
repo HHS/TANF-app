@@ -32,7 +32,7 @@ def _validate_and_assert(validator, val, exp_result, exp_message):
     result, msg, deprecated = validator(val, _make_eargs(val))
     assert result == exp_result
     assert msg == exp_message
-    assert deprecated == False
+    assert deprecated is False
 
 
 @pytest.mark.parametrize('val, option, kwargs, exp_result, exp_message', [
@@ -715,4 +715,4 @@ def test_deprecate_ifThenAlso(condition_val, result_val, exp_result, exp_message
     assert is_valid == exp_result
     assert error_msg == exp_message
     assert fields == exp_fields
-    assert deprecated == True
+    assert deprecated is True
