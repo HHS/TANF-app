@@ -17,17 +17,17 @@ const loadProfiles = {
 
   ramping: {
     executor: 'ramping-vus',
-      startVUs: 0,
-      stages: [
-        { duration: '20s', target: 2 }, // 0-10vu over 20s
-        { duration: '20s', target: 4 },
-        { duration: '20s', target: 6 },
-        { duration: '20s', target: 8 },
-        { duration: '20s', target: 10 },
-        { duration: '2m', target: 10 },
-        { duration: '40s', target: 0 }
-      ],
-      gracefulRampDown: '60s',
+    startVUs: 0,
+    stages: [
+      { duration: '20s', target: 2 }, // 0-10vu over 20s
+      { duration: '20s', target: 4 },
+      { duration: '20s', target: 6 },
+      { duration: '20s', target: 8 },
+      { duration: '20s', target: 10 },
+      { duration: '2m', target: 10 },
+      { duration: '40s', target: 0 }
+    ],
+    gracefulRampDown: '60s',
   }
 }
 
