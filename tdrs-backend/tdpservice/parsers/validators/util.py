@@ -55,7 +55,7 @@ def deprecate_call(validator):
     """
     def deprecated_validator(*args, **kwargs):
         ret = []
-        ret.append(validator(*args, **kwargs))
+        ret.extend(validator(*args, **kwargs))
         ret[-1] = True
         return ret
     return deprecated_validator

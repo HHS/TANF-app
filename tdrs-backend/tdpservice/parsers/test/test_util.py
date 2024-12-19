@@ -10,29 +10,87 @@ from ..util import (
     get_years_apart,
     clean_options_string,
     generate_t2_t3_t5_hashes)
+from ..validators.util import deprecate_call, deprecate_validator, make_validator
 import logging
 
 def passing_validator():
     """Fake validator that always returns valid."""
-    return lambda _, __: (True, None)
+    return lambda _, __: (True, None, False)
 
 
 def failing_validator():
     """Fake validator that always returns invalid."""
-    return lambda _, __: (False, 'Value is not valid.')
+    return lambda _, __: (False, 'Value is not valid.', False)
+
 
 def passing_postparsing_validator():
     """Fake validator that always returns valid."""
-    return lambda _, __: (True, None, [])
+    return lambda _, __: (True, None, [], False)
 
 
 def failing_postparsing_validator():
     """Fake validator that always returns invalid."""
-    return lambda _, __: (False, 'Value is not valid.', [])
+    return lambda _, __: (False, 'Value is not valid.', [], False)
 
-def error_func(schema, error_category, error_message, record, field):
+
+def error_func(schema, error_category, error_message, record, field, deprecated=False):
     """Fake error func that returns an error_message."""
     return error_message
+
+def deprecated_error_func(schema, error_category, error_message, record, field, deprecated=False):
+    """Fake error func that returns an error_message and if the validator is deprecated."""
+    return (error_message, deprecated)
+
+
+@deprecate_validator
+def deprecated_validator():
+    """Fake validator that is false and is deprecated."""
+    return make_validator(lambda _, : False,
+                          lambda _, : "Failed.")
+
+def validator_to_deprecate():
+    """Fake validator that is False and becomes deprecated when invoked."""
+    return make_validator(lambda _, : False,
+                          lambda _, : "Failed.")
+
+
+def test_deprecate_validator():
+    """Test completely deprecated validator."""
+    line = '12345'
+    schema = RowSchema(
+        document=None,
+        preparsing_validators=[
+            deprecated_validator()
+        ]
+    )
+
+    is_valid, errors = schema.run_preparsing_validators(line, deprecated_error_func)
+    assert is_valid is False
+    assert len(errors) == 1
+
+    error = errors[0]
+    assert error[0] == "Failed."
+    assert error[1] is True
+
+
+def test_deprecate_call():
+    """Test deprecated invocation of a validator."""
+    line = '12345'
+    schema = RowSchema(
+        document=None,
+        preparsing_validators=[
+            deprecate_call(validator_to_deprecate()),
+            passing_validator()
+        ]
+    )
+
+    is_valid, errors = schema.run_preparsing_validators(line, deprecated_error_func)
+    assert is_valid is False
+    assert len(errors) == 1
+
+    error = errors[0]
+    assert error[0] == "Failed."
+    assert error[1] is True
 
 
 def test_run_preparsing_validators_returns_valid():
@@ -493,7 +551,7 @@ def test_run_postparsing_validators_returns_frinedly_fieldnames(test_datafile_em
 
     def postparse_validator():
         """Fake validator that always returns valid."""
-        return lambda _, __: (False, "an Error", ["FIRST", "SECOND"])
+        return lambda _, __: (False, "an Error", ["FIRST", "SECOND"], False)
 
     instance = {}
     schema = RowSchema(
