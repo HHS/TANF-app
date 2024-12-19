@@ -29,7 +29,7 @@ def _make_eargs(val):
 
 
 def _validate_and_assert(validator, val, exp_result, exp_message):
-    result, msg = validator(val, _make_eargs(val))
+    result, msg, deprecated = validator(val, _make_eargs(val))
     print(f'result: {result}; msg: {msg}')
     assert result == exp_result
     assert msg == exp_message
@@ -312,7 +312,7 @@ def test_ifThenAlso(condition_val, result_val, exp_result, exp_message, exp_fiel
         result_field_name='TestField3',
         result_function=category3.isLessThan(10)
     )
-    is_valid, error_msg, fields = _validator(instance, schema)
+    is_valid, error_msg, fields, deprecated = _validator(instance, schema)
     assert is_valid == exp_result
     assert error_msg == exp_message
     assert fields == exp_fields
@@ -373,7 +373,7 @@ def test_ifThenAlso_or(condition_val, result_val, exp_result, exp_message, exp_f
             category3.isGreaterThan(100)
         ], if_result=True)
     )
-    is_valid, error_msg, fields = _validator(instance, schema)
+    is_valid, error_msg, fields, deprecated = _validator(instance, schema)
     assert is_valid == exp_result
     assert error_msg == exp_message
     assert fields == exp_fields
@@ -398,7 +398,7 @@ def test_orValidators(val, exp_result, exp_message):
         item_num='1'
     )
 
-    is_valid, error_msg = _validator(val, eargs)
+    is_valid, error_msg, deprecated = _validator(val, eargs)
     assert is_valid == exp_result
     assert error_msg == exp_message
 
@@ -442,11 +442,12 @@ def test_sumIsEqual():
     assert result == (
         False,
         "T1: The sum of ['TestField1', 'TestField3'] does not equal TestField2 test2 Item 2.",
-        ['TestField2', 'TestField1', 'TestField3']
+        ['TestField2', 'TestField1', 'TestField3'],
+        False
     )
     instance['TestField2'] = 11
     result = category3.sumIsEqual('TestField2', ['TestField1', 'TestField3'])(instance, schema)
-    assert result == (True, None, ['TestField2', 'TestField1', 'TestField3'])
+    assert result == (True, None, ['TestField2', 'TestField1', 'TestField3'], False)
 
 
 def test_sumIsLarger():
@@ -488,11 +489,12 @@ def test_sumIsLarger():
     assert result == (
         False,
         "T1: The sum of ['TestField1', 'TestField3'] is not larger than 10.",
-        ['TestField1', 'TestField3']
+        ['TestField1', 'TestField3'], 
+        False
     )
     instance['TestField3'] = 9
     result = category3.sumIsLarger(['TestField1', 'TestField3'], 10)(instance, schema)
-    assert result == (True, None, ['TestField1', 'TestField3'])
+    assert result == (True, None, ['TestField1', 'TestField3'], False)
 
 
 def test_validate__FAM_AFF__SSN():
@@ -535,11 +537,12 @@ def test_validate__FAM_AFF__SSN():
         False,
         'T1: Since Item 1 (family affiliation) is 2 and Item 2 (citizenship status) is 1 or 2, '
         'then Item 3 (social security number) must not be in 000000000 -- 999999999.',
-        ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN']
+        ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN'],
+        False
     )
     instance['SSN'] = '1'*8 + '0'
     result = category3.validate__FAM_AFF__SSN()(instance, schema)
-    assert result == (True, None, ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN'])
+    assert result == (True, None, ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN'], False)
 
 
 def test_validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
@@ -591,8 +594,9 @@ def test_validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
         False,
         'T1: Since Item 1 (work eligible indicator) is 11 and Item 3 (Age) is less than 19, '
         'then Item 2 (relationship w/ head of household) must not be 1.',
-        ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH']
+        ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH'],
+        False
     )
     instance['DATE_OF_BIRTH'] = '19950101'
     result = category3.validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE()(instance, schema)
-    assert result == (True, None, ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH'])
+    assert result == (True, None, ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH'], False)
