@@ -81,9 +81,6 @@ def test_deprecate_call():
         preparsing_validators=[
             deprecate_call(validator_to_deprecate()),
             passing_validator()
-        ],
-        postparsing_validators=[
-            deprecate_call()
         ]
     )
 
