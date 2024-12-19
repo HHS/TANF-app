@@ -24,18 +24,17 @@ const Modal = ({ title, message, buttons = [], isVisible = false }) => {
         (b) => b.key === selectedButtonKey
       )
 
+      const btnIdxMinOne = Math.max(0, buttons.length - 1)
       if (shiftKey) {
         // go backward
+        const selectedIdxMinOne = Math.max(0, selectedButtonIndex - 1)
         nextButtonIndex =
-          selectedButtonIndex >= 0
-            ? selectedButtonIndex - 1
-            : buttons.length - 1
+          selectedButtonIndex >= 0 ? selectedIdxMinOne : btnIdxMinOne
       } else {
         nextButtonIndex =
-          selectedButtonIndex < buttons.length - 1 ? selectedButtonIndex + 1 : 0
+          selectedButtonIndex < btnIdxMinOne ? selectedButtonIndex + 1 : 0
       }
     }
-
     const nextButtonKey = buttons[nextButtonIndex].key
     const nextButton = modalRef.current.querySelector(
       `button[buttonkey="${nextButtonKey}"]`
@@ -45,7 +44,6 @@ const Modal = ({ title, message, buttons = [], isVisible = false }) => {
 
   const onKeyDown = (e) => {
     const { key, shiftKey } = e
-
     switch (key) {
       case 'Tab':
         onTabPressed(shiftKey)
