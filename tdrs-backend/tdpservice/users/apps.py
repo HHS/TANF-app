@@ -8,3 +8,7 @@ class UsersConfig(AppConfig):
 
     name = "tdpservice.users"
     verbose_name = "Users"
+
+    def ready(self):
+        """Import signals."""
+        import tdpservice.users.signals  # noqa
