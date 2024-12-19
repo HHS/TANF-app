@@ -57,15 +57,6 @@ export const options = {
   },
 };
 
-// how to stress celery process specifically?
-// - long running tasks
-// - large files
-// - large queries
-// http-based, pointed stress test
-// submit data files (of different sizes?)
-// track time to parse, overwhelm on celery workers
-// - memory (reaches 2gb)
-// - restarts due to OOM (not max-child) (celery_task_failed_total)
 export const dataFileApiSubmission = async () => {
   login()
   const httpCookies = http.cookieJar().cookiesForURL(__ENV.BASE_URL)
