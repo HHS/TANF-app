@@ -272,5 +272,5 @@ if `SCENARIO` is not provided to the `task k6` command (so `__ENV.SCENARIO` is `
 ### Features to consider in the future
 * thresholds, groups/tags, metrics/custom metrics
 * grafana cloud - https://grafana.com/docs/grafana-cloud/testing/k6/
-* synthetic monitoring - https://grafana.com/docs/k6/latest/testing-guides/synthetic-monitoring/
 * disruptor - https://grafana.com/docs/k6/latest/testing-guides/injecting-faults-with-xk6-disruptor/
+* synthetic monitoring - https://grafana.com/docs/k6/latest/testing-guides/synthetic-monitoring/
