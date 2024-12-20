@@ -13,6 +13,8 @@ export const login = (username = 'cypress-admin@teamraft.com') => {
     JSON.stringify(body),
     { headers: { 'Content-Type': 'application/json' } },
   );
+
+  return res
 }
 
 export const attachAuthCookiesToBrowser = (context) => {

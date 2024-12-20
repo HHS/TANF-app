@@ -43,7 +43,7 @@ const scenarios = {
   },
   api: {
     exec: 'dataFileApiSubmission',
-    ...loadProfiles.ramping,
+    ...loadProfiles.unit,
   }
 }
 
@@ -58,13 +58,14 @@ export const options = {
 };
 
 export const dataFileApiSubmission = async () => {
-  login()
+  let res = login()
+  let userId = res.json().users[0].id
   const httpCookies = http.cookieJar().cookiesForURL(__ENV.BASE_URL)
 
   const body = {
     file: http.file(file, 'loadtest-file.txt'),
     original_filename: 'ADS.E2J.FTP2.TS06',
-    user: 'f94b3a2e-4ee5-4d4b-bab3-20147cb6f480',
+    user: userId,
     section: 'Closed Case Data',
     year: '2021',
     stt: 4,
