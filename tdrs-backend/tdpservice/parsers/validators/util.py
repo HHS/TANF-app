@@ -5,9 +5,9 @@ import functools
 import logging
 from dataclasses import dataclass
 from typing import Any
+import warnings
 
 logger = logging.getLogger(__name__)
-
 
 def make_validator(validator_func, error_func):
     """
@@ -41,6 +41,8 @@ def deprecate_validator(validator):
         wrapper_kwargs = kwargs
 
         def deprecated_validator(*args, **kwargs):
+            warnings.warn(f"{validator.__name__} has been deprecated and will be removed in a future version.",
+                           DeprecationWarning)
             make_val = validator(*wrapper_args, **wrapper_kwargs)
             result = []
             result.extend(make_val(*args, **kwargs))
