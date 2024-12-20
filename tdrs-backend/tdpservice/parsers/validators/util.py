@@ -42,8 +42,10 @@ def deprecate_validator(validator):
 
         def deprecated_validator(*args, **kwargs):
             make_val = validator(*wrapper_args, **wrapper_kwargs)
-            is_valid, error, _ = make_val(*args, **kwargs)
-            return (is_valid, error, True)
+            result = []
+            result.extend(make_val(*args, **kwargs))
+            result[-1] = True
+            return tuple(result)
         return deprecated_validator
     return wrapper
 
@@ -55,10 +57,10 @@ def deprecate_call(validator):
     `deprecate_call(category1.recordHasLengthBetween(117, 156))`.
     """
     def deprecated_validator(*args, **kwargs):
-        ret = []
-        ret.extend(validator(*args, **kwargs))
-        ret[-1] = True
-        return ret
+        result = []
+        result.extend(validator(*args, **kwargs))
+        result[-1] = True
+        return tuple(result)
     return deprecated_validator
 
 

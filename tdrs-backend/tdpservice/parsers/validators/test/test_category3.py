@@ -647,14 +647,13 @@ def test_deprecate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
         'RPT_MONTH_YEAR': '202010',
     }
     result = deprecate_call(category3.validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE())(instance, schema)
-    print(result)
-    assert result == [
+    assert result == (
         False,
         'T1: Since Item 1 (work eligible indicator) is 11 and Item 3 (Age) is less than 19, '
         'then Item 2 (relationship w/ head of household) must not be 1.',
         ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH'],
         True
-    ]
+    )
     instance['DATE_OF_BIRTH'] = '19950101'
     result = category3.validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE()(instance, schema)
     assert result == (True, None, ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH'], False)
