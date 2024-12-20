@@ -42,7 +42,7 @@ def deprecate_validator(validator):
 
         def deprecated_validator(*args, **kwargs):
             warnings.warn(f"{validator.__name__} has been deprecated and will be removed in a future version.",
-                           DeprecationWarning)
+                          DeprecationWarning)
             make_val = validator(*wrapper_args, **wrapper_kwargs)
             result = []
             result.extend(make_val(*args, **kwargs))
