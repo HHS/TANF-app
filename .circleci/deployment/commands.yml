@@ -123,10 +123,10 @@
             sudo apt update
             sudo apt-get install -y wget
             sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.42.1/yq_linux_amd64 && chmod +x /usr/local/bin/yq
-      # - run:
-      #     name: Apply database migrations
-      #     command: |
-      #       bash ./scripts/apply-remote-migrations.sh <<parameters.backend-appname>>
+      - run:
+          name: Apply database migrations
+          command: |
+            bash ./scripts/apply-remote-migrations.sh <<parameters.backend-appname>>
       - run:
           name: Deploy backend application
           command: |
