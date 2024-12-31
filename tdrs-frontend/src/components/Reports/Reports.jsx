@@ -247,6 +247,9 @@ function Reports() {
             error(s) in this form
           </div>
         )}
+        <p className="margin-top-5 margin-bottom-0">
+          Fields marked with an asterisk (*) are required.
+        </p>
         <form>
           <div className="grid-row grid-gap">
             <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
@@ -269,7 +272,7 @@ function Reports() {
               {(stt?.ssp ? stt.ssp : false) && (
                 <div className="usa-form-group margin-top-4">
                   <fieldset className="usa-fieldset">
-                    <legend className="usa-label text-bold">File Type</legend>
+                    <legend className="usa-label text-bold">File Type*</legend>
                     <div className="usa-radio">
                       <input
                         className="usa-radio__input"
@@ -316,7 +319,7 @@ function Reports() {
                   className="usa-label text-bold margin-top-4"
                   htmlFor="reportingYears"
                 >
-                  Fiscal Year (October - September)
+                  Fiscal Year*
                   {formValidation.year && (
                     <div className="usa-error-message" id="years-error-alert">
                       A fiscal year is required
@@ -352,10 +355,10 @@ function Reports() {
                   className="usa-label text-bold margin-top-4"
                   htmlFor="quarter"
                 >
-                  Quarter
+                  Fiscal Quarter*
                   {formValidation.quarter && (
                     <div className="usa-error-message" id="quarter-error-alert">
-                      A quarter is required
+                      A fiscal quarter is required
                     </div>
                   )}
                   {/* eslint-disable-next-line */}

@@ -106,7 +106,7 @@ describe('Reports', () => {
     // added 1 to include the starting year
     const yearNum = fiscalYear - 2021 + 1
 
-    const select = getByLabelText('Fiscal Year (October - September)')
+    const select = getByLabelText('Fiscal Year*')
 
     expect(select).toBeInTheDocument()
 
@@ -165,7 +165,7 @@ describe('Reports', () => {
     )
 
     const sttDropdown = getByLabelText(
-      'Associated State, Tribe, or Territory*',
+      'State, Tribe, or Territory*',
       { selector: 'input' }
     )
 
@@ -176,7 +176,7 @@ describe('Reports', () => {
 
     expect(sttDropdown.value).toEqual('alaska')
 
-    const yearsDropdown = getByLabelText('Fiscal Year (October - September)')
+    const yearsDropdown = getByLabelText('Fiscal Year*')
 
     fireEvent.select(yearsDropdown, {
       target: { value: '2021' },
@@ -403,7 +403,7 @@ describe('Reports', () => {
 
     await waitFor(() => {
       expect(getByText('A fiscal year is required')).toBeInTheDocument()
-      expect(getByText('A quarter is required')).toBeInTheDocument()
+      expect(getByText('A fiscal quarter is required')).toBeInTheDocument()
       expect(
         getByText('A state, tribe, or territory is required')
       ).toBeInTheDocument()
@@ -705,7 +705,7 @@ describe('Reports', () => {
       </Provider>
     )
 
-    const select = getByLabelText('Fiscal Year (October - September)')
+    const select = getByLabelText('Fiscal Year*')
     const options = select.children
     const expected = options.item(1).value
 
@@ -732,7 +732,7 @@ describe('Reports', () => {
       </Provider>
     )
 
-    const select = getByLabelText('Fiscal Year (October - September)')
+    const select = getByLabelText('Fiscal Year*')
     const options = select.children
     const expected = options.item(1).value
 
@@ -760,7 +760,7 @@ describe('Reports', () => {
       </Provider>
     )
 
-    expect(getByText('File Type')).toBeInTheDocument()
+    expect(getByText('File Type*')).toBeInTheDocument()
   })
 
   // should not render the File Type section if the user is not an OFA Admin and the stt has ssp set to false
@@ -785,7 +785,7 @@ describe('Reports', () => {
       </Provider>
     )
 
-    expect(queryByText('File Type')).not.toBeInTheDocument()
+    expect(queryByText('File Type*')).not.toBeInTheDocument()
   })
 
   it('OFA Admin should see the data files section when they select a stt with ssp set to true', () => {
@@ -803,7 +803,7 @@ describe('Reports', () => {
       </Provider>
     )
 
-    expect(getByText('File Type')).toBeInTheDocument()
+    expect(getByText('File Type*')).toBeInTheDocument()
   })
 
   it('OFA Admin should not see the data files section when they select a stt with ssp set to false', () => {
@@ -821,6 +821,6 @@ describe('Reports', () => {
       </Provider>
     )
 
-    expect(queryByText('File Type')).not.toBeInTheDocument()
+    expect(queryByText('File Type*')).not.toBeInTheDocument()
   })
 })
