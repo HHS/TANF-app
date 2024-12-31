@@ -164,10 +164,9 @@ describe('Reports', () => {
       </Provider>
     )
 
-    const sttDropdown = getByLabelText(
-      'State, Tribe, or Territory*',
-      { selector: 'input' }
-    )
+    const sttDropdown = getByLabelText('State, Tribe, or Territory*', {
+      selector: 'input',
+    })
 
     // Due to weirdness with USWDS, fire a change event instead of a select
     fireEvent.change(sttDropdown, {
