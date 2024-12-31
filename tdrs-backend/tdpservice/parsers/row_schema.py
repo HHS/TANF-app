@@ -98,23 +98,23 @@ class RowSchema:
                 friendly_name=field.friendly_name if field else 'record type',
                 item_num=field.item if field else '0',
             )
-            validator_is_valid, validator_error, is_deprecated = validator(line, eargs)
-            is_valid = False if not validator_is_valid else is_valid
+            result = validator(line, eargs)
+            is_valid = False if not result.valid else is_valid
 
             is_quiet_preparser_errors = (
                 self.quiet_preparser_errors
                 if type(self.quiet_preparser_errors) is bool
                 else self.quiet_preparser_errors(line)
             )
-            if validator_error and not is_quiet_preparser_errors:
+            if result.error and not is_quiet_preparser_errors:
                 errors.append(
                     generate_error(
                         schema=self,
                         error_category=ParserErrorCategoryChoices.PRE_CHECK,
-                        error_message=validator_error,
+                        error_message=result.error,
                         record=None,
                         field="Record_Type",
-                        deprecated=is_deprecated,
+                        deprecated=result.deprecated,
                     )
                 )
 
@@ -153,17 +153,17 @@ class RowSchema:
             should_validate = not field.required and not is_empty
             if (field.required and not is_empty) or should_validate:
                 for validator in field.validators:
-                    validator_is_valid, validator_error, is_deprecated = validator(value, eargs)
-                    is_valid = False if (not validator_is_valid and not field.ignore_errors) else is_valid
-                    if validator_error:
+                    result = validator(value, eargs)
+                    is_valid = False if (not result.valid and not field.ignore_errors) else is_valid
+                    if result.error:
                         errors.append(
                             generate_error(
                                 schema=self,
                                 error_category=ParserErrorCategoryChoices.FIELD_VALUE,
-                                error_message=validator_error,
+                                error_message=result.error,
                                 record=instance,
                                 field=field,
-                                deprecated=is_deprecated
+                                deprecated=result.deprecated
                             )
                         )
             elif field.required:
@@ -189,19 +189,19 @@ class RowSchema:
         errors = []
 
         for validator in self.postparsing_validators:
-            validator_is_valid, validator_error, field_names, is_deprecated = validator(instance, self)
-            is_valid = False if not validator_is_valid else is_valid
-            if validator_error:
+            result = validator(instance, self)
+            is_valid = False if not result.valid else is_valid
+            if result.error:
                 # get field from field name
-                fields = [self.get_field_by_name(name) for name in field_names]
+                fields = [self.get_field_by_name(name) for name in result.field_names]
                 errors.append(
                     generate_error(
                         schema=self,
                         error_category=ParserErrorCategoryChoices.VALUE_CONSISTENCY,
-                        error_message=validator_error,
+                        error_message=result.error,
                         record=instance,
                         field=fields,
-                        deprecated=is_deprecated
+                        deprecated=result.deprecated
                     )
                 )
 

@@ -10,28 +10,19 @@ from ..util import (
     get_years_apart,
     clean_options_string,
     generate_t2_t3_t5_hashes)
+from ..validators.category3 import ifThenAlso
 from ..validators.util import deprecate_call, deprecate_validator, make_validator
 import logging
 
 def passing_validator():
     """Fake validator that always returns valid."""
-    return lambda _, __: (True, None, False)
-
+    return make_validator(lambda _, : True,
+                          lambda _, : "Failed.")
 
 def failing_validator():
     """Fake validator that always returns invalid."""
-    return lambda _, __: (False, 'Value is not valid.', False)
-
-
-def passing_postparsing_validator():
-    """Fake validator that always returns valid."""
-    return lambda _, __: (True, None, [], False)
-
-
-def failing_postparsing_validator():
-    """Fake validator that always returns invalid."""
-    return lambda _, __: (False, 'Value is not valid.', [], False)
-
+    return make_validator(lambda _, : False,
+                          lambda _, : "Value is not valid.")
 
 def error_func(schema, error_category, error_message, record, field, deprecated=False):
     """Fake error func that returns an error_message."""
@@ -405,7 +396,7 @@ def test_run_postparsing_validators_returns_valid():
     schema = RowSchema(
         document=None,
         postparsing_validators=[
-            passing_postparsing_validator()
+            passing_validator()
         ]
     )
 
@@ -420,8 +411,8 @@ def test_run_postparsing_validators_returns_invalid_and_errors():
     schema = RowSchema(
         document=None,
         postparsing_validators=[
-            passing_postparsing_validator(),
-            failing_postparsing_validator()
+            passing_validator(),
+            failing_validator()
         ]
     )
 
@@ -441,7 +432,7 @@ def test_multi_record_schema_parses_and_validates():
                     passing_validator()
                 ],
                 postparsing_validators=[
-                    failing_postparsing_validator()
+                    failing_validator()
                 ],
                 fields=[
                     Field(
@@ -461,7 +452,7 @@ def test_multi_record_schema_parses_and_validates():
                     passing_validator()
                 ],
                 postparsing_validators=[
-                    passing_postparsing_validator()
+                    passing_validator()
                 ],
                 fields=[
                     Field(
@@ -480,7 +471,7 @@ def test_multi_record_schema_parses_and_validates():
                     failing_validator()
                 ],
                 postparsing_validators=[
-                    passing_postparsing_validator()
+                    passing_validator()
                 ],
                 fields=[
                     Field(
@@ -500,7 +491,7 @@ def test_multi_record_schema_parses_and_validates():
                     passing_validator()
                 ],
                 postparsing_validators=[
-                    passing_postparsing_validator()
+                    passing_validator()
                 ],
                 fields=[
                     Field(
@@ -549,15 +540,12 @@ def test_datafile_empty_file(stt_user, stt):
 def test_run_postparsing_validators_returns_frinedly_fieldnames(test_datafile_empty_file):
     """Test run_postparsing_validators executes all postparsing_validators provided in schema."""
 
-    def postparse_validator():
-        """Fake validator that always returns valid."""
-        return lambda _, __: (False, "an Error", ["FIRST", "SECOND"], False)
-
     instance = {}
     schema = RowSchema(
         document=None,
         postparsing_validators=[
-            postparse_validator()
+            ifThenAlso("FIRST", passing_validator(),
+                       "SECOND", failing_validator())
         ],
         fields=[
             Field(
@@ -588,7 +576,7 @@ def test_run_postparsing_validators_returns_frinedly_fieldnames(test_datafile_em
     ))
     assert is_valid is False
     assert errors[0].fields_json == {'friendly_name': {'FIRST': 'first', 'SECOND': 'second'}}
-    assert errors[0].error_message == "an Error"
+    assert errors[0].error_message == "Since Item 1 (first) is None, then Item 2 (second) None Value is not valid."
 
 
 @pytest.mark.parametrize("rpt_date_str,date_str,expected", [

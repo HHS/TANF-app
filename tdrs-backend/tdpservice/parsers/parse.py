@@ -61,43 +61,43 @@ def parse_datafile(datafile, dfs):
 
     # Validate tribe code in submission across program type and fips code
     generate_error = util.make_generate_parser_error(datafile, 1)
-    tribe_is_valid, tribe_error, _ = category1.validate_tribe_fips_program_agree(
+    tribe_result = category1.validate_tribe_fips_program_agree(
         header['program_type'],
         field_values["tribe_code"],
         field_values["state_fips"],
         generate_error
     )
 
-    if not tribe_is_valid:
+    if not tribe_result.valid:
         logger.info(f"Tribe Code ({field_values['tribe_code']}) inconsistency with Program Type " +
                     f"({header['program_type']}) and FIPS Code ({field_values['state_fips']}).",)
-        errors['header'] = [tribe_error]
-        bulk_create_errors({1: [tribe_error]}, 1, flush=True)
+        errors['header'] = [tribe_result.error]
+        bulk_create_errors({1: [tribe_result.error]}, 1, flush=True)
         return errors
 
     # Ensure file section matches upload section
-    section_is_valid, section_error, _ = category1.validate_header_section_matches_submission(
+    section_result = category1.validate_header_section_matches_submission(
         datafile,
         get_section_reference(program_type, section),
         util.make_generate_parser_error(datafile, 1)
     )
 
-    if not section_is_valid:
-        logger.info(f"Preparser Error -> Section is not valid: {section_error.error_message}")
-        errors['document'] = [section_error]
-        unsaved_parser_errors = {1: [section_error]}
+    if not section_result.valid:
+        logger.info(f"Preparser Error -> Section is not valid: {section_result.error}")
+        errors['document'] = [section_result.error]
+        unsaved_parser_errors = {1: [section_result.error]}
         bulk_create_errors(unsaved_parser_errors, 1, flush=True)
         return errors
 
-    rpt_month_year_is_valid, rpt_month_year_error, _ = category1.validate_header_rpt_month_year(
+    rpt_month_year_result = category1.validate_header_rpt_month_year(
         datafile,
         header,
         util.make_generate_parser_error(datafile, 1)
     )
-    if not rpt_month_year_is_valid:
-        logger.info(f"Preparser Error -> Rpt Month Year is not valid: {rpt_month_year_error.error_message}")
-        errors['document'] = [rpt_month_year_error]
-        unsaved_parser_errors = {1: [rpt_month_year_error]}
+    if not rpt_month_year_result.valid:
+        logger.info(f"Preparser Error -> Rpt Month Year is not valid: {rpt_month_year_result.error}")
+        errors['document'] = [rpt_month_year_result.error]
+        unsaved_parser_errors = {1: [rpt_month_year_result.error]}
         bulk_create_errors(unsaved_parser_errors, 1, flush=True)
         return errors
 

@@ -3,11 +3,20 @@
 
 import functools
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 import warnings
 
 logger = logging.getLogger(__name__)
+
+@dataclass
+class Result:
+    """Dataclass representing a validator's evaluated result."""
+    valid: bool = True
+    error: str | None = None
+    field_names: list = field(default_factory=list)
+    deprecated: bool = False
+
 
 def make_validator(validator_func, error_func):
     """
@@ -21,10 +30,10 @@ def make_validator(validator_func, error_func):
     def validator(value, eargs):
         try:
             if validator_func(value):
-                return (True, None, False)
+                return Result()
         except Exception:
             logger.exception("Caught exception in validator.")
-        return (False, error_func(eargs), False)
+        return Result(valid=False, error=error_func(eargs))
 
     return validator
 
@@ -44,10 +53,9 @@ def deprecate_validator(validator):
             warnings.warn(f"{validator.__name__} has been deprecated and will be removed in a future version.",
                           DeprecationWarning)
             make_val = validator(*wrapper_args, **wrapper_kwargs)
-            result = []
-            result.extend(make_val(*args, **kwargs))
-            result[-1] = True
-            return tuple(result)
+            result = make_val(*args, **kwargs)
+            result.deprecated = True
+            return result
         return deprecated_validator
     return wrapper
 
@@ -59,10 +67,9 @@ def deprecate_call(validator):
     `deprecate_call(category1.recordHasLengthBetween(117, 156))`.
     """
     def deprecated_validator(*args, **kwargs):
-        result = []
-        result.extend(validator(*args, **kwargs))
-        result[-1] = True
-        return tuple(result)
+        result = validator(*args, **kwargs)
+        result.deprecated = True
+        return result
     return deprecated_validator
 
 

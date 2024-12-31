@@ -26,10 +26,10 @@ def _make_eargs(val):
 
 
 def _validate_and_assert(validator, val, exp_result, exp_message, exp_deprecated=False):
-    result, msg, deprecated = validator(val, _make_eargs(val))
-    assert result == exp_result
-    assert msg == exp_message
-    assert deprecated == exp_deprecated
+    result = validator(val, _make_eargs(val))
+    assert result.valid == exp_result
+    assert result.error == exp_message
+    assert result.deprecated == exp_deprecated
 
 
 @pytest.mark.parametrize('val, option, kwargs, exp_result, exp_message', [

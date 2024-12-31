@@ -3,7 +3,7 @@
 from tdpservice.parsers.models import ParserErrorCategoryChoices
 from tdpservice.parsers.util import fiscal_to_calendar, year_month_to_year_quarter
 from . import base
-from .util import ValidationErrorArgs, make_validator, _is_all_zeros, _is_empty, value_is_empty
+from .util import Result, ValidationErrorArgs, make_validator, _is_all_zeros, _is_empty, value_is_empty
 
 
 def format_error_context(eargs: ValidationErrorArgs):
@@ -63,10 +63,10 @@ def or_priority_validators(validators=[]):
     """
     def or_priority_validators_func(value, eargs):
         for validator in validators:
-            result, msg, _ = validator(value, eargs)
-            if not result:
-                return (result, msg, False)
-        return (True, None, False)
+            result = validator(value, eargs)
+            if not result.valid:
+                return result
+        return Result()
 
     return or_priority_validators_func
 
@@ -85,13 +85,12 @@ def validate_fieldYearMonth_with_headerYearQuarter():
         file_calendar_year, file_calendar_qtr = fiscal_to_calendar(df_year, f"{df_quarter}")
 
         if str(file_calendar_year) == str(field_year) and file_calendar_qtr == field_quarter:
-            return (True, None, False)
+            return Result()
 
-        return (
-            False,
-            f"{row_schema.record_type}: Reporting month year {field_month_year} " +
-            f"does not match file reporting year:{df_year}, quarter:{df_quarter}.",
-            False
+        return Result(
+            valid=False,
+            error=(f"{row_schema.record_type}: Reporting month year {field_month_year} "
+                   f"does not match file reporting year:{df_year}, quarter:{df_quarter}."),
         )
 
     return validate_reporting_month_year_fields_header
@@ -113,25 +112,23 @@ def t3_m3_child_validator(which_child):
     """T3 child validator."""
     def t3_first_child_validator_func(line, eargs):
         if not _is_empty(line, 1, 60) and len(line) >= 60:
-            return (True, None, False)
+            return Result()
         elif not len(line) >= 60:
-            return (False, f"The first child record is too short at {len(line)} "
-                    "characters and must be at least 60 characters.",
-                    False)
+            return Result(valid=False, error=f"The first child record is too short at {len(line)} "
+                          "characters and must be at least 60 characters.")
         else:
-            return (False, "The first child record is empty.", False)
+            return Result(valid=False, error="The first child record is empty.")
 
     def t3_second_child_validator_func(line, eargs):
         if not _is_empty(line, 60, 101) and len(line) >= 101 and \
                 not _is_empty(line, 8, 19) and \
                 not _is_all_zeros(line, 60, 101):
-            return (True, None, False)
+            return Result()
         elif not len(line) >= 101:
-            return (False, f"The second child record is too short at {len(line)} "
-                    "characters and must be at least 101 characters.",
-                    False)
+            return Result(valid=False, error=(f"The second child record is too short at {len(line)} "
+                                              "characters and must be at least 101 characters."))
         else:
-            return (False, "The second child record is empty.", False)
+            return Result(valid=False, error="The second child record is empty.")
 
     return t3_first_child_validator_func if which_child == 1 else t3_second_child_validator_func
 
@@ -170,7 +167,7 @@ def validate_tribe_fips_program_agree(program_type, tribe_code, state_fips_code,
             field=None
         )
 
-    return is_valid, error, False
+    return Result(valid=is_valid, error=error)
 
 
 def validate_header_section_matches_submission(datafile, section, generate_error):
@@ -187,7 +184,7 @@ def validate_header_section_matches_submission(datafile, section, generate_error
             field=None,
         )
 
-    return is_valid, error, False
+    return Result(valid=is_valid, error=error)
 
 
 def validate_header_rpt_month_year(datafile, header, generate_error):
@@ -210,4 +207,4 @@ def validate_header_rpt_month_year(datafile, header, generate_error):
             record=None,
             field=None,
         )
-    return is_valid, error, False
+    return Result(valid=is_valid, error=error)
