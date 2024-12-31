@@ -112,7 +112,7 @@ function FileUpload({ section, setLocalAlertState }) {
       /* istanbul ignore next */
       if (!evt.target.error) {
         // Validate file extension before proceeding
-        const re = /(\.txt|\.ms\d{2}|\.ts\d{2,3})$/i
+        const re = /(\.txt)$/i
         if (!re.exec(file.name)) {
           dispatch({
             type: FILE_EXT_ERROR,
