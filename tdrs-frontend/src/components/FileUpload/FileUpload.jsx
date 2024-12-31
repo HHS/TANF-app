@@ -18,8 +18,20 @@ import { handlePreview, getTargetClassName } from './utils'
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
 
-const INVALID_EXT_ERROR =
-  'Invalid extension. Accepted file types are: .txt, .ms##, .ts##, or .ts###.'
+const INVALID_EXT_ERROR = (
+  <>
+    Invalid extension, please upload a .txt file.&nbsp;
+    <a
+      className="usa-link"
+      href="https://tdp-project-updates.app.cloud.gov/knowledge-center/file-extension-guide.html"
+      target="_blank"
+      aria-label="Knowledge Center file extension guidance"
+      rel="noreferrer"
+    >
+      Need help?
+    </a>
+  </>
+)
 
 function FileUpload({ section, setLocalAlertState }) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
