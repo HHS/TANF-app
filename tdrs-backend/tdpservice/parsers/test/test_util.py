@@ -539,7 +539,6 @@ def test_datafile_empty_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_run_postparsing_validators_returns_frinedly_fieldnames(test_datafile_empty_file):
     """Test run_postparsing_validators executes all postparsing_validators provided in schema."""
-
     instance = {}
     schema = RowSchema(
         document=None,
