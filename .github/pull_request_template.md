@@ -6,8 +6,8 @@ Pull request closes #_
 _List the steps to test the PR_
 These steps are generic, please adjust as necessary.
 ```
-cd tdrs-frontend && docker-compose -f docker-compose.yml -f docker-compose.local.yml up -d
-cd tdrs-backend && docker-compose -f docker-compose.yml -f docker-compose.local.yml up -d 
+cd tdrs-frontend && docker-compose up --build
+cd tdrs-backend && docker-compose up --build
 ```
 
 1. Open http://localhost:3000/ and sign in.
