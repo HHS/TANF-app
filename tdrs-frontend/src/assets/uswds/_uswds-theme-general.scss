@@ -1,53 +1,56 @@
-/*
-* * * * * ==============================
-* * * * * ==============================
-* * * * * ==============================
-* * * * * ==============================
-========================================
-========================================
-========================================
-----------------------------------------
-USWDS 2.8.1
-----------------------------------------
-GENERAL SETTINGS
-----------------------------------------
-Read more about settings and
-USWDS style tokens in the documentation:
-https://designsystem.digital.gov/design-tokens
-----------------------------------------
-*/
+@use "uswds-core" with (
+  // general
+  /*
+  * * * * * ==============================
+  * * * * * ==============================
+  * * * * * ==============================
+  * * * * * ==============================
+  ========================================
+  ========================================
+  ========================================
+  ----------------------------------------
+  USWDS 2.8.1
+  ----------------------------------------
+  GENERAL SETTINGS
+  ----------------------------------------
+  Read more about settings and
+  USWDS style tokens in the documentation:
+  https://designsystem.digital.gov/design-tokens
+  ----------------------------------------
+  */
 
-/*
-----------------------------------------
-Image Path
-----------------------------------------
-Relative image file path
-----------------------------------------
-*/
+  /*
+  ----------------------------------------
+  Image Path
+  ----------------------------------------
+  Relative image file path
+  ----------------------------------------
+  */
 
-$theme-image-path: "../../../img";
+  $theme-image-path: "../../../../../../dist/img",
+  $theme-hero-image: "../img/_hero.png",
 
-/*
-----------------------------------------
-Show compile warnings
-----------------------------------------
-Show Sass warnings when functions and
-mixins use non-standard tokens.
-AND
-Show updates and notifications.
-----------------------------------------
-*/
+  /*
+  ----------------------------------------
+  Show compile warnings
+  ----------------------------------------
+  Show Sass warnings when functions and
+  mixins use non-standard tokens.
+  AND
+  Show updates and notifications.
+  ----------------------------------------
+  */
 
-$theme-show-compile-warnings: true;
-$theme-show-notifications: false;
+  $theme-show-compile-warnings: true,
+  $theme-show-notifications: false,
 
-/*
-----------------------------------------
-Namespace
-----------------------------------------
-*/
+  /*
+  ----------------------------------------
+  Namespace
+  ----------------------------------------
+  */
 
-$theme-namespace: (
+  $theme-namespace: (
   "grid": (
     namespace: "grid-",
     output: true,
@@ -56,46 +59,1572 @@ $theme-namespace: (
     namespace: "u-",
     output: false,
   ),
+  ),
+
+  /*
+  ----------------------------------------
+  Layout grid
+  ----------------------------------------
+  Should the layout grid classes output
+  with !important
+  ----------------------------------------
+  */
+
+  $theme-layout-grid-use-important: false,
+
+  /*
+  ----------------------------------------
+  Border box sizing
+  ----------------------------------------
+  When set to true, sets the box-sizing
+  property of all site elements to
+  `border-box`.
+  ----------------------------------------
+  */
+
+  $theme-global-border-box-sizing: true,
+
+  /*
+  ----------------------------------------
+  Focus styles
+  ----------------------------------------
+  */
+
+  $theme-focus-color: "blue-40v",
+  $theme-focus-offset: 0,
+  $theme-focus-style: solid,
+  $theme-focus-width: 0.5,
+
+  /*
+  ----------------------------------------
+  Icons
+  ----------------------------------------
+  */
+
+  $theme-icon-image-size: 2,
+
+
+  // typography
+
+  /*
+  * * * * * ==============================
+  * * * * * ==============================
+  * * * * * ==============================
+  * * * * * ==============================
+  ========================================
+  ========================================
+  ========================================
+  ----------------------------------------
+  USWDS 2.8.1
+  ----------------------------------------
+  TYPOGRAPHY SETTINGS
+  ----------------------------------------
+  Read more about settings and
+  USWDS typography tokens in the documentation:
+  https://designsystem.digital.gov/design-tokens/typesetting/font-family/
+  ----------------------------------------
+  */
+
+  /*
+  ----------------------------------------
+  Root font size
+  ----------------------------------------
+  Setting $theme-respect-user-font-size to
+  true sets the root font size to 100% and
+  uses ems for media queries
+  ----------------------------------------
+  $theme-root-font-size only applies when
+  $theme-respect-user-font-size is set to
+  false.
+
+  This will set the root font size
+  as a specific px value and use px values
+  for media queries.
+
+  Accepts true or false
+  ----------------------------------------
+  */
+
+  $theme-respect-user-font-size: true,
+
+  // $theme-root-font-size only applies when
+  // $theme-respect-user-font-size is set to
+  // false.
+
+  // This will set the root font size
+  // as a specific px value and use px values
+  // for media queries.
+
+  // Accepts values in px
+
+  $theme-root-font-size: 10px,
+
+  /*
+  ----------------------------------------
+  Global styles
+  ----------------------------------------
+  Adds basic styling for the following
+  unclassed elements:
+
+  - paragraph: paragraph text
+  - link: links
+  - content: paragraph text, links,
+  headings, lists, and tables
+  ----------------------------------------
+  */
+
+  $theme-global-paragraph-styles: false,
+  $theme-global-link-styles: false,
+  $theme-global-content-styles: false,
+
+  /*
+  ----------------------------------------
+  Font path
+  ----------------------------------------
+  Relative font file path
+  ----------------------------------------
+  */
+
+  $theme-font-path: "../../../../../uswds-core/src/assets/fonts",
+
+  /*
+  ----------------------------------------
+  Custom typeface tokens
+  ----------------------------------------
+  Add a new custom typeface token if
+  your project uses a typeface not already
+  defined by USWDS.
+  ----------------------------------------
+  USWDS defines the following tokens
+  by default:
+  ----------------------------------------
+  'georgia'
+  'helvetica'
+  'merriweather'
+  'open-sans'
+  'public-sans'
+  'roboto-mono'
+  'source-sans-pro'
+  'system'
+  'tahoma'
+  'verdana'
+  ----------------------------------------
+  Add as many new tokens as you have
+  custom typefaces. Reference your new
+  token(s) in the type-based font settings
+  using the quoted name of the token.
+
+  For example:
+
+  $theme-font-type-cond: 'example-font-token',
+
+  display-name:
+  The display name of your font
+
+  cap-height:
+  The height of a 500px `N` in Sketch
+  ----------------------------------------
+  You should change `example-[style]-token`
+  names to something more descriptive.
+  ----------------------------------------
+  */
+
+  $theme-typeface-tokens: (
+    example-serif-token: (
+      display-name: "Example Serif Display Name",
+      cap-height: 364px,
+    ),
+    example-sans-token: (
+      display-name: "Example Sans Display Name",
+      cap-height: 364px,
+    ),
+    acf-arial: (
+      display-name: "Arial",
+      cap-height: 345px,
+    ),
+  ),
+
+  /*
+  ----------------------------------------
+  Type-based font settings
+  ----------------------------------------
+  Set the type-based tokens for your
+  project from the following tokens,
+  or from any new font tokens you added in
+  $theme-typeface-tokens.
+  ----------------------------------------
+  'georgia'
+  'helvetica'
+  'merriweather'
+  'open-sans'
+  'public-sans'
+  'roboto-mono'
+  'source-sans-pro'
+  'system'
+  'tahoma'
+  'verdana'
+  ----------------------------------------
+  */
+
+  // condensed
+  $theme-font-type-cond: false,
+
+  // icon
+  $theme-font-type-icon: false,
+
+  // language-specific
+  $theme-font-type-lang: false,
+
+  // monospace
+  $theme-font-type-mono: "roboto-mono",
+
+  // sans-serif
+  // $theme-font-type-sans: "source-sans-pro",
+
+  // serif
+  $theme-font-type-serif: "merriweather",
+
+  /*
+  ----------------------------------------
+  Custom font stacks
+  ----------------------------------------
+  Add custom font stacks to any of the
+  type-based fonts. Any USWDS typeface
+  token already has a default stack.
+
+  Custom stacks don't need to include the
+  font's display name. It will
+  automatically appear at the start of
+  the stack.
+  ----------------------------------------
+  Example:
+  $theme-font-type-sans: 'source-sans-pro',
+  $theme-font-sans-custom-stack: "Helvetica Neue", Helvetica, Arial, sans,
+
+  Output:
+  font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans,
+  ----------------------------------------
+  */
+
+  $theme-font-cond-custom-stack: false,
+  $theme-font-icon-custom-stack: false,
+  $theme-font-lang-custom-stack: false,
+  $theme-font-mono-custom-stack: false,
+  $theme-font-serif-custom-stack: false,
+
+  /*
+  ----------------------------------------
+  Add any custom font source files
+  ----------------------------------------
+  If you want USWDS to generate additional
+  @font-face declarations, add your font
+  data below, following the example that
+  follows.
+  ----------------------------------------
+  USWDS automatically generates @font-face
+  decalarations for the following
+
+  'merriweather'
+  'public-sans'
+  'roboto-mono'
+  'source-sans-pro'
+
+  These typefaces not require custom
+  source files.
+  ----------------------------------------
+  EXAMPLE
+
+  - dir:
+  Directory relative to $theme-font-path
+  - This directory should include fonts saved as
+  .ttf, .woff, and .woff2
+  ExampleSerif-Normal.ttf
+  ExampleSerif-Normal.woff
+  ExampleSerif-Normal.woff2
+
+  $theme-font-serif-custom-src: (
+  dir: 'custom/example-serif',
+  roman: (
+    100: false,
+    200: false,
+    300: 'ExampleSerif-Light',
+    400: 'ExampleSerif-Normal',
+    500: false,
+    600: false,
+    700: 'ExampleSerif-Bold',
+    800: false,
+    900: false,
+  ),
+  italic: (
+    100: false,
+    200: false,
+    300: 'ExampleSerif-LightItalic',
+    400: 'ExampleSerif-Italic',
+    500: false,
+    600: false,
+    700: 'ExampleSerif-BoldItalic',
+    800: false,
+    900: false,
+  ),
+  ),
+  ----------------------------------------
+  */
+
+  $theme-font-cond-custom-src: false,
+  $theme-font-icon-custom-src: false,
+  $theme-font-lang-custom-src: false,
+  $theme-font-mono-custom-src: false,
+  $theme-font-sans-custom-src: false,
+  $theme-font-serif-custom-src: false,
+
+  /*
+  ----------------------------------------
+  Role-based font settings
+  ----------------------------------------
+  Set the role-based tokens for your
+  project from the following font-type
+  tokens.
+  ----------------------------------------
+  'cond'
+  'icon'
+  'lang'
+  'mono'
+  'sans'
+  'serif'
+  ----------------------------------------
+  */
+
+  $theme-font-role-ui: "sans",
+  $theme-font-role-heading: "serif",
+  $theme-font-role-body: "sans",
+  $theme-font-role-code: "mono",
+  $theme-font-role-alt: "serif",
+
+  /*
+  ----------------------------------------
+  Type scale
+  ----------------------------------------
+  Define your project's type scale using
+  values from the USWDS system type scale
+
+  1-20
+  ----------------------------------------
+  */
+
+  $theme-type-scale-3xs: 2,
+  $theme-type-scale-2xs: 3,
+  $theme-type-scale-xs: 4,
+  $theme-type-scale-sm: 5,
+  $theme-type-scale-md: 6,
+  $theme-type-scale-lg: 9,
+  $theme-type-scale-xl: 12,
+  $theme-type-scale-2xl: 14,
+  $theme-type-scale-3xl: 15,
+
+  /*
+  ----------------------------------------
+  Font weights
+  ----------------------------------------
+  Assign weights 100-900
+  Or use `false` for unneeded weights.
+  ----------------------------------------
+  */
+
+  $theme-font-weight-thin: false,
+  $theme-font-weight-light: 300,
+  $theme-font-weight-normal: 400,
+  $theme-font-weight-medium: false,
+  $theme-font-weight-semibold: false,
+  $theme-font-weight-bold: 700,
+  $theme-font-weight-heavy: false,
+
+  // If USWDS is generating your @font-face rules,
+  // should we generate all available weights
+  // regardless of the assignments above?
+
+  $theme-generate-all-weights: false,
+
+  /*
+  ----------------------------------------
+  General typography settings
+  ----------------------------------------
+  Type scale tokens
+  ----------------------------------------
+  micro:      10px
+  1:          12px
+  2:          13px
+  3:          14px
+  4:          15px
+  5:          16px
+  6:          17px
+  7:          18px
+  8:          20px
+  9:          22px
+  10:         24px
+  11:         28px
+  12:         32px
+  13:         36px
+  14:         40px
+  15:         48px
+  16:         56px
+  17:         64px
+  18:         80px
+  19:         120px
+  20:         140px
+  ----------------------------------------
+  Line height tokens
+  ----------------------------------------
+  1:    1
+  2:    1.15
+  3:    1.35
+  4:    1.5
+  5:    1.62
+  6:    1.75
+  ----------------------------------------
+  Font role tokens
+  ----------------------------------------
+  'ui'
+  'heading'
+  'body'
+  'code'
+  'alt'
+  ----------------------------------------
+  Measure (max-width) tokens
+  ----------------------------------------
+  1:       44ex
+  2:       60ex
+  3:       64ex
+  4:       68ex
+  5:       74ex
+  6:       88ex
+  none:    none
+  ----------------------------------------
+  */
+
+  // Body settings are the equivalent of setting the <body> element
+  $theme-body-font-family: "body",
+  $theme-body-font-size: "sm",
+  $theme-body-line-height: 5,
+
+  // If true, explicitly style the <body> element with the base styles
+  $theme-style-body-element: false,
+
+  // Headings
+  $theme-h1-font-size: "2xl",
+  $theme-h2-font-size: "xl",
+  $theme-h3-font-size: "lg",
+  $theme-h4-font-size: "sm",
+  $theme-h5-font-size: "xs",
+  $theme-h6-font-size: "3xs",
+  $theme-heading-line-height: 2,
+  $theme-small-font-size: "2xs",
+  $theme-display-font-size: "3xl",
+
+  // Text and prose
+  $theme-text-measure-narrow: 1,
+  $theme-text-measure: 4,
+  $theme-text-measure-wide: 6,
+  $theme-prose-font-family: "body",
+
+  // Lead text
+  $theme-lead-font-family: "heading",
+  $theme-lead-font-size: "lg",
+  $theme-lead-line-height: 6,
+  $theme-lead-measure: 6,
+
+  $theme-font-type-sans: "acf-arial",
+  $theme-font-sans-custom-stack: "Helvetica",
+
+  // spacing
+  /*
+  * * * * * ==============================
+  * * * * * ==============================
+  * * * * * ==============================
+  * * * * * ==============================
+  ========================================
+  ========================================
+  ========================================
+  ----------------------------------------
+  USWDS 2.8.1
+  ----------------------------------------
+  SPACING SETTINGS
+  ----------------------------------------
+  Read more about settings and
+  USWDS spacing units tokens in the
+  documentation:
+  https://designsystem.digital.gov/design-tokens/spacing-units
+  ----------------------------------------
+  */
+
+  /*
+  ----------------------------------------
+  Border radius
+  ----------------------------------------
+  2px           2px
+  0.5           4px
+  1             8px
+  1.5           12px
+  2             16px
+  2.5           20px
+  3             24px
+  4             32px
+  5             40px
+  6             48px
+  7             56px
+  8             64px
+  9             72px
+  ----------------------------------------
+  */
+
+  $theme-border-radius-sm: 2px,
+  $theme-border-radius-md: 0.5,
+  $theme-border-radius-lg: 1,
+
+  /*
+  ----------------------------------------
+  Column gap
+  ----------------------------------------
+  2px         2px
+  0.5         4px
+  1           8px
+  2           16px
+  3           24px
+  4           32px
+  5           40px
+  6           48px
+  ----------------------------------------
+  */
+
+  $theme-column-gap-sm: 2px,
+  $theme-column-gap-md: 2,
+  $theme-column-gap-lg: 3,
+
+  // These determine the responsive gap sizes set with .grid-gap
+  $theme-column-gap-mobile: 2,
+  $theme-column-gap-desktop: 4,
+
+  /*
+  ----------------------------------------
+  Grid container max-width
+  ----------------------------------------
+  mobile
+  mobile-lg
+  tablet
+  tablet-lg
+  desktop
+  desktop-lg
+  widescreen
+  ----------------------------------------
+  */
+
+  $theme-grid-container-max-width: "desktop",
+
+  /*
+  ----------------------------------------
+  Site
+  ----------------------------------------
+  */
+
+  // $theme-site-max-width: "desktop",
+  $theme-site-margins-breakpoint: "desktop",
+  $theme-site-margins-width: 4,
+  $theme-site-margins-mobile-width: 2,
+
+  // color
+    /*
+  * * * * * ==============================
+  * * * * * ==============================
+  * * * * * ==============================
+  * * * * * ==============================
+  ========================================
+  ========================================
+  ========================================
+  ----------------------------------------
+  USWDS 2.8.1
+  ----------------------------------------
+  COLOR SETTINGS
+  ----------------------------------------
+  Read more about settings and
+  USWDS color tokens in the documentation:
+  https://designsystem.digital.gov/design-tokens/color
+  ----------------------------------------
+  */
+
+  /*
+  ----------------------------------------
+  Theme palette colors
+  ----------------------------------------
+  */
+
+  // Base colors
+  $theme-color-base-family: "gray-cool",
+  $theme-color-base-lightest: "gray-5",
+  $theme-color-base-lighter: "gray-cool-10",
+  $theme-color-base-light: "gray-cool-30",
+  $theme-color-base: "gray-cool-50",
+  $theme-color-base-dark: "gray-cool-60",
+  $theme-color-base-darker: "gray-cool-70",
+  $theme-color-base-darkest: "gray-90",
+  $theme-color-base-ink: "gray-90",
+
+  // Primary colors
+  $theme-color-primary-family: "blue",
+  $theme-color-primary-lightest: false,
+  $theme-color-primary-lighter: "blue-10",
+  $theme-color-primary-light: "blue-30",
+  $theme-color-primary: "blue-60v",
+  $theme-color-primary-vivid: "blue-warm-60v",
+  $theme-color-primary-dark: "blue-warm-70v",
+  $theme-color-primary-darker: "blue-warm-80v",
+  $theme-color-primary-darkest: false,
+
+  // Secondary colors
+  $theme-color-secondary-family: "red",
+  $theme-color-secondary-lightest: false,
+  $theme-color-secondary-lighter: "red-cool-10",
+  $theme-color-secondary-light: "red-30",
+  $theme-color-secondary: "red-50",
+  $theme-color-secondary-vivid: "red-cool-50v",
+  $theme-color-secondary-dark: "red-60v",
+  $theme-color-secondary-darker: "red-70v",
+  $theme-color-secondary-darkest: false,
+
+  // Accent warm colors
+  $theme-color-accent-warm-family: "orange",
+  $theme-color-accent-warm-lightest: false,
+  $theme-color-accent-warm-lighter: "orange-10",
+  $theme-color-accent-warm-light: "orange-20v",
+  $theme-color-accent-warm: "orange-30v",
+  $theme-color-accent-warm-dark: "orange-50v",
+  $theme-color-accent-warm-darker: "orange-60",
+  $theme-color-accent-warm-darkest: false,
+
+  // Accent cool colors
+  $theme-color-accent-cool-family: "blue-cool",
+  $theme-color-accent-cool-lightest: false,
+  $theme-color-accent-cool-lighter: "blue-cool-5v",
+  $theme-color-accent-cool-light: "blue-cool-20v",
+  $theme-color-accent-cool: "cyan-30v",
+  $theme-color-accent-cool-dark: "blue-cool-40v",
+  $theme-color-accent-cool-darker: "blue-cool-60v",
+  $theme-color-accent-cool-darkest: false,
+
+  /*
+  ----------------------------------------
+  State palette colors
+  ----------------------------------------
+  */
+
+  // Error colors
+  $theme-color-error-family: "red-warm",
+  $theme-color-error-lighter: "red-warm-10",
+  $theme-color-error-light: "red-warm-30v",
+  $theme-color-error: "red-warm-50v",
+  $theme-color-error-dark: "red-60v",
+  $theme-color-error-darker: "red-70",
+
+  // Warning colors
+  $theme-color-warning-family: "gold",
+  $theme-color-warning-lighter: "yellow-5",
+  $theme-color-warning-light: "yellow-10v",
+  $theme-color-warning: "gold-20v",
+  $theme-color-warning-dark: "gold-30v",
+  $theme-color-warning-darker: "gold-50v",
+
+  // Success colors
+  $theme-color-success-family: "green-cool",
+  $theme-color-success-lighter: "green-cool-5",
+  $theme-color-success-light: "green-cool-20v",
+  $theme-color-success: "green-cool-40v",
+  $theme-color-success-dark: "green-cool-50",
+  $theme-color-success-darker: "green-cool-60",
+
+  // Info colors
+  $theme-color-info-family: "cyan",
+  $theme-color-info-lighter: "cyan-5",
+  $theme-color-info-light: "cyan-20",
+  $theme-color-info: "cyan-30v",
+  $theme-color-info-dark: "cyan-40v",
+  $theme-color-info-darker: "blue-cool-60",
+
+  // Disabled colors
+  $theme-color-disabled-family: "gray",
+  $theme-color-disabled-light: "gray-10",
+  $theme-color-disabled: "gray-20",
+  $theme-color-disabled-dark: "gray-30",
+
+  /*
+  ----------------------------------------
+  General colors
+  ----------------------------------------
+  */
+
+  // Links
+  $theme-link-color: "primary",
+  $theme-link-visited-color: "violet-70v",
+  $theme-link-hover-color: "primary-dark",
+  $theme-link-active-color: "primary-darker",
+  $theme-link-reverse-color: "base-lighter",
+  $theme-link-reverse-hover-color: "base-lightest",
+  $theme-link-reverse-active-color: "white",
+
+
+  // utilities
+
+  /*
+  * * * * * ==============================
+  * * * * * ==============================
+  * * * * * ==============================
+  * * * * * ==============================
+  ========================================
+  ========================================
+  ========================================
+  ----------------------------------------
+  USWDS 2.8.1
+  ----------------------------------------
+  UTILITIES SETTINGS
+  ----------------------------------------
+  Read more about settings and
+  USWDS utilities in the documentation:
+  https://designsystem.digital.gov/utilities
+  ----------------------------------------
+  */
+
+  $utilities-use-important: false,
+  // $output-all-utilities: true,
+  $output-these-utilities: 'default',
+
+  /*
+  ----------------------------------------
+  Utility breakpoints
+  ----------------------------------------
+  Which breakpoints does your project
+  need? Select as `true` any breakpoint
+  used by utilities or layout grid
+  ----------------------------------------
+  */
+
+  $theme-utility-breakpoints: (
+    "card": true,
+    // 160px
+      "card-lg": false,
+    // 240px
+      "mobile": true,
+    // 320px
+      "mobile-lg": true,
+    // 480px
+      "tablet": true,
+    // 640px
+      "tablet-lg": false,
+    // 800px
+      "desktop": true,
+    // 1024px
+      "desktop-lg": false,
+    // 1200px
+      "widescreen": false,
+    // 1400px
+  ),
+
+  /*
+  ----------------------------------------
+  Global colors
+  ----------------------------------------
+  The following palettes will be added to
+  - background-color
+  - border-color
+  - color
+  - text-decoration-color
+  ----------------------------------------
+  */
+
+  $global-color-palettes: ("palette-color-default"),
+
+  /*
+  ----------------------------------------
+  Settings
+  ----------------------------------------
+  */
+
+  $add-aspect-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $add-list-reset-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $align-items-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $background-color-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: true,
+    visited: false,
+  ),
+
+  $border-settings: (
+    output: true,
+    responsive: true,
+    active: false,
+    focus: false,
+    hover: true,
+    visited: false,
+  ),
+
+  $border-color-settings: (
+    output: true,
+    responsive: true,
+    active: false,
+    focus: false,
+    hover: true,
+    visited: false,
+  ),
+
+  $border-radius-settings: (
+    output: true,
+    responsive: true,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $border-style-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $border-width-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $bottom-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $box-shadow-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: true,
+    visited: false,
+  ),
+
+  $circle-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $clearfix-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $color-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: true,
+    visited: false,
+  ),
+
+  $cursor-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $display-settings: (
+    output: true,
+    responsive: true,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $flex-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $flex-direction-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $flex-wrap-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $float-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $font-settings: (
+    output: true,
+    responsive: true,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $font-family-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $font-feature-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $font-style-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $font-weight-settings: (
+    output: true,
+    responsive: true,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $height-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $justify-content-settings: (
+    output: true,
+    responsive: true,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $left-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $letter-spacing-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $line-height-settings: (
+    output: true,
+    responsive: true,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $margin-settings: (
+    output: true,
+    responsive: true,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $max-height-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $max-width-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $measure-settings: (
+    output: true,
+    responsive: true,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $min-height-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $min-width-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $opacity-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $order-settings: (
+    output: true,
+    responsive: true,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $outline-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $outline-color-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $overflow-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $padding-settings: (
+    output: true,
+    responsive: true,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $pin-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $position-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $right-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $square-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $text-align-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $text-decoration-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: true,
+    visited: false,
+  ),
+
+  $text-decoration-color-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: true,
+    visited: false,
+  ),
+
+  $text-indent-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $text-transform-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $top-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $vertical-align-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $whitespace-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $width-settings: (
+    output: true,
+    responsive: true,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  $z-index-settings: (
+    output: true,
+    responsive: false,
+    active: false,
+    focus: false,
+    hover: false,
+    visited: false,
+  ),
+
+  /*
+  ----------------------------------------
+  Values
+  ----------------------------------------
+  */
+
+  // .add-aspect
+
+  $add-aspect-palettes: (),
+  $add-aspect-manual-values: (),
+
+  // .align-items
+
+  $align-items-palettes: ("palette-align-items-default"),
+  $align-items-manual-values: (),
+
+  // .background-color
+
+  $background-color-palettes: (),
+  $background-color-manual-values: (),
+
+  // .border
+
+  $border-palettes: ("palette-border-default"),
+  $border-manual-values: (),
+
+  // .border-color
+
+  $border-color-palettes: (),
+  $border-color-manual-values: (),
+
+  // .border-radius
+
+  $border-radius-palettes: ("palette-border-radius-default"),
+  $border-radius-manual-values: (),
+
+  // .border-style
+
+  $border-style-palettes: ("palette-border-style-default"),
+  $border-style-manual-values: (),
+
+  // .border-width
+
+  $border-width-palettes: ("palette-border-width-default"),
+  $border-width-manual-values: (),
+
+  // .bottom
+
+  $bottom-palettes: ("palette-bottom-default"),
+
+  $bottom-manual-values: (),
+
+  // .box-shadow
+
+  $box-shadow-palettes: (/*
+    */ "palette-box-shadow-default"),
+
+  $box-shadow-manual-values: (),
+
+  // .circle
+
+  $circle-palettes: ("palette-circle-default"),
+  $circle-manual-values: (),
+
+  // .color
+
+  $color-palettes: (),
+  $color-manual-values: (),
+
+  // .cursor
+
+  $cursor-palettes: ("palette-cursor-default"),
+  $cursor-manual-values: (),
+
+  // .display
+
+  $display-palettes: ("palette-display-default"),
+  $display-manual-values: (),
+
+  // .flex
+
+  $flex-palettes: ("palette-flex-default"),
+  $flex-manual-values: (),
+
+  // .flex-direction
+
+  $flex-direction-palettes: ("palette-flex-direction-default"),
+  $flex-direction-manual-values: (),
+
+  // .flex-wrap
+
+  $flex-wrap-palettes: ("palette-flex-wrap-default"),
+  $flex-wrap-manual-values: (),
+
+  // .float
+
+  $float-palettes: ("palette-float-default"),
+  $float-manual-values: (),
+
+  // .font
+
+  $font-palettes: ("palette-font-default"),
+  $font-manual-values: (),
+
+  // .font-family
+
+  $font-family-palettes: ("palette-font-family-default"),
+  $font-family-manual-values: (),
+
+  // .font-feature-settings
+
+  $font-feature-palettes: ("palette-font-feature-settings-default"),
+  $font-feature-manual-values: (),
+
+  // .font-style
+
+  $font-style-palettes: ("palette-font-style-default"),
+  $font-style-manual-values: (),
+
+  // .font-weight
+
+  $font-weight-palettes: ("palette-font-weight-default"),
+  $font-weight-manual-values: (),
+
+  // .height
+
+  $height-palettes: ("palette-height-default"),
+  $height-manual-values: (),
+
+  // .justify-content
+
+  $justify-content-palettes: ("palette-justify-content-default"),
+  $justify-content-manual-values: (),
+
+  // .left
+
+  $left-palettes: ("palette-left-default"),
+  $left-manual-values: (),
+
+  // .letter-spacing
+
+  $letter-spacing-palettes: ("palette-letter-spacing-default"),
+  $letter-spacing-manual-values: (),
+
+  // .line-height
+
+  $line-height-palettes: ("palette-line-height-default"),
+  $line-height-manual-values: (),
+
+  // .margin
+
+  $margin-palettes: ("palette-margin-default"),
+  $margin-manual-values: (),
+  $margin-vertical-palettes: ("palette-margin-vertical-default"),
+  $margin-vertical-manual-values: (),
+  $margin-horizontal-palettes: ("palette-margin-horizontal-default"),
+  $margin-horizontal-manual-values: (),
+
+  // .max-height
+
+  $max-height-palettes: ("palette-max-height-default"),
+  $max-height-manual-values: (),
+
+  // .max-width
+
+  $max-width-palettes: ("palette-max-width-default"),
+  $max-width-manual-values: (),
+
+  // .measure
+
+  $measure-palettes: ("palette-measure-default"),
+  $measure-manual-values: (),
+
+  // .min-height
+
+  $min-height-palettes: ("palette-min-height-default"),
+  $min-height-manual-values: (),
+
+  // .min-width
+
+  $min-width-palettes: ("palette-min-width-default"),
+  $min-width-manual-values: (),
+
+  // .opacity
+
+  $opacity-palettes: ("palette-opacity-default"),
+  $opacity-manual-values: (),
+
+  // .order
+
+  $order-palettes: ("palette-order-default"),
+  $order-manual-values: (),
+
+  // .outline
+
+  $outline-palettes: ("palette-outline-default"),
+  $outline-manual-values: (),
+
+  // .outline-color
+
+  $outline-color-palettes: ("palette-outline-color-default"),
+  $outline-color-manual-values: (),
+
+  // .overflow
+
+  $overflow-palettes: ("palette-overflow-default"),
+  $overflow-manual-values: (),
+
+  // .padding
+
+  $padding-palettes: ("palette-padding-default"),
+  $padding-manual-values: (),
+
+  // .position
+
+  $position-palettes: ("palette-position-default"),
+  $position-manual-values: (),
+
+  // .right
+
+  $right-palettes: ("palette-right-default"),
+  $right-manual-values: (),
+
+  // .square
+
+  $square-palettes: ("palette-square-default"),
+  $square-manual-values: (),
+
+  // .text-align
+
+  $text-align-palettes: ("palette-text-align-default"),
+  $text-align-manual-values: (),
+
+  // .text-decoration
+
+  $text-decoration-palettes: ("palette-text-decoration-default"),
+  $text-decoration-manual-values: (),
+
+  // .text-decoration-color
+
+  $text-decoration-color-palettes: (),
+  $text-decoration-color-manual-values: (),
+
+  // .text-indent
+
+  $text-indent-palettes: ("palette-text-indent-default"),
+  $text-indent-manual-values: (),
+
+  // .text-transform
+
+  $text-transform-palettes: ("palette-text-transform-default"),
+  $text-transform-manual-values: (),
+
+  // .top
+
+  $top-palettes: ("palette-top-default"),
+  $top-manual-values: (),
+
+  // .vertical-align
+
+  $vertical-align-palettes: ("palette-vertical-align-default"),
+  $vertical-align-manual-values: (),
+
+  // .white-space
+
+  $whitespace-palettes: ("palette-white-space-default"),
+  $whitespace-manual-values: (),
+
+  // .width
+
+  $width-palettes: ("palette-width-default"),
+  $width-manual-values: (),
+
+  // .z-index
+
+  $z-index-palettes: ("palette-z-index-default"),
+  $z-index-manual-values: (),
+
 );
-
-/*
-----------------------------------------
-Layout grid
-----------------------------------------
-Should the layout grid classes output
-with !important
-----------------------------------------
-*/
-
-$theme-layout-grid-use-important: false !default;
-
-/*
-----------------------------------------
-Border box sizing
-----------------------------------------
-When set to true, sets the box-sizing
-property of all site elements to
-`border-box`.
-----------------------------------------
-*/
-
-$theme-global-border-box-sizing: true;
-
-/*
-----------------------------------------
-Focus styles
-----------------------------------------
-*/
-
-$theme-focus-color: "blue-40v";
-$theme-focus-offset: 0;
-$theme-focus-style: solid;
-$theme-focus-width: 0.5;
-
-/*
-----------------------------------------
-Icons
-----------------------------------------
-*/
-
-$theme-icon-image-size: 2;

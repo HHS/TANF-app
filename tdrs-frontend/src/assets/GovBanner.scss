@@ -1,4 +1,8 @@
-@include media(">=medium") {
+@use "uswds-core" as *;
+@use "./assets/uswds/_variables" as *;
+@use 'include-media/dist/include-media' as *;
+
+@include media(">=tablet") {
   .usa-banner {
     background-color: #ebf3fa;
     &__header {
