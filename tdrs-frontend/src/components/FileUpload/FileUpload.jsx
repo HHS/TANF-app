@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
-import fileType from 'file-type/browser'
+import fileTypeChecker from 'file-type-checker'
 
 import {
   clearError,
@@ -95,78 +95,33 @@ function FileUpload({ section, setLocalAlertState }) {
     const dropTarget = inputRef.current.parentNode
 
     const filereader = new FileReader()
-
-    filereader.onloadend = (evt) => {
-      /* istanbul ignore next */
-      if (!evt.target.error) {
-        // Validate file extension before proceeding
-        const re = /(\.txt|\.ms\d{2}|\.ts\d{2,3})$/i
-        if (!re.exec(file.name)) {
-          dispatch({
-            type: FILE_EXT_ERROR,
-            payload: {
-              error: { message: INVALID_EXT_ERROR },
-              section,
-            },
-          })
-          return
-        }
-
-        // Read in the file blob "headers: and create a hex string signature
-        const uint = new Uint8Array(evt.target.result)
-        const bytes = []
-        uint.forEach((byte) => {
-          bytes.push(byte.toString(16))
+    const types = ['png', 'gif', 'jpeg']
+    filereader.onload = () => {
+      const re = /(\.txt|\.ms\d{2}|\.ts\d{2,3})$/i
+      if (!re.exec(file.name)) {
+        dispatch({
+          type: FILE_EXT_ERROR,
+          payload: {
+            error: { message: INVALID_EXT_ERROR },
+            section,
+          },
         })
-        const header = bytes.join('')
+        return
+      }
 
-        switch (header) {
-          // For some reason, fileType.fromBlob won't detect image/png;
-          // Account for this by checking for png and some other
-          // file signatures manually. https://stackoverflow.com/a/55136384/7678576
-          case '89504e47': // image/png
-          case '47494638': // image/gif
-          case 'ffd8ffe0': // all the rest are image/jpeg
-          case 'ffd8ffe1':
-          case 'ffd8ffe2':
-          case 'ffd8ffe3':
-          case 'ffd8ffe8':
-            // reject the file and create an error message
-            createFileInputErrorState(input, dropTarget)
+      const isImg = fileTypeChecker.validateFileType(filereader.result, types)
 
-            dispatch({
-              type: SET_FILE_ERROR,
-              payload: {
-                error: { message: INVALID_FILE_ERROR },
-                section,
-              },
-            })
-            return
-          default:
-            break
-        }
+      if (isImg) {
+        createFileInputErrorState(input, dropTarget)
 
-        // file-type should detect and return values for most other
-        // known binary files
-        fileType.fromBlob(blob).then((res) => {
-          // res should be undefined for non-binary files
-          /* istanbul ignore next */
-          if (res) {
-            // reject the file and create an error message
-            createFileInputErrorState(input, dropTarget)
-
-            dispatch({
-              type: SET_FILE_ERROR,
-              payload: {
-                error: { message: INVALID_FILE_ERROR },
-                section,
-              },
-            })
-          }
+        dispatch({
+          type: SET_FILE_ERROR,
+          payload: {
+            error: { message: INVALID_FILE_ERROR },
+            section,
+          },
         })
-
-        // At this point we can reasonably conclude the file is a text file.
-        // Add the file to the redux state
+      } else {
         dispatch(
           upload({
             section,
