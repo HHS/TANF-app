@@ -1,10 +1,10 @@
-import faker from 'faker'
+import { faker } from '@faker-js/faker'
 export const AUTH_CHECK_DATA = {
   authenticated: true,
   user: {
-    id: faker.datatype.uuid(),
-    first_name: faker.name.firstName(),
-    last_name: faker.name.lastName(),
+    id: faker.string.uuid(),
+    first_name: faker.person.firstName(),
+    last_name: faker.person.lastName(),
     email: faker.internet.email(),
     stt: {
       id: 31,
@@ -1066,7 +1066,7 @@ export const REPORTS_DATA = {
       original_filename: '2020.Q1.Active Case Data',
       slug: '2020.Q1.Active Case Data',
       extension: 'None',
-      user: faker.datatype.uuid(),
+      user: faker.string.uuid(),
       stt: 31,
       year: 2020,
       quarter: 'Q1',
@@ -1078,7 +1078,7 @@ export const REPORTS_DATA = {
       original_filename: '2020.Q1.Active Case Data',
       slug: '2020.Q1.Active Case Data',
       extension: 'None',
-      user: faker.datatype.uuid(),
+      user: faker.string.uuid(),
       stt: 31,
       year: 2020,
       quarter: 'Q1',

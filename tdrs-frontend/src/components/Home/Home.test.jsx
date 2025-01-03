@@ -2,7 +2,7 @@ import React from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
 
 import { Provider } from 'react-redux'
-import thunk from 'redux-thunk'
+import { thunk } from 'redux-thunk'
 import { mount } from 'enzyme'
 import Home from '../Home'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'

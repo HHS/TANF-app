@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react'
 import { useSelector } from 'react-redux'
-import closeIcon from 'uswds/dist/img/close.svg'
+import closeIcon from '@uswds/uswds/img/usa-icons/close.svg'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSignOutAlt, faUserCircle } from '@fortawesome/free-solid-svg-icons'
 import {

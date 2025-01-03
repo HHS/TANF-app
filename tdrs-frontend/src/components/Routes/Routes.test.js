@@ -1,6 +1,6 @@
 import React from 'react'
 import { mount } from 'enzyme'
-import thunk from 'redux-thunk'
+import { thunk } from 'redux-thunk'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 import { MemoryRouter } from 'react-router-dom'
