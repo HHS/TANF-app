@@ -75,6 +75,16 @@ def get_ofa_admin_user_emails():
         groups__in=Group.objects.filter(name__in=('OFA Admin', 'OFA System Admin'))
     ).values_list('email', flat=True).distinct()
 
+def get_system_owner_email():
+    """Return the email of the System Owner."""
+    try:
+        user_email = User.objects.filter(groups__name='System Owner').values_list('email', flat=True).distinct()
+    except User.DoesNotExist:
+        user_email = [None]
+    except User.MultipleObjectsReturned:
+        user_email = user_email[0]
+    return user_email
+
 def get_num_access_requests():
     """Return the number of users requesting access."""
     return User.objects.filter(

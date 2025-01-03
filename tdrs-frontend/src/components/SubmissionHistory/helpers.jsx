@@ -31,7 +31,8 @@ export const hasReparsed = (f) =>
   f.latest_reparse_file_meta.finished_at &&
   f.latest_reparse_file_meta.finished_at !== null
 
-export const getReprocessedDate = (f) => f.latest_reparse_file_meta.finished_at
+export const getReprocessedDate = (f) =>
+  f?.latest_reparse_file_meta?.finished_at
 
 export const getErrorReportStatus = (file) => {
   if (

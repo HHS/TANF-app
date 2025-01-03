@@ -62,6 +62,7 @@ export const accountCanViewAdmin = (state) =>
     'ACF OCIO',
     'OFA Admin',
     'DIGIT Team',
+    'System Owner',
   ].includes(selectPrimaryUserRole(state)?.name)
 
 export const accountCanViewKibana = (state) =>
