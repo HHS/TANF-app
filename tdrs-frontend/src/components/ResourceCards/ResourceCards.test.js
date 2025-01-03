@@ -1,7 +1,7 @@
 import { Provider } from 'react-redux'
 import ResourceCards from './ResourceCards'
 import { mount } from 'enzyme'
-import thunk from 'redux-thunk'
+import { thunk } from 'redux-thunk'
 
 import configureStore from 'redux-mock-store'
 
