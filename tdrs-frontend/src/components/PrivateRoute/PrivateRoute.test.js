@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 import React from 'react'
-import thunk from 'redux-thunk'
+import { thunk } from 'redux-thunk'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
