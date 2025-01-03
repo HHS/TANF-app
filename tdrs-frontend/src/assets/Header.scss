@@ -1,3 +1,6 @@
+@use "uswds-core" as *;
+@use "./assets/uswds/_variables" as *;
+
 .usa-logo a {
   color: $primary-acf-blue;
 }

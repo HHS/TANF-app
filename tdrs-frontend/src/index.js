@@ -1,5 +1,5 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client'
 import axios from 'axios'
 
 import { ReduxRouter as Router } from '@lagunovsky/redux-react-router'
@@ -10,7 +10,7 @@ import startMirage from './mirage'
 import { fetchAuth } from './actions/auth'
 import App from './App'
 
-import 'uswds/dist/js/uswds'
+import '@uswds/uswds'
 import './index.scss'
 
 if (
@@ -52,13 +52,14 @@ store.dispatch(fetchAuth())
 // }
 // Start the mirage server to stub some backend endpoints when running locally
 
-ReactDOM.render(
+const container = document.getElementById('root')
+const root = createRoot(container)
+root.render(
   <Provider store={store}>
     <Router store={store} history={history}>
       <App />
     </Router>
-  </Provider>,
-  document.getElementById('root')
+  </Provider>
 )
 
 // expose store when run in Cypress
