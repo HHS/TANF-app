@@ -25,7 +25,7 @@ const INVALID_EXT_ERROR = (
       className="usa-link"
       href="https://tdp-project-updates.app.cloud.gov/knowledge-center/file-extension-guide.html"
       target="_blank"
-      aria-label="Knowledge Center file extension guidance"
+      aria-label="Need help? Read file extension guidance"
       rel="noreferrer"
     >
       Need help?
