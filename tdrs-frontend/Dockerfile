@@ -27,7 +27,6 @@ RUN npm ci
 
 COPY --chown=node:node . .
 
-ENV SASS_PATH=node_modules:src
 ENV PORT=80
 EXPOSE 80
 
