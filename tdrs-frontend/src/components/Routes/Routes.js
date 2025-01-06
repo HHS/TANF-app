@@ -5,7 +5,7 @@ import SplashPage from '../SplashPage'
 import Profile from '../Profile'
 import PrivateRoute from '../PrivateRoute'
 import LoginCallback from '../LoginCallback'
-import Reports from '../Reports'
+import Reports, { FRAReports } from '../Reports'
 import { useSelector } from 'react-redux'
 import { accountIsInReview } from '../../selectors/auth'
 
@@ -47,6 +47,19 @@ const AppRoutes = () => {
             requiresApproval
           >
             <Reports />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        exact
+        path="/fra-reports"
+        element={
+          <PrivateRoute
+            title="FRA Reports"
+            requiredPermissions={['view_datafile', 'add_datafile']}
+            requiresApproval
+          >
+            <FRAReports />
           </PrivateRoute>
         }
       />

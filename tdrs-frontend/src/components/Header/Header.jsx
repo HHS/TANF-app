@@ -127,6 +127,16 @@ function Header() {
                       href="/data-files"
                     />
                   </PermissionGuard>
+                  <PermissionGuard
+                    requiresApproval
+                    requiredPermissions={['view_datafile', 'add_datafile']}
+                  >
+                    <NavItem
+                      pathname={pathname}
+                      tabTitle="FRA Reports"
+                      href="/fra-reports"
+                    />
+                  </PermissionGuard>
                   {(userAccessRequestPending || userAccessRequestApproved) && (
                     <NavItem
                       pathname={pathname}
