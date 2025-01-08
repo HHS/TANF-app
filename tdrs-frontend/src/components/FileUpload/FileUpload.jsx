@@ -110,7 +110,7 @@ function FileUpload({ section, setLocalAlertState }) {
 
     const types = ['png', 'gif', 'jpeg']
     filereader.onload = () => {
-      const re = /(\.txt)$/i
+      const re = /(\.txt|\.ms\d{2}|\.ts\d{2,3})$/i
       if (!re.exec(file.name)) {
         dispatch({
           type: FILE_EXT_ERROR,
