@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
-import comboBox from 'uswds/src/js/components/combo-box'
+import { comboBox } from '@uswds/uswds/src/js/components'
 
 /**
  * @param {ReactNode} children - One or more React components to be rendered
