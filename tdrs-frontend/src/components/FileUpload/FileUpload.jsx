@@ -173,7 +173,7 @@ function FileUpload({ section, setLocalAlertState }) {
         data-errormessage={INVALID_FILE_ERROR}
       />
       <div style={{ marginTop: '25px' }}>
-        {hasFile && selectedFile?.uuid ? (
+        {hasFile && selectedFile?.id ? (
           <Button
             className="tanf-file-download-btn"
             type="button"
