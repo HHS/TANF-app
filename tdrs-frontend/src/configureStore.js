@@ -1,7 +1,7 @@
-import { composeWithDevTools } from 'redux-devtools-extension'
+import { composeWithDevTools } from '@redux-devtools/extension'
 import { createStore, applyMiddleware } from 'redux'
 import { createBrowserHistory } from 'history'
-import thunkMiddleware from 'redux-thunk'
+import { thunk as thunkMiddleware } from 'redux-thunk'
 import loggerMiddleware from './middleware/logger'
 import createRootReducer from './reducers'
 
