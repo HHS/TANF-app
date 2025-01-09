@@ -76,3 +76,9 @@ export const accountCanViewKibana = (state) =>
 export const accountCanViewPlg = (state) =>
   accountStatusIsApproved(state) &&
   ['OFA System Admin', 'Developer'].includes(selectPrimaryUserRole(state)?.name)
+
+export const accountCanSelectStt = (state) =>
+  accountStatusIsApproved(state) &&
+  ['OFA System Admin', 'OFA Admin', 'DIGIT Team'].includes(
+    selectPrimaryUserRole(state)?.name
+  )

@@ -19,6 +19,7 @@ import SegmentedControl from '../SegmentedControl'
 import SubmissionHistory from '../SubmissionHistory'
 import ReprocessedModal from '../SubmissionHistory/ReprocessedModal'
 import { selectPrimaryUserRole } from '../../selectors/auth'
+import { quarters, constructYearOptions } from './utils'
 
 /**
  * Reports is the home page for users to file a report.
@@ -58,13 +59,6 @@ function Reports() {
 
   const [reprocessedModalVisible, setReprocessedModalVisible] = useState(false)
   const [reprocessedDate, setReprocessedDate] = useState('')
-
-  const quarters = {
-    Q1: 'Quarter 1 (October - December)',
-    Q2: 'Quarter 2 (January - March)',
-    Q3: 'Quarter 3 (April - June)',
-    Q4: 'Quarter 4 (July - September)',
-  }
 
   const currentStt =
     isOFAAdmin || isDIGITTeam || isSystemAdmin ? selectedStt : userProfileStt
@@ -170,24 +164,6 @@ function Reports() {
   const selectStt = (value) => {
     setSttInputValue(value)
     setTouched((currentForm) => ({ ...currentForm, stt: true }))
-  }
-
-  const constructYearOptions = () => {
-    const years = []
-    const today = new Date(Date.now())
-
-    const fiscalYear =
-      today.getMonth() > 8 ? today.getFullYear() + 1 : today.getFullYear()
-
-    for (let i = fiscalYear; i >= 2021; i--) {
-      const option = (
-        <option key={i} data-testid={i} value={i}>
-          {i}
-        </option>
-      )
-      years.push(option)
-    }
-    return years
   }
 
   useEffect(() => {
