@@ -919,14 +919,14 @@ Family-level data for a specific month the family is receiving assistance.
     <div style="min-height: 22px;"></div><div style="min-height: 22px;"></div> <div style="min-height: 22px;"></div> 
   <h4 id="related-records">Case Consistency: Errors related partial or exact duplicate records:</h4>
   <div style="min-height: 22px;"></div>
-  <p>Errors related to duplicate records occur when a file contains either exact or partial duplicates of non-header/non-trailer records. These errors compromise the integrity of the data and must be resolved before the file can be fully accepted.</p>
+  <p>Errors related to duplicate records occur when a file contains either exact or partial duplicates of non-header/non-trailer records. These errors compromise the integrity of the data and must be resolved before the file can be accepted.</p>
   <div style="min-height: 22px;"></div> 
-  <p>An exact duplicate record occurs when multiple non-header/non-trailer records in a file that are exactly the same in all fields.</p>
+  <p>An exact duplicate record occurs when multiple non-header/non-trailer records in a file are exactly the same in all fields.</p>
   <div style="min-height: 22px;"></div>
   <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">"Duplicate record detected with record type T1 at line 3. Record is a duplicate of the record at line number 2."
   </code>
   <div style="min-height: 22px;"></div> 
-  <p>A partial duplicate record occurs when multiple non-header/non-trailer records that share the same values for some key data elements while differing in others.</p>
+  <p>A partial duplicate record occurs when multiple non-header/non-trailer records share the same values for some key data elements while differing in others.</p>
   <div style="min-height: 22px;"></div> 
   <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">"Partial duplicate record detected with record type T1 at line 3. Record is a partial duplicate of the record at line number 2. Duplicated fields causing error: Item 0 (Record Type), Item 4 (Reporting Year and Month), and Item 6 (Case Number)."</code>
   <div style="min-height: 22px;"></div> 
@@ -955,7 +955,7 @@ Family-level data for a specific month the family is receiving assistance.
 <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">If Item 30 (Family Affiliation) is 1 then Item 49 (Work Participation Status) must be in set of values [01, 02, 05, 07, 09, 15, 17, 18, 19, 99].
 </code>
 <div style="min-height: 22px;"></div>
-<p>Some Record Value Inconsistency errors are more serious than others. When they prevent us from identifying families receiving assistance and work-eligible families, these errors will appear in the critical tab of the error report. The error message below suggests that we do not have a valid social security number for an adult or child who is receiving TANF.</p>
+<p>Some Record Value Inconsistency errors are more serious than others. When they prevent us from identifying families receiving assistance and work-eligible families, these errors will appear in the critical tab of the error report. The error message below suggests that we do not have a valid social security number for an adult or child who is receiving assistance.</p>
 <div style="min-height: 22px;"></div>
 <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">Since Item 30 (Family Affiliation) is 1, then Item 33 (Social Security Number) 000000000 is in ['000000000', '111111111', '222222222', '333333333', '444444444', '555555555', '666666666', '777777777', '888888888', '999999999'].</code>
 <div style="min-height: 22px;"></div>
