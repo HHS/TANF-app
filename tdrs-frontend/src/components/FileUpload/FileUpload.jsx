@@ -20,7 +20,8 @@ const INVALID_FILE_ERROR =
 
 const INVALID_EXT_ERROR = (
   <>
-    Invalid extension, please upload a .txt file.&nbsp;
+    Invalid extension. Accepted file types are: .txt, .ms##, .ts##, or
+    .ts###.&nbsp;
     <a
       className="usa-link"
       href="https://tdp-project-updates.app.cloud.gov/knowledge-center/file-extension-guide.html"
