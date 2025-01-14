@@ -82,7 +82,7 @@ Error Report Implementation, we will host disclosures in an entirely separate do
 
 Impact: **Medium**     Participants Affected: **11/12**
 
-The consolidated submission & submission history page tested in the prototype wasn't remarked upon by participants directly but successfully delivered on its intended goal of leading users to immediately read submission history results and open the error report. Because TANF/SSP submission history contains more complex data, some further ideation will be required to align this submission workflow enhancement into TANF/SSP pages, but this research validates the core design as highly functional.
+The consolidated submission & submission history page tested in the prototype wasn't remarked upon by participants directly but successfully delivered on its intended goal of leading users to immediately read submission history results and open the error report. Because TANF/SSP submission history contains more complex data, some further design work will be required to create viable specifications of this submission workflow enhancement into TANF/SSP pages, but this research validates the core design as highly functional.
 
 > "It's just helpful when it says identifying the right fiscal year and quarter, the table there has generic names for Fiscal Year it would help me if there were specific numbers" – P2
 
