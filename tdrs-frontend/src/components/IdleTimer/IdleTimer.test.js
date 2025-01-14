@@ -1,17 +1,15 @@
 import React from 'react'
-import thunk from 'redux-thunk'
+import { thunk } from 'redux-thunk'
 import { Provider } from 'react-redux'
 import { mount } from 'enzyme'
 import { fireEvent, render } from '@testing-library/react'
-
-import { act } from 'react-dom/test-utils'
-
 import configureStore from 'redux-mock-store'
 import IdleTimer from './IdleTimer'
 import { FETCH_AUTH } from '../../actions/auth'
 
 describe('IdleTimer', () => {
   const mockStore = configureStore([thunk])
+
   it('should have a modal with an id of "timeoutModal"', () => {
     const store = mockStore({
       auth: { authenticated: true, user: { email: 'hi@bye.com' } },
@@ -51,6 +49,7 @@ describe('IdleTimer', () => {
       },
     })
     jest.useFakeTimers()
+    let start = Date.now()
     const store = mockStore({
       auth: { authenticated: true, user: { email: 'hi@bye.com' } },
     })
@@ -61,9 +60,11 @@ describe('IdleTimer', () => {
     )
 
     const modal = container.querySelector('#timeoutModal')
+    expect(modal.classList.contains('display-block')).not.toBeTruthy()
 
-    act(() => {
-      jest.runAllTimers()
+    React.act(() => {
+      jest.setSystemTime(start + 1200000)
+      fireEvent.focus(document)
     })
 
     expect(modal.classList.contains('display-block')).toBeTruthy()
@@ -122,6 +123,7 @@ describe('IdleTimer', () => {
     const store = mockStore({
       auth: { authenticated: true, user: { email: 'hi@bye.com' } },
     })
+    let start = Date.now()
     const { container } = render(
       <Provider store={store}>
         <IdleTimer />
@@ -131,8 +133,9 @@ describe('IdleTimer', () => {
     const modal = container.querySelector('#timeoutModal')
     const staySignedInButton = container.querySelector('.renew-session')
 
-    act(() => {
-      jest.runAllTimers()
+    React.act(() => {
+      jest.setSystemTime(start + 1200000)
+      fireEvent.focus(document)
     })
 
     fireEvent.keyDown(modal, { keyCode: 9 })
@@ -145,6 +148,7 @@ describe('IdleTimer', () => {
     const store = mockStore({
       auth: { authenticated: true, user: { email: 'hi@bye.com' } },
     })
+    let start = Date.now()
     const { container } = render(
       <Provider store={store}>
         <IdleTimer />
@@ -154,8 +158,9 @@ describe('IdleTimer', () => {
     const modal = container.querySelector('#timeoutModal')
     const signOutButton = container.querySelector('.sign-out')
 
-    act(() => {
-      jest.runAllTimers()
+    React.act(() => {
+      jest.setSystemTime(start + 1200000)
+      fireEvent.focus(document)
     })
 
     fireEvent.keyDown(modal, { shiftKey: true, keyCode: 9 })
@@ -177,7 +182,7 @@ describe('IdleTimer', () => {
 
     fireEvent.mouseMove(container)
 
-    act(() => {
+    React.act(() => {
       jest.runAllTimers()
     })
 
