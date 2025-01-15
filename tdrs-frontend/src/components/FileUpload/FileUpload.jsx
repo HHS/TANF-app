@@ -18,8 +18,21 @@ import { handlePreview, getTargetClassName } from './utils'
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
 
-const INVALID_EXT_ERROR =
-  'Invalid extension. Accepted file types are: .txt, .ms##, .ts##, or .ts###.'
+const INVALID_EXT_ERROR = (
+  <>
+    Invalid extension. Accepted file types are: .txt, .ms##, .ts##, or
+    .ts###.&nbsp;
+    <a
+      className="usa-link"
+      href="https://tdp-project-updates.app.cloud.gov/knowledge-center/file-extension-guide.html"
+      target="_blank"
+      aria-label="Need help? Read file extension guidance"
+      rel="noreferrer"
+    >
+      Need help?
+    </a>
+  </>
+)
 
 function FileUpload({ section, setLocalAlertState }) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
@@ -95,6 +108,7 @@ function FileUpload({ section, setLocalAlertState }) {
     const dropTarget = inputRef.current.parentNode
 
     const filereader = new FileReader()
+
     const types = ['png', 'gif', 'jpeg']
     filereader.onload = () => {
       const re = /(\.txt|\.ms\d{2}|\.ts\d{2,3})$/i
