@@ -364,7 +364,7 @@ t5 = SchemaManager(
                     required=False,
                     validators=[
                         category3.orValidators([
-                            category3.isBetween(0, 2, inclusive=True),
+                            category3.isBetween(0, 3, inclusive=True),
                             category3.isEqual(9)
                         ])
                     ],

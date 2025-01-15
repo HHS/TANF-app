@@ -300,7 +300,7 @@ child_one = RowSchema(
             startIndex=51,
             endIndex=52,
             required=False,
-            validators=[category2.isOneOf([1, 2, 9])],
+            validators=[category2.isOneOf([1, 2, 3, 9])],
         ),
         Field(
             item="77A",
@@ -616,7 +616,7 @@ child_two = RowSchema(
             startIndex=92,
             endIndex=93,
             required=False,
-            validators=[category2.isOneOf([1, 2, 9])],
+            validators=[category2.isOneOf([1, 2, 3, 9])],
         ),
         Field(
             item="77A",
