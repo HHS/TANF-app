@@ -1,11 +1,21 @@
-import React, { useState, createContext, useContext } from 'react'
+import React, {
+  useState,
+  createContext,
+  useContext,
+  useRef,
+  useEffect,
+} from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import classNames from 'classnames'
+import { fileInput } from '@uswds/uswds/src/js/components'
+import fileTypeChecker from 'file-type-checker'
 
 import Button from '../Button'
 import STTComboBox from '../STTComboBox'
 import { quarters, constructYearOptions } from './utils'
 import { accountCanSelectStt } from '../../selectors/auth'
+import { handlePreview } from '../FileUpload/utils'
+import createFileInputErrorState from '../../utils/createFileInputErrorState'
 
 // const FRAContext = createContext({
 //   reportType: null,
@@ -14,6 +24,12 @@ import { accountCanSelectStt } from '../../selectors/auth'
 //   selectedFile: null,
 //   submissionHistory: null,
 // })
+
+const INVALID_FILE_ERROR =
+  'We can’t process that file format. Please provide a plain text file.'
+
+const INVALID_EXT_ERROR =
+  'Invalid extension. Accepted file types are: .txt, .ms##, .ts##, or .ts###.'
 
 const SelectSTT = ({ valid, value, setValue }) => (
   <div
@@ -99,7 +115,7 @@ const SelectFiscalYear = ({ valid, value, setValue }) => (
         })}
         name="reportingYears"
         id="reportingYears"
-        onChange={setValue}
+        onChange={(e) => setValue(e.target.value)}
         value={value}
         aria-describedby="years-error-alert"
       >
@@ -132,7 +148,7 @@ const SelectQuarter = ({ valid, value, setValue }) => (
         })}
         name="quarter"
         id="quarter"
-        onChange={setValue}
+        onChange={(e) => setValue(e.target.value)}
         value={value}
         aria-describedby="quarter-error-alert"
       >
@@ -275,7 +291,7 @@ const SearchForm = ({ handleSearch }) => {
     let isValid = validateForm(formValues)
 
     if (isValid) {
-      console.log('searching')
+      console.log('searching:', formValues)
       handleSearch(formValues)
     } else {
       console.log('not vlaid')
@@ -352,30 +368,217 @@ const SearchForm = ({ handleSearch }) => {
   )
 }
 
-const UploadForm = () => <></>
+const UploadForm = ({
+  handleCancel,
+  handleUpload,
+  handleDownload,
+  file,
+  setLocalAlertState,
+}) => {
+  const [error, setError] = useState(null)
+  const [selectedFile, setSelectedFile] = useState(file || null)
+  // const [file, setFile] = useState(null)
+  const inputRef = useRef(null)
+
+  useEffect(() => {
+    // `init` for the uswds fileInput must be called on the
+    // initial render for it to load properly
+    fileInput.init()
+  }, [])
+
+  useEffect(() => {
+    const trySettingPreview = () => {
+      const targetClassName = 'usa-file-input__preview input #fra-file-upload'
+      const previewState = handlePreview(file?.name, targetClassName)
+      if (!previewState) {
+        setTimeout(trySettingPreview, 100)
+      }
+    }
+    if (file?.id) {
+      trySettingPreview()
+    }
+  }, [file])
+
+  const onFileChanged = (e) => {
+    setError(null)
+    setLocalAlertState({
+      active: false,
+      type: null,
+      message: null,
+    })
+
+    // const { name: section } = e.target
+    const fileInputValue = e.target.files[0]
+    const input = inputRef.current
+    const dropTarget = inputRef.current.parentNode
+
+    const blob = fileInputValue.slice(0, 4)
+
+    const filereader = new FileReader()
+    const types = ['png', 'gif', 'jpeg']
+    filereader.onload = () => {
+      const re = /(\.txt|\.ms\d{2}|\.ts\d{2,3})$/i
+      if (!re.exec(fileInputValue.name)) {
+        setError(INVALID_EXT_ERROR)
+        return
+      }
+
+      const isImg = fileTypeChecker.validateFileType(filereader.result, types)
+
+      if (isImg) {
+        createFileInputErrorState(input, dropTarget)
+        setError(INVALID_FILE_ERROR)
+      } else {
+        setSelectedFile(fileInputValue)
+      }
+    }
+
+    filereader.readAsArrayBuffer(blob)
+  }
+
+  const onSubmit = (e) => {
+    e.preventDefault()
+
+    if (selectedFile && selectedFile.id) {
+      setLocalAlertState({
+        active: true,
+        type: 'error',
+        message: 'No changes have been made to data files',
+      })
+      return
+    }
+
+    handleUpload(selectedFile)
+  }
+
+  return (
+    <>
+      <form onSubmit={onSubmit}>
+        <div
+          className={`usa-form-group ${error ? 'usa-form-group--error' : ''}`}
+        >
+          <label className="usa-label text-bold" htmlFor="uploadReport">
+            Section {'formattedSectionName'}
+          </label>
+          <div>
+            {error && (
+              <div
+                className="usa-error-message"
+                id={`${'formattedSectionName'}-error-alert`}
+                role="alert"
+              >
+                {error}
+              </div>
+            )}
+          </div>
+          <div
+            id={`${'formattedSectionName'}-file`}
+            aria-hidden
+            className="display-none"
+          >
+            {'ariaDescription'}
+          </div>
+          <input
+            ref={inputRef}
+            onChange={onFileChanged}
+            id="fra-file-upload"
+            className="usa-file-input"
+            type="file"
+            name={'sectionName'}
+            aria-describedby={`${'formattedSectionName'}-file`}
+            aria-hidden="false"
+            data-errormessage={'INVALID_FILE_ERROR'}
+          />
+          <div style={{ marginTop: '25px' }}>
+            {selectedFile?.id ? (
+              <Button
+                className="tanf-file-download-btn"
+                type="button"
+                onClick={handleDownload}
+              >
+                Download Section {'sectionNumber'}
+              </Button>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="buttonContainer margin-y-4">
+          <Button
+            className="card:margin-y-1"
+            type="submit"
+            disabled={!error && !localAlert.active}
+          >
+            Submit Report
+          </Button>
+
+          <Button className="cancel" type="button" onClick={handleCancel}>
+            Cancel
+          </Button>
+        </div>
+      </form>
+    </>
+  )
+}
 
 const SubmissionHistory = () => <></>
 
 const FRAReports = () => {
-  const isUploadReportToggled = useState(false)
+  const [isUploadReportToggled, setUploadReportToggled] = useState(false)
+  const [stt, setStt] = useState(null)
   const [reportType, setReportType] = useState(null)
   const [fiscalYear, setFiscalYear] = useState(null)
   const [fiscalQuarter, setFiscalQuarter] = useState(null)
+  // const [selectedFile, setSelectedFile] = useState(null)
 
-  const handleSearch = (
-    reportTypeValue,
-    fiscalYearValue,
-    fiscalQuarterValue
-  ) => {
-    setReportType(reportTypeValue)
-    setFiscalYear(fiscalYearValue)
-    setFiscalQuarter(fiscalQuarterValue)
+  const alertRef = useRef(null)
+  const [localAlert, setLocalAlertState] = useState({
+    active: false,
+    type: null,
+    message: null,
+  })
+
+  const handleSearch = ({
+    stt: selectedStt,
+    reportType: selectedReportType,
+    fiscalYear: selectedFiscalYear,
+    fiscalQuarter: selectedFiscalQuarter,
+  }) => {
+    setStt(selectedStt)
+    setReportType(selectedReportType)
+    setFiscalYear(selectedFiscalYear)
+    setFiscalQuarter(selectedFiscalQuarter)
+
+    const onSearchSuccess = () => setUploadReportToggled(true)
+    const onSearchError = () => null
+
     // dispatch()
   }
 
-  const [selectedFile, setSelectedFile] = useState(null)
+  const handleUpload = ({ file: selectedFile }) => {
+    const onFileUploadSuccess = () =>
+      setLocalAlertState({
+        active: true,
+        type: 'success',
+        message: `Successfully submitted section(s): ${'formattedSections'} on ${new Date().toDateString()}`,
+      })
 
-  const stt = useSelector((state) => state.stts?.stt)
+    const onFileUploadError = (error) =>
+      setLocalAlertState({
+        active: true,
+        type: 'error',
+        message: ''.concat(error.message, ': ', error.response?.data?.file[0]),
+      })
+
+    // dispatch()
+  }
+
+  useEffect(() => {
+    if (localAlert.active && alertRef && alertRef.current) {
+      alertRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [localAlert, alertRef])
+
+  // const stt = useSelector((state) => state.stts?.stt)
 
   // const fraSubmissionHistory = useSelector((state) => state.fraReports)
 
@@ -390,7 +593,31 @@ const FRAReports = () => {
       </div>
       {isUploadReportToggled && (
         <>
-          <UploadForm />
+          <h2
+            // ref={headerRef}
+            className="font-serif-xl margin-top-5 margin-bottom-0 text-normal"
+            tabIndex="-1"
+          >
+            {`${stt.name} - ${reportType.toUpperCase()} - Fiscal Year ${fiscalYear} - ${
+              quarters[fiscalQuarter]
+            }`}
+          </h2>
+          {localAlert.active && (
+            <div
+              ref={alertRef}
+              className={classNames('usa-alert usa-alert--slim', {
+                [`usa-alert--${localAlert.type}`]: true,
+              })}
+            >
+              <div className="usa-alert__body" role="alert">
+                <p className="usa-alert__text">{localAlert.message}</p>
+              </div>
+            </div>
+          )}
+          <UploadForm
+            handleUpload={handleUpload}
+            setLocalAlertState={setLocalAlertState}
+          />
           <SubmissionHistory />
         </>
       )}
