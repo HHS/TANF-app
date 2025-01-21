@@ -23,7 +23,7 @@ The Interim Final Rule on TANF Work Outcomes Measures (implementing Section 304 
 * What elements of the FRA reporting experience are most/least confusing for users?
 * How might we best illustrate which period of data is due for a given submission deadline? (i.e. FRA equivalent of fiscal : calendar period table)
 * How might we best highlight where problems exist in provided FRA reports?&#x20;
-* Is FRA submission history similarly useful for internal STT audit purposes as TANF/SSP submission history?&#x20;
+* Is FRA submission history similarly useful for internal states and territories audit purposes as TANF/SSP submission history?&#x20;
 * Concept testing prompts (capturing user reactions as they interact with our prototype/mockups) for: Submitting/resubmitting an FRA report, Accessing submission history and Interacting with an FRA report error
 
 ***
@@ -56,7 +56,7 @@ Impact: **High**     Participants Affected: **11/12**
 
 > **"**&#x53;o it \[Version A] took me straight to where the error is, I think it's more user friendly and requires less familiarity. " - P2
 
-From this finding, we have a sense of what error reports should look like for STTs. Both versions of the error report were interpretable by participants but Version A was exclusively favored once they had seen both. Participants expressed that it was simpler to quickly identify what errors had been found in the context of their submitted data, that it would save them time switching between multiple documents, and that SSN in particular would be the primary way they would look up the relevant data in their own systems to correct an error. This aligns with insights from past research indicating SSNs are useful search terms when locating an individual in case management systems.
+From this finding, we have a sense of what error reports should look like for states and territories. Both versions of the error report were interpretable by participants but Version A was exclusively favored once they had seen both. Participants expressed that it was simpler to quickly identify what errors had been found in the context of their submitted data, that it would save them time switching between multiple documents, and that SSN in particular would be the primary way they would look up the relevant data in their own systems to correct an error. This aligns with insights from past research indicating SSNs are useful search terms when locating an individual in case management systems.
 
 One participant said that while they would prefer Version A, that Version B might be more appropriate (since it doesn't include SSNs) for passing on to their vendor team should changes need to be made to their automations based on error reports. It should be noted that this vendor team would not be direct TDP users. \
 \
@@ -92,11 +92,11 @@ As we've found with TANF/SSP data, it can be challenging to determine which repo
 
 Related to ticket #3391 Design Spike - Enhancement to Submission Screen to Flag Wrong Fiscal Period&#x20;
 
-### 4. STTs we spoke to were in various stages of planning to support the various FRA reports, with planning for the first due being most developed&#x20;
+### 4. States and territories we spoke to were in various stages of planning to support the various FRA reports, with planning for the first due being most developed&#x20;
 
 Impact: **N/A**     Participants Affected: **TBD**
 
-We found that while there is significant overlap in the participants we spoke to and those responsible for TANF/SSP data, STTs have been engaging in a variety of internal conversations that reach outside of TANF-specific roles to prepare for FRA compliance. This includes strategizing reporting process adjustments with data partners and planning investments into technical systems to allow for  export of the new FRA reports themselves.
+We found that while there is significant overlap in the participants we spoke to and those responsible for TANF/SSP data, states and territories have been engaging in a variety of internal conversations that reach outside of TANF-specific roles to prepare for FRA compliance. This includes strategizing reporting process adjustments with data partners and planning investments into technical systems to allow for  export of the new FRA reports themselves.
 
 > "For the new FRA requirements it's just the 45 day deadline. We suggested to ACF 75 day turnaround so we can see the data settle. Because we have a monthly update to our warehouse it gives time to settle." – P5
 
