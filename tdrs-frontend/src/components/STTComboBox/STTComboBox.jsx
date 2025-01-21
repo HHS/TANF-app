@@ -47,9 +47,7 @@ function STTComboBox({ selectStt, selectedStt, handleBlur, error, sttType }) {
       <ComboBox
         name="stt"
         label={
-          sttType
-            ? `${toTitleCase(sttType)}*`
-            : 'Associated State, Tribe, or Territory*'
+          sttType ? `${toTitleCase(sttType)}*` : 'State, Tribe, or Territory*'
         }
         error={
           error
