@@ -17,6 +17,11 @@ import { accountCanSelectStt } from '../../selectors/auth'
 import { handlePreview } from '../FileUpload/utils'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
 
+import {
+  getFraSubmissionHistory,
+  uploadFraReport,
+} from '../../actions/fraReports'
+
 // const FRAContext = createContext({
 //   reportType: null,
 //   fiscalYear: null,
@@ -195,15 +200,9 @@ const FiscalQuarterExplainer = () => (
   </table>
 )
 
-const SearchForm = ({ handleSearch }) => {
-  // const [selectedStt, setSelectedStt] = useState(null)
-  // const [selectedReportType, setSelectedReportType] = useState(null)
-  // const [selectedFiscalYear, setSelectedFiscalYear] = useState(null)
-  // const [selectedFiscalQuarter, setSelectedFiscalQuarter] = useState(null)
-
+const SearchForm = ({ handleSearch, user }) => {
   const needsSttSelection = useSelector(accountCanSelectStt)
   const sttList = useSelector((state) => state?.stts?.sttList)
-  const user = useSelector((state) => state.auth.user)
   const userProfileStt = user?.stt?.name
   const missingStt = !needsSttSelection && !userProfileStt
 
@@ -270,7 +269,8 @@ const SearchForm = ({ handleSearch }) => {
     return isValid
   }
 
-  const onClickSearch = () => {
+  const onClickSearch = (e) => {
+    e.preventDefault()
     // if un-uploaded file selection
     // "are you sure modal"
 
@@ -321,7 +321,7 @@ const SearchForm = ({ handleSearch }) => {
           this form
         </div>
       )}
-      <form>
+      <form onSubmit={onClickSearch}>
         <div className="grid-row grid-gap">
           <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
             {needsSttSelection && (
@@ -351,11 +351,7 @@ const SearchForm = ({ handleSearch }) => {
               value={form.fiscalQuarter.value}
               setValue={(val) => setFormValue('fiscalQuarter', val)}
             />
-            <Button
-              className="margin-y-4"
-              type="button"
-              onClick={onClickSearch}
-            >
+            <Button className="margin-y-4" type="submit">
               Search
             </Button>
           </div>
@@ -373,6 +369,7 @@ const UploadForm = ({
   handleUpload,
   handleDownload,
   file,
+  localAlert,
   setLocalAlertState,
 }) => {
   const [error, setError] = useState(null)
@@ -429,6 +426,7 @@ const UploadForm = ({
         createFileInputErrorState(input, dropTarget)
         setError(INVALID_FILE_ERROR)
       } else {
+        console.log('fileInputValue', fileInputValue)
         setSelectedFile(fileInputValue)
       }
     }
@@ -448,7 +446,7 @@ const UploadForm = ({
       return
     }
 
-    handleUpload(selectedFile)
+    handleUpload({ file: selectedFile })
   }
 
   return (
@@ -506,7 +504,9 @@ const UploadForm = ({
           <Button
             className="card:margin-y-1"
             type="submit"
-            disabled={!error && !localAlert.active}
+            disabled={
+              error || localAlert.active || !selectedFile || selectedFile.id
+            }
           >
             Submit Report
           </Button>
@@ -524,11 +524,14 @@ const SubmissionHistory = () => <></>
 
 const FRAReports = () => {
   const [isUploadReportToggled, setUploadReportToggled] = useState(false)
-  const [stt, setStt] = useState(null)
-  const [reportType, setReportType] = useState(null)
-  const [fiscalYear, setFiscalYear] = useState(null)
-  const [fiscalQuarter, setFiscalQuarter] = useState(null)
+  const [searchFormValues, setSearchFormValues] = useState(null)
+  // const [stt, setStt] = useState(null)
+  // const [reportType, setReportType] = useState(null)
+  // const [fiscalYear, setFiscalYear] = useState(null)
+  // const [fiscalQuarter, setFiscalQuarter] = useState(null)
+  const user = useSelector((state) => state.auth.user)
   // const [selectedFile, setSelectedFile] = useState(null)
+  const dispatch = useDispatch()
 
   const alertRef = useRef(null)
   const [localAlert, setLocalAlertState] = useState({
@@ -537,21 +540,17 @@ const FRAReports = () => {
     message: null,
   })
 
-  const handleSearch = ({
-    stt: selectedStt,
-    reportType: selectedReportType,
-    fiscalYear: selectedFiscalYear,
-    fiscalQuarter: selectedFiscalQuarter,
-  }) => {
-    setStt(selectedStt)
-    setReportType(selectedReportType)
-    setFiscalYear(selectedFiscalYear)
-    setFiscalQuarter(selectedFiscalQuarter)
+  const handleSearch = (values) => {
+    setUploadReportToggled(false)
+    setSearchFormValues(null)
 
-    const onSearchSuccess = () => setUploadReportToggled(true)
-    const onSearchError = () => null
+    const onSearchSuccess = () => {
+      setUploadReportToggled(true)
+      setSearchFormValues(values)
+    }
+    const onSearchError = (e) => console.error(e)
 
-    // dispatch()
+    dispatch(getFraSubmissionHistory(values, onSearchSuccess, onSearchError))
   }
 
   const handleUpload = ({ file: selectedFile }) => {
@@ -562,14 +561,26 @@ const FRAReports = () => {
         message: `Successfully submitted section(s): ${'formattedSections'} on ${new Date().toDateString()}`,
       })
 
-    const onFileUploadError = (error) =>
+    const onFileUploadError = (error) => {
+      console.log(error)
       setLocalAlertState({
         active: true,
         type: 'error',
-        message: ''.concat(error.message, ': ', error.response?.data?.file[0]),
+        message: ''.concat(error.message, ': ', error.response?.data?.detail),
       })
+    }
 
-    // dispatch()
+    dispatch(
+      uploadFraReport(
+        {
+          ...searchFormValues,
+          file: selectedFile,
+          user,
+        },
+        onFileUploadSuccess,
+        onFileUploadError
+      )
+    )
   }
 
   useEffect(() => {
@@ -589,7 +600,7 @@ const FRAReports = () => {
       {/* <FRAContext.Provider> */}
       {/* </FRAContext.Provider> */}
       <div className={classNames({ 'border-bottom': isUploadReportToggled })}>
-        <SearchForm handleSearch={handleSearch} />
+        <SearchForm handleSearch={handleSearch} user={user} />
       </div>
       {isUploadReportToggled && (
         <>
@@ -598,8 +609,8 @@ const FRAReports = () => {
             className="font-serif-xl margin-top-5 margin-bottom-0 text-normal"
             tabIndex="-1"
           >
-            {`${stt.name} - ${reportType.toUpperCase()} - Fiscal Year ${fiscalYear} - ${
-              quarters[fiscalQuarter]
+            {`${searchFormValues.stt.name} - ${searchFormValues.reportType.toUpperCase()} - Fiscal Year ${searchFormValues.fiscalYear} - ${
+              quarters[searchFormValues.fiscalQuarter]
             }`}
           </h2>
           {localAlert.active && (
@@ -616,6 +627,7 @@ const FRAReports = () => {
           )}
           <UploadForm
             handleUpload={handleUpload}
+            localAlert={localAlert}
             setLocalAlertState={setLocalAlertState}
           />
           <SubmissionHistory />
