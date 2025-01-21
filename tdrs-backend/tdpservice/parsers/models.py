@@ -112,7 +112,7 @@ class DataFileSummary(models.Model):
         if self.status != DataFileSummary.Status.PENDING:
             return self.status
 
-        errors = ParserError.objects.filter(file=self.datafile)
+        errors = ParserError.objects.filter(file=self.datafile, deprecated=False)
 
         # excluding row-level pre-checks and trailer pre-checks.
         precheck_errors = errors.filter(error_type=ParserErrorCategoryChoices.PRE_CHECK)\
