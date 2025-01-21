@@ -81,6 +81,7 @@ const load = (file, section, input, dropTarget, dispatch) => {
     }
 
     filereader.onload = () => {
+      let error = false
       const re = /(\.txt|\.ms\d{2}|\.ts\d{2,3})$/i
       if (!re.exec(file.name)) {
         dispatch({
@@ -90,13 +91,12 @@ const load = (file, section, input, dropTarget, dispatch) => {
             section,
           },
         })
-        reject()
-        return
+        error = true
       }
 
       const isImg = fileTypeChecker.validateFileType(filereader.result, types)
 
-      if (isImg) {
+      if (!error && isImg) {
         createFileInputErrorState(input, dropTarget)
 
         dispatch({
@@ -106,11 +106,10 @@ const load = (file, section, input, dropTarget, dispatch) => {
             section,
           },
         })
-        reject()
-        return
+        error = true
       }
 
-      resolve({ result: filereader.result })
+      resolve({ result: filereader.result, error: error })
     }
     filereader.readAsArrayBuffer(file)
   })
