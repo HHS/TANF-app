@@ -121,4 +121,4 @@ Not only will the other FRA reports not involve selection of fiscal quarters, th
 * [Version B Prototype](https://reitermb.github.io/TDPrototype/knowledge-center/index2.html)
 * [FRA Research Sessions Affinity Mapping](https://app.mural.co/t/raft2792/m/raft2792/1732564281598/dcead26cbc0379f5f51aba1b56ca4656d64b9ef5)
 
-[^1]: how to select the fiscal period that the report covers, how to upload/submit the report, and how to access previous submissions of the report? is this correct?&#x20;
+
