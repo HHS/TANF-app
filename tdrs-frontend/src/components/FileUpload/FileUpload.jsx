@@ -77,7 +77,7 @@ const load = (file, section, input, dropTarget, dispatch) => {
   return new Promise((resolve, reject) => {
     filereader.onerror = () => {
       filereader.abort()
-      reject()
+      reject(new Error('Problem parsing input file.'))
     }
 
     filereader.onload = () => {
