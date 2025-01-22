@@ -16,6 +16,7 @@ import {
   getFraSubmissionHistory,
   uploadFraReport,
 } from '../../actions/fraReports'
+import { fetchSttList } from '../../actions/sttList'
 
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
@@ -257,6 +258,7 @@ const UploadForm = ({
   setLocalAlertState,
   file,
   setSelectedFile,
+  section,
 }) => {
   const [error, setError] = useState(null)
   // const [selectedFile, setSelectedFile] = useState(file || null)
@@ -335,6 +337,12 @@ const UploadForm = ({
     handleUpload({ file })
   }
 
+  const formattedSectionName = section.toLowerCase().replace(' ', '-')
+
+  const ariaDescription = file
+    ? `Selected File ${file?.fileName}. To change the selected file, click this button.`
+    : `Drag file here or choose from folder.`
+
   return (
     <>
       <form onSubmit={onSubmit}>
@@ -342,13 +350,13 @@ const UploadForm = ({
           className={`usa-form-group ${error ? 'usa-form-group--error' : ''}`}
         >
           <label className="usa-label text-bold" htmlFor="uploadReport">
-            Section {'formattedSectionName'}
+            {section}
           </label>
           <div>
             {error && (
               <div
                 className="usa-error-message"
-                id={`${'formattedSectionName'}-error-alert`}
+                id={`${formattedSectionName}-error-alert`}
                 role="alert"
               >
                 {error}
@@ -356,11 +364,11 @@ const UploadForm = ({
             )}
           </div>
           <div
-            id={`${'formattedSectionName'}-file`}
+            id={`${formattedSectionName}-file`}
             aria-hidden
             className="display-none"
           >
-            {'ariaDescription'}
+            {ariaDescription}
           </div>
           <input
             ref={inputRef}
@@ -369,7 +377,7 @@ const UploadForm = ({
             className="usa-file-input"
             type="file"
             name={'sectionName'}
-            aria-describedby={`${'formattedSectionName'}-file`}
+            aria-describedby={`${formattedSectionName}-file`}
             aria-hidden="false"
             data-errormessage={'INVALID_FILE_ERROR'}
           />
@@ -416,6 +424,8 @@ const FRAReports = () => {
   const needsSttSelection = useSelector(accountCanSelectStt)
   const userProfileStt = user?.stt?.name
 
+  console.log(userProfileStt)
+
   const [temporaryFormState, setTemporaryFormState] = useState({
     errors: 0,
     stt: {
@@ -439,6 +449,7 @@ const FRAReports = () => {
       touched: false,
     },
   })
+  console.log(temporaryFormState)
   const [selectedFile, setSelectedFile] = useState(null)
 
   // const stt = useSelector((state) => state.stts?.stt)
@@ -464,6 +475,12 @@ const FRAReports = () => {
     },
     { value: 'supplementalWorkOutcomes', label: 'Supplemental Work Outcomes' },
   ]
+
+  useEffect(() => {
+    if (sttList.length === 0) {
+      dispatch(fetchSttList())
+    }
+  }, [dispatch, sttList])
 
   const resetPreviousValues = () => {
     setTemporaryFormState({
@@ -505,9 +522,7 @@ const FRAReports = () => {
       validatedForm[key].touched = true
     })
 
-    if (!isValid) {
-      setTemporaryFormState({ ...validatedForm, errors })
-    }
+    setTemporaryFormState({ ...validatedForm, errors })
 
     return isValid
   }
@@ -522,9 +537,15 @@ const FRAReports = () => {
 
     const form = temporaryFormState
 
+    console.log('form', form)
+
     const formValues = {
       stt: sttList?.find((stt) => stt?.name === form.stt.value),
     }
+
+    console.log('formvalues', formValues)
+    console.log('sttList', sttList)
+
     Object.keys(form).forEach((key) => {
       if (key !== 'errors' && key !== 'stt') {
         formValues[key] = form[key].value
@@ -592,12 +613,19 @@ const FRAReports = () => {
     }
   }, [localAlert, alertRef])
 
+  const getReportTypeLabel = () => {
+    if (isUploadReportToggled) {
+      const { reportType } = searchFormValues
+      return reportTypeOptions.find((o) => o.value === reportType).label
+    }
+
+    return null
+  }
+
   const makeHeaderLabel = () => {
     if (isUploadReportToggled) {
       const { stt, reportType, fiscalQuarter, fiscalYear } = searchFormValues
-      const reportTypeLabel = reportTypeOptions.find(
-        (o) => o.value === reportType
-      ).label
+      const reportTypeLabel = getReportTypeLabel()
       const quarterLabel = quarters[fiscalQuarter]
 
       return `${stt.name} - ${reportTypeLabel} - Fiscal Year ${fiscalYear} - ${quarterLabel}`
@@ -647,6 +675,7 @@ const FRAReports = () => {
             setLocalAlertState={setLocalAlertState}
             file={selectedFile}
             setSelectedFile={setSelectedFile}
+            section={getReportTypeLabel()}
           />
           <SubmissionHistory />
         </>
