@@ -30,7 +30,6 @@ def _make_eargs(val):
 
 def _validate_and_assert(validator, val, exp_result, exp_message):
     result, msg = validator(val, _make_eargs(val))
-    print(f'result: {result}; msg: {msg}')
     assert result == exp_result
     assert msg == exp_message
 
