@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  createContext,
-  useContext,
-  useRef,
-  useEffect,
-} from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import classNames from 'classnames'
 import { fileInput } from '@uswds/uswds/src/js/components'
@@ -16,19 +10,12 @@ import { quarters, constructYearOptions } from './utils'
 import { accountCanSelectStt } from '../../selectors/auth'
 import { handlePreview } from '../FileUpload/utils'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
+import Modal from '../Modal'
 
 import {
   getFraSubmissionHistory,
   uploadFraReport,
 } from '../../actions/fraReports'
-
-// const FRAContext = createContext({
-//   reportType: null,
-//   fiscalYear: null,
-//   fiscalQuarter: null,
-//   selectedFile: null,
-//   submissionHistory: null,
-// })
 
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
@@ -46,53 +33,27 @@ const SelectSTT = ({ valid, value, setValue }) => (
   </div>
 )
 
-const SelectReportType = ({ valid, value, setValue }) => (
+const SelectReportType = ({ valid, value, setValue, options }) => (
   <div className="usa-form-group margin-top-4">
     <fieldset className="usa-fieldset">
       <legend className="usa-label text-bold">File Type</legend>
-      <div className="usa-radio">
-        <input
-          className="usa-radio__input"
-          id="workOutcomesForTanfExiters"
-          type="radio"
-          name="reportType"
-          value="workOutcomesForTanfExiters"
-          defaultChecked
-          onChange={() => setValue('workOutcomesForTanfExiters')}
-        />
-        <label
-          className="usa-radio__label"
-          htmlFor="workOutcomesForTanfExiters"
-        >
-          Work Outcomes for TANF Exiters
-        </label>
-      </div>
-      <div className="usa-radio">
-        <input
-          className="usa-radio__input"
-          id="secondarySchoolAttainment"
-          type="radio"
-          name="reportType"
-          value="secondarySchoolAttainment"
-          onChange={() => setValue('secondarySchoolAttainment')}
-        />
-        <label className="usa-radio__label" htmlFor="secondarySchoolAttainment">
-          Secondary School Attainment
-        </label>
-      </div>
-      <div className="usa-radio">
-        <input
-          className="usa-radio__input"
-          id="supplementalWorkOutcomes"
-          type="radio"
-          name="reportType"
-          value="supplementalWorkOutcomes"
-          onChange={() => setValue('supplementalWorkOutcomes')}
-        />
-        <label className="usa-radio__label" htmlFor="supplementalWorkOutcomes">
-          Supplemental Work Outcomes
-        </label>
-      </div>
+
+      {options.map(({ label, value }, index) => (
+        <div className="usa-radio">
+          <input
+            className="usa-radio__input"
+            id={value}
+            type="radio"
+            name="reportType"
+            value={value}
+            defaultChecked={index === 0}
+            onChange={() => setValue(value)}
+          />
+          <label className="usa-radio__label" htmlFor={value}>
+            {label}
+          </label>
+        </div>
+      ))}
     </fieldset>
   </div>
 )
@@ -200,40 +161,18 @@ const FiscalQuarterExplainer = () => (
   </table>
 )
 
-const SearchForm = ({ handleSearch, user }) => {
-  const needsSttSelection = useSelector(accountCanSelectStt)
-  const sttList = useSelector((state) => state?.stts?.sttList)
-  const userProfileStt = user?.stt?.name
+const SearchForm = ({
+  handleSearch,
+  reportTypeOptions,
+  form,
+  setFormState,
+  needsSttSelection,
+  userProfileStt,
+  sttList,
+}) => {
   const missingStt = !needsSttSelection && !userProfileStt
-
-  const uploadedFiles = []
-  const setErrorModalVisible = () => null
   const errorsRef = null
   const errorsCount = 0
-
-  const [form, setFormState] = useState({
-    errors: 0,
-    stt: {
-      value: needsSttSelection ? null : userProfileStt,
-      valid: false,
-      touched: false,
-    },
-    reportType: {
-      value: 'workOutcomesForTanfExiters',
-      valid: false,
-      touched: false,
-    },
-    fiscalYear: {
-      value: '',
-      valid: false,
-      touched: false,
-    },
-    fiscalQuarter: {
-      value: '',
-      valid: false,
-      touched: false,
-    },
-  })
 
   const setFormValue = (field, value) => {
     console.log(`${field}: ${value}`)
@@ -246,61 +185,6 @@ const SearchForm = ({ handleSearch, user }) => {
     newFormState[field].touched = true
 
     setFormState(newFormState)
-  }
-
-  const validateForm = (selectedValues) => {
-    const validatedForm = { ...form }
-    let isValid = true
-    let errors = 0
-
-    console.log('selected values: ', selectedValues)
-
-    Object.keys(selectedValues).forEach((key) => {
-      if (!!selectedValues[key]) {
-        validatedForm[key].valid = true
-      } else {
-        validatedForm[key].valid = false
-        isValid = false
-        errors += 1
-      }
-      validatedForm[key].touched = true
-    })
-    setFormState({ ...validatedForm, errors })
-    return isValid
-  }
-
-  const onClickSearch = (e) => {
-    e.preventDefault()
-    // if un-uploaded file selection
-    // "are you sure modal"
-
-    // const currentStt = needsSttSelection ? form.stt.value : userProfileStt
-    // const stt = sttList?.find((stt) => stt?.name === currentStt)
-
-    const formValues = {
-      stt: sttList?.find((stt) => stt?.name === form.stt.value),
-    }
-    Object.keys(form).forEach((key) => {
-      if (key !== 'errors' && key !== 'stt') {
-        formValues[key] = form[key].value
-      }
-    })
-
-    // console.log(form)
-
-    let isValid = validateForm(formValues)
-
-    if (isValid) {
-      console.log('searching:', formValues)
-      handleSearch(formValues)
-    } else {
-      console.log('not vlaid')
-    }
-
-    // setSelectedStt(null)
-    // setSelectedReportType(null)
-    // setSelectedFiscalYear(null)
-    // setSelectedFiscalQuarter(null)
   }
 
   return (
@@ -321,7 +205,7 @@ const SearchForm = ({ handleSearch, user }) => {
           this form
         </div>
       )}
-      <form onSubmit={onClickSearch}>
+      <form onSubmit={handleSearch}>
         <div className="grid-row grid-gap">
           <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
             {needsSttSelection && (
@@ -333,6 +217,7 @@ const SearchForm = ({ handleSearch, user }) => {
             )}
             <SelectReportType
               value={form.reportType.value}
+              options={reportTypeOptions}
               setValue={(val) => setFormValue('reportType', val)}
             />
           </div>
@@ -368,12 +253,13 @@ const UploadForm = ({
   handleCancel,
   handleUpload,
   handleDownload,
-  file,
   localAlert,
   setLocalAlertState,
+  file,
+  setSelectedFile,
 }) => {
   const [error, setError] = useState(null)
-  const [selectedFile, setSelectedFile] = useState(file || null)
+  // const [selectedFile, setSelectedFile] = useState(file || null)
   // const [file, setFile] = useState(null)
   const inputRef = useRef(null)
 
@@ -437,7 +323,7 @@ const UploadForm = ({
   const onSubmit = (e) => {
     e.preventDefault()
 
-    if (selectedFile && selectedFile.id) {
+    if (file && file.id) {
       setLocalAlertState({
         active: true,
         type: 'error',
@@ -446,7 +332,7 @@ const UploadForm = ({
       return
     }
 
-    handleUpload({ file: selectedFile })
+    handleUpload({ file })
   }
 
   return (
@@ -488,7 +374,7 @@ const UploadForm = ({
             data-errormessage={'INVALID_FILE_ERROR'}
           />
           <div style={{ marginTop: '25px' }}>
-            {selectedFile?.id ? (
+            {file?.id ? (
               <Button
                 className="tanf-file-download-btn"
                 type="button"
@@ -504,9 +390,7 @@ const UploadForm = ({
           <Button
             className="card:margin-y-1"
             type="submit"
-            disabled={
-              error || localAlert.active || !selectedFile || selectedFile.id
-            }
+            disabled={error || localAlert.active || !file || file.id}
           >
             Submit Report
           </Button>
@@ -524,13 +408,42 @@ const SubmissionHistory = () => <></>
 
 const FRAReports = () => {
   const [isUploadReportToggled, setUploadReportToggled] = useState(false)
+  const [errorModalVisible, setErrorModalVisible] = useState(false)
   const [searchFormValues, setSearchFormValues] = useState(null)
-  // const [stt, setStt] = useState(null)
-  // const [reportType, setReportType] = useState(null)
-  // const [fiscalYear, setFiscalYear] = useState(null)
-  // const [fiscalQuarter, setFiscalQuarter] = useState(null)
+
   const user = useSelector((state) => state.auth.user)
-  // const [selectedFile, setSelectedFile] = useState(null)
+  const sttList = useSelector((state) => state?.stts?.sttList)
+  const needsSttSelection = useSelector(accountCanSelectStt)
+  const userProfileStt = user?.stt?.name
+
+  const [temporaryFormState, setTemporaryFormState] = useState({
+    errors: 0,
+    stt: {
+      value: needsSttSelection ? null : userProfileStt,
+      valid: false,
+      touched: false,
+    },
+    reportType: {
+      value: 'workOutcomesForTanfExiters',
+      valid: false,
+      touched: false,
+    },
+    fiscalYear: {
+      value: '',
+      valid: false,
+      touched: false,
+    },
+    fiscalQuarter: {
+      value: '',
+      valid: false,
+      touched: false,
+    },
+  })
+  const [selectedFile, setSelectedFile] = useState(null)
+
+  // const stt = useSelector((state) => state.stts?.stt)
+  // const fraSubmissionHistory = useSelector((state) => state.fraReports)
+
   const dispatch = useDispatch()
 
   const alertRef = useRef(null)
@@ -540,17 +453,107 @@ const FRAReports = () => {
     message: null,
   })
 
-  const handleSearch = (values) => {
+  const reportTypeOptions = [
+    {
+      value: 'workOutcomesForTanfExiters',
+      label: 'Work Outcomes for TANF Exiters',
+    },
+    {
+      value: 'secondarySchoolAttainment',
+      label: 'Secondary School Attainment',
+    },
+    { value: 'supplementalWorkOutcomes', label: 'Supplemental Work Outcomes' },
+  ]
+
+  const resetPreviousValues = () => {
+    setTemporaryFormState({
+      errors: 0,
+      stt: {
+        ...temporaryFormState.stt,
+        value: searchFormValues.stt.name,
+      },
+      reportType: {
+        ...temporaryFormState.reportType,
+        value: searchFormValues.reportType,
+      },
+      fiscalYear: {
+        ...temporaryFormState.fiscalYear,
+        value: searchFormValues.fiscalYear,
+      },
+      fiscalQuarter: {
+        ...temporaryFormState.fiscalQuarter,
+        value: searchFormValues.fiscalQuarter,
+      },
+    })
+  }
+
+  const validateSearchForm = (selectedValues) => {
+    const validatedForm = { ...temporaryFormState }
+    let isValid = true
+    let errors = 0
+
+    console.log('selected values: ', selectedValues)
+
+    Object.keys(selectedValues).forEach((key) => {
+      if (!!selectedValues[key]) {
+        validatedForm[key].valid = true
+      } else {
+        validatedForm[key].valid = false
+        isValid = false
+        errors += 1
+      }
+      validatedForm[key].touched = true
+    })
+
+    if (!isValid) {
+      setTemporaryFormState({ ...validatedForm, errors })
+    }
+
+    return isValid
+  }
+
+  const handleSearch = (e) => {
+    e.preventDefault()
+
+    if (selectedFile && !selectedFile.id) {
+      setErrorModalVisible(true)
+      return
+    }
+
+    const form = temporaryFormState
+
+    const formValues = {
+      stt: sttList?.find((stt) => stt?.name === form.stt.value),
+    }
+    Object.keys(form).forEach((key) => {
+      if (key !== 'errors' && key !== 'stt') {
+        formValues[key] = form[key].value
+      }
+    })
+
+    // console.log(form)
+
+    let isValid = validateSearchForm(formValues)
+
+    if (!isValid) {
+      console.log('not valid')
+      return
+    }
+
+    console.log('searching:', formValues)
+
     setUploadReportToggled(false)
     setSearchFormValues(null)
 
     const onSearchSuccess = () => {
       setUploadReportToggled(true)
-      setSearchFormValues(values)
+      setSearchFormValues(formValues)
     }
     const onSearchError = (e) => console.error(e)
 
-    dispatch(getFraSubmissionHistory(values, onSearchSuccess, onSearchError))
+    dispatch(
+      getFraSubmissionHistory(formValues, onSearchSuccess, onSearchError)
+    )
   }
 
   const handleUpload = ({ file: selectedFile }) => {
@@ -589,18 +592,33 @@ const FRAReports = () => {
     }
   }, [localAlert, alertRef])
 
-  // const stt = useSelector((state) => state.stts?.stt)
+  const makeHeaderLabel = () => {
+    if (isUploadReportToggled) {
+      const { stt, reportType, fiscalQuarter, fiscalYear } = searchFormValues
+      const reportTypeLabel = reportTypeOptions.find(
+        (o) => o.value === reportType
+      ).label
+      const quarterLabel = quarters[fiscalQuarter]
 
-  // const fraSubmissionHistory = useSelector((state) => state.fraReports)
+      return `${stt.name} - ${reportTypeLabel} - Fiscal Year ${fiscalYear} - ${quarterLabel}`
+    }
 
-  // const context = useContext(FRAContext)
+    return null
+  }
 
   return (
-    <div>
-      {/* <FRAContext.Provider> */}
-      {/* </FRAContext.Provider> */}
+    <>
       <div className={classNames({ 'border-bottom': isUploadReportToggled })}>
-        <SearchForm handleSearch={handleSearch} user={user} />
+        <SearchForm
+          handleSearch={handleSearch}
+          user={user}
+          reportTypeOptions={reportTypeOptions}
+          form={temporaryFormState}
+          setFormState={setTemporaryFormState}
+          needsSttSelection={needsSttSelection}
+          userProfileStt={userProfileStt}
+          sttList={sttList}
+        />
       </div>
       {isUploadReportToggled && (
         <>
@@ -609,9 +627,7 @@ const FRAReports = () => {
             className="font-serif-xl margin-top-5 margin-bottom-0 text-normal"
             tabIndex="-1"
           >
-            {`${searchFormValues.stt.name} - ${searchFormValues.reportType.toUpperCase()} - Fiscal Year ${searchFormValues.fiscalYear} - ${
-              quarters[searchFormValues.fiscalQuarter]
-            }`}
+            {makeHeaderLabel()}
           </h2>
           {localAlert.active && (
             <div
@@ -629,11 +645,38 @@ const FRAReports = () => {
             handleUpload={handleUpload}
             localAlert={localAlert}
             setLocalAlertState={setLocalAlertState}
+            file={selectedFile}
+            setSelectedFile={setSelectedFile}
           />
           <SubmissionHistory />
         </>
       )}
-    </div>
+
+      <Modal
+        title="Files Not Submitted"
+        message="Your uploaded files have not been submitted. Searching without submitting will discard your changes and remove any uploaded files."
+        isVisible={errorModalVisible}
+        buttons={[
+          {
+            key: '1',
+            text: 'Cancel',
+            onClick: () => {
+              setErrorModalVisible(false)
+              resetPreviousValues()
+            },
+          },
+          {
+            key: '2',
+            text: 'Discard and Search',
+            onClick: () => {
+              setErrorModalVisible(false)
+              setSelectedFile(null)
+              handleSearch({ preventDefault: () => null })
+            },
+          },
+        ]}
+      />
+    </>
   )
 }
 

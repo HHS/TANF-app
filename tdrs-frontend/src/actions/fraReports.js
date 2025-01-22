@@ -18,7 +18,6 @@ export const getFraSubmissionHistory =
       payload: { isLoadingSubmissionHistory: true },
     })
 
-    // do work
     try {
       console.log('params', { stt, reportType, fiscalQuarter, fiscalYear })
 
@@ -66,7 +65,6 @@ export const uploadFraReport =
       payload: { isUploadingFraReport: true },
     })
 
-    // do work
     const formData = new FormData()
     const fraReportData = {
       file: file,
@@ -92,6 +90,7 @@ export const uploadFraReport =
           withCredentials: true,
         }
       )
+
       onSuccess()
     } catch (error) {
       onError(error)
