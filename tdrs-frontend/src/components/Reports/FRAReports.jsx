@@ -376,10 +376,10 @@ const UploadForm = ({
             id="fra-file-upload"
             className="usa-file-input"
             type="file"
-            name={'sectionName'}
+            name={section}
             aria-describedby={`${formattedSectionName}-file`}
             aria-hidden="false"
-            data-errormessage={'INVALID_FILE_ERROR'}
+            data-errormessage={INVALID_FILE_ERROR}
           />
           <div style={{ marginTop: '25px' }}>
             {file?.id ? (
@@ -388,7 +388,7 @@ const UploadForm = ({
                 type="button"
                 onClick={handleDownload}
               >
-                Download Section {'sectionNumber'}
+                Download {section}
               </Button>
             ) : null}
           </div>
@@ -582,7 +582,7 @@ const FRAReports = () => {
       setLocalAlertState({
         active: true,
         type: 'success',
-        message: `Successfully submitted section(s): ${'formattedSections'} on ${new Date().toDateString()}`,
+        message: `Successfully submitted section(s): ${formattedSections} on ${new Date().toDateString()}`,
       })
 
     const onFileUploadError = (error) => {
