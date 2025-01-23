@@ -476,12 +476,6 @@ const FRAReports = () => {
     { value: 'supplementalWorkOutcomes', label: 'Supplemental Work Outcomes' },
   ]
 
-  useEffect(() => {
-    if (sttList.length === 0) {
-      dispatch(fetchSttList())
-    }
-  }, [dispatch, sttList])
-
   const resetPreviousValues = () => {
     setTemporaryFormState({
       errors: 0,
@@ -582,7 +576,7 @@ const FRAReports = () => {
       setLocalAlertState({
         active: true,
         type: 'success',
-        message: `Successfully submitted section(s): ${formattedSections} on ${new Date().toDateString()}`,
+        message: `Successfully submitted section(s): ${getReportTypeLabel()} on ${new Date().toDateString()}`,
       })
 
     const onFileUploadError = (error) => {
@@ -607,12 +601,6 @@ const FRAReports = () => {
     )
   }
 
-  useEffect(() => {
-    if (localAlert.active && alertRef && alertRef.current) {
-      alertRef.current.scrollIntoView({ behavior: 'smooth' })
-    }
-  }, [localAlert, alertRef])
-
   const getReportTypeLabel = () => {
     if (isUploadReportToggled) {
       const { reportType } = searchFormValues
@@ -624,7 +612,7 @@ const FRAReports = () => {
 
   const makeHeaderLabel = () => {
     if (isUploadReportToggled) {
-      const { stt, reportType, fiscalQuarter, fiscalYear } = searchFormValues
+      const { stt, fiscalQuarter, fiscalYear } = searchFormValues
       const reportTypeLabel = getReportTypeLabel()
       const quarterLabel = quarters[fiscalQuarter]
 
@@ -633,6 +621,18 @@ const FRAReports = () => {
 
     return null
   }
+
+  useEffect(() => {
+    if (sttList.length === 0) {
+      dispatch(fetchSttList())
+    }
+  }, [dispatch, sttList])
+
+  useEffect(() => {
+    if (localAlert.active && alertRef && alertRef.current) {
+      alertRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [localAlert, alertRef])
 
   return (
     <>
