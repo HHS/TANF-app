@@ -3,6 +3,13 @@ from tdpservice.email.email_enums import EmailType
 from tdpservice.email.email import automated_email, log
 
 
+def getRegionalContext(relation):
+    regionsNames = ['Boston', 'New York', 'Philadelphia', 'Atlanta', 'Chicago',
+                                'Dallas', 'Kansas City', 'Denver', 'San Francisco', 'Seattle']
+    return {'regional': True,
+            'regions': [f"Region {region.pk} ({regionsNames[region.pk - 1]})" for region in relation]}
+
+
 def send_approval_status_update_email(
     new_approval_status,
     user,
@@ -34,6 +41,9 @@ def send_approval_status_update_email(
             template_path = EmailType.ACCESS_REQUEST_SUBMITTED.value
             subject = 'Access Request Submitted'
             text_message = 'Your account has been requested.'
+            relation = user.regions.all().order_by('pk')
+            if relation:
+                context.update(getRegionalContext(relation))
 
         case AccountApprovalStatusChoices.PENDING:
             # Stubbed for future use
@@ -43,6 +53,9 @@ def send_approval_status_update_email(
             template_path = EmailType.REQUEST_APPROVED.value
             subject = 'Access Request Approved'
             text_message = 'Your account request has been approved.'
+            relation = user.regions.all().order_by('pk')
+            if relation:
+                context.update(getRegionalContext(relation))
 
         case AccountApprovalStatusChoices.DENIED:
             template_path = EmailType.REQUEST_DENIED.value
