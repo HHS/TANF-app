@@ -44,6 +44,8 @@ class ParserError(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     fields_json = models.JSONField(null=True)
 
+    deprecated = models.BooleanField(default=False)
+
     @property
     def rpt_month_name(self):
         """Return the month name."""
@@ -110,7 +112,7 @@ class DataFileSummary(models.Model):
         if self.status != DataFileSummary.Status.PENDING:
             return self.status
 
-        errors = ParserError.objects.filter(file=self.datafile)
+        errors = ParserError.objects.filter(file=self.datafile, deprecated=False)
 
         # excluding row-level pre-checks and trailer pre-checks.
         precheck_errors = errors.filter(error_type=ParserErrorCategoryChoices.PRE_CHECK)\
