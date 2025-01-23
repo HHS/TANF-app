@@ -278,10 +278,10 @@ function RequestAccessForm({ user, sttList }) {
                 <div className="usa-radio">
                   <input
                     className="usa-radio__input"
-                    id="notRegional"
+                    id="central"
                     type="radio"
                     name="regionalType"
-                    value="notRegional"
+                    value="central"
                     defaultChecked
                     onChange={() => {
                       setErrors(excludeRegions(errors))
@@ -290,7 +290,7 @@ function RequestAccessForm({ user, sttList }) {
                       setRegional(false)
                     }}
                   />
-                  <label className="usa-radio__label" htmlFor="notRegional">
+                  <label className="usa-radio__label" htmlFor="central">
                     No
                   </label>
                 </div>
