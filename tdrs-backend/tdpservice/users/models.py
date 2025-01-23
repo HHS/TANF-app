@@ -30,6 +30,17 @@ class AccountApprovalStatusChoices(models.TextChoices):
     # is "pending", "approved", and "denied" enough to cover functionality?
 
 
+class RegionMeta(models.Model):
+    """Meta data model representing the relationship between a Region and a User."""
+
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='region_metas')
+    region = models.ForeignKey(
+        Region,
+        on_delete=models.CASCADE,
+        related_name='region_metas'
+    )
+
+
 class User(AbstractUser):
     """Define user fields and methods."""
 
@@ -44,6 +55,15 @@ class User(AbstractUser):
         STT,
         on_delete=models.deletion.SET_NULL,
         related_name='users',
+        null=True,
+        blank=True
+    )
+
+    regions = models.ManyToManyField(
+        Region,
+        through=RegionMeta,
+        help_text="Regions this user is associated with.",
+        related_name="regions",
         null=True,
         blank=True
     )

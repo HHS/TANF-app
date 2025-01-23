@@ -13,7 +13,7 @@ function RequestAccessForm({ user, sttList }) {
     firstName: '',
     lastName: '',
     stt: '',
-    regions: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    regions: new Set(),
   })
   const dispatch = useDispatch()
   const [touched, setTouched] = useState({})
@@ -21,7 +21,7 @@ function RequestAccessForm({ user, sttList }) {
   const [jurisdictionType, setJurisdictionTypeInputValue] = useState('state')
   const isAMSUser = user?.email?.includes('@acf.hhs.gov')
 
-  const regions = [
+  const regionsNames = [
     'Boston',
     'New York',
     'Philadelphia',
@@ -34,11 +34,15 @@ function RequestAccessForm({ user, sttList }) {
     'Seattle',
   ]
 
-  const handleRegionChange = (event, regionIdx) => {
+  const handleRegionChange = (event, regionPK) => {
     const { name, checked } = event.target
     const { [name]: removedError, ...rest } = errors
     const newProfileInfo = { ...profileInfo }
-    newProfileInfo.regions[regionIdx] = checked ? 1 : 0
+    if (!checked && newProfileInfo.regions.has(regionPK)) {
+      newProfileInfo.regions.delete(regionPK)
+    } else {
+      newProfileInfo.regions.add(regionPK)
+    }
 
     const error = validation(name, newProfileInfo.regions)
 
@@ -61,8 +65,7 @@ function RequestAccessForm({ user, sttList }) {
       (Boolean(field) &&
         typeof fieldValue === 'string' &&
         fieldValue.trim() === '') ||
-      (Array.isArray(fieldValue) &&
-        !fieldValue.reduce((sum, val) => sum + val, 0))
+      (fieldValue instanceof Set && fieldValue.size === 0)
     ) {
       return `${field} is required`
     }
@@ -234,7 +237,7 @@ function RequestAccessForm({ user, sttList }) {
             />
           </div>
         )}
-        // TODO: change !isAMSUser to isAMSUser
+        {/* TODO: change !isAMSUser to isAMSUser */}
         {!isAMSUser && (
           <div
             className={`usa-form-group ${errors.regions ? 'usa-form-group--error' : ''}`}
@@ -253,7 +256,7 @@ function RequestAccessForm({ user, sttList }) {
                   {errors.regions}
                 </span>
               )}
-              {regions.map((region, index) => {
+              {regionsNames.map((region, index) => {
                 return (
                   <div className="usa-checkbox">
                     <input
@@ -262,7 +265,7 @@ function RequestAccessForm({ user, sttList }) {
                       type="checkbox"
                       name="regions"
                       value={region}
-                      onChange={(event) => handleRegionChange(event, index)}
+                      onChange={(event) => handleRegionChange(event, index + 1)}
                     />
                     <label
                       className={`usa-checkbox__label ${errors.regions ? 'usa-input--error' : ''}`}

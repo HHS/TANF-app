@@ -1,18 +1,14 @@
-import React, { useRef, useState } from 'react'
+import React from 'react'
 import Button from '../Button'
 import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import signOut from '../../utils/signOut'
-import FormGroup from '../FormGroup'
-import STTComboBox from '../STTComboBox'
-import { requestAccess } from '../../actions/requestAccess'
 import ResourceCards from '../ResourceCards'
 import RequestAccessForm from '../RequestAccessForm/RequestAccessForm'
 import {
   accountStatusIsApproved,
   accountIsInReview,
-  selectPrimaryUserRole,
 } from '../../selectors/auth'
 
 /**

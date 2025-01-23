@@ -59,6 +59,7 @@ class UserSerializer(serializers.ModelSerializer):
             'is_superuser',
             'is_staff',
             'stt',
+            'regions',
             'region',
             'login_gov_uuid',
             'hhs_id',
@@ -92,6 +93,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         source='groups'
     )
     stt = STTPrimaryKeyRelatedField(required=False)
+    regions = RegionPrimaryKeyRelatedField(many=True, required=False)
     region = RegionPrimaryKeyRelatedField(required=False)
 
     class Meta:
@@ -104,6 +106,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'last_name',
             'email',
             'stt',
+            'regions',
             'region',
             'login_gov_uuid',
             'hhs_id',
@@ -139,6 +142,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'last_name': {'allow_blank': False, 'required': True},
             'stt': {'allow_blank': True, 'required': False},
             'region': {'allow_blank': True, 'required': False},
+            'regions': {'allow_blank': True, 'required': False},
         }
 
     def update(self, instance, validated_data):
