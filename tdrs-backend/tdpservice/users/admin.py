@@ -8,7 +8,6 @@ from rest_framework.authtoken.models import TokenProxy
 
 from .models import User
 
-
 class UserForm(forms.ModelForm):
     """Customize the user admin form."""
 
@@ -29,6 +28,20 @@ class UserForm(forms.ModelForm):
         return cleaned_data
 
 
+class RegionInline(admin.TabularInline):
+    """Inline model for many to many relationship."""
+
+    model = User.regions.through
+    verbose_name = "Regions"
+    verbose_name_plural = "Regions"
+    can_delete = False
+    ordering = ["-pk"]
+
+    def has_change_permission(self, request, obj=None):
+        """Read only permissions."""
+        return False
+
+
 class UserAdmin(admin.ModelAdmin):
     """Customize the user admin functions."""
 
@@ -44,6 +57,8 @@ class UserAdmin(admin.ModelAdmin):
         "account_approval_status",
     ]
     autocomplete_fields = ['stt']
+
+    inlines = [RegionInline]
 
     def has_add_permission(self, request):
         """Disable User object creation through Django Admin."""
