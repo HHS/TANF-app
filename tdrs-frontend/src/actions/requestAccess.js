@@ -17,7 +17,7 @@ export const requestAccess =
         first_name: firstName,
         last_name: lastName,
         stt: stt?.id,
-        regions: [...regions],
+        regions: regions ? [...regions] : [],
       }
       const { data } = await axios.patch(URL, user, {
         withCredentials: true,
