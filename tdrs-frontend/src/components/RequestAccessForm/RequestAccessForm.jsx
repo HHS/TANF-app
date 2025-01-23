@@ -13,14 +13,18 @@ function RequestAccessForm({ user, sttList }) {
     firstName: '',
     lastName: '',
     stt: '',
-    regions: new Set(),
   })
   const dispatch = useDispatch()
   const [touched, setTouched] = useState({})
+  const displayingError =
+    !!Object.keys(errors).length && !!Object.keys(touched).length
 
   const [jurisdictionType, setJurisdictionTypeInputValue] = useState('state')
   const isAMSUser = user?.email?.includes('@acf.hhs.gov')
 
+  const [regional, setRegional] = useState(false)
+  const regionError = 'At least one Region'
+  const regionKey = 'regions'
   const regionsNames = [
     'Boston',
     'New York',
@@ -33,6 +37,11 @@ function RequestAccessForm({ user, sttList }) {
     'San Francisco',
     'Seattle',
   ]
+
+  const excludeRegions = (state) => {
+    const { regions, ...newState } = state
+    return newState
+  }
 
   const handleRegionChange = (event, regionPK) => {
     const { name, checked } = event.target
@@ -58,7 +67,7 @@ function RequestAccessForm({ user, sttList }) {
       firstName: 'First Name',
       lastName: 'Last Name',
       stt: !isAMSUser && 'A state, tribe, or territory',
-      regions: 'At least one Region',
+      regions: regionError,
     }[fieldName]
 
     if (
@@ -149,9 +158,7 @@ function RequestAccessForm({ user, sttList }) {
       <form className="usa-form" onSubmit={handleSubmit}>
         <div
           className={`usa-error-message ${
-            !!Object.keys(errors).length && !!Object.keys(touched).length
-              ? 'display-block'
-              : 'display-none'
+            displayingError ? 'display-block' : 'display-none'
           }`}
           ref={errorRef}
           tabIndex="-1"
@@ -239,45 +246,100 @@ function RequestAccessForm({ user, sttList }) {
         )}
         {/* TODO: change !isAMSUser to isAMSUser */}
         {!isAMSUser && (
-          <div
-            className={`usa-form-group ${errors.regions ? 'usa-form-group--error' : ''}`}
-          >
-            <fieldset className="usa-fieldset">
-              <legend className="usa-label text-bold">Region(s)*</legend>
-              <div>
-                Need help?&nbsp;
-                <a href="google.com">Lookup region by location.</a>
-              </div>
-              {errors.regions && (
-                <span
-                  className="usa-error-message"
-                  id={`regions-error-message`}
-                >
-                  {errors.regions}
-                </span>
-              )}
-              {regionsNames.map((region, index) => {
-                return (
-                  <div className="usa-checkbox">
-                    <input
-                      className={`usa-checkbox__input ${errors.regions ? 'usa-input--error' : ''}`}
-                      id={region}
-                      type="checkbox"
-                      name="regions"
-                      value={region}
-                      onChange={(event) => handleRegionChange(event, index + 1)}
-                    />
-                    <label
-                      className={`usa-checkbox__label ${errors.regions ? 'usa-input--error' : ''}`}
-                      htmlFor={region}
-                    >
-                      Region {index + 1} ({region})
-                    </label>
+          <>
+            <div className="usa-form-group">
+              <fieldset className="usa-fieldset">
+                <legend className="usa-label text-bold">
+                  Do you work for an OFA Regional Office?*
+                </legend>
+                <div className="usa-radio">
+                  <input
+                    className="usa-radio__input"
+                    id="regional"
+                    type="radio"
+                    name="regionalType"
+                    value="regional"
+                    onChange={() => {
+                      if (displayingError) {
+                        setTouched({ ...touched, regions: true })
+                        setErrors({
+                          ...errors,
+                          regions: `${regionError} is required`,
+                        })
+                      }
+                      setProfileInfo({ ...profileInfo, regions: new Set() })
+                      setRegional(true)
+                    }}
+                  />
+                  <label className="usa-radio__label" htmlFor="regional">
+                    Yes
+                  </label>
+                </div>
+                <div className="usa-radio">
+                  <input
+                    className="usa-radio__input"
+                    id="notRegional"
+                    type="radio"
+                    name="regionalType"
+                    value="notRegional"
+                    defaultChecked
+                    onChange={() => {
+                      setErrors(excludeRegions(errors))
+                      setTouched(excludeRegions(touched))
+                      setProfileInfo(excludeRegions(profileInfo))
+                      setRegional(false)
+                    }}
+                  />
+                  <label className="usa-radio__label" htmlFor="notRegional">
+                    No
+                  </label>
+                </div>
+              </fieldset>
+            </div>
+            {regional && (
+              <div
+                className={`usa-form-group ${regionKey in errors ? 'usa-form-group--error' : ''}`}
+              >
+                <fieldset className="usa-fieldset">
+                  <legend className="usa-label text-bold">Region(s)*</legend>
+                  <div>
+                    Need help?&nbsp;
+                    <a href="google.com">Lookup region by location.</a>
                   </div>
-                )
-              })}
-            </fieldset>
-          </div>
+                  {regionKey in errors && (
+                    <span
+                      className="usa-error-message"
+                      id={`regions-error-message`}
+                    >
+                      {errors.regions}
+                    </span>
+                  )}
+                  {regionsNames.map((region, index) => {
+                    return (
+                      <div className="usa-checkbox">
+                        <input
+                          className={`usa-checkbox__input ${regionKey in errors ? 'usa-input--error' : ''}`}
+                          id={region}
+                          type="checkbox"
+                          name={regionKey}
+                          value={region}
+                          onChange={(event) =>
+                            handleRegionChange(event, index + 1)
+                          }
+                        />
+                        <label
+                          className={`usa-checkbox__label ${'regions' in errors ? 'usa-input--error' : ''}`}
+                          htmlFor={region}
+                        >
+                          Region {index + 1} ({region})
+                        </label>
+                      </div>
+                    )
+                  })}
+                </fieldset>
+              </div>
+            )}
+          </>
         )}
         <Button type="submit" className="width-full request-access-button">
           Request Access
