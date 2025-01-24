@@ -71,7 +71,6 @@ class AdminUserFactory(UserFactory):
     """Generate Admin User."""
 
     stt = None
-    region = None
     is_staff = True
     is_superuser = True
 
