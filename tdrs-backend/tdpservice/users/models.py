@@ -64,7 +64,6 @@ class User(AbstractUser):
         through=RegionMeta,
         help_text="Regions this user is associated with.",
         related_name="regions",
-        null=True,
         blank=True
     )
 
@@ -137,19 +136,18 @@ class User(AbstractUser):
         return self.groups.filter(name__in=group_names).exists()
 
     def validate_location(self):
-        # TODO: update this logic
         """Throw a validation error if a user has a location type incompatable with their role."""
-        if self.region and self.stt:
+        if self.regions and self.stt:
             raise ValidationError(
                 _("A user may only have a Region or STT assigned, not both.")
             )
 
-        if self.groups.count() == 0 and (self.stt or self.region):
+        if self.groups.count() == 0 and (self.stt or self.regions):
             return
 
         if (
             not (self.is_regional_staff or self.is_data_analyst or self.is_developer)
-        ) and (self.stt or self.region):
+        ) and (self.stt or self.regions):
             raise ValidationError(
                 _(
                     "Users other than Regional Staff, Developers, Data Analysts do not get assigned a location"
@@ -164,7 +162,7 @@ class User(AbstractUser):
             )
         elif (
             self.is_data_analyst
-            and self.region
+            and self.regions
         ):
             raise ValidationError(
                 _("Data Analyst cannot have a location type other than stt")
@@ -218,8 +216,7 @@ class User(AbstractUser):
     @property
     def location(self):
         """Return the STT or Region based on which is not null."""
-        # TODO: update this logic
-        return self.stt if self.stt else self.region
+        return self.stt if self.stt else self.regions.all()
 
     @classmethod
     def from_db(cls, db, field_names, values):
