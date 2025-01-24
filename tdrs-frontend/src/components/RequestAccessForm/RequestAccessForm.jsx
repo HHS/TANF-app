@@ -244,8 +244,7 @@ function RequestAccessForm({ user, sttList }) {
             />
           </div>
         )}
-        {/* TODO: change !isAMSUser to isAMSUser */}
-        {!isAMSUser && (
+        {isAMSUser && (
           <>
             <div className="usa-form-group">
               <fieldset className="usa-fieldset">
