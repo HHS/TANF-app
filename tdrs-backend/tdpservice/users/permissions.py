@@ -243,7 +243,7 @@ class UserPermissions(DjangoModelCRUDPermissions):
                 if hasattr(request.user, 'regions')
                 else None
             )
-            return obj.stt.region.id in user_regions
+            return obj.stt.region in user_regions
 
         # Check if user is an admin
         is_admin = request.user.groups.filter(name__in=["OFA System Admin", "OFA Admin"]).exists()
