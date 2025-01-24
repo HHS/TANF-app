@@ -192,6 +192,7 @@ const reports = (state = initialState, action) => {
         fileName: file.fileName,
         section,
         uuid: file.uuid,
+        id: file.id,
         fileType: file.fileType,
       })
       return { ...state, submittedFiles: updatedFiles }

@@ -21,6 +21,7 @@ def case_aggregates_by_month(df, dfs_status):
     schema_models = [model for model in schema_models_dict.values()]
 
     aggregate_data = {"months": [], "rejected": 0}
+    all_errors = ParserError.objects.filter(file=df, deprecated=False)
     for month in month_list:
         total = 0
         cases_with_errors = 0
@@ -46,8 +47,7 @@ def case_aggregates_by_month(df, dfs_status):
             case_numbers = case_numbers.union(curr_case_numbers)
 
         total += len(case_numbers)
-        cases_with_errors += ParserError.objects.filter(file=df, case_number__in=case_numbers)\
-            .distinct('case_number').count()
+        cases_with_errors += all_errors.filter(case_number__in=case_numbers).distinct('case_number').count()
         accepted = total - cases_with_errors
 
         aggregate_data['months'].append({"month": month,
@@ -57,8 +57,8 @@ def case_aggregates_by_month(df, dfs_status):
     error_type_query = Query(error_type=ParserErrorCategoryChoices.PRE_CHECK) | \
         Query(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
 
-    aggregate_data['rejected'] = ParserError.objects.filter(error_type_query, file=df)\
-        .distinct("row_number").exclude(row_number=0).count()
+    aggregate_data['rejected'] = all_errors.filter(error_type_query).distinct("row_number")\
+        .exclude(row_number=0).count()
 
     return aggregate_data
 
@@ -70,7 +70,7 @@ def total_errors_by_month(df, dfs_status):
 
     total_errors_data = {"months": []}
 
-    errors = ParserError.objects.all().filter(file=df)
+    errors = ParserError.objects.all().filter(file=df, deprecated=False)
 
     for month in month_list:
         if dfs_status == "Rejected":
