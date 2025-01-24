@@ -48,7 +48,7 @@ class UserFactory(BaseUserFactory):
     """General purpose user factory used through out most tests."""
 
     stt = None
-    region = None
+    regions = None
 
 
 class STTUserFactory(BaseUserFactory):

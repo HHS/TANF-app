@@ -60,7 +60,6 @@ class UserSerializer(serializers.ModelSerializer):
             'is_staff',
             'stt',
             'regions',
-            'region',
             'login_gov_uuid',
             'hhs_id',
             'last_login',
@@ -94,7 +93,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
     )
     stt = STTPrimaryKeyRelatedField(required=False)
     regions = RegionPrimaryKeyRelatedField(many=True, required=False)
-    region = RegionPrimaryKeyRelatedField(required=False)
 
     class Meta:
         """Metadata."""
@@ -107,7 +105,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'email',
             'stt',
             'regions',
-            'region',
             'login_gov_uuid',
             'hhs_id',
             'roles',
@@ -141,7 +138,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'first_name': {'allow_blank': False, 'required': True},
             'last_name': {'allow_blank': False, 'required': True},
             'stt': {'allow_blank': True, 'required': False},
-            'region': {'allow_blank': True, 'required': False},
             'regions': {'allow_blank': True, 'required': False},
         }
 

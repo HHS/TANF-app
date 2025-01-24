@@ -68,14 +68,6 @@ class User(AbstractUser):
         blank=True
     )
 
-    region = models.ForeignKey(
-        Region,
-        on_delete=models.deletion.SET_NULL,
-        related_name='users',
-        null=True,
-        blank=True
-    )
-
     # The unique `sub` UUID from decoded login.gov payloads for login.gov users.
     login_gov_uuid = models.UUIDField(
         editable=False, blank=True, null=True, unique=True
@@ -145,6 +137,7 @@ class User(AbstractUser):
         return self.groups.filter(name__in=group_names).exists()
 
     def validate_location(self):
+        # TODO: update this logic
         """Throw a validation error if a user has a location type incompatable with their role."""
         if self.region and self.stt:
             raise ValidationError(
@@ -225,6 +218,7 @@ class User(AbstractUser):
     @property
     def location(self):
         """Return the STT or Region based on which is not null."""
+        # TODO: update this logic
         return self.stt if self.stt else self.region
 
     @classmethod
