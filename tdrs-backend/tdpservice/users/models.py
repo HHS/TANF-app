@@ -137,17 +137,18 @@ class User(AbstractUser):
 
     def validate_location(self):
         """Throw a validation error if a user has a location type incompatable with their role."""
-        if self.regions and self.stt:
+        regional = self.regions.count()
+        if regional and self.stt:
             raise ValidationError(
                 _("A user may only have a Region or STT assigned, not both.")
             )
 
-        if self.groups.count() == 0 and (self.stt or self.regions):
+        if self.groups.count() == 0 and (self.stt or regional):
             return
 
         if (
             not (self.is_regional_staff or self.is_data_analyst or self.is_developer)
-        ) and (self.stt or self.regions):
+        ) and (self.stt or regional):
             raise ValidationError(
                 _(
                     "Users other than Regional Staff, Developers, Data Analysts do not get assigned a location"
@@ -162,7 +163,7 @@ class User(AbstractUser):
             )
         elif (
             self.is_data_analyst
-            and self.regions
+            and regional
         ):
             raise ValidationError(
                 _("Data Analyst cannot have a location type other than stt")
