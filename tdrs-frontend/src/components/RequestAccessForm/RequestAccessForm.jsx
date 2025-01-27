@@ -182,8 +182,7 @@ function RequestAccessForm({ user, sttList }) {
           handleChange={handleChange}
           handleBlur={handleBlur}
         />
-        {/* TODO: After raft/a11y review convert isAMSUser back to !isAMSUser. */}
-        {isAMSUser && (
+        {!isAMSUser && (
           <div className="usa-form-group">
             <fieldset className="usa-fieldset">
               <legend className="usa-label text-bold">Jurisdiction Type</legend>
@@ -230,8 +229,7 @@ function RequestAccessForm({ user, sttList }) {
             </fieldset>
           </div>
         )}
-        {/* TODO: After raft/a11y review convert isAMSUser back to !isAMSUser. */}
-        {jurisdictionType && isAMSUser && (
+        {jurisdictionType && !isAMSUser && (
           <div
             className={`usa-form-group ${
               errors.stt ? 'usa-form-group--error' : ''
@@ -246,8 +244,7 @@ function RequestAccessForm({ user, sttList }) {
             />
           </div>
         )}
-        {/* TODO: After raft/a11y review convert !isAMSUser back to isAMSUser. */}
-        {!isAMSUser && (
+        {isAMSUser && (
           <>
             <div className="usa-form-group">
               <fieldset className="usa-fieldset">
