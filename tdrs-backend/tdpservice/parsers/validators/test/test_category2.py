@@ -3,7 +3,7 @@
 
 import pytest
 from .. import category2
-from ..util import ValidationErrorArgs
+from ..util import ValidationErrorArgs, deprecate_call
 from ...row_schema import RowSchema
 
 
@@ -25,10 +25,11 @@ def _make_eargs(val):
     )
 
 
-def _validate_and_assert(validator, val, exp_result, exp_message):
-    result, msg = validator(val, _make_eargs(val))
-    assert result == exp_result
-    assert msg == exp_message
+def _validate_and_assert(validator, val, exp_result, exp_message, exp_deprecated=False):
+    result = validator(val, _make_eargs(val))
+    assert result.valid == exp_result
+    assert result.error == exp_message
+    assert result.deprecated == exp_deprecated
 
 
 @pytest.mark.parametrize('val, option, kwargs, exp_result, exp_message', [
@@ -262,3 +263,16 @@ def test_quarterIsValid(val, kwargs, exp_result, exp_message):
     """Test quarterIsValid validator error messages."""
     _validator = category2.quarterIsValid(**kwargs)
     _validate_and_assert(_validator, val, exp_result, exp_message)
+
+
+@pytest.mark.parametrize('val, validator, kwargs, exp_result, exp_message', [
+    (4, category2.isEqual, {"option": 4}, True, None),
+    ('    ', category2.isOneOf, {"options": [1, 2]}, False, 'Test Item 1 (test field):      is not in [1, 2].'),
+    ('1  4', category2.validateHeaderUpdateIndicator, {}, False, ('HEADER Update Indicator must be set to D instead '
+                                                                  'of 1  4. Please review Exporting Complete Data '
+                                                                  'Using FTANF in the Knowledge Center.')),
+])
+def test_deprecated_cat2_validator(val, validator, kwargs, exp_result, exp_message):
+    """Test deprecated cat2 validators."""
+    deprecated_validator = deprecate_call(validator(**kwargs))
+    _validate_and_assert(deprecated_validator, val, exp_result, exp_message, exp_deprecated=True)

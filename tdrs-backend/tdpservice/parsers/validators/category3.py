@@ -4,7 +4,7 @@ import datetime
 import logging
 from tdpservice.parsers.util import get_record_value_by_field_name
 from . import base
-from .util import ValidationErrorArgs, validator, make_validator, evaluate_all
+from .util import Result, ValidationErrorArgs, validator, make_validator, evaluate_all
 
 logger = logging.getLogger(__name__)
 
@@ -166,7 +166,7 @@ def ifThenAlso(condition_field_name, condition_function, result_field_name, resu
             friendly_name=condition_field.friendly_name,
             item_num=condition_field.item,
         )
-        condition_success, msg1 = condition_function(condition_value, condition_field_eargs)
+        condition_result = condition_function(condition_value, condition_field_eargs)
 
         result_value = get_record_value_by_field_name(record, result_field_name)
         result_field = row_schema.get_field_by_name(result_field_name)
@@ -176,24 +176,25 @@ def ifThenAlso(condition_field_name, condition_function, result_field_name, resu
             friendly_name=result_field.friendly_name,
             item_num=result_field.item,
         )
-        result_success, msg2 = result_function(result_value, result_field_eargs)
+        result_result = result_function(result_value, result_field_eargs)
 
-        if not condition_success:
-            return (True, None, [result_field_name, condition_field_name])  # order is important
-        elif not result_success:
+        if not condition_result.valid:
+            return Result(field_names=[result_field_name, condition_field_name])
+        elif not result_result.valid:
             center_error = None
-            if condition_success:
+            if condition_result.valid:
                 center_error = f'{format_error_context(condition_field_eargs)} is {condition_value}'
             else:
-                center_error = msg1
+                center_error = condition_result.error
             error_message = (
                 f"Since {center_error}, then {format_error_context(result_field_eargs)} "
-                f"{result_value} {msg2}"
+                f"{result_value} {result_result.error}"
             )
 
-            return (result_success, error_message, [condition_field_name, result_field_name])
+            return Result(valid=result_result.valid, error=error_message,
+                          field_names=[condition_field_name, result_field_name])
         else:
-            return (result_success, None, [condition_field_name, result_field_name])
+            return Result(valid=result_result.valid, field_names=[condition_field_name, result_field_name])
 
     return if_then_validator_func
 
@@ -205,12 +206,12 @@ def orValidators(validators, **kwargs):
     def _validate(value, eargs):
         validator_results = evaluate_all(validators, value, eargs)
 
-        if not any(result[0] for result in validator_results):
+        if not any(result.valid for result in validator_results):
             error_msg = f'{format_error_context(eargs)} {value} ' if not is_if_result_func else ''
-            error_msg += " or ".join([result[1] for result in validator_results]) + '.'
-            return (False, error_msg)
+            error_msg += " or ".join([result.error for result in validator_results]) + '.'
+            return Result(valid=False, error=error_msg)
 
-        return (True, None)
+        return Result()
 
     return _validate
 
@@ -230,12 +231,12 @@ def sumIsEqual(condition_field_name, sum_fields=[]):
         fields.extend(sum_fields)
 
         if sum == condition_val:
-            return (True, None, fields)
-        return (
-            False,
-            f"{row_schema.record_type}: The sum of {sum_fields} does not equal {condition_field_name} "
-            f"{condition_field.friendly_name} Item {condition_field.item}.",
-            fields
+            return Result(field_names=fields)
+        return Result(
+            valid=False,
+            error=(f"{row_schema.record_type}: The sum of {sum_fields} does not equal {condition_field_name} "
+                   f"{condition_field.friendly_name} Item {condition_field.item}."),
+            field_names=fields
         )
 
     return sumIsEqualFunc
@@ -250,12 +251,12 @@ def sumIsLarger(fields, val):
             sum += 0 if temp_val is None else temp_val
 
         if sum > val:
-            return (True, None, fields)
+            return Result(field_names=fields)
 
-        return (
-            False,
-            f"{row_schema.record_type}: The sum of {fields} is not larger than {val}.",
-            fields,
+        return Result(
+            valid=False,
+            error=f"{row_schema.record_type}: The sum of {fields} is not larger than {val}.",
+            field_names=fields
         )
 
     return sumIsLargerFunc
@@ -301,17 +302,17 @@ def validate__FAM_AFF__SSN():
             CITIZENSHIP_STATUS == 1 or CITIZENSHIP_STATUS == 2
         ):
             if SSN in [str(i) * 9 for i in range(10)]:
-                return (
-                    False,
-                    f"{row_schema.record_type}: Since {format_error_context(fam_affil_eargs)} is 2 "
-                    f"and {format_error_context(cit_stat_eargs)} is 1 or 2, "
-                    f"then {format_error_context(ssn_eargs)} must not be in 000000000 -- 999999999.",
-                    ["FAMILY_AFFILIATION", "CITIZENSHIP_STATUS", "SSN"],
+                return Result(
+                    valid=False,
+                    error=(f"{row_schema.record_type}: Since {format_error_context(fam_affil_eargs)} is 2 "
+                           f"and {format_error_context(cit_stat_eargs)} is 1 or 2, "
+                           f"then {format_error_context(ssn_eargs)} must not be in 000000000 -- 999999999."),
+                    field_names=["FAMILY_AFFILIATION", "CITIZENSHIP_STATUS", "SSN"],
                 )
             else:
-                return (True, None, ["FAMILY_AFFILIATION", "CITIZENSHIP_STATUS", "SSN"])
+                return Result(field_names=["FAMILY_AFFILIATION", "CITIZENSHIP_STATUS", "SSN"])
         else:
-            return (True, None, ["FAMILY_AFFILIATION", "CITIZENSHIP_STATUS", "SSN"])
+            return Result(field_names=["FAMILY_AFFILIATION", "CITIZENSHIP_STATUS", "SSN"])
 
     return validate
 
@@ -344,18 +345,15 @@ def validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
             item_num=dob_field.item,
         )
 
-        false_case = (
-            False,
-            f"{row_schema.record_type}: Since {format_error_context(work_elig_eargs)} is 11 "
-            f"and {format_error_context(age_eargs)} is less than 19, "
-            f"then {format_error_context(relat_hoh_eargs)} must not be 1.",
-            ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH']
+        false_case = Result(
+            valid=False,
+            error=(f"{row_schema.record_type}: Since {format_error_context(work_elig_eargs)} is 11 "
+                   f"and {format_error_context(age_eargs)} is less than 19, "
+                   f"then {format_error_context(relat_hoh_eargs)} must not be 1."),
+            field_names=['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH'],
         )
-        true_case = (
-            True,
-            None,
-            ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH'],
-        )
+        true_case = Result(field_names=['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH'])
+
         try:
             WORK_ELIGIBLE_INDICATOR = get_record_value_by_field_name(record, 'WORK_ELIGIBLE_INDICATOR')
             RELATIONSHIP_HOH = int(get_record_value_by_field_name(record, 'RELATIONSHIP_HOH'))
