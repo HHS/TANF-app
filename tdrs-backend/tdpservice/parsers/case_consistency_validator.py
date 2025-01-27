@@ -9,6 +9,7 @@ from tdpservice.parsers.schema_defs.utils import get_program_model
 from tdpservice.parsers.validators.util import ValidationErrorArgs
 from tdpservice.parsers.validators.category3 import format_error_context
 import logging
+import warnings
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +55,7 @@ class CaseConsistencyValidator:
                                          )
         return format_error_context(error_args)
 
-    def __generate_and_add_error(self, schema, record, field, line_num, msg):
+    def __generate_and_add_error(self, schema, record, field, line_num, msg, deprecated=False):
         """Generate a ParserError and add it to the `generated_errors` list."""
         err = self.generate_error(
             error_category=ParserErrorCategoryChoices.CASE_CONSISTENCY,
@@ -63,6 +64,7 @@ class CaseConsistencyValidator:
             record=record,
             field=field,
             error_message=msg,
+            deprecated=deprecated
         )
         self.generated_errors.append(err)
 
@@ -340,11 +342,14 @@ class CaseConsistencyValidator:
 
     def __validate_case_closure_employment(self, t4, t5s, error_msg):
         """
-        Validate case closure.
+        Validate case closure. (DEPRECATED, always returns zero.).
 
         If case closure reason = 01:employment, then at least one person on
         the case must have employment status = 1:Yes in the same month.
         """
+        warnings.warn(("No longer considered a category four failure. "
+                      "Records are serialized even if this error is generated."), DeprecationWarning,
+                      stacklevel=2)
         num_errors = 0
         t4_record, t4_schema, line_num = t4
 
@@ -362,19 +367,23 @@ class CaseConsistencyValidator:
                 t4_record,
                 "EMPLOYMENT_STATUS",
                 line_num,
-                error_msg
+                error_msg,
+                deprecated=True
             )
             num_errors += 1
 
-        return num_errors
+        return 0
 
     def __validate_case_closure_ftl(self, t4, t5s, error_msg):
         """
-        Validate case closure.
+        Validate case closure. (DEPRECATED, always returns zero.).
 
         If closure reason = FTL, then at least one person who is HoH
         or spouse of HoH on case must have FTL months >=60.
         """
+        warnings.warn(("No longer considered a category four failure. "
+                      "Records are serialized even if this error is generated."), DeprecationWarning,
+                      stacklevel=2)
         num_errors = 0
         t4_record, t4_schema, line_num = t4
 
@@ -393,11 +402,12 @@ class CaseConsistencyValidator:
                 t4_record,
                 "COUNTABLE_MONTH_FED_TIME",
                 line_num,
-                error_msg
+                error_msg,
+                deprecated=True
             )
             num_errors += 1
 
-        return num_errors
+        return 0
 
     def __validate_s2_records_are_related(self):
         """
@@ -466,6 +476,10 @@ class CaseConsistencyValidator:
         return num_errors
 
     def __validate_t5_atd_and_ssi(self):
+        """Validate aid totally disabled and SSI. (DEPRECATED, always returns zero.)."""
+        warnings.warn(("No longer considered a category four failure. "
+                      "Records are serialized even if this error is generated."), DeprecationWarning,
+                      stacklevel=2)
         num_errors = 0
         t4s, t4_model_name, t5s, t5_model_name = self.__get_s2_triplets_and_names()
 
@@ -492,7 +506,8 @@ class CaseConsistencyValidator:
                     msg=(
                         f"{t5_model_name} Adults in territories must have a valid "
                         f"value for {self.__get_error_context('REC_AID_TOTALLY_DISABLED', schema)}."
-                    )
+                    ),
+                    deprecated=True
                 )
                 num_errors += 1
             elif is_state and rec_atd == 1:
@@ -504,7 +519,8 @@ class CaseConsistencyValidator:
                     msg=(
                         f"{t5_model_name} People in states should not have a value "
                         f"of 1 for {self.__get_error_context('REC_AID_TOTALLY_DISABLED', schema)}."
-                    )
+                    ),
+                    deprecated=True
                 )
                 num_errors += 1
 
@@ -517,7 +533,8 @@ class CaseConsistencyValidator:
                     msg=(
                         f"{t5_model_name} People in territories must have value = 2:No for "
                         f"{self.__get_error_context('REC_SSI', schema)}."
-                    )
+                    ),
+                    deprecated=True
                 )
                 num_errors += 1
             elif is_state and family_affiliation == 1 and rec_ssi not in {1, 2}:
@@ -529,8 +546,9 @@ class CaseConsistencyValidator:
                     msg=(
                         f"{t5_model_name} People in states must have a valid value for "
                         f"{self.__get_error_context('REC_SSI', schema)}."
-                    )
+                    ),
+                    deprecated=True
                 )
                 num_errors += 1
 
-        return num_errors
+        return 0
