@@ -340,7 +340,7 @@ const UploadForm = ({
   const formattedSectionName = section.toLowerCase().replace(' ', '-')
 
   const ariaDescription = file
-    ? `Selected File ${file?.fileName}. To change the selected file, click this button.`
+    ? `Selected File ${file?.name}. To change the selected file, click this button.`
     : `Drag file here or choose from folder.`
 
   return (
@@ -398,7 +398,7 @@ const UploadForm = ({
           <Button
             className="card:margin-y-1"
             type="submit"
-            disabled={error || localAlert.active || !file || file.id}
+            disabled={!!error || localAlert.active || !file || !!file.id}
           >
             Submit Report
           </Button>
