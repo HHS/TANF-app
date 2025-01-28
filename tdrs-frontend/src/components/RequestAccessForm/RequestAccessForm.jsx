@@ -303,7 +303,9 @@ function RequestAccessForm({ user, sttList }) {
                   <legend className="usa-label text-bold">Region(s)*</legend>
                   <div>
                     Need help?&nbsp;
-                    <a href="google.com">Lookup region by location.</a>
+                    <a href="https://www.acf.hhs.gov/oro/regional-offices">
+                      Lookup region by location.
+                    </a>
                   </div>
                   {regionKey in errors && (
                     <span
