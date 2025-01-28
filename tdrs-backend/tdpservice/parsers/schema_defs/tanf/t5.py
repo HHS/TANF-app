@@ -94,7 +94,7 @@ t5 = SchemaManager(
                     condition_field_name="FAMILY_AFFILIATION",
                     condition_function=category3.isEqual(1),
                     result_field_name="CITIZENSHIP_STATUS",
-                    result_function=category3.isBetween(1, 2, 3, inclusive=True),
+                    result_function=category3.isBetween(1, 2, inclusive=True),
                 ),
                 category3.ifThenAlso(
                     condition_field_name="DATE_OF_BIRTH",
