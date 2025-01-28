@@ -182,7 +182,7 @@ function RequestAccessForm({ user, sttList }) {
           handleChange={handleChange}
           handleBlur={handleBlur}
         />
-        {!isAMSUser && (
+        {isAMSUser && (
           <div className="usa-form-group">
             <fieldset className="usa-fieldset">
               <legend className="usa-label text-bold">Jurisdiction Type</legend>
@@ -229,7 +229,7 @@ function RequestAccessForm({ user, sttList }) {
             </fieldset>
           </div>
         )}
-        {jurisdictionType && !isAMSUser && (
+        {jurisdictionType && isAMSUser && (
           <div
             className={`usa-form-group ${
               errors.stt ? 'usa-form-group--error' : ''
@@ -244,7 +244,7 @@ function RequestAccessForm({ user, sttList }) {
             />
           </div>
         )}
-        {isAMSUser && (
+        {!isAMSUser && (
           <>
             <div className="usa-form-group">
               <fieldset className="usa-fieldset">
