@@ -1,5 +1,4 @@
 import React from 'react'
-import axios from 'axios'
 import { fireEvent, waitFor, render } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import { FRAReports } from '.'
@@ -240,6 +239,7 @@ describe('FRA Reports Page', () => {
 
   describe('Upload form', () => {
     const setup = async () => {
+      window.HTMLElement.prototype.scrollIntoView = () => {}
       const state = {
         ...initialState,
         auth: {
@@ -291,24 +291,33 @@ describe('FRA Reports Page', () => {
       return { ...component, ...store }
     }
 
-    // it('Allows text files to be selected and submitted', async () => {
-    //   const { getByText, dispatch, getByRole, container } = await setup()
+    it('Allows text files to be selected and submitted', async () => {
+      const { getByText, dispatch, getByRole, container } = await setup()
 
-    //   const uploadForm = container.querySelector('#fra-file-upload')
-    //   await waitFor(() => {
-    //     fireEvent.change(uploadForm, {
-    //       target: { files: [makeTestFile('report.txt')] },
-    //     })
-    //   })
+      const uploadForm = container.querySelector('#fra-file-upload')
+      fireEvent.change(uploadForm, {
+        target: { files: [makeTestFile('report.txt')] },
+      })
+      await waitFor(() =>
+        expect(
+          getByText(
+            'Selected File report.txt. To change the selected file, click this button.'
+          )
+        ).toBeInTheDocument()
+      )
 
-    //   const submitButton = getByText('Submit Report')
-    //   fireEvent.click(submitButton)
+      const submitButton = getByText('Submit Report')
+      fireEvent.click(submitButton)
 
-    //   // await waitFor(() => getByText('asdfasdf'))
-
-    //   await waitFor(() => getByRole('alert'))
-    //   expect(dispatch).toHaveBeenCalledTimes(1)
-    // })
+      await waitFor(() =>
+        expect(
+          getByText(
+            `Successfully submitted section(s): Work Outcomes for TANF Exiters on ${new Date().toDateString()}`
+          )
+        ).toBeInTheDocument()
+      )
+      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(2))
+    })
 
     it('Shows an error if a non-allowed file type is selected', async () => {
       const { getByText, dispatch, getByRole, container } = await setup()
@@ -367,45 +376,43 @@ describe('FRA Reports Page', () => {
       )
     })
 
-    // it('Does not show a message if search is clicked after uploading a file', async () => {
-    //   const {
-    //     getByText,
-    //     container,
-    //     getByLabelText,
-    //     queryByText,
-    //     dispatch,
-    //     getByRole,
-    //   } = await setup()
+    it('Does not show a message if search is clicked after uploading a file', async () => {
+      const { getByText, container, getByLabelText, queryByText, dispatch } =
+        await setup()
 
-    //   const uploadForm = container.querySelector('#fra-file-upload')
-    //   fireEvent.change(uploadForm, {
-    //     target: { files: [makeTestFile('report.txt')] },
-    //   })
+      const uploadForm = container.querySelector('#fra-file-upload')
+      fireEvent.change(uploadForm, {
+        target: { files: [makeTestFile('report.txt')] },
+      })
+      await waitFor(() =>
+        expect(
+          getByText(
+            'Selected File report.txt. To change the selected file, click this button.'
+          )
+        ).toBeInTheDocument()
+      )
 
-    //   const submitButton = getByText('Submit Report')
-    //   fireEvent.click(submitButton)
+      fireEvent.click(getByText(/Submit Report/, { selector: 'button' }))
+      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(2))
 
-    //   // await waitFor(() => getByRole('alert'))
-    //   expect(dispatch).toHaveBeenCalledTimes(2)
+      const yearsDropdown = getByLabelText('Fiscal Year (October - September)')
+      fireEvent.change(yearsDropdown, { target: { value: '2024' } })
 
-    //   const yearsDropdown = getByLabelText('Fiscal Year (October - September)')
-    //   fireEvent.change(yearsDropdown, { target: { value: '2024' } })
+      const quarterDropdown = getByLabelText('Quarter')
+      fireEvent.change(quarterDropdown, { target: { value: 'Q2' } })
 
-    //   const quarterDropdown = getByLabelText('Quarter')
-    //   fireEvent.change(quarterDropdown, { target: { value: 'Q2' } })
+      await waitFor(() => {
+        expect(
+          getByText('Quarter 2 (January - March)', { selector: 'option' })
+            .selected
+        ).toBe(true)
+      })
 
-    //   await waitFor(() => {
-    //     expect(
-    //       getByText('Quarter 2 (January - March)', { selector: 'option' })
-    //         .selected
-    //     ).toBe(true)
-    //   })
+      fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
-    //   fireEvent.click(getByText(/Search/, { selector: 'button' }))
-
-    //   await waitFor(() =>
-    //     expect(queryByText('Files Not Submitted')).not.toBeInTheDocument()
-    //   )
-    // })
+      await waitFor(() =>
+        expect(queryByText('Files Not Submitted')).not.toBeInTheDocument()
+      )
+    })
   })
 })

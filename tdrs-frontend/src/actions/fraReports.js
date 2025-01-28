@@ -11,7 +11,11 @@ export const SET_FRA_SUBMISSION_HISTORY = 'SET_FRA_SUBMISSION_HISTORY'
 export const SET_IS_UPLOADING_FRA_REPORT = 'SET_IS_UPLOADING_FRA_REPORT'
 
 export const getFraSubmissionHistory =
-  ({ stt, reportType, fiscalQuarter, fiscalYear }, onSuccess, onError) =>
+  (
+    { stt, reportType, fiscalQuarter, fiscalYear },
+    onSuccess = () => null,
+    onError = () => null
+  ) =>
   async (dispatch) => {
     dispatch({
       type: SET_IS_LOADING_SUBMISSION_HISTORY,
@@ -19,16 +23,12 @@ export const getFraSubmissionHistory =
     })
 
     try {
-      console.log('params', { stt, reportType, fiscalQuarter, fiscalYear })
-
       const requestParams = {
         stt: stt.id,
         file_type: reportType,
         year: fiscalYear,
         quarter: fiscalQuarter,
       }
-      console.log('params', requestParams)
-      console.log(objectToUrlParams(requestParams))
 
       const response = await axios.get(
         `${BACKEND_URL}/data_files/?${objectToUrlParams(requestParams)}`,
@@ -56,8 +56,8 @@ export const getFraSubmissionHistory =
 export const uploadFraReport =
   (
     { stt, reportType, fiscalQuarter, fiscalYear, file, user },
-    onSuccess,
-    onError
+    onSuccess = () => null,
+    onError = () => null
   ) =>
   async (dispatch) => {
     dispatch({
@@ -91,6 +91,15 @@ export const uploadFraReport =
         }
       )
 
+      // dispatch(
+      //   getFraSubmissionHistory({
+      //     stt,
+      //     reportType,
+      //     fiscalQuarter,
+      //     fiscalYear,
+      //   })
+      // )
+      // or, dispatch the state update if response from upload can contain updated submission history
       onSuccess()
     } catch (error) {
       onError(error)

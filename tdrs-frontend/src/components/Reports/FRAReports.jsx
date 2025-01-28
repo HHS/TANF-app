@@ -325,6 +325,10 @@ const UploadForm = ({
   const onSubmit = (e) => {
     e.preventDefault()
 
+    if (!!error) {
+      return
+    }
+
     if (file && file.id) {
       setLocalAlertState({
         active: true,
@@ -398,7 +402,7 @@ const UploadForm = ({
           <Button
             className="card:margin-y-1"
             type="submit"
-            disabled={!!error || localAlert.active || !file || !!file.id}
+            // disabled={!!error || localAlert.active || !file || !!file.id}
           >
             Submit Report
           </Button>
@@ -424,8 +428,6 @@ const FRAReports = () => {
   const needsSttSelection = useSelector(accountCanSelectStt)
   const userProfileStt = user?.stt?.name
 
-  console.log(userProfileStt)
-
   const [temporaryFormState, setTemporaryFormState] = useState({
     errors: 0,
     stt: {
@@ -449,7 +451,7 @@ const FRAReports = () => {
       touched: false,
     },
   })
-  console.log(temporaryFormState)
+
   const [selectedFile, setSelectedFile] = useState(null)
 
   // const stt = useSelector((state) => state.stts?.stt)
@@ -572,12 +574,14 @@ const FRAReports = () => {
   }
 
   const handleUpload = ({ file: selectedFile }) => {
-    const onFileUploadSuccess = () =>
+    const onFileUploadSuccess = () => {
+      setSelectedFile(null) // once we have the latest file in submission history, conditional setting of state in constructor should be sufficient
       setLocalAlertState({
         active: true,
         type: 'success',
         message: `Successfully submitted section(s): ${getReportTypeLabel()} on ${new Date().toDateString()}`,
       })
+    }
 
     const onFileUploadError = (error) => {
       console.log(error)
