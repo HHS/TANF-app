@@ -1,5 +1,5 @@
 import React from 'react'
-import * as axios from 'axios'
+import axios from 'axios'
 import { fireEvent, waitFor, render } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import { FRAReports } from '.'
@@ -80,9 +80,7 @@ describe('FRA Reports Page', () => {
         </Provider>
       )
 
-      expect(
-        getByText('Associated State, Tribe, or Territory*')
-      ).toBeInTheDocument()
+      expect(getByText('State, Tribe, or Territory*')).toBeInTheDocument()
     })
 
     it('Does not show STT combobox if not admin', () => {
@@ -379,10 +377,6 @@ describe('FRA Reports Page', () => {
     //     getByRole,
     //   } = await setup()
 
-    //   const mockAxios = jest.genMockFromModule('axios')
-    //   mockAxios.create = jest.fn(() => mockAxios)
-    //   mockAxios.post.mockResolvedValue({ status: 201 })
-
     //   const uploadForm = container.querySelector('#fra-file-upload')
     //   fireEvent.change(uploadForm, {
     //     target: { files: [makeTestFile('report.txt')] },
@@ -392,9 +386,7 @@ describe('FRA Reports Page', () => {
     //   fireEvent.click(submitButton)
 
     //   // await waitFor(() => getByRole('alert'))
-    //   expect(dispatch).toHaveBeenCalledTimes(1)
-    //   expect(mockAxios.create).toHaveBeenCalledTimes(1)
-    //   expect(mockAxios.post).toHaveBeenCalledTimes(1)
+    //   expect(dispatch).toHaveBeenCalledTimes(2)
 
     //   const yearsDropdown = getByLabelText('Fiscal Year (October - September)')
     //   fireEvent.change(yearsDropdown, { target: { value: '2024' } })
