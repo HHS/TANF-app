@@ -612,7 +612,7 @@ class TestCaseConsistencyValidator:
         errors = case_consistency_validator.get_generated_errors()
 
         assert len(errors) == 1
-        assert num_errors == 1
+        assert num_errors == 0
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
             f"At least one person on the case must have Item {emp_status_item_num} (Employment Status) = 1:Yes in the "
@@ -688,7 +688,7 @@ class TestCaseConsistencyValidator:
         errors = case_consistency_validator.get_generated_errors()
 
         assert len(errors) == 1
-        assert num_errors == 1
+        assert num_errors == 0
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         is_tribal = "Tribal" in header["program_type"]
         tribe_or_fed = "Tribal" if is_tribal else "Federal"
@@ -974,7 +974,7 @@ class TestCaseConsistencyValidator:
         errors = case_consistency_validator.get_generated_errors()
 
         assert len(errors) == 2
-        assert num_errors == 2
+        assert num_errors == 0
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
             f"{t5_model_name} Adults in territories must have a valid value for Item {ratd_item_num} "
@@ -1124,7 +1124,7 @@ class TestCaseConsistencyValidator:
         errors = case_consistency_validator.get_generated_errors()
 
         assert len(errors) == 2
-        assert num_errors == 2
+        assert num_errors == 0
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
             f"{t5_model_name} People in states should not have a value of 1 for Item {item_no} ("
@@ -1204,7 +1204,7 @@ class TestCaseConsistencyValidator:
         errors = case_consistency_validator.get_generated_errors()
 
         assert len(errors) == 2
-        assert num_errors == 2
+        assert num_errors == 0
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
             f"{t5_model_name} People in territories must have value = 2:No for Item {rec_ssi_item_num} "
@@ -1284,7 +1284,7 @@ class TestCaseConsistencyValidator:
         errors = case_consistency_validator.get_generated_errors()
 
         assert len(errors) == 1
-        assert num_errors == 1
+        assert num_errors == 0
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
             f"{t5_model_name} People in states must have a valid value for Item {rec_ssi_item_num} "

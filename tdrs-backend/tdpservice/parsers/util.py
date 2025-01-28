@@ -28,7 +28,8 @@ def create_test_datafile(filename, stt_user, stt, section='Active Case Data'):
     return datafile
 
 
-def generate_parser_error(datafile, line_number, schema, error_category, error_message, record=None, field=None):
+def generate_parser_error(datafile, line_number, schema, error_category, error_message, record=None,
+                          field=None, deprecated=False):
     """Create and return a ParserError using args."""
     fields = [*field] if type(field) is list else [field]
     fields_json = {
@@ -53,13 +54,14 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
             model=schema.document.Django.model if schema else None
         ) if record and not isinstance(record, dict) else None,
         object_id=getattr(record, 'id', None) if record and not isinstance(record, dict) else None,
-        fields_json=fields_json
+        fields_json=fields_json,
+        deprecated=deprecated,
     )
 
 
 def make_generate_parser_error(datafile, line_number):
     """Configure generate_parser_error with a datafile and line number."""
-    def generate(schema, error_category, error_message, record=None, field=None):
+    def generate(schema, error_category, error_message, record=None, field=None, deprecated=False):
         return generate_parser_error(
             datafile=datafile,
             line_number=line_number,
@@ -68,6 +70,7 @@ def make_generate_parser_error(datafile, line_number):
             error_message=error_message,
             record=record,
             field=field,
+            deprecated=deprecated,
         )
 
     return generate
@@ -75,7 +78,7 @@ def make_generate_parser_error(datafile, line_number):
 
 def make_generate_file_precheck_parser_error(datafile, line_number):
     """Configure a generate_parser_error that acts as a file pre-check error."""
-    def generate(schema, error_category, error_message, record=None, field=None):
+    def generate(schema, error_category, error_message, record=None, field=None, deprecated=False):
         return generate_parser_error(
             datafile=datafile,
             line_number=line_number,
@@ -84,6 +87,7 @@ def make_generate_file_precheck_parser_error(datafile, line_number):
             error_message=error_message,
             record=record,
             field=None,  # purposely overridden to force a "Rejected" status for certain file precheck errors
+            deprecated=deprecated,
         )
 
     return generate
@@ -91,7 +95,7 @@ def make_generate_file_precheck_parser_error(datafile, line_number):
 
 def make_generate_case_consistency_parser_error(datafile):
     """Configure a generate_parser_error that is specific to case consistency errors."""
-    def generate(schema, error_category, error_message, line_number=None, record=None, field=None):
+    def generate(schema, error_category, error_message, line_number=None, record=None, field=None, deprecated=False):
         return generate_parser_error(
             datafile=datafile,
             line_number=line_number,
@@ -100,6 +104,7 @@ def make_generate_case_consistency_parser_error(datafile):
             error_message=error_message,
             record=record,
             field=field,
+            deprecated=deprecated,
         )
 
     return generate

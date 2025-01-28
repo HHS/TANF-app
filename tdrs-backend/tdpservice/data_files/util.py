@@ -21,7 +21,7 @@ class ParserErrorCategoryChoices(models.TextChoices):
     HISTORICAL_CONSISTENCY = "6", _("Historical consistency")
 
 
-def get_prioritized_queryset(parser_errors):
+def get_prioritized_queryset(parser_errors, is_s3_s4):
     """Generate a prioritized queryset of ParserErrors."""
     PRIORITIZED_CAT2 = (
         ("FAMILY_AFFILIATION", "CITIZENSHIP_STATUS", "CLOSURE_REASON"),
@@ -41,6 +41,15 @@ def get_prioritized_queryset(parser_errors):
     error_type_query = Q(error_type=ParserErrorCategoryChoices.PRE_CHECK) | \
         Q(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
     filtered_errors = parser_errors.filter(error_type_query)
+
+    # If we are a Aggregate or Stratum file, we want all cat2 and cat3 errors.
+    if is_s3_s4:
+        all_cat2_cat3 = Q(error_type=ParserErrorCategoryChoices.FIELD_VALUE) | \
+            Q(error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY)
+        filtered_errors = filtered_errors.union(parser_errors.filter(all_cat2_cat3).exclude(
+            error_message__contains="HEADER Update Indicator")
+        )
+        return filtered_errors
 
     for fields in PRIORITIZED_CAT2:
         filtered_errors = filtered_errors.union(parser_errors.filter(
@@ -121,36 +130,65 @@ def format_header(header_list: list):
     return ' '.join([i.capitalize() for i in header_list.split('_')])
 
 
-def write_prioritized_errors(worksheet, prioritized_errors, bold):
-    """Write prioritized errors to spreadsheet."""
-    row, col = 5, 0
+def active_closed_generator(record, rpt_month_year, fields_json):
+    """Generate error report row for S1/S2 files."""
+    return (record.case_number,
+            rpt_month_year[:4],
+            calendar.month_name[int(rpt_month_year[4:])] if rpt_month_year[4:] else None,
+            format_error_msg(record.error_message, fields_json),
+            record.item_number,
+            friendly_names(fields_json),
+            internal_names(fields_json),
+            record.row_number,
+            str(ParserErrorCategoryChoices(record.error_type).label))
 
-    # We will write the headers in the first row
+
+def aggregate_stratum_generator(record, rpt_month_year, fields_json):
+    """Generate error report row for S3/S4 files."""
+    return (rpt_month_year[:4],
+            calendar.month_name[int(rpt_month_year[4:])] if rpt_month_year[4:] else None,
+            format_error_msg(record.error_message, fields_json),
+            record.item_number,
+            friendly_names(fields_json),
+            internal_names(fields_json),
+            record.row_number,
+            str(ParserErrorCategoryChoices(record.error_type).label))
+
+
+def get_row_generator(is_s3_s4):
+    """Get the correct row generator."""
+    if is_s3_s4:
+        return aggregate_stratum_generator
+    return active_closed_generator
+
+
+def get_sheet_columns(is_s3_s4):
+    """Get the correct columns based on file section."""
     columns = ['case_number', 'year', 'month',
                'error_message', 'item_number', 'item_name',
                'internal_variable_name', 'row_number', 'error_type',
                ]
-    for idx, col in enumerate(columns):
-        worksheet.write(row, idx, format_header(col), bold)
+    columns = columns[1:] if is_s3_s4 else columns
+    return columns
 
+
+def write_prioritized_errors(worksheet, prioritized_errors, bold, is_s3_s4):
+    """Write prioritized errors to spreadsheet."""
+    # We will write the headers in the first row, remove case_number if we are s3/s4
+    columns = get_sheet_columns(is_s3_s4)
+    for idx, col in enumerate(columns):
+        worksheet.write(5, idx, format_header(col), bold)
+
+    row_generator = get_row_generator(is_s3_s4)
     paginator = Paginator(prioritized_errors.order_by('pk'), settings.BULK_CREATE_BATCH_SIZE)
     row_idx = 6
     for page in paginator:
         for record in page.object_list:
             rpt_month_year = getattr(record, 'rpt_month_year', None)
             rpt_month_year = str(rpt_month_year) if rpt_month_year else ""
-
             fields_json = check_fields_json(getattr(record, 'fields_json', {}), record.field_name)
 
-            worksheet.write(row_idx, 0, record.case_number)
-            worksheet.write(row_idx, 1, rpt_month_year[:4])
-            worksheet.write(row_idx, 2, calendar.month_name[int(rpt_month_year[4:])] if rpt_month_year[4:] else None)
-            worksheet.write(row_idx, 3, format_error_msg(record.error_message, fields_json))
-            worksheet.write(row_idx, 4, record.item_number)
-            worksheet.write(row_idx, 5, friendly_names(fields_json))
-            worksheet.write(row_idx, 6, internal_names(fields_json))
-            worksheet.write(row_idx, 7, record.row_number)
-            worksheet.write(row_idx, 8, str(ParserErrorCategoryChoices(record.error_type).label))
+            worksheet.write_row(row_idx, 0, row_generator(record, rpt_month_year, fields_json))
             row_idx += 1
 
 
@@ -189,7 +227,7 @@ def write_aggregate_errors(worksheet, all_errors, bold):
             row_idx += 1
 
 
-def get_xls_serialized_file(all_errors, prioritized_errors):
+def get_xls_serialized_file(all_errors, prioritized_errors, is_s3_s4):
     """Return xls file created from the error."""
     output = BytesIO()
     workbook = xlsxwriter.Workbook(output)
@@ -200,7 +238,7 @@ def get_xls_serialized_file(all_errors, prioritized_errors):
     write_worksheet_banner(aggregate_sheet)
 
     bold = workbook.add_format({'bold': True})
-    write_prioritized_errors(prioritized_sheet, prioritized_errors, bold)
+    write_prioritized_errors(prioritized_sheet, prioritized_errors, bold, is_s3_s4)
     write_aggregate_errors(aggregate_sheet, all_errors, bold)
 
     # autofit all columns except for the first one
