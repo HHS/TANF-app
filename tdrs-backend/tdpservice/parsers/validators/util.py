@@ -3,10 +3,20 @@
 
 import functools
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
+import warnings
 
 logger = logging.getLogger(__name__)
+
+@dataclass
+class Result:
+    """Dataclass representing a validator's evaluated result."""
+
+    valid: bool = True
+    error: str | None = None
+    field_names: list = field(default_factory=list)
+    deprecated: bool = False
 
 
 def make_validator(validator_func, error_func):
@@ -21,12 +31,47 @@ def make_validator(validator_func, error_func):
     def validator(value, eargs):
         try:
             if validator_func(value):
-                return (True, None)
+                return Result()
         except Exception:
             logger.exception("Caught exception in validator.")
-        return (False, error_func(eargs))
+        return Result(valid=False, error=error_func(eargs))
 
     return validator
+
+
+def deprecate_validator(validator):
+    """
+    Deprecate entire validator function.
+
+    This decorator should ONLY be used on validator functions that return another
+    validator function, i.e. make_validator.
+    """
+    def wrapper(*args, **kwargs):
+        wrapper_args = args
+        wrapper_kwargs = kwargs
+
+        def deprecated_validator(*args, **kwargs):
+            warnings.warn(f"{validator.__name__} has been deprecated and will be removed in a future version.",
+                          DeprecationWarning)
+            make_val = validator(*wrapper_args, **wrapper_kwargs)
+            result = make_val(*args, **kwargs)
+            result.deprecated = True
+            return result
+        return deprecated_validator
+    return wrapper
+
+
+def deprecate_call(validator):
+    """Deprecate top level, evaluated validator.
+
+    This function should wrap invocations of validators in a schema. E.g.:
+    `deprecate_call(category1.recordHasLengthBetween(117, 156))`.
+    """
+    def deprecated_validator(*args, **kwargs):
+        result = validator(*args, **kwargs)
+        result.deprecated = True
+        return result
+    return deprecated_validator
 
 
 # decorator helper
