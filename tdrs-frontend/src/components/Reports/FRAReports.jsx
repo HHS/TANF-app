@@ -523,10 +523,10 @@ const FRAReports = () => {
     return isValid
   }
 
-  const handleSearch = (e) => {
+  const handleSearch = (e, bypassSelectedFile = false) => {
     e.preventDefault()
 
-    if (selectedFile && !selectedFile.id) {
+    if (!bypassSelectedFile && selectedFile && !selectedFile.id) {
       setErrorModalVisible(true)
       return
     }
@@ -701,10 +701,10 @@ const FRAReports = () => {
           {
             key: '2',
             text: 'Discard and Search',
-            onClick: () => {
+            onClick: (e) => {
               setErrorModalVisible(false)
               setSelectedFile(null)
-              handleSearch({ preventDefault: () => null })
+              handleSearch(e, true)
             },
           },
         ]}

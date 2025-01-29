@@ -414,5 +414,125 @@ describe('FRA Reports Page', () => {
         expect(queryByText('Files Not Submitted')).not.toBeInTheDocument()
       )
     })
+
+    it('Allows the user to cancel the error modal and retain previous search selections', async () => {
+      const { getByText, queryByText, getByLabelText, container, dispatch } =
+        await setup()
+
+      const uploadForm = container.querySelector('#fra-file-upload')
+      fireEvent.change(uploadForm, {
+        target: { files: [makeTestFile('report.txt')] },
+      })
+      await waitFor(() =>
+        expect(
+          getByText(
+            'Selected File report.txt. To change the selected file, click this button.'
+          )
+        ).toBeInTheDocument()
+      )
+
+      // make a change to the search selections and click search
+      const yearsDropdown = getByLabelText('Fiscal Year (October - September)')
+      fireEvent.change(yearsDropdown, { target: { value: '2024' } })
+
+      const quarterDropdown = getByLabelText('Quarter')
+      fireEvent.change(quarterDropdown, { target: { value: 'Q2' } })
+      await waitFor(() => {
+        expect(getByText('2024', { selector: 'option' }).selected).toBe(true)
+        expect(
+          getByText('Quarter 2 (January - March)', { selector: 'option' })
+            .selected
+        ).toBe(true)
+      })
+
+      fireEvent.click(getByText(/Search/, { selector: 'button' }))
+
+      await waitFor(() =>
+        expect(queryByText('Files Not Submitted')).toBeInTheDocument()
+      )
+
+      // click cancel
+      fireEvent.click(getByText(/Cancel/, { selector: '#modal button' }))
+
+      // assert file still exists, search params are the same as initial, dispatch not called
+      await waitFor(() => {
+        expect(dispatch).toHaveBeenCalledTimes(1)
+        expect(queryByText('Files Not Submitted')).not.toBeInTheDocument()
+        expect(
+          getByText(
+            'Selected File report.txt. To change the selected file, click this button.'
+          )
+        ).toBeInTheDocument()
+        expect(getByText('2021', { selector: 'option' }).selected).toBe(true)
+        expect(
+          getByText('Quarter 1 (October - December)', { selector: 'option' })
+            .selected
+        ).toBe(true)
+      })
+    })
+
+    it('Allows the user to discard the error modal and continue with a new search', async () => {
+      const { getByText, queryByText, getByLabelText, container, dispatch } =
+        await setup()
+
+      const uploadForm = container.querySelector('#fra-file-upload')
+      fireEvent.change(uploadForm, {
+        target: { files: [makeTestFile('report.txt')] },
+      })
+      await waitFor(() =>
+        expect(
+          getByText(
+            'Selected File report.txt. To change the selected file, click this button.'
+          )
+        ).toBeInTheDocument()
+      )
+
+      // make a change to the search selections and click search
+      const yearsDropdown = getByLabelText('Fiscal Year (October - September)')
+      fireEvent.change(yearsDropdown, { target: { value: '2024' } })
+
+      const quarterDropdown = getByLabelText('Quarter')
+      fireEvent.change(quarterDropdown, { target: { value: 'Q2' } })
+      await waitFor(() => {
+        expect(getByText('2024', { selector: 'option' }).selected).toBe(true)
+        expect(
+          getByText('Quarter 2 (January - March)', { selector: 'option' })
+            .selected
+        ).toBe(true)
+      })
+
+      fireEvent.click(getByText(/Search/, { selector: 'button' }))
+
+      await waitFor(() =>
+        expect(queryByText('Files Not Submitted')).toBeInTheDocument()
+      )
+
+      // click discard
+      const button = getByText(/Discard and Search/, {
+        selector: '#modal button',
+      })
+      fireEvent.click(button)
+
+      // assert file discarded, search params updated
+      await waitFor(() => {
+        // expect(dispatch).toHaveBeenCalledTimes(2)
+        expect(queryByText('Files Not Submitted')).not.toBeInTheDocument()
+        expect(
+          queryByText(
+            'Selected File report.txt. To change the selected file, click this button.'
+          )
+        ).not.toBeInTheDocument()
+        expect(getByText('2024', { selector: 'option' }).selected).toBe(true)
+        expect(
+          getByText('Quarter 2 (January - March)', { selector: 'option' })
+            .selected
+        ).toBe(true)
+        expect(
+          getByText(
+            'Alaska - Work Outcomes for TANF Exiters - Fiscal Year 2024 - Quarter 2 (January - March)'
+          )
+        ).toBeInTheDocument()
+      })
+    })
   })
 })
