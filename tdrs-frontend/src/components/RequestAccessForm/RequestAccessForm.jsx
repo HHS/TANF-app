@@ -66,7 +66,7 @@ function RequestAccessForm({ user, sttList }) {
     const field = {
       firstName: 'First Name',
       lastName: 'Last Name',
-      stt: !isAMSUser && 'A state, tribe, or territory',
+      stt: isAMSUser && 'A state, tribe, or territory',
       regions: regionError,
     }[fieldName]
 
@@ -303,7 +303,11 @@ function RequestAccessForm({ user, sttList }) {
                   <legend className="usa-label text-bold">Region(s)*</legend>
                   <div>
                     Need help?&nbsp;
-                    <a href="https://www.acf.hhs.gov/oro/regional-offices">
+                    <a
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      href="https://www.acf.hhs.gov/oro/regional-offices"
+                    >
                       Lookup region by location.
                     </a>
                   </div>
@@ -324,6 +328,7 @@ function RequestAccessForm({ user, sttList }) {
                           type="checkbox"
                           name={regionKey}
                           value={region}
+                          aria-required="true"
                           onChange={(event) =>
                             handleRegionChange(event, index + 1)
                           }
