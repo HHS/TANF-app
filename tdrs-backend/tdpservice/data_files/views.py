@@ -122,7 +122,6 @@ class DataFileViewSet(ModelViewSet):
     def download(self, request, pk=None):
         """Retrieve a file from s3 then stream it to the client."""
         record = self.get_object()
-        print(f"\n\nDOWNLOAD RECORD: {record}\n\n")
         response = None
 
         # If no versioning id, then download from django storage

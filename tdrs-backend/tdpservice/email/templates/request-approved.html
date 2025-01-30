@@ -5,7 +5,7 @@
     <p>Dear {{ first_name }},</p>
 
     {% if regional %}
-        <p>Congratulations! Your request for the TANF Data Portal (TDP) is <b>approved</b> and access as a {{ group_permission }} for Region(s) {{ regions }} <b>has been granted</b>.</p>
+        <p>Congratulations! Your request for the TANF Data Portal (TDP) is <b>approved</b> and access as a {{ group_permission }} for Region(s): {{ regions|join:", " }} <b>has been granted</b>.</p>
     {% else %}
         <p>Congratulations! Your request for the TANF Data Portal (TDP) is <b>approved</b> and access as a {{ group_permission }} from {{ stt_name }} <b>has been granted</b>.</p>
     {% endif %}

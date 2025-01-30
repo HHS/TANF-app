@@ -5,11 +5,11 @@
     <p>Dear {{ first_name }},</p>
 
     {% if regional %}
-        <p><b>Your request for Region(s) {{ regions }} access to the TANF Data Portal (TDP) has been submitted for review.</b></p>
+        <p><b>Your request for Region(s): {{ regions|join:", " }} access to the TANF Data Portal (TDP) has been submitted for review.</b></p>
     {% else %}
         <p><b>Your request for {{ stt_name }} access to the TANF Data Portal (TDP) has been submitted for review.</b></p>
     {% endif %}
-    
+
     <p>You can <a href="{{ url }}" target="_blank">view the status</a> of your request by logging into TDP.</p>
 
     <b>Need help?</b><br>
