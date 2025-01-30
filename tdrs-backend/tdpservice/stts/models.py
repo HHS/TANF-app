@@ -11,6 +11,7 @@ class Region(models.Model):
     """A model representing a US region."""
 
     id = models.PositiveIntegerField(primary_key=True)
+    name = models.CharField(max_length=25, blank=True, null=True)
 
     def __str__(self):
         """Return the ID."""
