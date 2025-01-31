@@ -7,7 +7,7 @@ from tdpservice.stts.models import Region
 def getRegionalContext(regions):
     """Get email context for regional users."""
     return {'regional': True,
-            'regions': [str(region) for region in Region.objects.exclude(id=1000)]}
+            'regions': [str(region) for region in Region.objects.filter(id__in=regions)]}
 
 
 def send_approval_status_update_email(
