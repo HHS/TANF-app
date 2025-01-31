@@ -19,7 +19,7 @@ def _populate_regions():
         reader = csv.DictReader(csvfile)
         for row in reader:
             Region.objects.get_or_create(id=row["Id"], name=row["name"])
-        Region.objects.get_or_create(id=1000)
+        Region.objects.get_or_create(id=1000, name=None)
 
 def _load_csv(filename, entity):
     with open(DATA_DIR / filename) as csvfile:
