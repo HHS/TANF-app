@@ -14,12 +14,12 @@ DATA_DIR = BASE_DIR = Path(__file__).resolve().parent / "data"
 logger = logging.getLogger(__name__)
 
 
-def _populate_regions():
+def _populate_regions(region_model=Region):
     with open(DATA_DIR / "regions.csv") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            Region.objects.get_or_create(id=row["Id"], name=row["name"])
-        Region.objects.get_or_create(id=1000, name=None)
+            region_model.objects.get_or_create(id=row["Id"], name=row["name"])
+        region_model.objects.get_or_create(id=1000, name=None)
 
 def _load_csv(filename, entity):
     with open(DATA_DIR / filename) as csvfile:

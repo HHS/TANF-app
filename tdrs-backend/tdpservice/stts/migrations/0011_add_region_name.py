@@ -3,15 +3,12 @@
 from django.db import migrations, models
 import csv
 from pathlib import Path
+from tdpservice.stts.management.commands.populate_stts import _populate_regions
 
 DATA_DIR = Path(__file__).resolve().parent.parent / 'management/commands/data'
 def populate_regions(apps, schema_editor):
     Region = apps.get_model('stts', 'Region')
-    with open(DATA_DIR / "regions.csv") as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            Region.objects.get_or_create(id=row["Id"], name=row["name"])
-        Region.objects.get_or_create(id=1000, name=None)
+    _populate_regions(Region)
 
 
 class Migration(migrations.Migration):
