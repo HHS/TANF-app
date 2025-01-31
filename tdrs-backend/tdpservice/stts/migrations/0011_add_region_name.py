@@ -5,14 +5,13 @@ import csv
 from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent.parent / 'management/commands/data'
-def populate_region_names(apps, schema_editor):
+def populate_regions(apps, schema_editor):
     Region = apps.get_model('stts', 'Region')
     with open(DATA_DIR / "regions.csv") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            region = Region.objects.get(id=row["Id"])
-            region.name = row["name"]
-            region.save()
+            Region.objects.get_or_create(id=row["Id"], name=row["name"])
+        Region.objects.get_or_create(id=1000, name=None)
 
 
 class Migration(migrations.Migration):
@@ -27,5 +26,5 @@ class Migration(migrations.Migration):
             name='name',
             field=models.CharField(blank=True, max_length=25, null=True),
         ),
-        migrations.RunPython(populate_region_names)
+        migrations.RunPython(populate_regions)
     ]
