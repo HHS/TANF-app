@@ -8,6 +8,8 @@ function RegionSelector({
   setProfileInfo,
   profileInfo,
   displayingError,
+  validateRegions,
+  regionError,
 }) {
   const [regional, setRegional] = useState(false)
   const regionKey = 'regions'
@@ -23,14 +25,6 @@ function RegionSelector({
     'San Francisco',
     'Seattle',
   ]
-  const regionError = 'At least on Region is required'
-
-  const validate = (regions) => {
-    if (regions.size === 0 && regional) {
-      return regionError
-    }
-    return null
-  }
 
   const handleRegionChange = (event, regionPK) => {
     const { name, checked } = event.target
@@ -42,7 +36,7 @@ function RegionSelector({
       newProfileInfo.regions.add(regionPK)
     }
 
-    const error = validate(newProfileInfo.regions)
+    const error = validateRegions(newProfileInfo.regions)
 
     setErrors({
       ...rest,
@@ -130,7 +124,7 @@ function RegionSelector({
             )}
             {regionsNames.map((region, index) => {
               return (
-                <div className="usa-checkbox">
+                <div key={region} className="usa-checkbox">
                   <input
                     className={`usa-checkbox__input ${regionKey in errors ? 'usa-input--error' : ''}`}
                     id={region}

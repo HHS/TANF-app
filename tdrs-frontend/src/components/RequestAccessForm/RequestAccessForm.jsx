@@ -24,6 +24,15 @@ function RequestAccessForm({ user, sttList }) {
   const [jurisdictionType, setJurisdictionTypeInputValue] = useState('state')
   const isAMSUser = user?.email?.includes('@acf.hhs.gov')
 
+  const regionError = 'At least on Region is required'
+
+  const validateRegions = (regions) => {
+    if (regions?.size === 0) {
+      return regionError
+    }
+    return null
+  }
+
   const validation = (fieldName, fieldValue) => {
     const field = {
       firstName: 'First Name',
@@ -94,8 +103,15 @@ function RequestAccessForm({ user, sttList }) {
         touched: { ...touched },
       }
     )
-    setErrors(formValidation.errors)
-    setTouched(formValidation.touched)
+    const regionError = validateRegions(profileInfo.regions)
+    setErrors({
+      ...formValidation.errors,
+      ...(regionError && { regions: regionError }),
+    })
+    setTouched({
+      ...formValidation.touched,
+      ...(regionError && { regions: true }),
+    })
 
     if (!Object.values(formValidation.errors).length) {
       return dispatch(
@@ -169,6 +185,8 @@ function RequestAccessForm({ user, sttList }) {
             setProfileInfo={setProfileInfo}
             profileInfo={profileInfo}
             displayingError={displayingError}
+            validateRegions={validateRegions}
+            regionError={regionError}
           />
         )}
         <Button type="submit" className="width-full request-access-button">
