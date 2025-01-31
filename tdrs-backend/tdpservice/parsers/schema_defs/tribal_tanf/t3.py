@@ -229,8 +229,8 @@ child_one = RowSchema(
         ),
         Field(
             item="70",
-            name="GENDER",
-            friendly_name="Gender",
+            name="SEX",
+            friendly_name="Sex",
             type="number",
             startIndex=43,
             endIndex=44,
@@ -543,8 +543,8 @@ child_two = RowSchema(
         ),
         Field(
             item="70",
-            name="GENDER",
-            friendly_name="Gender",
+            name="SEX",
+            friendly_name="Sex",
             type="number",
             startIndex=84,
             endIndex=85,
