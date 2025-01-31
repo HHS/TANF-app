@@ -1,14 +1,13 @@
 """Helper functions for sending approval status update emails."""
 from tdpservice.email.email_enums import EmailType
 from tdpservice.email.email import automated_email, log
+from tdpservice.stts.models import Region
 
 
 def getRegionalContext(regions):
     """Get email context for regional users."""
-    regionsNames = ['Boston', 'New York', 'Philadelphia', 'Atlanta', 'Chicago',
-                    'Dallas', 'Kansas City', 'Denver', 'San Francisco', 'Seattle']
     return {'regional': True,
-            'regions': [f"Region {region.pk} ({regionsNames[region.pk - 1]})" for region in regions]}
+            'regions': [str(region) for region in Region.objects.exclude(id=1000)]}
 
 
 def send_approval_status_update_email(
