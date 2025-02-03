@@ -1625,7 +1625,7 @@ def test_parse_t3_cat2_invalid_citizenship(t3_cat2_invalid_citizenship_file, dfs
     assert parser_errors.count() == 2
 
     for e in parser_errors:
-        assert e.error_message == "T3 Item 76 (Citizenship/Immigration Status): 0 is not in [1, 2, 9]."
+        assert e.error_message == "T3 Item 76 (Citizenship/Immigration Status): 0 is not in [1, 2, 3, 9]."
 
 
 @pytest.mark.django_db()
