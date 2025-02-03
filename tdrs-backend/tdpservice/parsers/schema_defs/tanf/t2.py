@@ -94,7 +94,7 @@ t2 = SchemaManager(
                     condition_field_name="FAMILY_AFFILIATION",
                     condition_function=category3.isEqual(1),
                     result_field_name="CITIZENSHIP_STATUS",
-                    result_function=category3.isOneOf((1, 2)),
+                    result_function=category3.isOneOf((1, 2, 3)),
                 ),
                 category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
@@ -415,7 +415,7 @@ t2 = SchemaManager(
                     startIndex=57,
                     endIndex=58,
                     required=False,
-                    validators=[category2.isOneOf([0, 1, 2, 9])],
+                    validators=[category2.isOneOf([0, 1, 2, 3, 9])],
                 ),
                 Field(
                     item="43",
