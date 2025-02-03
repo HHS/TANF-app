@@ -323,6 +323,10 @@ describe('Reports', () => {
         },
       })
     })
+    await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
+    await waitFor(() => expect(getByText('section2.txt')).toBeInTheDocument())
+    await waitFor(() => expect(getByText('section3.txt')).toBeInTheDocument())
+    await waitFor(() => expect(getByText('section4.txt')).toBeInTheDocument())
     expect(store.dispatch).toHaveBeenCalledTimes(14)
 
     // There should be 4 more dispatches upon making the submission,
