@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useContext, createContext } from 'react'
 import PropTypes from 'prop-types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
@@ -101,3 +101,77 @@ Paginator.propTypes = {
 }
 
 export default Paginator
+
+const PaginatorContext = createContext({
+  pageSize: 5,
+  pageNumber: 1,
+  data: null,
+  setPageNumber: () => null,
+  getSlicedData: () => null,
+})
+
+const PaginatorWithContext = () => {
+  const context = useContext(PaginatorContext)
+  const { setPageNumber, pageNumber, numPages } = context
+
+  return (
+    <Paginator
+      onChange={(page) => setPageNumber(page)}
+      selected={pageNumber}
+      pages={numPages}
+    />
+  )
+}
+
+const PaginatedComponent = ({ pageSize, data, children }) => {
+  const [pageNumber, setPageNumber] = useState(1)
+
+  const numPages =
+    data && data.length > pageSize ? Math.ceil(data.length / pageSize) : 1
+  const pageStart = (pageNumber - 1) * pageSize
+  const pageEnd = Math.min(data.length, pageStart + pageSize)
+
+  return (
+    <PaginatorContext.Provider
+      value={{
+        pageNumber,
+        pageSize,
+        numPages,
+        data,
+        setPageNumber,
+        getSlicedData: () => data.slice(pageStart, pageEnd),
+      }}
+    >
+      {children}
+      <PaginatorWithContext />
+    </PaginatorContext.Provider>
+  )
+}
+
+export { PaginatorContext, PaginatedComponent, PaginatorWithContext }
+
+const PaginatedHOC = ({ pageSize, data, children }) => {
+  const [pageNumber, setPageNumber] = useState(1)
+
+  const numPages =
+    data && data.length > pageSize ? Math.ceil(data.length / pageSize) : 1
+  const pageStart = (pageNumber - 1) * pageSize
+  const pageEnd = Math.min(data.length, pageStart + pageSize)
+
+  const slicedData = data.slice(pageStart, pageEnd)
+
+  return (
+    <>
+      {React.cloneElement(children, { data: slicedData })}
+      {numPages > 1 && (
+        <Paginator
+          onChange={(page) => setPageNumber(page)}
+          selected={pageNumber}
+          pages={numPages}
+        />
+      )}
+    </>
+  )
+}
+
+export { PaginatedHOC }
