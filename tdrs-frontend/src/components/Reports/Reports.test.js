@@ -524,10 +524,12 @@ describe('Reports', () => {
       })
 
       // add a file to be uploaded, but don't submit
-      fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
-        target: {
-          files: [makeTestFile('section1.txt')],
-        },
+      await waitFor(() => {
+        fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
+          target: {
+            files: [makeTestFile('section1.txt')],
+          },
+        })
       })
 
       await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
@@ -566,10 +568,12 @@ describe('Reports', () => {
       })
 
       // add a file to be uploaded, but don't submit
-      fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
-        target: {
-          files: [makeTestFile('section1.txt')],
-        },
+      await waitFor(() => {
+        fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
+          target: {
+            files: [makeTestFile('section1.txt')],
+          },
+        })
       })
 
       await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
@@ -617,10 +621,12 @@ describe('Reports', () => {
       })
 
       // add a file to be uploaded, but don't submit
-      fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
-        target: {
-          files: [makeTestFile('section1.txt')],
-        },
+      await waitFor(() => {
+        fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
+          target: {
+            files: [makeTestFile('section1.txt')],
+          },
+        })
       })
 
       await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
