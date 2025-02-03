@@ -64,7 +64,7 @@ describe('UploadReport', () => {
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
-    const { getByLabelText, container } = render(
+    const { getByLabelText, getByText, container } = render(
       <Provider store={store}>
         <UploadReport handleCancel={handleCancel} header="Some header" />
       </Provider>
@@ -82,7 +82,8 @@ describe('UploadReport', () => {
       })
     })
 
-    expect(store.dispatch).toHaveBeenCalledTimes(2)
+    await waitFor(() => expect(getByText('test.txt')).toBeInTheDocument())
+    expect(store.dispatch).toHaveBeenCalledTimes(3)
     expect(container.querySelectorAll('.has-invalid-file').length).toBe(0)
   })
   it('should prevent upload of file with invalid extension', async () => {
@@ -90,7 +91,7 @@ describe('UploadReport', () => {
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
-    const { getByLabelText, container } = render(
+    const { getByLabelText, getByText, container } = render(
       <Provider store={store}>
         <UploadReport handleCancel={handleCancel} header="Some header" />
       </Provider>
@@ -111,7 +112,8 @@ describe('UploadReport', () => {
       })
     })
 
-    expect(store.dispatch).toHaveBeenCalledTimes(2)
+    await waitFor(() => expect(getByText('test.html')).toBeInTheDocument())
+    expect(store.dispatch).toHaveBeenCalledTimes(4)
     expect(container.querySelectorAll('.has-invalid-file').length).toBe(0)
   })
 
@@ -233,7 +235,7 @@ describe('UploadReport', () => {
       Promise.resolve({ data: { id: 1 } })
     )
 
-    const { getByLabelText } = render(
+    const { getByLabelText, getByText } = render(
       <Provider store={store}>
         <UploadReport handleCancel={handleCancel} header="Some header" />
       </Provider>
@@ -253,6 +255,7 @@ describe('UploadReport', () => {
       })
     })
 
+    await waitFor(() => expect(getByText('test.txt')).toBeInTheDocument())
     expect(fileInput.value).toStrictEqual('')
   })
 })
