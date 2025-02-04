@@ -11,7 +11,6 @@ import ResourceCards from '../ResourceCards'
 import {
   accountStatusIsApproved,
   accountIsInReview,
-  selectPrimaryUserRole,
 } from '../../selectors/auth'
 
 /**
