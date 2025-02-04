@@ -101,6 +101,8 @@ function FileUpload({ section, setLocalAlertState }) {
     dispatch(clearError({ section }))
     dispatch(clearFile({ section }))
 
+    if (!file) return
+
     // Get the the first 4 bytes of the file with which to check file signatures
     const blob = file.slice(0, 4)
 
