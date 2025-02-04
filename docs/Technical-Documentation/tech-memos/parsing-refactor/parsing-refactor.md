@@ -2,7 +2,7 @@
 
 **Audience**: TDP Software Engineers <br>
 **Subject**:  Refactor Functional Parsing to Class Based Parsing <br>
-**Date**:     August 8, 2024 <br>
+**Date**:     February 4, 2025 <br>
 
 ## Summary
 This technical memorandum provides a set of suggestions to refactor the structure of the parsing engine from a functional approach to a class based approach. The introduction of the FRA report type/datafiles illuminates the parsing engine's deep coupling to current datafiles structure and the engine's low conformance to SOLID principles which prevent it from being generic, easily extensible, and readable. While generic, extensible, and readable code can be achieved in a functional design, this technical memorandum argues that a class based approach will be even more so. The #method/design section provides the suggested class templates to shift the parser to a class based structure that will support the parsing of any datafile type needed, while keeping the same general interface, usage patterns as the current functional approach, and more strictly adhering to SOLID principles.
