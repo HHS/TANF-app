@@ -11,7 +11,6 @@ export const TARGET_CLASS = `${PREFIX}-file-input__target`
 
 export const GENERIC_PREVIEW_CLASS = `${GENERIC_PREVIEW_CLASS_NAME}--generic`
 
-export const HIDDEN_CLASS = 'display-none'
 export const INSTRUCTIONS_CLASS = `${PREFIX}-file-input__instructions`
 export const INVALID_FILE_CLASS = 'has-invalid-file'
 export const ACCEPTED_FILE_MESSAGE_CLASS = `${PREFIX}-file-input__accepted-files-message`
@@ -54,9 +53,6 @@ const removeOldPreviews = (dropTarget, instructions) => {
 
   // Get rid of existing previews if they exist, show instructions
   if (filePreviews !== null) {
-    if (instructions) {
-      instructions.classList.remove(HIDDEN_CLASS)
-    }
     Array.prototype.forEach.call(filePreviews, removeImages)
   }
 }
@@ -90,7 +86,6 @@ export const handlePreview = (fileName, targetClassName) => {
 
   // Hides null state content and sets preview heading class
   if (filePreviewsHeading) {
-    instructions.classList.add(HIDDEN_CLASS)
     filePreviewsHeading.classList.add(PREVIEW_HEADING_CLASS)
   }
   return true
