@@ -269,7 +269,7 @@ def base_regional_data_file_data(fake_file_name, regional_user):
         "extension": "txt",
         "section": "Active Case Data",
         "user": str(regional_user.id),
-        "regions": [regional_user.regions.first().pk],
+        "regions": list(regional_user.regions.all().values_list('id', flat=True)),
         "quarter": "Q1",
         "year": 2020,
         "stt": int(regional_user.regions.first().stts.first().id)
