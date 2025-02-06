@@ -20,6 +20,7 @@
     "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
     "react/jsx-props-no-spreading": ["off"],
     "jsx-a11y/no-noninteractive-tabindex": "off",
+    "comma-dangle": 0,
     "max-len": [
       "warn",
       {

@@ -24,6 +24,14 @@ scrape_configs:
         labels:
           job: backend-local
           __path__: /logs/django.log
+    pipeline_stages:
+      - regex:
+          expression:  '^(?P<time>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) (?P<level>\w+) (?P<logger>\S+) (?P<message>.*)$'
+      - labels:
+          level:
+          logger:
+          message:
+          time:
   - job_name: backend-prod
     static_configs:
       - targets:
@@ -37,4 +45,11 @@ scrape_configs:
         - localhost
         labels:
           job: frontend-local
-          __path__: /var/log/nginx/*log
+          __path__: /var/log/nginx/access_log.log
+          level: DEBUG
+      - targets:
+        - localhost
+        labels:
+          job: frontend-local
+          __path__: /var/log/nginx/error_log.log
+          level: ERROR

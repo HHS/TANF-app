@@ -1,3 +1,6 @@
+@use "uswds-core" as *;
+@use "./assets/uswds/_variables" as *;
+
 .usa-button {
   font-size: 1rem;
 }
