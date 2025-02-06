@@ -575,14 +575,14 @@ def test_parse_tanf_section1_datafile_t3s(small_tanf_section1_datafile, dfs):
     assert t3_1.RPT_MONTH_YEAR == 202010
     assert t3_1.CASE_NUMBER == '11111111112'
     assert t3_1.FAMILY_AFFILIATION == 1
-    assert t3_1.GENDER == 2
+    assert t3_1.SEX == 2
     assert t3_1.EDUCATION_LEVEL == '98'
 
     t3_5 = t3_models[4]
     assert t3_5.RPT_MONTH_YEAR == 202010
     assert t3_5.CASE_NUMBER == '11111111151'
     assert t3_5.FAMILY_AFFILIATION == 1
-    assert t3_5.GENDER == 1
+    assert t3_5.SEX == 1
     assert t3_5.EDUCATION_LEVEL == '98'
 
 
@@ -863,7 +863,7 @@ def test_parse_small_tanf_section2_file(small_tanf_section2_file, dfs):
     assert t4.DISPOSITION == 1
     assert t4.REC_SUB_CC == 3
 
-    assert t5.GENDER == 2
+    assert t5.SEX == 2
     assert t5.AMOUNT_UNEARNED_INCOME == '0000'
 
 
@@ -878,8 +878,8 @@ def test_parse_tanf_section2_file(tanf_section2_file, dfs):
 
     parse.parse_datafile(tanf_section2_file, dfs)
 
-    assert TANF_T4.objects.all().count() == 206
-    assert TANF_T5.objects.all().count() == 548
+    assert TANF_T4.objects.all().count() == 223
+    assert TANF_T5.objects.all().count() == 605
 
     parser_errors = ParserError.objects.filter(file=tanf_section2_file)
 
@@ -1619,7 +1619,7 @@ def test_parse_t3_cat2_invalid_citizenship(t3_cat2_invalid_citizenship_file, dfs
     assert parser_errors.count() == 2
 
     for e in parser_errors:
-        assert e.error_message == "T3 Item 76 (Citizenship/Immigration Status): 0 is not in [1, 2, 9]."
+        assert e.error_message == "T3 Item 76 (Citizenship/Immigration Status): 0 is not in [1, 2, 3, 9]."
 
 
 @pytest.mark.django_db()

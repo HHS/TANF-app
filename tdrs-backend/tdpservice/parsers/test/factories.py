@@ -178,7 +178,7 @@ class TanfT2Factory(factory.django.DjangoModelFactory):
     RACE_BLACK = 1
     RACE_HAWAIIAN = 1
     RACE_WHITE = 1
-    GENDER = 1
+    SEX = 1
     FED_OASDI_PROGRAM = 1
     FED_DISABILITY_STATUS = 1
     DISABLED_TITLE_XIVAPDT = 1
@@ -257,7 +257,7 @@ class TanfT3Factory(factory.django.DjangoModelFactory):
     RACE_BLACK = 1
     RACE_HAWAIIAN = 1
     RACE_WHITE = 1
-    GENDER = 1
+    SEX = 1
     RECEIVE_NONSSA_BENEFITS = 1
     RECEIVE_SSI = 1
     RELATIONSHIP_HOH = "01"
@@ -310,7 +310,7 @@ class TanfT5Factory(factory.django.DjangoModelFactory):
     RACE_BLACK = 1
     RACE_HAWAIIAN = 1
     RACE_WHITE = 1
-    GENDER = 1
+    SEX = 1
     REC_OASDI_INSURANCE = 1
     REC_FEDERAL_DISABILITY = 1
     REC_AID_TOTALLY_DISABLED = 1
@@ -446,7 +446,7 @@ class TribalTanfT2Factory(factory.django.DjangoModelFactory):
     RACE_BLACK = 1
     RACE_HAWAIIAN = 1
     RACE_WHITE = 1
-    GENDER = 1
+    SEX = 1
     FED_OASDI_PROGRAM = 1
     FED_DISABILITY_STATUS = 1
     DISABLED_TITLE_XIVAPDT = 1
@@ -507,7 +507,7 @@ class TribalTanfT3Factory(factory.django.DjangoModelFactory):
     RACE_BLACK = 1
     RACE_HAWAIIAN = 1
     RACE_WHITE = 1
-    GENDER = 1
+    SEX = 1
     RECEIVE_NONSSA_BENEFITS = 1
     RECEIVE_SSI = 1
     RELATIONSHIP_HOH = "01"
@@ -560,7 +560,7 @@ class TribalTanfT5Factory(factory.django.DjangoModelFactory):
     RACE_BLACK = 1
     RACE_HAWAIIAN = 1
     RACE_WHITE = 1
-    GENDER = 1
+    SEX = 1
     REC_OASDI_INSURANCE = 1
     REC_FEDERAL_DISABILITY = 1
     REC_AID_TOTALLY_DISABLED = 1
@@ -692,7 +692,7 @@ class SSPM2Factory(factory.django.DjangoModelFactory):
     RACE_BLACK = 1
     RACE_HAWAIIAN = 1
     RACE_WHITE = 1
-    GENDER = 1
+    SEX = 1
     FED_OASDI_PROGRAM = 1
     FED_DISABILITY_STATUS = 1
     DISABLED_TITLE_XIVAPDT = 1
@@ -768,7 +768,7 @@ class SSPM3Factory(factory.django.DjangoModelFactory):
     RACE_BLACK = 1
     RACE_HAWAIIAN = 1
     RACE_WHITE = 1
-    GENDER = 1
+    SEX = 1
     RECEIVE_NONSSI_BENEFITS = 1
     RECEIVE_SSI = 1
     RELATIONSHIP_HOH = "01"
@@ -821,7 +821,7 @@ class SSPM5Factory(factory.django.DjangoModelFactory):
     RACE_BLACK = 1
     RACE_HAWAIIAN = 1
     RACE_WHITE = 1
-    GENDER = 1
+    SEX = 1
     REC_OASDI_INSURANCE = 1
     REC_FEDERAL_DISABILITY = 1
     REC_AID_TOTALLY_DISABLED = 1

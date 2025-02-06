@@ -92,8 +92,6 @@ class ReparseMeta(models.Model):
         This function assumes the meta_model has been passed in a distributed/thread safe way. If the database row
         containing this model has not been locked the caller will experience race issues.
         """
-        print("\n\nINSIDE FILE COUNTS MATCH:")
-        print(f"{meta_model.num_files }, {meta_model.num_files_completed}, {meta_model.num_files_failed}\n\n")
         return (meta_model.num_files_completed == meta_model.num_files or
                 meta_model.num_files_completed + meta_model.num_files_failed ==
                 meta_model.num_files or meta_model.num_files_failed == meta_model.num_files)
