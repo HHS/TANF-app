@@ -596,6 +596,7 @@ const FRAReports = () => {
       uploadFraReport(
         {
           ...searchFormValues,
+          reportType: getReportTypeLabel(),
           file: selectedFile,
           user,
         },
