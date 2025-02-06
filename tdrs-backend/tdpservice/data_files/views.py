@@ -54,6 +54,7 @@ class DataFileViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         """Override create to upload in case of successful scan."""
         logger.debug(f"{self.__class__.__name__}: {request}")
+
         response = super().create(request, *args, **kwargs)
 
         # only if file is passed the virus scan and created successfully will we perform side-effects:
@@ -68,6 +69,10 @@ class DataFileViewSet(ModelViewSet):
             logger.info(f"Preparing parse task: User META -> user: {request.user}, stt: {data_file.stt}. " +
                         f"Datafile META -> datafile: {data_file_id}, section: {data_file.section}, " +
                         f"quarter {data_file.quarter}, year {data_file.year}.")
+
+            if data_file.prog_type == 'FRA':
+                logger.debug(f"{self.__class__.__name__}: return val: {response}")
+                return response
 
             parser_task.parse.delay(data_file_id)
             logger.info("Submitted parse task to queue for datafile %s.", data_file_id)
