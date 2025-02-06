@@ -2,7 +2,7 @@
 
 **Audience**: TDP Software Engineers <br>
 **Subject**:  Refactor Functional Parsing to Class Based Parsing <br>
-**Date**:     February 4, 2025 <br>
+**Date**:     February 6, 2025 <br>
 
 ## Summary
 This technical memorandum provides a set of suggestions to refactor the structure of the parsing engine from a functional approach to a class based approach. The introduction of the FRA report type/datafiles illuminates the parsing engine's deep coupling to current datafiles structure and the engine's low conformance to SOLID principles which prevent it from being generic, easily extensible, and readable. While generic, extensible, and readable code can be achieved in a functional design, this technical memorandum argues that a class based approach will be even more so. The #method/design section provides the suggested class templates to shift the parser to a class based structure that will support the parsing of any datafile type needed, while keeping the same general interface, usage patterns as the current functional approach, and more strictly adhering to SOLID principles.
@@ -13,9 +13,9 @@ The concrete code implementation for the `FRAParser` is out of scope for this te
 ## Method/Design
 
 ### Revisiting SchemaManager
-In the early days of the parsing engine, the implementation of the `SchemaManager` class was introduced to help keep the "parse and validate" interface of a `record` in a file consistent. The extra abstraction was introduced because certain record types in TANF/SSP/Tribal datafiles required more than one `RowSchema` to parse and validate them, e.g T3 records. The `SchemaManager` is a thin wrapper around one or more `RowSchema`s which calls each of those schema's `parse_and_validate` method on the record. This general parsing functionality is still desirable, however, the way in which the parsing engine constructs and makes use of the `SchemaManager` is wasteful at best. For each record in a datafile, the parsing engine gets a pre constructed instance of a `SchemaManager` via `get_schema_manager`. Because this manager object is already initialized it has to be back-populated with other information about the file, line, and record type so that it can successfully parse the line into a record.
+In the early days of the parsing engine, the implementation of the `SchemaManager` class was introduced to help keep the "parse and validate" method consistent across all `RowSchema`s. The extra abstraction was introduced because certain record types in TANF/SSP/Tribal datafiles required more than one `RowSchema` to parse and validate them, e.g T3 records. The `SchemaManager` is a thin wrapper around one or more `RowSchema`s which calls each of those schema's `parse_and_validate` method on the raw row. This general parsing functionality is still desirable, however, the way in which the parsing engine constructs and makes use of the `SchemaManager` is wasteful at best. For each record in a datafile, the parsing engine gets a pre constructed instance of a `SchemaManager` via `get_schema_manager`. Because this manager object is already initialized it has to be back-populated with other information about the file, raw row, and record type so that it can successfully parse the raw row into a record.
 
-To unify the interface of the `SchemaManager` and make it more capable it should be updated to support a larger context with respect to the file it is helping to parse. Because we know the program type and section of any datafile before parsing begins, the `SchemaManager` can be initialized once at the beginning of parsing and should contain a reference to all possible schemas associated to the datafile and not just the schema(s) associated to an individual line/record in a datafile. The code below provides a general template for the updated `SchemaManager` based on the recommended changes in the following sections which will leverage this class.
+To unify the interface of the `SchemaManager` and make it more capable it should be updated to support a larger context with respect to the file it is helping to parse. Because we know the program type and section of any datafile before parsing begins, the `SchemaManager` can be initialized once at the beginning of parsing and should contain a reference to all possible schemas associated to the datafile and not just the schema(s) associated to an individual record. The code below provides a general template for the updated `SchemaManager` based on the recommended changes in the following sections which will leverage this class.
 
 ```python
 class SchemaManager:
@@ -26,33 +26,56 @@ class SchemaManager:
         self.program_type = program_type
         self.section = section
         self.schemas = dict() # e.g. {record type: RowSchema}
+        self._init_schemas()
 
     def _init_schemas(self):
         """Initialize the schemas associated to the file."""
         # This method should take program type and section, get the correct RowSchemas initialized, and associate them with datafile.
         pass
 
-    def parse_and_validate(self, line, generate_error):
+    def parse_and_validate(self, raw_row, generate_error):
         """Run `parse_and_validate` for each schema provided and bubble up errors."""
-        # Given the line, get the record type and the appropriate schemas and call parse_and_validate
+        # Given the raw_row, get the record type and the appropriate schemas and call parse_and_validate
         pass
 
     def update_encrypted_fields(self, is_encrypted):
         """Update whether schema fields are encrypted or not."""
-        # This should be called at the begining of parsing after the header has been parsed and we have access to is_encrypted
+        # This should be called at the begining of parsing after the header has been parsed and we have access to is_encrypted for TANF/SSP/Tribal
         pass
 ```
 
 ## Handling Different File Types
 The introduction of the FRA datafile introduces the need for the parsing engine to support different file types; e.g. .csv, .xlsx, .txt, etc... To support this capability, this technical memorandum will make the assumption that any files that will need to be parsed by the parsing engine will have two characteristics. Firstly, the data from the raw file (however it is encoded) can be read row by row. Second, the data for any record in the file does NOT span more than a single row.
 
-The parsing engine currently makes the assumptions that all files are UTF-8 encoded and delimited based on indexes. This has been a good assumption for a long time. However, that assumption no longer holds with the introduction of .csv and .xlsx files which break one or both assumptions. Thus, the introduction of a file decoding interface is required to seamlessly iterate over each row in a file and pass that decoded row to the appropriate schema for validation and parsing. The reader will note that it is the responsibility of the `RowSchema` and `Field` classes to handle a record's delimiters. The class template below provides an example of what the minimal interface for a decoder and two concrete decoders could look like. The interface makes use of the `ABC` standard library to help Python conform to more strict OOP standards.
+The parsing engine currently makes the assumptions that all files are UTF-8 encoded and delimited in some way (indexes currently). This has been a good assumption for a long time. However, that assumption is no longer generic enough with the introduction of .csv and .xlsx files. Thus, the introduction of an abstract file decoding interface is required to seamlessly iterate over each row in a raw file and pass that decoded raw row to the appropriate schema for validation and parsing.
+
+Now, the issue with a raw row after it has been decoded is that it may or may not be delimited. However, if we consider that the data in a raw row is positional instead of delimited, a standard output with well defined behaviors can be implemented for all decoders regardless of the raw data's encoding. This can be achieved because we know the data is, at it's most generic level, tabular; i.e. the data can be defined in rows, columns, and positions within a row. We know this to be true because of the assumptions made above. Defining a standard output from the decoder will make the `RowSchema` and `Field` class interfaces and parsing logic much simpler than if they were expected to handle the true raw output of a decoded row. Thus, the code block below introduces some suggested class templates to adhere to the above recommendations.
 
 ```python
-"""Base decoder logic associated to all decoder classes."""
+"""Decoder and utility classes."""
 
 from abc import ABC, abstractmethod
+import csv
+from dataclasses import dataclass
 from openpyxl import load_workbook
+from typing import Iterable
+
+@dataclass
+class Position:
+    start: int
+    end: int | None = None
+
+    def __init__(self, start: int, end: int = None):
+        self.start = start
+        self.end = end if end is not None else start + 1
+
+@dataclass
+class RawRow:
+    raw_data: Iterable
+    row_num: int
+
+    def value_at(self, position: Position):
+        return self.raw_data[position.start:position.end]
 
 class BaseDecoder(ABC):
     """Abstract base class for all decoders."""
@@ -60,9 +83,10 @@ class BaseDecoder(ABC):
     def __init__(self, raw_file):
         super().__init__()
         self.raw_file = raw_file
+        self.current_row = 0
 
     @abstractmethod
-    def decode(self):
+    def decode(self) -> RawRow:
         """To be implemented in child class."""
         pass
 
@@ -73,7 +97,22 @@ class Utf8Decoder(BaseDecoder):
     def decode(self):
         """Decode and yield each row."""
         for row in self.raw_file:
-            yield row.decode().strip('\r\n')
+            yield RawRow(raw_data=row.decode().strip('\r\n'), row_num=self.current_row)
+            self.current_row += 1
+
+
+class CsvDecoder(BaseDecoder):
+    """Decoder for csv files."""
+
+    def __init__(self, raw_file):
+        super().__init__(raw_file)
+        self.csv_file = csv.reader(raw_file)
+
+    def decode(self):
+        """Decode and yield each row."""
+        for row in self.csv_file:
+            yield RawRow(raw_data=row, row_num=self.current_row)
+            self.current_row += 1
 
 
 class XlsxDecoder(BaseDecoder):
@@ -86,10 +125,40 @@ class XlsxDecoder(BaseDecoder):
     def decode(self):
         """Decode and yield each row."""
         for row in self.work_book.active.iter_rows(values_only=True):
-            yield row
+            yield RawRow(raw_data=row, row_num=self.current_row)
+            self.current_row += 1
 ```
 
-The minimal implementations above are very simple technically but provide the abstraction, interface, and ease of use required to handle reading different file types row by row in different parsers.
+The minimal implementations above are very simple technically but provide the abstraction, interface, and ease of use desired while also allowing for further expansion so long as their interface doesn't change. The `RawRow` from the decoder's `decode` method can then be fed to the `RowSchema` and `Field` which will let the developer standardize the interface of their `parse_and_validate` methods. Each `Field` will then be able to know it's `Position`, call the `value_at` method of the `RawRow` and get it's value. Similarly to the parser classes in the following sections, it is suggested to implement a decoder factory class to abstract the decision away from the caller on what is the correct decoder. This factory can then determine the correct decoder based on the encoding and type of the file. The check to do so could be as simple as a file extension check... Or, a more appropriate and dependable method to confirm the file encoding would be to use a combination of libraries. To detect the encoding of a binary file this memo recommends [puremagic](https://pypi.org/project/puremagic/). Puremagic uses a file's "magic numbers" to determine the files encoding and is a pure Python library with no dependencies. However, if the file is not binary we want to ensure that it is UTF-8 encoded. To handle that, this memo recommends making use of the pure Python library [chardet](https://pypi.org/project/chardet/). The template below outlines such a factory class.
+
+```python
+import chardet
+import puremagic
+from puremagic import PureError
+
+class DecoderFactory:
+    """Factory class to get/instantiate parsers."""
+
+    @classmethod
+    def get_suggested_decoder(raw_file):
+        # use puremagic and chardet to determine the correct decoder. This should probably return an enum
+        return info
+
+    @classmethod
+    def get_instance(cls, raw_file):
+        """Return the correct parser class to be constructed manually."""
+        decoder = cls.get_suggested_decoder(raw_file)
+        match decoder:
+            case "UTF8":
+                return Utf8Decoder(raw_file)
+            case "CSV":
+                return CsvDecoder(raw_file)
+            case "XLSX":
+                return XlsxDecoder(raw_file)
+            case _:
+                raise ValueError(f"No decoder available for the file.")
+
+```
 
 ## Parsing Interface & Concrete Classes
 Transferring the functional parsing design to a class based design requires defining an interface class which will define the expected behavior of all parser subclasses. Similarly to the decoder interface, the parser class hierarchy should be kept as generic, extensible, and as readable as possible by conforming to SOLID principles. The class interface below provides a suggested template to produce a SOLID interface for other parsers to subclass.
@@ -100,6 +169,7 @@ Transferring the functional parsing design to a class based design requires defi
 from abc import ABC, abstractmethod
 from tdpservice.parsers.row_schema import SchemaManager
 from tdpservice.parsers.util import SortedRecords
+import DecoderFactory
 
 class BaseParser(ABC):
     """Abstract base class for all parsers."""
@@ -116,8 +186,8 @@ class BaseParser(ABC):
         # program type, then it can instantiate all of the correct row schemas and parse more explicitely.
         self.schema_manager = SchemaManager(datafile, program_type, section)
 
-        # Initialized in child classes since they know how their file is encoded.
-        self.decoder = None
+        # Initialized decoder.
+        self.decoder = DecoderFactory.get_instance(datafile.file)
 
         self.current_line = ""
         self.current_line_num = 0
@@ -133,11 +203,6 @@ class BaseParser(ABC):
     def parse_and_validate(self):
         """To be overriden in child class."""
         # Should have the same return as parse.py::parse_datafile
-        pass
-
-    @abstractmethod
-    def _init_schema_manager(self):
-        """To be overridden in child class."""
         pass
 
     def bulk_create_records(self, header_count, flush=False):
@@ -179,7 +244,6 @@ class TanfSspTribalParser(BaseParser):
         self.case_consistency_validator = None
         self.trailer_count = 0
         self.multiple_trailer_errors = False
-        self.decoder = Utf8Decoder(datafile.file)
         self._init_schema_manager()
 
     def parse_and_validate(self):
@@ -189,10 +253,6 @@ class TanfSspTribalParser(BaseParser):
 
         # Move a lot of code from parse.py::parse_datafile_lines here to complete parsing.
         return self.errors
-
-    def _init_schema_manager(self):
-        """Init schema manager with appropriate schemas given section and program type."""
-        pass
 
     def _validate_header(self):
         """Validate header and header fields."""
@@ -225,34 +285,24 @@ FRA
 """FRA parser class."""
 
 from tdpservice.parsers.parsers.base import BaseParser
-from tdpservice.parsers.decoders import Utf8Decoder, XlsxDecoder
+from tdpservice.parsers.decoders import CsvDecoder, XlsxDecoder
 
 class FRAParser(BaseParser):
     """Parser for FRA datafiles."""
 
     def __init__(self, datafile, dfs, section, program_type):
         super().__init__(datafile, dfs, section, program_type)
-        # FRA files will either be a csv or an xlsx. Determine the appropriate decoder based on the file type
-        if datafile.file is XLSX_FILE:
-            self.decoder = XlsxDecoder(datafile.file)
-        else:
-            self.decoder = Utf8Decoder(datafile.file)
-        self._init_schema_manager()
 
     def parse_and_validate(self):
         """Parse and validate the datafile."""
         # Stub for FRA specific parsing logic.
         return self.errors
 
-    def _init_schema_manager(self):
-        """Init schema manager with appropriate schemas given section and program type."""
-        pass
-
 ```
 
 Looking at the TANF/SSP/Tribal implementation you'll notice that the remaining functions from `parse.py` that were not included in `BaseParser` now live in the concrete class. You should also note that the functions that moved into the concrete TANF/SSP/Tribal class would be implemented in almost the exact same way as they currently are in `parse.py`.
 
-The FRA concrete parser will have to assess whether the file it is parsing is a .csv or a .xlsx. The check to do so could be as simple as a file extension check... Or, a more appropriate and dependable method to confirm the file type would be to use a library such as [puremagic](https://pypi.org/project/puremagic/). Puremagic uses a file's "magic numbers" to determine the files encoding and is a pure Python library with no dependencies. The rest of the parsing logic for FRA files will be predicated on the implementation of FRA specific `RowSchema`s and `Field`s. As long as `RowSchema` and `Field` keep the same interface, the `parse_and_validate` method will be very similar to `TanfSspTribalParser::parse_and_validate`.
+The parsing logic for FRA files will be predicated on the implementation of FRA specific `RowSchema`s and `Field`s. As long as `RowSchema` and `Field` classes keep the same interface, the `parse_and_validate` method will be very similar to `TanfSspTribalParser::parse_and_validate`.
 
 ## Parser Factory & Parsing
 To tie everything up, it would be nice to have a class that we could use to get the correct parser based on a datafile's metadata. That is exactly what the factory method was created for and is what this technical memorandum suggests the implementer uses. The factory should then be leveraged inside of the `parser_task.py` file to parse and validate the incoming file. The template below provides the suggested implementation for the parser factory class and the following code block indicates how the current parsing logic can be directly swapped for the suggested class based parsers this memo has laid out.
