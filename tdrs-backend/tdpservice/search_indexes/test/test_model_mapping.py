@@ -104,7 +104,7 @@ def test_can_create_and_index_tanf_t2_submission(test_datafile):
     submission.RACE_BLACK = 1
     submission.RACE_HAWAIIAN = 1
     submission.RACE_WHITE = 1
-    submission.GENDER = 1
+    submission.SEX = 1
     submission.FED_OASDI_PROGRAM = 1
     submission.FED_DISABILITY_STATUS = 1
     submission.DISABLED_TITLE_XIVAPDT = "1"
@@ -193,7 +193,7 @@ def test_can_create_and_index_tanf_t3_submission(test_datafile):
     submission.RACE_BLACK = 1
     submission.RACE_HAWAIIAN = 1
     submission.RACE_WHITE = 1
-    submission.GENDER = 1
+    submission.SEX = 1
     submission.RECEIVE_NONSSA_BENEFITS = 1
     submission.RECEIVE_SSI = 1
     submission.RELATIONSHIP_HOH = "01"
@@ -268,7 +268,7 @@ def test_can_create_and_index_tanf_t5_submission(test_datafile):
     submission.RACE_BLACK = 1
     submission.RACE_HAWAIIAN = 1
     submission.RACE_WHITE = 1
-    submission.GENDER = 1
+    submission.SEX = 1
     submission.REC_OASDI_INSURANCE = 1
     submission.REC_FEDERAL_DISABILITY = 1
     submission.REC_AID_TOTALLY_DISABLED = 1
@@ -467,7 +467,7 @@ def test_can_create_and_index_ssp_m2_submission():
         RACE_BLACK=1,
         RACE_HAWAIIAN=1,
         RACE_WHITE=1,
-        GENDER=1,
+        SEX=1,
         FED_OASDI_PROGRAM=1,
         FED_DISABILITY_STATUS=1,
         DISABLED_TITLE_XIVAPDT=1,
@@ -556,7 +556,7 @@ def test_can_create_and_index_ssp_m3_submission():
         RACE_BLACK=1,
         RACE_HAWAIIAN=1,
         RACE_WHITE=1,
-        GENDER=1,
+        SEX=1,
         RECEIVE_NONSSI_BENEFITS=1,
         RECEIVE_SSI=1,
         RELATIONSHIP_HOH="01",
@@ -630,7 +630,7 @@ def test_can_create_and_index_ssp_m5_submission():
         RACE_BLACK=1,
         RACE_HAWAIIAN=1,
         RACE_WHITE=1,
-        GENDER=1,
+        SEX=1,
         REC_OASDI_INSURANCE=1,
         REC_FEDERAL_DISABILITY=1,
         REC_AID_TOTALLY_DISABLED=1,
@@ -810,7 +810,7 @@ def test_can_create_and_index_tribal_tanf_t2_submission(test_datafile):
     submission.RACE_BLACK = 1
     submission.RACE_HAWAIIAN = 1
     submission.RACE_WHITE = 1
-    submission.GENDER = 1
+    submission.SEX = 1
     submission.FED_OASDI_PROGRAM = 1
     submission.FED_DISABILITY_STATUS = 1
     submission.DISABLED_TITLE_XIVAPDT = "01"
@@ -881,7 +881,7 @@ def test_can_create_and_index_tribal_tanf_t3_submission(test_datafile):
     submission.RACE_BLACK = 1
     submission.RACE_HAWAIIAN = 1
     submission.RACE_WHITE = 1
-    submission.GENDER = 1
+    submission.SEX = 1
     submission.RECEIVE_NONSSA_BENEFITS = 1
     submission.RECEIVE_SSI = 1
     submission.RELATIONSHIP_HOH = "01"
@@ -955,7 +955,7 @@ def test_can_create_and_index_tribal_tanf_t5_submission(test_datafile):
     submission.RACE_BLACK = 1
     submission.RACE_HAWAIIAN = 1
     submission.RACE_WHITE = 1
-    submission.GENDER = 1
+    submission.SEX = 1
     submission.REC_OASDI_INSURANCE = 1
     submission.REC_FEDERAL_DISABILITY = 1
     submission.REC_AID_TOTALLY_DISABLED = 1
