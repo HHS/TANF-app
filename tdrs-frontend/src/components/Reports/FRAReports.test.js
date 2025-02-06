@@ -312,7 +312,7 @@ describe('FRA Reports Page', () => {
       await waitFor(() =>
         expect(
           getByText(
-            `Successfully submitted section(s): Work Outcomes for TANF Exiters on ${new Date().toDateString()}`
+            `Successfully submitted section: Work Outcomes for TANF Exiters on ${new Date().toDateString()}`
           )
         ).toBeInTheDocument()
       )
