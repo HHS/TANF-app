@@ -300,7 +300,7 @@ class FRAParser(BaseParser):
 
 ```
 
-Looking at the TANF/SSP/Tribal implementation you'll notice that the remaining functions from `parse.py` that were not included in `BaseParser` now live in the concrete class. You should also note that the functions that moved into the concrete TANF/SSP/Tribal class would be implemented in almost the exact same way as they currently are in `parse.py`.
+Looking at the TANF/SSP/Tribal implementation you'll notice that the remaining functions from `parse.py` that were not included in `BaseParser` now live in the concrete class. You should also note that the functions that moved into the concrete TANF/SSP/Tribal class would be implemented in almost the exact same way as they currently are in `parse.py`. Note, the implementer may choose further separate out the concrete class into a `TanfParser`, `SspParser`, and `TribalParser` if that becomes more readable or specific logic can be moved to the separate classes.
 
 The parsing logic for FRA files will be predicated on the implementation of FRA specific `RowSchema`s and `Field`s. As long as `RowSchema` and `Field` classes keep the same interface, the `parse_and_validate` method will be very similar to `TanfSspTribalParser::parse_and_validate`.
 
