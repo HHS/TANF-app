@@ -259,8 +259,9 @@ const UploadForm = ({
   file,
   setSelectedFile,
   section,
+  error,
+  setError,
 }) => {
-  const [error, setError] = useState(null)
   // const [selectedFile, setSelectedFile] = useState(file || null)
   // const [file, setFile] = useState(null)
   const inputRef = useRef(null)
@@ -325,7 +326,7 @@ const UploadForm = ({
   const onSubmit = (e) => {
     e.preventDefault()
 
-    if (!!error) {
+    if (!!error || !file) {
       return
     }
 
@@ -422,6 +423,7 @@ const FRAReports = () => {
   const [isUploadReportToggled, setUploadReportToggled] = useState(false)
   const [errorModalVisible, setErrorModalVisible] = useState(false)
   const [searchFormValues, setSearchFormValues] = useState(null)
+  const [uploadError, setUploadError] = useState(null)
 
   const user = useSelector((state) => state.auth.user)
   const sttList = useSelector((state) => state?.stts?.sttList)
@@ -579,7 +581,7 @@ const FRAReports = () => {
       setLocalAlertState({
         active: true,
         type: 'success',
-        message: `Successfully submitted section(s): ${getReportTypeLabel()} on ${new Date().toDateString()}`,
+        message: `Successfully submitted section: ${getReportTypeLabel()} on ${new Date().toDateString()}`,
       })
     }
 
@@ -676,11 +678,18 @@ const FRAReports = () => {
           )}
           <UploadForm
             handleUpload={handleUpload}
+            handleCancel={() => {
+              setSelectedFile(null)
+              setUploadError(null)
+              setUploadReportToggled(false)
+            }}
             localAlert={localAlert}
             setLocalAlertState={setLocalAlertState}
             file={selectedFile}
             setSelectedFile={setSelectedFile}
             section={getReportTypeLabel()}
+            error={uploadError}
+            setError={setUploadError}
           />
           <SubmissionHistory />
         </>
@@ -705,6 +714,7 @@ const FRAReports = () => {
             onClick: (e) => {
               setErrorModalVisible(false)
               setSelectedFile(null)
+              setUploadError(null)
               handleSearch(e, true)
             },
           },
