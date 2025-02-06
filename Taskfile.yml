@@ -106,7 +106,7 @@ tasks:
     desc: Open a shell in the backend container
     dir: tdrs-backend
     cmds:
-      - docker compose -f docker-compose.yml exec web sh
+      - docker compose -f docker-compose.yml exec web bash
 
   backend-shell:
     desc: Open a Django shell in the backend container
@@ -240,6 +240,17 @@ tasks:
     cmds:
       - docker-compose -f docker-compose.local.yml up --build tdp-frontend-test -d
       - npm run test:e2e
+
+  k6:
+    desc: Run k6 performance tests
+    dir: performance-tests
+    vars:
+      SCRIPT: '{{.SCRIPT}}'
+      CYPRESS_TOKEN: '{{.CYPRESS_TOKEN | default "local-cypress-token"}}'
+      BASE_URL: '{{.BASE_URL | default "http://localhost:3000"}}'
+      SCENARIO: '{{.SCENARIO}}'
+    cmds:
+      - k6 run -e BASE_URL={{.BASE_URL}} -e CYPRESS_TOKEN={{.CYPRESS_TOKEN}} -e SCENARIO={{.SCENARIO}} {{.SCRIPT}}
 
 
   frontend-lint:

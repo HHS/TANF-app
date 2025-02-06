@@ -132,7 +132,7 @@ function SplashPage() {
           </div>
         </div>
       </section>
-      <div class="grid-container-widescreen">
+      <div className="grid-container-widescreen">
         <ResourceCards />
       </div>
     </>

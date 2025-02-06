@@ -91,13 +91,13 @@ child_one = RowSchema(
             condition_field_name="FAMILY_AFFILIATION",
             condition_function=category3.isEqual(1),
             result_field_name="CITIZENSHIP_STATUS",
-            result_function=category3.isOneOf((1, 2)),
+            result_function=category3.isOneOf((1, 2, 3)),
         ),
         category3.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
             condition_function=category3.isEqual(2),
             result_field_name="CITIZENSHIP_STATUS",
-            result_function=category3.isOneOf((1, 2, 9)),
+            result_function=category3.isOneOf((1, 2, 3, 9)),
         ),
     ],
     fields=[
@@ -229,8 +229,8 @@ child_one = RowSchema(
         ),
         Field(
             item="71",
-            name="GENDER",
-            friendly_name="Gender",
+            name="SEX",
+            friendly_name="Sex",
             type="number",
             startIndex=43,
             endIndex=44,
@@ -300,7 +300,7 @@ child_one = RowSchema(
             startIndex=51,
             endIndex=52,
             required=False,
-            validators=[category2.isOneOf([1, 2, 9])],
+            validators=[category2.isOneOf([1, 2, 3, 9])],
         ),
         Field(
             item="77A",
@@ -407,13 +407,13 @@ child_two = RowSchema(
             condition_field_name="FAMILY_AFFILIATION",
             condition_function=category3.isEqual(1),
             result_field_name="CITIZENSHIP_STATUS",
-            result_function=category3.isOneOf((1, 2)),
+            result_function=category3.isOneOf((1, 2, 3)),
         ),
         category3.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
             condition_function=category3.isEqual(2),
             result_field_name="CITIZENSHIP_STATUS",
-            result_function=category3.isOneOf((1, 2, 9)),
+            result_function=category3.isOneOf((1, 2, 3, 9)),
         ),
     ],
     fields=[
@@ -545,8 +545,8 @@ child_two = RowSchema(
         ),
         Field(
             item="71",
-            name="GENDER",
-            friendly_name="Gender",
+            name="SEX",
+            friendly_name="Sex",
             type="number",
             startIndex=84,
             endIndex=85,
@@ -616,7 +616,7 @@ child_two = RowSchema(
             startIndex=92,
             endIndex=93,
             required=False,
-            validators=[category2.isOneOf([1, 2, 9])],
+            validators=[category2.isOneOf([1, 2, 3, 9])],
         ),
         Field(
             item="77A",

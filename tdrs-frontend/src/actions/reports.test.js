@@ -1,5 +1,5 @@
 import axios from 'axios'
-import thunk from 'redux-thunk'
+import { thunk } from 'redux-thunk'
 import configureStore from 'redux-mock-store'
 import { v4 as uuidv4 } from 'uuid'
 
