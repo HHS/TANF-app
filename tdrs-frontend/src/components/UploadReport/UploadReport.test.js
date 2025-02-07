@@ -2,7 +2,7 @@ import React from 'react'
 import { thunk } from 'redux-thunk'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
-import { fireEvent, render } from '@testing-library/react'
+import { fireEvent, render, waitFor } from '@testing-library/react'
 import axios from 'axios'
 
 import { v4 as uuidv4 } from 'uuid'
@@ -59,12 +59,12 @@ describe('UploadReport', () => {
     expect(inputs.length).toEqual(4)
   })
 
-  it('should dispatch the `clearError` and `upload` actions when submit button is clicked', () => {
+  it('should dispatch the `clearError` and `upload` actions when submit button is clicked', async () => {
     const store = mockStore(initialState)
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
-    const { getByLabelText, container } = render(
+    const { getByLabelText, getByText, container } = render(
       <Provider store={store}>
         <UploadReport handleCancel={handleCancel} header="Some header" />
       </Provider>
@@ -74,21 +74,24 @@ describe('UploadReport', () => {
 
     const newFile = new File(['test'], 'test.txt', { type: 'text/plain' })
 
-    fireEvent.change(fileInput, {
-      target: {
-        files: [newFile],
-      },
+    await waitFor(() => {
+      fireEvent.change(fileInput, {
+        target: {
+          files: [newFile],
+        },
+      })
     })
 
-    expect(store.dispatch).toHaveBeenCalledTimes(2)
+    await waitFor(() => expect(getByText('test.txt')).toBeInTheDocument())
+    expect(store.dispatch).toHaveBeenCalledTimes(3)
     expect(container.querySelectorAll('.has-invalid-file').length).toBe(0)
   })
-  it('should prevent upload of file with invalid extension', () => {
+  it('should prevent upload of file with invalid extension', async () => {
     const store = mockStore(initialState)
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
-    const { getByLabelText, container } = render(
+    const { getByLabelText, getByText, container } = render(
       <Provider store={store}>
         <UploadReport handleCancel={handleCancel} header="Some header" />
       </Provider>
@@ -101,13 +104,16 @@ describe('UploadReport', () => {
     })
 
     expect(container.querySelectorAll('.has-invalid-file').length).toBe(0)
-    fireEvent.change(fileInput, {
-      target: {
-        files: [newFile],
-      },
+    await waitFor(() => {
+      fireEvent.change(fileInput, {
+        target: {
+          files: [newFile],
+        },
+      })
     })
 
-    expect(store.dispatch).toHaveBeenCalledTimes(2)
+    await waitFor(() => expect(getByText('test.html')).toBeInTheDocument())
+    expect(store.dispatch).toHaveBeenCalledTimes(4)
     expect(container.querySelectorAll('.has-invalid-file').length).toBe(0)
   })
 
@@ -223,13 +229,13 @@ describe('UploadReport', () => {
     expect(formGroup.classList.contains('usa-form-group--error')).toBeFalsy()
   })
 
-  it('should clear input value if there is an error', () => {
+  it('should clear input value if there is an error', async () => {
     const store = mockStore(initialState)
     axios.post.mockImplementationOnce(() =>
       Promise.resolve({ data: { id: 1 } })
     )
 
-    const { getByLabelText } = render(
+    const { getByLabelText, getByText } = render(
       <Provider store={store}>
         <UploadReport handleCancel={handleCancel} header="Some header" />
       </Provider>
@@ -240,13 +246,16 @@ describe('UploadReport', () => {
     const newFile = new File(['test'], 'test.txt', { type: 'text/plain' })
     const fileList = [newFile]
 
-    fireEvent.change(fileInput, {
-      target: {
-        name: 'Active Case Data',
-        files: fileList,
-      },
+    await waitFor(() => {
+      fireEvent.change(fileInput, {
+        target: {
+          name: 'Active Case Data',
+          files: fileList,
+        },
+      })
     })
 
+    await waitFor(() => expect(getByText('test.txt')).toBeInTheDocument())
     expect(fileInput.value).toStrictEqual('')
   })
 })
