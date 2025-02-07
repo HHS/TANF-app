@@ -6,7 +6,7 @@ import fileTypeChecker from 'file-type-checker'
 
 import Button from '../Button'
 import STTComboBox from '../STTComboBox'
-import { quarters, constructYearOptions } from './utils'
+import { quarters, constructYearOptions, constructYears } from './utils'
 import { accountCanSelectStt } from '../../selectors/auth'
 import { handlePreview } from '../FileUpload/utils'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
@@ -17,6 +17,7 @@ import {
   uploadFraReport,
 } from '../../actions/fraReports'
 import { fetchSttList } from '../../actions/sttList'
+import { DropdownSelect, RadioSelect } from '../Form'
 
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
@@ -36,26 +37,14 @@ const SelectSTT = ({ valid, value, setValue }) => (
 
 const SelectReportType = ({ valid, value, setValue, options }) => (
   <div className="usa-form-group margin-top-4">
-    <fieldset className="usa-fieldset">
-      <legend className="usa-label text-bold">File Type</legend>
-
-      {options.map(({ label, value }, index) => (
-        <div className="usa-radio">
-          <input
-            className="usa-radio__input"
-            id={value}
-            type="radio"
-            name="reportType"
-            value={value}
-            defaultChecked={index === 0}
-            onChange={() => setValue(value)}
-          />
-          <label className="usa-radio__label" htmlFor={value}>
-            {label}
-          </label>
-        </div>
-      ))}
-    </fieldset>
+    <RadioSelect
+      valid={valid}
+      value={value}
+      label="File Type"
+      fieldName="reportType"
+      options={options}
+      setValue={setValue}
+    />
   </div>
 )
 
@@ -65,33 +54,24 @@ const SelectFiscalYear = ({ valid, value, setValue }) => (
       'usa-form-group--error': !valid,
     })}
   >
-    <label
-      className="usa-label text-bold margin-top-4"
-      htmlFor="reportingYears"
-    >
-      Fiscal Year (October - September)
-      {!valid && (
-        <div className="usa-error-message" id="years-error-alert">
-          A fiscal year is required
-        </div>
-      )}
-      {/* eslint-disable-next-line */}
-              <select
-        className={classNames('usa-select maxw-mobile', {
-          'usa-combo-box__input--error': !valid,
-        })}
-        name="reportingYears"
-        id="reportingYears"
-        onChange={(e) => setValue(e.target.value)}
-        value={value}
-        aria-describedby="years-error-alert"
-      >
-        <option value="" disabled hidden>
-          - Select Fiscal Year -
-        </option>
-        {constructYearOptions()}
-      </select>
-    </label>
+    <DropdownSelect
+      label="Fiscal Year (October - September)"
+      fieldName="reportingYears"
+      value={value}
+      setValue={setValue}
+      valid={valid}
+      errorText="A fiscal year is required"
+      options={[
+        {
+          label: '- Select Fiscal Year -',
+          value: '',
+        },
+        ...constructYears().map((year) => ({
+          label: year,
+          value: year,
+        })),
+      ]}
+    />
   </div>
 )
 
@@ -101,34 +81,24 @@ const SelectQuarter = ({ valid, value, setValue }) => (
       'usa-form-group--error': !valid,
     })}
   >
-    <label className="usa-label text-bold margin-top-4" htmlFor="quarter">
-      Quarter
-      {!valid && (
-        <div className="usa-error-message" id="quarter-error-alert">
-          A quarter is required
-        </div>
-      )}
-      {/* eslint-disable-next-line */}
-              <select
-        className={classNames('usa-select maxw-mobile', {
-          'usa-combo-box__input--error': !valid,
-        })}
-        name="quarter"
-        id="quarter"
-        onChange={(e) => setValue(e.target.value)}
-        value={value}
-        aria-describedby="quarter-error-alert"
-      >
-        <option value="" disabled hidden>
-          - Select Quarter -
-        </option>
-        {Object.entries(quarters).map(([quarter, quarterDescription]) => (
-          <option value={quarter} key={quarter}>
-            {quarterDescription}
-          </option>
-        ))}
-      </select>
-    </label>
+    <DropdownSelect
+      label="Quarter"
+      fieldName="quarter"
+      value={value}
+      setValue={setValue}
+      valid={valid}
+      errorText="A quarter is required"
+      options={[
+        {
+          label: '- Select Quarter -',
+          value: '',
+        },
+        ...Object.entries(quarters).map(([quarter, quarterDescription]) => ({
+          label: quarterDescription,
+          value: quarter,
+        })),
+      ]}
+    />
   </div>
 )
 
