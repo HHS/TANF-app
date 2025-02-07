@@ -6,7 +6,7 @@ import fileTypeChecker from 'file-type-checker'
 
 import Button from '../Button'
 import STTComboBox from '../STTComboBox'
-import { quarters, constructYearOptions, constructYears } from './utils'
+import { quarters, constructYears } from './utils'
 import { accountCanSelectStt } from '../../selectors/auth'
 import { handlePreview } from '../FileUpload/utils'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
@@ -133,7 +133,6 @@ const SearchForm = ({
   const errorsRef = null
 
   const setFormValue = (field, value) => {
-    console.log(`${field}: ${value}`)
     const newFormState = { ...form }
 
     if (!!value) {
@@ -230,8 +229,6 @@ const UploadForm = ({
   error,
   setError,
 }) => {
-  // const [selectedFile, setSelectedFile] = useState(file || null)
-  // const [file, setFile] = useState(null)
   const inputRef = useRef(null)
 
   useEffect(() => {
@@ -261,7 +258,6 @@ const UploadForm = ({
       message: null,
     })
 
-    // const { name: section } = e.target
     const fileInputValue = e.target.files[0]
     const input = inputRef.current
     const dropTarget = inputRef.current.parentNode
@@ -283,7 +279,6 @@ const UploadForm = ({
         createFileInputErrorState(input, dropTarget)
         setError(INVALID_FILE_ERROR)
       } else {
-        console.log('fileInputValue', fileInputValue)
         setSelectedFile(fileInputValue)
       }
     }
@@ -368,11 +363,7 @@ const UploadForm = ({
         </div>
 
         <div className="buttonContainer margin-y-4">
-          <Button
-            className="card:margin-y-1"
-            type="submit"
-            // disabled={!!error || localAlert.active || !file || !!file.id}
-          >
+          <Button className="card:margin-y-1" type="submit">
             Submit Report
           </Button>
 
@@ -424,7 +415,6 @@ const FRAReports = () => {
 
   const [selectedFile, setSelectedFile] = useState(null)
 
-  // const stt = useSelector((state) => state.stts?.stt)
   // const fraSubmissionHistory = useSelector((state) => state.fraReports)
 
   const dispatch = useDispatch()
@@ -475,8 +465,6 @@ const FRAReports = () => {
     let isValid = true
     let errors = 0
 
-    console.log('selected values: ', selectedValues)
-
     Object.keys(selectedValues).forEach((key) => {
       if (!!selectedValues[key]) {
         validatedForm[key].valid = true
@@ -503,14 +491,9 @@ const FRAReports = () => {
 
     const form = temporaryFormState
 
-    console.log('form', form)
-
     const formValues = {
       stt: sttList?.find((stt) => stt?.name === form.stt.value),
     }
-
-    console.log('formvalues', formValues)
-    console.log('sttList', sttList)
 
     Object.keys(form).forEach((key) => {
       if (key !== 'errors' && key !== 'stt') {
@@ -518,16 +501,11 @@ const FRAReports = () => {
       }
     })
 
-    // console.log(form)
-
     let isValid = validateSearchForm(formValues)
 
     if (!isValid) {
-      console.log('not valid')
       return
     }
-
-    console.log('searching:', formValues)
 
     setUploadReportToggled(false)
     setSearchFormValues(null)
@@ -554,7 +532,6 @@ const FRAReports = () => {
     }
 
     const onFileUploadError = (error) => {
-      console.log(error)
       setLocalAlertState({
         active: true,
         type: 'error',
