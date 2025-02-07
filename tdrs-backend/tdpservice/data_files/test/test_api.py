@@ -1,7 +1,6 @@
 """Tests for DataFiles Application."""
 import os
 from rest_framework import status
-from rest_framework.exceptions import ErrorDetail
 import pytest
 import base64
 import openpyxl
