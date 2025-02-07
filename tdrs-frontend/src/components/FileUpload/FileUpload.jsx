@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
 import fileTypeChecker from 'file-type-checker'
+import languageEncoding from 'detect-file-encoding-and-language'
 
 import {
   clearError,
@@ -33,6 +34,86 @@ const INVALID_EXT_ERROR = (
     </a>
   </>
 )
+
+// The package author suggests using a minimum of 500 words to determine the encoding. However, datafiles don't have
+// "words" so we're using bytes instead to determine the encoding. See: https://www.npmjs.com/package/detect-file-encoding-and-language
+const MIN_BYTES = 500
+
+/* istanbul ignore next */
+const tryGetUTF8EncodedFile = async function (fileBytes, file) {
+  // Create a small view of the file to determine the encoding.
+  const btyesView = new Uint8Array(fileBytes.slice(0, MIN_BYTES))
+  const blobView = new Blob([btyesView], { type: 'text/plain' })
+  try {
+    const fileInfo = await languageEncoding(blobView)
+    const bom = btyesView.slice(0, 3)
+    const hasBom = bom[0] === 0xef && bom[1] === 0xbb && bom[2] === 0xbf
+    if ((fileInfo && fileInfo.encoding !== 'UTF-8') || hasBom) {
+      const utf8Encoder = new TextEncoder()
+      const decoder = new TextDecoder(fileInfo.encoding)
+      const decodedString = decoder.decode(
+        hasBom ? fileBytes.slice(3) : fileBytes
+      )
+      const utf8Bytes = utf8Encoder.encode(decodedString)
+      return new File([utf8Bytes], file.name, file.options)
+    }
+    return file
+  } catch (error) {
+    // This is a last ditch fallback to ensure consistent functionality and also allows the unit tests to work in the
+    // same way they did before this change. When the unit tests (i.e. Node environment) call `languageEncoding` it
+    // expects a Buffer/string/URL object. When the browser calls `languageEncoding`, it expects a Blob/File object.
+    // There is not a convenient way or universal object to handle both cases. Thus, when the tests run the call to
+    // `languageEncoding`, it raises an exception and we return the file as is which is then dispatched as it would
+    // have been before this change.
+    console.error('Caught error while handling file encoding. Error:', error)
+    return file
+  }
+}
+
+const load = (file, section, input, dropTarget, dispatch) => {
+  const filereader = new FileReader()
+  const types = ['png', 'gif', 'jpeg']
+
+  return new Promise((resolve, reject) => {
+    filereader.onerror = () => {
+      filereader.abort()
+      reject(new Error('Problem parsing input file.'))
+    }
+
+    filereader.onload = () => {
+      let error = false
+      const re = /(\.txt|\.ms\d{2}|\.ts\d{2,3})$/i
+      if (!re.exec(file.name)) {
+        dispatch({
+          type: FILE_EXT_ERROR,
+          payload: {
+            error: { message: INVALID_EXT_ERROR },
+            section,
+          },
+        })
+        error = true
+      }
+
+      const isImg = fileTypeChecker.validateFileType(filereader.result, types)
+
+      if (!error && isImg) {
+        createFileInputErrorState(input, dropTarget)
+
+        dispatch({
+          type: SET_FILE_ERROR,
+          payload: {
+            error: { message: INVALID_FILE_ERROR },
+            section,
+          },
+        })
+        error = true
+      }
+
+      resolve({ result: filereader.result, error: error })
+    }
+    filereader.readAsArrayBuffer(file)
+  })
+}
 
 function FileUpload({ section, setLocalAlertState }) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
@@ -86,7 +167,7 @@ function FileUpload({ section, setLocalAlertState }) {
   }
   const inputRef = useRef(null)
 
-  const validateAndUploadFile = (event) => {
+  const validateAndUploadFile = async (event) => {
     setLocalAlertState({
       active: false,
       type: null,
@@ -101,51 +182,14 @@ function FileUpload({ section, setLocalAlertState }) {
     dispatch(clearError({ section }))
     dispatch(clearFile({ section }))
 
-    // Get the the first 4 bytes of the file with which to check file signatures
-    const blob = file.slice(0, 4)
-
     const input = inputRef.current
     const dropTarget = inputRef.current.parentNode
 
-    const filereader = new FileReader()
+    const { result } = await load(file, section, input, dropTarget, dispatch)
 
-    const types = ['png', 'gif', 'jpeg']
-    filereader.onload = () => {
-      const re = /(\.txt|\.ms\d{2}|\.ts\d{2,3})$/i
-      if (!re.exec(file.name)) {
-        dispatch({
-          type: FILE_EXT_ERROR,
-          payload: {
-            error: { message: INVALID_EXT_ERROR },
-            section,
-          },
-        })
-        return
-      }
-
-      const isImg = fileTypeChecker.validateFileType(filereader.result, types)
-
-      if (isImg) {
-        createFileInputErrorState(input, dropTarget)
-
-        dispatch({
-          type: SET_FILE_ERROR,
-          payload: {
-            error: { message: INVALID_FILE_ERROR },
-            section,
-          },
-        })
-      } else {
-        dispatch(
-          upload({
-            section,
-            file,
-          })
-        )
-      }
-    }
-
-    filereader.readAsArrayBuffer(blob)
+    // Get the correctly encoded file
+    const encodedFile = await tryGetUTF8EncodedFile(result, file)
+    dispatch(upload({ file: encodedFile, section }))
   }
 
   return (
