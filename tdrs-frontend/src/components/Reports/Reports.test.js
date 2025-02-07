@@ -323,7 +323,11 @@ describe('Reports', () => {
         },
       })
     })
-    expect(store.dispatch).toHaveBeenCalledTimes(14)
+    await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
+    await waitFor(() => expect(getByText('section2.txt')).toBeInTheDocument())
+    await waitFor(() => expect(getByText('section3.txt')).toBeInTheDocument())
+    await waitFor(() => expect(getByText('section4.txt')).toBeInTheDocument())
+    expect(store.dispatch).toHaveBeenCalledTimes(18)
 
     // There should be 4 more dispatches upon making the submission,
     // one request to /reports for each file
@@ -524,10 +528,12 @@ describe('Reports', () => {
       })
 
       // add a file to be uploaded, but don't submit
-      fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
-        target: {
-          files: [makeTestFile('section1.txt')],
-        },
+      await waitFor(() => {
+        fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
+          target: {
+            files: [makeTestFile('section1.txt')],
+          },
+        })
       })
 
       await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
@@ -566,10 +572,12 @@ describe('Reports', () => {
       })
 
       // add a file to be uploaded, but don't submit
-      fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
-        target: {
-          files: [makeTestFile('section1.txt')],
-        },
+      await waitFor(() => {
+        fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
+          target: {
+            files: [makeTestFile('section1.txt')],
+          },
+        })
       })
 
       await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
@@ -617,10 +625,12 @@ describe('Reports', () => {
       })
 
       // add a file to be uploaded, but don't submit
-      fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
-        target: {
-          files: [makeTestFile('section1.txt')],
-        },
+      await waitFor(() => {
+        fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
+          target: {
+            files: [makeTestFile('section1.txt')],
+          },
+        })
       })
 
       await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
