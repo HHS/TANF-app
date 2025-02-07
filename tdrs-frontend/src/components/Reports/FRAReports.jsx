@@ -11,7 +11,6 @@ import { accountCanSelectStt } from '../../selectors/auth'
 import { handlePreview, tryGetUTF8EncodedFile } from '../FileUpload/utils'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
 import Modal from '../Modal'
-import Paginator from '../Paginator'
 import {
   formatDate,
   SubmissionSummaryStatusIcon,
@@ -245,8 +244,8 @@ const UploadForm = ({
 
   useEffect(() => {
     const trySettingPreview = () => {
-      const targetClassName = 'usa-file-input__preview input #fra-file-upload'
-      const previewState = handlePreview(file?.name, targetClassName)
+      const targetClassName = '.usa-file-input__target input#fra-file-upload'
+      const previewState = handlePreview(file?.fileName, targetClassName)
       if (!previewState) {
         setTimeout(trySettingPreview, 100)
       }
@@ -480,11 +479,16 @@ const FRAReports = () => {
     },
   })
 
-  const [selectedFile, setSelectedFile] = useState(null)
-
   const fraSubmissionHistory = useSelector(
     (state) => state.fraReports.submissionHistory
   )
+
+  const latestSubmission =
+    fraSubmissionHistory && fraSubmissionHistory.length > 0
+      ? fraSubmissionHistory[0]
+      : null
+
+  const [selectedFile, setSelectedFile] = useState(latestSubmission)
 
   const dispatch = useDispatch()
 
@@ -592,7 +596,7 @@ const FRAReports = () => {
 
   const handleUpload = ({ file: selectedFile }) => {
     const onFileUploadSuccess = () => {
-      setSelectedFile(null) // once we have the latest file in submission history, conditional setting of state in constructor should be sufficient
+      setSelectedFile(null)
       setLocalAlertState({
         active: true,
         type: 'success',
@@ -697,7 +701,7 @@ const FRAReports = () => {
               setUploadReportToggled(false)
             }}
             setLocalAlertState={setLocalAlertState}
-            file={selectedFile}
+            file={selectedFile ? selectedFile : latestSubmission}
             setSelectedFile={setSelectedFile}
             section={getReportTypeLabel()}
             error={uploadError}
@@ -709,10 +713,6 @@ const FRAReports = () => {
             style={{ maxWidth: '100%' }}
             tabIndex={0}
           >
-            {/* <SubmissionHistory
-              data={fraSubmissionHistory}
-              sectionName={getReportTypeLabel()}
-            /> */}
             <PaginatedComponent pageSize={5} data={fraSubmissionHistory}>
               <SubmissionHistory sectionName={getReportTypeLabel()} />
             </PaginatedComponent>
