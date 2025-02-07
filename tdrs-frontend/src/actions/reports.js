@@ -4,7 +4,6 @@ import axios from 'axios'
 import axiosInstance from '../axios-instance'
 import { logErrorToServer } from '../utils/eventLogger'
 import removeFileInputErrorState from '../utils/removeFileInputErrorState'
-import { fileUploadSections } from '../reducers/reports'
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
 
