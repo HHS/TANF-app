@@ -527,85 +527,9 @@ const FRAReports = () => {
 
   const [selectedFile, setSelectedFile] = useState(null)
 
-  // const stt = useSelector((state) => state.stts?.stt)
-  // const fraSubmissionHistory = useSelector(
-  //   (state) => state.fraReports.submissionHistory
-  // )
-
-  const fraSubmissionHistory = [
-    {
-      createdAt: '2025-01-30',
-      submittedBy: 'jeff jeffries',
-      fileName: 'nothing.txt',
-      summary: {
-        case_aggregates: { total_errors: 3 },
-        status: 'Accepted with Errors',
-      },
-      year: 2021,
-      quarter: 'Q1',
-      section: 'Work Outcomes for TANF Exiters',
-    },
-    {
-      createdAt: '2025-01-30',
-      submittedBy: 'jeff jeffries 1',
-      fileName: 'nothing1.txt',
-      summary: {
-        case_aggregates: { total_errors: 3 },
-        status: 'Accepted with Errors',
-      },
-      year: 2021,
-      quarter: 'Q1',
-      section: 'Work Outcomes for TANF Exiters',
-    },
-    {
-      createdAt: '2025-01-30',
-      submittedBy: 'jeff jeffries 2',
-      fileName: 'nothing2.txt',
-      summary: {
-        case_aggregates: { total_errors: 3 },
-        status: 'Accepted with Errors',
-      },
-      year: 2021,
-      quarter: 'Q1',
-      section: 'Work Outcomes for TANF Exiters',
-    },
-    {
-      createdAt: '2025-01-30',
-      submittedBy: 'jeff jeffries 3',
-      fileName: 'nothing3.txt',
-      summary: {
-        case_aggregates: { total_errors: 3 },
-        status: 'Accepted with Errors',
-      },
-      year: 2021,
-      quarter: 'Q1',
-      section: 'Work Outcomes for TANF Exiters',
-    },
-    {
-      createdAt: '2025-01-30',
-      submittedBy: 'jeff jeffries4',
-      fileName: 'nothing4.txt',
-      summary: {
-        case_aggregates: { total_errors: 3 },
-        status: 'Accepted with Errors',
-      },
-      year: 2021,
-      quarter: 'Q1',
-      section: 'Work Outcomes for TANF Exiters',
-    },
-    {
-      createdAt: '2025-01-30',
-      submittedBy: 'jeff jeffries 5',
-      fileName: 'nothing5.txt',
-      summary: {
-        case_aggregates: { total_errors: 3 },
-        status: 'Accepted with Errors',
-      },
-      year: 2021,
-      quarter: 'Q1',
-      section: 'Work Outcomes for TANF Exiters',
-    },
-  ]
+  const fraSubmissionHistory = useSelector(
+    (state) => state.fraReports.submissionHistory
+  )
 
   const dispatch = useDispatch()
 
