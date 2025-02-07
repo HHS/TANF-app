@@ -290,6 +290,7 @@ const UploadForm = ({
     if (isImg) {
       createFileInputErrorState(input, dropTarget)
       setError(INVALID_FILE_ERROR)
+      return
     }
 
     const encodedFile = await tryGetUTF8EncodedFile(
