@@ -6,9 +6,9 @@ import fileTypeChecker from 'file-type-checker'
 
 import Button from '../Button'
 import STTComboBox from '../STTComboBox'
-import { quarters, constructYearOptions } from './utils'
+import { quarters, constructYears } from './utils'
 import { accountCanSelectStt } from '../../selectors/auth'
-import { handlePreview } from '../FileUpload/utils'
+import { handlePreview, tryGetUTF8EncodedFile } from '../FileUpload/utils'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
 import Modal from '../Modal'
 import Paginator from '../Paginator'
@@ -23,6 +23,7 @@ import {
   uploadFraReport,
 } from '../../actions/fraReports'
 import { fetchSttList } from '../../actions/sttList'
+import { DropdownSelect, RadioSelect } from '../Form'
 import { PaginatedComponent } from '../Paginator/Paginator'
 
 const INVALID_FILE_ERROR =
@@ -42,101 +43,59 @@ const SelectSTT = ({ valid, value, setValue }) => (
 )
 
 const SelectReportType = ({ valid, value, setValue, options }) => (
-  <div className="usa-form-group margin-top-4">
-    <fieldset className="usa-fieldset">
-      <legend className="usa-label text-bold">File Type</legend>
-
-      {options.map(({ label, value }, index) => (
-        <div className="usa-radio">
-          <input
-            className="usa-radio__input"
-            id={value}
-            type="radio"
-            name="reportType"
-            value={value}
-            defaultChecked={index === 0}
-            onChange={() => setValue(value)}
-          />
-          <label className="usa-radio__label" htmlFor={value}>
-            {label}
-          </label>
-        </div>
-      ))}
-    </fieldset>
-  </div>
+  <RadioSelect
+    valid={valid}
+    value={value}
+    label="File Type"
+    fieldName="reportType"
+    classes="margin-top-4"
+    options={options}
+    setValue={setValue}
+  />
 )
 
 const SelectFiscalYear = ({ valid, value, setValue }) => (
-  <div
-    className={classNames('usa-form-group maxw-mobile margin-top-4', {
-      'usa-form-group--error': !valid,
-    })}
-  >
-    <label
-      className="usa-label text-bold margin-top-4"
-      htmlFor="reportingYears"
-    >
-      Fiscal Year (October - September)
-      {!valid && (
-        <div className="usa-error-message" id="years-error-alert">
-          A fiscal year is required
-        </div>
-      )}
-      {/* eslint-disable-next-line */}
-              <select
-        className={classNames('usa-select maxw-mobile', {
-          'usa-combo-box__input--error': !valid,
-        })}
-        name="reportingYears"
-        id="reportingYears"
-        onChange={(e) => setValue(e.target.value)}
-        value={value}
-        aria-describedby="years-error-alert"
-      >
-        <option value="" disabled hidden>
-          - Select Fiscal Year -
-        </option>
-        {constructYearOptions()}
-      </select>
-    </label>
-  </div>
+  <DropdownSelect
+    label="Fiscal Year (October - September)"
+    fieldName="reportingYears"
+    classes="maxw-mobile margin-top-4"
+    value={value}
+    setValue={setValue}
+    valid={valid}
+    errorText="A fiscal year is required"
+    options={[
+      {
+        label: '- Select Fiscal Year -',
+        value: '',
+      },
+      ...constructYears().map((year) => ({
+        label: year,
+        value: year,
+      })),
+    ]}
+  />
 )
 
 const SelectQuarter = ({ valid, value, setValue }) => (
-  <div
-    className={classNames('usa-form-group maxw-mobile margin-top-4', {
-      'usa-form-group--error': !valid,
-    })}
-  >
-    <label className="usa-label text-bold margin-top-4" htmlFor="quarter">
-      Quarter
-      {!valid && (
-        <div className="usa-error-message" id="quarter-error-alert">
-          A quarter is required
-        </div>
-      )}
-      {/* eslint-disable-next-line */}
-              <select
-        className={classNames('usa-select maxw-mobile', {
-          'usa-combo-box__input--error': !valid,
-        })}
-        name="quarter"
-        id="quarter"
-        onChange={(e) => setValue(e.target.value)}
-        value={value}
-        aria-describedby="quarter-error-alert"
-      >
-        <option value="" disabled hidden>
-          - Select Quarter -
-        </option>
-        {Object.entries(quarters).map(([quarter, quarterDescription]) => (
-          <option value={quarter} key={quarter}>
-            {quarterDescription}
-          </option>
-        ))}
-      </select>
-    </label>
-  </div>
+  <DropdownSelect
+    label="Quarter"
+    fieldName="quarter"
+    classes="maxw-mobile margin-top-4"
+    value={value}
+    setValue={setValue}
+    valid={valid}
+    errorText="A quarter is required"
+    options={[
+      {
+        label: '- Select Quarter -',
+        value: '',
+      },
+      ...Object.entries(quarters).map(([quarter, quarterDescription]) => ({
+        label: quarterDescription,
+        value: quarter,
+      })),
+    ]}
+  />
 )
 
 const FiscalQuarterExplainer = () => (
@@ -181,7 +140,6 @@ const SearchForm = ({
   const errorsRef = null
 
   const setFormValue = (field, value) => {
-    console.log(`${field}: ${value}`)
     const newFormState = { ...form }
 
     if (!!value) {
@@ -270,7 +228,6 @@ const UploadForm = ({
   handleCancel,
   handleUpload,
   handleDownload,
-  localAlert,
   setLocalAlertState,
   file,
   setSelectedFile,
@@ -278,8 +235,6 @@ const UploadForm = ({
   error,
   setError,
 }) => {
-  // const [selectedFile, setSelectedFile] = useState(file || null)
-  // const [file, setFile] = useState(null)
   const inputRef = useRef(null)
 
   useEffect(() => {
@@ -301,7 +256,7 @@ const UploadForm = ({
     }
   }, [file])
 
-  const onFileChanged = (e) => {
+  const onFileChanged = async (e) => {
     setError(null)
     setLocalAlertState({
       active: false,
@@ -309,7 +264,6 @@ const UploadForm = ({
       message: null,
     })
 
-    // const { name: section } = e.target
     const fileInputValue = e.target.files[0]
     const input = inputRef.current
     const dropTarget = inputRef.current.parentNode
@@ -317,26 +271,41 @@ const UploadForm = ({
     const blob = fileInputValue.slice(0, 4)
 
     const filereader = new FileReader()
-    const types = ['png', 'gif', 'jpeg']
-    filereader.onload = () => {
-      const re = /(\.txt|\.ms\d{2}|\.ts\d{2,3})$/i
-      if (!re.exec(fileInputValue.name)) {
-        setError(INVALID_EXT_ERROR)
-        return
-      }
+    const imgFileTypes = ['png', 'gif', 'jpeg']
+    const allowedExtensions = /(\.txt|\.ms\d{2}|\.ts\d{2,3})$/i
 
-      const isImg = fileTypeChecker.validateFileType(filereader.result, types)
+    const loadFile = () =>
+      new Promise((resolve, reject) => {
+        filereader.onerror = () => {
+          filereader.abort()
+          reject(new Error('Problem loading input file'))
+        }
 
-      if (isImg) {
-        createFileInputErrorState(input, dropTarget)
-        setError(INVALID_FILE_ERROR)
-      } else {
-        console.log('fileInputValue', fileInputValue)
-        setSelectedFile(fileInputValue)
-      }
+        filereader.onload = () => resolve({ result: filereader.result })
+
+        filereader.readAsArrayBuffer(blob)
+      })
+
+    if (!allowedExtensions.exec(fileInputValue.name)) {
+      setError(INVALID_EXT_ERROR)
+      return
     }
 
-    filereader.readAsArrayBuffer(blob)
+    const { result } = await loadFile()
+
+    const isImg = fileTypeChecker.validateFileType(result, imgFileTypes)
+    if (isImg) {
+      createFileInputErrorState(input, dropTarget)
+      setError(INVALID_FILE_ERROR)
+      return
+    }
+
+    const encodedFile = await tryGetUTF8EncodedFile(
+      filereader.result,
+      fileInputValue
+    )
+
+    setSelectedFile(encodedFile)
   }
 
   const onSubmit = (e) => {
@@ -416,11 +385,7 @@ const UploadForm = ({
         </div>
 
         <div className="buttonContainer margin-y-4">
-          <Button
-            className="card:margin-y-1"
-            type="submit"
-            // disabled={!!error || localAlert.active || !file || !!file.id}
-          >
+          <Button className="card:margin-y-1" type="submit">
             Submit Report
           </Button>
 
@@ -569,8 +534,6 @@ const FRAReports = () => {
     let isValid = true
     let errors = 0
 
-    console.log('selected values: ', selectedValues)
-
     Object.keys(selectedValues).forEach((key) => {
       if (!!selectedValues[key]) {
         validatedForm[key].valid = true
@@ -597,14 +560,9 @@ const FRAReports = () => {
 
     const form = temporaryFormState
 
-    console.log('form', form)
-
     const formValues = {
       stt: sttList?.find((stt) => stt?.name === form.stt.value),
     }
-
-    console.log('formvalues', formValues)
-    console.log('sttList', sttList)
 
     Object.keys(form).forEach((key) => {
       if (key !== 'errors' && key !== 'stt') {
@@ -612,16 +570,11 @@ const FRAReports = () => {
       }
     })
 
-    // console.log(form)
-
     let isValid = validateSearchForm(formValues)
 
     if (!isValid) {
-      console.log('not valid')
       return
     }
-
-    console.log('searching:', formValues)
 
     setUploadReportToggled(false)
     setSearchFormValues(null)
@@ -648,7 +601,6 @@ const FRAReports = () => {
     }
 
     const onFileUploadError = (error) => {
-      console.log(error)
       setLocalAlertState({
         active: true,
         type: 'error',
@@ -744,7 +696,6 @@ const FRAReports = () => {
               setUploadError(null)
               setUploadReportToggled(false)
             }}
-            localAlert={localAlert}
             setLocalAlertState={setLocalAlertState}
             file={selectedFile}
             setSelectedFile={setSelectedFile}

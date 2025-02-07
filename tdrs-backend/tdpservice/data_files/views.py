@@ -102,9 +102,16 @@ class DataFileViewSet(ModelViewSet):
     def get_queryset(self):
         """Apply custom queryset filters."""
         queryset = super().get_queryset().order_by('-created_at')
+        FRA_SECTION_LIST = [
+                DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
+                DataFile.Section.FRA_SECONDRY_SCHOOL_ATTAINMENT,
+                DataFile.Section.FRA_SUPPLEMENT_WORK_OUTCOMES
+                ]
         if self.action == 'list':
             if self.request.query_params.get('file_type') == 'ssp-moe':
                 queryset = queryset.filter(section__contains='SSP')
+            elif self.request.query_params.get('file_type') == 'fra':
+                queryset = queryset.filter(section__in=FRA_SECTION_LIST)
             else:
                 queryset = queryset.exclude(section__contains='SSP')
 

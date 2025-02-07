@@ -5,6 +5,20 @@ export const quarters = {
   Q4: 'Quarter 4 (July - September)',
 }
 
+export const constructYears = () => {
+  const years = []
+  const today = new Date(Date.now())
+
+  const fiscalYear =
+    today.getMonth() > 8 ? today.getFullYear() + 1 : today.getFullYear()
+
+  for (let i = fiscalYear; i >= 2021; i--) {
+    years.push(i)
+  }
+
+  return years
+}
+
 export const constructYearOptions = () => {
   const years = []
   const today = new Date(Date.now())

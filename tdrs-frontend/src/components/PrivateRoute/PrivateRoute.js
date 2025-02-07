@@ -17,6 +17,7 @@ function PrivateRoute({
   children,
   title,
   requiredPermissions,
+  requiredFeatureFlags,
   requiresApproval,
 }) {
   const authenticated = useSelector((state) => state.auth.authenticated)
@@ -45,6 +46,7 @@ function PrivateRoute({
       <PermissionGuard
         requiresApproval={requiresApproval}
         requiredPermissions={requiredPermissions}
+        requiredFeatureFlags={requiredFeatureFlags}
         notAllowedComponent={<Navigate to="/home" />}
       >
         <PrivateTemplate title={title}>

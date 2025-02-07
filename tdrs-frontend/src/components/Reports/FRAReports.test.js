@@ -179,6 +179,66 @@ describe('FRA Reports Page', () => {
       expect(getByText('There are 3 error(s) in this form')).toBeInTheDocument()
     })
 
+    it('Updates form validation if values are changed', async () => {
+      const state = {
+        ...initialState,
+        auth: {
+          authenticated: true,
+          user: {
+            email: 'hi@bye.com',
+            stt: null,
+            roles: [{ id: 1, name: 'OFA System Admin', permission: [] }],
+            account_approval_status: 'Approved',
+          },
+        },
+      }
+
+      const store = mockStore(state)
+
+      const { getByText, queryByText, getByLabelText } = render(
+        <Provider store={store}>
+          <FRAReports />
+        </Provider>
+      )
+
+      // don't fill out any form values
+      fireEvent.click(getByText(/Search/, { selector: 'button' }))
+
+      // upload form not displayed
+      expect(queryByText('Submit Report')).not.toBeInTheDocument()
+
+      // fields all have errors
+      expect(
+        getByText('A state, tribe, or territory is required')
+      ).toBeInTheDocument()
+      expect(getByText('A fiscal year is required')).toBeInTheDocument()
+      expect(getByText('A quarter is required')).toBeInTheDocument()
+      expect(getByText('There are 3 error(s) in this form')).toBeInTheDocument()
+
+      const yearsDropdown = getByLabelText(
+        'Fiscal Year (October - September)',
+        { exact: false }
+      )
+      fireEvent.change(yearsDropdown, { target: { value: '2021' } })
+
+      await waitFor(() => {
+        expect(queryByText('A fiscal year is required')).not.toBeInTheDocument()
+        expect(
+          getByText('There are 2 error(s) in this form')
+        ).toBeInTheDocument()
+      })
+
+      const quarterDropdown = getByLabelText('Quarter', { exact: false })
+      fireEvent.change(quarterDropdown, { target: { value: 'Q1' } })
+
+      await waitFor(() => {
+        expect(queryByText('A quarter is required')).not.toBeInTheDocument()
+        expect(
+          getByText('There is 1 error(s) in this form')
+        ).toBeInTheDocument()
+      })
+    })
+
     it('Shows upload form once search has been clicked', async () => {
       const state = {
         ...initialState,
@@ -374,6 +434,30 @@ describe('FRA Reports Page', () => {
       await waitFor(() =>
         expect(queryByText('Files Not Submitted')).toBeInTheDocument()
       )
+    })
+
+    it('Cancels the upload if Cancel is clicked', async () => {
+      const { getByText, container, queryByText } = await setup()
+
+      const uploadForm = container.querySelector('#fra-file-upload')
+      fireEvent.change(uploadForm, {
+        target: { files: [makeTestFile('report.txt')] },
+      })
+
+      await waitFor(() => {
+        expect(
+          getByText('You have selected the file: report.txt')
+        ).toBeInTheDocument()
+      })
+
+      fireEvent.click(getByText(/Cancel/, { selector: 'button' }))
+
+      await waitFor(() => {
+        expect(
+          queryByText('You have selected the file: report.txt')
+        ).not.toBeInTheDocument()
+        expect(queryByText(/Submit Report/)).not.toBeInTheDocument()
+      })
     })
 
     it('Does not show a message if search is clicked after uploading a file', async () => {
