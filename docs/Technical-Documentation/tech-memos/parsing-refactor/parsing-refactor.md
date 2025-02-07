@@ -200,7 +200,7 @@ class BaseParser(ABC):
         self.num_errors = 0
 
     @abstractmethod
-    def parse_and_validate(self):
+    def parse_and_validate(self) -> dict:
         """To be overriden in child class."""
         # Should have the same return as parse.py::parse_datafile
         pass
