@@ -2,6 +2,9 @@ const valueIsEmpty = (val) => val === null || val === undefined || val === ''
 
 export const selectUser = (state) => state.auth.user || null
 
+export const selectFeatureFlags = (state) =>
+  selectUser(state)?.feature_flags || {}
+
 // could memoize these with `createSelector` from `reselect`
 export const selectUserAccountApprovalStatus = (state) =>
   selectUser(state)?.['account_approval_status']

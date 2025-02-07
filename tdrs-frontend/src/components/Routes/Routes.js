@@ -57,6 +57,7 @@ const AppRoutes = () => {
           <PrivateRoute
             title="FRA Reports"
             requiredPermissions={['view_datafile', 'add_datafile']}
+            requiredFeatureFlags={['fra_reports']}
             requiresApproval
           >
             <FRAReports />
