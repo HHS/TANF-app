@@ -181,11 +181,9 @@ const SearchForm = ({
   setFormState,
   needsSttSelection,
   userProfileStt,
-  sttList,
 }) => {
   const missingStt = !needsSttSelection && !userProfileStt
   const errorsRef = null
-  const errorsCount = 0
 
   const setFormValue = (field, value) => {
     console.log(`${field}: ${value}`)
@@ -194,10 +192,21 @@ const SearchForm = ({
     if (!!value) {
       newFormState[field].value = value
       newFormState[field].valid = true
+    } else {
+      newFormState[field].valid = false
     }
     newFormState[field].touched = true
 
-    setFormState(newFormState)
+    let errors = 0
+    Object.keys(newFormState).forEach((key) => {
+      if (key !== 'errors') {
+        if (newFormState[key].touched && !newFormState[key].valid) {
+          errors += 1
+        }
+      }
+    })
+
+    setFormState({ ...newFormState, errors })
   }
 
   return (
@@ -214,7 +223,7 @@ const SearchForm = ({
           ref={errorsRef}
           tabIndex="-1"
         >
-          There {errorsCount === 1 ? 'is' : 'are'} {form.errors} error(s) in
+          There {form.errors === 1 ? 'is' : 'are'} {form.errors} error(s) in
           this form
         </div>
       )}
@@ -271,8 +280,9 @@ const UploadForm = ({
   file,
   setSelectedFile,
   section,
+  error,
+  setError,
 }) => {
-  const [error, setError] = useState(null)
   // const [selectedFile, setSelectedFile] = useState(file || null)
   // const [file, setFile] = useState(null)
   const inputRef = useRef(null)
@@ -337,7 +347,7 @@ const UploadForm = ({
   const onSubmit = (e) => {
     e.preventDefault()
 
-    if (!!error) {
+    if (!!error || !file) {
       return
     }
 
@@ -484,6 +494,7 @@ const FRAReports = () => {
   const [isUploadReportToggled, setUploadReportToggled] = useState(false)
   const [errorModalVisible, setErrorModalVisible] = useState(false)
   const [searchFormValues, setSearchFormValues] = useState(null)
+  const [uploadError, setUploadError] = useState(null)
 
   const user = useSelector((state) => state.auth.user)
   const sttList = useSelector((state) => state?.stts?.sttList)
@@ -718,7 +729,7 @@ const FRAReports = () => {
       setLocalAlertState({
         active: true,
         type: 'success',
-        message: `Successfully submitted section(s): ${getReportTypeLabel()} on ${new Date().toDateString()}`,
+        message: `Successfully submitted section: ${getReportTypeLabel()} on ${new Date().toDateString()}`,
       })
     }
 
@@ -735,6 +746,7 @@ const FRAReports = () => {
       uploadFraReport(
         {
           ...searchFormValues,
+          reportType: getReportTypeLabel(),
           file: selectedFile,
           user,
         },
@@ -788,7 +800,6 @@ const FRAReports = () => {
           setFormState={setTemporaryFormState}
           needsSttSelection={needsSttSelection}
           userProfileStt={userProfileStt}
-          sttList={sttList}
         />
       </div>
       {isUploadReportToggled && (
@@ -814,11 +825,18 @@ const FRAReports = () => {
           )}
           <UploadForm
             handleUpload={handleUpload}
+            handleCancel={() => {
+              setSelectedFile(null)
+              setUploadError(null)
+              setUploadReportToggled(false)
+            }}
             localAlert={localAlert}
             setLocalAlertState={setLocalAlertState}
             file={selectedFile}
             setSelectedFile={setSelectedFile}
             section={getReportTypeLabel()}
+            error={uploadError}
+            setError={setUploadError}
           />
 
           <div
@@ -856,6 +874,7 @@ const FRAReports = () => {
             onClick: (e) => {
               setErrorModalVisible(false)
               setSelectedFile(null)
+              setUploadError(null)
               handleSearch(e, true)
             },
           },

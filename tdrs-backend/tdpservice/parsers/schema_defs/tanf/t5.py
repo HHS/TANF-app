@@ -94,7 +94,7 @@ t5 = SchemaManager(
                     condition_field_name="FAMILY_AFFILIATION",
                     condition_function=category3.isEqual(1),
                     result_field_name="CITIZENSHIP_STATUS",
-                    result_function=category3.isBetween(1, 2, inclusive=True),
+                    result_function=category3.isBetween(1, 3, inclusive=True),
                 ),
                 category3.ifThenAlso(
                     condition_field_name="DATE_OF_BIRTH",
@@ -241,8 +241,8 @@ t5 = SchemaManager(
                 ),
                 Field(
                     item="18",
-                    name="GENDER",
-                    friendly_name="Gender",
+                    name="SEX",
+                    friendly_name="Sex",
                     type="number",
                     startIndex=43,
                     endIndex=44,
@@ -364,7 +364,7 @@ t5 = SchemaManager(
                     required=False,
                     validators=[
                         category3.orValidators([
-                            category3.isBetween(0, 2, inclusive=True),
+                            category3.isBetween(0, 3, inclusive=True),
                             category3.isEqual(9)
                         ])
                     ],
