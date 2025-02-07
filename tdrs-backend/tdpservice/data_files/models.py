@@ -162,6 +162,15 @@ class DataFile(FileRecord):
                 cls.STRATUM_DATA
             ]
 
+    @staticmethod
+    def get_fra_section_list():
+        """Return FRA section list."""
+        return [
+                DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
+                DataFile.Section.FRA_SECONDRY_SCHOOL_ATTAINMENT,
+                DataFile.Section.FRA_SUPPLEMENT_WORK_OUTCOMES
+            ]
+
     class Quarter(models.TextChoices):
         """Enum for data file Quarter."""
 
