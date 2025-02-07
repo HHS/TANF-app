@@ -169,11 +169,9 @@ const SearchForm = ({
   setFormState,
   needsSttSelection,
   userProfileStt,
-  sttList,
 }) => {
   const missingStt = !needsSttSelection && !userProfileStt
   const errorsRef = null
-  const errorsCount = 0
 
   const setFormValue = (field, value) => {
     console.log(`${field}: ${value}`)
@@ -182,10 +180,21 @@ const SearchForm = ({
     if (!!value) {
       newFormState[field].value = value
       newFormState[field].valid = true
+    } else {
+      newFormState[field].valid = false
     }
     newFormState[field].touched = true
 
-    setFormState(newFormState)
+    let errors = 0
+    Object.keys(newFormState).forEach((key) => {
+      if (key !== 'errors') {
+        if (newFormState[key].touched && !newFormState[key].valid) {
+          errors += 1
+        }
+      }
+    })
+
+    setFormState({ ...newFormState, errors })
   }
 
   return (
@@ -202,7 +211,7 @@ const SearchForm = ({
           ref={errorsRef}
           tabIndex="-1"
         >
-          There {errorsCount === 1 ? 'is' : 'are'} {form.errors} error(s) in
+          There {form.errors === 1 ? 'is' : 'are'} {form.errors} error(s) in
           this form
         </div>
       )}
@@ -652,7 +661,6 @@ const FRAReports = () => {
           setFormState={setTemporaryFormState}
           needsSttSelection={needsSttSelection}
           userProfileStt={userProfileStt}
-          sttList={sttList}
         />
       </div>
       {isUploadReportToggled && (
