@@ -58,7 +58,7 @@ from abc import ABC, abstractmethod
 import csv
 from dataclasses import dataclass
 from openpyxl import load_workbook
-from typing import Iterable
+from typing import List, Tuple, AnyStr
 
 @dataclass
 class Position:
@@ -71,7 +71,7 @@ class Position:
 
 @dataclass
 class RawRow:
-    raw_data: Iterable
+    raw_data: AnyStr | List | Tuple
     row_num: int
 
     def value_at(self, position: Position):
