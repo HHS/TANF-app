@@ -36,70 +36,59 @@ const SelectSTT = ({ valid, value, setValue }) => (
 )
 
 const SelectReportType = ({ valid, value, setValue, options }) => (
-  <div className="usa-form-group margin-top-4">
-    <RadioSelect
-      valid={valid}
-      value={value}
-      label="File Type"
-      fieldName="reportType"
-      options={options}
-      setValue={setValue}
-    />
-  </div>
+  <RadioSelect
+    valid={valid}
+    value={value}
+    label="File Type"
+    fieldName="reportType"
+    classes="margin-top-4"
+    options={options}
+    setValue={setValue}
+  />
 )
 
 const SelectFiscalYear = ({ valid, value, setValue }) => (
-  <div
-    className={classNames('usa-form-group maxw-mobile margin-top-4', {
-      'usa-form-group--error': !valid,
-    })}
-  >
-    <DropdownSelect
-      label="Fiscal Year (October - September)"
-      fieldName="reportingYears"
-      value={value}
-      setValue={setValue}
-      valid={valid}
-      errorText="A fiscal year is required"
-      options={[
-        {
-          label: '- Select Fiscal Year -',
-          value: '',
-        },
-        ...constructYears().map((year) => ({
-          label: year,
-          value: year,
-        })),
-      ]}
-    />
-  </div>
+  <DropdownSelect
+    label="Fiscal Year (October - September)"
+    fieldName="reportingYears"
+    classes="maxw-mobile margin-top-4"
+    value={value}
+    setValue={setValue}
+    valid={valid}
+    errorText="A fiscal year is required"
+    options={[
+      {
+        label: '- Select Fiscal Year -',
+        value: '',
+      },
+      ...constructYears().map((year) => ({
+        label: year,
+        value: year,
+      })),
+    ]}
+  />
 )
 
 const SelectQuarter = ({ valid, value, setValue }) => (
-  <div
-    className={classNames('usa-form-group maxw-mobile margin-top-4', {
-      'usa-form-group--error': !valid,
-    })}
-  >
-    <DropdownSelect
-      label="Quarter"
-      fieldName="quarter"
-      value={value}
-      setValue={setValue}
-      valid={valid}
-      errorText="A quarter is required"
-      options={[
-        {
-          label: '- Select Quarter -',
-          value: '',
-        },
-        ...Object.entries(quarters).map(([quarter, quarterDescription]) => ({
-          label: quarterDescription,
-          value: quarter,
-        })),
-      ]}
-    />
-  </div>
+  <DropdownSelect
+    label="Quarter"
+    fieldName="quarter"
+    classes="maxw-mobile margin-top-4"
+    value={value}
+    setValue={setValue}
+    valid={valid}
+    errorText="A quarter is required"
+    options={[
+      {
+        label: '- Select Quarter -',
+        value: '',
+      },
+      ...Object.entries(quarters).map(([quarter, quarterDescription]) => ({
+        label: quarterDescription,
+        value: quarter,
+      })),
+    ]}
+  />
 )
 
 const FiscalQuarterExplainer = () => (
