@@ -84,7 +84,18 @@ def test_data_files_filename_is_expected(user):
             assert new_data_file.filename == stt.filenames[section]
 
 @pytest.mark.django_db
-def test_prog_type(data_file_instance):
+@pytest.mark.parametrize('section, program_type',
+                         [('Tribal Closed Case Data', 'TAN'),
+                          ('Tribal Active Case Data', 'TAN'),
+                          ('SSP Aggregate Data', 'SSP'),
+                          ('SSP Closed Case Data', 'SSP'),
+                          ('Active Case Data', 'TAN'),
+                          ('Aggregate Data', 'TAN'),
+                          ('Work Outcomes for TANF Exiters', 'FRA'),
+                          ('Secondary School Attainment', 'FRA'),
+                          ('Supplemental Work Outcomes', 'FRA')
+                          ])
+def test_prog_type(data_file_instance, section, program_type):
     """Test propert prog_type."""
     df = DataFile.create_new_version({
         "year": data_file_instance.year,
@@ -97,11 +108,8 @@ def test_prog_type(data_file_instance):
         "user": data_file_instance.user,
     })
 
-    assert df.prog_type == "TAN"
-    df.section = "SSP Active Case Data"
-    assert df.prog_type == "SSP"
-    df.section = "Tribal Active Case Data"
-    assert df.prog_type == "TAN"
+    df.section = section
+    assert df.prog_type == program_type
 
 @pytest.mark.django_db
 def test_fiscal_year(data_file_instance):

@@ -233,8 +233,8 @@ first_part_schema = RowSchema(
         ),
         Field(
             item="64",
-            name='GENDER',
-            friendly_name="Gender",
+            name='SEX',
+            friendly_name="Sex",
             type='number',
             startIndex=43,
             endIndex=44,
@@ -550,8 +550,8 @@ second_part_schema = RowSchema(
         ),
         Field(
             item="64",
-            name='GENDER',
-            friendly_name="Gender",
+            name='SEX',
+            friendly_name="Sex",
             type='number',
             startIndex=84,
             endIndex=85,
