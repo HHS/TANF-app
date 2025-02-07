@@ -23,12 +23,7 @@ import {
   uploadFraReport,
 } from '../../actions/fraReports'
 import { fetchSttList } from '../../actions/sttList'
-import {
-  PaginatedComponent,
-  PaginatedHOC,
-  PaginatorContext,
-  PaginatorWithContext,
-} from '../Paginator/Paginator'
+import { PaginatedComponent } from '../Paginator/Paginator'
 
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
@@ -438,57 +433,52 @@ const UploadForm = ({
   )
 }
 
-const SubmissionHistory = ({ /*data,*/ sectionName }) => {
-  const context = useContext(PaginatorContext)
-  const data = context.getSlicedData()
-
-  return (
-    <table className="usa-table usa-table--striped">
-      <caption>{sectionName}</caption>
-      {data && data.length > 0 ? (
-        <>
-          <thead>
+const SubmissionHistory = ({ data, sectionName }) => (
+  <table className="usa-table usa-table--striped">
+    <caption>{sectionName}</caption>
+    {data && data.length > 0 ? (
+      <>
+        <thead>
+          <tr>
+            <th>Submitted On</th>
+            <th>Submitted By</th>
+            <th>File Name</th>
+            <th>Total Errors</th>
+            <th>Status</th>
+            <th>Error Report</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((file) => (
             <tr>
-              <th>Submitted On</th>
-              <th>Submitted By</th>
-              <th>File Name</th>
-              <th>Total Errors</th>
-              <th>Status</th>
-              <th>Error Report</th>
+              <td>{formatDate(file.createdAt)}</td>
+              <td>{file.submittedBy}</td>
+              <td>
+                <button className="section-download" onClick={() => null}>
+                  {file.fileName}
+                </button>
+              </td>
+              <td>{file?.summary?.case_aggregates?.total_errors}</td>
+              <td>
+                <span>
+                  <SubmissionSummaryStatusIcon
+                    status={file.summary ? file.summary.status : 'Pending'}
+                  />
+                </span>
+                {file.summary && file.summary.status
+                  ? file.summary.status
+                  : 'Pending'}
+              </td>
+              <td>{getErrorReportStatus(file)}</td>
             </tr>
-          </thead>
-          <tbody>
-            {data.map((file) => (
-              <tr>
-                <td>{formatDate(file.createdAt)}</td>
-                <td>{file.submittedBy}</td>
-                <td>
-                  <button className="section-download" onClick={() => null}>
-                    {file.fileName}
-                  </button>
-                </td>
-                <td>{file?.summary?.case_aggregates?.total_errors}</td>
-                <td>
-                  <span>
-                    <SubmissionSummaryStatusIcon
-                      status={file.summary ? file.summary.status : 'Pending'}
-                    />
-                  </span>
-                  {file.summary && file.summary.status
-                    ? file.summary.status
-                    : 'Pending'}
-                </td>
-                <td>{getErrorReportStatus(file)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </>
-      ) : (
-        <span>No data available.</span>
-      )}
-    </table>
-  )
-}
+          ))}
+        </tbody>
+      </>
+    ) : (
+      <span>No data available.</span>
+    )}
+  </table>
+)
 
 const FRAReports = () => {
   const [isUploadReportToggled, setUploadReportToggled] = useState(false)
