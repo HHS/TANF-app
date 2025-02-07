@@ -8,7 +8,7 @@ import Button from '../Button'
 import STTComboBox from '../STTComboBox'
 import { quarters, constructYears } from './utils'
 import { accountCanSelectStt } from '../../selectors/auth'
-import { handlePreview } from '../FileUpload/utils'
+import { handlePreview, tryGetUTF8EncodedFile } from '../FileUpload/utils'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
 import Modal from '../Modal'
 
@@ -221,7 +221,6 @@ const UploadForm = ({
   handleCancel,
   handleUpload,
   handleDownload,
-  localAlert,
   setLocalAlertState,
   file,
   setSelectedFile,
@@ -250,7 +249,7 @@ const UploadForm = ({
     }
   }, [file])
 
-  const onFileChanged = (e) => {
+  const onFileChanged = async (e) => {
     setError(null)
     setLocalAlertState({
       active: false,
@@ -265,25 +264,40 @@ const UploadForm = ({
     const blob = fileInputValue.slice(0, 4)
 
     const filereader = new FileReader()
-    const types = ['png', 'gif', 'jpeg']
-    filereader.onload = () => {
-      const re = /(\.txt|\.ms\d{2}|\.ts\d{2,3})$/i
-      if (!re.exec(fileInputValue.name)) {
-        setError(INVALID_EXT_ERROR)
-        return
-      }
+    const imgFileTypes = ['png', 'gif', 'jpeg']
+    const allowedExtensions = /(\.txt|\.ms\d{2}|\.ts\d{2,3})$/i
 
-      const isImg = fileTypeChecker.validateFileType(filereader.result, types)
+    const loadFile = () =>
+      new Promise((resolve, reject) => {
+        filereader.onerror = () => {
+          filereader.abort()
+          reject(new Error('Problem loading input file'))
+        }
 
-      if (isImg) {
-        createFileInputErrorState(input, dropTarget)
-        setError(INVALID_FILE_ERROR)
-      } else {
-        setSelectedFile(fileInputValue)
-      }
+        filereader.onload = () => resolve({ result: filereader.result })
+
+        filereader.readAsArrayBuffer(blob)
+      })
+
+    if (!allowedExtensions.exec(fileInputValue.name)) {
+      setError(INVALID_EXT_ERROR)
+      return
     }
 
-    filereader.readAsArrayBuffer(blob)
+    const { result } = await loadFile()
+
+    const isImg = fileTypeChecker.validateFileType(result, imgFileTypes)
+    if (isImg) {
+      createFileInputErrorState(input, dropTarget)
+      setError(INVALID_FILE_ERROR)
+    }
+
+    const encodedFile = await tryGetUTF8EncodedFile(
+      filereader.result,
+      fileInputValue
+    )
+
+    setSelectedFile(encodedFile)
   }
 
   const onSubmit = (e) => {
@@ -627,7 +641,6 @@ const FRAReports = () => {
               setUploadError(null)
               setUploadReportToggled(false)
             }}
-            localAlert={localAlert}
             setLocalAlertState={setLocalAlertState}
             file={selectedFile}
             setSelectedFile={setSelectedFile}
