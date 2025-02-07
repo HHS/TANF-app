@@ -230,9 +230,8 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
     def test_create_data_file_fra(self, api_client, data_file_data, user):
         """Test ability to create data file metadata registry."""
         response = self.post_data_file_fra(api_client, data_file_data)
-        from rest_framework.exceptions import ErrorDetail
-        assert response.data == {'section': [ErrorDetail(string='Section cannot be FRA', code='invalid')]}
-        self.assert_data_file_error(response)
+        self.assert_data_file_created(response)
+        self.assert_data_file_exists(data_file_data, 1, user)
 
     def test_data_file_file_version_increment(
         self,
