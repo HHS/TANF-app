@@ -648,7 +648,7 @@ const FRAReports = () => {
   }
 
   useEffect(() => {
-    if (sttList.length === 0) {
+    if (sttList && sttList.length === 0) {
       dispatch(fetchSttList())
     }
   }, [dispatch, sttList])

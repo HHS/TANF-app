@@ -108,9 +108,10 @@ const PaginatedComponent = ({ pageSize, data, children }) => {
   const numPages =
     data && data.length > pageSize ? Math.ceil(data.length / pageSize) : 1
   const pageStart = (pageNumber - 1) * pageSize
-  const pageEnd = Math.min(data.length, pageStart + pageSize)
+  const pageEnd =
+    data && data.length ? Math.min(data.length, pageStart + pageSize) : 1
 
-  const slicedData = data.slice(pageStart, pageEnd)
+  const slicedData = data && data.length ? data.slice(pageStart, pageEnd) : null
 
   return (
     <>

@@ -26,9 +26,9 @@ const fraReports = (state = initialState, action) => {
       const { submissionHistory } = payload
       return {
         ...state,
-        submissionHistory: submissionHistory.map((f) =>
-          serializeApiDataFile(f)
-        ),
+        submissionHistory: submissionHistory
+          ? submissionHistory.map((f) => serializeApiDataFile(f))
+          : null,
       }
     }
     case SET_IS_UPLOADING_FRA_REPORT: {
