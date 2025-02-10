@@ -91,15 +91,15 @@ export const uploadFraReport =
         }
       )
 
-      // dispatch(
-      //   getFraSubmissionHistory({
-      //     stt,
-      //     reportType,
-      //     fiscalQuarter,
-      //     fiscalYear,
-      //   })
-      // )
-      // or, dispatch the state update if response from upload can contain updated submission history
+      dispatch(
+        getFraSubmissionHistory({
+          stt,
+          reportType,
+          fiscalQuarter,
+          fiscalYear,
+        })
+      )
+
       onSuccess()
     } catch (error) {
       onError(error)
