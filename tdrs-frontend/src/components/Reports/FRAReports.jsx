@@ -24,6 +24,7 @@ import {
 import { fetchSttList } from '../../actions/sttList'
 import { DropdownSelect, RadioSelect } from '../Form'
 import { PaginatedComponent } from '../Paginator/Paginator'
+import { download } from '../../actions/reports'
 
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
@@ -397,7 +398,7 @@ const UploadForm = ({
   )
 }
 
-const SubmissionHistory = ({ data, sectionName }) => (
+const SubmissionHistory = ({ data, sectionName, onClickDownloadReport }) => (
   <table className="usa-table usa-table--striped">
     <caption>{sectionName}</caption>
     {data && data.length > 0 ? (
@@ -418,7 +419,10 @@ const SubmissionHistory = ({ data, sectionName }) => (
               <td>{formatDate(file.createdAt)}</td>
               <td>{file.submittedBy}</td>
               <td>
-                <button className="section-download" onClick={() => null}>
+                <button
+                  className="section-download"
+                  onClick={() => onClickDownloadReport(file)}
+                >
                   {file.fileName}
                 </button>
               </td>
@@ -626,6 +630,10 @@ const FRAReports = () => {
     )
   }
 
+  const handleDownload = (file) => {
+    dispatch(download(file))
+  }
+
   const getReportTypeLabel = () => {
     if (isUploadReportToggled) {
       const { reportType } = searchFormValues
@@ -714,7 +722,10 @@ const FRAReports = () => {
             tabIndex={0}
           >
             <PaginatedComponent pageSize={5} data={fraSubmissionHistory}>
-              <SubmissionHistory sectionName={getReportTypeLabel()} />
+              <SubmissionHistory
+                sectionName={getReportTypeLabel()}
+                onClickDownloadReport={handleDownload}
+              />
             </PaginatedComponent>
           </div>
         </>
