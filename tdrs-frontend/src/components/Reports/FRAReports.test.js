@@ -808,9 +808,5 @@ describe('FRA Reports Page', () => {
         ).not.toBeInTheDocument()
       })
     })
-
-    it('', async () => {})
-    it('', async () => {})
-    it('', async () => {})
   })
 })
