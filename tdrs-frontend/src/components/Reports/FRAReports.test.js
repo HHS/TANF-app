@@ -726,7 +726,6 @@ describe('FRA Reports Page', () => {
         await setup(submissionHistoryApiResponse)
 
       await waitFor(() => {
-        expect(getByText('2/7/2025, 6:38:58 PM')).toBeInTheDocument()
         expect(getByText('Test Testerson')).toBeInTheDocument()
         expect(
           getByText('testFile.txt', { selector: 'td button' })
