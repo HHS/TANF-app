@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('stts', '0010_alter_stt_stt_code'),
-        ('users', '0041_users_digit_group_add_datafile_permission'),
+        ('users', '0042_user_feature_flags'),
     ]
 
     operations = [
