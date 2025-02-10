@@ -398,7 +398,7 @@ const UploadForm = ({
   )
 }
 
-const SubmissionHistory = ({ data, sectionName, onClickDownloadReport }) => (
+const SubmissionHistory = ({ data, sectionName, handleDownloadFile }) => (
   <table className="usa-table usa-table--striped">
     <caption>{sectionName}</caption>
     {data && data.length > 0 ? (
@@ -421,7 +421,7 @@ const SubmissionHistory = ({ data, sectionName, onClickDownloadReport }) => (
               <td>
                 <button
                   className="section-download"
-                  onClick={() => onClickDownloadReport(file)}
+                  onClick={() => handleDownloadFile(file)}
                 >
                   {file.fileName}
                 </button>
@@ -630,7 +630,7 @@ const FRAReports = () => {
     )
   }
 
-  const handleDownload = (file) => {
+  const handleDownloadFile = (file) => {
     dispatch(download(file))
   }
 
@@ -724,7 +724,7 @@ const FRAReports = () => {
             <PaginatedComponent pageSize={5} data={fraSubmissionHistory}>
               <SubmissionHistory
                 sectionName={getReportTypeLabel()}
-                onClickDownloadReport={handleDownload}
+                handleDownloadFile={handleDownloadFile}
               />
             </PaginatedComponent>
           </div>
