@@ -7,7 +7,15 @@
     {% if regional %}
         <p><b>Your request for Region(s): {{ regions|join:", " }} access to the TANF Data Portal (TDP) has been submitted for review.</b></p>
     {% else %}
-        <p><b>Your request for {{ stt_name }} access to the TANF Data Portal (TDP) has been submitted for review.</b></p>
+        <p>
+            <b>
+                {% if not stt_name %}
+                    Your request for access to the TANF Data Portal (TDP) has been submitted for review.
+                {% else %}
+                    Your request for {{ stt_name }} access to the TANF Data Portal (TDP) has been submitted for review.
+                {% endif %}
+            </b>
+        </p>
     {% endif %}
 
     <p>You can <a href="{{ url }}" target="_blank">view the status</a> of your request by logging into TDP.</p>

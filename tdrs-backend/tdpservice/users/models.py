@@ -265,7 +265,7 @@ class User(AbstractUser):
                     self,
                     {
                         "first_name": self.first_name,
-                        "stt_name": str(self.stt),
+                        "stt_name": str(self.stt) if self.stt else None,
                         "group_permission": str(self.groups.first()),
                         "url": settings.FRONTEND_BASE_URL
                     }
