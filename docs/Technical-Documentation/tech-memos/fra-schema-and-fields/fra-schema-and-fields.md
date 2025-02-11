@@ -174,6 +174,7 @@ class FRASchema(RowSchema):
     def parse_and_validate(self, row: RawRow, generate_error):
         """Run all validation steps in order, and parse the given line into a record."""
         # Parse FRA row and run field validators, waiting for guidance on other categories of validators
+        # The implementor should reference `UpdatedErrorReport.xlsx` to gain insight into appropriate validators for fields.
         errors = []
 
         # parse row to model
