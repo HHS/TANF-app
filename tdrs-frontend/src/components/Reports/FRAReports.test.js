@@ -50,7 +50,7 @@ describe('FRA Reports Page', () => {
     expect(
       getByText('Identifying the right Fiscal Year and Quarter')
     ).toBeInTheDocument()
-    expect(getByText('Work Outcomes for TANF Exiters')).toBeInTheDocument()
+    expect(getByText('Work Outcomes of TANF Exiters')).toBeInTheDocument()
 
     // error and upload for elements do not
     expect(queryByText('Submit Report')).not.toBeInTheDocument()
@@ -279,7 +279,7 @@ describe('FRA Reports Page', () => {
       await waitFor(() => {
         expect(
           getByText(
-            'Alaska - Work Outcomes for TANF Exiters - Fiscal Year 2021 - Quarter 1 (October - December)'
+            'Alaska - Work Outcomes of TANF Exiters - Fiscal Year 2021 - Quarter 1 (October - December)'
           )
         ).toBeInTheDocument()
         expect(getByText('Submit Report')).toBeInTheDocument()
@@ -342,7 +342,7 @@ describe('FRA Reports Page', () => {
       await waitFor(() => {
         expect(
           getByText(
-            'Alaska - Work Outcomes for TANF Exiters - Fiscal Year 2021 - Quarter 1 (October - December)'
+            'Alaska - Work Outcomes of TANF Exiters - Fiscal Year 2021 - Quarter 1 (October - December)'
           )
         ).toBeInTheDocument()
         expect(getByText('Submit Report')).toBeInTheDocument()
@@ -372,7 +372,7 @@ describe('FRA Reports Page', () => {
       await waitFor(() =>
         expect(
           getByText(
-            `Successfully submitted section: Work Outcomes for TANF Exiters on ${new Date().toDateString()}`
+            `Successfully submitted section: Work Outcomes of TANF Exiters on ${new Date().toDateString()}`
           )
         ).toBeInTheDocument()
       )
@@ -613,7 +613,7 @@ describe('FRA Reports Page', () => {
         ).toBe(true)
         expect(
           getByText(
-            'Alaska - Work Outcomes for TANF Exiters - Fiscal Year 2024 - Quarter 2 (January - March)'
+            'Alaska - Work Outcomes of TANF Exiters - Fiscal Year 2024 - Quarter 2 (January - March)'
           )
         ).toBeInTheDocument()
       })
