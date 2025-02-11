@@ -1,6 +1,7 @@
 """Decoder and utility classes."""
 
 from abc import ABC, abstractmethod
+from enum import IntEnum, auto
 import chardet
 import csv
 from dataclasses import dataclass
@@ -32,6 +33,15 @@ class RawRow:
     def value_at(self, position: Position):
         """Get value at position."""
         return self.raw_data[position.start:position.end]
+
+
+class Decoder(IntEnum):
+    """Enum class for decoder types."""
+
+    UTF8 = auto()
+    CSV = auto()
+    XLSX = auto()
+
 
 class BaseDecoder(ABC):
     """Abstract base class for all decoders."""
