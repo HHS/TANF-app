@@ -449,8 +449,13 @@ const FRAReports = () => {
     {
       value: 'secondarySchoolAttainment',
       label: 'Secondary School Attainment',
+      disabled: true,
     },
-    { value: 'supplementalWorkOutcomes', label: 'Supplemental Work Outcomes' },
+    {
+      value: 'supplementalWorkOutcomes',
+      label: 'Supplemental Work Outcomes',
+      disabled: true,
+    },
   ]
 
   const resetPreviousValues = () => {
