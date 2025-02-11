@@ -5,10 +5,13 @@ from enum import IntEnum, auto
 import chardet
 import csv
 from dataclasses import dataclass
+import logging
 from openpyxl import load_workbook
+import os
 import puremagic
 from typing import List, Tuple
 
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -41,6 +44,7 @@ class Decoder(IntEnum):
     UTF8 = auto()
     CSV = auto()
     XLSX = auto()
+    UNKNOWN = auto()
 
 
 class BaseDecoder(ABC):
@@ -124,21 +128,40 @@ class DecoderFactory:
     """Factory class to get/instantiate parsers."""
 
     @classmethod
-    def get_suggested_decoder(raw_file):
-        # use puremagic and chardet to determine the correct decoder. This should probably return an enum
-        return info
+    def get_suggested_decoder(cls, raw_file):
+        """Try and determine what decoder to use based on file encoding and magic numbers."""
+        char_result = chardet.detect(raw_file.read(4096))
+        if char_result.get('encoding') == "ascii":
+            confidence = char_result.get('confidence')
+            if "csv" in os.path.splitext(raw_file.name)[-1]:
+                logger.info(f"Returning CSV decoder with a confidence score of {confidence}")
+                return Decoder.CSV
+            logger.info(f"Returning UTF-8 decoder with a confidence score of {confidence}")
+            return Decoder.UTF8
+        else:
+            try:
+                predictions = puremagic.magic_string(raw_file.read(4096))
+                most_confident = predictions[0]
+                if most_confident.extension == "xlsx":
+                    logger.info(f"Returning XLSX decoder with a confidence score of {most_confident.confidence}")
+                    return Decoder.XLSX
+            except puremagic.PureError:
+                return Decoder.UNKNOWN
+        return Decoder.UNKNOWN
 
     @classmethod
     def get_instance(cls, raw_file):
         """Return the correct parser class to be constructed manually."""
         decoder = cls.get_suggested_decoder(raw_file)
         match decoder:
-            case "UTF8":
+            case Decoder.UTF8:
                 return Utf8Decoder(raw_file)
-            case "CSV":
+            case Decoder.CSV:
                 return CsvDecoder(raw_file)
-            case "XLSX":
+            case Decoder.XLSX:
                 return XlsxDecoder(raw_file)
+            case Decoder.UNKNOWN:
+                raise ValueError("Could not determine what decoder to use for file.")
             case _:
-                raise ValueError(f"No decoder available for the file.")
+                raise ValueError("No decoder available for the file.")
 
