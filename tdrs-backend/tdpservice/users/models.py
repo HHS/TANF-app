@@ -118,14 +118,14 @@ class User(AbstractUser):
     feature_flags = models.JSONField(
         default=dict,
         help_text='Feature flags for this user. This is a JSON field that can be used to store key-value pairs. ' +
-        'E.g: {"fra_access": true}',
+        'E.g: {"fra_reports": true}',
         blank=True,
     )
 
     @property
     def has_fra_access(self):
         """Return whether or not the user has FRA access."""
-        return self.feature_flags.get('fra_access', False)
+        return self.feature_flags.get('fra_reports', False)
 
     def __str__(self):
         """Return the username as the string representation of the object."""

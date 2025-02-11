@@ -114,3 +114,11 @@ class DataFileSerializer(serializers.ModelSerializer):
         validate_file_extension(file.name)
         validate_file_infection(file, file.name, user)
         return file
+
+    def validate_section(self, section):
+        """Validate the section field."""
+        if DataFile.Section.is_fra(section):
+            user = self.context.get('user')
+            if not user.has_fra_access:
+                raise serializers.ValidationError("Section cannot be FRA")
+        return section

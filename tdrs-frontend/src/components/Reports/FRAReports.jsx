@@ -311,11 +311,11 @@ const UploadForm = ({
   const onSubmit = (e) => {
     e.preventDefault()
 
-    if (!!error || !file) {
+    if (!!error) {
       return
     }
 
-    if (file && file.id) {
+    if (!file || (file && file.id)) {
       setLocalAlertState({
         active: true,
         type: 'error',
@@ -586,6 +586,11 @@ const FRAReports = () => {
 
     setUploadReportToggled(false)
     setSearchFormValues(null)
+    setLocalAlertState({
+      active: false,
+      type: null,
+      message: null,
+    })
 
     const onSearchSuccess = () => {
       setUploadReportToggled(true)
