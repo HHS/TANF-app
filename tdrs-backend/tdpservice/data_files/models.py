@@ -119,6 +119,58 @@ class DataFile(FileRecord):
         AGGREGATE_DATA = "Aggregate Data"
         STRATUM_DATA = "Stratum Data"
 
+        FRA_WORK_OUTCOME_TANF_EXITERS = "Work Outcomes for TANF Exiters"
+        FRA_SECONDRY_SCHOOL_ATTAINMENT = "Secondary School Attainment"
+        FRA_SUPPLEMENT_WORK_OUTCOMES = "Supplemental Work Outcomes"
+
+        @classmethod
+        def is_fra(cls, section: str) -> bool:
+            """Determine if the section is a FRA section."""
+            return section in [
+                cls.FRA_WORK_OUTCOME_TANF_EXITERS,
+                cls.FRA_SECONDRY_SCHOOL_ATTAINMENT,
+                cls.FRA_SUPPLEMENT_WORK_OUTCOMES
+            ]
+
+        @classmethod
+        def is_ssp(cls, section: str) -> bool:
+            """Determine if the section is an SSP section."""
+            return section in [
+                cls.SSP_AGGREGATE_DATA,
+                cls.SSP_ACTIVE_CASE_DATA,
+                cls.SSP_CLOSED_CASE_DATA,
+                cls.SSP_STRATUM_DATA
+            ]
+
+        @classmethod
+        def is_tribal(cls, section: str) -> bool:
+            """Determine if the section is a Tribal section."""
+            return section in [
+                cls.TRIBAL_AGGREGATE_DATA,
+                cls.TRIBAL_ACTIVE_CASE_DATA,
+                cls.TRIBAL_CLOSED_CASE_DATA,
+                cls.TRIBAL_STRATUM_DATA
+            ]
+
+        @classmethod
+        def is_tanf(cls, section: str) -> bool:
+            """Determine if the section is a TANF section."""
+            return section in [
+                cls.ACTIVE_CASE_DATA,
+                cls.CLOSED_CASE_DATA,
+                cls.AGGREGATE_DATA,
+                cls.STRATUM_DATA
+            ]
+
+    @staticmethod
+    def get_fra_section_list():
+        """Return FRA section list."""
+        return [
+                DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
+                DataFile.Section.FRA_SECONDRY_SCHOOL_ATTAINMENT,
+                DataFile.Section.FRA_SUPPLEMENT_WORK_OUTCOMES
+            ]
+
     class Quarter(models.TextChoices):
         """Enum for data file Quarter."""
 
@@ -182,13 +234,12 @@ class DataFile(FileRecord):
     def prog_type(self):
         """Return the program type for a given section."""
         # e.g., 'SSP Closed Case Data'
-        if self.section.startswith('SSP'):
+        if self.Section.is_ssp(self.section):
             return 'SSP'
+        elif self.Section.is_fra(self.section):
+            return 'FRA'
         else:
             return 'TAN'
-
-        # TODO: if given a datafile (section), we can reverse back to the program b/c the
-        # section string has "tribal/ssp" in it, then process of elimination we have tanf
 
     @property
     def filename(self):

@@ -106,7 +106,7 @@ describe('Reports', () => {
     // added 1 to include the starting year
     const yearNum = fiscalYear - 2021 + 1
 
-    const select = getByLabelText('Fiscal Year (October - September)')
+    const select = getByLabelText('Fiscal Year*')
 
     expect(select).toBeInTheDocument()
 
@@ -164,10 +164,9 @@ describe('Reports', () => {
       </Provider>
     )
 
-    const sttDropdown = getByLabelText(
-      'Associated State, Tribe, or Territory*',
-      { selector: 'input' }
-    )
+    const sttDropdown = getByLabelText('State, Tribe, or Territory*', {
+      selector: 'input',
+    })
 
     // Due to weirdness with USWDS, fire a change event instead of a select
     fireEvent.change(sttDropdown, {
@@ -176,7 +175,7 @@ describe('Reports', () => {
 
     expect(sttDropdown.value).toEqual('alaska')
 
-    const yearsDropdown = getByLabelText('Fiscal Year (October - September)')
+    const yearsDropdown = getByLabelText('Fiscal Year*')
 
     fireEvent.select(yearsDropdown, {
       target: { value: '2021' },
@@ -324,7 +323,11 @@ describe('Reports', () => {
         },
       })
     })
-    expect(store.dispatch).toHaveBeenCalledTimes(14)
+    await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
+    await waitFor(() => expect(getByText('section2.txt')).toBeInTheDocument())
+    await waitFor(() => expect(getByText('section3.txt')).toBeInTheDocument())
+    await waitFor(() => expect(getByText('section4.txt')).toBeInTheDocument())
+    expect(store.dispatch).toHaveBeenCalledTimes(18)
 
     // There should be 4 more dispatches upon making the submission,
     // one request to /reports for each file
@@ -403,7 +406,7 @@ describe('Reports', () => {
 
     await waitFor(() => {
       expect(getByText('A fiscal year is required')).toBeInTheDocument()
-      expect(getByText('A quarter is required')).toBeInTheDocument()
+      expect(getByText('A fiscal quarter is required')).toBeInTheDocument()
       expect(
         getByText('A state, tribe, or territory is required')
       ).toBeInTheDocument()
@@ -525,10 +528,12 @@ describe('Reports', () => {
       })
 
       // add a file to be uploaded, but don't submit
-      fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
-        target: {
-          files: [makeTestFile('section1.txt')],
-        },
+      await waitFor(() => {
+        fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
+          target: {
+            files: [makeTestFile('section1.txt')],
+          },
+        })
       })
 
       await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
@@ -567,10 +572,12 @@ describe('Reports', () => {
       })
 
       // add a file to be uploaded, but don't submit
-      fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
-        target: {
-          files: [makeTestFile('section1.txt')],
-        },
+      await waitFor(() => {
+        fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
+          target: {
+            files: [makeTestFile('section1.txt')],
+          },
+        })
       })
 
       await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
@@ -618,10 +625,12 @@ describe('Reports', () => {
       })
 
       // add a file to be uploaded, but don't submit
-      fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
-        target: {
-          files: [makeTestFile('section1.txt')],
-        },
+      await waitFor(() => {
+        fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
+          target: {
+            files: [makeTestFile('section1.txt')],
+          },
+        })
       })
 
       await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
@@ -705,7 +714,7 @@ describe('Reports', () => {
       </Provider>
     )
 
-    const select = getByLabelText('Fiscal Year (October - September)')
+    const select = getByLabelText('Fiscal Year*')
     const options = select.children
     const expected = options.item(1).value
 
@@ -732,7 +741,7 @@ describe('Reports', () => {
       </Provider>
     )
 
-    const select = getByLabelText('Fiscal Year (October - September)')
+    const select = getByLabelText('Fiscal Year*')
     const options = select.children
     const expected = options.item(1).value
 
@@ -760,7 +769,7 @@ describe('Reports', () => {
       </Provider>
     )
 
-    expect(getByText('File Type')).toBeInTheDocument()
+    expect(getByText('File Type*')).toBeInTheDocument()
   })
 
   // should not render the File Type section if the user is not an OFA Admin and the stt has ssp set to false
@@ -785,7 +794,7 @@ describe('Reports', () => {
       </Provider>
     )
 
-    expect(queryByText('File Type')).not.toBeInTheDocument()
+    expect(queryByText('File Type*')).not.toBeInTheDocument()
   })
 
   it('OFA Admin should see the data files section when they select a stt with ssp set to true', () => {
@@ -803,7 +812,7 @@ describe('Reports', () => {
       </Provider>
     )
 
-    expect(getByText('File Type')).toBeInTheDocument()
+    expect(getByText('File Type*')).toBeInTheDocument()
   })
 
   it('OFA Admin should not see the data files section when they select a stt with ssp set to false', () => {
@@ -821,6 +830,6 @@ describe('Reports', () => {
       </Provider>
     )
 
-    expect(queryByText('File Type')).not.toBeInTheDocument()
+    expect(queryByText('File Type*')).not.toBeInTheDocument()
   })
 })

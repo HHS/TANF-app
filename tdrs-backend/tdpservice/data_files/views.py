@@ -54,6 +54,7 @@ class DataFileViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         """Override create to upload in case of successful scan."""
         logger.debug(f"{self.__class__.__name__}: {request}")
+
         response = super().create(request, *args, **kwargs)
 
         # only if file is passed the virus scan and created successfully will we perform side-effects:
@@ -68,6 +69,10 @@ class DataFileViewSet(ModelViewSet):
             logger.info(f"Preparing parse task: User META -> user: {request.user}, stt: {data_file.stt}. " +
                         f"Datafile META -> datafile: {data_file_id}, section: {data_file.section}, " +
                         f"quarter {data_file.quarter}, year {data_file.year}.")
+
+            if data_file.prog_type == 'FRA':
+                logger.debug(f"{self.__class__.__name__}: return val: {response}")
+                return response
 
             parser_task.parse.delay(data_file_id)
             logger.info("Submitted parse task to queue for datafile %s.", data_file_id)
@@ -97,9 +102,16 @@ class DataFileViewSet(ModelViewSet):
     def get_queryset(self):
         """Apply custom queryset filters."""
         queryset = super().get_queryset().order_by('-created_at')
+        FRA_SECTION_LIST = [
+                DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
+                DataFile.Section.FRA_SECONDRY_SCHOOL_ATTAINMENT,
+                DataFile.Section.FRA_SUPPLEMENT_WORK_OUTCOMES
+                ]
         if self.action == 'list':
             if self.request.query_params.get('file_type') == 'ssp-moe':
                 queryset = queryset.filter(section__contains='SSP')
+            elif self.request.query_params.get('file_type') == 'fra':
+                queryset = queryset.filter(section__in=FRA_SECTION_LIST)
             else:
                 queryset = queryset.exclude(section__contains='SSP')
 
@@ -146,7 +158,7 @@ class DataFileViewSet(ModelViewSet):
     def download_error_report(self, request, pk=None):
         """Generate and return the parsing error report xlsx."""
         datafile = self.get_object()
-        all_errors = ParserError.objects.filter(file=datafile)
+        all_errors = ParserError.objects.filter(file=datafile, deprecated=False)
         is_s3_s4 = (DataFile.Section.AGGREGATE_DATA in datafile.section or
                     DataFile.Section.STRATUM_DATA in datafile.section)
         filtered_errors = get_prioritized_queryset(all_errors, is_s3_s4)

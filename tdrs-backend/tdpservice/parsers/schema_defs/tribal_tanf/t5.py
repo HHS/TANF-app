@@ -236,8 +236,8 @@ t5 = SchemaManager(
                 ),
                 Field(
                     item="18",
-                    name="GENDER",
-                    friendly_name="Gender",
+                    name="SEX",
+                    friendly_name="Sex",
                     type="number",
                     startIndex=43,
                     endIndex=44,

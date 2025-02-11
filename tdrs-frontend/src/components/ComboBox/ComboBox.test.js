@@ -10,7 +10,7 @@ describe('ComboBox', () => {
       handleBlur: jest.fn(),
       handleSelect: jest.fn(),
       name: 'stt',
-      label: 'Associated State, Tribe, or Territory',
+      label: 'State, Tribe, or Territory',
     }
     const stts = [
       {
@@ -86,7 +86,7 @@ describe('ComboBox', () => {
       handleBlur: jest.fn(),
       handleSelect: jest.fn(),
       name: 'stt',
-      label: 'Associated State, Tribe, or Territory',
+      label: 'State, Tribe, or Territory',
     }
 
     const stts = [
@@ -161,7 +161,7 @@ describe('ComboBox', () => {
       handleSelect: jest.fn(),
       error: 'There is an error',
       name: 'stt',
-      label: 'Associated State, Tribe, or Territory',
+      label: 'State, Tribe, or Territory',
     }
 
     const stts = [
@@ -225,7 +225,7 @@ describe('ComboBox', () => {
       handleBlur: jest.fn(),
       handleSelect: jest.fn(),
       name: 'stt',
-      label: 'Associated State, Tribe, or Territory',
+      label: 'State, Tribe, or Territory',
     }
     const stts = [
       {
