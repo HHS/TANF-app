@@ -406,17 +406,17 @@ const ReportTypeSubtext = ({ reportType, reportTypeLabel }) => {
       templateLink = ''
       break
 
-    case 'secondarySchoolAttainment':
-      description = ''
-      aboutLink = ''
-      templateLink = ''
-      break
+    // case 'secondarySchoolAttainment':
+    //   description = ''
+    //   aboutLink = ''
+    //   templateLink = ''
+    //   break
 
-    case 'supplementalWorkOutcomes':
-      description = ''
-      aboutLink = ''
-      templateLink = ''
-      break
+    // case 'supplementalWorkOutcomes':
+    //   description = ''
+    //   aboutLink = ''
+    //   templateLink = ''
+    //   break
 
     default:
       break

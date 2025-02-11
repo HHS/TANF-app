@@ -345,6 +345,11 @@ describe('FRA Reports Page', () => {
             'Alaska - Work Outcomes of TANF Exiters - Fiscal Year 2021 - Quarter 1 (October - December)'
           )
         ).toBeInTheDocument()
+        expect(
+          getByText(
+            'The Work Outcomes of TANF Exiters report contains the Social Security Numbers (SSNs) of all work-eligible individuals who exit TANF in a given quarter and the dates in YYYYMM format that each individual exited TANF.'
+          )
+        ).toBeInTheDocument()
         expect(getByText('Submit Report')).toBeInTheDocument()
       })
 
@@ -377,6 +382,19 @@ describe('FRA Reports Page', () => {
         ).toBeInTheDocument()
       )
       await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(2))
+    })
+
+    it('Shows an error if a no file is selected for submission', async () => {
+      const { getByText, dispatch, getByRole, container } = await setup()
+
+      const submitButton = getByText('Submit Report', { selector: 'button' })
+      fireEvent.click(submitButton)
+
+      await waitFor(() => {
+        expect(
+          getByText('No changes have been made to data files')
+        ).toBeInTheDocument()
+      })
     })
 
     it('Shows an error if a non-allowed file type is selected', async () => {
