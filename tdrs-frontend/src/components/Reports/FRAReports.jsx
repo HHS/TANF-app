@@ -524,6 +524,11 @@ const FRAReports = () => {
 
     setUploadReportToggled(false)
     setSearchFormValues(null)
+    setLocalAlertState({
+      active: false,
+      type: null,
+      message: null,
+    })
 
     const onSearchSuccess = () => {
       setUploadReportToggled(true)
