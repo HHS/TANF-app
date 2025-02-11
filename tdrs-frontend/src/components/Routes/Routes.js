@@ -52,10 +52,10 @@ const AppRoutes = () => {
       />
       <Route
         exact
-        path="/fra-reports"
+        path="/fra-data-files"
         element={
           <PrivateRoute
-            title="FRA Reports"
+            title="FRA Data Files"
             requiredPermissions={['view_datafile', 'add_datafile']}
             requiredFeatureFlags={['fra_reports']}
             requiresApproval
