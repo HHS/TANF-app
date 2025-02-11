@@ -246,7 +246,7 @@ class SchemaManager:
         # row should know it's record type
         try:
             records = []
-            schemas = self.schema_map[row.type]
+            schemas = self.schema_map[row.record_type]
             # TODO: We pass `raw_data` for now until the `RowSchema` and `Field` classes are update to support `RawRow`.
             for schema in schemas:
                 record, is_valid, errors = schema.parse_and_validate(row.raw_data, generate_error)

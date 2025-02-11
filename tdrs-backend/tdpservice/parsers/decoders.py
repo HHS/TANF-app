@@ -27,7 +27,7 @@ class RawRow:
     """Generic wrapper for indexable row data."""
     raw_data: str | List | Tuple
     row_num: int
-    type: str
+    record_type: str
 
     def value_at(self, position: Position):
         """Get value at position."""
@@ -42,6 +42,11 @@ class BaseDecoder(ABC):
         self.current_row = 0
 
     @abstractmethod
+    def get_record_type(self, raw_data):
+        """To be implemented in child class."""
+        pass
+
+    @abstractmethod
     def decode(self) -> RawRow:
         """To be implemented in child class."""
         pass
@@ -50,10 +55,20 @@ class BaseDecoder(ABC):
 class Utf8Decoder(BaseDecoder):
     """Decoder for UTF-8 files."""
 
+    def get_record_type(self, raw_data):
+        if raw_data.startswith('HEADER'):
+            return "HEADER"
+        elif raw_data.startswith('TRAILER'):
+            return "TRAILER"
+        else:
+            return raw_data[0:2]
+
     def decode(self):
         """Decode and yield each row."""
         for row in self.raw_file:
-            yield RawRow(raw_data=row.decode().strip('\r\n'), row_num=self.current_row)
+            raw_data = row.decode().strip('\r\n')
+            record_type = self.get_record_type(raw_data)
+            yield RawRow(raw_data=raw_data, row_num=self.current_row, record_type=record_type)
             self.current_row += 1
 
 
@@ -64,10 +79,15 @@ class CsvDecoder(BaseDecoder):
         super().__init__(raw_file)
         self.csv_file = csv.reader(raw_file)
 
+    def get_record_type(self, raw_data):
+        # Until the need for more complicated logic arises, we assume this decoder is only being used for FRA files.
+        return "FRA"
+
     def decode(self):
         """Decode and yield each row."""
-        for row in self.csv_file:
-            yield RawRow(raw_data=row, row_num=self.current_row)
+        for raw_data in self.csv_file:
+            record_type = self.get_record_type(raw_data)
+            yield RawRow(raw_data=raw_data, row_num=self.current_row, record_type=record_type)
             self.current_row += 1
 
 
@@ -78,10 +98,15 @@ class XlsxDecoder(BaseDecoder):
         super().__init__(raw_file)
         self.work_book = load_workbook(raw_file)
 
+    def get_record_type(self, raw_data):
+        # Until the need for more complicated logic arises, we assume this decoder is only being used for FRA files.
+        return "FRA"
+
     def decode(self):
         """Decode and yield each row."""
-        for row in self.work_book.active.iter_rows(values_only=True):
-            yield RawRow(raw_data=row, row_num=self.current_row)
+        for raw_data in self.work_book.active.iter_rows(values_only=True):
+            record_type = self.get_record_type(raw_data)
+            yield RawRow(raw_data=raw_data, row_num=self.current_row, record_type=record_type)
             self.current_row += 1
 
 
