@@ -393,6 +393,66 @@ const UploadForm = ({
 
 const SubmissionHistory = () => <></>
 
+const ReportTypeSubtext = ({ reportType, reportTypeLabel }) => {
+  let description = ''
+  let aboutLink = ''
+  let templateLink = ''
+
+  switch (reportType) {
+    case 'workOutcomesOfTanfExiters':
+      description =
+        'The Work Outcomes of TANF Exiters report contains the Social Security Numbers (SSNs) of all work-eligible individuals who exit TANF in a given quarter and the dates in YYYYMM format that each individual exited TANF.'
+      aboutLink = ''
+      templateLink = ''
+      break
+
+    case 'secondarySchoolAttainment':
+      description = ''
+      aboutLink = ''
+      templateLink = ''
+      break
+
+    case 'supplementalWorkOutcomes':
+      description = ''
+      aboutLink = ''
+      templateLink = ''
+      break
+
+    default:
+      break
+  }
+
+  return (
+    <div className="margin-top-2">
+      <div className="margin-top-2">
+        <p>{description}</p>
+        <p>
+          <a
+            className="usa-link"
+            href={aboutLink}
+            target="_blank"
+            aria-label={`${reportTypeLabel} guidance`}
+            rel="noreferrer"
+          >
+            Read more about the {reportTypeLabel} report
+          </a>
+        </p>
+        <p>
+          <a
+            className="usa-link"
+            href={templateLink}
+            target="_blank"
+            aria-label={`${reportTypeLabel} template`}
+            rel="noreferrer"
+          >
+            Download Report Template
+          </a>
+        </p>
+      </div>
+    </div>
+  )
+}
+
 const FRAReports = () => {
   const [isUploadReportToggled, setUploadReportToggled] = useState(false)
   const [errorModalVisible, setErrorModalVisible] = useState(false)
@@ -412,7 +472,7 @@ const FRAReports = () => {
       touched: false,
     },
     reportType: {
-      value: 'workOutcomesForTanfExiters',
+      value: 'workOutcomesOfTanfExiters',
       valid: false,
       touched: false,
     },
@@ -443,8 +503,8 @@ const FRAReports = () => {
 
   const reportTypeOptions = [
     {
-      value: 'workOutcomesForTanfExiters',
-      label: 'Work Outcomes for TANF Exiters',
+      value: 'workOutcomesOfTanfExiters',
+      label: 'Work Outcomes of TANF Exiters',
     },
     {
       value: 'secondarySchoolAttainment',
@@ -633,6 +693,12 @@ const FRAReports = () => {
           >
             {makeHeaderLabel()}
           </h2>
+
+          <ReportTypeSubtext
+            reportType={searchFormValues.reportType}
+            reportTypeLabel={getReportTypeLabel()}
+          />
+
           {localAlert.active && (
             <div
               ref={alertRef}
@@ -659,6 +725,7 @@ const FRAReports = () => {
             error={uploadError}
             setError={setUploadError}
           />
+
           <SubmissionHistory />
         </>
       )}
