@@ -3,7 +3,7 @@
 
 from tdpservice.parsers.transforms import ssp_ssn_decryption_func
 from tdpservice.parsers.fields import TransformField, Field
-from tdpservice.parsers.row_schema import RowSchema, SchemaManager
+from tdpservice.parsers.row_schema import RowSchema
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.parsers.validators.util import is_quiet_preparser_errors
 from tdpservice.search_indexes.documents.ssp import SSP_M3DataSubmissionDocument
@@ -646,4 +646,4 @@ second_part_schema = RowSchema(
     ]
 )
 
-m3 = SchemaManager(schemas=[first_part_schema, second_part_schema])
+m3 = [first_part_schema, second_part_schema]

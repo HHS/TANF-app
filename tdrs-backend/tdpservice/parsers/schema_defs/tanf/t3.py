@@ -3,7 +3,7 @@
 
 from tdpservice.parsers.transforms import tanf_ssn_decryption_func
 from tdpservice.parsers.fields import TransformField, Field
-from tdpservice.parsers.row_schema import RowSchema, SchemaManager
+from tdpservice.parsers.row_schema import RowSchema
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.parsers.validators.util import is_quiet_preparser_errors
 from tdpservice.search_indexes.documents.tanf import TANF_T3DataSubmissionDocument
@@ -641,4 +641,4 @@ child_two = RowSchema(
     ],
 )
 
-t3 = SchemaManager(schemas=[child_one, child_two])
+t3 = [child_one, child_two]
