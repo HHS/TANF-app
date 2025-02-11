@@ -123,7 +123,7 @@ function Header() {
                   >
                     <NavItem
                       pathname={pathname}
-                      tabTitle="Data Files"
+                      tabTitle="TANF Data Files"
                       href="/data-files"
                     />
                   </PermissionGuard>
@@ -134,8 +134,8 @@ function Header() {
                   >
                     <NavItem
                       pathname={pathname}
-                      tabTitle="FRA Reports"
-                      href="/fra-reports"
+                      tabTitle="FRA Data Files"
+                      href="/fra-data-files"
                     />
                   </PermissionGuard>
                   {(userAccessRequestPending || userAccessRequestApproved) && (
