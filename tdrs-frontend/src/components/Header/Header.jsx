@@ -123,7 +123,7 @@ function Header() {
                   >
                     <NavItem
                       pathname={pathname}
-                      tabTitle="Data Files"
+                      tabTitle="TANF Data Files"
                       href="/data-files"
                     />
                   </PermissionGuard>

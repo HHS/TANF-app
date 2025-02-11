@@ -42,7 +42,7 @@ const AppRoutes = () => {
         path="/data-files"
         element={
           <PrivateRoute
-            title="Data Files"
+            title="TANF Data Files"
             requiredPermissions={['view_datafile', 'add_datafile']}
             requiresApproval
           >
