@@ -1,5 +1,6 @@
 import React from 'react'
 import { fireEvent, waitFor, render } from '@testing-library/react'
+import axios from 'axios'
 import { Provider } from 'react-redux'
 import { FRAReports } from '.'
 import configureStore from '../../configureStore'
@@ -380,6 +381,40 @@ describe('FRA Reports Page', () => {
             `Successfully submitted section: Work Outcomes of TANF Exiters on ${new Date().toDateString()}`
           )
         ).toBeInTheDocument()
+      )
+      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(2))
+    })
+
+    it('Shows an error if file submission failed', async () => {
+      jest.mock('axios')
+      const mockAxios = axios
+      const { getByText, dispatch, getByRole, container } = await setup()
+
+      mockAxios.post.mockRejectedValue({
+        message: 'Error',
+        response: {
+          status: 400,
+          data: { detail: 'Mock fail response' },
+        },
+      })
+
+      const uploadForm = container.querySelector('#fra-file-upload')
+      fireEvent.change(uploadForm, {
+        target: { files: [makeTestFile('report.txt')] },
+      })
+      await waitFor(() =>
+        expect(
+          getByText(
+            'Selected File report.txt. To change the selected file, click this button.'
+          )
+        ).toBeInTheDocument()
+      )
+
+      const submitButton = getByText('Submit Report')
+      fireEvent.click(submitButton)
+
+      await waitFor(() =>
+        expect(getByText('Error: Mock fail response')).toBeInTheDocument()
       )
       await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(2))
     })
