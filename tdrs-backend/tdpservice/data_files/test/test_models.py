@@ -91,7 +91,7 @@ def test_data_files_filename_is_expected(user):
                           ('SSP Closed Case Data', 'SSP'),
                           ('Active Case Data', 'TAN'),
                           ('Aggregate Data', 'TAN'),
-                          ('Work Outcomes for TANF Exiters', 'FRA'),
+                          ('Work Outcomes of TANF Exiters', 'FRA'),
                           ('Secondary School Attainment', 'FRA'),
                           ('Supplemental Work Outcomes', 'FRA')
                           ])

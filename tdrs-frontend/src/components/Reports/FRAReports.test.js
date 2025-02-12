@@ -51,7 +51,7 @@ describe('FRA Reports Page', () => {
     expect(
       getByText('Identifying the right Fiscal Year and Quarter')
     ).toBeInTheDocument()
-    expect(getByText('Work Outcomes for TANF Exiters')).toBeInTheDocument()
+    expect(getByText('Work Outcomes of TANF Exiters')).toBeInTheDocument()
 
     // error and upload for elements do not
     expect(queryByText('Submit Report')).not.toBeInTheDocument()
@@ -280,7 +280,7 @@ describe('FRA Reports Page', () => {
       await waitFor(() => {
         expect(
           getByText(
-            'Alaska - Work Outcomes for TANF Exiters - Fiscal Year 2021 - Quarter 1 (October - December)'
+            'Alaska - Work Outcomes of TANF Exiters - Fiscal Year 2021 - Quarter 1 (October - December)'
           )
         ).toBeInTheDocument()
         expect(getByText('Submit Report')).toBeInTheDocument()
@@ -343,7 +343,12 @@ describe('FRA Reports Page', () => {
       await waitFor(() => {
         expect(
           getByText(
-            'Alaska - Work Outcomes for TANF Exiters - Fiscal Year 2021 - Quarter 1 (October - December)'
+            'Alaska - Work Outcomes of TANF Exiters - Fiscal Year 2021 - Quarter 1 (October - December)'
+          )
+        ).toBeInTheDocument()
+        expect(
+          getByText(
+            'The Work Outcomes of TANF Exiters report contains the Social Security Numbers (SSNs) of all work-eligible individuals who exit TANF in a given quarter and the dates in YYYYMM format that each individual exited TANF.'
           )
         ).toBeInTheDocument()
         expect(getByText('Submit Report')).toBeInTheDocument()
@@ -373,11 +378,24 @@ describe('FRA Reports Page', () => {
       await waitFor(() =>
         expect(
           getByText(
-            `Successfully submitted section: Work Outcomes for TANF Exiters on ${new Date().toDateString()}`
+            `Successfully submitted section: Work Outcomes of TANF Exiters on ${new Date().toDateString()}`
           )
         ).toBeInTheDocument()
       )
       await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(2))
+    })
+
+    it('Shows an error if a no file is selected for submission', async () => {
+      const { getByText, dispatch, getByRole, container } = await setup()
+
+      const submitButton = getByText('Submit Report', { selector: 'button' })
+      fireEvent.click(submitButton)
+
+      await waitFor(() => {
+        expect(
+          getByText('No changes have been made to data files')
+        ).toBeInTheDocument()
+      })
     })
 
     it('Shows an error if a non-allowed file type is selected', async () => {
@@ -614,7 +632,7 @@ describe('FRA Reports Page', () => {
         ).toBe(true)
         expect(
           getByText(
-            'Alaska - Work Outcomes for TANF Exiters - Fiscal Year 2024 - Quarter 2 (January - March)'
+            'Alaska - Work Outcomes of TANF Exiters - Fiscal Year 2024 - Quarter 2 (January - March)'
           )
         ).toBeInTheDocument()
       })

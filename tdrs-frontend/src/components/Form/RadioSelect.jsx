@@ -14,7 +14,7 @@ const RadioSelect = ({
     <fieldset className="usa-fieldset">
       <legend className="usa-label text-bold">{label}</legend>
 
-      {options.map(({ label, value }, index) => (
+      {options.map(({ label, value, disabled }, index) => (
         <div className="usa-radio">
           <input
             className="usa-radio__input"
@@ -24,6 +24,7 @@ const RadioSelect = ({
             value={value}
             defaultChecked={index === 0}
             onChange={() => setValue(value)}
+            disabled={!!disabled}
           />
           <label className="usa-radio__label" htmlFor={value}>
             {label}
