@@ -1,18 +1,19 @@
 """Celery hook for parsing tasks."""
+
 from __future__ import absolute_import
 from celery import shared_task
-import logging
-from django.utils import timezone
 from django.contrib.auth.models import Group
 from django.db.utils import DatabaseError
-from tdpservice.users.models import AccountApprovalStatusChoices, User
+from django.utils import timezone
+import logging
 from tdpservice.data_files.models import DataFile, ReparseFileMeta
-from tdpservice.parsers.parse import parse_datafile
-from tdpservice.parsers.models import DataFileSummary, ParserErrorCategoryChoices, ParserError
-from tdpservice.parsers.aggregates import case_aggregates_by_month, total_errors_by_month
-from tdpservice.parsers.util import log_parser_exception, make_generate_parser_error
 from tdpservice.email.helpers.data_file import send_data_submitted_email
+from tdpservice.parsers.aggregates import case_aggregates_by_month, total_errors_by_month
+from tdpservice.parsers.models import DataFileSummary, ParserErrorCategoryChoices, ParserError
+from tdpservice.parsers.factory import ParserFactory
+from tdpservice.parsers.util import log_parser_exception, make_generate_parser_error
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
+from tdpservice.users.models import AccountApprovalStatusChoices, User
 
 
 logger = logging.getLogger(__name__)
@@ -43,7 +44,10 @@ def parse(data_file_id, reparse_id=None):
             file_meta.save()
 
         dfs = DataFileSummary.objects.create(datafile=data_file, status=DataFileSummary.Status.PENDING)
-        errors = parse_datafile(data_file, dfs)
+        parser = ParserFactory.get_instance(datafile=data_file, dfs=dfs,
+                                            section=data_file.section,
+                                            program_type=data_file.prog_type)
+        errors = parser.parse_and_validate()
         dfs.status = dfs.get_status()
 
         if "Case Data" in data_file.section:

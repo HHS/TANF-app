@@ -162,6 +162,3 @@ class DecoderFactory:
                 return XlsxDecoder(raw_file)
             case Decoder.UNKNOWN:
                 raise ValueError("Could not determine what decoder to use for file.")
-            case _:
-                raise ValueError("No decoder available for the file.")
-
