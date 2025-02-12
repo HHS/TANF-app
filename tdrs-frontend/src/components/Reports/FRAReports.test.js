@@ -696,7 +696,7 @@ describe('FRA Reports Page', () => {
       await waitFor(() => {
         expect(
           getByText(
-            'Alaska - Work Outcomes for TANF Exiters - Fiscal Year 2021 - Quarter 1 (October - December)'
+            'Alaska - Work Outcomes of TANF Exiters - Fiscal Year 2021 - Quarter 1 (October - December)'
           )
         ).toBeInTheDocument()
         expect(getByText('Submit Report')).toBeInTheDocument()
@@ -723,7 +723,7 @@ describe('FRA Reports Page', () => {
           original_filename: 'testFile.txt',
           extension: 'txt',
           quarter: 'Q1',
-          section: 'Work Outcomes for TANF Exiters',
+          section: 'Work Outcomes of TANF Exiters',
           slug: '1234-5-6-7890',
           year: '2021',
           s3_version_id: '3210',
@@ -763,7 +763,7 @@ describe('FRA Reports Page', () => {
           original_filename: `testFile${i}.txt`,
           extension: 'txt',
           quarter: 'Q1',
-          section: 'Work Outcomes for TANF Exiters',
+          section: 'Work Outcomes of TANF Exiters',
           slug: '1234-5-6-7890',
           year: '2021',
           s3_version_id: '3210',
