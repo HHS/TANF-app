@@ -659,6 +659,13 @@ const FRAReports = () => {
     return null
   }
 
+  const headerRef = useRef(null)
+  useEffect(() => {
+    if (headerRef && headerRef.current) {
+      headerRef.current.focus()
+    }
+  }, [])
+
   useEffect(() => {
     if (sttList.length === 0) {
       dispatch(fetchSttList())
@@ -687,7 +694,7 @@ const FRAReports = () => {
       {isUploadReportToggled && (
         <>
           <h2
-            // ref={headerRef}
+            ref={headerRef}
             className="font-serif-xl margin-top-5 margin-bottom-0 text-normal"
             tabIndex="-1"
           >
