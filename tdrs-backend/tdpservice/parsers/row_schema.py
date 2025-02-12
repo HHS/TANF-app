@@ -1,10 +1,14 @@
 """Row schema for datafile."""
+
+from dataclasses import dataclass
+from django.db.models import Model
 from tdpservice.parsers.models import ParserErrorCategoryChoices
 from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.validators.util import value_is_empty, ValidationErrorArgs
 from tdpservice.parsers.validators.category2 import format_error_context
 from tdpservice.parsers.util import get_record_value_by_field_name
 from tdpservice.parsers.schema_defs.utils import get_program_models
+from typing import List, Tuple
 import logging
 
 logger = logging.getLogger(__name__)
@@ -224,6 +228,15 @@ class RowSchema:
         return None
 
 
+@dataclass
+class ManagerPVResult:
+    """SchemaManager parse and validate result class."""
+
+    # TODO: Update the `records` type to align the implementation of `SchemaResult`
+    records: List[Tuple[Model, bool, List[Model]]]
+    schemas: List[RowSchema]
+
+
 class SchemaManager:
     """Manages all RowSchema's based on a file's program type and section."""
 
@@ -247,13 +260,14 @@ class SchemaManager:
         try:
             records = []
             schemas = self.schema_map[row.record_type]
-            # TODO: We pass `raw_data` for now until the `RowSchema` and `Field` classes are update to support `RawRow`.
+            # TODO: We pass `raw_data` for now until the `RowSchema` and `Field` classes are
+            # updated to support `RawRow`.
             for schema in schemas:
                 record, is_valid, errors = schema.parse_and_validate(row.raw_data, generate_error)
                 records.append((record, is_valid, errors))
-            return records
+            return ManagerPVResult(records=records, schemas=schemas)
         except Exception:
-            return [(None, False, [
+            records = [(None, False, [
                 generate_error(
                     schema=None,
                     error_category=ParserErrorCategoryChoices.PRE_CHECK,
@@ -262,6 +276,7 @@ class SchemaManager:
                     field="Record_Type",
                 )
             ])]
+            return ManagerPVResult(records=records, schemas=[])
 
     def update_encrypted_fields(self, is_encrypted):
         """Update whether schema fields are encrypted or not."""

@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class Position:
     """Generic class representing a position in a row of data."""
+
     start: int
     end: int | None = None
     is_range: bool = True
@@ -29,6 +30,7 @@ class Position:
 @dataclass
 class RawRow:
     """Generic wrapper for indexable row data."""
+
     raw_data: str | List | Tuple
     row_num: int
     record_type: str
@@ -36,6 +38,14 @@ class RawRow:
     def value_at(self, position: Position):
         """Get value at position."""
         return self.raw_data[position.start:position.end]
+
+    def value_at_is(self, position: Position, expected_value):
+        """Check if the value at position matches the expected value."""
+        return self.value_at(position) == expected_value
+
+    def __len__(self):
+        """Return the length of raw_data."""
+        return len(self.raw_data)
 
 
 class Decoder(IntEnum):
@@ -53,7 +63,7 @@ class BaseDecoder(ABC):
     def __init__(self, raw_file):
         super().__init__()
         self.raw_file = raw_file
-        self.current_row = 0
+        self.current_row_num = 0
 
     @abstractmethod
     def get_record_type(self, raw_data):
@@ -70,6 +80,7 @@ class Utf8Decoder(BaseDecoder):
     """Decoder for UTF-8 files."""
 
     def get_record_type(self, raw_data):
+        """Get the record type based on the raw data."""
         if raw_data.startswith('HEADER'):
             return "HEADER"
         elif raw_data.startswith('TRAILER'):
@@ -82,8 +93,8 @@ class Utf8Decoder(BaseDecoder):
         for row in self.raw_file:
             raw_data = row.decode().strip('\r\n')
             record_type = self.get_record_type(raw_data)
-            yield RawRow(raw_data=raw_data, row_num=self.current_row, record_type=record_type)
-            self.current_row += 1
+            yield RawRow(raw_data=raw_data, row_num=self.current_row_num, record_type=record_type)
+            self.current_row_num += 1
 
 
 class CsvDecoder(BaseDecoder):
@@ -94,6 +105,7 @@ class CsvDecoder(BaseDecoder):
         self.csv_file = csv.reader(raw_file)
 
     def get_record_type(self, raw_data):
+        """Get the record type based on the raw data."""
         # Until the need for more complicated logic arises, we assume this decoder is only being used for FRA files.
         return "FRA"
 
@@ -101,8 +113,8 @@ class CsvDecoder(BaseDecoder):
         """Decode and yield each row."""
         for raw_data in self.csv_file:
             record_type = self.get_record_type(raw_data)
-            yield RawRow(raw_data=raw_data, row_num=self.current_row, record_type=record_type)
-            self.current_row += 1
+            yield RawRow(raw_data=raw_data, row_num=self.current_row_num, record_type=record_type)
+            self.current_row_num += 1
 
 
 class XlsxDecoder(BaseDecoder):
@@ -113,6 +125,7 @@ class XlsxDecoder(BaseDecoder):
         self.work_book = load_workbook(raw_file)
 
     def get_record_type(self, raw_data):
+        """Get the record type based on the raw data."""
         # Until the need for more complicated logic arises, we assume this decoder is only being used for FRA files.
         return "FRA"
 
@@ -120,8 +133,8 @@ class XlsxDecoder(BaseDecoder):
         """Decode and yield each row."""
         for raw_data in self.work_book.active.iter_rows(values_only=True):
             record_type = self.get_record_type(raw_data)
-            yield RawRow(raw_data=raw_data, row_num=self.current_row, record_type=record_type)
-            self.current_row += 1
+            yield RawRow(raw_data=raw_data, row_num=self.current_row_num, record_type=record_type)
+            self.current_row_num += 1
 
 
 class DecoderFactory:
