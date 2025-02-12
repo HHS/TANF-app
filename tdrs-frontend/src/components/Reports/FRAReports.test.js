@@ -778,7 +778,7 @@ describe('FRA Reports Page', () => {
         await setup(submissionHistoryApiResponse)
 
       await waitFor(() => {
-        expect(getByText('Test Testerson')).toBeInTheDocument()
+        expect(getByText(/by Test Testerson/)).toBeInTheDocument()
         expect(
           getByText('testFile.txt', { selector: 'td button' })
         ).toBeInTheDocument()

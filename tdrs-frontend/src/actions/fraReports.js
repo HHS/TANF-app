@@ -91,6 +91,11 @@ export const uploadFraReport =
         }
       )
 
+      dispatch({
+        type: SET_IS_UPLOADING_FRA_REPORT,
+        payload: { isUploadingFraReport: false },
+      })
+
       dispatch(
         getFraSubmissionHistory({
           stt,
@@ -102,11 +107,10 @@ export const uploadFraReport =
 
       onSuccess()
     } catch (error) {
+      dispatch({
+        type: SET_IS_UPLOADING_FRA_REPORT,
+        payload: { isUploadingFraReport: false },
+      })
       onError(error)
     }
-
-    dispatch({
-      type: SET_IS_UPLOADING_FRA_REPORT,
-      payload: { isUploadingFraReport: false },
-    })
   }

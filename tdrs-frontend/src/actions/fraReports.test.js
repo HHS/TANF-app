@@ -197,6 +197,10 @@ describe('actions/fraReports', () => {
         data: { yay: 'success' },
       })
 
+      mockAxios.get.mockResolvedValue({
+        data: { yay: 'we did it' },
+      })
+
       await store.dispatch(
         uploadFraReport({
           stt: 'stt',
@@ -210,7 +214,7 @@ describe('actions/fraReports', () => {
 
       const actions = store.getActions()
 
-      expect(actions.length).toEqual(2)
+      expect(actions.length).toEqual(3)
 
       expect(actions[0].type).toBe(SET_IS_UPLOADING_FRA_REPORT)
       expect(actions[0].payload).toStrictEqual({
@@ -222,7 +226,13 @@ describe('actions/fraReports', () => {
         isUploadingFraReport: false,
       })
 
+      expect(actions[2].type).toBe(SET_IS_LOADING_SUBMISSION_HISTORY)
+      expect(actions[2].payload).toStrictEqual({
+        isLoadingSubmissionHistory: true,
+      })
+
       expect(axios.post).toHaveBeenCalledTimes(1)
+      expect(axios.get).toHaveBeenCalledTimes(1)
     })
 
     it('should handle fail without callbacks', async () => {
@@ -236,6 +246,10 @@ describe('actions/fraReports', () => {
         },
       })
 
+      mockAxios.get.mockResolvedValue({
+        data: { yay: 'we did it' },
+      })
+
       await store.dispatch(
         uploadFraReport({
           stt: 'stt',
@@ -262,6 +276,7 @@ describe('actions/fraReports', () => {
       })
 
       expect(axios.post).toHaveBeenCalledTimes(1)
+      expect(axios.get).toHaveBeenCalledTimes(0)
     })
 
     it('should call onSuccess', async () => {
@@ -269,6 +284,10 @@ describe('actions/fraReports', () => {
 
       mockAxios.post.mockResolvedValue({
         data: { yay: 'success' },
+      })
+
+      mockAxios.get.mockResolvedValue({
+        data: { yay: 'we did it' },
       })
 
       const onSuccess = jest.fn()
@@ -291,7 +310,7 @@ describe('actions/fraReports', () => {
 
       const actions = store.getActions()
 
-      expect(actions.length).toEqual(2)
+      expect(actions.length).toEqual(3)
 
       expect(actions[0].type).toBe(SET_IS_UPLOADING_FRA_REPORT)
       expect(actions[0].payload).toStrictEqual({
@@ -303,7 +322,13 @@ describe('actions/fraReports', () => {
         isUploadingFraReport: false,
       })
 
+      expect(actions[2].type).toBe(SET_IS_LOADING_SUBMISSION_HISTORY)
+      expect(actions[2].payload).toStrictEqual({
+        isLoadingSubmissionHistory: true,
+      })
+
       expect(axios.post).toHaveBeenCalledTimes(1)
+      expect(axios.get).toHaveBeenCalledTimes(1)
 
       expect(onSuccess).toHaveBeenCalledTimes(1)
       expect(onError).toHaveBeenCalledTimes(0)
@@ -320,6 +345,10 @@ describe('actions/fraReports', () => {
         },
       })
 
+      mockAxios.get.mockResolvedValue({
+        data: { yay: 'we did it' },
+      })
+
       const onSuccess = jest.fn()
       const onError = jest.fn()
 
@@ -353,6 +382,7 @@ describe('actions/fraReports', () => {
       })
 
       expect(axios.post).toHaveBeenCalledTimes(1)
+      expect(axios.get).toHaveBeenCalledTimes(0)
 
       expect(onSuccess).toHaveBeenCalledTimes(0)
       expect(onError).toHaveBeenCalledTimes(1)
