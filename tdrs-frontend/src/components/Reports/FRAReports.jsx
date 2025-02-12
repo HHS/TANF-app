@@ -405,8 +405,7 @@ const SubmissionHistory = ({ data, sectionName, handleDownloadFile }) => (
       <>
         <thead>
           <tr>
-            <th>Submitted On</th>
-            <th>Submitted By</th>
+            <th>Submitted</th>
             <th>File Name</th>
             <th>Total Errors</th>
             <th>Status</th>
@@ -416,8 +415,7 @@ const SubmissionHistory = ({ data, sectionName, handleDownloadFile }) => (
         <tbody>
           {data.map((file) => (
             <tr>
-              <td>{formatDate(file.createdAt)}</td>
-              <td>{file.submittedBy}</td>
+              <td>{formatDate(file.createdAt) + ' by ' + file.submittedBy}</td>
               <td>
                 <button
                   className="section-download"
