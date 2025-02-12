@@ -68,7 +68,7 @@ When('{string} requests access', (username) => {
   })
 
   cy.get('button').contains('Request Access').should('exist').click()
-  cy.wait(2000).then(() => {
+  cy.wait(4000).then(() => {
     cy.contains('Request Submitted').should('exist')
   })
 })

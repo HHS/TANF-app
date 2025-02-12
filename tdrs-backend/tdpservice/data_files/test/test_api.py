@@ -1,6 +1,7 @@
 """Tests for DataFiles Application."""
 import os
 from rest_framework import status
+from rest_framework.exceptions import ErrorDetail
 import pytest
 import base64
 import openpyxl
@@ -230,7 +231,6 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
     def test_create_data_file_fra(self, api_client, data_file_data, user):
         """Test ability to create data file metadata registry."""
         response = self.post_data_file_fra(api_client, data_file_data)
-        from rest_framework.exceptions import ErrorDetail
         assert response.data == {'section': [ErrorDetail(string='Section cannot be FRA', code='invalid')]}
         self.assert_data_file_error(response)
 

@@ -37,6 +37,16 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
 
     actions = ['reparse']
 
+    def get_queryset(self, request):
+        """Return the queryset."""
+        qs = super().get_queryset(request)
+        # return data files based on user's section
+        if not (request.user.has_fra_access or request.user.is_an_admin):
+            filtered_for_fra = qs.exclude(section__in=DataFile.get_fra_section_list())
+            return filtered_for_fra
+        else:
+            return qs
+
     def reparse(self, request, queryset):
         """Reparse the selected data files."""
         files = queryset.values_list("id", flat=True)
@@ -135,6 +145,28 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
             else:
                 return queryset
 
+    class FRA_AccessFilter(admin.SimpleListFilter):
+        """Filter datafile based on user access to FRA files."""
+
+        title = 'FRA/Non FRA Files'
+        parameter_name = 'fra_access'
+
+        def lookups(self, request, model_admin):
+            """Return a list of tuples."""
+            return [
+                ('1', 'FRA Datafile'),
+                ('0', 'Non FRA Datafile'),
+            ]
+
+        def queryset(self, request, queryset):
+            """Return a queryset."""
+            if self.value() == '1':
+                return queryset.filter(section__in=DataFile.get_fra_section_list())
+            elif self.value() == '0':
+                return queryset.exclude(section__in=DataFile.get_fra_section_list())
+            else:
+                return queryset
+
     inlines = [DataFileInline]
 
     list_display = [
@@ -161,6 +193,16 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         LatestReparseEvent,
         VersionFilter,
     ]
+
+    def get_list_filter(self, request):
+        """Get filter list in DataFile admin page."""
+        list_filter = super().get_list_filter(request)
+        user = request.user
+        if (user.is_an_admin or user.has_fra_access) and self.FRA_AccessFilter not in list_filter:
+            list_filter.append(self.FRA_AccessFilter)
+        elif not user.has_fra_access and self.FRA_AccessFilter in list_filter:
+            list_filter.remove(self.FRA_AccessFilter)
+        return list_filter
 
 @admin.register(LegacyFileTransfer)
 class LegacyFileTransferAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
