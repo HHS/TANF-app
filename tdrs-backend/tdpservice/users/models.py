@@ -251,6 +251,10 @@ class User(AbstractUser):
         The existing values can be accessed using `self._loaded_values`
         which are set by `from_db`
         """
+        # kwargs are passed via the serializer. Kwargs that do not exist in the base model must be removed befor the
+        # call to super(User, self).save(*args, **kwargs) below.
+        regions = kwargs.pop('regions', [])
+
         if not self._adding:
             current_status = self._loaded_values["account_approval_status"]
             new_status = self.account_approval_status
@@ -259,6 +263,9 @@ class User(AbstractUser):
                 """Send account status update emails after save."""
 
                 super(User, self).save(*args, **kwargs)
+
+                for region in regions:
+                    self.regions.add(region)
 
                 send_approval_status_update_email(
                     new_status,

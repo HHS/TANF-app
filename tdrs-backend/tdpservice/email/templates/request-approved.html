@@ -7,7 +7,13 @@
     {% if regional %}
         <p>Congratulations! Your request for the TANF Data Portal (TDP) is <b>approved</b> and access as a {{ group_permission }} for Region(s): {{ regions|join:", " }} <b>has been granted</b>.</p>
     {% else %}
-        <p>Congratulations! Your request for the TANF Data Portal (TDP) is <b>approved</b> and access as a {{ group_permission }} from {{ stt_name }} <b>has been granted</b>.</p>
+        <p>
+            {% if not stt_name %}
+                Congratulations! Your request for the TANF Data Portal (TDP) is <b>approved</b> and access as a {{ group_permission }} <b>has been granted</b>.
+            {% else %}
+                Congratulations! Your request for the TANF Data Portal (TDP) is <b>approved</b> and access as a {{ group_permission }} from {{ stt_name }} <b>has been granted</b>.
+            {% endif %}
+        </p>
     {% endif %}
 
     <!-- This link uses descriptive text to inform the user what will happen with the link is tapped. -->

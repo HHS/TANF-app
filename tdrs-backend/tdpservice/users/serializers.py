@@ -3,7 +3,7 @@
 import logging
 from django.contrib.auth.models import Group, Permission
 from django.core.exceptions import ValidationError
-from rest_framework import serializers
+from rest_framework import serializers, utils
 
 from tdpservice.stts.serializers import STTPrimaryKeyRelatedField, RegionPrimaryKeyRelatedField
 from tdpservice.users.models import User
@@ -143,7 +143,35 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         """Perform model validation before saving."""
-        instance = super(UserProfileSerializer, self).update(instance, validated_data)
+
+        ###############################################################################################################
+        # This code block is pulled directly from rest_framework.serializers.ModelSerializer::update.
+        # The only modification is to the line 1033 in rest_framework.serializers.ModelSerializer::update.
+        # The User model M2M fields are passed as a kwargs to `save()` so that the email context can access the
+        # fields.
+        serializers.raise_errors_on_nested_writes('update', self, validated_data)
+        info = utils.model_meta.get_field_info(instance)
+        # Simply set each attribute on the instance, and then save it.
+        # Note that unlike `.create()` we don't need to treat many-to-many
+        # relationships as being a special case. During updates we already
+        # have an instance pk for the relationships to be associated with.
+        m2m_fields = []
+        for attr, value in validated_data.items():
+            if attr in info.relations and info.relations[attr].to_many:
+                m2m_fields.append((attr, value))
+            else:
+                setattr(instance, attr, value)
+
+        # We changed this line
+        instance.save(regions=validated_data.get('regions', []))
+
+        # Note that many-to-many fields are set after updating instance.
+        # Setting m2m fields triggers signals which could potentially change
+        # updated instance and we do not want it to collide with .update()
+        for attr, value in m2m_fields:
+            field = getattr(instance, attr)
+            field.set(value)
+        ###############################################################################################################
 
         try:
             instance.validate_location()
