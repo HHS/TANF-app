@@ -376,7 +376,7 @@ const UploadForm = ({
               <Button
                 className="tanf-file-download-btn"
                 type="button"
-                onClick={handleDownload}
+                onClick={() => handleDownload(file)}
               >
                 Download {section}
               </Button>
@@ -398,7 +398,7 @@ const UploadForm = ({
   )
 }
 
-const SubmissionHistory = ({ data, sectionName, handleDownloadFile }) => (
+const SubmissionHistory = ({ data, sectionName, handleDownload }) => (
   <table className="usa-table usa-table--striped">
     <caption>{sectionName}</caption>
     {data && data.length > 0 ? (
@@ -419,7 +419,7 @@ const SubmissionHistory = ({ data, sectionName, handleDownloadFile }) => (
               <td>
                 <button
                   className="section-download"
-                  onClick={() => handleDownloadFile(file)}
+                  onClick={() => handleDownload(file)}
                 >
                   {file.fileName}
                 </button>
@@ -698,7 +698,7 @@ const FRAReports = () => {
     )
   }
 
-  const handleDownloadFile = (file) => {
+  const handleDownload = (file) => {
     dispatch(download(file))
   }
 
@@ -789,6 +789,7 @@ const FRAReports = () => {
               setUploadError(null)
               setUploadReportToggled(false)
             }}
+            handleDownload={handleDownload}
             setLocalAlertState={setLocalAlertState}
             file={selectedFile ? selectedFile : latestSubmission}
             setSelectedFile={setSelectedFile}
@@ -805,7 +806,7 @@ const FRAReports = () => {
             <PaginatedComponent pageSize={5} data={fraSubmissionHistory}>
               <SubmissionHistory
                 sectionName={getReportTypeLabel()}
-                handleDownloadFile={handleDownloadFile}
+                handleDownload={handleDownload}
               />
             </PaginatedComponent>
           </div>
