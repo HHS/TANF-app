@@ -143,7 +143,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         """Perform model validation before saving."""
-
         ###############################################################################################################
         # This code block is pulled directly from rest_framework.serializers.ModelSerializer::update.
         # The only modification is to the line 1033 in rest_framework.serializers.ModelSerializer::update.
