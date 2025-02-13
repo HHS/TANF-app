@@ -362,12 +362,12 @@ describe('FRA Reports Page', () => {
 
       const uploadForm = container.querySelector('#fra-file-upload')
       fireEvent.change(uploadForm, {
-        target: { files: [makeTestFile('report.txt')] },
+        target: { files: [makeTestFile('report.csv')] },
       })
       await waitFor(() =>
         expect(
           getByText(
-            'Selected File report.txt. To change the selected file, click this button.'
+            'Selected File report.csv. To change the selected file, click this button.'
           )
         ).toBeInTheDocument()
       )
@@ -400,12 +400,12 @@ describe('FRA Reports Page', () => {
 
       const uploadForm = container.querySelector('#fra-file-upload')
       fireEvent.change(uploadForm, {
-        target: { files: [makeTestFile('report.txt')] },
+        target: { files: [makeTestFile('report.csv')] },
       })
       await waitFor(() =>
         expect(
           getByText(
-            'Selected File report.txt. To change the selected file, click this button.'
+            'Selected File report.csv. To change the selected file, click this button.'
           )
         ).toBeInTheDocument()
       )
@@ -442,7 +442,7 @@ describe('FRA Reports Page', () => {
       await waitFor(() => {
         expect(
           getByText(
-            'Invalid extension. Accepted file types are: .txt, .ms##, .ts##, or .ts###.'
+            'Invalid extension. Accepted file types are: .csv or .xlsx.'
           )
         ).toBeInTheDocument()
       })
@@ -460,12 +460,12 @@ describe('FRA Reports Page', () => {
 
       const uploadForm = container.querySelector('#fra-file-upload')
       fireEvent.change(uploadForm, {
-        target: { files: [makeTestFile('report.txt')] },
+        target: { files: [makeTestFile('report.csv')] },
       })
 
       await waitFor(() => {
         expect(
-          getByText('You have selected the file: report.txt')
+          getByText('You have selected the file: report.csv')
         ).toBeInTheDocument()
       })
 
@@ -494,12 +494,12 @@ describe('FRA Reports Page', () => {
 
       const uploadForm = container.querySelector('#fra-file-upload')
       fireEvent.change(uploadForm, {
-        target: { files: [makeTestFile('report.txt')] },
+        target: { files: [makeTestFile('report.csv')] },
       })
 
       await waitFor(() => {
         expect(
-          getByText('You have selected the file: report.txt')
+          getByText('You have selected the file: report.csv')
         ).toBeInTheDocument()
       })
 
@@ -507,7 +507,7 @@ describe('FRA Reports Page', () => {
 
       await waitFor(() => {
         expect(
-          queryByText('You have selected the file: report.txt')
+          queryByText('You have selected the file: report.csv')
         ).not.toBeInTheDocument()
         expect(queryByText(/Submit Report/)).not.toBeInTheDocument()
       })
@@ -519,12 +519,12 @@ describe('FRA Reports Page', () => {
 
       const uploadForm = container.querySelector('#fra-file-upload')
       fireEvent.change(uploadForm, {
-        target: { files: [makeTestFile('report.txt')] },
+        target: { files: [makeTestFile('report.csv')] },
       })
       await waitFor(() =>
         expect(
           getByText(
-            'Selected File report.txt. To change the selected file, click this button.'
+            'Selected File report.csv. To change the selected file, click this button.'
           )
         ).toBeInTheDocument()
       )
@@ -558,12 +558,12 @@ describe('FRA Reports Page', () => {
 
       const uploadForm = container.querySelector('#fra-file-upload')
       fireEvent.change(uploadForm, {
-        target: { files: [makeTestFile('report.txt')] },
+        target: { files: [makeTestFile('report.csv')] },
       })
       await waitFor(() =>
         expect(
           getByText(
-            'Selected File report.txt. To change the selected file, click this button.'
+            'Selected File report.csv. To change the selected file, click this button.'
           )
         ).toBeInTheDocument()
       )
@@ -597,7 +597,7 @@ describe('FRA Reports Page', () => {
         expect(queryByText('Files Not Submitted')).not.toBeInTheDocument()
         expect(
           getByText(
-            'Selected File report.txt. To change the selected file, click this button.'
+            'Selected File report.csv. To change the selected file, click this button.'
           )
         ).toBeInTheDocument()
         expect(getByText('2021', { selector: 'option' }).selected).toBe(true)
@@ -614,12 +614,12 @@ describe('FRA Reports Page', () => {
 
       const uploadForm = container.querySelector('#fra-file-upload')
       fireEvent.change(uploadForm, {
-        target: { files: [makeTestFile('report.txt')] },
+        target: { files: [makeTestFile('report.csv')] },
       })
       await waitFor(() =>
         expect(
           getByText(
-            'Selected File report.txt. To change the selected file, click this button.'
+            'Selected File report.csv. To change the selected file, click this button.'
           )
         ).toBeInTheDocument()
       )
@@ -656,7 +656,7 @@ describe('FRA Reports Page', () => {
         expect(queryByText('Files Not Submitted')).not.toBeInTheDocument()
         expect(
           queryByText(
-            'Selected File report.txt. To change the selected file, click this button.'
+            'Selected File report.csv. To change the selected file, click this button.'
           )
         ).not.toBeInTheDocument()
         expect(getByText('2024', { selector: 'option' }).selected).toBe(true)
