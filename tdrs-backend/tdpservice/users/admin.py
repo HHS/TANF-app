@@ -41,12 +41,8 @@ class RegionInline(admin.TabularInline):
     model = User.regions.through
     verbose_name = "Regions"
     verbose_name_plural = "Regions"
-    can_delete = False
+    can_delete = True
     ordering = ["-pk"]
-
-    def has_change_permission(self, request, obj=None):
-        """Read only permissions."""
-        return False
 
 
 class UserAdmin(admin.ModelAdmin):
