@@ -107,7 +107,7 @@ class DataFileSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         """Throw an error if a user tries to update a data_file."""
         raise ImmutabilityError(instance, validated_data)
-    
+
     def validate(self, data):
         """Perform all validation steps on a given file."""
         user = self.context.get('user')
@@ -117,14 +117,6 @@ class DataFileSerializer(serializers.ModelSerializer):
         validate_file_infection(file, file.name, user)
 
         return data
-
-    # def validate_file(self, file):
-    #     """Perform all validation steps on a given file."""
-        
-    #     print('***************************** section')
-    #     print(self.context)
-        
-    #     return file
 
     def validate_section(self, section):
         """Validate the section field."""
