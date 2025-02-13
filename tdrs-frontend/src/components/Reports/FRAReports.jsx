@@ -23,7 +23,7 @@ const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
 
 const INVALID_EXT_ERROR =
-  'Invalid extension. Accepted file types are: .txt, .ms##, .ts##, or .ts###.'
+  'Invalid extension. Accepted file types are: .csv or .xlsx.'
 
 const SelectSTT = ({ valid, value, setValue }) => (
   <div
@@ -265,7 +265,7 @@ const UploadForm = ({
 
     const filereader = new FileReader()
     const imgFileTypes = ['png', 'gif', 'jpeg']
-    const allowedExtensions = /(\.txt|\.ms\d{2}|\.ts\d{2,3})$/i
+    const allowedExtensions = /(\.csv|\.xlsx)$/i
 
     const loadFile = () =>
       new Promise((resolve, reject) => {
@@ -589,6 +589,7 @@ const FRAReports = () => {
 
     setUploadReportToggled(false)
     setSearchFormValues(null)
+    setUploadError(null)
     setLocalAlertState({
       active: false,
       type: null,
@@ -617,10 +618,15 @@ const FRAReports = () => {
     }
 
     const onFileUploadError = (error) => {
+      const error_response = error.response?.data
+      const msg = error_response?.non_field_errors
+        ? error_response.non_field_errors[0]
+        : error_response?.detail
+
       setLocalAlertState({
         active: true,
         type: 'error',
-        message: ''.concat(error.message, ': ', error.response?.data?.detail),
+        message: ''.concat(error.message, ': ', msg),
       })
     }
 

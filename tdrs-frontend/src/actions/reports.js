@@ -258,7 +258,7 @@ export const submit =
           message: ''.concat(
             error.message,
             ': ',
-            error.response?.data?.file[0]
+            error.response?.data?.non_field_errors[0]
           ),
         })
       )
