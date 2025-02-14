@@ -265,7 +265,8 @@ const UploadForm = ({
 
     const filereader = new FileReader()
     const imgFileTypes = ['png', 'gif', 'jpeg']
-    const allowedExtensions = /(\.csv|\.xlsx)$/i
+    const csvExtension = /(\.csv)$/i
+    const xlsxExtension = /(\.xlsx)$/i
 
     const loadFile = () =>
       new Promise((resolve, reject) => {
@@ -279,7 +280,10 @@ const UploadForm = ({
         filereader.readAsArrayBuffer(blob)
       })
 
-    if (!allowedExtensions.exec(fileInputValue.name)) {
+    const isCsv = csvExtension.exec(fileInputValue.name)
+    const isXlsx = xlsxExtension.exec(fileInputValue.name)
+
+    if (!isCsv && !isXlsx) {
       setError(INVALID_EXT_ERROR)
       return
     }
@@ -293,10 +297,13 @@ const UploadForm = ({
       return
     }
 
-    const encodedFile = await tryGetUTF8EncodedFile(
-      filereader.result,
-      fileInputValue
-    )
+    let encodedFile = null
+
+    if (isXlsx) {
+      encodedFile = fileInputValue
+    } else {
+      encodedFile = await tryGetUTF8EncodedFile(result, fileInputValue)
+    }
 
     setSelectedFile(encodedFile)
   }
@@ -622,6 +629,10 @@ const FRAReports = () => {
       const msg = error_response?.non_field_errors
         ? error_response.non_field_errors[0]
         : error_response?.detail
+          ? error_response.detail
+          : error_response?.file
+            ? error_response.file
+            : null
 
       setLocalAlertState({
         active: true,
