@@ -1,9 +1,9 @@
 """Aggregate methods for the parsers."""
-from .row_schema import SchemaManager
-from .models import ParserError, ParserErrorCategoryChoices
-from .util import month_to_int, \
+from tdpservice.parsers.row_schema import SchemaManager
+from tdpservice.parsers.models import ParserError, ParserErrorCategoryChoices
+from tdpservice.parsers.util import month_to_int, \
     transform_to_months, fiscal_to_calendar, get_prog_from_section
-from .schema_defs.utils import get_program_models, get_text_from_df
+from tdpservice.parsers.schema_defs.utils import get_program_models, get_text_from_df
 from django.db.models import Q as Query
 
 

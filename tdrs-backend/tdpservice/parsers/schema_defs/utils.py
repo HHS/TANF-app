@@ -1,6 +1,6 @@
 """Utility functions for parsing."""
 
-from .. import schema_defs
+from tdpservice.parsers import schema_defs
 from tdpservice.data_files.models import DataFile
 import logging
 

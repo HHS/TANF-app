@@ -7,7 +7,6 @@ from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.validators.util import value_is_empty, ValidationErrorArgs
 from tdpservice.parsers.validators.category2 import format_error_context
 from tdpservice.parsers.util import get_record_value_by_field_name
-from tdpservice.parsers.schema_defs.utils import get_program_models
 from typing import List, Tuple
 import logging
 
@@ -249,6 +248,7 @@ class SchemaManager:
 
     def _init_schema_map(self):
         """Initialize all schemas for the program type and section."""
+        from tdpservice.parsers.schema_defs.utils import get_program_models
         self.schema_map = get_program_models(self.program_type, self.section)
         for schemas in self.schema_map.values():
             for schema in schemas:

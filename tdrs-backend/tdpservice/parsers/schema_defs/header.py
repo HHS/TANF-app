@@ -1,8 +1,8 @@
 """Schema for HEADER row of all submission types."""
 
 
-from ..fields import Field
-from ..row_schema import RowSchema
+from tdpservice.parsers.fields import Field
+from tdpservice.parsers.row_schema import RowSchema
 from tdpservice.parsers.validators import category1, category2
 
 
