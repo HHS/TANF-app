@@ -101,13 +101,13 @@ services:
     command: --config /usr/share/grafana/conf/custom.ini
     depends_on:
       - grafana-pg
-  
+
   alertmanager:
     restart: always
     image: prom/alertmanager:v0.27.0
-    ports: 
+    ports:
       - 9093:9093
-    volumes: 
+    volumes:
       - ./plg/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
     command: --config.file=/etc/alertmanager/alertmanager.yml --storage.path=/alertmanager --log.level=debug --web.external-url=http://localhost:3000/alerts --web.route-prefix=/alerts --cluster.listen-address=""
 

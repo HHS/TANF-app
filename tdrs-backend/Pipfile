@@ -61,6 +61,8 @@ openpyxl = "==3.1.2"
 sendgrid = "==6.10.0"
 django_prometheus = "==2.3.1"
 sentry-sdk = "==2.11.0"
+chardet = "==5.2.0"
+puremagic = "==1.28"
 
 [requires]
 python_version = "3.10.8"

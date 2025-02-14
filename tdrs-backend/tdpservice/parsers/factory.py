@@ -21,7 +21,7 @@ class ParserFactory:
         """Construct parser instance with the given kwargs."""
         program_type = kwargs.get('program_type', None)
         match program_type:
-            case "TANF" | "SSP":
+            case "TAN" | "SSP":
                 return TSTParser(**kwargs)
             case "FRA":
                 raise ValueError("FRA parser is not yet available.")
