@@ -7,9 +7,6 @@
 ## Summary
 This technical memorandum provides a set of suggestions to further abstract the `RowSchema` and `Field` classes to better support the introduction of the FRA datafile type and the parser refactor. This memo highlights key areas in the `Field` and `RowSchema` classes that are not generic and should be moved down an inheritance hierarchy thus introducing the need for better interfaces for both classes.
 
-## Out of Scope
-Call out what is out of scope for this technical memorandum and should be considered in a different technical memorandum.
-
 ## Method/Design
 
 ### Abstracting the Line
@@ -62,11 +59,10 @@ class SchemaResult:
 
 class RowSchema(ABC):
 
-    def __init__(self, record_type, document, fields=None):
+    def __init__(self, record_type, model, fields=None):
         super().__init__()
         self.record_type = record_type
-        # This will change to "model" once elastic/kibana are officially gone
-        self.document = document
+        self.model = model
         self.fields = list() if not fields else fields
         self.datafile = None
 
@@ -124,7 +120,7 @@ class TanfSspTribalSchema(RowSchema):
     def __init__(
             self,
             record_type="T1",
-            document=None,
+            model=None,
             fields=None,
             # The default hash function covers all program types with record types ending in a 6 or 7.
             generate_hashes_func=lambda line, record: (hash(line),
@@ -135,7 +131,7 @@ class TanfSspTribalSchema(RowSchema):
             postparsing_validators=[],
             quiet_preparser_errors=False,
             ):
-        super().__init__(record_type, document, fields)
+        super().__init__(record_type, model, fields)
 
         self.generate_hashes_func = generate_hashes_func
         self.should_skip_partial_dup_func = should_skip_partial_dup_func
@@ -166,10 +162,10 @@ class FRASchema(RowSchema):
     def __init__(
             self,
             record_type="FRA_RECORD",
-            document=None,
+            model=None,
             fields=None,
             ):
-        super().__init__(record_type, document, fields)
+        super().__init__(record_type, model, fields)
 
     def parse_and_validate(self, row: RawRow, generate_error):
         """Run all validation steps in order, and parse the given line into a record."""
@@ -191,7 +187,7 @@ class FRASchema(RowSchema):
 
 ```
 
-There are a few things to note from the above templates. Methods that have `# Same` in their body indicate that they would be implemented in exactly the same way as the are in the current `RowSchema` class. Only new imports have been included with the template and a distinct comment is called out since TDP is moving away from ElasticSearch and the `document` member will likely not be relevant when this is implemented. Otherwise, you will note that a very simple abstraction layer has been introduced and that all `RowSchema` subclasses have the freedom to implement their `parse_and_validate` function as they see fit. This memo also introduces the simple `SchemaResult` data class. This allows the return value of the schema's `parse_and_validate` function to be well defined and typed. This will help to prevent future developers from drilling down deep into the code to see what they should expect as a return value.
+There are a few things to note from the above templates. Methods that have `# Same` in their body indicate that they would be implemented in exactly the same way as the are in the current `RowSchema` class. Only new imports have been included with the template. Otherwise, you will note that a very simple abstraction layer has been introduced and that all `RowSchema` subclasses have the freedom to implement their `parse_and_validate` function as they see fit. This memo also introduces the simple `SchemaResult` data class. This allows the return value of the schema's `parse_and_validate` function to be well defined and typed. This will help to prevent future developers from drilling down deep into the code to see what they should expect as a return value.
 
 
 ### Field
@@ -216,6 +212,7 @@ class Field:
         friendly_name,
         type: FieldType,
         position: Position,
+        item=None,
         required=True,
         validators=[],
         ignore_errors=False
@@ -224,13 +221,14 @@ class Field:
         self.friendly_name = friendly_name
         self.type = type
         self.position = position
+        self.item = item
         self.required = required
         self.validators = validators
         self.ignore_errors = ignore_errors
 
     def __repr__(self):
         """Return a string representation of the field."""
-        return f"{self.name}({self.startIndex}-{self.endIndex})"
+        return f"{self.name}({self.position.start}-{self.position.end})"
 
     def parse_value(self, row: RawRow):
         """Parse the value for a field given a RawRow."""
@@ -254,30 +252,6 @@ class Field:
             case _:
                 logger.warning(f"Unknown field type: {self.type}.")
                 return None
-
-
-# This could technically be reabsorbed back into RowSchema since it only adds the `item` member. It's up to the
-# implementer to decide what makes the most sense.
-class ItemField:
-    """Provides a mapping between a field name/item and its position in a RawRow."""
-
-    def __init__(
-        self,
-        item,
-        name,
-        friendly_name,
-        type,
-        position: Position,
-        required=True,
-        validators=[],
-        ignore_errors=False,
-    ):
-        super().__init__(name, friendly_name, type, position, required, validators, ignore_errors)
-        self.item = item
-
-    def __repr__(self):
-        """Return a string representation of the field."""
-        return f"{self.name}({self.position.start}-{self.position.end})"
 
 
 class TransformField(ItemField):
