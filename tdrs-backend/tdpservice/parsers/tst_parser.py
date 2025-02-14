@@ -201,12 +201,14 @@ class TSTParser(BaseParser):
         if not header_is_valid:
             logger.info(f"Preparser Error: {len(header_errors)} header errors encountered.")
             self.errors['header'] = header_errors
-            self.bulk_create_errors({1: header_errors}, 1, flush=True)
+            self.num_errors += 1
+            self.bulk_create_errors({1: header_errors}, flush=True)
             return HeaderResult(is_valid=False)
         elif header_is_valid and len(header_errors) > 0:
             logger.info(f"Preparser Warning: {len(header_errors)} header warnings encountered.")
             self.errors['header'] = header_errors
-            self.bulk_create_errors({1: header_errors}, 1, flush=True)
+            self.num_errors += 1
+            self.bulk_create_errors({1: header_errors}, flush=True)
 
         # Grab important fields from header
         # TODO: just pass header_row when schemas and fields are updated to accept it.
@@ -235,7 +237,8 @@ class TSTParser(BaseParser):
             logger.info(f"Tribe Code ({field_values['tribe_code']}) inconsistency with Program Type " +
                         f"({header['program_type']}) and FIPS Code ({field_values['state_fips']}).",)
             self.errors['header'] = [tribe_result.error]
-            self.bulk_create_errors({1: [tribe_result.error]}, 1, flush=True)
+            self.num_errors += 1
+            self.bulk_create_errors({1: [tribe_result.error]}, flush=True)
             return HeaderResult(is_valid=False)
 
         # Ensure file section matches upload section
@@ -249,7 +252,8 @@ class TSTParser(BaseParser):
             logger.info(f"Preparser Error -> Section is not valid: {section_result.error}")
             self.errors['document'] = [section_result.error]
             unsaved_parser_errors = {1: [section_result.error]}
-            self.bulk_create_errors(unsaved_parser_errors, 1, flush=True)
+            self.num_errors += 1
+            self.bulk_create_errors(unsaved_parser_errors, flush=True)
             return HeaderResult(is_valid=False)
 
         rpt_month_year_result = category1.validate_header_rpt_month_year(
@@ -261,7 +265,8 @@ class TSTParser(BaseParser):
             logger.info(f"Preparser Error -> Rpt Month Year is not valid: {rpt_month_year_result.error}")
             self.errors['document'] = [rpt_month_year_result.error]
             unsaved_parser_errors = {1: [rpt_month_year_result.error]}
-            self.bulk_create_errors(unsaved_parser_errors, 1, flush=True)
+            self.num_errors += 1
+            self.bulk_create_errors(unsaved_parser_errors, flush=True)
             return HeaderResult(is_valid=False)
 
         return HeaderResult(is_valid=True, header=header, program_type=program_type, is_encrypted=is_encrypted)
