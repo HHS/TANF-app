@@ -111,10 +111,12 @@ class DataFileSerializer(serializers.ModelSerializer):
     def validate(self, data):
         """Perform all validation steps on a given file."""
         user = self.context.get('user')
-        file = data['file']
-        section = data['section']
-        validate_file_extension(file.name, is_fra=DataFile.Section.is_fra(section))
-        validate_file_infection(file, file.name, user)
+        file = data['file'] if 'file' in data else None
+        section = data['section'] if 'section' in data else None
+
+        if file and section:
+            validate_file_extension(file.name, is_fra=DataFile.Section.is_fra(section))
+            validate_file_infection(file, file.name, user)
 
         return data
 

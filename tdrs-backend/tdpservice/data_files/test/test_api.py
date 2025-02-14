@@ -234,13 +234,13 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
         assert response.data == {'section': [ErrorDetail(string='Section cannot be FRA', code='invalid')]}
         self.assert_data_file_error(response)
 
-    def test_create_data_file_fra_with_feat_flag(self, api_client, data_file_data, user):
+    def test_create_data_file_fra_with_feat_flag(self, api_client, csv_data_file, user):
         """Test ability to create data file metadata registry."""
         user.feature_flags = {"fra_reports": True}
         user.save()
-        response = self.post_data_file_fra(api_client, data_file_data)
+        response = self.post_data_file_fra(api_client, csv_data_file)
         self.assert_data_file_created(response)
-        self.assert_data_file_exists(data_file_data, 1, user)
+        self.assert_data_file_exists(csv_data_file, 1, user)
 
     def test_data_file_file_version_increment(
         self,
