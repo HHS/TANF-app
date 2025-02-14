@@ -145,10 +145,12 @@ const SearchForm = ({
 
     let errors = 0
     Object.keys(newFormState).forEach((key) => {
-      if (key !== 'errors') {
-        if (newFormState[key].touched && !newFormState[key].valid) {
-          errors += 1
-        }
+      if (
+        key !== 'errors' &&
+        newFormState[key].touched &&
+        !newFormState[key].valid
+      ) {
+        errors += 1
       }
     })
 
