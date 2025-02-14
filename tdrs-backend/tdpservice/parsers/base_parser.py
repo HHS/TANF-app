@@ -56,7 +56,7 @@ class BaseParser(ABC):
             num_db_records_created = 0
             num_expected_db_records = 0
             num_elastic_records_created = 0
-            for document, records in self.unsaved_records.items():
+            for document, records in self.unsaved_records.get_bulk_create_struct().items():
                 try:
                     num_expected_db_records += len(records)
                     created_objs = document.Django.model.objects.bulk_create(records)

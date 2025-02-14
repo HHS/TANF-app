@@ -63,6 +63,7 @@ class TSTParser(BaseParser):
         case_hash = None
         for row in self.decoder.decode():
             offset += len(row)
+            self.current_row = row
             row_number = self.decoder.current_row_num
 
             self.header_count += int(row.value_at_is(HEADER_POSITION, "HEADER"))
@@ -162,6 +163,7 @@ class TSTParser(BaseParser):
         # This is the last chance to successfully create the records.
         all_created = self.bulk_create_records(self.header_count, flush=True)
 
+        self.delete_serialized_records()
         self.create_no_records_created_pre_check_error()
 
         if not all_created:
@@ -177,8 +179,6 @@ class TSTParser(BaseParser):
         self.case_consistency_validator.clear_errors()
 
         self.bulk_create_errors(flush=True)
-
-        self.delete_serialized_records()
 
         logger.debug(f"Cat4 validator cached {self.case_consistency_validator.total_cases_cached} cases and "
                      f"validated {self.case_consistency_validator.total_cases_validated} of them.")
@@ -261,7 +261,6 @@ class TSTParser(BaseParser):
             self.bulk_create_errors(unsaved_parser_errors, 1, flush=True)
             return HeaderResult(is_valid=False)
 
-        self.header_count += 1
         return HeaderResult(is_valid=True, header=header, program_type=program_type)
 
     def validate_case_consistency(self):
