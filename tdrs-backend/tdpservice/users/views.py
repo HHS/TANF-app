@@ -33,7 +33,6 @@ class UserViewSet(
 
     queryset = User.objects\
         .select_related("stt")\
-        .select_related("region")\
         .prefetch_related("groups__permissions")
 
     def get_serializer_class(self):
