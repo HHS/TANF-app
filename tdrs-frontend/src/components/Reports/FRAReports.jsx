@@ -400,7 +400,7 @@ const UploadForm = ({
 
 const SubmissionHistory = ({ data, sectionName, handleDownload }) => (
   <table className="usa-table usa-table--striped">
-    <caption>{sectionName}</caption>
+    <caption>{sectionName} Submission History</caption>
     {data && data.length > 0 ? (
       <>
         <thead>
