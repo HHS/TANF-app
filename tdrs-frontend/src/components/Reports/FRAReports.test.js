@@ -357,7 +357,7 @@ describe('FRA Reports Page', () => {
       return { ...component, ...store }
     }
 
-    it('Allows text files to be selected and submitted', async () => {
+    it('Allows csv files to be selected and submitted', async () => {
       const { getByText, dispatch, getByRole, container } = await setup()
 
       const uploadForm = container.querySelector('#fra-file-upload')
@@ -368,6 +368,38 @@ describe('FRA Reports Page', () => {
         expect(
           getByText(
             'Selected File report.csv. To change the selected file, click this button.'
+          )
+        ).toBeInTheDocument()
+      )
+
+      const submitButton = getByText('Submit Report')
+      fireEvent.click(submitButton)
+
+      await waitFor(() =>
+        expect(
+          getByText(
+            `Successfully submitted section: Work Outcomes of TANF Exiters on ${new Date().toDateString()}`
+          )
+        ).toBeInTheDocument()
+      )
+      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(2))
+    })
+
+    it('Allows xlsx files to be selected and submitted', async () => {
+      const { getByText, dispatch, getByRole, container } = await setup()
+
+      const uploadForm = container.querySelector('#fra-file-upload')
+      fireEvent.change(uploadForm, {
+        target: {
+          files: [
+            makeTestFile('report.xlsx', ['asdfad'], 'application/vnd.ms-excel'),
+          ],
+        },
+      })
+      await waitFor(() =>
+        expect(
+          getByText(
+            'Selected File report.xlsx. To change the selected file, click this button.'
           )
         ).toBeInTheDocument()
       )

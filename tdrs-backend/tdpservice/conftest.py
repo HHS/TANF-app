@@ -317,6 +317,23 @@ def data_file_data(base_data_file_data, data_file):
 
 
 @pytest.fixture
+def csv_data_file(data_analyst, fake_file):
+    """Return a CSV data file for testing FRA uploads."""
+    return {
+        'file': create_temporary_file(fake_file, 'report.csv'),
+        "original_filename": 'report.csv',
+        "slug": str(uuid.uuid4()),
+        "extension": "txt",
+        "section": "Active Case Data",
+        "user": str(data_analyst.id),
+        "quarter": "Q1",
+        "year": 2020,
+        "stt": int(data_analyst.stt.id),
+        "ssp": False,
+    }
+
+
+@pytest.fixture
 def regional_data_file_data(base_regional_data_file_data, data_file):
     """Return data file creation data for a reigon."""
     return {
