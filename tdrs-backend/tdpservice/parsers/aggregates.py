@@ -1,5 +1,4 @@
 """Aggregate methods for the parsers."""
-from tdpservice.parsers.row_schema import SchemaManager
 from tdpservice.parsers.models import ParserError, ParserErrorCategoryChoices
 from tdpservice.parsers.util import month_to_int, \
     transform_to_months, fiscal_to_calendar, get_prog_from_section
@@ -38,8 +37,7 @@ def case_aggregates_by_month(df, dfs_status):
 
         case_numbers = set()
         for schema_model in schema_models:
-            if isinstance(schema_model, SchemaManager):
-                schema_model = schema_model.schemas[0]
+            schema_model = schema_model[0]
 
             curr_case_numbers = set(schema_model.document.Django.model.objects.filter(datafile=df,
                                                                                       RPT_MONTH_YEAR=rpt_month_year)

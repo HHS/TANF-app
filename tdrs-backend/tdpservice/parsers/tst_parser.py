@@ -31,6 +31,7 @@ class HeaderResult:
     is_valid: bool
     header: dict | None = None
     program_type: str | None = None
+    is_encrypted: bool = False
 
 
 class TSTParser(BaseParser):
@@ -49,6 +50,8 @@ class TSTParser(BaseParser):
         if not header_result.is_valid:
             return self.errors
 
+        self.schema_manager.update_encrypted_fields(header_result.is_encrypted)
+
         cat4_error_generator = make_generate_case_consistency_parser_error(self.datafile)
         self.case_consistency_validator = CaseConsistencyValidator(
             header_result.header,
@@ -64,7 +67,7 @@ class TSTParser(BaseParser):
         for row in self.decoder.decode():
             offset += len(row)
             self.current_row = row
-            row_number = self.decoder.current_row_num
+            self.current_row_num = self.decoder.current_row_num
 
             self.header_count += int(row.value_at_is(HEADER_POSITION, "HEADER"))
             self.trailer_count += int(row.value_at_is(TRAILER_POSITION, "TRAILER"))
@@ -72,11 +75,11 @@ class TSTParser(BaseParser):
             is_last_line = offset == file_length
             self.evaluate_trailer(is_last_line)
 
-            generate_error = make_generate_parser_error(self.datafile, row_number)
+            generate_error = make_generate_parser_error(self.datafile, self.current_row_num)
 
             if self.header_count > 1:
                 logger.info("Preparser Error -> Multiple headers found for file: "
-                            f"{self.datafile.id} on line: {row_number}.")
+                            f"{self.datafile.id} on line: {self.current_row_num}.")
                 self.errors.update({'document': ['Multiple headers found.']})
                 err_obj = generate_error(
                     schema=None,
@@ -85,7 +88,7 @@ class TSTParser(BaseParser):
                     record=None,
                     field=None
                 )
-                preparse_error = {row_number: [err_obj]}
+                preparse_error = {self.current_row_num: [err_obj]}
                 self.unsaved_parser_errors.update(preparse_error)
                 self.rollback_records()
                 self.rollback_parser_errors()
@@ -107,11 +110,11 @@ class TSTParser(BaseParser):
                 record_number += 1
                 record, record_is_valid, record_errors = r
                 if not record_is_valid:
-                    logger.debug(f"Record #{i} from line {row_number} is invalid.")
-                    line_errors = self.errors.get(f"{row_number}_{i}", {})
+                    logger.debug(f"Record #{i} from line {self.current_row_num} is invalid.")
+                    line_errors = self.errors.get(f"{self.current_row_num}_{i}", {})
                     line_errors.update({record_number: record_errors})
-                    self.errors.update({f"{row_number}_{i}": record_errors})
-                    self.unsaved_parser_errors.update({f"{row_number}_{i}": record_errors})
+                    self.errors.update({f"{self.current_row_num}_{i}": record_errors})
+                    self.unsaved_parser_errors.update({f"{self.current_row_num}_{i}": record_errors})
                     self.num_errors += len(record_errors)
                 if record:
                     schema = schemas[i]
@@ -121,11 +124,11 @@ class TSTParser(BaseParser):
                         record,
                         schema,
                         row.raw_data,
-                        row_number,
+                        self.current_row_num,
                         record_has_errors
                     )
                     # TODO: update schema.document when document is removed.
-                    self.unsaved_records.add_record(case_hash, (record, schema.document), row_number)
+                    self.unsaved_records.add_record(case_hash, (record, schema.document), self.current_row_num)
                     was_removed = self.unsaved_records.remove_case_due_to_errors(should_remove, case_hash_to_remove)
                     self.case_consistency_validator.update_removed(case_hash_to_remove, should_remove, was_removed)
                     self.dfs.total_number_of_records_in_file += 1
@@ -151,7 +154,7 @@ class TSTParser(BaseParser):
             )
             self.rollback_records()
             self.rollback_parser_errors()
-            preparse_error = {row_number: [err_obj]}
+            preparse_error = {self.current_row_num: [err_obj]}
             self.bulk_create_errors(flush=True)
             return self.errors
 
@@ -261,7 +264,7 @@ class TSTParser(BaseParser):
             self.bulk_create_errors(unsaved_parser_errors, 1, flush=True)
             return HeaderResult(is_valid=False)
 
-        return HeaderResult(is_valid=True, header=header, program_type=program_type)
+        return HeaderResult(is_valid=True, header=header, program_type=program_type, is_encrypted=is_encrypted)
 
     def validate_case_consistency(self):
         """Force category four validation if we have reached the last case in the file."""
