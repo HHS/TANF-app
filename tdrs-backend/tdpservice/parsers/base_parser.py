@@ -108,7 +108,7 @@ class BaseParser(ABC):
     def rollback_records(self):
         """Delete created records in the event of a failure."""
         logger.info("Rolling back created records.")
-        for document in self.unsaved_records:
+        for document in self.unsaved_records.get_bulk_create_struct():
             try:
                 model = document.Django.model
                 qset = model.objects.filter(datafile=self.datafile)

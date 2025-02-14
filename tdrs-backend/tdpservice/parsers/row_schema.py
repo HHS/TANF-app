@@ -248,8 +248,9 @@ class SchemaManager:
 
     def _init_schema_map(self):
         """Initialize all schemas for the program type and section."""
-        from tdpservice.parsers.schema_defs.utils import get_program_models
-        self.schema_map = get_program_models(self.program_type, self.section)
+        from tdpservice.parsers.schema_defs.utils import get_program_models, get_text_from_df
+        short_section = get_text_from_df(self.datafile)['section']
+        self.schema_map = get_program_models(self.program_type, short_section)
         for schemas in self.schema_map.values():
             for schema in schemas:
                 schema.datafile = self.datafile
