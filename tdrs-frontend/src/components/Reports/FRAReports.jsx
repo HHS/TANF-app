@@ -413,8 +413,10 @@ const ReportTypeSubtext = ({ reportType, reportTypeLabel }) => {
     case 'workOutcomesOfTanfExiters':
       description =
         'The Work Outcomes of TANF Exiters report contains the Social Security Numbers (SSNs) of all work-eligible individuals who exit TANF in a given quarter and the dates in YYYYMM format that each individual exited TANF.'
-      aboutLink = ''
-      templateLink = ''
+      aboutLink =
+        'https://acf.gov/sites/default/files/documents/ofa/1A.Instructions-work-outcomes-of-TANF-exiters-report.pdf'
+      templateLink =
+        'https://acf.gov/sites/default/files/documents/ofa/1B.TANF-work-outcomes-of-TANF-exiters-report-example-file-submission.zip'
       break
 
     // case 'secondarySchoolAttainment':
