@@ -17,17 +17,12 @@ logger = logging.getLogger(__name__)
 class BaseParser(ABC):
     """Abstract base class for all parsers."""
 
-    def __init__(self, datafile, dfs, section, program_type):
+    def __init__(self, datafile, dfs, section):
         super().__init__()
         self.datafile = datafile
         self.dfs = dfs
         self.section = section
-        self.program_type = program_type
-
-        # Since we know the program type and the section of the file. We can explicitely initialize the schema manager.
-        # This would involve making the schema manager "smarter". That is, we need to give the manager it's section and
-        # program type, then it can instantiate all of the correct row schemas and parse more explicitely.
-        self.schema_manager = SchemaManager(datafile, program_type, section)
+        self.program_type = None
 
         # Initialized decoder.
         self.decoder = DecoderFactory.get_instance(datafile.file)
@@ -47,6 +42,13 @@ class BaseParser(ABC):
         """To be overriden in child class."""
         # Should have the same return as parse.py::parse_datafile
         pass
+
+    def _init_schema_manager(self, program_type):
+        """Initialize the schema manager with the given program type."""
+        # program_type is manipulated by some parsers. E.g. the tst_parser has to prefix a tribal TANF's program type
+        # with "Tribal" since it's base program type would just be TANF.
+        self.program_type = program_type
+        self.schema_manager = SchemaManager(self.datafile, self.program_type, self.section)
 
     def bulk_create_records(self, header_count, flush=False):
         """Bulk create unsaved_records."""

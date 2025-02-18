@@ -19,7 +19,7 @@ class ParserFactory:
     @classmethod
     def get_instance(cls, **kwargs):
         """Construct parser instance with the given kwargs."""
-        program_type = kwargs.get('program_type', None)
+        program_type = kwargs.pop('program_type', None)
         match program_type:
             case "TAN" | "SSP":
                 return TSTParser(**kwargs)

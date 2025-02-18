@@ -37,8 +37,8 @@ class HeaderResult:
 class TSTParser(BaseParser):
     """Parser for TANF, SSP, and Tribal datafiles."""
 
-    def __init__(self, datafile, dfs, section, program_type):
-        super().__init__(datafile, dfs, section, program_type)
+    def __init__(self, datafile, dfs, section):
+        super().__init__(datafile, dfs, section)
         self.case_consistency_validator = None
         self.multiple_trailer_errors = False
         self.header_count = 0
@@ -50,6 +50,7 @@ class TSTParser(BaseParser):
         if not header_result.is_valid:
             return self.errors
 
+        self._init_schema_manager(header_result.program_type)
         self.schema_manager.update_encrypted_fields(header_result.is_encrypted)
 
         cat4_error_generator = make_generate_case_consistency_parser_error(self.datafile)
