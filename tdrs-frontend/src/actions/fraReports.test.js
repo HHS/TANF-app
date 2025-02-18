@@ -221,14 +221,14 @@ describe('actions/fraReports', () => {
         isUploadingFraReport: true,
       })
 
-      expect(actions[1].type).toBe(SET_IS_UPLOADING_FRA_REPORT)
+      expect(actions[1].type).toBe(SET_IS_LOADING_SUBMISSION_HISTORY)
       expect(actions[1].payload).toStrictEqual({
-        isUploadingFraReport: false,
+        isLoadingSubmissionHistory: true,
       })
 
-      expect(actions[2].type).toBe(SET_IS_LOADING_SUBMISSION_HISTORY)
+      expect(actions[2].type).toBe(SET_IS_UPLOADING_FRA_REPORT)
       expect(actions[2].payload).toStrictEqual({
-        isLoadingSubmissionHistory: true,
+        isUploadingFraReport: false,
       })
 
       expect(axios.post).toHaveBeenCalledTimes(1)
@@ -317,14 +317,14 @@ describe('actions/fraReports', () => {
         isUploadingFraReport: true,
       })
 
-      expect(actions[1].type).toBe(SET_IS_UPLOADING_FRA_REPORT)
+      expect(actions[1].type).toBe(SET_IS_LOADING_SUBMISSION_HISTORY)
       expect(actions[1].payload).toStrictEqual({
-        isUploadingFraReport: false,
+        isLoadingSubmissionHistory: true,
       })
 
-      expect(actions[2].type).toBe(SET_IS_LOADING_SUBMISSION_HISTORY)
+      expect(actions[2].type).toBe(SET_IS_UPLOADING_FRA_REPORT)
       expect(actions[2].payload).toStrictEqual({
-        isLoadingSubmissionHistory: true,
+        isUploadingFraReport: false,
       })
 
       expect(axios.post).toHaveBeenCalledTimes(1)
