@@ -89,6 +89,7 @@ class TSTParser(BaseParser):
                     field=None
                 )
                 preparse_error = {self.current_row_num: [err_obj]}
+                self.unsaved_parser_errors = dict()
                 self.unsaved_parser_errors.update(preparse_error)
                 self.rollback_records()
                 self.rollback_parser_errors()

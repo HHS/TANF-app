@@ -32,6 +32,7 @@ class RawRow:
     """Generic wrapper for indexable row data."""
 
     raw_data: str | List | Tuple
+    raw_len: int
     row_num: int
     record_type: str
 
@@ -45,7 +46,7 @@ class RawRow:
 
     def __len__(self):
         """Return the length of raw_data."""
-        return len(self.raw_data)
+        return self.raw_len
 
 
 class Decoder(IntEnum):
@@ -90,10 +91,11 @@ class Utf8Decoder(BaseDecoder):
 
     def decode(self):
         """Decode and yield each row."""
-        for row in self.raw_file:
-            raw_data = row.decode().strip('\r\n')
+        for raw_data in self.raw_file:
+            raw_len = len(raw_data)
+            raw_data = raw_data.decode().strip('\r\n')
             record_type = self.get_record_type(raw_data)
-            yield RawRow(raw_data=raw_data, row_num=self.current_row_num, record_type=record_type)
+            yield RawRow(raw_data=raw_data, raw_len=raw_len, row_num=self.current_row_num, record_type=record_type)
             self.current_row_num += 1
 
 
@@ -112,8 +114,9 @@ class CsvDecoder(BaseDecoder):
     def decode(self):
         """Decode and yield each row."""
         for raw_data in self.csv_file:
+            raw_len = len(raw_data)
             record_type = self.get_record_type(raw_data)
-            yield RawRow(raw_data=raw_data, row_num=self.current_row_num, record_type=record_type)
+            yield RawRow(raw_data=raw_data, raw_len=raw_len, row_num=self.current_row_num, record_type=record_type)
             self.current_row_num += 1
 
 
@@ -132,8 +135,9 @@ class XlsxDecoder(BaseDecoder):
     def decode(self):
         """Decode and yield each row."""
         for raw_data in self.work_book.active.iter_rows(values_only=True):
+            raw_len = len(raw_data)
             record_type = self.get_record_type(raw_data)
-            yield RawRow(raw_data=raw_data, row_num=self.current_row_num, record_type=record_type)
+            yield RawRow(raw_data=raw_data, raw_len=raw_len, row_num=self.current_row_num, record_type=record_type)
             self.current_row_num += 1
 
 
