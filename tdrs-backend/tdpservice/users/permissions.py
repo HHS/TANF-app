@@ -109,10 +109,8 @@ def is_own_region(user, requested_stt):
         STT.objects.get(id=requested_stt).region
         if requested_stt else None
     )
-    return bool(
-        user.region is not None and
-        (requested_region in [None, user.region])
-    )
+
+    return bool(requested_region is None or requested_region in user.regions.all())
 
 
 def is_own_stt(user, requested_stt):
@@ -205,12 +203,13 @@ class DataFilePermissions(DjangoModelCRUDPermissions):
 
         # Regional Staff can only see files uploaded for their designated Region
         if request.user.is_regional_staff:
-            user_region = (
-                request.user.region.id
-                if hasattr(request.user, 'region')
+            user_regions = (
+                request.user.regions.all()
+                if hasattr(request.user, 'regions')
                 else None
             )
-            return user_region == obj.stt.region.id
+
+            return obj.stt.region in user_regions
 
         return super().has_object_permission(request, view, obj)
 
@@ -239,12 +238,12 @@ class UserPermissions(DjangoModelCRUDPermissions):
         """
         # Regional Staff can only see files uploaded for their designated Region
         if request.user.groups.filter(name="OFA Regional Staff").exists():
-            user_region = (
-                request.user.region.id
-                if hasattr(request.user, 'region')
+            user_regions = (
+                request.user.regions.all()
+                if hasattr(request.user, 'regions')
                 else None
             )
-            return user_region == obj.stt.region_id
+            return obj.stt.region in user_regions
 
         # Check if user is an admin
         is_admin = request.user.groups.filter(name__in=["OFA System Admin", "OFA Admin"]).exists()
