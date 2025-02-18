@@ -30,6 +30,17 @@ class AccountApprovalStatusChoices(models.TextChoices):
     # is "pending", "approved", and "denied" enough to cover functionality?
 
 
+class RegionMeta(models.Model):
+    """Meta data model representing the relationship between a Region and a User."""
+
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='region_metas')
+    region = models.ForeignKey(
+        Region,
+        on_delete=models.CASCADE,
+        related_name='region_metas'
+    )
+
+
 class User(AbstractUser):
     """Define user fields and methods."""
 
@@ -48,11 +59,11 @@ class User(AbstractUser):
         blank=True
     )
 
-    region = models.ForeignKey(
+    regions = models.ManyToManyField(
         Region,
-        on_delete=models.deletion.SET_NULL,
-        related_name='users',
-        null=True,
+        through=RegionMeta,
+        help_text="Regions this user is associated with.",
+        related_name="regions",
         blank=True
     )
 
@@ -114,6 +125,19 @@ class User(AbstractUser):
     _loaded_values = None
     _adding = True
 
+    # Feature flag for the user to enable or disable FRA access
+    feature_flags = models.JSONField(
+        default=dict,
+        help_text='Feature flags for this user. This is a JSON field that can be used to store key-value pairs. ' +
+        'E.g: {"fra_access": true}',
+        blank=True,
+    )
+
+    @property
+    def has_fra_access(self):
+        """Return whether or not the user has FRA access."""
+        return self.feature_flags.get('fra_access', False)
+
     def __str__(self):
         """Return the username as the string representation of the object."""
         return self.username
@@ -126,17 +150,18 @@ class User(AbstractUser):
 
     def validate_location(self):
         """Throw a validation error if a user has a location type incompatable with their role."""
-        if self.region and self.stt:
+        regional = self.regions.count()
+        if regional and self.stt:
             raise ValidationError(
                 _("A user may only have a Region or STT assigned, not both.")
             )
 
-        if self.groups.count() == 0 and (self.stt or self.region):
+        if self.groups.count() == 0 and (self.stt or regional):
             return
 
         if (
             not (self.is_regional_staff or self.is_data_analyst or self.is_developer)
-        ) and (self.stt or self.region):
+        ) and (self.stt or regional):
             raise ValidationError(
                 _(
                     "Users other than Regional Staff, Developers, Data Analysts do not get assigned a location"
@@ -151,7 +176,7 @@ class User(AbstractUser):
             )
         elif (
             self.is_data_analyst
-            and self.region
+            and regional
         ):
             raise ValidationError(
                 _("Data Analyst cannot have a location type other than stt")
@@ -205,7 +230,7 @@ class User(AbstractUser):
     @property
     def location(self):
         """Return the STT or Region based on which is not null."""
-        return self.stt if self.stt else self.region
+        return self.stt if self.stt else self.regions.all()
 
     @classmethod
     def from_db(cls, db, field_names, values):
@@ -226,6 +251,10 @@ class User(AbstractUser):
         The existing values can be accessed using `self._loaded_values`
         which are set by `from_db`
         """
+        # kwargs are passed via the serializer. Kwargs that do not exist in the base model must be removed befor the
+        # call to super(User, self).save(*args, **kwargs) below.
+        regions = kwargs.pop('regions', [])
+
         if not self._adding:
             current_status = self._loaded_values["account_approval_status"]
             new_status = self.account_approval_status
@@ -235,12 +264,15 @@ class User(AbstractUser):
 
                 super(User, self).save(*args, **kwargs)
 
+                for region in regions:
+                    self.regions.add(region)
+
                 send_approval_status_update_email(
                     new_status,
                     self,
                     {
                         "first_name": self.first_name,
-                        "stt_name": str(self.stt),
+                        "stt_name": str(self.stt) if self.stt else None,
                         "group_permission": str(self.groups.first()),
                         "url": settings.FRONTEND_BASE_URL
                     }

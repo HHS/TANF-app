@@ -1,6 +1,7 @@
 """Tests for DataFiles Application."""
 import os
 from rest_framework import status
+from rest_framework.exceptions import ErrorDetail
 import pytest
 import base64
 import openpyxl
@@ -66,6 +67,11 @@ class DataFileAPITestBase:
     def assert_data_file_created(response):
         """Assert that the data file was created."""
         assert response.status_code == status.HTTP_201_CREATED
+
+    @staticmethod
+    def assert_data_file_error(response):
+        """Assert that the data file was created."""
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     @staticmethod
     def assert_data_file_rejected(response):
@@ -154,6 +160,15 @@ class DataFileAPITestBase:
             format='multipart'
         )
 
+    def post_data_file_fra(self, api_client, data_file_data):
+        """Submit a data file with the given data."""
+        data_file_data['section'] = 'Secondary School Attainment'
+        return api_client.post(
+            self.root_url,
+            data_file_data,
+            format='multipart'
+        )
+
     def get_data_file_files(self, api_client):
         """Submit a data file with the given data."""
         return api_client.get(
@@ -212,6 +227,12 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
         response = self.post_data_file_file(api_client, data_file_data)
         self.assert_data_file_created(response)
         self.assert_data_file_exists(data_file_data, 1, user)
+
+    def test_create_data_file_fra(self, api_client, data_file_data, user):
+        """Test ability to create data file metadata registry."""
+        response = self.post_data_file_fra(api_client, data_file_data)
+        assert response.data == {'section': [ErrorDetail(string='Section cannot be FRA', code='invalid')]}
+        self.assert_data_file_error(response)
 
     def test_data_file_file_version_increment(
         self,
@@ -409,7 +430,7 @@ class TestDataFileAsOFARegionalStaff(DataFileAPITestBase):
     def test_download_data_file_file_for_own_region(
         self, api_client, regional_data_file_data, user
     ):
-        """Test that the file is downloaded as expected for Regional Staffs's."""
+        """Test that the file is downloaded as expected for Regional Staff."""
         response = self.post_data_file_file(api_client, regional_data_file_data)
         data_file_id = response.data['id']
         response = self.download_file(api_client, data_file_id)
