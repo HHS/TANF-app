@@ -63,7 +63,7 @@ def regional_user(region, stt):
     user = STTUserFactory.create(
         groups=(Group.objects.get(name="OFA Regional Staff"),),
     )
-    user.region = region
+    user.regions.add(region)
     user.account_approval_status = AccountApprovalStatusChoices.APPROVED
     user.save()
     return user
@@ -269,10 +269,10 @@ def base_regional_data_file_data(fake_file_name, regional_user):
         "extension": "txt",
         "section": "Active Case Data",
         "user": str(regional_user.id),
-        "region": regional_user.region.id,
+        "regions": list(regional_user.regions.all().values_list('id', flat=True)),
         "quarter": "Q1",
         "year": 2020,
-        "stt": int(regional_user.region.stts.first().id)
+        "stt": int(regional_user.regions.first().stts.first().id)
     }
 
 
@@ -300,7 +300,7 @@ def other_base_regional_data_file_data(
         "extension": "txt",
         "section": "Active Case Data",
         "user": str(regional_user.id),
-        "region": other_stt.region.id,
+        "regions": [other_stt.region.id],
         "quarter": "Q1",
         "year": 2020,
         "stt": int(other_stt.id)

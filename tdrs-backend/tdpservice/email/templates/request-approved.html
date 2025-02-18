@@ -4,7 +4,17 @@
 <p style="color: #000000;">
     <p>Dear {{ first_name }},</p>
 
-    <p>Congratulations! Your request for the TANF Data Portal (TDP) is <b>approved</b> and access as a {{ group_permission }} from {{ stt_name }} <b>has been granted</b>.</p>
+    {% if regional %}
+        <p>Congratulations! Your request for the TANF Data Portal (TDP) is <b>approved</b> and access as a {{ group_permission }} for Region(s): {{ regions|join:", " }} <b>has been granted</b>.</p>
+    {% else %}
+        <p>
+            {% if not stt_name %}
+                Congratulations! Your request for the TANF Data Portal (TDP) is <b>approved</b> and access as a {{ group_permission }} <b>has been granted</b>.
+            {% else %}
+                Congratulations! Your request for the TANF Data Portal (TDP) is <b>approved</b> and access as a {{ group_permission }} from {{ stt_name }} <b>has been granted</b>.
+            {% endif %}
+        </p>
+    {% endif %}
 
     <!-- This link uses descriptive text to inform the user what will happen with the link is tapped. -->
     <!-- It also uses inline styles since some email clients won't render embedded styles from the head. -->
