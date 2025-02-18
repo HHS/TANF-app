@@ -147,7 +147,11 @@ class DecoderFactory:
     @classmethod
     def get_suggested_decoder(cls, raw_file):
         """Try and determine what decoder to use based on file encoding and magic numbers."""
-        char_result = chardet.detect(raw_file.read(4096))
+        # We need to guarentee that the file pointer is at the first byte
+        raw_file.seek(0)
+
+        data = raw_file.read(4096)
+        char_result = chardet.detect(data)
         if char_result.get('encoding') == "ascii":
             confidence = char_result.get('confidence')
             if "csv" in os.path.splitext(raw_file.name)[-1]:
@@ -157,7 +161,7 @@ class DecoderFactory:
             return Decoder.UTF8
         else:
             try:
-                predictions = puremagic.magic_string(raw_file.read(4096))
+                predictions = puremagic.magic_string(data)
                 most_confident = predictions[0]
                 if most_confident.extension == "xlsx":
                     logger.info(f"Returning XLSX decoder with a confidence score of {most_confident.confidence}")
