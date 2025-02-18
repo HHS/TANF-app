@@ -63,7 +63,7 @@ class BaseDecoder(ABC):
     def __init__(self, raw_file):
         super().__init__()
         self.raw_file = raw_file
-        self.current_row_num = 0
+        self.current_row_num = 1
 
     @abstractmethod
     def get_record_type(self, raw_data):
