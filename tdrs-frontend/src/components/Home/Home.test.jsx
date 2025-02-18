@@ -480,6 +480,327 @@ describe('Pre-approval Home page', () => {
     expect(queryByText('A state is required')).not.toBeInTheDocument()
   })
 
+  it('should display regional vs central radio control', () => {
+    const store = mockStore({
+      ...initialState,
+      auth: {
+        authenticated: true,
+        user: {
+          email: 'admin@acf.hhs.gov',
+          roles: [],
+          access_request: false,
+        },
+      },
+      stts: {
+        sttList: [
+          {
+            id: 1,
+            type: 'state',
+            code: 'AL',
+            name: 'Alabama',
+          },
+          {
+            id: 2,
+            type: 'state',
+            code: 'AK',
+            name: 'Alaska',
+          },
+          {
+            id: 140,
+            type: 'tribe',
+            code: 'AK',
+            name: 'Aleutian/Pribilof Islands Association, Inc.',
+          },
+        ],
+      },
+    })
+    const { getByText } = render(
+      <Provider store={store}>
+        <Home />
+      </Provider>
+    )
+
+    expect(
+      getByText('Do you work for an OFA Regional Office?*')
+    ).toBeInTheDocument()
+    expect(getByText('No')).toBeInTheDocument()
+    expect(getByText('Yes')).toBeInTheDocument()
+  })
+
+  it('should toggle region checkboxes', () => {
+    const store = mockStore({
+      ...initialState,
+      auth: {
+        authenticated: true,
+        user: {
+          email: 'admin@acf.hhs.gov',
+          roles: [],
+          access_request: false,
+        },
+      },
+      stts: {
+        sttList: [
+          {
+            id: 1,
+            type: 'state',
+            code: 'AL',
+            name: 'Alabama',
+          },
+          {
+            id: 2,
+            type: 'state',
+            code: 'AK',
+            name: 'Alaska',
+          },
+          {
+            id: 140,
+            type: 'tribe',
+            code: 'AK',
+            name: 'Aleutian/Pribilof Islands Association, Inc.',
+          },
+        ],
+      },
+    })
+    const { getByText, queryByText } = render(
+      <Provider store={store}>
+        <Home />
+      </Provider>
+    )
+
+    expect(
+      getByText('Do you work for an OFA Regional Office?*')
+    ).toBeInTheDocument()
+
+    fireEvent.click(getByText('Yes'))
+
+    expect(getByText('Region(s)*')).toBeInTheDocument()
+    expect(getByText('Region 6 (Dallas)')).toBeInTheDocument()
+
+    fireEvent.click(getByText('No'))
+
+    expect(queryByText('Region(s)*')).not.toBeInTheDocument()
+    expect(queryByText('Region 6 (Dallas)')).not.toBeInTheDocument()
+  })
+
+  it('should have 3 errors when regions toggled and no selections made', () => {
+    const store = mockStore({
+      ...initialState,
+      auth: {
+        authenticated: true,
+        user: {
+          email: 'admin@acf.hhs.gov',
+          roles: [],
+          access_request: false,
+        },
+      },
+      stts: {
+        sttList: [
+          {
+            id: 1,
+            type: 'state',
+            code: 'AL',
+            name: 'Alabama',
+          },
+          {
+            id: 2,
+            type: 'state',
+            code: 'AK',
+            name: 'Alaska',
+          },
+          {
+            id: 140,
+            type: 'tribe',
+            code: 'AK',
+            name: 'Aleutian/Pribilof Islands Association, Inc.',
+          },
+        ],
+      },
+    })
+    const { getByText } = render(
+      <Provider store={store}>
+        <Home />
+      </Provider>
+    )
+
+    expect(
+      getByText('Do you work for an OFA Regional Office?*')
+    ).toBeInTheDocument()
+
+    fireEvent.click(getByText('Yes'))
+
+    expect(getByText('Region(s)*')).toBeInTheDocument()
+    expect(getByText('Region 6 (Dallas)')).toBeInTheDocument()
+
+    fireEvent.click(getByText('Request Access'))
+    expect(getByText('There are 3 errors in this form')).toBeInTheDocument()
+  })
+
+  it('should have 2 errors after region selection when already invalid', () => {
+    const store = mockStore({
+      ...initialState,
+      auth: {
+        authenticated: true,
+        user: {
+          email: 'admin@acf.hhs.gov',
+          roles: [],
+          access_request: false,
+        },
+      },
+      stts: {
+        sttList: [
+          {
+            id: 1,
+            type: 'state',
+            code: 'AL',
+            name: 'Alabama',
+          },
+          {
+            id: 2,
+            type: 'state',
+            code: 'AK',
+            name: 'Alaska',
+          },
+          {
+            id: 140,
+            type: 'tribe',
+            code: 'AK',
+            name: 'Aleutian/Pribilof Islands Association, Inc.',
+          },
+        ],
+      },
+    })
+    const { getByText } = render(
+      <Provider store={store}>
+        <Home />
+      </Provider>
+    )
+
+    expect(
+      getByText('Do you work for an OFA Regional Office?*')
+    ).toBeInTheDocument()
+
+    fireEvent.click(getByText('Yes'))
+
+    expect(getByText('Region(s)*')).toBeInTheDocument()
+    expect(getByText('Region 6 (Dallas)')).toBeInTheDocument()
+
+    fireEvent.click(getByText('Request Access'))
+    expect(getByText('There are 3 errors in this form')).toBeInTheDocument()
+
+    fireEvent.click(getByText('Region 6 (Dallas)'))
+    expect(getByText('There are 2 errors in this form')).toBeInTheDocument()
+  })
+
+  it('should have 2 errors after region checkboxes are hidden', () => {
+    const store = mockStore({
+      ...initialState,
+      auth: {
+        authenticated: true,
+        user: {
+          email: 'admin@acf.hhs.gov',
+          roles: [],
+          access_request: false,
+        },
+      },
+      stts: {
+        sttList: [
+          {
+            id: 1,
+            type: 'state',
+            code: 'AL',
+            name: 'Alabama',
+          },
+          {
+            id: 2,
+            type: 'state',
+            code: 'AK',
+            name: 'Alaska',
+          },
+          {
+            id: 140,
+            type: 'tribe',
+            code: 'AK',
+            name: 'Aleutian/Pribilof Islands Association, Inc.',
+          },
+        ],
+      },
+    })
+    const { getByText } = render(
+      <Provider store={store}>
+        <Home />
+      </Provider>
+    )
+
+    expect(
+      getByText('Do you work for an OFA Regional Office?*')
+    ).toBeInTheDocument()
+
+    fireEvent.click(getByText('Yes'))
+
+    expect(getByText('Region(s)*')).toBeInTheDocument()
+    expect(getByText('Region 6 (Dallas)')).toBeInTheDocument()
+
+    fireEvent.click(getByText('Request Access'))
+    expect(getByText('There are 3 errors in this form')).toBeInTheDocument()
+
+    fireEvent.click(getByText('No'))
+    expect(getByText('There are 2 errors in this form')).toBeInTheDocument()
+  })
+
+  it('should be able to select and deselect multiple regions', () => {
+    const store = mockStore({
+      ...initialState,
+      auth: {
+        authenticated: true,
+        user: {
+          email: 'admin@acf.hhs.gov',
+          roles: [],
+          access_request: false,
+        },
+      },
+      stts: {
+        sttList: [
+          {
+            id: 1,
+            type: 'state',
+            code: 'AL',
+            name: 'Alabama',
+          },
+          {
+            id: 2,
+            type: 'state',
+            code: 'AK',
+            name: 'Alaska',
+          },
+          {
+            id: 140,
+            type: 'tribe',
+            code: 'AK',
+            name: 'Aleutian/Pribilof Islands Association, Inc.',
+          },
+        ],
+      },
+    })
+    const { getByText } = render(
+      <Provider store={store}>
+        <Home />
+      </Provider>
+    )
+
+    expect(
+      getByText('Do you work for an OFA Regional Office?*')
+    ).toBeInTheDocument()
+
+    fireEvent.click(getByText('Yes'))
+
+    expect(getByText('Region(s)*')).toBeInTheDocument()
+    expect(getByText('Region 6 (Dallas)')).toBeInTheDocument()
+
+    fireEvent.click(getByText('Region 6 (Dallas)'))
+    fireEvent.click(getByText('Region 8 (Denver)'))
+    fireEvent.click(getByText('Region 6 (Dallas)'))
+  })
+
   it('should remove error message when you add a character and blur out of input', () => {
     const store = mockStore({
       ...initialState,
