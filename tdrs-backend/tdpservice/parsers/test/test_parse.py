@@ -878,7 +878,6 @@ def test_get_schema_options(dfs):
 
     # from text:
     schema = parse.get_schema_manager('T1xx', 'A', 'TAN')
-    assert isinstance(schema, aggregates.SchemaManager)
     assert schema == schema_defs.tanf.t1
 
     # get model
