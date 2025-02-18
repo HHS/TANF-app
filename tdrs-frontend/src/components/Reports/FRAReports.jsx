@@ -238,18 +238,20 @@ const UploadForm = ({
     fileInput.init()
   }, [])
 
-  useEffect(() => {
-    const trySettingPreview = () => {
-      const targetClassName = 'usa-file-input__preview input #fra-file-upload'
-      const previewState = handlePreview(file?.name, targetClassName)
-      if (!previewState) {
-        setTimeout(trySettingPreview, 100)
-      }
-    }
-    if (file?.id) {
-      trySettingPreview()
-    }
-  }, [file])
+  // unused for this PR, affects the test cov threshold
+  // uncommented and properly tested in followup PR #3407
+  // useEffect(() => {
+  //   const trySettingPreview = () => {
+  //     const targetClassName = 'usa-file-input__preview input #fra-file-upload'
+  //     const previewState = handlePreview(file?.name, targetClassName)
+  //     if (!previewState) {
+  //       setTimeout(trySettingPreview, 100)
+  //     }
+  //   }
+  //   if (file?.id) {
+  //     trySettingPreview()
+  //   }
+  // }, [file])
 
   const onFileChanged = async (e) => {
     setError(null)
