@@ -49,7 +49,7 @@ describe('FRA Reports Page', () => {
     expect(getByText('Fiscal Year (October - September)')).toBeInTheDocument()
     expect(getByText('Quarter')).toBeInTheDocument()
     expect(
-      getByText('Identifying the right Fiscal Year and Quarter')
+      getByText('Identifying the right Fiscal Year (FY) and Quarter (Q)')
     ).toBeInTheDocument()
     expect(getByText('Work Outcomes of TANF Exiters')).toBeInTheDocument()
 

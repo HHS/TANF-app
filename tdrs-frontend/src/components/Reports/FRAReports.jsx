@@ -100,7 +100,7 @@ const SelectQuarter = ({ valid, value, setValue }) => (
 
 const FiscalQuarterExplainer = () => (
   <table className="usa-table usa-table--striped margin-top-4 desktop:width-mobile-lg mobile:width-full">
-    <caption>Identifying the right Fiscal Year and Quarter</caption>
+    <caption>Identifying the right Fiscal Year (FY) and Quarter (Q)</caption>
     <thead>
       <tr>
         <th>Fiscal Quarter</th>
