@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0042_user_feature_flags'),
+        ('users', '0043_create_regions_m2m_del_region'),
     ]
 
     operations = [
