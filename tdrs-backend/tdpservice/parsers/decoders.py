@@ -1,52 +1,17 @@
 """Decoder and utility classes."""
 
+from tdpservice.parsers.dataclasses import RawRow
+
 from abc import ABC, abstractmethod
 from enum import IntEnum, auto
 import chardet
 import csv
-from dataclasses import dataclass
 import logging
 from openpyxl import load_workbook
 import os
 import puremagic
-from typing import List, Tuple
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass
-class Position:
-    """Generic class representing a position in a row of data."""
-
-    start: int
-    end: int | None = None
-    is_range: bool = True
-
-    def __init__(self, start: int, end: int = None):
-        self.start = start
-        self.end = end if end is not None else start + 1
-        self.is_range = self.end - self.start > 1
-
-@dataclass
-class RawRow:
-    """Generic wrapper for indexable row data."""
-
-    raw_data: str | List | Tuple
-    raw_len: int
-    row_num: int
-    record_type: str
-
-    def value_at(self, position: Position):
-        """Get value at position."""
-        return self.raw_data[position.start:position.end]
-
-    def value_at_is(self, position: Position, expected_value):
-        """Check if the value at position matches the expected value."""
-        return self.value_at(position) == expected_value
-
-    def __len__(self):
-        """Return the length of raw_data."""
-        return self.raw_len
 
 
 class Decoder(IntEnum):

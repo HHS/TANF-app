@@ -1,7 +1,7 @@
 """Schema for Tribal TANF T7 Row."""
 
 from tdpservice.parsers.fields import Field, TransformField
-from tdpservice.parsers.row_schema import RowSchema
+from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.transforms import calendar_quarter_to_rpt_month_year
 from tdpservice.parsers.validators import category1, category2
 from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T7DataSubmissionDocument
@@ -18,7 +18,7 @@ for i in range(1, 31):
     families_value_item_number = f"6{sub_item_labels[month_index]}"
 
     schemas.append(
-        RowSchema(
+        TanfDataReportSchema(
             record_type="T7",
             document=Tribal_TANF_T7DataSubmissionDocument(),
             quiet_preparser_errors=i > 1,

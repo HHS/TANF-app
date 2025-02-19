@@ -1,6 +1,5 @@
 """TANF/SSP/Tribal parser class."""
 
-from dataclasses import dataclass
 from django.conf import settings
 from django.db.utils import DatabaseError
 from elasticsearch.exceptions import ElasticsearchException
@@ -8,7 +7,7 @@ import logging
 from tdpservice.parsers import schema_defs
 from tdpservice.parsers.base_parser import BaseParser
 from tdpservice.parsers.case_consistency_validator import CaseConsistencyValidator
-from tdpservice.parsers.decoders import Position
+from tdpservice.parsers.dataclasses import Position
 from tdpservice.parsers.models import ParserErrorCategoryChoices
 from tdpservice.parsers.schema_defs.utils import get_section_reference
 from tdpservice.parsers.util import log_parser_exception, make_generate_case_consistency_parser_error, \
@@ -22,16 +21,6 @@ logger = logging.getLogger(__name__)
 
 HEADER_POSITION = Position(0, 6)
 TRAILER_POSITION = Position(0, 7)
-
-
-@dataclass
-class HeaderResult:
-    """Header validation result class."""
-
-    is_valid: bool
-    header: dict | None = None
-    program_type: str | None = None
-    is_encrypted: bool = False
 
 
 class TanfDataReportParser(BaseParser):

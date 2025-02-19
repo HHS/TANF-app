@@ -3,7 +3,7 @@
 
 from tdpservice.parsers.transforms import tanf_ssn_decryption_func
 from tdpservice.parsers.fields import Field, TransformField
-from tdpservice.parsers.row_schema import RowSchema
+from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.parsers.validators.util import is_quiet_preparser_errors
 from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T3DataSubmissionDocument
@@ -12,7 +12,7 @@ from tdpservice.parsers.util import generate_t2_t3_t5_hashes, get_t2_t3_t5_parti
 FIRST_CHILD = 1
 SECOND_CHILD = 2
 
-child_one = RowSchema(
+child_one = TanfDataReportSchema(
     record_type="T3",
     document=Tribal_TANF_T3DataSubmissionDocument(),
     generate_hashes_func=generate_t2_t3_t5_hashes,
@@ -325,7 +325,7 @@ child_one = RowSchema(
     ],
 )
 
-child_two = RowSchema(
+child_two = TanfDataReportSchema(
     record_type="T3",
     document=Tribal_TANF_T3DataSubmissionDocument(),
     generate_hashes_func=generate_t2_t3_t5_hashes,

@@ -2,11 +2,11 @@
 
 
 from tdpservice.parsers.fields import Field
-from tdpservice.parsers.row_schema import RowSchema
+from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.validators import category1, category2
 
 
-header = RowSchema(
+header = TanfDataReportSchema(
     record_type="HEADER",
     document=None,
     preparsing_validators=[

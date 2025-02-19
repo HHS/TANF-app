@@ -3,20 +3,10 @@
 
 import functools
 import logging
-from dataclasses import dataclass, field
-from typing import Any
 import warnings
+from tdpservice.parsers.dataclasses import Result
 
 logger = logging.getLogger(__name__)
-
-@dataclass
-class Result:
-    """Dataclass representing a validator's evaluated result."""
-
-    valid: bool = True
-    error: str | None = None
-    field_names: list = field(default_factory=list)
-    deprecated: bool = False
 
 
 def make_validator(validator_func, error_func):
@@ -141,13 +131,3 @@ def is_quiet_preparser_errors(min_length, empty_from=61, empty_to=101):
             )
         return not (is_length_valid and not is_empty and not _is_all_zeros(value, empty_from, empty_to))
     return return_value
-
-
-@dataclass
-class ValidationErrorArgs:
-    """Dataclass for args to `make_validator` `error_func`s."""
-
-    value: Any
-    row_schema: object  # RowSchema causes circular import
-    friendly_name: str
-    item_num: str

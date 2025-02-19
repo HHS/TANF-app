@@ -3,14 +3,14 @@
 
 from tdpservice.parsers.transforms import ssp_ssn_decryption_func
 from tdpservice.parsers.fields import TransformField, Field
-from tdpservice.parsers.row_schema import RowSchema
+from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.search_indexes.documents.ssp import SSP_M2DataSubmissionDocument
 from tdpservice.parsers.util import generate_t2_t3_t5_hashes, get_t2_t3_t5_partial_hash_members
 
 
 m2 = [
-    RowSchema(
+    TanfDataReportSchema(
         record_type="M2",
         document=SSP_M2DataSubmissionDocument(),
         generate_hashes_func=generate_t2_t3_t5_hashes,

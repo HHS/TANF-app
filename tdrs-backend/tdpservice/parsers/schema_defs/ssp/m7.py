@@ -2,7 +2,7 @@
 
 from tdpservice.parsers.transforms import calendar_quarter_to_rpt_month_year
 from tdpservice.parsers.fields import Field, TransformField
-from tdpservice.parsers.row_schema import RowSchema
+from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.validators import category1, category2
 from tdpservice.search_indexes.documents.ssp import SSP_M7DataSubmissionDocument
 
@@ -18,7 +18,7 @@ families_item_numbers = [sub_item_labels[i % 3] for i in range(30)]
 
 for i in range(1, 31):
     schemas.append(
-        RowSchema(
+        TanfDataReportSchema(
             record_type="M7",
             document=SSP_M7DataSubmissionDocument(),
             quiet_preparser_errors=i > 1,

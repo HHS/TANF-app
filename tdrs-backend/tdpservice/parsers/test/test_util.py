@@ -1,9 +1,9 @@
-"""Test the methods of RowSchema to ensure parsing and validation work in all individual cases."""
+"""Test the methods of TanfDataReportSchema to ensure parsing and validation work in all individual cases."""
 
 import pytest
 from datetime import datetime
 from ..fields import Field
-from ..row_schema import RowSchema
+from ..row_schema import TanfDataReportSchema
 from ..util import (
     make_generate_parser_error,
     create_test_datafile,
@@ -48,7 +48,7 @@ def validator_to_deprecate():
 def test_deprecate_validator():
     """Test completely deprecated validator."""
     line = '12345'
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=None,
         preparsing_validators=[
             deprecated_validator()
@@ -67,7 +67,7 @@ def test_deprecate_validator():
 def test_deprecate_call():
     """Test deprecated invocation of a validator."""
     line = '12345'
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=None,
         preparsing_validators=[
             deprecate_call(validator_to_deprecate()),
@@ -87,7 +87,7 @@ def test_deprecate_call():
 def test_run_preparsing_validators_returns_valid():
     """Test run_preparsing_validators executes all preparsing_validators provided in schema."""
     line = '12345'
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=None,
         preparsing_validators=[
             passing_validator()
@@ -102,7 +102,7 @@ def test_run_preparsing_validators_returns_valid():
 def test_run_preparsing_validators_returns_invalid_and_errors():
     """Test that run_preparsing_validators executes all preparsing_validators provided in schema and returns errors."""
     line = '12345'
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=None,
         preparsing_validators=[
             passing_validator(),
@@ -118,7 +118,7 @@ def test_run_preparsing_validators_returns_invalid_and_errors():
 def test_parse_line_parses_line_from_schema_to_dict():
     """Test that parse_line parses a string into a dict given start and end indices for all fields."""
     line = '12345001'
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=None,
         fields=[
             Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3),
@@ -152,7 +152,7 @@ def test_parse_line_parses_line_from_schema_to_object():
             model = TestModel
 
     line = '12345001'
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=TestDocument(),
         fields=[
             Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3),
@@ -179,7 +179,7 @@ def test_run_field_validators_returns_valid_with_dict():
         'second': '4',
         'third': '5'
     }
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=None,
         fields=[
             Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3, validators=[
@@ -218,7 +218,7 @@ def test_run_field_validators_returns_valid_with_object():
     document = TestDocument()
     document.Django.model = instance
 
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=document,
         fields=[
             Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3, validators=[
@@ -245,7 +245,7 @@ def test_run_field_validators_returns_invalid_with_dict():
         'second': '4',
         'third': '5'
     }
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=None,
         fields=[
             Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3, validators=[
@@ -285,7 +285,7 @@ def test_run_field_validators_returns_invalid_with_object():
     document = TestDocument()
     document.Django.model = instance
 
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=document,
         fields=[
             Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3, validators=[
@@ -318,7 +318,7 @@ def test_field_validators_blank_and_required_returns_error(first, second):
         'first': first,
         'second': second,
     }
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=None,
         fields=[
             Field(
@@ -366,7 +366,7 @@ def test_field_validators_blank_and_not_required_returns_valid(first, expected_v
     instance = {
         'first': first,
     }
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=None,
         fields=[
             Field(
@@ -393,7 +393,7 @@ def test_field_validators_blank_and_not_required_returns_valid(first, expected_v
 def test_run_postparsing_validators_returns_valid():
     """Test run_postparsing_validators executes all postparsing_validators provided in schema."""
     instance = {}
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=None,
         postparsing_validators=[
             passing_validator()
@@ -408,7 +408,7 @@ def test_run_postparsing_validators_returns_valid():
 def test_run_postparsing_validators_returns_invalid_and_errors():
     """Test run_postparsing_validators executes all postparsing_validators provided in schema and returns errors."""
     instance = {}
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=None,
         postparsing_validators=[
             passing_validator(),
@@ -430,7 +430,7 @@ def test_datafile_empty_file(stt_user, stt):
 def test_run_postparsing_validators_returns_frinedly_fieldnames(test_datafile_empty_file):
     """Test run_postparsing_validators executes all postparsing_validators provided in schema."""
     instance = {}
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=None,
         postparsing_validators=[
             ifThenAlso("FIRST", passing_validator(),

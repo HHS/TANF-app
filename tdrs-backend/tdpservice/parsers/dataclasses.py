@@ -1,0 +1,88 @@
+"""Utility data classes for the parsing engine."""
+
+from dataclasses import dataclass, field
+from django.db.models import Model
+from typing import Any, DefaultDict, List, Tuple
+
+
+@dataclass
+class HeaderResult:
+    """Header validation result class."""
+
+    is_valid: bool
+    header: dict | None = None
+    program_type: str | None = None
+    is_encrypted: bool = False
+
+
+@dataclass
+class ManagerPVResult:
+    """SchemaManager parse and validate result class."""
+
+    records: List["SchemaResult"]
+    schemas: List[object] # RowSchema causes circular import
+
+
+@dataclass
+class Position:
+    """Generic class representing a position in a row of data."""
+
+    start: int
+    end: int | None = None
+    is_range: bool = True
+
+    def __init__(self, start: int, end: int = None):
+        self.start = start
+        self.end = end if end is not None else start + 1
+        self.is_range = self.end - self.start > 1
+
+
+@dataclass
+class RawRow:
+    """Generic wrapper for indexable row data."""
+
+    raw_data: str | List | Tuple
+    raw_len: int
+    row_num: int
+    record_type: str
+
+    def value_at(self, position: Position):
+        """Get value at position."""
+        return self.raw_data[position.start:position.end]
+
+    def value_at_is(self, position: Position, expected_value):
+        """Check if the value at position matches the expected value."""
+        return self.value_at(position) == expected_value
+
+    def __len__(self):
+        """Return the length of raw_data."""
+        return self.raw_len
+
+
+@dataclass
+class Result:
+    """Dataclass representing a validator's evaluated result."""
+
+    valid: bool = True
+    error: str | None = None
+    field_names: list = field(default_factory=list)
+    deprecated: bool = False
+
+
+@dataclass
+class SchemaResult:
+    """Datclass to encapsulating a RowSchema's parse_and_validate result."""
+
+    record: DefaultDict | Model
+    is_valid: bool
+    errors: List[Model]
+
+
+@dataclass
+class ValidationErrorArgs:
+    """Dataclass for args to `make_validator` `error_func`s."""
+
+    value: Any
+    row_schema: object  # RowSchema causes circular import
+    friendly_name: str
+    item_num: str

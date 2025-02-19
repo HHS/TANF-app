@@ -2,13 +2,13 @@
 
 from tdpservice.parsers.transforms import zero_pad
 from tdpservice.parsers.fields import Field, TransformField
-from tdpservice.parsers.row_schema import RowSchema
+from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.search_indexes.documents.ssp import SSP_M4DataSubmissionDocument
 from tdpservice.parsers.util import generate_t1_t4_hashes, get_t1_t4_partial_hash_members
 
 m4 = [
-    RowSchema(
+    TanfDataReportSchema(
         record_type="M4",
         document=SSP_M4DataSubmissionDocument(),
         generate_hashes_func=generate_t1_t4_hashes,

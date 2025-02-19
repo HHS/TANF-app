@@ -2,8 +2,9 @@
 
 from tdpservice.parsers.models import ParserErrorCategoryChoices
 from tdpservice.parsers.util import fiscal_to_calendar, year_month_to_year_quarter
-from . import base
-from .util import Result, ValidationErrorArgs, make_validator, _is_all_zeros, _is_empty, value_is_empty
+from tdpservice.parsers.validators import base
+from tdpservice.parsers.validators.util import Result, make_validator, _is_all_zeros, _is_empty, value_is_empty
+from tdpservice.parsers.dataclasses import ValidationErrorArgs
 
 
 def format_error_context(eargs: ValidationErrorArgs):

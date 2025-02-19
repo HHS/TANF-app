@@ -3,11 +3,11 @@
 
 from tdpservice.parsers.transforms import calendar_quarter_to_rpt_month_year
 from tdpservice.parsers.fields import Field, TransformField
-from tdpservice.parsers.row_schema import RowSchema
+from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.search_indexes.documents.tanf import TANF_T6DataSubmissionDocument
 
-s1 = RowSchema(
+s1 = TanfDataReportSchema(
     record_type="T6",
     document=TANF_T6DataSubmissionDocument(),
     preparsing_validators=[
@@ -227,7 +227,7 @@ s1 = RowSchema(
     ],
 )
 
-s2 = RowSchema(
+s2 = TanfDataReportSchema(
     record_type="T6",
     document=TANF_T6DataSubmissionDocument(),
     quiet_preparser_errors=True,
@@ -445,7 +445,7 @@ s2 = RowSchema(
     ],
 )
 
-s3 = RowSchema(
+s3 = TanfDataReportSchema(
     record_type="T6",
     document=TANF_T6DataSubmissionDocument(),
     quiet_preparser_errors=True,

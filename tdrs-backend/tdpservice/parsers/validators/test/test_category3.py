@@ -3,14 +3,14 @@
 
 import pytest
 import datetime
-from .. import category3
-from ..util import ValidationErrorArgs, deprecate_call
-from ...row_schema import RowSchema
-from ...fields import Field
+from tdpservice.parsers.validators import category3
+from tdpservice.parsers.validators.util import deprecate_call
+from tdpservice.parsers.row_schema import TanfDataReportSchema
+from tdpservice.parsers.fields import Field
+from tdpservice.parsers.dataclasses import ValidationErrorArgs
 
-# export all error messages to file
 
-test_schema = RowSchema(
+test_schema = TanfDataReportSchema(
     record_type="Test",
     document=None,
     preparsing_validators=[],
@@ -276,7 +276,7 @@ def test_validateSSN(val, kwargs, exp_result, exp_message):
 ])
 def test_ifThenAlso(condition_val, result_val, exp_result, exp_message, exp_fields):
     """Test ifThenAlso validator error messages."""
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         fields=[
             Field(
                 item='1',
@@ -334,7 +334,7 @@ def test_ifThenAlso(condition_val, result_val, exp_result, exp_message, exp_fiel
 ])
 def test_ifThenAlso_or(condition_val, result_val, exp_result, exp_message, exp_fields):
     """Test ifThenAlso validator error messages."""
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         fields=[
             Field(
                 item='1',
@@ -396,7 +396,7 @@ def test_orValidators(val, exp_result, exp_message):
 
     eargs = ValidationErrorArgs(
         value=val,
-        row_schema=RowSchema(),
+        row_schema=TanfDataReportSchema(),
         friendly_name='TestField1',
         item_num='1'
     )
@@ -408,7 +408,7 @@ def test_orValidators(val, exp_result, exp_message):
 
 def test_sumIsEqual():
     """Test sumIsEqual postparsing validator."""
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         fields=[
             Field(
                 item='1',
@@ -455,7 +455,7 @@ def test_sumIsEqual():
 
 def test_sumIsLarger():
     """Test sumIsLarger postparsing validator."""
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         fields=[
             Field(
                 item='1',
@@ -502,7 +502,7 @@ def test_sumIsLarger():
 
 def test_validate__FAM_AFF__SSN():
     """Test `validate__FAM_AFF__SSN` gives a valid result."""
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         fields=[
             Field(
                 item='1',
@@ -550,7 +550,7 @@ def test_validate__FAM_AFF__SSN():
 
 def test_validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
     """Test `validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE` gives a valid result."""
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         fields=[
             Field(
                 item='1',
@@ -607,7 +607,7 @@ def test_validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
 
 def test_deprecate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
     """Test deprecated `validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE` gives a valid result."""
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         fields=[
             Field(
                 item='1',
@@ -676,7 +676,7 @@ def test_deprecate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
 ])
 def test_deprecate_ifThenAlso(condition_val, result_val, exp_result, exp_message, exp_fields):
     """Test deprecate ifThenAlso validator error messages."""
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         fields=[
             Field(
                 item='1',

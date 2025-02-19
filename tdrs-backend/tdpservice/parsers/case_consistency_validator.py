@@ -6,7 +6,7 @@ from .models import ParserErrorCategoryChoices
 from .util import get_years_apart
 from tdpservice.stts.models import STT
 from tdpservice.parsers.schema_defs.utils import get_program_model
-from tdpservice.parsers.validators.util import ValidationErrorArgs
+from tdpservice.parsers.dataclasses import ValidationErrorArgs
 from tdpservice.parsers.validators.category3 import format_error_context
 import logging
 import warnings
