@@ -59,7 +59,7 @@ function STTComboBox({ selectStt, selectedStt, handleBlur, error, sttType }) {
         <option value="" disabled hidden>
           - Select or Search -
         </option>
-        {filteredStts.map(
+        {filteredStts?.map(
           (stt) =>
             (sttType == null || stt.type === sttType) && (
               <option className="sttOption" key={stt.id} value={stt.name}>
