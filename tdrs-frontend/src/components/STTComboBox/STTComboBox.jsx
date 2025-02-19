@@ -5,6 +5,7 @@ import { fetchSttList } from '../../actions/sttList'
 import ComboBox from '../ComboBox'
 import Modal from '../Modal'
 import { toTitleCase } from '../../utils/stringUtils'
+import { availableStts } from '../../selectors/stts'
 
 /**
  * @param {function} selectStt - Function to reference and change the
@@ -17,26 +18,20 @@ import { toTitleCase } from '../../utils/stringUtils'
 
 function STTComboBox({ selectStt, selectedStt, handleBlur, error, sttType }) {
   const sttListRequest = useSelector((state) => state?.stts)
+  const filteredStts = useSelector(availableStts)
   const dispatch = useDispatch()
   const [numTries, setNumTries] = useState(0)
   const [reachedMaxTries, setReachedMaxTries] = useState(false)
 
   useEffect(() => {
-    if (
-      sttListRequest.sttList.length === 0 &&
-      numTries <= 3 &&
-      !sttListRequest.loading
-    ) {
+    const { loading, sttList } = sttListRequest
+    if (sttList.length === 0 && numTries <= 3 && !loading) {
       dispatch(fetchSttList())
       setNumTries(numTries + 1)
-    } else if (
-      sttListRequest.sttList.length === 0 &&
-      numTries > 3 &&
-      !reachedMaxTries
-    ) {
+    } else if (sttList.length === 0 && numTries > 3 && !reachedMaxTries) {
       setReachedMaxTries(true)
     }
-  }, [dispatch, sttListRequest.sttList, numTries, reachedMaxTries])
+  }, [dispatch, sttListRequest, numTries, reachedMaxTries])
 
   const onSignOut = () => {
     window.location.href = `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`
@@ -64,7 +59,7 @@ function STTComboBox({ selectStt, selectedStt, handleBlur, error, sttType }) {
         <option value="" disabled hidden>
           - Select or Search -
         </option>
-        {sttListRequest.sttList.map(
+        {filteredStts.map(
           (stt) =>
             (sttType == null || stt.type === sttType) && (
               <option className="sttOption" key={stt.id} value={stt.name}>
