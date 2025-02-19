@@ -48,9 +48,7 @@ describe('FRA Reports Page', () => {
     expect(getByText('File Type')).toBeInTheDocument()
     expect(getByText('Fiscal Year (October - September)*')).toBeInTheDocument()
     expect(getByText('Quarter*')).toBeInTheDocument()
-    expect(
-      getByText('Identifying the right Fiscal Year and Quarter')
-    ).toBeInTheDocument()
+    expect(getByText('FRA Data Reporting Guidelines')).toBeInTheDocument()
     expect(getByText('Work Outcomes of TANF Exiters')).toBeInTheDocument()
 
     // error and upload for elements do not

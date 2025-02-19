@@ -92,30 +92,35 @@ const SelectQuarter = ({ valid, value, setValue }) => (
 )
 
 const FiscalQuarterExplainer = () => (
-  <table className="usa-table usa-table--striped margin-top-4 desktop:width-mobile-lg mobile:width-full">
-    <caption>Identifying the right Fiscal Year and Quarter</caption>
+  <table className="usa-table usa-table--striped margin-top-4 desktop:width-tablet mobile:width-full">
+    <caption>FRA Data Reporting Guidelines</caption>
     <thead>
       <tr>
-        <th>Fiscal Quarter</th>
+        <th>Fiscal Year (FY) &amp; Quarter (Q)</th>
         <th>Calendar Period</th>
+        <th>Due Date</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td>Quarter 1</td>
+        <td>FY Q1</td>
         <td>Oct 1 - Dec 31</td>
+        <td>May 15</td>
       </tr>
       <tr>
-        <td>Quarter 2</td>
+        <td>FY Q2</td>
         <td>Jan 1 - Mar 31</td>
+        <td>August 14</td>
       </tr>
       <tr>
-        <td>Quarter 3</td>
+        <td>FY Q3</td>
         <td>Apr 1 - Jun 30</td>
+        <td>November 14</td>
       </tr>
       <tr>
-        <td>Quarter 4</td>
+        <td>FY Q4</td>
         <td>Jul 1 - Sep 30</td>
+        <td>February 14</td>
       </tr>
     </tbody>
   </table>
