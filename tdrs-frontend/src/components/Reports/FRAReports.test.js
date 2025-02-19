@@ -46,8 +46,8 @@ describe('FRA Reports Page', () => {
 
     // search form elements exist
     expect(getByText('File Type')).toBeInTheDocument()
-    expect(getByText('Fiscal Year (October - September)')).toBeInTheDocument()
-    expect(getByText('Quarter')).toBeInTheDocument()
+    expect(getByText('Fiscal Year (October - September)*')).toBeInTheDocument()
+    expect(getByText('Quarter*')).toBeInTheDocument()
     expect(
       getByText('Identifying the right Fiscal Year and Quarter')
     ).toBeInTheDocument()
@@ -217,7 +217,7 @@ describe('FRA Reports Page', () => {
       expect(getByText('There are 3 error(s) in this form')).toBeInTheDocument()
 
       const yearsDropdown = getByLabelText(
-        'Fiscal Year (October - September)',
+        'Fiscal Year (October - September)*',
         { exact: false }
       )
       fireEvent.change(yearsDropdown, { target: { value: '2021' } })
@@ -229,7 +229,7 @@ describe('FRA Reports Page', () => {
         ).toBeInTheDocument()
       })
 
-      const quarterDropdown = getByLabelText('Quarter', { exact: false })
+      const quarterDropdown = getByLabelText('Quarter*', { exact: false })
       fireEvent.change(quarterDropdown, { target: { value: 'Q1' } })
 
       await waitFor(() => {
@@ -268,10 +268,10 @@ describe('FRA Reports Page', () => {
       )
 
       // fill out the form values before clicking search
-      const yearsDropdown = getByLabelText('Fiscal Year (October - September)')
+      const yearsDropdown = getByLabelText('Fiscal Year (October - September)*')
       fireEvent.change(yearsDropdown, { target: { value: '2021' } })
 
-      const quarterDropdown = getByLabelText('Quarter')
+      const quarterDropdown = getByLabelText('Quarter*')
       fireEvent.change(quarterDropdown, { target: { value: 'Q1' } })
 
       fireEvent.click(getByText(/Search/, { selector: 'button' }))
@@ -332,10 +332,10 @@ describe('FRA Reports Page', () => {
       const { getByLabelText, getByText } = component
 
       // fill out the form values before clicking search
-      const yearsDropdown = getByLabelText('Fiscal Year (October - September)')
+      const yearsDropdown = getByLabelText('Fiscal Year (October - September)*')
       fireEvent.change(yearsDropdown, { target: { value: '2021' } })
 
-      const quarterDropdown = getByLabelText('Quarter')
+      const quarterDropdown = getByLabelText('Quarter*')
       fireEvent.change(quarterDropdown, { target: { value: 'Q1' } })
 
       fireEvent.click(getByText(/Search/, { selector: 'button' }))
@@ -501,10 +501,10 @@ describe('FRA Reports Page', () => {
         ).toBeInTheDocument()
       })
 
-      const yearsDropdown = getByLabelText('Fiscal Year (October - September)')
+      const yearsDropdown = getByLabelText('Fiscal Year (October - September)*')
       fireEvent.change(yearsDropdown, { target: { value: '2024' } })
 
-      const quarterDropdown = getByLabelText('Quarter')
+      const quarterDropdown = getByLabelText('Quarter*')
       fireEvent.change(quarterDropdown, { target: { value: 'Q2' } })
 
       await waitFor(() => {
@@ -564,10 +564,10 @@ describe('FRA Reports Page', () => {
       fireEvent.click(getByText(/Submit Report/, { selector: 'button' }))
       await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(2))
 
-      const yearsDropdown = getByLabelText('Fiscal Year (October - September)')
+      const yearsDropdown = getByLabelText('Fiscal Year (October - September)*')
       fireEvent.change(yearsDropdown, { target: { value: '2024' } })
 
-      const quarterDropdown = getByLabelText('Quarter')
+      const quarterDropdown = getByLabelText('Quarter*')
       fireEvent.change(quarterDropdown, { target: { value: 'Q2' } })
 
       await waitFor(() => {
@@ -601,10 +601,10 @@ describe('FRA Reports Page', () => {
       )
 
       // make a change to the search selections and click search
-      const yearsDropdown = getByLabelText('Fiscal Year (October - September)')
+      const yearsDropdown = getByLabelText('Fiscal Year (October - September)*')
       fireEvent.change(yearsDropdown, { target: { value: '2024' } })
 
-      const quarterDropdown = getByLabelText('Quarter')
+      const quarterDropdown = getByLabelText('Quarter*')
       fireEvent.change(quarterDropdown, { target: { value: 'Q2' } })
       await waitFor(() => {
         expect(getByText('2024', { selector: 'option' }).selected).toBe(true)
@@ -657,10 +657,10 @@ describe('FRA Reports Page', () => {
       )
 
       // make a change to the search selections and click search
-      const yearsDropdown = getByLabelText('Fiscal Year (October - September)')
+      const yearsDropdown = getByLabelText('Fiscal Year (October - September)*')
       fireEvent.change(yearsDropdown, { target: { value: '2024' } })
 
-      const quarterDropdown = getByLabelText('Quarter')
+      const quarterDropdown = getByLabelText('Quarter*')
       fireEvent.change(quarterDropdown, { target: { value: 'Q2' } })
       await waitFor(() => {
         expect(getByText('2024', { selector: 'option' }).selected).toBe(true)

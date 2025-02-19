@@ -49,7 +49,7 @@ const SelectReportType = ({ valid, value, setValue, options }) => (
 
 const SelectFiscalYear = ({ valid, value, setValue }) => (
   <DropdownSelect
-    label="Fiscal Year (October - September)"
+    label="Fiscal Year (October - September)*"
     fieldName="reportingYears"
     classes="maxw-mobile margin-top-4"
     value={value}
@@ -71,7 +71,7 @@ const SelectFiscalYear = ({ valid, value, setValue }) => (
 
 const SelectQuarter = ({ valid, value, setValue }) => (
   <DropdownSelect
-    label="Quarter"
+    label="Quarter*"
     fieldName="quarter"
     classes="maxw-mobile margin-top-4"
     value={value}
