@@ -1,6 +1,4 @@
 # Base Docker compose for all environments
-version: "3.4"
-
 services:
   zaproxy:
     image: tdp-docker.dev.raftlabs.tech/dependencies/softwaresecurityproject/zap-stable:2.14.0
