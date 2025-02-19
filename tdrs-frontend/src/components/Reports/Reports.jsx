@@ -21,6 +21,41 @@ import ReprocessedModal from '../SubmissionHistory/ReprocessedModal'
 import { selectPrimaryUserRole } from '../../selectors/auth'
 import { quarters, constructYearOptions } from './utils'
 
+const FiscalQuarterExplainer = () => (
+  <table className="usa-table usa-table--striped margin-top-4 desktop:width-tablet mobile:width-full">
+    <caption>TANF/SSP Data Reporting Guidelines</caption>
+    <thead>
+      <tr>
+        <th>Fiscal Year (FY) &amp; Quarter (Q)</th>
+        <th>Calendar Period</th>
+        <th>Due Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>FY Q1</td>
+        <td>Oct 1 - Dec 31</td>
+        <td>February 14</td>
+      </tr>
+      <tr>
+        <td>FY Q2</td>
+        <td>Jan 1 - Mar 31</td>
+        <td>May 15</td>
+      </tr>
+      <tr>
+        <td>FY Q3</td>
+        <td>Apr 1 - Jun 30</td>
+        <td>August 14</td>
+      </tr>
+      <tr>
+        <td>FY Q4</td>
+        <td>Jul 1 - Sep 30</td>
+        <td>November 14</td>
+      </tr>
+    </tbody>
+  </table>
+)
+
 /**
  * Reports is the home page for users to file a report.
  * The user can select a year
@@ -376,35 +411,7 @@ function Reports() {
               </Button>
             </div>
             <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
-              <table className="usa-table usa-table--striped margin-top-4 desktop:width-mobile-lg mobile:width-full">
-                <caption>
-                  Identifying the right Fiscal Year (FY) and Quarter (Q)
-                </caption>
-                <thead>
-                  <tr>
-                    <th>Fiscal Quarter</th>
-                    <th>Calendar Period</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Quarter 1</td>
-                    <td>Oct 1 - Dec 31</td>
-                  </tr>
-                  <tr>
-                    <td>Quarter 2</td>
-                    <td>Jan 1 - Mar 31</td>
-                  </tr>
-                  <tr>
-                    <td>Quarter 3</td>
-                    <td>Apr 1 - Jun 30</td>
-                  </tr>
-                  <tr>
-                    <td>Quarter 4</td>
-                    <td>Jul 1 - Sep 30</td>
-                  </tr>
-                </tbody>
-              </table>
+              <FiscalQuarterExplainer />
             </div>
           </div>
         </form>
