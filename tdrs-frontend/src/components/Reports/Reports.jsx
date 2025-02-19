@@ -67,7 +67,9 @@ function Reports() {
   }
 
   const currentStt =
-    isOFAAdmin || isDIGITTeam || isSystemAdmin ? selectedStt : userProfileStt
+    isOFAAdmin || isDIGITTeam || isSystemAdmin || isRegionalStaff
+      ? selectedStt
+      : userProfileStt
 
   const stt = sttList?.find((stt) => stt?.name === currentStt)
 
@@ -203,7 +205,8 @@ function Reports() {
       )
       const touchedFields = Object.keys(touched).length
 
-      const expected_fields = isOFAAdmin || isDIGITTeam || isSystemAdmin ? 3 : 2
+      const expected_fields =
+        isOFAAdmin || isDIGITTeam || isSystemAdmin || isRegionalStaff ? 3 : 2
 
       const errors = touchedFields === 3 ? expected_fields - form.length : 0
 
@@ -226,6 +229,7 @@ function Reports() {
     isOFAAdmin,
     isDIGITTeam,
     isSystemAdmin,
+    isRegionalStaff,
   ])
 
   return (
@@ -253,7 +257,10 @@ function Reports() {
         <form>
           <div className="grid-row grid-gap">
             <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
-              {(isOFAAdmin || isDIGITTeam || isSystemAdmin) && (
+              {(isOFAAdmin ||
+                isDIGITTeam ||
+                isSystemAdmin ||
+                isRegionalStaff) && (
                 <div
                   className={classNames(
                     'usa-form-group maxw-mobile margin-top-4',
