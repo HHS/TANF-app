@@ -9,7 +9,6 @@ from tdpservice.parsers.schema_defs.utils import get_schema_options, get_program
 from tdpservice.parsers.util import fiscal_to_calendar
 # all models should be referenced by using the utils.py get_schema_options wrappers
 from tdpservice.data_files.models import DataFile
-# from tdpservice.parsers import parse
 from tdpservice.parsers.test.factories import DataFileSummaryFactory
 from tdpservice.scheduling.parser_task import parse as parse_task
 from tdpservice.stts.models import STT

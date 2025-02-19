@@ -3,7 +3,7 @@
 import pytest
 from datetime import datetime
 from ..fields import Field
-from ..row_schema import RowSchema, SchemaManager
+from ..row_schema import RowSchema
 from ..util import (
     make_generate_parser_error,
     create_test_datafile,
