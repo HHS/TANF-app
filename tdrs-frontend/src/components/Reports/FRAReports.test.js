@@ -749,10 +749,10 @@ describe('FRA Reports Page', () => {
       })
 
       // fill out the form values before clicking search
-      const yearsDropdown = getByLabelText('Fiscal Year (October - September)')
+      const yearsDropdown = getByLabelText('Fiscal Year (October - September)*')
       fireEvent.change(yearsDropdown, { target: { value: '2021' } })
 
-      const quarterDropdown = getByLabelText('Quarter')
+      const quarterDropdown = getByLabelText('Quarter*')
       fireEvent.change(quarterDropdown, { target: { value: 'Q1' } })
 
       fireEvent.click(getByText(/Search/, { selector: 'button' }))
