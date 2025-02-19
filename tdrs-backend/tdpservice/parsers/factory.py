@@ -1,6 +1,6 @@
 """Factory class for all parser classes."""
 
-from tdpservice.parsers.tst_parser import TSTParser
+from tdpservice.parsers.tdr_parser import TanfDataReportParser
 
 class ParserFactory:
     """Factory class to get/instantiate parsers."""
@@ -10,7 +10,7 @@ class ParserFactory:
         """Return the correct parser class to be constructed manually."""
         match program_type:
             case "TANF" | "SSP":
-                return TSTParser
+                return TanfDataReportParser
             case "FRA":
                 raise ValueError("FRA parser is not yet available.")
             case _:
@@ -22,7 +22,7 @@ class ParserFactory:
         program_type = kwargs.pop('program_type', None)
         match program_type:
             case "TAN" | "SSP":
-                return TSTParser(**kwargs)
+                return TanfDataReportParser(**kwargs)
             case "FRA":
                 raise ValueError("FRA parser is not yet available.")
             case _:

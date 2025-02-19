@@ -34,7 +34,7 @@ class HeaderResult:
     is_encrypted: bool = False
 
 
-class TSTParser(BaseParser):
+class TanfDataReportParser(BaseParser):
     """Parser for TANF, SSP, and Tribal datafiles."""
 
     def __init__(self, datafile, dfs, section):

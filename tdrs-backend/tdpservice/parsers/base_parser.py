@@ -9,7 +9,7 @@ import logging
 from tdpservice.parsers import util
 from tdpservice.parsers.decoders import DecoderFactory
 from tdpservice.parsers.models import ParserErrorCategoryChoices, ParserError
-from tdpservice.parsers.row_schema import SchemaManager
+from tdpservice.parsers.schema_manager import SchemaManager
 from tdpservice.parsers.util import SortedRecords, log_parser_exception
 
 logger = logging.getLogger(__name__)
@@ -45,7 +45,7 @@ class BaseParser(ABC):
 
     def _init_schema_manager(self, program_type):
         """Initialize the schema manager with the given program type."""
-        # program_type is manipulated by some parsers. E.g. the tst_parser has to prefix a tribal TANF's program type
+        # program_type is manipulated by some parsers. E.g. the tdr_parser has to prefix a tribal TANF's program type
         # with "Tribal" since it's base program type would just be TANF.
         self.program_type = program_type
         self.schema_manager = SchemaManager(self.datafile, self.program_type, self.section)
