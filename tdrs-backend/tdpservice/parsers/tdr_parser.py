@@ -194,7 +194,7 @@ class TanfDataReportParser(BaseParser):
     def _validate_header(self):
         """Validate header and header fields."""
         # parse & validate header
-        header_row = next(self.decoder.decode())
+        header_row = self.decoder.get_header()
         header, header_is_valid, header_errors = schema_defs.header.parse_and_validate(
             # TODO: just pass header_row when schemas and fields are updated to accept it.
             header_row.raw_data,

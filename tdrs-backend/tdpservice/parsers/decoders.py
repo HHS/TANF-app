@@ -66,9 +66,16 @@ class BaseDecoder(ABC):
         self.raw_file = raw_file
         self.current_row_num = 1
 
+        # Always ensure our file pointer is at the start
+        self.raw_file.seek(0)
+
     @abstractmethod
-    def get_record_type(self, raw_data):
+    def get_record_type(self, raw_data) -> str:
         """To be implemented in child class."""
+        pass
+
+    @abstractmethod
+    def get_header(self) -> RawRow:
         pass
 
     @abstractmethod
@@ -88,6 +95,11 @@ class Utf8Decoder(BaseDecoder):
             return "TRAILER"
         else:
             return raw_data[0:2]
+
+    def get_header(self):
+        """Get the first line in the file. Assumed to be the header."""
+        raw_data = self.raw_file.readline().decode().strip()
+        return RawRow(raw_data=raw_data, raw_len=len(raw_data), row_num=self.current_row_num, record_type="HEADER")
 
     def decode(self):
         """Decode and yield each row."""
@@ -111,6 +123,12 @@ class CsvDecoder(BaseDecoder):
         # Until the need for more complicated logic arises, we assume this decoder is only being used for FRA files.
         return "FRA"
 
+    def get_header(self):
+        """Get the first line in the file. Assumed to be the header."""
+        # TODO: Implement when FRA parser is fully implemented
+        raw_data = None
+        return RawRow(raw_data=raw_data, raw_len=0, row_num=self.current_row_num, record_type="HEADER")
+
     def decode(self):
         """Decode and yield each row."""
         for raw_data in self.csv_file:
@@ -132,6 +150,12 @@ class XlsxDecoder(BaseDecoder):
         # Until the need for more complicated logic arises, we assume this decoder is only being used for FRA files.
         return "FRA"
 
+    def get_header(self):
+        """Get the first line in the file. Assumed to be the header."""
+        # TODO: Implement when FRA parser is fully implemented
+        raw_data = None
+        return RawRow(raw_data=raw_data, raw_len=0, row_num=self.current_row_num, record_type="HEADER")
+
     def decode(self):
         """Decode and yield each row."""
         for raw_data in self.work_book.active.iter_rows(values_only=True):
@@ -147,8 +171,20 @@ class DecoderFactory:
     @classmethod
     def get_suggested_decoder(cls, raw_file):
         """Try and determine what decoder to use based on file encoding and magic numbers."""
-        # We need to guarentee that the file pointer is at the first byte
+        # We need to guarantee that the file pointer is at the first byte
         raw_file.seek(0)
+
+        # If our file has size zero, use the extension to try and determine the correct decoder. Default to UTF8 in
+        # the worst case.
+        if not len(raw_file):
+            extension = os.path.splitext(raw_file.name)[-1]
+            match extension:
+                case ".csv":
+                    return Decoder.CSV
+                case ".xlsx":
+                    return Decoder.XLSX
+                case _:
+                    return Decoder.UTF8
 
         data = raw_file.read(4096)
         char_result = chardet.detect(data)
