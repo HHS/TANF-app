@@ -4489,6 +4489,7 @@ var ACCEPTED_FILE_MESSAGE_CLASS = "".concat(PREFIX, "-file-input__accepted-files
 var DRAG_TEXT_CLASS = "".concat(PREFIX, "-file-input__drag-text");
 var DRAG_CLASS = "".concat(PREFIX, "-file-input--drag");
 var LOADING_CLASS = "is-loading";
+var HIDDEN_CLASS = "display-none";
 var INVALID_FILE_CLASS = "has-invalid-file";
 var GENERIC_PREVIEW_CLASS_NAME = "".concat(PREFIX, "-file-input__preview-image");
 var GENERIC_PREVIEW_CLASS = "".concat(GENERIC_PREVIEW_CLASS_NAME, "--generic");
@@ -4587,6 +4588,10 @@ var removeOldPreviews = function removeOldPreviews(dropTarget, instructions) {
 
 
   if (filePreviews !== null) {
+    if (instructions) {
+      instructions.classList.remove(HIDDEN_CLASS);
+    }
+
     Array.prototype.forEach.call(filePreviews, function removeImages(node) {
       node.parentNode.removeChild(node);
     });
@@ -4702,6 +4707,7 @@ var handleChange = function handleChange(e, fileInputEl, instructions, dropTarge
 
 
     if (filePreviewsHeading) {
+      instructions.classList.add(HIDDEN_CLASS);
       filePreviewsHeading.classList.add(PREVIEW_HEADING_CLASS);
     }
   };

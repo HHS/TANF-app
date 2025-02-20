@@ -13,7 +13,12 @@ import {
 } from '../../actions/reports'
 import Button from '../Button'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
-import { handlePreview, getTargetClassName } from './utils'
+import {
+  handlePreview,
+  getTargetClassName,
+  checkPreviewDependencies,
+  removeOldPreviews,
+} from './utils'
 
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
@@ -77,6 +82,10 @@ function FileUpload({ section, setLocalAlertState }) {
     }
     if (hasPreview || hasFile) {
       trySettingPreview()
+    } else {
+      // When the file upload modal is cancelled we need to remove our hiding logic
+      const deps = checkPreviewDependencies(targetClassName)
+      if (deps.rendered) removeOldPreviews(deps.dropTarget, deps.instructions)
     }
   }, [hasPreview, hasFile, fileName, targetClassName])
 
