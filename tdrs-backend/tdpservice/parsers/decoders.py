@@ -76,6 +76,7 @@ class BaseDecoder(ABC):
 
     @abstractmethod
     def get_header(self) -> RawRow:
+        """To be implemented in child class."""
         pass
 
     @abstractmethod
