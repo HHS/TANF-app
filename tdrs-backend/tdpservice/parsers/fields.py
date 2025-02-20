@@ -44,9 +44,9 @@ class Field:
         """Convenience method to provide constructor overloading for position."""
         start = kwargs.get("startIndex", None)
         end = kwargs.get("endIndex", None)
-        if self.position:
+        if self.position is not None:
             return
-        elif start and end:
+        elif start is not None and end is not None:
             self.position = Position(start, end)
             return
 
