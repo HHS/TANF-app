@@ -271,8 +271,8 @@ m2 = SchemaManager(
                 ),
                 Field(
                     item="31",
-                    name='GENDER',
-                    friendly_name="Gender",
+                    name='SEX',
+                    friendly_name="Sex",
                     type='number',
                     startIndex=44,
                     endIndex=45,

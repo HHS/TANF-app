@@ -8,7 +8,7 @@ from tdpservice.stts.models import STT, Region
 def test_region_string_representation(stts):
     """Test region string representation."""
     first_region = Region.objects.first()
-    assert str(first_region) == f"Region {first_region.id}"
+    assert str(first_region) == f"Region {first_region.id} (Boston)"
 
 
 @pytest.mark.django_db

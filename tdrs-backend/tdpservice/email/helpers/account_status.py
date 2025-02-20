@@ -1,6 +1,13 @@
 """Helper functions for sending approval status update emails."""
 from tdpservice.email.email_enums import EmailType
 from tdpservice.email.email import automated_email, log
+from tdpservice.stts.models import Region
+
+
+def getRegionalContext(regions):
+    """Get email context for regional users."""
+    return {'regional': True,
+            'regions': [str(region) for region in Region.objects.filter(id__in=regions)]}
 
 
 def send_approval_status_update_email(
@@ -34,6 +41,9 @@ def send_approval_status_update_email(
             template_path = EmailType.ACCESS_REQUEST_SUBMITTED.value
             subject = 'Access Request Submitted'
             text_message = 'Your account has been requested.'
+            regions = user.regions.all().order_by('pk')
+            if regions:
+                context.update(getRegionalContext(regions))
 
         case AccountApprovalStatusChoices.PENDING:
             # Stubbed for future use
@@ -43,6 +53,9 @@ def send_approval_status_update_email(
             template_path = EmailType.REQUEST_APPROVED.value
             subject = 'Access Request Approved'
             text_message = 'Your account request has been approved.'
+            regions = user.regions.all().order_by('pk')
+            if regions:
+                context.update(getRegionalContext(regions))
 
         case AccountApprovalStatusChoices.DENIED:
             template_path = EmailType.REQUEST_DENIED.value

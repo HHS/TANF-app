@@ -342,7 +342,7 @@ In discussing error troubleshooting, we also discussed new staff training. Curre
 But, most participants wanted a way to know where the error was occuring—for example what row or case.
 
 - “[It’s] helpful to know what specific value was submitted and what is acceptable. If it’s like a million records that’s obviously a problem.”
-- “If comes back that specific, gender incorrect, as long as it tell us which case it was for then they could correct pretty quickly, but doesn’t show what actual case it was on”
+- “If comes back that specific, sex incorrect, as long as it tell us which case it was for then they could correct pretty quickly, but doesn’t show what actual case it was on”
 
 **Project impacts**
 
