@@ -135,7 +135,7 @@ class TanfDataReportSchema(RowSchema):
             fields=None,
             # The default hash function covers all program types with record types ending in a 6 or 7.
             generate_hashes_func=lambda row, record: (hash(row),
-                                                       hash(record.RecordType)),
+                                                      hash(record.RecordType)),
             should_skip_partial_dup_func=lambda record: False,
             get_partial_hash_members_func=lambda: ["RecordType"],
             preparsing_validators=[],
@@ -258,7 +258,8 @@ class FRASchema(RowSchema):
     def parse_and_validate(self, row: RawRow, generate_error):
         """Run all validation steps in order, and parse the given row into a record."""
         # Parse FRA row and run field validators, waiting for guidance on other categories of validators
-        # The implementor should reference `UpdatedErrorReport.xlsx` to gain insight into appropriate validators for fields.
+        # The implementor should reference `UpdatedErrorReport.xlsx` to gain insight into appropriate
+        # validators for fields.
         errors = []
 
         # parse row to model

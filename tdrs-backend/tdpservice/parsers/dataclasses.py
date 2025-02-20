@@ -28,7 +28,7 @@ class ManagerPVResult:
     """SchemaManager parse and validate result class."""
 
     records: List["SchemaResult"]
-    schemas: List[object] # RowSchema causes circular import
+    schemas: List[object]  # RowSchema causes circular import
 
 
 @dataclass
@@ -66,7 +66,7 @@ class RawRow:
     def value_at_is(self, position: Position, expected_value):
         """Check if the value at position matches the expected value."""
         return self.value_at(position) == expected_value
-    
+
     def raw_length(self):
         """Return the byte length of data."""
         return self.raw_len

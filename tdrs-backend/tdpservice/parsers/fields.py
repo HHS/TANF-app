@@ -16,7 +16,7 @@ class Field:
         name,
         friendly_name,
         type: FieldType,
-        position: Position=None,
+        position: Position = None,
         required=True,
         validators=[],
         ignore_errors=False,
@@ -33,7 +33,9 @@ class Field:
         self.ignore_errors = ignore_errors
 
     def _init_position(self, **kwargs):
-        """Convenience method to provide constructor overloading for position."""
+        """Initialize position based on `startIndex` and `endIndex`."""
+        # This is a Python hack to get constructor overloading which avoids changing hundreds of Field class
+        # constructions with `startIndex` and `endIndex`.
         start = kwargs.get("startIndex", None)
         end = kwargs.get("endIndex", None)
         if self.position is not None:
@@ -43,7 +45,6 @@ class Field:
             return
 
         raise ValueError("You must pass a position or a startIndex and endIndex.")
-
 
     def create(self, item, name, length, start, end, type):
         """Create a new field."""
