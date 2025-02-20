@@ -6,7 +6,7 @@ from .models import ParserErrorCategoryChoices
 from .util import get_years_apart
 from tdpservice.stts.models import STT
 from tdpservice.parsers.schema_defs.utils import get_program_model
-from tdpservice.parsers.dataclasses import ValidationErrorArgs
+from tdpservice.parsers.dataclasses import RawRow, ValidationErrorArgs
 from tdpservice.parsers.validators.category3 import format_error_context
 import logging
 import warnings
@@ -111,12 +111,12 @@ class CaseConsistencyValidator:
             return hash(record.RecordType)
         return hash(str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER)
 
-    def add_record(self, record, schema, line, line_number, case_has_errors):
+    def add_record(self, record, schema, row: RawRow, line_number, case_has_errors):
         """Add record to cache, validate if new case is detected, and check for duplicate errors.
 
         @param record: a Django model representing a datafile record
         @param schema: the schema from which the record was created
-        @param line: the raw string line representing the record
+        @param row: the RawRow parsed from the decoder
         @param line_number: the line number the record was generated from in the datafile
         @param case_has_errors: boolean indictating whether the record's case has any cat2 or cat3 errors
         @return: (boolean indicating existence of cat4 errors, a hash value generated from fields in the record
@@ -142,7 +142,7 @@ class CaseConsistencyValidator:
         # Need to return the hash of what we just cat4 validated, i.e. case_hash_to_remove = self.current_case_hash. If
         # we didn't cat4 validate then we return the latest case hash, i.e. case_hash_to_remove = latest_case_hash.
         # However, we always call self.duplicate_manager.add_record with the latest case_hash.
-        self.duplicate_manager.add_record(record, latest_case_hash, schema, line, line_number)
+        self.duplicate_manager.add_record(record, latest_case_hash, schema, row, line_number)
         num_errors += self.duplicate_manager.get_num_dup_errors(case_hash_to_remove)
 
         self.current_case_hash = latest_case_hash

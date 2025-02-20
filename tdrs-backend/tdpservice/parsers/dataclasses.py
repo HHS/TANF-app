@@ -53,22 +53,39 @@ class Position:
 class RawRow:
     """Generic wrapper for indexable row data."""
 
-    raw_data: str | List | Tuple
+    data: str | List | Tuple
     raw_len: int
+    decoded_len: int
     row_num: int
     record_type: str
 
     def value_at(self, position: Position):
         """Get value at position."""
-        return self.raw_data[position.start:position.end]
+        return self.data[position.start:position.end]
 
     def value_at_is(self, position: Position, expected_value):
         """Check if the value at position matches the expected value."""
         return self.value_at(position) == expected_value
+    
+    def raw_length(self):
+        """Return the byte length of data."""
+        return self.raw_len
 
     def __len__(self):
-        """Return the length of raw_data."""
-        return self.raw_len
+        """Return the length of data."""
+        return self.decoded_len
+
+    def __getitem__(self, key):
+        """Return slice from data."""
+        return self.data[key]
+
+    def __str__(self):
+        """Return string representation of data."""
+        return str(self.data)
+
+    def __hash__(self):
+        """Return hash of data."""
+        return hash(self.data)
 
 
 @dataclass

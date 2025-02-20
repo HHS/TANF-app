@@ -152,7 +152,6 @@ def test_parse_big_file(big_file, dfs):
 
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
         dfs.datafile, dfs.status)
-    print(dfs.case_aggregates)
     assert dfs.case_aggregates == {'months': [
         {'month': 'Oct', 'accepted_without_errors': 25, 'accepted_with_errors': 245},
         {'month': 'Nov', 'accepted_without_errors': 18, 'accepted_with_errors': 255},

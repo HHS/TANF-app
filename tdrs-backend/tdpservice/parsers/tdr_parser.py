@@ -55,7 +55,7 @@ class TanfDataReportParser(BaseParser):
         offset = 0
         case_hash = None
         for row in self.decoder.decode():
-            offset += len(row)
+            offset += row.raw_length()
             self.current_row = row
             self.current_row_num = self.decoder.current_row_num
 
@@ -114,7 +114,7 @@ class TanfDataReportParser(BaseParser):
                     should_remove, case_hash_to_remove, case_hash = self.case_consistency_validator.add_record(
                         record,
                         schema,
-                        row.raw_data,
+                        row,
                         self.current_row_num,
                         record_has_errors
                     )

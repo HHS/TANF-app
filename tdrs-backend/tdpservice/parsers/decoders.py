@@ -65,15 +65,18 @@ class Utf8Decoder(BaseDecoder):
     def get_header(self):
         """Get the first line in the file. Assumed to be the header."""
         raw_data = self.raw_file.readline().decode().strip()
-        return RawRow(raw_data=raw_data, raw_len=len(raw_data), row_num=self.current_row_num, record_type="HEADER")
+        return RawRow(data=raw_data, raw_len=len(raw_data), decoded_len=len(raw_data),
+                      row_num=self.current_row_num, record_type="HEADER")
 
     def decode(self):
         """Decode and yield each row."""
         for raw_data in self.raw_file:
             raw_len = len(raw_data)
             raw_data = raw_data.decode().strip('\r\n')
+            decoded_len = len(raw_data)
             record_type = self.get_record_type(raw_data)
-            yield RawRow(raw_data=raw_data, raw_len=raw_len, row_num=self.current_row_num, record_type=record_type)
+            yield RawRow(data=raw_data, raw_len=raw_len, decoded_len=decoded_len,
+                          row_num=self.current_row_num, record_type=record_type)
             self.current_row_num += 1
 
 
@@ -93,14 +96,16 @@ class CsvDecoder(BaseDecoder):
         """Get the first line in the file. Assumed to be the header."""
         # TODO: Implement when FRA parser is fully implemented
         raw_data = None
-        return RawRow(raw_data=raw_data, raw_len=0, row_num=self.current_row_num, record_type="HEADER")
+        return RawRow(data=raw_data, raw_len=0, decoded_len=0,
+                      row_num=self.current_row_num, record_type="HEADER")
 
     def decode(self):
         """Decode and yield each row."""
         for raw_data in self.csv_file:
             raw_len = len(raw_data)
             record_type = self.get_record_type(raw_data)
-            yield RawRow(raw_data=raw_data, raw_len=raw_len, row_num=self.current_row_num, record_type=record_type)
+            yield RawRow(data=raw_data, raw_len=raw_len, decoded_len=raw_len,
+                         row_num=self.current_row_num, record_type=record_type)
             self.current_row_num += 1
 
 
@@ -120,14 +125,16 @@ class XlsxDecoder(BaseDecoder):
         """Get the first line in the file. Assumed to be the header."""
         # TODO: Implement when FRA parser is fully implemented
         raw_data = None
-        return RawRow(raw_data=raw_data, raw_len=0, row_num=self.current_row_num, record_type="HEADER")
+        return RawRow(data=raw_data, raw_len=0, decoded_len=0, 
+                      row_num=self.current_row_num, record_type="HEADER")
 
     def decode(self):
         """Decode and yield each row."""
         for raw_data in self.work_book.active.iter_rows(values_only=True):
             raw_len = len(raw_data)
             record_type = self.get_record_type(raw_data)
-            yield RawRow(raw_data=raw_data, raw_len=raw_len, row_num=self.current_row_num, record_type=record_type)
+            yield RawRow(data=raw_data, raw_len=raw_len, decoded_len=raw_len,
+                         row_num=self.current_row_num, record_type=record_type)
             self.current_row_num += 1
 
 

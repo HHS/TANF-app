@@ -24,7 +24,7 @@ class RowSchema(ABC):
         self.datafile = None
 
     @abstractmethod
-    def parse_and_validate(self, line, generate_error) -> SchemaResult:
+    def parse_and_validate(self, row: RawRow, generate_error) -> SchemaResult:
         """To be overriden in child class."""
         pass
 
@@ -109,12 +109,12 @@ class RowSchema(ABC):
 
         return is_valid, errors
 
-    def get_field_values_by_names(self, line, names={}):
+    def get_field_values_by_names(self, row: RawRow, names={}):
         """Return dictionary of field values keyed on their name."""
         field_values = {}
         for field in self.fields:
             if field.name in names:
-                field_values[field.name] = field.parse_value(line)
+                field_values[field.name] = field.parse_value(row)
         return field_values
 
     def get_field_by_name(self, name):
@@ -134,7 +134,7 @@ class TanfDataReportSchema(RowSchema):
             document=None,
             fields=None,
             # The default hash function covers all program types with record types ending in a 6 or 7.
-            generate_hashes_func=lambda line, record: (hash(line),
+            generate_hashes_func=lambda row, record: (hash(row),
                                                        hash(record.RecordType)),
             should_skip_partial_dup_func=lambda record: False,
             get_partial_hash_members_func=lambda: ["RecordType"],
@@ -152,7 +152,7 @@ class TanfDataReportSchema(RowSchema):
         self.quiet_preparser_errors = quiet_preparser_errors
 
     def parse_and_validate(self, row: RawRow, generate_error):
-        """Run all validation steps in order, and parse the given line into a record."""
+        """Run all validation steps in order, and parse the given row into a record."""
         errors = []
 
         # run preparsing validators
@@ -162,7 +162,7 @@ class TanfDataReportSchema(RowSchema):
         is_quiet_preparser_errors = (
                 self.quiet_preparser_errors
                 if type(self.quiet_preparser_errors) is bool
-                else self.quiet_preparser_errors(row.raw_data)  # TODO: Update to handle RawRow
+                else self.quiet_preparser_errors(row.data)  # TODO: Update to handle RawRow
             )
         if not preparsing_is_valid:
             if is_quiet_preparser_errors:
@@ -185,7 +185,7 @@ class TanfDataReportSchema(RowSchema):
         return SchemaResult(record, is_valid, errors)
 
     def run_preparsing_validators(self, row: RawRow, generate_error):
-        """Run each of the `preparsing_validator` functions in the schema against the un-parsed line."""
+        """Run each of the `preparsing_validator` functions in the schema against the un-parsed row."""
         is_valid = True
         errors = []
 
@@ -198,14 +198,14 @@ class TanfDataReportSchema(RowSchema):
                 friendly_name=field.friendly_name if field else 'record type',
                 item_num=field.item if field else '0',
             )
-            # TODO: Update to handle RawRow?
-            result = validator(row.raw_data, eargs)
+
+            result = validator(row, eargs)
             is_valid = False if not result.valid else is_valid
 
             is_quiet_preparser_errors = (
                 self.quiet_preparser_errors
                 if type(self.quiet_preparser_errors) is bool
-                else self.quiet_preparser_errors(row.raw_data)
+                else self.quiet_preparser_errors(row.data)
             )
             if result.error and not is_quiet_preparser_errors:
                 errors.append(
@@ -256,7 +256,7 @@ class FRASchema(RowSchema):
         super().__init__(record_type, model, fields)
 
     def parse_and_validate(self, row: RawRow, generate_error):
-        """Run all validation steps in order, and parse the given line into a record."""
+        """Run all validation steps in order, and parse the given row into a record."""
         # Parse FRA row and run field validators, waiting for guidance on other categories of validators
         # The implementor should reference `UpdatedErrorReport.xlsx` to gain insight into appropriate validators for fields.
         errors = []
