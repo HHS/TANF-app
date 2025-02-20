@@ -5,6 +5,7 @@ import logging
 from tdpservice.parsers.test import factories
 from .. import schema_defs, util
 from ..case_consistency_validator import CaseConsistencyValidator
+from tdpservice.parsers.dataclasses import RawRow
 from tdpservice.parsers.models import ParserErrorCategoryChoices
 from tdpservice.stts.models import STT
 
@@ -22,8 +23,10 @@ class TestCaseConsistencyValidator:
         # parse header, trailer
         rawfile.seek(0)
         header_line = rawfile.readline().decode().strip()
+        length = len(header_line)
+        row = RawRow(data=header_line, raw_len=length, decoded_len=length, row_num=1, record_type="HEADER")
         return schema_defs.header.parse_and_validate(
-            header_line,
+            row,
             util.make_generate_file_precheck_parser_error(datafile, 1)
         )
 
@@ -71,7 +74,11 @@ class TestCaseConsistencyValidator:
 
         line_number = 1
         for record, schema in zip(tanf_s1_records, tanf_s1_schemas):
-            case_consistency_validator.add_record(record, schema, str(record), line_number, True)
+            line = str(record)
+            length = len(line)
+            row = RawRow(data=line, raw_len=length, decoded_len=length,
+                         row_num=line_number, record_type=schema.record_type)
+            case_consistency_validator.add_record(record, schema, row, line_number, True)
             line_number += 1
 
         assert case_consistency_validator.has_validated is False
@@ -85,7 +92,11 @@ class TestCaseConsistencyValidator:
         t1.CASE_NUMBER = "2"
         t1.RPT_MONTH_YEAR = 2
         line_number += 1
-        case_consistency_validator.add_record(t1, tanf_s1_schemas[0], str(t1), line_number, False)
+        line = str(t1)
+        length = len(line)
+        row1 = RawRow(data=line, raw_len=length, decoded_len=length,
+                     row_num=line_number, record_type=t1.RecordType)
+        case_consistency_validator.add_record(t1, tanf_s1_schemas[0], row1, line_number, False)
         assert case_consistency_validator.has_validated is False
         assert case_consistency_validator.case_has_errors is False
         assert len(case_consistency_validator.cases) == 1
@@ -100,13 +111,21 @@ class TestCaseConsistencyValidator:
         t3.CASE_NUMBER = "2"
         t3.RPT_MONTH_YEAR = 2
         line_number += 1
-        case_consistency_validator.add_record(t2, tanf_s1_schemas[1], str(t2), line_number, False)
+        line = str(t2)
+        length = len(line)
+        row2 = RawRow(data=line, raw_len=length, decoded_len=length,
+                     row_num=line_number, record_type=t1.RecordType)
+        case_consistency_validator.add_record(t2, tanf_s1_schemas[1], row2, line_number, False)
         line_number += 1
-        case_consistency_validator.add_record(t3, tanf_s1_schemas[2], str(t3), line_number, False)
+        line = str(t3)
+        length = len(line)
+        row3 = RawRow(data=line, raw_len=length, decoded_len=length,
+                     row_num=line_number, record_type=t1.RecordType)
+        case_consistency_validator.add_record(t3, tanf_s1_schemas[2], row3, line_number, False)
         assert case_consistency_validator.case_has_errors is False
 
         line_number += 1
-        case_consistency_validator.add_record(tanf_s1_records[0], tanf_s1_schemas[0], str(t3), line_number, True)
+        case_consistency_validator.add_record(tanf_s1_records[0], tanf_s1_schemas[0], row3, line_number, True)
 
         assert case_consistency_validator.has_validated is False
         assert case_consistency_validator.case_has_errors is True
