@@ -1,5 +1,6 @@
-"""Schema for TANF T7 Row."""
+"""Schema for M7 Row."""
 
+from tdpservice.parsers.dataclasses import FieldType
 from tdpservice.parsers.transforms import calendar_quarter_to_rpt_month_year
 from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import TanfDataReportSchema
@@ -35,7 +36,7 @@ for i in range(1, 31):
                     item="0",
                     name="RecordType",
                     friendly_name="Record Type",
-                    type="string",
+                    type=FieldType.ALPHA_NUMERIC,
                     startIndex=0,
                     endIndex=2,
                     required=True,
@@ -45,7 +46,7 @@ for i in range(1, 31):
                     item="2",
                     name="CALENDAR_QUARTER",
                     friendly_name="Calendar Quarter",
-                    type="number",
+                    type=FieldType.NUMERIC,
                     startIndex=2,
                     endIndex=7,
                     required=True,
@@ -59,7 +60,7 @@ for i in range(1, 31):
                     item="2A",
                     name="RPT_MONTH_YEAR",
                     friendly_name="Reporting Year and Month",
-                    type="number",
+                    type=FieldType.NUMERIC,
                     startIndex=2,
                     endIndex=7,
                     required=True,
@@ -72,7 +73,7 @@ for i in range(1, 31):
                     item="3",
                     name="TDRS_SECTION_IND",
                     friendly_name="SDR Section Indicator",
-                    type="string",
+                    type=FieldType.ALPHA_NUMERIC,
                     startIndex=section_ind_index,
                     endIndex=section_ind_index + 1,
                     required=True,
@@ -82,7 +83,7 @@ for i in range(1, 31):
                     item="4",
                     name="STRATUM",
                     friendly_name="Stratum",
-                    type="string",
+                    type=FieldType.ALPHA_NUMERIC,
                     startIndex=stratum_index,
                     endIndex=stratum_index + 2,
                     required=True,
@@ -92,7 +93,7 @@ for i in range(1, 31):
                     item=families_item_numbers[i - 1],
                     name="FAMILIES_MONTH",
                     friendly_name="Number of Families",
-                    type="number",
+                    type=FieldType.NUMERIC,
                     startIndex=families_index,
                     endIndex=families_index + 7,
                     required=True,

@@ -1,8 +1,16 @@
 """Utility data classes for the parsing engine."""
 
+from enum import IntFlag, auto
 from dataclasses import dataclass, field
 from django.db.models import Model
 from typing import Any, DefaultDict, List, Tuple
+
+
+class FieldType(IntFlag):
+    """Enum class for field types."""
+
+    NUMERIC = auto()
+    ALPHA_NUMERIC = auto()
 
 
 @dataclass
@@ -80,6 +88,10 @@ class SchemaResult:
     record: DefaultDict | Model
     is_valid: bool
     errors: List[Model]
+
+    def __iter__(self):
+        """Allow unpacking."""
+        return iter((self.record, self.is_valid, self.errors))
 
 
 @dataclass

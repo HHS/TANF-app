@@ -282,8 +282,7 @@ class TanfDataReportParser(BaseParser):
             self._generate_trailer_errors(errors)
         if self.trailer_count == 1 or is_last_line:
             record, trailer_is_valid, trailer_errors = schema_defs.trailer.parse_and_validate(
-                # TODO: this should take just current_row when schema/field is updated in follow on work.
-                self.current_row.raw_data,
+                self.current_row,
                 make_generate_parser_error(self.datafile, self.current_row_num)
             )
             self._generate_trailer_errors(trailer_errors)

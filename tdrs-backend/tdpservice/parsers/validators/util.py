@@ -95,7 +95,6 @@ def value_is_empty(value, length, extra_vals={}):
         '#'*length,  # '#####'
         '_'*length,  # '_____'
     }
-
     empty_values = empty_values.union(extra_vals)
 
     return value is None or value in empty_values

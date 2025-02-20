@@ -75,7 +75,6 @@ class RowSchema(ABC):
                 friendly_name=field.friendly_name,
                 item_num=field.item,
             )
-
             is_empty = value_is_empty(value, len(field.position))
             should_validate = not field.required and not is_empty
             if (field.required and not is_empty) or should_validate:

@@ -1,18 +1,10 @@
 """Datafile field representations."""
 
-from enum import IntFlag, auto
 import logging
 from tdpservice.parsers.validators.util import value_is_empty
-from tdpservice.parsers.dataclasses import Position, RawRow
+from tdpservice.parsers.dataclasses import FieldType, Position, RawRow
 
 logger = logging.getLogger(__name__)
-
-
-class FieldType(IntFlag):
-    """Enum class for field types."""
-
-    NUMERIC = auto()
-    ALPHA_NUMERIC = auto()
 
 
 class Field:
