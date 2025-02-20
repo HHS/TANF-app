@@ -47,10 +47,10 @@ class RowSchema(ABC):
         """Datafile setter."""
         self.datafile = datafile
 
-    def _add_field(self, item, name, length, start, end, type):
+    def _add_field(self, item, name, length, position, type):
         """Add a field to the schema."""
         self.fields.append(
-            Field(item, name, type, start, end)
+            Field(item, name, type, position)
         )
 
     def add_fields(self, fields: list):

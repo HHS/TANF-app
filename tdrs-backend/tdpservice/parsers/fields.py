@@ -1,9 +1,19 @@
 """Datafile field representations."""
 
+from enum import IntFlag, auto
 import logging
-from .validators.util import value_is_empty
+from tdpservice.parsers.validators.util import value_is_empty
+from tdpservice.parsers.dataclasses import Position, RawRow
 
 logger = logging.getLogger(__name__)
+
+
+class FieldType(IntFlag):
+    """Enum class for field types."""
+
+    NUMERIC = auto()
+    ALPHA_NUMERIC = auto()
+
 
 class Field:
     """Provides a mapping between a field name and its position."""
@@ -13,22 +23,35 @@ class Field:
         item,
         name,
         friendly_name,
-        type,
-        startIndex,
-        endIndex,
+        type: FieldType,
+        position: Position=None,
         required=True,
         validators=[],
         ignore_errors=False,
+        **kwargs,
     ):
         self.item = item
         self.name = name
         self.friendly_name = friendly_name
         self.type = type
-        self.startIndex = startIndex
-        self.endIndex = endIndex
+        self.position = position
+        self._init_position(**kwargs)
         self.required = required
         self.validators = validators
         self.ignore_errors = ignore_errors
+
+    def _init_position(self, **kwargs):
+        """Convenience method to provide constructor overloading for position."""
+        start = kwargs.get("startIndex", None)
+        end = kwargs.get("endIndex", None)
+        if self.position:
+            return
+        elif start and end:
+            self.position = Position(start, end)
+            return
+
+        raise ValueError("You must pass a position or a startIndex and endIndex.")
+
 
     def create(self, item, name, length, start, end, type):
         """Create a new field."""
@@ -38,27 +61,27 @@ class Field:
         """Return a string representation of the field."""
         return f"{self.name}({self.startIndex}-{self.endIndex})"
 
-    def parse_value(self, line):
-        """Parse the value for a field given a line, startIndex, endIndex, and field type."""
-        value = line[self.startIndex:self.endIndex]
-        value_length = self.endIndex-self.startIndex
+    def parse_value(self, row: RawRow):
+        """Parse the value for a field given a row, posiiton, and field type."""
+        value = row.value_at(self.position)
+        value_length = len(self.position)
 
         if len(value) < value_length or value_is_empty(value, value_length):
             logger.debug(f"Field: '{self.name}' at position: [{self.startIndex}, {self.endIndex}) is empty.")
             return None
 
         match self.type:
-            case "number":
+            case FieldType.NUMERIC:
                 try:
                     value = int(value)
                     return value
                 except ValueError:
                     logger.error(f"Error parsing field {self.name} value to integer.")
                     return None
-            case "string":
+            case FieldType.ALPHA_NUMERIC:
                 return value
             case _:
-                logger.warn(f"Unknown field type: {self.type}.")
+                logger.warning(f"Unknown field type: {self.type}.")
                 return None
 
 
@@ -76,13 +99,14 @@ class TransformField(Field):
             endIndex=endIndex,
             required=required,
             validators=validators,
-            ignore_errors=ignore_errors)
+            ignore_errors=ignore_errors,
+            **kwargs)
         self.transform_func = transform_func
         self.kwargs = kwargs
 
-    def parse_value(self, line):
-        """Parse and transform the value for a field given a line, startIndex, endIndex, and field type."""
-        value = super().parse_value(line)
+    def parse_value(self, row: RawRow):
+        """Parse and transform the value for a field given a row, position, and field type."""
+        value = super().parse_value(row)
         try:
             return_value = self.transform_func(value, **self.kwargs)
             return return_value
