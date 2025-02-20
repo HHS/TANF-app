@@ -12,6 +12,7 @@ from ..util import (
     generate_t2_t3_t5_hashes)
 from ..validators.category3 import ifThenAlso
 from ..validators.util import deprecate_call, deprecate_validator, make_validator
+from tdpservice.parsers.dataclasses import FieldType, RawRow
 import logging
 
 def passing_validator():
@@ -155,15 +156,17 @@ def test_parse_line_parses_line_from_schema_to_object():
     schema = TanfDataReportSchema(
         document=TestDocument(),
         fields=[
-            Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3),
-            Field(item=2, name='second', friendly_name='second', type='string', startIndex=3, endIndex=4),
-            Field(item=3, name='third', friendly_name='third', type='string', startIndex=4, endIndex=5),
-            Field(item=4, name='fourth', friendly_name='fourth', type='number', startIndex=5, endIndex=7),
-            Field(item=5, name='fifth', friendly_name='fifth', type='number', startIndex=7, endIndex=8),
+            Field(item=1, name='first', friendly_name='first', type=FieldType.ALPHA_NUMERIC, startIndex=0, endIndex=3),
+            Field(item=2, name='second', friendly_name='second', type=FieldType.ALPHA_NUMERIC, startIndex=3, endIndex=4),
+            Field(item=3, name='third', friendly_name='third', type=FieldType.ALPHA_NUMERIC, startIndex=4, endIndex=5),
+            Field(item=4, name='fourth', friendly_name='fourth', type=FieldType.NUMERIC, startIndex=5, endIndex=7),
+            Field(item=5, name='fifth', friendly_name='fifth', type=FieldType.NUMERIC, startIndex=7, endIndex=8),
         ]
     )
 
-    record = schema.parse_line(line)
+    length = len(line)
+    row = RawRow(data=line, raw_len=length, decoded_len=length, row_num=1, record_type="")
+    record = schema.parse_row(row)
 
     assert record.first == '123'
     assert record.second == '4'
