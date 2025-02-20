@@ -59,7 +59,7 @@ class Field:
 
     def __repr__(self):
         """Return a string representation of the field."""
-        return f"{self.name}({self.startIndex}-{self.endIndex})"
+        return f"{self.name}({self.position.start}-{self.position.end})"
 
     def parse_value(self, row: RawRow):
         """Parse the value for a field given a row, posiiton, and field type."""
@@ -67,7 +67,7 @@ class Field:
         value_length = len(self.position)
 
         if len(value) < value_length or value_is_empty(value, value_length):
-            logger.debug(f"Field: '{self.name}' at position: [{self.startIndex}, {self.endIndex}) is empty.")
+            logger.debug(f"Field: '{self.name}' at position: [{self.position.start}, {self.position.end}) is empty.")
             return None
 
         match self.type:

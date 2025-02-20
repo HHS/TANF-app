@@ -36,6 +36,10 @@ class Position:
         self.end = end if end is not None else start + 1
         self.is_range = self.end - self.start > 1
 
+    def __len__(self):
+        """Return the size of the field the position represents."""
+        return self.end - self.start
+
 
 @dataclass
 class RawRow:

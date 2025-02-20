@@ -7,7 +7,7 @@ import logging
 from tdpservice.parsers import schema_defs
 from tdpservice.parsers.base_parser import BaseParser
 from tdpservice.parsers.case_consistency_validator import CaseConsistencyValidator
-from tdpservice.parsers.dataclasses import Position
+from tdpservice.parsers.dataclasses import HeaderResult, Position
 from tdpservice.parsers.models import ParserErrorCategoryChoices
 from tdpservice.parsers.schema_defs.utils import get_section_reference
 from tdpservice.parsers.util import log_parser_exception, make_generate_case_consistency_parser_error, \
@@ -185,8 +185,7 @@ class TanfDataReportParser(BaseParser):
         # parse & validate header
         header_row = self.decoder.get_header()
         header, header_is_valid, header_errors = schema_defs.header.parse_and_validate(
-            # TODO: just pass header_row when schemas and fields are updated to accept it.
-            header_row.raw_data,
+            header_row,
             make_generate_file_precheck_parser_error(self.datafile, 1)
         )
         if not header_is_valid:
@@ -204,8 +203,7 @@ class TanfDataReportParser(BaseParser):
             self.bulk_create_errors(flush=True)
 
         # Grab important fields from header
-        # TODO: just pass header_row when schemas and fields are updated to accept it.
-        field_values = schema_defs.header.get_field_values_by_names(header_row.raw_data,
+        field_values = schema_defs.header.get_field_values_by_names(header_row,
                                                                     {"encryption", "tribe_code", "state_fips"})
         is_encrypted = field_values["encryption"] == "E"
         is_tribal = not value_is_empty(field_values["tribe_code"], 3, extra_vals={'0'*3})
