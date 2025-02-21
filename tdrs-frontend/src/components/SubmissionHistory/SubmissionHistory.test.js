@@ -1,6 +1,13 @@
 import React from 'react'
-import { render, screen, fireEvent, within } from '@testing-library/react'
+import {
+  render,
+  screen,
+  fireEvent,
+  within,
+  waitFor,
+} from '@testing-library/react'
 import { Provider } from 'react-redux'
+import axios from 'axios'
 import appConfigureStore from '../../configureStore'
 import SubmissionHistory from './SubmissionHistory'
 
@@ -523,5 +530,75 @@ describe('SubmissionHistory', () => {
 
     const reprocessedBtn = screen.queryByText('Reprocessed ⓘ')
     expect(reprocessedBtn).toBeInTheDocument()
+  })
+
+  it('Lets the user download error report', () => {
+    const state = {
+      reports: {
+        files: [
+          {
+            id: '123',
+            fileName: 'test1.txt',
+            fileType: 'TANF',
+            quarter: 'Q1',
+            section: 'Active Case Data',
+            uuid: '123-4-4-321',
+            year: '2023',
+            s3_version_id: '321-0-0-123',
+            createdAt: '12/12/2012 12:12',
+            submittedBy: 'test@teamraft.com',
+            hasError: true,
+            summary: {
+              datafile: '123',
+              status: 'Accepted with Errors',
+              case_aggregates: {
+                months: [
+                  {
+                    accepted_without_errors: 0,
+                    accepted_with_errors: 58,
+                    month: 'Oct',
+                  },
+                  {
+                    accepted_without_errors: 0,
+                    accepted_with_errors: 52,
+                    month: 'Nov',
+                  },
+                  {
+                    accepted_without_errors: 0,
+                    accepted_with_errors: 40,
+                    month: 'Dec',
+                  },
+                ],
+                rejected: 0,
+              },
+            },
+          },
+        ],
+      },
+    }
+
+    jest.mock('axios')
+    const mockAxios = axios
+    mockAxios.get = jest.fn()
+
+    const store = appConfigureStore(state)
+    const dispatch = jest.fn(store.dispatch)
+    store.dispatch = dispatch
+
+    setup(store)
+
+    expect(mockAxios.get).toHaveBeenCalledTimes(1)
+    expect(screen.queryByText('Status')).toBeInTheDocument()
+    expect(screen.queryByText('test1.txt')).toBeInTheDocument()
+
+    screen.getByText('2023-Q1-Active Case Data.xlsx')
+
+    expect(
+      screen.getByText('2023-Q1-Active Case Data.xlsx')
+    ).toBeInTheDocument()
+
+    fireEvent.click(screen.getByText('2023-Q1-Active Case Data.xlsx'))
+
+    expect(mockAxios.get).toHaveBeenCalledTimes(2)
   })
 })
