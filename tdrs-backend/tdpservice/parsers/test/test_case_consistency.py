@@ -95,7 +95,7 @@ class TestCaseConsistencyValidator:
         line = str(t1)
         length = len(line)
         row1 = RawRow(data=line, raw_len=length, decoded_len=length,
-                     row_num=line_number, record_type=t1.RecordType)
+                      row_num=line_number, record_type=t1.RecordType)
         case_consistency_validator.add_record(t1, tanf_s1_schemas[0], row1, line_number, False)
         assert case_consistency_validator.has_validated is False
         assert case_consistency_validator.case_has_errors is False
@@ -114,13 +114,13 @@ class TestCaseConsistencyValidator:
         line = str(t2)
         length = len(line)
         row2 = RawRow(data=line, raw_len=length, decoded_len=length,
-                     row_num=line_number, record_type=t1.RecordType)
+                      row_num=line_number, record_type=t1.RecordType)
         case_consistency_validator.add_record(t2, tanf_s1_schemas[1], row2, line_number, False)
         line_number += 1
         line = str(t3)
         length = len(line)
         row3 = RawRow(data=line, raw_len=length, decoded_len=length,
-                     row_num=line_number, record_type=t1.RecordType)
+                      row_num=line_number, record_type=t1.RecordType)
         case_consistency_validator.add_record(t3, tanf_s1_schemas[2], row3, line_number, False)
         assert case_consistency_validator.case_has_errors is False
 
