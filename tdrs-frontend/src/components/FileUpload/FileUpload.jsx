@@ -17,6 +17,8 @@ import {
   handlePreview,
   getTargetClassName,
   tryGetUTF8EncodedFile,
+  checkPreviewDependencies,
+  removeOldPreviews,
 } from './utils'
 
 const INVALID_FILE_ERROR =
@@ -126,6 +128,10 @@ function FileUpload({ section, setLocalAlertState }) {
     }
     if (hasPreview || hasFile) {
       trySettingPreview()
+    } else {
+      // When the file upload modal is cancelled we need to remove our hiding logic
+      const deps = checkPreviewDependencies(targetClassName)
+      if (deps.rendered) removeOldPreviews(deps.dropTarget, deps.instructions)
     }
   }, [hasPreview, hasFile, fileName, targetClassName])
 
@@ -149,6 +155,8 @@ function FileUpload({ section, setLocalAlertState }) {
     // file in the state if the user is re-uploading
     dispatch(clearError({ section }))
     dispatch(clearFile({ section }))
+
+    if (!file) return
 
     const input = inputRef.current
     const dropTarget = inputRef.current.parentNode
