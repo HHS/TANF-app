@@ -85,7 +85,19 @@ class CsvDecoder(BaseDecoder):
 
     def __init__(self, raw_file):
         super().__init__(raw_file)
-        self.csv_file = csv.reader(raw_file)
+        self.local_file = None
+        self.csv_file = None
+        self._open_as_csv()
+
+    def _open_as_csv(self):
+        """Read binary csv to local storage and reopen in text mode."""
+        name = self.raw_file.name.split('/')[-1]
+        with open(f'/tmp/{name}', 'wb') as file:
+            for line in self.raw_file:
+                file.write(line)
+
+        self.local_file = open(f'/tmp/{name}', 'rt')
+        self.csv_file = csv.reader(self.local_file)
 
     def get_record_type(self, raw_data):
         """Get the record type based on the raw data."""
@@ -107,6 +119,16 @@ class CsvDecoder(BaseDecoder):
             yield RawRow(data=raw_data, raw_len=raw_len, decoded_len=raw_len,
                          row_num=self.current_row_num, record_type=record_type)
             self.current_row_num += 1
+
+    def __del__(self):
+        """Close and delete the file when destructed."""
+        try:
+            self.local_file.close()
+            if os.path.exists(self.local_file.name):
+                os.remove(self.local_file.name)
+                logger.info(f"Deleted tempory storage of csv file: {self.raw_file.name}")
+        except Exception:
+            logger.exception("Encountered exception while closing and deleting file instance.")
 
 
 class XlsxDecoder(BaseDecoder):
@@ -153,10 +175,13 @@ class DecoderFactory:
             extension = os.path.splitext(raw_file.name)[-1]
             match extension:
                 case ".csv":
+                    logger.warning("File was empty. Returning CSV decoder based on extension.")
                     return Decoder.CSV
                 case ".xlsx":
+                    logger.warning("File was empty. Returning XLSX decoder based on extension.")
                     return Decoder.XLSX
                 case _:
+                    logger.warning("File was empty. Returning UTF8 decoder based on extension.")
                     return Decoder.UTF8
 
         data = raw_file.read(4096)

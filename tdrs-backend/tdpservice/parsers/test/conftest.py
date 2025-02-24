@@ -752,3 +752,18 @@ def partial_dup_s3_s4_err_msg():
 def cat4_edge_case_file(stt_user, stt):
     """Fixture for cat_4_edge_case.txt."""
     return util.create_test_datafile('cat_4_edge_case.txt', stt_user, stt)
+
+@pytest.fixture
+def fra_csv(stt_user, stt):
+    """Fixture for csv fra file."""
+    return util.create_test_datafile('fra.csv', stt_user, stt)
+
+@pytest.fixture
+def fra_xlsx(stt_user, stt):
+    """Fixture for xlsx fra file."""
+    return util.create_test_datafile('fra.xlsx', stt_user, stt)
+
+@pytest.fixture
+def unknown_png(stt_user, stt):
+    """Fixture for blank png file."""
+    return util.create_test_datafile('unknown.png', stt_user, stt)
