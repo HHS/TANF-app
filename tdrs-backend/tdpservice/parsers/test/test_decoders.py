@@ -55,3 +55,19 @@ def test_unknown_decoder(unknown_png):
     with pytest.raises(ValueError) as e:
         DecoderFactory.get_instance(unknown_png.file)
         assert repr(e) == "Could not determine what decoder to use for file."
+
+@pytest.mark.django_db
+def test_file_offset(small_correct_file):
+    """Test raw length matches file length."""
+    decoder = DecoderFactory.get_instance(small_correct_file.file)
+    assert type(decoder) == Utf8Decoder
+    assert decoder.raw_file == small_correct_file.file
+    raw_length = 0
+    decoded_length = 0
+    for row in decoder.decode():
+        assert "\n" not in row.data
+        assert "\r" not in row.data
+        raw_length += row.raw_length()
+        decoded_length += len(row)
+    assert raw_length == len(small_correct_file.file)
+    assert decoded_length != raw_length
