@@ -162,7 +162,7 @@ class TanfDataReportSchema(RowSchema):
         is_quiet_preparser_errors = (
                 self.quiet_preparser_errors
                 if type(self.quiet_preparser_errors) is bool
-                else self.quiet_preparser_errors(row.data)  # TODO: Update to handle RawRow
+                else self.quiet_preparser_errors(row)
             )
         if not preparsing_is_valid:
             if is_quiet_preparser_errors:
@@ -205,7 +205,7 @@ class TanfDataReportSchema(RowSchema):
             is_quiet_preparser_errors = (
                 self.quiet_preparser_errors
                 if type(self.quiet_preparser_errors) is bool
-                else self.quiet_preparser_errors(row.data)
+                else self.quiet_preparser_errors(row)
             )
             if result.error and not is_quiet_preparser_errors:
                 errors.append(
