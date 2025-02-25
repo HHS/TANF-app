@@ -30,7 +30,9 @@ const SiteMap = ({ user }) => {
         link="https://www.hhs.gov/vulnerability-disclosure-policy/index.html"
         target="_blank"
       />
-      {userIsApproved && <SiteMap.Link text="Data Files" link="/data-files" />}
+      {userIsApproved && (
+        <SiteMap.Link text="TANF Data Files" link="/data-files" />
+      )}
       {userHasFra && (
         <SiteMap.Link text="FRA Data Files" link="/fra-data-files" />
       )}
