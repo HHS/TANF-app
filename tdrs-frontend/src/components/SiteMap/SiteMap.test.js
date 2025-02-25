@@ -30,7 +30,7 @@ describe('SiteMap', () => {
     const locations = [
       'Home',
       'Privacy Policy',
-      'Data Files',
+      'TANF Data Files',
       'Profile',
       'Admin',
     ]
@@ -61,7 +61,7 @@ describe('SiteMap', () => {
     const locations = [
       'Home',
       'Privacy Policy',
-      'Data Files',
+      'TANF Data Files',
       'Profile',
       'Admin',
     ]
@@ -92,7 +92,7 @@ describe('SiteMap', () => {
     const locations = [
       'Home',
       'Privacy Policy',
-      'Data Files',
+      'TANF Data Files',
       'Profile',
       'Admin',
     ]
@@ -120,7 +120,7 @@ describe('SiteMap', () => {
       </Provider>
     )
 
-    const locations = ['Home', 'Privacy Policy', 'Data Files', 'Profile']
+    const locations = ['Home', 'Privacy Policy', 'TANF Data Files', 'Profile']
     for (let location of locations) {
       expect(getByText(location)).toBeInTheDocument()
     }
