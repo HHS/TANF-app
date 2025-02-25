@@ -2,7 +2,7 @@
 from tdpservice.parsers.models import ParserError, ParserErrorCategoryChoices
 from tdpservice.parsers.util import month_to_int, \
     transform_to_months, fiscal_to_calendar, get_prog_from_section
-from tdpservice.parsers.schema_defs.utils import get_program_models, get_text_from_df
+from tdpservice.parsers.schema_defs.utils import ProgramManager
 from django.db.models import Q as Query
 
 
@@ -15,9 +15,7 @@ def case_aggregates_by_month(df, dfs_status):
     calendar_year, calendar_qtr = fiscal_to_calendar(df.year, df.quarter)
     month_list = transform_to_months(calendar_qtr)
 
-    short_section = get_text_from_df(df)['section']
-    schema_models_dict = get_program_models(program_type, short_section)
-    schema_models = [model for model in schema_models_dict.values()]
+    schemas = ProgramManager.get_schemas(program_type, df.section)
 
     aggregate_data = {"months": [], "rejected": 0}
     all_errors = ParserError.objects.filter(file=df, deprecated=False)
@@ -36,11 +34,11 @@ def case_aggregates_by_month(df, dfs_status):
             continue
 
         case_numbers = set()
-        for schema_model in schema_models:
-            schema_model = schema_model[0]
+        for schema in schemas.values():
+            schema = schema[0]
 
-            curr_case_numbers = set(schema_model.document.Django.model.objects.filter(datafile=df,
-                                                                                      RPT_MONTH_YEAR=rpt_month_year)
+            curr_case_numbers = set(schema.document.Django.model.objects.filter(datafile=df,
+                                                                                RPT_MONTH_YEAR=rpt_month_year)
                                     .distinct("CASE_NUMBER").values_list("CASE_NUMBER", flat=True))
             case_numbers = case_numbers.union(curr_case_numbers)
 
