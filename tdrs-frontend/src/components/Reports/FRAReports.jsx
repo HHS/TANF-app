@@ -817,7 +817,7 @@ const FRAReports = () => {
             }}
             handleDownload={handleDownload}
             setLocalAlertState={setLocalAlertState}
-            file={selectedFile ? selectedFile : latestSubmission}
+            file={selectedFile || uploadError ? selectedFile : latestSubmission}
             setSelectedFile={setSelectedFile}
             section={getReportTypeLabel()}
             error={uploadError}
