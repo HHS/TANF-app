@@ -110,3 +110,29 @@ export const uploadFraReport =
       })
     }
   }
+
+export const downloadOriginalSubmission =
+  ({ id, fileName }) =>
+  async (dispatch) => {
+    try {
+      if (!id) throw new Error('No id provided to download action')
+
+      const response = await axios.get(
+        `${BACKEND_URL}/data_files/${id}/download/`,
+        { responseType: 'blob' }
+      )
+
+      const data = response.data
+      const url = window.URL.createObjectURL(new Blob([data]))
+      const link = document.createElement('a')
+
+      link.href = url
+      link.setAttribute('download', fileName)
+
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } catch (e) {
+      console.error('error downloading file', e)
+    }
+  }

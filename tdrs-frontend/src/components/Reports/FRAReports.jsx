@@ -20,11 +20,11 @@ import {
 import {
   getFraSubmissionHistory,
   uploadFraReport,
+  downloadOriginalSubmission,
 } from '../../actions/fraReports'
 import { fetchSttList } from '../../actions/sttList'
 import { DropdownSelect, RadioSelect } from '../Form'
 import { PaginatedComponent } from '../Paginator/Paginator'
-import { download } from '../../actions/reports'
 
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
@@ -725,7 +725,7 @@ const FRAReports = () => {
   }
 
   const handleDownload = (file) => {
-    dispatch(download(file))
+    dispatch(downloadOriginalSubmission(file))
   }
 
   const getReportTypeLabel = () => {
