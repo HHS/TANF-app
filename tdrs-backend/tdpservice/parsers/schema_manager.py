@@ -5,7 +5,7 @@ from django.db.models import Model
 from tdpservice.parsers.models import ParserErrorCategoryChoices
 from tdpservice.parsers.fields import TransformField
 from tdpservice.parsers.row_schema import RowSchema
-from tdpservice.parsers.schema_defs.utils import get_program_models, get_text_from_df
+from tdpservice.parsers.schema_defs.utils import ProgramManager
 from typing import List, Tuple
 import logging
 
@@ -33,8 +33,7 @@ class SchemaManager:
 
     def _init_schema_map(self):
         """Initialize all schemas for the program type and section."""
-        short_section = get_text_from_df(self.datafile)['section']
-        self.schema_map = get_program_models(self.program_type, short_section)
+        self.schema_map = ProgramManager.get_schemas(self.program_type, self.section)
         for schemas in self.schema_map.values():
             for schema in schemas:
                 schema.datafile = self.datafile

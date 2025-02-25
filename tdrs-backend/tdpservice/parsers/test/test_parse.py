@@ -12,8 +12,7 @@ from tdpservice.search_indexes.models.tribal import Tribal_TANF_T1, Tribal_TANF_
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T5, Tribal_TANF_T6, Tribal_TANF_T7
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3, SSP_M4, SSP_M5, SSP_M6, SSP_M7
 from tdpservice.search_indexes import documents
-from tdpservice.data_files.models import DataFile
-from .. import schema_defs, aggregates
+from .. import aggregates
 import logging
 logger = logging.getLogger(__name__)
 
@@ -855,50 +854,6 @@ def test_dfs_set_case_aggregates(small_correct_file, dfs):
         if month['month'] == 'Oct':
             assert month['accepted_without_errors'] == 1
             assert month['accepted_with_errors'] == 0
-
-
-@pytest.mark.django_db
-def test_get_schema_options(dfs):
-    """Test use-cases for translating strings to named object references."""
-    '''
-    text -> section
-    text -> models{} YES
-    text -> model YES
-    datafile -> model
-        ^ section -> program -> model
-    datafile -> text
-    model -> text YES
-    section -> text
-
-    text**: input string from the header/file
-    '''
-
-    # from text:
-    schema = schema_defs.utils.get_program_model('TAN', 'A', 'T1')
-    assert schema == schema_defs.tanf.t1
-
-    # get model
-    models = schema_defs.utils.get_program_models('TAN', 'A')
-    assert models == {
-        'T1': schema_defs.tanf.t1,
-        'T2': schema_defs.tanf.t2,
-        'T3': schema_defs.tanf.t3,
-    }
-
-    model = schema_defs.utils.get_program_model('TAN', 'A', 'T1')
-    assert model == schema_defs.tanf.t1
-    # get section
-    section = schema_defs.utils.get_section_reference('TAN', 'C')
-    assert section == DataFile.Section.CLOSED_CASE_DATA
-
-    # from datafile:
-    # get model(s)
-    # get section str
-
-    # from model:
-    # get text
-    # get section str
-    # get ref section
 
 
 @pytest.mark.django_db()

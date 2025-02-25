@@ -10,7 +10,7 @@ from tdpservice.parsers.base_parser import BaseParser
 from tdpservice.parsers.case_consistency_validator import CaseConsistencyValidator
 from tdpservice.parsers.decoders import Position
 from tdpservice.parsers.models import ParserErrorCategoryChoices
-from tdpservice.parsers.schema_defs.utils import get_section_reference
+from tdpservice.parsers.schema_defs.utils import ProgramManager
 from tdpservice.parsers.util import log_parser_exception, make_generate_case_consistency_parser_error, \
     make_generate_file_precheck_parser_error, make_generate_parser_error
 from tdpservice.parsers.validators import category1
@@ -249,7 +249,7 @@ class TanfDataReportParser(BaseParser):
         # Ensure file section matches upload section
         section_result = category1.validate_header_section_matches_submission(
             self.datafile,
-            get_section_reference(program_type, section),
+            ProgramManager.get_section(program_type, section),
             make_generate_parser_error(self.datafile, 1)
         )
 
