@@ -89,6 +89,8 @@ const load = (file, section, input, dropTarget, dispatch) => {
       let error = false
       const re = /(\.txt|\.ms\d{2}|\.ts\d{2,3})$/i
       if (!re.exec(file.name)) {
+        createFileInputErrorState(input, dropTarget)
+
         dispatch({
           type: FILE_EXT_ERROR,
           payload: {

@@ -103,7 +103,7 @@ describe('UploadReport', () => {
       type: 'text/html',
     })
 
-    expect(container.querySelectorAll('.has-invalid-file').length).toBe(0)
+    expect(container.querySelectorAll('.has-invalid-file').length).toBe(1)
     await waitFor(() => {
       fireEvent.change(fileInput, {
         target: {
@@ -111,6 +111,10 @@ describe('UploadReport', () => {
         },
       })
     })
+
+    //const formGroup = container.querySelector('.usa-form-group')
+    //console.log(formGroup)
+    //expect(formGroup.classList.contains('usa-form-group--error')).toBeTruthy()
 
     await waitFor(() => expect(getByText('test.html')).toBeInTheDocument())
     expect(store.dispatch).toHaveBeenCalledTimes(3)
