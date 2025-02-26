@@ -112,7 +112,11 @@ describe('UploadReport', () => {
       })
     })
 
-    await waitFor(() => expect(getByText('test.html')).toBeInTheDocument())
+    await waitFor(() =>
+      expect(
+        getByText('You have selected the file: test.html')
+      ).toBeInTheDocument()
+    )
     expect(store.dispatch).toHaveBeenCalledTimes(4)
     expect(container.querySelectorAll('.has-invalid-file').length).toBe(0)
   })

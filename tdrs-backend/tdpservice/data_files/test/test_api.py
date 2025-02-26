@@ -2,6 +2,7 @@
 import os
 from rest_framework import status
 from rest_framework.exceptions import ErrorDetail
+from rest_framework.test import APIClient
 import pytest
 import base64
 import openpyxl
@@ -48,9 +49,16 @@ class DataFileAPITestBase:
 
     @pytest.fixture
     def api_client(self, api_client, user):
-        """Provide an API client that is logged in with the specified user."""
+        """Provide an API client that is logged in with the default fixture user."""
         api_client.login(username=user.username, password='test_password')
         return api_client
+
+    @staticmethod
+    def login_as(request_user):
+        """Provide an API client that is logged in with a provided user."""
+        client = APIClient()
+        client.login(username=request_user.username, password='test_password')
+        return client
 
     @staticmethod
     def get_data_file_record(data_file_data, version, user):
@@ -427,23 +435,42 @@ class TestDataFileAsOFARegionalStaff(DataFileAPITestBase):
         """Override the default user with data_analyst for our tests."""
         return regional_user
 
-    def test_download_data_file_file_for_own_region(
-        self, api_client, regional_data_file_data, user
+    def test_cannot_download_data_file(
+        self, api_client, regional_data_file_data, user, data_analyst
     ):
-        """Test that the file is downloaded as expected for Regional Staff."""
-        response = self.post_data_file_file(api_client, regional_data_file_data)
+        """Test OFA Regional Staff cannot download datafiles."""
+        post_client = self.login_as(data_analyst)
+        response = self.post_data_file_file(post_client, regional_data_file_data)
         data_file_id = response.data['id']
         response = self.download_file(api_client, data_file_id)
 
-        assert response.status_code == status.HTTP_200_OK
-        self.assert_data_file_content_matches(response, data_file_id)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    def test_cannot_download_data_file_file_for_other_regions(
-        self, api_client, other_regional_data_file_data, user
+    def test_can_download_error_report_for_own_region(
+        self, api_client, regional_data_file_data, user, data_analyst
     ):
-        """Test that the file is not downloaded if the report is not in their region."""
-        response = self.post_data_file_file(api_client, other_regional_data_file_data)
+        """Test that OFA Regional Staff can download error reports for data files in their own region."""
+        post_client = self.login_as(data_analyst)
+        response = self.post_data_file_file(post_client, regional_data_file_data)
+        data_file_id = response.data['id']
+        response = self.download_error_report_file(api_client, data_file_id)
 
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_cannot_download_error_report_for_other_region(
+        self, api_client, other_regional_data_file_data, user, user_in_other_region
+    ):
+        """Test that OFA Regional Staff cannot download error reports in regions other than their own."""
+        post_client = self.login_as(user_in_other_region)
+        response = self.post_data_file_file(post_client, other_regional_data_file_data)
+        data_file_id = response.data['id']
+        response = self.download_error_report_file(api_client, data_file_id)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_cannot_upload_files(self, api_client, regional_data_file_data, user):
+        """Test that OFA Regional Staff cannot create datafiles."""
+        response = self.post_data_file_file(api_client, regional_data_file_data)
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
