@@ -167,7 +167,7 @@ class DataFilePermissions(DjangoModelCRUDPermissions):
         # Checks for existence of `data_files.view_datafile` Permission
         has_permission = super().has_permission(request, view)
 
-        # Regional Staff are not allowed to submit or data files
+        # Regional Staff are not allowed to submit or download data files
         if has_permission and hasattr(view, 'action'):
             if view.action in ['create', 'download'] and request.user.is_regional_staff:
                 return False
