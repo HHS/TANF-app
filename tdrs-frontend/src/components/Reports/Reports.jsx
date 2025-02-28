@@ -19,6 +19,42 @@ import SegmentedControl from '../SegmentedControl'
 import SubmissionHistory from '../SubmissionHistory'
 import ReprocessedModal from '../SubmissionHistory/ReprocessedModal'
 import { selectPrimaryUserRole } from '../../selectors/auth'
+import { quarters, constructYearOptions } from './utils'
+
+const FiscalQuarterExplainer = () => (
+  <table className="usa-table usa-table--striped margin-top-4 desktop:width-tablet mobile:width-full">
+    <caption>TANF/SSP Data Reporting Guidelines</caption>
+    <thead>
+      <tr>
+        <th>Fiscal Year (FY) &amp; Quarter (Q)</th>
+        <th>Calendar Period</th>
+        <th>Due Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>FY Q1</td>
+        <td>Oct 1 - Dec 31</td>
+        <td>February 14</td>
+      </tr>
+      <tr>
+        <td>FY Q2</td>
+        <td>Jan 1 - Mar 31</td>
+        <td>May 15</td>
+      </tr>
+      <tr>
+        <td>FY Q3</td>
+        <td>Apr 1 - Jun 30</td>
+        <td>August 14</td>
+      </tr>
+      <tr>
+        <td>FY Q4</td>
+        <td>Jul 1 - Sep 30</td>
+        <td>November 14</td>
+      </tr>
+    </tbody>
+  </table>
+)
 
 /**
  * Reports is the home page for users to file a report.
@@ -58,13 +94,6 @@ function Reports() {
 
   const [reprocessedModalVisible, setReprocessedModalVisible] = useState(false)
   const [reprocessedDate, setReprocessedDate] = useState('')
-
-  const quarters = {
-    Q1: 'Quarter 1 (October - December)',
-    Q2: 'Quarter 2 (January - March)',
-    Q3: 'Quarter 3 (April - June)',
-    Q4: 'Quarter 4 (July - September)',
-  }
 
   const currentStt =
     isOFAAdmin || isDIGITTeam || isSystemAdmin ? selectedStt : userProfileStt
@@ -170,24 +199,6 @@ function Reports() {
   const selectStt = (value) => {
     setSttInputValue(value)
     setTouched((currentForm) => ({ ...currentForm, stt: true }))
-  }
-
-  const constructYearOptions = () => {
-    const years = []
-    const today = new Date(Date.now())
-
-    const fiscalYear =
-      today.getMonth() > 8 ? today.getFullYear() + 1 : today.getFullYear()
-
-    for (let i = fiscalYear; i >= 2021; i--) {
-      const option = (
-        <option key={i} data-testid={i} value={i}>
-          {i}
-        </option>
-      )
-      years.push(option)
-    }
-    return years
   }
 
   useEffect(() => {
@@ -400,33 +411,7 @@ function Reports() {
               </Button>
             </div>
             <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
-              <table className="usa-table usa-table--striped margin-top-4 desktop:width-mobile-lg mobile:width-full">
-                <caption>Identifying the right Fiscal Year and Quarter</caption>
-                <thead>
-                  <tr>
-                    <th>Fiscal Quarter</th>
-                    <th>Calendar Period</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Quarter 1</td>
-                    <td>Oct 1 - Dec 31</td>
-                  </tr>
-                  <tr>
-                    <td>Quarter 2</td>
-                    <td>Jan 1 - Mar 31</td>
-                  </tr>
-                  <tr>
-                    <td>Quarter 3</td>
-                    <td>Apr 1 - Jun 30</td>
-                  </tr>
-                  <tr>
-                    <td>Quarter 4</td>
-                    <td>Jul 1 - Sep 30</td>
-                  </tr>
-                </tbody>
-              </table>
+              <FiscalQuarterExplainer />
             </div>
           </div>
         </form>
