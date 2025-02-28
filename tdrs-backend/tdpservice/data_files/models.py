@@ -119,7 +119,7 @@ class DataFile(FileRecord):
         AGGREGATE_DATA = "Aggregate Data"
         STRATUM_DATA = "Stratum Data"
 
-        FRA_WORK_OUTCOME_TANF_EXITERS = "Work Outcomes for TANF Exiters"
+        FRA_WORK_OUTCOME_TANF_EXITERS = "Work Outcomes of TANF Exiters"
         FRA_SECONDRY_SCHOOL_ATTAINMENT = "Secondary School Attainment"
         FRA_SUPPLEMENT_WORK_OUTCOMES = "Supplemental Work Outcomes"
 
