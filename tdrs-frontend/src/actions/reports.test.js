@@ -167,50 +167,66 @@ describe('actions/reports', () => {
     }
   })
 
-  it('should set local alert state on submission failure', async () => {
-    const uuid = uuidv4()
-    axios.post.mockImplementationOnce(() =>
-      Promise.reject({
-        status: 400,
-        message: 'Error',
-        response: {
-          data: {
-            non_field_errors: ['Something went wrong'],
+  it.each([
+    [
+      {
+        non_field_errors: ['Something went wrong'],
+      },
+      null,
+    ],
+    [
+      {
+        detail: 'Something went wrong',
+      },
+      null,
+    ],
+    [{ file: 'Something went wrong' }, null],
+    [{}, 'Error: null'],
+  ])(
+    'should set local alert state on submission failure',
+    async (data, msg) => {
+      const uuid = uuidv4()
+      axios.post.mockImplementationOnce(() =>
+        Promise.reject({
+          status: 400,
+          message: 'Error',
+          response: {
+            data,
           },
-        },
+        })
+      )
+      const store = mockStore()
+
+      const setLocalAlertState = jest.fn()
+
+      await store.dispatch(
+        submit({
+          formattedSections: '4',
+          logger: { alert: jest.fn() },
+          quarter: 'Q1',
+          setLocalAlertState: setLocalAlertState,
+          stt: { id: 10 },
+          uploadedFiles: [
+            {
+              file: { name: 'Test.txt', type: 'text/plain' },
+              fileName: 'Test.txt',
+              section: 'Stratum Data',
+              uuid,
+            },
+          ],
+          user: { id: 1 },
+          year: 2021,
+        })
+      )
+
+      expect(axios.post).toHaveBeenCalledTimes(1)
+      expect(setLocalAlertState).toHaveBeenCalledWith({
+        active: true,
+        message: msg || 'Error: Something went wrong',
+        type: 'error',
       })
-    )
-    const store = mockStore()
-
-    const setLocalAlertState = jest.fn()
-
-    await store.dispatch(
-      submit({
-        formattedSections: '4',
-        logger: { alert: jest.fn() },
-        quarter: 'Q1',
-        setLocalAlertState: setLocalAlertState,
-        stt: { id: 10 },
-        uploadedFiles: [
-          {
-            file: { name: 'Test.txt', type: 'text/plain' },
-            fileName: 'Test.txt',
-            section: 'Stratum Data',
-            uuid,
-          },
-        ],
-        user: { id: 1 },
-        year: 2021,
-      })
-    )
-
-    expect(axios.post).toHaveBeenCalledTimes(1)
-    expect(setLocalAlertState).toHaveBeenCalledWith({
-      active: true,
-      message: 'Error: Something went wrong',
-      type: 'error',
-    })
-  })
+    }
+  )
 
   it('should dispatch FILE_DOWNLOAD_ERROR if no year is provided to download', async () => {
     const store = mockStore()
