@@ -108,15 +108,22 @@ class DataFileSerializer(serializers.ModelSerializer):
         """Throw an error if a user tries to update a data_file."""
         raise ImmutabilityError(instance, validated_data)
 
-    def validate_file(self, file):
+    def validate(self, data):
         """Perform all validation steps on a given file."""
         user = self.context.get('user')
-        validate_file_extension(file.name)
-        validate_file_infection(file, file.name, user)
-        return file
+        file = data['file'] if 'file' in data else None
+        section = data['section'] if 'section' in data else None
+
+        if file and section:
+            validate_file_extension(file.name, is_fra=DataFile.Section.is_fra(section))
+            validate_file_infection(file, file.name, user)
+
+        return data
 
     def validate_section(self, section):
         """Validate the section field."""
         if DataFile.Section.is_fra(section):
-            raise serializers.ValidationError("Section cannot be FRA")
+            user = self.context.get('user')
+            if not user.has_fra_access:
+                raise serializers.ValidationError("Section cannot be FRA")
         return section

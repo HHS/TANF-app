@@ -5,6 +5,7 @@ import {
   accountCanViewAdmin,
   accountCanViewKibana,
   accountCanViewPlg,
+  selectFeatureFlags,
 } from '../../selectors/auth'
 
 const SiteMap = ({ user }) => {
@@ -12,6 +13,9 @@ const SiteMap = ({ user }) => {
   const userIsAdmin = useSelector(accountCanViewAdmin)
   const userViewKibana = useSelector(accountCanViewKibana)
   const userViewPlg = useSelector(accountCanViewPlg)
+
+  const featureFlags = useSelector(selectFeatureFlags)
+  const userHasFra = userIsApproved && featureFlags['fra_reports'] === true
 
   return (
     <div className="margin-top-5">
@@ -26,7 +30,12 @@ const SiteMap = ({ user }) => {
         link="https://www.hhs.gov/vulnerability-disclosure-policy/index.html"
         target="_blank"
       />
-      {userIsApproved && <SiteMap.Link text="Data Files" link="/data-files" />}
+      {userIsApproved && (
+        <SiteMap.Link text="TANF Data Files" link="/data-files" />
+      )}
+      {userHasFra && (
+        <SiteMap.Link text="FRA Data Files" link="/fra-data-files" />
+      )}
       <SiteMap.Link text="Profile" link="/profile" />
 
       {userIsAdmin && (
