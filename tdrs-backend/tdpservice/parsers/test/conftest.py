@@ -772,10 +772,10 @@ def unknown_png(stt_user, stt):
 def fra_work_outcome_exiter_csv_file(stt_user, stt):
     """Fixture for FRA Work Outcome Exiters file."""
     return util.create_test_datafile('fra.csv', stt_user, stt,
-                                     DataFile.Section.FRA_SUPPLEMENT_WORK_OUTCOMES)
+                                     DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)
 
 @pytest.fixture
 def fra_work_outcome_exiter_xlsx_file(stt_user, stt):
     """Fixture for FRA Work Outcome Exiters file."""
     return util.create_test_datafile('fra.xlsx', stt_user, stt,
-                                     DataFile.Section.FRA_SUPPLEMENT_WORK_OUTCOMES)
+                                     DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)

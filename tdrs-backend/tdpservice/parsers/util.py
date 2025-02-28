@@ -224,11 +224,10 @@ class SortedRecords:
     def add_record(self, case_hash, record_doc_pair, line_num):
         """Add a record_doc_pair to the sorted object if the case hasn't been removed already."""
         record, document = record_doc_pair
-        rpt_month_year = str(getattr(record, 'RPT_MONTH_YEAR'))
 
         if case_hash in self.cases_already_removed:
             logger.info("Record's case has already been removed due to category four errors. Not adding record with "
-                        f"info: ({record.RecordType}, {getattr(record, 'CASE_NUMBER', None)}, {rpt_month_year})")
+                        f"info: ({record.RecordType}, {getattr(record, 'CASE_NUMBER', None)})")
             return
 
         if case_hash is not None:

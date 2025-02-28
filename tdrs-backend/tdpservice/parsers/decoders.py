@@ -1,6 +1,6 @@
 """Decoder and utility classes."""
 
-from tdpservice.parsers.dataclasses import RawRow
+from tdpservice.parsers.dataclasses import IndexRow, RawRow
 
 from abc import ABC, abstractmethod
 from enum import IntEnum, auto
@@ -113,8 +113,8 @@ class CsvDecoder(BaseDecoder):
         # Very important to move pointer back to the begining since invoking the generator does not do it for us.
         self.local_file.seek(0)
         length = len(raw_data)
-        return RawRow(data=raw_data, raw_len=length, decoded_len=length,
-                      row_num=self.current_row_num, record_type="HEADER")
+        return IndexRow(data=tuple(raw_data), raw_len=length, decoded_len=length,
+                        row_num=self.current_row_num, record_type="HEADER")
 
     def decode(self):
         """Decode and yield each row."""
@@ -124,8 +124,8 @@ class CsvDecoder(BaseDecoder):
                 continue
             raw_len = len(raw_data)
             record_type = self.get_record_type(raw_data)
-            yield RawRow(data=raw_data, raw_len=raw_len, decoded_len=raw_len,
-                         row_num=self.current_row_num, record_type=record_type)
+            yield IndexRow(data=tuple(raw_data), raw_len=raw_len, decoded_len=raw_len,
+                           row_num=self.current_row_num, record_type=record_type)
 
     def __del__(self):
         """Close and delete the file when destructed."""
@@ -133,7 +133,7 @@ class CsvDecoder(BaseDecoder):
             self.local_file.close()
             if os.path.exists(self.local_file.name):
                 os.remove(self.local_file.name)
-                logger.info(f"Deleted tempory storage of csv file: {self.raw_file.name}")
+                assert os.path.exists(self.local_file.name) is False
         except Exception:
             logger.exception("Encountered exception while closing and deleting file instance.")
 
@@ -154,8 +154,8 @@ class XlsxDecoder(BaseDecoder):
         """Get the first line in the file. Assumed to be the header."""
         for raw_data in self.work_book.active.iter_rows(values_only=True):
             length = len(raw_data)
-            return RawRow(data=raw_data, raw_len=length, decoded_len=length,
-                        row_num=self.current_row_num, record_type="HEADER")
+            return IndexRow(data=raw_data, raw_len=length, decoded_len=length,
+                            row_num=self.current_row_num, record_type="HEADER")
 
     def decode(self):
         """Decode and yield each row."""
@@ -165,8 +165,8 @@ class XlsxDecoder(BaseDecoder):
                 continue
             raw_len = len(raw_data)
             record_type = self.get_record_type(raw_data)
-            yield RawRow(data=raw_data, raw_len=raw_len, decoded_len=raw_len,
-                         row_num=self.current_row_num, record_type=record_type)
+            yield IndexRow(data=raw_data, raw_len=raw_len, decoded_len=raw_len,
+                           row_num=self.current_row_num, record_type=record_type)
 
 
 class DecoderFactory:
@@ -177,11 +177,11 @@ class DecoderFactory:
         """Try and determine what decoder to use based on file encoding and magic numbers."""
         # We need to guarantee that the file pointer is at the first byte
         raw_file.seek(0)
+        extension = os.path.splitext(raw_file.name)[-1]
 
         # If our file has size zero, use the extension to try and determine the correct decoder. Default to UTF8 in
         # the worst case.
         if not len(raw_file):
-            extension = os.path.splitext(raw_file.name)[-1]
             match extension:
                 case ".csv":
                     logger.warning("File was empty. Returning CSV decoder based on extension.")

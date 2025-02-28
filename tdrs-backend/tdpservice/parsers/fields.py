@@ -59,7 +59,8 @@ class Field:
         value = row.value_at(self.position)
         value_length = len(self.position)
 
-        if len(value) < value_length or value_is_empty(value, value_length):
+        # We need the type check because the XLSX decoder returns typed data not strictly strings.
+        if not isinstance(value, (int, float)) and (len(value) < value_length or value_is_empty(value, value_length)):
             logger.debug(f"Field: '{self.name}' at position: [{self.position.start}, {self.position.end}) is empty.")
             return None
 

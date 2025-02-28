@@ -37,21 +37,7 @@ class FRAParser(BaseParser):
         """Validate that the file does NOT have a header and that it begins with FRA data."""
         header_row = self.decoder.get_header()
 
-        valid_data = False
-        try:
-            exit_date = str(header_row.value_at(self.EXIT_DATE_POSITION))
-            ssn = str(header_row.value_at(self.SSN_POSITION))
-
-            # If we can convert to a valid datetime we at least know the length of exit_date is correct and that it's
-            # content is all numeric.
-            datetime.strptime(exit_date, "%Y%m")
-
-            # Validate ssn length/type along with the length of the RawRow
-            valid_data = True and len(ssn) == 9 and ssn.isdigit() and len(header_row) != 2
-        except ValueError:
-            pass
-
-        if not valid_data:
+        if len(header_row) != 2:
             return self._create_header_error()
 
         return HeaderResult(is_valid=True, program_type="FRA")
@@ -65,6 +51,7 @@ class FRAParser(BaseParser):
         self._init_schema_manager(header_result.program_type)
 
         for row in self.decoder.decode():
+            self.current_row_num = self.decoder.current_row_num
             generate_error = make_generate_parser_error(self.datafile, self.current_row_num)
 
             manager_result = self.schema_manager.parse_and_validate(row, generate_error)

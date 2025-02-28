@@ -2,7 +2,6 @@
 
 from django.conf import settings
 from django.db.utils import DatabaseError
-from elasticsearch.exceptions import ElasticsearchException
 import logging
 from tdpservice.parsers import schema_defs
 from tdpservice.parsers.base_parser import BaseParser
@@ -302,31 +301,12 @@ class TanfDataReportParser(BaseParser):
             try:
                 model = document.Django.model
                 qset = model.objects.filter(id__in=ids)
-                # We must tell elastic to delete the documents first because after we call `_raw_delete`
-                # the queryset will be empty which will tell elastic that nothing needs updated.
-                document.update(qset, refresh=True, action="delete")
                 # WARNING: we can use `_raw_delete` in this case because our record models don't have cascading
                 # dependencies. If that ever changes, we should NOT use `_raw_delete`.
                 num_deleted = qset._raw_delete(qset.db)
                 total_deleted += num_deleted
                 self.dfs.total_number_of_records_created -= num_deleted
                 logger.debug(f"Deleted {num_deleted} records of type: {model}.")
-            except ElasticsearchException as e:
-                # Caught an Elastic exception, to ensure the quality of the DB, we will force the DB deletion and let
-                # Elastic clean up later.
-                log_parser_exception(self.datafile,
-                                     ("Encountered error while indexing datafile documents. Enforcing DB cleanup. "
-                                      f"Exception: \n{e}"),
-                                     "error"
-                                     )
-                num_deleted, models = qset.delete()
-                total_deleted += num_deleted
-                self.dfs.total_number_of_records_created -= num_deleted
-                log_parser_exception(self.datafile,
-                                     ("Succesfully performed DB cleanup after elastic failure "
-                                      "in delete_serialized_records."),
-                                     "info"
-                                     )
             except DatabaseError as e:
                 log_parser_exception(self.datafile,
                                      (f"Encountered error while deleting database records for model {model}. "

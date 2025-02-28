@@ -4,11 +4,16 @@ from tdpservice.parsers.dataclasses import FieldType, Position
 from tdpservice.parsers.fields import Field
 from tdpservice.parsers.row_schema import FRASchema
 from tdpservice.parsers.validators import category2
+from tdpservice.search_indexes.models.fra import TANF_Exiter1
+
+class TANF_Exiter1Document:
+    class Django:
+        model = TANF_Exiter1
 
 te1 = [
     FRASchema(
         record_type="TE1",
-        model=None,
+        document=TANF_Exiter1Document,
         fields=[
             Field(
                 item="",
@@ -33,6 +38,7 @@ te1 = [
                 required=True,
                 validators=[
                     category2.isNumber(),
+                    category2.intHasLength(9),
                     category2.valueNotAt(slice(0, 3), "000"),
                     category2.valueNotAt(slice(3, 5), "00"),
                     category2.valueNotAt(slice(5, 9), "0000"),

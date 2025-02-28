@@ -250,10 +250,10 @@ class FRASchema(RowSchema):
     def __init__(
             self,
             record_type="FRA_RECORD",
-            model=None,
+            document=None,
             fields=None,
             ):
-        super().__init__(record_type, model, fields)
+        super().__init__(record_type, document, fields)
 
     def parse_and_validate(self, row: RawRow, generate_error):
         """Run all validation steps in order, and parse the given row into a record."""

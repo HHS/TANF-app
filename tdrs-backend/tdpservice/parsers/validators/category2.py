@@ -13,7 +13,7 @@ def format_error_context(eargs: ValidationErrorArgs):
         context = f"{context} Item {eargs.item_num} ({eargs.friendly_name}):"
     else:
         context = f"{context} ({eargs.friendly_name}):"
-    return f'{eargs.row_schema.record_type} Item {eargs.item_num} ({eargs.friendly_name}):'
+    return context
 
 
 @validator(base.isEqual)
@@ -201,7 +201,7 @@ def validateHeaderUpdateIndicator():
 def valueNotAt(location: slice, unexpected_val, **kwargs):
     """Validate value is not present at location."""
     return lambda eargs: (f"{format_error_context(eargs)} cannot have {unexpected_val} at "
-                          f"position {location.start + 1} to {location.end + 1}")
+                          f"position {location.start + 1} to {location.stop}")
 
 
 @validator(base.dateHasFormat)
