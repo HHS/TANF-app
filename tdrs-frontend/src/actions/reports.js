@@ -251,17 +251,21 @@ export const submit =
           }
         )
       })
-      .catch((error) =>
+      .catch((error) => {
+        const error_response = error.response?.data
+        const msg = error_response?.non_field_errors
+          ? error_response.non_field_errors[0]
+          : error_response?.detail
+            ? error_response.detail
+            : error_response?.file
+              ? error_response.file
+              : null
         setLocalAlertState({
           active: true,
           type: 'error',
-          message: ''.concat(
-            error.message,
-            ': ',
-            error.response?.data?.non_field_errors[0]
-          ),
+          message: ''.concat(error.message, ': ', msg),
         })
-      )
+      })
   }
 
 export const SET_SELECTED_STT = 'SET_SELECTED_STT'
