@@ -48,7 +48,6 @@ class UserFactory(BaseUserFactory):
     """General purpose user factory used through out most tests."""
 
     stt = None
-    region = None
 
 
 class STTUserFactory(BaseUserFactory):
@@ -59,7 +58,6 @@ class STTUserFactory(BaseUserFactory):
     # Our solution was to not set the STT specifically for the STT tests that
     # were calling the `populate_stt` command.
     stt = None
-    region = None
 
 
 class AdminSTTUserFactory(STTUserFactory):
@@ -73,7 +71,6 @@ class AdminUserFactory(UserFactory):
     """Generate Admin User."""
 
     stt = None
-    region = None
     is_staff = True
     is_superuser = True
 
