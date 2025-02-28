@@ -172,6 +172,12 @@ describe('actions/reports', () => {
     axios.post.mockImplementationOnce(() =>
       Promise.reject({
         status: 400,
+        message: 'Error',
+        response: {
+          data: {
+            non_field_errors: ['Something went wrong'],
+          },
+        },
       })
     )
     const store = mockStore()
@@ -201,7 +207,7 @@ describe('actions/reports', () => {
     expect(axios.post).toHaveBeenCalledTimes(1)
     expect(setLocalAlertState).toHaveBeenCalledWith({
       active: true,
-      message: 'undefined: undefined',
+      message: 'Error: Something went wrong',
       type: 'error',
     })
   })
