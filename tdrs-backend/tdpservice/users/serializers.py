@@ -115,7 +115,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'date_joined',
             'access_request',
             'access_requested_date',
-            'account_approval_status'
+            'account_approval_status',
+            'feature_flags',
         ]
         read_only_fields = (
             'id',
@@ -131,6 +132,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'access_request',
             'access_requested_date',
             'account_approval_status',
+            'feature_flags',
         )
 
         """Enforce first and last name to be in API call and not empty"""
