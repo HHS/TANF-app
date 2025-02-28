@@ -56,7 +56,6 @@ class BaseParser(ABC):
             logger.debug("Bulk creating records.")
             num_db_records_created = 0
             num_expected_db_records = 0
-            num_elastic_records_created = 0
             for document, records in self.unsaved_records.get_bulk_create_struct().items():
                 try:
                     num_expected_db_records += len(records)

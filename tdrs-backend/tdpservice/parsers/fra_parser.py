@@ -5,7 +5,6 @@ from tdpservice.parsers.base_parser import BaseParser
 from tdpservice.parsers.dataclasses import HeaderResult, Position
 from tdpservice.parsers.models import ParserErrorCategoryChoices
 from tdpservice.parsers.util import make_generate_parser_error
-from datetime import datetime
 
 
 logger = logging.getLogger(__name__)

@@ -7,8 +7,13 @@ from tdpservice.parsers.validators import category2
 from tdpservice.search_indexes.models.fra import TANF_Exiter1
 
 class TANF_Exiter1Document:
+    """Fake document class for TANF_Exiter1."""
+
     class Django:
+        """Fake inner Django class for TANF_Exiter1."""
+
         model = TANF_Exiter1
+
 
 te1 = [
     FRASchema(
@@ -20,7 +25,7 @@ te1 = [
                 name="EXIT_DATE",
                 friendly_name="Exit Date",
                 type=FieldType.NUMERIC,
-                position= Position(start=0),
+                position=Position(start=0),
                 required=True,
                 validators=[
                     category2.dateHasFormat("%Y%m"),
@@ -34,7 +39,7 @@ te1 = [
                 name="SSN",
                 friendly_name="Social Security Number",
                 type=FieldType.ALPHA_NUMERIC,
-                position= Position(start=1),
+                position=Position(start=1),
                 required=True,
                 validators=[
                     category2.isNumber(),
