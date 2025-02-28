@@ -35,6 +35,9 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
     fields_json = {
         "friendly_name": {
             getattr(f, 'name', ''): getattr(f, 'friendly_name', '') for f in fields
+        },
+        "item_numbers": {
+            getattr(f, 'name', ''): getattr(f, 'item', '') for f in fields
         }
     }
 
