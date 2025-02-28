@@ -8,6 +8,11 @@ from tdpservice.parsers.dataclasses import ValidationErrorArgs
 
 def format_error_context(eargs: ValidationErrorArgs):
     """Format the error message for consistency across cat2 validators."""
+    context = f"{eargs.row_schema.record_type}"
+    if eargs.item_num:
+        context = f"{context} Item {eargs.item_num} ({eargs.friendly_name}):"
+    else:
+        context = f"{context} ({eargs.friendly_name}):"
     return f'{eargs.row_schema.record_type} Item {eargs.item_num} ({eargs.friendly_name}):'
 
 
@@ -190,3 +195,16 @@ def validateHeaderUpdateIndicator():
             f"HEADER Update Indicator must be set to D instead of {eargs.value}. "
             "Please review Exporting Complete Data Using FTANF in the Knowledge Center."
     )
+
+
+@validator(base.valueNotAt)
+def valueNotAt(location: slice, unexpected_val, **kwargs):
+    """Validate value is not present at location."""
+    return lambda eargs: (f"{format_error_context(eargs)} cannot have {unexpected_val} at "
+                          f"position {location.start + 1} to {location.end + 1}")
+
+
+@validator(base.dateHasFormat)
+def dateHasFormat(format: str, **kwargs):
+    """Validate date matches the expected format."""
+    return lambda eargs: (f"{format_error_context(eargs)} is formatted incorrectly. Expected: {format}")

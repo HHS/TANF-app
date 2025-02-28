@@ -767,3 +767,15 @@ def fra_xlsx(stt_user, stt):
 def unknown_png(stt_user, stt):
     """Fixture for blank png file."""
     return util.create_test_datafile('unknown.png', stt_user, stt)
+
+@pytest.fixture
+def fra_work_outcome_exiter_csv_file(stt_user, stt):
+    """Fixture for FRA Work Outcome Exiters file."""
+    return util.create_test_datafile('fra.csv', stt_user, stt,
+                                     DataFile.Section.FRA_SUPPLEMENT_WORK_OUTCOMES)
+
+@pytest.fixture
+def fra_work_outcome_exiter_xlsx_file(stt_user, stt):
+    """Fixture for FRA Work Outcome Exiters file."""
+    return util.create_test_datafile('fra.xlsx', stt_user, stt,
+                                     DataFile.Section.FRA_SUPPLEMENT_WORK_OUTCOMES)

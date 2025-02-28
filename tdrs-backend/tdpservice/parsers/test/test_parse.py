@@ -1909,3 +1909,22 @@ def test_parse_cat_4_edge_case_file(cat4_edge_case_file, dfs):
     err = parser_errors.first()
     assert err.error_message == ("Every T1 record should have at least one corresponding T2 or T3 record with the "
                                  "same Item 4 (Reporting Year and Month) and Item 6 (Case Number).")
+
+@pytest.mark.django_db()
+def test_parse_csv_fra_work_outcome_exiters(fra_work_outcome_exiter_csv_file, dfs):
+    """Test parsing FRA Work Outcome Exiters file."""
+    fra_work_outcome_exiter_csv_file.year = 2024
+    fra_work_outcome_exiter_csv_file.quarter = 'Q1'
+
+    dfs.datafile = fra_work_outcome_exiter_csv_file
+    dfs.save()
+
+    parser = ParserFactory.get_instance(datafile=fra_work_outcome_exiter_csv_file, dfs=dfs,
+                                        section=fra_work_outcome_exiter_csv_file.section,
+                                        program_type=fra_work_outcome_exiter_csv_file.prog_type)
+    parser.parse_and_validate()
+
+    errors = ParserError.objects.filter(file=fra_work_outcome_exiter_csv_file)
+    for e in errors:
+        print(e.error_message)
+    assert False
