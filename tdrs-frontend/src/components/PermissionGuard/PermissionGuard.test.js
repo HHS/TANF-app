@@ -10,12 +10,18 @@ import PermissionGuard from '.'
 describe('PermissionGuard.js', () => {
   const mockStore = configureStore([thunk])
 
-  const setup = (initialState, requiredPermissions, requiresApproval = false) =>
+  const setup = (
+    initialState,
+    requiredPermissions,
+    requiresApproval = false,
+    requiredFeatureFlags = null
+  ) =>
     render(
       <Provider store={mockStore(initialState)}>
         <PermissionGuard
           requiresApproval={requiresApproval}
           requiredPermissions={requiredPermissions}
+          requiredFeatureFlags={requiredFeatureFlags}
           notAllowedComponent={<p>not allowed</p>}
         >
           <p>hello, world</p>
@@ -190,5 +196,42 @@ describe('PermissionGuard.js', () => {
       expect(screen.queryByText('hello, world')).toBeInTheDocument()
       expect(screen.queryByText('not allowed')).not.toBeInTheDocument()
     })
+  })
+
+  describe('feature flags', () => {
+    it.each([
+      ['Data Analyst', { feat: false }, null, true], // not required, not set
+      ['Data Analyst', { feat: true }, null, true], // not required, set
+      ['Data Analyst', { feat: false }, ['feat'], false], // required, not set
+      ['Data Analyst', { feat: true }, ['feat'], true], // required, set
+      ['OFA System Admin', { feat: false }, ['feat'], true], // admin bypass
+    ])(
+      'correctly renders',
+      (name, feature_flags, required_feature_flags, expectedVisible) => {
+        setup(
+          {
+            auth: {
+              authenticated: true,
+              user: {
+                roles: [{ name, permissions: ['anything'] }],
+                feature_flags,
+                account_approval_status: 'Approved',
+              },
+            },
+          },
+          [],
+          true,
+          required_feature_flags
+        )
+
+        if (expectedVisible) {
+          expect(screen.queryByText('hello, world')).toBeInTheDocument()
+          expect(screen.queryByText('not allowed')).not.toBeInTheDocument()
+        } else {
+          expect(screen.queryByText('hello, world')).not.toBeInTheDocument()
+          expect(screen.queryByText('not allowed')).toBeInTheDocument()
+        }
+      }
+    )
   })
 })

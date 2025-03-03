@@ -53,7 +53,7 @@ def test_immutability_of_data_file(data_file_instance):
     with pytest.raises(ImmutabilityError):
         serializer = DataFileSerializer(
             data_file_instance, data={
-                "original_filename": "BadGuy.js"
+                "original_filename": "BadGuy.js",
             },
             partial=True
         )
