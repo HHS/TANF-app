@@ -1,7 +1,7 @@
 """Test the implementation of the decoders with realistic datafiles."""
 
 import pytest
-from tdpservice.parsers.dataclasses import IndexRow, RawRow
+from tdpservice.parsers.dataclasses import TupleRow, RawRow
 from tdpservice.parsers.decoders import DecoderFactory, CsvDecoder, Utf8Decoder, XlsxDecoder
 
 
@@ -23,7 +23,7 @@ def test_csv_decoder(fra_csv):
     assert type(decoder) == CsvDecoder
     assert decoder.raw_file == fra_csv.file
     first_row = next(decoder.decode())
-    assert type(first_row) == IndexRow
+    assert type(first_row) == TupleRow
     assert type(first_row.data) == tuple
     assert first_row.data == ("202401", "446412419")
 
@@ -34,7 +34,7 @@ def test_xlsx_decoder(fra_xlsx):
     assert type(decoder) == XlsxDecoder
     assert decoder.raw_file == fra_xlsx.file
     first_row = next(decoder.decode())
-    assert type(first_row) == IndexRow
+    assert type(first_row) == TupleRow
     assert type(first_row.data) == tuple
     assert first_row.data == (202401, 446412419)
 

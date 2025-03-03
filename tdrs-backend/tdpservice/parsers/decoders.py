@@ -1,6 +1,6 @@
 """Decoder and utility classes."""
 
-from tdpservice.parsers.dataclasses import IndexRow, RawRow
+from tdpservice.parsers.dataclasses import TupleRow, RawRow
 
 from abc import ABC, abstractmethod
 from enum import IntEnum, auto
@@ -113,7 +113,7 @@ class CsvDecoder(BaseDecoder):
         # Very important to move pointer back to the begining since invoking the generator does not do it for us.
         self.local_file.seek(0)
         length = len(raw_data)
-        return IndexRow(data=tuple(raw_data), raw_len=length, decoded_len=length,
+        return TupleRow(data=tuple(raw_data), raw_len=length, decoded_len=length,
                         row_num=self.current_row_num, record_type="HEADER")
 
     def decode(self):
@@ -124,7 +124,7 @@ class CsvDecoder(BaseDecoder):
                 continue
             raw_len = len(raw_data)
             record_type = self.get_record_type(raw_data)
-            yield IndexRow(data=tuple(raw_data), raw_len=raw_len, decoded_len=raw_len,
+            yield TupleRow(data=tuple(raw_data), raw_len=raw_len, decoded_len=raw_len,
                            row_num=self.current_row_num, record_type=record_type)
 
     def __del__(self):
@@ -154,7 +154,7 @@ class XlsxDecoder(BaseDecoder):
         """Get the first line in the file. Assumed to be the header."""
         for raw_data in self.work_book.active.iter_rows(values_only=True):
             length = len(raw_data)
-            return IndexRow(data=raw_data, raw_len=length, decoded_len=length,
+            return TupleRow(data=raw_data, raw_len=length, decoded_len=length,
                             row_num=self.current_row_num, record_type="HEADER")
 
     def decode(self):
@@ -165,7 +165,7 @@ class XlsxDecoder(BaseDecoder):
                 continue
             raw_len = len(raw_data)
             record_type = self.get_record_type(raw_data)
-            yield IndexRow(data=raw_data, raw_len=raw_len, decoded_len=raw_len,
+            yield TupleRow(data=raw_data, raw_len=raw_len, decoded_len=raw_len,
                            row_num=self.current_row_num, record_type=record_type)
 
 

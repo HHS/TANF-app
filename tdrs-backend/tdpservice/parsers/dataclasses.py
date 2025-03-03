@@ -94,14 +94,16 @@ class RawRow:
         return False
 
 @dataclass(eq=False)
-class IndexRow(RawRow):
-    """Row class for List/Tuple based raw data."""
+class TupleRow(RawRow):
+    """Row class for Tuple based raw data."""
 
     def value_at(self, position: Position):
         """Get value at position."""
         value = self.data[position.start:position.end]
         if value is None or len(value) == 0:
             return None
+        if position.is_range:
+            return value
         return value[0]
 
 
