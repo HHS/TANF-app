@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchSttList } from '../../actions/sttList'
-import ComboBox from '../ComboBox'
+import { ComboBox } from '../Form'
 import Modal from '../Modal'
 import { toTitleCase } from '../../utils/stringUtils'
 
