@@ -89,9 +89,13 @@ class RawRow:
 
     def __eq__(self, value):
         """Check if value equals self."""
-        if issubclass(value, RawRow):
+        if isinstance(value, RawRow):
             return self.data == value.data
         return False
+
+    def __ne__(self, value):
+        """Check if value does not equal self."""
+        return not self.__eq__(value)
 
 @dataclass(eq=False)
 class TupleRow(RawRow):
