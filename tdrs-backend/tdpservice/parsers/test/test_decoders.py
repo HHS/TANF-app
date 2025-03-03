@@ -1,7 +1,7 @@
 """Test the implementation of the decoders with realistic datafiles."""
 
 import pytest
-from tdpservice.parsers.dataclasses import TupleRow, RawRow
+from tdpservice.parsers.dataclasses import RawRow, TupleRow
 from tdpservice.parsers.decoders import DecoderFactory, CsvDecoder, Utf8Decoder, XlsxDecoder
 
 
