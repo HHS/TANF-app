@@ -47,7 +47,7 @@ def parse(data_file_id, reparse_id=None):
         parser = ParserFactory.get_instance(datafile=data_file, dfs=dfs,
                                             section=data_file.section,
                                             program_type=data_file.prog_type)
-        errors = parser.parse_and_validate()
+        parser.parse_and_validate()
         dfs.status = dfs.get_status()
 
         if "Case Data" in data_file.section:

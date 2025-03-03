@@ -29,7 +29,6 @@ class FRAParser(BaseParser):
                                error_message="File does not begin with FRA data.")
         self.unsaved_parser_errors.update({1: [error]})
         self.bulk_create_errors(flush=True)
-        self.errors['header'] = [error]
         return HeaderResult(is_valid=False)
 
     def _validate_header(self):
@@ -45,7 +44,7 @@ class FRAParser(BaseParser):
         """Parse and validate the datafile."""
         header_result = self._validate_header()
         if not header_result.is_valid:
-            return self.errors
+            return
 
         self._init_schema_manager(header_result.program_type)
 
@@ -65,9 +64,6 @@ class FRAParser(BaseParser):
                 record, record_is_valid, record_errors = r
                 if not record_is_valid:
                     logger.debug(f"Record #{i} from line {self.current_row_num} is invalid.")
-                    line_errors = self.errors.get(f"{self.current_row_num}_{i}", {})
-                    line_errors.update({record_number: record_errors})
-                    self.errors.update({f"{self.current_row_num}_{i}": record_errors})
                     self.unsaved_parser_errors.update({f"{self.current_row_num}_{i}": record_errors})
                     self.num_errors += len(record_errors)
                 if record:
@@ -92,10 +88,10 @@ class FRAParser(BaseParser):
             logger.error(f"Not all parsed records created for file: {self.datafile.id}!")
             self.rollback_records()
             self.bulk_create_errors(flush=True)
-            return self.errors
+            return
 
         self.bulk_create_errors(flush=True)
 
         self.dfs.save()
 
-        return self.errors
+        return
