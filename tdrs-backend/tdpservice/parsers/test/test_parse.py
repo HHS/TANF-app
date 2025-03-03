@@ -11,6 +11,7 @@ from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TAN
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T1, Tribal_TANF_T2, Tribal_TANF_T3, Tribal_TANF_T4
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T5, Tribal_TANF_T6, Tribal_TANF_T7
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3, SSP_M4, SSP_M5, SSP_M6, SSP_M7
+from tdpservice.search_indexes.models.fra import TANF_Exiter1
 from tdpservice.search_indexes import documents
 from .. import aggregates
 import logging
@@ -1828,7 +1829,7 @@ def test_parse_cat_4_edge_case_file(cat4_edge_case_file, dfs):
 ])
 @pytest.mark.django_db()
 def test_parse_fra_work_outcome_exiters(request, file, dfs):
-    """Test parsing FRA Work Outcome Exiters file."""
+    """Test parsing FRA Work Outcome Exiters files."""
     datafile = request.getfixturevalue(file)
     datafile.year = 2024
     datafile.quarter = 'Q1'
@@ -1841,6 +1842,8 @@ def test_parse_fra_work_outcome_exiters(request, file, dfs):
                                         program_type=datafile.prog_type)
     parser.parse_and_validate()
 
+    assert TANF_Exiter1.objects.all().count() == 11
+
     errors = ParserError.objects.filter(file=datafile).order_by("id")
     assert len(errors) == 11
     for e in errors:
@@ -1848,3 +1851,57 @@ def test_parse_fra_work_outcome_exiters(request, file, dfs):
     assert dfs.total_number_of_records_in_file == 11
     assert dfs.total_number_of_records_created == 11
     assert dfs.get_status() == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+
+@pytest.mark.parametrize("file", [
+    ('fra_bad_header_csv'),
+    ('fra_bad_header_xlsx'),
+])
+@pytest.mark.django_db()
+def test_parse_fra_bad_header(request, file, dfs):
+    """Test parsing FRA files with bad header data."""
+    datafile = request.getfixturevalue(file)
+    datafile.year = 2024
+    datafile.quarter = 'Q1'
+
+    dfs.datafile = datafile
+    dfs.save()
+
+    parser = ParserFactory.get_instance(datafile=datafile, dfs=dfs,
+                                        section=datafile.section,
+                                        program_type=datafile.prog_type)
+    parser.parse_and_validate()
+
+    assert TANF_Exiter1.objects.all().count() == 0
+
+    errors = ParserError.objects.filter(file=datafile).order_by("id")
+    assert len(errors) == 1
+    for e in errors:
+        assert e.error_message == "File does not begin with FRA data."
+        assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
+
+@pytest.mark.parametrize("file", [
+    ('fra_empty_first_row_csv'),
+    ('fra_empty_first_row_xlsx'),
+])
+@pytest.mark.django_db()
+def test_parse_fra_empty_first_row(request, file, dfs):
+    """Test parsing FRA files with an empty first row/no header data."""
+    datafile = request.getfixturevalue(file)
+    datafile.year = 2024
+    datafile.quarter = 'Q1'
+
+    dfs.datafile = datafile
+    dfs.save()
+
+    parser = ParserFactory.get_instance(datafile=datafile, dfs=dfs,
+                                        section=datafile.section,
+                                        program_type=datafile.prog_type)
+    parser.parse_and_validate()
+
+    assert TANF_Exiter1.objects.all().count() == 0
+
+    errors = ParserError.objects.filter(file=datafile).order_by("id")
+    assert len(errors) == 1
+    for e in errors:
+        assert e.error_message == "File does not begin with FRA data."
+        assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK

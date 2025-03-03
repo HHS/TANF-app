@@ -35,7 +35,7 @@ class FRAParser(BaseParser):
         """Validate that the file does NOT have a header and that it begins with FRA data."""
         header_row = self.decoder.get_header()
 
-        if len(header_row) != 2:
+        if len(header_row) != 2 or not all(header_row):
             return self._create_header_error()
 
         return HeaderResult(is_valid=True, program_type="FRA")

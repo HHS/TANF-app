@@ -779,3 +779,27 @@ def fra_work_outcome_exiter_xlsx_file(stt_user, stt):
     """Fixture for FRA Work Outcome Exiters file."""
     return util.create_test_datafile('fra.xlsx', stt_user, stt,
                                      DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)
+
+@pytest.fixture
+def fra_empty_first_row_xlsx(stt_user, stt):
+    """Fixture for FRA file with no header data."""
+    return util.create_test_datafile('fra_empty_first_row.xlsx', stt_user, stt,
+                                     DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)
+
+@pytest.fixture
+def fra_empty_first_row_csv(stt_user, stt):
+    """Fixture for FRA file with no header data."""
+    return util.create_test_datafile('fra_empty_first_row.csv', stt_user, stt,
+                                     DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)
+
+@pytest.fixture
+def fra_bad_header_csv(stt_user, stt):
+    """Fixture for FRA file with bad header data."""
+    return util.create_test_datafile('fra_bad_header.csv', stt_user, stt,
+                                     DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)
+
+@pytest.fixture
+def fra_bad_header_xlsx(stt_user, stt):
+    """Fixture for FRA file with bad header data."""
+    return util.create_test_datafile('fra_bad_header.xlsx', stt_user, stt,
+                                     DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)
