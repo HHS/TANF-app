@@ -2,6 +2,9 @@ const valueIsEmpty = (val) => val === null || val === undefined || val === ''
 
 export const selectUser = (state) => state.auth.user || null
 
+export const selectFeatureFlags = (state) =>
+  selectUser(state)?.feature_flags || {}
+
 // could memoize these with `createSelector` from `reselect`
 export const selectUserAccountApprovalStatus = (state) =>
   selectUser(state)?.['account_approval_status']
@@ -80,3 +83,9 @@ export const accountCanViewPlg = (state) =>
 export const accountIsRegionalStaff = (state) =>
   accountStatusIsApproved(state) &&
   selectPrimaryUserRole(state)?.name === 'OFA Regional Staff'
+
+export const accountCanSelectStt = (state) =>
+  accountStatusIsApproved(state) &&
+  ['OFA System Admin', 'OFA Admin', 'DIGIT Team'].includes(
+    selectPrimaryUserRole(state)?.name
+  )
