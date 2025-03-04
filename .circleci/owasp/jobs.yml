@@ -4,7 +4,6 @@
     steps:
       - checkout
       - docker-compose-check
-      - docker-login
       - docker-compose-up-backend
       - docker-compose-up-frontend
       - run:
@@ -27,7 +26,6 @@
     steps:
       - checkout
       - docker-compose-check
-      - docker-login
       - docker-compose-up-backend
       - docker-compose-up-frontend
       - run:
@@ -68,7 +66,6 @@
       - sudo-check
       - cf-check
       - docker-compose-check
-      - docker-login
       - login-cloud-dot-gov:
           cf-password: <<parameters.cf_password>>
           cf-space: <<parameters.cf_space>>
