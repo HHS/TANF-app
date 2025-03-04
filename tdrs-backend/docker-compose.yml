@@ -1,7 +1,7 @@
 # Base Docker compose for all environments
 services:
   zaproxy:
-    image: tdp-docker.dev.raftlabs.tech/dependencies/softwaresecurityproject/zap-stable:2.14.0
+    image: elipe17/zap-stable:2.14.0
     command: sleep 3600
     depends_on:
       - web
@@ -10,7 +10,7 @@ services:
       - ../scripts/zap-hook.py:/zap/scripts/zap-hook.py:ro
 
   postgres:
-    image: tdp-docker.dev.raftlabs.tech/dependencies/postgres:15.7
+    image: postgres:15.7
     environment:
       - PGDATA=/var/lib/postgresql/data/
       - POSTGRES_DB=tdrs_test
@@ -23,7 +23,7 @@ services:
       - postgres_data:/var/lib/postgresql/data/:rw
 
   grafana-pg:
-    image: tdp-docker.dev.raftlabs.tech/dependencies/postgres:15.7
+    image: postgres:15.7
     environment:
       - PGDATA=/var/lib/postgresql/data/
       - POSTGRES_DB=grafana
@@ -36,14 +36,14 @@ services:
       - grafana_pg_data:/var/lib/postgresql/data/:rw
 
   clamav-rest:
-    image: tdp-docker.dev.raftlabs.tech/dependencies/rafttech/clamav-rest:0.103.2
+    image: rafttech/clamav-rest:0.103.2
     environment:
       - MAX_FILE_SIZE=200M
     ports:
       - "9000:9000"
 
   localstack:
-    image: tdp-docker.dev.raftlabs.tech/dependencies/localstack/localstack:0.13.3
+    image: localstack/localstack:0.13.3
     environment:
       - SERVICES=s3
       - DATA_DIR=/tmp/localstack/data
@@ -57,7 +57,7 @@ services:
       - ../scripts/localstack-setup.sh:/docker-entrypoint-initaws.d/localstack-setup.sh
 
   kibana:
-    image: tdp-docker.dev.raftlabs.tech/dependencies/docker.elastic.co/kibana/kibana-oss:7.10.2
+    image: docker.elastic.co/kibana/kibana-oss:7.10.2
     ports:
       - 5601:5601
     environment:
@@ -72,7 +72,7 @@ services:
       - elastic
 
   elastic:
-    image: tdp-docker.dev.raftlabs.tech/dependencies/docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2
     environment:
       - discovery.type=single-node
       - logger.discovery.level=debug
@@ -99,13 +99,13 @@ services:
     command: --config /usr/share/grafana/conf/custom.ini
     depends_on:
       - grafana-pg
-  
+
   alertmanager:
     restart: always
     image: prom/alertmanager:v0.27.0
-    ports: 
+    ports:
       - 9093:9093
-    volumes: 
+    volumes:
       - ./plg/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
     command: --config.file=/etc/alertmanager/alertmanager.yml --storage.path=/alertmanager --log.level=debug --web.external-url=http://localhost:3000/alerts --web.route-prefix=/alerts --cluster.listen-address=""
 
@@ -209,7 +209,6 @@ services:
     volumes:
       - .:/tdpapp
       - logs:/tmp
-    image: tdp-backend
     build: .
     command: >
       bash -c "./wait_for_services.sh &&
@@ -228,7 +227,7 @@ services:
       - elastic
 
   redis-server:
-    image: tdp-docker.dev.raftlabs.tech/dependencies/redis:alpine
+    image: redis:alpine
     command: redis-server /tdpapp/redis.conf
     ports:
       - "6379:6379"
