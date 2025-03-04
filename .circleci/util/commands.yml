@@ -9,16 +9,7 @@
     steps:
       - run:
           name: Build and spin-up Django API service
-          command: cd tdrs-backend; docker network create external-net; docker-compose up -d --build
-
-  docker-compose-up-with-elastic-backend:
-    steps:
-      - run:
-          name: Build and spin-up Django API service
-          command: cd tdrs-backend; docker network create external-net; docker-compose --profile elastic_setup up -d --build
-      - run:
-          name: Reindex elasticsearch
-          command: cd tdrs-backend; docker-compose exec web wait-for-it --service http://localhost:8080 --timeout 180 -- python manage.py search_index --rebuild -f
+          command: cd tdrs-backend; docker network create external-net; docker-compose up web -d --build
 
   cf-check:
     steps:
