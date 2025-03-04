@@ -123,8 +123,19 @@ function Header() {
                   >
                     <NavItem
                       pathname={pathname}
-                      tabTitle="Data Files"
+                      tabTitle="TANF Data Files"
                       href="/data-files"
+                    />
+                  </PermissionGuard>
+                  <PermissionGuard
+                    requiresApproval
+                    requiredPermissions={['view_datafile', 'add_datafile']}
+                    requiredFeatureFlags={['fra_reports']}
+                  >
+                    <NavItem
+                      pathname={pathname}
+                      tabTitle="FRA Data Files"
+                      href="/fra-data-files"
                     />
                   </PermissionGuard>
                   {(userAccessRequestPending || userAccessRequestApproved) && (

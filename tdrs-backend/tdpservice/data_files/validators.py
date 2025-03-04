@@ -12,10 +12,15 @@ logger = logging.getLogger(__name__)
 # The default set of Extensions allowed for an uploaded file
 # Supports regex patterns as defined by standard library
 # https://docs.python.org/3/library/re.html#regular-expression-syntax
-ALLOWED_FILE_EXTENSIONS = [
+ALLOWED_TANF_FILE_EXTENSIONS = [
     r'^(ms\d{2})$',  # Files ending in .MS## where # is a digit 0-9
     r'^(ts\d{2,3})$',  # Files ending in .TS## or .TS### where # is a digit 0-9
     'txt',  # plain text files
+]
+
+ALLOWED_FRA_FILE_EXTENSIONS = [
+    'csv',
+    'xlsx'
 ]
 
 
@@ -27,13 +32,15 @@ def _get_unsupported_msg(_type, value, supported_options):
     )
 
 
-def validate_file_extension(file_name: str):
+def validate_file_extension(file_name: str, is_fra: bool = False):
     """Validate the file extension of a file is in our supported list."""
     file_extension = (
         file_name.split('.')[-1].lower() if '.' in file_name else None
     )
 
-    allowed_ext_patterns = '|'.join(ALLOWED_FILE_EXTENSIONS)
+    allowed_list = ALLOWED_FRA_FILE_EXTENSIONS if is_fra else ALLOWED_TANF_FILE_EXTENSIONS
+
+    allowed_ext_patterns = '|'.join(allowed_list)
     if (
         file_extension is not None
         and not re.match(allowed_ext_patterns, file_extension)
@@ -41,7 +48,7 @@ def validate_file_extension(file_name: str):
         msg = _get_unsupported_msg(
             'file extension',
             file_extension,
-            ALLOWED_FILE_EXTENSIONS
+            allowed_list
         )
         raise ValidationError(msg)
 

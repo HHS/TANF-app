@@ -30,7 +30,7 @@ describe('SiteMap', () => {
     const locations = [
       'Home',
       'Privacy Policy',
-      'Data Files',
+      'TANF Data Files',
       'Profile',
       'Admin',
     ]
@@ -61,7 +61,7 @@ describe('SiteMap', () => {
     const locations = [
       'Home',
       'Privacy Policy',
-      'Data Files',
+      'TANF Data Files',
       'Profile',
       'Admin',
     ]
@@ -92,7 +92,7 @@ describe('SiteMap', () => {
     const locations = [
       'Home',
       'Privacy Policy',
-      'Data Files',
+      'TANF Data Files',
       'Profile',
       'Admin',
     ]
@@ -120,7 +120,7 @@ describe('SiteMap', () => {
       </Provider>
     )
 
-    const locations = ['Home', 'Privacy Policy', 'Data Files', 'Profile']
+    const locations = ['Home', 'Privacy Policy', 'TANF Data Files', 'Profile']
     for (let location of locations) {
       expect(getByText(location)).toBeInTheDocument()
     }
@@ -158,5 +158,53 @@ describe('SiteMap', () => {
     }
 
     expect(queryByText('Admin')).not.toBeInTheDocument()
+  })
+
+  describe('Fra reports', () => {
+    it('Shows FRA reports if feat flag is on', () => {
+      const user = {
+        email: 'hi@bye.com',
+        roles: [],
+        feature_flags: { fra_reports: true },
+        account_approval_status: 'Approved',
+      }
+
+      const initialState = {
+        auth: { user },
+      }
+
+      const store = mockStore(initialState)
+
+      const { getByText } = render(
+        <Provider store={store}>
+          <SiteMap user={user}></SiteMap>
+        </Provider>
+      )
+
+      expect(getByText('FRA Data Files')).toBeInTheDocument()
+    })
+
+    it('Doesnt show FRA reports if feat flag is off', () => {
+      const user = {
+        email: 'hi@bye.com',
+        roles: [],
+        feature_flags: { fra_reports: false },
+        account_approval_status: 'Approved',
+      }
+
+      const initialState = {
+        auth: { user },
+      }
+
+      const store = mockStore(initialState)
+
+      const { queryByText } = render(
+        <Provider store={store}>
+          <SiteMap user={user}></SiteMap>
+        </Provider>
+      )
+
+      expect(queryByText('FRA Data Files')).not.toBeInTheDocument()
+    })
   })
 })

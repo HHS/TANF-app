@@ -80,7 +80,7 @@ def test_user_with_fra_access(client, admin_user, stt):
     """Test that a user with FRA access can only have an STT."""
     admin_user.stt = stt
     admin_user.is_superuser = True
-    admin_user.feature_flags = {"fra_access": False}
+    admin_user.feature_flags = {"fra_reports": False}
 
     admin_user.clean()
     admin_user.save()
@@ -95,7 +95,7 @@ def test_user_with_fra_access(client, admin_user, stt):
     response = client.get(f"/admin/data_files/datafile/{datafile.id}/change/")
     assert response.status_code == 302
 
-    admin_user.feature_flags = {"fra_access": True}
+    admin_user.feature_flags = {"fra_reports": True}
     admin_user.save()
 
     response = client.get(f"/admin/data_files/datafile/{datafile.id}/change/")
