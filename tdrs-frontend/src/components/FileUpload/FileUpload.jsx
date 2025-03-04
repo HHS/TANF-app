@@ -54,6 +54,8 @@ const load = (file, section, input, dropTarget, dispatch) => {
       let error = false
       const re = /(\.txt|\.ms\d{2}|\.ts\d{2,3})$/i
       if (!re.exec(file.name)) {
+        createFileInputErrorState(input, dropTarget)
+
         dispatch({
           type: FILE_EXT_ERROR,
           payload: {
@@ -161,11 +163,19 @@ function FileUpload({ section, setLocalAlertState }) {
     const input = inputRef.current
     const dropTarget = inputRef.current.parentNode
 
-    const { result } = await load(file, section, input, dropTarget, dispatch)
+    const { result, error } = await load(
+      file,
+      section,
+      input,
+      dropTarget,
+      dispatch
+    )
 
-    // Get the correctly encoded file
-    const encodedFile = await tryGetUTF8EncodedFile(result, file)
-    dispatch(upload({ file: encodedFile, section }))
+    if (!error) {
+      // Get the correctly encoded file
+      const encodedFile = await tryGetUTF8EncodedFile(result, file)
+      dispatch(upload({ file: encodedFile, section }))
+    }
   }
 
   return (
