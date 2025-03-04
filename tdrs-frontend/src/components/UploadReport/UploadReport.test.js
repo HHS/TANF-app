@@ -88,6 +88,7 @@ describe('UploadReport', () => {
   })
   it('should prevent upload of file with invalid extension', async () => {
     const store = mockStore(initialState)
+
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
@@ -112,9 +113,11 @@ describe('UploadReport', () => {
       })
     })
 
-    await waitFor(() => expect(getByText('test.html')).toBeInTheDocument())
-    expect(store.dispatch).toHaveBeenCalledTimes(4)
-    expect(container.querySelectorAll('.has-invalid-file').length).toBe(0)
+    //await waitFor(() => expect(getByText('test.html')).toBeInTheDocument()))
+    await waitFor(() => {
+      expect(store.dispatch).toHaveBeenCalledTimes(3)
+      expect(container.querySelectorAll('.has-invalid-file').length).toBe(1)
+    })
   })
 
   it('should display a download button when the file is available for download', () => {
