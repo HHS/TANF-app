@@ -40,7 +40,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('auth', '__latest__'),
-        ('users', '0043_create_regions_m2m_del_region'),
+        ('users', '0044_alter_user_feature_flags'),
     ]
 
     operations = [
