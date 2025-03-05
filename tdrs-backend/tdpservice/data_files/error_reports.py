@@ -102,14 +102,19 @@ class FRADataErrorReport(ErrorReportBase):
 
         paginator = Paginator(self.parser_errors.order_by('pk'), settings.BULK_CREATE_BATCH_SIZE)
         row_idx = 1
-        records = TANF_Exiter1.objects.filter(datafile=self.datafile)
+        records = TANF_Exiter1.objects.filter(datafile=self.datafile,
+                                              id__in=self.parser_errors.values_list('object_id', flat=True))
+        # We need to do some analysis on this! There is a potential for a memory overflow here
+        # TODO: See if we can do this with a crazy join/group by instead of an in memory map!
+        record_map = {record.id: record for record in records}
         for page in paginator:
             for error in page.object_list:
-                record = records.get(id=error.object_id)
-                rpt_month_year = getattr(error, 'rpt_month_year', None)
-                rpt_month_year = str(rpt_month_year) if rpt_month_year else ""
+                record = record_map.get(error.object_id)
+                exit_date = getattr(record, 'EXIT_DATE', None)
+                exit_date = str(exit_date) if exit_date else ""
                 fields_json = self.check_fields_json(getattr(error, 'fields_json', {}), error.field_name)
-                row = self.row_generator(record, error, rpt_month_year, fields_json)
+                row = self.row_generator(record, error, exit_date, fields_json)
+                print(row)
                 worksheet.write_row(row_idx, 0, row)
                 row_idx += 1
 
