@@ -70,10 +70,6 @@ class DataFileViewSet(ModelViewSet):
                         f"Datafile META -> datafile: {data_file_id}, section: {data_file.section}, " +
                         f"quarter {data_file.quarter}, year {data_file.year}.")
 
-            if data_file.prog_type == 'FRA':
-                logger.debug(f"{self.__class__.__name__}: return val: {response}")
-                return response
-
             parser_task.parse.delay(data_file_id)
             logger.info("Submitted parse task to queue for datafile %s.", data_file_id)
 
