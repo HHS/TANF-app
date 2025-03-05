@@ -106,6 +106,7 @@ class FRADataErrorReport(ErrorReportBase):
                                               id__in=self.parser_errors.values_list('object_id', flat=True))
         # We need to do some analysis on this! There is a potential for a memory overflow here
         # TODO: See if we can do this with a crazy join/group by instead of an in memory map!
+        # TODO: Write tests for the new error report generator
         record_map = {record.id: record for record in records}
         for page in paginator:
             for error in page.object_list:
