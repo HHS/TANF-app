@@ -1358,6 +1358,7 @@
       },
       {
         "current": {
+          "isNone": true,
           "selected": false,
           "text": "None",
           "value": ""
@@ -1386,6 +1387,7 @@
       },
       {
         "current": {
+          "isNone": true,
           "selected": false,
           "text": "None",
           "value": ""
@@ -1443,13 +1445,13 @@
     ]
   },
   "time": {
-    "from": "now-30m",
+    "from": "now-1m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "Uptime/Health",
   "uid": "beec9qjbf6iv4d",
-  "version": 3,
+  "version": 9,
   "weekStart": ""
 }
