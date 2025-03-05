@@ -15,7 +15,6 @@ from wsgiref.util import FileWrapper
 from rest_framework import status
 
 from tdpservice.data_files.serializers import DataFileSerializer
-from tdpservice.data_files.util import get_xls_serialized_file, get_prioritized_queryset
 from tdpservice.data_files.models import DataFile, get_s3_upload_path
 from tdpservice.users.permissions import DataFilePermissions, IsApprovedPermission
 from tdpservice.scheduling import parser_task

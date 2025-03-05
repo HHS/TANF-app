@@ -6,7 +6,6 @@ import calendar
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
-from django.utils.translation import gettext_lazy as _
 
 from abc import ABC, abstractmethod
 from tdpservice.data_files.models import DataFile
@@ -21,10 +20,11 @@ class ErrorReportFactory:
     @staticmethod
     def get_error_report_generator(datafile):
         """Get error report generator."""
-        if (DataFile.Section.ACTIVE_CASE_DATA in  datafile.section or
-            DataFile.Section.CLOSED_CASE_DATA in datafile.section):
+        active = DataFile.Section.ACTIVE_CASE_DATA
+        closed = DataFile.Section.CLOSED_CASE_DATA
+        if active in datafile.section or closed in datafile.section:
             return ActiveClosedErrorReport(datafile)
-        elif (DataFile.Section.AGGREGATE_DATA in  datafile.section or
+        elif (DataFile.Section.AGGREGATE_DATA in datafile.section or
               DataFile.Section.STRATUM_DATA in datafile.section):
             return AggregateStratumErrorReport(datafile)
         elif datafile.section == DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS:
@@ -188,8 +188,7 @@ class TanfDataErrorReportBase(ErrorReportBase):
 
         # We will write the headers in the first row
         columns = ['year', 'month', 'error_message', 'item_number', 'item_name',
-                'internal_variable_name', 'error_type', 'number_of_occurrences'
-                ]
+                   'internal_variable_name', 'error_type', 'number_of_occurrences']
         for idx, col in enumerate(columns):
             worksheet.write(row, idx, self.format_header(col), bold)
 
@@ -210,7 +209,8 @@ class TanfDataErrorReportBase(ErrorReportBase):
                 fields_json = self.check_fields_json(error['fields_json'], error['field_name'])
 
                 worksheet.write(row_idx, 0, rpt_month_year[:4])
-                worksheet.write(row_idx, 1, calendar.month_name[int(rpt_month_year[4:])] if rpt_month_year[4:] else None)
+                worksheet.write(row_idx, 1, calendar.month_name[int(rpt_month_year[4:])] if rpt_month_year[4:]
+                                else None)
                 worksheet.write(row_idx, 2, self.format_error_msg(error['error_message'], fields_json))
                 worksheet.write(row_idx, 3, error['item_number'])
                 worksheet.write(row_idx, 4, self.friendly_names(fields_json))
@@ -298,15 +298,15 @@ class ActiveClosedErrorReport(TanfDataErrorReportBase):
     def get_row_generator(self):
         """Get row generator for error report."""
         return lambda error, rpt_month_year, fields_json: (error.case_number,
-                                                            rpt_month_year[:4],
-                                                            calendar.month_name[int(rpt_month_year[4:])] if \
-                                                                rpt_month_year[4:] else None,
-                                                            self.format_error_msg(error.error_message, fields_json),
-                                                            error.item_number,
-                                                            self.friendly_names(fields_json),
-                                                            self.internal_names(fields_json),
-                                                            error.row_number,
-                                                            str(ParserErrorCategoryChoices(error.error_type).label))
+                                                           rpt_month_year[:4],
+                                                           calendar.month_name[int(rpt_month_year[4:])] if
+                                                           rpt_month_year[4:] else None,
+                                                           self.format_error_msg(error.error_message, fields_json),
+                                                           error.item_number,
+                                                           self.friendly_names(fields_json),
+                                                           self.internal_names(fields_json),
+                                                           error.row_number,
+                                                           str(ParserErrorCategoryChoices(error.error_type).label))
 
     def get_columns(self):
         """Get the columns for header."""
@@ -329,14 +329,14 @@ class AggregateStratumErrorReport(TanfDataErrorReportBase):
     def get_row_generator(self):
         """Get row generator for error report."""
         return lambda error, rpt_month_year, fields_json: (rpt_month_year[:4],
-                                                            calendar.month_name[int(rpt_month_year[4:])] if \
-                                                                rpt_month_year[4:] else None,
-                                                            self.format_error_msg(error.error_message, fields_json),
-                                                            error.item_number,
-                                                            self.friendly_names(fields_json),
-                                                            self.internal_names(fields_json),
-                                                            error.row_number,
-                                                            str(ParserErrorCategoryChoices(error.error_type).label))
+                                                           calendar.month_name[int(rpt_month_year[4:])] if
+                                                           rpt_month_year[4:] else None,
+                                                           self.format_error_msg(error.error_message, fields_json),
+                                                           error.item_number,
+                                                           self.friendly_names(fields_json),
+                                                           self.internal_names(fields_json),
+                                                           error.row_number,
+                                                           str(ParserErrorCategoryChoices(error.error_type).label))
 
     def get_columns(self):
         """Get the columns for header."""
