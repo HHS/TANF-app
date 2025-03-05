@@ -47,7 +47,8 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
         column_number=getattr(field, 'item', None),
         item_number=getattr(field, 'item', None),
         field_name=getattr(field, 'name', None) if hasattr(field, 'name') else field,
-        rpt_month_year=getattr(record, 'RPT_MONTH_YEAR', None),
+        # TODO: This is cheating, but im using the same field for both the rpt_month_year and exit_date
+        rpt_month_year=getattr(record, 'RPT_MONTH_YEAR', getattr(record, 'EXIT_DATE', None)),
         case_number=getattr(record, 'CASE_NUMBER', None),
         error_message=error_message,
         error_type=error_category,

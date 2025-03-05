@@ -21,7 +21,7 @@ te1 = [
         document=TANF_Exiter1Document,
         fields=[
             Field(
-                item="",
+                item="A",
                 name="EXIT_DATE",
                 friendly_name="Exit Date",
                 type=FieldType.NUMERIC,
@@ -35,7 +35,7 @@ te1 = [
                 is_encrypted=False
             ),
             Field(
-                item="",
+                item="B",
                 name="SSN",
                 friendly_name="Social Security Number",
                 type=FieldType.ALPHA_NUMERIC,
