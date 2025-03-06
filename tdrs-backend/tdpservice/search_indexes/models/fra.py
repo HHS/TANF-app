@@ -23,6 +23,6 @@ class TANF_Exiter1(models.Model):
         related_name='tanf_exiter_1_parent'
     )
 
-    RecordType = models.CharField(max_length=25, null=True, blank=False)
+    RecordType = models.CharField(max_length=25, null=True, blank=False, default='TE1')
     EXIT_DATE = models.IntegerField(null=True, blank=False)
     SSN = models.CharField(max_length=9, null=True, blank=False)
