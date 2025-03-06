@@ -73,7 +73,7 @@ def format_error_msg(error_msg, fields_json):
     return error_msg
 
 def item_numbers(fields_json, item_number):
-    """Return comma separated string of of item_numbers"""
+    """Return comma separated string of of item_numbers."""
     if fields_json and 'item_numbers' in fields_json:
         return ','.join([i for i in fields_json['item_numbers'].values()])
     return item_number
