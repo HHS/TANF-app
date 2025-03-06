@@ -105,11 +105,11 @@ class FRADataErrorReport(ErrorReportBase):
         # Because we use a generic relation on the ParserError model, we need to use raw SQL to join the two tables.
         # The `prefetch_related` method does not work in the same was as this raw join. I.e. we don't get all the fields
         # from both tables.
-        records = TANF_Exiter1.objects.raw("""SELECT a.id, a.\"EXIT_DATE\", a.\"SSN\",
-                                           b.object_id, b.error_message, b.fields_json,
-                                           b.field_name, b.row_number, b.column_number
-                                           FROM search_indexes_tanf_exiter1 AS a
-                                           INNER JOIN parser_error b ON a.id = b.object_id""")
+        records = TANF_Exiter1.objects.raw("""SELECT te1.id, te1.\"EXIT_DATE\", te1.\"SSN\",
+                                           pe.object_id, pe.error_message, pe.fields_json,
+                                           pe.field_name, pe.row_number, pe.column_number
+                                           FROM search_indexes_tanf_exiter1 AS te1
+                                           INNER JOIN parser_error pe ON te1.id = pe.object_id""")
         for record in records.iterator():
             exit_date = getattr(record, 'EXIT_DATE', None)
             exit_date = str(exit_date) if exit_date else ""
