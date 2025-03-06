@@ -40,6 +40,26 @@ class DataFileAPITestBase:
         return test_datafile
 
     @pytest.fixture
+    def test_fra_csv_file(self, stt_user, stt):
+        """Fixture for small_incorrect_file_cross_validator."""
+        test_datafile = util.create_test_datafile('fra.csv', stt_user, stt,
+                                                  DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)
+        test_datafile.year = 2024
+        test_datafile.quarter = 'Q1'
+        test_datafile.save()
+        return test_datafile
+
+    @pytest.fixture
+    def test_fra_xlsx_file(self, stt_user, stt):
+        """Fixture for small_incorrect_file_cross_validator."""
+        test_datafile = util.create_test_datafile('fra.xlsx', stt_user, stt,
+                                                  DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)
+        test_datafile.year = 2024
+        test_datafile.quarter = 'Q1'
+        test_datafile.save()
+        return test_datafile
+
+    @pytest.fixture
     def test_ssp_datafile(self, stt_user, stt):
         """Fixture for small_ssp_section1."""
         df = util.create_test_datafile('small_ssp_section1.txt', stt_user, stt, 'SSP Active Case Data')
@@ -99,14 +119,25 @@ class DataFileAPITestBase:
 
         # read the excel file from disk
         wb = openpyxl.load_workbook('mycls.xlsx')
-        critical = wb['Critical']
-        summary = wb['Summary']
-        return critical, summary
+        return wb
+
+    @staticmethod
+    def assert_fra_error_report_file_content_matches_with_friendly_names(response):
+        """Assert the error report file contents match expected with friendly names."""
+        wb = DataFileAPITestBase.get_spreadsheet(response)
+        sheet = wb['Error Report']
+
+        assert sheet.cell(row=2, column=1).value == "202301"
+        assert sheet.cell(row=2, column=2).value == "*****5507"
+        assert sheet.cell(row=2, column=3).value == "A10"
+        assert sheet.cell(row=2, column=4).value == "TE1 Item A (Exit Date): Year 2023 must be larger than 2023."
 
     @staticmethod
     def assert_error_report_tanf_file_content_matches_with_friendly_names(response):
         """Assert the error report file contents match expected with friendly names."""
-        critical, summary = DataFileAPITestBase.get_spreadsheet(response)
+        wb = DataFileAPITestBase.get_spreadsheet(response)
+        critical = wb['Critical']
+        summary = wb['Summary']
 
         COL_ERROR_MESSAGE = 4
         COL_NUM_OCCURRENCES = 8
@@ -119,7 +150,9 @@ class DataFileAPITestBase:
     @staticmethod
     def assert_error_report_ssp_file_content_matches_with_friendly_names(response):
         """Assert the error report file contents match expected with friendly names."""
-        critical, summary = DataFileAPITestBase.get_spreadsheet(response)
+        wb = DataFileAPITestBase.get_spreadsheet(response)
+        critical = wb['Critical']
+        summary = wb['Summary']
 
         COL_ERROR_MESSAGE = 4
         COL_NUM_OCCURRENCES = 8
@@ -133,7 +166,9 @@ class DataFileAPITestBase:
     @staticmethod
     def assert_error_report_file_content_matches_without_friendly_names(response):
         """Assert the error report file contents match expected without friendly names."""
-        critical, summary = DataFileAPITestBase.get_spreadsheet(response)
+        wb = DataFileAPITestBase.get_spreadsheet(response)
+        critical = wb['Critical']
+        summary = wb['Summary']
 
         COL_ERROR_MESSAGE = 4
         COL_NUM_OCCURRENCES = 8
@@ -304,6 +339,23 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
 
         assert response.status_code == status.HTTP_200_OK
         self.assert_data_file_content_matches(response, data_file_id)
+
+    @pytest.mark.parametrize("file", [
+        ('test_fra_csv_file'),
+        ('test_fra_xlsx_file'),
+    ])
+    def test_download_fra_error_report_file_for_own_stt(self, request, api_client, file, dfs):
+        """Test that the fra error report file is downloaded as expected for a Data Analyst's set STT."""
+        datafile = request.getfixturevalue(file)
+        parser = ParserFactory.get_instance(datafile=datafile, dfs=dfs,
+                                            section=datafile.section,
+                                            program_type=datafile.prog_type)
+        parser.parse_and_validate()
+
+        response = self.download_error_report_file(api_client, datafile.id)
+
+        assert response.status_code == status.HTTP_200_OK
+        self.assert_fra_error_report_file_content_matches_with_friendly_names(response)
 
     def test_download_error_report_file_for_own_stt(
         self, api_client, test_datafile, dfs

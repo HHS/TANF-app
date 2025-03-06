@@ -117,10 +117,10 @@ class FRADataErrorReport(ErrorReportBase):
             # Json object.
             json_str = getattr(record, 'fields_json', '{}')
             fields_json = self.check_fields_json(json.loads(json_str), record.field_name)
-            row = self.row_generator(record, exit_date, fields_json)
-            worksheet.write_row(row_idx, 0, row)
+            worksheet.write_row(row_idx, 0, self.row_generator(record, exit_date, fields_json))
             row_idx += 1
 
+        self.workbook.close()
         return {"xls_report": base64.b64encode(self.output.getvalue())}
 
     def get_columns(self):
