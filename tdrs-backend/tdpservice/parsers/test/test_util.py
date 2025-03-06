@@ -574,7 +574,7 @@ def test_run_postparsing_validators_returns_frinedly_fieldnames(test_datafile_em
         test_datafile_empty_file, 10
     ))
     assert is_valid is False
-    assert errors[0].fields_json == {'friendly_name': {'FIRST': 'first', 'SECOND': 'second'}}
+    assert errors[0].fields_json == {'friendly_name': {'FIRST': 'first', 'SECOND': 'second'}, 'item_numbers': {'FIRST': 1, 'SECOND': 2}}
     assert errors[0].error_message == "Since Item 1 (first) is None, then Item 2 (second) None Value is not valid."
 
 
