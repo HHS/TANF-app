@@ -5,7 +5,7 @@ from .duplicate_manager import DuplicateManager
 from .models import ParserErrorCategoryChoices
 from .util import get_years_apart
 from tdpservice.stts.models import STT
-from tdpservice.parsers.schema_defs.utils import get_program_model
+from tdpservice.parsers.schema_defs.utils import ProgramManager
 from tdpservice.parsers.validators.util import ValidationErrorArgs
 from tdpservice.parsers.validators.category3 import format_error_context
 import logging
@@ -41,8 +41,8 @@ class CaseConsistencyValidator:
 
     def __get_model(self, model_str):
         """Return a model for the current program type/section given the model"s string name."""
-        manager = get_program_model(self.program_type, self.section, model_str)
-        return manager.schemas[0].document.Django.model
+        schemas = ProgramManager.get_schema(self.program_type, self.section, model_str)
+        return schemas[0].document.Django.model
 
     def __get_error_context(self, field_name, schema):
         if schema is None:

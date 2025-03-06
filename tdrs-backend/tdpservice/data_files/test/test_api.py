@@ -6,7 +6,8 @@ import pytest
 import base64
 import openpyxl
 from tdpservice.data_files.models import DataFile
-from tdpservice.parsers import parse, util
+from tdpservice.parsers import util
+from tdpservice.parsers.factory import ParserFactory
 from tdpservice.parsers.models import ParserError
 from tdpservice.parsers.test.factories import DataFileSummaryFactory
 
@@ -308,7 +309,11 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         self, api_client, test_datafile, dfs
     ):
         """Test that the error report file is downloaded as expected for a Data Analyst's set STT."""
-        parse.parse_datafile(test_datafile, dfs)
+        parser = ParserFactory.get_instance(datafile=test_datafile, dfs=dfs,
+                                            section=test_datafile.section,
+                                            program_type=test_datafile.prog_type)
+        parser.parse_and_validate()
+
         response = self.download_error_report_file(api_client, test_datafile.id)
 
         assert response.status_code == status.HTTP_200_OK
@@ -316,7 +321,10 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
 
     def test_download_error_report_ssp_file_for_own_stt(self, api_client, test_ssp_datafile, dfs):
         """Test that the error report file for an SSP file is downloaded as expected for a Data Analyst's set STT."""
-        parse.parse_datafile(test_ssp_datafile, dfs)
+        parser = ParserFactory.get_instance(datafile=test_ssp_datafile, dfs=dfs,
+                                            section=test_ssp_datafile.section,
+                                            program_type=test_ssp_datafile.prog_type)
+        parser.parse_and_validate()
         response = self.download_error_report_file(api_client, test_ssp_datafile.id)
 
         assert response.status_code == status.HTTP_200_OK
@@ -326,7 +334,10 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         self, api_client, test_datafile, dfs
     ):
         """Test that the error report file is downloaded as expected when no fields_json is added to ParserErrors."""
-        parse.parse_datafile(test_datafile, dfs)
+        parser = ParserFactory.get_instance(datafile=test_datafile, dfs=dfs,
+                                            section=test_datafile.section,
+                                            program_type=test_datafile.prog_type)
+        parser.parse_and_validate()
 
         # remove the fields' friendly names for all parser errors
         for error in ParserError.objects.all():
