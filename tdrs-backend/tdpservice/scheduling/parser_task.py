@@ -14,6 +14,7 @@ from tdpservice.parsers.factory import ParserFactory
 from tdpservice.parsers.util import log_parser_exception, make_generate_parser_error
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 from tdpservice.users.models import AccountApprovalStatusChoices, User
+from tdpservice.scheduling import df_version_task
 
 
 logger = logging.getLogger(__name__)
@@ -79,6 +80,9 @@ def parse(data_file_id, reparse_id=None):
             ).values_list('username', flat=True).distinct()
 
             send_data_submitted_email(dfs, recipients)
+            print("\n\nBEFORE DELAY")
+            df_version_task.delete_old_versions.delay(data_file_id=data_file_id)
+            print("\n\nAFTER DELAY")
     except DatabaseError as e:
         log_parser_exception(data_file,
                              f"Encountered Database exception in parser_task.py: \n{e}",
