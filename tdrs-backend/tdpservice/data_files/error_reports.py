@@ -1,5 +1,6 @@
 """Utility functions for DataFile views."""
 import base64
+import json
 from io import BytesIO
 import xlsxwriter
 import calendar
@@ -100,24 +101,25 @@ class FRADataErrorReport(ErrorReportBase):
         for idx, col in enumerate(columns):
             worksheet.write(0, idx, self.format_header(col), bold)
 
-        paginator = Paginator(self.parser_errors.order_by('pk'), settings.BULK_CREATE_BATCH_SIZE)
         row_idx = 1
-        records = TANF_Exiter1.objects.filter(datafile=self.datafile,
-                                              id__in=self.parser_errors.values_list('object_id', flat=True))
-        # We need to do some analysis on this! There is a potential for a memory overflow here
-        # TODO: See if we can do this with a crazy join/group by instead of an in memory map!
-        # TODO: Write tests for the new error report generator
-        record_map = {record.id: record for record in records}
-        for page in paginator:
-            for error in page.object_list:
-                record = record_map.get(error.object_id)
-                exit_date = getattr(record, 'EXIT_DATE', None)
-                exit_date = str(exit_date) if exit_date else ""
-                fields_json = self.check_fields_json(getattr(error, 'fields_json', {}), error.field_name)
-                row = self.row_generator(record, error, exit_date, fields_json)
-                print(row)
-                worksheet.write_row(row_idx, 0, row)
-                row_idx += 1
+        # Because we use a generic relation on the ParserError model, we need to use raw SQL to join the two tables.
+        # The `prefetch_related` method does not work in the same was as this raw join. I.e. we don't get all the fields
+        # from both tables.
+        records = TANF_Exiter1.objects.raw(("SELECT a.id, a.\"EXIT_DATE\", a.\"SSN\", "
+                                            "b.object_id, b.error_message, b.fields_json, "
+                                            "b.field_name, b.row_number, b.column_number FROM "
+                                            "search_indexes_tanf_exiter1 AS a "
+                                            "INNER JOIN parser_error b ON a.id = b.object_id"))
+        for record in records.iterator():
+            exit_date = getattr(record, 'EXIT_DATE', None)
+            exit_date = str(exit_date) if exit_date else ""
+            # Because the data is serialized from the raw query above, we need to convert the json string to an actual
+            # Json object.
+            json_str = getattr(record, 'fields_json', '{}')
+            fields_json = self.check_fields_json(json.loads(json_str), record.field_name)
+            row = self.row_generator(record, exit_date, fields_json)
+            worksheet.write_row(row_idx, 0, row)
+            row_idx += 1
 
         return {"xls_report": base64.b64encode(self.output.getvalue())}
 
@@ -131,10 +133,10 @@ class FRADataErrorReport(ErrorReportBase):
 
     def get_row_generator(self):
         """Get row generator for error report."""
-        return lambda record, error, exit_date, fields_json: (exit_date,
-                                                              self._obscure_ssn(record.SSN),
-                                                              f"{error.column_number}{error.row_number}",
-                                                              self.format_error_msg(error.error_message, fields_json),)
+        return lambda record, exit_date, fields_json: (exit_date,
+                                                       self._obscure_ssn(record.SSN),
+                                                       f"{record.column_number}{record.row_number}",
+                                                       self.format_error_msg(record.error_message, fields_json),)
 
 
 class TanfDataErrorReportBase(ErrorReportBase):
