@@ -62,13 +62,13 @@ class RowSchema(ABC):
         """Get all fields from the schema."""
         return self.fields
 
-    def run_field_validators(self, instance, generate_error):
+    def run_field_validators(self, record, generate_error):
         """Run all validators for each field in the parsed model."""
         is_valid = True
         errors = []
 
         for field in self.fields:
-            value = get_record_value_by_field_name(instance, field.name)
+            value = get_record_value_by_field_name(record, field.name)
             eargs = ValidationErrorArgs(
                 value=value,
                 row_schema=self,
@@ -87,7 +87,7 @@ class RowSchema(ABC):
                                 schema=self,
                                 error_category=ParserErrorCategoryChoices.FIELD_VALUE,
                                 error_message=result.error,
-                                record=instance,
+                                record=record,
                                 field=field,
                                 deprecated=result.deprecated
                             )
@@ -102,7 +102,7 @@ class RowSchema(ABC):
                             f"{format_error_context(eargs)} "
                             "field is required but a value was not provided."
                         ),
-                        record=instance,
+                        record=record,
                         field=field
                     )
                 )
@@ -265,10 +265,64 @@ class FRASchema(RowSchema):
         # parse row to model
         record = self.parse_row(row)
 
-        # run field validators
+        # run category 1 field validators
         fields_are_valid, field_errors = self.run_field_validators(record, generate_error)
 
         is_valid = fields_are_valid
         errors = field_errors
+        record = record if is_valid else None
 
         return SchemaResult(record, is_valid, errors)
+
+    def run_field_validators(self, record, generate_error):
+        """
+        Run all validators for each field in the parsed model.
+
+        NOTE: FRA (for the moment) needs all field based validators to produce category1 errors. This is the same exact
+        logic as RowSchema.run_field_validators, but we need to override it here to ensure that the error category is
+        correct.
+        """
+        is_valid = True
+        errors = []
+
+        for field in self.fields:
+            value = get_record_value_by_field_name(record, field.name)
+            eargs = ValidationErrorArgs(
+                value=value,
+                row_schema=self,
+                friendly_name=field.friendly_name,
+                item_num=field.item,
+            )
+            is_empty = value_is_empty(value, len(field.position))
+            should_validate = not field.required and not is_empty
+            if (field.required and not is_empty) or should_validate:
+                for validator in field.validators:
+                    result = validator(value, eargs)
+                    is_valid = False if (not result.valid and not field.ignore_errors) else is_valid
+                    if result.error:
+                        errors.append(
+                            generate_error(
+                                schema=self,
+                                error_category=ParserErrorCategoryChoices.PRE_CHECK,
+                                error_message=result.error,
+                                record=record,
+                                field=field,
+                                deprecated=result.deprecated
+                            )
+                        )
+            elif field.required:
+                is_valid = False
+                errors.append(
+                    generate_error(
+                        schema=self,
+                        error_category=ParserErrorCategoryChoices.PRE_CHECK,
+                        error_message=(
+                            f"{format_error_context(eargs)} "
+                            "field is required but a value was not provided."
+                        ),
+                        record=record,
+                        field=field
+                    )
+                )
+
+        return is_valid, errors
