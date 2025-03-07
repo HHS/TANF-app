@@ -12,9 +12,8 @@ applications:
       S3_ACCESS_KEY=$(echo $VCAP_SERVICES | jq -r .s3[0].credentials.access_key_id)
       S3_SECRET_KEY=$(echo $VCAP_SERVICES | jq -r .s3[0].credentials.secret_access_key)
       S3_BUCKET=$(echo $VCAP_SERVICES | jq -r .s3[0].credentials.bucket)
-      wget https://tdp-nexus.dev.raftlabs.tech/repository/tdp-bin/linux/bin/yq_linux_amd64.tar.gz
-      tar -zxvf yq_linux_amd64.tar.gz
-      rm yq_linux_amd64.tar.gz && rm yq.1 && rm install-man-page.sh
+      https://github.com/mikefarah/yq/releases/download/v4.45.1/yq_linux_amd64
+      chmod +x yq_linux_amd64
       ./yq_linux_amd64 eval -i ".storage_config.aws.s3 = \"$S3_URI\"" loki.yml
       ./yq_linux_amd64 eval -i ".storage_config.aws.endpoint = \"$S3_ENDPOINT\"" loki.yml
       ./yq_linux_amd64 eval -i ".storage_config.aws.region = \"$S3_REGION\"" loki.yml
