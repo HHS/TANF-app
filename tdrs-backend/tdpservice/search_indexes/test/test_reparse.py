@@ -1,7 +1,8 @@
 """Test cases for reparse functions."""
 
 import pytest
-from tdpservice.parsers import util, parse
+from tdpservice.parsers import util
+from tdpservice.parsers.factory import ParserFactory
 from tdpservice.parsers.test.factories import DataFileSummaryFactory
 from tdpservice.scheduling.management.commands import backup_db
 from tdpservice.search_indexes.management.commands import clean_and_reparse
@@ -92,16 +93,29 @@ def log_context():
 def parse_files(summary, f1, f2, f3, f4):
     """Parse all files."""
     summary.datafile = f1
-    parse.parse_datafile(f1, summary)
+    parser = ParserFactory.get_instance(datafile=f1, dfs=summary,
+                                        section=f1.section,
+                                        program_type=f1.prog_type)
+    parser.parse_and_validate()
 
     summary.datafile = f2
-    parse.parse_datafile(f2, summary)
+    parser = ParserFactory.get_instance(datafile=f2, dfs=summary,
+                                        section=f2.section,
+                                        program_type=f2.prog_type)
+    parser.parse_and_validate()
 
     summary.datafile = f3
-    parse.parse_datafile(f3, summary)
+    parser = ParserFactory.get_instance(datafile=f3, dfs=summary,
+                                        section=f3.section,
+                                        program_type=f3.prog_type)
+    parser.parse_and_validate()
 
     summary.datafile = f4
-    parse.parse_datafile(f4, summary)
+    parser = ParserFactory.get_instance(datafile=f4, dfs=summary,
+                                        section=f4.section,
+                                        program_type=f4.prog_type)
+    parser.parse_and_validate()
+
     f1.save()
     f2.save()
     f3.save()

@@ -39,9 +39,9 @@ class TestCaseConsistencyValidator:
     @pytest.fixture
     def tanf_s1_schemas(self):
         """Return group of TANF Section 1 schemas."""
-        s1 = schema_defs.tanf.t1.schemas[0]
-        s2 = schema_defs.tanf.t2.schemas[0]
-        s3 = schema_defs.tanf.t3.schemas[0]
+        s1 = schema_defs.tanf.t1[0]
+        s2 = schema_defs.tanf.t2[0]
+        s3 = schema_defs.tanf.t3[0]
         return [s1, s2, s3, s3]
 
     @pytest.fixture
@@ -117,23 +117,23 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff,stt_type", [
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT1Factory, schema_defs.tanf.t1.schemas[0], "T1"),
-            (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], "T2"),
-            (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], "T3"),
+            (factories.TanfT1Factory, schema_defs.tanf.t1[0], "T1"),
+            (factories.TanfT2Factory, schema_defs.tanf.t2[0], "T2"),
+            (factories.TanfT3Factory, schema_defs.tanf.t3[0], "T3"),
             STT.EntityType.STATE,
         ),
         (
             {"type": "A", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1.schemas[0], "T1"),
-            (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2.schemas[0], "T2"),
-            (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3.schemas[0], "T3"),
+            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1[0], "T1"),
+            (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2[0], "T2"),
+            (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3[0], "T3"),
             STT.EntityType.TRIBE,
         ),
         (
             {"type": "A", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM1Factory, schema_defs.ssp.m1.schemas[0], "M1"),
-            (factories.SSPM2Factory, schema_defs.ssp.m2.schemas[0], "M2"),
-            (factories.SSPM3Factory, schema_defs.ssp.m3.schemas[0], "M3"),
+            (factories.SSPM1Factory, schema_defs.ssp.m1[0], "M1"),
+            (factories.SSPM2Factory, schema_defs.ssp.m2[0], "M2"),
+            (factories.SSPM3Factory, schema_defs.ssp.m3[0], "M3"),
             STT.EntityType.STATE,
         ),
     ])
@@ -204,23 +204,23 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff,stt_type", [
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT1Factory, schema_defs.tanf.t1.schemas[0], "T1", "4", "6"),
-            (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], "T2"),
-            (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], "T3"),
+            (factories.TanfT1Factory, schema_defs.tanf.t1[0], "T1", "4", "6"),
+            (factories.TanfT2Factory, schema_defs.tanf.t2[0], "T2"),
+            (factories.TanfT3Factory, schema_defs.tanf.t3[0], "T3"),
             STT.EntityType.STATE,
         ),
         (
             {"type": "A", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1.schemas[0], "T1", "4", "6"),
-            (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2.schemas[0], "T2"),
-            (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3.schemas[0], "T3"),
+            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1[0], "T1", "4", "6"),
+            (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2[0], "T2"),
+            (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3[0], "T3"),
             STT.EntityType.TRIBE,
         ),
         (
             {"type": "A", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM1Factory, schema_defs.ssp.m1.schemas[0], "M1", "3", "5"),
-            (factories.SSPM2Factory, schema_defs.ssp.m2.schemas[0], "M2"),
-            (factories.SSPM3Factory, schema_defs.ssp.m3.schemas[0], "M3"),
+            (factories.SSPM1Factory, schema_defs.ssp.m1[0], "M1", "3", "5"),
+            (factories.SSPM2Factory, schema_defs.ssp.m2[0], "M2"),
+            (factories.SSPM3Factory, schema_defs.ssp.m3[0], "M3"),
             STT.EntityType.STATE,
         ),
     ])
@@ -269,23 +269,23 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff,stt_type", [
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT1Factory, schema_defs.tanf.t1.schemas[0], "T1", "4", "6"),
-            (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], "T2"),
-            (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], "T3"),
+            (factories.TanfT1Factory, schema_defs.tanf.t1[0], "T1", "4", "6"),
+            (factories.TanfT2Factory, schema_defs.tanf.t2[0], "T2"),
+            (factories.TanfT3Factory, schema_defs.tanf.t3[0], "T3"),
             STT.EntityType.STATE,
         ),
         (
             {"type": "A", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1.schemas[0], "T1", "4", "6"),
-            (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2.schemas[0], "T2"),
-            (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3.schemas[0], "T3"),
+            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1[0], "T1", "4", "6"),
+            (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2[0], "T2"),
+            (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3[0], "T3"),
             STT.EntityType.TRIBE,
         ),
         (
             {"type": "A", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM1Factory, schema_defs.ssp.m1.schemas[0], "M1", "3", "5"),
-            (factories.SSPM2Factory, schema_defs.ssp.m2.schemas[0], "M2"),
-            (factories.SSPM3Factory, schema_defs.ssp.m3.schemas[0], "M3"),
+            (factories.SSPM1Factory, schema_defs.ssp.m1[0], "M1", "3", "5"),
+            (factories.SSPM2Factory, schema_defs.ssp.m2[0], "M2"),
+            (factories.SSPM3Factory, schema_defs.ssp.m3[0], "M3"),
             STT.EntityType.STATE,
         ),
     ])
@@ -374,23 +374,23 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff,stt_type", [
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT1Factory, schema_defs.tanf.t1.schemas[0], "T1", "4", "6"),
-            (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], "T2", "30"),
-            (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], "T3", "67"),
+            (factories.TanfT1Factory, schema_defs.tanf.t1[0], "T1", "4", "6"),
+            (factories.TanfT2Factory, schema_defs.tanf.t2[0], "T2", "30"),
+            (factories.TanfT3Factory, schema_defs.tanf.t3[0], "T3", "67"),
             STT.EntityType.STATE,
         ),
         (
             {"type": "A", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1.schemas[0], "T1", "4", "6"),
-            (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2.schemas[0], "T2", "30"),
-            (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3.schemas[0], "T3", "66"),
+            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1[0], "T1", "4", "6"),
+            (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2[0], "T2", "30"),
+            (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3[0], "T3", "66"),
             STT.EntityType.TRIBE,
         ),
         (
             {"type": "A", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM1Factory, schema_defs.ssp.m1.schemas[0], "M1", "3", "5"),
-            (factories.SSPM2Factory, schema_defs.ssp.m2.schemas[0], "M2", "26"),
-            (factories.SSPM3Factory, schema_defs.ssp.m3.schemas[0], "M3", "60"),
+            (factories.SSPM1Factory, schema_defs.ssp.m1[0], "M1", "3", "5"),
+            (factories.SSPM2Factory, schema_defs.ssp.m2[0], "M2", "26"),
+            (factories.SSPM3Factory, schema_defs.ssp.m3[0], "M3", "60"),
             STT.EntityType.STATE,
         ),
     ])
@@ -471,20 +471,20 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff,stt_type", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], "T4"),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5"),
+            (factories.TanfT4Factory, schema_defs.tanf.t4[0], "T4"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5[0], "T5"),
             STT.EntityType.STATE,
         ),
         (
             {"type": "C", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], "T4"),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], "T5"),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4[0], "T4"),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5[0], "T5"),
             STT.EntityType.TRIBE,
         ),
         (
             {"type": "C", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], "M4"),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], "M5"),
+            (factories.SSPM4Factory, schema_defs.ssp.m4[0], "M4"),
+            (factories.SSPM5Factory, schema_defs.ssp.m5[0], "M5"),
             STT.EntityType.STATE,
         ),
     ])
@@ -542,20 +542,20 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff,stt_type", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], "T4", "4", "9"),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5", "28"),
+            (factories.TanfT4Factory, schema_defs.tanf.t4[0], "T4", "4", "9"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5[0], "T5", "28"),
             STT.EntityType.STATE,
         ),
         (
             {"type": "C", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], "T4", "4", "9"),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], "T5", "28"),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4[0], "T4", "4", "9"),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5[0], "T5", "28"),
             STT.EntityType.TRIBE,
         ),
         (
             {"type": "C", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], "M4", "3", "8"),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], "M5", "25"),
+            (factories.SSPM4Factory, schema_defs.ssp.m4[0], "M4", "3", "8"),
+            (factories.SSPM5Factory, schema_defs.ssp.m5[0], "M5", "25"),
             STT.EntityType.STATE,
         ),
     ])
@@ -623,14 +623,14 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff,stt_type", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], "T4", "9"),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5", "26"),
+            (factories.TanfT4Factory, schema_defs.tanf.t4[0], "T4", "9"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5[0], "T5", "26"),
             STT.EntityType.STATE,
         ),
         (
             {"type": "C", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], "T4", "9"),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], "T5", "26"),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4[0], "T4", "9"),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5[0], "T5", "26"),
             STT.EntityType.TRIBE,
         ),
     ])
@@ -701,20 +701,20 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff,stt_type", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], "T4", "4", "6"),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5"),
+            (factories.TanfT4Factory, schema_defs.tanf.t4[0], "T4", "4", "6"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5[0], "T5"),
             STT.EntityType.STATE,
         ),
         (
             {"type": "C", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], "T4", "4", "6"),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], "T5"),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4[0], "T4", "4", "6"),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5[0], "T5"),
             STT.EntityType.TRIBE,
         ),
         (
             {"type": "C", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], "M4", "3", "5"),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], "M5"),
+            (factories.SSPM4Factory, schema_defs.ssp.m4[0], "M4", "3", "5"),
+            (factories.SSPM5Factory, schema_defs.ssp.m5[0], "M5"),
             STT.EntityType.STATE,
         ),
     ])
@@ -762,20 +762,20 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff,stt_type", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], "T4", "4", "6"),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5"),
+            (factories.TanfT4Factory, schema_defs.tanf.t4[0], "T4", "4", "6"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5[0], "T5"),
             STT.EntityType.STATE,
         ),
         (
             {"type": "C", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], "T4", "4", "6"),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], "T5"),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4[0], "T4", "4", "6"),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5[0], "T5"),
             STT.EntityType.TRIBE,
         ),
         (
             {"type": "C", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], "M4", "3", "5"),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], "M5"),
+            (factories.SSPM4Factory, schema_defs.ssp.m4[0], "M4", "3", "5"),
+            (factories.SSPM5Factory, schema_defs.ssp.m5[0], "M5"),
             STT.EntityType.STATE,
         ),
     ])
@@ -839,18 +839,18 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], "T4"),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5"),
+            (factories.TanfT4Factory, schema_defs.tanf.t4[0], "T4"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5[0], "T5"),
         ),
         (
             {"type": "C", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], "T4"),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], "T5"),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4[0], "T4"),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5[0], "T5"),
         ),
         (
             {"type": "C", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], "M4"),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], "M5"),
+            (factories.SSPM4Factory, schema_defs.ssp.m4[0], "M4"),
+            (factories.SSPM5Factory, schema_defs.ssp.m5[0], "M5"),
         ),
     ])
     @pytest.mark.django_db
@@ -909,18 +909,18 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], "T4"),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5", "19C"),
+            (factories.TanfT4Factory, schema_defs.tanf.t4[0], "T4"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5[0], "T5", "19C"),
         ),
         (
             {"type": "C", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], "T4"),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], "T5", "19C"),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4[0], "T4"),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5[0], "T5", "19C"),
         ),
         (
             {"type": "C", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], "M4"),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], "M5", "18C"),
+            (factories.SSPM4Factory, schema_defs.ssp.m4[0], "M4"),
+            (factories.SSPM5Factory, schema_defs.ssp.m5[0], "M5", "18C"),
         ),
     ])
     @pytest.mark.django_db
@@ -989,18 +989,18 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], "T4"),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5"),
+            (factories.TanfT4Factory, schema_defs.tanf.t4[0], "T4"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5[0], "T5"),
         ),
         (
             {"type": "C", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], "T4"),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], "T5"),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4[0], "T4"),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5[0], "T5"),
         ),
         (
             {"type": "C", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], "M4"),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], "M5"),
+            (factories.SSPM4Factory, schema_defs.ssp.m4[0], "M4"),
+            (factories.SSPM5Factory, schema_defs.ssp.m5[0], "M5"),
         ),
     ])
     @pytest.mark.django_db
@@ -1059,18 +1059,18 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], "T4"),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5", "19C"),
+            (factories.TanfT4Factory, schema_defs.tanf.t4[0], "T4"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5[0], "T5", "19C"),
         ),
         (
             {"type": "C", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], "T4"),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], "T5", "19C"),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4[0], "T4"),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5[0], "T5", "19C"),
         ),
         (
             {"type": "C", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], "M4"),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], "M5", "18C"),
+            (factories.SSPM4Factory, schema_defs.ssp.m4[0], "M4"),
+            (factories.SSPM5Factory, schema_defs.ssp.m5[0], "M5", "18C"),
         ),
     ])
     @pytest.mark.django_db
@@ -1139,18 +1139,18 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], "T4"),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5", "19E"),
+            (factories.TanfT4Factory, schema_defs.tanf.t4[0], "T4"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5[0], "T5", "19E"),
         ),
         (
             {"type": "C", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], "T4"),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], "T5", "19E"),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4[0], "T4"),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5[0], "T5", "19E"),
         ),
         (
             {"type": "C", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], "M4"),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], "M5", "18E"),
+            (factories.SSPM4Factory, schema_defs.ssp.m4[0], "M4"),
+            (factories.SSPM5Factory, schema_defs.ssp.m5[0], "M5", "18E"),
         ),
     ])
     @pytest.mark.django_db
@@ -1219,18 +1219,18 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], "T4"),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5", "19E"),
+            (factories.TanfT4Factory, schema_defs.tanf.t4[0], "T4"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5[0], "T5", "19E"),
         ),
         (
             {"type": "C", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], "T4"),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], "T5", "19E"),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4[0], "T4"),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5[0], "T5", "19E"),
         ),
         (
             {"type": "C", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], "M4"),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], "M5", "18E"),
+            (factories.SSPM4Factory, schema_defs.ssp.m4[0], "M4"),
+            (factories.SSPM5Factory, schema_defs.ssp.m5[0], "M5", "18E"),
         ),
     ])
     @pytest.mark.django_db
@@ -1294,23 +1294,23 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff,stt_type", [
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT1Factory, schema_defs.tanf.t1.schemas[0], "T1"),
-            (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], "T2"),
-            (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], "T3"),
+            (factories.TanfT1Factory, schema_defs.tanf.t1[0], "T1"),
+            (factories.TanfT2Factory, schema_defs.tanf.t2[0], "T2"),
+            (factories.TanfT3Factory, schema_defs.tanf.t3[0], "T3"),
             STT.EntityType.STATE,
         ),
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1.schemas[0], "T1"),
-            (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2.schemas[0], "T2"),
-            (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3.schemas[0], "T3"),
+            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1[0], "T1"),
+            (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2[0], "T2"),
+            (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3[0], "T3"),
             STT.EntityType.STATE,
         ),
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.SSPM1Factory, schema_defs.ssp.m1.schemas[0], "M1"),
-            (factories.SSPM2Factory, schema_defs.ssp.m2.schemas[0], "M2"),
-            (factories.SSPM3Factory, schema_defs.ssp.m3.schemas[0], "M3"),
+            (factories.SSPM1Factory, schema_defs.ssp.m1[0], "M1"),
+            (factories.SSPM2Factory, schema_defs.ssp.m2[0], "M2"),
+            (factories.SSPM3Factory, schema_defs.ssp.m3[0], "M3"),
             STT.EntityType.STATE,
         )
     ])
@@ -1386,23 +1386,23 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff,stt_type", [
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT1Factory, schema_defs.tanf.t1.schemas[0], "T1"),
-            (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], "T2"),
-            (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], "T3"),
+            (factories.TanfT1Factory, schema_defs.tanf.t1[0], "T1"),
+            (factories.TanfT2Factory, schema_defs.tanf.t2[0], "T2"),
+            (factories.TanfT3Factory, schema_defs.tanf.t3[0], "T3"),
             STT.EntityType.STATE,
         ),
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1.schemas[0], "T1"),
-            (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2.schemas[0], "T2"),
-            (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3.schemas[0], "T3"),
+            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1[0], "T1"),
+            (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2[0], "T2"),
+            (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3[0], "T3"),
             STT.EntityType.STATE,
         ),
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.SSPM1Factory, schema_defs.ssp.m1.schemas[0], "M1"),
-            (factories.SSPM2Factory, schema_defs.ssp.m2.schemas[0], "M2"),
-            (factories.SSPM3Factory, schema_defs.ssp.m3.schemas[0], "M3"),
+            (factories.SSPM1Factory, schema_defs.ssp.m1[0], "M1"),
+            (factories.SSPM2Factory, schema_defs.ssp.m2[0], "M2"),
+            (factories.SSPM3Factory, schema_defs.ssp.m3[0], "M3"),
             STT.EntityType.STATE,
         ),
     ])
@@ -1495,18 +1495,18 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], "T4"),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5"),
+            (factories.TanfT4Factory, schema_defs.tanf.t4[0], "T4"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5[0], "T5"),
         ),
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], "T4"),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], "T5"),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4[0], "T4"),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5[0], "T5"),
         ),
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], "M4"),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], "M5"),
+            (factories.SSPM4Factory, schema_defs.ssp.m4[0], "M4"),
+            (factories.SSPM5Factory, schema_defs.ssp.m5[0], "M5"),
         ),
     ])
     @pytest.mark.django_db
@@ -1551,18 +1551,18 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], "T4"),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5"),
+            (factories.TanfT4Factory, schema_defs.tanf.t4[0], "T4"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5[0], "T5"),
         ),
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], "T4"),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], "T5"),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4[0], "T4"),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5[0], "T5"),
         ),
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], "M4"),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], "M5"),
+            (factories.SSPM4Factory, schema_defs.ssp.m4[0], "M4"),
+            (factories.SSPM5Factory, schema_defs.ssp.m5[0], "M5"),
         ),
     ])
     @pytest.mark.django_db
@@ -1622,15 +1622,15 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,record_stuff", [
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], "T2"),
+            (factories.TanfT2Factory, schema_defs.tanf.t2[0], "T2"),
         ),
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], "T3"),
+            (factories.TanfT3Factory, schema_defs.tanf.t3[0], "T3"),
         ),
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5[0], "T5"),
         ),
     ])
     @pytest.mark.django_db
@@ -1661,27 +1661,27 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,record_stuff", [
         (
             {"type": "G", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT6Factory, schema_defs.tanf.t6.schemas[0], "T6"),
+            (factories.TanfT6Factory, schema_defs.tanf.t6[0], "T6"),
         ),
         (
             {"type": "G", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT6Factory, schema_defs.tribal_tanf.t6.schemas[0], "T6"),
+            (factories.TribalTanfT6Factory, schema_defs.tribal_tanf.t6[0], "T6"),
         ),
         (
             {"type": "G", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.SSPM6Factory, schema_defs.ssp.m6.schemas[0], "M6"),
+            (factories.SSPM6Factory, schema_defs.ssp.m6[0], "M6"),
         ),
         (
             {"type": "S", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT7Factory, schema_defs.tanf.t7.schemas[0], "T7"),
+            (factories.TanfT7Factory, schema_defs.tanf.t7[0], "T7"),
         ),
         (
             {"type": "S", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT7Factory, schema_defs.tribal_tanf.t7.schemas[0], "T7"),
+            (factories.TribalTanfT7Factory, schema_defs.tribal_tanf.t7[0], "T7"),
         ),
         (
             {"type": "S", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.SSPM7Factory, schema_defs.ssp.m7.schemas[0], "M7"),
+            (factories.SSPM7Factory, schema_defs.ssp.m7[0], "M7"),
         ),
     ])
     @pytest.mark.django_db

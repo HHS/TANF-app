@@ -5,11 +5,9 @@ from django.core.files.base import ContentFile
 from django.db.utils import IntegrityError
 from tdpservice.parsers.schema_defs.header import header
 from tdpservice.parsers.schema_defs.trailer import trailer
-from tdpservice.parsers.schema_defs.utils import get_schema_options, get_program_models
+from tdpservice.parsers.schema_defs.utils import ProgramManager
 from tdpservice.parsers.util import fiscal_to_calendar
-# all models should be referenced by using the utils.py get_schema_options wrappers
 from tdpservice.data_files.models import DataFile
-# from tdpservice.parsers import parse
 from tdpservice.parsers.test.factories import DataFileSummaryFactory
 from tdpservice.scheduling.parser_task import parse as parse_task
 from tdpservice.stts.models import STT
@@ -115,10 +113,11 @@ def make_files(stt, sub_year, sub_quarter):
     files_for_quarter = {}
 
     for long_section in sections:
-        text_dict = get_schema_options("", section=long_section, query='text')
-        prog_type = text_dict['program_type']  # TAN
-        section = text_dict['section']  # A
-        models_in_section = get_program_models(prog_type, section)
+        # TODO: fix this if it becomes relevant.
+        prog_type = None   # TAN
+        section = None  # A
+        models_in_section = ProgramManager.get_schemas(prog_type, section)
+
         temp_file = ''
 
         cal_year, cal_quarter = fiscal_to_calendar(sub_year, 'Q{}'.format(sub_quarter))
