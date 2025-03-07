@@ -3,7 +3,7 @@
 
 from tdpservice.parsers.transforms import calendar_quarter_to_rpt_month_year
 from tdpservice.parsers.fields import Field, TransformField
-from tdpservice.parsers.row_schema import RowSchema, SchemaManager
+from tdpservice.parsers.row_schema import RowSchema
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T6DataSubmissionDocument
 
@@ -628,4 +628,4 @@ s3 = RowSchema(
 )
 
 
-t6 = SchemaManager(schemas=[s1, s2, s3])
+t6 = [s1, s2, s3]

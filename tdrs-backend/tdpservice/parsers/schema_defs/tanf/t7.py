@@ -1,7 +1,7 @@
 """Schema for TANF T7 Row."""
 
 from tdpservice.parsers.fields import Field, TransformField
-from tdpservice.parsers.row_schema import RowSchema, SchemaManager
+from tdpservice.parsers.row_schema import RowSchema
 from tdpservice.parsers.transforms import calendar_quarter_to_rpt_month_year
 from tdpservice.parsers.validators import category1, category2
 from tdpservice.search_indexes.documents.tanf import TANF_T7DataSubmissionDocument
@@ -108,4 +108,4 @@ for i in range(1, 31):
     stratum_index += index_offset
     families_index += 7 if i % 3 != 0 else 10
 
-t7 = SchemaManager(schemas=schemas)
+t7 = schemas
