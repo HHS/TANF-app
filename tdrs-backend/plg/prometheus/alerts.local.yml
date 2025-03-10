@@ -9,6 +9,14 @@ groups:
         annotations:
           summary: "The {{ $labels.service }} service is down."
           description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 1 minute."
+      - alert: LocalDatabaseExporterDown
+        expr: last_over_time(up{job="postgres"}[1m]) == 0
+        for: 1m
+        labels:
+          severity: ERROR
+        annotations:
+          summary: "The {{ $labels.service }} is down."
+          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has not reported metrics for more than 1 minute."
   - name: backend.alerts
     rules:
     - alert: LocalBackendDown
