@@ -15,7 +15,6 @@ logger = logging.getLogger(__name__)
 
 
 RETRY_DELAY = 30
-system_user, created = User.objects.get_or_create(username='system')
 
 
 @shared_task(bind=True, max_retries=None)
@@ -40,12 +39,14 @@ def remove_old_versions(self, data_file_id=None, data_file_version=None):
         num_prev_versions = prev_versions.count()
         logger.info(f"Preparing to delete {num_prev_versions} old versions of file: {repr(data_file)}")
         ids = prev_versions.values_list('id', flat=True)
-        log_context = get_log_context(system_user)
-        delete_summaries(ids, log_context)
-        delete_errors(ids, log_context)
-        delete_records(ids, True, log_context)
-        DataFile.objects.filter(id__in=ids).delete()
-        logger.info(f"Successfully deleted {num_prev_versions} old versions of file: {repr(data_file)}")
+        if len(ids) > 0:
+            system_user, created = User.objects.get_or_create(username='system')
+            log_context = get_log_context(system_user)
+            delete_summaries(ids, log_context)
+            delete_errors(ids, log_context)
+            delete_records(ids, True, log_context)
+            DataFile.objects.filter(id__in=ids).delete()
+            logger.info(f"Successfully deleted {num_prev_versions} old version(s) of file: {repr(data_file)}")
     except Exception as e:
         if self.request.retries == data_file_version:
             logger.exception(f"Failed to delete old versions of file: {data_file_id}.")
@@ -70,6 +71,7 @@ def remove_all_old_versions():
         log(f"Found {num_out_of_range} files with years outside of the range {min_year} to "
             f"{max_year}. These will need manual cleanup!", level='warning')
 
+    system_user, created = User.objects.get_or_create(username='system')
     log_context = get_log_context(system_user)
     for year in range(min_year, max_year + 1):
         for stt in stts:
