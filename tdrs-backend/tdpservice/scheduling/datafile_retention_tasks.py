@@ -60,7 +60,7 @@ def remove_old_versions(self, data_file_id=None, data_file_version=None):
 def remove_all_old_versions():
     """Delete old versions for every file in the database."""
     stts = STT.objects.all()
-    min_year = 2019 # TDP didn't exist before this
+    min_year = 2019  # TDP didn't exist before this
     max_year = datetime.now().year
     sections = DataFile.Section
     quarters = DataFile.Quarter
