@@ -679,7 +679,11 @@ const FRAReports = () => {
     const onSearchError = (e) => console.error(e)
 
     dispatch(
-      getFraSubmissionHistory(formValues, onSearchSuccess, onSearchError)
+      getFraSubmissionHistory(
+        { ...formValues, reportType: getReportTypeLabel() },
+        onSearchSuccess,
+        onSearchError
+      )
     )
   }
 
