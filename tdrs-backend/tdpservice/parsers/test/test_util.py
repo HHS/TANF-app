@@ -197,13 +197,13 @@ def test_run_field_validators_returns_valid_with_dict():
     schema = TanfDataReportSchema(
         document=None,
         fields=[
-            Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3, validators=[
+            Field(item=1, name='first', friendly_name='first', type=FieldType.ALPHA_NUMERIC, startIndex=0, endIndex=3, validators=[
                 passing_validator()
             ]),
-            Field(item=2, name='second', friendly_name='second', type='string', startIndex=3, endIndex=4, validators=[
+            Field(item=2, name='second', friendly_name='second', type=FieldType.ALPHA_NUMERIC, startIndex=3, endIndex=4, validators=[
                 passing_validator()
             ]),
-            Field(item=3, name='third', friendly_name='third', type='string', startIndex=4, endIndex=5, validators=[
+            Field(item=3, name='third', friendly_name='third', type=FieldType.ALPHA_NUMERIC, startIndex=4, endIndex=5, validators=[
                 passing_validator()
             ]),
         ]
@@ -236,13 +236,13 @@ def test_run_field_validators_returns_valid_with_object():
     schema = TanfDataReportSchema(
         document=document,
         fields=[
-            Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3, validators=[
+            Field(item=1, name='first', friendly_name='first', type=FieldType.ALPHA_NUMERIC, startIndex=0, endIndex=3, validators=[
                 passing_validator()
             ]),
-            Field(item=2, name='second', friendly_name='second', type='string', startIndex=3, endIndex=4, validators=[
+            Field(item=2, name='second', friendly_name='second', type=FieldType.ALPHA_NUMERIC, startIndex=3, endIndex=4, validators=[
                 passing_validator()
             ]),
-            Field(item=3, name='third', friendly_name='third', type='string', startIndex=4, endIndex=5, validators=[
+            Field(item=3, name='third', friendly_name='third', type=FieldType.ALPHA_NUMERIC, startIndex=4, endIndex=5, validators=[
                 passing_validator()
             ]),
         ]
@@ -263,14 +263,14 @@ def test_run_field_validators_returns_invalid_with_dict():
     schema = TanfDataReportSchema(
         document=None,
         fields=[
-            Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3, validators=[
+            Field(item=1, name='first', friendly_name='first', type=FieldType.ALPHA_NUMERIC, startIndex=0, endIndex=3, validators=[
                 passing_validator(),
                 failing_validator()
             ]),
-            Field(item=2, name='second', friendly_name='second', type='string', startIndex=3, endIndex=4, validators=[
+            Field(item=2, name='second', friendly_name='second', type=FieldType.ALPHA_NUMERIC, startIndex=3, endIndex=4, validators=[
                 passing_validator()
             ]),
-            Field(item=3, name='third', friendly_name='third', type='string', startIndex=4, endIndex=5, validators=[
+            Field(item=3, name='third', friendly_name='third', type=FieldType.ALPHA_NUMERIC, startIndex=4, endIndex=5, validators=[
                 passing_validator()
             ]),
         ]
@@ -303,14 +303,14 @@ def test_run_field_validators_returns_invalid_with_object():
     schema = TanfDataReportSchema(
         document=document,
         fields=[
-            Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3, validators=[
+            Field(item=1, name='first', friendly_name='first', type=FieldType.ALPHA_NUMERIC, startIndex=0, endIndex=3, validators=[
                 passing_validator(),
                 failing_validator()
             ]),
-            Field(item=2, name='second', friendly_name='second', type='string', startIndex=3, endIndex=4, validators=[
+            Field(item=2, name='second', friendly_name='second', type=FieldType.ALPHA_NUMERIC, startIndex=3, endIndex=4, validators=[
                 passing_validator()
             ]),
-            Field(item=3, name='third', friendly_name='third', type='string', startIndex=4, endIndex=5, validators=[
+            Field(item=3, name='third', friendly_name='third', type=FieldType.ALPHA_NUMERIC, startIndex=4, endIndex=5, validators=[
                 passing_validator()
             ]),
         ]
@@ -340,7 +340,7 @@ def test_field_validators_blank_and_required_returns_error(first, second):
                 item=1,
                 name='first',
                 friendly_name='first',
-                type='string',
+                type=FieldType.ALPHA_NUMERIC,
                 startIndex=0,
                 endIndex=1,
                 required=True,
@@ -352,7 +352,7 @@ def test_field_validators_blank_and_required_returns_error(first, second):
                 item=2,
                 name='second',
                 friendly_name='second',
-                type='string',
+                type=FieldType.ALPHA_NUMERIC,
                 startIndex=1,
                 endIndex=3,
                 required=True,
@@ -388,7 +388,7 @@ def test_field_validators_blank_and_not_required_returns_valid(first, expected_v
                 item=1,
                 name='first',
                 friendly_name='first',
-                type='string',
+                type=FieldType.ALPHA_NUMERIC,
                 startIndex=0,
                 endIndex=3,
                 required=False,
@@ -456,7 +456,7 @@ def test_run_postparsing_validators_returns_frinedly_fieldnames(test_datafile_em
                 item=1,
                 name='FIRST',
                 friendly_name='first',
-                type='string',
+                type=FieldType.ALPHA_NUMERIC,
                 startIndex=0,
                 endIndex=3,
                 required=False,
@@ -466,7 +466,7 @@ def test_run_postparsing_validators_returns_frinedly_fieldnames(test_datafile_em
                 item=2,
                 name='SECOND',
                 friendly_name='second',
-                type='string',
+                type=FieldType.ALPHA_NUMERIC,
                 startIndex=3,
                 endIndex=4,
                 required=False,
