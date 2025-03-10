@@ -1,3 +1,0 @@
-deb https://tdp-nexus.dev.raftlabs.tech/repository/apt-proxy/ bullseye main
-deb https://tdp-nexus.dev.raftlabs.tech/repository/apt-proxy/ bullseye-updates main
-deb https://tdp-nexus.dev.raftlabs.tech/repository/apt-proxy-security/ bullseye-security main
