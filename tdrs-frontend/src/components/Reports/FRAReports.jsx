@@ -705,7 +705,9 @@ const FRAReports = () => {
           ? error_response.detail
           : error_response?.file
             ? error_response.file
-            : null
+            : error_response?.section
+              ? error_response?.section
+              : null
 
       setLocalAlertState({
         active: true,
