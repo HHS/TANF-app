@@ -11,13 +11,20 @@ import { accountCanSelectStt } from '../../selectors/auth'
 import { handlePreview, tryGetUTF8EncodedFile } from '../FileUpload/utils'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
 import Modal from '../Modal'
+import {
+  formatDate,
+  SubmissionSummaryStatusIcon,
+  getErrorReportStatus,
+} from '../SubmissionHistory/helpers'
 
 import {
   getFraSubmissionHistory,
   uploadFraReport,
+  downloadOriginalSubmission,
 } from '../../actions/fraReports'
 import { fetchSttList } from '../../actions/sttList'
 import { DropdownSelect, RadioSelect } from '../Form'
+import { PaginatedComponent } from '../Paginator/Paginator'
 
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
@@ -243,20 +250,18 @@ const UploadForm = ({
     fileInput.init()
   }, [])
 
-  // unused for this PR, affects the test cov threshold
-  // uncommented and properly tested in followup PR #3407
-  // useEffect(() => {
-  //   const trySettingPreview = () => {
-  //     const targetClassName = 'usa-file-input__preview input #fra-file-upload'
-  //     const previewState = handlePreview(file?.name, targetClassName)
-  //     if (!previewState) {
-  //       setTimeout(trySettingPreview, 100)
-  //     }
-  //   }
-  //   if (file?.id) {
-  //     trySettingPreview()
-  //   }
-  // }, [file])
+  useEffect(() => {
+    const trySettingPreview = () => {
+      const targetClassName = '.usa-file-input__target input#fra-file-upload'
+      const previewState = handlePreview(file?.fileName, targetClassName)
+      if (!previewState) {
+        setTimeout(trySettingPreview, 100)
+      }
+    }
+    if (file?.id) {
+      trySettingPreview()
+    }
+  }, [file])
 
   const onFileChanged = async (e) => {
     setError(null)
@@ -385,7 +390,7 @@ const UploadForm = ({
               <Button
                 className="tanf-file-download-btn"
                 type="button"
-                onClick={handleDownload}
+                onClick={() => handleDownload(file)}
               >
                 Download {section}
               </Button>
@@ -407,7 +412,53 @@ const UploadForm = ({
   )
 }
 
-const SubmissionHistory = () => <></>
+const SubmissionHistory = ({ data, sectionName, handleDownload }) => (
+  <table className="usa-table usa-table--striped">
+    <caption>{sectionName} Submission History</caption>
+    {data && data.length > 0 ? (
+      <>
+        <thead>
+          <tr>
+            <th>Submitted</th>
+            <th>File Name</th>
+            <th>Total Errors</th>
+            <th>Status</th>
+            <th>Error Report</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((file) => (
+            <tr>
+              <td>{formatDate(file.createdAt) + ' by ' + file.submittedBy}</td>
+              <td>
+                <button
+                  className="section-download"
+                  onClick={() => handleDownload(file)}
+                >
+                  {file.fileName}
+                </button>
+              </td>
+              <td>{file?.summary?.case_aggregates?.total_errors}</td>
+              <td>
+                <span>
+                  <SubmissionSummaryStatusIcon
+                    status={file.summary ? file.summary.status : 'Pending'}
+                  />
+                </span>
+                {file.summary && file.summary.status
+                  ? file.summary.status
+                  : 'Pending'}
+              </td>
+              <td>{getErrorReportStatus(file)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </>
+    ) : (
+      <span>No data available.</span>
+    )}
+  </table>
+)
 
 const ReportTypeSubtext = ({ reportType, reportTypeLabel }) => {
   let description = ''
@@ -506,9 +557,16 @@ const FRAReports = () => {
     },
   })
 
-  const [selectedFile, setSelectedFile] = useState(null)
+  const fraSubmissionHistory = useSelector(
+    (state) => state.fraReports.submissionHistory
+  )
 
-  // const fraSubmissionHistory = useSelector((state) => state.fraReports)
+  const latestSubmission =
+    fraSubmissionHistory && fraSubmissionHistory.length > 0
+      ? fraSubmissionHistory[0]
+      : null
+
+  const [selectedFile, setSelectedFile] = useState(latestSubmission)
 
   const dispatch = useDispatch()
 
@@ -621,13 +679,17 @@ const FRAReports = () => {
     const onSearchError = (e) => console.error(e)
 
     dispatch(
-      getFraSubmissionHistory(formValues, onSearchSuccess, onSearchError)
+      getFraSubmissionHistory(
+        { ...formValues, reportType: getReportTypeLabel() },
+        onSearchSuccess,
+        onSearchError
+      )
     )
   }
 
   const handleUpload = ({ file: selectedFile }) => {
     const onFileUploadSuccess = () => {
-      setSelectedFile(null) // once we have the latest file in submission history, conditional setting of state in constructor should be sufficient
+      setSelectedFile(null)
       setLocalAlertState({
         active: true,
         type: 'success',
@@ -643,7 +705,9 @@ const FRAReports = () => {
           ? error_response.detail
           : error_response?.file
             ? error_response.file
-            : null
+            : error_response?.section
+              ? error_response?.section
+              : null
 
       setLocalAlertState({
         active: true,
@@ -664,6 +728,10 @@ const FRAReports = () => {
         onFileUploadError
       )
     )
+  }
+
+  const handleDownload = (file) => {
+    dispatch(downloadOriginalSubmission(file))
   }
 
   const getReportTypeLabel = () => {
@@ -695,7 +763,7 @@ const FRAReports = () => {
   }, [])
 
   useEffect(() => {
-    if (sttList.length === 0) {
+    if (sttList && sttList.length === 0) {
       dispatch(fetchSttList())
     }
   }, [dispatch, sttList])
@@ -753,15 +821,27 @@ const FRAReports = () => {
               setUploadError(null)
               setUploadReportToggled(false)
             }}
+            handleDownload={handleDownload}
             setLocalAlertState={setLocalAlertState}
-            file={selectedFile}
+            file={selectedFile || uploadError ? selectedFile : latestSubmission}
             setSelectedFile={setSelectedFile}
             section={getReportTypeLabel()}
             error={uploadError}
             setError={setUploadError}
           />
 
-          <SubmissionHistory />
+          <div
+            className="submission-history-section usa-table-container--scrollable"
+            style={{ maxWidth: '100%' }}
+            tabIndex={0}
+          >
+            <PaginatedComponent pageSize={5} data={fraSubmissionHistory}>
+              <SubmissionHistory
+                sectionName={getReportTypeLabel()}
+                handleDownload={handleDownload}
+              />
+            </PaginatedComponent>
+          </div>
         </>
       )}
 

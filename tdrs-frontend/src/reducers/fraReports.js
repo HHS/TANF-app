@@ -3,6 +3,7 @@ import {
   SET_FRA_SUBMISSION_HISTORY,
   SET_IS_UPLOADING_FRA_REPORT,
 } from '../actions/fraReports'
+import { serializeApiDataFile } from './reports'
 
 const initialState = {
   isLoadingSubmissionHistory: false,
@@ -25,7 +26,9 @@ const fraReports = (state = initialState, action) => {
       const { submissionHistory } = payload
       return {
         ...state,
-        submissionHistory,
+        submissionHistory: submissionHistory
+          ? submissionHistory.map((f) => serializeApiDataFile(f))
+          : null,
       }
     }
     case SET_IS_UPLOADING_FRA_REPORT: {
