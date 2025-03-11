@@ -702,4 +702,192 @@ describe('FRA Reports Page', () => {
       })
     })
   })
+
+  describe('Submission History', () => {
+    const setup = async (submissionHistoryApiResponse = []) => {
+      jest.mock('axios')
+      const mockAxios = axios
+
+      window.HTMLElement.prototype.scrollIntoView = () => {}
+      const state = {
+        ...initialState,
+        auth: {
+          authenticated: true,
+          user: {
+            email: 'hi@bye.com',
+            stt: {
+              id: 2,
+              type: 'state',
+              code: 'AK',
+              name: 'Alaska',
+            },
+            roles: [{ id: 1, name: 'Data Analyst', permission: [] }],
+            account_approval_status: 'Approved',
+          },
+        },
+        fraReports: {
+          isLoadingSubmissionHistory: false,
+          isUploadingFraReport: false,
+          submissionHistory: [],
+        },
+      }
+
+      const store = mockStore(state)
+      const origDispatch = store.dispatch
+      store.dispatch = jest.fn(origDispatch)
+
+      const component = render(
+        <Provider store={store}>
+          <FRAReports />
+        </Provider>
+      )
+
+      const { getByLabelText, getByText } = component
+
+      mockAxios.get.mockResolvedValue({
+        data: submissionHistoryApiResponse,
+      })
+
+      // fill out the form values before clicking search
+      const yearsDropdown = getByLabelText('Fiscal Year (October - September)*')
+      fireEvent.change(yearsDropdown, { target: { value: '2021' } })
+
+      const quarterDropdown = getByLabelText('Quarter*')
+      fireEvent.change(quarterDropdown, { target: { value: 'Q1' } })
+
+      fireEvent.click(getByText(/Search/, { selector: 'button' }))
+
+      await waitFor(() => {
+        expect(
+          getByText(
+            'Alaska - Work Outcomes of TANF Exiters - Fiscal Year 2021 - Quarter 1 (October - December)'
+          )
+        ).toBeInTheDocument()
+        expect(getByText('Submit Report')).toBeInTheDocument()
+      })
+
+      return { ...component, ...store }
+    }
+
+    it('Renders a message when no data is available', async () => {
+      const submissionHistoryState = []
+
+      const { getByText, queryByText, getByLabelText, container, dispatch } =
+        await setup(submissionHistoryState)
+
+      await waitFor(() => {
+        expect(getByText('No data available.')).toBeInTheDocument()
+      })
+    })
+
+    it('Renders a table with the submission history data if available', async () => {
+      const submissionHistoryApiResponse = [
+        {
+          id: 1,
+          original_filename: 'testFile.txt',
+          extension: 'txt',
+          quarter: 'Q1',
+          section: 'Work Outcomes of TANF Exiters',
+          slug: '1234-5-6-7890',
+          year: '2021',
+          s3_version_id: '3210',
+          created_at: '2025-02-07T23:38:58+0000',
+          submitted_by: 'Test Testerson',
+          has_error: false,
+          summary: {
+            status: 'Accepted',
+            case_aggregates: {
+              total_errors: 0,
+            },
+          },
+          latest_reparse_file_meta: '',
+        },
+      ]
+
+      const { getByText, queryByText, getByLabelText, container, dispatch } =
+        await setup(submissionHistoryApiResponse)
+
+      await waitFor(() => {
+        expect(getByText(/by Test Testerson/)).toBeInTheDocument()
+        expect(
+          getByText('testFile.txt', { selector: 'td button' })
+        ).toBeInTheDocument()
+        expect(getByText('0')).toBeInTheDocument()
+        expect(getByText('Accepted')).toBeInTheDocument()
+        expect(getByText('No Errors')).toBeInTheDocument()
+      })
+    })
+
+    it('Renders a paginated table with a page size of 5', async () => {
+      const submissionHistoryApiResponse = []
+
+      for (var i = 0; i < 8; i++) {
+        submissionHistoryApiResponse.push({
+          id: i,
+          original_filename: `testFile${i}.txt`,
+          extension: 'txt',
+          quarter: 'Q1',
+          section: 'Work Outcomes of TANF Exiters',
+          slug: '1234-5-6-7890',
+          year: '2021',
+          s3_version_id: '3210',
+          created_at: '2025-02-07T23:38:58+0000',
+          submitted_by: 'Test Testerson',
+          has_error: false,
+          summary: {
+            status: 'Accepted',
+            case_aggregates: {
+              total_errors: 0,
+            },
+          },
+          latest_reparse_file_meta: '',
+        })
+      }
+
+      const { getByText, queryByText, getByLabelText, container, dispatch } =
+        await setup(submissionHistoryApiResponse)
+
+      await waitFor(() => {
+        expect(
+          getByText('testFile0.txt', { selector: 'td button' })
+        ).toBeInTheDocument()
+        expect(
+          getByText('testFile1.txt', { selector: 'td button' })
+        ).toBeInTheDocument()
+        expect(
+          getByText('testFile2.txt', { selector: 'td button' })
+        ).toBeInTheDocument()
+        expect(
+          getByText('testFile3.txt', { selector: 'td button' })
+        ).toBeInTheDocument()
+        expect(
+          getByText('testFile4.txt', { selector: 'td button' })
+        ).toBeInTheDocument()
+        expect(
+          queryByText('testFile5.txt', { selector: 'td button' })
+        ).not.toBeInTheDocument()
+      })
+
+      fireEvent.click(
+        getByText(/Next/, {
+          selector: 'button span',
+        })
+      )
+
+      await waitFor(() => {
+        expect(
+          getByText('testFile5.txt', { selector: 'td button' })
+        ).toBeInTheDocument()
+        expect(
+          getByText('testFile6.txt', { selector: 'td button' })
+        ).toBeInTheDocument()
+        expect(
+          getByText('testFile7.txt', { selector: 'td button' })
+        ).toBeInTheDocument()
+        expect(
+          queryByText('testFile4.txt', { selector: 'td button' })
+        ).not.toBeInTheDocument()
+      })
+    })
+  })
 })

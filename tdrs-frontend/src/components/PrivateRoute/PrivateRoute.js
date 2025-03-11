@@ -16,6 +16,7 @@ import PermissionGuard from '../PermissionGuard'
 function PrivateRoute({
   children,
   title,
+  subtitle,
   requiredPermissions,
   requiredFeatureFlags,
   requiresApproval,
@@ -49,7 +50,7 @@ function PrivateRoute({
         requiredFeatureFlags={requiredFeatureFlags}
         notAllowedComponent={<Navigate to="/home" />}
       >
-        <PrivateTemplate title={title}>
+        <PrivateTemplate title={title} subtitle={subtitle}>
           {children}
           <IdleTimer />
         </PrivateTemplate>

@@ -91,15 +91,15 @@ export const uploadFraReport =
         }
       )
 
-      // dispatch(
-      //   getFraSubmissionHistory({
-      //     stt,
-      //     reportType,
-      //     fiscalQuarter,
-      //     fiscalYear,
-      //   })
-      // )
-      // or, dispatch the state update if response from upload can contain updated submission history
+      dispatch(
+        getFraSubmissionHistory({
+          stt,
+          reportType,
+          fiscalQuarter,
+          fiscalYear,
+        })
+      )
+
       onSuccess()
     } catch (error) {
       onError(error)
@@ -108,5 +108,31 @@ export const uploadFraReport =
         type: SET_IS_UPLOADING_FRA_REPORT,
         payload: { isUploadingFraReport: false },
       })
+    }
+  }
+
+export const downloadOriginalSubmission =
+  ({ id, fileName }) =>
+  async (dispatch) => {
+    try {
+      if (!id) throw new Error('No id provided to download action')
+
+      const response = await axios.get(
+        `${BACKEND_URL}/data_files/${id}/download/`,
+        { responseType: 'blob' }
+      )
+
+      const data = response.data
+      const url = window.URL.createObjectURL(new Blob([data]))
+      const link = document.createElement('a')
+
+      link.href = url
+      link.setAttribute('download', fileName)
+
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } catch (e) {
+      console.error('error downloading file', e)
     }
   }
