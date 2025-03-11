@@ -69,7 +69,6 @@ class FRAParser(BaseParser):
                 if record:
                     schema = schemas[i]
                     record.datafile = self.datafile
-                    record.stt = self.datafile.stt
 
                     # TODO: update schema.document when document is removed.
                     self.unsaved_records.add_record(hash(row), (record, schema.document), self.current_row_num)
