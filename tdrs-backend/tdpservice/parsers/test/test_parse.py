@@ -1842,14 +1842,14 @@ def test_parse_fra_work_outcome_exiters(request, file, dfs):
                                         program_type=datafile.prog_type)
     parser.parse_and_validate()
 
-    assert TANF_Exiter1.objects.all().count() == 7
+    assert TANF_Exiter1.objects.all().count() == 11
 
     errors = ParserError.objects.filter(file=datafile).order_by("id")
     assert len(errors) == 11
     for e in errors:
         assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert dfs.total_number_of_records_in_file == 7
-    assert dfs.total_number_of_records_created == 7
+    assert dfs.total_number_of_records_in_file == 11
+    assert dfs.total_number_of_records_created == 11
     assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
 @pytest.mark.parametrize("file", [

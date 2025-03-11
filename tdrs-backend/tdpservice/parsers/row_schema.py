@@ -265,12 +265,13 @@ class FRASchema(RowSchema):
         # parse row to model
         record = self.parse_row(row)
 
-        # run category 1 field validators
+        # Run category 1 field validators. Note that even though we are generating cat1 errors the records are still
+        # serialized to the database. This is a requiremnt for the moment because the FRA error report requires access
+        # to fields in records that generated an error.
         fields_are_valid, field_errors = self.run_field_validators(record, generate_error)
 
         is_valid = fields_are_valid
         errors = field_errors
-        record = record if is_valid else None
 
         return SchemaResult(record, is_valid, errors)
 
