@@ -3,6 +3,7 @@
 import uuid
 from django.db import models
 from tdpservice.data_files.models import DataFile
+from tdpservice.stts.models import STT
 
 
 class TANF_Exiter1(models.Model):
@@ -21,6 +22,9 @@ class TANF_Exiter1(models.Model):
         null=True,
         on_delete=models.CASCADE,
         related_name='tanf_exiter_1_parent'
+    )
+    stt = models.ForeignKey(
+        STT, on_delete=models.DO_NOTHING, related_name="te1_stt_ref", blank=False, null=False
     )
 
     RecordType = models.CharField(max_length=25, null=True, blank=False, default='TE1')
