@@ -86,6 +86,9 @@ export const accountIsRegionalStaff = (state) =>
 
 export const accountCanSelectStt = (state) =>
   accountStatusIsApproved(state) &&
-  ['OFA System Admin', 'OFA Admin', 'DIGIT Team'].includes(
-    selectPrimaryUserRole(state)?.name
-  )
+  [
+    'OFA System Admin',
+    'OFA Admin',
+    'DIGIT Team',
+    'OFA Regional Staff',
+  ].includes(selectPrimaryUserRole(state)?.name)

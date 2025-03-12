@@ -7,7 +7,10 @@ import fileTypeChecker from 'file-type-checker'
 import Button from '../Button'
 import STTComboBox from '../STTComboBox'
 import { quarters, constructYears } from './utils'
-import { accountCanSelectStt } from '../../selectors/auth'
+import {
+  accountCanSelectStt,
+  accountIsRegionalStaff,
+} from '../../selectors/auth'
 import { handlePreview, tryGetUTF8EncodedFile } from '../FileUpload/utils'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
 import Modal from '../Modal'
@@ -25,6 +28,7 @@ import {
 import { fetchSttList } from '../../actions/sttList'
 import { DropdownSelect, RadioSelect } from '../Form'
 import { PaginatedComponent } from '../Paginator/Paginator'
+import PermissionGuard from '../PermissionGuard'
 
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
@@ -531,6 +535,7 @@ const FRAReports = () => {
   const user = useSelector((state) => state.auth.user)
   const sttList = useSelector((state) => state?.stts?.sttList)
   const needsSttSelection = useSelector(accountCanSelectStt)
+  const isRegionalStaff = useSelector(accountIsRegionalStaff)
   const userProfileStt = user?.stt?.name
 
   const [temporaryFormState, setTemporaryFormState] = useState({
@@ -802,33 +807,39 @@ const FRAReports = () => {
             reportTypeLabel={getReportTypeLabel()}
           />
 
-          {localAlert.active && (
-            <div
-              ref={alertRef}
-              className={classNames('usa-alert usa-alert--slim', {
-                [`usa-alert--${localAlert.type}`]: true,
-              })}
-            >
-              <div className="usa-alert__body" role="alert">
-                <p className="usa-alert__text">{localAlert.message}</p>
-              </div>
-            </div>
+          {!isRegionalStaff && (
+            <>
+              {localAlert.active && (
+                <div
+                  ref={alertRef}
+                  className={classNames('usa-alert usa-alert--slim', {
+                    [`usa-alert--${localAlert.type}`]: true,
+                  })}
+                >
+                  <div className="usa-alert__body" role="alert">
+                    <p className="usa-alert__text">{localAlert.message}</p>
+                  </div>
+                </div>
+              )}
+              <UploadForm
+                handleUpload={handleUpload}
+                handleCancel={() => {
+                  setSelectedFile(null)
+                  setUploadError(null)
+                  setUploadReportToggled(false)
+                }}
+                handleDownload={handleDownload}
+                setLocalAlertState={setLocalAlertState}
+                file={
+                  selectedFile || uploadError ? selectedFile : latestSubmission
+                }
+                setSelectedFile={setSelectedFile}
+                section={getReportTypeLabel()}
+                error={uploadError}
+                setError={setUploadError}
+              />
+            </>
           )}
-          <UploadForm
-            handleUpload={handleUpload}
-            handleCancel={() => {
-              setSelectedFile(null)
-              setUploadError(null)
-              setUploadReportToggled(false)
-            }}
-            handleDownload={handleDownload}
-            setLocalAlertState={setLocalAlertState}
-            file={selectedFile || uploadError ? selectedFile : latestSubmission}
-            setSelectedFile={setSelectedFile}
-            section={getReportTypeLabel()}
-            error={uploadError}
-            setError={setUploadError}
-          />
 
           <div
             className="submission-history-section usa-table-container--scrollable"
