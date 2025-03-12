@@ -38,7 +38,7 @@ _Add additional useful information, such as related issues and functionality tha
 
 
 **Supporting Documentation:**
-_Please include any relevant log snippets/files/screen shots_
+_Please include any relevant log snippets/files/screen shots. Please coordinate with @ADPennington on files for testing before picking up the work._
 
 - _Doc 1_
 - _Doc 2_
