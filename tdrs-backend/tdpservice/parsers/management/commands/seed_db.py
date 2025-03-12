@@ -78,7 +78,7 @@ def make_line(schemaMgr, section, year, qtr):
 
     for field in row_schema.fields:
         line += validValues(row_schema, field, year, qtr)
-        print(f"Field: {field.name}, field length {field.endIndex - field.startIndex} Value: {line}")
+        print(f"Field: {field.name}, field length {field.position} Value: {line}")
     return line + '\n'
 
 def make_HT(schemaMgr, prog_type, section, year, quarter, stt):

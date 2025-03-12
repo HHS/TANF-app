@@ -2,7 +2,7 @@
 name: Research planning issue template
 about: Template for research planning issues
 title: "[Research Planning] "
-labels: "Research & Design"
+labels: Research & Design
 assignees: ''
 
 ---
