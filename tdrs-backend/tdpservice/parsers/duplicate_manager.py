@@ -2,6 +2,7 @@
 from django.conf import settings
 from enum import IntEnum
 from .models import ParserErrorCategoryChoices
+from tdpservice.parsers.dataclasses import RawRow
 
 class ErrorLevel(IntEnum):
     """Error level enumerations for precedence."""
@@ -117,12 +118,12 @@ class CaseDuplicateDetector:
                 err_msg += f"{item_and_name}, "
         return err_msg
 
-    def add_case_member(self, record, schema, line, line_number):
+    def add_case_member(self, record, schema, row: RawRow, line_number):
         """Add case member and generate errors if needed.
 
         @param record: a Django model representing a datafile record
         @param schema: the schema from which the record was created
-        @param line: the raw string line representing the record
+        @param row: the RawRow parsed from the decoder
         @param line_number: the line number the record was generated from in the datafile
         """
         # Add all records detector receives to id dictionary. That way if a line that has more than one record created
@@ -137,7 +138,7 @@ class CaseDuplicateDetector:
             has_precedence = False
             is_new_max_precedence = False
 
-            line_hash, partial_hash = schema.generate_hashes_func(line, record)
+            line_hash, partial_hash = schema.generate_hashes_func(row, record)
             should_skip_partial_dup = schema.should_skip_partial_dup_func(record)
 
             if line_hash in self.record_hashes:
@@ -175,19 +176,19 @@ class DuplicateManager:
         # CaseDuplicateDetectors to get their errors which is a serious performance boost.
         ################################################################################################################
 
-    def add_record(self, record, case_hash, schema, line, line_number):
+    def add_record(self, record, case_hash, schema, row: RawRow, line_number):
         """Add record to CaseDuplicateDetector and return whether the record's case has errors.
 
         @param record: a Django model representing a datafile record
         @param case_hash: a hash value representing the @record's unique case
         @param schema: the schema from which the record was created
-        @param line: the raw string from the datafile representing the record
+        @param row: the RawRow the decoder parsed from the datafile
         @param line_number: the line number the record was generated from in the datafile
         """
         if case_hash not in self.case_duplicate_detectors:
             case_duplicate_detector = CaseDuplicateDetector(case_hash, self.generated_errors, self.generate_error)
             self.case_duplicate_detectors[case_hash] = case_duplicate_detector
-        self.case_duplicate_detectors[case_hash].add_case_member(record, schema, line, line_number)
+        self.case_duplicate_detectors[case_hash].add_case_member(record, schema, row, line_number)
 
     def get_generated_errors(self):
         """Return all errors from all CaseDuplicateDetectors."""

@@ -1,15 +1,16 @@
-"""Schema for HEADER row of all submission types."""
+"""Schema for T4 record type."""
 
+from tdpservice.parsers.dataclasses import FieldType
 from tdpservice.parsers.transforms import zero_pad
 from tdpservice.parsers.fields import Field, TransformField
-from tdpservice.parsers.row_schema import RowSchema
+from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.search_indexes.documents.tanf import TANF_T4DataSubmissionDocument
 from tdpservice.parsers.util import generate_t1_t4_hashes, get_t1_t4_partial_hash_members
 
 
 t4 = [
-    RowSchema(
+    TanfDataReportSchema(
         record_type="T4",
         document=TANF_T4DataSubmissionDocument(),
         generate_hashes_func=generate_t1_t4_hashes,
@@ -28,7 +29,7 @@ t4 = [
                 item="0",
                 name="RecordType",
                 friendly_name="Record Type",
-                type="string",
+                type=FieldType.ALPHA_NUMERIC,
                 startIndex=0,
                 endIndex=2,
                 required=True,
@@ -38,7 +39,7 @@ t4 = [
                 item="4",
                 name="RPT_MONTH_YEAR",
                 friendly_name="Reporting Year and Month",
-                type="number",
+                type=FieldType.NUMERIC,
                 startIndex=2,
                 endIndex=8,
                 required=True,
@@ -51,7 +52,7 @@ t4 = [
                 item="6",
                 name="CASE_NUMBER",
                 friendly_name="Case Number",
-                type="string",
+                type=FieldType.ALPHA_NUMERIC,
                 startIndex=8,
                 endIndex=19,
                 required=True,
@@ -62,7 +63,7 @@ t4 = [
                 item="2",
                 name="COUNTY_FIPS_CODE",
                 friendly_name="County FIPS code",
-                type="string",
+                type=FieldType.ALPHA_NUMERIC,
                 startIndex=19,
                 endIndex=22,
                 required=True,
@@ -72,7 +73,7 @@ t4 = [
                 item="5",
                 name="STRATUM",
                 friendly_name="Stratum",
-                type="string",
+                type=FieldType.ALPHA_NUMERIC,
                 startIndex=22,
                 endIndex=24,
                 required=False,
@@ -82,7 +83,7 @@ t4 = [
                 item="7",
                 name="ZIP_CODE",
                 friendly_name="ZIP Code",
-                type="string",
+                type=FieldType.ALPHA_NUMERIC,
                 startIndex=24,
                 endIndex=29,
                 required=True,
@@ -92,7 +93,7 @@ t4 = [
                 item="8",
                 name="DISPOSITION",
                 friendly_name="Disposition",
-                type="number",
+                type=FieldType.NUMERIC,
                 startIndex=29,
                 endIndex=30,
                 required=True,
@@ -102,7 +103,7 @@ t4 = [
                 item="9",
                 name="CLOSURE_REASON",
                 friendly_name="Reason for Closure",
-                type="string",
+                type=FieldType.ALPHA_NUMERIC,
                 startIndex=30,
                 endIndex=32,
                 required=True,
@@ -117,7 +118,7 @@ t4 = [
                 item="10",
                 name="REC_SUB_HOUSING",
                 friendly_name="Received Subsidized Housing",
-                type="number",
+                type=FieldType.NUMERIC,
                 startIndex=32,
                 endIndex=33,
                 required=True,
@@ -127,7 +128,7 @@ t4 = [
                 item="11",
                 name="REC_MED_ASSIST",
                 friendly_name="Received Medical Assistance",
-                type="number",
+                type=FieldType.NUMERIC,
                 startIndex=33,
                 endIndex=34,
                 required=True,
@@ -137,7 +138,7 @@ t4 = [
                 item="12",
                 name="REC_FOOD_STAMPS",
                 friendly_name="Received SNAP Assistance",
-                type="number",
+                type=FieldType.NUMERIC,
                 startIndex=34,
                 endIndex=35,
                 required=True,
@@ -147,7 +148,7 @@ t4 = [
                 item="13",
                 name="REC_SUB_CC",
                 friendly_name="Received Subsidized Child Care",
-                type="number",
+                type=FieldType.NUMERIC,
                 startIndex=35,
                 endIndex=36,
                 required=True,
@@ -157,7 +158,7 @@ t4 = [
                 item="-1",
                 name="BLANK",
                 friendly_name="blank",
-                type="string",
+                type=FieldType.ALPHA_NUMERIC,
                 startIndex=36,
                 endIndex=71,
                 required=False,

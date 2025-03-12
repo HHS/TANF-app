@@ -2,6 +2,7 @@
 from .models import ParserError
 from django.contrib.admin.models import ADDITION
 from django.contrib.contenttypes.models import ContentType
+from tdpservice.parsers.dataclasses import RawRow
 from tdpservice.data_files.models import DataFile
 from tdpservice.core.utils import log
 from datetime import datetime
@@ -110,13 +111,6 @@ def make_generate_case_consistency_parser_error(datafile):
     return generate
 
 
-def contains_encrypted_indicator(line, encryption_field):
-    """Determine if line contains encryption indicator."""
-    if encryption_field is not None:
-        return encryption_field.parse_value(line) == "E"
-    return False
-
-
 def clean_options_string(options, remove=['\'', '"', ' ']):
     """Return a prettied-up version of an options array."""
     options_str = ', '.join(str(o) for o in options)
@@ -217,7 +211,7 @@ class SortedRecords:
     """Maintains a dict sorted by hash_val and model type.
 
     Note, hash_val = `hash(str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER)` for section 1 and 2 files; but for section
-    3 and 4 files hash_val = `hash(line)`.
+    3 and 4 files hash_val = `hash(row)`.
     """
 
     def __init__(self, section):
@@ -287,17 +281,17 @@ class SortedRecords:
                 return True and case_hash not in self.serialized_cases
         return False
 
-def generate_t1_t4_hashes(line, record):
+def generate_t1_t4_hashes(row: RawRow, record):
     """Return hashes for duplicate and partial duplicate detection for T1 & T4 records."""
     logger.debug(f"Partial Hash Field Values: for T1/T4: {record.RecordType} {str(record.RPT_MONTH_YEAR)} ")
-    return hash(line), hash(record.RecordType + str(record.RPT_MONTH_YEAR or '') + str(record.CASE_NUMBER or ''))
+    return hash(row), hash(record.RecordType + str(record.RPT_MONTH_YEAR or '') + str(record.CASE_NUMBER or ''))
 
-def generate_t2_t3_t5_hashes(line, record):
+def generate_t2_t3_t5_hashes(row: RawRow, record):
     """Return hashes for duplicate and partial duplicate detection for T2 & T3 & T5 records."""
     logger.debug(f"Partial Hash Field Values: for T2/T3/T5: {record.RecordType} {str(record.RPT_MONTH_YEAR)} ")
-    return hash(line), hash(record.RecordType + str(record.RPT_MONTH_YEAR or '') + str(record.CASE_NUMBER or '') +
-                            str(record.FAMILY_AFFILIATION or '') + str(record.DATE_OF_BIRTH or '') +
-                            str(record.SSN or ''))
+    return hash(row), hash(record.RecordType + str(record.RPT_MONTH_YEAR or '') + str(record.CASE_NUMBER or '') +
+                           str(record.FAMILY_AFFILIATION or '') + str(record.DATE_OF_BIRTH or '') +
+                           str(record.SSN or ''))
 
 def get_t1_t4_partial_hash_members():
     """Return field names used to generate t1/t4 partial hashes."""
