@@ -1,9 +1,9 @@
-"""Test the methods of RowSchema to ensure parsing and validation work in all individual cases."""
+"""Test the methods of TanfDataReportSchema to ensure parsing and validation work in all individual cases."""
 
 import pytest
 from datetime import datetime
 from ..fields import Field
-from ..row_schema import RowSchema
+from ..row_schema import TanfDataReportSchema
 from ..util import (
     make_generate_parser_error,
     create_test_datafile,
@@ -12,6 +12,7 @@ from ..util import (
     generate_t2_t3_t5_hashes)
 from ..validators.category3 import ifThenAlso
 from ..validators.util import deprecate_call, deprecate_validator, make_validator
+from tdpservice.parsers.dataclasses import FieldType, RawRow
 import logging
 
 def passing_validator():
@@ -48,7 +49,7 @@ def validator_to_deprecate():
 def test_deprecate_validator():
     """Test completely deprecated validator."""
     line = '12345'
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=None,
         preparsing_validators=[
             deprecated_validator()
@@ -67,7 +68,7 @@ def test_deprecate_validator():
 def test_deprecate_call():
     """Test deprecated invocation of a validator."""
     line = '12345'
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=None,
         preparsing_validators=[
             deprecate_call(validator_to_deprecate()),
@@ -87,7 +88,7 @@ def test_deprecate_call():
 def test_run_preparsing_validators_returns_valid():
     """Test run_preparsing_validators executes all preparsing_validators provided in schema."""
     line = '12345'
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=None,
         preparsing_validators=[
             passing_validator()
@@ -102,7 +103,7 @@ def test_run_preparsing_validators_returns_valid():
 def test_run_preparsing_validators_returns_invalid_and_errors():
     """Test that run_preparsing_validators executes all preparsing_validators provided in schema and returns errors."""
     line = '12345'
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=None,
         preparsing_validators=[
             passing_validator(),
@@ -118,18 +119,25 @@ def test_run_preparsing_validators_returns_invalid_and_errors():
 def test_parse_line_parses_line_from_schema_to_dict():
     """Test that parse_line parses a string into a dict given start and end indices for all fields."""
     line = '12345001'
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=None,
         fields=[
-            Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3),
-            Field(item=2, name='second', friendly_name='second', type='string', startIndex=3, endIndex=4),
-            Field(item=3, name='third', friendly_name='third', type='string', startIndex=4, endIndex=5),
-            Field(item=4, name='fourth', friendly_name='fourth', type='number', startIndex=5, endIndex=7),
-            Field(item=5, name='fifth', friendly_name='fifth', type='number', startIndex=7, endIndex=8),
+            Field(item=1, name='first', friendly_name='first', type=FieldType.ALPHA_NUMERIC,
+                  startIndex=0, endIndex=3),
+            Field(item=2, name='second', friendly_name='second', type=FieldType.ALPHA_NUMERIC,
+                  startIndex=3, endIndex=4),
+            Field(item=3, name='third', friendly_name='third', type=FieldType.ALPHA_NUMERIC,
+                  startIndex=4, endIndex=5),
+            Field(item=4, name='fourth', friendly_name='fourth', type=FieldType.NUMERIC,
+                  startIndex=5, endIndex=7),
+            Field(item=5, name='fifth', friendly_name='fifth', type=FieldType.NUMERIC,
+                  startIndex=7, endIndex=8),
         ]
     )
 
-    record = schema.parse_line(line)
+    length = len(line)
+    row = RawRow(data=line, raw_len=length, decoded_len=length, row_num=1, record_type="")
+    record = schema.parse_row(row)
 
     assert record['first'] == '123'
     assert record['second'] == '4'
@@ -152,18 +160,25 @@ def test_parse_line_parses_line_from_schema_to_object():
             model = TestModel
 
     line = '12345001'
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=TestDocument(),
         fields=[
-            Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3),
-            Field(item=2, name='second', friendly_name='second', type='string', startIndex=3, endIndex=4),
-            Field(item=3, name='third', friendly_name='third', type='string', startIndex=4, endIndex=5),
-            Field(item=4, name='fourth', friendly_name='fourth', type='number', startIndex=5, endIndex=7),
-            Field(item=5, name='fifth', friendly_name='fifth', type='number', startIndex=7, endIndex=8),
+            Field(item=1, name='first', friendly_name='first', type=FieldType.ALPHA_NUMERIC,
+                  startIndex=0, endIndex=3),
+            Field(item=2, name='second', friendly_name='second', type=FieldType.ALPHA_NUMERIC,
+                  startIndex=3, endIndex=4),
+            Field(item=3, name='third', friendly_name='third', type=FieldType.ALPHA_NUMERIC,
+                  startIndex=4, endIndex=5),
+            Field(item=4, name='fourth', friendly_name='fourth', type=FieldType.NUMERIC,
+                  startIndex=5, endIndex=7),
+            Field(item=5, name='fifth', friendly_name='fifth', type=FieldType.NUMERIC,
+                  startIndex=7, endIndex=8),
         ]
     )
 
-    record = schema.parse_line(line)
+    length = len(line)
+    row = RawRow(data=line, raw_len=length, decoded_len=length, row_num=1, record_type="")
+    record = schema.parse_row(row)
 
     assert record.first == '123'
     assert record.second == '4'
@@ -179,18 +194,21 @@ def test_run_field_validators_returns_valid_with_dict():
         'second': '4',
         'third': '5'
     }
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=None,
         fields=[
-            Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3, validators=[
-                passing_validator()
-            ]),
-            Field(item=2, name='second', friendly_name='second', type='string', startIndex=3, endIndex=4, validators=[
-                passing_validator()
-            ]),
-            Field(item=3, name='third', friendly_name='third', type='string', startIndex=4, endIndex=5, validators=[
-                passing_validator()
-            ]),
+            Field(item=1, name='first', friendly_name='first', type=FieldType.ALPHA_NUMERIC,
+                  startIndex=0, endIndex=3, validators=[
+                      passing_validator()
+                      ]),
+            Field(item=2, name='second', friendly_name='second', type=FieldType.ALPHA_NUMERIC,
+                  startIndex=3, endIndex=4, validators=[
+                      passing_validator()
+                      ]),
+            Field(item=3, name='third', friendly_name='third', type=FieldType.ALPHA_NUMERIC,
+                  startIndex=4, endIndex=5, validators=[
+                      passing_validator()
+                      ]),
         ]
     )
 
@@ -218,18 +236,21 @@ def test_run_field_validators_returns_valid_with_object():
     document = TestDocument()
     document.Django.model = instance
 
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=document,
         fields=[
-            Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3, validators=[
-                passing_validator()
-            ]),
-            Field(item=2, name='second', friendly_name='second', type='string', startIndex=3, endIndex=4, validators=[
-                passing_validator()
-            ]),
-            Field(item=3, name='third', friendly_name='third', type='string', startIndex=4, endIndex=5, validators=[
-                passing_validator()
-            ]),
+            Field(item=1, name='first', friendly_name='first', type=FieldType.ALPHA_NUMERIC,
+                  startIndex=0, endIndex=3, validators=[
+                      passing_validator()
+                      ]),
+            Field(item=2, name='second', friendly_name='second', type=FieldType.ALPHA_NUMERIC,
+                  startIndex=3, endIndex=4, validators=[
+                      passing_validator()
+                      ]),
+            Field(item=3, name='third', friendly_name='third', type=FieldType.ALPHA_NUMERIC,
+                  startIndex=4, endIndex=5, validators=[
+                      passing_validator()
+                      ]),
         ]
     )
 
@@ -245,19 +266,22 @@ def test_run_field_validators_returns_invalid_with_dict():
         'second': '4',
         'third': '5'
     }
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=None,
         fields=[
-            Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3, validators=[
-                passing_validator(),
-                failing_validator()
-            ]),
-            Field(item=2, name='second', friendly_name='second', type='string', startIndex=3, endIndex=4, validators=[
-                passing_validator()
-            ]),
-            Field(item=3, name='third', friendly_name='third', type='string', startIndex=4, endIndex=5, validators=[
-                passing_validator()
-            ]),
+            Field(item=1, name='first', friendly_name='first', type=FieldType.ALPHA_NUMERIC,
+                  startIndex=0, endIndex=3, validators=[
+                      passing_validator(),
+                      failing_validator()
+                      ]),
+            Field(item=2, name='second', friendly_name='second', type=FieldType.ALPHA_NUMERIC,
+                  startIndex=3, endIndex=4, validators=[
+                      passing_validator()
+                      ]),
+            Field(item=3, name='third', friendly_name='third', type=FieldType.ALPHA_NUMERIC,
+                  startIndex=4, endIndex=5, validators=[
+                      passing_validator()
+                      ]),
         ]
     )
 
@@ -285,19 +309,22 @@ def test_run_field_validators_returns_invalid_with_object():
     document = TestDocument()
     document.Django.model = instance
 
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=document,
         fields=[
-            Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3, validators=[
-                passing_validator(),
-                failing_validator()
-            ]),
-            Field(item=2, name='second', friendly_name='second', type='string', startIndex=3, endIndex=4, validators=[
-                passing_validator()
-            ]),
-            Field(item=3, name='third', friendly_name='third', type='string', startIndex=4, endIndex=5, validators=[
-                passing_validator()
-            ]),
+            Field(item=1, name='first', friendly_name='first', type=FieldType.ALPHA_NUMERIC,
+                  startIndex=0, endIndex=3, validators=[
+                      passing_validator(),
+                      failing_validator()
+                      ]),
+            Field(item=2, name='second', friendly_name='second', type=FieldType.ALPHA_NUMERIC,
+                  startIndex=3, endIndex=4, validators=[
+                      passing_validator()
+                      ]),
+            Field(item=3, name='third', friendly_name='third', type=FieldType.ALPHA_NUMERIC,
+                  startIndex=4, endIndex=5, validators=[
+                      passing_validator()
+                      ]),
         ]
     )
 
@@ -318,14 +345,14 @@ def test_field_validators_blank_and_required_returns_error(first, second):
         'first': first,
         'second': second,
     }
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=None,
         fields=[
             Field(
                 item=1,
                 name='first',
                 friendly_name='first',
-                type='string',
+                type=FieldType.ALPHA_NUMERIC,
                 startIndex=0,
                 endIndex=1,
                 required=True,
@@ -337,7 +364,7 @@ def test_field_validators_blank_and_required_returns_error(first, second):
                 item=2,
                 name='second',
                 friendly_name='second',
-                type='string',
+                type=FieldType.ALPHA_NUMERIC,
                 startIndex=1,
                 endIndex=3,
                 required=True,
@@ -366,14 +393,14 @@ def test_field_validators_blank_and_not_required_returns_valid(first, expected_v
     instance = {
         'first': first,
     }
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=None,
         fields=[
             Field(
                 item=1,
                 name='first',
                 friendly_name='first',
-                type='string',
+                type=FieldType.ALPHA_NUMERIC,
                 startIndex=0,
                 endIndex=3,
                 required=False,
@@ -393,7 +420,7 @@ def test_field_validators_blank_and_not_required_returns_valid(first, expected_v
 def test_run_postparsing_validators_returns_valid():
     """Test run_postparsing_validators executes all postparsing_validators provided in schema."""
     instance = {}
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=None,
         postparsing_validators=[
             passing_validator()
@@ -408,7 +435,7 @@ def test_run_postparsing_validators_returns_valid():
 def test_run_postparsing_validators_returns_invalid_and_errors():
     """Test run_postparsing_validators executes all postparsing_validators provided in schema and returns errors."""
     instance = {}
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=None,
         postparsing_validators=[
             passing_validator(),
@@ -430,7 +457,7 @@ def test_datafile_empty_file(stt_user, stt):
 def test_run_postparsing_validators_returns_frinedly_fieldnames(test_datafile_empty_file):
     """Test run_postparsing_validators executes all postparsing_validators provided in schema."""
     instance = {}
-    schema = RowSchema(
+    schema = TanfDataReportSchema(
         document=None,
         postparsing_validators=[
             ifThenAlso("FIRST", passing_validator(),
@@ -441,7 +468,7 @@ def test_run_postparsing_validators_returns_frinedly_fieldnames(test_datafile_em
                 item=1,
                 name='FIRST',
                 friendly_name='first',
-                type='string',
+                type=FieldType.ALPHA_NUMERIC,
                 startIndex=0,
                 endIndex=3,
                 required=False,
@@ -451,7 +478,7 @@ def test_run_postparsing_validators_returns_frinedly_fieldnames(test_datafile_em
                 item=2,
                 name='SECOND',
                 friendly_name='second',
-                type='string',
+                type=FieldType.ALPHA_NUMERIC,
                 startIndex=3,
                 endIndex=4,
                 required=False,
@@ -464,7 +491,10 @@ def test_run_postparsing_validators_returns_frinedly_fieldnames(test_datafile_em
         test_datafile_empty_file, 10
     ))
     assert is_valid is False
-    assert errors[0].fields_json == {'friendly_name': {'FIRST': 'first', 'SECOND': 'second'}}
+    assert errors[0].fields_json == {
+        "friendly_name": {"FIRST": "first", "SECOND": "second"},
+        "item_numbers": {"FIRST": 1, "SECOND": 2},
+    }
     assert errors[0].error_message == "Since Item 1 (first) is None, then Item 2 (second) None Value is not valid."
 
 

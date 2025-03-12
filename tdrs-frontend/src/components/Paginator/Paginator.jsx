@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
@@ -101,3 +101,30 @@ Paginator.propTypes = {
 }
 
 export default Paginator
+
+const PaginatedComponent = ({ pageSize, data, children }) => {
+  const [pageNumber, setPageNumber] = useState(1)
+
+  const numPages =
+    data && data.length > pageSize ? Math.ceil(data.length / pageSize) : 1
+  const pageStart = (pageNumber - 1) * pageSize
+  const pageEnd =
+    data && data.length ? Math.min(data.length, pageStart + pageSize) : 1
+
+  const slicedData = data && data.length ? data.slice(pageStart, pageEnd) : null
+
+  return (
+    <>
+      {React.cloneElement(children, { data: slicedData })}
+      {numPages > 1 && (
+        <Paginator
+          onChange={(page) => setPageNumber(page)}
+          selected={pageNumber}
+          pages={numPages}
+        />
+      )}
+    </>
+  )
+}
+
+export { PaginatedComponent }

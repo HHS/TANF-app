@@ -1,6 +1,5 @@
 """TANF/SSP/Tribal parser class."""
 
-from dataclasses import dataclass
 from django.conf import settings
 from django.db.utils import DatabaseError
 from elasticsearch.exceptions import ElasticsearchException
@@ -8,7 +7,7 @@ import logging
 from tdpservice.parsers import schema_defs
 from tdpservice.parsers.base_parser import BaseParser
 from tdpservice.parsers.case_consistency_validator import CaseConsistencyValidator
-from tdpservice.parsers.decoders import Position
+from tdpservice.parsers.dataclasses import HeaderResult, Position
 from tdpservice.parsers.models import ParserErrorCategoryChoices
 from tdpservice.parsers.schema_defs.utils import ProgramManager
 from tdpservice.parsers.util import log_parser_exception, make_generate_case_consistency_parser_error, \
@@ -22,16 +21,6 @@ logger = logging.getLogger(__name__)
 
 HEADER_POSITION = Position(0, 6)
 TRAILER_POSITION = Position(0, 7)
-
-
-@dataclass
-class HeaderResult:
-    """Header validation result class."""
-
-    is_valid: bool
-    header: dict | None = None
-    program_type: str | None = None
-    is_encrypted: bool = False
 
 
 class TanfDataReportParser(BaseParser):
@@ -66,7 +55,7 @@ class TanfDataReportParser(BaseParser):
         offset = 0
         case_hash = None
         for row in self.decoder.decode():
-            offset += len(row)
+            offset += row.raw_length()
             self.current_row = row
             self.current_row_num = self.decoder.current_row_num
 
@@ -125,7 +114,7 @@ class TanfDataReportParser(BaseParser):
                     should_remove, case_hash_to_remove, case_hash = self.case_consistency_validator.add_record(
                         record,
                         schema,
-                        row.raw_data,
+                        row,
                         self.current_row_num,
                         record_has_errors
                     )
@@ -196,8 +185,7 @@ class TanfDataReportParser(BaseParser):
         # parse & validate header
         header_row = self.decoder.get_header()
         header, header_is_valid, header_errors = schema_defs.header.parse_and_validate(
-            # TODO: just pass header_row when schemas and fields are updated to accept it.
-            header_row.raw_data,
+            header_row,
             make_generate_file_precheck_parser_error(self.datafile, 1)
         )
         if not header_is_valid:
@@ -215,8 +203,7 @@ class TanfDataReportParser(BaseParser):
             self.bulk_create_errors(flush=True)
 
         # Grab important fields from header
-        # TODO: just pass header_row when schemas and fields are updated to accept it.
-        field_values = schema_defs.header.get_field_values_by_names(header_row.raw_data,
+        field_values = schema_defs.header.get_field_values_by_names(header_row,
                                                                     {"encryption", "tribe_code", "state_fips"})
         is_encrypted = field_values["encryption"] == "E"
         is_tribal = not value_is_empty(field_values["tribe_code"], 3, extra_vals={'0'*3})
@@ -295,8 +282,7 @@ class TanfDataReportParser(BaseParser):
             self._generate_trailer_errors(errors)
         if self.trailer_count == 1 or is_last_line:
             record, trailer_is_valid, trailer_errors = schema_defs.trailer.parse_and_validate(
-                # TODO: this should take just current_row when schema/field is updated in follow on work.
-                self.current_row.raw_data,
+                self.current_row,
                 make_generate_parser_error(self.datafile, self.current_row_num)
             )
             self._generate_trailer_errors(trailer_errors)

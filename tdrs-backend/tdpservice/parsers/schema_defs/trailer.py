@@ -1,12 +1,12 @@
 """Schema for TRAILER row of all submission types."""
 
-
+from tdpservice.parsers.dataclasses import FieldType
 from tdpservice.parsers.fields import Field
-from tdpservice.parsers.row_schema import RowSchema
+from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.validators import category1, category2
 
 
-trailer = RowSchema(
+trailer = TanfDataReportSchema(
     record_type="TRAILER",
     document=None,
     preparsing_validators=[
@@ -21,7 +21,7 @@ trailer = RowSchema(
             item="1",
             name='title',
             friendly_name='title',
-            type='string',
+            type=FieldType.ALPHA_NUMERIC,
             startIndex=0,
             endIndex=7,
             required=True,
@@ -33,7 +33,7 @@ trailer = RowSchema(
             item="2",
             name='record_count',
             friendly_name='record count',
-            type='number',
+            type=FieldType.NUMERIC,
             startIndex=7,
             endIndex=14,
             required=True,
@@ -45,7 +45,7 @@ trailer = RowSchema(
             item="-1",
             name='blank',
             friendly_name='blank',
-            type='string',
+            type=FieldType.ALPHA_NUMERIC,
             startIndex=14,
             endIndex=23,
             required=False,

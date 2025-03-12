@@ -3,8 +3,9 @@
 import datetime
 import logging
 from tdpservice.parsers.util import get_record_value_by_field_name
-from . import base
-from .util import Result, ValidationErrorArgs, validator, make_validator, evaluate_all
+from tdpservice.parsers.validators import base
+from tdpservice.parsers.validators.util import Result, validator, make_validator, evaluate_all
+from tdpservice.parsers.dataclasses import ValidationErrorArgs
 
 logger = logging.getLogger(__name__)
 
