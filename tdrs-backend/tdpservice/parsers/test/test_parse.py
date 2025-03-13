@@ -1832,7 +1832,7 @@ def test_parse_fra_work_outcome_exiters(request, file, dfs):
     """Test parsing FRA Work Outcome Exiters files."""
     datafile = request.getfixturevalue(file)
     datafile.year = 2024
-    datafile.quarter = 'Q1'
+    datafile.quarter = 'Q2'
 
     dfs.datafile = datafile
     dfs.save()
@@ -1845,7 +1845,7 @@ def test_parse_fra_work_outcome_exiters(request, file, dfs):
     assert TANF_Exiter1.objects.all().count() == 7
 
     errors = ParserError.objects.filter(file=datafile).order_by("id")
-    assert len(errors) == 11
+    assert errors.count() == 14
     for e in errors:
         assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert dfs.total_number_of_records_in_file == 7
