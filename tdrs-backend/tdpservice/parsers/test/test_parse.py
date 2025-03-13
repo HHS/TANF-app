@@ -1832,7 +1832,7 @@ def test_parse_fra_work_outcome_exiters(request, file, dfs):
     """Test parsing FRA Work Outcome Exiters files."""
     datafile = request.getfixturevalue(file)
     datafile.year = 2024
-    datafile.quarter = 'Q1'
+    datafile.quarter = 'Q2'
 
     dfs.datafile = datafile
     dfs.save()
@@ -1845,7 +1845,7 @@ def test_parse_fra_work_outcome_exiters(request, file, dfs):
     assert TANF_Exiter1.objects.all().count() == 11
 
     errors = ParserError.objects.filter(file=datafile).order_by("id")
-    assert len(errors) == 11
+    assert errors.count() == 14
     for e in errors:
         assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert dfs.total_number_of_records_in_file == 11
@@ -1905,3 +1905,31 @@ def test_parse_fra_empty_first_row(request, file, dfs):
     for e in errors:
         assert e.error_message == "File does not begin with FRA data."
         assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
+
+
+@pytest.mark.parametrize("file", [
+    ('fra_ofa_test_csv'),
+    ('fra_ofa_test_xlsx'),
+])
+@pytest.mark.django_db()
+def test_parse_fra_ofa_test_cases(request, file, dfs):
+    """Test parsing FRA files with an empty first row/no header data."""
+    datafile = request.getfixturevalue(file)
+    datafile.year = 2025
+    datafile.quarter = 'Q3'
+
+    dfs.datafile = datafile
+    dfs.save()
+
+    parser = ParserFactory.get_instance(datafile=datafile, dfs=dfs,
+                                        section=datafile.section,
+                                        program_type=datafile.prog_type)
+    parser.parse_and_validate()
+
+    errors = ParserError.objects.filter(file=datafile).order_by("id")
+    for e in errors:
+        assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
+        print(e.row_number, e.error_message)
+
+    assert errors.count() == 26
+    assert TANF_Exiter1.objects.all().count() == 12

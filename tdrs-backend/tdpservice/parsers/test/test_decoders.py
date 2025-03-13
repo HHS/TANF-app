@@ -25,7 +25,7 @@ def test_csv_decoder(fra_csv):
     first_row = next(decoder.decode())
     assert type(first_row) == TupleRow
     assert type(first_row.data) == tuple
-    assert first_row.data == ("202401", "446412419")
+    assert first_row.data == ("202401", "946412419")
 
 @pytest.mark.django_db
 def test_xlsx_decoder(fra_xlsx):
@@ -36,7 +36,7 @@ def test_xlsx_decoder(fra_xlsx):
     first_row = next(decoder.decode())
     assert type(first_row) == TupleRow
     assert type(first_row.data) == tuple
-    assert first_row.data == (202401, 446412419)
+    assert first_row.data == (202401, 946412419)
 
 @pytest.mark.django_db
 def test_empty_file_decoder(empty_file):

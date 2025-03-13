@@ -102,11 +102,14 @@ class DataFileViewSet(ModelViewSet):
                 DataFile.Section.FRA_SECONDRY_SCHOOL_ATTAINMENT,
                 DataFile.Section.FRA_SUPPLEMENT_WORK_OUTCOMES
                 ]
+
         if self.action == 'list':
-            if self.request.query_params.get('file_type') == 'ssp-moe':
+            file_type = self.request.query_params.get('file_type', None)
+
+            if file_type == 'ssp-moe':
                 queryset = queryset.filter(section__contains='SSP')
-            elif self.request.query_params.get('file_type') == 'fra':
-                queryset = queryset.filter(section__in=FRA_SECTION_LIST)
+            elif file_type in FRA_SECTION_LIST:
+                queryset = queryset.filter(section=file_type)
             else:
                 queryset = queryset.exclude(section__contains='SSP')
 

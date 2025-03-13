@@ -43,6 +43,7 @@ const AppRoutes = () => {
         element={
           <PrivateRoute
             title="TANF Data Files"
+            subtitle="Participation, Characteristics, and Caseload reports"
             requiredPermissions={['view_datafile', 'add_datafile']}
             requiresApproval
           >
@@ -56,6 +57,7 @@ const AppRoutes = () => {
         element={
           <PrivateRoute
             title="FRA Data Files"
+            subtitle="Outcomes Reports as established by the Fiscal Responsibility Act (FRA)"
             requiredPermissions={['view_datafile', 'add_datafile']}
             requiredFeatureFlags={['fra_reports']}
             requiresApproval

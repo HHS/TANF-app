@@ -803,3 +803,17 @@ def fra_bad_header_xlsx(stt_user, stt):
     """Fixture for FRA file with bad header data."""
     return util.create_test_datafile('fra_bad_header.xlsx', stt_user, stt,
                                      DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)
+
+
+@pytest.fixture
+def fra_ofa_test_csv(stt_user, stt):
+    """Fixture for FRA file with bad header data."""
+    return util.create_test_datafile('fra_ofa_test.csv', stt_user, stt,
+                                     DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)
+
+
+@pytest.fixture
+def fra_ofa_test_xlsx(stt_user, stt):
+    """Fixture for FRA file with bad header data."""
+    return util.create_test_datafile('fra_ofa_test.xlsx', stt_user, stt,
+                                     DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)
