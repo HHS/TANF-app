@@ -91,7 +91,7 @@ def _validate_YYYYmm_against_file_fiscal_period(row: RawRow, date_field, eargs):
     return Result(
         valid=False,
         error=(f"{row_schema.record_type}: Reporting month year {field_month_year} "
-                f"does not match file reporting year:{df_year}, quarter:{df_quarter}."),
+               f"does not match file reporting year:{df_year}, quarter:{df_quarter}."),
     )
 
 
