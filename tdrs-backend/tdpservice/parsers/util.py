@@ -48,7 +48,10 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
         value = getattr(record, name, None) if type(record) is not dict else record.get(name, None)
         values_json[name] = value
 
-    field = fields[-1]  # if multiple fields, result field is last
+    # If we are a cat1/cat4 error then the parser error will know about all fields. To keep things simple we associate
+    # the field with the record type. If the error is not cat1/cat4 then we use the last field since that will be the
+    # result field in the multi-field case.
+    field = "Record_Type" if schema is not None and len(fields) == len(schema.fields) else fields[-1]
 
     return ParserError(
         file=datafile,
@@ -97,7 +100,7 @@ def make_generate_file_precheck_parser_error(datafile, line_number):
             error_category=error_category,
             error_message=error_message,
             record=record,
-            field=None,  # purposely overridden to force a "Rejected" status for certain file precheck errors
+            field=field,  # purposely overridden to force a "Rejected" status for certain file precheck errors
             deprecated=deprecated,
         )
 

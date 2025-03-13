@@ -1929,7 +1929,6 @@ def test_parse_fra_ofa_test_cases(request, file, dfs):
     errors = ParserError.objects.filter(file=datafile).order_by("id")
     for e in errors:
         assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
-        print(e.row_number, e.error_message)
 
     assert errors.count() == 26
     assert TANF_Exiter1.objects.all().count() == 12

@@ -143,7 +143,7 @@ class RowSchema(ABC):
                         error_category=ParserErrorCategoryChoices.PRE_CHECK,
                         error_message=result.error,
                         record=None,
-                        field="Record_Type",
+                        field=self.fields,
                         deprecated=result.deprecated,
                     )
                 )
