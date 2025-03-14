@@ -297,6 +297,43 @@ class FRASchema(RowSchema):
 
         return SchemaResult(record, is_valid, errors)
 
+    def run_preparsing_validators(self, row: RawRow, record, generate_error):
+        """Run each of the `preparsing_validator` functions in the schema against the un-parsed row."""
+        is_valid = True
+        errors = []
+
+        field = self.get_field_by_name('RecordType')
+
+        for validator in self.preparsing_validators:
+            eargs = ValidationErrorArgs(
+                value=row,
+                row_schema=self,
+                friendly_name=field.friendly_name if field else 'record type',
+                item_num=field.item if field else '0',
+            )
+
+            result = validator(row, eargs)
+            is_valid = False if not result.valid else is_valid
+
+            is_quiet_preparser_errors = (
+                self.quiet_preparser_errors
+                if type(self.quiet_preparser_errors) is bool
+                else self.quiet_preparser_errors(row)
+            )
+            if result.error and not is_quiet_preparser_errors:
+                errors.append(
+                    generate_error(
+                        schema=self,
+                        error_category=ParserErrorCategoryChoices.PRE_CHECK,
+                        error_message=result.error,
+                        record=record,
+                        offending_field=field,
+                        fields=self.fields,
+                        deprecated=result.deprecated,
+                    )
+                )
+        return is_valid, errors
+
     def run_field_validators(self, record, generate_error):
         """
         Run all validators for each field in the parsed model.
@@ -329,7 +366,8 @@ class FRASchema(RowSchema):
                                 error_category=ParserErrorCategoryChoices.PRE_CHECK,
                                 error_message=result.error,
                                 record=record,
-                                field=field,
+                                offending_field=field,
+                                fields=self.fields,
                                 deprecated=result.deprecated
                             )
                         )
@@ -344,7 +382,8 @@ class FRASchema(RowSchema):
                             "field is required but a value was not provided."
                         ),
                         record=record,
-                        field=field
+                        offending_field=field,
+                        fields=self.fields,
                     )
                 )
 

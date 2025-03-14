@@ -1,6 +1,5 @@
 """Utility functions for DataFile views."""
 import base64
-import json
 from io import BytesIO
 import xlsxwriter
 import calendar
@@ -102,22 +101,12 @@ class FRADataErrorReport(ErrorReportBase):
             worksheet.write(0, idx, self.format_header(col), bold)
 
         row_idx = 1
-        # Because we use a generic relation on the ParserError model, we need to use raw SQL to join the two tables.
-        # The `prefetch_related` method does not work in the same was as this raw join. I.e. we don't get all the fields
-        # from both tables.
-        records = TANF_Exiter1.objects.raw("""SELECT te1.id, te1.\"EXIT_DATE\", te1.\"SSN\",
-                                           pe.object_id, pe.error_message, pe.fields_json,
-                                           pe.field_name, pe.row_number, pe.column_number
-                                           FROM search_indexes_tanf_exiter1 AS te1
-                                           INNER JOIN parser_error pe ON te1.id = pe.object_id""")
-        for record in records.iterator():
-            exit_date = getattr(record, 'EXIT_DATE', None)
-            exit_date = str(exit_date) if exit_date else ""
-            # Because the data is serialized from the raw query above, we need to convert the json string to an actual
-            # Json object.
-            json_str = getattr(record, 'fields_json', '{}')
-            fields_json = self.check_fields_json(json.loads(json_str), record.field_name)
-            worksheet.write_row(row_idx, 0, self.row_generator(record, exit_date, fields_json))
+        for error in self.parser_errors.iterator():
+            ssn = error.values_json.get('SSN', '')
+            exit_date = error.values_json.get('EXIT_DATE', None)
+            fields_json = self.check_fields_json(getattr(error, 'fields_json', {}), error.field_name)
+            row = self.row_generator(error, exit_date, ssn, fields_json)
+            worksheet.write_row(row_idx, 0, row)
             row_idx += 1
 
         self.workbook.close()
@@ -133,10 +122,10 @@ class FRADataErrorReport(ErrorReportBase):
 
     def get_row_generator(self):
         """Get row generator for error report."""
-        return lambda record, exit_date, fields_json: (exit_date,
-                                                       self._obscure_ssn(record.SSN),
-                                                       f"{record.column_number}{record.row_number}",
-                                                       self.format_error_msg(record.error_message, fields_json),)
+        return lambda error, exit_date, ssn, fields_json: (exit_date,
+                                                           self._obscure_ssn(ssn),
+                                                           f"{error.column_number}{error.row_number}",
+                                                           self.format_error_msg(error.error_message, fields_json),)
 
 
 class TanfDataErrorReportBase(ErrorReportBase):

@@ -30,7 +30,7 @@ def create_test_datafile(filename, stt_user, stt, section='Active Case Data'):
 
 
 def generate_parser_error(datafile, line_number, schema, error_category, error_message, record=None,
-                          field=None, deprecated=False):
+                          field=None, fields=None, deprecated=False):
     """Create and return a ParserError using args."""
     fields = [*field] if type(field) is list else [field]
     fields_json = {
@@ -71,6 +71,61 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
         values_json=values_json,
         deprecated=deprecated,
     )
+
+
+def generate_fra_parser_error(datafile, line_number, schema, error_category, error_message, record=None,
+                              offending_field=None, fields=None, deprecated=False):
+    """Create and return a ParserError using args."""
+    fields_json = {
+        "friendly_name": {
+            getattr(offending_field, 'name', ''): getattr(offending_field, 'friendly_name', '')
+        },
+        "item_numbers": {
+            getattr(offending_field, 'name', ''): getattr(offending_field, 'item', '')
+        }
+    }
+
+    values_json = {}
+    for field in fields:
+        name = getattr(field, 'name', '')
+        value = getattr(record, name, None) if type(record) is not dict else record.get(name, None)
+        values_json[name] = value
+
+    return ParserError(
+        file=datafile,
+        row_number=line_number,
+        column_number=getattr(offending_field, 'item', ''),
+        item_number=getattr(offending_field, 'item', ''),
+        field_name=getattr(field, 'name', None) if hasattr(field, 'name') else field,
+        rpt_month_year=None,
+        case_number=None,
+        error_message=error_message,
+        error_type=error_category,
+        content_type=ContentType.objects.get_for_model(
+            model=schema.document.Django.model if schema else None
+        ) if record and not isinstance(record, dict) else None,
+        object_id=getattr(record, 'id', None) if record and not isinstance(record, dict) else None,
+        fields_json=fields_json,
+        values_json=values_json,
+        deprecated=deprecated,
+    )
+
+
+def make_generate_fra_parser_error(datafile, line_number):
+    """Configure generate_fra_parser_error with a datafile and line number."""
+    def generate(schema, error_category, error_message, record=None, offending_field=None, fields=None, deprecated=False):
+        return generate_fra_parser_error(
+            datafile=datafile,
+            line_number=line_number,
+            schema=schema,
+            error_category=error_category,
+            error_message=error_message,
+            record=record,
+            offending_field=offending_field,
+            fields=fields,
+            deprecated=deprecated,
+        )
+    return generate
 
 
 def make_generate_parser_error(datafile, line_number):
