@@ -210,9 +210,9 @@ class TanfDataReportSchema(RowSchema):
             )
         if not preparsing_is_valid:
             if is_quiet_preparser_errors:
-                return None, True, []
+                return SchemaResult(None, True, [])
             logger.info(f"{len(preparsing_errors)} preparser error(s) encountered.")
-            return None, False, preparsing_errors
+            return SchemaResult(None, False, preparsing_errors)
 
         # run field validators
         fields_are_valid, field_errors = self.run_field_validators(record, generate_error)
