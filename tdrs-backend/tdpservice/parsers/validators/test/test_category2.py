@@ -2,12 +2,13 @@
 
 
 import pytest
-from .. import category2
-from ..util import ValidationErrorArgs, deprecate_call
-from ...row_schema import RowSchema
+from tdpservice.parsers.dataclasses import ValidationErrorArgs
+from tdpservice.parsers.validators import category2
+from tdpservice.parsers.validators.util import deprecate_call
+from tdpservice.parsers.row_schema import TanfDataReportSchema
 
 
-test_schema = RowSchema(
+test_schema = TanfDataReportSchema(
     record_type="Test",
     document=None,
     preparsing_validators=[],
