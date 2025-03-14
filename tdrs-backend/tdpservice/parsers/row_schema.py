@@ -113,7 +113,7 @@ class RowSchema(ABC):
 
         return is_valid, errors
 
-    def run_preparsing_validators(self, row: RawRow, generate_error):
+    def run_preparsing_validators(self, row: RawRow, record, generate_error):
         """Run each of the `preparsing_validator` functions in the schema against the un-parsed row."""
         is_valid = True
         errors = []
@@ -142,7 +142,7 @@ class RowSchema(ABC):
                         schema=self,
                         error_category=ParserErrorCategoryChoices.PRE_CHECK,
                         error_message=result.error,
-                        record=None,
+                        record=record,
                         field=self.fields,
                         deprecated=result.deprecated,
                     )
@@ -196,9 +196,12 @@ class TanfDataReportSchema(RowSchema):
         """Run all validation steps in order, and parse the given row into a record."""
         errors = []
 
+        # parse row to model
+        record = self.parse_row(row)
+
         # run preparsing validators
         preparsing_is_valid, preparsing_errors = self.run_preparsing_validators(
-            row, generate_error
+            row, record, generate_error
         )
         is_quiet_preparser_errors = (
                 self.quiet_preparser_errors
@@ -210,9 +213,6 @@ class TanfDataReportSchema(RowSchema):
                 return None, True, []
             logger.info(f"{len(preparsing_errors)} preparser error(s) encountered.")
             return None, False, preparsing_errors
-
-        # parse row to model
-        record = self.parse_row(row)
 
         # run field validators
         fields_are_valid, field_errors = self.run_field_validators(record, generate_error)
@@ -269,9 +269,12 @@ class FRASchema(RowSchema):
         # validators for fields.
         errors = []
 
+        # parse row to model
+        record = self.parse_row(row)
+
         # run preparsing validators
         preparsing_is_valid, preparsing_errors = self.run_preparsing_validators(
-            row, generate_error
+            row, record, generate_error
         )
         is_quiet_preparser_errors = (
                 self.quiet_preparser_errors
@@ -283,9 +286,6 @@ class FRASchema(RowSchema):
                 preparsing_errors = []
             logger.info(f"{len(preparsing_errors)} preparser error(s) encountered.")
 
-        # parse row to model
-        record = self.parse_row(row)
-
         # Run category 1 field validators. Note that even though we are generating cat1 errors the records are still
         # serialized to the database. This is a requiremnt for the moment because the FRA error report requires access
         # to fields in records that generated an error.
@@ -293,6 +293,7 @@ class FRASchema(RowSchema):
 
         is_valid = fields_are_valid and preparsing_is_valid
         errors = field_errors + preparsing_errors
+        record = record if is_valid else None
 
         return SchemaResult(record, is_valid, errors)
 
