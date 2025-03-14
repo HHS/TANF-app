@@ -6,7 +6,8 @@ import pytest
 import base64
 import openpyxl
 from tdpservice.data_files.models import DataFile
-from tdpservice.parsers import parse, util
+from tdpservice.parsers import util
+from tdpservice.parsers.factory import ParserFactory
 from tdpservice.parsers.models import ParserError
 from tdpservice.parsers.test.factories import DataFileSummaryFactory
 
@@ -228,11 +229,19 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
         self.assert_data_file_created(response)
         self.assert_data_file_exists(data_file_data, 1, user)
 
-    def test_create_data_file_fra(self, api_client, data_file_data, user):
+    def test_create_data_file_fra_no_feat_flag(self, api_client, data_file_data, user):
         """Test ability to create data file metadata registry."""
         response = self.post_data_file_fra(api_client, data_file_data)
         assert response.data == {'section': [ErrorDetail(string='Section cannot be FRA', code='invalid')]}
         self.assert_data_file_error(response)
+
+    def test_create_data_file_fra_with_feat_flag(self, api_client, csv_data_file, user):
+        """Test ability to create data file metadata registry."""
+        user.feature_flags = {"fra_reports": True}
+        user.save()
+        response = self.post_data_file_fra(api_client, csv_data_file)
+        self.assert_data_file_created(response)
+        self.assert_data_file_exists(csv_data_file, 1, user)
 
     def test_data_file_file_version_increment(
         self,
@@ -300,7 +309,11 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         self, api_client, test_datafile, dfs
     ):
         """Test that the error report file is downloaded as expected for a Data Analyst's set STT."""
-        parse.parse_datafile(test_datafile, dfs)
+        parser = ParserFactory.get_instance(datafile=test_datafile, dfs=dfs,
+                                            section=test_datafile.section,
+                                            program_type=test_datafile.prog_type)
+        parser.parse_and_validate()
+
         response = self.download_error_report_file(api_client, test_datafile.id)
 
         assert response.status_code == status.HTTP_200_OK
@@ -308,7 +321,10 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
 
     def test_download_error_report_ssp_file_for_own_stt(self, api_client, test_ssp_datafile, dfs):
         """Test that the error report file for an SSP file is downloaded as expected for a Data Analyst's set STT."""
-        parse.parse_datafile(test_ssp_datafile, dfs)
+        parser = ParserFactory.get_instance(datafile=test_ssp_datafile, dfs=dfs,
+                                            section=test_ssp_datafile.section,
+                                            program_type=test_ssp_datafile.prog_type)
+        parser.parse_and_validate()
         response = self.download_error_report_file(api_client, test_ssp_datafile.id)
 
         assert response.status_code == status.HTTP_200_OK
@@ -318,7 +334,10 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         self, api_client, test_datafile, dfs
     ):
         """Test that the error report file is downloaded as expected when no fields_json is added to ParserErrors."""
-        parse.parse_datafile(test_datafile, dfs)
+        parser = ParserFactory.get_instance(datafile=test_datafile, dfs=dfs,
+                                            section=test_datafile.section,
+                                            program_type=test_datafile.prog_type)
+        parser.parse_and_validate()
 
         # remove the fields' friendly names for all parser errors
         for error in ParserError.objects.all():
@@ -430,7 +449,7 @@ class TestDataFileAsOFARegionalStaff(DataFileAPITestBase):
     def test_download_data_file_file_for_own_region(
         self, api_client, regional_data_file_data, user
     ):
-        """Test that the file is downloaded as expected for Regional Staffs's."""
+        """Test that the file is downloaded as expected for Regional Staff."""
         response = self.post_data_file_file(api_client, regional_data_file_data)
         data_file_id = response.data['id']
         response = self.download_file(api_client, data_file_id)

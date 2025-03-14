@@ -1,12 +1,12 @@
 """Test category1 validators."""
 
-
 import pytest
-from .. import category1
-from ..util import ValidationErrorArgs, deprecate_call
-from ...row_schema import RowSchema
+from tdpservice.parsers.validators import category1
+from tdpservice.parsers.validators.util import deprecate_call
+from tdpservice.parsers.row_schema import TanfDataReportSchema
+from tdpservice.parsers.dataclasses import ValidationErrorArgs
 
-test_schema = RowSchema(
+test_schema = TanfDataReportSchema(
     record_type="Test",
     document=None,
     preparsing_validators=[],

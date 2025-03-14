@@ -2,7 +2,7 @@
 name: Research synthesis issue template
 about: Template for research synthesis issues
 title: "[Reearch Synthesis] "
-labels: "Research & Design"
+labels: Research & Design
 assignees: ''
 
 ---

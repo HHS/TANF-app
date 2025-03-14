@@ -2,7 +2,7 @@
 name: Research facilitation issue template
 about: Template for research facilitation issues (1 per research session)
 title: "[Research Facilitation] "
-labels: "Research & Design"
+labels: Research & Design
 assignees: ''
 
 ---
@@ -25,5 +25,3 @@ assignees: ''
 **Supporting Documentation:**
 
 - *---Link to hack.md, Mural, or other relevant top-line documentation materials---*
-
-

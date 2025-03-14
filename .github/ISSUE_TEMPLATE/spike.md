@@ -29,4 +29,3 @@ _Please include any relevant log snippets/files/screen shots_
 
 - _Doc 1_
 - _Doc 2_
-

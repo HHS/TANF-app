@@ -1,6 +1,7 @@
 //This file contains modified versions of code from:
 //https://github.com/uswds/uswds/blob/develop/src/js/components/file-input.js
 import escapeHtml from '../../utils/escapeHtml'
+import languageEncoding from 'detect-file-encoding-and-language'
 
 export const PREFIX = 'usa'
 
@@ -24,7 +25,7 @@ const SPACER_GIF =
  * @param {HTMLElement} dropTarget - target area div that encases the input
  * @param {HTMLElement} instructions - text to inform users to drag or select files
  */
-const removeOldPreviews = (dropTarget, instructions) => {
+export const removeOldPreviews = (dropTarget, instructions) => {
   const filePreviews = dropTarget.querySelectorAll(`.${PREVIEW_CLASS}`)
   const currentPreviewHeading = dropTarget.querySelector(
     `.${PREVIEW_HEADING_CLASS}`
@@ -61,21 +62,30 @@ const removeOldPreviews = (dropTarget, instructions) => {
   }
 }
 
+export const checkPreviewDependencies = (targetClassName) => {
+  const targetInput = document.querySelector(targetClassName)
+  const dropTarget = targetInput?.parentElement
+  const instructions = dropTarget?.getElementsByClassName(INSTRUCTIONS_CLASS)[0]
+
+  // guard against the case that uswd has not yet rendered this
+  if (!dropTarget || !instructions) return { rendered: false }
+
+  return { rendered: true, instructions: instructions, dropTarget: dropTarget }
+}
+
 export const getTargetClassName = (formattedSectionName) =>
   `.${TARGET_CLASS} input#${formattedSectionName}`
 
 export const handlePreview = (fileName, targetClassName) => {
-  const targetInput = document.querySelector(targetClassName)
-  const dropTarget = targetInput?.parentElement
+  const deps = checkPreviewDependencies(targetClassName)
+  if (!deps.rendered) return false
 
-  const instructions = dropTarget?.getElementsByClassName(INSTRUCTIONS_CLASS)[0]
-  const filePreviewsHeading = document.createElement('div')
-
-  // guard against the case that uswd has not yet rendered this
-  if (!dropTarget || !instructions) return false
+  const dropTarget = deps.dropTarget
+  const instructions = deps.instructions
 
   removeOldPreviews(dropTarget, instructions)
 
+  const filePreviewsHeading = document.createElement('div')
   instructions.insertAdjacentHTML(
     'afterend',
     `<div class="${PREVIEW_CLASS}" aria-hidden="true">
@@ -94,4 +104,39 @@ export const handlePreview = (fileName, targetClassName) => {
     filePreviewsHeading.classList.add(PREVIEW_HEADING_CLASS)
   }
   return true
+}
+
+// The package author suggests using a minimum of 500 words to determine the encoding. However, datafiles don't have
+// "words" so we're using bytes instead to determine the encoding. See: https://www.npmjs.com/package/detect-file-encoding-and-language
+const MIN_BYTES = 500
+
+/* istanbul ignore next */
+export const tryGetUTF8EncodedFile = async function (fileBytes, file) {
+  // Create a small view of the file to determine the encoding.
+  const btyesView = new Uint8Array(fileBytes.slice(0, MIN_BYTES))
+  const blobView = new Blob([btyesView], { type: 'text/plain' })
+  try {
+    const fileInfo = await languageEncoding(blobView)
+    const bom = btyesView.slice(0, 3)
+    const hasBom = bom[0] === 0xef && bom[1] === 0xbb && bom[2] === 0xbf
+    if ((fileInfo && fileInfo.encoding !== 'UTF-8') || hasBom) {
+      const utf8Encoder = new TextEncoder()
+      const decoder = new TextDecoder(fileInfo.encoding)
+      const decodedString = decoder.decode(
+        hasBom ? fileBytes.slice(3) : fileBytes
+      )
+      const utf8Bytes = utf8Encoder.encode(decodedString)
+      return new File([utf8Bytes], file.name, file.options)
+    }
+    return file
+  } catch (error) {
+    // This is a last ditch fallback to ensure consistent functionality and also allows the unit tests to work in the
+    // same way they did before this change. When the unit tests (i.e. Node environment) call `languageEncoding` it
+    // expects a Buffer/string/URL object. When the browser calls `languageEncoding`, it expects a Blob/File object.
+    // There is not a convenient way or universal object to handle both cases. Thus, when the tests run the call to
+    // `languageEncoding`, it raises an exception and we return the file as is which is then dispatched as it would
+    // have been before this change.
+    console.error('Caught error while handling file encoding. Error:', error)
+    return file
+  }
 }

@@ -7,7 +7,7 @@ import {
   faXmarkCircle,
   faClock,
 } from '@fortawesome/free-solid-svg-icons'
-import { getAvailableFileList, download } from '../../actions/reports'
+import { download } from '../../actions/reports'
 import { getParseErrors } from '../../actions/createXLSReport'
 
 export const formatDate = (dateStr) => new Date(dateStr).toLocaleString()

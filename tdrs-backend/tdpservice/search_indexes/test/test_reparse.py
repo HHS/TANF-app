@@ -1,7 +1,8 @@
 """Test cases for reparse functions."""
 
 import pytest
-from tdpservice.parsers import util, parse
+from tdpservice.parsers import util
+from tdpservice.parsers.factory import ParserFactory
 from tdpservice.parsers.test.factories import DataFileSummaryFactory
 from tdpservice.scheduling.management.commands import backup_db
 from tdpservice.search_indexes.management.commands import clean_and_reparse
@@ -20,246 +21,413 @@ from datetime import timedelta
 import os
 import time
 
+from tdpservice.search_indexes.utils import (
+    backup,
+    assert_sequential_execution,
+    delete_associated_models,
+    count_total_num_records,
+    calculate_timeout,
+)
+
+
 @pytest.fixture
 def cat4_edge_case_file(stt_user, stt):
     """Fixture for cat_4_edge_case.txt."""
-    cat4_edge_case_file = util.create_test_datafile('cat_4_edge_case.txt', stt_user, stt)
+    cat4_edge_case_file = util.create_test_datafile(
+        "cat_4_edge_case.txt", stt_user, stt
+    )
     cat4_edge_case_file.year = 2024
-    cat4_edge_case_file.quarter = 'Q1'
+    cat4_edge_case_file.quarter = "Q1"
     cat4_edge_case_file.save()
     return cat4_edge_case_file
+
 
 @pytest.fixture
 def big_file(stt_user, stt):
     """Fixture for ADS.E2J.FTP1.TS06."""
-    return util.create_test_datafile('ADS.E2J.FTP1.TS06', stt_user, stt)
+    return util.create_test_datafile("ADS.E2J.FTP1.TS06", stt_user, stt)
+
 
 @pytest.fixture
 def small_ssp_section1_datafile(stt_user, stt):
     """Fixture for small_ssp_section1."""
-    small_ssp_section1_datafile = util.create_test_datafile('small_ssp_section1.txt', stt_user,
-                                                            stt, 'SSP Active Case Data')
+    small_ssp_section1_datafile = util.create_test_datafile(
+        "small_ssp_section1.txt", stt_user, stt, "SSP Active Case Data"
+    )
     small_ssp_section1_datafile.year = 2024
-    small_ssp_section1_datafile.quarter = 'Q1'
+    small_ssp_section1_datafile.quarter = "Q1"
     small_ssp_section1_datafile.save()
     return small_ssp_section1_datafile
+
 
 @pytest.fixture
 def tribal_section_1_file(stt_user, stt):
     """Fixture for ADS.E2J.FTP4.TS06."""
-    tribal_section_1_file = util.create_test_datafile('ADS.E2J.FTP1.TS142', stt_user, stt, "Tribal Active Case Data")
+    tribal_section_1_file = util.create_test_datafile(
+        "ADS.E2J.FTP1.TS142", stt_user, stt, "Tribal Active Case Data"
+    )
     tribal_section_1_file.year = 2022
-    tribal_section_1_file.quarter = 'Q1'
+    tribal_section_1_file.quarter = "Q1"
     tribal_section_1_file.save()
     return tribal_section_1_file
+
 
 @pytest.fixture
 def dfs():
     """Fixture for DataFileSummary."""
     return DataFileSummaryFactory.build()
 
+
 @pytest.fixture
 def log_context():
     """Fixture for logger context."""
-    system_user, created = User.objects.get_or_create(username='system')
-    context = {'user_id': system_user.id,
-               'action_flag': ADDITION,
-               'object_repr': "Test Clean and Reparse"
-               }
+    system_user, created = User.objects.get_or_create(username="system")
+    context = {
+        "user_id": system_user.id,
+        "action_flag": ADDITION,
+        "object_repr": "Test Clean and Reparse",
+    }
     return context
+
 
 def parse_files(summary, f1, f2, f3, f4):
     """Parse all files."""
     summary.datafile = f1
-    parse.parse_datafile(f1, summary)
+    parser = ParserFactory.get_instance(datafile=f1, dfs=summary,
+                                        section=f1.section,
+                                        program_type=f1.prog_type)
+    parser.parse_and_validate()
 
     summary.datafile = f2
-    parse.parse_datafile(f2, summary)
+    parser = ParserFactory.get_instance(datafile=f2, dfs=summary,
+                                        section=f2.section,
+                                        program_type=f2.prog_type)
+    parser.parse_and_validate()
 
     summary.datafile = f3
-    parse.parse_datafile(f3, summary)
+    parser = ParserFactory.get_instance(datafile=f3, dfs=summary,
+                                        section=f3.section,
+                                        program_type=f3.prog_type)
+    parser.parse_and_validate()
 
     summary.datafile = f4
-    parse.parse_datafile(f4, summary)
+    parser = ParserFactory.get_instance(datafile=f4, dfs=summary,
+                                        section=f4.section,
+                                        program_type=f4.prog_type)
+    parser.parse_and_validate()
+
     f1.save()
     f2.save()
     f3.save()
     f4.save()
     return [f1.pk, f2.pk, f3.pk, f4.pk]
 
+
 @pytest.mark.django_db
-def test_count_total_num_records(log_context, dfs, cat4_edge_case_file, big_file,
-                                 small_ssp_section1_datafile, tribal_section_1_file):
+def test_count_total_num_records(
+    log_context,
+    dfs,
+    cat4_edge_case_file,
+    big_file,
+    small_ssp_section1_datafile,
+    tribal_section_1_file,
+):
     """Count total number of records in DB."""
-    parse_files(dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile, tribal_section_1_file)
+    parse_files(
+        dfs,
+        cat4_edge_case_file,
+        big_file,
+        small_ssp_section1_datafile,
+        tribal_section_1_file,
+    )
 
-    cmd = clean_and_reparse.Command()
-    assert 3104 == cmd._count_total_num_records(log_context)
+    assert 3104 == count_total_num_records(log_context)
     cat4_edge_case_file.delete()
-    assert 3096 == cmd._count_total_num_records(log_context)
+    assert 3096 == count_total_num_records(log_context)
+
 
 @pytest.mark.django_db
-def test_reparse_backup_succeed(log_context, dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile,
-                                tribal_section_1_file):
+def test_reparse_backup_succeed(
+    log_context,
+    dfs,
+    cat4_edge_case_file,
+    big_file,
+    small_ssp_section1_datafile,
+    tribal_section_1_file,
+):
     """Verify a backup is created with the correct size."""
-    parse_files(dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile, tribal_section_1_file)
+    parse_files(
+        dfs,
+        cat4_edge_case_file,
+        big_file,
+        small_ssp_section1_datafile,
+        tribal_section_1_file,
+    )
 
-    cmd = clean_and_reparse.Command()
     file_name = "/tmp/test_reparse.pg"
-    cmd._backup(file_name, log_context)
+    backup(file_name, log_context)
     time.sleep(10)
 
     file_size = os.path.getsize(file_name)
     assert file_size > 180000
 
+
 @pytest.mark.django_db
-def test_reparse_backup_fail(mocker, log_context, dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile,
-                             tribal_section_1_file):
+def test_reparse_backup_fail(
+    mocker,
+    log_context,
+    dfs,
+    cat4_edge_case_file,
+    big_file,
+    small_ssp_section1_datafile,
+    tribal_section_1_file,
+):
     """Verify a backup is created with the correct size."""
-    parse_files(dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile, tribal_section_1_file)
+    parse_files(
+        dfs,
+        cat4_edge_case_file,
+        big_file,
+        small_ssp_section1_datafile,
+        tribal_section_1_file,
+    )
 
     mocker.patch(
-        'tdpservice.search_indexes.management.commands.clean_and_reparse.Command._backup',
-        side_effect=Exception('Backup exception')
+        "tdpservice.search_indexes.utils.backup",
+        side_effect=Exception("Backup exception"),
     )
-    cmd = clean_and_reparse.Command()
     file_name = "/tmp/test_reparse.pg"
     with pytest.raises(Exception):
-        cmd._backup(file_name, log_context)
+        backup(file_name, log_context)
         assert os.path.exists(file_name) is False
-        exception_msg = LogEntry.objects.latest('pk').change_message
-        assert exception_msg == ("Database backup FAILED. Clean and reparse NOT executed. Database "
-                                 "and Elastic are CONSISTENT!")
+        exception_msg = LogEntry.objects.latest("pk").change_message
+        assert exception_msg == (
+            "Database backup FAILED. Clean and reparse NOT executed. Database "
+            "and Elastic are CONSISTENT!"
+        )
 
-@pytest.mark.parametrize(("new_indexes"), [
-    (True),
-    (False)
-])
+
+@pytest.mark.parametrize(("new_indexes"), [(True), (False)])
 @pytest.mark.django_db
-def test_delete_associated_models(log_context, new_indexes, dfs, cat4_edge_case_file, big_file,
-                                  small_ssp_section1_datafile, tribal_section_1_file):
+def test_delete_associated_models(
+    log_context,
+    new_indexes,
+    dfs,
+    cat4_edge_case_file,
+    big_file,
+    small_ssp_section1_datafile,
+    tribal_section_1_file,
+):
     """Verify all records and models are deleted."""
-    ids = parse_files(dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile, tribal_section_1_file)
+    ids = parse_files(
+        dfs,
+        cat4_edge_case_file,
+        big_file,
+        small_ssp_section1_datafile,
+        tribal_section_1_file,
+    )
 
-    cmd = clean_and_reparse.Command()
-    assert 3104 == cmd._count_total_num_records(log_context)
+    assert 3104 == count_total_num_records(log_context)
 
     class Fake:
         pass
+
     fake_meta = Fake()
-    cmd._delete_associated_models(fake_meta, ids, new_indexes, log_context)
+    delete_associated_models(fake_meta, ids, new_indexes, log_context)
 
-    assert cmd._count_total_num_records(log_context) == 0
+    assert count_total_num_records(log_context) == 0
 
-@pytest.mark.parametrize(("exc_msg, exception_type"), [
-    (('Encountered a DatabaseError while deleting DataFileSummary from Postgres. The database '
-      'and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!'), DatabaseError),
-    (('Caught generic exception while deleting DataFileSummary. The database and Elastic are INCONSISTENT! '
-      'Restore the DB from the backup as soon as possible!'), Exception)
-])
+
+@pytest.mark.parametrize(
+    ("exc_msg, exception_type"),
+    [
+        (
+            (
+                "Encountered a DatabaseError while deleting DataFileSummary from Postgres. The database "
+                "and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!"
+            ),
+            DatabaseError,
+        ),
+        (
+            (
+                "Caught generic exception while deleting DataFileSummary. The database and Elastic are INCONSISTENT! "
+                "Restore the DB from the backup as soon as possible!"
+            ),
+            Exception,
+        ),
+    ],
+)
 @pytest.mark.django_db
 def test_delete_summaries_exceptions(mocker, log_context, exc_msg, exception_type):
     """Test summary exception handling."""
-    mocker.patch(
-        'tdpservice.search_indexes.management.commands.clean_and_reparse.Command._delete_summaries',
-        side_effect=exception_type('Summary delete exception')
+    mocked_delete_summaries = mocker.patch(
+        "tdpservice.search_indexes.utils.delete_summaries",
+        side_effect=exception_type("Summary delete exception"),
     )
-    cmd = clean_and_reparse.Command()
     with pytest.raises(exception_type):
-        cmd._delete_summaries([], log_context)
-        exception_msg = LogEntry.objects.latest('pk').change_message
+        mocked_delete_summaries([], log_context)
+        exception_msg = LogEntry.objects.latest("pk").change_message
         assert exception_msg == exc_msg
 
-@pytest.mark.parametrize(("exc_msg, exception_type"), [
-    (('Elastic index creation FAILED. Clean and reparse NOT executed. '
-      'Database is CONSISTENT, Elastic is INCONSISTENT!'), ElasticsearchException),
-    (('Caught generic exception in _handle_elastic. Clean and reparse NOT executed. '
-      'Database is CONSISTENT, Elastic is INCONSISTENT!'), Exception)
-])
+
+@pytest.mark.parametrize(
+    ("exc_msg, exception_type"),
+    [
+        (
+            (
+                "Elastic index creation FAILED. Clean and reparse NOT executed. "
+                "Database is CONSISTENT, Elastic is INCONSISTENT!"
+            ),
+            ElasticsearchException,
+        ),
+        (
+            (
+                "Caught generic exception in _handle_elastic. Clean and reparse NOT executed. "
+                "Database is CONSISTENT, Elastic is INCONSISTENT!"
+            ),
+            Exception,
+        ),
+    ],
+)
 @pytest.mark.django_db
 def test_handle_elastic_exceptions(mocker, log_context, exc_msg, exception_type):
     """Test summary exception handling."""
-    mocker.patch(
-        'tdpservice.search_indexes.management.commands.clean_and_reparse.Command._handle_elastic',
-        side_effect=exception_type('Summary delete exception')
+    mocked_handle_elastic = mocker.patch(
+        "tdpservice.search_indexes.reparse.handle_elastic",
+        side_effect=exception_type("Summary delete exception"),
     )
-    cmd = clean_and_reparse.Command()
     with pytest.raises(exception_type):
-        cmd._handle_elastic([], True, log_context)
-        exception_msg = LogEntry.objects.latest('pk').change_message
+        mocked_handle_elastic(True, log_context)
+        exception_msg = LogEntry.objects.latest("pk").change_message
         assert exception_msg == exc_msg
 
-@pytest.mark.parametrize(("exc_msg, exception_type"), [
-    (('Elastic document delete failed for type {model}. The database and Elastic are INCONSISTENT! '
-      'Restore the DB from the backup as soon as possible!'), ElasticsearchException),
-    (('Encountered a DatabaseError while deleting records of type {model} from Postgres. The database '
-      'and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!'), DatabaseError),
-    (('Caught generic exception while deleting records of type {model}. The database and Elastic are '
-      'INCONSISTENT! Restore the DB from the backup as soon as possible!'), Exception)
-])
+
+@pytest.mark.parametrize(
+    ("exc_msg, exception_type"),
+    [
+        (
+            (
+                "Elastic document delete failed for type {model}. The database and Elastic are INCONSISTENT! "
+                "Restore the DB from the backup as soon as possible!"
+            ),
+            ElasticsearchException,
+        ),
+        (
+            (
+                "Encountered a DatabaseError while deleting records of type {model} from Postgres. The database "
+                "and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!"
+            ),
+            DatabaseError,
+        ),
+        (
+            (
+                "Caught generic exception while deleting records of type {model}. The database and Elastic are "
+                "INCONSISTENT! Restore the DB from the backup as soon as possible!"
+            ),
+            Exception,
+        ),
+    ],
+)
 @pytest.mark.django_db
 def test_delete_records_exceptions(mocker, log_context, exc_msg, exception_type):
     """Test record exception handling."""
-    mocker.patch(
-        'tdpservice.search_indexes.management.commands.clean_and_reparse.Command._delete_records',
-        side_effect=exception_type('Record delete exception')
+    mocked_delete_records = mocker.patch(
+        "tdpservice.search_indexes.utils.delete_records",
+        side_effect=exception_type("Record delete exception"),
     )
-    cmd = clean_and_reparse.Command()
     with pytest.raises(exception_type):
-        cmd._delete_records([], True, log_context)
-        exception_msg = LogEntry.objects.latest('pk').change_message
+        mocked_delete_records([], True, log_context)
+        exception_msg = LogEntry.objects.latest("pk").change_message
         assert exception_msg == exc_msg
 
-@pytest.mark.parametrize(("exc_msg, exception_type"), [
-    (('Encountered a DatabaseError while deleting ParserErrors from Postgres. The database '
-      'and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!'), DatabaseError),
-    (('Caught generic exception while deleting ParserErrors. The database and Elastic are INCONSISTENT! '
-      'Restore the DB from the backup as soon as possible!'), Exception)
-])
+
+@pytest.mark.parametrize(
+    ("exc_msg, exception_type"),
+    [
+        (
+            (
+                "Encountered a DatabaseError while deleting ParserErrors from Postgres. The database "
+                "and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!"
+            ),
+            DatabaseError,
+        ),
+        (
+            (
+                "Caught generic exception while deleting ParserErrors. The database and Elastic are INCONSISTENT! "
+                "Restore the DB from the backup as soon as possible!"
+            ),
+            Exception,
+        ),
+    ],
+)
 @pytest.mark.django_db
 def test_delete_errors_exceptions(mocker, log_context, exc_msg, exception_type):
     """Test error exception handling."""
-    mocker.patch(
-        'tdpservice.search_indexes.management.commands.clean_and_reparse.Command._delete_errors',
-        side_effect=exception_type('Error delete exception')
+    mocked_delete_errors = mocker.patch(
+        "tdpservice.search_indexes.utils.delete_errors",
+        side_effect=exception_type("Error delete exception"),
     )
-    cmd = clean_and_reparse.Command()
     with pytest.raises(exception_type):
-        cmd._delete_errors([], log_context)
-        exception_msg = LogEntry.objects.latest('pk').change_message
+        mocked_delete_errors([], log_context)
+        exception_msg = LogEntry.objects.latest("pk").change_message
         assert exception_msg == exc_msg
 
-@pytest.mark.parametrize(("exc_msg, exception_type"), [
-    (('Encountered a DatabaseError while re-creating datafiles. The database '
-      'and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!'), DatabaseError),
-    (('Caught generic exception in _handle_datafiles. Database and Elastic are INCONSISTENT! '
-      'Restore the DB from the backup as soon as possible!'), Exception)
-])
+
+@pytest.mark.parametrize(
+    ("exc_msg, exception_type"),
+    [
+        (
+            (
+                "Encountered a DatabaseError while re-creating datafiles. The database "
+                "and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!"
+            ),
+            DatabaseError,
+        ),
+        (
+            (
+                "Caught generic exception in _handle_datafiles. Database and Elastic are INCONSISTENT! "
+                "Restore the DB from the backup as soon as possible!"
+            ),
+            Exception,
+        ),
+    ],
+)
 @pytest.mark.django_db
 def test_handle_files_exceptions(mocker, log_context, exc_msg, exception_type):
     """Test error exception handling."""
-    mocker.patch(
-        'tdpservice.search_indexes.management.commands.clean_and_reparse.Command._handle_datafiles',
-        side_effect=exception_type('Files exception')
+    mocked_handle_datafiles = mocker.patch(
+        "tdpservice.search_indexes.reparse.handle_datafiles",
+        side_effect=exception_type("Files exception"),
     )
-    cmd = clean_and_reparse.Command()
     with pytest.raises(exception_type):
-        cmd._handle_datafiles([], None, log_context)
-        exception_msg = LogEntry.objects.latest('pk').change_message
+        mocked_handle_datafiles([], None, log_context)
+        exception_msg = LogEntry.objects.latest("pk").change_message
         assert exception_msg == exc_msg
 
+
 @pytest.mark.django_db
-def test_timeout_calculation(log_context, dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile,
-                             tribal_section_1_file):
+def test_timeout_calculation(
+    log_context,
+    dfs,
+    cat4_edge_case_file,
+    big_file,
+    small_ssp_section1_datafile,
+    tribal_section_1_file,
+):
     """Verify calculated timeout."""
-    ids = parse_files(dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile, tribal_section_1_file)
+    ids = parse_files(
+        dfs,
+        cat4_edge_case_file,
+        big_file,
+        small_ssp_section1_datafile,
+        tribal_section_1_file,
+    )
 
-    cmd = clean_and_reparse.Command()
-    num_records = cmd._count_total_num_records(log_context)
+    num_records = count_total_num_records(log_context)
 
-    assert cmd._calculate_timeout(len(ids), num_records).seconds == 57
+    assert calculate_timeout(len(ids), num_records).seconds == 57
 
-    assert cmd._calculate_timeout(len(ids), 50).seconds == 40
+    assert calculate_timeout(len(ids), 50).seconds == 40
+
 
 @pytest.mark.django_db
 def test_reparse_dunce():
@@ -268,15 +436,15 @@ def test_reparse_dunce():
     assert None is cmd.handle()
     assert ReparseMeta.objects.count() == 0
 
+
 @pytest.mark.django_db
 def test_reparse_sequential(log_context, big_file):
     """Test reparse _assert_sequential_execution."""
-    cmd = clean_and_reparse.Command()
-    assert True is cmd._assert_sequential_execution(log_context)
+    assert True is assert_sequential_execution(log_context)
 
     meta = ReparseMeta.objects.create(timeout_at=None)
-    assert False is cmd._assert_sequential_execution(log_context)
-    timeout_entry = LogEntry.objects.latest('pk')
+    assert False is assert_sequential_execution(log_context)
+    timeout_entry = LogEntry.objects.latest("pk")
     assert timeout_entry.change_message == (
         f"The latest ReparseMeta model's (ID: {meta.pk}) timeout_at field is None. Cannot "
         "safely execute reparse, please fix manually."
@@ -285,112 +453,157 @@ def test_reparse_sequential(log_context, big_file):
     big_file.reparses.add(meta)
     meta.timeout_at = timezone.now() + timedelta(seconds=100)
     meta.save()
-    assert False is cmd._assert_sequential_execution(log_context)
-    not_seq_entry = LogEntry.objects.latest('pk')
-    assert not_seq_entry.change_message == ("A previous execution of the reparse command is RUNNING. "
-                                            "Cannot execute in parallel, exiting.")
+    assert False is assert_sequential_execution(log_context)
+    not_seq_entry = LogEntry.objects.latest("pk")
+    assert not_seq_entry.change_message == (
+        "A previous execution of the reparse command is RUNNING. "
+        "Cannot execute in parallel, exiting."
+    )
 
     meta.timeout_at = timezone.now()
     meta.save()
 
-    assert True is cmd._assert_sequential_execution(log_context)
-    timeout_entry = LogEntry.objects.latest('pk')
-    assert timeout_entry.change_message == ("Previous reparse has exceeded the timeout. Allowing "
-                                            "execution of the command.")
-
-@pytest.mark.django_db()
-def test_reparse_quarter_and_year(mocker, dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile,
-                                  tribal_section_1_file):
-    """Test reparse with year and quarter."""
-    parse_files(dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile, tribal_section_1_file)
-    cmd = clean_and_reparse.Command()
-
-    mocker.patch(
-        'tdpservice.scheduling.parser_task.parse',
-        return_value=None
+    assert True is assert_sequential_execution(log_context)
+    timeout_entry = LogEntry.objects.latest("pk")
+    assert timeout_entry.change_message == (
+        "Previous reparse has exceeded the timeout. Allowing "
+        "execution of the command."
     )
 
-    opts = {'fiscal_quarter': 'Q1', 'fiscal_year': 2021, 'testing': True}
+
+@pytest.mark.django_db()
+def test_reparse_quarter_and_year(
+    mocker,
+    dfs,
+    cat4_edge_case_file,
+    big_file,
+    small_ssp_section1_datafile,
+    tribal_section_1_file,
+):
+    """Test reparse with year and quarter."""
+    parse_files(
+        dfs,
+        cat4_edge_case_file,
+        big_file,
+        small_ssp_section1_datafile,
+        tribal_section_1_file,
+    )
+    cmd = clean_and_reparse.Command()
+
+    mocker.patch("tdpservice.scheduling.parser_task.parse", return_value=None)
+
+    opts = {"fiscal_quarter": "Q1", "fiscal_year": 2021, "testing": True}
     cmd.handle(**opts)
 
     latest = ReparseMeta.objects.select_for_update().latest("pk")
     assert latest.num_files == 1
     assert latest.num_records_deleted == 3073
 
+
 @pytest.mark.django_db()
-def test_reparse_quarter(mocker, dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile,
-                         tribal_section_1_file):
+def test_reparse_quarter(
+    mocker,
+    dfs,
+    cat4_edge_case_file,
+    big_file,
+    small_ssp_section1_datafile,
+    tribal_section_1_file,
+):
     """Test reparse with quarter."""
-    parse_files(dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile, tribal_section_1_file)
+    parse_files(
+        dfs,
+        cat4_edge_case_file,
+        big_file,
+        small_ssp_section1_datafile,
+        tribal_section_1_file,
+    )
     cmd = clean_and_reparse.Command()
 
-    mocker.patch(
-        'tdpservice.scheduling.parser_task.parse',
-        return_value=None
-    )
+    mocker.patch("tdpservice.scheduling.parser_task.parse", return_value=None)
 
-    opts = {'fiscal_quarter': 'Q1', 'testing': True}
+    opts = {"fiscal_quarter": "Q1", "testing": True}
     cmd.handle(**opts)
 
     latest = ReparseMeta.objects.select_for_update().latest("pk")
     assert latest.num_files == 4
     assert latest.num_records_deleted == 3104
 
+
 @pytest.mark.django_db()
-def test_reparse_year(mocker, dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile,
-                      tribal_section_1_file):
+def test_reparse_year(
+    mocker,
+    dfs,
+    cat4_edge_case_file,
+    big_file,
+    small_ssp_section1_datafile,
+    tribal_section_1_file,
+):
     """Test reparse year."""
-    parse_files(dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile, tribal_section_1_file)
+    parse_files(
+        dfs,
+        cat4_edge_case_file,
+        big_file,
+        small_ssp_section1_datafile,
+        tribal_section_1_file,
+    )
     cmd = clean_and_reparse.Command()
 
-    mocker.patch(
-        'tdpservice.scheduling.parser_task.parse',
-        return_value=None
-    )
+    mocker.patch("tdpservice.scheduling.parser_task.parse", return_value=None)
 
-    opts = {'fiscal_year': 2024, 'testing': True}
+    opts = {"fiscal_year": 2024, "testing": True}
     cmd.handle(**opts)
 
     latest = ReparseMeta.objects.select_for_update().latest("pk")
     assert latest.num_files == 2
     assert latest.num_records_deleted == 27
 
+
 @pytest.mark.django_db()
-def test_reparse_all(mocker, dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile,
-                     tribal_section_1_file):
+def test_reparse_all(
+    mocker,
+    dfs,
+    cat4_edge_case_file,
+    big_file,
+    small_ssp_section1_datafile,
+    tribal_section_1_file,
+):
     """Test reparse all."""
-    parse_files(dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile, tribal_section_1_file)
+    parse_files(
+        dfs,
+        cat4_edge_case_file,
+        big_file,
+        small_ssp_section1_datafile,
+        tribal_section_1_file,
+    )
     cmd = clean_and_reparse.Command()
 
-    mocker.patch(
-        'tdpservice.scheduling.parser_task.parse',
-        return_value=None
-    )
+    mocker.patch("tdpservice.scheduling.parser_task.parse", return_value=None)
 
-    opts = {'all': True, 'testing': True}
+    opts = {"all": True, "testing": True}
     cmd.handle(**opts)
 
     latest = ReparseMeta.objects.select_for_update().latest("pk")
     assert latest.num_files == 4
     assert latest.num_records_deleted == 3104
 
+
 @pytest.mark.django_db()
 def test_reparse_no_files(mocker):
     """Test reparse with no files in query."""
     cmd = clean_and_reparse.Command()
 
-    mocker.patch(
-        'tdpservice.scheduling.parser_task.parse',
-        return_value=None
-    )
+    mocker.patch("tdpservice.scheduling.parser_task.parse", return_value=None)
 
-    opts = {'fiscal_year': 2025, 'testing': True}
+    opts = {"fiscal_year": 2025, "testing": True}
     res = cmd.handle(**opts)
 
     assert ReparseMeta.objects.count() == 0
     assert res is None
-    assert LogEntry.objects.latest('pk').change_message == ("No files available for the selected Fiscal Year: 2025 and "
-                                                            "Quarter: Q1-4. Nothing to do.")
+    assert LogEntry.objects.latest("pk").change_message == (
+        "No files available for the selected Fiscal Year: 2025 and "
+        "Quarter: Q1-4. Nothing to do."
+    )
+
 
 @pytest.mark.django_db()
 def test_mm_all_files_done(big_file):
@@ -399,10 +612,13 @@ def test_mm_all_files_done(big_file):
     big_file.reparses.add(meta_model)
     assert ReparseMeta.assert_all_files_done(meta_model) is False
 
-    fm = ReparseFileMeta.objects.get(data_file_id=big_file.pk, reparse_meta_id=meta_model.pk)
+    fm = ReparseFileMeta.objects.get(
+        data_file_id=big_file.pk, reparse_meta_id=meta_model.pk
+    )
     fm.finished = True
     fm.save()
     assert ReparseMeta.assert_all_files_done(meta_model) is True
+
 
 @pytest.mark.django_db()
 def test_mm_files_completed(big_file):
@@ -418,7 +634,9 @@ def test_mm_files_completed(big_file):
     assert meta_model.num_files_failed == 0
     assert ReparseMeta.assert_all_files_done(meta_model) is False
 
-    fm = ReparseFileMeta.objects.get(data_file_id=big_file.pk, reparse_meta_id=meta_model.pk)
+    fm = ReparseFileMeta.objects.get(
+        data_file_id=big_file.pk, reparse_meta_id=meta_model.pk
+    )
     fm.finished = True
     fm.success = True
     fm.save()
@@ -431,6 +649,7 @@ def test_mm_files_completed(big_file):
     assert meta_model.is_success is True
 
     assert ReparseMeta.assert_all_files_done(meta_model) is True
+
 
 @pytest.mark.django_db()
 def test_mm_files_failed(big_file):
@@ -445,7 +664,9 @@ def test_mm_files_failed(big_file):
     assert meta_model.num_files_failed == 0
     assert ReparseMeta.assert_all_files_done(meta_model) is False
 
-    fm = ReparseFileMeta.objects.get(data_file_id=big_file.pk, reparse_meta_id=meta_model.pk)
+    fm = ReparseFileMeta.objects.get(
+        data_file_id=big_file.pk, reparse_meta_id=meta_model.pk
+    )
     fm.finished = True
     fm.save()
     meta_model = ReparseMeta.get_latest()
@@ -457,6 +678,7 @@ def test_mm_files_failed(big_file):
 
     assert ReparseMeta.assert_all_files_done(meta_model) is True
 
+
 @pytest.mark.django_db()
 def test_mm_increment_records_created(big_file):
     """Test meta model increment records created."""
@@ -467,13 +689,16 @@ def test_mm_increment_records_created(big_file):
     meta_model = ReparseMeta.get_latest()
     assert meta_model.num_records_created == 0
 
-    fm = ReparseFileMeta.objects.get(data_file_id=big_file.pk, reparse_meta_id=meta_model.pk)
+    fm = ReparseFileMeta.objects.get(
+        data_file_id=big_file.pk, reparse_meta_id=meta_model.pk
+    )
     fm.finished = True
     fm.success = True
     fm.num_records_created = 1388
     fm.save()
     meta_model = ReparseMeta.get_latest()
     assert meta_model.num_records_created == 1388
+
 
 @pytest.mark.django_db()
 def test_mm_get_latest():
@@ -485,6 +710,7 @@ def test_mm_get_latest():
     ReparseMeta.objects.create()
     assert ReparseMeta.get_latest() != meta1
 
+
 @pytest.mark.django_db()
 def test_mm_file_counts_match(big_file):
     """Test meta model file counts match."""
@@ -493,10 +719,13 @@ def test_mm_file_counts_match(big_file):
     big_file.save()
     assert ReparseMeta.file_counts_match(meta_model) is False
 
-    fm = ReparseFileMeta.objects.get(data_file_id=big_file.pk, reparse_meta_id=meta_model.pk)
+    fm = ReparseFileMeta.objects.get(
+        data_file_id=big_file.pk, reparse_meta_id=meta_model.pk
+    )
     fm.finished = True
     fm.save()
     assert ReparseMeta.file_counts_match(meta_model) is True
+
 
 @pytest.mark.django_db
 def test_prettify_time_delta():
@@ -506,17 +735,19 @@ def test_prettify_time_delta():
 
     assert prettify_time_delta(start.timestamp(), end.timestamp()) == (1, 40)
 
+
 @pytest.mark.django_db
 def test_db_backup_cloud(mocker):
     """Test DB backup fail without localstack."""
     settings.USE_LOCALSTACK = False
 
     cmd = backup_db.Command()
-    opts = {'file': 'fake_file.pg'}
+    opts = {"file": "fake_file.pg"}
 
     with pytest.raises(Exception):
         cmd.handle(**opts)
     settings.USE_LOCALSTACK = True
+
 
 @pytest.mark.django_db()
 def test_reparse_finished_success_false_before_file_queue(big_file):
@@ -530,7 +761,9 @@ def test_reparse_finished_success_false_before_file_queue(big_file):
     assert meta_model.is_finished is False
     assert meta_model.is_success is False
 
-    fm = ReparseFileMeta.objects.get(data_file_id=big_file.pk, reparse_meta_id=meta_model.pk)
+    fm = ReparseFileMeta.objects.get(
+        data_file_id=big_file.pk, reparse_meta_id=meta_model.pk
+    )
     fm.finished = True
     fm.save()
     assert meta_model.is_finished is True

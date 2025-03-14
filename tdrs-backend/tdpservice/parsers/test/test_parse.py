@@ -3,19 +3,16 @@
 
 import pytest
 import os
-from django.contrib.admin.models import LogEntry
 from django.conf import settings
 from django.db.models import Q as Query
-from .. import parse
-from ..models import ParserError, ParserErrorCategoryChoices, DataFileSummary
+from tdpservice.parsers.factory import ParserFactory
+from tdpservice.parsers.models import ParserError, ParserErrorCategoryChoices, DataFileSummary
 from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6, TANF_T7
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T1, Tribal_TANF_T2, Tribal_TANF_T3, Tribal_TANF_T4
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T5, Tribal_TANF_T6, Tribal_TANF_T7
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3, SSP_M4, SSP_M5, SSP_M6, SSP_M7
 from tdpservice.search_indexes import documents
-from tdpservice.data_files.models import DataFile
-from .. import schema_defs, aggregates
-from elasticsearch.helpers.errors import BulkIndexError
+from .. import aggregates
 import logging
 logger = logging.getLogger(__name__)
 
@@ -36,7 +33,10 @@ def test_parse_small_correct_file(small_correct_file, dfs):
     small_correct_file.save()
     dfs.datafile = small_correct_file
 
-    parse.parse_datafile(small_correct_file, dfs)
+    parser = ParserFactory.get_instance(datafile=small_correct_file, dfs=dfs,
+                                        section=small_correct_file.section,
+                                        program_type=small_correct_file.prog_type)
+    parser.parse_and_validate()
 
     errors = ParserError.objects.filter(file=small_correct_file).order_by('id')
     assert errors.count() == 2
@@ -69,7 +69,11 @@ def test_parse_section_mismatch(small_correct_file, dfs):
 
     dfs.datafile = small_correct_file
 
-    errors = parse.parse_datafile(small_correct_file, dfs)
+    parser = ParserFactory.get_instance(datafile=small_correct_file, dfs=dfs,
+                                        section=small_correct_file.section,
+                                        program_type=small_correct_file.prog_type)
+    errors = parser.parse_and_validate()
+
     dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.REJECTED
     parser_errors = ParserError.objects.filter(file=small_correct_file)
@@ -109,7 +113,10 @@ def test_parse_wrong_program_type(small_correct_file, dfs):
 
     dfs.datafile = small_correct_file
     dfs.save()
-    errors = parse.parse_datafile(small_correct_file, dfs)
+    parser = ParserFactory.get_instance(datafile=small_correct_file, dfs=dfs,
+                                        section=small_correct_file.section,
+                                        program_type=small_correct_file.prog_type)
+    errors = parser.parse_and_validate()
     assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
     parser_errors = ParserError.objects.filter(file=small_correct_file)
@@ -135,7 +142,10 @@ def test_parse_big_file(big_file, dfs):
 
     dfs.datafile = big_file
 
-    parse.parse_datafile(big_file, dfs)
+    parser = ParserFactory.get_instance(datafile=big_file, dfs=dfs,
+                                        section=big_file.section,
+                                        program_type=big_file.prog_type)
+    parser.parse_and_validate()
     dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
 
@@ -176,7 +186,10 @@ def test_parse_big_file(big_file, dfs):
 @pytest.mark.django_db
 def test_parse_bad_test_file(bad_test_file, dfs):
     """Test parsing of bad_TANF_S2."""
-    errors = parse.parse_datafile(bad_test_file, dfs)
+    parser = ParserFactory.get_instance(datafile=bad_test_file, dfs=dfs,
+                                        section=bad_test_file.section,
+                                        program_type=bad_test_file.prog_type)
+    errors = parser.parse_and_validate()
 
     parser_errors = ParserError.objects.filter(file=bad_test_file)
     assert parser_errors.count() == 1
@@ -196,7 +209,10 @@ def test_parse_bad_test_file(bad_test_file, dfs):
 @pytest.mark.django_db
 def test_parse_bad_file_missing_header(bad_file_missing_header, dfs):
     """Test parsing of bad_missing_header."""
-    errors = parse.parse_datafile(bad_file_missing_header, dfs)
+    parser = ParserFactory.get_instance(datafile=bad_file_missing_header, dfs=dfs,
+                                        section=bad_file_missing_header.section,
+                                        program_type=bad_file_missing_header.prog_type)
+    errors = parser.parse_and_validate()
     dfs.datafile = bad_file_missing_header
     assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
@@ -222,7 +238,10 @@ def test_parse_bad_file_multiple_headers(bad_file_multiple_headers, dfs):
     bad_file_multiple_headers.year = 2024
     bad_file_multiple_headers.quarter = 'Q1'
     bad_file_multiple_headers.save()
-    errors = parse.parse_datafile(bad_file_multiple_headers, dfs)
+    parser = ParserFactory.get_instance(datafile=bad_file_multiple_headers, dfs=dfs,
+                                        section=bad_file_multiple_headers.section,
+                                        program_type=bad_file_multiple_headers.prog_type)
+    errors = parser.parse_and_validate()
     dfs.datafile = bad_file_multiple_headers
     assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
@@ -244,7 +263,10 @@ def test_parse_big_bad_test_file(big_bad_test_file, dfs):
     """Test parsing of bad_TANF_S1."""
     big_bad_test_file.year = 2022
     big_bad_test_file.quarter = 'Q1'
-    parse.parse_datafile(big_bad_test_file, dfs)
+    parser = ParserFactory.get_instance(datafile=big_bad_test_file, dfs=dfs,
+                                        section=big_bad_test_file.section,
+                                        program_type=big_bad_test_file.prog_type)
+    parser.parse_and_validate()
 
     parser_errors = ParserError.objects.filter(file=big_bad_test_file)
     assert parser_errors.count() == 1
@@ -265,7 +287,10 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
     bad_trailer_file.quarter = 'Q1'
     dfs.datafile = bad_trailer_file
 
-    errors = parse.parse_datafile(bad_trailer_file, dfs)
+    parser = ParserFactory.get_instance(datafile=bad_trailer_file, dfs=dfs,
+                                        section=bad_trailer_file.section,
+                                        program_type=bad_trailer_file.prog_type)
+    errors = parser.parse_and_validate()
 
     parser_errors = ParserError.objects.filter(file=bad_trailer_file)
     assert parser_errors.count() == 5
@@ -314,7 +339,10 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
 
     bad_trailer_file_2.year = 2021
     bad_trailer_file_2.quarter = 'Q1'
-    errors = parse.parse_datafile(bad_trailer_file_2, dfs)
+    parser = ParserFactory.get_instance(datafile=bad_trailer_file_2, dfs=dfs,
+                                        section=bad_trailer_file_2.section,
+                                        program_type=bad_trailer_file_2.prog_type)
+    errors = parser.parse_and_validate()
 
     parser_errors = ParserError.objects.filter(file=bad_trailer_file_2)
     assert parser_errors.count() == 9
@@ -394,7 +422,10 @@ def test_parse_empty_file(empty_file, dfs):
     """Test parsing of empty_file."""
     dfs.datafile = empty_file
     dfs.save()
-    errors = parse.parse_datafile(empty_file, dfs)
+    parser = ParserFactory.get_instance(datafile=empty_file, dfs=dfs,
+                                        section=empty_file.section,
+                                        program_type=empty_file.prog_type)
+    errors = parser.parse_and_validate()
 
     dfs.status = dfs.get_status()
     dfs.case_aggregates = aggregates.case_aggregates_by_month(empty_file, dfs.status)
@@ -441,7 +472,10 @@ def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile, dfs):
 
     dfs.datafile = small_ssp_section1_datafile
     dfs.save()
-    parse.parse_datafile(small_ssp_section1_datafile, dfs)
+    parser = ParserFactory.get_instance(datafile=small_ssp_section1_datafile, dfs=dfs,
+                                        section=small_ssp_section1_datafile.section,
+                                        program_type=small_ssp_section1_datafile.prog_type)
+    parser.parse_and_validate()
 
     parser_errors = ParserError.objects.filter(file=small_ssp_section1_datafile)
     dfs.status = dfs.get_status()
@@ -477,7 +511,10 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile, dfs):
     dfs.datafile = ssp_section1_datafile
     dfs.save()
 
-    parse.parse_datafile(ssp_section1_datafile, dfs)
+    parser = ParserFactory.get_instance(datafile=ssp_section1_datafile, dfs=dfs,
+                                        section=ssp_section1_datafile.section,
+                                        program_type=ssp_section1_datafile.prog_type)
+    parser.parse_and_validate()
 
     parser_errors = ParserError.objects.filter(file=ssp_section1_datafile).order_by('row_number')
 
@@ -512,7 +549,10 @@ def test_parse_tanf_section1_datafile(small_tanf_section1_datafile, dfs):
     small_tanf_section1_datafile.quarter = 'Q1'
     dfs.datafile = small_tanf_section1_datafile
 
-    parse.parse_datafile(small_tanf_section1_datafile, dfs)
+    parser = ParserFactory.get_instance(datafile=small_tanf_section1_datafile, dfs=dfs,
+                                        section=small_tanf_section1_datafile.section,
+                                        program_type=small_tanf_section1_datafile.prog_type)
+    parser.parse_and_validate()
 
     dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
@@ -550,7 +590,10 @@ def test_parse_tanf_section1_datafile_obj_counts(small_tanf_section1_datafile, d
     dfs.datafile = small_tanf_section1_datafile
     dfs.save()
 
-    parse.parse_datafile(small_tanf_section1_datafile, dfs)
+    parser = ParserFactory.get_instance(datafile=small_tanf_section1_datafile, dfs=dfs,
+                                        section=small_tanf_section1_datafile.section,
+                                        program_type=small_tanf_section1_datafile.prog_type)
+    parser.parse_and_validate()
 
     assert TANF_T1.objects.count() == 5
     assert TANF_T2.objects.count() == 5
@@ -566,7 +609,10 @@ def test_parse_tanf_section1_datafile_t3s(small_tanf_section1_datafile, dfs):
     dfs.datafile = small_tanf_section1_datafile
     dfs.save()
 
-    parse.parse_datafile(small_tanf_section1_datafile, dfs)
+    parser = ParserFactory.get_instance(datafile=small_tanf_section1_datafile, dfs=dfs,
+                                        section=small_tanf_section1_datafile.section,
+                                        program_type=small_tanf_section1_datafile.prog_type)
+    parser.parse_and_validate()
 
     assert TANF_T3.objects.count() == 6
 
@@ -597,7 +643,10 @@ def test_parse_super_big_s1_file(super_big_s1_file, dfs):
     dfs.datafile = super_big_s1_file
     dfs.save()
 
-    parse.parse_datafile(super_big_s1_file, dfs)
+    parser = ParserFactory.get_instance(datafile=super_big_s1_file, dfs=dfs,
+                                        section=super_big_s1_file.section,
+                                        program_type=super_big_s1_file.prog_type)
+    parser.parse_and_validate()
     expected_t1_record_count = 96607
     expected_t2_record_count = 112753
     expected_t3_record_count = 172525
@@ -641,7 +690,10 @@ def test_parse_big_s1_file_with_rollback(big_s1_rollback_file, dfs):
     dfs.datafile = big_s1_rollback_file
     dfs.save()
 
-    parse.parse_datafile(big_s1_rollback_file, dfs)
+    parser = ParserFactory.get_instance(datafile=big_s1_rollback_file, dfs=dfs,
+                                        section=big_s1_rollback_file.section,
+                                        program_type=big_s1_rollback_file.prog_type)
+    parser.parse_and_validate()
 
     parser_errors = ParserError.objects.filter(file=big_s1_rollback_file)
     assert parser_errors.count() == 1
@@ -686,7 +738,10 @@ def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field
     dfs.datafile = bad_tanf_s1__row_missing_required_field
     dfs.save()
 
-    parse.parse_datafile(bad_tanf_s1__row_missing_required_field, dfs)
+    parser = ParserFactory.get_instance(datafile=bad_tanf_s1__row_missing_required_field, dfs=dfs,
+                                        section=bad_tanf_s1__row_missing_required_field.section,
+                                        program_type=bad_tanf_s1__row_missing_required_field.prog_type)
+    parser.parse_and_validate()
 
     assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
@@ -727,7 +782,10 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
     dfs.datafile = bad_ssp_s1__row_missing_required_field
     dfs.save()
 
-    parse.parse_datafile(bad_ssp_s1__row_missing_required_field, dfs)
+    parser = ParserFactory.get_instance(datafile=bad_ssp_s1__row_missing_required_field, dfs=dfs,
+                                        section=bad_ssp_s1__row_missing_required_field.section,
+                                        program_type=bad_ssp_s1__row_missing_required_field.prog_type)
+    parser.parse_and_validate()
 
     parser_errors = ParserError.objects.filter(file=bad_ssp_s1__row_missing_required_field)
     assert parser_errors.count() == 6
@@ -782,7 +840,10 @@ def test_dfs_set_case_aggregates(small_correct_file, dfs):
     small_correct_file.section = 'Active Case Data'
     small_correct_file.save()
     # this still needs to execute to create db objects to be queried
-    parse.parse_datafile(small_correct_file, dfs)
+    parser = ParserFactory.get_instance(datafile=small_correct_file, dfs=dfs,
+                                        section=small_correct_file.section,
+                                        program_type=small_correct_file.prog_type)
+    parser.parse_and_validate()
     dfs.file = small_correct_file
     dfs.status = dfs.get_status()
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
@@ -794,51 +855,6 @@ def test_dfs_set_case_aggregates(small_correct_file, dfs):
             assert month['accepted_with_errors'] == 0
 
 
-@pytest.mark.django_db
-def test_get_schema_options(dfs):
-    """Test use-cases for translating strings to named object references."""
-    '''
-    text -> section
-    text -> models{} YES
-    text -> model YES
-    datafile -> model
-        ^ section -> program -> model
-    datafile -> text
-    model -> text YES
-    section -> text
-
-    text**: input string from the header/file
-    '''
-
-    # from text:
-    schema = parse.get_schema_manager('T1xx', 'A', 'TAN')
-    assert isinstance(schema, aggregates.SchemaManager)
-    assert schema == schema_defs.tanf.t1
-
-    # get model
-    models = schema_defs.utils.get_program_models('TAN', 'A')
-    assert models == {
-        'T1': schema_defs.tanf.t1,
-        'T2': schema_defs.tanf.t2,
-        'T3': schema_defs.tanf.t3,
-    }
-
-    model = schema_defs.utils.get_program_model('TAN', 'A', 'T1')
-    assert model == schema_defs.tanf.t1
-    # get section
-    section = schema_defs.utils.get_section_reference('TAN', 'C')
-    assert section == DataFile.Section.CLOSED_CASE_DATA
-
-    # from datafile:
-    # get model(s)
-    # get section str
-
-    # from model:
-    # get text
-    # get section str
-    # get ref section
-
-
 @pytest.mark.django_db()
 def test_parse_small_tanf_section2_file(small_tanf_section2_file, dfs):
     """Test parsing a small TANF Section 2 submission."""
@@ -848,7 +864,10 @@ def test_parse_small_tanf_section2_file(small_tanf_section2_file, dfs):
     dfs.datafile = small_tanf_section2_file
     dfs.save()
 
-    parse.parse_datafile(small_tanf_section2_file, dfs)
+    parser = ParserFactory.get_instance(datafile=small_tanf_section2_file, dfs=dfs,
+                                        section=small_tanf_section2_file.section,
+                                        program_type=small_tanf_section2_file.prog_type)
+    parser.parse_and_validate()
 
     assert TANF_T4.objects.all().count() == 1
     assert TANF_T5.objects.all().count() == 1
@@ -876,7 +895,10 @@ def test_parse_tanf_section2_file(tanf_section2_file, dfs):
     dfs.datafile = tanf_section2_file
     dfs.save()
 
-    parse.parse_datafile(tanf_section2_file, dfs)
+    parser = ParserFactory.get_instance(datafile=tanf_section2_file, dfs=dfs,
+                                        section=tanf_section2_file.section,
+                                        program_type=tanf_section2_file.prog_type)
+    parser.parse_and_validate()
 
     assert TANF_T4.objects.all().count() == 223
     assert TANF_T5.objects.all().count() == 605
@@ -900,7 +922,10 @@ def test_parse_tanf_section3_file(tanf_section3_file, dfs):
 
     dfs.datafile = tanf_section3_file
 
-    parse.parse_datafile(tanf_section3_file, dfs)
+    parser = ParserFactory.get_instance(datafile=tanf_section3_file, dfs=dfs,
+                                        section=tanf_section3_file.section,
+                                        program_type=tanf_section3_file.prog_type)
+    parser.parse_and_validate()
 
     dfs.status = dfs.get_status()
     dfs.case_aggregates = aggregates.total_errors_by_month(
@@ -946,7 +971,10 @@ def test_parse_tanf_section1_blanks_file(tanf_section1_file_with_blanks, dfs):
     dfs.datafile = tanf_section1_file_with_blanks
     dfs.save()
 
-    parse.parse_datafile(tanf_section1_file_with_blanks, dfs)
+    parser = ParserFactory.get_instance(datafile=tanf_section1_file_with_blanks, dfs=dfs,
+                                        section=tanf_section1_file_with_blanks.section,
+                                        program_type=tanf_section1_file_with_blanks.prog_type)
+    parser.parse_and_validate()
 
     parser_errors = ParserError.objects.filter(file=tanf_section1_file_with_blanks)
 
@@ -973,7 +1001,10 @@ def test_parse_tanf_section4_file(tanf_section4_file, dfs):
 
     dfs.datafile = tanf_section4_file
 
-    parse.parse_datafile(tanf_section4_file, dfs)
+    parser = ParserFactory.get_instance(datafile=tanf_section4_file, dfs=dfs,
+                                        section=tanf_section4_file.section,
+                                        program_type=tanf_section4_file.prog_type)
+    parser.parse_and_validate()
 
     dfs.status = dfs.get_status()
     dfs.case_aggregates = aggregates.total_errors_by_month(
@@ -1014,7 +1045,10 @@ def test_parse_bad_tanf_section4_file(bad_tanf_section4_file, dfs):
 
     dfs.datafile = bad_tanf_section4_file
 
-    parse.parse_datafile(bad_tanf_section4_file, dfs)
+    parser = ParserFactory.get_instance(datafile=bad_tanf_section4_file, dfs=dfs,
+                                        section=bad_tanf_section4_file.section,
+                                        program_type=bad_tanf_section4_file.prog_type)
+    parser.parse_and_validate()
 
     dfs.status = dfs.get_status()
     dfs.case_aggregates = aggregates.total_errors_by_month(dfs.datafile, dfs.status)
@@ -1049,7 +1083,10 @@ def test_parse_ssp_section4_file(ssp_section4_file, dfs):
 
     dfs.datafile = ssp_section4_file
 
-    parse.parse_datafile(ssp_section4_file, dfs)
+    parser = ParserFactory.get_instance(datafile=ssp_section4_file, dfs=dfs,
+                                        section=ssp_section4_file.section,
+                                        program_type=ssp_section4_file.prog_type)
+    parser.parse_and_validate()
 
     m7_objs = SSP_M7.objects.all().order_by('FAMILIES_MONTH')
 
@@ -1078,7 +1115,10 @@ def test_parse_ssp_section2_rec_oadsi_file(ssp_section2_rec_oadsi_file, dfs):
 
     dfs.datafile = ssp_section2_rec_oadsi_file
 
-    parse.parse_datafile(ssp_section2_rec_oadsi_file, dfs)
+    parser = ParserFactory.get_instance(datafile=ssp_section2_rec_oadsi_file, dfs=dfs,
+                                        section=ssp_section2_rec_oadsi_file.section,
+                                        program_type=ssp_section2_rec_oadsi_file.prog_type)
+    parser.parse_and_validate()
     parser_errors = ParserError.objects.filter(file=ssp_section2_rec_oadsi_file)
 
     assert parser_errors.count() == 0
@@ -1092,7 +1132,10 @@ def test_parse_ssp_section2_file(ssp_section2_file, dfs):
 
     dfs.datafile = ssp_section2_file
 
-    parse.parse_datafile(ssp_section2_file, dfs)
+    parser = ParserFactory.get_instance(datafile=ssp_section2_file, dfs=dfs,
+                                        section=ssp_section2_file.section,
+                                        program_type=ssp_section2_file.prog_type)
+    parser.parse_and_validate()
 
     dfs.status = dfs.get_status()
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
@@ -1144,7 +1187,10 @@ def test_parse_ssp_section3_file(ssp_section3_file, dfs):
 
     dfs.datafile = ssp_section3_file
 
-    parse.parse_datafile(ssp_section3_file, dfs)
+    parser = ParserFactory.get_instance(datafile=ssp_section3_file, dfs=dfs,
+                                        section=ssp_section3_file.section,
+                                        program_type=ssp_section3_file.prog_type)
+    parser.parse_and_validate()
 
     dfs.status = dfs.get_status()
     dfs.case_aggregates = aggregates.total_errors_by_month(
@@ -1194,7 +1240,10 @@ def test_rpt_month_year_mismatch(header_datafile, dfs):
     dfs.datafile = header_datafile
     dfs.save()
 
-    parse.parse_datafile(datafile, dfs)
+    parser = ParserFactory.get_instance(datafile=datafile, dfs=dfs,
+                                        section=datafile.section,
+                                        program_type=datafile.prog_type)
+    parser.parse_and_validate()
 
     parser_errors = ParserError.objects.filter(file=datafile)
     assert parser_errors.count() == 2
@@ -1203,7 +1252,10 @@ def test_rpt_month_year_mismatch(header_datafile, dfs):
     datafile.year = 2023
     datafile.save()
 
-    parse.parse_datafile(datafile, dfs)
+    parser = ParserFactory.get_instance(datafile=datafile, dfs=dfs,
+                                        section=datafile.section,
+                                        program_type=datafile.prog_type)
+    parser.parse_and_validate()
 
     parser_errors = ParserError.objects.filter(file=datafile).order_by('-id')
     assert parser_errors.count() == 3
@@ -1223,7 +1275,10 @@ def test_parse_tribal_section_1_file(tribal_section_1_file, dfs):
 
     dfs.datafile = tribal_section_1_file
 
-    parse.parse_datafile(tribal_section_1_file, dfs)
+    parser = ParserFactory.get_instance(datafile=tribal_section_1_file, dfs=dfs,
+                                        section=tribal_section_1_file.section,
+                                        program_type=tribal_section_1_file.prog_type)
+    parser.parse_and_validate()
 
     dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.ACCEPTED
@@ -1255,7 +1310,10 @@ def test_parse_tribal_section_1_file(tribal_section_1_file, dfs):
 @pytest.mark.django_db()
 def test_parse_tribal_section_1_inconsistency_file(tribal_section_1_inconsistency_file, dfs):
     """Test parsing inconsistent Tribal TANF Section 1 submission."""
-    parse.parse_datafile(tribal_section_1_inconsistency_file, dfs)
+    parser = ParserFactory.get_instance(datafile=tribal_section_1_inconsistency_file, dfs=dfs,
+                                        section=tribal_section_1_inconsistency_file.section,
+                                        program_type=tribal_section_1_inconsistency_file.prog_type)
+    parser.parse_and_validate()
 
     assert Tribal_TANF_T1.objects.all().count() == 0
 
@@ -1274,7 +1332,10 @@ def test_parse_tribal_section_2_file(tribal_section_2_file, dfs):
 
     dfs.datafile = tribal_section_2_file
 
-    parse.parse_datafile(tribal_section_2_file, dfs)
+    parser = ParserFactory.get_instance(datafile=tribal_section_2_file, dfs=dfs,
+                                        section=tribal_section_2_file.section,
+                                        program_type=tribal_section_2_file.prog_type)
+    parser.parse_and_validate()
 
     dfs.status = dfs.get_status()
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
@@ -1312,7 +1373,10 @@ def test_parse_tribal_section_3_file(tribal_section_3_file, dfs):
 
     dfs.datafile = tribal_section_3_file
 
-    parse.parse_datafile(tribal_section_3_file, dfs)
+    parser = ParserFactory.get_instance(datafile=tribal_section_3_file, dfs=dfs,
+                                        section=tribal_section_3_file.section,
+                                        program_type=tribal_section_3_file.prog_type)
+    parser.parse_and_validate()
 
     dfs.status = dfs.get_status()
     dfs.case_aggregates = aggregates.total_errors_by_month(
@@ -1344,7 +1408,10 @@ def test_parse_tribal_section_4_file(tribal_section_4_file, dfs):
 
     dfs.datafile = tribal_section_4_file
 
-    parse.parse_datafile(tribal_section_4_file, dfs)
+    parser = ParserFactory.get_instance(datafile=tribal_section_4_file, dfs=dfs,
+                                        section=tribal_section_4_file.section,
+                                        program_type=tribal_section_4_file.prog_type)
+    parser.parse_and_validate()
 
     dfs.status = dfs.get_status()
     dfs.case_aggregates = aggregates.total_errors_by_month(
@@ -1388,7 +1455,10 @@ def test_misformatted_multi_records(file_fixture, result, number_of_errors, erro
     """Test that (not space filled) multi-records are caught."""
     file_fixture = request.getfixturevalue(file_fixture)
     dfs.datafile = file_fixture
-    parse.parse_datafile(file_fixture, dfs)
+    parser = ParserFactory.get_instance(datafile=file_fixture, dfs=dfs,
+                                        section=file_fixture.section,
+                                        program_type=file_fixture.prog_type)
+    parser.parse_and_validate()
     parser_errors = ParserError.objects.filter(file=file_fixture)
     t3 = TANF_T3.objects.all()
     assert t3.count() == result
@@ -1411,7 +1481,10 @@ def test_misformatted_multi_records(file_fixture, result, number_of_errors, erro
 def test_empty_t4_t5_values(t4_t5_empty_values, dfs):
     """Test that empty field values for un-required fields parse."""
     dfs.datafile = t4_t5_empty_values
-    parse.parse_datafile(t4_t5_empty_values, dfs)
+    parser = ParserFactory.get_instance(datafile=t4_t5_empty_values, dfs=dfs,
+                                        section=t4_t5_empty_values.section,
+                                        program_type=t4_t5_empty_values.prog_type)
+    parser.parse_and_validate()
     parser_errors = ParserError.objects.filter(file=t4_t5_empty_values)
     t4 = TANF_T4.objects.all()
     t5 = TANF_T5.objects.all()
@@ -1432,7 +1505,10 @@ def test_parse_t2_invalid_dob(t2_invalid_dob_file, dfs):
     t2_invalid_dob_file.quarter = 'Q1'
     dfs.save()
 
-    parse.parse_datafile(t2_invalid_dob_file, dfs)
+    parser = ParserFactory.get_instance(datafile=t2_invalid_dob_file, dfs=dfs,
+                                        section=t2_invalid_dob_file.section,
+                                        program_type=t2_invalid_dob_file.prog_type)
+    parser.parse_and_validate()
 
     parser_errors = ParserError.objects.filter(file=t2_invalid_dob_file).order_by("pk")
 
@@ -1444,40 +1520,6 @@ def test_parse_t2_invalid_dob(t2_invalid_dob_file, dfs):
     assert year_error.error_message == "T2 Item 32 (Date of Birth): Year Q897 must be larger than 1900."
     assert digits_error.error_message == "T2 Item 32 (Date of Birth): Q897$9 3 does not have exactly 8 digits."
 
-@pytest.mark.django_db
-def test_bulk_create_returns_rollback_response_on_bulk_index_exception(small_correct_file, mocker, dfs):
-    """Test bulk_create_records returns (False, [unsaved_records]) on BulkIndexException."""
-    mocker.patch(
-        'tdpservice.search_indexes.documents.tanf.TANF_T1DataSubmissionDocument.update',
-        side_effect=BulkIndexError('indexing exception')
-    )
-
-    # create some records, don't save them
-    records = {
-        documents.tanf.TANF_T1DataSubmissionDocument(): [TANF_T1()],
-        documents.tanf.TANF_T2DataSubmissionDocument(): [TANF_T2()],
-        documents.tanf.TANF_T3DataSubmissionDocument(): [TANF_T3()]
-    }
-
-    all_created = parse.bulk_create_records(
-        records,
-        line_number=1,
-        header_count=1,
-        datafile=small_correct_file,
-        dfs=dfs,
-        flush=True
-    )
-
-    assert LogEntry.objects.all().count() == 1
-
-    log = LogEntry.objects.get()
-    assert log.change_message == "Encountered error while indexing datafile documents: \nindexing exception"
-
-    assert all_created is True
-    assert TANF_T1.objects.all().count() == 1
-    assert TANF_T2.objects.all().count() == 1
-    assert TANF_T3.objects.all().count() == 1
-
 
 @pytest.mark.django_db()
 def test_parse_tanf_section4_file_with_errors(tanf_section_4_file_with_errors, dfs):
@@ -1486,7 +1528,10 @@ def test_parse_tanf_section4_file_with_errors(tanf_section_4_file_with_errors, d
     tanf_section_4_file_with_errors.quarter = 'Q1'
     dfs.datafile = tanf_section_4_file_with_errors
 
-    parse.parse_datafile(tanf_section_4_file_with_errors, dfs)
+    parser = ParserFactory.get_instance(datafile=tanf_section_4_file_with_errors, dfs=dfs,
+                                        section=tanf_section_4_file_with_errors.section,
+                                        program_type=tanf_section_4_file_with_errors.prog_type)
+    parser.parse_and_validate()
 
     dfs.status = dfs.get_status()
     dfs.case_aggregates = aggregates.total_errors_by_month(
@@ -1524,7 +1569,10 @@ def test_parse_tanf_section4_file_with_errors(tanf_section_4_file_with_errors, d
 def test_parse_no_records_file(no_records_file, dfs):
     """Test parsing TANF Section 4 submission."""
     dfs.datafile = no_records_file
-    parse.parse_datafile(no_records_file, dfs)
+    parser = ParserFactory.get_instance(datafile=no_records_file, dfs=dfs,
+                                        section=no_records_file.section,
+                                        program_type=no_records_file.prog_type)
+    parser.parse_and_validate()
 
     dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.REJECTED
@@ -1547,7 +1595,10 @@ def test_parse_aggregates_rejected_datafile(aggregates_rejected_datafile, dfs):
     aggregates_rejected_datafile.quarter = 'Q1'
     dfs.datafile = aggregates_rejected_datafile
 
-    parse.parse_datafile(aggregates_rejected_datafile, dfs)
+    parser = ParserFactory.get_instance(datafile=aggregates_rejected_datafile, dfs=dfs,
+                                        section=aggregates_rejected_datafile.section,
+                                        program_type=aggregates_rejected_datafile.prog_type)
+    parser.parse_and_validate()
 
     dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.REJECTED
@@ -1573,7 +1624,10 @@ def test_parse_tanf_section_1_file_with_bad_update_indicator(tanf_section_1_file
     """Test parsing TANF Section 1 submission update indicator."""
     dfs.datafile = tanf_section_1_file_with_bad_update_indicator
 
-    parse.parse_datafile(tanf_section_1_file_with_bad_update_indicator, dfs)
+    parser = ParserFactory.get_instance(datafile=tanf_section_1_file_with_bad_update_indicator, dfs=dfs,
+                                        section=tanf_section_1_file_with_bad_update_indicator.section,
+                                        program_type=tanf_section_1_file_with_bad_update_indicator.prog_type)
+    parser.parse_and_validate()
 
     parser_errors = ParserError.objects.filter(file=tanf_section_1_file_with_bad_update_indicator)
 
@@ -1591,7 +1645,10 @@ def test_parse_tribal_section_4_bad_quarter(tribal_section_4_bad_quarter, dfs):
     tribal_section_4_bad_quarter.quarter = 'Q1'
     dfs.datafile = tribal_section_4_bad_quarter
 
-    parse.parse_datafile(tribal_section_4_bad_quarter, dfs)
+    parser = ParserFactory.get_instance(datafile=tribal_section_4_bad_quarter, dfs=dfs,
+                                        section=tribal_section_4_bad_quarter.section,
+                                        program_type=tribal_section_4_bad_quarter.prog_type)
+    parser.parse_and_validate()
     parser_errors = ParserError.objects.filter(file=tribal_section_4_bad_quarter).order_by('id')
 
     assert parser_errors.count() == 3
@@ -1609,7 +1666,10 @@ def test_parse_t3_cat2_invalid_citizenship(t3_cat2_invalid_citizenship_file, dfs
     t3_cat2_invalid_citizenship_file.quarter = 'Q1'
     dfs.save()
 
-    parse.parse_datafile(t3_cat2_invalid_citizenship_file, dfs)
+    parser = ParserFactory.get_instance(datafile=t3_cat2_invalid_citizenship_file, dfs=dfs,
+                                        section=t3_cat2_invalid_citizenship_file.section,
+                                        program_type=t3_cat2_invalid_citizenship_file.prog_type)
+    parser.parse_and_validate()
 
     exclusion = Query(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY) | \
         Query(error_type=ParserErrorCategoryChoices.PRE_CHECK)
@@ -1630,7 +1690,10 @@ def test_parse_m2_cat2_invalid_37_38_39_file(m2_cat2_invalid_37_38_39_file, dfs)
     m2_cat2_invalid_37_38_39_file.quarter = 'Q1'
     dfs.save()
 
-    parse.parse_datafile(m2_cat2_invalid_37_38_39_file, dfs)
+    parser = ParserFactory.get_instance(datafile=m2_cat2_invalid_37_38_39_file, dfs=dfs,
+                                        section=m2_cat2_invalid_37_38_39_file.section,
+                                        program_type=m2_cat2_invalid_37_38_39_file.prog_type)
+    parser.parse_and_validate()
 
     exclusion = Query(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY) | \
         Query(error_type=ParserErrorCategoryChoices.PRE_CHECK)
@@ -1655,7 +1718,10 @@ def test_parse_m3_cat2_invalid_68_69_file(m3_cat2_invalid_68_69_file, dfs):
     m3_cat2_invalid_68_69_file.quarter = 'Q1'
     dfs.save()
 
-    parse.parse_datafile(m3_cat2_invalid_68_69_file, dfs)
+    parser = ParserFactory.get_instance(datafile=m3_cat2_invalid_68_69_file, dfs=dfs,
+                                        section=m3_cat2_invalid_68_69_file.section,
+                                        program_type=m3_cat2_invalid_68_69_file.prog_type)
+    parser.parse_and_validate()
 
     exclusion = Query(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY) | \
         Query(error_type=ParserErrorCategoryChoices.PRE_CHECK)
@@ -1682,7 +1748,10 @@ def test_parse_m5_cat2_invalid_23_24_file(m5_cat2_invalid_23_24_file, dfs):
     m5_cat2_invalid_23_24_file.quarter = 'Q1'
     dfs.save()
 
-    parse.parse_datafile(m5_cat2_invalid_23_24_file, dfs)
+    parser = ParserFactory.get_instance(datafile=m5_cat2_invalid_23_24_file, dfs=dfs,
+                                        section=m5_cat2_invalid_23_24_file.section,
+                                        program_type=m5_cat2_invalid_23_24_file.prog_type)
+    parser.parse_and_validate()
 
     exclusion = Query(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY) | \
         Query(error_type=ParserErrorCategoryChoices.PRE_CHECK)
@@ -1706,7 +1775,10 @@ def test_zero_filled_fips_code_file(test_file_zero_filled_fips_code, dfs):
     test_file_zero_filled_fips_code.quarter = 'Q2'
     test_file_zero_filled_fips_code.save()
 
-    parse.parse_datafile(test_file_zero_filled_fips_code, dfs)
+    parser = ParserFactory.get_instance(datafile=test_file_zero_filled_fips_code, dfs=dfs,
+                                        section=test_file_zero_filled_fips_code.section,
+                                        program_type=test_file_zero_filled_fips_code.prog_type)
+    parser.parse_and_validate()
 
     parser_errors = ParserError.objects.filter(file=test_file_zero_filled_fips_code)
     assert 'T1 Item 2 (County FIPS Code): field is required but a value was not' + \
@@ -1739,7 +1811,10 @@ def test_parse_duplicate(file, batch_size, model, record_type, num_errors, dfs, 
 
     settings.BULK_CREATE_BATCH_SIZE = batch_size
 
-    parse.parse_datafile(datafile, dfs)
+    parser = ParserFactory.get_instance(datafile=datafile, dfs=dfs,
+                                        section=datafile.section,
+                                        program_type=datafile.prog_type)
+    parser.parse_and_validate()
 
     settings.BULK_CREATE_BATCH_SIZE = os.getenv("BULK_CREATE_BATCH_SIZE", 10000)
 
@@ -1785,7 +1860,10 @@ def test_parse_partial_duplicate(file, batch_size, model, record_type, num_error
 
     settings.BULK_CREATE_BATCH_SIZE = batch_size
 
-    parse.parse_datafile(datafile, dfs)
+    parser = ParserFactory.get_instance(datafile=datafile, dfs=dfs,
+                                        section=datafile.section,
+                                        program_type=datafile.prog_type)
+    parser.parse_and_validate()
 
     settings.BULK_CREATE_BATCH_SIZE = os.getenv("BULK_CREATE_BATCH_SIZE", 10000)
 
@@ -1811,7 +1889,10 @@ def test_parse_cat_4_edge_case_file(cat4_edge_case_file, dfs):
 
     settings.BULK_CREATE_BATCH_SIZE = 1
 
-    parse.parse_datafile(cat4_edge_case_file, dfs)
+    parser = ParserFactory.get_instance(datafile=cat4_edge_case_file, dfs=dfs,
+                                        section=cat4_edge_case_file.section,
+                                        program_type=cat4_edge_case_file.prog_type)
+    parser.parse_and_validate()
 
     settings.BULK_CREATE_BATCH_SIZE = os.getenv("BULK_CREATE_BATCH_SIZE", 10000)
 

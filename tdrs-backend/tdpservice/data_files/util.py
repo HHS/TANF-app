@@ -72,6 +72,11 @@ def format_error_msg(error_msg, fields_json):
         error_msg = error_msg.replace(key, value) if value else error_msg
     return error_msg
 
+def item_numbers(fields_json, item_number):
+    """Return comma separated string of of item_numbers."""
+    if fields_json and 'item_numbers' in fields_json:
+        return ','.join([i for i in fields_json['item_numbers'].values()])
+    return item_number
 
 def friendly_names(fields_json):
     """Return comma separated string of friendly names."""
@@ -136,7 +141,7 @@ def active_closed_generator(record, rpt_month_year, fields_json):
             rpt_month_year[:4],
             calendar.month_name[int(rpt_month_year[4:])] if rpt_month_year[4:] else None,
             format_error_msg(record.error_message, fields_json),
-            record.item_number,
+            item_numbers(fields_json, record.item_number),
             friendly_names(fields_json),
             internal_names(fields_json),
             record.row_number,
@@ -148,7 +153,7 @@ def aggregate_stratum_generator(record, rpt_month_year, fields_json):
     return (rpt_month_year[:4],
             calendar.month_name[int(rpt_month_year[4:])] if rpt_month_year[4:] else None,
             format_error_msg(record.error_message, fields_json),
-            record.item_number,
+            item_numbers(fields_json, record.item_number),
             friendly_names(fields_json),
             internal_names(fields_json),
             record.row_number,
@@ -219,7 +224,7 @@ def write_aggregate_errors(worksheet, all_errors, bold):
             worksheet.write(row_idx, 0, rpt_month_year[:4])
             worksheet.write(row_idx, 1, calendar.month_name[int(rpt_month_year[4:])] if rpt_month_year[4:] else None)
             worksheet.write(row_idx, 2, format_error_msg(record['error_message'], fields_json))
-            worksheet.write(row_idx, 3, record['item_number'])
+            worksheet.write(row_idx, 3, item_numbers(fields_json, record['item_number']))
             worksheet.write(row_idx, 4, friendly_names(fields_json))
             worksheet.write(row_idx, 5, internal_names(fields_json))
             worksheet.write(row_idx, 6, str(ParserErrorCategoryChoices(record['error_type']).label))

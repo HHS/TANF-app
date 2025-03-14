@@ -1,12 +1,12 @@
 """Schema for HEADER row of all submission types."""
 
-
-from ..fields import Field
-from ..row_schema import RowSchema
+from tdpservice.parsers.dataclasses import FieldType
+from tdpservice.parsers.fields import Field
+from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.validators import category1, category2
 
 
-header = RowSchema(
+header = TanfDataReportSchema(
     record_type="HEADER",
     document=None,
     preparsing_validators=[
@@ -21,7 +21,7 @@ header = RowSchema(
             item="2",
             name="title",
             friendly_name="title",
-            type="string",
+            type=FieldType.ALPHA_NUMERIC,
             startIndex=0,
             endIndex=6,
             required=True,
@@ -33,7 +33,7 @@ header = RowSchema(
             item="4",
             name="year",
             friendly_name="year",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=6,
             endIndex=10,
             required=True,
@@ -43,7 +43,7 @@ header = RowSchema(
             item="5",
             name="quarter",
             friendly_name="quarter",
-            type="string",
+            type=FieldType.ALPHA_NUMERIC,
             startIndex=10,
             endIndex=11,
             required=True,
@@ -53,7 +53,7 @@ header = RowSchema(
             item="6",
             name="type",
             friendly_name="type",
-            type="string",
+            type=FieldType.ALPHA_NUMERIC,
             startIndex=11,
             endIndex=12,
             required=True,
@@ -63,7 +63,7 @@ header = RowSchema(
             item="1",
             name="state_fips",
             friendly_name="state fips",
-            type="string",
+            type=FieldType.ALPHA_NUMERIC,
             startIndex=12,
             endIndex=14,
             required=False,
@@ -81,7 +81,7 @@ header = RowSchema(
             item="3",
             name="tribe_code",
             friendly_name="tribe code",
-            type="string",
+            type=FieldType.ALPHA_NUMERIC,
             startIndex=14,
             endIndex=17,
             required=False,
@@ -91,7 +91,7 @@ header = RowSchema(
             item="7",
             name="program_type",
             friendly_name="program type",
-            type="string",
+            type=FieldType.ALPHA_NUMERIC,
             startIndex=17,
             endIndex=20,
             required=True,
@@ -101,7 +101,7 @@ header = RowSchema(
             item="8",
             name="edit",
             friendly_name="edit",
-            type="string",
+            type=FieldType.ALPHA_NUMERIC,
             startIndex=20,
             endIndex=21,
             required=True,
@@ -111,7 +111,7 @@ header = RowSchema(
             item="9",
             name="encryption",
             friendly_name="encryption",
-            type="string",
+            type=FieldType.ALPHA_NUMERIC,
             startIndex=21,
             endIndex=22,
             required=False,
@@ -121,7 +121,7 @@ header = RowSchema(
             item="10",
             name="update",
             friendly_name="update indicator",
-            type="string",
+            type=FieldType.ALPHA_NUMERIC,
             startIndex=22,
             endIndex=23,
             required=True,

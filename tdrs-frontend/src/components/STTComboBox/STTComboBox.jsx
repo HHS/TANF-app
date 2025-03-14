@@ -1,8 +1,8 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchSttList } from '../../actions/sttList'
-import ComboBox from '../ComboBox'
+import { ComboBox } from '../Form'
 import Modal from '../Modal'
 import { toTitleCase } from '../../utils/stringUtils'
 
@@ -36,7 +36,13 @@ function STTComboBox({ selectStt, selectedStt, handleBlur, error, sttType }) {
     ) {
       setReachedMaxTries(true)
     }
-  }, [dispatch, sttListRequest.sttList, numTries, reachedMaxTries])
+  }, [
+    dispatch,
+    sttListRequest.sttList,
+    sttListRequest.loading,
+    numTries,
+    reachedMaxTries,
+  ])
 
   const onSignOut = () => {
     window.location.href = `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`

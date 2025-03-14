@@ -12,7 +12,7 @@ import PropTypes from 'prop-types'
  * instance of this template
  * @returns {React.Component} A page to be used in an authenticacted context
  */
-export default function PrivateTemplate({ title, children }) {
+export default function PrivateTemplate({ title, subtitle, children }) {
   const headerRef = useRef()
   useEffect(() => {
     document.title = `${title} - TDP - TANF Data Portal`
@@ -32,6 +32,7 @@ export default function PrivateTemplate({ title, children }) {
       >
         {title}
       </h1>
+      {subtitle ? <h2 className="usa-intro">{subtitle}</h2> : null}
       {children}
     </div>
   )

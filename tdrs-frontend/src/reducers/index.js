@@ -5,6 +5,7 @@ import auth from './auth'
 import stts from './sttList'
 import requestAccess from './requestAccess'
 import reports from './reports'
+import fraReports from './fraReports'
 
 /**
  * Combines all store reducers
@@ -18,6 +19,7 @@ const createRootReducer = (history) =>
     stts,
     requestAccess,
     reports,
+    fraReports,
   })
 
 export default createRootReducer

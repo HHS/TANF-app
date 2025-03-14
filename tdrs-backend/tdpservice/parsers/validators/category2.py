@@ -1,8 +1,9 @@
 """Overloaded base validators and custom validators for category 2 validation (field validation)."""
 
 from tdpservice.parsers.util import clean_options_string
-from . import base
-from .util import ValidationErrorArgs, validator, make_validator
+from tdpservice.parsers.validators import base
+from tdpservice.parsers.validators.util import make_validator, validator
+from tdpservice.parsers.dataclasses import ValidationErrorArgs
 
 
 def format_error_context(eargs: ValidationErrorArgs):
