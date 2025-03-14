@@ -228,11 +228,19 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
         self.assert_data_file_created(response)
         self.assert_data_file_exists(data_file_data, 1, user)
 
-    def test_create_data_file_fra(self, api_client, data_file_data, user):
+    def test_create_data_file_fra_no_feat_flag(self, api_client, data_file_data, user):
         """Test ability to create data file metadata registry."""
         response = self.post_data_file_fra(api_client, data_file_data)
         assert response.data == {'section': [ErrorDetail(string='Section cannot be FRA', code='invalid')]}
         self.assert_data_file_error(response)
+
+    def test_create_data_file_fra_with_feat_flag(self, api_client, csv_data_file, user):
+        """Test ability to create data file metadata registry."""
+        user.feature_flags = {"fra_reports": True}
+        user.save()
+        response = self.post_data_file_fra(api_client, csv_data_file)
+        self.assert_data_file_created(response)
+        self.assert_data_file_exists(csv_data_file, 1, user)
 
     def test_data_file_file_version_increment(
         self,
@@ -430,7 +438,7 @@ class TestDataFileAsOFARegionalStaff(DataFileAPITestBase):
     def test_download_data_file_file_for_own_region(
         self, api_client, regional_data_file_data, user
     ):
-        """Test that the file is downloaded as expected for Regional Staffs's."""
+        """Test that the file is downloaded as expected for Regional Staff."""
         response = self.post_data_file_file(api_client, regional_data_file_data)
         data_file_id = response.data['id']
         response = self.download_file(api_client, data_file_id)

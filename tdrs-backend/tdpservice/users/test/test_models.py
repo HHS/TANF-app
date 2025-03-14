@@ -29,7 +29,7 @@ def test_regional_user_cannot_have_stt(regional_user, stt):
 def test_data_analyst_cannot_have_region(data_analyst, region):
     """Test that an error will be thrown if a region is set on a data analyst user."""
     with pytest.raises(ValidationError):
-        data_analyst.region = region
+        data_analyst.regions.add(region)
 
         data_analyst.clean()
         data_analyst.save()
@@ -61,7 +61,8 @@ def test_location_user_property(stt_user, regional_user, stt):
     """Test `location` property returns non-null models.Model representing Region or STT."""
     stt_user.stt = stt
     assert isinstance(stt_user.location, STT)
-    assert isinstance(regional_user.location, Region)
+    for region in regional_user.location:
+        assert isinstance(region, Region)
 
 
 @pytest.mark.django_db
@@ -69,7 +70,7 @@ def test_user_can_only_have_stt_or_region(user, stt, region):
     """Test that a validationError is raised when both the stt and region are set."""
     with pytest.raises(ValidationError):
         user.stt = stt
-        user.region = region
+        user.regions.add(region)
 
         user.clean()
         user.save()
@@ -79,7 +80,7 @@ def test_user_with_fra_access(client, admin_user, stt):
     """Test that a user with FRA access can only have an STT."""
     admin_user.stt = stt
     admin_user.is_superuser = True
-    admin_user.feature_flags = {"fra_access": False}
+    admin_user.feature_flags = {"fra_reports": False}
 
     admin_user.clean()
     admin_user.save()
@@ -94,7 +95,7 @@ def test_user_with_fra_access(client, admin_user, stt):
     response = client.get(f"/admin/data_files/datafile/{datafile.id}/change/")
     assert response.status_code == 302
 
-    admin_user.feature_flags = {"fra_access": True}
+    admin_user.feature_flags = {"fra_reports": True}
     admin_user.save()
 
     response = client.get(f"/admin/data_files/datafile/{datafile.id}/change/")

@@ -46,7 +46,7 @@ describe('Header', () => {
     )
     const welcomeLink = screen.getByText('Home')
     expect(welcomeLink).toBeInTheDocument()
-    const dataFilesLink = screen.getByText('Data Files')
+    const dataFilesLink = screen.getByText('TANF Data Files')
     expect(dataFilesLink).toBeInTheDocument()
     const profileLink = screen.getByText('Profile')
     expect(profileLink).toBeInTheDocument()
@@ -103,7 +103,7 @@ describe('Header', () => {
       </Provider>
     )
 
-    const dataFilesTab = screen.getByText('Data Files')
+    const dataFilesTab = screen.getByText('TANF Data Files')
 
     expect(dataFilesTab.parentNode).toHaveClass('usa-current')
   })
@@ -163,7 +163,7 @@ describe('Header', () => {
     )
 
     expect(queryByText('Welcome')).not.toBeInTheDocument()
-    expect(queryByText('Data Files')).not.toBeInTheDocument()
+    expect(queryByText('TANF Data Files')).not.toBeInTheDocument()
     expect(queryByText('Profile')).not.toBeInTheDocument()
     expect(queryByText('Admin')).not.toBeInTheDocument()
   })
@@ -190,7 +190,7 @@ describe('Header', () => {
       </Provider>
     )
 
-    expect(queryByText('Data Files')).not.toBeInTheDocument()
+    expect(queryByText('TANF Data Files')).not.toBeInTheDocument()
     expect(queryByText('Profile')).toBeInTheDocument()
     expect(queryByText('Admin')).toBeInTheDocument()
   })
@@ -222,7 +222,7 @@ describe('Header', () => {
       </Provider>
     )
 
-    expect(queryByText('Data Files')).not.toBeInTheDocument()
+    expect(queryByText('TANF Data Files')).not.toBeInTheDocument()
     expect(queryByText('Profile')).toBeInTheDocument()
     expect(queryByText('Admin')).not.toBeInTheDocument()
   })
@@ -236,7 +236,7 @@ describe('Header', () => {
       </Provider>
     )
 
-    expect(queryByText('Data Files')).toBeInTheDocument()
+    expect(queryByText('TANF Data Files')).toBeInTheDocument()
     expect(queryByText('Profile')).toBeInTheDocument()
     expect(queryByText('Admin')).toBeInTheDocument()
   })
