@@ -1,52 +1,17 @@
 """Decoder and utility classes."""
 
+from tdpservice.parsers.dataclasses import RawRow
+
 from abc import ABC, abstractmethod
 from enum import IntEnum, auto
 import chardet
 import csv
-from dataclasses import dataclass
 import logging
 from openpyxl import load_workbook
 import os
 import puremagic
-from typing import List, Tuple
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass
-class Position:
-    """Generic class representing a position in a row of data."""
-
-    start: int
-    end: int | None = None
-    is_range: bool = True
-
-    def __init__(self, start: int, end: int = None):
-        self.start = start
-        self.end = end if end is not None else start + 1
-        self.is_range = self.end - self.start > 1
-
-@dataclass
-class RawRow:
-    """Generic wrapper for indexable row data."""
-
-    raw_data: str | List | Tuple
-    raw_len: int
-    row_num: int
-    record_type: str
-
-    def value_at(self, position: Position):
-        """Get value at position."""
-        return self.raw_data[position.start:position.end]
-
-    def value_at_is(self, position: Position, expected_value):
-        """Check if the value at position matches the expected value."""
-        return self.value_at(position) == expected_value
-
-    def __len__(self):
-        """Return the length of raw_data."""
-        return self.raw_len
 
 
 class Decoder(IntEnum):
@@ -100,15 +65,18 @@ class Utf8Decoder(BaseDecoder):
     def get_header(self):
         """Get the first line in the file. Assumed to be the header."""
         raw_data = self.raw_file.readline().decode().strip()
-        return RawRow(raw_data=raw_data, raw_len=len(raw_data), row_num=self.current_row_num, record_type="HEADER")
+        return RawRow(data=raw_data, raw_len=len(raw_data), decoded_len=len(raw_data),
+                      row_num=self.current_row_num, record_type="HEADER")
 
     def decode(self):
         """Decode and yield each row."""
         for raw_data in self.raw_file:
             raw_len = len(raw_data)
             raw_data = raw_data.decode().strip('\r\n')
+            decoded_len = len(raw_data)
             record_type = self.get_record_type(raw_data)
-            yield RawRow(raw_data=raw_data, raw_len=raw_len, row_num=self.current_row_num, record_type=record_type)
+            yield RawRow(data=raw_data, raw_len=raw_len, decoded_len=decoded_len,
+                         row_num=self.current_row_num, record_type=record_type)
             self.current_row_num += 1
 
 
@@ -117,7 +85,19 @@ class CsvDecoder(BaseDecoder):
 
     def __init__(self, raw_file):
         super().__init__(raw_file)
-        self.csv_file = csv.reader(raw_file)
+        self.local_file = None
+        self.csv_file = None
+        self._open_as_csv()
+
+    def _open_as_csv(self):
+        """Read binary csv to local storage and reopen in text mode."""
+        name = self.raw_file.name.split('/')[-1]
+        with open(f'/tmp/{name}', 'wb') as file:
+            for line in self.raw_file:
+                file.write(line)
+
+        self.local_file = open(f'/tmp/{name}', 'rt')
+        self.csv_file = csv.reader(self.local_file)
 
     def get_record_type(self, raw_data):
         """Get the record type based on the raw data."""
@@ -128,15 +108,27 @@ class CsvDecoder(BaseDecoder):
         """Get the first line in the file. Assumed to be the header."""
         # TODO: Implement when FRA parser is fully implemented
         raw_data = None
-        return RawRow(raw_data=raw_data, raw_len=0, row_num=self.current_row_num, record_type="HEADER")
+        return RawRow(data=raw_data, raw_len=0, decoded_len=0,
+                      row_num=self.current_row_num, record_type="HEADER")
 
     def decode(self):
         """Decode and yield each row."""
         for raw_data in self.csv_file:
             raw_len = len(raw_data)
             record_type = self.get_record_type(raw_data)
-            yield RawRow(raw_data=raw_data, raw_len=raw_len, row_num=self.current_row_num, record_type=record_type)
+            yield RawRow(data=raw_data, raw_len=raw_len, decoded_len=raw_len,
+                         row_num=self.current_row_num, record_type=record_type)
             self.current_row_num += 1
+
+    def __del__(self):
+        """Close and delete the file when destructed."""
+        try:
+            self.local_file.close()
+            if os.path.exists(self.local_file.name):
+                os.remove(self.local_file.name)
+                logger.info(f"Deleted tempory storage of csv file: {self.raw_file.name}")
+        except Exception:
+            logger.exception("Encountered exception while closing and deleting file instance.")
 
 
 class XlsxDecoder(BaseDecoder):
@@ -155,14 +147,16 @@ class XlsxDecoder(BaseDecoder):
         """Get the first line in the file. Assumed to be the header."""
         # TODO: Implement when FRA parser is fully implemented
         raw_data = None
-        return RawRow(raw_data=raw_data, raw_len=0, row_num=self.current_row_num, record_type="HEADER")
+        return RawRow(data=raw_data, raw_len=0, decoded_len=0,
+                      row_num=self.current_row_num, record_type="HEADER")
 
     def decode(self):
         """Decode and yield each row."""
         for raw_data in self.work_book.active.iter_rows(values_only=True):
             raw_len = len(raw_data)
             record_type = self.get_record_type(raw_data)
-            yield RawRow(raw_data=raw_data, raw_len=raw_len, row_num=self.current_row_num, record_type=record_type)
+            yield RawRow(data=raw_data, raw_len=raw_len, decoded_len=raw_len,
+                         row_num=self.current_row_num, record_type=record_type)
             self.current_row_num += 1
 
 
@@ -181,10 +175,13 @@ class DecoderFactory:
             extension = os.path.splitext(raw_file.name)[-1]
             match extension:
                 case ".csv":
+                    logger.warning("File was empty. Returning CSV decoder based on extension.")
                     return Decoder.CSV
                 case ".xlsx":
+                    logger.warning("File was empty. Returning XLSX decoder based on extension.")
                     return Decoder.XLSX
                 case _:
+                    logger.warning("File was empty. Returning UTF8 decoder based on extension.")
                     return Decoder.UTF8
 
         data = raw_file.read(4096)
