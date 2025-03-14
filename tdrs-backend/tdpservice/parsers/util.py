@@ -4,6 +4,7 @@ from django.contrib.admin.models import ADDITION
 from django.contrib.contenttypes.models import ContentType
 from tdpservice.parsers.dataclasses import RawRow
 from tdpservice.data_files.models import DataFile
+from tdpservice.parsers.models import ParserErrorCategoryChoices
 from tdpservice.core.utils import log
 from datetime import datetime
 from pathlib import Path
@@ -53,6 +54,9 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
     # result field in the multi-field case.
     field = "Record_Type" if schema is not None and len(fields) == len(schema.fields) else fields[-1]
 
+    if error_category == ParserErrorCategoryChoices.PRE_CHECK:
+        record = None
+
     return ParserError(
         file=datafile,
         row_number=line_number,
@@ -96,7 +100,7 @@ def generate_fra_parser_error(datafile, line_number, schema, error_category, err
         row_number=line_number,
         column_number=getattr(offending_field, 'item', ''),
         item_number=getattr(offending_field, 'item', ''),
-        field_name=getattr(field, 'name', None) if hasattr(field, 'name') else field,
+        field_name=getattr(offending_field, 'name', None) if hasattr(offending_field, 'name') else offending_field,
         rpt_month_year=None,
         case_number=None,
         error_message=error_message,

@@ -26,7 +26,9 @@ class FRAParser(BaseParser):
         self.num_errors += 1
         error = generate_error(schema=None,
                                error_category=ParserErrorCategoryChoices.PRE_CHECK,
-                               error_message="File does not begin with FRA data.")
+                               error_message="File does not begin with FRA data.",
+                               fields=[],
+                               )
         self.unsaved_parser_errors.update({1: [error]})
         self.bulk_create_errors(flush=True)
         return HeaderResult(is_valid=False)
