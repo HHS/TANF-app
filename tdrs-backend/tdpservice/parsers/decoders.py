@@ -195,9 +195,10 @@ class DecoderFactory:
 
         data = raw_file.read(4096)
         char_result = chardet.detect(data)
-        if char_result.get('encoding') == "ascii":
+        encoding = char_result.get('encoding')
+        if encoding is not None and (encoding == "ascii" or "UTF-8" in encoding):
             confidence = char_result.get('confidence')
-            if "csv" in os.path.splitext(raw_file.name)[-1]:
+            if "csv" in extension:
                 logger.info(f"Returning CSV decoder with a confidence score of {confidence}")
                 return Decoder.CSV
             logger.info(f"Returning UTF-8 decoder with a confidence score of {confidence}")
