@@ -49,11 +49,11 @@ class Position:
         return self.end - self.start
 
 
-@dataclass
+@dataclass(eq=False)
 class RawRow:
     """Generic wrapper for indexable row data."""
 
-    data: str | List | Tuple
+    data: str | Tuple
     raw_len: int
     decoded_len: int
     row_num: int
@@ -86,6 +86,29 @@ class RawRow:
     def __hash__(self):
         """Return hash of data."""
         return hash(self.data)
+
+    def __eq__(self, value):
+        """Check if value equals self."""
+        if isinstance(value, RawRow):
+            return self.data == value.data
+        return False
+
+    def __ne__(self, value):
+        """Check if value does not equal self."""
+        return not self.__eq__(value)
+
+@dataclass(eq=False)
+class TupleRow(RawRow):
+    """Row class for Tuple based raw data."""
+
+    def value_at(self, position: Position):
+        """Get value at position."""
+        value = self.data[position.start:position.end]
+        if value is None or len(value) == 0:
+            return None
+        if position.is_range:
+            return value
+        return value[0]
 
 
 @dataclass
