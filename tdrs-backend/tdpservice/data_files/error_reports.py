@@ -11,7 +11,6 @@ from abc import ABC, abstractmethod
 from tdpservice.data_files.models import DataFile
 from tdpservice.data_files.util import ParserErrorCategoryChoices
 from tdpservice.parsers.models import ParserError
-from tdpservice.search_indexes.models.fra import TANF_Exiter1
 
 
 class ErrorReportFactory:

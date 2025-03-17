@@ -117,7 +117,8 @@ def generate_fra_parser_error(datafile, line_number, schema, error_category, err
 
 def make_generate_fra_parser_error(datafile, line_number):
     """Configure generate_fra_parser_error with a datafile and line number."""
-    def generate(schema, error_category, error_message, record=None, offending_field=None, fields=None, deprecated=False):
+    def generate(schema, error_category, error_message, record=None,
+                 offending_field=None, fields=None, deprecated=False):
         return generate_fra_parser_error(
             datafile=datafile,
             line_number=line_number,
