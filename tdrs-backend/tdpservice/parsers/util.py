@@ -160,7 +160,7 @@ def make_generate_file_precheck_parser_error(datafile, line_number):
             error_category=error_category,
             error_message=error_message,
             record=record,
-            field=field,  # purposely overridden to force a "Rejected" status for certain file precheck errors
+            field=field,
             deprecated=deprecated,
         )
 
