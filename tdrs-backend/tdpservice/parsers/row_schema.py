@@ -296,7 +296,7 @@ class FRASchema(RowSchema):
         if not preparsing_is_valid:
             if is_quiet_preparser_errors:
                 preparsing_errors = []
-            logger.info(f"{len(preparsing_errors)} preparser error(s) encountered.")
+            logger.info(f"{len(preparsing_errors)} category4 preparser error(s) encountered.")
 
         fields_are_valid, field_errors = self.run_field_validators(record, generate_error)
 
