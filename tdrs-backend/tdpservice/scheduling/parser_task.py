@@ -47,7 +47,7 @@ def parse(data_file_id, reparse_id=None):
         parser = ParserFactory.get_instance(datafile=data_file, dfs=dfs,
                                             section=data_file.section,
                                             program_type=data_file.prog_type)
-        errors = parser.parse_and_validate()
+        parser.parse_and_validate()
         dfs.status = dfs.get_status()
 
         if "Case Data" in data_file.section:
@@ -58,7 +58,7 @@ def parse(data_file_id, reparse_id=None):
         dfs.save()
 
         logger.info(f"Parsing finished for file -> {repr(data_file)} with status "
-                    f"{dfs.status} and {len(errors)} errors.")
+                    f"{dfs.status}.")
 
         if reparse_id is not None:
             file_meta.num_records_created = dfs.total_number_of_records_created
