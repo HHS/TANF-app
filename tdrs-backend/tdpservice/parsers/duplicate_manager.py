@@ -92,7 +92,7 @@ class CaseDuplicateDetector:
                         line_number=line_number,
                         schema=schema,
                         record=record,
-                        field=None,
+                        field=schema.fields,
                         error_message=err_msg,
                     )
             if is_new_max_precedence:

@@ -3,8 +3,9 @@
 import logging
 from tdpservice.parsers.base_parser import BaseParser
 from tdpservice.parsers.dataclasses import HeaderResult, Position
+from tdpservice.parsers.duplicate_manager import DuplicateManager
 from tdpservice.parsers.models import ParserErrorCategoryChoices
-from tdpservice.parsers.util import make_generate_fra_parser_error
+from tdpservice.parsers.util import make_generate_fra_parser_error, make_generate_case_consistency_parser_error
 
 
 logger = logging.getLogger(__name__)
@@ -19,6 +20,8 @@ class FRAParser(BaseParser):
 
     def __init__(self, datafile, dfs, section):
         super().__init__(datafile, dfs, section)
+        cat4_error_generator = make_generate_case_consistency_parser_error(self.datafile)
+        self.duplicate_manager = DuplicateManager(cat4_error_generator)
 
     def _create_header_error(self):
         """Create FRA header error and return invalid HeaderResult."""
@@ -73,9 +76,21 @@ class FRAParser(BaseParser):
                     record.datafile = self.datafile
 
                     # TODO: update schema.document when document is removed.
-                    self.unsaved_records.add_record(hash(row), (record, schema.document), self.current_row_num)
+                    row_hash = hash(row)
+                    self.unsaved_records.add_record(row_hash, (record, schema.document), self.current_row_num)
                     self.dfs.total_number_of_records_in_file += 1
 
+                    self.duplicate_manager.add_record(record, row_hash, schema, row, self.current_row_num)
+                    num_dup_errors = self.duplicate_manager.get_num_dup_errors(row_hash)
+
+                    should_remove = num_dup_errors > 0 or len(record_errors) > 0
+                    was_removed = self.unsaved_records.remove_case_due_to_errors(should_remove, row_hash)
+                    self.duplicate_manager.update_removed(row_hash, should_remove, was_removed)
+
+            dup_errors = self.duplicate_manager.get_generated_errors()
+            self.num_errors += len(dup_errors)
+            self.unsaved_parser_errors[None] = self.unsaved_parser_errors.get(None, []) + dup_errors
+            self.duplicate_manager.clear_errors()
             self.bulk_create_records(1)
             self.bulk_create_errors()
 
@@ -84,6 +99,7 @@ class FRAParser(BaseParser):
         all_created = self.bulk_create_records(1, flush=True)
 
         # Must happen after last bulk create
+        self._delete_serialized_records(self.duplicate_manager)
         self.create_no_records_created_pre_check_error()
 
         if not all_created:

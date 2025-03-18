@@ -1921,14 +1921,18 @@ def test_parse_fra_ofa_test_cases(request, file, dfs):
     dfs.datafile = datafile
     dfs.save()
 
+    settings.BULK_CREATE_BATCH_SIZE = 1
+
     parser = ParserFactory.get_instance(datafile=datafile, dfs=dfs,
                                         section=datafile.section,
                                         program_type=datafile.prog_type)
     parser.parse_and_validate()
 
+    settings.BULK_CREATE_BATCH_SIZE = os.getenv("BULK_CREATE_BATCH_SIZE", 10000)
+
     errors = ParserError.objects.filter(file=datafile).order_by("id")
     for e in errors:
-        assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
+        assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
 
-    assert errors.count() == 26
-    assert TANF_Exiter1.objects.all().count() == 12
+    assert errors.count() == 28
+    assert TANF_Exiter1.objects.all().count() == 10
