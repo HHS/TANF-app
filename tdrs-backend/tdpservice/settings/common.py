@@ -92,7 +92,6 @@ class Common(Configuration):
     ROOT_URLCONF = "tdpservice.urls"
     SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
     WSGI_APPLICATION = "tdpservice.wsgi.application"
-    CORS_ORIGIN_ALLOW_ALL = True
 
     # Application URLs
     BASE_URL = os.getenv('BASE_URL', 'http://localhost:8080/v1')
@@ -328,7 +327,10 @@ class Common(Configuration):
     TOKEN_EXPIRATION_HOURS = int(os.getenv("TOKEN_EXPIRATION_HOURS", 24))
 
     # CORS
+    CORS_ORIGIN_ALLOW_ALL = True
     CORS_ALLOW_CREDENTIALS = True
+    CORS_PREFLIGHT_MAX_AGE = 1800
+
 
     # Capture all logging statements across the service in the root handler
     logger = logging.getLogger()

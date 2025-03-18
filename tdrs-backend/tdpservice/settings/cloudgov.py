@@ -118,14 +118,7 @@ class CloudGov(Common):
     MEDIA_URL = \
         f'{AWS_S3_STATICFILES_ENDPOINT}/{AWS_S3_STATICFILES_BUCKET_NAME}/{APP_NAME}/'
 
-    # https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/http-caching#cache-control
-    # Response can be cached by browser and any intermediary caches
-    # (i.e. it is "public") for up to 1 day
-    # 86400 = (60 seconds x 60 minutes x 24 hours)
-    # TODO: Determine if this is still necessary
-    AWS_HEADERS = {
-        "Cache-Control": "max-age=86400, s-maxage=86400, must-revalidate",
-    }
+
     # The following variables are used to configure the Django Elasticsearch
     es_access_key = cloudgov_services['aws-elasticsearch'][0]['credentials']['access_key']
     es_secret_key = cloudgov_services['aws-elasticsearch'][0]['credentials']['secret_key']
