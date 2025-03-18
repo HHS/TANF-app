@@ -118,7 +118,6 @@ class CloudGov(Common):
     MEDIA_URL = \
         f'{AWS_S3_STATICFILES_ENDPOINT}/{AWS_S3_STATICFILES_BUCKET_NAME}/{APP_NAME}/'
 
-
     # The following variables are used to configure the Django Elasticsearch
     es_access_key = cloudgov_services['aws-elasticsearch'][0]['credentials']['access_key']
     es_secret_key = cloudgov_services['aws-elasticsearch'][0]['credentials']['secret_key']
