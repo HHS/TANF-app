@@ -45,7 +45,7 @@ class DataFileAPITestBase:
         test_datafile = util.create_test_datafile('fra.csv', stt_user, stt,
                                                   DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)
         test_datafile.year = 2024
-        test_datafile.quarter = 'Q1'
+        test_datafile.quarter = 'Q2'
         test_datafile.save()
         return test_datafile
 
@@ -55,7 +55,7 @@ class DataFileAPITestBase:
         test_datafile = util.create_test_datafile('fra.xlsx', stt_user, stt,
                                                   DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)
         test_datafile.year = 2024
-        test_datafile.quarter = 'Q1'
+        test_datafile.quarter = 'Q2'
         test_datafile.save()
         return test_datafile
 
@@ -127,10 +127,16 @@ class DataFileAPITestBase:
         wb = DataFileAPITestBase.get_spreadsheet(response)
         sheet = wb['Error Report']
 
-        assert sheet.cell(row=9, column=1).value == 202301
-        assert sheet.cell(row=9, column=2).value == "*****5507"
-        assert sheet.cell(row=9, column=3).value == "A10"
-        assert sheet.cell(row=9, column=4).value == "TE1 Item A (Exit Date): Year 2023 must be larger than 2023."
+        assert sheet.cell(row=2, column=1).value == 202403
+        assert sheet.cell(row=2, column=2).value == "*****5891"
+        assert sheet.cell(row=2, column=3).value == "7"
+        assert sheet.cell(row=2, column=4).value == ("Duplicate record detected with record type TE1 at line 7. "
+                                                     "Record is a duplicate of the record at line number 6.")
+
+        assert sheet.cell(row=3, column=1).value == 202301
+        assert sheet.cell(row=3, column=2).value == "*****5507"
+        assert sheet.cell(row=3, column=3).value == "A10"
+        assert sheet.cell(row=3, column=4).value == "TE1 Item A (Exit Date): Year 2023 must be larger than 2023."
 
     @staticmethod
     def assert_error_report_tanf_file_content_matches_with_friendly_names(response):
