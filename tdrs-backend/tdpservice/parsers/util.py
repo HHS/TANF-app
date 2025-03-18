@@ -54,7 +54,7 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
     # result field in the multi-field case.
     field = "Record_Type" if schema is not None and len(fields) == len(schema.fields) else fields[-1]
 
-    if error_category == ParserErrorCategoryChoices.PRE_CHECK:
+    if (error_category in (ParserErrorCategoryChoices.PRE_CHECK, ParserErrorCategoryChoices.CASE_CONSISTENCY)):
         record = None
 
     return ParserError(
