@@ -1842,15 +1842,15 @@ def test_parse_fra_work_outcome_exiters(request, file, dfs):
                                         program_type=datafile.prog_type)
     parser.parse_and_validate()
 
-    assert TANF_Exiter1.objects.all().count() == 7
+    assert TANF_Exiter1.objects.all().count() == 5
 
     errors = ParserError.objects.filter(file=datafile).order_by("id")
-    assert errors.count() == 14
+    assert errors.count() == 15
     for e in errors:
-        assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert dfs.total_number_of_records_in_file == 7
-    assert dfs.total_number_of_records_created == 7
-    assert dfs.get_status() == DataFileSummary.Status.REJECTED
+        assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+    assert dfs.total_number_of_records_in_file == 11
+    assert dfs.total_number_of_records_created == 5
+    assert dfs.get_status() == DataFileSummary.Status.PARTIALLY_ACCEPTED
 
 @pytest.mark.parametrize("file", [
     ('fra_bad_header_csv'),
