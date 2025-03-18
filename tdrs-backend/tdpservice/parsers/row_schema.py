@@ -273,7 +273,6 @@ class FRASchema(RowSchema):
         super().__init__(record_type, document, fields, generate_hashes_func,
                          should_skip_partial_dup_func, preparsing_validators, quiet_preparser_errors)
 
-
     def parse_and_validate(self, row: RawRow, generate_error):
         """Run all validation steps in order, and parse the given row into a record."""
         # Parse FRA row and run field validators, waiting for guidance on other categories of validators

@@ -1,7 +1,6 @@
 """TANF/SSP/Tribal parser class."""
 
 from django.conf import settings
-from django.db.utils import DatabaseError
 import logging
 from tdpservice.parsers import schema_defs
 from tdpservice.parsers.base_parser import BaseParser
@@ -9,8 +8,11 @@ from tdpservice.parsers.case_consistency_validator import CaseConsistencyValidat
 from tdpservice.parsers.dataclasses import HeaderResult, Position
 from tdpservice.parsers.models import ParserErrorCategoryChoices
 from tdpservice.parsers.schema_defs.utils import ProgramManager
-from tdpservice.parsers.util import log_parser_exception, make_generate_case_consistency_parser_error, \
-    make_generate_file_precheck_parser_error, make_generate_parser_error
+from tdpservice.parsers.util import (
+    make_generate_case_consistency_parser_error,
+    make_generate_file_precheck_parser_error,
+    make_generate_parser_error
+)
 from tdpservice.parsers.validators import category1
 from tdpservice.parsers.validators.util import value_is_empty
 
