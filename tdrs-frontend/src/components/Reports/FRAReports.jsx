@@ -416,7 +416,12 @@ const UploadForm = ({
   )
 }
 
-const SubmissionHistory = ({ data, sectionName, handleDownload }) => (
+const SubmissionHistory = ({
+  data,
+  sectionName,
+  handleDownload,
+  isRegionalStaff,
+}) => (
   <table className="usa-table usa-table--striped">
     <caption>{sectionName} Submission History</caption>
     {data && data.length > 0 ? (
@@ -435,12 +440,16 @@ const SubmissionHistory = ({ data, sectionName, handleDownload }) => (
             <tr>
               <td>{formatDate(file.createdAt) + ' by ' + file.submittedBy}</td>
               <td>
-                <button
-                  className="section-download"
-                  onClick={() => handleDownload(file)}
-                >
-                  {file.fileName}
-                </button>
+                {isRegionalStaff ? (
+                  file.fileName
+                ) : (
+                  <button
+                    className="section-download"
+                    onClick={() => handleDownload(file)}
+                  >
+                    {file.fileName}
+                  </button>
+                )}
               </td>
               <td>{file?.summary?.case_aggregates?.total_errors}</td>
               <td>
@@ -850,6 +859,7 @@ const FRAReports = () => {
               <SubmissionHistory
                 sectionName={getReportTypeLabel()}
                 handleDownload={handleDownload}
+                isRegionalStaff={isRegionalStaff}
               />
             </PaginatedComponent>
           </div>
