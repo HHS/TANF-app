@@ -11,7 +11,7 @@ assignees: ''
 _Provide context, goals, and justification for the research._
 
 ### Why It Matters
-_ Explain how this research supports user needs, compliance, or team goals. What value will it bring?_ 
+_Explain how this research supports user needs, compliance, or team goals. What value will it bring?_ 
 
 ### What's Changing
 _Summarize key outcomes of the research that could impact users, product direction, or stakeholders._
