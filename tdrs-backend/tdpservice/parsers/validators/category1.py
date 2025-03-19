@@ -73,29 +73,40 @@ def or_priority_validators(validators=[]):
     return or_priority_validators_func
 
 
+def _validate_YYYYmm_against_file_fiscal_period(row: RawRow, date_field, eargs):
+    """Validate that the YYYYmm date field matches the file fiscal period."""
+    row_schema = eargs.row_schema
+    field_month_year = row_schema.get_field_values_by_names(
+        row, [date_field]).get(date_field)
+    df_quarter = row_schema.datafile.quarter
+    df_year = row_schema.datafile.year
+
+    # get reporting month year from header
+    field_year, field_quarter = year_month_to_year_quarter(f"{field_month_year}")
+    file_calendar_year, file_calendar_qtr = fiscal_to_calendar(df_year, f"{df_quarter}")
+
+    if str(file_calendar_year) == str(field_year) and file_calendar_qtr == field_quarter:
+        return Result()
+
+    return Result(
+        valid=False,
+        error=(f"{row_schema.record_type}: Reporting month year {field_month_year} "
+               f"does not match file reporting year:{df_year}, quarter:{df_quarter}."),
+    )
+
+
 def validate_fieldYearMonth_with_headerYearQuarter():
     """Validate that the field year and month match the header year and quarter."""
-    def validate_reporting_month_year_fields_header(row: RawRow, eargs):
-        row_schema = eargs.row_schema
-        field_month_year = row_schema.get_field_values_by_names(
-            row, ['RPT_MONTH_YEAR']).get('RPT_MONTH_YEAR')
-        df_quarter = row_schema.datafile.quarter
-        df_year = row_schema.datafile.year
+    def validate(row: RawRow, eargs):
+        return _validate_YYYYmm_against_file_fiscal_period(row, 'RPT_MONTH_YEAR', eargs)
+    return validate
 
-        # get reporting month year from header
-        field_year, field_quarter = year_month_to_year_quarter(f"{field_month_year}")
-        file_calendar_year, file_calendar_qtr = fiscal_to_calendar(df_year, f"{df_quarter}")
 
-        if str(file_calendar_year) == str(field_year) and file_calendar_qtr == field_quarter:
-            return Result()
-
-        return Result(
-            valid=False,
-            error=(f"{row_schema.record_type}: Reporting month year {field_month_year} "
-                   f"does not match file reporting year:{df_year}, quarter:{df_quarter}."),
-        )
-
-    return validate_reporting_month_year_fields_header
+def validate_exit_date_against_fiscal_period():
+    """Validate that the exit date is within the fiscal period."""
+    def validate(row: RawRow, eargs):
+        return _validate_YYYYmm_against_file_fiscal_period(row, 'EXIT_DATE', eargs)
+    return validate
 
 
 def validateRptMonthYear():

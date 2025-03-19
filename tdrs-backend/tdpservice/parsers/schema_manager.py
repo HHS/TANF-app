@@ -28,7 +28,6 @@ class SchemaManager:
 
     def parse_and_validate(self, row, generate_error):
         """Run `parse_and_validate` for each schema provided and bubble up errors."""
-        # row should know it's record type
         try:
             records = []
             schemas = self.schema_map[row.record_type]
