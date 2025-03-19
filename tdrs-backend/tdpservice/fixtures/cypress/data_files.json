@@ -1,0 +1,50 @@
+[
+    {
+        "model": "data_files.datafile",
+        "pk": 9,
+        "fields": {
+            "original_filename": "small_tanf_section1.txt",
+            "slug": "ec762e41-0821-4c84-90f2-94f03c7ba914",
+            "extension": "txt",
+            "created_at": "2025-02-24T13:48:55.022Z",
+            "quarter": "Q1",
+            "year": 2023,
+            "section": "Active Case Data",
+            "version": 4,
+            "user": "bfcdc9bc-0b54-4b53-8f04-8aed0b0a9459",
+            "stt": 14,
+            "file": "data_files/2021/Q1/4/Active Case Data/small_tanf_section1.txt",
+            "s3_versioning_id": "ad9b635b-6bf9-4e81-90c7-6f0250e5456e"
+        }
+    },
+    {
+        "model": "parsers.datafilesummary",
+        "pk": 1,
+        "fields": {
+            "status": "Accepted with Errors",
+            "datafile": 9,
+            "case_aggregates": {
+                "months": [
+                    {
+                        "month": "Oct",
+                        "accepted_with_errors": 1,
+                        "accepted_without_errors": 4
+                    },
+                    {
+                        "month": "Nov",
+                        "accepted_with_errors": 0,
+                        "accepted_without_errors": 0
+                    },
+                    {
+                        "month": "Dec",
+                        "accepted_with_errors": 0,
+                        "accepted_without_errors": 0
+                    }
+                ],
+                "rejected": 0
+            },
+            "total_number_of_records_in_file": 16,
+            "total_number_of_records_created": 16
+        }
+    }
+]
