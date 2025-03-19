@@ -1,9 +1,11 @@
 """Overloads and custom validators for category 1 (preparsing)."""
 
+from tdpservice.parsers.dataclasses import RawRow
 from tdpservice.parsers.models import ParserErrorCategoryChoices
 from tdpservice.parsers.util import fiscal_to_calendar, year_month_to_year_quarter
-from . import base
-from .util import Result, ValidationErrorArgs, make_validator, _is_all_zeros, _is_empty, value_is_empty
+from tdpservice.parsers.validators import base
+from tdpservice.parsers.validators.util import Result, make_validator, _is_all_zeros, _is_empty, value_is_empty
+from tdpservice.parsers.dataclasses import ValidationErrorArgs
 
 
 def format_error_context(eargs: ValidationErrorArgs):
@@ -12,7 +14,7 @@ def format_error_context(eargs: ValidationErrorArgs):
 
 
 def recordIsNotEmpty(start=0, end=None, **kwargs):
-    """Return a function that tests that a record/line is not empty."""
+    """Return a function that tests that a record/row is not empty."""
     return make_validator(
         base.isNotEmpty(start, end, **kwargs),
         lambda eargs: f'{format_error_context(eargs)} {str(eargs.value)} contains blanks '
@@ -21,7 +23,7 @@ def recordIsNotEmpty(start=0, end=None, **kwargs):
 
 
 def recordHasLength(length, **kwargs):
-    """Return a function that tests that a record/line has the specified length."""
+    """Return a function that tests that a record/row has the specified length."""
     return make_validator(
         base.hasLength(length, **kwargs),
         lambda eargs:
@@ -30,7 +32,7 @@ def recordHasLength(length, **kwargs):
 
 
 def recordHasLengthBetween(min, max, **kwargs):
-    """Return a function that tests that a record/line has a length between min and max."""
+    """Return a function that tests that a record/row has a length between min and max."""
     _validator = base.isBetween(min, max, inclusive=True, **kwargs)
     return make_validator(
         lambda record: _validator(len(record)),
@@ -41,7 +43,7 @@ def recordHasLengthBetween(min, max, **kwargs):
 
 
 def recordStartsWith(substr, func=None, **kwargs):
-    """Return a function that tests that a record/line starts with a specified substr."""
+    """Return a function that tests that a record/row starts with a specified substr."""
     return make_validator(
         base.startsWith(substr, **kwargs),
         func if func else lambda eargs: f'{eargs.value} must start with {substr}.'
@@ -49,7 +51,7 @@ def recordStartsWith(substr, func=None, **kwargs):
 
 
 def caseNumberNotEmpty(start=0, end=None, **kwargs):
-    """Return a function that tests that a record/line is not blank between the Case Number indices."""
+    """Return a function that tests that a record/row is not blank between the Case Number indices."""
     return make_validator(
         base.isNotEmpty(start, end, **kwargs),
         lambda eargs: f'{eargs.row_schema.record_type}: Case number {str(eargs.value)} cannot contain blanks.'
@@ -71,29 +73,40 @@ def or_priority_validators(validators=[]):
     return or_priority_validators_func
 
 
+def _validate_YYYYmm_against_file_fiscal_period(row: RawRow, date_field, eargs):
+    """Validate that the YYYYmm date field matches the file fiscal period."""
+    row_schema = eargs.row_schema
+    field_month_year = row_schema.get_field_values_by_names(
+        row, [date_field]).get(date_field)
+    df_quarter = row_schema.datafile.quarter
+    df_year = row_schema.datafile.year
+
+    # get reporting month year from header
+    field_year, field_quarter = year_month_to_year_quarter(f"{field_month_year}")
+    file_calendar_year, file_calendar_qtr = fiscal_to_calendar(df_year, f"{df_quarter}")
+
+    if str(file_calendar_year) == str(field_year) and file_calendar_qtr == field_quarter:
+        return Result()
+
+    return Result(
+        valid=False,
+        error=(f"{row_schema.record_type}: Reporting month year {field_month_year} "
+               f"does not match file reporting year:{df_year}, quarter:{df_quarter}."),
+    )
+
+
 def validate_fieldYearMonth_with_headerYearQuarter():
     """Validate that the field year and month match the header year and quarter."""
-    def validate_reporting_month_year_fields_header(line, eargs):
-        row_schema = eargs.row_schema
-        field_month_year = row_schema.get_field_values_by_names(
-            line, ['RPT_MONTH_YEAR']).get('RPT_MONTH_YEAR')
-        df_quarter = row_schema.datafile.quarter
-        df_year = row_schema.datafile.year
+    def validate(row: RawRow, eargs):
+        return _validate_YYYYmm_against_file_fiscal_period(row, 'RPT_MONTH_YEAR', eargs)
+    return validate
 
-        # get reporting month year from header
-        field_year, field_quarter = year_month_to_year_quarter(f"{field_month_year}")
-        file_calendar_year, file_calendar_qtr = fiscal_to_calendar(df_year, f"{df_quarter}")
 
-        if str(file_calendar_year) == str(field_year) and file_calendar_qtr == field_quarter:
-            return Result()
-
-        return Result(
-            valid=False,
-            error=(f"{row_schema.record_type}: Reporting month year {field_month_year} "
-                   f"does not match file reporting year:{df_year}, quarter:{df_quarter}."),
-        )
-
-    return validate_reporting_month_year_fields_header
+def validate_exit_date_against_fiscal_period():
+    """Validate that the exit date is within the fiscal period."""
+    def validate(row: RawRow, eargs):
+        return _validate_YYYYmm_against_file_fiscal_period(row, 'EXIT_DATE', eargs)
+    return validate
 
 
 def validateRptMonthYear():
@@ -110,22 +123,22 @@ def validateRptMonthYear():
 
 def t3_m3_child_validator(which_child):
     """T3 child validator."""
-    def t3_first_child_validator_func(line, eargs):
-        if not _is_empty(line, 1, 60) and len(line) >= 60:
+    def t3_first_child_validator_func(row: RawRow, eargs):
+        if not _is_empty(row, 1, 60) and len(row) >= 60:
             return Result()
-        elif not len(line) >= 60:
-            return Result(valid=False, error=f"The first child record is too short at {len(line)} "
+        elif not len(row) >= 60:
+            return Result(valid=False, error=f"The first child record is too short at {len(row)} "
                           "characters and must be at least 60 characters.")
         else:
             return Result(valid=False, error="The first child record is empty.")
 
-    def t3_second_child_validator_func(line, eargs):
-        if not _is_empty(line, 60, 101) and len(line) >= 101 and \
-                not _is_empty(line, 8, 19) and \
-                not _is_all_zeros(line, 60, 101):
+    def t3_second_child_validator_func(row: RawRow, eargs):
+        if not _is_empty(row, 60, 101) and len(row) >= 101 and \
+                not _is_empty(row, 8, 19) and \
+                not _is_all_zeros(row, 60, 101):
             return Result()
-        elif not len(line) >= 101:
-            return Result(valid=False, error=(f"The second child record is too short at {len(line)} "
+        elif not len(row) >= 101:
+            return Result(valid=False, error=(f"The second child record is too short at {len(row)} "
                                               "characters and must be at least 101 characters."))
         else:
             return Result(valid=False, error="The second child record is empty.")

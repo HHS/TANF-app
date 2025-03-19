@@ -2,6 +2,7 @@
 
 from tdpservice.parsers import schema_defs
 from tdpservice.parsers import util
+from tdpservice.parsers.dataclasses import RawRow
 import pytest
 
 import logging
@@ -31,8 +32,10 @@ def test_header_cleanup(test_datafile):
         f"HEADER{YEAR}{QUARTER}{TYPE}{STATE_FIPS}{TRIBE_CODE}"
         + f"{PROGRAM_CODE}{EDIT_CODE}{ENCRYPTION_CODE}{UPDATE_INDICATOR}"
     )
+    length = len(header_line)
+    row = RawRow(data=header_line, raw_len=length, decoded_len=length, row_num=1, record_type="HEADER")
     header, header_is_valid, header_errors = schema_defs.header.parse_and_validate(
-        header_line, util.make_generate_file_precheck_parser_error(test_datafile, 1)
+        row, util.make_generate_file_precheck_parser_error(test_datafile, 1)
     )
 
     assert header_is_valid
@@ -66,7 +69,9 @@ def test_header_cleanup(test_datafile):
 def test_header_fields(test_datafile, header_line, is_valid, error):
     """Test validate all header fields."""
     generate_error = util.make_generate_parser_error(test_datafile, 1)
-    header, header_is_valid, header_errors = schema_defs.header.parse_and_validate(header_line,
+    length = len(header_line)
+    row = RawRow(data=header_line, raw_len=length, decoded_len=length, row_num=1, record_type="HEADER")
+    header, header_is_valid, header_errors = schema_defs.header.parse_and_validate(row,
                                                                                    generate_error)
 
     assert is_valid == header_is_valid

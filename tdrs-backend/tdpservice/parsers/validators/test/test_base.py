@@ -2,7 +2,7 @@
 
 
 import pytest
-from .. import base
+from tdpservice.parsers.validators import base
 
 
 @pytest.mark.parametrize('val, option, kwargs, expected', [

@@ -1,165 +1,150 @@
 """Utility functions for parsing."""
 
-from .. import schema_defs
+from tdpservice.parsers import schema_defs
 from tdpservice.data_files.models import DataFile
 import logging
 
 logger = logging.getLogger(__name__)
 
-def get_schema_options(program, section, query=None, model=None, model_name=None):
-    """Centralized function to return the appropriate schema for a given program, section, and query.
+class ProgramManager:
+    """Container class to map schemas based on program and section."""
 
-    TODO: need to rework this docstring as it is outdated hence the weird ';;' for some of them.
-
-    @param program: the abbreviated program type (.e.g, 'TAN')
-    @param section: the section of the file (.e.g, 'A');; or ACTIVE_CASE_DATA
-    @param query: the query for section_names (.e.g, 'section', 'models', etc.)
-    @return: the appropriate references (e.g., ACTIVE_CASE_DATA or {t1,t2,t3}) ;; returning 'A'
-    """
-    schema_options = {
-        'TAN': {
-            'A': {
-                'section': DataFile.Section.ACTIVE_CASE_DATA,
-                'models': {
-                    'T1': schema_defs.tanf.t1,
-                    'T2': schema_defs.tanf.t2,
-                    'T3': schema_defs.tanf.t3,
-                }
-            },
-            'C': {
-                'section': DataFile.Section.CLOSED_CASE_DATA,
-                'models': {
-                    'T4': schema_defs.tanf.t4,
-                    'T5': schema_defs.tanf.t5,
-                }
-            },
-            'G': {
-                'section': DataFile.Section.AGGREGATE_DATA,
-                'models': {
-                    'T6': schema_defs.tanf.t6,
-                }
-            },
-            'S': {
-                'section': DataFile.Section.STRATUM_DATA,
-                'models': {
-                    'T7': schema_defs.tanf.t7,
-                }
-            }
-        },
-        'SSP': {
-            'A': {
-                'section': DataFile.Section.SSP_ACTIVE_CASE_DATA,
-                'models': {
-                    'M1': schema_defs.ssp.m1,
-                    'M2': schema_defs.ssp.m2,
-                    'M3': schema_defs.ssp.m3,
-                }
-            },
-            'C': {
-                'section': DataFile.Section.SSP_CLOSED_CASE_DATA,
-                'models': {
-                    'M4': schema_defs.ssp.m4,
-                    'M5': schema_defs.ssp.m5,
-                }
-            },
-            'G': {
-                'section': DataFile.Section.SSP_AGGREGATE_DATA,
-                'models': {
-                    'M6': schema_defs.ssp.m6,
-                }
-            },
-            'S': {
-                'section': DataFile.Section.SSP_STRATUM_DATA,
-                'models': {
-                    'M7': schema_defs.ssp.m7,
-                }
-            }
-        },
-        'Tribal TAN': {
-            'A': {
-                'section': DataFile.Section.TRIBAL_ACTIVE_CASE_DATA,
-                'models': {
-                    'T1': schema_defs.tribal_tanf.t1,
-                    'T2': schema_defs.tribal_tanf.t2,
-                    'T3': schema_defs.tribal_tanf.t3,
-                }
-            },
-            'C': {
-                'section': DataFile.Section.TRIBAL_CLOSED_CASE_DATA,
-                'models': {
-                    'T4': schema_defs.tribal_tanf.t4,
-                    'T5': schema_defs.tribal_tanf.t5,
-                }
-            },
-            'G': {
-                'section': DataFile.Section.TRIBAL_AGGREGATE_DATA,
-                'models': {
-                    'T6': schema_defs.tribal_tanf.t6,
-                }
-            },
-            'S': {
-                'section': DataFile.Section.TRIBAL_STRATUM_DATA,
-                'models': {
-                    'T7': schema_defs.tribal_tanf.t7,
-                }
-            },
-        },
+    # TANF schemas
+    tan_active_schemas = {
+        'T1': schema_defs.tanf.t1,
+        'T2': schema_defs.tanf.t2,
+        'T3': schema_defs.tanf.t3,
+    }
+    tan_closed_schemas = {
+        'T4': schema_defs.tanf.t4,
+        'T5': schema_defs.tanf.t5,
+    }
+    tan_agg_schemas = {
+        'T6': schema_defs.tanf.t6,
+    }
+    tan_strat_schemas = {
+        'T7': schema_defs.tanf.t7,
     }
 
-    if query == "text":
-        for prog_name, prog_dict in schema_options.items():
-            for sect, val in prog_dict.items():
-                if val['section'] == section:
-                    return {'program_type': prog_name, 'section': sect}
-        raise ValueError("Model not found in schema_defs")
-    elif query == "section":
-        return schema_options.get(program, {}).get(section, None)[query]
-    elif query == "models":
-        links = schema_options.get(program, {}).get(section, None)
+    # Tribal schemas
+    tribal_active_schemas = {
+        'T1': schema_defs.tribal_tanf.t1,
+        'T2': schema_defs.tribal_tanf.t2,
+        'T3': schema_defs.tribal_tanf.t3,
+    }
+    tribal_closed_schemas = {
+        'T4': schema_defs.tribal_tanf.t4,
+        'T5': schema_defs.tribal_tanf.t5,
+    }
+    tribal_agg_schemas = {
+        'T6': schema_defs.tribal_tanf.t6,
+    }
+    tribal_strat_schemas = {
+        'T7': schema_defs.tribal_tanf.t7,
+    }
 
-        # if query is not chosen or wrong input, return all options
-        # query = 'models', model = 'T1'
-        models = links.get(query, links)
+    # SSP schemas
+    ssp_active_schemas = {
+        'M1': schema_defs.ssp.m1,
+        'M2': schema_defs.ssp.m2,
+        'M3': schema_defs.ssp.m3,
+    }
+    ssp_closed_schemas = {
+        'M4': schema_defs.ssp.m4,
+        'M5': schema_defs.ssp.m5,
+    }
+    ssp_agg_schemas = {
+        'M6': schema_defs.ssp.m6,
+    }
+    ssp_strat_schemas = {
+        'M7': schema_defs.ssp.m7,
+    }
 
-        if model_name is None:
-            return models
-        elif model_name not in models.keys():
-            logger.debug(f"Model {model_name} not found in schema_defs")
-            return []  # intentionally trigger the error_msg for unknown record type
-        else:
-            return models.get(model_name, models)
+    # FRA schemas
+    fra_work_outcomes_tanf_exiters = {
+        'TE1': schema_defs.fra.te1
+    }
 
+    @classmethod
+    def get_section(cls, program_type: str, section_abbrev: str):
+        """Get full section name given the program type and section abbreviation used in the datafile."""
+        match program_type:
+            case "TAN":
+                match section_abbrev:
+                    case "A":
+                        return DataFile.Section.ACTIVE_CASE_DATA
+                    case "C":
+                        return DataFile.Section.CLOSED_CASE_DATA
+                    case "G":
+                        return DataFile.Section.AGGREGATE_DATA
+                    case "S":
+                        return DataFile.Section.STRATUM_DATA
+            case "SSP":
+                match section_abbrev:
+                    case "A":
+                        return DataFile.Section.SSP_ACTIVE_CASE_DATA
+                    case "C":
+                        return DataFile.Section.SSP_CLOSED_CASE_DATA
+                    case "G":
+                        return DataFile.Section.SSP_AGGREGATE_DATA
+                    case "S":
+                        return DataFile.Section.SSP_STRATUM_DATA
+            case "Tribal TAN":
+                match section_abbrev:
+                    case "A":
+                        return DataFile.Section.TRIBAL_ACTIVE_CASE_DATA
+                    case "C":
+                        return DataFile.Section.TRIBAL_CLOSED_CASE_DATA
+                    case "G":
+                        return DataFile.Section.TRIBAL_AGGREGATE_DATA
+                    case "S":
+                        return DataFile.Section.TRIBAL_STRATUM_DATA
 
-'''
-text -> section YES
-text -> models{} YES
-text -> model YES
-datafile -> model
-    ^ section -> program -> model
-datafile -> text
-model -> text YES
-section -> text
+    @classmethod
+    def get_schema(cls, program_type: str, section: DataFile.Section | str, record_type: str):
+        """Get specific schema."""
+        schemas = cls.get_schemas(program_type, section)
+        return schemas.get(record_type, None)
 
-text**: input string from the header/file
-'''
-
-def get_program_models(str_prog, str_section):
-    """Return the models dict for a given program and section."""
-    return get_schema_options(program=str_prog, section=str_section, query='models')
-
-def get_program_model(str_prog, str_section, str_model):
-    """Return singular model for a given program, section, and name."""
-    return get_schema_options(program=str_prog, section=str_section, query='models', model_name=str_model)
-
-def get_section_reference(str_prog, str_section):
-    """Return the named section reference for a given program and section."""
-    return get_schema_options(program=str_prog, section=str_section, query='section')
-
-def get_text_from_df(df):
-    """Return the short-hand text for program, section for a given datafile."""
-    return get_schema_options("", section=df.section, query='text')
-
-def get_schema(line, section, program_type):
-    """Return the appropriate schema for the line."""
-    line_type = line[0:2]
-    return get_schema_options(program_type, section, query='models', model_name=line_type)
+    @classmethod
+    def get_schemas(cls, program_type: str, section: DataFile.Section | str):
+        """Get all schemas for a program type and section."""
+        match program_type:
+            case "TAN":
+                match section:
+                    case DataFile.Section.ACTIVE_CASE_DATA | "A":
+                        return cls.tan_active_schemas
+                    case DataFile.Section.CLOSED_CASE_DATA | "C":
+                        return cls.tan_closed_schemas
+                    case DataFile.Section.AGGREGATE_DATA | "G":
+                        return cls.tan_agg_schemas
+                    case DataFile.Section.STRATUM_DATA | "S":
+                        return cls.tan_strat_schemas
+            case "SSP":
+                match section:
+                    case DataFile.Section.SSP_ACTIVE_CASE_DATA | "A":
+                        return cls.ssp_active_schemas
+                    case DataFile.Section.SSP_CLOSED_CASE_DATA | "C":
+                        return cls.ssp_closed_schemas
+                    case DataFile.Section.SSP_AGGREGATE_DATA | "G":
+                        return cls.ssp_agg_schemas
+                    case DataFile.Section.SSP_STRATUM_DATA | "S":
+                        return cls.ssp_strat_schemas
+            case "Tribal TAN":
+                match section:
+                    case DataFile.Section.TRIBAL_ACTIVE_CASE_DATA | "A":
+                        return cls.tribal_active_schemas
+                    case DataFile.Section.TRIBAL_CLOSED_CASE_DATA | "C":
+                        return cls.tribal_closed_schemas
+                    case DataFile.Section.TRIBAL_AGGREGATE_DATA | "G":
+                        return cls.tribal_agg_schemas
+                    case DataFile.Section.TRIBAL_STRATUM_DATA | "S":
+                        return cls.tribal_strat_schemas
+            case "FRA":
+                match section:
+                    case DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS:
+                        return cls.fra_work_outcomes_tanf_exiters
+                    case DataFile.Section.FRA_SECONDRY_SCHOOL_ATTAINMENT:
+                        return {}
+                    case DataFile.Section.FRA_SUPPLEMENT_WORK_OUTCOMES:
+                        return {}
