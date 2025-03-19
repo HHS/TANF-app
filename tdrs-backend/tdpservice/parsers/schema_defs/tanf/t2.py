@@ -124,11 +124,13 @@ t2 = [
                     ["01", "02", "05", "07", "09", "15", "17", "18", "19", "99"]
                 ),
             ),
-            category3.ifThenAlso(
-                condition_field_name="WORK_ELIGIBLE_INDICATOR",
-                condition_function=category3.isBetween(1, 5, inclusive=True, cast=int),
-                result_field_name="WORK_PART_STATUS",
-                result_function=category3.isNotEqual("99"),
+            category3.supress_pilot_state(
+                category3.ifThenAlso(
+                    condition_field_name="WORK_ELIGIBLE_INDICATOR",
+                    condition_function=category3.isBetween(1, 5, inclusive=True, cast=int),
+                    result_field_name="WORK_PART_STATUS",
+                    result_function=category3.isNotEqual("99"),
+                )
             ),
             category3.validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE(),
         ],

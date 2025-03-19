@@ -262,6 +262,22 @@ def sumIsLarger(fields, val):
 
     return sumIsLargerFunc
 
+def supress_pilot_state(validator):
+    """
+    Supresses the passed validation should the state be an FRA pilot state
+    """
+    def validate(_, row_schema):
+        pilotStates = {}
+
+        isState = row_schema.datafile.stt.type == 'State'
+
+        if isState and row_schema.datafile.stt.postal_code in pilotStates:
+            return Result(field_names=['WORK_ELIGIBLE_INDICATOR', 'WORK_PART_STATUS'])
+
+        return validator
+
+    return validate
+
 
 def validate__FAM_AFF__SSN():
     """
