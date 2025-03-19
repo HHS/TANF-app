@@ -1,0 +1,94 @@
+[
+    {
+        "model": "users.user",
+        "pk": "70848df1-7c24-41c0-a69a-3a5a692574ea",
+        "fields": {
+            "password": "!0PuQNyNEK5kyAR4nGD74xxPMK7C16IjjAdnLCX8J",
+            "last_login": "2025-02-20T19:48:12.225Z",
+            "is_superuser": true,
+            "username": "cypress-admin@teamraft.com",
+            "first_name": "",
+            "last_name": "",
+            "email": "cypress-admin@teamraft.com",
+            "is_staff": true,
+            "is_active": true,
+            "date_joined": "2025-02-20T13:53:20.746Z",
+            "stt": null,
+            "login_gov_uuid": null,
+            "hhs_id": null,
+            "deactivated": false,
+            "access_request": false,
+            "account_approval_status": "Approved",
+            "access_requested_date": "0001-01-01T00:00:00Z",
+            "feature_flags": {},
+            "groups": [
+                4
+            ],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "users.user",
+        "pk": "bfcdc9bc-0b54-4b53-8f04-8aed0b0a9459",
+        "fields": {
+            "password": "",
+            "last_login": "2025-02-20T13:53:54.420Z",
+            "is_superuser": false,
+            "username": "new-cypress@teamraft.com",
+            "first_name": "",
+            "last_name": "",
+            "email": "new-cypress@teamraft.com",
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2025-02-20T13:53:20.715Z",
+            "stt": 6,
+            "login_gov_uuid": null,
+            "hhs_id": null,
+            "deactivated": false,
+            "access_request": false,
+            "account_approval_status": "Initial",
+            "access_requested_date": "0001-01-01T00:00:00Z",
+            "feature_flags": {},
+            "groups": [
+                2
+            ],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "users.user",
+        "pk": "78e10c5b-271e-4838-9e7b-b3c30773ef2e",
+        "fields": {
+            "password": "",
+            "last_login": null,
+            "is_superuser": false,
+            "username": "cypress-regional-staff@teamraft.com",
+            "first_name": "",
+            "last_name": "",
+            "email": "",
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2025-02-20T20:23:35.309Z",
+            "stt": null,
+            "login_gov_uuid": null,
+            "hhs_id": null,
+            "deactivated": false,
+            "access_request": false,
+            "account_approval_status": "Approved",
+            "access_requested_date": "0001-01-01T00:00:00Z",
+            "feature_flags": {},
+            "groups": [
+                5
+            ],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "users.regionmeta",
+        "pk": 7,
+        "fields": {
+            "user": "78e10c5b-271e-4838-9e7b-b3c30773ef2e",
+            "region": 5
+        }
+    }
+]

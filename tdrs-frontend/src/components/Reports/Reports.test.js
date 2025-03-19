@@ -59,6 +59,7 @@ describe('Reports', () => {
           code: 'AL',
           name: 'Alabama',
           ssp: true,
+          num_sections: 4,
         },
         {
           id: 2,
@@ -66,6 +67,7 @@ describe('Reports', () => {
           code: 'AK',
           name: 'Alaska',
           ssp: false,
+          num_sections: 4,
         },
       ],
       loading: false,
@@ -81,6 +83,7 @@ describe('Reports', () => {
           name: 'Alaska',
         },
         roles: [{ id: 1, name: 'OFA Admin', permission: [] }],
+        account_approval_status: 'Approved',
       },
     },
   }
@@ -106,7 +109,7 @@ describe('Reports', () => {
     // added 1 to include the starting year
     const yearNum = fiscalYear - 2021 + 1
 
-    const select = getByLabelText('Fiscal Year*')
+    const select = getByLabelText('Fiscal Year (October - September)*')
 
     expect(select).toBeInTheDocument()
 
@@ -175,7 +178,7 @@ describe('Reports', () => {
 
     expect(sttDropdown.value).toEqual('alaska')
 
-    const yearsDropdown = getByLabelText('Fiscal Year*')
+    const yearsDropdown = getByLabelText('Fiscal Year (October - September)*')
 
     fireEvent.select(yearsDropdown, {
       target: { value: '2021' },
@@ -714,7 +717,7 @@ describe('Reports', () => {
       </Provider>
     )
 
-    const select = getByLabelText('Fiscal Year*')
+    const select = getByLabelText('Fiscal Year (October - September)*')
     const options = select.children
     const expected = options.item(1).value
 
@@ -741,7 +744,7 @@ describe('Reports', () => {
       </Provider>
     )
 
-    const select = getByLabelText('Fiscal Year*')
+    const select = getByLabelText('Fiscal Year (October - September)*')
     const options = select.children
     const expected = options.item(1).value
 
@@ -831,5 +834,39 @@ describe('Reports', () => {
     )
 
     expect(queryByText('File Type*')).not.toBeInTheDocument()
+  })
+
+  it('only allows OFA Regional Staff to view Submission History', async () => {
+    const store = mockStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        year: '2021',
+        stt: 'Alaska',
+        quarter: 'Q3',
+      },
+      auth: {
+        ...initialState.auth,
+        user: {
+          ...initialState.auth.user,
+          roles: [{ id: 1, name: 'OFA Regional Staff', permission: [] }],
+        },
+      },
+    })
+
+    const { getByText, queryByText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    fireEvent.click(getByText(/Search/, { selector: 'button' }))
+
+    await waitFor(() => {
+      expect(queryByText('Submission History')).toBeInTheDocument()
+    })
+
+    expect(queryByText('Current Submission')).not.toBeInTheDocument()
+    expect(queryByText('Submit Data Files')).not.toBeInTheDocument()
   })
 })
