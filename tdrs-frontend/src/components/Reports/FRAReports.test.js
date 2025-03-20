@@ -925,7 +925,12 @@ describe('FRA Reports Page', () => {
         expect(
           getByText('testFile.txt', { selector: 'td button' })
         ).toBeInTheDocument()
-        expect(getByText('0')).toBeInTheDocument()
+        expect(
+          within(
+            getByText('Work Outcomes of TANF Exiters Submission History')
+              .parentElement
+          ).getByText('0')
+        ).toBeInTheDocument()
         expect(getByText('Accepted')).toBeInTheDocument()
         expect(getByText('No Errors')).toBeInTheDocument()
       })

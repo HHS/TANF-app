@@ -402,7 +402,7 @@ describe('actions/fraReports', () => {
       const onError = jest.fn()
 
       mockAxios.get.mockResolvedValue({
-        data: { summary: { status: 'Approved' } },
+        data: { id: 1, hasErrors: true, summary: { status: 'Approved' } },
       })
 
       await store.dispatch(
@@ -438,7 +438,11 @@ describe('actions/fraReports', () => {
       expect(actions[3].type).toBe(SET_FRA_SUBMISSION_STATUS)
       expect(actions[3].payload).toStrictEqual({
         datafile_id: 1,
-        status: 'Approved',
+        datafile: {
+          id: 1,
+          hasErrors: true,
+          summary: { status: 'Approved' },
+        },
       })
 
       expect(test).toHaveBeenCalledTimes(1)
@@ -514,7 +518,7 @@ describe('actions/fraReports', () => {
       expect(onError).toHaveBeenCalledTimes(0)
 
       mockAxios.get.mockResolvedValue({
-        data: { summary: { status: 'Approved' } },
+        data: { id: 1, hasErrors: true, summary: { status: 'Approved' } },
       })
 
       await store.dispatch(
@@ -550,7 +554,11 @@ describe('actions/fraReports', () => {
       expect(actions[7].type).toBe(SET_FRA_SUBMISSION_STATUS)
       expect(actions[7].payload).toStrictEqual({
         datafile_id: 1,
-        status: 'Approved',
+        datafile: {
+          id: 1,
+          hasErrors: true,
+          summary: { status: 'Approved' },
+        },
       })
 
       expect(test).toHaveBeenCalledTimes(3)
@@ -620,7 +628,7 @@ describe('actions/fraReports', () => {
       const onError = jest.fn()
 
       mockAxios.get.mockResolvedValue({
-        data: { summary: { status: 'Pending' } },
+        data: { id: 1, hasErrors: true, summary: { status: 'Approved' } },
       })
 
       await store.dispatch(

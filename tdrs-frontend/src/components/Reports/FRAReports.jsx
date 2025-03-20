@@ -429,6 +429,7 @@ const SubmissionHistoryRow = ({ file, handleDownload, isRegionalStaff }) => {
 
   const hasStatus = file.summary && file.summary.status
   const status = hasStatus ? file.summary.status : 'Pending'
+  const errors = file.summary?.case_aggregates?.total_errors
 
   return (
     <tr>
@@ -446,7 +447,7 @@ const SubmissionHistoryRow = ({ file, handleDownload, isRegionalStaff }) => {
         )}
       </td>
       <td>
-        {file?.summary?.case_aggregates?.total_errors || 'Pending'}
+        {errors !== null ? errors : 'Pending'}
         <Spinner visible={isLoadingStatus} />
       </td>
       <td>
