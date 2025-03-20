@@ -3,12 +3,14 @@ import spinnerSvg from '../../assets/spinner.svg'
 
 const Spinner = ({ visible }) =>
   visible ? (
-    <img
-      src={spinnerSvg}
-      alt="Loading spinner"
-      width={16}
-      className="margin-right-1"
-    />
+    <span>
+      <img
+        src={spinnerSvg}
+        alt="Loading spinner"
+        width={18}
+        className="margin-left-1"
+      />
+    </span>
   ) : null
 
 export { Spinner }

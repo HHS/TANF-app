@@ -424,6 +424,9 @@ const SubmissionHistoryRow = ({ file, handleDownload }) => {
     return !submissionStatuses[file.id].isDone
   })
 
+  const hasStatus = file.summary && file.summary.status
+  const status = hasStatus ? file.summary.status : 'Pending'
+
   return (
     <tr>
       <td>{formatDate(file.createdAt) + ' by ' + file.submittedBy}</td>
@@ -440,12 +443,12 @@ const SubmissionHistoryRow = ({ file, handleDownload }) => {
         <Spinner visible={isLoadingStatus} />
       </td>
       <td>
-        <span>
-          <SubmissionSummaryStatusIcon
-            status={file.summary ? file.summary.status : 'Pending'}
-          />
-        </span>
-        {file.summary && file.summary.status ? file.summary.status : 'Pending'}
+        {hasStatus && status !== 'Pending' ? (
+          <span>
+            <SubmissionSummaryStatusIcon status={status} />
+          </span>
+        ) : null}
+        {status}
         <Spinner visible={isLoadingStatus} />
       </td>
       <td>
