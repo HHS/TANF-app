@@ -1,5 +1,5 @@
 import React from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   SubmissionSummaryStatusIcon,
   formatDate,
@@ -8,6 +8,7 @@ import {
   downloadFile,
   getErrorReportStatus,
 } from './helpers'
+import { accountIsRegionalStaff } from '../../selectors/auth'
 import { ReprocessedButton } from './ReprocessedModal'
 
 const MonthSubRow = ({ data }) =>
@@ -26,6 +27,7 @@ const MonthSubRow = ({ data }) =>
 const TotalAggregatesRow = ({ file, reprocessedState }) => {
   const dispatch = useDispatch()
   const reprocessedDate = formatDate(getReprocessedDate(file))
+  const isRegionalStaff = useSelector(accountIsRegionalStaff)
   return (
     <>
       <tr>
@@ -40,12 +42,16 @@ const TotalAggregatesRow = ({ file, reprocessedState }) => {
         </th>
 
         <th scope="rowgroup" rowSpan={3}>
-          <button
-            className="section-download"
-            onClick={() => downloadFile(dispatch, file)}
-          >
-            {file.fileName}
-          </button>
+          {isRegionalStaff ? (
+            file.fileName
+          ) : (
+            <button
+              className="section-download"
+              onClick={() => downloadFile(dispatch, file)}
+            >
+              {file.fileName}
+            </button>
+          )}
         </th>
 
         <MonthSubRow data={file?.summary?.case_aggregates?.months?.[0]} />
