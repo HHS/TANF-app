@@ -59,9 +59,9 @@ const fraReports = (state = initialState, action) => {
       return { ...state, submissionStatuses }
     }
     case SET_FRA_SUBMISSION_STATUS: {
-      const { datafile_id, status } = payload
+      const { datafile_id, datafile } = payload
       const submissionHistory = state.submissionHistory.map((f) =>
-        f.id === datafile_id ? { ...f, status } : f
+        f.id === datafile_id ? serializeApiDataFile(datafile) : f
       )
 
       return { ...state, submissionHistory }

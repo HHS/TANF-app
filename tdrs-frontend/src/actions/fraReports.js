@@ -197,7 +197,7 @@ export const pollFraSubmissionStatus =
           type: SET_FRA_SUBMISSION_STATUS,
           payload: {
             datafile_id,
-            status: response?.data?.summary?.status,
+            datafile: response?.data,
           },
         })
         onSuccess(response?.data)
