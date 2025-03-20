@@ -445,7 +445,9 @@ const SubmissionHistoryRow = ({ file, handleDownload }) => {
       <td>
         {hasStatus && status !== 'Pending' ? (
           <span>
-            <SubmissionSummaryStatusIcon status={status} />
+            <SubmissionSummaryStatusIcon
+              status={file.summary ? file.summary.status : 'Pending'}
+            />
           </span>
         ) : null}
         {status}
