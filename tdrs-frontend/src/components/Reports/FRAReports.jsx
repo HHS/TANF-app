@@ -21,10 +21,12 @@ import {
   getFraSubmissionHistory,
   uploadFraReport,
   downloadOriginalSubmission,
+  pollFraSubmissionStatus,
 } from '../../actions/fraReports'
 import { fetchSttList } from '../../actions/sttList'
 import { DropdownSelect, RadioSelect } from '../Form'
 import { PaginatedComponent } from '../Paginator/Paginator'
+import { Spinner } from '../Spinner'
 
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
@@ -412,6 +414,48 @@ const UploadForm = ({
   )
 }
 
+const SubmissionHistoryRow = ({ file, handleDownload }) => {
+  const isLoadingStatus = useSelector((state) => {
+    const submissionStatuses = state.fraReports.submissionStatuses
+    if (!submissionStatuses || !submissionStatuses[file.id]) {
+      return false
+    }
+
+    return !submissionStatuses[file.id].isDone
+  })
+
+  return (
+    <tr>
+      <td>{formatDate(file.createdAt) + ' by ' + file.submittedBy}</td>
+      <td>
+        <button
+          className="section-download"
+          onClick={() => handleDownload(file)}
+        >
+          {file.fileName}
+        </button>
+      </td>
+      <td>
+        {file?.summary?.case_aggregates?.total_errors}
+        <Spinner visible={isLoadingStatus} />
+      </td>
+      <td>
+        <span>
+          <SubmissionSummaryStatusIcon
+            status={file.summary ? file.summary.status : 'Pending'}
+          />
+        </span>
+        {file.summary && file.summary.status ? file.summary.status : 'Pending'}
+        <Spinner visible={isLoadingStatus} />
+      </td>
+      <td>
+        {getErrorReportStatus(file)}
+        <Spinner visible={isLoadingStatus} />
+      </td>
+    </tr>
+  )
+}
+
 const SubmissionHistory = ({ data, sectionName, handleDownload }) => (
   <table className="usa-table usa-table--striped">
     <caption>{sectionName} Submission History</caption>
@@ -428,29 +472,7 @@ const SubmissionHistory = ({ data, sectionName, handleDownload }) => (
         </thead>
         <tbody>
           {data.map((file) => (
-            <tr>
-              <td>{formatDate(file.createdAt) + ' by ' + file.submittedBy}</td>
-              <td>
-                <button
-                  className="section-download"
-                  onClick={() => handleDownload(file)}
-                >
-                  {file.fileName}
-                </button>
-              </td>
-              <td>{file?.summary?.case_aggregates?.total_errors}</td>
-              <td>
-                <span>
-                  <SubmissionSummaryStatusIcon
-                    status={file.summary ? file.summary.status : 'Pending'}
-                  />
-                </span>
-                {file.summary && file.summary.status
-                  ? file.summary.status
-                  : 'Pending'}
-              </td>
-              <td>{getErrorReportStatus(file)}</td>
-            </tr>
+            <SubmissionHistoryRow file={file} handleDownload={handleDownload} />
           ))}
         </tbody>
       </>
@@ -688,13 +710,39 @@ const FRAReports = () => {
   }
 
   const handleUpload = ({ file: selectedFile }) => {
-    const onFileUploadSuccess = () => {
+    const onFileUploadSuccess = (datafile) => {
+      console.log(datafile)
+
       setSelectedFile(null)
       setLocalAlertState({
         active: true,
         type: 'success',
         message: `Successfully submitted section: ${getReportTypeLabel()} on ${new Date().toDateString()}`,
       })
+
+      const WAIT_TIME = 2000 // #
+      let statusTimeout = null
+
+      const pollSubmissionStatus = (tryNumber) => {
+        statusTimeout = setTimeout(
+          () =>
+            dispatch(
+              pollFraSubmissionStatus(
+                datafile.id,
+                tryNumber,
+                ({ summary }) =>
+                  summary && summary.status && summary.status !== 'Pending',
+                () => pollSubmissionStatus(tryNumber + 1),
+                () => {},
+                () => {}
+              )
+            ),
+          tryNumber === 1 ? 0 : WAIT_TIME
+        )
+        setSubmissionStatusTimerId(statusTimeout)
+      }
+
+      pollSubmissionStatus(1)
     }
 
     const onFileUploadError = (error) => {
@@ -773,6 +821,11 @@ const FRAReports = () => {
       alertRef.current.scrollIntoView({ behavior: 'smooth' })
     }
   }, [localAlert, alertRef])
+
+  const [submissionStatusTimerId, setSubmissionStatusTimerId] = useState(null)
+  useEffect(() => {
+    return () => clearTimeout(submissionStatusTimerId)
+  }, [submissionStatusTimerId])
 
   return (
     <>
