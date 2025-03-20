@@ -436,7 +436,7 @@ const SubmissionHistoryRow = ({ file, handleDownload }) => {
         </button>
       </td>
       <td>
-        {file?.summary?.case_aggregates?.total_errors}
+        {file?.summary?.case_aggregates?.total_errors || 'Pending'}
         <Spinner visible={isLoadingStatus} />
       </td>
       <td>
