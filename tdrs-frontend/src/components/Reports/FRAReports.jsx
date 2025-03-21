@@ -446,22 +446,22 @@ const SubmissionHistoryRow = ({ file, handleDownload, isRegionalStaff }) => {
           </button>
         )}
       </td>
-      <td>
+      <td aria-live="polite">
         {errors !== null ? errors : 'Pending'}
         <Spinner visible={isLoadingStatus} />
       </td>
-      <td>
-        {hasStatus && status !== 'Pending' ? (
-          <span>
-            <SubmissionSummaryStatusIcon
-              status={file.summary ? file.summary.status : 'Pending'}
-            />
-          </span>
-        ) : null}
+      <td aria-live="polite">
+        {/* {hasStatus && status !== 'Pending' ? ( */}
+        <span>
+          <SubmissionSummaryStatusIcon
+            status={file.summary ? file.summary.status : 'Pending'}
+          />
+        </span>
+        {/* ) : null} */}
         {status}
         <Spinner visible={isLoadingStatus} />
       </td>
-      <td>
+      <td aria-live="polite">
         {getErrorReportStatus(file)}
         <Spinner visible={isLoadingStatus} />
       </td>
