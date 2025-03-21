@@ -270,8 +270,9 @@ def supress_pilot_state(condition_field_name, result_field_name, validator):
     def validate(record, row_schema):
         pilotStates = settings.FRA_PILOT_STATES
         
-        isState = row_schema.datafile.stt.type.lower() == 'state'
-        if isState and row_schema.datafile.stt.postal_code in pilotStates:
+        stt = row_schema.datafile.stt.type
+
+        if stt is not None and stt.lower() == 'state' and row_schema.datafile.stt.postal_code in pilotStates:
             return Result(field_names=[condition_field_name, result_field_name])
 
         return validator(record, row_schema)
