@@ -101,7 +101,7 @@ class FRADataErrorReport(ErrorReportBase):
 
         row_idx = 1
         for error in self.parser_errors.iterator():
-            ssn = error.values_json.get('SSN', '')
+            ssn = error.values_json.get('SSN', None)
             exit_date = error.values_json.get('EXIT_DATE', None)
             fields_json = self.check_fields_json(getattr(error, 'fields_json', {}), error.field_name)
             row = self.row_generator(error, exit_date, ssn, fields_json)
@@ -117,6 +117,8 @@ class FRADataErrorReport(ErrorReportBase):
 
     def _obscure_ssn(self, ssn):
         """Obscure SSN."""
+        if ssn is None:
+            return ""
         return f"*****{ssn[-4:]}"
 
     def get_row_generator(self):
