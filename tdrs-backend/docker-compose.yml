@@ -207,6 +207,10 @@ services:
       - ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_TRACE
       - ELASTICSEARCH_LOG_INDEX_SLOW_LEVEL
       - FRA_PILOT_STATES
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_S3_BUCKET_NAME
+      - AWS_S3_LOGS_PREFIX
     volumes:
       - .:/tdpapp
       - logs:/tmp
