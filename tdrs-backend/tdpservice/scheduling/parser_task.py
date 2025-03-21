@@ -8,7 +8,11 @@ from django.utils import timezone
 import logging
 from tdpservice.data_files.models import DataFile, ReparseFileMeta
 from tdpservice.email.helpers.data_file import send_data_submitted_email
-from tdpservice.parsers.aggregates import case_aggregates_by_month, total_errors_by_month
+from tdpservice.parsers.aggregates import (
+    case_aggregates_by_month,
+    total_errors_by_month,
+    fra_total_errors
+)
 from tdpservice.parsers.models import DataFileSummary, ParserErrorCategoryChoices, ParserError
 from tdpservice.parsers.factory import ParserFactory
 from tdpservice.parsers.util import log_parser_exception, make_generate_parser_error
@@ -50,10 +54,13 @@ def parse(data_file_id, reparse_id=None):
         parser.parse_and_validate()
         dfs.status = dfs.get_status()
 
-        if "Case Data" in data_file.section:
-            dfs.case_aggregates = case_aggregates_by_month(data_file, dfs.status)
+        if data_file.prog_type == "FRA":
+            dfs.case_aggregates = fra_total_errors(data_file)
         else:
-            dfs.case_aggregates = total_errors_by_month(data_file, dfs.status)
+            if "Case Data" in data_file.section:
+                dfs.case_aggregates = case_aggregates_by_month(data_file, dfs.status)
+            else:
+                dfs.case_aggregates = total_errors_by_month(data_file, dfs.status)
 
         dfs.save()
 
