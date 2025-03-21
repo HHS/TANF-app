@@ -123,6 +123,8 @@ m2 = [
                 result_function=category3.isOneOf([1, 2, 5, 7, 9, 15, 16, 17, 18, 99]),
             ),
             category3.supress_pilot_state(
+                "WORK_ELIGIBLE_INDICATOR",
+                "WORK_PART_STATUS",
                 category3.ifThenAlso(
                     condition_field_name='WORK_ELIGIBLE_INDICATOR',
                     condition_function=category3.isBetween(1, 5, inclusive=True),
