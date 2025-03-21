@@ -269,6 +269,7 @@ def supress_pilot_state(condition_field_name, result_field_name, validator):
         pilotStates = settings.FRA_PILOT_STATES
 
         stt = row_schema.datafile.stt.type
+        print(f'STT={stt}')
 
         if stt is not None and stt.lower() == 'state' and row_schema.datafile.stt.postal_code in pilotStates:
             return Result(field_names=[condition_field_name, result_field_name])
