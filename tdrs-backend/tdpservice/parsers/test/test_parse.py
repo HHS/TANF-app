@@ -1878,6 +1878,7 @@ def test_parse_fra_bad_header(request, file, dfs):
     for e in errors:
         assert e.error_message == "File does not begin with FRA data."
         assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
 @pytest.mark.parametrize("file", [
     ('fra_empty_first_row_csv'),
@@ -1905,6 +1906,7 @@ def test_parse_fra_empty_first_row(request, file, dfs):
     for e in errors:
         assert e.error_message == "File does not begin with FRA data."
         assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
 
 @pytest.mark.parametrize("file", [
@@ -1936,3 +1938,4 @@ def test_parse_fra_ofa_test_cases(request, file, dfs):
 
     assert errors.count() == 28
     assert TANF_Exiter1.objects.all().count() == 10
+    assert dfs.get_status() == DataFileSummary.Status.PARTIALLY_ACCEPTED

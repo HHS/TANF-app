@@ -1,7 +1,11 @@
 """Aggregate methods for the parsers."""
 from tdpservice.parsers.models import ParserError, ParserErrorCategoryChoices
-from tdpservice.parsers.util import month_to_int, \
-    transform_to_months, fiscal_to_calendar, get_prog_from_section
+from tdpservice.parsers.util import (
+    month_to_int,
+    transform_to_months,
+    fiscal_to_calendar,
+    get_prog_from_section
+)
 from tdpservice.parsers.schema_defs.utils import ProgramManager
 from django.db.models import Q as Query
 
@@ -78,6 +82,32 @@ def total_errors_by_month(df, dfs_status):
         rpt_month_year = int(f"{calendar_year}{month_int}")
 
         error_count = errors.filter(rpt_month_year=rpt_month_year).count()
+        total_errors_data["months"].append(
+            {"month": month, "total_errors": error_count})
+
+    return total_errors_data
+
+
+def fra_total_errors_by_month(df, dfs_status):
+    """Return total errors for each month in the reporting period based on EXIT_DATE in values_json."""
+    calendar_year, calendar_qtr = fiscal_to_calendar(df.year, df.quarter)
+    month_list = transform_to_months(calendar_qtr)
+
+    total_errors_data = {"months": []}
+
+    errors = ParserError.objects.all().filter(file=df, deprecated=False)
+
+    for month in month_list:
+        if dfs_status == "Rejected":
+            total_errors_data["months"].append(
+                {"month": month, "total_errors": "N/A"})
+            continue
+
+        month_int = month_to_int(month)
+        exit_date = int(f"{calendar_year}{month_int}")
+
+        # Filter errors where values_json->>'EXIT_DATE' matches the current month's exit_date
+        error_count = errors.filter(values_json__EXIT_DATE=exit_date).count()
         total_errors_data["months"].append(
             {"month": month, "total_errors": error_count})
 
