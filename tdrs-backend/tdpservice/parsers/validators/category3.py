@@ -267,7 +267,7 @@ def validate__FAM_AFF__SSN():
     """
     Validate social security number provided.
 
-    Since item FAMILY_AFFILIATION ==2 and item CITIZENSHIP_STATUS ==1 or 2,
+    Since item FAMILY_AFFILIATION == 2 and item CITIZENSHIP_STATUS ==1 or 2,
     then item SSN != 000000000 -- 999999999.
     """
     # value is instance
