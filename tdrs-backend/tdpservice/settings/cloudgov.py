@@ -118,14 +118,6 @@ class CloudGov(Common):
     MEDIA_URL = \
         f'{AWS_S3_STATICFILES_ENDPOINT}/{AWS_S3_STATICFILES_BUCKET_NAME}/{APP_NAME}/'
 
-    # https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/http-caching#cache-control
-    # Response can be cached by browser and any intermediary caches
-    # (i.e. it is "public") for up to 1 day
-    # 86400 = (60 seconds x 60 minutes x 24 hours)
-    # TODO: Determine if this is still necessary
-    AWS_HEADERS = {
-        "Cache-Control": "max-age=86400, s-maxage=86400, must-revalidate",
-    }
     # The following variables are used to configure the Django Elasticsearch
     es_access_key = cloudgov_services['aws-elasticsearch'][0]['credentials']['access_key']
     es_secret_key = cloudgov_services['aws-elasticsearch'][0]['credentials']['secret_key']
@@ -149,6 +141,13 @@ class CloudGov(Common):
     }
     ELASTIC_INDEX_PREFIX = f'{APP_NAME}_'
 
+    # HSTS settings
+    SESSION_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_SSL_REDIRECT = True
+
 
 class Development(CloudGov):
     """Settings for applications deployed in the Cloud.gov dev space."""
@@ -157,7 +156,9 @@ class Development(CloudGov):
     ALLOWED_HOSTS = ['.app.cloud.gov',
                      '.apps.internal']
     CORS_ORIGIN_ALLOW_ALL = False
-    CORS_ALLOWED_ORIGINS = ['https://*.app.cloud.gov']
+    CORS_ALLOWED_ORIGINS = ['https://tdp-frontend-raft.app.cloud.gov',
+                            'https://tdp-frontend-a11y.app.cloud.gov',
+                            'https://tdp-frontend-qasp.app.cloud.gov']
     CORS_ALLOW_CREDENTIALS = True
     CORS_ALLOW_METHODS = (
         "GET",
@@ -173,7 +174,8 @@ class Staging(CloudGov):
         'tdp-frontend-develop.acf.hhs.gov',
         '.apps.internal'
         ]
-    CORS_ALLOWED_ORIGINS = ['https://*.acf.hhs.gov']
+    CORS_ALLOWED_ORIGINS = ['https://tdp-frontend-staging.acf.hhs.gov',
+                            'https://tdp-frontend-develop.acf.hhs.gov']
     CORS_ORIGIN_ALLOW_ALL = False
     CORS_ALLOW_CREDENTIALS = True
     CORS_ALLOW_METHODS = (
@@ -199,7 +201,6 @@ class Production(CloudGov):
         'urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-prod'
     )
     ENABLE_DEVELOPER_GROUP = False
-    SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_SAMESITE = 'None'
     SESSION_COOKIE_DOMAIN = '.acf.hhs.gov'
     SESSION_COOKIE_PATH = "/;HttpOnly"
