@@ -263,61 +263,6 @@ def sumIsLarger(fields, val):
     return sumIsLargerFunc
 
 
-def validate__FAM_AFF__SSN():
-    """
-    Validate social security number provided.
-
-    Since item FAMILY_AFFILIATION ==2 and item CITIZENSHIP_STATUS ==1 or 2,
-    then item SSN != 000000000 -- 999999999.
-    """
-    # value is instance
-    def validate(record, row_schema):
-        fam_affil_field = row_schema.get_field_by_name('FAMILY_AFFILIATION')
-        FAMILY_AFFILIATION = get_record_value_by_field_name(record, 'FAMILY_AFFILIATION')
-        fam_affil_eargs = ValidationErrorArgs(
-            value=FAMILY_AFFILIATION,
-            row_schema=row_schema,
-            friendly_name=fam_affil_field.friendly_name,
-            item_num=fam_affil_field.item,
-        )
-
-        cit_stat_field = row_schema.get_field_by_name('CITIZENSHIP_STATUS')
-        CITIZENSHIP_STATUS = get_record_value_by_field_name(record, 'CITIZENSHIP_STATUS')
-        cit_stat_eargs = ValidationErrorArgs(
-            value=CITIZENSHIP_STATUS,
-            row_schema=row_schema,
-            friendly_name=cit_stat_field.friendly_name,
-            item_num=cit_stat_field.item,
-        )
-
-        ssn_field = row_schema.get_field_by_name('SSN')
-        SSN = get_record_value_by_field_name(record, 'SSN')
-        ssn_eargs = ValidationErrorArgs(
-            value=SSN,
-            row_schema=row_schema,
-            friendly_name=ssn_field.friendly_name,
-            item_num=ssn_field.item,
-        )
-
-        if FAMILY_AFFILIATION == 2 and (
-            CITIZENSHIP_STATUS == 1 or CITIZENSHIP_STATUS == 2
-        ):
-            if SSN in [str(i) * 9 for i in range(10)]:
-                return Result(
-                    valid=False,
-                    error=(f"{row_schema.record_type}: Since {format_error_context(fam_affil_eargs)} is 2 "
-                           f"and {format_error_context(cit_stat_eargs)} is 1 or 2, "
-                           f"then {format_error_context(ssn_eargs)} must not be in 000000000 -- 999999999."),
-                    field_names=["FAMILY_AFFILIATION", "CITIZENSHIP_STATUS", "SSN"],
-                )
-            else:
-                return Result(field_names=["FAMILY_AFFILIATION", "CITIZENSHIP_STATUS", "SSN"])
-        else:
-            return Result(field_names=["FAMILY_AFFILIATION", "CITIZENSHIP_STATUS", "SSN"])
-
-    return validate
-
-
 def validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
     """If WORK_ELIGIBLE_INDICATOR == 11 and AGE < 19, then RELATIONSHIP_HOH != 1."""
     # value is instance
