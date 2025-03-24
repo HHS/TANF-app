@@ -234,6 +234,11 @@ class Common(Configuration):
                 "class": "logging.StreamHandler",
                 "formatter": "color",
             },
+            "s3":{
+                "class": "tdpservice.log_handler.S3FileHandler",
+                'filename': "/tmp/s3.log",
+                "formatter": "verbose",
+            },
             "file": {
                 "class": "logging.handlers.RotatingFileHandler",
                 "formatter": "verbose",
@@ -249,7 +254,7 @@ class Common(Configuration):
                "level": LOGGING_LEVEL
             },
             "tdpservice.parsers": {
-               "handlers": ["application", "file"],
+               "handlers": ["application", "file", "s3"],
                "propagate": False,
                "level": LOGGING_LEVEL
             },
@@ -269,6 +274,8 @@ class Common(Configuration):
     }
     es_logger = logging.getLogger('elasticsearch')
     es_logger.setLevel(getattr(logging, LOGGING_LEVEL))
+
+    PARSER_LOGGER = logging.getLogger('tdpservice.parsers')
 
     # Custom user app
     AUTH_USER_MODEL = "users.User"
@@ -554,6 +561,7 @@ class Common(Configuration):
     }
 
     CYPRESS_TOKEN = os.getenv('CYPRESS_TOKEN', None)
+    FIXTURE_DIRS = [os.path.join(BASE_DIR, "fixtures")]
 
     GENERATE_TRAILER_ERRORS = os.getenv("GENERATE_TRAILER_ERRORS", False)
     IGNORE_DUPLICATE_ERROR_PRECEDENCE = os.getenv("IGNORE_DUPLICATE_ERROR_PRECEDENCE", False)

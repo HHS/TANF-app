@@ -18,7 +18,10 @@ import Modal from '../Modal'
 import SegmentedControl from '../SegmentedControl'
 import SubmissionHistory from '../SubmissionHistory'
 import ReprocessedModal from '../SubmissionHistory/ReprocessedModal'
-import { selectPrimaryUserRole } from '../../selectors/auth'
+import {
+  selectPrimaryUserRole,
+  accountIsRegionalStaff,
+} from '../../selectors/auth'
 import { quarters, constructYearOptions } from './utils'
 
 const FiscalQuarterExplainer = () => (
@@ -78,6 +81,7 @@ function Reports() {
   const isDIGITTeam = useSelector(selectPrimaryUserRole)?.name === 'DIGIT Team'
   const isSystemAdmin =
     useSelector(selectPrimaryUserRole)?.name === 'OFA System Admin'
+  const isRegionalStaff = useSelector(accountIsRegionalStaff)
   const sttList = useSelector((state) => state?.stts?.sttList)
 
   const [errorModalVisible, setErrorModalVisible] = useState(false)
@@ -96,7 +100,9 @@ function Reports() {
   const [reprocessedDate, setReprocessedDate] = useState('')
 
   const currentStt =
-    isOFAAdmin || isDIGITTeam || isSystemAdmin ? selectedStt : userProfileStt
+    isOFAAdmin || isDIGITTeam || isSystemAdmin || isRegionalStaff
+      ? selectedStt
+      : userProfileStt
 
   const stt = sttList?.find((stt) => stt?.name === currentStt)
 
@@ -106,7 +112,12 @@ function Reports() {
   const errorsCount = formValidation.errors
 
   const missingStt =
-    !isOFAAdmin && !isDIGITTeam && !isSystemAdmin && !currentStt
+    (!isOFAAdmin &&
+      !isDIGITTeam &&
+      !isSystemAdmin &&
+      !isRegionalStaff &&
+      !currentStt) ||
+    (isRegionalStaff && user?.regions?.length === 0)
 
   const errorsRef = useRef(null)
 
@@ -214,7 +225,8 @@ function Reports() {
       )
       const touchedFields = Object.keys(touched).length
 
-      const expected_fields = isOFAAdmin || isDIGITTeam || isSystemAdmin ? 3 : 2
+      const expected_fields =
+        isOFAAdmin || isDIGITTeam || isSystemAdmin || isRegionalStaff ? 3 : 2
 
       const errors = touchedFields === 3 ? expected_fields - form.length : 0
 
@@ -237,6 +249,7 @@ function Reports() {
     isOFAAdmin,
     isDIGITTeam,
     isSystemAdmin,
+    isRegionalStaff,
   ])
 
   return (
@@ -264,7 +277,10 @@ function Reports() {
         <form>
           <div className="grid-row grid-gap">
             <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
-              {(isOFAAdmin || isDIGITTeam || isSystemAdmin) && (
+              {(isOFAAdmin ||
+                isDIGITTeam ||
+                isSystemAdmin ||
+                isRegionalStaff) && (
                 <div
                   className={classNames(
                     'usa-form-group maxw-mobile margin-top-4',
@@ -330,7 +346,7 @@ function Reports() {
                   className="usa-label text-bold margin-top-4"
                   htmlFor="reportingYears"
                 >
-                  Fiscal Year*
+                  Fiscal Year (October - September)*
                   {formValidation.year && (
                     <div className="usa-error-message" id="years-error-alert">
                       A fiscal year is required
@@ -429,23 +445,29 @@ function Reports() {
             }`}
           </h2>
 
-          <SegmentedControl
-            buttons={[
-              {
-                id: 1,
-                label: 'Current Submission',
-                onSelect: () => setSelectedSubmissionTab(1),
-              },
-              {
-                id: 2,
-                label: 'Submission History',
-                onSelect: () => setSelectedSubmissionTab(2),
-              },
-            ]}
-            selected={selectedSubmissionTab}
-          />
+          {isRegionalStaff ? (
+            <h3 className="font-sans-lg margin-top-5 margin-bottom-2 text-bold">
+              Submission History
+            </h3>
+          ) : (
+            <SegmentedControl
+              buttons={[
+                {
+                  id: 1,
+                  label: 'Current Submission',
+                  onSelect: () => setSelectedSubmissionTab(1),
+                },
+                {
+                  id: 2,
+                  label: 'Submission History',
+                  onSelect: () => setSelectedSubmissionTab(2),
+                },
+              ]}
+              selected={selectedSubmissionTab}
+            />
+          )}
 
-          {selectedSubmissionTab === 1 && (
+          {!isRegionalStaff && selectedSubmissionTab === 1 && (
             <UploadReport
               stt={stt}
               handleCancel={() => {
@@ -456,7 +478,7 @@ function Reports() {
             />
           )}
 
-          {selectedSubmissionTab === 2 && (
+          {(isRegionalStaff || selectedSubmissionTab === 2) && (
             <SubmissionHistory
               filterValues={{
                 quarter: quarterInputValue,

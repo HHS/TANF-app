@@ -63,8 +63,8 @@ Cypress.Commands.add('adminLogin', () => {
     cy.getCookie('sessionid').its('value').as('adminSessionId')
     cy.getCookie('csrftoken').its('value').as('adminCsrfToken')
 
-    // handle response, list of user emails/ids for use in adminApiRequest
-    cy.get(response.body.users[0]).as('cypressUser')
+    // handle response, list of user emails/ids for use in adminConsoleFormRequest
+    cy.get(response.body.users).as('cypressUsers')
   })
 
   cy.clearCookie('sessionid')
@@ -72,7 +72,7 @@ Cypress.Commands.add('adminLogin', () => {
 })
 
 Cypress.Commands.add(
-  'adminApiRequest',
+  'adminConsoleFormRequest',
   (method = 'POST', path = '', body = {}) => {
     options = {
       method,
@@ -111,5 +111,49 @@ Cypress.Commands.add(
         cy.setCookie('csrftoken', csrfToken)
       )
     }
+  }
+)
+
+Cypress.Commands.add(
+  'adminApiRequest',
+  (method = 'POST', path = '', body = {}, headers = {}) => {
+    options = {
+      method,
+      body,
+      headers,
+      url: `${Cypress.env('apiUrl')}${path}`,
+    }
+
+    cy.get('@adminSessionId').then((sessionId) =>
+      cy.setCookie('sessionid', sessionId)
+    )
+    cy.get('@adminCsrfToken').then((csrfToken) => {
+      cy.setCookie('csrftoken', csrfToken)
+      options.headers['X-CSRFToken'] = csrfToken
+    })
+
+    cy.request(options).then((r) => {
+      cy.wrap(r).as('response')
+    })
+
+    cy.clearCookie('sessionid')
+    cy.clearCookie('csrftoken')
+
+    const userSessionId = cy.state('aliases').userSessionId
+    const userCsrfToken = cy.state('aliases').userCsrfToken
+
+    if (userSessionId) {
+      cy.get('@userSessionId').then((sessionId) =>
+        cy.setCookie('sessionid', sessionId)
+      )
+    }
+
+    if (userCsrfToken) {
+      cy.get('@userCsrfToken').then((csrfToken) =>
+        cy.setCookie('csrftoken', csrfToken)
+      )
+    }
+
+    return cy.get('@response')
   }
 )

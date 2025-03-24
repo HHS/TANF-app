@@ -44,10 +44,8 @@ class UserViewSet(
     def get_queryset(self):
         """Return the queryset based on user's group status."""
         queryset = None
-        # This is not a great way to make sure regional users can access what they need. This should be revisited.
         is_admin = self.request.user.groups.filter(name="OFA System Admin").exists()
-        is_regional = self.request.user.groups.filter(name="OFA Regional Staff").exists()
-        if is_admin or is_regional:
+        if is_admin:
             queryset = self.queryset
         else:
             queryset = self.queryset.filter(id=self.request.user.id)
