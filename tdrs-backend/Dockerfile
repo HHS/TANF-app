@@ -1,4 +1,4 @@
-FROM elipe17/tdp-backend-base:latest
+FROM elipe17/tdp-backend-base:setup-tools-lock
 
 # Adds our application code to the image
 COPY . /tdpapp
