@@ -767,3 +767,53 @@ def fra_xlsx(stt_user, stt):
 def unknown_png(stt_user, stt):
     """Fixture for blank png file."""
     return util.create_test_datafile('unknown.png', stt_user, stt)
+
+@pytest.fixture
+def fra_work_outcome_exiter_csv_file(stt_user, stt):
+    """Fixture for FRA Work Outcome Exiters file."""
+    return util.create_test_datafile('fra.csv', stt_user, stt,
+                                     DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)
+
+@pytest.fixture
+def fra_work_outcome_exiter_xlsx_file(stt_user, stt):
+    """Fixture for FRA Work Outcome Exiters file."""
+    return util.create_test_datafile('fra.xlsx', stt_user, stt,
+                                     DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)
+
+@pytest.fixture
+def fra_empty_first_row_xlsx(stt_user, stt):
+    """Fixture for FRA file with no header data."""
+    return util.create_test_datafile('fra_empty_first_row.xlsx', stt_user, stt,
+                                     DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)
+
+@pytest.fixture
+def fra_empty_first_row_csv(stt_user, stt):
+    """Fixture for FRA file with no header data."""
+    return util.create_test_datafile('fra_empty_first_row.csv', stt_user, stt,
+                                     DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)
+
+@pytest.fixture
+def fra_bad_header_csv(stt_user, stt):
+    """Fixture for FRA file with bad header data."""
+    return util.create_test_datafile('fra_bad_header.csv', stt_user, stt,
+                                     DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)
+
+@pytest.fixture
+def fra_bad_header_xlsx(stt_user, stt):
+    """Fixture for FRA file with bad header data."""
+    return util.create_test_datafile('fra_bad_header.xlsx', stt_user, stt,
+                                     DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)
+
+
+@pytest.fixture
+def fra_ofa_test_csv(stt_user, stt):
+    """Fixture for FRA file with bad header data."""
+    return util.create_test_datafile('fra_ofa_test.csv', stt_user, stt,
+                                     DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)
+
+
+@pytest.fixture
+def fra_ofa_test_xlsx(stt_user, stt):
+    """Fixture for FRA file with bad header data."""
+    return util.create_test_datafile('fra_ofa_test.xlsx', stt_user, stt,
+                                     DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)

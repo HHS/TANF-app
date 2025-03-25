@@ -124,6 +124,6 @@ class DataFileSerializer(serializers.ModelSerializer):
         """Validate the section field."""
         if DataFile.Section.is_fra(section):
             user = self.context.get('user')
-            if not user.has_fra_access:
+            if not user.has_fra_access and not user.is_ofa_sys_admin:
                 raise serializers.ValidationError("Section cannot be FRA")
         return section

@@ -1,47 +1,49 @@
 ---
 name: Design Deliverable issue template
 about: Template for dev-ready design issues
-title: "[Design Deliverable] "
-labels: Research & Design
+title: ''
+labels: Design Deliverable, Research & Design
 assignees: ''
 
 ---
 
-**Description:**
+## Background
+_Describe the problem, user needs, or design scope. Reference relevant tickets or context._
 
-—Describe the scope of ticket and problem to be solved. Reference any related tickets that might be helpful to cite for design, discussion, or review. These should typically range between 3 and 13 points.—
+### Why It Matters
+_Explain the value of this design work for users, product goals, or compliance._
 
-**Related User Stories:**
+### What's Changing
+_Summarize what the user experience or interface change will be and any stakeholder impact._
 
-—As a [user type] I want the page to exist so that I can see it.—
+## Design & Testing
+### Acceptance Criteria
+- [ ] User stories are documented
+- [ ] Accessibility and pa11y test cases are defined
+- [ ] Figma design is dev-ready and shared in the correct folder
+- [ ] Updates to UX documentation (Flows, Personas, Service Blueprint)
+- [ ] Internal Raft review for DoD and QA
+- [ ] Dev/Design sync occurred and tickets created
+- [ ] Design meets usability and accessibility standards
 
-**Recommended pa11y actions:**
+### Tasks
+- [ ] Draft design in Figma
+- [ ] Define recommended pa11y checks
+- [ ] Update UX documentation
+- [ ] Sync with developers and create supporting tickets
 
-—‘click element #error-report’,—
+### Usability Testing Criteria
+_List behaviors or user flows that must be validated during testing or design review._
+- Example: User can easily locate the error message in the new UI
 
-**AC:**
+### Notes
+- Links to earlier explorations or related issues
+- Potential design trade-offs or risks
 
-- [ ] Documentation work for the following has occurred:
-   - [ ] Relevant User stories.
-   - [ ] Recommended pa11y checks.
-   - [ ] Updating living UX documents, e.g. User Flows, Personas, [Service Blueprint](https://www.figma.com/design/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=9080-4762) (if relevant).
-- [ ] Internal Raft Review has occurred to ensure DoD standards and QA
-- [ ] Dev/Design sync has occurred; resulting tickets created
-- [ ] The design is usable and accessible, meaning it adheres to definition of done standards for design work.
-> <details>
->      <summary>Expand Definition of Done Standards</summary>
-> 
-> - It uses [USWDS components and follows it’s UX guidance](https://designsystem.digital.gov/components/), or a deviation is clearly documented
-> 
-> - Language is intentional and [plain](https://plainlanguage.gov/guidelines/); placeholders are clearly documented
-> - It follows [accessibility guidelines](https://accessibility.digital.gov/) and accessibility implementation notes are documented (e.g. clear information hierarchy, color is not the only way meaning is communicated, etc.)
-> - If feedback identifies bigger questions or unknowns, create additional issues to investigate
-> </details>
+### Supporting Documentation
+- Figma files
+- Dev-ready design folder
+- Service Blueprint update link
 
-**Tasks:**
-
-- [ ] —Draft design in Figma—
-
-**Supporting Documentation:**
-
-—Link to Figma and Dev-Ready Design folder PDF—
+### Open Questions
+_Are there any unresolved design decisions or trade-offs_
