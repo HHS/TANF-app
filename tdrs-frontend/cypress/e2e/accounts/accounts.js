@@ -14,7 +14,12 @@ Then('{string} can see the hompage', (username) => {
 })
 
 When('{string} is in begin state', (username) => {
-  cy.get('@cypressUser').then((cypressUser) => {
+  cy.get('@cypressUsers').then((cypressUsers) => {
+    cy.log('users', cypressUsers)
+    const user = cypressUsers.selector.find((u) => u.username === username)
+
+    cy.log('user', user)
+
     let body = {
       username: username,
       first_name: '',
@@ -29,19 +34,21 @@ When('{string} is in begin state', (username) => {
       account_approval_status: 'Initial',
       access_requested_date_0: '0001-01-01',
       access_requested_date_1: '00:00:00',
+      feature_flags: '',
       _save: 'Save',
     }
 
-    cy.adminApiRequest(
-      'POST',
-      `/users/user/${cypressUser.selector.id}/change/`,
-      body
-    )
+    cy.adminConsoleFormRequest('POST', `/users/user/${user.id}/change/`, body)
   })
 })
 
 When('{string} is in approved state', (username) => {
-  cy.get('@cypressUser').then((cypressUser) => {
+  cy.get('@cypressUsers').then((cypressUsers) => {
+    cy.log('users', cypressUsers)
+    const user = cypressUsers.selector.find((u) => u.username === username)
+
+    cy.log('user', user)
+
     let body = {
       username: username,
       first_name: '',
@@ -57,13 +64,10 @@ When('{string} is in approved state', (username) => {
       account_approval_status: 'Approved',
       access_requested_date_0: '0001-01-01',
       access_requested_date_1: '00:00:00',
+      feature_flags: '',
       _save: 'Save',
     }
-    cy.adminApiRequest(
-      'POST',
-      `/users/user/${cypressUser.selector.id}/change/`,
-      body
-    )
+    cy.adminConsoleFormRequest('POST', `/users/user/${user.id}/change/`, body)
   })
 })
 

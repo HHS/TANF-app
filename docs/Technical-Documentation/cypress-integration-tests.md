@@ -14,7 +14,7 @@ All tests added into the `tdrs-frontend/cypress/e2e/` folder will be run against
 1. In a new terminal, set up test users by running
    ```bash
    cd tdrs-backend
-   docker-compose exec web python manage.py generate_cypress_users
+   docker-compose exec web python manage.py loaddata cypress/users cypress/data_files
    ```
 1. Be sure your `tdrs-backend/.env` file contains the following
    ```bash

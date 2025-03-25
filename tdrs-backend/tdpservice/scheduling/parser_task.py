@@ -2,10 +2,11 @@
 
 from __future__ import absolute_import
 from celery import shared_task
+from django.utils import timezone
 from django.contrib.auth.models import Group
 from django.db.utils import DatabaseError
-from django.utils import timezone
-import logging
+from django.conf import settings
+
 from tdpservice.data_files.models import DataFile, ReparseFileMeta
 from tdpservice.email.helpers.data_file import send_data_submitted_email
 from tdpservice.parsers.aggregates import case_aggregates_by_month, total_errors_by_month
@@ -13,11 +14,10 @@ from tdpservice.parsers.models import DataFileSummary, ParserErrorCategoryChoice
 from tdpservice.parsers.factory import ParserFactory
 from tdpservice.parsers.util import log_parser_exception, make_generate_parser_error
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
+from tdpservice.log_handler import change_log_filename
 from tdpservice.users.models import AccountApprovalStatusChoices, User
 
-
-logger = logging.getLogger(__name__)
-
+logger = settings.PARSER_LOGGER
 
 def set_reparse_file_meta_model_failed_state(file_meta):
     """Set ReparseFileMeta fields to indicate a parse failure."""
@@ -35,6 +35,7 @@ def parse(data_file_id, reparse_id=None):
     # for undetermined amount of time.
     try:
         data_file = DataFile.objects.get(id=data_file_id)
+        change_log_filename(logger, str(data_file.filename))
         logger.info(f"DataFile parsing started for file {data_file.filename}")
 
         file_meta = None
@@ -105,3 +106,6 @@ def parse(data_file_id, reparse_id=None):
                              "critical")
         if reparse_id:
             set_reparse_file_meta_model_failed_state(file_meta)
+    finally:
+        logger.info(f"DataFile parsing finished for file {data_file.filename}")
+        logger.handlers[2].doRollover(data_file)
