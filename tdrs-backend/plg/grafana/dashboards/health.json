@@ -18,7 +18,6 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 6,
   "links": [],
   "panels": [
     {
@@ -243,7 +242,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "sum(celery_workers)",
+          "expr": "sum(celery_workers{job=~\"celery-$app_env\"})",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -315,7 +314,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(celery_tasks_total{state=\"RECEIVED\"})",
+          "expr": "sum(celery_tasks_total{state=\"RECEIVED\", job=~\"celery-$app_env\"})",
           "format": "time_series",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
@@ -332,7 +331,7 @@
     },
     {
       "datasource": {
-        "default": true,
+        "default": false,
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
@@ -400,7 +399,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "100 * avg_over_time(up{job=~\"tdp-backend\"}[$__range])",
+          "expr": "100 * avg_over_time(up{job=~\"tdp-backend-$app_env\"}[$__range])",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -475,7 +474,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum(ALERTS{job=\"tdp-backend\",alertstate=\"firing\"})",
+          "expr": "sum(ALERTS{job=\"tdp-backend-$app_env\",alertstate=\"firing\"})",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -554,7 +553,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "100 * avg_over_time(up{job=~\"postgres\"}[$__range])",
+          "expr": "100 * avg_over_time(up{job=~\"postgres-$pg_env\"}[$__range])",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -629,7 +628,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "sum(ALERTS{job=\"postgres\", alertstate=\"firing\"})",
+          "expr": "sum(ALERTS{job=~\"postgres-$pg_env\", alertstate=\"firing\"})",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -698,7 +697,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(celery_tasks_total{state=\"SUCCESS\"})",
+          "expr": "sum(celery_tasks_total{state=\"SUCCESS\", job=~\"celery-$app_env\"})",
           "format": "time_series",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
@@ -780,7 +779,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(celery_tasks_total{state=\"FAILURE\"})",
+          "expr": "sum(celery_tasks_total{state=\"FAILURE\", job=~\"celery-$app_env\"})",
           "format": "time_series",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
@@ -866,8 +865,8 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "sum(irate(django_http_requests_total_by_transport_total{instance=~\"^$application$\"}[$__rate_interval]))",
+          "editorMode": "code",
+          "expr": "sum(irate(django_http_requests_total_by_transport_total{job=~\"tdp-backend-$app_env\"}[$__rate_interval]))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -943,7 +942,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "sum(irate(django_http_responses_total_by_status_total{status!~\"2.+|3.+\"}[$__rate_interval]))",
+          "expr": "sum(irate(django_http_responses_total_by_status_total{job=~\"tdp-backend-$app_env\",status!~\"2.+|3.+\"}[$__rate_interval]))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -1050,7 +1049,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "avg(rate(process_cpu_seconds_total{release=\"$release\", instance=\"$instance\"}[5m]) * 1000)",
+          "expr": "avg(rate(process_cpu_seconds_total{job=~\"postgres-$pg_env\"}[$__rate_interval]) * 1000)",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "CPU Time",
@@ -1165,7 +1164,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "sum(irate(django_db_execute_total[$__rate_interval]))",
+          "expr": "sum(irate(django_db_execute_total{job=~\"tdp-backend-$app_env\"}[$__rate_interval]))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -1180,7 +1179,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum(irate(django_db_errors_total[$__rate_interval]))",
+          "expr": "sum(irate(django_db_errors_total{job=~\"tdp-backend-$app_env\"}[$__rate_interval]))",
           "hide": false,
           "instant": false,
           "legendFormat": "Errors",
@@ -1193,6 +1192,7 @@
     },
     {
       "datasource": {
+        "default": false,
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
@@ -1283,10 +1283,12 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "avg(rate(process_resident_memory_bytes{release=\"$release\", instance=\"$instance\"}[5m]))",
+          "editorMode": "code",
+          "expr": "avg(rate(process_resident_memory_bytes{job=~\"postgres-$pg_env\"}[$__rate_interval]))",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "Resident Mem",
+          "range": true,
           "refId": "A"
         },
         {
@@ -1294,10 +1296,12 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "avg(rate(process_virtual_memory_bytes{release=\"$release\", instance=\"$instance\"}[5m]))",
+          "editorMode": "code",
+          "expr": "avg(rate(process_virtual_memory_bytes{job=~\"postgres-$pg_env\"}[$__rate_interval]))",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "Virtual Mem",
+          "range": true,
           "refId": "B"
         }
       ],
@@ -1323,6 +1327,7 @@
         "name": "DS_PROMETHEUS",
         "options": [],
         "query": "prometheus",
+        "queryValue": "",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -1331,127 +1336,104 @@
       {
         "current": {
           "selected": false,
-          "text": "postgres-exporter:9187",
-          "value": "postgres-exporter:9187"
+          "text": "local",
+          "value": "local"
         },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "${DS_PROMETHEUS}"
-        },
-        "definition": "query_result(pg_up{release=\"$release\"})",
         "hide": 0,
         "includeAll": false,
-        "label": "Instance",
+        "label": "Backend environment",
         "multi": false,
-        "name": "instance",
-        "options": [],
-        "query": {
-          "qryType": 3,
-          "query": "query_result(pg_up{release=\"$release\"})",
-          "refId": "PrometheusVariableQueryEditor-VariableQuery"
-        },
-        "refresh": 1,
-        "regex": "/.*instance=\"([^\"]+).*/",
+        "name": "app_env",
+        "options": [
+          {
+            "selected": true,
+            "text": "local",
+            "value": "local"
+          },
+          {
+            "selected": false,
+            "text": "raft",
+            "value": "raft"
+          },
+          {
+            "selected": false,
+            "text": "a11y",
+            "value": "a11y"
+          },
+          {
+            "selected": false,
+            "text": "qasp",
+            "value": "qasp"
+          },
+          {
+            "selected": false,
+            "text": "develop",
+            "value": "develop"
+          },
+          {
+            "selected": false,
+            "text": "staging",
+            "value": "staging"
+          },
+          {
+            "selected": false,
+            "text": "prod",
+            "value": "prod"
+          }
+        ],
+        "query": "local, raft, a11y, qasp, develop, staging, prod",
+        "queryValue": "",
         "skipUrlSync": false,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {
-          "isNone": true,
-          "selected": false,
-          "text": "None",
-          "value": ""
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "${DS_PROMETHEUS}"
-        },
-        "definition": "query_result(pg_exporter_last_scrape_duration_seconds{kubernetes_namespace=\"$namespace\"})",
-        "hide": 0,
-        "includeAll": false,
-        "label": "Release",
-        "multi": false,
-        "name": "release",
-        "options": [],
-        "query": {
-          "qryType": 3,
-          "query": "query_result(pg_exporter_last_scrape_duration_seconds{kubernetes_namespace=\"$namespace\"})",
-          "refId": "PrometheusVariableQueryEditor-VariableQuery"
-        },
-        "refresh": 1,
-        "regex": "/.*release=\"([^\"]+)/",
-        "skipUrlSync": false,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {
-          "isNone": true,
-          "selected": false,
-          "text": "None",
-          "value": ""
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "${DS_PROMETHEUS}"
-        },
-        "definition": "query_result(pg_exporter_last_scrape_duration_seconds)",
-        "hide": 0,
-        "includeAll": false,
-        "label": "Namespace",
-        "multi": false,
-        "name": "namespace",
-        "options": [],
-        "query": {
-          "qryType": 3,
-          "query": "query_result(pg_exporter_last_scrape_duration_seconds)",
-          "refId": "PrometheusVariableQueryEditor-VariableQuery"
-        },
-        "refresh": 1,
-        "regex": "/.*kubernetes_namespace=\"([^\"]+).*/",
-        "skipUrlSync": false,
-        "sort": 1,
-        "type": "query"
+        "type": "custom"
       },
       {
         "current": {
           "selected": false,
-          "text": "All",
-          "value": "$__all"
+          "text": "local",
+          "value": "local"
         },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "${DS_PROMETHEUS}"
-        },
-        "definition": "label_values(python_info,instance)",
         "hide": 0,
-        "includeAll": true,
-        "label": "application",
+        "includeAll": false,
+        "label": "Database environment",
         "multi": false,
-        "name": "application",
-        "options": [],
-        "query": {
-          "qryType": 1,
-          "query": "label_values(python_info,instance)",
-          "refId": "PrometheusVariableQueryEditor-VariableQuery"
-        },
-        "refresh": 1,
-        "regex": "",
+        "name": "pg_env",
+        "options": [
+          {
+            "selected": true,
+            "text": "local",
+            "value": "local"
+          },
+          {
+            "selected": false,
+            "text": "dev",
+            "value": "dev"
+          },
+          {
+            "selected": false,
+            "text": "staging",
+            "value": "staging"
+          },
+          {
+            "selected": false,
+            "text": "production",
+            "value": "production"
+          }
+        ],
+        "query": "local, dev, staging, production",
+        "queryValue": "",
         "skipUrlSync": false,
-        "sort": 0,
-        "type": "query"
+        "type": "custom"
       }
     ]
   },
   "time": {
-    "from": "now-1m",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "Uptime/Health",
   "uid": "beec9qjbf6iv4d",
-  "version": 9,
+  "version": 6,
   "weekStart": ""
 }
