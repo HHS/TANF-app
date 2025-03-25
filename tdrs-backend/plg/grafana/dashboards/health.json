@@ -18,6 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
+  "id": 25,
   "links": [],
   "panels": [
     {
@@ -1335,9 +1336,9 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "local",
-          "value": "local"
+          "selected": true,
+          "text": "prod",
+          "value": "prod"
         },
         "hide": 0,
         "includeAll": false,
@@ -1347,28 +1348,8 @@
         "options": [
           {
             "selected": true,
-            "text": "local",
-            "value": "local"
-          },
-          {
-            "selected": false,
-            "text": "raft",
-            "value": "raft"
-          },
-          {
-            "selected": false,
-            "text": "a11y",
-            "value": "a11y"
-          },
-          {
-            "selected": false,
-            "text": "qasp",
-            "value": "qasp"
-          },
-          {
-            "selected": false,
-            "text": "develop",
-            "value": "develop"
+            "text": "prod",
+            "value": "prod"
           },
           {
             "selected": false,
@@ -1377,20 +1358,35 @@
           },
           {
             "selected": false,
-            "text": "prod",
-            "value": "prod"
+            "text": "develop",
+            "value": "develop"
+          },
+          {
+            "selected": false,
+            "text": "qasp",
+            "value": "qasp"
+          },
+          {
+            "selected": false,
+            "text": "raft",
+            "value": "raft"
+          },
+          {
+            "selected": false,
+            "text": "local",
+            "value": "local"
           }
         ],
-        "query": "local, raft, a11y, qasp, develop, staging, prod",
+        "query": "prod, staging, develop, qasp, raft, local",
         "queryValue": "",
         "skipUrlSync": false,
         "type": "custom"
       },
       {
         "current": {
-          "selected": false,
-          "text": "local",
-          "value": "local"
+          "selected": true,
+          "text": "production",
+          "value": "production"
         },
         "hide": 0,
         "includeAll": false,
@@ -1400,13 +1396,8 @@
         "options": [
           {
             "selected": true,
-            "text": "local",
-            "value": "local"
-          },
-          {
-            "selected": false,
-            "text": "dev",
-            "value": "dev"
+            "text": "production",
+            "value": "production"
           },
           {
             "selected": false,
@@ -1415,11 +1406,16 @@
           },
           {
             "selected": false,
-            "text": "production",
-            "value": "production"
+            "text": "dev",
+            "value": "dev"
+          },
+          {
+            "selected": false,
+            "text": "local",
+            "value": "local"
           }
         ],
-        "query": "local, dev, staging, production",
+        "query": "production, staging, dev, local",
         "queryValue": "",
         "skipUrlSync": false,
         "type": "custom"
@@ -1434,6 +1430,6 @@
   "timezone": "browser",
   "title": "Uptime/Health",
   "uid": "beec9qjbf6iv4d",
-  "version": 6,
+  "version": 2,
   "weekStart": ""
 }
