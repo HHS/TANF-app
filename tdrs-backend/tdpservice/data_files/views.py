@@ -70,10 +70,6 @@ class DataFileViewSet(ModelViewSet):
                         f"Datafile META -> datafile: {data_file_id}, section: {data_file.section}, " +
                         f"quarter {data_file.quarter}, year {data_file.year}.")
 
-            if data_file.prog_type == 'FRA':
-                logger.debug(f"{self.__class__.__name__}: return val: {response}")
-                return response
-
             parser_task.parse.delay(data_file_id)
             logger.info("Submitted parse task to queue for datafile %s.", data_file_id)
 
@@ -107,11 +103,14 @@ class DataFileViewSet(ModelViewSet):
                 DataFile.Section.FRA_SECONDRY_SCHOOL_ATTAINMENT,
                 DataFile.Section.FRA_SUPPLEMENT_WORK_OUTCOMES
                 ]
+
         if self.action == 'list':
-            if self.request.query_params.get('file_type') == 'ssp-moe':
+            file_type = self.request.query_params.get('file_type', None)
+
+            if file_type == 'ssp-moe':
                 queryset = queryset.filter(section__contains='SSP')
-            elif self.request.query_params.get('file_type') == 'fra':
-                queryset = queryset.filter(section__in=FRA_SECTION_LIST)
+            elif file_type in FRA_SECTION_LIST:
+                queryset = queryset.filter(section=file_type)
             else:
                 queryset = queryset.exclude(section__contains='SSP')
 

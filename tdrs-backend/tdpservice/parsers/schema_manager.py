@@ -1,24 +1,12 @@
 """Manager class for a datafile's schema's."""
 
-from dataclasses import dataclass
-from django.db.models import Model
 from tdpservice.parsers.models import ParserErrorCategoryChoices
 from tdpservice.parsers.fields import TransformField
-from tdpservice.parsers.row_schema import RowSchema
+from tdpservice.parsers.dataclasses import ManagerPVResult
 from tdpservice.parsers.schema_defs.utils import ProgramManager
-from typing import List, Tuple
 import logging
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass
-class ManagerPVResult:
-    """SchemaManager parse and validate result class."""
-
-    # TODO: Update the `records` type to align the implementation of `SchemaResult`
-    records: List[Tuple[Model, bool, List[Model]]]
-    schemas: List[RowSchema]
 
 
 class SchemaManager:
@@ -40,14 +28,11 @@ class SchemaManager:
 
     def parse_and_validate(self, row, generate_error):
         """Run `parse_and_validate` for each schema provided and bubble up errors."""
-        # row should know it's record type
         try:
             records = []
             schemas = self.schema_map[row.record_type]
-            # TODO: We pass `raw_data` for now until the `RowSchema` and `Field` classes are
-            # updated to support `RawRow`.
             for schema in schemas:
-                record, is_valid, errors = schema.parse_and_validate(row.raw_data, generate_error)
+                record, is_valid, errors = schema.parse_and_validate(row, generate_error)
                 records.append((record, is_valid, errors))
             return ManagerPVResult(records=records, schemas=schemas)
         except Exception:

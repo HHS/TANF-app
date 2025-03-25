@@ -1,6 +1,7 @@
 """Factory class for all parser classes."""
 
 from tdpservice.parsers.tdr_parser import TanfDataReportParser
+from tdpservice.parsers.fra_parser import FRAParser
 
 class ParserFactory:
     """Factory class to get/instantiate parsers."""
@@ -12,7 +13,7 @@ class ParserFactory:
             case "TANF" | "SSP":
                 return TanfDataReportParser
             case "FRA":
-                raise ValueError("FRA parser is not yet available.")
+                return FRAParser
             case _:
                 raise ValueError(f"No parser available for program type: {program_type}.")
 
@@ -24,6 +25,6 @@ class ParserFactory:
             case "TAN" | "SSP":
                 return TanfDataReportParser(**kwargs)
             case "FRA":
-                raise ValueError("FRA parser is not yet available.")
+                return FRAParser(**kwargs)
             case _:
                 raise ValueError(f"No parser available for program type: {program_type}.")

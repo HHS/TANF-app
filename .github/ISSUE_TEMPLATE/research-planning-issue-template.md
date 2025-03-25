@@ -1,29 +1,46 @@
 ---
 name: Research planning issue template
 about: Template for research planning issues
-title: "[Research Planning] "
-labels: "Research & Design"
+title: ''
+labels: Research & Design, Research Planning
 assignees: ''
 
 ---
 
-**Description:**
+## Background
+_Provide context, goals, and justification for the research._
 
-*---Describe the scope of research and core questions/designs to be investigated. Reference any related tickets that might be helpful to cite for planning, discussion, or review. Should typically be between 5 and 13 points.---*
+### Why It Matters
+_Explain how this research supports user needs, compliance, or team goals. What value will it bring?_ 
 
-**AC:**
-- [ ] A research plan has been created which includes:
-    - [ ] Research goals, relevant research questions.
-    - [ ] Recruitment criteria & target participants.
-    - [ ] Recruitment/participation email templates.
-    - [ ] Timeline (for recruitment and for research sessions).
-    - [ ] Testable Designs/Content (if applicable).
+### What's Changing
+_Summarize key outcomes of the research that could impact users, product direction, or stakeholders._
 
-  - [ ] Ethics, privacy concerns 
+## Research & Testing
+### Acceptance Criteria
+- [ ] A detailed research plan is created and reviewed
+- [ ] Research goals and questions are defined
+- [ ] Recruitment criteria and participant profiles are documented
+- [ ] Ethics and privacy considerations are addressed
+- [ ] Timeline and facilitation plans are outlined
 
+### Tasks
+- [ ] Draft research plan in hack.md
+- [ ] Document recruitment strategy and participant criteria
+- [ ] Draft participant communications (outreach emails, consent forms)
+- [ ] Confirm stakeholder alignment on goals and plan
 
-**Tasks:**
-- [ ] *---Create a hack.md for research plan drafting---*
+### Usability Testing Criteria
+_List any expected testable hypotheses or user behaviors to observe during research._
+- Example: Users understand the difference between X and Y tasks
 
-**Supporting Documentation:**
-- *---Link to hack.md, Mural, Figma, or other relevant planning documentation---*
+### Notes
+- Related tickets or references
+- Known risks or constraints
+
+### Supporting Documentation
+- Link to research plan
+- Mural/Figma/Docs relevant to research
+
+### Open Questions
+_Any pending decisions or areas needing stakeholder input?_

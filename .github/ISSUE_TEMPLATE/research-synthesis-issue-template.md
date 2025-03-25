@@ -1,39 +1,46 @@
 ---
 name: Research synthesis issue template
 about: Template for research synthesis issues
-title: "[Reearch Synthesis] "
-labels: "Research & Design"
+title: ''
+labels: Research & Design, Research Synthesis
 assignees: ''
 
 ---
 
-**Description:**
+## Background
+_Link to research planning and facilitation tickets. Describe the synthesis scope._
 
---Link to research planning, facilitation tickets, other relevant supporting information. Typically pointed at 13 points.--
+### Why It Matters
+_Explain what insights will be delivered and how they support the team, users, or product goals._
 
-**AC:**
+### What's Changing
+_Summarize key updates or deliverables produced from this synthesis._
 
-- [ ] A Gitbook with the drafted synthesis has been reviewed.
-- [ ] [TDP Service Blueprint](https://www.figma.com/design/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=9080-4762) has been updated, as appplicable
-- [ ] PR has been opened containing the final draft of the synthesis.
-- [ ] Internal Raft Review has occurred to ensure DoD standards and QA
-- [ ] The content is usable and accessible, meaning it adheres to definition of done standards for design work.
-> <details>
->      <summary>Expand Definition of Done Standards</summary>
-> 
-> - It uses [USWDS components and follows it’s UX guidance](https://designsystem.digital.gov/components/), or a deviation is clearly documented
-> 
-> - Language is intentional and [plain](https://plainlanguage.gov/guidelines/); placeholders are clearly documented
-> - It follows [accessibility guidelines](https://accessibility.digital.gov/) and accessibility implementation notes are documented (e.g. clear information hierarchy, color is not the only way meaning is communicated, etc.)
-> - If feedback identifies bigger questions or unknowns, create additional issues to investigate
-> </details>
+## Synthesis & Review
+### Acceptance Criteria
+- [ ] Gitbook draft reviewed
+- [ ] Service Blueprint updated (if applicable)
+- [ ] PR submitted for final synthesis draft
+- [ ] Internal Raft review completed
+- [ ] Final deliverable meets usability and accessibility standards
 
-**Tasks:**
+### Tasks
+- [ ] Aggregate and anonymize session notes
+- [ ] Delete recordings (privacy compliance)
+- [ ] Draft synthesis: scope, findings, insights, Zenhub issues
+- [ ] Update Service Blueprint or other UX docs
 
-- [ ] --Aggregate notes from research sessions--
-- [ ] Delete video recording(s) once notes are compiled
-- [ ] Document synthesis - Scope (research goal(s)), High-level findings, Actionable learnings, Issues that have to be added to Zenhub, Takeways for future research
+### Usability Testing Criteria
+_List any high-level insights that should inform usability testing or product changes._
+- Example: Users struggled with submission flow validation
 
-**Supporting Documentation:**
+### Notes
+- Open questions for future research
+- Additional patterns or unknowns surfaced
 
-- --Link to the gitbook page--
+### Supporting Documentation
+- Link to Gitbook
+- Updated Service Blueprint
+
+### Open Questions
+_What research gaps or follow-ups were identified?_
