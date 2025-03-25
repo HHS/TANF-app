@@ -2,6 +2,7 @@
 import os
 from rest_framework import status
 from rest_framework.exceptions import ErrorDetail
+from rest_framework.test import APIClient
 import pytest
 import base64
 import openpyxl
@@ -69,9 +70,16 @@ class DataFileAPITestBase:
 
     @pytest.fixture
     def api_client(self, api_client, user):
-        """Provide an API client that is logged in with the specified user."""
+        """Provide an API client that is logged in with the default fixture user."""
         api_client.login(username=user.username, password='test_password')
         return api_client
+
+    @staticmethod
+    def login_as(request_user):
+        """Provide an API client that is logged in with a provided user."""
+        client = APIClient()
+        client.login(username=request_user.username, password='test_password')
+        return client
 
     @staticmethod
     def get_data_file_record(data_file_data, version, user):
@@ -194,7 +202,7 @@ class DataFileAPITestBase:
             version=version,
         ).exists()
 
-    def post_data_file_file(self, api_client, data_file_data):
+    def post_data_file(self, api_client, data_file_data):
         """Submit a data file with the given data."""
         return api_client.post(
             self.root_url,
@@ -242,7 +250,7 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
 
     def test_get_data_file_file_meta_data(self, api_client, data_file_data, user):
         """Assert the meta data the api provides is as expected."""
-        response = self.post_data_file_file(api_client, data_file_data)
+        response = self.post_data_file(api_client, data_file_data)
         data_file_id = response.data['id']
         assert DataFile.objects.get(id=data_file_id)
         response = self.get_data_file_file(api_client, data_file_id)
@@ -257,7 +265,7 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
 
     def test_download_data_file_file(self, api_client, data_file_data, user):
         """Test that the file is transmitted with out errors."""
-        response = self.post_data_file_file(api_client, data_file_data)
+        response = self.post_data_file(api_client, data_file_data)
         data_file_id = response.data['id']
         response = self.download_file(api_client, data_file_id)
 
@@ -266,7 +274,7 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
 
     def test_create_data_file_file_entry(self, api_client, data_file_data, user):
         """Test ability to create data file metadata registry."""
-        response = self.post_data_file_file(api_client, data_file_data)
+        response = self.post_data_file(api_client, data_file_data)
         self.assert_data_file_created(response)
         self.assert_data_file_exists(data_file_data, 1, user)
 
@@ -292,8 +300,8 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
         user
     ):
         """Test that data file version numbers incremented."""
-        response1 = self.post_data_file_file(api_client, data_file_data)
-        response2 = self.post_data_file_file(api_client, other_data_file_data)
+        response1 = self.post_data_file(api_client, data_file_data)
+        response2 = self.post_data_file(api_client, other_data_file_data)
 
         self.assert_data_file_created(response1)
         self.assert_data_file_created(response2)
@@ -322,7 +330,7 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
 
     def test_data_files_data_analyst_permission(self, api_client, data_file_data, user):
         """Test that a Data Analyst is allowed to add data_files to their own STT."""
-        response = self.post_data_file_file(api_client, data_file_data)
+        response = self.post_data_file(api_client, data_file_data)
         self.assert_data_file_created(response)
         self.assert_data_file_exists(data_file_data, 1, user)
 
@@ -332,14 +340,14 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         """Test that Data Analysts can't add data_files to STTs other than their own."""
         data_file_data['stt'] = data_file_data['stt'] + 1
 
-        response = self.post_data_file_file(api_client, data_file_data)
+        response = self.post_data_file(api_client, data_file_data)
         self.assert_data_file_rejected(response)
 
     def test_download_data_file_file_for_own_stt(
         self, api_client, data_file_data, user
     ):
         """Test that the file is downloaded as expected for a Data Analyst's set STT."""
-        response = self.post_data_file_file(api_client, data_file_data)
+        response = self.post_data_file(api_client, data_file_data)
         data_file_id = response.data['id']
         response = self.download_file(api_client, data_file_id)
 
@@ -415,7 +423,7 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         user
     ):
         """Test that the download is rejected when user's STT doesn't match."""
-        response = self.post_data_file_file(api_client, data_file_data)
+        response = self.post_data_file(api_client, data_file_data)
         data_file_id = response.data['id']
 
         # Update the STT to something other than the user's
@@ -435,7 +443,7 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         user
     ):
         """Test that the error report download is rejected when user's STT doesn't match."""
-        response = self.post_data_file_file(api_client, data_file_data)
+        response = self.post_data_file(api_client, data_file_data)
         data_file_id = response.data['id']
 
         # Update the STT to something other than the user's
@@ -453,7 +461,7 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         """Test that when Data Analysts upload file with ssp true the section name is updated."""
         data_file_data['ssp'] = True
 
-        response = self.post_data_file_file(api_client, data_file_data)
+        response = self.post_data_file(api_client, data_file_data)
         assert response.data['section'] == 'SSP Active Case Data'
 
     def test_data_file_data_upload_tribe(
@@ -462,7 +470,7 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         """Test that when we upload a file for Tribe the section name is updated."""
         stt.type = 'tribe'
         stt.save()
-        response = self.post_data_file_file(api_client, data_file_data)
+        response = self.post_data_file(api_client, data_file_data)
         assert 'Tribal Active Case Data' == response.data['section']
         stt.type = ''
         stt.save()
@@ -473,7 +481,7 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         """Test that when Data Analysts upload file with ssp true the section name is updated."""
         data_file_data['ssp'] = False
 
-        response = self.post_data_file_file(api_client, data_file_data)
+        response = self.post_data_file(api_client, data_file_data)
         assert response.data['section'] == 'Active Case Data'
 
 
@@ -492,7 +500,7 @@ class TestDataFileAPIAsInactiveUser(DataFileAPITestBase):
         data_file_data
     ):
         """Test that an inactive user can't add data_files at all."""
-        response = self.post_data_file_file(api_client, data_file_data)
+        response = self.post_data_file(api_client, data_file_data)
         self.assert_data_file_rejected(response)
 
 
@@ -504,23 +512,42 @@ class TestDataFileAsOFARegionalStaff(DataFileAPITestBase):
         """Override the default user with data_analyst for our tests."""
         return regional_user
 
-    def test_download_data_file_file_for_own_region(
-        self, api_client, regional_data_file_data, user
+    def test_cannot_download_data_file(
+        self, api_client, regional_data_file_data, user, data_analyst
     ):
-        """Test that the file is downloaded as expected for Regional Staff."""
-        response = self.post_data_file_file(api_client, regional_data_file_data)
+        """Test OFA Regional Staff cannot download datafiles."""
+        post_client = self.login_as(data_analyst)
+        response = self.post_data_file(post_client, regional_data_file_data)
         data_file_id = response.data['id']
         response = self.download_file(api_client, data_file_id)
 
-        assert response.status_code == status.HTTP_200_OK
-        self.assert_data_file_content_matches(response, data_file_id)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    def test_cannot_download_data_file_file_for_other_regions(
-        self, api_client, other_regional_data_file_data, user
+    def test_can_download_error_report_for_own_region(
+        self, api_client, regional_data_file_data, user, data_analyst
     ):
-        """Test that the file is not downloaded if the report is not in their region."""
-        response = self.post_data_file_file(api_client, other_regional_data_file_data)
+        """Test that OFA Regional Staff can download error reports for data files in their own region."""
+        post_client = self.login_as(data_analyst)
+        response = self.post_data_file(post_client, regional_data_file_data)
+        data_file_id = response.data['id']
+        response = self.download_error_report_file(api_client, data_file_id)
 
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_cannot_download_error_report_for_other_region(
+        self, api_client, other_regional_data_file_data, user, user_in_other_region
+    ):
+        """Test that OFA Regional Staff cannot download error reports in regions other than their own."""
+        post_client = self.login_as(user_in_other_region)
+        response = self.post_data_file(post_client, other_regional_data_file_data)
+        data_file_id = response.data['id']
+        response = self.download_error_report_file(api_client, data_file_id)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_cannot_upload_files(self, api_client, regional_data_file_data, user):
+        """Test that OFA Regional Staff cannot create datafiles."""
+        response = self.post_data_file(api_client, regional_data_file_data)
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
