@@ -1,4 +1,4 @@
-FROM elipe17/tdp-backend-base:setup-tools-update
+FROM elipe17/tdp-backend-base:v0.0.2
 
 # Adds our application code to the image
 COPY . /tdpapp
