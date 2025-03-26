@@ -140,3 +140,45 @@ export const tryGetUTF8EncodedFile = async function (fileBytes, file) {
     return file
   }
 }
+
+// import SET_SELECTED_YEAR
+// import SET_SELECTED_QUARTER
+
+export const checkHeaderFile = async function (
+  result,
+  file,
+  fiscalSelectedYear,
+  fiscalSelectedQuarter
+) {
+  const CalendarToFiscalYearQuarter = (calendarYear, calendarQuarter) => {
+    let quarter = parseInt(calendarQuarter)
+    let year = parseInt(calendarYear)
+    if (quarter === 4) {
+      year = year + 1
+    }
+    quarter = quarter === 4 ? 1 : quarter + 1
+    return [year.toString(), quarter.toString()]
+  }
+  // reads the first line of file formatted as UTF8Encoded
+  const decoder = new TextDecoder('utf-8') // Or another encoding if needed
+  const textResult = decoder.decode(result)
+  const lines = textResult.split('\n')
+  const firstLine = lines[0]
+  const yearQuarterRegex = '[0-9]{4}[1-4]'
+  const yearQuarter = firstLine.match(yearQuarterRegex)
+  const fileYear = yearQuarter?.[0]?.slice(0, 4)
+  const fileQuarter = yearQuarter?.[0]?.slice(4, 5)
+  const [fiscalFileYear, fiscalFileQuarter] = CalendarToFiscalYearQuarter(
+    fileYear,
+    fileQuarter
+  )
+  if (
+    yearQuarter &&
+    (fiscalFileYear !== fiscalSelectedYear ||
+      fiscalFileQuarter !== fiscalSelectedQuarter.slice(1, 2))
+  ) {
+    return [false, fiscalFileYear, fiscalFileQuarter]
+  } else {
+    return [true, null, null]
+  }
+}
