@@ -43,6 +43,7 @@ class ParserError(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     fields_json = models.JSONField(null=True)
+    values_json = models.JSONField(null=True)
 
     deprecated = models.BooleanField(default=False)
 
