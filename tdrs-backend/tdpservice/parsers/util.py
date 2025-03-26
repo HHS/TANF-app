@@ -42,6 +42,12 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
         }
     }
 
+    values_json = {}
+    for field in fields:
+        name = getattr(field, 'name', '')
+        value = getattr(record, name, None) if type(record) is not dict else record.get(name, None)
+        values_json[name] = value
+
     field = fields[-1]  # if multiple fields, result field is last
 
     return ParserError(
@@ -59,6 +65,7 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
         ) if record and not isinstance(record, dict) else None,
         object_id=getattr(record, 'id', None) if record and not isinstance(record, dict) else None,
         fields_json=fields_json,
+        values_json=values_json,
         deprecated=deprecated,
     )
 

@@ -24,7 +24,7 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:9090"]
 
-  - job_name: "tdp-backend"
+  - job_name: "tdp-backend-local"
     metrics_path: "/prometheus/metrics"
     static_configs:
       - targets: ["web:8080"]
@@ -32,14 +32,14 @@ scrape_configs:
           service: "tdp-backend"
           env: "local"
 
-  - job_name: "celery"
+  - job_name: "celery-local"
     static_configs:
       - targets: ["celery-exporter:9540"]
         labels:
           service: "celery"
           env: "local"
 
-  - job_name: postgres
+  - job_name: postgres-local
     static_configs:
       - targets: ["postgres-exporter:9187"]
         labels:
