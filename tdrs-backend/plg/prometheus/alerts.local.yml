@@ -2,7 +2,7 @@ groups:
   - name: database.alerts
     rules:
       - alert: LocalDatabaseDown
-        expr: last_over_time(pg_up{job="postgres"}[1m]) == 0 or last_over_time(up{job="postgres"}[1m]) == 0
+        expr: last_over_time(pg_up{job="postgres-local"}[1m]) == 0 or last_over_time(up{job="postgres-local"}[1m]) == 0
         for: 1m
         labels:
           severity: CRITICAL
@@ -12,7 +12,7 @@ groups:
   - name: backend.alerts
     rules:
     - alert: LocalBackendDown
-      expr: last_over_time(up{job=~"tdp-backend.*"}[1m]) == 0
+      expr: last_over_time(up{job=~"tdp-backend-local"}[1m]) == 0
       for: 1m
       labels:
         severity: ERROR

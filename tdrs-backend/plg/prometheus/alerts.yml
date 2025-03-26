@@ -2,7 +2,7 @@ groups:
   - name: database.alerts
     rules:
       - alert: DevDatabaseDown
-        expr: last_over_time(pg_up{job="postgres-dev"}[1m]) == 0 or last_over_time(up{job="postgres"}[1m]) == 0
+        expr: last_over_time(pg_up{job="postgres-dev"}[1m]) == 0 or last_over_time(up{job="postgres-dev"}[1m]) == 0
         labels:
           severity: CRITICAL
         annotations:
