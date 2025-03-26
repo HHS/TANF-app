@@ -9,14 +9,14 @@ groups:
           summary: "The {{ $labels.service }} service is down."
           description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 1 minute."
       - alert: StagingDatabaseDown
-        expr: last_over_time(pg_up{job="postgres-staging"}[1m]) == 0
+        expr: last_over_time(pg_up{job="postgres-staging"}[1m]) == 0 or last_over_time(up{job="postgres-staging"}[1m]) == 0
         labels:
           severity: ERROR
         annotations:
           summary: "The {{ $labels.service }} service is down."
           description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 1 minute."
       - alert: ProductionDatabaseDown
-        expr: last_over_time(pg_up{job="postgres-production"}[1m]) == 0
+        expr: last_over_time(pg_up{job="postgres-production"}[1m]) == 0 or last_over_time(up{job="postgres-production"}[1m]) == 0
         labels:
           severity: CRITICAL
         annotations:
