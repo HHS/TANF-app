@@ -733,8 +733,6 @@ const FRAReports = () => {
 
   const handleUpload = ({ file: selectedFile }) => {
     const onFileUploadSuccess = (datafile) => {
-      console.log(datafile)
-
       setSelectedFile(null)
       setLocalAlertState({
         active: true,
