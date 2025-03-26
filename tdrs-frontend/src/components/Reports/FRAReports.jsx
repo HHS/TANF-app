@@ -619,6 +619,8 @@ const FRAReports = () => {
     message: null,
   })
 
+  const submissionStatusTimer = useRef(null)
+
   const reportTypeOptions = [
     {
       value: 'workOutcomesOfTanfExiters',
@@ -759,7 +761,7 @@ const FRAReports = () => {
             ),
           tryNumber === 1 ? 0 : WAIT_TIME
         )
-        setSubmissionStatusTimerId(statusTimeout)
+        submissionStatusTimer.current = statusTimeout
       }
 
       pollSubmissionStatus(1)
@@ -842,10 +844,12 @@ const FRAReports = () => {
     }
   }, [localAlert, alertRef])
 
-  const [submissionStatusTimerId, setSubmissionStatusTimerId] = useState(null)
   useEffect(() => {
-    return () => clearTimeout(submissionStatusTimerId)
-  }, [submissionStatusTimerId])
+    return () =>
+      submissionStatusTimer.current
+        ? clearTimeout(submissionStatusTimer.current)
+        : null
+  }, [submissionStatusTimer])
 
   return (
     <>
