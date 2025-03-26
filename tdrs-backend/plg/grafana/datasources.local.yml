@@ -18,3 +18,13 @@ datasources:
       maxLines: 1000
     isDefault: false
     uid: "L8E80F9AEF21F6940"
+  - name: Alertmanager
+    type: alertmanager
+    access: proxy
+    url: "http://alertmanager:9093/alerts"
+    jsonData:
+      implementation: prometheus
+      handleGrafanaManagedAlerts: false
+    basicAuth: false
+    basicAuthUser: 
+    basicAuthPassword: 
