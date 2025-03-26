@@ -109,6 +109,16 @@ services:
       - ./plg/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
     command: --config.file=/etc/alertmanager/alertmanager.yml --storage.path=/alertmanager --log.level=debug --web.external-url=http://localhost:3000/alerts --web.route-prefix=/alerts --cluster.listen-address=""
 
+  mimir:
+    image: grafana/mimir:2.15.1
+    ports:
+      - 9009:9009
+    volumes:
+      - ./plg/mimir/mimir.yml:/etc/mimir/mimir.yml
+    command: --config.file=/etc/mimir/mimir.yml
+    depends_on:
+      - localstack
+
   prometheus:
     restart: always
     image: prom/prometheus:v2.54.1
@@ -124,6 +134,7 @@ services:
       - celery-exporter
       - postgres-exporter
       - alertmanager
+      - mimir
 
   promtail:
     restart: always
