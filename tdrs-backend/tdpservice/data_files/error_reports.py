@@ -60,7 +60,7 @@ class ErrorReportBase(ABC):
 
     def format_header(self, header_list: list):
         """Format header."""
-        return ' '.join([i.capitalize() for i in header_list.split('_')])
+        return ' '.join([i.capitalize() if not i.isupper() else i for i in header_list.split('_')])
 
     def format_error_msg(self, error_msg, fields_json):
         """Format error message."""
@@ -113,7 +113,7 @@ class FRADataErrorReport(ErrorReportBase):
 
     def get_columns(self):
         """Get the columns for header."""
-        return ["exit_date", "ssn", "error_location_in_file", "error_description"]
+        return ["exit_date", "SSN", "error_location_in_file", "error_description"]
 
     def _obscure_ssn(self, ssn):
         """Obscure SSN."""
