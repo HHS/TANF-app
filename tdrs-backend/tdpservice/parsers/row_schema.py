@@ -267,7 +267,6 @@ class FRASchema(RowSchema):
         # Parse FRA row and run field validators, waiting for guidance on other categories of validators
         # The implementor should reference `UpdatedErrorReport.xlsx` to gain insight into appropriate
         # validators for fields.
-        errors = []
 
         # parse row to model
         record = self.parse_row(row)
@@ -285,17 +284,16 @@ class FRASchema(RowSchema):
             if is_quiet_preparser_errors:
                 preparsing_errors = []
             logger.info(f"{len(preparsing_errors)} preparser error(s) encountered.")
+            return SchemaResult(None, False, preparsing_errors)
 
         # Run category 1 field validators. Note that even though we are generating cat1 errors the records are still
         # serialized to the database. This is a requiremnt for the moment because the FRA error report requires access
         # to fields in records that generated an error.
         fields_are_valid, field_errors = self.run_field_validators(record, generate_error)
 
-        is_valid = fields_are_valid and preparsing_is_valid
-        errors = field_errors + preparsing_errors
-        record = record if is_valid else None
+        record = record if fields_are_valid else None
 
-        return SchemaResult(record, is_valid, errors)
+        return SchemaResult(record, fields_are_valid, field_errors)
 
     def run_preparsing_validators(self, row: RawRow, record, generate_error):
         """Run each of the `preparsing_validator` functions in the schema against the un-parsed row."""

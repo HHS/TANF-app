@@ -1845,7 +1845,7 @@ def test_parse_fra_work_outcome_exiters(request, file, dfs):
     assert TANF_Exiter1.objects.all().count() == 7
 
     errors = ParserError.objects.filter(file=datafile).order_by("id")
-    assert errors.count() == 14
+    assert errors.count() == 4
     for e in errors:
         assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert dfs.total_number_of_records_in_file == 7
@@ -1913,7 +1913,7 @@ def test_parse_fra_empty_first_row(request, file, dfs):
 ])
 @pytest.mark.django_db()
 def test_parse_fra_ofa_test_cases(request, file, dfs):
-    """Test parsing FRA files with an empty first row/no header data."""
+    """Test parsing OFA FRA files."""
     datafile = request.getfixturevalue(file)
     datafile.year = 2025
     datafile.quarter = 'Q3'
@@ -1930,5 +1930,5 @@ def test_parse_fra_ofa_test_cases(request, file, dfs):
     for e in errors:
         assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
 
-    assert errors.count() == 26
+    assert errors.count() == 15
     assert TANF_Exiter1.objects.all().count() == 12
