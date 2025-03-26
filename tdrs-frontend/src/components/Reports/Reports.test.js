@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 
 import { Provider } from 'react-redux'
 import { thunk } from 'redux-thunk'
@@ -868,5 +868,59 @@ describe('Reports', () => {
 
     expect(queryByText('Current Submission')).not.toBeInTheDocument()
     expect(queryByText('Submit Data Files')).not.toBeInTheDocument()
+  })
+  it("should skip the file upload step when submitted files header doesn't match submitted year and quarter", async () => {
+    const currentYear = new Date().getFullYear()
+    const store = appConfigureStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        year: (currentYear - 1).toString(),
+        stt: 'Florida',
+        quarter: 'Q3',
+      },
+    })
+
+    const origDispatch = store.dispatch
+    store.dispatch = jest.fn(origDispatch)
+
+    window.HTMLElement.prototype.scrollIntoView = jest.fn(() => null)
+
+    const { getByText, getByLabelText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    fireEvent.click(getByText(/Search/, { selector: 'button' }))
+
+    await waitFor(() => {
+      expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
+    })
+
+    const makeTestFile = (name, contents = ['test'], type = 'text/plain') =>
+      new File(contents, name, { type })
+
+    // add a file to be uploaded
+    await waitFor(() => {
+      fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
+        target: {
+          files: [
+            makeTestFile('test2.txt', [(currentYear - 2).toString() + '4']),
+          ],
+        },
+      })
+    })
+    await waitFor(() => {
+      const divElement = screen.getByText(
+        `File contains data from ` +
+          `Oct 1 - Dec 31, ` +
+          `which belongs to Fiscal Year ` +
+          (currentYear - 1).toString() +
+          ', Quarter 1' +
+          `. Adjust your search parameters or upload a different file.`
+      )
+      expect(divElement).toBeInTheDocument()
+    })
   })
 })
