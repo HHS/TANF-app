@@ -632,7 +632,7 @@ describe('actions/fraReports', () => {
       })
 
       await store.dispatch(
-        pollFraSubmissionStatus(1, 11, test, retry, onSuccess, onError)
+        pollFraSubmissionStatus(1, 31, test, retry, onSuccess, onError)
       )
 
       const actions = store.getActions()

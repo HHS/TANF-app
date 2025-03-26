@@ -150,7 +150,7 @@ export const pollFraSubmissionStatus =
     onError = (error) => null
   ) =>
   async (dispatch) => {
-    const MAX_TRIES = 10 // #
+    const MAX_TRIES = 30 // #
 
     try {
       if (tryNumber > MAX_TRIES) {
