@@ -108,12 +108,14 @@ class FRADataErrorReport(ErrorReportBase):
             worksheet.write_row(row_idx, 0, row)
             row_idx += 1
 
+        worksheet.autofit()
+
         self.workbook.close()
         return {"xls_report": base64.b64encode(self.output.getvalue())}
 
     def get_columns(self):
         """Get the columns for header."""
-        return ["exit_date", "SSN", "error_location_in_file", "error_description"]
+        return ["exit_date", "SSN", "row_number_in_file", "error_description"]
 
     def _obscure_ssn(self, ssn):
         """Obscure SSN."""
@@ -125,7 +127,7 @@ class FRADataErrorReport(ErrorReportBase):
         """Get row generator for error report."""
         return lambda error, exit_date, ssn, fields_json: (exit_date,
                                                            self._obscure_ssn(ssn),
-                                                           f"{error.column_number}{error.row_number}",
+                                                           error.row_number,
                                                            self.format_error_msg(error.error_message, fields_json),)
 
 
