@@ -6,7 +6,7 @@ from datetime import datetime
 import logging
 from tdpservice.core.utils import log
 from tdpservice.data_files.models import DataFile
-from tdpservice.search_indexes.utils import delete_summaries, delete_errors, delete_records, get_log_context
+from tdpservice.search_indexes.utils import delete_records, get_log_context
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
 
