@@ -28,7 +28,6 @@ import {
 import { fetchSttList } from '../../actions/sttList'
 import { DropdownSelect, RadioSelect } from '../Form'
 import { PaginatedComponent } from '../Paginator/Paginator'
-import PermissionGuard from '../PermissionGuard'
 
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
@@ -694,7 +693,12 @@ const FRAReports = () => {
 
     dispatch(
       getFraSubmissionHistory(
-        { ...formValues, reportType: getReportTypeLabel() },
+        {
+          ...formValues,
+          reportType: reportTypeOptions.find(
+            (o) => o.value === formValues.reportType
+          ).label,
+        },
         onSearchSuccess,
         onSearchError
       )
