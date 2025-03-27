@@ -137,7 +137,7 @@ class DataFileAPITestBase:
 
         assert sheet.cell(row=9, column=1).value == 202301
         assert sheet.cell(row=9, column=2).value == "*****5507"
-        assert sheet.cell(row=9, column=3).value == "10"
+        assert sheet.cell(row=9, column=3).value == 10
         assert sheet.cell(row=9, column=4).value == ("Exit date (202301) is not valid. Date must be in the "
                                                      "range of 2024 - Q1 (Oct - Dec)")
 
