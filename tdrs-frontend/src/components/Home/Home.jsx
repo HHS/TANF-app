@@ -50,40 +50,6 @@ function Home() {
           data, managing your account, and utilizing other functionality please
           refer to the TDP Knowledge Center.
         </p>
-        <table className="usa-table usa-table--striped">
-          <caption>
-            <b> Data Reporting Deadlines </b>
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">Fiscal Quarter</th>
-              <th scope="col">Calendar Period</th>
-              <th scope="col">Due Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1</td>
-              <td>Oct 1 - Dec 31</td>
-              <td>February 14</td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td>Jan 1 - Mar 31</td>
-              <td>May 15</td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td>Apr 1 - Jun 30</td>
-              <td>August 14</td>
-            </tr>
-            <tr>
-              <td>4</td>
-              <td>Jul 1 - Sep 30</td>
-              <td>November 14</td>
-            </tr>
-          </tbody>
-        </table>
       </div>
       <br />
       <hr />
