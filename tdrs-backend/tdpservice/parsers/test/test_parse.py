@@ -1845,10 +1845,10 @@ def test_parse_fra_work_outcome_exiters(request, file, dfs):
     assert TANF_Exiter1.objects.all().count() == 5
 
     errors = ParserError.objects.filter(file=datafile).order_by("id")
-    assert errors.count() == 7
+    assert errors.count() == 5
     for e in errors:
         assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
-    assert dfs.total_number_of_records_in_file == 11
+    assert dfs.total_number_of_records_in_file == 7
     assert dfs.total_number_of_records_created == 5
     assert dfs.get_status() == DataFileSummary.Status.PARTIALLY_ACCEPTED
 
@@ -1936,6 +1936,6 @@ def test_parse_fra_ofa_test_cases(request, file, dfs):
     for e in errors:
         assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
 
-    assert errors.count() == 18
+    assert errors.count() == 17
     assert TANF_Exiter1.objects.all().count() == 10
     assert dfs.get_status() == DataFileSummary.Status.PARTIALLY_ACCEPTED

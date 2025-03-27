@@ -141,11 +141,11 @@ class DataFileAPITestBase:
         assert sheet.cell(row=2, column=4).value == ("Duplicate record detected with record type TE1 at line 7. "
                                                      "Record is a duplicate of the record at line number 6.")
 
-        assert sheet.cell(row=9, column=1).value == 202301
-        assert sheet.cell(row=9, column=2).value == "*****5507"
-        assert sheet.cell(row=9, column=3).value == 10
-        assert sheet.cell(row=9, column=4).value == ("Exit date (202301) is not valid. Date must be in the "
-                                                     "range of 2024 - Q1 (Oct - Dec)")
+        assert sheet.cell(row=3, column=1).value == 202301
+        assert sheet.cell(row=3, column=2).value == "*****5507"
+        assert sheet.cell(row=3, column=3).value == 10
+        assert sheet.cell(row=3, column=4).value == ("Exit date (202301) is not valid. Date must be in the "
+                                                     "range of 2024 - Q2 (Jan - Mar)")
 
     @staticmethod
     def assert_error_report_tanf_file_content_matches_with_friendly_names(response):
