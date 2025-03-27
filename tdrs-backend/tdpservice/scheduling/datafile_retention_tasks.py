@@ -19,7 +19,7 @@ RETRY_DELAY = 30
 
 @shared_task(bind=True, max_retries=None)
 def remove_old_versions(self, data_file_id=None, data_file_version=None):
-    """Delete old versions of the file."""
+    """Delete old versions of the file's records."""
     if data_file_id is None or data_file_version is None:
         logger.error("Null data_file_id or data_file_version provided to delete_old_versions task.")
         return
@@ -27,7 +27,7 @@ def remove_old_versions(self, data_file_id=None, data_file_version=None):
     try:
         data_file = DataFile.objects.get(id=data_file_id)
 
-        # Strictly look at versions less than our version. If a files we subbmitted very rapidly and we have multiple
+        # Strictly look at versions less than our version. If submitted very rapidly and we have multiple
         # celery workers, this task could execute in parallel and introduce race conditions if the query deletes all
         # other versions instead of versions strictly less than itself.
         prev_versions = DataFile.objects.filter(version__lt=data_file_version,
@@ -42,10 +42,7 @@ def remove_old_versions(self, data_file_id=None, data_file_version=None):
         if len(ids) > 0:
             system_user, created = User.objects.get_or_create(username='system')
             log_context = get_log_context(system_user)
-            delete_summaries(ids, log_context)
-            delete_errors(ids, log_context)
             delete_records(ids, True, log_context)
-            DataFile.objects.filter(id__in=ids).delete()
             logger.info(f"Successfully deleted {num_prev_versions} old version(s) of file: {repr(data_file)}")
     except Exception as e:
         if self.request.retries == data_file_version:
@@ -83,10 +80,7 @@ def remove_all_old_versions():
                             continue
                         newest_file = files.latest('version')
                         ids = files.exclude(id=newest_file.id).values_list('id', flat=True)
-                        delete_summaries(ids, log_context)
-                        delete_errors(ids, log_context)
                         delete_records(ids, True, log_context)
-                        DataFile.objects.filter(id__in=ids).delete()
                     except Exception as e:
                         log(f"Failed to delete old versions of file for: Year:{year}, Quarter:{quarter}, "
                             f"Section:{section}, STT:{stt.name}", level='error')
