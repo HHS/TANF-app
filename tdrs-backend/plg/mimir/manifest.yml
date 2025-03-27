@@ -1,0 +1,50 @@
+version: 1
+applications:
+  - name: mimir
+    memory: 256M
+    disk_quota: 7G
+    instances: 1
+    command: |
+      wget https://github.com/mikefarah/yq/releases/download/v4.45.1/yq_linux_amd64
+      chmod +x yq_linux_amd64
+
+      # Setup mimir blocks storage
+      BLOCKS_S3_ENDPOINT=$(echo $VCAP_SERVICES | jq -r .s3[0].credentials.endpoint)
+      BLOCKS_S3_REGION=$(echo $VCAP_SERVICES | jq -r .s3[0].credentials.region)
+      BLOCKS_S3_ACCESS_KEY=$(echo $VCAP_SERVICES | jq -r .s3[0].credentials.access_key_id)
+      BLOCKS_S3_SECRET_KEY=$(echo $VCAP_SERVICES | jq -r .s3[0].credentials.secret_access_key)
+      ./yq_linux_amd64 eval -i ".blocks_storage.s3.endpoint = \"$BLOCKS_S3_ENDPOINT\"" mimir.yml
+      ./yq_linux_amd64 eval -i ".blocks_storage.s3.region = \"$BLOCKS_S3_REGION\"" mimir.yml
+      ./yq_linux_amd64 eval -i ".blocks_storage.s3.access_key_id = \"$BLOCKS_S3_ACCESS_KEY\"" mimir.yml
+      ./yq_linux_amd64 eval -i ".blocks_storage.s3.secret_access_key = \"$BLOCKS_S3_SECRET_KEY\"" mimir.yml
+
+      # Setup mimir alertmanager storage
+      ALERTMANAGER_S3_ENDPOINT=$(echo $VCAP_SERVICES | jq -r .s3[1].credentials.endpoint)
+      ALERTMANAGER_S3_REGION=$(echo $VCAP_SERVICES | jq -r .s3[1].credentials.region)
+      ALERTMANAGER_S3_ACCESS_KEY=$(echo $VCAP_SERVICES | jq -r .s3[1].credentials.access_key_id)
+      ALERTMANAGER_S3_SECRET_KEY=$(echo $VCAP_SERVICES | jq -r .s3[1].credentials.secret_access_key)
+      ./yq_linux_amd64 eval -i ".alertmanager_storage.s3.endpoint = \"$ALERTMANAGER_S3_ENDPOINT\"" mimir.yml
+      ./yq_linux_amd64 eval -i ".alertmanager_storage.s3.region = \"$ALERTMANAGER_S3_REGION\"" mimir.yml
+      ./yq_linux_amd64 eval -i ".alertmanager_storage.s3.access_key_id = \"$ALERTMANAGER_S3_ACCESS_KEY\"" mimir.yml
+      ./yq_linux_amd64 eval -i ".alertmanager_storage.s3.secret_access_key = \"$ALERTMANAGER_S3_SECRET_KEY\"" mimir.yml
+
+      # Setup mimir ruler storage
+      RULER_S3_ENDPOINT=$(echo $VCAP_SERVICES | jq -r .s3[2].credentials.endpoint)
+      RULER_S3_REGION=$(echo $VCAP_SERVICES | jq -r .s3[2].credentials.region)
+      RULER_S3_ACCESS_KEY=$(echo $VCAP_SERVICES | jq -r .s3[2].credentials.access_key_id)
+      RULER_S3_SECRET_KEY=$(echo $VCAP_SERVICES | jq -r .s3[2].credentials.secret_access_key)
+      ./yq_linux_amd64 eval -i ".ruler_storage.s3.endpoint = \"$RULER_S3_ENDPOINT\"" mimir.yml
+      ./yq_linux_amd64 eval -i ".ruler_storage.s3.region = \"$RULER_S3_REGION\"" mimir.yml
+      ./yq_linux_amd64 eval -i ".ruler_storage.s3.access_key_id = \"$RULER_S3_ACCESS_KEY\"" mimir.yml
+      ./yq_linux_amd64 eval -i ".ruler_storage.s3.secret_access_key = \"$RULER_S3_SECRET_KEY\"" mimir.yml
+
+      wget https://github.com/grafana/mimir/releases/download/mimir-2.15.1/mimir-linux-amd64
+      chmod +x mimir-linux-amd64
+      ./mimir-linux-amd64 -config.file=/home/vcap/app/mimir.yml
+    buildpacks:
+    - https://github.com/cloudfoundry/binary-buildpack
+    services:
+      # Order matters! If this order changes, you need to update the order of s3 credential requests above!
+      - tdp-mimir-blocks
+      - tdp-mimir-alertmanager
+      - tdp-mimir-ruler

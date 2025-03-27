@@ -114,7 +114,7 @@ services:
     ports:
       - 9009:9009
     volumes:
-      - ./plg/mimir/mimir.yml:/etc/mimir/mimir.yml
+      - ./plg/mimir/mimir.local.yml:/etc/mimir/mimir.yml
     command: --config.file=/etc/mimir/mimir.yml
     depends_on:
       - localstack

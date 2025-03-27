@@ -2,30 +2,35 @@ multitenancy_enabled: false
 
 
 server:
-  http_listen_port: 9009
+  http_listen_port: 8080
   log_level: info
-
-common:
-  storage:
-    backend: s3
-    s3:
-      endpoint: localstack:4566
-      secret_access_key: test
-      access_key_id: test
-      region: us-gov-west-1
-      insecure: true
 
 blocks_storage:
   s3:
-    bucket_name: mimir-blocks
+    bucket_name: tdp-mimir-blocks
+    endpoint: ${BLOCKS_S3_ENDPOINT}
+    secret_access_key: ${BLOCKS_S3_SECRET_KEY}
+    access_key_id: ${BLOCKS_S3_ACCESS_KEY}
+    region: ${BLOCKS_S3_REGION}
+    insecure: false
 
 alertmanager_storage:
   s3:
-    bucket_name: mimir-alertmanager
+    bucket_name: tdp-mimir-alertmanager
+    endpoint: ${ALERTMANAGER_S3_ENDPOINT}
+    secret_access_key: ${ALERTMANAGER_S3_SECRET_KEY}
+    access_key_id: ${ALERTMANAGER_S3_ACCESS_KEY}
+    region: ${ALERTMANAGER_S3_REGION}
+    insecure: false
 
 ruler_storage:
   s3:
-    bucket_name: mimir-ruler
+    bucket_name: tdp-mimir-ruler
+    endpoint: ${RULER_S3_ENDPOINT}
+    secret_access_key: ${RULER_S3_SECRET_KEY}
+    access_key_id: ${RULER_S3_ACCESS_KEY}
+    region: ${RULER_S3_REGION}
+    insecure: false
 
 compactor:
   data_dir: /tmp/mimir/compactor
