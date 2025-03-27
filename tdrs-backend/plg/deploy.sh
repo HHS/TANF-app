@@ -63,6 +63,13 @@ deploy_grafana() {
     popd
 }
 
+deploy_mimir() {
+    pushd mimir
+    cf push --no-route -f manifest.yml -t 180  --strategy rolling
+    cf map-route mimir apps.internal --hostname mimir
+    popd
+}
+
 deploy_prometheus() {
     pushd prometheus
     cf push --no-route -f manifest.yml -t 180  --strategy rolling
@@ -95,15 +102,17 @@ setup_prod_net_pols() {
     # Target prod environment just in case
     cf target -o hhs-acf-ofa -s tanf-prod
 
-    # Let grafana talk to prometheus and loki
+    # Let grafana talk to prometheus, loki, and mimir
     cf add-network-policy grafana prometheus --protocol tcp --port 8080
     cf add-network-policy grafana loki --protocol tcp --port 8080
+    cf add-network-policy grafana mimir --protocol tcp --port 8080
 
-    # Let prometheus talk to alertmanager/grafana/loki/prod backend
+    # Let prometheus talk to alertmanager, grafana, loki, prod backend, and mimir
     cf add-network-policy prometheus alertmanager --protocol tcp --port 8080
     cf add-network-policy prometheus $PROD_BACKEND --protocol tcp --port 8080
     cf add-network-policy prometheus grafana --protocol tcp --port 8080
     cf add-network-policy prometheus loki --protocol tcp --port 8080
+    cf add-network-policy prometheus mimir --protocol tcp --port 8080
 
     # Let alertmanager/grafana talk to the prod frontend and vice versa
     cf add-network-policy alertmanager $PROD_FRONTEND --protocol tcp --port 80
@@ -201,6 +210,7 @@ if [ "$DB_SERVICE_NAME" == "" ]; then
     err_help_exit "Error: you must include a database service name."
 fi
 if [ "$DEPLOY" == "plg" ]; then
+    deploy_mimir
     deploy_prometheus
     deploy_loki
     deploy_grafana $DB_SERVICE_NAME
