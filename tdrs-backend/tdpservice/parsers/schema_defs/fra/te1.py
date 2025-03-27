@@ -30,11 +30,7 @@ te1 = [
                 type=FieldType.NUMERIC,
                 position=Position(start=0),
                 required=True,
-                validators=[
-                    category2.dateHasFormat("%Y%m"),
-                    category2.dateYearIsLargerThan(2023),
-                    category2.dateMonthIsValid(),
-                ],
+                validators=[],
                 is_encrypted=False
             ),
             Field(
@@ -45,11 +41,13 @@ te1 = [
                 position=Position(start=1),
                 required=True,
                 validators=[
-                    category2.isNumber(),
-                    category2.intHasLength(9),
-                    category2.valueNotAt(slice(0, 3), "000"),
-                    category2.valueNotAt(slice(3, 5), "00"),
-                    category2.valueNotAt(slice(5, 9), "0000"),
+                    category2.fraSSNAllOf(
+                        category2.isNumber(),
+                        category2.intHasLength(9),
+                        category2.valueNotAt(slice(0, 3), "000"),
+                        category2.valueNotAt(slice(3, 5), "00"),
+                        category2.valueNotAt(slice(5, 9), "0000"),
+                    ),
                 ],
                 is_encrypted=False
             )
