@@ -43,7 +43,7 @@ route:
     - matchers:
         - alertname=~"UpTime"
       receiver: dev-team-emails
-      group_wait: 30m
+      repeat_interval: 24h
 
     # Send all severity CRITICAL/ERROR alerts to OFA admins and TDP Devs
     - matchers:

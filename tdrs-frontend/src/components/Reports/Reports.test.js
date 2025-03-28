@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 
 import { Provider } from 'react-redux'
 import { thunk } from 'redux-thunk'
@@ -59,6 +59,7 @@ describe('Reports', () => {
           code: 'AL',
           name: 'Alabama',
           ssp: true,
+          num_sections: 4,
         },
         {
           id: 2,
@@ -66,6 +67,7 @@ describe('Reports', () => {
           code: 'AK',
           name: 'Alaska',
           ssp: false,
+          num_sections: 4,
         },
       ],
       loading: false,
@@ -81,6 +83,7 @@ describe('Reports', () => {
           name: 'Alaska',
         },
         roles: [{ id: 1, name: 'OFA Admin', permission: [] }],
+        account_approval_status: 'Approved',
       },
     },
   }
@@ -106,7 +109,7 @@ describe('Reports', () => {
     // added 1 to include the starting year
     const yearNum = fiscalYear - 2021 + 1
 
-    const select = getByLabelText('Fiscal Year*')
+    const select = getByLabelText('Fiscal Year (October - September)*')
 
     expect(select).toBeInTheDocument()
 
@@ -175,7 +178,7 @@ describe('Reports', () => {
 
     expect(sttDropdown.value).toEqual('alaska')
 
-    const yearsDropdown = getByLabelText('Fiscal Year*')
+    const yearsDropdown = getByLabelText('Fiscal Year (October - September)*')
 
     fireEvent.select(yearsDropdown, {
       target: { value: '2021' },
@@ -714,7 +717,7 @@ describe('Reports', () => {
       </Provider>
     )
 
-    const select = getByLabelText('Fiscal Year*')
+    const select = getByLabelText('Fiscal Year (October - September)*')
     const options = select.children
     const expected = options.item(1).value
 
@@ -741,7 +744,7 @@ describe('Reports', () => {
       </Provider>
     )
 
-    const select = getByLabelText('Fiscal Year*')
+    const select = getByLabelText('Fiscal Year (October - September)*')
     const options = select.children
     const expected = options.item(1).value
 
@@ -831,5 +834,93 @@ describe('Reports', () => {
     )
 
     expect(queryByText('File Type*')).not.toBeInTheDocument()
+  })
+
+  it('only allows OFA Regional Staff to view Submission History', async () => {
+    const store = mockStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        year: '2021',
+        stt: 'Alaska',
+        quarter: 'Q3',
+      },
+      auth: {
+        ...initialState.auth,
+        user: {
+          ...initialState.auth.user,
+          roles: [{ id: 1, name: 'OFA Regional Staff', permission: [] }],
+        },
+      },
+    })
+
+    const { getByText, queryByText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    fireEvent.click(getByText(/Search/, { selector: 'button' }))
+
+    await waitFor(() => {
+      expect(queryByText('Submission History')).toBeInTheDocument()
+    })
+
+    expect(queryByText('Current Submission')).not.toBeInTheDocument()
+    expect(queryByText('Submit Data Files')).not.toBeInTheDocument()
+  })
+  it("should skip the file upload step when submitted files header doesn't match submitted year and quarter", async () => {
+    const currentYear = new Date().getFullYear()
+    const store = appConfigureStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        year: (currentYear - 1).toString(),
+        stt: 'Florida',
+        quarter: 'Q3',
+      },
+    })
+
+    const origDispatch = store.dispatch
+    store.dispatch = jest.fn(origDispatch)
+
+    window.HTMLElement.prototype.scrollIntoView = jest.fn(() => null)
+
+    const { getByText, getByLabelText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    fireEvent.click(getByText(/Search/, { selector: 'button' }))
+
+    await waitFor(() => {
+      expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
+    })
+
+    const makeTestFile = (name, contents = ['test'], type = 'text/plain') =>
+      new File(contents, name, { type })
+
+    // add a file to be uploaded
+    await waitFor(() => {
+      fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
+        target: {
+          files: [
+            makeTestFile('test2.txt', [(currentYear - 2).toString() + '4']),
+          ],
+        },
+      })
+    })
+    await waitFor(() => {
+      const divElement = screen.getByText(
+        `File contains data from ` +
+          `Oct 1 - Dec 31, ` +
+          `which belongs to Fiscal Year ` +
+          (currentYear - 1).toString() +
+          ', Quarter 1' +
+          `. Adjust your search parameters or upload a different file.`
+      )
+      expect(divElement).toBeInTheDocument()
+    })
   })
 })
