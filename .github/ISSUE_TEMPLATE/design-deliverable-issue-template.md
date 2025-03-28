@@ -26,12 +26,6 @@ _Summarize what the user experience or interface change will be and any stakehol
 - [ ] Dev/Design sync occurred and tickets created
 - [ ] Design meets usability and accessibility standards
 
-### Tasks
-- [ ] Draft design in Figma
-- [ ] Define recommended pa11y checks
-- [ ] Update UX documentation
-- [ ] Sync with developers and create supporting tickets
-
 ### Usability Testing Criteria
 _List behaviors or user flows that must be validated during testing or design review._
 - Example: User can easily locate the error message in the new UI
