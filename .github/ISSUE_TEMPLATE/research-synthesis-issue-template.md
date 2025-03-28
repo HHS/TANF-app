@@ -24,12 +24,6 @@ _Summarize key updates or deliverables produced from this synthesis._
 - [ ] Internal Raft review completed
 - [ ] Final deliverable meets usability and accessibility standards
 
-### Tasks
-- [ ] Aggregate and anonymize session notes
-- [ ] Delete recordings (privacy compliance)
-- [ ] Draft synthesis: scope, findings, insights, Zenhub issues
-- [ ] Update Service Blueprint or other UX docs
-
 ### Usability Testing Criteria
 _List any high-level insights that should inform usability testing or product changes._
 - Example: Users struggled with submission flow validation
