@@ -17,6 +17,7 @@ import {
   handlePreview,
   getTargetClassName,
   tryGetUTF8EncodedFile,
+  checkHeaderFile,
   checkPreviewDependencies,
   removeOldPreviews,
 } from './utils'
@@ -91,6 +92,8 @@ function FileUpload({ section, setLocalAlertState }) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
   // The set of uploaded files in our Redux state
   const files = useSelector((state) => state.reports.submittedFiles)
+  const selectedYear = useSelector((state) => state.reports.year)
+  const selectedQuarter = useSelector((state) => state.reports.quarter)
 
   const dispatch = useDispatch()
 
@@ -174,7 +177,60 @@ function FileUpload({ section, setLocalAlertState }) {
     if (!error) {
       // Get the correctly encoded file
       const encodedFile = await tryGetUTF8EncodedFile(result, file)
-      dispatch(upload({ file: encodedFile, section }))
+      const [isCorrectQuarterYear, fiscalFileYear, fiscalFileQuarter] =
+        await checkHeaderFile(result, file, selectedYear, selectedQuarter)
+      if (isCorrectQuarterYear) {
+        dispatch(upload({ file: encodedFile, section }))
+      } else {
+        let error_period
+        var link = (
+          <a
+            target="_blank"
+            rel="noopener noreferrer"
+            href="https://tdp-project-updates.app.cloud.gov/knowledge-center/uploading-data.html#reporting-period"
+          >
+            Need help?
+          </a>
+        )
+        switch (fiscalFileQuarter) {
+          case '1':
+            error_period = 'Oct 1 - Dec 31, '
+            break
+          case '2':
+            error_period = 'Jan 1 - Mar 31, '
+            break
+          case '3':
+            error_period = 'Apr 1 - Jun 30, '
+            break
+          case '4':
+            error_period = 'Jul 1 - Sep 30, '
+            break
+          default:
+            error_period = ''
+        }
+        try {
+          createFileInputErrorState(input, dropTarget)
+        } catch (e) {
+          console.log('Error: ', e)
+        }
+        dispatch({
+          type: SET_FILE_ERROR,
+          payload: {
+            error: {
+              message:
+                `File contains data from ` +
+                error_period +
+                `which belongs to Fiscal Year ` +
+                fiscalFileYear +
+                `, Quarter ` +
+                fiscalFileQuarter +
+                `. Adjust your search parameters or upload a different file.`,
+              link: link,
+            },
+            section,
+          },
+        })
+      }
     }
   }
 
@@ -194,7 +250,7 @@ function FileUpload({ section, setLocalAlertState }) {
             id={`${formattedSectionName}-error-alert`}
             role="alert"
           >
-            {selectedFile.error.message}
+            {selectedFile.error.message} {selectedFile.error.link}
           </div>
         )}
       </div>

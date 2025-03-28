@@ -60,6 +60,11 @@ class ProgramManager:
         'M7': schema_defs.ssp.m7,
     }
 
+    # FRA schemas
+    fra_work_outcomes_tanf_exiters = {
+        'TE1': schema_defs.fra.te1
+    }
+
     @classmethod
     def get_section(cls, program_type: str, section_abbrev: str):
         """Get full section name given the program type and section abbreviation used in the datafile."""
@@ -135,3 +140,11 @@ class ProgramManager:
                         return cls.tribal_agg_schemas
                     case DataFile.Section.TRIBAL_STRATUM_DATA | "S":
                         return cls.tribal_strat_schemas
+            case "FRA":
+                match section:
+                    case DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS:
+                        return cls.fra_work_outcomes_tanf_exiters
+                    case DataFile.Section.FRA_SECONDRY_SCHOOL_ATTAINMENT:
+                        return {}
+                    case DataFile.Section.FRA_SUPPLEMENT_WORK_OUTCOMES:
+                        return {}

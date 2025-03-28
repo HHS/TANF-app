@@ -42,6 +42,12 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
         }
     }
 
+    values_json = {}
+    for field in fields:
+        name = getattr(field, 'name', '')
+        value = getattr(record, name, None) if type(record) is not dict else record.get(name, None)
+        values_json[name] = value
+
     field = fields[-1]  # if multiple fields, result field is last
 
     return ParserError(
@@ -59,6 +65,7 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
         ) if record and not isinstance(record, dict) else None,
         object_id=getattr(record, 'id', None) if record and not isinstance(record, dict) else None,
         fields_json=fields_json,
+        values_json=values_json,
         deprecated=deprecated,
     )
 
@@ -227,11 +234,10 @@ class SortedRecords:
     def add_record(self, case_hash, record_doc_pair, line_num):
         """Add a record_doc_pair to the sorted object if the case hasn't been removed already."""
         record, document = record_doc_pair
-        rpt_month_year = str(getattr(record, 'RPT_MONTH_YEAR'))
 
         if case_hash in self.cases_already_removed:
             logger.info("Record's case has already been removed due to category four errors. Not adding record with "
-                        f"info: ({record.RecordType}, {getattr(record, 'CASE_NUMBER', None)}, {rpt_month_year})")
+                        f"info: ({record.RecordType}, {getattr(record, 'CASE_NUMBER', None)})")
             return
 
         if case_hash is not None:
