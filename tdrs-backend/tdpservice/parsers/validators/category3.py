@@ -263,7 +263,7 @@ def sumIsLarger(fields, val):
 
     return sumIsLargerFunc
 
-def suppress_pilot_state(condition_field_name, result_field_name, validator):
+def suppress_for_fra_pilot_state(condition_field_name, result_field_name, validator):
     """Supresses the passed validation should the state be an FRA pilot state."""
     def validate(record, row_schema):
         pilotStates = settings.FRA_PILOT_STATES

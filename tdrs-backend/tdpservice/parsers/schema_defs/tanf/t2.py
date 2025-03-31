@@ -124,7 +124,7 @@ t2 = [
                     ["01", "02", "05", "07", "09", "15", "17", "18", "19", "99"]
                 ),
             ),
-            category3.suppress_pilot_state(
+            category3.suppress_for_fra_pilot_state(
                 "WORK_ELIGIBLE_INDICATOR",
                 "WORK_PART_STATUS",
                 category3.ifThenAlso(

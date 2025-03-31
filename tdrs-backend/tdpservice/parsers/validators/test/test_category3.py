@@ -503,8 +503,8 @@ def test_sumIsLarger():
     assert result.field_names == ['TestField1', 'TestField3']
 
 
-def test_suppress_pilot_state():
-    """Test `suppress_pilot_state` suppresses validation logic."""
+def test_suppress_for_fra_pilot_state():
+    """Test `suppress_for_fra_pilot_state` suppresses validation logic."""
     stt = STT(
         type="state",
         postal_code='AZ'
@@ -539,7 +539,7 @@ def test_suppress_pilot_state():
         'WORK_PART_STATUS': '99',
     }
 
-    validate = category3.suppress_pilot_state(
+    validate = category3.suppress_for_fra_pilot_state(
         'WORK_ELIGIBLE_INDICATOR',
         'WORK_PART_STATUS',
         category3.ifThenAlso(
