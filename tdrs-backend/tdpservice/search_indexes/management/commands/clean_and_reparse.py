@@ -15,7 +15,7 @@ from tdpservice.search_indexes.utils import (
     calculate_timeout,
     get_files_to_reparse,
 )
-from tdpservice.search_indexes.reparse import handle_datafiles, handle_elastic
+from tdpservice.search_indexes.reparse import handle_datafiles
 
 logger = logging.getLogger(__name__)
 class Command(BaseCommand):
@@ -161,15 +161,12 @@ class Command(BaseCommand):
         meta_model.db_backup_location = backup_file_name
         meta_model.save()
 
-        # Create and delete Elastic indices if necessary
-        handle_elastic(new_indices, log_context)
-
-        # Delete records from Postgres and Elastic if necessary
+        # Delete records from Postgres if necessary
         file_ids = files.values_list("id", flat=True).distinct()
         meta_model.total_num_records_initial = count_total_num_records(log_context)
         meta_model.save()
 
-        delete_associated_models(meta_model, file_ids, new_indices, log_context)
+        delete_associated_models(meta_model, file_ids, log_context)
 
         meta_model.timeout_at = meta_model.created_at + calculate_timeout(
             num_files, meta_model.num_records_deleted
