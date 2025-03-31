@@ -1,6 +1,4 @@
 # Base Docker compose for all environments
-version: "3.4"
-
 services:
   postgres:
     image: postgres:15.7
@@ -31,18 +29,6 @@ services:
       # Copy in the Localstack setup script to configure any buckets needed
       - ../scripts/localstack-setup.sh:/docker-entrypoint-initaws.d/localstack-setup.sh
 
-  elastic:
-    image: elasticsearch:7.17.6
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - cluster.routing.allocation.disk.threshold_enabled=false
-      - logger.discovery.level=debug
-    ports:
-      - 9200:9200
-      - 9300:9300
-    volumes:
-      - elastic_data:/usr/share/elasticsearch/data
 
   web:
     restart: always
@@ -85,7 +71,6 @@ services:
       - localstack
       - postgres
       - redis-server
-      - elastic
 
   redis-server:
     image: "redis:alpine"
@@ -98,7 +83,6 @@ services:
 volumes:
   localstack_data:
   postgres_data:
-  elastic_data:
 
 
 networks:

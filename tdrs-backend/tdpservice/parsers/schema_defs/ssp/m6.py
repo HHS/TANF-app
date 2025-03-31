@@ -5,11 +5,11 @@ from tdpservice.parsers.transforms import calendar_quarter_to_rpt_month_year
 from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.validators import category1, category2, category3
-from tdpservice.search_indexes.documents.ssp import SSP_M6DataSubmissionDocument
+from tdpservice.search_indexes.models.ssp import SSP_M6
 
 s1 = TanfDataReportSchema(
     record_type="M6",
-    document=SSP_M6DataSubmissionDocument(),
+    model=SSP_M6,
     preparsing_validators=[
         category1.recordHasLength(259),
         category1.validate_fieldYearMonth_with_headerYearQuarter(),
@@ -173,7 +173,7 @@ s1 = TanfDataReportSchema(
 
 s2 = TanfDataReportSchema(
     record_type="M6",
-    document=SSP_M6DataSubmissionDocument(),
+    model=SSP_M6,
     quiet_preparser_errors=True,
     preparsing_validators=[
         category1.recordHasLength(259),
@@ -338,7 +338,7 @@ s2 = TanfDataReportSchema(
 
 s3 = TanfDataReportSchema(
     record_type="M6",
-    document=SSP_M6DataSubmissionDocument(),
+    model=SSP_M6,
     quiet_preparser_errors=True,
     preparsing_validators=[
         category1.recordHasLength(259),
