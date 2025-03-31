@@ -320,23 +320,6 @@
             "index": "pypi",
             "version": "==3.7"
         },
-        "django-elasticsearch-dsl": {
-            "hashes": [
-                "sha256:084a790edf26131a7897d13a3b5c08a6e129ca145b2b3fcbc2b2d4e902a919c1",
-                "sha256:c1be1c6d25ee6e99dc246282a4f6de8cc0630d0f8d9863ed512c0baa9d21be94"
-            ],
-            "index": "pypi",
-            "version": "==7.3"
-        },
-        "django-elasticsearch-dsl-drf": {
-            "hashes": [
-                "sha256:b444f168535ff99244cc995ec354a31abcbf3fc03bd7b11ec1a3f43c7208f63a",
-                "sha256:fc0b3960e16f6c06de4f2ca4daf1134376fce4d496c1ddc218c23daddf6bcaa0"
-            ],
-            "index": "pypi",
-            "markers": "python_version >= '2.7'",
-            "version": "==0.22.5"
-        },
         "django-extensions": {
             "hashes": [
                 "sha256:50de8977794a66a91575dd40f87d5053608f679561731845edbd325ceeb387e3",
@@ -374,13 +357,6 @@
             ],
             "index": "pypi",
             "version": "==4.1.1"
-        },
-        "django-nine": {
-            "hashes": [
-                "sha256:304e0f83cea5a35359375fc919d00f9917b655c1d388244cbfc7363f59489177",
-                "sha256:4d93208ca5bb4a63bf65cf098a82ee469127b04ebde698d72fe12d258b73c291"
-            ],
-            "version": "==0.2.7"
         },
         "django-prometheus": {
             "hashes": [
@@ -432,23 +408,6 @@
             "index": "pypi",
             "markers": "python_version >= '3.6'",
             "version": "==1.20.0"
-        },
-        "elasticsearch": {
-            "hashes": [
-                "sha256:52dda85f76eeb85ec873bf9ffe0ba6849e544e591f66d4048a5e48016de268e0",
-                "sha256:5920df0ab2630778680376d86bea349dc99860977eec9b6d2bd0860f337313f2"
-            ],
-            "index": "pypi",
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3' and python_version < '4'",
-            "version": "==7.13.4"
-        },
-        "elasticsearch-dsl": {
-            "hashes": [
-                "sha256:07ee9c87dc28cc3cae2daa19401e1e18a172174ad9e5ca67938f752e3902a1d5",
-                "sha256:97f79239a252be7c4cce554c29e64695d7ef6a4828372316a5e5ff815e7a7498"
-            ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
-            "version": "==7.4.1"
         },
         "et-xmlfile": {
             "hashes": [

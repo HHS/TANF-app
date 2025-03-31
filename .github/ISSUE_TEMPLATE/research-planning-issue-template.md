@@ -24,12 +24,6 @@ _Summarize key outcomes of the research that could impact users, product directi
 - [ ] Ethics and privacy considerations are addressed
 - [ ] Timeline and facilitation plans are outlined
 
-### Tasks
-- [ ] Draft research plan in hack.md
-- [ ] Document recruitment strategy and participant criteria
-- [ ] Draft participant communications (outreach emails, consent forms)
-- [ ] Confirm stakeholder alignment on goals and plan
-
 ### Usability Testing Criteria
 _List any expected testable hypotheses or user behaviors to observe during research._
 - Example: Users understand the difference between X and Y tasks

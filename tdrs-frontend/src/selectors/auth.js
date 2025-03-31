@@ -68,14 +68,6 @@ export const accountCanViewAdmin = (state) =>
     'System Owner',
   ].includes(selectPrimaryUserRole(state)?.name)
 
-export const accountCanViewKibana = (state) =>
-  accountStatusIsApproved(state) &&
-  (selectUser(state)?.email?.includes('@acf.hhs.gov') ||
-    process.env.REACT_APP_BYPASS_OFA_AUTH) &&
-  ['OFA System Admin', 'DIGIT Team'].includes(
-    selectPrimaryUserRole(state)?.name
-  )
-
 export const accountCanViewPlg = (state) =>
   accountStatusIsApproved(state) &&
   ['OFA System Admin', 'Developer'].includes(selectPrimaryUserRole(state)?.name)

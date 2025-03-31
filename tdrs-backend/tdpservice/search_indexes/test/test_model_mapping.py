@@ -1,9 +1,8 @@
-"""Tests for elasticsearch model mapping."""
+"""Tests for model mapping."""
 
 import pytest
 from faker import Faker
 from tdpservice.search_indexes import models
-from tdpservice.search_indexes import documents
 from tdpservice.parsers.util import create_test_datafile
 
 
@@ -74,14 +73,6 @@ def test_can_create_and_index_tanf_t1_submission(test_datafile):
     # submission.full_clean()
 
     assert submission.id is not None
-
-    search = documents.tanf.TANF_T1DataSubmissionDocument.search().query(
-        'match',
-        RecordType=record_num
-    )
-    response = search.execute()
-
-    assert response.hits.total.value == 1
 
 
 @pytest.mark.django_db
@@ -163,16 +154,6 @@ def test_can_create_and_index_tanf_t2_submission(test_datafile):
 
     submission.save()
 
-    assert submission.id is not None
-
-    search = documents.tanf.TANF_T2DataSubmissionDocument.search().query(
-        'match',
-        RecordType=record_num
-    )
-    response = search.execute()
-
-    assert response.hits.total.value == 1
-
 
 @pytest.mark.django_db
 def test_can_create_and_index_tanf_t3_submission(test_datafile):
@@ -205,16 +186,6 @@ def test_can_create_and_index_tanf_t3_submission(test_datafile):
 
     submission.save()
 
-    assert submission.id is not None
-
-    search = documents.tanf.TANF_T3DataSubmissionDocument.search().query(
-        'match',
-        RecordType=record_num
-    )
-    response = search.execute()
-
-    assert response.hits.total.value == 1
-
 
 @pytest.mark.django_db
 def test_can_create_and_index_tanf_t4_submission(test_datafile):
@@ -237,16 +208,6 @@ def test_can_create_and_index_tanf_t4_submission(test_datafile):
     submission.REC_SUB_CC = 1
 
     submission.save()
-
-    assert submission.id is not None
-
-    search = documents.tanf.TANF_T4DataSubmissionDocument.search().query(
-        'match',
-        RecordType=record_num
-    )
-    response = search.execute()
-
-    assert response.hits.total.value == 1
 
 
 @pytest.mark.django_db
@@ -288,16 +249,6 @@ def test_can_create_and_index_tanf_t5_submission(test_datafile):
 
     submission.save()
 
-    assert submission.id is not None
-
-    search = documents.tanf.TANF_T5DataSubmissionDocument.search().query(
-        'match',
-        RecordType=record_num
-    )
-    response = search.execute()
-
-    assert response.hits.total.value == 1
-
 
 @pytest.mark.django_db
 def test_can_create_and_index_tanf_t6_submission(test_datafile):
@@ -327,16 +278,6 @@ def test_can_create_and_index_tanf_t6_submission(test_datafile):
 
     submission.save()
 
-    assert submission.id is not None
-
-    search = documents.tanf.TANF_T6DataSubmissionDocument.search().query(
-        'match',
-        RecordType=record_num
-    )
-    response = search.execute()
-
-    assert response.hits.total.value == 1
-
 
 @pytest.mark.django_db
 def test_can_create_and_index_tanf_t7_submission(test_datafile):
@@ -356,29 +297,6 @@ def test_can_create_and_index_tanf_t7_submission(test_datafile):
 
     # No checks her because t7 records can't be parsed currently.
     assert submission.id is not None
-
-    search = documents.tanf.TANF_T7DataSubmissionDocument.search().query(
-        'match',
-        RecordType=record_num
-    )
-    response = search.execute()
-
-    assert response.hits.total.value == 1
-
-
-@pytest.mark.django_db
-def test_does_not_create_index_if_model_creation_fails():
-    """Index creation shouldn't happen if saving a model errors."""
-    record_num = fake.uuid4()
-
-    search = documents.tanf.TANF_T7DataSubmissionDocument.search().query(
-        'match',
-        RecordType=record_num
-    )
-
-    response = search.execute()
-
-    assert response.hits.total.value == 0
 
 
 @pytest.mark.django_db
@@ -436,14 +354,6 @@ def test_can_create_and_map_ssp_m1_submission():
     )
 
     assert submission.id is not None
-
-    search = documents.ssp.SSP_M1DataSubmissionDocument.search().query(
-        'match',
-        RecordType=record_num
-    )
-    response = search.execute()
-
-    assert response.hits.total.value == 1
 
 
 @pytest.mark.django_db
@@ -527,14 +437,6 @@ def test_can_create_and_index_ssp_m2_submission():
 
     assert submission.id is not None
 
-    search = documents.ssp.SSP_M2DataSubmissionDocument.search().query(
-        'match',
-        RecordType=record_num
-    )
-    response = search.execute()
-
-    assert response.hits.total.value == 1
-
 
 @pytest.mark.django_db
 def test_can_create_and_index_ssp_m3_submission():
@@ -569,14 +471,6 @@ def test_can_create_and_index_ssp_m3_submission():
 
     assert submission.id is not None
 
-    search = documents.ssp.SSP_M3DataSubmissionDocument.search().query(
-        'match',
-        RecordType=record_num
-    )
-    response = search.execute()
-
-    assert response.hits.total.value == 1
-
 @pytest.mark.django_db
 def test_can_create_and_index_ssp_m4_submission():
     """SSP M4 submissions can be created and mapped."""
@@ -603,13 +497,6 @@ def test_can_create_and_index_ssp_m4_submission():
 
     assert submission.id is not None
 
-    search = documents.ssp.SSP_M4DataSubmissionDocument.search().query(
-        'match',
-        RecordType=record_num
-    )
-    response = search.execute()
-
-    assert response.hits.total.value == 1
 
 @pytest.mark.django_db
 def test_can_create_and_index_ssp_m5_submission():
@@ -649,13 +536,6 @@ def test_can_create_and_index_ssp_m5_submission():
 
     assert submission.id is not None
 
-    search = documents.ssp.SSP_M5DataSubmissionDocument.search().query(
-        'match',
-        RecordType=record_num
-    )
-    response = search.execute()
-
-    assert response.hits.total.value == 1
 
 @pytest.mark.django_db
 def test_can_create_and_index_ssp_m6_submission(test_datafile):
@@ -687,13 +567,6 @@ def test_can_create_and_index_ssp_m6_submission(test_datafile):
 
     assert submission.id is not None
 
-    search = documents.ssp.SSP_M6DataSubmissionDocument.search().query(
-        'match',
-        RecordType=record_num
-    )
-    response = search.execute()
-
-    assert response.hits.total.value == 1
 
 @pytest.mark.django_db
 def test_can_create_and_index_ssp_m7_submission(test_datafile):
@@ -714,13 +587,6 @@ def test_can_create_and_index_ssp_m7_submission(test_datafile):
     # No checks her because m7 records can't be parsed currently.
     assert submission.id is not None
 
-    search = documents.ssp.SSP_M7DataSubmissionDocument.search().query(
-        'match',
-        RecordType=record_num
-    )
-    response = search.execute()
-
-    assert response.hits.total.value == 1
 
 @pytest.mark.django_db
 def test_can_create_and_index_tribal_tanf_t1_submission(test_datafile):
@@ -780,14 +646,6 @@ def test_can_create_and_index_tribal_tanf_t1_submission(test_datafile):
     # submission.full_clean()
 
     assert submission.id is not None
-
-    search = documents.tribal.Tribal_TANF_T1DataSubmissionDocument.search().query(
-        'match',
-        RecordType=record_num
-    )
-    response = search.execute()
-
-    assert response.hits.total.value == 1
 
 
 @pytest.mark.django_db
@@ -853,14 +711,6 @@ def test_can_create_and_index_tribal_tanf_t2_submission(test_datafile):
 
     assert submission.id is not None
 
-    search = documents.tribal.Tribal_TANF_T2DataSubmissionDocument.search().query(
-        'match',
-        RecordType=record_num
-    )
-    response = search.execute()
-
-    assert response.hits.total.value == 1
-
 
 @pytest.mark.django_db
 def test_can_create_and_index_tribal_tanf_t3_submission(test_datafile):
@@ -895,13 +745,6 @@ def test_can_create_and_index_tribal_tanf_t3_submission(test_datafile):
 
     assert submission.id is not None
 
-    search = documents.tribal.Tribal_TANF_T3DataSubmissionDocument.search().query(
-        'match',
-        RecordType=record_num
-    )
-    response = search.execute()
-
-    assert response.hits.total.value == 1
 
 @pytest.mark.django_db
 def test_can_create_and_index_tribal_tanf_t4_submission(test_datafile):
@@ -926,14 +769,6 @@ def test_can_create_and_index_tribal_tanf_t4_submission(test_datafile):
     submission.save()
 
     assert submission.id is not None
-
-    search = documents.tribal.Tribal_TANF_T4DataSubmissionDocument.search().query(
-        'match',
-        RecordType=record_num
-    )
-    response = search.execute()
-
-    assert response.hits.total.value == 1
 
 
 @pytest.mark.django_db
@@ -977,13 +812,6 @@ def test_can_create_and_index_tribal_tanf_t5_submission(test_datafile):
 
     assert submission.id is not None
 
-    search = documents.tribal.Tribal_TANF_T5DataSubmissionDocument.search().query(
-        'match',
-        RecordType=record_num
-    )
-    response = search.execute()
-
-    assert response.hits.total.value == 1
 
 @pytest.mark.django_db
 def test_can_create_and_index_tribal_tanf_t6_submission(test_datafile):
@@ -1015,13 +843,6 @@ def test_can_create_and_index_tribal_tanf_t6_submission(test_datafile):
 
     assert submission.id is not None
 
-    search = documents.tribal.Tribal_TANF_T6DataSubmissionDocument.search().query(
-        'match',
-        RecordType=record_num
-    )
-    response = search.execute()
-
-    assert response.hits.total.value == 1
 
 @pytest.mark.django_db
 def test_can_create_and_index_tribal_tanf_t7_submission(test_datafile):
@@ -1040,11 +861,3 @@ def test_can_create_and_index_tribal_tanf_t7_submission(test_datafile):
     submission.save()
 
     assert submission.id is not None
-
-    search = documents.tribal.Tribal_TANF_T7DataSubmissionDocument.search().query(
-        'match',
-        RecordType=record_num
-    )
-    response = search.execute()
-
-    assert response.hits.total.value == 1

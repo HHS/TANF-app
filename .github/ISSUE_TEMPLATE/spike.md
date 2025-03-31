@@ -24,14 +24,6 @@ _Include specific research questions, technical unknowns, or possible solutions 
 - _Open Question 2_
 - _Open Question 3_
 
-### Deliverables ###
-_List the outputs expected from this spike — recommendations, proof of concept, documentation, etc._
-- [ ] _Recommendation or summary of findings_
-- [ ] _List of proposed solutions or next steps_
-- [ ] _Proof of concept (if applicable)_
-- [ ] _Testing Checklist has been run if code is involved_
-- [ ] _README is updated, if necessary_
-
 ## Usability Testing Criteria ##
 _PM/UX/OFA Only: (Optional) List any user research or usability evaluation tasks that might be part of this spike or recommended next steps._
 

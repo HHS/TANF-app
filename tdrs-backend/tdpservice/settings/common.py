@@ -4,7 +4,6 @@ import json
 import logging
 import logging.handlers
 import os
-from django.utils.dateparse import parse_datetime
 from distutils.util import strtobool
 from os.path import join
 from typing import Any, Optional
@@ -54,8 +53,6 @@ class Common(Configuration):
         "drf_yasg",
         "django_celery_beat",
         "storages",
-        "django_elasticsearch_dsl",
-        "django_elasticsearch_dsl_drf",
         "django_prometheus",
         # Local apps
         "tdpservice.core.apps.CoreConfig",
@@ -273,8 +270,6 @@ class Common(Configuration):
             "django.db.backends": {"handlers": ["console", "file"], "level": "INFO"},
         },
     }
-    es_logger = logging.getLogger('elasticsearch')
-    es_logger.setLevel(getattr(logging, LOGGING_LEVEL))
 
     PARSER_LOGGER = logging.getLogger('tdpservice.parsers')
 
@@ -368,33 +363,10 @@ class Common(Configuration):
     # The number of seconds to wait for socket response from clamav-rest
     AV_SCAN_TIMEOUT = int(os.getenv('AV_SCAN_TIMEOUT', 30))
 
-    # Elastic/Kibana
-    ELASTICSEARCH_DSL = {
-        'default': {
-            'hosts': os.getenv('ELASTIC_HOST', 'elastic:9200'),
-        },
-    }
-    ELASTICSEARCH_DSL_PARALLEL = True
-    ELASTICSEARCH_REINDEX_THREAD_COUNT = int(os.getenv('ELASTICSEARCH_REINDEX_THREAD_COUNT', 3))
-    ELASTICSEARCH_REINDEX_CHUNK_SIZE = int(os.getenv('ELASTICSEARCH_REINDEX_CHUNK_SIZE', 500))
-    ELASTICSEARCH_REINDEX_REQUEST_TIMEOUT = int(os.getenv('ELASTICSEARCH_REINDEX_REQUEST_TIMEOUT', 10))
-    ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_WARN = os.getenv('ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_WARN', '1s')
-    ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_INFO = os.getenv('ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_INFO', '500ms')
-    ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_TRACE = os.getenv('ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_TRACE', '0ms')
-    ELASTICSEARCH_LOG_SEARCH_SLOW_LEVEL = os.getenv('ELASTICSEARCH_LOG_SEARCH_SLOW_LEVEL', 'info')
-    ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_WARN = os.getenv('ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_WARN', '1s')
-    ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_INFO = os.getenv('ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_INFO', '500ms')
-    ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_TRACE = os.getenv('ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_TRACE', '0ms')
-    ELASTICSEARCH_LOG_INDEX_SLOW_LEVEL = os.getenv('ELASTICSEARCH_LOG_SEARCH_SLOW_LEVEL', 'info')
-    KIBANA_BASE_URL = os.getenv('KIBANA_BASE_URL', 'http://kibana:5601')
-    ELASTIC_INDEX_PREFIX = APP_NAME + '_'
-    es_logger = logging.getLogger('elasticsearch')
-    es_logger.setLevel(logging.WARNING)
-
     s3_src = "s3-us-gov-west-1.amazonaws.com"
 
     CSP_DEFAULT_SRC = ("'none'")
-    CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", s3_src, KIBANA_BASE_URL)
+    CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", s3_src)
     CSP_IMG_SRC = ("'self'", "data:", s3_src)
     CSP_FONT_SRC = ("'self'", s3_src)
     CSP_CONNECT_SRC = ("'self'", "*.cloud.gov")
@@ -402,7 +374,7 @@ class Common(Configuration):
     CSP_OBJECT_SRC = ("'none'")
     CSP_FRAME_ANCESTORS = ("'none'")
     CSP_FORM_ACTION = ("'self'")
-    CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", s3_src, KIBANA_BASE_URL)
+    CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", s3_src)
 
 
     ####################################
