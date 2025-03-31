@@ -8,7 +8,7 @@ from tdpservice.parsers.validators import category1, category2
 
 trailer = TanfDataReportSchema(
     record_type="TRAILER",
-    document=None,
+    model=dict,
     preparsing_validators=[
         category1.recordHasLength(23),
         category1.recordStartsWith(

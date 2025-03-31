@@ -6,7 +6,7 @@ from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.parsers.validators.util import is_quiet_preparser_errors
-from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T3DataSubmissionDocument
+from tdpservice.search_indexes.models.tribal import Tribal_TANF_T3
 from tdpservice.parsers.util import generate_t2_t3_t5_hashes, get_t2_t3_t5_partial_hash_members
 
 FIRST_CHILD = 1
@@ -14,7 +14,7 @@ SECOND_CHILD = 2
 
 child_one = TanfDataReportSchema(
     record_type="T3",
-    document=Tribal_TANF_T3DataSubmissionDocument(),
+    model=Tribal_TANF_T3,
     generate_hashes_func=generate_t2_t3_t5_hashes,
     should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {2, 4, 5},
     get_partial_hash_members_func=get_t2_t3_t5_partial_hash_members,
@@ -327,7 +327,7 @@ child_one = TanfDataReportSchema(
 
 child_two = TanfDataReportSchema(
     record_type="T3",
-    document=Tribal_TANF_T3DataSubmissionDocument(),
+    model=Tribal_TANF_T3,
     generate_hashes_func=generate_t2_t3_t5_hashes,
     should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {2, 4, 5},
     get_partial_hash_members_func=get_t2_t3_t5_partial_hash_members,

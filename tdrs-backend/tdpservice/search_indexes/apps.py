@@ -1,4 +1,4 @@
-"""Elasticsearch indexes app configuration."""
+"""Search_indexes app configuration."""
 
 from django.apps import AppConfig
 

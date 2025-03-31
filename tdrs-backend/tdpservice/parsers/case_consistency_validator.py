@@ -42,7 +42,7 @@ class CaseConsistencyValidator:
     def __get_model(self, model_str):
         """Return a model for the current program type/section given the model"s string name."""
         schemas = ProgramManager.get_schema(self.program_type, self.section, model_str)
-        return schemas[0].document.Django.model
+        return schemas[0].model
 
     def __get_error_context(self, field_name, schema):
         if schema is None:
