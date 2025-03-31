@@ -12,7 +12,7 @@ from tdpservice.parsers.dataclasses import FieldType, ValidationErrorArgs
 
 test_schema = TanfDataReportSchema(
     record_type="Test",
-    document=None,
+    model=None,
     preparsing_validators=[],
     postparsing_validators=[],
     fields=[],
