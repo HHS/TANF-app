@@ -73,7 +73,7 @@ class DataFileSerializer(serializers.ModelSerializer):
 
     def get_has_error(self, obj):
         """Return whether the file has an error."""
-        parser_errors = ParserError.objects.filter(file=obj.id)
+        parser_errors = ParserError.objects.filter(file=obj.id, deprecated=False)
         return len(parser_errors) > 0
 
     def get_latest_reparse_file_meta(self, instance):
