@@ -156,9 +156,8 @@ class BaseParser(ABC):
     def _delete_serialized_records(self, duplicate_manager):
         """Delete all records that have already been serialized to the DB that have cat4 errors."""
         total_deleted = 0
-        for document, ids in duplicate_manager.get_records_to_remove().items():
+        for model, ids in duplicate_manager.get_records_to_remove().items():
             try:
-                model = document.Django.model
                 qset = model.objects.filter(id__in=ids)
                 # WARNING: we can use `_raw_delete` in this case because our record models don't have cascading
                 # dependencies. If that ever changes, we should NOT use `_raw_delete`.

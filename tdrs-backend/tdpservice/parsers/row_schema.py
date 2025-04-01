@@ -17,7 +17,7 @@ class RowSchema(ABC):
     """Base schema class for tabular data."""
 
     def __init__(self, record_type,
-                 document,
+                 model,
                  fields,
                  generate_hashes_func,
                  should_skip_partial_dup_func,
@@ -190,7 +190,7 @@ class TanfDataReportSchema(RowSchema):
             postparsing_validators=None,
             quiet_preparser_errors=False
             ):
-        super().__init__(record_type, document, fields, generate_hashes_func,
+        super().__init__(record_type, model, fields, generate_hashes_func,
                          should_skip_partial_dup_func, preparsing_validators, quiet_preparser_errors)
 
         self.get_partial_hash_members_func = get_partial_hash_members_func
@@ -270,7 +270,7 @@ class FRASchema(RowSchema):
             preparsing_validators=None,
             quiet_preparser_errors=False
             ):
-        super().__init__(record_type, document, fields, generate_hashes_func,
+        super().__init__(record_type, model, fields, generate_hashes_func,
                          should_skip_partial_dup_func, preparsing_validators, quiet_preparser_errors)
 
     def parse_and_validate(self, row: RawRow, generate_error):
