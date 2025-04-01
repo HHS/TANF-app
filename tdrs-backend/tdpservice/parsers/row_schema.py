@@ -16,10 +16,10 @@ logger = logging.getLogger(__name__)
 class RowSchema(ABC):
     """Base schema class for tabular data."""
 
-    def __init__(self, record_type, document, fields=None, preparsing_validators=None, quiet_preparser_errors=False):
+    def __init__(self, record_type, model, fields=None, preparsing_validators=None, quiet_preparser_errors=False):
         super().__init__()
         self.record_type = record_type
-        self.document = document
+        self.model = model
         self.fields = list() if not fields else fields
         self.datafile = None
         self.preparsing_validators = []
@@ -34,7 +34,7 @@ class RowSchema(ABC):
 
     def parse_row(self, row: RawRow):
         """Create a model for the row based on the schema."""
-        record = self.document.Django.model() if self.document is not None else dict()
+        record = self.model()
 
         for field in self.fields:
             value = field.parse_value(row)
@@ -171,7 +171,7 @@ class TanfDataReportSchema(RowSchema):
     def __init__(
             self,
             record_type="T1",
-            document=None,
+            model=None,
             fields=None,
             # The default hash function covers all program types with record types ending in a 6 or 7.
             generate_hashes_func=lambda row, record: (hash(row),
@@ -182,7 +182,7 @@ class TanfDataReportSchema(RowSchema):
             postparsing_validators=None,
             quiet_preparser_errors=False
             ):
-        super().__init__(record_type, document, fields, preparsing_validators, quiet_preparser_errors)
+        super().__init__(record_type, model, fields, preparsing_validators, quiet_preparser_errors)
 
         self.generate_hashes_func = generate_hashes_func
         self.should_skip_partial_dup_func = should_skip_partial_dup_func
@@ -255,12 +255,12 @@ class FRASchema(RowSchema):
     def __init__(
             self,
             record_type="FRA_RECORD",
-            document=None,
+            model=None,
             fields=None,
             preparsing_validators=None,
             quiet_preparser_errors=False
             ):
-        super().__init__(record_type, document, fields, preparsing_validators, quiet_preparser_errors)
+        super().__init__(record_type, model, fields, preparsing_validators, quiet_preparser_errors)
 
     def parse_and_validate(self, row: RawRow, generate_error):
         """Run all validation steps in order, and parse the given row into a record."""
