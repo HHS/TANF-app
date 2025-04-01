@@ -7,7 +7,6 @@ import {
   accountStatusIsApproved,
   accountIsInReview,
   accountCanViewAdmin,
-  accountCanViewKibana,
   accountCanViewPlg,
 } from '../../selectors/auth'
 
@@ -31,7 +30,6 @@ function Header() {
   const userAccessRequestPending = useSelector(accountIsInReview)
   const userAccessRequestApproved = useSelector(accountStatusIsApproved)
   const userIsAdmin = useSelector(accountCanViewAdmin)
-  const userViewKibana = useSelector(accountCanViewKibana)
   const userViewPlg = useSelector(accountCanViewPlg)
 
   const menuRef = useRef()
@@ -150,13 +148,6 @@ function Header() {
                       pathname={pathname}
                       tabTitle="Admin"
                       href={`${process.env.REACT_APP_BACKEND_HOST}/admin/`}
-                    />
-                  )}
-                  {userViewKibana && (
-                    <NavItem
-                      pathname={pathname}
-                      tabTitle="Kibana"
-                      href={`${process.env.REACT_APP_BACKEND_HOST}/kibana/`}
                     />
                   )}
                   {userViewPlg && (

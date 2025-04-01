@@ -128,7 +128,7 @@ class CaseDuplicateDetector:
         """
         # Add all records detector receives to id dictionary. That way if a line that has more than one record created
         # from it will have all of it's records appropriately marked for deletion if need be.
-        self.record_ids.setdefault(schema.document, []).append(record.id)
+        self.record_ids.setdefault(schema.model, []).append(record.id)
 
         # We do not run duplicate detection for records that have been generated on the same line: T3, M3, T6, M6, T7,
         # M7. This is because we would incorrectly generate both duplicate and partial duplicate errors.
@@ -205,11 +205,11 @@ class DuplicateManager:
         self.generated_errors.clear()
 
     def get_records_to_remove(self):
-        """Return dictionary of document:[errors]."""
+        """Return dictionary of model:[errors]."""
         records_to_remove = dict()
         for case_duplicate_detector in self.case_duplicate_detectors.values():
-            for document, ids in case_duplicate_detector.get_records_for_post_parse_deletion().items():
-                records_to_remove.setdefault(document, []).extend(ids)
+            for model, ids in case_duplicate_detector.get_records_for_post_parse_deletion().items():
+                records_to_remove.setdefault(model, []).extend(ids)
 
         return records_to_remove
 

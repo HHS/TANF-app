@@ -10,7 +10,7 @@ from tdpservice.parsers.row_schema import TanfDataReportSchema
 
 test_schema = TanfDataReportSchema(
     record_type="Test",
-    document=None,
+    model=None,
     preparsing_validators=[],
     postparsing_validators=[],
     fields=[],

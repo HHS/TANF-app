@@ -47,17 +47,6 @@ http {
 }
 ```
 
-```
-location ~* ^/kibana/(.*)$ {
-    auth_request /kibana_auth_check;
-    auth_request_set $auth_status $upstream_status;
-
-    set $kibana http://${KIBANA}:5601/;
-    proxy_pass $kibana$1$is_args$args;
-    ...
-}
-```
-
 In the `http` block we need to include the `resolver` directive. This tells Nginx where our desired nameserver is and any other options we want to configure, such as the TTL option.
 The configuration above indicates the nameserver is at `127.0.0.11`, ipv6 is disabled, and the TTL for a hostname is five seconds. However, for Nginx to re-resolve a host
 we have to update the location, i.e. the `proxy_pass` in the location to use variable resolution. When Nginx resolves the variable given to the `proxy_pass` directive it will also determine if the TTL has expired for the host that the variable resolves to and will then resolve the DNS info if it has expired. If `proxy_pass` is not given a variable, Nginx will never resolve the host given to the `proxy_pass` directive no matter how short the TTL option is.
