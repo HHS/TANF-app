@@ -64,6 +64,7 @@ function GovBanner() {
         <div
           className="usa-banner__content usa-accordion__content"
           id="gov-banner"
+          hidden
         >
           <div className="grid-row grid-gap-lg">
             <div className="usa-banner__guidance tablet:grid-col-6">
