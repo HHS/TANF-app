@@ -97,6 +97,7 @@ services:
       - web
       - celery-exporter
       - postgres-exporter
+      - node-exporter 
       - alertmanager
 
   promtail:
@@ -137,6 +138,20 @@ services:
       - 9187:9187
     environment:
       - DATA_SOURCE_NAME=postgres://tdpuser:something_secure@postgres:5432/tdrs_test?sslmode=disable
+    depends_on:
+      - web
+
+  node-exporter:
+    restart: always
+    image: quay.io/prometheus/node-exporter:v1.9.0
+    ports:
+      - 9100:9100
+    command: 
+      - '--path.rootfs=/host'
+    network_mode: host
+    pid: host
+    volumes:
+      - '/:/host:ro,rslave'
     depends_on:
       - web
 
