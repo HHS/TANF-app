@@ -1,8 +1,6 @@
 """Reparsing command for selected files."""
 # should include all the steps in the management command
 import datetime
-from django.core.management import call_command
-from elasticsearch.exceptions import ElasticsearchException
 from tdpservice.data_files.models import DataFile
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 from tdpservice.core.utils import log
@@ -32,43 +30,20 @@ def handle_datafiles(files, meta_model, log_context):
         except DatabaseError as e:
             log(
                 "Encountered a DatabaseError while re-creating datafiles. The database "
-                "and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!",
+                "is INCONSISTENT! Restore the DB from the backup as soon as possible!",
                 logger_context=log_context,
                 level="critical",
             )
             raise e
         except Exception as e:
             log(
-                "Caught generic exception in _handle_datafiles. Database and Elastic are INCONSISTENT! "
+                "Caught generic exception in _handle_datafiles. Database is INCONSISTENT! "
                 "Restore the DB from the backup as soon as possible!",
                 logger_context=log_context,
                 level="critical",
             )
             raise e
 
-def handle_elastic(new_indices, log_context):
-    """Create new Elastic indices and delete old ones."""
-    if new_indices:
-        try:
-            logger.info("Creating new elastic indexes.")
-            call_command("tdp_search_index", "--create", "-f", "--use-alias")
-            log("Index creation complete.", logger_context=log_context, level="info")
-        except ElasticsearchException as e:
-            log(
-                "Elastic index creation FAILED. Clean and reparse NOT executed. "
-                "Database is CONSISTENT, Elastic is INCONSISTENT!",
-                logger_context=log_context,
-                level="error",
-            )
-            raise e
-        except Exception as e:
-            log(
-                "Caught generic exception in _handle_elastic. Clean and reparse NOT executed. "
-                "Database is CONSISTENT, Elastic is INCONSISTENT!",
-                logger_context=log_context,
-                level="error",
-            )
-            raise e
 
 def clean_reparse(selected_file_ids):
     """Reparse selected files."""
@@ -134,14 +109,11 @@ def clean_reparse(selected_file_ids):
     meta_model.db_backup_location = backup_file_name
     meta_model.save()
 
-    # Create and delete Elastic indices if necessary
-    handle_elastic(new_indices, log_context)
-
     file_ids = files.values_list("id", flat=True).distinct()
     meta_model.total_num_records_initial = count_total_num_records(log_context)
     meta_model.save()
 
-    delete_associated_models(meta_model, file_ids, new_indices, log_context)
+    delete_associated_models(meta_model, file_ids, log_context)
 
     meta_model.timeout_at = meta_model.created_at + calculated_timeout_at
     meta_model.save()

@@ -6,19 +6,11 @@ from tdpservice.parsers.row_schema import FRASchema
 from tdpservice.parsers.validators import category1, category2
 from tdpservice.search_indexes.models.fra import TANF_Exiter1
 
-class TANF_Exiter1Document:
-    """Fake document class for TANF_Exiter1."""
-
-    class Django:
-        """Fake inner Django class for TANF_Exiter1."""
-
-        model = TANF_Exiter1
-
 
 te1 = [
     FRASchema(
         record_type="TE1",
-        document=TANF_Exiter1Document,
+        model=TANF_Exiter1,
         preparsing_validators=[
             category1.validate_exit_date_against_fiscal_period(),
         ],
