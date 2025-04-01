@@ -115,8 +115,7 @@ class TanfDataReportParser(BaseParser):
                         self.current_row_num,
                         record_has_errors
                     )
-                    # TODO: update schema.document when document is removed.
-                    self.unsaved_records.add_record(case_hash, (record, schema.document), self.current_row_num)
+                    self.unsaved_records.add_record(case_hash, (record, schema.model), self.current_row_num)
                     was_removed = self.unsaved_records.remove_case_due_to_errors(should_remove, case_hash_to_remove)
                     self.case_consistency_validator.update_removed(case_hash_to_remove, should_remove, was_removed)
                     self.dfs.total_number_of_records_in_file += 1
@@ -132,6 +131,7 @@ class TanfDataReportParser(BaseParser):
 
         if self.header_count == 0:
             logger.info(f"Preparser Error -> No headers found for file: {self.datafile.id}.")
+            self.errors.update({'model': ['No headers found.']})
             err_obj = generate_error(
                 schema=None,
                 error_category=ParserErrorCategoryChoices.PRE_CHECK,

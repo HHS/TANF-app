@@ -68,7 +68,7 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
         error_message=error_message,
         error_type=error_category,
         content_type=ContentType.objects.get_for_model(
-            model=schema.document.Django.model if schema else None
+            model=schema.model if schema else None
         ) if record and not isinstance(record, dict) else None,
         object_id=getattr(record, 'id', None) if record and not isinstance(record, dict) else None,
         fields_json=fields_json,
@@ -106,7 +106,7 @@ def generate_fra_parser_error(datafile, line_number, schema, error_category, err
         error_message=error_message,
         error_type=error_category,
         content_type=ContentType.objects.get_for_model(
-            model=schema.document.Django.model if schema else None
+            model=schema.model if schema else None
         ) if record and not isinstance(record, dict) else None,
         object_id=getattr(record, 'id', None) if record and not isinstance(record, dict) else None,
         fields_json=fields_json,
@@ -118,7 +118,7 @@ def generate_fra_parser_error(datafile, line_number, schema, error_category, err
 def make_generate_fra_parser_error(datafile, line_number):
     """Configure generate_fra_parser_error with a datafile and line number."""
     def generate(schema, error_category, error_message, record=None,
-                 offending_field=None, fields=None, deprecated=False):
+                 offending_field=None, field=None, fields=None, deprecated=False):
         return generate_fra_parser_error(
             datafile=datafile,
             line_number=line_number,
@@ -126,8 +126,8 @@ def make_generate_fra_parser_error(datafile, line_number):
             error_category=error_category,
             error_message=error_message,
             record=record,
-            offending_field=offending_field,
-            fields=fields,
+            offending_field=offending_field if offending_field else field,
+            fields=fields if fields else [field],
             deprecated=deprecated,
         )
     return generate

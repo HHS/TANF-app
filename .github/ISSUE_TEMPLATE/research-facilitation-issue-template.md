@@ -23,13 +23,6 @@ _Summarize any expected insights or updates the facilitation may generate for pr
 - [ ] Changes to recruitment criteria are documented (if the participant pool was expanded or adjusted).
 - [ ] Internal Raft review has occurred to confirm research plan was followed.
 
-### Tasks
-- [ ] Schedule research sessions and confirm attendance
-- [ ] Facilitate sessions (note-taking and recording, if applicable)
-- [ ] Aggregate anonymized notes into hack.md or synthesis doc
-- [ ] Flag emerging insights, pain points, or patterns
-- [ ] Share updates with stakeholders or the product team
-
 ### Usability Testing Criteria
 _PM/UX Only: Identify any user behaviors or reactions observed during facilitation that should inform usability recommendations._
 - Example: Users struggled with form labels during task completion

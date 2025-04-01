@@ -25,7 +25,7 @@ class RowSchema(ABC):
                  quiet_preparser_errors):
         super().__init__()
         self.record_type = record_type
-        self.document = document
+        self.model = model
         self.fields = list() if not fields else fields
         self.datafile = None
         self.generate_hashes_func = generate_hashes_func
@@ -42,7 +42,7 @@ class RowSchema(ABC):
 
     def parse_row(self, row: RawRow):
         """Create a model for the row based on the schema."""
-        record = self.document.Django.model() if self.document is not None else dict()
+        record = self.model()
 
         for field in self.fields:
             value = field.parse_value(row)
@@ -179,7 +179,7 @@ class TanfDataReportSchema(RowSchema):
     def __init__(
             self,
             record_type="T1",
-            document=None,
+            model=None,
             fields=None,
             # The default hash function covers all program types with record types ending in a 6 or 7.
             generate_hashes_func=lambda row, record: (hash(row),
@@ -262,7 +262,7 @@ class FRASchema(RowSchema):
     def __init__(
             self,
             record_type="FRA_RECORD",
-            document=None,
+            model=None,
             fields=None,
             generate_hashes_func=lambda row, record: (hash(row),
                                                       hash(record.RecordType)),
