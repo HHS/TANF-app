@@ -4,7 +4,6 @@ import smallFlag from '@uswds/uswds/img/us_flag_small.png'
 import govLogo from '@uswds/uswds/img/icon-dot-gov.svg'
 import httpsLogo from '@uswds/uswds/img/icon-https.svg'
 import lock from '@uswds/uswds/img/lock.svg'
-import '@uswds/uswds'
 
 function GovBanner() {
   return (
@@ -65,7 +64,6 @@ function GovBanner() {
         <div
           className="usa-banner__content usa-accordion__content"
           id="gov-banner"
-          hidden
         >
           <div className="grid-row grid-gap-lg">
             <div className="usa-banner__guidance tablet:grid-col-6">
