@@ -2,8 +2,6 @@
 
 import json
 import os
-from requests_aws4auth import AWS4Auth
-from elasticsearch import RequestsHttpConnection
 
 from tdpservice.settings.common import Common
 import logging
@@ -118,36 +116,13 @@ class CloudGov(Common):
     MEDIA_URL = \
         f'{AWS_S3_STATICFILES_ENDPOINT}/{AWS_S3_STATICFILES_BUCKET_NAME}/{APP_NAME}/'
 
-    # The following variables are used to configure the Django Elasticsearch
-    es_access_key = cloudgov_services['aws-elasticsearch'][0]['credentials']['access_key']
-    es_secret_key = cloudgov_services['aws-elasticsearch'][0]['credentials']['secret_key']
-    es_host = cloudgov_services['aws-elasticsearch'][0]['credentials']['uri']
-
-    awsauth = AWS4Auth(
-        es_access_key,
-        es_secret_key,
-        'us-gov-west-1',
-        'es'
-    )
-
-    # Elastic
-    ELASTICSEARCH_DSL = {
-        'default': {
-            'hosts': es_host,
-            'http_auth': awsauth,
-            'use_ssl': True,
-            'connection_class': RequestsHttpConnection,
-        },
-    }
-    ELASTIC_INDEX_PREFIX = f'{APP_NAME}_'
-
     # HSTS settings
     SESSION_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+    SECURE_REDIRECT_EXEMPT = [r"^prometheus/.*"]
     SECURE_SSL_REDIRECT = True
-
 
 class Development(CloudGov):
     """Settings for applications deployed in the Cloud.gov dev space."""
@@ -215,4 +190,3 @@ class Production(CloudGov):
         "PATCH",
         "POST",
     )
-    ELASTIC_INDEX_PREFIX = ''

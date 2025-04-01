@@ -5,11 +5,11 @@ from tdpservice.parsers.transforms import calendar_quarter_to_rpt_month_year
 from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.validators import category1, category2, category3
-from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T6DataSubmissionDocument
+from tdpservice.search_indexes.models.tribal import Tribal_TANF_T6
 
 s1 = TanfDataReportSchema(
     record_type="T6",
-    document=Tribal_TANF_T6DataSubmissionDocument(),
+    model=Tribal_TANF_T6,
     preparsing_validators=[
         category1.recordHasLength(379),
         category1.validate_fieldYearMonth_with_headerYearQuarter(),
@@ -217,7 +217,7 @@ s1 = TanfDataReportSchema(
 
 s2 = TanfDataReportSchema(
     record_type="T6",
-    document=Tribal_TANF_T6DataSubmissionDocument(),
+    model=Tribal_TANF_T6,
     quiet_preparser_errors=True,
     preparsing_validators=[
         category1.recordHasLength(379),
@@ -423,7 +423,7 @@ s2 = TanfDataReportSchema(
 
 s3 = TanfDataReportSchema(
     record_type="T6",
-    document=Tribal_TANF_T6DataSubmissionDocument(),
+    model=Tribal_TANF_T6,
     quiet_preparser_errors=True,
     preparsing_validators=[
         category1.recordHasLength(379),
