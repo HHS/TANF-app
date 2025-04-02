@@ -10,9 +10,7 @@ DEPLOY_STRATEGY=${1}
 #The application name  defined via the manifest yml for the frontend
 CGAPPNAME_FRONTEND=${2}
 CGAPPNAME_BACKEND=${3}
-CGAPPNAME_KIBANA=${4}
-CGAPPNAME_PROXY=${5}
-CF_SPACE=${6}
+CF_SPACE=${4}
 
 strip() {
     # Usage: strip "string" "pattern"
@@ -22,14 +20,8 @@ strip() {
 env=$(strip $CF_SPACE "tanf-")
 backend_app_name=$(echo $CGAPPNAME_BACKEND | cut -d"-" -f3)
 
-# Update the Kibana and Elastic proxy names to include the environment
-CGAPPNAME_KIBANA="${CGAPPNAME_KIBANA}-${env}"
-CGAPPNAME_PROXY="${CGAPPNAME_PROXY}-${env}"
-
 echo DEPLOY_STRATEGY: "$DEPLOY_STRATEGY"
 echo BACKEND_HOST: "$CGAPPNAME_BACKEND"
-echo KIBANA_HOST: "$CGAPPNAME_KIBANA"
-echo ELASTIC_PROXY_HOST: "$CGAPPNAME_PROXY"
 echo CF_SPACE: "$CF_SPACE"
 echo env: "$env"
 echo backend_app_name: "$backend_app_name"
@@ -54,7 +46,6 @@ set_cf_envs()
   "DJANGO_SETTINGS_MODULE"
   "DJANGO_SU_NAME"
   "FRONTEND_BASE_URL"
-  "KIBANA_BASE_URL"
   "LOGGING_LEVEL"
   "REDIS_URI"
   "JWT_KEY"
@@ -94,18 +85,6 @@ generate_jwt_cert()
     yes 'XX' | openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -sha256
     cf set-env "$CGAPPNAME_BACKEND" JWT_CERT "$(cat cert.pem)"
     cf set-env "$CGAPPNAME_BACKEND" JWT_KEY "$(cat key.pem)"
-}
-
-update_kibana()
-{
-  # Add network policy allowing Kibana to talk to the proxy and to allow the backend to talk to Kibana
-  cf add-network-policy "$CGAPPNAME_BACKEND" "$CGAPPNAME_KIBANA" --protocol tcp --port 5601
-  cf add-network-policy "$CGAPPNAME_FRONTEND" "$CGAPPNAME_KIBANA" --protocol tcp --port 5601
-  cf add-network-policy "$CGAPPNAME_KIBANA" "$CGAPPNAME_FRONTEND" --protocol tcp --port 80
-
-  # Upload dashboards to Kibana
-  CMD="curl -X POST $CGAPPNAME_KIBANA.apps.internal:5601/api/saved_objects/_import -H 'kbn-xsrf: true' --form file=@/home/vcap/app/tdpservice/search_indexes/kibana_saved_objs.ndjson"
-  cf run-task $CGAPPNAME_BACKEND --command "$CMD" --name kibana-obj-upload
 }
 
 prepare_promtail() {
@@ -180,9 +159,6 @@ bind_backend_to_services() {
     cf bind-service "$CGAPPNAME_BACKEND" "tdp-datafiles-${env}"
     cf bind-service "$CGAPPNAME_BACKEND" "tdp-db-${env}"
 
-    # Setting up the ElasticSearch service
-    cf bind-service "$CGAPPNAME_BACKEND" "es-${env}"
-
     set_cf_envs
 
     echo "Restarting app: $CGAPPNAME_BACKEND"
@@ -225,8 +201,6 @@ else
   FRONTEND_BASE_URL="$DEFAULT_FRONTEND_ROUTE"
 fi
 
-KIBANA_BASE_URL="http://$CGAPPNAME_KIBANA.apps.internal"
-
 # Dynamically generate a new DJANGO_SECRET_KEY
 DJANGO_SECRET_KEY=$(python3 -c "from secrets import token_urlsafe; print(token_urlsafe(50))")
 
@@ -247,7 +221,6 @@ if [ "$DEPLOY_STRATEGY" = "rolling" ] ; then
     # Perform a rolling update for the backend and frontend deployments if
     # specified, otherwise perform a normal deployment
     update_backend 'rolling'
-    update_kibana 'rolling'
 elif [ "$DEPLOY_STRATEGY" = "bind" ] ; then
     # Bind the services the application depends on and restage the app.
     bind_backend_to_services
@@ -256,7 +229,6 @@ elif [ "$DEPLOY_STRATEGY" = "initial" ]; then
     # for it to work. the app will fail to start once, have the services bind,
     # and then get restaged.
     update_backend
-    update_kibana
     bind_backend_to_services
 elif [ "$DEPLOY_STRATEGY" = "rebuild" ]; then
     # You want to redeploy the instance under the same name
@@ -264,10 +236,8 @@ elif [ "$DEPLOY_STRATEGY" = "rebuild" ]; then
     # and perform the initial deployment strategy.
     cf delete "$CGAPPNAME_BACKEND" -r -f
     update_backend
-    update_kibana
     bind_backend_to_services
 else
     # No changes to deployment config, just deploy the changes and restart
     update_backend
-    update_kibana
 fi

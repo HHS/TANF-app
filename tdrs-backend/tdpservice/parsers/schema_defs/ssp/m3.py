@@ -6,7 +6,7 @@ from tdpservice.parsers.fields import TransformField, Field
 from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.parsers.validators.util import is_quiet_preparser_errors
-from tdpservice.search_indexes.documents.ssp import SSP_M3DataSubmissionDocument
+from tdpservice.search_indexes.models.ssp import SSP_M3
 from tdpservice.parsers.util import generate_t2_t3_t5_hashes, get_t2_t3_t5_partial_hash_members
 
 FIRST_CHILD = 1
@@ -14,7 +14,7 @@ SECOND_CHILD = 2
 
 first_part_schema = TanfDataReportSchema(
     record_type="M3",
-    document=SSP_M3DataSubmissionDocument(),
+    model=SSP_M3,
     generate_hashes_func=generate_t2_t3_t5_hashes,
     should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {2, 4, 5},
     get_partial_hash_members_func=get_t2_t3_t5_partial_hash_members,
@@ -331,7 +331,7 @@ first_part_schema = TanfDataReportSchema(
 
 second_part_schema = TanfDataReportSchema(
     record_type="M3",
-    document=SSP_M3DataSubmissionDocument(),
+    model=SSP_M3,
     generate_hashes_func=generate_t2_t3_t5_hashes,
     should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {2, 4, 5},
     get_partial_hash_members_func=get_t2_t3_t5_partial_hash_members,
