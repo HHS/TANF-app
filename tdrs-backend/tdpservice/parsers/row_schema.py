@@ -295,13 +295,12 @@ class FRASchema(RowSchema):
             if is_quiet_preparser_errors:
                 preparsing_errors = []
             logger.info(f"{len(preparsing_errors)} category4 preparser error(s) encountered.")
-            return SchemaResult(None, False, preparsing_errors)
 
         fields_are_valid, field_errors = self.run_field_validators(record, generate_error)
 
-        record = record if fields_are_valid else None
+        is_valid = fields_are_valid and preparsing_is_valid
 
-        return SchemaResult(record, fields_are_valid, field_errors)
+        return SchemaResult(record, is_valid, field_errors + preparsing_errors)
 
     def run_preparsing_validators(self, row: RawRow, record, generate_error):
         """Run each of the `preparsing_validator` functions in the schema against the un-parsed row."""

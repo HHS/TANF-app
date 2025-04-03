@@ -144,8 +144,11 @@ class DataFileAPITestBase:
         assert sheet.cell(row=3, column=1).value == 202301
         assert sheet.cell(row=3, column=2).value == "*****5507"
         assert sheet.cell(row=3, column=3).value == 10
-        assert sheet.cell(row=3, column=4).value == ("Exit date (202301) is not valid. Date must be in the "
-                                                     "range of 2024 - Q2 (Jan - Mar)")
+        assert sheet.cell(row=3, column=4).value == ("Social Security Number is not valid. Check that the Social "
+                                                     "Security Number is 9 digits, does not contain only zeroes "
+                                                     "in any one section, and does not contain dashes or other "
+                                                     "punctuation. Enter 999999999 if an individual does not have "
+                                                     "an Social Security Number.")
 
     @staticmethod
     def assert_error_report_tanf_file_content_matches_with_friendly_names(response):

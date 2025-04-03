@@ -1811,8 +1811,7 @@ def test_parse_fra_work_outcome_exiters(request, file, dfs):
 
     dfs.datafile = datafile
     dfs.save()
-    print('_______ dfs:', dfs.__dict__)
-    print('_______ datafile:', datafile.__dict__)
+
     parser = ParserFactory.get_instance(datafile=datafile, dfs=dfs,
                                         section=datafile.section,
                                         program_type=datafile.prog_type)
@@ -1821,10 +1820,10 @@ def test_parse_fra_work_outcome_exiters(request, file, dfs):
     assert TANF_Exiter1.objects.all().count() == 5
 
     errors = ParserError.objects.filter(file=datafile).order_by("id")
-    assert errors.count() == 5
+    assert errors.count() == 8
     for e in errors:
         assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
-    assert dfs.total_number_of_records_in_file == 7
+    assert dfs.total_number_of_records_in_file == 11
     assert dfs.total_number_of_records_created == 5
     assert dfs.get_status() == DataFileSummary.Status.PARTIALLY_ACCEPTED
 
@@ -1912,6 +1911,8 @@ def test_parse_fra_ofa_test_cases(request, file, dfs):
     for e in errors:
         assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
 
-    assert errors.count() == 17
+    assert errors.count() == 23
     assert TANF_Exiter1.objects.all().count() == 10
+    assert dfs.total_number_of_records_in_file == 28
+    assert dfs.total_number_of_records_created == 10
     assert dfs.get_status() == DataFileSummary.Status.PARTIALLY_ACCEPTED

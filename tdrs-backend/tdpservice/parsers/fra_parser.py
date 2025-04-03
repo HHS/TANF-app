@@ -63,6 +63,7 @@ class FRAParser(BaseParser):
             num_records = len(records)
 
             record_number = 0
+            self.dfs.total_number_of_records_in_file += num_records
             for i in range(num_records):
                 r = records[i]
                 record_number += 1
@@ -71,20 +72,20 @@ class FRAParser(BaseParser):
                     logger.debug(f"Record #{i} from line {self.current_row_num} is invalid.")
                     self.unsaved_parser_errors.update({f"{self.current_row_num}_{i}": record_errors})
                     self.num_errors += len(record_errors)
-                if record:
-                    schema = schemas[i]
-                    record.datafile = self.datafile
 
-                    row_hash = hash(row)
+                schema = schemas[i]
+                record.datafile = self.datafile
+
+                row_hash = hash(row)
+                if record_is_valid:
                     self.unsaved_records.add_record(row_hash, (record, schema.model), self.current_row_num)
-                    self.dfs.total_number_of_records_in_file += 1
 
-                    self.duplicate_manager.add_record(record, row_hash, schema, row, self.current_row_num)
-                    num_dup_errors = self.duplicate_manager.get_num_dup_errors(row_hash)
+                self.duplicate_manager.add_record(record, row_hash, schema, row, self.current_row_num)
+                num_dup_errors = self.duplicate_manager.get_num_dup_errors(row_hash)
 
-                    should_remove = num_dup_errors > 0 or len(record_errors) > 0
-                    was_removed = self.unsaved_records.remove_case_due_to_errors(should_remove, row_hash)
-                    self.duplicate_manager.update_removed(row_hash, should_remove, was_removed)
+                should_remove = num_dup_errors > 0 or len(record_errors) > 0
+                was_removed = self.unsaved_records.remove_case_due_to_errors(should_remove, row_hash)
+                self.duplicate_manager.update_removed(row_hash, should_remove, was_removed)
 
             dup_errors = self.duplicate_manager.get_generated_errors()
             self.num_errors += len(dup_errors)
