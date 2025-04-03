@@ -42,7 +42,7 @@ def remove_old_versions(self, data_file_id=None, data_file_version=None):
         if len(ids) > 0:
             system_user, created = User.objects.get_or_create(username='system')
             log_context = get_log_context(system_user)
-            delete_records(ids, True, log_context)
+            delete_records(ids, log_context)
             logger.info(f"Successfully deleted {num_prev_versions} old version(s) of file: {repr(data_file)}")
     except Exception as e:
         if self.request.retries == data_file_version:
@@ -80,7 +80,7 @@ def remove_all_old_versions():
                             continue
                         newest_file = files.latest('version')
                         ids = files.exclude(id=newest_file.id).values_list('id', flat=True)
-                        delete_records(ids, True, log_context)
+                        delete_records(ids, log_context)
                     except Exception as e:
                         log(f"Failed to delete old versions of file for: Year:{year}, Quarter:{quarter}, "
                             f"Section:{section}, STT:{stt.name}", level='error')
