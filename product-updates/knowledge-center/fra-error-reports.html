@@ -303,7 +303,15 @@
         <p>This guide provides instruction on how to access, understand, and address issues listed in your error reports.
         <br><br>
       Please note: The error reports were designed to help you to correct a wide variety of data issues but do not necessarily capture every possible data quality issue. OFA's TANF data team may still reach out to you via email with additional feedback.</p>
- 
+         <div style="min-height: 22px;"></div>
+
+ <p>Jump to:</p>
+ <ul>
+  <li><a href="#download">Download and View Error Reports</a></li>
+    <li><a href="#structure">Data File Structure</a></li>
+  <li><a href="#errors">Overview of the Error Report</a></li>
+ </ul>
+
  <div style="min-height: 22px;"></div> 
  <hr style="border: none;
     height: 1px;
@@ -312,7 +320,7 @@
     background: repeating-linear-gradient(90deg,#000,#000 6px,transparent 6px,transparent 12px);">
     <div style="min-height: 22px;"></div> <div style="min-height: 22px;"></div> 
 
-      <h2>Download and View Error Reports</h2>
+      <h2 id="download">Download and View Error Reports</h2>
       <p>Error reports can be accessed from the FRA Data Files page by navigating to the Submission History section for a given reporting period. Read more about accessing Submission History.<br><br></p>
       <p>To access error reports for submitted files, select the link in the ‘Error Report’ column to download error feedback associated with the relevant version of the file.</p>
 
@@ -329,8 +337,8 @@
     background: repeating-linear-gradient(90deg,#000,#000 6px,transparent 6px,transparent 12px);">
     <div style="min-height: 22px;"></div> <div style="min-height: 22px;"></div> 
 
-      <h2>Data File Structure</h2>
-      <p>The FRA Work Outcomes of TANF Exiters report should be in either .csv or .xlsx format and made up of two columns of data: exit date (in YYYYMM format) and social security number (including no spaces, dashes, or other non-numeric characters).  Unlike TANF/SSP data files, the submission file should only include the data above; not file headers, footers, column labels, or other information. For further guidance, please refer to the ACF resources below: </p>
+      <h2 id="structure">Data File Structure</h2>
+      <p>The FRA Work Outcomes of TANF Exiters report should be in either .csv or .xlsx format and made up of two columns of data: exit date (in YYYYMM format) and social security number (including no spaces, dashes, or other non-numeric characters). The submission file should only include the data above; not file headers, footers, column labels, or other information. For further guidance, please refer to the ACF resources below: </p>
       <ul>
         <li><a href="https://acf.gov/sites/default/files/documents/ofa/1A.Instructions-work-outcomes-of-TANF-exiters-report.pdf">Work Outcomes of TANF Exiters Report Instructions</a></li>
         <li><a href="https://acf.gov/sites/default/files/documents/ofa/1B.TANF-work-outcomes-of-TANF-exiters-report-example-file-submission.zip">Example File Submission</a></li>
@@ -345,7 +353,7 @@
     background: repeating-linear-gradient(90deg,#000,#000 6px,transparent 6px,transparent 12px);">
     <div style="min-height: 22px;"></div> <div style="min-height: 22px;"></div> 
 
-      <h2>Overview of the Error Report</h2>
+      <h2 id="errors">Overview of the Error Report</h2>
       <p>TDP's error reports are designed to provide you with key information you may need to quickly identify records that have been flagged for data quality issues.
         <br><br>
 The error report has four columns:
@@ -374,8 +382,8 @@ The error report has four columns:
     </code>
            
           </li>
-          <div style="min-height: 22px;"></div> 
-            <li><strong>Social Security Nubmer Errors</strong>
+          
+            <li><div style="min-height: 22px;"></div> <strong>Social Security Number Errors</strong>
             
             <p>If a social security number contains too few, too many, or non-numeric characters it will result in an error. Additionally, each potentially valid social security number should only be associated with one exit date within a single month.</p>
                     <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">Social Security Number (SSN) is not valid. Check that the SSN is 9 digits, does not contain only zeroes in any one section, and does not contain dashes or other punctuation. Enter 999999999 if an individual does not have an SSN
