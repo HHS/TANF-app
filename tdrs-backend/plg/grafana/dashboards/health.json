@@ -1406,7 +1406,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[$__rate_interval])) * 100)",
+          "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\",job=~\"node-$app_env\"}[$__rate_interval])) * 100)",
           "instant": false,
           "interval": "",
           "legendFormat": "CPU %",
@@ -1419,7 +1419,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "avg_over_time(\n  ((node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100)[$__rate_interval:]\n)",
+          "expr": "avg_over_time(\n  (\n    (node_memory_MemTotal_bytes{job=~\"node-$app_env\"} - node_memory_MemAvailable_bytes{job=~\"node-$app_env\"})\n    / node_memory_MemTotal_bytes{job=~\"node-$app_env\"} * 100\n  )[$__rate_interval:]\n)",
           "hide": false,
           "instant": false,
           "legendFormat": "Memory %",
@@ -1432,7 +1432,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "avg_over_time(\n  (\n    100 * (node_filesystem_size_bytes{mountpoint=\"/\",fstype!~\"tmpfs|overlay\"} \n    - node_filesystem_free_bytes{mountpoint=\"/\",fstype!~\"tmpfs|overlay\"})\n    / node_filesystem_size_bytes{mountpoint=\"/\",fstype!~\"tmpfs|overlay\"}\n  )[$__rate_interval:]\n)",
+          "expr": "avg_over_time(\n  (\n    100 * (node_filesystem_size_bytes{mountpoint=\"/\",fstype!~\"tmpfs|overlay\",job=~\"node-$app_env\"} \n    - node_filesystem_free_bytes{mountpoint=\"/\",fstype!~\"tmpfs|overlay\",job=~\"node-$app_env\"})\n    / node_filesystem_size_bytes{mountpoint=\"/\",fstype!~\"tmpfs|overlay\",job=~\"node-$app_env\"}\n  )[$__rate_interval:]\n)",
           "hide": false,
           "instant": false,
           "legendFormat": "Disk %",
