@@ -46,7 +46,7 @@ scrape_configs:
           service: "postgres"
           env: "local"
 
-  - job_name: node-local
+  - job_name: "node-local"
     static_configs:
       - targets: ["host.docker.internal:9100"]
         labels:

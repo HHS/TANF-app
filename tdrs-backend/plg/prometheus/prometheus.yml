@@ -33,10 +33,24 @@ scrape_configs:
           service: "tdp-backend"
           env: "dev"
 
+  - job_name: "node-raft"
+    static_configs:
+      - targets: ["tdp-backend-raft.apps.internal:9100"]
+        labels:
+          service: "node"
+          env: "dev"
+
   - job_name: "tdp-backend-qasp"
     metrics_path: "/prometheus/metrics"
     static_configs:
       - targets: ["tdp-backend-qasp.apps.internal:8080"]
+
+  - job_name: "node-qasp"
+    static_configs:
+      - targets: ["tdp-backend-qasp.apps.internal:9100"]
+        labels:
+          service: "node"
+          env: "qasp"
 
   - job_name: "tdp-backend-develop"
     metrics_path: "/prometheus/metrics"
@@ -44,6 +58,13 @@ scrape_configs:
       - targets: ["tdp-backend-develop.apps.internal:8080"]
         labels:
           service: "tdp-backend"
+          env: "dev"
+
+  - job_name: "node-develop"
+    static_configs:
+      - targets: ["tdp-backend-develop.apps.internal:9100"]
+        labels:
+          service: "node"
           env: "dev"
 
   - job_name: "tdp-backend-staging"
@@ -54,12 +75,26 @@ scrape_configs:
           service: "tdp-backend"
           env: "staging"
 
+  - job_name: "node-staging"
+    static_configs:
+      - targets: ["tdp-backend-staging.apps.internal:9100"]
+        labels:
+          service: "node"
+          env: "staging"
+
   - job_name: "tdp-backend-prod"
     metrics_path: "/prometheus/metrics"
     static_configs:
       - targets: ["tdp-backend-prod.apps.internal:8080"]
         labels:
           service: "tdp-backend"
+          env: "production"
+
+  - job_name: "node-prod"
+    static_configs:
+      - targets: ["tdp-backend-prod.apps.internal:9100"]
+        labels:
+          service: "node"
           env: "production"
 
   - job_name: postgres-dev
