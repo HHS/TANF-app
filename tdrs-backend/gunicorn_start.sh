@@ -41,6 +41,12 @@ if [[ $1 == "cloud" ]]; then
     wget https://github.com/grafana/loki/releases/download/v3.1.1/promtail-linux-amd64.zip
     unzip -a promtail-linux-amd64.zip && rm -rf promtail-linux-amd64.zip
     ./promtail-linux-amd64 -config.file=./plg/promtail/config.yml &
+
+    echo "Starting the Node Exporter"
+    curl -LO https://github.com/prometheus/node_exporter/releases/download/v1.9.0/node_exporter-1.9.0.linux-amd64.tar.gz
+    tar --strip-components=1 -xzvf node_exporter-1.9.0.linux-amd64.tar.gz node_exporter-1.9.0.linux-amd64/node_exporter
+    rm node_exporter-1.9.0.linux-amd64.tar.gz
+    ./node_exporter &
 fi
 
 exec $gunicorn_cmd
