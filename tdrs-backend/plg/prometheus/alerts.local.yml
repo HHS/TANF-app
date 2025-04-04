@@ -19,6 +19,44 @@ groups:
       annotations:
           summary: "The {{ $labels.service }} service is down."
           description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 1 minute."
+    - alert: LocalBackendCpuUsageHigh
+      expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle",job=~"node-local"}[5m])) * 100)
+      for: 5m
+      labels:
+        severity: WARNING
+      annotations:
+          summary: "CPU usage is above 80% on {{ $labels.instance }}"
+          description: "The {{ $labels.instance }} instance in the {{ $labels.env }} environment has been experiencing high CPU usage for more than 5 minutes."
+    - alert: LocalBackendMemoryUsageHigh
+      expr: |
+        avg_over_time(
+          (
+            (node_memory_MemTotal_bytes{job=~"node-local"} - node_memory_MemAvailable_bytes{job=~"node-local"})
+            / node_memory_MemTotal_bytes{job=~"node-local"} * 100
+          )[5m:]
+        )
+      for: 5m
+      labels:
+        severity: WARNING
+      annotations:
+          summary: "Memory usage is above 80% on {{ $labels.instance }}"
+          description: "The {{ $labels.instance }} instance in the {{ $labels.env }} environment has been experiencing high Memory usage for more than 5 minutes."
+    - alert: LocalBackendDiskUsageHigh
+      expr: |
+        avg_over_time(
+          (
+            100 * (node_filesystem_size_bytes{mountpoint="/",fstype!~"tmpfs|overlay",job=~"node-local"} 
+            - node_filesystem_free_bytes{mountpoint="/",fstype!~"tmpfs|overlay",job=~"node-local"})
+            / node_filesystem_size_bytes{mountpoint="/",fstype!~"tmpfs|overlay",job=~"node-local"}
+          )[5m:]
+        )
+      for: 5m
+      labels:
+        severity: WARNING
+      annotations:
+          summary: "Disk usage is above 80% on {{ $labels.instance }}"
+          description: "The {{ $labels.instance }} instance in the {{ $labels.env }} environment has been experiencing high disk usage for more than 5 minutes."
+
   - name: plg.alerts
     rules:
     - alert: LocalLokiDown
