@@ -7,7 +7,7 @@ server:
 
 blocks_storage:
   s3:
-    bucket_name: tdp-mimir-blocks
+    bucket_name: ${BLOCKS_S3_BUCKET}
     endpoint: ${BLOCKS_S3_ENDPOINT}
     secret_access_key: ${BLOCKS_S3_SECRET_KEY}
     access_key_id: ${BLOCKS_S3_ACCESS_KEY}
@@ -16,7 +16,7 @@ blocks_storage:
 
 alertmanager_storage:
   s3:
-    bucket_name: tdp-mimir-alertmanager
+    bucket_name: ${ALERTMANAGER_S3_BUCKET}
     endpoint: ${ALERTMANAGER_S3_ENDPOINT}
     secret_access_key: ${ALERTMANAGER_S3_SECRET_KEY}
     access_key_id: ${ALERTMANAGER_S3_ACCESS_KEY}
@@ -25,7 +25,7 @@ alertmanager_storage:
 
 ruler_storage:
   s3:
-    bucket_name: tdp-mimir-ruler
+    bucket_name: ${RULER_S3_BUCKET}
     endpoint: ${RULER_S3_ENDPOINT}
     secret_access_key: ${RULER_S3_SECRET_KEY}
     access_key_id: ${RULER_S3_ACCESS_KEY}
