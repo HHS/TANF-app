@@ -1,10 +1,8 @@
 """Utility functions for the reparse command."""
 from django.core.management import call_command
-from django.core.paginator import Paginator
 from django.db.utils import DatabaseError
-from elasticsearch.exceptions import ElasticsearchException
 from tdpservice.parsers.models import DataFileSummary, ParserError
-from tdpservice.search_indexes.util import DOCUMENTS, count_all_records
+from tdpservice.search_indexes.util import MODELS, count_all_records
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 from tdpservice.core.utils import log
 from django.contrib.admin.models import ADDITION
@@ -27,7 +25,7 @@ def backup(backup_file_name, log_context):
         log("Database backup complete.", logger_context=log_context, level="info")
     except Exception as e:
         log(
-            "Database backup FAILED. Clean and reparse NOT executed. Database and Elastic are CONSISTENT!",
+            "Database backup FAILED. Clean and reparse NOT executed. Database is CONSISTENT!",
             logger_context=log_context,
             level="error",
         )
@@ -96,7 +94,7 @@ def count_total_num_records(log_context):
     except DatabaseError as e:
         log(
             "Encountered a DatabaseError while counting records for meta model. The database "
-            f"and Elastic are consistent! Cancelling reparse to be safe. \n{e}",
+            f"is consistent! Cancelling reparse to be safe. \n{e}",
             logger_context=log_context,
             level="error",
         )
@@ -104,7 +102,7 @@ def count_total_num_records(log_context):
     except Exception as e:
         log(
             "Encountered generic exception while counting records for meta model. "
-            f"The database and Elastic are consistent! Cancelling reparse to be safe. \n{e}",
+            f"The database is consistent! Cancelling reparse to be safe. \n{e}",
             logger_context=log_context,
             level="error",
         )
@@ -122,14 +120,14 @@ def delete_summaries(file_ids, log_context):
     except DatabaseError as e:
         log(
             "Encountered a DatabaseError while deleting DataFileSummary from Postgres. The database "
-            "and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!",
+            "is INCONSISTENT! Restore the DB from the backup as soon as possible!",
             logger_context=log_context,
             level="critical",
         )
         raise e
     except Exception as e:
         log(
-            "Caught generic exception while deleting DataFileSummary. The database and Elastic are INCONSISTENT! "
+            "Caught generic exception while deleting DataFileSummary. The database is INCONSISTENT! "
             "Restore the DB from the backup as soon as possible!",
             logger_context=log_context,
             level="critical",
@@ -148,14 +146,14 @@ def delete_errors(file_ids, log_context):
     except DatabaseError as e:
         log(
             "Encountered a DatabaseError while deleting ParserErrors from Postgres. The database "
-            "and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!",
+            "is INCONSISTENT! Restore the DB from the backup as soon as possible!",
             logger_context=log_context,
             level="critical",
         )
         raise e
     except Exception as e:
         log(
-            "Caught generic exception while deleting ParserErrors. The database and Elastic are INCONSISTENT! "
+            "Caught generic exception while deleting ParserErrors. The database is INCONSISTENT! "
             "Restore the DB from the backup as soon as possible!",
             logger_context=log_context,
             level="critical",
@@ -163,67 +161,40 @@ def delete_errors(file_ids, log_context):
         raise e
 
 
-def handle_elastic_doc_delete(doc, qset, model, elastic_exceptions, new_indices):
-    """Delete documents from Elastic and handle exceptions."""
-    if not new_indices:
-        # If we aren't creating new indices, then we don't want duplicate data in the existing indices.
-        # We alos use a Paginator here because it allows us to slice querysets based on a batch size. This
-        # prevents a very large queryset from being brought into main memory when `doc().update(...)`
-        # evaluates it by iterating over the queryset and deleting the models from ES.
-        paginator = Paginator(qset, settings.BULK_CREATE_BATCH_SIZE)
-        for page in paginator:
-            try:
-                doc().update(page.object_list, refresh=True, action="delete")
-            except ElasticsearchException:
-                elastic_exceptions[model] = elastic_exceptions.get(model, 0) + 1
-                continue
-
-
-def delete_records(file_ids, new_indices, log_context):
-    """Delete records, errors, and documents from Postgres and Elastic."""
+def delete_records(file_ids, log_context):
+    """Delete records, errors from Postgres."""
     total_deleted = 0
-    elastic_exceptions = dict()
-    for doc in DOCUMENTS:
+    for model in MODELS:
         try:
-            model = doc.Django.model
             qset = model.objects.filter(datafile_id__in=file_ids).order_by("id")
             count = qset.count()
             total_deleted += count
             logger.info(f"Deleting {count} records of type: {model}.")
-            handle_elastic_doc_delete(doc, qset, model, elastic_exceptions, new_indices)
             qset._raw_delete(qset.db)
         except DatabaseError as e:
             log(
                 f"Encountered a DatabaseError while deleting records of type {model} from Postgres. The database "
-                "and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!",
+                "is INCONSISTENT! Restore the DB from the backup as soon as possible!",
                 logger_context=log_context,
                 level="critical",
             )
             raise e
         except Exception as e:
             log(
-                f"Caught generic exception while deleting records of type {model}. The database and Elastic are "
+                f"Caught generic exception while deleting records of type {model}. The database is "
                 "INCONSISTENT! Restore the DB from the backup as soon as possible!",
                 logger_context=log_context,
                 level="critical",
             )
             raise e
-    if elastic_exceptions != {}:
-        msg = (
-            "Warning: Elastic is inconsistent and the database is consistent. "
-            "Models which generated the Elastic exception(s) are below:\n"
-        )
-        for key, val in elastic_exceptions.items():
-            msg += f"Model: {key} generated {val} Elastic Exception(s) while being deleted.\n"
-        log(msg, logger_context=log_context, level="warn")
     return total_deleted
 
 
-def delete_associated_models(meta_model, file_ids, new_indices, log_context):
+def delete_associated_models(meta_model, file_ids, log_context):
     """Delete all models associated to the selected datafiles."""
     delete_summaries(file_ids, log_context)
     delete_errors(file_ids, log_context)
-    num_deleted = delete_records(file_ids, new_indices, log_context)
+    num_deleted = delete_records(file_ids, log_context)
     meta_model.num_records_deleted = num_deleted
 
 

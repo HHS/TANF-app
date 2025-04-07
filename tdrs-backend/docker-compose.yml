@@ -56,32 +56,6 @@ services:
       # Copy in the Localstack setup script to configure any buckets needed
       - ../scripts/localstack-setup.sh:/docker-entrypoint-initaws.d/localstack-setup.sh
 
-  kibana:
-    image: docker.elastic.co/kibana/kibana-oss:7.10.2
-    ports:
-      - 5601:5601
-    environment:
-      - ELASTICSEARCH_HOSTS="http://elastic:9200"
-      - SERVER_HOST=kibana
-      - SERVER_BASEPATH=/kibana
-      - SERVER_SECURITYRESPONSEHEADERS_REFERRERPOLICY=no-referrer
-      - CSP_WARNLEGACYBROWSERS=false
-    volumes:
-      - ./search_indexes/kibana_saved_objs.ndjson:/usr/share/kibana/kibana_saved_objs.ndjson
-    depends_on:
-      - elastic
-
-  elastic:
-    image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2
-    environment:
-      - discovery.type=single-node
-      - logger.discovery.level=debug
-    ports:
-      - 9200:9200
-      - 9300:9300
-    volumes:
-      - elastic_data:/usr/share/elasticsearch/data
-
   grafana:
     restart: always
     image: grafana/grafana:11.2.0
@@ -206,17 +180,6 @@ services:
       - SENDGRID_API_KEY
       - GENERATE_TRAILER_ERRORS=True
       - BYPASS_OFA_AUTH
-      - ELASTICSEARCH_REINDEX_THREAD_COUNT
-      - ELASTICSEARCH_REINDEX_CHUNK_SIZE
-      - ELASTICSEARCH_REINDEX_REQUEST_TIMEOUT
-      - ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_WARN
-      - ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_INFO
-      - ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_TRACE
-      - ELASTICSEARCH_LOG_SEARCH_SLOW_LEVEL
-      - ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_WARN
-      - ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_INFO
-      - ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_TRACE
-      - ELASTICSEARCH_LOG_INDEX_SLOW_LEVEL
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
       - AWS_S3_BUCKET_NAME
@@ -239,7 +202,6 @@ services:
       - localstack
       - postgres
       - redis-server
-      - elastic
 
   redis-server:
     image: redis:alpine
@@ -253,7 +215,6 @@ volumes:
   localstack_data:
   postgres_data:
   grafana_pg_data:
-  elastic_data:
   prometheus_data:
   grafana_data:
   loki_data:

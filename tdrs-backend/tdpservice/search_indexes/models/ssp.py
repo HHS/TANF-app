@@ -6,11 +6,7 @@ from tdpservice.data_files.models import DataFile
 
 
 class SSP_M1(models.Model):
-    """
-    Parsed record representing an SSP M1 data submission.
-
-    Mapped to an elastic search index.
-    """
+    """Parsed record representing an SSP M1 data submission."""
 
     class Meta:
         """Meta class for the model."""
@@ -77,11 +73,7 @@ class SSP_M1(models.Model):
 
 
 class SSP_M2(models.Model):
-    """
-    Parsed record representing an SSP M2 data submission.
-
-    Mapped to an elastic search index.
-    """
+    """Parsed record representing an SSP M2 data submission."""
 
     class Meta:
         """Meta class for the model."""
@@ -169,11 +161,7 @@ class SSP_M2(models.Model):
 
 
 class SSP_M3(models.Model):
-    """
-    Parsed record representing an SSP M3 data submission.
-
-    Mapped to an elastic search index.
-    """
+    """Parsed record representing an SSP M3 data submission."""
 
     class Meta:
         """Meta class for the model."""
@@ -215,11 +203,7 @@ class SSP_M3(models.Model):
     OTHER_UNEARNED_INCOME = models.IntegerField(null=True, blank=False)
 
 class SSP_M4(models.Model):
-    """
-    Parsed record representing an SSP M1 data submission.
-
-    Mapped to an elastic search index.
-    """
+    """Parsed record representing an SSP M1 data submission."""
 
     class Meta:
         """Meta class for the model."""
@@ -254,11 +238,7 @@ class SSP_M4(models.Model):
     REC_SUB_CC = models.IntegerField(null=True, blank=False)
 
 class SSP_M5(models.Model):
-    """
-    Parsed record representing an SSP M1 data submission.
-
-    Mapped to an elastic search index.
-    """
+    """Parsed record representing an SSP M1 data submission."""
 
     class Meta:
         """Meta class for the model."""
@@ -305,11 +285,7 @@ class SSP_M5(models.Model):
     AMOUNT_UNEARNED_INCOME = models.CharField(max_length=4, null=True, blank=False)
 
 class SSP_M6(models.Model):
-    """
-    Parsed record representing an M6 data submission.
-
-    Mapped to an elastic search index.
-    """
+    """Parsed record representing an M6 data submission."""
 
     class Meta:
         """Meta class for the model."""
@@ -342,11 +318,7 @@ class SSP_M6(models.Model):
     CLOSED_CASES = models.IntegerField(null=True, blank=True)
 
 class SSP_M7(models.Model):
-    """
-    Parsed record representing an SSP M3 data submission.
-
-    Mapped to an elastic search index.
-    """
+    """Parsed record representing an SSP M3 data submission."""
 
     class Meta:
         """Meta class for the model."""

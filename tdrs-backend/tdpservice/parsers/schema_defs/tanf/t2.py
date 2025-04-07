@@ -5,14 +5,14 @@ from tdpservice.parsers.transforms import tanf_ssn_decryption_func
 from tdpservice.parsers.fields import TransformField, Field
 from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.validators import category1, category2, category3
-from tdpservice.search_indexes.documents.tanf import TANF_T2DataSubmissionDocument
+from tdpservice.search_indexes.models.tanf import TANF_T2
 from tdpservice.parsers.util import generate_t2_t3_t5_hashes, get_t2_t3_t5_partial_hash_members
 
 
 t2 = [
     TanfDataReportSchema(
         record_type="T2",
-        document=TANF_T2DataSubmissionDocument(),
+        model=TANF_T2,
         generate_hashes_func=generate_t2_t3_t5_hashes,
         should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {3, 5},
         get_partial_hash_members_func=get_t2_t3_t5_partial_hash_members,
@@ -129,6 +129,12 @@ t2 = [
                 condition_function=category3.isBetween(1, 5, inclusive=True, cast=int),
                 result_field_name="WORK_PART_STATUS",
                 result_function=category3.isNotEqual("99"),
+            ),
+            category3.ifThenAlso(
+                condition_field_name="WORK_ELIGIBLE_INDICATOR",
+                condition_function=category3.isBetween(1, 5, inclusive=True, cast=int),
+                result_field_name="SSN",
+                result_function=category3.validateSSN(),
             ),
             category3.validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE(),
         ],
