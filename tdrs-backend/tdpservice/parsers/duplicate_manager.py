@@ -3,7 +3,6 @@ from tdpservice.parsers.dataclasses import RawRow
 from tdpservice.parsers.duplicate_detectors import DuplicateDetectorFactory
 
 
-
 class DuplicateManager:
     """Manages all DuplicateDetectors and their errors."""
 
