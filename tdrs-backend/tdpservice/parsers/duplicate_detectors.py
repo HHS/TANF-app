@@ -1,4 +1,4 @@
-"""Class definition for record duplicate class and helper classes."""
+"""Class definitions for record duplicate class and helper classes."""
 from abc import ABC, abstractmethod
 from django.conf import settings
 from enum import IntEnum
