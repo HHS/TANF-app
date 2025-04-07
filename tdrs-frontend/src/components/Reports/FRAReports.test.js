@@ -1007,5 +1007,47 @@ describe('FRA Reports Page', () => {
         ).not.toBeInTheDocument()
       })
     })
+
+    it('shows a special status for timed out status polling attempts', async () => {
+      const submissionHistoryApiResponse = [
+        {
+          id: 1,
+          original_filename: 'testFile.txt',
+          extension: 'txt',
+          quarter: 'Q1',
+          section: 'Work Outcomes of TANF Exiters',
+          slug: '1234-5-6-7890',
+          year: '2021',
+          s3_version_id: '3210',
+          created_at: '2025-02-07T23:38:58+0000',
+          submitted_by: 'Test Testerson',
+          has_error: false,
+          summary: {
+            status: 'TimedOut',
+          },
+          latest_reparse_file_meta: '',
+        },
+      ]
+
+      const { getByText, queryByText, getByLabelText, container, dispatch } =
+        await setup(submissionHistoryApiResponse)
+
+      await waitFor(() => {
+        expect(getByText(/by Test Testerson/)).toBeInTheDocument()
+        expect(
+          getByText('testFile.txt', { selector: 'td button' })
+        ).toBeInTheDocument()
+        expect(
+          within(
+            getByText('Work Outcomes of TANF Exiters Submission History')
+              .parentElement
+          ).getByText('Pending')
+        ).toBeInTheDocument()
+        expect(
+          getByText('Still processing. Check back soon.')
+        ).toBeInTheDocument()
+        expect(getByText('Pending')).toBeInTheDocument()
+      })
+    })
   })
 })

@@ -4,6 +4,7 @@ import {
   SET_IS_UPLOADING_FRA_REPORT,
   SET_IS_LOADING_FRA_SUBMISSION_STATUS,
   SET_FRA_SUBMISSION_STATUS,
+  SET_FRA_SUBMISSION_STATUS_TIMED_OUT,
 } from '../actions/fraReports'
 import { serializeApiDataFile } from './reports'
 
@@ -62,6 +63,22 @@ const fraReports = (state = initialState, action) => {
       const { datafile_id, datafile } = payload
       const submissionHistory = state.submissionHistory.map((f) =>
         f.id === datafile_id ? serializeApiDataFile(datafile) : f
+      )
+
+      return { ...state, submissionHistory }
+    }
+    case SET_FRA_SUBMISSION_STATUS_TIMED_OUT: {
+      const { datafile_id } = payload
+      const submissionHistory = state.submissionHistory.map((f) =>
+        f.id === datafile_id
+          ? {
+              ...f,
+              summary: {
+                ...f.summary,
+                status: 'TimedOut',
+              },
+            }
+          : f
       )
 
       return { ...state, submissionHistory }

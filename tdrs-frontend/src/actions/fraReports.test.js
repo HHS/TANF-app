@@ -1,11 +1,9 @@
 import axios from 'axios'
 import { thunk } from 'redux-thunk'
 import configureStore from 'redux-mock-store'
-import { v4 as uuidv4 } from 'uuid'
 
 import {
   getFraSubmissionHistory,
-  upload,
   SET_IS_LOADING_SUBMISSION_HISTORY,
   SET_FRA_SUBMISSION_HISTORY,
   SET_IS_UPLOADING_FRA_REPORT,
@@ -13,6 +11,7 @@ import {
   pollFraSubmissionStatus,
   SET_IS_LOADING_FRA_SUBMISSION_STATUS,
   SET_FRA_SUBMISSION_STATUS,
+  SET_FRA_SUBMISSION_STATUS_TIMED_OUT,
 } from './fraReports'
 
 describe('actions/fraReports', () => {
@@ -619,7 +618,7 @@ describe('actions/fraReports', () => {
       expect(onError).toHaveBeenCalledTimes(1)
     })
 
-    it('calls onError when tryNumber > MAX_TRIES', async () => {
+    it('dispatches and calls onError when tryNumber > MAX_TRIES', async () => {
       const store = mockStore()
 
       const test = jest.fn(() => true)
@@ -636,10 +635,15 @@ describe('actions/fraReports', () => {
       )
 
       const actions = store.getActions()
-      expect(actions.length).toEqual(1)
+      expect(actions.length).toEqual(2)
 
-      expect(actions[0].type).toBe(SET_IS_LOADING_FRA_SUBMISSION_STATUS)
+      expect(actions[0].type).toBe(SET_FRA_SUBMISSION_STATUS_TIMED_OUT)
       expect(actions[0].payload).toEqual({
+        datafile_id: 1,
+      })
+
+      expect(actions[1].type).toBe(SET_IS_LOADING_FRA_SUBMISSION_STATUS)
+      expect(actions[1].payload).toEqual({
         datafile_id: 1,
         isPerformingRequest: false,
         isDone: true,

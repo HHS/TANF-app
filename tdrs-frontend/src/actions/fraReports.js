@@ -12,6 +12,8 @@ export const SET_IS_UPLOADING_FRA_REPORT = 'SET_IS_UPLOADING_FRA_REPORT'
 export const SET_IS_LOADING_FRA_SUBMISSION_STATUS =
   'SET_IS_LOADING_FRA_SUBMISSION_STATUS'
 export const SET_FRA_SUBMISSION_STATUS = 'SET_FRA_SUBMISSION_STATUS'
+export const SET_FRA_SUBMISSION_STATUS_TIMED_OUT =
+  'SET_FRA_SUBMISSION_STATUS_TIMED_OUT'
 
 export const getFraSubmissionHistory =
   (
@@ -150,10 +152,14 @@ export const pollFraSubmissionStatus =
     onError = (error) => null
   ) =>
   async (dispatch) => {
-    const MAX_TRIES = 30 // #
+    const MAX_TRIES = 30
 
     try {
       if (tryNumber > MAX_TRIES) {
+        dispatch({
+          type: SET_FRA_SUBMISSION_STATUS_TIMED_OUT,
+          payload: { datafile_id },
+        })
         throw new Error(
           'Exceeded max number of tries to update submission status.'
         )

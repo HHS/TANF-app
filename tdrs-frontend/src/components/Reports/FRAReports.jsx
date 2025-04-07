@@ -18,6 +18,8 @@ import {
   formatDate,
   SubmissionSummaryStatusIcon,
   getErrorReportStatus,
+  fileStatusOrDefault,
+  getSummaryStatusLabel,
 } from '../SubmissionHistory/helpers'
 
 import {
@@ -453,14 +455,14 @@ const SubmissionHistoryRow = ({ file, handleDownload, isRegionalStaff }) => {
       <td aria-live="polite">
         {hasStatus && status !== 'Pending' ? (
           <span>
-            <SubmissionSummaryStatusIcon
-              status={file.summary ? file.summary.status : 'Pending'}
-            />
+            <SubmissionSummaryStatusIcon status={fileStatusOrDefault(file)} />
           </span>
         ) : (
           <Spinner visible={isLoadingStatus} />
         )}
-        <span style={{ position: 'relative' }}>{status}</span>
+        <span style={{ position: 'relative' }}>
+          {getSummaryStatusLabel(file)}
+        </span>
       </td>
       <td aria-live="polite">
         <Spinner visible={isLoadingStatus} />
