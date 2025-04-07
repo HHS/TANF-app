@@ -4,6 +4,9 @@ from django.conf import settings
 from enum import IntEnum
 from .models import ParserErrorCategoryChoices
 from tdpservice.parsers.dataclasses import RawRow
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ErrorLevel(IntEnum):
     """Error level enumerations for precedence."""
@@ -138,6 +141,12 @@ class TE1DuplicateDetector(DuplicateDetector):
         """
         # Add all records the detector receives to id dictionary. That way a line that has more than one record
         # created from it will have all of it's records appropriately marked for deletion if need be.
+        ssn = getattr(record, 'SSN', None)
+        if ssn == "999999999":
+            logger.warning(f"SSN is 999999999 for record {record.id} at line number "
+                           f"{line_number}. Skipping duplicate detection.")
+            return
+
         self.record_ids.setdefault(schema.model, []).append(record.id)
 
         self.current_line_number = line_number
