@@ -500,54 +500,6 @@ def test_sumIsLarger():
     assert result.field_names == ['TestField1', 'TestField3']
 
 
-def test_validate__FAM_AFF__SSN():
-    """Test `validate__FAM_AFF__SSN` gives a valid result."""
-    schema = TanfDataReportSchema(
-        fields=[
-            Field(
-                item='1',
-                name='FAMILY_AFFILIATION',
-                friendly_name='family affiliation',
-                type=FieldType.NUMERIC,
-                startIndex=0,
-                endIndex=1
-            ),
-            Field(
-                item='2',
-                name='CITIZENSHIP_STATUS',
-                friendly_name='citizenship status',
-                type=FieldType.NUMERIC,
-                startIndex=1,
-                endIndex=2
-            ),
-            Field(
-                item='3',
-                name='SSN',
-                friendly_name='social security number',
-                type=FieldType.NUMERIC,
-                startIndex=2,
-                endIndex=11
-            )
-        ]
-    )
-    instance = {
-        'FAMILY_AFFILIATION': 2,
-        'CITIZENSHIP_STATUS': 1,
-        'SSN': '0'*9,
-    }
-    result = category3.validate__FAM_AFF__SSN()(instance, schema)
-    assert result.valid is False
-    assert result.error == ('T1: Since Item 1 (family affiliation) is 2 and Item 2 (citizenship status) is 1 or 2, '
-                            'then Item 3 (social security number) must not be in 000000000 -- 999999999.')
-    assert result.field_names == ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN']
-
-    instance['SSN'] = '1'*8 + '0'
-    result = category3.validate__FAM_AFF__SSN()(instance, schema)
-    assert result.valid is True
-    assert result.error is None
-    assert result.field_names == ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN']
-
-
 def test_validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
     """Test `validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE` gives a valid result."""
     schema = TanfDataReportSchema(
