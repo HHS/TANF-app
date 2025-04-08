@@ -5,7 +5,7 @@ from tdpservice.parsers.models import DataFileSummary, ParserError
 from tdpservice.search_indexes.util import MODELS, count_all_records
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 from tdpservice.core.utils import log
-from django.contrib.admin.models import ADDITION
+from django.contrib.admin.models import CHANGE
 from datetime import timedelta
 from django.utils import timezone
 from django.conf import settings
@@ -36,7 +36,7 @@ def get_log_context(system_user):
     """Return logger context."""
     context = {
         "user_id": system_user.id,
-        "action_flag": ADDITION,
+        "action_flag": CHANGE,
         "object_repr": "Clean and Reparse",
     }
     return context
