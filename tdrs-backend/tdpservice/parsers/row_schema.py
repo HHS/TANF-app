@@ -113,7 +113,7 @@ class RowSchema(ABC):
 
         return is_valid, errors
 
-    def run_preparsing_validators(self, row: RawRow, generate_error):
+    def run_preparsing_validators(self, row: RawRow, record, generate_error):
         """Run each of the `preparsing_validator` functions in the schema against the un-parsed row."""
         is_valid = True
         errors = []
@@ -142,8 +142,8 @@ class RowSchema(ABC):
                         schema=self,
                         error_category=ParserErrorCategoryChoices.PRE_CHECK,
                         error_message=result.error,
-                        record=None,
-                        field="Record_Type",
+                        record=record,
+                        field=self.fields,
                         deprecated=result.deprecated,
                     )
                 )
@@ -196,9 +196,12 @@ class TanfDataReportSchema(RowSchema):
         """Run all validation steps in order, and parse the given row into a record."""
         errors = []
 
+        # parse row to model
+        record = self.parse_row(row)
+
         # run preparsing validators
         preparsing_is_valid, preparsing_errors = self.run_preparsing_validators(
-            row, generate_error
+            row, record, generate_error
         )
         is_quiet_preparser_errors = (
                 self.quiet_preparser_errors
@@ -207,12 +210,9 @@ class TanfDataReportSchema(RowSchema):
             )
         if not preparsing_is_valid:
             if is_quiet_preparser_errors:
-                return None, True, []
+                return SchemaResult(None, True, [])
             logger.info(f"{len(preparsing_errors)} preparser error(s) encountered.")
-            return None, False, preparsing_errors
-
-        # parse row to model
-        record = self.parse_row(row)
+            return SchemaResult(None, False, preparsing_errors)
 
         # run field validators
         fields_are_valid, field_errors = self.run_field_validators(record, generate_error)
@@ -267,11 +267,13 @@ class FRASchema(RowSchema):
         # Parse FRA row and run field validators, waiting for guidance on other categories of validators
         # The implementor should reference `UpdatedErrorReport.xlsx` to gain insight into appropriate
         # validators for fields.
-        errors = []
+
+        # parse row to model
+        record = self.parse_row(row)
 
         # run preparsing validators
         preparsing_is_valid, preparsing_errors = self.run_preparsing_validators(
-            row, generate_error
+            row, record, generate_error
         )
         is_quiet_preparser_errors = (
                 self.quiet_preparser_errors
@@ -282,18 +284,53 @@ class FRASchema(RowSchema):
             if is_quiet_preparser_errors:
                 preparsing_errors = []
             logger.info(f"{len(preparsing_errors)} preparser error(s) encountered.")
+            return SchemaResult(None, False, preparsing_errors)
 
-        # parse row to model
-        record = self.parse_row(row)
-
-        # run category 1 field validators
+        # Run category 1 field validators. Note that even though we are generating cat1 errors the records are still
+        # serialized to the database. This is a requiremnt for the moment because the FRA error report requires access
+        # to fields in records that generated an error.
         fields_are_valid, field_errors = self.run_field_validators(record, generate_error)
 
-        is_valid = fields_are_valid and preparsing_is_valid
-        errors = field_errors + preparsing_errors
-        record = record if is_valid else None
+        record = record if fields_are_valid else None
 
-        return SchemaResult(record, is_valid, errors)
+        return SchemaResult(record, fields_are_valid, field_errors)
+
+    def run_preparsing_validators(self, row: RawRow, record, generate_error):
+        """Run each of the `preparsing_validator` functions in the schema against the un-parsed row."""
+        is_valid = True
+        errors = []
+
+        field = self.get_field_by_name('RecordType')
+
+        for validator in self.preparsing_validators:
+            eargs = ValidationErrorArgs(
+                value=row,
+                row_schema=self,
+                friendly_name=field.friendly_name if field else 'record type',
+                item_num=field.item if field else '0',
+            )
+
+            result = validator(row, eargs)
+            is_valid = False if not result.valid else is_valid
+
+            is_quiet_preparser_errors = (
+                self.quiet_preparser_errors
+                if type(self.quiet_preparser_errors) is bool
+                else self.quiet_preparser_errors(row)
+            )
+            if result.error and not is_quiet_preparser_errors:
+                errors.append(
+                    generate_error(
+                        schema=self,
+                        error_category=ParserErrorCategoryChoices.PRE_CHECK,
+                        error_message=result.error,
+                        record=record,
+                        offending_field=field,
+                        fields=self.fields,
+                        deprecated=result.deprecated,
+                    )
+                )
+        return is_valid, errors
 
     def run_field_validators(self, record, generate_error):
         """
@@ -327,7 +364,8 @@ class FRASchema(RowSchema):
                                 error_category=ParserErrorCategoryChoices.PRE_CHECK,
                                 error_message=result.error,
                                 record=record,
-                                field=field,
+                                offending_field=field,
+                                fields=self.fields,
                                 deprecated=result.deprecated
                             )
                         )
@@ -342,7 +380,8 @@ class FRASchema(RowSchema):
                             "field is required but a value was not provided."
                         ),
                         record=record,
-                        field=field
+                        offending_field=field,
+                        fields=self.fields,
                     )
                 )
 
