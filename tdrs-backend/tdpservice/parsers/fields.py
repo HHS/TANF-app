@@ -74,7 +74,7 @@ class Field:
                     logger.error(f"Error parsing field {self.name} value to integer.")
                     return None
             case FieldType.ALPHA_NUMERIC:
-                return value
+                return str(value)
             case _:
                 logger.warning(f"Unknown field type: {self.type}.")
                 return None

@@ -86,26 +86,37 @@ def _validate_YYYYmm_against_file_fiscal_period(row: RawRow, date_field, eargs):
     file_calendar_year, file_calendar_qtr = fiscal_to_calendar(df_year, f"{df_quarter}")
 
     if str(file_calendar_year) == str(field_year) and file_calendar_qtr == field_quarter:
-        return Result()
+        return True, field_month_year
 
-    return Result(
-        valid=False,
-        error=(f"{row_schema.record_type}: Reporting month year {field_month_year} "
-               f"does not match file reporting year:{df_year}, quarter:{df_quarter}."),
-    )
+    return False, field_month_year
 
 
 def validate_fieldYearMonth_with_headerYearQuarter():
     """Validate that the field year and month match the header year and quarter."""
     def validate(row: RawRow, eargs):
-        return _validate_YYYYmm_against_file_fiscal_period(row, 'RPT_MONTH_YEAR', eargs)
+        is_valid, val = _validate_YYYYmm_against_file_fiscal_period(row, 'RPT_MONTH_YEAR', eargs)
+        if not is_valid:
+            return Result(
+                valid=False,
+                error=(f"{eargs.row_schema.record_type}: Reporting month year {val} "
+                       f"does not match file reporting year:{eargs.row_schema.datafile.year}, "
+                       f"quarter:{eargs.row_schema.datafile.quarter}."),
+            )
+        return Result()
     return validate
 
 
 def validate_exit_date_against_fiscal_period():
     """Validate that the exit date is within the fiscal period."""
     def validate(row: RawRow, eargs):
-        return _validate_YYYYmm_against_file_fiscal_period(row, 'EXIT_DATE', eargs)
+        is_valid, val = _validate_YYYYmm_against_file_fiscal_period(row, 'EXIT_DATE', eargs)
+        if not is_valid:
+            return Result(
+                valid=False,
+                error=(f"Exit date ({val}) is not valid. Date must be in the range of "
+                       f"{eargs.row_schema.datafile.fiscal_year}")
+            )
+        return Result()
     return validate
 
 
