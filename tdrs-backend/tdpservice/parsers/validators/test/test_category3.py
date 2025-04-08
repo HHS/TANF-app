@@ -8,6 +8,9 @@ from tdpservice.parsers.validators.util import deprecate_call
 from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.fields import Field
 from tdpservice.parsers.dataclasses import FieldType, ValidationErrorArgs
+from tdpservice.data_files.models import DataFile
+from tdpservice.stts.models import STT
+from django.conf import settings
 
 
 test_schema = TanfDataReportSchema(
@@ -498,6 +501,108 @@ def test_sumIsLarger():
     assert result.valid is True
     assert result.error is None
     assert result.field_names == ['TestField1', 'TestField3']
+
+
+def test_suppress_for_fra_pilot_state():
+    """Test `suppress_for_fra_pilot_state` suppresses validation logic."""
+    stt = STT(
+        type="state",
+        postal_code='AZ'
+    )
+    datafile = DataFile(
+        stt=stt
+    )
+    schema = TanfDataReportSchema(
+        fields=[
+            Field(
+                item='1',
+                name='WORK_ELIGIBLE_INDICATOR',
+                friendly_name='Work-Eligible Individual Indicator',
+                type=FieldType.ALPHA_NUMERIC,
+                startIndex=0,
+                endIndex=1
+            ),
+            Field(
+                item='2',
+                name='WORK_PART_STATUS',
+                friendly_name='Work Participation Status',
+                type=FieldType.ALPHA_NUMERIC,
+                startIndex=1,
+                endIndex=2
+            )
+        ],
+    )
+    schema.set_datafile(datafile)
+
+    record = {
+        'WORK_ELIGIBLE_INDICATOR': '1',
+        'WORK_PART_STATUS': '99',
+    }
+
+    validate = category3.suppress_for_fra_pilot_state(
+        'WORK_ELIGIBLE_INDICATOR',
+        'WORK_PART_STATUS',
+        category3.ifThenAlso(
+            condition_field_name="WORK_ELIGIBLE_INDICATOR",
+            condition_function=category3.isBetween(1, 5, inclusive=True, cast=int),
+            result_field_name="WORK_PART_STATUS",
+            result_function=category3.isNotEqual("99"),
+        )
+    )
+
+    settings.FRA_PILOT_STATES = ['AZ']
+
+    result = validate(record, schema)
+    assert result.valid
+    assert result.error is None
+
+
+def test_validate__FAM_AFF__SSN():
+    """Test `validate__FAM_AFF__SSN` gives a valid result."""
+    schema = TanfDataReportSchema(
+        fields=[
+            Field(
+                item='1',
+                name='FAMILY_AFFILIATION',
+                friendly_name='family affiliation',
+                type=FieldType.NUMERIC,
+                startIndex=0,
+                endIndex=1
+            ),
+            Field(
+                item='2',
+                name='CITIZENSHIP_STATUS',
+                friendly_name='citizenship status',
+                type=FieldType.NUMERIC,
+                startIndex=1,
+                endIndex=2
+            ),
+            Field(
+                item='3',
+                name='SSN',
+                friendly_name='social security number',
+                type=FieldType.NUMERIC,
+                startIndex=2,
+                endIndex=11
+            )
+        ]
+    )
+    instance = {
+        'FAMILY_AFFILIATION': 2,
+        'CITIZENSHIP_STATUS': 1,
+        'SSN': '0'*9,
+    }
+    result = category3.validate__FAM_AFF__SSN()(instance, schema)
+    assert result.valid is False
+    assert result.error == ('T1: Since Item 1 (family affiliation) is 2 and Item 2 (citizenship status) is 1 or 2, '
+                            'then Item 3 (social security number) must not be in 000000000 -- 999999999.')
+    assert result.field_names == ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN']
+
+    instance['SSN'] = '1'*8 + '0'
+    result = category3.validate__FAM_AFF__SSN()(instance, schema)
+    assert result.valid is True
+    assert result.error is None
+    assert result.field_names == ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN']
 
 
 def test_validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():

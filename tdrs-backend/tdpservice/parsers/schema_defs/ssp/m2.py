@@ -121,11 +121,15 @@ m2 = [
                 result_field_name='WORK_PART_STATUS',
                 result_function=category3.isOneOf([1, 2, 5, 7, 9, 15, 16, 17, 18, 99]),
             ),
-            category3.ifThenAlso(
-                condition_field_name='WORK_ELIGIBLE_INDICATOR',
-                condition_function=category3.isBetween(1, 5, inclusive=True),
-                result_field_name='WORK_PART_STATUS',
-                result_function=category3.isNotEqual(99),
+            category3.suppress_for_fra_pilot_state(
+                "WORK_ELIGIBLE_INDICATOR",
+                "WORK_PART_STATUS",
+                category3.ifThenAlso(
+                    condition_field_name='WORK_ELIGIBLE_INDICATOR',
+                    condition_function=category3.isBetween(1, 5, inclusive=True),
+                    result_field_name='WORK_PART_STATUS',
+                    result_function=category3.isNotEqual(99),
+                )
             ),
             category3.ifThenAlso(
                 condition_field_name="WORK_ELIGIBLE_INDICATOR",
