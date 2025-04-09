@@ -5,7 +5,7 @@ from tdpservice.parsers.models import DataFileSummary, ParserError
 from tdpservice.search_indexes.util import MODELS, count_all_records
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 from tdpservice.core.utils import log
-from django.contrib.admin.models import ADDITION
+from django.contrib.admin.models import CHANGE
 from datetime import timedelta
 from django.utils import timezone
 from django.conf import settings
@@ -36,7 +36,7 @@ def get_log_context(system_user):
     """Return logger context."""
     context = {
         "user_id": system_user.id,
-        "action_flag": ADDITION,
+        "action_flag": CHANGE,
         "object_repr": "Clean and Reparse",
     }
     return context
@@ -167,9 +167,12 @@ def delete_records(file_ids, log_context):
     for model in MODELS:
         try:
             qset = model.objects.filter(datafile_id__in=file_ids).order_by("id")
+            total_in_table = model.objects.count()
             count = qset.count()
             total_deleted += count
-            logger.info(f"Deleting {count} records of type: {model}.")
+            if count > 0:
+                log(f"Deleting {count} out of {total_in_table} records of type: {model}.",
+                    level="info", logger_context=log_context)
             qset._raw_delete(qset.db)
         except DatabaseError as e:
             log(
