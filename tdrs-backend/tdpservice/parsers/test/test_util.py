@@ -56,7 +56,7 @@ def test_deprecate_validator():
         ]
     )
 
-    is_valid, errors = schema.run_preparsing_validators(line, deprecated_error_func)
+    is_valid, errors = schema.run_preparsing_validators(line, None, deprecated_error_func)
     assert is_valid is False
     assert len(errors) == 1
 
@@ -76,7 +76,7 @@ def test_deprecate_call():
         ]
     )
 
-    is_valid, errors = schema.run_preparsing_validators(line, deprecated_error_func)
+    is_valid, errors = schema.run_preparsing_validators(line, None, deprecated_error_func)
     assert is_valid is False
     assert len(errors) == 1
 
@@ -95,7 +95,7 @@ def test_run_preparsing_validators_returns_valid():
         ]
     )
 
-    is_valid, errors = schema.run_preparsing_validators(line, error_func)
+    is_valid, errors = schema.run_preparsing_validators(line, None, error_func)
     assert is_valid is True
     assert errors == []
 
@@ -111,7 +111,7 @@ def test_run_preparsing_validators_returns_invalid_and_errors():
         ]
     )
 
-    is_valid, errors = schema.run_preparsing_validators(line, error_func)
+    is_valid, errors = schema.run_preparsing_validators(line, None, error_func)
     assert is_valid is False
     assert errors == ['Value is not valid.']
 

@@ -3,7 +3,7 @@
 from tdpservice.parsers.util import clean_options_string
 from tdpservice.parsers.validators import base
 from tdpservice.parsers.validators.util import make_validator, validator
-from tdpservice.parsers.dataclasses import ValidationErrorArgs
+from tdpservice.parsers.dataclasses import ValidationErrorArgs, Result
 
 
 def format_error_context(eargs: ValidationErrorArgs):
@@ -208,3 +208,16 @@ def valueNotAt(location: slice, unexpected_val, **kwargs):
 def dateHasFormat(format: str, **kwargs):
     """Validate date matches the expected format."""
     return lambda eargs: (f"{format_error_context(eargs)} is formatted incorrectly. Expected: {format}")
+
+
+def fraSSNAllOf(*funcs, **kwargs):
+    """Aggregate validator for all FRA SSN validators."""
+    def validator(val, eargs):
+        is_valid = all([validator(val, eargs).valid for validator in funcs])
+        if is_valid:
+            return Result()
+        return Result(valid=False, error=("Social Security Number is not valid. Check that the SSN is 9 digits, "
+                                          "does not contain only zeroes in any one section, and does not contain "
+                                          "dashes or other punctuation. "
+                                          "Enter 999999999 if an individual does not have an SSN."))
+    return validator
