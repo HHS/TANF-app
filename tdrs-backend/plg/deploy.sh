@@ -127,9 +127,11 @@ setup_prod_net_pols() {
     # Add network policies to allow prometheus to talk to all backend apps in all environments
     for app in ${DEV_BACKEND_APPS[@]}; do
         cf add-network-policy prometheus $app -s tanf-dev --protocol tcp --port 8080
+        cf add-network-policy prometheus $app -s tanf-dev --protocol tcp --port 9808
     done
     for app in ${STAGING_BACKEND_APPS[@]}; do
         cf add-network-policy prometheus $app -s tanf-staging --protocol tcp --port 8080
+        cf add-network-policy prometheus $app -s tanf-staging --protocol tcp --port 9808
     done
 }
 
