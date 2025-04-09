@@ -45,13 +45,14 @@ route:
       receiver: dev-team-emails
       repeat_interval: 24h
 
-    # Send all severity CRITICAL/ERROR alerts to OFA admins and TDP Devs
+    # Send all severity CRITICAL/ERROR alerts to OFA admins
     - matchers:
       - severity=~"ERROR|CRITICAL"
       receiver: admin-team-emails
       continue: true
+    # Send all severity CRITICAL/ERROR/WARNING alerts to TDP Devs
     - matchers:
-      - severity=~"ERROR|CRITICAL"
+      - severity=~"ERROR|CRITICAL|WARNING"
       receiver: dev-team-emails
       continue: true
 

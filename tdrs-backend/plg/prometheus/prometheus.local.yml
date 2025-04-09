@@ -35,7 +35,7 @@ scrape_configs:
 
   - job_name: "celery-local"
     static_configs:
-      - targets: ["celery-exporter:9540"]
+      - targets: ["celery-exporter:9808"]
         labels:
           service: "celery"
           env: "local"

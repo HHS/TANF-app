@@ -133,11 +133,11 @@ services:
 
   celery-exporter:
     restart: always
-    image: ovalmoney/celery-exporter:1.5.1
+    image: danihodovic/celery-exporter:0.11.1
     ports:
-      - 9540:9540
+      - 9808:9808
     environment:
-      - CELERY_EXPORTER_BROKER_URL=redis://redis-server:6379/0
+      - CE_BROKER_URL=redis://redis-server:6379/0
     depends_on:
       - web
 
