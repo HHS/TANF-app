@@ -35,7 +35,6 @@
     },
     {
       "datasource": {
-        "name": "Prometheus",
         "type": "prometheus",
         "uid": "$datasource"
       },
@@ -460,7 +459,6 @@
     },
     {
       "datasource": {
-        "name": "Prometheus",
         "type": "prometheus",
         "uid": "$datasource"
       },
@@ -503,6 +501,160 @@
       ],
       "title": "Celery - Active Alerts",
       "type": "alertlist"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-red",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              },
+              {
+                "color": "#EAB839",
+                "value": 90
+              },
+              {
+                "color": "green",
+                "value": 100
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 12,
+        "x": 0,
+        "y": 23
+      },
+      "id": 35,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "100 * avg_over_time(up{job=~\"celery-$app_env|celery-exporter-$app_env\"}[$__range])",
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Uptime (Celery)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 3
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 12,
+        "x": 12,
+        "y": 23
+      },
+      "id": 24,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "sum(ALERTS{job=~\"celery-$app_env|celery-exporter-$app_env\", alertstate=\"firing\"})",
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Alerts Fired (Celery)",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -555,7 +707,7 @@
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 23
+        "y": 28
       },
       "id": 25,
       "options": {
@@ -749,7 +901,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 35
       },
       "id": 26,
       "options": {
@@ -868,7 +1020,7 @@
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 36
+        "y": 41
       },
       "id": 28,
       "options": {
@@ -907,7 +1059,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 43
+        "y": 48
       },
       "id": 33,
       "panels": [],
@@ -918,13 +1070,13 @@
       "datasource": {
         "name": "Prometheus",
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "${datasource}"
       },
       "gridPos": {
         "h": 4,
         "w": 24,
         "x": 0,
-        "y": 44
+        "y": 49
       },
       "id": 6,
       "options": {
@@ -949,7 +1101,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${datasource}"
           },
           "expr": "",
           "instant": false,
@@ -976,8 +1128,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "dark-red",
-                "value": null
+                "color": "dark-red"
               },
               {
                 "color": "red",
@@ -1001,7 +1152,7 @@
         "h": 5,
         "w": 12,
         "x": 0,
-        "y": 48
+        "y": 53
       },
       "id": 18,
       "options": {
@@ -1056,8 +1207,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "yellow",
@@ -1076,9 +1226,9 @@
         "h": 5,
         "w": 12,
         "x": 12,
-        "y": 48
+        "y": 53
       },
-      "id": 24,
+      "id": 36,
       "options": {
         "colorMode": "background",
         "graphMode": "none",
@@ -1180,7 +1330,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 53
+        "y": 58
       },
       "id": 20,
       "options": {
@@ -1284,7 +1434,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 53
+        "y": 58
       },
       "id": 22,
       "options": {
@@ -1409,7 +1559,7 @@
       },
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "production",
           "value": "production"
         },
