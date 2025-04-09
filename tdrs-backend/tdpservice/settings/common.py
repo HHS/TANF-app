@@ -1,5 +1,6 @@
 """Define settings for all environments."""
 
+import json
 import logging
 import logging.handlers
 import os
@@ -543,3 +544,5 @@ class Common(Configuration):
 
     CELERY_WORKER_SEND_TASK_EVENTS = True
     CELERY_TASK_SEND_SENT_EVENT = True
+
+    FRA_PILOT_STATES = json.loads(os.getenv("FRA_PILOT_STATES", "[]"))
