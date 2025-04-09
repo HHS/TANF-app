@@ -71,3 +71,68 @@ groups:
       annotations:
           summary: "The {{ $labels.service }} service has a uptime warning."
           description: "The {{ $labels.service }} service in the {{ $labels.env }} environment is not maintaining 95% uptime."
+  - name: celery.alerts
+    rules:
+      - alert: CeleryTaskHighFailRate
+        annotations:
+          description: "More than 5% tasks failed for the task {{ $labels.job }}/{{ $labels.queue_name }}/{{ $labels.name }} the past 10m."
+          summary: "Celery high task fail rate."
+        expr: |
+          sum(
+            increase(
+              celery_task_failed_total{
+                job=~"celery|celery-exporter",
+                queue_name!~"None",
+                name!~"None"
+              }[10m]
+            )
+          )  by (job, queue_name, name)
+          /
+          (
+            sum(
+              increase(
+                celery_task_failed_total{
+                  job=~"celery|celery-exporter",
+                  queue_name!~"None",
+                  name!~"None"
+                }[10m]
+              )
+            )  by (job, queue_name, name)
+            +
+            sum(
+              increase(
+                celery_task_succeeded_total{
+                  job=~"celery|celery-exporter",
+                  queue_name!~"None",
+                  name!~"None"
+                }[10m]
+              )
+            )  by (job, queue_name, name)
+          )
+          * 100 > 5
+        for: 1m
+        labels:
+          severity: WARNING
+      - alert: CeleryHighQueueLength
+        annotations:
+          description: "More than 15 tasks in the queue {{ $labels.job }}/{{ $labels.queue_name }} the past 20m."
+          summary: "Celery high queue length."
+        expr: |
+          sum(
+            celery_queue_length{
+              job=~"celery|celery-exporter",
+              queue_name!~"None"
+            }
+          )  by (job, queue_name)
+          > 15
+        for: 20m
+        labels:
+          severity: WARNING
+      - alert: CeleryWorkerDown
+        annotations:
+          description: "The Celery worker {{ $labels.job }}/{{ $labels.hostname }} is offline."
+          summary: "A Celery worker is offline."
+        expr: celery_worker_up{job=~"celery|celery-exporter"} == 0
+        for: 5m
+        labels:
+          severity: WARNING
