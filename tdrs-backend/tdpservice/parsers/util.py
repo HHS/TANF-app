@@ -60,8 +60,8 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
     return ParserError(
         file=datafile,
         row_number=line_number,
-        column_number=getattr(field, 'item', None),
-        item_number=getattr(field, 'item', None),
+        column_number=getattr(field, 'item', ''),
+        item_number=getattr(field, 'item', ''),
         field_name=getattr(field, 'name', None) if hasattr(field, 'name') else field,
         rpt_month_year=getattr(record, 'RPT_MONTH_YEAR', None),
         case_number=getattr(record, 'CASE_NUMBER', None),
@@ -345,7 +345,7 @@ class SortedRecords:
                 for records in removed.values():
                     for record in records:
                         case_ids.append((record.RecordType, getattr(record, 'CASE_NUMBER', None),
-                                        record.RPT_MONTH_YEAR))
+                                        getattr(record, 'RPT_MONTH_YEAR', None)))
                         for record_set in self.cases.values():
                             record_set.pop(record, None)
                     logger.info("Case consistency errors generated, removing case from in memory cache. "
