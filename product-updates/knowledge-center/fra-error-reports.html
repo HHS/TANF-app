@@ -378,18 +378,19 @@ The error report has four columns:
           <li><strong>Exit Date Errors</strong>
             
             <p>If an exit date in your report falls outside of the fiscal period you selected in TDP, it will result in an error. Similarly, if an exit date contains too few, too many, or unexpected characters it too will generate an error.</p>
-            <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">Exit date (YYYYMM) is not valid. Date must be in the range of 2024 and months 10-12 
+            <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">Exit date (202413) is not valid. Date must be in the range of 2025 - Q1 (Oct-Dec) 
     </code>
            
           </li>
           
             <li><div style="min-height: 22px;"></div> <strong>Social Security Number Errors</strong>
             
-            <p>If a social security number contains too few, too many, or non-numeric characters it will result in an error. Additionally, each potentially valid social security number should only be associated with one exit date within a single month.</p>
-                    <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">Social Security Number (SSN) is not valid. Check that the SSN is 9 digits, does not contain only zeroes in any one section, and does not contain dashes or other punctuation. Enter 999999999 if an individual does not have an SSN. Multiple instances of 999999999 within a single month will not be flagged as duplicate SSN errors.
-    </code><br><br>
+            <p>If a social security number contains too few, too many, or non-numeric characters it will result in an error. Additionally, each potentially valid social security number should only be associated with one exit date within a single month. Multiple instances of 999999999 within a single month will not be flagged as duplicate SSN errors.</p>
+                    <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">Social Security Number (SSN) is not valid. Check that the SSN is 9 digits, does not contain only zeroes in any one section, and does not contain dashes or other punctuation. Enter 999999999 if an individual does not have an SSN. 
+    </code><br><br> 
             <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">Duplicate Social Security Number within a month. Check that individual SSNs within a single exit month are not included more than once
     </code>
+
           </li>
         </ol>
 
