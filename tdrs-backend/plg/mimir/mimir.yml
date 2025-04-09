@@ -1,9 +1,12 @@
 multitenancy_enabled: false
 
-
 server:
   http_listen_port: 8080
   log_level: info
+
+common:
+  storage:
+    backend: s3
 
 blocks_storage:
   s3:

@@ -1,6 +1,5 @@
 multitenancy_enabled: false
 
-
 server:
   http_listen_port: 9009
   log_level: info
@@ -8,24 +7,33 @@ server:
 common:
   storage:
     backend: s3
-    s3:
-      endpoint: localstack:4566
-      secret_access_key: test
-      access_key_id: test
-      region: us-gov-west-1
-      insecure: true
 
 blocks_storage:
   s3:
     bucket_name: mimir-blocks
+    endpoint: localstack:4566
+    secret_access_key: test
+    access_key_id: test
+    region: us-gov-west-1
+    insecure: true
 
 alertmanager_storage:
   s3:
     bucket_name: mimir-alertmanager
+    endpoint: localstack:4566
+    secret_access_key: test
+    access_key_id: test
+    region: us-gov-west-1
+    insecure: true
 
 ruler_storage:
   s3:
     bucket_name: mimir-ruler
+    endpoint: localstack:4566
+    secret_access_key: test
+    access_key_id: test
+    region: us-gov-west-1
+    insecure: true
 
 compactor:
   data_dir: /tmp/mimir/compactor
