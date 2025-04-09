@@ -535,5 +535,7 @@ class Common(Configuration):
     MEDIAN_LINE_PARSE_TIME = os.getenv("MEDIAN_LINE_PARSE_TIME", 0.0005574226379394531)
     BYPASS_OFA_AUTH = os.getenv("BYPASS_OFA_AUTH", False)
 
-    FRA_PILOT_STATES = json.loads(os.getenv("FRA_PILOT_STATES", "[]"))
+    CELERY_WORKER_SEND_TASK_EVENTS = True
+    CELERY_TASK_SEND_SENT_EVENT = True
 
+    FRA_PILOT_STATES = json.loads(os.getenv("FRA_PILOT_STATES", "[]"))
