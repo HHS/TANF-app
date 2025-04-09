@@ -1,7 +1,11 @@
 """Aggregate methods for the parsers."""
 from tdpservice.parsers.models import ParserError, ParserErrorCategoryChoices
-from tdpservice.parsers.util import month_to_int, \
-    transform_to_months, fiscal_to_calendar, get_prog_from_section
+from tdpservice.parsers.util import (
+    month_to_int,
+    transform_to_months,
+    fiscal_to_calendar,
+    get_prog_from_section
+)
 from tdpservice.parsers.schema_defs.utils import ProgramManager
 from django.db.models import Q as Query
 
