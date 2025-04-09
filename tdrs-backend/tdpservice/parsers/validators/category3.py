@@ -6,6 +6,7 @@ from tdpservice.parsers.util import get_record_value_by_field_name
 from tdpservice.parsers.validators import base
 from tdpservice.parsers.validators.util import Result, validator, make_validator, evaluate_all
 from tdpservice.parsers.dataclasses import ValidationErrorArgs
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -261,6 +262,20 @@ def sumIsLarger(fields, val):
         )
 
     return sumIsLargerFunc
+
+def suppress_for_fra_pilot_state(condition_field_name, result_field_name, validator):
+    """Supresses the passed validation should the state be an FRA pilot state."""
+    def validate(record, row_schema):
+        pilotStates = settings.FRA_PILOT_STATES
+
+        stt = row_schema.datafile.stt
+
+        if stt.type is not None and stt.type.lower() == 'state' and stt.postal_code in pilotStates:
+            return Result(field_names=[condition_field_name, result_field_name])
+
+        return validator(record, row_schema)
+
+    return validate
 
 
 def validate__FAM_AFF__SSN():
