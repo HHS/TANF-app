@@ -8,6 +8,15 @@ datasources:
     jsonData:
       httpMethod: POST
     isDefault: false
+    uid: "MQFA97CFB590B2099"
+    typeLogoUrl: "public/app/plugins/datasource/prometheus/img/prometheus_logo.svg"
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: {{ prometheus_url }}
+    jsonData:
+      httpMethod: POST
+    isDefault: false
     uid: "PQFA97CFB590B2099"
     typeLogoUrl: "public/app/plugins/datasource/prometheus/img/prometheus_logo.svg"
   - name: Loki

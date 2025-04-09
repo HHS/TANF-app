@@ -52,7 +52,8 @@ deploy_grafana() {
     cp manifest.yml $MANIFEST
 
     yq eval -i ".datasources[0].url = \"http://mimir.apps.internal:8080/prometheus\""  $DATASOURCES
-    yq eval -i ".datasources[1].url = \"http://loki.apps.internal:8080\""  $DATASOURCES
+    yq eval -i ".datasources[1].url = \"http://prometheus.apps.internal:8080\""  $DATASOURCES
+    yq eval -i ".datasources[2].url = \"http://loki.apps.internal:8080\""  $DATASOURCES
     yq eval -i ".applications[0].services[0] = \"$1\""  $MANIFEST
 
     cf push --no-route -f $MANIFEST -t 180  --strategy rolling

@@ -8,6 +8,15 @@ datasources:
     jsonData:
       httpMethod: POST
     isDefault: false
+    uid: "MQFA97CFB590B2099"
+    typeLogoUrl: "public/app/plugins/datasource/prometheus/img/prometheus_logo.svg"
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    jsonData:
+      httpMethod: POST
+    isDefault: false
     uid: "PQFA97CFB590B2099"
     typeLogoUrl: "public/app/plugins/datasource/prometheus/img/prometheus_logo.svg"
   - name: Loki
@@ -18,13 +27,3 @@ datasources:
       maxLines: 1000
     isDefault: false
     uid: "L8E80F9AEF21F6940"
-  - name: Alertmanager
-    type: alertmanager
-    access: proxy
-    url: "http://alertmanager:9093/alerts"
-    jsonData:
-      implementation: prometheus
-      handleGrafanaManagedAlerts: false
-    basicAuth: false
-    basicAuthUser:
-    basicAuthPassword:
