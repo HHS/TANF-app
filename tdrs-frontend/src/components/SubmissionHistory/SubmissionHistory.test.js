@@ -591,13 +591,15 @@ describe('SubmissionHistory', () => {
     expect(screen.queryByText('Status')).toBeInTheDocument()
     expect(screen.queryByText('test1.txt')).toBeInTheDocument()
 
-    screen.getByText('2023-Q1-Active Case Data.xlsx')
+    screen.getByText('2023-Q1-Active Case Data Error Report.xlsx')
 
     expect(
-      screen.getByText('2023-Q1-Active Case Data.xlsx')
+      screen.getByText('2023-Q1-Active Case Data Error Report.xlsx')
     ).toBeInTheDocument()
 
-    fireEvent.click(screen.getByText('2023-Q1-Active Case Data.xlsx'))
+    fireEvent.click(
+      screen.getByText('2023-Q1-Active Case Data Error Report.xlsx')
+    )
 
     expect(mockAxios.get).toHaveBeenCalledTimes(2)
   })
