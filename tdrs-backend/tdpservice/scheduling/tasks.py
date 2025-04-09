@@ -4,6 +4,7 @@ from __future__ import absolute_import
 from celery import shared_task
 import logging
 from tdpservice.scheduling.management.db_backup import run_backup
+from tdpservice.scheduling.datafile_retention_tasks import remove_all_old_versions
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +17,7 @@ def postgres_backup(*args):
     result = run_backup(arg)
     if result:
         logger.info("Finished database backup.")
+        remove_all_old_versions.delay()
     else:
         logger.error("Failed to complete database backup.")
     return result
