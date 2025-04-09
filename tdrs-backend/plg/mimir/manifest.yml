@@ -54,3 +54,4 @@ applications:
       - tdp-mimir-blocks
       - tdp-mimir-alertmanager
       - tdp-mimir-ruler
+
