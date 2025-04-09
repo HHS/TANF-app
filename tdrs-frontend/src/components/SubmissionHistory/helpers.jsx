@@ -38,7 +38,8 @@ export const getErrorReportStatus = (file) => {
   if (
     file.summary &&
     file.summary.status &&
-    file.summary.status !== 'Pending'
+    file.summary.status !== 'Pending' &&
+    file.summary.status !== 'TimedOut'
   ) {
     const errorFileName = `${file.year}-${file.quarter}-${file.section}`
     if (file.hasError) {
@@ -89,4 +90,22 @@ export const SubmissionSummaryStatusIcon = ({ status }) => {
   return (
     <FontAwesomeIcon className="margin-right-1" icon={icon} color={color} />
   )
+}
+
+export const fileStatusOrDefault = (file) => {
+  if (!file || !file.summary || !file.summary.status) {
+    return 'Pending'
+  }
+
+  return file.summary.status
+}
+
+export const getSummaryStatusLabel = (file) => {
+  const status = fileStatusOrDefault(file)
+
+  if (status === 'TimedOut') {
+    return 'Still processing. Check back soon.'
+  }
+
+  return status
 }
