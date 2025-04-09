@@ -167,9 +167,12 @@ def delete_records(file_ids, log_context):
     for model in MODELS:
         try:
             qset = model.objects.filter(datafile_id__in=file_ids).order_by("id")
+            total_in_table = model.objects.count()
             count = qset.count()
             total_deleted += count
-            logger.info(f"Deleting {count} records of type: {model}.")
+            if count > 0:
+                log(f"Deleting {count} out of {total_in_table} records of type: {model}.",
+                    level="info", logger_context=log_context)
             qset._raw_delete(qset.db)
         except DatabaseError as e:
             log(
