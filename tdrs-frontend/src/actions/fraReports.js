@@ -9,6 +9,11 @@ export const SET_IS_LOADING_SUBMISSION_HISTORY =
   'SET_IS_LOADING_SUBMISSION_HISTORY'
 export const SET_FRA_SUBMISSION_HISTORY = 'SET_FRA_SUBMISSION_HISTORY'
 export const SET_IS_UPLOADING_FRA_REPORT = 'SET_IS_UPLOADING_FRA_REPORT'
+export const SET_IS_LOADING_FRA_SUBMISSION_STATUS =
+  'SET_IS_LOADING_FRA_SUBMISSION_STATUS'
+export const SET_FRA_SUBMISSION_STATUS = 'SET_FRA_SUBMISSION_STATUS'
+export const SET_FRA_SUBMISSION_STATUS_TIMED_OUT =
+  'SET_FRA_SUBMISSION_STATUS_TIMED_OUT'
 
 export const getFraSubmissionHistory =
   (
@@ -100,7 +105,7 @@ export const uploadFraReport =
         })
       )
 
-      onSuccess()
+      onSuccess(response?.data)
     } catch (error) {
       onError(error)
     } finally {
@@ -140,5 +145,85 @@ export const downloadOriginalSubmission =
       document.body.removeChild(link)
     } catch (e) {
       console.error('error downloading file', e)
+    }
+  }
+
+export const pollFraSubmissionStatus =
+  (
+    datafile_id,
+    tryNumber,
+    test = (datafile) => null,
+    retry = () => null,
+    onSuccess = (datafile) => null,
+    onError = (error) => null
+  ) =>
+  async (dispatch) => {
+    const MAX_TRIES = 30
+
+    try {
+      if (tryNumber > MAX_TRIES) {
+        dispatch({
+          type: SET_FRA_SUBMISSION_STATUS_TIMED_OUT,
+          payload: { datafile_id },
+        })
+        throw new Error(
+          'Exceeded max number of tries to update submission status.'
+        )
+      } else {
+        dispatch({
+          type: SET_IS_LOADING_FRA_SUBMISSION_STATUS,
+          payload: {
+            datafile_id,
+            tryNumber,
+            isPerformingRequest: true,
+            isDone: false,
+            error: null,
+          },
+        })
+      }
+
+      const response = await axios.get(
+        `${BACKEND_URL}/data_files/${datafile_id}/` // # ?fields=status
+      )
+      dispatch({
+        type: SET_IS_LOADING_FRA_SUBMISSION_STATUS,
+        payload: {
+          datafile_id,
+          isPerformingRequest: false,
+        },
+      })
+
+      if (!test(response?.data)) {
+        retry()
+      } else {
+        dispatch({
+          type: SET_IS_LOADING_FRA_SUBMISSION_STATUS,
+          payload: {
+            datafile_id,
+            isPerformingRequest: false,
+            isDone: true,
+            error: null,
+          },
+        })
+        dispatch({
+          type: SET_FRA_SUBMISSION_STATUS,
+          payload: {
+            datafile_id,
+            datafile: response?.data,
+          },
+        })
+        onSuccess(response?.data)
+      }
+    } catch (e) {
+      dispatch({
+        type: SET_IS_LOADING_FRA_SUBMISSION_STATUS,
+        payload: {
+          datafile_id,
+          isPerformingRequest: false,
+          isDone: true,
+          error: e,
+        },
+      })
+      onError(e)
     }
   }
