@@ -35,9 +35,8 @@
     },
     {
       "datasource": {
-        "name": "Prometheus",
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "$datasource"
       },
       "gridPos": {
         "h": 4,
@@ -68,7 +67,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "$datasource"
           },
           "expr": "",
           "instant": false,
@@ -81,7 +80,7 @@
     },
     {
       "datasource": {
-        "name": "${datasource}",
+        "default": false,
         "type": "prometheus",
         "uid": "${datasource}"
       },
@@ -460,6 +459,205 @@
     },
     {
       "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 19
+      },
+      "id": 34,
+      "options": {
+        "alertInstanceLabelFilter": "",
+        "alertName": "celery",
+        "dashboardAlerts": false,
+        "datasource": "Prometheus",
+        "groupBy": [],
+        "groupMode": "default",
+        "maxItems": 20,
+        "sortOrder": 3,
+        "stateFilter": {
+          "error": true,
+          "firing": true,
+          "noData": true,
+          "normal": true,
+          "pending": true
+        },
+        "viewMode": "list"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "expr": "",
+          "instant": false,
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Celery - Active Alerts",
+      "type": "alertlist"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-red",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              },
+              {
+                "color": "#EAB839",
+                "value": 90
+              },
+              {
+                "color": "green",
+                "value": 100
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 12,
+        "x": 0,
+        "y": 23
+      },
+      "id": 35,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "100 * avg_over_time(up{job=~\"celery-$app_env|celery-exporter-$app_env\"}[$__range])",
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Uptime (Celery)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 3
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 12,
+        "x": 12,
+        "y": 23
+      },
+      "id": 24,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "sum(ALERTS{job=~\"celery-$app_env|celery-exporter-$app_env\", alertstate=\"firing\"})",
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Alerts Fired (Celery)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
         "default": false,
         "type": "datasource",
         "uid": "-- Mixed --"
@@ -509,7 +707,7 @@
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 19
+        "y": 28
       },
       "id": 25,
       "options": {
@@ -539,7 +737,7 @@
             "uid": "$datasource"
           },
           "editorMode": "code",
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_succeeded_total{\n        job=\"$job\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name)\n/(sum (\n  round(\n    increase(\n      celery_task_succeeded_total{\n        job=\"$job\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name)\n+sum (\n  round(\n    increase(\n      celery_task_failed_total{\n        job=\"$job\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name)\n) > -1\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_succeeded_total{\n        job=\"celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name)\n/(sum (\n  round(\n    increase(\n      celery_task_succeeded_total{\n        job=\"celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name)\n+sum (\n  round(\n    increase(\n      celery_task_failed_total{\n        job=\"celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name)\n) > -1\n",
           "format": "table",
           "instant": true,
           "refId": "A"
@@ -550,7 +748,7 @@
             "uid": "$datasource"
           },
           "editorMode": "code",
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_succeeded_total{\n        job=\"$job\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_succeeded_total{\n        job=\"celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
           "format": "table",
           "instant": true,
           "refId": "B"
@@ -561,7 +759,7 @@
             "uid": "$datasource"
           },
           "editorMode": "code",
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_failed_total{\n        job=\"$job\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_failed_total{\n        job=\"celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
           "format": "table",
           "instant": true,
           "refId": "C"
@@ -572,7 +770,7 @@
             "uid": "$datasource"
           },
           "editorMode": "code",
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_sent_total{\n        job=\"$job\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_sent_total{\n        job=\"celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
           "format": "table",
           "instant": true,
           "refId": "D"
@@ -583,7 +781,7 @@
             "uid": "$datasource"
           },
           "editorMode": "code",
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_received_total{\n        job=\"$job\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_received_total{\n        job=\"celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
           "format": "table",
           "instant": true,
           "refId": "E"
@@ -594,7 +792,7 @@
             "uid": "$datasource"
           },
           "editorMode": "code",
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_rejected_total{\n        job=\"$job\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_rejected_total{\n        job=\"celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
           "format": "table",
           "instant": true,
           "refId": "F"
@@ -605,7 +803,7 @@
             "uid": "$datasource"
           },
           "editorMode": "code",
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_retried_total{\n        job=\"$job\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_retried_total{\n        job=\"celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
           "format": "table",
           "instant": true,
           "refId": "G"
@@ -616,7 +814,7 @@
             "uid": "$datasource"
           },
           "editorMode": "code",
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_revoked_total{\n        job=\"$job\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_revoked_total{\n        job=\"celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
           "format": "table",
           "instant": true,
           "refId": "H"
@@ -703,7 +901,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 26
+        "y": 35
       },
       "id": 26,
       "options": {
@@ -728,7 +926,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(\n  celery_task_runtime_sum{\n    job=\"$job\",\n    queue_name=~\"$queue_name\"\n  }\n) by (name) / sum(\n  celery_task_runtime_count{\n    job=\"$job\",\n    queue_name=~\"$queue_name\"\n  }\n) by (name)\n\n",
+          "expr": "sum(\n  celery_task_runtime_sum{\n    job=\"celery-$app_env\",\n    queue_name=~\"$queue_name\"\n  }\n) by (name) / sum(\n  celery_task_runtime_count{\n    job=\"celery-$app_env\",\n    queue_name=~\"$queue_name\"\n  }\n) by (name)\n\n",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -822,7 +1020,7 @@
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 32
+        "y": 41
       },
       "id": 28,
       "options": {
@@ -845,7 +1043,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(celery_active_worker_count{job=\"$job\", queue_name=\"$queue_name\"}) by (queue_name)",
+          "expr": "sum(celery_active_worker_count{job=\"celery-$app_env\", queue_name=\"$queue_name\"}) by (queue_name)",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -861,7 +1059,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 39
+        "y": 48
       },
       "id": 33,
       "panels": [],
@@ -872,13 +1070,13 @@
       "datasource": {
         "name": "Prometheus",
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "${datasource}"
       },
       "gridPos": {
         "h": 4,
         "w": 24,
         "x": 0,
-        "y": 40
+        "y": 49
       },
       "id": 6,
       "options": {
@@ -903,7 +1101,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${datasource}"
           },
           "expr": "",
           "instant": false,
@@ -930,8 +1128,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "dark-red",
-                "value": null
+                "color": "dark-red"
               },
               {
                 "color": "red",
@@ -955,7 +1152,7 @@
         "h": 5,
         "w": 12,
         "x": 0,
-        "y": 44
+        "y": 53
       },
       "id": 18,
       "options": {
@@ -1010,8 +1207,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "yellow",
@@ -1030,9 +1226,9 @@
         "h": 5,
         "w": 12,
         "x": 12,
-        "y": 44
+        "y": 53
       },
-      "id": 24,
+      "id": 36,
       "options": {
         "colorMode": "background",
         "graphMode": "none",
@@ -1118,8 +1314,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1135,7 +1330,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 49
+        "y": 58
       },
       "id": 20,
       "options": {
@@ -1223,8 +1418,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1240,7 +1434,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 49
+        "y": 58
       },
       "id": 22,
       "options": {
@@ -1300,12 +1494,11 @@
       {
         "current": {
           "selected": false,
-          "text": "Prometheus",
-          "value": "PBFA97CFB590B2093"
+          "text": "Mimir",
+          "value": "PQFA97CFB590B2099"
         },
         "hide": 0,
         "includeAll": false,
-        "label": "datasource",
         "multi": false,
         "name": "datasource",
         "options": [],
@@ -1318,7 +1511,7 @@
       },
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": "prod",
           "value": "prod"
         },
@@ -1429,30 +1622,6 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "celery-local",
-          "value": "celery-local"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "${datasource}"
-        },
-        "definition": "",
-        "hide": 0,
-        "includeAll": false,
-        "label": "Job",
-        "multi": false,
-        "name": "job",
-        "options": [],
-        "query": "label_values(celery_worker_up{namespace=\"$namespace\"}, job)",
-        "refresh": 2,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {
           "isNone": true,
           "selected": false,
           "text": "None",
@@ -1469,7 +1638,7 @@
         "multi": false,
         "name": "queue_name",
         "options": [],
-        "query": "label_values(celery_task_received_total{namespace=\"$namespace\", job=\"$job\", name!~\"None\"}, queue_name)",
+        "query": "label_values(celery_task_received_total{namespace=\"$namespace\", job=\"celery-$app_env\", name!~\"None\"}, queue_name)",
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,

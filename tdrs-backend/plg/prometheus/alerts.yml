@@ -81,7 +81,7 @@ groups:
           sum(
             increase(
               celery_task_failed_total{
-                job=~"celery|celery-exporter",
+                job=~"celery-.*|celery-exporter.*",
                 queue_name!~"None",
                 name!~"None"
               }[10m]
@@ -92,7 +92,7 @@ groups:
             sum(
               increase(
                 celery_task_failed_total{
-                  job=~"celery|celery-exporter",
+                  job=~"celery-.*|celery-exporter.*",
                   queue_name!~"None",
                   name!~"None"
                 }[10m]
@@ -102,7 +102,7 @@ groups:
             sum(
               increase(
                 celery_task_succeeded_total{
-                  job=~"celery|celery-exporter",
+                  job=~"celery-.*|celery-exporter.*",
                   queue_name!~"None",
                   name!~"None"
                 }[10m]
@@ -120,7 +120,7 @@ groups:
         expr: |
           sum(
             celery_queue_length{
-              job=~"celery|celery-exporter",
+              job=~"celery-.*|celery-exporter.*",
               queue_name!~"None"
             }
           )  by (job, queue_name)
@@ -129,10 +129,11 @@ groups:
         labels:
           severity: WARNING
       - alert: CeleryWorkerDown
-        annotations:
-          description: "The Celery worker {{ $labels.job }}/{{ $labels.hostname }} is offline."
-          summary: "A Celery worker is offline."
-        expr: celery_worker_up{job=~"celery|celery-exporter"} == 0
-        for: 5m
+        expr: last_over_time(up{job=~"celery-.*|celery-exporter.*"}[1m]) == 0
+        for: 1m
         labels:
-          severity: WARNING
+          severity: ERROR
+        annotations:
+          summary: "The {{ $labels.service }} service is down."
+          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 1 minute."
+

@@ -17,8 +17,9 @@ rule_files:
   - "django-rules.yml"
   - "alerts.yml"
 
-# A scrape configuration containing exactly one endpoint to scrape:
-# Here it's Prometheus itself.
+remote_write:
+ - url: http://mimir:9009/api/v1/push
+
 scrape_configs:
   - job_name: "prometheus"
     static_configs:

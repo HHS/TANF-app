@@ -289,7 +289,7 @@
       "datasource": {
         "default": true,
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "$datasource"
       },
       "fieldConfig": {
         "defaults": {
@@ -346,7 +346,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -365,7 +365,7 @@
       "datasource": {
         "default": true,
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "$datasource"
       },
       "fieldConfig": {
         "defaults": {
@@ -422,7 +422,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -613,7 +613,7 @@
       "datasource": {
         "default": true,
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "$datasource"
       },
       "description": "",
       "fieldConfig": {
@@ -683,7 +683,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "sum(rate(django_http_requests_latency_including_middlewares_seconds_bucket{app=~\"^$application$\"}[$__rate_interval])) by (le)",
@@ -701,7 +701,7 @@
       "datasource": {
         "default": true,
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "$datasource"
       },
       "description": "",
       "fieldConfig": {
@@ -771,7 +771,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -1025,7 +1025,7 @@
       "datasource": {
         "default": true,
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "$datasource"
       },
       "description": "",
       "fieldConfig": {
@@ -1090,7 +1090,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -1220,7 +1220,7 @@
       "datasource": {
         "default": true,
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "$datasource"
       },
       "fieldConfig": {
         "defaults": {
@@ -1301,7 +1301,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "sum(irate(django_db_execute_total{app=~\"^$application$\"}[$__rate_interval])) by (vendor)",
@@ -1317,7 +1317,7 @@
       "datasource": {
         "default": true,
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "$datasource"
       },
       "fieldConfig": {
         "defaults": {
@@ -1385,7 +1385,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "sum(rate(django_db_query_duration_seconds_bucket{app=~\"^$application$\"}[$__rate_interval])) by (le)",
@@ -1412,8 +1412,8 @@
       {
         "current": {
           "selected": false,
-          "text": "Prometheus",
-          "value": "PBFA97CFB590B2093"
+          "text": "Mimir",
+          "value": "$datasource"
         },
         "hide": 0,
         "includeAll": false,
