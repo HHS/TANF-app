@@ -1916,3 +1916,25 @@ def test_parse_fra_ofa_test_cases(request, file, dfs):
     assert dfs.total_number_of_records_in_file == 28
     assert dfs.total_number_of_records_created == 10
     assert dfs.get_status() == DataFileSummary.Status.PARTIALLY_ACCEPTED
+
+@pytest.mark.django_db()
+def test_parse_fra_formula_fields(fra_formula_fields_test_xlsx, dfs):
+    """Test parsing a correct FRA file with formula fields."""
+    datafile = fra_formula_fields_test_xlsx
+    datafile.year = 2025
+    datafile.quarter = 'Q3'
+
+    dfs.datafile = datafile
+    dfs.save()
+
+    parser = ParserFactory.get_instance(datafile=datafile, dfs=dfs,
+                                        section=datafile.section,
+                                        program_type=datafile.prog_type)
+    parser.parse_and_validate()
+
+    errors = ParserError.objects.filter(file=datafile).order_by("id")
+    assert errors.count() == 0
+    assert TANF_Exiter1.objects.all().count() == 8
+    assert dfs.total_number_of_records_in_file == 8
+    assert dfs.total_number_of_records_created == 8
+    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED

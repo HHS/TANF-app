@@ -143,7 +143,7 @@ class XlsxDecoder(BaseDecoder):
 
     def __init__(self, raw_file):
         super().__init__(raw_file)
-        self.work_book = load_workbook(raw_file)
+        self.work_book = load_workbook(raw_file, data_only=True)
 
     def get_record_type(self, raw_data):
         """Get the record type based on the raw data."""
