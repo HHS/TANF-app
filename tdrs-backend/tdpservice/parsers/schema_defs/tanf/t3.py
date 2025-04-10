@@ -29,6 +29,12 @@ child_one = TanfDataReportSchema(
     postparsing_validators=[
         category3.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
+            condition_function=category3.isEqual(1),
+            result_field_name="SSN",
+            result_function=category3.validateSSN(),
+        ),
+        category3.ifThenAlso(
+            condition_field_name="FAMILY_AFFILIATION",
             condition_function=category3.isOneOf((1, 2)),
             result_field_name="RACE_HISPANIC",
             result_function=category3.isBetween(1, 2, inclusive=True),
@@ -337,6 +343,12 @@ child_two = TanfDataReportSchema(
     ],
     # all conditions from first child should be met, otherwise we don't parse second child
     postparsing_validators=[
+        category3.ifThenAlso(
+            condition_field_name="FAMILY_AFFILIATION",
+            condition_function=category3.isEqual(1),
+            result_field_name="SSN",
+            result_function=category3.validateSSN(),
+        ),
         category3.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
             condition_function=category3.isOneOf((1, 2)),
