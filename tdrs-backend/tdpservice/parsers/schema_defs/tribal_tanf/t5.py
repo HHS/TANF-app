@@ -5,14 +5,14 @@ from tdpservice.parsers.transforms import tanf_ssn_decryption_func
 from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.validators import category1, category2, category3
-from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T5DataSubmissionDocument
+from tdpservice.search_indexes.models.tribal import Tribal_TANF_T5
 from tdpservice.parsers.util import generate_t2_t3_t5_hashes, get_t2_t3_t5_partial_hash_members
 
 
 t5 = [
     TanfDataReportSchema(
         record_type="T5",
-        document=Tribal_TANF_T5DataSubmissionDocument(),
+        model=Tribal_TANF_T5,
         generate_hashes_func=generate_t2_t3_t5_hashes,
         should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {3, 4, 5},
         get_partial_hash_members_func=get_t2_t3_t5_partial_hash_members,
@@ -25,13 +25,13 @@ t5 = [
             ]),
         ],
         postparsing_validators=[
+            category3.validate__FAM_AFF__SSN(),
             category3.ifThenAlso(
                 condition_field_name="FAMILY_AFFILIATION",
                 condition_function=category3.isEqual(1),
                 result_field_name="SSN",
                 result_function=category3.validateSSN(),
             ),
-            category3.validate__FAM_AFF__SSN(),
             category3.ifThenAlso(
                 condition_field_name="FAMILY_AFFILIATION",
                 condition_function=category3.isBetween(1, 3, inclusive=True),

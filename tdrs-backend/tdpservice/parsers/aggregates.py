@@ -1,7 +1,11 @@
 """Aggregate methods for the parsers."""
 from tdpservice.parsers.models import ParserError, ParserErrorCategoryChoices
-from tdpservice.parsers.util import month_to_int, \
-    transform_to_months, fiscal_to_calendar, get_prog_from_section
+from tdpservice.parsers.util import (
+    month_to_int,
+    transform_to_months,
+    fiscal_to_calendar,
+    get_prog_from_section
+)
 from tdpservice.parsers.schema_defs.utils import ProgramManager
 from django.db.models import Q as Query
 
@@ -37,8 +41,8 @@ def case_aggregates_by_month(df, dfs_status):
         for schema in schemas.values():
             schema = schema[0]
 
-            curr_case_numbers = set(schema.document.Django.model.objects.filter(datafile=df,
-                                                                                RPT_MONTH_YEAR=rpt_month_year)
+            curr_case_numbers = set(schema.model.objects.filter(datafile=df,
+                                                                RPT_MONTH_YEAR=rpt_month_year)
                                     .distinct("CASE_NUMBER").values_list("CASE_NUMBER", flat=True))
             case_numbers = case_numbers.union(curr_case_numbers)
 
@@ -82,3 +86,9 @@ def total_errors_by_month(df, dfs_status):
             {"month": month, "total_errors": error_count})
 
     return total_errors_data
+
+
+def fra_total_errors(df):
+    """Return total errors for the file."""
+    errors = ParserError.objects.all().filter(file=df, deprecated=False)
+    return {"total_errors": errors.count()}

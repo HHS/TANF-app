@@ -5,14 +5,14 @@ from tdpservice.parsers.transforms import ssp_ssn_decryption_func
 from tdpservice.parsers.fields import TransformField, Field
 from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.validators import category1, category2, category3
-from tdpservice.search_indexes.documents.ssp import SSP_M2DataSubmissionDocument
+from tdpservice.search_indexes.models.ssp import SSP_M2
 from tdpservice.parsers.util import generate_t2_t3_t5_hashes, get_t2_t3_t5_partial_hash_members
 
 
 m2 = [
     TanfDataReportSchema(
         record_type="M2",
-        document=SSP_M2DataSubmissionDocument(),
+        model=SSP_M2,
         generate_hashes_func=generate_t2_t3_t5_hashes,
         should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {3, 5},
         get_partial_hash_members_func=get_t2_t3_t5_partial_hash_members,
@@ -25,7 +25,6 @@ m2 = [
             ]),
         ],
         postparsing_validators=[
-            category3.validate__FAM_AFF__SSN(),
             category3.ifThenAlso(
                 condition_field_name='FAMILY_AFFILIATION',
                 condition_function=category3.isEqual(1),
@@ -122,11 +121,21 @@ m2 = [
                 result_field_name='WORK_PART_STATUS',
                 result_function=category3.isOneOf([1, 2, 5, 7, 9, 15, 16, 17, 18, 99]),
             ),
+            category3.suppress_for_fra_pilot_state(
+                "WORK_ELIGIBLE_INDICATOR",
+                "WORK_PART_STATUS",
+                category3.ifThenAlso(
+                    condition_field_name='WORK_ELIGIBLE_INDICATOR',
+                    condition_function=category3.isBetween(1, 5, inclusive=True),
+                    result_field_name='WORK_PART_STATUS',
+                    result_function=category3.isNotEqual(99),
+                )
+            ),
             category3.ifThenAlso(
-                condition_field_name='WORK_ELIGIBLE_INDICATOR',
-                condition_function=category3.isBetween(1, 5, inclusive=True),
-                result_field_name='WORK_PART_STATUS',
-                result_function=category3.isNotEqual(99),
+                condition_field_name="WORK_ELIGIBLE_INDICATOR",
+                condition_function=category3.isBetween(1, 5, inclusive=True, cast=int),
+                result_field_name="SSN",
+                result_function=category3.validateSSN(),
             ),
         ],
         fields=[

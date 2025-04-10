@@ -15,7 +15,6 @@ from django.conf import settings
 from django.contrib.admin.models import LogEntry, ADDITION
 from django.db.utils import DatabaseError
 from django.utils import timezone
-from elasticsearch.exceptions import ElasticsearchException
 
 from datetime import timedelta
 import os
@@ -202,15 +201,13 @@ def test_reparse_backup_fail(
         exception_msg = LogEntry.objects.latest("pk").change_message
         assert exception_msg == (
             "Database backup FAILED. Clean and reparse NOT executed. Database "
-            "and Elastic are CONSISTENT!"
+            "is CONSISTENT!"
         )
 
 
-@pytest.mark.parametrize(("new_indexes"), [(True), (False)])
 @pytest.mark.django_db
 def test_delete_associated_models(
     log_context,
-    new_indexes,
     dfs,
     cat4_edge_case_file,
     big_file,
@@ -232,7 +229,7 @@ def test_delete_associated_models(
         pass
 
     fake_meta = Fake()
-    delete_associated_models(fake_meta, ids, new_indexes, log_context)
+    delete_associated_models(fake_meta, ids, log_context)
 
     assert count_total_num_records(log_context) == 0
 
@@ -243,13 +240,13 @@ def test_delete_associated_models(
         (
             (
                 "Encountered a DatabaseError while deleting DataFileSummary from Postgres. The database "
-                "and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!"
+                "is INCONSISTENT! Restore the DB from the backup as soon as possible!"
             ),
             DatabaseError,
         ),
         (
             (
-                "Caught generic exception while deleting DataFileSummary. The database and Elastic are INCONSISTENT! "
+                "Caught generic exception while deleting DataFileSummary. The database is INCONSISTENT! "
                 "Restore the DB from the backup as soon as possible!"
             ),
             Exception,
@@ -274,85 +271,14 @@ def test_delete_summaries_exceptions(mocker, log_context, exc_msg, exception_typ
     [
         (
             (
-                "Elastic index creation FAILED. Clean and reparse NOT executed. "
-                "Database is CONSISTENT, Elastic is INCONSISTENT!"
-            ),
-            ElasticsearchException,
-        ),
-        (
-            (
-                "Caught generic exception in _handle_elastic. Clean and reparse NOT executed. "
-                "Database is CONSISTENT, Elastic is INCONSISTENT!"
-            ),
-            Exception,
-        ),
-    ],
-)
-@pytest.mark.django_db
-def test_handle_elastic_exceptions(mocker, log_context, exc_msg, exception_type):
-    """Test summary exception handling."""
-    mocked_handle_elastic = mocker.patch(
-        "tdpservice.search_indexes.reparse.handle_elastic",
-        side_effect=exception_type("Summary delete exception"),
-    )
-    with pytest.raises(exception_type):
-        mocked_handle_elastic(True, log_context)
-        exception_msg = LogEntry.objects.latest("pk").change_message
-        assert exception_msg == exc_msg
-
-
-@pytest.mark.parametrize(
-    ("exc_msg, exception_type"),
-    [
-        (
-            (
-                "Elastic document delete failed for type {model}. The database and Elastic are INCONSISTENT! "
-                "Restore the DB from the backup as soon as possible!"
-            ),
-            ElasticsearchException,
-        ),
-        (
-            (
-                "Encountered a DatabaseError while deleting records of type {model} from Postgres. The database "
-                "and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!"
-            ),
-            DatabaseError,
-        ),
-        (
-            (
-                "Caught generic exception while deleting records of type {model}. The database and Elastic are "
-                "INCONSISTENT! Restore the DB from the backup as soon as possible!"
-            ),
-            Exception,
-        ),
-    ],
-)
-@pytest.mark.django_db
-def test_delete_records_exceptions(mocker, log_context, exc_msg, exception_type):
-    """Test record exception handling."""
-    mocked_delete_records = mocker.patch(
-        "tdpservice.search_indexes.utils.delete_records",
-        side_effect=exception_type("Record delete exception"),
-    )
-    with pytest.raises(exception_type):
-        mocked_delete_records([], True, log_context)
-        exception_msg = LogEntry.objects.latest("pk").change_message
-        assert exception_msg == exc_msg
-
-
-@pytest.mark.parametrize(
-    ("exc_msg, exception_type"),
-    [
-        (
-            (
                 "Encountered a DatabaseError while deleting ParserErrors from Postgres. The database "
-                "and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!"
+                "is INCONSISTENT! Restore the DB from the backup as soon as possible!"
             ),
             DatabaseError,
         ),
         (
             (
-                "Caught generic exception while deleting ParserErrors. The database and Elastic are INCONSISTENT! "
+                "Caught generic exception while deleting ParserErrors. The database is INCONSISTENT! "
                 "Restore the DB from the backup as soon as possible!"
             ),
             Exception,
@@ -378,13 +304,13 @@ def test_delete_errors_exceptions(mocker, log_context, exc_msg, exception_type):
         (
             (
                 "Encountered a DatabaseError while re-creating datafiles. The database "
-                "and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!"
+                "is INCONSISTENT! Restore the DB from the backup as soon as possible!"
             ),
             DatabaseError,
         ),
         (
             (
-                "Caught generic exception in _handle_datafiles. Database and Elastic are INCONSISTENT! "
+                "Caught generic exception in _handle_datafiles. Database is INCONSISTENT! "
                 "Restore the DB from the backup as soon as possible!"
             ),
             Exception,

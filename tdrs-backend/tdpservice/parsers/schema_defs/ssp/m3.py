@@ -6,7 +6,7 @@ from tdpservice.parsers.fields import TransformField, Field
 from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.parsers.validators.util import is_quiet_preparser_errors
-from tdpservice.search_indexes.documents.ssp import SSP_M3DataSubmissionDocument
+from tdpservice.search_indexes.models.ssp import SSP_M3
 from tdpservice.parsers.util import generate_t2_t3_t5_hashes, get_t2_t3_t5_partial_hash_members
 
 FIRST_CHILD = 1
@@ -14,7 +14,7 @@ SECOND_CHILD = 2
 
 first_part_schema = TanfDataReportSchema(
     record_type="M3",
-    document=SSP_M3DataSubmissionDocument(),
+    model=SSP_M3,
     generate_hashes_func=generate_t2_t3_t5_hashes,
     should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {2, 4, 5},
     get_partial_hash_members_func=get_t2_t3_t5_partial_hash_members,
@@ -28,12 +28,6 @@ first_part_schema = TanfDataReportSchema(
         category1.recordIsNotEmpty(8, 19)
     ],
     postparsing_validators=[
-        category3.ifThenAlso(
-            condition_field_name='FAMILY_AFFILIATION',
-            condition_function=category3.isEqual(1),
-            result_field_name='SSN',
-            result_function=category3.validateSSN(),
-            ),
         category3.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
             condition_function=category3.isOneOf((1, 2)),
@@ -331,7 +325,7 @@ first_part_schema = TanfDataReportSchema(
 
 second_part_schema = TanfDataReportSchema(
     record_type="M3",
-    document=SSP_M3DataSubmissionDocument(),
+    model=SSP_M3,
     generate_hashes_func=generate_t2_t3_t5_hashes,
     should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {2, 4, 5},
     get_partial_hash_members_func=get_t2_t3_t5_partial_hash_members,
@@ -345,12 +339,6 @@ second_part_schema = TanfDataReportSchema(
                 ]),
     ],
     postparsing_validators=[
-        category3.ifThenAlso(
-            condition_field_name='FAMILY_AFFILIATION',
-            condition_function=category3.isEqual(1),
-            result_field_name='SSN',
-            result_function=category3.validateSSN(),
-            ),
         category3.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
             condition_function=category3.isOneOf((1, 2)),

@@ -1,9 +1,9 @@
 """Define settings for all environments."""
 
+import json
 import logging
 import logging.handlers
 import os
-from django.utils.dateparse import parse_datetime
 from distutils.util import strtobool
 from os.path import join
 from typing import Any, Optional
@@ -53,8 +53,6 @@ class Common(Configuration):
         "drf_yasg",
         "django_celery_beat",
         "storages",
-        "django_elasticsearch_dsl",
-        "django_elasticsearch_dsl_drf",
         "django_prometheus",
         # Local apps
         "tdpservice.core.apps.CoreConfig",
@@ -272,8 +270,6 @@ class Common(Configuration):
             "django.db.backends": {"handlers": ["console", "file"], "level": "INFO"},
         },
     }
-    es_logger = logging.getLogger('elasticsearch')
-    es_logger.setLevel(getattr(logging, LOGGING_LEVEL))
 
     PARSER_LOGGER = logging.getLogger('tdpservice.parsers')
 
@@ -367,33 +363,10 @@ class Common(Configuration):
     # The number of seconds to wait for socket response from clamav-rest
     AV_SCAN_TIMEOUT = int(os.getenv('AV_SCAN_TIMEOUT', 30))
 
-    # Elastic/Kibana
-    ELASTICSEARCH_DSL = {
-        'default': {
-            'hosts': os.getenv('ELASTIC_HOST', 'elastic:9200'),
-        },
-    }
-    ELASTICSEARCH_DSL_PARALLEL = True
-    ELASTICSEARCH_REINDEX_THREAD_COUNT = int(os.getenv('ELASTICSEARCH_REINDEX_THREAD_COUNT', 3))
-    ELASTICSEARCH_REINDEX_CHUNK_SIZE = int(os.getenv('ELASTICSEARCH_REINDEX_CHUNK_SIZE', 500))
-    ELASTICSEARCH_REINDEX_REQUEST_TIMEOUT = int(os.getenv('ELASTICSEARCH_REINDEX_REQUEST_TIMEOUT', 10))
-    ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_WARN = os.getenv('ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_WARN', '1s')
-    ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_INFO = os.getenv('ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_INFO', '500ms')
-    ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_TRACE = os.getenv('ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_TRACE', '0ms')
-    ELASTICSEARCH_LOG_SEARCH_SLOW_LEVEL = os.getenv('ELASTICSEARCH_LOG_SEARCH_SLOW_LEVEL', 'info')
-    ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_WARN = os.getenv('ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_WARN', '1s')
-    ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_INFO = os.getenv('ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_INFO', '500ms')
-    ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_TRACE = os.getenv('ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_TRACE', '0ms')
-    ELASTICSEARCH_LOG_INDEX_SLOW_LEVEL = os.getenv('ELASTICSEARCH_LOG_SEARCH_SLOW_LEVEL', 'info')
-    KIBANA_BASE_URL = os.getenv('KIBANA_BASE_URL', 'http://kibana:5601')
-    ELASTIC_INDEX_PREFIX = APP_NAME + '_'
-    es_logger = logging.getLogger('elasticsearch')
-    es_logger.setLevel(logging.WARNING)
-
     s3_src = "s3-us-gov-west-1.amazonaws.com"
 
     CSP_DEFAULT_SRC = ("'none'")
-    CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", s3_src, KIBANA_BASE_URL)
+    CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", s3_src)
     CSP_IMG_SRC = ("'self'", "data:", s3_src)
     CSP_FONT_SRC = ("'self'", s3_src)
     CSP_CONNECT_SRC = ("'self'", "*.cloud.gov")
@@ -401,7 +374,7 @@ class Common(Configuration):
     CSP_OBJECT_SRC = ("'none'")
     CSP_FRAME_ANCESTORS = ("'none'")
     CSP_FORM_ACTION = ("'self'")
-    CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", s3_src, KIBANA_BASE_URL)
+    CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", s3_src)
 
 
     ####################################
@@ -487,9 +460,6 @@ class Common(Configuration):
             'task': 'tdpservice.scheduling.tasks.postgres_backup',
             'schedule': crontab(minute='0', hour='4'), # Runs at midnight EST
             'args': "-b",
-            'options': {
-                'expires': 15.0,
-            },
         },
         'Account Deactivation Warning': {
             'task': 'tdpservice.email.tasks.check_for_accounts_needing_deactivation_warning',
@@ -518,7 +488,6 @@ class Common(Configuration):
             'task': 'tdpservice.email.tasks.send_data_submission_reminder',
             # Feb 9 at 1pm UTC (9am EST)
             'schedule': crontab(month_of_year='2', day_of_month='9', hour='13', minute='0'),
-            # 'schedule': crontab(minute='*/3'),
             'kwargs': {
                 'due_date': 'February 14th',
                 'reporting_period': 'Oct - Dec',
@@ -529,7 +498,6 @@ class Common(Configuration):
             'task': 'tdpservice.email.tasks.send_data_submission_reminder',
             # May 10 at 1pm UTC (9am EST)
             'schedule': crontab(month_of_year='5', day_of_month='10', hour='13', minute='0'),
-            # 'schedule': crontab(minute='*/3'),
             'kwargs': {
                 'due_date': 'May 15th',
                 'reporting_period': 'Jan - Mar',
@@ -540,7 +508,6 @@ class Common(Configuration):
             'task': 'tdpservice.email.tasks.send_data_submission_reminder',
             # Aug 9 at 1pm UTC (9am EST)
             'schedule': crontab(month_of_year='8', day_of_month='9', hour='13', minute='0'),
-            # 'schedule': crontab(minute='*/3'),
             'kwargs': {
                 'due_date': 'August 14th',
                 'reporting_period': 'Apr - Jun',
@@ -551,7 +518,6 @@ class Common(Configuration):
             'task': 'tdpservice.email.tasks.send_data_submission_reminder',
             # Nov 9 at 1pm UTC (9am EST)
             'schedule': crontab(month_of_year='11', day_of_month='9', hour='13', minute='0'),
-            # 'schedule': crontab(minute='*/3'),
             'kwargs': {
                 'due_date': 'November 14th',
                 'reporting_period': 'Jul - Sep',
@@ -568,3 +534,8 @@ class Common(Configuration):
     BULK_CREATE_BATCH_SIZE = os.getenv("BULK_CREATE_BATCH_SIZE", 10000)
     MEDIAN_LINE_PARSE_TIME = os.getenv("MEDIAN_LINE_PARSE_TIME", 0.0005574226379394531)
     BYPASS_OFA_AUTH = os.getenv("BYPASS_OFA_AUTH", False)
+
+    CELERY_WORKER_SEND_TASK_EVENTS = True
+    CELERY_TASK_SEND_SENT_EVENT = True
+
+    FRA_PILOT_STATES = json.loads(os.getenv("FRA_PILOT_STATES", "[]"))

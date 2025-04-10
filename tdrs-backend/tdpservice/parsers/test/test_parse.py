@@ -11,15 +11,11 @@ from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TAN
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T1, Tribal_TANF_T2, Tribal_TANF_T3, Tribal_TANF_T4
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T5, Tribal_TANF_T6, Tribal_TANF_T7
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3, SSP_M4, SSP_M5, SSP_M6, SSP_M7
+from tdpservice.parsers import aggregates
 from tdpservice.search_indexes.models.fra import TANF_Exiter1
-from tdpservice.search_indexes import documents
-from .. import aggregates
+
 import logging
 logger = logging.getLogger(__name__)
-
-
-es_logger = logging.getLogger('elasticsearch')
-es_logger.setLevel(logging.WARNING)
 
 settings.GENERATE_TRAILER_ERRORS = True
 
@@ -599,27 +595,6 @@ def test_parse_super_big_s1_file(super_big_s1_file, dfs):
     assert TANF_T1.objects.count() == expected_t1_record_count
     assert TANF_T2.objects.count() == expected_t2_record_count
     assert TANF_T3.objects.count() == expected_t3_record_count
-
-    search = documents.tanf.TANF_T1DataSubmissionDocument.search().query(
-        'match',
-        datafile__id=super_big_s1_file.id
-    )
-    assert search.count() == expected_t1_record_count
-    search.delete()
-
-    search = documents.tanf.TANF_T2DataSubmissionDocument.search().query(
-        'match',
-        datafile__id=super_big_s1_file.id
-    )
-    assert search.count() == expected_t2_record_count
-    search.delete()
-
-    search = documents.tanf.TANF_T3DataSubmissionDocument.search().query(
-        'match',
-        datafile__id=super_big_s1_file.id
-    )
-    assert search.count() == expected_t3_record_count
-    search.delete()
 
 
 @pytest.mark.django_db()
@@ -1842,15 +1817,15 @@ def test_parse_fra_work_outcome_exiters(request, file, dfs):
                                         program_type=datafile.prog_type)
     parser.parse_and_validate()
 
-    assert TANF_Exiter1.objects.all().count() == 7
+    assert TANF_Exiter1.objects.all().count() == 5
 
     errors = ParserError.objects.filter(file=datafile).order_by("id")
-    assert errors.count() == 14
+    assert errors.count() == 8
     for e in errors:
-        assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert dfs.total_number_of_records_in_file == 7
-    assert dfs.total_number_of_records_created == 7
-    assert dfs.get_status() == DataFileSummary.Status.REJECTED
+        assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+    assert dfs.total_number_of_records_in_file == 11
+    assert dfs.total_number_of_records_created == 5
+    assert dfs.get_status() == DataFileSummary.Status.PARTIALLY_ACCEPTED
 
 @pytest.mark.parametrize("file", [
     ('fra_bad_header_csv'),
@@ -1878,6 +1853,7 @@ def test_parse_fra_bad_header(request, file, dfs):
     for e in errors:
         assert e.error_message == "File does not begin with FRA data."
         assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
 @pytest.mark.parametrize("file", [
     ('fra_empty_first_row_csv'),
@@ -1905,6 +1881,7 @@ def test_parse_fra_empty_first_row(request, file, dfs):
     for e in errors:
         assert e.error_message == "File does not begin with FRA data."
         assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
 
 @pytest.mark.parametrize("file", [
@@ -1913,7 +1890,7 @@ def test_parse_fra_empty_first_row(request, file, dfs):
 ])
 @pytest.mark.django_db()
 def test_parse_fra_ofa_test_cases(request, file, dfs):
-    """Test parsing FRA files with an empty first row/no header data."""
+    """Test parsing OFA FRA files."""
     datafile = request.getfixturevalue(file)
     datafile.year = 2025
     datafile.quarter = 'Q3'
@@ -1921,15 +1898,21 @@ def test_parse_fra_ofa_test_cases(request, file, dfs):
     dfs.datafile = datafile
     dfs.save()
 
+    settings.BULK_CREATE_BATCH_SIZE = 1
+
     parser = ParserFactory.get_instance(datafile=datafile, dfs=dfs,
                                         section=datafile.section,
                                         program_type=datafile.prog_type)
     parser.parse_and_validate()
 
+    settings.BULK_CREATE_BATCH_SIZE = os.getenv("BULK_CREATE_BATCH_SIZE", 10000)
+
     errors = ParserError.objects.filter(file=datafile).order_by("id")
     for e in errors:
-        assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
-        print(e.row_number, e.error_message)
+        assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
 
-    assert errors.count() == 26
-    assert TANF_Exiter1.objects.all().count() == 12
+    assert errors.count() == 23
+    assert TANF_Exiter1.objects.all().count() == 10
+    assert dfs.total_number_of_records_in_file == 28
+    assert dfs.total_number_of_records_created == 10
+    assert dfs.get_status() == DataFileSummary.Status.PARTIALLY_ACCEPTED

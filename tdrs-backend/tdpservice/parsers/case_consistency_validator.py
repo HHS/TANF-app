@@ -42,7 +42,7 @@ class CaseConsistencyValidator:
     def __get_model(self, model_str):
         """Return a model for the current program type/section given the model"s string name."""
         schemas = ProgramManager.get_schema(self.program_type, self.section, model_str)
-        return schemas[0].document.Django.model
+        return schemas[0].model
 
     def __get_error_context(self, field_name, schema):
         if schema is None:
@@ -55,14 +55,14 @@ class CaseConsistencyValidator:
                                          )
         return format_error_context(error_args)
 
-    def __generate_and_add_error(self, schema, record, field, line_num, msg, deprecated=False):
+    def __generate_and_add_error(self, schema, record, line_num, msg, deprecated=False):
         """Generate a ParserError and add it to the `generated_errors` list."""
         err = self.generate_error(
             error_category=ParserErrorCategoryChoices.CASE_CONSISTENCY,
             schema=schema,
             line_number=line_num,
             record=record,
-            field=field,
+            field=schema.fields,
             error_message=msg,
             deprecated=deprecated
         )
@@ -237,7 +237,6 @@ class CaseConsistencyValidator:
                 self.__generate_and_add_error(
                     schema,
                     record,
-                    field="FAMILY_AFFILIATION",
                     line_num=line_num,
                     msg=error_msg
                 )
@@ -288,7 +287,6 @@ class CaseConsistencyValidator:
                     self.__generate_and_add_error(
                         schema,
                         record,
-                        field="RPT_MONTH_YEAR",
                         line_num=line_num,
                         msg=(
                             f"Every {t1_model_name} record should have at least one "
@@ -314,7 +312,6 @@ class CaseConsistencyValidator:
                 self.__generate_and_add_error(
                     schema,
                     record,
-                    field="RPT_MONTH_YEAR",
                     line_num=line_num,
                     msg=(
                         f"Every {t2_model_name} record should have at least one corresponding "
@@ -328,7 +325,6 @@ class CaseConsistencyValidator:
                 self.__generate_and_add_error(
                     schema,
                     record,
-                    field="RPT_MONTH_YEAR",
                     line_num=line_num,
                     msg=(
                         f"Every {t3_model_name} record should have at least one corresponding "
@@ -365,7 +361,6 @@ class CaseConsistencyValidator:
             self.__generate_and_add_error(
                 t4_schema,
                 t4_record,
-                "EMPLOYMENT_STATUS",
                 line_num,
                 error_msg,
                 deprecated=True
@@ -400,7 +395,6 @@ class CaseConsistencyValidator:
             self.__generate_and_add_error(
                 t4_schema,
                 t4_record,
-                "COUNTABLE_MONTH_FED_TIME",
                 line_num,
                 error_msg,
                 deprecated=True
@@ -447,7 +441,6 @@ class CaseConsistencyValidator:
                     self.__generate_and_add_error(
                         schema,
                         record,
-                        field="RPT_MONTH_YEAR",
                         line_num=line_num,
                         msg=(
                             f"Every {t4_model_name} record should have at least one corresponding "
@@ -464,7 +457,6 @@ class CaseConsistencyValidator:
                 self.__generate_and_add_error(
                     schema,
                     record,
-                    field="RPT_MONTH_YEAR",
                     line_num=line_num,
                     msg=(
                         f"Every {t5_model_name} record should have at least one corresponding "
@@ -501,7 +493,6 @@ class CaseConsistencyValidator:
                 self.__generate_and_add_error(
                     schema,
                     record,
-                    field="REC_AID_TOTALLY_DISABLED",
                     line_num=line_num,
                     msg=(
                         f"{t5_model_name} Adults in territories must have a valid "
@@ -514,7 +505,6 @@ class CaseConsistencyValidator:
                 self.__generate_and_add_error(
                     schema,
                     record,
-                    field="REC_AID_TOTALLY_DISABLED",
                     line_num=line_num,
                     msg=(
                         f"{t5_model_name} People in states should not have a value "
@@ -528,7 +518,6 @@ class CaseConsistencyValidator:
                 self.__generate_and_add_error(
                     schema,
                     record,
-                    field="REC_SSI",
                     line_num=line_num,
                     msg=(
                         f"{t5_model_name} People in territories must have value = 2:No for "
@@ -541,7 +530,6 @@ class CaseConsistencyValidator:
                 self.__generate_and_add_error(
                     schema,
                     record,
-                    field="REC_SSI",
                     line_num=line_num,
                     msg=(
                         f"{t5_model_name} People in states must have a valid value for "

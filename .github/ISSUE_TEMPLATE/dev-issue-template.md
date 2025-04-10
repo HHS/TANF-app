@@ -25,6 +25,7 @@ _Create a list of functional outcomes that must be achieved to complete this iss
 - [ ] _Outcome 3_
 - [ ] Testing Checklist has been run and all tests pass
 - [ ] README is updated, if necessary
+- [ ] [Release digest](https://app.gitbook.com/o/Yd4Wv0Fi89kSKpmakWrn/s/JSIbkxujKUxhKv2cXFEg/) has been updated with testing steps & relevant media
 
 ### Usability Testing Criteria ###
 _PM/UX/OFA Only: Create a list of expected user behaviors that should be confirmed when UX and/or PM is testing this ticket_

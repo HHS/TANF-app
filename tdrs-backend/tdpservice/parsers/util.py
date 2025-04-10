@@ -4,6 +4,7 @@ from django.contrib.admin.models import ADDITION
 from django.contrib.contenttypes.models import ContentType
 from tdpservice.parsers.dataclasses import RawRow
 from tdpservice.data_files.models import DataFile
+from tdpservice.parsers.models import ParserErrorCategoryChoices
 from tdpservice.core.utils import log
 from datetime import datetime
 from pathlib import Path
@@ -30,7 +31,7 @@ def create_test_datafile(filename, stt_user, stt, section='Active Case Data'):
 
 
 def generate_parser_error(datafile, line_number, schema, error_category, error_message, record=None,
-                          field=None, deprecated=False):
+                          field=None, fields=None, deprecated=False):
     """Create and return a ParserError using args."""
     fields = [*field] if type(field) is list else [field]
     fields_json = {
@@ -48,26 +49,88 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
         value = getattr(record, name, None) if type(record) is not dict else record.get(name, None)
         values_json[name] = value
 
-    field = fields[-1]  # if multiple fields, result field is last
+    # If we are a cat1/cat4 error then the parser error will know about all fields. To keep things simple we associate
+    # the field with the record type. If the error is not cat1/cat4 then we use the last field since that will be the
+    # result field in the multi-field case.
+    field = "Record_Type" if schema is not None and len(fields) == len(schema.fields) else fields[-1]
+
+    if (error_category in (ParserErrorCategoryChoices.PRE_CHECK, ParserErrorCategoryChoices.CASE_CONSISTENCY)):
+        record = None
 
     return ParserError(
         file=datafile,
         row_number=line_number,
-        column_number=getattr(field, 'item', None),
-        item_number=getattr(field, 'item', None),
+        column_number=getattr(field, 'item', ''),
+        item_number=getattr(field, 'item', ''),
         field_name=getattr(field, 'name', None) if hasattr(field, 'name') else field,
         rpt_month_year=getattr(record, 'RPT_MONTH_YEAR', None),
         case_number=getattr(record, 'CASE_NUMBER', None),
         error_message=error_message,
         error_type=error_category,
         content_type=ContentType.objects.get_for_model(
-            model=schema.document.Django.model if schema else None
+            model=schema.model if schema else None
         ) if record and not isinstance(record, dict) else None,
         object_id=getattr(record, 'id', None) if record and not isinstance(record, dict) else None,
         fields_json=fields_json,
         values_json=values_json,
         deprecated=deprecated,
     )
+
+
+def generate_fra_parser_error(datafile, line_number, schema, error_category, error_message, record=None,
+                              offending_field=None, fields=None, deprecated=False):
+    """Create and return a ParserError using args."""
+    fields_json = {
+        "friendly_name": {
+            getattr(offending_field, 'name', ''): getattr(offending_field, 'friendly_name', '')
+        },
+        "item_numbers": {
+            getattr(offending_field, 'name', ''): getattr(offending_field, 'item', '')
+        }
+    }
+
+    values_json = {}
+    for field in fields:
+        name = getattr(field, 'name', '')
+        value = getattr(record, name, None) if type(record) is not dict else record.get(name, None)
+        values_json[name] = value
+
+    return ParserError(
+        file=datafile,
+        row_number=line_number,
+        column_number=getattr(offending_field, 'item', ''),
+        item_number=getattr(offending_field, 'item', ''),
+        field_name=getattr(offending_field, 'name', None) if hasattr(offending_field, 'name') else offending_field,
+        rpt_month_year=None,
+        case_number=None,
+        error_message=error_message,
+        error_type=error_category,
+        content_type=ContentType.objects.get_for_model(
+            model=schema.model if schema else None
+        ) if record and not isinstance(record, dict) else None,
+        object_id=getattr(record, 'id', None) if record and not isinstance(record, dict) else None,
+        fields_json=fields_json,
+        values_json=values_json,
+        deprecated=deprecated,
+    )
+
+
+def make_generate_fra_parser_error(datafile, line_number):
+    """Configure generate_fra_parser_error with a datafile and line number."""
+    def generate(schema, error_category, error_message, record=None,
+                 offending_field=None, field=None, fields=None, deprecated=False):
+        return generate_fra_parser_error(
+            datafile=datafile,
+            line_number=line_number,
+            schema=schema,
+            error_category=error_category,
+            error_message=error_message,
+            record=record,
+            offending_field=offending_field if offending_field else field,
+            fields=fields if fields else [field],
+            deprecated=deprecated,
+        )
+    return generate
 
 
 def make_generate_parser_error(datafile, line_number):
@@ -97,7 +160,7 @@ def make_generate_file_precheck_parser_error(datafile, line_number):
             error_category=error_category,
             error_message=error_message,
             record=record,
-            field=None,  # purposely overridden to force a "Rejected" status for certain file precheck errors
+            field=field,
             deprecated=deprecated,
         )
 
@@ -282,7 +345,7 @@ class SortedRecords:
                 for records in removed.values():
                     for record in records:
                         case_ids.append((record.RecordType, getattr(record, 'CASE_NUMBER', None),
-                                        record.RPT_MONTH_YEAR))
+                                        getattr(record, 'RPT_MONTH_YEAR', None)))
                         for record_set in self.cases.values():
                             record_set.pop(record, None)
                     logger.info("Case consistency errors generated, removing case from in memory cache. "

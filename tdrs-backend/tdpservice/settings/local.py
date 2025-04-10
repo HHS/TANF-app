@@ -71,6 +71,3 @@ class Local(Common):
             ],
             traces_sample_rate=1.0,
         )
-
-    CELERY_WORKER_SEND_TASK_EVENTS = True
-    CELERY_TASK_SEND_SENT_EVENT = True

@@ -54,10 +54,10 @@ class BaseParser(ABC):
             logger.debug("Bulk creating records.")
             num_db_records_created = 0
             num_expected_db_records = 0
-            for document, records in self.unsaved_records.get_bulk_create_struct().items():
+            for model, records in self.unsaved_records.get_bulk_create_struct().items():
                 try:
                     num_expected_db_records += len(records)
-                    created_objs = document.Django.model.objects.bulk_create(records)
+                    created_objs = model.objects.bulk_create(records)
                     num_db_records_created += len(created_objs)
                 except DatabaseError as e:
                     log_parser_exception(self.datafile,
@@ -96,9 +96,8 @@ class BaseParser(ABC):
     def rollback_records(self):
         """Delete created records in the event of a failure."""
         logger.info("Rolling back created records.")
-        for document in self.unsaved_records.get_bulk_create_struct():
+        for model in self.unsaved_records.get_bulk_create_struct():
             try:
-                model = document.Django.model
                 qset = model.objects.filter(datafile=self.datafile)
                 # WARNING: we can use `_raw_delete` in this case because our record models don't have cascading
                 # dependencies. If that ever changes, we should NOT use `_raw_delete`.
@@ -153,3 +152,28 @@ class BaseParser(ABC):
             errors["no_records_created"] = [err_obj]
             self.unsaved_parser_errors.update(errors)
             self.num_errors += 1
+
+    def _delete_serialized_records(self, duplicate_manager):
+        """Delete all records that have already been serialized to the DB that have cat4 errors."""
+        total_deleted = 0
+        for model, ids in duplicate_manager.get_records_to_remove().items():
+            try:
+                qset = model.objects.filter(id__in=ids)
+                # WARNING: we can use `_raw_delete` in this case because our record models don't have cascading
+                # dependencies. If that ever changes, we should NOT use `_raw_delete`.
+                num_deleted = qset._raw_delete(qset.db)
+                total_deleted += num_deleted
+                self.dfs.total_number_of_records_created -= num_deleted
+                logger.debug(f"Deleted {num_deleted} records of type: {model}.")
+            except DatabaseError as e:
+                log_parser_exception(self.datafile,
+                                     (f"Encountered error while deleting database records for model {model}. "
+                                      f"Exception: \n{e}"),
+                                     "error"
+                                     )
+            except Exception as e:
+                log_parser_exception(self.datafile,
+                                     (f"Encountered generic exception while deleting records of type {model}. "
+                                      f"Exception: \n{e}"),
+                                     "error"
+                                     )

@@ -56,32 +56,6 @@ services:
       # Copy in the Localstack setup script to configure any buckets needed
       - ../scripts/localstack-setup.sh:/docker-entrypoint-initaws.d/localstack-setup.sh
 
-  kibana:
-    image: docker.elastic.co/kibana/kibana-oss:7.10.2
-    ports:
-      - 5601:5601
-    environment:
-      - ELASTICSEARCH_HOSTS="http://elastic:9200"
-      - SERVER_HOST=kibana
-      - SERVER_BASEPATH=/kibana
-      - SERVER_SECURITYRESPONSEHEADERS_REFERRERPOLICY=no-referrer
-      - CSP_WARNLEGACYBROWSERS=false
-    volumes:
-      - ./search_indexes/kibana_saved_objs.ndjson:/usr/share/kibana/kibana_saved_objs.ndjson
-    depends_on:
-      - elastic
-
-  elastic:
-    image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2
-    environment:
-      - discovery.type=single-node
-      - logger.discovery.level=debug
-    ports:
-      - 9200:9200
-      - 9300:9300
-    volumes:
-      - elastic_data:/usr/share/elasticsearch/data
-
   grafana:
     restart: always
     image: grafana/grafana:11.2.0
@@ -109,6 +83,16 @@ services:
       - ./plg/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
     command: --config.file=/etc/alertmanager/alertmanager.yml --storage.path=/alertmanager --log.level=debug --web.external-url=http://localhost:3000/alerts --web.route-prefix=/alerts --cluster.listen-address=""
 
+  mimir:
+    image: grafana/mimir:2.15.1
+    ports:
+      - 9009:9009
+    volumes:
+      - ./plg/mimir/mimir.local.yml:/etc/mimir/mimir.yml
+    command: --config.file=/etc/mimir/mimir.yml
+    depends_on:
+      - localstack
+
   prometheus:
     restart: always
     image: prom/prometheus:v2.54.1
@@ -124,6 +108,7 @@ services:
       - celery-exporter
       - postgres-exporter
       - alertmanager
+      - mimir
 
   promtail:
     restart: always
@@ -148,11 +133,11 @@ services:
 
   celery-exporter:
     restart: always
-    image: ovalmoney/celery-exporter:1.5.1
+    image: danihodovic/celery-exporter:0.11.1
     ports:
-      - 9540:9540
+      - 9808:9808
     environment:
-      - CELERY_EXPORTER_BROKER_URL=redis://redis-server:6379/0
+      - CE_BROKER_URL=redis://redis-server:6379/0
     depends_on:
       - web
 
@@ -206,6 +191,7 @@ services:
       - ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_INFO
       - ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_TRACE
       - ELASTICSEARCH_LOG_INDEX_SLOW_LEVEL
+      - FRA_PILOT_STATES
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
       - AWS_S3_BUCKET_NAME
@@ -228,7 +214,6 @@ services:
       - localstack
       - postgres
       - redis-server
-      - elastic
 
   redis-server:
     image: redis:alpine
@@ -242,7 +227,6 @@ volumes:
   localstack_data:
   postgres_data:
   grafana_pg_data:
-  elastic_data:
   prometheus_data:
   grafana_data:
   loki_data:

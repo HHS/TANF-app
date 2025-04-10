@@ -38,3 +38,14 @@ groups:
       annotations:
           summary: "The {{ $labels.service }} service has a uptime warning."
           description: "The {{ $labels.service }} service in the {{ $labels.env }} environment is not maintaining 95% uptime."
+  - name: celery.alerts
+    rules:
+    - alert: LocalCeleryWorkerDown
+      expr: last_over_time(up{job=~"celery-.*|celery-exporter.*"}[1m]) == 0
+      for: 1m
+      labels:
+        severity: ERROR
+      annotations:
+          summary: "The {{ $labels.service }} service is down."
+          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 1 minute."
+
