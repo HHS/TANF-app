@@ -41,6 +41,11 @@ if [[ $1 == "cloud" ]]; then
     wget https://github.com/grafana/loki/releases/download/v3.1.1/promtail-linux-amd64.zip
     unzip -a promtail-linux-amd64.zip && rm -rf promtail-linux-amd64.zip
     ./promtail-linux-amd64 -config.file=./plg/promtail/config.yml &
+
+    echo "Starting the Celery Exporter"
+    curl -L https://github.com/danihodovic/celery-exporter/releases/download/latest/celery-exporter -o ./celery-exporter
+    chmod +x ./celery-exporter
+    ./celery-exporter --broker-url=$REDIS_URI --port 9808 &
 fi
 
 exec $gunicorn_cmd
