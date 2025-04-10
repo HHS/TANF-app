@@ -16,6 +16,9 @@ rule_files:
   - "django-rules.yml"
   - "alerts.yml"
 
+remote_write:
+ - url: http://mimir.apps.internal:8080/api/v1/push
+
 scrape_configs:
   # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
   - job_name: "prometheus"
