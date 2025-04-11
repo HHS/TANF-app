@@ -8,11 +8,14 @@ from tdpservice.parsers.validators.util import deprecate_call
 from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.fields import Field
 from tdpservice.parsers.dataclasses import FieldType, ValidationErrorArgs
+from tdpservice.data_files.models import DataFile
+from tdpservice.stts.models import STT
+from django.conf import settings
 
 
 test_schema = TanfDataReportSchema(
     record_type="Test",
-    document=None,
+    model=None,
     preparsing_validators=[],
     postparsing_validators=[],
     fields=[],
@@ -498,6 +501,60 @@ def test_sumIsLarger():
     assert result.valid is True
     assert result.error is None
     assert result.field_names == ['TestField1', 'TestField3']
+
+
+def test_suppress_for_fra_pilot_state():
+    """Test `suppress_for_fra_pilot_state` suppresses validation logic."""
+    stt = STT(
+        type="state",
+        postal_code='AZ'
+    )
+    datafile = DataFile(
+        stt=stt
+    )
+    schema = TanfDataReportSchema(
+        fields=[
+            Field(
+                item='1',
+                name='WORK_ELIGIBLE_INDICATOR',
+                friendly_name='Work-Eligible Individual Indicator',
+                type=FieldType.ALPHA_NUMERIC,
+                startIndex=0,
+                endIndex=1
+            ),
+            Field(
+                item='2',
+                name='WORK_PART_STATUS',
+                friendly_name='Work Participation Status',
+                type=FieldType.ALPHA_NUMERIC,
+                startIndex=1,
+                endIndex=2
+            )
+        ],
+    )
+    schema.set_datafile(datafile)
+
+    record = {
+        'WORK_ELIGIBLE_INDICATOR': '1',
+        'WORK_PART_STATUS': '99',
+    }
+
+    validate = category3.suppress_for_fra_pilot_state(
+        'WORK_ELIGIBLE_INDICATOR',
+        'WORK_PART_STATUS',
+        category3.ifThenAlso(
+            condition_field_name="WORK_ELIGIBLE_INDICATOR",
+            condition_function=category3.isBetween(1, 5, inclusive=True, cast=int),
+            result_field_name="WORK_PART_STATUS",
+            result_function=category3.isNotEqual("99"),
+        )
+    )
+
+    settings.FRA_PILOT_STATES = ['AZ']
+
+    result = validate(record, schema)
+    assert result.valid
+    assert result.error is None
 
 
 def test_validate__FAM_AFF__SSN():

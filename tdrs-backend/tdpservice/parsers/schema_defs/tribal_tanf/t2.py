@@ -5,14 +5,14 @@ from tdpservice.parsers.transforms import tanf_ssn_decryption_func, zero_pad
 from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.validators import category1, category2, category3
-from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T2DataSubmissionDocument
+from tdpservice.search_indexes.models.tribal import Tribal_TANF_T2
 from tdpservice.parsers.util import generate_t2_t3_t5_hashes, get_t2_t3_t5_partial_hash_members
 
 
 t2 = [
     TanfDataReportSchema(
         record_type="T2",
-        document=Tribal_TANF_T2DataSubmissionDocument(),
+        model=Tribal_TANF_T2,
         generate_hashes_func=generate_t2_t3_t5_hashes,
         should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {3, 5},
         get_partial_hash_members_func=get_t2_t3_t5_partial_hash_members,
