@@ -25,13 +25,13 @@ t5 = [
             ]),
         ],
         postparsing_validators=[
+            category3.validate__FAM_AFF__SSN(),
             category3.ifThenAlso(
                 condition_field_name="FAMILY_AFFILIATION",
                 condition_function=category3.isEqual(1),
                 result_field_name="SSN",
                 result_function=category3.validateSSN(),
             ),
-            category3.validate__FAM_AFF__SSN(),
             category3.ifThenAlso(
                 condition_field_name="FAMILY_AFFILIATION",
                 condition_function=category3.isBetween(1, 3, inclusive=True),
