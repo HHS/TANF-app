@@ -1,5 +1,6 @@
 """Define settings for all environments."""
 
+import json
 import logging
 import logging.handlers
 import os
@@ -459,9 +460,6 @@ class Common(Configuration):
             'task': 'tdpservice.scheduling.tasks.postgres_backup',
             'schedule': crontab(minute='0', hour='4'), # Runs at midnight EST
             'args': "-b",
-            'options': {
-                'expires': 15.0,
-            },
         },
         'Account Deactivation Warning': {
             'task': 'tdpservice.email.tasks.check_for_accounts_needing_deactivation_warning',
@@ -490,7 +488,6 @@ class Common(Configuration):
             'task': 'tdpservice.email.tasks.send_data_submission_reminder',
             # Feb 9 at 1pm UTC (9am EST)
             'schedule': crontab(month_of_year='2', day_of_month='9', hour='13', minute='0'),
-            # 'schedule': crontab(minute='*/3'),
             'kwargs': {
                 'due_date': 'February 14th',
                 'reporting_period': 'Oct - Dec',
@@ -501,7 +498,6 @@ class Common(Configuration):
             'task': 'tdpservice.email.tasks.send_data_submission_reminder',
             # May 10 at 1pm UTC (9am EST)
             'schedule': crontab(month_of_year='5', day_of_month='10', hour='13', minute='0'),
-            # 'schedule': crontab(minute='*/3'),
             'kwargs': {
                 'due_date': 'May 15th',
                 'reporting_period': 'Jan - Mar',
@@ -512,7 +508,6 @@ class Common(Configuration):
             'task': 'tdpservice.email.tasks.send_data_submission_reminder',
             # Aug 9 at 1pm UTC (9am EST)
             'schedule': crontab(month_of_year='8', day_of_month='9', hour='13', minute='0'),
-            # 'schedule': crontab(minute='*/3'),
             'kwargs': {
                 'due_date': 'August 14th',
                 'reporting_period': 'Apr - Jun',
@@ -523,7 +518,6 @@ class Common(Configuration):
             'task': 'tdpservice.email.tasks.send_data_submission_reminder',
             # Nov 9 at 1pm UTC (9am EST)
             'schedule': crontab(month_of_year='11', day_of_month='9', hour='13', minute='0'),
-            # 'schedule': crontab(minute='*/3'),
             'kwargs': {
                 'due_date': 'November 14th',
                 'reporting_period': 'Jul - Sep',
@@ -540,3 +534,8 @@ class Common(Configuration):
     BULK_CREATE_BATCH_SIZE = os.getenv("BULK_CREATE_BATCH_SIZE", 10000)
     MEDIAN_LINE_PARSE_TIME = os.getenv("MEDIAN_LINE_PARSE_TIME", 0.0005574226379394531)
     BYPASS_OFA_AUTH = os.getenv("BYPASS_OFA_AUTH", False)
+
+    CELERY_WORKER_SEND_TASK_EVENTS = True
+    CELERY_TASK_SEND_SENT_EVENT = True
+
+    FRA_PILOT_STATES = json.loads(os.getenv("FRA_PILOT_STATES", "[]"))

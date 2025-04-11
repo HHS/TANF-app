@@ -18,16 +18,20 @@ import {
   formatDate,
   SubmissionSummaryStatusIcon,
   getErrorReportStatus,
+  fileStatusOrDefault,
+  getSummaryStatusLabel,
 } from '../SubmissionHistory/helpers'
 
 import {
   getFraSubmissionHistory,
   uploadFraReport,
   downloadOriginalSubmission,
+  pollFraSubmissionStatus,
 } from '../../actions/fraReports'
 import { fetchSttList } from '../../actions/sttList'
 import { DropdownSelect, RadioSelect } from '../Form'
 import { PaginatedComponent } from '../Paginator/Paginator'
+import { Spinner } from '../Spinner'
 
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
@@ -415,6 +419,59 @@ const UploadForm = ({
   )
 }
 
+const SubmissionHistoryRow = ({ file, handleDownload, isRegionalStaff }) => {
+  const isLoadingStatus = useSelector((state) => {
+    const submissionStatuses = state.fraReports.submissionStatuses
+    if (!submissionStatuses || !submissionStatuses[file.id]) {
+      return false
+    }
+
+    return !submissionStatuses[file.id].isDone
+  })
+
+  const hasStatus = file.summary && file.summary.status
+  const status = hasStatus ? file.summary.status : 'Pending'
+  const errors = file.summary?.case_aggregates?.total_errors
+
+  return (
+    <tr>
+      <td>{formatDate(file.createdAt) + ' by ' + file.submittedBy}</td>
+      <td>
+        {isRegionalStaff ? (
+          file.fileName
+        ) : (
+          <button
+            className="section-download"
+            onClick={() => handleDownload(file)}
+          >
+            {file.fileName}
+          </button>
+        )}
+      </td>
+      <td aria-live="polite">
+        <Spinner visible={isLoadingStatus} />
+        {errors !== null ? errors : 'Pending'}
+      </td>
+      <td aria-live="polite">
+        {hasStatus && status !== 'Pending' ? (
+          <span>
+            <SubmissionSummaryStatusIcon status={fileStatusOrDefault(file)} />
+          </span>
+        ) : (
+          <Spinner visible={isLoadingStatus} />
+        )}
+        <span style={{ position: 'relative' }}>
+          {getSummaryStatusLabel(file)}
+        </span>
+      </td>
+      <td aria-live="polite">
+        <Spinner visible={isLoadingStatus} />
+        {getErrorReportStatus(file)}
+      </td>
+    </tr>
+  )
+}
+
 const SubmissionHistory = ({
   data,
   sectionName,
@@ -436,33 +493,7 @@ const SubmissionHistory = ({
         </thead>
         <tbody>
           {data.map((file) => (
-            <tr>
-              <td>{formatDate(file.createdAt) + ' by ' + file.submittedBy}</td>
-              <td>
-                {isRegionalStaff ? (
-                  file.fileName
-                ) : (
-                  <button
-                    className="section-download"
-                    onClick={() => handleDownload(file)}
-                  >
-                    {file.fileName}
-                  </button>
-                )}
-              </td>
-              <td>{file?.summary?.case_aggregates?.total_errors}</td>
-              <td>
-                <span>
-                  <SubmissionSummaryStatusIcon
-                    status={file.summary ? file.summary.status : 'Pending'}
-                  />
-                </span>
-                {file.summary && file.summary.status
-                  ? file.summary.status
-                  : 'Pending'}
-              </td>
-              <td>{getErrorReportStatus(file)}</td>
-            </tr>
+            <SubmissionHistoryRow file={file} handleDownload={handleDownload} />
           ))}
         </tbody>
       </>
@@ -590,6 +621,8 @@ const FRAReports = () => {
     message: null,
   })
 
+  const submissionStatusTimer = useRef(null)
+
   const reportTypeOptions = [
     {
       value: 'workOutcomesOfTanfExiters',
@@ -706,13 +739,37 @@ const FRAReports = () => {
   }
 
   const handleUpload = ({ file: selectedFile }) => {
-    const onFileUploadSuccess = () => {
+    const onFileUploadSuccess = (datafile) => {
       setSelectedFile(null)
       setLocalAlertState({
         active: true,
         type: 'success',
         message: `Successfully submitted section: ${getReportTypeLabel()} on ${new Date().toDateString()}`,
       })
+
+      const WAIT_TIME = 2000 // #
+      let statusTimeout = null
+
+      const pollSubmissionStatus = (tryNumber) => {
+        statusTimeout = setTimeout(
+          () =>
+            dispatch(
+              pollFraSubmissionStatus(
+                datafile.id,
+                tryNumber,
+                ({ summary }) =>
+                  summary && summary.status && summary.status !== 'Pending',
+                () => pollSubmissionStatus(tryNumber + 1),
+                () => {},
+                () => {}
+              )
+            ),
+          tryNumber === 1 ? 0 : WAIT_TIME
+        )
+        submissionStatusTimer.current = statusTimeout
+      }
+
+      pollSubmissionStatus(1)
     }
 
     const onFileUploadError = (error) => {
@@ -791,6 +848,13 @@ const FRAReports = () => {
       alertRef.current.scrollIntoView({ behavior: 'smooth' })
     }
   }, [localAlert, alertRef])
+
+  useEffect(() => {
+    return () =>
+      submissionStatusTimer.current
+        ? clearTimeout(submissionStatusTimer.current)
+        : null
+  }, [submissionStatusTimer])
 
   return (
     <>
