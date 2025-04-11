@@ -24,7 +24,7 @@ for i in range(1, 31):
             model=Tribal_TANF_T7,
             quiet_preparser_errors=i > 1,
             preparsing_validators=[
-                category1.recordHasLength(247),
+                category1.recordHasLengthOfAtLeast(247),
                 category1.recordIsNotEmpty(0, 7),
                 category1.recordIsNotEmpty(validator_index, validator_index + 24),
                 category1.validate_fieldYearMonth_with_headerYearQuarter(),

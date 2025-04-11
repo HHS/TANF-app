@@ -11,7 +11,7 @@ s1 = TanfDataReportSchema(
     record_type="T6",
     model=Tribal_TANF_T6,
     preparsing_validators=[
-        category1.recordHasLength(379),
+        category1.recordHasLengthOfAtLeast(379),
         category1.validate_fieldYearMonth_with_headerYearQuarter(),
         category1.calendarQuarterIsValid(2, 7),
     ],
@@ -220,7 +220,7 @@ s2 = TanfDataReportSchema(
     model=Tribal_TANF_T6,
     quiet_preparser_errors=True,
     preparsing_validators=[
-        category1.recordHasLength(379),
+        category1.recordHasLengthOfAtLeast(379),
         category1.validate_fieldYearMonth_with_headerYearQuarter(),
         category1.calendarQuarterIsValid(2, 7),
     ],
@@ -426,7 +426,7 @@ s3 = TanfDataReportSchema(
     model=Tribal_TANF_T6,
     quiet_preparser_errors=True,
     preparsing_validators=[
-        category1.recordHasLength(379),
+        category1.recordHasLengthOfAtLeast(379),
         category1.validate_fieldYearMonth_with_headerYearQuarter(),
         category1.calendarQuarterIsValid(2, 7),
     ],
