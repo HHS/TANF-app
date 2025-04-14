@@ -10,19 +10,19 @@ clients:
   - url: http://loki.apps.internal:8080/loki/api/v1/push
 
 scrape_configs:
-  - job_name: {{ system_env_name }}
+  - job_name: ${system_env_name}
     static_configs:
     - targets:
         - localhost
       labels:
-        job: {{ system_env_name }}
+        job: ${system_env_name}
         __path__: /var/log/*log
-  - job_name: {{ backend_env_name }}
+  - job_name: ${backend_env_name}
     static_configs:
       - targets:
         - localhost
         labels:
-          job: {{ backend_env_name }}
+          job: ${backend_env_name}
           __path__: /tmp/django.log
     pipeline_stages:
       - regex:
@@ -32,17 +32,17 @@ scrape_configs:
           logger:
           message:
           time:
-  - job_name: {{ frontend_env_name }}
+  - job_name: ${frontend_env_name}
     static_configs:
       - targets:
         - localhost
         labels:
-          job: {{ frontend_env_name }}
+          job: ${frontend_env_name}
           __path__: /var/log/nginx/access_log.log
           level: DEBUG
       - targets:
         - localhost
         labels:
-          job: {{ frontend_env_name }}
+          job: ${frontend_env_name}
           __path__: /var/log/nginx/error_log.log
           level: ERROR

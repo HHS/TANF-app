@@ -1,5 +1,5 @@
 import React from 'react'
-import { fireEvent, waitFor, render } from '@testing-library/react'
+import { fireEvent, waitFor, render, within } from '@testing-library/react'
 import axios from 'axios'
 import { Provider } from 'react-redux'
 import { FRAReports } from '.'
@@ -36,6 +36,14 @@ const makeTestFile = (name, contents = ['test'], type = 'text/plain') =>
   new File(contents, name, { type })
 
 describe('FRA Reports Page', () => {
+  beforeEach(() => {
+    jest.useFakeTimers()
+  })
+  afterEach(() => {
+    jest.runOnlyPendingTimers()
+    jest.useRealTimers()
+  })
+
   it('Renders', () => {
     const store = mockStore()
     const { getByText, queryByText } = render(
@@ -239,6 +247,9 @@ describe('FRA Reports Page', () => {
     })
 
     it('Shows upload form once search has been clicked', async () => {
+      jest.mock('axios')
+      const mockAxios = axios
+
       const state = {
         ...initialState,
         auth: {
@@ -272,6 +283,14 @@ describe('FRA Reports Page', () => {
       const quarterDropdown = getByLabelText('Quarter*')
       fireEvent.change(quarterDropdown, { target: { value: 'Q1' } })
 
+      let searchUrl = null
+      mockAxios.get.mockImplementation((url) => {
+        if (url.includes('/data_files/')) {
+          searchUrl = url
+        }
+        return {}
+      })
+
       fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
       // upload form displayed
@@ -283,6 +302,10 @@ describe('FRA Reports Page', () => {
         ).toBeInTheDocument()
         expect(getByText('Submit Report')).toBeInTheDocument()
       })
+
+      expect(
+        searchUrl.includes('&file_type=Work Outcomes of TANF Exiters')
+      ).toBe(true)
 
       // fields don't have errors
       expect(
@@ -298,6 +321,9 @@ describe('FRA Reports Page', () => {
 
   describe('Upload form', () => {
     const setup = async () => {
+      jest.mock('axios')
+      const mockAxios = axios
+
       window.HTMLElement.prototype.scrollIntoView = () => {}
       const state = {
         ...initialState,
@@ -320,6 +346,10 @@ describe('FRA Reports Page', () => {
       const store = mockStore(state)
       const origDispatch = store.dispatch
       store.dispatch = jest.fn(origDispatch)
+
+      mockAxios.post.mockResolvedValue({
+        data: { id: 1 },
+      })
 
       const component = render(
         <Provider store={store}>
@@ -352,7 +382,7 @@ describe('FRA Reports Page', () => {
         expect(getByText('Submit Report')).toBeInTheDocument()
       })
 
-      return { ...component, ...store }
+      return { ...component, ...store, mockAxios }
     }
 
     it('Allows csv files to be selected and submitted', async () => {
@@ -380,7 +410,7 @@ describe('FRA Reports Page', () => {
           )
         ).toBeInTheDocument()
       )
-      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(2))
+      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(3))
     })
 
     it('Allows xlsx files to be selected and submitted', async () => {
@@ -412,7 +442,99 @@ describe('FRA Reports Page', () => {
           )
         ).toBeInTheDocument()
       )
-      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(2))
+      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(3))
+    })
+
+    it('Shows a spinner until submission history updates', async () => {
+      jest.spyOn(global, 'setTimeout')
+      const { getByText, getByAltText, dispatch, mockAxios, container } =
+        await setup()
+
+      mockAxios.post.mockResolvedValue({
+        data: {
+          id: 1,
+          original_filename: 'testFile.txt',
+          extension: 'txt',
+          quarter: 'Q1',
+          section: 'Work Outcomes of TANF Exiters',
+          slug: '1234-5-6-7890',
+          year: '2021',
+          s3_version_id: '3210',
+          created_at: '2025-02-07T23:38:58+0000',
+          submitted_by: 'Test Testerson',
+          has_error: false,
+          summary: null,
+          latest_reparse_file_meta: '',
+        },
+      })
+
+      let times = 0
+      mockAxios.get.mockImplementation((url) => {
+        if (url.includes('/data_files/1/')) {
+          // status
+          times += 1
+          return Promise.resolve({
+            data: {
+              id: 1,
+              summary: { status: times > 1 ? 'Approved' : 'Pending' },
+            },
+          })
+        } else {
+          // submission history
+          return Promise.resolve({
+            data: [
+              {
+                id: 1,
+                original_filename: 'testFile.txt',
+                extension: 'txt',
+                quarter: 'Q1',
+                section: 'Work Outcomes of TANF Exiters',
+                slug: '1234-5-6-7890',
+                year: '2021',
+                s3_version_id: '3210',
+                created_at: '2025-02-07T23:38:58+0000',
+                submitted_by: 'Test Testerson',
+                has_error: false,
+                summary: { status: 'Pending' },
+                latest_reparse_file_meta: '',
+              },
+            ],
+          })
+        }
+      })
+
+      const uploadForm = container.querySelector('#fra-file-upload')
+      fireEvent.change(uploadForm, {
+        target: {
+          files: [
+            makeTestFile('report.xlsx', ['asdfad'], 'application/vnd.ms-excel'),
+          ],
+        },
+      })
+      await waitFor(() =>
+        expect(
+          getByText(
+            'Selected File report.xlsx. To change the selected file, click this button.'
+          )
+        ).toBeInTheDocument()
+      )
+
+      const submitButton = getByText('Submit Report')
+      fireEvent.click(submitButton)
+
+      await waitFor(() =>
+        expect(
+          getByText(
+            `Successfully submitted section: Work Outcomes of TANF Exiters on ${new Date().toDateString()}`
+          )
+        ).toBeInTheDocument()
+      )
+      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(3))
+
+      jest.runOnlyPendingTimers()
+
+      expect(mockAxios.get).toHaveBeenCalledTimes(4)
+      expect(times).toBe(2)
     })
 
     it('Shows an error if file submission failed', async () => {
@@ -495,7 +617,9 @@ describe('FRA Reports Page', () => {
 
       await waitFor(() => {
         expect(
-          getByText('You have selected the file: report.csv')
+          getByText(
+            'Selected File report.csv. To change the selected file, click this button.'
+          )
         ).toBeInTheDocument()
       })
 
@@ -529,7 +653,9 @@ describe('FRA Reports Page', () => {
 
       await waitFor(() => {
         expect(
-          getByText('You have selected the file: report.csv')
+          getByText(
+            'Selected File report.csv. To change the selected file, click this button.'
+          )
         ).toBeInTheDocument()
       })
 
@@ -537,7 +663,9 @@ describe('FRA Reports Page', () => {
 
       await waitFor(() => {
         expect(
-          queryByText('You have selected the file: report.csv')
+          queryByText(
+            'Selected File report.csv. To change the selected file, click this button.'
+          )
         ).not.toBeInTheDocument()
         expect(queryByText(/Submit Report/)).not.toBeInTheDocument()
       })
@@ -812,7 +940,12 @@ describe('FRA Reports Page', () => {
         expect(
           getByText('testFile.txt', { selector: 'td button' })
         ).toBeInTheDocument()
-        expect(getByText('0')).toBeInTheDocument()
+        expect(
+          within(
+            getByText('Work Outcomes of TANF Exiters Submission History')
+              .parentElement
+          ).getByText('0')
+        ).toBeInTheDocument()
         expect(getByText('Accepted')).toBeInTheDocument()
         expect(getByText('No Errors')).toBeInTheDocument()
       })
@@ -887,6 +1020,48 @@ describe('FRA Reports Page', () => {
         expect(
           queryByText('testFile4.txt', { selector: 'td button' })
         ).not.toBeInTheDocument()
+      })
+    })
+
+    it('shows a special status for timed out status polling attempts', async () => {
+      const submissionHistoryApiResponse = [
+        {
+          id: 1,
+          original_filename: 'testFile.txt',
+          extension: 'txt',
+          quarter: 'Q1',
+          section: 'Work Outcomes of TANF Exiters',
+          slug: '1234-5-6-7890',
+          year: '2021',
+          s3_version_id: '3210',
+          created_at: '2025-02-07T23:38:58+0000',
+          submitted_by: 'Test Testerson',
+          has_error: false,
+          summary: {
+            status: 'TimedOut',
+          },
+          latest_reparse_file_meta: '',
+        },
+      ]
+
+      const { getByText, queryByText, getByLabelText, container, dispatch } =
+        await setup(submissionHistoryApiResponse)
+
+      await waitFor(() => {
+        expect(getByText(/by Test Testerson/)).toBeInTheDocument()
+        expect(
+          getByText('testFile.txt', { selector: 'td button' })
+        ).toBeInTheDocument()
+        expect(
+          within(
+            getByText('Work Outcomes of TANF Exiters Submission History')
+              .parentElement
+          ).getByText('Pending')
+        ).toBeInTheDocument()
+        expect(
+          getByText('Still processing. Check back soon.')
+        ).toBeInTheDocument()
+        expect(getByText('Pending')).toBeInTheDocument()
       })
     })
   })

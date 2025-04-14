@@ -1,7 +1,6 @@
 """TANF/SSP/Tribal parser class."""
 
 from django.conf import settings
-from django.db.utils import DatabaseError
 import logging
 from tdpservice.parsers import schema_defs
 from tdpservice.parsers.base_parser import BaseParser
@@ -9,8 +8,11 @@ from tdpservice.parsers.case_consistency_validator import CaseConsistencyValidat
 from tdpservice.parsers.dataclasses import HeaderResult, Position
 from tdpservice.parsers.models import ParserErrorCategoryChoices
 from tdpservice.parsers.schema_defs.utils import ProgramManager
-from tdpservice.parsers.util import log_parser_exception, make_generate_case_consistency_parser_error, \
-    make_generate_file_precheck_parser_error, make_generate_parser_error
+from tdpservice.parsers.util import (
+    make_generate_case_consistency_parser_error,
+    make_generate_file_precheck_parser_error,
+    make_generate_parser_error
+)
 from tdpservice.parsers.validators import category1
 from tdpservice.parsers.validators.util import value_is_empty
 
@@ -284,26 +286,5 @@ class TanfDataReportParser(BaseParser):
 
     def delete_serialized_records(self):
         """Delete all records that have already been serialized to the DB that have cat4 errors."""
-        total_deleted = 0
         duplicate_manager = self.case_consistency_validator.duplicate_manager
-        for model, ids in duplicate_manager.get_records_to_remove().items():
-            try:
-                qset = model.objects.filter(id__in=ids)
-                # WARNING: we can use `_raw_delete` in this case because our record models don't have cascading
-                # dependencies. If that ever changes, we should NOT use `_raw_delete`.
-                num_deleted = qset._raw_delete(qset.db)
-                total_deleted += num_deleted
-                self.dfs.total_number_of_records_created -= num_deleted
-                logger.debug(f"Deleted {num_deleted} records of type: {model}.")
-            except DatabaseError as e:
-                log_parser_exception(self.datafile,
-                                     (f"Encountered error while deleting database records for model {model}. "
-                                      f"Exception: \n{e}"),
-                                     "error"
-                                     )
-            except Exception as e:
-                log_parser_exception(self.datafile,
-                                     (f"Encountered generic exception while deleting records of type {model}. "
-                                      f"Exception: \n{e}"),
-                                     "error"
-                                     )
+        self._delete_serialized_records(duplicate_manager)

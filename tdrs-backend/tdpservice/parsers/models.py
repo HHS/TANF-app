@@ -104,7 +104,7 @@ class DataFileSummary(models.Model):
             case DataFileSummary.Status.REJECTED:
                 self.status = DataFileSummary.Status.REJECTED
             case _:
-                logger.warn(f"Unknown status: {status} passed into set_status.")
+                logger.warning(f"Unknown status: {status} passed into set_status.")
 
     def get_status(self):
         """Set and return the status field based on errors and models associated with datafile."""

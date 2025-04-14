@@ -51,8 +51,9 @@ deploy_grafana() {
     MANIFEST=manifest.tmp.yml
     cp manifest.yml $MANIFEST
 
-    yq eval -i ".datasources[0].url = \"http://prometheus.apps.internal:8080\""  $DATASOURCES
-    yq eval -i ".datasources[1].url = \"http://loki.apps.internal:8080\""  $DATASOURCES
+    yq eval -i ".datasources[0].url = \"http://mimir.apps.internal:8080/prometheus\""  $DATASOURCES
+    yq eval -i ".datasources[1].url = \"http://prometheus.apps.internal:8080\""  $DATASOURCES
+    yq eval -i ".datasources[2].url = \"http://loki.apps.internal:8080\""  $DATASOURCES
     yq eval -i ".applications[0].services[0] = \"$1\""  $MANIFEST
 
     cf push --no-route -f $MANIFEST -t 180  --strategy rolling
@@ -60,6 +61,13 @@ deploy_grafana() {
 
     rm $DATASOURCES
     rm $MANIFEST
+    popd
+}
+
+deploy_mimir() {
+    pushd mimir
+    cf push --no-route -f manifest.yml -t 180  --strategy rolling
+    cf map-route mimir apps.internal --hostname mimir
     popd
 }
 
@@ -95,15 +103,17 @@ setup_prod_net_pols() {
     # Target prod environment just in case
     cf target -o hhs-acf-ofa -s tanf-prod
 
-    # Let grafana talk to prometheus and loki
+    # Let grafana talk to prometheus, loki, and mimir
     cf add-network-policy grafana prometheus --protocol tcp --port 8080
     cf add-network-policy grafana loki --protocol tcp --port 8080
+    cf add-network-policy grafana mimir --protocol tcp --port 8080
 
-    # Let prometheus talk to alertmanager/grafana/loki/prod backend
+    # Let prometheus talk to alertmanager, grafana, loki, prod backend, and mimir
     cf add-network-policy prometheus alertmanager --protocol tcp --port 8080
     cf add-network-policy prometheus $PROD_BACKEND --protocol tcp --port 8080
     cf add-network-policy prometheus grafana --protocol tcp --port 8080
     cf add-network-policy prometheus loki --protocol tcp --port 8080
+    cf add-network-policy prometheus mimir --protocol tcp --port 8080
 
     # Let alertmanager/grafana talk to the prod frontend and vice versa
     cf add-network-policy alertmanager $PROD_FRONTEND --protocol tcp --port 80
@@ -127,9 +137,11 @@ setup_prod_net_pols() {
     # Add network policies to allow prometheus to talk to all backend apps in all environments
     for app in ${DEV_BACKEND_APPS[@]}; do
         cf add-network-policy prometheus $app -s tanf-dev --protocol tcp --port 8080
+        cf add-network-policy prometheus $app -s tanf-dev --protocol tcp --port 9808
     done
     for app in ${STAGING_BACKEND_APPS[@]}; do
         cf add-network-policy prometheus $app -s tanf-staging --protocol tcp --port 8080
+        cf add-network-policy prometheus $app -s tanf-staging --protocol tcp --port 9808
     done
 }
 
@@ -201,6 +213,7 @@ if [ "$DB_SERVICE_NAME" == "" ]; then
     err_help_exit "Error: you must include a database service name."
 fi
 if [ "$DEPLOY" == "plg" ]; then
+    deploy_mimir
     deploy_prometheus
     deploy_loki
     deploy_grafana $DB_SERVICE_NAME
