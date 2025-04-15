@@ -726,7 +726,12 @@ const FRAReports = () => {
 
     dispatch(
       getFraSubmissionHistory(
-        { ...formValues, reportType: getReportTypeLabel() },
+        {
+          ...formValues,
+          reportType: reportTypeOptions.find(
+            (o) => o.value === formValues.reportType
+          ).label,
+        },
         onSearchSuccess,
         onSearchError
       )
