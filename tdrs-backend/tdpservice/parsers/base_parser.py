@@ -9,7 +9,7 @@ from tdpservice.parsers import util
 from tdpservice.parsers.decoders import DecoderFactory
 from tdpservice.parsers.models import ParserErrorCategoryChoices, ParserError
 from tdpservice.parsers.schema_manager import SchemaManager
-from tdpservice.parsers.util import SortedRecords, log_parser_exception
+from tdpservice.parsers.util import SortedRecords, log_parser_exception, DecoderUnknownException
 
 logger = logging.getLogger(__name__)
 
@@ -23,9 +23,6 @@ class BaseParser(ABC):
         self.section = section
         self.program_type = None
 
-        # Initialized decoder.
-        self.decoder = DecoderFactory.get_instance(datafile.file)
-
         self.current_row = None
         self.current_row_num = 0
 
@@ -35,10 +32,41 @@ class BaseParser(ABC):
         self.unsaved_parser_errors = dict()
         self.num_errors = 0
 
+        # Initialized decoder.
+        self._init_decoder()
+
     @abstractmethod
     def parse_and_validate(self):
         """To be overriden in child class."""
         pass
+
+    def _init_decoder(self):
+        """Initialize the decoder."""
+        try:
+            self.decoder = DecoderFactory.get_instance(self.datafile.file)
+        except ValueError as e:
+            log_parser_exception(self.datafile,
+                                 f"Could not determine encoding of file: \n{e}",
+                                 "error"
+                                 )
+            if self.datafile.Section.is_fra(self.section):
+                msg = ("Could not determine encoding of FRA file. If the file is an Excel file, ensure it "
+                       "can be opened in Excel and the data is valid. If the file is a CSV, ensure it can "
+                       "be opened in a text editor and is UTF-8 encoded.")
+            else:
+                msg = f"Could not determine encoding of file TANF file. Ensure the file is UTF-8 encoded."
+            generate_error = util.make_generate_parser_error(self.datafile, 0)
+            err_obj = generate_error(
+                    schema=None,
+                    error_category=ParserErrorCategoryChoices.PRE_CHECK,
+                    error_message=msg,
+                    record=None,
+                    field=None
+                )
+            self.unsaved_parser_errors.update({0: [err_obj]})
+            self.num_errors += 1
+            self.bulk_create_errors(flush=True)
+            raise DecoderUnknownException(msg)
 
     def _init_schema_manager(self, program_type):
         """Initialize the schema manager with the given program type."""

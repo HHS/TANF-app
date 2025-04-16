@@ -384,3 +384,9 @@ def log_parser_exception(datafile, error_msg, level):
                'object_repr': f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
                "object_id": datafile}
     log(error_msg, context, level)
+
+
+class DecoderUnknownException(Exception):
+    """Exception raised when decoder cannot be determined."""
+
+    pass

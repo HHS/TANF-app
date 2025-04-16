@@ -16,7 +16,7 @@ from tdpservice.parsers.aggregates import (
 )
 from tdpservice.parsers.models import DataFileSummary, ParserErrorCategoryChoices, ParserError
 from tdpservice.parsers.factory import ParserFactory
-from tdpservice.parsers.util import log_parser_exception, make_generate_parser_error
+from tdpservice.parsers.util import log_parser_exception, make_generate_parser_error, DecoderUnknownException
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 from tdpservice.log_handler import change_log_filename
 from tdpservice.users.models import AccountApprovalStatusChoices, User
@@ -87,6 +87,11 @@ def parse(data_file_id, reparse_id=None):
             ).values_list('username', flat=True).distinct()
 
             send_data_submitted_email(dfs, recipients)
+    except DecoderUnknownException as e:
+        dfs.set_status(DataFileSummary.Status.REJECTED)
+        dfs.save()
+        if reparse_id:
+            set_reparse_file_meta_model_failed_state(file_meta)
     except DatabaseError as e:
         log_parser_exception(data_file,
                              f"Encountered Database exception in parser_task.py: \n{e}",
