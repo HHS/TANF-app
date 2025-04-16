@@ -11,7 +11,7 @@ from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TAN
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T1, Tribal_TANF_T2, Tribal_TANF_T3, Tribal_TANF_T4
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T5, Tribal_TANF_T6, Tribal_TANF_T7
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3, SSP_M4, SSP_M5, SSP_M6, SSP_M7
-from tdpservice.parsers import aggregates
+from tdpservice.parsers import aggregates, util
 from tdpservice.search_indexes.models.fra import TANF_Exiter1
 
 import logging
@@ -1938,3 +1938,29 @@ def test_parse_fra_formula_fields(fra_formula_fields_test_xlsx, dfs):
     assert dfs.total_number_of_records_in_file == 8
     assert dfs.total_number_of_records_created == 8
     assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
+
+@pytest.mark.django_db()
+def test_parse_fra_decoder_unknown(fra_decoder_unknown, dfs):
+    """Test parsing a FRA file with bad encoding."""
+    datafile = fra_decoder_unknown
+    datafile.year = 2025
+    datafile.quarter = 'Q3'
+
+    dfs.datafile = datafile
+    dfs.save()
+
+    try:
+        parser = ParserFactory.get_instance(datafile=datafile, dfs=dfs,
+                                            section=datafile.section,
+                                            program_type=datafile.prog_type)
+        parser.parse_and_validate()
+    except util.DecoderUnknownException:
+        pass
+
+    errors = ParserError.objects.filter(file=datafile).order_by("id")
+    assert errors.count() == 1
+    assert errors.first().error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert errors.first().error_message == ("Could not determine encoding of FRA file. If the file is an Excel file, "
+                                           "ensure it can be opened in Excel and the data is valid. If the file is a "
+                                           "CSV, ensure it can be opened in a text editor and is UTF-8 encoded.")
+    assert dfs.get_status() == DataFileSummary.Status.REJECTED
