@@ -33,5 +33,5 @@ class S3Client():
         except ClientError as e:
             logger.error(e)
 
-        f = open(path, 'r')
+        f = open(path, 'rb')
         return f
