@@ -23,12 +23,13 @@ from tdpservice.users.models import AccountApprovalStatusChoices, User
 
 logger = settings.PARSER_LOGGER
 
-def set_reparse_file_meta_model_failed_state(file_meta):
+def set_reparse_file_meta_model_failed_state(reparse_id, file_meta):
     """Set ReparseFileMeta fields to indicate a parse failure."""
-    file_meta.finished = True
-    file_meta.success = False
-    file_meta.finished_at = timezone.now()
-    file_meta.save()
+    if reparse_id:
+        file_meta.finished = True
+        file_meta.success = False
+        file_meta.finished_at = timezone.now()
+        file_meta.save()
 
 
 @shared_task
@@ -87,18 +88,16 @@ def parse(data_file_id, reparse_id=None):
             ).values_list('username', flat=True).distinct()
 
             send_data_submitted_email(dfs, recipients)
-    except DecoderUnknownException as e:
+    except DecoderUnknownException:
         dfs.set_status(DataFileSummary.Status.REJECTED)
         dfs.save()
-        if reparse_id:
-            set_reparse_file_meta_model_failed_state(file_meta)
+        set_reparse_file_meta_model_failed_state(reparse_id, file_meta)
     except DatabaseError as e:
         log_parser_exception(data_file,
                              f"Encountered Database exception in parser_task.py: \n{e}",
                              "error"
                              )
-        if reparse_id:
-            set_reparse_file_meta_model_failed_state(file_meta)
+        set_reparse_file_meta_model_failed_state(reparse_id, file_meta)
     except Exception as e:
         generate_error = make_generate_parser_error(data_file, None)
         error = generate_error(schema=None,
@@ -116,8 +115,7 @@ def parse(data_file_id, reparse_id=None):
                              (f"Uncaught exception while parsing datafile: {data_file.pk}! Please review the logs to "
                               f"see if manual intervention is required. Exception: \n{e}"),
                              "critical")
-        if reparse_id:
-            set_reparse_file_meta_model_failed_state(file_meta)
+        set_reparse_file_meta_model_failed_state(reparse_id, file_meta)
     finally:
         logger.info(f"DataFile parsing finished for file {data_file.filename}")
         logger.handlers[2].doRollover(data_file)

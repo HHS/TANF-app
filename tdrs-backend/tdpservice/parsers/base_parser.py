@@ -54,7 +54,7 @@ class BaseParser(ABC):
                        "can be opened in Excel and the data is valid. If the file is a CSV, ensure it can "
                        "be opened in a text editor and is UTF-8 encoded.")
             else:
-                msg = f"Could not determine encoding of file TANF file. Ensure the file is UTF-8 encoded."
+                msg = "Could not determine encoding of file TANF file. Ensure the file is UTF-8 encoded."
             generate_error = util.make_generate_parser_error(self.datafile, 0)
             err_obj = generate_error(
                     schema=None,
