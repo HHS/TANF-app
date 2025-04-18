@@ -11,7 +11,7 @@ s1 = TanfDataReportSchema(
     record_type="M6",
     model=SSP_M6,
     preparsing_validators=[
-        category1.recordHasLength(259),
+        category1.recordHasLengthOfAtLeast(259),
         category1.validate_fieldYearMonth_with_headerYearQuarter(),
         category1.calendarQuarterIsValid(2, 7),
     ],
@@ -176,7 +176,7 @@ s2 = TanfDataReportSchema(
     model=SSP_M6,
     quiet_preparser_errors=True,
     preparsing_validators=[
-        category1.recordHasLength(259),
+        category1.recordHasLengthOfAtLeast(259),
         category1.validate_fieldYearMonth_with_headerYearQuarter(),
         category1.calendarQuarterIsValid(2, 7),
     ],
@@ -341,7 +341,7 @@ s3 = TanfDataReportSchema(
     model=SSP_M6,
     quiet_preparser_errors=True,
     preparsing_validators=[
-        category1.recordHasLength(259),
+        category1.recordHasLengthOfAtLeast(259),
         category1.validate_fieldYearMonth_with_headerYearQuarter(),
         category1.calendarQuarterIsValid(2, 7),
     ],

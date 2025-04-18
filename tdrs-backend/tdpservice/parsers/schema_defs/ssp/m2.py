@@ -17,7 +17,7 @@ m2 = [
         should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {3, 5},
         get_partial_hash_members_func=get_t2_t3_t5_partial_hash_members,
         preparsing_validators=[
-            category1.recordHasLength(150),
+            category1.recordHasLengthOfAtLeast(150),
             category1.caseNumberNotEmpty(8, 19),
             category1.or_priority_validators([
                 category1.validate_fieldYearMonth_with_headerYearQuarter(),

@@ -30,6 +30,14 @@ def recordHasLength(length, **kwargs):
             f"{eargs.row_schema.record_type}: record length is {len(eargs.value)} characters but must be {length}.",
     )
 
+def recordHasLengthOfAtLeast(length, **kwargs):
+    """Return a function that tests that a record/row has a length of at least length."""
+    return make_validator(
+        base.hasLengthGreaterThan(length, inclusive=True, **kwargs),
+        lambda eargs:
+            f"{eargs.row_schema.record_type}: record length should be at least {length} "
+            f"characters but it is {len(eargs.value)} characters.",
+    )
 
 def recordHasLengthBetween(min, max, **kwargs):
     """Return a function that tests that a record/row has a length between min and max."""
