@@ -69,6 +69,25 @@ jobs:
         message: "${{ github.head_ref }} - ${{ github.sha }}"
         color: blue
 
+    - name: Build and Push Images to GHCR
+      if: steps.get-pr-state.outputs.STATE == 'success'
+      env:
+        REGISTRY_LOGIN: ${{ secrets.GITHUB_TOKEN }}
+        REGISTRY_USER: ${{ github.actor }}
+        REGISTRY_DOMAIN: ghcr.io
+      run: |
+        chmod +x ./scripts/build-and-tag-images.sh
+        ./scripts/build-and-tag-images.sh \
+          tdp-backend \
+          tdp-frontend \
+          ./tdrs-backend \
+          ./tdrs-frontend \
+          ${{ github.run_number }} \
+          ${{ github.sha }} \
+          "$REGISTRY_LOGIN" \
+          "$REGISTRY_USER" \
+          "$REGISTRY_DOMAIN"
+
     - name: Circle CI Deployment Trigger
       id: curl-circle-ci
       if: steps.get-pr-state.outputs.STATE == 'success'
@@ -78,7 +97,7 @@ jobs:
         project-slug: ${{ github.repository }}
         branch: ${{ github.head_ref }}
         payload: '{
-          "run_dev_deployment": true,
-          "target_env": "${{steps.extract-deploy-env.outputs.DEPLOY_ENV}}",
-          "triggered": true
-        }'
+            "run_dev_deployment": true,
+            "target_env": "${{steps.extract-deploy-env.outputs.DEPLOY_ENV}}",
+            "triggered": true
+          }'
