@@ -69,23 +69,6 @@ jobs:
         message: "${{ github.head_ref }} - ${{ github.sha }}"
         color: blue
 
-    - name: Build and Push Images to GHCR
-      if: steps.get-pr-state.outputs.STATE == 'success'
-      env:
-        BACKEND_APP_NAME: tdp-backend
-        FRONTEND_APP_NAME: tdp-frontend
-        BACKEND_PATH: ./tdrs-backend
-        FRONTEND_PATH: ./tdrs-frontend
-        BUILD_NUM: ${{ github.run_number }}
-        COMMIT_HASH: ${{ github.sha }}
-        REGISTRY_LOGIN: ${{ secrets.GITHUB_TOKEN }}
-        REGISTRY_USER: ${{ github.actor }}
-        REGISTRY_DOMAIN: ghcr.io
-        REPOSISTORY_OWNER: ${{ github.repository_owner }}
-      run: |
-        chmod +x ./scripts/build-and-tag-images.sh
-        ./scripts/build-and-tag-images.sh
-
     - name: Circle CI Deployment Trigger
       id: curl-circle-ci
       if: steps.get-pr-state.outputs.STATE == 'success'
