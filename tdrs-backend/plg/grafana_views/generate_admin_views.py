@@ -21,6 +21,125 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
+def handle_field(field, formatted_fields):
+    """Mutate or add field to fields array."""
+    if field == "DATE_OF_BIRTH":
+        # Remove DATE_OF_BIRTH from the formatted fields list since we're adding two new age calculations
+        # We'll add the new AGE_FIRST and AGE_LAST calculations instead
+        formatted_fields.append(f'''
+        -- Calculate AGE_FIRST: Age as of the first day of the reporting month
+        CASE
+            WHEN "{field}" ~ '^[0-9]{{8}}$' AND
+                    -- Validate year (reasonable range)
+                    CAST(SUBSTRING("{field}" FROM 1 FOR 4) AS INTEGER) BETWEEN 1900 AND
+                    EXTRACT(YEAR FROM CURRENT_DATE) AND
+                    -- Validate month (01-12)
+                    CAST(SUBSTRING("{field}" FROM 5 FOR 2) AS INTEGER) BETWEEN 1 AND 12 AND
+                    -- Validate day (01-31)
+                    CAST(SUBSTRING("{field}" FROM 7 FOR 2) AS INTEGER) BETWEEN 1 AND 31 AND
+                    -- Validate RPT_MONTH_YEAR format (YYYYMM)
+                    "RPT_MONTH_YEAR"::TEXT ~ '^[0-9]{{6}}$'
+            THEN
+                -- Simple calculation: (end_date - start_date) / 365.25
+                (
+                    EXTRACT(YEAR FROM TO_DATE(
+                        SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 1 FOR 4) || '-' ||
+                        SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 5 FOR 2) || '-01',
+                        'YYYY-MM-DD'
+                    )) -
+                    EXTRACT(YEAR FROM TO_DATE(
+                        SUBSTRING("{field}" FROM 1 FOR 4) || '-' ||
+                        SUBSTRING("{field}" FROM 5 FOR 2) || '-' ||
+                        SUBSTRING("{field}" FROM 7 FOR 2),
+                        'YYYY-MM-DD'
+                    )) -
+                    (CASE
+                        WHEN TO_CHAR(TO_DATE(
+                            SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 1 FOR 4) || '-' ||
+                            SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 5 FOR 2) || '-01',
+                            'YYYY-MM-DD'
+                        ), 'MMDD') <
+                            TO_CHAR(TO_DATE(
+                                SUBSTRING("{field}" FROM 1 FOR 4) || '-' ||
+                                SUBSTRING("{field}" FROM 5 FOR 2) || '-' ||
+                                SUBSTRING("{field}" FROM 7 FOR 2),
+                                'YYYY-MM-DD'
+                            ), 'MMDD')
+                        THEN 1
+                        ELSE 0
+                    END)
+                )
+            ELSE NULL
+        END AS "AGE_FIRST"'''.strip())
+
+        formatted_fields.append(f'''
+        -- Calculate AGE_LAST: Age as of the last day of the reporting month
+        CASE
+            WHEN "{field}" ~ '^[0-9]{{8}}$' AND
+                    -- Validate year (reasonable range)
+                    CAST(SUBSTRING("{field}" FROM 1 FOR 4) AS INTEGER) BETWEEN 1900 AND
+                    EXTRACT(YEAR FROM CURRENT_DATE) AND
+                    -- Validate month (01-12)
+                    CAST(SUBSTRING("{field}" FROM 5 FOR 2) AS INTEGER) BETWEEN 1 AND 12 AND
+                    -- Validate day (01-31)
+                    CAST(SUBSTRING("{field}" FROM 7 FOR 2) AS INTEGER) BETWEEN 1 AND 31 AND
+                    -- Validate RPT_MONTH_YEAR format (YYYYMM)
+                    "RPT_MONTH_YEAR"::TEXT ~ '^[0-9]{{6}}$'
+            THEN
+                -- Simple calculation: (end_date - start_date) / 365.25
+                (
+                    EXTRACT(YEAR FROM (DATE_TRUNC('MONTH', TO_DATE(
+                        SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 1 FOR 4) || '-' ||
+                        SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 5 FOR 2) || '-01',
+                        'YYYY-MM-DD'
+                    )) + INTERVAL '1 MONTH - 1 day')) -
+                    EXTRACT(YEAR FROM TO_DATE(
+                        SUBSTRING("{field}" FROM 1 FOR 4) || '-' ||
+                        SUBSTRING("{field}" FROM 5 FOR 2) || '-' ||
+                        SUBSTRING("{field}" FROM 7 FOR 2),
+                        'YYYY-MM-DD'
+                    )) -
+                    (CASE
+                        WHEN TO_CHAR((DATE_TRUNC('MONTH', TO_DATE(
+                            SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 1 FOR 4) || '-' ||
+                            SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 5 FOR 2) || '-01',
+                            'YYYY-MM-DD'
+                        )) + INTERVAL '1 MONTH - 1 day'), 'MMDD') <
+                            TO_CHAR(TO_DATE(
+                                SUBSTRING("{field}" FROM 1 FOR 4) || '-' ||
+                                SUBSTRING("{field}" FROM 5 FOR 2) || '-' ||
+                                SUBSTRING("{field}" FROM 7 FOR 2),
+                                'YYYY-MM-DD'
+                            ), 'MMDD')
+                        THEN 1
+                        ELSE 0
+                    END)
+                )
+            ELSE NULL
+        END AS "AGE_LAST"'''.strip())
+
+
+def handle_table_name(schema_type, schema_name):
+    """Determine appropriate table name."""
+    table_name = ""
+    table_alias = ""
+    if schema_type == 'tanf':
+        table_name = f'search_indexes_TANF_{schema_name.upper()}'
+        table_alias = schema_name.upper()
+    elif schema_type == 'tribal_tanf':
+        table_name = f'search_indexes_TRIBAL_TANF_{schema_name.upper()}'
+        table_alias = schema_name.upper()
+    elif schema_type == 'ssp':
+        table_name = f'search_indexes_SSP_{schema_name.upper()}'
+        table_alias = schema_name.upper()
+    elif schema_type == 'fra':
+        table_name = f'search_indexes_FRA_{schema_name.upper()}'
+        table_alias = schema_name.upper()
+
+    return table_name, table_alias
+
+
 # Log start of script execution
 logger.info("Starting admin schema query generation")
 
@@ -76,100 +195,7 @@ for schema_type, schemas in schema_data.items():
         formatted_fields = []
         for field in fields:
             formatted_fields.append(f'"{field}"')
-            if field == "DATE_OF_BIRTH":
-                # Remove DATE_OF_BIRTH from the formatted fields list since we're adding two new age calculations
-                # We'll add the new AGE_FIRST and AGE_LAST calculations instead
-                formatted_fields.append(f'''
-                -- Calculate AGE_FIRST: Age as of the first day of the reporting month
-                CASE
-                    WHEN "{field}" ~ '^[0-9]{{8}}$' AND
-                         -- Validate year (reasonable range)
-                         CAST(SUBSTRING("{field}" FROM 1 FOR 4) AS INTEGER) BETWEEN 1900 AND
-                         EXTRACT(YEAR FROM CURRENT_DATE) AND
-                         -- Validate month (01-12)
-                         CAST(SUBSTRING("{field}" FROM 5 FOR 2) AS INTEGER) BETWEEN 1 AND 12 AND
-                         -- Validate day (01-31)
-                         CAST(SUBSTRING("{field}" FROM 7 FOR 2) AS INTEGER) BETWEEN 1 AND 31 AND
-                         -- Validate RPT_MONTH_YEAR format (YYYYMM)
-                         "RPT_MONTH_YEAR"::TEXT ~ '^[0-9]{{6}}$'
-                    THEN
-                        -- Simple calculation: (end_date - start_date) / 365.25
-                        (
-                            EXTRACT(YEAR FROM TO_DATE(
-                                SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 1 FOR 4) || '-' ||
-                                SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 5 FOR 2) || '-01',
-                                'YYYY-MM-DD'
-                            )) -
-                            EXTRACT(YEAR FROM TO_DATE(
-                                SUBSTRING("{field}" FROM 1 FOR 4) || '-' ||
-                                SUBSTRING("{field}" FROM 5 FOR 2) || '-' ||
-                                SUBSTRING("{field}" FROM 7 FOR 2),
-                                'YYYY-MM-DD'
-                            )) -
-                            (CASE
-                                WHEN TO_CHAR(TO_DATE(
-                                    SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 1 FOR 4) || '-' ||
-                                    SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 5 FOR 2) || '-01',
-                                    'YYYY-MM-DD'
-                                ), 'MMDD') <
-                                    TO_CHAR(TO_DATE(
-                                        SUBSTRING("{field}" FROM 1 FOR 4) || '-' ||
-                                        SUBSTRING("{field}" FROM 5 FOR 2) || '-' ||
-                                        SUBSTRING("{field}" FROM 7 FOR 2),
-                                        'YYYY-MM-DD'
-                                    ), 'MMDD')
-                                THEN 1
-                                ELSE 0
-                            END)
-                        )
-                    ELSE NULL
-                END AS "AGE_FIRST"'''.strip())
-
-                formatted_fields.append(f'''
-                -- Calculate AGE_LAST: Age as of the last day of the reporting month
-                CASE
-                    WHEN "{field}" ~ '^[0-9]{{8}}$' AND
-                         -- Validate year (reasonable range)
-                         CAST(SUBSTRING("{field}" FROM 1 FOR 4) AS INTEGER) BETWEEN 1900 AND
-                         EXTRACT(YEAR FROM CURRENT_DATE) AND
-                         -- Validate month (01-12)
-                         CAST(SUBSTRING("{field}" FROM 5 FOR 2) AS INTEGER) BETWEEN 1 AND 12 AND
-                         -- Validate day (01-31)
-                         CAST(SUBSTRING("{field}" FROM 7 FOR 2) AS INTEGER) BETWEEN 1 AND 31 AND
-                         -- Validate RPT_MONTH_YEAR format (YYYYMM)
-                         "RPT_MONTH_YEAR"::TEXT ~ '^[0-9]{{6}}$'
-                    THEN
-                        -- Simple calculation: (end_date - start_date) / 365.25
-                        (
-                            EXTRACT(YEAR FROM (DATE_TRUNC('MONTH', TO_DATE(
-                                SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 1 FOR 4) || '-' ||
-                                SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 5 FOR 2) || '-01',
-                                'YYYY-MM-DD'
-                            )) + INTERVAL '1 MONTH - 1 day')) -
-                            EXTRACT(YEAR FROM TO_DATE(
-                                SUBSTRING("{field}" FROM 1 FOR 4) || '-' ||
-                                SUBSTRING("{field}" FROM 5 FOR 2) || '-' ||
-                                SUBSTRING("{field}" FROM 7 FOR 2),
-                                'YYYY-MM-DD'
-                            )) -
-                            (CASE
-                                WHEN TO_CHAR((DATE_TRUNC('MONTH', TO_DATE(
-                                    SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 1 FOR 4) || '-' ||
-                                    SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 5 FOR 2) || '-01',
-                                    'YYYY-MM-DD'
-                                )) + INTERVAL '1 MONTH - 1 day'), 'MMDD') <
-                                    TO_CHAR(TO_DATE(
-                                        SUBSTRING("{field}" FROM 1 FOR 4) || '-' ||
-                                        SUBSTRING("{field}" FROM 5 FOR 2) || '-' ||
-                                        SUBSTRING("{field}" FROM 7 FOR 2),
-                                        'YYYY-MM-DD'
-                                    ), 'MMDD')
-                                THEN 1
-                                ELSE 0
-                            END)
-                        )
-                    ELSE NULL
-                END AS "AGE_LAST"'''.strip())
+            handle_field(field, formatted_fields)
 
         formatted_fields_str = ','.join(formatted_fields)
 
@@ -177,22 +203,7 @@ for schema_type, schemas in schema_data.items():
         new_select = f'SELECT {formatted_fields_str},'
 
         # Determine the appropriate table name based on schema type and name
-        if schema_type == 'tanf':
-            table_name = f'search_indexes_TANF_{schema_name.upper()}'
-            table_alias = schema_name.upper()
-        elif schema_type == 'tribal_tanf':
-            table_name = f'search_indexes_TRIBAL_TANF_{schema_name.upper()}'
-            table_alias = schema_name.upper()
-        elif schema_type == 'ssp':
-            table_name = f'search_indexes_SSP_{schema_name.upper()}'
-            table_alias = schema_name.upper()
-        elif schema_type == 'fra':
-            table_name = f'search_indexes_FRA_{schema_name.upper()}'
-            table_alias = schema_name.upper()
-        else:
-            # For root schemas like header and trailer
-            table_name = f'search_indexes_{schema_name.upper()}'
-            table_alias = schema_name.upper()
+        table_name, table_alias = handle_table_name(schema_type, schema_name)
 
         # Create a new query by replacing the table name and alias throughout the query
         new_query = query_template
