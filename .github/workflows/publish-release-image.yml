@@ -1,28 +1,23 @@
 name: Build and Publish Image to GHCR
 
 on:
-  push:
-    branches:
-      - develop
+  pull_request:
+    branches: 
       - main
-      - master
-  workflow_dispatch:
+    types: 
+      - opened
+      - synchronize
+      - reopened
 
 env:
-  REGISTRY: ghcr.io
   BACKEND_DIR: tdrs-backend
   FRONTEND_DIR: tdrs-frontend
   BACKEND_NAME: tdp-backend
   FRONTEND_NAME: tdp-frontend
-  DEPLOY_ENV: |
-    ${{
-      github.ref_name == 'develop' && 'develop' ||
-      github.ref_name == 'main' && 'staging' ||
-      github.ref_name == 'master' && 'production'
-    }}
 
 jobs:
   build-and-push-image:
+    if: startsWith(github.head_ref, 'release/') || startsWith(github.head_ref, 'hotfix/')
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -32,12 +27,31 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Derive build tag
-        id: meta
+      - name: Extract Metadata for Backend
+        id: meta_backend
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository_owner }}/${{ BACKEND_NAME }}
+          tags: |
+            type=ref,event=pr,pattern=(release|hotfix)/(?<version>v\d+\.\d+\.\d+(?:-[\w\-]+)?),group=version
+            type=raw,value=latest
+
+      - name: Extract Metadata for Frontend
+        id: meta_frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository_owner }}/${{ FRONTEND_NAME }}
+          tags: |
+            type=ref,event=pr,pattern=(release|hotfix)/(?<version>v\d+\.\d+\.\d+(?:-[\w\-]+)?),group=version
+            type=raw,value=latest
+
+      - name: Ensure tag was extracted
+        if: steps.meta_backend.outputs.tags == '' || steps.meta_frontend.outputs.tags == ''
         run: |
-          DATE=$(date +%F)
-          TAG="${DATE}_build-${{ github.run_number }}_${{ github.sha }}"
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo: "Failed to extract a valid semver tag. Please check that the branch name has the correct syntax"
+          exit 1
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -45,7 +59,7 @@ jobs:
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -55,9 +69,8 @@ jobs:
           context: ${{ env.BACKEND_DIR }}
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.BACKEND_NAME }}-${{ env.DEPLOY_ENV }}:latest
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.BACKEND_NAME }}-${{ env.DEPLOY_ENV }}:${{ steps.meta.outputs.tag }}
+          tags: ${{ steps.meta_backend.outputs.tags }}
+          labels: ${{ steps.meta_backend.outputs.lables }}
 
       - name: Build and Push Frontend
         uses: docker/build-push-action@v5
@@ -65,6 +78,5 @@ jobs:
           context: ${{ env.FRONTEND_DIR }}
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: |
-            ghcr.io/${{ github.repository_owner }}/${{ env.FRONTEND_NAME }}-${{ env.DEPLOY_ENV }}:latest
-            ghcr.io/${{ github.repository_owner }}/${{ env.FRONTEND_NAME }}-${{ env.DEPLOY_ENV }}:${{ steps.meta.outputs.tag }}
+          tags: ${{ steps.meta_frontend.outputs.tags }}
+          labels: ${{ steps.meta_frontend.outputs.lables }}
