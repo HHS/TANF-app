@@ -232,7 +232,6 @@ function FileUpload({ section, setLocalAlertState }) {
         })
       }
     }
-    inputRef.current.value = null
   }
 
   return (
