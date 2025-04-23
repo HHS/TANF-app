@@ -9,6 +9,7 @@ import FileUpload from '../FileUpload'
 import { submit } from '../../actions/reports'
 import { fileUploadSections } from '../../reducers/reports'
 import { useEventLogger } from '../../utils/eventLogger'
+import { useFormSubmission } from '../../hooks/useFormSubmission'
 
 function UploadReport({ handleCancel, stt }) {
   // The currently selected year from the reportingYears dropdown
@@ -36,7 +37,8 @@ function UploadReport({ handleCancel, stt }) {
     message: null,
   })
 
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  // Use the form submission hook
+  const { isSubmitting, executeSubmission } = useFormSubmission()
 
   const alertRef = useRef(null)
 
@@ -62,10 +64,7 @@ function UploadReport({ handleCancel, stt }) {
   const onSubmit = async (event) => {
     event.preventDefault()
 
-    if (isSubmitting) {
-      return
-    }
-
+    // Prevent submission if no files have been uploaded
     if (uploadedFiles.length === 0) {
       setLocalAlertState({
         active: true,
@@ -75,27 +74,30 @@ function UploadReport({ handleCancel, stt }) {
       return
     }
 
-    setIsSubmitting(true)
-
-    // Create a promise from the dispatch to handle completion
-    const submissionPromise = dispatch(
-      submit({
-        quarter: selectedQuarter,
-        year: selectedYear,
-        formattedSections,
-        logger,
-        setLocalAlertState,
-        stt: stt_id,
-        uploadedFiles,
-        user,
-        ssp: selectedFileType === 'ssp-moe',
+    try {
+      await executeSubmission(() =>
+        dispatch(
+          submit({
+            quarter: selectedQuarter,
+            year: selectedYear,
+            formattedSections,
+            logger,
+            setLocalAlertState,
+            stt: stt_id,
+            uploadedFiles,
+            user,
+            ssp: selectedFileType === 'ssp-moe',
+          })
+        )
+      )
+    } catch (error) {
+      console.error('Error during form submission:', error)
+      setLocalAlertState({
+        active: true,
+        type: 'error',
+        message: 'An error occurred during submission. Please try again.',
       })
-    )
-
-    // Reset loading state when submission completes (success or failure)
-    submissionPromise.finally(() => {
-      setIsSubmitting(false)
-    })
+    }
   }
 
   useEffect(() => {

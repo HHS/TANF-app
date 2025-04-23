@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+import { useFormSubmission } from '../../hooks/useFormSubmission'
 import { useDispatch, useSelector } from 'react-redux'
 import classNames from 'classnames'
 import { fileInput } from '@uswds/uswds/src/js/components'
@@ -248,9 +249,9 @@ const UploadForm = ({
   section,
   error,
   setError,
+  isSubmitting,
 }) => {
   const inputRef = useRef(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     // `init` for the uswds fileInput must be called on the
@@ -351,11 +352,7 @@ const UploadForm = ({
       return
     }
 
-    handleUpload({
-      file,
-      onUploadStart: () => setIsSubmitting(true),
-      onUploadComplete: () => setIsSubmitting(false),
-    })
+    handleUpload({ file })
   }
 
   const formattedSectionName = section.toLowerCase().replace(' ', '-')
@@ -585,6 +582,10 @@ const FRAReports = () => {
   const [searchFormValues, setSearchFormValues] = useState(null)
   const [uploadError, setUploadError] = useState(null)
 
+  // Use the form submission hook to prevent multiple submissions
+  const { isSubmitting, executeSubmission, onSubmitStart, onSubmitComplete } =
+    useFormSubmission()
+
   const user = useSelector((state) => state.auth.user)
   const sttList = useSelector((state) => state?.stts?.sttList)
   const needsSttSelection = useSelector(accountCanSelectStt)
@@ -752,12 +753,14 @@ const FRAReports = () => {
     )
   }
 
-  const handleUpload = ({
-    file: selectedFile,
-    onUploadStart,
-    onUploadComplete,
-  }) => {
-    onUploadStart()
+  const handleUpload = ({ file: selectedFile }) => {
+    // If already submitting, prevent multiple submissions
+    if (isSubmitting) {
+      return
+    }
+
+    // Start the submission process
+    onSubmitStart()
 
     const onFileUploadSuccess = (datafile) => {
       setSelectedFile(null)
@@ -767,7 +770,8 @@ const FRAReports = () => {
         message: `Successfully submitted section: ${getReportTypeLabel()} on ${new Date().toDateString()}`,
       })
 
-      onUploadComplete()
+      // Complete the submission process
+      onSubmitComplete()
 
       const WAIT_TIME = 2000 // #
       let statusTimeout = null
@@ -812,19 +816,22 @@ const FRAReports = () => {
         message: ''.concat(error.message, ': ', msg),
       })
 
-      onUploadComplete()
+      // Complete the submission process even in case of error
+      onSubmitComplete()
     }
 
-    dispatch(
-      uploadFraReport(
-        {
-          ...searchFormValues,
-          reportType: getReportTypeLabel(),
-          file: selectedFile,
-          user,
-        },
-        onFileUploadSuccess,
-        onFileUploadError
+    executeSubmission(() =>
+      dispatch(
+        uploadFraReport(
+          {
+            ...searchFormValues,
+            reportType: getReportTypeLabel(),
+            file: selectedFile,
+            user,
+          },
+          onFileUploadSuccess,
+          onFileUploadError
+        )
       )
     )
   }
@@ -938,6 +945,7 @@ const FRAReports = () => {
                 section={getReportTypeLabel()}
                 error={uploadError}
                 setError={setUploadError}
+                isSubmitting={isSubmitting}
               />
             </>
           )}
