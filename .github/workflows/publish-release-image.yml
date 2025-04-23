@@ -32,7 +32,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ghcr.io/${{ github.repository_owner }}/${{ BACKEND_NAME }}
+            ghcr.io/${{ github.repository_owner }}/${{ env.BACKEND_NAME }}
           tags: |
             type=ref,event=pr,pattern=(release|hotfix)/(?<version>v\d+\.\d+\.\d+(?:-[\w\-]+)?),group=version
             type=raw,value=latest
@@ -42,7 +42,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ghcr.io/${{ github.repository_owner }}/${{ FRONTEND_NAME }}
+            ghcr.io/${{ github.repository_owner }}/${{ env.FRONTEND_NAME }}
           tags: |
             type=ref,event=pr,pattern=(release|hotfix)/(?<version>v\d+\.\d+\.\d+(?:-[\w\-]+)?),group=version
             type=raw,value=latest
