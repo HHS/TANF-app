@@ -35,13 +35,16 @@ jobs:
           BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
           echo "Branch: $BRANCH_NAME"
 
-          if [[ "$BRANCH_NAME" =~ ^(release|hotfix)\/(v\d+\.\d+\.\d+(?:-[\w\-]+)?)$ ]]; then
+          # only match release and hotfix branches with a valid v prefixed semver as the branch name
+          pattern='^(release|hotfix)/(v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9_-]+)?)$'
+
+          if [[ "$BRANCH_NAME" =~ $pattern ]]; then
             VERSION="${BASH_REMATCH[2]}"
             echo "Version: $VERSION"
 
             echo "VERSION=$VERSION" >> $GITHUB_ENV
           else
-            echo "Invalid branch format: expected release/vX.X.X-optional-additional-information"
+            echo "Invalid branch format"
             exit 1
           fi
 
