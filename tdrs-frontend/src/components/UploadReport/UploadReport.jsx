@@ -35,6 +35,10 @@ function UploadReport({ handleCancel, stt }) {
     type: null,
     message: null,
   })
+
+  // Track submission loading state to prevent multiple submissions
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
   const alertRef = useRef(null)
 
   const dispatch = useDispatch()
@@ -59,6 +63,11 @@ function UploadReport({ handleCancel, stt }) {
   const onSubmit = async (event) => {
     event.preventDefault()
 
+    // Prevent multiple submissions
+    if (isSubmitting) {
+      return
+    }
+
     if (uploadedFiles.length === 0) {
       setLocalAlertState({
         active: true,
@@ -68,7 +77,11 @@ function UploadReport({ handleCancel, stt }) {
       return
     }
 
-    dispatch(
+    // Set loading state to true to prevent multiple submissions
+    setIsSubmitting(true)
+
+    // Create a promise from the dispatch to handle completion
+    const submissionPromise = dispatch(
       submit({
         quarter: selectedQuarter,
         year: selectedYear,
@@ -81,6 +94,12 @@ function UploadReport({ handleCancel, stt }) {
         ssp: selectedFileType === 'ssp-moe',
       })
     )
+
+    // Handle submission completion or failure
+    submissionPromise.finally(() => {
+      // Reset loading state when submission completes (success or failure)
+      setIsSubmitting(false)
+    })
   }
 
   useEffect(() => {
@@ -121,8 +140,12 @@ function UploadReport({ handleCancel, stt }) {
         })}
 
         <div className="buttonContainer margin-y-4">
-          <Button className="card:margin-y-1" type="submit">
-            Submit Data Files
+          <Button
+            className="card:margin-y-1"
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit Data Files'}
           </Button>
 
           <Button className="cancel" type="button" onClick={handleCancel}>

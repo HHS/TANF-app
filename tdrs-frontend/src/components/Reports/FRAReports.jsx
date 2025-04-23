@@ -250,6 +250,7 @@ const UploadForm = ({
   setError,
 }) => {
   const inputRef = useRef(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     // `init` for the uswds fileInput must be called on the
@@ -332,6 +333,11 @@ const UploadForm = ({
   const onSubmit = (e) => {
     e.preventDefault()
 
+    // Prevent multiple submissions
+    if (isSubmitting) {
+      return
+    }
+
     if (!!error) {
       return
     }
@@ -345,7 +351,11 @@ const UploadForm = ({
       return
     }
 
-    handleUpload({ file })
+    handleUpload({
+      file,
+      onUploadStart: () => setIsSubmitting(true),
+      onUploadComplete: () => setIsSubmitting(false),
+    })
   }
 
   const formattedSectionName = section.toLowerCase().replace(' ', '-')
@@ -406,8 +416,12 @@ const UploadForm = ({
         </div>
 
         <div className="buttonContainer margin-y-4">
-          <Button className="card:margin-y-1" type="submit">
-            Submit Report
+          <Button
+            className="card:margin-y-1"
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit Report'}
           </Button>
 
           <Button className="cancel" type="button" onClick={handleCancel}>
@@ -738,7 +752,13 @@ const FRAReports = () => {
     )
   }
 
-  const handleUpload = ({ file: selectedFile }) => {
+  const handleUpload = ({
+    file: selectedFile,
+    onUploadStart,
+    onUploadComplete,
+  }) => {
+    onUploadStart()
+
     const onFileUploadSuccess = (datafile) => {
       setSelectedFile(null)
       setLocalAlertState({
@@ -746,6 +766,8 @@ const FRAReports = () => {
         type: 'success',
         message: `Successfully submitted section: ${getReportTypeLabel()} on ${new Date().toDateString()}`,
       })
+
+      onUploadComplete()
 
       const WAIT_TIME = 2000 // #
       let statusTimeout = null
@@ -789,6 +811,8 @@ const FRAReports = () => {
         type: 'error',
         message: ''.concat(error.message, ': ', msg),
       })
+
+      onUploadComplete()
     }
 
     dispatch(
