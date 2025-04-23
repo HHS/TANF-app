@@ -36,7 +36,6 @@ function UploadReport({ handleCancel, stt }) {
     message: null,
   })
 
-  // Track submission loading state to prevent multiple submissions
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const alertRef = useRef(null)
@@ -63,7 +62,6 @@ function UploadReport({ handleCancel, stt }) {
   const onSubmit = async (event) => {
     event.preventDefault()
 
-    // Prevent multiple submissions
     if (isSubmitting) {
       return
     }
@@ -77,7 +75,6 @@ function UploadReport({ handleCancel, stt }) {
       return
     }
 
-    // Set loading state to true to prevent multiple submissions
     setIsSubmitting(true)
 
     // Create a promise from the dispatch to handle completion
@@ -95,9 +92,8 @@ function UploadReport({ handleCancel, stt }) {
       })
     )
 
-    // Handle submission completion or failure
+    // Reset loading state when submission completes (success or failure)
     submissionPromise.finally(() => {
-      // Reset loading state when submission completes (success or failure)
       setIsSubmitting(false)
     })
   }
