@@ -18,7 +18,7 @@ env:
 
 jobs:
   build-and-push-image:
-    if: startsWith(github.head_ref, 'release/') || startsWith(github.head_ref, 'hotfix/')
+    if: startsWith(github.head_ref, 'release/v') || startsWith(github.head_ref, 'hotfix/v')
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -28,15 +28,23 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Extract Metadata for Backend
-        id: meta_backend
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ghcr.io/${{ github.repository_owner }}/${{ env.BACKEND_NAME }}
-          tags: |
-            type=ref,event=pr,pattern=(release|hotfix)/(?<version>v\d+\.\d+\.\d+(?:-[\w\-]+)?),group=version
-            type=raw,value=latest
+      - name: Get Semver
+        id: semver
+        run: |
+          # head_ref -> set in pr events
+          # ref_name -> set in branch events (pushes)
+          BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
+          echo "Branch: $BRANCH_NAME"
+
+          if [[ "$BRANCH_NAME" =~ ^(release|hotfix)\/(v\d+\.\d+\.\d+(?:-[\w\-]+)?)$ ]]; then
+            VERSION="${BASH_REMATCH[2]}"
+            echo "Version: $VERSION"
+
+            echo "VERSION=$VERSION" >> $GITHUB_ENV
+          else
+            echo "Invalid branch format: expected release/vX.X.X-optional-additional-information"
+            exit 1
+          fi
 
       - name: Extract Metadata for Frontend
         id: meta_frontend
@@ -47,12 +55,6 @@ jobs:
           tags: |
             type=ref,event=pr,pattern=(release|hotfix)/(?<version>v\d+\.\d+\.\d+(?:-[\w\-]+)?),group=version
             type=raw,value=latest
-
-      - name: Ensure tag was extracted
-        if: steps.meta_backend.outputs.tags == '' || steps.meta_frontend.outputs.tags == ''
-        run: |
-          echo: "Failed to extract a valid semver tag. Please check that the branch name has the correct syntax"
-          exit 1
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -70,8 +72,9 @@ jobs:
           context: ${{ env.BACKEND_DIR }}
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ steps.meta_backend.outputs.tags }}
-          labels: ${{ steps.meta_backend.outputs.lables }}
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/${{ env.BACKEND_NAME }}:${{ env.VERSION }}
+            ghcr.io/${{ github.repository_owner }}/${{ env.BACKEND_NAME }}:latest
 
       - name: Build and Push Frontend
         uses: docker/build-push-action@v5
@@ -79,5 +82,6 @@ jobs:
           context: ${{ env.FRONTEND_DIR }}
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ steps.meta_frontend.outputs.tags }}
-          labels: ${{ steps.meta_frontend.outputs.lables }}
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/${{ env.FRONTEND_NAME }}:${{ env.VERSION }}
+            ghcr.io/${{ github.repository_owner }}/${{ env.FRONTEND_NAME }}:latest
