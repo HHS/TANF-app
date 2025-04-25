@@ -68,6 +68,7 @@
   border-radius: 50%;
   display: inline-block;
   animation: spin 0.7s linear infinite;
+  animation-play-state: running !important;
 }
 
 @keyframes spin {
