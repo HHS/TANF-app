@@ -50,10 +50,14 @@ Issues will be created in the [Raft TDP repo](https://github.com/raft-tech/TANF-
 - If all this is in place, the assignee should move the card to “Raft Review” column/pipeline in Zenhub and ping the appropriate reviewer(s).
      - Once _research_ issues are approved in raft review, the assignee should tag the PO for review and move the issue/PR to the "QASP Review" pipeline in Zenhub.
      - For _design_ issues, the assignee should tag at least one developer for raft review. Upon approval,  the reviewer tags the ACF Tech Lead and moves the issue/PR to the "QASP Review" pipeline in Zenhub.
-     - _Dev_ issues must proceed through the **[tabletop process](https://github.com/raft-tech/TANF-app/tree/develop/docs/How-We-Work/Developer-Tabletops.md)** and be approved in raft review before it is moved the "QASP Review" pipeline in Zenhub.
+     - _Dev_ issues must proceed through the **[tabletop process](https://github.com/raft-tech/TANF-app/tree/develop/docs/How-We-Work/Developer-Tabletops.md)** and be approved in raft review. If the PR does not require QASP review, the assignee should move the card to the "Ready to Merge" column/pipeline in Zenhub. If the PR requires QASP review, the assignee should move the card to the "QASP Review" column/pipeline in Zenhub. [The issue needs QASP review (Not a requirement)](#the_issue_needs_qasp_review) section explains the criteria for when QASP review is required.
 - When approved and QASP review is not required, the assignee should move the card to the "Ready to Merge" column/pipeline in Zenhub.
 
 ### The issue needs QASP review (Not a requirement)
+- Criteria for when QASP review is required:
+  - The government team (i.e. PO or ACF Tech Lead) indicates that QASP review is required
+  - The PR will change or modify existing data in the database (e.g. database schema, database migrations, database queries, etc.)
+  - The PR will change or modify security controls
 - The government reviewers (i.e. PO or ACF Tech Lead) verify that all the acceptance criteria and the relevant [QASP elements](https://github.com/raft-tech/TANF-app/blob/develop/.github/pull_request_template.md) have been met.
 - The reviewer checks the issue/PR against the QASP checklist and provides feedback if needed. Raft addresses any small feedback (one/two pointer) within the same PR. Larger feedback is added as an issue for backlog refinement and PR is updated with a note on the ‘issue # has been created to address the specific feedback.’
 - Government reviewers approve PRs (or request changes) and when relevant qasp elements satisfied, adds the label "Ready to Merge".
