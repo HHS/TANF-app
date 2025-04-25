@@ -29,3 +29,4 @@ const Spinner = ({ visible }) => {
 }
 
 export { Spinner }
+export { SpinnerSyncProvider } from './SpinnerContext'
