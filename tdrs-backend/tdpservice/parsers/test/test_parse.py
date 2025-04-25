@@ -1960,7 +1960,7 @@ def test_parse_fra_decoder_unknown(fra_decoder_unknown, dfs):
     errors = ParserError.objects.filter(file=datafile).order_by("id")
     assert errors.count() == 1
     assert errors.first().error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert errors.first().error_message == ("Could not determine encoding of FRA file. If the file is an Excel file, "
-                                            "ensure it can be opened in Excel and the data is valid. If the file is a "
-                                            "CSV, ensure it can be opened in a text editor and is UTF-8 encoded.")
+    assert errors.first().error_message == ("Could not determine encoding of FRA file. If the file is an XLSX file, "
+                                            "ensure it can be opened in Excel. If the file is a CSV, ensure it can be "
+                                            "opened in a text editor and is UTF-8 encoded.")
     assert dfs.get_status() == DataFileSummary.Status.REJECTED
