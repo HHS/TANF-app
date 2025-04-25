@@ -1,18 +1,7 @@
-import React, { createContext, useContext } from 'react'
+import React from 'react'
 
-// Create a context for sharing animation state across spinners
-const SpinnerContext = createContext({
-  startTime: Date.now(),
-})
-
-const useSpinnerSync = () => useContext(SpinnerContext)
-
-const Spinner = ({ visible }) => {
-  // Use the shared spinner context to ensure synchronized animations
-  const { startTime } = useSpinnerSync()
-
-  if (!visible) return null
-  return (
+const Spinner = ({ visible }) =>
+  visible ? (
     <span
       className="margin-right-1 margin-top-1"
       style={{ position: 'relative', display: 'inline-block' }}
@@ -22,11 +11,8 @@ const Spinner = ({ visible }) => {
         aria-hidden={true}
         role="status"
         aria-label="Loading"
-        data-animation-start={startTime}
       />
     </span>
-  )
-}
+  ) : null
 
 export { Spinner }
-export { SpinnerSyncProvider } from './SpinnerContext'
