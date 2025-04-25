@@ -29,5 +29,5 @@ COPY nginx/src/static/ /usr/share/nginx/html/static/
 
 # Links this container to the rpo in GHCR
 LABEL org.opencontainers.image.source=https://github.com/raft-tech/TANF-app
-LABEL org.opencontainers.image.description="Frontend API Service for TDP."
+LABEL org.opencontainers.image.description="Frontend Service for TDP."
 LABEL org.opencontainers.image.licenses=CC0-1.0
