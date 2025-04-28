@@ -1,7 +1,7 @@
 # Base Docker compose for all environments
 services:
   zaproxy:
-    image: ghcr.io/raft-tech/zap-stable:v2.14.0
+    image: ghcr.io/${REGISTRY_OWNER:-HHS}/zap-stable:v2.14.0
     command: sleep 3600
     depends_on:
       - web
@@ -188,7 +188,10 @@ services:
     volumes:
       - .:/tdpapp
       - logs:/tmp
-    build: .
+    build: 
+      context: .
+      args:
+        REGISTRY_OWNER: ${REGISTRY_OWNER:-HHS}
     command: >
       bash -c "./wait_for_services.sh &&
       ./manage.py makemigrations &&

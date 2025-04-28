@@ -1,6 +1,6 @@
 services:
   zaproxy:
-    image: ghcr.io/raft-tech/zap-stable:v2.14.0
+    image: ghcr.io/${REGISTRY_OWNER:-HHS}/zap-stable:v2.14.0
     container_name: zap-scan
     command: sleep 3600
     ports:
@@ -13,8 +13,10 @@ services:
   tdp-frontend:
     stdin_open: true # docker run -i
     tty: true        # docker run -t
-    build:
+    build: 
       context: .
+      args:
+        REGISTRY_OWNER: ${REGISTRY_OWNER:-HHS}
       target: nginx
     ports:
       - 3000:80

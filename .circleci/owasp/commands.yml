@@ -25,10 +25,16 @@
           path: tdrs-<<parameters.target>>/reports/owasp_report.html
 
   docker-compose-up-frontend:
+    parameters:
+      registry_owner:
+        description: The organization that triggered this CircleCI build
+        type: string
+        default: "HHS"
     steps:
       - run:
           name: Build and spin-up React application
           command: |
+            export REGISTRY_OWNER=<< parameters.registry_owner >>
             cd tdrs-frontend 
             if [ $(docker network inspect external-net 2>&1 | grep -c Scope) == 0 ]; then 
             docker network create external-net

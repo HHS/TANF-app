@@ -4,8 +4,10 @@
     steps:
       - checkout
       - docker-compose-check
-      - docker-compose-up-backend
-      - docker-compose-up-frontend
+      - docker-compose-up-backend:
+          registry_owner: << pipeline.parameters.registry_owner >>
+      - docker-compose-up-frontend:
+          registry_owner: << pipeline.parameters.registry_owner >>
       - run:
           name: Wait for Django to become available
           command: |
@@ -26,8 +28,10 @@
     steps:
       - checkout
       - docker-compose-check
-      - docker-compose-up-backend
-      - docker-compose-up-frontend
+      - docker-compose-up-backend:
+          registry_owner: << pipeline.parameters.registry_owner >>
+      - docker-compose-up-frontend:
+          registry_owner: << pipeline.parameters.registry_owner >>
       - run:
           name: Wait for frontend to become available
           command: |

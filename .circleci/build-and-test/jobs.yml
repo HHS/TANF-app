@@ -3,7 +3,8 @@
     steps:
       - checkout
       - docker-compose-check
-      - docker-compose-up-backend
+      - docker-compose-up-backend:
+          registry_owner: << pipeline.parameters.registry_owner >>
       - run:
           name: Run Unit Tests And Create Code Coverage Report
           command: |
@@ -46,8 +47,10 @@
     steps:
       - checkout
       - docker-compose-check
-      - docker-compose-up-backend
-      - docker-compose-up-frontend
+      - docker-compose-up-backend:
+          registry_owner: << pipeline.parameters.registry_owner >>
+      - docker-compose-up-frontend:
+          registry_owner: << pipeline.parameters.registry_owner >>
       - install-nodejs-machine
       - disable-npm-audit
       - install-nodejs-packages:
