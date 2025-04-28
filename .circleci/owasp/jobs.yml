@@ -11,6 +11,7 @@
       - run:
           name: Wait for Django to become available
           command: |
+            export REGISTRY_OWNER=<< pipeline.parameters.registry_owner >>
             cd tdrs-backend;
             docker-compose run --rm zaproxy bash -c \
               "PATH=$PATH:/home/zap/.local/bin &&
@@ -35,6 +36,7 @@
       - run:
           name: Wait for frontend to become available
           command: |
+            export REGISTRY_OWNER=<< pipeline.parameters.registry_owner >>
             cd tdrs-frontend;
             docker-compose run --rm zaproxy bash -c \
               "PATH=$PATH:/home/zap/.local/bin &&
