@@ -1,7 +1,7 @@
 # Base Docker compose for all environments
 services:
   zaproxy:
-    image: elipe17/zap-stable:2.14.0
+    image: ghcr.io/raft-tech/zap-stable:v2.14.0
     command: sleep 3600
     depends_on:
       - web

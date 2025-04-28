@@ -1,4 +1,4 @@
-FROM elipe17/tdp-frontend-base:latest AS localdev
+FROM ghcr.io/raft-tech/tdp-frontend-base:latest AS localdev
 
 # ---
 # Stage 0: Copy source
