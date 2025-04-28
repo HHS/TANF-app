@@ -56,4 +56,4 @@ parameters:
     default: false
   registry_owner:
     type: string
-    default: 'HHS'
+    default: 'hhs'

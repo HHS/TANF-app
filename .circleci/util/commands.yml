@@ -10,7 +10,7 @@
       registry_owner:
         description: The organization that triggered this CircleCI build
         type: string
-        default: "HHS"
+        default: "hhs"
     steps:
       - run:
           name: Build and spin-up Django API service
