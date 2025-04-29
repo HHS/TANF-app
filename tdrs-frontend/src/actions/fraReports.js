@@ -117,7 +117,7 @@ export const uploadFraReport =
   }
 
 export const downloadOriginalSubmission =
-  ({ id, fileName }) =>
+  ({ id, fileName, year, quarter, section }) =>
   async (dispatch) => {
     try {
       if (!id) throw new Error('No id provided to download action')
@@ -132,7 +132,13 @@ export const downloadOriginalSubmission =
       const link = document.createElement('a')
 
       link.href = url
-      link.setAttribute('download', fileName)
+
+      const fileNameParts = fileName.split('.')
+      const extension = fileName.split('.')[fileNameParts.length - 1]
+      link.setAttribute(
+        'download',
+        `${year}-${quarter}-${section}.${extension}`
+      )
 
       document.body.appendChild(link)
       link.click()
