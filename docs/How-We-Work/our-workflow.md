@@ -17,12 +17,12 @@ Issues will be created in the [Raft TDP repo](https://github.com/raft-tech/TANF-
 - New issues will automatically be placed in the “New issues to be sorted column” in the [Product Backlog](https://app.zenhub.com/workspaces/tdrs-product-backlog-5f2c6cdc7c0bb1001bdc43a5/board?repos=281707402) in Zenhub.
 
 ### The issue is refined
-- The Product Owner, ACF Tech Lead, Project Manager, Design Lead, and Raft Tech Lead will meet weekly for [backlog refinement](https://github.com/raft-tech/TANF-app/blob/develop/docs/How-We-Work/team-charter/team-meetings.md#backlog-refinement) to review issues on the Product Backlog. They will flesh out details on the issues, group them into epics if applicable, and prioritize them into the appropriate column/pipeline in Zenhub.
+- The Product Owner, OFA Tech Lead, Project Manager, Design Lead, and Raft Tech Lead will meet weekly for [backlog refinement](https://github.com/raft-tech/TANF-app/blob/develop/docs/How-We-Work/team-charter/team-meetings.md#backlog-refinement) to review issues on the Product Backlog. They will flesh out details on the issues, group them into epics if applicable, and prioritize them into the appropriate column/pipeline in Zenhub.
 - _Epics_ are used to group issues by their theme, and often span multiple sprints. The epics appear as issues with the label “epic" will be are organized into milestones and releases in the [Product Roadmap](https://app.mural.co/t/raft2792/m/raft2792/1629476801275/0f2773589c30764b9f53740adbc5706074ac52a6?).
 
 
 ### The issue is pointed, assigned, and accepted into sprint
-- **The PO and ACF Tech Lead will propose a set of refined issues during [sprint planning](https://github.com/raft-tech/TANF-app/blob/develop/docs/How-We-Work/team-charter/team-meetings.md#sprint-planning) mtg that they would like the team to focus on for the next sprint.**
+- **The PO and OFA Tech Lead will propose a set of refined issues during [sprint planning](https://github.com/raft-tech/TANF-app/blob/develop/docs/How-We-Work/team-charter/team-meetings.md#sprint-planning) mtg that they would like the team to focus on for the next sprint.**
 - Refined issues should be pointed, which will be based on the amount and complexity of work ([Practical Fibonacci: A Beginner's Guide to Relative Sizing](https://www.scrum.org/resources/blog/practical-fibonacci-beginners-guide-relative-sizing)), as well as other details defined in the ticket (e.g. open questions, risks, etc.). Issue points _do not_ directly correlate to hours/time spent on an issue.
 - Pointed issues should be assigned to at least one team member before acceptance into the sprint.
 - Once the issue has been accepted into the sprint:
@@ -34,7 +34,7 @@ Issues will be created in the [Raft TDP repo](https://github.com/raft-tech/TANF-
 - When the individual assigned to work on an issue starts work on it, they should move it to the “In Progress” column/pipeline in Zenhub.
 - Progress should be updated in issue daily. Any major decisions or discussions about the issue--especially **scope creep** and **blockers** should be documented within the issue.
 - **If the issue grows in scope**:
-  - Determine with the PO, ACF Tech Lead, and PM if more refinement is needed and/or new issue(s) should be spun out from parent ticket.
+  - Determine with the PO, OFA Tech Lead, and PM if more refinement is needed and/or new issue(s) should be spun out from parent ticket.
   - Any new issues should be discussed at the next backlog refinement, unless it is a hot fix or other high priority that requires earlier discussion.
 - **If the issue becomes blocked**:
   - Move the issue to the “Blocked” column/pipeline in Zenhub.
@@ -48,17 +48,25 @@ Issues will be created in the [Raft TDP repo](https://github.com/raft-tech/TANF-
   - documentation necessary to review the work is captured
   - A pull request is drafted using the [PR template]() for issues that will result in changes to the documentation/code managed in the TDP repo. **See [ADR 009]() for more details on the PR review process, which may vary depending on the issue type (e.g. frontend, security controls, dependencies)**.
 - If all this is in place, the assignee should move the card to “Raft Review” column/pipeline in Zenhub and ping the appropriate reviewer(s).
-     - Once _research_ issues are approved in raft review, the assignee should tag the PO for review and move the issue/PR to the "QASP Review" pipeline in Zenhub.
-     - For _design_ issues, the assignee should tag at least one developer for raft review. Upon approval,  the reviewer tags the ACF Tech Lead and moves the issue/PR to the "QASP Review" pipeline in Zenhub.
-     - _Dev_ issues must proceed through the **[tabletop process](https://github.com/raft-tech/TANF-app/tree/develop/docs/How-We-Work/Developer-Tabletops.md)** and be approved in raft review. If the PR does not require QASP review, the assignee should move the card to the "Ready to Merge" column/pipeline in Zenhub. If the PR requires QASP review, the assignee should move the card to the "QASP Review" column/pipeline in Zenhub. [The issue needs QASP review (Not a requirement)](#the_issue_needs_qasp_review) section explains the criteria for when QASP review is required.
+     - _Dev_ issues must proceed through the **[tabletop process](https://github.com/raft-tech/TANF-app/tree/develop/docs/How-We-Work/Developer-Tabletops.md)** and be approved in raft review. Once the PR is approved in the raft review process, it will move to UX review.
+
+### The issue is ready for UX review
+- When the issue is ready for review, the UX reviewer should check that:
+  - all ACs are met and tasks complete
+  - documentation necessary to review the work is captured
+  - The changes are a11y compliant
+  - The changes do not introduce or have any usability issues
+  - User-facing messages are appropriate and clear
+- If the PR does not require QASP review, the assignee should move the card to the "Ready to Merge" column/pipeline in Zenhub. If the PR requires QASP review, the assignee should move the card to the "QASP Review" column/pipeline in Zenhub. [The issue needs QASP review (Not a requirement)](#the_issue_needs_qasp_review) section explains the criteria for when QASP review is required.
 - When approved and QASP review is not required, the assignee should move the card to the "Ready to Merge" column/pipeline in Zenhub.
 
 ### The issue needs QASP review (Not a requirement)
 - Criteria for when QASP review is required:
-  - The government team (i.e. PO or ACF Tech Lead) indicates that QASP review is required
+  - The government team (i.e. PO or OFA Tech Lead) indicates that QASP review is required
+  - The PR is implementing validation or data requirements changes
   - The PR will change or modify existing data in the database (e.g. database schema, database migrations, database queries, etc.)
   - The PR will change or modify security controls
-- The government reviewers (i.e. PO or ACF Tech Lead) verify that all the acceptance criteria and the relevant [QASP elements](https://github.com/raft-tech/TANF-app/blob/develop/.github/pull_request_template.md) have been met.
+- The government reviewers (i.e. PO or OFA Tech Lead) verify that all the acceptance criteria and the relevant [QASP elements](https://github.com/raft-tech/TANF-app/blob/develop/.github/pull_request_template.md) have been met.
 - The reviewer checks the issue/PR against the QASP checklist and provides feedback if needed. Raft addresses any small feedback (one/two pointer) within the same PR. Larger feedback is added as an issue for backlog refinement and PR is updated with a note on the ‘issue # has been created to address the specific feedback.’
 - Government reviewers approve PRs (or request changes) and when relevant qasp elements satisfied, adds the label "Ready to Merge".
 
