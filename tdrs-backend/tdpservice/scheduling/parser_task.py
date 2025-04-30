@@ -32,6 +32,20 @@ def set_reparse_file_meta_model_failed_state(reparse_id, file_meta):
         file_meta.save()
 
 
+def update_dfs(dfs, data_file):
+    """Update DataFileSummary fields."""
+    dfs.status = dfs.get_status()
+
+    if data_file.prog_type == "FRA":
+        dfs.case_aggregates = fra_total_errors(data_file)
+    else:
+        if "Case Data" in data_file.section:
+            dfs.case_aggregates = case_aggregates_by_month(data_file, dfs.status)
+        else:
+            dfs.case_aggregates = total_errors_by_month(data_file, dfs.status)
+    dfs.save()
+
+
 @shared_task
 def parse(data_file_id, reparse_id=None):
     """Send data file for processing."""
@@ -54,17 +68,7 @@ def parse(data_file_id, reparse_id=None):
                                             section=data_file.section,
                                             program_type=data_file.prog_type)
         parser.parse_and_validate()
-        dfs.status = dfs.get_status()
-
-        if data_file.prog_type == "FRA":
-            dfs.case_aggregates = fra_total_errors(data_file)
-        else:
-            if "Case Data" in data_file.section:
-                dfs.case_aggregates = case_aggregates_by_month(data_file, dfs.status)
-            else:
-                dfs.case_aggregates = total_errors_by_month(data_file, dfs.status)
-
-        dfs.save()
+        update_dfs(dfs, data_file)
 
         logger.info(f"Parsing finished for file -> {repr(data_file)} with status "
                     f"{dfs.status}.")
@@ -117,5 +121,6 @@ def parse(data_file_id, reparse_id=None):
                              "critical")
         set_reparse_file_meta_model_failed_state(reparse_id, file_meta)
     finally:
+        update_dfs(dfs, data_file)
         logger.info(f"DataFile parsing finished for file {data_file.filename}")
         logger.handlers[2].doRollover(data_file)
