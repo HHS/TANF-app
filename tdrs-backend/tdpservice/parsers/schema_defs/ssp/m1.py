@@ -15,7 +15,7 @@ m1 = [
         generate_hashes_func=generate_t1_t4_hashes,
         get_partial_hash_members_func=get_t1_t4_partial_hash_members,
         preparsing_validators=[
-            category1.recordHasLengthBetween(113, 150),
+            category1.recordHasLengthOfAtLeast(113),
             category1.caseNumberNotEmpty(8, 19),
             category1.or_priority_validators([
                 category1.validate_fieldYearMonth_with_headerYearQuarter(),

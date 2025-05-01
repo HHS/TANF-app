@@ -96,24 +96,3 @@ resource "cloudfoundry_service_instance" "redis" {
   space        = data.cloudfoundry_space.space.id
   service_plan = data.cloudfoundry_service.redis.service_plans["redis-dev"]
 }
-
-###
-# Provision elasticsearch
-###
-
-data "cloudfoundry_service" "elasticsearch" {
-  name = "aws-elasticsearch"
-}
-
-resource "cloudfoundry_service_instance" "elasticsearch" {
-  name                     = "es-dev"
-  space                    = data.cloudfoundry_space.space.id
-  service_plan             = data.cloudfoundry_service.elasticsearch.service_plans["es-dev"]
-  replace_on_params_change = true
-  json_params              = "{\"ElasticsearchVersion\": \"Elasticsearch_7.10\"}"
-  timeouts {
-    create = "60m"
-    update = "60m"
-    delete = "2h"
-  }
-}
