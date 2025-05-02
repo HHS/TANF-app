@@ -72,6 +72,8 @@ jobs:
           tags: |
             ghcr.io/${{ env.REGISTRY_OWNER }}/${{ env.BACKEND_NAME }}:${{ env.VERSION }}
             ghcr.io/${{ env.REGISTRY_OWNER }}/${{ env.BACKEND_NAME }}:latest
+          build-args: |
+            REGISTRY_OWNER=${{ env.REGISTRY_OWNER }}
 
       - name: Build and Push Frontend
         uses: docker/build-push-action@v5
@@ -82,3 +84,5 @@ jobs:
           tags: |
             ghcr.io/${{ env.REGISTRY_OWNER }}/${{ env.FRONTEND_NAME }}:${{ env.VERSION }}
             ghcr.io/${{ env.REGISTRY_OWNER }}/${{ env.FRONTEND_NAME }}:latest
+          build-args: |
+            REGISTRY_OWNER=${{ env.REGISTRY_OWNER }}
