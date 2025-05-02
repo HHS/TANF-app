@@ -1,5 +1,6 @@
 services:
   zaproxy:
+    platform: linux/amd64
     image: ghcr.io/${REGISTRY_OWNER:-HHS}/zap-stable:v2.14.0
     container_name: zap-scan
     command: sleep 3600
