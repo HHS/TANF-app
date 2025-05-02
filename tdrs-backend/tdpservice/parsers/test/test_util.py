@@ -371,7 +371,7 @@ def test_field_validators_blank_and_required_returns_error(first, second):
 
 @pytest.mark.parametrize('first, expected_valid, expected_errors', [
     ('   ', True, []),
-    ('####', False, ['Value is not valid.']),
+    ('####', True, []),
     (None, True, []),
 ])
 def test_field_validators_blank_and_not_required_returns_valid(first, expected_valid, expected_errors):

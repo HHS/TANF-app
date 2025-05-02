@@ -433,7 +433,7 @@ def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile, dfs):
             assert month['accepted_with_errors'] == 0
 
     parser_errors = ParserError.objects.filter(file=small_ssp_section1_datafile)
-    assert parser_errors.count() == 16
+    assert parser_errors.count() == 9
     assert SSP_M1.objects.count() == expected_m1_record_count
     assert SSP_M2.objects.count() == expected_m2_record_count
     assert SSP_M3.objects.count() == expected_m3_record_count
@@ -476,7 +476,7 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile, dfs):
     assert cat4_errors[1].error_message == "Duplicate record detected with record type M3 at line 3273. " + \
         "Record is a duplicate of the record at line number 3272."
 
-    assert parser_errors.count() == 32455
+    assert parser_errors.count() == 31725
 
     assert SSP_M1.objects.count() == expected_m1_record_count
     assert SSP_M2.objects.count() == expected_m2_record_count
@@ -1564,10 +1564,8 @@ def test_parse_t3_cat2_invalid_citizenship(t3_cat2_invalid_citizenship_file, dfs
 
     parser_errors = ParserError.objects.filter(file=t3_cat2_invalid_citizenship_file).exclude(exclusion).order_by("pk")
 
-    assert parser_errors.count() == 2
-
-    for e in parser_errors:
-        assert e.error_message == "T3 Item 76 (Citizenship/Immigration Status): 0 is not in [1, 2, 3, 9]."
+    # no errors expected as fields are not required
+    assert parser_errors.count() == 0
 
 
 @pytest.mark.django_db()
@@ -1588,15 +1586,9 @@ def test_parse_m2_cat2_invalid_37_38_39_file(m2_cat2_invalid_37_38_39_file, dfs)
 
     parser_errors = ParserError.objects.filter(file=m2_cat2_invalid_37_38_39_file).exclude(exclusion).order_by("pk")
 
-    assert parser_errors.count() == 3
+    # no errors expected as fields are not required
+    assert parser_errors.count() == 0
 
-    error_msgs = {
-        "Item 37 (Educational Level) 00 must be between 1 and 16 or must be between 98 and 99.",
-        "M2 Item 38 (Citizenship/Immigration Status): 0 is not in [1, 2, 3, 9].",
-        "M2 Item 39 (Cooperated with Child Support): 0 is not in [1, 2, 9]."
-    }
-    for e in parser_errors:
-        assert e.error_message in error_msgs
 
 @pytest.mark.django_db()
 def test_parse_m3_cat2_invalid_68_69_file(m3_cat2_invalid_68_69_file, dfs):
@@ -1616,13 +1608,11 @@ def test_parse_m3_cat2_invalid_68_69_file(m3_cat2_invalid_68_69_file, dfs):
 
     parser_errors = ParserError.objects.filter(file=m3_cat2_invalid_68_69_file).exclude(exclusion).order_by("pk")
 
-    assert parser_errors.count() == 4
+    assert parser_errors.count() == 2
 
     error_msgs = {
         "Item 68 (Educational Level) 00 must be between 1 and 16 or must be between 98 and 99.",
-        "M3 Item 69 (Citizenship/Immigration Status): 0 is not in [1, 2, 3, 9].",
         "Item 68 (Educational Level) 00 must be between 1 and 16 or must be between 98 and 99.",
-        "M3 Item 69 (Citizenship/Immigration Status): 0 is not in [1, 2, 3, 9]."
     }
 
     for e in parser_errors:
@@ -1646,13 +1636,7 @@ def test_parse_m5_cat2_invalid_23_24_file(m5_cat2_invalid_23_24_file, dfs):
 
     parser_errors = ParserError.objects.filter(file=m5_cat2_invalid_23_24_file).exclude(exclusion).order_by("pk")
 
-    assert parser_errors.count() == 2
-
-    error_msgs = {"M5 Item 23 (Educational Level): 00 matches 00.",
-                  "M5 Item 24 (Citizenship/Immigration Status): 0 is not in [1, 2, 3, 9]."}
-
-    for e in parser_errors:
-        assert e.error_message in error_msgs
+    assert parser_errors.count() == 0
 
 @pytest.mark.django_db()
 def test_zero_filled_fips_code_file(test_file_zero_filled_fips_code, dfs):
