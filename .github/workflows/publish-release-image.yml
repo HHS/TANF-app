@@ -66,8 +66,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/${{ env.BACKEND_NAME }}:${{ env.VERSION }}
-            ghcr.io/${{ github.repository_owner }}/${{ env.BACKEND_NAME }}:latest
+            ghcr.io/${{ github.repository_owner.toLower() }}/${{ env.BACKEND_NAME }}:${{ env.VERSION }}
+            ghcr.io/${{ github.repository_owner.toLower() }}/${{ env.BACKEND_NAME }}:latest
 
       - name: Build and Push Frontend
         uses: docker/build-push-action@v5
@@ -76,5 +76,5 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/${{ env.FRONTEND_NAME }}:${{ env.VERSION }}
-            ghcr.io/${{ github.repository_owner }}/${{ env.FRONTEND_NAME }}:latest
+            ghcr.io/${{ github.repository_owner.toLower() }}/${{ env.FRONTEND_NAME }}:${{ env.VERSION }}
+            ghcr.io/${{ github.repository_owner.toLower() }}/${{ env.FRONTEND_NAME }}:latest
