@@ -59,6 +59,11 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Ensure package repo is all lowercase
+        id: set-registry-owner
+        run: |
+          echo "PACKAGE_REPO=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Build and Push Backend
         uses: docker/build-push-action@v5
         with:
@@ -66,8 +71,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner.toLower() }}/${{ env.BACKEND_NAME }}:${{ env.VERSION }}
-            ghcr.io/${{ github.repository_owner.toLower() }}/${{ env.BACKEND_NAME }}:latest
+            ghcr.io/${{ env.PACKAGE_REPO }}/${{ env.BACKEND_NAME }}:${{ env.VERSION }}
+            ghcr.io/${{ env.PACKAGE_REPO }}/${{ env.BACKEND_NAME }}:latest
 
       - name: Build and Push Frontend
         uses: docker/build-push-action@v5
@@ -76,5 +81,5 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner.toLower() }}/${{ env.FRONTEND_NAME }}:${{ env.VERSION }}
-            ghcr.io/${{ github.repository_owner.toLower() }}/${{ env.FRONTEND_NAME }}:latest
+            ghcr.io/${{ env.PACKAGE_REPO }}/${{ env.FRONTEND_NAME }}:${{ env.VERSION }}
+            ghcr.io/${{ env.PACKAGE_REPO }}/${{ env.FRONTEND_NAME }}:latest
