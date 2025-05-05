@@ -49,7 +49,7 @@ def handle_field(field, formatted_fields):
                             SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 1 FOR 4) || '-' ||
                             SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 5 FOR 2) || '-01',
                             'YYYY-MM-DD'
-                        ))) - 
+                        ))) -
                         TO_DATE(
                             SUBSTRING("{field}" FROM 1 FOR 4) || '-' ||
                             SUBSTRING("{field}" FROM 5 FOR 2) || '-' ||
@@ -84,7 +84,7 @@ def handle_field(field, formatted_fields):
                             SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 1 FOR 4) || '-' ||
                             SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 5 FOR 2) || '-01',
                             'YYYY-MM-DD'
-                        )) + INTERVAL '1 MONTH - 1 day') - 
+                        )) + INTERVAL '1 MONTH - 1 day') -
                         TO_DATE(
                             SUBSTRING("{field}" FROM 1 FOR 4) || '-' ||
                             SUBSTRING("{field}" FROM 5 FOR 2) || '-' ||
