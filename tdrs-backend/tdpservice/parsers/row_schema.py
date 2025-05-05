@@ -88,8 +88,7 @@ class RowSchema(ABC):
                 item_num=field.item,
             )
             is_empty = value_is_empty(value, len(field.position))
-            should_validate = not field.required and not is_empty
-            if (field.required and not is_empty) or should_validate:
+            if field.required and not is_empty:
                 for validator in field.validators:
                     result = validator(value, eargs)
                     is_valid = False if (not result.valid and not field.ignore_errors) else is_valid
@@ -359,8 +358,7 @@ class FRASchema(RowSchema):
                 item_num=field.item,
             )
             is_empty = value_is_empty(value, len(field.position))
-            should_validate = not field.required and not is_empty
-            if (field.required and not is_empty) or should_validate:
+            if field.required and not is_empty:
                 for validator in field.validators:
                     result = validator(value, eargs)
                     is_valid = False if (not result.valid and not field.ignore_errors) else is_valid
