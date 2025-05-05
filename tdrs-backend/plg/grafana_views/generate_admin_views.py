@@ -42,33 +42,22 @@ def handle_field(field, formatted_fields):
                     "RPT_MONTH_YEAR"::TEXT ~ '^[0-9]{{6}}$'
             THEN
                 -- Simple calculation: (end_date - start_date) / 365.25
-                (
-                    EXTRACT(YEAR FROM TO_DATE(
-                        SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 1 FOR 4) || '-' ||
-                        SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 5 FOR 2) || '-01',
-                        'YYYY-MM-DD'
-                    )) -
-                    EXTRACT(YEAR FROM TO_DATE(
-                        SUBSTRING("{field}" FROM 1 FOR 4) || '-' ||
-                        SUBSTRING("{field}" FROM 5 FOR 2) || '-' ||
-                        SUBSTRING("{field}" FROM 7 FOR 2),
-                        'YYYY-MM-DD'
-                    )) -
-                    (CASE
-                        WHEN TO_CHAR(TO_DATE(
+                ROUND(
+                    EXTRACT(EPOCH FROM (
+                        -- Calculate the difference in days between last day of reporting month and birth date
+                        (DATE_TRUNC('MONTH', TO_DATE(
                             SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 1 FOR 4) || '-' ||
                             SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 5 FOR 2) || '-01',
                             'YYYY-MM-DD'
-                        ), 'MMDD') <
-                            TO_CHAR(TO_DATE(
-                                SUBSTRING("{field}" FROM 1 FOR 4) || '-' ||
-                                SUBSTRING("{field}" FROM 5 FOR 2) || '-' ||
-                                SUBSTRING("{field}" FROM 7 FOR 2),
-                                'YYYY-MM-DD'
-                            ), 'MMDD')
-                        THEN 1
-                        ELSE 0
-                    END)
+                        ))) - 
+                        TO_DATE(
+                            SUBSTRING("{field}" FROM 1 FOR 4) || '-' ||
+                            SUBSTRING("{field}" FROM 5 FOR 2) || '-' ||
+                            SUBSTRING("{field}" FROM 7 FOR 2),
+                            'YYYY-MM-DD'
+                        )
+                    )) / (365.25 * 86400), -- Convert seconds to years (86400 seconds per day)
+                    1  -- Round to 1 decimal place
                 )
             ELSE NULL
         END AS "AGE_FIRST"'''.strip())
@@ -88,33 +77,22 @@ def handle_field(field, formatted_fields):
                     "RPT_MONTH_YEAR"::TEXT ~ '^[0-9]{{6}}$'
             THEN
                 -- Simple calculation: (end_date - start_date) / 365.25
-                (
-                    EXTRACT(YEAR FROM (DATE_TRUNC('MONTH', TO_DATE(
-                        SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 1 FOR 4) || '-' ||
-                        SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 5 FOR 2) || '-01',
-                        'YYYY-MM-DD'
-                    )) + INTERVAL '1 MONTH - 1 day')) -
-                    EXTRACT(YEAR FROM TO_DATE(
-                        SUBSTRING("{field}" FROM 1 FOR 4) || '-' ||
-                        SUBSTRING("{field}" FROM 5 FOR 2) || '-' ||
-                        SUBSTRING("{field}" FROM 7 FOR 2),
-                        'YYYY-MM-DD'
-                    )) -
-                    (CASE
-                        WHEN TO_CHAR((DATE_TRUNC('MONTH', TO_DATE(
+                ROUND(
+                    EXTRACT(EPOCH FROM (
+                        -- Calculate the difference in days between last day of reporting month and birth date
+                        (DATE_TRUNC('MONTH', TO_DATE(
                             SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 1 FOR 4) || '-' ||
                             SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 5 FOR 2) || '-01',
                             'YYYY-MM-DD'
-                        )) + INTERVAL '1 MONTH - 1 day'), 'MMDD') <
-                            TO_CHAR(TO_DATE(
-                                SUBSTRING("{field}" FROM 1 FOR 4) || '-' ||
-                                SUBSTRING("{field}" FROM 5 FOR 2) || '-' ||
-                                SUBSTRING("{field}" FROM 7 FOR 2),
-                                'YYYY-MM-DD'
-                            ), 'MMDD')
-                        THEN 1
-                        ELSE 0
-                    END)
+                        )) + INTERVAL '1 MONTH - 1 day') - 
+                        TO_DATE(
+                            SUBSTRING("{field}" FROM 1 FOR 4) || '-' ||
+                            SUBSTRING("{field}" FROM 5 FOR 2) || '-' ||
+                            SUBSTRING("{field}" FROM 7 FOR 2),
+                            'YYYY-MM-DD'
+                        )
+                    )) / (365.25 * 86400), -- Convert seconds to years (86400 seconds per day)
+                    1  -- Round to 1 decimal place
                 )
             ELSE NULL
         END AS "AGE_LAST"'''.strip())
