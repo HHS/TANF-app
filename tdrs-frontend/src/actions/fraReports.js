@@ -182,37 +182,55 @@ export const pollFraSubmissionStatus =
         })
       }
 
-      const response = await axios.get(
-        `${BACKEND_URL}/data_files/${datafile_id}/` // # ?fields=status
-      )
-      dispatch({
-        type: SET_IS_LOADING_FRA_SUBMISSION_STATUS,
-        payload: {
-          datafile_id,
-          isPerformingRequest: false,
-        },
-      })
+      try {
+        const response = await axios.get(
+          `${BACKEND_URL}/data_files/${datafile_id}/`
+        )
 
-      if (!test(response?.data)) {
-        retry()
-      } else {
         dispatch({
           type: SET_IS_LOADING_FRA_SUBMISSION_STATUS,
           payload: {
             datafile_id,
             isPerformingRequest: false,
-            isDone: true,
-            error: null,
           },
         })
+
+        if (!test(response?.data)) {
+          retry()
+        } else {
+          dispatch({
+            type: SET_IS_LOADING_FRA_SUBMISSION_STATUS,
+            payload: {
+              datafile_id,
+              isPerformingRequest: false,
+              isDone: true,
+              error: null,
+            },
+          })
+          dispatch({
+            type: SET_FRA_SUBMISSION_STATUS,
+            payload: {
+              datafile_id,
+              datafile: response?.data,
+            },
+          })
+          onSuccess(response?.data)
+        }
+      } catch (axiosError) {
+        // Keep polling even if we are getting 4xx or 5xx responses.
         dispatch({
-          type: SET_FRA_SUBMISSION_STATUS,
+          type: SET_IS_LOADING_FRA_SUBMISSION_STATUS,
           payload: {
             datafile_id,
-            datafile: response?.data,
+            isPerformingRequest: false,
+            error: axiosError,
+            isDone: false,
           },
         })
-        onSuccess(response?.data)
+
+        onError(axiosError)
+
+        retry()
       }
     } catch (e) {
       dispatch({
