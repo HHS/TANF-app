@@ -576,7 +576,7 @@ describe('actions/fraReports', () => {
       expect(onError).toHaveBeenCalledTimes(0)
     })
 
-    it('calls onError when a request fails', async () => {
+    it('calls onError when a request fails, but keeps polling', async () => {
       const store = mockStore()
 
       const test = jest.fn(() => true)
@@ -612,7 +612,7 @@ describe('actions/fraReports', () => {
       expect(actions[1].payload).toStrictEqual({
         datafile_id: 1,
         isPerformingRequest: false,
-        isDone: true,
+        isDone: false,
         error: {
           message: 'Error',
           response: {
@@ -623,7 +623,7 @@ describe('actions/fraReports', () => {
       })
 
       expect(test).toHaveBeenCalledTimes(0)
-      expect(retry).toHaveBeenCalledTimes(0)
+      expect(retry).toHaveBeenCalledTimes(1)
       expect(onSuccess).toHaveBeenCalledTimes(0)
       expect(onError).toHaveBeenCalledTimes(1)
     })
