@@ -284,8 +284,6 @@ const UploadForm = ({
     const input = inputRef.current
     const dropTarget = inputRef.current.parentNode
 
-    const blob = fileInputValue.slice(0, 4)
-
     const filereader = new FileReader()
     const imgFileTypes = ['png', 'gif', 'jpeg']
     const csvExtension = /(\.csv)$/i
@@ -300,7 +298,7 @@ const UploadForm = ({
 
         filereader.onload = () => resolve({ result: filereader.result })
 
-        filereader.readAsArrayBuffer(blob)
+        filereader.readAsArrayBuffer(fileInputValue)
       })
 
     const isCsv = csvExtension.exec(fileInputValue.name)
@@ -329,6 +327,7 @@ const UploadForm = ({
     }
 
     setSelectedFile(encodedFile)
+    inputRef.current.value = null
   }
 
   const onSubmit = (e) => {

@@ -16,19 +16,34 @@ from tdpservice.parsers.aggregates import (
 )
 from tdpservice.parsers.models import DataFileSummary, ParserErrorCategoryChoices, ParserError
 from tdpservice.parsers.factory import ParserFactory
-from tdpservice.parsers.util import log_parser_exception, make_generate_parser_error
+from tdpservice.parsers.util import log_parser_exception, make_generate_parser_error, DecoderUnknownException
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 from tdpservice.log_handler import change_log_filename
 from tdpservice.users.models import AccountApprovalStatusChoices, User
 
 logger = settings.PARSER_LOGGER
 
-def set_reparse_file_meta_model_failed_state(file_meta):
+def set_reparse_file_meta_model_failed_state(reparse_id, file_meta):
     """Set ReparseFileMeta fields to indicate a parse failure."""
-    file_meta.finished = True
-    file_meta.success = False
-    file_meta.finished_at = timezone.now()
-    file_meta.save()
+    if reparse_id:
+        file_meta.finished = True
+        file_meta.success = False
+        file_meta.finished_at = timezone.now()
+        file_meta.save()
+
+
+def update_dfs(dfs, data_file):
+    """Update DataFileSummary fields."""
+    dfs.status = dfs.get_status()
+
+    if data_file.prog_type == "FRA":
+        dfs.case_aggregates = fra_total_errors(data_file)
+    else:
+        if "Case Data" in data_file.section:
+            dfs.case_aggregates = case_aggregates_by_month(data_file, dfs.status)
+        else:
+            dfs.case_aggregates = total_errors_by_month(data_file, dfs.status)
+    dfs.save()
 
 
 @shared_task
@@ -53,17 +68,7 @@ def parse(data_file_id, reparse_id=None):
                                             section=data_file.section,
                                             program_type=data_file.prog_type)
         parser.parse_and_validate()
-        dfs.status = dfs.get_status()
-
-        if data_file.prog_type == "FRA":
-            dfs.case_aggregates = fra_total_errors(data_file)
-        else:
-            if "Case Data" in data_file.section:
-                dfs.case_aggregates = case_aggregates_by_month(data_file, dfs.status)
-            else:
-                dfs.case_aggregates = total_errors_by_month(data_file, dfs.status)
-
-        dfs.save()
+        update_dfs(dfs, data_file)
 
         logger.info(f"Parsing finished for file -> {repr(data_file)} with status "
                     f"{dfs.status}.")
@@ -87,13 +92,16 @@ def parse(data_file_id, reparse_id=None):
             ).values_list('username', flat=True).distinct()
 
             send_data_submitted_email(dfs, recipients)
+    except DecoderUnknownException:
+        dfs.set_status(DataFileSummary.Status.REJECTED)
+        dfs.save()
+        set_reparse_file_meta_model_failed_state(reparse_id, file_meta)
     except DatabaseError as e:
         log_parser_exception(data_file,
                              f"Encountered Database exception in parser_task.py: \n{e}",
                              "error"
                              )
-        if reparse_id:
-            set_reparse_file_meta_model_failed_state(file_meta)
+        set_reparse_file_meta_model_failed_state(reparse_id, file_meta)
     except Exception as e:
         generate_error = make_generate_parser_error(data_file, None)
         error = generate_error(schema=None,
@@ -111,8 +119,8 @@ def parse(data_file_id, reparse_id=None):
                              (f"Uncaught exception while parsing datafile: {data_file.pk}! Please review the logs to "
                               f"see if manual intervention is required. Exception: \n{e}"),
                              "critical")
-        if reparse_id:
-            set_reparse_file_meta_model_failed_state(file_meta)
+        set_reparse_file_meta_model_failed_state(reparse_id, file_meta)
     finally:
+        update_dfs(dfs, data_file)
         logger.info(f"DataFile parsing finished for file {data_file.filename}")
         logger.handlers[2].doRollover(data_file)

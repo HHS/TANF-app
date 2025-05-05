@@ -42,9 +42,8 @@ class S3FileHandler(logging.FileHandler):
         try:
             with open(filename, "x") as file: # noqa
                 pass  # No content is written, so it's an empty file
-            print("File created successfully.")
         except FileExistsError:
-            print("File already exists.")
+            pass
         super().__init__(
             filename, mode='a', encoding=None, delay=False, errors=None
         )

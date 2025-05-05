@@ -807,19 +807,25 @@ def fra_bad_header_xlsx(stt_user, stt):
 
 @pytest.fixture
 def fra_ofa_test_csv(stt_user, stt):
-    """Fixture for FRA file with bad header data."""
+    """Fixture for OFA FRA csv file."""
     return util.create_test_datafile('fra_ofa_test.csv', stt_user, stt,
                                      DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)
 
 
 @pytest.fixture
 def fra_ofa_test_xlsx(stt_user, stt):
-    """Fixture for FRA file with bad header data."""
+    """Fixture for OFA FRA xlsx file."""
     return util.create_test_datafile('fra_ofa_test.xlsx', stt_user, stt,
                                      DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)
 
 @pytest.fixture
 def fra_formula_fields_test_xlsx(stt_user, stt):
-    """Fixture for FRA file with bad header data."""
+    """Fixture for FRA file with formula fields."""
     return util.create_test_datafile('fra_formula_fields.xlsx', stt_user, stt,
+                                     DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)
+
+@pytest.fixture
+def fra_decoder_unknown(stt_user, stt):
+    """Fixture for FRA file with bad encoding."""
+    return util.create_test_datafile('fra_decoder_unknown.xlsx', stt_user, stt,
                                      DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)

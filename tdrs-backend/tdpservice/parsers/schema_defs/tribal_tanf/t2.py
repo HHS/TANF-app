@@ -402,7 +402,7 @@ t2 = [
                 startIndex=57,
                 endIndex=58,
                 required=False,
-                validators=[category2.isOneOf([0, 1, 2, 9])],
+                validators=[category2.isOneOf([1, 2, 9])],
             ),
             Field(
                 item="43",

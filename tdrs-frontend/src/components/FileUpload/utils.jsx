@@ -114,7 +114,7 @@ const MIN_BYTES = 500
 export const tryGetUTF8EncodedFile = async function (fileBytes, file) {
   // Create a small view of the file to determine the encoding.
   const btyesView = new Uint8Array(fileBytes.slice(0, MIN_BYTES))
-  const blobView = new Blob([btyesView], { type: 'text/plain' })
+  const blobView = new Blob([btyesView])
   try {
     const fileInfo = await languageEncoding(blobView)
     const bom = btyesView.slice(0, 3)
