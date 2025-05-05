@@ -325,6 +325,7 @@ const UploadForm = ({
     }
 
     setSelectedFile(encodedFile)
+    inputRef.current.value = null
   }
 
   const onSubmit = (e) => {
