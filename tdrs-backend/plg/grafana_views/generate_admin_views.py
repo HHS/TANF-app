@@ -24,7 +24,13 @@ logger = logging.getLogger(__name__)
 
 def handle_field(field, formatted_fields):
     """Mutate or add field to fields array."""
-    if field == "DATE_OF_BIRTH":
+    if field == "SSN":
+        formatted_fields.append(f'''
+        CASE
+            WHEN "{field}" !~ '^(1{{9}}|2{{9}}|3{{9}}|4{{9}}|5{{9}}|6{{9}}|7{{9}}|8{{9}}|9{{9}})$' THEN 1
+            ELSE 0
+        END AS "SSN_VALID"'''.strip())
+    elif field == "DATE_OF_BIRTH":
         # Remove DATE_OF_BIRTH from the formatted fields list since we're adding two new age calculations
         # We'll add the new AGE_FIRST and AGE_LAST calculations instead
         formatted_fields.append(f'''
@@ -96,6 +102,21 @@ def handle_field(field, formatted_fields):
                 )
             ELSE NULL
         END AS "AGE_LAST"'''.strip())
+
+        formatted_fields.append(f'''
+        -- Determine AGE_VALID
+        CASE
+            WHEN "{field}" !~ '^[0-9]{{8}}$' OR
+                    -- Validate year (reasonable range)
+                    CAST(SUBSTRING("{field}" FROM 1 FOR 4) AS INTEGER) NOT BETWEEN 1900 AND
+                    EXTRACT(YEAR FROM CURRENT_DATE) OR
+                    -- Validate month (01-12)
+                    CAST(SUBSTRING("{field}" FROM 5 FOR 2) AS INTEGER) NOT BETWEEN 1 AND 12 OR
+                    -- Validate day (01-31)
+                    CAST(SUBSTRING("{field}" FROM 7 FOR 2) AS INTEGER) NOT BETWEEN 1 AND 31
+            THEN 0
+            ELSE 1
+        END AS "AGE_VALID"'''.strip())
 
 
 def handle_table_name(schema_type, schema_name):
