@@ -26,7 +26,7 @@ def handle_field(field, formatted_fields):
     """Mutate or add field to fields array."""
     if field == "SSN":
         formatted_fields.append(f'md5("{field}"::text) as "SSN_HASH"')
-        
+
         formatted_fields.append(f'''
         CASE
             WHEN "{field}" !~ '^(1{{9}}|2{{9}}|3{{9}}|4{{9}}|5{{9}}|6{{9}}|7{{9}}|8{{9}}|9{{9}})$' THEN 1
