@@ -188,6 +188,7 @@
       "m6": [
         "RecordType",
         "CALENDAR_QUARTER",
+        "RPT_MONTH_YEAR",
         "SSPMOE_FAMILIES",
         "NUM_2_PARENTS",
         "NUM_1_PARENTS",
@@ -202,6 +203,7 @@
       "m7": [
         "RecordType",
         "CALENDAR_QUARTER",
+        "RPT_MONTH_YEAR",
         "TDRS_SECTION_IND",
         "STRATUM",
         "FAMILIES_MONTH"
@@ -395,6 +397,7 @@
       "t6": [
         "RecordType",
         "CALENDAR_QUARTER",
+        "RPT_MONTH_YEAR",
         "NUM_APPLICATIONS",
         "NUM_APPROVED",
         "NUM_DENIED",
@@ -414,6 +417,7 @@
       "t7": [
         "RecordType",
         "CALENDAR_QUARTER",
+        "RPT_MONTH_YEAR",
         "TDRS_SECTION_IND",
         "STRATUM",
         "FAMILIES_MONTH"
@@ -589,6 +593,7 @@
       "t6": [
         "RecordType",
         "CALENDAR_QUARTER",
+        "RPT_MONTH_YEAR",
         "NUM_APPLICATIONS",
         "NUM_APPROVED",
         "NUM_DENIED",
@@ -608,6 +613,7 @@
       "t7": [
         "RecordType",
         "CALENDAR_QUARTER",
+        "RPT_MONTH_YEAR",
         "TDRS_SECTION_IND",
         "STRATUM",
         "FAMILIES_MONTH"
