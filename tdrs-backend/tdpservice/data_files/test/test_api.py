@@ -182,7 +182,7 @@ class DataFileAPITestBase:
             + "instructions (linked below) when looking up items and allowable values during the data revision process"
         assert critical.cell(row=7, column=COL_ERROR_MESSAGE).value == ("TRAILER: record length is 15 characters "
                                                                         "but must be 23.")
-        assert summary.cell(row=7, column=COL_NUM_OCCURRENCES).value == 5
+        assert summary.cell(row=7, column=COL_NUM_OCCURRENCES).value == 3
 
     @staticmethod
     def assert_error_report_file_content_matches_without_friendly_names(response):
