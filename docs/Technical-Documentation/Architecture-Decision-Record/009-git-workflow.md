@@ -1,6 +1,6 @@
 # 9. Git Workflow
 
-Date: 2021-02-23 (_updated 2023-01-18_)
+Date: 2021-02-23 (_updated 2025-05-08_)
 
 ## Status
 
