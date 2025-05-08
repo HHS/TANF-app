@@ -143,7 +143,7 @@ class XlsxDecoder(BaseDecoder):
 
     def __init__(self, raw_file):
         super().__init__(raw_file)
-        self.work_book = load_workbook(raw_file)
+        self.work_book = load_workbook(raw_file, data_only=True)
 
     def get_record_type(self, raw_data):
         """Get the record type based on the raw data."""
@@ -196,7 +196,7 @@ class DecoderFactory:
         data = raw_file.read(4096)
         char_result = chardet.detect(data)
         encoding = char_result.get('encoding')
-        if encoding is not None and (encoding == "ascii" or "UTF-8" in encoding):
+        if encoding is not None and (encoding == "ascii" or encoding == "UTF-8"):
             confidence = char_result.get('confidence')
             if "csv" in extension:
                 logger.info(f"Returning CSV decoder with a confidence score of {confidence}")
