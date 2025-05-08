@@ -137,7 +137,7 @@ export const download =
       const link = document.createElement('a')
 
       link.href = url
-      link.setAttribute('download', `${year}.${quarter}.${section}.txt`)
+      link.setAttribute('download', `${year}-${quarter}-${section}.txt`)
 
       document.body.appendChild(link)
 

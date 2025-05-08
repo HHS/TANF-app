@@ -247,6 +247,9 @@ describe('FRA Reports Page', () => {
     })
 
     it('Shows upload form once search has been clicked', async () => {
+      jest.mock('axios')
+      const mockAxios = axios
+
       const state = {
         ...initialState,
         auth: {
@@ -280,6 +283,14 @@ describe('FRA Reports Page', () => {
       const quarterDropdown = getByLabelText('Quarter*')
       fireEvent.change(quarterDropdown, { target: { value: 'Q1' } })
 
+      let searchUrl = null
+      mockAxios.get.mockImplementation((url) => {
+        if (url.includes('/data_files/')) {
+          searchUrl = url
+        }
+        return {}
+      })
+
       fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
       // upload form displayed
@@ -291,6 +302,10 @@ describe('FRA Reports Page', () => {
         ).toBeInTheDocument()
         expect(getByText('Submit Report')).toBeInTheDocument()
       })
+
+      expect(
+        searchUrl.includes('&file_type=Work Outcomes of TANF Exiters')
+      ).toBe(true)
 
       // fields don't have errors
       expect(

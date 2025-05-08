@@ -41,7 +41,7 @@ export const getErrorReportStatus = (file) => {
     file.summary.status !== 'Pending' &&
     file.summary.status !== 'TimedOut'
   ) {
-    const errorFileName = `${file.year}-${file.quarter}-${file.section}`
+    const errorFileName = `${file.year}-${file.quarter}-${file.section} Error Report`
     if (file.hasError) {
       return (
         <button

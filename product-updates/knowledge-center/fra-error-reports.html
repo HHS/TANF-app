@@ -134,7 +134,7 @@
 
 <!-- Here begins mobile menu -->
 
-  <div class="usa-overlay"></div>
+<div class="usa-overlay"></div>
 <header class="usa-header usa-header--basic">
   <div class="usa-nav-container">
     <div class="usa-navbar">
@@ -181,7 +181,7 @@
 
 
         <li class="usa-sidenav__item">
-        <a href="uploading-data.html">Submitting Data to TDP</a>
+        <a href="uploading-data.html">Submitting TANF Data</a>
         </li>
         <li>
         <ul class="usa-sidenav__sublist">
@@ -190,7 +190,7 @@
           </li>
 
           <li class="usa-sidenav__item">
-          <a href="./viewing-error-reports.html" class="usa-current" aria-current="page">Understanding Error Reports and File Structure</a>
+          <a href="./viewing-error-reports.html">Understanding TANF Error Reports and File Structure</a>
           </li>
 
           <li class="usa-sidenav__item">
@@ -203,10 +203,23 @@
 
         </ul>
       </li>
+      <li class="usa-sidenav__item">
+        <a href="./submitting-fra-data.html">Submitting FRA Data</a>
+        </li>
+
+        <li>
+          <ul class="usa-sidenav__sublist">
+            <li class="usa-sidenav__item">
+            <a href="./fra-error-reports.html"  class="usa-current" aria-current="page">Understanding FRA Error Reports and File Structure</a>
+            </li>
+
+          </ul>
+        </li>
 
         <li class="usa-sidenav__item">
         <a href="./managing-your-account.html">Managing Your Account</a>
         </li>
+      
 
         <li class="usa-sidenav__item">
         <a href="./give-feedback.html">Give Feedback</a>
@@ -252,7 +265,7 @@
           </li>
 
             <li class="usa-sidenav__item">
-              <a href="uploading-data.html">Submitting Data to TDP</a>
+              <a href="uploading-data.html">Submitting TANF Data</a>
               </li>
               <li>
               <ul class="usa-sidenav__sublist">
@@ -261,7 +274,7 @@
                 </li>
 
                   <li class="usa-sidenav__item">
-                <a href="./viewing-error-reports.html" class="usa-current" aria-current="page">Understanding Error Reports and File Structure</a>
+                <a href="./viewing-error-reports.html">Understanding TANF Error Reports and File Structure</a>
                 </li>
 
               <li class="usa-sidenav__item">
@@ -271,6 +284,19 @@
               <li class="usa-sidenav__item">
               <a href="./exporting-complete-data-using-ftanf.html">Exporting Complete Data Using FTANF</a>
               </li>
+
+              </ul>
+            </li>
+            
+            <li class="usa-sidenav__item">
+              <a href="./submitting-fra-data.html">Submitting FRA Data</a>
+            </li>
+
+            <li>
+              <ul class="usa-sidenav__sublist">
+                <li class="usa-sidenav__item">
+                <a href="./fra-error-reports.html"  class="usa-current" aria-current="page">Understanding FRA Error Reports and File Structure</a>
+                </li>
 
               </ul>
             </li>
@@ -375,10 +401,25 @@ The error report has four columns:
       <p>Below are examples of error messages associated with common issues that may be listed in an error report. <br><br> Some error messages that you may encounter in error reports are still in development and may have been listed incorrectly or need further clarity. Please feel free to reach out to <a href="mailto:tanfdata@acf.hhs.gov">tanfdata@acf.hhs.gov</a> with questions or requests for additional guidance. We continuously update the system based on user feedback and encourage you to reach out if you encounter any confusing errors or believe the system incorrectly identified an issue.
 
         <ol>
-          <li><strong>Exit Date Errors</strong>
+
+          <li><strong>File errors</strong>
+            
+            <p>If a file doesn't adhere to official instructions in layout and content it will likely result in this error. Frequent causes include:
+              <ul><li>Files beginning with a blank row or header row instead of the first data row</li>
+              <li>Files with hidden and/or extra columns</li>
+              <li>Files uploaded in .xlsx format with exit dates stored in a date format column rather than a numeric column</li>
+            </ul> <div style="min-height: 22px;"></div>Guidance on how to format data can be found in the <a href="https://acf.gov/sites/default/files/documents/ofa/1A.Instructions-work-outcomes-of-TANF-exiters-report.pdf">Work Exiters report instructions</a>.</p>
+            <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">File does not begin with FRA data.
+    </code>
+    <br><br> 
+            <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">We're sorry, an unexpected error has occurred and the file has been rejected. Please contact the TDP support team at TANFData@acf.hhs.gov for further assistance.
+    </code>
+           
+          </li>
+          <li> <div style="min-height: 22px;"></div> <strong>Exit Date Errors</strong>
             
             <p>If an exit date in your report falls outside of the fiscal period you selected in TDP, it will result in an error. Similarly, if an exit date contains too few, too many, or unexpected characters it too will generate an error.</p>
-            <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">Exit date (202413) is not valid. Date must be in the range of 2025 - Q1 (Oct-Dec) 
+            <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">Exit date (202413) is not valid. Date must be in the range of 2025 - Q1 (Oct-Dec).
     </code>
            
           </li>
@@ -388,7 +429,7 @@ The error report has four columns:
             <p>If a social security number contains too few, too many, or non-numeric characters it will result in an error. Additionally, each potentially valid social security number should only be associated with one exit date within a single month. Multiple instances of 999999999 within a single month will not be flagged as duplicate SSN errors.</p>
                     <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">Social Security Number (SSN) is not valid. Check that the SSN is 9 digits, does not contain only zeroes in any one section, and does not contain dashes or other punctuation. Enter 999999999 if an individual does not have an SSN. 
     </code><br><br> 
-            <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">Duplicate Social Security Number within a month. Check that individual SSNs within a single exit month are not included more than once
+            <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">Duplicate Social Security Number within a month. Check that individual SSNs within a single exit month are not included more than once.
     </code>
 
           </li>

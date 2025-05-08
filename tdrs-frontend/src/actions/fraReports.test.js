@@ -12,6 +12,7 @@ import {
   SET_IS_LOADING_FRA_SUBMISSION_STATUS,
   SET_FRA_SUBMISSION_STATUS,
   SET_FRA_SUBMISSION_STATUS_TIMED_OUT,
+  downloadOriginalSubmission,
 } from './fraReports'
 
 describe('actions/fraReports', () => {
@@ -388,6 +389,15 @@ describe('actions/fraReports', () => {
 
       expect(onSuccess).toHaveBeenCalledTimes(0)
       expect(onError).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('downloadOriginalSubmission', () => {
+    it('do nothing if no id provided', async () => {
+      const store = mockStore()
+      await store.dispatch(downloadOriginalSubmission({}))
+      const actions = store.getActions()
+      expect(actions.length).toEqual(0)
     })
   })
 

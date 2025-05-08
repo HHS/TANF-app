@@ -53,6 +53,16 @@ def test_recordHasLength(line, length, kwargs, exp_result, exp_message):
     _validator = category1.recordHasLength(length, **kwargs)
     _validate_and_assert(_validator, line, exp_result, exp_message)
 
+@pytest.mark.parametrize('line, length, kwargs, exp_result, exp_message', [
+    ('1234', 4, {}, True, None),
+    ('12345            ', 10, {}, True, None),
+    ('123', 4, {}, False, 'Test: record length should be at least 4 characters but it is 3 characters.'),
+])
+def test_recordHasLengthOfAtLeast(line, length, kwargs, exp_result, exp_message):
+    """Test recordHasLengthOfAtLeast error messages."""
+    _validator = category1.recordHasLengthOfAtLeast(length, **kwargs)
+    _validate_and_assert(_validator, line, exp_result, exp_message)
+
 
 @pytest.mark.parametrize('line, min, max, kwargs, exp_result, exp_message', [
     ('1234', 2, 6, {}, True, None),
