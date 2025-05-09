@@ -759,8 +759,20 @@ const FRAReports = () => {
                 ({ summary }) =>
                   summary && summary.status && summary.status !== 'Pending',
                 () => pollSubmissionStatus(tryNumber + 1),
-                () => {},
-                () => {}
+                () => {
+                  setLocalAlertState({
+                    active: true,
+                    type: 'success',
+                    message: 'Parsing complete.',
+                  })
+                },
+                (e) => {
+                  setLocalAlertState({
+                    active: true,
+                    type: 'error',
+                    message: e.message,
+                  })
+                }
               )
             ),
           tryNumber === 1 ? 0 : WAIT_TIME

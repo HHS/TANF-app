@@ -148,6 +148,22 @@ export const downloadOriginalSubmission =
     }
   }
 
+const onPollError = (datafile_id, onError, dispatch) => {
+  const error = new Error(
+    'The system encountered an error, please refresh the page or press Search again.'
+  )
+  dispatch({
+    type: SET_IS_LOADING_FRA_SUBMISSION_STATUS,
+    payload: {
+      datafile_id,
+      isPerformingRequest: false,
+      isDone: true,
+      error: error,
+    },
+  })
+  onError(error)
+}
+
 export const pollFraSubmissionStatus =
   (
     datafile_id,
@@ -217,31 +233,31 @@ export const pollFraSubmissionStatus =
           onSuccess(response?.data)
         }
       } catch (axiosError) {
-        // Keep polling even if we are getting 4xx or 5xx responses.
+        // Check if the error has a response with status code
+        const statusCode = axiosError?.response?.status
+        const shouldStopPolling =
+          statusCode === 400 || statusCode === 401 || statusCode === 403
+
         dispatch({
           type: SET_IS_LOADING_FRA_SUBMISSION_STATUS,
           payload: {
             datafile_id,
             isPerformingRequest: false,
             error: axiosError,
-            isDone: false,
+            isDone: shouldStopPolling,
           },
         })
 
-        onError(axiosError)
+        // Continue polling if it's not a 400, 401, or 403 error
+        if (!shouldStopPolling) {
+          retry()
+          return
+        }
 
-        retry()
+        onPollError(datafile_id, onError, dispatch)
       }
     } catch (e) {
-      dispatch({
-        type: SET_IS_LOADING_FRA_SUBMISSION_STATUS,
-        payload: {
-          datafile_id,
-          isPerformingRequest: false,
-          isDone: true,
-          error: e,
-        },
-      })
-      onError(e)
+      console.error(e)
+      onPollError(datafile_id, onError, dispatch)
     }
   }
