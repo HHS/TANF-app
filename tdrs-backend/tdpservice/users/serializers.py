@@ -192,7 +192,6 @@ class UserProfileChangeRequestSerializer(UserProfileSerializer):
     # Add fields to track pending change requests
     has_pending_first_name_change = serializers.SerializerMethodField()
     has_pending_last_name_change = serializers.SerializerMethodField()
-    has_pending_stt_change = serializers.SerializerMethodField()
     has_pending_regions_change = serializers.SerializerMethodField()
 
     class Meta(UserProfileSerializer.Meta):
@@ -203,7 +202,6 @@ class UserProfileChangeRequestSerializer(UserProfileSerializer):
             'create_change_requests',
             'has_pending_first_name_change',
             'has_pending_last_name_change',
-            'has_pending_stt_change',
             'has_pending_regions_change',
         ]
 
@@ -214,10 +212,6 @@ class UserProfileChangeRequestSerializer(UserProfileSerializer):
     def get_has_pending_last_name_change(self, obj):
         """Check if there's a pending change request for last_name."""
         return obj.has_pending_change_for_field('last_name')
-
-    def get_has_pending_stt_change(self, obj):
-        """Check if there's a pending change request for stt."""
-        return obj.has_pending_change_for_field('stt')
 
     def get_has_pending_regions_change(self, obj):
         """Check if there's a pending change request for regions."""
@@ -256,23 +250,6 @@ class UserProfileChangeRequestSerializer(UserProfileSerializer):
                         requested_by=self.context['request'].user
                     )
                     change_requests.append(change_request)
-
-        # Process STT field
-        if 'stt' in validated_data:
-            new_stt = validated_data['stt']
-            current_stt = instance.stt
-
-            # Compare IDs for foreign keys
-            new_stt_id = new_stt.id if new_stt else None
-            current_stt_id = current_stt.id if current_stt else None
-
-            if new_stt_id != current_stt_id:
-                change_request = instance.request_change(
-                    field_name='stt',
-                    requested_value=new_stt_id,
-                    requested_by=self.context['request'].user
-                )
-                change_requests.append(change_request)
 
         # Process regions field (many-to-many)
         if 'regions' in validated_data:
@@ -350,8 +327,7 @@ class UserChangeRequestSerializer(serializers.ModelSerializer):
 
         # Check if the field is in the list of allowed fields for change requests
         allowed_fields = [
-            'first_name', 'last_name', 'email',
-            'stt', 'regions'
+            'first_name', 'last_name', 'regions'
         ]
         if field_name not in allowed_fields:
             raise serializers.ValidationError({

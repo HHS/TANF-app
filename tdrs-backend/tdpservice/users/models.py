@@ -53,6 +53,13 @@ class UserChangeRequestStatus(models.TextChoices):
 class UserChangeRequest(models.Model):
     """Model to track user information change requests."""
 
+    class Meta:
+        """Define meta attributes."""
+
+        ordering = ['-requested_at']
+        verbose_name = _('User Change Request')
+        verbose_name_plural = _('User Change Requests')
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
         'users.User',
@@ -104,13 +111,6 @@ class UserChangeRequest(models.Model):
         help_text=_('Admin notes on approval/rejection')
     )
 
-    class Meta:
-        """Define meta attributes."""
-
-        ordering = ['-requested_at']
-        verbose_name = _('User Change Request')
-        verbose_name_plural = _('User Change Requests')
-
     def __str__(self):
         """Return string representation."""
         return f"{self.user.username} - {self.field_name} - {self.get_status_display()}"
@@ -157,6 +157,13 @@ class UserChangeRequest(models.Model):
 class ChangeRequestAuditLog(models.Model):
     """Model to track audit logs for change requests."""
 
+    class Meta:
+        """Define meta attributes."""
+
+        ordering = ['-timestamp']
+        verbose_name = _('Change Request Audit Log')
+        verbose_name_plural = _('Change Request Audit Logs')
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     change_request = models.ForeignKey(
         UserChangeRequest,
@@ -181,13 +188,6 @@ class ChangeRequestAuditLog(models.Model):
         default=dict,
         help_text=_('Additional details about the action')
     )
-
-    class Meta:
-        """Define meta attributes."""
-
-        ordering = ['-timestamp']
-        verbose_name = _('Change Request Audit Log')
-        verbose_name_plural = _('Change Request Audit Logs')
 
     def __str__(self):
         """Return string representation."""

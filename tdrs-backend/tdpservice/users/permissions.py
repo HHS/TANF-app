@@ -132,6 +132,18 @@ class IsApprovedPermission(permissions.DjangoModelPermissions):
                 request.user.account_approval_status == AccountApprovalStatusChoices.APPROVED)
 
 
+class IsOwnerOrAdmin(permissions.DjangoModelPermissions):
+    """Permission to only allow owners of a change request or admins to view it."""
+
+    def has_object_permission(self, request, view, obj):
+        """Check if user is owner or admin."""
+        if request.user.is_ofa_sys_admin:
+            return True
+
+        # Allow owners
+        return obj.user == request.user
+
+
 class DjangoModelCRUDPermissions(permissions.DjangoModelPermissions):
     """The request is authorized using `django.contrib.auth` permissions.
 
