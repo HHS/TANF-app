@@ -576,7 +576,7 @@ describe('actions/fraReports', () => {
       expect(onError).toHaveBeenCalledTimes(0)
     })
 
-    it('calls onError when a request fails, but keeps polling', async () => {
+    it('keeps polling during backend outage', async () => {
       const store = mockStore()
 
       const test = jest.fn(() => true)
@@ -587,7 +587,7 @@ describe('actions/fraReports', () => {
       mockAxios.get.mockRejectedValue({
         message: 'Error',
         response: {
-          status: 400,
+          status: 502,
           data: { detail: 'Mock fail response' },
         },
       })
@@ -616,7 +616,7 @@ describe('actions/fraReports', () => {
         error: {
           message: 'Error',
           response: {
-            status: 400,
+            status: 502,
             data: { detail: 'Mock fail response' },
           },
         },
@@ -624,6 +624,68 @@ describe('actions/fraReports', () => {
 
       expect(test).toHaveBeenCalledTimes(0)
       expect(retry).toHaveBeenCalledTimes(1)
+      expect(onSuccess).toHaveBeenCalledTimes(0)
+      expect(onError).toHaveBeenCalledTimes(0)
+    })
+
+    it('dispatches and calls onError when polling gets 400, 401, or 403', async () => {
+      const store = mockStore()
+
+      const test = jest.fn(() => true)
+      const retry = jest.fn()
+      const onSuccess = jest.fn()
+      const onError = jest.fn()
+
+      mockAxios.get.mockRejectedValue({
+        message: 'Error',
+        response: {
+          status: 403,
+          data: { detail: 'Mock fail response' },
+        },
+      })
+
+      await store.dispatch(
+        pollFraSubmissionStatus(1, 1, test, retry, onSuccess, onError)
+      )
+
+      const actions = store.getActions()
+      expect(actions.length).toEqual(3)
+
+      expect(actions[0].type).toBe(SET_IS_LOADING_FRA_SUBMISSION_STATUS)
+      expect(actions[0].payload).toStrictEqual({
+        datafile_id: 1,
+        tryNumber: 1,
+        isPerformingRequest: true,
+        isDone: false,
+        error: null,
+      })
+
+      expect(actions[1].type).toBe(SET_IS_LOADING_FRA_SUBMISSION_STATUS)
+      expect(actions[1].payload).toStrictEqual({
+        datafile_id: 1,
+        isPerformingRequest: false,
+        isDone: true,
+        error: {
+          message: 'Error',
+          response: {
+            status: 403,
+            data: { detail: 'Mock fail response' },
+          },
+        },
+      })
+
+      expect(actions[2].type).toBe(SET_IS_LOADING_FRA_SUBMISSION_STATUS)
+      expect(actions[2].payload).toStrictEqual({
+        datafile_id: 1,
+        isPerformingRequest: false,
+        isDone: true,
+        error: new Error(
+          'The system encountered an error, please refresh the page or press Search again.'
+        ),
+      })
+
+      expect(test).toHaveBeenCalledTimes(0)
+      expect(retry).toHaveBeenCalledTimes(0)
       expect(onSuccess).toHaveBeenCalledTimes(0)
       expect(onError).toHaveBeenCalledTimes(1)
     })
@@ -658,7 +720,7 @@ describe('actions/fraReports', () => {
         isPerformingRequest: false,
         isDone: true,
         error: new Error(
-          'Exceeded max number of tries to update submission status.'
+          'The system encountered an error, please refresh the page or press Search again.'
         ),
       })
 
