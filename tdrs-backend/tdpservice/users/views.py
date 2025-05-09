@@ -172,7 +172,7 @@ class AdminChangeRequestViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Only allow admins to access this viewset."""
         user = self.request.user
-        if not (user.is_an_admin or user.is_ofa_sys_admin):
+        if not user.is_ofa_sys_admin:
             return UserChangeRequest.objects.none()
         return UserChangeRequest.objects.all()
 
