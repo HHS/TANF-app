@@ -132,8 +132,7 @@ class IsOwnerOrAdmin(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         """Check if user is owner or admin."""
-        # Allow admins
-        if request.user.is_an_admin or request.user.is_ofa_sys_admin:
+        if request.user.is_ofa_sys_admin:
             return True
 
         # Allow owners
