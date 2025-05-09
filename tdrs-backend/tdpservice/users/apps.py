@@ -12,3 +12,4 @@ class UsersConfig(AppConfig):
     def ready(self):
         """Import signals."""
         import tdpservice.users.signals  # noqa
+        import tdpservice.users.change_request_signals  # noqa

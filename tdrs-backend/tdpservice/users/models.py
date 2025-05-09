@@ -9,10 +9,12 @@ from tdpservice.email.helpers.account_status import send_approval_status_update_
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 
 from tdpservice.stts.models import STT, Region
+from .change_request_mixin import UserChangeRequestMixin
 
 logger = logging.getLogger()
 
@@ -41,7 +43,7 @@ class RegionMeta(models.Model):
     )
 
 
-class User(AbstractUser):
+class User(AbstractUser, UserChangeRequestMixin):
     """Define user fields and methods."""
 
     class Meta:
@@ -281,3 +283,155 @@ class User(AbstractUser):
                 return
 
         super(User, self).save(*args, **kwargs)
+
+
+class UserChangeRequestStatus(models.TextChoices):
+    """Enum of options for change request status."""
+
+    PENDING = "pending", _('Pending')
+    APPROVED = "approved", _('Approved')
+    REJECTED = "rejected", _('Rejected')
+
+
+class UserChangeRequest(models.Model):
+    """Model to track user information change requests."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        'users.User',
+        on_delete=models.CASCADE,
+        related_name='change_requests'
+    )
+    requested_by = models.ForeignKey(
+        'users.User',
+        on_delete=models.CASCADE,
+        related_name='requested_changes'
+    )
+    field_name = models.CharField(
+        max_length=100,
+        help_text=_('The name of the field being changed')
+    )
+    current_value = models.TextField(
+        blank=True,
+        help_text=_('The current value of the field')
+    )
+    requested_value = models.TextField(
+        blank=True,
+        help_text=_('The requested new value for the field')
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=UserChangeRequestStatus.choices,
+        default=UserChangeRequestStatus.PENDING,
+        help_text=_('The current status of this change request')
+    )
+    requested_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text=_('When this change was requested')
+    )
+    reviewed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text=_('When this change request was reviewed')
+    )
+    reviewed_by = models.ForeignKey(
+        'users.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reviewed_changes',
+        help_text=_('The admin who reviewed this change request')
+    )
+    notes = models.TextField(
+        blank=True,
+        help_text=_('Admin notes on approval/rejection')
+    )
+
+    class Meta:
+        """Define meta attributes."""
+
+        ordering = ['-requested_at']
+        verbose_name = _('User Change Request')
+        verbose_name_plural = _('User Change Requests')
+
+    def __str__(self):
+        """Return string representation."""
+        return f"{self.user.username} - {self.field_name} - {self.get_status_display()}"
+
+    def approve(self, admin_user, notes=None):
+        """Approve the change request and apply changes to the user."""
+        if self.status != UserChangeRequestStatus.PENDING:
+            return False
+
+        user = self.user
+        field_name = self.field_name
+        new_value = self.requested_value
+
+        # Apply the change to the user
+        setattr(user, field_name, new_value)
+        user.save()
+
+        # Update the change request
+        self.status = UserChangeRequestStatus.APPROVED
+        self.reviewed_by = admin_user
+        self.reviewed_at = timezone.now()
+        if notes:
+            self.notes = notes
+        self.save()
+
+        return True
+
+    def reject(self, admin_user, notes=None):
+        """Reject the change request."""
+        if self.status != UserChangeRequestStatus.PENDING:
+            return False
+
+        # Update the change request
+        self.status = UserChangeRequestStatus.REJECTED
+        self.reviewed_by = admin_user
+        self.reviewed_at = timezone.now()
+        if notes:
+            self.notes = notes
+        self.save()
+
+        return True
+
+
+class ChangeRequestAuditLog(models.Model):
+    """Model to track audit logs for change requests."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    change_request = models.ForeignKey(
+        UserChangeRequest,
+        on_delete=models.CASCADE,
+        related_name='audit_logs'
+    )
+    action = models.CharField(
+        max_length=50,
+        help_text=_('The action performed (created, approved, rejected)')
+    )
+    performed_by = models.ForeignKey(
+        'users.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='change_request_actions'
+    )
+    timestamp = models.DateTimeField(
+        auto_now_add=True,
+        help_text=_('When this action was performed')
+    )
+    details = models.JSONField(
+        default=dict,
+        help_text=_('Additional details about the action')
+    )
+
+    class Meta:
+        """Define meta attributes."""
+
+        ordering = ['-timestamp']
+        verbose_name = _('Change Request Audit Log')
+        verbose_name_plural = _('Change Request Audit Logs')
+
+    def __str__(self):
+        """Return string representation."""
+        return f"{self.action} by {self.performed_by} at {self.timestamp}"

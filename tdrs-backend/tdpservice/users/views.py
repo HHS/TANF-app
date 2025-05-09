@@ -8,17 +8,21 @@ from django.utils import timezone
 
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView
 
-from tdpservice.users.models import User, AccountApprovalStatusChoices
+from tdpservice.users.models import User, AccountApprovalStatusChoices, UserChangeRequest, ChangeRequestAuditLog
 from tdpservice.users.permissions import DjangoModelCRUDPermissions, IsApprovedPermission, UserPermissions
 from tdpservice.users.serializers import (
     GroupSerializer,
     UserProfileSerializer,
     UserSerializer,
+    UserChangeRequestSerializer,
+    AdminChangeRequestSerializer,
+    ChangeRequestAuditLogSerializer
 )
+from tdpservice.users.serializers import UserProfileChangeRequestSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +43,8 @@ class UserViewSet(
         """Return the serializer class."""
         return {
             "request_access": UserProfileSerializer,
+            "profile": UserProfileSerializer,
+            "update_profile": UserProfileChangeRequestSerializer,
         }.get(self.action, UserSerializer)
 
     def get_queryset(self):
@@ -80,6 +86,37 @@ class UserViewSet(
         )
         return Response(serializer.data)
 
+    @action(methods=["GET"], detail=False)
+    def profile(self, request):
+        """Get the current user's profile."""
+        serializer = self.get_serializer(self.request.user)
+        return Response(serializer.data)
+
+    @action(methods=["PATCH"], detail=False)
+    def update_profile(self, request):
+        """Update the current user's profile through change requests."""
+        print("\n\nIn update_profile\n\n")
+        serializer = self.get_serializer(self.request.user, request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        # Check if any change requests were created
+        user = self.request.user
+        pending_requests = user.get_pending_change_requests()
+
+        if pending_requests.exists():
+            logger.info(
+                "Change requests created for user: %s on %s", user, timezone.now()
+            )
+            # Return the updated serializer data with pending change request info
+            return Response({
+                'user': self.get_serializer(user).data,
+                'message': 'Your requested changes have been submitted for approval.',
+                'pending_requests': pending_requests.count()
+            })
+
+        return Response(serializer.data)
+
 
 class GroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     """GET for groups (roles)."""
@@ -88,3 +125,131 @@ class GroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     queryset = Group.objects.all()
     permission_classes = [DjangoModelCRUDPermissions, IsApprovedPermission]
     serializer_class = GroupSerializer
+
+
+class IsOwnerOrAdmin(BasePermission):
+    """Permission to only allow owners of a change request or admins to view it."""
+
+    def has_object_permission(self, request, view, obj):
+        """Check if user is owner or admin."""
+        # Allow admins
+        if request.user.is_an_admin or request.user.is_ofa_sys_admin:
+            return True
+
+        # Allow owners
+        return obj.user == request.user
+
+
+class UserChangeRequestViewSet(viewsets.ModelViewSet):
+    """ViewSet for user change requests."""
+
+    serializer_class = UserChangeRequestSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
+
+    def get_queryset(self):
+        """Filter queryset based on user permissions."""
+        user = self.request.user
+        # Admins can see all change requests
+        if user.is_an_admin or user.is_ofa_sys_admin:
+            return UserChangeRequest.objects.all()
+        # Regular users can only see their own
+        return UserChangeRequest.objects.filter(user=user)
+
+    def perform_create(self, serializer):
+        """Set user to current user if not specified."""
+        data = serializer.validated_data
+        if 'user' not in data:
+            data['user'] = self.request.user
+        serializer.save()
+
+
+class AdminChangeRequestViewSet(viewsets.ModelViewSet):
+    """ViewSet for admin management of change requests."""
+
+    serializer_class = AdminChangeRequestSerializer
+    permission_classes = [IsAuthenticated]
+    filterset_fields = ['status', 'user', 'field_name']
+
+    def get_queryset(self):
+        """Only allow admins to access this viewset."""
+        user = self.request.user
+        if not (user.is_an_admin or user.is_ofa_sys_admin):
+            return UserChangeRequest.objects.none()
+        return UserChangeRequest.objects.all()
+
+    @action(detail=True, methods=['post'])
+    def approve(self, request, pk=None):
+        """Approve a change request."""
+        change_request = self.get_object()
+        if change_request.status != 'pending':
+            return Response(
+                {'detail': 'This change request has already been processed.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        notes = request.data.get('notes', '')
+        success = change_request.approve(request.user, notes)
+
+        if success:
+            # Create audit log entry
+            ChangeRequestAuditLog.objects.create(
+                change_request=change_request,
+                action='approved',
+                performed_by=request.user,
+                details={
+                    'field': change_request.field_name,
+                    'new_value': change_request.requested_value,
+                    'api_action': True
+                }
+            )
+
+            return Response({'status': 'approved'}, status=status.HTTP_200_OK)
+        return Response(
+            {'detail': 'Could not approve change request.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    @action(detail=True, methods=['post'])
+    def reject(self, request, pk=None):
+        """Reject a change request."""
+        change_request = self.get_object()
+        if change_request.status != 'pending':
+            return Response(
+                {'detail': 'This change request has already been processed.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        notes = request.data.get('notes', '')
+        success = change_request.reject(request.user, notes)
+
+        if success:
+            # Create audit log entry
+            ChangeRequestAuditLog.objects.create(
+                change_request=change_request,
+                action='rejected',
+                performed_by=request.user,
+                details={
+                    'field': change_request.field_name,
+                    'api_action': True
+                }
+            )
+
+            return Response({'status': 'rejected'}, status=status.HTTP_200_OK)
+        return Response(
+            {'detail': 'Could not reject change request.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+class ChangeRequestAuditLogViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for change request audit logs."""
+
+    serializer_class = ChangeRequestAuditLogSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Only allow admins to access audit logs."""
+        user = self.request.user
+        if not (user.is_an_admin or user.is_ofa_sys_admin):
+            return ChangeRequestAuditLog.objects.none()
+        return ChangeRequestAuditLog.objects.all()
