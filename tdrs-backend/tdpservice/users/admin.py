@@ -194,7 +194,7 @@ class UserChangeRequestAdmin(admin.ModelAdmin):
             else:
                 self.message_user(
                     request,
-                    f"Could not approve change request. It may have already been processed.",
+                    "Could not approve change request. It may have already been processed.",
                     messages.ERROR
                 )
 
@@ -223,7 +223,7 @@ class UserChangeRequestAdmin(admin.ModelAdmin):
             else:
                 self.message_user(
                     request,
-                    f"Could not reject change request. It may have already been processed.",
+                    "Could not reject change request. It may have already been processed.",
                     messages.ERROR
                 )
 
@@ -328,7 +328,6 @@ class ChangeRequestAuditLogAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         """Disable deleting audit logs."""
         return False
-
 
 
 admin.site.register(User, UserAdmin)

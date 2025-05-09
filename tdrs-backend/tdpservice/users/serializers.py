@@ -197,6 +197,7 @@ class UserProfileChangeRequestSerializer(UserProfileSerializer):
 
     class Meta(UserProfileSerializer.Meta):
         """Metadata."""
+
         # Add the new fields to the existing fields list
         fields = UserProfileSerializer.Meta.fields + [
             'create_change_requests',
@@ -228,7 +229,6 @@ class UserProfileChangeRequestSerializer(UserProfileSerializer):
         create_change_requests = validated_data.pop('create_change_requests', True)
 
         # If not creating change requests, use the parent update method
-        print(f"\n\nCreating change requests: {create_change_requests}\n\n")
         if not create_change_requests:
             # Only admins can bypass change requests
             user = self.context['request'].user
@@ -242,7 +242,6 @@ class UserProfileChangeRequestSerializer(UserProfileSerializer):
         change_requests = []
 
         # Process simple fields
-        print("Processing first name and last name")
         for field_name in ['first_name', 'last_name']:
             if field_name in validated_data:
                 # Check if the value is actually changing
@@ -259,7 +258,6 @@ class UserProfileChangeRequestSerializer(UserProfileSerializer):
                     change_requests.append(change_request)
 
         # Process STT field
-        print("Processing stt")
         if 'stt' in validated_data:
             new_stt = validated_data['stt']
             current_stt = instance.stt
@@ -277,7 +275,6 @@ class UserProfileChangeRequestSerializer(UserProfileSerializer):
                 change_requests.append(change_request)
 
         # Process regions field (many-to-many)
-        print("processing regions")
         if 'regions' in validated_data:
             new_regions = validated_data['regions']
             current_regions = set(instance.regions.all().values_list('id', flat=True))
