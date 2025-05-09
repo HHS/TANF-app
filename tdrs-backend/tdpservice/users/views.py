@@ -249,6 +249,6 @@ class ChangeRequestAuditLogViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         """Only allow admins to access audit logs."""
         user = self.request.user
-        if not (user.is_an_admin or user.is_ofa_sys_admin):
+        if not user.is_ofa_sys_admin:
             return ChangeRequestAuditLog.objects.none()
         return ChangeRequestAuditLog.objects.all()
