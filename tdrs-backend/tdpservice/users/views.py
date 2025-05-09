@@ -24,7 +24,6 @@ from tdpservice.users.serializers import (
     UserProfileSerializer,
     UserSerializer,
     UserChangeRequestSerializer,
-    AdminChangeRequestSerializer,
     ChangeRequestAuditLogSerializer
 )
 from tdpservice.users.serializers import UserProfileChangeRequestSerializer
@@ -141,10 +140,9 @@ class UserChangeRequestViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Filter queryset based on user permissions."""
         user = self.request.user
-        # Admins can see all change requests
         if user.is_ofa_sys_admin:
             return UserChangeRequest.objects.all()
-        # Regular users can only see their own
+
         return UserChangeRequest.objects.filter(user=user)
 
     def perform_create(self, serializer):
