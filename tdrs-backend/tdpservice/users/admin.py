@@ -174,7 +174,6 @@ class UserChangeRequestAdmin(admin.ModelAdmin):
         """Handle approval of a change request."""
         change_request = self.get_object(request, object_id)
         if change_request and change_request.status == 'pending':
-            # Create audit log entry
             ChangeRequestAuditLog.objects.create(
                 change_request=change_request,
                 action='approved',
@@ -185,7 +184,6 @@ class UserChangeRequestAdmin(admin.ModelAdmin):
                 }
             )
 
-            # Approve the change request
             success = change_request.approve(request.user)
             if success:
                 self.message_user(
@@ -215,7 +213,6 @@ class UserChangeRequestAdmin(admin.ModelAdmin):
                 details={'field': change_request.field_name}
             )
 
-            # Reject the change request
             success = change_request.reject(request.user)
             if success:
                 self.message_user(
@@ -249,7 +246,6 @@ class UserChangeRequestAdmin(admin.ModelAdmin):
                 }
             )
 
-            # Approve the change request
             if change_request.approve(request.user):
                 updated += 1
 
@@ -274,7 +270,6 @@ class UserChangeRequestAdmin(admin.ModelAdmin):
                 }
             )
 
-            # Reject the change request
             if change_request.reject(request.user):
                 updated += 1
 
