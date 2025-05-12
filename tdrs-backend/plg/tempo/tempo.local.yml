@@ -1,0 +1,48 @@
+server:
+  http_listen_port: 3200
+
+distributor:
+  receivers:
+      otlp:
+        protocols:
+          http:
+          grpc:
+
+compactor:
+  compaction:
+    block_retention: 48h                # configure total trace retention here
+
+metrics_generator:
+  registry:
+    external_labels:
+      source: tempo
+      cluster: linux-microservices
+  storage:
+    path: /var/tempo/generator/wal
+    remote_write:
+    - url: http://prometheus:9090/api/v1/write
+      send_exemplars: true
+
+storage:
+  trace:
+    backend: s3
+    s3:
+      endpoint: http://localstack:4566
+      region: us-gov-west-1
+      bucket: tempo-traces
+      forcepathstyle: true
+      enable_dual_stack: false
+      # set to false if endpoint is https
+      insecure: true
+      access_key: test
+      secret_key: test
+    wal:
+      path: /var/tempo/wal         # where to store the wal locally
+
+overrides:
+  defaults:
+    metrics_generator:
+      processors: [service-graphs, span-metrics]
+
+usage_report:
+  reporting_enabled: false

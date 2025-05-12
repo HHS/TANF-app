@@ -126,11 +126,23 @@ services:
     image: grafana/alloy:v1.8.0
     ports:
       - 12345:12345
+      - 12346:12346
     volumes:
       - ./plg/alloy:/etc/alloy
       - ~/tdp-logs/nginx:/var/log/nginx
       - logs:/logs
     command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/alloy.local.config
+
+  tempo:
+    restart: always
+    image: grafana/tempo:latest
+    ports:
+      - 3200:3200
+    volumes:
+      - ./plg/tempo/tempo.local.yml:/etc/tempo/config.yml
+    depends_on:
+      - localstack
+      - prometheus
 
   loki:
     restart: always

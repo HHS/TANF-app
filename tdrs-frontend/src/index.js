@@ -4,6 +4,7 @@ import axios from 'axios'
 
 import { ReduxRouter as Router } from '@lagunovsky/redux-react-router'
 import { Provider } from 'react-redux'
+import { FaroErrorBoundary } from '@grafana/faro-react'
 
 import configureStore, { history } from './configureStore'
 import startMirage from './mirage'
@@ -57,7 +58,9 @@ const root = createRoot(container)
 root.render(
   <Provider store={store}>
     <Router store={store} history={history}>
-      <App />
+      <FaroErrorBoundary>
+        <App />
+      </FaroErrorBoundary>
     </Router>
   </Provider>
 )
