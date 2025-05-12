@@ -110,16 +110,27 @@ services:
       - alertmanager
       - mimir
 
-  promtail:
+  # promtail:
+  #   restart: always
+  #   image: grafana/promtail:3.1.1
+  #   ports:
+  #     - 9080:9080
+  #   volumes:
+  #     - ./plg/promtail/config.local.yml:/etc/promtail/config.yml
+  #     - ~/tdp-logs/nginx:/var/log/nginx
+  #     - logs:/logs
+  #   command: -config.file=/etc/promtail/config.yml
+
+  alloy:
     restart: always
-    image: grafana/promtail:3.1.1
+    image: grafana/alloy:v1.8.0
     ports:
-      - 9080:9080
+      - 12345:12345
     volumes:
-      - ./plg/promtail/config.local.yml:/etc/promtail/config.yml
+      - ./plg/alloy:/etc/alloy
       - ~/tdp-logs/nginx:/var/log/nginx
       - logs:/logs
-    command: -config.file=/etc/promtail/config.yml
+    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/alloy.local.config
 
   loki:
     restart: always
