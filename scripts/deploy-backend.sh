@@ -91,12 +91,6 @@ prepare_alloy() {
   pushd tdrs-backend/plg/alloy
   cf set-env "$CGAPPNAME_BACKEND" ALLOY_SYSTEM_NAME "system-$backend_app_name"
   cf set-env "$CGAPPNAME_BACKEND" ALLOY_BACKEND_NAME "backend-$backend_app_name"
-  
-  # CONFIG=alloy.config
-  # yq eval -i ".scrape_configs[0].job_name = \"system-$backend_app_name\""  $CONFIG
-  # yq eval -i ".scrape_configs[0].static_configs[0].labels.job = \"system-$backend_app_name\""  $CONFIG
-  # yq eval -i ".scrape_configs[1].job_name = \"backend-$backend_app_name\""  $CONFIG
-  # yq eval -i ".scrape_configs[1].static_configs[0].labels.job = \"backend-$backend_app_name\""  $CONFIG
   popd
 }
 
