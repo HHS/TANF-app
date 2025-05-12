@@ -900,6 +900,7 @@ const FRAReports = () => {
               {localAlert.active && (
                 <div
                   ref={alertRef}
+                  tabIndex={-1}
                   className={classNames('usa-alert usa-alert--slim', {
                     [`usa-alert--${localAlert.type}`]: true,
                   })}
