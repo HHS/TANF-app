@@ -98,6 +98,11 @@ services:
     image: prom/prometheus:v2.54.1
     ports:
       - 9090:9090
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --web.enable-remote-write-receiver
+      - --enable-feature=exemplar-storage
+      - --enable-feature=native-histograms
     volumes:
       - ./plg/prometheus/prometheus.local.yml:/etc/prometheus/prometheus.yml
       - ./plg/prometheus/django-rules.yml:/etc/prometheus/django-rules.yml
@@ -134,15 +139,22 @@ services:
     command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/alloy.local.config
 
   tempo:
-    restart: always
     image: grafana/tempo:latest
-    ports:
-      - 3200:3200
+    command: [ "-config.file=/etc/tempo.yaml" ]
     volumes:
-      - ./plg/tempo/tempo.local.yml:/etc/tempo/config.yml
+      - ./plg/tempo/tempo.local.yml:/etc/tempo.yaml
+      - tempo-data:/var/tempo
+    ports:
+      - "14268:14268"  # jaeger ingest
+      - "3200:3200"   # tempo
+      - "9095:9095" # tempo grpc
+      - "4317:4317"  # otlp grpc
+      - "4318:4318"  # otlp http
+      - "9411:9411"   # zipkin
     depends_on:
-      - localstack
       - prometheus
+      - localstack
+      - alloy
 
   loki:
     restart: always
@@ -243,6 +255,7 @@ volumes:
   grafana_data:
   loki_data:
   logs:
+  tempo-data:
 
 
 networks:

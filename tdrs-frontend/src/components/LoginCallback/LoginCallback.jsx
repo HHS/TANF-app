@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { setAlert, clearAlert } from '../../actions/alert'
 import { ALERT_INFO } from '../Alert'
+import faroInstance from '../../services/RumService'
 
 /**
  * This component renders momentarily after the user logs in.
@@ -45,8 +46,20 @@ function LoginCallback() {
       window.location = `${process.env.REACT_APP_BACKEND_HOST}/admin/`
     }
   }
+  if (authenticated) {
+    console.log('Setting user to:', JSON.stringify(user, null, 2))
+    faroInstance.api.setUser({
+      email: user.email,
+      id: user.id,
+      username: user.username,
+      attributes: {
+        role: user.roles,
+      },
+    })
+    return <Navigate to="/home" />
+  }
 
-  return authenticated ? <Navigate to="/home" /> : null
+  return null
 }
 
 export default LoginCallback
