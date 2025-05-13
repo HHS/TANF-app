@@ -34,7 +34,7 @@ const initializeRum = () => {
     const faro = initializeFaro({
       url: process.env.REACT_APP_FARO_ENDPOINT,
       app: {
-        name: 'TDP Frontend',
+        name: 'tdp-frontend',
         version: process.env.REACT_APP_VERSION,
         environment: process.env.NODE_ENV,
       },

@@ -86,7 +86,7 @@ http {
         set $CSP "${CSP}script-src-attr 'self' 'unsafe-inline';";
         set $CSP "${CSP}style-src-elem 'self' 'unsafe-inline';";
         set $CSP "${CSP}style-src-attr 'self' 'unsafe-inline';";
-        set $CSP "${CSP}worker-src 'none';";
+        set $CSP "${CSP}worker-src 'self' blob:;";
         add_header Content-Security-Policy $CSP;
 
     }
