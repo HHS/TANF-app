@@ -1,7 +1,6 @@
 """OpenTelemetry tracing configuration for the TDP application."""
 
 import logging
-from django.conf import settings
 
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
@@ -66,7 +65,7 @@ def initialize_tracer():
     # Instrument requests for external HTTP calls
     RequestsInstrumentor().instrument(tracer_provider=tracer_provider)
 
-    logger.info("OpenTelemetry tracing initialized for tdp-backend service with comprehensive instrumentation")
+    logger.info("OpenTelemetry tracing initialized for tdp-backend.")
     return tracer_provider
 
 
@@ -111,7 +110,9 @@ class TracingMiddleware:
             span.set_attribute("db.system", "postgresql")
 
             # Add the endpoint path as an attribute to help identify which endpoints are making database queries
-            span.set_attribute("http.route", request.resolver_match.route if hasattr(request, 'resolver_match') and request.resolver_match else request.path)
+            span.set_attribute("http.route",
+                               request.resolver_match.route if hasattr(request, 'resolver_match')
+                               and request.resolver_match else request.path)
 
             # If user is authenticated, add user info
             if hasattr(request, "user") and request.user.is_authenticated:
