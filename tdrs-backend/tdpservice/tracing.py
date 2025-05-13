@@ -3,10 +3,16 @@
 import logging
 from django.conf import settings
 
-# Import OpenTelemetry modules
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+
 from opentelemetry.instrumentation.django import DjangoInstrumentor
+from opentelemetry.instrumentation.psycopg2 import Psycopg2Instrumentor
+from opentelemetry.instrumentation.redis import RedisInstrumentor
+from opentelemetry.instrumentation.celery import CeleryInstrumentor
+from opentelemetry.instrumentation.botocore import BotocoreInstrumentor
+from opentelemetry.instrumentation.requests import RequestsInstrumentor
+
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
@@ -38,7 +44,29 @@ def initialize_tracer():
     # Instrument Django
     DjangoInstrumentor().instrument()
 
-    logger.info("OpenTelemetry tracing initialized for tdp-backend service")
+    # Instrument PostgreSQL
+    Psycopg2Instrumentor().instrument(
+        tracer_provider=tracer_provider,
+        # Add database-specific attributes to spans
+        enable_commenter=True,
+        # Include query parameters in spans (be careful with sensitive data)
+        # Set to False in production if queries might contain sensitive information
+        include_db_statement=True
+    )
+
+    # Instrument Redis
+    RedisInstrumentor().instrument(tracer_provider=tracer_provider)
+
+    # Instrument Celery
+    CeleryInstrumentor().instrument(tracer_provider=tracer_provider)
+
+    # Instrument boto3/botocore for S3
+    BotocoreInstrumentor().instrument(tracer_provider=tracer_provider)
+
+    # Instrument requests for external HTTP calls
+    RequestsInstrumentor().instrument(tracer_provider=tracer_provider)
+
+    logger.info("OpenTelemetry tracing initialized for tdp-backend service with comprehensive instrumentation")
     return tracer_provider
 
 
@@ -60,7 +88,7 @@ class TracingMiddleware:
 
         # Get the current context from the carrier
         context = self.propagator.extract(carrier=carrier)
-        
+
         # Start a new span for this request
         with self.tracer.start_as_current_span(
             f"{request.method} {request.path}",
@@ -72,16 +100,28 @@ class TracingMiddleware:
             span.set_attribute("http.url", request.build_absolute_uri())
             span.set_attribute("http.target", request.path)
             span.set_attribute("http.host", request.get_host())
-            
+
+            # Preserve the original service name if it's provided in the request
+            if 'x-service-name' in request.headers:
+                span.set_attribute("service.name", request.headers['x-service-name'])
+            else:
+                span.set_attribute("service.name", "tdp-backend")
+
+            # Add database context to help correlate database operations with this request
+            span.set_attribute("db.system", "postgresql")
+
+            # Add the endpoint path as an attribute to help identify which endpoints are making database queries
+            span.set_attribute("http.route", request.resolver_match.route if hasattr(request, 'resolver_match') and request.resolver_match else request.path)
+
             # If user is authenticated, add user info
             if hasattr(request, "user") and request.user.is_authenticated:
                 span.set_attribute("enduser.id", str(request.user.id))
                 span.set_attribute("enduser.username", request.user.username)
-            
+
             # Process the request
             response = self.get_response(request)
-            
+
             # Add response details to the span
             span.set_attribute("http.status_code", response.status_code)
-            
+
             return response

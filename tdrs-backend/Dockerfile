@@ -1,4 +1,4 @@
-FROM elipe17/tdp-backend-base:v0.0.3
+FROM elipe17/tdp-backend-base:v0.0.4
 
 # Adds our application code to the image
 COPY . /tdpapp

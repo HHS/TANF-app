@@ -64,6 +64,11 @@ opentelemetry-api = "==1.33.0"
 opentelemetry-exporter-otlp = "==1.33.0"
 opentelemetry-sdk = "==1.33.0"
 opentelemetry-instrumentation-django = "==0.54b0"
+opentelemetry-instrumentation-psycopg2 = "==0.54b0"
+opentelemetry-instrumentation-redis = "==0.54b0"
+opentelemetry-instrumentation-celery = "==0.54b0"
+opentelemetry-instrumentation-botocore = "==0.54b0"
+opentelemetry-instrumentation-requests = "==0.54b0"
 
 [requires]
 python_version = "3.10.8"

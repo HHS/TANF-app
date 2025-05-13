@@ -58,17 +58,11 @@ const initializeRum = () => {
           }),
         }),
       ],
-      // Collect browser and device metadata
       meta: {
         // Add any application-specific metadata here
         appType: 'TANF Data Portal',
       },
     })
-
-    // Add custom attributes that will be attached to all events
-    // faro.api.pushMeta({
-    //   userType: localStorage.getItem('userRole') || 'unknown',
-    // })
 
     console.log('Grafana Faro RUM initialized successfully')
     return faro
@@ -84,6 +78,80 @@ const faroInstance = initializeRum()
 
 export default faroInstance
 
+export const setUserInfo = (user) => {
+  if (!faroInstance || !faroInstance.api) return
+
+  // Set user information in Faro
+  faroInstance.api.setUser({
+    email: user.email,
+    id: user.id,
+    username: user.username,
+    attributes: {
+      role: user.roles,
+      // Add service name directly in user attributes to ensure proper attribution
+      serviceName: 'tdp-frontend',
+    },
+  })
+
+  if (faroInstance.api.pushMeta) {
+    faroInstance.api.pushMeta({
+      'enduser.id': user.id,
+      'enduser.username': user.username,
+      'enduser.role': user.roles,
+      'service.name': 'tdp-frontend',
+    })
+  }
+}
+
+/**
+ * Create a traced span for a user action
+ * @param {string} actionName - Name of the action being performed
+ * @param {Function} callback - Function to execute within the span
+ * @returns {*} - Result of the callback function
+ */
+export const traceUserAction = (actionName, callback) => {
+  if (!faroInstance || !faroInstance.api) {
+    return callback()
+  }
+
+  // Check if tracing is available in this version of Faro
+  if (!faroInstance.api.getTracer) {
+    // Fallback to just logging the action if tracing isn't available
+    console.log(`Tracing action: ${actionName}`)
+    return callback()
+  }
+
+  try {
+    const tracer = faroInstance.api.getTracer('user-actions')
+    return tracer.startActiveSpan(`User Action: ${actionName}`, (span) => {
+      // Add attributes to the span
+      if (span.setAttribute) {
+        span.setAttribute('service.name', 'tdp-frontend')
+        span.setAttribute('action.name', actionName)
+      }
+
+      try {
+        const result = callback()
+        span.end()
+        return result
+      } catch (error) {
+        if (span.recordException) {
+          span.recordException(error)
+        }
+        if (span.setStatus) {
+          span.setStatus({ code: 2, message: error.message }) // Error status
+        }
+        span.end()
+        throw error
+      }
+    })
+  } catch (error) {
+    // If anything fails in the tracing setup, still execute the callback
+    console.error('Error in tracing:', error)
+    return callback()
+  }
+}
+
 // Helper functions for manual instrumentation
 export const logPageView = (pageName) => {
   if (!faroInstance) return
@@ -91,6 +159,7 @@ export const logPageView = (pageName) => {
   faroInstance.api.pushEvent('page_view', {
     page: pageName,
     timestamp: Date.now(),
+    service_name: 'tdp-frontend',
   })
 }
 
@@ -101,6 +170,7 @@ export const logUserAction = (actionName, details = {}) => {
     action: actionName,
     ...details,
     timestamp: Date.now(),
+    service_name: 'tdp-frontend',
   })
 }
 
@@ -110,5 +180,6 @@ export const logError = (error, context = {}) => {
   faroInstance.api.pushError(error, {
     ...context,
     timestamp: Date.now(),
+    service_name: 'tdp-frontend',
   })
 }

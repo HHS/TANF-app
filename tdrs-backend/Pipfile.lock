@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "4fee75e365b149a0572b3be9f5ddeadc6a36d082afbcc4a1404b2229b6205c28"
+            "sha256": "0725def68fb62ab6881204dde4ca39b0e574b8230c099cd2bc666071c67cae67"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -705,10 +705,63 @@
             "markers": "python_version >= '3.8'",
             "version": "==0.54b0"
         },
+        "opentelemetry-instrumentation-botocore": {
+            "hashes": [
+                "sha256:06634a63b13a85a476674aaea6bccbadcfcf61d697d9d10bf6a5f14abe18b81b",
+                "sha256:27a867c6a27c4bcf98c96fae1d2012a0fb0a76479c2158248e90aacb32303bba"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.8'",
+            "version": "==0.54b0"
+        },
+        "opentelemetry-instrumentation-celery": {
+            "hashes": [
+                "sha256:0a8cdcb37b7ab6c6366edd821d2b3ce7f941257f44a83da5868c3a328c61207c",
+                "sha256:d73145b0a0ac412abf8b5a5da8f2f7183909b4a95e61ed803cf0251ce4cc661b"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.8'",
+            "version": "==0.54b0"
+        },
+        "opentelemetry-instrumentation-dbapi": {
+            "hashes": [
+                "sha256:85d5852a653bc99cacdc8db29d3a0524c64f417bcdb3515513e36f2fa5d6da61",
+                "sha256:94ad94819320c01ec80f5e139e2ea1f56f54745d5a74e2404499545dcc11830d"
+            ],
+            "markers": "python_version >= '3.8'",
+            "version": "==0.54b0"
+        },
         "opentelemetry-instrumentation-django": {
             "hashes": [
                 "sha256:1df0e7c9f3ab796fbc4579fcc5dae78926b89e7c4c6279fa5355f6630f12f3ce",
                 "sha256:af6b33ebf91c9fccba82a9070ed8d884b0d5d4ee9e4f70716672a6641ee005e6"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.8'",
+            "version": "==0.54b0"
+        },
+        "opentelemetry-instrumentation-psycopg2": {
+            "hashes": [
+                "sha256:1c101be21267b735dc7a9765cf1f68dd45e1e6f4536925100af1bcda5e12d47d",
+                "sha256:9406408092d56f6b9553427eae4b7c6188d3df1dbf49049020c858736dfea401"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.8'",
+            "version": "==0.54b0"
+        },
+        "opentelemetry-instrumentation-redis": {
+            "hashes": [
+                "sha256:1365af42c2953b5f8a164d318df1eb5cc9c205fd7266c5d040223ba8489ca2b8",
+                "sha256:6c2b3d63bf34a3713c35ed9170ab0a20b3ae71704af9a64cac171665ded5747c"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.8'",
+            "version": "==0.54b0"
+        },
+        "opentelemetry-instrumentation-requests": {
+            "hashes": [
+                "sha256:abc604d58a0da9cbfad2e9439df2b85437ec00bf550753cf64bf6d61e2b98bdd",
+                "sha256:c05324b3a5a047b28cd7bccf1f506d7ebadbfd8faefc2661fe7d40c3218d9a8c"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.8'",
@@ -721,6 +774,14 @@
             ],
             "markers": "python_version >= '3.8'",
             "version": "==0.54b0"
+        },
+        "opentelemetry-propagator-aws-xray": {
+            "hashes": [
+                "sha256:1c99181ee228e99bddb638a0c911a297fa21f1c3a0af951f841e79919b5f1934",
+                "sha256:6b2cee5479d2ef0172307b66ed2ed151f598a0fd29b3c01133ac87ca06326260"
+            ],
+            "markers": "python_version >= '3.8'",
+            "version": "==1.0.2"
         },
         "opentelemetry-proto": {
             "hashes": [
