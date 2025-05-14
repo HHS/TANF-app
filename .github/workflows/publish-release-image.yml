@@ -13,7 +13,7 @@ on:
 env:
   BACKEND_DIR: tdrs-backend
   FRONTEND_DIR: tdrs-frontend
-  BACKEND_NAME: TANF-app
+  BACKEND_NAME: tanf-app
   FRONTEND_NAME: tdp-frontend-test
 
 jobs:
