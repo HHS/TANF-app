@@ -11,7 +11,7 @@ from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TAN
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T1, Tribal_TANF_T2, Tribal_TANF_T3, Tribal_TANF_T4
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T5, Tribal_TANF_T6, Tribal_TANF_T7
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3, SSP_M4, SSP_M5, SSP_M6, SSP_M7
-from tdpservice.parsers import aggregates
+from tdpservice.parsers import aggregates, util
 from tdpservice.search_indexes.models.fra import TANF_Exiter1
 
 import logging
@@ -433,7 +433,7 @@ def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile, dfs):
             assert month['accepted_with_errors'] == 0
 
     parser_errors = ParserError.objects.filter(file=small_ssp_section1_datafile)
-    assert parser_errors.count() == 16
+    assert parser_errors.count() == 9
     assert SSP_M1.objects.count() == expected_m1_record_count
     assert SSP_M2.objects.count() == expected_m2_record_count
     assert SSP_M3.objects.count() == expected_m3_record_count
@@ -476,7 +476,7 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile, dfs):
     assert cat4_errors[1].error_message == "Duplicate record detected with record type M3 at line 3273. " + \
         "Record is a duplicate of the record at line number 3272."
 
-    assert parser_errors.count() == 32455
+    assert parser_errors.count() == 31725
 
     assert SSP_M1.objects.count() == expected_m1_record_count
     assert SSP_M2.objects.count() == expected_m2_record_count
@@ -1564,10 +1564,8 @@ def test_parse_t3_cat2_invalid_citizenship(t3_cat2_invalid_citizenship_file, dfs
 
     parser_errors = ParserError.objects.filter(file=t3_cat2_invalid_citizenship_file).exclude(exclusion).order_by("pk")
 
-    assert parser_errors.count() == 2
-
-    for e in parser_errors:
-        assert e.error_message == "T3 Item 76 (Citizenship/Immigration Status): 0 is not in [1, 2, 3, 9]."
+    # no errors expected as fields are not required
+    assert parser_errors.count() == 0
 
 
 @pytest.mark.django_db()
@@ -1588,15 +1586,9 @@ def test_parse_m2_cat2_invalid_37_38_39_file(m2_cat2_invalid_37_38_39_file, dfs)
 
     parser_errors = ParserError.objects.filter(file=m2_cat2_invalid_37_38_39_file).exclude(exclusion).order_by("pk")
 
-    assert parser_errors.count() == 3
+    # no errors expected as fields are not required
+    assert parser_errors.count() == 0
 
-    error_msgs = {
-        "Item 37 (Educational Level) 00 must be between 1 and 16 or must be between 98 and 99.",
-        "M2 Item 38 (Citizenship/Immigration Status): 0 is not in [1, 2, 3, 9].",
-        "M2 Item 39 (Cooperated with Child Support): 0 is not in [1, 2, 9]."
-    }
-    for e in parser_errors:
-        assert e.error_message in error_msgs
 
 @pytest.mark.django_db()
 def test_parse_m3_cat2_invalid_68_69_file(m3_cat2_invalid_68_69_file, dfs):
@@ -1616,13 +1608,11 @@ def test_parse_m3_cat2_invalid_68_69_file(m3_cat2_invalid_68_69_file, dfs):
 
     parser_errors = ParserError.objects.filter(file=m3_cat2_invalid_68_69_file).exclude(exclusion).order_by("pk")
 
-    assert parser_errors.count() == 4
+    assert parser_errors.count() == 2
 
     error_msgs = {
         "Item 68 (Educational Level) 00 must be between 1 and 16 or must be between 98 and 99.",
-        "M3 Item 69 (Citizenship/Immigration Status): 0 is not in [1, 2, 3, 9].",
         "Item 68 (Educational Level) 00 must be between 1 and 16 or must be between 98 and 99.",
-        "M3 Item 69 (Citizenship/Immigration Status): 0 is not in [1, 2, 3, 9]."
     }
 
     for e in parser_errors:
@@ -1646,13 +1636,7 @@ def test_parse_m5_cat2_invalid_23_24_file(m5_cat2_invalid_23_24_file, dfs):
 
     parser_errors = ParserError.objects.filter(file=m5_cat2_invalid_23_24_file).exclude(exclusion).order_by("pk")
 
-    assert parser_errors.count() == 2
-
-    error_msgs = {"M5 Item 23 (Educational Level): 00 matches 00.",
-                  "M5 Item 24 (Citizenship/Immigration Status): 0 is not in [1, 2, 3, 9]."}
-
-    for e in parser_errors:
-        assert e.error_message in error_msgs
+    assert parser_errors.count() == 0
 
 @pytest.mark.django_db()
 def test_zero_filled_fips_code_file(test_file_zero_filled_fips_code, dfs):
@@ -1938,3 +1922,29 @@ def test_parse_fra_formula_fields(fra_formula_fields_test_xlsx, dfs):
     assert dfs.total_number_of_records_in_file == 8
     assert dfs.total_number_of_records_created == 8
     assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
+
+@pytest.mark.django_db()
+def test_parse_fra_decoder_unknown(fra_decoder_unknown, dfs):
+    """Test parsing a FRA file with bad encoding."""
+    datafile = fra_decoder_unknown
+    datafile.year = 2025
+    datafile.quarter = 'Q3'
+
+    dfs.datafile = datafile
+    dfs.save()
+
+    try:
+        parser = ParserFactory.get_instance(datafile=datafile, dfs=dfs,
+                                            section=datafile.section,
+                                            program_type=datafile.prog_type)
+        parser.parse_and_validate()
+    except util.DecoderUnknownException:
+        pass
+
+    errors = ParserError.objects.filter(file=datafile).order_by("id")
+    assert errors.count() == 1
+    assert errors.first().error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert errors.first().error_message == ("Could not determine encoding of FRA file. If the file is an XLSX file, "
+                                            "ensure it can be opened in Excel. If the file is a CSV, ensure it can be "
+                                            "opened in a text editor and is UTF-8 encoded.")
+    assert dfs.get_status() == DataFileSummary.Status.REJECTED
