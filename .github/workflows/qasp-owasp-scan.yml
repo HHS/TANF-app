@@ -35,5 +35,6 @@ jobs:
         payload: |
           {
             "run_owasp_scan": ${{ env.HAS_QASP_LABEL }},
-            "triggered": true
+            "triggered": true,
+            "registry_owner":  "${{ github.repository_owner }}"
           }

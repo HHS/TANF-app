@@ -1,0 +1,89 @@
+name: Build and Publish Image to GHCR
+
+on:
+  pull_request:
+    branches: 
+      - main
+      - develop
+    types: 
+      - opened
+      - synchronize
+      - reopened
+
+env:
+  BACKEND_DIR: tdrs-backend
+  FRONTEND_DIR: tdrs-frontend
+  BACKEND_NAME: tanf-app
+  FRONTEND_NAME: tdp-frontend-test
+
+jobs:
+  build-and-push-image:
+    if: startsWith(github.head_ref, 'release/v') || startsWith(github.head_ref, 'hotfix/v')
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Get Semver
+        id: semver
+        run: |
+          # head_ref -> set in pr events
+          # ref_name -> set in branch events (pushes)
+          BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
+          echo "Branch: $BRANCH_NAME"
+
+          # only match release and hotfix branches with a valid v prefixed semver as the branch name
+          pattern='^(release|hotfix)/(v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9_-]+)?)$'
+
+          if [[ "$BRANCH_NAME" =~ $pattern ]]; then
+            VERSION="${BASH_REMATCH[2]}"
+            echo "Version: $VERSION"
+
+            echo "VERSION=$VERSION" >> $GITHUB_ENV
+          else
+            echo "Invalid branch format"
+            exit 1
+          fi
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Ensure package repo is all lowercase
+        id: set-registry-owner
+        run: |
+          echo "REGISTRY_OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Build and Push Backend
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ env.BACKEND_DIR }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ env.REGISTRY_OWNER }}/${{ env.BACKEND_NAME }}:${{ env.VERSION }}
+            ghcr.io/${{ env.REGISTRY_OWNER }}/${{ env.BACKEND_NAME }}:latest
+          build-args: |
+            REGISTRY_OWNER=${{ env.REGISTRY_OWNER }}
+
+      - name: Build and Push Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ env.FRONTEND_DIR }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ env.REGISTRY_OWNER }}/${{ env.FRONTEND_NAME }}:${{ env.VERSION }}
+            ghcr.io/${{ env.REGISTRY_OWNER }}/${{ env.FRONTEND_NAME }}:latest
+          build-args: |
+            REGISTRY_OWNER=${{ env.REGISTRY_OWNER }}
