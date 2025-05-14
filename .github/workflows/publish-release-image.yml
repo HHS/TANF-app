@@ -13,8 +13,8 @@ on:
 env:
   BACKEND_DIR: tdrs-backend
   FRONTEND_DIR: tdrs-frontend
-  BACKEND_NAME: tdp-backend
-  FRONTEND_NAME: tdp-frontend
+  BACKEND_NAME: tdp-backend-test
+  FRONTEND_NAME: tdp-frontend-test
 
 jobs:
   build-and-push-image:
