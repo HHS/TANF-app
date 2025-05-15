@@ -50,11 +50,17 @@ metrics_generator:
 
 storage:
   trace:
-    backend: local
+    backend: s3
+    s3:
+      bucket: tempo-traces
+      endpoint: localstack:4566
+      region: us-gov-west-1
+      access_key: test
+      secret_key: test
+      insecure: true
+      forcepathstyle: true
     wal:
       path: /var/tempo/wal
-    local:
-      path: /var/tempo/blocks
 
 overrides:
   defaults:
