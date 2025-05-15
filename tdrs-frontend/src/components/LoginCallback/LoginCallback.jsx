@@ -47,7 +47,6 @@ function LoginCallback() {
     }
   }
   if (authenticated) {
-    console.log('Setting user to:', JSON.stringify(user, null, 2))
     setUserInfo(user)
     return <Navigate to="/home" />
   }

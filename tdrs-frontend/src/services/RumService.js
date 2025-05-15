@@ -1,106 +1,22 @@
-import { initializeFaro } from '@grafana/faro-web-sdk'
-import { TracingInstrumentation } from '@grafana/faro-web-tracing'
-import {
-  ReactIntegration,
-  getWebInstrumentations,
-  createReactRouterV6Options,
-} from '@grafana/faro-react'
-import {
-  createRoutesFromChildren,
-  matchRoutes,
-  Routes,
-  useLocation,
-  useNavigationType,
-} from 'react-router-dom'
-
-/**
- * Initialize and configure the Grafana Faro RUM SDK
- * This service tracks user sessions, page performance metrics, and application events
- * for integration with Grafana dashboards.
- */
-const initializeRum = () => {
-  // Only initialize in production or if explicitly enabled in other environments
-  if (
-    process.env.NODE_ENV !== 'production' &&
-    !process.env.REACT_APP_ENABLE_RUM
-  ) {
-    console.log(
-      'RUM disabled in development. Set REACT_APP_ENABLE_RUM=true to enable.'
-    )
-    return null
-  }
-
-  try {
-    const faro = initializeFaro({
-      url: process.env.REACT_APP_FARO_ENDPOINT,
-      app: {
-        name: 'tdp-frontend',
-        version: process.env.REACT_APP_VERSION,
-        environment: process.env.NODE_ENV,
-      },
-      // Set a reasonable sample rate to control data volume
-      sessionSampleRate: 0.5,
-      instrumentations: [
-        // Load the default Web instrumentations
-        ...getWebInstrumentations({ captureConsole: true }),
-        // Trace API calls and other async operations
-        new TracingInstrumentation(),
-        // Add React-specific instrumentation
-        new ReactIntegration({
-          // Track components that take >50ms to render
-          componentRenderThreshold: 50,
-          router: createReactRouterV6Options({
-            createRoutesFromChildren,
-            matchRoutes,
-            Routes,
-            useLocation,
-            useNavigationType,
-          }),
-        }),
-      ],
-      meta: {
-        // Add any application-specific metadata here
-        appType: 'TANF Data Portal',
-      },
-    })
-
-    console.log('Grafana Faro RUM initialized successfully')
-    return faro
-  } catch (error) {
-    // Fail gracefully - RUM should never break the application
-    console.error('Failed to initialize RUM:', error)
-    return null
-  }
-}
-
-// Export a singleton instance
-const faroInstance = initializeRum()
-
-export default faroInstance
+import { faro } from '@grafana/faro-react'
 
 export const setUserInfo = (user) => {
-  if (!faroInstance || !faroInstance.api) return
+  // if (!faro || !faro.api) return
+  console.log('Setting user to:', JSON.stringify(user, null, 2))
+
+  // Convert roles array to string to avoid unmarshal error
+  const roleString = Array.isArray(user.roles)
+    ? user.roles.map((role) => role.name).join(', ')
+    : 'unknown'
 
   // Set user information in Faro
-  faroInstance.api.setUser({
-    email: user.email,
+  faro.api.setUser({
     id: user.id,
-    username: user.username,
+    username: user.email,
     attributes: {
-      role: user.roles,
-      // Add service name directly in user attributes to ensure proper attribution
-      serviceName: 'tdp-frontend',
+      role: roleString,
     },
   })
-
-  if (faroInstance.api.pushMeta) {
-    faroInstance.api.pushMeta({
-      'enduser.id': user.id,
-      'enduser.username': user.username,
-      'enduser.role': user.roles,
-      'service.name': 'tdp-frontend',
-    })
-  }
 }
 
 /**
@@ -110,23 +26,22 @@ export const setUserInfo = (user) => {
  * @returns {*} - Result of the callback function
  */
 export const traceUserAction = (actionName, callback) => {
-  if (!faroInstance || !faroInstance.api) {
+  if (!faro || !faro.api) {
     return callback()
   }
 
   // Check if tracing is available in this version of Faro
-  if (!faroInstance.api.getTracer) {
+  if (!faro.api.getTracer) {
     // Fallback to just logging the action if tracing isn't available
     console.log(`Tracing action: ${actionName}`)
     return callback()
   }
 
   try {
-    const tracer = faroInstance.api.getTracer('user-actions')
+    const tracer = faro.api.getTracer('user-actions')
     return tracer.startActiveSpan(`User Action: ${actionName}`, (span) => {
       // Add attributes to the span
       if (span.setAttribute) {
-        span.setAttribute('service.name', 'tdp-frontend')
         span.setAttribute('action.name', actionName)
       }
 
@@ -154,32 +69,34 @@ export const traceUserAction = (actionName, callback) => {
 
 // Helper functions for manual instrumentation
 export const logPageView = (pageName) => {
-  if (!faroInstance) return
+  if (!faro) return
 
-  faroInstance.api.pushEvent('page_view', {
+  // Structure data in a way that Alloy can process
+  // Using event_data_ prefix for fields that should be extracted
+  const eventData = {
     page: pageName,
     timestamp: Date.now(),
-    service_name: 'tdp-frontend',
-  })
+  }
+
+  console.log('Sending page_view event with data:', eventData)
+  faro.api.pushEvent('page_view', eventData)
 }
 
 export const logUserAction = (actionName, details = {}) => {
-  if (!faroInstance) return
+  if (!faro) return
 
-  faroInstance.api.pushEvent('user_action', {
+  faro.api.pushEvent('user_action', {
     action: actionName,
     ...details,
     timestamp: Date.now(),
-    service_name: 'tdp-frontend',
   })
 }
 
 export const logError = (error, context = {}) => {
-  if (!faroInstance) return
+  if (!faro) return
 
-  faroInstance.api.pushError(error, {
+  faro.api.pushError(error, {
     ...context,
     timestamp: Date.now(),
-    service_name: 'tdp-frontend',
   })
 }

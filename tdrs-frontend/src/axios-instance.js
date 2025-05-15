@@ -1,5 +1,5 @@
 import axios from 'axios'
-import faroInstance from './services/RumService'
+import { faro } from '@grafana/faro-react'
 
 // Need a custom instance of axios so we can set the csrf keys on auth_check
 // Work around for csrf cookie issue we encountered in production.
@@ -17,8 +17,8 @@ axiosInstance.interceptors.request.use((config) => {
     config.headers = config.headers || {}
     config.headers['x-service-name'] = 'tdp-frontend'
     // Add trace context if Faro is initialized
-    if (faroInstance && faroInstance.api) {
-      const traceContext = faroInstance.api.getTraceContext()
+    if (faro && faro.api) {
+      const traceContext = faro.api.getTraceContext()
       if (traceContext) {
         // Add W3C trace context headers
         Object.assign(config.headers, traceContext)
