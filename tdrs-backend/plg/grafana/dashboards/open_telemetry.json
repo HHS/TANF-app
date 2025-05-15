@@ -22,37 +22,6 @@
   "panels": [
     {
       "datasource": {
-        "type": "tempo",
-        "uid": "celzqpsk6u2v4b"
-      },
-      "gridPos": {
-        "h": 13,
-        "w": 24,
-        "x": 0,
-        "y": 0
-      },
-      "id": 7,
-      "options": {
-        "edges": {},
-        "nodes": {}
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "tempo",
-            "uid": "celzqpsk6u2v4b"
-          },
-          "limit": 20,
-          "queryType": "serviceMap",
-          "refId": "A",
-          "tableType": "traces"
-        }
-      ],
-      "title": "Topology",
-      "type": "nodeGraph"
-    },
-    {
-      "datasource": {
         "default": false,
         "type": "loki",
         "uid": "L8E80F9AEF21F6940"
@@ -138,7 +107,7 @@
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 13
+        "y": 0
       },
       "id": 5,
       "options": {
@@ -528,7 +497,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 20
+        "y": 7
       },
       "id": 4,
       "options": {
@@ -656,7 +625,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 20
+        "y": 7
       },
       "id": 3,
       "options": {
@@ -738,7 +707,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 28
+        "y": 15
       },
       "id": 2,
       "options": {
@@ -805,7 +774,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 37
+        "y": 24
       },
       "id": 6,
       "options": {
