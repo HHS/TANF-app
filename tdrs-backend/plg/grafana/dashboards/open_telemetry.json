@@ -22,6 +22,37 @@
   "panels": [
     {
       "datasource": {
+        "type": "tempo",
+        "uid": "celzqpsk6u2v4b"
+      },
+      "gridPos": {
+        "h": 13,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 7,
+      "options": {
+        "edges": {},
+        "nodes": {}
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "celzqpsk6u2v4b"
+          },
+          "limit": 20,
+          "queryType": "serviceMap",
+          "refId": "A",
+          "tableType": "traces"
+        }
+      ],
+      "title": "Topology",
+      "type": "nodeGraph"
+    },
+    {
+      "datasource": {
         "default": false,
         "type": "loki",
         "uid": "L8E80F9AEF21F6940"
@@ -107,7 +138,7 @@
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 13
       },
       "id": 5,
       "options": {
@@ -497,7 +528,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 7
+        "y": 20
       },
       "id": 4,
       "options": {
@@ -625,7 +656,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 7
+        "y": 20
       },
       "id": 3,
       "options": {
@@ -707,7 +738,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 15
+        "y": 28
       },
       "id": 2,
       "options": {
@@ -759,8 +790,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -775,7 +805,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 24
+        "y": 37
       },
       "id": 6,
       "options": {
@@ -905,13 +935,13 @@
     ]
   },
   "time": {
-    "from": "now-3h",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "OpenTelemetry",
   "uid": "celsnjrklc35sb",
-  "version": 2,
+  "version": 1,
   "weekStart": ""
 }
