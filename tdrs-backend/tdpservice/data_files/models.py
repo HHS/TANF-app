@@ -10,6 +10,7 @@ from django.contrib.admin.models import ADDITION, ContentType, LogEntry
 from django.core.files.base import File
 from django.db import models
 from django.db.models import Max
+from django.utils.html import format_html
 
 from tdpservice.backends import DataFilesS3Storage
 from tdpservice.stts.models import STT
@@ -275,6 +276,24 @@ class DataFile(FileRecord):
     def submitted_by(self):
         """Return the author as a string for this data file."""
         return self.user.get_full_name()
+
+    @property
+    def log_file(self):
+        """Generate S3 path for the log file."""
+        datafile = self
+        if not datafile:
+            return None
+        LOG_PRE_FIX = "v1/data_files/logs"
+        DOMAIN = settings.FRONTEND_BASE_URL
+        if datafile:
+            link = f"{LOG_PRE_FIX}/{datafile.year}/{datafile.quarter}/" \
+                  f"{datafile.stt}/{datafile.section}"
+            url = f"{DOMAIN}/{link}"  # Replace with your actual S3 URL
+            return format_html("<a href='{url}'>{field}</a>",
+                               field="Parser logs",
+                               url=url)
+        else:
+            return None
 
     def admin_link(self):
         """Return a link to the admin console for this file."""
