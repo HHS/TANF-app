@@ -1,4 +1,32 @@
-FROM elipe17/tdp-frontend-base:v0.0.5 AS localdev
+# FROM elipe17/tdp-frontend-base:v0.0.5 AS localdev
+
+# Stage 0: Create the app directory, install dependencies, and copy in the source code
+FROM node:16.13-alpine3.14 AS localdev
+
+# Due to M1 issues found here, adding solution:
+# https://stackoverflow.com/questions/69983063/
+RUN apk add chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+USER node
+
+
+RUN mkdir /home/node/app/ && chown -R node:node /home/node/app
+WORKDIR /home/node/app
+
+# Copy package.json and run npm install before copying the rest of the app in
+# to allow Docker to cache the npm layer to prevent unnecessary installations
+# when code changes occur
+COPY --chown=node:node package.json package-lock.json ./
+
+# Disable npm audit
+RUN npm set audit false
+# Install npm packages directly from package-lock.json <https://docs.npmjs.com/cli/v8/commands/npm-ci>
+RUN npm ci
+
+ENV PORT=80
+EXPOSE 80
 
 # ---
 # Stage 0: Copy source
