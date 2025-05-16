@@ -1,4 +1,4 @@
-FROM tdp-frontend/grafana-faro:latest AS localdev
+FROM elipe17/tdp-frontend-base:v0.0.5 AS localdev
 
 # ---
 # Stage 0: Copy source
