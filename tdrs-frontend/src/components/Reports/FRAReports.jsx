@@ -785,8 +785,20 @@ const FRAReports = () => {
                 ({ summary }) =>
                   summary && summary.status && summary.status !== 'Pending',
                 () => pollSubmissionStatus(tryNumber + 1),
-                () => {},
-                () => {}
+                () => {
+                  setLocalAlertState({
+                    active: true,
+                    type: 'success',
+                    message: 'Parsing complete.',
+                  })
+                },
+                (e) => {
+                  setLocalAlertState({
+                    active: true,
+                    type: 'error',
+                    message: e.message,
+                  })
+                }
               )
             ),
           tryNumber === 1 ? 0 : WAIT_TIME
@@ -919,6 +931,7 @@ const FRAReports = () => {
               {localAlert.active && (
                 <div
                   ref={alertRef}
+                  tabIndex={-1}
                   className={classNames('usa-alert usa-alert--slim', {
                     [`usa-alert--${localAlert.type}`]: true,
                   })}
