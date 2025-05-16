@@ -4,8 +4,8 @@ import Routes from './components/Routes'
 import { Alert } from './components/Alert'
 import Header from './components/Header'
 import Footer from './components/Footer'
-import { setUserInfo } from './services/RumService'
 import { useSelector } from 'react-redux'
+import { useRUM } from './hooks/useRUM'
 
 /**
  * The root component
@@ -18,11 +18,12 @@ import { useSelector } from 'react-redux'
  */
 function App() {
   const user = useSelector((state) => state.auth.user)
+  const { setUserInfo } = useRUM()
   useEffect(() => {
     if (user) {
       setUserInfo(user)
     }
-  }, [user])
+  }, [user, setUserInfo])
   return (
     <>
       <a
