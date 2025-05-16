@@ -822,9 +822,9 @@
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "Mimir",
-          "value": "MQFA97CFB590B2099"
+          "selected": true,
+          "text": "default",
+          "value": "default"
         },
         "hide": 0,
         "includeAll": false,
@@ -874,7 +874,7 @@
       },
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": "All",
           "value": "$__all"
         },
