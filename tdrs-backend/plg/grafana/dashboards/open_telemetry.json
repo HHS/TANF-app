@@ -26,6 +26,84 @@
         "type": "loki",
         "uid": "L8E80F9AEF21F6940"
       },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "displayName": "Sessions",
+          "mappings": [],
+          "max": 494,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 100
+              },
+              {
+                "color": "dark-orange",
+                "value": 200
+              },
+              {
+                "color": "dark-red",
+                "value": 350
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 7,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "L8E80F9AEF21F6940"
+          },
+          "editorMode": "code",
+          "expr": "count(count(count_over_time({service_name=\"unknown_service\"}[$__range])) by (session_id))",
+          "hide": false,
+          "queryType": "range",
+          "refId": "B"
+        }
+      ],
+      "title": "Sessions",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "loki",
+        "uid": "L8E80F9AEF21F6940"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -107,7 +185,7 @@
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 8
       },
       "id": 5,
       "options": {
@@ -509,7 +587,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 7
+        "y": 15
       },
       "id": 4,
       "options": {
@@ -637,7 +715,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 7
+        "y": 15
       },
       "id": 3,
       "options": {
@@ -706,7 +784,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 15
+        "y": 23
       },
       "id": 2,
       "options": {
@@ -774,7 +852,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 24
+        "y": 32
       },
       "id": 6,
       "options": {
@@ -822,9 +900,9 @@
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "Mimir",
+          "value": "MQFA97CFB590B2099"
         },
         "hide": 0,
         "includeAll": false,
@@ -911,6 +989,6 @@
   "timezone": "browser",
   "title": "OpenTelemetry",
   "uid": "celsnjrklc35sb",
-  "version": 2,
+  "version": 6,
   "weekStart": ""
 }
