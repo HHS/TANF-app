@@ -110,6 +110,9 @@
       }
     },
     "transform": {},
+    "transformIgnorePatterns": [
+      "node_modules/(?!(@grafana|web-vitals)/)"
+    ],
     "moduleNameMapper": {
       "^axios$": "axios/dist/node/axios.cjs",
       "@uswds/uswds/src/js/components": "@uswds/uswds/packages/uswds-core/src/js/index.js",
