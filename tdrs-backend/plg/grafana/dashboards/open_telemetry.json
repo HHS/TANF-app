@@ -85,7 +85,7 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 168
+                "value": 295
               }
             ]
           },
@@ -468,6 +468,18 @@
               "value": ""
             }
           }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "desc": true,
+                "field": "Time"
+              }
+            ]
+          }
         }
       ],
       "type": "table"
@@ -823,7 +835,7 @@
     "list": [
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "default",
           "value": "default"
         },
@@ -912,6 +924,6 @@
   "timezone": "browser",
   "title": "OpenTelemetry",
   "uid": "celsnjrklc35sb",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }
