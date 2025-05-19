@@ -573,7 +573,7 @@
     },
     {
       "datasource": {
-        "name": "${datasource}",
+        "default": false,
         "type": "prometheus",
         "uid": "${datasource}"
       },
@@ -691,19 +691,6 @@
           "legendFormat": "__auto",
           "range": true,
           "refId": "C"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "editorMode": "code",
-          "expr": "# p99\nhistogram_quantile(0.99, sum(rate(traces_spanmetrics_latency_bucket[$__rate_interval])) by (le, service_name))",
-          "hide": false,
-          "instant": false,
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "D"
         }
       ],
       "title": "Span Latency Percentiles",
