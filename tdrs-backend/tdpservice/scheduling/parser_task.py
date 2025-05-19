@@ -54,8 +54,8 @@ def parse(data_file_id, reparse_id=None):
     # for undetermined amount of time.
     try:
         data_file = DataFile.objects.get(id=data_file_id)
-        change_log_filename(logger, str(data_file.filename))
-        logger.info(f"DataFile parsing started for file {data_file.filename}")
+        change_log_filename(logger, data_file)
+        logger.info(f"\n\n\n __ Starting to {'re-' if reparse_id else ''}parse datafile {data_file.filename}__ \n\n\n")
 
         file_meta = None
         if reparse_id:
@@ -121,6 +121,6 @@ def parse(data_file_id, reparse_id=None):
                              "critical")
         set_reparse_file_meta_model_failed_state(reparse_id, file_meta)
     finally:
+        logger.info(f"DataFile parsing finished for file -> {repr(data_file)}.")
         update_dfs(dfs, data_file)
-        logger.info(f"DataFile parsing finished for file {data_file.filename}")
         logger.handlers[2].doRollover(data_file)
