@@ -101,6 +101,78 @@
     {
       "datasource": {
         "default": false,
+        "type": "tempo",
+        "uid": "celzqpsk6u2v4b"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 8,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "celzqpsk6u2v4b"
+          },
+          "limit": 1000,
+          "query": "{name != \"GET /prometheus/metrics\"} && {name != \"GET prometheus/metrics\"}",
+          "queryType": "traceql",
+          "refId": "A",
+          "spss": 94,
+          "tableType": "traces"
+        }
+      ],
+      "title": "Trace Logs",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "default": false,
         "type": "loki",
         "uid": "L8E80F9AEF21F6940"
       },
@@ -182,10 +254,10 @@
         ]
       },
       "gridPos": {
-        "h": 7,
+        "h": 10,
         "w": 24,
         "x": 0,
-        "y": 8
+        "y": 18
       },
       "id": 5,
       "options": {
@@ -587,7 +659,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 15
+        "y": 28
       },
       "id": 4,
       "options": {
@@ -715,7 +787,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 15
+        "y": 28
       },
       "id": 3,
       "options": {
@@ -784,7 +856,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 23
+        "y": 36
       },
       "id": 2,
       "options": {
@@ -836,8 +908,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -852,7 +923,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 32
+        "y": 45
       },
       "id": 6,
       "options": {
@@ -900,7 +971,7 @@
     "list": [
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "Mimir",
           "value": "MQFA97CFB590B2099"
         },
@@ -952,7 +1023,7 @@
       },
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "All",
           "value": "$__all"
         },
@@ -989,6 +1060,6 @@
   "timezone": "browser",
   "title": "OpenTelemetry",
   "uid": "celsnjrklc35sb",
-  "version": 6,
+  "version": 8,
   "weekStart": ""
 }
