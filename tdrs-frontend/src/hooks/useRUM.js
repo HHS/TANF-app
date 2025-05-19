@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { faro } from '@grafana/faro-react'
 
 export const useRUM = () => {
