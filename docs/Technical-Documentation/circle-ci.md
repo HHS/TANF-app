@@ -11,7 +11,7 @@
     * Executors: build environments used for jobs
     * Jobs: a collection of steps run on an executor
     * Orbs: reusable code that can be imported in to circle config - similar to pip packages, etc
-* We currently have 5 automated workflows:
+* Automated workflows:
     * `build-and-test`: Runs jobs `secrets-check`, `test-frontend` and `test-backend` on every commit
     * `dev-deployment`: Deploys a PR to the dev space. Triggered by a GitHub action whenever one of the relevant deployment labels is assigned via an API call to Circle CI with the pipeline parameter `run_dev_deployment`.
     * `nightly`: Runs every night at UTC midnight and performs an OWASP scan against the staging site for both backend and frontend then stores the results in Django using a Cloud Foundry task.
