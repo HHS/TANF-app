@@ -1,7 +1,7 @@
 ARG REGISTRY_OWNER=hhs
 ARG BASE_TAG=latest
 
-FROM ghcr.io/${REGISTRY_OWNER}}/tdp-frontend-base:${BASE_TAG} AS localdev
+FROM ghcr.io/${REGISTRY_OWNER}/tdp-frontend-base:${BASE_TAG} AS localdev
 
 # ---
 # Stage 0: Copy source
