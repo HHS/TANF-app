@@ -11,12 +11,19 @@
     * Executors: build environments used for jobs
     * Jobs: a collection of steps run on an executor
     * Orbs: reusable code that can be imported in to circle config - similar to pip packages, etc
-* We currently have 5 workflows:
+* We currently have 5 automated workflows:
     * `build-and-test`: Runs jobs `secrets-check`, `test-frontend` and `test-backend` on every commit
     * `dev-deployment`: Deploys a PR to the dev space. Triggered by a GitHub action whenever one of the relevant deployment labels is assigned via an API call to Circle CI with the pipeline parameter `run_dev_deployment`.
     * `nightly`: Runs every night at UTC midnight and performs an OWASP scan against the staging site for both backend and frontend then stores the results in Django using a Cloud Foundry task.
     * `owasp-scan`: Runs an OWASP scan against the backend and frontend for a given PR. Triggered by a GitHub action whenever the `QASP Review` label is assigned via an API call to Circle CI with the pipeline parameter `run_owasp_scan`.
-    * `staging-deployment`: Deploys the main branch to the staging space in Cloud.gov. Triggered via merges to the branch `develop`.
+    * `staging-deployment`: Deploys the main branch to the staging space in Cloud.gov. Triggered via merges to the branch `main`.
+* Manual deployment
+    * Select the desired branch from the branch dropdown on the CircleCI project page
+    * Click the "Trigger Pipeline" button
+    * Enter the `target_env`: e.g. `qasp`, `raft`, `a11y`
+    * Set `triggered` to true
+    * Set `run_dev_deployment` to true
+    * Click the `Run Pipeline` button
 
 ## How are environment variables supplied in CI?
 We manually set some environment variables in the project settings for Circle CI. From there, they are used in several places:
