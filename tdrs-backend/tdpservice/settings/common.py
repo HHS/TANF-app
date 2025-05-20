@@ -296,6 +296,10 @@ class Common(Configuration):
     CSRF_COOKIE_HTTPONLY = False
     CSRF_TRUSTED_ORIGINS = ['.app.cloud.gov', '.acf.hhs.gov']
 
+    # Disable the deprecated X-XSS-Protection header
+    # header is put in ever request by the SecurityMiddleware by default
+    SECURE_BROWSER_XSS_FILTER = False
+
 
     # Django Rest Framework
     DEFAULT_RENDERER_CLASSES = ['rest_framework.renderers.JSONRenderer']
