@@ -33,7 +33,14 @@ jobs:
     runs-on: ubuntu-latest
     name: Initiate deploy job in CircleCI
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout source
+        uses: actions/checkout@v2
+
+      - name: Ensure package repo is all lowercase
+        id: set-registry-owner
+        run: |
+          echo "REGISTRY_OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Circle CI Deployment Trigger
         id: curl-circle-ci
         uses: promiseofcake/circleci-trigger-action@v1
@@ -44,5 +51,5 @@ jobs:
           payload: '{
               "build_and_test_all": true,
               "triggered": true,
-              "registry_owner":  "${{ github.repository_owner }}"
+              "registry_owner":  "${{ env.REGISTRY_OWNER }}"
             }'
