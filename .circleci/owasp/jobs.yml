@@ -22,6 +22,7 @@
       - run-owasp-scan:
           environment: circle
           target: backend
+          registry_owner: << pipeline.parameters.registry_owner >>
 
   frontend-owasp-scan:
     executor: large-machine-executor
@@ -47,6 +48,7 @@
       - run-owasp-scan:
           environment: circle
           target: frontend
+          registry_owner: << pipeline.parameters.registry_owner >>
 
   nightly-owasp-scan:
     executor: large-machine-executor
@@ -81,10 +83,12 @@
           environment: nightly
           target: backend
           target_env: <<parameters.target_env>>
+          registry_owner: << pipeline.parameters.registry_owner >>
       - run-owasp-scan:
           environment: nightly
           target: frontend
           target_env: <<parameters.target_env>>
+          registry_owner: << pipeline.parameters.registry_owner >>
       - run:
           name: Run post-processing task to record OWASP ZAP results
           command: |
