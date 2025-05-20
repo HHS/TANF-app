@@ -51,6 +51,10 @@ jobs:
             ghcr.io/${{ env.REGISTRY_OWNER }}/${{ env.BACKEND_NAME }}:latest
           build-args: |
             REGISTRY_OWNER=${{ env.REGISTRY_OWNER }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository_owner }}/TANF-app
+            org.opencontainers.image.description=Backend API Service for TDP.
+            org.opencontainers.image.licenses=CC0-1.0
 
       - name: Build and Push Frontend
         uses: docker/build-push-action@v5
@@ -63,3 +67,7 @@ jobs:
             ghcr.io/${{ env.REGISTRY_OWNER }}/${{ env.FRONTEND_NAME }}:latest
           build-args: |
             REGISTRY_OWNER=${{ env.REGISTRY_OWNER }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository_owner }}/TANF-app
+            org.opencontainers.image.description=Frontend Service for TDP.
+            org.opencontainers.image.licenses=CC0-1.0

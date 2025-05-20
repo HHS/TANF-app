@@ -1,7 +1,7 @@
-ARG REGISTRY_OWNER=HHS
+ARG REGISTRY_OWNER=hhs
 ARG BASE_TAG=latest
 
-FROM ghcr.io/${REGISTRY_OWNER}/tdp-frontend-base:${BASE_TAG} AS localdev
+FROM ghcr.io/${REGISTRY_OWNER}}/tdp-frontend-base:${BASE_TAG} AS localdev
 
 # ---
 # Stage 0: Copy source
@@ -29,8 +29,3 @@ COPY nginx/local/locations.conf /etc/nginx/locations.conf
 #COPY nginx/local/under_maintenance.html /etc/nginx/under_maintenance.html
 COPY nginx/src/503.html /usr/share/nginx/html/503_.html
 COPY nginx/src/static/ /usr/share/nginx/html/static/
-
-# Links this container to the rpo in GHCR
-LABEL org.opencontainers.image.source=https://github.com/${REGISTRY_OWNER}/TANF-app
-LABEL org.opencontainers.image.description="Frontend Service for TDP."
-LABEL org.opencontainers.image.licenses=CC0-1.0

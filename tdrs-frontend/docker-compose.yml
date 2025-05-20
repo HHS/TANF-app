@@ -1,7 +1,7 @@
 services:
   zaproxy:
     platform: linux/amd64
-    image: ghcr.io/${REGISTRY_OWNER:-HHS}/zap-stable:v2.14.0
+    image: ghcr.io/${REGISTRY_OWNER:-hhs}/zap-stable:v2.14.0
     container_name: zap-scan
     command: sleep 3600
     ports:
@@ -17,7 +17,7 @@ services:
     build: 
       context: .
       args:
-        REGISTRY_OWNER: ${REGISTRY_OWNER:-HHS}
+        REGISTRY_OWNER: ${REGISTRY_OWNER:-hhs}
       target: nginx
     ports:
       - 3000:80
