@@ -14,7 +14,6 @@ env:
 
 jobs:
   build-and-push-image:
-    # TODO: Uncomment before merging this PR
     if: github.event.base_ref == 'refs/heads/main' || github.event.base_ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     permissions:
