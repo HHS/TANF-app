@@ -15,7 +15,7 @@ env:
 jobs:
   build-and-push-image:
     # TODO: Uncomment before merging this PR
-    if: github.event.base_ref == 'refs/heads/main'
+    if: github.event.base_ref == 'refs/heads/main' || github.event.base_ref == 'refs/heads/3498-migrate-raft-ofa-to-ghcr'
     runs-on: ubuntu-latest
     permissions:
       packages: write
