@@ -14,6 +14,24 @@ class ParserErrorAdmin(admin.ModelAdmin):
         'error_message',
     ]
 
+    fields = [
+        'file',
+        'row_number',
+        'column_number',
+        'item_number',
+        'field_name',
+        'rpt_month_year',
+        'case_number',
+        'error_message',
+        'error_type',
+    ]
+
+
+class ParserErrorInline(admin.TabularInline):
+    """Inline model for ParserError objects."""
+
+    model = models.ParserError
+
 
 class DataFileSummaryAdmin(admin.ModelAdmin):
     """ModelAdmin class for DataFileSummary objects generated in parsing."""

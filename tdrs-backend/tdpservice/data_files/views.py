@@ -1,8 +1,10 @@
 """Check if user is authorized."""
 import logging
 from django.http import FileResponse
+from django.http import Http404
 from django_filters import rest_framework as filters
 from django.conf import settings
+from django.http import HttpResponse
 from drf_yasg.openapi import Parameter
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.parsers import MultiPartParser
@@ -20,8 +22,24 @@ from tdpservice.users.permissions import DataFilePermissions, IsApprovedPermissi
 from tdpservice.scheduling import parser_task
 from tdpservice.data_files.s3_client import S3Client
 from tdpservice.data_files.error_reports import ErrorReportFactory
+from tdpservice.log_handler import S3FileHandler
 
 logger = logging.getLogger(__name__)
+
+
+def get_log_file(request, remaining_path):
+    """Get log file."""
+    try:
+        response = FileResponse(
+            FileWrapper(
+                S3FileHandler.download_file(key=remaining_path)
+            )
+        )
+        return HttpResponse(response, content_type='text/plain')
+    except Exception as e:
+        logger.error(f"Error retrieving log file: {e}")
+        raise Http404("Log file not found.")
+
 
 class DataFileFilter(filters.FilterSet):
     """Filters that can be applied to GET requests as query parameters."""
