@@ -20,8 +20,11 @@ strip() {
 env=$(strip $CF_SPACE "tanf-")
 backend_app_name=$(echo $CGAPPNAME_BACKEND | cut -d"-" -f3)
 
+CGAPPNAME_CELERY="tdp-celery-${backend_app_name}"
+
 echo DEPLOY_STRATEGY: "$DEPLOY_STRATEGY"
 echo BACKEND_HOST: "$CGAPPNAME_BACKEND"
+echo CELERY_APPNAME: "$CGAPPNAME_CELERY"
 echo CF_SPACE: "$CF_SPACE"
 echo env: "$env"
 echo backend_app_name: "$backend_app_name"
@@ -47,18 +50,18 @@ set_cf_envs()
   "DJANGO_SU_NAME"
   "FRONTEND_BASE_URL"
   "LOGGING_LEVEL"
-  "REDIS_URI"
+  # "REDIS_URI"  # ?
   "JWT_KEY"
   "SENDGRID_API_KEY"
   )
 
-  echo "Setting environment variables for $CGAPPNAME_BACKEND"
+  echo "Setting environment variables for $1"
 
   for var_name in ${var_list[@]}; do
     # Intentionally unsetting variable if empty
     if [[ -z "${!var_name}" ]]; then
         echo "WARNING: Empty value for $var_name. It will now be unset."
-        cf_cmd="cf unset-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
+        cf_cmd="cf unset-env $1 $var_name ${!var_name}"
         $cf_cmd
         continue
     elif [[ ("$CF_SPACE" = "tanf-staging") ]]; then
@@ -67,9 +70,9 @@ set_cf_envs()
         if [[ "${!staging_var}" ]]; then
           var_value=${!staging_var}
         fi
-        cf_cmd="cf set-env $CGAPPNAME_BACKEND $var_name ${var_value}"
+        cf_cmd="cf set-env $1 $var_name ${var_value}"
     else
-      cf_cmd="cf set-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
+      cf_cmd="cf set-env $1 $var_name ${!var_name}"
     fi
 
     echo "Setting var : $var_name"
@@ -89,8 +92,10 @@ generate_jwt_cert()
 
 prepare_alloy() {
   pushd tdrs-backend/plg/alloy
-  cf set-env "$CGAPPNAME_BACKEND" ALLOY_SYSTEM_NAME "system-$backend_app_name"
+  cf set-env "$CGAPPNAME_BACKEND" ALLOY_SYSTEM_NAME "django-system-$backend_app_name"
   cf set-env "$CGAPPNAME_BACKEND" ALLOY_BACKEND_NAME "backend-$backend_app_name"
+  cf set-env "$CGAPPNAME_CELERY" ALLOY_SYSTEM_NAME "celery-system-$backend_app_name"
+  cf set-env "$CGAPPNAME_CELERY" ALLOY_BACKEND_NAME "celery-$backend_app_name"
   popd
 }
 
@@ -111,12 +116,16 @@ update_backend()
     fi
 
     if [ "$1" = "rolling" ] ; then
-        set_cf_envs
+        set_cf_envs $CGAPPNAME_BACKEND
+        set_cf_envs $CGAPPNAME_CELERY
         # Do a zero downtime deploy.  This requires enough memory for
         # two apps to exist in the org/space at one time.
         cf push "$CGAPPNAME_BACKEND" --no-route -f manifest.buildpack.yml -t 180 --strategy rolling || exit 1
+        cf push "$CGAPPNAME_CELERY" --no-route -f manifest.celery.yml -t 180 --strategy rolling || exit 1
     else
         cf push "$CGAPPNAME_BACKEND" --no-route -f manifest.buildpack.yml -t 180
+        cf push "$CGAPPNAME_CELERY" --no-route -f manifest.celery.yml -t 180
+
         # set up JWT key if needed
         if cf e "$CGAPPNAME_BACKEND" | grep -q JWT_KEY ; then
             echo jwt cert already created
@@ -125,7 +134,11 @@ update_backend()
         fi
     fi
 
-    set_cf_envs
+    set_cf_envs $CGAPPNAME_BACKEND
+    set_cf_envs $CGAPPNAME_CELERY
+
+    cf set-env "$CGAPPNAME_BACKEND" CGAPPNAME_BACKEND "$CGAPPNAME_BACKEND"
+    cf set-env "$CGAPPNAME_CELERY" CGAPPNAME_BACKEND "$CGAPPNAME_BACKEND"
 
     cf map-route "$CGAPPNAME_BACKEND" apps.internal --hostname "$CGAPPNAME_BACKEND"
 
@@ -155,11 +168,19 @@ bind_backend_to_services() {
     cf bind-service "$CGAPPNAME_BACKEND" "tdp-staticfiles-${env}"
     cf bind-service "$CGAPPNAME_BACKEND" "tdp-datafiles-${env}"
     cf bind-service "$CGAPPNAME_BACKEND" "tdp-db-${env}"
+    cf bind-service "$CGAPPNAME_BACKEND" "tdp-redis-${space}"
 
-    set_cf_envs
+    cf bind-service "$CGAPPNAME_CELERY" "tdp-staticfiles-${env}"
+    cf bind-service "$CGAPPNAME_CELERY" "tdp-datafiles-${env}"
+    cf bind-service "$CGAPPNAME_CELERY" "tdp-db-${env}"
+    cf bind-service "$CGAPPNAME_CELERY" "tdp-redis-${space}"
 
-    echo "Restarting app: $CGAPPNAME_BACKEND"
+    set_cf_envs $CGAPPNAME_BACKEND
+    set_cf_envs $CGAPPNAME_CELERY
+
+    echo "Restarting app: $CGAPPNAME_BACKEND and $CGAPPNAME_CELERY"
     cf restage "$CGAPPNAME_BACKEND"
+    cf restage "$CGAPPNAME_CELERY"
 
 }
 
@@ -232,6 +253,7 @@ elif [ "$DEPLOY_STRATEGY" = "rebuild" ]; then
     # Delete the existing app (with out deleting the services)
     # and perform the initial deployment strategy.
     cf delete "$CGAPPNAME_BACKEND" -r -f
+    cf delete "$CGAPPNAME_CELERY" -r -f
     update_backend
     bind_backend_to_services
 else

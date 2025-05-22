@@ -35,7 +35,7 @@ class CloudGov(Common):
     # Cloud.gov exposes variables for the application and bound services via
     # VCAP_APPLICATION and VCAP_SERVICES environment variables, respectively.
     cloudgov_app = get_json_env_var('VCAP_APPLICATION')
-    APP_NAME = cloudgov_app.get('application_name')
+    APP_NAME = os.getenv('CGAPPNAME_BACKEND', '{}')
 
     cloudgov_services = get_json_env_var('VCAP_SERVICES')
 
@@ -123,6 +123,13 @@ class CloudGov(Common):
     SECURE_HSTS_PRELOAD = True
     SECURE_REDIRECT_EXEMPT = [r"^prometheus/.*"]
     SECURE_SSL_REDIRECT = True
+
+    # Redis
+    redis_settings = cloudgov_services['aws-elasticache-redis'][0]['credentials']
+    REDIS_URI = f"rediss://:{redis_settings['password']}@{redis_settings['host']}:{redis_settings['port']}"
+
+    CELERY_BROKER_URL = REDIS_URI + '/0'
+    CELERY_RESULT_BACKEND = REDIS_URI + '/1'
 
 class Development(CloudGov):
     """Settings for applications deployed in the Cloud.gov dev space."""
