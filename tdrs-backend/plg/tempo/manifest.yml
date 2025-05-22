@@ -1,7 +1,7 @@
 version: 1
 applications:
   - name: tempo
-    memory: 1G
+    memory: 2G
     disk_quota: 7G
     instances: 1
     command: |
