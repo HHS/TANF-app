@@ -11,6 +11,7 @@ from django.shortcuts import redirect
 from django.utils.translation import ngettext
 from django.contrib import messages
 from tdpservice.data_files.tasks import reparse_files
+from tdpservice.log_handler import S3FileHandler
 
 DOMAIN = settings.FRONTEND_BASE_URL
 
@@ -36,6 +37,52 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         js = ('admin/js/admin/admin_datafile_model.js',)
 
     actions = ['reparse']
+
+    fieldsets = (
+            ('Properties', {
+                'fields': (
+                    'created_at',
+                    'quarter',
+                    'year',
+                    'section',
+                    'prog_type',
+                    'stt',
+                    'version',),
+                'classes': ('wide', 'extrapretty'),
+            }),
+            ('File', {
+                'fields': (
+                    'file',
+                    's3_versioning_id',
+                    'filename',),
+            }),
+            ('Logs', {
+                'fields': (
+                    'log_file',),
+                })
+        )
+    readonly_fields = ('year',)
+
+    def get_fieldsets(self, request, obj):
+        """Return the fieldsets."""
+        field_sets = super().get_fieldsets(request, obj)
+
+        # Remove the 'Logs' fieldset if the file doesn't exist
+        datafile = obj
+        if datafile:
+            link = f"{datafile.year}/{datafile.quarter}/" \
+                  f"{datafile.stt}/{datafile.section}"
+            response = S3FileHandler.download_file(key=link)
+            if response is not None:
+                return field_sets
+            else:
+                # If the log file is not available, remove the field from the fieldsets
+                for field_set in field_sets:
+                    if field_set[0] == 'Logs' and response is None:
+                        field_sets_list = list(field_sets)
+                        field_sets_list.remove(field_set)
+                        return tuple(field_sets_list)
+        return field_sets
 
     def get_queryset(self, request):
         """Return the queryset."""
