@@ -54,6 +54,7 @@ deploy_grafana() {
     yq eval -i ".datasources[0].url = \"http://mimir.apps.internal:8080/prometheus\""  $DATASOURCES
     yq eval -i ".datasources[1].url = \"http://prometheus.apps.internal:8080\""  $DATASOURCES
     yq eval -i ".datasources[2].url = \"http://loki.apps.internal:8080\""  $DATASOURCES
+    yq eval -i ".datasources[3].url = \"http://tempo.apps.internal:8080\""  $DATASOURCES
     yq eval -i ".applications[0].services[0] = \"$1\""  $MANIFEST
 
     cf push --no-route -f $MANIFEST -t 180  --strategy rolling
@@ -61,6 +62,13 @@ deploy_grafana() {
 
     rm $DATASOURCES
     rm $MANIFEST
+    popd
+}
+
+deploy_tempo() {
+    pushd tempo
+    cf push --no-route -f manifest.yml -t 180  --strategy rolling
+    cf map-route tempo apps.internal --hostname tempo
     popd
 }
 
@@ -103,10 +111,11 @@ setup_prod_net_pols() {
     # Target prod environment just in case
     cf target -o hhs-acf-ofa -s tanf-prod
 
-    # Let grafana talk to prometheus, loki, and mimir
+    # Let grafana talk to prometheus, loki, mimir, and tempo
     cf add-network-policy grafana prometheus --protocol tcp --port 8080
     cf add-network-policy grafana loki --protocol tcp --port 8080
     cf add-network-policy grafana mimir --protocol tcp --port 8080
+    cf add-network-policy grafana tempo --protocol tcp --port 8080
 
     # Let prometheus talk to alertmanager, grafana, loki, prod backend, and mimir
     cf add-network-policy prometheus alertmanager --protocol tcp --port 8080
@@ -123,6 +132,9 @@ setup_prod_net_pols() {
 
     # Let prod backend send logs to loki
     cf add-network-policy $PROD_BACKEND  loki -s tanf-prod --protocol tcp --port 8080
+
+    # Let tempo talk to prometheus
+    cf add-network-policy tempo prometheus --protocol tcp --port 8080
 
     # Add network policies to allow alertmanager/grafana to talk to all frontend apps
     for app in ${DEV_FRONTEND_APPS[@]}; do
@@ -216,6 +228,7 @@ if [ "$DEPLOY" == "plg" ]; then
     deploy_mimir
     deploy_prometheus
     deploy_loki
+    deploy_tempo
     deploy_grafana $DB_SERVICE_NAME
     deploy_alertmanager
     setup_prod_net_pols
