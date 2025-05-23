@@ -31,5 +31,7 @@ if not settings.USE_LOCALSTACK:
         },
     )
 
+    app.conf.task_default_queue = settings.cloudgov_name
+
 # Load task modules from all registered Django apps.
 app.autodiscover_tasks()
