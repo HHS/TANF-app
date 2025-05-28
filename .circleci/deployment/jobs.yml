@@ -1,33 +1,3 @@
-  build-and-tag-develop:
-    executor: large-machine-executor
-    working_directory: ~/tdp-deploy
-    steps:
-      - checkout
-      - sudo-check
-      - build-and-tag-images:
-          backend-appname: tdp-backend-develop
-          frontend-appname: tdp-frontend-develop
-
-  build-and-tag-staging:
-    executor: large-machine-executor
-    working_directory: ~/tdp-deploy
-    steps:
-      - checkout
-      - sudo-check
-      - build-and-tag-images:
-          backend-appname: tdp-backend-staging
-          frontend-appname: tdp-frontend-staging
-
-  build-and-tag-production:
-    executor: large-machine-executor
-    working_directory: ~/tdp-deploy
-    steps:
-      - checkout
-      - sudo-check
-      - build-and-tag-images:
-          backend-appname: tdp-backend-production
-          frontend-appname: tdp-frontend-production
-
   deploy-dev:
     parameters:
       target_env:
