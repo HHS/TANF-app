@@ -6,6 +6,7 @@ set -uxo pipefail
 TARGET=$1
 ENVIRONMENT=$2
 TARGET_ENV=$3
+REGISTRY_OWNER=$4
 
 TARGET_DIR="$(pwd)/tdrs-$TARGET"
 CONFIG_FILE="zap.conf"
@@ -44,7 +45,7 @@ if [[ $(docker network inspect external-net 2>&1 | grep -c Scope) == 0 ]]; then
 fi
 
 # Ensure the APP_URL is reachable from the zaproxy container
-if ! docker-compose run --rm zaproxy curl -Is "$APP_URL" > /dev/null 2>&1; then
+if ! REGISTRY_OWNER="$REGISTRY_OWNER" docker-compose run --rm zaproxy curl -Is "$APP_URL" > /dev/null 2>&1; then
   echo "Target application at $APP_URL is unreachable by ZAP scanner"
   exit 3
 fi

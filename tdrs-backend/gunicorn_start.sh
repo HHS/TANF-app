@@ -50,4 +50,6 @@ if [[ $1 == "cloud" ]]; then
     ./celery-exporter --broker-url=$REDIS_URI --port 9808 &
 fi
 
+python manage.py runscript create_readonly_grafana_user --script-args "$GRAFANA_PASSWORD" "$GRAFANA_USER"
+
 exec $gunicorn_cmd

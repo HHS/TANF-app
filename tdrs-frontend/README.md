@@ -1,6 +1,6 @@
 # Frontend for TDP
 
-Frontend API Service for TDP. Deployed to Cloud.gov at https://tdp-frontend.app.cloud.gov/ . The project uses [USWDS](https://designsystem.digital.gov/) and in particular, [trussworks/react-uswds](https://github.com/trussworks/react-uswds)
+Frontend Service for TDP. Deployed to Cloud.gov at https://tdp-frontend.app.cloud.gov/ . The project uses [USWDS](https://designsystem.digital.gov/) and in particular, [trussworks/react-uswds](https://github.com/trussworks/react-uswds)
 
 # Prerequisites
 
