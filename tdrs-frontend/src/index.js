@@ -48,7 +48,7 @@ if (
   initializeFaro({
     url: process.env.REACT_APP_FARO_ENDPOINT,
     app: {
-      name: 'tdp-frontend',
+      name: 'tdp-frontend-rum',
       version: process.env.REACT_APP_VERSION,
       environment: process.env.NODE_ENV,
     },
