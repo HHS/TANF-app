@@ -18,6 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
+  "id": 2,
   "links": [],
   "panels": [
     {
@@ -39,8 +40,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "#EAB839",
@@ -81,15 +81,16 @@
         "showThresholdMarkers": true,
         "sizing": "auto"
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "loki",
             "uid": "L8E80F9AEF21F6940"
           },
+          "direction": "backward",
           "editorMode": "code",
-          "expr": "count(count(count_over_time({service_name=\"unknown_service\"}[$__range])) by (session_id))",
+          "expr": "count(count(count_over_time({service_name=\"tdp-frontend-rum\"}[$__range])) by (session_id))",
           "hide": false,
           "queryType": "range",
           "refId": "B"
@@ -121,8 +122,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -152,14 +152,22 @@
         },
         "showHeader": true
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "tempo",
             "uid": "celzqpsk6u2v4b"
           },
+          "filters": [
+            {
+              "id": "456e201b",
+              "operator": "=",
+              "scope": "span"
+            }
+          ],
           "limit": 1000,
+          "metricsQueryType": "range",
           "query": "{name != \"GET /prometheus/metrics\"} && {name != \"GET prometheus/metrics\"}",
           "queryType": "traceql",
           "refId": "A",
@@ -193,8 +201,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -273,15 +280,16 @@
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "loki",
             "uid": "L8E80F9AEF21F6940"
           },
+          "direction": "backward",
           "editorMode": "code",
-          "expr": "{service_name=\"unknown_service\", user_username=~\"$user\", session_id=~\"$session_id\"} | logfmt",
+          "expr": "{service_name=\"tdp-frontend-rum\", user_username=~\"$user\", session_id=~\"$session_id\"} | logfmt",
           "queryType": "range",
           "refId": "A"
         }
@@ -702,7 +710,7 @@
           "unit": "ms"
         }
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
@@ -770,8 +778,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -798,11 +805,12 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "multi",
           "sort": "none"
         }
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
@@ -852,6 +860,10 @@
         "type": "loki",
         "uid": "L8E80F9AEF21F6940"
       },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
       "gridPos": {
         "h": 9,
         "w": 24,
@@ -861,6 +873,7 @@
       "id": 2,
       "options": {
         "dedupStrategy": "none",
+        "enableInfiniteScrolling": false,
         "enableLogDetails": true,
         "prettifyLogMessage": false,
         "showCommonLabels": false,
@@ -869,14 +882,16 @@
         "sortOrder": "Descending",
         "wrapLogMessage": false
       },
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "loki",
             "uid": "L8E80F9AEF21F6940"
           },
+          "direction": "backward",
           "editorMode": "code",
-          "expr": "{service_name=\"unknown_service\", user_username=~\"$user\", session_id=~\"$session_id\"}",
+          "expr": "{service_name=\"tdp-frontend-rum\", user_username=~\"$user\", session_id=~\"$session_id\"}",
           "key": "Q-764ecf18-0675-48bf-9a67-1e342ad34362-0",
           "queryType": "range",
           "refId": "A"
@@ -938,15 +953,16 @@
         },
         "showHeader": true
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "loki",
             "uid": "L8E80F9AEF21F6940"
           },
+          "direction": "backward",
           "editorMode": "code",
-          "expr": "{service_name=\"unknown_service\", user_username=~\"$user\", session_id=~\"$session_id\"} | logfmt",
+          "expr": "{service_name=\"tdp-frontend-rum\", user_username=~\"$user\", session_id=~\"$session_id\"} | logfmt",
           "queryType": "range",
           "refId": "A"
         }
@@ -964,36 +980,34 @@
       "type": "table"
     }
   ],
+  "preload": false,
   "refresh": "30s",
-  "schemaVersion": 39,
-  "tags": [],
+  "schemaVersion": 41,
+  "tags": [
+    "Frontend",
+    "OTEL",
+    "Faro",
+    "Tempo"
+  ],
   "templating": {
     "list": [
       {
         "current": {
-          "selected": false,
           "text": "Mimir",
           "value": "MQFA97CFB590B2099"
         },
-        "hide": 0,
         "includeAll": false,
         "label": "datasource",
-        "multi": false,
         "name": "datasource",
         "options": [],
         "query": "prometheus",
-        "queryValue": "",
         "refresh": 1,
         "regex": "",
-        "skipUrlSync": false,
         "type": "datasource"
       },
       {
         "current": {
-          "selected": true,
-          "text": [
-            "All"
-          ],
+          "text": "All",
           "value": [
             "$__all"
           ]
@@ -1003,7 +1017,6 @@
           "uid": "L8E80F9AEF21F6940"
         },
         "definition": "",
-        "hide": 0,
         "includeAll": true,
         "label": "User",
         "multi": true,
@@ -1017,13 +1030,10 @@
         },
         "refresh": 1,
         "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
         "type": "query"
       },
       {
         "current": {
-          "selected": false,
           "text": "All",
           "value": "$__all"
         },
@@ -1032,10 +1042,8 @@
           "uid": "L8E80F9AEF21F6940"
         },
         "definition": "",
-        "hide": 0,
         "includeAll": true,
         "label": "Session ID",
-        "multi": false,
         "name": "session_id",
         "options": [],
         "query": {
@@ -1046,8 +1054,6 @@
         },
         "refresh": 1,
         "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
         "type": "query"
       }
     ]
@@ -1060,6 +1066,5 @@
   "timezone": "browser",
   "title": "OpenTelemetry",
   "uid": "celsnjrklc35sb",
-  "version": 8,
-  "weekStart": ""
+  "version": 1
 }

@@ -4,16 +4,22 @@ import { faro } from '@grafana/faro-react'
 export const useRUM = () => {
   const setUserInfo = (user) => {
     // Convert roles array to string to avoid unmarshal error
-    const roleString = Array.isArray(user.roles)
+    const roles = Array.isArray(user.roles)
       ? user.roles.map((role) => role.name).join(', ')
       : 'unknown'
+
+    const regions = Array.isArray(user.regions)
+      ? user.regions.map((region) => region.name).join(', ')
+      : ''
 
     // Set user information in Faro
     faro.api.setUser({
       id: user.id,
       username: user.email,
       attributes: {
-        role: roleString,
+        roles: roles,
+        stt: user.stt ? user.stt.name : 'unknown',
+        regions: regions,
       },
     })
   }
