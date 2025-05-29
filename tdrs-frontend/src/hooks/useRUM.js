@@ -3,7 +3,6 @@ import { faro } from '@grafana/faro-react'
 
 export const useRUM = () => {
   const setUserInfo = (user) => {
-    // Convert roles array to string to avoid unmarshal error
     const roles = Array.isArray(user.roles)
       ? user.roles.map((role) => role.name).join(', ')
       : 'unknown'
