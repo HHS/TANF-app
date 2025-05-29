@@ -40,7 +40,7 @@ jobs:
           project-slug: ${{ github.repository }}
           branch: ${{ github.ref_name }}
           payload: '{
-            "deploy_infrastructure": true,
-            "triggered": true
-          }'
-          
+              "deploy_infrastructure": true,
+              "triggered": true
+            }'
+

@@ -74,7 +74,8 @@ def clean_reparse(selected_file_ids):
     )
     total_number_of_records = get_number_of_records(files)
     calculated_timeout_at = calculate_timeout(
-        total_number_of_records, meta_model.num_records_deleted
+        files.count(),
+        total_number_of_records
     )
     backup_file_name = "/tmp/reparsing_backup"
     continue_msg = "You have selected to reparse datafiles for FY {fy} and {q}. The reparsed files "

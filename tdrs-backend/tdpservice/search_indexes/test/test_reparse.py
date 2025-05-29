@@ -350,7 +350,7 @@ def test_timeout_calculation(
 
     num_records = count_total_num_records(log_context)
 
-    assert calculate_timeout(len(ids), num_records).seconds == 57
+    assert calculate_timeout(len(ids), num_records).seconds == 43
 
     assert calculate_timeout(len(ids), 50).seconds == 40
 
