@@ -1,11 +1,11 @@
 version: 1
 applications:
   - name: tempo
-    memory: 2G
+    memory: 512M
     disk_quota: 7G
     instances: 1
     command: |
-      mkdir /home/vcap/app/tempo
+      mkdir /home/vcap/app/tempo-data
       S3_URI=$(echo $VCAP_SERVICES | jq -r .s3[0].credentials.uri)
       S3_ENDPOINT=$(echo $VCAP_SERVICES | jq -r .s3[0].credentials.endpoint)
       S3_REGION=$(echo $VCAP_SERVICES | jq -r .s3[0].credentials.region)
@@ -25,4 +25,4 @@ applications:
     buildpacks:
     - https://github.com/cloudfoundry/binary-buildpack
     services:
-      - tdp-tempo-traces
+      - tdp-tempo

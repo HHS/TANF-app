@@ -23,9 +23,9 @@ distributor:
     otlp:
       protocols:
         grpc:
-          endpoint: "localhost:4317"
+          endpoint: "0.0.0.0:4317"
         http:
-          endpoint: "localhost:4318"
+          endpoint: "0.0.0.0:4318"
 
 compactor:
   compaction:
@@ -37,12 +37,12 @@ metrics_generator:
       source: tempo
       cluster: docker-compose
   storage:
-    path: /vcap/app/tempo/generator/wal
+    path: /home/vcap/app/tempo-data/generator/wal
     remote_write:
       - url: http://prometheus.apps.internal:8080/api/v1/write
         send_exemplars: true
   traces_storage:
-    path: /vcap/app/tempo/generator/traces
+    path: /home/vcap/app/tempo-data/generator/traces
   processor:
     local_blocks:
       filter_server_spans: false
@@ -60,7 +60,7 @@ storage:
       insecure: false
       forcepathstyle: true
     wal:
-      path: /vcap/app/tempo/wal
+      path: /home/vcap/app/tempo-data/wal
 
 overrides:
   defaults:
