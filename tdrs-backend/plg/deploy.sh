@@ -136,6 +136,12 @@ setup_prod_net_pols() {
     # Let tempo talk to prometheus
     cf add-network-policy tempo prometheus --protocol tcp --port 8080
 
+    # Let backend (alloy) talk to tempo
+    cf add-network-policy $PROD_BACKEND tempo --protocol tcp --port 4317
+
+    # Let frontend talk to alloy faro receiver
+    cf add-network-policy $PROD_FRONTEND $PROD_BACKEND --protocol tcp --port 12346
+
     # Add network policies to allow alertmanager/grafana to talk to all frontend apps
     for app in ${DEV_FRONTEND_APPS[@]}; do
         cf add-network-policy alertmanager $app -s "tanf-dev" --protocol tcp --port 80
