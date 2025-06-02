@@ -9,3 +9,8 @@ applications:
   - https://github.com/cloudfoundry/apt-buildpack
   - https://github.com/cloudfoundry/python-buildpack.git#v1.8.3
   - https://github.com/cloudfoundry/binary-buildpack
+  services:
+  - tdp-db-{cg_space}
+  - tdp-staticfiles-{cg_space}
+  - tdp-datafiles-{cg_space}
+  - tdp-redis-{cg_space}

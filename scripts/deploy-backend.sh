@@ -50,7 +50,6 @@ set_cf_envs()
   "DJANGO_SU_NAME"
   "FRONTEND_BASE_URL"
   "LOGGING_LEVEL"
-  # "REDIS_URI"  # ?
   "JWT_KEY"
   "SENDGRID_API_KEY"
   )
@@ -165,22 +164,32 @@ bind_backend_to_services() {
       env="develop"
     fi
 
-    cf bind-service "$CGAPPNAME_BACKEND" "tdp-staticfiles-${env}"
-    cf bind-service "$CGAPPNAME_BACKEND" "tdp-datafiles-${env}"
-    cf bind-service "$CGAPPNAME_BACKEND" "tdp-db-${env}"
-    cf bind-service "$CGAPPNAME_BACKEND" "tdp-redis-${space}"
+    yq eval -i ".applications[0].services[0] = \"tdp-db-${env}\"" ./tdrs-backend/manifest.buildpack.yml
+    yq eval -i ".applications[0].services[1] = \"tdp-staticfiles-${env}\"" ./tdrs-backend/manifest.buildpack.yml
+    yq eval -i ".applications[0].services[2] = \"tdp-datafiles-${env}\"" ./tdrs-backend/manifest.buildpack.yml
+    yq eval -i ".applications[0].services[3] = \"tdp-redis-${env}\"" ./tdrs-backend/manifest.buildpack.yml
 
-    cf bind-service "$CGAPPNAME_CELERY" "tdp-staticfiles-${env}"
-    cf bind-service "$CGAPPNAME_CELERY" "tdp-datafiles-${env}"
-    cf bind-service "$CGAPPNAME_CELERY" "tdp-db-${env}"
-    cf bind-service "$CGAPPNAME_CELERY" "tdp-redis-${space}"
+    yq eval -i ".applications[0].services[0] = \"tdp-db-${env}\"" ./tdrs-backend/manifest.celery.yml
+    yq eval -i ".applications[0].services[1] = \"tdp-staticfiles-${env}\"" ./tdrs-backend/manifest.celery.yml
+    yq eval -i ".applications[0].services[2] = \"tdp-datafiles-${env}\"" ./tdrs-backend/manifest.celery.yml
+    yq eval -i ".applications[0].services[3] = \"tdp-redis-${env}\"" ./tdrs-backend/manifest.celery.yml
 
-    set_cf_envs $CGAPPNAME_BACKEND
-    set_cf_envs $CGAPPNAME_CELERY
+    # cf bind-service "$CGAPPNAME_BACKEND" "tdp-staticfiles-${env}"
+    # cf bind-service "$CGAPPNAME_BACKEND" "tdp-datafiles-${env}"
+    # cf bind-service "$CGAPPNAME_BACKEND" "tdp-db-${env}"
+    # cf bind-service "$CGAPPNAME_BACKEND" "tdp-redis-${space}"
 
-    echo "Restarting app: $CGAPPNAME_BACKEND and $CGAPPNAME_CELERY"
-    cf restage "$CGAPPNAME_BACKEND"
-    cf restage "$CGAPPNAME_CELERY"
+    # cf bind-service "$CGAPPNAME_CELERY" "tdp-staticfiles-${env}"
+    # cf bind-service "$CGAPPNAME_CELERY" "tdp-datafiles-${env}"
+    # cf bind-service "$CGAPPNAME_CELERY" "tdp-db-${env}"
+    # cf bind-service "$CGAPPNAME_CELERY" "tdp-redis-${space}"
+
+    # set_cf_envs $CGAPPNAME_BACKEND
+    # set_cf_envs $CGAPPNAME_CELERY
+
+    # echo "Restarting app: $CGAPPNAME_BACKEND and $CGAPPNAME_CELERY"
+    # cf restage "$CGAPPNAME_BACKEND"
+    # cf restage "$CGAPPNAME_CELERY"
 
 }
 
@@ -234,11 +243,17 @@ else
   CYPRESS_TOKEN=$CYPRESS_TOKEN
 fi
 
+
+#### there's an env var + binding race condition that prevents initial deploys
+
+
 prepare_alloy
 if [ "$DEPLOY_STRATEGY" = "rolling" ] ; then
     # Perform a rolling update for the backend and frontend deployments if
     # specified, otherwise perform a normal deployment
+    bind_backend_to_services
     update_backend 'rolling'
+    # is bind_services idempotent ?
 elif [ "$DEPLOY_STRATEGY" = "bind" ] ; then
     # Bind the services the application depends on and restage the app.
     bind_backend_to_services
