@@ -40,10 +40,10 @@ update_frontend()
         echo "REACT_APP_FRONTEND_URL=https://$CGHOSTNAME_FRONTEND.app.cloud.gov" >> .env.development
         echo "REACT_APP_BACKEND_HOST=https://$CGHOSTNAME_FRONTEND.app.cloud.gov" >> .env.development
         echo "REACT_APP_CF_SPACE=$CF_SPACE" >> .env.development
-        echo "REACT_APP_FARO_ENDPOINT=https://$CGHOSTNAME_BACKEND.apps.internal:12346/collect" >> .env.development
+        echo "REACT_APP_FARO_ENDPOINT=http://$CGHOSTNAME_BACKEND.apps.internal:12346/collect" >> .env.development
 
         cf set-env "$CGHOSTNAME_FRONTEND" ALLOWED_ORIGIN "https://$CGHOSTNAME_FRONTEND.app.cloud.gov"
-        cf set-env "$CGHOSTNAME_FRONTEND" CONNECT_SRC "'*.app.cloud.gov' 'https://*.apps.internal:12346'"
+        cf set-env "$CGHOSTNAME_FRONTEND" CONNECT_SRC "http://*.apps.internal:12346"
     fi
 
     cf set-env "$CGHOSTNAME_FRONTEND" BACKEND_HOST "$CGHOSTNAME_BACKEND"
