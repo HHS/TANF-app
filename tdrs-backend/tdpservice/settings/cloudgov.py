@@ -125,7 +125,7 @@ class CloudGov(Common):
     SECURE_SSL_REDIRECT = True
 
     # Redis
-    if cloudgov_services['aws-elasticache-redis']:
+    if 'aws-elasticache-redis' in cloudgov_services:
         redis_settings = cloudgov_services['aws-elasticache-redis'][0]['credentials']
         REDIS_URI = f"rediss://:{redis_settings['password']}@{redis_settings['host']}:{redis_settings['port']}"
 
