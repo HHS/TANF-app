@@ -76,6 +76,7 @@ describe('actions/reports', () => {
       download({
         id: 1,
         section: 'Active Case Data',
+        fileName: 'test.txt',
       })
     )
     const actions = store.getActions()
