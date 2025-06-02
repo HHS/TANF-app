@@ -125,11 +125,12 @@ class CloudGov(Common):
     SECURE_SSL_REDIRECT = True
 
     # Redis
-    redis_settings = cloudgov_services['aws-elasticache-redis'][0]['credentials']
-    REDIS_URI = f"rediss://:{redis_settings['password']}@{redis_settings['host']}:{redis_settings['port']}"
+    if cloudgov_services['aws-elasticache-redis']:
+        redis_settings = cloudgov_services['aws-elasticache-redis'][0]['credentials']
+        REDIS_URI = f"rediss://:{redis_settings['password']}@{redis_settings['host']}:{redis_settings['port']}"
 
-    CELERY_BROKER_URL = REDIS_URI + '/0'
-    CELERY_RESULT_BACKEND = REDIS_URI + '/1'
+        CELERY_BROKER_URL = REDIS_URI + '/0'
+        CELERY_RESULT_BACKEND = REDIS_URI + '/1'
 
 class Development(CloudGov):
     """Settings for applications deployed in the Cloud.gov dev space."""
