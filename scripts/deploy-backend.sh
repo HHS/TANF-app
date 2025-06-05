@@ -138,22 +138,10 @@ update_backend()
     echo "Deploying $APP with strategy $STRATEGY"
 
     cd tdrs-backend || exit
-    cf unset-env "$APP" "AV_SCAN_URL"
-
-    if [ "$CF_SPACE" = "tanf-prod" ]; then
-      cf set-env "$APP" AV_SCAN_URL "http://tanf-prod-clamav-rest.apps.internal:9000/scan"
-    else
-      # Add environment varilables for clamav
-      cf set-env "$APP" AV_SCAN_URL "http://tdp-clamav-nginx-$env.apps.internal:9000/scan"
-
-      # Add variable for dev/staging apps to know their DB name. Prod uses default AWS name.
-      cf unset-env "$APP" "APP_DB_NAME"
-      cf set-env "$APP" "APP_DB_NAME" "tdp_db_$backend_app_name"
-    fi
 
     if [ "$APP" = "$CGAPPNAME_BACKEND" ] ; then
       MANIFEST="manifest.buildpack.yml"
-    elif [ "$APP" = "$CGAPPNAME_CELERY"] ; then
+    elif [ "$APP" = "$CGAPPNAME_CELERY" ] ; then
       MANIFEST="manifest.celery.yml"
     else
       echo "Unknown app"
@@ -178,6 +166,19 @@ update_backend()
 
     set_cf_envs $APP
     cf set-env "$APP" CGAPPNAME_BACKEND "$CGAPPNAME_BACKEND"
+
+    cf unset-env "$APP" "AV_SCAN_URL"
+
+    if [ "$CF_SPACE" = "tanf-prod" ]; then
+      cf set-env "$APP" AV_SCAN_URL "http://tanf-prod-clamav-rest.apps.internal:9000/scan"
+    else
+      # Add environment varilables for clamav
+      cf set-env "$APP" AV_SCAN_URL "http://tdp-clamav-nginx-$env.apps.internal:9000/scan"
+
+      # Add variable for dev/staging apps to know their DB name. Prod uses default AWS name.
+      cf unset-env "$APP" "APP_DB_NAME"
+      cf set-env "$APP" "APP_DB_NAME" "tdp_db_$backend_app_name"
+    fi
 
     cd ..
 }
