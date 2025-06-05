@@ -73,7 +73,7 @@ export const getAvailableFileList =
   }
 
 export const download =
-  ({ id, quarter = 'Q1', section, year, s3_version_id }) =>
+  ({ id, quarter = 'Q1', section, year, s3_version_id, fileName }) =>
   async (dispatch) => {
     try {
       if (!id) throw new Error('No id was provided to download action.')
@@ -93,7 +93,12 @@ export const download =
       const link = document.createElement('a')
 
       link.href = url
-      link.setAttribute('download', `${year}-${quarter}-${section}.txt`)
+      const fileNameParts = fileName.split('.')
+      const baseName = fileNameParts.slice(0, -1).join('.')
+      link.setAttribute(
+        'download',
+        `${baseName} (${year}-${quarter}-${section}).txt`
+      )
 
       document.body.appendChild(link)
 
