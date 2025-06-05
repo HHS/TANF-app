@@ -17,7 +17,10 @@ import FeedbackModal from 'components/FeedbackModal'
  * Renders Routes and all its children
  */
 function App() {
+  const supportEmail = 'tanfdata@acf.hhs.gov'
+
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
 
   const handleOpenModal = () => {
     setIsModalOpen(true)
@@ -28,7 +31,7 @@ function App() {
   }
 
   const handleFeedbackSubmit = () => {
-    setIsModalOpen(false)
+    setIsFeedbackSubmitted(true)
     alert('Thank you for your feedback!')
   }
 
@@ -69,7 +72,7 @@ function App() {
       >
         Feedback
       </button>
-      {isModalOpen && (
+      {isModalOpen && isFeedbackSubmitted ? (
         <FeedbackModal
           title="Tell us how we can improve TDP"
           isOpen={isModalOpen}
@@ -80,6 +83,30 @@ function App() {
             <h6>Fields marked with an asterisk (*) are required.</h6>
             <br />
             <FeedbackForm onFeedbackSubmit={handleFeedbackSubmit} />
+          </div>
+        </FeedbackModal>
+      ) : (
+        <FeedbackModal
+          title="Thank you for your feedback"
+          isOpen={isModalOpen}
+          message={
+            "Your response has been recorded. If you're encountering an issue you need support to resolve please feel free to email us at <a href='mailto:" +
+            supportEmail +
+            "'>" +
+            supportEmail +
+            '</a>.'
+          }
+          onClose={handleCloseModal}
+        >
+          <div className="margin-x-4 margin-bottom-4">
+            <button
+              id="feedback-submit-button"
+              type="button"
+              className="mobile:margin-bottom-1 mobile-lg:margin-bottom-0"
+              onClick={handleCloseModal}
+            >
+              Close
+            </button>
           </div>
         </FeedbackModal>
       )}

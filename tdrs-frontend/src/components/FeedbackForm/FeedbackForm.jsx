@@ -18,27 +18,34 @@ const feedbackRatingsList = [
 
 const FeedbackForm = ({ onFeedbackSubmit }) => {
   const [user, setUser] = useState(null)
-  const [shouldSubmit, setShouldSubmit] = useState(false)
+  const [canSubmit, setCanSubmit] = useState(false)
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [selectedRatingsOption, setSelectedRatingsOption] = useState()
-  const [feedback, setFeedback] = useState('')
+  const [feedbackMessage, setFeedbackMessage] = useState('')
+  const [error, setError] = useState(false)
 
   // Stubbed API call to submit feedback
   const handleSubmit = async () => {
-    try {
-      const response = await axios.post('/api/feedback', { feedback })
+    if (isFormValidToSubmit) {
+      try {
+        const response = await axios.post('/api/feedback', { feedbackMessage })
 
-      if (response.status === 200) {
-        alert('Thank you for your feedback!')
-        setFeedback('')
-        onFeedbackSubmit() // Callback to parent component
-      } else {
-        alert('Something went wrong. Please try again.')
+        if (response.status === 200) {
+          alert('Thank you for your feedback!')
+          setFeedbackMessage('')
+          onFeedbackSubmit() // Callback to parent component
+        } else {
+          alert('Something went wrong. Please try again.')
+        }
+      } catch (error) {
+        console.error('Error submitting feedback:', error)
+        alert('Failed to submit feedback.')
       }
-    } catch (error) {
-      console.error('Error submitting feedback:', error)
-      alert('Failed to submit feedback.')
+    } else {
+      setError(true)
+      alert('Please select a rating before submitting.')
     }
+    
   }
 
   // Stubbed API call to fetch user data
@@ -54,45 +61,84 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
     }
   }
 
+  const handleRatingSelected = (rating) => {
+    setSelectedRatingsOption(rating)
+  }
+
+  const handleFeedbackMessageChange = (event) => {
+    const message = event.target.value
+    setFeedbackMessage(message)
+  }
+
+  const isFormValidToSubmit = () => {
+    return selectedRatingsOption !== undefined
+  }
+
   useEffect(() => {
     getUser()
   }, [])
 
   return (
     <div>
+      {error && (
+        <div className="usa-alert usa-alert--error">
+          <div className="usa-alert__body">
+            <h3 style={{ color: 'red' }}className="usa-alert__heading">There is 1 error in this form</h3>
+          </div>
+        </div>
+      )}
       <div style={{ marginTop: '10px' }}>
         <FeedbackRadioSelectGroup
           label="How is your overall experience using TANF Data Portal?*"
           options={feedbackRatingsList}
-          selectedRating={selectedRating}
           classes="feedback-radio-select-group"
+          onRatingSelected={handleRatingSelected}
+          error={error}
+          onError=
         />
         <br />
-        <h5>Tell us more</h5>
-        <br />
-        <textarea
-          value={feedback}
-          onChange={(e) => setFeedback(e.target.value)}
-          placeholder="Enter your feedback"
-          rows="4"
-          cols="40"
-        />
-        <br />
-        <label className="usa-radio__label">
-          <div className="usa-radio">
-            <input
-              className="usa-radio__input"
-              id="feedback-anonymous-input"
-              type="checkbox"
-              name="feedback-anonymous"
-              checked={isAnonymous}
-              onChange={() => setIsAnonymous(!isAnonymous)}
-            />
+        <div id="feedback-text-area" className="usa-form-group">
+          <h5>Tell us more</h5>
+          <br />
+          <textarea
+            value={feedbackMessage}
+            onChange={handleFeedbackMessageChange}
+            placeholder="Enter your feedback..."
+            rows={5}
+            cols={50}
+            maxLength={500}
+          />
+          <div>
+            {feedbackMessage.length}/{500} characters
           </div>
-          Send anonymously
-        </label>
+        </div>
         <br />
-        <button onClick={handleSubmit}>Send Feedback</button>
+        <div className="margin-top-2">
+          <label className="usa-radio__label">
+            <div className="usa-radio">
+              <input
+                className="usa-radio__input"
+                id="feedback-anonymous-input"
+                type="checkbox"
+                name="feedback-anonymous"
+                checked={isAnonymous}
+                onChange={() => setIsAnonymous(!isAnonymous)}
+              />
+            </div>
+            Send anonymously
+          </label>
+        </div>
+        <br />
+        <div className="margin-x-4 margin-bottom-4">
+          <button
+            id="feedback-submit-button"
+            type="button"
+            className="mobile:margin-bottom-1 mobile-lg:margin-bottom-0"
+            onClick={handleSubmit}
+          >
+            Send Feedback
+          </button>
+        </div>
       </div>
     </div>
   )

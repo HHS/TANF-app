@@ -7,17 +7,31 @@ const FeedbackRadioSelectGroup = ({
   options,
   classes,
   onRatingSelected,
+  error,
+  onError,
 }) => {
   const [selectedValue, setSelectedValue] = useState('')
 
   const handleChange = (event) => {
     setSelectedValue(event.target.value)
+    onRatingSelected(!selectedValue)
   }
 
   return (
-    <div className={classNames('usa-form-group', classes)}>
+    <div
+      style={{ outline: '2px solid red' }}
+      className={classNames('usa-form-group', classes)}
+    >
       <fieldset className="usa-fieldset">
-        <legend className="usa-label text-bold">{label}</legend>
+        <legend
+          style={{
+            color: error ? 'red' : 'black',
+            backgroundColor: error ? 'lightcoral' : 'lightblue',
+          }}
+          className="usa-label text-bold"
+        >
+          {label}
+        </legend>
         {options.map(({ option }, index) => (
           <IconRadioSelect
             label={option.label}

@@ -1,5 +1,4 @@
 import React, { useRef, useEffect } from 'react'
-import Button from '../Button'
 
 const FeedbackModal = ({
   title,
@@ -42,16 +41,8 @@ const FeedbackModal = ({
           <p id="modalDescription" className="margin-4 margin-top-1">
             {message}
           </p>
+          <br />
           {children}
-        </div>
-        <div className="margin-x-4 margin-bottom-4">
-          <button
-            type="button"
-            className="mobile:margin-bottom-1 mobile-lg:margin-bottom-0"
-            onClick={() => console.log('Feedback submitted!')}
-          >
-            Send Feedback
-          </button>
         </div>
       </div>
     </div>
