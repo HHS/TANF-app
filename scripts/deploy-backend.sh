@@ -96,7 +96,7 @@ generate_jwt_cert()
 set_alloy_envs() {
   echo "Setting alloy for $APP"
 
-  pushd tdrs-backend/plg/alloy
+  pushd plg/alloy
 
   if [ "$APP" = "$CGAPPNAME_BACKEND" ] ; then
     cf set-env "$APP" ALLOY_SYSTEM_NAME "django-system-$backend_app_name"
@@ -148,7 +148,7 @@ update_backend()
       exit
     fi
 
-    if [ "$1" = "rolling" ] ; then
+    if [ "$STRATEGY" = "rolling" ] ; then
         set_cf_envs $APP
         # Do a zero downtime deploy.  This requires enough memory for
         # two apps to exist in the org/space at one time.
