@@ -101,7 +101,7 @@ set_alloy_envs() {
   if [ "$APP" = "$CGAPPNAME_BACKEND" ] ; then
     cf set-env "$APP" ALLOY_SYSTEM_NAME "django-system-$backend_app_name"
     cf set-env "$APP" ALLOY_BACKEND_NAME "backend-$backend_app_name"
-  elif [ "$APP" = "$CGAPPNAME_CELERY"] ; then
+  elif [ "$APP" = "$CGAPPNAME_CELERY" ] ; then
     cf set-env "$APP" ALLOY_SYSTEM_NAME "celery-system-$backend_app_name"
     cf set-env "$APP" ALLOY_BACKEND_NAME "celery-$backend_app_name"
   else
