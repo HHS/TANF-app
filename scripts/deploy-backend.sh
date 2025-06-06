@@ -80,7 +80,7 @@ set_cf_envs()
     $cf_cmd
   done
 
-  set_alloy_envs $APP
+  set_alloy_envs "$APP"
 }
 
 # Helper method to generate JWT cert and keys for new environment
@@ -96,7 +96,7 @@ generate_jwt_cert()
 set_alloy_envs() {
   echo "Setting alloy for $APP"
 
-  pushd plg/alloy
+  pushd plg/alloy || exit
 
   if [ "$APP" = "$CGAPPNAME_BACKEND" ] ; then
     cf set-env "$APP" ALLOY_SYSTEM_NAME "django-system-$backend_app_name"
@@ -108,7 +108,7 @@ set_alloy_envs() {
     echo "Can't set alloy, unknown app"
   fi
 
-  popd
+  popd || exit
 }
 
 add_service_bindings() {
@@ -149,7 +149,7 @@ update_backend()
     fi
 
     if [ "$STRATEGY" = "rolling" ] ; then
-        set_cf_envs $APP
+        set_cf_envs "$APP"
         # Do a zero downtime deploy.  This requires enough memory for
         # two apps to exist in the org/space at one time.
         cf push "$APP" --no-route -f "$MANIFEST" -t 180 --strategy rolling || exit 1
@@ -160,11 +160,11 @@ update_backend()
         if cf e "$APP" | grep -q JWT_KEY ; then
             echo jwt cert already created
         else
-            generate_jwt_cert
+            generate_jwt_cert "$APP"
         fi
     fi
 
-    set_cf_envs $APP
+    set_cf_envs "$APP"
     cf set-env "$APP" CGAPPNAME_BACKEND "$CGAPPNAME_BACKEND"
 
     cf unset-env "$APP" "AV_SCAN_URL"
@@ -253,8 +253,8 @@ fi
 
 CELERY_DEPLOY_STRATEGY=$DEPLOY_STRATEGY
 
-APP_GUID=$(cf app $CGAPPNAME_BACKEND --guid || true)
-CELERY_GUID=$(cf app $CGAPPNAME_CELERY --guid || true)
+APP_GUID=$(cf app "$CGAPPNAME_BACKEND" --guid || true)
+CELERY_GUID=$(cf app "$CGAPPNAME_CELERY" --guid || true)
 
 if [[ $DEPLOY_STRATEGY == 'rolling' ]]; then
   if [[ $APP_GUID == 'FAILED' ]]; then
@@ -281,17 +281,17 @@ fi
 add_service_bindings
 
 if [[ $DEPLOY_STRATEGY == 'rebuild' ]]; then
-  update_backend $CGAPPNAME_BACKEND 'initial'
+  update_backend "$CGAPPNAME_BACKEND" 'initial'
 else
-  update_backend $CGAPPNAME_BACKEND $DEPLOY_STRATEGY
+  update_backend "$CGAPPNAME_BACKEND" "$DEPLOY_STRATEGY"
 fi
 
 update_backend_network
 
 if [[ $CELERY_DEPLOY_STRATEGY == 'rebuild' ]]; then
-  update_backend $CGAPPNAME_CELERY 'initial'
+  update_backend "$CGAPPNAME_CELERY" 'initial'
 else
-  update_backend $CGAPPNAME_CELERY $CELERY_DEPLOY_STRATEGY
+  update_backend "$CGAPPNAME_CELERY" "$CELERY_DEPLOY_STRATEGY"
 fi
 
 
