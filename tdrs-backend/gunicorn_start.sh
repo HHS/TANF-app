@@ -1,16 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-echo "REDIS_SERVER"
-echo "redis local: $REDIS_SERVER_LOCAL"
-if [[ "$REDIS_SERVER_LOCAL" = "TRUE" || "$CIRCLE_JOB" = "backend-owasp-scan" ]]; then
-    echo "Run redis server on docker"
-else
-    echo "Run redis server locally"
-    export LD_LIBRARY_PATH=/home/vcap/deps/0/lib/:/home/vcap/deps/1/lib:$LD_LIBRARY_PATH
-    ( cd  /home/vcap/deps/0/bin/; ./redis-server /home/vcap/app/redis.conf &)
-fi
-
 # Collect static files. This is needed for swagger to work in local environment
 if [[ $DISABLE_COLLECTSTATIC ]]; then
     echo "DISABLE_COLLECTSTATIC is set to true, skipping collectstatic"
