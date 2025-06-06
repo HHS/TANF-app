@@ -1,16 +1,16 @@
 import React from 'react'
-import spinnerSvg from '../../assets/spinner.svg'
 
 const Spinner = ({ visible }) =>
   visible ? (
-    <span>
-      <img
-        src={spinnerSvg}
-        alt="Loading spinner"
+    <span
+      className="margin-right-1 margin-top-1"
+      style={{ position: 'relative', display: 'inline-block' }}
+    >
+      <span
+        className="spinner"
         aria-hidden={true}
-        width={16}
-        className="margin-right-1 margin-top-1"
-        style={{ position: 'relative' }}
+        role="status"
+        aria-label="Loading"
       />
     </span>
   ) : null

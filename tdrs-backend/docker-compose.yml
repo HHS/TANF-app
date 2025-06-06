@@ -1,7 +1,8 @@
 # Base Docker compose for all environments
 services:
   zaproxy:
-    image: elipe17/zap-stable:2.14.0
+    platform: linux/amd64
+    image: ghcr.io/${REGISTRY_OWNER:-hhs}/zap-stable:2.14.0
     command: sleep 3600
     depends_on:
       - web
@@ -110,16 +111,16 @@ services:
       - alertmanager
       - mimir
 
-  promtail:
+  alloy:
     restart: always
-    image: grafana/promtail:3.1.1
+    image: grafana/alloy:v1.8.0
     ports:
-      - 9080:9080
+      - 12345:12345
     volumes:
-      - ./plg/promtail/config.local.yml:/etc/promtail/config.yml
+      - ./plg/alloy:/etc/alloy
       - ~/tdp-logs/nginx:/var/log/nginx
       - logs:/logs
-    command: -config.file=/etc/promtail/config.yml
+    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/alloy.local.config
 
   loki:
     restart: always
@@ -185,10 +186,15 @@ services:
       - AWS_SECRET_ACCESS_KEY
       - AWS_S3_BUCKET_NAME
       - AWS_S3_LOGS_PREFIX
+      - GRAFANA_PASSWORD
+      - GRAFANA_USER
     volumes:
       - .:/tdpapp
       - logs:/tmp
-    build: .
+    build: 
+      context: .
+      args:
+        REGISTRY_OWNER: ${REGISTRY_OWNER:-hhs}
     command: >
       bash -c "./wait_for_services.sh &&
       ./manage.py makemigrations &&

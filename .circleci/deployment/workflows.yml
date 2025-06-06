@@ -93,44 +93,23 @@
                 - develop
                 - main
                 - master
-      - build-and-tag-develop:
-          requires:
-            - deploy-infrastructure-staging
-          filters:
-            branches:
-              only:
-                - develop
       - deploy-develop:
           requires:
-            - build-and-tag-develop
+            - deploy-infrastructure-staging
           filters:
             branches:
               only:
                 - develop
-      - build-and-tag-staging:
+      - deploy-staging:
           requires:
             - deploy-infrastructure-staging
           filters:
             branches:
               only:
                 - main
-      - deploy-staging:
-          requires:
-            - build-and-tag-staging
-          filters:
-            branches:
-              only:
-                - main
-      - build-and-tag-production:
-          requires:
-            - deploy-infrastructure-production
-          filters:
-            branches:
-              only:
-                - master
       - deploy-production:
           requires:
-            - build-and-tag-production
+            - deploy-infrastructure-production
           filters:
             branches:
               only:

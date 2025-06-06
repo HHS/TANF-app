@@ -1,7 +1,7 @@
 version: 1
 applications:
   - name: grafana
-    memory: 512M
+    memory: 4096M
     disk_quota: 2G
     instances: 1
     env:

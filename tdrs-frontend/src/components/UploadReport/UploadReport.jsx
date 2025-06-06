@@ -9,6 +9,7 @@ import FileUpload from '../FileUpload'
 import { submit } from '../../actions/reports'
 import { fileUploadSections } from '../../reducers/reports'
 import { useEventLogger } from '../../utils/eventLogger'
+import { useFormSubmission } from '../../hooks/useFormSubmission'
 
 function UploadReport({ handleCancel, stt }) {
   // The currently selected year from the reportingYears dropdown
@@ -35,6 +36,10 @@ function UploadReport({ handleCancel, stt }) {
     type: null,
     message: null,
   })
+
+  // Use the form submission hook
+  const { isSubmitting, executeSubmission } = useFormSubmission()
+
   const alertRef = useRef(null)
 
   const dispatch = useDispatch()
@@ -59,6 +64,7 @@ function UploadReport({ handleCancel, stt }) {
   const onSubmit = async (event) => {
     event.preventDefault()
 
+    // Prevent submission if no files have been uploaded
     if (uploadedFiles.length === 0) {
       setLocalAlertState({
         active: true,
@@ -68,19 +74,30 @@ function UploadReport({ handleCancel, stt }) {
       return
     }
 
-    dispatch(
-      submit({
-        quarter: selectedQuarter,
-        year: selectedYear,
-        formattedSections,
-        logger,
-        setLocalAlertState,
-        stt: stt_id,
-        uploadedFiles,
-        user,
-        ssp: selectedFileType === 'ssp-moe',
+    try {
+      await executeSubmission(() =>
+        dispatch(
+          submit({
+            quarter: selectedQuarter,
+            year: selectedYear,
+            formattedSections,
+            logger,
+            setLocalAlertState,
+            stt: stt_id,
+            uploadedFiles,
+            user,
+            ssp: selectedFileType === 'ssp-moe',
+          })
+        )
+      )
+    } catch (error) {
+      console.error('Error during form submission:', error)
+      setLocalAlertState({
+        active: true,
+        type: 'error',
+        message: 'An error occurred during submission. Please try again.',
       })
-    )
+    }
   }
 
   useEffect(() => {
@@ -121,8 +138,12 @@ function UploadReport({ handleCancel, stt }) {
         })}
 
         <div className="buttonContainer margin-y-4">
-          <Button className="card:margin-y-1" type="submit">
-            Submit Data Files
+          <Button
+            className="card:margin-y-1"
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit Data Files'}
           </Button>
 
           <Button className="cancel" type="button" onClick={handleCancel}>

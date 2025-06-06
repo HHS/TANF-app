@@ -134,10 +134,11 @@ export const downloadOriginalSubmission =
       link.href = url
 
       const fileNameParts = fileName.split('.')
-      const extension = fileName.split('.')[fileNameParts.length - 1]
+      const extension = fileNameParts[fileNameParts.length - 1]
+      const baseName = fileNameParts.slice(0, -1).join('.')
       link.setAttribute(
         'download',
-        `${year}-${quarter}-${section}.${extension}`
+        `${baseName} (${year}-${quarter}-${section}).${extension}`
       )
 
       document.body.appendChild(link)
@@ -147,6 +148,22 @@ export const downloadOriginalSubmission =
       console.error('error downloading file', e)
     }
   }
+
+const onPollError = (datafile_id, onError, dispatch) => {
+  const error = new Error(
+    'The system encountered an error, please refresh the page or press Search again.'
+  )
+  dispatch({
+    type: SET_IS_LOADING_FRA_SUBMISSION_STATUS,
+    payload: {
+      datafile_id,
+      isPerformingRequest: false,
+      isDone: true,
+      error: error,
+    },
+  })
+  onError(error)
+}
 
 export const pollFraSubmissionStatus =
   (
@@ -182,48 +199,66 @@ export const pollFraSubmissionStatus =
         })
       }
 
-      const response = await axios.get(
-        `${BACKEND_URL}/data_files/${datafile_id}/` // # ?fields=status
-      )
-      dispatch({
-        type: SET_IS_LOADING_FRA_SUBMISSION_STATUS,
-        payload: {
-          datafile_id,
-          isPerformingRequest: false,
-        },
-      })
+      try {
+        const response = await axios.get(
+          `${BACKEND_URL}/data_files/${datafile_id}/`
+        )
 
-      if (!test(response?.data)) {
-        retry()
-      } else {
         dispatch({
           type: SET_IS_LOADING_FRA_SUBMISSION_STATUS,
           payload: {
             datafile_id,
             isPerformingRequest: false,
-            isDone: true,
-            error: null,
           },
         })
+
+        if (!test(response?.data)) {
+          retry()
+        } else {
+          dispatch({
+            type: SET_IS_LOADING_FRA_SUBMISSION_STATUS,
+            payload: {
+              datafile_id,
+              isPerformingRequest: false,
+              isDone: true,
+              error: null,
+            },
+          })
+          dispatch({
+            type: SET_FRA_SUBMISSION_STATUS,
+            payload: {
+              datafile_id,
+              datafile: response?.data,
+            },
+          })
+          onSuccess(response?.data)
+        }
+      } catch (axiosError) {
+        // Check if the error has a response with status code
+        const statusCode = axiosError?.response?.status
+        const shouldStopPolling =
+          statusCode === 400 || statusCode === 401 || statusCode === 403
+
         dispatch({
-          type: SET_FRA_SUBMISSION_STATUS,
+          type: SET_IS_LOADING_FRA_SUBMISSION_STATUS,
           payload: {
             datafile_id,
-            datafile: response?.data,
+            isPerformingRequest: false,
+            error: axiosError,
+            isDone: shouldStopPolling,
           },
         })
-        onSuccess(response?.data)
+
+        // Continue polling if it's not a 400, 401, or 403 error
+        if (!shouldStopPolling) {
+          retry()
+          return
+        }
+
+        onPollError(datafile_id, onError, dispatch)
       }
     } catch (e) {
-      dispatch({
-        type: SET_IS_LOADING_FRA_SUBMISSION_STATUS,
-        payload: {
-          datafile_id,
-          isPerformingRequest: false,
-          isDone: true,
-          error: e,
-        },
-      })
-      onError(e)
+      console.error(e)
+      onPollError(datafile_id, onError, dispatch)
     }
   }
