@@ -152,9 +152,9 @@ update_backend()
         set_cf_envs $APP
         # Do a zero downtime deploy.  This requires enough memory for
         # two apps to exist in the org/space at one time.
-        cf push "$APP" --no-route -f manifest.buildpack.yml -t 180 --strategy rolling || exit 1
+        cf push "$APP" --no-route -f "$MANIFEST" -t 180 --strategy rolling || exit 1
     else
-        cf push "$APP" --no-route -f manifest.buildpack.yml -t 180
+        cf push "$APP" --no-route -f "$MANIFEST" -t 180
 
         # set up JWT key if needed
         if cf e "$APP" | grep -q JWT_KEY ; then
