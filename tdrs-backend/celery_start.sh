@@ -5,7 +5,7 @@ echo "Starting celery"
 if [[ $1 == "cloud" ]]; then
     echo "Starting Alloy"
     mkdir /home/vcap/app/alloy-data
-    wget https://github.com/grafana/alloy/releases/download/v1.8.1/alloy-boringcrypto-linux-amd64.zip
+    wget https://github.com/grafana/alloy/releases/download/v1.9.1/alloy-boringcrypto-linux-amd64.zip
     unzip -a alloy-boringcrypto-linux-amd64.zip && rm -rf alloy-boringcrypto-linux-amd64.zip
     chmod +x alloy-boringcrypto-linux-amd64
     ./alloy-boringcrypto-linux-amd64 run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/home/vcap/app/alloy-data /home/vcap/app/plg/alloy/alloy.config &
