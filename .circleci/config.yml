@@ -46,6 +46,9 @@ parameters:
   util_make_erd:
     type: boolean
     default: false
+  registry_owner:
+    type: string
+    default: 'hhs'
 
 jobs:
   setup:
