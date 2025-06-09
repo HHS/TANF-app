@@ -4,7 +4,7 @@ app=${1}
 
 guid=$(cf app "$app" --guid || true)
 
-if [[ $APP_GUID == 'FAILED' ]]; then
+if [[ $guid == 'FAILED' ]]; then
     echo "Backend not available, skipping migrations."
     exit 1
 else
