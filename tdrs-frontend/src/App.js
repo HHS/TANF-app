@@ -23,6 +23,7 @@ function App() {
   const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
 
   const handleOpenModal = () => {
+    console.log('Opening feedback modal')
     setIsModalOpen(true)
   }
 
@@ -30,9 +31,9 @@ function App() {
     setIsModalOpen(false)
   }
 
-  const handleFeedbackSubmit = () => {
+  const handleOnFeedbackSubmit = () => {
     setIsFeedbackSubmitted(true)
-    alert('Thank you for your feedback!')
+    console.log('Thank you for your feedback!')
   }
 
   return (
@@ -58,31 +59,36 @@ function App() {
       <button
         type="button"
         data-testid="usa-feedback-sticky-button"
-        className="usa-menu-btn"
+        className="usa-button"
         style={{
           position: 'fixed',
-          right: '20px',
-          cursor: 'pointer',
-          border: 'none',
-          borderRadius: '5px',
+          bottom: '0px',
+          right: '45px',
           padding: '10px 20px',
-          zIndex: 1000,
+          zIndex: isModalOpen ? 'auto' : 1000,
+          borderRadius: '0',
         }}
         onClick={handleOpenModal}
       >
-        Feedback
+        Give Feedback
       </button>
-      {isModalOpen && isFeedbackSubmitted ? (
+      {isModalOpen && !isFeedbackSubmitted ? (
         <FeedbackModal
           title="Tell us how we can improve TDP"
           isOpen={isModalOpen}
           message="Your feedback is important to us! We use it to ensure that the TANF Data Portal is meeting your needs and better serve you and your team."
+          modalWidth={'53.75rem'}
+          modalHeight={'auto'}
           onClose={handleCloseModal}
         >
-          <div style={{ marginTop: '10px' }}>
-            <h6>Fields marked with an asterisk (*) are required.</h6>
-            <br />
-            <FeedbackForm onFeedbackSubmit={handleFeedbackSubmit} />
+          <div
+            style={{
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginTop: '5px',
+            }}
+          >
+            <FeedbackForm onFeedbackSubmit={handleOnFeedbackSubmit} />
           </div>
         </FeedbackModal>
       ) : (
@@ -90,20 +96,26 @@ function App() {
           title="Thank you for your feedback"
           isOpen={isModalOpen}
           message={
-            "Your response has been recorded. If you're encountering an issue you need support to resolve please feel free to email us at <a href='mailto:" +
-            supportEmail +
-            "'>" +
-            supportEmail +
-            '</a>.'
+            <p>
+              Your response has been recorded. If you're encountering an issue
+              you need support to resolve please feel free to email us at{' '}
+              <a className="usa-link" href="mailto:tanfdata@acf.hhs.gov">
+                {supportEmail}
+              </a>
+              .
+            </p>
           }
+          modalWidth={'53.75rem'}
+          modalHeight={'auto'}
           onClose={handleCloseModal}
         >
           <div className="margin-x-4 margin-bottom-4">
             <button
               id="feedback-submit-button"
+              className="usa-button"
               type="button"
-              className="mobile:margin-bottom-1 mobile-lg:margin-bottom-0"
               onClick={handleCloseModal}
+              style={{ marginTop: '8px' }}
             >
               Close
             </button>

@@ -1,44 +1,37 @@
 import React from 'react'
-import classNames from 'classnames'
-import Tooltip from '../Tooltip/Tooltip'
 
-const IconRadioSelect = ({
-  label,
-  value,
-  icon,
-  checked,
-  onChange,
-  classes,
-}) => {
-  // TODO: need to wrap radio buttons in a tooltip
+const IconRadioSelect = ({ label, value, icon, checked, onChange, color }) => {
+  // TODO: may want to add a tooltip for icon selects for users
   return (
-    <Tooltip text={label}>
-      <div className="usa-radio">
-        <input
-          className="usa-radio__input"
-          id={`usa-radio__input-${value}`}
-          type="radio"
-          name={`tdpFeedbackRating-${value}`}
-          value={value}
-          checked={checked}
-          onChange={onChange}
-        />
-        <label
-          aria-label={label}
-          className={classNames('usa-radio__label', classes)}
-          htmlFor={value}
+    <div className="usa-radio" style={{ border: '1px solid black' }}>
+      <input
+        className="usa-radio__input"
+        id={`usa-radio-input-${value}`}
+        type="button"
+        name={`tdpFeedbackRating-${value}`}
+        value={value}
+        checked={checked}
+        onChange={onChange}
+      />
+      {icon && (
+        <span
+          style={{
+            cursor: 'pointer',
+            zIndex: '2',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: color,
+            padding: '4px',
+            width: '45px',
+            border: checked ? `1px solid ${color}` : 'none',
+          }}
+          className="radio-icon"
         >
-          {icon && (
-            <span
-              style={{ zIndex: '2', display: 'flex', alignItems: 'center' }}
-              className="radio-icon"
-            >
-              {icon}
-            </span>
-          )}
-        </label>
-      </div>
-    </Tooltip>
+          {icon}
+        </span>
+      )}
+    </div>
   )
 }
 
