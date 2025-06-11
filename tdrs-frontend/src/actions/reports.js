@@ -23,10 +23,6 @@ export const SET_FILE_LIST = 'SET_FILE_LIST'
 export const FETCH_FILE_LIST_ERROR = 'FETCH_FILE_LIST_ERROR'
 export const DOWNLOAD_DIALOG_OPEN = 'DOWNLOAD_DIALOG_OPEN'
 
-export const SET_CURRENT_SUBMISSION = 'SET_CURRENT_SUBMISSION'
-export const SET_LOADING_CURRENT_SUBMISSION = 'SET_LOADING_CURRENT_SUBMISSION'
-export const SET_CURRENT_SUBMISSION_ERROR = 'SET_CURRENT_SUBMISSION_ERROR'
-
 export const clearFile =
   ({ section }) =>
   (dispatch) => {
@@ -41,46 +37,6 @@ export const clearError =
   ({ section }) =>
   (dispatch) => {
     dispatch({ type: CLEAR_ERROR, payload: { section } })
-  }
-
-/**
-   Get a list of files that can be downloaded, mainly used to decide
-   if the download button should be present.
-*/
-export const getCurrentSubmission =
-  ({ quarter = 'Q1', stt, year, file_type, section }) =>
-  async (dispatch) => {
-    dispatch({
-      type: SET_LOADING_CURRENT_SUBMISSION,
-      payload: {
-        isLoadingCurrentSubmission: true,
-      },
-    })
-    try {
-      const response = await axios.get(
-        `${BACKEND_URL}/data_files/?year=${year}&quarter=${quarter}&stt=${stt.id}&file_type=${file_type}`,
-        {
-          responseType: 'json',
-        }
-      )
-      dispatch({
-        type: SET_CURRENT_SUBMISSION,
-        payload: {
-          data: response?.data,
-        },
-      })
-    } catch (error) {
-      dispatch({
-        type: SET_CURRENT_SUBMISSION_ERROR,
-        payload: {
-          error,
-          year,
-          quarter,
-          file_type,
-          section,
-        },
-      })
-    }
   }
 
 export const getAvailableFileList =
