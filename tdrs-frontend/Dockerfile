@@ -1,8 +1,7 @@
-FROM elipe17/tdp-frontend-base:v0.0.5 AS localdev
 ARG REGISTRY_OWNER=hhs
-ARG BASE_TAG=latest
+ARG BASE_TAG=v0.0.5
 
-# FROM ghcr.io/${REGISTRY_OWNER}/tdp-frontend-base:${BASE_TAG} AS localdev
+FROM ghcr.io/${REGISTRY_OWNER}/tdp-frontend-base:${BASE_TAG} AS localdev
 
 # ---
 # Stage 0: Copy source
