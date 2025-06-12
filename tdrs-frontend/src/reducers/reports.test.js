@@ -45,8 +45,6 @@ const initialState = {
       uuid: null,
     },
   ],
-  isLoadingCurrentSubmission: false,
-  currentSubmissionError: null,
   year: '',
   stt: '',
   quarter: '',
@@ -80,8 +78,6 @@ describe('reducers/reports', () => {
       })
     ).toEqual({
       submittedFiles: initialState.submittedFiles,
-      isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
-      currentSubmissionError: initialState.currentSubmissionError,
       files: [
         {
           fileName: 'test.txt',
@@ -116,8 +112,6 @@ describe('reducers/reports', () => {
       })
     ).toEqual({
       files: initialState.files,
-      isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
-      currentSubmissionError: initialState.currentSubmissionError,
       submittedFiles: [
         {
           section: 'Active Case Data',
@@ -176,8 +170,6 @@ describe('reducers/reports', () => {
       })
     ).toEqual({
       files: initialState.files,
-      isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
-      currentSubmissionError: initialState.currentSubmissionError,
       submittedFiles: [
         {
           section: 'Active Case Data',
@@ -227,8 +219,6 @@ describe('reducers/reports', () => {
       })
     ).toEqual({
       files: initialState.files,
-      isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
-      currentSubmissionError: initialState.currentSubmissionError,
       submittedFiles: [
         {
           section: 'Active Case Data',
@@ -326,8 +316,6 @@ describe('reducers/reports', () => {
       })
     ).toEqual({
       files: initialState.files,
-      isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
-      currentSubmissionError: initialState.currentSubmissionError,
       submittedFiles: [
         {
           section: 'Active Case Data',
@@ -462,8 +450,6 @@ describe('reducers/reports', () => {
       })
     ).toEqual({
       files: initialState.files,
-      isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
-      currentSubmissionError: initialState.currentSubmissionError,
       submittedFiles: initialState.submittedFiles,
       year: '',
       stt: 'florida',
@@ -482,8 +468,6 @@ describe('reducers/reports', () => {
       })
     ).toEqual({
       files: initialState.files,
-      isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
-      currentSubmissionError: initialState.currentSubmissionError,
       submittedFiles: initialState.submittedFiles,
       year: '',
       stt: '',
@@ -500,8 +484,6 @@ describe('reducers/reports', () => {
       })
     ).toEqual({
       files: initialState.files,
-      isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
-      currentSubmissionError: initialState.currentSubmissionError,
       submittedFiles: initialState.submittedFiles,
       year: '',
       stt: '',
@@ -518,8 +500,6 @@ describe('reducers/reports', () => {
       })
     ).toEqual({
       files: initialState.files,
-      isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
-      currentSubmissionError: initialState.currentSubmissionError,
       submittedFiles: initialState.submittedFiles,
       year: '',
       stt: '',
@@ -535,8 +515,6 @@ describe('reducers/reports', () => {
       })
     ).toEqual({
       files: initialState.files,
-      isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
-      currentSubmissionError: initialState.currentSubmissionError,
       submittedFiles: initialState.submittedFiles,
       year: '',
       stt: '',
@@ -555,8 +533,6 @@ describe('reducers/reports', () => {
       })
     ).toEqual({
       files: initialState.files,
-      isLoadingCurrentSubmission: initialState.isLoadingCurrentSubmission,
-      currentSubmissionError: initialState.currentSubmissionError,
       submittedFiles: initialState.submittedFiles,
       year: '2021',
       stt: '',

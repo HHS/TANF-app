@@ -10,7 +10,26 @@ import { faro } from '@grafana/faro-react'
 
 const axiosInstance = axios.create()
 
-// Add an interceptor to include trace context in outgoing requests
+// Add an interceptor to include trace context in outgoing requests for custom instance and default instance
+axios.interceptors.request.use((config) => {
+  try {
+    // Add service name to the request
+    config.headers = config.headers || {}
+    config.headers['x-service-name'] = 'tdp-frontend'
+    // Add trace context if Faro is initialized
+    if (faro && faro.api) {
+      const traceContext = faro.api.getTraceContext()
+      if (traceContext) {
+        // Add W3C trace context headers
+        Object.assign(config.headers, traceContext)
+      }
+    }
+  } catch (e) {
+    console.error('Failed to add trace context', e)
+  }
+  return config
+})
+
 axiosInstance.interceptors.request.use((config) => {
   try {
     // Add service name to the request
