@@ -297,34 +297,3 @@ if [[ $CELERY_DEPLOY_STRATEGY == 'rebuild' ]]; then
 else
   update_backend "$CGAPPNAME_CELERY" "$CELERY_DEPLOY_STRATEGY"
 fi
-
-
-
-# prepare_alloy
-# if [ "$DEPLOY_STRATEGY" = "rolling" ] ; then
-#     # Perform a rolling update for the backend and frontend deployments if
-#     # specified, otherwise perform a normal deployment
-#     bind_backend_to_services
-#     update_backend 'rolling'
-#     # is bind_services idempotent ?
-# elif [ "$DEPLOY_STRATEGY" = "bind" ] ; then
-#     # Bind the services the application depends on and restage the app.
-#     bind_backend_to_services
-# elif [ "$DEPLOY_STRATEGY" = "initial" ]; then
-#     # There is no app with this name, and the services need to be bound to it
-#     # for it to work. the app will fail to start once, have the services bind,
-#     # and then get restaged.
-#     update_backend
-#     bind_backend_to_services
-# elif [ "$DEPLOY_STRATEGY" = "rebuild" ]; then
-#     # You want to redeploy the instance under the same name
-#     # Delete the existing app (with out deleting the services)
-#     # and perform the initial deployment strategy.
-#     cf delete "$CGAPPNAME_BACKEND" -r -f
-#     cf delete "$CGAPPNAME_CELERY" -r -f
-#     update_backend
-#     bind_backend_to_services
-# else
-#     # No changes to deployment config, just deploy the changes and restart
-#     update_backend
-# fi

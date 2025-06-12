@@ -200,7 +200,7 @@ services:
       ./manage.py makemigrations &&
       ./manage.py migrate &&
       ./manage.py populate_stts &&
-      ./gunicorn_start.sh && celery -A tdpservice.settings worker -l info"
+      ./gunicorn_start.sh"
     ports:
       - "5555:5555"
     tty: true
