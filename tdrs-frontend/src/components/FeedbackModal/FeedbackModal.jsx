@@ -1,14 +1,6 @@
 import React, { useRef, useEffect } from 'react'
 
-const FeedbackModal = ({
-  title,
-  message,
-  children,
-  isOpen,
-  onClose,
-  modalWidth,
-  modalHeight,
-}) => {
+const FeedbackModal = ({ id, title, message, children, isOpen, onClose }) => {
   const modalRef = useRef(null)
   useEffect(
     () =>
@@ -19,13 +11,13 @@ const FeedbackModal = ({
   )
 
   return isOpen ? (
-    <div id="feedback-modal" className="usa-modal-overlay" role="presentation">
+    <div id={id} className="usa-modal-overlay" role="presentation">
       <div
         className="modal-content"
         ref={modalRef}
         style={{
-          width: modalWidth,
-          height: modalHeight,
+          width: 'auto',
+          height: 'auto',
           justifyContent: 'center',
           alignItems: 'center',
           borderRadius: '0.5rem',
@@ -33,6 +25,7 @@ const FeedbackModal = ({
       >
         <div id="feedback-modal-header-container">
           <h1
+            data-testid="feedback-modal-header"
             className="font-serif-xl margin-4 margin-bottom-0 text-normal"
             tabIndex={-1}
             id="feedbackModalHeader"

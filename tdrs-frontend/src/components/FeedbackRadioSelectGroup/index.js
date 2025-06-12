@@ -1,3 +1,3 @@
-import FeedbackRadioSelectGroup from './FeedbackRadioSelectGroup.jsx'
+import FeedbackRadioSelectGroup from './FeedbackRadioSelectGroup'
 
 export default FeedbackRadioSelectGroup

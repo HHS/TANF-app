@@ -1,20 +1,50 @@
 import React, { useState } from 'react'
-import IconRadioSelect from '../IconRadioSelect/IconRadioSelect'
+
+import { ReactComponent as VeryBadIcon } from '../../assets/feedback/very-dissatisfied-feedback.svg'
+import { ReactComponent as BadIcon } from '../../assets/feedback/dissatisfied-feedback.svg'
+import { ReactComponent as NeutralIcon } from '../../assets/feedback/neutral-feedback.svg'
+import { ReactComponent as GoodIcon } from '../../assets/feedback/satisfied-feedback.svg'
+import { ReactComponent as VeryGoodIcon } from '../../assets/feedback/very-satisfied-feedback.svg'
+
+const feedbackRatingsList = [
+  {
+    label: 'Very Dissatisfied (1/5)',
+    value: 1,
+    color: 'red',
+    icon: <VeryBadIcon data-testid="icon-very-bad" title="Very Dissatisfied" />,
+  },
+  {
+    label: 'Dissatisfied (2/5)',
+    value: 2,
+    color: 'orange',
+    icon: <BadIcon data-testid="icon-bad" title="Dissatisfied" />,
+  },
+  {
+    label: 'Fair (3/5)',
+    value: 3,
+    color: 'blue',
+    icon: <NeutralIcon data-testid="icon-fair" title="Fair" />,
+  },
+  {
+    label: 'Satisfied (4/5)',
+    value: 4,
+    color: 'green',
+    icon: <GoodIcon data-testid="icon-good" title="Satisfied" />,
+  },
+  {
+    label: 'Very Satisfied (5/5)',
+    value: 5,
+    color: 'darkgreen',
+    icon: <VeryGoodIcon data-testid="icon-very-good" title="Very Satisfied" />,
+  },
+]
 
 const FeedbackRadioSelectGroup = ({
   label,
-  options,
+  selectedOption,
   onRatingSelected,
   error,
-  onError,
 }) => {
-  const [selectedValue, setSelectedValue] = useState('')
-
-  const handleChange = (event) => {
-    setSelectedValue(event.target.value)
-    onRatingSelected(!selectedValue)
-  }
-
   return (
     <div
       style={{
@@ -27,6 +57,7 @@ const FeedbackRadioSelectGroup = ({
         textAlign: 'center',
         borderRadius: '0.5rem',
       }}
+      data-testid="feedback-ratings-select-group"
       className="usa-form-group"
     >
       <fieldset className="usa-fieldset">
@@ -53,16 +84,51 @@ const FeedbackRadioSelectGroup = ({
             marginTop: '10px',
           }}
         >
-          {options.map((option) => (
-            <IconRadioSelect
-              key={`radio-${option.value}`}
-              label={option.label}
-              value={option.value}
-              icon={option.icon}
-              checked={selectedValue === option.value}
-              onChange={handleChange}
-              color={option.color}
-            />
+          {feedbackRatingsList.map((option) => (
+            <div
+              data-testid={`feedback-rating-option-${option.value}`}
+              key={option.value}
+              className="usa-radio"
+              style={{
+                border:
+                  selectedOption === option.value
+                    ? `1px solid ${option.value}`
+                    : '1px solid black',
+              }}
+            >
+              {option.icon && (
+                <label
+                  style={{
+                    cursor: 'pointer',
+                    zIndex: '2',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: option.color,
+                    padding: '4px',
+                    width: '45px',
+                    border:
+                      selectedOption !== undefined &&
+                      selectedOption === option.value
+                        ? `2px solid ${option.color}`
+                        : 'none',
+                  }}
+                  key={option.value}
+                  className="radio-icon"
+                >
+                  <input
+                    className="usa-radio__input"
+                    data-testid={`usa-radio-input-${option.value}`}
+                    type="radio"
+                    name={'tdpFeedbackRatings'}
+                    value={option.value}
+                    checked={selectedOption === option.value}
+                    onChange={() => onRatingSelected(option.value)}
+                  />
+                  {option.icon}
+                </label>
+              )}
+            </div>
           ))}
         </div>
       </fieldset>

@@ -1,87 +1,75 @@
 /* eslint-disable no-unused-vars */
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 // @ts-ignore
 import axios from 'axios'
-import FeedbackRadioSelectGroup from '../FeedbackRadioSelectGroup/FeedbackRadioSelectGroup'
-
-import { ReactComponent as VeryBadIcon } from '../../assets/feedback/very-dissatisfied-feedback.svg'
-import { ReactComponent as BadIcon } from '../../assets/feedback/dissatisfied-feedback.svg'
-import { ReactComponent as NeutralIcon } from '../../assets/feedback/neutral-feedback.svg'
-import { ReactComponent as GoodIcon } from '../../assets/feedback/satisfied-feedback.svg'
-import { ReactComponent as VeryGoodIcon } from '../../assets/feedback/very-satisfied-feedback.svg'
-
-const feedbackRatingsList = [
-  {
-    label: 'Very Dissatisfied (1/5)',
-    value: 1,
-    color: 'red',
-    icon: <VeryBadIcon />,
-  },
-  { label: 'Dissatisfied (2/5)', value: 2, color: 'orange', icon: <BadIcon /> },
-  { label: 'Fair (3/5)', value: 3, color: 'blue', icon: <NeutralIcon /> },
-  { label: 'Satisfied (4/5)', value: 4, color: 'green', icon: <GoodIcon /> },
-  {
-    label: 'Very Satisfied (5/5)',
-    value: 5,
-    color: 'darkgreen',
-    icon: <VeryGoodIcon />,
-  },
-]
+import FeedbackRadioSelectGroup from '../FeedbackRadioSelectGroup'
+import { feedbackPost } from '__mocks__/mockFeedbackAxiosApi'
+console.log('FeedbackRadioSelectGroup:', FeedbackRadioSelectGroup)
 
 // @ts-ignore
 const FeedbackForm = ({ onFeedbackSubmit }) => {
   // @ts-ignore
-  const [canSubmit, setCanSubmit] = useState(false)
   const [isAnonymous, setIsAnonymous] = useState(false)
-  const [selectedRatingsOption, setSelectedRatingsOption] = useState()
+  const [selectedRatingsOption, setSelectedRatingsOption] = useState(undefined)
   const [feedbackMessage, setFeedbackMessage] = useState('')
   const [error, setError] = useState(false)
 
-  // Stubbed API call to submit feedback
+  const resetStatesOnceSubmitted = () => {
+    setSelectedRatingsOption(undefined)
+    setFeedbackMessage('')
+    setError(false)
+    setIsAnonymous(false)
+  }
+
+  const submitForm = (data) => {
+    return axios.post('/api/userFeedback/', data)
+  }
+
+  // Currently using stubbed API call to submit feedback
+  // TODO: replace with above api call when implement in backend (adjust url and data if needed)
   const handleSubmit = async () => {
-    console.log('Attempting to submit user feedback...')
+    console.log('Attempting to send user feedback...')
     if (isFormValidToSubmit()) {
-      // TODO: add api subbing call in here
-      onFeedbackSubmit() // Callback to parent component
+      try {
+        // api stubbing (mock) call here
+        const response = await feedbackPost('/api/userFeedback/', {
+          rating: selectedRatingsOption,
+          feedback: feedbackMessage,
+          anonymous: isAnonymous,
+        })
+
+        if (response.status === 200) {
+          onFeedbackSubmit() // Callback to parent component
+          resetStatesOnceSubmitted() // Reset states after submission
+          console.log('Feedback submitted successfully!')
+        } else {
+          console.log('Something went wrong. Please try again.')
+        }
+      } catch (error) {
+        if (error.response && error.response.status === 400) {
+          console.error('Error submitting feedback:', error)
+        } else {
+          console.error('An unexpected error occurred. Please try again later.')
+        }
+      }
     } else {
       setError(true)
       console.log('Please select a rating before submitting.')
     }
-    //   try {
-    //     const response = await axios.post('/api/feedback', { feedbackMessage })
-
-    //     if (response.status === 200) {
-    //       alert('Thank you for your feedback!')
-    //       setFeedbackMessage('')
-    //       onFeedbackSubmit() // Callback to parent component
-    //     } else {
-    //       alert('Something went wrong. Please try again.')
-    //     }
-    //   } catch (error) {
-    //     console.error('Error submitting feedback:', error)
-    //     alert('Failed to submit feedback.')
-    //   }
-    // } else {
-    //   setError(true)
-    //   alert('Please select a rating before submitting.')
-    // }
   }
 
   const handleRatingSelected = (rating) => {
     setSelectedRatingsOption(rating)
+    setError(false) // Reset error state when a rating is selected
   }
 
   const handleFeedbackMessageChange = (event) => {
-    const message = event.target.value
+    console.log('user feedback...' + event.target.value.trimStart())
+    const message = event.target.value.trimStart()
     setFeedbackMessage(message)
   }
 
-  const handleOnError = () => {
-    setError(true)
-  }
-
   const handleAnonymousChange = () => {
-    console.log('Anonymous feedback:', !isAnonymous)
     setIsAnonymous(!isAnonymous)
   }
 
@@ -100,7 +88,10 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
           marginBottom: '4px',
         }}
       >
-        <p style={{ color: error ? 'red' : 'none' }}>
+        <p
+          data-testid="fields-required-text"
+          style={{ color: error ? 'red' : 'black' }}
+        >
           Fields marked with an asterisk (*) are required.
         </p>
       </div>
@@ -114,20 +105,20 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
           <div>
             <FeedbackRadioSelectGroup
               label="How is your overall experience using TANF Data Portal?*"
-              options={feedbackRatingsList}
+              selectedOption={selectedRatingsOption}
               onRatingSelected={handleRatingSelected}
               error={error}
-              onError={handleOnError}
             />
           </div>
           <div id="feedback-text-area" className="usa-form-group">
             <h3>Tell us more</h3>
             <textarea
+              data-testid="feedback-message-input"
               className="usa-textarea"
               value={feedbackMessage}
               onChange={handleFeedbackMessageChange}
               placeholder="Enter your feedback..."
-              rows={9}
+              rows={10}
               cols={72}
               maxLength={500}
               style={{
@@ -157,7 +148,7 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
                 htmlFor="feedback-anonymous-input"
                 style={{
                   display: 'inline',
-                  paddingTop: '0.25rem',
+                  paddingTop: '0.15rem',
                 }}
               >
                 Send anonymously
@@ -166,7 +157,7 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
           </div>
           <div className="margin-top-4 margin-bottom-2">
             <button
-              id="feedback-submit-button"
+              data-testid="feedback-submit-button"
               type="button"
               className="usa-button"
               onClick={handleSubmit}

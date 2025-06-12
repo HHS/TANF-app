@@ -4,8 +4,8 @@ import Routes from './components/Routes'
 import { Alert } from './components/Alert'
 import Header from './components/Header'
 import Footer from './components/Footer'
-import FeedbackForm from 'components/FeedbackForm'
-import FeedbackModal from 'components/FeedbackModal'
+import FeedbackForm from './components/FeedbackForm'
+import FeedbackModal from './components/FeedbackModal'
 
 /**
  * The root component
@@ -15,10 +15,13 @@ import FeedbackModal from 'components/FeedbackModal'
  * Renders the Alert component which will show or hide alerts
  *
  * Renders Routes and all its children
+ *
+ * Renders Give Feed back button at the bottom right of the viewport
+ *
+ * Displays a modal when the user clicks the Give Feedback button
  */
 function App() {
   const supportEmail = 'tanfdata@acf.hhs.gov'
-
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
 
@@ -29,6 +32,7 @@ function App() {
 
   const handleCloseModal = () => {
     setIsModalOpen(false)
+    setIsFeedbackSubmitted(false)
   }
 
   const handleOnFeedbackSubmit = () => {
@@ -74,11 +78,10 @@ function App() {
       </button>
       {isModalOpen && !isFeedbackSubmitted ? (
         <FeedbackModal
+          id="feedback-modal"
           title="Tell us how we can improve TDP"
           isOpen={isModalOpen}
           message="Your feedback is important to us! We use it to ensure that the TANF Data Portal is meeting your needs and better serve you and your team."
-          modalWidth={'53.75rem'}
-          modalHeight={'auto'}
           onClose={handleCloseModal}
         >
           <div
@@ -93,6 +96,7 @@ function App() {
         </FeedbackModal>
       ) : (
         <FeedbackModal
+          id="feedback-thank-you-modal"
           title="Thank you for your feedback"
           isOpen={isModalOpen}
           message={
@@ -105,8 +109,6 @@ function App() {
               .
             </p>
           }
-          modalWidth={'53.75rem'}
-          modalHeight={'auto'}
           onClose={handleCloseModal}
         >
           <div className="margin-x-4 margin-bottom-4">

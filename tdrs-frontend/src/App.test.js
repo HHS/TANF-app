@@ -27,6 +27,14 @@ describe('App.js', () => {
     expect(wrapper.find(Alert)).toExist()
   })
 
+  it('renders sticky button at bottom right of Apps viewport', () => {
+    const wrapper = shallow(<App />)
+    const stickyButton = wrapper.find(
+      '[data-testid="usa-feedback-sticky-button"]'
+    )
+    expect(stickyButton).toExist()
+  })
+
   it('should redirect to #main-content when space bar is pressed on "skip links" element', () => {
     const url = '#main-content'
 
@@ -65,5 +73,21 @@ describe('App.js', () => {
     })
 
     expect(window.location.href).toEqual(url)
+  })
+
+  it('should not show modal initially', () => {
+    const wrapper = shallow(<App />)
+    const feedbackModal = wrapper.find('#feedback-modal')
+    expect(feedbackModal.exists()).toBe(false)
+  })
+
+  it('should open modal when sticky button is clicked', () => {
+    const wrapper = shallow(<App />)
+    const stickyButton = wrapper.find(
+      '[data-testid="usa-feedback-sticky-button"]'
+    )
+    stickyButton.simulate('click')
+    const feedbackModal = wrapper.find('#feedback-modal')
+    expect(feedbackModal.exists()).toBe(true)
   })
 })
