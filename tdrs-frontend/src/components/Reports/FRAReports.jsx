@@ -242,7 +242,6 @@ const SearchForm = ({
 const UploadForm = ({
   handleCancel,
   handleUpload,
-  handleDownload,
   setLocalAlertState,
   file,
   setSelectedFile,
@@ -398,17 +397,6 @@ const UploadForm = ({
             aria-hidden="false"
             data-errormessage={INVALID_FILE_ERROR}
           />
-          <div style={{ marginTop: '25px' }}>
-            {file?.id ? (
-              <Button
-                className="tanf-file-download-btn"
-                type="button"
-                onClick={() => handleDownload(file)}
-              >
-                Download {section}
-              </Button>
-            ) : null}
-          </div>
         </div>
 
         <div className="buttonContainer margin-y-4">
@@ -619,12 +607,7 @@ const FRAReports = () => {
     (state) => state.fraReports.submissionHistory
   )
 
-  const latestSubmission =
-    fraSubmissionHistory && fraSubmissionHistory.length > 0
-      ? fraSubmissionHistory[0]
-      : null
-
-  const [selectedFile, setSelectedFile] = useState(latestSubmission)
+  const [selectedFile, setSelectedFile] = useState(null)
 
   const dispatch = useDispatch()
 
@@ -948,11 +931,8 @@ const FRAReports = () => {
                   setUploadError(null)
                   setUploadReportToggled(false)
                 }}
-                handleDownload={handleDownload}
                 setLocalAlertState={setLocalAlertState}
-                file={
-                  selectedFile || uploadError ? selectedFile : latestSubmission
-                }
+                file={selectedFile}
                 setSelectedFile={setSelectedFile}
                 section={getReportTypeLabel()}
                 error={uploadError}
