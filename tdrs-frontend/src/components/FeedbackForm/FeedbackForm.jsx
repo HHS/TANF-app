@@ -24,7 +24,6 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
   // Currently using stubbed API call to submit feedback
   // TODO: replace with above api call when implement in backend (adjust url and data if needed)
   const handleSubmit = async () => {
-    console.log('Attempting to send user feedback...')
     if (isFormValidToSubmit()) {
       try {
         // api stubbing (mock) call here
