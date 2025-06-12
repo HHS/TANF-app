@@ -3,100 +3,169 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import FeedbackRadioSelectGroup from './FeedbackRadioSelectGroup'
 
+jest.mock('../../assets/feedback/very-dissatisfied-feedback.svg', () => {
+  const React = require('react')
+  return {
+    ReactComponent: () =>
+      React.createElement('svg', {
+        'data-testid': 'icon-very-bad',
+        title: 'Very Dissatisfied',
+        role: 'svg',
+      }),
+  }
+})
+
+jest.mock('../../assets/feedback/dissatisfied-feedback.svg', () => {
+  const React = require('react')
+  return {
+    ReactComponent: () =>
+      React.createElement('svg', {
+        'data-testid': 'icon-bad',
+        title: 'Dissatisfied',
+        role: 'svg',
+      }),
+  }
+})
+
+jest.mock('../../assets/feedback/neutral-feedback.svg', () => {
+  const React = require('react')
+  return {
+    ReactComponent: () =>
+      React.createElement('svg', {
+        'data-testid': 'icon-fair',
+        title: 'Fair',
+        role: 'svg',
+      }),
+  }
+})
+
+jest.mock('../../assets/feedback/satisfied-feedback.svg', () => {
+  const React = require('react')
+  return {
+    ReactComponent: () =>
+      React.createElement('svg', {
+        'data-testid': 'icon-good',
+        title: 'Satisfied',
+        role: 'svg',
+      }),
+  }
+})
+
+jest.mock('../../assets/feedback/very-satisfied-feedback.svg', () => {
+  const React = require('react')
+  return {
+    ReactComponent: () =>
+      React.createElement('svg', {
+        'data-testid': 'icon-very-good',
+        title: 'Very Satisfied',
+        role: 'svg',
+      }),
+  }
+})
+
+function FeedbackRadioGroupTestWrapper() {
+  const [selectedOption, setSelectedOption] = React.useState()
+
+  return (
+    <FeedbackRadioSelectGroup
+      label="How satisfied are you?"
+      selectedOption={selectedOption}
+      onRatingSelected={setSelectedOption}
+      error={false}
+    />
+  )
+}
+
 describe('Feedback Radio Select Group tests', () => {
   const radioGroupLabel =
     'How is your overall experience using TANF Data Portal?*'
-  const onRatingSelected = jest.fn()
+  const mockOnRatingSelected = jest.fn()
 
-  const mockingSvgImgs = () => {
-    jest.mock('../../assets/feedback/very-dissatisfied-feedback.svg', () => {
-      const React = require('react')
-      return {
-        ReactComponent: () =>
-          React.createElement('svg', { 'data-testid': 'icon-very-bad' }),
-      }
-    })
+  beforeEach(() => {
+    mockOnRatingSelected.mockClear()
+  })
 
-    jest.mock('../../assets/feedback/dissatisfied-feedback.svg', () => {
-      const React = require('react')
-      return {
-        ReactComponent: () =>
-          React.createElement('svg', { 'data-testid': 'icon-bad' }),
-      }
-    })
-
-    jest.mock('../../assets/feedback/neutral-feedback.svg', () => {
-      const React = require('react')
-      return {
-        ReactComponent: () =>
-          React.createElement('svg', { 'data-testid': 'icon-fair' }),
-      }
-    })
-
-    jest.mock('../../assets/feedback/satisfied-feedback.svg', () => {
-      const React = require('react')
-      return {
-        ReactComponent: () =>
-          React.createElement('svg', { 'data-testid': 'icon-good' }),
-      }
-    })
-
-    jest.mock('../../assets/feedback/very-satisfied-feedback.svg', () => {
-      const React = require('react')
-      return {
-        ReactComponent: () =>
-          React.createElement('svg', { 'data-testid': 'icon-very-good' }),
-      }
-    })
-  }
-
-  const setup = () => {
-    mockingSvgImgs()
+  it('renders all 5 rating options with icons', () => {
     render(
       <FeedbackRadioSelectGroup
         label={radioGroupLabel}
         selectedOption={undefined}
-        onRatingSelected={jest.fn()}
+        onRatingSelected={mockOnRatingSelected}
         error={false}
       />
     )
-  }
 
-  it('renders all ratings options', () => {
-    setup()
+    // All 5 rating inputs should exist
+    for (let value = 1; value <= 5; value++) {
+      expect(
+        screen.getByTestId(`feedback-radio-input-${value}`)
+      ).toBeInTheDocument()
+    }
 
+    // Icon group label should be present
     expect(screen.getByText(radioGroupLabel)).toBeInTheDocument()
-    expect(screen.getByTestId('icon-very-bad')).toBeInTheDocument()
-    expect(screen.getByTestId('icon-bad')).toBeInTheDocument()
-    expect(screen.getByTestId('icon-fair')).toBeInTheDocument()
-    expect(screen.getByTestId('icon-good')).toBeInTheDocument()
-    expect(screen.getByTestId('icon-very-good')).toBeInTheDocument()
+    // All 5 icons should be present
+    expect(screen.getAllByRole('svg').length).toBe(5)
   })
 
   it('selects a rating when clicked', () => {
-    setup()
+    render(
+      <FeedbackRadioSelectGroup
+        label={radioGroupLabel}
+        selectedOption={undefined}
+        onRatingSelected={mockOnRatingSelected}
+        error={false}
+      />
+    )
 
-    const veryBadOption = screen.getByTestId('feedback-rating-option-1')
-    fireEvent.click(veryBadOption)
-    expect(onRatingSelected).toHaveBeenCalledWith(1)
+    const veryBadRadio = screen.getByTestId('feedback-radio-input-1')
+    fireEvent.click(veryBadRadio)
+    expect(mockOnRatingSelected).toHaveBeenCalledWith(1)
+  })
 
-    const goodOption = screen.getByTestId('usa-radio-input-4')
-    fireEvent.click(goodOption)
-    expect(onRatingSelected).toHaveBeenCalledWith(4)
+  it('applies "checked" when selectedOption matches', () => {
+    render(
+      <FeedbackRadioSelectGroup
+        label={radioGroupLabel}
+        selectedOption={4}
+        onRatingSelected={mockOnRatingSelected}
+        error={false}
+      />
+    )
+
+    const selectedInput = screen.getByTestId('feedback-radio-input-4')
+    expect(selectedInput.checked).toBe(true)
   })
 
   it('only one option can be selected at a time', () => {
-    setup()
+    render(<FeedbackRadioGroupTestWrapper />)
 
-    const veryBadRadio = screen.getByTestId('usa-radio-input-1')
-    const goodRadio = screen.getByTestId('usa-radio-input-4')
+    const veryBadRadio = screen.getByTestId('feedback-radio-input-1')
+    const goodRadio = screen.getByTestId('feedback-radio-input-4')
 
-    fireEvent.click(screen.getByTestId('feedback-rating-option-1'))
-    expect(veryBadRadio).checked.toBe(true)
-    expect(goodRadio).checked.toBe(false)
+    // Simulate user clicking the first radio input
+    fireEvent.click(veryBadRadio)
+    expect(veryBadRadio.checked).toBe(true)
+    expect(goodRadio.checked).toBe(false)
 
-    fireEvent.click(screen.getByTestId('feedback-rating-option-4'))
-    expect(veryBadRadio).checked.toBe(false)
-    expect(goodRadio).checked.toBe(true)
+    // Simulate user changing their mind and clicking a different option
+    fireEvent.click(goodRadio)
+    expect(veryBadRadio.checked).toBe(false)
+    expect(goodRadio.checked).toBe(true)
+  })
+
+  it('applies error styling when error is true', () => {
+    const { getByTestId } = render(
+      <FeedbackRadioSelectGroup
+        label={radioGroupLabel}
+        selectedOption={undefined}
+        onRatingSelected={mockOnRatingSelected}
+        error={true}
+      />
+    )
+
+    const wrapper = getByTestId('feedback-ratings-select-group')
+    expect(wrapper.style.outline).toBe('2px solid #b50909')
+    expect(wrapper.style.backgroundColor).toBe('rgb(244, 227, 219)')
   })
 })

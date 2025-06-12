@@ -1,14 +1,10 @@
 /* eslint-disable no-unused-vars */
 import React, { useState } from 'react'
-// @ts-ignore
 import axios from 'axios'
 import FeedbackRadioSelectGroup from '../FeedbackRadioSelectGroup'
 import { feedbackPost } from '__mocks__/mockFeedbackAxiosApi'
-console.log('FeedbackRadioSelectGroup:', FeedbackRadioSelectGroup)
 
-// @ts-ignore
 const FeedbackForm = ({ onFeedbackSubmit }) => {
-  // @ts-ignore
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [selectedRatingsOption, setSelectedRatingsOption] = useState(undefined)
   const [feedbackMessage, setFeedbackMessage] = useState('')
@@ -39,7 +35,7 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
         })
 
         if (response.status === 200) {
-          onFeedbackSubmit() // Callback to parent component
+          onFeedbackSubmit()
           resetStatesOnceSubmitted() // Reset states after submission
           console.log('Feedback submitted successfully!')
         } else {
@@ -60,11 +56,10 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
 
   const handleRatingSelected = (rating) => {
     setSelectedRatingsOption(rating)
-    setError(false) // Reset error state when a rating is selected
+    setError(false)
   }
 
   const handleFeedbackMessageChange = (event) => {
-    console.log('user feedback...' + event.target.value.trimStart())
     const message = event.target.value.trimStart()
     setFeedbackMessage(message)
   }
@@ -74,9 +69,6 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
   }
 
   const isFormValidToSubmit = () => {
-    console.log(
-      'Checking if form is valid to submit...' + selectedRatingsOption
-    )
     return selectedRatingsOption !== undefined
   }
 

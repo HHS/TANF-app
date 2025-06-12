@@ -11,31 +11,43 @@ const feedbackRatingsList = [
     label: 'Very Dissatisfied (1/5)',
     value: 1,
     color: 'red',
-    icon: <VeryBadIcon data-testid="icon-very-bad" title="Very Dissatisfied" />,
+    icon: (
+      <VeryBadIcon
+        data-testid="icon-very-bad"
+        title="Very Dissatisfied"
+        role="svg"
+      />
+    ),
   },
   {
     label: 'Dissatisfied (2/5)',
     value: 2,
     color: 'orange',
-    icon: <BadIcon data-testid="icon-bad" title="Dissatisfied" />,
+    icon: <BadIcon data-testid="icon-bad" title="Dissatisfied" role="svg" />,
   },
   {
     label: 'Fair (3/5)',
     value: 3,
     color: 'blue',
-    icon: <NeutralIcon data-testid="icon-fair" title="Fair" />,
+    icon: <NeutralIcon data-testid="icon-fair" title="Fair" role="svg" />,
   },
   {
     label: 'Satisfied (4/5)',
     value: 4,
     color: 'green',
-    icon: <GoodIcon data-testid="icon-good" title="Satisfied" />,
+    icon: <GoodIcon data-testid="icon-good" title="Satisfied" role="svg" />,
   },
   {
     label: 'Very Satisfied (5/5)',
     value: 5,
     color: 'darkgreen',
-    icon: <VeryGoodIcon data-testid="icon-very-good" title="Very Satisfied" />,
+    icon: (
+      <VeryGoodIcon
+        data-testid="icon-very-good"
+        title="Very Satisfied"
+        role="svg"
+      />
+    ),
   },
 ]
 
@@ -118,7 +130,7 @@ const FeedbackRadioSelectGroup = ({
                 >
                   <input
                     className="usa-radio__input"
-                    data-testid={`usa-radio-input-${option.value}`}
+                    data-testid={`feedback-radio-input-${option.value}`}
                     type="radio"
                     name={'tdpFeedbackRatings'}
                     value={option.value}

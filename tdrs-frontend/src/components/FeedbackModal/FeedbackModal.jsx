@@ -11,15 +11,22 @@ const FeedbackModal = ({ id, title, message, children, isOpen, onClose }) => {
   )
 
   return isOpen ? (
-    <div id={id} className="usa-modal-overlay" role="presentation">
+    <div
+      id={id}
+      className="usa-modal-overlay"
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+      role="presentation"
+    >
       <div
         className="modal-content"
         ref={modalRef}
         style={{
           width: 'auto',
           height: 'auto',
-          justifyContent: 'center',
-          alignItems: 'center',
           borderRadius: '0.5rem',
         }}
       >
