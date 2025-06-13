@@ -57,6 +57,9 @@ describe('FeedbackModal', () => {
     const header = screen.getByTestId('feedback-modal-header')
     expect(header).toHaveAttribute('tabIndex', '-1')
     expect(header).toHaveAttribute('aria-describedby', 'modalDescription')
-    expect(screen.getByText('This is a test message.')).toHaveAttribute('id', 'modalDescription')
+    expect(screen.getByText('This is a test message.')).toHaveAttribute(
+      'id',
+      'modalDescription'
+    )
   })
 })
