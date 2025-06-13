@@ -6,6 +6,7 @@ import STTComboBox from '../STTComboBox'
 import { requestAccess } from '../../actions/requestAccess'
 import JurisdictionSelector from './JurisdictionSelector'
 import RegionSelector from './RegionSelector'
+import FRASelector from './FRASelector'
 
 function RequestAccessForm({ user, sttList }) {
   const errorRef = useRef(null)
@@ -22,6 +23,7 @@ function RequestAccessForm({ user, sttList }) {
     !!Object.keys(errors).length && !!Object.keys(touched).length
 
   const [jurisdictionType, setJurisdictionTypeInputValue] = useState('state')
+  const [hasFRAData, setHasFRAData] = useState('hasFRAData')
   const isAMSUser = user?.email?.includes('@acf.hhs.gov')
 
   const regionError = 'At least on Region is required'
@@ -188,6 +190,9 @@ function RequestAccessForm({ user, sttList }) {
             validateRegions={validateRegions}
             regionError={regionError}
           />
+        )}
+        {jurisdictionType !== 'tribe' && (
+          <FRASelector setHasFRAData={setHasFRAData} />
         )}
         <Button type="submit" className="width-full request-access-button">
           Request Access
