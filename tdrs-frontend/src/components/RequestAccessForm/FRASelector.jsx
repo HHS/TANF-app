@@ -1,4 +1,4 @@
-function FRASelector({ setHasFRAData }) {
+function FRASelector({ hasFRAData, setHasFRAData }) {
   return (
     <div className="usa-form-group">
       <fieldset className="usa-fieldset">
@@ -6,27 +6,29 @@ function FRASelector({ setHasFRAData }) {
         <div className="usa-radio">
           <input
             className="usa-radio__input"
-            id="yes"
+            id="fra-yes"
             type="radio"
             name="hasFRAData"
-            value="yes"
+            value="true"
             defaultChecked
-            onChange={() => setHasFRAData('yes')}
+            checked={hasFRAData}
+            onChange={() => setHasFRAData(true)}
           />
-          <label className="usa-radio__label" htmlFor="yes">
+          <label className="usa-radio__label" htmlFor="fra-yes">
             Yes
           </label>
         </div>
         <div className="usa-radio">
           <input
             className="usa-radio__input"
-            id="no"
+            id="fra-no"
             type="radio"
             name="hasFRAData"
-            value="no"
-            onChange={() => setHasFRAData('no')}
+            value="false"
+            checked={!hasFRAData}
+            onChange={() => setHasFRAData(false)}
           />
-          <label className="usa-radio__label" htmlFor="no">
+          <label className="usa-radio__label" htmlFor="fra-no">
             No
           </label>
         </div>

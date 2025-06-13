@@ -16,6 +16,7 @@ function RequestAccessForm({ user, sttList }) {
     firstName: '',
     lastName: '',
     stt: '',
+    hasFRAData: false,
   })
   const dispatch = useDispatch()
   const [touched, setTouched] = useState({})
@@ -23,7 +24,6 @@ function RequestAccessForm({ user, sttList }) {
     !!Object.keys(errors).length && !!Object.keys(touched).length
 
   const [jurisdictionType, setJurisdictionTypeInputValue] = useState('state')
-  const [hasFRAData, setHasFRAData] = useState('hasFRAData')
   const isAMSUser = user?.email?.includes('@acf.hhs.gov')
 
   const regionError = 'At least on Region is required'
@@ -54,6 +54,7 @@ function RequestAccessForm({ user, sttList }) {
 
   const setJurisdictionType = (val) => {
     setStt('')
+    setHasFRAData(false)
     setJurisdictionTypeInputValue(val)
   }
 
@@ -61,6 +62,13 @@ function RequestAccessForm({ user, sttList }) {
     setProfileInfo((currentState) => ({
       ...currentState,
       stt: sttName,
+    }))
+  }
+
+  const setHasFRAData = (hasFRAData) => {
+    setProfileInfo((currentState) => ({
+      ...currentState,
+      hasFRAData: hasFRAData,
     }))
   }
 
@@ -192,7 +200,10 @@ function RequestAccessForm({ user, sttList }) {
           />
         )}
         {jurisdictionType !== 'tribe' && (
-          <FRASelector setHasFRAData={setHasFRAData} />
+          <FRASelector
+            hasFRAData={profileInfo.hasFRAData}
+            setHasFRAData={setHasFRAData}
+          />
         )}
         <Button type="submit" className="width-full request-access-button">
           Request Access
