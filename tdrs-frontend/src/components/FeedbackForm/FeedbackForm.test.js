@@ -3,7 +3,6 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import FeedbackForm from './FeedbackForm'
 import { feedbackPost } from '__mocks__/mockFeedbackAxiosApi'
-console.log('***FeedbackForm:', FeedbackForm)
 
 jest.mock('__mocks__/mockFeedbackAxiosApi', () => ({
   feedbackPost: jest.fn(),
@@ -100,6 +99,22 @@ describe('Feedback Form tests', () => {
     expect(textarea.value).toBe('Test feedback')
   })
 
+  it('shows updated character count as user types', () => {
+    render(<FeedbackForm onFeedbackSubmit={mockOnFeedbackSubmit} />)
+
+    const textarea = screen.getByTestId('feedback-message-input')
+    fireEvent.change(textarea, { target: { value: 'Hello' } })
+    expect(screen.getByText('5/500 characters')).toBeInTheDocument()
+  })
+
+  it('trims leading whitespace from feedback input', () => {
+    render(<FeedbackForm onFeedbackSubmit={mockOnFeedbackSubmit} />)
+
+    const textarea = screen.getByTestId('feedback-message-input')
+    fireEvent.change(textarea, { target: { value: '   leading space' } })
+    expect(textarea.value).toBe('leading space')
+  })
+
   it('toggles anonymous checkbox', () => {
     render(<FeedbackForm onFeedbackSubmit={mockOnFeedbackSubmit} />)
 
@@ -132,13 +147,32 @@ describe('Feedback Form tests', () => {
     expect(mockOnFeedbackSubmit).not.toHaveBeenCalled()
   })
 
+  it('clears error message after rating is selected and form is resubmitted', async () => {
+    render(<FeedbackForm onFeedbackSubmit={mockOnFeedbackSubmit} />)
+
+    fireEvent.click(screen.getByTestId('feedback-submit-button'))
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/There is 1 error in this form/i)
+      ).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByTestId('feedback-radio-input-2'))
+    fireEvent.click(screen.getByTestId('feedback-submit-button'))
+
+    await waitFor(() =>
+      expect(screen.queryByText(/There is 1 error in this form/i)).toBeNull()
+    )
+  })
+
   it('submits feedback with rating, message, and anonymous flag', async () => {
     feedbackPost.mockResolvedValueOnce({ status: 200 })
 
     render(<FeedbackForm onFeedbackSubmit={mockOnFeedbackSubmit} />)
 
     // Simulate selecting a rating
-    const ratingInput = screen.getByTestId('feedback-radio-input-4') // "Satisfied"
+    const ratingInput = screen.getByTestId('feedback-radio-input-4')
     fireEvent.click(ratingInput)
 
     // Simulate entering feedback message
@@ -160,5 +194,68 @@ describe('Feedback Form tests', () => {
       })
     )
     expect(mockOnFeedbackSubmit).toHaveBeenCalled()
+  })
+
+  it('submits with rating and no feedback message if allowed', async () => {
+    feedbackPost.mockResolvedValueOnce({ status: 200 })
+
+    render(<FeedbackForm onFeedbackSubmit={mockOnFeedbackSubmit} />)
+
+    fireEvent.click(screen.getByTestId('feedback-radio-input-3'))
+    fireEvent.click(screen.getByTestId('feedback-submit-button'))
+
+    await waitFor(() =>
+      expect(feedbackPost).toHaveBeenCalledWith('/api/userFeedback/', {
+        rating: 3,
+        feedback: '',
+        anonymous: false,
+      })
+    )
+  })
+
+  it('resets form fields after successful submission', async () => {
+    feedbackPost.mockResolvedValueOnce({ status: 200 })
+
+    render(<FeedbackForm onFeedbackSubmit={mockOnFeedbackSubmit} />)
+
+    fireEvent.click(screen.getByTestId('feedback-radio-input-2'))
+    fireEvent.change(screen.getByTestId('feedback-message-input'), {
+      target: { value: 'Feedback to reset' },
+    })
+    fireEvent.click(screen.getByLabelText(/Send anonymously/i))
+
+    fireEvent.click(screen.getByTestId('feedback-submit-button'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('feedback-message-input').value).toBe('')
+      expect(screen.getByLabelText(/Send anonymously/i).checked).toBe(false)
+    })
+  })
+
+  it('sanitizes script tags from feedback input before submitting', async () => {
+    feedbackPost.mockResolvedValueOnce({ status: 200 })
+
+    render(<FeedbackForm onFeedbackSubmit={mockOnFeedbackSubmit} />)
+
+    const maliciousInput = `<script>alert("x")</script> Legit feedback`
+
+    // Select rating
+    fireEvent.click(screen.getByTestId('feedback-radio-input-3'))
+
+    // Type malicious input
+    fireEvent.change(screen.getByTestId('feedback-message-input'), {
+      target: { value: maliciousInput },
+    })
+
+    fireEvent.click(screen.getByTestId('feedback-submit-button'))
+
+    await waitFor(() => {
+      expect(feedbackPost).toHaveBeenCalled()
+    })
+
+    // Validate that the submitted feedback doesn't contain <script>
+    const submittedData = feedbackPost.mock.calls[0][1]
+    expect(submittedData.feedback).not.toMatch(/<script.*?>.*?<\/script>/i)
+    expect(submittedData.feedback).toMatch(/Legit feedback/)
   })
 })

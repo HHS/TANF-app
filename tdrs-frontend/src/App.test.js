@@ -1,9 +1,10 @@
 import React from 'react'
-import { shallow } from 'enzyme'
+import { mount, shallow } from 'enzyme'
 
 import GovBanner from './components/GovBanner'
 import Header from './components/Header'
 import { Alert } from './components/Alert'
+import Feedback from 'components/FeedbackModal/Feedback'
 
 import App from './App'
 
@@ -29,10 +30,7 @@ describe('App.js', () => {
 
   it('renders sticky button at bottom right of Apps viewport', () => {
     const wrapper = shallow(<App />)
-    const stickyButton = wrapper.find(
-      '[data-testid="usa-feedback-sticky-button"]'
-    )
-    expect(stickyButton).toExist()
+    expect(wrapper.find(Feedback)).toExist()
   })
 
   it('should redirect to #main-content when space bar is pressed on "skip links" element', () => {
@@ -79,15 +77,5 @@ describe('App.js', () => {
     const wrapper = shallow(<App />)
     const feedbackModal = wrapper.find('#feedback-modal')
     expect(feedbackModal.exists()).toBe(false)
-  })
-
-  it('should open modal when sticky button is clicked', () => {
-    const wrapper = shallow(<App />)
-    const stickyButton = wrapper.find(
-      '[data-testid="usa-feedback-sticky-button"]'
-    )
-    stickyButton.simulate('click')
-    const feedbackModal = wrapper.find('#feedback-modal')
-    expect(feedbackModal.exists()).toBe(true)
   })
 })

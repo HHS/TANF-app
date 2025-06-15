@@ -1,11 +1,10 @@
-import React, { useState } from 'react'
+import React from 'react'
 import GovBanner from './components/GovBanner'
 import Routes from './components/Routes'
 import { Alert } from './components/Alert'
 import Header from './components/Header'
 import Footer from './components/Footer'
-import FeedbackForm from './components/FeedbackForm'
-import FeedbackModal from './components/FeedbackModal'
+import Feedback from 'components/FeedbackModal/Feedback'
 
 /**
  * The root component
@@ -21,25 +20,6 @@ import FeedbackModal from './components/FeedbackModal'
  * Displays a modal when the user clicks the Give Feedback button
  */
 function App() {
-  const supportEmail = 'tanfdata@acf.hhs.gov'
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
-
-  const handleOpenModal = () => {
-    console.log('Opening feedback modal')
-    setIsModalOpen(true)
-  }
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false)
-    setIsFeedbackSubmitted(false)
-  }
-
-  const handleOnFeedbackSubmit = () => {
-    setIsFeedbackSubmitted(true)
-    console.log('Thank you for your feedback!')
-  }
-
   return (
     <>
       <a
@@ -60,70 +40,7 @@ function App() {
         <Routes />
       </main>
       <Footer />
-      <button
-        type="button"
-        data-testid="usa-feedback-sticky-button"
-        className="usa-button"
-        style={{
-          position: 'fixed',
-          bottom: '0px',
-          right: '45px',
-          padding: '10px 20px',
-          zIndex: isModalOpen ? 'auto' : 1000,
-          borderRadius: '0',
-        }}
-        onClick={handleOpenModal}
-      >
-        Give Feedback
-      </button>
-      {isModalOpen && !isFeedbackSubmitted ? (
-        <FeedbackModal
-          id="feedback-modal"
-          title="Tell us how we can improve TDP"
-          isOpen={isModalOpen}
-          message="Your feedback is important to us! We use it to ensure that the TANF Data Portal is meeting your needs and better serve you and your team."
-          onClose={handleCloseModal}
-        >
-          <div
-            style={{
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginTop: '5px',
-            }}
-          >
-            <FeedbackForm onFeedbackSubmit={handleOnFeedbackSubmit} />
-          </div>
-        </FeedbackModal>
-      ) : (
-        <FeedbackModal
-          id="feedback-thank-you-modal"
-          title="Thank you for your feedback"
-          isOpen={isModalOpen}
-          message={
-            <p>
-              Your response has been recorded. If you're encountering an issue
-              you need support to resolve please feel free to email us at{' '}
-              <a className="usa-link" href="mailto:tanfdata@acf.hhs.gov">
-                {supportEmail}
-              </a>
-              .
-            </p>
-          }
-          onClose={handleCloseModal}
-        >
-          <div className="margin-x-4 margin-bottom-4">
-            <button
-              id="feedback-submit-button"
-              className="usa-button"
-              type="button"
-              onClick={handleCloseModal}
-              style={{ marginTop: '8px' }}
-            >
-              Close
-            </button>
-          </div>
-        </FeedbackModal>
-      )}
+      <Feedback />
     </>
   )
 }

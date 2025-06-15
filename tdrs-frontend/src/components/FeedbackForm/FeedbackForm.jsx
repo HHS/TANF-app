@@ -17,6 +17,12 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
     setIsAnonymous(false)
   }
 
+  function sanitizeInput(input) {
+    const div = document.createElement('div')
+    div.textContent = input
+    return div.innerHTML
+  }
+
   const submitForm = (data) => {
     return axios.post('/api/userFeedback/', data)
   }
@@ -60,7 +66,7 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
 
   const handleFeedbackMessageChange = (event) => {
     const message = event.target.value.trimStart()
-    setFeedbackMessage(message)
+    setFeedbackMessage(sanitizeInput(message))
   }
 
   const handleAnonymousChange = () => {
