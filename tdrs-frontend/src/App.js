@@ -1,10 +1,12 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import GovBanner from './components/GovBanner'
 import Routes from './components/Routes'
 import { Alert } from './components/Alert'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import Feedback from 'components/FeedbackModal/Feedback'
+import { useSelector } from 'react-redux'
+import { useRUM } from './hooks/useRUM'
 
 /**
  * The root component
@@ -20,6 +22,13 @@ import Feedback from 'components/FeedbackModal/Feedback'
  * Displays a modal when the user clicks the Give Feedback button
  */
 function App() {
+  const user = useSelector((state) => state.auth.user)
+  const { setUserInfo } = useRUM()
+  useEffect(() => {
+    if (user) {
+      setUserInfo(user)
+    }
+  }, [user, setUserInfo])
   return (
     <>
       <a

@@ -1,30 +1,73 @@
 import React from 'react'
-import { mount, shallow } from 'enzyme'
+import { mount, mount } from 'enzyme'
 
 import GovBanner from './components/GovBanner'
 import Header from './components/Header'
 import { Alert } from './components/Alert'
 import Feedback from 'components/FeedbackModal/Feedback'
+import { thunk } from 'redux-thunk'
+import configureStore from 'redux-mock-store'
+import { Provider } from 'react-redux'
+import { MemoryRouter } from 'react-router'
 
 import App from './App'
 
 describe('App.js', () => {
+  const initialState = {
+    alert: {
+      show: false,
+      type: null,
+      heading: null,
+      body: null,
+    },
+    router: {
+      location: {
+        pathname: '/',
+      },
+    },
+    auth: {
+      user: null,
+    },
+  }
+  const mockStore = configureStore([thunk])
+
   afterEach(() => {
     window.location.href = ''
   })
 
   it('renders the Gov Banner', () => {
-    const wrapper = shallow(<App />)
+    const store = mockStore(initialState)
+    const wrapper = mount(
+      <Provider store={store}>
+        <MemoryRouter>
+          <App />
+        </MemoryRouter>
+      </Provider>
+    )
     expect(wrapper.find(GovBanner)).toExist()
   })
 
   it('renders the Header', () => {
-    const wrapper = shallow(<App />)
+    const store = mockStore(initialState)
+    const wrapper = mount(
+      <Provider store={store}>
+        <MemoryRouter>
+          <App />
+        </MemoryRouter>
+      </Provider>
+    )
     expect(wrapper.find(Header)).toExist()
   })
 
   it('renders the Alert', () => {
-    const wrapper = shallow(<App />)
+    const store = mockStore(initialState)
+    const wrapper = mount(
+      <Provider store={store}>
+        <MemoryRouter>
+          <App />
+        </MemoryRouter>
+      </Provider>
+    )
     expect(wrapper.find(Alert)).toExist()
   })
 
@@ -43,7 +86,14 @@ describe('App.js', () => {
       },
     })
 
-    const wrapper = shallow(<App />)
+    const store = mockStore(initialState)
+    const wrapper = mount(
+      <Provider store={store}>
+        <MemoryRouter>
+          <App />
+        </MemoryRouter>
+      </Provider>
+    )
 
     const skipLink = wrapper.find('.usa-skipnav')
     skipLink.simulate('keyPress', {
@@ -63,7 +113,14 @@ describe('App.js', () => {
       },
     })
 
-    const wrapper = shallow(<App />)
+    const store = mockStore(initialState)
+    const wrapper = mount(
+      <Provider store={store}>
+        <MemoryRouter>
+          <App />
+        </MemoryRouter>
+      </Provider>
+    )
 
     const skipLink = wrapper.find('.usa-skipnav')
     skipLink.simulate('keyPress', {

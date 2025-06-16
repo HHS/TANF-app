@@ -5,6 +5,22 @@ import axios from 'axios'
 import { ReduxRouter as Router } from '@lagunovsky/redux-react-router'
 import { Provider } from 'react-redux'
 
+import { TracingInstrumentation } from '@grafana/faro-web-tracing'
+import {
+  initializeFaro,
+  ReactIntegration,
+  getWebInstrumentations,
+  createReactRouterV6Options,
+  FaroErrorBoundary,
+} from '@grafana/faro-react'
+
+import {
+  createRoutesFromChildren,
+  matchRoutes,
+  Routes,
+  useLocation,
+  useNavigationType,
+} from 'react-router-dom'
 import configureStore, { history } from './configureStore'
 import startMirage from './mirage'
 import { fetchAuth } from './actions/auth'
@@ -23,6 +39,46 @@ if (
 axios.defaults.xsrfCookieName = 'csrftoken'
 axios.defaults.xsrfHeaderName = 'X-CSRFToken'
 axios.defaults.withCredentials = true
+
+// Initialize FaroSDK
+if (
+  process.env.NODE_ENV === 'production' ||
+  process.env.REACT_APP_ENABLE_RUM === 'true'
+) {
+  initializeFaro({
+    url: process.env.REACT_APP_FARO_ENDPOINT,
+    app: {
+      name: 'tdp-frontend',
+      version: process.env.REACT_APP_VERSION,
+      environment: process.env.NODE_ENV,
+    },
+    // Set a reasonable sample rate to control data volume
+    sessionSampleRate: 0.5,
+    instrumentations: [
+      // Load the default Web instrumentations
+      ...getWebInstrumentations({ captureConsole: true }),
+      // Trace API calls and other async operations
+      new TracingInstrumentation(),
+      // Add React-specific instrumentation
+      new ReactIntegration({
+        // Track components that take >50ms to render
+        componentRenderThreshold: 50,
+        router: createReactRouterV6Options({
+          createRoutesFromChildren,
+          matchRoutes,
+          Routes,
+          useLocation,
+          useNavigationType,
+        }),
+      }),
+    ],
+    meta: {
+      // Add any application-specific metadata here
+      appType: 'TANF Data Portal',
+      service_name: 'tdp-frontend',
+    },
+  })
+}
 
 function devLogin(devEmail) {
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
@@ -57,7 +113,9 @@ const root = createRoot(container)
 root.render(
   <Provider store={store}>
     <Router store={store} history={history}>
-      <App />
+      <FaroErrorBoundary>
+        <App />
+      </FaroErrorBoundary>
     </Router>
   </Provider>
 )
