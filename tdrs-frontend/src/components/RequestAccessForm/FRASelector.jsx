@@ -1,4 +1,14 @@
-function FRASelector({ hasFRAData, setHasFRAData, error }) {
+function FRASelector({ hasFRAData, setHasFRAData, error, setErrors }) {
+  const handleRadioChange = (value) => {
+    setHasFRAData(value)
+
+    // clear any error messages
+    setErrors((errs) => {
+      const { hasFRAData, ...rest } = errs
+      return rest
+    })
+  }
+
   return (
     <div className={`usa-form-group ${error ? 'usa-form-group--error' : ''}`}>
       <fieldset className="usa-fieldset">
@@ -27,7 +37,7 @@ function FRASelector({ hasFRAData, setHasFRAData, error }) {
             value="true"
             defaultChecked
             checked={hasFRAData === true}
-            onChange={() => setHasFRAData(true)}
+            onChange={() => handleRadioChange(true)}
           />
           <label className="usa-radio__label" htmlFor="fra-yes">
             Yes
@@ -41,7 +51,7 @@ function FRASelector({ hasFRAData, setHasFRAData, error }) {
             name="hasFRAData"
             value="false"
             checked={hasFRAData === false}
-            onChange={() => setHasFRAData(false)}
+            onChange={() => handleRadioChange(false)}
           />
           <label className="usa-radio__label" htmlFor="fra-no">
             No

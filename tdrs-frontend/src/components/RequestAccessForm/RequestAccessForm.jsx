@@ -205,6 +205,7 @@ function RequestAccessForm({ user, sttList }) {
             hasFRAData={profileInfo.hasFRAData}
             setHasFRAData={setHasFRAData}
             error={errors.hasFRAData}
+            setErrors={setErrors}
           />
         )}
         <Button type="submit" className="width-full request-access-button">
