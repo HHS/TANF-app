@@ -1,7 +1,10 @@
 Feature: User Feedback Submission
+
   Scenario: User submits feedback through the feedback modal
-    When user visits the home page
-    Given user clicks on Give Feedback button on home page
-    Then feed back modal and form should display to user
-    Then user attempts to submit invalid feedback
-    Then user submits valid feedback (rating is selected)
+    Given user visits the home page
+    When user clicks on Give Feedback button on home page
+    Then the feedback modal and form should be displayed to the user
+    When user attempts to submit invalid feedback
+    And user submits valid feedback (rating is selected)
+    
+

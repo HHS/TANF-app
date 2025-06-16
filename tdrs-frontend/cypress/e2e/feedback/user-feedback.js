@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 import { Given, When, Then } from '@badeball/cypress-cucumber-preprocessor'
 
-When('user visits the home page', () => {
+Given('user visits the home page', () => {
   cy.clearCookie('sessionid')
   cy.clearCookie('csrftoken')
   cy.intercept('/v1/stts/alpha').as('getSttSearchList')
@@ -9,7 +9,7 @@ When('user visits the home page', () => {
   cy.contains('Sign into TANF Data Portal', { timeout: 30000 })
 })
 
-Given('user clicks on Give Feedback button on home page', () => {
+When('user clicks on Give Feedback button on home page', () => {
   cy.url().should('include', '/') // confirm on homepage
   cy.get('[data-testid="usa-feedback-sticky-button"]', {
     timeout: 10000,
@@ -17,12 +17,12 @@ Given('user clicks on Give Feedback button on home page', () => {
   cy.get('[data-testid="usa-feedback-sticky-button"]').click()
 })
 
-Then('feed back modal and form should display to user', () => {
+Then('the feedback modal and form should be displayed to the user', () => {
   cy.get('#feedback-modal', { timeout: 5000 }).should('be.visible')
   cy.get('form').contains('Tell us more').should('exist')
 })
 
-Then('user attempts to submit invalid feedback', () => {
+When('user attempts to submit invalid feedback', () => {
   cy.get('[data-testid="feedback-submit-button"]').should('exist').click()
 
   // Error text should appear since required rating wasn't selected
