@@ -1,7 +1,7 @@
 import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 import '@testing-library/jest-dom'
-import FeedbackRadioSelectGroup from './FeedbackRadioSelectGroup'
+import FeedbackRadioSelectGroup from '../FeedbackModal/FeedbackRadioSelectGroup'
 
 jest.mock('../../assets/feedback/very-dissatisfied-feedback.svg', () => {
   const React = require('react')
@@ -165,7 +165,6 @@ describe('Feedback Radio Select Group tests', () => {
     )
 
     const wrapper = getByTestId('feedback-ratings-select-group')
-    expect(wrapper.style.outline).toBe('2px solid #b50909')
-    expect(wrapper.style.backgroundColor).toBe('rgb(244, 227, 219)')
+    expect(wrapper).toHaveClass('error')
   })
 })

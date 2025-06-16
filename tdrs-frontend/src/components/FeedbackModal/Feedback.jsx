@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import FeedbackModal from './FeedbackModal'
-import FeedbackForm from '../FeedbackForm'
+import FeedbackForm from './FeedbackForm'
 
 function Feedback() {
   const supportEmail = 'tanfdata@acf.hhs.gov'

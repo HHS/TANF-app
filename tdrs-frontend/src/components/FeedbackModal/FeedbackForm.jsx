@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import React, { useState } from 'react'
 import axios from 'axios'
-import FeedbackRadioSelectGroup from '../FeedbackRadioSelectGroup'
+import FeedbackRadioSelectGroup from './FeedbackRadioSelectGroup'
 import { feedbackPost } from '__mocks__/mockFeedbackAxiosApi'
 
 const FeedbackForm = ({ onFeedbackSubmit }) => {
@@ -17,22 +17,17 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
     setIsAnonymous(false)
   }
 
-  function sanitizeInput(input) {
-    const div = document.createElement('div')
-    div.textContent = input
-    return div.innerHTML
-  }
-
-  const submitForm = (data) => {
+  // TODO: NOTE: make sure to use axiosInstance (to carry over auth creds) for the real api POST call
+  const submitFeedbackForm = (data) => {
     return axios.post('/api/userFeedback/', data)
   }
 
   // Currently using stubbed API call to submit feedback
-  // TODO: replace with above api call when implement in backend (adjust url and data if needed)
+  // TODO: replace with above api call when implemented in backend (adjust url and data if needed)
   const handleSubmit = async () => {
     if (isFormValidToSubmit()) {
       try {
-        // api stubbing (mock) call here
+        // api stubbing (mock) call here replace
         const response = await feedbackPost('/api/userFeedback/', {
           rating: selectedRatingsOption,
           feedback: feedbackMessage,
@@ -41,7 +36,7 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
 
         if (response.status === 200) {
           onFeedbackSubmit()
-          resetStatesOnceSubmitted() // Reset states after submission
+          resetStatesOnceSubmitted()
           console.log('Feedback submitted successfully!')
         } else {
           console.log('Something went wrong. Please try again.')
@@ -66,7 +61,7 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
 
   const handleFeedbackMessageChange = (event) => {
     const message = event.target.value.trimStart()
-    setFeedbackMessage(sanitizeInput(message))
+    setFeedbackMessage(message)
   }
 
   const handleAnonymousChange = () => {
@@ -111,7 +106,7 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
             <h3>Tell us more</h3>
             <textarea
               data-testid="feedback-message-input"
-              className="usa-textarea"
+              className="usa-textarea feedback-textarea"
               value={feedbackMessage}
               onChange={handleFeedbackMessageChange}
               placeholder="Enter your feedback..."

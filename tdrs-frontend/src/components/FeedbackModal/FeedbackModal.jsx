@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useCallback } from 'react'
 
 const FOCUSABLE_SELECTOR =
-  'a[href], button, textarea, select, [tabindex]:not([tabindex="-1"])'
+  'a[href], button, textarea, select, input:not([type="hidden"]), [tabindex]:not([tabindex="-1"])'
 
 const FeedbackModal = ({ id, title, message, children, isOpen, onClose }) => {
   const modalRef = useRef(null)
@@ -79,10 +79,6 @@ const FeedbackModal = ({ id, title, message, children, isOpen, onClose }) => {
         return
       }
 
-      console.log(
-        'Focusable elements:',
-        focusableElements.map((el) => el.dataset.testid || el.outerHTML)
-      )
       const isActiveInsideModal = modalRef.current.contains(activeEl)
       const currentIdx = isActiveInsideModal
         ? focusableElements.indexOf(activeEl)

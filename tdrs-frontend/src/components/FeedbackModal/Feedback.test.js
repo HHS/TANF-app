@@ -4,7 +4,7 @@ import '@testing-library/jest-dom'
 import Feedback from './Feedback'
 
 // Mock FeedbackForm with simplified submit button
-jest.mock('../FeedbackForm', () => ({ onFeedbackSubmit }) => (
+jest.mock('./FeedbackForm', () => ({ onFeedbackSubmit }) => (
   <div>
     <p>Mock Feedback Form</p>
     <button data-testid="submit-feedback" onClick={onFeedbackSubmit}>

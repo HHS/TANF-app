@@ -230,6 +230,68 @@ describe('FeedbackModal', () => {
     await waitFor(() => expect(document.activeElement).toBe(customChild))
   })
 
+  it('tabs through icon radio selects in order', async () => {
+    const iconOptions = [
+      {
+        value: 'good',
+        color: 'green',
+        icon: <span data-testid="icon-good">👍</span>,
+      },
+      {
+        value: 'bad',
+        color: 'red',
+        icon: <span data-testid="icon-bad">👎</span>,
+      },
+    ]
+
+    const IconRadioChildren = (
+      <div className="rating-options">
+        {iconOptions.map((option) => (
+          <label key={option.value} style={{ color: option.color }}>
+            <input
+              type="radio"
+              name="feedbackRating"
+              value={option.value}
+              data-testid={`icon-radio-${option.value}`}
+            />
+            {option.icon}
+          </label>
+        ))}
+        <button data-testid="after-radio">After Radio</button>
+      </div>
+    )
+
+    render(<FeedbackModal {...props} children={IconRadioChildren} />)
+
+    const overlay = screen.getByTestId('feedback-modal-overlay')
+
+    await waitFor(() =>
+      expect(screen.getByTestId('feedback-modal-header')).toHaveFocus()
+    )
+
+    // Tab: h1 -> close button
+    pressTab(overlay)
+    await waitFor(() =>
+      expect(screen.getByTestId('modal-close-button')).toHaveFocus()
+    )
+
+    // Tab: close button -> first radio
+    pressTab(overlay)
+    await waitFor(() =>
+      expect(screen.getByTestId('icon-radio-good')).toHaveFocus()
+    )
+
+    // Tab: first radio -> second radio
+    pressTab(overlay)
+    await waitFor(() =>
+      expect(screen.getByTestId('icon-radio-bad')).toHaveFocus()
+    )
+
+    // Tab: second radio -> next tabbable (button)
+    pressTab(overlay)
+    await waitFor(() => expect(screen.getByTestId('after-radio')).toHaveFocus())
+  })
+
   it('focuses modal itself if no heading or focusable elements exist', async () => {
     render(
       <FeedbackModal

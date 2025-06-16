@@ -22,11 +22,14 @@ Then('feed back modal and form should display to user', () => {
   cy.get('form').contains('Tell us more').should('exist')
 })
 
-Then('user attempts to submit invalid feedback and then valid feedback', () => {
+Then('user attempts to submit invalid feedback', () => {
   cy.get('[data-testid="feedback-submit-button"]').should('exist').click()
 
   // Error text should appear since required rating wasn't selected
   cy.contains('There is 1 error in this form').should('be.visible')
+})
+
+Then('user attempts to submits valid feedback (rating is selected)', () => {
   // Select a required rating
   cy.get('[data-testid="feedback-radio-input-2"]')
     .check({ force: true })
@@ -38,7 +41,7 @@ Then('user attempts to submit invalid feedback and then valid feedback', () => {
     'Great job on the new features!'
   )
   // Submit feedback
-  cy.get('[data-testid="feedback-submit-button"]').click()
+  cy.get('[data-testid="feedback-submit-button"]').should('exist').click()
   // Wait for thank you modal to appear
   cy.get('#feedback-thank-you-modal', { timeout: 5000 }).should('be.visible')
 })

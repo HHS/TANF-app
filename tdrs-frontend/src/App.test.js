@@ -1,5 +1,5 @@
 import React from 'react'
-import { mount, mount } from 'enzyme'
+import { mount } from 'enzyme'
 
 import GovBanner from './components/GovBanner'
 import Header from './components/Header'
@@ -72,7 +72,14 @@ describe('App.js', () => {
   })
 
   it('renders sticky button at bottom right of Apps viewport', () => {
-    const wrapper = shallow(<App />)
+    const store = mockStore(initialState)
+    const wrapper = mount(
+      <Provider store={store}>
+        <MemoryRouter>
+          <App />
+        </MemoryRouter>
+      </Provider>
+    )
     expect(wrapper.find(Feedback)).toExist()
   })
 
@@ -131,7 +138,14 @@ describe('App.js', () => {
   })
 
   it('should not show modal initially', () => {
-    const wrapper = shallow(<App />)
+    const store = mockStore(initialState)
+    const wrapper = mount(
+      <Provider store={store}>
+        <MemoryRouter>
+          <App />
+        </MemoryRouter>
+      </Provider>
+    )
     const feedbackModal = wrapper.find('#feedback-modal')
     expect(feedbackModal.exists()).toBe(false)
   })

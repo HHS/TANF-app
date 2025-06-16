@@ -1,0 +1,84 @@
+/* Feedback.scss */
+/* styles needed to override some of the USWD default stylling */
+
+.feedback-group {
+  width: 37.5rem;
+  height: 9.375rem;
+  text-align: center;
+  border-radius: 0.5rem;
+  border: 2px solid #e2eff7;
+  background-color: #e2eff7;
+
+  &.error {
+    border-color: #b50909;
+    background-color: #f4e3db;
+  }
+}
+
+.feedback-label {
+  color: black;
+  padding-top: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &.error {
+    color: #b50909;
+  }
+}
+
+.rating-options {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.radio-option {
+  &.selected {
+    border-width: 2px;
+  }
+
+  label.radio-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    width: 45px;
+    cursor: pointer;
+    border-radius: 1px;
+    border: 2px solid black; // default border
+    color: inherit;
+
+    // icon color is always visible
+    svg {
+      fill: currentColor;
+    }
+  }
+
+  &.selected-red label {
+    border: 2px solid red;
+    color: red;
+  }
+
+  &.selected-orange label {
+    border: 2px solid orange;
+    color: orange;
+  }
+
+  &.selected-blue label {
+    border: 2px solid blue;
+    color: blue;
+  }
+
+  &.selected-green label {
+    border: 2px solid green;
+    color: green;
+  }
+
+  &.selected-darkgreen label {
+    border: 2px solid darkgreen;
+    color: darkgreen;
+  }
+}

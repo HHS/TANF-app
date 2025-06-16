@@ -266,33 +266,6 @@ describe('Feedback Form tests', () => {
     )
   })
 
-  it('sanitizes script tags from feedback input before submitting', async () => {
-    feedbackPost.mockResolvedValueOnce({ status: 200 })
-
-    render(<FeedbackForm onFeedbackSubmit={mockOnFeedbackSubmit} />)
-
-    const maliciousInput = `<script>alert("x")</script> Legit feedback`
-
-    // Select rating
-    fireEvent.click(screen.getByTestId('feedback-radio-input-3'))
-
-    // Type malicious input
-    fireEvent.change(screen.getByTestId('feedback-message-input'), {
-      target: { value: maliciousInput },
-    })
-
-    fireEvent.click(screen.getByTestId('feedback-submit-button'))
-
-    await waitFor(() => {
-      expect(feedbackPost).toHaveBeenCalled()
-    })
-
-    // Validate that the submitted feedback doesn't contain <script>
-    const submittedData = feedbackPost.mock.calls[0][1]
-    expect(submittedData.feedback).not.toMatch(/<script.*?>.*?<\/script>/i)
-    expect(submittedData.feedback).toMatch(/Legit feedback/)
-  })
-
   it('logs error message when API returns 400', async () => {
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
     feedbackPost.mockRejectedValueOnce({
