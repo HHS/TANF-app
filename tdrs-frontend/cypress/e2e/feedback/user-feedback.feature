@@ -5,6 +5,6 @@ Feature: User Feedback Submission
     When user clicks on Give Feedback button on home page
     Then the feedback modal and form should be displayed to the user
     When user attempts to submit invalid feedback
-    And user submits valid feedback (rating is selected)
+    When user submits valid feedback (rating is selected)
     
 
