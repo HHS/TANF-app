@@ -29,7 +29,7 @@ When('user attempts to submit invalid feedback', () => {
   cy.contains('There is 1 error in this form').should('be.visible')
 })
 
-Then('user submits valid feedback (rating is selected)', () => {
+When('user submits valid feedback (rating is selected)', () => {
   // Select a required rating
   cy.get('[data-testid="feedback-radio-input-2"]')
     .check({ force: true })
