@@ -37,7 +37,7 @@
 
 .radio-option {
   &.selected {
-    border-width: 2px;
+    border-width: 3px;
   }
 
   label.radio-icon {
@@ -48,37 +48,63 @@
     width: 45px;
     cursor: pointer;
     border-radius: 1px;
-    border: 2px solid black; // default border
+    border: 3px solid black; // default border
     color: inherit;
+    transition: border 0.2s ease;
 
-    // icon color is always visible
     svg {
       fill: currentColor;
     }
+
+    // Focus ring (only applies if not selected)
+    &:focus-within {
+      border: 3px solid #005ea2;
+    }
   }
 
-  &.selected-red label {
-    border: 2px solid red;
+  &.selected-red label.radio-icon {
+    border-color: red;
     color: red;
   }
 
-  &.selected-orange label {
-    border: 2px solid orange;
+  &.selected-orange label.radio-icon {
+    border-color: orange;
     color: orange;
   }
 
-  &.selected-blue label {
-    border: 2px solid blue;
+  &.selected-blue label.radio-icon {
+    border-color: blue;
     color: blue;
   }
 
-  &.selected-green label {
-    border: 2px solid green;
+  &.selected-green label.radio-icon {
+    border-color: green;
     color: green;
   }
 
-  &.selected-darkgreen label {
-    border: 2px solid darkgreen;
+  &.selected-darkgreen label.radio-icon {
+    border-color: darkgreen;
     color: darkgreen;
+  }
+
+  // Override focus when selected
+  &.selected-red label.radio-icon:focus-within {
+    border-color: red;
+  }
+
+  &.selected-orange label.radio-icon:focus-within {
+    border-color: orange;
+  }
+
+  &.selected-blue label.radio-icon:focus-within {
+    border-color: blue;
+  }
+
+  &.selected-green label.radio-icon:focus-within {
+    border-color: green;
+  }
+
+  &.selected-darkgreen label.radio-icon:focus-within {
+    border-color: darkgreen;
   }
 }
