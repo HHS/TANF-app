@@ -16,7 +16,7 @@ function RequestAccessForm({ user, sttList }) {
     firstName: '',
     lastName: '',
     stt: '',
-    hasFRAData: false,
+    hasFRAData: null,
   })
   const dispatch = useDispatch()
   const [touched, setTouched] = useState({})
@@ -40,12 +40,13 @@ function RequestAccessForm({ user, sttList }) {
       firstName: 'First Name',
       lastName: 'Last Name',
       stt: !isAMSUser && 'A state, tribe, or territory',
+      hasFRAData: 'Yes or No response',
     }[fieldName]
 
     if (
       Boolean(field) &&
-      typeof fieldValue === 'string' &&
-      fieldValue.trim() === ''
+      ((fieldName === 'hasFRAData' && fieldValue === null) ||
+        (typeof fieldValue === 'string' && fieldValue.trim() === ''))
     ) {
       return `${field} is required`
     }
@@ -203,6 +204,7 @@ function RequestAccessForm({ user, sttList }) {
           <FRASelector
             hasFRAData={profileInfo.hasFRAData}
             setHasFRAData={setHasFRAData}
+            error={errors.hasFRAData}
           />
         )}
         <Button type="submit" className="width-full request-access-button">
