@@ -22,7 +22,12 @@ Then('the feedback modal and form should be displayed to the user', () => {
   cy.get('form').contains('Tell us more').should('exist')
 })
 
-When('user submits valid feedback (rating is selected)', () => {
+When('user attempts to submit invalid feedback', () => {
+  cy.get('[data-testid="feedback-submit-button"]').should('exist').click()
+  cy.contains('There is 1 error in this form').should('be.visible')
+})
+
+When('user submits valid feedback', () => {
   // Select a required rating
   cy.get('[data-testid="feedback-radio-input-2"]')
     .check({ force: true })
