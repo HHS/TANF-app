@@ -144,7 +144,7 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
                 className="usa-checkbox__label"
                 htmlFor="feedback-anonymous-input"
                 style={{
-                  display: 'inline',
+                  display: 'inline-block',
                   paddingTop: '0.15rem',
                 }}
               >

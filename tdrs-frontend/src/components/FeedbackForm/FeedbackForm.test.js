@@ -147,6 +147,21 @@ describe('Feedback Form tests', () => {
     expect(mockOnFeedbackSubmit).not.toHaveBeenCalled()
   })
 
+  it('does not proceed if user submits multiple times without selecting rating', async () => {
+    render(<FeedbackForm onFeedbackSubmit={mockOnFeedbackSubmit} />)
+
+    fireEvent.click(screen.getByTestId('feedback-submit-button'))
+    fireEvent.click(screen.getByTestId('feedback-submit-button'))
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/There is 1 error in this form/i)
+      ).toBeInTheDocument()
+    })
+
+    expect(feedbackPost).not.toHaveBeenCalled()
+  })
+
   it('clears error message after rating is selected and form is resubmitted', async () => {
     render(<FeedbackForm onFeedbackSubmit={mockOnFeedbackSubmit} />)
 
@@ -196,7 +211,7 @@ describe('Feedback Form tests', () => {
     expect(mockOnFeedbackSubmit).toHaveBeenCalled()
   })
 
-  it('submits with rating and no feedback message if allowed', async () => {
+  it('submits with rating and no feedback message', async () => {
     feedbackPost.mockResolvedValueOnce({ status: 200 })
 
     render(<FeedbackForm onFeedbackSubmit={mockOnFeedbackSubmit} />)
@@ -232,6 +247,25 @@ describe('Feedback Form tests', () => {
     })
   })
 
+  it('does not reset form on failed feedback submission', async () => {
+    feedbackPost.mockResolvedValueOnce({ status: 500 })
+
+    render(<FeedbackForm onFeedbackSubmit={mockOnFeedbackSubmit} />)
+
+    fireEvent.click(screen.getByTestId('feedback-radio-input-2'))
+    fireEvent.change(screen.getByTestId('feedback-message-input'), {
+      target: { value: 'Should not reset' },
+    })
+
+    fireEvent.click(screen.getByTestId('feedback-submit-button'))
+
+    await waitFor(() =>
+      expect(screen.getByTestId('feedback-message-input').value).toBe(
+        'Should not reset'
+      )
+    )
+  })
+
   it('sanitizes script tags from feedback input before submitting', async () => {
     feedbackPost.mockResolvedValueOnce({ status: 200 })
 
@@ -257,5 +291,62 @@ describe('Feedback Form tests', () => {
     const submittedData = feedbackPost.mock.calls[0][1]
     expect(submittedData.feedback).not.toMatch(/<script.*?>.*?<\/script>/i)
     expect(submittedData.feedback).toMatch(/Legit feedback/)
+  })
+
+  it('logs error message when API returns 400', async () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    feedbackPost.mockRejectedValueOnce({
+      response: { status: 400 },
+    })
+
+    render(<FeedbackForm onFeedbackSubmit={jest.fn()} />)
+
+    fireEvent.click(screen.getByTestId('feedback-radio-input-2'))
+    fireEvent.click(screen.getByTestId('feedback-submit-button'))
+
+    await waitFor(() =>
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Error submitting feedback:',
+        expect.any(Object)
+      )
+    )
+
+    consoleSpy.mockRestore()
+  })
+
+  it('logs an error if feedbackPost returns non-200 status', async () => {
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {})
+    feedbackPost.mockResolvedValueOnce({ status: 500 })
+
+    render(<FeedbackForm onFeedbackSubmit={jest.fn()} />)
+
+    fireEvent.click(screen.getByTestId('feedback-radio-input-4'))
+    fireEvent.click(screen.getByTestId('feedback-submit-button'))
+
+    await waitFor(() =>
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Something went wrong. Please try again.'
+      )
+    )
+
+    consoleSpy.mockRestore()
+  })
+
+  it('logs fallback error if API throws unexpected error', async () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    feedbackPost.mockRejectedValueOnce(new Error('Network down'))
+
+    render(<FeedbackForm onFeedbackSubmit={jest.fn()} />)
+
+    fireEvent.click(screen.getByTestId('feedback-radio-input-1'))
+    fireEvent.click(screen.getByTestId('feedback-submit-button'))
+
+    await waitFor(() =>
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'An unexpected error occurred. Please try again later.'
+      )
+    )
+
+    consoleSpy.mockRestore()
   })
 })

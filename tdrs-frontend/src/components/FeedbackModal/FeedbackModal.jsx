@@ -6,7 +6,7 @@ const FOCUSABLE_SELECTOR =
 const FeedbackModal = ({ id, title, message, children, isOpen, onClose }) => {
   const modalRef = useRef(null)
   const hasAutoFocused = useRef(false)
-  // On mount, focus the first tabbable element inside the modal
+
   useEffect(() => {
     if (isOpen && modalRef.current && !hasAutoFocused.current) {
       const modalEl = modalRef.current

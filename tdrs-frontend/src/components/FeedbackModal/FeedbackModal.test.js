@@ -13,7 +13,6 @@ describe('FeedbackModal', () => {
     children: <button data-testid="custom-child">Child content</button>,
   }
 
-  // TODO: refactore keydown call with this method in tests
   const pressTab = (el, shiftKey = false) =>
     fireEvent.keyDown(el, {
       key: 'Tab',
@@ -71,7 +70,7 @@ describe('FeedbackModal', () => {
     heading.style.display = 'none' // simulate hidden heading
 
     const overlay = screen.getByTestId('feedback-modal-overlay')
-    fireEvent.keyDown(overlay, { key: 'Tab', code: 'Tab', bubbles: true })
+    pressTab(overlay, false)
 
     await waitFor(() => {
       expect(document.activeElement).not.toBe(heading)
@@ -140,7 +139,6 @@ describe('FeedbackModal', () => {
     // Render modal after outside button is created and focused
     render(<FeedbackModal {...props} />)
 
-    // Fire a Tab keydown event on the modal overlay to trigger the focus trap
     const overlay = screen.getByTestId('feedback-modal-overlay')
     act(() => {
       overlay.focus()
@@ -180,33 +178,23 @@ describe('FeedbackModal', () => {
     await waitFor(() => expect(document.activeElement).toBe(heading))
 
     // Press Tab: heading -> close button
-    fireEvent.keyDown(overlay, { key: 'Tab', code: 'Tab', bubbles: true })
+    pressTab(overlay, false)
     await waitFor(() => expect(document.activeElement).toBe(closeButton))
 
     // Press Tab: close button -> custom child
-    fireEvent.keyDown(overlay, { key: 'Tab', code: 'Tab', bubbles: true })
+    pressTab(overlay, false)
     await waitFor(() => expect(document.activeElement).toBe(customChild))
 
     // Press Tab: custom child -> back to close button (looping)
-    fireEvent.keyDown(overlay, { key: 'Tab', code: 'Tab', bubbles: true })
+    pressTab(overlay, false)
     await waitFor(() => expect(document.activeElement).toBe(closeButton))
 
     // Shift+Tab: back to custom child
-    fireEvent.keyDown(overlay, {
-      key: 'Tab',
-      code: 'Tab',
-      shiftKey: true,
-      bubbles: true,
-    })
+    pressTab(overlay, true)
     await waitFor(() => expect(document.activeElement).toBe(customChild))
 
-    // Shift+Tab: back to close button -> heading
-    fireEvent.keyDown(overlay, {
-      key: 'Tab',
-      code: 'Tab',
-      shiftKey: true,
-      bubbles: true,
-    })
+    // Shift+Tab: back to close button
+    pressTab(overlay, true)
     await waitFor(() => expect(document.activeElement).toBe(closeButton))
   })
 
@@ -238,14 +226,66 @@ describe('FeedbackModal', () => {
     expect(document.activeElement).toBe(heading)
 
     // Press Shift+Tab: should cycle to custom child
-    fireEvent.keyDown(overlay, {
-      key: 'Tab',
-      shiftKey: true,
-      code: 'Tab',
-      bubbles: true,
+    pressTab(overlay, true)
+    await waitFor(() => expect(document.activeElement).toBe(customChild))
+  })
+
+  it('focuses modal itself if no heading or focusable elements exist', async () => {
+    render(
+      <FeedbackModal
+        {...props}
+        title=""
+        message=""
+        isOpen={true}
+        onClose={jest.fn()}
+        children={<div data-testid="non-focusable-child" />} // not focusable
+      />
+    )
+
+    // Force remove heading
+    const heading = screen.queryByTestId('feedback-modal-header')
+    if (heading) heading.remove()
+
+    // Remove the close button, so nothing is tabbable
+    const closeButton = screen.getByTestId('modal-close-button')
+    if (closeButton) closeButton.remove() // Ensure no close button
+
+    const modal = screen.getByTestId('feedback-modal-content')
+
+    act(() => {
+      modal.focus()
     })
 
-    await waitFor(() => expect(document.activeElement).toBe(customChild))
+    pressTab(modal, false)
+
+    await waitFor(() => {
+      expect(document.activeElement).toBe(modal)
+    })
+  })
+
+  it('warns when no focusable elements are found', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+
+    render(
+      <FeedbackModal
+        {...props}
+        title=""
+        message=""
+        isOpen={true}
+        onClose={jest.fn()}
+        children={<div data-testid="non-focusable-child" />} // Not tabbable
+      />
+    )
+
+    // Remove close button before tab logic
+    const closeButton = screen.getByTestId('modal-close-button')
+    closeButton.remove()
+
+    const overlay = screen.getByTestId('feedback-modal-overlay')
+    pressTab(overlay, false)
+
+    expect(warnSpy).toHaveBeenCalledWith('No focusable elements found in modal')
+    warnSpy.mockRestore()
   })
 
   it('includes proper accessibility attributes', () => {
@@ -260,21 +300,6 @@ describe('FeedbackModal', () => {
       'presentation'
     )
     expect(header).toHaveAttribute('aria-describedby', 'modalDescription')
-  })
-
-  it('does not throw if no focusable elements are found', () => {
-    render(
-      <FeedbackModal
-        {...props}
-        children={<button disabled hidden data-testid="custom-child" />}
-      />
-    )
-
-    const overlay = screen.getByTestId('feedback-modal-overlay')
-    fireEvent.keyDown(overlay, { key: 'Tab', code: 'Tab', bubbles: true })
-
-    // Should not crash
-    expect(true).toBe(true)
   })
 
   it('renders correctly with no children', () => {
