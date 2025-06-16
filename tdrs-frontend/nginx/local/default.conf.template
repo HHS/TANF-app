@@ -44,7 +44,7 @@ http {
         add_header X-Permitted-Cross-Domain-Policies: none;
 
         # Referrer-Policy: no-referrer
-        add_header Referrer-Policy: no-referrer;
+        add_header Referrer-Policy no-referrer;
 
         # Cross-Origin-Embedder-Policy:This response header (also named COEP) prevents a document from loading
         # any cross-origin resources that don’t explicitly grant the document permission
@@ -86,7 +86,7 @@ http {
         set $CSP "${CSP}script-src-attr 'self' 'unsafe-inline';";
         set $CSP "${CSP}style-src-elem 'self' 'unsafe-inline';";
         set $CSP "${CSP}style-src-attr 'self' 'unsafe-inline';";
-        set $CSP "${CSP}worker-src 'none';";
+        set $CSP "${CSP}worker-src 'self' blob:;";
         add_header Content-Security-Policy $CSP;
 
     }

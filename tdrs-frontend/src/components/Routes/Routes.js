@@ -1,5 +1,5 @@
 import React from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Route } from 'react-router-dom'
 import NoMatch from '../NoMatch'
 import SplashPage from '../SplashPage'
 import Profile from '../Profile'
@@ -8,6 +8,7 @@ import LoginCallback from '../LoginCallback'
 import Reports, { FRAReports } from '../Reports'
 import { useSelector } from 'react-redux'
 import { accountIsInReview } from '../../selectors/auth'
+import { FaroRoutes } from '@grafana/faro-react'
 
 import SiteMap from '../SiteMap'
 
@@ -25,7 +26,7 @@ const AppRoutes = () => {
   const homeTitle = userAccountInReview ? 'Request Submitted' : 'Welcome to TDP'
 
   return (
-    <Routes>
+    <FaroRoutes>
       <Route exact path="/" element={<SplashPage />} />
       <Route exact path="/login" element={<LoginCallback />} />
       <Route
@@ -86,7 +87,7 @@ const AppRoutes = () => {
         }
       />
       <Route path="*" element={<NoMatch />} />
-    </Routes>
+    </FaroRoutes>
   )
 }
 
