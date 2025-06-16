@@ -5,6 +5,7 @@ server:
 
 query_frontend:
   search:
+    max_duration: 0
     duration_slo: 5s
     throughput_bytes_slo: 1.073741824e+09
     metadata_slo:
