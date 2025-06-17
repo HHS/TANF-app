@@ -23,6 +23,17 @@
             docker network create external-net
             docker-compose up web -d --build
 
+  docker-compose-up-frontend:
+    steps:
+      - run:
+          name: Build and spin-up React application
+          command: |
+            cd tdrs-frontend
+            if [ $(docker network inspect external-net 2>&1 | grep -c Scope) == 0 ]; then
+            docker network create external-net
+            fi
+            docker-compose up -d --build
+
   cf-check:
     steps:
       - run:
