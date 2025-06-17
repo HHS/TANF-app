@@ -24,10 +24,9 @@
       - run:
           name: Build and spin-up Django API service
           command: |
-            export REGISTRY_OWNER=<< parameters.registry_owner >>
             cd tdrs-backend
             docker network create external-net
-            docker-compose up web -d --build
+            REGISTRY_OWNER=<< parameters.registry_owner >> docker-compose up web -d --build
 
   cf-check:
     steps:
