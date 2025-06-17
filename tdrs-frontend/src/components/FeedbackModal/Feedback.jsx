@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
+import Button from '../Button'
 import FeedbackModal from './FeedbackModal'
 import FeedbackForm from './FeedbackForm'
+import classNames from 'classnames'
 
 function Feedback() {
   const supportEmail = 'tanfdata@acf.hhs.gov'
@@ -8,7 +10,6 @@ function Feedback() {
   const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
 
   const handleOpenModal = () => {
-    console.log('Opening feedback modal')
     setIsModalOpen(true)
   }
 
@@ -19,27 +20,20 @@ function Feedback() {
 
   const handleOnFeedbackSubmit = () => {
     setIsFeedbackSubmitted(true)
-    console.log('Thank you for your feedback!')
   }
 
   return (
     <>
-      <button
+      <Button
         type="button"
         data-testid="usa-feedback-sticky-button"
-        className="usa-button"
-        style={{
-          position: 'fixed',
-          bottom: '0px',
-          right: '45px',
-          padding: '10px 20px',
-          zIndex: isModalOpen ? 'auto' : 1000,
-          borderRadius: '0',
-        }}
+        className={classNames('usa-button', 'feedback-button', {
+          'modal-open': isModalOpen,
+        })}
         onClick={handleOpenModal}
       >
         Give Feedback
-      </button>
+      </Button>
       {isModalOpen && !isFeedbackSubmitted ? (
         <FeedbackModal
           id="feedback-modal"

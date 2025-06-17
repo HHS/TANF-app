@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useCallback } from 'react'
+import '../../assets/feedback/Feedback.scss'
 
 const FOCUSABLE_SELECTOR =
   'a[href], button, textarea, select, input:not([type="hidden"]), [tabindex]:not([tabindex="-1"])'
@@ -91,11 +92,6 @@ const FeedbackModal = ({ id, title, message, children, isOpen, onClose }) => {
               focusableElements.length
             : (currentIdx + 1) % focusableElements.length
 
-      console.log(
-        'Active element:',
-        activeEl.dataset.testid || activeEl.outerHTML
-      )
-      console.log('Tab pressed: currentIdx', currentIdx, 'nextIdx', nextIdx)
       focusableElements[nextIdx].focus()
     },
     [modalRef]
@@ -151,17 +147,7 @@ const FeedbackModal = ({ id, title, message, children, isOpen, onClose }) => {
           <button
             data-testid="modal-close-button"
             type="button"
-            className="usa-modal__close margin-right-4 margin-bottom-0"
-            style={{
-              background: 'none',
-              border: 'none',
-              fontSize: '1.25rem',
-              fontWeight: 'bold',
-              lineHeight: '1',
-              padding: '0',
-              marginBottom: '1px',
-              cursor: 'pointer',
-            }}
+            className="usa-modal__close margin-right-4 feedback-modal-close-button"
             aria-label="Close modal"
             onClick={onClose}
           >

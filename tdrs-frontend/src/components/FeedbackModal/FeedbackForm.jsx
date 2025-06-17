@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import React, { useState } from 'react'
 import axios from 'axios'
+import Button from '../Button'
 import FeedbackRadioSelectGroup from './FeedbackRadioSelectGroup'
 import { feedbackPost } from '__mocks__/mockFeedbackAxiosApi'
 
@@ -37,9 +38,8 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
         if (response.status === 200) {
           onFeedbackSubmit()
           resetStatesOnceSubmitted()
-          console.log('Feedback submitted successfully!')
         } else {
-          console.log('Something went wrong. Please try again.')
+          console.error('Something went wrong. Please try again.')
         }
       } catch (error) {
         if (error.response && error.response.status === 400) {
@@ -50,7 +50,6 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
       }
     } else {
       setError(true)
-      console.log('Please select a rating before submitting.')
     }
   }
 
@@ -148,14 +147,14 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
             </div>
           </div>
           <div className="margin-top-4 margin-bottom-2">
-            <button
+            <Button
               data-testid="feedback-submit-button"
               type="button"
               className="usa-button"
               onClick={handleSubmit}
             >
               Send Feedback
-            </button>
+            </Button>
           </div>
         </div>
       </form>
