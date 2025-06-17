@@ -53,8 +53,7 @@
       - docker-set-registry-owner
       - docker-compose-check
       - docker-compose-up-backend
-      - docker-compose-up-frontend:
-          registry_owner: << pipeline.parameters.registry_owner >>
+      - docker-compose-up-frontend
       - install-nodejs-machine
       - disable-npm-audit
       - install-nodejs-packages:
