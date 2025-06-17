@@ -87,7 +87,7 @@ describe('Feedback Form tests', () => {
     expect(ratingRadioGroup).toBeInTheDocument()
     const textarea = screen.getByTestId('feedback-message-input')
     expect(textarea).toBeInTheDocument()
-    const submitButton = screen.getByTestId('feedback-submit-button')
+    const submitButton = screen.getByRole('button', { name: /send feedback/i })
     expect(submitButton).toBeInTheDocument()
   })
 
@@ -126,7 +126,7 @@ describe('Feedback Form tests', () => {
 
   it('shows error if rating is not selected on submit', async () => {
     render(<FeedbackForm onFeedbackSubmit={mockOnFeedbackSubmit} />)
-    const submitButton = screen.getByTestId('feedback-submit-button')
+    const submitButton = screen.getByRole('button', { name: /send feedback/i })
 
     // Initially error message should not be present
     expect(screen.queryByText(/There is 1 error in this form/i)).toBeNull()
@@ -150,8 +150,8 @@ describe('Feedback Form tests', () => {
   it('does not proceed if user submits multiple times without selecting rating', async () => {
     render(<FeedbackForm onFeedbackSubmit={mockOnFeedbackSubmit} />)
 
-    fireEvent.click(screen.getByTestId('feedback-submit-button'))
-    fireEvent.click(screen.getByTestId('feedback-submit-button'))
+    fireEvent.click(screen.getByRole('button', { name: /send feedback/i }))
+    fireEvent.click(screen.getByRole('button', { name: /send feedback/i }))
 
     await waitFor(() => {
       expect(
@@ -165,7 +165,7 @@ describe('Feedback Form tests', () => {
   it('clears error message after rating is selected and form is resubmitted', async () => {
     render(<FeedbackForm onFeedbackSubmit={mockOnFeedbackSubmit} />)
 
-    fireEvent.click(screen.getByTestId('feedback-submit-button'))
+    fireEvent.click(screen.getByRole('button', { name: /send feedback/i }))
 
     await waitFor(() => {
       expect(
@@ -174,7 +174,7 @@ describe('Feedback Form tests', () => {
     })
 
     fireEvent.click(screen.getByTestId('feedback-radio-input-2'))
-    fireEvent.click(screen.getByTestId('feedback-submit-button'))
+    fireEvent.click(screen.getByRole('button', { name: /send feedback/i }))
 
     await waitFor(() =>
       expect(screen.queryByText(/There is 1 error in this form/i)).toBeNull()
@@ -199,7 +199,7 @@ describe('Feedback Form tests', () => {
     fireEvent.click(screen.getByLabelText(/Send anonymously/i))
 
     // Submit
-    fireEvent.click(screen.getByTestId('feedback-submit-button'))
+    fireEvent.click(screen.getByRole('button', { name: /send feedback/i }))
 
     await waitFor(() =>
       expect(feedbackPost).toHaveBeenCalledWith('/api/userFeedback/', {
@@ -217,7 +217,7 @@ describe('Feedback Form tests', () => {
     render(<FeedbackForm onFeedbackSubmit={mockOnFeedbackSubmit} />)
 
     fireEvent.click(screen.getByTestId('feedback-radio-input-3'))
-    fireEvent.click(screen.getByTestId('feedback-submit-button'))
+    fireEvent.click(screen.getByRole('button', { name: /send feedback/i }))
 
     await waitFor(() =>
       expect(feedbackPost).toHaveBeenCalledWith('/api/userFeedback/', {
@@ -239,7 +239,7 @@ describe('Feedback Form tests', () => {
     })
     fireEvent.click(screen.getByLabelText(/Send anonymously/i))
 
-    fireEvent.click(screen.getByTestId('feedback-submit-button'))
+    fireEvent.click(screen.getByRole('button', { name: /send feedback/i }))
 
     await waitFor(() => {
       expect(screen.getByTestId('feedback-message-input').value).toBe('')
@@ -257,7 +257,7 @@ describe('Feedback Form tests', () => {
       target: { value: 'Should not reset' },
     })
 
-    fireEvent.click(screen.getByTestId('feedback-submit-button'))
+    fireEvent.click(screen.getByRole('button', { name: /send feedback/i }))
 
     await waitFor(() =>
       expect(screen.getByTestId('feedback-message-input').value).toBe(
@@ -275,7 +275,7 @@ describe('Feedback Form tests', () => {
     render(<FeedbackForm onFeedbackSubmit={jest.fn()} />)
 
     fireEvent.click(screen.getByTestId('feedback-radio-input-2'))
-    fireEvent.click(screen.getByTestId('feedback-submit-button'))
+    fireEvent.click(screen.getByRole('button', { name: /send feedback/i }))
 
     await waitFor(() =>
       expect(consoleSpy).toHaveBeenCalledWith(
@@ -294,7 +294,7 @@ describe('Feedback Form tests', () => {
     render(<FeedbackForm onFeedbackSubmit={jest.fn()} />)
 
     fireEvent.click(screen.getByTestId('feedback-radio-input-4'))
-    fireEvent.click(screen.getByTestId('feedback-submit-button'))
+    fireEvent.click(screen.getByRole('button', { name: /send feedback/i }))
 
     await waitFor(() =>
       expect(consoleSpy).toHaveBeenCalledWith(
@@ -312,7 +312,7 @@ describe('Feedback Form tests', () => {
     render(<FeedbackForm onFeedbackSubmit={jest.fn()} />)
 
     fireEvent.click(screen.getByTestId('feedback-radio-input-1'))
-    fireEvent.click(screen.getByTestId('feedback-submit-button'))
+    fireEvent.click(screen.getByRole('button', { name: /send feedback/i }))
 
     await waitFor(() =>
       expect(consoleSpy).toHaveBeenCalledWith(

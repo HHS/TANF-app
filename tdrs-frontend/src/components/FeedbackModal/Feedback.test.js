@@ -16,15 +16,13 @@ jest.mock('./FeedbackForm', () => ({ onFeedbackSubmit }) => (
 describe('Feedback component', () => {
   it('feedback sticky button is always visible initially', () => {
     render(<Feedback />)
-    const button = screen.getByTestId('usa-feedback-sticky-button')
-
+    const button = screen.getByRole('button', { name: /give feedback/i })
     expect(button).toBeVisible()
-    expect(button).toHaveTextContent('Give Feedback')
   })
 
   it('opens modal on button click', () => {
     render(<Feedback />)
-    fireEvent.click(screen.getByTestId('usa-feedback-sticky-button'))
+    fireEvent.click(screen.getByRole('button', { name: /give feedback/i }))
     expect(
       screen.getByRole('heading', { name: /tell us how we can improve/i })
     ).toBeInTheDocument()
@@ -35,7 +33,7 @@ describe('Feedback component', () => {
   it('does not close modal on Escape key press', () => {
     render(<Feedback />)
 
-    fireEvent.click(screen.getByTestId('usa-feedback-sticky-button'))
+    fireEvent.click(screen.getByRole('button', { name: /give feedback/i }))
 
     const overlay = screen.getByTestId('feedback-modal-overlay')
     overlay.focus()
@@ -56,7 +54,7 @@ describe('Feedback component', () => {
   it('does not close modal when clicking on the overlay', () => {
     render(<Feedback />)
 
-    fireEvent.click(screen.getByTestId('usa-feedback-sticky-button'))
+    fireEvent.click(screen.getByRole('button', { name: /give feedback/i }))
 
     const overlay = screen.getByTestId('feedback-modal-overlay')
     fireEvent.click(overlay)
@@ -69,7 +67,7 @@ describe('Feedback component', () => {
   it('transitions to thank you modal after submitting feedback', async () => {
     render(<Feedback />)
 
-    fireEvent.click(screen.getByTestId('usa-feedback-sticky-button'))
+    fireEvent.click(screen.getByRole('button', { name: /give feedback/i }))
 
     fireEvent.click(await screen.findByTestId('submit-feedback'))
 
@@ -96,7 +94,7 @@ describe('Feedback component', () => {
     render(<Feedback />)
 
     // Open and submit feedback
-    fireEvent.click(screen.getByTestId('usa-feedback-sticky-button'))
+    fireEvent.click(screen.getByRole('button', { name: /give feedback/i }))
     fireEvent.click(await screen.findByTestId('submit-feedback'))
 
     await waitFor(() =>
@@ -122,7 +120,7 @@ describe('Feedback component', () => {
     render(<Feedback />)
 
     // Open and submit
-    fireEvent.click(screen.getByTestId('usa-feedback-sticky-button'))
+    fireEvent.click(screen.getByRole('button', { name: /give feedback/i }))
     fireEvent.click(await screen.findByTestId('submit-feedback'))
 
     // Wait for thank you modal
@@ -136,7 +134,7 @@ describe('Feedback component', () => {
     fireEvent.click(screen.getByTestId('modal-close-button'))
 
     // Reopen
-    fireEvent.click(screen.getByTestId('usa-feedback-sticky-button'))
+    fireEvent.click(screen.getByRole('button', { name: /give feedback/i }))
 
     expect(
       screen.getByRole('heading', { name: /tell us how we can improve/i })

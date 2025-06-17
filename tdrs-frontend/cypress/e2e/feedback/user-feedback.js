@@ -11,10 +11,9 @@ Given('user visits the home page', () => {
 
 When('user clicks on Give Feedback button on home page', () => {
   cy.url().should('include', '/') // confirm on homepage
-  cy.get('[data-testid="usa-feedback-sticky-button"]', {
-    timeout: 10000,
-  }).should('exist')
-  cy.get('[data-testid="usa-feedback-sticky-button"]').click()
+  cy.contains('button', 'Give Feedback', { timeout: 10000 })
+    .should('be.visible')
+    .click()
 })
 
 Then('the feedback modal and form should be displayed to the user', () => {
@@ -23,7 +22,7 @@ Then('the feedback modal and form should be displayed to the user', () => {
 })
 
 When('user attempts to submit invalid feedback', () => {
-  cy.get('[data-testid="feedback-submit-button"]').should('exist').click()
+  cy.contains('button', 'Send Feedback').should('be.visible').click()
   cy.contains('There is 1 error in this form').should('be.visible')
 })
 
@@ -39,7 +38,7 @@ When('user submits valid feedback', () => {
     'Great job on the new features!'
   )
   // Submit feedback
-  cy.get('[data-testid="feedback-submit-button"]').should('exist').click()
+  cy.contains('button', 'Send Feedback').should('be.visible').click()
   // Wait for thank you modal to appear
   cy.get('#feedback-thank-you-modal', { timeout: 5000 }).should('be.visible')
 })
