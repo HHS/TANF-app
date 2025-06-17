@@ -61,7 +61,6 @@
       - run:
           name: Wait for backend to become available
           command: |
-            export REGISTRY_OWNER=<< pipeline.parameters.registry_owner >>
             cd tdrs-backend
             docker-compose run --rm zaproxy bash -c \
               "PATH=$PATH:/home/zap/.local/bin &&
@@ -70,20 +69,17 @@
       - run:
           name: apply the migrations
           command: |
-            export REGISTRY_OWNER=<< pipeline.parameters.registry_owner >>
             cd tdrs-backend
             docker-compose exec web bash -c "python manage.py makemigrations
             python manage.py migrate"
       - run:
           name: Remove existing cypress test users
           command: |
-            export REGISTRY_OWNER=<< pipeline.parameters.registry_owner >>
             cd tdrs-backend
             docker-compose exec web python manage.py delete_cypress_users -usernames new-cypress@teamraft.com cypress-admin@teamraft.com
       - run:
           name: Setup cypress test data
           command: |
-            export REGISTRY_OWNER=<< pipeline.parameters.registry_owner >>
             cd tdrs-backend
             docker-compose exec web python manage.py loaddata cypress/users cypress/data_files
       - run:
