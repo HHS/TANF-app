@@ -15,15 +15,11 @@
         type: enum
         default: "develop"
         enum: ["staging", "develop", "prod"]
-      registry_owner:
-        description: The organization that triggered this CircleCI build
-        type: string
-        default: "hhs"
     steps:
       - run:
           name: Execute OWASP ZAP vulnerability scan
           #wait up to 60min for scan
           no_output_timeout: 60m
-          command: ./scripts/zap-scanner.sh <<parameters.target>> <<parameters.environment>> <<parameters.target_env>> <<parameters.registry_owner>>
+          command: ./scripts/zap-scanner.sh <<parameters.target>> <<parameters.environment>> <<parameters.target_env>> $REGISTRY_OWNER
       - store_artifacts:
           path: tdrs-<<parameters.target>>/reports/owasp_report.html

@@ -10,7 +10,6 @@
       - run:
           name: Wait for Django to become available
           command: |
-            export REGISTRY_OWNER=<< pipeline.parameters.registry_owner >>
             cd tdrs-backend;
             docker-compose run --rm zaproxy bash -c \
               "PATH=$PATH:/home/zap/.local/bin &&
@@ -21,7 +20,6 @@
       - run-owasp-scan:
           environment: circle
           target: backend
-          registry_owner: << pipeline.parameters.registry_owner >>
 
   frontend-owasp-scan:
     executor: large-machine-executor
@@ -35,7 +33,6 @@
       - run:
           name: Wait for frontend to become available
           command: |
-            export REGISTRY_OWNER=<< pipeline.parameters.registry_owner >>
             cd tdrs-frontend;
             docker-compose run --rm zaproxy bash -c \
               "PATH=$PATH:/home/zap/.local/bin &&
@@ -46,7 +43,6 @@
       - run-owasp-scan:
           environment: circle
           target: frontend
-          registry_owner: << pipeline.parameters.registry_owner >>
 
   nightly-owasp-scan:
     executor: large-machine-executor
@@ -71,6 +67,7 @@
       - checkout
       - sudo-check
       - cf-check
+      - docker-set-registry-owner
       - docker-compose-check
       - login-cloud-dot-gov:
           cf-password: <<parameters.cf_password>>
@@ -81,12 +78,10 @@
           environment: nightly
           target: backend
           target_env: <<parameters.target_env>>
-          registry_owner: << pipeline.parameters.registry_owner >>
       - run-owasp-scan:
           environment: nightly
           target: frontend
           target_env: <<parameters.target_env>>
-          registry_owner: << pipeline.parameters.registry_owner >>
       - run:
           name: Run post-processing task to record OWASP ZAP results
           command: |
