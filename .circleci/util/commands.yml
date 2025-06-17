@@ -1,4 +1,13 @@
 # commands:
+  docker-set-registry-owner:
+    steps:
+      - run:
+          name: Set registry_owner
+          description: "Sets registry for docker commands by precedence: ENV variable, pipeline parameter, pipeline parameter. (default is 'hhs')"
+          command: |
+            export REGISTRY_OWNER=${REGISTRY_OWNER:-<< pipeline.parameters.registry_owner >>}
+            echo "export REGISTRY_OWNER=$REGISTRY_OWNER" >> $BASH_ENV
+            echo "REGISTRY_OWNER=$REGISTRY_OWNER"
   docker-compose-check:
     steps:
       - run:
