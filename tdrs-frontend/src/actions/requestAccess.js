@@ -1,5 +1,5 @@
 import { SET_AUTH } from './auth'
-import axiosInstance from '../axios-instance'
+import axios from 'axios'
 import { logErrorToServer } from '../utils/eventLogger'
 
 export const PATCH_REQUEST_ACCESS = 'PATCH_REQUEST_ACCESS'
@@ -19,7 +19,7 @@ export const requestAccess =
         stt: stt?.id,
         regions: regions ? [...regions] : [],
       }
-      const { data } = await axiosInstance.patch(URL, user, {
+      const { data } = await axios.patch(URL, user, {
         withCredentials: true,
       })
 
