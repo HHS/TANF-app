@@ -53,9 +53,6 @@ update_frontend()
         cf set-env "$CGHOSTNAME_FRONTEND" CONNECT_SRC '*.app.cloud.gov'
     fi
 
-    echo "Environment File:"
-    cat .env.development
-
     cf set-env "$CGHOSTNAME_FRONTEND" BACKEND_HOST "$CGHOSTNAME_BACKEND"
 
     npm run build:$ENVIRONMENT
