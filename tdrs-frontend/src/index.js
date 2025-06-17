@@ -42,10 +42,7 @@ axios.defaults.xsrfHeaderName = 'X-CSRFToken'
 axios.defaults.withCredentials = true
 
 // Initialize FaroSDK
-if (
-  process.env.NODE_ENV === 'production' ||
-  process.env.REACT_APP_ENABLE_RUM === 'true'
-) {
+if (process.env.REACT_APP_ENABLE_RUM === 'true') {
   initializeFaro({
     url: process.env.REACT_APP_FARO_ENDPOINT,
     app: {
