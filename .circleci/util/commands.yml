@@ -15,18 +15,13 @@
           command: ./scripts/docker-compose-check.sh
 
   docker-compose-up-backend:
-    parameters:
-      registry_owner:
-        description: The organization that triggered this CircleCI build
-        type: string
-        default: "hhs"
     steps:
       - run:
           name: Build and spin-up Django API service
           command: |
             cd tdrs-backend
             docker network create external-net
-            REGISTRY_OWNER=<< parameters.registry_owner >> docker-compose up web -d --build
+            docker-compose up web -d --build
 
   cf-check:
     steps:

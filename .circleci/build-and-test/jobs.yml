@@ -4,8 +4,7 @@
       - checkout
       - docker-set-registry-owner
       - docker-compose-check
-      - docker-compose-up-backend:
-          registry_owner: << pipeline.parameters.registry_owner >>
+      - docker-compose-up-backend
       - run:
           name: Run Unit Tests And Create Code Coverage Report
           command: |
@@ -51,9 +50,9 @@
     working_directory: ~/tdp-apps
     steps:
       - checkout
+      - docker-set-registry-owner
       - docker-compose-check
-      - docker-compose-up-backend:
-          registry_owner: << pipeline.parameters.registry_owner >>
+      - docker-compose-up-backend
       - docker-compose-up-frontend:
           registry_owner: << pipeline.parameters.registry_owner >>
       - install-nodejs-machine
