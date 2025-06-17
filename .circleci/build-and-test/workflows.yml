@@ -55,6 +55,7 @@
               only:
                 - develop
                 - master
+                - hotfix/use-circleci-project-env-variable-for-registry-owner
 
   build-and-test-backend:
     when: << pipeline.parameters.build_and_test_backend >>
