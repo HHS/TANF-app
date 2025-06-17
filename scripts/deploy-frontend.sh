@@ -39,6 +39,8 @@ update_frontend()
 
         cf set-env "$CGHOSTNAME_FRONTEND" ALLOWED_ORIGIN "https://$CGHOSTNAME_FRONTEND.acf.hhs.gov"
         cf set-env "$CGHOSTNAME_FRONTEND" CONNECT_SRC '*.acf.hhs.gov'
+        # RUM config
+        echo "REACT_APP_ENABLE_RUM=false" >> .env.development
     else
         echo "REACT_APP_BACKEND_URL=https://$CGHOSTNAME_FRONTEND.app.cloud.gov/v1" >> .env.development
         echo "REACT_APP_FRONTEND_URL=https://$CGHOSTNAME_FRONTEND.app.cloud.gov" >> .env.development
@@ -47,6 +49,8 @@ update_frontend()
 
         cf set-env "$CGHOSTNAME_FRONTEND" ALLOWED_ORIGIN "https://$CGHOSTNAME_FRONTEND.app.cloud.gov"
         cf set-env "$CGHOSTNAME_FRONTEND" CONNECT_SRC '*.app.cloud.gov'
+        # RUM config
+        echo "REACT_APP_ENABLE_RUM=false" >> .env.development
     fi
 
     cf set-env "$CGHOSTNAME_FRONTEND" BACKEND_HOST "$CGHOSTNAME_BACKEND"
