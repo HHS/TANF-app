@@ -19,7 +19,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 9,
+  "id": 35,
   "links": [],
   "panels": [
     {
@@ -1395,5 +1395,5 @@
   "timezone": "browser",
   "title": "User Telemetry",
   "uid": "ccbe253f-b624-467b-8935-4a38e7524222",
-  "version": 4
+  "version": 1
 }
