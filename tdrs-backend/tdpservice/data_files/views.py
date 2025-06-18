@@ -1,4 +1,5 @@
 """Check if user is authorized."""
+import base64
 import logging
 from django.http import FileResponse
 from django.http import Http404
@@ -174,9 +175,12 @@ class DataFileViewSet(ModelViewSet):
     def download_error_report(self, request, pk=None):
         """Generate and return the parsing error report xlsx."""
         datafile = self.get_object()
-        error_report_generator = ErrorReportFactory.get_error_report_generator(datafile)
 
-        return Response(error_report_generator.generate())
+        if datafile.summary.error_report:
+            return FileResponse(datafile.summary.error_report, "report.xlsx")
+        else:
+            error_report_generator = ErrorReportFactory.get_error_report_generator(datafile)
+            return FileResponse(error_report_generator.generate())
 
 
 class GetYearList(APIView):
