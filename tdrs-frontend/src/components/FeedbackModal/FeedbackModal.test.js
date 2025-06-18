@@ -297,9 +297,16 @@ describe('FeedbackModal', () => {
 
     const overlay = screen.getByTestId('feedback-modal-overlay')
 
+    // Set initial focus to overlay
+    act(() => {
+      overlay.focus()
+    })
+
+    // Simulate pressing a random key (not Tab or Escape)
     fireEvent.keyDown(overlay, {
-      key: 'Enter',
-      code: 'Enter',
+      key: 'a',
+      code: 'KeyA',
+      keyCode: 65,
       bubbles: true,
     })
 
