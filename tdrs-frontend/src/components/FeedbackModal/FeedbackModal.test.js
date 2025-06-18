@@ -292,6 +292,21 @@ describe('FeedbackModal', () => {
     await waitFor(() => expect(screen.getByTestId('after-radio')).toHaveFocus())
   })
 
+  it('does not intercept unrelated key presses', () => {
+    render(<FeedbackModal {...props} />)
+
+    const overlay = screen.getByTestId('feedback-modal-overlay')
+
+    fireEvent.keyDown(overlay, {
+      key: 'Enter',
+      code: 'Enter',
+      bubbles: true,
+    })
+
+    // Nothing should break and no focus change expected
+    expect(document.activeElement).toBe(overlay)
+  })
+
   it('focuses modal itself if no heading or focusable elements exist', async () => {
     render(
       <FeedbackModal
@@ -348,6 +363,38 @@ describe('FeedbackModal', () => {
 
     expect(warnSpy).toHaveBeenCalledWith('No focusable elements found in modal')
     warnSpy.mockRestore()
+  })
+
+  it('handles tabbing when the currently focused element is removed', async () => {
+    const DynamicChildren = () => {
+      const [showInput, setShowInput] = React.useState(true)
+
+      return (
+        <>
+          {showInput && (
+            <input
+              data-testid="dynamic-input"
+              onFocus={() => setShowInput(false)}
+            />
+          )}
+          <button data-testid="static-button">Static</button>
+        </>
+      )
+    }
+
+    render(<FeedbackModal {...props} children={<DynamicChildren />} />)
+
+    const overlay = screen.getByTestId('feedback-modal-overlay')
+    const input = screen.queryByTestId('dynamic-input')
+
+    input.focus()
+    // Simulate Tab press, which triggers removal of input
+    fireEvent.keyDown(overlay, { key: 'Tab', code: 'Tab', bubbles: true })
+
+    // Should still recover and focus the next element
+    await waitFor(() => {
+      expect(screen.getByTestId('static-button')).toHaveFocus()
+    })
   })
 
   it('includes proper accessibility attributes', () => {

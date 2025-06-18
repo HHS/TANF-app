@@ -83,6 +83,22 @@ describe('App.js', () => {
     expect(wrapper.find(Feedback)).toExist()
   })
 
+  it('renders skip link with correct href and text', () => {
+    const store = mockStore(initialState)
+
+    const wrapper = mount(
+      <Provider store={store}>
+        <MemoryRouter>
+          <App />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    const skipLink = wrapper.find('a.usa-skipnav')
+    expect(skipLink.text()).toContain('Skip to main content')
+    expect(skipLink.prop('href')).toEqual('#main-content')
+  })
+
   it('should redirect to #main-content when space bar is pressed on "skip links" element', () => {
     const url = '#main-content'
 
