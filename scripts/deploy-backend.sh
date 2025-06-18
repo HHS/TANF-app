@@ -190,6 +190,7 @@ update_backend_network()
 {
     echo "Setting backend network"
     cf map-route "$CGAPPNAME_BACKEND" apps.internal --hostname "$CGAPPNAME_BACKEND"
+    cf map-route "$CGAPPNAME_CELERY" apps.internal --hostname "$CGAPPNAME_CELERY"
 
     # Add network policy to allow frontend to access backend
     cf add-network-policy "$CGAPPNAME_FRONTEND" "$CGAPPNAME_BACKEND" --protocol tcp --port 8080
