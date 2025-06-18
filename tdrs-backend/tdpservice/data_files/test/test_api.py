@@ -548,14 +548,16 @@ class TestDataFileAsOFARegionalStaff(DataFileAPITestBase):
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_can_download_error_report_for_own_region(
-        self, api_client, regional_data_file_data, user, data_analyst, dfs
+        self, api_client, regional_data_file_data, user, data_analyst, dfs,
     ):
         """Test that OFA Regional Staff can download error reports for data files in their own region."""
-        dfs.datafile = regional_data_file_data['file']
-        dfs.save()
         post_client = self.login_as(data_analyst)
         response = self.post_data_file(post_client, regional_data_file_data)
         data_file_id = response.data['id']
+
+        dfs.datafile = DataFile.objects.get(id=data_file_id)
+        dfs.save()
+
         response = self.download_error_report_file(api_client, data_file_id)
 
         assert response.status_code == status.HTTP_200_OK
