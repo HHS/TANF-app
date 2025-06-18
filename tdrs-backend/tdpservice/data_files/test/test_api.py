@@ -5,7 +5,6 @@ from rest_framework import status
 from rest_framework.exceptions import ErrorDetail
 from rest_framework.test import APIClient
 import pytest
-import base64
 import openpyxl
 from tdpservice.data_files.models import DataFile
 from tdpservice.parsers import util
@@ -117,7 +116,6 @@ class DataFileAPITestBase:
     @staticmethod
     def get_spreadsheet(response):
         """Return error report."""
-
         decoded_response = None
         with io.BytesIO(b"".join(response.streaming_content)) as buf_bytes:
             decoded_response = buf_bytes.read()

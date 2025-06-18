@@ -1,5 +1,4 @@
 """Check if user is authorized."""
-import base64
 import logging
 from django.http import FileResponse
 from django.http import Http404
