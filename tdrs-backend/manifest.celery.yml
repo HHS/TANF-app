@@ -1,6 +1,6 @@
 version: 1
 applications:
-- name: tdp-backend
+- name: tdp-celery
   memory: 2G
   instances: 1
   disk_quota: 7G
