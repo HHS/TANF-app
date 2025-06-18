@@ -59,7 +59,7 @@ services:
 
   grafana:
     restart: always
-    image: grafana/grafana:11.2.0
+    image: grafana/grafana:12.0.1
     ports:
       - 9400:9400
     environment:
@@ -99,6 +99,11 @@ services:
     image: prom/prometheus:v2.54.1
     ports:
       - 9090:9090
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --web.enable-remote-write-receiver
+      - --enable-feature=exemplar-storage
+      - --enable-feature=native-histograms
     volumes:
       - ./plg/prometheus/prometheus.local.yml:/etc/prometheus/prometheus.yml
       - ./plg/prometheus/django-rules.yml:/etc/prometheus/django-rules.yml
@@ -116,11 +121,29 @@ services:
     image: grafana/alloy:v1.8.0
     ports:
       - 12345:12345
+      - 12346:12346
     volumes:
       - ./plg/alloy:/etc/alloy
       - ~/tdp-logs/nginx:/var/log/nginx
       - logs:/logs
     command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/alloy.local.config
+
+  tempo:
+    restart: always
+    image: grafana/tempo:latest
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ./plg/tempo/tempo.local.yml:/etc/tempo.yaml
+      - tempo-data:/var/tempo
+    ports:
+      - "3200:3200"   # tempo
+      - "9095:9095" # tempo grpc
+      - "4317:4317"  # otlp grpc
+      - "4318:4318"  # otlp http
+    depends_on:
+      - prometheus
+      - localstack
+      - alloy
 
   loki:
     restart: always
@@ -271,6 +294,7 @@ volumes:
   grafana_data:
   loki_data:
   logs:
+  tempo-data:
 
 
 networks:

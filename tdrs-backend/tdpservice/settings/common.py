@@ -13,6 +13,7 @@ from celery.schedules import crontab
 
 from configurations import Configuration
 from celery.schedules import crontab
+from corsheaders.defaults import default_headers
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -80,8 +81,16 @@ class Common(Configuration):
         "tdpservice.users.api.middleware.AuthUpdateMiddleware",
         "csp.middleware.CSPMiddleware",
         "tdpservice.middleware.NoCacheMiddleware",
+        "tdpservice.tracing.TracingMiddleware",
         "django_prometheus.middleware.PrometheusAfterMiddleware",
     )
+    
+    # OpenTelemetry Tracing Configuration
+    OTEL_ENABLED = bool(strtobool(os.getenv("OTEL_ENABLED", "yes")))
+    OTEL_SERVICE_NAME = "tdp-backend"
+    OTEL_EXPORTER_OTLP_ENDPOINT = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://tempo:4317")
+    OTEL_PROPAGATORS = "tracecontext"
+
     PROMETHEUS_LATENCY_BUCKETS = (.1, .2, .5, .6, .8, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.5, 9.0, 12.0, 15.0, 20.0, 30.0, float("inf"))
     PROMETHEUS_METRIC_NAMESPACE = ""
 
@@ -333,6 +342,9 @@ class Common(Configuration):
     CORS_ORIGIN_ALLOW_ALL = True
     CORS_ALLOW_CREDENTIALS = True
     CORS_PREFLIGHT_MAX_AGE = 1800
+    CORS_ALLOW_HEADERS = list(default_headers) + [
+        'x-service-name',
+    ]
 
 
     # Capture all logging statements across the service in the root handler

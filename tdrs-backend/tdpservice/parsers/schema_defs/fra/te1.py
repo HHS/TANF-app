@@ -37,6 +37,7 @@ te1 = [
                         category2.isNumber(),
                         category2.intHasLength(9),
                         category2.valueNotAt(slice(0, 3), "000"),
+                        category2.valueNotAt(slice(0, 3), "666"),
                         category2.valueNotAt(slice(3, 5), "00"),
                         category2.valueNotAt(slice(5, 9), "0000"),
                     ),
