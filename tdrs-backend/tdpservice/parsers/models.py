@@ -1,15 +1,26 @@
 """Models representing parser error."""
 
+import os
 import datetime
 from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from tdpservice.data_files.models import DataFile
 from tdpservice.data_files.util import ParserErrorCategoryChoices
+from tdpservice.backends import DataFilesS3Storage
 
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def get_s3_upload_path(instance, filename):
+    """Produce a unique upload path for S3 files for a given STT and Quarter."""
+    df = instance.datafile
+    return os.path.join(
+        f'data_files/{df.year}/{df.quarter}/{df.stt.id}/{df.section}/',
+        filename
+    )
 
 
 class ParserError(models.Model):
@@ -84,6 +95,12 @@ class DataFileSummary(models.Model):
     )
 
     datafile = models.OneToOneField(DataFile, on_delete=models.CASCADE, related_name="summary")
+    error_report = models.FileField(
+        storage=DataFilesS3Storage,
+        upload_to=get_s3_upload_path,
+        null=True,
+        blank=True
+    )
 
     case_aggregates = models.JSONField(null=True, blank=False)
 
