@@ -12,6 +12,7 @@ import {
   getWebInstrumentations,
   createReactRouterV6Options,
   FaroErrorBoundary,
+  faro,
 } from '@grafana/faro-react'
 
 import {
@@ -41,10 +42,7 @@ axios.defaults.xsrfHeaderName = 'X-CSRFToken'
 axios.defaults.withCredentials = true
 
 // Initialize FaroSDK
-if (
-  process.env.NODE_ENV === 'production' ||
-  process.env.REACT_APP_ENABLE_RUM === 'true'
-) {
+if (process.env.REACT_APP_ENABLE_RUM === 'true') {
   initializeFaro({
     url: process.env.REACT_APP_FARO_ENDPOINT,
     app: {
@@ -108,14 +106,23 @@ store.dispatch(fetchAuth())
 // }
 // Start the mirage server to stub some backend endpoints when running locally
 
+/* istanbul ignore next */
+const ErrorProvider = ({ children }) => {
+  return !faro || !faro.api ? (
+    <>{children}</>
+  ) : (
+    <FaroErrorBoundary>{children}</FaroErrorBoundary>
+  )
+}
+
 const container = document.getElementById('root')
 const root = createRoot(container)
 root.render(
   <Provider store={store}>
     <Router store={store} history={history}>
-      <FaroErrorBoundary>
+      <ErrorProvider>
         <App />
-      </FaroErrorBoundary>
+      </ErrorProvider>
     </Router>
   </Provider>
 )

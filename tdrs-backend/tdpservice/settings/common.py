@@ -13,6 +13,7 @@ from celery.schedules import crontab
 
 from configurations import Configuration
 from celery.schedules import crontab
+from corsheaders.defaults import default_headers
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -340,6 +341,9 @@ class Common(Configuration):
     CORS_ORIGIN_ALLOW_ALL = True
     CORS_ALLOW_CREDENTIALS = True
     CORS_PREFLIGHT_MAX_AGE = 1800
+    CORS_ALLOW_HEADERS = list(default_headers) + [
+        'x-service-name',
+    ]
 
 
     # Capture all logging statements across the service in the root handler
