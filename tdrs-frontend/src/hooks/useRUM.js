@@ -3,6 +3,10 @@ import { faro } from '@grafana/faro-react'
 
 export const useRUM = () => {
   const setUserInfo = (user) => {
+    if (!faro || !faro.api) {
+      return
+    }
+
     // Convert roles array to string to avoid unmarshal error
     const roleString = Array.isArray(user.roles)
       ? user.roles.map((role) => role.name).join(', ')
@@ -26,7 +30,7 @@ export const useRUM = () => {
    */
   const traceAsyncUserAction = async (actionName, callback) => {
     // Check if tracing is available
-    if (!faro.api.getTracer) {
+    if (!faro.api.getTracer || !faro) {
       return await callback()
     }
 
@@ -57,7 +61,7 @@ export const useRUM = () => {
 
   const traceUserAction = (actionName, callback) => {
     // Check if tracing is available
-    if (!faro.api.getTracer) {
+    if (!faro.api.getTracerm || !faro) {
       return callback()
     }
 
@@ -85,6 +89,9 @@ export const useRUM = () => {
 
   // Helper functions for manual instrumentation
   const logPageView = (pageName) => {
+    if (!faro || !faro.api) {
+      return
+    }
     // Structure data in a way that Alloy can process
     // Using event_data_ prefix for fields that should be extracted
     const eventData = {
@@ -96,6 +103,9 @@ export const useRUM = () => {
   }
 
   const logUserAction = (actionName, details = {}) => {
+    if (!faro || !faro.api) {
+      return
+    }
     faro.api.pushEvent('user_action', {
       action: actionName,
       ...details,
@@ -104,6 +114,9 @@ export const useRUM = () => {
   }
 
   const logError = (error, context = {}) => {
+    if (!faro || !faro.api) {
+      return
+    }
     faro.api.pushError(error, {
       ...context,
       timestamp: Date.now(),
