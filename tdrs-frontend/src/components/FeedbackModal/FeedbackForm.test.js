@@ -288,7 +288,7 @@ describe('Feedback Form tests', () => {
   })
 
   it('logs an error if feedbackPost returns non-200 status', async () => {
-    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {})
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
     feedbackPost.mockResolvedValueOnce({ status: 500 })
 
     render(<FeedbackForm onFeedbackSubmit={jest.fn()} />)
