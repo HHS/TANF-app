@@ -531,6 +531,11 @@ class TestDataFileAsOFARegionalStaff(DataFileAPITestBase):
         """Override the default user with data_analyst for our tests."""
         return regional_user
 
+    @pytest.fixture
+    def dfs(self):
+        """Fixture for DataFileSummary."""
+        return DataFileSummaryFactory.create()
+
     def test_cannot_download_data_file(
         self, api_client, regional_data_file_data, user, data_analyst
     ):
