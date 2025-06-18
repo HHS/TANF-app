@@ -551,7 +551,7 @@ class TestDataFileAsOFARegionalStaff(DataFileAPITestBase):
         self, api_client, regional_data_file_data, user, data_analyst, dfs
     ):
         """Test that OFA Regional Staff can download error reports for data files in their own region."""
-        dfs.datafile = regional_data_file_data
+        dfs.datafile = regional_data_file_data['file']
         dfs.save()
         post_client = self.login_as(data_analyst)
         response = self.post_data_file(post_client, regional_data_file_data)
