@@ -1,4 +1,5 @@
 """Tests for DataFiles Application."""
+import io
 import os
 from rest_framework import status
 from rest_framework.exceptions import ErrorDetail
@@ -116,7 +117,10 @@ class DataFileAPITestBase:
     @staticmethod
     def get_spreadsheet(response):
         """Return error report."""
-        decoded_response = base64.b64decode(response.data['xls_report'])
+
+        decoded_response = None
+        with io.BytesIO(b"".join(response.streaming_content)) as buf_bytes:
+            decoded_response = buf_bytes.read()
 
         if os.path.exists('mycls.xlsx'):
             os.remove('mycls.xlsx')
@@ -368,6 +372,8 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
     def test_download_fra_error_report_file_for_own_stt(self, request, api_client, file, dfs):
         """Test that the fra error report file is downloaded as expected for a Data Analyst's set STT."""
         datafile = request.getfixturevalue(file)
+        dfs.datafile = datafile
+        dfs.save()
         parser = ParserFactory.get_instance(datafile=datafile, dfs=dfs,
                                             section=datafile.section,
                                             program_type=datafile.prog_type)
@@ -382,6 +388,8 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         self, api_client, test_datafile, dfs
     ):
         """Test that the error report file is downloaded as expected for a Data Analyst's set STT."""
+        dfs.datafile = test_datafile
+        dfs.save()
         parser = ParserFactory.get_instance(datafile=test_datafile, dfs=dfs,
                                             section=test_datafile.section,
                                             program_type=test_datafile.prog_type)
@@ -394,6 +402,8 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
 
     def test_download_error_report_ssp_file_for_own_stt(self, api_client, test_ssp_datafile, dfs):
         """Test that the error report file for an SSP file is downloaded as expected for a Data Analyst's set STT."""
+        dfs.datafile = test_ssp_datafile
+        dfs.save()
         parser = ParserFactory.get_instance(datafile=test_ssp_datafile, dfs=dfs,
                                             section=test_ssp_datafile.section,
                                             program_type=test_ssp_datafile.prog_type)
@@ -407,6 +417,8 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         self, api_client, test_datafile, dfs
     ):
         """Test that the error report file is downloaded as expected when no fields_json is added to ParserErrors."""
+        dfs.datafile = test_datafile
+        dfs.save()
         parser = ParserFactory.get_instance(datafile=test_datafile, dfs=dfs,
                                             section=test_datafile.section,
                                             program_type=test_datafile.prog_type)
