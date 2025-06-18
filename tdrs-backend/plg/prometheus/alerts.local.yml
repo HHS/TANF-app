@@ -13,7 +13,7 @@ groups:
     rules:
     - alert: LocalBackendDown
       expr: last_over_time(up{job=~"tdp-backend-local"}[1m]) == 0
-      for: 1m
+      for: 5m
       labels:
         severity: ERROR
       annotations:
