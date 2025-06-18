@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.contrib.auth.models import Group
 from django.db.utils import DatabaseError
 from django.conf import settings
+from django.core.files import File
 
 from tdpservice.data_files.models import DataFile, ReparseFileMeta
 from tdpservice.email.helpers.data_file import send_data_submitted_email
@@ -20,6 +21,7 @@ from tdpservice.parsers.util import log_parser_exception, make_generate_parser_e
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 from tdpservice.log_handler import change_log_filename
 from tdpservice.users.models import AccountApprovalStatusChoices, User
+from tdpservice.data_files.error_reports import ErrorReportFactory
 
 logger = settings.PARSER_LOGGER
 
@@ -43,6 +45,12 @@ def update_dfs(dfs, data_file):
             dfs.case_aggregates = case_aggregates_by_month(data_file, dfs.status)
         else:
             dfs.case_aggregates = total_errors_by_month(data_file, dfs.status)
+    dfs.save()
+
+
+def set_error_report(dfs, error_report):
+    """Update DataFileSummary error_report."""
+    dfs.error_report = File(error_report, name="error_report.xlsx")
     dfs.save()
 
 
@@ -122,5 +130,8 @@ def parse(data_file_id, reparse_id=None):
         set_reparse_file_meta_model_failed_state(reparse_id, file_meta)
     finally:
         logger.info(f"DataFile parsing finished for file -> {repr(data_file)}.")
+        error_report_generator = ErrorReportFactory.get_error_report_generator(data_file)
+        error_report = error_report_generator.generate()
         update_dfs(dfs, data_file)
+        set_error_report(dfs, error_report)
         logger.handlers[2].doRollover(data_file)
