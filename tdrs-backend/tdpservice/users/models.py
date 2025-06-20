@@ -10,9 +10,11 @@ from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 from django.conf import settings
 
 from tdpservice.stts.models import STT, Region
+from tdpservice.users.mixins import ReviewerMixin as Reviewable
 
 logger = logging.getLogger()
 
@@ -39,6 +41,64 @@ class RegionMeta(models.Model):
         on_delete=models.CASCADE,
         related_name='region_metas'
     )
+
+
+class Rating(models.IntegerChoices):
+    """Likert like rating scale."""
+
+    VERY_BAD = 1
+    BAD = 2
+    NEUTRAL = 3
+    GOOD = 4
+    VERY_GOOD = 5
+
+class Feedback(Reviewable):
+    """Model to capture and review user feedback."""
+
+    class Meta:
+        """Define meta feedback model attributes."""
+
+        ordering = ['pk']
+        verbose_name = "Feedback"
+        verbose_name_plural = "Feedback"
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
+
+    user = models.ForeignKey(
+        'users.User',
+        on_delete=models.SET_NULL,
+        related_name='feedback',
+        null=True,
+        blank=True
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    rating = models.IntegerField(choices=Rating.choices)
+
+    feedback = models.TextField()
+
+    acked = models.BooleanField(default=False)
+
+    def __str__(self):
+        """Return a string representation of the object."""
+        return (f"User: {self.user.username if self.user is not None else 'Anonymous'} - "
+                f"Rating: {self.rating} - Acked: {self.acked}")
+
+    def acknowledge(self, admin_user):
+        """Acknowledge the feedback."""
+        if self.acked:
+            return False
+
+        self.acked = True
+        self.reviewed_at = timezone.now()
+        self.reviewed_by = admin_user
+        self.save()
+        return True
 
 
 class User(AbstractUser):
