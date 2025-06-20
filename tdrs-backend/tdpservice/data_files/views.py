@@ -87,15 +87,15 @@ class DataFileViewSet(ModelViewSet):
                         f"Datafile META -> datafile: {data_file_id}, section: {data_file.section}, " +
                         f"quarter {data_file.quarter}, year {data_file.year}.")
 
-            parser_task.parse.delay(data_file_id)
-            logger.info("Submitted parse task to queue for datafile %s.", data_file_id)
-
             app_name = settings.APP_NAME + '/'
             key = app_name + get_s3_upload_path(data_file, '')
             version_id = self.get_s3_versioning_id(response.data.get('original_filename'), key)
 
             data_file.s3_versioning_id = version_id
             data_file.save(update_fields=['s3_versioning_id'])
+
+            parser_task.parse.delay(data_file_id)
+            logger.info("Submitted parse task to queue for datafile %s.", data_file_id)
 
         logger.debug(f"{self.__class__.__name__}: return val: {response}")
         return response
