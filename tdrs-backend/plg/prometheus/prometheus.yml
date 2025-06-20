@@ -36,11 +36,11 @@ scrape_configs:
           service: "tdp-backend"
           env: "dev"
 
-  - job_name: "celery-raft"
+  - job_name: "tdp-celery-raft"
     static_configs:
       - targets: ["tdp-celery-raft.apps.internal:9808"]
         labels:
-          service: "celery"
+          service: "tdp-celery"
           env: "dev"
 
   - job_name: "tdp-backend-qasp"
@@ -48,11 +48,11 @@ scrape_configs:
     static_configs:
       - targets: ["tdp-backend-qasp.apps.internal:8080"]
 
-  - job_name: "celery-qasp"
+  - job_name: "tdp-celery-qasp"
     static_configs:
       - targets: ["tdp-celery-qasp.apps.internal:9808"]
         labels:
-          service: "celery"
+          service: "tdp-celery"
           env: "qasp"
 
   - job_name: "tdp-backend-develop"
@@ -63,11 +63,11 @@ scrape_configs:
           service: "tdp-backend"
           env: "dev"
 
-  - job_name: "celery-develop"
+  - job_name: "tdp-celery-develop"
     static_configs:
       - targets: ["tdp-celery-develop.apps.internal:9808"]
         labels:
-          service: "celery"
+          service: "tdp-celery"
           env: "dev"
 
   - job_name: "tdp-backend-staging"
@@ -78,11 +78,11 @@ scrape_configs:
           service: "tdp-backend"
           env: "staging"
 
-  - job_name: "celery-staging"
+  - job_name: "tdp-celery-staging"
     static_configs:
       - targets: ["tdp-celery-staging.apps.internal:9808"]
         labels:
-          service: "celery"
+          service: "tdp-celery"
           env: "staging"
 
   - job_name: "tdp-backend-prod"
@@ -93,11 +93,11 @@ scrape_configs:
           service: "tdp-backend"
           env: "production"
 
-  - job_name: "celery-prod"
+  - job_name: "tdp-celery-prod"
     static_configs:
       - targets: ["tdp-celery-prod.apps.internal:9808"]
         labels:
-          service: "celery"
+          service: "tdp-celery"
           env: "production"
 
   - job_name: postgres-dev
