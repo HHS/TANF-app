@@ -50,7 +50,10 @@ def update_dfs(dfs, data_file):
 
 def set_error_report(dfs, error_report):
     """Update DataFileSummary error_report."""
-    dfs.error_report = File(error_report, name="error_report.xlsx")
+    dfs.error_report = File(
+        error_report,
+        name=f'{dfs.datafile.original_filename}_error_report'
+    )
     dfs.save()
 
 

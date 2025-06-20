@@ -19,7 +19,7 @@ def get_s3_upload_path(instance, filename):
     df = instance.datafile
     return os.path.join(
         f'data_files/{df.year}/{df.quarter}/{df.stt.id}/{df.section}/',
-        filename
+        f'{filename}_{df.s3_versioning_id}'
     )
 
 
