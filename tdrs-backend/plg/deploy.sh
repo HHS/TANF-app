@@ -169,9 +169,7 @@ setup_dev_staging_net_pols() {
     done
 
     for i in ${!DEV_CELERY_APPS[@]}; do
-        cf add-network-policy ${DEV_CELERY_APPS[$i]} grafana -s tanf-prod --protocol tcp --port 8080
         cf add-network-policy ${DEV_CELERY_APPS[$i]} loki -s tanf-prod --protocol tcp --port 8080
-        cf add-network-policy ${DEV_CELERY_APPS[$i]} alertmanager -s tanf-prod --protocol tcp --port 8080
     done
 
     cf target -o hhs-acf-ofa -s tanf-staging
@@ -183,9 +181,7 @@ setup_dev_staging_net_pols() {
     done
 
     for i in ${!STAGING_CELERY_APPS[@]}; do
-        cf add-network-policy ${STAGING_CELERY_APPS[$i]} grafana -s tanf-prod --protocol tcp --port 8080
         cf add-network-policy ${STAGING_CELERY_APPS[$i]} loki -s tanf-prod --protocol tcp --port 8080
-        cf add-network-policy ${STAGING_CELERY_APPS[$i]} alertmanager -s tanf-prod --protocol tcp --port 8080
     done
 
     cf target -o hhs-acf-ofa -s tanf-prod
