@@ -291,10 +291,10 @@ else
   update_backend "$CGAPPNAME_BACKEND" "$DEPLOY_STRATEGY"
 fi
 
-update_backend_network
-
 if [[ $CELERY_DEPLOY_STRATEGY == 'rebuild' ]]; then
   update_backend "$CGAPPNAME_CELERY" 'initial'
 else
   update_backend "$CGAPPNAME_CELERY" "$CELERY_DEPLOY_STRATEGY"
 fi
+
+update_backend_network
