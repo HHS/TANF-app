@@ -79,7 +79,7 @@ t2 = [
                 result_field_name="EDUCATION_LEVEL",
                 result_function=category3.orValidators([
                     category3.isBetween(0, 16, inclusive=True, cast=int),
-                    category3.isBetween(98, 99, inclusive=True, cast=int),
+                    category3.isEqual(98, cast=int),
                 ], if_result=True),
             ),
             category3.ifThenAlso(

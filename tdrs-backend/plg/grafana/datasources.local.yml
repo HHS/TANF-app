@@ -27,3 +27,30 @@ datasources:
       maxLines: 1000
     isDefault: false
     uid: "L8E80F9AEF21F6940"
+  - name: Tempo
+    type: tempo
+    access: proxy
+    url: http://tempo:3200
+    jsonData:
+      nodeGraph:
+        enabled: true
+      search:
+        filters:
+          - id: service-name
+            operator: =
+            scope: resource
+            tag: service.name
+          - id: span-name
+            operator: =
+            scope: span
+            tag: name
+      serviceMap:
+        datasourceUid: "MQFA97CFB590B2099"
+      tracesToLogsV2:
+        customQuery: false
+        datasourceUid: "L8E80F9AEF21F6940"
+      tracesToMetrics:
+        datasourceUid: "MQFA97CFB590B2099"
+    isDefault: false
+    uid: "celzqpsk6u2v4b"
+    typeLogoUrl: "public/app/plugins/datasource/tempo/img/tempo_logo.svg"

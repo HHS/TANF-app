@@ -14,6 +14,11 @@ from django.contrib import messages
 from tdpservice.data_files.tasks import reparse_files
 from tdpservice.data_files.s3_client import S3Client
 from tdpservice.log_handler import S3FileHandler
+from botocore.exceptions import ClientError
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 DOMAIN = settings.FRONTEND_BASE_URL
 
@@ -45,20 +50,27 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
 
     def versioned_file_download_link(self, obj):
         """Generate a custom download link for the file."""
-        s3 = S3Client()
-        version = obj.s3_versioning_id
-        bucket = settings.AWS_S3_DATAFILES_BUCKET_NAME
-        key = obj.s3_location
-        app_name = settings.APP_NAME + "/"
-        key = app_name + key
+        try:
+            s3 = S3Client()
+            version = obj.s3_versioning_id
+            bucket = settings.AWS_S3_DATAFILES_BUCKET_NAME
+            key = obj.s3_location
+            app_name = settings.APP_NAME + "/"
+            key = app_name + key
 
-        url = s3.client.generate_presigned_url(
-            ClientMethod="get_object",
-            Params={"Bucket": bucket, "Key": key, "VersionId": version},
-            ExpiresIn=3600,  # one hour in seconds, increase if needed
-        )
-        # url = url.replace("localstack", "localhost")
-        return format_html("<a href='{0}'>{1}</a>", url, key)
+            url = s3.client.generate_presigned_url(
+                ClientMethod="get_object",
+                Params={"Bucket": bucket, "Key": key, "VersionId": version},
+                ExpiresIn=3600,  # one hour in seconds, increase if needed
+            )
+            # url = url.replace("localstack", "localhost")
+            return format_html("<a href='{0}'>{1}</a>", url, key)
+        except (ClientError, KeyError, Exception) as e:
+            # If the file is not available, return a placeholder
+            logger.info(
+                f"File version not available for DataFile ID: {obj.id}. Error: {e}"
+            )
+            return None
 
     versioned_file_download_link.short_description = (
         "File"  # Optional: Renames the field in the admin

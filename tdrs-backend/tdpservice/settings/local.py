@@ -21,7 +21,7 @@ class Local(Common):
     USE_LOCALSTACK = bool(strtobool(os.getenv("USE_LOCALSTACK", "yes")))
 
     # Overwrite CORS allowed origins to allow for local development
-    CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
+    CORS_ALLOWED_ORIGINS = ['http://localhost:3000', 'http://localhost:3001']
 
     if USE_LOCALSTACK:
         # To get s3 signed URLs to work with localstack we must pass in
