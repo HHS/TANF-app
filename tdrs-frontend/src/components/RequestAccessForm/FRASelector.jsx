@@ -1,10 +1,10 @@
-function FRASelector({ hasFRAData, setHasFRAData, error, setErrors }) {
+function FRASelector({ hasFRAAccess, setHasFRAAccess, error, setErrors }) {
   const handleRadioChange = (value) => {
-    setHasFRAData(value)
+    setHasFRAAccess(value)
 
     // clear any error messages
     setErrors((errs) => {
-      const { hasFRAData, ...rest } = errs
+      const { hasFRAAccess, ...rest } = errs
       return rest
     })
   }
@@ -33,10 +33,10 @@ function FRASelector({ hasFRAData, setHasFRAData, error, setErrors }) {
             className="usa-radio__input"
             id="fra-yes"
             type="radio"
-            name="hasFRAData"
+            name="hasFRAAccess"
             value="true"
             defaultChecked
-            checked={hasFRAData === true}
+            checked={hasFRAAccess === true}
             onChange={() => handleRadioChange(true)}
           />
           <label className="usa-radio__label" htmlFor="fra-yes">
@@ -48,9 +48,9 @@ function FRASelector({ hasFRAData, setHasFRAData, error, setErrors }) {
             className="usa-radio__input"
             id="fra-no"
             type="radio"
-            name="hasFRAData"
+            name="hasFRAAccess"
             value="false"
-            checked={hasFRAData === false}
+            checked={hasFRAAccess === false}
             onChange={() => handleRadioChange(false)}
           />
           <label className="usa-radio__label" htmlFor="fra-no">

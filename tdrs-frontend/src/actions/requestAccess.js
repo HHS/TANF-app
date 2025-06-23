@@ -8,17 +8,18 @@ export const SET_REQUEST_ACCESS_ERROR = 'SET_REQUEST_ACCESS_ERROR'
 export const CLEAR_REQUEST_ACCESS = 'CLEAR_REQUEST_ACCESS'
 
 export const requestAccess =
-  ({ firstName, lastName, stt, regions, hasFRAData }) =>
+  ({ firstName, lastName, stt, regions, hasFRAAccess }) =>
   async (dispatch) => {
     dispatch({ type: PATCH_REQUEST_ACCESS })
     try {
       const URL = `${process.env.REACT_APP_BACKEND_URL}/users/request_access/`
+      console.log(`Has FRA Access: ${hasFRAAccess}`)
       const user = {
         first_name: firstName,
         last_name: lastName,
         stt: stt?.id,
         regions: regions ? [...regions] : [],
-        hasFRAData: hasFRAData,
+        has_fra_access: hasFRAAccess,
       }
       const { data } = await axios.patch(URL, user, {
         withCredentials: true,

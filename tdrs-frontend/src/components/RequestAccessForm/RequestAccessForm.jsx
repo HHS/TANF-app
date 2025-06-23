@@ -16,7 +16,7 @@ function RequestAccessForm({ user, sttList }) {
     firstName: '',
     lastName: '',
     stt: '',
-    hasFRAData: null,
+    hasFRAAccess: null,
   })
   const dispatch = useDispatch()
   const [touched, setTouched] = useState({})
@@ -40,12 +40,12 @@ function RequestAccessForm({ user, sttList }) {
       firstName: 'First Name',
       lastName: 'Last Name',
       stt: !isAMSUser && 'A state, tribe, or territory',
-      hasFRAData: 'Yes or No response',
+      hasFRAAccess: 'Yes or No response',
     }[fieldName]
 
     if (
       Boolean(field) &&
-      ((fieldName === 'hasFRAData' && fieldValue === null) ||
+      ((fieldName === 'hasFRAAccess' && fieldValue === null) ||
         (typeof fieldValue === 'string' && fieldValue.trim() === ''))
     ) {
       return `${field} is required`
@@ -55,7 +55,7 @@ function RequestAccessForm({ user, sttList }) {
 
   const setJurisdictionType = (val) => {
     setStt('')
-    setHasFRAData(false)
+    setHasFRAAccess(false)
     setJurisdictionTypeInputValue(val)
   }
 
@@ -66,10 +66,10 @@ function RequestAccessForm({ user, sttList }) {
     }))
   }
 
-  const setHasFRAData = (hasFRAData) => {
+  const setHasFRAAccess = (hasFRAAccess) => {
     setProfileInfo((currentState) => ({
       ...currentState,
-      hasFRAData: hasFRAData,
+      hasFRAAccess: hasFRAAccess,
     }))
   }
 
@@ -202,9 +202,9 @@ function RequestAccessForm({ user, sttList }) {
         )}
         {jurisdictionType !== 'tribe' && (
           <FRASelector
-            hasFRAData={profileInfo.hasFRAData}
-            setHasFRAData={setHasFRAData}
-            error={errors.hasFRAData}
+            hasFRAAccess={profileInfo.hasFRAAccess}
+            setHasFRAAccess={setHasFRAAccess}
+            error={errors.hasFRAAccess}
             setErrors={setErrors}
           />
         )}
