@@ -76,12 +76,14 @@ class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     """Customize the feedback admin functions."""
 
     list_display = [
+        "user_list_display",
         "created_at",
         "rating",
         "feedback_list_display",
         "acked",
         "quick_ack",
     ]
+    list_filter = ["created_at", "rating", "acked"]
     change_form_template = 'feedback_admin_template.html'
     actions = ['ack_selected_feedback']
 
@@ -110,6 +112,11 @@ class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         return HttpResponseRedirect(
             reverse('admin:users_feedback_changelist')
         )
+
+    def user_list_display(self, obj):
+        """Handle user display."""
+        return obj.user.username if obj.user is not None else "Anonymous"
+    user_list_display.short_description = "User"
 
     def feedback_list_display(self, obj):
         """Display truncated version of feedback."""

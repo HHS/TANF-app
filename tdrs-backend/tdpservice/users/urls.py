@@ -8,6 +8,7 @@ router = DefaultRouter()
 
 router.register("users", views.UserViewSet)
 router.register("roles", views.GroupViewSet)
+router.register("feedback", views.FeedbackViewSet)
 
 urlpatterns = []
 

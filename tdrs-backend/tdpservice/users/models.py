@@ -56,9 +56,9 @@ class Feedback(Reviewable):
     """Model to capture and review user feedback."""
 
     class Meta:
-        """Define meta feedback model attributes."""
+        """Meta feedback model attributes."""
 
-        ordering = ['pk']
+        ordering = ['created_at']
         verbose_name = "Feedback"
         verbose_name_plural = "Feedback"
 

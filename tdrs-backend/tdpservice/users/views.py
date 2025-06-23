@@ -3,6 +3,7 @@ import datetime
 import logging
 
 from django.contrib.auth.models import Group
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
@@ -12,12 +13,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView
 
-from tdpservice.users.models import User, AccountApprovalStatusChoices
+from tdpservice.users.models import User, Feedback, AccountApprovalStatusChoices
 from tdpservice.users.permissions import DjangoModelCRUDPermissions, IsApprovedPermission, UserPermissions
 from tdpservice.users.serializers import (
     GroupSerializer,
     UserProfileSerializer,
     UserSerializer,
+    FeedbackSerializer,
 )
 
 logger = logging.getLogger(__name__)
@@ -88,3 +90,28 @@ class GroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     queryset = Group.objects.all()
     permission_classes = [DjangoModelCRUDPermissions, IsApprovedPermission]
     serializer_class = GroupSerializer
+
+
+class FeedbackViewSet(mixins.CreateModelMixin,
+                      mixins.RetrieveModelMixin,
+                      mixins.ListModelMixin,
+                      viewsets.GenericViewSet):
+    """Feedback viewset."""
+    queryset = Feedback.objects.all()
+    serializer_class = FeedbackSerializer
+    permission_classes = ()
+
+    def retrieve(self, request, *args, **kwargs):
+        """Only allow admin retrieval."""
+        admin = request.user.groups.filter(name__in=["OFA System Admin", "OFA Admin"]).exists()
+        if not admin:
+            return HttpResponse(status=status.HTTP_403_FORBIDDEN)
+
+        return super().retrieve(request, *args, **kwargs)
+
+    def list(self, request, *args, **kwargs):
+        admin = request.user.groups.filter(name__in=["OFA System Admin", "OFA Admin"]).exists()
+        if not admin:
+            return HttpResponse(status=status.HTTP_403_FORBIDDEN)
+
+        return super().list(request, *args, **kwargs)
