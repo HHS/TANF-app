@@ -19,7 +19,7 @@ def get_s3_upload_path(instance, filename):
     df = instance.datafile
     return os.path.join(
         f'data_files/{df.year}/{df.quarter}/{df.stt.id}/{df.section}/',
-        f'{filename}_{df.s3_versioning_id}'
+        f'{filename}_{df.s3_versioning_id}.xlsx'
     )
 
 
@@ -70,7 +70,8 @@ class ParserError(models.Model):
 
     def __str__(self):
         """Return a string representation of the model."""
-        return f"ParserError {self.__dict__}"
+        return f"{{id: {self.id}, file: {self.file.id}, row: {self.row_number}, column: {self.column_number}, " + \
+               f"error message: {self.error_message}}}"
 
     def _get_error_message(self):
         """Return the error message."""
