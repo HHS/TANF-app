@@ -6,7 +6,7 @@ verify_ssl = true
 [dev-packages]
 awscli = "1.29.4"
 awscli-local = "0.20"
-django-stubs = "~=4.2.7"
+django-types = "~=0.21.0"
 factory-boy = "==3.2.1"
 flake8 = "6.0.0"
 flake8-docstrings = "1.7.0"
