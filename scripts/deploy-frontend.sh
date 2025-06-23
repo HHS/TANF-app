@@ -47,7 +47,9 @@ update_frontend()
         echo "REACT_APP_BACKEND_HOST=https://$CGHOSTNAME_FRONTEND.app.cloud.gov" >> .env.development
         echo "REACT_APP_CF_SPACE=$CF_SPACE" >> .env.development
         # RUM config
-        echo "REACT_APP_ENABLE_RUM=false" >> .env.development
+        # TODO: Revert this
+        echo "REACT_APP_ENABLE_RUM=true" >> .env.development
+        echo "REACT_APP_FARO_ENDPOINT=https://$CGHOSTNAME_FRONTEND.app.cloud.gov/collect" >> .env.development
 
         cf set-env "$CGHOSTNAME_FRONTEND" ALLOWED_ORIGIN "https://$CGHOSTNAME_FRONTEND.app.cloud.gov"
         cf set-env "$CGHOSTNAME_FRONTEND" CONNECT_SRC '*.app.cloud.gov'
