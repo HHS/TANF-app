@@ -104,7 +104,7 @@ class FeedbackViewSet(mixins.CreateModelMixin,
     def retrieve(self, request, pk=None):
         """Return a specific feedback."""
         item = get_object_or_404(self.queryset, pk=pk)
-        if request.user == item.user:
+        if request.user.is_authenticated and request.user == item.user:
             serializer = self.get_serializer_class()(item)
             return Response(serializer.data)
         return Response(status=status.HTTP_403_FORBIDDEN)

@@ -80,7 +80,7 @@ class Feedback(Reviewable):
 
     rating = models.IntegerField(choices=Rating.choices)
 
-    feedback = models.TextField()
+    feedback = models.TextField(null=True, blank=True)
 
     acked = models.BooleanField(default=False)
 
