@@ -53,12 +53,12 @@ class FeedbackAPITestsBase:
         return api_client.get(f'{self.root_url}{feedback_id}/')
 
     def create_feedback(self, api_client, feedback_data):
-        """Post feddback."""
+        """Post feadback."""
         return api_client.post(f'{self.root_url}', feedback_data)
 
 
 class TestFeedbackAPIAnonymousUser(FeedbackAPITestsBase):
-    """Test class to test API endpoints with an un-authenticated user."""
+    """Test class to test API endpoints with an anonymous user."""
 
     @pytest.fixture
     def user(self, data_analyst):
@@ -79,7 +79,7 @@ class TestFeedbackAPIAnonymousUser(FeedbackAPITestsBase):
         """List feedback, expect 200 and no data with anonymous user."""
         response = self.list_feedback(api_client)
         assert response.status_code == status.HTTP_200_OK
-        assert response.data == None
+        assert response.data is None
 
     def test_get_feedback(self, api_client, feedback):
         """Get a specific feedback, expect 403 with anonymous user."""
@@ -133,21 +133,21 @@ class TestFeedbackAPIAdminUser(FeedbackAPITestsBase):
 
     @pytest.fixture
     def api_client(self, api_client, user):
-        """Provide an API client that is not logged in with a specified user."""
+        """Provide an API client that is logged in with a admin user."""
         api_client.login(username=user.username, password='test_password')
         return api_client
 
     def test_list_feedback(self, api_client):
-        """List feedback, expect 200 with authenticated user."""
+        """List feedback, expect 200 with admin user."""
         response = self.list_feedback(api_client)
         assert response.status_code == status.HTTP_200_OK
 
     def test_get_feedback(self, api_client, feedback):
-        """Get a specific feedback, expect 200 with authenticated user."""
+        """Get a specific feedback, expect 200 with admin user."""
         response = self.get_feedback(api_client, feedback.id)
         assert response.status_code == status.HTTP_200_OK
 
     def test_create_feedback(self, api_client, feedback_data):
-        """Create feedback, expect 201 with authenticated user."""
+        """Create feedback, expect 201 with admin user."""
         response = self.create_feedback(api_client, feedback_data)
         assert response.status_code == status.HTTP_201_CREATED

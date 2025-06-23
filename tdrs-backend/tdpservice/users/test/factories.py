@@ -112,4 +112,3 @@ class FeedbackFactory(factory.django.DjangoModelFactory):
     acked = False
     reviewed_at = None
     reviewed_by = None
-

@@ -3,7 +3,6 @@ import datetime
 import logging
 
 from django.contrib.auth.models import Group
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
@@ -97,6 +96,7 @@ class FeedbackViewSet(mixins.CreateModelMixin,
                       mixins.ListModelMixin,
                       viewsets.GenericViewSet):
     """Feedback viewset."""
+
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
     permission_classes = ()
@@ -126,4 +126,3 @@ class FeedbackViewSet(mixins.CreateModelMixin,
 
         serializer = self.get_serializer(users_feedback, many=True)
         return Response(serializer.data)
-
