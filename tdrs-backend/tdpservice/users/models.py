@@ -2,6 +2,7 @@
 
 import datetime
 import logging
+from typing import List, Union
 import uuid
 
 from tdpservice.email.helpers.account_status import send_approval_status_update_email
@@ -44,7 +45,7 @@ class RegionMeta(models.Model):
 class User(AbstractUser):
     """Define user fields and methods."""
 
-    class Meta:
+    class Meta:  # type: ignore[overrride]
         """Define meta user model attributes."""
 
         ordering = ['pk']
@@ -142,7 +143,7 @@ class User(AbstractUser):
         """Return the username as the string representation of the object."""
         return self.username
 
-    def is_in_group(self, group_names: list) -> bool:
+    def is_in_group(self, group_names: Union[str, List[str]]) -> bool:
         """Return whether or not the user is a member of the specified Group(s)."""
         if type(group_names) == str:
             group_names = [group_names]
@@ -256,6 +257,12 @@ class User(AbstractUser):
         regions = kwargs.pop('regions', [])
 
         if not self._adding:
+            if self._loaded_values is None:
+                raise RuntimeError(
+                    "Expects `_loaded_values` to be set by `from_db()` before "
+                    "calling `save()`."
+                )
+
             current_status = self._loaded_values["account_approval_status"]
             new_status = self.account_approval_status
 
