@@ -126,18 +126,20 @@ class User(AbstractUser):
     _loaded_values = None
     _adding = True
 
-    # Feature flag for the user to enable or disable FRA access
+    # TODO: 4972 - ensure feature_flags is not used with fra_reports anywhere
     feature_flags = models.JSONField(
         default=dict,
         help_text='Feature flags for this user. This is a JSON field that can be used to store key-value pairs. ' +
-        'E.g: {"fra_reports": true}',
+        'E.g: {"some_feature": true}',
         blank=True,
     )
 
-    @property
-    def has_fra_access(self):
-        """Return whether or not the user has FRA access."""
-        return self.feature_flags.get('fra_reports', False)
+    # TODO: 4972 - Is this naming okay? On the admin page it is "Has fra access".
+    has_fra_access = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="Does this user submit FRA data? (null for not answered)"
+    )
 
     def __str__(self):
         """Return the username as the string representation of the object."""

@@ -3,7 +3,8 @@
 import logging
 from django.contrib.auth.models import Group, Permission
 from django.core.exceptions import ValidationError
-from rest_framework import serializers, utils
+from rest_framework import serializers
+from rest_framework.utils import model_meta
 
 from tdpservice.stts.serializers import STTPrimaryKeyRelatedField, RegionPrimaryKeyRelatedField
 from tdpservice.users.models import User
@@ -105,6 +106,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'email',
             'stt',
             'regions',
+            'has_fra_access',
             'login_gov_uuid',
             'hhs_id',
             'roles',
@@ -151,7 +153,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         # The User model M2M fields are passed as a kwargs to `save()` so that the email context can access the
         # fields.
         serializers.raise_errors_on_nested_writes('update', self, validated_data)
-        info = utils.model_meta.get_field_info(instance)
+        info = model_meta.get_field_info(instance)
         # Simply set each attribute on the instance, and then save it.
         # Note that unlike `.create()` we don't need to treat many-to-many
         # relationships as being a special case. During updates we already
