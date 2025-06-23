@@ -207,7 +207,3 @@ class FeedbackSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         """Create a new feedback instance."""
         return Feedback.objects.create(**validated_data, created_at=timezone.now())
-
-    def update(self, instance, validated_data):
-        """Do not allow updates."""
-        return HTTP_403_FORBIDDEN

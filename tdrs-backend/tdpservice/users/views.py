@@ -102,16 +102,27 @@ class FeedbackViewSet(mixins.CreateModelMixin,
     permission_classes = ()
 
     def retrieve(self, request, *args, **kwargs):
-        """Only allow admin retrieval."""
-        admin = request.user.groups.filter(name__in=["OFA System Admin", "OFA Admin"]).exists()
-        if not admin:
-            return HttpResponse(status=status.HTTP_403_FORBIDDEN)
-
-        return super().retrieve(request, *args, **kwargs)
+        """Return a specific feedback."""
+        item = get_object_or_404(self.queryset, pk=pk)
+        self.check_object_permissions(request, item)
+        serializer = self.get_serializer_class()(item)
+        return Response(serializer.data)
 
     def list(self, request, *args, **kwargs):
+        """List feedback by user."""
         admin = request.user.groups.filter(name__in=["OFA System Admin", "OFA Admin"]).exists()
-        if not admin:
-            return HttpResponse(status=status.HTTP_403_FORBIDDEN)
+        if admin:
+            return super().list(request, *args, **kwargs)
 
-        return super().list(request, *args, **kwargs)
+        if request.user.is_anonymous:
+            return Response()
+
+        users_feedback = self.queryset.filter(user=request.user)
+        page = self.paginate_queryset(users_feedback)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(users_feedback, many=True)
+        return Response(serializer.data)
+
