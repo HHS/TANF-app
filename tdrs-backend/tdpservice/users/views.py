@@ -101,12 +101,13 @@ class FeedbackViewSet(mixins.CreateModelMixin,
     serializer_class = FeedbackSerializer
     permission_classes = ()
 
-    def retrieve(self, request, *args, **kwargs):
+    def retrieve(self, request, pk=None):
         """Return a specific feedback."""
         item = get_object_or_404(self.queryset, pk=pk)
-        self.check_object_permissions(request, item)
-        serializer = self.get_serializer_class()(item)
-        return Response(serializer.data)
+        if request.user == item.user:
+            serializer = self.get_serializer_class()(item)
+            return Response(serializer.data)
+        return Response(status=status.HTTP_403_FORBIDDEN)
 
     def list(self, request, *args, **kwargs):
         """List feedback by user."""

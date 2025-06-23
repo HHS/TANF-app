@@ -193,6 +193,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
 
         model = Feedback
         fields = (
+            'id',
             'user',
             'rating',
             'feedback',
