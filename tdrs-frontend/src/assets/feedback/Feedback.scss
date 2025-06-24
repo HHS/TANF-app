@@ -1,6 +1,15 @@
 /* Feedback.scss */
 /* styles needed to override some of the USWD default stylling */
 
+.feedback-modal-overlay {
+  outline: none;
+
+  &:focus,
+  &:focus-visible {
+    outline: none;
+  }
+}
+
 .feedback-button {
   position: fixed;
   bottom: 0;
@@ -21,6 +30,20 @@
   padding: 0;
   margin-bottom: 1px;
   cursor: pointer;
+}
+
+.feedback-modal-content {
+  outline: none;
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #005ea2;
+    outline-offset: 2px;
+    border-radius: 0.5rem;
+  }
 }
 
 .feedback-group {
@@ -72,7 +95,7 @@
     border-radius: 1px;
     border: 1px solid black; // default border
     color: inherit;
-    transition: border 0.2s ease;
+    transition: border 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 
     svg {
       fill: currentColor;
@@ -87,26 +110,31 @@
   &.selected-red label.radio-icon {
     border-color: red;
     color: red;
+    background-color: rgba(255, 0, 0, 0.1); // light red background
   }
 
   &.selected-orange label.radio-icon {
     border-color: orange;
     color: orange;
+    background-color: rgba(255, 165, 0, 0.1); // light orange
   }
 
   &.selected-blue label.radio-icon {
     border-color: blue;
     color: blue;
+    background-color: rgba(0, 0, 255, 0.1); // light blue
   }
 
   &.selected-green label.radio-icon {
     border-color: green;
     color: green;
+    background-color: rgba(0, 128, 0, 0.1); // light green
   }
 
   &.selected-darkgreen label.radio-icon {
     border-color: darkgreen;
     color: darkgreen;
+    background-color: rgba(0, 100, 0, 0.15); // light dark green
   }
 
   // Override focus when selected

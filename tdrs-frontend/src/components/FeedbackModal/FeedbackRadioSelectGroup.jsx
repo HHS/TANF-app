@@ -57,6 +57,7 @@ const FeedbackRadioSelectGroup = ({
   label,
   selectedOption,
   onRatingSelected,
+  onKeyDownSelection,
   error,
 }) => {
   return (
@@ -109,6 +110,7 @@ const FeedbackRadioSelectGroup = ({
                       value={option.value}
                       checked={isSelected}
                       onChange={() => onRatingSelected(option.value)}
+                      onKeyDown={(e) => onKeyDownSelection(e, option.value)}
                       tabIndex={0}
                     />
                     {option.icon}

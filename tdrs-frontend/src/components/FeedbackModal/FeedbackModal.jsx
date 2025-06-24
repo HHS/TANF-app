@@ -112,9 +112,8 @@ const FeedbackModal = ({ id, title, message, children, isOpen, onClose }) => {
   return isOpen ? (
     <div
       id={id}
-      className="usa-modal-overlay"
+      className="usa-modal-overlay feedback-modal-overlay"
       data-testid="feedback-modal-overlay"
-      tabIndex={-1}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -124,7 +123,7 @@ const FeedbackModal = ({ id, title, message, children, isOpen, onClose }) => {
       onKeyDown={onKeyDown}
     >
       <div
-        className="modal-content"
+        className="modal-content feedback-modal-content"
         data-testid="feedback-modal-content"
         ref={modalRef}
         tabIndex={-1}
@@ -133,6 +132,8 @@ const FeedbackModal = ({ id, title, message, children, isOpen, onClose }) => {
           height: 'auto',
           borderRadius: '0.5rem',
         }}
+        role="presentation"
+        onClick={(e) => e.stopPropagation()}
       >
         <div id="feedback-modal-header-container">
           <h1

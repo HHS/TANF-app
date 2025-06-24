@@ -67,6 +67,12 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
     setIsAnonymous(!isAnonymous)
   }
 
+  const handleKeyDown = (event, rating) => {
+    if (event.key === 'Enter') {
+      handleRatingSelected(rating)
+    }
+  }
+
   const isFormValidToSubmit = () => {
     return selectedRatingsOption !== undefined
   }
@@ -98,6 +104,7 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
               label="How is your overall experience using TANF Data Portal?*"
               selectedOption={selectedRatingsOption}
               onRatingSelected={handleRatingSelected}
+              onKeyDownSelection={handleKeyDown}
               error={error}
             />
           </div>
@@ -133,6 +140,11 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
                 type="checkbox"
                 checked={isAnonymous}
                 onChange={handleAnonymousChange}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleAnonymousChange()
+                  }
+                }}
               />
               <label
                 className="usa-checkbox__label"
