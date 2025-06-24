@@ -22,7 +22,10 @@ Then('the feedback modal and form should be displayed to the user', () => {
 })
 
 When('user attempts to submit invalid feedback', () => {
-  cy.contains('button', 'Send Feedback').should('be.visible').click()
+  cy.contains('button', 'Send Feedback')
+    .scrollIntoView()
+    .should('be.visible')
+    .click()
 })
 
 Then('an error message should be displayed indicating the issue', () => {
@@ -41,7 +44,10 @@ When('user submits valid feedback', () => {
     'Great job on the new features!'
   )
   // Submit feedback
-  cy.contains('button', 'Send Feedback').should('be.visible').click()
+  cy.contains('button', 'Send Feedback')
+    .scrollIntoView()
+    .should('be.visible')
+    .click()
 })
 
 Then('the feedback is successfully submitted', () => {
