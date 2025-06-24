@@ -1,9 +1,11 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import GovBanner from './components/GovBanner'
 import Routes from './components/Routes'
 import { Alert } from './components/Alert'
 import Header from './components/Header'
 import Footer from './components/Footer'
+import { useSelector } from 'react-redux'
+import { useRUM } from './hooks/useRUM'
 
 /**
  * The root component
@@ -15,6 +17,13 @@ import Footer from './components/Footer'
  * Renders Routes and all its children
  */
 function App() {
+  const user = useSelector((state) => state.auth.user)
+  const { setUserInfo } = useRUM()
+  useEffect(() => {
+    if (user) {
+      setUserInfo(user)
+    }
+  }, [user, setUserInfo])
   return (
     <>
       <a
