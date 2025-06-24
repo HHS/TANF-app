@@ -23,6 +23,9 @@ Then('the feedback modal and form should be displayed to the user', () => {
 
 When('user attempts to submit invalid feedback', () => {
   cy.contains('button', 'Send Feedback').should('be.visible').click()
+})
+
+Then('an error message should be displayed indicating the issue', () => {
   cy.contains('There is 1 error in this form').should('be.visible')
 })
 
@@ -39,6 +42,14 @@ When('user submits valid feedback', () => {
   )
   // Submit feedback
   cy.contains('button', 'Send Feedback').should('be.visible').click()
-  // Wait for thank you modal to appear
+})
+
+Then('the feedback is successfully submitted', () => {
   cy.get('#feedback-thank-you-modal', { timeout: 5000 }).should('be.visible')
+})
+
+Then('a success confirmation is shown or modal closes', () => {
+  // Optional extra check: modal disappears or a success message appears
+  cy.get('#feedback-modal').should('not.exist')
+  cy.get('#feedback-thank-you-modal').should('be.visible')
 })
