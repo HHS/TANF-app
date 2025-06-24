@@ -9,11 +9,16 @@ const FeedbackModal = ({ id, title, message, children, isOpen, onClose }) => {
   const hasAutoFocused = useRef(false)
 
   useEffect(() => {
-    if (isOpen && modalRef.current && !hasAutoFocused.current) {
+    if (isOpen && modalRef.current) {
       const modalEl = modalRef.current
       const headingEl = modalEl.querySelector('h1')
 
-      const timeoutId = setTimeout(() => {
+      const alreadyFocused = modalEl.contains(document.activeElement)
+      if (hasAutoFocused.current || alreadyFocused) return
+
+      hasAutoFocused.current = true
+
+      requestAnimationFrame(() => {
         if (!modalEl) return
         const focusableEls = modalEl.querySelectorAll(FOCUSABLE_SELECTOR)
         const focusables = Array.from(focusableEls).filter(
@@ -36,12 +41,14 @@ const FeedbackModal = ({ id, title, message, children, isOpen, onClose }) => {
             modalEl.focus()
           }
         }
-        hasAutoFocused.current = true
-      }, 0)
+        //hasAutoFocused.current = true
+      })
 
-      return () => clearTimeout(timeoutId)
+      return () => {
+        hasAutoFocused.current = false
+      }
     }
-  }, [isOpen, modalRef])
+  }, [isOpen])
 
   useEffect(() => {
     if (!isOpen) {
@@ -104,9 +111,10 @@ const FeedbackModal = ({ id, title, message, children, isOpen, onClose }) => {
         onTabPressed(e.shiftKey)
       } else if (e.key === 'Escape') {
         e.preventDefault()
+        onClose()
       }
     },
-    [onTabPressed]
+    [onTabPressed, onClose]
   )
 
   return isOpen ? (
