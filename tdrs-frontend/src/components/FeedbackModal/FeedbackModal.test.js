@@ -86,7 +86,7 @@ describe('FeedbackModal', () => {
     expect(props.onClose).not.toHaveBeenCalled()
   })
 
-  it('does not close on Escape key', () => {
+  it('modal is closed on Escape key', () => {
     render(<FeedbackModal {...props} />)
     const overlay = screen.getByTestId('feedback-modal-overlay')
 
@@ -106,7 +106,7 @@ describe('FeedbackModal', () => {
 
     overlay.dispatchEvent(keyboardEvent)
     expect(preventDefault).toHaveBeenCalled()
-    expect(props.onClose).not.toHaveBeenCalled()
+    expect(props.onClose).toHaveBeenCalledTimes(1)
     expect(document.activeElement).toBe(overlay)
   })
 
@@ -334,7 +334,7 @@ describe('FeedbackModal', () => {
     const closeButton = screen.getByTestId('modal-close-button')
     if (closeButton) closeButton.remove() // Ensure no close button
 
-    const modal = screen.getByTestId('feedback-modal-content')
+    const modal = screen.getByTestId('feedback-modal-overlay')
 
     act(() => {
       modal.focus()

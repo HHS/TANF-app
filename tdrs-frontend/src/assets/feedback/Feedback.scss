@@ -6,7 +6,7 @@
 
   &:focus,
   &:focus-visible {
-    outline: none;
+    outline: none !important;
   }
 }
 

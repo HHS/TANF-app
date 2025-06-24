@@ -97,7 +97,14 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
           <h3 className="usa-error-message">There is 1 error in this form</h3>
         </div>
       )}
-      <form style={{ marginTop: '1.5rem' }} onSubmit={handleSubmit}>
+      <form
+        data-testid="feedback-form"
+        style={{ marginTop: '1.5rem' }}
+        onSubmit={(e) => {
+          e.preventDefault()
+          handleSubmit()
+        }}
+      >
         <div className="margin-4 margin-bottom-0" style={{ marginTop: '5px' }}>
           <div>
             <FeedbackRadioSelectGroup
@@ -161,9 +168,8 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
           <div className="margin-top-4 margin-bottom-2">
             <Button
               data-testid="feedback-submit-button"
-              type="button"
+              type="submit"
               className="usa-button"
-              onClick={handleSubmit}
             >
               Send Feedback
             </Button>

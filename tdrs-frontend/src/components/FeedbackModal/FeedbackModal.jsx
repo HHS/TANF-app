@@ -9,44 +9,41 @@ const FeedbackModal = ({ id, title, message, children, isOpen, onClose }) => {
   const hasAutoFocused = useRef(false)
 
   useEffect(() => {
-    if (isOpen && modalRef.current) {
-      const modalEl = modalRef.current
-      const headingEl = modalEl.querySelector('h1')
+    if (!isOpen || !modalRef.current) return
+    const modalEl = modalRef.current
 
+    requestAnimationFrame(() => {
       const alreadyFocused = modalEl.contains(document.activeElement)
+
       if (hasAutoFocused.current || alreadyFocused) return
 
       hasAutoFocused.current = true
+      const headingEl = modalEl.querySelector('h1[tabindex="-1"]')
+      const focusableEls = modalEl.querySelectorAll(FOCUSABLE_SELECTOR)
+      const focusables = Array.from(focusableEls).filter(
+        (el) => !el.disabled && el.offsetParent !== null
+      )
 
-      requestAnimationFrame(() => {
-        if (!modalEl) return
-        const focusableEls = modalEl.querySelectorAll(FOCUSABLE_SELECTOR)
-        const focusables = Array.from(focusableEls).filter(
-          (el) => !el.disabled && el.offsetParent !== null
-        )
-
-        // focus on heading
-        if (headingEl) {
+      // Focus on heading
+      if (headingEl) {
+        headingEl.focus()
+        // Manually ensure it's marked focused in jsdom (helpful for tests)
+        if (document.activeElement !== headingEl) {
           headingEl.focus()
-          // Manually ensure it's marked focused in jsdom (helpful for tests)
-          if (document.activeElement !== headingEl) {
-            headingEl.focus()
-          }
-        } else if (focusables.length > 0) {
-          // If no heading, fall back to first focusable
-          focusables[0].focus()
-        } else {
-          if (modalEl) {
-            // Fallback: focus modal itself
-            modalEl.focus()
-          }
         }
-        //hasAutoFocused.current = true
-      })
-
-      return () => {
-        hasAutoFocused.current = false
+      } else if (focusables.length > 0) {
+        // If no heading, fall back to first focusable
+        focusables[0].focus()
+      } else {
+        if (modalEl) {
+          // Fallback: focus modal itself
+          modalEl.focus()
+        }
       }
+    })
+
+    return () => {
+      hasAutoFocused.current = false
     }
   }, [isOpen])
 
@@ -122,6 +119,7 @@ const FeedbackModal = ({ id, title, message, children, isOpen, onClose }) => {
       id={id}
       className="usa-modal-overlay feedback-modal-overlay"
       data-testid="feedback-modal-overlay"
+      tabIndex={-1}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -134,7 +132,6 @@ const FeedbackModal = ({ id, title, message, children, isOpen, onClose }) => {
         className="modal-content feedback-modal-content"
         data-testid="feedback-modal-content"
         ref={modalRef}
-        tabIndex={-1}
         style={{
           width: 'auto',
           height: 'auto',

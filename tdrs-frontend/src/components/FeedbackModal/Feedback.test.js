@@ -30,7 +30,7 @@ describe('Feedback component', () => {
     expect(screen.getByTestId('submit-feedback')).toBeInTheDocument()
   })
 
-  it('does not close modal on Escape key press', () => {
+  it('closes modal on Escape key press', async () => {
     render(<Feedback />)
 
     fireEvent.click(screen.getByRole('button', { name: /give feedback/i }))
@@ -45,10 +45,14 @@ describe('Feedback component', () => {
       cancelable: true,
     })
 
-    // Modal still open
-    expect(
-      screen.getByRole('heading', { name: /tell us how we can improve/i })
-    ).toBeInTheDocument()
+    // Modal should closed
+    await waitFor(() => {
+      expect(
+        screen.queryByRole('heading', {
+          name: /tell us how we can improve/i,
+        })
+      ).not.toBeInTheDocument()
+    })
   })
 
   it('does not close modal when clicking on the overlay', () => {

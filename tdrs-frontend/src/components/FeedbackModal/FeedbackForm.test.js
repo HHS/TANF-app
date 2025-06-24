@@ -115,12 +115,22 @@ describe('Feedback Form tests', () => {
     expect(textarea.value).toBe('leading space')
   })
 
-  it('toggles anonymous checkbox', () => {
+  it('toggles anonymous checkbox with mouse click', () => {
     render(<FeedbackForm onFeedbackSubmit={mockOnFeedbackSubmit} />)
 
     const checkbox = screen.getByLabelText(/Send anonymously/i)
     expect(checkbox.checked).toBe(false)
     fireEvent.click(checkbox)
+    expect(checkbox.checked).toBe(true)
+  })
+
+  it('toggles anonymous checkbox with Enter key', () => {
+    render(<FeedbackForm onFeedbackSubmit={mockOnFeedbackSubmit} />)
+
+    const checkbox = screen.getByLabelText(/Send anonymously/i)
+    checkbox.focus()
+    fireEvent.keyDown(checkbox, { key: 'Enter', code: 'Enter' })
+
     expect(checkbox.checked).toBe(true)
   })
 
@@ -228,12 +238,28 @@ describe('Feedback Form tests', () => {
     )
   })
 
+  it('submits form using Enter key on submit button', async () => {
+    feedbackPost.mockResolvedValueOnce({ status: 200 })
+
+    render(<FeedbackForm onFeedbackSubmit={mockOnFeedbackSubmit} />)
+
+    fireEvent.click(screen.getByTestId('feedback-radio-input-3'))
+
+    fireEvent.submit(screen.getByTestId('feedback-form'))
+
+    await waitFor(() => {
+      expect(feedbackPost).toHaveBeenCalled()
+      expect(mockOnFeedbackSubmit).toHaveBeenCalled()
+    })
+  })
+
   it('resets form fields after successful submission', async () => {
     feedbackPost.mockResolvedValueOnce({ status: 200 })
 
     render(<FeedbackForm onFeedbackSubmit={mockOnFeedbackSubmit} />)
 
-    fireEvent.click(screen.getByTestId('feedback-radio-input-2'))
+    const rating = screen.getByTestId('feedback-radio-input-2')
+    fireEvent.click(rating)
     fireEvent.change(screen.getByTestId('feedback-message-input'), {
       target: { value: 'Feedback to reset' },
     })
@@ -242,6 +268,7 @@ describe('Feedback Form tests', () => {
     fireEvent.click(screen.getByRole('button', { name: /send feedback/i }))
 
     await waitFor(() => {
+      expect(rating.checked).toBe(false)
       expect(screen.getByTestId('feedback-message-input').value).toBe('')
       expect(screen.getByLabelText(/Send anonymously/i).checked).toBe(false)
     })
