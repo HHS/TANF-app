@@ -134,13 +134,6 @@ class User(AbstractUser):
         blank=True,
     )
 
-    # TODO: 4972 - Is this naming okay? On the admin page it is "Has fra access".
-    has_fra_access = models.BooleanField(
-        null=True,
-        blank=True,
-        help_text="Does this user submit FRA data? (null for not answered)"
-    )
-
     def __str__(self):
         """Return the username as the string representation of the object."""
         return self.username
@@ -163,7 +156,7 @@ class User(AbstractUser):
             return
 
         if (
-            not (self.is_regional_staff or self.is_data_analyst or self.is_developer)
+            not (self.is_regional_staff or self.is_data_analyst or self.is_fra_submitter or self.is_developer)
         ) and (self.stt or regional):
             raise ValidationError(
                 _(
@@ -204,6 +197,11 @@ class User(AbstractUser):
     def is_data_analyst(self) -> bool:
         """Return whether or not the user is in the Data Analyst Group."""
         return self.is_in_group("Data Analyst")
+
+    @property
+    def is_fra_submitter(self) -> bool:
+        """Return whether or not the user is in the FRA Submitter Group."""
+        return self.is_in_group("FRA Submitter")
 
     @property
     def is_ocio_staff(self) -> bool:

@@ -106,7 +106,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'email',
             'stt',
             'regions',
-            'has_fra_access',
             'login_gov_uuid',
             'hhs_id',
             'roles',
@@ -154,6 +153,18 @@ class UserProfileSerializer(serializers.ModelSerializer):
         # fields.
         serializers.raise_errors_on_nested_writes('update', self, validated_data)
         info = model_meta.get_field_info(instance)
+
+        # Handle group assignment for FRA access
+        request = self.context.get('request')
+        if request:
+            has_fra_access = request.data.get('has_fra_access')
+            if has_fra_access:
+                try:
+                    fra_group = Group.objects.get(name='FRA Submitter')
+                    instance.groups.add(fra_group)
+                except Group.DoesNotExist:
+                    raise serializers.ValidationError('FRA Submitter group does not exist.')
+
         # Simply set each attribute on the instance, and then save it.
         # Note that unlike `.create()` we don't need to treat many-to-many
         # relationships as being a special case. During updates we already
