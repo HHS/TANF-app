@@ -14,6 +14,9 @@ def set_fra_submitters_group_and_permissions(apps, shcema_editor):
     # Get or create groups that need FRA access
     fra_submitter, _ = Group.objects.get_or_create(name='FRA Submitter')
     developer = Group.objects.get(name='Developer')
+    ofa_admin = Group.objects.get(name='OFA Admin')
+    ofa_regional_staff = Group.objects.get(name='OFA Regional Staff')
+    ofa_system_admin = Group.objects.get(name='OFA System Admin')
 
     # Get the same permissions as data analyst
     datafile_permissions = get_permission_ids_for_model(
@@ -37,6 +40,9 @@ def set_fra_submitters_group_and_permissions(apps, shcema_editor):
 
     # add FRA permissions to other groups
     developer.permissions.add(fra_permission)
+    ofa_admin.permissions.add(fra_permission)
+    ofa_regional_staff.permissions.add(fra_permission)
+    ofa_system_admin.permissions.add(fra_permission)
     # TODO: 4972 - What other groups need fra access?
 
 def unset_fra_submitters_group_and_permissions(apps, schema_editor):
@@ -46,6 +52,9 @@ def unset_fra_submitters_group_and_permissions(apps, schema_editor):
     # Groups to reove fra from
     fra_submitter = Group.objects.get(name='FRA Submitter')
     developer = Group.objects.get(name='Developer')
+    ofa_admin = Group.objects.get(name='OFA Admin')
+    ofa_regional_staff = Group.objects.get(name='OFA Regional Staff')
+    ofa_system_admin = Group.objects.get(name='OFA System Admin')
 
     # Delete fra submitter group
     fra_submitter.delete()
@@ -53,6 +62,9 @@ def unset_fra_submitters_group_and_permissions(apps, schema_editor):
     # Remove fra permissions from other groups
     fra_access_permission = Permission.objects.get(codename='has_fra_access')
     developer.permissions.remove(fra_access_permission)
+    ofa_admin.permissions.remove(fra_access_permission)
+    ofa_regional_staff.permissions.remove(fra_access_permission)
+    ofa_system_admin.permissions.remove(fra_access_permission)
 
 class Migration(migrations.Migration):
 
