@@ -11,15 +11,16 @@ import FRASelector from './FRASelector'
 function RequestAccessForm({ user, sttList }) {
   const errorRef = useRef(null)
 
-  const isRegionalStaff =
-    user?.roles?.[0]?.name?.includes('OFA Regional Staff') || false
+  const isAMSUser = user?.email?.includes('@acf.hhs.gov')
 
   const [errors, setErrors] = useState({})
   const [profileInfo, setProfileInfo] = useState({
     firstName: '',
     lastName: '',
     stt: '',
-    hasFRAAccess: isRegionalStaff ? false : null,
+    // Regional staff alreayd have fra access through their permissions,
+    // setting this to `true` would set their group to `FRA Submitter` which isn't wanted
+    hasFRAAccess: isAMSUser ? false : null,
   })
   const dispatch = useDispatch()
   const [touched, setTouched] = useState({})
@@ -27,7 +28,6 @@ function RequestAccessForm({ user, sttList }) {
     !!Object.keys(errors).length && !!Object.keys(touched).length
 
   const [jurisdictionType, setJurisdictionTypeInputValue] = useState('state')
-  const isAMSUser = user?.email?.includes('@acf.hhs.gov')
 
   const regionError = 'At least on Region is required'
 
@@ -203,7 +203,7 @@ function RequestAccessForm({ user, sttList }) {
             regionError={regionError}
           />
         )}
-        {jurisdictionType !== 'tribe' && !isRegionalStaff && (
+        {jurisdictionType !== 'tribe' && !isAMSUser && (
           <FRASelector
             hasFRAAccess={profileInfo.hasFRAAccess}
             setHasFRAAccess={setHasFRAAccess}
