@@ -161,11 +161,22 @@ describe('SiteMap', () => {
   })
 
   describe('Fra reports', () => {
-    it('Shows FRA reports if feat flag is on', () => {
+    it('Shows FRA reports if user has has_fra_access group permission', () => {
       const user = {
         email: 'hi@bye.com',
-        roles: [],
-        feature_flags: { fra_reports: true },
+        roles: [
+          {
+            id: 1,
+            name: 'FRA Submitter',
+            permissions: [
+              {
+                id: 1,
+                codename: 'has_fra_access',
+                name: 'Can access FRA Data Files',
+              },
+            ],
+          },
+        ],
         account_approval_status: 'Approved',
       }
 
@@ -184,7 +195,7 @@ describe('SiteMap', () => {
       expect(getByText('FRA Data Files')).toBeInTheDocument()
     })
 
-    it('Doesnt show FRA reports if feat flag is off', () => {
+    it('Doesnt show FRA reports if user does not nave has_fra_access group permission', () => {
       const user = {
         email: 'hi@bye.com',
         roles: [],
