@@ -81,10 +81,6 @@
 }
 
 .radio-option {
-  &.selected {
-    border-width: 3px;
-  }
-
   label.radio-icon {
     display: flex;
     align-items: center;
@@ -93,9 +89,15 @@
     width: 45px;
     cursor: pointer;
     border-radius: 1px;
-    border: 1px solid black; // default border
     color: inherit;
     transition: border 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+    box-sizing: border-box;
+
+    /* Inner border logic */
+    border-top: 3px solid black;
+    border-bottom: 3px solid black;
+    border-left: 3px solid black;
+    border-right: none;
 
     svg {
       fill: currentColor;
@@ -103,36 +105,55 @@
 
     // Focus ring (only applies if not selected)
     &:focus-within {
-      border: 2px solid #005ea2;
+      outline: none;
+      border-top: 3px solid #005ea2;
+      border-bottom: 3px solid #005ea2;
+      border-left: 3px solid #005ea2;
     }
   }
 
+  &:first-child label.radio-icon {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+  }
+
+  &:last-child label.radio-icon {
+    border-right: 3px solid black;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+  }
+
+  // Selected state: apply full border and radius
+  &.selected-red label.radio-icon,
+  &.selected-orange label.radio-icon,
+  &.selected-blue label.radio-icon,
+  &.selected-green label.radio-icon,
+  &.selected-darkgreen label.radio-icon {
+    border: 3px solid currentColor; // apply full border
+    border-radius: 4px; // restore rounding for standalone look
+  }
+
   &.selected-red label.radio-icon {
-    border-color: red;
     color: red;
     background-color: rgba(255, 0, 0, 0.1); // light red background
   }
 
   &.selected-orange label.radio-icon {
-    border-color: orange;
     color: orange;
     background-color: rgba(255, 165, 0, 0.1); // light orange
   }
 
   &.selected-blue label.radio-icon {
-    border-color: blue;
     color: blue;
     background-color: rgba(0, 0, 255, 0.1); // light blue
   }
 
   &.selected-green label.radio-icon {
-    border-color: green;
     color: green;
     background-color: rgba(0, 128, 0, 0.1); // light green
   }
 
   &.selected-darkgreen label.radio-icon {
-    border-color: darkgreen;
     color: darkgreen;
     background-color: rgba(0, 100, 0, 0.15); // light dark green
   }

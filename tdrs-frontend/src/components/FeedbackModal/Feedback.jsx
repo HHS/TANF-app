@@ -78,6 +78,12 @@ function Feedback() {
                 type="button"
                 onClick={handleCloseModal}
                 style={{ marginTop: '8px' }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    handleCloseModal()
+                  }
+                }}
               >
                 Close
               </button>

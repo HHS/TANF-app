@@ -1,11 +1,14 @@
 /* eslint-disable no-unused-vars */
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import axios from 'axios'
-import Button from '../Button'
 import FeedbackRadioSelectGroup from './FeedbackRadioSelectGroup'
 import { feedbackPost } from '__mocks__/mockFeedbackAxiosApi'
+import { useSelector } from 'react-redux'
 
 const FeedbackForm = ({ onFeedbackSubmit }) => {
+  const formRef = useRef(null)
+  const authenticated = useSelector((state) => state.auth.authenticated)
+
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [selectedRatingsOption, setSelectedRatingsOption] = useState(undefined)
   const [feedbackMessage, setFeedbackMessage] = useState('')
@@ -77,6 +80,23 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
     return selectedRatingsOption !== undefined
   }
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const isCmdOrCtrl = e.metaKey || e.ctrlKey
+      const isEnter = e.key === 'Enter'
+
+      if (isCmdOrCtrl && isEnter) {
+        if (formRef.current?.contains(document.activeElement)) {
+          e.preventDefault()
+          handleSubmit()
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedRatingsOption, feedbackMessage, isAnonymous])
+
   return (
     <div>
       <div
@@ -98,11 +118,11 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
         </div>
       )}
       <form
+        ref={formRef}
         data-testid="feedback-form"
         style={{ marginTop: '1.5rem' }}
         onSubmit={(e) => {
           e.preventDefault()
-          handleSubmit()
         }}
       >
         <div className="margin-4 margin-bottom-0" style={{ marginTop: '5px' }}>
@@ -139,40 +159,50 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
               {feedbackMessage.length}/{500} characters
             </div>
           </div>
-          <div className="margin-top-3">
-            <div className="usa-checkbox">
-              <input
-                id="feedback-anonymous-input"
-                className="usa-checkbox__input"
-                type="checkbox"
-                checked={isAnonymous}
-                onChange={handleAnonymousChange}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleAnonymousChange()
-                  }
-                }}
-              />
-              <label
-                className="usa-checkbox__label"
-                htmlFor="feedback-anonymous-input"
-                style={{
-                  display: 'inline-block',
-                  paddingTop: '0.15rem',
-                }}
-              >
-                Send anonymously
-              </label>
+          {authenticated && (
+            <div className="margin-top-3">
+              <div className="usa-checkbox">
+                <input
+                  id="feedback-anonymous-input"
+                  className="usa-checkbox__input"
+                  type="checkbox"
+                  checked={isAnonymous}
+                  onChange={handleAnonymousChange}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      handleAnonymousChange()
+                    }
+                  }}
+                />
+                <label
+                  className="usa-checkbox__label"
+                  htmlFor="feedback-anonymous-input"
+                  style={{
+                    display: 'inline-block',
+                    paddingTop: '0.15rem',
+                  }}
+                >
+                  Send anonymously
+                </label>
+              </div>
             </div>
-          </div>
+          )}
           <div className="margin-top-4 margin-bottom-2">
-            <Button
+            <button
               data-testid="feedback-submit-button"
-              type="submit"
+              type="button"
               className="usa-button"
+              onClick={handleSubmit}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  handleSubmit()
+                }
+              }}
             >
               Send Feedback
-            </Button>
+            </button>
           </div>
         </div>
       </form>
