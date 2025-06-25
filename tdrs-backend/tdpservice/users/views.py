@@ -116,8 +116,9 @@ class FeedbackViewSet(mixins.CreateModelMixin,
         try:
             feedback_id = response.data['id']
             feedback = Feedback.objects.get(id=feedback_id)
-            feedback.user = request.user
-            feedback.save()
+            if not feedback.anonymous:
+                feedback.user = request.user
+                feedback.save()
         except ObjectDoesNotExist:
             logger.exception("Failed to update the user field on the Feedback model because it does not exist.")
         finally:

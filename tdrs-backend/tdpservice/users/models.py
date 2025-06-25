@@ -82,6 +82,8 @@ class Feedback(Reviewable):
 
     feedback = models.TextField(null=True, blank=True)
 
+    anonymous = models.BooleanField(default=False)
+
     acked = models.BooleanField(default=False)
 
     def __str__(self):

@@ -194,6 +194,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
             'id',
             'rating',
             'feedback',
+            'anonymous',
         )
         read_only_fields = (
             'id',
