@@ -3,6 +3,7 @@ import datetime
 import logging
 
 from django.contrib.auth.models import Group
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
@@ -13,7 +14,12 @@ from rest_framework.response import Response
 from rest_framework.generics import ListAPIView
 
 from tdpservice.users.models import User, Feedback, AccountApprovalStatusChoices
-from tdpservice.users.permissions import DjangoModelCRUDPermissions, IsApprovedPermission, UserPermissions
+from tdpservice.users.permissions import (
+    DjangoModelCRUDPermissions,
+    IsApprovedPermission,
+    UserPermissions,
+    FeedbackPermissions
+)
 from tdpservice.users.serializers import (
     GroupSerializer,
     UserProfileSerializer,
@@ -99,30 +105,20 @@ class FeedbackViewSet(mixins.CreateModelMixin,
 
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
-    permission_classes = ()
+    permission_classes = (FeedbackPermissions,)
 
-    def retrieve(self, request, pk=None):
-        """Return a specific feedback."""
-        item = get_object_or_404(self.queryset, pk=pk)
-        if request.user.is_authenticated and request.user == item.user:
-            serializer = self.get_serializer_class()(item)
-            return Response(serializer.data)
-        return Response(status=status.HTTP_403_FORBIDDEN)
+    def create(self, request, *args, **kwargs):
+        """Create feedback with user."""
+        response = super().create(request, *args, **kwargs)
+        if response.status_code != status.HTTP_201_CREATED:
+            return response
 
-    def list(self, request, *args, **kwargs):
-        """List feedback by user."""
-        admin = request.user.groups.filter(name__in=["OFA System Admin", "OFA Admin"]).exists()
-        if admin:
-            return super().list(request, *args, **kwargs)
-
-        if request.user.is_anonymous:
-            return Response()
-
-        users_feedback = self.queryset.filter(user=request.user)
-        page = self.paginate_queryset(users_feedback)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(users_feedback, many=True)
-        return Response(serializer.data)
+        try:
+            feedback_id = response.data['id']
+            feedback = Feedback.objects.get(id=feedback_id)
+            feedback.user = request.user
+            feedback.save()
+        except ObjectDoesNotExist:
+            logger.exception("Failed to update the user field on the Feedback model because it does not exist.")
+        finally:
+            return response

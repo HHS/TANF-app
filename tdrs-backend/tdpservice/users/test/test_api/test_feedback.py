@@ -76,10 +76,9 @@ class TestFeedbackAPIAnonymousUser(FeedbackAPITestsBase):
         return api_client
 
     def test_list_feedback(self, api_client):
-        """List feedback, expect 200 and no data with anonymous user."""
+        """List feedback, expect 403 with anonymous user."""
         response = self.list_feedback(api_client)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data is None
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_get_feedback(self, api_client, feedback):
         """Get a specific feedback, expect 403 with anonymous user."""
