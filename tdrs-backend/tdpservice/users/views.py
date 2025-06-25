@@ -2,7 +2,7 @@
 import datetime
 import logging
 
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import AnonymousUser, Group
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -116,9 +116,14 @@ class FeedbackViewSet(mixins.CreateModelMixin,
         try:
             feedback_id = response.data['id']
             feedback = Feedback.objects.get(id=feedback_id)
+
+            # Force anonymity if user is None to prevent us from know if authenticated users chose to remain anonymous
+            if request.user is None or isinstance(request.user, AnonymousUser):
+                feedback.anonymous = True
+
             if not feedback.anonymous:
                 feedback.user = request.user
-                feedback.save()
+            feedback.save()
         except ObjectDoesNotExist:
             logger.exception("Failed to update the user field on the Feedback model because it does not exist.")
         finally:

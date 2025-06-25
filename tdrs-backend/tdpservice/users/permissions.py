@@ -266,12 +266,21 @@ class FeedbackPermissions(permissions.BasePermission):
 
     def has_permission(self, request, view):
         """Check if user has permission to access Feedback resources."""
-        # Allow create action for all users (including anonymous)
+        # Allow all create actions
         if request.method == 'POST':
             return True
 
         # For list and retrieve actions, only authenticated users are allowed
-        return request.user.is_authenticated
+        if not request.user.is_authenticated:
+            return False
+
+        # For list action, filter queryset for non-admin users
+        if view.action == 'list':
+            is_admin = request.user.groups.filter(name__in=["OFA System Admin", "OFA Admin"]).exists()
+            if not is_admin:
+                view.queryset = view.queryset.filter(user=request.user)
+
+        return True
 
     def has_object_permission(self, request, view, obj):
         """Check if user has permission to access a specific Feedback object."""
