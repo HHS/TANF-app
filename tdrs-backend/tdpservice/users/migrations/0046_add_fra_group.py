@@ -11,8 +11,9 @@ def set_fra_submitters_group_and_permissions(apps, shcema_editor):
     Permission = apps.get_model('auth', 'Permission')
     ContentType = apps.get_model('contenttypes', 'ContentType')
 
-    # Create Group
-    group, _ = Group.objects.get_or_create(name='FRA Submitter')
+    # Get or create groups that need FRA access
+    fra_submitter, _ = Group.objects.get_or_create(name='FRA Submitter')
+    developer = Group.objects.get(name='Developer')
 
     # Get the same permissions as data analyst
     datafile_permissions = get_permission_ids_for_model(
@@ -31,12 +32,27 @@ def set_fra_submitters_group_and_permissions(apps, shcema_editor):
     )
 
     # Clear old permissions and set the new one
-    group.permissions.clear()
-    group.permissions.add(*datafile_permissions, fra_permission)
+    fra_submitter.permissions.clear()
+    fra_submitter.permissions.add(*datafile_permissions, fra_permission)
+
+    # add FRA permissions to other groups
+    developer.permissions.add(fra_permission)
+    # TODO: 4972 - What other groups need fra access?
 
 def unset_fra_submitters_group_and_permissions(apps, schema_editor):
     Group = apps.get_model('auth', 'Group')
-    Group.objects.filter(name='FRA Submitter').delete()
+    Permission = apps.get_model('auth', 'Permission')
+
+    # Groups to reove fra from
+    fra_submitter = Group.objects.get(name='FRA Submitter')
+    developer = Group.objects.get(name='Developer')
+
+    # Delete fra submitter group
+    fra_submitter.delete()
+
+    # Remove fra permissions from other groups
+    fra_access_permission = Permission.objects.get(codename='has_fra_access')
+    developer.permissions.remove(fra_access_permission)
 
 class Migration(migrations.Migration):
 
