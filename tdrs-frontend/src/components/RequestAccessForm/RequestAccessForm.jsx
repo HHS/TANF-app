@@ -11,12 +11,15 @@ import FRASelector from './FRASelector'
 function RequestAccessForm({ user, sttList }) {
   const errorRef = useRef(null)
 
+  const isRegionalStaff =
+    user?.roles?.[0]?.name?.includes('OFA Regional Staff') || false
+
   const [errors, setErrors] = useState({})
   const [profileInfo, setProfileInfo] = useState({
     firstName: '',
     lastName: '',
     stt: '',
-    hasFRAAccess: null,
+    hasFRAAccess: isRegionalStaff ? false : null,
   })
   const dispatch = useDispatch()
   const [touched, setTouched] = useState({})
@@ -200,7 +203,7 @@ function RequestAccessForm({ user, sttList }) {
             regionError={regionError}
           />
         )}
-        {jurisdictionType !== 'tribe' && (
+        {jurisdictionType !== 'tribe' && !isRegionalStaff && (
           <FRASelector
             hasFRAAccess={profileInfo.hasFRAAccess}
             setHasFRAAccess={setHasFRAAccess}

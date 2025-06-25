@@ -13,7 +13,6 @@ export const requestAccess =
     dispatch({ type: PATCH_REQUEST_ACCESS })
     try {
       const URL = `${process.env.REACT_APP_BACKEND_URL}/users/request_access/`
-      console.log(`Has FRA Access: ${hasFRAAccess}`)
       const user = {
         first_name: firstName,
         last_name: lastName,
