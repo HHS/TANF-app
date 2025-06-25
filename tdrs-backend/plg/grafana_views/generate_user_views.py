@@ -12,6 +12,8 @@ import re
 import logging
 import datetime
 
+CWD = os.path.dirname(os.path.abspath(__file__))
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -146,7 +148,7 @@ def handle_table_name(schema_type, schema_name):
 logger.info("Starting user view generation")
 
 # Load the schema fields from the JSON file
-with open('schema_fields.json', 'r') as f:
+with open(os.path.join(CWD, 'schema_fields.json'), 'r') as f:
     json_data = json.load(f)
 
 # Extract the schema data from the 'schemas' key
@@ -156,7 +158,7 @@ schema_data = json_data.get('schemas', {})
 logger.info(f"Loaded schema data with {len(schema_data)} schema types")
 
 # Read the template query from the file
-with open('view_template.txt', 'r') as f:
+with open(os.path.join(CWD, 'view_template.txt'), 'r') as f:
     query_template = f.read().split(';')[0] + ';'  # Take only the first query
 
 # Extract the SELECT part and the rest of the query
