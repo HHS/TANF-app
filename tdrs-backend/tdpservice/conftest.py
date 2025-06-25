@@ -16,6 +16,7 @@ from rest_framework.test import APIClient
 
 from tdpservice.core.admin import LogEntryAdmin
 from tdpservice.data_files.test.factories import DataFileFactory
+from tdpservice.parsers.schema_defs import fra
 from tdpservice.security.test.factories import OwaspZapScanFactory
 from tdpservice.stts.models import STT, Region
 from tdpservice.users.models import AccountApprovalStatusChoices
@@ -132,6 +133,14 @@ def ofa_system_admin():
     ofa_sys_adming.save()
     return ofa_sys_adming
 
+@pytest.fixture
+def fra_submitter(stt):
+    """Return an fra submitter user."""
+    fra_submitter = UserFactory.create(groups=(Group.objects.get(name="FRA Submitter"),),)
+    fra_submitter.stt = stt
+    fra_submitter.account_approval_status = AccountApprovalStatusChoices.APPROVED
+    fra_submitter.save()
+    return fra_submitter
 
 @pytest.fixture
 def data_analyst(stt):
