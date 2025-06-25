@@ -14,6 +14,45 @@ import datetime
 
 CWD = os.path.dirname(os.path.abspath(__file__))
 
+query_string ="""
+SELECT {fields}
+    data_files.section,
+    data_files.version,
+    data_files.year,
+    data_files.quarter,
+    stt.name AS "STT",                                                         -- Select stt_name from the stts table
+    stt.stt_code AS "STT_CODE",                                                -- Select stt_code from the stts table
+    stt.region_id AS "REGION"                                                  -- Select region from the stts table
+FROM {table} {record_type}
+INNER JOIN
+        data_files_datafile data_files                                             -- Join with data_files_datafile
+        ON {record_type}.datafile_id = data_files.id                              -- Join condition
+    INNER JOIN (
+        SELECT
+            stt_id,                                                                -- Select stt_id
+            section,                                                               -- Select section
+            year,                                                                  -- Select fiscal_year
+            quarter,                                                               -- Select fiscal_quarter
+            MAX(version) AS version                                                -- Get the maximum version for each group
+        FROM
+            data_files_datafile                                                    -- Subquery table
+        GROUP BY
+            stt_id, section, year, quarter                                         -- Group by columns
+    ) most_recent
+        ON data_files.stt_id = most_recent.stt_id
+        AND data_files.section = most_recent.section
+        AND data_files.version = most_recent.version
+        AND data_files.year = most_recent.year
+        AND data_files.quarter = most_recent.quarter
+    INNER JOIN
+        stts_stt stt                                                               -- Join with the stts table (aliased as stt)
+        ON data_files.stt_id = stt.id                                              -- Join condition to match stt_id
+    WHERE
+        data_files.year > 2020 AND                                                 -- Filter for fiscal year
+        data_files.quarter in ('Q1', 'Q2', 'Q3', 'Q4')                         -- Filter for fiscal quarters
+;
+"""
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -29,16 +68,15 @@ def handle_field(field, formatted_fields):
     if field == "SSN":
         formatted_fields.append(f'md5("{field}"::text) as "SSN_HASH"')
 
-        formatted_fields.append(f'''
+        formatted_fields.append(f''' --
         CASE
             WHEN "{field}" !~ '^(1{{9}}|2{{9}}|3{{9}}|4{{9}}|5{{9}}|6{{9}}|7{{9}}|8{{9}}|9{{9}})$' THEN 1
             ELSE 0
         END AS "SSN_VALID"'''.strip())
     elif field == "DATE_OF_BIRTH":
         # Remove DATE_OF_BIRTH from the formatted fields list since we're adding two age calculations
-        formatted_fields.append(f'''
-        -- Calculate AGE_FIRST: Age as of the first day of the reporting month
-        CASE
+        formatted_fields.append(f''' --
+        CASE -- Calculate AGE_FIRST: Age as of the first day of the reporting month
             WHEN "{field}" ~ '^[0-9]{{8}}$' AND
                     -- Validate year (reasonable range)
                     CAST(SUBSTRING("{field}" FROM 1 FOR 4) AS INTEGER) BETWEEN 1900 AND
@@ -71,9 +109,8 @@ def handle_field(field, formatted_fields):
             ELSE NULL
         END AS "AGE_FIRST"'''.strip())
 
-        formatted_fields.append(f'''
-        -- Calculate AGE_LAST: Age as of the last day of the reporting month
-        CASE
+        formatted_fields.append(f''' --
+        CASE -- Calculate AGE_LAST: Age as of the last day of the reporting month
             WHEN "{field}" ~ '^[0-9]{{8}}$' AND
                     -- Validate year (reasonable range)
                     CAST(SUBSTRING("{field}" FROM 1 FOR 4) AS INTEGER) BETWEEN 1900 AND
@@ -106,7 +143,7 @@ def handle_field(field, formatted_fields):
             ELSE NULL
         END AS "AGE_LAST"'''.strip())
 
-        formatted_fields.append(f'''
+        formatted_fields.append(f''' --
         -- Determine AGE_VALID
         CASE
             WHEN "{field}" !~ '^[0-9]{{8}}$' OR
@@ -125,23 +162,23 @@ def handle_field(field, formatted_fields):
 
 
 def handle_table_name(schema_type, schema_name):
-    """Determine appropriate table name."""
+    """Determine appropriate table and record type."""
     table_name = ""
-    table_alias = ""
+    record_type = ""
     if schema_type == 'tanf':
         table_name = f'search_indexes_TANF_{schema_name.upper()}'
-        table_alias = schema_name.upper()
+        record_type = schema_name.upper()
     elif schema_type == 'tribal_tanf':
         table_name = f'search_indexes_TRIBAL_TANF_{schema_name.upper()}'
-        table_alias = schema_name.upper()
+        record_type = schema_name.upper()
     elif schema_type == 'ssp':
         table_name = f'search_indexes_SSP_{schema_name.upper()}'
-        table_alias = schema_name.upper()
+        record_type = schema_name.upper()
     elif schema_type == 'fra':
         table_name = f'search_indexes_FRA_{schema_name.upper()}'
-        table_alias = schema_name.upper()
+        record_type = schema_name.upper()
 
-    return table_name, table_alias
+    return table_name, record_type
 
 
 # Log start of script execution
@@ -157,35 +194,8 @@ schema_data = json_data.get('schemas', {})
 # Log information about the loaded schema data
 logger.info(f"Loaded schema data with {len(schema_data)} schema types")
 
-# Read the template query from the file
-with open(os.path.join(CWD, 'view_template.txt'), 'r') as f:
-    query_template = f.read().split(';')[0] + ';'  # Take only the first query
-
-# Extract the SELECT part and the rest of the query
-select_pattern = re.compile(r'SELECT\s+([^\n]+),\s*\n')
-select_match = select_pattern.search(query_template)
-
-if not select_match:
-    logger.error("Could not find SELECT statement in the query template.")
-    exit(1)
-
-# Get the part after the field list
-query_parts = query_template.split('\n', 1)
-after_select = query_parts[1].lstrip()
-
-# Extract the FROM part to identify the table name and alias
-from_pattern = re.compile(r'FROM\s+([^\s]+)\s+([^\s\n]+)')
-from_match = from_pattern.search(query_template)
-
-if not from_match:
-    logger.error("Could not find FROM clause in the query template.")
-    exit(1)
-
-template_table = from_match.group(1)  # e.g., search_indexes_TANF_T1
-template_alias = from_match.group(2)  # e.g., T1
-
 # Create the output directory if it doesn't exist
-output_dir = 'user_views'
+output_dir = os.path.join(CWD, 'user_views')
 os.makedirs(output_dir, exist_ok=True)
 
 # Process each schema type and its schemas
@@ -200,27 +210,13 @@ for schema_type, schemas in schema_data.items():
         for field in fields:
             handle_field(field, formatted_fields)
 
-        formatted_fields_str = ','.join(formatted_fields)
-
-        # Create the new SELECT statement
-        new_select = f'SELECT {formatted_fields_str},'
+        formatted_fields_str = ','.join(formatted_fields) + ","
 
         # Determine the appropriate table name based on schema type and name
-        table_name, table_alias = handle_table_name(schema_type, schema_name)
+        table_name, record_type = handle_table_name(schema_type, schema_name)
 
-        # Create a new query by replacing the table name and alias throughout the query
-        new_query = query_template
-
-        # Replace the SELECT part
-        new_query = select_pattern.sub(f'{new_select} \n', new_query)
-
-        # Replace the table name and alias in the FROM clause
-        new_query = new_query.replace(f'FROM {template_table} {template_alias}',
-                                      f'FROM {table_name} {table_alias}')
-
-        # Replace all other occurrences of the template alias with the new alias
-        # This handles the JOIN conditions and any other references to the table alias
-        new_query = re.sub(r'\b' + template_alias + r'\b', table_alias, new_query)
+        # Construct query
+        query = query_string.format(fields=formatted_fields_str, table=table_name, record_type=record_type)
 
         # Create the header comment with warning, timestamp, and transformation details
         timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -243,7 +239,7 @@ for schema_type, schemas in schema_data.items():
 
         # Modify the query to create a view
         view_name = f'{schema_type}_{schema_name}'
-        view_query = f'''CREATE OR REPLACE VIEW "{view_name}" AS {new_query}'''
+        view_query = f'''CREATE OR REPLACE VIEW "{view_name}" AS {query}'''
 
         # Write to a file
         output_file = os.path.join(output_dir, f'{view_name}.sql')
