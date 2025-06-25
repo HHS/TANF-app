@@ -115,7 +115,7 @@ class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
 
     def user_list_display(self, obj):
         """Handle user display."""
-        return obj.user.username if not obj.anonymous else "Anonymous"
+        return obj.user.username if not obj.anonymous and obj.user is not None else "Anonymous"
     user_list_display.short_description = "User"
 
     def feedback_list_display(self, obj):
