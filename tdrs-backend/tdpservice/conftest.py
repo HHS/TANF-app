@@ -16,7 +16,6 @@ from rest_framework.test import APIClient
 
 from tdpservice.core.admin import LogEntryAdmin
 from tdpservice.data_files.test.factories import DataFileFactory
-from tdpservice.parsers.schema_defs import fra
 from tdpservice.security.test.factories import OwaspZapScanFactory
 from tdpservice.stts.models import STT, Region
 from tdpservice.users.models import AccountApprovalStatusChoices

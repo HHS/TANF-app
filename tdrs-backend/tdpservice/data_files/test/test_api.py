@@ -1,7 +1,6 @@
 """Tests for DataFiles Application."""
 import os
 from rest_framework import status
-from rest_framework.exceptions import ErrorDetail
 from rest_framework.test import APIClient
 import pytest
 import base64
