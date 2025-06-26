@@ -14,7 +14,7 @@ import datetime
 
 CWD = os.path.dirname(os.path.abspath(__file__))
 
-query_string ="""
+query_template ="""
 SELECT {fields}
     data_files.section,
     data_files.version,
@@ -50,6 +50,7 @@ INNER JOIN
     WHERE
         data_files.year > 2020 AND                                                 -- Filter for fiscal year
         data_files.quarter in ('Q1', 'Q2', 'Q3', 'Q4')                         -- Filter for fiscal quarters
+        {custom_where_clause}
 ;
 """
 
@@ -147,6 +148,8 @@ def handle_field(field, formatted_fields):
         -- Determine AGE_VALID
         CASE
             WHEN "{field}" !~ '^[0-9]{{8}}$' OR
+                    -- Perform null check
+                    "{field}" IS NULL OR "{field}" = '' OR
                     -- Validate year (reasonable range)
                     CAST(SUBSTRING("{field}" FROM 1 FOR 4) AS INTEGER) NOT BETWEEN 1900 AND
                     EXTRACT(YEAR FROM CURRENT_DATE) OR
@@ -179,6 +182,16 @@ def handle_table_name(schema_type, schema_name):
         record_type = schema_name.upper()
 
     return table_name, record_type
+
+
+def handle_where_clause(record_type):
+    """Add custom where clause based on record type."""
+    if '3' in record_type:
+        return "AND \"FAMILY_AFFILIATION\" != 0 AND \"SEX\" != 0"
+    elif '7' in record_type:
+        return "AND \"FAMILIES_MONTH\" != 0 AND \"TDRS_SECTION_IND\" NOT BETWEEN '1' AND '2'"
+    else:
+        return ""
 
 
 # Log start of script execution
@@ -215,8 +228,14 @@ for schema_type, schemas in schema_data.items():
         # Determine the appropriate table name based on schema type and name
         table_name, record_type = handle_table_name(schema_type, schema_name)
 
+        # Handle custom where clause
+        custom_where_clause = handle_where_clause(record_type)
+
         # Construct query
-        query = query_string.format(fields=formatted_fields_str, table=table_name, record_type=record_type)
+        query = query_template.format(fields=formatted_fields_str,
+                                      table=table_name,
+                                      record_type=record_type,
+                                      custom_where_clause=custom_where_clause)
 
         # Create the header comment with warning, timestamp, and transformation details
         timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
