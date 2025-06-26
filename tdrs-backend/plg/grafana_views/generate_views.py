@@ -14,30 +14,30 @@ import datetime
 
 CWD = os.path.dirname(os.path.abspath(__file__))
 
-query_template ="""
+query_template = """
 SELECT {fields}
     data_files.section,
     data_files.version,
     data_files.year,
     data_files.quarter,
-    stt.name AS "STT",                                                         -- Select stt_name from the stts table
-    stt.stt_code AS "STT_CODE",                                                -- Select stt_code from the stts table
-    stt.region_id AS "REGION"                                                  -- Select region from the stts table
+    stt.name AS "STT",                                                     -- Select stt_name from the stts table
+    stt.stt_code AS "STT_CODE",                                            -- Select stt_code from the stts table
+    stt.region_id AS "REGION"                                              -- Select region from the stts table
 FROM {table} {record_type}
 INNER JOIN
-        data_files_datafile data_files                                             -- Join with data_files_datafile
-        ON {record_type}.datafile_id = data_files.id                              -- Join condition
+        data_files_datafile data_files                                     -- Join with data_files_datafile
+        ON {record_type}.datafile_id = data_files.id                       -- Join condition
     INNER JOIN (
         SELECT
-            stt_id,                                                                -- Select stt_id
-            section,                                                               -- Select section
-            year,                                                                  -- Select fiscal_year
-            quarter,                                                               -- Select fiscal_quarter
-            MAX(version) AS version                                                -- Get the maximum version for each group
+            stt_id,                                                        -- Select stt_id
+            section,                                                       -- Select section
+            year,                                                          -- Select fiscal_year
+            quarter,                                                       -- Select fiscal_quarter
+            MAX(version) AS version                                        -- Get the maximum version for each group
         FROM
-            data_files_datafile                                                    -- Subquery table
+            data_files_datafile                                            -- Subquery table
         GROUP BY
-            stt_id, section, year, quarter                                         -- Group by columns
+            stt_id, section, year, quarter                                 -- Group by columns
     ) most_recent
         ON data_files.stt_id = most_recent.stt_id
         AND data_files.section = most_recent.section
@@ -45,11 +45,11 @@ INNER JOIN
         AND data_files.year = most_recent.year
         AND data_files.quarter = most_recent.quarter
     INNER JOIN
-        stts_stt stt                                                               -- Join with the stts table (aliased as stt)
-        ON data_files.stt_id = stt.id                                              -- Join condition to match stt_id
+        stts_stt stt                                                       -- Join with the stts table (aliased as stt)
+        ON data_files.stt_id = stt.id                                      -- Join condition to match stt_id
     WHERE
-        data_files.year > 2020 AND                                                 -- Filter for fiscal year
-        data_files.quarter in ('Q1', 'Q2', 'Q3', 'Q4')                         -- Filter for fiscal quarters
+        data_files.year > 2020 AND                                         -- Filter for fiscal year
+        data_files.quarter in ('Q1', 'Q2', 'Q3', 'Q4')                     -- Filter for fiscal quarters
         {custom_where_clause}
 ;
 """
@@ -203,7 +203,7 @@ def handle_where_clause(record_type):
 
 
 def main(is_admin):
-    """Main function to generate views."""
+    """Generate views."""
     # Log start of script execution
     logger.info(f"Starting {'admin' if is_admin else 'user'} view generation")
 
@@ -244,9 +244,9 @@ def main(is_admin):
 
             # Construct query
             query = query_template.format(fields=formatted_fields_str,
-                                        table=table_name,
-                                        record_type=record_type,
-                                        custom_where_clause=custom_where_clause)
+                                          table=table_name,
+                                          record_type=record_type,
+                                          custom_where_clause=custom_where_clause)
 
             # Create the header comment with warning, timestamp, and transformation details
             timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -279,6 +279,7 @@ def main(is_admin):
             logger.info(f'Created query for {schema_type}_{schema_name}')
 
     logger.info(f'All query files have been generated in the {output_dir_name} directory.')
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate PostgreSQL views for Grafana.')
