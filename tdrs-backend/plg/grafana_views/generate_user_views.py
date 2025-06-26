@@ -6,9 +6,9 @@ This script will create a separate SQL file for each schema, replacing:
 - SSN with md5("SSN"::text) as SSN_HASH
 """
 
+import argparse
 import os
 import json
-import re
 import logging
 import datetime
 
@@ -64,18 +64,26 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def handle_field(field, formatted_fields):
+def handle_field(field, formatted_fields, is_admin):
     """Mutate or add field to fields array."""
     if field == "SSN":
-        formatted_fields.append(f'md5("{field}"::text) as "SSN_HASH"')
+        # Add SSN to the formatted fields list if generating admin views and SSN_HASH if not admin
+        if not is_admin:
+            formatted_fields.append(f'md5("{field}"::text) as "SSN_HASH"')
+        else:
+            formatted_fields.append(f'"{field}"')
 
         formatted_fields.append(f''' --
+        -- Calculate if SSN is valid
         CASE
             WHEN "{field}" !~ '^(1{{9}}|2{{9}}|3{{9}}|4{{9}}|5{{9}}|6{{9}}|7{{9}}|8{{9}}|9{{9}})$' THEN 1
             ELSE 0
         END AS "SSN_VALID"'''.strip())
     elif field == "DATE_OF_BIRTH":
-        # Remove DATE_OF_BIRTH from the formatted fields list since we're adding two age calculations
+        # Add DATE_OF_BIRTH to the formatted fields list if generating admin views
+        if is_admin:
+            formatted_fields.append(f'"{field}"')
+
         formatted_fields.append(f''' --
         CASE -- Calculate AGE_FIRST: Age as of the first day of the reporting month
             WHEN "{field}" ~ '^[0-9]{{8}}$' AND
@@ -194,77 +202,88 @@ def handle_where_clause(record_type):
         return ""
 
 
-# Log start of script execution
-logger.info("Starting user view generation")
+def main(is_admin):
+    """Main function to generate views."""
+    # Log start of script execution
+    logger.info(f"Starting {'admin' if is_admin else 'user'} view generation")
 
-# Load the schema fields from the JSON file
-with open(os.path.join(CWD, 'schema_fields.json'), 'r') as f:
-    json_data = json.load(f)
+    # Load the schema fields from the JSON file
+    with open(os.path.join(CWD, 'schema_fields.json'), 'r') as f:
+        json_data = json.load(f)
 
-# Extract the schema data from the 'schemas' key
-schema_data = json_data.get('schemas', {})
+    # Extract the schema data from the 'schemas' key
+    schema_data = json_data.get('schemas', {})
 
-# Log information about the loaded schema data
-logger.info(f"Loaded schema data with {len(schema_data)} schema types")
+    # Log information about the loaded schema data
+    logger.info(f"Loaded schema data with {len(schema_data)} schema types")
 
-# Create the output directory if it doesn't exist
-output_dir = os.path.join(CWD, 'user_views')
-os.makedirs(output_dir, exist_ok=True)
+    # Create the output directory if it doesn't exist
+    output_dir_name = "admin_views" if is_admin else "user_views"
+    output_dir = os.path.join(CWD, output_dir_name)
+    os.makedirs(output_dir, exist_ok=True)
 
-# Process each schema type and its schemas
-for schema_type, schemas in schema_data.items():
-    for schema_name, fields in schemas.items():
-        # Skip if no fields
-        if not fields:
-            continue
+    # Process each schema type and its schemas
+    for schema_type, schemas in schema_data.items():
+        for schema_name, fields in schemas.items():
+            # Skip if no fields
+            if not fields:
+                continue
 
-        # Format the field list with transformations for DATE_OF_BIRTH and SSN
-        formatted_fields = []
-        for field in fields:
-            handle_field(field, formatted_fields)
+            # Format the field list with transformations for DATE_OF_BIRTH and SSN
+            formatted_fields = []
+            for field in fields:
+                handle_field(field, formatted_fields, is_admin)
 
-        formatted_fields_str = ','.join(formatted_fields) + ","
+            formatted_fields_str = ','.join(formatted_fields) + ","
 
-        # Determine the appropriate table name based on schema type and name
-        table_name, record_type = handle_table_name(schema_type, schema_name)
+            # Determine the appropriate table name based on schema type and name
+            table_name, record_type = handle_table_name(schema_type, schema_name)
 
-        # Handle custom where clause
-        custom_where_clause = handle_where_clause(record_type)
+            # Handle custom where clause
+            custom_where_clause = handle_where_clause(record_type)
 
-        # Construct query
-        query = query_template.format(fields=formatted_fields_str,
-                                      table=table_name,
-                                      record_type=record_type,
-                                      custom_where_clause=custom_where_clause)
+            # Construct query
+            query = query_template.format(fields=formatted_fields_str,
+                                        table=table_name,
+                                        record_type=record_type,
+                                        custom_where_clause=custom_where_clause)
 
-        # Create the header comment with warning, timestamp, and transformation details
-        timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            # Create the header comment with warning, timestamp, and transformation details
+            timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        # Create the header comment as a single string
-        header_comment = f"-- AUTOMATICALLY GENERATED FILE ON {timestamp}\n"
-        header_comment += "-- DO NOT EDIT - Your changes will be overwritten\n"
-        header_comment += "-- Generated by generate_user_views.py\n\n"
-        header_comment += f"-- SQL view for {schema_type}_{schema_name} schema\n"
-        header_comment += "-- Transformations applied:\n"
+            # Create the header comment as a single string
+            header_comment = f"-- AUTOMATICALLY GENERATED FILE ON {timestamp}\n"
+            header_comment += "-- DO NOT EDIT - Your changes will be overwritten\n"
+            header_comment += "-- Generated by generate_views.py\n\n"
+            header_comment += f"-- SQL view for {schema_type}_{schema_name} schema\n"
+            header_comment += "-- Transformations applied:\n"
 
-        # Add specific transformation details
-        if "DATE_OF_BIRTH" in fields:
-            header_comment += "--   * DATE_OF_BIRTH transformed to AGE calculation (as integer)\n"
-        if "SSN" in fields:
-            header_comment += "--   * SSN transformed to md5 hash for privacy\n"
+            # Add specific transformation details
+            if "DATE_OF_BIRTH" in fields:
+                header_comment += "--   * DATE_OF_BIRTH transformed to AGE calculation (as integer)\n"
+            if "SSN" in fields and not is_admin:
+                header_comment += "--   * SSN transformed to md5 hash for privacy\n"
 
-        # Add a blank line at the end
-        header_comment += "\n\n"
+            # Add a blank line at the end
+            header_comment += "\n\n"
 
-        # Modify the query to create a view
-        view_name = f'{schema_type}_{schema_name}'
-        view_query = f'''CREATE OR REPLACE VIEW "{view_name}" AS {query}'''
+            # Modify the query to create a view
+            view_name = f'{"admin_" if is_admin else ""}{schema_type}_{schema_name}'
+            view_query = f'''CREATE OR REPLACE VIEW "{view_name}" AS {query}'''
 
-        # Write to a file
-        output_file = os.path.join(output_dir, f'{view_name}.sql')
-        with open(output_file, 'w') as f:
-            f.write(header_comment + view_query)
+            # Write to a file
+            output_file = os.path.join(output_dir, f'{view_name}.sql')
+            with open(output_file, 'w') as f:
+                f.write(header_comment + view_query)
 
-        logger.info(f'Created query for {schema_type}_{schema_name}')
+            logger.info(f'Created query for {schema_type}_{schema_name}')
 
-logger.info('All query files have been generated in the user_views directory.')
+    logger.info(f'All query files have been generated in the {output_dir_name} directory.')
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Generate PostgreSQL views for Grafana.')
+    parser.add_argument('--is_admin', '-a', type=bool, help='Generate admin version of views.',
+                        default=False, required=False)
+
+    args = parser.parse_args()
+    main(args.is_admin)
