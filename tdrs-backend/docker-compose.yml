@@ -215,7 +215,7 @@ services:
     volumes:
       - .:/tdpapp
       - logs:/tmp
-    build: 
+    build:
       context: .
       args:
         REGISTRY_OWNER: ${REGISTRY_OWNER:-hhs}
@@ -224,6 +224,7 @@ services:
       ./manage.py makemigrations &&
       ./manage.py migrate &&
       ./manage.py populate_stts &&
+      ./manage.py runscript apply_grafana_views &&
       ./gunicorn_start.sh && celery -A tdpservice.settings worker -l info"
     ports:
       - "5555:5555"
