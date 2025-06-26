@@ -43,23 +43,12 @@ storage_config:
     cache_location: /home/vcap/app/loki-data/cache
 
 limits_config:
-  ingestion_rate_mb: 20
-  ingestion_burst_size_mb: 30
-  per_stream_rate_limit: 20MB
-  per_stream_rate_limit_burst: 30MB
+  ingestion_rate_mb: 100
+  ingestion_burst_size_mb: 150
+  per_stream_rate_limit: 100MB
+  per_stream_rate_limit_burst: 150MB
   max_entries_limit_per_query: 5000
-
-#### Loki does not allow retention configs when using non-filesystem stores. We need to configure that on our specific
-### block store (i.e S3).
-# limits_config:
-#   max_query_lookback: 672h # 28 days
-#   retention_period: 672h   # 28 days
-
-# compactor:
-#   working_directory: /home/vcap/app/loki-data/compactor
-#   compaction_interval: 10m
-#   delete_request_store: "aws"
-#   retention_enabled: true
+  max_query_length: 0
 
 ruler:
   alertmanager_url: http://localhost:9093

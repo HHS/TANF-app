@@ -124,6 +124,9 @@ class CloudGov(Common):
     SECURE_REDIRECT_EXEMPT = [r"^prometheus/.*"]
     SECURE_SSL_REDIRECT = True
 
+    # OTEL Settings
+    OTEL_EXPORTER_OTLP_ENDPOINT = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://tempo.apps.internal:4317")
+
 class Development(CloudGov):
     """Settings for applications deployed in the Cloud.gov dev space."""
 
