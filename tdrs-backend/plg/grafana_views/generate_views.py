@@ -2,8 +2,8 @@
 Script to generate SQL query files for each schema in schema_fields.json with specific field transformations.
 
 This script will create a separate SQL file for each schema, replacing:
-- DATE_OF_BIRTH with AGE_FIRST and AGE_LAST
-- SSN with md5("SSN"::text) as SSN_HASH
+- DATE_OF_BIRTH with AGE_FIRST and AGE_LAST for non-admin users
+- SSN with md5("SSN"::text) as SSN_HASH for non-admin users
 """
 
 import argparse
