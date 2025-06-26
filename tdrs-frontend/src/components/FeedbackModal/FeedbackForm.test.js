@@ -1,8 +1,16 @@
 import React from 'react'
+import * as reactRedux from 'react-redux'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import FeedbackForm from './FeedbackForm'
 import { feedbackPost } from '__mocks__/mockFeedbackAxiosApi'
+import { useSelector } from 'react-redux'
+
+// Mock the Redux selector
+jest.mock('react-redux', () => ({
+  ...jest.requireActual('react-redux'),
+  useSelector: jest.fn(),
+}))
 
 jest.mock('__mocks__/mockFeedbackAxiosApi', () => ({
   feedbackPost: jest.fn(),
@@ -74,6 +82,9 @@ describe('Feedback Form tests', () => {
   beforeEach(() => {
     feedbackPost.mockClear()
     mockOnFeedbackSubmit.mockClear()
+
+    // Default to authenticated for most tests
+    reactRedux.useSelector.mockImplementation(() => true)
   })
 
   it('renders feedback form', () => {
@@ -132,6 +143,19 @@ describe('Feedback Form tests', () => {
     fireEvent.keyDown(checkbox, { key: 'Enter', code: 'Enter' })
 
     expect(checkbox.checked).toBe(true)
+  })
+
+  it('does not show anonymous checkbox when user is not authenticated', () => {
+    // Override useSelector to simulate unauthenticated user
+    reactRedux.useSelector.mockImplementation(() => false)
+
+    render(<FeedbackForm onFeedbackSubmit={jest.fn()} />)
+
+    // Check that checkbox is NOT in the document
+    expect(screen.queryByLabelText(/Send anonymously/i)).toBeNull()
+
+    // Restore useSelector to default (authenticated: true) for other tests
+    useSelector.mockImplementation(() => true)
   })
 
   it('shows error if rating is not selected on submit', async () => {
@@ -245,7 +269,28 @@ describe('Feedback Form tests', () => {
 
     fireEvent.click(screen.getByTestId('feedback-radio-input-3'))
 
-    fireEvent.submit(screen.getByTestId('feedback-form'))
+    const button = screen.getByTestId('feedback-submit-button')
+    // Focus the button and simulate Enter keypress
+    button.focus()
+    fireEvent.keyDown(button, { key: 'Enter', code: 'Enter' })
+
+    await waitFor(() => {
+      expect(feedbackPost).toHaveBeenCalled()
+      expect(mockOnFeedbackSubmit).toHaveBeenCalled()
+    })
+  })
+
+  it('submits form with Cmd/Ctrl + Enter from inside textarea', async () => {
+    feedbackPost.mockResolvedValueOnce({ status: 200 })
+    render(<FeedbackForm onFeedbackSubmit={mockOnFeedbackSubmit} />)
+
+    const textarea = screen.getByTestId('feedback-message-input')
+    textarea.focus()
+    fireEvent.change(textarea, { target: { value: 'Quick feedback' } })
+    fireEvent.click(screen.getByTestId('feedback-radio-input-3'))
+
+    fireEvent.keyDown(window, { key: 'Enter', metaKey: true }) // Mac
+    // OR use ctrlKey: true for Windows
 
     await waitFor(() => {
       expect(feedbackPost).toHaveBeenCalled()

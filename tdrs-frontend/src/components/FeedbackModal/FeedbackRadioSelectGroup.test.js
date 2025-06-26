@@ -71,6 +71,7 @@ function FeedbackRadioGroupTestWrapper() {
       label="How satisfied are you?"
       selectedOption={selectedOption}
       onRatingSelected={setSelectedOption}
+      onKeyDownSelection={jest.fn()}
       error={false}
     />
   )
@@ -91,6 +92,7 @@ describe('Feedback Radio Select Group tests', () => {
         label={radioGroupLabel}
         selectedOption={undefined}
         onRatingSelected={mockOnRatingSelected}
+        onKeyDownSelection={jest.fn()}
         error={false}
       />
     )
@@ -114,6 +116,7 @@ describe('Feedback Radio Select Group tests', () => {
         label={radioGroupLabel}
         selectedOption={undefined}
         onRatingSelected={mockOnRatingSelected}
+        onKeyDownSelection={jest.fn()}
         error={false}
       />
     )
@@ -123,12 +126,29 @@ describe('Feedback Radio Select Group tests', () => {
     expect(mockOnRatingSelected).toHaveBeenCalledWith(1)
   })
 
+  it('calls onKeyDownSelection callback on keydown event', () => {
+    const onKeyDownSelection = jest.fn()
+    render(
+      <FeedbackRadioSelectGroup
+        label={radioGroupLabel}
+        selectedOption={undefined}
+        onRatingSelected={mockOnRatingSelected}
+        onKeyDownSelection={onKeyDownSelection}
+        error={false}
+      />
+    )
+    const input = screen.getByTestId('feedback-radio-input-2')
+    fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
+    expect(onKeyDownSelection).toHaveBeenCalledWith(expect.any(Object), 2)
+  })
+
   it('applies "checked" when selectedOption matches', () => {
     render(
       <FeedbackRadioSelectGroup
         label={radioGroupLabel}
         selectedOption={4}
         onRatingSelected={mockOnRatingSelected}
+        onKeyDownSelection={jest.fn()}
         error={false}
       />
     )
@@ -160,6 +180,7 @@ describe('Feedback Radio Select Group tests', () => {
         label={radioGroupLabel}
         selectedOption={undefined}
         onRatingSelected={mockOnRatingSelected}
+        onKeyDownSelection={jest.fn()}
         error={true}
       />
     )

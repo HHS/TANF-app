@@ -78,104 +78,96 @@
   justify-content: center;
   align-items: center;
   margin-top: 10px;
-}
 
-.radio-option {
-  label.radio-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4px;
-    width: 45px;
-    cursor: pointer;
-    border-radius: 1px;
-    color: inherit;
-    transition: border 0.2s ease, background-color 0.2s ease, color 0.2s ease;
-    box-sizing: border-box;
+  .radio-option {
+    label.radio-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      width: 45px;
+      cursor: pointer;
+      border-radius: 1px;
+      border: 2px solid black; // full border always
+      color: inherit;
+      transition: box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+      box-sizing: border-box;
 
-    /* Inner border logic */
-    border-top: 3px solid black;
-    border-bottom: 3px solid black;
-    border-left: 3px solid black;
-    border-right: none;
+      svg {
+        fill: currentColor;
+      }
 
-    svg {
-      fill: currentColor;
+      // Focus ring (only applies if not selected)
+      &:focus-within {
+        outline: none;
+        box-shadow: inset 0 0 0 2px #005ea2; // subtle glow
+      }
     }
 
-    // Focus ring (only applies if not selected)
-    &:focus-within {
-      outline: none;
-      border-top: 3px solid #005ea2;
-      border-bottom: 3px solid #005ea2;
-      border-left: 3px solid #005ea2;
+    &:first-child label.radio-icon {
+      border-top-left-radius: 3px;
+      border-bottom-left-radius: 3px;
     }
-  }
 
-  &:first-child label.radio-icon {
-    border-top-left-radius: 4px;
-    border-bottom-left-radius: 4px;
-  }
+    &:last-child label.radio-icon {
+      //border-right: 2px solid black;
+      border-top-right-radius: 3px;
+      border-bottom-right-radius: 3px;
+    }
 
-  &:last-child label.radio-icon {
-    border-right: 3px solid black;
-    border-top-right-radius: 4px;
-    border-bottom-right-radius: 4px;
-  }
+    // Selected state: apply full border and radius
+    &.selected-red label.radio-icon,
+    &.selected-orange label.radio-icon,
+    &.selected-blue label.radio-icon,
+    &.selected-green label.radio-icon,
+    &.selected-darkgreen label.radio-icon {
+      box-shadow: inset 0 0 0 2px currentColor; // apply full border
+    }
 
-  // Selected state: apply full border and radius
-  &.selected-red label.radio-icon,
-  &.selected-orange label.radio-icon,
-  &.selected-blue label.radio-icon,
-  &.selected-green label.radio-icon,
-  &.selected-darkgreen label.radio-icon {
-    border: 3px solid currentColor; // apply full border
-    border-radius: 4px; // restore rounding for standalone look
-  }
+    &.selected-red label.radio-icon {
+      color: red;
+      background-color: rgba(255, 0, 0, 0.1); // light red background
+    }
 
-  &.selected-red label.radio-icon {
-    color: red;
-    background-color: rgba(255, 0, 0, 0.1); // light red background
-  }
+    &.selected-orange label.radio-icon {
+      color: orange;
+      background-color: rgba(255, 165, 0, 0.1); // light orange
+    }
 
-  &.selected-orange label.radio-icon {
-    color: orange;
-    background-color: rgba(255, 165, 0, 0.1); // light orange
-  }
+    &.selected-blue label.radio-icon {
+      color: blue;
+      background-color: rgba(0, 0, 255, 0.1); // light blue
+    }
 
-  &.selected-blue label.radio-icon {
-    color: blue;
-    background-color: rgba(0, 0, 255, 0.1); // light blue
-  }
+    &.selected-green label.radio-icon {
+      color: green;
+      background-color: rgba(0, 128, 0, 0.1); // light green
+    }
 
-  &.selected-green label.radio-icon {
-    color: green;
-    background-color: rgba(0, 128, 0, 0.1); // light green
-  }
+    &.selected-darkgreen label.radio-icon {
+      color: darkgreen;
+      background-color: rgba(0, 100, 0, 0.15); // light dark green
+    }
 
-  &.selected-darkgreen label.radio-icon {
-    color: darkgreen;
-    background-color: rgba(0, 100, 0, 0.15); // light dark green
-  }
+    // Override focus when selected
+    &.selected-red label.radio-icon:focus-within {
+      border-color: red;
+    }
 
-  // Override focus when selected
-  &.selected-red label.radio-icon:focus-within {
-    border-color: red;
-  }
+    &.selected-orange label.radio-icon:focus-within {
+      border-color: orange;
+    }
 
-  &.selected-orange label.radio-icon:focus-within {
-    border-color: orange;
-  }
+    &.selected-blue label.radio-icon:focus-within {
+      border-color: blue;
+    }
 
-  &.selected-blue label.radio-icon:focus-within {
-    border-color: blue;
-  }
+    &.selected-green label.radio-icon:focus-within {
+      border-color: green;
+    }
 
-  &.selected-green label.radio-icon:focus-within {
-    border-color: green;
-  }
-
-  &.selected-darkgreen label.radio-icon:focus-within {
-    border-color: darkgreen;
+    &.selected-darkgreen label.radio-icon:focus-within {
+      border-color: darkgreen;
+    }
   }
 }

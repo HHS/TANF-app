@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import FeedbackRadioSelectGroup from './FeedbackRadioSelectGroup'
 import { feedbackPost } from '__mocks__/mockFeedbackAxiosApi'
@@ -28,7 +28,7 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
 
   // Currently using stubbed API call to submit feedback
   // TODO: replace with above api call when implemented in backend (adjust url and data if needed)
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (isFormValidToSubmit()) {
       try {
         // api stubbing (mock) call here replace
@@ -54,7 +54,7 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
     } else {
       setError(true)
     }
-  }
+  }, [selectedRatingsOption, feedbackMessage, isAnonymous, onFeedbackSubmit])
 
   const handleRatingSelected = (rating) => {
     setSelectedRatingsOption(rating)
@@ -70,15 +70,13 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
     setIsAnonymous(!isAnonymous)
   }
 
-  const handleKeyDown = (event, rating) => {
+  const handleRadioKeyDown = (event, rating) => {
     if (event.key === 'Enter') {
       handleRatingSelected(rating)
     }
   }
 
-  const isFormValidToSubmit = () => {
-    return selectedRatingsOption !== undefined
-  }
+  const isFormValidToSubmit = () => selectedRatingsOption !== undefined
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -86,7 +84,8 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
       const isEnter = e.key === 'Enter'
 
       if (isCmdOrCtrl && isEnter) {
-        if (formRef.current?.contains(document.activeElement)) {
+        const isInsideForm = formRef.current?.contains(document.activeElement)
+        if (isInsideForm) {
           e.preventDefault()
           handleSubmit()
         }
@@ -95,7 +94,7 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [selectedRatingsOption, feedbackMessage, isAnonymous])
+  }, [handleSubmit])
 
   return (
     <div>
@@ -131,7 +130,7 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
               label="How is your overall experience using TANF Data Portal?*"
               selectedOption={selectedRatingsOption}
               onRatingSelected={handleRatingSelected}
-              onKeyDownSelection={handleKeyDown}
+              onKeyDownSelection={handleRadioKeyDown}
               error={error}
             />
           </div>

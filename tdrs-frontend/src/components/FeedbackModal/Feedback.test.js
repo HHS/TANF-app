@@ -120,6 +120,30 @@ describe('Feedback component', () => {
     ).not.toBeInTheDocument()
   })
 
+  it('closes modal when Enter is pressed on Thank You Modal Close button', async () => {
+    render(<Feedback />)
+
+    // Open and submit
+    fireEvent.click(screen.getByRole('button', { name: /give feedback/i }))
+    fireEvent.click(await screen.findByTestId('submit-feedback'))
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole('heading', { name: /thank you for your feedback/i })
+      ).toBeInTheDocument()
+    )
+
+    const closeButton = screen.getByTestId('feedback-submit-close-button')
+    closeButton.focus()
+    fireEvent.keyDown(closeButton, { key: 'Enter', code: 'Enter' })
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('heading', { name: /thank you for your feedback/i })
+      ).not.toBeInTheDocument()
+    )
+  })
+
   it('resets to feedback form after submitting then reopening', async () => {
     render(<Feedback />)
 
@@ -144,5 +168,20 @@ describe('Feedback component', () => {
       screen.getByRole('heading', { name: /tell us how we can improve/i })
     ).toBeInTheDocument()
     expect(screen.getByText(/mock feedback form/i)).toBeInTheDocument()
+  })
+
+  it('does not render multiple modals when button is clicked multiple times', () => {
+    render(<Feedback />)
+
+    const button = screen.getByRole('button', { name: /give feedback/i })
+    fireEvent.click(button)
+    fireEvent.click(button)
+
+    // Still only one modal
+    expect(
+      screen.getAllByRole('heading', {
+        name: /tell us how we can improve/i,
+      }).length
+    ).toBe(1)
   })
 })
