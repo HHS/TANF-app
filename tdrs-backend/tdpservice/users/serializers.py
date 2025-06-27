@@ -166,7 +166,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         if request:
             has_fra_access = request.data.get('has_fra_access')
             try:
-                fra_permission = Permission.objects.get(codename='has_fra_access') 
+                fra_permission = Permission.objects.get(codename='has_fra_access')
                 if has_fra_access:
                     instance.user_permissions.add(fra_permission)
                 else:
