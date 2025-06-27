@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 
 import pytest
 
+from django.contrib.auth.models import Permission
 from tdpservice.stts.models import STT, Region
 from tdpservice.data_files.models import DataFile
 from tdpservice.data_files.test.factories import DataFileFactory
@@ -76,15 +77,15 @@ def test_user_can_only_have_stt_or_region(user, stt, region):
         user.save()
 
 @pytest.mark.django_db
-def test_user_with_fra_access(client, fra_submitter):
+def test_user_with_fra_access(client, ofa_system_admin):
     """Test that a user with FRA access can only have an STT."""
-    fra_submitter.is_staff = True
-
-    fra_submitter.clean()
-    fra_submitter.save()
+    ofa_system_admin.is_staff = True
+    
+    ofa_system_admin.clean()
+    ofa_system_admin.save()
 
     client = Client()
-    client.login(username=fra_submitter.username, password="test_password")
+    client.login(username=ofa_system_admin.username, password="test_password")
 
     datafile = DataFileFactory()
     datafile.section = DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS

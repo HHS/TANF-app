@@ -18,9 +18,7 @@ function RequestAccessForm({ user, sttList }) {
     firstName: '',
     lastName: '',
     stt: '',
-    // Regional staff alreayd have fra access through their permissions,
-    // setting this to `true` would set their group to `FRA Submitter` which isn't wanted
-    hasFRAAccess: isAMSUser ? false : null,
+    hasFRAAccess: isAMSUser ? true : null,
   })
   const dispatch = useDispatch()
   const [touched, setTouched] = useState({})

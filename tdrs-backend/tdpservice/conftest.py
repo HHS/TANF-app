@@ -133,15 +133,6 @@ def ofa_system_admin():
     return ofa_sys_adming
 
 @pytest.fixture
-def fra_submitter(stt):
-    """Return an fra submitter user."""
-    fra_submitter = UserFactory.create(groups=(Group.objects.get(name="FRA Submitter"),),)
-    fra_submitter.stt = stt
-    fra_submitter.account_approval_status = AccountApprovalStatusChoices.APPROVED
-    fra_submitter.save()
-    return fra_submitter
-
-@pytest.fixture
 def data_analyst(stt):
     """Return a data analyst user."""
     user = UserFactory.create(groups=(Group.objects.get(name="Data Analyst"),),)

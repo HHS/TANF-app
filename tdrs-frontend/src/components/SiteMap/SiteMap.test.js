@@ -161,20 +161,14 @@ describe('SiteMap', () => {
   })
 
   describe('Fra reports', () => {
-    it('Shows FRA reports if user has has_fra_access group permission', () => {
+    it('Shows FRA reports if user has has_fra_access permission', () => {
       const user = {
         email: 'hi@bye.com',
-        roles: [
+        permissions: [
           {
             id: 1,
-            name: 'FRA Submitter',
-            permissions: [
-              {
-                id: 1,
-                codename: 'has_fra_access',
-                name: 'Can access FRA Data Files',
-              },
-            ],
+            codename: 'has_fra_access',
+            name: 'Can access FRA Data Files',
           },
         ],
         account_approval_status: 'Approved',
@@ -198,7 +192,7 @@ describe('SiteMap', () => {
     it('Doesnt show FRA reports if user does not nave has_fra_access group permission', () => {
       const user = {
         email: 'hi@bye.com',
-        roles: [],
+        permissions: [],
         feature_flags: { fra_reports: false },
         account_approval_status: 'Approved',
       }
