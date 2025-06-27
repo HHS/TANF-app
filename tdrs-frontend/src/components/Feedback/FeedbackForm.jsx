@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import FeedbackRadioSelectGroup from './FeedbackRadioSelectGroup'
-import { feedbackPost } from '__mocks__/mockFeedbackAxiosApi'
+import { feedbackPost } from '../../__mocks__/mockFeedbackAxiosApi'
 import { useSelector } from 'react-redux'
 
 const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
