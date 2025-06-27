@@ -46,6 +46,71 @@
   }
 }
 
+.feedback-widget-container {
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+}
+
+.feedback-widget-container .usa-textarea {
+  font-size: 0.9rem;
+  padding: 0.5rem;
+  height: auto;
+  min-height: 80px;
+}
+
+.feedback-widget-container .usa-button {
+  width: 100%;
+  margin-top: 0.75rem;
+}
+
+.feedback-widget-container:focus {
+  outline: 2px solid #005ea2;
+  outline-offset: 2px;
+}
+
+.feedback-widget {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 340px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  z-index: 9999;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+@media (max-width: 480px) {
+  .feedback-widget {
+    right: 0.5rem;
+    left: 0.5rem;
+    width: auto;
+    max-width: 100%;
+  }
+}
+
+.feedback-widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.widget-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.close-widget {
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
 .feedback-group {
   width: 37.5rem;
   height: 9.375rem;

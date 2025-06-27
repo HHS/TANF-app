@@ -58,6 +58,7 @@ const FeedbackRadioSelectGroup = ({
   selectedOption,
   onRatingSelected,
   onKeyDownSelection,
+  showLabel,
   error,
 }) => {
   return (
@@ -68,20 +69,22 @@ const FeedbackRadioSelectGroup = ({
       })}
     >
       <fieldset className="usa-fieldset">
-        <legend
-          // @ts-ignore
-          align="center"
-          className={classNames(
-            'usa-label',
-            'font-serif-md',
-            'feedback-label',
-            {
-              error: error,
-            }
-          )}
-        >
-          {label}
-        </legend>
+        {showLabel && (
+          <legend
+            // @ts-ignore
+            align="center"
+            className={classNames(
+              'usa-label',
+              'font-serif-md',
+              'feedback-label',
+              {
+                error: error,
+              }
+            )}
+          >
+            {label}
+          </legend>
+        )}
         <div className="rating-options">
           {feedbackRatingsList.map((option) => {
             const isSelected = selectedOption === option.value

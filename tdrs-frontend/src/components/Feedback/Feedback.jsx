@@ -3,9 +3,13 @@ import Button from '../Button'
 import FeedbackModal from './FeedbackModal'
 import FeedbackForm from './FeedbackForm'
 import classNames from 'classnames'
+import {
+  FEEDBACK_MODAL_HEADER,
+  FEEDBACK_SUCCESS_RESPONSE_HEADER,
+  TANF_SUPPORT_EMAIL,
+} from './FeedbackConstants'
 
 function Feedback() {
-  const supportEmail = 'tanfdata@acf.hhs.gov'
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
 
@@ -39,7 +43,7 @@ function Feedback() {
           id="feedback-modal"
           title="Tell us how we can improve TDP"
           isOpen={isModalOpen}
-          message="Your feedback is important to us! We use it to ensure that the TANF Data Portal is meeting your needs and better serve you and your team."
+          message={FEEDBACK_MODAL_HEADER}
           onClose={handleCloseModal}
         >
           <div
@@ -49,21 +53,24 @@ function Feedback() {
               marginTop: '5px',
             }}
           >
-            <FeedbackForm onFeedbackSubmit={handleOnFeedbackSubmit} />
+            <FeedbackForm
+              isGeneralFeedback={true}
+              onFeedbackSubmit={handleOnFeedbackSubmit}
+            />
           </div>
         </FeedbackModal>
       ) : (
         isModalOpen && (
           <FeedbackModal
             id="feedback-thank-you-modal"
-            title="Thank you for your feedback"
+            title={FEEDBACK_SUCCESS_RESPONSE_HEADER}
             isOpen={isModalOpen}
             message={
               <p>
                 Your response has been recorded. If you're encountering an issue
                 you need support to resolve please feel free to email us at{' '}
-                <a className="usa-link" href={`mailto:${supportEmail}`}>
-                  {supportEmail}
+                <a className="usa-link" href={`mailto:${TANF_SUPPORT_EMAIL}`}>
+                  {TANF_SUPPORT_EMAIL}
                 </a>
                 .
               </p>

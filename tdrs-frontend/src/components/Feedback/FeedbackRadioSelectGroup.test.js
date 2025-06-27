@@ -1,7 +1,7 @@
 import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 import '@testing-library/jest-dom'
-import FeedbackRadioSelectGroup from '../FeedbackModal/FeedbackRadioSelectGroup'
+import FeedbackRadioSelectGroup from './FeedbackRadioSelectGroup'
 
 jest.mock('../../assets/feedback/very-dissatisfied-feedback.svg', () => {
   const React = require('react')
