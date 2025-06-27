@@ -66,6 +66,7 @@ class UserSerializer(serializers.ModelSerializer):
             'last_login',
             'date_joined',
             'access_requested_date',
+            # 'user_permissions'
         )
         read_only_fields = (
             'id',
@@ -94,6 +95,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
     )
     stt = STTPrimaryKeyRelatedField(required=False)
     regions = RegionPrimaryKeyRelatedField(many=True, required=False)
+    permissions = PermissionSerializer(
+        many=True,
+        read_only=True,
+        source='user_permissions.all',
+    )
 
     class Meta:
         """Metadata."""
@@ -118,6 +124,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'access_requested_date',
             'account_approval_status',
             'feature_flags',
+            'permissions',
         ]
         read_only_fields = (
             'id',
@@ -158,12 +165,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request:
             has_fra_access = request.data.get('has_fra_access')
-            if has_fra_access:
-                try:
-                    fra_group = Group.objects.get(name='FRA Submitter')
-                    instance.groups.add(fra_group)
-                except Group.DoesNotExist:
-                    raise serializers.ValidationError('FRA Submitter group does not exist.')
+            try:
+                fra_permission = Permission.objects.get(codename='has_fra_access') 
+                if has_fra_access:
+                    instance.user_permissions.add(fra_permission)
+                else:
+                    instance.user_permissions.remove(fra_permission)
+            except Permission.DoesNotExist:
+                raise serializers.ValidationError('has_fra_access permission does not exist.')
 
         # Simply set each attribute on the instance, and then save it.
         # Note that unlike `.create()` we don't need to treat many-to-many
