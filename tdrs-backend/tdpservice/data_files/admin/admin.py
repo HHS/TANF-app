@@ -129,7 +129,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         qs = super().get_queryset(request)
         # return data files based on user's section
         if not (
-            request.user.has_perm("user.has_fra_access") or request.user.is_an_admin
+            request.user.has_fra_access or request.user.is_an_admin
         ):
             filtered_for_fra = qs.exclude(section__in=DataFile.get_fra_section_list())
             return filtered_for_fra
@@ -313,10 +313,10 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         list_filter = super().get_list_filter(request)
         user = request.user
         if (
-            user.is_an_admin or user.has_perm('user.has_fra_access')
+            user.is_an_admin or user.has_fra_access
         ) and self.FRA_AccessFilter not in list_filter:
             list_filter.append(self.FRA_AccessFilter)
-        elif not user.has_perm('user.has_fra_access') and self.FRA_AccessFilter in list_filter:
+        elif not user.has_fra_access and self.FRA_AccessFilter in list_filter:
             list_filter.remove(self.FRA_AccessFilter)
         return list_filter
 

@@ -184,6 +184,11 @@ class User(AbstractUser):
         self.validate_location()
 
     @property
+    def has_fra_access(self) -> bool:
+        """Return whether or not the user has FRA access."""
+        return self.has_perm('user.has_fra_access')
+
+    @property
     def is_developer(self) -> bool:
         """Return whether or not the user is in the OFA Regional Staff Group."""
         return self.is_in_group("Developer")
