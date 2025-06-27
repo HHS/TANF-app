@@ -3,7 +3,7 @@ import * as reactRedux from 'react-redux'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import FeedbackForm from './FeedbackForm'
-import { feedbackPost } from '__mocks__/mockFeedbackAxiosApi'
+import { feedbackPost } from '../../__mocks__/mockFeedbackAxiosApi'
 import { useSelector } from 'react-redux'
 
 // Mock the Redux selector
@@ -12,7 +12,7 @@ jest.mock('react-redux', () => ({
   useSelector: jest.fn(),
 }))
 
-jest.mock('__mocks__/mockFeedbackAxiosApi', () => ({
+jest.mock('../../__mocks__/mockFeedbackAxiosApi', () => ({
   feedbackPost: jest.fn(),
 }))
 
