@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+import { useFormSubmission } from '../../hooks/useFormSubmission'
 import { useDispatch, useSelector } from 'react-redux'
 import classNames from 'classnames'
 import { fileInput } from '@uswds/uswds/src/js/components'
@@ -241,13 +242,13 @@ const SearchForm = ({
 const UploadForm = ({
   handleCancel,
   handleUpload,
-  handleDownload,
   setLocalAlertState,
   file,
   setSelectedFile,
   section,
   error,
   setError,
+  isSubmitting,
 }) => {
   const inputRef = useRef(null)
 
@@ -331,6 +332,11 @@ const UploadForm = ({
   const onSubmit = (e) => {
     e.preventDefault()
 
+    // Prevent multiple submissions
+    if (isSubmitting) {
+      return
+    }
+
     if (!!error) {
       return
     }
@@ -391,22 +397,15 @@ const UploadForm = ({
             aria-hidden="false"
             data-errormessage={INVALID_FILE_ERROR}
           />
-          <div style={{ marginTop: '25px' }}>
-            {file?.id ? (
-              <Button
-                className="tanf-file-download-btn"
-                type="button"
-                onClick={() => handleDownload(file)}
-              >
-                Download {section}
-              </Button>
-            ) : null}
-          </div>
         </div>
 
         <div className="buttonContainer margin-y-4">
-          <Button className="card:margin-y-1" type="submit">
-            Submit Report
+          <Button
+            className="card:margin-y-1"
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit Report'}
           </Button>
 
           <Button className="cancel" type="button" onClick={handleCancel}>
@@ -570,6 +569,10 @@ const FRAReports = () => {
   const [searchFormValues, setSearchFormValues] = useState(null)
   const [uploadError, setUploadError] = useState(null)
 
+  // Use the form submission hook to prevent multiple submissions
+  const { isSubmitting, executeSubmission, onSubmitStart, onSubmitComplete } =
+    useFormSubmission()
+
   const user = useSelector((state) => state.auth.user)
   const sttList = useSelector((state) => state?.stts?.sttList)
   const needsSttSelection = useSelector(accountCanSelectStt)
@@ -604,12 +607,7 @@ const FRAReports = () => {
     (state) => state.fraReports.submissionHistory
   )
 
-  const latestSubmission =
-    fraSubmissionHistory && fraSubmissionHistory.length > 0
-      ? fraSubmissionHistory[0]
-      : null
-
-  const [selectedFile, setSelectedFile] = useState(latestSubmission)
+  const [selectedFile, setSelectedFile] = useState(null)
 
   const dispatch = useDispatch()
 
@@ -738,6 +736,14 @@ const FRAReports = () => {
   }
 
   const handleUpload = ({ file: selectedFile }) => {
+    // If already submitting, prevent multiple submissions
+    if (isSubmitting) {
+      return
+    }
+
+    // Start the submission process
+    onSubmitStart()
+
     const onFileUploadSuccess = (datafile) => {
       setSelectedFile(null)
       setLocalAlertState({
@@ -745,6 +751,9 @@ const FRAReports = () => {
         type: 'success',
         message: `Successfully submitted section: ${getReportTypeLabel()} on ${new Date().toDateString()}`,
       })
+
+      // Complete the submission process
+      onSubmitComplete()
 
       const WAIT_TIME = 2000 // #
       let statusTimeout = null
@@ -759,8 +768,20 @@ const FRAReports = () => {
                 ({ summary }) =>
                   summary && summary.status && summary.status !== 'Pending',
                 () => pollSubmissionStatus(tryNumber + 1),
-                () => {},
-                () => {}
+                () => {
+                  setLocalAlertState({
+                    active: true,
+                    type: 'success',
+                    message: 'Parsing complete.',
+                  })
+                },
+                (e) => {
+                  setLocalAlertState({
+                    active: true,
+                    type: 'error',
+                    message: e.message,
+                  })
+                }
               )
             ),
           tryNumber === 1 ? 0 : WAIT_TIME
@@ -788,18 +809,23 @@ const FRAReports = () => {
         type: 'error',
         message: ''.concat(error.message, ': ', msg),
       })
+
+      // Complete the submission process even in case of error
+      onSubmitComplete()
     }
 
-    dispatch(
-      uploadFraReport(
-        {
-          ...searchFormValues,
-          reportType: getReportTypeLabel(),
-          file: selectedFile,
-          user,
-        },
-        onFileUploadSuccess,
-        onFileUploadError
+    executeSubmission(() =>
+      dispatch(
+        uploadFraReport(
+          {
+            ...searchFormValues,
+            reportType: getReportTypeLabel(),
+            file: selectedFile,
+            user,
+          },
+          onFileUploadSuccess,
+          onFileUploadError
+        )
       )
     )
   }
@@ -888,6 +914,7 @@ const FRAReports = () => {
               {localAlert.active && (
                 <div
                   ref={alertRef}
+                  tabIndex={-1}
                   className={classNames('usa-alert usa-alert--slim', {
                     [`usa-alert--${localAlert.type}`]: true,
                   })}
@@ -904,15 +931,13 @@ const FRAReports = () => {
                   setUploadError(null)
                   setUploadReportToggled(false)
                 }}
-                handleDownload={handleDownload}
                 setLocalAlertState={setLocalAlertState}
-                file={
-                  selectedFile || uploadError ? selectedFile : latestSubmission
-                }
+                file={selectedFile}
                 setSelectedFile={setSelectedFile}
                 section={getReportTypeLabel()}
                 error={uploadError}
                 setError={setUploadError}
+                isSubmitting={isSubmitting}
               />
             </>
           )}

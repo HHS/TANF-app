@@ -239,8 +239,8 @@ def get_files_to_reparse(fiscal_year, fiscal_quarter, selected_files, reparse_al
 
 def calculate_timeout(num_files, num_records):
     """Estimate a timeout parameter based on the number of files and the number of records."""
-    # Increase by an order of magnitude to have the bases covered.
-    line_parse_time = settings.MEDIAN_LINE_PARSE_TIME * 10
+    # Double median parse time to account for CPU capability differences.
+    line_parse_time = settings.MEDIAN_LINE_PARSE_TIME * 2
     time_to_queue_datafile = 10
     time_in_seconds = num_files * time_to_queue_datafile + num_records * line_parse_time
     delta = timedelta(seconds=time_in_seconds)

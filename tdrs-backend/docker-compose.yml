@@ -1,7 +1,8 @@
 # Base Docker compose for all environments
 services:
   zaproxy:
-    image: elipe17/zap-stable:2.14.0
+    platform: linux/amd64
+    image: ghcr.io/${REGISTRY_OWNER:-hhs}/zap-stable:2.14.0
     command: sleep 3600
     depends_on:
       - web
@@ -58,7 +59,7 @@ services:
 
   grafana:
     restart: always
-    image: grafana/grafana:11.2.0
+    image: grafana/grafana:12.0.2
     ports:
       - 9400:9400
     environment:
@@ -98,6 +99,11 @@ services:
     image: prom/prometheus:v2.54.1
     ports:
       - 9090:9090
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --web.enable-remote-write-receiver
+      - --enable-feature=exemplar-storage
+      - --enable-feature=native-histograms
     volumes:
       - ./plg/prometheus/prometheus.local.yml:/etc/prometheus/prometheus.yml
       - ./plg/prometheus/django-rules.yml:/etc/prometheus/django-rules.yml
@@ -110,16 +116,34 @@ services:
       - alertmanager
       - mimir
 
-  promtail:
+  alloy:
     restart: always
-    image: grafana/promtail:3.1.1
+    image: grafana/alloy:v1.8.0
     ports:
-      - 9080:9080
+      - 12345:12345
+      - 12346:12346
     volumes:
-      - ./plg/promtail/config.local.yml:/etc/promtail/config.yml
+      - ./plg/alloy:/etc/alloy
       - ~/tdp-logs/nginx:/var/log/nginx
       - logs:/logs
-    command: -config.file=/etc/promtail/config.yml
+    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/alloy.local.config
+
+  tempo:
+    restart: always
+    image: grafana/tempo:latest
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ./plg/tempo/tempo.local.yml:/etc/tempo.yaml
+      - tempo-data:/var/tempo
+    ports:
+      - "3200:3200"   # tempo
+      - "9095:9095" # tempo grpc
+      - "4317:4317"  # otlp grpc
+      - "4318:4318"  # otlp http
+    depends_on:
+      - prometheus
+      - localstack
+      - alloy
 
   loki:
     restart: always
@@ -185,10 +209,16 @@ services:
       - AWS_SECRET_ACCESS_KEY
       - AWS_S3_BUCKET_NAME
       - AWS_S3_LOGS_PREFIX
+      - GRAFANA_PASSWORD
+      - GRAFANA_USER
+      - OTEL_PYTHON_DJANGO_EXCLUDED_URLS
     volumes:
       - .:/tdpapp
       - logs:/tmp
-    build: .
+    build: 
+      context: .
+      args:
+        REGISTRY_OWNER: ${REGISTRY_OWNER:-hhs}
     command: >
       bash -c "./wait_for_services.sh &&
       ./manage.py makemigrations &&
@@ -220,6 +250,7 @@ volumes:
   grafana_data:
   loki_data:
   logs:
+  tempo-data:
 
 
 networks:
