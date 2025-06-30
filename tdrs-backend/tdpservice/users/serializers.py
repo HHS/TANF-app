@@ -66,7 +66,6 @@ class UserSerializer(serializers.ModelSerializer):
             'last_login',
             'date_joined',
             'access_requested_date',
-            # 'user_permissions'
         )
         read_only_fields = (
             'id',
