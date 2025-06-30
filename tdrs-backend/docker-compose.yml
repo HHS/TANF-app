@@ -59,7 +59,7 @@ services:
 
   grafana:
     restart: always
-    image: grafana/grafana:12.0.1
+    image: grafana/grafana:12.0.2
     ports:
       - 9400:9400
     environment:
@@ -211,6 +211,7 @@ services:
       - AWS_S3_LOGS_PREFIX
       - GRAFANA_PASSWORD
       - GRAFANA_USER
+      - OTEL_PYTHON_DJANGO_EXCLUDED_URLS
     volumes:
       - .:/tdpapp
       - logs:/tmp

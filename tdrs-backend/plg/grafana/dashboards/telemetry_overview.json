@@ -18,6 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
+  "id": 4,
   "links": [],
   "panels": [
     {
@@ -50,8 +51,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "orange",
@@ -91,15 +91,16 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "loki",
             "uid": "L8E80F9AEF21F6940"
           },
+          "direction": "backward",
           "editorMode": "code",
-          "expr": "avg_over_time({kind=\"measurement\", app_name=\"tdp-frontend\"} |= \"ttfb\" | logfmt | unwrap ttfb [$__range]) by (app_name)",
+          "expr": "avg_over_time({kind=\"measurement\"} |= \"ttfb\" | logfmt | unwrap ttfb [$__range]) by (app_name)",
           "legendFormat": "TTFB",
           "queryType": "range",
           "refId": "A"
@@ -125,8 +126,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "#EAB839",
@@ -166,15 +166,16 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "loki",
             "uid": "L8E80F9AEF21F6940"
           },
+          "direction": "backward",
           "editorMode": "code",
-          "expr": "avg_over_time({kind=\"measurement\", app_name=\"tdp-frontend\"} |= \" fcp=\" | logfmt | unwrap fcp [$__range]) by (app_name)",
+          "expr": "avg_over_time({kind=\"measurement\"} |= \" fcp=\" | logfmt | unwrap fcp [$__range]) by (app_name)",
           "legendFormat": "FCP",
           "queryType": "range",
           "refId": "A"
@@ -202,8 +203,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "#EAB839",
@@ -243,15 +243,16 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "loki",
             "uid": "L8E80F9AEF21F6940"
           },
+          "direction": "backward",
           "editorMode": "code",
-          "expr": "avg_over_time({kind=\"measurement\", app_name=\"tdp-frontend\"} |= \"cls\" | logfmt | unwrap cls [$__range]) by (app_name)",
+          "expr": "avg_over_time({kind=\"measurement\"} |= \"cls\" | logfmt | unwrap cls [$__range]) by (app_name)",
           "legendFormat": "CLS",
           "queryType": "range",
           "refId": "A"
@@ -277,8 +278,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "#EAB839",
@@ -318,15 +318,16 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "loki",
             "uid": "L8E80F9AEF21F6940"
           },
+          "direction": "backward",
           "editorMode": "code",
-          "expr": "avg_over_time({kind=\"measurement\", app_name=\"tdp-frontend\"} |= \" lcp=\" | logfmt | unwrap lcp [$__range]) by (app_name)",
+          "expr": "avg_over_time({kind=\"measurement\"} |= \" lcp=\" | logfmt | unwrap lcp [$__range]) by (app_name)",
           "legendFormat": "LCP",
           "queryType": "range",
           "refId": "A"
@@ -352,8 +353,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "#EAB839",
@@ -393,15 +393,16 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "loki",
             "uid": "L8E80F9AEF21F6940"
           },
+          "direction": "backward",
           "editorMode": "code",
-          "expr": "avg_over_time({kind=\"measurement\", app_name=\"tdp-frontend\"} |= \" fid=\" | logfmt | unwrap fid [$__range]) by (app_name)",
+          "expr": "avg_over_time({kind=\"measurement\"} |= \" fid=\" | logfmt | unwrap fid [$__range]) by (app_name)",
           "legendFormat": "FID",
           "queryType": "range",
           "refId": "A"
@@ -460,8 +461,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -484,18 +484,21 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "loki",
             "uid": "L8E80F9AEF21F6940"
           },
+          "direction": "backward",
           "editorMode": "code",
-          "expr": "quantile_over_time(0.75, {kind=\"measurement\", app_name=\"tdp-frontend\"} |= \" ttfb=\" | logfmt | unwrap ttfb [$__auto]) by (app_name)",
+          "expr": "quantile_over_time(0.75, {kind=\"measurement\"} |= \" ttfb=\" | logfmt | unwrap ttfb [$__auto]) by (app_name)",
           "legendFormat": "TTFB",
           "queryType": "range",
           "refId": "A"
@@ -505,6 +508,7 @@
             "type": "loki",
             "uid": "L8E80F9AEF21F6940"
           },
+          "direction": "backward",
           "editorMode": "code",
           "expr": "quantile_over_time(0.75, {kind=\"measurement\", app_name=\"tdp-frontend\"} |= \" fcp=\" | logfmt | unwrap fcp [$__auto]) by (app_name)",
           "hide": false,
@@ -517,6 +521,7 @@
             "type": "loki",
             "uid": "L8E80F9AEF21F6940"
           },
+          "direction": "backward",
           "editorMode": "code",
           "expr": "quantile_over_time(0.75, {kind=\"measurement\", app_name=\"tdp-frontend\"} |= \" lcp=\" | logfmt | unwrap lcp [$__auto]) by (app_name)",
           "hide": false,
@@ -578,8 +583,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "#EAB839",
@@ -609,18 +613,21 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "loki",
             "uid": "L8E80F9AEF21F6940"
           },
+          "direction": "backward",
           "editorMode": "code",
-          "expr": "quantile_over_time(0.75, {kind=\"measurement\", app_name=\"tdp-frontend\"} |= \" cls=\" | logfmt | unwrap cls [5m]) by (app_name)",
+          "expr": "quantile_over_time(0.75, {kind=\"measurement\"} |= \" cls=\" | logfmt | unwrap cls [5m]) by (app_name)",
           "legendFormat": "CLS",
           "queryType": "range",
           "refId": "A"
@@ -679,8 +686,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "yellow",
@@ -711,18 +717,21 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "loki",
             "uid": "L8E80F9AEF21F6940"
           },
+          "direction": "backward",
           "editorMode": "code",
-          "expr": "quantile_over_time(0.75, {kind=\"measurement\", app_name=\"tdp-frontend\"} |= \" fid=\" | logfmt | unwrap fid [5m]) by (app_name)",
+          "expr": "quantile_over_time(0.75, {kind=\"measurement\"} |= \" fid=\" | logfmt | unwrap fid [5m]) by (app_name)",
           "legendFormat": "FID",
           "queryType": "range",
           "refId": "A"
@@ -760,8 +769,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -796,15 +804,16 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "loki",
             "uid": "L8E80F9AEF21F6940"
           },
+          "direction": "backward",
           "editorMode": "code",
-          "expr": "sum(count_over_time({app_name=\"tdp-frontend\",kind=\"exception\"} [$__range])) by (app_name)",
+          "expr": "sum(count_over_time({kind=\"exception\"} [$__range])) by (app_name)",
           "queryType": "range",
           "refId": "A"
         }
@@ -861,8 +870,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -904,18 +912,21 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "multi",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "loki",
             "uid": "L8E80F9AEF21F6940"
           },
+          "direction": "backward",
           "editorMode": "code",
-          "expr": "sum(count_over_time({app_name=\"tdp-frontend\",kind=\"exception\"} [$__interval]))",
+          "expr": "sum(count_over_time({kind=\"exception\"} [$__interval]))",
           "legendFormat": "errors",
           "queryType": "range",
           "refId": "A"
@@ -947,8 +958,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -997,15 +1007,16 @@
           }
         ]
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "loki",
             "uid": "L8E80F9AEF21F6940"
           },
+          "direction": "backward",
           "editorMode": "code",
-          "expr": "topk(10, count(count_over_time({kind=\"exception\", app_name=\"tdp-frontend\"} | logfmt [$__range])) by (page_url))",
+          "expr": "topk(10, count(count_over_time({kind=\"exception\"} | logfmt [$__range])) by (page_url))",
           "queryType": "instant",
           "refId": "A"
         }
@@ -1052,8 +1063,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1102,15 +1112,16 @@
           }
         ]
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "loki",
             "uid": "L8E80F9AEF21F6940"
           },
+          "direction": "backward",
           "editorMode": "code",
-          "expr": "topk(10, count(count_over_time({kind=\"exception\", app_name=\"tdp-frontend\"} | logfmt [$__range])) by (value))",
+          "expr": "topk(10, count(count_over_time({kind=\"exception\"} | logfmt [$__range])) by (value))",
           "queryType": "instant",
           "refId": "A"
         }
@@ -1156,8 +1167,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1218,15 +1228,16 @@
           }
         ]
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "loki",
             "uid": "L8E80F9AEF21F6940"
           },
+          "direction": "backward",
           "editorMode": "code",
-          "expr": "topk(10, count by (browser_name, browser_version) (count_over_time({kind=\"exception\", app_name=\"tdp-frontend\"} | logfmt [$__range])))",
+          "expr": "topk(10, count by (browser_name, browser_version) (count_over_time({kind=\"exception\"} | logfmt [$__range])))",
           "queryType": "instant",
           "refId": "A"
         }
@@ -1288,8 +1299,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1325,15 +1335,16 @@
           }
         ]
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "loki",
             "uid": "L8E80F9AEF21F6940"
           },
+          "direction": "backward",
           "editorMode": "code",
-          "expr": "topk(10, count(count_over_time({app_name=\"tdp-frontend\",kind=\"measurement\"} |= \" ttfb=\" | logfmt [$__range])) by (browser_name, browser_version))",
+          "expr": "topk(10, count(count_over_time({kind=\"measurement\"} |= \" ttfb=\" | logfmt [$__range])) by (browser_name, browser_version))",
           "queryType": "instant",
           "refId": "A"
         }
@@ -1380,8 +1391,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1430,15 +1440,16 @@
           }
         ]
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "loki",
             "uid": "L8E80F9AEF21F6940"
           },
+          "direction": "backward",
           "editorMode": "code",
-          "expr": "topk(10, count(count_over_time({kind=\"event\", app_name=\"tdp-frontend\"} | logfmt [$__range])) by (event_name))",
+          "expr": "topk(10, count(count_over_time({kind=\"event\"} | logfmt [$__range])) by (event_name))",
           "queryType": "instant",
           "refId": "A"
         }
@@ -1463,9 +1474,14 @@
       "type": "table"
     }
   ],
+  "preload": false,
   "refresh": "30s",
-  "schemaVersion": 39,
-  "tags": [],
+  "schemaVersion": 41,
+  "tags": [
+    "Frontend",
+    "OTEL",
+    "Faro"
+  ],
   "templating": {
     "list": []
   },
@@ -1476,7 +1492,6 @@
   "timepicker": {},
   "timezone": "browser",
   "title": "Telemetry Overview",
-  "uid": "een670gm3tvk0b",
-  "version": 22,
-  "weekStart": ""
+  "uid": "88c5dafb-8973-443a-9436-fdc05d2ef427",
+  "version": 1
 }
