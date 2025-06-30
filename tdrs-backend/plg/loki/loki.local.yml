@@ -53,3 +53,4 @@ limits_config:
   per_stream_rate_limit: 40MB
   per_stream_rate_limit_burst: 60MB
   max_entries_limit_per_query: 5000
+  max_query_length: 0
