@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useCallback } from 'react'
 import '../../assets/feedback/Feedback.scss'
-import { useFocusTrap } from 'hooks/useFocusTrap'
+import { useFocusTrap } from '../../hooks/useFocusTrap'
 
 // const FOCUSABLE_SELECTOR =
 //   'a[href], button, textarea, select, input:not([type="hidden"]), [tabindex]:not([tabindex="-1"])'

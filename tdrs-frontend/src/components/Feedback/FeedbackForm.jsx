@@ -4,6 +4,20 @@ import axios from 'axios'
 import FeedbackRadioSelectGroup from './FeedbackRadioSelectGroup'
 import { feedbackPost } from '../../__mocks__/mockFeedbackAxiosApi'
 import { useSelector } from 'react-redux'
+import {
+  FAIR_FEEDBACK,
+  GOOD_FEEDBACK,
+  GREAT_FEEDBACK,
+  POOR_AND_BAD_FEEDBACK,
+} from './FeedbackConstants'
+
+const ratingMessageMap = {
+  1: POOR_AND_BAD_FEEDBACK,
+  2: POOR_AND_BAD_FEEDBACK,
+  3: FAIR_FEEDBACK,
+  4: GOOD_FEEDBACK,
+  5: GREAT_FEEDBACK,
+}
 
 const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
   const formRef = useRef(null)
@@ -181,55 +195,76 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
           onRatingSelected={handleRatingSelected}
           onKeyDownSelection={handleRadioKeyDown}
           showLabel={isGeneralFeedback ? true : false}
+          isModal={isGeneralFeedback ? true : false}
           error={error}
         />
       </div>
-      <div id="feedback-text-area" className="usa-form-group">
-        <h3>Tell us more</h3>
-        <textarea
-          data-testid="feedback-message-input"
-          className="usa-textarea feedback-textarea"
-          value={feedbackMessage}
-          onChange={handleFeedbackMessageChange}
-          placeholder="Enter your feedback..."
-          rows={isGeneralFeedback ? 10 : 5}
-          cols={isGeneralFeedback ? 72 : 30}
-          maxLength={500}
-          style={{
-            border: '2px solid black',
-            marginTop: '-6px',
-            maxWidth: '100%',
-          }}
-        />
-        <div
-          className="usa-character-count__message"
-          style={{ marginTop: '2px' }}
-        >
-          {feedbackMessage.length}/{500} characters
+      {(isGeneralFeedback || selectedRatingsOption) && (
+        <div id="feedback-text-area" className="usa-form-group">
+          {isGeneralFeedback ? (
+            <h3>Tell us more</h3>
+          ) : (
+            selectedRatingsOption && (
+              <p
+                className="margin-bottom-1"
+                style={{
+                  fontWeight: 'bold',
+                  fontSize: '0.95rem',
+                }}
+              >
+                {ratingMessageMap[selectedRatingsOption]}
+              </p>
+            )
+          )}
+          <textarea
+            data-testid="feedback-message-input"
+            className="usa-textarea feedback-textarea"
+            value={feedbackMessage}
+            onChange={handleFeedbackMessageChange}
+            placeholder="Enter your feedback..."
+            rows={isGeneralFeedback ? 10 : 5}
+            cols={isGeneralFeedback ? 72 : 30}
+            maxLength={500}
+            style={{
+              border: '2px solid black',
+              marginTop: '-6px',
+              maxWidth: '100%',
+              fontSize: isGeneralFeedback ? '1rem' : '0.85rem',
+              padding: isGeneralFeedback ? '0.75rem' : '0.4rem',
+            }}
+          />
+          <div
+            className="usa-character-count__message"
+            style={{ marginTop: '2px' }}
+          >
+            {feedbackMessage.length}/{500} characters
+          </div>
         </div>
-      </div>
+      )}
       {authenticated &&
         isGeneralFeedback &&
         renderAnonymousCheckbox({
           isAnonymous,
           handleAnonymousChange,
         })}
-      <div className="margin-top-4 margin-bottom-2">
-        <button
-          data-testid="feedback-submit-button"
-          type="button"
-          className="usa-button"
-          onClick={handleSubmit}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault()
-              handleSubmit()
-            }
-          }}
-        >
-          Send Feedback
-        </button>
-      </div>
+      {(isGeneralFeedback || selectedRatingsOption) && (
+        <div className="margin-top-4 margin-bottom-2">
+          <button
+            data-testid="feedback-submit-button"
+            type="button"
+            className="usa-button"
+            onClick={handleSubmit}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                handleSubmit()
+              }
+            }}
+          >
+            Send Feedback
+          </button>
+        </div>
+      )}
     </form>
   )
 }

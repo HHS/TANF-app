@@ -123,6 +123,35 @@
     border-color: #b50909;
     background-color: #f4e3db;
   }
+
+  &.no-background {
+    border: none;
+    background-color: transparent;
+    height: auto;
+    width: auto;
+  }
+
+  .widget-size {
+    width: 100%;
+    height: auto;
+    background: none;
+    border: none;
+    padding: 0.5rem;
+
+    .rating-option {
+      width: 42px;
+
+      label.radio-icon {
+        width: 100%;
+        padding: 3px;
+      }
+    }
+
+    .feedback-label {
+      font-size: 0.9rem;
+      padding-top: 10px;
+    }
+  }
 }
 
 .feedback-label {

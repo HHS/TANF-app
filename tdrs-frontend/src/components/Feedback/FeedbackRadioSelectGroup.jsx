@@ -59,6 +59,7 @@ const FeedbackRadioSelectGroup = ({
   onRatingSelected,
   onKeyDownSelection,
   showLabel,
+  isModal,
   error,
 }) => {
   return (
@@ -66,6 +67,7 @@ const FeedbackRadioSelectGroup = ({
       data-testid="feedback-ratings-select-group"
       className={classNames('feedback-group', 'usa-form-group', {
         error: error,
+        'no-background': !isModal,
       })}
     >
       <fieldset className="usa-fieldset">
@@ -124,14 +126,16 @@ const FeedbackRadioSelectGroup = ({
           })}
         </div>
       </fieldset>
-      <div
-        style={{
-          display: 'block',
-          paddingTop: '0px',
-        }}
-      >
-        <p className="margin-top-1">Pick a score and leave a comment</p>
-      </div>
+      {isModal && (
+        <div
+          style={{
+            display: 'block',
+            paddingTop: '0px',
+          }}
+        >
+          <p className="margin-top-1">Pick a score and leave a comment</p>
+        </div>
+      )}
     </div>
   )
 }

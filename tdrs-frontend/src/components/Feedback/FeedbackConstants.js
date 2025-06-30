@@ -6,9 +6,13 @@ export const TANF_SUPPORT_EMAIL = 'tanfdata@acf.hhs.gov'
 
 export const SSP_MOE_DATA_UPLOAD_FEEDBACK_HEADER =
   'How was your experience uploading SSP-MOE data?'
+export const TANF_DATA_UPLOAD_FEEDBACK_HEADER =
+  'How was your experience uploading TANF data?'
+export const FRA_DATA_UPLOAD_FEEDBACK_HEADER =
+  'How was your experience uploading FRA data?'
 
 export const GREAT_FEEDBACK = 'Fantastic. Score has been received!'
 export const GOOD_FEEDBACK = 'Great. Score has been received!'
-export const FAIR_FEEDBACK = 'Score has been received!'
+export const FAIR_FEEDBACK = 'Score has been received! Any suggestions?'
 export const POOR_AND_BAD_FEEDBACK =
   "Score has been received! We're sorry. How can we improve?"

@@ -7,6 +7,7 @@ import fileTypeChecker from 'file-type-checker'
 
 import Button from '../Button'
 import STTComboBox from '../STTComboBox'
+import FeedbackWidget from '../Feedback/FeedbackWidget'
 import { quarters, constructYears } from './utils'
 import {
   accountCanSelectStt,
@@ -608,6 +609,8 @@ const FRAReports = () => {
   )
 
   const [selectedFile, setSelectedFile] = useState(null)
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false)
+  const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
 
   const dispatch = useDispatch()
 
@@ -735,6 +738,19 @@ const FRAReports = () => {
     )
   }
 
+  const handleOpenWidget = () => {
+    setIsFeedbackOpen(true)
+  }
+
+  const handleCloseWidget = () => {
+    setIsFeedbackOpen(false)
+    setIsFeedbackSubmitted(false)
+  }
+
+  const handleOnFeedbackSubmit = () => {
+    setIsFeedbackSubmitted(true)
+  }
+
   const handleUpload = ({ file: selectedFile }) => {
     // If already submitting, prevent multiple submissions
     if (isSubmitting) {
@@ -754,6 +770,7 @@ const FRAReports = () => {
 
       // Complete the submission process
       onSubmitComplete()
+      handleOpenWidget() // TODO: opens widget (or makes visiable on Report submissions)
 
       const WAIT_TIME = 2000 // #
       let statusTimeout = null
@@ -955,6 +972,12 @@ const FRAReports = () => {
               />
             </PaginatedComponent>
           </div>
+          {/* Feedback widget at bottom right after submission */}
+          <FeedbackWidget
+            isOpen={isFeedbackOpen}
+            onClose={handleCloseWidget}
+            dataType="fra"
+          />
         </>
       )}
 
