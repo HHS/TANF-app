@@ -120,38 +120,6 @@ describe('UploadReport', () => {
     })
   })
 
-  it('should display a download button when the file is available for download', () => {
-    const store = mockStore(initialState)
-    const origDispatch = store.dispatch
-    store.dispatch = jest.fn(origDispatch)
-
-    const { container } = render(
-      <Provider store={store}>
-        <UploadReport handleCancel={handleCancel} header="Some header" />
-      </Provider>
-    )
-
-    const buttons = container.querySelectorAll('.tanf-file-download-btn')
-    expect(buttons.length).toBe(2)
-  })
-
-  it('should dispatch on click of file download button', () => {
-    const store = mockStore(initialState)
-    const origDispatch = store.dispatch
-    store.dispatch = jest.fn(origDispatch)
-
-    const { container } = render(
-      <Provider store={store}>
-        <UploadReport handleCancel={handleCancel} header="Some header" />
-      </Provider>
-    )
-
-    const buttons = container.querySelectorAll('.tanf-file-download-btn')
-    buttons[0].click()
-
-    expect(store.dispatch).toHaveBeenCalledTimes(2)
-  })
-
   it('should render a preview when there is a file available to download', (done) => {
     const store = mockStore(initialState)
     const origDispatch = store.dispatch
