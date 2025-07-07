@@ -2,6 +2,9 @@
 
 import factory
 import factory.fuzzy
+from django.utils import timezone
+
+from tdpservice.users.models import Rating
 
 class BaseUserFactory(factory.django.DjangoModelFactory):
     """Generate test data for users."""
@@ -91,3 +94,21 @@ class DeactivatedUserFactory(UserFactory):
     """Generate user with account deemed `inactive`."""
 
     account_approval_status = 'Deactivated'
+
+
+class FeedbackFactory(factory.django.DjangoModelFactory):
+    """Generate test data for user feedback."""
+
+    class Meta:
+        """Metadata for FeedbackFactory."""
+
+        model = "users.Feedback"
+
+    id = factory.Faker("uuid4")
+    user = factory.SubFactory(UserFactory)
+    created_at = factory.LazyFunction(timezone.now)
+    rating = factory.fuzzy.FuzzyChoice([choice for choice in Rating])
+    feedback = factory.Faker("paragraph")
+    acked = False
+    reviewed_at = None
+    reviewed_by = None

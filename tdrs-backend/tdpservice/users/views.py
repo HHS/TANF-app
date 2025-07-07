@@ -2,7 +2,8 @@
 import datetime
 import logging
 
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import AnonymousUser, Group
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
@@ -12,12 +13,18 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView
 
-from tdpservice.users.models import User, AccountApprovalStatusChoices
-from tdpservice.users.permissions import DjangoModelCRUDPermissions, IsApprovedPermission, UserPermissions
+from tdpservice.users.models import User, Feedback, AccountApprovalStatusChoices
+from tdpservice.users.permissions import (
+    DjangoModelCRUDPermissions,
+    IsApprovedPermission,
+    UserPermissions,
+    FeedbackPermissions
+)
 from tdpservice.users.serializers import (
     GroupSerializer,
     UserProfileSerializer,
     UserSerializer,
+    FeedbackSerializer,
 )
 
 logger = logging.getLogger(__name__)
@@ -88,3 +95,36 @@ class GroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     queryset = Group.objects.all()
     permission_classes = [DjangoModelCRUDPermissions, IsApprovedPermission]
     serializer_class = GroupSerializer
+
+
+class FeedbackViewSet(mixins.CreateModelMixin,
+                      mixins.RetrieveModelMixin,
+                      mixins.ListModelMixin,
+                      viewsets.GenericViewSet):
+    """Feedback viewset."""
+
+    queryset = Feedback.objects.all()
+    serializer_class = FeedbackSerializer
+    permission_classes = (FeedbackPermissions,)
+
+    def create(self, request, *args, **kwargs):
+        """Create feedback with user."""
+        response = super().create(request, *args, **kwargs)
+        if response.status_code != status.HTTP_201_CREATED:
+            return response
+
+        try:
+            feedback_id = response.data['id']
+            feedback = Feedback.objects.get(id=feedback_id)
+
+            # Force anonymity if user is None to prevent us from know if authenticated users chose to remain anonymous
+            if request.user is None or isinstance(request.user, AnonymousUser):
+                feedback.anonymous = True
+
+            if not feedback.anonymous:
+                feedback.user = request.user
+            feedback.save()
+        except ObjectDoesNotExist:
+            logger.exception("Failed to update the user field on the Feedback model because it does not exist.")
+        finally:
+            return response
