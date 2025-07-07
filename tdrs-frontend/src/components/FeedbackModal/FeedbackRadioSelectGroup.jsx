@@ -127,7 +127,9 @@ const FeedbackRadioSelectGroup = ({
           paddingTop: '0px',
         }}
       >
-        <p className="margin-top-1">Pick a score and leave a comment</p>
+        <p className="margin-top-1" style={{ color: '#575c64' }}>
+          Pick a score and leave a comment
+        </p>
       </div>
     </div>
   )

@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useCallback } from 'react'
+import closeIcon from '@uswds/uswds/img/usa-icons/close.svg'
 import '../../assets/feedback/Feedback.scss'
 
 const FOCUSABLE_SELECTOR =
@@ -155,16 +156,17 @@ const FeedbackModal = ({ id, title, message, children, isOpen, onClose }) => {
             type="button"
             className="usa-modal__close margin-right-4 feedback-modal-close-button"
             aria-label="Close modal"
+            style={{ padding: '0', marginBottom: '1px' }}
             onClick={onClose}
           >
-            X
+            <img src={closeIcon} alt="X" />
           </button>
         </div>
         <div id="feedback-modal-body">
           <p
             id="modalDescription"
-            className="font-serif-md margin-4 margin-top-3 margin-bottom-0"
-            style={{ lineHeight: '1.25' }}
+            className="font-sans-md font-family-sans margin-4 margin-top-3 margin-bottom-0"
+            style={{ lineHeight: '1.25', color: '#575c64' }}
           >
             {message}
           </p>

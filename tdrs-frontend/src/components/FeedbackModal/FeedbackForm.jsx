@@ -106,7 +106,7 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
       >
         <p
           data-testid="fields-required-text"
-          style={{ color: error ? 'red' : 'black' }}
+          style={{ color: error ? '#b50909' : '#575c64' }}
         >
           Fields marked with an asterisk (*) are required.
         </p>
@@ -146,7 +146,7 @@ const FeedbackForm = ({ onFeedbackSubmit }) => {
               cols={72}
               maxLength={500}
               style={{
-                border: '2px solid black',
+                border: '1px solid black',
                 marginTop: '-6px',
                 maxWidth: '100%',
               }}

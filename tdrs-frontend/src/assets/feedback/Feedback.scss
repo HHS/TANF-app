@@ -27,8 +27,6 @@
   font-size: 1.25rem;
   font-weight: bold;
   line-height: 1;
-  padding: 0;
-  margin-bottom: 1px;
   cursor: pointer;
 }
 
@@ -56,7 +54,7 @@
 
   &.error {
     border-color: #b50909;
-    background-color: #f4e3db;
+    background-color: #fefafa;
   }
 }
 
@@ -88,7 +86,7 @@
       width: 45px;
       cursor: pointer;
       border-radius: 1px;
-      border: 2px solid black; // full border always
+      border: 1px solid #b0b0b0; // full border always
       color: inherit;
       transition: box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
       box-sizing: border-box;
@@ -110,7 +108,6 @@
     }
 
     &:last-child label.radio-icon {
-      //border-right: 2px solid black;
       border-top-right-radius: 3px;
       border-bottom-right-radius: 3px;
     }
