@@ -62,6 +62,9 @@ const FeedbackRadioSelectGroup = ({
   isModal,
   error,
 }) => {
+  const baseStyle = { color: '#575c64' }
+  const conditionalStyle = !isModal ? { fontSize: '12px' } : {}
+
   return (
     <div
       data-testid="feedback-ratings-select-group"
@@ -135,7 +138,7 @@ const FeedbackRadioSelectGroup = ({
       >
         <p
           className="margin-top-1"
-          style={!isModal ? { fontSize: '12px' } : {}}
+          style={{ ...baseStyle, ...conditionalStyle }}
         >
           Pick a score and leave a comment
         </p>
