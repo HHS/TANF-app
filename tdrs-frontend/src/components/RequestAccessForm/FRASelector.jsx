@@ -17,7 +17,11 @@ function FRASelector({ hasFRAAccess, setHasFRAAccess, error, setErrors }) {
         </legend>
         <p className="text-no-wrap margin-y-2px">
           Unsure?{' '}
-          <a href="https://tdp-project-updates.app.cloud.gov/knowledge-center/submitting-fra-data.html">
+          <a
+            href="https://tdp-project-updates.app.cloud.gov/knowledge-center/submitting-fra-data.html"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             Learn about FRA data file reporting
           </a>
         </p>
