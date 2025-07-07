@@ -5,9 +5,10 @@ from django.contrib.auth.models import Group, Permission
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 from rest_framework.utils import model_meta
+from django.utils import timezone
 
 from tdpservice.stts.serializers import STTPrimaryKeyRelatedField, RegionPrimaryKeyRelatedField
-from tdpservice.users.models import User
+from tdpservice.users.models import User, Feedback
 
 
 logger = logging.getLogger(__name__)
@@ -201,3 +202,29 @@ class UserProfileSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(e.message)
 
         return instance
+
+
+class FeedbackSerializer(serializers.ModelSerializer):
+    """Serializer for user feedback."""
+
+    class Meta:
+        """Serializer metadata."""
+
+        model = Feedback
+        fields = (
+            'id',
+            'rating',
+            'feedback',
+            'anonymous',
+        )
+        read_only_fields = (
+            'id',
+            'user',
+            'acked',
+            'reviewed_at',
+            'reviewed_by',
+        )
+
+    def create(self, validated_data):
+        """Create a new feedback instance."""
+        return Feedback.objects.create(**validated_data, created_at=timezone.now())
