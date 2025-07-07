@@ -2,7 +2,6 @@
 
 import datetime
 import logging
-from typing import List, Union
 import uuid
 
 from tdpservice.email.helpers.account_status import send_approval_status_update_email
@@ -137,7 +136,7 @@ class User(AbstractUser):
         """Return the username as the string representation of the object."""
         return self.username
 
-    def is_in_group(self, group_names: Union[str, List[str]]) -> bool:
+    def is_in_group(self, group_names: str | list[str]) -> bool:
         """Return whether or not the user is a member of the specified Group(s)."""
         if type(group_names) == str:
             group_names = [group_names]
