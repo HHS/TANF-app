@@ -1,6 +1,8 @@
 /* eslint-disable no-unused-vars */
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import axios from 'axios'
+import axiosInstance from '../../axios-instance'
+import classNames from 'classnames'
 import FeedbackRadioSelectGroup from './FeedbackRadioSelectGroup'
 import { feedbackPost } from '../../__mocks__/mockFeedbackAxiosApi'
 import { useSelector } from 'react-redux'
@@ -36,8 +38,12 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
   }
 
   // TODO: NOTE: make sure to use axiosInstance (to carry over auth creds) for the real api POST call
-  const submitFeedbackForm = (data) => {
-    return axios.post('/api/userFeedback/', data)
+  const submitFeedbackForm = async (data) => {
+    return axiosInstance.post('/api/userFeedback/', {
+      rating: selectedRatingsOption,
+      feedback: feedbackMessage,
+      anonymous: isAnonymous,
+    })
   }
 
   // Currently using stubbed API call to submit feedback
@@ -117,8 +123,15 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
 
   function renderAnonymousCheckbox({ isAnonymous, handleAnonymousChange }) {
     return (
-      <div className="margin-top-3">
-        <div className="usa-checkbox">
+      <div
+        className={
+          isGeneralFeedback ? 'margin-left-4 margin-top-1' : 'margin-bottom-1'
+        }
+      >
+        <div
+          className="usa-checkbox"
+          style={{ marginLeft: !isGeneralFeedback ? '12px' : '' }}
+        >
           <input
             id="feedback-anonymous-input"
             className="usa-checkbox__input"
@@ -136,8 +149,7 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
             className="usa-checkbox__label"
             htmlFor="feedback-anonymous-input"
             style={{
-              display: 'inline-block',
-              paddingTop: '0.15rem',
+              display: isGeneralFeedback ? 'inline-block' : '',
             }}
           >
             Send anonymously
@@ -151,7 +163,7 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
     <form
       ref={formRef}
       data-testid="feedback-form"
-      style={{ marginTop: '1.5rem' }}
+      style={{ marginTop: isGeneralFeedback ? '1.5rem' : '0.5rem' }}
       onSubmit={(e) => {
         e.preventDefault()
       }}
@@ -188,7 +200,14 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
           isAnonymous,
           handleAnonymousChange,
         })}
-      <div className="margin-4 margin-bottom-0" style={{ marginTop: '5px' }}>
+      <div
+        className={classNames('margin-bottom-0', {
+          'margin-4': isGeneralFeedback,
+        })}
+        style={{
+          marginTop: isGeneralFeedback ? '4px' : '',
+        }}
+      >
         <FeedbackRadioSelectGroup
           label="How is your overall experience using TANF Data Portal?*"
           selectedOption={selectedRatingsOption}
@@ -200,16 +219,19 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
         />
       </div>
       {(isGeneralFeedback || selectedRatingsOption) && (
-        <div id="feedback-text-area" className="usa-form-group">
+        <div
+          id="feedback-text-area"
+          className={isGeneralFeedback ? 'usa-form-group margin-4' : ''}
+        >
           {isGeneralFeedback ? (
             <h3>Tell us more</h3>
           ) : (
             selectedRatingsOption && (
               <p
-                className="margin-bottom-1"
+                className="margin-bottom-2"
                 style={{
                   fontWeight: 'bold',
-                  fontSize: '0.95rem',
+                  fontSize: '0.90rem',
                 }}
               >
                 {ratingMessageMap[selectedRatingsOption]}
@@ -222,7 +244,7 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
             value={feedbackMessage}
             onChange={handleFeedbackMessageChange}
             placeholder="Enter your feedback..."
-            rows={isGeneralFeedback ? 10 : 5}
+            rows={isGeneralFeedback ? 10 : 4}
             cols={isGeneralFeedback ? 72 : 30}
             maxLength={500}
             style={{
@@ -233,12 +255,14 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
               padding: isGeneralFeedback ? '0.75rem' : '0.4rem',
             }}
           />
-          <div
-            className="usa-character-count__message"
-            style={{ marginTop: '2px' }}
-          >
-            {feedbackMessage.length}/{500} characters
-          </div>
+          {isGeneralFeedback && (
+            <div
+              className="usa-character-count__message"
+              style={{ marginTop: '2px' }}
+            >
+              {feedbackMessage.length}/{500} characters
+            </div>
+          )}
         </div>
       )}
       {authenticated &&
@@ -248,7 +272,14 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
           handleAnonymousChange,
         })}
       {(isGeneralFeedback || selectedRatingsOption) && (
-        <div className="margin-top-4 margin-bottom-2">
+        <div
+          className={classNames({
+            'margin-top-4': isGeneralFeedback,
+            'margin-top-2': !isGeneralFeedback,
+            'margin-bottom-2': isGeneralFeedback,
+            'margin-left-4': isGeneralFeedback,
+          })}
+        >
           <button
             data-testid="feedback-submit-button"
             type="button"

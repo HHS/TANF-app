@@ -65,7 +65,8 @@ const FeedbackRadioSelectGroup = ({
   return (
     <div
       data-testid="feedback-ratings-select-group"
-      className={classNames('feedback-group', 'usa-form-group', {
+      className={classNames('feedback-group', {
+        'usa-form-group': isModal, // TODO: may need to take a look at this further weird behavior happening
         error: error,
         'no-background': !isModal,
       })}
@@ -126,16 +127,19 @@ const FeedbackRadioSelectGroup = ({
           })}
         </div>
       </fieldset>
-      {isModal && (
-        <div
-          style={{
-            display: 'block',
-            paddingTop: '0px',
-          }}
+      <div
+        style={{
+          display: 'block',
+          paddingTop: '0px',
+        }}
+      >
+        <p
+          className="margin-top-1"
+          style={!isModal ? { fontSize: '12px' } : {}}
         >
-          <p className="margin-top-1">Pick a score and leave a comment</p>
-        </div>
-      )}
+          Pick a score and leave a comment
+        </p>
+      </div>
     </div>
   )
 }

@@ -8,7 +8,7 @@ export function useFocusTrap({ containerRef, isActive }) {
 
   // Focus first focusable or heading when active
   useEffect(() => {
-    if (!isActive || !containerRef.current) return
+    if (!isActive || !containerRef?.current) return
 
     const container = containerRef.current
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useFormSubmission } from '../../hooks/useFormSubmission'
+import { useStickyAboveFooter } from '../../hooks/useStickyAboveFooter'
 import { useDispatch, useSelector } from 'react-redux'
 import classNames from 'classnames'
 import { fileInput } from '@uswds/uswds/src/js/components'
@@ -574,6 +575,16 @@ const FRAReports = () => {
   const { isSubmitting, executeSubmission, onSubmitStart, onSubmitComplete } =
     useFormSubmission()
 
+  // Feedback state
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(true)
+  const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
+
+  const {
+    topPosition: widgetTop,
+    isVisible: isFeedbackWidgetOpen,
+    containerRef: widgetRef,
+  } = useStickyAboveFooter(120, 1024) // 120 = widget height, 1024 = min width to show
+
   const user = useSelector((state) => state.auth.user)
   const sttList = useSelector((state) => state?.stts?.sttList)
   const needsSttSelection = useSelector(accountCanSelectStt)
@@ -609,8 +620,6 @@ const FRAReports = () => {
   )
 
   const [selectedFile, setSelectedFile] = useState(null)
-  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false)
-  const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
 
   const dispatch = useDispatch()
 
@@ -911,6 +920,24 @@ const FRAReports = () => {
           userProfileStt={userProfileStt}
         />
       </div>
+      {isFeedbackOpen && isFeedbackWidgetOpen && widgetTop !== null && (
+        <div
+          ref={widgetRef}
+          style={{
+            position: 'absolute',
+            top: `${widgetTop}px`,
+            right: '-13.5rem',
+            bottom: 0, // align it to bottom of the container
+          }}
+        >
+          <FeedbackWidget
+            //ref={widgetRef}
+            isOpen={true}
+            onClose={handleCloseWidget}
+            dataType="fra"
+          />
+        </div>
+      )}
       {isUploadReportToggled && (
         <>
           <h2
@@ -973,11 +1000,23 @@ const FRAReports = () => {
             </PaginatedComponent>
           </div>
           {/* Feedback widget at bottom right after submission */}
-          <FeedbackWidget
-            isOpen={isFeedbackOpen}
-            onClose={handleCloseWidget}
-            dataType="fra"
-          />
+          {/* {isFeedbackOpen && isFeedbackWidgetOpen && widgetTop !== null && (
+            <div
+              ref={widgetRef}
+              style={{
+                position: 'absolute',
+                top: `${widgetTop}px`,
+                right: '13.5rem',
+                zIndex: 999,
+              }}
+            >
+              <FeedbackWidget
+                isOpen={true}
+                onClose={handleCloseWidget}
+                dataType="fra"
+              />
+            </div>
+          )} */}
         </>
       )}
 

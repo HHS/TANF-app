@@ -14,7 +14,7 @@
   position: fixed;
   bottom: 0;
   right: 40px;
-  z-index: 1000; // default when modal is closed
+  z-index: 1100; // default when modal is closed
 }
 
 .feedback-button.modal-open {
@@ -51,6 +51,17 @@
   font-size: 14px;
 }
 
+.feedback-widget-modal-close-button {
+  background: none;
+  border: none;
+  font-size:0.93rem;
+  font-weight: bold;
+  line-height: 1;
+  padding:0.25rem 0.25rem;
+  margin-bottom: 3px;
+  cursor: pointer;
+}
+
 .feedback-widget-container .usa-textarea {
   font-size: 0.9rem;
   padding: 0.5rem;
@@ -70,17 +81,20 @@
 
 .feedback-widget {
   position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
-  width: 340px;
+  right: 13.5rem;
+  width: 290px;
   max-height: 90vh;
   overflow-y: auto;
   background: white;
-  border: 1px solid #ccc;
+  border-top: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  border-left: 1px solid #ccc;
   border-radius: 0.5rem;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
   padding: 1rem;
-  z-index: 9999;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1000; // default when modal is closed
+  transition: bottom 0.2s ease-in-out;
 }
 
 @media (max-width: 480px) {
@@ -204,7 +218,6 @@
     }
 
     &:last-child label.radio-icon {
-      //border-right: 2px solid black;
       border-top-right-radius: 3px;
       border-bottom-right-radius: 3px;
     }
