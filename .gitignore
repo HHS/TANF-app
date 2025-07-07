@@ -25,6 +25,8 @@ tdrs-backend/.env.ci
 tdrs-backend/ADS*
 tdrs-backend/temp_key_file
 tdrs-backend/test
+tdrs-backend/plg/grafana_views/admin_views/*
+tdrs-backend/plg/grafana_views/user_views/*
 *.pyc
 /backend/db.sqlite3
 .DS_Store
