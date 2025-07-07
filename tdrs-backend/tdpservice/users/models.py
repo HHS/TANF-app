@@ -126,7 +126,6 @@ class User(AbstractUser):
     _loaded_values = None
     _adding = True
 
-    # TODO: 4972 - ensure feature_flags is not used with fra_reports anywhere
     feature_flags = models.JSONField(
         default=dict,
         help_text='Feature flags for this user. This is a JSON field that can be used to store key-value pairs. ' +
