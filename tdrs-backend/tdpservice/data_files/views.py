@@ -23,6 +23,7 @@ from tdpservice.scheduling import parser_task
 from tdpservice.data_files.s3_client import S3Client
 from tdpservice.data_files.error_reports import ErrorReportFactory
 from tdpservice.log_handler import S3FileHandler
+from tdpservice.scheduling.parser_task import set_error_report
 
 logger = logging.getLogger(__name__)
 
@@ -174,11 +175,14 @@ class DataFileViewSet(ModelViewSet):
     def download_error_report(self, request, pk=None):
         """Generate and return the parsing error report xlsx."""
         datafile = self.get_object()
+        dfs = datafile.summary
 
         if datafile.summary.error_report:
             return FileResponse(datafile.summary.error_report, "report.xlsx")
         else:
             error_report_generator = ErrorReportFactory.get_error_report_generator(datafile)
+            error_report = error_report_generator.generate()
+            set_error_report(dfs, error_report)
             return FileResponse(error_report_generator.generate())
 
 

@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='datafilesummary',
             name='error_report',
-            field=models.FileField(blank=True, null=True, storage=tdpservice.backends.DataFilesS3Storage, upload_to=tdpservice.parsers.models.get_s3_upload_path),
+            field=models.FileField(blank=True, null=True, max_length=500, storage=tdpservice.backends.DataFilesS3Storage, upload_to=tdpservice.parsers.models.get_s3_upload_path),
         ),
     ]

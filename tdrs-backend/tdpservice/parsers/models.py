@@ -17,9 +17,25 @@ logger = logging.getLogger(__name__)
 def get_s3_upload_path(instance, filename):
     """Produce a unique upload path for S3 files for a given STT and Quarter."""
     df = instance.datafile
+
+    file_path = f'data_files/{df.year}/{df.quarter}/{df.stt.id}/{df.section}/'
+
+    file_name_info = filename
+
+    if df.s3_versioning_id:
+        file_name_info += f'_{df.s3_versioning_id}'
+
+    print('reparses ' + str(df.reparses.count()))
+
+    if df.reparses.count() > 0:
+        re = df.reparses.order_by('-created_at').first()
+        file_name_info += f'_reparse-{re.pk}'
+
+        print('file_name_info ' + file_name_info)
+
     return os.path.join(
-        f'data_files/{df.year}/{df.quarter}/{df.stt.id}/{df.section}/',
-        f'{filename}_{df.s3_versioning_id}.xlsx'
+        file_path,
+        f'{file_name_info}.xlsx'
     )
 
 
@@ -99,6 +115,7 @@ class DataFileSummary(models.Model):
     error_report = models.FileField(
         storage=DataFilesS3Storage,
         upload_to=get_s3_upload_path,
+        max_length=500,
         null=True,
         blank=True
     )
