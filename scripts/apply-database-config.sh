@@ -2,6 +2,15 @@
 
 app=${1}
 
+guid=$(cf app "$app" --guid || true)
+
+if [[ $guid == 'FAILED' ]]; then
+    echo "Backend not available, skipping migrations."
+    exit 0
+else
+    echo Applying migrations to "$app"
+fi
+
 cd ./tdrs-backend
 
 echo "Install dependencies..."
@@ -15,7 +24,6 @@ pipenv install --dev --system --deploy
 echo "Done."
 
 echo "Getting credentials..."
-guid=$(cf app --guid $app)
 app_vars=$(cf curl /v2/apps/$guid/env)
 
 db_creds=$(echo $app_vars | jq -r '.system_env_json.VCAP_SERVICES."aws-rds"[0].credentials')
