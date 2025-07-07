@@ -283,8 +283,15 @@ def main(is_admin):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate PostgreSQL views for Grafana.')
-    parser.add_argument('--is_admin', '-a', type=bool, help='Generate admin version of views.',
-                        default=False, required=False)
+    parser.add_argument('--admin_only', help='Only generate admin version of views.', action='store_true')
+    parser.add_argument('--user_only', help='Only generate user version of views.', action='store_true')
+    parser.add_argument('--all', help='Generate all views.', action='store_true')
 
     args = parser.parse_args()
-    main(args.is_admin)
+    if args.all:
+        main(True)
+        main(False)
+    elif args.admin_only and not (args.user_only or args.all):
+        main(True)
+    elif args.user_only and not (args.admin_only or args.all):
+        main(False)
