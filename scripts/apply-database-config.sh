@@ -59,6 +59,10 @@ python manage.py migrate
 status=$?
 echo "Done."
 
+echo "Generating Admin and User Views"
+python ./plg/grafana_views/generate_views.py --all
+echo "Done."
+
 echo "Applying SQL views"
 python manage.py runscript apply_grafana_views
 echo "Done."
