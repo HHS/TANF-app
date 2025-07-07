@@ -134,10 +134,11 @@ export const downloadOriginalSubmission =
       link.href = url
 
       const fileNameParts = fileName.split('.')
-      const extension = fileName.split('.')[fileNameParts.length - 1]
+      const extension = fileNameParts[fileNameParts.length - 1]
+      const baseName = fileNameParts.slice(0, -1).join('.')
       link.setAttribute(
         'download',
-        `${year}-${quarter}-${section}.${extension}`
+        `${baseName} (${year}-${quarter}-${section}).${extension}`
       )
 
       document.body.appendChild(link)

@@ -20,8 +20,11 @@ strip() {
 env=$(strip $CF_SPACE "tanf-")
 backend_app_name=$(echo $CGAPPNAME_BACKEND | cut -d"-" -f3)
 
+CGAPPNAME_CELERY="tdp-celery-${backend_app_name}"
+
 echo DEPLOY_STRATEGY: "$DEPLOY_STRATEGY"
 echo BACKEND_HOST: "$CGAPPNAME_BACKEND"
+echo CELERY_APPNAME: "$CGAPPNAME_CELERY"
 echo CF_SPACE: "$CF_SPACE"
 echo env: "$env"
 echo backend_app_name: "$backend_app_name"
@@ -47,18 +50,19 @@ set_cf_envs()
   "DJANGO_SU_NAME"
   "FRONTEND_BASE_URL"
   "LOGGING_LEVEL"
-  "REDIS_URI"
   "JWT_KEY"
   "SENDGRID_API_KEY"
   )
 
-  echo "Setting environment variables for $CGAPPNAME_BACKEND"
+  APP=$1
+
+  echo "Setting environment variables for $APP"
 
   for var_name in ${var_list[@]}; do
     # Intentionally unsetting variable if empty
     if [[ -z "${!var_name}" ]]; then
         echo "WARNING: Empty value for $var_name. It will now be unset."
-        cf_cmd="cf unset-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
+        cf_cmd="cf unset-env $APP $var_name ${!var_name}"
         $cf_cmd
         continue
     elif [[ ("$CF_SPACE" = "tanf-staging") ]]; then
@@ -67,67 +71,126 @@ set_cf_envs()
         if [[ "${!staging_var}" ]]; then
           var_value=${!staging_var}
         fi
-        cf_cmd="cf set-env $CGAPPNAME_BACKEND $var_name ${var_value}"
+        cf_cmd="cf set-env $APP $var_name ${var_value}"
     else
-      cf_cmd="cf set-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
+      cf_cmd="cf set-env $APP $var_name ${!var_name}"
     fi
 
     echo "Setting var : $var_name"
     $cf_cmd
   done
 
+  set_alloy_envs "$APP"
 }
 
 # Helper method to generate JWT cert and keys for new environment
 generate_jwt_cert()
 {
+    APP=$1
     echo "regenerating JWT cert/key"
     yes 'XX' | openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -sha256
     cf set-env "$CGAPPNAME_BACKEND" JWT_CERT "$(cat cert.pem)"
     cf set-env "$CGAPPNAME_BACKEND" JWT_KEY "$(cat key.pem)"
 }
 
-prepare_alloy() {
-  pushd tdrs-backend/plg/alloy
-  cf set-env "$CGAPPNAME_BACKEND" ALLOY_SYSTEM_NAME "system-$backend_app_name"
-  cf set-env "$CGAPPNAME_BACKEND" ALLOY_BACKEND_NAME "backend-$backend_app_name"
-  popd
+set_alloy_envs() {
+  echo "Setting alloy for $APP"
+
+  pushd plg/alloy || exit
+
+  if [ "$APP" = "$CGAPPNAME_BACKEND" ] ; then
+    cf set-env "$APP" ALLOY_SYSTEM_NAME "django-system-$backend_app_name"
+    cf set-env "$APP" ALLOY_BACKEND_NAME "backend-$backend_app_name"
+  elif [ "$APP" = "$CGAPPNAME_CELERY" ] ; then
+    cf set-env "$APP" ALLOY_SYSTEM_NAME "celery-system-$backend_app_name"
+    cf set-env "$APP" ALLOY_BACKEND_NAME "celery-$backend_app_name"
+  else
+    echo "Can't set alloy, unknown app"
+  fi
+
+  popd || exit
+}
+
+add_service_bindings() {
+    if [ "$CGAPPNAME_BACKEND" = "tdp-backend-develop" ]; then
+      # TODO: this is technical debt, we should either make staging mimic tanf-dev
+      #       or make unique services for all apps but we have a services limit
+      #       Introducing technical debt for release 3.0.0 specifically.
+      env="develop"
+    fi
+
+    yq eval -i ".applications[0].services[0] = \"tdp-db-${env}\"" ./tdrs-backend/manifest.buildpack.yml
+    yq eval -i ".applications[0].services[1] = \"tdp-staticfiles-${env}\"" ./tdrs-backend/manifest.buildpack.yml
+    yq eval -i ".applications[0].services[2] = \"tdp-datafiles-${env}\"" ./tdrs-backend/manifest.buildpack.yml
+    yq eval -i ".applications[0].services[3] = \"tdp-redis-${env}\"" ./tdrs-backend/manifest.buildpack.yml
+
+    yq eval -i ".applications[0].services[0] = \"tdp-db-${env}\"" ./tdrs-backend/manifest.celery.yml
+    yq eval -i ".applications[0].services[1] = \"tdp-staticfiles-${env}\"" ./tdrs-backend/manifest.celery.yml
+    yq eval -i ".applications[0].services[2] = \"tdp-datafiles-${env}\"" ./tdrs-backend/manifest.celery.yml
+    yq eval -i ".applications[0].services[3] = \"tdp-redis-${env}\"" ./tdrs-backend/manifest.celery.yml
 }
 
 update_backend()
 {
+    APP=$1
+    STRATEGY=$2
+
+    echo "Deploying $APP with strategy $STRATEGY"
+
     cd tdrs-backend || exit
-    cf unset-env "$CGAPPNAME_BACKEND" "AV_SCAN_URL"
 
-    if [ "$CF_SPACE" = "tanf-prod" ]; then
-      cf set-env "$CGAPPNAME_BACKEND" AV_SCAN_URL "http://tanf-prod-clamav-rest.apps.internal:9000/scan"
+    if [ "$APP" = "$CGAPPNAME_BACKEND" ] ; then
+      MANIFEST="manifest.buildpack.yml"
+    elif [ "$APP" = "$CGAPPNAME_CELERY" ] ; then
+      MANIFEST="manifest.celery.yml"
     else
-      # Add environment varilables for clamav
-      cf set-env "$CGAPPNAME_BACKEND" AV_SCAN_URL "http://tdp-clamav-nginx-$env.apps.internal:9000/scan"
-
-      # Add variable for dev/staging apps to know their DB name. Prod uses default AWS name.
-      cf unset-env "$CGAPPNAME_BACKEND" "APP_DB_NAME"
-      cf set-env "$CGAPPNAME_BACKEND" "APP_DB_NAME" "tdp_db_$backend_app_name"
+      echo "Unknown app"
+      exit
     fi
 
-    if [ "$1" = "rolling" ] ; then
-        set_cf_envs
+    if [ "$STRATEGY" = "rolling" ] ; then
+        set_cf_envs "$APP"
         # Do a zero downtime deploy.  This requires enough memory for
         # two apps to exist in the org/space at one time.
-        cf push "$CGAPPNAME_BACKEND" --no-route -f manifest.buildpack.yml -t 180 --strategy rolling || exit 1
+        cf push "$APP" --no-route -f "$MANIFEST" -t 180 --strategy rolling || exit 1
     else
-        cf push "$CGAPPNAME_BACKEND" --no-route -f manifest.buildpack.yml -t 180
+        cf push "$APP" --no-route -f "$MANIFEST" -t 180
+
         # set up JWT key if needed
-        if cf e "$CGAPPNAME_BACKEND" | grep -q JWT_KEY ; then
+        if cf e "$APP" | grep -q JWT_KEY ; then
             echo jwt cert already created
         else
-            generate_jwt_cert
+            generate_jwt_cert "$APP"
         fi
+
+        set_cf_envs "$APP"
+
+        cf unset-env "$APP" "AV_SCAN_URL"
+
+        if [ "$CF_SPACE" = "tanf-prod" ]; then
+          cf set-env "$APP" AV_SCAN_URL "http://tanf-prod-clamav-rest.apps.internal:9000/scan"
+        else
+          # Add environment varilables for clamav
+          cf set-env "$APP" AV_SCAN_URL "http://tdp-clamav-nginx-$env.apps.internal:9000/scan"
+
+          # Add variable for dev/staging apps to know their DB name. Prod uses default AWS name.
+          cf unset-env "$APP" "APP_DB_NAME"
+          cf set-env "$APP" "APP_DB_NAME" "tdp_db_$backend_app_name"
+        fi
+
+        cf set-env "$APP" CGAPPNAME_BACKEND "$CGAPPNAME_BACKEND"
+
+        cf restage "$APP"
     fi
 
-    set_cf_envs
+    cd ..
+}
 
+update_backend_network()
+{
+    echo "Setting backend network"
     cf map-route "$CGAPPNAME_BACKEND" apps.internal --hostname "$CGAPPNAME_BACKEND"
+    cf map-route "$CGAPPNAME_CELERY" apps.internal --hostname "$CGAPPNAME_CELERY"
 
     # Add network policy to allow frontend to access backend
     cf add-network-policy "$CGAPPNAME_FRONTEND" "$CGAPPNAME_BACKEND" --protocol tcp --port 8080
@@ -138,29 +201,6 @@ update_backend()
     else
       cf add-network-policy "$CGAPPNAME_BACKEND" tdp-clamav-nginx-$env --protocol tcp --port 9000
     fi
-
-    cd ..
-}
-
-bind_backend_to_services() {
-    echo "Binding services to app: $CGAPPNAME_BACKEND"
-
-    if [ "$CGAPPNAME_BACKEND" = "tdp-backend-develop" ]; then
-      # TODO: this is technical debt, we should either make staging mimic tanf-dev
-      #       or make unique services for all apps but we have a services limit
-      #       Introducing technical debt for release 3.0.0 specifically.
-      env="develop"
-    fi
-
-    cf bind-service "$CGAPPNAME_BACKEND" "tdp-staticfiles-${env}"
-    cf bind-service "$CGAPPNAME_BACKEND" "tdp-datafiles-${env}"
-    cf bind-service "$CGAPPNAME_BACKEND" "tdp-db-${env}"
-
-    set_cf_envs
-
-    echo "Restarting app: $CGAPPNAME_BACKEND"
-    cf restage "$CGAPPNAME_BACKEND"
-
 }
 
 ##############################
@@ -213,28 +253,48 @@ else
   CYPRESS_TOKEN=$CYPRESS_TOKEN
 fi
 
-prepare_alloy
-if [ "$DEPLOY_STRATEGY" = "rolling" ] ; then
-    # Perform a rolling update for the backend and frontend deployments if
-    # specified, otherwise perform a normal deployment
-    update_backend 'rolling'
-elif [ "$DEPLOY_STRATEGY" = "bind" ] ; then
-    # Bind the services the application depends on and restage the app.
-    bind_backend_to_services
-elif [ "$DEPLOY_STRATEGY" = "initial" ]; then
-    # There is no app with this name, and the services need to be bound to it
-    # for it to work. the app will fail to start once, have the services bind,
-    # and then get restaged.
-    update_backend
-    bind_backend_to_services
-elif [ "$DEPLOY_STRATEGY" = "rebuild" ]; then
-    # You want to redeploy the instance under the same name
-    # Delete the existing app (with out deleting the services)
-    # and perform the initial deployment strategy.
-    cf delete "$CGAPPNAME_BACKEND" -r -f
-    update_backend
-    bind_backend_to_services
-else
-    # No changes to deployment config, just deploy the changes and restart
-    update_backend
+
+#### there's an env var + binding race condition that prevents initial deploys
+
+CELERY_DEPLOY_STRATEGY=$DEPLOY_STRATEGY
+
+APP_GUID=$(cf app "$CGAPPNAME_BACKEND" --guid || true)
+CELERY_GUID=$(cf app "$CGAPPNAME_CELERY" --guid || true)
+
+if [[ $DEPLOY_STRATEGY == 'rolling' ]]; then
+  if [[ $APP_GUID == 'FAILED' ]]; then
+    DEPLOY_STRATEGY='initial'
+  else
+    DEPLOY_STRATEGY='rolling'
+  fi
+
+  if [[ $CELERY_GUID == 'FAILED' ]]; then
+    CELERY_DEPLOY_STRATEGY='initial'
+  else
+    CELERY_DEPLOY_STRATEGY='rolling'
+  fi
 fi
+
+if [[ $DEPLOY_STRATEGY == 'rebuild' ]]; then
+  # You want to redeploy the instance under the same name
+  # Delete the existing app (with out deleting the services)
+  # and perform the initial deployment strategy.
+  cf delete "$CGAPPNAME_BACKEND" -r -f
+  cf delete "$CGAPPNAME_CELERY" -r -f
+fi
+ 
+add_service_bindings
+
+if [[ $DEPLOY_STRATEGY == 'rebuild' ]]; then
+  update_backend "$CGAPPNAME_BACKEND" 'initial'
+else
+  update_backend "$CGAPPNAME_BACKEND" "$DEPLOY_STRATEGY"
+fi
+
+if [[ $CELERY_DEPLOY_STRATEGY == 'rebuild' ]]; then
+  update_backend "$CGAPPNAME_CELERY" 'initial'
+else
+  update_backend "$CGAPPNAME_CELERY" "$CELERY_DEPLOY_STRATEGY"
+fi
+
+update_backend_network

@@ -33,11 +33,12 @@ services:
       - LOCAL_DEV=true
       - GRAFANA=grafana
       - ALERTS=alertmanager
+      - FARO_RECEIVER=alloy
       - REACT_APP_DEVAUTH=${REACT_APP_DEVAUTH}
     command: >
       /bin/sh -c
       "echo 'starting nginx' &&
-        envsubst '$${BACK_END} $${GRAFANA} $${ALERTS}' < /etc/nginx/locations.conf > /etc/nginx/locations_.conf &&
+        envsubst '$${BACK_END} $${GRAFANA} $${ALERTS} $${FARO_RECEIVER}' < /etc/nginx/locations.conf > /etc/nginx/locations_.conf &&
         rm /etc/nginx/locations.conf &&
         cp /etc/nginx/locations_.conf /etc/nginx/locations.conf &&
        envsubst '

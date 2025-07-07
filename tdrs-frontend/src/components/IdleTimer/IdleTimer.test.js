@@ -209,4 +209,68 @@ describe('IdleTimer', () => {
 
     expect(store.dispatch).toHaveBeenCalledTimes(0)
   })
+
+  it('should handle tab key when document.activeElement is the first element', () => {
+    jest.useFakeTimers()
+    const store = mockStore({
+      auth: { authenticated: true, user: { email: 'hi@bye.com' } },
+    })
+    let start = Date.now()
+    const { container } = render(
+      <Provider store={store}>
+        <IdleTimer />
+      </Provider>
+    )
+
+    const modal = container.querySelector('#timeoutModal')
+    const staySignedInButton = container.querySelector('.renew-session')
+
+    // Make the modal visible
+    React.act(() => {
+      jest.setSystemTime(start + 1200000)
+      fireEvent.focus(document)
+    })
+
+    // Set focus to the first button
+    staySignedInButton.focus()
+    expect(document.activeElement).toEqual(staySignedInButton)
+
+    // Press tab without shift
+    fireEvent.keyDown(modal, { keyCode: 9 })
+
+    // First button should still have focus (branch on line 66)
+    expect(document.activeElement).toEqual(staySignedInButton)
+  })
+
+  it('should handle shift+tab key when document.activeElement is the last element', () => {
+    jest.useFakeTimers()
+    const store = mockStore({
+      auth: { authenticated: true, user: { email: 'hi@bye.com' } },
+    })
+    let start = Date.now()
+    const { container } = render(
+      <Provider store={store}>
+        <IdleTimer />
+      </Provider>
+    )
+
+    const modal = container.querySelector('#timeoutModal')
+    const signOutButton = container.querySelector('.sign-out')
+
+    // Make the modal visible
+    React.act(() => {
+      jest.setSystemTime(start + 1200000)
+      fireEvent.focus(document)
+    })
+
+    // Set focus to the last button
+    signOutButton.focus()
+    expect(document.activeElement).toEqual(signOutButton)
+
+    // Press shift+tab
+    fireEvent.keyDown(modal, { shiftKey: true, keyCode: 9 })
+
+    // Last button should still have focus (branch on line 77)
+    expect(document.activeElement).toEqual(signOutButton)
+  })
 })

@@ -18,6 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
+  "id": 7,
   "links": [],
   "panels": [
     {
@@ -34,9 +35,9 @@
       "type": "row"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "$datasource"
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
       },
       "gridPos": {
         "h": 4,
@@ -53,28 +54,19 @@
         "groupBy": [],
         "groupMode": "default",
         "maxItems": 20,
+        "showInactiveAlerts": false,
         "sortOrder": 3,
         "stateFilter": {
           "error": true,
           "firing": true,
           "noData": true,
           "normal": true,
-          "pending": true
+          "pending": true,
+          "recovering": true
         },
         "viewMode": "list"
       },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
-          "expr": "",
-          "instant": false,
-          "range": true,
-          "refId": "A"
-        }
-      ],
+      "pluginVersion": "12.0.1",
       "title": "Backend - Active Alerts",
       "type": "alertlist"
     },
@@ -95,8 +87,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "dark-red",
-                "value": null
+                "color": "dark-red"
               },
               {
                 "color": "red",
@@ -140,7 +131,7 @@
         "textMode": "value",
         "wideLayout": true
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
@@ -175,8 +166,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "yellow",
@@ -215,7 +205,7 @@
         "textMode": "value",
         "wideLayout": true
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
@@ -257,8 +247,7 @@
             "mode": "percentage",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "orange",
@@ -296,7 +285,7 @@
         "showThresholdMarkers": true,
         "sizing": "auto"
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
@@ -334,8 +323,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -356,6 +344,12 @@
       "id": 12,
       "options": {
         "displayMode": "lcd",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
         "maxVizHeight": 300,
         "minVizHeight": 16,
         "minVizWidth": 8,
@@ -372,7 +366,7 @@
         "sizing": "auto",
         "valueMode": "color"
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
@@ -395,9 +389,9 @@
       "type": "bargauge"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
       },
       "gridPos": {
         "h": 8,
@@ -415,14 +409,14 @@
         "content": "# Add backend CPU here",
         "mode": "markdown"
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.1",
       "title": "Average CPU Usage (Backend)",
       "type": "text"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
       },
       "gridPos": {
         "h": 8,
@@ -440,7 +434,7 @@
         "content": "# Add backend Memory here",
         "mode": "markdown"
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.1",
       "title": "Average Memory Usage (Backend)",
       "type": "text"
     },
@@ -458,9 +452,9 @@
       "type": "row"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "$datasource"
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
       },
       "gridPos": {
         "h": 4,
@@ -477,28 +471,19 @@
         "groupBy": [],
         "groupMode": "default",
         "maxItems": 20,
+        "showInactiveAlerts": false,
         "sortOrder": 3,
         "stateFilter": {
           "error": true,
           "firing": true,
           "noData": true,
           "normal": true,
-          "pending": true
+          "pending": true,
+          "recovering": true
         },
         "viewMode": "list"
       },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
-          "expr": "",
-          "instant": false,
-          "range": true,
-          "refId": "A"
-        }
-      ],
+      "pluginVersion": "12.0.1",
       "title": "Celery - Active Alerts",
       "type": "alertlist"
     },
@@ -518,8 +503,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "dark-red",
-                "value": null
+                "color": "dark-red"
               },
               {
                 "color": "red",
@@ -598,8 +582,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "yellow",
@@ -677,8 +660,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -881,8 +863,7 @@
             "mode": "percentage",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "orange",
@@ -1007,8 +988,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -1067,10 +1047,9 @@
       "type": "row"
     },
     {
-      "datasource": {
-        "name": "Prometheus",
-        "type": "prometheus",
-        "uid": "${datasource}"
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
       },
       "gridPos": {
         "h": 4,
@@ -1097,18 +1076,6 @@
         },
         "viewMode": "list"
       },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "",
-          "instant": false,
-          "range": true,
-          "refId": "A"
-        }
-      ],
       "title": "Database - Active Alerts",
       "type": "alertlist"
     },
@@ -1486,39 +1453,36 @@
       "type": "timeseries"
     }
   ],
+  "preload": false,
   "refresh": "5s",
-  "schemaVersion": 39,
-  "tags": [],
+  "schemaVersion": 41,
+  "tags": [
+    "Backend",
+    "Postgres",
+    "Celery"
+  ],
   "templating": {
     "list": [
       {
         "current": {
-          "selected": false,
           "text": "Mimir",
           "value": "PQFA97CFB590B2099"
         },
-        "hide": 0,
         "includeAll": false,
-        "multi": false,
         "name": "datasource",
         "options": [],
         "query": "prometheus",
-        "queryValue": "",
         "refresh": 1,
         "regex": "",
-        "skipUrlSync": false,
         "type": "datasource"
       },
       {
         "current": {
-          "selected": true,
           "text": "prod",
           "value": "prod"
         },
-        "hide": 0,
         "includeAll": false,
         "label": "Backend environment",
-        "multi": false,
         "name": "app_env",
         "options": [
           {
@@ -1553,20 +1517,15 @@
           }
         ],
         "query": "prod, staging, develop, qasp, raft, local",
-        "queryValue": "",
-        "skipUrlSync": false,
         "type": "custom"
       },
       {
         "current": {
-          "selected": false,
           "text": "production",
           "value": "production"
         },
-        "hide": 0,
         "includeAll": false,
         "label": "Database environment",
-        "multi": false,
         "name": "pg_env",
         "options": [
           {
@@ -1591,14 +1550,11 @@
           }
         ],
         "query": "production, staging, dev, local",
-        "queryValue": "",
-        "skipUrlSync": false,
         "type": "custom"
       },
       {
         "current": {
           "isNone": true,
-          "selected": false,
           "text": "None",
           "value": ""
         },
@@ -1607,23 +1563,19 @@
           "uid": "${datasource}"
         },
         "definition": "",
-        "hide": 0,
         "includeAll": false,
         "label": "Namespace",
-        "multi": false,
         "name": "namespace",
         "options": [],
         "query": "label_values(celery_worker_up{}, namespace)",
         "refresh": 2,
         "regex": "",
-        "skipUrlSync": false,
         "sort": 1,
         "type": "query"
       },
       {
         "current": {
           "isNone": true,
-          "selected": false,
           "text": "None",
           "value": ""
         },
@@ -1632,16 +1584,13 @@
           "uid": "${datasource}"
         },
         "definition": "",
-        "hide": 0,
         "includeAll": false,
         "label": "Queue Name",
-        "multi": false,
         "name": "queue_name",
         "options": [],
         "query": "label_values(celery_task_received_total{namespace=\"$namespace\", job=\"celery-$app_env\", name!~\"None\"}, queue_name)",
         "refresh": 2,
         "regex": "",
-        "skipUrlSync": false,
         "sort": 1,
         "type": "query"
       }
@@ -1655,6 +1604,5 @@
   "timezone": "browser",
   "title": "Uptime/Health",
   "uid": "aeh7ymwdwpvk0e",
-  "version": 1,
-  "weekStart": ""
+  "version": 1
 }

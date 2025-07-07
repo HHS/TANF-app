@@ -6,4 +6,3 @@ repos:
 packages:
   - postgresql-client-15
   - libjemalloc-dev
-  - redis

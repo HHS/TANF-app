@@ -70,7 +70,9 @@ export const accountCanViewAdmin = (state) =>
 
 export const accountCanViewPlg = (state) =>
   accountStatusIsApproved(state) &&
-  ['OFA System Admin', 'Developer'].includes(selectPrimaryUserRole(state)?.name)
+  ['OFA System Admin', 'Developer', 'DIGIT Team'].includes(
+    selectPrimaryUserRole(state)?.name
+  )
 
 export const accountIsRegionalStaff = (state) =>
   accountStatusIsApproved(state) &&

@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { setAlert, clearAlert } from '../../actions/alert'
 import { ALERT_INFO } from '../Alert'
+import { useRUM } from '../../hooks/useRUM'
 
 /**
  * This component renders momentarily after the user logs in.
@@ -29,6 +30,7 @@ function LoginCallback() {
   const dispatch = useDispatch()
   const user = useSelector((state) => state.auth.user)
   const isACFOCIO = user?.roles?.some((role) => role.name === 'ACF OCIO')
+  const { setUserInfo } = useRUM()
 
   useEffect(() => {
     if (authLoading) {
@@ -45,8 +47,12 @@ function LoginCallback() {
       window.location = `${process.env.REACT_APP_BACKEND_HOST}/admin/`
     }
   }
+  if (authenticated) {
+    setUserInfo(user)
+    return <Navigate to="/home" />
+  }
 
-  return authenticated ? <Navigate to="/home" /> : null
+  return null
 }
 
 export default LoginCallback

@@ -9,7 +9,6 @@ import {
   setStt,
   setQuarter,
   setFileType,
-  getCurrentSubmission,
 } from '../../actions/reports'
 import UploadReport from '../UploadReport'
 import STTComboBox from '../STTComboBox'
@@ -164,16 +163,6 @@ function Reports() {
       dispatch(setQuarter(quarterInputValue))
       dispatch(setStt(sttInputValue))
       dispatch(setFileType(fileTypeInputValue))
-
-      // Retrieve the files matching the selected year, quarter, and ssp.
-      dispatch(
-        getCurrentSubmission({
-          quarter: quarterInputValue,
-          year: yearInputValue,
-          stt,
-          file_type: fileTypeInputValue,
-        })
-      )
 
       // Restore upload sections to the page
       setTimeout(() => setIsToggled(true), 0)

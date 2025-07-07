@@ -9,9 +9,7 @@ import {
   SET_FILE_ERROR,
   FILE_EXT_ERROR,
   upload,
-  download,
 } from '../../actions/reports'
-import Button from '../Button'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
 import {
   handlePreview,
@@ -140,10 +138,6 @@ function FileUpload({ section, setLocalAlertState }) {
     }
   }, [hasPreview, hasFile, fileName, targetClassName])
 
-  const downloadFile = ({ target }) => {
-    dispatch(clearError({ section: sectionName }))
-    dispatch(download(selectedFile))
-  }
   const inputRef = useRef(null)
 
   const validateAndUploadFile = async (event) => {
@@ -273,17 +267,6 @@ function FileUpload({ section, setLocalAlertState }) {
         aria-hidden="false"
         data-errormessage={INVALID_FILE_ERROR}
       />
-      <div style={{ marginTop: '25px' }}>
-        {hasFile && selectedFile?.id ? (
-          <Button
-            className="tanf-file-download-btn"
-            type="button"
-            onClick={downloadFile}
-          >
-            Download Section {sectionNumber}
-          </Button>
-        ) : null}
-      </div>
     </div>
   )
 }

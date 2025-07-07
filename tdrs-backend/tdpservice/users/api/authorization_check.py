@@ -62,7 +62,7 @@ class PlgAuthorizationCheck(APIView):
         """Handle get request and verify user is authorized to access plg apps."""
         user = request.user
 
-        user_in_valid_group = user.is_ofa_sys_admin or user.is_developer
+        user_in_valid_group = user.is_ofa_sys_admin or user.is_developer or user.is_digit_team
 
         if user_in_valid_group:
             return HttpResponse(status=200)

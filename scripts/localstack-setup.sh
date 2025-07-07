@@ -20,3 +20,5 @@ awslocal s3api put-bucket-versioning --bucket mimir-alertmanager --versioning-co
 awslocal s3api create-bucket --bucket mimir-ruler --region $AWS_REGION_NAME
 awslocal s3api put-bucket-versioning --bucket mimir-ruler --versioning-configuration Status=Enabled
 
+awslocal s3api create-bucket --bucket tempo-traces --region $AWS_REGION_NAME
+awslocal s3api put-bucket-versioning --bucket tempo-traces --versioning-configuration Status=Enabled

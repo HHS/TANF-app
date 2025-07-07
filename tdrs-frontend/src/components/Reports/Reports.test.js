@@ -330,7 +330,7 @@ describe('Reports', () => {
     await waitFor(() => expect(getByText('section2.txt')).toBeInTheDocument())
     await waitFor(() => expect(getByText('section3.txt')).toBeInTheDocument())
     await waitFor(() => expect(getByText('section4.txt')).toBeInTheDocument())
-    expect(store.dispatch).toHaveBeenCalledTimes(18)
+    expect(store.dispatch).toHaveBeenCalledTimes(17)
 
     // There should be 4 more dispatches upon making the submission,
     // one request to /reports for each file
@@ -339,7 +339,7 @@ describe('Reports', () => {
     )
     fireEvent.click(getByText('Submit Data Files'))
     await waitFor(() => getByRole('alert'))
-    expect(store.dispatch).toHaveBeenCalledTimes(19)
+    expect(store.dispatch).toHaveBeenCalledTimes(18)
   })
 
   it('should add files to the redux state when dispatching uploads', async () => {
