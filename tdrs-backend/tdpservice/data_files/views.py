@@ -177,13 +177,12 @@ class DataFileViewSet(ModelViewSet):
         datafile = self.get_object()
         dfs = datafile.summary
 
-        if datafile.summary.error_report:
-            return FileResponse(datafile.summary.error_report, "report.xlsx")
-        else:
+        if not datafile.summary.error_report:
             error_report_generator = ErrorReportFactory.get_error_report_generator(datafile)
             error_report = error_report_generator.generate()
             set_error_report(dfs, error_report)
-            return FileResponse(error_report_generator.generate())
+
+        return FileResponse(datafile.summary.error_report, "report.xlsx")
 
 
 class GetYearList(APIView):
