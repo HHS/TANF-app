@@ -14,6 +14,7 @@
 	allowed = ./tdrs-backend/manifest.proxy.yml:*
 	allowed = ./tdrs-backend/plg/loki/manifest.yml:*
 	allowed = ./tdrs-backend/plg/mimir/manifest.yml:*
+	allowed = ./tdrs-backend/plg/tempo/manifest.yml:*
 	allowed = ./tdrs-backend/plg/deploy.sh:*
 	patterns = (A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}
 	patterns = (\"|')?(AWS|aws|Aws)?_?(SECRET|secret|Secret)?_?(ACCESS|access|Access)?_?(KEY|key|Key)(\"|')?\\s*(:|=>|=)\\s*(\"|')?[A-Za-z0-9/\\+=]{40}(\"|')?
