@@ -6,7 +6,7 @@ from tdpservice.users.permissions import (
     view_permissions_q
 )
 
-def set_fra_permissions(apps, shcema_editor):
+def set_fra_permissions(apps, schema_editor):
     Group = apps.get_model('auth', 'Group')
     Permission = apps.get_model('auth', 'Permission')
     ContentType = apps.get_model('contenttypes', 'ContentType')
@@ -17,7 +17,7 @@ def set_fra_permissions(apps, shcema_editor):
     ofa_regional_staff = Group.objects.get(name='OFA Regional Staff')
     ofa_system_admin = Group.objects.get(name='OFA System Admin')
 
-    # Creat Permission
+    # Create Permission
     contentType = ContentType.objects.get(app_label='users', model='user')
     fra_permission, _ = Permission.objects.get_or_create(
         codename='has_fra_access',
