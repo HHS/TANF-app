@@ -35,7 +35,7 @@ def unset_fra_permissions(apps, schema_editor):
     Group = apps.get_model('auth', 'Group')
     Permission = apps.get_model('auth', 'Permission')
 
-    # Groups to reove fra from
+    # Groups to remove fra from
     developer = Group.objects.get(name='Developer')
     ofa_admin = Group.objects.get(name='OFA Admin')
     ofa_regional_staff = Group.objects.get(name='OFA Regional Staff')
