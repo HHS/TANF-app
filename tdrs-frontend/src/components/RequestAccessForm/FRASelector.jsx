@@ -1,14 +1,4 @@
-function FRASelector({ hasFRAAccess, setHasFRAAccess, error, setErrors }) {
-  const handleRadioChange = (value) => {
-    setHasFRAAccess(value)
-
-    // clear any error messages
-    setErrors((errs) => {
-      const { hasFRAAccess, ...rest } = errs
-      return rest
-    })
-  }
-
+function FRASelector({ hasFRAAccess, setHasFRAAccess, error }) {
   return (
     <div className={`usa-form-group ${error ? 'usa-form-group--error' : ''}`}>
       <fieldset className="usa-fieldset">
@@ -41,7 +31,7 @@ function FRASelector({ hasFRAAccess, setHasFRAAccess, error, setErrors }) {
             value="true"
             defaultChecked
             checked={hasFRAAccess === true}
-            onChange={() => handleRadioChange(true)}
+            onChange={() => setHasFRAAccess(true)}
           />
           <label className="usa-radio__label" htmlFor="fra-yes">
             Yes
@@ -55,7 +45,7 @@ function FRASelector({ hasFRAAccess, setHasFRAAccess, error, setErrors }) {
             name="hasFRAAccess"
             value="false"
             checked={hasFRAAccess === false}
-            onChange={() => handleRadioChange(false)}
+            onChange={() => setHasFRAAccess(false)}
           />
           <label className="usa-radio__label" htmlFor="fra-no">
             No

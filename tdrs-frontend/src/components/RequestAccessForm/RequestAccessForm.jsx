@@ -56,8 +56,12 @@ function RequestAccessForm({ user, sttList }) {
 
   const setJurisdictionType = (val) => {
     setStt('')
-    setHasFRAAccess(false)
     setJurisdictionTypeInputValue(val)
+    if (val === 'tribe') {
+      setHasFRAAccess(false)
+    } else {
+      setHasFRAAccess(null)
+    }
   }
 
   const setStt = (sttName) => {
@@ -72,6 +76,17 @@ function RequestAccessForm({ user, sttList }) {
       ...currentState,
       hasFRAAccess: hasFRAAccess,
     }))
+
+    // Remove errors when FRA Access is changed or hidden
+    if (displayingError) {
+      const { hasFRAAccess: removedError, ...rest } = errors
+      const error = validation('hasFRAAccess', hasFRAAccess)
+
+      setErrors({
+        ...rest,
+        ...(error && { hasFRAAccess: error }),
+      })
+    }
   }
 
   const handleChange = ({ name, value }) => {
@@ -206,7 +221,6 @@ function RequestAccessForm({ user, sttList }) {
             hasFRAAccess={profileInfo.hasFRAAccess}
             setHasFRAAccess={setHasFRAAccess}
             error={errors.hasFRAAccess}
-            setErrors={setErrors}
           />
         )}
         <Button type="submit" className="width-full request-access-button">
