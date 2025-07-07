@@ -1,0 +1,32 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+
+{% block content %}
+<div class="module">
+    {% if original.acked == False %}
+    <h2>Feedback Details</h2>
+    <div style="margin-bottom: 20px; width: 100%;">
+        <div style="padding: 10px; border: 1px solid #ccc; margin-bottom: 10px; margin-top: 10px; width: 100%; box-sizing: border-box;">
+            <h3>Feedback</h3>
+            <div style="word-break: break-word; margin-left: 10px; margin-right: 10px;">{{ original.feedback }}</div>
+        </div>
+        <div style="padding: 10px; border: 1px solid #ccc; width: 100%; box-sizing: border-box;">
+            <h3>Rating</h3>
+            <div style="margin-left: 10px; margin-right: 10px;">{{ original.rating }}</div>
+        </div>
+    </div>
+
+
+    <div style="margin-bottom: 20px;">
+        <form method="post" action="{% url 'admin:acknowledge_feedback' original.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="button" style="background-color: #28a745; color: white;">
+                Acknowledge
+            </button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
+{{ block.super }}
+{% endblock %}

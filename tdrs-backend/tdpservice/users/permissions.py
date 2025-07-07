@@ -253,3 +253,43 @@ class UserPermissions(DjangoModelCRUDPermissions):
         # Check if user is an admin
         is_admin = request.user.groups.filter(name__in=["OFA System Admin", "OFA Admin"]).exists()
         return obj == request.user or is_admin
+
+
+class FeedbackPermissions(permissions.BasePermission):
+    """Permission class for the Feedback viewset.
+
+    Permissions rules:
+    - Admin users can retrieve/list all feedback models
+    - Non-admin users can only see their submitted feedback
+    - Anonymous users can create feedback but cannot retrieve or list any feedback
+    """
+
+    def has_permission(self, request, view):
+        """Check if user has permission to access Feedback resources."""
+        # Allow all create actions
+        if request.method == 'POST':
+            return True
+
+        # For list and retrieve actions, only authenticated users are allowed
+        if not request.user.is_authenticated:
+            return False
+
+        # For list action, filter queryset for non-admin users
+        if view.action == 'list':
+            is_admin = request.user.groups.filter(name__in=["OFA System Admin", "OFA Admin"]).exists()
+            if not is_admin:
+                view.queryset = view.queryset.filter(user=request.user)
+
+        return True
+
+    def has_object_permission(self, request, view, obj):
+        """Check if user has permission to access a specific Feedback object."""
+        # Check if user is an admin
+        is_admin = request.user.groups.filter(name__in=["OFA System Admin", "OFA Admin"]).exists()
+
+        # Admin users can access all feedback
+        if is_admin:
+            return True
+
+        # Non-admin users can only access their own feedback
+        return obj.user == request.user
