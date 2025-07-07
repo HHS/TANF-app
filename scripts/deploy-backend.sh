@@ -112,6 +112,9 @@ set_alloy_envs() {
 }
 
 add_service_bindings() {
+    yq eval -i ".applications[0].services[3] = \"tdp-redis-${env}\"" ./tdrs-backend/manifest.buildpack.yml
+    yq eval -i ".applications[0].services[3] = \"tdp-redis-${env}\"" ./tdrs-backend/manifest.celery.yml
+
     if [ "$CGAPPNAME_BACKEND" = "tdp-backend-develop" ]; then
       # TODO: this is technical debt, we should either make staging mimic tanf-dev
       #       or make unique services for all apps but we have a services limit
@@ -122,12 +125,10 @@ add_service_bindings() {
     yq eval -i ".applications[0].services[0] = \"tdp-db-${env}\"" ./tdrs-backend/manifest.buildpack.yml
     yq eval -i ".applications[0].services[1] = \"tdp-staticfiles-${env}\"" ./tdrs-backend/manifest.buildpack.yml
     yq eval -i ".applications[0].services[2] = \"tdp-datafiles-${env}\"" ./tdrs-backend/manifest.buildpack.yml
-    yq eval -i ".applications[0].services[3] = \"tdp-redis-${env}\"" ./tdrs-backend/manifest.buildpack.yml
 
     yq eval -i ".applications[0].services[0] = \"tdp-db-${env}\"" ./tdrs-backend/manifest.celery.yml
     yq eval -i ".applications[0].services[1] = \"tdp-staticfiles-${env}\"" ./tdrs-backend/manifest.celery.yml
     yq eval -i ".applications[0].services[2] = \"tdp-datafiles-${env}\"" ./tdrs-backend/manifest.celery.yml
-    yq eval -i ".applications[0].services[3] = \"tdp-redis-${env}\"" ./tdrs-backend/manifest.celery.yml
 }
 
 update_backend()
