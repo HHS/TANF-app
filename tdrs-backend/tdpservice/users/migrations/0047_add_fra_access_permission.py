@@ -1,11 +1,5 @@
 from django.db import migrations
 
-from tdpservice.users.permissions import (
-    get_permission_ids_for_model,
-    add_permissions_q,
-    view_permissions_q
-)
-
 def set_fra_permissions(apps, schema_editor):
     Group = apps.get_model('auth', 'Group')
     Permission = apps.get_model('auth', 'Permission')
@@ -52,7 +46,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('auth', '__latest__'),
-        ('users', '0045_regional_staff_permissions_update'),
+        ('users', '0046_user_feedback'),
     ]
 
     operations = [

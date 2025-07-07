@@ -25,7 +25,7 @@ def grant_fra_access_permission(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0046_add_fra_access_permission'),
+        ('users', '0047_add_fra_access_permission'),
     ]
 
     operations = [
