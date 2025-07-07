@@ -18,7 +18,7 @@ function RequestAccessForm({ user, sttList }) {
     firstName: '',
     lastName: '',
     stt: '',
-    hasFRAAccess: isAMSUser ? true : null,
+    hasFRAAccess: isAMSUser ? false : null,
   })
   const dispatch = useDispatch()
   const [touched, setTouched] = useState({})
