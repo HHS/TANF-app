@@ -170,9 +170,9 @@ function FileUpload({ section, setLocalAlertState }) {
 
     if (!error) {
       // Get the correctly encoded file
-      const { encodedFile, header } = await tryGetUTF8EncodedFile(result, file)
+      const encodedFile = await tryGetUTF8EncodedFile(result, file)
       const [isCorrectQuarterYear, fiscalFileYear, fiscalFileQuarter] =
-        await checkHeaderFile(header, selectedYear, selectedQuarter)
+        await checkHeaderFile(result, file, selectedYear, selectedQuarter)
       if (isCorrectQuarterYear) {
         dispatch(upload({ file: encodedFile, section }))
       } else {
