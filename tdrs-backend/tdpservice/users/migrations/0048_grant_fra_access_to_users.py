@@ -15,11 +15,11 @@ def grant_fra_access_permission(apps, schema_editor):
         return
 
     # Filter users who currently have the feature flag
-    users_with_flag = User.objects.filter(feature_flags__has_key='has_fra_access')
+    users_with_flag = User.objects.filter(feature_flags__contains={'fra_reports': True})
 
     for user in users_with_flag:
         user.user_permissions.add(fra_permission)
-        user.feature_flags.pop('has_fra_access', None)
+        user.feature_flags.pop('fra_reports', None)
         user.save()
 
 class Migration(migrations.Migration):
