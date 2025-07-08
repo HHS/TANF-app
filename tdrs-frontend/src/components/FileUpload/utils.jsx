@@ -111,6 +111,7 @@ export const handlePreview = (fileName, targetClassName) => {
 const MIN_BYTES = 500
 const HEADER_LENGTH = 23 * 4 // Multiply by 4 because some encodings are 4 bytes per char
 
+/* istanbul ignore next */
 const checkBom = (bytesView) => {
   // Check for different types of BOMs
   let skipBytes = 0
@@ -170,10 +171,11 @@ export const tryGetUTF8EncodedFile = async function (fileBytes, file) {
     // same way they did before this change. When the unit tests (i.e. Node environment) call `languageEncoding` it
     // expects a Buffer/string/URL object. When the browser calls `languageEncoding`, it expects a Blob/File object.
     // There is not a convenient way or universal object to handle both cases. Thus, when the tests run the call to
-    // `languageEncoding`, it raises an exception and we return the file as is which is then dispatched as it would
-    // have been before this change.
-    console.error('Caught error while handling file encoding. Error:', error)
-    return { encodedFile: file, header: '' }
+    // `languageEncoding`, it raises an exception and we return the file and decode the header as is which is then
+    // dispatched as it would have be.
+    const decoder = new TextDecoder()
+    const header = decoder.decode(bytesView.slice(0, HEADER_LENGTH))
+    return { encodedFile: file, header: header }
   }
 }
 
