@@ -24,11 +24,11 @@
                 - main
                 - master
       - deploy-infrastructure-staging:
-          filters:
-            branches:
-              only:
-                - develop
-                - main
+          # filters:
+          #   branches:
+          #     only:
+                # - develop
+                # - main
       - deploy-infrastructure-production:
           filters:
             branches:
@@ -96,10 +96,10 @@
       - deploy-develop:
           requires:
             - deploy-infrastructure-staging
-          filters:
-            branches:
-              only:
-                - develop
+          # filters:
+          #   branches:
+          #     only:
+          #       - develop
       - deploy-staging:
           requires:
             - deploy-infrastructure-staging
