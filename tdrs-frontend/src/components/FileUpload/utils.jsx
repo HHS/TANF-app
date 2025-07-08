@@ -195,6 +195,8 @@ export const checkHeaderFile = async function (
   }
 
   const yearQuarterRegex = '[0-9]{4}[1-4]'
+  // TODO: Remove
+  console.log(header)
   const yearQuarter = header.match(yearQuarterRegex)
   const fileYear = yearQuarter?.[0]?.slice(0, 4)
   const fileQuarter = yearQuarter?.[0]?.slice(4, 5)
