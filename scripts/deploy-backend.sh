@@ -170,11 +170,10 @@ update_backend()
           cf unset-env "$APP" "APP_DB_NAME"
           cf set-env "$APP" "APP_DB_NAME" "tdp_db_$backend_app_name"
         fi
-
-        cf set-env "$APP" CGAPPNAME_BACKEND "$CGAPPNAME_BACKEND"
-
-        cf restage "$APP"
     fi
+
+    cf set-env "$APP" CGAPPNAME_BACKEND "$CGAPPNAME_BACKEND"
+    cf restage "$APP"
 
     cd ..
 }
