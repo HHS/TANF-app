@@ -215,7 +215,7 @@ services:
     volumes:
       - .:/tdpapp
       - logs:/tmp
-    build: 
+    build:
       context: .
       args:
         REGISTRY_OWNER: ${REGISTRY_OWNER:-hhs}
@@ -224,6 +224,8 @@ services:
       ./manage.py makemigrations &&
       ./manage.py migrate &&
       ./manage.py populate_stts &&
+      python ./plg/grafana_views/generate_views.py --all &&
+      ./manage.py runscript apply_grafana_views &&
       ./gunicorn_start.sh"
     ports:
       - "5555:5555"
