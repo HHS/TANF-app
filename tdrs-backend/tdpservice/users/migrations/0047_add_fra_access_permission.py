@@ -1,6 +1,6 @@
 from django.db import migrations
 
-def set_fra_permissions(apps, schema_editor):
+def set_fra_permissions(apps, _):
     Group = apps.get_model('auth', 'Group')
     Permission = apps.get_model('auth', 'Permission')
     ContentType = apps.get_model('contenttypes', 'ContentType')
@@ -25,7 +25,7 @@ def set_fra_permissions(apps, schema_editor):
     ofa_regional_staff.permissions.add(fra_permission)
     ofa_system_admin.permissions.add(fra_permission)
 
-def unset_fra_permissions(apps, schema_editor):
+def unset_fra_permissions(apps, _):
     Group = apps.get_model('auth', 'Group')
     Permission = apps.get_model('auth', 'Permission')
 
