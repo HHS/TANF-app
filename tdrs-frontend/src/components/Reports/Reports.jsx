@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useFooterHeight } from '../../hooks/useFooterHeight'
 import classNames from 'classnames'
 
 import Button from '../Button'
@@ -86,11 +85,9 @@ function Reports() {
   const isRegionalStaff = useSelector(accountIsRegionalStaff)
   const sttList = useSelector((state) => state?.stts?.sttList)
 
-  const { footerHeight } = useFooterHeight() // <== ✅ Place here, near the top
-
   // Feedback state
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false) // TODO: change to false using true for testing right now
-  const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
+  const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false) // TODO: test to see if this is needed
 
   const [errorModalVisible, setErrorModalVisible] = useState(false)
   const files = useSelector((state) => state.reports.submittedFiles)
@@ -215,11 +212,12 @@ function Reports() {
   }
 
   const handleCloseWidget = () => {
-    console.log('Closing feedback widget...')
+    console.log('Closing feedback widget...') // TODO: Remove this log
     setIsFeedbackOpen(false)
     setIsFeedbackSubmitted(false)
   }
 
+  // TODO: test to see if this is needed
   const handleOnFeedbackSubmit = () => {
     setIsFeedbackSubmitted(true)
   }

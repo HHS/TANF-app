@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useFormSubmission } from '../../hooks/useFormSubmission'
-import { useFooterHeight } from '../../hooks/useFooterHeight'
 import { useDispatch, useSelector } from 'react-redux'
 import classNames from 'classnames'
 import { fileInput } from '@uswds/uswds/src/js/components'
@@ -572,15 +571,13 @@ const FRAReports = () => {
   const [searchFormValues, setSearchFormValues] = useState(null)
   const [uploadError, setUploadError] = useState(null)
 
-  const { footerHeight } = useFooterHeight() // <== ✅ Place here, near the top
-
   // Use the form submission hook to prevent multiple submissions
   const { isSubmitting, executeSubmission, onSubmitStart, onSubmitComplete } =
     useFormSubmission()
 
   // Feedback state
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(true) // TODO: change to false using true for testing right now
-  const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
+  const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false) // TODO: test to see if this is needed
 
   const user = useSelector((state) => state.auth.user)
   const sttList = useSelector((state) => state?.stts?.sttList)
@@ -754,6 +751,7 @@ const FRAReports = () => {
     setIsFeedbackSubmitted(false)
   }
 
+  // TODO: test to see if this is needed
   const handleOnFeedbackSubmit = () => {
     setIsFeedbackSubmitted(true)
   }
