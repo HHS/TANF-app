@@ -1,10 +1,8 @@
 /* eslint-disable no-unused-vars */
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import axios from 'axios'
 import axiosInstance from '../../axios-instance'
 import classNames from 'classnames'
 import FeedbackRadioSelectGroup from './FeedbackRadioSelectGroup'
-import { feedbackPost } from '../../__mocks__/mockFeedbackAxiosApi'
 import { useSelector } from 'react-redux'
 import {
   FAIR_FEEDBACK,
@@ -21,6 +19,8 @@ const ratingMessageMap = {
   5: GREAT_FEEDBACK,
 }
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
+
 const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
   const formRef = useRef(null)
   const authenticated = useSelector((state) => state.auth.authenticated)
@@ -28,62 +28,56 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [selectedRatingsOption, setSelectedRatingsOption] = useState(undefined)
   const [feedbackMessage, setFeedbackMessage] = useState('')
-  const [error, setError] = useState(false)
+  const [hasError, setHasError] = useState(false)
 
   const resetStatesOnceSubmitted = () => {
     setSelectedRatingsOption(undefined)
     setFeedbackMessage('')
-    setError(false)
+    setHasError(false)
     setIsAnonymous(false)
   }
 
-  // TODO: NOTE: make sure to use axiosInstance (to carry over auth creds) for the real api POST call
-  const submitFeedbackForm = async (data) => {
-    return axiosInstance.post('/api/userFeedback/', {
-      rating: selectedRatingsOption,
-      feedback: feedbackMessage,
-      anonymous: isAnonymous,
-    })
-  }
-
-  // Currently using stubbed API call to submit feedback
-  // TODO: replace with above api call when implemented in backend (adjust url and data if needed)
-  const handleSubmit = useCallback(async () => {
-    if (!selectedRatingsOption) {
-      setError(true)
-      return
-    }
-
-    //if (isFormValidToSubmit()) {
-    try {
-      // api stubbing (mock) call here replace
-      const response = await feedbackPost('/api/userFeedback/', {
-        rating: selectedRatingsOption,
-        feedback: feedbackMessage,
-        anonymous: isAnonymous,
-      })
-
-      if (response.status === 200) {
-        onFeedbackSubmit()
-        resetStatesOnceSubmitted()
-      } else {
-        console.error('Something went wrong. Please try again.')
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault()
+      if (!selectedRatingsOption) {
+        setHasError(true)
+        return
       }
-    } catch (error) {
-      if (error.response && error.response.status === 400) {
-        console.error('Error submitting feedback:', error)
-      } else {
-        console.error('An unexpected error occurred. Please try again later.')
+
+      try {
+        const response = await axiosInstance.post(
+          `${process.env.REACT_APP_BACKEND_URL}/feedback/`,
+          {
+            rating: selectedRatingsOption,
+            feedback: feedbackMessage,
+            anonymous: isAnonymous,
+          }
+        )
+
+        if (response.status === 200) {
+          onFeedbackSubmit()
+          resetStatesOnceSubmitted()
+        } else {
+          console.error('Unexpected response: ', response)
+        }
+      } catch (error) {
+        if (error.response && error.response.status === 400) {
+          console.error('Error submitting feedback:', error.response.data)
+        } else {
+          console.error(
+            'An unexpected error occurred. Please try again later.',
+            error
+          )
+        }
       }
-    }
-    // } else {
-    //   setError(true)
-    // }
-  }, [selectedRatingsOption, feedbackMessage, isAnonymous, onFeedbackSubmit])
+    },
+    [selectedRatingsOption, feedbackMessage, isAnonymous, onFeedbackSubmit]
+  )
 
   const handleRatingSelected = (rating) => {
     setSelectedRatingsOption(rating)
-    setError(false)
+    setHasError(false)
   }
 
   const handleFeedbackMessageChange = (event) => {
@@ -98,8 +92,6 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
       handleRatingSelected(rating)
     }
   }
-
-  //const isFormValidToSubmit = () => selectedRatingsOption !== undefined
 
   useEffect(() => {
     if (!isGeneralFeedback) return // Only add listener when modal is open
@@ -178,12 +170,12 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
           >
             <p
               data-testid="fields-required-text"
-              style={{ color: error ? '#b50909' : '#575c64' }}
+              style={{ color: hasError ? '#b50909' : 'black' }}
             >
               Fields marked with an asterisk (*) are required.
             </p>
           </div>
-          {error && (
+          {hasError && (
             <div
               role="alert"
               className="usa-alert__body margin-4 margin-bottom-0 margin-top-0"
@@ -215,7 +207,7 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
           onKeyDownSelection={handleRadioKeyDown}
           showLabel={isGeneralFeedback ? true : false}
           isModal={isGeneralFeedback ? true : false}
-          error={error}
+          error={hasError}
         />
       </div>
       {(isGeneralFeedback || selectedRatingsOption) && (
