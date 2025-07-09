@@ -166,7 +166,7 @@ const FeedbackModal = ({ id, title, message, children, isOpen, onClose }) => {
           <p
             id="modalDescription"
             className="font-sans-md font-family-sans margin-4 margin-top-3 margin-bottom-0"
-            style={{ lineHeight: '1.25', color: '#575c64' }}
+            style={{ lineHeight: '1.25' }}
           >
             {message}
           </p>
