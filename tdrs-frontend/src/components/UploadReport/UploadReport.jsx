@@ -11,7 +11,7 @@ import { fileUploadSections } from '../../reducers/reports'
 import { useEventLogger } from '../../utils/eventLogger'
 import { useFormSubmission } from '../../hooks/useFormSubmission'
 
-function UploadReport({ handleCancel, stt }) {
+function UploadReport({ handleCancel, stt, openWidget }) {
   // The currently selected year from the reportingYears dropdown
   const selectedYear = useSelector((state) => state.reports.year)
   // The selected quarter in the dropdown tied to our redux `reports` state
@@ -90,6 +90,7 @@ function UploadReport({ handleCancel, stt }) {
           })
         )
       )
+      openWidget() // TODO: opens widget (or makes visiable on Report submissions)
     } catch (error) {
       console.error('Error during form submission:', error)
       setLocalAlertState({

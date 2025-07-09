@@ -1,10 +1,5 @@
-import React, {
-  useRef,
-  useEffect,
-  useCallback,
-  useState,
-  useImperativeHandle,
-} from 'react'
+import React, { useRef, useEffect, useState, useImperativeHandle } from 'react'
+import closeIcon from '@uswds/uswds/img/usa-icons/close.svg'
 import '../../assets/feedback/Feedback.scss'
 import { useFocusTrap } from '../../hooks/useFocusTrap'
 import FeedbackForm from './FeedbackForm'
@@ -16,6 +11,8 @@ import {
 
 const FeedbackWidget = React.forwardRef(
   ({ isOpen, onClose, dataType }, ref) => {
+    const [showSpinner, setShowSpinner] = useState(true)
+    const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
     const widgetRef = useRef(null)
 
     useFocusTrap({ containerRef: widgetRef, isActive: isOpen })
@@ -25,9 +22,15 @@ const FeedbackWidget = React.forwardRef(
 
     const handleFeedbackSubmit = () => {
       // Called when form submits successfully
+      setIsFeedbackSubmitted(true)
+      setShowSpinner(true) // Show spinner while processing
+
       setTimeout(() => {
+        setShowSpinner(false) // Hide spinner after processing
         onClose?.()
-      }, 1000)
+      }, 5000) // Close after 5 seconds
+
+      setIsFeedbackSubmitted(false) // Reset for next use
     }
 
     const getFeedbackWidgetHeader = () => {
@@ -40,26 +43,15 @@ const FeedbackWidget = React.forwardRef(
       }
     }
 
-    // useEffect(() => {
-    //   //   // Reset visibility when widget is reopened
-    //   if (!isOpen) {
-    //     return
-    //   }
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        setShowSpinner(false)
+        onClose?.() // Close widget after 5 seconds
+        // Reset any values here if needed
+      }, 5000) // 5 seconds
 
-    //   const widget = widgetRef.current
-    //   const footer = document.querySelector('footer')
-    //   if (!widget || !footer) return
-
-    //   // Get footer height to position widget just above it
-    //   const footerHeight = footer.offsetHeight
-    //   // const footerRect = footer.getBoundingClientRect()
-    //   // const bottomSpace = window.innerHeight - footerRect.top
-
-    //   // Position widget fixed above footer by setting bottom = footerHeight
-    //   widget.style.position = 'relative' // change to relative for correct positioning
-    //   //widget.style.bottom = `${footerHeight}px`
-    //   widget.style.right = '13.5rem' // keep your right positioning
-    // }, [isOpen])
+      return () => clearTimeout(timer)
+    }, [])
 
     return isOpen ? (
       <div
@@ -70,28 +62,48 @@ const FeedbackWidget = React.forwardRef(
         aria-describedby="feedbackWidgetDesc"
       >
         <div className="feedback-widget-content">
-          <div className="feedback-widget-header">
-            <p
-              id="feedbackWidgetHeader"
-              className="font-serif-sm"
-              tabIndex={-1}
-            >
-              {getFeedbackWidgetHeader()}
-            </p>
-            <button
-              data-testid="feedback-widget-close-button"
-              type="button"
-              className="margin-right-2 feedback-modal-close-button feedback-widget-modal-close-button"
-              aria-label="Close feedback widget"
-              onClick={onClose}
-            >
-              X
-            </button>
-          </div>
-          <FeedbackForm
-            isGeneralFeedback={false} // compact form (no validation banner)
-            onFeedbackSubmit={handleFeedbackSubmit} // closes widget after submit
-          />
+          {!isFeedbackSubmitted ? (
+            <>
+              <div className="feedback-widget-header">
+                <p
+                  id="feedbackWidgetHeader"
+                  className="font-serif-sm"
+                  tabIndex={-1}
+                >
+                  {getFeedbackWidgetHeader()}
+                </p>
+                <button
+                  data-testid="feedback-widget-close-button"
+                  type="button"
+                  className="usa-modal__close feedback-modal-close-button"
+                  aria-label="Close feedback widget"
+                  style={{
+                    padding: '0',
+                    marginBottom: '3px',
+                    alignSelf: 'unset',
+                  }}
+                  onClick={onClose}
+                >
+                  <img src={closeIcon} alt="X" />
+                </button>
+              </div>
+              <FeedbackForm
+                isGeneralFeedback={false} // compact form (no validation banner)
+                onFeedbackSubmit={handleFeedbackSubmit} // closes widget after submit
+              />
+            </>
+          ) : (
+            <div className="feedback-widget-header">
+              <p
+                id="feedbackWidgetHeader"
+                className="font-serif-sm"
+                tabIndex={-1}
+              >
+                Thank you for your feedback!
+              </p>
+              {showSpinner && <span className="spinner" aria-label="Loading" />}
+            </div>
+          )}
         </div>
       </div>
     ) : null

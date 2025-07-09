@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useFormSubmission } from '../../hooks/useFormSubmission'
-import { useStickyAboveFooter } from '../../hooks/useStickyAboveFooter'
+import { useFooterHeight } from '../../hooks/useFooterHeight'
 import { useDispatch, useSelector } from 'react-redux'
 import classNames from 'classnames'
 import { fileInput } from '@uswds/uswds/src/js/components'
@@ -8,6 +8,7 @@ import fileTypeChecker from 'file-type-checker'
 
 import Button from '../Button'
 import STTComboBox from '../STTComboBox'
+import FeedbackPortal from '../Feedback/FeedbackPortal'
 import FeedbackWidget from '../Feedback/FeedbackWidget'
 import { quarters, constructYears } from './utils'
 import {
@@ -571,19 +572,15 @@ const FRAReports = () => {
   const [searchFormValues, setSearchFormValues] = useState(null)
   const [uploadError, setUploadError] = useState(null)
 
+  const { footerHeight } = useFooterHeight() // <== ✅ Place here, near the top
+
   // Use the form submission hook to prevent multiple submissions
   const { isSubmitting, executeSubmission, onSubmitStart, onSubmitComplete } =
     useFormSubmission()
 
   // Feedback state
-  const [isFeedbackOpen, setIsFeedbackOpen] = useState(true)
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(true) // TODO: change to false using true for testing right now
   const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
-
-  const {
-    topPosition: widgetTop,
-    isVisible: isFeedbackWidgetOpen,
-    containerRef: widgetRef,
-  } = useStickyAboveFooter(120, 1024) // 120 = widget height, 1024 = min width to show
 
   const user = useSelector((state) => state.auth.user)
   const sttList = useSelector((state) => state?.stts?.sttList)
@@ -752,6 +749,7 @@ const FRAReports = () => {
   }
 
   const handleCloseWidget = () => {
+    console.log('Closing feedback widget...')
     setIsFeedbackOpen(false)
     setIsFeedbackSubmitted(false)
   }
@@ -908,7 +906,7 @@ const FRAReports = () => {
   }, [submissionStatusTimer])
 
   return (
-    <>
+    <div className="page-container" style={{ position: 'relative' }}>
       <div className={classNames({ 'border-bottom': isUploadReportToggled })}>
         <SearchForm
           handleSearch={handleSearch}
@@ -920,23 +918,23 @@ const FRAReports = () => {
           userProfileStt={userProfileStt}
         />
       </div>
-      {isFeedbackOpen && isFeedbackWidgetOpen && widgetTop !== null && (
-        <div
-          ref={widgetRef}
-          style={{
-            position: 'absolute',
-            top: `${widgetTop}px`,
-            right: '-13.5rem',
-            bottom: 0, // align it to bottom of the container
-          }}
-        >
-          <FeedbackWidget
-            //ref={widgetRef}
-            isOpen={true}
-            onClose={handleCloseWidget}
-            dataType="fra"
-          />
-        </div>
+      {isFeedbackOpen && (
+        <FeedbackPortal>
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '100%',
+              right: '13.5rem',
+              zIndex: 1100,
+            }}
+          >
+            <FeedbackWidget
+              isOpen={isFeedbackOpen}
+              onClose={handleCloseWidget}
+              dataType="fra"
+            />
+          </div>
+        </FeedbackPortal>
       )}
       {isUploadReportToggled && (
         <>
@@ -1019,7 +1017,6 @@ const FRAReports = () => {
           )} */}
         </>
       )}
-
       <Modal
         title="Files Not Submitted"
         message="Your uploaded files have not been submitted. Searching without submitting will discard your changes and remove any uploaded files."
@@ -1045,7 +1042,7 @@ const FRAReports = () => {
           },
         ]}
       />
-    </>
+    </div>
   )
 }
 

@@ -48,6 +48,7 @@ function App() {
       <main id="main-content">
         <Routes />
       </main>
+      <div id="feedback-widget-anchor"></div>
       <Footer />
       <Feedback />
     </>

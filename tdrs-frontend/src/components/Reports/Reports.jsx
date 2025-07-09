@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useFooterHeight } from '../../hooks/useFooterHeight'
 import classNames from 'classnames'
 
 import Button from '../Button'
@@ -12,6 +13,8 @@ import {
 } from '../../actions/reports'
 import UploadReport from '../UploadReport'
 import STTComboBox from '../STTComboBox'
+import FeedbackPortal from '../Feedback/FeedbackPortal'
+import FeedbackWidget from '../Feedback/FeedbackWidget'
 import { fetchSttList } from '../../actions/sttList'
 import Modal from '../Modal'
 import SegmentedControl from '../SegmentedControl'
@@ -82,6 +85,12 @@ function Reports() {
     useSelector(selectPrimaryUserRole)?.name === 'OFA System Admin'
   const isRegionalStaff = useSelector(accountIsRegionalStaff)
   const sttList = useSelector((state) => state?.stts?.sttList)
+
+  const { footerHeight } = useFooterHeight() // <== ✅ Place here, near the top
+
+  // Feedback state
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false) // TODO: change to false using true for testing right now
+  const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
 
   const [errorModalVisible, setErrorModalVisible] = useState(false)
   const files = useSelector((state) => state.reports.submittedFiles)
@@ -199,6 +208,20 @@ function Reports() {
   const selectStt = (value) => {
     setSttInputValue(value)
     setTouched((currentForm) => ({ ...currentForm, stt: true }))
+  }
+
+  const handleOpenWidget = () => {
+    setIsFeedbackOpen(true)
+  }
+
+  const handleCloseWidget = () => {
+    console.log('Closing feedback widget...')
+    setIsFeedbackOpen(false)
+    setIsFeedbackSubmitted(false)
+  }
+
+  const handleOnFeedbackSubmit = () => {
+    setIsFeedbackSubmitted(true)
   }
 
   useEffect(() => {
@@ -464,6 +487,7 @@ function Reports() {
                 resetPreviousValues()
                 dispatch(clearFileList())
               }}
+              openWidget={handleOpenWidget}
             />
           )}
 
@@ -483,6 +507,28 @@ function Reports() {
           )}
         </>
       )}
+      {/* {isFeedbackOpen &&
+        isFeedbackWidgetOpen &&
+        topPosition !== null &&
+        (console.log('Rendering widget...'),
+        ( */}
+      <FeedbackPortal>
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '100%',
+            right: '13.5rem',
+            zIndex: 1100,
+          }}
+        >
+          <FeedbackWidget
+            isOpen={isFeedbackOpen}
+            onClose={handleCloseWidget}
+            dataType={fileTypeInputValue}
+          />
+        </div>
+      </FeedbackPortal>
+      {/* ))} */}
       <Modal
         title="Files Not Submitted"
         message="Your uploaded files have not been submitted. Searching without submitting will discard your changes and remove any uploaded files."

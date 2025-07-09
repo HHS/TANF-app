@@ -130,19 +130,21 @@ const FeedbackRadioSelectGroup = ({
           })}
         </div>
       </fieldset>
-      <div
-        style={{
-          display: 'block',
-          paddingTop: '0px',
-        }}
-      >
-        <p
-          className="margin-top-1"
-          style={{ ...baseStyle, ...conditionalStyle }}
+      {(isModal || selectedOption == null) && (
+        <div
+          style={{
+            display: 'block',
+            paddingTop: '0px',
+          }}
         >
-          Pick a score and leave a comment
-        </p>
-      </div>
+          <p
+            className="margin-top-1"
+            style={{ ...baseStyle, ...conditionalStyle }}
+          >
+            Pick a score and leave a comment
+          </p>
+        </div>
+      )}
     </div>
   )
 }
