@@ -27,7 +27,7 @@ function RequestAccessForm({ user, sttList }) {
 
   const [jurisdictionType, setJurisdictionTypeInputValue] = useState('state')
 
-  const regionError = 'At least on Region is required'
+  const regionError = 'At least one Region is required'
 
   const validateRegions = (regions) => {
     if (regions?.size === 0) {
@@ -131,16 +131,20 @@ function RequestAccessForm({ user, sttList }) {
       }
     )
     const regionError = validateRegions(profileInfo.regions)
-    setErrors({
+
+    const combinedErrors = {
       ...formValidation.errors,
       ...(regionError && { regions: regionError }),
-    })
-    setTouched({
+    }
+    const combinedTouched = {
       ...formValidation.touched,
       ...(regionError && { regions: true }),
-    })
+    }
 
-    if (!Object.values(formValidation.errors).length) {
+    setErrors(combinedErrors)
+    setTouched(combinedTouched)
+
+    if (!Object.values(combinedErrors).length) {
       return dispatch(
         requestAccess({
           ...profileInfo,
@@ -148,6 +152,7 @@ function RequestAccessForm({ user, sttList }) {
         })
       )
     }
+
     return setTimeout(() => errorRef.current.focus(), 0)
   }
 
