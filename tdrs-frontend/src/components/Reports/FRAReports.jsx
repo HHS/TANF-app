@@ -909,24 +909,6 @@ const FRAReports = () => {
           userProfileStt={userProfileStt}
         />
       </div>
-      {isFeedbackOpen && (
-        <FeedbackPortal>
-          <div
-            style={{
-              position: 'absolute',
-              bottom: '100%',
-              right: '13.5rem',
-              zIndex: 1000,
-            }}
-          >
-            <FeedbackWidget
-              isOpen={isFeedbackOpen}
-              onClose={handleCloseWidget}
-              dataType="fra"
-            />
-          </div>
-        </FeedbackPortal>
-      )}
       {isUploadReportToggled && (
         <>
           <h2
