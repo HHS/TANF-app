@@ -3,6 +3,7 @@
 
 .feedback-modal-overlay {
   outline: none;
+  z-index: 9999; // Ensure modal overlay is above all other content
 
   &:focus,
   &:focus-visible {

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useImperativeHandle } from 'react'
+import React, { useRef, useState, useImperativeHandle } from 'react'
 import closeIcon from '@uswds/uswds/img/usa-icons/close.svg'
 import '../../assets/feedback/Feedback.scss'
 import { useFocusTrap } from '../../hooks/useFocusTrap'
@@ -25,12 +25,13 @@ const FeedbackWidget = React.forwardRef(
       setIsFeedbackSubmitted(true)
       setShowSpinner(true) // Show spinner while processing
 
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         setShowSpinner(false) // Hide spinner after processing
         onClose?.()
       }, 5000) // Close after 5 seconds
 
       setIsFeedbackSubmitted(false) // Reset for next use
+      return () => clearTimeout(timer)
     }
 
     const getFeedbackWidgetHeader = () => {
@@ -42,16 +43,6 @@ const FeedbackWidget = React.forwardRef(
         return FRA_DATA_UPLOAD_FEEDBACK_HEADER
       }
     }
-
-    useEffect(() => {
-      const timer = setTimeout(() => {
-        setShowSpinner(false)
-        onClose?.() // Close widget after 5 seconds
-        // Reset any values here if needed
-      }, 5000) // 5 seconds
-
-      return () => clearTimeout(timer)
-    }, [])
 
     return isOpen ? (
       <div

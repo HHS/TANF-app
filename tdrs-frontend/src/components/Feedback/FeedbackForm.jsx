@@ -55,7 +55,7 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
           }
         )
 
-        if (response.status === 200) {
+        if (response.status === 200 || response.status === 201) {
           onFeedbackSubmit()
           resetStatesOnceSubmitted()
         } else {

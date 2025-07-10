@@ -505,28 +505,24 @@ function Reports() {
           )}
         </>
       )}
-      {/* {isFeedbackOpen &&
-        isFeedbackWidgetOpen &&
-        topPosition !== null &&
-        (console.log('Rendering widget...'),
-        ( */}
-      <FeedbackPortal>
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '100%',
-            right: '13.5rem',
-            zIndex: 1100,
-          }}
-        >
-          <FeedbackWidget
-            isOpen={isFeedbackOpen}
-            onClose={handleCloseWidget}
-            dataType={fileTypeInputValue}
-          />
-        </div>
-      </FeedbackPortal>
-      {/* ))} */}
+      {isFeedbackOpen && (
+        <FeedbackPortal>
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '100%',
+              right: '13.5rem',
+              zIndex: 1000,
+            }}
+          >
+            <FeedbackWidget
+              isOpen={isFeedbackOpen}
+              onClose={handleCloseWidget}
+              dataType={fileTypeInputValue}
+            />
+          </div>
+        </FeedbackPortal>
+      )}
       <Modal
         title="Files Not Submitted"
         message="Your uploaded files have not been submitted. Searching without submitting will discard your changes and remove any uploaded files."

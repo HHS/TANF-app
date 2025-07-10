@@ -916,7 +916,7 @@ const FRAReports = () => {
           userProfileStt={userProfileStt}
         />
       </div>
-      {isFeedbackOpen && (
+      {/* {isFeedbackOpen && (
         <FeedbackPortal>
           <div
             style={{
@@ -933,7 +933,7 @@ const FRAReports = () => {
             />
           </div>
         </FeedbackPortal>
-      )}
+      )} */}
       {isUploadReportToggled && (
         <>
           <h2
@@ -996,23 +996,24 @@ const FRAReports = () => {
             </PaginatedComponent>
           </div>
           {/* Feedback widget at bottom right after submission */}
-          {/* {isFeedbackOpen && isFeedbackWidgetOpen && widgetTop !== null && (
-            <div
-              ref={widgetRef}
-              style={{
-                position: 'absolute',
-                top: `${widgetTop}px`,
-                right: '13.5rem',
-                zIndex: 999,
-              }}
-            >
-              <FeedbackWidget
-                isOpen={true}
-                onClose={handleCloseWidget}
-                dataType="fra"
-              />
-            </div>
-          )} */}
+          {isFeedbackOpen && (
+            <FeedbackPortal>
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: '100%',
+                  right: '13.5rem',
+                  zIndex: 1000,
+                }}
+              >
+                <FeedbackWidget
+                  isOpen={isFeedbackOpen}
+                  onClose={handleCloseWidget}
+                  dataType="fra"
+                />
+              </div>
+            </FeedbackPortal>
+          )}
         </>
       )}
       <Modal
