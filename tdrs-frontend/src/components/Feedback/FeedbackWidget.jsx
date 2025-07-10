@@ -1,4 +1,4 @@
-import React, { useRef, useState, useImperativeHandle } from 'react'
+import React, { useRef, useEffect, useState, useImperativeHandle } from 'react'
 import closeIcon from '@uswds/uswds/img/usa-icons/close.svg'
 import '../../assets/feedback/Feedback.scss'
 import { useFocusTrap } from '../../hooks/useFocusTrap'
@@ -13,27 +13,32 @@ const FeedbackWidget = React.forwardRef(
   ({ isOpen, onClose, dataType }, ref) => {
     const [showSpinner, setShowSpinner] = useState(true)
     const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
-    const widgetRef = useRef(null)
 
+    const widgetRef = useRef(null)
     useFocusTrap({ containerRef: widgetRef, isActive: isOpen })
 
     // Forward the ref up to parent
     useImperativeHandle(ref, () => widgetRef.current)
 
     const handleFeedbackSubmit = () => {
-      // Called when form submits successfully
       setIsFeedbackSubmitted(true)
       setShowSpinner(true) // Show spinner while processing
-
-      const timer = setTimeout(() => {
-        setShowSpinner(false) // Hide spinner after processing
-        onClose?.()
-      }, 5000) // Close after 5 seconds
-
-      setIsFeedbackSubmitted(false) // Reset for next use
-      return () => clearTimeout(timer)
     }
 
+    // Close and reset after 5 seconds
+    useEffect(() => {
+      if (!isFeedbackSubmitted) return
+
+      const timer = setTimeout(() => {
+        setShowSpinner(false)
+        setIsFeedbackSubmitted(false)
+        onClose?.()
+      }, 5000)
+
+      return () => clearTimeout(timer)
+    }, [isFeedbackSubmitted, onClose])
+
+    // Pick the correct widget header based on dataType
     const getFeedbackWidgetHeader = () => {
       if (dataType === 'tanf') {
         return TANF_DATA_UPLOAD_FEEDBACK_HEADER
@@ -84,7 +89,7 @@ const FeedbackWidget = React.forwardRef(
               />
             </>
           ) : (
-            <div className="feedback-widget-header">
+            <div className="feedback-widget-thank-you-header margin-4">
               <p
                 id="feedbackWidgetHeader"
                 className="font-serif-sm"
@@ -93,6 +98,20 @@ const FeedbackWidget = React.forwardRef(
                 Thank you for your feedback!
               </p>
               {showSpinner && <span className="spinner" aria-label="Loading" />}
+              <button
+                data-testid="feedback-widget-thank-you-close-button"
+                type="button"
+                className="usa-modal__close feedback-modal-close-button"
+                aria-label="Close feedback widget"
+                style={{
+                  padding: '0',
+                  marginBottom: '2px',
+                  alignSelf: 'center',
+                }}
+                onClick={onClose}
+              >
+                <img src={closeIcon} alt="X" />
+              </button>
             </div>
           )}
         </div>

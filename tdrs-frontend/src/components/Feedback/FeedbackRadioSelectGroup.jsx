@@ -63,7 +63,7 @@ const FeedbackRadioSelectGroup = ({
   error,
 }) => {
   const baseStyle = { color: '#575c64' }
-  const conditionalStyle = !isModal ? { fontSize: '12px' } : {}
+  const conditionalStyle = !isModal ? { fontSize: '14px' } : {}
 
   return (
     <div

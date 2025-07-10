@@ -576,8 +576,7 @@ const FRAReports = () => {
     useFormSubmission()
 
   // Feedback state
-  const [isFeedbackOpen, setIsFeedbackOpen] = useState(true) // TODO: change to false using true for testing right now
-  const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false) // TODO: test to see if this is needed
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(true) // TODO: change back to false
 
   const user = useSelector((state) => state.auth.user)
   const sttList = useSelector((state) => state?.stts?.sttList)
@@ -748,12 +747,6 @@ const FRAReports = () => {
   const handleCloseWidget = () => {
     console.log('Closing feedback widget...')
     setIsFeedbackOpen(false)
-    setIsFeedbackSubmitted(false)
-  }
-
-  // TODO: test to see if this is needed
-  const handleOnFeedbackSubmit = () => {
-    setIsFeedbackSubmitted(true)
   }
 
   const handleUpload = ({ file: selectedFile }) => {
@@ -916,14 +909,14 @@ const FRAReports = () => {
           userProfileStt={userProfileStt}
         />
       </div>
-      {/* {isFeedbackOpen && (
+      {isFeedbackOpen && (
         <FeedbackPortal>
           <div
             style={{
               position: 'absolute',
               bottom: '100%',
               right: '13.5rem',
-              zIndex: 1100,
+              zIndex: 1000,
             }}
           >
             <FeedbackWidget
@@ -933,7 +926,7 @@ const FRAReports = () => {
             />
           </div>
         </FeedbackPortal>
-      )} */}
+      )}
       {isUploadReportToggled && (
         <>
           <h2

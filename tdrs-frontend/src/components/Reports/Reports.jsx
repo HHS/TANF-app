@@ -86,8 +86,7 @@ function Reports() {
   const sttList = useSelector((state) => state?.stts?.sttList)
 
   // Feedback state
-  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false) // TODO: change to false using true for testing right now
-  const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false) // TODO: test to see if this is needed
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false)
 
   const [errorModalVisible, setErrorModalVisible] = useState(false)
   const files = useSelector((state) => state.reports.submittedFiles)
@@ -214,12 +213,6 @@ function Reports() {
   const handleCloseWidget = () => {
     console.log('Closing feedback widget...') // TODO: Remove this log
     setIsFeedbackOpen(false)
-    setIsFeedbackSubmitted(false)
-  }
-
-  // TODO: test to see if this is needed
-  const handleOnFeedbackSubmit = () => {
-    setIsFeedbackSubmitted(true)
   }
 
   useEffect(() => {

@@ -142,6 +142,7 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
             htmlFor="feedback-anonymous-input"
             style={{
               display: isGeneralFeedback ? 'inline-block' : '',
+              color: !isGeneralFeedback ? '#575c64' : '',
             }}
           >
             Send anonymously
@@ -155,7 +156,7 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
     <form
       ref={formRef}
       data-testid="feedback-form"
-      style={{ marginTop: isGeneralFeedback ? '1.5rem' : '0.5rem' }}
+      style={{ marginTop: isGeneralFeedback ? '1.5rem' : '' }}
       onSubmit={(e) => {
         e.preventDefault()
       }}
@@ -222,8 +223,8 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
               <p
                 className="margin-bottom-2"
                 style={{
-                  fontWeight: 'bold',
                   fontSize: '0.90rem',
+                  color: '#575c64',
                 }}
               >
                 {ratingMessageMap[selectedRatingsOption]}
@@ -232,7 +233,7 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
           )}
           <textarea
             data-testid="feedback-message-input"
-            className="usa-textarea feedback-textarea"
+            className="usa-textarea"
             value={feedbackMessage}
             onChange={handleFeedbackMessageChange}
             placeholder="Enter your feedback..."
@@ -245,6 +246,7 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
               maxWidth: '100%',
               fontSize: isGeneralFeedback ? '1rem' : '0.85rem',
               padding: isGeneralFeedback ? '0.75rem' : '0.4rem',
+              height: isGeneralFeedback ? 'auto' : '5rem',
             }}
           />
           {isGeneralFeedback && (
@@ -265,10 +267,9 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
         })}
       {(isGeneralFeedback || selectedRatingsOption) && (
         <div
-          className={classNames({
+          className={classNames('margin-bottom-2', {
             'margin-top-4': isGeneralFeedback,
             'margin-top-2': !isGeneralFeedback,
-            'margin-bottom-2': isGeneralFeedback,
             'margin-left-4': isGeneralFeedback,
           })}
         >

@@ -57,8 +57,7 @@
 .feedback-widget-container .usa-textarea {
   font-size: 0.9rem;
   padding: 0.5rem;
-  height: auto;
-  min-height: 80px;
+  height: 6rem;
 }
 
 .feedback-widget-container .usa-button {
@@ -73,13 +72,14 @@
 
 .feedback-widget {
   right: 13.5rem;
-  width: 280px;
+  width: 300px;
   max-height: 90vh;
   overflow-y: auto;
   background: white;
   border: 1px solid #ccc;
   border-radius: 0.5rem;
   padding: 1rem;
+  padding-bottom: 0;
   z-index: 1000; // default when modal is closed
   transition: bottom 0.2s ease-in-out;
 }
@@ -97,7 +97,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.75rem;
+  margin-bottom: -1rem;
+}
+
+.feedback-widget-thank-you-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .widget-title {
@@ -115,10 +121,11 @@
 .spinner {
   width: 20px;
   height: 20px;
-  border: 3px solid rgba(0, 0, 0, 0.2);
+  border: 2px solid rgba(0, 0, 0, 0.2);
   border-top: 3px solid #000;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+  margin-left: 0.5rem;
 }
 
 @keyframes spin {
