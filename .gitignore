@@ -53,6 +53,7 @@ tdrs-backend/tdpservice/static/*
 # coverage result
 .coverage
 /coverage/
+tdrs-backend/coverage.json
 
 # pycharm
 .idea/
