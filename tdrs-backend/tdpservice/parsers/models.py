@@ -31,7 +31,7 @@ def get_s3_upload_path(instance, filename):
         reparse = df.reparses.order_by('-created_at').first()
         file_name_info += f'_reparse-{reparse.pk}'
 
-        print('file_name_info ' + file_name_info)
+        logger.info('file_name_info ' + file_name_info)
 
     return os.path.join(
         file_path,
