@@ -1,5 +1,4 @@
 """Utility functions for DataFile views."""
-import base64
 from io import BytesIO
 import xlsxwriter
 import calendar
@@ -111,7 +110,8 @@ class FRADataErrorReport(ErrorReportBase):
         worksheet.autofit()
 
         self.workbook.close()
-        return {"xls_report": base64.b64encode(self.output.getvalue())}
+        self.output.seek(0)
+        return self.output
 
     def get_columns(self):
         """Get the columns for header."""
@@ -162,7 +162,8 @@ class TanfDataErrorReportBase(ErrorReportBase):
         aggregate_sheet.set_column(0, 0, 20)
 
         self.workbook.close()
-        return {"xls_report": base64.b64encode(self.output.getvalue())}
+        self.output.seek(0)
+        return self.output
 
     def write_prioritized_errors(self, worksheet, bold):
         """Write prioritized errors to spreadsheet."""
