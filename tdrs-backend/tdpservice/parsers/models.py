@@ -1,15 +1,38 @@
 """Models representing parser error."""
 
+import os
 import datetime
 from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from tdpservice.data_files.models import DataFile
 from tdpservice.data_files.util import ParserErrorCategoryChoices
+from tdpservice.backends import DataFilesS3Storage
 
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def get_s3_upload_path(instance, filename):
+    """Produce a unique upload path for S3 files for a given STT and Quarter."""
+    df = instance.datafile
+
+    file_path = f'data_files/{df.year}/{df.quarter}/{df.stt.id}/{df.section}/'
+
+    file_name_info = filename
+
+    if df.s3_versioning_id:
+        file_name_info += f'_{df.s3_versioning_id}'
+
+    if df.reparses.count() > 0:
+        reparse = df.reparses.order_by('-created_at').first()
+        file_name_info += f'_reparse-{reparse.pk}'
+
+    return os.path.join(
+        file_path,
+        f'{file_name_info}.xlsx'
+    )
 
 
 class ParserError(models.Model):
@@ -59,7 +82,8 @@ class ParserError(models.Model):
 
     def __str__(self):
         """Return a string representation of the model."""
-        return f"ParserError {self.__dict__}"
+        return f"{{id: {self.id}, file: {self.file.id}, row: {self.row_number}, column: {self.column_number}, " + \
+               f"error message: {self.error_message}}}"
 
     def _get_error_message(self):
         """Return the error message."""
@@ -84,6 +108,13 @@ class DataFileSummary(models.Model):
     )
 
     datafile = models.OneToOneField(DataFile, on_delete=models.CASCADE, related_name="summary")
+    error_report = models.FileField(
+        storage=DataFilesS3Storage,
+        upload_to=get_s3_upload_path,
+        max_length=500,
+        null=True,
+        blank=True
+    )
 
     case_aggregates = models.JSONField(null=True, blank=False)
 
