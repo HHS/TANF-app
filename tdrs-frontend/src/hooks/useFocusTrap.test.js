@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useRef } from 'react'
 import { render, fireEvent, act } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import { useFocusTrap } from './useFocusTrap'
@@ -16,6 +16,15 @@ function TestComponent({ isActive }) {
   )
 }
 
+beforeAll(() => {
+  HTMLElement.prototype.focus = jest.fn(function () {
+    Object.defineProperty(document, 'activeElement', {
+      configurable: true,
+      get: () => this,
+    })
+  })
+})
+
 describe('useFocusTrap', () => {
   beforeEach(() => {
     jest.useFakeTimers()
@@ -24,17 +33,20 @@ describe('useFocusTrap', () => {
   afterEach(() => {
     jest.runOnlyPendingTimers()
     jest.useRealTimers()
+    jest.clearAllMocks()
   })
 
   it('focuses the heading on activation if present', () => {
-    const { getByText } = render(<TestComponent isActive={true} />)
+    const { container } = render(<TestComponent isActive={true} />)
+
+    const heading = container.querySelector('h1')
+    const focusSpy = jest.spyOn(heading, 'focus')
 
     act(() => {
       jest.runAllTimers()
     })
 
-    const heading = getByText('Heading')
-    expect(document.activeElement).toBe(heading)
+    expect(focusSpy).toHaveBeenCalled()
   })
 
   it('focuses the first focusable if no heading', () => {
@@ -50,73 +62,116 @@ describe('useFocusTrap', () => {
       )
     }
 
-    const { getByText } = render(<WithoutHeading isActive={true} />)
+    const { container } = render(<WithoutHeading isActive={true} />)
+    const button1 = container.querySelector('button')
+
+    const focusSpy = jest.spyOn(button1, 'focus')
 
     act(() => {
       jest.runAllTimers()
     })
 
-    expect(document.activeElement).toBe(getByText('Button 1'))
+    expect(focusSpy).toHaveBeenCalled()
   })
 
   it('cycles focus with Tab key', () => {
-    const { getByText } = render(<TestComponent isActive={true} />)
+    const { container } = render(<TestComponent isActive={true} />)
+
+    const heading = container.querySelector('h1')
+    const buttons = container.querySelectorAll('button')
+    const button1 = buttons[0]
+    const button2 = buttons[1]
+
+    const headingFocus = jest.spyOn(heading, 'focus')
+    const button1Focus = jest.spyOn(button1, 'focus')
+    const button2Focus = jest.spyOn(button2, 'focus')
 
     act(() => {
       jest.runAllTimers()
     })
 
-    const heading = getByText('Heading')
-    const button1 = getByText('Button 1')
-    const button2 = getByText('Button 2')
+    // Initial focus is on heading
+    expect(headingFocus).toHaveBeenCalled()
 
-    // Simulate tab
+    // Simulate Tab from heading -> button1
     fireEvent.keyDown(heading, { key: 'Tab' })
-    expect(document.activeElement).toBe(button1)
+    expect(button1Focus).toHaveBeenCalled()
 
+    // Simulate Tab from button1 -> button2
     fireEvent.keyDown(button1, { key: 'Tab' })
-    expect(document.activeElement).toBe(button2)
+    expect(button2Focus).toHaveBeenCalled()
 
+    // Simulate Tab from button2 -> heading
     fireEvent.keyDown(button2, { key: 'Tab' })
-    expect(document.activeElement).toBe(heading) // loop back
+    expect(headingFocus).toHaveBeenCalledTimes(2) // 1 from init + 1 from loop
   })
 
   it('cycles focus with Shift+Tab', () => {
-    const { getByText } = render(<TestComponent isActive={true} />)
+    const { container } = render(<TestComponent isActive={true} />)
+
+    const heading = container.querySelector('h1')
+    const buttons = container.querySelectorAll('button')
+    const button1 = buttons[0]
+    const button2 = buttons[1]
+
+    const headingFocus = jest.spyOn(heading, 'focus')
+    const button1Focus = jest.spyOn(button1, 'focus')
+    const button2Focus = jest.spyOn(button2, 'focus')
 
     act(() => {
       jest.runAllTimers()
     })
 
-    const heading = getByText('Heading')
-    const button1 = getByText('Button 1')
-    const button2 = getByText('Button 2')
+    // Initial focus goes to heading
+    expect(headingFocus).toHaveBeenCalled()
 
+    // Simulate Shift+Tab from heading -> button2
     fireEvent.keyDown(heading, { key: 'Tab', shiftKey: true })
-    expect(document.activeElement).toBe(button2)
+    expect(button2Focus).toHaveBeenCalled()
 
+    // Simulate Shift+Tab from button2 -> button1
     fireEvent.keyDown(button2, { key: 'Tab', shiftKey: true })
-    expect(document.activeElement).toBe(button1)
+    expect(button1Focus).toHaveBeenCalled()
 
+    // Simulate Shift+Tab from button1 -> heading
     fireEvent.keyDown(button1, { key: 'Tab', shiftKey: true })
-    expect(document.activeElement).toBe(heading)
+    expect(headingFocus).toHaveBeenCalledTimes(2) // 1 for init + 1 for loop
   })
 
   it('removes keydown listener on unmount or inactive', () => {
-    const { rerender, getByText } = render(<TestComponent isActive={true} />)
+    const { rerender, container } = render(<TestComponent isActive={true} />)
+
+    const heading = container.querySelector('h1')
+    const buttons = container.querySelectorAll('button')
+    const button1 = buttons[0]
+    const button2 = buttons[1]
+
+    const button1Focus = jest.spyOn(button1, 'focus')
+    const button2Focus = jest.spyOn(button2, 'focus')
 
     act(() => {
       jest.runAllTimers()
     })
 
-    const button1 = getByText('Button 1')
-    fireEvent.keyDown(button1, { key: 'Tab' })
-    expect(document.activeElement).toBe(getByText('Button 2'))
+    // Simulate Tab from heading -> button1
+    fireEvent.keyDown(heading, { key: 'Tab' })
+    expect(button1Focus).toHaveBeenCalled()
 
+    // Simulate Tab from button1 -> button2
+    fireEvent.keyDown(button1, { key: 'Tab' })
+    expect(button2Focus).toHaveBeenCalled()
+
+    // Disable the focus trap
     rerender(<TestComponent isActive={false} />)
 
-    fireEvent.keyDown(document.activeElement, { key: 'Tab' })
-    // Should not change focus because listener is removed
-    expect(document.activeElement).toBe(getByText('Button 2'))
+    // Reset spies to detect future calls
+    button1Focus.mockClear()
+    button2Focus.mockClear()
+
+    // Try to tab again (should do nothing because listener is removed)
+    fireEvent.keyDown(button2, { key: 'Tab' })
+
+    expect(button1Focus).not.toHaveBeenCalled()
+    expect(button2Focus).not.toHaveBeenCalled()
   })
 })

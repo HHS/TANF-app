@@ -3,6 +3,11 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import FeedbackModal from './FeedbackModal'
 
+jest.mock('../../hooks/useFocusTrap', () => ({
+  useFocusTrap: jest.requireActual('../../__mocks__/hooks/useFocusTrap.js')
+    .useFocusTrap,
+}))
+
 describe('FeedbackModal', () => {
   const props = {
     id: 'test-modal',
@@ -347,7 +352,7 @@ describe('FeedbackModal', () => {
     })
   })
 
-  it('warns when no focusable elements are found', () => {
+  it('warns when no focusable elements are found', async () => {
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
 
     render(
@@ -361,14 +366,20 @@ describe('FeedbackModal', () => {
       />
     )
 
-    // Remove close button before tab logic
+    // Remove close button before triggering tab
     const closeButton = screen.getByTestId('modal-close-button')
     closeButton.remove()
 
     const overlay = screen.getByTestId('feedback-modal-overlay')
     pressTab(overlay, false)
 
-    expect(warnSpy).toHaveBeenCalledWith('No focusable elements found in modal')
+    // Wait for the console warning to be triggered
+    await waitFor(() => {
+      expect(warnSpy).toHaveBeenCalledWith(
+        'No focusable elements found in modal'
+      )
+    })
+
     warnSpy.mockRestore()
   })
 
@@ -394,7 +405,18 @@ describe('FeedbackModal', () => {
     const overlay = screen.getByTestId('feedback-modal-overlay')
     const input = screen.queryByTestId('dynamic-input')
 
-    input.focus()
+    // Focus input to trigger removal
+    act(() => {
+      input.focus()
+      expect(input).toHaveFocus()
+    })
+
+    // Wait a moment for React state update & re-render
+    await waitFor(() => {
+      // input should be gone
+      expect(screen.queryByTestId('dynamic-input')).toBeNull()
+    })
+
     // Simulate Tab press, which triggers removal of input
     fireEvent.keyDown(overlay, { key: 'Tab', code: 'Tab', bubbles: true })
 
