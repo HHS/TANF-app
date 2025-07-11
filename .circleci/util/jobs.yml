@@ -3,6 +3,7 @@
     working_directory: ~/tdp_apps
     steps:
       - checkout
+      - docker-set-registry-owner
       - docker-compose-check
       - run:
           name: Run graph_models

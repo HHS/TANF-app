@@ -24,6 +24,28 @@ def get_cloudgov_service_creds_by_instance_name(services, instance_name):
     )
 
 
+def get_cloudgov_broker_db_numbers(cloudgov_name):
+    """
+    Get the appropriate redis broker db numbers for an environment.
+
+    Returns a tuple of (broker_db_number, results_db_number)
+    """
+    match cloudgov_name:
+        case 'raft':
+            return ('0', '1')
+        case 'qasp':
+            return ('2', '3')
+        case 'a11y':
+            return ('4', '5')
+        case 'develop':
+            return ('0', '1')
+        case 'staging':
+            return ('2', '3')
+        case 'prod':
+            return ('0', '1')
+    return ('0', '1')
+
+
 class CloudGov(Common):
     """Base settings class for applications deployed in Cloud.gov."""
 
@@ -35,7 +57,7 @@ class CloudGov(Common):
     # Cloud.gov exposes variables for the application and bound services via
     # VCAP_APPLICATION and VCAP_SERVICES environment variables, respectively.
     cloudgov_app = get_json_env_var('VCAP_APPLICATION')
-    APP_NAME = cloudgov_app.get('application_name')
+    APP_NAME = os.getenv('CGAPPNAME_BACKEND', '{}')
 
     cloudgov_services = get_json_env_var('VCAP_SERVICES')
 
@@ -123,6 +145,18 @@ class CloudGov(Common):
     SECURE_HSTS_PRELOAD = True
     SECURE_REDIRECT_EXEMPT = [r"^prometheus/.*"]
     SECURE_SSL_REDIRECT = True
+
+    # Redis
+    if 'aws-elasticache-redis' in cloudgov_services:
+        redis_settings = cloudgov_services['aws-elasticache-redis'][0]['credentials']
+        REDIS_URI = f"rediss://:{redis_settings['password']}@{redis_settings['host']}:{redis_settings['port']}"
+
+        (broker_db_number, results_db_number) = get_cloudgov_broker_db_numbers(cloudgov_name)
+
+        CELERY_BROKER_URL = REDIS_URI + '/' + broker_db_number
+        CELERY_RESULT_BACKEND = REDIS_URI + '/' + broker_db_number
+
+    OTEL_EXPORTER_OTLP_ENDPOINT = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://tempo.apps.internal:4317")
 
 class Development(CloudGov):
     """Settings for applications deployed in the Cloud.gov dev space."""

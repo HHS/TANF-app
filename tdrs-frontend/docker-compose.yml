@@ -1,6 +1,7 @@
 services:
   zaproxy:
-    image: elipe17/zap-stable:2.14.0
+    platform: linux/amd64
+    image: ghcr.io/${REGISTRY_OWNER:-hhs}/zap-stable:2.14.0
     container_name: zap-scan
     command: sleep 3600
     ports:
@@ -13,8 +14,10 @@ services:
   tdp-frontend:
     stdin_open: true # docker run -i
     tty: true        # docker run -t
-    build:
+    build: 
       context: .
+      args:
+        REGISTRY_OWNER: ${REGISTRY_OWNER:-hhs}
       target: nginx
     ports:
       - 3000:80
@@ -30,11 +33,12 @@ services:
       - LOCAL_DEV=true
       - GRAFANA=grafana
       - ALERTS=alertmanager
+      - FARO_RECEIVER=alloy
       - REACT_APP_DEVAUTH=${REACT_APP_DEVAUTH}
     command: >
       /bin/sh -c
       "echo 'starting nginx' &&
-        envsubst '$${BACK_END} $${GRAFANA} $${ALERTS}' < /etc/nginx/locations.conf > /etc/nginx/locations_.conf &&
+        envsubst '$${BACK_END} $${GRAFANA} $${ALERTS} $${FARO_RECEIVER}' < /etc/nginx/locations.conf > /etc/nginx/locations_.conf &&
         rm /etc/nginx/locations.conf &&
         cp /etc/nginx/locations_.conf /etc/nginx/locations.conf &&
        envsubst '

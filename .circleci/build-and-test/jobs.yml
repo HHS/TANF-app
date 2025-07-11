@@ -2,6 +2,7 @@
     executor: machine-executor
     steps:
       - checkout
+      - docker-set-registry-owner
       - docker-compose-check
       - docker-compose-up-backend
       - run:
@@ -11,7 +12,9 @@
             docker-compose run --rm web bash -c "./wait_for_services.sh && pytest --cov-report=xml"
       - run:
           name: Execute Python Linting Test
-          command: cd tdrs-backend; docker-compose run --rm web bash -c "flake8 ."
+          command: |
+            cd tdrs-backend
+            docker-compose run --rm web bash -c "flake8 ."
       - upload-codecov:
           component: backend
           coverage-report: ./tdrs-backend/coverage.xml
@@ -45,6 +48,7 @@
     working_directory: ~/tdp-apps
     steps:
       - checkout
+      - docker-set-registry-owner
       - docker-compose-check
       - docker-compose-up-backend
       - docker-compose-up-frontend
@@ -54,19 +58,28 @@
           app-dir: tdrs-frontend
       - run:
           name: Wait for backend to become available
-          command: cd tdrs-backend; docker-compose run --rm zaproxy bash -c \
+          command: |
+            cd tdrs-backend
+            docker-compose run --rm zaproxy bash -c \
               "PATH=$PATH:/home/zap/.local/bin &&
                pip install wait-for-it &&
                wait-for-it --service http://web:8080 --timeout 180 -- echo \"Django is ready\""
       - run:
           name: apply the migrations
-          command: cd tdrs-backend; docker-compose exec web bash -c "python manage.py makemigrations; python manage.py migrate"
+          command: |
+            cd tdrs-backend
+            docker-compose exec web bash -c "python manage.py makemigrations
+            python manage.py migrate"
       - run:
           name: Remove existing cypress test users
-          command: cd tdrs-backend; docker-compose exec web python manage.py delete_cypress_users -usernames new-cypress@teamraft.com cypress-admin@teamraft.com
+          command: |
+            cd tdrs-backend
+            docker-compose exec web python manage.py delete_cypress_users -usernames new-cypress@teamraft.com cypress-admin@teamraft.com
       - run:
           name: Setup cypress test data
-          command: cd tdrs-backend; docker-compose exec web python manage.py loaddata cypress/users cypress/data_files
+          command: |
+            cd tdrs-backend
+            docker-compose exec web python manage.py loaddata cypress/users cypress/data_files
       - run:
           name: Run Cypress e2e tests
           command: cd tdrs-frontend; npm run test:e2e-ci

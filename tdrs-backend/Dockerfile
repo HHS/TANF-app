@@ -1,4 +1,7 @@
-FROM elipe17/tdp-backend-base:v0.0.2
+ARG REGISTRY_OWNER=hhs
+ARG BASE_TAG=v0.0.4
+
+FROM ghcr.io/${REGISTRY_OWNER}/tdp-backend-base:${BASE_TAG}
 
 # Adds our application code to the image
 COPY . /tdpapp

@@ -25,26 +25,29 @@ groups:
   - name: backend.alerts
     rules:
     - alert: DevEnvironmentBackendDown
-      expr: last_over_time(up{job=~"tdp-backend.*", job!~".*prod", job!~".*staging"}[5m]) == 0
+      expr: last_over_time(up{job=~"tdp-backend.*", job`!~".*prod", job!~".*staging"}[1m]) == 0
+      for: 10m
       labels:
         severity: ERROR
       annotations:
           summary: "The {{ $labels.service }} service is down."
-          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 5 minutes."
+          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 10 minutes."
     - alert: StagingBackendDown
       expr: last_over_time(up{job=~"tdp-backend-staging"}[1m]) == 0
+      for: 10m
       labels:
         severity: ERROR
       annotations:
           summary: "The {{ $labels.service }} service is down."
-          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 1 minute."
+          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 10 minutes."
     - alert: ProductionBackendDown
       expr: last_over_time(up{job=~"tdp-backend-prod"}[1m]) == 0
+      for: 10m
       labels:
         severity: CRITICAL
       annotations:
           summary: "The {{ $labels.service }} service is down."
-          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 1 minute."
+          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 10 minutes."
   - name: plg.alerts
     rules:
     - alert: LokiDown
@@ -130,10 +133,10 @@ groups:
           severity: WARNING
       - alert: CeleryWorkerDown
         expr: last_over_time(up{job=~"celery-.*|celery-exporter.*"}[1m]) == 0
-        for: 1m
+        for: 10m
         labels:
           severity: ERROR
         annotations:
           summary: "The {{ $labels.service }} service is down."
-          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 1 minute."
+          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 10 minutes."
 
