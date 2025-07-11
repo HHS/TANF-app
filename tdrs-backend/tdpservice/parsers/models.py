@@ -25,7 +25,7 @@ def get_s3_upload_path(instance, filename):
     if df.s3_versioning_id:
         file_name_info += f'_{df.s3_versioning_id}'
 
-    print('reparses ' + str(df.reparses.count()))
+    logger.info('reparses ' + str(df.reparses.count()))
 
     if df.reparses.count() > 0:
         reparse = df.reparses.order_by('-created_at').first()
