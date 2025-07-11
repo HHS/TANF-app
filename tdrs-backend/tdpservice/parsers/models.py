@@ -28,8 +28,8 @@ def get_s3_upload_path(instance, filename):
     print('reparses ' + str(df.reparses.count()))
 
     if df.reparses.count() > 0:
-        re = df.reparses.order_by('-created_at').first()
-        file_name_info += f'_reparse-{re.pk}'
+        reparse = df.reparses.order_by('-created_at').first()
+        file_name_info += f'_reparse-{reparse.pk}'
 
         print('file_name_info ' + file_name_info)
 
