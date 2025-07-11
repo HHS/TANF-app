@@ -14,6 +14,7 @@ tdrs-frontend/pa11y-screenshots/*
 
 # Don't commit local environment override files
 tdrs-frontend/.env*.local
+tdrs-frontend/jsconfig.json
 
 #BACKEND
 tdrs-backend/vars-backend.yml

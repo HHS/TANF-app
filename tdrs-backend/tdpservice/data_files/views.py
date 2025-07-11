@@ -23,6 +23,7 @@ from tdpservice.scheduling import parser_task
 from tdpservice.data_files.s3_client import S3Client
 from tdpservice.data_files.error_reports import ErrorReportFactory
 from tdpservice.log_handler import S3FileHandler
+from tdpservice.scheduling.parser_task import set_error_report
 
 logger = logging.getLogger(__name__)
 
@@ -87,15 +88,15 @@ class DataFileViewSet(ModelViewSet):
                         f"Datafile META -> datafile: {data_file_id}, section: {data_file.section}, " +
                         f"quarter {data_file.quarter}, year {data_file.year}.")
 
-            parser_task.parse.delay(data_file_id)
-            logger.info("Submitted parse task to queue for datafile %s.", data_file_id)
-
             app_name = settings.APP_NAME + '/'
             key = app_name + get_s3_upload_path(data_file, '')
             version_id = self.get_s3_versioning_id(response.data.get('original_filename'), key)
 
             data_file.s3_versioning_id = version_id
             data_file.save(update_fields=['s3_versioning_id'])
+
+            parser_task.parse.delay(data_file_id)
+            logger.info("Submitted parse task to queue for datafile %s.", data_file_id)
 
         logger.debug(f"{self.__class__.__name__}: return val: {response}")
         return response
@@ -174,9 +175,14 @@ class DataFileViewSet(ModelViewSet):
     def download_error_report(self, request, pk=None):
         """Generate and return the parsing error report xlsx."""
         datafile = self.get_object()
-        error_report_generator = ErrorReportFactory.get_error_report_generator(datafile)
 
-        return Response(error_report_generator.generate())
+        if not datafile.summary.error_report:
+            error_report_generator = ErrorReportFactory.get_error_report_generator(datafile)
+            error_report = error_report_generator.generate()
+            set_error_report(datafile.summary, error_report)
+            datafile = self.get_object()  # reload to get the newly added file
+
+        return FileResponse(datafile.summary.error_report, "report.xlsx")
 
 
 class GetYearList(APIView):
