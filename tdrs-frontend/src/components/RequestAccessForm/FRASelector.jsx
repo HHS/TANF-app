@@ -12,7 +12,7 @@ function FRASelector({ hasFRAAccess, setHasFRAAccess, error }) {
             target="_blank"
             rel="noopener noreferrer"
           >
-            Learn about FRA data file reporting
+            Learn about FRA data file reporting.
           </a>
         </p>
 
