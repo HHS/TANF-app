@@ -36,9 +36,3 @@ variable "cf_user" {
   type        = string
   description = "secret; cloud.gov deployer account user"
 }
-
-variable "dev_app_names" {
-  type        = list(string)
-  description = "list of app names deployed in the dev environment"
-  default     = ["a11y", "qasp", "raft"]
-}

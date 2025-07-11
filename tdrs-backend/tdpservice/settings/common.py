@@ -81,7 +81,6 @@ class Common(Configuration):
         "tdpservice.users.api.middleware.AuthUpdateMiddleware",
         "csp.middleware.CSPMiddleware",
         "tdpservice.middleware.NoCacheMiddleware",
-        "tdpservice.tracing.TracingMiddleware",
         "django_prometheus.middleware.PrometheusAfterMiddleware",
     )
     
