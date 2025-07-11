@@ -175,12 +175,12 @@ class DataFileViewSet(ModelViewSet):
     def download_error_report(self, request, pk=None):
         """Generate and return the parsing error report xlsx."""
         datafile = self.get_object()
-        dfs = datafile.summary
 
         if not datafile.summary.error_report:
             error_report_generator = ErrorReportFactory.get_error_report_generator(datafile)
             error_report = error_report_generator.generate()
-            set_error_report(dfs, error_report)
+            set_error_report(datafile.summary, error_report)
+            datafile = self.get_object()  # reload to get the newly added file
 
         return FileResponse(datafile.summary.error_report, "report.xlsx")
 
