@@ -1,3 +1,7 @@
+Ideas:
+- Consider just "accepting" the new claim since login.gov makes the user prove they own the email, etc...
+- If new sub comes in force user approval status to in_review (user change request) and notify the user and admin that we detected a change in their account and that it requires manual approval.
+
 # Identity Change Email Verification Challenge Implementation Plan
 
 **Audience**: TDP Software Engineers <br>
