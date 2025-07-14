@@ -112,13 +112,6 @@ set_alloy_envs() {
 }
 
 add_service_bindings() {
-    if [ "$CGAPPNAME_BACKEND" = "tdp-backend-develop" ]; then
-      # TODO: this is technical debt, we should either make staging mimic tanf-dev
-      #       or make unique services for all apps but we have a services limit
-      #       Introducing technical debt for release 3.0.0 specifically.
-      env="develop"
-    fi
-
     yq eval -i ".applications[0].services[0] = \"tdp-db-${env}\"" ./tdrs-backend/manifest.buildpack.yml
     yq eval -i ".applications[0].services[1] = \"tdp-staticfiles-${env}\"" ./tdrs-backend/manifest.buildpack.yml
     yq eval -i ".applications[0].services[2] = \"tdp-datafiles-${env}\"" ./tdrs-backend/manifest.buildpack.yml
@@ -177,11 +170,10 @@ update_backend()
           cf unset-env "$APP" "APP_DB_NAME"
           cf set-env "$APP" "APP_DB_NAME" "tdp_db_$backend_app_name"
         fi
-
-        cf set-env "$APP" CGAPPNAME_BACKEND "$CGAPPNAME_BACKEND"
-
-        cf restage "$APP"
     fi
+
+    cf set-env "$APP" CGAPPNAME_BACKEND "$CGAPPNAME_BACKEND"
+    cf restage "$APP"
 
     cd ..
 }

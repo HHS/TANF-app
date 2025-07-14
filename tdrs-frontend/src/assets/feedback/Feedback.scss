@@ -1,0 +1,170 @@
+/* Feedback.scss */
+/* styles needed to override some of the USWD default stylling */
+
+.feedback-modal-overlay {
+  outline: none;
+
+  &:focus,
+  &:focus-visible {
+    outline: none !important;
+  }
+}
+
+.feedback-button {
+  position: fixed;
+  bottom: 0;
+  right: 40px;
+  z-index: 1000; // default when modal is closed
+}
+
+.feedback-button.modal-open {
+  z-index: auto;
+}
+
+.feedback-modal-close-button {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  font-weight: bold;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.feedback-modal-content {
+  outline: none;
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #005ea2;
+    outline-offset: 2px;
+    border-radius: 0.5rem;
+  }
+}
+
+.feedback-group {
+  width: 37.5rem;
+  height: 9.375rem;
+  text-align: center;
+  border-radius: 0.5rem;
+  border: 2px solid #e2eff7;
+  background-color: #e2eff7;
+
+  &.error {
+    border-color: #b50909;
+    background-color: #fefafa;
+  }
+}
+
+.feedback-label {
+  color: black;
+  padding-top: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &.error {
+    color: #b50909;
+  }
+}
+
+.rating-options {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+
+  .radio-option {
+    label.radio-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      width: 45px;
+      cursor: pointer;
+      border-radius: 1px;
+      border: 1px solid #b0b0b0; // full border always
+      color: inherit;
+      transition: box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+      box-sizing: border-box;
+
+      svg {
+        fill: currentColor;
+      }
+
+      // Focus ring (only applies if not selected)
+      &:focus-within {
+        outline: none;
+        box-shadow: inset 0 0 0 2px #005ea2; // subtle glow
+      }
+    }
+
+    &:first-child label.radio-icon {
+      border-top-left-radius: 3px;
+      border-bottom-left-radius: 3px;
+    }
+
+    &:last-child label.radio-icon {
+      border-top-right-radius: 3px;
+      border-bottom-right-radius: 3px;
+    }
+
+    // Selected state: apply full border and radius
+    &.selected-red label.radio-icon,
+    &.selected-orange label.radio-icon,
+    &.selected-blue label.radio-icon,
+    &.selected-green label.radio-icon,
+    &.selected-darkgreen label.radio-icon {
+      box-shadow: inset 0 0 0 2px currentColor; // apply full border
+    }
+
+    &.selected-red label.radio-icon {
+      color: red;
+      background-color: rgba(255, 0, 0, 0.1); // light red background
+    }
+
+    &.selected-orange label.radio-icon {
+      color: orange;
+      background-color: rgba(255, 165, 0, 0.1); // light orange
+    }
+
+    &.selected-blue label.radio-icon {
+      color: blue;
+      background-color: rgba(0, 0, 255, 0.1); // light blue
+    }
+
+    &.selected-green label.radio-icon {
+      color: green;
+      background-color: rgba(0, 128, 0, 0.1); // light green
+    }
+
+    &.selected-darkgreen label.radio-icon {
+      color: darkgreen;
+      background-color: rgba(0, 100, 0, 0.15); // light dark green
+    }
+
+    // Override focus when selected
+    &.selected-red label.radio-icon:focus-within {
+      border-color: red;
+    }
+
+    &.selected-orange label.radio-icon:focus-within {
+      border-color: orange;
+    }
+
+    &.selected-blue label.radio-icon:focus-within {
+      border-color: blue;
+    }
+
+    &.selected-green label.radio-icon:focus-within {
+      border-color: green;
+    }
+
+    &.selected-darkgreen label.radio-icon:focus-within {
+      border-color: darkgreen;
+    }
+  }
+}
