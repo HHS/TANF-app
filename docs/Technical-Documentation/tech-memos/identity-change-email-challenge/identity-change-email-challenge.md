@@ -322,9 +322,8 @@ In TDP, when users lose access to their Login.gov credentials, they often re-cre
            setStatus('success');
            setMessage(response.data.message);
            
-           // Redirect to login after successful verification
            setTimeout(() => {
-             navigate('/login');
+             navigate('/home');
            }, 5000);
          } catch (error) {
            setStatus('error');
@@ -347,9 +346,9 @@ In TDP, when users lose access to their Login.gov credentials, they often re-cre
            <>
              <div className="success-icon">✓</div>
              <p>Your identity has been verified successfully!</p>
-             <p>You will be redirected to the login page in a few seconds.</p>
-             <button onClick={() => navigate('/login')}>
-               Go to Login
+             <p>You will be redirected to the home page in a few seconds.</p>
+             <button onClick={() => navigate('/home')}>
+               Go to Home
              </button>
            </>
          )}
@@ -359,8 +358,8 @@ In TDP, when users lose access to their Login.gov credentials, they often re-cre
              <div className="error-icon">✗</div>
              <p>Verification failed: {message}</p>
              <p>Please try again or contact support for assistance.</p>
-             <button onClick={() => navigate('/login')}>
-               Go to Login
+             <button onClick={() => navigate('/home')}>
+               Go to Home
              </button>
            </>
          )}
@@ -371,29 +370,7 @@ In TDP, when users lose access to their Login.gov credentials, they often re-cre
    export default VerifyIdentity;
    ```
 
-3. **Update Login Flow**
-   ```jsx
-   // src/pages/Login.jsx
-   // Update login flow to handle verification_required response
-   
-   const handleLogin = async () => {
-     try {
-       const response = await loginService.login();
-       
-       if (response.data.status === 'verification_required') {
-         // Redirect to verification required page
-         navigate('/verification-required');
-       } else {
-         // Normal login flow
-         // ...
-       }
-     } catch (error) {
-       // Handle error
-     }
-   };
-   ```
-
-4. **Add Routes**
+3. **Add Routes**
    ```jsx
    // src/components/Routes/Routes.js
    import VerificationRequired from '../VerificationRequired';
