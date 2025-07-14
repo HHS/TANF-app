@@ -172,7 +172,7 @@ export const tryGetUTF8EncodedFile = async function (fileBytes, file) {
     // expects a Buffer/string/URL object. When the browser calls `languageEncoding`, it expects a Blob/File object.
     // There is not a convenient way or universal object to handle both cases. Thus, when the tests run the call to
     // `languageEncoding`, it raises an exception and we return the file and decode the header as is which is then
-    // dispatched as it would have be.
+    // dispatched as it would have been.
     const decoder = new TextDecoder()
     const header = decoder.decode(bytesView.slice(0, HEADER_LENGTH))
     return { encodedFile: file, header: header }
