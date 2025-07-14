@@ -25,7 +25,7 @@ groups:
   - name: backend.alerts
     rules:
     - alert: DevEnvironmentBackendDown
-      expr: last_over_time(up{job=~"tdp-backend.*", job`!~".*prod", job!~".*staging"}[1m]) == 0
+      expr: last_over_time(up{job=~"tdp-backend.*", job!~".*prod", job!~".*staging"}[1m]) == 0
       for: 10m
       labels:
         severity: ERROR
