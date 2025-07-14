@@ -28,8 +28,7 @@ def user_group_changed(sender, instance, action, pk_set, **kwargs):
     elif pk_set is None and action == ACTIONS['PRE_CLEAR']:
         # EMAIL ADMIN GROUP REMOVED from OFA ADMIN
         user = User.objects.get(pk=instance.pk)
-        groups = [group.name for group in user.groups.all()]
-        if "OFA System Admin" in groups:
+        if user.is_ofa_sys_admin:
             email_system_owner_system_admin_role_change(instance, "removed")
 
 @receiver(pre_save, sender=User)
