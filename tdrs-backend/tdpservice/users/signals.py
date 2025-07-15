@@ -10,7 +10,7 @@ logger = logging.getLogger()
 
 @receiver(m2m_changed, sender=User.groups.through)
 def user_group_changed(sender, instance, action, pk_set, **kwargs):
-    """Send an email to the System Owner when a user is assigned or removed from the System Admin role."""
+    """Send an email to the System Owner when a user is assigned or removed from the OFA System Admin role."""
     ACTIONS = {
             'PRE_REMOVE': 'pre_remove',
             'PRE_ADD': 'pre_add',
@@ -27,7 +27,9 @@ def user_group_changed(sender, instance, action, pk_set, **kwargs):
             email_system_owner_system_admin_role_change(instance, "removed")
     elif pk_set is None and action == ACTIONS['PRE_CLEAR']:
         # EMAIL ADMIN GROUP REMOVED from OFA ADMIN
-        email_system_owner_system_admin_role_change(instance, "removed")
+        user = User.objects.get(pk=instance.pk)
+        if user.is_ofa_sys_admin:
+            email_system_owner_system_admin_role_change(instance, "removed")
 
 @receiver(pre_save, sender=User)
 def user_is_staff_superuser_changed(sender, instance, **kwargs):

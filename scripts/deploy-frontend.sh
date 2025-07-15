@@ -28,7 +28,7 @@ update_frontend()
         echo "REACT_APP_CF_SPACE=$CF_SPACE" >> .env.production
         # RUM config
         echo "REACT_APP_ENABLE_RUM=true" >> .env.production
-        echo "REACT_APP_FARO_ENDPOINT=https://$CGHOSTNAME_FRONTEND.acf.hhs.gov/collect" >> .env.production
+        echo "REACT_APP_FARO_ENDPOINT=https://tanfdata.acf.hhs.gov/collect" >> .env.production
         echo "REACT_APP_VERSION=v3.8.4" >> .env.production
         echo "BACK_END=" >> .env.production
     elif [ "$CF_SPACE" = "tanf-staging" ]; then
