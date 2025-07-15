@@ -4,19 +4,18 @@ import logging
 
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-
+from opentelemetry.instrumentation.botocore import BotocoreInstrumentor
+from opentelemetry.instrumentation.celery import CeleryInstrumentor
 from opentelemetry.instrumentation.django import DjangoInstrumentor
 from opentelemetry.instrumentation.psycopg2 import Psycopg2Instrumentor
 from opentelemetry.instrumentation.redis import RedisInstrumentor
-from opentelemetry.instrumentation.celery import CeleryInstrumentor
-from opentelemetry.instrumentation.botocore import BotocoreInstrumentor
 from opentelemetry.instrumentation.requests import RequestsInstrumentor
-
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 logger = logging.getLogger(__name__)
+
 
 def initialize_tracer():
     """Initialize the OpenTelemetry tracer with proper service name and configuration."""
@@ -47,7 +46,7 @@ def initialize_tracer():
         # Add database-specific attributes to spans
         enable_commenter=True,
         # Set to False in production if queries might contain sensitive information
-        include_db_statement=True
+        include_db_statement=True,
     )
 
     # Instrument Redis

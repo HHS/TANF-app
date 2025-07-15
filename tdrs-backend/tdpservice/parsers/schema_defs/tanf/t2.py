@@ -1,13 +1,15 @@
 """Schema for T1 record type."""
 
 from tdpservice.parsers.dataclasses import FieldType
-from tdpservice.parsers.transforms import tanf_ssn_decryption_func
-from tdpservice.parsers.fields import TransformField, Field
+from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import TanfDataReportSchema
+from tdpservice.parsers.transforms import tanf_ssn_decryption_func
+from tdpservice.parsers.util import (
+    generate_t2_t3_t5_hashes,
+    get_t2_t3_t5_partial_hash_members,
+)
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.search_indexes.models.tanf import TANF_T2
-from tdpservice.parsers.util import generate_t2_t3_t5_hashes, get_t2_t3_t5_partial_hash_members
-
 
 t2 = [
     TanfDataReportSchema(
@@ -19,10 +21,12 @@ t2 = [
         preparsing_validators=[
             category1.recordHasLengthOfAtLeast(156),
             category1.caseNumberNotEmpty(8, 19),
-            category1.or_priority_validators([
-                category1.validate_fieldYearMonth_with_headerYearQuarter(),
-                category1.validateRptMonthYear(),
-            ]),
+            category1.or_priority_validators(
+                [
+                    category1.validate_fieldYearMonth_with_headerYearQuarter(),
+                    category1.validateRptMonthYear(),
+                ]
+            ),
         ],
         postparsing_validators=[
             category3.ifThenAlso(
@@ -77,10 +81,13 @@ t2 = [
                 condition_field_name="FAMILY_AFFILIATION",
                 condition_function=category3.isBetween(1, 3, inclusive=True),
                 result_field_name="EDUCATION_LEVEL",
-                result_function=category3.orValidators([
-                    category3.isBetween(0, 16, inclusive=True, cast=int),
-                    category3.isEqual(98, cast=int),
-                ], if_result=True),
+                result_function=category3.orValidators(
+                    [
+                        category3.isBetween(0, 16, inclusive=True, cast=int),
+                        category3.isEqual(98, cast=int),
+                    ],
+                    if_result=True,
+                ),
             ),
             category3.ifThenAlso(
                 condition_field_name="FAMILY_AFFILIATION",
@@ -104,10 +111,13 @@ t2 = [
                 condition_field_name="FAMILY_AFFILIATION",
                 condition_function=category3.isOneOf((1, 2)),
                 result_field_name="WORK_ELIGIBLE_INDICATOR",
-                result_function=category3.orValidators([
-                    category3.isBetween(1, 9, inclusive=True, cast=int),
-                    category3.isOneOf(("11", "12"))
-                ], if_result=True),
+                result_function=category3.orValidators(
+                    [
+                        category3.isBetween(1, 9, inclusive=True, cast=int),
+                        category3.isOneOf(("11", "12")),
+                    ],
+                    if_result=True,
+                ),
             ),
             category3.ifThenAlso(
                 condition_field_name="FAMILY_AFFILIATION",
@@ -122,10 +132,12 @@ t2 = [
                 "WORK_PART_STATUS",
                 category3.ifThenAlso(
                     condition_field_name="WORK_ELIGIBLE_INDICATOR",
-                    condition_function=category3.isBetween(1, 5, inclusive=True, cast=int),
+                    condition_function=category3.isBetween(
+                        1, 5, inclusive=True, cast=int
+                    ),
                     result_field_name="WORK_PART_STATUS",
                     result_function=category3.isNotEqual("99"),
-                )
+                ),
             ),
             category3.ifThenAlso(
                 condition_field_name="WORK_ELIGIBLE_INDICATOR",
@@ -197,11 +209,12 @@ t2 = [
                 startIndex=21,
                 endIndex=29,
                 required=True,
-                validators=[category2.intHasLength(8),
-                            category2.dateYearIsLargerThan(1900),
-                            category2.dateMonthIsValid(),
-                            category2.dateDayIsValid()
-                            ]
+                validators=[
+                    category2.intHasLength(8),
+                    category2.dateYearIsLargerThan(1900),
+                    category2.dateMonthIsValid(),
+                    category2.dateDayIsValid(),
+                ],
             ),
             TransformField(
                 transform_func=tanf_ssn_decryption_func,
@@ -316,10 +329,9 @@ t2 = [
                 endIndex=48,
                 required=True,
                 validators=[
-                    category3.orValidators([
-                        category3.isOneOf(["1", "2"]),
-                        category3.isBlank()
-                    ])
+                    category3.orValidators(
+                        [category3.isOneOf(["1", "2"]), category3.isBlank()]
+                    )
                 ],
             ),
             Field(
@@ -403,10 +415,12 @@ t2 = [
                 endIndex=57,
                 required=False,
                 validators=[
-                    category3.orValidators([
-                        category3.isBetween(0, 16, inclusive=True, cast=int),
-                        category3.isBetween(98, 99, inclusive=True, cast=int),
-                    ])
+                    category3.orValidators(
+                        [
+                            category3.isBetween(0, 16, inclusive=True, cast=int),
+                            category3.isBetween(98, 99, inclusive=True, cast=int),
+                        ]
+                    )
                 ],
             ),
             Field(
@@ -488,10 +502,12 @@ t2 = [
                 endIndex=68,
                 required=True,
                 validators=[
-                    category3.orValidators([
-                        category3.isBetween(0, 9, inclusive=True, cast=int),
-                        category3.isOneOf(("11", "12")),
-                    ])
+                    category3.orValidators(
+                        [
+                            category3.isBetween(0, 9, inclusive=True, cast=int),
+                            category3.isOneOf(("11", "12")),
+                        ]
+                    )
                 ],
             ),
             Field(
@@ -750,8 +766,8 @@ t2 = [
             Field(
                 item="59A",
                 name="ED_NO_HIGH_SCHOOL_DIPL_HOP",
-                friendly_name="Education Directly Related to Employment: " +
-                "Hours of Participation",
+                friendly_name="Education Directly Related to Employment: "
+                + "Hours of Participation",
                 type=FieldType.ALPHA_NUMERIC,
                 startIndex=108,
                 endIndex=110,
@@ -763,8 +779,8 @@ t2 = [
             Field(
                 item="59B",
                 name="ED_NO_HIGH_SCHOOL_DIPL_EA",
-                friendly_name="Education Directly Related to Employment: " +
-                "Hours of Excused Absences",
+                friendly_name="Education Directly Related to Employment: "
+                + "Hours of Excused Absences",
                 type=FieldType.ALPHA_NUMERIC,
                 startIndex=110,
                 endIndex=112,
@@ -776,8 +792,8 @@ t2 = [
             Field(
                 item="59C",
                 name="ED_NO_HIGH_SCHOOL_DIPL_HOL",
-                friendly_name="Education Directly Related to Employment: " +
-                "Hours of Holidays",
+                friendly_name="Education Directly Related to Employment: "
+                + "Hours of Holidays",
                 type=FieldType.ALPHA_NUMERIC,
                 startIndex=112,
                 endIndex=114,
@@ -789,8 +805,8 @@ t2 = [
             Field(
                 item="60A",
                 name="SCHOOL_ATTENDENCE_HOP",
-                friendly_name="Satisfactory School Attendance: " +
-                "Hours of Participation",
+                friendly_name="Satisfactory School Attendance: "
+                + "Hours of Participation",
                 type=FieldType.ALPHA_NUMERIC,
                 startIndex=114,
                 endIndex=116,
@@ -802,8 +818,8 @@ t2 = [
             Field(
                 item="60B",
                 name="SCHOOL_ATTENDENCE_EA",
-                friendly_name="Satisfactory School Attendance: " +
-                "Hours of Excused Absences",
+                friendly_name="Satisfactory School Attendance: "
+                + "Hours of Excused Absences",
                 type=FieldType.ALPHA_NUMERIC,
                 startIndex=116,
                 endIndex=118,
@@ -815,8 +831,7 @@ t2 = [
             Field(
                 item="60C",
                 name="SCHOOL_ATTENDENCE_HOL",
-                friendly_name="Satisfactory School Attendance: " +
-                "Hours of Holidays",
+                friendly_name="Satisfactory School Attendance: " + "Hours of Holidays",
                 type=FieldType.ALPHA_NUMERIC,
                 startIndex=118,
                 endIndex=120,
@@ -828,8 +843,7 @@ t2 = [
             Field(
                 item="61A",
                 name="PROVIDE_CC_HOP",
-                friendly_name="Providing Child Care: " +
-                "Hours of Participation",
+                friendly_name="Providing Child Care: " + "Hours of Participation",
                 type=FieldType.ALPHA_NUMERIC,
                 startIndex=120,
                 endIndex=122,
@@ -841,8 +855,7 @@ t2 = [
             Field(
                 item="61B",
                 name="PROVIDE_CC_EA",
-                friendly_name="Providing Child Care: " +
-                "Hours of Excused Absences",
+                friendly_name="Providing Child Care: " + "Hours of Excused Absences",
                 type=FieldType.ALPHA_NUMERIC,
                 startIndex=122,
                 endIndex=124,
@@ -854,8 +867,7 @@ t2 = [
             Field(
                 item="61C",
                 name="PROVIDE_CC_HOL",
-                friendly_name="Providing Child Care Services: " +
-                "Hours of Holidays",
+                friendly_name="Providing Child Care Services: " + "Hours of Holidays",
                 type=FieldType.ALPHA_NUMERIC,
                 startIndex=124,
                 endIndex=126,

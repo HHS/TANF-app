@@ -1,7 +1,8 @@
 """Base functions to be overloaded and composed from within the other validator classes."""
 
-from datetime import datetime
 import functools
+from datetime import datetime
+
 from .util import _is_empty
 
 
@@ -10,14 +11,15 @@ def _handle_cast(val, cast):
 
 
 def _handle_kwargs(val, **kwargs):
-    if 'cast' in kwargs and kwargs['cast'] is not None:
-        val = _handle_cast(val, kwargs['cast'])
+    if "cast" in kwargs and kwargs["cast"] is not None:
+        val = _handle_cast(val, kwargs["cast"])
 
     return val
 
 
 def base_validator(makeValidator):
     """Wrap validator funcs to handle kwargs."""
+
     @functools.wraps(makeValidator)
     def _validator(*args, **kwargs):
         validator = makeValidator(*args, **kwargs)
@@ -46,6 +48,7 @@ def isNotEqual(option, **kwargs):
 @base_validator
 def isOneOf(options, **kwargs):
     """Return a function that tests if an input param is one of options."""
+
     def check_option(value):
         # split the option if it is a range and append the range to the options
         for option in options:
@@ -181,10 +184,12 @@ def valueNotAt(location: slice, unexpected_val: str, **kwargs):
 @base_validator
 def dateHasFormat(format: str, **kwargs):
     """Return a function that tests whether value is a date matching format."""
+
     def is_valid(value):
         try:
             datetime.strptime(str(value), format)
         except ValueError:
             return False
         return True
+
     return is_valid

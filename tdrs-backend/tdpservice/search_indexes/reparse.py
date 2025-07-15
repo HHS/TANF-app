@@ -1,24 +1,27 @@
 """Reparsing command for selected files."""
 # should include all the steps in the management command
 import datetime
-from tdpservice.data_files.models import DataFile
-from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
-from tdpservice.core.utils import log
-from tdpservice.users.models import User
-from tdpservice.scheduling import parser_task
-from django.db.utils import DatabaseError
-from tdpservice.search_indexes.utils import (
-    backup,
-    get_log_context,
-    assert_sequential_execution,
-    delete_associated_models,
-    count_total_num_records,
-    calculate_timeout,
-    get_number_of_records
-)
 import logging
 
+from django.db.utils import DatabaseError
+
+from tdpservice.core.utils import log
+from tdpservice.data_files.models import DataFile
+from tdpservice.scheduling import parser_task
+from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
+from tdpservice.search_indexes.utils import (
+    assert_sequential_execution,
+    backup,
+    calculate_timeout,
+    count_total_num_records,
+    delete_associated_models,
+    get_log_context,
+    get_number_of_records,
+)
+from tdpservice.users.models import User
+
 logger = logging.getLogger(__name__)
+
 
 def handle_datafiles(files, meta_model, log_context):
     """Delete, re-save, and reparse selected datafiles."""
@@ -73,10 +76,7 @@ def clean_reparse(selected_file_ids):
         delete_old_indices=new_indices,
     )
     total_number_of_records = get_number_of_records(files)
-    calculated_timeout_at = calculate_timeout(
-        files.count(),
-        total_number_of_records
-    )
+    calculated_timeout_at = calculate_timeout(files.count(), total_number_of_records)
     backup_file_name = "/tmp/reparsing_backup"
     continue_msg = "You have selected to reparse datafiles for FY {fy} and {q}. The reparsed files "
     continue_msg = continue_msg.format(
@@ -101,7 +101,9 @@ def clean_reparse(selected_file_ids):
 
     is_sequential = assert_sequential_execution(log_context)
     if not is_sequential:
-        raise Exception(f"Sequential execution required for selected file ids: {selected_file_ids}")
+        raise Exception(
+            f"Sequential execution required for selected file ids: {selected_file_ids}"
+        )
     meta_model.save()
     # Backup the Postgres DB
     backup_file_name += f"_rpv{meta_model.pk}_{datetime.datetime.now().strftime('%d-%m-%Y-%H-%M-%S')}.pg"
