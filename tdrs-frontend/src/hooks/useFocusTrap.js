@@ -3,29 +3,32 @@ import { useEffect, useCallback, useRef } from 'react'
 const FOCUSABLE_SELECTOR =
   'a[href], button, textarea, select, input:not([type="hidden"]), [tabindex]:not([tabindex="-1"])'
 
+const isVisibleAndFocusable = (el) =>
+  el &&
+  !el.disabled &&
+  el.offsetParent !== null &&
+  typeof el.focus === 'function'
+
 export function useFocusTrap({ containerRef, isActive }) {
   const hasAutoFocused = useRef(false)
 
   // Focus first focusable or heading when active
   useEffect(() => {
     if (!isActive || !containerRef?.current) return
-
     const container = containerRef.current
 
     requestAnimationFrame(() => {
       const alreadyFocused = container.contains(document.activeElement)
-
       if (hasAutoFocused.current || alreadyFocused) return
-
       hasAutoFocused.current = true
+
       const headingEl = container.querySelector('h1[tabindex="-1"]')
       const focusableEls = container.querySelectorAll(FOCUSABLE_SELECTOR)
-      const focusables = Array.from(focusableEls).filter(
-        (el) => !el.disabled && el.offsetParent !== null
-      )
+      const focusables = Array.from(focusableEls).filter(isVisibleAndFocusable)
 
-      if (headingEl) {
+      if (headingEl && isVisibleAndFocusable(headingEl)) {
         headingEl.focus()
+        // Manually ensure it's marked focused in jsdom (helpful for tests)
         if (document.activeElement !== headingEl) {
           headingEl.focus()
         }
@@ -33,6 +36,7 @@ export function useFocusTrap({ containerRef, isActive }) {
         focusables[0].focus()
       } else {
         container.focus()
+        console.warn('No focusable elements found in modal')
       }
     })
 
@@ -48,12 +52,7 @@ export function useFocusTrap({ containerRef, isActive }) {
 
       let focusableElements = Array.from(
         containerRef.current.querySelectorAll(FOCUSABLE_SELECTOR)
-      ).filter(
-        (el) =>
-          !el.disabled &&
-          el.offsetParent !== null &&
-          !(el.tagName === 'H1' && el.getAttribute('tabindex') === '-1')
-      )
+      ).filter(isVisibleAndFocusable)
 
       const headingEl = containerRef.current.querySelector('h1[tabindex="-1"]')
       const activeEl = document.activeElement
@@ -61,6 +60,7 @@ export function useFocusTrap({ containerRef, isActive }) {
       const isHeadingFocused = headingEl && headingEl === activeEl
       if (
         headingEl &&
+        isVisibleAndFocusable(headingEl) &&
         isHeadingFocused &&
         !focusableElements.includes(headingEl)
       ) {
@@ -85,7 +85,10 @@ export function useFocusTrap({ containerRef, isActive }) {
               focusableElements.length
             : (currentIdx + 1) % focusableElements.length
 
-      focusableElements[nextIdx].focus()
+      const nextEl = focusableElements[nextIdx]
+      if (nextEl && document.activeElement !== nextEl) {
+        nextEl.focus()
+      }
     },
     [containerRef]
   )
