@@ -89,8 +89,8 @@ describe('Reports', () => {
   }
   const mockStore = configureStore([thunk])
 
-  const makeTestFile = (name) =>
-    new File(['test'], name, {
+  const makeTestFile = (name, contents = ['test']) =>
+    new File(contents, name, {
       type: 'text/plain',
     })
 
@@ -195,6 +195,7 @@ describe('Reports', () => {
         year: '2021',
         stt: 'Florida',
         quarter: 'Q3',
+        fileType: 'tanf',
       },
     })
 
@@ -204,14 +205,20 @@ describe('Reports', () => {
       </Provider>
     )
 
-    expect(queryByText('Section 1 - Active Case Data')).not.toBeInTheDocument()
+    expect(
+      queryByText('Section 1 - TANF - Active Case Data')
+    ).not.toBeInTheDocument()
 
     fireEvent.click(getByText(/Search/, { selector: 'button' }))
     await waitFor(() => {
-      expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
-      expect(getByText('Section 2 - Closed Case Data')).toBeInTheDocument()
-      expect(getByText('Section 3 - Aggregate Data')).toBeInTheDocument()
-      expect(getByText('Section 4 - Stratum Data')).toBeInTheDocument()
+      expect(
+        getByText('Section 1 - TANF - Active Case Data')
+      ).toBeInTheDocument()
+      expect(
+        getByText('Section 2 - TANF - Closed Case Data')
+      ).toBeInTheDocument()
+      expect(getByText('Section 3 - TANF - Aggregate Data')).toBeInTheDocument()
+      expect(getByText('Section 4 - TANF - Stratum Data')).toBeInTheDocument()
     })
   })
 
@@ -223,6 +230,7 @@ describe('Reports', () => {
         year: '2021',
         stt: 'Florida',
         quarter: 'Q3',
+        fileType: 'tanf',
       },
     })
 
@@ -232,12 +240,16 @@ describe('Reports', () => {
       </Provider>
     )
 
-    expect(queryByText('Section 1 - Active Case Data')).not.toBeInTheDocument()
+    expect(
+      queryByText('Section 1 - TANF - Active Case Data')
+    ).not.toBeInTheDocument()
 
     fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
     await waitFor(() => {
-      expect(queryByText('Section 1 - Active Case Data')).toBeInTheDocument()
+      expect(
+        queryByText('Section 1 - TANF - Active Case Data')
+      ).toBeInTheDocument()
     })
 
     const select = getByLabelText(/Fiscal Year/)
@@ -248,7 +260,9 @@ describe('Reports', () => {
       },
     })
 
-    expect(queryByText('Section 1 - Active Case Data')).toBeInTheDocument()
+    expect(
+      queryByText('Section 1 - TANF - Active Case Data')
+    ).toBeInTheDocument()
   })
 
   it('should de-render when Cancel is clicked', async () => {
@@ -270,12 +284,16 @@ describe('Reports', () => {
 
     fireEvent.click(getByText(/Search/, { selector: 'button' }))
     await waitFor(() => {
-      expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
+      expect(
+        getByText('Section 1 - TANF - Active Case Data')
+      ).toBeInTheDocument()
     })
 
     fireEvent.click(getByText(/Cancel/))
 
-    expect(queryByText('Section 1 - Active Case Data')).not.toBeInTheDocument()
+    expect(
+      queryByText('Section 1 - TANF - Active Case Data')
+    ).not.toBeInTheDocument()
   })
 
   it('should make a request with the selections and upload payloads after clicking Submit Data Files', async () => {
@@ -286,6 +304,7 @@ describe('Reports', () => {
         year: '2021',
         stt: 'Florida',
         quarter: 'Q3',
+        fileType: 'tanf',
       },
     })
     const origDispatch = store.dispatch
@@ -302,27 +321,27 @@ describe('Reports', () => {
     fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
     await waitFor(() => {
-      fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
+      fireEvent.change(getByLabelText('Section 1 - TANF - Active Case Data'), {
         target: {
-          files: [makeTestFile('section1.txt')],
+          files: [makeTestFile('section1.txt', ['HEADER20212A53000TAN1ED\n'])],
         },
       })
 
-      fireEvent.change(getByLabelText('Section 2 - Closed Case Data'), {
+      fireEvent.change(getByLabelText('Section 2 - TANF - Closed Case Data'), {
         target: {
-          files: [makeTestFile('section2.txt')],
+          files: [makeTestFile('section2.txt', ['HEADER20212C53000TAN1ED\n'])],
         },
       })
 
-      fireEvent.change(getByLabelText('Section 3 - Aggregate Data'), {
+      fireEvent.change(getByLabelText('Section 3 - TANF - Aggregate Data'), {
         target: {
-          files: [makeTestFile('section3.txt')],
+          files: [makeTestFile('section3.txt', ['HEADER20212G53000TAN1ED\n'])],
         },
       })
 
-      fireEvent.change(getByLabelText('Section 4 - Stratum Data'), {
+      fireEvent.change(getByLabelText('Section 4 - TANF - Stratum Data'), {
         target: {
-          files: [makeTestFile('section4.txt')],
+          files: [makeTestFile('section4.txt', ['HEADER20212S53000TAN1ED\n'])],
         },
       })
     })
@@ -441,6 +460,7 @@ describe('Reports', () => {
           year: '2021',
           stt: 'Alaska',
           quarter: 'Q3',
+          fileType: 'tanf',
         },
       })
 
@@ -452,7 +472,7 @@ describe('Reports', () => {
 
       await waitFor(() => {
         expect(
-          queryByText('Section 1 - Active Case Data')
+          queryByText('Section 1 - TANF - Active Case Data')
         ).not.toBeInTheDocument()
         expect(getByText('2021', { selector: 'option' }).selected).toBe(true)
         expect(
@@ -471,7 +491,9 @@ describe('Reports', () => {
       fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
       await waitFor(() => {
-        expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
+        expect(
+          getByText('Section 1 - TANF - Active Case Data')
+        ).toBeInTheDocument()
         expect(
           getByText(
             'Alaska - TANF - Fiscal Year 2021 - Quarter 3 (April - June)'
@@ -524,19 +546,30 @@ describe('Reports', () => {
       fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
       await waitFor(() => {
-        expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
-        expect(getByText('Section 2 - Closed Case Data')).toBeInTheDocument()
-        expect(getByText('Section 3 - Aggregate Data')).toBeInTheDocument()
-        expect(getByText('Section 4 - Stratum Data')).toBeInTheDocument()
+        expect(
+          getByText('Section 1 - TANF - Active Case Data')
+        ).toBeInTheDocument()
+        expect(
+          getByText('Section 2 - TANF - Closed Case Data')
+        ).toBeInTheDocument()
+        expect(
+          getByText('Section 3 - TANF - Aggregate Data')
+        ).toBeInTheDocument()
+        expect(getByText('Section 4 - TANF - Stratum Data')).toBeInTheDocument()
       })
 
       // add a file to be uploaded, but don't submit
       await waitFor(() => {
-        fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
-          target: {
-            files: [makeTestFile('section1.txt')],
-          },
-        })
+        fireEvent.change(
+          getByLabelText('Section 1 - TANF - Active Case Data'),
+          {
+            target: {
+              files: [
+                makeTestFile('section1.txt', ['HEADER20212A53000TAN1ED\n']),
+              ],
+            },
+          }
+        )
       })
 
       await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
@@ -555,6 +588,7 @@ describe('Reports', () => {
       fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
       // the modal should display
+
       await waitFor(() =>
         expect(queryByText('Files Not Submitted')).toBeInTheDocument()
       )
@@ -568,19 +602,30 @@ describe('Reports', () => {
       fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
       await waitFor(() => {
-        expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
-        expect(getByText('Section 2 - Closed Case Data')).toBeInTheDocument()
-        expect(getByText('Section 3 - Aggregate Data')).toBeInTheDocument()
-        expect(getByText('Section 4 - Stratum Data')).toBeInTheDocument()
+        expect(
+          getByText('Section 1 - TANF - Active Case Data')
+        ).toBeInTheDocument()
+        expect(
+          getByText('Section 2 - TANF - Closed Case Data')
+        ).toBeInTheDocument()
+        expect(
+          getByText('Section 3 - TANF - Aggregate Data')
+        ).toBeInTheDocument()
+        expect(getByText('Section 4 - TANF - Stratum Data')).toBeInTheDocument()
       })
 
       // add a file to be uploaded, but don't submit
       await waitFor(() => {
-        fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
-          target: {
-            files: [makeTestFile('section1.txt')],
-          },
-        })
+        fireEvent.change(
+          getByLabelText('Section 1 - TANF - Active Case Data'),
+          {
+            target: {
+              files: [
+                makeTestFile('section1.txt', ['HEADER20212A53000TAN1ED\n']),
+              ],
+            },
+          }
+        )
       })
 
       await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
@@ -621,22 +666,35 @@ describe('Reports', () => {
       fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
       await waitFor(() => {
-        expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
-        expect(getByText('Section 2 - Closed Case Data')).toBeInTheDocument()
-        expect(getByText('Section 3 - Aggregate Data')).toBeInTheDocument()
-        expect(getByText('Section 4 - Stratum Data')).toBeInTheDocument()
+        expect(
+          getByText('Section 1 - TANF - Active Case Data')
+        ).toBeInTheDocument()
+        expect(
+          getByText('Section 2 - TANF - Closed Case Data')
+        ).toBeInTheDocument()
+        expect(
+          getByText('Section 3 - TANF - Aggregate Data')
+        ).toBeInTheDocument()
+        expect(getByText('Section 4 - TANF - Stratum Data')).toBeInTheDocument()
       })
 
       // add a file to be uploaded, but don't submit
       await waitFor(() => {
-        fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
-          target: {
-            files: [makeTestFile('section1.txt')],
-          },
-        })
+        fireEvent.change(
+          getByLabelText('Section 1 - TANF - Active Case Data'),
+          {
+            target: {
+              files: [
+                makeTestFile('section1.txt', ['HEADER20212A53000TAN1ED']),
+              ],
+            },
+          }
+        )
       })
 
       await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
+
+      //fireEvent.click(getByLabelText(/TANF/))
 
       // make a change to the search selections and click search
       fireEvent.change(getByLabelText(/Fiscal Year/), {
@@ -676,7 +734,9 @@ describe('Reports', () => {
       fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
       await waitFor(() => {
-        expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
+        expect(
+          getByText('Section 1 - TANF - Active Case Data')
+        ).toBeInTheDocument()
         expect(
           getByText(
             'Alaska - TANF - Fiscal Year 2021 - Quarter 3 (April - June)'
@@ -878,6 +938,7 @@ describe('Reports', () => {
         year: (currentYear - 1).toString(),
         stt: 'Florida',
         quarter: 'Q3',
+        fileType: 'tanf',
       },
     })
 
@@ -895,7 +956,9 @@ describe('Reports', () => {
     fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
     await waitFor(() => {
-      expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
+      expect(
+        getByText('Section 1 - TANF - Active Case Data')
+      ).toBeInTheDocument()
     })
 
     const makeTestFile = (name, contents = ['test'], type = 'text/plain') =>
@@ -903,7 +966,7 @@ describe('Reports', () => {
 
     // add a file to be uploaded
     await waitFor(() => {
-      fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
+      fireEvent.change(getByLabelText('Section 1 - TANF - Active Case Data'), {
         target: {
           files: [
             makeTestFile('test2.txt', [(currentYear - 2).toString() + '4']),
@@ -921,6 +984,118 @@ describe('Reports', () => {
           `. Adjust your search parameters or upload a different file.`
       )
       expect(divElement).toBeInTheDocument()
+    })
+  })
+
+  it("should skip the file upload step when submitted files header doesn't match submitted year and quarter", async () => {
+    const currentYear = new Date().getFullYear()
+    const store = appConfigureStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        year: (currentYear - 1).toString(),
+        stt: 'Florida',
+        quarter: 'Q3',
+        fileType: 'tanf',
+      },
+    })
+
+    const origDispatch = store.dispatch
+    store.dispatch = jest.fn(origDispatch)
+
+    window.HTMLElement.prototype.scrollIntoView = jest.fn(() => null)
+
+    const { getByText, getByLabelText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    fireEvent.click(getByText(/Search/, { selector: 'button' }))
+
+    await waitFor(() => {
+      expect(
+        getByText('Section 1 - TANF - Active Case Data')
+      ).toBeInTheDocument()
+    })
+
+    const makeTestFile = (name, contents = ['test'], type = 'text/plain') =>
+      new File(contents, name, { type })
+
+    // add a file to be uploaded
+    await waitFor(() => {
+      fireEvent.change(getByLabelText('Section 1 - TANF - Active Case Data'), {
+        target: {
+          files: [
+            makeTestFile('test2.txt', [(currentYear - 2).toString() + '4']),
+          ],
+        },
+      })
+    })
+    await waitFor(() => {
+      const divElement = screen.getByText(
+        `File contains data from ` +
+          `Oct 1 - Dec 31, ` +
+          `which belongs to Fiscal Year ` +
+          (currentYear - 1).toString() +
+          ', Quarter 1' +
+          `. Adjust your search parameters or upload a different file.`
+      )
+      expect(divElement).toBeInTheDocument()
+    })
+  })
+
+  it('should show an error message when the file program type does not match the report program type', async () => {
+    const store = appConfigureStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        fileType: 'tanf',
+        year: '2021',
+        stt: 'Florida',
+        quarter: 'Q3',
+      },
+    })
+    const origDispatch = store.dispatch
+    store.dispatch = jest.fn(origDispatch)
+
+    window.HTMLElement.prototype.scrollIntoView = jest.fn(() => null)
+
+    const { getByText, getByLabelText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    fireEvent.click(getByText(/Search/, { selector: 'button' }))
+
+    await waitFor(() => {
+      expect(
+        getByText('Section 1 - TANF - Active Case Data')
+      ).toBeInTheDocument()
+    })
+
+    const makeTestFile = (name, contents = ['test']) =>
+      new File(contents, name, {
+        type: 'text/plain',
+      })
+
+    const fileInput = getByLabelText('Section 1 - TANF - Active Case Data')
+    await waitFor(() => {
+      fireEvent.change(fileInput, {
+        target: {
+          //name: 'Active Case Data',
+          files: [makeTestFile('section2.txt', ['HEADER20212A53000SSP1ED\n'])],
+        },
+      })
+    })
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          'File may correspond to SSP instead of TAN. Please verify the file type.'
+        )
+      ).toBeInTheDocument()
     })
   })
 })
