@@ -314,7 +314,6 @@ def suppress_for_fra_pilot_state(condition_field_name, result_field_name, valida
 def validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
     """If WORK_ELIGIBLE_INDICATOR == 11 and AGE < 19, then RELATIONSHIP_HOH != 1."""
 
-    # value is instance
     def validate(record, row_schema):
         work_elig_field = row_schema.get_field_by_name("WORK_ELIGIBLE_INDICATOR")
         work_elig_eargs = ValidationErrorArgs(

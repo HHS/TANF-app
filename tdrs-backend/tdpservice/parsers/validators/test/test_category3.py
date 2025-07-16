@@ -294,7 +294,10 @@ def test_isNotZero(val, number_of_zeros, kwargs, exp_result, exp_message):
             18,
             {},
             False,
-            f"2020 must be less than or equal to {datetime.date.today().year - 18} to meet the minimum age requirement.",
+            (
+                f"2020 must be less than or equal to {datetime.date.today().year - 18} "
+                "to meet the minimum age requirement."
+            ),
         ),
     ],
 )

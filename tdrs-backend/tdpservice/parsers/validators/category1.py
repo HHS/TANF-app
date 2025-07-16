@@ -33,7 +33,10 @@ def recordHasLength(length, **kwargs):
     """Return a function that tests that a record/row has the specified length."""
     return make_validator(
         base.hasLength(length, **kwargs),
-        lambda eargs: f"{eargs.row_schema.record_type}: record length is {len(eargs.value)} characters but must be {length}.",
+        lambda eargs: (
+            f"{eargs.row_schema.record_type}: record length is "
+            f"{len(eargs.value)} characters but must be {length}."
+        ),
     )
 
 

@@ -456,8 +456,8 @@ class CaseConsistencyValidator:
                         t5s,
                         (
                             f"At least one person on the case must have "
-                            f"{self.__get_error_context('EMPLOYMENT_STATUS', t5s[0][1] if t5s else None)} = 1:Yes in the "
-                            f"same {self.__get_error_context('RPT_MONTH_YEAR', t4_schema)} since "
+                            f"{self.__get_error_context('EMPLOYMENT_STATUS', t5s[0][1] if t5s else None)} = 1:"
+                            f"Yes in the same {self.__get_error_context('RPT_MONTH_YEAR', t4_schema)} since "
                             f"{self.__get_error_context('CLOSURE_REASON', t4_schema)} = 1:Employment/excess earnings."
                         ),
                     )

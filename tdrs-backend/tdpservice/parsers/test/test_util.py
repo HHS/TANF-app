@@ -22,12 +22,12 @@ from ..validators.util import deprecate_call, deprecate_validator, make_validato
 
 def passing_validator():
     """Fake validator that always returns valid."""
-    return make_validator(lambda _,: True, lambda _,: "Failed.")
+    return make_validator(lambda _: True, lambda _: "Failed.")
 
 
 def failing_validator():
     """Fake validator that always returns invalid."""
-    return make_validator(lambda _,: False, lambda _,: "Value is not valid.")
+    return make_validator(lambda _: False, lambda _: "Value is not valid.")
 
 
 def error_func(schema, error_category, error_message, record, field, deprecated=False):
@@ -45,12 +45,12 @@ def deprecated_error_func(
 @deprecate_validator
 def deprecated_validator():
     """Fake validator that is false and is deprecated."""
-    return make_validator(lambda _,: False, lambda _,: "Failed.")
+    return make_validator(lambda _: False, lambda _: "Failed.")
 
 
 def validator_to_deprecate():
     """Fake validator that is False and becomes deprecated when invoked."""
-    return make_validator(lambda _,: False, lambda _,: "Failed.")
+    return make_validator(lambda _: False, lambda _: "Failed.")
 
 
 def test_deprecate_validator():
