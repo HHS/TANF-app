@@ -829,3 +829,17 @@ def fra_decoder_unknown(stt_user, stt):
     """Fixture for FRA file with bad encoding."""
     return util.create_test_datafile('fra_decoder_unknown.xlsx', stt_user, stt,
                                      DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS)
+
+@pytest.fixture
+def section2_no_records():
+    """Fixture for a valid section 2 file with no records."""
+    parsing_file = ParsingFileFactory(
+        year=2025,
+        quarter='Q1',
+        section="Closed Case Data",
+        file__name='section2_no_records.txt',
+        file__section='Closed Case Data',
+        file__data=(b'HEADER20244C06   TAN1ED\n'
+                    b'TRAILER0000001         ')
+    )
+    return parsing_file

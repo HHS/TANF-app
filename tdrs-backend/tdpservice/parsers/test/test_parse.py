@@ -1948,3 +1948,19 @@ def test_parse_fra_decoder_unknown(fra_decoder_unknown, dfs):
                                             "ensure it can be opened in Excel. If the file is a CSV, ensure it can be "
                                             "opened in a text editor and is UTF-8 encoded.")
     assert dfs.get_status() == DataFileSummary.Status.REJECTED
+
+@pytest.mark.django_db()
+def test_parse_section2_no_records(section2_no_records, dfs):
+    """Test parsing valid section 2 file with no records."""
+    datafile = section2_no_records
+    dfs.datafile = datafile
+    dfs.save()
+
+    parser = ParserFactory.get_instance(datafile=datafile, dfs=dfs,
+                                        section=datafile.section,
+                                        program_type=datafile.prog_type)
+    parser.parse_and_validate()
+
+    errors = ParserError.objects.filter(file=datafile).order_by("id")
+    assert errors.count() == 0
+    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
