@@ -185,7 +185,6 @@ def test_parse_bad_file_missing_header(bad_file_missing_header, dfs):
     assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
     parser_errors = ParserError.objects.filter(file=bad_file_missing_header).order_by('created_at')
-
     assert parser_errors.count() == 2
 
     err = parser_errors.first()
@@ -260,7 +259,7 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
     assert parser_errors.count() == 5
 
     trailer_error = parser_errors.get(row_number=3)
-    assert trailer_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert trailer_error.error_type == ParserErrorCategoryChoices.RECORD_PRE_CHECK
     assert trailer_error.error_message == 'TRAILER: record length is 11 characters but must be 23.'
     assert trailer_error.content_type is None
     assert trailer_error.object_id is None
@@ -270,7 +269,7 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
     row_errors_list = []
     for row_error in row_errors:
         row_errors_list.append(row_error)
-        assert row_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+        assert row_error.error_type == ParserErrorCategoryChoices.RECORD_PRE_CHECK
         assert trailer_error.error_message in [
             'TRAILER: record length is 11 characters but must be 23.',
             'T1: Reporting month year None does not match file reporting year:2021, quarter:Q1.']
@@ -279,7 +278,7 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
 
     row_errors = list(parser_errors.filter(row_number=2).order_by("id"))
     length_error = row_errors[0]
-    assert length_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert length_error.error_type == ParserErrorCategoryChoices.RECORD_PRE_CHECK
     assert length_error.error_message == "T1: record length should be at least 117 characters but it is 7 characters."
     assert length_error.content_type is None
     assert length_error.object_id is None
@@ -305,13 +304,13 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     trailer_errors = list(parser_errors.filter(row_number=3).order_by('id'))
 
     trailer_error_1 = trailer_errors[0]
-    assert trailer_error_1.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert trailer_error_1.error_type == ParserErrorCategoryChoices.RECORD_PRE_CHECK
     assert trailer_error_1.error_message == 'TRAILER: record length is 7 characters but must be 23.'
     assert trailer_error_1.content_type is None
     assert trailer_error_1.object_id is None
 
     trailer_error_2 = trailer_errors[1]
-    assert trailer_error_2.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert trailer_error_2.error_type == ParserErrorCategoryChoices.RECORD_PRE_CHECK
     assert trailer_error_2.error_message == "Your file does not end with a TRAILER record."
     assert trailer_error_2.content_type is None
     assert trailer_error_2.object_id is None
@@ -329,7 +328,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
 
     for row_3_error in row_3_errors:
         row_3_error_list.append(row_3_error)
-        assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+        assert row_3_error.error_type == ParserErrorCategoryChoices.RECORD_PRE_CHECK
         assert row_3_error.error_message in {
             'T1: record length should be at least 117 characters but it is 7 characters.',
             'T1: Reporting month year None does not match file reporting year:2021, quarter:Q1.',
@@ -342,19 +341,19 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     # case number validators
     row_3_errors = [trailer_errors[2], trailer_errors[3]]
     length_error = row_3_errors[0]
-    assert length_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert length_error.error_type == ParserErrorCategoryChoices.RECORD_PRE_CHECK
     assert length_error.error_message == 'T1: record length should be at least 117 characters but it is 7 characters.'
     assert length_error.content_type is None
     assert length_error.object_id is None
 
     trailer_error_3 = trailer_errors[3]
-    assert trailer_error_3.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert trailer_error_3.error_type == ParserErrorCategoryChoices.RECORD_PRE_CHECK
     assert trailer_error_3.error_message == 'T1: Case number T1trash cannot contain blanks.'
     assert trailer_error_3.content_type is None
     assert trailer_error_3.object_id is None
 
     trailer_error_4 = trailer_errors[4]
-    assert trailer_error_4.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert trailer_error_4.error_type == ParserErrorCategoryChoices.RECORD_PRE_CHECK
     assert trailer_error_4.error_message == ('T1: Reporting month year None does not '
                                              'match file reporting year:2021, quarter:Q1.')
     assert trailer_error_4.content_type is None
@@ -420,9 +419,10 @@ def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile, dfs):
 
     parser_errors = ParserError.objects.filter(file=small_ssp_section1_datafile)
     dfs.status = dfs.get_status()
-    assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+    assert dfs.status == DataFileSummary.Status.PARTIALLY_ACCEPTED
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
         dfs.datafile, dfs.status)
+
     assert dfs.case_aggregates["rejected"] == 1
     for month in dfs.case_aggregates['months']:
         if month['month'] == 'Oct':
@@ -654,17 +654,17 @@ def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field
 
     error_message = 'T1: Reporting month year None does not match file reporting year:2021, quarter:Q1.'
     row_2_error = parser_errors.get(row_number=2, error_message=error_message)
-    assert row_2_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert row_2_error.error_type == ParserErrorCategoryChoices.RECORD_PRE_CHECK
     assert row_2_error.error_message == error_message
 
     error_message = 'T2: Reporting month year None does not match file reporting year:2021, quarter:Q1.'
     row_3_error = parser_errors.get(row_number=3, error_message=error_message)
-    assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert row_3_error.error_type == ParserErrorCategoryChoices.RECORD_PRE_CHECK
     assert row_3_error.error_message == error_message
 
     error_message = 'T3: Reporting month year None does not match file reporting year:2021, quarter:Q1.'
     row_4_error = parser_errors.get(row_number=4, error_message=error_message)
-    assert row_4_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert row_4_error.error_type == ParserErrorCategoryChoices.RECORD_PRE_CHECK
     assert row_4_error.error_message == error_message
 
     error_message = 'Unknown Record_Type was found.'
@@ -696,25 +696,25 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
         row_number=2,
         error_message__contains='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
     )
-    assert row_2_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert row_2_error.error_type == ParserErrorCategoryChoices.RECORD_PRE_CHECK
 
     row_3_error = parser_errors.get(
         row_number=3,
         error_message__contains='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
     )
-    assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert row_3_error.error_type == ParserErrorCategoryChoices.RECORD_PRE_CHECK
 
     row_4_error = parser_errors.get(
         row_number=4,
         error_message__contains='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
     )
-    assert row_4_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert row_4_error.error_type == ParserErrorCategoryChoices.RECORD_PRE_CHECK
 
     error_message = 'Reporting month year None does not match file reporting year:2019, quarter:Q1.'
     rpt_month_errors = parser_errors.filter(error_message__contains=error_message)
     assert len(rpt_month_errors) == 3
     for i, e in enumerate(rpt_month_errors):
-        assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
+        assert e.error_type == ParserErrorCategoryChoices.RECORD_PRE_CHECK
         assert error_message.format(i + 1) in e.error_message
         assert e.object_id is None
 
@@ -730,7 +730,7 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
         row_number=6,
         error_message='TRAILER: record length is 15 characters but must be 23.'
     )
-    assert trailer_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert trailer_error.error_type == ParserErrorCategoryChoices.RECORD_PRE_CHECK
     assert trailer_error.content_type is None
     assert trailer_error.object_id is None
 
@@ -1498,12 +1498,15 @@ def test_parse_aggregates_rejected_datafile(aggregates_rejected_datafile, dfs):
         {'month': 'Dec', 'accepted_without_errors': "N/A", 'accepted_with_errors': "N/A"}],
         'rejected': 1}
 
-    errors = ParserError.objects.filter(file=aggregates_rejected_datafile)
+    errors = ParserError.objects.filter(file=aggregates_rejected_datafile).order_by('id')
 
     assert errors.count() == 3
-    for error in errors:
-        assert error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert errors.filter(row_number=2).count() == 2
+    record_precheck_errors = errors.filter(row_number=2)
+    assert record_precheck_errors.count() == 2
+    for error in record_precheck_errors:
+        assert error.error_type == ParserErrorCategoryChoices.RECORD_PRE_CHECK
+
+    assert errors.last().error_type == ParserErrorCategoryChoices.PRE_CHECK
 
     assert TANF_T2.objects.count() == 0
 

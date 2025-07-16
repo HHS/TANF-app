@@ -152,6 +152,8 @@ class DataFileSummary(models.Model):
                                 .exclude(error_message__icontains="trailer")\
                                 .exclude(error_message__icontains="Unknown Record_Type was found.")
 
+        record_precheck_errors = errors.filter(error_type=ParserErrorCategoryChoices.RECORD_PRE_CHECK)
+
         case_consistency_errors = errors.filter(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
 
         row_precheck_errors = errors.filter(error_type=ParserErrorCategoryChoices.PRE_CHECK)\
@@ -164,7 +166,7 @@ class DataFileSummary(models.Model):
             return DataFileSummary.Status.REJECTED
         elif errors.count() == 0:
             return DataFileSummary.Status.ACCEPTED
-        elif (row_precheck_errors.count() > 0 or case_consistency_errors.count()):
+        elif (row_precheck_errors.count() > 0 or case_consistency_errors.count() or record_precheck_errors.count()):
             return DataFileSummary.Status.PARTIALLY_ACCEPTED
         else:
             return DataFileSummary.Status.ACCEPTED_WITH_ERRORS

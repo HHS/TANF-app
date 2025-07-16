@@ -55,6 +55,7 @@ def case_aggregates_by_month(df, dfs_status):
                                          "accepted_with_errors": cases_with_errors})
 
     error_type_query = Query(error_type=ParserErrorCategoryChoices.PRE_CHECK) | \
+        Query(error_type=ParserErrorCategoryChoices.RECORD_PRE_CHECK) | \
         Query(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
 
     aggregate_data['rejected'] = all_errors.filter(error_type_query).distinct("row_number")\

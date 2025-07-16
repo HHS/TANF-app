@@ -177,12 +177,12 @@ class DataFileAPITestBase:
         critical = wb['Critical']
         summary = wb['Summary']
 
-        COL_ERROR_MESSAGE = 4
+        COL_ERROR_MESSAGE = 3
         COL_NUM_OCCURRENCES = 8
 
         assert critical.cell(row=1, column=1).value == "Please refer to the most recent versions of the coding " \
             + "instructions (linked below) when looking up items and allowable values during the data revision process"
-        assert critical.cell(row=7, column=COL_ERROR_MESSAGE).value == ("TRAILER: record length is 15 characters "
+        assert summary.cell(row=10, column=COL_ERROR_MESSAGE).value == ("TRAILER: record length is 15 characters "
                                                                         "but must be 23.")
         assert summary.cell(row=7, column=COL_NUM_OCCURRENCES).value == 3
 

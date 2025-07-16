@@ -52,9 +52,11 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
     # If we are a cat1/cat4 error then the parser error will know about all fields. To keep things simple we associate
     # the field with the record type. If the error is not cat1/cat4 then we use the last field since that will be the
     # result field in the multi-field case.
-    field = "Record_Type" if schema is not None and len(fields) == len(schema.fields) else fields[-1]
+    field = schema.record_type if schema is not None and len(fields) == len(schema.fields) else fields[-1]
 
-    if (error_category in (ParserErrorCategoryChoices.PRE_CHECK, ParserErrorCategoryChoices.CASE_CONSISTENCY)):
+    if (error_category in (ParserErrorCategoryChoices.PRE_CHECK,
+                           ParserErrorCategoryChoices.RECORD_PRE_CHECK,
+                           ParserErrorCategoryChoices.CASE_CONSISTENCY)):
         record = None
 
     return ParserError(
