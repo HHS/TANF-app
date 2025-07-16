@@ -167,7 +167,9 @@ class BaseParser(ABC):
 
     def create_no_records_created_pre_check_error(self):
         """Generate a precheck error if no records were created."""
-        if self.dfs.total_number_of_records_created == 0:
+        no_records_allowed = ("Closed Case Data" in self.section and
+                              self.dfs.total_number_of_records_created == self.dfs.total_number_of_records_in_file)
+        if self.dfs.total_number_of_records_created == 0 and not no_records_allowed:
             errors = {}
             generate_error = util.make_generate_parser_error(self.datafile, 0)
             err_obj = generate_error(
