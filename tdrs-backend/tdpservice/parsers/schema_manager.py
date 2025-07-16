@@ -36,6 +36,7 @@ class SchemaManager:
                 records.append((record, is_valid, errors))
             return ManagerPVResult(records=records, schemas=schemas)
         except Exception:
+            # TODO: should this be changed? Should it be a precheck or a different error all together?
             records = [(None, False, [
                 generate_error(
                     schema=None,
