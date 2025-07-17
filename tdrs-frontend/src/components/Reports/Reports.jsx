@@ -211,7 +211,6 @@ function Reports() {
   }
 
   const handleCloseWidget = () => {
-    console.log('Closing feedback widget...') // TODO: Remove this log
     setIsFeedbackOpen(false)
   }
 

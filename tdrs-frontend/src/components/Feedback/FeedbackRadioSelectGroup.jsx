@@ -109,7 +109,10 @@ const FeedbackRadioSelectGroup = ({
                   <label
                     key={option.value}
                     className="radio-icon"
-                    style={{ color: option.color }}
+                    style={{
+                      color: option.color,
+                      width: isModal ? '' : '50px',
+                    }}
                   >
                     <input
                       className="usa-radio__input"

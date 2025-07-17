@@ -37,43 +37,37 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
     setIsAnonymous(false)
   }
 
-  const handleSubmit = useCallback(
-    async (e) => {
-      e.preventDefault()
-      if (!selectedRatingsOption) {
-        setHasError(true)
-        return
-      }
+  const handleSubmit = useCallback(async () => {
+    if (!selectedRatingsOption) {
+      setHasError(true)
+      return
+    }
 
-      try {
-        const response = await axiosInstance.post(
-          `${process.env.REACT_APP_BACKEND_URL}/feedback/`,
-          {
-            rating: selectedRatingsOption,
-            feedback: feedbackMessage,
-            anonymous: isAnonymous,
-          }
+    try {
+      const response = await axiosInstance.post(`${BACKEND_URL}/feedback/`, {
+        rating: selectedRatingsOption,
+        feedback: feedbackMessage,
+        anonymous: isAnonymous,
+      })
+
+      if (response.status === 200 || response.status === 201) {
+        onFeedbackSubmit()
+        resetStatesOnceSubmitted()
+      } else {
+        console.error('Unexpected response: ', response)
+      }
+    } catch (error) {
+      const status = error?.response?.status
+      if (status === 400) {
+        console.error('Error submitting feedback: ', error.response)
+      } else {
+        console.error(
+          'An unexpected error occurred. Please try again later.',
+          error
         )
-
-        if (response.status === 200 || response.status === 201) {
-          onFeedbackSubmit()
-          resetStatesOnceSubmitted()
-        } else {
-          console.error('Unexpected response: ', response)
-        }
-      } catch (error) {
-        if (error.response && error.response.status === 400) {
-          console.error('Error submitting feedback:', error.response.data)
-        } else {
-          console.error(
-            'An unexpected error occurred. Please try again later.',
-            error
-          )
-        }
       }
-    },
-    [selectedRatingsOption, feedbackMessage, isAnonymous, onFeedbackSubmit]
-  )
+    }
+  }, [selectedRatingsOption, feedbackMessage, isAnonymous, onFeedbackSubmit])
 
   const handleRatingSelected = (rating) => {
     setSelectedRatingsOption(rating)
@@ -117,12 +111,13 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
     return (
       <div
         className={
-          isGeneralFeedback ? 'margin-left-4 margin-top-1' : 'margin-bottom-1'
+          isGeneralFeedback ? 'margin-left-4 margin-top-1' : 'margin-bottom-0'
         }
       >
         <div
-          className="usa-checkbox"
-          style={{ marginLeft: !isGeneralFeedback ? '12px' : '' }}
+          className={classNames('usa-checkbox', {
+            'margin-left-2': !isGeneralFeedback,
+          })}
         >
           <input
             id="feedback-anonymous-input"
@@ -138,7 +133,7 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
             }}
           />
           <label
-            className="usa-checkbox__label"
+            className={`usa-checkbox__label ${!isGeneralFeedback ? 'feedback-widget-anonymous-label' : ''}`}
             htmlFor="feedback-anonymous-input"
             style={{
               display: isGeneralFeedback ? 'inline-block' : '',
@@ -206,8 +201,8 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
           selectedOption={selectedRatingsOption}
           onRatingSelected={handleRatingSelected}
           onKeyDownSelection={handleRadioKeyDown}
-          showLabel={isGeneralFeedback ? true : false}
-          isModal={isGeneralFeedback ? true : false}
+          showLabel={isGeneralFeedback}
+          isModal={isGeneralFeedback}
           error={hasError}
         />
       </div>
@@ -221,7 +216,7 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
           ) : (
             selectedRatingsOption && (
               <p
-                className="margin-bottom-2"
+                className="margin-bottom-1 margin-top-1"
                 style={{
                   fontSize: '0.90rem',
                   color: '#575c64',
@@ -242,7 +237,7 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
             maxLength={500}
             style={{
               border: '1px solid black',
-              marginTop: '-6px',
+              marginTop: '-5px',
               maxWidth: '100%',
               fontSize: isGeneralFeedback ? '1rem' : '0.85rem',
               padding: isGeneralFeedback ? '0.75rem' : '0.4rem',

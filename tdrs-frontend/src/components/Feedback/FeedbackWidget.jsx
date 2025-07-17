@@ -52,6 +52,7 @@ const FeedbackWidget = React.forwardRef(
     return isOpen ? (
       <div
         className="feedback-widget"
+        style={isFeedbackSubmitted ? { paddingBottom: '1rem' } : {}}
         ref={widgetRef}
         role="dialog"
         aria-labelledby="feedbackWidgetHeader"
@@ -63,8 +64,9 @@ const FeedbackWidget = React.forwardRef(
               <div className="feedback-widget-header">
                 <p
                   id="feedbackWidgetHeader"
-                  className="font-serif-sm"
+                  className="font-serif-sm margin-2 text-normal"
                   tabIndex={-1}
+                  aria-describedby="widgetDesc"
                 >
                   {getFeedbackWidgetHeader()}
                 </p>
@@ -84,15 +86,15 @@ const FeedbackWidget = React.forwardRef(
                 </button>
               </div>
               <FeedbackForm
-                isGeneralFeedback={false} // compact form (no validation banner)
-                onFeedbackSubmit={handleFeedbackSubmit} // closes widget after submit
+                isGeneralFeedback={false}
+                onFeedbackSubmit={handleFeedbackSubmit}
               />
             </>
           ) : (
-            <div className="feedback-widget-thank-you-header margin-4">
+            <div className="feedback-widget-thank-you-header">
               <p
                 id="feedbackWidgetHeader"
-                className="font-serif-sm"
+                className="font-serif-xs margin-left-0 text-normal"
                 tabIndex={-1}
               >
                 Thank you for your feedback!
@@ -105,12 +107,15 @@ const FeedbackWidget = React.forwardRef(
                 aria-label="Close feedback widget"
                 style={{
                   padding: '0',
-                  marginBottom: '2px',
                   alignSelf: 'center',
                 }}
                 onClick={onClose}
               >
-                <img src={closeIcon} alt="X" />
+                <img
+                  src={closeIcon}
+                  alt="X"
+                  style={{ width: '14px', height: 'auto' }}
+                />
               </button>
             </div>
           )}

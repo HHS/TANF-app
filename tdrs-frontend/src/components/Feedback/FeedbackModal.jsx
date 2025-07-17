@@ -6,7 +6,10 @@ import { useFocusTrap } from '../../hooks/useFocusTrap'
 const FeedbackModal = ({ id, title, message, children, isOpen, onClose }) => {
   const modalRef = useRef(null)
 
-  useFocusTrap({ containerRef: modalRef, isActive: isOpen })
+  const { onKeyDown: trapKeyDown } = useFocusTrap({
+    containerRef: modalRef,
+    isActive: isOpen,
+  })
 
   // Escape key closes modal here
   const onKeyDown = useCallback(
@@ -15,16 +18,10 @@ const FeedbackModal = ({ id, title, message, children, isOpen, onClose }) => {
         e.preventDefault()
         onClose()
       }
+      trapKeyDown(e)
     },
-    [onClose]
+    [onClose, trapKeyDown]
   )
-
-  useEffect(() => {
-    if (!isOpen || !modalRef.current) return
-    const node = modalRef.current
-    node.addEventListener('keydown', onKeyDown)
-    return () => node.removeEventListener('keydown', onKeyDown)
-  }, [isOpen, onKeyDown])
 
   return isOpen ? (
     <div

@@ -49,29 +49,8 @@
   position: relative;
 }
 
-.feedback-widget-container {
-  font-family: system-ui, sans-serif;
-  font-size: 14px;
-}
-
-.feedback-widget-container .usa-textarea {
-  font-size: 0.9rem;
-  padding: 0.5rem;
-  height: 6rem;
-}
-
-.feedback-widget-container .usa-button {
-  width: 100%;
-  margin-top: 0.75rem;
-}
-
-.feedback-widget-container:focus {
-  outline: 2px solid #005ea2;
-  outline-offset: 2px;
-}
-
 .feedback-widget {
-  right: 13.5rem;
+  right: 14rem;
   width: 300px;
   max-height: 90vh;
   overflow-y: auto;
@@ -104,34 +83,33 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.widget-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.close-widget {
-  background: transparent;
-  border: none;
-  font-size: 1.25rem;
-  cursor: pointer;
+  z-index: 1000;
 }
 
 .spinner {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border: 2px solid rgba(0, 0, 0, 0.2);
-  border-top: 3px solid #000;
+  border-top: 2px solid #000;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-left: 0.5rem;
 }
 
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
+}
+
+.usa-checkbox__label.feedback-widget-anonymous-label {
+  margin-top:0.5rem;
+  padding-left: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.usa-checkbox__label.feedback-widget-anonymous-label::before {
+  height:1rem;
+  width:1rem;
 }
 
 .feedback-group {

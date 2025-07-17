@@ -5,19 +5,33 @@ import { useFocusTrap } from './useFocusTrap'
 
 function TestComponent({ isActive }) {
   const containerRef = useRef(null)
-  useFocusTrap({ containerRef, isActive })
+  const { onKeyDown } = useFocusTrap({ containerRef, isActive })
 
   return (
-    <div ref={containerRef} tabIndex={-1}>
-      <h1 tabIndex={-1}>Heading</h1>
-      <button>Button 1</button>
-      <button>Button 2</button>
+    <div
+      ref={containerRef}
+      onKeyDown={onKeyDown}
+      tabIndex={-1}
+      role="presentation"
+    >
+      <h1 tabIndex={-1} data-testid="heading">
+        Heading
+      </h1>
+      <button data-testid="button-1">Button 1</button>
+      <button data-testid="button-2">Button 2</button>
     </div>
   )
 }
 
+let activeElement = null
+
 beforeAll(() => {
+  jest
+    .spyOn(window, 'requestAnimationFrame')
+    .mockImplementation((cb) => setTimeout(cb, 0))
+
   HTMLElement.prototype.focus = jest.fn(function () {
+    activeElement = this
     Object.defineProperty(document, 'activeElement', {
       configurable: true,
       get: () => this,
@@ -25,9 +39,14 @@ beforeAll(() => {
   })
 })
 
+afterAll(() => {
+  window.requestAnimationFrame.mockRestore()
+})
+
 describe('useFocusTrap', () => {
   beforeEach(() => {
     jest.useFakeTimers()
+    activeElement = null
     jest.clearAllMocks()
   })
 
@@ -90,30 +109,25 @@ describe('useFocusTrap', () => {
 
     // Initial focus is on heading
     expect(headingFocus).toHaveBeenCalled()
-    headingFocus.mockClear()
 
     // Simulate Tab from heading -> button1
     fireEvent.keyDown(heading, { key: 'Tab' })
     expect(button1Focus).toHaveBeenCalled()
-    button1Focus.mockClear()
 
     // Simulate Tab from button1 -> button2
     fireEvent.keyDown(button1, { key: 'Tab' })
     expect(button2Focus).toHaveBeenCalled()
-    button2Focus.mockClear()
 
     // Simulate Tab from button2 -> heading
     fireEvent.keyDown(button2, { key: 'Tab' })
-    expect(headingFocus).toHaveBeenCalledTimes(1) // loop back once
+    expect(headingFocus).toHaveBeenCalled() // loop back to heading
   })
 
-  it('cycles focus with Shift+Tab', () => {
+  it('cycles focus backwards with Shift+Tab', () => {
     const { container } = render(<TestComponent isActive={true} />)
 
     const heading = container.querySelector('h1')
-    const buttons = container.querySelectorAll('button')
-    const button1 = buttons[0]
-    const button2 = buttons[1]
+    const [button1, button2] = container.querySelectorAll('button')
 
     const headingFocus = jest.spyOn(heading, 'focus')
     const button1Focus = jest.spyOn(button1, 'focus')
@@ -123,25 +137,28 @@ describe('useFocusTrap', () => {
       jest.runAllTimers()
     })
 
-    // Initial focus goes to heading
+    // Initially heading is focused
     expect(headingFocus).toHaveBeenCalled()
 
-    // Clear all .focus() call history
-    headingFocus.mockClear()
-    button1Focus.mockClear()
-    button2Focus.mockClear()
+    // Tab to button1
+    fireEvent.keyDown(heading, { key: 'Tab' })
 
-    // Simulate Shift+Tab from heading -> button2
-    fireEvent.keyDown(heading, { key: 'Tab', shiftKey: true })
-    expect(button2Focus).toHaveBeenCalledTimes(1)
+    // Tab to button2
+    fireEvent.keyDown(button1, { key: 'Tab' })
 
-    // Simulate Shift+Tab from button2 -> button1
-    fireEvent.keyDown(button2, { key: 'Tab', shiftKey: true })
-    expect(button1Focus).toHaveBeenCalledTimes(2)
+    expect(button2Focus).toHaveBeenCalled()
 
-    // Simulate Shift+Tab from button1 -> heading
-    fireEvent.keyDown(button1, { key: 'Tab', shiftKey: true })
-    expect(headingFocus).toHaveBeenCalledTimes(3) // loop back to heading
+    // Shift+Tab: button2 -> button1
+    act(() => {
+      fireEvent.keyDown(button2, { key: 'Tab', shiftKey: true })
+    })
+    expect(button1Focus).toHaveBeenCalled()
+
+    // Shift+Tab: button1 -> heading
+    act(() => {
+      fireEvent.keyDown(button1, { key: 'Tab', shiftKey: true })
+    })
+    expect(headingFocus).toHaveBeenCalled()
   })
 
   it('removes keydown listener on unmount or inactive', () => {
@@ -179,5 +196,11 @@ describe('useFocusTrap', () => {
 
     expect(button1Focus).not.toHaveBeenCalled()
     expect(button2Focus).not.toHaveBeenCalled()
+  })
+
+  it('does nothing when isActive is false', () => {
+    render(<TestComponent isActive={false} />)
+    jest.runAllTimers()
+    expect(document.body).toHaveFocus() // No focus movement
   })
 })

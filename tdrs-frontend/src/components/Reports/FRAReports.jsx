@@ -576,7 +576,7 @@ const FRAReports = () => {
     useFormSubmission()
 
   // Feedback state
-  const [isFeedbackOpen, setIsFeedbackOpen] = useState(true) // TODO: change back to false
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false)
 
   const user = useSelector((state) => state.auth.user)
   const sttList = useSelector((state) => state?.stts?.sttList)
@@ -768,7 +768,7 @@ const FRAReports = () => {
 
       // Complete the submission process
       onSubmitComplete()
-      handleOpenWidget() // TODO: opens widget (or makes visiable on Report submissions)
+      handleOpenWidget()
 
       const WAIT_TIME = 2000 // #
       let statusTimeout = null

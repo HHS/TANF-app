@@ -3,13 +3,8 @@ import { useEffect, useCallback, useRef } from 'react'
 const FOCUSABLE_SELECTOR =
   'a[href], button, textarea, select, input:not([type="hidden"]), [tabindex]:not([tabindex="-1"])'
 
-const isVisibleAndFocusable = (el) =>
-  el &&
-  !el.disabled &&
-  el.offsetParent !== null &&
-  typeof el.focus === 'function'
-
 export function useFocusTrap({ containerRef, isActive }) {
+  const lastFocusedEl = useRef(null)
   const hasAutoFocused = useRef(false)
 
   // Focus first focusable or heading when active
@@ -24,9 +19,11 @@ export function useFocusTrap({ containerRef, isActive }) {
 
       const headingEl = container.querySelector('h1[tabindex="-1"]')
       const focusableEls = container.querySelectorAll(FOCUSABLE_SELECTOR)
-      const focusables = Array.from(focusableEls).filter(isVisibleAndFocusable)
+      const focusables = Array.from(focusableEls).filter(
+        (el) => !el.disabled && el.offsetParent !== null
+      )
 
-      if (headingEl && isVisibleAndFocusable(headingEl)) {
+      if (headingEl) {
         headingEl.focus()
         // Manually ensure it's marked focused in jsdom (helpful for tests)
         if (document.activeElement !== headingEl) {
@@ -35,8 +32,9 @@ export function useFocusTrap({ containerRef, isActive }) {
       } else if (focusables.length > 0) {
         focusables[0].focus()
       } else {
-        container.focus()
-        console.warn('No focusable elements found in modal')
+        if (container) {
+          container.focus()
+        }
       }
     })
 
@@ -45,6 +43,13 @@ export function useFocusTrap({ containerRef, isActive }) {
     }
   }, [isActive, containerRef])
 
+  // Reset on close
+  useEffect(() => {
+    if (!isActive) {
+      hasAutoFocused.current = false
+    }
+  }, [isActive])
+
   // Handle tab key to cycle focus
   const onTabPressed = useCallback(
     (shiftKey = false) => {
@@ -52,15 +57,20 @@ export function useFocusTrap({ containerRef, isActive }) {
 
       let focusableElements = Array.from(
         containerRef.current.querySelectorAll(FOCUSABLE_SELECTOR)
-      ).filter(isVisibleAndFocusable)
+      ).filter(
+        (el) =>
+          !el.disabled &&
+          el.offsetParent !== null &&
+          !(el.tagName === 'h1' && el.getAttribute('tabindex') === '-1')
+      )
 
       const headingEl = containerRef.current.querySelector('h1[tabindex="-1"]')
       const activeEl = document.activeElement
+      const lastEl = lastFocusedEl.current
 
       const isHeadingFocused = headingEl && headingEl === activeEl
       if (
         headingEl &&
-        isVisibleAndFocusable(headingEl) &&
         isHeadingFocused &&
         !focusableElements.includes(headingEl)
       ) {
@@ -73,22 +83,18 @@ export function useFocusTrap({ containerRef, isActive }) {
       }
 
       const isActiveInside = containerRef.current.contains(activeEl)
-      const currentIdx = isActiveInside
-        ? focusableElements.indexOf(activeEl)
-        : -1
+      let currentIdx = isActiveInside ? focusableElements.indexOf(activeEl) : -1
 
-      const nextIdx =
-        currentIdx === -1
-          ? 0
-          : shiftKey
-            ? (currentIdx - 1 + focusableElements.length) %
-              focusableElements.length
-            : (currentIdx + 1) % focusableElements.length
-
-      const nextEl = focusableElements[nextIdx]
-      if (nextEl && document.activeElement !== nextEl) {
-        nextEl.focus()
+      // If the current activeEl is not found (e.g. removed), fall back to last known focused element
+      if (currentIdx === -1 && lastEl && focusableElements.includes(lastEl)) {
+        currentIdx = focusableElements.indexOf(lastEl)
       }
+
+      const nextIdx = shiftKey
+        ? (currentIdx - 1 + focusableElements.length) % focusableElements.length
+        : (currentIdx + 1) % focusableElements.length
+
+      focusableElements[nextIdx].focus()
     },
     [containerRef]
   )
@@ -97,22 +103,16 @@ export function useFocusTrap({ containerRef, isActive }) {
   const onKeyDown = useCallback(
     (e) => {
       if (e.key === 'Tab') {
+        if (containerRef.current?.contains(document.activeElement)) {
+          lastFocusedEl.current = document.activeElement
+        }
         e.preventDefault()
         onTabPressed(e.shiftKey)
       }
     },
-    [onTabPressed]
+    [containerRef, onTabPressed]
   )
 
-  // Attach keydown listener if active
-  useEffect(() => {
-    if (!isActive || !containerRef.current) return
-
-    const node = containerRef.current
-    node.addEventListener('keydown', onKeyDown)
-
-    return () => {
-      node.removeEventListener('keydown', onKeyDown)
-    }
-  }, [isActive, onKeyDown, containerRef])
+  // Return the keydown handler
+  return { onKeyDown }
 }
