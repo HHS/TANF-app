@@ -10,6 +10,7 @@ function FRASelector({ hasFRAAccess, setHasFRAAccess, error }) {
           <a
             href="https://tdp-project-updates.app.cloud.gov/knowledge-center/submitting-fra-data.html"
             target="_blank"
+            aria-describedby="fra-selector-error-message"
             rel="noopener noreferrer"
           >
             Learn about FRA data file reporting.
@@ -27,6 +28,7 @@ function FRASelector({ hasFRAAccess, setHasFRAAccess, error }) {
             className="usa-radio__input"
             id="fra-yes"
             type="radio"
+            aria-describedby="fra-selector-error-message"
             name="hasFRAAccess"
             value="true"
             defaultChecked
@@ -42,6 +44,7 @@ function FRASelector({ hasFRAAccess, setHasFRAAccess, error }) {
             className="usa-radio__input"
             id="fra-no"
             type="radio"
+            aria-describedby="fra-selector-error-message"
             name="hasFRAAccess"
             value="false"
             checked={hasFRAAccess === false}
