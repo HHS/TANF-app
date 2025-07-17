@@ -83,11 +83,11 @@ class Common(Configuration):
         "tdpservice.middleware.NoCacheMiddleware",
         "django_prometheus.middleware.PrometheusAfterMiddleware",
     )
-    
+
     # OpenTelemetry Tracing Configuration
-    OTEL_ENABLED = bool(strtobool(os.getenv("OTEL_ENABLED", "yes")))
+    OTEL_ENABLED = bool(strtobool(os.getenv("OTEL_ENABLED", "no")))
     OTEL_SERVICE_NAME = "tdp-backend"
-    OTEL_EXPORTER_OTLP_ENDPOINT = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://tempo:4317")
+    OTEL_EXPORTER_OTLP_ENDPOINT = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "")
     OTEL_PROPAGATORS = "tracecontext"
 
     PROMETHEUS_LATENCY_BUCKETS = (.1, .2, .5, .6, .8, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.5, 9.0, 12.0, 15.0, 20.0, 30.0, float("inf"))
