@@ -1,5 +1,7 @@
 """OpenTelemetry tracing configuration for the TDP application."""
 
+from django.conf import settings
+
 import logging
 
 from opentelemetry import trace
@@ -20,6 +22,11 @@ logger = logging.getLogger(__name__)
 
 def initialize_tracer():
     """Initialize the OpenTelemetry tracer with proper service name and configuration."""
+
+    if settings.OTEL_EXPORTER_OTLP_ENDPOINT in [None, ""]:
+        logger.warning("OTEL Exporter Endpoint is empty, disabling tracing.")
+        return
+
     # Create a resource with service name
     resource = Resource.create({"service.name": "tdp-backend"})
 
@@ -28,7 +35,7 @@ def initialize_tracer():
 
     # Configure the OTLP exporter to send traces to Tempo
     otlp_exporter = OTLPSpanExporter(
-        endpoint="http://tempo:4317",  # OTLP gRPC endpoint
+        endpoint=settings.OTEL_EXPORTER_OTLP_ENDPOINT,  # OTLP gRPC endpoint
         insecure=True,
     )
 
