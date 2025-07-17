@@ -22,7 +22,6 @@ logger = logging.getLogger(__name__)
 
 def initialize_tracer():
     """Initialize the OpenTelemetry tracer with proper service name and configuration."""
-
     if settings.OTEL_EXPORTER_OTLP_ENDPOINT in [None, ""]:
         logger.warning("OTEL Exporter Endpoint is empty, disabling tracing.")
         return
