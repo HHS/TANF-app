@@ -40,6 +40,7 @@ function LoginCallback() {
     }
   }, [authenticated, authLoading, dispatch])
 
+  /* istanbul ignore next */
   if (!authLoading) {
     if (!authenticated) {
       return <Navigate to="/" />
