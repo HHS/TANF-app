@@ -19,6 +19,25 @@ Login.gov provides a Security Event Token (SET) notification system that follows
 
 A common issue in production is that users sometimes delete their Login.gov accounts and recreate them, which results in a new `sub` claim for the same email address. This causes authentication issues in TDP since it relies on the `sub` claim for user identification. By implementing SET handling, particularly for the "Account Purged" event, we can automatically manage these account recreation scenarios without requiring additional user verification steps.
 
+ERROR: `{"error":"Email verified, but experienced internal issue with login/registration."}`
+EXCEPTION:
+```
+2025-07-17 21:30:59,840 ERROR login.py::_get_user_id_token:L249 : Error attempting to login/register user: duplicate key value violates unique constraint "users_user_username_key"
+DETAIL: Key (username)=(ericlipe17@gmail.com) already exists.
+at...
+Traceback (most recent call last):
+File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+return self.cursor.execute(sql, params)
+File "/usr/local/lib/python3.10/site-packages/django_prometheus/db/common.py", line 69, in execute
+return super().execute(*args, **kwargs)
+File "/usr/local/lib/python3.10/site-packages/opentelemetry/instrumentation/psycopg2/__init__.py", line 322, in execute
+return _cursor_tracer.traced_execution(
+File "/usr/local/lib/python3.10/site-packages/opentelemetry/instrumentation/dbapi/__init__.py", line 593, in traced_execution
+return query_method(*args, **kwargs)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "users_user_username_key"
+DETAIL: Key (username)=(ericlipe17@gmail.com) already exists.
+```
+
 ## Out of Scope
 * Changes to the existing Login.gov authentication flow
 * Frontend UI components for displaying security events (may be considered in a future enhancement)
