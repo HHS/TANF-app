@@ -1093,7 +1093,7 @@ describe('Reports', () => {
     await waitFor(() => {
       expect(
         screen.getByText(
-          'File may correspond to SSP instead of TAN. Please verify the file type.'
+          'File may correspond to SSP instead of TANF. Please verify the file type.'
         )
       ).toBeInTheDocument()
     })
