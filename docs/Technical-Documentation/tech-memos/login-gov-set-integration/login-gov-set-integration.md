@@ -19,28 +19,9 @@ Login.gov provides a Security Event Token (SET) notification system that follows
 
 A common issue in production is that users sometimes delete their Login.gov accounts and recreate them, which results in a new `sub` claim for the same email address. This causes authentication issues in TDP since it relies on the `sub` claim for user identification. By implementing SET handling, particularly for the "Account Purged" event, we can automatically manage these account recreation scenarios without requiring additional user verification steps.
 
-ERROR: `{"error":"Email verified, but experienced internal issue with login/registration."}`
-EXCEPTION:
-```
-2025-07-17 21:30:59,840 ERROR login.py::_get_user_id_token:L249 : Error attempting to login/register user: duplicate key value violates unique constraint "users_user_username_key"
-DETAIL: Key (username)=(ericlipe17@gmail.com) already exists.
-at...
-Traceback (most recent call last):
-File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
-return self.cursor.execute(sql, params)
-File "/usr/local/lib/python3.10/site-packages/django_prometheus/db/common.py", line 69, in execute
-return super().execute(*args, **kwargs)
-File "/usr/local/lib/python3.10/site-packages/opentelemetry/instrumentation/psycopg2/__init__.py", line 322, in execute
-return _cursor_tracer.traced_execution(
-File "/usr/local/lib/python3.10/site-packages/opentelemetry/instrumentation/dbapi/__init__.py", line 593, in traced_execution
-return query_method(*args, **kwargs)
-psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "users_user_username_key"
-DETAIL: Key (username)=(ericlipe17@gmail.com) already exists.
-```
-
 ## Out of Scope
 * Changes to the existing Login.gov authentication flow
-* Frontend UI components for displaying security events (may be considered in a future enhancement)
+* Frontend UI components for displaying security events
 * Integration with other identity providers' security event systems
 * Real-time notifications to users about security events
 
@@ -67,7 +48,7 @@ class SecurityEventToken(models.Model):
     email = models.EmailField(null=True, blank=True)
     event_type = models.CharField(max_length=255)
     event_data = models.JSONField()
-    jwt_id = models.CharField(max_length=255, unique=True)  # jti claim
+    jwt_id = models.CharField(max_length=255, unique=True)
     issuer = models.CharField(max_length=255)
     issued_at = models.DateTimeField()
     received_at = models.DateTimeField(auto_now_add=True)
@@ -210,23 +191,25 @@ class SecurityEventHandler:
                 jwt_id=decoded_jwt.get('jti'),
                 issuer=decoded_jwt.get('iss'),
                 issued_at=decoded_jwt.get('iat'),
-                received_at=timezone.now(),
                 user=user,
                 email=user.email,
             )
 
-            # Call the appropriate handler if available
-            handler = cls.handler_map.get(event_type)
-            if handler:
-                handled = handler(security_event)
-                security_event.processed = handled
-                security_event.processed_at = timezone.now()
-                security_event.save()
-            else:
-                logger.info(f"No specific handler for event type: {event_type}")
+            # Call the appropriate handler
+            handler = cls.handler_map.get(event_type, cls._handle_unknown_event)
+            handled = handler(security_event)
+            security_event.processed = handled
+            security_event.processed_at = timezone.now()
+            security_event.save()
 
         except Exception as e:
             logger.exception(f"Error handling event {event_type}: {e}")
+
+    @classmethod
+    def _handle_unknown_event(cls, security_event):
+        """Handle unimplemented or unknown events."""
+        logger.warning(f"No specific handler for event type: {security_event.event_type}")
+        return True
 
     @classmethod
     def _handle_account_disabled(cls, security_event):
@@ -292,7 +275,7 @@ class SecurityEventHandler:
 
 ### Update Authentication Flow
 
-Update the authentication flow to handle account recreation scenarios. If we find a user with an existing email, a different sub, a purge event, and a account enabled event we can guarantee the user re-created and verified their account with Login.gov. In this case we immediately update the user login_gov_uuid and proceed as normal. In the event that all these criteria aren't met, we flag the user's account and indicate admin intervention and verification is required. In the intervention case, the users account is put into a review state and they are not allowed to authenticate to TDP until the admin confirms this was a valid ID change.
+Update the authentication flow to handle account recreation scenarios. If we find a user with an existing email, a different sub, an existing purge event, and no other events with a timestamp after the purge event, then we can guarantee the user re-created and verified their account with Login.gov. When this occurs we immediately update the user's login_gov_uuid and proceed as normal.
 
 ```python
 # tdpservice/users/api/login.py
@@ -315,7 +298,14 @@ def handle_user(self, request, id_token, decoded_token_data):
         existing_user = User.objects.filter(email=email).first()
 
         if existing_user:
-            # TODO: write user update or admin flow
+            # Check if last security event was account_purged
+            last_security_event = SecurityEventToken.objects.filter(user=existing_user).order_by('-received_at').first()
+            if last_security_event and last_security_event.event_type == 'account_purged':
+                # Update user login_gov_uuid
+                existing_user.login_gov_uuid = decoded_token_data.get('sub')
+                existing_user.save()
+                return existing_user
+            return None
         else:
             # Existing user creation code...
 
@@ -351,7 +341,6 @@ class SecurityEventTokenAdmin(admin.ModelAdmin):
 - **User Authentication System**: Enhanced handling of account recreation scenarios
 - **Admin Interface**: New admin views for security events
 - **Deployment Configuration**: Registration of SET endpoint with Login.gov
-- **Logging and Monitoring**: Enhanced logging for security events and account recreation
 
 ## Use and Test Cases to Consider
 
