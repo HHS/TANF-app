@@ -967,19 +967,18 @@ describe('Reports', () => {
       fireEvent.change(getByLabelText('Section 1 - TANF - Active Case Data'), {
         target: {
           files: [
-            makeTestFile('test2.txt', [(currentYear - 2).toString() + '4']),
+            makeTestFile('test2.txt', [
+              `HEADER${(currentYear - 2).toString()}4A53000TAN1ED\n`,
+            ]),
           ],
         },
       })
     })
     await waitFor(() => {
       const divElement = screen.getByText(
-        `File contains data from ` +
-          `Oct 1 - Dec 31, ` +
-          `which belongs to Fiscal Year ` +
+        `File contains data from Oct 1 - Dec 31, which belongs to Fiscal Year ` +
           (currentYear - 1).toString() +
-          ', Quarter 1' +
-          `. Adjust your search parameters or upload a different file.`
+          `, Quarter 1. Adjust your search parameters or upload a different file.`
       )
       expect(divElement).toBeInTheDocument()
     })
