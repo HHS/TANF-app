@@ -196,6 +196,14 @@ function FileUpload({ section, setLocalAlertState }) {
         progType !== null &&
         !selectedFileType.includes(progType?.toLowerCase())
       ) {
+        let tempProgType = progType?.slice(0, 3).toUpperCase()
+        let tempSelectedFileType = selectedFileType.slice(0, 3).toUpperCase()
+        if (tempProgType === 'TAN') {
+          tempProgType = 'TANF'
+        }
+        if (tempSelectedFileType === 'TAN') {
+          tempSelectedFileType = 'TANF'
+        }
         // Handle specific program type cases
         dispatch({
           type: SET_FILE_ERROR,
@@ -203,9 +211,9 @@ function FileUpload({ section, setLocalAlertState }) {
             error: {
               message:
                 `File may correspond to ` +
-                progType?.slice(0, 3).toUpperCase() +
+                tempProgType +
                 ` instead of ` +
-                selectedFileType.slice(0, 3).toUpperCase() +
+                tempSelectedFileType +
                 `. Please verify the file type.`,
             },
             section,
