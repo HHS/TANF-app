@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback } from 'react'
+import React, { useRef, useCallback } from 'react'
 import closeIcon from '@uswds/uswds/img/usa-icons/close.svg'
 import '../../assets/feedback/Feedback.scss'
 import { useFocusTrap } from '../../hooks/useFocusTrap'

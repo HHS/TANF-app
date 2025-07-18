@@ -210,13 +210,14 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
         <div
           id="feedback-text-area"
           className={isGeneralFeedback ? 'usa-form-group margin-4' : ''}
+          style={{ boxSizing: !isGeneralFeedback ? 'border-box' : '' }}
         >
           {isGeneralFeedback ? (
             <h3>Tell us more</h3>
           ) : (
             selectedRatingsOption && (
               <p
-                className="margin-bottom-1 margin-top-1"
+                className="margin-left-1 margin-bottom-1 margin-top-1"
                 style={{
                   fontSize: '0.90rem',
                   color: '#575c64',
@@ -228,7 +229,9 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
           )}
           <textarea
             data-testid="feedback-message-input"
-            className="usa-textarea"
+            className={classNames(
+              `usa-textarea ${!isGeneralFeedback ? 'feedback-widget-textarea' : ''}`
+            )}
             value={feedbackMessage}
             onChange={handleFeedbackMessageChange}
             placeholder="Enter your feedback..."
@@ -237,11 +240,8 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
             maxLength={500}
             style={{
               border: '1px solid black',
-              marginTop: '-5px',
+              marginTop: '-4px',
               maxWidth: '100%',
-              fontSize: isGeneralFeedback ? '1rem' : '0.85rem',
-              padding: isGeneralFeedback ? '0.75rem' : '0.4rem',
-              height: isGeneralFeedback ? 'auto' : '5rem',
             }}
           />
           {isGeneralFeedback && (
@@ -266,6 +266,7 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
             'margin-top-4': isGeneralFeedback,
             'margin-top-2': !isGeneralFeedback,
             'margin-left-4': isGeneralFeedback,
+            'margin-left-1': !isGeneralFeedback,
           })}
         >
           <button

@@ -503,7 +503,7 @@ function Reports() {
             style={{
               position: 'absolute',
               bottom: '100%',
-              right: '13.5rem',
+              right: '14rem',
               zIndex: 1000,
             }}
           >

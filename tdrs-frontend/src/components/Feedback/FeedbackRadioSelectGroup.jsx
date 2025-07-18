@@ -69,7 +69,7 @@ const FeedbackRadioSelectGroup = ({
     <div
       data-testid="feedback-ratings-select-group"
       className={classNames('feedback-group', {
-        'usa-form-group': isModal, // TODO: may need to take a look at this further weird behavior happening
+        'usa-form-group': isModal,
         error: error,
         'no-background': !isModal,
       })}

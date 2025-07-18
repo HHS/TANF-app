@@ -11,18 +11,31 @@ import {
 
 const FeedbackWidget = React.forwardRef(
   ({ isOpen, onClose, dataType }, ref) => {
+    const [isFocusTrapActive, setIsFocusTrapActive] = useState(false)
     const [showSpinner, setShowSpinner] = useState(true)
     const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
 
     const widgetRef = useRef(null)
-    useFocusTrap({ containerRef: widgetRef, isActive: isOpen })
+    const headerRef = useRef(null)
+    const { onKeyDown } = useFocusTrap({
+      containerRef: widgetRef,
+      isActive: isFocusTrapActive,
+    })
 
     // Forward the ref up to parent
     useImperativeHandle(ref, () => widgetRef.current)
 
     const handleFeedbackSubmit = () => {
       setIsFeedbackSubmitted(true)
-      setShowSpinner(true) // Show spinner while processing
+      setShowSpinner(true)
+    }
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setIsFocusTrapActive(false)
+        onClose?.()
+      }
+      onKeyDown?.(e) // Trap Tab if active
     }
 
     // Close and reset after 5 seconds
@@ -49,20 +62,50 @@ const FeedbackWidget = React.forwardRef(
       }
     }
 
+    const handleWidgetClick = () => {
+      if (!widgetRef.current) return
+
+      const activeEl = document.activeElement
+      const isClickFromOutside = !widgetRef.current.contains(activeEl)
+
+      if (isClickFromOutside) {
+        setIsFocusTrapActive(true)
+        headerRef.current?.focus()
+      }
+    }
+
+    useEffect(() => {
+      const handleClickOutside = (event) => {
+        if (widgetRef.current && !widgetRef.current.contains(event.target)) {
+          setIsFocusTrapActive(false)
+        }
+      }
+
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside)
+      }
+    }, [])
+
     return isOpen ? (
+      // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
       <div
         className="feedback-widget"
         style={isFeedbackSubmitted ? { paddingBottom: '1rem' } : {}}
         ref={widgetRef}
+        tabIndex={-1}
         role="dialog"
+        aria-modal="true"
         aria-labelledby="feedbackWidgetHeader"
-        aria-describedby="feedbackWidgetDesc"
+        onClick={handleWidgetClick}
+        onKeyDown={handleKeyDown}
       >
         <div className="feedback-widget-content">
           {!isFeedbackSubmitted ? (
             <>
               <div className="feedback-widget-header">
                 <p
+                  ref={headerRef}
                   id="feedbackWidgetHeader"
                   className="font-serif-sm margin-2 text-normal"
                   tabIndex={-1}
@@ -95,11 +138,17 @@ const FeedbackWidget = React.forwardRef(
               <p
                 id="feedbackWidgetHeader"
                 className="font-serif-xs margin-left-0 text-normal"
-                tabIndex={-1}
               >
                 Thank you for your feedback!
               </p>
-              {showSpinner && <span className="spinner" aria-label="Loading" />}
+              {showSpinner && (
+                <span
+                  className="spinner margin-left-1"
+                  aria-label="Loading"
+                  aria-hidden={true}
+                  role="status"
+                />
+              )}
               <button
                 data-testid="feedback-widget-thank-you-close-button"
                 type="button"
@@ -108,6 +157,7 @@ const FeedbackWidget = React.forwardRef(
                 style={{
                   padding: '0',
                   alignSelf: 'center',
+                  marginTop: '0',
                 }}
                 onClick={onClose}
               >

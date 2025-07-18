@@ -90,7 +90,7 @@ function UploadReport({ handleCancel, stt, openWidget }) {
           })
         )
       )
-      openWidget() // TODO: opens widget (or makes visiable on Report submissions)
+      openWidget()
     } catch (error) {
       console.error('Error during form submission:', error)
       setLocalAlertState({
