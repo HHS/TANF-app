@@ -7,7 +7,8 @@ import {
   accountStatusIsApproved,
   accountIsInReview,
   accountCanViewAdmin,
-  accountCanViewPlg,
+  accountCanViewGrafana,
+  accountCanViewAlerts,
 } from '../../selectors/auth'
 
 import NavItem from '../NavItem/NavItem'
@@ -30,7 +31,8 @@ function Header() {
   const userAccessRequestPending = useSelector(accountIsInReview)
   const userAccessRequestApproved = useSelector(accountStatusIsApproved)
   const userIsAdmin = useSelector(accountCanViewAdmin)
-  const userViewPlg = useSelector(accountCanViewPlg)
+  const userViewGrafana = useSelector(accountCanViewGrafana)
+  const userViewAlerts = useSelector(accountCanViewAlerts)
 
   const menuRef = useRef()
 
@@ -150,19 +152,19 @@ function Header() {
                       href={`${process.env.REACT_APP_BACKEND_HOST}/admin/`}
                     />
                   )}
-                  {userViewPlg && (
-                    <>
-                      <NavItem
-                        pathname={pathname}
-                        tabTitle="Grafana"
-                        href={`${process.env.REACT_APP_BACKEND_HOST}/grafana/`}
-                      />
-                      <NavItem
-                        pathname={pathname}
-                        tabTitle="Alerts"
-                        href={`${process.env.REACT_APP_BACKEND_HOST}/alerts/`}
-                      />
-                    </>
+                  {userViewGrafana && (
+                    <NavItem
+                      pathname={pathname}
+                      tabTitle="Grafana"
+                      href={`${process.env.REACT_APP_BACKEND_HOST}/grafana/`}
+                    />
+                  )}
+                  {userViewAlerts && (
+                    <NavItem
+                      pathname={pathname}
+                      tabTitle="Alerts"
+                      href={`${process.env.REACT_APP_BACKEND_HOST}/alerts/`}
+                    />
                   )}
                 </>
               )}
