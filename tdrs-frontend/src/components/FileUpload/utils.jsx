@@ -179,11 +179,11 @@ export const tryGetUTF8EncodedFile = async function (fileBytes, file) {
   }
 }
 
-export const checkHeaderFile = async function (
+const validateCalendarToFiscalYearQuarter = (
   header,
-  fiscalSelectedYear,
-  fiscalSelectedQuarter
-) {
+  selectedFiscalYear,
+  selectedFiscalQuarter
+) => {
   const CalendarToFiscalYearQuarter = (calendarYear, calendarQuarter) => {
     let quarter = parseInt(calendarQuarter)
     let year = parseInt(calendarYear)
@@ -198,20 +198,47 @@ export const checkHeaderFile = async function (
   const yearQuarter = header.match(yearQuarterRegex)
   const fileYear = yearQuarter?.[0]?.slice(0, 4)
   const fileQuarter = yearQuarter?.[0]?.slice(4, 5)
-  const [fiscalFileYear, fiscalFileQuarter] = CalendarToFiscalYearQuarter(
+  const [fileFiscalYear, fileFiscalQuarter] = CalendarToFiscalYearQuarter(
     fileYear,
     fileQuarter
   )
+  return {
+    isValid:
+      yearQuarter &&
+      fileFiscalYear === selectedFiscalYear &&
+      fileFiscalQuarter === selectedFiscalQuarter.slice(1, 2),
+    fileFiscalYear,
+    fileFiscalQuarter,
+  }
+}
+
+const validateProgramType = (header, selectedProgramType) => {
   const progTypeRegex = '(TAN|tan|SSP|ssp)'
-  const progType = firstLine.match(progTypeRegex)
-  // Check if the fiscal year and quarter match the selected values
-  if (
-    yearQuarter !== null &&
-    (fiscalFileYear !== fiscalSelectedYear ||
-      fiscalFileQuarter !== fiscalSelectedQuarter.slice(1, 2))
-  ) {
-    return [false, fiscalFileYear, fiscalFileQuarter, null]
-  } else {
-    return [true, null, null, progType ? progType[0] : null]
+  const progType = header.match(progTypeRegex)
+  return {
+    isValid: !!progType
+      ? progType[0].toUpperCase() === selectedProgramType
+      : false,
+    progType: !!progType ? progType[0] : null,
+  }
+}
+
+export const validateHeader = async function (
+  header,
+  selectedFiscalYear,
+  selectedFiscalQuarter,
+  selectedProgramType
+) {
+  const calendarFiscalResult = validateCalendarToFiscalYearQuarter(
+    header,
+    selectedFiscalYear,
+    selectedFiscalQuarter
+  )
+  const programTypeResult = validateProgramType(header, selectedProgramType)
+  console.log(JSON.stringify(selectedProgramType, null, 2))
+  return {
+    isValid: calendarFiscalResult.isValid && programTypeResult.isValid,
+    calendarFiscalResult,
+    programTypeResult,
   }
 }
