@@ -42,10 +42,23 @@ describe('FeedbackWidget', () => {
     expect(screen.getByText(/FRA/i)).toBeInTheDocument()
   })
 
+  it('exposes internal ref via forwardRef', () => {
+    const testRef = React.createRef()
+    render(<FeedbackWidget {...defaultProps} ref={testRef} />)
+    expect(testRef.current).toBeInstanceOf(HTMLElement)
+  })
+
   it('calls onClose when close button is clicked', () => {
     render(<FeedbackWidget {...defaultProps} />)
     const closeButton = screen.getByTestId('feedback-widget-close-button')
     fireEvent.click(closeButton)
+    expect(defaultProps.onClose).toHaveBeenCalled()
+  })
+
+  it('closes when Escape key is pressed', () => {
+    render(<FeedbackWidget {...defaultProps} />)
+    const widget = screen.getByRole('dialog')
+    fireEvent.keyDown(widget, { key: 'Escape', code: 'Escape' })
     expect(defaultProps.onClose).toHaveBeenCalled()
   })
 
@@ -67,6 +80,19 @@ describe('FeedbackWidget', () => {
 
     await waitFor(() => {
       expect(defaultProps.onClose).toHaveBeenCalled()
+    })
+  })
+
+  it('removes spinner after timeout', async () => {
+    render(<FeedbackWidget {...defaultProps} />)
+    fireEvent.click(screen.getByText('Submit'))
+
+    expect(screen.getByLabelText('Loading')).toBeInTheDocument()
+
+    jest.advanceTimersByTime(5000)
+
+    await waitFor(() => {
+      expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument()
     })
   })
 })
