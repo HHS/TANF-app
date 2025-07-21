@@ -8,8 +8,6 @@ from rest_framework import serializers
 from rest_framework.utils import model_meta
 from django.utils import timezone
 
-from rest_framework import serializers, utils
-
 from tdpservice.stts.serializers import (
     RegionPrimaryKeyRelatedField,
     STTPrimaryKeyRelatedField,
