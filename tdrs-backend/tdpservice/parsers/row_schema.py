@@ -35,6 +35,10 @@ class RowSchema(ABC):
             self.preparsing_validators = preparsing_validators
         self.quiet_preparser_errors = quiet_preparser_errors
 
+        self.field_error_type = ParserErrorCategoryChoices.FIELD_VALUE
+        self.record_precheck_error_type = ParserErrorCategoryChoices.RECORD_PRE_CHECK
+        self.value_consisistency_error_type = ParserErrorCategoryChoices.VALUE_CONSISTENCY
+
     @abstractmethod
     def parse_and_validate(self, row: RawRow, generate_error) -> SchemaResult:
         """To be overriden in child class."""
@@ -96,7 +100,7 @@ class RowSchema(ABC):
                         errors.append(
                             generate_error(
                                 schema=self,
-                                error_category=ParserErrorCategoryChoices.FIELD_VALUE,
+                                error_category=self.field_error_type,
                                 error_message=result.error,
                                 record=record,
                                 field=field,
@@ -108,7 +112,7 @@ class RowSchema(ABC):
                 errors.append(
                     generate_error(
                         schema=self,
-                        error_category=ParserErrorCategoryChoices.FIELD_VALUE,
+                        error_category=self.field_error_type,
                         error_message=(
                             f"{format_error_context(eargs)} "
                             "field is required but a value was not provided."
@@ -147,7 +151,7 @@ class RowSchema(ABC):
                 errors.append(
                     generate_error(
                         schema=self,
-                        error_category=ParserErrorCategoryChoices.RECORD_PRE_CHECK,
+                        error_category=self.record_precheck_error_type,
                         error_message=result.error,
                         record=record,
                         field=self.fields,
@@ -245,7 +249,7 @@ class TanfDataReportSchema(RowSchema):
                 errors.append(
                     generate_error(
                         schema=self,
-                        error_category=ParserErrorCategoryChoices.VALUE_CONSISTENCY,
+                        error_category=self.value_consisistency_error_type,
                         error_message=result.error,
                         record=instance,
                         field=fields,
@@ -281,41 +285,7 @@ class HeaderSchema(TanfDataReportSchema):
         if postparsing_validators is not None:
             self.postparsing_validators = postparsing_validators
 
-    def run_preparsing_validators(self, row: RawRow, record, generate_error):
-        """Run each of the `preparsing_validator` functions in the schema against the un-parsed row."""
-        is_valid = True
-        errors = []
-
-        field = self.get_field_by_name('RecordType')
-
-        for validator in self.preparsing_validators:
-            eargs = ValidationErrorArgs(
-                value=row,
-                row_schema=self,
-                friendly_name=field.friendly_name if field else 'record type',
-                item_num=field.item if field else '0',
-            )
-
-            result = validator(row, eargs)
-            is_valid = False if not result.valid else is_valid
-
-            is_quiet_preparser_errors = (
-                self.quiet_preparser_errors
-                if type(self.quiet_preparser_errors) is bool
-                else self.quiet_preparser_errors(row)
-            )
-            if result.error and not is_quiet_preparser_errors:
-                errors.append(
-                    generate_error(
-                        schema=self,
-                        error_category=ParserErrorCategoryChoices.PRE_CHECK,
-                        error_message=result.error,
-                        record=record,
-                        field=self.fields,
-                        deprecated=result.deprecated,
-                    )
-                )
-        return is_valid, errors
+        self.record_precheck_error_type = ParserErrorCategoryChoices.PRE_CHECK
 
 
 class FRASchema(RowSchema):
@@ -334,6 +304,9 @@ class FRASchema(RowSchema):
             ):
         super().__init__(record_type, model, fields, generate_hashes_func,
                          should_skip_partial_dup_func, preparsing_validators, quiet_preparser_errors)
+
+        self.record_precheck_error_type = ParserErrorCategoryChoices.CASE_CONSISTENCY
+        self.field_error_type = ParserErrorCategoryChoices.CASE_CONSISTENCY
 
     def parse_and_validate(self, row: RawRow, generate_error):
         """Run all validation steps in order, and parse the given row into a record."""
@@ -364,43 +337,6 @@ class FRASchema(RowSchema):
 
         return SchemaResult(record, is_valid, field_errors + preparsing_errors)
 
-    def run_preparsing_validators(self, row: RawRow, record, generate_error):
-        """Run each of the `preparsing_validator` functions in the schema against the un-parsed row."""
-        is_valid = True
-        errors = []
-
-        field = self.get_field_by_name('RecordType')
-
-        for validator in self.preparsing_validators:
-            eargs = ValidationErrorArgs(
-                value=row,
-                row_schema=self,
-                friendly_name=field.friendly_name if field else 'record type',
-                item_num=field.item if field else '0',
-            )
-
-            result = validator(row, eargs)
-            is_valid = False if not result.valid else is_valid
-
-            is_quiet_preparser_errors = (
-                self.quiet_preparser_errors
-                if type(self.quiet_preparser_errors) is bool
-                else self.quiet_preparser_errors(row)
-            )
-            if result.error and not is_quiet_preparser_errors:
-                errors.append(
-                    generate_error(
-                        schema=self,
-                        error_category=ParserErrorCategoryChoices.CASE_CONSISTENCY,
-                        error_message=result.error,
-                        record=record,
-                        offending_field=field,
-                        fields=self.fields,
-                        deprecated=result.deprecated,
-                    )
-                )
-        return is_valid, errors
-
     def run_field_validators(self, record, generate_error):
         """
         Run all validators for each field in the parsed model.
@@ -429,7 +365,7 @@ class FRASchema(RowSchema):
                         errors.append(
                             generate_error(
                                 schema=self,
-                                error_category=ParserErrorCategoryChoices.CASE_CONSISTENCY,
+                                error_category=self.field_error_type,
                                 error_message=result.error,
                                 record=record,
                                 offending_field=field,
