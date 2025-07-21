@@ -546,7 +546,9 @@ function Reports() {
                 <FeedbackWidget
                   isOpen={isFeedbackOpen}
                   onClose={handleCloseWidget}
-                  dataType={fileTypeInputValue}
+                  dataType={
+                    fileTypeComboBoxRequired ? fileTypeInputValue : 'tanf'
+                  }
                 />
               </div>
             </FeedbackPortal>
