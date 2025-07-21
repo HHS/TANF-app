@@ -1,12 +1,12 @@
 """Module for testing the user model."""
 from django.core.exceptions import ValidationError
+from django.test import Client
 
 import pytest
 
-from tdpservice.stts.models import STT, Region
 from tdpservice.data_files.models import DataFile
 from tdpservice.data_files.test.factories import DataFileFactory
-from django.test import Client
+from tdpservice.stts.models import STT, Region
 
 
 @pytest.mark.django_db
@@ -74,6 +74,7 @@ def test_user_can_only_have_stt_or_region(user, stt, region):
 
         user.clean()
         user.save()
+
 
 @pytest.mark.django_db
 def test_user_with_fra_access(client, ofa_system_admin):

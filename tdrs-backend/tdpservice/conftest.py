@@ -47,15 +47,21 @@ def user():
 @pytest.fixture
 def stt_data_analyst():
     """Return a basic, approved, data analyst stt user."""
-    user = UserFactory.create(groups=(Group.objects.get(name="Data Analyst"),),)
+    user = UserFactory.create(
+        groups=(Group.objects.get(name="Data Analyst"),),
+    )
     user.account_approval_status = AccountApprovalStatusChoices.APPROVED
     user.save()
     return user
 
+
 @pytest.fixture
 def stt_data_analyst_initial():
     """Return a basic, data analyst stt user."""
-    return UserFactory.create(groups=(Group.objects.get(name="Data Analyst"),),)
+    return UserFactory.create(
+        groups=(Group.objects.get(name="Data Analyst"),),
+    )
+
 
 @pytest.fixture
 def regional_user(region, stt):
@@ -109,7 +115,9 @@ def stt_user_with_group():
 @pytest.fixture
 def ofa_admin_stt_user():
     """Return an admin user without an STT for Data File tests."""
-    ofa_admin = AdminSTTUserFactory.create(groups=(Group.objects.get(name="OFA Admin"),))
+    ofa_admin = AdminSTTUserFactory.create(
+        groups=(Group.objects.get(name="OFA Admin"),)
+    )
     ofa_admin.account_approval_status = AccountApprovalStatusChoices.APPROVED
     ofa_admin.save()
     return ofa_admin
@@ -127,7 +135,9 @@ def ofa_admin():
 @pytest.fixture
 def ofa_system_admin():
     """Return on OFA System Admin user."""
-    ofa_sys_adming = UserFactory.create(groups=(Group.objects.get(name='OFA System Admin'),))
+    ofa_sys_adming = UserFactory.create(
+        groups=(Group.objects.get(name="OFA System Admin"),)
+    )
     ofa_sys_adming.account_approval_status = AccountApprovalStatusChoices.APPROVED
     ofa_sys_adming.save()
     return ofa_sys_adming
@@ -135,7 +145,9 @@ def ofa_system_admin():
 @pytest.fixture
 def data_analyst(stt):
     """Return a data analyst user."""
-    user = UserFactory.create(groups=(Group.objects.get(name="Data Analyst"),),)
+    user = UserFactory.create(
+        groups=(Group.objects.get(name="Data Analyst"),),
+    )
     user.stt = stt
     user.account_approval_status = AccountApprovalStatusChoices.APPROVED
     user.save()
@@ -145,7 +157,9 @@ def data_analyst(stt):
 @pytest.fixture
 def digit_team(stt):
     """Return a DIGIT Team user."""
-    user = UserFactory.create(groups=(Group.objects.get(name="DIGIT Team"),),)
+    user = UserFactory.create(
+        groups=(Group.objects.get(name="DIGIT Team"),),
+    )
     user.stt = stt
     user.account_approval_status = AccountApprovalStatusChoices.APPROVED
     user.save()
@@ -193,7 +207,7 @@ def region():
 @pytest.fixture
 def fake_file_name():
     """Generate a random, but valid file name ending in .txt."""
-    return _faker.file_name(extension='txt')
+    return _faker.file_name(extension="txt")
 
 
 @pytest.fixture
@@ -209,7 +223,7 @@ def infected_file():
     https://en.wikipedia.org/wiki/EICAR_test_file
     """
     return StringIO(
-        r'X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*'
+        r"X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*"
     )
 
 
@@ -268,10 +282,10 @@ def base_regional_data_file_data(fake_file_name, regional_user):
         "extension": "txt",
         "section": "Active Case Data",
         "user": str(regional_user.id),
-        "regions": list(regional_user.regions.all().values_list('id', flat=True)),
+        "regions": list(regional_user.regions.all().values_list("id", flat=True)),
         "quarter": "Q1",
         "year": 2020,
-        "stt": int(regional_user.regions.first().stts.first().id)
+        "stt": int(regional_user.regions.first().stts.first().id),
     }
 
 
@@ -290,8 +304,7 @@ def other_stt(other_region):
 
 
 @pytest.fixture
-def other_base_regional_data_file_data(
-        fake_file_name, regional_user, other_stt):
+def other_base_regional_data_file_data(fake_file_name, regional_user, other_stt):
     """Return data file creation data without a file."""
     return {
         "original_filename": fake_file_name,
@@ -302,25 +315,22 @@ def other_base_regional_data_file_data(
         "regions": [other_stt.region.id],
         "quarter": "Q1",
         "year": 2020,
-        "stt": int(other_stt.id)
+        "stt": int(other_stt.id),
     }
 
 
 @pytest.fixture
 def data_file_data(base_data_file_data, data_file):
     """Return data file creation data."""
-    return {
-        "file": data_file,
-        **base_data_file_data
-    }
+    return {"file": data_file, **base_data_file_data}
 
 
 @pytest.fixture
 def csv_data_file(data_analyst, fake_file):
     """Return a CSV data file for testing FRA uploads."""
     return {
-        'file': create_temporary_file(fake_file, 'report.csv'),
-        "original_filename": 'report.csv',
+        "file": create_temporary_file(fake_file, "report.csv"),
+        "original_filename": "report.csv",
         "slug": str(uuid.uuid4()),
         "extension": "csv",
         "section": "Work Outcomes of TANF Exiters",
@@ -335,39 +345,25 @@ def csv_data_file(data_analyst, fake_file):
 @pytest.fixture
 def regional_data_file_data(base_regional_data_file_data, data_file):
     """Return data file creation data for a reigon."""
-    return {
-        "file": data_file,
-        **base_regional_data_file_data
-    }
+    return {"file": data_file, **base_regional_data_file_data}
 
 
 @pytest.fixture
-def other_regional_data_file_data(
-        other_base_regional_data_file_data,
-        data_file):
+def other_regional_data_file_data(other_base_regional_data_file_data, data_file):
     """Return data file creation data for the other reigon."""
-    return {
-        "file": data_file,
-        **other_base_regional_data_file_data
-    }
+    return {"file": data_file, **other_base_regional_data_file_data}
 
 
 @pytest.fixture
 def other_data_file_data(base_data_file_data, other_data_file):
     """Return data file creation data."""
-    return {
-        "file": other_data_file,
-        **base_data_file_data
-    }
+    return {"file": other_data_file, **base_data_file_data}
 
 
 @pytest.fixture
 def infected_data_file_data(base_data_file_data, infected_data_file):
     """Return data file creation data."""
-    return {
-        "file": infected_data_file,
-        **base_data_file_data
-    }
+    return {"file": infected_data_file, **base_data_file_data}
 
 
 @pytest.fixture
@@ -387,15 +383,16 @@ def get_private_key(private_key):
     private_key_der = private_key.private_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.PKCS8,
-        encryption_algorithm=serialization.NoEncryption())
+        encryption_algorithm=serialization.NoEncryption(),
+    )
     return private_key_der
 
 
 def get_public_key(private_key):
     """Getter function for transforming RSA key object to bytes for public key."""
     public_key_pem = private_key.public_key().public_bytes(
-        serialization.Encoding.PEM,
-        serialization.PublicFormat.SubjectPublicKeyInfo)
+        serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo
+    )
     return public_key_pem
 
 
@@ -414,7 +411,7 @@ def test_private_key():
 @pytest.fixture()
 def system_user():
     """Create system user."""
-    return UserFactory.create(username='system')
+    return UserFactory.create(username="system")
 
 
 # Register factories with pytest-factoryboy for automatic dependency injection

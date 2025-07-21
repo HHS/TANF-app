@@ -4,15 +4,14 @@ import datetime
 import logging
 import uuid
 
-from tdpservice.email.helpers.account_status import send_approval_status_update_email
-
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
-from django.conf import settings
+from django.utils.translation import gettext_lazy as _
 
+from tdpservice.email.helpers.account_status import send_approval_status_update_email
 from tdpservice.stts.models import STT, Region
 from tdpservice.users.mixins import ReviewerMixin as Reviewable
 
@@ -35,11 +34,11 @@ class AccountApprovalStatusChoices(models.TextChoices):
 class RegionMeta(models.Model):
     """Meta data model representing the relationship between a Region and a User."""
 
-    user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='region_metas')
+    user = models.ForeignKey(
+        "users.User", on_delete=models.CASCADE, related_name="region_metas"
+    )
     region = models.ForeignKey(
-        Region,
-        on_delete=models.CASCADE,
-        related_name='region_metas'
+        Region, on_delete=models.CASCADE, related_name="region_metas"
     )
 
 
@@ -52,28 +51,25 @@ class Rating(models.IntegerChoices):
     GOOD = 4
     VERY_GOOD = 5
 
+
 class Feedback(Reviewable):
     """Model to capture and review user feedback."""
 
     class Meta:
         """Meta feedback model attributes."""
 
-        ordering = ['created_at']
+        ordering = ["created_at"]
         verbose_name = "Feedback"
         verbose_name_plural = "Feedback"
 
-    id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False
-    )
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     user = models.ForeignKey(
-        'users.User',
+        "users.User",
         on_delete=models.SET_NULL,
-        related_name='feedback',
+        related_name="feedback",
         null=True,
-        blank=True
+        blank=True,
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -88,8 +84,10 @@ class Feedback(Reviewable):
 
     def __str__(self):
         """Return a string representation of the object."""
-        return (f"User: {self.user.username if self.user is not None else 'Anonymous'} - "
-                f"Rating: {self.rating} - Acked: {self.acked}")
+        return (
+            f"User: {self.user.username if self.user is not None else 'Anonymous'} - "
+            f"Rating: {self.rating} - Acked: {self.acked}"
+        )
 
     def acknowledge(self, admin_user):
         """Acknowledge the feedback."""
@@ -109,16 +107,16 @@ class User(AbstractUser):
     class Meta:  # type: ignore[overrride]
         """Define meta user model attributes."""
 
-        ordering = ['pk']
+        ordering = ["pk"]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     stt = models.ForeignKey(
         STT,
         on_delete=models.deletion.SET_NULL,
-        related_name='users',
+        related_name="users",
         null=True,
-        blank=True
+        blank=True,
     )
 
     regions = models.ManyToManyField(
@@ -126,7 +124,7 @@ class User(AbstractUser):
         through=RegionMeta,
         help_text="Regions this user is associated with.",
         related_name="regions",
-        blank=True
+        blank=True,
     )
 
     # The unique `sub` UUID from decoded login.gov payloads for login.gov users.
@@ -150,9 +148,9 @@ class User(AbstractUser):
         _("deactivated"),
         default=False,
         help_text=_(
-            'Deprecated: use Account Approval Status instead - '
-            'Designates whether this user should be treated as active. '
-            'Unselect this instead of deleting accounts.'
+            "Deprecated: use Account Approval Status instead - "
+            "Designates whether this user should be treated as active. "
+            "Unselect this instead of deleting accounts."
         ),
     )
 
@@ -162,9 +160,9 @@ class User(AbstractUser):
     access_request = models.BooleanField(
         default=False,
         help_text=_(
-            'Deprecated: use Account Approval Status instead - '
-            'Designates whether this user account has requested access to TDP. '
-            'Users with this checked must have groups assigned for the application to work correctly.'
+            "Deprecated: use Account Approval Status instead - "
+            "Designates whether this user account has requested access to TDP. "
+            "Users with this checked must have groups assigned for the application to work correctly."
         ),
     )
 
@@ -181,8 +179,9 @@ class User(AbstractUser):
         ),
     )
 
-    access_requested_date = models.DateTimeField(default=datetime.datetime(year=1, month=1, day=1, hour=0, minute=0,
-                                                                           second=0))
+    access_requested_date = models.DateTimeField(
+        default=datetime.datetime(year=1, month=1, day=1, hour=0, minute=0, second=0)
+    )
 
     _loaded_values = None
     _adding = True
@@ -223,17 +222,11 @@ class User(AbstractUser):
                     "Users other than Regional Staff, Developers, Data Analysts do not get assigned a location"
                 )
             )
-        elif (
-            self.is_regional_staff
-            and self.stt
-        ):
+        elif self.is_regional_staff and self.stt:
             raise ValidationError(
                 _("Regional staff cannot have a location type other than region")
             )
-        elif (
-            self.is_data_analyst
-            and regional
-        ):
+        elif self.is_data_analyst and regional:
             raise ValidationError(
                 _("Data Analyst cannot have a location type other than stt")
             )
@@ -314,7 +307,7 @@ class User(AbstractUser):
         """
         # kwargs are passed via the serializer. Kwargs that do not exist in the base model must be removed befor the
         # call to super(User, self).save(*args, **kwargs) below.
-        regions = kwargs.pop('regions', [])
+        regions = kwargs.pop("regions", [])
 
         if not self._adding:
             if self._loaded_values is None:
@@ -341,8 +334,8 @@ class User(AbstractUser):
                         "first_name": self.first_name,
                         "stt_name": str(self.stt) if self.stt else None,
                         "group_permission": str(self.groups.first()),
-                        "url": settings.FRONTEND_BASE_URL
-                    }
+                        "url": settings.FRONTEND_BASE_URL,
+                    },
                 )
 
                 return

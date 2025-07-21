@@ -1,20 +1,22 @@
 """Add users to Django Admin."""
 
+import logging
+
 from django import forms
 from django.contrib import admin, messages
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect
 from django.urls import path, reverse
-from django.utils.safestring import mark_safe
 from django.utils import timezone
+from django.utils.safestring import mark_safe
 
 from rest_framework.authtoken.models import TokenProxy
 
-from tdpservice.users.models import User, Feedback
 from tdpservice.core.utils import ReadOnlyAdminMixin
+from tdpservice.users.models import Feedback, User
 
-import logging
 logger = logging.getLogger()
+
 
 class UserForm(forms.ModelForm):
     """Customize the user admin form."""
@@ -29,16 +31,17 @@ class UserForm(forms.ModelForm):
     def clean(self):
         """Add extra validation for locations based on roles."""
         cleaned_data = super().clean()
-        groups = cleaned_data['groups']
+        groups = cleaned_data["groups"]
         if len(groups) > 1:
             raise ValidationError("User should not have multiple groups")
 
-        feature_flags = cleaned_data.get('feature_flags', {})
+        feature_flags = cleaned_data.get("feature_flags", {})
         if not feature_flags:
             feature_flags = {}
-        cleaned_data['feature_flags'] = feature_flags
+        cleaned_data["feature_flags"] = feature_flags
 
         return cleaned_data
+
 
 class RegionInline(admin.TabularInline):
     """Inline model for many to many relationship."""
@@ -55,15 +58,16 @@ class UserAdmin(admin.ModelAdmin):
 
     exclude = ['password', 'is_active']
     readonly_fields = ['last_login', 'date_joined', 'login_gov_uuid', 'hhs_id', 'access_request', 'deactivated']
+
     form = UserForm
-    list_filter = ('account_approval_status', 'stt')
+    list_filter = ("account_approval_status", "stt")
     list_display = [
         "username",
-        'access_requested_date',
+        "access_requested_date",
         "stt",
         "account_approval_status",
     ]
-    autocomplete_fields = ['stt']
+    autocomplete_fields = ["stt"]
 
     inlines = [RegionInline]
 
@@ -84,8 +88,8 @@ class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "quick_ack",
     ]
     list_filter = ["created_at", "rating", "acked"]
-    change_form_template = 'feedback_admin_template.html'
-    actions = ['ack_selected_feedback']
+    change_form_template = "feedback_admin_template.html"
+    actions = ["ack_selected_feedback"]
 
     class Meta:
         """Meta for admin view."""
@@ -98,9 +102,9 @@ class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         urls = super().get_urls()
         custom_urls = [
             path(
-                '<path:object_id>/acknowledge/',
+                "<path:object_id>/acknowledge/",
                 self.admin_site.admin_view(self.acknowledge_feedback),
-                name='acknowledge_feedback',
+                name="acknowledge_feedback",
             ),
         ]
         return custom_urls + urls
@@ -109,19 +113,23 @@ class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         """Acknowledge the feedback."""
         feedback = self.get_object(request, object_id)
         feedback.acknowledge(request.user)
-        return HttpResponseRedirect(
-            reverse('admin:users_feedback_changelist')
-        )
+        return HttpResponseRedirect(reverse("admin:users_feedback_changelist"))
 
     def user_list_display(self, obj):
         """Handle user display."""
-        return obj.user.username if not obj.anonymous and obj.user is not None else "Anonymous"
+        return (
+            obj.user.username
+            if not obj.anonymous and obj.user is not None
+            else "Anonymous"
+        )
+
     user_list_display.short_description = "User"
 
     def feedback_list_display(self, obj):
         """Display truncated version of feedback."""
         return obj.feedback[:50] + "..." if len(obj.feedback) > 50 else obj.feedback
-    feedback_list_display.short_description = 'Feedback'
+
+    feedback_list_display.short_description = "Feedback"
 
     def quick_ack(self, obj):
         """Display quick action button for unacknowledged feedback."""
@@ -131,8 +139,9 @@ class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
                 f'class="button" style="background-color: #28a745; color: white; padding: 5px; '
                 f'margin-right: 5px; text-decoration: none;">Acknowledge</a>'
             )
-        return '-'
-    quick_ack.short_description = 'Acknowledge'
+        return "-"
+
+    quick_ack.short_description = "Acknowledge"
 
     def ack_selected_feedback(self, request, queryset):
         """Bulk approve selected change requests."""
@@ -145,13 +154,14 @@ class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
             f.reviewed_by = request.user
             updated += 1
 
-        Feedback.objects.bulk_update(feedback, ['acked', 'reviewed_at', 'reviewed_by'])
+        Feedback.objects.bulk_update(feedback, ["acked", "reviewed_at", "reviewed_by"])
 
         self.message_user(
             request,
             f"{updated} feedback(s) were successfully acknowledged.",
-            messages.SUCCESS if updated > 0 else messages.WARNING
+            messages.SUCCESS if updated > 0 else messages.WARNING,
         )
+
     ack_selected_feedback.short_description = "Acknowledge selected feedback"
 
 
