@@ -76,6 +76,10 @@ function Reports() {
   // The selected quarter in the dropdown tied to our redux `reports` state
   const selectedQuarter = useSelector((state) => state.reports.quarter)
   const [quarterInputValue, setQuarterInputValue] = useState(selectedQuarter)
+  // The selected file type in the dropdown tied to our redux `reports` state
+  const selectedFileType = useSelector((state) => state.reports.fileType)
+  const [fileTypeInputValue, setFileTypeInputValue] = useState(selectedFileType)
+
   // The logged in user saved in our redux `auth` state object
   const user = useSelector((state) => state.auth.user)
   const isOFAAdmin = useSelector(selectPrimaryUserRole)?.name === 'OFA Admin'
@@ -110,10 +114,11 @@ function Reports() {
 
   const stt = sttList?.find((stt) => stt?.name === currentStt)
 
-  const selectedFileType = useSelector((state) => state.reports.fileType)
-  const [fileTypeInputValue, setFileTypeInputValue] = useState(selectedFileType)
+  const fileTypeStt = stt
+    ? stt
+    : sttList?.find((fileTypeStt) => fileTypeStt?.name === sttInputValue)
 
-  const errorsCount = formValidation.errors
+  const errorsCount = formValidation.errors ? formValidation.errors : 0
 
   const missingStt =
     (!isOFAAdmin &&
@@ -136,25 +141,32 @@ function Reports() {
 
   const [selectedSubmissionTab, setSelectedSubmissionTab] = useState(1)
 
+  const fileTypeComboBoxRequired = fileTypeStt?.ssp ? fileTypeStt.ssp : false
+
   const resetPreviousValues = () => {
     setQuarterInputValue(selectedQuarter || '')
     setYearInputValue(selectedYear || '')
     setSttInputValue(selectedStt || '')
-    setFileTypeInputValue(selectedFileType || 'tanf')
+    setFileTypeInputValue(
+      fileTypeComboBoxRequired ? selectedFileType || '' : 'tanf'
+    )
   }
 
   const handleSearch = () => {
     // Clear previous errors
+    setIsToggled(false)
     setFormValidationState({})
-
     // Filter out non-truthy values]
     const form = [
       yearInputValue,
-      sttInputValue || currentStt,
+      isOFAAdmin || isDIGITTeam || isSystemAdmin || isRegionalStaff
+        ? sttInputValue
+        : currentStt,
       quarterInputValue,
+      fileTypeComboBoxRequired ? fileTypeInputValue : 'tanf',
     ].filter(Boolean)
 
-    if (form.length === 3) {
+    if (form.length === 4) {
       // Hide upload sections while submitting search
       if (isUploadReportToggled) {
         setIsToggled(false)
@@ -167,22 +179,28 @@ function Reports() {
       dispatch(setYear(yearInputValue))
       dispatch(setQuarter(quarterInputValue))
       dispatch(setStt(sttInputValue))
-      dispatch(setFileType(fileTypeInputValue))
+      dispatch(
+        setFileType(fileTypeComboBoxRequired ? fileTypeInputValue : 'tanf')
+      )
 
       // Restore upload sections to the page
       setTimeout(() => setIsToggled(true), 0)
     } else {
+      setIsToggled(false)
       // create error state
       setFormValidationState({
         year: !selectedYear,
         stt: !(sttInputValue || currentStt),
+        fileType: !selectedFileType,
         quarter: !selectedQuarter,
-        errors: 3 - form.length,
+        errors: 4 - form.length,
       })
+
       setTouched({
         year: true,
         stt: true,
         quarter: true,
+        fileType: true,
       })
       // Focus on the newly rendered error message.
       setTimeout(() => errorsRef.current.focus(), 0)
@@ -222,20 +240,23 @@ function Reports() {
 
   useEffect(() => {
     if (!isUploadReportToggled) {
-      const form = [yearInputValue, sttInputValue, quarterInputValue].filter(
-        Boolean
-      )
+      const form = [
+        yearInputValue,
+        sttInputValue,
+        quarterInputValue,
+        fileTypeComboBoxRequired ? fileTypeInputValue : 'tanf',
+      ].filter(Boolean)
       const touchedFields = Object.keys(touched).length
 
       const expected_fields =
-        isOFAAdmin || isDIGITTeam || isSystemAdmin || isRegionalStaff ? 3 : 2
+        isOFAAdmin || isDIGITTeam || isSystemAdmin || isRegionalStaff ? 4 : 3
 
-      const errors = touchedFields === 3 ? expected_fields - form.length : 0
-
+      const errors = touchedFields === 4 ? expected_fields - form.length : 0
       setFormValidationState((currentState) => ({
         ...currentState,
         year: touched.year && !yearInputValue,
         stt: touched.stt && !sttInputValue,
+        fileType: touched.fileType && !fileTypeInputValue,
         quarter: touched.quarter && !quarterInputValue,
         errors,
       }))
@@ -246,17 +267,24 @@ function Reports() {
     yearInputValue,
     selectedStt,
     quarterInputValue,
+    fileTypeInputValue,
     setFormValidationState,
     touched,
     isOFAAdmin,
     isDIGITTeam,
     isSystemAdmin,
     isRegionalStaff,
+    fileTypeComboBoxRequired,
+    currentStt,
   ])
 
   return (
     <>
-      <div className={classNames({ 'border-bottom': isUploadReportToggled })}>
+      <div
+        className={classNames({
+          'border-bottom': isUploadReportToggled && errorsCount === 0,
+        })}
+      >
         {missingStt && (
           <div className="margin-top-4 usa-error-message" role="alert">
             An STT is not set for this user.
@@ -298,38 +326,49 @@ function Reports() {
                   />
                 </div>
               )}
-              {(stt?.ssp ? stt.ssp : false) && (
+              {(fileTypeStt?.ssp ? fileTypeStt.ssp : false) && (
                 <div className="usa-form-group margin-top-4">
-                  <fieldset className="usa-fieldset">
-                    <legend className="usa-label text-bold">File Type*</legend>
-                    <div className="usa-radio">
-                      <input
-                        className="usa-radio__input"
-                        id="tanf"
-                        type="radio"
-                        name="reportType"
-                        value="tanf"
-                        defaultChecked
-                        onChange={() => setFileTypeInputValue('tanf')}
-                      />
-                      <label className="usa-radio__label" htmlFor="tanf">
-                        TANF
-                      </label>
-                    </div>
-                    <div className="usa-radio">
-                      <input
-                        className="usa-radio__input"
-                        id="ssp-moe"
-                        type="radio"
-                        name="reportType"
-                        value="ssp-moe"
-                        onChange={() => setFileTypeInputValue('ssp-moe')}
-                      />
-                      <label className="usa-radio__label" htmlFor="ssp-moe">
-                        SSP-MOE
-                      </label>
-                    </div>
-                  </fieldset>
+                  <label className="usa-label text-bold" htmlFor="reportType">
+                    {formValidation.fileType && (
+                      <div
+                        className="usa-error-message"
+                        id="reportType-error-alert"
+                      >
+                        A file type selection is required
+                      </div>
+                    )}
+                    <fieldset className="usa-fieldset">
+                      <legend className="usa-label text-bold">
+                        File Type*
+                      </legend>
+                      <div className="usa-radio">
+                        <input
+                          className="usa-radio__input"
+                          id="tanf"
+                          type="radio"
+                          name="reportType"
+                          value="tanf"
+                          onChange={() => setFileTypeInputValue('tanf')}
+                        />
+                        <label className="usa-radio__label" htmlFor="tanf">
+                          TANF
+                        </label>
+                      </div>
+                      <div className="usa-radio">
+                        <input
+                          className="usa-radio__input"
+                          id="ssp-moe"
+                          type="radio"
+                          name="reportType"
+                          value="ssp-moe"
+                          onChange={() => setFileTypeInputValue('ssp-moe')}
+                        />
+                        <label className="usa-radio__label" htmlFor="ssp-moe">
+                          SSP-MOE
+                        </label>
+                      </div>
+                    </fieldset>
+                  </label>
                 </div>
               )}
             </div>
@@ -434,8 +473,7 @@ function Reports() {
           </div>
         </form>
       </div>
-
-      {isUploadReportToggled && (
+      {isUploadReportToggled && errorsCount === 0 && (
         <>
           <h2
             ref={headerRef}

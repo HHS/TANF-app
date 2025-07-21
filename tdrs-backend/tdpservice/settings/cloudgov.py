@@ -1,5 +1,6 @@
 """Define settings classes available for environments deployed in Cloud.gov."""
 
+from distutils.util import strtobool
 import json
 import os
 
@@ -156,8 +157,6 @@ class CloudGov(Common):
         CELERY_BROKER_URL = REDIS_URI + '/' + broker_db_number
         CELERY_RESULT_BACKEND = REDIS_URI + '/' + broker_db_number
 
-    OTEL_EXPORTER_OTLP_ENDPOINT = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://tempo.apps.internal:4317")
-
 class Development(CloudGov):
     """Settings for applications deployed in the Cloud.gov dev space."""
 
@@ -224,3 +223,7 @@ class Production(CloudGov):
         "PATCH",
         "POST",
     )
+
+    # OTEL
+    OTEL_ENABLED = bool(strtobool(os.getenv("OTEL_ENABLED", "yes")))
+    OTEL_EXPORTER_OTLP_ENDPOINT = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://tempo.apps.internal:4317")
