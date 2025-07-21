@@ -1,13 +1,16 @@
 """Schema for Tribal TANF T3 row of all submission types."""
 
 from tdpservice.parsers.dataclasses import FieldType
-from tdpservice.parsers.transforms import tanf_ssn_decryption_func
 from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import TanfDataReportSchema
+from tdpservice.parsers.transforms import tanf_ssn_decryption_func
+from tdpservice.parsers.util import (
+    generate_t2_t3_t5_hashes,
+    get_t2_t3_t5_partial_hash_members,
+)
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.parsers.validators.util import is_quiet_preparser_errors
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T3
-from tdpservice.parsers.util import generate_t2_t3_t5_hashes, get_t2_t3_t5_partial_hash_members
 
 FIRST_CHILD = 1
 SECOND_CHILD = 2
@@ -21,10 +24,12 @@ child_one = TanfDataReportSchema(
     preparsing_validators=[
         category1.t3_m3_child_validator(FIRST_CHILD),
         category1.caseNumberNotEmpty(8, 19),
-        category1.or_priority_validators([
-                    category1.validate_fieldYearMonth_with_headerYearQuarter(),
-                    category1.validateRptMonthYear(),
-                ]),
+        category1.or_priority_validators(
+            [
+                category1.validate_fieldYearMonth_with_headerYearQuarter(),
+                category1.validateRptMonthYear(),
+            ]
+        ),
     ],
     postparsing_validators=[
         category3.ifThenAlso(
@@ -143,11 +148,12 @@ child_one = TanfDataReportSchema(
             startIndex=20,
             endIndex=28,
             required=True,
-            validators=[category2.intHasLength(8),
-                        category2.dateYearIsLargerThan(1900),
-                        category2.dateMonthIsValid(),
-                        category2.dateDayIsValid()
-                        ]
+            validators=[
+                category2.intHasLength(8),
+                category2.dateYearIsLargerThan(1900),
+                category2.dateMonthIsValid(),
+                category2.dateDayIsValid(),
+            ],
         ),
         TransformField(
             transform_func=tanf_ssn_decryption_func,
@@ -280,10 +286,12 @@ child_one = TanfDataReportSchema(
             endIndex=51,
             required=True,
             validators=[
-                category3.orValidators([
-                    category3.isBetween(0, 16, inclusive=True, cast=int),
-                    category3.isBetween(98, 99, inclusive=True, cast=int),
-                ])
+                category3.orValidators(
+                    [
+                        category3.isBetween(0, 16, inclusive=True, cast=int),
+                        category3.isBetween(98, 99, inclusive=True, cast=int),
+                    ]
+                )
             ],
         ),
         Field(
@@ -329,10 +337,12 @@ child_two = TanfDataReportSchema(
     preparsing_validators=[
         category1.t3_m3_child_validator(SECOND_CHILD),
         category1.caseNumberNotEmpty(8, 19),
-        category1.or_priority_validators([
-                    category1.validate_fieldYearMonth_with_headerYearQuarter(),
-                    category1.validateRptMonthYear(),
-                ]),
+        category1.or_priority_validators(
+            [
+                category1.validate_fieldYearMonth_with_headerYearQuarter(),
+                category1.validateRptMonthYear(),
+            ]
+        ),
     ],
     postparsing_validators=[
         category3.ifThenAlso(
@@ -451,11 +461,12 @@ child_two = TanfDataReportSchema(
             startIndex=61,
             endIndex=69,
             required=True,
-            validators=[category2.intHasLength(8),
-                        category2.dateYearIsLargerThan(1900),
-                        category2.dateMonthIsValid(),
-                        category2.dateDayIsValid()
-                        ]
+            validators=[
+                category2.intHasLength(8),
+                category2.dateYearIsLargerThan(1900),
+                category2.dateMonthIsValid(),
+                category2.dateDayIsValid(),
+            ],
         ),
         TransformField(
             transform_func=tanf_ssn_decryption_func,
@@ -588,10 +599,12 @@ child_two = TanfDataReportSchema(
             endIndex=92,
             required=True,
             validators=[
-                category3.orValidators([
-                    category3.isBetween(0, 16, inclusive=True, cast=int),
-                    category3.isOneOf(["98", "99"])
-                ])
+                category3.orValidators(
+                    [
+                        category3.isBetween(0, 16, inclusive=True, cast=int),
+                        category3.isOneOf(["98", "99"]),
+                    ]
+                )
             ],
         ),
         Field(

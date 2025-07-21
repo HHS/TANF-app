@@ -5,12 +5,15 @@ and an admin user. The regular user has is_staff and is_superuser
 set to false, while the admin_user has both set to true.
 """
 
-import pytest
 import re
+
 from django.contrib import admin
 from django.urls import reverse
-from rest_framework import status
 from django.utils.text import capfirst
+
+import pytest
+from rest_framework import status
+
 from tdpservice.users.models import User
 
 

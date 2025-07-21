@@ -1,32 +1,32 @@
 """Test cases for reparse functions."""
 
+import os
+import time
+from datetime import timedelta
+
+from django.conf import settings
+from django.contrib.admin.models import ADDITION, LogEntry
+from django.db.utils import DatabaseError
+from django.utils import timezone
+
 import pytest
+
+from tdpservice.data_files.models import ReparseFileMeta
 from tdpservice.parsers import util
 from tdpservice.parsers.factory import ParserFactory
 from tdpservice.parsers.test.factories import DataFileSummaryFactory
 from tdpservice.scheduling.management.commands import backup_db
 from tdpservice.search_indexes.management.commands import clean_and_reparse
-from tdpservice.search_indexes.tasks import prettify_time_delta
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
-from tdpservice.users.models import User
-from tdpservice.data_files.models import ReparseFileMeta
-
-from django.conf import settings
-from django.contrib.admin.models import LogEntry, ADDITION
-from django.db.utils import DatabaseError
-from django.utils import timezone
-
-from datetime import timedelta
-import os
-import time
-
+from tdpservice.search_indexes.tasks import prettify_time_delta
 from tdpservice.search_indexes.utils import (
-    backup,
     assert_sequential_execution,
-    delete_associated_models,
-    count_total_num_records,
+    backup,
     calculate_timeout,
+    count_total_num_records,
+    delete_associated_models,
 )
+from tdpservice.users.models import User
 
 
 @pytest.fixture
@@ -92,27 +92,27 @@ def log_context():
 def parse_files(summary, f1, f2, f3, f4):
     """Parse all files."""
     summary.datafile = f1
-    parser = ParserFactory.get_instance(datafile=f1, dfs=summary,
-                                        section=f1.section,
-                                        program_type=f1.prog_type)
+    parser = ParserFactory.get_instance(
+        datafile=f1, dfs=summary, section=f1.section, program_type=f1.prog_type
+    )
     parser.parse_and_validate()
 
     summary.datafile = f2
-    parser = ParserFactory.get_instance(datafile=f2, dfs=summary,
-                                        section=f2.section,
-                                        program_type=f2.prog_type)
+    parser = ParserFactory.get_instance(
+        datafile=f2, dfs=summary, section=f2.section, program_type=f2.prog_type
+    )
     parser.parse_and_validate()
 
     summary.datafile = f3
-    parser = ParserFactory.get_instance(datafile=f3, dfs=summary,
-                                        section=f3.section,
-                                        program_type=f3.prog_type)
+    parser = ParserFactory.get_instance(
+        datafile=f3, dfs=summary, section=f3.section, program_type=f3.prog_type
+    )
     parser.parse_and_validate()
 
     summary.datafile = f4
-    parser = ParserFactory.get_instance(datafile=f4, dfs=summary,
-                                        section=f4.section,
-                                        program_type=f4.prog_type)
+    parser = ParserFactory.get_instance(
+        datafile=f4, dfs=summary, section=f4.section, program_type=f4.prog_type
+    )
     parser.parse_and_validate()
 
     f1.save()

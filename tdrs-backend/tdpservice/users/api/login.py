@@ -1,6 +1,7 @@
 """Login.gov/authorize is redirected to this endpoint to start a django user session."""
 import logging
 from abc import abstractmethod
+from typing import Dict, Optional
 
 from django.conf import settings
 from django.contrib.auth import get_user_model, login
@@ -13,16 +14,15 @@ import requests
 from rest_framework import status
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
-from typing import Dict, Optional
 
-from .login_redirect_oidc import LoginRedirectAMS
 from ..authentication import CustomAuthentication
+from .login_redirect_oidc import LoginRedirectAMS
 from .utils import (
-    generate_token_endpoint_parameters,
-    generate_jwt_from_jwks,
-    validate_nonce_and_state,
-    response_redirect,
     generate_client_assertion,
+    generate_jwt_from_jwks,
+    generate_token_endpoint_parameters,
+    response_redirect,
+    validate_nonce_and_state,
 )
 
 logger = logging.getLogger(__name__)
@@ -64,7 +64,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         id_token = token_data.get("id_token")
 
         decoded_payload = self.decode_payload(token_data)
-        decoded_id_token = decoded_payload['id_token']
+        decoded_id_token = decoded_payload["id_token"]
 
         if decoded_id_token == {"error": "The token is expired."}:
             raise ExpiredToken("The token is expired.")
@@ -89,7 +89,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
     def decode_jwt(payload, issuer, audience, cert_sr, options=None):
         """Decode jwt payloads."""
         if not options:
-            options = {'verify_nbf': False}
+            options = {"verify_nbf": False}
 
         try:
             decoded_payload = jwt.decode(
@@ -107,7 +107,9 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             return {"error": "The token is expired."}
 
     @abstractmethod
-    def get_auth_options(self, access_token: Optional[str], sub: Optional[str]) -> Dict[str, str]:
+    def get_auth_options(
+        self, access_token: Optional[str], sub: Optional[str]
+    ) -> Dict[str, str]:
         """Set auth options to handle payloads appropriately."""
 
     def verify_email(self, email):
@@ -170,12 +172,12 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
         elif user and not user.is_active:
             raise InactiveUser(
-                f'Login failed, user account is inactive: {user.username}'
+                f"Login failed, user account is inactive: {user.username}"
             )
         else:
             User = get_user_model()
 
-            if 'username' in auth_options:
+            if "username" in auth_options:
                 # Delete the username key if it exists in auth_options, as it will conflict with the first argument
                 # of `create_user`.
                 del auth_options["username"]
@@ -202,36 +204,23 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
     def _get_user_id_token(self, request, state, token_data):
         """Get the user and id_token from the request."""
         try:
-            decoded_payload = self.validate_and_decode_payload(request, state, token_data)
+            decoded_payload = self.validate_and_decode_payload(
+                request, state, token_data
+            )
             id_token = token_data.get("id_token")
             user = self.handle_user(request, id_token, decoded_payload)
             return response_redirect(user, id_token)
         except (InactiveUser, ExpiredToken) as e:
             logger.exception(e)
-            return Response(
-                {
-                    "error": str(e)
-                },
-                status=status.HTTP_401_UNAUTHORIZED
-            )
+            return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
         except UnverifiedEmail as e:
             logger.exception(e)
-            return Response(
-                {
-                    "error": str(e)
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         except ACFUserLoginDotGov as e:
             logger.exception(e)
-            return Response(
-                {
-                    "error": str(e)
-                },
-                status=status.HTTP_403_FORBIDDEN
-            )
+            return Response({"error": str(e)}, status=status.HTTP_403_FORBIDDEN)
 
         except SuspiciousOperation as e:
             logger.exception(e)
@@ -255,7 +244,9 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         state = request.GET.get("state", None)
 
         if code is None or state is None:
-            logger.info(f"Redirecting call to main page. No {'code' if code is None else 'state'} provided.")
+            logger.info(
+                f"Redirecting call to main page. No {'code' if code is None else 'state'} provided."
+            )
             return HttpResponseRedirect(settings.FRONTEND_BASE_URL)
 
         try:
@@ -263,10 +254,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         except Exception as e:
             logger.exception(e)
             return Response(
-                {
-                    "error": str(e)
-                },
-                status=status.HTTP_503_SERVICE_UNAVAILABLE
+                {"error": str(e)}, status=status.HTTP_503_SERVICE_UNAVAILABLE
             )
 
         if token_endpoint_response.status_code != 200:
@@ -283,6 +271,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         token_data = token_endpoint_response.json()
         return self._get_user_id_token(request, state, token_data)
 
+
 class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
     """Define methods for handling login request from login.gov."""
 
@@ -293,8 +282,13 @@ class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
         certs_endpoint = settings.LOGIN_GOV_JWKS_ENDPOINT
         cert_str = generate_jwt_from_jwks(certs_endpoint)
 
-        decoded_id_token = self.decode_jwt(id_token, settings.LOGIN_GOV_ISSUER, settings.LOGIN_GOV_CLIENT_ID, cert_str,
-                                           options)
+        decoded_id_token = self.decode_jwt(
+            id_token,
+            settings.LOGIN_GOV_ISSUER,
+            settings.LOGIN_GOV_CLIENT_ID,
+            cert_str,
+            options,
+        )
         return {"id_token": decoded_id_token}
 
     def get_token_endpoint_response(self, code):
@@ -302,7 +296,7 @@ class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
         try:
             options = {
                 "client_assertion": generate_client_assertion(),
-                "client_assertion_type": settings.LOGIN_GOV_CLIENT_ASSERTION_TYPE
+                "client_assertion_type": settings.LOGIN_GOV_CLIENT_ASSERTION_TYPE,
             }
             token_params = generate_token_endpoint_parameters(code, options)
             token_endpoint = settings.LOGIN_GOV_TOKEN_ENDPOINT + "?" + token_params
@@ -310,12 +304,7 @@ class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
 
         except ValueError as e:
             logger.exception(e)
-            return Response(
-                {
-                    "error": str(e)
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def get_auth_options(self, access_token, sub):
         """Add specific auth properties for the CustomAuthentication handler."""
@@ -325,9 +314,11 @@ class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
     def verify_email(self, user):
         """Handle user email exception to disallow ACF staff to utilize non-AMS authentication."""
         if "@acf.hhs.gov" in user.email:
-            user_groups = list(user.groups.values_list('name', flat=True))
+            user_groups = list(user.groups.values_list("name", flat=True))
             raise ACFUserLoginDotGov(
-                '{} attempted Login.gov authentication with role(s): {}'.format(user.email, user_groups)
+                "{} attempted Login.gov authentication with role(s): {}".format(
+                    user.email, user_groups
+                )
             )
 
 
@@ -349,13 +340,17 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
         issuer = ams_configuration["issuer"]
         audience = settings.AMS_CLIENT_ID
 
-        decoded_id_token = self.decode_jwt(id_token, issuer, audience, cert_str, {"verify_aud": False})
-        decoded_access_token = self.decode_jwt(access_token, issuer, audience, cert_str, {"verify_aud": False})
+        decoded_id_token = self.decode_jwt(
+            id_token, issuer, audience, cert_str, {"verify_aud": False}
+        )
+        decoded_access_token = self.decode_jwt(
+            access_token, issuer, audience, cert_str, {"verify_aud": False}
+        )
 
         return {
             "id_token": decoded_id_token,
             "access_token": access_token,
-            "decoded_access_token": decoded_access_token
+            "decoded_access_token": decoded_access_token,
         }
 
     def get_token_endpoint_response(self, code):
@@ -393,8 +388,9 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
             except Exception as e:
                 logger.error(e)
                 raise Exception(e)
-            userinfo_response = requests.post(ams_configuration["userinfo_endpoint"],
-                                              {"access_token": access_token})
+            userinfo_response = requests.post(
+                ams_configuration["userinfo_endpoint"], {"access_token": access_token}
+            )
             user_info = userinfo_response.json()
             logging.debug(user_info)
 
@@ -413,11 +409,11 @@ class CypressLoginDotGovAuthenticationOverride(TokenAuthorizationOIDC):
 
     def post(self, request):
         """Create a session for the specified user, if they exist."""
-        username = request.data.get('username', None)
-        token = request.data.get('token', None)
+        username = request.data.get("username", None)
+        token = request.data.get("token", None)
 
         if not username or not (token and token == settings.CYPRESS_TOKEN):
-            return Response({'error': 'Required parameters not provided'}, status=400)
+            return Response({"error": "Required parameters not provided"}, status=400)
 
         User = get_user_model()
         u = None
@@ -425,7 +421,7 @@ class CypressLoginDotGovAuthenticationOverride(TokenAuthorizationOIDC):
         try:
             u = User.objects.get(username=username)
         except User.DoesNotExist:
-            return Response({'error': 'User does not exist'}, status=400)
+            return Response({"error": "User does not exist"}, status=400)
 
         login(
             request,
@@ -434,9 +430,13 @@ class CypressLoginDotGovAuthenticationOverride(TokenAuthorizationOIDC):
         )
         logger.info("cypress user %s logged in on %s", u.username, timezone.now())
 
-        response = {'authenticated': True}
+        response = {"authenticated": True}
         if u.is_superuser:
-            cypress_users = User.objects.exclude(username__contains="admin").filter(username__contains="cypress")
-            response["users"] = [{'username': user.username, 'id': user.id} for user in cypress_users]
+            cypress_users = User.objects.exclude(username__contains="admin").filter(
+                username__contains="cypress"
+            )
+            response["users"] = [
+                {"username": user.username, "id": user.id} for user in cypress_users
+            ]
 
         return Response(response)

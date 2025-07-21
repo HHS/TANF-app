@@ -1,9 +1,9 @@
 """Overloaded base validators and custom validators for category 2 validation (field validation)."""
 
+from tdpservice.parsers.dataclasses import Result, ValidationErrorArgs
 from tdpservice.parsers.util import clean_options_string
 from tdpservice.parsers.validators import base
 from tdpservice.parsers.validators.util import make_validator, validator
-from tdpservice.parsers.dataclasses import ValidationErrorArgs, Result
 
 
 def format_error_context(eargs: ValidationErrorArgs):
@@ -19,42 +19,55 @@ def format_error_context(eargs: ValidationErrorArgs):
 @validator(base.isEqual)
 def isEqual(option, **kwargs):
     """Return a custom message for the isEqual validator."""
-    return lambda eargs: f"{format_error_context(eargs)} {eargs.value} does not match {option}."
+    return (
+        lambda eargs: f"{format_error_context(eargs)} {eargs.value} does not match {option}."
+    )
 
 
 @validator(base.isNotEqual)
 def isNotEqual(option, **kwargs):
     """Return a custom message for the isNotEqual validator."""
-    return lambda eargs: f"{format_error_context(eargs)} {eargs.value} matches {option}."
+    return (
+        lambda eargs: f"{format_error_context(eargs)} {eargs.value} matches {option}."
+    )
 
 
 @validator(base.isOneOf)
 def isOneOf(options, **kwargs):
     """Return a custom message for the isOneOf validator."""
-    return lambda eargs: f"{format_error_context(eargs)} {eargs.value} is not in {clean_options_string(options)}."
+    return (
+        lambda eargs: f"{format_error_context(eargs)} {eargs.value} is not in {clean_options_string(options)}."
+    )
 
 
 @validator(base.isNotOneOf)
 def isNotOneOf(options, **kwargs):
     """Return a custom message for the isNotOneOf validator."""
-    return lambda eargs: f"{format_error_context(eargs)} {eargs.value} is in {clean_options_string(options)}."
+    return (
+        lambda eargs: f"{format_error_context(eargs)} {eargs.value} is in {clean_options_string(options)}."
+    )
 
 
 @validator(base.isGreaterThan)
 def isGreaterThan(option, inclusive=False, **kwargs):
     """Return a custom message for the isGreaterThan validator."""
-    return lambda eargs: f"{format_error_context(eargs)} {eargs.value} is not larger than {option}."
+    return (
+        lambda eargs: f"{format_error_context(eargs)} {eargs.value} is not larger than {option}."
+    )
 
 
 @validator(base.isLessThan)
 def isLessThan(option, inclusive=False, **kwargs):
     """Return a custom message for the isLessThan validator."""
-    return lambda eargs: f"{format_error_context(eargs)} {eargs.value} is not smaller than {option}."
+    return (
+        lambda eargs: f"{format_error_context(eargs)} {eargs.value} is not smaller than {option}."
+    )
 
 
 @validator(base.isBetween)
 def isBetween(min, max, inclusive=False, **kwargs):
     """Return a custom message for the isBetween validator."""
+
     def inclusive_err(eargs):
         return f"{format_error_context(eargs)} {eargs.value} is not in range [{min}, {max}]."
 
@@ -67,13 +80,17 @@ def isBetween(min, max, inclusive=False, **kwargs):
 @validator(base.startsWith)
 def startsWith(substr, **kwargs):
     """Return a custom message for the startsWith validator."""
-    return lambda eargs: f"{format_error_context(eargs)} {eargs.value} does not start with {substr}."
+    return (
+        lambda eargs: f"{format_error_context(eargs)} {eargs.value} does not start with {substr}."
+    )
 
 
 @validator(base.contains)
 def contains(substr, **kwargs):
     """Return a custom message for the contains validator."""
-    return lambda eargs: f"{format_error_context(eargs)} {eargs.value} does not contain {substr}."
+    return (
+        lambda eargs: f"{format_error_context(eargs)} {eargs.value} does not contain {substr}."
+    )
 
 
 @validator(base.isNumber)
@@ -85,15 +102,17 @@ def isNumber(**kwargs):
 @validator(base.isAlphaNumeric)
 def isAlphaNumeric(**kwargs):
     """Return a custom message for the isAlphaNumeric validator."""
-    return lambda eargs: f"{format_error_context(eargs)} {eargs.value} is not alphanumeric."
+    return (
+        lambda eargs: f"{format_error_context(eargs)} {eargs.value} is not alphanumeric."
+    )
 
 
 @validator(base.isEmpty)
 def isEmpty(start=0, end=None, **kwargs):
     """Return a custom message for the isEmpty validator."""
     return lambda eargs: (
-        f'{format_error_context(eargs)} {eargs.value} is not blank '
-        f'between positions {start} and {end if end else len(eargs.value)}.'
+        f"{format_error_context(eargs)} {eargs.value} is not blank "
+        f"between positions {start} and {end if end else len(eargs.value)}."
     )
 
 
@@ -101,8 +120,8 @@ def isEmpty(start=0, end=None, **kwargs):
 def isNotEmpty(start=0, end=None, **kwargs):
     """Return a custom message for the isNotEmpty validator."""
     return lambda eargs: (
-        f'{format_error_context(eargs)} {str(eargs.value)} contains blanks '
-        f'between positions {start} and {end if end else len(str(eargs.value))}.'
+        f"{format_error_context(eargs)} {str(eargs.value)} contains blanks "
+        f"between positions {start} and {end if end else len(str(eargs.value))}."
     )
 
 
@@ -132,7 +151,9 @@ def hasLengthGreaterThan(length, inclusive=False, **kwargs):
 @validator(base.intHasLength)
 def intHasLength(length, **kwargs):
     """Return a custom message for the intHasLength validator."""
-    return lambda eargs: f"{format_error_context(eargs)} {eargs.value} does not have exactly {length} digits."
+    return (
+        lambda eargs: f"{format_error_context(eargs)} {eargs.value} does not have exactly {length} digits."
+    )
 
 
 @validator(base.isNotZero)
@@ -182,42 +203,51 @@ def validateRace():
     """Validate race."""
     return make_validator(
         base.isBetween(0, 2, inclusive=True),
-        lambda eargs:
-            f"{format_error_context(eargs)} {eargs.value} is not in range [0, 2]."
+        lambda eargs: f"{format_error_context(eargs)} {eargs.value} is not in range [0, 2].",
     )
 
 
 def validateHeaderUpdateIndicator():
     """Validate the header update indicator."""
     return make_validator(
-        base.isEqual('D'),
-        lambda eargs:
-            f"HEADER Update Indicator must be set to D instead of {eargs.value}. "
-            "Please review Exporting Complete Data Using FTANF in the Knowledge Center."
+        base.isEqual("D"),
+        lambda eargs: f"HEADER Update Indicator must be set to D instead of {eargs.value}. "
+        "Please review Exporting Complete Data Using FTANF in the Knowledge Center.",
     )
 
 
 @validator(base.valueNotAt)
 def valueNotAt(location: slice, unexpected_val, **kwargs):
     """Validate value is not present at location."""
-    return lambda eargs: (f"{format_error_context(eargs)} cannot have {unexpected_val} at "
-                          f"position {location.start + 1} to {location.stop}")
+    return lambda eargs: (
+        f"{format_error_context(eargs)} cannot have {unexpected_val} at "
+        f"position {location.start + 1} to {location.stop}"
+    )
 
 
 @validator(base.dateHasFormat)
 def dateHasFormat(format: str, **kwargs):
     """Validate date matches the expected format."""
-    return lambda eargs: (f"{format_error_context(eargs)} is formatted incorrectly. Expected: {format}")
+    return lambda eargs: (
+        f"{format_error_context(eargs)} is formatted incorrectly. Expected: {format}"
+    )
 
 
 def fraSSNAllOf(*funcs, **kwargs):
     """Aggregate validator for all FRA SSN validators."""
+
     def validator(val, eargs):
         is_valid = all([validator(val, eargs).valid for validator in funcs])
         if is_valid:
             return Result()
-        return Result(valid=False, error=("Social Security Number is not valid. Check that the SSN is 9 digits, "
-                                          "does not contain only zeroes in any one section, and does not contain "
-                                          "dashes or other punctuation. "
-                                          "Enter 999999999 if an individual does not have an SSN."))
+        return Result(
+            valid=False,
+            error=(
+                "Social Security Number is not valid. Check that the SSN is 9 digits, "
+                "does not contain only zeroes in any one section, and does not contain "
+                "dashes or other punctuation. "
+                "Enter 999999999 if an individual does not have an SSN."
+            ),
+        )
+
     return validator

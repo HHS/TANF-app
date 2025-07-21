@@ -1,13 +1,15 @@
 """Schema for T1 record types."""
 
 from tdpservice.parsers.dataclasses import FieldType
-from tdpservice.parsers.transforms import zero_pad
 from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import TanfDataReportSchema
+from tdpservice.parsers.transforms import zero_pad
+from tdpservice.parsers.util import (
+    generate_t1_t4_hashes,
+    get_t1_t4_partial_hash_members,
+)
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.search_indexes.models.tanf import TANF_T1
-from tdpservice.parsers.util import generate_t1_t4_hashes, get_t1_t4_partial_hash_members
-
 
 t1 = [
     TanfDataReportSchema(
@@ -18,17 +20,19 @@ t1 = [
         preparsing_validators=[
             category1.recordHasLengthOfAtLeast(117),
             category1.caseNumberNotEmpty(8, 19),
-            category1.or_priority_validators([
-                category1.validate_fieldYearMonth_with_headerYearQuarter(),
-                category1.validateRptMonthYear(),
-            ]),
+            category1.or_priority_validators(
+                [
+                    category1.validate_fieldYearMonth_with_headerYearQuarter(),
+                    category1.validateRptMonthYear(),
+                ]
+            ),
         ],
         postparsing_validators=[
             category3.ifThenAlso(
                 condition_field_name="CASH_AMOUNT",
                 condition_function=category3.isGreaterThan(0),
                 result_field_name="NBR_MONTHS",
-                result_function=category3.isGreaterThan(0)
+                result_function=category3.isGreaterThan(0),
             ),
             category3.ifThenAlso(
                 condition_field_name="CC_AMOUNT",

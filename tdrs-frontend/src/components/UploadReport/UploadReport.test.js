@@ -4,6 +4,7 @@ import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 import { fireEvent, render, waitFor } from '@testing-library/react'
 import axios from 'axios'
+import Reports from '../Reports/Reports'
 
 import { v4 as uuidv4 } from 'uuid'
 
@@ -15,30 +16,38 @@ describe('UploadReport', () => {
   const initialState = {
     auth: { user: { email: 'test@test.com' }, authenticated: true },
     reports: {
+      year: '2021',
+      stt: 'Florida',
+      quarter: 'Q3',
+      fileType: 'tanf',
       submittedFiles: [
         {
           fileName: 'test.txt',
           id: 1,
           section: 'Active Case Data',
           uuid: uuidv4(),
+          progType: 'tanf',
         },
         {
           fileName: 'testb.txt',
           id: 2,
           section: 'Closed Case Data',
           uuid: uuidv4(),
+          progType: 'tanf',
         },
         {
           section: 'Aggregate Data',
           fileType: null,
           fileName: null,
           error: null,
+          progType: 'tanf',
         },
         {
           section: 'Stratum Data',
           fileType: null,
           fileName: null,
           error: null,
+          progType: 'tanf',
         },
       ],
     },
@@ -70,9 +79,11 @@ describe('UploadReport', () => {
       </Provider>
     )
 
-    const fileInput = getByLabelText('Section 1 - Active Case Data')
+    const fileInput = getByLabelText('Section 1 - TANF - Active Case Data')
 
-    const newFile = new File(['test'], 'test.txt', { type: 'text/plain' })
+    const newFile = new File(['HEADER20212A53000TAN1ED\n'], 'test.txt', {
+      type: 'text/plain',
+    })
 
     await waitFor(() => {
       fireEvent.change(fileInput, {
@@ -98,7 +109,7 @@ describe('UploadReport', () => {
       </Provider>
     )
 
-    const fileInput = getByLabelText('Section 1 - Active Case Data')
+    const fileInput = getByLabelText('Section 1 - TANF - Active Case Data')
 
     const newFile = new File(['<div>test</div>'], 'test.html', {
       type: 'text/html',
@@ -212,7 +223,7 @@ describe('UploadReport', () => {
       </Provider>
     )
 
-    const fileInput = getByLabelText('Section 1 - Active Case Data')
+    const fileInput = getByLabelText('Section 1 - TANF - Active Case Data')
 
     const newFile = new File(['test'], 'test.txt', { type: 'text/plain' })
     const fileList = [newFile]

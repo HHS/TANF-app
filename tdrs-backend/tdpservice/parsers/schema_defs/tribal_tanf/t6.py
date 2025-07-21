@@ -1,9 +1,9 @@
 """Schema for Tribal TANF T6 record."""
 
 from tdpservice.parsers.dataclasses import FieldType
-from tdpservice.parsers.transforms import calendar_quarter_to_rpt_month_year
 from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import TanfDataReportSchema
+from tdpservice.parsers.transforms import calendar_quarter_to_rpt_month_year
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T6
 

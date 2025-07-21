@@ -2,9 +2,9 @@
 
 import pytest
 from faker import Faker
-from tdpservice.search_indexes import models
-from tdpservice.parsers.util import create_test_datafile
 
+from tdpservice.parsers.util import create_test_datafile
+from tdpservice.search_indexes import models
 
 fake = Faker()
 
@@ -12,7 +12,7 @@ fake = Faker()
 @pytest.fixture
 def test_datafile(stt_user, stt):
     """Fixture for small_correct_file.txt."""
-    return create_test_datafile('small_correct_file.txt', stt_user, stt)
+    return create_test_datafile("small_correct_file.txt", stt_user, stt)
 
 
 @pytest.mark.django_db
@@ -84,11 +84,11 @@ def test_can_create_and_index_tanf_t2_submission(test_datafile):
     submission.datafile = test_datafile
     submission.RecordType = record_num
     submission.RPT_MONTH_YEAR = 1
-    submission.CASE_NUMBER = '1'
+    submission.CASE_NUMBER = "1"
     submission.FAMILY_AFFILIATION = 1
     submission.NONCUSTODIAL_PARENT = 1
     submission.DATE_OF_BIRTH = "1"
-    submission.SSN = '1'
+    submission.SSN = "1"
     submission.RACE_HISPANIC = 1
     submission.RACE_AMER_INDIAN = 1
     submission.RACE_ASIAN = 1
@@ -164,10 +164,10 @@ def test_can_create_and_index_tanf_t3_submission(test_datafile):
     submission.datafile = test_datafile
     submission.RecordType = record_num
     submission.RPT_MONTH_YEAR = 1
-    submission.CASE_NUMBER = '1'
+    submission.CASE_NUMBER = "1"
     submission.FAMILY_AFFILIATION = 1
     submission.DATE_OF_BIRTH = 1
-    submission.SSN = '1'
+    submission.SSN = "1"
     submission.RACE_HISPANIC = 1
     submission.RACE_AMER_INDIAN = 1
     submission.RACE_ASIAN = 1
@@ -196,10 +196,10 @@ def test_can_create_and_index_tanf_t4_submission(test_datafile):
     submission.datafile = test_datafile
     submission.RecordType = record_num
     submission.RPT_MONTH_YEAR = 1
-    submission.CASE_NUMBER = '1'
-    submission.COUNTY_FIPS_CODE = '1'
+    submission.CASE_NUMBER = "1"
+    submission.COUNTY_FIPS_CODE = "1"
     submission.STRATUM = "1"
-    submission.ZIP_CODE = '01'
+    submission.ZIP_CODE = "01"
     submission.DISPOSITION = 1
     submission.CLOSURE_REASON = "1"
     submission.REC_SUB_HOUSING = 1
@@ -219,10 +219,10 @@ def test_can_create_and_index_tanf_t5_submission(test_datafile):
     submission.datafile = test_datafile
     submission.RecordType = record_num
     submission.RPT_MONTH_YEAR = 1
-    submission.CASE_NUMBER = '1'
+    submission.CASE_NUMBER = "1"
     submission.FAMILY_AFFILIATION = 1
-    submission.DATE_OF_BIRTH = '1'
-    submission.SSN = '1'
+    submission.DATE_OF_BIRTH = "1"
+    submission.SSN = "1"
     submission.RACE_HISPANIC = 1
     submission.RACE_AMER_INDIAN = 1
     submission.RACE_ASIAN = 1
@@ -289,8 +289,8 @@ def test_can_create_and_index_tanf_t7_submission(test_datafile):
     submission.RecordType = record_num
     submission.CALENDAR_YEAR = 2020
     submission.CALENDAR_QUARTER = 1
-    submission.TDRS_SECTION_IND = '1'
-    submission.STRATUM = '01'
+    submission.TDRS_SECTION_IND = "1"
+    submission.STRATUM = "01"
     submission.FAMILIES_MONTH = 47655
 
     submission.save()
@@ -364,13 +364,12 @@ def test_can_create_and_index_ssp_m2_submission():
     submission = models.ssp.SSP_M2.objects.create(
         RecordType=record_num,
         RPT_MONTH_YEAR=1,
-        CASE_NUMBER='1',
-        FIPS_CODE='1',
-
+        CASE_NUMBER="1",
+        FIPS_CODE="1",
         FAMILY_AFFILIATION=1,
         NONCUSTODIAL_PARENT=1,
-        DATE_OF_BIRTH='1',
-        SSN='1',
+        DATE_OF_BIRTH="1",
+        SSN="1",
         RACE_HISPANIC=1,
         RACE_AMER_INDIAN=1,
         RACE_ASIAN=1,
@@ -432,7 +431,7 @@ def test_can_create_and_index_ssp_m2_submission():
         UNEARNED_SOCIAL_SECURITY=1,
         UNEARNED_SSI=1,
         UNEARNED_WORKERS_COMP=1,
-        OTHER_UNEARNED_INCOME=1
+        OTHER_UNEARNED_INCOME=1,
     )
 
     assert submission.id is not None
@@ -446,12 +445,11 @@ def test_can_create_and_index_ssp_m3_submission():
     submission = models.ssp.SSP_M3.objects.create(
         RecordType=record_num,
         RPT_MONTH_YEAR=1,
-        CASE_NUMBER='1',
-        FIPS_CODE='1',
-
+        CASE_NUMBER="1",
+        FIPS_CODE="1",
         FAMILY_AFFILIATION=1,
         DATE_OF_BIRTH=1,
-        SSN='1',
+        SSN="1",
         RACE_HISPANIC=1,
         RACE_AMER_INDIAN=1,
         RACE_ASIAN=1,
@@ -471,6 +469,7 @@ def test_can_create_and_index_ssp_m3_submission():
 
     assert submission.id is not None
 
+
 @pytest.mark.django_db
 def test_can_create_and_index_ssp_m4_submission():
     """SSP M4 submissions can be created and mapped."""
@@ -479,16 +478,16 @@ def test_can_create_and_index_ssp_m4_submission():
     submission = models.ssp.SSP_M4.objects.create(
         RecordType=record_num,
         RPT_MONTH_YEAR=1,
-        CASE_NUMBER='1',
-        COUNTY_FIPS_CODE='1',
-        STRATUM='01',
-        ZIP_CODE='11111',
+        CASE_NUMBER="1",
+        COUNTY_FIPS_CODE="1",
+        STRATUM="01",
+        ZIP_CODE="11111",
         DISPOSITION=1,
-        CLOSURE_REASON='01',
+        CLOSURE_REASON="01",
         REC_SUB_HOUSING=1,
         REC_MED_ASSIST=1,
         REC_FOOD_STAMPS=1,
-        REC_SUB_CC=1
+        REC_SUB_CC=1,
     )
 
     assert models.ssp.SSP_M4.objects.count() == 1
@@ -506,11 +505,10 @@ def test_can_create_and_index_ssp_m5_submission():
     submission = models.ssp.SSP_M5.objects.create(
         RecordType=record_num,
         RPT_MONTH_YEAR=1,
-        CASE_NUMBER='1',
-
+        CASE_NUMBER="1",
         FAMILY_AFFILIATION=1,
-        DATE_OF_BIRTH='11111111',
-        SSN='123456789',
+        DATE_OF_BIRTH="11111111",
+        SSN="123456789",
         RACE_HISPANIC=1,
         RACE_AMER_INDIAN=1,
         RACE_ASIAN=1,
@@ -524,14 +522,14 @@ def test_can_create_and_index_ssp_m5_submission():
         REC_AID_AGED_BLIND=1,
         REC_SSI=1,
         MARITAL_STATUS=1,
-        RELATIONSHIP_HOH='01',
+        RELATIONSHIP_HOH="01",
         PARENT_MINOR_CHILD=1,
         NEEDS_OF_PREGNANT_WOMAN=1,
-        EDUCATION_LEVEL='01',
+        EDUCATION_LEVEL="01",
         CITIZENSHIP_STATUS=1,
         EMPLOYMENT_STATUS=1,
-        AMOUNT_EARNED_INCOME='1000',
-        AMOUNT_UNEARNED_INCOME='1000'
+        AMOUNT_EARNED_INCOME="1000",
+        AMOUNT_UNEARNED_INCOME="1000",
     )
 
     assert submission.id is not None
@@ -578,8 +576,8 @@ def test_can_create_and_index_ssp_m7_submission(test_datafile):
     submission.RecordType = record_num
     submission.CALENDAR_YEAR = 2020
     submission.CALENDAR_QUARTER = 1
-    submission.TDRS_SECTION_IND = '1'
-    submission.STRATUM = '01'
+    submission.TDRS_SECTION_IND = "1"
+    submission.STRATUM = "01"
     submission.FAMILIES_MONTH = 47655
 
     submission.save()
@@ -657,11 +655,11 @@ def test_can_create_and_index_tribal_tanf_t2_submission(test_datafile):
     submission.datafile = test_datafile
     submission.RecordType = record_num
     submission.RPT_MONTH_YEAR = 1
-    submission.CASE_NUMBER = '1'
+    submission.CASE_NUMBER = "1"
     submission.FAMILY_AFFILIATION = 1
     submission.NONCUSTODIAL_PARENT = 1
     submission.DATE_OF_BIRTH = "1"
-    submission.SSN = '1'
+    submission.SSN = "1"
     submission.RACE_HISPANIC = 1
     submission.RACE_AMER_INDIAN = 1
     submission.RACE_ASIAN = 1
@@ -697,7 +695,7 @@ def test_can_create_and_index_tribal_tanf_t2_submission(test_datafile):
     submission.ED_NO_HIGH_SCHOOL_DIPLOMA = "01"
     submission.SCHOOL_ATTENDENCE = "01"
     submission.PROVIDE_CC = "01"
-    submission.ADD_WORK_ACTIVITIES = '01'
+    submission.ADD_WORK_ACTIVITIES = "01"
     submission.OTHER_WORK_ACTIVITIES = "01"
     submission.REQ_HRS_WAIVER_DEMO = "01"
     submission.EARNED_INCOME = "01"
@@ -721,10 +719,10 @@ def test_can_create_and_index_tribal_tanf_t3_submission(test_datafile):
     submission.datafile = test_datafile
     submission.RecordType = record_num
     submission.RPT_MONTH_YEAR = 1
-    submission.CASE_NUMBER = '1'
+    submission.CASE_NUMBER = "1"
     submission.FAMILY_AFFILIATION = 1
     submission.DATE_OF_BIRTH = 1
-    submission.SSN = '1'
+    submission.SSN = "1"
     submission.RACE_HISPANIC = 1
     submission.RACE_AMER_INDIAN = 1
     submission.RACE_ASIAN = 1
@@ -755,10 +753,10 @@ def test_can_create_and_index_tribal_tanf_t4_submission(test_datafile):
     submission.datafile = test_datafile
     submission.RecordType = record_num
     submission.RPT_MONTH_YEAR = 1
-    submission.CASE_NUMBER = '1'
-    submission.COUNTY_FIPS_CODE = '1'
+    submission.CASE_NUMBER = "1"
+    submission.COUNTY_FIPS_CODE = "1"
     submission.STRATUM = "1"
-    submission.ZIP_CODE = '01'
+    submission.ZIP_CODE = "01"
     submission.DISPOSITION = 1
     submission.CLOSURE_REASON = "1"
     submission.REC_SUB_HOUSING = 1
@@ -780,10 +778,10 @@ def test_can_create_and_index_tribal_tanf_t5_submission(test_datafile):
     submission.datafile = test_datafile
     submission.RecordType = record_num
     submission.RPT_MONTH_YEAR = 1
-    submission.CASE_NUMBER = '1'
+    submission.CASE_NUMBER = "1"
     submission.FAMILY_AFFILIATION = 1
-    submission.DATE_OF_BIRTH = '1'
-    submission.SSN = '1'
+    submission.DATE_OF_BIRTH = "1"
+    submission.SSN = "1"
     submission.RACE_HISPANIC = 1
     submission.RACE_AMER_INDIAN = 1
     submission.RACE_ASIAN = 1
@@ -854,8 +852,8 @@ def test_can_create_and_index_tribal_tanf_t7_submission(test_datafile):
     submission.RecordType = record_num
     submission.CALENDAR_YEAR = 2020
     submission.CALENDAR_QUARTER = 1
-    submission.TDRS_SECTION_IND = '1'
-    submission.STRATUM = '01'
+    submission.TDRS_SECTION_IND = "1"
+    submission.STRATUM = "01"
     submission.FAMILIES_MONTH = 47655
 
     submission.save()

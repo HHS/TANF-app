@@ -1,13 +1,15 @@
 """Schema for Tribal TANF T4 record types."""
 
 from tdpservice.parsers.dataclasses import FieldType
-from tdpservice.parsers.transforms import zero_pad
 from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import TanfDataReportSchema
+from tdpservice.parsers.transforms import zero_pad
+from tdpservice.parsers.util import (
+    generate_t1_t4_hashes,
+    get_t1_t4_partial_hash_members,
+)
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T4
-from tdpservice.parsers.util import generate_t1_t4_hashes, get_t1_t4_partial_hash_members
-
 
 t4 = [
     TanfDataReportSchema(
@@ -18,10 +20,12 @@ t4 = [
         preparsing_validators=[
             category1.recordHasLengthOfAtLeast(36),
             category1.caseNumberNotEmpty(8, 19),
-            category1.or_priority_validators([
-                category1.validate_fieldYearMonth_with_headerYearQuarter(),
-                category1.validateRptMonthYear(),
-            ]),
+            category1.or_priority_validators(
+                [
+                    category1.validate_fieldYearMonth_with_headerYearQuarter(),
+                    category1.validateRptMonthYear(),
+                ]
+            ),
         ],
         postparsing_validators=[],
         fields=[
@@ -108,10 +112,12 @@ t4 = [
                 endIndex=32,
                 required=True,
                 validators=[
-                    category3.orValidators([
-                        category3.isBetween(1, 18, inclusive=True, cast=int),
-                        category3.isEqual("99")
-                    ])
+                    category3.orValidators(
+                        [
+                            category3.isBetween(1, 18, inclusive=True, cast=int),
+                            category3.isEqual("99"),
+                        ]
+                    )
                 ],
             ),
             Field(

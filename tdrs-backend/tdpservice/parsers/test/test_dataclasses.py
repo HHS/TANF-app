@@ -2,6 +2,7 @@
 
 from tdpservice.parsers.dataclasses import Position, RawRow, TupleRow
 
+
 def test_position():
     """Test the Position class."""
     pos1 = Position(1, 3)
@@ -13,6 +14,7 @@ def test_position():
     assert pos2.end == 2
     assert pos2.is_range is False
     assert len(pos2) == 1
+
 
 def test_raw_row():
     """Test the RawRow class."""
@@ -27,6 +29,7 @@ def test_raw_row():
     assert hash(row) == hash("test")
     assert row == RawRow("test", 4, 4, 1, "test")
     assert row != RawRow("test2", 4, 4, 1, "test2")
+
 
 def test_tuple_row():
     """Test the TupleRow class."""

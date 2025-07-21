@@ -1,9 +1,11 @@
 """Meta data model for tracking reparsed files."""
 
+import logging
+
 from django.db import models
 from django.db.models import Max
+
 from tdpservice.search_indexes.util import count_all_records
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +56,7 @@ class ReparseMeta(models.Model):
     @property
     def finished_at(self):
         """Return the finished_at timestamp of the last ReparseFileMeta object."""
-        last_parse = self.reparse_file_metas.order_by('-finished_at').first()
+        last_parse = self.reparse_file_metas.order_by("-finished_at").first()
         return last_parse.finished_at if last_parse else None
 
     @property
@@ -92,9 +94,12 @@ class ReparseMeta(models.Model):
         This function assumes the meta_model has been passed in a distributed/thread safe way. If the database row
         containing this model has not been locked the caller will experience race issues.
         """
-        return (meta_model.num_files_completed == meta_model.num_files or
-                meta_model.num_files_completed + meta_model.num_files_failed ==
-                meta_model.num_files or meta_model.num_files_failed == meta_model.num_files)
+        return (
+            meta_model.num_files_completed == meta_model.num_files
+            or meta_model.num_files_completed + meta_model.num_files_failed
+            == meta_model.num_files
+            or meta_model.num_files_failed == meta_model.num_files
+        )
 
     @staticmethod
     def assert_all_files_done(meta_model):
@@ -111,7 +116,7 @@ class ReparseMeta(models.Model):
     @staticmethod
     def get_latest():
         """Get the ReparseMeta model with the greatest pk."""
-        max_pk = ReparseMeta.objects.all().aggregate(Max('pk'))
+        max_pk = ReparseMeta.objects.all().aggregate(Max("pk"))
         if max_pk.get("pk__max", None) is None:
             return None
         return ReparseMeta.objects.get(pk=max_pk["pk__max"])

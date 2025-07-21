@@ -1,9 +1,10 @@
 """Core API tests."""
 import uuid
 
-import pytest
 from django.contrib.admin.models import LogEntry
 from django.contrib.contenttypes.models import ContentType
+
+import pytest
 from rest_framework import status
 
 from tdpservice.data_files.models import DataFile
@@ -27,7 +28,7 @@ def test_write_logs(api_client, ofa_admin):
     }
     response = api_client.post("/v1/logs/", data)
     assert response.status_code == status.HTTP_200_OK
-    assert response.data == 'Success'
+    assert response.data == "Success"
 
 
 @pytest.mark.django_db
@@ -56,8 +57,7 @@ def test_log_output(api_client, ofa_admin, caplog):
 def test_log_entry_creation(api_client, data_file_instance):
     """Test endpoint's creation of LogEntry objects."""
     api_client.login(
-        username=data_file_instance.user.username,
-        password="test_password"
+        username=data_file_instance.user.username, password="test_password"
     )
     data = {
         "original_filename": data_file_instance.original_filename,
@@ -69,12 +69,12 @@ def test_log_entry_creation(api_client, data_file_instance):
         "timestamp": "2021-04-26T18:32:43.330Z",
         "type": "alert",
         "message": "User submitted file(s)",
-        "files": [data_file_instance.pk]
+        "files": [data_file_instance.pk],
     }
 
     api_client.post("/v1/logs/", data)
 
     assert LogEntry.objects.filter(
         content_type_id=ContentType.objects.get_for_model(DataFile).pk,
-        object_id=data_file_instance.pk
+        object_id=data_file_instance.pk,
     ).exists()

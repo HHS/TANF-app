@@ -19,11 +19,11 @@ class OverriddenCredentialsS3Storage(S3Boto3Storage):
         """Override the base class method to use specific credentials/region."""
         return {
             **super().get_default_settings(),
-            'access_key': self.access_key,
-            'endpoint_url': self.endpoint_url,
-            'region_name': self.region_name,
-            'secret_key': self.secret_key,
-            'location': self.location,
+            "access_key": self.access_key,
+            "endpoint_url": self.endpoint_url,
+            "region_name": self.region_name,
+            "secret_key": self.secret_key,
+            "location": self.location,
         }
 
 

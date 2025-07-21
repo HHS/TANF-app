@@ -1,9 +1,9 @@
 """Schema for T6 record type."""
 
 from tdpservice.parsers.dataclasses import FieldType
-from tdpservice.parsers.transforms import calendar_quarter_to_rpt_month_year
 from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import TanfDataReportSchema
+from tdpservice.parsers.transforms import calendar_quarter_to_rpt_month_year
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.search_indexes.models.tanf import TANF_T6
 
@@ -16,24 +16,12 @@ s1 = TanfDataReportSchema(
         category1.calendarQuarterIsValid(2, 7),
     ],
     postparsing_validators=[
+        category3.sumIsEqual("NUM_APPLICATIONS", ["NUM_APPROVED", "NUM_DENIED"]),
         category3.sumIsEqual(
-            "NUM_APPLICATIONS", [
-                "NUM_APPROVED",
-                "NUM_DENIED"
-            ]
+            "NUM_FAMILIES", ["NUM_2_PARENTS", "NUM_1_PARENTS", "NUM_NO_PARENTS"]
         ),
         category3.sumIsEqual(
-            "NUM_FAMILIES", [
-                "NUM_2_PARENTS",
-                "NUM_1_PARENTS",
-                "NUM_NO_PARENTS"
-            ]
-        ),
-        category3.sumIsEqual(
-            "NUM_RECIPIENTS", [
-                "NUM_ADULT_RECIPIENTS",
-                "NUM_CHILD_RECIPIENTS"
-            ]
+            "NUM_RECIPIENTS", ["NUM_ADULT_RECIPIENTS", "NUM_CHILD_RECIPIENTS"]
         ),
     ],
     fields=[
@@ -237,24 +225,12 @@ s2 = TanfDataReportSchema(
         category1.calendarQuarterIsValid(2, 7),
     ],
     postparsing_validators=[
+        category3.sumIsEqual("NUM_APPLICATIONS", ["NUM_APPROVED", "NUM_DENIED"]),
         category3.sumIsEqual(
-            "NUM_APPLICATIONS", [
-                "NUM_APPROVED",
-                "NUM_DENIED"
-            ]
+            "NUM_FAMILIES", ["NUM_2_PARENTS", "NUM_1_PARENTS", "NUM_NO_PARENTS"]
         ),
         category3.sumIsEqual(
-            "NUM_FAMILIES", [
-                "NUM_2_PARENTS",
-                "NUM_1_PARENTS",
-                "NUM_NO_PARENTS"
-            ]
-        ),
-        category3.sumIsEqual(
-            "NUM_RECIPIENTS", [
-                "NUM_ADULT_RECIPIENTS",
-                "NUM_CHILD_RECIPIENTS"
-            ]
+            "NUM_RECIPIENTS", ["NUM_ADULT_RECIPIENTS", "NUM_CHILD_RECIPIENTS"]
         ),
     ],
     fields=[
@@ -455,24 +431,12 @@ s3 = TanfDataReportSchema(
         category1.calendarQuarterIsValid(2, 7),
     ],
     postparsing_validators=[
+        category3.sumIsEqual("NUM_APPLICATIONS", ["NUM_APPROVED", "NUM_DENIED"]),
         category3.sumIsEqual(
-            "NUM_APPLICATIONS", [
-                "NUM_APPROVED",
-                "NUM_DENIED"
-            ]
+            "NUM_FAMILIES", ["NUM_2_PARENTS", "NUM_1_PARENTS", "NUM_NO_PARENTS"]
         ),
         category3.sumIsEqual(
-            "NUM_FAMILIES", [
-                "NUM_2_PARENTS",
-                "NUM_1_PARENTS",
-                "NUM_NO_PARENTS"
-            ]
-        ),
-        category3.sumIsEqual(
-            "NUM_RECIPIENTS", [
-                "NUM_ADULT_RECIPIENTS",
-                "NUM_CHILD_RECIPIENTS"
-            ]
+            "NUM_RECIPIENTS", ["NUM_ADULT_RECIPIENTS", "NUM_CHILD_RECIPIENTS"]
         ),
     ],
     fields=[

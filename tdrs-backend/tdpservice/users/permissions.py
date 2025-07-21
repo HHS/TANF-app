@@ -1,14 +1,17 @@
 """Set permissions for users."""
-from tdpservice.stts.models import STT
-from tdpservice.users.models import AccountApprovalStatusChoices
-from rest_framework import permissions
-from django.db.models import Q, QuerySet
-from django.contrib.auth.management import create_permissions
-from django.apps import apps
+import logging
 from collections import ChainMap
 from copy import deepcopy
-from typing import List, Optional, TYPE_CHECKING
-import logging
+from typing import TYPE_CHECKING, List, Optional
+
+from django.apps import apps
+from django.contrib.auth.management import create_permissions
+from django.db.models import Q, QuerySet
+
+from rest_framework import permissions
+
+from tdpservice.stts.models import STT
+from tdpservice.users.models import AccountApprovalStatusChoices
 
 logger = logging.getLogger(__name__)
 
@@ -19,10 +22,10 @@ if TYPE_CHECKING:  # pragma: no cover
 
 # Q objects that can be used to query for default permissions
 # Ref: https://docs.djangoproject.com/en/3.2/topics/auth/default/#default-permissions # noqa
-add_permissions_q = Q(codename__startswith='add_')
-change_permissions_q = Q(codename__startswith='change_')
-delete_permissions_q = Q(codename__startswith='delete_')
-view_permissions_q = Q(codename__startswith='view_')
+add_permissions_q = Q(codename__startswith="add_")
+change_permissions_q = Q(codename__startswith="change_")
+delete_permissions_q = Q(codename__startswith="delete_")
+view_permissions_q = Q(codename__startswith="view_")
 
 
 def create_perms(_apps, *_):
@@ -48,8 +51,8 @@ def get_permission_ids_for_model(
     app_label: str,
     model_name: str,
     filters: Optional[List[Q]] = None,
-    exclusions: Optional[List[Q]] = None
-) -> QuerySet['Permission']:
+    exclusions: Optional[List[Q]] = None,
+) -> QuerySet["Permission"]:
     """Retrieve the permissions associated with a given model.
 
     Intended for use in data migrations that add/edit/remove group permissions.
@@ -67,9 +70,8 @@ def get_permission_ids_for_model(
     """
     # NOTE: We must use the historical version of the model from `apps` to
     #       assert deterministic behavior in both migrations and runtime code.
-    queryset = apps.get_model('auth', 'Permission').objects.filter(
-        content_type__app_label=app_label,
-        content_type__model=model_name
+    queryset = apps.get_model("auth", "Permission").objects.filter(
+        content_type__app_label=app_label, content_type__model=model_name
     )
 
     # If any filters were supplied then chain them together with OR clauses
@@ -90,24 +92,19 @@ def get_permission_ids_for_model(
 
         queryset = queryset.exclude(exclusion_filters)
 
-    return queryset.values_list('id', flat=True)
+    return queryset.values_list("id", flat=True)
 
 
 def get_requested_stt(request, view):
     """Get stt from a valid request."""
-    request_parameters = ChainMap(
-        view.kwargs,
-        request.query_params,
-        request.data
-    )
-    return request_parameters.get('stt')
+    request_parameters = ChainMap(view.kwargs, request.query_params, request.data)
+    return request_parameters.get("stt")
 
 
 def is_own_region(user, requested_stt):
     """Verify user belongs to the requested region based on the stt in the request."""
     requested_region = (
-        STT.objects.get(id=requested_stt).region
-        if requested_stt else None
+        STT.objects.get(id=requested_stt).region if requested_stt else None
     )
 
     return bool(requested_region is None or requested_region in user.regions.all())
@@ -115,11 +112,8 @@ def is_own_region(user, requested_stt):
 
 def is_own_stt(user, requested_stt):
     """Verify user belongs to requested STT."""
-    user_stt = user.stt.id if hasattr(user, 'stt') else None
-    return bool(
-        user_stt is not None and
-        (requested_stt in [None, str(user_stt)])
-    )
+    user_stt = user.stt.id if hasattr(user, "stt") else None
+    return bool(user_stt is not None and (requested_stt in [None, str(user_stt)]))
 
 
 class IsApprovedPermission(permissions.DjangoModelPermissions):
@@ -128,8 +122,11 @@ class IsApprovedPermission(permissions.DjangoModelPermissions):
     def has_permission(self, request, view):
         """Return True if the user has been assigned a group and is approved."""
         logging.debug(f"{self.__class__.__name__}: {request} ; {view}")
-        return (request.user.groups.first() is not None and
-                request.user.account_approval_status == AccountApprovalStatusChoices.APPROVED)
+        return (
+            request.user.groups.first() is not None
+            and request.user.account_approval_status
+            == AccountApprovalStatusChoices.APPROVED
+        )
 
 
 class DjangoModelCRUDPermissions(permissions.DjangoModelPermissions):
@@ -148,7 +145,7 @@ class DjangoModelCRUDPermissions(permissions.DjangoModelPermissions):
         # Use deepcopy to prevent overwriting the parent class perms_map
         self.perms_map = deepcopy(self.perms_map)
         # We also want to check for the `view` permission for GET requests.
-        self.perms_map['GET'] = ['%(app_label)s.view_%(model_name)s']
+        self.perms_map["GET"] = ["%(app_label)s.view_%(model_name)s"]
 
 
 class DataFilePermissions(DjangoModelCRUDPermissions):
@@ -168,22 +165,20 @@ class DataFilePermissions(DjangoModelCRUDPermissions):
         has_permission = super().has_permission(request, view)
 
         # Regional Staff are not allowed to submit or download data files
-        if has_permission and hasattr(view, 'action'):
-            if view.action in ['create', 'download'] and request.user.is_regional_staff:
+        if has_permission and hasattr(view, "action"):
+            if view.action in ["create", "download"] and request.user.is_regional_staff:
                 return False
 
         # Data Analysts are limited to only data files for their designated STT
         # Regional Staff are limited to only files for their designated Region
         if has_permission and (
-            request.user.is_data_analyst or
-            request.user.is_regional_staff
+            request.user.is_data_analyst or request.user.is_regional_staff
         ):
             perms_function = (
                 is_own_region if request.user.is_regional_staff else is_own_stt
             )
             has_permission = perms_function(
-                request.user,
-                get_requested_stt(request, view)
+                request.user, get_requested_stt(request, view)
             )
 
         return has_permission
@@ -199,19 +194,13 @@ class DataFilePermissions(DjangoModelCRUDPermissions):
         """
         # Data Analysts can only see files uploaded for their designated STT
         if request.user.is_data_analyst:
-            user_stt = (
-                request.user.stt.id
-                if hasattr(request.user, 'stt')
-                else None
-            )
+            user_stt = request.user.stt.id if hasattr(request.user, "stt") else None
             return user_stt == obj.stt_id
 
         # Regional Staff can only see files uploaded for their designated Region
         if request.user.is_regional_staff:
             user_regions = (
-                request.user.regions.all()
-                if hasattr(request.user, 'regions')
-                else None
+                request.user.regions.all() if hasattr(request.user, "regions") else None
             )
 
             return obj.stt.region in user_regions
@@ -244,14 +233,14 @@ class UserPermissions(DjangoModelCRUDPermissions):
         # Regional Staff can only see files uploaded for their designated Region
         if request.user.groups.filter(name="OFA Regional Staff").exists():
             user_regions = (
-                request.user.regions.all()
-                if hasattr(request.user, 'regions')
-                else None
+                request.user.regions.all() if hasattr(request.user, "regions") else None
             )
             return obj.stt.region in user_regions
 
         # Check if user is an admin
-        is_admin = request.user.groups.filter(name__in=["OFA System Admin", "OFA Admin"]).exists()
+        is_admin = request.user.groups.filter(
+            name__in=["OFA System Admin", "OFA Admin"]
+        ).exists()
         return obj == request.user or is_admin
 
 
@@ -267,7 +256,7 @@ class FeedbackPermissions(permissions.BasePermission):
     def has_permission(self, request, view):
         """Check if user has permission to access Feedback resources."""
         # Allow all create actions
-        if request.method == 'POST':
+        if request.method == "POST":
             return True
 
         # For list and retrieve actions, only authenticated users are allowed
@@ -275,8 +264,10 @@ class FeedbackPermissions(permissions.BasePermission):
             return False
 
         # For list action, filter queryset for non-admin users
-        if view.action == 'list':
-            is_admin = request.user.groups.filter(name__in=["OFA System Admin", "OFA Admin"]).exists()
+        if view.action == "list":
+            is_admin = request.user.groups.filter(
+                name__in=["OFA System Admin", "OFA Admin"]
+            ).exists()
             if not is_admin:
                 view.queryset = view.queryset.filter(user=request.user)
 
@@ -285,7 +276,9 @@ class FeedbackPermissions(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         """Check if user has permission to access a specific Feedback object."""
         # Check if user is an admin
-        is_admin = request.user.groups.filter(name__in=["OFA System Admin", "OFA Admin"]).exists()
+        is_admin = request.user.groups.filter(
+            name__in=["OFA System Admin", "OFA Admin"]
+        ).exists()
 
         # Admin users can access all feedback
         if is_admin:

@@ -25,13 +25,13 @@ def get_file_shasum(file: Union[File, StringIO]) -> str:
 
     # If the file has the `open` method it needs to be called, otherwise this
     # input is a file-like object (ie. StringIO) and doesn't need to be opened.
-    if hasattr(file, 'open'):
-        f = file.open('rb')
+    if hasattr(file, "open"):
+        f = file.open("rb")
     else:
         f = file
 
     # For large files we need to read it in by chunks to prevent invalid hashes
-    if hasattr(f, 'multiple_chunks') and f.multiple_chunks():
+    if hasattr(f, "multiple_chunks") and f.multiple_chunks():
         for chunk in f.chunks():
             _hash.update(chunk)
     else:
@@ -40,7 +40,7 @@ def get_file_shasum(file: Union[File, StringIO]) -> str:
         # If the content is returned as a string we must encode it to bytes
         # or an error will be raised.
         if isinstance(content, str):
-            content = content.encode('utf-8')
+            content = content.encode("utf-8")
 
         _hash.update(content)
 
@@ -49,11 +49,12 @@ def get_file_shasum(file: Union[File, StringIO]) -> str:
 
     return _hash.hexdigest()
 
+
 def get_s3_upload_path(instance, filename):
     """Produce a unique upload path for S3 files for a given STT and Quarter."""
     return os.path.join(
-        f'data_files/{instance.year}/{instance.quarter}/{instance.stt.id}/{instance.section}/',
-        filename
+        f"data_files/{instance.year}/{instance.quarter}/{instance.stt.id}/{instance.section}/",
+        filename,
     )
 
 
@@ -66,12 +67,11 @@ class FileRecord(models.Model):
         """Metadata."""
 
         abstract = True
+
     # Keep the file name because it will be different in s3,
     # but the interface will still want to present the file with its
     # original name.
-    original_filename = models.CharField(max_length=256,
-                                         blank=False,
-                                         null=False)
+    original_filename = models.CharField(max_length=256, blank=False, null=False)
     # Slug is the name of the file in S3
     # NOTE: Currently unused, may be removed with a later release
     slug = models.CharField(max_length=256, blank=False, null=False)
@@ -80,14 +80,19 @@ class FileRecord(models.Model):
     # separately
     extension = models.CharField(max_length=8, default="txt")
 
+
 class ReparseFileMeta(models.Model):
     """Meta data model representing a single file parse within a reparse execution."""
 
-    data_file = models.ForeignKey('data_files.DataFile', on_delete=models.CASCADE, related_name='reparse_file_metas')
-    reparse_meta = models.ForeignKey(
-        'search_indexes.ReparseMeta',
+    data_file = models.ForeignKey(
+        "data_files.DataFile",
         on_delete=models.CASCADE,
-        related_name='reparse_file_metas'
+        related_name="reparse_file_metas",
+    )
+    reparse_meta = models.ForeignKey(
+        "search_indexes.ReparseMeta",
+        on_delete=models.CASCADE,
+        related_name="reparse_file_metas",
     )
 
     finished = models.BooleanField(default=False)
@@ -105,15 +110,15 @@ class DataFile(FileRecord):
     class Section(models.TextChoices):
         """Enum for data file section."""
 
-        TRIBAL_CLOSED_CASE_DATA = 'Tribal Closed Case Data'
-        TRIBAL_ACTIVE_CASE_DATA = 'Tribal Active Case Data'
-        TRIBAL_AGGREGATE_DATA = 'Tribal Aggregate Data'
-        TRIBAL_STRATUM_DATA = 'Tribal Stratum Data'
+        TRIBAL_CLOSED_CASE_DATA = "Tribal Closed Case Data"
+        TRIBAL_ACTIVE_CASE_DATA = "Tribal Active Case Data"
+        TRIBAL_AGGREGATE_DATA = "Tribal Aggregate Data"
+        TRIBAL_STRATUM_DATA = "Tribal Stratum Data"
 
-        SSP_AGGREGATE_DATA = 'SSP Aggregate Data'
-        SSP_CLOSED_CASE_DATA = 'SSP Closed Case Data'
-        SSP_ACTIVE_CASE_DATA = 'SSP Active Case Data'
-        SSP_STRATUM_DATA = 'SSP Stratum Data'
+        SSP_AGGREGATE_DATA = "SSP Aggregate Data"
+        SSP_CLOSED_CASE_DATA = "SSP Closed Case Data"
+        SSP_ACTIVE_CASE_DATA = "SSP Active Case Data"
+        SSP_STRATUM_DATA = "SSP Stratum Data"
 
         ACTIVE_CASE_DATA = "Active Case Data"
         CLOSED_CASE_DATA = "Closed Case Data"
@@ -130,7 +135,7 @@ class DataFile(FileRecord):
             return section in [
                 cls.FRA_WORK_OUTCOME_TANF_EXITERS,
                 cls.FRA_SECONDRY_SCHOOL_ATTAINMENT,
-                cls.FRA_SUPPLEMENT_WORK_OUTCOMES
+                cls.FRA_SUPPLEMENT_WORK_OUTCOMES,
             ]
 
         @classmethod
@@ -140,7 +145,7 @@ class DataFile(FileRecord):
                 cls.SSP_AGGREGATE_DATA,
                 cls.SSP_ACTIVE_CASE_DATA,
                 cls.SSP_CLOSED_CASE_DATA,
-                cls.SSP_STRATUM_DATA
+                cls.SSP_STRATUM_DATA,
             ]
 
         @classmethod
@@ -150,7 +155,7 @@ class DataFile(FileRecord):
                 cls.TRIBAL_AGGREGATE_DATA,
                 cls.TRIBAL_ACTIVE_CASE_DATA,
                 cls.TRIBAL_CLOSED_CASE_DATA,
-                cls.TRIBAL_STRATUM_DATA
+                cls.TRIBAL_STRATUM_DATA,
             ]
 
         @classmethod
@@ -160,17 +165,17 @@ class DataFile(FileRecord):
                 cls.ACTIVE_CASE_DATA,
                 cls.CLOSED_CASE_DATA,
                 cls.AGGREGATE_DATA,
-                cls.STRATUM_DATA
+                cls.STRATUM_DATA,
             ]
 
     @staticmethod
     def get_fra_section_list():
         """Return FRA section list."""
         return [
-                DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
-                DataFile.Section.FRA_SECONDRY_SCHOOL_ATTAINMENT,
-                DataFile.Section.FRA_SUPPLEMENT_WORK_OUTCOMES
-            ]
+            DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
+            DataFile.Section.FRA_SECONDRY_SCHOOL_ATTAINMENT,
+            DataFile.Section.FRA_SUPPLEMENT_WORK_OUTCOMES,
+        ]
 
     class Quarter(models.TextChoices):
         """Enum for data file Quarter."""
@@ -191,15 +196,13 @@ class DataFile(FileRecord):
         ]
 
     created_at = models.DateTimeField(auto_now_add=True)
-    quarter = models.CharField(max_length=16,
-                               blank=False,
-                               null=False,
-                               choices=Quarter.choices)
+    quarter = models.CharField(
+        max_length=16, blank=False, null=False, choices=Quarter.choices
+    )
     year = models.IntegerField()
-    section = models.CharField(max_length=32,
-                               blank=False,
-                               null=False,
-                               choices=Section.choices)
+    section = models.CharField(
+        max_length=32, blank=False, null=False, choices=Section.choices
+    )
 
     version = models.IntegerField()
 
@@ -213,22 +216,16 @@ class DataFile(FileRecord):
     # NOTE: `file` is only temporarily nullable until we complete the issue:
     # https://github.com/raft-tech/TANF-app/issues/755
     file = models.FileField(
-        storage=DataFilesS3Storage,
-        upload_to=get_s3_upload_path,
-        null=True,
-        blank=True
+        storage=DataFilesS3Storage, upload_to=get_s3_upload_path, null=True, blank=True
     )
 
-    s3_versioning_id = models.CharField(max_length=1024,
-                                        blank=False,
-                                        null=True
-                                        )
+    s3_versioning_id = models.CharField(max_length=1024, blank=False, null=True)
 
     reparses = models.ManyToManyField(
         "search_indexes.ReparseMeta",
         through="data_files.ReparseFileMeta",
         help_text="Reparse events this file has been associated with.",
-        related_name="files"
+        related_name="files",
     )
 
     @property
@@ -236,11 +233,11 @@ class DataFile(FileRecord):
         """Return the program type for a given section."""
         # e.g., 'SSP Closed Case Data'
         if self.Section.is_ssp(self.section):
-            return 'SSP'
+            return "SSP"
         elif self.Section.is_fra(self.section):
-            return 'FRA'
+            return "FRA"
         else:
-            return 'TAN'
+            return "TAN"
 
     @property
     def filename(self):
@@ -286,12 +283,14 @@ class DataFile(FileRecord):
         LOG_PRE_FIX = "v1/data_files/logs"
         DOMAIN = settings.FRONTEND_BASE_URL
         if datafile:
-            link = f"{LOG_PRE_FIX}/{datafile.year}/{datafile.quarter}/" \
-                  f"{datafile.stt}/{datafile.section}"
+            link = (
+                f"{LOG_PRE_FIX}/{datafile.year}/{datafile.quarter}/"
+                f"{datafile.stt}/{datafile.section}"
+            )
             url = f"{DOMAIN}/{link}"  # Replace with your actual S3 URL
-            return format_html("<a href='{url}'>{field}</a>",
-                               field="Parser logs",
-                               url=url)
+            return format_html(
+                "<a href='{url}'>{field}</a>", field="Parser logs", url=url
+            )
         else:
             return None
 
@@ -315,7 +314,10 @@ class DataFile(FileRecord):
             or 0
         ) + 1
 
-        return DataFile.objects.create(version=version, **data,)
+        return DataFile.objects.create(
+            version=version,
+            **data,
+        )
 
     @classmethod
     def find_latest_version_number(self, year, quarter, section, stt):
@@ -330,17 +332,24 @@ class DataFile(FileRecord):
         version = self.find_latest_version_number(year, quarter, section, stt)
 
         return self.objects.filter(
-            version=version, year=year, quarter=quarter, section=section, stt=stt,
+            version=version,
+            year=year,
+            quarter=quarter,
+            section=section,
+            stt=stt,
         ).first()
 
     def __repr__(self):
         """Return a string representation of the model."""
-        return f"{{id: {self.id}, filename: {self.original_filename}, STT: {self.stt}, S3 location: " + \
-               f"{self.s3_location}}}"
+        return (
+            f"{{id: {self.id}, filename: {self.original_filename}, STT: {self.stt}, S3 location: "
+            + f"{self.s3_location}}}"
+        )
 
     def __str__(self):
         """Return a string representation of the model."""
         return f"filename: {self.original_filename}"
+
 
 class LegacyFileTransferManager(models.Manager):
     """Extends object manager functionality for LegacyFileTransfer model."""
@@ -350,29 +359,25 @@ class LegacyFileTransferManager(models.Manager):
         file: Union[File, StringIO],
         file_name: str,
         msg: str,
-        result: 'LegacyFileTransfer.Result',
-        uploaded_by: User
-    ) -> 'LegacyFileTransfer':
+        result: "LegacyFileTransfer.Result",
+        uploaded_by: User,
+    ) -> "LegacyFileTransfer":
         """Create a new LegacyFileTransfer instance with associated LogEntry."""
         try:
             # Was their an expectation here? THis wasn't ever defined.
             # Probbly pseudo code.
             file_shasum = get_file_shasum(file)
         except (AttributeError, TypeError, ValueError) as err:
-            logger.error(f'Encountered error deriving file hash: {err}')
-            file_shasum = 'INVALID'
+            logger.error(f"Encountered error deriving file hash: {err}")
+            file_shasum = "INVALID"
 
         # Create the LegacyFileTransfer instance.
         fileTransfer = self.model.objects.create(
             file_name=file_name,
-            file_size=(
-                file.size
-                if isinstance(file, File)
-                else len(file.getvalue())
-            ),
+            file_size=(file.size if isinstance(file, File) else len(file.getvalue())),
             file_shasum=file_shasum,
             result=result,
-            uploaded_by=uploaded_by
+            uploaded_by=uploaded_by,
         )
 
         # Create a new LogEntry that is tied to this model instance.
@@ -383,7 +388,7 @@ class LegacyFileTransferManager(models.Manager):
             object_id=fileTransfer.pk,
             object_repr=str(fileTransfer),
             action_flag=ADDITION,
-            change_message=msg
+            change_message=msg,
         )
 
         return fileTransfer
@@ -395,57 +400,53 @@ class LegacyFileTransfer(models.Model):
     class Meta:
         """Model Meta options."""
 
-        verbose_name = 'Legacy File Transfer'
+        verbose_name = "Legacy File Transfer"
 
     class Result(models.TextChoices):
         """Represents the possible results from a completed transfer."""
 
-        COMPLETED = 'COMPLETED'
-        ERROR = 'ERROR'
+        COMPLETED = "COMPLETED"
+        ERROR = "ERROR"
 
     sent_at = models.DateTimeField(auto_now_add=True)
     file_name = models.TextField()
-    file_size = models.PositiveBigIntegerField(
-        help_text='The file size in bytes'
-    )
-    file_shasum = models.TextField(
-        help_text='The SHA256 checksum of the uploaded file'
-    )
+    file_size = models.PositiveBigIntegerField(help_text="The file size in bytes")
+    file_shasum = models.TextField(help_text="The SHA256 checksum of the uploaded file")
     result = models.CharField(
         choices=Result.choices,
-        help_text='Transfer result for uploaded file',
-        max_length=12
+        help_text="Transfer result for uploaded file",
+        max_length=12,
     )
     uploaded_by = models.ForeignKey(
         User,
-        help_text='The user that uploaded the data file',
+        help_text="The user that uploaded the data file",
         null=True,
         on_delete=models.SET_NULL,
-        related_name='fileTransfer'
+        related_name="fileTransfer",
     )
 
     data_file = models.ForeignKey(
         DataFile,
         blank=True,
-        help_text='The resulting DataFile object, if this transfer was completed',
+        help_text="The resulting DataFile object, if this transfer was completed",
         null=True,
         on_delete=models.SET_NULL,
-        related_name='fileTransfer'
+        related_name="fileTransfer",
     )
 
     objects = LegacyFileTransferManager()
 
     def __str__(self) -> str:
         """Return string representation of model instance."""
-        return f'{self.file_name} ({self.file_size_humanized}) - {self.result}'
+        return f"{self.file_name} ({self.file_size_humanized}) - {self.result}"
 
     @property
     def file_size_humanized(self) -> str:
         """Convert the file size into the largest human-readable unit."""
         size = self.file_size
-        for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+        for unit in ["B", "KB", "MB", "GB", "TB"]:
             if size < 1024.0:
                 break
             size /= 1024.0
 
-        return f'{size:.{2}f}{unit}'
+        return f"{size:.{2}f}{unit}"

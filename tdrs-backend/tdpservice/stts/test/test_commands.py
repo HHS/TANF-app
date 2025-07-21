@@ -1,8 +1,10 @@
 """Commands tests."""
 
 from django.core.management import call_command
+
 import pytest
-from tdpservice.stts.models import Region, STT
+
+from tdpservice.stts.models import STT, Region
 
 
 @pytest.mark.django_db

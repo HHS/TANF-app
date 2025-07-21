@@ -1,12 +1,13 @@
 """External client services related to security auditing."""
-from requests.adapters import HTTPAdapter
-from requests.exceptions import ConnectionError
-from urllib3.util.retry import Retry
-from requests.sessions import Session
 import logging
 
 from django.conf import settings
 from django.core.files.base import File
+
+from requests.adapters import HTTPAdapter
+from requests.exceptions import ConnectionError
+from requests.sessions import Session
+from urllib3.util.retry import Retry
 
 from tdpservice.security.models import ClamAVFileScan
 from tdpservice.users.models import User
@@ -23,11 +24,7 @@ class ClamAVClient:
         pass
 
     # https://github.com/raft-tech/clamav-rest#status-codes
-    SCAN_CODES = {
-        'CLEAN': [200],
-        'INFECTED': [406],
-        'ERROR': [400, 412, 429, 500, 501]
-    }
+    SCAN_CODES = {"CLEAN": [200], "INFECTED": [406], "ERROR": [400, 412, 429, 500, 501]}
 
     def __init__(self, endpoint_url=None):
         if not endpoint_url:
@@ -42,8 +39,8 @@ class ClamAVClient:
         session = Session()
         retries = Retry(
             backoff_factor=settings.AV_SCAN_BACKOFF_FACTOR,
-            status_forcelist=self.SCAN_CODES['ERROR'],
-            total=settings.AV_SCAN_MAX_RETRIES
+            status_forcelist=self.SCAN_CODES["ERROR"],
+            total=settings.AV_SCAN_MAX_RETRIES,
         )
         session.mount(self.endpoint_url, HTTPAdapter(max_retries=retries))
         return session
@@ -61,39 +58,35 @@ class ClamAVClient:
             A boolean indicating whether or not the file passed the ClamAV scan
         :raises ClamAVClient.ServiceUnavailable:
         """
-        logger.debug(f'Initiating virus scan for file: {file_name}')
+        logger.debug(f"Initiating virus scan for file: {file_name}")
         try:
             scan_response = self.session.post(
                 self.endpoint_url,
-                data={'name': file_name},
-                files={'file': file},
-                timeout=settings.AV_SCAN_TIMEOUT
+                data={"name": file_name},
+                files={"file": file},
+                timeout=settings.AV_SCAN_TIMEOUT,
             )
 
         except ConnectionError as err:
-            logger.error(f'ClamAV connection failure: {err}')
+            logger.error(f"ClamAV connection failure: {err}")
             raise self.ServiceUnavailable()
 
-        if scan_response.status_code in self.SCAN_CODES['CLEAN']:
-            msg = f'File scan marked as CLEAN for file: {file_name}'
+        if scan_response.status_code in self.SCAN_CODES["CLEAN"]:
+            msg = f"File scan marked as CLEAN for file: {file_name}"
             scan_result = ClamAVFileScan.Result.CLEAN
 
-        elif scan_response.status_code in self.SCAN_CODES['INFECTED']:
-            msg = f'File scan marked as INFECTED for file: {file_name}'
+        elif scan_response.status_code in self.SCAN_CODES["INFECTED"]:
+            msg = f"File scan marked as INFECTED for file: {file_name}"
             scan_result = ClamAVFileScan.Result.INFECTED
 
         else:
-            msg = f'Unable to scan file with name: {file_name}'
+            msg = f"Unable to scan file with name: {file_name}"
             scan_result = ClamAVFileScan.Result.ERROR
 
         # Log and create audit records with the results of this scan
         logger.debug(msg)
         ClamAVFileScan.objects.record_scan(
-            file,
-            file_name,
-            msg,
-            scan_result,
-            uploaded_by
+            file, file_name, msg, scan_result, uploaded_by
         )
 
         return True if scan_result == ClamAVFileScan.Result.CLEAN else False

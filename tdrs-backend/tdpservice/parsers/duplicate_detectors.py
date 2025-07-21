@@ -1,12 +1,16 @@
 """Class definitions for record duplicate class and helper classes."""
-from abc import ABC, abstractmethod
-from django.conf import settings
-from enum import IntEnum
-from .models import ParserErrorCategoryChoices
-from tdpservice.parsers.dataclasses import RawRow
 import logging
+from abc import ABC, abstractmethod
+from enum import IntEnum
+
+from django.conf import settings
+
+from tdpservice.parsers.dataclasses import RawRow
+
+from .models import ParserErrorCategoryChoices
 
 logger = logging.getLogger(__name__)
+
 
 class ErrorLevel(IntEnum):
     """Error level enumerations for precedence."""
@@ -46,9 +50,13 @@ class DuplicateDetectorFactory:
         """Create a DuplicateDetector instance."""
         match schema.record_type:
             case "TE1":
-                return TE1DuplicateDetector(detector_hash, manager_error_dict, generate_error)
+                return TE1DuplicateDetector(
+                    detector_hash, manager_error_dict, generate_error
+                )
             case _:
-                return CaseDuplicateDetector(detector_hash, manager_error_dict, generate_error)
+                return CaseDuplicateDetector(
+                    detector_hash, manager_error_dict, generate_error
+                )
 
 
 class DuplicateDetector(ABC):
@@ -96,7 +104,15 @@ class DuplicateDetector(ABC):
             return self.record_ids
         return dict()
 
-    def _generate_error(self, err_msg, record, schema, line_number, has_precedence, is_new_max_precedence):
+    def _generate_error(
+        self,
+        err_msg,
+        record,
+        schema,
+        line_number,
+        has_precedence,
+        is_new_max_precedence,
+    ):
         """Add an error to the managers error dictionary.
 
         @param err_msg: string representation of the error message
@@ -107,13 +123,13 @@ class DuplicateDetector(ABC):
         """
         if has_precedence:
             error = self.generate_error(
-                        error_category=ParserErrorCategoryChoices.CASE_CONSISTENCY,
-                        line_number=line_number,
-                        schema=schema,
-                        record=record,
-                        field=schema.fields,
-                        error_message=err_msg,
-                    )
+                error_category=ParserErrorCategoryChoices.CASE_CONSISTENCY,
+                line_number=line_number,
+                schema=schema,
+                record=record,
+                field=schema.fields,
+                error_message=err_msg,
+            )
             if is_new_max_precedence:
                 self.manager_error_dict[self.my_hash] = [error]
             else:
@@ -141,10 +157,12 @@ class TE1DuplicateDetector(DuplicateDetector):
         """
         # Add all records the detector receives to id dictionary. That way a line that has more than one record
         # created from it will have all of it's records appropriately marked for deletion if need be.
-        ssn = getattr(record, 'SSN', None)
+        ssn = getattr(record, "SSN", None)
         if ssn == "999999999":
-            logger.warning(f"SSN is 999999999 for record {record.id} at line number "
-                           f"{line_number}. Skipping duplicate detection.")
+            logger.warning(
+                f"SSN is 999999999 for record {record.id} at line number "
+                f"{line_number}. Skipping duplicate detection."
+            )
             return
 
         self.record_ids.setdefault(schema.model, []).append(record.id)
@@ -157,13 +175,20 @@ class TE1DuplicateDetector(DuplicateDetector):
         line_hash, partial_hash = schema.generate_hashes_func(row, record)
 
         if line_hash in self.record_hashes:
-            has_precedence, is_new_max_precedence = self.error_precedence.has_precedence(ErrorLevel.DUPLICATE)
+            (
+                has_precedence,
+                is_new_max_precedence,
+            ) = self.error_precedence.has_precedence(ErrorLevel.DUPLICATE)
             existing_record_line_number = self.record_hashes[line_hash]
-            err_msg = ("Duplicate Social Security Number within a month. Check that individual SSNs "
-                       "within a single exit month are not included more than once. "
-                       f"SSN is a duplicate of the record at line number {existing_record_line_number}.")
+            err_msg = (
+                "Duplicate Social Security Number within a month. Check that individual SSNs "
+                "within a single exit month are not included more than once. "
+                f"SSN is a duplicate of the record at line number {existing_record_line_number}."
+            )
 
-        self._generate_error(err_msg, record, schema, line_number, has_precedence, is_new_max_precedence)
+        self._generate_error(
+            err_msg, record, schema, line_number, has_precedence, is_new_max_precedence
+        )
         if line_hash not in self.record_hashes:
             self.record_hashes[line_hash] = line_number
 
@@ -178,12 +203,16 @@ class CaseDuplicateDetector(DuplicateDetector):
     def __init__(self, my_hash, manager_error_dict, generate_error):
         super().__init__(my_hash, manager_error_dict, generate_error)
 
-    def __get_partial_dup_error_msg(self, schema, record_type, curr_line_number, existing_line_number):
+    def __get_partial_dup_error_msg(
+        self, schema, record_type, curr_line_number, existing_line_number
+    ):
         """Generate partial duplicate error message with friendly names."""
         field_names = schema.get_partial_hash_members_func()
-        err_msg = (f"Partial duplicate record detected with record type "
-                   f"{record_type} at line {curr_line_number}. Record is a partial duplicate of the "
-                   f"record at line number {existing_line_number}. Duplicated fields causing error: ")
+        err_msg = (
+            f"Partial duplicate record detected with record type "
+            f"{record_type} at line {curr_line_number}. Record is a partial duplicate of the "
+            f"record at line number {existing_line_number}. Duplicated fields causing error: "
+        )
         for i, name in enumerate(field_names):
             field = schema.get_field_by_name(name)
             item_and_name = f"Item {field.item} ({field.friendly_name})"
@@ -219,19 +248,34 @@ class CaseDuplicateDetector(DuplicateDetector):
             should_skip_partial_dup = schema.should_skip_partial_dup_func(record)
 
             if line_hash in self.record_hashes:
-                has_precedence, is_new_max_precedence = self.error_precedence.has_precedence(ErrorLevel.DUPLICATE)
+                (
+                    has_precedence,
+                    is_new_max_precedence,
+                ) = self.error_precedence.has_precedence(ErrorLevel.DUPLICATE)
                 existing_record_line_number = self.record_hashes[line_hash]
-                err_msg = (f"Duplicate record detected with record type "
-                           f"{record.RecordType} at line {line_number}. Record is a duplicate of the record at "
-                           f"line number {existing_record_line_number}.")
+                err_msg = (
+                    f"Duplicate record detected with record type "
+                    f"{record.RecordType} at line {line_number}. Record is a duplicate of the record at "
+                    f"line number {existing_record_line_number}."
+                )
             elif not should_skip_partial_dup and partial_hash in self.partial_hashes:
-                has_precedence, is_new_max_precedence = self.error_precedence.has_precedence(
-                    ErrorLevel.PARTIAL_DUPLICATE)
+                (
+                    has_precedence,
+                    is_new_max_precedence,
+                ) = self.error_precedence.has_precedence(ErrorLevel.PARTIAL_DUPLICATE)
                 existing_record_line_number = self.partial_hashes[partial_hash]
-                err_msg = self.__get_partial_dup_error_msg(schema, record.RecordType,
-                                                           line_number, existing_record_line_number)
+                err_msg = self.__get_partial_dup_error_msg(
+                    schema, record.RecordType, line_number, existing_record_line_number
+                )
 
-            self._generate_error(err_msg, record, schema, line_number, has_precedence, is_new_max_precedence)
+            self._generate_error(
+                err_msg,
+                record,
+                schema,
+                line_number,
+                has_precedence,
+                is_new_max_precedence,
+            )
             if line_hash not in self.record_hashes:
                 self.record_hashes[line_hash] = line_number
             if partial_hash is not None and partial_hash not in self.partial_hashes:

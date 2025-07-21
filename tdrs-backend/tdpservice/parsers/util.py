@@ -1,114 +1,164 @@
 """Utility file for functions shared between all parsers even preparser."""
-from .models import ParserError
-from django.contrib.admin.models import ADDITION
-from django.contrib.contenttypes.models import ContentType
-from tdpservice.parsers.dataclasses import RawRow
-from tdpservice.data_files.models import DataFile
-from tdpservice.parsers.models import ParserErrorCategoryChoices
-from tdpservice.core.utils import log
+import logging
 from datetime import datetime
 from pathlib import Path
-import logging
+
+from django.contrib.admin.models import ADDITION
+from django.contrib.contenttypes.models import ContentType
+
+from tdpservice.core.utils import log
+from tdpservice.data_files.models import DataFile
+from tdpservice.parsers.dataclasses import RawRow
+from tdpservice.parsers.models import ParserErrorCategoryChoices
+
+from .models import ParserError
 
 logger = logging.getLogger(__name__)
 
 
-def create_test_datafile(filename, stt_user, stt, section='Active Case Data'):
+def create_test_datafile(filename, stt_user, stt, section="Active Case Data"):
     """Create a test DataFile instance with the given file attached."""
-    path = str(Path(__file__).parent.joinpath('test/data')) + f'/{filename}'
-    datafile = DataFile.create_new_version({
-        'quarter': 'Q1',
-        'year': 2021,
-        'section': section,
-        'user': stt_user,
-        'stt': stt
-    })
+    path = str(Path(__file__).parent.joinpath("test/data")) + f"/{filename}"
+    datafile = DataFile.create_new_version(
+        {
+            "quarter": "Q1",
+            "year": 2021,
+            "section": section,
+            "user": stt_user,
+            "stt": stt,
+        }
+    )
 
-    with open(path, 'rb') as file:
+    with open(path, "rb") as file:
         datafile.file.save(filename, file)
 
     return datafile
 
 
-def generate_parser_error(datafile, line_number, schema, error_category, error_message, record=None,
-                          field=None, fields=None, deprecated=False):
+def generate_parser_error(
+    datafile,
+    line_number,
+    schema,
+    error_category,
+    error_message,
+    record=None,
+    field=None,
+    fields=None,
+    deprecated=False,
+):
     """Create and return a ParserError using args."""
     fields = [*field] if type(field) is list else [field]
     fields_json = {
         "friendly_name": {
-            getattr(f, 'name', ''): getattr(f, 'friendly_name', '') for f in fields
+            getattr(f, "name", ""): getattr(f, "friendly_name", "") for f in fields
         },
         "item_numbers": {
-            getattr(f, 'name', ''): getattr(f, 'item', '') for f in fields
-        }
+            getattr(f, "name", ""): getattr(f, "item", "") for f in fields
+        },
     }
 
     values_json = {}
     for field in fields:
-        name = getattr(field, 'name', '')
-        value = getattr(record, name, None) if type(record) is not dict else record.get(name, None)
+        name = getattr(field, "name", "")
+        value = (
+            getattr(record, name, None)
+            if type(record) is not dict
+            else record.get(name, None)
+        )
         values_json[name] = value
 
     # If we are a cat1/cat4 error then the parser error will know about all fields. To keep things simple we associate
     # the field with the record type. If the error is not cat1/cat4 then we use the last field since that will be the
     # result field in the multi-field case.
-    field = "Record_Type" if schema is not None and len(fields) == len(schema.fields) else fields[-1]
+    field = (
+        "Record_Type"
+        if schema is not None and len(fields) == len(schema.fields)
+        else fields[-1]
+    )
 
-    if (error_category in (ParserErrorCategoryChoices.PRE_CHECK, ParserErrorCategoryChoices.CASE_CONSISTENCY)):
+    if error_category in (
+        ParserErrorCategoryChoices.PRE_CHECK,
+        ParserErrorCategoryChoices.CASE_CONSISTENCY,
+    ):
         record = None
 
     return ParserError(
         file=datafile,
         row_number=line_number,
-        column_number=getattr(field, 'item', ''),
-        item_number=getattr(field, 'item', ''),
-        field_name=getattr(field, 'name', None) if hasattr(field, 'name') else field,
-        rpt_month_year=getattr(record, 'RPT_MONTH_YEAR', None),
-        case_number=getattr(record, 'CASE_NUMBER', None),
+        column_number=getattr(field, "item", ""),
+        item_number=getattr(field, "item", ""),
+        field_name=getattr(field, "name", None) if hasattr(field, "name") else field,
+        rpt_month_year=getattr(record, "RPT_MONTH_YEAR", None),
+        case_number=getattr(record, "CASE_NUMBER", None),
         error_message=error_message,
         error_type=error_category,
         content_type=ContentType.objects.get_for_model(
             model=schema.model if schema else None
-        ) if record and not isinstance(record, dict) else None,
-        object_id=getattr(record, 'id', None) if record and not isinstance(record, dict) else None,
+        )
+        if record and not isinstance(record, dict)
+        else None,
+        object_id=getattr(record, "id", None)
+        if record and not isinstance(record, dict)
+        else None,
         fields_json=fields_json,
         values_json=values_json,
         deprecated=deprecated,
     )
 
 
-def generate_fra_parser_error(datafile, line_number, schema, error_category, error_message, record=None,
-                              offending_field=None, fields=None, deprecated=False):
+def generate_fra_parser_error(
+    datafile,
+    line_number,
+    schema,
+    error_category,
+    error_message,
+    record=None,
+    offending_field=None,
+    fields=None,
+    deprecated=False,
+):
     """Create and return a ParserError using args."""
     fields_json = {
         "friendly_name": {
-            getattr(offending_field, 'name', ''): getattr(offending_field, 'friendly_name', '')
+            getattr(offending_field, "name", ""): getattr(
+                offending_field, "friendly_name", ""
+            )
         },
         "item_numbers": {
-            getattr(offending_field, 'name', ''): getattr(offending_field, 'item', '')
-        }
+            getattr(offending_field, "name", ""): getattr(offending_field, "item", "")
+        },
     }
 
     values_json = {}
     for field in fields:
-        name = getattr(field, 'name', '')
-        value = getattr(record, name, None) if type(record) is not dict else record.get(name, None)
+        name = getattr(field, "name", "")
+        value = (
+            getattr(record, name, None)
+            if type(record) is not dict
+            else record.get(name, None)
+        )
         values_json[name] = value
 
     return ParserError(
         file=datafile,
         row_number=line_number,
-        column_number=getattr(offending_field, 'item', ''),
-        item_number=getattr(offending_field, 'item', ''),
-        field_name=getattr(offending_field, 'name', None) if hasattr(offending_field, 'name') else offending_field,
+        column_number=getattr(offending_field, "item", ""),
+        item_number=getattr(offending_field, "item", ""),
+        field_name=getattr(offending_field, "name", None)
+        if hasattr(offending_field, "name")
+        else offending_field,
         rpt_month_year=None,
         case_number=None,
         error_message=error_message,
         error_type=error_category,
         content_type=ContentType.objects.get_for_model(
             model=schema.model if schema else None
-        ) if record and not isinstance(record, dict) else None,
-        object_id=getattr(record, 'id', None) if record and not isinstance(record, dict) else None,
+        )
+        if record and not isinstance(record, dict)
+        else None,
+        object_id=getattr(record, "id", None)
+        if record and not isinstance(record, dict)
+        else None,
         fields_json=fields_json,
         values_json=values_json,
         deprecated=deprecated,
@@ -117,8 +167,17 @@ def generate_fra_parser_error(datafile, line_number, schema, error_category, err
 
 def make_generate_fra_parser_error(datafile, line_number):
     """Configure generate_fra_parser_error with a datafile and line number."""
-    def generate(schema, error_category, error_message, record=None,
-                 offending_field=None, field=None, fields=None, deprecated=False):
+
+    def generate(
+        schema,
+        error_category,
+        error_message,
+        record=None,
+        offending_field=None,
+        field=None,
+        fields=None,
+        deprecated=False,
+    ):
         return generate_fra_parser_error(
             datafile=datafile,
             line_number=line_number,
@@ -130,12 +189,16 @@ def make_generate_fra_parser_error(datafile, line_number):
             fields=fields if fields else [field],
             deprecated=deprecated,
         )
+
     return generate
 
 
 def make_generate_parser_error(datafile, line_number):
     """Configure generate_parser_error with a datafile and line number."""
-    def generate(schema, error_category, error_message, record=None, field=None, deprecated=False):
+
+    def generate(
+        schema, error_category, error_message, record=None, field=None, deprecated=False
+    ):
         return generate_parser_error(
             datafile=datafile,
             line_number=line_number,
@@ -152,7 +215,10 @@ def make_generate_parser_error(datafile, line_number):
 
 def make_generate_file_precheck_parser_error(datafile, line_number):
     """Configure a generate_parser_error that acts as a file pre-check error."""
-    def generate(schema, error_category, error_message, record=None, field=None, deprecated=False):
+
+    def generate(
+        schema, error_category, error_message, record=None, field=None, deprecated=False
+    ):
         return generate_parser_error(
             datafile=datafile,
             line_number=line_number,
@@ -169,7 +235,16 @@ def make_generate_file_precheck_parser_error(datafile, line_number):
 
 def make_generate_case_consistency_parser_error(datafile):
     """Configure a generate_parser_error that is specific to case consistency errors."""
-    def generate(schema, error_category, error_message, line_number=None, record=None, field=None, deprecated=False):
+
+    def generate(
+        schema,
+        error_category,
+        error_message,
+        line_number=None,
+        record=None,
+        field=None,
+        deprecated=False,
+    ):
         return generate_parser_error(
             datafile=datafile,
             line_number=line_number,
@@ -184,13 +259,13 @@ def make_generate_case_consistency_parser_error(datafile):
     return generate
 
 
-def clean_options_string(options, remove=['\'', '"', ' ']):
+def clean_options_string(options, remove=["'", '"', " "]):
     """Return a prettied-up version of an options array."""
-    options_str = ', '.join(str(o) for o in options)
-    return f'[{options_str}]'
+    options_str = ", ".join(str(o) for o in options)
+    return f"[{options_str}]"
 
 
-'''
+"""
 text -> section YES
 text -> models{} YES
 text -> model YES
@@ -201,18 +276,18 @@ model -> text YES
 section -> text
 
 text**: input string from the header/file
-'''
+"""
 
 
 def get_prog_from_section(str_section):
     """Return the program type for a given section."""
     # e.g., 'SSP Closed Case Data'
-    if str_section.startswith('SSP'):
-        return 'SSP'
-    elif str_section.startswith('Tribal'):
-        return 'Tribal TAN'
+    if str_section.startswith("SSP"):
+        return "SSP"
+    elif str_section.startswith("Tribal"):
+        return "Tribal TAN"
     else:
-        return 'TAN'
+        return "TAN"
 
     # TODO: if given a datafile (section), we can reverse back to the program b/c the
     # section string has "tribal/ssp" in it, then process of elimination we have tanf
@@ -225,13 +300,15 @@ def fiscal_to_calendar(year, fiscal_quarter):
     if int_qtr == 1:
         year = year - 1
 
-    ind_qtr = array.index(int_qtr)  # get the index so we can easily wrap-around end of array
+    ind_qtr = array.index(
+        int_qtr
+    )  # get the index so we can easily wrap-around end of array
     return year, "Q{}".format(array[ind_qtr - 1])  # return the previous quarter
 
 
 def calendar_to_fiscal(calendar_year, fiscal_quarter):
     """Decrement the calendar year if in Q1."""
-    return calendar_year - 1 if fiscal_quarter == 'Q1' else calendar_year
+    return calendar_year - 1 if fiscal_quarter == "Q1" else calendar_year
 
 
 def transform_to_months(quarter):
@@ -248,12 +325,15 @@ def transform_to_months(quarter):
         case _:
             raise ValueError("Invalid quarter value.")
 
+
 def month_to_int(month):
     """Return the integer value of a month."""
-    return datetime.strptime(month, '%b').strftime('%m')
+    return datetime.strptime(month, "%b").strftime("%m")
+
 
 def year_month_to_year_quarter(year_month):
     """Return the year and quarter from a year_month string."""
+
     def get_quarter_from_month(month):
         """Return the quarter from a month."""
         if month in ["01", "02", "03"]:
@@ -276,7 +356,7 @@ def year_month_to_year_quarter(year_month):
 def get_years_apart(rpt_month_year_date, date):
     """Return the number of years (double) between rpt_month_year_date and the target date - both `datetime`s."""
     delta = rpt_month_year_date - date
-    age = delta.days/365.25
+    age = delta.days / 365.25
     return age
 
 
@@ -288,7 +368,7 @@ class SortedRecords:
     """
 
     def __init__(self, section):
-        self.records_are_s1_or_s2 = section in {'A', 'C'}
+        self.records_are_s1_or_s2 = section in {"A", "C"}
         self.hash_sorted_cases = dict()
         self.cases = dict()
         self.cases_already_removed = set()
@@ -299,8 +379,10 @@ class SortedRecords:
         record, document = record_doc_pair
 
         if case_hash in self.cases_already_removed:
-            logger.info("Record's case has already been removed due to category four errors. Not adding record with "
-                        f"info: ({record.RecordType}, {getattr(record, 'CASE_NUMBER', None)})")
+            logger.info(
+                "Record's case has already been removed due to category four errors. Not adding record with "
+                f"info: ({record.RecordType}, {getattr(record, 'CASE_NUMBER', None)})"
+            )
             return
 
         if case_hash is not None:
@@ -344,45 +426,84 @@ class SortedRecords:
                 case_ids = list()
                 for records in removed.values():
                     for record in records:
-                        case_ids.append((record.RecordType, getattr(record, 'CASE_NUMBER', None),
-                                        getattr(record, 'RPT_MONTH_YEAR', None)))
+                        case_ids.append(
+                            (
+                                record.RecordType,
+                                getattr(record, "CASE_NUMBER", None),
+                                getattr(record, "RPT_MONTH_YEAR", None),
+                            )
+                        )
                         for record_set in self.cases.values():
                             record_set.pop(record, None)
-                    logger.info("Case consistency errors generated, removing case from in memory cache. "
-                                f"Record(s) info: {case_ids}.")
+                    logger.info(
+                        "Case consistency errors generated, removing case from in memory cache. "
+                        f"Record(s) info: {case_ids}."
+                    )
                 return True and case_hash not in self.serialized_cases
         return False
 
+
 def generate_t1_t4_hashes(row: RawRow, record):
     """Return hashes for duplicate and partial duplicate detection for T1 & T4 records."""
-    logger.debug(f"Partial Hash Field Values: for T1/T4: {record.RecordType} {str(record.RPT_MONTH_YEAR)} ")
-    return hash(row), hash(record.RecordType + str(record.RPT_MONTH_YEAR or '') + str(record.CASE_NUMBER or ''))
+    logger.debug(
+        f"Partial Hash Field Values: for T1/T4: {record.RecordType} {str(record.RPT_MONTH_YEAR)} "
+    )
+    return hash(row), hash(
+        record.RecordType
+        + str(record.RPT_MONTH_YEAR or "")
+        + str(record.CASE_NUMBER or "")
+    )
+
 
 def generate_t2_t3_t5_hashes(row: RawRow, record):
     """Return hashes for duplicate and partial duplicate detection for T2 & T3 & T5 records."""
-    logger.debug(f"Partial Hash Field Values: for T2/T3/T5: {record.RecordType} {str(record.RPT_MONTH_YEAR)} ")
-    return hash(row), hash(record.RecordType + str(record.RPT_MONTH_YEAR or '') + str(record.CASE_NUMBER or '') +
-                           str(record.FAMILY_AFFILIATION or '') + str(record.DATE_OF_BIRTH or '') +
-                           str(record.SSN or ''))
+    logger.debug(
+        f"Partial Hash Field Values: for T2/T3/T5: {record.RecordType} {str(record.RPT_MONTH_YEAR)} "
+    )
+    return hash(row), hash(
+        record.RecordType
+        + str(record.RPT_MONTH_YEAR or "")
+        + str(record.CASE_NUMBER or "")
+        + str(record.FAMILY_AFFILIATION or "")
+        + str(record.DATE_OF_BIRTH or "")
+        + str(record.SSN or "")
+    )
+
 
 def get_t1_t4_partial_hash_members():
     """Return field names used to generate t1/t4 partial hashes."""
     return ["RecordType", "RPT_MONTH_YEAR", "CASE_NUMBER"]
 
+
 def get_t2_t3_t5_partial_hash_members():
     """Return field names used to generate t2/t3/t5 partial hashes."""
-    return ["RecordType", "RPT_MONTH_YEAR", "CASE_NUMBER", "FAMILY_AFFILIATION", "DATE_OF_BIRTH", "SSN"]
+    return [
+        "RecordType",
+        "RPT_MONTH_YEAR",
+        "CASE_NUMBER",
+        "FAMILY_AFFILIATION",
+        "DATE_OF_BIRTH",
+        "SSN",
+    ]
+
 
 def get_record_value_by_field_name(record, field_name):
     """Return the value of a record for a given field name, accounting for the generic record type."""
-    return record.get(field_name, None) if type(record) is dict else getattr(record, field_name, None)
+    return (
+        record.get(field_name, None)
+        if type(record) is dict
+        else getattr(record, field_name, None)
+    )
+
 
 def log_parser_exception(datafile, error_msg, level):
     """Log to DAC and console on parser exception."""
-    context = {'user_id': datafile.user.pk,
-               'action_flag': ADDITION,
-               'object_repr': f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
-               "object_id": datafile}
+    context = {
+        "user_id": datafile.user.pk,
+        "action_flag": ADDITION,
+        "object_repr": f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
+        "object_id": datafile,
+    }
     log(error_msg, context, level)
 
 

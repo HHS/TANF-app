@@ -1,22 +1,23 @@
 """Admin class for DataFile objects."""
 
-from django.contrib import admin
-from tdpservice.core.utils import ReadOnlyAdminMixin
-from tdpservice.data_files.models import DataFile, LegacyFileTransfer
-from tdpservice.parsers.models import DataFileSummary, ParserError
-from tdpservice.data_files.admin.filters import LatestReparseEvent, VersionFilter
-from django.conf import settings
-from django.utils.html import format_html
+import logging
 from datetime import datetime, timedelta, timezone
+
+from django.conf import settings
+from django.contrib import admin, messages
 from django.shortcuts import redirect
+from django.utils.html import format_html
 from django.utils.translation import ngettext
-from django.contrib import messages
-from tdpservice.data_files.tasks import reparse_files
-from tdpservice.data_files.s3_client import S3Client
-from tdpservice.log_handler import S3FileHandler
+
 from botocore.exceptions import ClientError
 
-import logging
+from tdpservice.core.utils import ReadOnlyAdminMixin
+from tdpservice.data_files.admin.filters import LatestReparseEvent, VersionFilter
+from tdpservice.data_files.models import DataFile, LegacyFileTransfer
+from tdpservice.data_files.s3_client import S3Client
+from tdpservice.data_files.tasks import reparse_files
+from tdpservice.log_handler import S3FileHandler
+from tdpservice.parsers.models import DataFileSummary, ParserError
 
 logger = logging.getLogger(__name__)
 
@@ -79,29 +80,39 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     exclude = ("file",)
 
     fieldsets = (
-            ('Properties', {
-                'fields': (
-                    'created_at',
-                    'quarter',
-                    'year',
-                    'section',
-                    'prog_type',
-                    'stt',
-                    'version',),
-                'classes': ('wide', 'extrapretty'),
-            }),
-            ('File', {
-                'fields': (
-                    'versioned_file_download_link',
-                    's3_versioning_id',
-                    'filename',),
-            }),
-            ('Logs', {
-                'fields': (
-                    'log_file',),
-                })
-        )
-    readonly_fields = ('year',)
+        (
+            "Properties",
+            {
+                "fields": (
+                    "created_at",
+                    "quarter",
+                    "year",
+                    "section",
+                    "prog_type",
+                    "stt",
+                    "version",
+                ),
+                "classes": ("wide", "extrapretty"),
+            },
+        ),
+        (
+            "File",
+            {
+                "fields": (
+                    "versioned_file_download_link",
+                    "s3_versioning_id",
+                    "filename",
+                ),
+            },
+        ),
+        (
+            "Logs",
+            {
+                "fields": ("log_file",),
+            },
+        ),
+    )
+    readonly_fields = ("year",)
 
     def get_fieldsets(self, request, obj):
         """Return the fieldsets."""
@@ -110,15 +121,17 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         # Remove the 'Logs' fieldset if the file doesn't exist
         datafile = obj
         if datafile:
-            link = f"{datafile.year}/{datafile.quarter}/" \
-                  f"{datafile.stt}/{datafile.section}"
+            link = (
+                f"{datafile.year}/{datafile.quarter}/"
+                f"{datafile.stt}/{datafile.section}"
+            )
             response = S3FileHandler.download_file(key=link)
             if response is not None:
                 return field_sets
             else:
                 # If the log file is not available, remove the field from the fieldsets
                 for field_set in field_sets:
-                    if field_set[0] == 'Logs' and response is None:
+                    if field_set[0] == "Logs" and response is None:
                         field_sets_list = list(field_sets)
                         field_sets_list.remove(field_set)
                         return tuple(field_sets_list)

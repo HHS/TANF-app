@@ -1,15 +1,16 @@
 """Add STTs and Regions to Django Admin."""
 
 from django.contrib import admin
-from .models import STT, Region
+
 from ..core.utils import ReadOnlyAdminMixin
+from .models import STT, Region
 
 
 @admin.register(STT)
 class STTAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     """Read-only Admin class for STT models."""
 
-    search_fields = ['name', 'stt_code']
+    search_fields = ["name", "stt_code"]
 
     list_display = [
         "id",
@@ -29,8 +30,10 @@ class STTAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         if obj.type == "tribe":
             return obj.state
         return None
+
     has_state.short_description = "State"
     has_state.admin_order_field = "state"
+
 
 @admin.register(Region)
 class RegionAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):

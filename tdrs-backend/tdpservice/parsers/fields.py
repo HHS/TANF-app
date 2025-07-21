@@ -1,8 +1,9 @@
 """Datafile field representations."""
 
 import logging
-from tdpservice.parsers.validators.util import value_is_empty
+
 from tdpservice.parsers.dataclasses import FieldType, Position, RawRow
+from tdpservice.parsers.validators.util import value_is_empty
 
 logger = logging.getLogger(__name__)
 
@@ -61,8 +62,13 @@ class Field:
 
         # We need the type check because the XLSX decoder returns typed data not strictly strings.
         not_numeric = not isinstance(value, (int, float))
-        if value is None or (not_numeric and (len(value) < value_length or value_is_empty(value, value_length))):
-            logger.debug(f"Field: '{self.name}' at position: [{self.position.start}, {self.position.end}) is empty.")
+        if value is None or (
+            not_numeric
+            and (len(value) < value_length or value_is_empty(value, value_length))
+        ):
+            logger.debug(
+                f"Field: '{self.name}' at position: [{self.position.start}, {self.position.end}) is empty."
+            )
             return None
 
         match self.type:
@@ -83,8 +89,20 @@ class Field:
 class TransformField(Field):
     """Represents a field that requires some transformation before serializing."""
 
-    def __init__(self, transform_func, item, name, friendly_name, type, startIndex, endIndex, required=True,
-                 validators=[], ignore_errors=False, **kwargs):
+    def __init__(
+        self,
+        transform_func,
+        item,
+        name,
+        friendly_name,
+        type,
+        startIndex,
+        endIndex,
+        required=True,
+        validators=[],
+        ignore_errors=False,
+        **kwargs,
+    ):
         super().__init__(
             item=item,
             name=name,
@@ -95,7 +113,8 @@ class TransformField(Field):
             required=required,
             validators=validators,
             ignore_errors=ignore_errors,
-            **kwargs)
+            **kwargs,
+        )
         self.transform_func = transform_func
         self.kwargs = kwargs
 

@@ -1,5 +1,6 @@
 """Handle authorization calls globally."""
 import datetime
+
 from django.conf import settings
 
 

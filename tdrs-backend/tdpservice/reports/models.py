@@ -11,10 +11,7 @@ from tdpservice.users.models import User
 
 def get_s3_upload_path(instance, filename):
     """Produce a unique upload path for S3 files for a given STT and Quarter."""
-    return os.path.join(
-        f'data_files/{instance.stt.id}/{instance.quarter}',
-        filename
-    )
+    return os.path.join(f"data_files/{instance.stt.id}/{instance.quarter}", filename)
 
 
 # The Report File model was starting to explode, and I think that keeping this logic
@@ -26,12 +23,11 @@ class File(models.Model):
         """Metadata."""
 
         abstract = True
+
     # Keep the file name because it will be different in s3,
     # but the interface will still want to present the file with its
     # original name.
-    original_filename = models.CharField(max_length=256,
-                                         blank=False,
-                                         null=False)
+    original_filename = models.CharField(max_length=256, blank=False, null=False)
     # Slug is the name of the file in S3
     # NOTE: Currently unused, may be removed with a later release
     slug = models.CharField(max_length=256, blank=False, null=False)
@@ -71,15 +67,13 @@ class ReportFile(File):
         ]
 
     created_at = models.DateTimeField(auto_now_add=True)
-    quarter = models.CharField(max_length=16,
-                               blank=False,
-                               null=False,
-                               choices=Quarter.choices)
+    quarter = models.CharField(
+        max_length=16, blank=False, null=False, choices=Quarter.choices
+    )
     year = models.IntegerField()
-    section = models.CharField(max_length=32,
-                               blank=False,
-                               null=False,
-                               choices=Section.choices)
+    section = models.CharField(
+        max_length=32, blank=False, null=False, choices=Section.choices
+    )
 
     version = models.IntegerField()
 
@@ -93,10 +87,7 @@ class ReportFile(File):
     # NOTE: `file` is only temporarily nullable until we complete the issue:
     # https://github.com/raft-tech/TANF-app/issues/755
     file = models.FileField(
-        storage=DataFilesS3Storage,
-        upload_to=get_s3_upload_path,
-        null=True,
-        blank=True
+        storage=DataFilesS3Storage, upload_to=get_s3_upload_path, null=True, blank=True
     )
 
     @classmethod
@@ -115,7 +106,10 @@ class ReportFile(File):
             or 0
         ) + 1
 
-        return ReportFile.objects.create(version=version, **data,)
+        return ReportFile.objects.create(
+            version=version,
+            **data,
+        )
 
     @classmethod
     def find_latest_version_number(self, year, quarter, section, stt):
@@ -130,5 +124,9 @@ class ReportFile(File):
         version = self.find_latest_version_number(year, quarter, section, stt)
 
         return self.objects.filter(
-            version=version, year=year, quarter=quarter, section=section, stt=stt,
+            version=version,
+            year=year,
+            quarter=quarter,
+            section=section,
+            stt=stt,
         ).first()

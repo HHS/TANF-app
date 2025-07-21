@@ -1,25 +1,30 @@
 """Shared celery search_indexes tasks for beat."""
 
 from __future__ import absolute_import
+
 import gzip
 import os
-from tdpservice.users.models import User
-from celery import shared_task
+
+from django.apps import apps
+from django.conf import settings
+
 from botocore.exceptions import ClientError
+from celery import shared_task
+
 from tdpservice.core.utils import log
 from tdpservice.data_files.s3_client import S3Client
-from django.conf import settings
-from django.apps import apps
+from tdpservice.users.models import User
 
 
 def prettify_time_delta(start, end):
     """Calculate minutes and seconds."""
-    elapsed_seconds = int(end-start)
+    elapsed_seconds = int(end - start)
     elapsed_minutes = elapsed_seconds // 60
-    remainder_seconds = int(elapsed_seconds - (elapsed_minutes*60))
+    remainder_seconds = int(elapsed_seconds - (elapsed_minutes * 60))
     remainder_seconds = remainder_seconds if elapsed_minutes > 0 else elapsed_seconds
 
     return elapsed_minutes, remainder_seconds
+
 
 class RowIterator:
     """Iterator class to support custom CSV row generation."""
@@ -54,7 +59,9 @@ class RowIterator:
 
 
 @shared_task
-def export_queryset_to_s3_csv(query_str, query_params, field_names, model_name, s3_filename):
+def export_queryset_to_s3_csv(
+    query_str, query_params, field_names, model_name, s3_filename
+):
     """
     Export a selected queryset to a csv file stored in s3.
 
@@ -64,15 +71,15 @@ def export_queryset_to_s3_csv(query_str, query_params, field_names, model_name, 
     @param model_name: the `model._meta.model_name` of the model to export.
     @param s3_filename: a string representing the file path/name in s3.
     """
-    system_user, _ = User.objects.get_or_create(username='system')
-    Model = apps.get_model('search_indexes', model_name)
+    system_user, _ = User.objects.get_or_create(username="system")
+    Model = apps.get_model("search_indexes", model_name)
     queryset = Model.objects.raw(query_str, query_params)
     iterator = RowIterator(field_names, queryset)
     s3 = S3Client()
 
-    tmp_filename = 'file.csv.gz'
+    tmp_filename = "file.csv.gz"
     record_count = -1  # offset row count to account for the header
-    with gzip.open(tmp_filename, 'wt') as f:
+    with gzip.open(tmp_filename, "wt") as f:
         for row in iterator:
             record_count += 1
             f.write(row)
@@ -80,16 +87,18 @@ def export_queryset_to_s3_csv(query_str, query_params, field_names, model_name, 
     local_filename = os.path.basename(tmp_filename)
 
     try:
-        s3.client.upload_file(local_filename, settings.AWS_S3_DATAFILES_BUCKET_NAME, s3_filename)
+        s3.client.upload_file(
+            local_filename, settings.AWS_S3_DATAFILES_BUCKET_NAME, s3_filename
+        )
     except ClientError as e:
         log(
-            f'Export failed: {s3_filename}. {e}',
-            {'user_id': system_user.pk, 'object_id': None, 'object_repr': ''},
-            'error'
+            f"Export failed: {s3_filename}. {e}",
+            {"user_id": system_user.pk, "object_id": None, "object_repr": ""},
+            "error",
         )
     else:
         log(
-            f'Export of {record_count} {model_name} objects complete: {s3_filename}',
-            {'user_id': system_user.pk, 'object_id': None, 'object_repr': ''}
+            f"Export of {record_count} {model_name} objects complete: {s3_filename}",
+            {"user_id": system_user.pk, "object_id": None, "object_repr": ""},
         )
     os.remove(local_filename)

@@ -3,9 +3,9 @@ import pytest
 
 from tdpservice.backends import DataFilesS3Storage, StaticFilesS3Storage
 
-LOCALSTACK_DUMMY_CREDS = 'test'
-LOCALSTACK_REGION_NAME = 'us-gov-west-1'
-LOCALSTACK_URL = 'http://localstack:4566'
+LOCALSTACK_DUMMY_CREDS = "test"
+LOCALSTACK_REGION_NAME = "us-gov-west-1"
+LOCALSTACK_URL = "http://localstack:4566"
 
 
 @pytest.fixture
@@ -37,8 +37,7 @@ def test_datafiles_localstack_storage(datafiles_backend, settings):
 
 
 def test_datafiles_and_staticfiles_storages_have_distinct_credentials(
-    datafiles_backend,
-    staticfiles_backend
+    datafiles_backend, staticfiles_backend
 ):
     """Test that the credentials used differ between backends."""
     assert datafiles_backend.access_key != staticfiles_backend.access_key

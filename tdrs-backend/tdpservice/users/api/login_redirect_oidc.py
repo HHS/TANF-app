@@ -1,16 +1,17 @@
 """Handle login requests."""
 
 import logging
-import requests
 import secrets
 import time
-from rest_framework import status
 from urllib.parse import quote_plus, urlencode
 
 from django.conf import settings
-from django.http import HttpResponseRedirect, HttpResponse
-from django.views.generic.base import RedirectView
+from django.http import HttpResponse, HttpResponseRedirect
 from django.template.loader import render_to_string
+from django.views.generic.base import RedirectView
+
+import requests
+from rest_framework import status
 
 logger = logging.getLogger(__name__)
 
@@ -54,9 +55,7 @@ class LoginRedirectLoginDotGov(RedirectView):
         encoded_params = urlencode(auth_params, quote_via=quote_plus)
 
         # build out full API GET call to authorize endpoint
-        auth_endpoint = (
-            settings.LOGIN_GOV_AUTHORIZATION_ENDPOINT + "?" + encoded_params
-        )
+        auth_endpoint = settings.LOGIN_GOV_AUTHORIZATION_ENDPOINT + "?" + encoded_params
 
         # login.gov expects unescaped '+' value for scope parameter
         auth_endpoint_with_scope = auth_endpoint + "&scope=openid+email"
@@ -97,10 +96,10 @@ class LoginRedirectAMS(RedirectView):
         """
         r = requests.get(settings.AMS_CONFIGURATION_ENDPOINT, timeout=10)
         if r.status_code != 200:
-            logger.error(
+            logger.error(f"Failed to get AMS configuration: {r.status_code} - {r.text}")
+            raise Exception(
                 f"Failed to get AMS configuration: {r.status_code} - {r.text}"
             )
-            raise Exception(f"Failed to get AMS configuration: {r.status_code} - {r.text}")
         else:
             data = r.json()
             return data
@@ -116,11 +115,16 @@ class LoginRedirectAMS(RedirectView):
         except Exception as e:
             logger.error(f"Failed to get AMS configuration: {e}")
             rendered = render_to_string(
-                'error_pages/500.html',
-                {'error': f"Failed to get AMS configuration: {e}",
-                 'frontend': settings.FRONTEND_BASE_URL})
-            return HttpResponse(rendered,
-                                status=status.HTTP_503_SERVICE_UNAVAILABLE,)
+                "error_pages/500.html",
+                {
+                    "error": f"Failed to get AMS configuration: {e}",
+                    "frontend": settings.FRONTEND_BASE_URL,
+                },
+            )
+            return HttpResponse(
+                rendered,
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
         auth_params = {
             "client_id": settings.AMS_CLIENT_ID,
             "nonce": nonce,
@@ -133,9 +137,7 @@ class LoginRedirectAMS(RedirectView):
         encoded_params = urlencode(auth_params, quote_via=quote_plus)
 
         # build out full API GET call to authorize endpoint
-        auth_endpoint = (
-            configuration["authorization_endpoint"] + "?" + encoded_params
-        )
+        auth_endpoint = configuration["authorization_endpoint"] + "?" + encoded_params
 
         auth_endpoint_with_scope = auth_endpoint + "&scope=openid+email"
 
@@ -144,7 +146,7 @@ class LoginRedirectAMS(RedirectView):
             "nonce": nonce,
             "state": state,
             "added_on": time.time(),
-            "ams": True
+            "ams": True,
         }
 
         logger.info(encoded_params)

@@ -6,7 +6,6 @@ from tdpservice.parsers.row_schema import FRASchema
 from tdpservice.parsers.validators import category1, category2
 from tdpservice.search_indexes.models.fra import TANF_Exiter1
 
-
 te1 = [
     FRASchema(
         record_type="TE1",
@@ -23,7 +22,7 @@ te1 = [
                 position=Position(start=0),
                 required=True,
                 validators=[],
-                is_encrypted=False
+                is_encrypted=False,
             ),
             Field(
                 item="B",
@@ -42,8 +41,8 @@ te1 = [
                         category2.valueNotAt(slice(5, 9), "0000"),
                     ),
                 ],
-                is_encrypted=False
-            )
-        ]
+                is_encrypted=False,
+            ),
+        ],
     )
 ]

@@ -112,7 +112,7 @@ tasks:
     desc: Open a Django shell in the backend container
     dir: tdrs-backend
     cmds:
-      - docker compose -f docker-compose.yml exec web sh -c "python ./manage.py shell"
+      - docker compose -f docker-compose.yml exec web sh -c "python ./manage.py shell_plus"
 
   backend-exec:
     desc: Execute a command in the backend container

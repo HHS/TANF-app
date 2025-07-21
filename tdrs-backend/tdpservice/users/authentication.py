@@ -1,10 +1,13 @@
 """Define custom authentication class."""
 
+import logging
+
 from django.contrib.auth import get_user_model
 
 from rest_framework.authentication import BaseAuthentication
-import logging
+
 logger = logging.getLogger(__name__)
+
 
 class CustomAuthentication(BaseAuthentication):
     """Define authentication and get user functions for custom authentication."""
@@ -18,7 +21,9 @@ class CustomAuthentication(BaseAuthentication):
         #   tdpservice/users/api/login.py:TokenAuthorizationOIDC.handleUser
         #   https://www.django-rest-framework.org/api-guide/authentication
         User = get_user_model()
-        logging.debug(f"CustomAuthentication::authenticate: {username}, {login_gov_uuid}, {hhs_id}")
+        logging.debug(
+            f"CustomAuthentication::authenticate: {username}, {login_gov_uuid}, {hhs_id}"
+        )
         try:
             if hhs_id:
                 try:
@@ -27,7 +32,9 @@ class CustomAuthentication(BaseAuthentication):
                     # If below line also fails with User.DNE, will bubble up and return None
                     user = User.objects.filter(username=username)
                     user.update(hhs_id=hhs_id)
-                    logging.debug("Updated user {} with hhs_id {}.".format(username, hhs_id))
+                    logging.debug(
+                        "Updated user {} with hhs_id {}.".format(username, hhs_id)
+                    )
                 return User.objects.get(hhs_id=hhs_id)
 
             elif login_gov_uuid:

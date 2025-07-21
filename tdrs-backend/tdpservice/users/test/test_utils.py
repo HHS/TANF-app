@@ -1,11 +1,14 @@
 """Test user utils."""
 
-import pytest
 import time
-from ..api import utils
-from django.test import TestCase
+
 from django.core.exceptions import SuspiciousOperation
+from django.test import TestCase
+
+import pytest
 from rest_framework import status
+
+from ..api import utils
 
 
 class TestUtilities(TestCase):
@@ -51,8 +54,7 @@ class TestUtilities(TestCase):
         }
         session.save()
         with pytest.raises(SuspiciousOperation):
-            assert utils.get_nonce_and_state(session)\
-
+            assert utils.get_nonce_and_state(session)
 
     @pytest.mark.django_db
     def test_error_raised_when_tracker_not_in_session(self):

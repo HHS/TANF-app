@@ -1,14 +1,18 @@
 """Serialize user data."""
 
 import logging
+
 from django.contrib.auth.models import Group, Permission
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+
 from rest_framework import serializers, utils
 
-from tdpservice.stts.serializers import STTPrimaryKeyRelatedField, RegionPrimaryKeyRelatedField
-from tdpservice.users.models import User, Feedback
-
+from tdpservice.stts.serializers import (
+    RegionPrimaryKeyRelatedField,
+    STTPrimaryKeyRelatedField,
+)
+from tdpservice.users.models import Feedback, User
 
 logger = logging.getLogger(__name__)
 
@@ -56,42 +60,38 @@ class UserSerializer(serializers.ModelSerializer):
             "last_name",
             "access_request",
             "account_approval_status",
-            'groups',
-            'is_superuser',
-            'is_staff',
-            'stt',
-            'regions',
-            'login_gov_uuid',
-            'hhs_id',
-            'last_login',
-            'date_joined',
-            'access_requested_date',
+            "groups",
+            "is_superuser",
+            "is_staff",
+            "stt",
+            "regions",
+            "login_gov_uuid",
+            "hhs_id",
+            "last_login",
+            "date_joined",
+            "access_requested_date",
         )
         read_only_fields = (
-            'id',
-            'username',
-            'access_request',
-            'account_approval_status',
-            'groups',
-            'login_gov_uuid',
-            'is_staff',
-            'is_superuser',
-            'hhs_id',
-            'last_login',
-            'date_joined',
-            'access_requested_date',
+            "id",
+            "username",
+            "access_request",
+            "account_approval_status",
+            "groups",
+            "login_gov_uuid",
+            "is_staff",
+            "is_superuser",
+            "hhs_id",
+            "last_login",
+            "date_joined",
+            "access_requested_date",
         )
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer used for retrieving/updating a user's profile."""
 
-    email = serializers.CharField(read_only=True, source='username')
-    roles = GroupSerializer(
-        many=True,
-        read_only=True,
-        source='groups'
-    )
+    email = serializers.CharField(read_only=True, source="username")
+    roles = GroupSerializer(many=True, read_only=True, source="groups")
     stt = STTPrimaryKeyRelatedField(required=False)
     regions = RegionPrimaryKeyRelatedField(many=True, required=False)
 
@@ -100,48 +100,48 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
         model = User
         fields = [
-            'id',
-            'first_name',
-            'last_name',
-            'email',
-            'stt',
-            'regions',
-            'login_gov_uuid',
-            'hhs_id',
-            'roles',
-            'groups',
-            'is_superuser',
-            'is_staff',
-            'last_login',
-            'date_joined',
-            'access_request',
-            'access_requested_date',
-            'account_approval_status',
-            'feature_flags',
+            "id",
+            "first_name",
+            "last_name",
+            "email",
+            "stt",
+            "regions",
+            "login_gov_uuid",
+            "hhs_id",
+            "roles",
+            "groups",
+            "is_superuser",
+            "is_staff",
+            "last_login",
+            "date_joined",
+            "access_request",
+            "access_requested_date",
+            "account_approval_status",
+            "feature_flags",
         ]
         read_only_fields = (
-            'id',
-            'email',
-            'login_gov_uuid',
-            'hhs_id',
-            'groups',
-            'roles',
-            'is_staff',
-            'is_superuser',
-            'last_login',
-            'date_joined',
-            'access_request',
-            'access_requested_date',
-            'account_approval_status',
-            'feature_flags',
+            "id",
+            "email",
+            "login_gov_uuid",
+            "hhs_id",
+            "groups",
+            "roles",
+            "is_staff",
+            "is_superuser",
+            "last_login",
+            "date_joined",
+            "access_request",
+            "access_requested_date",
+            "account_approval_status",
+            "feature_flags",
         )
 
         """Enforce first and last name to be in API call and not empty"""
         extra_kwargs = {
-            'first_name': {'allow_blank': False, 'required': True},
-            'last_name': {'allow_blank': False, 'required': True},
-            'stt': {'allow_blank': True, 'required': False},
-            'regions': {'allow_blank': True, 'required': False},
+            "first_name": {"allow_blank": False, "required": True},
+            "last_name": {"allow_blank": False, "required": True},
+            "stt": {"allow_blank": True, "required": False},
+            "regions": {"allow_blank": True, "required": False},
         }
 
     def update(self, instance, validated_data):
@@ -151,7 +151,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         # The only modification is to the line 1033 in rest_framework.serializers.ModelSerializer::update.
         # The User model M2M fields are passed as a kwargs to `save()` so that the email context can access the
         # fields.
-        serializers.raise_errors_on_nested_writes('update', self, validated_data)
+        serializers.raise_errors_on_nested_writes("update", self, validated_data)
         info = utils.model_meta.get_field_info(instance)
         # Simply set each attribute on the instance, and then save it.
         # Note that unlike `.create()` we don't need to treat many-to-many
@@ -165,7 +165,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
                 setattr(instance, attr, value)
 
         # We changed this line
-        instance.save(regions=validated_data.get('regions', []))
+        instance.save(regions=validated_data.get("regions", []))
 
         # Note that many-to-many fields are set after updating instance.
         # Setting m2m fields triggers signals which could potentially change
@@ -191,17 +191,17 @@ class FeedbackSerializer(serializers.ModelSerializer):
 
         model = Feedback
         fields = (
-            'id',
-            'rating',
-            'feedback',
-            'anonymous',
+            "id",
+            "rating",
+            "feedback",
+            "anonymous",
         )
         read_only_fields = (
-            'id',
-            'user',
-            'acked',
-            'reviewed_at',
-            'reviewed_by',
+            "id",
+            "user",
+            "acked",
+            "reviewed_at",
+            "reviewed_by",
         )
 
     def create(self, validated_data):
