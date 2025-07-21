@@ -5,7 +5,7 @@
 **Date**: July 17, 2025 <br>
 
 ## Summary
-This technical memorandum outlines the implementation plan for integrating Security Event Tokens (SETs) from Login.gov into the TDP application. The integration will enable TDP to:
+This technical memorandum outlines the implementation plan for integrating [Security Event Tokens (SETs)](https://developers.login.gov/security-events/) from Login.gov into the TDP application. The integration will enable TDP to:
 1. Handle security-related notifications about user accounts
 2. Automatically manage account recreation scenarios when users delete and recreate their Login.gov accounts
 3. Maintain audit history and respond appropriately to security events
@@ -17,10 +17,11 @@ Login.gov provides a Security Event Token (SET) notification system that follows
 - Password resets
 - Recovery information changes
 
-A common issue in production is that users sometimes delete their Login.gov accounts and recreate them, which results in a new `sub` claim for the same email address. This causes authentication issues in TDP since it relies on the `sub` claim for user identification. By implementing SET handling, particularly for the "Account Purged" event, we can automatically manage these account recreation scenarios without requiring additional user verification steps.
+A common issue in production is that users sometimes delete their Login.gov accounts and recreate them, which results in a new `sub` claim for the same email address. This causes authentication issues in TDP. TDP manages users by the `sub`/`login_gov_uuid`. That is, TDP looks up users via the `login_gov_uuid`. When a user's ID changes, TDP tries to create a new account. However, the account creation will fail because TDP places a unique constraint on the user's `email`. Since the user's email hasn't changed TDP's ORM throws a unique key violation error, which is presented as a plain old json object to the user (seen below). By implementing SET handling, particularly for the "Account Purged" event, we can automatically manage these account recreation scenarios without requiring additional user verification steps.
+
+![Unique Key Violation](./unique_key_violation.png)
 
 ## Out of Scope
-* Changes to the existing Login.gov authentication flow
 * Frontend UI components for displaying security events
 * Integration with other identity providers' security event systems
 * Real-time notifications to users about security events
@@ -275,7 +276,7 @@ class SecurityEventHandler:
 
 ### Update Authentication Flow
 
-Update the authentication flow to handle account recreation scenarios. If we find a user with an existing email, a different sub, an existing purge event, and no other events with a timestamp after the purge event, then we can guarantee the user re-created and verified their account with Login.gov. When this occurs we immediately update the user's login_gov_uuid and proceed as normal.
+Update the authentication flow to handle account recreation scenarios. If we find a user with an existing email, a different `sub`, an existing purge event, and no other events with a timestamp after the purge event, then we can guarantee the user re-created and verified their account with Login.gov. When this occurs we immediately update the user's login_gov_uuid and proceed as normal.
 
 ```python
 # tdpservice/users/api/login.py
@@ -300,7 +301,7 @@ def handle_user(self, request, id_token, decoded_token_data):
         if existing_user:
             # Check if last security event was account_purged
             last_security_event = SecurityEventToken.objects.filter(user=existing_user).order_by('-received_at').first()
-            if last_security_event and last_security_event.event_type == 'account_purged':
+            if last_security_event and 'account_purged' in last_security_event.event_type:
                 # Update user login_gov_uuid
                 existing_user.login_gov_uuid = decoded_token_data.get('sub')
                 existing_user.save()
