@@ -84,11 +84,9 @@ class Common(Configuration):
     )
 
     # OpenTelemetry Tracing Configuration
-    OTEL_ENABLED = bool(strtobool(os.getenv("OTEL_ENABLED", "yes")))
+    OTEL_ENABLED = bool(strtobool(os.getenv("OTEL_ENABLED", "no")))
     OTEL_SERVICE_NAME = "tdp-backend"
-    OTEL_EXPORTER_OTLP_ENDPOINT = os.getenv(
-        "OTEL_EXPORTER_OTLP_ENDPOINT", "http://tempo:4317"
-    )
+    OTEL_EXPORTER_OTLP_ENDPOINT = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "")
     OTEL_PROPAGATORS = "tracecontext"
 
     PROMETHEUS_LATENCY_BUCKETS = (

@@ -69,3 +69,6 @@ class Local(Common):
             ],
             traces_sample_rate=1.0,
         )
+
+    OTEL_ENABLED = bool(strtobool(os.getenv("OTEL_ENABLED", "yes")))
+    OTEL_EXPORTER_OTLP_ENDPOINT = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://tempo:4317")

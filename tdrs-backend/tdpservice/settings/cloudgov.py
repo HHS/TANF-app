@@ -1,5 +1,6 @@
 """Define settings classes available for environments deployed in Cloud.gov."""
 
+from distutils.util import strtobool
 import json
 import logging
 import os
@@ -235,4 +236,10 @@ class Production(CloudGov):
         "GET",
         "PATCH",
         "POST",
+    )
+
+    # OTEL
+    OTEL_ENABLED = bool(strtobool(os.getenv("OTEL_ENABLED", "yes")))
+    OTEL_EXPORTER_OTLP_ENDPOINT = os.getenv(
+        "OTEL_EXPORTER_OTLP_ENDPOINT", "http://tempo.apps.internal:4317"
     )
