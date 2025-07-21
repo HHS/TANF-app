@@ -1,20 +1,20 @@
 """Define utility methods for users test_api."""
 
 import binascii
+import datetime
 import logging
 import secrets
 import time
-import datetime
 from base64 import b64decode
 from urllib.parse import quote_plus, urlencode
 
+from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
 from django.http import HttpResponseRedirect
 
 import jwt
 import requests
 from jwcrypto import jwk
-from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -87,11 +87,7 @@ Generate a token to be passed to the login.gov/token endpoint
 
 def generate_token_endpoint_parameters(code, options={}):
     """Generate token parameters."""
-    params = {
-        "code": code,
-        "grant_type": "authorization_code",
-        **options
-    }
+    params = {"code": code, "grant_type": "authorization_code", **options}
     encoded_params = urlencode(params, quote_via=quote_plus)
     return encoded_params
 

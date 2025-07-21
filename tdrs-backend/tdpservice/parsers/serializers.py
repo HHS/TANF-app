@@ -1,7 +1,8 @@
 """Serializers for parsing errors."""
 
 from rest_framework import serializers
-from .models import ParserError, DataFileSummary
+
+from .models import DataFileSummary, ParserError
 
 
 class ParsingErrorSerializer(serializers.ModelSerializer):
@@ -10,9 +11,9 @@ class ParsingErrorSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         """Override fields argument to control fields to be displayed."""
         super(ParsingErrorSerializer, self).__init__(*args, **kwargs)
-        fields = kwargs['context']['request'].query_params.get('fields')
+        fields = kwargs["context"]["request"].query_params.get("fields")
         if fields is not None:
-            fields = [x.strip() for x in fields.split(',')]
+            fields = [x.strip() for x in fields.split(",")]
             allowed = set(fields)
             existing = set(self.fields)
             for field_name in existing - allowed:
@@ -22,7 +23,7 @@ class ParsingErrorSerializer(serializers.ModelSerializer):
         """Metadata."""
 
         model = ParserError
-        fields = '__all__'
+        fields = "__all__"
 
 
 class DataFileSummarySerializer(serializers.ModelSerializer):
@@ -32,4 +33,4 @@ class DataFileSummarySerializer(serializers.ModelSerializer):
         """Metadata."""
 
         model = DataFileSummary
-        fields = ['status', 'case_aggregates', 'datafile']
+        fields = ["status", "case_aggregates", "datafile"]

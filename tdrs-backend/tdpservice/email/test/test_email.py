@@ -3,11 +3,7 @@
 from django.core import mail
 from django.test import TestCase
 
-from tdpservice.email.email import (
-    automated_email,
-    send_email,
-    filter_valid_emails
-)
+from tdpservice.email.email import automated_email, filter_valid_emails, send_email
 
 
 class EmailTest(TestCase):
@@ -21,7 +17,9 @@ class EmailTest(TestCase):
         email_context = {}
         text_message = "This is a test email."
 
-        automated_email(email_path, recipient_email, subject, email_context, text_message)
+        automated_email(
+            email_path, recipient_email, subject, email_context, text_message
+        )
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, subject)
@@ -30,10 +28,17 @@ class EmailTest(TestCase):
         """Test email."""
         subject = "Test email"
         message = "This is a test email."
-        html_message = "<DOCTYPE html><html><body><h1>This is a test email.</h1></body></html>"
+        html_message = (
+            "<DOCTYPE html><html><body><h1>This is a test email.</h1></body></html>"
+        )
         recipient_list = ["test_user@hhs.gov"]
 
-        send_email(subject=subject, message=message, html_message=html_message, recipient_list=recipient_list)
+        send_email(
+            subject=subject,
+            message=message,
+            html_message=html_message,
+            recipient_list=recipient_list,
+        )
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, subject)
@@ -49,7 +54,9 @@ class EmailTest(TestCase):
 
         mail.outbox.clear()
 
-        automated_email(email_path, recipient_email, subject, email_context, text_message)
+        automated_email(
+            email_path, recipient_email, subject, email_context, text_message
+        )
         self.assertEqual(len(mail.outbox), 0)
 
     def test_filter_valid_emails(self):

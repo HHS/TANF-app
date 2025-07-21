@@ -1,9 +1,9 @@
 """Define configuration settings for local environment."""
-import os
 import logging
-import django
-
+import os
 from distutils.util import strtobool
+
+import django
 
 from .common import Common
 
@@ -21,7 +21,7 @@ class Local(Common):
     USE_LOCALSTACK = bool(strtobool(os.getenv("USE_LOCALSTACK", "yes")))
 
     # Overwrite CORS allowed origins to allow for local development
-    CORS_ALLOWED_ORIGINS = ['http://localhost:3000', 'http://localhost:3001']
+    CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "http://localhost:3001"]
 
     if USE_LOCALSTACK:
         # To get s3 signed URLs to work with localstack we must pass in
@@ -33,17 +33,14 @@ class Local(Common):
 
         # These are hard-coded to match the environment variables passed to the
         # localstack container in the base docker-compose
-        AWS_S3_DATAFILES_BUCKET_NAME = 'tdp-datafiles-localstack'
-        AWS_S3_DATAFILES_REGION_NAME = 'us-gov-west-1'
+        AWS_S3_DATAFILES_BUCKET_NAME = "tdp-datafiles-localstack"
+        AWS_S3_DATAFILES_REGION_NAME = "us-gov-west-1"
 
         # If localstack is in use then we must supply the endpoint URL
         # explicitly to prevent boto3 from auto-generating a live S3 URL
-        AWS_S3_DATAFILES_ENDPOINT = 'http://localstack:4566'
+        AWS_S3_DATAFILES_ENDPOINT = "http://localstack:4566"
 
-    Common.LOGGING['loggers']['root'] = {
-        'level': 'DEBUG',
-        'handlers': ['console']
-    }
+    Common.LOGGING["loggers"]["root"] = {"level": "DEBUG", "handlers": ["console"]}
 
     REDIS_SERVER_LOCAL = bool(strtobool(os.getenv("REDIS_SERVER_LOCAL", "TRUE")))
 
@@ -52,13 +49,14 @@ class Local(Common):
         import sentry_sdk
         from sentry_sdk.integrations.django import DjangoIntegration
         from sentry_sdk.integrations.logging import LoggingIntegration
+
         sentry_sdk.init(
             dsn="http://43ebf8abe1434ec6aea2c7b92c465a0e@host.docker.internal:9001/2",
             # Set traces_sample_rate to 1.0 to capture 100%
             # of transactions for performance monitoring.
             integrations=[
                 DjangoIntegration(
-                    transaction_style='url',
+                    transaction_style="url",
                     middleware_spans=True,
                     signals_spans=True,
                     signals_denylist=[
@@ -67,7 +65,12 @@ class Local(Common):
                     ],
                     cache_spans=False,
                 ),
-                LoggingIntegration(level=logging.DEBUG, event_level=logging.DEBUG)
+                LoggingIntegration(level=logging.DEBUG, event_level=logging.DEBUG),
             ],
             traces_sample_rate=1.0,
         )
+
+    OTEL_ENABLED = bool(strtobool(os.getenv("OTEL_ENABLED", "yes")))
+    OTEL_EXPORTER_OTLP_ENDPOINT = os.getenv(
+        "OTEL_EXPORTER_OTLP_ENDPOINT", "http://tempo:4317"
+    )

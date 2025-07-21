@@ -1,28 +1,33 @@
 """Schema for T5 record type."""
 
 from tdpservice.parsers.dataclasses import FieldType
-from tdpservice.parsers.transforms import tanf_ssn_decryption_func
-from tdpservice.parsers.fields import TransformField, Field
+from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import TanfDataReportSchema
+from tdpservice.parsers.transforms import tanf_ssn_decryption_func
+from tdpservice.parsers.util import (
+    generate_t2_t3_t5_hashes,
+    get_t2_t3_t5_partial_hash_members,
+)
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.search_indexes.models.tanf import TANF_T5
-from tdpservice.parsers.util import generate_t2_t3_t5_hashes, get_t2_t3_t5_partial_hash_members
-
 
 t5 = [
     TanfDataReportSchema(
         record_type="T5",
         model=TANF_T5,
         generate_hashes_func=generate_t2_t3_t5_hashes,
-        should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {3, 4, 5},
+        should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION
+        in {3, 4, 5},
         get_partial_hash_members_func=get_t2_t3_t5_partial_hash_members,
         preparsing_validators=[
             category1.recordHasLengthOfAtLeast(71),
             category1.caseNumberNotEmpty(8, 19),
-            category1.or_priority_validators([
-                category1.validate_fieldYearMonth_with_headerYearQuarter(),
-                category1.validateRptMonthYear(),
-            ]),
+            category1.or_priority_validators(
+                [
+                    category1.validate_fieldYearMonth_with_headerYearQuarter(),
+                    category1.validateRptMonthYear(),
+                ]
+            ),
         ],
         postparsing_validators=[
             category3.ifThenAlso(
@@ -77,10 +82,13 @@ t5 = [
                 condition_field_name="FAMILY_AFFILIATION",
                 condition_function=category3.isBetween(1, 3, inclusive=True),
                 result_field_name="EDUCATION_LEVEL",
-                result_function=category3.orValidators([
-                    category3.isBetween(1, 16, inclusive=True, cast=int),
-                    category3.isBetween(98, 99, inclusive=True, cast=int),
-                ], if_result=True),
+                result_function=category3.orValidators(
+                    [
+                        category3.isBetween(1, 16, inclusive=True, cast=int),
+                        category3.isBetween(98, 99, inclusive=True, cast=int),
+                    ],
+                    if_result=True,
+                ),
             ),
             category3.ifThenAlso(
                 condition_field_name="FAMILY_AFFILIATION",
@@ -153,11 +161,12 @@ t5 = [
                 startIndex=20,
                 endIndex=28,
                 required=True,
-                validators=[category2.intHasLength(8),
-                            category2.dateYearIsLargerThan(1900),
-                            category2.dateMonthIsValid(),
-                            category2.dateDayIsValid()
-                            ],
+                validators=[
+                    category2.intHasLength(8),
+                    category2.dateYearIsLargerThan(1900),
+                    category2.dateMonthIsValid(),
+                    category2.dateDayIsValid(),
+                ],
             ),
             TransformField(
                 transform_func=tanf_ssn_decryption_func,
@@ -340,10 +349,12 @@ t5 = [
                 endIndex=56,
                 required=False,
                 validators=[
-                    category3.orValidators([
-                        category3.isBetween(0, 16, inclusive=True, cast=int),
-                        category3.isBetween(98, 99, inclusive=True, cast=int),
-                    ])
+                    category3.orValidators(
+                        [
+                            category3.isBetween(0, 16, inclusive=True, cast=int),
+                            category3.isBetween(98, 99, inclusive=True, cast=int),
+                        ]
+                    )
                 ],
             ),
             Field(
@@ -355,10 +366,12 @@ t5 = [
                 endIndex=57,
                 required=False,
                 validators=[
-                    category3.orValidators([
-                        category3.isBetween(1, 3, inclusive=True),
-                        category3.isEqual(9)
-                    ])
+                    category3.orValidators(
+                        [
+                            category3.isBetween(1, 3, inclusive=True),
+                            category3.isEqual(9),
+                        ]
+                    )
                 ],
             ),
             Field(
