@@ -1,9 +1,11 @@
 """Custom session engine for TDP."""
 
+import datetime
+
+from django.conf import settings
 from django.contrib.sessions.backends import signed_cookies
 from django.core import signing
-import datetime
-from django.conf import settings
+
 
 class SessionStore(signed_cookies.SessionStore):
     """Custom session engine for TDP."""

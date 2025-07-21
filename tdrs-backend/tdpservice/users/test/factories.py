@@ -1,10 +1,12 @@
 """Generate test data for users."""
 
-import factory
-import factory.fuzzy
 from django.utils import timezone
 
+import factory
+import factory.fuzzy
+
 from tdpservice.users.models import Rating
+
 
 class BaseUserFactory(factory.django.DjangoModelFactory):
     """Generate test data for users."""
@@ -27,7 +29,7 @@ class BaseUserFactory(factory.django.DjangoModelFactory):
 
     login_gov_uuid = factory.Faker("uuid4")
     deactivated = False
-    account_approval_status = 'Initial'
+    account_approval_status = "Initial"
     # For testing convenience, though most users won't have both a login_gov_uuid and hhs_id
 
     hhs_id = factory.fuzzy.FuzzyText(length=12, chars="1234567890")
@@ -46,6 +48,7 @@ class BaseUserFactory(factory.django.DjangoModelFactory):
         if extracted:
             for group in extracted:
                 self.groups.add(group)
+
 
 class UserFactory(BaseUserFactory):
     """General purpose user factory used through out most tests."""
@@ -93,7 +96,7 @@ class InactiveUserFactory(UserFactory):
 class DeactivatedUserFactory(UserFactory):
     """Generate user with account deemed `inactive`."""
 
-    account_approval_status = 'Deactivated'
+    account_approval_status = "Deactivated"
 
 
 class FeedbackFactory(factory.django.DjangoModelFactory):

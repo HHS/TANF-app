@@ -11,6 +11,7 @@ pswd = "pass"
 first = "Jon"
 last = "Tester"
 
+
 class Command(BaseCommand):
     """Command class."""
 
@@ -21,14 +22,16 @@ class Command(BaseCommand):
             print(f"Found {vars(user)}")
         except User.DoesNotExist:
             group = Group.objects.get(name="Developer")
-            user = User.objects.create(username=email,
-                                       email=email,
-                                       password=pswd,
-                                       is_superuser=True,
-                                       is_staff=True,
-                                       first_name=first,
-                                       last_name=last,
-                                       stt_id=31,
-                                       account_approval_status="Approved")
+            user = User.objects.create(
+                username=email,
+                email=email,
+                password=pswd,
+                is_superuser=True,
+                is_staff=True,
+                first_name=first,
+                last_name=last,
+                stt_id=31,
+                account_approval_status="Approved",
+            )
             user.groups.add(group)
             print(f"Created {vars(user)}")

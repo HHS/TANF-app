@@ -1,12 +1,15 @@
 """Schema for SSP M4 record type."""
 
 from tdpservice.parsers.dataclasses import FieldType
-from tdpservice.parsers.transforms import zero_pad
 from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import TanfDataReportSchema
+from tdpservice.parsers.transforms import zero_pad
+from tdpservice.parsers.util import (
+    generate_t1_t4_hashes,
+    get_t1_t4_partial_hash_members,
+)
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.search_indexes.models.ssp import SSP_M4
-from tdpservice.parsers.util import generate_t1_t4_hashes, get_t1_t4_partial_hash_members
 
 m4 = [
     TanfDataReportSchema(
@@ -17,10 +20,12 @@ m4 = [
         preparsing_validators=[
             category1.recordHasLengthOfAtLeast(34),
             category1.caseNumberNotEmpty(8, 19),
-            category1.or_priority_validators([
-                category1.validate_fieldYearMonth_with_headerYearQuarter(),
-                category1.validateRptMonthYear(),
-            ]),
+            category1.or_priority_validators(
+                [
+                    category1.validate_fieldYearMonth_with_headerYearQuarter(),
+                    category1.validateRptMonthYear(),
+                ]
+            ),
         ],
         postparsing_validators=[],
         fields=[
@@ -107,10 +112,12 @@ m4 = [
                 endIndex=32,
                 required=True,
                 validators=[
-                    category3.orValidators([
-                        category3.isBetween(1, 19, inclusive=True, cast=int),
-                        category3.isEqual("99")
-                    ])
+                    category3.orValidators(
+                        [
+                            category3.isBetween(1, 19, inclusive=True, cast=int),
+                            category3.isEqual("99"),
+                        ]
+                    )
                 ],
             ),
             Field(
