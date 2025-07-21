@@ -764,6 +764,11 @@ def fra_xlsx(stt_user, stt):
     return util.create_test_datafile('fra.xlsx', stt_user, stt)
 
 @pytest.fixture
+def fra_multi_sheet_xlsx(stt_user, stt):
+    """Fixture for xlsx fra file."""
+    return util.create_test_datafile('fra_multi_sheet.xlsx', stt_user, stt)
+
+@pytest.fixture
 def unknown_png(stt_user, stt):
     """Fixture for blank png file."""
     return util.create_test_datafile('unknown.png', stt_user, stt)

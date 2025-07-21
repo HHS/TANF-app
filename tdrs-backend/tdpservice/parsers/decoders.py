@@ -152,14 +152,14 @@ class XlsxDecoder(BaseDecoder):
 
     def get_header(self):
         """Get the first line in the file. Assumed to be the header."""
-        for raw_data in self.work_book.active.iter_rows(values_only=True):
+        for raw_data in self.work_book.worksheets[0].iter_rows(values_only=True):
             length = len(raw_data)
             return TupleRow(data=raw_data, raw_len=length, decoded_len=length,
                             row_num=self.current_row_num, record_type="HEADER")
 
     def decode(self):
         """Decode and yield each row."""
-        for raw_data in self.work_book.active.iter_rows(values_only=True):
+        for raw_data in self.work_book.worksheets[0].iter_rows(values_only=True):
             self.current_row_num += 1
             if not len(raw_data) or not any(raw_data) or str(raw_data[0]).startswith('#'):
                 continue
