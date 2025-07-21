@@ -203,7 +203,7 @@ class DataFileAPITestBase:
             == "Please refer to the most recent versions of the coding "
             + "instructions (linked below) when looking up items and allowable values during the data revision process"
         )
-        assert critical.cell(row=7, column=COL_ERROR_MESSAGE).value == (
+        assert summary.cell(row=10, column=COL_ERROR_MESSAGE).value == (
             "TRAILER: record length is 15 characters " "but must be 23."
         )
         assert summary.cell(row=7, column=COL_NUM_OCCURRENCES).value == 3
