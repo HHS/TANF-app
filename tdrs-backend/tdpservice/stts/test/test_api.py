@@ -1,8 +1,10 @@
 """API STT Tests."""
-import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+
+import pytest
 from rest_framework import status
+
 from tdpservice.stts.models import STT, Region
 
 User = get_user_model()

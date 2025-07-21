@@ -1,7 +1,11 @@
 """Test functions for email helper."""
-import pytest
 from django.core import mail
-from tdpservice.email.helpers.account_deactivation_warning import send_deactivation_warning_email
+
+import pytest
+
+from tdpservice.email.helpers.account_deactivation_warning import (
+    send_deactivation_warning_email,
+)
 
 
 @pytest.mark.django_db

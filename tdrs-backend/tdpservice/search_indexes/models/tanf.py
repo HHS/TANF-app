@@ -1,7 +1,9 @@
 """Models representing parsed TANF data file records submitted to TDP."""
 
 import uuid
+
 from django.db import models
+
 from tdpservice.data_files.models import DataFile
 
 
@@ -11,27 +13,23 @@ class TANF_T1(models.Model):
     class Meta:
         """Meta class for the model."""
 
-        verbose_name = 'TANF T1'
+        verbose_name = "TANF T1"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
-        help_text='The parent file from which this record was created.',
+        help_text="The parent file from which this record was created.",
         null=True,
         on_delete=models.CASCADE,
-        related_name='t1_parent'
+        related_name="t1_parent",
     )
 
     RecordType = models.CharField(max_length=156, null=True, blank=False)
     RPT_MONTH_YEAR = models.IntegerField(null=True, blank=False)
     CASE_NUMBER = models.CharField(max_length=11, null=True, blank=False)
     FIPS_CODE = models.CharField(max_length=2, null=True, blank=False)
-    COUNTY_FIPS_CODE = models.CharField(
-        max_length=3,
-        null=True,
-        blank=False
-    )
+    COUNTY_FIPS_CODE = models.CharField(max_length=3, null=True, blank=False)
     STRATUM = models.CharField(max_length=2, null=True, blank=False)
     ZIP_CODE = models.CharField(max_length=5, null=True, blank=False)
     FUNDING_STREAM = models.IntegerField(null=True, blank=False)
@@ -81,16 +79,16 @@ class TANF_T2(models.Model):
     class Meta:
         """Meta class for the model."""
 
-        verbose_name = 'TANF T2'
+        verbose_name = "TANF T2"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
-        help_text='The parent file from which this record was created.',
+        help_text="The parent file from which this record was created.",
         null=True,
         on_delete=models.CASCADE,
-        related_name='t2_parent'
+        related_name="t2_parent",
     )
 
     RecordType = models.CharField(max_length=156, null=True, blank=False)
@@ -171,16 +169,16 @@ class TANF_T3(models.Model):
     class Meta:
         """Meta class for the model."""
 
-        verbose_name = 'TANF T3'
+        verbose_name = "TANF T3"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
-        help_text='The parent file from which this record was created.',
+        help_text="The parent file from which this record was created.",
         null=True,
         on_delete=models.CASCADE,
-        related_name='t3_parent'
+        related_name="t3_parent",
     )
 
     RecordType = models.CharField(max_length=156, null=True, blank=False)
@@ -213,16 +211,16 @@ class TANF_T4(models.Model):
     class Meta:
         """Meta class for the model."""
 
-        verbose_name = 'TANF T4'
+        verbose_name = "TANF T4"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
-        help_text='The parent file from which this record was created.',
+        help_text="The parent file from which this record was created.",
         null=True,
         on_delete=models.CASCADE,
-        related_name='t4_parent'
+        related_name="t4_parent",
     )
 
     RecordType = models.CharField(max_length=156, null=True, blank=False)
@@ -246,16 +244,16 @@ class TANF_T5(models.Model):
     class Meta:
         """Meta class for the model."""
 
-        verbose_name = 'TANF T5'
+        verbose_name = "TANF T5"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
-        help_text='The parent file from which this record was created.',
+        help_text="The parent file from which this record was created.",
         null=True,
         on_delete=models.CASCADE,
-        related_name='t5_parent'
+        related_name="t5_parent",
     )
 
     RecordType = models.CharField(max_length=156, null=True, blank=False)
@@ -284,7 +282,9 @@ class TANF_T5(models.Model):
     EDUCATION_LEVEL = models.CharField(max_length=2, null=True, blank=False)
     CITIZENSHIP_STATUS = models.IntegerField(null=True, blank=False)
     COUNTABLE_MONTH_FED_TIME = models.CharField(max_length=3, null=True, blank=False)
-    COUNTABLE_MONTHS_STATE_TRIBE = models.CharField(max_length=2, null=True, blank=False)
+    COUNTABLE_MONTHS_STATE_TRIBE = models.CharField(
+        max_length=2, null=True, blank=False
+    )
     EMPLOYMENT_STATUS = models.IntegerField(null=True, blank=False)
     AMOUNT_EARNED_INCOME = models.CharField(max_length=4, null=True, blank=False)
     AMOUNT_UNEARNED_INCOME = models.CharField(max_length=4, null=True, blank=False)
@@ -296,16 +296,16 @@ class TANF_T6(models.Model):
     class Meta:
         """Meta class for the model."""
 
-        verbose_name = 'TANF T6'
+        verbose_name = "TANF T6"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
-        help_text='The parent file from which this record was created.',
+        help_text="The parent file from which this record was created.",
         null=True,
         on_delete=models.CASCADE,
-        related_name='t6_parent'
+        related_name="t6_parent",
     )
 
     RecordType = models.CharField(max_length=156, null=True, blank=False)
@@ -334,25 +334,21 @@ class TANF_T7(models.Model):
     class Meta:
         """Meta class for the model."""
 
-        verbose_name = 'TANF T7'
+        verbose_name = "TANF T7"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
-        help_text='The parent file from which this record was created.',
+        help_text="The parent file from which this record was created.",
         null=True,
         on_delete=models.CASCADE,
-        related_name='t7_parent'
+        related_name="t7_parent",
     )
 
     RecordType = models.CharField(max_length=156, null=True, blank=False)
     CALENDAR_QUARTER = models.IntegerField(null=True, blank=True)
     RPT_MONTH_YEAR = models.IntegerField(null=True, blank=False)
-    TDRS_SECTION_IND = models.CharField(
-        max_length=1,
-        null=True,
-        blank=False
-    )
+    TDRS_SECTION_IND = models.CharField(max_length=1, null=True, blank=False)
     STRATUM = models.CharField(max_length=2, null=True, blank=False)
     FAMILIES_MONTH = models.IntegerField(null=True, blank=False)

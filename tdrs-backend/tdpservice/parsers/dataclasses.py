@@ -1,9 +1,10 @@
 """Utility data classes for the parsing engine."""
 
-from enum import IntFlag, auto
 from dataclasses import dataclass, field
-from django.db.models import Model
+from enum import IntFlag, auto
 from typing import Any, DefaultDict, List, Tuple
+
+from django.db.models import Model
 
 
 class FieldType(IntFlag):
@@ -61,7 +62,7 @@ class RawRow:
 
     def value_at(self, position: Position):
         """Get value at position."""
-        return self.data[position.start:position.end]
+        return self.data[position.start : position.end]
 
     def value_at_is(self, position: Position, expected_value):
         """Check if the value at position matches the expected value."""
@@ -97,13 +98,14 @@ class RawRow:
         """Check if value does not equal self."""
         return not self.__eq__(value)
 
+
 @dataclass(eq=False)
 class TupleRow(RawRow):
     """Row class for Tuple based raw data."""
 
     def value_at(self, position: Position):
         """Get value at position."""
-        value = self.data[position.start:position.end]
+        value = self.data[position.start : position.end]
         if value is None or len(value) == 0:
             return None
         if position.is_range:

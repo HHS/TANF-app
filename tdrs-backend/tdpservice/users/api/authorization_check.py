@@ -1,14 +1,17 @@
 """Check if user is authorized."""
 
 import logging
+
 from django.contrib.auth import logout
+from django.http import HttpResponse
 from django.middleware import csrf
 from django.utils import timezone
+
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
 from ..serializers import UserProfileSerializer
-from django.http import HttpResponse
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +25,9 @@ class AuthorizationCheck(APIView):
 
     def get(self, request, *args, **kwargs):
         """Handle get request and verify user is authorized."""
-        logger.debug(f"{self.__class__.__name__}: {request} {request.user} {args} {kwargs}")
+        logger.debug(
+            f"{self.__class__.__name__}: {request} {request.user} {args} {kwargs}"
+        )
 
         user = request.user
         serializer = UserProfileSerializer(user)
@@ -51,6 +56,7 @@ class AuthorizationCheck(APIView):
             logger.info("Auth check FAIL for user on %s", timezone.now())
             return Response({"authenticated": False})
 
+
 class PlgAuthorizationCheck(APIView):
     """Check if user is authorized to view Grafana."""
 
@@ -62,10 +68,14 @@ class PlgAuthorizationCheck(APIView):
         """Handle get request and verify user is authorized to access plg apps."""
         user = request.user
 
-        user_in_valid_group = user.is_ofa_sys_admin or user.is_developer or user.is_digit_team
+        user_in_valid_group = (
+            user.is_ofa_sys_admin or user.is_developer or user.is_digit_team
+        )
 
         if user_in_valid_group:
             return HttpResponse(status=200)
         else:
-            logger.warning(f"User: {user} has incorrect authentication credentials. Not allowing access to Grafana.")
+            logger.warning(
+                f"User: {user} has incorrect authentication credentials. Not allowing access to Grafana."
+            )
             return HttpResponse(status=401)
