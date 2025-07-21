@@ -1,15 +1,16 @@
 """Models representing parser error."""
 
-import os
 import datetime
-from django.db import models
+import logging
+import os
+
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.db import models
+
+from tdpservice.backends import DataFilesS3Storage
 from tdpservice.data_files.models import DataFile
 from tdpservice.data_files.util import ParserErrorCategoryChoices
-from tdpservice.backends import DataFilesS3Storage
-
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -18,21 +19,18 @@ def get_s3_upload_path(instance, filename):
     """Produce a unique upload path for S3 files for a given STT and Quarter."""
     df = instance.datafile
 
-    file_path = f'data_files/{df.year}/{df.quarter}/{df.stt.id}/{df.section}/'
+    file_path = f"data_files/{df.year}/{df.quarter}/{df.stt.id}/{df.section}/"
 
     file_name_info = filename
 
     if df.s3_versioning_id:
-        file_name_info += f'_{df.s3_versioning_id}'
+        file_name_info += f"_{df.s3_versioning_id}"
 
     if df.reparses.count() > 0:
-        reparse = df.reparses.order_by('-created_at').first()
-        file_name_info += f'_reparse-{reparse.pk}'
+        reparse = df.reparses.order_by("-created_at").first()
+        file_name_info += f"_reparse-{reparse.pk}"
 
-    return os.path.join(
-        file_path,
-        f'{file_name_info}.xlsx'
-    )
+    return os.path.join(file_path, f"{file_name_info}.xlsx")
 
 
 class ParserError(models.Model):
@@ -54,11 +52,13 @@ class ParserError(models.Model):
     column_number = models.CharField(null=True, max_length=8)
     item_number = models.CharField(null=True, max_length=8)
     field_name = models.TextField(null=True, max_length=128)
-    rpt_month_year = models.IntegerField(null=True,  blank=False)
+    rpt_month_year = models.IntegerField(null=True, blank=False)
     case_number = models.TextField(null=True, max_length=128)
 
     error_message = models.TextField(null=True, max_length=512)
-    error_type = models.TextField(max_length=128, choices=ParserErrorCategoryChoices.choices)
+    error_type = models.TextField(
+        max_length=128, choices=ParserErrorCategoryChoices.choices
+    )
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True)
     object_id = models.UUIDField(null=True)
@@ -73,21 +73,28 @@ class ParserError(models.Model):
     @property
     def rpt_month_name(self):
         """Return the month name."""
-        return datetime.datetime.strptime(str(self.rpt_month_year)[4:6], "%m").strftime("%B")
+        return datetime.datetime.strptime(str(self.rpt_month_year)[4:6], "%m").strftime(
+            "%B"
+        )
 
     def __repr__(self):
         """Return a string representation of the model."""
-        return f"{{id: {self.id}, file: {self.file.id}, row: {self.row_number}, column: {self.column_number}, " + \
-               f"error message: {self.error_message}}}"
+        return (
+            f"{{id: {self.id}, file: {self.file.id}, row: {self.row_number}, column: {self.column_number}, "
+            + f"error message: {self.error_message}}}"
+        )
 
     def __str__(self):
         """Return a string representation of the model."""
-        return f"{{id: {self.id}, file: {self.file.id}, row: {self.row_number}, column: {self.column_number}, " + \
-               f"error message: {self.error_message}}}"
+        return (
+            f"{{id: {self.id}, file: {self.file.id}, row: {self.row_number}, column: {self.column_number}, "
+            + f"error message: {self.error_message}}}"
+        )
 
     def _get_error_message(self):
         """Return the error message."""
         return self.error_message
+
 
 class DataFileSummary(models.Model):
     """Aggregates information about a parsed file."""
@@ -107,19 +114,25 @@ class DataFileSummary(models.Model):
         default=Status.PENDING,
     )
 
-    datafile = models.OneToOneField(DataFile, on_delete=models.CASCADE, related_name="summary")
+    datafile = models.OneToOneField(
+        DataFile, on_delete=models.CASCADE, related_name="summary"
+    )
     error_report = models.FileField(
         storage=DataFilesS3Storage,
         upload_to=get_s3_upload_path,
         max_length=500,
         null=True,
-        blank=True
+        blank=True,
     )
 
     case_aggregates = models.JSONField(null=True, blank=False)
 
-    total_number_of_records_in_file = models.IntegerField(null=True, blank=False, default=0)
-    total_number_of_records_created = models.IntegerField(null=True, blank=False, default=0)
+    total_number_of_records_in_file = models.IntegerField(
+        null=True, blank=False, default=0
+    )
+    total_number_of_records_created = models.IntegerField(
+        null=True, blank=False, default=0
+    )
 
     def set_status(self, status):
         """Set the status on the summary object."""
@@ -147,18 +160,26 @@ class DataFileSummary(models.Model):
         errors = ParserError.objects.filter(file=self.datafile, deprecated=False)
 
         # excluding row-level pre-checks and trailer pre-checks.
-        precheck_errors = errors.filter(error_type=ParserErrorCategoryChoices.PRE_CHECK)\
-                                .exclude(field_name="Record_Type")\
-                                .exclude(error_message__icontains="trailer")\
-                                .exclude(error_message__icontains="Unknown Record_Type was found.")
+        precheck_errors = (
+            errors.filter(error_type=ParserErrorCategoryChoices.PRE_CHECK)
+            .exclude(field_name="Record_Type")
+            .exclude(error_message__icontains="trailer")
+            .exclude(error_message__icontains="Unknown Record_Type was found.")
+        )
 
-        record_precheck_errors = errors.filter(error_type=ParserErrorCategoryChoices.RECORD_PRE_CHECK)
+        record_precheck_errors = errors.filter(
+            error_type=ParserErrorCategoryChoices.RECORD_PRE_CHECK
+        )
 
-        case_consistency_errors = errors.filter(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
+        case_consistency_errors = errors.filter(
+            error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY
+        )
 
-        row_precheck_errors = errors.filter(error_type=ParserErrorCategoryChoices.PRE_CHECK)\
-                                    .filter(field_name="Record_Type")\
-                                    .exclude(error_message__icontains="trailer")
+        row_precheck_errors = (
+            errors.filter(error_type=ParserErrorCategoryChoices.PRE_CHECK)
+            .filter(field_name="Record_Type")
+            .exclude(error_message__icontains="trailer")
+        )
 
         if errors is None:
             return DataFileSummary.Status.PENDING
@@ -166,7 +187,11 @@ class DataFileSummary(models.Model):
             return DataFileSummary.Status.REJECTED
         elif errors.count() == 0:
             return DataFileSummary.Status.ACCEPTED
-        elif (row_precheck_errors.count() > 0 or case_consistency_errors.count() or record_precheck_errors.count()):
+        elif (
+            row_precheck_errors.count() > 0
+            or case_consistency_errors.count()
+            or record_precheck_errors.count()
+        ):
             return DataFileSummary.Status.PARTIALLY_ACCEPTED
         else:
             return DataFileSummary.Status.ACCEPTED_WITH_ERRORS

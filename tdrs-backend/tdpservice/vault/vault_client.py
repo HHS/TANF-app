@@ -1,9 +1,9 @@
 """VaultLocal settings module for local development with Vault integration."""
-import hvac
+import logging
 import os
 import sys
 
-import logging
+import hvac
 
 logger = logging.getLogger(__name__)
 

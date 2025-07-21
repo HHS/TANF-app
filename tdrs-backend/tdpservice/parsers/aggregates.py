@@ -1,13 +1,14 @@
 """Aggregate methods for the parsers."""
+from django.db.models import Q as Query
+
 from tdpservice.parsers.models import ParserError, ParserErrorCategoryChoices
+from tdpservice.parsers.schema_defs.utils import ProgramManager
 from tdpservice.parsers.util import (
+    fiscal_to_calendar,
+    get_prog_from_section,
     month_to_int,
     transform_to_months,
-    fiscal_to_calendar,
-    get_prog_from_section
 )
-from tdpservice.parsers.schema_defs.utils import ProgramManager
-from django.db.models import Q as Query
 
 
 def case_aggregates_by_month(df, dfs_status):
@@ -32,34 +33,54 @@ def case_aggregates_by_month(df, dfs_status):
         if dfs_status == "Rejected":
             # we need to be careful here on examples of bad headers or empty files, since no month will be found
             # but we can rely on the frontend submitted year-quarter to still generate the list of months
-            aggregate_data["months"].append({"accepted_with_errors": "N/A",
-                                             "accepted_without_errors": "N/A",
-                                             "month": month})
+            aggregate_data["months"].append(
+                {
+                    "accepted_with_errors": "N/A",
+                    "accepted_without_errors": "N/A",
+                    "month": month,
+                }
+            )
             continue
 
         case_numbers = set()
         for schema in schemas.values():
             schema = schema[0]
 
-            curr_case_numbers = set(schema.model.objects.filter(datafile=df,
-                                                                RPT_MONTH_YEAR=rpt_month_year)
-                                    .distinct("CASE_NUMBER").values_list("CASE_NUMBER", flat=True))
+            curr_case_numbers = set(
+                schema.model.objects.filter(datafile=df, RPT_MONTH_YEAR=rpt_month_year)
+                .distinct("CASE_NUMBER")
+                .values_list("CASE_NUMBER", flat=True)
+            )
             case_numbers = case_numbers.union(curr_case_numbers)
 
         total += len(case_numbers)
-        cases_with_errors += all_errors.filter(case_number__in=case_numbers).distinct('case_number').count()
+        cases_with_errors += (
+            all_errors.filter(case_number__in=case_numbers)
+            .distinct("case_number")
+            .count()
+        )
         accepted = total - cases_with_errors
 
-        aggregate_data['months'].append({"month": month,
-                                         "accepted_without_errors": accepted,
-                                         "accepted_with_errors": cases_with_errors})
+        aggregate_data["months"].append(
+            {
+                "month": month,
+                "accepted_without_errors": accepted,
+                "accepted_with_errors": cases_with_errors,
+            }
+        )
 
-    error_type_query = Query(error_type=ParserErrorCategoryChoices.PRE_CHECK) | \
-        Query(error_type=ParserErrorCategoryChoices.RECORD_PRE_CHECK) | \
-        Query(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
+    error_type_query = (
+        Query(error_type=ParserErrorCategoryChoices.PRE_CHECK)
+        | Query(error_type=ParserErrorCategoryChoices.RECORD_PRE_CHECK)
+        | Query(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
+    )
 
-    aggregate_data['rejected'] = all_errors.filter(error_type_query).distinct("row_number")\
-        .exclude(row_number=0).count()
+    aggregate_data["rejected"] = (
+        all_errors.filter(error_type_query)
+        .distinct("row_number")
+        .exclude(row_number=0)
+        .count()
+    )
 
     return aggregate_data
 
@@ -75,8 +96,7 @@ def total_errors_by_month(df, dfs_status):
 
     for month in month_list:
         if dfs_status == "Rejected":
-            total_errors_data["months"].append(
-                {"month": month, "total_errors": "N/A"})
+            total_errors_data["months"].append({"month": month, "total_errors": "N/A"})
             continue
 
         month_int = month_to_int(month)
@@ -84,7 +104,8 @@ def total_errors_by_month(df, dfs_status):
 
         error_count = errors.filter(rpt_month_year=rpt_month_year).count()
         total_errors_data["months"].append(
-            {"month": month, "total_errors": error_count})
+            {"month": month, "total_errors": error_count}
+        )
 
     return total_errors_data
 

@@ -2,7 +2,9 @@
 import pytest
 
 from tdpservice.parsers.models import ParserError
+
 from .factories import ParserErrorFactory
+
 
 @pytest.fixture
 def parser_error_instance():

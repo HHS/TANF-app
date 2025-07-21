@@ -1,14 +1,16 @@
 """VaultLocal settings module for local development with Vault integration."""
-from .local import Local
+import logging
 import os
+
 from tdpservice.vault.vault_client import get_vault_database_config
 
-import logging
+from .local import Local
 
 logger = logging.getLogger(__name__)
 
 # Django settings module that integrates Vault credentials into database configuration
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 
 class VaultLocal(Local):
     """Define class for local configuration settings with Vault integration."""

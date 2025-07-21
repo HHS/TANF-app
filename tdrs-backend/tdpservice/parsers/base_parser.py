@@ -1,17 +1,24 @@
 """Base parser logic associated to all parser classes."""
 
-from abc import ABC, abstractmethod
-from django.conf import settings
-from django.db.utils import DatabaseError
 import itertools
 import logging
+from abc import ABC, abstractmethod
+
+from django.conf import settings
+from django.db.utils import DatabaseError
+
 from tdpservice.parsers import util
 from tdpservice.parsers.decoders import DecoderFactory
-from tdpservice.parsers.models import ParserErrorCategoryChoices, ParserError
+from tdpservice.parsers.models import ParserError, ParserErrorCategoryChoices
 from tdpservice.parsers.schema_manager import SchemaManager
-from tdpservice.parsers.util import SortedRecords, log_parser_exception, DecoderUnknownException
+from tdpservice.parsers.util import (
+    DecoderUnknownException,
+    SortedRecords,
+    log_parser_exception,
+)
 
 logger = logging.getLogger(__name__)
+
 
 class BaseParser(ABC):
     """Abstract base class for all parsers."""
@@ -45,24 +52,25 @@ class BaseParser(ABC):
         try:
             self.decoder = DecoderFactory.get_instance(self.datafile.file)
         except ValueError as e:
-            log_parser_exception(self.datafile,
-                                 f"Could not determine encoding of file: \n{e}",
-                                 "error"
-                                 )
+            log_parser_exception(
+                self.datafile, f"Could not determine encoding of file: \n{e}", "error"
+            )
             if self.datafile.Section.is_fra(self.section):
-                msg = ("Could not determine encoding of FRA file. If the file is an XLSX file, ensure it "
-                       "can be opened in Excel. If the file is a CSV, ensure it can be opened in a text "
-                       "editor and is UTF-8 encoded.")
+                msg = (
+                    "Could not determine encoding of FRA file. If the file is an XLSX file, ensure it "
+                    "can be opened in Excel. If the file is a CSV, ensure it can be opened in a text "
+                    "editor and is UTF-8 encoded."
+                )
             else:
                 msg = "Could not determine encoding of TANF file. Ensure the file is UTF-8 encoded."
             generate_error = util.make_generate_parser_error(self.datafile, 0)
             err_obj = generate_error(
-                    schema=None,
-                    error_category=ParserErrorCategoryChoices.PRE_CHECK,
-                    error_message=msg,
-                    record=None,
-                    field=None
-                )
+                schema=None,
+                error_category=ParserErrorCategoryChoices.PRE_CHECK,
+                error_message=msg,
+                record=None,
+                field=None,
+            )
             self.unsaved_parser_errors.update({0: [err_obj]})
             self.num_errors += 1
             self.bulk_create_errors(flush=True)
@@ -73,7 +81,9 @@ class BaseParser(ABC):
         # program_type is manipulated by some parsers. E.g. the tdr_parser has to prefix a tribal TANF's program type
         # with "Tribal" since it's base program type would just be TANF.
         self.program_type = program_type
-        self.schema_manager = SchemaManager(self.datafile, self.program_type, self.section)
+        self.schema_manager = SchemaManager(
+            self.datafile, self.program_type, self.section
+        )
 
     def bulk_create_records(self, header_count, flush=False):
         """Bulk create unsaved_records."""
@@ -88,24 +98,30 @@ class BaseParser(ABC):
                     created_objs = model.objects.bulk_create(records)
                     num_db_records_created += len(created_objs)
                 except DatabaseError as e:
-                    log_parser_exception(self.datafile,
-                                         f"Encountered error while creating database records: \n{e}",
-                                         "error"
-                                         )
+                    log_parser_exception(
+                        self.datafile,
+                        f"Encountered error while creating database records: \n{e}",
+                        "error",
+                    )
                     return False
                 except Exception as e:
-                    log_parser_exception(self.datafile,
-                                         f"Encountered generic exception while creating database records: \n{e}",
-                                         "error"
-                                         )
+                    log_parser_exception(
+                        self.datafile,
+                        f"Encountered generic exception while creating database records: \n{e}",
+                        "error",
+                    )
                     return False
 
             self.dfs.total_number_of_records_created += num_db_records_created
             if num_db_records_created != num_expected_db_records:
-                logger.error(f"Bulk Django record creation only created {num_db_records_created}/" +
-                             f"{num_expected_db_records}!")
+                logger.error(
+                    f"Bulk Django record creation only created {num_db_records_created}/"
+                    + f"{num_expected_db_records}!"
+                )
             else:
-                logger.info(f"Created {num_db_records_created}/{num_expected_db_records} records.")
+                logger.info(
+                    f"Created {num_db_records_created}/{num_expected_db_records} records."
+                )
 
             all_created = num_db_records_created == num_expected_db_records
             self.unsaved_records.clear(all_created)
@@ -115,8 +131,15 @@ class BaseParser(ABC):
         """Bulk create unsaved_parser_errors."""
         if flush or (self.unsaved_parser_errors and self.num_errors >= batch_size):
             logger.debug("Bulk creating ParserErrors.")
-            num_created = len(ParserError.objects.bulk_create(list(itertools.chain.from_iterable(
-                self.unsaved_parser_errors.values()))))
+            num_created = len(
+                ParserError.objects.bulk_create(
+                    list(
+                        itertools.chain.from_iterable(
+                            self.unsaved_parser_errors.values()
+                        )
+                    )
+                )
+            )
             logger.info(f"Created {num_created}/{self.num_errors} ParserErrors.")
             self.unsaved_parser_errors = dict()
             self.num_errors = 0
@@ -132,17 +155,23 @@ class BaseParser(ABC):
                 num_deleted = qset._raw_delete(qset.db)
                 logger.debug(f"Deleted {num_deleted} records of type: {model}.")
             except DatabaseError as e:
-                log_parser_exception(self.datafile,
-                                     (f"Encountered error while deleting database records for model: {model}. "
-                                      f"Exception: \n{e}"),
-                                     "error"
-                                     )
+                log_parser_exception(
+                    self.datafile,
+                    (
+                        f"Encountered error while deleting database records for model: {model}. "
+                        f"Exception: \n{e}"
+                    ),
+                    "error",
+                )
             except Exception as e:
-                log_parser_exception(self.datafile,
-                                     ("Encountered generic exception while trying to rollback "
-                                      f"records. Exception: \n{e}"),
-                                     "error"
-                                     )
+                log_parser_exception(
+                    self.datafile,
+                    (
+                        "Encountered generic exception while trying to rollback "
+                        f"records. Exception: \n{e}"
+                    ),
+                    "error",
+                )
 
     def rollback_parser_errors(self):
         """Delete created errors in the event of a failure."""
@@ -154,31 +183,38 @@ class BaseParser(ABC):
             num_deleted = qset._raw_delete(qset.db)
             logger.debug(f"Deleted {num_deleted} ParserErrors.")
         except DatabaseError as e:
-            log_parser_exception(self.datafile,
-                                 ("Encountered error while deleting database records for ParserErrors. "
-                                  f"Exception: \n{e}"),
-                                 "error"
-                                 )
+            log_parser_exception(
+                self.datafile,
+                (
+                    "Encountered error while deleting database records for ParserErrors. "
+                    f"Exception: \n{e}"
+                ),
+                "error",
+            )
         except Exception as e:
-            log_parser_exception(self.datafile,
-                                 f"Encountered generic exception while rolling back ParserErrors. Exception: \n{e}.",
-                                 "error"
-                                 )
+            log_parser_exception(
+                self.datafile,
+                f"Encountered generic exception while rolling back ParserErrors. Exception: \n{e}.",
+                "error",
+            )
 
     def create_no_records_created_pre_check_error(self):
         """Generate a precheck error if no records were created."""
-        no_records_allowed = ("Closed Case Data" in self.section and
-                              self.dfs.total_number_of_records_created == self.dfs.total_number_of_records_in_file)
+        no_records_allowed = (
+            "Closed Case Data" in self.section
+            and self.dfs.total_number_of_records_created
+            == self.dfs.total_number_of_records_in_file
+        )
         if self.dfs.total_number_of_records_created == 0 and not no_records_allowed:
             errors = {}
             generate_error = util.make_generate_parser_error(self.datafile, 0)
             err_obj = generate_error(
-                    schema=None,
-                    error_category=ParserErrorCategoryChoices.PRE_CHECK,
-                    error_message="No records created.",
-                    record=None,
-                    field=None
-                )
+                schema=None,
+                error_category=ParserErrorCategoryChoices.PRE_CHECK,
+                error_message="No records created.",
+                record=None,
+                field=None,
+            )
             errors["no_records_created"] = [err_obj]
             self.unsaved_parser_errors.update(errors)
             self.num_errors += 1
@@ -196,14 +232,20 @@ class BaseParser(ABC):
                 self.dfs.total_number_of_records_created -= num_deleted
                 logger.debug(f"Deleted {num_deleted} records of type: {model}.")
             except DatabaseError as e:
-                log_parser_exception(self.datafile,
-                                     (f"Encountered error while deleting database records for model {model}. "
-                                      f"Exception: \n{e}"),
-                                     "error"
-                                     )
+                log_parser_exception(
+                    self.datafile,
+                    (
+                        f"Encountered error while deleting database records for model {model}. "
+                        f"Exception: \n{e}"
+                    ),
+                    "error",
+                )
             except Exception as e:
-                log_parser_exception(self.datafile,
-                                     (f"Encountered generic exception while deleting records of type {model}. "
-                                      f"Exception: \n{e}"),
-                                     "error"
-                                     )
+                log_parser_exception(
+                    self.datafile,
+                    (
+                        f"Encountered generic exception while deleting records of type {model}. "
+                        f"Exception: \n{e}"
+                    ),
+                    "error",
+                )

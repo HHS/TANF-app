@@ -15,7 +15,7 @@ import {
   handlePreview,
   getTargetClassName,
   tryGetUTF8EncodedFile,
-  checkHeaderFile,
+  validateHeader,
   checkPreviewDependencies,
   removeOldPreviews,
 } from './utils'
@@ -179,23 +179,26 @@ function FileUpload({ section, setLocalAlertState }) {
 
     if (!error) {
       // Get the correctly encoded file
-      const encodedFile = await tryGetUTF8EncodedFile(result, file)
-      const [
-        isInCorrectQuarterYearProgramType,
-        fiscalFileYear,
-        fiscalFileQuarter,
-        progType,
-      ] = await checkHeaderFile(result, file, selectedYear, selectedQuarter)
-      if (
-        isInCorrectQuarterYearProgramType &&
-        progType !== null &&
-        selectedFileType.includes(progType?.toLowerCase())
-      ) {
+      const { encodedFile, header } = await tryGetUTF8EncodedFile(result, file)
+      const selectedProgramType = selectedFileType.slice(0, 3).toUpperCase()
+      const { isValid, calendarFiscalResult, programTypeResult } =
+        await validateHeader(
+          header,
+          selectedYear,
+          selectedQuarter,
+          selectedProgramType
+        )
+      if (isValid) {
         dispatch(upload({ file: encodedFile, section }))
-      } else if (
-        progType !== null &&
-        !selectedFileType.includes(progType?.toLowerCase())
-      ) {
+      } else if (!programTypeResult.isValid) {
+        let formattedFileProgramType = programTypeResult.progType
+        let formattedSelectedProgramType = selectedProgramType
+        if (formattedFileProgramType === 'TAN') {
+          formattedFileProgramType = 'TANF'
+        }
+        if (formattedSelectedProgramType === 'TAN') {
+          formattedSelectedProgramType = 'TANF'
+        }
         // Handle specific program type cases
         dispatch({
           type: SET_FILE_ERROR,
@@ -203,15 +206,15 @@ function FileUpload({ section, setLocalAlertState }) {
             error: {
               message:
                 `File may correspond to ` +
-                progType?.slice(0, 3).toUpperCase() +
+                formattedFileProgramType +
                 ` instead of ` +
-                selectedFileType.slice(0, 3).toUpperCase() +
+                formattedSelectedProgramType +
                 `. Please verify the file type.`,
             },
             section,
           },
         })
-      } else if (!isInCorrectQuarterYearProgramType) {
+      } else if (!calendarFiscalResult.isValid) {
         // Handle fiscal year and quarter mismatch
         let error_period
         var link = (
@@ -223,7 +226,7 @@ function FileUpload({ section, setLocalAlertState }) {
             Need help?
           </a>
         )
-        switch (fiscalFileQuarter) {
+        switch (calendarFiscalResult.fileFiscalQuarter) {
           case '1':
             error_period = 'Oct 1 - Dec 31, '
             break
@@ -252,9 +255,9 @@ function FileUpload({ section, setLocalAlertState }) {
                 `File contains data from ` +
                 error_period +
                 `which belongs to Fiscal Year ` +
-                fiscalFileYear +
+                calendarFiscalResult.fileFiscalYear +
                 `, Quarter ` +
-                fiscalFileQuarter +
+                calendarFiscalResult.fileFiscalQuarter +
                 `. Adjust your search parameters or upload a different file.`,
               link: link,
             },
