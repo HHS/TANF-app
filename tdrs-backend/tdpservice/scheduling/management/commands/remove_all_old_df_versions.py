@@ -1,10 +1,13 @@
 """Command to facilitate backup of the Postgres DB."""
 
-from django.core.management.base import BaseCommand
 import logging
+
+from django.core.management.base import BaseCommand
+
 from tdpservice.scheduling.datafile_retention_tasks import remove_all_old_versions
 
 logger = logging.getLogger(__name__)
+
 
 class Command(BaseCommand):
     """Command class."""
@@ -15,5 +18,7 @@ class Command(BaseCommand):
         """Remove every previous version."""
         logger.info("Queueing task to remove all old versions of every datafile.")
         remove_all_old_versions.delay()
-        logger.info("Task to remove all old versions of every datafile has been queued. Please refer to the LogEntries "
-                    "in the DAC for more information.")
+        logger.info(
+            "Task to remove all old versions of every datafile has been queued. Please refer to the LogEntries "
+            "in the DAC for more information."
+        )

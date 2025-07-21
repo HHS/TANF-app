@@ -2,21 +2,22 @@
 
 import logging
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management import BaseCommand
-from django.conf import settings
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
+
 
 def delete_cypress_user(username):
     """Delete the user if it exists."""
     try:
         user = User.objects.get(username=username)
         user.delete()
-        logger.debug(f'Deleting {username}')
+        logger.debug(f"Deleting {username}")
     except User.DoesNotExist:
-        logger.debug(f'{username} does not exist')
+        logger.debug(f"{username} does not exist")
 
 
 class Command(BaseCommand):
@@ -31,7 +32,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Delete test users if they exist."""
         if settings.DEBUG:
-            for username in options['usernames']:
+            for username in options["usernames"]:
                 delete_cypress_user(username)
         else:
-            raise Exception('Cannot delete cypress users in non-dev environments.')
+            raise Exception("Cannot delete cypress users in non-dev environments.")

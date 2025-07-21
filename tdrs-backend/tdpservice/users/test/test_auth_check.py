@@ -1,8 +1,10 @@
 """Test the authorization check."""
 
-import pytest
 from django.urls import reverse
+
+import pytest
 from rest_framework import status
+
 from ..serializers import UserProfileSerializer
 
 
