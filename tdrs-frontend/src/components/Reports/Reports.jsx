@@ -279,7 +279,7 @@ function Reports() {
   ])
 
   return (
-    <>
+    <div className="page-container" style={{ position: 'relative' }}>
       <div
         className={classNames({
           'border-bottom': isUploadReportToggled && errorsCount === 0,
@@ -533,25 +533,25 @@ function Reports() {
               }}
             />
           )}
+          {isFeedbackOpen && (
+            <FeedbackPortal>
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: '100%',
+                  right: '14rem',
+                  zIndex: 1000,
+                }}
+              >
+                <FeedbackWidget
+                  isOpen={isFeedbackOpen}
+                  onClose={handleCloseWidget}
+                  dataType={fileTypeInputValue}
+                />
+              </div>
+            </FeedbackPortal>
+          )}
         </>
-      )}
-      {isFeedbackOpen && (
-        <FeedbackPortal>
-          <div
-            style={{
-              position: 'absolute',
-              bottom: '100%',
-              right: '14rem',
-              zIndex: 1000,
-            }}
-          >
-            <FeedbackWidget
-              isOpen={isFeedbackOpen}
-              onClose={handleCloseWidget}
-              dataType={fileTypeInputValue}
-            />
-          </div>
-        </FeedbackPortal>
       )}
       <Modal
         title="Files Not Submitted"
@@ -581,7 +581,7 @@ function Reports() {
         isVisible={reprocessedModalVisible}
         setModalVisible={setReprocessedModalVisible}
       />
-    </>
+    </div>
   )
 }
 
