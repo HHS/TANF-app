@@ -236,8 +236,8 @@ def sumIsEqual(condition_field_name, sum_fields=[]):
             return Result(field_names=fields)
         return Result(
             valid=False,
-            error=(f"{row_schema.record_type}: The sum of {sum_fields} does not equal {condition_field_name} "
-                   f"{condition_field.friendly_name} Item {condition_field.item}."),
+            error=(f"{row_schema.record_type}: The sum of {', '.join(sum_fields)} does not equal "
+                   f"{condition_field_name} {condition_field.friendly_name} Item {condition_field.item}."),
             field_names=fields
         )
 
@@ -257,7 +257,8 @@ def sumIsLarger(fields, val):
 
         return Result(
             valid=False,
-            error=f"{row_schema.record_type}: The sum of {fields} is not larger than {val}.",
+            error=(f"{row_schema.record_type}: No benefits detected for this case. "
+                   f"The total sum of {', '.join(fields)} must be greater than {val}."),
             field_names=fields
         )
 

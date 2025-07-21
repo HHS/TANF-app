@@ -10,6 +10,59 @@ services:
       - ./reports:/zap/wrk/:rw
       - ../scripts/zap-hook.py:/zap/scripts/zap-hook.py:ro
 
+  # Init container to set up Vault volume permissions
+  vault-init:
+    image: alpine:3.20
+    container_name: vault-init
+    user: "0:0"
+    restart: "no"
+    volumes:
+      - vault_data:/vault/data
+      - vault_logs:/vault/logs
+    command: ["sh", "-c", "chown -R 100:1000 /vault/data /vault/logs && chmod -R 755 /vault/data /vault/logs"]
+
+  
+
+  # HashiCorp Vault Community Edition
+  vault:
+    image: hashicorp/vault:latest
+    container_name: vault
+    depends_on:
+      - vault-init
+    ports:
+      - "8200:8200"  # Vault API and UI port
+    environment:
+      #VAULT_ADDR: http://0.0.0.0:8200
+      #VAULT_API_ADDR: http://0.0.0.0:8200
+      VAULT_TOKEN: ${VAULT_TOKEN}  # Set this in your .env file or export it in your shell
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_TOKEN}  # For development purposes, set a root token
+      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+    cap_add:
+      - IPC_LOCK  # Required for Vault's memory locking
+    volumes:
+      - vault_data:/vault/data:rw      # Secret storage for demo. Vault can also use S3, postgres or other
+      - vault_logs:/vault/logs:rw  
+      - ./vault:/vault:rw  # Configuration files
+    command: ["server", "-dev", "-config=/vault/vault.hcl"] # for local environment, use -dev for simplicity
+    # Note: In production, you should not use -dev mode and should configure Vault properly with TLS and secure storage.
+
+    # Vault Agent for credential injection
+  vault-agent:
+    image: hashicorp/vault:1.19.2
+    container_name: vault-agent
+    depends_on:
+      - vault
+    environment:
+      - VAULT_ADDR=http://vault:8200
+      - VAULT_TOKEN=${VAULT_TOKEN}
+    volumes:
+      - vault_secrets:/vault/secrets
+      - ./vault/vault_agent/config:/vault_agent/config:ro
+      - ./vault/vault_agent/templates:/vault_agent/templates:ro
+    command: ["sh", "-c", "echo \"$VAULT_TOKEN\" > /tmp/vault-token && vault agent -config=/vault_agent/config/agent.hcl"]
+    cap_add:
+      - IPC_LOCK         
+
   postgres:
     image: postgres:15.7
     environment:
@@ -59,7 +112,7 @@ services:
 
   grafana:
     restart: always
-    image: grafana/grafana:12.0.1
+    image: grafana/grafana:12.0.2
     ports:
       - 9400:9400
     environment:
@@ -210,11 +263,19 @@ services:
       - AWS_S3_BUCKET_NAME
       - AWS_S3_LOGS_PREFIX
       - GRAFANA_PASSWORD
+      - VAULT_TOKEN=${VAULT_TOKEN}
       - GRAFANA_USER
+      - OFA_DB_PASSWORD
+      - OFA_DB_USER
+
+      - OTEL_PYTHON_DJANGO_EXCLUDED_URLS
     volumes:
       - .:/tdpapp
       - logs:/tmp
-    build: 
+      - vault_logs:/tmp
+      - vault_secrets:/vault/secrets
+
+    build:
       context: .
       args:
         REGISTRY_OWNER: ${REGISTRY_OWNER:-hhs}
@@ -223,7 +284,9 @@ services:
       ./manage.py makemigrations &&
       ./manage.py migrate &&
       ./manage.py populate_stts &&
-      ./gunicorn_start.sh && celery -A tdpservice.settings worker -l info"
+      python ./plg/grafana_views/generate_views.py --all &&
+      ./manage.py runscript apply_grafana_views &&
+      ./gunicorn_start.sh"
     ports:
       - "5555:5555"
     tty: true
@@ -241,6 +304,51 @@ services:
     volumes:
       - .:/tdpapp
 
+  celery:
+    restart: always
+    environment:
+      - CLAMAV_NEEDED
+      - AV_SCAN_URL=http://clamav-rest:9000/scan
+      - DB_HOST=postgres
+      - DB_NAME=tdrs_test
+      - DB_PASSWORD=something_secure
+      - DB_PORT=5432
+      - DB_USER=tdpuser
+      - DJANGO_CONFIGURATION=${DJANGO_CONFIGURATION:-Local}
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-tdp-dev-insecure}
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-tdpservice.settings.local}
+      - LOCALSTACK_HOST=localstack
+      - DJANGO_SU_NAME
+      - JWT_CERT_TEST
+      - JWT_KEY
+      - USE_LOCALSTACK
+      - LOGGING_LEVEL
+      - AMS_CLIENT_ID
+      - AMS_CLIENT_SECRET
+      - AMS_CONFIGURATION_ENDPOINT
+      - REDIS_URI=redis://redis-server:6379
+      - REDIS_SERVER_LOCAL=TRUE
+      - CYPRESS_TOKEN
+      - DJANGO_DEBUG
+      - SENDGRID_API_KEY
+      - GENERATE_TRAILER_ERRORS=True
+      - BYPASS_OFA_AUTH
+      - FRA_PILOT_STATES
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_S3_BUCKET_NAME
+      - AWS_S3_LOGS_PREFIX
+    volumes:
+      - .:/tdpapp
+      - logs:/tmp
+    image: tdp
+    build: .
+    command: bash -c "./wait_for_services.sh && ./celery_start.sh"
+    depends_on:
+      - localstack
+      - postgres
+      - redis-server
+
 volumes:
   localstack_data:
   postgres_data:
@@ -249,8 +357,10 @@ volumes:
   grafana_data:
   loki_data:
   logs:
+  vault_data: # Store Vault's encrypted data
+  vault_logs:  # Store Vault's log files
+  vault_secrets:
   tempo-data:
-
 
 networks:
   default:

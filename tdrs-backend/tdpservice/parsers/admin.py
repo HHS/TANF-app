@@ -1,10 +1,11 @@
 """Django admin customizations for the parser models."""
 from django.contrib import admin
+from tdpservice.core.utils import ReadOnlyAdminMixin
 from . import models
 
 
 # Register your models here.
-class ParserErrorAdmin(admin.ModelAdmin):
+class ParserErrorAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     """ModelAdmin class for ParserError objects generated in parsing."""
 
     list_display = [
@@ -33,7 +34,7 @@ class ParserErrorInline(admin.TabularInline):
     model = models.ParserError
 
 
-class DataFileSummaryAdmin(admin.ModelAdmin):
+class DataFileSummaryAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     """ModelAdmin class for DataFileSummary objects generated in parsing."""
 
     list_display = ['status', 'case_aggregates', 'datafile']

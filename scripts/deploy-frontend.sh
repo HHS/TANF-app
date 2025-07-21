@@ -28,7 +28,7 @@ update_frontend()
         echo "REACT_APP_CF_SPACE=$CF_SPACE" >> .env.production
         # RUM config
         echo "REACT_APP_ENABLE_RUM=true" >> .env.production
-        echo "REACT_APP_FARO_ENDPOINT=https://$CGHOSTNAME_FRONTEND.acf.hhs.gov/collect" >> .env.production
+        echo "REACT_APP_FARO_ENDPOINT=https://tanfdata.acf.hhs.gov/collect" >> .env.production
         echo "REACT_APP_VERSION=v3.8.4" >> .env.production
         echo "BACK_END=" >> .env.production
     elif [ "$CF_SPACE" = "tanf-staging" ]; then
@@ -36,8 +36,6 @@ update_frontend()
         echo "REACT_APP_FRONTEND_URL=https://$CGHOSTNAME_FRONTEND.acf.hhs.gov" >> .env.development
         echo "REACT_APP_BACKEND_HOST=https://$CGHOSTNAME_FRONTEND.acf.hhs.gov" >> .env.development
         echo "REACT_APP_CF_SPACE=$CF_SPACE" >> .env.development
-        # RUM config
-        echo "REACT_APP_ENABLE_RUM=false" >> .env.development
 
         cf set-env "$CGHOSTNAME_FRONTEND" ALLOWED_ORIGIN "https://$CGHOSTNAME_FRONTEND.acf.hhs.gov"
         cf set-env "$CGHOSTNAME_FRONTEND" CONNECT_SRC '*.acf.hhs.gov'
@@ -46,8 +44,6 @@ update_frontend()
         echo "REACT_APP_FRONTEND_URL=https://$CGHOSTNAME_FRONTEND.app.cloud.gov" >> .env.development
         echo "REACT_APP_BACKEND_HOST=https://$CGHOSTNAME_FRONTEND.app.cloud.gov" >> .env.development
         echo "REACT_APP_CF_SPACE=$CF_SPACE" >> .env.development
-        # RUM config
-        echo "REACT_APP_ENABLE_RUM=false" >> .env.development
 
         cf set-env "$CGHOSTNAME_FRONTEND" ALLOWED_ORIGIN "https://$CGHOSTNAME_FRONTEND.app.cloud.gov"
         cf set-env "$CGHOSTNAME_FRONTEND" CONNECT_SRC '*.app.cloud.gov'
