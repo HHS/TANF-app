@@ -1,9 +1,9 @@
 """Define settings classes available for environments deployed in Cloud.gov."""
 
-from distutils.util import strtobool
 import json
 import logging
 import os
+from distutils.util import strtobool
 
 from tdpservice.settings.common import Common
 

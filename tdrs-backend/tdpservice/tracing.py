@@ -1,8 +1,8 @@
 """OpenTelemetry tracing configuration for the TDP application."""
 
-from django.conf import settings
-
 import logging
+
+from django.conf import settings
 
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
