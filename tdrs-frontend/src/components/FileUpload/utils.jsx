@@ -109,47 +109,81 @@ export const handlePreview = (fileName, targetClassName) => {
 // The package author suggests using a minimum of 500 words to determine the encoding. However, datafiles don't have
 // "words" so we're using bytes instead to determine the encoding. See: https://www.npmjs.com/package/detect-file-encoding-and-language
 const MIN_BYTES = 500
+const HEADER_LENGTH = 23 * 4 // Multiply by 4 because some encodings are 4 bytes per char
+
+/* istanbul ignore next */
+const checkBom = (bytesView) => {
+  // Check for different types of BOMs
+  let skipBytes = 0
+  const bom = bytesView.slice(0, 4) // Get enough bytes for any BOM
+
+  // UTF-8 BOM: EF BB BF
+  const hasUtf8Bom = bom[0] === 0xef && bom[1] === 0xbb && bom[2] === 0xbf
+  if (hasUtf8Bom) skipBytes = 3
+
+  // UTF-16 BE BOM: FE FF
+  const hasUtf16BeBom = bom[0] === 0xfe && bom[1] === 0xff
+  if (hasUtf16BeBom) skipBytes = 2
+
+  // UTF-16 LE BOM: FF FE
+  const hasUtf16LeBom = bom[0] === 0xff && bom[1] === 0xfe
+  if (hasUtf16LeBom) skipBytes = 2
+
+  // UTF-32 BE BOM: 00 00 FE FF
+  const hasUtf32BeBom =
+    bom[0] === 0x00 && bom[1] === 0x00 && bom[2] === 0xfe && bom[3] === 0xff
+  if (hasUtf32BeBom) skipBytes = 4
+
+  // UTF-32 LE BOM: FF FE 00 00
+  const hasUtf32LeBom =
+    bom[0] === 0xff && bom[1] === 0xfe && bom[2] === 0x00 && bom[3] === 0x00
+  if (hasUtf32LeBom) skipBytes = 4
+
+  const hasBom = skipBytes > 0
+
+  return { hasBom, skipBytes }
+}
 
 /* istanbul ignore next */
 export const tryGetUTF8EncodedFile = async function (fileBytes, file) {
   // Create a small view of the file to determine the encoding.
-  const btyesView = new Uint8Array(fileBytes.slice(0, MIN_BYTES))
-  const blobView = new Blob([btyesView])
+  const bytesView = new Uint8Array(fileBytes.slice(0, MIN_BYTES))
+  const blobView = new Blob([bytesView])
   try {
     const fileInfo = await languageEncoding(blobView)
-    const bom = btyesView.slice(0, 3)
-    const hasBom = bom[0] === 0xef && bom[1] === 0xbb && bom[2] === 0xbf
+    const decoder = new TextDecoder(fileInfo.encoding)
+    let retFile = file
+    let headerText = decoder.decode(fileBytes.slice(0, HEADER_LENGTH))
+    const { hasBom, skipBytes } = checkBom(bytesView)
+
     if ((fileInfo && fileInfo.encoding !== 'UTF-8') || hasBom) {
       const utf8Encoder = new TextEncoder()
-      const decoder = new TextDecoder(fileInfo.encoding)
-      const decodedString = decoder.decode(
-        hasBom ? fileBytes.slice(3) : fileBytes
-      )
+      const newBytes = hasBom ? fileBytes.slice(skipBytes) : fileBytes
+      headerText = decoder.decode(newBytes.slice(0, HEADER_LENGTH))
+      const decodedString = decoder.decode(newBytes)
       const utf8Bytes = utf8Encoder.encode(decodedString)
-      return new File([utf8Bytes], file.name, file.options)
+      retFile = new File([utf8Bytes], file.name, file.options)
     }
-    return file
+
+    return { encodedFile: retFile, header: headerText }
   } catch (error) {
     // This is a last ditch fallback to ensure consistent functionality and also allows the unit tests to work in the
     // same way they did before this change. When the unit tests (i.e. Node environment) call `languageEncoding` it
     // expects a Buffer/string/URL object. When the browser calls `languageEncoding`, it expects a Blob/File object.
     // There is not a convenient way or universal object to handle both cases. Thus, when the tests run the call to
-    // `languageEncoding`, it raises an exception and we return the file as is which is then dispatched as it would
-    // have been before this change.
-    console.error('Caught error while handling file encoding. Error:', error)
-    return file
+    // `languageEncoding`, it raises an exception and we return the file and decode the header as is which is then
+    // dispatched as it would have been.
+    const decoder = new TextDecoder()
+    const header = decoder.decode(bytesView.slice(0, HEADER_LENGTH))
+    return { encodedFile: file, header: header }
   }
 }
 
-// import SET_SELECTED_YEAR
-// import SET_SELECTED_QUARTER
-
-export const checkHeaderFile = async function (
-  result,
-  file,
-  fiscalSelectedYear,
-  fiscalSelectedQuarter
-) {
+const validateCalendarToFiscalYearQuarter = (
+  header,
+  selectedFiscalYear,
+  selectedFiscalQuarter
+) => {
   const CalendarToFiscalYearQuarter = (calendarYear, calendarQuarter) => {
     let quarter = parseInt(calendarQuarter)
     let year = parseInt(calendarYear)
@@ -159,29 +193,52 @@ export const checkHeaderFile = async function (
     quarter = quarter === 4 ? 1 : quarter + 1
     return [year.toString(), quarter.toString()]
   }
-  // reads the first line of file formatted as UTF8Encoded
-  const decoder = new TextDecoder('utf-8') // Or another encoding if needed
-  const textResult = decoder.decode(result)
-  const lines = textResult.split('\n')
-  const firstLine = lines[0]
+
   const yearQuarterRegex = '[0-9]{4}[1-4]'
-  const yearQuarter = firstLine.match(yearQuarterRegex)
+  const yearQuarter = header.match(yearQuarterRegex)
   const fileYear = yearQuarter?.[0]?.slice(0, 4)
   const fileQuarter = yearQuarter?.[0]?.slice(4, 5)
-  const [fiscalFileYear, fiscalFileQuarter] = CalendarToFiscalYearQuarter(
+  const [fileFiscalYear, fileFiscalQuarter] = CalendarToFiscalYearQuarter(
     fileYear,
     fileQuarter
   )
+  return {
+    isValid:
+      yearQuarter &&
+      fileFiscalYear === selectedFiscalYear &&
+      fileFiscalQuarter === selectedFiscalQuarter.slice(1, 2),
+    fileFiscalYear,
+    fileFiscalQuarter,
+  }
+}
+
+const validateProgramType = (header, selectedProgramType) => {
   const progTypeRegex = '(TAN|tan|SSP|ssp)'
-  const progType = firstLine.match(progTypeRegex)
-  // Check if the fiscal year and quarter match the selected values
-  if (
-    yearQuarter !== null &&
-    (fiscalFileYear !== fiscalSelectedYear ||
-      fiscalFileQuarter !== fiscalSelectedQuarter.slice(1, 2))
-  ) {
-    return [false, fiscalFileYear, fiscalFileQuarter, null]
-  } else {
-    return [true, null, null, progType ? progType[0] : null]
+  const progType = header.match(progTypeRegex)
+  return {
+    isValid: !!progType
+      ? progType[0].toUpperCase() === selectedProgramType
+      : false,
+    progType: !!progType ? progType[0] : null,
+  }
+}
+
+export const validateHeader = async function (
+  header,
+  selectedFiscalYear,
+  selectedFiscalQuarter,
+  selectedProgramType
+) {
+  const calendarFiscalResult = validateCalendarToFiscalYearQuarter(
+    header,
+    selectedFiscalYear,
+    selectedFiscalQuarter
+  )
+  const programTypeResult = validateProgramType(header, selectedProgramType)
+  console.log(JSON.stringify(selectedProgramType, null, 2))
+  return {
+    isValid: calendarFiscalResult.isValid && programTypeResult.isValid,
+    calendarFiscalResult,
+    programTypeResult,
   }
 }
