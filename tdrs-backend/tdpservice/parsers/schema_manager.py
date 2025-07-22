@@ -1,10 +1,11 @@
 """Manager class for a datafile's schema's."""
 
-from tdpservice.parsers.models import ParserErrorCategoryChoices
-from tdpservice.parsers.fields import TransformField
-from tdpservice.parsers.dataclasses import ManagerPVResult
-from tdpservice.parsers.schema_defs.utils import ProgramManager
 import logging
+
+from tdpservice.parsers.dataclasses import ManagerPVResult
+from tdpservice.parsers.fields import TransformField
+from tdpservice.parsers.models import ParserErrorCategoryChoices
+from tdpservice.parsers.schema_defs.utils import ProgramManager
 
 logger = logging.getLogger(__name__)
 
@@ -32,19 +33,27 @@ class SchemaManager:
             records = []
             schemas = self.schema_map[row.record_type]
             for schema in schemas:
-                record, is_valid, errors = schema.parse_and_validate(row, generate_error)
+                record, is_valid, errors = schema.parse_and_validate(
+                    row, generate_error
+                )
                 records.append((record, is_valid, errors))
             return ManagerPVResult(records=records, schemas=schemas)
         except Exception:
-            records = [(None, False, [
-                generate_error(
-                    schema=None,
-                    error_category=ParserErrorCategoryChoices.PRE_CHECK,
-                    error_message="Unknown Record_Type was found.",
-                    record=None,
-                    field="Record_Type",
+            records = [
+                (
+                    None,
+                    False,
+                    [
+                        generate_error(
+                            schema=None,
+                            error_category=ParserErrorCategoryChoices.PRE_CHECK,
+                            error_message="Unknown Record_Type was found.",
+                            record=None,
+                            field="Record_Type",
+                        )
+                    ],
                 )
-            ])]
+            ]
             return ManagerPVResult(records=records, schemas=[])
 
     def update_encrypted_fields(self, is_encrypted):
@@ -55,4 +64,4 @@ class SchemaManager:
             for schema in schemas:
                 for field in schema.fields:
                     if type(field) == TransformField and "is_encrypted" in field.kwargs:
-                        field.kwargs['is_encrypted'] = is_encrypted
+                        field.kwargs["is_encrypted"] = is_encrypted

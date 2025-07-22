@@ -318,15 +318,19 @@ const UploadForm = ({
       return
     }
 
-    let encodedFile = null
+    let fileToLoad = null
 
     if (isXlsx) {
-      encodedFile = fileInputValue
+      fileToLoad = fileInputValue
     } else {
-      encodedFile = await tryGetUTF8EncodedFile(result, fileInputValue)
+      const { encodedFile } = await tryGetUTF8EncodedFile(
+        result,
+        fileInputValue
+      )
+      fileToLoad = encodedFile
     }
 
-    setSelectedFile(encodedFile)
+    setSelectedFile(fileToLoad)
     inputRef.current.value = null
   }
 

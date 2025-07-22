@@ -1,69 +1,69 @@
 """Utility functions for parsing."""
 
-from tdpservice.parsers import schema_defs
-from tdpservice.data_files.models import DataFile
 import logging
 
+from tdpservice.data_files.models import DataFile
+from tdpservice.parsers import schema_defs
+
 logger = logging.getLogger(__name__)
+
 
 class ProgramManager:
     """Container class to map schemas based on program and section."""
 
     # TANF schemas
     tan_active_schemas = {
-        'T1': schema_defs.tanf.t1,
-        'T2': schema_defs.tanf.t2,
-        'T3': schema_defs.tanf.t3,
+        "T1": schema_defs.tanf.t1,
+        "T2": schema_defs.tanf.t2,
+        "T3": schema_defs.tanf.t3,
     }
     tan_closed_schemas = {
-        'T4': schema_defs.tanf.t4,
-        'T5': schema_defs.tanf.t5,
+        "T4": schema_defs.tanf.t4,
+        "T5": schema_defs.tanf.t5,
     }
     tan_agg_schemas = {
-        'T6': schema_defs.tanf.t6,
+        "T6": schema_defs.tanf.t6,
     }
     tan_strat_schemas = {
-        'T7': schema_defs.tanf.t7,
+        "T7": schema_defs.tanf.t7,
     }
 
     # Tribal schemas
     tribal_active_schemas = {
-        'T1': schema_defs.tribal_tanf.t1,
-        'T2': schema_defs.tribal_tanf.t2,
-        'T3': schema_defs.tribal_tanf.t3,
+        "T1": schema_defs.tribal_tanf.t1,
+        "T2": schema_defs.tribal_tanf.t2,
+        "T3": schema_defs.tribal_tanf.t3,
     }
     tribal_closed_schemas = {
-        'T4': schema_defs.tribal_tanf.t4,
-        'T5': schema_defs.tribal_tanf.t5,
+        "T4": schema_defs.tribal_tanf.t4,
+        "T5": schema_defs.tribal_tanf.t5,
     }
     tribal_agg_schemas = {
-        'T6': schema_defs.tribal_tanf.t6,
+        "T6": schema_defs.tribal_tanf.t6,
     }
     tribal_strat_schemas = {
-        'T7': schema_defs.tribal_tanf.t7,
+        "T7": schema_defs.tribal_tanf.t7,
     }
 
     # SSP schemas
     ssp_active_schemas = {
-        'M1': schema_defs.ssp.m1,
-        'M2': schema_defs.ssp.m2,
-        'M3': schema_defs.ssp.m3,
+        "M1": schema_defs.ssp.m1,
+        "M2": schema_defs.ssp.m2,
+        "M3": schema_defs.ssp.m3,
     }
     ssp_closed_schemas = {
-        'M4': schema_defs.ssp.m4,
-        'M5': schema_defs.ssp.m5,
+        "M4": schema_defs.ssp.m4,
+        "M5": schema_defs.ssp.m5,
     }
     ssp_agg_schemas = {
-        'M6': schema_defs.ssp.m6,
+        "M6": schema_defs.ssp.m6,
     }
     ssp_strat_schemas = {
-        'M7': schema_defs.ssp.m7,
+        "M7": schema_defs.ssp.m7,
     }
 
     # FRA schemas
-    fra_work_outcomes_tanf_exiters = {
-        'TE1': schema_defs.fra.te1
-    }
+    fra_work_outcomes_tanf_exiters = {"TE1": schema_defs.fra.te1}
 
     @classmethod
     def get_section(cls, program_type: str, section_abbrev: str):
@@ -101,7 +101,9 @@ class ProgramManager:
                         return DataFile.Section.TRIBAL_STRATUM_DATA
 
     @classmethod
-    def get_schema(cls, program_type: str, section: DataFile.Section | str, record_type: str):
+    def get_schema(
+        cls, program_type: str, section: DataFile.Section | str, record_type: str
+    ):
         """Get specific schema."""
         schemas = cls.get_schemas(program_type, section)
         return schemas.get(record_type, None)
