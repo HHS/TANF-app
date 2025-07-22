@@ -31,7 +31,9 @@ const RouteProvider = ({ children }) => {
 const AppRoutes = () => {
   const user = useSelector((state) => state.auth.user)
 
-  const userAccountInReview = useSelector(accountIsInReview)
+  // TODO: using for testing
+  //const userAccountInReview = useSelector(accountIsInReview)
+  const userAccountInReview = true
   const homeTitle = userAccountInReview ? 'Request Submitted' : 'Welcome to TDP'
 
   return (

@@ -20,17 +20,26 @@ function Home() {
   const user = useSelector((state) => state.auth.user)
   const sttList = useSelector((state) => state?.stts?.sttList)
 
-  const userAccessInReview = useSelector(accountIsInReview)
+  // TODO: only changing for testing
+  //const userAccessInReview = useSelector(accountIsInReview)
+  const userAccessInReview = true
   const userAccessRequestApproved = useSelector(accountStatusIsApproved)
 
   if (userAccessInReview) {
     return (
       <div className="margin-top-5">
         <div className="margin-top-5">
-          <p className="margin-top-1 margin-bottom-4" id="page-alert">
-            Your request for access is currently being reviewed by an OFA Admin.
-            We'll send you an email when it's been approved.
-          </p>
+          <div
+            className="usa-alert usa-alert--slim usa-alert--info margin-top-1 margin-bottom-4"
+            id="page-alert"
+          >
+            <div className="usa-alert__body" role="alert">
+              <p className="usa-alert__text">
+                Your request for access is currently being reviewed by an OFA
+                Admin. We'll send you an email when it's been approved.
+              </p>
+            </div>
+          </div>
         </div>
         <Button type="button" onClick={signOut}>
           <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />

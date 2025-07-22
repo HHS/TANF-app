@@ -14,7 +14,7 @@ function Profile() {
   // Most higher-env users will only have a single role, so just grab the first one.
   const primaryRole = user?.roles?.[0]
   const missingAccessRequest = useSelector(accountIsMissingAccessRequest)
-  const isAccessRequestPending = useSelector(accountIsInReview)
+  const isAccessRequestPending = useSelector(accountIsInReview) // TODO: make this true to see how this looks
 
   const isAMSUser = user?.email?.includes('@acf.hhs.gov')
 
