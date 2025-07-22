@@ -160,12 +160,7 @@ class DataFileSummary(models.Model):
         errors = ParserError.objects.filter(file=self.datafile, deprecated=False)
 
         # excluding row-level pre-checks and trailer pre-checks.
-        precheck_errors = (
-            errors.filter(error_type=ParserErrorCategoryChoices.PRE_CHECK)
-            .exclude(field_name="Record_Type")
-            .exclude(error_message__icontains="trailer")
-            .exclude(error_message__icontains="Unknown Record_Type was found.")
-        )
+        precheck_errors = errors.filter(error_type=ParserErrorCategoryChoices.PRE_CHECK)
 
         record_precheck_errors = errors.filter(
             error_type=ParserErrorCategoryChoices.RECORD_PRE_CHECK
@@ -175,23 +170,13 @@ class DataFileSummary(models.Model):
             error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY
         )
 
-        row_precheck_errors = (
-            errors.filter(error_type=ParserErrorCategoryChoices.PRE_CHECK)
-            .filter(field_name="Record_Type")
-            .exclude(error_message__icontains="trailer")
-        )
-
         if errors is None:
             return DataFileSummary.Status.PENDING
         elif precheck_errors.count() > 0:
             return DataFileSummary.Status.REJECTED
         elif errors.count() == 0:
             return DataFileSummary.Status.ACCEPTED
-        elif (
-            row_precheck_errors.count() > 0
-            or case_consistency_errors.count()
-            or record_precheck_errors.count()
-        ):
+        elif case_consistency_errors.count() > 0 or record_precheck_errors.count() > 0:
             return DataFileSummary.Status.PARTIALLY_ACCEPTED
         else:
             return DataFileSummary.Status.ACCEPTED_WITH_ERRORS

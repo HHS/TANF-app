@@ -39,7 +39,6 @@ class SchemaManager:
                 records.append((record, is_valid, errors))
             return ManagerPVResult(records=records, schemas=schemas)
         except Exception:
-            # TODO: should this be changed? Should it be a precheck or a different error all together?
             records = [
                 (
                     None,
@@ -47,7 +46,7 @@ class SchemaManager:
                     [
                         generate_error(
                             schema=None,
-                            error_category=ParserErrorCategoryChoices.PRE_CHECK,
+                            error_category=ParserErrorCategoryChoices.RECORD_PRE_CHECK,
                             error_message="Unknown Record_Type was found.",
                             record=None,
                             field="Record_Type",

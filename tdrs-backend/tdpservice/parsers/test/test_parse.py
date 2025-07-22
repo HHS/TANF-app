@@ -837,7 +837,7 @@ def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field
 
     error_message = "Unknown Record_Type was found."
     row_5_error = parser_errors.get(row_number=5, error_message=error_message)
-    assert row_5_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert row_5_error.error_type == ParserErrorCategoryChoices.RECORD_PRE_CHECK
     assert row_5_error.error_message == error_message
     assert row_5_error.content_type is None
     assert row_5_error.object_id is None
@@ -896,7 +896,7 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
     row_5_error = parser_errors.get(
         row_number=5, error_message="Unknown Record_Type was found."
     )
-    assert row_5_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert row_5_error.error_type == ParserErrorCategoryChoices.RECORD_PRE_CHECK
     assert row_5_error.content_type is None
     assert row_5_error.object_id is None
 
