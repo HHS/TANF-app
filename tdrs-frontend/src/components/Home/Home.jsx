@@ -10,6 +10,7 @@ import {
   accountStatusIsApproved,
   accountIsInReview,
 } from '../../selectors/auth'
+import UserAccessInfo from '../UserAccessInfo'
 
 /**
  * Home renders the Request Access form for creating a profile, and displays
@@ -30,7 +31,7 @@ function Home() {
       <div className="margin-top-5">
         <div className="margin-top-5">
           <div
-            className="usa-alert usa-alert--slim usa-alert--info margin-top-1 margin-bottom-4"
+            className="usa-alert usa-alert--slim usa-alert--info margin-top-1 margin-bottom-4 margin-right-4"
             id="page-alert"
           >
             <div className="usa-alert__body" role="alert">
@@ -41,10 +42,11 @@ function Home() {
             </div>
           </div>
         </div>
-        <Button type="button" onClick={signOut}>
+        <UserAccessInfo />
+        {/* <Button type="button" onClick={signOut}>
           <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
           Sign Out
-        </Button>
+        </Button> */}
       </div>
     )
   } else if (!userAccessRequestApproved) {

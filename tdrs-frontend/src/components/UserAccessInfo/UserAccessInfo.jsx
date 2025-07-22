@@ -38,26 +38,28 @@ const UserAccessInfo = () => {
     <div className="profile-container">
       <div className="profile-info">
         <div className="row">
-          <span className="label text-bold">Name</span>
+          <span className="label text-bold margin-right-4">Name</span>
           <span id="full-name" className="value">
             {user?.first_name} {user?.last_name}
           </span>
         </div>
         <hr />
         <div className="row">
-          <span className="label text-bold">User Type</span>
+          <span className="label text-bold margin-right-4">User Type</span>
           <span className="value">{primaryRole?.name}</span>
         </div>
         <div className="row">
-          <span className="label text-bold">Jurisdiction Type</span>
+          <span className="label text-bold margin-right-4">
+            Jurisdiction Type
+          </span>
           <span className="value">{user.jurisdictionType}</span>
         </div>
         <div className="row">
-          <span className="label text-bold">State</span>
+          <span className="label text-bold margin-right-4">State</span>
           <span className="value">{getState()}</span>
         </div>
         <div className="row">
-          <span className="label text-bold">Reporting FRA</span>
+          <span className="label text-bold margin-right-4">Reporting FRA</span>
           <span className="value">{user.reportingFRA}</span>
         </div>
       </div>
