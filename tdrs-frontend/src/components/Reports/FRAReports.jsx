@@ -35,6 +35,7 @@ import { fetchSttList } from '../../actions/sttList'
 import { DropdownSelect, RadioSelect } from '../Form'
 import { PaginatedComponent } from '../Paginator/Paginator'
 import { Spinner } from '../Spinner'
+import useFeedbackWidget from '../../hooks/useFeedbackWidget'
 
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
@@ -580,8 +581,9 @@ const FRAReports = () => {
   const { isSubmitting, executeSubmission, onSubmitStart, onSubmitComplete } =
     useFormSubmission()
 
-  // Feedback state
-  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false)
+  // Feedback widget state/hook info
+  const { isFeedbackOpen, handleOpenWidget, handleCloseWidget } =
+    useFeedbackWidget()
 
   const user = useSelector((state) => state.auth.user)
   const sttList = useSelector((state) => state?.stts?.sttList)
@@ -743,15 +745,6 @@ const FRAReports = () => {
         onSearchError
       )
     )
-  }
-
-  const handleOpenWidget = () => {
-    setIsFeedbackOpen(true)
-  }
-
-  const handleCloseWidget = () => {
-    console.log('Closing feedback widget...')
-    setIsFeedbackOpen(false)
   }
 
   const handleUpload = ({ file: selectedFile }) => {

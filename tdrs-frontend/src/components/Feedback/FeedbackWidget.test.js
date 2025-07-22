@@ -4,9 +4,22 @@ import FeedbackWidget from './FeedbackWidget'
 
 jest.useFakeTimers()
 
+// jest.mock('./FeedbackForm', () => (props) => (
+//   <div data-testid="mock-feedback-form">
+//     <button onClick={() => props.onFeedbackSubmit()}>Submit</button>
+//   </div>
+// ))
+
 jest.mock('./FeedbackForm', () => (props) => (
   <div data-testid="mock-feedback-form">
-    <button onClick={() => props.onFeedbackSubmit()}>Submit</button>
+    <button
+      onClick={() => {
+        props.onFeedbackSubmit()
+        props.onRequestSuccess?.()
+      }}
+    >
+      Submit
+    </button>
   </div>
 ))
 
@@ -76,11 +89,16 @@ describe('FeedbackWidget', () => {
     expect(screen.getByLabelText('Loading')).toBeInTheDocument()
 
     // Fast-forward timers
-    jest.advanceTimersByTime(5000)
+    jest.advanceTimersByTime(1000)
 
     await waitFor(() => {
       expect(defaultProps.onClose).toHaveBeenCalled()
     })
+  })
+
+  it('does not show spinner initially', () => {
+    render(<FeedbackWidget {...defaultProps} />)
+    expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument()
   })
 
   it('removes spinner after timeout', async () => {
@@ -89,7 +107,7 @@ describe('FeedbackWidget', () => {
 
     expect(screen.getByLabelText('Loading')).toBeInTheDocument()
 
-    jest.advanceTimersByTime(5000)
+    jest.advanceTimersByTime(1000)
 
     await waitFor(() => {
       expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument()

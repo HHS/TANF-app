@@ -12,9 +12,10 @@ import {
 const FeedbackWidget = React.forwardRef(
   ({ isOpen, onClose, dataType }, ref) => {
     const [isFocusTrapActive, setIsFocusTrapActive] = useState(false)
-    const [showSpinner, setShowSpinner] = useState(true)
+    const [showSpinner, setShowSpinner] = useState(false)
     const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
 
+    const timerRef = useRef(null)
     const widgetRef = useRef(null)
     const headerRef = useRef(null)
     const { onKeyDown } = useFocusTrap({
@@ -38,19 +39,6 @@ const FeedbackWidget = React.forwardRef(
       onKeyDown?.(e) // Trap Tab if active
     }
 
-    // Close and reset after 5 seconds
-    useEffect(() => {
-      if (!isFeedbackSubmitted) return
-
-      const timer = setTimeout(() => {
-        setShowSpinner(false)
-        setIsFeedbackSubmitted(false)
-        onClose?.()
-      }, 5000)
-
-      return () => clearTimeout(timer)
-    }, [isFeedbackSubmitted, onClose])
-
     // Pick the correct widget header based on dataType
     const getFeedbackWidgetHeader = () => {
       if (dataType === 'tanf') {
@@ -62,11 +50,10 @@ const FeedbackWidget = React.forwardRef(
       }
     }
 
-    const handleWidgetClick = () => {
+    const handleWidgetClick = (event) => {
       if (!widgetRef.current) return
 
-      const activeEl = document.activeElement
-      const isClickFromOutside = !widgetRef.current.contains(activeEl)
+      const isClickFromOutside = !widgetRef.current.contains(event.target)
 
       if (isClickFromOutside) {
         setIsFocusTrapActive(true)
@@ -80,11 +67,31 @@ const FeedbackWidget = React.forwardRef(
           setIsFocusTrapActive(false)
         }
       }
-
       document.addEventListener('mousedown', handleClickOutside)
       return () => {
         document.removeEventListener('mousedown', handleClickOutside)
       }
+    }, [])
+
+    const handleRequestSuccess = () => {
+      // Close modal after short delay
+      timerRef.current = setTimeout(() => {
+        setShowSpinner(false)
+        setIsFeedbackSubmitted(false)
+        onClose?.()
+      }, 1000)
+    }
+
+    const handleRequestError = () => {
+      // TODO: we may want to add in a signal for the user to know their feedback submission failed
+      // TODO: example could be if error happens change the thank you modal color to red right before it closes
+      setShowSpinner(false)
+      setIsFeedbackSubmitted(false)
+      onClose?.()
+    }
+
+    useEffect(() => {
+      return () => clearTimeout(timerRef.current)
     }, [])
 
     return isOpen ? (
@@ -110,6 +117,9 @@ const FeedbackWidget = React.forwardRef(
                   className="font-serif-sm margin-2 text-normal"
                   tabIndex={-1}
                   aria-describedby="widgetDesc"
+                  onMouseDown={(e) => e.preventDefault()}
+                  role="presentation"
+                  aria-hidden="true"
                 >
                   {getFeedbackWidgetHeader()}
                 </p>
@@ -131,6 +141,8 @@ const FeedbackWidget = React.forwardRef(
               <FeedbackForm
                 isGeneralFeedback={false}
                 onFeedbackSubmit={handleFeedbackSubmit}
+                onRequestSuccess={handleRequestSuccess}
+                onRequestError={handleRequestError}
               />
             </>
           ) : (

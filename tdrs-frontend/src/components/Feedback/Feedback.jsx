@@ -68,7 +68,7 @@ function Feedback() {
             message={
               <p>
                 Your response has been recorded. If you're encountering an issue
-                you need support to resolve please feel free to email us at{' '}
+                you need support to resolve, please feel free to email us at{' '}
                 <a className="usa-link" href={`mailto:${TANF_SUPPORT_EMAIL}`}>
                   {TANF_SUPPORT_EMAIL}
                 </a>

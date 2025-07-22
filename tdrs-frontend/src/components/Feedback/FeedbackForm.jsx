@@ -21,7 +21,12 @@ const ratingMessageMap = {
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
 
-const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
+const FeedbackForm = ({
+  isGeneralFeedback,
+  onFeedbackSubmit,
+  onRequestSuccess,
+  onRequestError,
+}) => {
   const formRef = useRef(null)
   const authenticated = useSelector((state) => state.auth.authenticated)
 
@@ -52,9 +57,11 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
 
       if (response.status === 200 || response.status === 201) {
         onFeedbackSubmit()
+        onRequestSuccess?.()
         resetStatesOnceSubmitted()
       } else {
         console.error('Unexpected response: ', response)
+        onRequestError?.()
       }
     } catch (error) {
       const status = error?.response?.status
@@ -66,8 +73,16 @@ const FeedbackForm = ({ isGeneralFeedback, onFeedbackSubmit }) => {
           error
         )
       }
+      onRequestError?.()
     }
-  }, [selectedRatingsOption, feedbackMessage, isAnonymous, onFeedbackSubmit])
+  }, [
+    selectedRatingsOption,
+    feedbackMessage,
+    isAnonymous,
+    onFeedbackSubmit,
+    onRequestSuccess,
+    onRequestError,
+  ])
 
   const handleRatingSelected = (rating) => {
     setSelectedRatingsOption(rating)

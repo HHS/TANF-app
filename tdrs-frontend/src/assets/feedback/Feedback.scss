@@ -61,6 +61,11 @@
   padding-bottom: 0;
   z-index: 1000; // default when modal is closed
   transition: bottom 0.2s ease-in-out;
+
+  &:focus,
+  &:focus-visible {
+    outline: none !important;
+  }
 }
 
 @media (max-width: 480px) {
@@ -76,7 +81,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: -1rem;
+  margin-bottom: -0.8rem;
 }
 
 .feedback-widget-thank-you-header {
@@ -103,7 +108,7 @@
 
 .usa-checkbox__label.feedback-widget-anonymous-label {
   margin-top:0.5rem;
-  padding-left: 1.5rem;
+  padding-left: 1.65rem;
   font-size: 0.95rem;
 }
 

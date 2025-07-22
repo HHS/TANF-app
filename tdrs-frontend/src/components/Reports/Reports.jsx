@@ -24,6 +24,7 @@ import {
   accountIsRegionalStaff,
 } from '../../selectors/auth'
 import { quarters, constructYearOptions } from './utils'
+import useFeedbackWidget from '../../hooks/useFeedbackWidget'
 
 const FiscalQuarterExplainer = () => (
   <table className="usa-table usa-table--striped margin-top-4 desktop:width-tablet mobile:width-full">
@@ -89,8 +90,9 @@ function Reports() {
   const isRegionalStaff = useSelector(accountIsRegionalStaff)
   const sttList = useSelector((state) => state?.stts?.sttList)
 
-  // Feedback state
-  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false)
+  // Feedback widget state/hook info
+  const { isFeedbackOpen, handleOpenWidget, handleCloseWidget } =
+    useFeedbackWidget()
 
   const [errorModalVisible, setErrorModalVisible] = useState(false)
   const files = useSelector((state) => state.reports.submittedFiles)
@@ -222,14 +224,6 @@ function Reports() {
   const selectStt = (value) => {
     setSttInputValue(value)
     setTouched((currentForm) => ({ ...currentForm, stt: true }))
-  }
-
-  const handleOpenWidget = () => {
-    setIsFeedbackOpen(true)
-  }
-
-  const handleCloseWidget = () => {
-    setIsFeedbackOpen(false)
   }
 
   useEffect(() => {
