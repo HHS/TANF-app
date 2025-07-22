@@ -394,7 +394,7 @@ class Common(Configuration):
     # The number of seconds to wait for socket response from clamav-rest
     AV_SCAN_TIMEOUT = int(os.getenv("AV_SCAN_TIMEOUT", 30))
 
-    s3_src = "s3-us-gov-west-1.amazonaws.com"
+    s3_src = "s3-fips.us-gov-west-1.amazonaws.com"
 
     CSP_DEFAULT_SRC = "'none'"
     CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", s3_src)
