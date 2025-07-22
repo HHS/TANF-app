@@ -127,8 +127,11 @@ function Header() {
                   </PermissionGuard>
                   <PermissionGuard
                     requiresApproval
-                    requiredPermissions={['view_datafile', 'add_datafile']}
-                    requiredFeatureFlags={['fra_reports']}
+                    requiredPermissions={[
+                      'view_datafile',
+                      'add_datafile',
+                      'has_fra_access',
+                    ]}
                   >
                     <NavItem
                       pathname={pathname}

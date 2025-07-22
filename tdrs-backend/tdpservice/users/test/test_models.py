@@ -77,17 +77,34 @@ def test_user_can_only_have_stt_or_region(user, stt, region):
 
 
 @pytest.mark.django_db
-def test_user_with_fra_access(client, admin_user, stt):
+def test_user_with_fra_access(client, ofa_system_admin):
     """Test that a user with FRA access can only have an STT."""
-    admin_user.stt = stt
-    admin_user.is_superuser = True
-    admin_user.feature_flags = {"fra_reports": False}
+    ofa_system_admin.is_staff = True
 
-    admin_user.clean()
-    admin_user.save()
+    ofa_system_admin.clean()
+    ofa_system_admin.save()
 
     client = Client()
-    client.login(username=admin_user.username, password="test_password")
+    client.login(username=ofa_system_admin.username, password="test_password")
+
+    datafile = DataFileFactory()
+    datafile.section = DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS
+    datafile.save()
+
+    response = client.get(f"/admin/data_files/datafile/{datafile.id}/change/")
+    assert response.status_code == 200
+    assert '<div class="readonly">Fra Work Outcome Tanf Exiters</div>' in response.content.decode('utf-8')
+
+@pytest.mark.django_db
+def test_user_without_fra_access(client, data_analyst):
+    """Test that a user with FRA access can only have an STT."""
+    data_analyst.is_staff = True
+
+    data_analyst.clean()
+    data_analyst.save()
+
+    client = Client()
+    client.login(username=data_analyst.username, password="test_password")
 
     datafile = DataFileFactory()
     datafile.section = DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS
@@ -95,13 +112,3 @@ def test_user_with_fra_access(client, admin_user, stt):
 
     response = client.get(f"/admin/data_files/datafile/{datafile.id}/change/")
     assert response.status_code == 302
-
-    admin_user.feature_flags = {"fra_reports": True}
-    admin_user.save()
-
-    response = client.get(f"/admin/data_files/datafile/{datafile.id}/change/")
-    assert response.status_code == 200
-    assert (
-        '<div class="readonly">Fra Work Outcome Tanf Exiters</div>'
-        in response.content.decode("utf-8")
-    )
