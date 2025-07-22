@@ -1,10 +1,11 @@
 """An implementation of EmailBackend that uses the Sendgrid web api to send messages."""
 
-from django.core.mail.backends.base import BaseEmailBackend
 from django.conf import settings
+from django.core.mail.backends.base import BaseEmailBackend
 from django.core.mail.message import sanitize_address
+
 import sendgrid
-from sendgrid.helpers.mail import Mail, From, To, Subject, PlainTextContent, HtmlContent
+from sendgrid.helpers.mail import From, HtmlContent, Mail, PlainTextContent, Subject, To
 
 
 class SendgridEmailBackend(BaseEmailBackend):
@@ -39,13 +40,17 @@ class SendgridEmailBackend(BaseEmailBackend):
         from_email = From(sanitize_address(email_message.from_email, encoding))
         subject = Subject(email_message.subject)
         content = PlainTextContent(email_message.body)
-        html_content = HtmlContent(email_message.alternatives[0][0]) if len(email_message.alternatives) > 0 else None
+        html_content = (
+            HtmlContent(email_message.alternatives[0][0])
+            if len(email_message.alternatives) > 0
+            else None
+        )
 
         mail = Mail(
             from_email=from_email,
             subject=subject,
             plain_text_content=content,
-            html_content=html_content
+            html_content=html_content,
         )
 
         for addr in email_message.recipients():

@@ -1,8 +1,8 @@
 """Generate test data for Data files."""
 import factory
 
-from tdpservice.users.test.factories import UserFactory
 from tdpservice.stts.test.factories import STTFactory
+from tdpservice.users.test.factories import UserFactory
 
 
 class DataFileFactory(factory.django.DjangoModelFactory):
@@ -22,5 +22,5 @@ class DataFileFactory(factory.django.DjangoModelFactory):
     version = 1
     user = factory.SubFactory(UserFactory)
     stt = factory.SubFactory(STTFactory)
-    file = factory.django.FileField(data=b'test', filename='my_data_file.txt')
+    file = factory.django.FileField(data=b"test", filename="my_data_file.txt")
     s3_versioning_id = 0

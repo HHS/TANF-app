@@ -1,12 +1,14 @@
 """Basic Feedback API Endpoint Tests."""
 
 from django.contrib.auth.models import AnonymousUser
-from rest_framework import status
+
 import pytest
+from rest_framework import status
+
 from tdpservice.users.test.factories import FeedbackFactory
 
 
-@pytest.mark.usefixtures('db')
+@pytest.mark.usefixtures("db")
 class FeedbackAPITestsBase:
     """A base test class for tests that interact with the FeedbackViewSet.
 
@@ -14,7 +16,7 @@ class FeedbackAPITestsBase:
     Intended to simplify creating tests for different user flows.
     """
 
-    root_url = '/v1/feedback/'
+    root_url = "/v1/feedback/"
 
     @pytest.fixture
     def user(self):
@@ -32,17 +34,13 @@ class FeedbackAPITestsBase:
     @pytest.fixture
     def api_client(self, api_client, user):
         """Provide an API client that is logged in with the specified user."""
-        api_client.login(username=user.username, password='test_password')
+        api_client.login(username=user.username, password="test_password")
         return api_client
 
     @pytest.fixture
     def feedback_data(self, user):
         """Provide an generic feedback data for users to change in different tests."""
-        return {
-                  "user": user.id,
-                  "rating": 3,
-                  "feedback": ""
-                }
+        return {"user": user.id, "rating": 3, "feedback": ""}
 
     def list_feedback(self, api_client):
         """List feedback."""
@@ -50,11 +48,11 @@ class FeedbackAPITestsBase:
 
     def get_feedback(self, api_client, feedback_id):
         """Get a specific feedback."""
-        return api_client.get(f'{self.root_url}{feedback_id}/')
+        return api_client.get(f"{self.root_url}{feedback_id}/")
 
     def create_feedback(self, api_client, feedback_data):
         """Post feadback."""
-        return api_client.post(f'{self.root_url}', feedback_data)
+        return api_client.post(f"{self.root_url}", feedback_data)
 
 
 class TestFeedbackAPIAnonymousUser(FeedbackAPITestsBase):
@@ -102,7 +100,7 @@ class TestFeedbackAPIAuthenticatedUserNoRole(FeedbackAPITestsBase):
     @pytest.fixture
     def api_client(self, api_client, user):
         """Provide an API client that is not logged in with a specified user."""
-        api_client.login(username=user.username, password='test_password')
+        api_client.login(username=user.username, password="test_password")
         return api_client
 
     def test_list_feedback(self, api_client):
@@ -120,6 +118,7 @@ class TestFeedbackAPIAuthenticatedUserNoRole(FeedbackAPITestsBase):
         response = self.create_feedback(api_client, feedback_data)
         assert response.status_code == status.HTTP_201_CREATED
 
+
 class TestFeedbackAPIAdminUser(FeedbackAPITestsBase):
     """Test class to test API endpoints with an admin user."""
 
@@ -133,7 +132,7 @@ class TestFeedbackAPIAdminUser(FeedbackAPITestsBase):
     @pytest.fixture
     def api_client(self, api_client, user):
         """Provide an API client that is logged in with a admin user."""
-        api_client.login(username=user.username, password='test_password')
+        api_client.login(username=user.username, password="test_password")
         return api_client
 
     def test_list_feedback(self, api_client):

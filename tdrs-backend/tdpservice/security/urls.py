@@ -1,7 +1,8 @@
 """URL patterns for the security app."""
 
-from . import views
 from django.urls import path
+
+from . import views
 
 urlpatterns = [
     path(
