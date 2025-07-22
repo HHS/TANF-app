@@ -4,12 +4,6 @@ import FeedbackWidget from './FeedbackWidget'
 
 jest.useFakeTimers()
 
-// jest.mock('./FeedbackForm', () => (props) => (
-//   <div data-testid="mock-feedback-form">
-//     <button onClick={() => props.onFeedbackSubmit()}>Submit</button>
-//   </div>
-// ))
-
 jest.mock('./FeedbackForm', () => (props) => (
   <div data-testid="mock-feedback-form">
     <button
