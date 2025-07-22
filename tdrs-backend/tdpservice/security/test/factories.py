@@ -1,6 +1,6 @@
 """Model instance factories related to Security models to be used in tests."""
-from faker import Factory as FakerFactory
 import factory
+from faker import Factory as FakerFactory
 
 from tdpservice.security.models import OwaspZapScan
 
@@ -16,15 +16,9 @@ class OwaspZapScanFactory(factory.django.DjangoModelFactory):
         model = OwaspZapScan
 
     app_target = factory.Iterator(OwaspZapScan.AppTarget.choices)
-    html_report = factory.django.FileField(filename='owasp_report.html')
+    html_report = factory.django.FileField(filename="owasp_report.html")
     scanned_at = factory.LazyAttribute(lambda x: faker.date_time())
 
-    fail_count = factory.LazyAttribute(
-        lambda x: faker.random_int(min=0, max=256)
-    )
-    pass_count = factory.LazyAttribute(
-        lambda x: faker.random_int(min=0, max=256)
-    )
-    warn_count = factory.LazyAttribute(
-        lambda x: faker.random_int(min=0, max=256)
-    )
+    fail_count = factory.LazyAttribute(lambda x: faker.random_int(min=0, max=256))
+    pass_count = factory.LazyAttribute(lambda x: faker.random_int(min=0, max=256))
+    warn_count = factory.LazyAttribute(lambda x: faker.random_int(min=0, max=256))

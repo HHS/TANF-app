@@ -1,6 +1,7 @@
 """User fixtures."""
 
 import uuid
+
 import pytest
 
 
