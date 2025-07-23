@@ -49,6 +49,11 @@ describe('FeedbackWidget', () => {
     expect(screen.getByText(/FRA/i)).toBeInTheDocument()
   })
 
+  it('renders FRA header when given unknown dataType', () => {
+    render(<FeedbackWidget {...defaultProps} dataType="invalid" />)
+    expect(screen.getByText(/FRA/i)).toBeInTheDocument()
+  })
+
   it('exposes internal ref via forwardRef', () => {
     const testRef = React.createRef()
     render(<FeedbackWidget {...defaultProps} ref={testRef} />)
@@ -67,6 +72,21 @@ describe('FeedbackWidget', () => {
     const widget = screen.getByRole('dialog')
     fireEvent.keyDown(widget, { key: 'Escape', code: 'Escape' })
     expect(defaultProps.onClose).toHaveBeenCalled()
+  })
+
+  it('does not call onClose when Escape is pressed on unrelated element', () => {
+    render(<FeedbackWidget {...defaultProps} />)
+
+    fireEvent.keyDown(document.body, { key: 'Escape', code: 'Escape' })
+    expect(defaultProps.onClose).not.toHaveBeenCalled()
+  })
+
+  it('does not close before the timeout expires', async () => {
+    render(<FeedbackWidget {...defaultProps} />)
+    fireEvent.click(screen.getByText('Submit'))
+
+    jest.advanceTimersByTime(999) // Just under the threshold
+    expect(defaultProps.onClose).not.toHaveBeenCalled()
   })
 
   it('submits feedback and shows thank you message and spinner', async () => {
@@ -106,5 +126,15 @@ describe('FeedbackWidget', () => {
     await waitFor(() => {
       expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument()
     })
+  })
+
+  it('clears timeout on unmount', () => {
+    const { unmount } = render(<FeedbackWidget {...defaultProps} />)
+    const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout')
+
+    unmount()
+
+    expect(clearTimeoutSpy).toHaveBeenCalled()
+    clearTimeoutSpy.mockRestore()
   })
 })
