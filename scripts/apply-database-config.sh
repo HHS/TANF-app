@@ -1,6 +1,7 @@
 #!/bin/bash
 
 app=${1}
+space=${2}
 
 guid=$(cf app "$app" --guid || true)
 
@@ -67,9 +68,11 @@ echo "Applying SQL views"
 python manage.py runscript apply_grafana_views
 echo "Done."
 
-echo "Applying e2e test data"
-python manage.py loaddata cypress/users cypress/data_files
-echo "Done."
+if [[ $app == "tdp-backend-develop" || $space == "tanf-dev" ]]; then
+    echo "Applying e2e test data"
+    python manage.py loaddata cypress/users cypress/data_files
+    echo "Done."
+fi
 
 echo "Cleaning up..."
 deactivate
