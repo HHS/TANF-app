@@ -2,9 +2,12 @@
 import logging
 
 from django.db.models import Prefetch
+
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
-from tdpservice.stts.models import Region, STT
+
+from tdpservice.stts.models import STT, Region
+
 from .serializers import RegionSerializer, STTSerializer
 
 logger = logging.getLogger(__name__)

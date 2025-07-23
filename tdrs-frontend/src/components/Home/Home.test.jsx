@@ -801,7 +801,7 @@ describe('Pre-approval Home page', () => {
     fireEvent.click(getByText('Region 6 (Dallas)'))
   })
 
-  it('should remove error message when you add a character and blur out of input', () => {
+  it('should remove error message as inputs are filled', () => {
     const store = mockStore({
       ...initialState,
       stts: {
@@ -841,7 +841,7 @@ describe('Pre-approval Home page', () => {
 
     let errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(4)
+    expect(errorMessages.length).toEqual(5)
 
     const firstNameInput = wrapper.find('#firstName')
 
@@ -856,7 +856,7 @@ describe('Pre-approval Home page', () => {
 
     errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(3)
+    expect(errorMessages.length).toEqual(4)
 
     const lastNameInput = wrapper.find('#lastName')
 
@@ -871,8 +871,7 @@ describe('Pre-approval Home page', () => {
 
     errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(2)
-    expect(errorMessages.first().hasClass('display-none')).toEqual(false)
+    expect(errorMessages.length).toEqual(3)
 
     const select = wrapper.find('.usa-select')
 
@@ -880,6 +879,20 @@ describe('Pre-approval Home page', () => {
       target: {
         value: 'alaska',
         name: 'stt',
+      },
+    })
+
+    errorMessages = wrapper.find('.usa-error-message')
+
+    expect(errorMessages.length).toEqual(2)
+    expect(errorMessages.first().hasClass('display-none')).toEqual(false)
+
+    const fraRadioNoButton = wrapper.find('#fra-no')
+
+    fraRadioNoButton.simulate('change', {
+      target: {
+        value: 'false',
+        name: 'hasFRAAccess',
       },
     })
 
@@ -929,7 +942,7 @@ describe('Pre-approval Home page', () => {
 
     let errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(4)
+    expect(errorMessages.length).toEqual(5)
 
     const firstNameInput = wrapper.find('#firstName')
 
@@ -944,7 +957,7 @@ describe('Pre-approval Home page', () => {
 
     errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(3)
+    expect(errorMessages.length).toEqual(4)
 
     firstNameInput.simulate('change', {
       target: {
@@ -957,7 +970,7 @@ describe('Pre-approval Home page', () => {
 
     errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(4)
+    expect(errorMessages.length).toEqual(5)
   })
 
   it('should set the Select element value to the value of the event when there is a selected stt', () => {
@@ -1115,6 +1128,11 @@ describe('Pre-approval Home page', () => {
     const select = wrapper.find('.usa-select')
     select.simulate('change', {
       target: { name: 'stt', value: 'Alaska' },
+    })
+
+    const fraRadioYesButton = wrapper.find('#fra-yes')
+    fraRadioYesButton.simulate('change', {
+      target: { name: 'hasFRAAccess', value: 'true' },
     })
 
     const form = wrapper.find('.usa-form').hostNodes()

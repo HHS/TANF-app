@@ -1,17 +1,21 @@
 """Shared celery database tasks file for beat."""
 
 from __future__ import absolute_import
-from celery import shared_task
+
 import logging
-from tdpservice.scheduling.management.db_backup import run_backup
+
+from celery import shared_task
+
 from tdpservice.scheduling.datafile_retention_tasks import remove_all_old_versions
+from tdpservice.scheduling.management.db_backup import run_backup
 
 logger = logging.getLogger(__name__)
+
 
 @shared_task
 def postgres_backup(*args):
     """Run nightly postgres backup."""
-    arg = ''.join(args)
+    arg = "".join(args)
     logger.debug("postgres_backup::run_backup() run with arg: " + arg)
     logger.info("Begining database backup.")
     result = run_backup(arg)

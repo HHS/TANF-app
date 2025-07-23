@@ -70,8 +70,11 @@ const AppRoutes = () => {
           <PrivateRoute
             title="FRA Data Files"
             subtitle="Outcomes Reports as established by the Fiscal Responsibility Act (FRA)"
-            requiredPermissions={['view_datafile', 'add_datafile']}
-            requiredFeatureFlags={['fra_reports']}
+            requiredPermissions={[
+              'view_datafile',
+              'add_datafile',
+              'has_fra_access',
+            ]}
             requiresApproval
           >
             <FRAReports />

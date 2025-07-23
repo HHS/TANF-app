@@ -7,12 +7,14 @@ Usage: python manage.py seed_records [--models search_index.TANF_T1] [--clear]
 """
 
 
-from django.core.management.base import BaseCommand, CommandError
-from tdpservice.search_indexes.models import tanf  # , ssp, tribal
-from tdpservice.parsers.test import factories
+import logging
 import time
 import uuid
-import logging
+
+from django.core.management.base import BaseCommand, CommandError
+
+from tdpservice.parsers.test import factories
+from tdpservice.search_indexes.models import tanf  # , ssp, tribal
 
 logger = logging.getLogger(__name__)
 
@@ -25,15 +27,13 @@ AVAILABLE_MODELS = [
     # {'model': ssp.SSP_M5, 'factory': factories.SSPM5Factory},
     # {'model': ssp.SSP_M6, 'factory': factories.SSPM6Factory},
     # {'model': ssp.SSP_M7, 'factory': factories.SSPM7Factory},
-
-    {'model': tanf.TANF_T1, 'factory': factories.TanfT1Factory},
-    {'model': tanf.TANF_T2, 'factory': factories.TanfT2Factory},
-    {'model': tanf.TANF_T3, 'factory': factories.TanfT3Factory},
-    {'model': tanf.TANF_T4, 'factory': factories.TanfT4Factory},
-    {'model': tanf.TANF_T5, 'factory': factories.TanfT5Factory},
-    {'model': tanf.TANF_T6, 'factory': factories.TanfT6Factory},
-    {'model': tanf.TANF_T7, 'factory': factories.TanfT7Factory},
-
+    {"model": tanf.TANF_T1, "factory": factories.TanfT1Factory},
+    {"model": tanf.TANF_T2, "factory": factories.TanfT2Factory},
+    {"model": tanf.TANF_T3, "factory": factories.TanfT3Factory},
+    {"model": tanf.TANF_T4, "factory": factories.TanfT4Factory},
+    {"model": tanf.TANF_T5, "factory": factories.TanfT5Factory},
+    {"model": tanf.TANF_T6, "factory": factories.TanfT6Factory},
+    {"model": tanf.TANF_T7, "factory": factories.TanfT7Factory},
     # {'model': tribal.Tribal_TANF_T1, 'factory': factories.TribalTanfT1Factory},
     # {'model': tribal.Tribal_TANF_T2, 'factory': factories.TribalTanfT2Factory},
     # {'model': tribal.Tribal_TANF_T3, 'factory': factories.TribalTanfT3Factory},
@@ -53,17 +53,17 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         """Add arguments to the management command."""
         parser.add_argument(
-            '--models',
-            metavar='app[.model]',
+            "--models",
+            metavar="app[.model]",
             type=str,
-            nargs='*',
-            help="Specify the model or app to be populated."
+            nargs="*",
+            help="Specify the model or app to be populated.",
         )
         parser.add_argument(
-            '--clear',
-            action='store_true',
-            dest='clear',
-            help="Clear previous postgres records."
+            "--clear",
+            action="store_true",
+            dest="clear",
+            help="Clear previous postgres records.",
         )
         parser.add_argument("--num", type=int)
 
@@ -79,10 +79,13 @@ class Command(BaseCommand):
                     if model._meta.app_label == arg:
                         models.append(model)
                         match_found = True
-                    elif '{}.{}'.format(
-                        model._meta.app_label.lower(),
-                        model._meta.model_name.lower()
-                    ) == arg:
+                    elif (
+                        "{}.{}".format(
+                            model._meta.app_label.lower(),
+                            model._meta.model_name.lower(),
+                        )
+                        == arg
+                    ):
                         models.append(model)
                         match_found = True
 
@@ -94,16 +97,16 @@ class Command(BaseCommand):
 
     def _clear(self, models):
         for m in models:
-            Model = m['model']
-            logger.debug(f'deleting {Model._meta.model_name}')
+            Model = m["model"]
+            logger.debug(f"deleting {Model._meta.model_name}")
             Model.objects.all().delete()
 
     def _populate(self, models, num):
         for m in models:
-            Model = m['model']
-            Factory = m['factory']
+            Model = m["model"]
+            Factory = m["factory"]
 
-            logger.debug(f'creating {num} {Model._meta.model_name} objects')
+            logger.debug(f"creating {num} {Model._meta.model_name} objects")
 
             objects = []
             for i in range(0, num):
@@ -115,9 +118,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         """Handle the `seed_records` command."""
-        clear = options['clear']
-        models = self._get_models(options['models'])
-        num = options['num']
+        clear = options["clear"]
+        models = self._get_models(options["models"])
+        num = options["num"]
 
         if not num:
             num = 1000
@@ -131,11 +134,11 @@ class Command(BaseCommand):
             remainder = num - (batches * 10000)
 
             for b in range(0, batches):
-                logger.debug(f'batch {b+1} of {batches}')
+                logger.debug(f"batch {b+1} of {batches}")
                 self._populate(models, 10000)
 
             if remainder > 0:
-                logger.debug(f'remaining {remainder}')
+                logger.debug(f"remaining {remainder}")
                 self._populate(models, remainder)
         else:
             self._populate(models, num)

@@ -1,6 +1,7 @@
 from django.contrib import admin
+
 from .. import models
-from . import tanf, tribal, ssp, reparse_meta, fra
+from . import fra, reparse_meta, ssp, tanf, tribal
 
 admin.site.register(models.tanf.TANF_T1, tanf.TANF_T1Admin)
 admin.site.register(models.tanf.TANF_T2, tanf.TANF_T2Admin)
