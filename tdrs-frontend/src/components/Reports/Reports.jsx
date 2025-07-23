@@ -94,7 +94,6 @@ function Reports() {
   const { isFeedbackOpen, handleOpenWidget, handleCloseWidget } =
     useFeedbackWidget()
   const [uploadedFileDataType, setUploadedFileDataType] = useState(null)
-  const [dataTypeLocked, setDataTypeLocked] = useState(null)
 
   const [errorModalVisible, setErrorModalVisible] = useState(false)
   const files = useSelector((state) => state.reports.submittedFiles)
@@ -231,7 +230,6 @@ function Reports() {
   const handleOpenFeedbackWidget = () => {
     const lockedType = fileTypeComboBoxRequired ? fileTypeInputValue : 'tanf'
     setUploadedFileDataType(lockedType)
-    setDataTypeLocked(lockedType)
     handleOpenWidget() // Calls hook to open widget
   }
 
@@ -549,7 +547,7 @@ function Reports() {
                 <FeedbackWidget
                   isOpen={isFeedbackOpen}
                   onClose={handleCloseWidget}
-                  dataType={dataTypeLocked}
+                  dataType={uploadedFileDataType}
                 />
               </div>
             </FeedbackPortal>
