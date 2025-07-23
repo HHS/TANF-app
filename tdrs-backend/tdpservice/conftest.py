@@ -142,7 +142,6 @@ def ofa_system_admin():
     ofa_sys_adming.save()
     return ofa_sys_adming
 
-
 @pytest.fixture
 def data_analyst(stt):
     """Return a data analyst user."""

@@ -1,0 +1,10 @@
+@use "uswds-core" as *;
+@use "./assets/uswds/_variables" as *;
+
+
+// We want to start wrapping text again once screen size becomes mobile
+@media (max-width: 30rem) {
+  .text-no-wrap {
+    white-space: normal;
+  }
+}
