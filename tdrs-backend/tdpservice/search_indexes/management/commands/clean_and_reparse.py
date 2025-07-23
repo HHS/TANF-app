@@ -1,23 +1,27 @@
 """Delete and reparse a set of datafiles."""
 
-from django.core.management.base import BaseCommand
-from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
-from tdpservice.core.utils import log
-from tdpservice.users.models import User
 import logging
-from tdpservice.search_indexes.utils import (
-    backup,
-    get_log_context,
-    assert_sequential_execution,
-    should_exit,
-    delete_associated_models,
-    count_total_num_records,
-    calculate_timeout,
-    get_files_to_reparse,
-)
+
+from django.core.management.base import BaseCommand
+
+from tdpservice.core.utils import log
+from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 from tdpservice.search_indexes.reparse import handle_datafiles
+from tdpservice.search_indexes.utils import (
+    assert_sequential_execution,
+    backup,
+    calculate_timeout,
+    count_total_num_records,
+    delete_associated_models,
+    get_files_to_reparse,
+    get_log_context,
+    should_exit,
+)
+from tdpservice.users.models import User
 
 logger = logging.getLogger(__name__)
+
+
 class Command(BaseCommand):
     """Command class."""
 

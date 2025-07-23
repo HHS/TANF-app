@@ -1,15 +1,17 @@
 """Utility classes and functions for security."""
 
+import logging
+from datetime import datetime, timedelta
+
+from django.conf import settings
+from django.utils.translation import gettext_lazy as _
+
+import pytz
 from rest_framework import exceptions
 from rest_framework.authentication import TokenAuthentication
-from django.utils.translation import gettext_lazy as _
-from datetime import datetime
-import pytz
-from datetime import timedelta
-from django.conf import settings
-import logging
 
 logger = logging.getLogger(__name__)
+
 
 def token_is_valid(token):
     """Check if token is valid."""
@@ -19,6 +21,7 @@ def token_is_valid(token):
         logger.info("API auth Token expired")
         return False
     return token is not None
+
 
 # have to use ExpTokenAuthentication in settings.py instead of TokenAuthentication
 class ExpTokenAuthentication(TokenAuthentication):

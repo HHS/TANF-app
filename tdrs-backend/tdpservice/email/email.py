@@ -1,12 +1,14 @@
 """Wrapper to send emails with Django."""
 
-from django.core.exceptions import ValidationError
-from django.core.validators import validate_email
-from django.core.mail import send_mail
-from django.conf import settings
-from django.template.loader import get_template
-from tdpservice.core.utils import log
 import logging
+
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.core.mail import send_mail
+from django.core.validators import validate_email
+from django.template.loader import get_template
+
+from tdpservice.core.utils import log
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +23,7 @@ def prepare_recipients(recipient_email):
     logger.info(f"Starting celery task to send email to {recipients}")
     return recipients
 
+
 def prepare_email(email_path, recipient_email, email_context, logger_context):
     """Prepare a valid email message and valid recipients."""
     recipients = prepare_recipients(recipient_email)
@@ -30,20 +33,29 @@ def prepare_email(email_path, recipient_email, email_context, logger_context):
     return html_message, valid_emails
 
 
-def automated_email(email_path, recipient_email, subject, email_context, text_message, logger_context=None):
+def automated_email(
+    email_path,
+    recipient_email,
+    subject,
+    email_context,
+    text_message,
+    logger_context=None,
+):
     """Send email to user."""
-    html_message, valid_emails = prepare_email(email_path, recipient_email, email_context, logger_context)
+    html_message, valid_emails = prepare_email(
+        email_path, recipient_email, email_context, logger_context
+    )
 
     try:
         send_email(subject, text_message, html_message, valid_emails)
         log(
-            f"Email sent to {valid_emails} with subject \"{subject}\".",
-            logger_context=logger_context
+            f'Email sent to {valid_emails} with subject "{subject}".',
+            logger_context=logger_context,
         )
     except Exception:
         log(
-            f'Emails were attempted to the following email list {valid_emails}, but none were sent.',
-            logger_context=logger_context
+            f"Emails were attempted to the following email list {valid_emails}, but none were sent.",
+            logger_context=logger_context,
         )
 
 
@@ -74,11 +86,9 @@ def filter_valid_emails(emails, logger_context=None):
         except ValidationError:
             log(
                 f"{email} is not a valid email address. An email will not be sent to this address.",
-                logger_context=logger_context
+                logger_context=logger_context,
             )
     if len(valid_emails) == 0:
-        log("No valid emails provided.",
-            logger_context,
-            "warn")
+        log("No valid emails provided.", logger_context, "warn")
 
     return valid_emails

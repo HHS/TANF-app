@@ -29,12 +29,13 @@ class DuplicateManager:
         @param line_number: the line number the record was generated from in the datafile
         """
         if detector_hash not in self.duplicate_detectors:
-            duplicate_detector = self.duplicate_detector_factory.create(schema,
-                                                                        detector_hash,
-                                                                        self.generated_errors,
-                                                                        self.generate_error)
+            duplicate_detector = self.duplicate_detector_factory.create(
+                schema, detector_hash, self.generated_errors, self.generate_error
+            )
             self.duplicate_detectors[detector_hash] = duplicate_detector
-        self.duplicate_detectors[detector_hash].add_member(record, schema, row, line_number)
+        self.duplicate_detectors[detector_hash].add_member(
+            record, schema, row, line_number
+        )
 
     def get_generated_errors(self):
         """Return all errors from all DuplicateDetectors."""
@@ -54,7 +55,10 @@ class DuplicateManager:
         """Return dictionary of model:[errors]."""
         records_to_remove = dict()
         for duplicate_detector in self.duplicate_detectors.values():
-            for model, ids in duplicate_detector.get_records_for_post_parse_deletion().items():
+            for (
+                model,
+                ids,
+            ) in duplicate_detector.get_records_for_post_parse_deletion().items():
                 records_to_remove.setdefault(model, []).extend(ids)
 
         return records_to_remove

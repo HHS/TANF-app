@@ -1,13 +1,15 @@
 """Views for the security app."""
 
+import logging
+
+from django.contrib.auth.decorators import user_passes_test
+
+from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from django.contrib.auth.decorators import user_passes_test
-from tdpservice.users.models import User, AccountApprovalStatusChoices
-from rest_framework.authtoken.models import Token
-from tdpservice.security.utils import token_is_valid
 
-import logging
+from tdpservice.security.utils import token_is_valid
+from tdpservice.users.models import AccountApprovalStatusChoices, User
 
 logger = logging.getLogger(__name__)
 
