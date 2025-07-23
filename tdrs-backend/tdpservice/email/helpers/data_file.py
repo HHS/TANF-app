@@ -1,6 +1,8 @@
 """Helper functions for sending data file submission emails."""
+
 from django.conf import settings
 
+from tdpservice.data_files.models import DataFile
 from tdpservice.email.email import automated_email, log
 from tdpservice.email.email_enums import EmailType
 from tdpservice.parsers.util import get_prog_from_section
@@ -20,6 +22,7 @@ def send_data_submitted_email(
         "user_id": datafile.user.id,
         "object_id": datafile.id,
         "object_repr": f"Uploaded data file for quarter: {datafile.fiscal_year}",
+        "content_type": DataFile,
     }
 
     template_path = None
