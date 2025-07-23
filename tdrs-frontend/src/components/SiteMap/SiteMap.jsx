@@ -5,7 +5,7 @@ import {
   accountCanViewAdmin,
   accountCanViewGrafana,
   accountCanViewAlerts,
-  selectFeatureFlags,
+  selectUserPermissions,
 } from '../../selectors/auth'
 
 const SiteMap = ({ user }) => {
@@ -14,8 +14,8 @@ const SiteMap = ({ user }) => {
   const userViewGrafana = useSelector(accountCanViewGrafana)
   const userViewAlerts = useSelector(accountCanViewAlerts)
 
-  const featureFlags = useSelector(selectFeatureFlags)
-  const userHasFra = userIsApproved && featureFlags['fra_reports'] === true
+  const permissions = useSelector(selectUserPermissions)
+  const userHasFra = userIsApproved && permissions.includes('has_fra_access')
 
   return (
     <div className="margin-top-5">
