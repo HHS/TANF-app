@@ -93,6 +93,8 @@ function Reports() {
   // Feedback widget state/hook info
   const { isFeedbackOpen, handleOpenWidget, handleCloseWidget } =
     useFeedbackWidget()
+  const [uploadedFileDataType, setUploadedFileDataType] = useState(null)
+  const [dataTypeLocked, setDataTypeLocked] = useState(null)
 
   const [errorModalVisible, setErrorModalVisible] = useState(false)
   const files = useSelector((state) => state.reports.submittedFiles)
@@ -224,6 +226,13 @@ function Reports() {
   const selectStt = (value) => {
     setSttInputValue(value)
     setTouched((currentForm) => ({ ...currentForm, stt: true }))
+  }
+
+  const handleOpenFeedbackWidget = () => {
+    const lockedType = fileTypeComboBoxRequired ? fileTypeInputValue : 'tanf'
+    setUploadedFileDataType(lockedType)
+    setDataTypeLocked(lockedType)
+    handleOpenWidget() // Calls hook to open widget
   }
 
   useEffect(() => {
@@ -509,7 +518,7 @@ function Reports() {
                 resetPreviousValues()
                 dispatch(clearFileList())
               }}
-              openWidget={handleOpenWidget}
+              openWidget={handleOpenFeedbackWidget}
             />
           )}
 
@@ -540,9 +549,7 @@ function Reports() {
                 <FeedbackWidget
                   isOpen={isFeedbackOpen}
                   onClose={handleCloseWidget}
-                  dataType={
-                    fileTypeComboBoxRequired ? fileTypeInputValue : 'tanf'
-                  }
+                  dataType={dataTypeLocked}
                 />
               </div>
             </FeedbackPortal>
