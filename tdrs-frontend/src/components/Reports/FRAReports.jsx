@@ -301,15 +301,16 @@ const UploadForm = ({
         filereader.readAsArrayBuffer(fileInputValue)
       })
 
+    const { result } = await loadFile()
+
     const isCsv = csvExtension.exec(fileInputValue.name)
     const isXlsx = xlsxExtension.exec(fileInputValue.name)
 
     if (!isCsv && !isXlsx) {
+      createFileInputErrorState(input, dropTarget)
       setError(INVALID_EXT_ERROR)
       return
     }
-
-    const { result } = await loadFile()
 
     const isImg = fileTypeChecker.validateFileType(result, imgFileTypes)
     if (isImg) {
