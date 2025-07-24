@@ -104,7 +104,7 @@ class Feedback(Reviewable):
 class User(AbstractUser):
     """Define user fields and methods."""
 
-    class Meta:
+    class Meta:  # type: ignore[overrride]
         """Define meta user model attributes."""
 
         ordering = ["pk"]
@@ -186,24 +186,18 @@ class User(AbstractUser):
     _loaded_values = None
     _adding = True
 
-    # Feature flag for the user to enable or disable FRA access
     feature_flags = models.JSONField(
         default=dict,
-        help_text="Feature flags for this user. This is a JSON field that can be used to store key-value pairs. "
-        + 'E.g: {"fra_reports": true}',
+        help_text='Feature flags for this user. This is a JSON field that can be used to store key-value pairs. ' +
+        'E.g: {"some_feature": true}',
         blank=True,
     )
-
-    @property
-    def has_fra_access(self):
-        """Return whether or not the user has FRA access."""
-        return self.feature_flags.get("fra_reports", False)
 
     def __str__(self):
         """Return the username as the string representation of the object."""
         return self.username
 
-    def is_in_group(self, group_names: list) -> bool:
+    def is_in_group(self, group_names: str | list[str]) -> bool:
         """Return whether or not the user is a member of the specified Group(s)."""
         if type(group_names) == str:
             group_names = [group_names]
@@ -241,6 +235,11 @@ class User(AbstractUser):
         """Prevent save if attributes are not necessary for a user given their role."""
         super().clean(*args, **kwargs)
         self.validate_location()
+
+    @property
+    def has_fra_access(self) -> bool:
+        """Return whether or not the user has FRA access."""
+        return self.has_perm('user.has_fra_access')
 
     @property
     def is_developer(self) -> bool:
@@ -311,6 +310,12 @@ class User(AbstractUser):
         regions = kwargs.pop("regions", [])
 
         if not self._adding:
+            if self._loaded_values is None:
+                raise RuntimeError(
+                    "Expects `_loaded_values` to be set by `from_db()` before "
+                    "calling `save()`."
+                )
+
             current_status = self._loaded_values["account_approval_status"]
             new_status = self.account_approval_status
 

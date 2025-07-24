@@ -4,7 +4,7 @@ import {
   accountStatusIsApproved,
   accountCanViewAdmin,
   accountCanViewPlg,
-  selectFeatureFlags,
+  selectUserPermissions,
 } from '../../selectors/auth'
 
 const SiteMap = ({ user }) => {
@@ -12,8 +12,8 @@ const SiteMap = ({ user }) => {
   const userIsAdmin = useSelector(accountCanViewAdmin)
   const userViewPlg = useSelector(accountCanViewPlg)
 
-  const featureFlags = useSelector(selectFeatureFlags)
-  const userHasFra = userIsApproved && featureFlags['fra_reports'] === true
+  const permissions = useSelector(selectUserPermissions)
+  const userHasFra = userIsApproved && permissions.includes('has_fra_access')
 
   return (
     <div className="margin-top-5">
