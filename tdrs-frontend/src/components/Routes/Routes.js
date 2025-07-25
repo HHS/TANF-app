@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import NoMatch from '../NoMatch'
 import SplashPage from '../SplashPage'
@@ -32,9 +32,15 @@ const AppRoutes = () => {
   const user = useSelector((state) => state.auth.user)
 
   // TODO: using for testing
+  const [isInEditMode, setIsInEditMode] = useState(false)
   //const userAccountInReview = useSelector(accountIsInReview)
   const userAccountInReview = true
-  const homeTitle = userAccountInReview ? 'Request Submitted' : 'Welcome to TDP'
+
+  const homeTitle = isInEditMode
+    ? 'Edit Access Request'
+    : userAccountInReview
+      ? 'Request Submitted'
+      : 'Welcome to TDP'
 
   return (
     <RouteProvider>
@@ -45,7 +51,7 @@ const AppRoutes = () => {
         path="/home"
         element={
           <PrivateRoute title={homeTitle}>
-            <Home />
+            <Home setInEditMode={setIsInEditMode} />
           </PrivateRoute>
         }
       />

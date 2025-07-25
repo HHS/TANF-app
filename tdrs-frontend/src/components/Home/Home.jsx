@@ -1,9 +1,5 @@
-import React from 'react'
-import Button from '../Button'
-import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import signOut from '../../utils/signOut'
 import ResourceCards from '../ResourceCards'
 import RequestAccessForm from '../RequestAccessForm/RequestAccessForm'
 import {
@@ -17,7 +13,7 @@ import UserAccessInfo from '../UserAccessInfo'
  * a pending-approval state, before showing the user their active roles and
  * permissions once they are approved by an Admin in the backend.
  */
-function Home() {
+function Home({ setInEditMode }) {
   const user = useSelector((state) => state.auth.user)
   const sttList = useSelector((state) => state?.stts?.sttList)
 
@@ -26,7 +22,33 @@ function Home() {
   const userAccessInReview = true
   const userAccessRequestApproved = useSelector(accountStatusIsApproved)
 
+  const [isEditing, setIsEditing] = useState(false)
+
+  useEffect(() => {
+    setInEditMode(isEditing)
+  }, [isEditing, setInEditMode])
+
   if (userAccessInReview) {
+    if (isEditing) {
+      // TODO: may need to add a submit Updated Request Access profile
+      // TODO: may need to play around with initial values
+      return (
+        <RequestAccessForm
+          user={user}
+          sttList={sttList}
+          editMode={true}
+          initialValues={{
+            firstName: user?.first_name,
+            lastName: user?.last_name,
+            stt: user?.stt?.name,
+            hasFRAAccess: user?.has_fra_access === 'Yes',
+            jurisdictionType: user?.stt?.type,
+          }}
+          onCancel={() => setIsEditing(false)}
+        />
+      )
+    }
+
     return (
       <div className="margin-top-5">
         <div className="margin-top-5">
@@ -42,15 +64,14 @@ function Home() {
             </div>
           </div>
         </div>
-        <UserAccessInfo />
-        {/* <Button type="button" onClick={signOut}>
-          <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
-          Sign Out
-        </Button> */}
+        <UserAccessInfo onEditClick={() => setIsEditing(true)} />
       </div>
     )
   } else if (!userAccessRequestApproved) {
-    return <RequestAccessForm user={user} sttList={sttList} />
+    return (
+      // TODO: may need to play aroudn with initial values
+      <RequestAccessForm user={user} sttList={sttList} />
+    )
   }
 
   return (

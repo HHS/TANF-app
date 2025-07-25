@@ -1,105 +1,60 @@
-import React, { useState } from 'react'
+import React from 'react'
 import Button from '../Button'
 import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useSelector } from 'react-redux'
 import signOut from '../../utils/signOut'
 
-const UserAccessInfo = () => {
+const UserAccessInfo = ({ onEditClick }) => {
   const user = useSelector((state) => state.auth.user)
   const primaryRole = user?.roles?.[0]
 
-  const [isEditing, setIsEditing] = useState(false)
-  const [formData, setFormData] = useState({
-    first_name: user?.first_name || '',
-    last_name: user?.last_name || '',
-    jurisdictionType: user?.jurisdictionType || '',
-    reportingFRA: user?.reportingFRA || '',
-  })
-  const [originalData] = useState(formData)
+  const userState = user?.stt?.name || 'Federal Government'
+  const userJurisdiction = user?.stt?.type || 'State'
+  const userIsReportingFRA = user?.has_fra_access ? 'Yes' : 'No'
 
-  const exUser = {
-    name: 'John Doe',
-    userType: 'Developer',
-    jurisdictionType: 'State',
-    state: 'Alaska',
-    reportingFRA: 'Yes',
-  }
-
-  const handleEdit = () => {
-    alert('Edit Profile clicked!')
-  }
-
-  const getState = () => {
-    return user?.stt?.name || 'Federal Government'
-  }
+  const ProfileRow = ({ label, value }) => (
+    <div className="grid-row margin-bottom-1">
+      <div className="grid-col-3 text-bold">{label}</div>
+      <div className="grid-col">{value}</div>
+    </div>
+  )
 
   return (
-    <div className="profile-container">
-      <div className="profile-info">
-        <div className="row">
-          <span className="label text-bold margin-right-4">Name</span>
-          <span id="full-name" className="value">
-            {user?.first_name} {user?.last_name}
-          </span>
+    <div data-testid="user-access-request-profile" className="usa-prose">
+      <div data-testid="user-access-profile-container">
+        <div data-testid="user-access-info">
+          <ProfileRow
+            label="Name"
+            value={`${user?.first_name || ''} ${user?.last_name || ''}`}
+          />
+          <hr />
+          <ProfileRow label="User Type" value={primaryRole?.name} />
+          <ProfileRow
+            label="Jurisdiction Type"
+            value={
+              userJurisdiction.charAt(0).toUpperCase() +
+                userJurisdiction.slice(1) || 'State'
+            }
+          />
+          <ProfileRow label="State" value={userState} />
+          <ProfileRow label="Reporting FRA" value={userIsReportingFRA} />
         </div>
-        <hr />
-        <div className="row">
-          <span className="label text-bold margin-right-4">User Type</span>
-          <span className="value">{primaryRole?.name}</span>
-        </div>
-        <div className="row">
-          <span className="label text-bold margin-right-4">
-            Jurisdiction Type
-          </span>
-          <span className="value">{user.jurisdictionType}</span>
-        </div>
-        <div className="row">
-          <span className="label text-bold margin-right-4">State</span>
-          <span className="value">{getState()}</span>
-        </div>
-        <div className="row">
-          <span className="label text-bold margin-right-4">Reporting FRA</span>
-          <span className="value">{user.reportingFRA}</span>
-        </div>
-      </div>
-      <div className="margin-top-5">
-        <div
-          className="buttons"
-          style={{
-            display: 'flex',
-            gap: '10px',
-            justifyContent: 'space-between',
-            marginTop: '10px',
-          }}
-        >
-          {!isEditing ? (
-            <>
-              <Button type="button" onClick={handleEdit}>
-                Edit Profile Information
-              </Button>
-              <Button type="button" onClick={signOut}>
-                <FontAwesomeIcon
-                  className="margin-right-1"
-                  icon={faSignOutAlt}
-                />
-                Sign Out
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button type="button" onClick={handleEdit}>
-                Request Access
-              </Button>
-              <Button type="button" onClick={signOut}>
-                <FontAwesomeIcon
-                  className="margin-right-1"
-                  icon={faSignOutAlt}
-                />
-                Cancel
-              </Button>
-            </>
-          )}
+        <div className="margin-top-9">
+          <div className="usa-button-group margin-top-4 margin-bottom-4">
+            <button
+              type="button"
+              className="usa-button margin-right-3"
+              style={{ minWidth: '400px' }}
+              onClick={onEditClick}
+            >
+              Edit Profile Information
+            </button>
+            <Button type="button" className="usa-button" onClick={signOut}>
+              <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
+              Sign Out
+            </Button>
+          </div>
         </div>
       </div>
     </div>
