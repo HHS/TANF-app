@@ -28,8 +28,19 @@ describe('App.js', () => {
     auth: {
       user: null,
     },
+    feedbackWidget: {
+      isOpen: false,
+      lockedDataType: null,
+    },
   }
   const mockStore = configureStore([thunk])
+
+  beforeEach(() => {
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      value: { pathname: '/' },
+    })
+  })
 
   afterEach(() => {
     window.location.href = ''

@@ -103,7 +103,7 @@ describe('FeedbackWidget', () => {
     expect(screen.getByLabelText('Loading')).toBeInTheDocument()
 
     // Fast-forward timers
-    jest.advanceTimersByTime(1000)
+    jest.advanceTimersByTime(3000)
 
     await waitFor(() => {
       expect(defaultProps.onClose).toHaveBeenCalled()
@@ -121,7 +121,7 @@ describe('FeedbackWidget', () => {
 
     expect(screen.getByLabelText('Loading')).toBeInTheDocument()
 
-    jest.advanceTimersByTime(1000)
+    jest.advanceTimersByTime(3000)
 
     await waitFor(() => {
       expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument()

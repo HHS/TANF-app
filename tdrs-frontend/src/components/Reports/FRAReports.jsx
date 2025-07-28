@@ -7,8 +7,6 @@ import fileTypeChecker from 'file-type-checker'
 
 import Button from '../Button'
 import STTComboBox from '../STTComboBox'
-import FeedbackPortal from '../Feedback/FeedbackPortal'
-import FeedbackWidget from '../Feedback/FeedbackWidget'
 import { quarters, constructYears } from './utils'
 import {
   accountCanSelectStt,
@@ -35,7 +33,7 @@ import { fetchSttList } from '../../actions/sttList'
 import { DropdownSelect, RadioSelect } from '../Form'
 import { PaginatedComponent } from '../Paginator/Paginator'
 import { Spinner } from '../Spinner'
-import useFeedbackWidget from '../../hooks/useFeedbackWidget'
+import { openFeedbackWidget } from '../../reducers/feedbackWidget'
 
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
@@ -581,10 +579,6 @@ const FRAReports = () => {
   const { isSubmitting, executeSubmission, onSubmitStart, onSubmitComplete } =
     useFormSubmission()
 
-  // Feedback widget state/hook info
-  const { isFeedbackOpen, handleOpenWidget, handleCloseWidget } =
-    useFeedbackWidget()
-
   const user = useSelector((state) => state.auth.user)
   const sttList = useSelector((state) => state?.stts?.sttList)
   const needsSttSelection = useSelector(accountCanSelectStt)
@@ -766,7 +760,7 @@ const FRAReports = () => {
 
       // Complete the submission process
       onSubmitComplete()
-      handleOpenWidget()
+      dispatch(openFeedbackWidget('fra'))
 
       const WAIT_TIME = 2000 // #
       let statusTimeout = null
@@ -968,25 +962,6 @@ const FRAReports = () => {
               />
             </PaginatedComponent>
           </div>
-          {/* Feedback widget at bottom right after submission */}
-          {isFeedbackOpen && (
-            <FeedbackPortal>
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: '100%',
-                  right: '14rem',
-                  zIndex: 1000,
-                }}
-              >
-                <FeedbackWidget
-                  isOpen={isFeedbackOpen}
-                  onClose={handleCloseWidget}
-                  dataType="fra"
-                />
-              </div>
-            </FeedbackPortal>
-          )}
         </>
       )}
       <Modal

@@ -12,8 +12,6 @@ import {
 } from '../../actions/reports'
 import UploadReport from '../UploadReport'
 import STTComboBox from '../STTComboBox'
-import FeedbackPortal from '../Feedback/FeedbackPortal'
-import FeedbackWidget from '../Feedback/FeedbackWidget'
 import { fetchSttList } from '../../actions/sttList'
 import Modal from '../Modal'
 import SegmentedControl from '../SegmentedControl'
@@ -24,7 +22,7 @@ import {
   accountIsRegionalStaff,
 } from '../../selectors/auth'
 import { quarters, constructYearOptions } from './utils'
-import useFeedbackWidget from '../../hooks/useFeedbackWidget'
+import { openFeedbackWidget } from '../../reducers/feedbackWidget'
 
 const FiscalQuarterExplainer = () => (
   <table className="usa-table usa-table--striped margin-top-4 desktop:width-tablet mobile:width-full">
@@ -89,11 +87,6 @@ function Reports() {
     useSelector(selectPrimaryUserRole)?.name === 'OFA System Admin'
   const isRegionalStaff = useSelector(accountIsRegionalStaff)
   const sttList = useSelector((state) => state?.stts?.sttList)
-
-  // Feedback widget state/hook info
-  const { isFeedbackOpen, handleOpenWidget, handleCloseWidget } =
-    useFeedbackWidget()
-  const [uploadedFileDataType, setUploadedFileDataType] = useState(null)
 
   const [errorModalVisible, setErrorModalVisible] = useState(false)
   const files = useSelector((state) => state.reports.submittedFiles)
@@ -229,8 +222,7 @@ function Reports() {
 
   const handleOpenFeedbackWidget = () => {
     const lockedType = fileTypeComboBoxRequired ? fileTypeInputValue : 'tanf'
-    setUploadedFileDataType(lockedType)
-    handleOpenWidget() // Calls hook to open widget
+    dispatch(openFeedbackWidget(lockedType)) // 'tanf' or 'ssp-moe'
   }
 
   useEffect(() => {
@@ -533,24 +525,6 @@ function Reports() {
                 setDate: setReprocessedDate,
               }}
             />
-          )}
-          {isFeedbackOpen && (
-            <FeedbackPortal>
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: '100%',
-                  right: '14rem',
-                  zIndex: 1000,
-                }}
-              >
-                <FeedbackWidget
-                  isOpen={isFeedbackOpen}
-                  onClose={handleCloseWidget}
-                  dataType={uploadedFileDataType}
-                />
-              </div>
-            </FeedbackPortal>
           )}
         </>
       )}

@@ -2,6 +2,15 @@ import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import Feedback from './Feedback'
+import { useSelector, useDispatch } from 'react-redux'
+
+const CLOSE_FEEDBACK_WIDGET = 'feedbackWidget/CLOSE_FEEDBACK_WIDGET'
+
+// Mock redux hooks
+jest.mock('react-redux', () => ({
+  useSelector: jest.fn(),
+  useDispatch: jest.fn(),
+}))
 
 // Mock FeedbackForm with simplified submit button
 jest.mock('./FeedbackForm', () => ({ onFeedbackSubmit }) => (
@@ -12,6 +21,26 @@ jest.mock('./FeedbackForm', () => ({ onFeedbackSubmit }) => (
     </button>
   </div>
 ))
+
+beforeAll(() => {
+  delete window.location
+  window.location = { pathname: '/some-page' } // not /data-files or /fra-data-files
+})
+
+const mockDispatch = jest.fn()
+
+beforeEach(() => {
+  jest.clearAllMocks()
+  useDispatch.mockReturnValue(mockDispatch)
+  useSelector.mockImplementation((selectorFn) =>
+    selectorFn({
+      feedbackWidget: {
+        isOpen: false,
+        lockedDataType: null,
+      },
+    })
+  )
+})
 
 describe('Feedback component', () => {
   it('feedback sticky button is always visible initially', () => {
@@ -94,7 +123,7 @@ describe('Feedback component', () => {
     ).toBeInTheDocument()
   })
 
-  it('closes modal when Close button clicked in thank you modal', async () => {
+  it('closes thank you modal via Close button', async () => {
     render(<Feedback />)
 
     // Open and submit feedback
@@ -120,7 +149,7 @@ describe('Feedback component', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('closes modal when Enter is pressed on Thank You Modal Close button', async () => {
+  it('closes thank you modal via Enter key on Close button', async () => {
     render(<Feedback />)
 
     // Open and submit
@@ -144,7 +173,7 @@ describe('Feedback component', () => {
     )
   })
 
-  it('resets to feedback form after submitting then reopening', async () => {
+  it('resets form when reopened after submitting feedback', async () => {
     render(<Feedback />)
 
     // Open and submit
@@ -183,5 +212,64 @@ describe('Feedback component', () => {
         name: /tell us how we can improve/i,
       }).length
     ).toBe(1)
+  })
+
+  it('renders widget when isWidgetOpen is true and path matches', () => {
+    window.location.pathname = '/data-files'
+
+    // Update useSelector to open widget
+    useSelector.mockImplementation((selector) =>
+      selector({
+        feedbackWidget: {
+          isOpen: true,
+          lockedDataType: 'tanf',
+        },
+      })
+    )
+
+    render(<Feedback />)
+
+    expect(screen.getByTestId('feedback-widget')).toBeInTheDocument()
+    expect(
+      screen.getByText(/how was your experience uploading tanf/i)
+    ).toBeInTheDocument()
+  })
+
+  it('does not render widget if isWidgetOpen is false even on matching path', () => {
+    window.location.pathname = '/data-files'
+
+    useSelector.mockImplementation((selector) =>
+      selector({
+        feedbackWidget: {
+          isOpen: false,
+          lockedDataType: 'someType',
+        },
+      })
+    )
+
+    render(<Feedback />)
+    expect(screen.queryByTestId('feedback-widget')).not.toBeInTheDocument()
+  })
+
+  it('dispatches closeFeedbackWidget when widget is closed', () => {
+    window.location.pathname = '/data-files'
+
+    useSelector.mockImplementation((selector) =>
+      selector({
+        feedbackWidget: {
+          isOpen: true,
+          lockedDataType: 'someType',
+        },
+      })
+    )
+
+    render(<Feedback />)
+
+    const closeButton = screen.getByTestId('feedback-widget-close-button')
+    fireEvent.click(closeButton)
+
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: CLOSE_FEEDBACK_WIDGET,
+    })
   })
 })

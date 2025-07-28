@@ -79,7 +79,7 @@ const FeedbackWidget = React.forwardRef(
         setShowSpinner(false)
         setIsFeedbackSubmitted(false)
         onClose?.()
-      }, 1000)
+      }, 3000)
     }
 
     const handleRequestError = () => {
@@ -98,6 +98,7 @@ const FeedbackWidget = React.forwardRef(
       // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
       <div
         className="feedback-widget"
+        data-testId="feedback-widget"
         style={isFeedbackSubmitted ? { paddingBottom: '1rem' } : {}}
         ref={widgetRef}
         tabIndex={-1}
