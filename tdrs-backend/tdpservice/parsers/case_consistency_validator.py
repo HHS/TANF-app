@@ -135,7 +135,7 @@ class CaseConsistencyValidator:
                 latest_case_hash != self.current_case_hash
                 and self.current_case_hash is not None
             ):
-                num_errors += self.validate()
+                self.validate()
                 self.clear_structs((record, schema, line_number))
                 self.case_has_errors = case_has_errors
                 self.has_validated = False
@@ -338,7 +338,7 @@ class CaseConsistencyValidator:
                         f"and {self.__get_error_context('CASE_NUMBER', schema)}."
                     ),
                 )
-                num_errors += 1
+                self.num_errors += 1
 
             for record, schema, line_num in t3s:
                 self.__generate_and_add_error(
@@ -351,9 +351,7 @@ class CaseConsistencyValidator:
                         f"and {self.__get_error_context('CASE_NUMBER', schema)}."
                     ),
                 )
-                num_errors += 1
-
-        return num_errors
+                self.num_errors += 1
 
     def __validate_case_closure_employment(self, t4, t5s, error_msg):
         """
