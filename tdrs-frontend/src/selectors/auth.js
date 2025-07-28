@@ -21,10 +21,14 @@ export const selectPrimaryUserRole = (state) => {
 
 export const selectUserPermissions = (state) => {
   const roles = selectUserRoles(state)
+  const userLevelPermissions = selectUser(state)?.permissions || []
+
   let permissions = []
   roles.forEach((role) => {
     permissions = [...permissions, ...role['permissions']]
   })
+  permissions = [...permissions, ...userLevelPermissions]
+
   return permissions.map((p) => p.codename)
 }
 
