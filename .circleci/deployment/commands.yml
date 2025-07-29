@@ -97,7 +97,7 @@
       - run:
           name: Apply database config
           command: |
-            bash ./scripts/apply-database-config.sh <<parameters.backend-appname>>
+            bash ./scripts/apply-database-config.sh <<parameters.backend-appname>> <<parameters.cf-space>>
       - run:
           name: Deploy backend application
           command: |

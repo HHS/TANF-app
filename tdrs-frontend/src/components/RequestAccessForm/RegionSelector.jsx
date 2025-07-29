@@ -72,7 +72,11 @@ function RegionSelector({
                     regions: regionError,
                   })
                 }
-                setProfileInfo({ ...profileInfo, regions: new Set() })
+                setProfileInfo({
+                  ...profileInfo,
+                  regions: new Set(),
+                  hasFRAAccess: true,
+                })
                 setRegional(true)
               }}
             />
@@ -91,7 +95,10 @@ function RegionSelector({
               onChange={() => {
                 setErrors(excludeRegions(errors))
                 setTouched(excludeRegions(touched))
-                setProfileInfo(excludeRegions(profileInfo))
+                setProfileInfo({
+                  ...excludeRegions(profileInfo),
+                  hasFRAAccess: false,
+                })
                 setRegional(false)
               }}
             />

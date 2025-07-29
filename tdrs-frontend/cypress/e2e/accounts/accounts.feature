@@ -5,6 +5,7 @@ Feature: Users can create and manage their accounts
         When 'new-cypress@teamraft.com' visits the home page
         And 'new-cypress@teamraft.com' logs in
         Then 'new-cypress@teamraft.com' sees a Request Access form
+    @focus
     Scenario: A new user is put in the pending state
         Given The admin logs in
         And 'new-cypress@teamraft.com' is in begin state

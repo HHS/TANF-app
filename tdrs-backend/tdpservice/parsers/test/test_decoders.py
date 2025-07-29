@@ -48,6 +48,17 @@ def test_xlsx_decoder(fra_xlsx):
 
 
 @pytest.mark.django_db
+def test_xlsx_decoder_multisheet(fra_multi_sheet_xlsx):
+    """Test XLSX decoder is selected and decodes data."""
+    decoder = DecoderFactory.get_instance(fra_multi_sheet_xlsx.file)
+    assert type(decoder) == XlsxDecoder
+    assert decoder.raw_file == fra_multi_sheet_xlsx.file
+    first_row = next(decoder.decode())
+    assert type(first_row) == TupleRow
+    assert type(first_row.data) == tuple
+    assert first_row.data == (202401, 946412419)
+
+@pytest.mark.django_db
 def test_empty_file_decoder(empty_file):
     """Test UTF8 decoder is selected on empty file with no extension."""
     with pytest.raises(StopIteration):

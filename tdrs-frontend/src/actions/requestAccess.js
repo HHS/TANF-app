@@ -8,7 +8,7 @@ export const SET_REQUEST_ACCESS_ERROR = 'SET_REQUEST_ACCESS_ERROR'
 export const CLEAR_REQUEST_ACCESS = 'CLEAR_REQUEST_ACCESS'
 
 export const requestAccess =
-  ({ firstName, lastName, stt, regions }) =>
+  ({ firstName, lastName, stt, regions, hasFRAAccess }) =>
   async (dispatch) => {
     dispatch({ type: PATCH_REQUEST_ACCESS })
     try {
@@ -18,6 +18,7 @@ export const requestAccess =
         last_name: lastName,
         stt: stt?.id,
         regions: regions ? [...regions] : [],
+        has_fra_access: hasFRAAccess,
       }
       const { data } = await axios.patch(URL, user, {
         withCredentials: true,

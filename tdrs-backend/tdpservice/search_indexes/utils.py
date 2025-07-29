@@ -3,10 +3,11 @@ import logging
 from datetime import timedelta
 
 from django.conf import settings
-from django.contrib.admin.models import CHANGE
 from django.core.management import call_command
 from django.db.utils import DatabaseError
 from django.utils import timezone
+from django.contrib.admin.models import LogEntry, CHANGE
+from django.contrib.contenttypes.models import ContentType
 
 from tdpservice.core.utils import log
 from tdpservice.data_files.models import DataFile
@@ -259,6 +260,17 @@ def get_number_of_records(files):
     """Get the number of records in the files."""
     total_number_of_records = 0
     for file in files:
-        datafile_summary = DataFileSummary.objects.get(datafile=file)
-        total_number_of_records += datafile_summary.total_number_of_records_in_file
+        try:
+            datafile_summary = DataFileSummary.objects.get(datafile=file)
+            total_number_of_records += datafile_summary.total_number_of_records_in_file
+        except DataFileSummary.DoesNotExist:
+            LogEntry.objects.log_action(
+                user_id=file.user.pk,
+                content_type_id=ContentType.objects.get_for_model(DataFile).pk,
+                object_id=file,
+                object_repr=str(file),
+                action_flag=CHANGE,
+                change_message=f"No summary found for datafile: {file.id}. Skipping.",
+            )
+            logger.warning(f"No summary found for datafile: {file.id}. Skipping.")
     return total_number_of_records

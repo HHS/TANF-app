@@ -95,4 +95,5 @@ export const permissions = [
   { id: 58, codename: 'change_user', name: 'Can change user' },
   { id: 59, codename: 'delete_user', name: 'Can delete user' },
   { id: 60, codename: 'view_user', name: 'Can view user' },
+  { id: 61, codename: 'has_fra_access', name: 'Can access FRA Data Files' },
 ]

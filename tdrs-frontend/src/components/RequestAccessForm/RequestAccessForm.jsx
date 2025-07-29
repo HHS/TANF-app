@@ -6,15 +6,19 @@ import STTComboBox from '../STTComboBox'
 import { requestAccess } from '../../actions/requestAccess'
 import JurisdictionSelector from './JurisdictionSelector'
 import RegionSelector from './RegionSelector'
+import FRASelector from './FRASelector'
 
 function RequestAccessForm({ user, sttList }) {
   const errorRef = useRef(null)
+
+  const isAMSUser = user?.email?.includes('@acf.hhs.gov')
 
   const [errors, setErrors] = useState({})
   const [profileInfo, setProfileInfo] = useState({
     firstName: '',
     lastName: '',
     stt: '',
+    hasFRAAccess: isAMSUser ? false : null,
   })
   const dispatch = useDispatch()
   const [touched, setTouched] = useState({})
@@ -22,9 +26,8 @@ function RequestAccessForm({ user, sttList }) {
     !!Object.keys(errors).length && !!Object.keys(touched).length
 
   const [jurisdictionType, setJurisdictionTypeInputValue] = useState('state')
-  const isAMSUser = user?.email?.includes('@acf.hhs.gov')
 
-  const regionError = 'At least on Region is required'
+  const regionError = 'At least one Region is required'
 
   const validateRegions = (regions) => {
     if (regions?.size === 0) {
@@ -38,12 +41,13 @@ function RequestAccessForm({ user, sttList }) {
       firstName: 'First Name',
       lastName: 'Last Name',
       stt: !isAMSUser && 'A state, tribe, or territory',
+      hasFRAAccess: 'Yes or No response',
     }[fieldName]
 
     if (
       Boolean(field) &&
-      typeof fieldValue === 'string' &&
-      fieldValue.trim() === ''
+      ((fieldName === 'hasFRAAccess' && fieldValue === null) ||
+        (typeof fieldValue === 'string' && fieldValue.trim() === ''))
     ) {
       return `${field} is required`
     }
@@ -53,6 +57,11 @@ function RequestAccessForm({ user, sttList }) {
   const setJurisdictionType = (val) => {
     setStt('')
     setJurisdictionTypeInputValue(val)
+    if (val === 'tribe') {
+      setHasFRAAccess(false)
+    } else {
+      setHasFRAAccess(null)
+    }
   }
 
   const setStt = (sttName) => {
@@ -60,6 +69,24 @@ function RequestAccessForm({ user, sttList }) {
       ...currentState,
       stt: sttName,
     }))
+  }
+
+  const setHasFRAAccess = (hasFRAAccess) => {
+    setProfileInfo((currentState) => ({
+      ...currentState,
+      hasFRAAccess: hasFRAAccess,
+    }))
+
+    // Remove errors when FRA Access is changed or hidden
+    if (displayingError) {
+      const { hasFRAAccess: removedError, ...rest } = errors
+      const error = validation('hasFRAAccess', hasFRAAccess)
+
+      setErrors({
+        ...rest,
+        ...(error && { hasFRAAccess: error }),
+      })
+    }
   }
 
   const handleChange = ({ name, value }) => {
@@ -104,16 +131,20 @@ function RequestAccessForm({ user, sttList }) {
       }
     )
     const regionError = validateRegions(profileInfo.regions)
-    setErrors({
+
+    const combinedErrors = {
       ...formValidation.errors,
       ...(regionError && { regions: regionError }),
-    })
-    setTouched({
+    }
+    const combinedTouched = {
       ...formValidation.touched,
       ...(regionError && { regions: true }),
-    })
+    }
 
-    if (!Object.values(formValidation.errors).length) {
+    setErrors(combinedErrors)
+    setTouched(combinedTouched)
+
+    if (!Object.values(combinedErrors).length) {
       return dispatch(
         requestAccess({
           ...profileInfo,
@@ -121,6 +152,7 @@ function RequestAccessForm({ user, sttList }) {
         })
       )
     }
+
     return setTimeout(() => errorRef.current.focus(), 0)
   }
 
@@ -187,6 +219,13 @@ function RequestAccessForm({ user, sttList }) {
             displayingError={displayingError}
             validateRegions={validateRegions}
             regionError={regionError}
+          />
+        )}
+        {jurisdictionType !== 'tribe' && !isAMSUser && (
+          <FRASelector
+            hasFRAAccess={profileInfo.hasFRAAccess}
+            setHasFRAAccess={setHasFRAAccess}
+            error={errors.hasFRAAccess}
           />
         )}
         <Button type="submit" className="width-full request-access-button">

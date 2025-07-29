@@ -71,13 +71,14 @@ def generate_parser_error(
     # the field with the record type. If the error is not cat1/cat4 then we use the last field since that will be the
     # result field in the multi-field case.
     field = (
-        "Record_Type"
+        schema.record_type
         if schema is not None and len(fields) == len(schema.fields)
         else fields[-1]
     )
 
     if error_category in (
         ParserErrorCategoryChoices.PRE_CHECK,
+        ParserErrorCategoryChoices.RECORD_PRE_CHECK,
         ParserErrorCategoryChoices.CASE_CONSISTENCY,
     ):
         record = None

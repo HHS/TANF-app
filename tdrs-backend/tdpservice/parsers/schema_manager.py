@@ -46,7 +46,7 @@ class SchemaManager:
                     [
                         generate_error(
                             schema=None,
-                            error_category=ParserErrorCategoryChoices.PRE_CHECK,
+                            error_category=ParserErrorCategoryChoices.RECORD_PRE_CHECK,
                             error_message="Unknown Record_Type was found.",
                             record=None,
                             field="Record_Type",

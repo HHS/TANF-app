@@ -923,6 +923,11 @@ def fra_xlsx(stt_user, stt):
 
 
 @pytest.fixture
+def fra_multi_sheet_xlsx(stt_user, stt):
+    """Fixture for xlsx fra file."""
+    return util.create_test_datafile('fra_multi_sheet.xlsx', stt_user, stt)
+
+@pytest.fixture
 def unknown_png(stt_user, stt):
     """Fixture for blank png file."""
     return util.create_test_datafile("unknown.png", stt_user, stt)
@@ -1030,3 +1035,17 @@ def fra_decoder_unknown(stt_user, stt):
         stt,
         DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
     )
+
+
+@pytest.fixture
+def section2_no_records():
+    """Fixture for a valid section 2 file with no records."""
+    parsing_file = ParsingFileFactory(
+        year=2025,
+        quarter="Q1",
+        section="Closed Case Data",
+        file__name="section2_no_records.txt",
+        file__section="Closed Case Data",
+        file__data=(b"HEADER20244C06   TAN1ED\n" b"TRAILER0000001         "),
+    )
+    return parsing_file
