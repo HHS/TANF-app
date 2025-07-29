@@ -2,10 +2,10 @@
 
 from tdpservice.parsers.dataclasses import FieldType
 from tdpservice.parsers.fields import Field
-from tdpservice.parsers.row_schema import TanfDataReportSchema
+from tdpservice.parsers.row_schema import HeaderSchema
 from tdpservice.parsers.validators import category1, category2
 
-header = TanfDataReportSchema(
+header = HeaderSchema(
     record_type="HEADER",
     model=dict,
     preparsing_validators=[

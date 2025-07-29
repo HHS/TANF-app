@@ -38,6 +38,7 @@ import { fetchSttList } from '../../actions/sttList'
 import { DropdownSelect, RadioSelect } from '../Form'
 import { PaginatedComponent } from '../Paginator/Paginator'
 import { Spinner } from '../Spinner'
+import { openFeedbackWidget } from '../../reducers/feedbackWidget'
 
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
@@ -765,6 +766,7 @@ const FRAReports = () => {
 
       // Complete the submission process
       onSubmitComplete()
+      dispatch(openFeedbackWidget('fra'))
 
       const WAIT_TIME = 2000 // #
       let statusTimeout = null
@@ -893,7 +895,7 @@ const FRAReports = () => {
   }, [submissionStatusTimer])
 
   return (
-    <>
+    <div className="page-container" style={{ position: 'relative' }}>
       <div className={classNames({ 'border-bottom': isUploadReportToggled })}>
         <SearchForm
           handleSearch={handleSearch}
@@ -968,7 +970,6 @@ const FRAReports = () => {
           </div>
         </>
       )}
-
       <Modal
         title="Files Not Submitted"
         message="Your uploaded files have not been submitted. Searching without submitting will discard your changes and remove any uploaded files."
@@ -994,7 +995,7 @@ const FRAReports = () => {
           },
         ]}
       />
-    </>
+    </div>
   )
 }
 
