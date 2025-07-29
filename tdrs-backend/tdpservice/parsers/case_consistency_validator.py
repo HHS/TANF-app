@@ -555,4 +555,3 @@ class CaseConsistencyValidator:
                     ),
                     deprecated=True,
                 )
-
