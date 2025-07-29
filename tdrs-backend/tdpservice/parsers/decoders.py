@@ -179,7 +179,7 @@ class XlsxDecoder(BaseDecoder):
 
     def get_header(self):
         """Get the first line in the file. Assumed to be the header."""
-        for raw_data in self.work_book.active.iter_rows(values_only=True):
+        for raw_data in self.work_book.worksheets[0].iter_rows(values_only=True):
             length = len(raw_data)
             return TupleRow(
                 data=raw_data,
@@ -191,7 +191,7 @@ class XlsxDecoder(BaseDecoder):
 
     def decode(self):
         """Decode and yield each row."""
-        for raw_data in self.work_book.active.iter_rows(values_only=True):
+        for raw_data in self.work_book.worksheets[0].iter_rows(values_only=True):
             self.current_row_num += 1
             if (
                 not len(raw_data)
