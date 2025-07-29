@@ -12,7 +12,12 @@ import {
   accountCanSelectStt,
   accountIsRegionalStaff,
 } from '../../selectors/auth'
-import { handlePreview, tryGetUTF8EncodedFile } from '../FileUpload/utils'
+import {
+  handlePreview,
+  tryGetUTF8EncodedFile,
+  checkPreviewDependencies,
+  removeOldPreviews,
+} from '../FileUpload/utils'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
 import Modal from '../Modal'
 import {
@@ -260,14 +265,14 @@ const UploadForm = ({
 
   /* istanbul ignore next */
   useEffect(() => {
+    const targetClassName = '.usa-file-input__target input#fra-file-upload'
     const trySettingPreview = () => {
-      const targetClassName = '.usa-file-input__target input#fra-file-upload'
-      const previewState = handlePreview(file?.fileName, targetClassName)
+      const previewState = handlePreview(file?.name, targetClassName)
       if (!previewState) {
         setTimeout(trySettingPreview, 100)
       }
     }
-    if (file?.id) {
+    if (file?.name) {
       trySettingPreview()
     }
   }, [file])
