@@ -15,7 +15,7 @@ const UserAccessInfo = ({ onEditClick }) => {
 
   const ProfileRow = ({ label, value }) => (
     <div className="grid-row margin-bottom-1">
-      <div className="grid-col-3 text-bold">{label}</div>
+      <div className="grid-col-2 text-bold">{label}</div>
       <div className="grid-col">{value}</div>
     </div>
   )
@@ -28,7 +28,7 @@ const UserAccessInfo = ({ onEditClick }) => {
             label="Name"
             value={`${user?.first_name || ''} ${user?.last_name || ''}`}
           />
-          <hr />
+          <hr className="margin-right-4" />
           <ProfileRow label="User Type" value={primaryRole?.name} />
           <ProfileRow
             label="Jurisdiction Type"
@@ -45,7 +45,7 @@ const UserAccessInfo = ({ onEditClick }) => {
             <button
               type="button"
               className="usa-button margin-right-3"
-              style={{ minWidth: '400px' }}
+              style={{ minWidth: '350px' }}
               onClick={onEditClick}
             >
               Edit Profile Information

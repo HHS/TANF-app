@@ -1,3 +1,11 @@
 .usa-combo-box__input--error {
   border: .25rem solid #b50909;
 }
+
+.full-width-hr {
+  border: none;
+  border-top: 1px solid #ccc;
+  width: 100%;
+  margin-top: 1rem; // or use USWDS spacing units
+  margin-bottom: 1rem;
+}

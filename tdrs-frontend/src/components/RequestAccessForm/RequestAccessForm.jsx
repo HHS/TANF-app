@@ -7,6 +7,7 @@ import { requestAccess } from '../../actions/requestAccess'
 import JurisdictionSelector from './JurisdictionSelector'
 import RegionSelector from './RegionSelector'
 import FRASelector from './FRASelector'
+import '../../assets/Profile.scss'
 
 function RequestAccessForm({
   user,
@@ -226,23 +227,31 @@ function RequestAccessForm({
         />
         {editMode ? (
           <>
-            <hr className="margin-top-2 margin-bottom-3" />
-            <div className="grid-row margin-bottom-1">
-              <div className="grid-col-7 text-bold">User Type</div>
-              <div className="grid-col">{primaryRole?.name}</div>
+            <div className="grid-row">
+              <div className="grid-col-8">
+                <hr className="margin-top-2 margin-bottom-3 full-width-hr" />
+              </div>
             </div>
             <div className="grid-row margin-bottom-1">
-              <div className="grid-col-7 text-bold">Jurisdiction Type</div>
+              <div className="grid-col-8 text-bold">User Type</div>
+              <div className="grid-col text-no-wrap">{primaryRole?.name}</div>
+            </div>
+            <div className="grid-row margin-bottom-1">
+              <div className="grid-col-8 text-bold">Jurisdiction Type</div>
               <div className="grid-col">
                 {jurisdictionType.charAt(0).toUpperCase() +
                   jurisdictionType.slice(1)}
               </div>
             </div>
             <div className="grid-row margin-bottom-1">
-              <div className="grid-col-7 text-bold">State</div>
+              <div className="grid-col-8 text-bold">State</div>
               <div className="grid-col">{profileInfo.stt}</div>
             </div>
-            <hr className="margin-bottom-1 margin-top-3" />
+            <div className="grid-row">
+              <div className="grid-col-8">
+                <hr className="margin-bottom-1 margin-top-2 full-width-hr" />
+              </div>
+            </div>
           </>
         ) : (
           <>
