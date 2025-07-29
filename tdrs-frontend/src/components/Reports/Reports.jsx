@@ -22,6 +22,7 @@ import {
   accountIsRegionalStaff,
 } from '../../selectors/auth'
 import { quarters, constructYearOptions } from './utils'
+import { openFeedbackWidget } from '../../reducers/feedbackWidget'
 
 const FiscalQuarterExplainer = () => (
   <table className="usa-table usa-table--striped margin-top-4 desktop:width-tablet mobile:width-full">
@@ -219,6 +220,11 @@ function Reports() {
     setTouched((currentForm) => ({ ...currentForm, stt: true }))
   }
 
+  const handleOpenFeedbackWidget = () => {
+    const lockedType = fileTypeComboBoxRequired ? fileTypeInputValue : 'tanf'
+    dispatch(openFeedbackWidget(lockedType)) // 'tanf' or 'ssp-moe'
+  }
+
   useEffect(() => {
     if (sttList.length === 0) {
       dispatch(fetchSttList())
@@ -266,7 +272,7 @@ function Reports() {
   ])
 
   return (
-    <>
+    <div className="page-container" style={{ position: 'relative' }}>
       <div
         className={classNames({
           'border-bottom': isUploadReportToggled && errorsCount === 0,
@@ -502,6 +508,7 @@ function Reports() {
                 resetPreviousValues()
                 dispatch(clearFileList())
               }}
+              openWidget={handleOpenFeedbackWidget}
             />
           )}
 
@@ -549,7 +556,7 @@ function Reports() {
         isVisible={reprocessedModalVisible}
         setModalVisible={setReprocessedModalVisible}
       />
-    </>
+    </div>
   )
 }
 

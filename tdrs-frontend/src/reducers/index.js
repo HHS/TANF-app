@@ -6,6 +6,7 @@ import stts from './sttList'
 import requestAccess from './requestAccess'
 import reports from './reports'
 import fraReports from './fraReports'
+import feedbackWidget from './feedbackWidget'
 
 /**
  * Combines all store reducers
@@ -20,6 +21,7 @@ const createRootReducer = (history) =>
     requestAccess,
     reports,
     fraReports,
+    feedbackWidget,
   })
 
 export default createRootReducer
