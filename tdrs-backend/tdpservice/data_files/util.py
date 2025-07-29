@@ -12,3 +12,4 @@ class ParserErrorCategoryChoices(models.TextChoices):
     CASE_CONSISTENCY = "4", _("Case consistency")
     SECTION_CONSISTENCY = "5", _("Section consistency")
     HISTORICAL_CONSISTENCY = "6", _("Historical consistency")
+    RECORD_PRE_CHECK = "7", _("Record pre-check")
