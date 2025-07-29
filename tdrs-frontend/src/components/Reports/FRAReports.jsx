@@ -12,12 +12,7 @@ import {
   accountCanSelectStt,
   accountIsRegionalStaff,
 } from '../../selectors/auth'
-import {
-  handlePreview,
-  tryGetUTF8EncodedFile,
-  checkPreviewDependencies,
-  removeOldPreviews,
-} from '../FileUpload/utils'
+import { handlePreview, tryGetUTF8EncodedFile } from '../FileUpload/utils'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
 import Modal from '../Modal'
 import {
