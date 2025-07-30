@@ -7,6 +7,7 @@ import signOut from '../../utils/signOut'
 
 const UserAccessInfo = ({ onEditClick }) => {
   const user = useSelector((state) => state.auth.user)
+  const isAMSUser = user?.email?.includes('@acf.hhs.gov') // regional staff person i guess
   const primaryRole = user?.roles?.[0]
 
   const userState = user?.stt?.name || 'Federal Government'
