@@ -2247,7 +2247,7 @@ def test_parse_cat_4_edge_case_file(cat4_edge_case_file, dfs):
         "Every T1 record should have at least one corresponding T2 or T3 record with the "
         "same Item 4 (Reporting Year and Month) and Item 6 (Case Number)."
     )
-    assert dfs.get_status() == DataFileSummary.Status.REJECTED
+    assert dfs.get_status() == DataFileSummary.Status.PARTIALLY_ACCEPTED
 
 
 @pytest.mark.parametrize(
@@ -2283,7 +2283,7 @@ def test_parse_fra_work_outcome_exiters(request, file, dfs):
         assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
     assert dfs.total_number_of_records_in_file == 11
     assert dfs.total_number_of_records_created == 5
-    assert dfs.get_status() == DataFileSummary.Status.REJECTED
+    assert dfs.get_status() == DataFileSummary.Status.PARTIALLY_ACCEPTED
 
 
 @pytest.mark.parametrize(
@@ -2393,7 +2393,7 @@ def test_parse_fra_ofa_test_cases(request, file, dfs):
     assert TANF_Exiter1.objects.all().count() == 10
     assert dfs.total_number_of_records_in_file == 28
     assert dfs.total_number_of_records_created == 10
-    assert dfs.get_status() == DataFileSummary.Status.REJECTED
+    assert dfs.get_status() == DataFileSummary.Status.PARTIALLY_ACCEPTED
 
 
 @pytest.mark.django_db()
