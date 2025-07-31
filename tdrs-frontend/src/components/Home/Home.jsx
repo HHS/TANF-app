@@ -41,8 +41,10 @@ function Home({ setInEditMode }) {
             firstName: user?.first_name,
             lastName: user?.last_name,
             stt: user?.stt?.name,
-            hasFRAAccess: user?.has_fra_access === 'Yes',
+            hasFRAAccess:
+              user?.permissions?.includes('has_fra_access') === 'Yes',
             jurisdictionType: user?.stt?.type,
+            regions: user?.region,
           }}
           onCancel={() => setIsEditing(false)}
         />

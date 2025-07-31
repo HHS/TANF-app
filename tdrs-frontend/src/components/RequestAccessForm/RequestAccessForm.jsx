@@ -27,7 +27,7 @@ function RequestAccessForm({
     lastName: initialValues.lastName || '',
     stt: initialValues.stt || '',
     hasFRAAccess: initialValues.hasFRAAccess ?? (isAMSUser ? false : null),
-    regions: initialValues.regions || new Set(), //TODO: may need to either move this out
+    regions: initialValues.regions || new Set(),
   })
   const [originalData] = useState(profileInfo) // This should be done when editing begins
 
@@ -41,6 +41,13 @@ function RequestAccessForm({
   )
 
   const regionError = 'At least one Region is required'
+
+  const EditAccessFormRow = ({ label, value }) => (
+    <div className="grid-row margin-bottom-1">
+      <div className="grid-col-8 text-bold">{label}</div>
+      <div className="grid-col text-no-wrap">{value}</div>
+    </div>
+  )
 
   const validateRegions = (regions) => {
     if (regions?.size === 0) {
@@ -189,6 +196,16 @@ function RequestAccessForm({
     return setTimeout(() => errorRef.current.focus(), 0)
   }
 
+  const getJurisdictionLocationInfo = () => {
+    if (jurisdictionType === 'state') {
+      return <EditAccessFormRow label="State" value={profileInfo.stt} />
+    } else if (jurisdictionType === 'territory') {
+      return <EditAccessFormRow label="Territory" value={profileInfo.stt} />
+    } else {
+      return <EditAccessFormRow label="Tribe" value={profileInfo.stt} />
+    }
+  }
+
   return (
     <div className="margin-top-5 margin-bottom-5">
       <p className="margin-top-1 margin-bottom-4">
@@ -227,31 +244,44 @@ function RequestAccessForm({
         />
         {editMode ? (
           <>
-            <div className="grid-row">
-              <div className="grid-col-8">
-                <hr className="margin-top-2 margin-bottom-3 full-width-hr" />
-              </div>
-            </div>
-            <div className="grid-row margin-bottom-1">
-              <div className="grid-col-8 text-bold">User Type</div>
-              <div className="grid-col text-no-wrap">{primaryRole?.name}</div>
-            </div>
-            <div className="grid-row margin-bottom-1">
-              <div className="grid-col-8 text-bold">Jurisdiction Type</div>
-              <div className="grid-col">
-                {jurisdictionType.charAt(0).toUpperCase() +
-                  jurisdictionType.slice(1)}
-              </div>
-            </div>
-            <div className="grid-row margin-bottom-1">
-              <div className="grid-col-8 text-bold">State</div>
-              <div className="grid-col">{profileInfo.stt}</div>
-            </div>
-            <div className="grid-row">
-              <div className="grid-col-8">
-                <hr className="margin-bottom-1 margin-top-2 full-width-hr" />
-              </div>
-            </div>
+            {isAMSUser ? (
+              <RegionSelector
+                setErrors={setErrors}
+                errors={errors}
+                setTouched={setTouched}
+                touched={touched}
+                setProfileInfo={setProfileInfo}
+                profileInfo={profileInfo}
+                displayingError={displayingError}
+                validateRegions={validateRegions}
+                regionError={regionError}
+              />
+            ) : (
+              <>
+                <div className="grid-row">
+                  <div className="grid-col-8">
+                    <hr className="margin-top-3 margin-bottom-3 full-width-hr" />
+                  </div>
+                </div>
+                <EditAccessFormRow
+                  label="User Type"
+                  value={primaryRole?.name}
+                />
+                <EditAccessFormRow
+                  label="Jurisdiction Type"
+                  value={
+                    jurisdictionType.charAt(0).toUpperCase() +
+                    jurisdictionType.slice(1)
+                  }
+                />
+                {getJurisdictionLocationInfo()}
+                <div className="grid-row">
+                  <div className="grid-col-8">
+                    <hr className="margin-bottom-1 margin-top-1 full-width-hr" />
+                  </div>
+                </div>
+              </>
+            )}
           </>
         ) : (
           <>
