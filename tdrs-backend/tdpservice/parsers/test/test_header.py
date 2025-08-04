@@ -40,9 +40,9 @@ def test_header_cleanup(test_datafile):
         row_num=1,
         record_type="HEADER",
     )
-    header, header_is_valid, header_errors = schema_defs.header.parse_and_validate(
-        row, util.make_generate_file_precheck_parser_error(test_datafile, 1)
-    )
+    header_schema = schema_defs.header
+    header_schema.prepare(test_datafile)
+    header, header_is_valid, header_errors = header_schema.parse_and_validate(row)
 
     assert header_is_valid
     assert header_errors == []

@@ -12,7 +12,6 @@ from tdpservice.parsers.models import ParserErrorCategoryChoices
 from tdpservice.parsers.schema_defs.utils import ProgramManager
 from tdpservice.parsers.util import (
     make_generate_case_consistency_parser_error,
-    make_generate_file_precheck_parser_error,
     make_generate_parser_error,
 )
 from tdpservice.parsers.validators import category1

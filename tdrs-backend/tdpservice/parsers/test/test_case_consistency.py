@@ -5,6 +5,11 @@ import logging
 import pytest
 
 from tdpservice.parsers.dataclasses import RawRow
+from tdpservice.parsers.error_generator import (
+    ErrorGeneratorArgs,
+    ErrorGeneratorFactory,
+    ErrorGeneratorType,
+)
 from tdpservice.parsers.models import ParserErrorCategoryChoices
 from tdpservice.parsers.test import factories
 from tdpservice.stts.models import STT
@@ -33,9 +38,9 @@ class TestCaseConsistencyValidator:
             row_num=1,
             record_type="HEADER",
         )
-        return schema_defs.header.parse_and_validate(
-            row, util.make_generate_file_precheck_parser_error(datafile, 1)
-        )
+        header_schema = schema_defs.header
+        header_schema.prepare(datafile)
+        return header_schema.parse_and_validate(row)
 
     @pytest.fixture
     def tanf_s1_records(self):
