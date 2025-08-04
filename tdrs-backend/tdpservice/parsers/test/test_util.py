@@ -14,7 +14,6 @@ from ..util import (
     create_test_datafile,
     generate_t2_t3_t5_hashes,
     get_years_apart,
-    make_generate_parser_error,
 )
 from ..validators.category3 import ifThenAlso
 from ..validators.util import deprecate_call, deprecate_validator, make_validator
@@ -591,9 +590,8 @@ def test_run_postparsing_validators_returns_frinedly_fieldnames(
         ],
     )
 
-    is_valid, errors = schema.run_postparsing_validators(
-        instance, make_generate_parser_error(test_datafile_empty_file, 10)
-    )
+    schema.prepare(test_datafile_empty_file)
+    is_valid, errors = schema.run_postparsing_validators(instance)
     assert is_valid is False
     assert errors[0].fields_json == {
         "friendly_name": {"FIRST": "first", "SECOND": "second"},
