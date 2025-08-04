@@ -65,7 +65,7 @@ class FRAParser(BaseParser):
                 self.datafile, self.current_row_num
             )
 
-            manager_result = self.schema_manager.parse_and_validate(row, generate_error)
+            manager_result = self.schema_manager.parse_and_validate(row)
             records = manager_result.records
             schemas = manager_result.schemas
             num_records = len(records)

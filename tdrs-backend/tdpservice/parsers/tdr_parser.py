@@ -97,7 +97,7 @@ class TanfDataReportParser(BaseParser):
                 prev_sum = self.header_count + self.trailer_count
                 continue
 
-            manager_result = self.schema_manager.parse_and_validate(row, generate_error)
+            manager_result = self.schema_manager.parse_and_validate(row)
             records = manager_result.records
             schemas = manager_result.schemas
             num_records = len(records)
@@ -211,8 +211,10 @@ class TanfDataReportParser(BaseParser):
         """Validate header and header fields."""
         # parse & validate header
         header_row = self.decoder.get_header()
-        header, header_is_valid, header_errors = schema_defs.header.parse_and_validate(
-            header_row, make_generate_file_precheck_parser_error(self.datafile, 1)
+        header_schema = schema_defs.header
+        header_schema.prepare(self.datafile)
+        header, header_is_valid, header_errors = header_schema.parse_and_validate(
+            header_row
         )
         if not header_is_valid:
             logger.info(
@@ -325,14 +327,13 @@ class TanfDataReportParser(BaseParser):
             )
             self._generate_trailer_errors(errors)
         if self.trailer_count == 1 or is_last_line:
+            trailer_schema = schema_defs.trailer
+            trailer_schema.prepare(self.datafile)
             (
                 record,
                 trailer_is_valid,
                 trailer_errors,
-            ) = schema_defs.trailer.parse_and_validate(
-                self.current_row,
-                make_generate_parser_error(self.datafile, self.current_row_num),
-            )
+            ) = trailer_schema.parse_and_validate(self.current_row)
             self._generate_trailer_errors(trailer_errors)
 
     def _generate_trailer_errors(self, trailer_errors):

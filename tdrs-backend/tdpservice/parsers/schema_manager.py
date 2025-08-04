@@ -25,32 +25,32 @@ class SchemaManager:
         self.schema_map = ProgramManager.get_schemas(self.program_type, self.section)
         for schemas in self.schema_map.values():
             for schema in schemas:
-                schema.datafile = self.datafile
+                schema.prepare(self.datafile)
 
-    def parse_and_validate(self, row, generate_error):
+    def parse_and_validate(self, row):
         """Run `parse_and_validate` for each schema provided and bubble up errors."""
         try:
             records = []
             schemas = self.schema_map[row.record_type]
             for schema in schemas:
-                record, is_valid, errors = schema.parse_and_validate(
-                    row, generate_error
-                )
+                record, is_valid, errors = schema.parse_and_validate(row)
                 records.append((record, is_valid, errors))
             return ManagerPVResult(records=records, schemas=schemas)
         except Exception:
+            logger.exception("Exception in SchemaManager.parse_and_validate")
             records = [
                 (
                     None,
                     False,
                     [
-                        generate_error(
-                            schema=None,
-                            error_category=ParserErrorCategoryChoices.RECORD_PRE_CHECK,
-                            error_message="Unknown Record_Type was found.",
-                            record=None,
-                            field="Record_Type",
-                        )
+                        # TODO: Error here
+                        # generate_error(
+                        #     schema=None,
+                        #     error_category=ParserErrorCategoryChoices.RECORD_PRE_CHECK,
+                        #     error_message="Unknown Record_Type was found.",
+                        #     record=None,
+                        #     field="Record_Type",
+                        # )
                     ],
                 )
             ]

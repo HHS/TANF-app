@@ -633,7 +633,7 @@ def test_suppress_for_fra_pilot_state():
             ),
         ],
     )
-    schema.set_datafile(datafile)
+    schema.prepare(datafile)
 
     record = {
         "WORK_ELIGIBLE_INDICATOR": "1",
