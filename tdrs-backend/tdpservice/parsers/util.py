@@ -166,26 +166,6 @@ def generate_fra_parser_error(
     )
 
 
-def make_generate_parser_error(datafile, line_number):
-    """Configure generate_parser_error with a datafile and line number."""
-
-    def generate(
-        schema, error_category, error_message, record=None, field=None, deprecated=False
-    ):
-        return generate_parser_error(
-            datafile=datafile,
-            line_number=line_number,
-            schema=schema,
-            error_category=error_category,
-            error_message=error_message,
-            record=record,
-            field=field,
-            deprecated=deprecated,
-        )
-
-    return generate
-
-
 def make_generate_case_consistency_parser_error(datafile):
     """Configure a generate_parser_error that is specific to case consistency errors."""
 

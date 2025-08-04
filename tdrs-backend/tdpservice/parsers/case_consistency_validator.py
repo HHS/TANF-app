@@ -5,12 +5,12 @@ import warnings
 from datetime import datetime
 
 from tdpservice.parsers.dataclasses import RawRow, ValidationErrorArgs
+from tdpservice.parsers.error_generator import ErrorGeneratorArgs
 from tdpservice.parsers.schema_defs.utils import ProgramManager
 from tdpservice.parsers.validators.category3 import format_error_context
 from tdpservice.stts.models import STT
 
 from .duplicate_manager import DuplicateManager
-from .models import ParserErrorCategoryChoices
 from .util import get_years_apart
 
 logger = logging.getLogger(__name__)
@@ -60,16 +60,15 @@ class CaseConsistencyValidator:
 
     def __generate_and_add_error(self, schema, record, line_num, msg, deprecated=False):
         """Generate a ParserError and add it to the `generated_errors` list."""
-        err = self.generate_error(
-            error_category=ParserErrorCategoryChoices.CASE_CONSISTENCY,
-            schema=schema,
-            line_number=line_num,
+        generator_args = ErrorGeneratorArgs(
             record=record,
-            field=schema.fields,
+            schema=schema,
             error_message=msg,
+            fields=schema.fields,
             deprecated=deprecated,
+            row_number=line_num,
         )
-        self.generated_errors.append(err)
+        self.generated_errors.append(self.generate_error(generator_args))
 
     def clear_errors(self, clear_dup=True):
         """Reset generated errors."""

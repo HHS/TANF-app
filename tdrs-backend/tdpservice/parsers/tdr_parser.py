@@ -9,9 +9,7 @@ from tdpservice.parsers.base_parser import BaseParser
 from tdpservice.parsers.case_consistency_validator import CaseConsistencyValidator
 from tdpservice.parsers.dataclasses import HeaderResult, Position
 from tdpservice.parsers.error_generator import ErrorGeneratorArgs, ErrorGeneratorType
-from tdpservice.parsers.models import ParserErrorCategoryChoices
 from tdpservice.parsers.schema_defs.utils import ProgramManager
-from tdpservice.parsers.util import make_generate_case_consistency_parser_error
 from tdpservice.parsers.validators import category1
 from tdpservice.parsers.validators.util import value_is_empty
 
@@ -41,8 +39,8 @@ class TanfDataReportParser(BaseParser):
         self._init_schema_manager(header_result.program_type)
         self.schema_manager.update_encrypted_fields(header_result.is_encrypted)
 
-        cat4_error_generator = make_generate_case_consistency_parser_error(
-            self.datafile
+        cat4_error_generator = self.error_generator_factory.get_generator(
+            ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
         )
         self.case_consistency_validator = CaseConsistencyValidator(
             header_result.header,

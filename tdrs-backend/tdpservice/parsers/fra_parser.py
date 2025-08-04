@@ -10,7 +10,6 @@ from tdpservice.parsers.error_generator import (
     ErrorGeneratorFactory,
     ErrorGeneratorType,
 )
-from tdpservice.parsers.util import make_generate_case_consistency_parser_error
 
 logger = logging.getLogger(__name__)
 
@@ -24,10 +23,10 @@ class FRAParser(BaseParser):
 
     def __init__(self, datafile, dfs, section):
         super().__init__(datafile, dfs, section)
-        cat4_error_generator = make_generate_case_consistency_parser_error(
-            self.datafile
+        duplicate_error_generator = self.error_generator_factory.get_generator(
+            ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
         )
-        self.duplicate_manager = DuplicateManager(cat4_error_generator)
+        self.duplicate_manager = DuplicateManager(duplicate_error_generator)
 
     def _create_header_error(self):
         """Create FRA header error and return invalid HeaderResult."""

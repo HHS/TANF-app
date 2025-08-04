@@ -156,3 +156,4 @@ class ErrorGeneratorArgs:
     offending_field: object | None = None  # Field causes circular import
     fields: list | None = None
     deprecated: bool = False
+    row_number: int | None = None
