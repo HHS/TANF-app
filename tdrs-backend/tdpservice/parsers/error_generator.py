@@ -11,6 +11,8 @@ from .models import ParserError
 
 
 class ErrorGeneratorType(Enum):
+    """Enum for error generator types."""
+
     PRE_CHECK = "pre_check"
     RECORD_PRE_CHECK = "record_pre_check"
     FIELD_VALUE = "field_value"
@@ -24,6 +26,8 @@ class ErrorGeneratorType(Enum):
 
 
 class ErrorGeneratorFactory:
+    """Factory for generating all types of ParserErrors."""
+
     def __init__(self, datafile):
         self.datafile = datafile
 
@@ -250,6 +254,8 @@ class ErrorGeneratorFactory:
         return generate_fra_parser_error
 
     def create_generate_message_only_precheck_error(self, row_number):
+        """Create a message only precheck error generator."""
+
         def generate_message_only_precheck_error(generator_args: ErrorGeneratorArgs):
             """Generate a no records precheck error."""
             return ParserError(
@@ -272,6 +278,8 @@ class ErrorGeneratorFactory:
         return generate_message_only_precheck_error
 
     def create_generate_message_only_record_precheck_error(self, row_number):
+        """Create a message only record precheck error generator."""
+
         def generate_message_only_record_precheck_error(
             generator_args: ErrorGeneratorArgs,
         ):

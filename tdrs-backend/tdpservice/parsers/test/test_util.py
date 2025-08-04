@@ -15,7 +15,6 @@ from ..util import (
     generate_t2_t3_t5_hashes,
     get_years_apart,
 )
-from ..validators.category3 import ifThenAlso
 from ..validators.util import deprecate_call, deprecate_validator, make_validator
 
 
