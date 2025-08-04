@@ -18,6 +18,8 @@ class ErrorGeneratorType(Enum):
     CASE_CONSISTENCY = "case_consistency"
     FRA = "fra_parser_error"
 
+    MSG_ONLY_PRECHECK = "message_only_precheck"
+
 
 class ErrorGeneratorFactory:
     def __init__(self, datafile):
@@ -38,6 +40,8 @@ class ErrorGeneratorFactory:
                 return self.create_generate_case_consistency_error(row_number)
             case ErrorGeneratorType.FRA:
                 return self.create_generate_fra_parser_error(row_number)
+            case ErrorGeneratorType.MSG_ONLY_PRECHECK:
+                return self.create_generate_message_only_precheck_error(row_number)
             case _:
                 raise ValueError(f"Invalid error category: {generator_type}")
 
@@ -237,6 +241,30 @@ class ErrorGeneratorFactory:
 
         return generate_fra_parser_error
 
+    def create_generate_message_only_precheck_error(self, row_number):
+        def generate_message_only_precheck_error(
+            self, generator_args: ErrorGeneratorArgs
+        ):
+            """Generate a no records precheck error."""
+            return ParserError(
+                file=self.datafile,
+                row_number=row_number,
+                column_number="",
+                item_number="",
+                field_name="",
+                rpt_month_year=None,
+                case_number=None,
+                error_message=generator_args.error_message,
+                error_type=ParserErrorCategoryChoices.PRE_CHECK,
+                content_type=None,
+                object_id=None,
+                fields_json=None,
+                values_json=None,
+                deprecated=generator_args.deprecated,
+            )
+
+        return generate_message_only_precheck_error
+
         # def generate_header_field_value_error(self, record, row_number, error_message, field, deprecated=False):
         #     """Generate a header field value error."""
         #     fields_json = self._generate_fields_json([field])
@@ -338,27 +366,27 @@ class ErrorGeneratorFactory:
         # def get_case_consistency_generator(self):
         """Get case consistency error generator function."""
 
-        def generate_error(
-            record, schema, row_number, error_message, fields, deprecated=False
-        ):
-            fields_json = self._generate_fields_json(fields)
-            values_json = self._generate_values_json(fields, record)
-            field = schema.record_type
-            return ParserError(
-                file=self.datafile,
-                row_number=row_number,
-                column_number=getattr(field, "item", ""),
-                item_number=getattr(field, "item", ""),
-                field_name=getattr(field, "name", ""),
-                rpt_month_year=getattr(record, "RPT_MONTH_YEAR", None),
-                case_number=getattr(record, "CASE_NUMBER", None),
-                error_message=error_message,
-                error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY,
-                content_type=None,
-                object_id=None,
-                fields_json=fields_json,
-                values_json=values_json,
-                deprecated=generator_args.deprecated,
-            )
+        # def generate_error(
+        #     record, schema, row_number, error_message, fields, deprecated=False
+        # ):
+        #     fields_json = self._generate_fields_json(fields)
+        #     values_json = self._generate_values_json(fields, record)
+        #     field = schema.record_type
+        #     return ParserError(
+        #         file=self.datafile,
+        #         row_number=row_number,
+        #         column_number=getattr(field, "item", ""),
+        #         item_number=getattr(field, "item", ""),
+        #         field_name=getattr(field, "name", ""),
+        #         rpt_month_year=getattr(record, "RPT_MONTH_YEAR", None),
+        #         case_number=getattr(record, "CASE_NUMBER", None),
+        #         error_message=error_message,
+        #         error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY,
+        #         content_type=None,
+        #         object_id=None,
+        #         fields_json=fields_json,
+        #         values_json=values_json,
+        #         deprecated=generator_args.deprecated,
+        #     )
 
-        return generate_error
+        # return generate_error

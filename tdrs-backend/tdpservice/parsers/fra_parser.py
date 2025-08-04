@@ -5,11 +5,12 @@ import logging
 from tdpservice.parsers.base_parser import BaseParser
 from tdpservice.parsers.dataclasses import HeaderResult, Position
 from tdpservice.parsers.duplicate_manager import DuplicateManager
-from tdpservice.parsers.models import ParserErrorCategoryChoices
-from tdpservice.parsers.util import (
-    make_generate_case_consistency_parser_error,
-    make_generate_fra_parser_error,
+from tdpservice.parsers.error_generator import (
+    ErrorGeneratorArgs,
+    ErrorGeneratorFactory,
+    ErrorGeneratorType,
 )
+from tdpservice.parsers.util import make_generate_case_consistency_parser_error
 
 logger = logging.getLogger(__name__)
 
@@ -30,14 +31,17 @@ class FRAParser(BaseParser):
 
     def _create_header_error(self):
         """Create FRA header error and return invalid HeaderResult."""
-        generate_error = make_generate_fra_parser_error(self.datafile, 1)
-        self.num_errors += 1
-        error = generate_error(
+        generate_error = ErrorGeneratorFactory(self.datafile).get_generator(
+            ErrorGeneratorType.MSG_ONLY_PRECHECK, 1
+        )
+        generator_args = ErrorGeneratorArgs(
+            record=None,
             schema=None,
-            error_category=ParserErrorCategoryChoices.PRE_CHECK,
             error_message="File does not begin with FRA data.",
             fields=[],
         )
+        self.num_errors += 1
+        error = generate_error(generator_args)
         self.unsaved_parser_errors.update({1: [error]})
         self.bulk_create_errors(flush=True)
         return HeaderResult(is_valid=False)
@@ -61,9 +65,6 @@ class FRAParser(BaseParser):
 
         for row in self.decoder.decode():
             self.current_row_num = self.decoder.current_row_num
-            generate_error = make_generate_fra_parser_error(
-                self.datafile, self.current_row_num
-            )
 
             manager_result = self.schema_manager.parse_and_validate(row)
             records = manager_result.records

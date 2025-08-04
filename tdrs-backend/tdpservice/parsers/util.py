@@ -166,34 +166,6 @@ def generate_fra_parser_error(
     )
 
 
-def make_generate_fra_parser_error(datafile, line_number):
-    """Configure generate_fra_parser_error with a datafile and line number."""
-
-    def generate(
-        schema,
-        error_category,
-        error_message,
-        record=None,
-        offending_field=None,
-        field=None,
-        fields=None,
-        deprecated=False,
-    ):
-        return generate_fra_parser_error(
-            datafile=datafile,
-            line_number=line_number,
-            schema=schema,
-            error_category=error_category,
-            error_message=error_message,
-            record=record,
-            offending_field=offending_field if offending_field else field,
-            fields=fields if fields else [field],
-            deprecated=deprecated,
-        )
-
-    return generate
-
-
 def make_generate_parser_error(datafile, line_number):
     """Configure generate_parser_error with a datafile and line number."""
 
