@@ -19,7 +19,9 @@ function RequestAccessForm({
   const errorRef = useRef(null)
 
   const isAMSUser = user?.email?.includes('@acf.hhs.gov')
+  //const isAMSUser = true
   const primaryRole = user?.roles?.[0]
+  //const primaryRole = 'Regional Staff'
 
   const [errors, setErrors] = useState({})
   const [profileInfo, setProfileInfo] = useState({
@@ -207,7 +209,7 @@ function RequestAccessForm({
   }
 
   return (
-    <div className="margin-top-5 margin-bottom-5">
+    <div className={`margin-top-5 ${editMode ? '' : 'margin-bottom-5'}`}>
       <p className="margin-top-1 margin-bottom-4">
         Please enter your information to request access from an OFA
         administrator
@@ -260,7 +262,7 @@ function RequestAccessForm({
               <>
                 <div className="grid-row">
                   <div className="grid-col-8">
-                    <hr className="margin-top-3 margin-bottom-3 full-width-hr" />
+                    <hr className="aligned-hr margin-top-3 margin-bottom-3" />
                   </div>
                 </div>
                 <EditAccessFormRow
@@ -277,7 +279,7 @@ function RequestAccessForm({
                 {getJurisdictionLocationInfo()}
                 <div className="grid-row">
                   <div className="grid-col-8">
-                    <hr className="margin-bottom-1 margin-top-1 full-width-hr" />
+                    <hr className="aligned-hr margin-bottom-1 margin-top-1" />
                   </div>
                 </div>
               </>

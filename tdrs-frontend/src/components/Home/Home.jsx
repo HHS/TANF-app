@@ -44,7 +44,7 @@ function Home({ setInEditMode }) {
             hasFRAAccess:
               user?.permissions?.includes('has_fra_access') === 'Yes',
             jurisdictionType: user?.stt?.type,
-            regions: user?.region,
+            regions: user?.regions,
           }}
           onCancel={() => setIsEditing(false)}
         />

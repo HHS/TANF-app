@@ -39,7 +39,7 @@ const UserAccessInfo = ({ onEditClick }) => {
   return (
     <div data-testid="user-access-request-profile" className="usa-prose">
       <div data-testid="user-access-profile-container">
-        <div data-testid="user-access-info">
+        <div data-testid="user-access-request-info">
           <ProfileRow
             label="Name"
             value={`${user?.first_name || ''} ${user?.last_name || ''}`}

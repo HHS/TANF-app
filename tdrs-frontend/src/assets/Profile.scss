@@ -2,10 +2,13 @@
   border: .25rem solid #b50909;
 }
 
-.full-width-hr {
+.aligned-hr {
   border: none;
   border-top: 1px solid #ccc;
-  width: 100%;
-  margin-top: 1rem; // or use USWDS spacing units
-  margin-bottom: 1rem;
+  width: 100vw;
+  max-width: none;
+
+  // Visually shift it to start where grid-col-8 starts
+  margin-left: calc((100% / 8) * 2); 
+  margin-right: calc((100% / 8) * 2); // optional: match right edge
 }

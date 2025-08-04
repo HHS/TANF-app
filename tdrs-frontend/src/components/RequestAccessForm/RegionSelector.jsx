@@ -11,7 +11,10 @@ function RegionSelector({
   validateRegions,
   regionError,
 }) {
-  const [regional, setRegional] = useState(false)
+  // TODO: might work
+  const [regional, setRegional] = useState(() => {
+    return profileInfo?.regions?.size > 0
+  })
   const regionKey = 'regions'
   const regionsNames = [
     'Boston',

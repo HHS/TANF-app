@@ -11,7 +11,6 @@ import { accountIsInReview } from '../../selectors/auth'
 import { faro, FaroRoutes } from '@grafana/faro-react'
 
 import SiteMap from '../SiteMap'
-
 import Home from '../Home'
 
 /* istanbul ignore next */
@@ -31,13 +30,15 @@ const RouteProvider = ({ children }) => {
 const AppRoutes = () => {
   const user = useSelector((state) => state.auth.user)
 
-  // TODO: using for testing
   const [isInEditMode, setIsInEditMode] = useState(false)
+  const [editContext, setEditContext] = useState(null) // 'access request' or 'profile'
   //const userAccountInReview = useSelector(accountIsInReview)
-  const userAccountInReview = true
+  const userAccountInReview = true // TODO: using for testing
 
   const homeTitle = isInEditMode
-    ? 'Edit Access Request'
+    ? editContext === 'profile'
+      ? 'Edit Profile'
+      : 'Edit Access Request'
     : userAccountInReview
       ? 'Request Submitted'
       : 'Welcome to TDP'
@@ -51,7 +52,12 @@ const AppRoutes = () => {
         path="/home"
         element={
           <PrivateRoute title={homeTitle}>
-            <Home setInEditMode={setIsInEditMode} />
+            <Home
+              setInEditMode={(val) => {
+                setEditContext('home')
+                setIsInEditMode(val)
+              }}
+            />
           </PrivateRoute>
         }
       />
@@ -101,8 +107,20 @@ const AppRoutes = () => {
         exact
         path="/profile"
         element={
-          <PrivateRoute title="Profile">
-            <Profile />
+          <PrivateRoute
+            title={editContext === 'profile' ? homeTitle : 'My Profile'}
+          >
+            <Profile
+              isEditing={isInEditMode}
+              onEdit={() => {
+                setEditContext('profile')
+                setIsInEditMode(true)
+              }}
+              onCancel={() => {
+                setIsInEditMode(false)
+                setEditContext(null)
+              }}
+            />
           </PrivateRoute>
         }
       />
