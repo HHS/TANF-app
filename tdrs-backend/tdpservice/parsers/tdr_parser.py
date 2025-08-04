@@ -265,7 +265,7 @@ class TanfDataReportParser(BaseParser):
                 + f"({header['program_type']}) and FIPS Code ({field_values['state_fips']}).",
             )
             self.num_errors += 1
-            self.unsaved_parser_errors.update({1: [tribe_result.error]})
+            self.unsaved_parser_errors.update({1: [tribe_result.error_message]})
             self.bulk_create_errors(flush=True)
             return HeaderResult(is_valid=False)
 
@@ -278,10 +278,10 @@ class TanfDataReportParser(BaseParser):
 
         if not section_result.valid:
             logger.info(
-                f"Preparser Error -> Section is not valid: {section_result.error}"
+                f"Preparser Error -> Section is not valid: {section_result.error_message}"
             )
             self.num_errors += 1
-            self.unsaved_parser_errors.update({1: [section_result.error]})
+            self.unsaved_parser_errors.update({1: [section_result.error_message]})
             self.bulk_create_errors(flush=True)
             return HeaderResult(is_valid=False)
 
@@ -290,10 +290,12 @@ class TanfDataReportParser(BaseParser):
         )
         if not rpt_month_year_result.valid:
             logger.info(
-                f"Preparser Error -> Rpt Month Year is not valid: {rpt_month_year_result.error}"
+                f"Preparser Error -> Rpt Month Year is not valid: {rpt_month_year_result.error_message}"
             )
             self.num_errors += 1
-            self.unsaved_parser_errors.update({1: [rpt_month_year_result.error]})
+            self.unsaved_parser_errors.update(
+                {1: [rpt_month_year_result.error_message]}
+            )
             self.bulk_create_errors(flush=True)
             return HeaderResult(is_valid=False)
 

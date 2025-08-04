@@ -242,7 +242,7 @@ def fraSSNAllOf(*funcs, **kwargs):
             return Result()
         return Result(
             valid=False,
-            error=(
+            error_message=(
                 "Social Security Number is not valid. Check that the SSN is 9 digits, "
                 "does not contain only zeroes in any one section, and does not contain "
                 "dashes or other punctuation. "

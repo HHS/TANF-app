@@ -198,15 +198,15 @@ def ifThenAlso(
             if condition_result.valid:
                 center_error = f"{format_error_context(condition_field_eargs)} is {condition_value}"
             else:
-                center_error = condition_result.error
+                center_error = condition_result.error_message
             error_message = (
                 f"Since {center_error}, then {format_error_context(result_field_eargs)} "
-                f"{result_value} {result_result.error}"
+                f"{result_value} {result_result.error_message}"
             )
 
             return Result(
                 valid=result_result.valid,
-                error=error_message,
+                error_message=error_message,
                 field_names=[condition_field_name, result_field_name],
             )
         else:
@@ -232,9 +232,10 @@ def orValidators(validators, **kwargs):
                 else ""
             )
             error_msg += (
-                " or ".join([result.error for result in validator_results]) + "."
+                " or ".join([result.error_message for result in validator_results])
+                + "."
             )
-            return Result(valid=False, error=error_msg)
+            return Result(valid=False, error_message=error_msg)
 
         return Result()
 
@@ -260,7 +261,7 @@ def sumIsEqual(condition_field_name, sum_fields=[]):
             return Result(field_names=fields)
         return Result(
             valid=False,
-            error=(
+            error_message=(
                 f"{row_schema.record_type}: The sum of {', '.join(sum_fields)} does not equal "
                 f"{condition_field_name} {condition_field.friendly_name} Item {condition_field.item}."
             ),
@@ -284,7 +285,7 @@ def sumIsLarger(fields, val):
 
         return Result(
             valid=False,
-            error=(
+            error_message=(
                 f"{row_schema.record_type}: No benefits detected for this case. "
                 f"The total sum of {', '.join(fields)} must be greater than {val}."
             ),
@@ -344,7 +345,7 @@ def validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
 
         false_case = Result(
             valid=False,
-            error=(
+            error_message=(
                 f"{row_schema.record_type}: Since {format_error_context(work_elig_eargs)} is 11 "
                 f"and {format_error_context(age_eargs)} is less than 19, "
                 f"then {format_error_context(relat_hoh_eargs)} must not be 1."

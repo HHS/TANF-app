@@ -123,7 +123,7 @@ def validate_fieldYearMonth_with_headerYearQuarter():
         if not is_valid:
             return Result(
                 valid=False,
-                error=(
+                error_message=(
                     f"{eargs.row_schema.record_type}: Reporting month year {val} "
                     f"does not match file reporting year:{eargs.row_schema.datafile.year}, "
                     f"quarter:{eargs.row_schema.datafile.quarter}."
@@ -144,7 +144,7 @@ def validate_exit_date_against_fiscal_period():
         if not is_valid:
             return Result(
                 valid=False,
-                error=(
+                error_message=(
                     f"Exit date ({val}) is not valid. Date must be in the range of "
                     f"{eargs.row_schema.datafile.fiscal_year}"
                 ),
@@ -175,11 +175,11 @@ def t3_m3_child_validator(which_child):
         elif not len(row) >= 60:
             return Result(
                 valid=False,
-                error=f"The first child record is too short at {len(row)} "
+                error_message=f"The first child record is too short at {len(row)} "
                 "characters and must be at least 60 characters.",
             )
         else:
-            return Result(valid=False, error="The first child record is empty.")
+            return Result(valid=False, error_message="The first child record is empty.")
 
     def t3_second_child_validator_func(row: RawRow, eargs):
         if (
@@ -192,13 +192,15 @@ def t3_m3_child_validator(which_child):
         elif not len(row) >= 101:
             return Result(
                 valid=False,
-                error=(
+                error_message=(
                     f"The second child record is too short at {len(row)} "
                     "characters and must be at least 101 characters."
                 ),
             )
         else:
-            return Result(valid=False, error="The second child record is empty.")
+            return Result(
+                valid=False, error_message="The second child record is empty."
+            )
 
     return (
         t3_first_child_validator_func
@@ -246,7 +248,7 @@ def validate_tribe_fips_program_agree(
             field=None,
         )
 
-    return Result(valid=is_valid, error=error)
+    return Result(valid=is_valid, error_message=error)
 
 
 def validate_header_section_matches_submission(datafile, section, generate_error):
@@ -263,7 +265,7 @@ def validate_header_section_matches_submission(datafile, section, generate_error
             field=None,
         )
 
-    return Result(valid=is_valid, error=error)
+    return Result(valid=is_valid, error_message=error)
 
 
 def validate_header_rpt_month_year(datafile, header, generate_error):
@@ -292,4 +294,4 @@ def validate_header_rpt_month_year(datafile, header, generate_error):
             record=None,
             field=None,
         )
-    return Result(valid=is_valid, error=error)
+    return Result(valid=is_valid, error_message=error)

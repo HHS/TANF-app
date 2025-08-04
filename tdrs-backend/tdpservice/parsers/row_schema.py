@@ -114,11 +114,11 @@ class RowSchema(ABC):
                         if (not result.valid and not field.ignore_errors)
                         else is_valid
                     )
-                    if result.error:
+                    if result.error_message:
                         generator_args = ErrorGeneratorArgs(
                             record=record,
                             schema=self,
-                            error_message=result.error,
+                            error_message=result.error_message,
                             offending_field=field,
                             fields=self.fields,
                             deprecated=result.deprecated,
@@ -179,13 +179,13 @@ class RowSchema(ABC):
             generator_args = ErrorGeneratorArgs(
                 record=record,
                 schema=self,
-                error_message=result.error,
+                error_message=result.error_message,
                 offending_field=field,
                 fields=self.fields,
                 deprecated=result.deprecated,
             )
 
-            if result.error and not is_quiet_preparser_errors:
+            if result.error_message and not is_quiet_preparser_errors:
                 errors.append(generate_error(generator_args=generator_args))
         return is_valid, errors
 
@@ -283,13 +283,13 @@ class TanfDataReportSchema(RowSchema):
         for validator in self.postparsing_validators:
             result = validator(record, self)
             is_valid = False if not result.valid else is_valid
-            if result.error:
+            if result.error_message:
                 # get field from field name
                 fields = [self.get_field_by_name(name) for name in result.field_names]
                 generator_args = ErrorGeneratorArgs(
                     record=record,
                     schema=self,
-                    error_message=result.error,
+                    error_message=result.error_message,
                     offending_field=fields[-1],
                     fields=fields,
                     deprecated=result.deprecated,
@@ -418,12 +418,12 @@ class FRASchema(RowSchema):
     #                     if (not result.valid and not field.ignore_errors)
     #                     else is_valid
     #                 )
-    #                 if result.error:
+    #                 if result.error_message:
     #                     errors.append(
     #                         generate_error(
     #                             schema=self,
     #                             error_category=self.field_error_type,
-    #                             error_message=result.error,
+    #                             error_message=result.error_message,
     #                             record=record,
     #                             offending_field=field,
     #                             fields=self.fields,
