@@ -207,6 +207,7 @@ class TanfDataReportParser(BaseParser):
         """Validate header and header fields."""
         # parse & validate header
         header_row = self.decoder.get_header()
+        header_row.row_num = 1
         header_schema = schema_defs.header
         header_schema.prepare(self.datafile)
         header, header_is_valid, header_errors = header_schema.parse_and_validate(

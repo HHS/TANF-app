@@ -331,6 +331,7 @@ class HeaderSchema(TanfDataReportSchema):
             self.postparsing_validators = postparsing_validators
 
         self.precheck_error_generator_type = ErrorGeneratorType.PRE_CHECK
+        self.field_error_generator_type = ErrorGeneratorType.PRE_CHECK
 
 
 class FRASchema(RowSchema):
@@ -356,8 +357,8 @@ class FRASchema(RowSchema):
             quiet_preparser_errors,
         )
 
-        self.precheck_error_generator_type = ErrorGeneratorType.CASE_CONSISTENCY
-        self.field_error_generator_type = ErrorGeneratorType.CASE_CONSISTENCY
+        self.precheck_error_generator_type = ErrorGeneratorType.FRA
+        self.field_error_generator_type = ErrorGeneratorType.FRA
 
     def parse_and_validate(self, row: RawRow):
         """Run all validation steps in order, and parse the given row into a record."""

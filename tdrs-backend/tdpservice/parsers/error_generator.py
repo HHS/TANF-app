@@ -19,6 +19,7 @@ class ErrorGeneratorType(Enum):
     FRA = "fra_parser_error"
 
     MSG_ONLY_PRECHECK = "message_only_precheck"
+    MSG_ONLY_RECORD_PRECHECK = "message_only_record_precheck"
     DYNAMIC_ROW_CASE_CONSISTENCY = "dynamic_row_case_consistency"
 
 
@@ -43,6 +44,10 @@ class ErrorGeneratorFactory:
                 return self.create_generate_fra_parser_error(row_number)
             case ErrorGeneratorType.MSG_ONLY_PRECHECK:
                 return self.create_generate_message_only_precheck_error(row_number)
+            case ErrorGeneratorType.MSG_ONLY_RECORD_PRECHECK:
+                return self.create_generate_message_only_record_precheck_error(
+                    row_number
+                )
             case ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY:
                 return self.create_generate_dynamic_row_case_consistency_error()
             case _:
@@ -245,9 +250,7 @@ class ErrorGeneratorFactory:
         return generate_fra_parser_error
 
     def create_generate_message_only_precheck_error(self, row_number):
-        def generate_message_only_precheck_error(
-            self, generator_args: ErrorGeneratorArgs
-        ):
+        def generate_message_only_precheck_error(generator_args: ErrorGeneratorArgs):
             """Generate a no records precheck error."""
             return ParserError(
                 file=self.datafile,
@@ -268,131 +271,29 @@ class ErrorGeneratorFactory:
 
         return generate_message_only_precheck_error
 
-        # def generate_header_field_value_error(self, record, row_number, error_message, field, deprecated=False):
-        #     """Generate a header field value error."""
-        #     fields_json = self._generate_fields_json([field])
-        #     values_json = self._generate_values_json([field], record)
-        #     return ParserError(
-        #         file=self.datafile,
-        #         row_number=row_number,
-        #         column_number=getattr(field, "item", ""),
-        #         item_number=getattr(field, "item", ""),
-        #         field_name=getattr(field, "name", ""),
-        #         rpt_month_year=getattr(record, "RPT_MONTH_YEAR", None),
-        #         case_number=getattr(record, "CASE_NUMBER", None),
-        #         error_message=error_message,
-        #         error_type=ParserErrorCategoryChoices.PRE_CHECK,
-        #         content_type=None,
-        #         object_id=None,
-        #         fields_json=fields_json,
-        #         values_json=values_json,
-        #         deprecated=generator_args.deprecated,
-        #     )
+    def create_generate_message_only_record_precheck_error(self, row_number):
+        def generate_message_only_record_precheck_error(
+            generator_args: ErrorGeneratorArgs,
+        ):
+            """Generate a no records precheck error."""
+            return ParserError(
+                file=self.datafile,
+                row_number=row_number,
+                column_number="",
+                item_number="",
+                field_name="",
+                rpt_month_year=None,
+                case_number=None,
+                error_message=generator_args.error_message,
+                error_type=ParserErrorCategoryChoices.RECORD_PRE_CHECK,
+                content_type=None,
+                object_id=None,
+                fields_json=None,
+                values_json=None,
+                deprecated=generator_args.deprecated,
+            )
 
-        # def generate_multiple_headers_error(self, row_number):
-        #     """Generate a multiple headers error."""
-        #     return ParserError(
-        #         file=self.datafile,
-        #         row_number=row_number,
-        #         column_number="",
-        #         item_number="",
-        #         field_name="",
-        #         rpt_month_year=None,
-        #         case_number=None,
-        #         error_message="Multiple headers found.",
-        #         error_type=ParserErrorCategoryChoices.PRE_CHECK,
-        #         content_type=None,
-        #         object_id=None,
-        #         fields_json=None,
-        #         values_json=None,
-        #         deprecated=False,
-        #     )
-
-        # def generate_record_unknown_error(self, row_number):
-        #     """Generate a record unknown error."""
-        #     return ParserError(
-        #         file=self.datafile,
-        #         row_number=row_number,
-        #         column_number="",
-        #         item_number="",
-        #         field_name="",
-        #         rpt_month_year=None,
-        #         case_number=None,
-        #         error_message="Unknown Record_Type was found.",
-        #         error_type=ParserErrorCategoryChoices.RECORD_PRE_CHECK,
-        #         content_type=None,
-        #         object_id=None,
-        #         fields_json=None,
-        #         values_json=None,
-        #         deprecated=False,
-        #     )
-
-        # def generate_precheck_msg_only(self, row_number, error_message, deprecated=False):
-        #     """Generate a no records precheck error."""
-        #     return ParserError(
-        #         file=self.datafile,
-        #         row_number=row_number,
-        #         column_number="",
-        #         item_number="",
-        #         field_name="",
-        #         rpt_month_year=None,
-        #         case_number=None,
-        #         error_message=error_message,
-        #         error_type=ParserErrorCategoryChoices.PRE_CHECK,
-        #         content_type=None,
-        #         object_id=None,
-        #         fields_json=None,
-        #         values_json=None,
-        #         deprecated=generator_args.deprecated,
-        #     )
-
-        # @staticmethod
-        # def static_generate_precheck_msg_only(datafile, row_number, error_message, deprecated=False):
-        #     """Generate a no records precheck error."""
-        #     return ParserError(
-        #         file=datafile,
-        #         row_number=row_number,
-        #         column_number="",
-        #         item_number="",
-        #         field_name="",
-        #         rpt_month_year=None,
-        #         case_number=None,
-        #         error_message=error_message,
-        #         error_type=ParserErrorCategoryChoices.PRE_CHECK,
-        #         content_type=None,
-        #         object_id=None,
-        #         fields_json=None,
-        #         values_json=None,
-        #         deprecated=generator_args.deprecated,
-        #     )
-
-        # def get_case_consistency_generator(self):
-        """Get case consistency error generator function."""
-
-        # def generate_error(
-        #     record, schema, row_number, error_message, fields, deprecated=False
-        # ):
-        #     fields_json = self._generate_fields_json(fields)
-        #     values_json = self._generate_values_json(fields, record)
-        #     field = schema.record_type
-        #     return ParserError(
-        #         file=self.datafile,
-        #         row_number=row_number,
-        #         column_number=getattr(field, "item", ""),
-        #         item_number=getattr(field, "item", ""),
-        #         field_name=getattr(field, "name", ""),
-        #         rpt_month_year=getattr(record, "RPT_MONTH_YEAR", None),
-        #         case_number=getattr(record, "CASE_NUMBER", None),
-        #         error_message=error_message,
-        #         error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY,
-        #         content_type=None,
-        #         object_id=None,
-        #         fields_json=fields_json,
-        #         values_json=values_json,
-        #         deprecated=generator_args.deprecated,
-        #     )
-
-        # return generate_error
+        return generate_message_only_record_precheck_error
 
     def create_generate_dynamic_row_case_consistency_error(self):
         """Create a case consistency error generator."""

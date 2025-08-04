@@ -3,8 +3,12 @@
 import logging
 
 from tdpservice.parsers.dataclasses import ManagerPVResult
+from tdpservice.parsers.error_generator import (
+    ErrorGeneratorArgs,
+    ErrorGeneratorFactory,
+    ErrorGeneratorType,
+)
 from tdpservice.parsers.fields import TransformField
-from tdpservice.parsers.models import ParserErrorCategoryChoices
 from tdpservice.parsers.schema_defs.utils import ProgramManager
 
 logger = logging.getLogger(__name__)
@@ -15,6 +19,7 @@ class SchemaManager:
 
     def __init__(self, datafile, program_type, section):
         self.datafile = datafile
+        self.error_generator_factory = ErrorGeneratorFactory(self.datafile)
         self.program_type = program_type
         self.section = section
         self.schema_map = None
@@ -38,19 +43,22 @@ class SchemaManager:
             return ManagerPVResult(records=records, schemas=schemas)
         except Exception:
             logger.exception("Exception in SchemaManager.parse_and_validate")
+            generator_args = ErrorGeneratorArgs(
+                record=None,
+                schema=None,
+                error_message="Unknown Record_Type was found.",
+                offending_field=None,
+                fields=None,
+            )
             records = [
                 (
                     None,
                     False,
                     [
-                        # TODO: Error here
-                        # generate_error(
-                        #     schema=None,
-                        #     error_category=ParserErrorCategoryChoices.RECORD_PRE_CHECK,
-                        #     error_message="Unknown Record_Type was found.",
-                        #     record=None,
-                        #     field="Record_Type",
-                        # )
+                        self.error_generator_factory.get_generator(
+                            generator_type=ErrorGeneratorType.MSG_ONLY_RECORD_PRECHECK,
+                            row_number=row.row_num,
+                        )(generator_args)
                     ],
                 )
             ]
