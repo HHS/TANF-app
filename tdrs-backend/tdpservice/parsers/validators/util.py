@@ -4,6 +4,7 @@
 import functools
 import logging
 import warnings
+
 from tdpservice.parsers.dataclasses import Result
 
 logger = logging.getLogger(__name__)
@@ -18,6 +19,7 @@ def make_validator(validator_func, error_func):
     @return: a function returning (True, None) for success or (False, string) for failure,
     with the string representing the error message
     """
+
     def validator(value, eargs):
         try:
             if validator_func(value):
@@ -36,18 +38,23 @@ def deprecate_validator(validator):
     This decorator should ONLY be used on validator functions that return another
     validator function, i.e. make_validator.
     """
+
     def wrapper(*args, **kwargs):
         wrapper_args = args
         wrapper_kwargs = kwargs
 
         def deprecated_validator(*args, **kwargs):
-            warnings.warn(f"{validator.__name__} has been deprecated and will be removed in a future version.",
-                          DeprecationWarning)
+            warnings.warn(
+                f"{validator.__name__} has been deprecated and will be removed in a future version.",
+                DeprecationWarning,
+            )
             make_val = validator(*wrapper_args, **wrapper_kwargs)
             result = make_val(*args, **kwargs)
             result.deprecated = True
             return result
+
         return deprecated_validator
+
     return wrapper
 
 
@@ -57,10 +64,12 @@ def deprecate_call(validator):
     This function should wrap invocations of validators in a schema. E.g.:
     `deprecate_call(category1.recordHasLengthBetween(117, 156))`.
     """
+
     def deprecated_validator(*args, **kwargs):
         result = validator(*args, **kwargs)
         result.deprecated = True
         return result
+
     return deprecated_validator
 
 
@@ -74,6 +83,7 @@ def validator(baseValidator):
     @param errorFunc: a function returning an error generator for make_validator
     @return: make_validator with the results of baseValidator and errorFunc both evaluated
     """
+
     # inner decorator wraps the given function and returns a function
     # that gives us our final make_validator
     def _decorator(errorFunc):
@@ -82,7 +92,9 @@ def validator(baseValidator):
             validator_func = baseValidator(*args, **kwargs)
             error_func = errorFunc(*args, **kwargs)
             return make_validator(validator_func, error_func)
+
         return _validator
+
     return _decorator
 
 
@@ -90,10 +102,10 @@ def value_is_empty(value, length, extra_vals={}):
     """Handle 'empty' values as field inputs."""
     # TODO: have to build mixed type handling for value
     empty_values = {
-        '',
-        ' '*length,  # '     '
-        '#'*length,  # '#####'
-        '_'*length,  # '_____'
+        "",
+        " " * length,  # '     '
+        "#" * length,  # '#####'
+        "_" * length,  # '_____'
     }
     empty_values = empty_values.union(extra_vals)
 
@@ -114,19 +126,21 @@ def _is_all_zeros(value, start, end):
 
 def evaluate_all(validators, value, eargs):
     """Evaluate all validators in the list and compose the result tuples in an array."""
-    return [
-        validator(value, eargs)
-        for validator in validators
-    ]
+    return [validator(value, eargs) for validator in validators]
 
 
 def is_quiet_preparser_errors(min_length, empty_from=61, empty_to=101):
     """Return a function that checks if the length is valid and if the value is empty."""
+
     def return_value(value):
         is_length_valid = len(value) >= min_length
         is_empty = value_is_empty(
-            value[empty_from:empty_to],
-            len(value[empty_from:empty_to])
-            )
-        return not (is_length_valid and not is_empty and not _is_all_zeros(value, empty_from, empty_to))
+            value[empty_from:empty_to], len(value[empty_from:empty_to])
+        )
+        return not (
+            is_length_valid
+            and not is_empty
+            and not _is_all_zeros(value, empty_from, empty_to)
+        )
+
     return return_value

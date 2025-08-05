@@ -60,8 +60,12 @@ class LogoutRedirectOIDC(RedirectView):
             logout_params["client_id"] = settings.AMS_CLIENT_ID
             ams_configuration = LoginRedirectAMS.get_ams_configuration()
             encoded_params = urlencode(logout_params, quote_via=quote_plus)
-            return HttpResponseRedirect(ams_configuration["end_session_endpoint"] + "?" + encoded_params)
+            return HttpResponseRedirect(
+                ams_configuration["end_session_endpoint"] + "?" + encoded_params
+            )
         else:
             logout_params["client_id"] = settings.LOGIN_GOV_CLIENT_ID
             encoded_params = urlencode(logout_params, quote_via=quote_plus)
-            return HttpResponseRedirect(settings.LOGIN_GOV_LOGOUT_ENDPOINT + "?" + encoded_params)
+            return HttpResponseRedirect(
+                settings.LOGIN_GOV_LOGOUT_ENDPOINT + "?" + encoded_params
+            )

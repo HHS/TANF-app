@@ -1,8 +1,9 @@
 """Apply Grafana views to the database."""
 
-from django.db import connection
-import os
 import logging
+import os
+
+from django.db import connection
 
 CWD = os.path.dirname(os.path.abspath(__file__))
 VIEWS_PATH = os.path.join(CWD, "../plg/grafana_views/")
@@ -11,12 +12,11 @@ VIEW_TYPES_PATHS = ["user_views", "admin_views"]
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler()
-    ]
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler()],
 )
 logger = logging.getLogger(__name__)
+
 
 def run(*args):
     """Apply Grafana views to the database."""
@@ -32,6 +32,8 @@ def run(*args):
                     with connection.cursor() as cursor:
                         cursor.execute(view)
                 except Exception:
-                    logger.exception(f"An error occurred while applying view: {view_file}")
+                    logger.exception(
+                        f"An error occurred while applying view: {view_file}"
+                    )
 
     logger.info("Grafana views applied successfully.")

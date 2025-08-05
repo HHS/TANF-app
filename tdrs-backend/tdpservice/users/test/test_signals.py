@@ -1,12 +1,15 @@
 """Test signals."""
-import pytest
-from unittest.mock import Mock, patch, call
-from tdpservice.users.test.factories import AdminUserFactory, UserFactory
-from django.contrib.auth.models import Group
 import logging
+from unittest.mock import Mock, call, patch
 
+from django.contrib.auth.models import Group
+
+import pytest
+
+from tdpservice.users.test.factories import AdminUserFactory, UserFactory
 
 logger = logging.getLogger(__name__)
+
 
 @patch("tdpservice.users.signals.email_system_owner_system_admin_role_change")
 @pytest.mark.django_db
@@ -25,9 +28,12 @@ def test_user_group_changed_add_triggers_email_if_ofa_system_admin(mock: Mock):
     assert not mock.called
 
     instance.groups.add(group_ofa_admin)
-    mock.assert_has_calls([
-        call(instance, "added"),
-    ])
+    mock.assert_has_calls(
+        [
+            call(instance, "added"),
+        ]
+    )
+
 
 @patch("tdpservice.users.signals.email_system_owner_system_admin_role_change")
 @pytest.mark.django_db
@@ -48,9 +54,12 @@ def test_user_group_changed_remove_triggers_email_if_ofa_system_admin(mock: Mock
 
     instance.groups.add(group_ofa_admin)
     instance.groups.remove(group_ofa_admin)
-    mock.assert_has_calls([
-        call(instance, "removed"),
-    ])
+    mock.assert_has_calls(
+        [
+            call(instance, "removed"),
+        ]
+    )
+
 
 @patch("tdpservice.users.signals.email_system_owner_system_admin_role_change")
 @pytest.mark.django_db
@@ -71,9 +80,12 @@ def test_user_group_changed_clear_triggers_email_if_ofa_system_admin(mock: Mock)
 
     instance.groups.add(group_ofa_admin)
     instance.groups.clear()
-    mock.assert_has_calls([
-        call(instance, "removed"),
-    ])
+    mock.assert_has_calls(
+        [
+            call(instance, "removed"),
+        ]
+    )
+
 
 @patch("tdpservice.users.signals.email_system_owner_system_admin_role_change")
 @pytest.mark.django_db
@@ -86,9 +98,12 @@ def test_user_is_staff_superuser_changed_assigned_staff(mock: Mock):
     instance.is_staff = True
     instance.save()
 
-    mock.assert_has_calls([
-        call(instance, "is_staff_assigned"),
-    ])
+    mock.assert_has_calls(
+        [
+            call(instance, "is_staff_assigned"),
+        ]
+    )
+
 
 @patch("tdpservice.users.signals.email_system_owner_system_admin_role_change")
 @pytest.mark.django_db
@@ -101,9 +116,12 @@ def test_user_is_staff_superuser_changed_assigned_superuser(mock: Mock):
     instance.is_superuser = True
     instance.save()
 
-    mock.assert_has_calls([
-        call(instance, "is_superuser_assigned"),
-    ])
+    mock.assert_has_calls(
+        [
+            call(instance, "is_superuser_assigned"),
+        ]
+    )
+
 
 @patch("tdpservice.users.signals.email_system_owner_system_admin_role_change")
 @pytest.mark.django_db
@@ -119,9 +137,12 @@ def test_user_is_staff_superuser_changed_removed_staff(mock: Mock):
     instance.is_staff = False
     instance.save()
 
-    mock.assert_has_calls([
-        call(instance, "is_staff_removed"),
-    ])
+    mock.assert_has_calls(
+        [
+            call(instance, "is_staff_removed"),
+        ]
+    )
+
 
 @patch("tdpservice.users.signals.email_system_owner_system_admin_role_change")
 @pytest.mark.django_db
@@ -137,9 +158,12 @@ def test_user_is_staff_superuser_changed_removed_superuser(mock: Mock):
     instance.is_superuser = False
     instance.save()
 
-    mock.assert_has_calls([
-        call(instance, "is_superuser_removed"),
-    ])
+    mock.assert_has_calls(
+        [
+            call(instance, "is_superuser_removed"),
+        ]
+    )
+
 
 @patch("tdpservice.users.signals.email_system_owner_system_admin_role_change")
 @pytest.mark.django_db
@@ -150,7 +174,9 @@ def test_user_is_staff_superuser_created(mock: Mock):
     """
     instance = AdminUserFactory.create()
 
-    mock.assert_has_calls([
-        call(instance, "is_staff_assigned"),
-        call(instance, "is_superuser_assigned"),
-    ])
+    mock.assert_has_calls(
+        [
+            call(instance, "is_staff_assigned"),
+            call(instance, "is_superuser_assigned"),
+        ]
+    )

@@ -9,22 +9,22 @@ from django.utils import timezone
 
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.generics import ListAPIView
 
-from tdpservice.users.models import User, Feedback, AccountApprovalStatusChoices
+from tdpservice.users.models import AccountApprovalStatusChoices, Feedback, User
 from tdpservice.users.permissions import (
     DjangoModelCRUDPermissions,
+    FeedbackPermissions,
     IsApprovedPermission,
     UserPermissions,
-    FeedbackPermissions
 )
 from tdpservice.users.serializers import (
+    FeedbackSerializer,
     GroupSerializer,
     UserProfileSerializer,
     UserSerializer,
-    FeedbackSerializer,
 )
 
 logger = logging.getLogger(__name__)
@@ -38,9 +38,9 @@ class UserViewSet(
 ):
     """User accounts viewset."""
 
-    queryset = User.objects\
-        .select_related("stt")\
-        .prefetch_related("groups__permissions")
+    queryset = User.objects.select_related("stt").prefetch_related(
+        "groups__permissions"
+    )
 
     def get_serializer_class(self):
         """Return the serializer class."""
@@ -60,8 +60,12 @@ class UserViewSet(
 
     def get_permissions(self):
         """Determine the permissions to apply based on action."""
-        if self.action in ['list', 'retrieve']:
-            permission_classes = [IsAuthenticated, IsApprovedPermission, UserPermissions]
+        if self.action in ["list", "retrieve"]:
+            permission_classes = [
+                IsAuthenticated,
+                IsApprovedPermission,
+                UserPermissions,
+            ]
         else:
             permission_classes = [IsAuthenticated, UserPermissions]
         return [permission() for permission in permission_classes]
@@ -80,8 +84,10 @@ class UserViewSet(
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
         serializer = self.get_serializer(self.request.user, request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(account_approval_status=AccountApprovalStatusChoices.ACCESS_REQUEST,
-                        access_requested_date=datetime.datetime.now())
+        serializer.save(
+            account_approval_status=AccountApprovalStatusChoices.ACCESS_REQUEST,
+            access_requested_date=datetime.datetime.now(),
+        )
         logger.info(
             "Access request for user: %s on %s", self.request.user, timezone.now()
         )
@@ -97,10 +103,12 @@ class GroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     serializer_class = GroupSerializer
 
 
-class FeedbackViewSet(mixins.CreateModelMixin,
-                      mixins.RetrieveModelMixin,
-                      mixins.ListModelMixin,
-                      viewsets.GenericViewSet):
+class FeedbackViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
     """Feedback viewset."""
 
     queryset = Feedback.objects.all()
@@ -114,7 +122,7 @@ class FeedbackViewSet(mixins.CreateModelMixin,
             return response
 
         try:
-            feedback_id = response.data['id']
+            feedback_id = response.data["id"]
             feedback = Feedback.objects.get(id=feedback_id)
 
             # Force anonymity if user is None to prevent us from know if authenticated users chose to remain anonymous
@@ -125,6 +133,8 @@ class FeedbackViewSet(mixins.CreateModelMixin,
                 feedback.user = request.user
             feedback.save()
         except ObjectDoesNotExist:
-            logger.exception("Failed to update the user field on the Feedback model because it does not exist.")
+            logger.exception(
+                "Failed to update the user field on the Feedback model because it does not exist."
+            )
         finally:
             return response

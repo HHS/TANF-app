@@ -21,6 +21,7 @@ def _populate_regions():
             Region.objects.get_or_create(id=row["Id"], name=row["name"])
         Region.objects.get_or_create(id=1000, name=None)
 
+
 def _load_csv(filename, entity):
     with open(DATA_DIR / filename) as csvfile:
         reader = csv.DictReader(csvfile)
@@ -33,13 +34,15 @@ def _load_csv(filename, entity):
             stt.postal_code = row["Code"]
             stt.region_id = row["Region"]
             if filename == "tribes.csv":
-                stt.state = STT.objects.get(postal_code=row["Code"], type=STT.EntityType.STATE)
+                stt.state = STT.objects.get(
+                    postal_code=row["Code"], type=STT.EntityType.STATE
+                )
 
             chars = 3 if entity == STT.EntityType.TRIBE else 2
             stt.stt_code = str(row["STT_CODE"]).zfill(chars)
 
             stt.type = entity
-            stt.filenames = json.loads(row["filenames"].replace('\'', '"'))
+            stt.filenames = json.loads(row["filenames"].replace("'", '"'))
             stt.ssp = row["SSP"]
             stt.sample = row["Sample"]
             # TODO: Was seeing lots of references to STT.objects.filter(pk=...
@@ -61,7 +64,7 @@ class Command(BaseCommand):
         stt_map = [
             ("states.csv", STT.EntityType.STATE),
             ("territories.csv", STT.EntityType.TERRITORY),
-            ("tribes.csv", STT.EntityType.TRIBE)
+            ("tribes.csv", STT.EntityType.TRIBE),
         ]
 
         for datafile, entity in stt_map:
