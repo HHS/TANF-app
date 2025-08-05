@@ -11,12 +11,15 @@ Then('{string} can see search form', (username) => {
   cy.contains('Quarter').should('exist')
 })
 
-Then('{string} submits the search form', (username) => {
-  cy.get('#reportingYears').should('exist').select('2023')
-  cy.get('#quarter').should('exist').select('Q1')
-  cy.get('button').contains('Search').should('exist')
-  cy.get('button').contains('Search').should('exist').click()
-})
+Then(
+  '{string} submits the search form for year {string} and quarter {string}',
+  (username, year, quarter) => {
+    cy.get('#reportingYears').should('exist').select(year)
+    cy.get('#quarter').should('exist').select(quarter) // Q1, Q2, Q3, Q4
+    cy.get('button').contains('Search').should('exist')
+    cy.get('button').contains('Search').should('exist').click()
+  }
+)
 
 When('{string} selects an STT', (username) => {
   cy.get('#stt').should('exist').click()

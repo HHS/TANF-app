@@ -7,7 +7,7 @@ Feature: Approved Regional Staff can view submission history
         Then 'cypress-regional-staff@teamraft.com' can see Data Files page
             And 'cypress-regional-staff@teamraft.com' can see search form
         When 'cypress-regional-staff@teamraft.com' selects an STT
-            And 'cypress-regional-staff@teamraft.com' submits the search form
+            And 'cypress-regional-staff@teamraft.com' submits the search form for year '2023' and quarter 'Q1'
         Then 'cypress-regional-staff@teamraft.com' can see submission history
             And 'cypress-regional-staff@teamraft.com' cannot see the upload form
             And 'cypress-regional-staff@teamraft.com' sees the file in submission history
