@@ -58,30 +58,39 @@ const FeedbackRadioSelectGroup = ({
   selectedOption,
   onRatingSelected,
   onKeyDownSelection,
+  showLabel,
+  isModal,
   error,
 }) => {
+  const baseStyle = { color: '#575c64' }
+  const conditionalStyle = !isModal ? { fontSize: '14px' } : {}
+
   return (
     <div
       data-testid="feedback-ratings-select-group"
-      className={classNames('feedback-group', 'usa-form-group', {
+      className={classNames('feedback-group', {
+        'usa-form-group': isModal,
         error: error,
+        'no-background': !isModal,
       })}
     >
       <fieldset className="usa-fieldset">
-        <legend
-          // @ts-ignore
-          align="center"
-          className={classNames(
-            'usa-label',
-            'font-serif-md',
-            'feedback-label',
-            {
-              error: error,
-            }
-          )}
-        >
-          {label}
-        </legend>
+        {showLabel && (
+          <legend
+            // @ts-ignore
+            align="center"
+            className={classNames(
+              'usa-label',
+              'font-serif-md',
+              'feedback-label',
+              {
+                error: error,
+              }
+            )}
+          >
+            {label}
+          </legend>
+        )}
         <div className="rating-options">
           {feedbackRatingsList.map((option) => {
             const isSelected = selectedOption === option.value
@@ -100,7 +109,10 @@ const FeedbackRadioSelectGroup = ({
                   <label
                     key={option.value}
                     className="radio-icon"
-                    style={{ color: option.color }}
+                    style={{
+                      color: option.color,
+                      width: isModal ? '' : '50px',
+                    }}
                   >
                     <input
                       className="usa-radio__input"
@@ -121,16 +133,21 @@ const FeedbackRadioSelectGroup = ({
           })}
         </div>
       </fieldset>
-      <div
-        style={{
-          display: 'block',
-          paddingTop: '0px',
-        }}
-      >
-        <p className="margin-top-1" style={{ color: '#575c64' }}>
-          Pick a score and leave a comment
-        </p>
-      </div>
+      {(isModal || selectedOption == null) && (
+        <div
+          style={{
+            display: 'block',
+            paddingTop: '0px',
+          }}
+        >
+          <p
+            className="margin-top-1"
+            style={{ ...baseStyle, ...conditionalStyle }}
+          >
+            Pick a score and leave a comment
+          </p>
+        </div>
+      )}
     </div>
   )
 }

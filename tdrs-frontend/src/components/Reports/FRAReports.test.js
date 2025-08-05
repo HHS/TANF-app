@@ -410,7 +410,7 @@ describe('FRA Reports Page', () => {
           )
         ).toBeInTheDocument()
       )
-      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(3))
+      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(4))
     })
 
     it('Allows xlsx files to be selected and submitted', async () => {
@@ -442,7 +442,7 @@ describe('FRA Reports Page', () => {
           )
         ).toBeInTheDocument()
       )
-      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(3))
+      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(4))
     })
 
     it('Shows a spinner until submission history updates', async () => {
@@ -529,7 +529,7 @@ describe('FRA Reports Page', () => {
           )
         ).toBeInTheDocument()
       )
-      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(3))
+      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(4))
 
       jest.runOnlyPendingTimers()
 

@@ -4,7 +4,7 @@ import Routes from './components/Routes'
 import { Alert } from './components/Alert'
 import Header from './components/Header'
 import Footer from './components/Footer'
-import Feedback from './components/FeedbackModal/Feedback'
+import Feedback from './components/Feedback/Feedback'
 import { useSelector } from 'react-redux'
 import { useRUM } from './hooks/useRUM'
 

@@ -4,7 +4,7 @@ import { mount } from 'enzyme'
 import GovBanner from './components/GovBanner'
 import Header from './components/Header'
 import { Alert } from './components/Alert'
-import Feedback from './components/FeedbackModal/Feedback'
+import Feedback from './components/Feedback/Feedback'
 import { thunk } from 'redux-thunk'
 import configureStore from 'redux-mock-store'
 import { Provider } from 'react-redux'
@@ -28,8 +28,19 @@ describe('App.js', () => {
     auth: {
       user: null,
     },
+    feedbackWidget: {
+      isOpen: false,
+      lockedDataType: null,
+    },
   }
   const mockStore = configureStore([thunk])
+
+  beforeEach(() => {
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      value: { pathname: '/' },
+    })
+  })
 
   afterEach(() => {
     window.location.href = ''

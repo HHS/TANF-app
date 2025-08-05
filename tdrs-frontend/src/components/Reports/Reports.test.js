@@ -358,7 +358,7 @@ describe('Reports', () => {
     )
     fireEvent.click(getByText('Submit Data Files'))
     await waitFor(() => getByRole('alert'))
-    expect(store.dispatch).toHaveBeenCalledTimes(18)
+    expect(store.dispatch).toHaveBeenCalledTimes(19)
   })
 
   it('should add files to the redux state when dispatching uploads', async () => {

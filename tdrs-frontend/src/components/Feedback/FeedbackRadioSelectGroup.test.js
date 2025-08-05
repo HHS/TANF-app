@@ -72,6 +72,8 @@ function FeedbackRadioGroupTestWrapper() {
       selectedOption={selectedOption}
       onRatingSelected={setSelectedOption}
       onKeyDownSelection={jest.fn()}
+      showLabel={true}
+      isModal={true}
       error={false}
     />
   )
@@ -93,6 +95,8 @@ describe('Feedback Radio Select Group tests', () => {
         selectedOption={undefined}
         onRatingSelected={mockOnRatingSelected}
         onKeyDownSelection={jest.fn()}
+        showLabel={true}
+        isModal={true}
         error={false}
       />
     )
@@ -117,6 +121,8 @@ describe('Feedback Radio Select Group tests', () => {
         selectedOption={undefined}
         onRatingSelected={mockOnRatingSelected}
         onKeyDownSelection={jest.fn()}
+        showLabel={true}
+        isModal={true}
         error={false}
       />
     )
@@ -134,6 +140,8 @@ describe('Feedback Radio Select Group tests', () => {
         selectedOption={undefined}
         onRatingSelected={mockOnRatingSelected}
         onKeyDownSelection={onKeyDownSelection}
+        showLabel={true}
+        isModal={true}
         error={false}
       />
     )
@@ -149,6 +157,8 @@ describe('Feedback Radio Select Group tests', () => {
         selectedOption={4}
         onRatingSelected={mockOnRatingSelected}
         onKeyDownSelection={jest.fn()}
+        showLabel={true}
+        isModal={true}
         error={false}
       />
     )
@@ -181,6 +191,8 @@ describe('Feedback Radio Select Group tests', () => {
         selectedOption={undefined}
         onRatingSelected={mockOnRatingSelected}
         onKeyDownSelection={jest.fn()}
+        showLabel={true}
+        isModal={true}
         error={true}
       />
     )
