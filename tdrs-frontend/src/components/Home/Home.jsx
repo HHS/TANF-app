@@ -6,7 +6,7 @@ import {
   accountStatusIsApproved,
   accountIsInReview,
 } from '../../selectors/auth'
-import UserAccessInfo from '../UserAccessInfo'
+import Profile from '../Profile/Profile'
 
 /**
  * Home renders the Request Access form for creating a profile, and displays
@@ -29,44 +29,16 @@ function Home({ setInEditMode }) {
   }, [isEditing, setInEditMode])
 
   if (userAccessInReview) {
-    if (isEditing) {
-      // TODO: may need to add a submit Updated Request Access profile
-      // TODO: may need to play around with initial values
-      return (
-        <RequestAccessForm
-          user={user}
-          sttList={sttList}
-          editMode={true}
-          initialValues={{
-            firstName: user?.first_name,
-            lastName: user?.last_name,
-            stt: user?.stt?.name,
-            hasFRAAccess:
-              user?.permissions?.includes('has_fra_access') === 'Yes',
-            jurisdictionType: user?.stt?.type,
-            regions: user?.regions,
-          }}
-          onCancel={() => setIsEditing(false)}
-        />
-      )
-    }
-
     return (
       <div className="margin-top-5">
-        <div className="margin-top-5">
-          <div
-            className="usa-alert usa-alert--slim usa-alert--info margin-top-1 margin-bottom-4 margin-right-4"
-            id="page-alert"
-          >
-            <div className="usa-alert__body" role="alert">
-              <p className="usa-alert__text">
-                Your request for access is currently being reviewed by an OFA
-                Admin. We'll send you an email when it's been approved.
-              </p>
-            </div>
-          </div>
-        </div>
-        <UserAccessInfo onEditClick={() => setIsEditing(true)} />
+        <Profile
+          isEditing={isEditing}
+          onEdit={() => setIsEditing(true)}
+          type="access request"
+          user={user}
+          sttList={sttList}
+          onCancel={() => setIsEditing(false)}
+        />
       </div>
     )
   } else if (!userAccessRequestApproved) {

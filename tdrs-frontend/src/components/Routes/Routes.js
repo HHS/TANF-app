@@ -120,6 +120,8 @@ const AppRoutes = () => {
                 setIsInEditMode(false)
                 setEditContext(null)
               }}
+              type="profile"
+              user={user}
             />
           </PrivateRoute>
         }

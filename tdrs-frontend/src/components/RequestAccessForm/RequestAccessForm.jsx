@@ -5,6 +5,7 @@ import FormGroup from '../FormGroup'
 import STTComboBox from '../STTComboBox'
 import { requestAccess } from '../../actions/requestAccess'
 import JurisdictionSelector from './JurisdictionSelector'
+import JurisdictionLocationInfo from './JurisdictionLocationInfo'
 import RegionSelector from './RegionSelector'
 import FRASelector from './FRASelector'
 import '../../assets/Profile.scss'
@@ -31,7 +32,7 @@ function RequestAccessForm({
     hasFRAAccess: initialValues.hasFRAAccess ?? (isAMSUser ? false : null),
     regions: initialValues.regions || new Set(),
   })
-  const [originalData] = useState(profileInfo) // This should be done when editing begins
+  const [originalData] = useState(profileInfo) // TODO: This should be done when editing begins
 
   const dispatch = useDispatch()
   const [touched, setTouched] = useState({})
@@ -44,7 +45,7 @@ function RequestAccessForm({
 
   const regionError = 'At least one Region is required'
 
-  const EditAccessFormRow = ({ label, value }) => (
+  const ReadOnlyRow = ({ label, value }) => (
     <div className="grid-row margin-bottom-1">
       <div className="grid-col-8 text-bold">{label}</div>
       <div className="grid-col text-no-wrap">{value}</div>
@@ -149,6 +150,7 @@ function RequestAccessForm({
       }
 
       // TODO: mock call to new API eventually
+      // TODO: Implement API call to update user profile when editing
     }
 
     // validate the form
@@ -196,16 +198,6 @@ function RequestAccessForm({
     }
 
     return setTimeout(() => errorRef.current.focus(), 0)
-  }
-
-  const getJurisdictionLocationInfo = () => {
-    if (jurisdictionType === 'state') {
-      return <EditAccessFormRow label="State" value={profileInfo.stt} />
-    } else if (jurisdictionType === 'territory') {
-      return <EditAccessFormRow label="Territory" value={profileInfo.stt} />
-    } else {
-      return <EditAccessFormRow label="Tribe" value={profileInfo.stt} />
-    }
   }
 
   return (
@@ -265,18 +257,18 @@ function RequestAccessForm({
                     <hr className="aligned-hr margin-top-3 margin-bottom-3" />
                   </div>
                 </div>
-                <EditAccessFormRow
-                  label="User Type"
-                  value={primaryRole?.name}
-                />
-                <EditAccessFormRow
+                <ReadOnlyRow label="User Type" value={primaryRole?.name} />
+                <ReadOnlyRow
                   label="Jurisdiction Type"
                   value={
                     jurisdictionType.charAt(0).toUpperCase() +
                     jurisdictionType.slice(1)
                   }
                 />
-                {getJurisdictionLocationInfo()}
+                <JurisdictionLocationInfo
+                  jurisdictionType={jurisdictionType}
+                  locationName={profileInfo.stt}
+                />
                 <div className="grid-row">
                   <div className="grid-col-8">
                     <hr className="aligned-hr margin-bottom-1 margin-top-1" />
