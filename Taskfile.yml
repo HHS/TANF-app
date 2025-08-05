@@ -112,7 +112,7 @@ tasks:
     desc: Open a Django shell in the backend container
     dir: tdrs-backend
     cmds:
-      - docker compose -f docker-compose.yml exec web sh -c "python ./manage.py shell"
+      - docker compose -f docker-compose.yml exec web sh -c "python ./manage.py shell_plus"
 
   backend-exec:
     desc: Execute a command in the backend container
@@ -139,6 +139,15 @@ tasks:
     cmds:
       - task backend-up
       - docker compose -f docker-compose.yml exec web sh -c "pytest {{.PYTEST_ARGS}}"
+
+  backend-pytest-cov:
+    desc: 'Generate coverage.json file in the backend container E.g: task backend-pytest-cov PYTEST_ARGS="tdpservice/test/ -s -vv"'
+    dir: tdrs-backend
+    vars:
+      PYTEST_ARGS: '{{.PYTEST_ARGS | default "."}}'
+    cmds:
+      - task backend-up
+      - docker compose -f docker-compose.yml exec web sh -c "pytest --cov=tdpservice --cov-report=json {{.PYTEST_ARGS}}"
 
   backend-remove-volumes:
     desc: Remove the backend volumes

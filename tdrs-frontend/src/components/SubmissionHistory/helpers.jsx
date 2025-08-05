@@ -17,7 +17,7 @@ export const downloadErrorReport = async (file, reportName) => {
     const promise = axios.get(
       `${process.env.REACT_APP_BACKEND_URL}/data_files/${file.id}/download_error_report/`,
       {
-        responseType: 'json',
+        responseType: 'blob',
       }
     )
     const dataPromise = await promise.then((response) => response.data)

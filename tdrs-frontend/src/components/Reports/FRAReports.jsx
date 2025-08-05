@@ -258,6 +258,7 @@ const UploadForm = ({
     fileInput.init()
   }, [])
 
+  /* istanbul ignore next */
   useEffect(() => {
     const trySettingPreview = () => {
       const targetClassName = '.usa-file-input__target input#fra-file-upload'

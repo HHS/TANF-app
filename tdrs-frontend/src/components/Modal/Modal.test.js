@@ -66,6 +66,19 @@ describe('Modal tests', () => {
       expect(document.activeElement).toHaveTextContent('Test')
     })
 
+    it('should call the correct button callbacks when clicked', async () => {
+      const { getByText, mocks } = await setup()
+
+      const cancelButton = getByText('Cancel')
+      const uncancelButton = getByText('Uncancel')
+
+      fireEvent.click(cancelButton)
+      expect(mocks.cancelFunc).toHaveBeenCalledTimes(1)
+
+      fireEvent.click(uncancelButton)
+      expect(mocks.uncancelFunc).toHaveBeenCalledTimes(1)
+    })
+
     it('Should trap focus to modal buttons when tabbing', async () => {
       const { container } = await setup()
       const modal = container.querySelector('#modal')
@@ -83,6 +96,39 @@ describe('Modal tests', () => {
       // tabbing another time should focus the first button again
       fireEvent.keyDown(modal, { key: 'Tab' })
       expect(document.activeElement).toHaveTextContent('Cancel')
+    })
+
+    it('should trap focus backward with Shift+Tab', async () => {
+      const { container, getByText } = await setup()
+      const modal = container.querySelector('#modal')
+      const cancelButton = getByText('Cancel')
+      const uncancelButton = getByText('Uncancel')
+
+      // Focus Uncancel manually
+      uncancelButton.focus()
+      expect(document.activeElement).toBe(uncancelButton)
+
+      fireEvent.keyDown(modal, {
+        key: 'Tab',
+        code: 'Tab',
+        shiftKey: true,
+        bubbles: true,
+      })
+
+      expect(document.activeElement).toBe(cancelButton)
+    })
+
+    it('renders correctly with no buttons', async () => {
+      const { queryByText } = render(
+        <Modal
+          title="Info"
+          message="Read-only modal"
+          isVisible={true}
+          buttons={[]}
+        />
+      )
+
+      expect(queryByText('Read-only modal')).toBeInTheDocument()
     })
   })
 })

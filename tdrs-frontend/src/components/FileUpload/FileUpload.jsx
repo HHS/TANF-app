@@ -92,11 +92,20 @@ function FileUpload({ section, setLocalAlertState }) {
   const files = useSelector((state) => state.reports.submittedFiles)
   const selectedYear = useSelector((state) => state.reports.year)
   const selectedQuarter = useSelector((state) => state.reports.quarter)
+  const selectedFileType = useSelector((state) => state.reports.fileType)
 
   const dispatch = useDispatch()
 
   // e.g. "1 - Active Case Data" => ["1", "Active Case Data"]
   const [sectionNumber, sectionName] = section.split(' - ')
+
+  const formattedSectionNameLabel =
+    'Section ' +
+    sectionNumber +
+    ' - ' +
+    selectedFileType?.toUpperCase() +
+    ' - ' +
+    sectionName
 
   const hasFile = files?.some(
     (file) => file.section.includes(sectionName) && file.uuid
@@ -171,11 +180,47 @@ function FileUpload({ section, setLocalAlertState }) {
     if (!error) {
       // Get the correctly encoded file
       const encodedFile = await tryGetUTF8EncodedFile(result, file)
-      const [isCorrectQuarterYear, fiscalFileYear, fiscalFileQuarter] =
-        await checkHeaderFile(result, file, selectedYear, selectedQuarter)
-      if (isCorrectQuarterYear) {
+      const [
+        isInCorrectQuarterYearProgramType,
+        fiscalFileYear,
+        fiscalFileQuarter,
+        progType,
+      ] = await checkHeaderFile(result, file, selectedYear, selectedQuarter)
+      if (
+        isInCorrectQuarterYearProgramType &&
+        progType !== null &&
+        selectedFileType.includes(progType?.toLowerCase())
+      ) {
         dispatch(upload({ file: encodedFile, section }))
-      } else {
+      } else if (
+        progType !== null &&
+        !selectedFileType.includes(progType?.toLowerCase())
+      ) {
+        let tempProgType = progType?.slice(0, 3).toUpperCase()
+        let tempSelectedFileType = selectedFileType.slice(0, 3).toUpperCase()
+        if (tempProgType === 'TAN') {
+          tempProgType = 'TANF'
+        }
+        if (tempSelectedFileType === 'TAN') {
+          tempSelectedFileType = 'TANF'
+        }
+        // Handle specific program type cases
+        dispatch({
+          type: SET_FILE_ERROR,
+          payload: {
+            error: {
+              message:
+                `File may correspond to ` +
+                tempProgType +
+                ` instead of ` +
+                tempSelectedFileType +
+                `. Please verify the file type.`,
+            },
+            section,
+          },
+        })
+      } else if (!isInCorrectQuarterYearProgramType) {
+        // Handle fiscal year and quarter mismatch
         let error_period
         var link = (
           <a
@@ -236,7 +281,7 @@ function FileUpload({ section, setLocalAlertState }) {
       }`}
     >
       <label className="usa-label text-bold" htmlFor={formattedSectionName}>
-        Section {sectionNumber} - {sectionName}
+        {formattedSectionNameLabel}
       </label>
       <div>
         {selectedFile?.error && (
