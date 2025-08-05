@@ -82,6 +82,14 @@ class Feedback(Reviewable):
 
     acked = models.BooleanField(default=False)
 
+    # --- Metadata for fields ---
+    page_url = models.URLField(blank=True, null=True)
+    feedback_type = models.CharField(max_length=20, blank=True, null=True)
+    program_type = models.CharField(max_length=100, blank=True)  # e.g., 'undergrad', 'phd', etc.
+    component = models.CharField(max_length=100, blank=True)     # e.g., 'sidebar', 'footer'
+    widget_id = models.CharField(max_length=100, blank=True)
+    data_file = models.CharField(max_length=255, blank=True)
+
     def __str__(self):
         """Return a string representation of the object."""
         return (

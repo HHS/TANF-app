@@ -53,6 +53,12 @@ const FeedbackForm = ({
         rating: selectedRatingsOption,
         feedback: feedbackMessage,
         anonymous: isAnonymous,
+        page_url: window.location.href,
+        feedback_type: isGeneralFeedback ? 'general' : 'widget', //TODO: updates this for data types
+        program_type: 'TANF', // Assuming TANF is the program type
+        component: isGeneralFeedback ? 'general' : 'widget', // Assuming widget for non-general feedback
+        widget_id: isGeneralFeedback ? '' : 'feedback-widget', // Assuming a static ID for the widget
+        data_file: '', // Assuming no specific data file for general feedback
       })
 
       if (response.status === 200 || response.status === 201) {
@@ -79,6 +85,7 @@ const FeedbackForm = ({
     selectedRatingsOption,
     feedbackMessage,
     isAnonymous,
+    isGeneralFeedback,
     onFeedbackSubmit,
     onRequestSuccess,
     onRequestError,

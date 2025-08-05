@@ -215,6 +215,12 @@ class FeedbackSerializer(serializers.ModelSerializer):
             "rating",
             "feedback",
             "anonymous",
+            "page_url",
+            "feedback_type",
+            "program_type",
+            "component",
+            "widget_id",
+            "data_file",
         )
         read_only_fields = (
             "id",
