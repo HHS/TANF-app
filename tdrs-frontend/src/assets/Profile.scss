@@ -12,3 +12,11 @@
   margin-left: calc((100% / 8) * 2); 
   margin-right: calc((100% / 8) * 2); // optional: match right edge
 }
+
+  .button-container {
+    display: flex;
+  }
+
+  .request-access-button {
+    min-width: '300px'
+  } 

@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux'
 import { Navigate } from 'react-router-dom'
 
 import RequestAccessForm from '../RequestAccessForm/RequestAccessForm'
-import UserProfileView from '../UserProfileView/UserProfileView'
+import UserProfileView from './UserProfileView'
 import {
   accountIsInReview,
   accountIsMissingAccessRequest,
@@ -12,7 +12,8 @@ import {
 function Profile({ isEditing = false, onEdit, type, user, sttList, onCancel }) {
   const isAMSUser = user?.email?.includes('@acf.hhs.gov')
   const missingAccessRequest = useSelector(accountIsMissingAccessRequest)
-  const isAccessRequestPending = useSelector(accountIsInReview) // TODO: make this true to see how this looks
+  //const isAccessRequestPending = useSelector(accountIsInReview) // TODO: make this true to see how this looks
+  const isAccessRequestPending = true // TODO: using for testing
 
   if (missingAccessRequest) {
     return <Navigate to="/home" />

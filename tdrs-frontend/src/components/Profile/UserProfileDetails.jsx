@@ -2,7 +2,7 @@ import React from 'react'
 import ProfileRow from './ProfileRow'
 import JurisdictionLocationInfo from './JurisdictionLocationInfo'
 
-const UserProfileDetails = ({ user, isAMSUser, showFRA = true }) => {
+const UserProfileDetails = ({ user, isAMSUser }) => {
   // Most higher-env users will only have a single role, so just grab the first one.
   const primaryRole = user?.roles?.[0]
   const userJurisdiction = user?.stt?.type || 'state'
@@ -18,7 +18,7 @@ const UserProfileDetails = ({ user, isAMSUser, showFRA = true }) => {
         label="Name"
         value={`${user?.first_name || ''} ${user?.last_name || ''}`}
       />
-      <hr className="margin-right-4 margin-top-3" />
+      <hr className="margin-right-4 margin-top-3 margin-bottom-2" />
       <ProfileRow label="User Type" value={primaryRole?.name} />
 
       {isAMSUser || (userRegions && userRegions.length > 0) ? (
@@ -36,7 +36,7 @@ const UserProfileDetails = ({ user, isAMSUser, showFRA = true }) => {
             jurisdictionType={userJurisdiction}
             locationName={userLocationName}
           />
-          {userJurisdiction !== 'tribe' && !isAMSUser && showFRA && (
+          {userJurisdiction !== 'tribe' && !isAMSUser && (
             <ProfileRow label="Reporting FRA" value={userIsReportingFRA} />
           )}
         </>

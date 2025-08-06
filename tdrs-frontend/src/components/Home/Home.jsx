@@ -30,22 +30,17 @@ function Home({ setInEditMode }) {
 
   if (userAccessInReview) {
     return (
-      <div className="margin-top-5">
-        <Profile
-          isEditing={isEditing}
-          onEdit={() => setIsEditing(true)}
-          type="access request"
-          user={user}
-          sttList={sttList}
-          onCancel={() => setIsEditing(false)}
-        />
-      </div>
+      <Profile
+        isEditing={isEditing}
+        onEdit={() => setIsEditing(true)}
+        type="access request"
+        user={user}
+        sttList={sttList}
+        onCancel={() => setIsEditing(false)}
+      />
     )
   } else if (!userAccessRequestApproved) {
-    return (
-      // TODO: may need to play aroudn with initial values
-      <RequestAccessForm user={user} sttList={sttList} />
-    )
+    return <RequestAccessForm user={user} sttList={sttList} />
   }
 
   return (

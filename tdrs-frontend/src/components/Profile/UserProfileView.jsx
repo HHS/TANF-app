@@ -17,8 +17,8 @@ const UserProfileView = ({
   return (
     <div className="usa-prose">
       {isAccessRequestPending && (
-        <div className="margin-top-5">
-          <div className="usa-alert usa-alert--slim usa-alert--info margin-top-3">
+        <div>
+          <div className="usa-alert usa-alert--info margin-top-3 margin-right-4">
             <div className="usa-alert__body" role="alert">
               <p className="usa-alert__text" id="page-alert">
                 Your request for access is currently being reviewed by an OFA
@@ -37,28 +37,6 @@ const UserProfileView = ({
         </div>
         {type === 'profile' && <hr className="margin-right-4 margin-top-3" />}
       </div>
-      {/* <div data-testid="user-access-request-profile">
-        <p id="full-name" className="text-bold">
-          {user?.first_name} {user?.last_name}
-        </p>
-        <p>{user?.email}</p>
-        <p>{primaryRole?.name}</p>
-        {(() => {
-          const stt = user?.stt?.name || 'Federal Government'
-         const region = user?.stt?.region || user?.region?.id
-
-          if (stt === 'Federal Government' && !region) {
-            return <p> {stt} </p>
-          } else {
-            return (
-              <>
-                <p> {stt} </p>
-                <p> Region {region} </p>
-              </>
-            )
-          }
-        })()}
-      </div> */}
       {type === 'profile' ? (
         <>
           <div className="margin-top-3">
@@ -114,7 +92,7 @@ const UserProfileView = ({
           </div>
         </>
       ) : (
-        <div className="margin-top-9">
+        <div className="margin-top-15">
           <div className="usa-button-group margin-top-4 margin-bottom-4">
             <button
               type="button"
