@@ -38,6 +38,7 @@ module.exports = defineConfig({
       }
 
       // Register custom task to execute JS in Node Environment
+      // TODO: Return json data for both worksheets
       on('task', {
         convertXlsxToJson(filePath) {
           const workbook = XLSX.readFile(filePath)

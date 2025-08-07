@@ -1,6 +1,16 @@
 /* eslint-disable no-undef */
 import { When, Then } from '@badeball/cypress-cucumber-preprocessor'
 
+const test_data_file_dir = '../tdrs-backend/tdpservice/parsers/test/data'
+const test_section_data_file_names = {
+  1: 'ADS.E2J.FTP1.TS06',
+  2: 'ADS.E2J.FTP2.TS06',
+  // TODO: Ideally we want to submit a file that is partially accepted with errors
+  // this aggregates file is rejected, we should create a section 3 file with accepted errors
+  3: 'aggregates_rejected.txt',
+  4: 'tanf_section4_with_errors.txt',
+}
+
 When(
   '{string} uploads a TANF Section {string} data file for year {string} and quarter {string}',
   (username, section, year, quarter) => {
@@ -28,8 +38,10 @@ When(
 
     cy.wait(1000).then(() => {
       cy.get(section_ids[section]).selectFile(
-        '../tdrs-backend/tdpservice/parsers/test/data/small_correct_file.txt',
-        { action: 'drag-drop' }
+        `${test_data_file_dir}/${test_section_data_file_names[section]}`,
+        {
+          action: 'drag-drop',
+        }
       )
       cy.get('button').contains('Submit Data Files').should('exist').click()
     })
@@ -64,7 +76,7 @@ Then(
     findSectionTableFirsRow(section)
       .should('exist')
       .within(() => {
-        cy.contains('small_correct_file.txt').should('exist')
+        cy.contains(test_section_data_file_names[section]).should('exist')
       })
   }
 )
@@ -103,6 +115,7 @@ Then(
         )
       }
     )
+    // TODO: Remove downloaded file after test passes
   }
 )
 
