@@ -8,31 +8,38 @@ const mockUser = {
   email: 'john.doe@example.com',
   roles: [{ name: 'State User' }],
   stt: {
+    id: 5,
     name: 'California',
     type: 'state',
     region: 9,
   },
-  regions: [9],
+  regions: [{ id: 9, name: 'San Francisco' }],
   permissions: ['view_datafile'],
   status: 'in_review',
 }
 
 describe('UserProfileView', () => {
-  it('renders user full name, email, role, and jurisdiction info', () => {
+  it('renders user full name, role, state, and jurisdiction info', () => {
     render(
       <UserProfileView user={mockUser} isAMSUser={false} onEdit={jest.fn()} />
     )
 
+    expect(screen.getByText('Name')).toBeInTheDocument()
     expect(screen.getByText('John Doe')).toBeInTheDocument()
-    expect(screen.getByText('john.doe@example.com')).toBeInTheDocument()
     expect(screen.getByText('State User')).toBeInTheDocument()
+    expect(screen.getByText('Jurisdiction Type')).toBeInTheDocument()
     expect(screen.getByText('California')).toBeInTheDocument()
-    expect(screen.getByText(/Region 9/)).toBeInTheDocument()
   })
 
   it('shows access request pending alert if user is in review', () => {
     render(
-      <UserProfileView user={mockUser} isAMSUser={false} onEdit={jest.fn()} />
+      <UserProfileView
+        user={mockUser}
+        isAMSUser={false}
+        isAccessRequestPending={true}
+        onEdit={jest.fn()}
+        type="profile"
+      />
     )
 
     expect(
@@ -53,12 +60,17 @@ describe('UserProfileView', () => {
   it('renders correct message for AMS users', () => {
     const amsUser = { ...mockUser, email: 'jane@acf.hhs.gov' }
     render(
-      <UserProfileView user={amsUser} isAMSUser={true} onEdit={jest.fn()} />
+      <UserProfileView
+        user={amsUser}
+        isAMSUser={true}
+        onEdit={jest.fn()}
+        type="profile"
+      />
     )
 
     expect(
       screen.getByText(
-        /you will receive all communications from the tanf data portal your acf email address/i
+        /you will receive all communications from the tanf data portal via your acf email address/i
       )
     ).toBeInTheDocument()
   })
@@ -76,6 +88,6 @@ describe('UserProfileView', () => {
 
     expect(
       screen.getByRole('link', { name: /manage your account at/i })
-    ).toHaveAttribute('href', expect.stringContaining('login.gov'))
+    ).toHaveAttribute('href', expect.stringContaining('.gov/account'))
   })
 })

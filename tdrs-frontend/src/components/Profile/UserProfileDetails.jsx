@@ -20,9 +20,17 @@ const UserProfileDetails = ({ user, isAMSUser }) => {
       />
       <hr className="margin-right-4 margin-top-3 margin-bottom-2" />
       <ProfileRow label="User Type" value={primaryRole?.name} />
-
-      {isAMSUser || (userRegions && userRegions.length > 0) ? (
-        <ProfileRow label="Regional Office(s)" value={userRegions} />
+      {isAMSUser && userRegions ? (
+        <ProfileRow
+          label="Regional Office(s)"
+          value={
+            <>
+              {userRegions.map((region, index) => (
+                <div key={index}>{`Region ${region.id} (${region.name})`}</div>
+              ))}
+            </>
+          }
+        />
       ) : (
         <>
           <ProfileRow

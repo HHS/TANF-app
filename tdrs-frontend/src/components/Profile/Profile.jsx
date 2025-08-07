@@ -12,8 +12,8 @@ import {
 function Profile({ isEditing = false, onEdit, type, user, sttList, onCancel }) {
   const isAMSUser = user?.email?.includes('@acf.hhs.gov')
   const missingAccessRequest = useSelector(accountIsMissingAccessRequest)
-  //const isAccessRequestPending = useSelector(accountIsInReview) // TODO: make this true to see how this looks
-  const isAccessRequestPending = true // TODO: using for testing
+  const isAccessRequestPending = useSelector(accountIsInReview)
+  //const isAccessRequestPending = true // TODO: using for testing
 
   if (missingAccessRequest) {
     return <Navigate to="/home" />
@@ -30,7 +30,7 @@ function Profile({ isEditing = false, onEdit, type, user, sttList, onCancel }) {
           lastName: user?.last_name || '',
           stt: user?.stt?.name || '',
           hasFRAAccess: user?.permissions?.includes('has_fra_access') ?? null,
-          regions: new Set(user?.regions || []),
+          regions: user?.regions || new Set(),
           jurisdictionType: user?.stt?.type || 'state',
         }}
         onCancel={onCancel}
