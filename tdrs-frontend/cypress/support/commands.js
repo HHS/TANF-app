@@ -210,3 +210,18 @@ Cypress.Commands.add('downloadErrorReport', (error_report_name) => {
     cy.readFile(`${Cypress.config('downloadsFolder')}/${error_report_name}`)
   })
 })
+
+Cypress.Commands.add('fillSttFyQ', (stt, fy, q, isTanf) => {
+  cy.get('#stt')
+    .type(stt + '{enter}')
+    .then(() => {
+      if (isTanf) {
+        cy.get(':nth-child(2) > .usa-radio__label').click()
+      } else {
+        cy.get(':nth-child(3) > .usa-radio__label').click()
+      }
+      cy.get('#reportingYears').should('exist').select(fy)
+      cy.get('#quarter').should('exist').select(q)
+      cy.get('button').contains('Search').should('exist').click()
+    })
+})
