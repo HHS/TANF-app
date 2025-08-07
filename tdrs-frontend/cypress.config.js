@@ -1,6 +1,7 @@
 const { defineConfig } = require('cypress')
 const webpack = require('@cypress/webpack-preprocessor')
 const preprocessor = require('@badeball/cypress-cucumber-preprocessor')
+const XLSX = require('xlsx')
 
 module.exports = defineConfig({
   e2e: {
@@ -35,6 +36,16 @@ module.exports = defineConfig({
           ],
         },
       }
+
+      // Register custom task to execute JS in Node Environment
+      on('task', {
+        convertXlsxToJson(filePath) {
+          const workbook = XLSX.readFile(filePath)
+          const worksheet = workbook.Sheets[workbook.SheetNames[0]]
+          const jsonData = XLSX.utils.sheet_to_json(worksheet)
+          return jsonData
+        },
+      })
 
       on('file:preprocessor', webpack({ webpackOptions }))
 

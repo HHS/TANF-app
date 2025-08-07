@@ -86,19 +86,23 @@ Then(
       4: 'Stratum Data',
     }
 
-    const downloaded_file_path = `${Cypress.config('downloadsFolder')}/${year}-${quarter}-${error_report_case_type[section]} Error Report.xlsx`
+    const file_name = `${year}-${quarter}-${error_report_case_type[section]} Error Report.xlsx`
+    const downloaded_file_path = `${Cypress.config('downloadsFolder')}/${file_name}`
+    const expected_file_path = `${Cypress.config('fixturesFolder')}/${file_name}`
+
+    // verify download was successful
     cy.readFile(downloaded_file_path, { timeout: 1000 }).should('exist')
-    // TODO: compare downloaded file against a saved fixture error report
-    // .then((downloadedContent) => {
-    //   cy.fixture(
-    //     `${year}-${quarter}-${error_report_case_type[section]} Error Report.xlsx`,
-    //     'utf-8'
-    //   )
-    //     .should('exist')
-    //     .then((expectedContent) => {
-    //       expect(downloadedContent).to.equal(expectedContent)
-    //     })
-    // })
+
+    // verify downloaded content matches expected
+    cy.task('convertXlsxToJson', downloaded_file_path).then(
+      (downloaded_json) => {
+        cy.task('convertXlsxToJson', expected_file_path).then(
+          (expected_json) => {
+            expect(downloaded_json).to.deep.equal(expected_json)
+          }
+        )
+      }
+    )
   }
 )
 
