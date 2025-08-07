@@ -1,6 +1,108 @@
 /* eslint-disable no-undef */
 import { When, Then } from '@badeball/cypress-cucumber-preprocessor'
 
+When(
+  '{string} uploads a TANF Section {string} data file for year {string} and quarter {string}',
+  (username, section, year, quarter) => {
+    cy.visit('/data-files')
+    cy.wait(1000)
+    cy.contains('Data Files').should('exist')
+
+    // Can see search form
+    cy.contains('Fiscal Year').should('exist')
+    cy.contains('Quarter').should('exist')
+
+    // Submit search form
+    cy.get('#reportingYears').should('exist').select(year)
+    cy.get('#quarter').should('exist').select(quarter) // Q1, Q2, Q3, Q4
+    cy.get('button').contains('Search').should('exist')
+    cy.get('button').contains('Search').should('exist').click()
+
+    // Uploads file
+    const section_ids = {
+      1: '#active-case-data',
+      2: '#closed-case-data',
+      3: '#aggregate-data',
+      4: '#stratum-data',
+    }
+
+    cy.wait(1000).then(() => {
+      cy.get(section_ids[section]).selectFile(
+        '../tdrs-backend/tdpservice/parsers/test/data/small_correct_file.txt',
+        { action: 'drag-drop' }
+      )
+      cy.get('button').contains('Submit Data Files').should('exist').click()
+    })
+
+    // Can see the upload successful
+    cy.wait(3000).then(() => {
+      cy.contains(/Successfully|No changes/g).should('exist')
+    })
+  }
+)
+
+const findSectionTableFirsRow = (section) => {
+  const table_caption = {
+    1: 'Section 1 - Active Case Data',
+    2: 'Section 2 - Closed Case Data',
+    3: 'Section 3 - Aggregate Data',
+    4: 'Section 4 - Stratum Data',
+  }
+
+  return cy
+    .contains('caption', table_caption[section])
+    .parents('table')
+    .find('tbody > tr')
+    .first()
+}
+
+Then(
+  '{string} sees the TANF Section {string} submission in Submission History',
+  (username, section) => {
+    cy.get('button').contains('Submission History').should('exist').click()
+
+    findSectionTableFirsRow(section)
+      .should('exist')
+      .within(() => {
+        cy.contains('small_correct_file.txt').should('exist')
+      })
+  }
+)
+
+Then(
+  '{string} can download the TANF Section {string} error report for year {string} and quarter {string}',
+  (username, section, year, quarter) => {
+    findSectionTableFirsRow(section)
+      .should('exist')
+      .within(() => {
+        cy.get('button').contains('Error Report').click()
+      })
+
+    // verify file
+    const error_report_case_type = {
+      1: 'Active Case Data',
+      2: 'Closed Case Data',
+      3: 'Aggregate Data',
+      4: 'Stratum Data',
+    }
+
+    const downloaded_file_path = `${Cypress.config('downloadsFolder')}/${year}-${quarter}-${error_report_case_type[section]} Error Report.xlsx`
+    cy.readFile(downloaded_file_path, { timeout: 1000 }).should('exist')
+    // TODO: compare downloaded file against a saved fixture error report
+    // .then((downloadedContent) => {
+    //   cy.fixture(
+    //     `${year}-${quarter}-${error_report_case_type[section]} Error Report.xlsx`,
+    //     'utf-8'
+    //   )
+    //     .should('exist')
+    //     .then((expectedContent) => {
+    //       expect(downloadedContent).to.equal(expectedContent)
+    //     })
+    // })
+  }
+)
+
+// TODO: Remove in favor of When 'user' uploads a TANF Seciton '' data file for year '' and quarter ''
 When('{string} uploads a file', (username) => {
   cy.wait(1000).then(() => {
     cy.get('#closed-case-data').selectFile(
@@ -11,12 +113,14 @@ When('{string} uploads a file', (username) => {
   })
 })
 
+// TODO: Remove in favor of When 'user' uploads a TANF Seciton '' data file for year '' and quarter ''
 Then('{string} can see the upload successful', (username) => {
   cy.wait(3000).then(() => {
     cy.contains(/Successfully|No changes/g).should('exist')
   })
 })
 
+// TODO: Remove in favor of When 'user' uploads a TANF Seciton '' data file for year '' and quarter ''
 When('{string} uploads a TANF Section 1 data file', (username) => {
   cy.wait(1000).then(() => {
     cy.get('#active-case-data').selectFile(
@@ -26,22 +130,3 @@ When('{string} uploads a TANF Section 1 data file', (username) => {
     cy.get('button').contains('Submit Data Files').should('exist').click()
   })
 })
-
-Then(
-  '{string} sees the TANF Section {string} submission in Submission History',
-  (username, section) => {
-    cy.get('button').contains('Submission History').should('exist').click()
-
-    cy.contains('caption', `Section ${section} - Active Case Data`)
-      .parents('table')
-      .within(() => {
-        cy.get('tbody > tr')
-          .first()
-          .should('exist')
-          .within(() => {
-            cy.contains('small_correct_file.txt').should('exist')
-            cy.get('button').contains('Error Report').click()
-          })
-      })
-  }
-)

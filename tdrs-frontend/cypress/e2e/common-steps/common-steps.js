@@ -1,5 +1,17 @@
+/* eslint-disable no-undef */
 import { Given, When } from '@badeball/cypress-cucumber-preprocessor'
 
+Given('{string}, {string}, logs in', (role, username) => {
+  cy.clearCookie('sessionid')
+  cy.clearCookie('csrftoken')
+  cy.intercept('/v1/stts/alpha').as('getSttSearchList')
+  cy.visit('/')
+  cy.contains('Sign into TANF Data Portal', { timeout: 30000 })
+  // TODO: add if statement for cy.adminLogin
+  cy.login(username)
+})
+
+// TODO: Remove in favor of Given 'user' logs in
 When('{string} visits the home page', (username) => {
   cy.clearCookie('sessionid')
   cy.clearCookie('csrftoken')
@@ -8,6 +20,8 @@ When('{string} visits the home page', (username) => {
   cy.contains('Sign into TANF Data Portal', { timeout: 30000 })
 })
 
+// TODO: Remove in favor of Given 'user' logs in
+// Add adminLogin as if statement above
 Given('The admin logs in', () => {
   cy.visit('/')
   cy.adminLogin('cypress-admin@teamraft.com')
@@ -20,6 +34,7 @@ Given('A file exists in submission history', () => {
   })
 })
 
+// TODO: Remove in favor of Given 'user' logs in
 When('{string} logs in', (username) => {
   cy.login(username)
 })
