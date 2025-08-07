@@ -3,10 +3,8 @@ import { When, Then } from '@badeball/cypress-cucumber-preprocessor'
 
 const test_data_file_dir = '../tdrs-backend/tdpservice/parsers/test/data'
 const test_section_data_file_names = {
-  1: 'ADS.E2J.FTP1.TS06',
-  2: 'ADS.E2J.FTP2.TS06',
-  // TODO: Ideally we want to submit a file that is partially accepted with errors
-  // this aggregates file is rejected, we should create a section 3 file with accepted errors
+  1: 'small_correct_file.txt',
+  2: 'small_correct_file.txt',
   3: 'aggregates_rejected.txt',
   4: 'tanf_section4_with_errors.txt',
 }
