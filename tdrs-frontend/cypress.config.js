@@ -2,6 +2,7 @@ const { defineConfig } = require('cypress')
 const webpack = require('@cypress/webpack-preprocessor')
 const preprocessor = require('@badeball/cypress-cucumber-preprocessor')
 const XLSX = require('xlsx')
+const fs = require('fs')
 
 module.exports = defineConfig({
   e2e: {
@@ -45,6 +46,16 @@ module.exports = defineConfig({
           const worksheet = workbook.Sheets[workbook.SheetNames[0]]
           const jsonData = XLSX.utils.sheet_to_json(worksheet)
           return jsonData
+        },
+        deleteDownloadFile(fileName) {
+          const filePath = `${config.downloadsFolder}/${fileName}`
+
+          if (fs.existsSync(filePath)) {
+            fs.rmSync(filePath)
+            return filePath
+          } else {
+            throw new Error(`File not found: ${filePath}`)
+          }
         },
       })
 

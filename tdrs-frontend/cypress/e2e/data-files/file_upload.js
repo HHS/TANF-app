@@ -109,6 +109,7 @@ Then(
         cy.task('convertXlsxToJson', expected_file_path).then(
           (expected_json) => {
             expect(downloaded_json).to.deep.equal(expected_json)
+            cy.task('deleteDownloadFile', file_name)
           }
         )
       }
