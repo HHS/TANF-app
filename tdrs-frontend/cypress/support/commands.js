@@ -225,3 +225,13 @@ Cypress.Commands.add('fillSttFyQ', (stt, fy, q, isTanf) => {
       cy.get('button').contains('Search').should('exist').click()
     })
 })
+
+Cypress.Commands.add('fillSttFyQNoProgramSelector', (stt, fy, q) => {
+  cy.get('#stt')
+    .type(stt + '{enter}')
+    .then(() => {
+      cy.get('#reportingYears').should('exist').select(fy)
+      cy.get('#quarter').should('exist').select(q)
+      cy.get('button').contains('Search').should('exist').click()
+    })
+})

@@ -78,5 +78,54 @@
             "total_number_of_records_in_file": 11,
             "total_number_of_records_created": 5
         }
-    }
+    },
+    {
+        "model": "data_files.datafile",
+        "pk": 11,
+        "fields": {
+          "original_filename": "small_ssp_section1.txt",
+          "slug": "d3273855-8d48-4d74-99d6-78451bff4c35",
+          "extension": "txt",
+          "created_at": "2025-08-07T20:27:56.073Z",
+          "quarter": "Q1",
+          "year": 2024,
+          "section": "SSP Active Case Data",
+          "version": 1,
+          "user": "7b7c4778-17e4-49a1-83b8-0e6a96297888",
+          "stt": 26,
+          "file": "data_files/2024/Q1/26/SSP Active Case Data/small_ssp_section1.txt",
+          "s3_versioning_id": "c1cba040-5f25-4568-a831-80a5a34ee450"
+        }
+      },
+      {
+        "model": "parsers.datafilesummary",
+        "pk": 3,
+        "fields": {
+          "status": "Partially Accepted with Errors",
+          "datafile": 11,
+          "error_report": "data_files/2024/Q1/26/SSP Active Case Data/small_ssp_section1.txt_error_report_c1cba040-5f25-4568-a831-80a5a34ee450.xlsx",
+          "case_aggregates": {
+            "months": [
+              {
+                "month": "Oct",
+                "accepted_with_errors": 5,
+                "accepted_without_errors": 0
+              },
+              {
+                "month": "Nov",
+                "accepted_with_errors": 0,
+                "accepted_without_errors": 0
+              },
+              {
+                "month": "Dec",
+                "accepted_with_errors": 0,
+                "accepted_without_errors": 0
+              }
+            ],
+            "rejected": 1
+          },
+          "total_number_of_records_in_file": 19,
+          "total_number_of_records_created": 19
+        }
+      }
 ]
