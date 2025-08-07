@@ -157,3 +157,47 @@ Cypress.Commands.add(
     return cy.get('@response')
   }
 )
+
+Cypress.Commands.add('restartAtHomePage', () => {
+  cy.clearCookie('sessionid')
+  cy.clearCookie('csrftoken')
+  cy.intercept('/v1/stts/alpha').as('getSttSearchList')
+  cy.visit('/')
+  cy.contains('Sign into TANF Data Portal', { timeout: 30000 })
+})
+
+Cypress.Commands.add('fillFYQ', (fiscal_year, quarter) => {
+  cy.get('#reportingYears').should('exist').select(fiscal_year)
+  cy.get('#quarter').should('exist').select(quarter)
+  cy.get('button').contains('Search').should('exist').click()
+})
+
+Cypress.Commands.add('uploadFile', (file_input, file_path) => {
+  cy.get(file_input).selectFile(file_path, { action: 'drag-drop' })
+})
+
+Cypress.Commands.add('validateSmallCorrectFile', () => {
+  cy.get('th').contains('small_correct_file.txt').should('exist')
+  cy.get('th').contains('1').should('exist')
+  cy.get('th').contains('Rejected').should('exist')
+  cy.get('th')
+    .contains('2021-Q1-Active Case Data Error Report.xlsx')
+    .should('exist')
+})
+
+Cypress.Commands.add('validateSmallSSPFile', () => {
+  cy.get('th').contains('small_ssp_section1.txt').should('exist')
+  cy.get('th').contains('1').should('exist')
+  cy.get('th').contains('5').should('exist')
+  cy.get('th').contains('Partially Accepted with Errors').should('exist')
+  cy.get('th')
+    .contains('2024-Q1-SSP Active Case Data Error Report.xlsx')
+    .should('exist')
+})
+
+Cypress.Commands.add('downloadErrorReport', (error_report_name) => {
+  cy.get('button').contains(error_report_name).should('exist').click()
+  cy.wait(2000).then(() => {
+    cy.readFile(`${Cypress.config('downloadsFolder')}/${error_report_name}`)
+  })
+})
