@@ -25,12 +25,7 @@ When('FRA Data Analyst Fred submits the Work Outcomes Report', () => {
 Then('FRA Data Analyst Fred sees the upload in Submission History', () => {
   cy.wait(5000).then(() => {
     cy.contains('Submission History').should('exist')
-    cy.get('td').contains('fra.csv').should('exist')
-    cy.get('td').contains('8').should('exist')
-    cy.get('td').contains('Partially Accepted with Errors').should('exist')
-    cy.get('td')
-      .contains('2024-Q2-Work Outcomes of TANF Exiters Error Report.xlsx')
-      .should('exist')
+    cy.validateFraCsv()
   })
 })
 

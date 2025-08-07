@@ -122,6 +122,36 @@
         }
     },
     {
+      "model": "users.user",
+      "pk": "7b7c4778-17e4-49a1-83b8-0e6a962972f7",
+      "fields": {
+        "password": "",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "fra-data-analyst-frank@teamraft.com",
+        "first_name": "FRA Data Analyst",
+        "last_name": "Frank",
+        "email": "fra-data-analyst-frank@teamraft.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2025-08-05T20:54:21.381Z",
+        "stt": 5,
+        "login_gov_uuid": null,
+        "hhs_id": null,
+        "deactivated": false,
+        "access_request": false,
+        "account_approval_status": "Approved",
+        "access_requested_date": "2025-08-05T21:06:10Z",
+        "feature_flags": {},
+        "groups": [
+          2
+        ],
+        "user_permissions": [
+          193
+        ]
+      }
+    },
+    {
         "model": "users.user",
         "pk": "7b7c4778-17e4-49a1-83b8-0e6a962972e8",
         "fields": {
@@ -162,7 +192,7 @@
           "first_name": "Regional",
           "last_name": "Randy",
           "email": "regional-randy@acf.hhs.gov",
-          "regions": [8],
+          "regions": [9],
           "is_staff": false,
           "is_active": true,
           "date_joined": "2025-08-05T20:54:21.381Z",
