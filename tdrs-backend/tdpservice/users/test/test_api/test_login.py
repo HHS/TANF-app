@@ -1,8 +1,10 @@
 """Test the LoginRedirectAMS class."""
+from unittest import mock
+
 import pytest
 
-from unittest import mock
 from tdpservice.users.api.login_redirect_oidc import LoginRedirectAMS
+
 
 @mock.patch("requests.get")
 def test_get_ams_configuration(requests_get_mock):
@@ -10,7 +12,7 @@ def test_get_ams_configuration(requests_get_mock):
     requests_get_mock.return_value.status_code = 200
     requests_get_mock.return_value.json.return_value = {"key": "test"}
     returned_value = LoginRedirectAMS.get_ams_configuration()
-    assert returned_value == {'key': 'test'}
+    assert returned_value == {"key": "test"}
 
     # Test if the configuration is not returned
     requests_get_mock.return_value.status_code = 503
@@ -22,13 +24,14 @@ def test_get_ams_configuration(requests_get_mock):
 @mock.patch("secrets.token_hex")
 def test_LoginRedirectAMS_get(secrets_token_hex_mock, requests_get_mock):
     """Test the LoginRedirectAMS class."""
+
     class DummyRequest:
-        session = {
-            "state_nonce_tracker": "dummy_state_nonce_tracker"
-        }
+        session = {"state_nonce_tracker": "dummy_state_nonce_tracker"}
 
     requests_get_mock.return_value.status_code = 200
-    requests_get_mock.return_value.json.return_value = {"authorization_endpoint": "dummy_authorization_endpoint"}
+    requests_get_mock.return_value.json.return_value = {
+        "authorization_endpoint": "dummy_authorization_endpoint"
+    }
 
     secrets_token_hex_mock.return_value = "dummy_state_nonce"
 

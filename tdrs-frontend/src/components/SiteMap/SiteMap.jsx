@@ -3,17 +3,19 @@ import { useSelector } from 'react-redux'
 import {
   accountStatusIsApproved,
   accountCanViewAdmin,
-  accountCanViewPlg,
-  selectFeatureFlags,
+  selectUserPermissions,
+  accountCanViewGrafana,
+  accountCanViewAlerts,
 } from '../../selectors/auth'
 
 const SiteMap = ({ user }) => {
   const userIsApproved = useSelector(accountStatusIsApproved)
   const userIsAdmin = useSelector(accountCanViewAdmin)
-  const userViewPlg = useSelector(accountCanViewPlg)
+  const userViewGrafana = useSelector(accountCanViewGrafana)
+  const userViewAlerts = useSelector(accountCanViewAlerts)
 
-  const featureFlags = useSelector(selectFeatureFlags)
-  const userHasFra = userIsApproved && featureFlags['fra_reports'] === true
+  const permissions = useSelector(selectUserPermissions)
+  const userHasFra = userIsApproved && permissions.includes('has_fra_access')
 
   return (
     <div className="margin-top-5">
@@ -43,17 +45,18 @@ const SiteMap = ({ user }) => {
         />
       )}
 
-      {userViewPlg && (
-        <>
-          <SiteMap.Link
-            text="Grafana"
-            link={`${process.env.REACT_APP_BACKEND_HOST}/grafana/`}
-          />
-          <SiteMap.Link
-            text="Alerts"
-            link={`${process.env.REACT_APP_BACKEND_HOST}/alerts/`}
-          />
-        </>
+      {userViewGrafana && (
+        <SiteMap.Link
+          text="Grafana"
+          link={`${process.env.REACT_APP_BACKEND_HOST}/grafana/`}
+        />
+      )}
+
+      {userViewAlerts && (
+        <SiteMap.Link
+          text="Alerts"
+          link={`${process.env.REACT_APP_BACKEND_HOST}/alerts/`}
+        />
       )}
     </div>
   )

@@ -4,15 +4,16 @@ import datetime
 import logging
 import uuid
 
-from tdpservice.email.helpers.account_status import send_approval_status_update_email
-
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from django.conf import settings
 
+from tdpservice.email.helpers.account_status import send_approval_status_update_email
 from tdpservice.stts.models import STT, Region
+from tdpservice.users.mixins import ReviewerMixin as Reviewable
 
 logger = logging.getLogger()
 
@@ -33,30 +34,89 @@ class AccountApprovalStatusChoices(models.TextChoices):
 class RegionMeta(models.Model):
     """Meta data model representing the relationship between a Region and a User."""
 
-    user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='region_metas')
-    region = models.ForeignKey(
-        Region,
-        on_delete=models.CASCADE,
-        related_name='region_metas'
+    user = models.ForeignKey(
+        "users.User", on_delete=models.CASCADE, related_name="region_metas"
     )
+    region = models.ForeignKey(
+        Region, on_delete=models.CASCADE, related_name="region_metas"
+    )
+
+
+class Rating(models.IntegerChoices):
+    """Likert like rating scale."""
+
+    VERY_BAD = 1
+    BAD = 2
+    NEUTRAL = 3
+    GOOD = 4
+    VERY_GOOD = 5
+
+
+class Feedback(Reviewable):
+    """Model to capture and review user feedback."""
+
+    class Meta:
+        """Meta feedback model attributes."""
+
+        ordering = ["created_at"]
+        verbose_name = "Feedback"
+        verbose_name_plural = "Feedback"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    user = models.ForeignKey(
+        "users.User",
+        on_delete=models.SET_NULL,
+        related_name="feedback",
+        null=True,
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    rating = models.IntegerField(choices=Rating.choices)
+
+    feedback = models.TextField(null=True, blank=True)
+
+    anonymous = models.BooleanField(default=False)
+
+    acked = models.BooleanField(default=False)
+
+    def __str__(self):
+        """Return a string representation of the object."""
+        return (
+            f"User: {self.user.username if self.user is not None else 'Anonymous'} - "
+            f"Rating: {self.rating} - Acked: {self.acked}"
+        )
+
+    def acknowledge(self, admin_user):
+        """Acknowledge the feedback."""
+        if self.acked:
+            return False
+
+        self.acked = True
+        self.reviewed_at = timezone.now()
+        self.reviewed_by = admin_user
+        self.save()
+        return True
 
 
 class User(AbstractUser):
     """Define user fields and methods."""
 
-    class Meta:
+    class Meta:  # type: ignore[overrride]
         """Define meta user model attributes."""
 
-        ordering = ['pk']
+        ordering = ["pk"]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     stt = models.ForeignKey(
         STT,
         on_delete=models.deletion.SET_NULL,
-        related_name='users',
+        related_name="users",
         null=True,
-        blank=True
+        blank=True,
     )
 
     regions = models.ManyToManyField(
@@ -64,7 +124,7 @@ class User(AbstractUser):
         through=RegionMeta,
         help_text="Regions this user is associated with.",
         related_name="regions",
-        blank=True
+        blank=True,
     )
 
     # The unique `sub` UUID from decoded login.gov payloads for login.gov users.
@@ -88,9 +148,9 @@ class User(AbstractUser):
         _("deactivated"),
         default=False,
         help_text=_(
-            'Deprecated: use Account Approval Status instead - '
-            'Designates whether this user should be treated as active. '
-            'Unselect this instead of deleting accounts.'
+            "Deprecated: use Account Approval Status instead - "
+            "Designates whether this user should be treated as active. "
+            "Unselect this instead of deleting accounts."
         ),
     )
 
@@ -100,9 +160,9 @@ class User(AbstractUser):
     access_request = models.BooleanField(
         default=False,
         help_text=_(
-            'Deprecated: use Account Approval Status instead - '
-            'Designates whether this user account has requested access to TDP. '
-            'Users with this checked must have groups assigned for the application to work correctly.'
+            "Deprecated: use Account Approval Status instead - "
+            "Designates whether this user account has requested access to TDP. "
+            "Users with this checked must have groups assigned for the application to work correctly."
         ),
     )
 
@@ -119,30 +179,25 @@ class User(AbstractUser):
         ),
     )
 
-    access_requested_date = models.DateTimeField(default=datetime.datetime(year=1, month=1, day=1, hour=0, minute=0,
-                                                                           second=0))
+    access_requested_date = models.DateTimeField(
+        default=datetime.datetime(year=1, month=1, day=1, hour=0, minute=0, second=0)
+    )
 
     _loaded_values = None
     _adding = True
 
-    # Feature flag for the user to enable or disable FRA access
     feature_flags = models.JSONField(
         default=dict,
         help_text='Feature flags for this user. This is a JSON field that can be used to store key-value pairs. ' +
-        'E.g: {"fra_reports": true}',
+        'E.g: {"some_feature": true}',
         blank=True,
     )
-
-    @property
-    def has_fra_access(self):
-        """Return whether or not the user has FRA access."""
-        return self.feature_flags.get('fra_reports', False)
 
     def __str__(self):
         """Return the username as the string representation of the object."""
         return self.username
 
-    def is_in_group(self, group_names: list) -> bool:
+    def is_in_group(self, group_names: str | list[str]) -> bool:
         """Return whether or not the user is a member of the specified Group(s)."""
         if type(group_names) == str:
             group_names = [group_names]
@@ -167,17 +222,11 @@ class User(AbstractUser):
                     "Users other than Regional Staff, Developers, Data Analysts do not get assigned a location"
                 )
             )
-        elif (
-            self.is_regional_staff
-            and self.stt
-        ):
+        elif self.is_regional_staff and self.stt:
             raise ValidationError(
                 _("Regional staff cannot have a location type other than region")
             )
-        elif (
-            self.is_data_analyst
-            and regional
-        ):
+        elif self.is_data_analyst and regional:
             raise ValidationError(
                 _("Data Analyst cannot have a location type other than stt")
             )
@@ -186,6 +235,11 @@ class User(AbstractUser):
         """Prevent save if attributes are not necessary for a user given their role."""
         super().clean(*args, **kwargs)
         self.validate_location()
+
+    @property
+    def has_fra_access(self) -> bool:
+        """Return whether or not the user has FRA access."""
+        return self.has_perm('user.has_fra_access')
 
     @property
     def is_developer(self) -> bool:
@@ -253,9 +307,15 @@ class User(AbstractUser):
         """
         # kwargs are passed via the serializer. Kwargs that do not exist in the base model must be removed befor the
         # call to super(User, self).save(*args, **kwargs) below.
-        regions = kwargs.pop('regions', [])
+        regions = kwargs.pop("regions", [])
 
         if not self._adding:
+            if self._loaded_values is None:
+                raise RuntimeError(
+                    "Expects `_loaded_values` to be set by `from_db()` before "
+                    "calling `save()`."
+                )
+
             current_status = self._loaded_values["account_approval_status"]
             new_status = self.account_approval_status
 
@@ -274,8 +334,8 @@ class User(AbstractUser):
                         "first_name": self.first_name,
                         "stt_name": str(self.stt) if self.stt else None,
                         "group_permission": str(self.groups.first()),
-                        "url": settings.FRONTEND_BASE_URL
-                    }
+                        "url": settings.FRONTEND_BASE_URL,
+                    },
                 )
 
                 return
