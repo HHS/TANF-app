@@ -12,7 +12,7 @@ Then('{string} can see search form', (username) => {
 })
 
 Then('{string} submits the search form', (username) => {
-  cy.get('#reportingYears').should('exist').select('2021')
+  cy.get('#reportingYears').should('exist').select('2023')
   cy.get('#quarter').should('exist').select('Q1')
   cy.get('button').contains('Search').should('exist')
   cy.get('button').contains('Search').should('exist').click()
