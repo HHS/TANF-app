@@ -12,7 +12,12 @@ import {
   accountCanSelectStt,
   accountIsRegionalStaff,
 } from '../../selectors/auth'
-import { handlePreview, tryGetUTF8EncodedFile } from '../FileUpload/utils'
+import {
+  checkPreviewDependencies,
+  removeOldPreviews,
+  handlePreview,
+  tryGetUTF8EncodedFile,
+} from '../FileUpload/utils'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
 import Modal from '../Modal'
 import {
@@ -270,10 +275,15 @@ const UploadForm = ({
     }
     if (file?.name) {
       trySettingPreview()
+    } else {
+      // When the file upload modal is cancelled we need to remove our hiding logic
+      const deps = checkPreviewDependencies(targetClassName)
+      if (deps.rendered) removeOldPreviews(deps.dropTarget, deps.instructions)
     }
   }, [file])
 
   const onFileChanged = async (e) => {
+    setSelectedFile(null)
     setError(null)
     setLocalAlertState({
       active: false,
