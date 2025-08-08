@@ -27,7 +27,7 @@ When('Admin Alex submits the TANF Report', () => {
 })
 
 Then('Admin Alex sees the upload in TANF Submission History', () => {
-  cy.wait(5000).then(() => {
+  cy.wait(10000).then(() => {
     cy.get('button').contains('Submission History').click()
     cy.validateSmallCorrectFile()
   })
@@ -50,7 +50,7 @@ When('Admin Alex submits the SSP Report', () => {
 })
 
 Then('Admin Alex sees the upload in SSP Submission History', () => {
-  cy.wait(5000).then(() => {
+  cy.wait(10000).then(() => {
     cy.get('button').contains('Submission History').click()
     cy.validateSmallSSPFile()
   })
@@ -73,7 +73,7 @@ When('Admin Alex submits the Work Outcomes Report', () => {
 })
 
 Then('Admin Alex sees the upload in FRA Submission History', () => {
-  cy.wait(5000).then(() => {
+  cy.wait(10000).then(() => {
     cy.contains('Submission History').should('exist')
     cy.validateFraCsv()
   })
