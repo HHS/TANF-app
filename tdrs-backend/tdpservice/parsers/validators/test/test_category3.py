@@ -546,7 +546,7 @@ def test_sumIsEqual():
     assert result.valid is False
     assert (
         result.error
-        == "T1: The sum of TestField1, TestField3 does not equal TestField2 test2 Item 2."
+        == "The sum of TestField1, TestField3 does not equal TestField2 test2 Item 2."
     )
     assert result.field_names == ["TestField2", "TestField1", "TestField3"]
 
@@ -597,7 +597,7 @@ def test_sumIsLarger():
     result = category3.sumIsLarger(["TestField1", "TestField3"], 10)(instance, schema)
     assert result.valid is False
     assert result.error == (
-        "T1: No benefits detected for this case. The total sum "
+        "No benefits detected for this case. The total sum "
         "of TestField1, TestField3 must be greater than 10."
     )
     assert result.field_names == ["TestField1", "TestField3"]

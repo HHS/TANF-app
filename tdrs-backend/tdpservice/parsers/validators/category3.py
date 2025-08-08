@@ -261,7 +261,7 @@ def sumIsEqual(condition_field_name, sum_fields=[]):
         return Result(
             valid=False,
             error=(
-                f"{row_schema.record_type}: The sum of {', '.join(sum_fields)} does not equal "
+                f"The sum of {', '.join(sum_fields)} does not equal "
                 f"{condition_field_name} {condition_field.friendly_name} Item {condition_field.item}."
             ),
             field_names=fields,
@@ -285,11 +285,12 @@ def sumIsLarger(fields, val):
         return Result(
             valid=False,
             error=(
-                f"{row_schema.record_type}: No benefits detected for this case. "
+                f"No benefits detected for this case. "
                 f"The total sum of {', '.join(fields)} must be greater than {val}."
             ),
             field_names=fields,
         )
+        s = "No benefits detected for this case. The total sum of SNAP Benefits, Subsidized Child Care, Cash Amount, Child Care, Transportation and Other Supportive Services must be greater than 0."
 
     return sumIsLargerFunc
 
