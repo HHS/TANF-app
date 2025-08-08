@@ -16,10 +16,9 @@ const test_section_data_file_names = {
     4: 'small_ssp_section1.txt',
   },
   TRIBAL: {
-    1: 'small_ssp_section1.txt',
-    2: 'small_ssp_section1.txt',
-    3: 'small_ssp_section1.txt',
-    4: 'small_ssp_section1.txt',
+    1: 'small_correct_file.txt',
+    2: 'small_correct_file.txt',
+    3: 'small_correct_file.txt',
   },
 }
 
@@ -40,7 +39,6 @@ When(
     // Submit search form
     if (program === 'SSP') {
       cy.get('label[for="ssp-moe"]').click()
-      cy.wait(10000)
     }
     cy.get('#reportingYears').should('exist').select(year)
     cy.get('#quarter').should('exist').select(quarter) // Q1, Q2, Q3, Q4
@@ -113,13 +111,26 @@ Then(
 
     // verify file
     const error_report_case_type = {
-      1: 'Active Case Data',
-      2: 'Closed Case Data',
-      3: 'Aggregate Data',
-      4: 'Stratum Data',
+      TANF: {
+        1: 'Active Case Data',
+        2: 'Closed Case Data',
+        3: 'Aggregate Data',
+        4: 'Stratum Data',
+      },
+      SSP: {
+        1: 'SSP Active Case Data',
+        2: 'SSP Closed Case Data',
+        3: 'SSP Aggregate Data',
+        4: 'SSP Stratum Data',
+      },
+      TRIBAL: {
+        1: 'Tribal Active Case Data',
+        2: 'Tribal Closed Case Data',
+        3: 'Tribal Aggregate Data',
+      },
     }
 
-    const file_name = `${year}-${quarter}-${error_report_case_type[section]} Error Report.xlsx`
+    const file_name = `${year}-${quarter}-${error_report_case_type[program][section]} Error Report.xlsx`
     const downloaded_file_path = `${Cypress.config('downloadsFolder')}/${file_name}`
     const expected_file_path = `${Cypress.config('fixturesFolder')}/${file_name}`
 

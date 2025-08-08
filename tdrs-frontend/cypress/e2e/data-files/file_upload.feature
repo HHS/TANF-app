@@ -31,63 +31,64 @@ Feature: Approved Data Analysts can upload data files
 
     # SSP Data Analyst Stefani scenarios
 
-    # Scenario: A data analyst can submit an SSP Section 1 data file
-    #     Given SSP Data Analyst Stefani logs in
-    #     When SSP Data Analyst Stefani submits an SSP Section 1 data file
-    #     Then SSP Data Analyst Stefani sees the Section 1 submission in Submission History -> implementation includes status, err report filename, original filename, etc
-    #     And SSP Data Analyst Stefani can download the error report -> file match contents?
-    #     # TODO: And Regional Randy (or Rebecca) gets an email (determine exact)
-    #
-    # Scenario: A data analyst can submit an SSP Section 2 data file
-    #     Given SSP Data Analyst Stefani logs in
-    #     When SSP Data Analyst Stefani submits an SSP Section 2 data file
-    #     Then SSP Data Analyst Stefani sees the Section 2 submission in Submission History -> implementation includes status, err report filename, original filename, etc
-    #     And SSP Data Analyst Stefani can download the error report -> file match contents?
-    #     # TODO: And Regional Randy (or Rebecca) gets an email (determine exact)
-    #
-    # Scenario: A data analyst can submit an SSP Section 3 data file
-    #     Given SSP Data Analyst Stefani logs in
-    #     When SSP Data Analyst Stefani submits an SSP Section 3 data file
-    #     Then SSP Data Analyst Stefani sees the Section 3 submission in Submission History -> implementation includes status, err report filename, original filename, etc
-    #     And SSP Data Analyst Stefani can download the error report -> file match contents?
-    #     # TODO: And Regional Randy (or Rebecca) gets an email (determine exact)
-    #
-    # Scenario: A data analyst can submit an SSP Section 4 data file
-    #     Given SSP Data Analyst Stefani logs in
-    #     When SSP Data Analyst Stefani submits an SSP Section 4 data file
-    #     Then SSP Data Analyst Stefani sees the Section 4 submission in Submission History -> implementation includes status, err report filename, original filename, etc
-    #     And SSP Data Analyst Stefani can download the error report -> file match contents?
-    #     # TODO: And Regional Randy (or Rebecca) gets an email (determine exact)
-    #
-    #   # Tribal Data Analyst Tara scenarios
-    #
-    # Scenario: A data analyst can submit a Tribal Section 1 data file
-    #     Given Tribal Data Analyst Tara logs in
-    #     When Tribal Data Analyst Tara submits a Tribal Section 1 data file
-    #     Then Tribal Data Analyst Tara sees the Section 1 submission in Submission History -> implementation includes status, err report filename, original filename, etc
-    #     And Tribal Data Analyst Tara can download the error report -> file match contents?
-    #     # TODO: And Regional Randy gets an email (determine exact)
-    #
-    # Scenario: A data analyst can submit a Tribal Section 2 data file
-    #     Given Tribal Data Analyst Tara logs in
-    #     When Tribal Data Analyst Tara submits a Tribal Section 2 data file
-    #     Then Tribal Data Analyst Tara sees the Section 2 submission in Submission History -> implementation includes status, err report filename, original filename, etc
-    #     And Tribal Data Analyst Tara can download the error report -> file match contents?
-    #     # TODO: And Regional Randy gets an email (determine exact)
-    #
-    # Scenario: A data analyst can submit a Tribal Section 3 data file
-    #     Given Tribal Data Analyst Tara logs in
-    #     When Tribal Data Analyst Tara submits a Tribal Section 3 data file
-    #     Then Tribal Data Analyst Tara sees the Section 3 submission in Submission History -> implementation includes status, err report filename, original filename, etc
-    #     And Tribal Data Analyst Tara can download the error report -> file match contents?
-    #     # TODO: And Regional Randy gets an email (determine exact)
-    #
+    Scenario: A data analyst can submit an SSP Section 1 data file
+        Given 'Data Analyst', 'stefani-cypress@teamraft.com', logs in
+        When 'stafani-cypress@teamraft.com' uploads a 'SSP' Section '1' data file for year '2024' and quarter 'Q1'
+        Then 'stafani-cypress@teamraft.com' sees the 'SSP' Section '1' submission in Submission History
+        And 'stafani-cypress@teamraft.com' can download the 'SSP' Section '1' error report for year '2024' and quarter 'Q1'
+        # TODO: And Regional Randy (or Rebecca) gets an email (determine exact)
+
+    Scenario: A data analyst can submit an SSP Section 2 data file
+        Given 'Data Analyst', 'stefani-cypress@teamraft.com', logs in
+        When 'stafani-cypress@teamraft.com' uploads a 'SSP' Section '2' data file for year '2024' and quarter 'Q1'
+        Then 'stafani-cypress@teamraft.com' sees the 'SSP' Section '2' submission in Submission History
+        And 'stafani-cypress@teamraft.com' can download the 'SSP' Section '2' error report for year '2024' and quarter 'Q1'
+        # TODO: And Regional Randy (or Rebecca) gets an email (determine exact)
+
+    Scenario: A data analyst can submit an SSP Section 3 data file
+        Given 'Data Analyst', 'stefani-cypress@teamraft.com', logs in
+        When 'stafani-cypress@teamraft.com' uploads a 'SSP' Section '3' data file for year '2024' and quarter 'Q1'
+        Then 'stafani-cypress@teamraft.com' sees the 'SSP' Section '3' submission in Submission History
+        And 'stafani-cypress@teamraft.com' can download the 'SSP' Section '3' error report for year '2024' and quarter 'Q1'
+        # TODO: And Regional Randy (or Rebecca) gets an email (determine exact)
+
+    Scenario: A data analyst can submit an SSP Section 4 data file
+        Given 'Data Analyst', 'stefani-cypress@teamraft.com', logs in
+        When 'stafani-cypress@teamraft.com' uploads a 'SSP' Section '4' data file for year '2024' and quarter 'Q1'
+        Then 'stafani-cypress@teamraft.com' sees the 'SSP' Section '4' submission in Submission History
+        And 'stafani-cypress@teamraft.com' can download the 'SSP' Section '4' error report for year '2024' and quarter 'Q1'
+        # TODO: And Regional Randy (or Rebecca) gets an email (determine exact)
+
+    # Tribal Data Analyst Tara scenarios
+
+    Scenario: A data analyst can submit a Tribal Section 1 data file
+        Given 'Data Analyst', 'tara-cypress@teamraft.com', logs in
+        When 'tara-cypress@teamraft.com' uploads a 'TRIBAL' Section '1' data file for year '2021' and quarter 'Q1'
+        Then 'tara-cypress@teamraft.com' sees the 'TRIBAL' Section '1' submission in Submission History
+        And 'tara-cypress@teamraft.com' can download the 'TRIBAL' Section '1' error report for year '2021' and quarter 'Q1'
+        # TODO: And Regional Randy gets an email (determine exact)
+
+    Scenario: A data analyst can submit a Tribal Section 2 data file
+        Given 'Data Analyst', 'tara-cypress@teamraft.com', logs in
+        When 'tara-cypress@teamraft.com' uploads a 'TRIBAL' Section '2' data file for year '2021' and quarter 'Q1'
+        Then 'tara-cypress@teamraft.com' sees the 'TRIBAL' Section '2' submission in Submission History
+        And 'tara-cypress@teamraft.com' can download the 'TRIBAL' Section '2' error report for year '2021' and quarter 'Q1'
+        # TODO: And Regional Randy gets an email (determine exact)
+
+    Scenario: A data analyst can submit a Tribal Section 3 data file
+        Given 'Data Analyst', 'tara-cypress@teamraft.com', logs in
+        When 'tara-cypress@teamraft.com' uploads a 'TRIBAL' Section '3' data file for year '2021' and quarter 'Q1'
+        Then 'tara-cypress@teamraft.com' sees the 'TRIBAL' Section '3' submission in Submission History
+        And 'tara-cypress@teamraft.com' can download the 'TRIBAL' Section '3' error report for year '2021' and quarter 'Q1'
+        # TODO: And Regional Randy gets an email (determine exact)
+
+    # TODO: Verify that no tribes can submit Section 4 Stratum Data
     # Scenario: A data analyst can submit a Tribal Section 4 data file
-    #     Given Tribal Data Analyst Tara logs in
-    #     When Tribal Data Analyst Tara submits a Tribal Section 4 data file
-    #     Then Tribal Data Analyst Tara sees the Section 4 submission in Submission History -> implementation includes status, err report filename, original filename, etc
-    #     And Tribal Data Analyst Tara can download the error report -> file match contents?
-    #     # TODO: And Regional Randy gets an email (determine exact)
+    #     Given 'Data Analyst', 'tara-cypress@teamraft.com', logs in
+    #     When 'tara-cypress@teamraft.com' uploads a 'TRIBAL' Section '4' data file for year '2021' and quarter 'Q1'
+    #     Then 'tara-cypress@teamraft.com' sees the 'TRIBAL' Section '4' submission in Submission History
+    #     And 'tara-cypress@teamraft.com' can download the 'TRIBAL' Section '4' error report for year '2021' and quarter 'Q1'
+        # TODO: And Regional Randy gets an email (determine exact)
     #
     #     # Edge / failure cases for TANF Data Analyst Tim
     #
