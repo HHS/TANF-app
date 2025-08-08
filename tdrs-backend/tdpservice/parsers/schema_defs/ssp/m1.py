@@ -267,7 +267,7 @@ m1 = [
             Field(
                 item="14",
                 name="AMT_FOOD_STAMP_ASSISTANCE",
-                friendly_name="Amount of SNAP Benefits",
+                friendly_name="SNAP Benefits",
                 type=FieldType.NUMERIC,
                 startIndex=37,
                 endIndex=41,
@@ -291,7 +291,7 @@ m1 = [
             Field(
                 item="16",
                 name="AMT_SUB_CC",
-                friendly_name="Amount of Subsidized Child Care",
+                friendly_name="Subsidized Child Care",
                 type=FieldType.NUMERIC,
                 startIndex=42,
                 endIndex=46,
@@ -327,7 +327,7 @@ m1 = [
             Field(
                 item="19A",
                 name="CASH_AMOUNT",
-                friendly_name="Cash and Cash Equivalents: Amount",
+                friendly_name="Cash and Cash Equivalents",
                 type=FieldType.NUMERIC,
                 startIndex=54,
                 endIndex=58,
@@ -351,7 +351,7 @@ m1 = [
             Field(
                 item="20A",
                 name="CC_AMOUNT",
-                friendly_name="SSP-MOE Child Care: Amount",
+                friendly_name="SSP-MOE Child Care",
                 type=FieldType.NUMERIC,
                 startIndex=61,
                 endIndex=65,
