@@ -3,24 +3,45 @@ import { When, Then } from '@badeball/cypress-cucumber-preprocessor'
 
 const test_data_file_dir = '../tdrs-backend/tdpservice/parsers/test/data'
 const test_section_data_file_names = {
-  1: 'small_correct_file.txt',
-  2: 'small_correct_file.txt',
-  3: 'aggregates_rejected.txt',
-  4: 'tanf_section4_with_errors.txt',
+  TANF: {
+    1: 'small_correct_file.txt',
+    2: 'small_correct_file.txt',
+    3: 'aggregates_rejected.txt',
+    4: 'tanf_section4_with_errors.txt',
+  },
+  SSP: {
+    1: 'small_ssp_section1.txt',
+    2: 'small_ssp_section1.txt',
+    3: 'small_ssp_section1.txt',
+    4: 'small_ssp_section1.txt',
+  },
+  TRIBAL: {
+    1: 'small_ssp_section1.txt',
+    2: 'small_ssp_section1.txt',
+    3: 'small_ssp_section1.txt',
+    4: 'small_ssp_section1.txt',
+  },
 }
 
 When(
-  '{string} uploads a TANF Section {string} data file for year {string} and quarter {string}',
-  (username, section, year, quarter) => {
+  '{string} uploads a {string} Section {string} data file for year {string} and quarter {string}',
+  (username, program, section, year, quarter) => {
     cy.visit('/data-files')
     cy.wait(1000)
     cy.contains('Data Files').should('exist')
 
     // Can see search form
     cy.contains('Fiscal Year').should('exist')
+    if (program === 'SSP') {
+      cy.contains('File Type').should('exist')
+    }
     cy.contains('Quarter').should('exist')
 
     // Submit search form
+    if (program === 'SSP') {
+      cy.get('label[for="ssp-moe"]').click()
+      cy.wait(10000)
+    }
     cy.get('#reportingYears').should('exist').select(year)
     cy.get('#quarter').should('exist').select(quarter) // Q1, Q2, Q3, Q4
     cy.get('button').contains('Search').should('exist')
@@ -36,7 +57,7 @@ When(
 
     cy.wait(1000).then(() => {
       cy.get(section_ids[section]).selectFile(
-        `${test_data_file_dir}/${test_section_data_file_names[section]}`,
+        `${test_data_file_dir}/${test_section_data_file_names[program][section]}`,
         {
           action: 'drag-drop',
         }
@@ -67,21 +88,23 @@ const findSectionTableFirsRow = (section) => {
 }
 
 Then(
-  '{string} sees the TANF Section {string} submission in Submission History',
-  (username, section) => {
+  '{string} sees the {string} Section {string} submission in Submission History',
+  (username, program, section) => {
     cy.get('button').contains('Submission History').should('exist').click()
 
     findSectionTableFirsRow(section)
       .should('exist')
       .within(() => {
-        cy.contains(test_section_data_file_names[section]).should('exist')
+        cy.contains(test_section_data_file_names[program][section]).should(
+          'exist'
+        )
       })
   }
 )
 
 Then(
-  '{string} can download the TANF Section {string} error report for year {string} and quarter {string}',
-  (username, section, year, quarter) => {
+  '{string} can download the {string} Section {string} error report for year {string} and quarter {string}',
+  (username, program, section, year, quarter) => {
     findSectionTableFirsRow(section)
       .should('exist')
       .within(() => {
