@@ -285,12 +285,11 @@ def sumIsLarger(fields, val):
         return Result(
             valid=False,
             error=(
-                f"No benefits detected for this case. "
+                f"No benefit amounts detected for this case. "
                 f"The total sum of {', '.join(fields)} must be greater than {val}."
             ),
             field_names=fields,
         )
-        s = "No benefits detected for this case. The total sum of SNAP Benefits, Subsidized Child Care, Cash Amount, Child Care, Transportation and Other Supportive Services must be greater than 0."
 
     return sumIsLargerFunc
 
