@@ -206,9 +206,7 @@ Cypress.Commands.add('validateFraCsv', () => {
 
 Cypress.Commands.add('downloadErrorReport', (error_report_name) => {
   cy.get('button').contains(error_report_name).should('exist').click()
-  cy.wait(2000).then(() => {
-    cy.readFile(`${Cypress.config('downloadsFolder')}/${error_report_name}`)
-  })
+  cy.readFile(`${Cypress.config('downloadsFolder')}/${error_report_name}`)
 })
 
 Cypress.Commands.add('fillSttFyQ', (stt, fy, q, isTanf) => {
@@ -235,3 +233,58 @@ Cypress.Commands.add('fillSttFyQNoProgramSelector', (stt, fy, q) => {
       cy.get('button').contains('Search').should('exist').click()
     })
 })
+
+Cypress.Commands.add('waitForSpinnerToDisappear', (timeout = 10000) => {
+  // Give time for the spinner to render and then check if it exists
+  cy.wait(500)
+  cy.get('body').then(($body) => {
+    if ($body.find('.spinner').length) {
+      cy.get('.spinner', { timeout }).should('not.exist')
+    }
+  })
+})
+
+Cypress.Commands.add(
+  'waitForDataFileSummary',
+  (fileId, maxAttempts = 15, interval = 2000) => {
+    // Function to check if summary exists and is populated
+    const checkSummary = (response) => {
+      return (
+        response &&
+        response.body &&
+        response.body.summary &&
+        Object.keys(response.body.summary).length > 0
+      )
+    }
+
+    const pollForProcessing = (attempt = 0) => {
+      // If we've exceeded max attempts, should we do anything else?
+      if (attempt >= maxAttempts) {
+        cy.log(
+          `Warning: Data file ${fileId} processing timeout after ${maxAttempts} attempts`
+        )
+        return cy.wrap({ id: fileId })
+      }
+
+      return cy
+        .request({
+          method: 'GET',
+          url: `${Cypress.env('apiUrl')}/data_files/${fileId}/`,
+          failOnStatusCode: false,
+        })
+        .then((response) => {
+          // If summary is populated, return the response
+          if (checkSummary(response)) {
+            return response
+          }
+
+          // Otherwise, wait and try again
+          cy.wait(interval)
+          return pollForProcessing(attempt + 1)
+        })
+    }
+
+    // Start polling
+    return pollForProcessing()
+  }
+)

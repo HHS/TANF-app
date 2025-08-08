@@ -23,7 +23,7 @@ When('FRA Data Analyst Fred submits the Work Outcomes Report', () => {
 })
 
 Then('FRA Data Analyst Fred sees the upload in Submission History', () => {
-  cy.wait(5000).then(() => {
+  cy.waitForSpinnerToDisappear().then(() => {
     cy.contains('Submission History').should('exist')
     cy.validateFraCsv()
   })
@@ -55,17 +55,31 @@ When('FRA Data Analyst Fred submits the TANF Report', () => {
   cy.visit('/data-files')
   cy.get(':nth-child(2) > .usa-radio__label').click()
   cy.fillFYQ('2021', 'Q1')
+  cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
   cy.uploadFile(
     '#active-case-data',
     '../tdrs-backend/tdpservice/parsers/test/data/small_correct_file.txt'
   )
+
   cy.get('button').contains('Submit Data Files').should('exist').click()
 })
 
 Then('FRA Data Analyst Fred sees the upload in TANF Submission History', () => {
-  cy.wait(5000).then(() => {
-    cy.get('button').contains('Submission History').click()
-    cy.validateSmallCorrectFile()
+  cy.wait('@dataFileSubmit').then((interception) => {
+    // Check if we have a valid response with an ID
+    if (
+      interception.response &&
+      interception.response.body &&
+      interception.response.body.id
+    ) {
+      const fileId = interception.response.body.id
+
+      // Poll the API until the summary is populated
+      cy.waitForDataFileSummary(fileId).then(() => {
+        cy.get('button').contains('Submission History').click()
+        cy.validateSmallCorrectFile()
+      })
+    }
   })
 })
 
@@ -78,17 +92,31 @@ When('FRA Data Analyst Fred submits the SSP Report', () => {
   cy.visit('/data-files')
   cy.get(':nth-child(3) > .usa-radio__label').click()
   cy.fillFYQ('2024', 'Q1')
+  cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
   cy.uploadFile(
     '#active-case-data',
     '../tdrs-backend/tdpservice/parsers/test/data/small_ssp_section1.txt'
   )
+
   cy.get('button').contains('Submit Data Files').should('exist').click()
 })
 
 Then('FRA Data Analyst Fred sees the upload in SSP Submission History', () => {
-  cy.wait(5000).then(() => {
-    cy.get('button').contains('Submission History').click()
-    cy.validateSmallSSPFile()
+  cy.wait('@dataFileSubmit').then((interception) => {
+    // Check if we have a valid response with an ID
+    if (
+      interception.response &&
+      interception.response.body &&
+      interception.response.body.id
+    ) {
+      const fileId = interception.response.body.id
+
+      // Poll the API until the summary is populated
+      cy.waitForDataFileSummary(fileId).then(() => {
+        cy.get('button').contains('Submission History').click()
+        cy.validateSmallSSPFile()
+      })
+    }
   })
 })
 
