@@ -170,6 +170,7 @@ Cypress.Commands.add('fillFYQ', (fiscal_year, quarter) => {
   cy.get('#reportingYears').should('exist').select(fiscal_year)
   cy.get('#quarter').should('exist').select(quarter)
   cy.get('button').contains('Search').should('exist').click()
+  cy.wait(100)
 })
 
 Cypress.Commands.add('uploadFile', (file_input, file_path) => {
@@ -222,6 +223,7 @@ Cypress.Commands.add('fillSttFyQ', (stt, fy, q, isTanf) => {
       cy.get('#reportingYears').should('exist').select(fy)
       cy.get('#quarter').should('exist').select(q)
       cy.get('button').contains('Search').should('exist').click()
+      cy.wait(100)
     })
 })
 
@@ -232,6 +234,7 @@ Cypress.Commands.add('fillSttFyQNoProgramSelector', (stt, fy, q) => {
       cy.get('#reportingYears').should('exist').select(fy)
       cy.get('#quarter').should('exist').select(q)
       cy.get('button').contains('Search').should('exist').click()
+      cy.wait(100)
     })
 })
 
