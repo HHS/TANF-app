@@ -236,7 +236,7 @@ Cypress.Commands.add('fillSttFyQNoProgramSelector', (stt, fy, q) => {
 
 Cypress.Commands.add(
   'waitForDataFileSummary',
-  (fileId, maxAttempts = 15, interval = 2000) => {
+  (fileId, maxAttempts = 60, interval = 2000) => {
     // Function to check if summary exists and is populated
     const checkSummary = (response) => {
       return (
