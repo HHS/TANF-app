@@ -80,6 +80,7 @@ Then('Admin Alex sees the upload in SSP Submission History', () => {
       // Poll the API until the summary is populated
       cy.waitForDataFileSummary(fileId).then(() => {
         cy.get('button').contains('Submission History').click()
+        cy.wait(500)
         cy.validateSmallSSPFile()
       })
     }
