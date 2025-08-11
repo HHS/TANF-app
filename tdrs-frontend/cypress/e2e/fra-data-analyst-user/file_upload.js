@@ -112,10 +112,11 @@ When('FRA Data Analyst Fred submits the SSP Report', () => {
   )
 
   cy.get('button').contains('Submit Data Files').should('exist').click()
+  cy.wait('@dataFileSubmit').as('interception')
 })
 
 Then('FRA Data Analyst Fred sees the upload in SSP Submission History', () => {
-  cy.wait('@dataFileSubmit').then((interception) => {
+  cy.get('@interception').then((interception) => {
     // Check if we have a valid response with an ID
     if (
       interception.response &&
