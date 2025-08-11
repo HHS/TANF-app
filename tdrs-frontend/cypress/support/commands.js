@@ -174,6 +174,7 @@ Cypress.Commands.add('fillFYQ', (fiscal_year, quarter) => {
 
 Cypress.Commands.add('uploadFile', (file_input, file_path) => {
   cy.get(file_input).selectFile(file_path, { action: 'drag-drop' })
+  cy.wait(500)
 })
 
 Cypress.Commands.add('validateSmallCorrectFile', () => {
