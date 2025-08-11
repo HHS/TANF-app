@@ -18,7 +18,7 @@ const UserProfileDetails = ({ user, isAMSUser }) => {
         label="Name"
         value={`${user?.first_name || ''} ${user?.last_name || ''}`}
       />
-      <hr className="margin-right-4 margin-top-3 margin-bottom-2" />
+      <hr className="margin-right-8 margin-top-3 margin-bottom-2" />
       <ProfileRow label="User Type" value={primaryRole?.name} />
       {isAMSUser && userRegions ? (
         <ProfileRow
@@ -43,6 +43,7 @@ const UserProfileDetails = ({ user, isAMSUser }) => {
           <JurisdictionLocationInfo
             jurisdictionType={userJurisdiction}
             locationName={userLocationName}
+            formType={'profile'}
           />
           {userJurisdiction !== 'tribe' && !isAMSUser && (
             <ProfileRow label="Reporting FRA" value={userIsReportingFRA} />

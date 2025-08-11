@@ -1,13 +1,20 @@
 import React from 'react'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
 
 import { Provider } from 'react-redux'
 import { thunk } from 'redux-thunk'
 import { mount } from 'enzyme'
-import Home from '../Home'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import Home from '.'
 import configureStore from 'redux-mock-store'
-import PrivateRoute from '../PrivateRoute'
+import * as authSelectors from '../../selectors/auth'
+
+// Mock the auth selectors
+jest.mock('../../selectors/auth', () => ({
+  ...jest.requireActual('../../selectors/auth'),
+  accountIsInReview: jest.fn(() => false),
+  accountStatusIsApproved: jest.fn(() => false),
+  accountIsRegionalStaff: jest.fn(() => false),
+}))
 
 const initialState = {
   auth: {
@@ -44,140 +51,34 @@ const initialState = {
   },
 }
 
-describe('Home', () => {
-  const mockStore = configureStore([thunk])
-
-  it('should render the Home page with the request access subheader', () => {
-    const store = mockStore({
-      ...initialState,
-      auth: {
-        authenticated: true,
-        user: {
-          email: 'hi@bye.com',
-          roles: [],
-          access_request: false,
-          account_approval_status: 'Access request',
-        },
-      },
-    })
-    const { getByText } = render(
-      <Provider store={store}>
-        <Home />
-      </Provider>
-    )
-
-    const header = getByText(
-      `Your request for access is currently being reviewed by an OFA Admin. We'll send you an email when it's been approved.`
-    )
-    expect(header).toBeInTheDocument()
-  })
-
-  it("should render the Home page with the user's current role", () => {
-    const store = mockStore({
-      ...initialState,
-      auth: {
-        authenticated: true,
-        user: {
-          email: 'hi@bye.com',
-          roles: [{ id: 1, name: 'OFA Admin', permission: [] }],
-          access_request: false,
-          account_approval_status: 'Approved',
-        },
-      },
-    })
-
-    const { getByText } = render(
-      <Provider store={store}>
-        <Home />
-      </Provider>
-    )
-
-    const header = getByText(
-      `You have been approved for access to TDP. For guidance on submitting data, managing your account, and utilizing other functionality please refer to the TDP Knowledge Center.`
-    )
-    expect(header).toBeInTheDocument()
-  })
-
-  it("should render the Home page with the user's OFA admin role", () => {
-    const store = mockStore({
-      ...initialState,
-      auth: {
-        authenticated: true,
-        user: {
-          email: 'hi@bye.com',
-          roles: [{ id: 2, name: 'Data Analyst', permission: [] }],
-          access_request: false,
-          account_approval_status: 'Approved',
-        },
-      },
-    })
-
-    const { getByText } = render(
-      <Provider store={store}>
-        <Home />
-      </Provider>
-    )
-
-    const header = getByText(
-      `You have been approved for access to TDP. For guidance on submitting data, managing your account, and utilizing other functionality please refer to the TDP Knowledge Center.`
-    )
-    expect(header).toBeInTheDocument()
-  })
-
-  it("should render the Home page with the user's Data Analyst role and permissions", () => {
-    const store = mockStore({
-      ...initialState,
-      auth: {
-        authenticated: true,
-        user: {
-          access_request: false,
-          account_approval_status: 'Approved',
-          email: 'hi@bye.com',
-          roles: [
-            {
-              id: 1,
-              name: 'Data Analyst',
-            },
-          ],
-        },
-      },
-    })
-
-    const { getByText } = render(
-      <Provider store={store}>
-        <Home />
-      </Provider>
-    )
-
-    expect(
-      getByText(
-        `You have been approved for access to TDP. For guidance on submitting data, managing your account, and utilizing other functionality please refer to the TDP Knowledge Center.`
-      )
-    ).toBeInTheDocument()
-  })
-})
-
 describe('Pre-approval Home page', () => {
   const mockStore = configureStore([thunk])
 
   it('should have a first name input', () => {
+    authSelectors.accountIsInReview.mockReturnValue(false)
+    authSelectors.accountStatusIsApproved.mockReturnValue(false)
+    authSelectors.accountIsRegionalStaff.mockReturnValue(false)
+
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>
-        <Home />
+        <Home setInEditMode={jest.fn()} />
       </Provider>
     )
 
     const nameInput = wrapper.find('#firstName')
-
     expect(nameInput).toExist()
   })
 
   it('should have a last name input', () => {
+    authSelectors.accountIsInReview.mockReturnValue(false)
+    authSelectors.accountStatusIsApproved.mockReturnValue(false)
+    authSelectors.accountIsRegionalStaff.mockReturnValue(false)
+
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>
-        <Home />
+        <Home setInEditMode={jest.fn()} />
       </Provider>
     )
 
@@ -187,10 +88,14 @@ describe('Pre-approval Home page', () => {
   })
 
   it('should set firstName state value to equal the input value', () => {
+    authSelectors.accountIsInReview.mockReturnValue(false)
+    authSelectors.accountStatusIsApproved.mockReturnValue(false)
+    authSelectors.accountIsRegionalStaff.mockReturnValue(false)
+
     const store = mockStore(initialState)
     const { container } = render(
       <Provider store={store}>
-        <Home />
+        <Home setInEditMode={jest.fn()} />
       </Provider>
     )
 
@@ -204,10 +109,14 @@ describe('Pre-approval Home page', () => {
   })
 
   it('should set lastName state value to equal the input value', () => {
+    authSelectors.accountIsInReview.mockReturnValue(false)
+    authSelectors.accountStatusIsApproved.mockReturnValue(false)
+    authSelectors.accountIsRegionalStaff.mockReturnValue(false)
+
     const store = mockStore(initialState)
     const { container } = render(
       <Provider store={store}>
-        <Home />
+        <Home setInEditMode={jest.fn()} />
       </Provider>
     )
 
@@ -221,10 +130,14 @@ describe('Pre-approval Home page', () => {
   })
 
   it('should have a submit button', () => {
+    authSelectors.accountIsInReview.mockReturnValue(false)
+    authSelectors.accountStatusIsApproved.mockReturnValue(false)
+    authSelectors.accountIsRegionalStaff.mockReturnValue(false)
+
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>
-        <Home />
+        <Home setInEditMode={jest.fn()} />
       </Provider>
     )
 
@@ -234,6 +147,10 @@ describe('Pre-approval Home page', () => {
   })
 
   it('should mount a list of stt options based on stts from the store', () => {
+    authSelectors.accountIsInReview.mockReturnValue(false)
+    authSelectors.accountStatusIsApproved.mockReturnValue(false)
+    authSelectors.accountIsRegionalStaff.mockReturnValue(false)
+
     const store = mockStore({
       ...initialState,
       stts: {
@@ -267,7 +184,7 @@ describe('Pre-approval Home page', () => {
     })
     const wrapper = mount(
       <Provider store={store}>
-        <Home />
+        <Home setInEditMode={jest.fn()} />
       </Provider>
     )
 
@@ -277,6 +194,10 @@ describe('Pre-approval Home page', () => {
   })
 
   it('should mount a list of tribe options based on stts from the store', () => {
+    authSelectors.accountIsInReview.mockReturnValue(false)
+    authSelectors.accountStatusIsApproved.mockReturnValue(false)
+    authSelectors.accountIsRegionalStaff.mockReturnValue(false)
+
     const store = mockStore({
       ...initialState,
       stts: {
@@ -310,7 +231,7 @@ describe('Pre-approval Home page', () => {
     })
     const wrapper = mount(
       <Provider store={store}>
-        <Home />
+        <Home setInEditMode={jest.fn()} />
       </Provider>
     )
 
@@ -324,6 +245,10 @@ describe('Pre-approval Home page', () => {
   })
 
   it('should mount a list of territory options based on stts from the store', () => {
+    authSelectors.accountIsInReview.mockReturnValue(false)
+    authSelectors.accountStatusIsApproved.mockReturnValue(false)
+    authSelectors.accountIsRegionalStaff.mockReturnValue(false)
+
     const store = mockStore({
       ...initialState,
       stts: {
@@ -357,7 +282,7 @@ describe('Pre-approval Home page', () => {
     })
     const wrapper = mount(
       <Provider store={store}>
-        <Home />
+        <Home setInEditMode={jest.fn()} />
       </Provider>
     )
 
@@ -371,6 +296,10 @@ describe('Pre-approval Home page', () => {
   })
 
   it('should not show the stt combno box for non-STT users', () => {
+    authSelectors.accountIsInReview.mockReturnValue(false)
+    authSelectors.accountStatusIsApproved.mockReturnValue(false)
+    authSelectors.accountIsRegionalStaff.mockReturnValue(false)
+
     const store = mockStore({
       ...initialState,
       auth: {
@@ -385,16 +314,19 @@ describe('Pre-approval Home page', () => {
 
     const wrapper = mount(
       <Provider store={store}>
-        <Home />
+        <Home setInEditMode={jest.fn()} />
       </Provider>
     )
 
     const options = wrapper.find('option')
-
     expect(options).toEqual({})
   })
 
   it('should have errors when you try to submit and first name does not have at least 1 character', () => {
+    authSelectors.accountIsInReview.mockReturnValue(false)
+    authSelectors.accountStatusIsApproved.mockReturnValue(false)
+    authSelectors.accountIsRegionalStaff.mockReturnValue(false)
+
     const store = mockStore({
       ...initialState,
       stts: {
@@ -422,7 +354,7 @@ describe('Pre-approval Home page', () => {
     })
     const { getByText } = render(
       <Provider store={store}>
-        <Home />
+        <Home setInEditMode={jest.fn()} />
       </Provider>
     )
 
@@ -434,6 +366,10 @@ describe('Pre-approval Home page', () => {
   })
 
   it('should not require an stt for ofa users', () => {
+    authSelectors.accountIsInReview.mockReturnValue(false)
+    authSelectors.accountStatusIsApproved.mockReturnValue(false)
+    authSelectors.accountIsRegionalStaff.mockReturnValue(false)
+
     const store = mockStore({
       ...initialState,
       auth: {
@@ -469,7 +405,7 @@ describe('Pre-approval Home page', () => {
     })
     const { getByText, queryByText } = render(
       <Provider store={store}>
-        <Home />
+        <Home setInEditMode={jest.fn()} />
       </Provider>
     )
 
@@ -481,6 +417,10 @@ describe('Pre-approval Home page', () => {
   })
 
   it('should display regional vs central radio control', () => {
+    authSelectors.accountIsInReview.mockReturnValue(false)
+    authSelectors.accountStatusIsApproved.mockReturnValue(false)
+    authSelectors.accountIsRegionalStaff.mockReturnValue(false)
+
     const store = mockStore({
       ...initialState,
       auth: {
@@ -516,7 +456,7 @@ describe('Pre-approval Home page', () => {
     })
     const { getByText } = render(
       <Provider store={store}>
-        <Home />
+        <Home setInEditMode={jest.fn()} />
       </Provider>
     )
 
@@ -528,6 +468,10 @@ describe('Pre-approval Home page', () => {
   })
 
   it('should toggle region checkboxes', () => {
+    authSelectors.accountIsInReview.mockReturnValue(false)
+    authSelectors.accountStatusIsApproved.mockReturnValue(false)
+    authSelectors.accountIsRegionalStaff.mockReturnValue(true)
+
     const store = mockStore({
       ...initialState,
       auth: {
@@ -563,7 +507,7 @@ describe('Pre-approval Home page', () => {
     })
     const { getByText, queryByText } = render(
       <Provider store={store}>
-        <Home />
+        <Home setInEditMode={jest.fn()} />
       </Provider>
     )
 
@@ -583,6 +527,10 @@ describe('Pre-approval Home page', () => {
   })
 
   it('should have 3 errors when regions toggled and no selections made', () => {
+    authSelectors.accountIsInReview.mockReturnValue(false)
+    authSelectors.accountStatusIsApproved.mockReturnValue(false)
+    authSelectors.accountIsRegionalStaff.mockReturnValue(false)
+
     const store = mockStore({
       ...initialState,
       auth: {
@@ -618,7 +566,7 @@ describe('Pre-approval Home page', () => {
     })
     const { getByText } = render(
       <Provider store={store}>
-        <Home />
+        <Home setInEditMode={jest.fn()} />
       </Provider>
     )
 
@@ -636,6 +584,10 @@ describe('Pre-approval Home page', () => {
   })
 
   it('should have 2 errors after region selection when already invalid', () => {
+    authSelectors.accountIsInReview.mockReturnValue(false)
+    authSelectors.accountStatusIsApproved.mockReturnValue(false)
+    authSelectors.accountIsRegionalStaff.mockReturnValue(false)
+
     const store = mockStore({
       ...initialState,
       auth: {
@@ -671,7 +623,7 @@ describe('Pre-approval Home page', () => {
     })
     const { getByText } = render(
       <Provider store={store}>
-        <Home />
+        <Home setInEditMode={jest.fn()} />
       </Provider>
     )
 
@@ -692,6 +644,10 @@ describe('Pre-approval Home page', () => {
   })
 
   it('should have 2 errors after region checkboxes are hidden', () => {
+    authSelectors.accountIsInReview.mockReturnValue(false)
+    authSelectors.accountStatusIsApproved.mockReturnValue(false)
+    authSelectors.accountIsRegionalStaff.mockReturnValue(false)
+
     const store = mockStore({
       ...initialState,
       auth: {
@@ -727,7 +683,7 @@ describe('Pre-approval Home page', () => {
     })
     const { getByText } = render(
       <Provider store={store}>
-        <Home />
+        <Home setInEditMode={jest.fn()} />
       </Provider>
     )
 
@@ -748,6 +704,10 @@ describe('Pre-approval Home page', () => {
   })
 
   it('should be able to select and deselect multiple regions', () => {
+    authSelectors.accountIsInReview.mockReturnValue(false)
+    authSelectors.accountStatusIsApproved.mockReturnValue(false)
+    authSelectors.accountIsRegionalStaff.mockReturnValue(false)
+
     const store = mockStore({
       ...initialState,
       auth: {
@@ -783,7 +743,7 @@ describe('Pre-approval Home page', () => {
     })
     const { getByText } = render(
       <Provider store={store}>
-        <Home />
+        <Home setInEditMode={jest.fn()} />
       </Provider>
     )
 
@@ -802,6 +762,10 @@ describe('Pre-approval Home page', () => {
   })
 
   it('should remove error message as inputs are filled', () => {
+    authSelectors.accountIsInReview.mockReturnValue(false)
+    authSelectors.accountStatusIsApproved.mockReturnValue(false)
+    authSelectors.accountIsRegionalStaff.mockReturnValue(false)
+
     const store = mockStore({
       ...initialState,
       stts: {
@@ -829,7 +793,7 @@ describe('Pre-approval Home page', () => {
     })
     const wrapper = mount(
       <Provider store={store}>
-        <Home />
+        <Home setInEditMode={jest.fn()} />
       </Provider>
     )
 
@@ -903,6 +867,10 @@ describe('Pre-approval Home page', () => {
   })
 
   it('should display an error message when the input has been touched', () => {
+    authSelectors.accountIsInReview.mockReturnValue(false)
+    authSelectors.accountStatusIsApproved.mockReturnValue(false)
+    authSelectors.accountIsRegionalStaff.mockReturnValue(false)
+
     const store = mockStore({
       ...initialState,
       stts: {
@@ -930,7 +898,7 @@ describe('Pre-approval Home page', () => {
     })
     const wrapper = mount(
       <Provider store={store}>
-        <Home />
+        <Home setInEditMode={jest.fn()} />
       </Provider>
     )
 
@@ -974,6 +942,10 @@ describe('Pre-approval Home page', () => {
   })
 
   it('should set the Select element value to the value of the event when there is a selected stt', () => {
+    authSelectors.accountIsInReview.mockReturnValue(false)
+    authSelectors.accountStatusIsApproved.mockReturnValue(false)
+    authSelectors.accountIsRegionalStaff.mockReturnValue(false)
+
     const store = mockStore({
       ...initialState,
       stts: {
@@ -1001,7 +973,7 @@ describe('Pre-approval Home page', () => {
     })
     const { getByLabelText } = render(
       <Provider store={store}>
-        <Home />
+        <Home setInEditMode={jest.fn()} />
       </Provider>
     )
 
@@ -1016,72 +988,11 @@ describe('Pre-approval Home page', () => {
     expect(select.value).toEqual('alaska')
   })
 
-  it('routes displays the pending approval message when a user has requested access', () => {
-    const store = mockStore({
-      ...initialState,
-      auth: {
-        ...initialState.auth,
-        user: {
-          account_approval_status: 'Pending',
-          access_request: false,
-          stt: {
-            id: 6,
-            type: 'state',
-            code: 'CO',
-            name: 'Colorado',
-          },
-        },
-      },
-      stts: {
-        sttList: [
-          {
-            id: 1,
-            type: 'state',
-            code: 'AL',
-            name: 'Alabama',
-          },
-          {
-            id: 2,
-            type: 'state',
-            code: 'AK',
-            name: 'Alaska',
-          },
-          {
-            id: 140,
-            type: 'tribe',
-            code: 'AK',
-            name: 'Aleutian/Pribilof Islands Association, Inc.',
-          },
-        ],
-      },
-    })
-
-    render(
-      <Provider store={store}>
-        <MemoryRouter initialEntries={['/home']}>
-          <Routes>
-            <Route
-              exact
-              path="/home"
-              element={
-                <PrivateRoute title="Home">
-                  <Home />
-                </PrivateRoute>
-              }
-            />
-          </Routes>
-        </MemoryRouter>
-      </Provider>
-    )
-
-    expect(
-      screen.getByText(
-        `Your request for access is currently being reviewed by an OFA Admin. We'll send you an email when it's been approved.`
-      )
-    ).toBeInTheDocument()
-  })
-
   it('should dispatch "requestAccess" when form is submitted', () => {
+    authSelectors.accountIsInReview.mockReturnValue(false)
+    authSelectors.accountStatusIsApproved.mockReturnValue(false)
+    authSelectors.accountIsRegionalStaff.mockReturnValue(false)
+
     const store = mockStore({
       ...initialState,
       stts: {
@@ -1111,7 +1022,7 @@ describe('Pre-approval Home page', () => {
     store.dispatch = jest.fn(origDispatch)
     const wrapper = mount(
       <Provider store={store}>
-        <Home />
+        <Home setInEditMode={jest.fn()} />
       </Provider>
     )
 

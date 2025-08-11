@@ -18,14 +18,14 @@ function Home({ setInEditMode }) {
   const sttList = useSelector((state) => state?.stts?.sttList)
 
   // TODO: only changing for testing
-  //const userAccessInReview = useSelector(accountIsInReview)
-  const userAccessInReview = true
+  const userAccessInReview = useSelector(accountIsInReview)
+  //const userAccessInReview = true
   const userAccessRequestApproved = useSelector(accountStatusIsApproved)
 
   const [isEditing, setIsEditing] = useState(false)
 
   useEffect(() => {
-    setInEditMode(isEditing)
+    setInEditMode(isEditing, 'access request')
   }, [isEditing, setInEditMode])
 
   if (userAccessInReview) {

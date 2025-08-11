@@ -2,21 +2,40 @@
   border: .25rem solid #b50909;
 }
 
-.aligned-hr {
+.form-section-divider {
+  width: 100vw;
+  max-width: 50rem; /* Match the form's max width */
+  margin-left: auto;
+  margin-right: auto;
   border: none;
   border-top: 1px solid #ccc;
-  width: 100vw;
-  max-width: none;
-
-  // Visually shift it to start where grid-col-8 starts
-  margin-left: calc((100% / 8) * 2); 
-  margin-right: calc((100% / 8) * 2); // optional: match right edge
+  margin-top: 2rem;
+  margin-bottom: 1.5rem;
 }
 
-  .button-container {
-    display: flex;
-  }
+.button-container {
+  display: flex;
+}
 
-  .request-access-button {
-    min-width: '300px'
-  } 
+.request-access-button {
+  min-width: '300px'
+} 
+
+.read-only-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.read-only-row .label {
+  font-weight: bold;
+  min-width: 200px; /* Ensure label has enough space */
+  margin-right: 2rem;
+}
+
+.read-only-row .value {
+  flex: 1;
+  white-space: nowrap;
+}

@@ -1,6 +1,7 @@
 // src/components/UserProfileView.jsx
 import React from 'react'
 import Button from '../Button'
+import ProfileRow from './ProfileRow'
 import UserProfileDetails from './UserProfileDetails'
 import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -29,13 +30,13 @@ const UserProfileView = ({
         </div>
       )}
 
-      <div data-testid="user-profile" className="margin-top-4 margin-bottom-3">
+      <div data-testid="user-profile" className="margin-top-5 margin-bottom-3">
         <div data-testid="user-profile-container">
           <div className="margin-top-4 margin-bottom-3">
             <UserProfileDetails user={user} isAMSUser={isAMSUser} />
           </div>
         </div>
-        {type === 'profile' && <hr className="margin-right-4 margin-top-3" />}
+        {type === 'profile' && <hr className="margin-right-8 margin-top-3" />}
       </div>
       {type === 'profile' ? (
         <>
@@ -65,9 +66,12 @@ const UserProfileView = ({
               <>
                 <p>
                   You will receive all communications from the TANF Data Portal
-                  via the email address you registered with Login.gov. Your
-                  email or password can be managed via Login.gov
+                  via the email address you registered with Login.gov. <br />
+                  Your email or password can be managed via Login.gov
                 </p>
+                <div className="margin-top-2 margin-bottom-2">
+                  <ProfileRow label="Email" value={user?.email} />
+                </div>
                 <Button
                   className="sign-in-button"
                   type="button"

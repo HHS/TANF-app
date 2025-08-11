@@ -16,7 +16,13 @@ import { availableStts } from '../../selectors/stts'
  * @param {function} error - Reference to stt errors object.
  */
 
-function STTComboBox({ selectStt, selectedStt, handleBlur, error, sttType }) {
+function STTComboBox({
+  selectStt,
+  selectedStt = '',
+  handleBlur = null,
+  error = null,
+  sttType,
+}) {
   const sttListRequest = useSelector((state) => state?.stts)
   const filteredStts = useSelector(availableStts)
   const dispatch = useDispatch()
@@ -99,9 +105,4 @@ STTComboBox.propTypes = {
   error: PropTypes.bool,
 }
 
-STTComboBox.defaultProps = {
-  handleBlur: null,
-  selectedStt: '',
-  error: null,
-}
 export default STTComboBox

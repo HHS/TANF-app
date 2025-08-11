@@ -29,19 +29,26 @@ const RouteProvider = ({ children }) => {
  */
 const AppRoutes = () => {
   const user = useSelector((state) => state.auth.user)
+  const userAccountInReview = useSelector(accountIsInReview)
 
   const [isInEditMode, setIsInEditMode] = useState(false)
   const [editContext, setEditContext] = useState(null) // 'access request' or 'profile'
-  //const userAccountInReview = useSelector(accountIsInReview)
-  const userAccountInReview = true // TODO: using for testing
+  //const userAccountInReview = true // TODO: using for testing
 
-  const homeTitle = isInEditMode
-    ? editContext === 'profile'
-      ? 'Edit Profile'
-      : 'Edit Access Request'
-    : userAccountInReview
-      ? 'Request Submitted'
-      : 'Welcome to TDP'
+  const homeTitle =
+    isInEditMode && editContext === 'access request'
+      ? 'Edit Access Request'
+      : userAccountInReview
+        ? 'Request Submitted'
+        : 'Welcome to TDP'
+
+  const profileTitle =
+    isInEditMode && editContext === 'profile' ? 'Edit Profile' : 'My Profile'
+
+  const setEditState = (isEditing, context) => {
+    setEditContext(context)
+    setIsInEditMode(isEditing)
+  }
 
   return (
     <RouteProvider>
@@ -52,12 +59,7 @@ const AppRoutes = () => {
         path="/home"
         element={
           <PrivateRoute title={homeTitle}>
-            <Home
-              setInEditMode={(val) => {
-                setEditContext('home')
-                setIsInEditMode(val)
-              }}
-            />
+            <Home setInEditMode={setEditState} />
           </PrivateRoute>
         }
       />
@@ -107,21 +109,14 @@ const AppRoutes = () => {
         exact
         path="/profile"
         element={
-          <PrivateRoute
-            title={editContext === 'profile' ? homeTitle : 'My Profile'}
-          >
+          <PrivateRoute title={profileTitle}>
             <Profile
               isEditing={isInEditMode}
-              onEdit={() => {
-                setEditContext('profile')
-                setIsInEditMode(true)
-              }}
-              onCancel={() => {
-                setIsInEditMode(false)
-                setEditContext(null)
-              }}
+              onEdit={() => setEditState(true, 'profile')}
+              onCancel={() => setEditState(false, null)}
               type="profile"
               user={user}
+              setInEditMode={setEditState}
             />
           </PrivateRoute>
         }

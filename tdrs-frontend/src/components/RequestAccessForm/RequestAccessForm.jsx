@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react'
+import React, { useRef, useState } from 'react'
 import Button from '../Button'
 import { useDispatch } from 'react-redux'
 import FormGroup from '../FormGroup'
@@ -31,20 +31,25 @@ function RequestAccessForm({
     lastName: initialValues.lastName || '',
     stt: initialValues.stt || '',
     hasFRAAccess: initialValues.hasFRAAccess ?? (isAMSUser ? false : null),
-    regions: initialValues.regions || new Set(),
+    ...(isAMSUser && { regions: initialValues.regions || new Set() }),
   })
   const [originalData] = useState(profileInfo)
 
   const dispatch = useDispatch()
   const [touched, setTouched] = useState({})
-  const displayingError =
-    !!Object.keys(errors).length && !!Object.keys(touched).length
+  const fieldErrorKeys = Object.keys(errors).filter((key) => key !== 'form')
+  const hasFieldErrors =
+    fieldErrorKeys.length > 0 && Object.keys(touched).length > 0
+
+  const showErrorSummary = hasFieldErrors || !!errors.form
 
   const [jurisdictionType, setJurisdictionTypeInputValue] = useState(
     initialValues.jurisdictionType || 'state'
   )
 
   const regionError = 'At least one Region is required'
+
+  console.log('User:', user)
 
   const validateRegions = (regions) => {
     if (regions?.size === 0) {
@@ -95,7 +100,7 @@ function RequestAccessForm({
     }))
 
     // Remove errors when FRA Access is changed or hidden
-    if (displayingError) {
+    if (hasFieldErrors || errors.hasFRAAccess) {
       const { hasFRAAccess: removedError, ...rest } = errors
       const error = validation('hasFRAAccess', hasFRAAccess)
 
@@ -107,14 +112,25 @@ function RequestAccessForm({
   }
 
   const handleChange = ({ name, value }) => {
+    // Clear form error if present on any change
+    if (errors.form) {
+      const { form, ...rest } = errors
+      setErrors(rest)
+    }
+
+    // Remove error for this field if present
+    if (errors[name]) {
+      const { [name]: removedError, ...rest } = errors
+      setErrors(rest)
+    }
+
+    setTouched((prev) => ({ ...prev, [name]: true }))
     setProfileInfo({ ...profileInfo, [name]: value })
   }
 
   const handleBlur = (evt) => {
     const { name, value } = evt.target
-
     const { [name]: removedError, ...rest } = errors
-
     const error = validation(name, value)
 
     setErrors({
@@ -195,9 +211,9 @@ function RequestAccessForm({
   }
 
   const ReadOnlyRow = ({ label, value }) => (
-    <div className="grid-row margin-bottom-1">
-      <div className="grid-col-2 text-bold">{label}</div>
-      <div className="grid-col-10 text-no-wrap">{value}</div>
+    <div className="read-only-row">
+      <div className="label">{label}</div>
+      <div className="value">{value}</div>
     </div>
   )
 
@@ -210,7 +226,7 @@ function RequestAccessForm({
         touched={touched}
         setProfileInfo={setProfileInfo}
         profileInfo={profileInfo}
-        displayingError={displayingError}
+        displayingError={hasFieldErrors}
         validateRegions={validateRegions}
         regionError={regionError}
       />
@@ -218,7 +234,7 @@ function RequestAccessForm({
   )
 
   return (
-    <div className="usa-prose margin-top-5 margin-bottom-5">
+    <div className="margin-top-5 margin-bottom-5">
       <p className="margin-top-1 margin-bottom-4">
         Please enter your information to request access from an OFA
         administrator
@@ -227,7 +243,7 @@ function RequestAccessForm({
       <form className="usa-form" onSubmit={handleSubmit}>
         <div
           className={`usa-error-message ${
-            displayingError || errors.form ? 'display-block' : 'display-none'
+            showErrorSummary ? 'display-block' : 'display-none'
           }`}
           ref={errorRef}
           tabIndex="-1"
@@ -255,14 +271,11 @@ function RequestAccessForm({
         />
         {editMode ? (
           isAMSUser ? (
-            { renderRegionSelector /* Render region selector for AMS users */ }
+            renderRegionSelector
           ) : (
-            <div className="grid-container">
-              <div className="grid-row">
-                <div className="grid-col-12">
-                  <hr className="aligned-hr margin-top-3 margin-bottom-3" />
-                </div>
-              </div>
+            <div>
+              <hr className="form-section-divider" />
+              {/* <hr className="margin-right-4 margin-top-3 margin-bottom-2" /> */}
               <ReadOnlyRow label="User Type" value={primaryRole?.name} />
               <ReadOnlyRow
                 label="Jurisdiction Type"
@@ -274,12 +287,9 @@ function RequestAccessForm({
               <JurisdictionLocationInfo
                 jurisdictionType={jurisdictionType}
                 locationName={profileInfo.stt}
+                formType={'access request'}
               />
-              <div className="grid-row">
-                <div className="grid-col-12">
-                  <hr className="aligned-hr margin-top-3 margin-bottom-2" />
-                </div>
-              </div>
+              <hr className="form-section-divider" />
             </div>
           )
         ) : (
@@ -302,9 +312,7 @@ function RequestAccessForm({
                 />
               </div>
             )}
-            {isAMSUser && {
-              renderRegionSelector /* Render region selector for AMS users */,
-            }}
+            {isAMSUser && renderRegionSelector}
           </div>
         )}
         {jurisdictionType !== 'tribe' && !isAMSUser && (
