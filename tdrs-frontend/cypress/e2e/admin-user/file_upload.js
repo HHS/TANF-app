@@ -98,6 +98,7 @@ Then('Admin Alex can download the SSP error report', () => {
 When('Admin Alex submits the Work Outcomes Report', () => {
   cy.visit('/fra-data-files')
   cy.fillSttFyQ('New York', '2024', 'Q2', false).then(() => {
+    cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
     cy.uploadFile(
       '#fra-file-upload',
       '../tdrs-backend/tdpservice/parsers/test/data/fra.csv'
@@ -107,9 +108,21 @@ When('Admin Alex submits the Work Outcomes Report', () => {
 })
 
 Then('Admin Alex sees the upload in FRA Submission History', () => {
-  cy.waitForSpinnerToDisappear().then(() => {
-    cy.contains('Submission History').should('exist')
-    cy.validateFraCsv()
+  cy.wait('@dataFileSubmit').then((interception) => {
+    // Check if we have a valid response with an ID
+    if (
+      interception.response &&
+      interception.response.body &&
+      interception.response.body.id
+    ) {
+      const fileId = interception.response.body.id
+
+      // Poll the API until the summary is populated
+      cy.waitForDataFileSummary(fileId).then(() => {
+        cy.contains('Submission History').should('exist')
+        cy.validateFraCsv()
+      })
+    }
   })
 })
 

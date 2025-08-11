@@ -234,16 +234,6 @@ Cypress.Commands.add('fillSttFyQNoProgramSelector', (stt, fy, q) => {
     })
 })
 
-Cypress.Commands.add('waitForSpinnerToDisappear', (timeout = 10000) => {
-  // Give time for the spinner to render and then check if it exists
-  cy.wait(500)
-  cy.get('body').then(($body) => {
-    if ($body.find('.spinner').length) {
-      cy.get('.spinner', { timeout }).should('not.exist')
-    }
-  })
-})
-
 Cypress.Commands.add(
   'waitForDataFileSummary',
   (fileId, maxAttempts = 15, interval = 2000) => {
