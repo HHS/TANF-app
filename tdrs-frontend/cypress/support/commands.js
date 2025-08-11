@@ -253,7 +253,8 @@ Cypress.Commands.add(
         response &&
         response.body &&
         response.body.summary &&
-        Object.keys(response.body.summary).length > 0
+        Object.keys(response.body.summary).length > 0 &&
+        response.body.summary.status !== 'Pending'
       )
     }
 
