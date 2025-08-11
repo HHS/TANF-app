@@ -597,8 +597,7 @@ def test_sumIsLarger():
     result = category3.sumIsLarger(["TestField1", "TestField3"], 10)(instance, schema)
     assert result.valid is False
     assert result.error == (
-        "No benefits detected for this case. The total sum "
-        "of TestField1, TestField3 must be greater than 10."
+        "No benefit amounts detected for this case. The total sum of TestField1, TestField3 must be greater than 10."
     )
     assert result.field_names == ["TestField1", "TestField3"]
 
