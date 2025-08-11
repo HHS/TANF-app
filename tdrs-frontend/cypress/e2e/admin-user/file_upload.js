@@ -17,10 +17,8 @@ Given('Admin Alex logs in', () => {
 // TANF steps
 When('Admin Alex submits the TANF Report', () => {
   cy.visit('/data-files')
+  cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
   cy.fillSttFyQ('New York', '2021', 'Q1', true).then(() => {
-    // Intercept the API call to capture the file ID
-    cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
-
     cy.uploadFile(
       '#active-case-data',
       '../tdrs-backend/tdpservice/parsers/test/data/small_correct_file.txt'
@@ -57,10 +55,8 @@ Then('Admin Alex can download the TANF error report', () => {
 // SSP steps
 When('Admin Alex submits the SSP Report', () => {
   cy.visit('/data-files')
+  cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
   cy.fillSttFyQ('Iowa', '2024', 'Q1', false).then(() => {
-    // Intercept the API call to capture the file ID
-    cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
-
     cy.uploadFile(
       '#active-case-data',
       '../tdrs-backend/tdpservice/parsers/test/data/small_ssp_section1.txt'
@@ -97,8 +93,8 @@ Then('Admin Alex can download the SSP error report', () => {
 // FRA steps
 When('Admin Alex submits the Work Outcomes Report', () => {
   cy.visit('/fra-data-files')
+  cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
   cy.fillSttFyQ('New York', '2024', 'Q2', false).then(() => {
-    cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
     cy.uploadFile(
       '#fra-file-upload',
       '../tdrs-backend/tdpservice/parsers/test/data/fra.csv'
