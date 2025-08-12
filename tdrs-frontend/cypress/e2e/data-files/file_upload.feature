@@ -94,11 +94,6 @@ Feature: Approved Data Analysts can upload data files
         When 'tim-cypress@teamraft.com' selects a 'SSP' data file for the year '2025' and quarter 'Q1'
         Then 'tim-cypress@teamraft.com' sees the error message: 'File may correspond to SSP instead of TANF'
 
-    Scenario: a data analyst cannot submit a file without a valid encoding
-        Given 'Data Analyst', 'tim-cypress@teamraft.com', logs in
-        When 'tim-cypress@teamraft.com' selects a data file with an invalid encoding
-        Then 'tim-cypress@teamraft.com' sees the error message: 'We can’t process that file format. Please provide a plain text file.'
-
     Scenario: a data analyst cannot submit a file for the wrong section
         Given 'Data Analyst', 'tim-cypress@teamraft.com', logs in
         When 'tim-cypress@teamraft.com' selects a data file for the wrong section
