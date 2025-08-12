@@ -115,7 +115,6 @@ class SecurityEventHandler:
             issued_at = None
             if iat_timestamp:
                 try:
-                    # Convert Unix timestamp to datetime with timezone awareness
                     issued_at = datetime.fromtimestamp(iat_timestamp, tz=timezone.utc)
                 except (ValueError, TypeError) as e:
                     logger.warning(f"Error converting timestamp {iat_timestamp}: {e}")
