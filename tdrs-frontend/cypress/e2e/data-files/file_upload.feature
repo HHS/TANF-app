@@ -84,31 +84,22 @@ Feature: Approved Data Analysts can upload data files
 
     # Edge / failure cases for TANF Data Analyst Tim
 
-    # Scenario: a data analyst cannot submit a file for the wrong fiscal year and quarter
-    #     Given 'Data Analyst', 'tim-cypress@teamraft.com', logs in
-    #     When TANF Data Analyst Tim selects a file for the wrong year and quarter
-    #     Then TANF Data Analyst Tim sees an error message -> should include error msg contents in impl.
-    #
-    # Scenario: a data analyst cannot submit a file for the wrong program type
-    #     Given 'Data Analyst', 'tim-cypress@teamraft.com', logs in
-    #     When TANF Data Analyst Tim selects an SSP data file
-    #     Then TANF Data Analyst Tim sees an error message -> should include error msg contents in impl.
-    #
-    # Scenario: a data analyst cannot submit a file without a valid encoding
-    #     Given 'Data Analyst', 'tim-cypress@teamraft.com', logs in
-    #     When TANF Data Analyst Tim selects a wrongly encoded data file
-    #     Then TANF Data Analyst Tim sees an error message -> should include error msg contents in impl.
-    #
-    # Scenario: a data analyst cannot submit a file for the wrong section
-    #     Given Data Analyst Dillon logs in
-    #     When Data Analyst Dillon selects a file for the wrong section
-    #     Then Data Analyst Dillon sees the Rejected status in Submission History -> "Rejected" status should be displayed
-    #
-    #     Multi-file upload scenario for SSP Data Analyst Stefani
-    #
-    # Scenario: a data analyst can submit multiple files at once
-    #     Given SSP Data Analyst Stefani logs in
-    #     When SSP Data Analyst Stefani submits all TANF sections
-    #     Then SSP Data Analyst Stefani sees all the files in Submission History -> implementation includes status, err report filename, original filename, etc
-    #     And SSP Data Analyst Stefani can download each of the error reports -> file match contents?
-    #     TODO: And Regional Randy (or Rebecca) gets an email for each section
+    Scenario: a data analyst cannot submit a file for the wrong fiscal year and quarter
+        Given 'Data Analyst', 'tim-cypress@teamraft.com', logs in
+        When 'tim-cypress@teamraft.com' selects a 'TANF' data file for the year '2025' and quarter 'Q1'
+        Then 'tim-cypress@teamraft.com' sees the error message: 'File contains data from Oct 1 - Dec 31, which belongs to Fiscal Year 2021, Quarter 1.'
+
+    Scenario: a data analyst cannot submit a file for the wrong program type
+        Given 'Data Analyst', 'tim-cypress@teamraft.com', logs in
+        When 'tim-cypress@teamraft.com' selects a 'SSP' data file for the year '2025' and quarter 'Q1'
+        Then 'tim-cypress@teamraft.com' sees the error message: 'File may correspond to SSP instead of TANF'
+
+    Scenario: a data analyst cannot submit a file without a valid encoding
+        Given 'Data Analyst', 'tim-cypress@teamraft.com', logs in
+        When 'tim-cypress@teamraft.com' selects a data file with an invalid encoding
+        Then 'tim-cypress@teamraft.com' sees the error message: 'We can’t process that file format. Please provide a plain text file.'
+
+    Scenario: a data analyst cannot submit a file for the wrong section
+        Given 'Data Analyst', 'tim-cypress@teamraft.com', logs in
+        When 'tim-cypress@teamraft.com' selects a data file for the wrong section
+        Then 'tim-cypress@teamraft.com' sees rejected status in submission history

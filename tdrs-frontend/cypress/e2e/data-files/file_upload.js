@@ -139,6 +139,98 @@ Then(
   }
 )
 
+When(
+  '{string} selects a {string} data file for the year {string} and quarter {string}',
+  (username, program, year, quarter) => {
+    cy.visit('/data-files')
+    cy.wait(1000)
+    cy.contains('Data Files').should('exist')
+
+    // Can see search form
+    cy.contains('Fiscal Year').should('exist')
+    cy.contains('Quarter').should('exist')
+
+    cy.get('#reportingYears').should('exist').select(year)
+    cy.get('#quarter').should('exist').select(quarter) // Q1, Q2, Q3, Q4
+    cy.get('button').contains('Search').should('exist')
+    cy.get('button').contains('Search').should('exist').click()
+
+    cy.wait(1000).then(() => {
+      cy.get('#active-case-data').selectFile(
+        `${test_data_file_dir}/${test_section_data_file_names[program][1]}`,
+        {
+          action: 'drag-drop',
+        }
+      )
+      cy.get('button').contains('Submit Data Files').should('exist').click()
+    })
+  }
+)
+
+When('{string} selects a data file with an invalid encoding', (username) => {
+  cy.visit('/data-files')
+  cy.wait(1000)
+  cy.contains('Data Files').should('exist')
+
+  // Can see search form
+  cy.contains('Fiscal Year').should('exist')
+  cy.contains('Quarter').should('exist')
+
+  cy.get('#reportingYears').should('exist').select('2021')
+  cy.get('#quarter').should('exist').select('Q1') // Q1, Q2, Q3, Q4
+  cy.get('button').contains('Search').should('exist')
+  cy.get('button').contains('Search').should('exist').click()
+
+  cy.wait(1000).then(() => {
+    cy.get('#active-case-data').selectFile(
+      `${test_data_file_dir}/bad_encoding_TANF.txt`,
+      {
+        action: 'drag-drop',
+      }
+    )
+    cy.get('button').contains('Submit Data Files').should('exist').click()
+  })
+})
+
+When('{string} selects a data file for the wrong section', (username) => {
+  cy.visit('/data-files')
+  cy.wait(1000)
+  cy.contains('Data Files').should('exist')
+
+  // Can see search form
+  cy.contains('Fiscal Year').should('exist')
+  cy.contains('Quarter').should('exist')
+
+  cy.get('#reportingYears').should('exist').select('2021')
+  cy.get('#quarter').should('exist').select('Q1') // Q1, Q2, Q3, Q4
+  cy.get('button').contains('Search').should('exist')
+  cy.get('button').contains('Search').should('exist').click()
+
+  cy.wait(1000).then(() => {
+    cy.get('#active-case-data').selectFile(
+      `${test_data_file_dir}/aggregates_rejected.txt`,
+      {
+        action: 'drag-drop',
+      }
+    )
+    cy.get('button').contains('Submit Data Files').should('exist').click()
+  })
+})
+
+Then('{string} sees the error message: {string}', (username, errorMessage) => {
+  cy.contains(errorMessage).should('exist')
+})
+
+Then('{string} sees rejected status in submission history', (username) => {
+  cy.get('button').contains('Submission History').should('exist').click()
+
+  findSectionTableFirsRow(1)
+    .should('exist')
+    .within(() => {
+      cy.contains('aggregates_rejected.txt').should('exist')
+    })
+})
+
 // TODO: Remove in favor of When 'user' uploads a TANF Seciton '' data file for year '' and quarter ''
 When('{string} uploads a file', (username) => {
   cy.wait(1000).then(() => {
