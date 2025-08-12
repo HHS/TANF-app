@@ -82,16 +82,8 @@ Feature: Approved Data Analysts can upload data files
         And 'tara-cypress@teamraft.com' can download the 'TRIBAL' Section '3' error report for year '2021' and quarter 'Q1'
         # TODO: And Regional Randy gets an email (determine exact)
 
-    # TODO: Verify that no tribes can submit Section 4 Stratum Data
-    # Scenario: A data analyst can submit a Tribal Section 4 data file
-    #     Given 'Data Analyst', 'tara-cypress@teamraft.com', logs in
-    #     When 'tara-cypress@teamraft.com' uploads a 'TRIBAL' Section '4' data file for year '2021' and quarter 'Q1'
-    #     Then 'tara-cypress@teamraft.com' sees the 'TRIBAL' Section '4' submission in Submission History
-    #     And 'tara-cypress@teamraft.com' can download the 'TRIBAL' Section '4' error report for year '2021' and quarter 'Q1'
-        # TODO: And Regional Randy gets an email (determine exact)
-    #
-    #     # Edge / failure cases for TANF Data Analyst Tim
-    #
+    # Edge / failure cases for TANF Data Analyst Tim
+
     # Scenario: a data analyst cannot submit a file for the wrong fiscal year and quarter
     #     Given 'Data Analyst', 'tim-cypress@teamraft.com', logs in
     #     When TANF Data Analyst Tim selects a file for the wrong year and quarter
