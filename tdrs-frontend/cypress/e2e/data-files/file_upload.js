@@ -61,12 +61,13 @@ When(
           action: 'drag-drop',
         }
       )
+      cy.wait(100)
       cy.get('button').contains('Submit Data Files').should('exist').click()
     })
 
     // Can see the upload successful
     cy.wait(3000).then(() => {
-      cy.contains(/Successfully|No changes/g).should('exist')
+      cy.contains('Successfully submitted').should('exist')
     })
   }
 )
@@ -207,6 +208,8 @@ When('{string} selects a data file for the wrong section', (username) => {
         action: 'drag-drop',
       }
     )
+
+    cy.wait(100)
     cy.get('button').contains('Submit Data Files').should('exist').click()
   })
 })
