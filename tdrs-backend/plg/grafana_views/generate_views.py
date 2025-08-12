@@ -204,7 +204,7 @@ def handle_where_clause(record_type):
     if "3" in record_type:
         return 'AND "FAMILY_AFFILIATION" != 0 AND "FAMILY_AFFILIATION" IS NOT NULL AND "SEX" != 0 AND "SEX" IS NOT NULL'
     elif "7" in record_type:
-        return 'AND "FAMILIES_MONTH" != 0 AND "FAMILIES_MONTH" IS NOT NULL AND "TDRS_SECTION_IND" NOT BETWEEN \'1\' AND \'2\' AND "TDRS_SECTION_IND" IS NOT NULL'
+        return 'AND "FAMILIES_MONTH" != 0 AND "FAMILIES_MONTH" IS NOT NULL AND "TDRS_SECTION_IND" NOT IN (\'1\', \'2\', \'\') AND "TDRS_SECTION_IND" IS NOT NULL'
     else:
         return ""
 
