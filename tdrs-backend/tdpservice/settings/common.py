@@ -580,3 +580,13 @@ class Common(Configuration):
     CELERY_TASK_SEND_SENT_EVENT = True
 
     FRA_PILOT_STATES = json.loads(os.getenv("FRA_PILOT_STATES", "[]"))
+
+    # Cloud.gov SET integration settings
+    LOGIN_GOV_SET_AUDIENCE = os.getenv(
+        "LOGIN_GOV_SET_AUDIENCE",
+        "https://tdp-frontend-raft.apps.cloud.gov/v1/security/event-token/",
+    )
+    LOGIN_GOV_WELL_KNOWN_CONFIG = os.getenv(
+        "LOGIN_GOV_WELL_KNOWN_CONFIG",
+        "https://idp.int.identitysandbox.gov/.well-known/openid-configuration",
+    )

@@ -1,8 +1,8 @@
 """Admin classes for the tdpservice.security app."""
 from django.contrib import admin
 
-from tdpservice.core.utils import ReadOnlyAdminMixin
-from tdpservice.security.models import ClamAVFileScan, OwaspZapScan
+from tdpservice.core.admin import ReadOnlyAdminMixin
+from tdpservice.security.models import ClamAVFileScan, OwaspZapScan, SecurityEventToken
 
 
 @admin.register(ClamAVFileScan)
@@ -47,3 +47,35 @@ class OwaspZapScanAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "scanned_at",
         "app_target",
     ]
+
+
+@admin.register(SecurityEventToken)
+class SecurityEventTokenAdmin(admin.ModelAdmin, ReadOnlyAdminMixin):
+    """Admin interface for Security Event Tokens."""
+
+    list_display = (
+        "event_type",
+        "user",
+        "email",
+        "issued_at",
+        "received_at",
+        "processed",
+    )
+    list_filter = ("user", "event_type", "processed", "received_at")
+    search_fields = ("user__username", "user__email", "email", "event_type")
+    readonly_fields = (
+        "id",
+        "jwt_id",
+        "issuer",
+        "issued_at",
+        "received_at",
+        "event_data",
+    )
+    date_hierarchy = "received_at"
+
+    def get_actions(self, request):
+        """Override get_action to remove delete action."""
+        actions = super().get_actions(request)
+        if "delete_selected" in actions:
+            del actions["delete_selected"]
+        return actions

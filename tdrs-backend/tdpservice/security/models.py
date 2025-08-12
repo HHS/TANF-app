@@ -1,5 +1,6 @@
 """Models for the tdpservice.security app."""
 import logging
+import uuid
 from io import StringIO
 from os.path import join
 from typing import Union
@@ -237,3 +238,36 @@ class OwaspZapScan(models.Model):
             return "Passed"
         else:
             return "Error"
+
+
+class SecurityEventToken(models.Model):
+    """Model to store Security Event Tokens from Login.gov."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        "users.User",
+        on_delete=models.SET_NULL,
+        related_name="security_events",
+        null=True,
+        blank=True,
+    )
+    email = models.EmailField(null=True, blank=True)
+    event_type = models.CharField(max_length=255)
+    event_data = models.JSONField()
+    jwt_id = models.CharField(max_length=255, unique=True)
+    issuer = models.CharField(max_length=255)
+    issued_at = models.DateTimeField()
+    received_at = models.DateTimeField(auto_now_add=True)
+    processed = models.BooleanField(default=False)
+    processed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        """Meta class."""
+
+        ordering = ["-received_at"]
+        indexes = [
+            models.Index(fields=["event_type"]),
+            models.Index(fields=["user"]),
+            models.Index(fields=["email"]),
+            models.Index(fields=["processed"]),
+        ]

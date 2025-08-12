@@ -15,6 +15,8 @@ from rest_framework import status
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
 
+from tdpservice.security.models import SecurityEventToken
+
 from ..authentication import CustomAuthentication
 from .login_redirect_oidc import LoginRedirectAMS
 from .utils import (
@@ -116,6 +118,43 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         """Handle user email exceptions."""
         pass
 
+    def _handle_user(self, email, decoded_token_data, auth_options, request):
+        """Handle user."""
+        User = get_user_model()
+
+        # Check if a user with the same email already exists
+        existing_user = User.objects.filter(email=email).first()
+
+        if existing_user:
+            # Check if last security event was account_purged
+            last_security_event = (
+                SecurityEventToken.objects.filter(user=existing_user)
+                .order_by("-received_at")
+                .first()
+            )
+            if (
+                last_security_event
+                and "account_purged" in last_security_event.event_type
+            ):
+                # Update user login_gov_uuid
+                existing_user.login_gov_uuid = decoded_token_data.get("sub")
+                existing_user.save()
+                return existing_user
+            return None
+        else:
+            # Delete the username key if it exists in auth_options, as it will conflict with the first argument
+            # of `create_user`.
+            auth_options.pop("username", None)
+
+            user = User.objects.create_user(email, email=email, **auth_options)
+            user.set_unusable_password()
+            user.save()
+            login_msg = "User Created"
+
+            self.verify_email(user)
+            self.login_user(request, user, login_msg)
+            return user
+
     def handle_user(self, request, id_token, decoded_token_data):
         """Handle the incoming user."""
         # get user from database if they exist. if not, create a new one
@@ -175,21 +214,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 f"Login failed, user account is inactive: {user.username}"
             )
         else:
-            User = get_user_model()
-
-            if "username" in auth_options:
-                # Delete the username key if it exists in auth_options, as it will conflict with the first argument
-                # of `create_user`.
-                del auth_options["username"]
-
-            user = User.objects.create_user(email, email=email, **auth_options)
-            user.set_unusable_password()
-            user.save()
-            login_msg = "User Created"
-
-        self.verify_email(user)
-        self.login_user(request, user, login_msg)
-        return user
+            self._handle_user(email, decoded_token_data, auth_options, request)
 
     @staticmethod
     def login_user(request, user, user_status):
