@@ -2247,6 +2247,7 @@ def test_parse_cat_4_edge_case_file(cat4_edge_case_file, dfs):
         "Every T1 record should have at least one corresponding T2 or T3 record with the "
         "same Item 4 (Reporting Year and Month) and Item 6 (Case Number)."
     )
+    assert dfs.get_status() == DataFileSummary.Status.PARTIALLY_ACCEPTED
 
 
 @pytest.mark.parametrize(
