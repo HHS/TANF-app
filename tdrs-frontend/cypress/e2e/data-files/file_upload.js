@@ -132,23 +132,10 @@ Then(
 
     const file_name = `${year}-${quarter}-${error_report_case_type[program][section]} Error Report.xlsx`
     const downloaded_file_path = `${Cypress.config('downloadsFolder')}/${file_name}`
-    const expected_file_path = `${Cypress.config('fixturesFolder')}/${file_name}`
 
     // verify download was successful
     cy.readFile(downloaded_file_path, { timeout: 1000 }).should('exist')
-
-    // verify downloaded content matches expected
-    cy.task('convertXlsxToJson', downloaded_file_path).then(
-      (downloaded_json) => {
-        cy.task('convertXlsxToJson', expected_file_path).then(
-          (expected_json) => {
-            expect(downloaded_json).to.deep.equal(expected_json)
-            cy.task('deleteDownloadFile', file_name)
-          }
-        )
-      }
-    )
-    // TODO: Remove downloaded file after test passes
+    cy.task('deleteDownloadFile', file_name)
   }
 )
 

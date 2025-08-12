@@ -1,7 +1,6 @@
 const { defineConfig } = require('cypress')
 const webpack = require('@cypress/webpack-preprocessor')
 const preprocessor = require('@badeball/cypress-cucumber-preprocessor')
-const XLSX = require('xlsx')
 const fs = require('fs')
 
 module.exports = defineConfig({
@@ -41,12 +40,6 @@ module.exports = defineConfig({
       // Register custom task to execute JS in Node Environment
       // TODO: Return json data for both worksheets
       on('task', {
-        convertXlsxToJson(filePath) {
-          const workbook = XLSX.readFile(filePath)
-          const worksheet = workbook.Sheets[workbook.SheetNames[0]]
-          const jsonData = XLSX.utils.sheet_to_json(worksheet)
-          return jsonData
-        },
         deleteDownloadFile(fileName) {
           const filePath = `${config.downloadsFolder}/${fileName}`
 
