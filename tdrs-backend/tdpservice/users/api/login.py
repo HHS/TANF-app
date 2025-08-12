@@ -123,12 +123,12 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         User = get_user_model()
 
         # Check if a user with the same email already exists
-        existing_user = User.objects.filter(email=email).first()
+        user = User.objects.filter(email=email).first()
 
-        if existing_user:
+        if user:
             # Check if last security event was account_purged
             last_security_event = (
-                SecurityEventToken.objects.filter(user=existing_user)
+                SecurityEventToken.objects.filter(user=user)
                 .order_by("-received_at")
                 .first()
             )
@@ -137,9 +137,9 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 and "account_purged" in last_security_event.event_type
             ):
                 # Update user login_gov_uuid
-                existing_user.login_gov_uuid = decoded_token_data.get("sub")
-                existing_user.save()
-                return existing_user
+                user.login_gov_uuid = decoded_token_data.get("sub")
+                user.save()
+                return user
             return None
         else:
             # Delete the username key if it exists in auth_options, as it will conflict with the first argument
@@ -151,9 +151,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             user.save()
             login_msg = "User Created"
 
-            self.verify_email(user)
-            self.login_user(request, user, login_msg)
-            return user
+        return user, login_msg
 
     def handle_user(self, request, id_token, decoded_token_data):
         """Handle the incoming user."""
@@ -214,7 +212,13 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 f"Login failed, user account is inactive: {user.username}"
             )
         else:
-            self._handle_user(email, decoded_token_data, auth_options, request)
+            user, login_msg = self._handle_user(
+                email, decoded_token_data, auth_options, request
+            )
+
+        self.verify_email(user)
+        self.login_user(request, user, login_msg)
+        return user
 
     @staticmethod
     def login_user(request, user, user_status):
