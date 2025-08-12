@@ -118,7 +118,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         """Handle user email exceptions."""
         pass
 
-    def _handle_user(self, email, decoded_token_data, auth_options, request):
+    def _handle_user(self, email, decoded_token_data, auth_options):
         """Handle user."""
         User = get_user_model()
 
@@ -139,8 +139,10 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 # Update user login_gov_uuid
                 user.login_gov_uuid = decoded_token_data.get("sub")
                 user.save()
-                return user
-            return None
+                login_msg = "User updated Login.gov UUID."
+            else:
+                user = None
+                login_msg = "User Login.gov UUID changed without account purge. Preventing login."
         else:
             # Delete the username key if it exists in auth_options, as it will conflict with the first argument
             # of `create_user`.
