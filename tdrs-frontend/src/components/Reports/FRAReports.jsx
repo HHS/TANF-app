@@ -497,7 +497,11 @@ const SubmissionHistory = ({
         </thead>
         <tbody>
           {data.map((file) => (
-            <SubmissionHistoryRow file={file} handleDownload={handleDownload} />
+            <SubmissionHistoryRow
+              file={file}
+              handleDownload={handleDownload}
+              isRegionalStaff={isRegionalStaff}
+            />
           ))}
         </tbody>
       </>
