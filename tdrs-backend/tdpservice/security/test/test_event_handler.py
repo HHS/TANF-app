@@ -11,7 +11,7 @@ import pytest
 
 from tdpservice.security.event_handler import SecurityEventHandler
 from tdpservice.security.models import SecurityEventToken
-from tdpservice.users.models import AccountApprovalStatusChoices, User
+from tdpservice.users.models import AccountApprovalStatusChoices
 
 
 @pytest.fixture
