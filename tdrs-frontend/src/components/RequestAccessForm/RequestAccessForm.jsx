@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux'
 import FormGroup from '../FormGroup'
 import STTComboBox from '../STTComboBox'
 import { requestAccess } from '../../actions/requestAccess'
+import { updateUserRequest } from '../../actions/mockUpdateUserRequest'
 import JurisdictionSelector from './JurisdictionSelector'
 import JurisdictionLocationInfo from '../Profile/JurisdictionLocationInfo'
 import RegionSelector from './RegionSelector'
@@ -51,6 +52,10 @@ function RequestAccessForm({
   const regionError = 'At least one Region is required'
 
   const validateRegions = (regions) => {
+    if (editMode && !isAMSUser) {
+      return null // Regions are not applicable in edit mode for non-AMS users
+    }
+
     if (regions?.size === 0) {
       return regionError
     }
@@ -58,6 +63,12 @@ function RequestAccessForm({
   }
 
   const validation = (fieldName, fieldValue) => {
+    if (editMode) {
+      if (fieldName === 'stt') {
+        return null // STT is read-only in edit mode
+      }
+    }
+
     const field = {
       firstName: 'First Name',
       lastName: 'Last Name',
@@ -157,9 +168,6 @@ function RequestAccessForm({
         setTimeout(() => errorRef.current?.focus(), 0)
         return
       }
-
-      // TODO: mock call to new API eventually
-      // TODO: Implement API call to update user profile when editing
     }
 
     // validate the form
@@ -198,12 +206,25 @@ function RequestAccessForm({
     setTouched(combinedTouched)
 
     if (!Object.values(combinedErrors).length) {
-      return dispatch(
-        requestAccess({
-          ...profileInfo,
-          stt: sttList.find((stt) => stt.name === profileInfo.stt),
+      if (editMode) {
+        // TODO: update with real API call
+        // For now, we will use the mock action to simulate an update
+        return dispatch(
+          updateUserRequest({
+            ...profileInfo,
+            stt: sttList.find((stt) => stt.name === profileInfo.stt),
+          })
+        ).then(() => {
+          onCancel() // toggles editMode to false after update
         })
-      )
+      } else {
+        return dispatch(
+          requestAccess({
+            ...profileInfo,
+            stt: sttList.find((stt) => stt.name === profileInfo.stt),
+          })
+        )
+      }
     }
 
     return setTimeout(() => errorRef.current.focus(), 0)
@@ -279,7 +300,7 @@ function RequestAccessForm({
             />
             <JurisdictionLocationInfo
               jurisdictionType={jurisdictionType}
-              locationName={profileInfo.stt}
+              locationName={profileInfo.stt || 'Federal Government'}
               formType={'access request'}
             />
             <hr className="form-section-divider" />

@@ -37,7 +37,7 @@ function Profile({
       <RequestAccessForm
         user={user}
         sttList={sttList}
-        editMode={true}
+        editMode={isEditing}
         initialValues={{
           firstName: user?.first_name || '',
           lastName: user?.last_name || '',
