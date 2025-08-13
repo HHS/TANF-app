@@ -125,7 +125,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         # Check if a user with the same email already exists
         user = User.objects.filter(email=email).first()
 
-        if user:
+        if user and auth_options.get("login_gov_uuid", False):
             # Check if last security event was account_purged
             last_security_event = (
                 SecurityEventToken.objects.filter(user=user)
