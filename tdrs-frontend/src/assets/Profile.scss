@@ -8,7 +8,7 @@
   margin-left: auto;
   margin-right: auto;
   border: none;
-  border-top: 1px solid #ccc;
+  border-top: 2px solid black;
   margin-top: 2rem;
   margin-bottom: 1.5rem;
 }
@@ -38,4 +38,23 @@
 .read-only-row .value {
   flex: 1;
   white-space: nowrap;
+}
+
+.region-selector-wrapper {
+  margin-bottom: 0 !important; // Prevents white space from stacking
+  padding-bottom: 0;
+
+  fieldset {
+    margin: 0;
+    padding: 0;
+    border: none;
+  }
+
+  .region-checkbox-group {
+    margin-bottom: 0; // Removes space under checkbox list
+  }
+
+  .usa-checkbox:last-child {
+    margin-bottom: 0 !important; // Remove any trailing margin
+  }
 }

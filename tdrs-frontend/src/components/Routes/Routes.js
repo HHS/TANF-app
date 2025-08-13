@@ -32,21 +32,16 @@ const AppRoutes = () => {
   const userAccountInReview = useSelector(accountIsInReview)
 
   const [isInEditMode, setIsInEditMode] = useState(false)
-  const [editContext, setEditContext] = useState(null) // 'access request' or 'profile'
-  //const userAccountInReview = true // TODO: using for testing
 
-  const homeTitle =
-    isInEditMode && editContext === 'access request'
-      ? 'Edit Access Request'
-      : userAccountInReview
-        ? 'Request Submitted'
-        : 'Welcome to TDP'
+  const homeTitle = isInEditMode
+    ? 'Edit Access Request'
+    : userAccountInReview
+      ? 'Request Submitted'
+      : 'Welcome to TDP'
 
-  const profileTitle =
-    isInEditMode && editContext === 'profile' ? 'Edit Profile' : 'My Profile'
+  const profileTitle = isInEditMode ? 'Edit Profile' : 'My Profile'
 
-  const setEditState = (isEditing, context) => {
-    setEditContext(context)
+  const setEditState = (isEditing) => {
     setIsInEditMode(isEditing)
   }
 
@@ -112,8 +107,8 @@ const AppRoutes = () => {
           <PrivateRoute title={profileTitle}>
             <Profile
               isEditing={isInEditMode}
-              onEdit={() => setEditState(true, 'profile')}
-              onCancel={() => setEditState(false, null)}
+              onEdit={() => setEditState(true)}
+              onCancel={() => setEditState(false)}
               type="profile"
               user={user}
               setInEditMode={setEditState}

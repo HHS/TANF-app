@@ -10,20 +10,18 @@ import RegionSelector from './RegionSelector'
 import FRASelector from './FRASelector'
 import '../../assets/Profile.scss'
 
-// TODO: random white space is appearing under the footer on this page - figure out why
 function RequestAccessForm({
   user,
   sttList,
   editMode = false,
   initialValues = {},
   onCancel,
+  type = 'access request',
 }) {
   const errorRef = useRef(null)
 
   const isAMSUser = user?.email?.includes('@acf.hhs.gov')
-  //const isAMSUser = true
   const primaryRole = user?.roles?.[0]
-  //const primaryRole = 'Regional Staff'
 
   const [errors, setErrors] = useState({})
   const [profileInfo, setProfileInfo] = useState({
@@ -31,7 +29,10 @@ function RequestAccessForm({
     lastName: initialValues.lastName || '',
     stt: initialValues.stt || '',
     hasFRAAccess: initialValues.hasFRAAccess ?? (isAMSUser ? false : null),
-    ...(isAMSUser && { regions: initialValues.regions || new Set() }),
+    regions:
+      isAMSUser && initialValues.regions
+        ? new Set(initialValues.regions)
+        : new Set(),
   })
   const [originalData] = useState(profileInfo)
 
@@ -48,8 +49,6 @@ function RequestAccessForm({
   )
 
   const regionError = 'At least one Region is required'
-
-  console.log('User:', user)
 
   const validateRegions = (regions) => {
     if (regions?.size === 0) {
@@ -217,21 +216,19 @@ function RequestAccessForm({
     </div>
   )
 
-  const renderRegionSelector = (
-    <div className="grid-container">
-      <RegionSelector
-        setErrors={setErrors}
-        errors={errors}
-        setTouched={setTouched}
-        touched={touched}
-        setProfileInfo={setProfileInfo}
-        profileInfo={profileInfo}
-        displayingError={hasFieldErrors}
-        validateRegions={validateRegions}
-        regionError={regionError}
-      />
-    </div>
-  )
+  // Props for RegionSelector
+  const regionSelectorProps = {
+    setErrors,
+    errors,
+    setTouched,
+    touched,
+    setProfileInfo,
+    profileInfo,
+    displayingError: hasFieldErrors,
+    validateRegions,
+    regionError,
+    editMode,
+  }
 
   return (
     <div className="margin-top-5 margin-bottom-5">
@@ -269,35 +266,30 @@ function RequestAccessForm({
           handleChange={handleChange}
           handleBlur={handleBlur}
         />
-        {editMode ? (
-          isAMSUser ? (
-            renderRegionSelector
-          ) : (
-            <div>
-              <hr className="form-section-divider" />
-              {/* <hr className="margin-right-4 margin-top-3 margin-bottom-2" /> */}
-              <ReadOnlyRow label="User Type" value={primaryRole?.name} />
-              <ReadOnlyRow
-                label="Jurisdiction Type"
-                value={
-                  (jurisdictionType?.charAt(0)?.toUpperCase() ?? '') +
-                  (jurisdictionType?.slice(1) ?? '')
-                }
-              />
-              <JurisdictionLocationInfo
-                jurisdictionType={jurisdictionType}
-                locationName={profileInfo.stt}
-                formType={'access request'}
-              />
-              <hr className="form-section-divider" />
-            </div>
-          )
-        ) : (
-          <div className="grid-container">
-            {!isAMSUser && (
-              <JurisdictionSelector setJurisdictionType={setJurisdictionType} />
-            )}
-            {jurisdictionType && !isAMSUser && (
+        {editMode && !isAMSUser && (
+          <div>
+            <hr className="form-section-divider" />
+            <ReadOnlyRow label="User Type" value={primaryRole?.name} />
+            <ReadOnlyRow
+              label="Jurisdiction Type"
+              value={
+                (jurisdictionType?.charAt(0)?.toUpperCase() ?? '') +
+                (jurisdictionType?.slice(1) ?? '')
+              }
+            />
+            <JurisdictionLocationInfo
+              jurisdictionType={jurisdictionType}
+              locationName={profileInfo.stt}
+              formType={'access request'}
+            />
+            <hr className="form-section-divider" />
+          </div>
+        )}
+
+        {!editMode && !isAMSUser && (
+          <>
+            <JurisdictionSelector setJurisdictionType={setJurisdictionType} />
+            {jurisdictionType && (
               <div
                 className={`usa-form-group ${
                   errors.stt ? 'usa-form-group--error' : ''
@@ -312,9 +304,9 @@ function RequestAccessForm({
                 />
               </div>
             )}
-            {isAMSUser && renderRegionSelector}
-          </div>
+          </>
         )}
+
         {jurisdictionType !== 'tribe' && !isAMSUser && (
           <FRASelector
             hasFRAAccess={profileInfo.hasFRAAccess}
@@ -322,18 +314,21 @@ function RequestAccessForm({
             error={errors.hasFRAAccess}
           />
         )}
+
+        {isAMSUser && <RegionSelector {...regionSelectorProps} />}
+
         {!editMode ? (
           <Button type="submit" className="width-full request-access-button">
             Request Access
           </Button>
         ) : (
-          <div className="usa-button-group margin-top-4">
+          <div className="usa-button-group margin-top-3">
             <button
               type="submit"
               className="usa-button"
               style={{ minWidth: '300px' }}
             >
-              Save Changes
+              {type === 'profile' ? 'Save Changes' : 'Update Request'}
             </button>
             <button
               type="button"

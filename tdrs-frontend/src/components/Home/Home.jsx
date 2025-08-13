@@ -17,9 +17,7 @@ function Home({ setInEditMode }) {
   const user = useSelector((state) => state.auth.user)
   const sttList = useSelector((state) => state?.stts?.sttList)
 
-  // TODO: only changing for testing
   const userAccessInReview = useSelector(accountIsInReview)
-  //const userAccessInReview = true
   const userAccessRequestApproved = useSelector(accountStatusIsApproved)
 
   const [isEditing, setIsEditing] = useState(false)
