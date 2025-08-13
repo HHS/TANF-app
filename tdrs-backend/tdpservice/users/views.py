@@ -1,4 +1,5 @@
 """Define API views for user class."""
+
 import datetime
 import logging
 
@@ -15,6 +16,7 @@ from rest_framework.response import Response
 
 from tdpservice.users.models import AccountApprovalStatusChoices, Feedback, User
 from tdpservice.users.permissions import (
+    CypressAdminAccountPermissions,
     DjangoModelCRUDPermissions,
     FeedbackPermissions,
     IsApprovedPermission,
@@ -92,6 +94,41 @@ class UserViewSet(
             "Access request for user: %s on %s", self.request.user, timezone.now()
         )
         return Response(serializer.data)
+
+
+class CypressAdminUserViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
+    """User accounts viewset for Cypress test updates."""
+
+    queryset = User.objects.select_related("stt").prefetch_related(
+        "groups__permissions"
+    )
+    permission_classes = [
+        IsAuthenticated,
+        IsApprovedPermission,
+        CypressAdminAccountPermissions,
+    ]
+    serializer_class = UserSerializer
+
+    @action(methods=["PATCH"], detail=True)
+    def approve_user(self, request, pk):
+        """Update user with provided approval status."""
+        print("pk")
+        print(pk)
+        item = get_object_or_404(self.queryset, pk=pk)
+        serializer = self.serializer_class(
+            item, data=request.data, partial=True
+        )  # set partial=True to update a data partially
+        if serializer.is_valid():
+            serializer.save(
+                account_approval_status=AccountApprovalStatusChoices.APPROVED
+            )
+            return Response(status=status.HTTP_200_OK, data=serializer.data)
+        return Response(status=status.HTTP_400_BAD_REQUEST, data="wrong parameters")
 
 
 class GroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):

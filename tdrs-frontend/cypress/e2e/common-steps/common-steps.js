@@ -1,5 +1,34 @@
 import { Given, When } from '@badeball/cypress-cucumber-preprocessor'
 
+const users = {
+  'Unapproved Alex': 'cypress-unapproved-alex@acf.hhs.gov',
+  'Unapproved Diana': 'cypress-unapproved-diana@acf.hhs.gov',
+  'Unapproved Olivia': 'cypress-unapproved-olivia@acf.hhs.gov',
+  'Unapproved Dave': 'cypress-unapproved-dave@teamraft.com',
+  'Unapproved Fred': 'cypress-unapproved-fred@teamraft.com',
+  'Unapproved Randy': 'cypress-unapproved-randy@acf.hhs.gov',
+}
+
+Given('{string} logs in', (name) => {
+  cy.visit('/')
+  cy.adminLogin('cypress-admin-alex@teamraft.com')
+  cy.login(users[name])
+})
+
+When('Admin Alex approves {string}', (name) => {
+  cy.get('@cypressUsers').then((cypressUsers) => {
+    cy.log(cypressUsers)
+    const username = users[name]
+    cy.log(username)
+    const user = Cypress._.find(cypressUsers, (u) => u.username === username)
+
+    cy.log(user)
+    cy.adminApiRequest('PATCH', `/cypress-users/${user.id}/approve_user/`, {
+      account_approval_status: 'Approved',
+    })
+  })
+})
+
 When('{string} visits the home page', (username) => {
   cy.clearCookie('sessionid')
   cy.clearCookie('csrftoken')
@@ -20,9 +49,9 @@ Given('A file exists in submission history', () => {
   })
 })
 
-When('{string} logs in', (username) => {
-  cy.login(username)
-})
+// When('{string} logs in', (username) => {
+//   cy.login(username)
+// })
 
 Given(
   'The admin sets the approval status of {string} to {string}',
