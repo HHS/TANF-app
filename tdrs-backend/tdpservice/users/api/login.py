@@ -214,9 +214,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 f"Login failed, user account is inactive: {user.username}"
             )
         else:
-            user, login_msg = self._handle_user(
-                email, decoded_token_data, auth_options, request
-            )
+            user, login_msg = self._handle_user(email, decoded_token_data, auth_options)
 
         self.verify_email(user)
         self.login_user(request, user, login_msg)
