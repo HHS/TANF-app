@@ -3,7 +3,7 @@
 import logging
 import uuid
 from datetime import datetime
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from django.utils import timezone
 
