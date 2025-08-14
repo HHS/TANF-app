@@ -5,7 +5,7 @@ from datetime import datetime
 
 from django.utils import timezone
 
-from tdpservice.security.models import SecurityEventToken
+from tdpservice.security.models import SecurityEventToken, SecurityEventType
 from tdpservice.users.models import AccountApprovalStatusChoices, User
 
 logger = logging.getLogger(__name__)
@@ -23,7 +23,7 @@ class SecurityEventHandler:
     def _handle_unknown_event(security_event):
         """Handle unimplemented or unknown events."""
         logger.warning(f"No handler for event type: {security_event.event_type}")
-        security_event.event_type = "unknown-event-type"
+        security_event.event_type = SecurityEventType.UNKNOWN_EVENT
 
     def _handle_account_disabled(security_event):
         """Handle account-disabled event."""
@@ -76,12 +76,12 @@ class SecurityEventHandler:
         logger.info(f"User {user.username} changed their recovery information")
 
     handler_map = {
-        "https://schemas.openid.net/secevent/risc/event-type/account-disabled": _handle_account_disabled,
-        "https://schemas.openid.net/secevent/risc/event-type/account-enabled": _handle_account_enabled,
-        "https://schemas.openid.net/secevent/risc/event-type/account-purged": _handle_account_purged,
-        "https://schemas.login.gov/secevent/risc/event-type/password-reset": _handle_password_reset,
-        "https://schemas.openid.net/secevent/risc/event-type/recovery-activated": _handle_recovery_activated,
-        "https://schemas.openid.net/secevent/risc/event-type/recovery-information-changed": _handle_recovery_information_changed,
+        SecurityEventType.ACCOUNT_DISABLED: _handle_account_disabled,
+        SecurityEventType.ACCOUNT_ENABLED: _handle_account_enabled,
+        SecurityEventType.ACCOUNT_PURGED: _handle_account_purged,
+        SecurityEventType.PASSWORD_RESET: _handle_password_reset,
+        SecurityEventType.RECOVERY_ACTIVATED: _handle_recovery_activated,
+        SecurityEventType.RECOVERY_INFORMATION_CHANGED: _handle_recovery_information_changed,
     }
 
     @classmethod

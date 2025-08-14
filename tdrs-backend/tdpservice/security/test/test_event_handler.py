@@ -10,7 +10,7 @@ from django.utils import timezone
 import pytest
 
 from tdpservice.security.event_handler import SecurityEventHandler
-from tdpservice.security.models import SecurityEventToken
+from tdpservice.security.models import SecurityEventToken, SecurityEventType
 from tdpservice.users.models import AccountApprovalStatusChoices
 
 
@@ -20,7 +20,7 @@ def mock_security_event(mock_user):
     event = MagicMock(spec=SecurityEventToken)
     event.user = mock_user
     event.email = mock_user.email
-    event.event_type = "test-event"
+    event.event_type = SecurityEventType.UNKNOWN_EVENT
     event.event_data = {"subject": {"sub": str(uuid.uuid4())}}
     event.jwt_id = "test-jwt-id"
     event.issuer = "test-issuer"
@@ -52,13 +52,13 @@ class TestSecurityEventHandler:
     @pytest.mark.django_db
     def test_handle_unknown_event(self, event_data, decoded_jwt):
         """Test handling of unknown event types."""
-        event_type = "https://unknown-event-type/"
+        event_type = SecurityEventType.UNKNOWN_EVENT
         SecurityEventHandler.handle_event(event_type, event_data, decoded_jwt)
 
         assert SecurityEventToken.objects.count() == 1
         token = SecurityEventToken.objects.first()
         assert token.processed is True
-        assert token.event_type == "unknown-event-type"
+        assert token.event_type == event_type
         assert token.event_data == event_data
         assert token.jwt_id == decoded_jwt["jti"]
         assert token.issuer == decoded_jwt["iss"]
@@ -69,9 +69,7 @@ class TestSecurityEventHandler:
     @pytest.mark.django_db
     def test_account_disabled(self, stt_data_analyst, event_data, decoded_jwt):
         """Test handling of account-disabled event."""
-        event_type = (
-            "https://schemas.openid.net/secevent/risc/event-type/account-disabled"
-        )
+        event_type = SecurityEventType.ACCOUNT_DISABLED
         SecurityEventHandler.handle_event(event_type, event_data, decoded_jwt)
 
         stt_data_analyst.refresh_from_db()
@@ -102,9 +100,7 @@ class TestSecurityEventHandler:
         stt_data_analyst.is_active = False
         stt_data_analyst.save()
 
-        event_type = (
-            "https://schemas.openid.net/secevent/risc/event-type/account-enabled"
-        )
+        event_type = SecurityEventType.ACCOUNT_ENABLED
         SecurityEventHandler.handle_event(event_type, event_data, decoded_jwt)
 
         stt_data_analyst.refresh_from_db()
@@ -129,9 +125,7 @@ class TestSecurityEventHandler:
     @pytest.mark.django_db
     def test_account_purged(self, stt_data_analyst, event_data, decoded_jwt):
         """Test handling of account-purged event."""
-        event_type = (
-            "https://schemas.openid.net/secevent/risc/event-type/account-purged"
-        )
+        event_type = SecurityEventType.ACCOUNT_PURGED
         SecurityEventHandler.handle_event(event_type, event_data, decoded_jwt)
 
         stt_data_analyst.refresh_from_db()
@@ -156,7 +150,7 @@ class TestSecurityEventHandler:
     @pytest.mark.django_db
     def test_password_reset(self, stt_data_analyst, event_data, decoded_jwt):
         """Test handling of password-reset event."""
-        event_type = "https://schemas.login.gov/secevent/risc/event-type/password-reset"
+        event_type = SecurityEventType.PASSWORD_RESET
         SecurityEventHandler.handle_event(event_type, event_data, decoded_jwt)
 
         stt_data_analyst.refresh_from_db()
@@ -176,9 +170,7 @@ class TestSecurityEventHandler:
     @pytest.mark.django_db
     def test_recovery_activated(self, stt_data_analyst, event_data, decoded_jwt):
         """Test handling of recovery-activated event."""
-        event_type = (
-            "https://schemas.openid.net/secevent/risc/event-type/recovery-activated"
-        )
+        event_type = SecurityEventType.RECOVERY_ACTIVATED
         SecurityEventHandler.handle_event(event_type, event_data, decoded_jwt)
 
         stt_data_analyst.refresh_from_db()
@@ -200,7 +192,7 @@ class TestSecurityEventHandler:
         self, stt_data_analyst, event_data, decoded_jwt
     ):
         """Test handling of recovery-information-changed event."""
-        event_type = "https://schemas.openid.net/secevent/risc/event-type/recovery-information-changed"
+        event_type = SecurityEventType.RECOVERY_INFORMATION_CHANGED
         SecurityEventHandler.handle_event(event_type, event_data, decoded_jwt)
 
         stt_data_analyst.refresh_from_db()
@@ -232,7 +224,7 @@ class TestSecurityEventHandler:
     def test_handle_event_user_not_found(self, caplog):
         """Test handling event when user is not found."""
 
-        event_type = "test-event"
+        event_type = SecurityEventType.UNKNOWN_EVENT
         login_gov_uuid = uuid.uuid4()
         event_data = {"subject": {"sub": str(login_gov_uuid)}}
         decoded_jwt = {}

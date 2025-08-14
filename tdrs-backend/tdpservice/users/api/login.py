@@ -15,7 +15,7 @@ from rest_framework import status
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
 
-from tdpservice.security.models import SecurityEventToken
+from tdpservice.security.models import SecurityEventToken, SecurityEventType
 
 from ..authentication import CustomAuthentication
 from .login_redirect_oidc import LoginRedirectAMS
@@ -134,7 +134,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             )
             if (
                 last_security_event
-                and "account_purged" in last_security_event.event_type
+                and last_security_event.event_type == SecurityEventType.ACCOUNT_PURGED
             ):
                 # Update user login_gov_uuid
                 user.login_gov_uuid = decoded_token_data.get("sub")

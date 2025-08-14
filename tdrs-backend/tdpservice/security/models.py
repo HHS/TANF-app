@@ -240,6 +240,28 @@ class OwaspZapScan(models.Model):
             return "Error"
 
 
+class SecurityEventType(models.TextChoices):
+    """Enum of options for accepted security events from login.gov."""
+
+    ACCOUNT_DISABLED = (
+        "https://schemas.openid.net/secevent/risc/event-type/account-disabled"
+    )
+    ACCOUNT_ENABLED = (
+        "https://schemas.openid.net/secevent/risc/event-type/account-enabled"
+    )
+    ACCOUNT_PURGED = (
+        "https://schemas.openid.net/secevent/risc/event-type/account-purged"
+    )
+    PASSWORD_RESET = "https://schemas.login.gov/secevent/risc/event-type/password-reset"
+    RECOVERY_ACTIVATED = (
+        "https://schemas.openid.net/secevent/risc/event-type/recovery-activated"
+    )
+    RECOVERY_INFORMATION_CHANGED = "https://schemas.openid.net/secevent/risc/event-type/recovery-information-changed"
+
+    # This should always be last in the list
+    UNKNOWN_EVENT = "unknown-event-type"
+
+
 class SecurityEventToken(models.Model):
     """Model to store Security Event Tokens from Login.gov."""
 
@@ -252,7 +274,7 @@ class SecurityEventToken(models.Model):
         blank=True,
     )
     email = models.EmailField(null=True, blank=True)
-    event_type = models.CharField(max_length=255)
+    event_type = models.CharField(max_length=255, choices=SecurityEventType.choices)
     event_data = models.JSONField()
     jwt_id = models.CharField(max_length=255, unique=True)
     issuer = models.CharField(max_length=255)
