@@ -11,7 +11,7 @@ import requests
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -56,15 +56,13 @@ class SecurityEventTokenView(APIView):
         """Validate content type."""
         if request.content_type != "application/secevent+jwt":
             logger.error(f"Invalid content type: {request.content_type}")
-            raise APIException("Invalid content type", code=status.HTTP_400_BAD_REQUEST)
+            raise ValidationError("Invalid content type")
 
     def _validate_key_id(self, key_id):
         """Validate key ID."""
         if not key_id:
             logger.error("No 'kid' found in JWT header")
-            raise APIException(
-                "No 'kid' found in JWT header", code=status.HTTP_400_BAD_REQUEST
-            )
+            raise ValidationError("No 'kid' found in JWT header")
 
     def _get_public_key(self, certs, key_id):
         """Validate and return public key."""
@@ -76,9 +74,7 @@ class SecurityEventTokenView(APIView):
 
         if not public_key:
             logger.error(f"No public key found for kid: {key_id}")
-            raise APIException(
-                "No public key found for kid", code=status.HTTP_400_BAD_REQUEST
-            )
+            raise ValidationError("No public key found for kid")
 
     def post(self, request, *args, **kwargs):
         """Process incoming Security Event Token from Login.gov."""
@@ -120,9 +116,7 @@ class SecurityEventTokenView(APIView):
             events = decoded_jwt.get("events", {})
             if not events:
                 logger.error("No events found in JWT")
-                raise APIException(
-                    "No events found in JWT", code=status.HTTP_400_BAD_REQUEST
-                )
+                raise ValidationError("No events found in JWT")
 
             # Process each event in the JWT
             for event_type, event_data in events.items():
@@ -132,7 +126,11 @@ class SecurityEventTokenView(APIView):
 
         except jwt.InvalidTokenError as e:
             logger.error(f"Invalid token: {e}")
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            logger.exception(f"Error processing SET: {e}")
+            raise ValidationError("Invalid token")
+        except ValidationError as e:
+            raise e
+        except Exception:
+            logger.exception(
+                "An unknown exception occurred when trying to handle a SET request."
+            )
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
