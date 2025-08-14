@@ -116,9 +116,6 @@ const UserProfileView = ({
             <UserProfileDetails user={user} isAMSUser={isAMSUser} />
           </div>
         </div>
-        {type === 'profile' && !isAMSUser && (
-          <hr className="margin-right-8 margin-top-3" />
-        )}
       </div>
       {type === 'profile' ? (
         <>

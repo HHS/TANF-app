@@ -11,10 +11,9 @@ function RegionSelector({
   displayingError,
   validateRegions,
   regionError,
-  editMode = false,
 }) {
   const [regional, setRegional] = useState(() => {
-    return editMode ? profileInfo?.regions?.size > 0 : false
+    return profileInfo?.regions instanceof Set && profileInfo.regions.size > 0
   })
 
   const [previousRegions, setPreviousRegions] = useState(
@@ -40,14 +39,6 @@ function RegionSelector({
       setPreviousRegions(new Set(profileInfo.regions))
     }
   }, [profileInfo.regions, regional])
-
-  useEffect(() => {
-    if (editMode) {
-      setRegional(
-        profileInfo?.regions instanceof Set && profileInfo.regions.size > 0
-      )
-    }
-  }, [editMode, profileInfo?.regions])
 
   const handleRegionChange = (event, regionId) => {
     const { name, checked } = event.target

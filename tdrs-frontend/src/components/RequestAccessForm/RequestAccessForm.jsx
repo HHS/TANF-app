@@ -248,7 +248,6 @@ function RequestAccessForm({
     displayingError: hasFieldErrors,
     validateRegions,
     regionError,
-    editMode,
   }
 
   return (

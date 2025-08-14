@@ -1,6 +1,7 @@
 import React from 'react'
 import ProfileRow from './ProfileRow'
 import JurisdictionLocationInfo from './JurisdictionLocationInfo'
+import { getRegionNameById } from '../../utils/regions'
 
 const UserProfileDetails = ({ user, isAMSUser }) => {
   // Most higher-env users will only have a single role, so just grab the first one.
@@ -29,7 +30,7 @@ const UserProfileDetails = ({ user, isAMSUser }) => {
                 {userRegions.map((region, index) => (
                   <div
                     key={index}
-                  >{`Region ${region.id} (${region.name})`}</div>
+                  >{`Region ${region.id} (${getRegionNameById(region.id)})`}</div>
                 ))}
               </>
             }
