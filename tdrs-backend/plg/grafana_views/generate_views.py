@@ -76,7 +76,7 @@ def handle_field(field, formatted_fields, is_admin):
             f''' --
         -- Calculate if SSN is valid
         CASE
-            WHEN "{field}" !~ '^(1{{9}}|2{{9}}|3{{9}}|4{{9}}|5{{9}}|6{{9}}|7{{9}}|8{{9}}|9{{9}})$' THEN 1
+            WHEN "{field}" !~ '^(0{{9}}|1{{9}}|2{{9}}|3{{9}}|4{{9}}|5{{9}}|6{{9}}|7{{9}}|8{{9}}|9{{9}})$' THEN 1
             ELSE 0
         END AS "SSN_VALID"'''.strip()
         )
