@@ -1,6 +1,86 @@
 /* eslint-disable no-undef */
 import { When, Then } from '@badeball/cypress-cucumber-preprocessor'
 
+export const openDataFilesAndSearch = (program, year, quarter) => {
+  cy.visit('/data-files')
+  cy.contains('Data Files').should('exist')
+
+  // Submit search form
+  if (program === 'SSP') cy.get('label[for="ssp-moe"]').click()
+
+  cy.get('#reportingYears').should('exist').select(year)
+  cy.get('#quarter').should('exist').select(quarter) // Q1, Q2, Q3, Q4
+  cy.get('button').contains('Search').should('exist').click()
+}
+
+export const uploadSectionFile = (inputSelector, filePath) => {
+  cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
+  cy.get(inputSelector).selectFile(filePath, { action: 'drag-drop' })
+  cy.wait(100)
+  cy.contains('button', 'Submit Data Files').click()
+}
+
+export const waitForFileSubmissionToAppear = () => {
+  cy.wait('@dataFileSubmit').then(({ response }) => {
+    const id = response?.body?.id
+    if (!id) throw new Error('Missing data_file id in response')
+    return cy.waitForDataFileSummary(id) // returns the poller
+  })
+}
+
+export const openSubmissionHistory = () => {
+  cy.contains('button', 'Submission History').click()
+}
+
+export const getLatestSubmissionHistoryRow = (section) => {
+  const table_captions = {
+    1: 'Section 1 - Active Case Data',
+    2: 'Section 2 - Closed Case Data',
+    3: 'Section 3 - Aggregate Data',
+    4: 'Section 4 - Stratum Data',
+  }
+
+  return cy
+    .contains('caption', table_captions[section])
+    .parents('table')
+    .find('tbody > tr')
+    .first()
+}
+
+export const downloadErrorReportAndAssert = (
+  program,
+  section,
+  year,
+  quarter,
+  deleteAfter = true
+) => {
+  const ERROR_REPORT_LABEL = {
+    TANF: {
+      1: 'Active Case Data',
+      2: 'Closed Case Data',
+      3: 'Aggregate Data',
+      4: 'Stratum Data',
+    },
+    SSP: {
+      1: 'SSP Active Case Data',
+      2: 'SSP Closed Case Data',
+      3: 'SSP Aggregate Data',
+      4: 'SSP Stratum Data',
+    },
+    TRIBAL: {
+      1: 'Tribal Active Case Data',
+      2: 'Tribal Closed Case Data',
+      3: 'Tribal Aggregate Data',
+    },
+  }
+
+  const fileName = `${year}-${quarter}-${ERROR_REPORT_LABEL[program][section]} Error Report.xlsx`
+  const downloadedFilePath = `${Cypress.config('downloadsFolder')}/${fileName}`
+
+  cy.readFile(downloadedFilePath, { timeout: 1000 }).should('exist')
+  if (deleteAfter) cy.task('deleteDownloadFile', fileName)
+}
+
 Then('{string} can see Data Files page', (username) => {
   cy.visit('/data-files')
   cy.contains('Data Files').should('exist')

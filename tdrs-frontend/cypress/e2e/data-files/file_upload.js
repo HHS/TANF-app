@@ -1,5 +1,8 @@
 /* eslint-disable no-undef */
 import { When, Then } from '@badeball/cypress-cucumber-preprocessor'
+import * as df from '../common-steps/data_files'
+
+// Constants ----------
 
 const TEST_DATA_DIR = '../tdrs-backend/tdpservice/parsers/test/data'
 
@@ -30,11 +33,13 @@ const UPLOAD_FILENAME = {
   },
 }
 
+// STEPS ----------
+
 When(
   '{string} uploads a {string} Section {string} data file for year {string} and quarter {string}',
   (username, program, section, year, quarter) => {
-    cy.openDataFilesAndSearch(program, year, quarter)
-    cy.uploadSectionFile(
+    df.openDataFilesAndSearch(program, year, quarter)
+    df.uploadSectionFile(
       SECTION_INPUT_ID[section],
       `${TEST_DATA_DIR}/${UPLOAD_FILENAME[program][section]}`
     )
@@ -45,9 +50,9 @@ When(
 Then(
   '{string} sees the {string} Section {string} submission in Submission History',
   (username, program, section) => {
-    cy.waitForFileSubmissionToAppear()
-    cy.openSubmissionHistory()
-    cy.getLatestSubmissionHistoryRow(section)
+    df.waitForFileSubmissionToAppear()
+    df.openSubmissionHistory()
+    df.getLatestSubmissionHistoryRow(section)
       .should('exist')
       .within(() => {
         cy.contains(UPLOAD_FILENAME[program][section]).should('exist')
@@ -58,17 +63,17 @@ Then(
 Then(
   '{string} can download the {string} Section {string} error report for year {string} and quarter {string}',
   (username, program, section, year, quarter) => {
-    cy.getLatestSubmissionHistoryRow(section).within(() => {
+    df.getLatestSubmissionHistoryRow(section).within(() => {
       cy.contains('button', 'Error Report').click()
     })
-    cy.downloadErrorReportAndAssert(program, section, year, quarter)
+    df.downloadErrorReportAndAssert(program, section, year, quarter)
   }
 )
 
 When(
   'tim-cypress@teamraft.com selects a TANF data file for the wrong year',
   () => {
-    cy.openDataFilesAndSearch('TANF', '2025', 'Q1')
+    df.openDataFilesAndSearch('TANF', '2025', 'Q1')
 
     cy.get('#active-case-data', { timeout: 1000 }).selectFile(
       `${TEST_DATA_DIR}/${UPLOAD_FILENAME['TANF'][1]}`,
@@ -83,7 +88,7 @@ When(
 When(
   'tim-cypres@teamraft.com selects an SSP data file for the year 2025 and quarter Q1',
   () => {
-    cy.openDataFilesAndSearch('TANF', '2025', 'Q1')
+    df.openDataFilesAndSearch('TANF', '2025', 'Q1')
 
     cy.get('#active-case-data', { timeout: 1000 }).selectFile(
       `${TEST_DATA_DIR}/${UPLOAD_FILENAME['SSP'][1]}`,
@@ -100,17 +105,17 @@ Then('{string} sees the error message: {string}', (username, errorMessage) => {
 })
 
 When('{string} selects a data file for the wrong section', (username) => {
-  cy.openDataFilesAndSearch('TANF', '2021', 'Q1')
-  cy.uploadSectionFile(
+  df.openDataFilesAndSearch('TANF', '2021', 'Q1')
+  df.uploadSectionFile(
     SECTION_INPUT_ID[1],
     `${TEST_DATA_DIR}/aggregates_rejected.txt`
   )
 })
 
 Then('{string} sees rejected status in submission history', (username) => {
-  cy.waitForFileSubmissionToAppear()
-  cy.openSubmissionHistory()
-  cy.getLatestSubmissionHistoryRow(1)
+  df.waitForFileSubmissionToAppear()
+  df.openSubmissionHistory()
+  df.getLatestSubmissionHistoryRow(1)
     .should('exist')
     .within(() => {
       cy.contains('aggregates_rejected.txt').should('exist')
