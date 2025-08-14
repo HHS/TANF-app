@@ -25,12 +25,12 @@ Feature: Approved Data Analysts can upload data files
 
     Scenario: a data analyst cannot submit a file for the wrong fiscal year and quarter
         Given 'Data Analyst', 'tim-cypress@teamraft.com', logs in
-        When 'tim-cypress@teamraft.com' selects a 'TANF' data file for the year '2025' and quarter 'Q1'
+        When tim-cypress@teamraft.com selects a TANF data file for the wrong year
         Then 'tim-cypress@teamraft.com' sees the error message: 'File contains data from Oct 1 - Dec 31, which belongs to Fiscal Year 2021, Quarter 1.'
 
     Scenario: a data analyst cannot submit a file for the wrong program type
         Given 'Data Analyst', 'tim-cypress@teamraft.com', logs in
-        When 'tim-cypress@teamraft.com' selects a 'SSP' data file for the year '2025' and quarter 'Q1'
+        When tim-cypres@teamraft.com selects an SSP data file for the year 2025 and quarter Q1
         Then 'tim-cypress@teamraft.com' sees the error message: 'File may correspond to SSP instead of TANF'
 
     Scenario: a data analyst cannot submit a file for the wrong section
