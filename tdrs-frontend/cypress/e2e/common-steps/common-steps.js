@@ -1,14 +1,37 @@
 /* eslint-disable no-undef */
 import { Given, When } from '@badeball/cypress-cucumber-preprocessor'
 
-Given('{string}, {string}, logs in', (role, username) => {
+export const ACTORS = {
+  'Data Analyst Tim': {
+    role: 'Data Analyst',
+    username: 'tim-cypress@teamraft.com',
+  },
+  'Data Analyst Stefani': {
+    role: 'Data Analyst',
+    username: 'stefani-cypress@teamraft.com',
+  },
+  'Data Analyst Tara': {
+    role: 'Data Analyst',
+    username: 'tara-cypress@teamraft.com',
+  },
+  'Regional Staff Cypress': {
+    role: 'OFA Regional Staff',
+    username: 'cypress-regional-staff@teamraft.com',
+  },
+  'New Cypress': {
+    role: 'Data Analyst',
+    username: 'new-cypress@teamraft.com',
+  },
+}
+
+Given('{string} logs in', (actor) => {
   cy.clearCookie('sessionid')
   cy.clearCookie('csrftoken')
   cy.intercept('/v1/stts/alpha').as('getSttSearchList')
   cy.visit('/')
   cy.contains('Sign into TANF Data Portal', { timeout: 30000 })
   // TODO: add if statement for cy.adminLogin
-  cy.login(username)
+  cy.login(ACTORS[actor].username)
 })
 
 // TODO: Remove in favor of Given 'user' logs in
@@ -32,11 +55,6 @@ Given('A file exists in submission history', () => {
     const data_file = response.body
     expect(data_file.summary.status).to.equal('Accepted with Errors')
   })
-})
-
-// TODO: Remove in favor of Given 'user' logs in
-When('{string} logs in', (username) => {
-  cy.login(username)
 })
 
 Given(

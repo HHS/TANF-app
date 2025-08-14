@@ -13,56 +13,66 @@ const SECTION_INPUT_ID = {
   4: '#stratum-data',
 }
 
-const UPLOAD_FILENAME = {
+const UPLOAD_FILE_INFO = {
   TANF: {
-    1: 'small_correct_file.txt',
-    2: 'small_correct_file.txt',
-    3: 'aggregates_rejected.txt',
-    4: 'tanf_section4_with_errors.txt',
+    1: { fileName: 'small_correct_file.txt', year: '2021', quarter: 'Q1' },
+    2: { fileName: 'small_correct_file.txt', year: '2021', quarter: 'Q1' },
+    3: { fileName: 'aggregates_rejected.txt', year: '2021', quarter: 'Q1' },
+    4: {
+      fileName: 'tanf_section4_with_errors.txt',
+      year: '2022',
+      quarter: 'Q1',
+    },
   },
   SSP: {
-    1: 'small_ssp_section1.txt',
-    2: 'small_ssp_section1.txt',
-    3: 'small_ssp_section1.txt',
-    4: 'small_ssp_section1.txt',
+    1: { fileName: 'small_ssp_section1.txt', year: '2024', quarter: 'Q1' },
+    2: { fileName: 'small_ssp_section1.txt', year: '2024', quarter: 'Q1' },
+    3: { fileName: 'small_ssp_section1.txt', year: '2024', quarter: 'Q1' },
+    4: { fileName: 'small_ssp_section1.txt', year: '2024', quarter: 'Q1' },
   },
   TRIBAL: {
-    1: 'small_correct_file.txt',
-    2: 'small_correct_file.txt',
-    3: 'small_correct_file.txt',
+    1: { fileName: 'small_correct_file.txt', year: '2021', quarter: 'Q1' },
+    2: { fileName: 'small_correct_file.txt', year: '2021', quarter: 'Q1' },
+    3: { fileName: 'small_correct_file.txt', year: '2021', quarter: 'Q1' },
   },
 }
 
 // STEPS ----------
 
 When(
-  '{string} uploads a {string} Section {string} data file for year {string} and quarter {string}',
-  (username, program, section, year, quarter) => {
+  '{string} uploads a {string} Section {string} data file',
+  (actor, program, section) => {
+    const { year, quarter, fileName } = UPLOAD_FILE_INFO[program][section]
+
     df.openDataFilesAndSearch(program, year, quarter)
     df.uploadSectionFile(
       SECTION_INPUT_ID[section],
-      `${TEST_DATA_DIR}/${UPLOAD_FILENAME[program][section]}`
+      `${TEST_DATA_DIR}/${fileName}`
     )
-    cy.contains('Successfully submitted', { timeout: 1000 }).should('exist')
+    cy.contains('Successfully submitted', { timeout: 2000 }).should('exist')
   }
 )
 
 Then(
   '{string} sees the {string} Section {string} submission in Submission History',
-  (username, program, section) => {
+  (actor, program, section) => {
     df.waitForFileSubmissionToAppear()
     df.openSubmissionHistory()
     df.getLatestSubmissionHistoryRow(section)
       .should('exist')
       .within(() => {
-        cy.contains(UPLOAD_FILENAME[program][section]).should('exist')
+        cy.contains(UPLOAD_FILE_INFO[program][section]['fileName']).should(
+          'exist'
+        )
       })
   }
 )
 
 Then(
-  '{string} can download the {string} Section {string} error report for year {string} and quarter {string}',
-  (username, program, section, year, quarter) => {
+  '{string} can download the {string} Section {string} error report',
+  (actor, program, section) => {
+    const { year, quarter } = UPLOAD_FILE_INFO[program][section]
+
     df.getLatestSubmissionHistoryRow(section).within(() => {
       cy.contains('button', 'Error Report').click()
     })
@@ -70,13 +80,25 @@ Then(
   }
 )
 
+When('Data Analyst Tim selects a TANF data file for the wrong year', () => {
+  df.openDataFilesAndSearch('TANF', '2025', 'Q1')
+
+  cy.get('#active-case-data', { timeout: 1000 }).selectFile(
+    `${TEST_DATA_DIR}/${UPLOAD_FILE_INFO['TANF'][1]['fileName']}`,
+    {
+      action: 'drag-drop',
+    }
+  )
+  cy.get('button').contains('Submit Data Files').should('exist').click()
+})
+
 When(
-  'tim-cypress@teamraft.com selects a TANF data file for the wrong year',
+  'Data Analyst Tim selects an SSP data file for the year 2025 and quarter Q1',
   () => {
     df.openDataFilesAndSearch('TANF', '2025', 'Q1')
 
     cy.get('#active-case-data', { timeout: 1000 }).selectFile(
-      `${TEST_DATA_DIR}/${UPLOAD_FILENAME['TANF'][1]}`,
+      `${TEST_DATA_DIR}/${UPLOAD_FILE_INFO['SSP'][1]['fileName']}`,
       {
         action: 'drag-drop',
       }
@@ -85,26 +107,11 @@ When(
   }
 )
 
-When(
-  'tim-cypres@teamraft.com selects an SSP data file for the year 2025 and quarter Q1',
-  () => {
-    df.openDataFilesAndSearch('TANF', '2025', 'Q1')
-
-    cy.get('#active-case-data', { timeout: 1000 }).selectFile(
-      `${TEST_DATA_DIR}/${UPLOAD_FILENAME['SSP'][1]}`,
-      {
-        action: 'drag-drop',
-      }
-    )
-    cy.get('button').contains('Submit Data Files').should('exist').click()
-  }
-)
-
-Then('{string} sees the error message: {string}', (username, errorMessage) => {
+Then('{string} sees the error message: {string}', (actor, errorMessage) => {
   cy.contains(errorMessage).should('exist')
 })
 
-When('{string} selects a data file for the wrong section', (username) => {
+When('{string} selects a data file for the wrong section', (actor) => {
   df.openDataFilesAndSearch('TANF', '2021', 'Q1')
   df.uploadSectionFile(
     SECTION_INPUT_ID[1],
@@ -112,7 +119,7 @@ When('{string} selects a data file for the wrong section', (username) => {
   )
 })
 
-Then('{string} sees rejected status in submission history', (username) => {
+Then('{string} sees rejected status in submission history', (actor) => {
   df.waitForFileSubmissionToAppear()
   df.openSubmissionHistory()
   df.getLatestSubmissionHistoryRow(1)

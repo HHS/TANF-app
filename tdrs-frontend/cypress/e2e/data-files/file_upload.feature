@@ -1,39 +1,39 @@
 Feature: Approved Data Analysts can upload data files
     
-    Scenario Outline: A data analyst can submit a data file
-        Given '<role>', '<username>', logs in
-        When '<username>' uploads a '<program>' Section '<section>' data file for year '<year>' and quarter '<quarter>'
-        Then '<username>' sees the '<program>' Section '<section>' submission in Submission History
-        And '<username>' can download the '<program>' Section '<section>' error report for year '<year>' and quarter '<quarter>'
+    Scenario Outline: <actor> can submit a <program> Section <section> data file
+        Given '<actor>' logs in
+        When '<actor>' uploads a '<program>' Section '<section>' data file
+        Then '<actor>' sees the '<program>' Section '<section>' submission in Submission History
+        And '<actor>' can download the '<program>' Section '<section>' error report
         # TODO: And Regional Randy gets an email (determine exact)
 
     Examples:
-        | role         | username                     | program | section | year | quarter |
-        | Data Analyst | tim-cypress@teamraft.com     | TANF    | 1       | 2021 | Q1      |
-        | Data Analyst | tim-cypress@teamraft.com     | TANF    | 2       | 2021 | Q1      |
-        | Data Analyst | tim-cypress@teamraft.com     | TANF    | 3       | 2021 | Q1      |
-        | Data Analyst | tim-cypress@teamraft.com     | TANF    | 4       | 2022 | Q1      |
-        | Data Analyst | stefani-cypress@teamraft.com | SSP     | 1       | 2024 | Q1      |
-        | Data Analyst | stefani-cypress@teamraft.com | SSP     | 2       | 2024 | Q1      |
-        | Data Analyst | stefani-cypress@teamraft.com | SSP     | 3       | 2024 | Q1      |
-        | Data Analyst | stefani-cypress@teamraft.com | SSP     | 4       | 2024 | Q1      |
-        | Data Analyst | tara-cypress@teamraft.com    | TRIBAL  | 1       | 2021 | Q1      |
-        | Data Analyst | tara-cypress@teamraft.com    | TRIBAL  | 2       | 2021 | Q1      |
-        | Data Analyst | tara-cypress@teamraft.com    | TRIBAL  | 3       | 2021 | Q1      |
+        | actor                 | program | section |
+        | Data Analyst Tim      | TANF    | 1       |
+        | Data Analyst Tim      | TANF    | 2       |
+        | Data Analyst Tim      | TANF    | 3       |
+        | Data Analyst Tim      | TANF    | 4       |
+        | Data Analyst Stefani  | SSP     | 1       |
+        | Data Analyst Stefani  | SSP     | 2       |
+        | Data Analyst Stefani  | SSP     | 3       |
+        | Data Analyst Stefani  | SSP     | 4       |
+        | Data Analyst Tara     | TRIBAL  | 1       |
+        | Data Analyst Tara     | TRIBAL  | 2       |
+        | Data Analyst Tara     | TRIBAL  | 3       |
 
     # Edge / failure cases for TANF Data Analyst Tim
 
-    Scenario: a data analyst cannot submit a file for the wrong fiscal year and quarter
-        Given 'Data Analyst', 'tim-cypress@teamraft.com', logs in
-        When tim-cypress@teamraft.com selects a TANF data file for the wrong year
-        Then 'tim-cypress@teamraft.com' sees the error message: 'File contains data from Oct 1 - Dec 31, which belongs to Fiscal Year 2021, Quarter 1.'
+    Scenario: Data Analyst Tim cannot submit a file for the wrong fiscal year and quarter
+        Given 'Data Analyst Tim' logs in
+        When Data Analyst Tim selects a TANF data file for the wrong year
+        Then 'Data Analyst Tim' sees the error message: 'File contains data from Oct 1 - Dec 31, which belongs to Fiscal Year 2021, Quarter 1.'
 
-    Scenario: a data analyst cannot submit a file for the wrong program type
-        Given 'Data Analyst', 'tim-cypress@teamraft.com', logs in
-        When tim-cypres@teamraft.com selects an SSP data file for the year 2025 and quarter Q1
-        Then 'tim-cypress@teamraft.com' sees the error message: 'File may correspond to SSP instead of TANF'
+    Scenario: Data Analyst Tim cannot submit a file for the wrong program type
+        Given 'Data Analyst Tim' logs in
+        When Data Analyst Tim selects an SSP data file for the year 2025 and quarter Q1
+        Then 'Data Analyst Tim' sees the error message: 'File may correspond to SSP instead of TANF'
 
-    Scenario: a data analyst cannot submit a file for the wrong section
-        Given 'Data Analyst', 'tim-cypress@teamraft.com', logs in
-        When 'tim-cypress@teamraft.com' selects a data file for the wrong section
-        Then 'tim-cypress@teamraft.com' sees rejected status in submission history
+    Scenario: Data Analyst Tim cannot submit a file for the wrong section
+        Given 'Data Analyst Tim' logs in
+        When 'Data Analyst Tim' selects a data file for the wrong section
+        Then 'Data Analyst Tim' sees rejected status in submission history
