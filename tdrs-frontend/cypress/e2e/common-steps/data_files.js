@@ -115,6 +115,7 @@ export const waitForDataFileSummary = (
         }
 
         // Otherwise, wait and try again
+        cy.wait(interval)
         return pollForProcessing(attempt + 1)
       })
   }
