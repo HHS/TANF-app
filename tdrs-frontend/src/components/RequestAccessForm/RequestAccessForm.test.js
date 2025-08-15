@@ -1,31 +1,15 @@
 import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { Provider } from 'react-redux'
-import { thunk } from 'redux-thunk'
-import configureStore from 'redux-mock-store'
+import configureStore from '../../configureStore'
 import RequestAccessForm from './RequestAccessForm'
-import { requestAccess } from '../../actions/requestAccess'
-import { updateUserRequest } from '../../actions/mockUpdateUserRequest'
-
-// Mocks
-jest.mock('../../actions/mockUpdateUserRequest', () => ({
-  updateUserRequest: jest.fn(() => () => Promise.resolve()),
-}))
-
-jest.mock('../../actions/requestAccess', () => ({
-  requestAccess: jest.fn(() => () => Promise.resolve()),
-}))
+import { UPDATE_USER_REQUEST_SUCCESS } from '../../actions/mockUpdateUserRequest'
 
 jest.mock('../STTComboBox', () => (props) => {
-  const sttOptions = {
-    California: { id: 4, type: 'state', code: 'CA', name: 'California' },
-    Texas: { id: 6, type: 'state', code: 'TX', name: 'Texas' },
-  }
-
   return (
     <select
       data-testid="stt-combobox"
-      onChange={(e) => props.selectStt(sttOptions[e.target.value])}
+      onChange={(e) => props.selectStt(e.target.value)}
       onBlur={props.handleBlur}
     >
       <option value="">Select</option>
@@ -35,12 +19,9 @@ jest.mock('../STTComboBox', () => (props) => {
   )
 })
 
-const middlewares = [thunk]
-const mockStore = configureStore(middlewares)
-
 const defaultUser = {
   email: 'user@example.com',
-  roles: [{ name: 'State Admin' }],
+  roles: [{ name: 'OFA System Admin' }],
   access_request: false,
   account_approval_status: 'Initial',
   stt: {
@@ -61,7 +42,7 @@ const defaultSTTList = [
   { id: 6, type: 'state', code: 'TX', name: 'Texas' },
 ]
 
-const setup = (props = {}, storeOverrides = {}) => {
+const createTestStore = (overrides = {}) => {
   const initialState = {
     auth: {
       authenticated: true,
@@ -71,18 +52,23 @@ const setup = (props = {}, storeOverrides = {}) => {
       loading: false,
       sttList: defaultSTTList,
     },
-    ...storeOverrides,
+    ...overrides,
   }
 
-  const store = mockStore(initialState)
+  return configureStore(initialState)
+}
+
+const setup = (props = {}, storeOverrides = {}) => {
+  const store = createTestStore(storeOverrides)
 
   return {
     store,
     ...render(
       <Provider store={store}>
         <RequestAccessForm
-          user={initialState.auth.user}
-          sttList={initialState.stts.sttList}
+          user={store.getState().auth.user}
+          sttList={store.getState().stts.sttList}
+          onCancel={jest.fn()}
           {...props}
         />
       </Provider>
@@ -116,33 +102,26 @@ describe('RequestAccessForm', () => {
   })
 
   it('does not dispatch if required fields are missing', async () => {
-    const store = mockStore({
-      auth: {
-        authenticated: true,
-        user: defaultUser,
-      },
-      stts: {
-        loading: false,
-        sttList: defaultSTTList,
-      },
-    })
-    store.dispatch = jest.fn()
+    const { store } = setup()
 
-    render(
-      <Provider store={store}>
-        <RequestAccessForm user={defaultUser} sttList={defaultSTTList} />
-      </Provider>
-    )
+    const dispatchSpy = jest.spyOn(store, 'dispatch')
 
     fireEvent.click(screen.getByRole('button', { name: /Request Access/i }))
 
+    // Wait a moment to confirm no thunk was dispatched
     await waitFor(() => {
-      expect(store.dispatch).not.toHaveBeenCalled()
+      const thunkWasDispatched = dispatchSpy.mock.calls.some(
+        ([arg]) => typeof arg === 'function'
+      )
+      expect(thunkWasDispatched).toBe(false)
     })
   })
 
   it('dispatches requestAccess when form is valid', async () => {
-    setup()
+    const { store } = setup()
+
+    // Spy on dispatch
+    const dispatchSpy = jest.spyOn(store, 'dispatch')
 
     fireEvent.change(screen.getByLabelText(/First Name/i), {
       target: { value: 'Jane' },
@@ -156,17 +135,36 @@ describe('RequestAccessForm', () => {
     fireEvent.change(select, {
       target: { value: 'Texas' },
     })
-    fireEvent.blur(select) // trigger any onBlur validation logic
+    fireEvent.blur(select)
 
+    // Make select updated to selected value
     expect(select.value).toEqual('Texas')
+
     // Simulate FRA response
     fireEvent.click(screen.getByLabelText(/^Yes$/i))
 
     fireEvent.click(screen.getByRole('button', { name: /Request Access/i }))
 
+    // Wait for dispatch to be called with the thunk
     await waitFor(() => {
-      expect(requestAccess).toHaveBeenCalled()
+      expect(dispatchSpy).toHaveBeenCalledWith(expect.any(Function))
     })
+
+    // Extract the dispatched thunk (function)
+    const dispatchedThunk = dispatchSpy.mock.calls.find(
+      (call) => typeof call[0] === 'function'
+    )[0]
+
+    // Mock dispatch to test what dispatchedThunk dispatches internally
+    const mockDispatch = jest.fn()
+    await dispatchedThunk(mockDispatch)
+
+    // test what mockDispatch was called with (if requestAccess dispatches success action)
+    expect(mockDispatch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'PATCH_REQUEST_ACCESS',
+      })
+    )
   })
 
   it('displays form-level error if no changes made in editMode', async () => {
@@ -213,16 +211,28 @@ describe('RequestAccessForm', () => {
   })
 
   it('validates region selection for AMS user', async () => {
-    setup({ editMode: true, user: amsUser }, { auth: { user: amsUser } })
+    const props = {
+      editMode: true,
+    }
+    const storeOverrides = {
+      auth: { authenticated: true, user: amsUser },
+      stts: { loading: false, sttList: defaultSTTList },
+    }
 
-    // Clear any previous calls
-    updateUserRequest.mockClear()
+    const { store } = setup(props, storeOverrides)
+
+    // Spy on dispatch to track thunk calls
+    const dispatchSpy = jest.spyOn(store, 'dispatch')
 
     fireEvent.click(screen.getByLabelText(/^Yes$/i))
     fireEvent.click(screen.getByRole('button', { name: /Update Request/i }))
 
+    // Wait to ensure no dispatch happens (or specifically the thunk one)
     await waitFor(() => {
-      expect(updateUserRequest).not.toHaveBeenCalled()
+      const thunkCalled = dispatchSpy.mock.calls.some(
+        ([arg]) => typeof arg === 'function'
+      )
+      expect(thunkCalled).toBe(false)
     })
   })
 
@@ -247,7 +257,19 @@ describe('RequestAccessForm', () => {
       regions: new Set(),
     }
 
-    setup({ editMode: true, initialValues })
+    const props = {
+      editMode: true,
+      initialValues,
+    }
+
+    const storeOverrides = {
+      auth: { authenticated: true, user: defaultUser },
+      stts: { loading: false, sttList: defaultSTTList },
+    }
+
+    const { store } = setup(props, storeOverrides)
+    // Spy on store.dispatch to monitor calls
+    const dispatchSpy = jest.spyOn(store, 'dispatch')
 
     const lastNameInput = screen.getByLabelText(/Last Name/i)
     fireEvent.change(lastNameInput, { target: { value: '' } })
@@ -257,8 +279,28 @@ describe('RequestAccessForm', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Update Request/i }))
 
+    // Wait for the thunk to be dispatched
     await waitFor(() => {
-      expect(updateUserRequest).toHaveBeenCalled()
+      expect(dispatchSpy).toHaveBeenCalledWith(expect.any(Function))
+    })
+
+    // Now, invoke the dispatched thunk manually with a mock dispatch to verify action payload
+    const dispatchedThunk = dispatchSpy.mock.calls.find(
+      (call) => typeof call[0] === 'function'
+    )[0]
+
+    const mockDispatch = jest.fn()
+    await dispatchedThunk(mockDispatch)
+
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: UPDATE_USER_REQUEST_SUCCESS,
+      user: {
+        first_name: 'John',
+        last_name: 'Smith',
+        stt: 6,
+        regions: [],
+        has_fra_access: false,
+      },
     })
   })
 })

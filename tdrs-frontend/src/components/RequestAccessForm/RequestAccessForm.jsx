@@ -52,10 +52,6 @@ function RequestAccessForm({
   const regionError = 'At least one Region is required'
 
   const validateRegions = (regions) => {
-    if (editMode && !isAMSUser) {
-      return null // Regions are not applicable in edit mode for non-AMS users
-    }
-
     if (regions?.size === 0) {
       return regionError
     }
@@ -191,7 +187,7 @@ function RequestAccessForm({
         touched: { ...touched },
       }
     )
-    const regionError = validateRegions(profileInfo.regions)
+    const regionError = isAMSUser ? validateRegions(profileInfo.regions) : null
 
     const combinedErrors = {
       ...formValidation.errors,
@@ -199,7 +195,7 @@ function RequestAccessForm({
     }
     const combinedTouched = {
       ...formValidation.touched,
-      ...(regionError && { regions: true }),
+      ...(regionError && isAMSUser && { regions: true }),
     }
 
     setErrors(combinedErrors)

@@ -1,4 +1,6 @@
 // actions/mockUpdateUserRequest.js
+export const UPDATE_USER_REQUEST_SUCCESS = 'UPDATE_USER_REQUEST_SUCCESS'
+
 export const updateUserRequest =
   ({ firstName, lastName, stt, regions, hasFRAAccess }) =>
   async (dispatch) => {
@@ -16,7 +18,7 @@ export const updateUserRequest =
     return new Promise((resolve) => {
       setTimeout(() => {
         dispatch({
-          type: 'UPDATE_USER_REQUEST_SUCCESS',
+          type: UPDATE_USER_REQUEST_SUCCESS,
           user, // this could be returned user data
         })
         resolve()
