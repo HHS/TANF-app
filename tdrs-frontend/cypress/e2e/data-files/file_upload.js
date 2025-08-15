@@ -4,8 +4,6 @@ import * as df from '../common-steps/data_files'
 
 // Constants ----------
 
-const TEST_DATA_DIR = '../tdrs-backend/tdpservice/parsers/test/data'
-
 const SECTION_INPUT_ID = {
   1: '#active-case-data',
   2: '#closed-case-data',
@@ -45,10 +43,7 @@ When(
     const { year, quarter, fileName } = UPLOAD_FILE_INFO[program][section]
 
     df.openDataFilesAndSearch(program, year, quarter)
-    df.uploadSectionFile(
-      SECTION_INPUT_ID[section],
-      `${TEST_DATA_DIR}/${fileName}`
-    )
+    df.uploadSectionFile(SECTION_INPUT_ID[section], fileName)
     cy.contains('Successfully submitted').should('exist')
   }
 )
@@ -80,29 +75,19 @@ Then(
 )
 
 When('Data Analyst Tim selects a TANF data file for the wrong year', () => {
-  df.openDataFilesAndSearch('TANF', '2025', 'Q1')
+  const fileName = UPLOAD_FILE_INFO['TANF'][1]['fileName']
 
-  cy.get('#active-case-data', { timeout: 1000 }).selectFile(
-    `${TEST_DATA_DIR}/${UPLOAD_FILE_INFO['TANF'][1]['fileName']}`,
-    {
-      action: 'drag-drop',
-    }
-  )
-  cy.get('button').contains('Submit Data Files').should('exist').click()
+  df.openDataFilesAndSearch('TANF', '2025', 'Q1')
+  df.uploadSectionFile(SECTION_INPUT_ID[1], fileName, true)
 })
 
 When(
   'Data Analyst Tim selects an SSP data file for the year 2025 and quarter Q1',
   () => {
-    df.openDataFilesAndSearch('TANF', '2025', 'Q1')
+    const fileName = UPLOAD_FILE_INFO['SSP'][1]['fileName']
 
-    cy.get('#active-case-data', { timeout: 1000 }).selectFile(
-      `${TEST_DATA_DIR}/${UPLOAD_FILE_INFO['SSP'][1]['fileName']}`,
-      {
-        action: 'drag-drop',
-      }
-    )
-    cy.get('button').contains('Submit Data Files').should('exist').click()
+    df.openDataFilesAndSearch('TANF', '2025', 'Q1')
+    df.uploadSectionFile(SECTION_INPUT_ID[1], fileName)
   }
 )
 
@@ -111,11 +96,10 @@ Then('{string} sees the error message: {string}', (actor, errorMessage) => {
 })
 
 When('{string} selects a data file for the wrong section', (actor) => {
+  const fileName = 'aggregates_rejected.txt'
+
   df.openDataFilesAndSearch('TANF', '2021', 'Q1')
-  df.uploadSectionFile(
-    SECTION_INPUT_ID[1],
-    `${TEST_DATA_DIR}/aggregates_rejected.txt`
-  )
+  df.uploadSectionFile(SECTION_INPUT_ID[1], fileName)
 })
 
 Then('{string} sees rejected status in submission history', (actor) => {

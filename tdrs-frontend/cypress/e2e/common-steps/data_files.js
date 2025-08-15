@@ -1,6 +1,8 @@
 /* eslint-disable no-undef */
 import { When, Then } from '@badeball/cypress-cucumber-preprocessor'
 
+const TEST_DATA_DIR = '../tdrs-backend/tdpservice/parsers/test/data'
+
 export const openDataFilesAndSearch = (program, year, quarter) => {
   cy.visit('/data-files')
   cy.contains('Data Files').should('exist')
@@ -13,10 +15,22 @@ export const openDataFilesAndSearch = (program, year, quarter) => {
   cy.get('button').contains('Search').should('exist').click()
 }
 
-export const uploadSectionFile = (inputSelector, filePath) => {
+export const uploadSectionFile = (
+  inputSelector,
+  fileName,
+  shouldRejectFileInput = false
+) => {
+  const filePath = `${TEST_DATA_DIR}/${fileName}`
+
   cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
-  cy.get(inputSelector).selectFile(filePath, { action: 'drag-drop' })
-  cy.wait(100)
+  cy.get(inputSelector)
+    .selectFile(filePath, { action: 'drag-drop' })
+    .prev()
+    .within(() => {
+      if (!shouldRejectFileInput)
+        cy.contains(fileName, { timeout: 2000 }).should('exist')
+    })
+
   cy.contains('button', 'Submit Data Files').click()
 }
 
