@@ -70,6 +70,13 @@ inhibit_rules:
     #   the inhibition rule will apply!
     equal: [alertname, env, service]
 
+  - source_matchers: [alertname=~"LocalBackendDown|DevEnvironmentBackendDown|
+                      StagingBackendDown|ProductionBackendDown"]
+    target_match:
+      alertname: 'UpTime'
+    equal: ['environment', 'service']
+
+
 
 receivers:
   - name: 'admin-team-emails'

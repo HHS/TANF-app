@@ -1,16 +1,19 @@
 """Utility functions for the reparse command."""
+import logging
+from datetime import timedelta
+
+from django.conf import settings
 from django.core.management import call_command
 from django.db.utils import DatabaseError
-from tdpservice.parsers.models import DataFileSummary, ParserError
-from tdpservice.search_indexes.util import MODELS, count_all_records
-from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
-from tdpservice.core.utils import log
-from django.contrib.admin.models import CHANGE
-from datetime import timedelta
 from django.utils import timezone
-from django.conf import settings
+from django.contrib.admin.models import LogEntry, CHANGE
+from django.contrib.contenttypes.models import ContentType
+
+from tdpservice.core.utils import log
 from tdpservice.data_files.models import DataFile
-import logging
+from tdpservice.parsers.models import DataFileSummary, ParserError
+from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
+from tdpservice.search_indexes.util import MODELS, count_all_records
 
 logger = logging.getLogger(__name__)
 
@@ -171,8 +174,11 @@ def delete_records(file_ids, log_context):
             count = qset.count()
             total_deleted += count
             if count > 0:
-                log(f"Deleting {count} out of {total_in_table} records of type: {model}.",
-                    level="info", logger_context=log_context)
+                log(
+                    f"Deleting {count} out of {total_in_table} records of type: {model}.",
+                    level="info",
+                    logger_context=log_context,
+                )
             qset._raw_delete(qset.db)
         except DatabaseError as e:
             log(
@@ -249,10 +255,22 @@ def calculate_timeout(num_files, num_records):
     )
     return delta
 
+
 def get_number_of_records(files):
     """Get the number of records in the files."""
     total_number_of_records = 0
     for file in files:
-        datafile_summary = DataFileSummary.objects.get(datafile=file)
-        total_number_of_records += datafile_summary.total_number_of_records_in_file
+        try:
+            datafile_summary = DataFileSummary.objects.get(datafile=file)
+            total_number_of_records += datafile_summary.total_number_of_records_in_file
+        except DataFileSummary.DoesNotExist:
+            LogEntry.objects.log_action(
+                user_id=file.user.pk,
+                content_type_id=ContentType.objects.get_for_model(DataFile).pk,
+                object_id=file,
+                object_repr=str(file),
+                action_flag=CHANGE,
+                change_message=f"No summary found for datafile: {file.id}. Skipping.",
+            )
+            logger.warning(f"No summary found for datafile: {file.id}. Skipping.")
     return total_number_of_records

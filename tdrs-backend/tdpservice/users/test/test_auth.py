@@ -4,16 +4,20 @@ import os
 import secrets
 import time
 import uuid
+from unittest import mock
 
 from django.core.exceptions import ImproperlyConfigured, SuspiciousOperation
-from rest_framework import status
-from rest_framework.test import APIRequestFactory
-from unittest import mock
+
 import jwt
 import pytest
+from rest_framework import status
+from rest_framework.test import APIRequestFactory
 
 from tdpservice.settings.common import get_required_env_var_setting
-from tdpservice.users.api.login import TokenAuthorizationLoginDotGov, TokenAuthorizationAMS
+from tdpservice.users.api.login import (
+    TokenAuthorizationAMS,
+    TokenAuthorizationLoginDotGov,
+)
 from tdpservice.users.api.logout_redirect_oidc import LogoutRedirectOIDC
 from tdpservice.users.api.utils import (
     generate_client_assertion,
@@ -39,14 +43,14 @@ class MockRequest:
 @pytest.fixture
 def patch_login_gov_jwt_key(settings, test_private_key):
     """Override JWT Key setting with the key needed for tests."""
-    assert test_private_key is not None, 'Unable to generate test_private_key'
+    assert test_private_key is not None, "Unable to generate test_private_key"
     settings.LOGIN_GOV_JWT_KEY = test_private_key.decode("utf-8")
 
 
 @pytest.fixture
 def patch_ams_jwt_key(settings, test_private_key):
     """Override JWT Key setting with the key needed for tests."""
-    assert test_private_key is not None, 'Unable to generate test_private_key'
+    assert test_private_key is not None, "Unable to generate test_private_key"
     settings.AMS_CLIENT_SECRET = test_private_key.decode("utf-8")
 
 
@@ -54,31 +58,27 @@ def patch_ams_jwt_key(settings, test_private_key):
 def mock_token():
     """Retrieve the mock token to be used for tests."""
     return os.getenv(
-        'MOCK_TOKEN',
-        'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJiMmQyZDExNS0xZDdlLTQ1N'
-        'zktYjlkNi1mOGU4NGY0ZjU2Y2EiLCJpc3MiOiJodHRwczovL2lkcC5pbnQubG9naW4uZ29'
-        '2IiwiYWNyIjoiaHR0cDovL2lkbWFuYWdlbWVudC5nb3YvbnMvYXNzdXJhbmNlL2xvYS8xI'
-        'iwibm9uY2UiOiJhYWQwYWE5NjljMTU2YjJkZmE2ODVmODg1ZmFjNzA4MyIsImF1ZCI6InV'
-        'ybjpnb3Y6Z3NhOm9wZW5pZGNvbm5lY3Q6ZGV2ZWxvcG1lbnQiLCJqdGkiOiJqQzdOblU4Z'
-        'E5OVjVsaXNRQm0xanRBIiwiYXRfaGFzaCI6InRsTmJpcXIxTHIyWWNOUkdqendsSWciLCJ'
-        'jX2hhc2giOiJoWGpxN2tPcnRRS196YV82dE9OeGN3IiwiZXhwIjoxNDg5Njk0MTk2LCJpY'
-        'XQiOjE0ODk2OTQxOTgsIm5iZiI6MTQ4OTY5NDE5OH0.pVbPF-2LJSG1fE9thn27PwmDlNd'
-        'lc3mEm7fFxb8ZADdRvYmDMnDPuZ3TGHl0ttK78H8NH7rBpH85LZzRNtCcWjS7QcycXHMn0'
-        '0Cuq_Bpbn7NRdf3ktxkBrpqyzIArLezVJJVXn2EeykXMvzlO-fJ7CaDUaJMqkDhKOK6caR'
-        'YePBLbZJFl0Ri25bqXugguAYTyX9HACaxMNFtQOwmUCVVr6WYL1AMV5WmaswZtdE8POxYd'
-        'hzwj777rkgSg555GoBDZy3MetapbT0csSWqVJ13skWTXBRrOiQQ70wzHAu_3ktBDXNoLx4'
-        'kG1fr1BiMEbHjKsHs14X8LCBcIMdt49hIZg'
+        "MOCK_TOKEN",
+        "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJiMmQyZDExNS0xZDdlLTQ1N"
+        "zktYjlkNi1mOGU4NGY0ZjU2Y2EiLCJpc3MiOiJodHRwczovL2lkcC5pbnQubG9naW4uZ29"
+        "2IiwiYWNyIjoiaHR0cDovL2lkbWFuYWdlbWVudC5nb3YvbnMvYXNzdXJhbmNlL2xvYS8xI"
+        "iwibm9uY2UiOiJhYWQwYWE5NjljMTU2YjJkZmE2ODVmODg1ZmFjNzA4MyIsImF1ZCI6InV"
+        "ybjpnb3Y6Z3NhOm9wZW5pZGNvbm5lY3Q6ZGV2ZWxvcG1lbnQiLCJqdGkiOiJqQzdOblU4Z"
+        "E5OVjVsaXNRQm0xanRBIiwiYXRfaGFzaCI6InRsTmJpcXIxTHIyWWNOUkdqendsSWciLCJ"
+        "jX2hhc2giOiJoWGpxN2tPcnRRS196YV82dE9OeGN3IiwiZXhwIjoxNDg5Njk0MTk2LCJpY"
+        "XQiOjE0ODk2OTQxOTgsIm5iZiI6MTQ4OTY5NDE5OH0.pVbPF-2LJSG1fE9thn27PwmDlNd"
+        "lc3mEm7fFxb8ZADdRvYmDMnDPuZ3TGHl0ttK78H8NH7rBpH85LZzRNtCcWjS7QcycXHMn0"
+        "0Cuq_Bpbn7NRdf3ktxkBrpqyzIArLezVJJVXn2EeykXMvzlO-fJ7CaDUaJMqkDhKOK6caR"
+        "YePBLbZJFl0Ri25bqXugguAYTyX9HACaxMNFtQOwmUCVVr6WYL1AMV5WmaswZtdE8POxYd"
+        "hzwj777rkgSg555GoBDZy3MetapbT0csSWqVJ13skWTXBRrOiQQ70wzHAu_3ktBDXNoLx4"
+        "kG1fr1BiMEbHjKsHs14X8LCBcIMdt49hIZg",
     )
 
 
 @pytest.fixture()
 def states_factory():
     """Bundle together nonce, state, and code for tests."""
-    yield {
-        'nonce': "testnonce",
-        'state': "teststate",
-        'code': secrets.token_hex(32)
-    }
+    yield {"nonce": "testnonce", "state": "teststate", "code": secrets.token_hex(32)}
 
 
 @pytest.fixture()
@@ -87,11 +87,7 @@ def req_factory(states_factory, mock, api_client):
     states = states_factory
     factory = APIRequestFactory()
     request = factory.get(
-        "/v1/login",
-        {
-            "state": states['state'],
-            "code": states['code']
-        }
+        "/v1/login", {"state": states["state"], "code": states["code"]}
     )
     request.session = api_client.session
     # Add an origin param to test multiple auth handlers.
@@ -122,8 +118,11 @@ def test_get_admin_user(ofa_system_admin):
 @pytest.mark.django_db
 def test_auth_user_by_hhs_id(user):
     """Test get_user method."""
-    authenticated_user = CustomAuthentication.authenticate(hhs_id=user.hhs_id, username=user.username)
+    authenticated_user = CustomAuthentication.authenticate(
+        hhs_id=user.hhs_id, username=user.username
+    )
     assert str(authenticated_user.hhs_id) == user.hhs_id
+
 
 @pytest.mark.django_db
 def test_get_non_user(user):
@@ -143,7 +142,7 @@ class TestLoginAMS:
         "token_endpoint": "http://openid-connect/token",
         "jwks_uri": "http://openid-connect/certs",
         "issuer": "http://realms/ams",
-        "userinfo_endpoint": "http://openid-connect/userinfo"
+        "userinfo_endpoint": "http://openid-connect/userinfo",
     }
 
     test_hhs_id = "1234567890"
@@ -155,13 +154,15 @@ class TestLoginAMS:
             "nonce": "testnonce",
             "state": "teststate",
             "code": secrets.token_hex(32),
-            "ams": True
+            "ams": True,
         }
 
     @pytest.fixture(autouse=True)
     def mock_ams_configuration(self, requests_mock, settings, mock_token):
         """Mock outgoing requests in various parts of the AMS flow."""
-        requests_mock.get(settings.AMS_CONFIGURATION_ENDPOINT, json=TestLoginAMS.mock_configuration)
+        requests_mock.get(
+            settings.AMS_CONFIGURATION_ENDPOINT, json=TestLoginAMS.mock_configuration
+        )
 
         jwk = {
             "kty": "EC",
@@ -170,17 +171,24 @@ class TestLoginAMS:
             "y": "x_FEzRu9m36HLN_tue659LNpXW6pCyStikYjKIWI5a0",
             "kid": "Public key used in JWS spec Appendix A.3 example",
         }
-        requests_mock.get(TestLoginAMS.mock_configuration["jwks_uri"], json={"keys": [jwk]})
+        requests_mock.get(
+            TestLoginAMS.mock_configuration["jwks_uri"], json={"keys": [jwk]}
+        )
 
-        requests_mock.post(TestLoginAMS.mock_configuration["userinfo_endpoint"],
-                           json={"email": "test_existing@example.com", "hhs_id": self.test_hhs_id})
+        requests_mock.post(
+            TestLoginAMS.mock_configuration["userinfo_endpoint"],
+            json={"email": "test_existing@example.com", "hhs_id": self.test_hhs_id},
+        )
 
-        requests_mock.post(TestLoginAMS.mock_configuration["token_endpoint"], json={
-            "access_token": "hhJES3wcgjI55jzjBvZpNQ",
-            "token_type": "Bearer",
-            "expires_in": 3600,
-            "id_token": mock_token,
-        })
+        requests_mock.post(
+            TestLoginAMS.mock_configuration["token_endpoint"],
+            json={
+                "access_token": "hhJES3wcgjI55jzjBvZpNQ",
+                "token_type": "Bearer",
+                "expires_in": 3600,
+                "id_token": mock_token,
+            },
+        )
 
     @pytest.fixture(autouse=True)
     def mock_decode(self, ams_states_factory, mocker):
@@ -188,8 +196,7 @@ class TestLoginAMS:
         mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
 
         mock_decode.return_value = decoded_token(
-            "test@example.com",
-            ams_states_factory['nonce']
+            "test@example.com", ams_states_factory["nonce"]
         )
 
         yield mock_decode
@@ -200,11 +207,7 @@ class TestLoginAMS:
         states = ams_states_factory
         factory = APIRequestFactory()
         request = factory.get(
-            "/v1/login",
-            {
-                "state": states["state"],
-                "code": states["code"]
-            }
+            "/v1/login", {"state": states["state"], "code": states["code"]}
         )
         request.session = api_client.session
         # Add an origin param to test multiple auth handlers.
@@ -245,11 +248,7 @@ class TestLoginAMS:
         assert response.status_code == status.HTTP_302_FOUND
 
     def test_login_with_admin_user(
-        self,
-        ofa_system_admin,
-        mock_decode,
-        ams_states_factory,
-        req_factory
+        self, ofa_system_admin, mock_decode, ams_states_factory, req_factory
     ):
         """Login should work with admin ACF user."""
         states = ams_states_factory
@@ -271,20 +270,17 @@ class TestLoginAMS:
 
     def test_auth_user_hhs_id_update(self, user):
         """Test updating pre-existing user w/ hhs_id field."""
-        user.hhs_id = ''
+        user.hhs_id = ""
         user.save()
         user_by_name = CustomAuthentication.authenticate(username=user.username)
         assert user_by_name.username == user.username
-        user_by_id = CustomAuthentication.authenticate(username=user.username, hhs_id=self.test_hhs_id)
+        user_by_id = CustomAuthentication.authenticate(
+            username=user.username, hhs_id=self.test_hhs_id
+        )
         assert str(user_by_id.hhs_id) == self.test_hhs_id
 
     @mock.patch("requests.get")
-    def test_bad_AMS_configuration(
-        self,
-        ams_states_factory,
-        req_factory,
-        user
-    ):
+    def test_bad_AMS_configuration(self, ams_states_factory, req_factory, user):
         """Test login with state and code."""
         request = req_factory
         request = create_session(request, ams_states_factory)
@@ -296,7 +292,7 @@ class TestLoginAMS:
         view = TokenAuthorizationAMS.as_view()
         response = view(request)
         assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
-        assert b'Failed to get AMS configuration' in response.render().content
+        assert b"Failed to get AMS configuration" in response.render().content
 
 
 def test_login_gov_redirect(api_client):
@@ -362,10 +358,7 @@ def test_login_fails_without_state(api_client):
 
 
 def decoded_token(
-    email,
-    nonce,
-    sub="b2d2d115-1d7e-4579-b9d6-f8e84f4f56ca",
-    email_verified=True
+    email, nonce, sub="b2d2d115-1d7e-4579-b9d6-f8e84f4f56ca", email_verified=True
 ):
     """Generate a token dictionary as part of DRY."""
     decoded_token = {
@@ -382,8 +375,8 @@ def decoded_token(
 def create_session(request, states):
     """Generate a client session as part of DRY."""
     request.session["state_nonce_tracker"] = {
-        "nonce": states['nonce'],
-        "state": states['state'],
+        "nonce": states["nonce"],
+        "state": states["state"],
         "added_on": time.time(),
     }
     return request
@@ -407,8 +400,7 @@ class TestLogin:
         mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
 
         mock_decode.return_value = decoded_token(
-            "test@example.com",
-            states_factory['nonce']
+            "test@example.com", states_factory["nonce"]
         )
 
         yield mock_post, mock_decode
@@ -419,7 +411,7 @@ class TestLogin:
         patch_login_gov_jwt_key,
         mock,
         states_factory,
-        req_factory
+        req_factory,
     ):
         """Login should *NOT* work with ACF user."""
         states = states_factory
@@ -435,7 +427,7 @@ class TestLogin:
         mock_decode.return_value = decoded_token(
             "test_admin@acf.hhs.gov",
             states["nonce"],
-            sub=ofa_system_admin.login_gov_uuid
+            sub=ofa_system_admin.login_gov_uuid,
         )
 
         response = view(request)
@@ -474,6 +466,7 @@ def test_generate_client_assertion_pem(patch_login_gov_jwt_key):
 def test_generate_client_assertion_base64(settings, test_private_key):
     """Test client assertion generation with Base64 key."""
     from base64 import b64encode
+
     settings.LOGIN_GOV_JWT_KEY = b64encode(test_private_key)
     utf8_jwt_key = generate_client_assertion()
     assert utf8_jwt_key is not None
@@ -489,7 +482,7 @@ def test_generate_token_endpoint_parameters(patch_login_gov_jwt_key):
     # Test specific login.gov options
     options = {
         "client_assertion": generate_client_assertion(),
-        "client_assertion_type": "sometype"
+        "client_assertion_type": "sometype",
     }
     login_gov_token_params = generate_token_endpoint_parameters("test_code", options)
     assert "code=test_code" in login_gov_token_params
@@ -509,28 +502,28 @@ def test_token_auth_decode_payload(mock_token):
         # is expired and would need to be refreshed on each test run, to work
         # around that we will disable signature verification for this test.
         # TODO: Consider writing code to generate MOCK_TOKEN on demand
-        options={'verify_signature': False}
+        options={"verify_signature": False},
     )
 
     # Assert the token was decoded correctly and contains necessary properties
     assert decoded_token is not None
-    assert 'nonce' in decoded_token
-    assert 'sub' in decoded_token
-    assert 'login.gov' in decoded_token.get('iss', '')
+    assert "nonce" in decoded_token
+    assert "sub" in decoded_token
+    assert "login.gov" in decoded_token.get("iss", "")
 
 
 def test_missing_django_superuser():
     """Test that an error is raised when env var DJANGO_SU_NAME is missing."""
-    os.environ['DJANGO_SU_NAME'] = ''
+    os.environ["DJANGO_SU_NAME"] = ""
     with pytest.raises(ImproperlyConfigured):
-        get_required_env_var_setting('DJANGO_SU_NAME')
+        get_required_env_var_setting("DJANGO_SU_NAME")
 
 
 def test_missing_jwt_key():
     """Test that an error is raised when env var JWT_KEY is missing."""
-    os.environ['JWT_KEY'] = ''
+    os.environ["JWT_KEY"] = ""
     with pytest.raises(ImproperlyConfigured):
-        get_required_env_var_setting('JWT_KEY')
+        get_required_env_var_setting("JWT_KEY")
 
 
 @pytest.mark.django_db
@@ -551,8 +544,7 @@ class TestLoginParam:
         mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
 
         mock_decode.return_value = decoded_token(
-            "test@example.com",
-            states_factory['nonce']
+            "test@example.com", states_factory["nonce"]
         )
 
         yield mock_post, mock_decode
@@ -563,7 +555,7 @@ class TestLoginParam:
         "token_endpoint": "http://openid-connect/token",
         "jwks_uri": "http://openid-connect/certs",
         "issuer": "http://realms/ams",
-        "userinfo_endpoint": "http://openid-connect/userinfo"
+        "userinfo_endpoint": "http://openid-connect/userinfo",
     }
 
     test_hhs_id = "1234567890"
@@ -575,13 +567,15 @@ class TestLoginParam:
             "nonce": "testnonce",
             "state": "teststate",
             "code": secrets.token_hex(32),
-            "ams": True
+            "ams": True,
         }
 
     @pytest.fixture()
     def mock_ams_configuration(self, requests_mock, settings, mock_token):
         """Mock outgoing requests in various parts of the AMS flow."""
-        requests_mock.get(settings.AMS_CONFIGURATION_ENDPOINT, json=TestLoginAMS.mock_configuration)
+        requests_mock.get(
+            settings.AMS_CONFIGURATION_ENDPOINT, json=TestLoginAMS.mock_configuration
+        )
 
         jwk = {
             "kty": "EC",
@@ -590,17 +584,24 @@ class TestLoginParam:
             "y": "x_FEzRu9m36HLN_tue659LNpXW6pCyStikYjKIWI5a0",
             "kid": "Public key used in JWS spec Appendix A.3 example",
         }
-        requests_mock.get(TestLoginAMS.mock_configuration["jwks_uri"], json={"keys": [jwk]})
+        requests_mock.get(
+            TestLoginAMS.mock_configuration["jwks_uri"], json={"keys": [jwk]}
+        )
 
-        requests_mock.post(TestLoginAMS.mock_configuration["userinfo_endpoint"],
-                           json={"email": "test_existing@example.com", "hhs_id": self.test_hhs_id})
+        requests_mock.post(
+            TestLoginAMS.mock_configuration["userinfo_endpoint"],
+            json={"email": "test_existing@example.com", "hhs_id": self.test_hhs_id},
+        )
 
-        requests_mock.post(TestLoginAMS.mock_configuration["token_endpoint"], json={
-            "access_token": "hhJES3wcgjI55jzjBvZpNQ",
-            "token_type": "Bearer",
-            "expires_in": 3600,
-            "id_tohttps://idp.int.identitysandbox.gov/api/opken": mock_token,
-        })
+        requests_mock.post(
+            TestLoginAMS.mock_configuration["token_endpoint"],
+            json={
+                "access_token": "hhJES3wcgjI55jzjBvZpNQ",
+                "token_type": "Bearer",
+                "expires_in": 3600,
+                "id_tohttps://idp.int.identitysandbox.gov/api/opken": mock_token,
+            },
+        )
         yield requests_mock
 
     @pytest.fixture(autouse=True)
@@ -609,8 +610,7 @@ class TestLoginParam:
         mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
 
         mock_decode.return_value = decoded_token(
-            "test@example.com",
-            ams_states_factory['nonce']
+            "test@example.com", ams_states_factory["nonce"]
         )
 
         yield mock_decode
@@ -621,11 +621,7 @@ class TestLoginParam:
         states = ams_states_factory
         factory = APIRequestFactory()
         request = factory.get(
-            "/v1/login",
-            {
-                "state": states["state"],
-                "code": states["code"]
-            }
+            "/v1/login", {"state": states["state"], "code": states["code"]}
         )
         request.session = api_client.session
         # Add an origin param to test multiple auth handlers.
@@ -633,18 +629,32 @@ class TestLoginParam:
 
     @pytest.mark.parametrize(
         "login_handler, fix_mock_config, fix_mock, fix_states_factory, fix_req_factory",
-        [("LoginDotGov", "mock", "mock", "states_factory", "req_factory"),                          # LoginDotGov
-         ("AMS", "mock_ams_configuration", "mock_decode", "ams_states_factory", "ams_req_factory")  # AMS
-         ])
+        [
+            (
+                "LoginDotGov",
+                "mock",
+                "mock",
+                "states_factory",
+                "req_factory",
+            ),  # LoginDotGov
+            (
+                "AMS",
+                "mock_ams_configuration",
+                "mock_decode",
+                "ams_states_factory",
+                "ams_req_factory",
+            ),  # AMS
+        ],
+    )
     def test_login_with_bad_nonce_and_state(
         self,
-        request,                    # Pytest request: provides information on the executing pytest fixture
-        login_handler,              # LoginDotGov or AMS
-        fix_mock_config,            # mock configuration fixture. Not needed for LoginDotGov
-        fix_mock,                   # mock and mock_decode fixture
-        fix_states_factory,         # states_factory
-        fix_req_factory,            # request_factory
-        patch_login_gov_jwt_key,    # LoginDotGov jwt
+        request,  # Pytest request: provides information on the executing pytest fixture
+        login_handler,  # LoginDotGov or AMS
+        fix_mock_config,  # mock configuration fixture. Not needed for LoginDotGov
+        fix_mock,  # mock and mock_decode fixture
+        fix_states_factory,  # states_factory
+        fix_req_factory,  # request_factory
+        patch_login_gov_jwt_key,  # LoginDotGov jwt
     ):
         """Login should error with a bad nonce and state."""
         """
@@ -654,7 +664,7 @@ class TestLoginParam:
         """
 
         # AMS
-        if login_handler == 'AMS':
+        if login_handler == "AMS":
             # run associated fixtures for AMS
             request.getfixturevalue(fix_mock)
             request.getfixturevalue(fix_mock_config)
@@ -671,7 +681,7 @@ class TestLoginParam:
             }
 
         # LoginDotGov
-        elif login_handler == 'LoginDotGov':
+        elif login_handler == "LoginDotGov":
             # run associated fixtures for LogindotGov
             mock = request.getfixturevalue(fix_mock)
             states_factory = request.getfixturevalue(fix_states_factory)
@@ -692,18 +702,32 @@ class TestLoginParam:
 
     @pytest.mark.parametrize(
         "login_handler,fix_mock_config,fix_mock,fix_states_factory,fix_req_factory",
-        [("LoginDotGov", "mock", "mock", "states_factory", "req_factory"),                             # LoginDotGov
-         ("AMS", "mock_ams_configuration", "mock_decode", "ams_states_factory", "ams_req_factory")   # AMS
-         ])
+        [
+            (
+                "LoginDotGov",
+                "mock",
+                "mock",
+                "states_factory",
+                "req_factory",
+            ),  # LoginDotGov
+            (
+                "AMS",
+                "mock_ams_configuration",
+                "mock_decode",
+                "ams_states_factory",
+                "ams_req_factory",
+            ),  # AMS
+        ],
+    )
     def test_login_with_bad_validation_code(
         self,
-        request,                    # Pytest request: provides information on the executing pytest fixture
-        login_handler,              # LoginDotGov or AMS
-        fix_mock_config,            # mock configuration fixture. Not needed for LoginDotGov.
-        fix_mock,                   # mock and mock_decode fixture
-        fix_states_factory,         # states_factory
-        fix_req_factory,            # request_factory
-        patch_login_gov_jwt_key     # LoginDotGov jwt
+        request,  # Pytest request: provides information on the executing pytest fixture
+        login_handler,  # LoginDotGov or AMS
+        fix_mock_config,  # mock configuration fixture. Not needed for LoginDotGov.
+        fix_mock,  # mock and mock_decode fixture
+        fix_states_factory,  # states_factory
+        fix_req_factory,  # request_factory
+        patch_login_gov_jwt_key,  # LoginDotGov jwt
     ):
         """Login should error with a bad validation code."""
         """
@@ -712,7 +736,7 @@ class TestLoginParam:
         This creates independent test environments for each parametrized tests.
         """
 
-        if login_handler == 'AMS':
+        if login_handler == "AMS":
             # run associated fixtures for AMS
             requests_mock = request.getfixturevalue(fix_mock_config)
             ams_states_factory = request.getfixturevalue(fix_states_factory)
@@ -720,10 +744,14 @@ class TestLoginParam:
 
             request = ams_req_factory
             request = create_session(request, ams_states_factory)
-            requests_mock.post(TestLoginAMS.mock_configuration["token_endpoint"], json={}, status_code=400)
+            requests_mock.post(
+                TestLoginAMS.mock_configuration["token_endpoint"],
+                json={},
+                status_code=400,
+            )
             view = TokenAuthorizationAMS.as_view()
 
-        elif login_handler == 'LoginDotGov':
+        elif login_handler == "LoginDotGov":
             # run associated fixtures for LoginDotGov
             mock = request.getfixturevalue(fix_mock)
             states_factory = request.getfixturevalue(fix_states_factory)
@@ -745,18 +773,32 @@ class TestLoginParam:
 
     @pytest.mark.parametrize(
         "login_handler,fix_mock_config,fix_mock,fix_states_factory,fix_req_factory",
-        [("LoginDotGov", "mock", "mock", "states_factory", "req_factory"),                             # LoginDotGov
-         ("AMS", "mock_ams_configuration", "mock_decode", "ams_states_factory", "ams_req_factory")   # AMS
-         ])
+        [
+            (
+                "LoginDotGov",
+                "mock",
+                "mock",
+                "states_factory",
+                "req_factory",
+            ),  # LoginDotGov
+            (
+                "AMS",
+                "mock_ams_configuration",
+                "mock_decode",
+                "ams_states_factory",
+                "ams_req_factory",
+            ),  # AMS
+        ],
+    )
     def test_login_with_email_unverified(
         self,
-        request,                    # Pytest request: provides information on the executing pytest fixture
-        login_handler,              # LoginDotGov or AMS
-        fix_mock_config,            # mock configuration fixture. Not needed for LoginDotGov.
-        fix_mock,                   # mock and mock_decode fixture
-        fix_states_factory,         # states_factory
-        fix_req_factory,            # request_factory
-        patch_login_gov_jwt_key     # LoginDotGov jwt
+        request,  # Pytest request: provides information on the executing pytest fixture
+        login_handler,  # LoginDotGov or AMS
+        fix_mock_config,  # mock configuration fixture. Not needed for LoginDotGov.
+        fix_mock,  # mock and mock_decode fixture
+        fix_states_factory,  # states_factory
+        fix_req_factory,  # request_factory
+        patch_login_gov_jwt_key,  # LoginDotGov jwt
     ):
         """Login should fail with unverified email."""
         """
@@ -765,7 +807,7 @@ class TestLoginParam:
         This creates independent test environments for each parametrized tests.
         """
 
-        if login_handler == 'AMS':
+        if login_handler == "AMS":
             # run associated fixtures for AMS
             request.getfixturevalue(fix_mock_config)
             mock_decode = request.getfixturevalue(fix_mock)
@@ -776,12 +818,10 @@ class TestLoginParam:
             request = ams_req_factory
             request = create_session(request, ams_states_factory)
             mock_decode.return_value = decoded_token(
-                "test@example.com",
-                states['nonce'],
-                email_verified=False
+                "test@example.com", states["nonce"], email_verified=False
             )
             view = TokenAuthorizationAMS.as_view()
-        elif login_handler == 'LoginDotGov':            # run associated fixtures for LoginDotGov
+        elif login_handler == "LoginDotGov":  # run associated fixtures for LoginDotGov
             mock = request.getfixturevalue(fix_mock)
             states_factory = request.getfixturevalue(fix_states_factory)
             req_factory = request.getfixturevalue(fix_req_factory)
@@ -791,9 +831,7 @@ class TestLoginParam:
             request = create_session(request, states_factory)
             mock_post, mock_decode = mock
             mock_decode.return_value = decoded_token(
-                "test@example.com",
-                states['nonce'],
-                email_verified=False
+                "test@example.com", states["nonce"], email_verified=False
             )
             view = TokenAuthorizationLoginDotGov.as_view()
 
@@ -803,18 +841,32 @@ class TestLoginParam:
 
     @pytest.mark.parametrize(
         "login_handler,fix_mock_config,fix_mock,fix_states_factory,fix_req_factory",
-        [("LoginDotGov", "mock", "mock", "states_factory", "req_factory"),  # LoginDotGov
-         ("AMS", "mock_ams_configuration", "mock_decode", "ams_states_factory", "ams_req_factory")  # AMS
-         ])
+        [
+            (
+                "LoginDotGov",
+                "mock",
+                "mock",
+                "states_factory",
+                "req_factory",
+            ),  # LoginDotGov
+            (
+                "AMS",
+                "mock_ams_configuration",
+                "mock_decode",
+                "ams_states_factory",
+                "ams_req_factory",
+            ),  # AMS
+        ],
+    )
     def test_login_with_existing_token(
         self,
-        request,                    # Pytest request: provides information on the executing pytest fixture
-        login_handler,              # LoginDotGov or AMS
-        fix_mock_config,            # mock configuration fixture. Not needed for LoginDotGov.
-        fix_mock,                   # mock and mock_decode fixture
-        fix_states_factory,         # states_factory
-        fix_req_factory,            # request_factory
-        patch_login_gov_jwt_key     # LoginDotGov jwt
+        request,  # Pytest request: provides information on the executing pytest fixture
+        login_handler,  # LoginDotGov or AMS
+        fix_mock_config,  # mock configuration fixture. Not needed for LoginDotGov.
+        fix_mock,  # mock and mock_decode fixture
+        fix_states_factory,  # states_factory
+        fix_req_factory,  # request_factory
+        patch_login_gov_jwt_key,  # LoginDotGov jwt
     ):
         """Login should proceed when token already exists."""
         """
@@ -823,7 +875,7 @@ class TestLoginParam:
         This creates independent test environments for each parametrized tests.
         """
 
-        if login_handler == 'AMS':
+        if login_handler == "AMS":
             # run associated fixtures for AMS
             request.getfixturevalue(fix_mock_config)
             request.getfixturevalue(fix_mock)
@@ -835,7 +887,7 @@ class TestLoginParam:
             request.session["token"] = "testtoken"
             request = create_session(request, ams_states_factory)
 
-        elif login_handler == 'LoginDotGov':
+        elif login_handler == "LoginDotGov":
             # run associated fixtures for LoginDotGov
             request.getfixturevalue(fix_mock)
             states_factory = request.getfixturevalue(fix_states_factory)
@@ -853,19 +905,33 @@ class TestLoginParam:
 
     @pytest.mark.parametrize(
         "login_handler,fix_mock_config,fix_mock,fix_states_factory,fix_req_factory",
-        [("LoginDotGov", "mock", "mock", "states_factory", "req_factory"),  # LoginDotGov
-         ("AMS", "mock_ams_configuration", "mock_decode", "ams_states_factory", "ams_req_factory")  # AMS
-         ])
+        [
+            (
+                "LoginDotGov",
+                "mock",
+                "mock",
+                "states_factory",
+                "req_factory",
+            ),  # LoginDotGov
+            (
+                "AMS",
+                "mock_ams_configuration",
+                "mock_decode",
+                "ams_states_factory",
+                "ams_req_factory",
+            ),  # AMS
+        ],
+    )
     def test_login_with_existing_user(
         self,
-        request,                    # Pytest request: provides information on the executing pytest fixture
-        login_handler,              # LoginDotGov or AMS
-        fix_mock_config,            # mock configuration fixture. Not needed for LoginDotGov.
-        fix_mock,                   # mock and mock_decode fixture
-        fix_states_factory,         # states_factory
-        fix_req_factory,            # request_factory
-        patch_login_gov_jwt_key,    # LoginDotGov jwt
-        user
+        request,  # Pytest request: provides information on the executing pytest fixture
+        login_handler,  # LoginDotGov or AMS
+        fix_mock_config,  # mock configuration fixture. Not needed for LoginDotGov.
+        fix_mock,  # mock and mock_decode fixture
+        fix_states_factory,  # states_factory
+        fix_req_factory,  # request_factory
+        patch_login_gov_jwt_key,  # LoginDotGov jwt
+        user,
     ):
         """Login should proceed when token already exists."""
         """
@@ -874,7 +940,7 @@ class TestLoginParam:
         This creates independent test environments for each parametrized tests.
         """
 
-        if login_handler == 'AMS':
+        if login_handler == "AMS":
             # run associated fixtures for AMS
             request.getfixturevalue(fix_mock_config)
             mock_decode = request.getfixturevalue(fix_mock)
@@ -893,7 +959,7 @@ class TestLoginParam:
                 states["nonce"],
             )
 
-        elif login_handler == 'LoginDotGov':
+        elif login_handler == "LoginDotGov":
             # run associated fixtures for LoginDotGov
             mock = request.getfixturevalue(fix_mock)
             states_factory = request.getfixturevalue(fix_states_factory)
@@ -908,9 +974,7 @@ class TestLoginParam:
             view = TokenAuthorizationLoginDotGov.as_view()
             mock_post, mock_decode = mock
             mock_decode.return_value = decoded_token(
-                "test_existing@example.com",
-                states["nonce"],
-                sub=user.login_gov_uuid
+                "test_existing@example.com", states["nonce"], sub=user.login_gov_uuid
             )
 
         response = view(request)
@@ -918,18 +982,32 @@ class TestLoginParam:
 
     @pytest.mark.parametrize(
         "login_handler,fix_mock_config,fix_mock,fix_states_factory,fix_req_factory",
-        [("LoginDotGov", "mock", "mock", "states_factory", "req_factory"),  # LoginDotGov
-         ("AMS", "mock_ams_configuration", "mock_decode", "ams_states_factory", "ams_req_factory")  # AMS
-         ])
+        [
+            (
+                "LoginDotGov",
+                "mock",
+                "mock",
+                "states_factory",
+                "req_factory",
+            ),  # LoginDotGov
+            (
+                "AMS",
+                "mock_ams_configuration",
+                "mock_decode",
+                "ams_states_factory",
+                "ams_req_factory",
+            ),  # AMS
+        ],
+    )
     def test_login_with_expired_token(
         self,
-        request,                    # Pytest request: provides information on the executing pytest fixture
-        login_handler,              # LoginDotGov or AMS
-        fix_mock_config,            # mock configuration fixture. Not needed for LoginDotGov.
-        fix_mock,                   # mock and mock_decode fixture
-        fix_states_factory,         # states_factory
-        fix_req_factory,            # request_factory
-        patch_login_gov_jwt_key,    # LoginDotGov jwt
+        request,  # Pytest request: provides information on the executing pytest fixture
+        login_handler,  # LoginDotGov or AMS
+        fix_mock_config,  # mock configuration fixture. Not needed for LoginDotGov.
+        fix_mock,  # mock and mock_decode fixture
+        fix_states_factory,  # states_factory
+        fix_req_factory,  # request_factory
+        patch_login_gov_jwt_key,  # LoginDotGov jwt
     ):
         """Login should proceed when token already exists."""
         """
@@ -938,7 +1016,7 @@ class TestLoginParam:
         This creates independent test environments for each parametrized tests.
         """
 
-        if login_handler == 'AMS':
+        if login_handler == "AMS":
             # run associated fixtures for AMS
             request.getfixturevalue(fix_mock_config)
             mock_decode = request.getfixturevalue(fix_mock)
@@ -952,7 +1030,7 @@ class TestLoginParam:
 
             view = TokenAuthorizationAMS.as_view()
 
-        elif login_handler == 'LoginDotGov':
+        elif login_handler == "LoginDotGov":
             # run associated fixtures for LoginDotGov
             mock = request.getfixturevalue(fix_mock)
             states_factory = request.getfixturevalue(fix_states_factory)
@@ -971,18 +1049,32 @@ class TestLoginParam:
 
     @pytest.mark.parametrize(
         "login_handler,fix_mock_config,fix_mock,fix_states_factory,fix_req_factory",
-        [("LoginDotGov", "mock", "mock", "states_factory", "req_factory"),  # LoginDotGov
-         ("AMS", "mock_ams_configuration", "mock_decode", "ams_states_factory", "ams_req_factory")  # AMS
-         ])
+        [
+            (
+                "LoginDotGov",
+                "mock",
+                "mock",
+                "states_factory",
+                "req_factory",
+            ),  # LoginDotGov
+            (
+                "AMS",
+                "mock_ams_configuration",
+                "mock_decode",
+                "ams_states_factory",
+                "ams_req_factory",
+            ),  # AMS
+        ],
+    )
     def test_login_with_general_exception(
         self,
-        request,                    # Pytest request: provides information on the executing pytest fixture
-        login_handler,              # LoginDotGov or AMS
-        fix_mock_config,            # mock configuration fixture. Not needed for LoginDotGov.
-        fix_mock,                   # mock and mock_decode fixture
-        fix_states_factory,         # states_factory
-        fix_req_factory,            # request_factory
-        patch_login_gov_jwt_key,    # LoginDotGov jwt
+        request,  # Pytest request: provides information on the executing pytest fixture
+        login_handler,  # LoginDotGov or AMS
+        fix_mock_config,  # mock configuration fixture. Not needed for LoginDotGov.
+        fix_mock,  # mock and mock_decode fixture
+        fix_states_factory,  # states_factory
+        fix_req_factory,  # request_factory
+        patch_login_gov_jwt_key,  # LoginDotGov jwt
     ):
         """Login should proceed when token already exists."""
         """
@@ -991,7 +1083,7 @@ class TestLoginParam:
         This creates independent test environments for each parametrized tests.
         """
 
-        if login_handler == 'AMS':
+        if login_handler == "AMS":
             # run associated fixtures for AMS
             request.getfixturevalue(fix_mock_config)
             request.getfixturevalue(fix_mock)
@@ -1006,7 +1098,7 @@ class TestLoginParam:
             request.session = {}
             request = create_session(request, states)
 
-        elif login_handler == 'LoginDotGov':
+        elif login_handler == "LoginDotGov":
             # run associated fixtures for LoginDotGov
             request.getfixturevalue(fix_mock)
             states_factory = request.getfixturevalue(fix_states_factory)
@@ -1031,19 +1123,33 @@ class TestLoginParam:
 
     @pytest.mark.parametrize(
         "login_handler,fix_mock_config,fix_mock,fix_states_factory,fix_req_factory",
-        [("LoginDotGov", "mock", "mock", "states_factory", "req_factory"),  # LoginDotGov
-         ("AMS", "mock_ams_configuration", "mock_decode", "ams_states_factory", "ams_req_factory")  # AMS
-         ])
+        [
+            (
+                "LoginDotGov",
+                "mock",
+                "mock",
+                "states_factory",
+                "req_factory",
+            ),  # LoginDotGov
+            (
+                "AMS",
+                "mock_ams_configuration",
+                "mock_decode",
+                "ams_states_factory",
+                "ams_req_factory",
+            ),  # AMS
+        ],
+    )
     def test_login_with_inactive_user(
         self,
-        request,                    # Pytest request: provides information on the executing pytest fixture
-        login_handler,              # LoginDotGov or AMS
-        fix_mock_config,            # mock configuration fixture. Not needed for LoginDotGov.
-        fix_mock,                   # mock and mock_decode fixture
-        fix_states_factory,         # states_factory
-        fix_req_factory,            # request_factory
-        patch_login_gov_jwt_key,    # LoginDotGov jwt
-        inactive_user
+        request,  # Pytest request: provides information on the executing pytest fixture
+        login_handler,  # LoginDotGov or AMS
+        fix_mock_config,  # mock configuration fixture. Not needed for LoginDotGov.
+        fix_mock,  # mock and mock_decode fixture
+        fix_states_factory,  # states_factory
+        fix_req_factory,  # request_factory
+        patch_login_gov_jwt_key,  # LoginDotGov jwt
+        inactive_user,
     ):
         """Login should proceed when token already exists."""
         """
@@ -1052,7 +1158,7 @@ class TestLoginParam:
         This creates independent test environments for each parametrized tests.
         """
 
-        if login_handler == 'AMS':
+        if login_handler == "AMS":
             # run associated fixtures for AMS
             requests_mock = request.getfixturevalue(fix_mock_config)
             mock_decode = request.getfixturevalue(fix_mock)
@@ -1069,18 +1175,20 @@ class TestLoginParam:
             inactive_user.username = "test_inactive@example.com"
             inactive_user.save()
 
-            requests_mock.post(TestLoginAMS.mock_configuration["userinfo_endpoint"],
-                               json={"email": "test_inactive@example.com"})
+            requests_mock.post(
+                TestLoginAMS.mock_configuration["userinfo_endpoint"],
+                json={"email": "test_inactive@example.com"},
+            )
 
             mock_decode.return_value = decoded_token(
                 "test_inactive@example.com",
-                ams_states_factory['nonce'],
+                ams_states_factory["nonce"],
             )
 
             view = TokenAuthorizationAMS.as_view()
             request = create_session(request, ams_states_factory)
 
-        elif login_handler == 'LoginDotGov':
+        elif login_handler == "LoginDotGov":
             # run associated fixtures for LoginDotGov
             mock = request.getfixturevalue(fix_mock)
             states_factory = request.getfixturevalue(fix_states_factory)
@@ -1100,8 +1208,8 @@ class TestLoginParam:
 
             mock_decode.return_value = decoded_token(
                 "test_inactive@example.com",
-                states_factory['nonce'],
-                sub=inactive_user.login_gov_uuid
+                states_factory["nonce"],
+                sub=inactive_user.login_gov_uuid,
             )
             view = TokenAuthorizationLoginDotGov.as_view()
             request = create_session(request, states_factory)
@@ -1109,23 +1217,37 @@ class TestLoginParam:
         response = view(request)
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
         assert response.data == {
-            "error": f'Login failed, user account is inactive: {inactive_user.username}'
+            "error": f"Login failed, user account is inactive: {inactive_user.username}"
         }
 
     @pytest.mark.parametrize(
         "login_handler,fix_mock_config,fix_mock,fix_states_factory,fix_req_factory",
-        [("LoginDotGov", "mock", "mock", "states_factory", "req_factory"),  # LoginDotGov
-         ("AMS", "mock_ams_configuration", "mock_decode", "ams_states_factory", "ams_req_factory")  # AMS
-         ])
+        [
+            (
+                "LoginDotGov",
+                "mock",
+                "mock",
+                "states_factory",
+                "req_factory",
+            ),  # LoginDotGov
+            (
+                "AMS",
+                "mock_ams_configuration",
+                "mock_decode",
+                "ams_states_factory",
+                "ams_req_factory",
+            ),  # AMS
+        ],
+    )
     def test_login_with_initial_superuser(
         self,
-        request,                    # Pytest request: providexs information on the executing pytest fixture
-        login_handler,              # LoginDotGov or AMS
-        fix_mock_config,            # mock configuration fixture. Not needed for LoginDotGov.
-        fix_mock,                   # mock and mock_decode fixture
-        fix_states_factory,         # states_factory
-        fix_req_factory,            # request_factory
-        patch_login_gov_jwt_key,    # LoginDotGov jwt
+        request,  # Pytest request: providexs information on the executing pytest fixture
+        login_handler,  # LoginDotGov or AMS
+        fix_mock_config,  # mock configuration fixture. Not needed for LoginDotGov.
+        fix_mock,  # mock and mock_decode fixture
+        fix_states_factory,  # states_factory
+        fix_req_factory,  # request_factory
+        patch_login_gov_jwt_key,  # LoginDotGov jwt
         user,
         settings,
     ):
@@ -1136,7 +1258,7 @@ class TestLoginParam:
         This creates independent test environments for each parametrized tests.
         """
 
-        if login_handler == 'AMS':
+        if login_handler == "AMS":
             # run associated fixtures for AMS
             request.getfixturevalue(fix_mock_config)
             mock_decode = request.getfixturevalue(fix_mock)
@@ -1157,7 +1279,7 @@ class TestLoginParam:
             view = TokenAuthorizationAMS.as_view()
             response = view(request)
 
-        elif login_handler == 'LoginDotGov':
+        elif login_handler == "LoginDotGov":
             # run associated fixtures for LoginDotGov
             mock = request.getfixturevalue(fix_mock)
             states_factory = request.getfixturevalue(fix_states_factory)
@@ -1182,18 +1304,32 @@ class TestLoginParam:
 
     @pytest.mark.parametrize(
         "login_handler,fix_mock_config,fix_mock,fix_states_factory,fix_req_factory",
-        [("LoginDotGov", "mock", "mock", "states_factory", "req_factory"),  # LoginDotGov
-         ("AMS", "mock_ams_configuration", "mock_decode", "ams_states_factory", "ams_req_factory")  # AMS
-         ])
+        [
+            (
+                "LoginDotGov",
+                "mock",
+                "mock",
+                "states_factory",
+                "req_factory",
+            ),  # LoginDotGov
+            (
+                "AMS",
+                "mock_ams_configuration",
+                "mock_decode",
+                "ams_states_factory",
+                "ams_req_factory",
+            ),  # AMS
+        ],
+    )
     def test_login_with_old_email(
         self,
-        request,                    # Pytest request: provides information on the executing pytest fixture
-        login_handler,              # LoginDotGov or AMS
-        fix_mock_config,            # mock configuration fixture. Not needed for LoginDotGov.
-        fix_mock,                   # mock and mock_decode fixture
-        fix_states_factory,         # states_factory
-        fix_req_factory,            # request_factory
-        patch_login_gov_jwt_key,    # LoginDotGov jwt
+        request,  # Pytest request: provides information on the executing pytest fixture
+        login_handler,  # LoginDotGov or AMS
+        fix_mock_config,  # mock configuration fixture. Not needed for LoginDotGov.
+        fix_mock,  # mock and mock_decode fixture
+        fix_states_factory,  # states_factory
+        fix_req_factory,  # request_factory
+        patch_login_gov_jwt_key,  # LoginDotGov jwt
         user,
     ):
         """Login should proceed when token already exists."""
@@ -1204,7 +1340,7 @@ class TestLoginParam:
         """
 
         # Test AMS
-        if login_handler == 'AMS':
+        if login_handler == "AMS":
             # run associated fixtures for AMS
             request.getfixturevalue(fix_mock_config)
             mock_decode = request.getfixturevalue(fix_mock)
@@ -1222,7 +1358,7 @@ class TestLoginParam:
                 states["nonce"],
             )
         # Test LoginDotGov
-        elif login_handler == 'LoginDotGov':
+        elif login_handler == "LoginDotGov":
             # run associated fixtures for LoginDotGov
             mock = request.getfixturevalue(fix_mock)
             states_factory = request.getfixturevalue(fix_states_factory)
@@ -1236,9 +1372,7 @@ class TestLoginParam:
             view = TokenAuthorizationLoginDotGov.as_view()
             mock_post, mock_decode = mock
             mock_decode.return_value = decoded_token(
-                "test_new_email@example.com",
-                states["nonce"],
-                sub=user.login_gov_uuid
+                "test_new_email@example.com", states["nonce"], sub=user.login_gov_uuid
             )
 
         response = view(request)
@@ -1248,18 +1382,32 @@ class TestLoginParam:
 
     @pytest.mark.parametrize(
         "login_handler,fix_mock_config,fix_mock,fix_states_factory,fix_req_factory",
-        [("LoginDotGov", "mock", "mock", "states_factory", "req_factory"),  # LoginDotGov
-         ("AMS", "mock_ams_configuration", "mock_decode", "ams_states_factory", "ams_req_factory")  # AMS
-         ])
+        [
+            (
+                "LoginDotGov",
+                "mock",
+                "mock",
+                "states_factory",
+                "req_factory",
+            ),  # LoginDotGov
+            (
+                "AMS",
+                "mock_ams_configuration",
+                "mock_decode",
+                "ams_states_factory",
+                "ams_req_factory",
+            ),  # AMS
+        ],
+    )
     def test_login_with_valid_state_and_code(
         self,
-        request,                    # Pytest request: provides information on the executing pytest fixture
-        login_handler,              # LoginDotGov or AMS
-        fix_mock_config,            # mock configuration fixture. Not needed for LoginDotGov.
-        fix_mock,                   # mock and mock_decode fixture
-        fix_states_factory,         # states_factory
-        fix_req_factory,            # request_factory
-        patch_login_gov_jwt_key,    # LoginDotGov jwt
+        request,  # Pytest request: provides information on the executing pytest fixture
+        login_handler,  # LoginDotGov or AMS
+        fix_mock_config,  # mock configuration fixture. Not needed for LoginDotGov.
+        fix_mock,  # mock and mock_decode fixture
+        fix_states_factory,  # states_factory
+        fix_req_factory,  # request_factory
+        patch_login_gov_jwt_key,  # LoginDotGov jwt
         user,
     ):
         """Login should proceed when token already exists."""
@@ -1269,7 +1417,7 @@ class TestLoginParam:
         This creates independent test environments for each parametrized tests.
         """
 
-        if login_handler == 'AMS':
+        if login_handler == "AMS":
             # run associated fixtures for AMS
             request.getfixturevalue(fix_mock_config)
             request.getfixturevalue(fix_mock)
@@ -1284,7 +1432,7 @@ class TestLoginParam:
 
             view = TokenAuthorizationAMS.as_view()
 
-        elif login_handler == 'LoginDotGov':
+        elif login_handler == "LoginDotGov":
             # run associated fixtures for LoginDotGov
             mock = request.getfixturevalue(fix_mock)
             states_factory = request.getfixturevalue(fix_states_factory)

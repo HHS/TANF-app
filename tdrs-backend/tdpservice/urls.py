@@ -1,24 +1,27 @@
 """Define Django routing."""
 
 import os
-from django.conf import settings
 
+from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.contrib.auth.decorators import login_required
 from django.urls import include, path, re_path
+
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework.permissions import AllowAny
 
-
+from .core.views import write_logs
 from .users.api.authorization_check import AuthorizationCheck, PlgAuthorizationCheck
-from .users.api.login import TokenAuthorizationLoginDotGov, TokenAuthorizationAMS
-from .users.api.login import CypressLoginDotGovAuthenticationOverride
+from .users.api.login import (
+    CypressLoginDotGovAuthenticationOverride,
+    TokenAuthorizationAMS,
+    TokenAuthorizationLoginDotGov,
+)
 from .users.api.login_redirect_oidc import LoginRedirectAMS, LoginRedirectLoginDotGov
 from .users.api.logout import LogoutUser
 from .users.api.logout_redirect_oidc import LogoutRedirectOIDC
-from django.contrib.auth.decorators import login_required
-from .core.views import write_logs
 
 admin.autodiscover()
 admin.site.login = login_required(admin.site.login)
@@ -43,7 +46,11 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns.append(
-        path("login/cypress", CypressLoginDotGovAuthenticationOverride.as_view(), name="login-cypress")
+        path(
+            "login/cypress",
+            CypressLoginDotGovAuthenticationOverride.as_view(),
+            name="login-cypress",
+        )
     )
 
 
@@ -53,14 +60,18 @@ urlpatterns = [
     path("v1/", include(urlpatterns)),
     path("admin/", admin.site.urls, name="admin"),
     path("prometheus/", include("django_prometheus.urls")),
-    path("plg_auth_check/", PlgAuthorizationCheck.as_view(), name="plg-authorization-check"),
+    path(
+        "plg_auth_check/",
+        PlgAuthorizationCheck.as_view(),
+        name="plg-authorization-check",
+    ),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # TODO: Supply `terms_of_service` argument in OpenAPI Info once implemented
 schema_view = get_schema_view(
     openapi.Info(
         title="TDP API",
-        default_version='v1',
+        default_version="v1",
         description="TANF Data Portal API documentation",
         contact=openapi.Contact(email="tanfdata@acf.hhs.gov"),
     ),
@@ -70,16 +81,16 @@ schema_view = get_schema_view(
 
 doc_patterns = [
     re_path(
-        r'^swagger(?P<format>\.json|\.yaml)/?$',
+        r"^swagger(?P<format>\.json|\.yaml)/?$",
         schema_view.without_ui(cache_timeout=0),
-        name='schema-json'
+        name="schema-json",
     ),
     path(
-        'swagger/',
-        schema_view.with_ui('swagger', cache_timeout=0),
-        name='schema-swagger-ui'
+        "swagger/",
+        schema_view.with_ui("swagger", cache_timeout=0),
+        name="schema-swagger-ui",
     ),
-    path('redocs/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    path("redocs/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
 ]
 
 urlpatterns.extend(doc_patterns)

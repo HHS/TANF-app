@@ -1,13 +1,16 @@
 """Tests for the views in the security app."""
 
-import pytest
 import logging
-from rest_framework.authtoken.models import Token
-from tdpservice.users.models import User, AccountApprovalStatusChoices
-from tdpservice.security.views import token_is_valid
+
+from django.contrib.auth.models import Group
 from django.test import Client
 from django.urls import reverse
-from django.contrib.auth.models import Group
+
+import pytest
+from rest_framework.authtoken.models import Token
+
+from tdpservice.security.views import token_is_valid
+from tdpservice.users.models import AccountApprovalStatusChoices, User
 
 client = Client()
 

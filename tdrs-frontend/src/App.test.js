@@ -4,6 +4,7 @@ import { mount } from 'enzyme'
 import GovBanner from './components/GovBanner'
 import Header from './components/Header'
 import { Alert } from './components/Alert'
+import Feedback from './components/Feedback/Feedback'
 import { thunk } from 'redux-thunk'
 import configureStore from 'redux-mock-store'
 import { Provider } from 'react-redux'
@@ -27,8 +28,19 @@ describe('App.js', () => {
     auth: {
       user: null,
     },
+    feedbackWidget: {
+      isOpen: false,
+      lockedDataType: null,
+    },
   }
   const mockStore = configureStore([thunk])
+
+  beforeEach(() => {
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      value: { pathname: '/' },
+    })
+  })
 
   afterEach(() => {
     window.location.href = ''
@@ -68,6 +80,34 @@ describe('App.js', () => {
       </Provider>
     )
     expect(wrapper.find(Alert)).toExist()
+  })
+
+  it('renders sticky button at bottom right of Apps viewport', () => {
+    const store = mockStore(initialState)
+    const wrapper = mount(
+      <Provider store={store}>
+        <MemoryRouter>
+          <App />
+        </MemoryRouter>
+      </Provider>
+    )
+    expect(wrapper.find(Feedback)).toExist()
+  })
+
+  it('renders skip link with correct href and text', () => {
+    const store = mockStore(initialState)
+
+    const wrapper = mount(
+      <Provider store={store}>
+        <MemoryRouter>
+          <App />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    const skipLink = wrapper.find('a.usa-skipnav')
+    expect(skipLink.text()).toContain('Skip to main content')
+    expect(skipLink.prop('href')).toEqual('#main-content')
   })
 
   it('should redirect to #main-content when space bar is pressed on "skip links" element', () => {
@@ -122,5 +162,18 @@ describe('App.js', () => {
     })
 
     expect(window.location.href).toEqual(url)
+  })
+
+  it('should not show modal initially', () => {
+    const store = mockStore(initialState)
+    const wrapper = mount(
+      <Provider store={store}>
+        <MemoryRouter>
+          <App />
+        </MemoryRouter>
+      </Provider>
+    )
+    const feedbackModal = wrapper.find('#feedback-modal')
+    expect(feedbackModal.exists()).toBe(false)
   })
 })

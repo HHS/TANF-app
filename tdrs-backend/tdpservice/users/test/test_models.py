@@ -1,12 +1,12 @@
 """Module for testing the user model."""
 from django.core.exceptions import ValidationError
+from django.test import Client
 
 import pytest
 
-from tdpservice.stts.models import STT, Region
 from tdpservice.data_files.models import DataFile
 from tdpservice.data_files.test.factories import DataFileFactory
-from django.test import Client
+from tdpservice.stts.models import STT, Region
 
 
 @pytest.mark.django_db
@@ -75,18 +75,36 @@ def test_user_can_only_have_stt_or_region(user, stt, region):
         user.clean()
         user.save()
 
-@pytest.mark.django_db
-def test_user_with_fra_access(client, admin_user, stt):
-    """Test that a user with FRA access can only have an STT."""
-    admin_user.stt = stt
-    admin_user.is_superuser = True
-    admin_user.feature_flags = {"fra_reports": False}
 
-    admin_user.clean()
-    admin_user.save()
+@pytest.mark.django_db
+def test_user_with_fra_access(client, ofa_system_admin):
+    """Test that a user with FRA access can only have an STT."""
+    ofa_system_admin.is_staff = True
+
+    ofa_system_admin.clean()
+    ofa_system_admin.save()
 
     client = Client()
-    client.login(username=admin_user.username, password="test_password")
+    client.login(username=ofa_system_admin.username, password="test_password")
+
+    datafile = DataFileFactory()
+    datafile.section = DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS
+    datafile.save()
+
+    response = client.get(f"/admin/data_files/datafile/{datafile.id}/change/")
+    assert response.status_code == 200
+    assert '<div class="readonly">Fra Work Outcome Tanf Exiters</div>' in response.content.decode('utf-8')
+
+@pytest.mark.django_db
+def test_user_without_fra_access(client, data_analyst):
+    """Test that a user with FRA access can only have an STT."""
+    data_analyst.is_staff = True
+
+    data_analyst.clean()
+    data_analyst.save()
+
+    client = Client()
+    client.login(username=data_analyst.username, password="test_password")
 
     datafile = DataFileFactory()
     datafile.section = DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS
@@ -94,10 +112,3 @@ def test_user_with_fra_access(client, admin_user, stt):
 
     response = client.get(f"/admin/data_files/datafile/{datafile.id}/change/")
     assert response.status_code == 302
-
-    admin_user.feature_flags = {"fra_reports": True}
-    admin_user.save()
-
-    response = client.get(f"/admin/data_files/datafile/{datafile.id}/change/")
-    assert response.status_code == 200
-    assert '<div class="readonly">Fra Work Outcome Tanf Exiters</div>' in response.content.decode('utf-8')

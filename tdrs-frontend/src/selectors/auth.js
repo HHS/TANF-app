@@ -21,10 +21,14 @@ export const selectPrimaryUserRole = (state) => {
 
 export const selectUserPermissions = (state) => {
   const roles = selectUserRoles(state)
+  const userLevelPermissions = selectUser(state)?.permissions || []
+
   let permissions = []
   roles.forEach((role) => {
     permissions = [...permissions, ...role['permissions']]
   })
+  permissions = [...permissions, ...userLevelPermissions]
+
   return permissions.map((p) => p.codename)
 }
 
@@ -68,11 +72,15 @@ export const accountCanViewAdmin = (state) =>
     'System Owner',
   ].includes(selectPrimaryUserRole(state)?.name)
 
-export const accountCanViewPlg = (state) =>
+export const accountCanViewGrafana = (state) =>
   accountStatusIsApproved(state) &&
   ['OFA System Admin', 'Developer', 'DIGIT Team'].includes(
     selectPrimaryUserRole(state)?.name
   )
+
+export const accountCanViewAlerts = (state) =>
+  accountStatusIsApproved(state) &&
+  ['OFA System Admin', 'Developer'].includes(selectPrimaryUserRole(state)?.name)
 
 export const accountIsRegionalStaff = (state) =>
   accountStatusIsApproved(state) &&

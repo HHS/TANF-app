@@ -4,6 +4,7 @@ import Routes from './components/Routes'
 import { Alert } from './components/Alert'
 import Header from './components/Header'
 import Footer from './components/Footer'
+import Feedback from './components/Feedback/Feedback'
 import { useSelector } from 'react-redux'
 import { useRUM } from './hooks/useRUM'
 
@@ -15,6 +16,10 @@ import { useRUM } from './hooks/useRUM'
  * Renders the Alert component which will show or hide alerts
  *
  * Renders Routes and all its children
+ *
+ * Renders Give Feed back button at the bottom right of the viewport
+ *
+ * Displays a modal when the user clicks the Give Feedback button
  */
 function App() {
   const user = useSelector((state) => state.auth.user)
@@ -44,6 +49,7 @@ function App() {
         <Routes />
       </main>
       <Footer />
+      <Feedback />
     </>
   )
 }
