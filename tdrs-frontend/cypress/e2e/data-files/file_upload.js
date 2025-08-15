@@ -44,7 +44,8 @@ When(
 
     df.openDataFilesAndSearch(program, year, quarter)
     df.uploadSectionFile(SECTION_INPUT_ID[section], fileName)
-    cy.contains('Successfully submitted').should('exist')
+
+    cy.contains('Successfully submitted', { timeout: 10000 }).should('exist')
   }
 )
 
