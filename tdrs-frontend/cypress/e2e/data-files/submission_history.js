@@ -1,5 +1,6 @@
 /* eslint-disable no-undef */
 import { Given, When, Then } from '@badeball/cypress-cucumber-preprocessor'
+import * as df from '../common-steps/data_files.js'
 
 Then('{string} can see submission history', (username) => {
   cy.get('h3').contains('Submission History').should('exist', { timeout: 5000 })
@@ -23,9 +24,8 @@ Then('{string} sees the file in submission history', (username) => {
 // TANF steps
 Then('Admin Alex can view the Illinois TANF Submission History', () => {
   cy.visit('/data-files')
-  cy.fillSttFyQNoProgramSelector('Illinois', '2023', 'Q1').then(() => {
-    cy.get('button').contains('Submission History').click()
-  })
+  df.fillSttFyQNoProgramSelector('Illinois', '2023', 'Q1')
+  cy.get('button').contains('Submission History').click()
 })
 
 Then('Admin Alex can verify the Illinois TANF submission', () => {
@@ -37,9 +37,8 @@ Then('Admin Alex can verify the Illinois TANF submission', () => {
 // SSP steps
 Then('Admin Alex can view the Missouri SSP Submission History', () => {
   cy.visit('/data-files')
-  cy.fillSttFyQ('Missouri', '2024', 'Q1', false).then(() => {
-    cy.get('button').contains('Submission History').click()
-  })
+  df.fillSttFyQ('Missouri', '2024', 'Q1', false)
+  cy.get('button').contains('Submission History').click()
 })
 
 Then('Admin Alex can verify the Missouri SSP submission', () => {
@@ -51,7 +50,7 @@ Then('Admin Alex can verify the Missouri SSP submission', () => {
 // FRA steps
 Then('Admin Alex can view the Arizona FRA Submission History', () => {
   cy.visit('/fra-data-files')
-  cy.fillSttFyQNoProgramSelector('Arizona', '2024', 'Q2')
+  df.fillSttFyQNoProgramSelector('Arizona', '2024', 'Q2')
 })
 
 Then('Admin Alex can verify the Arizona FRA submission', () => {
@@ -63,19 +62,16 @@ Then('Admin Alex can verify the Arizona FRA submission', () => {
 
 /////////////////////// Regional Steps ////////////////////////
 Given('Regional Randy logs in', () => {
-  cy.restartAtHomePage().then(() => {
-    cy.login('regional-randy@acf.hhs.gov').then(() => {
-      cy.visit('/home')
-      cy.contains('FRA Data Files').should('exist')
-    })
+  df.restartAtHomePage()
+  cy.login('regional-randy@acf.hhs.gov').then(() => {
+    cy.visit('/home')
+    cy.contains('FRA Data Files').should('exist')
   })
 })
 
 When('Regional Randy searches FRA Data Files', () => {
   cy.visit('/fra-data-files')
-  cy.get('#stt').type('Arizona{enter}')
-  cy.fillFYQ('2024', 'Q2')
-  cy.wait(3000)
+  df.fillSttFyQNoProgramSelector('Arizona', '2024', 'Q2')
 })
 
 Then('Regional Randy has read-only access to submission history', () => {
@@ -85,8 +81,8 @@ Then('Regional Randy has read-only access to submission history', () => {
   cy.get('td').contains('Partially Accepted with Errors').should('exist')
   // This can't be simulated with a fixture. It requires the actual submission
   // which would require dependencies between tests
-  //   cy.validateFraCsv()
-  //   cy.downloadErrorReport(
+  //   df.validateFraCsv()
+  //   df.downloadErrorReport(
   //     '2024-Q2-Work Outcomes of TANF Exiters Error Report.xlsx'
   //   )
 })
