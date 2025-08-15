@@ -12,7 +12,12 @@ import {
   accountCanSelectStt,
   accountIsRegionalStaff,
 } from '../../selectors/auth'
-import { handlePreview, tryGetUTF8EncodedFile } from '../FileUpload/utils'
+import {
+  checkPreviewDependencies,
+  removeOldPreviews,
+  handlePreview,
+  tryGetUTF8EncodedFile,
+} from '../FileUpload/utils'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
 import Modal from '../Modal'
 import {
@@ -261,19 +266,24 @@ const UploadForm = ({
 
   /* istanbul ignore next */
   useEffect(() => {
+    const targetClassName = '.usa-file-input__target input#fra-file-upload'
     const trySettingPreview = () => {
-      const targetClassName = '.usa-file-input__target input#fra-file-upload'
-      const previewState = handlePreview(file?.fileName, targetClassName)
+      const previewState = handlePreview(file?.name, targetClassName)
       if (!previewState) {
         setTimeout(trySettingPreview, 100)
       }
     }
-    if (file?.id) {
+    if (file?.name) {
       trySettingPreview()
+    } else {
+      // When the file upload modal is cancelled we need to remove our hiding logic
+      const deps = checkPreviewDependencies(targetClassName)
+      if (deps.rendered) removeOldPreviews(deps.dropTarget, deps.instructions)
     }
   }, [file])
 
   const onFileChanged = async (e) => {
+    setSelectedFile(null)
     setError(null)
     setLocalAlertState({
       active: false,
@@ -302,15 +312,16 @@ const UploadForm = ({
         filereader.readAsArrayBuffer(fileInputValue)
       })
 
+    const { result } = await loadFile()
+
     const isCsv = csvExtension.exec(fileInputValue.name)
     const isXlsx = xlsxExtension.exec(fileInputValue.name)
 
     if (!isCsv && !isXlsx) {
+      createFileInputErrorState(input, dropTarget)
       setError(INVALID_EXT_ERROR)
       return
     }
-
-    const { result } = await loadFile()
 
     const isImg = fileTypeChecker.validateFileType(result, imgFileTypes)
     if (isImg) {
