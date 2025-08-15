@@ -170,6 +170,7 @@ describe('Profile', () => {
             user={baseUser}
             sttList={[]}
             onCancel={jest.fn()}
+            type={'profile'}
           />
         </MemoryRouter>
       </Provider>
