@@ -74,10 +74,18 @@ export const downloadErrorReportAndAssert = (
     },
   }
 
+  // Download error report
+  cy.intercept('GET', '/v1/data_files/*/download_error_report/').as(
+    'downloadErrorReport'
+  )
+  cy.contains('button', 'Error Report').click()
+  cy.wait('@downloadErrorReport').its('response.statusCode').should('eq', 200)
+
+  // Assert Error Report successfully downloaded
   const fileName = `${year}-${quarter}-${ERROR_REPORT_LABEL[program][section]} Error Report.xlsx`
   const downloadedFilePath = `${Cypress.config('downloadsFolder')}/${fileName}`
 
-  cy.readFile(downloadedFilePath, { timeout: 1000 }).should('exist')
+  cy.readFile(downloadedFilePath, { timeout: 30000 }).should('exist')
   if (deleteAfter) cy.task('deleteDownloadFile', fileName)
 }
 

@@ -49,7 +49,7 @@ When(
       SECTION_INPUT_ID[section],
       `${TEST_DATA_DIR}/${fileName}`
     )
-    cy.contains('Successfully submitted', { timeout: 2000 }).should('exist')
+    cy.contains('Successfully submitted').should('exist')
   }
 )
 
@@ -74,9 +74,8 @@ Then(
     const { year, quarter } = UPLOAD_FILE_INFO[program][section]
 
     df.getLatestSubmissionHistoryRow(section).within(() => {
-      cy.contains('button', 'Error Report').click()
+      df.downloadErrorReportAndAssert(program, section, year, quarter)
     })
-    df.downloadErrorReportAndAssert(program, section, year, quarter)
   }
 )
 

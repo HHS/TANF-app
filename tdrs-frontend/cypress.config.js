@@ -38,7 +38,6 @@ module.exports = defineConfig({
       }
 
       // Register custom task to execute JS in Node Environment
-      // TODO: Return json data for both worksheets
       on('task', {
         deleteDownloadFile(fileName) {
           const filePath = `${config.downloadsFolder}/${fileName}`
