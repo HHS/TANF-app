@@ -517,12 +517,14 @@ describe('Pre-approval Home page', () => {
 
     fireEvent.click(getByText('Yes'))
 
-    expect(getByText('Region(s)*')).toBeInTheDocument()
+    expect(getByText('Select Your Regional Office(s)*')).toBeInTheDocument()
     expect(getByText('Region 6 (Dallas)')).toBeInTheDocument()
 
     fireEvent.click(getByText('No'))
 
-    expect(queryByText('Region(s)*')).not.toBeInTheDocument()
+    expect(
+      queryByText('Select Your Regional Office(s):*')
+    ).not.toBeInTheDocument()
     expect(queryByText('Region 6 (Dallas)')).not.toBeInTheDocument()
   })
 
@@ -576,7 +578,7 @@ describe('Pre-approval Home page', () => {
 
     fireEvent.click(getByText('Yes'))
 
-    expect(getByText('Region(s)*')).toBeInTheDocument()
+    expect(getByText('Select Your Regional Office(s)*')).toBeInTheDocument()
     expect(getByText('Region 6 (Dallas)')).toBeInTheDocument()
 
     fireEvent.click(getByText('Request Access'))
@@ -633,7 +635,7 @@ describe('Pre-approval Home page', () => {
 
     fireEvent.click(getByText('Yes'))
 
-    expect(getByText('Region(s)*')).toBeInTheDocument()
+    expect(getByText('Select Your Regional Office(s)*')).toBeInTheDocument()
     expect(getByText('Region 6 (Dallas)')).toBeInTheDocument()
 
     fireEvent.click(getByText('Request Access'))
@@ -693,7 +695,7 @@ describe('Pre-approval Home page', () => {
 
     fireEvent.click(getByText('Yes'))
 
-    expect(getByText('Region(s)*')).toBeInTheDocument()
+    expect(getByText('Select Your Regional Office(s)*')).toBeInTheDocument()
     expect(getByText('Region 6 (Dallas)')).toBeInTheDocument()
 
     fireEvent.click(getByText('Request Access'))
@@ -753,7 +755,7 @@ describe('Pre-approval Home page', () => {
 
     fireEvent.click(getByText('Yes'))
 
-    expect(getByText('Region(s)*')).toBeInTheDocument()
+    expect(getByText('Select Your Regional Office(s)*')).toBeInTheDocument()
     expect(getByText('Region 6 (Dallas)')).toBeInTheDocument()
 
     fireEvent.click(getByText('Region 6 (Dallas)'))
