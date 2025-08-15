@@ -18,7 +18,7 @@ export const openDataFilesAndSearch = (program, year, quarter) => {
 export const uploadSectionFile = (
   inputSelector,
   fileName,
-  shouldRejectFileInput = false
+  shouldError = false
 ) => {
   const filePath = `${TEST_DATA_DIR}/${fileName}`
 
@@ -27,19 +27,18 @@ export const uploadSectionFile = (
     .selectFile(filePath, { action: 'drag-drop' })
     .prev()
     .within(() => {
-      if (!shouldRejectFileInput)
-        cy.contains(fileName, { timeout: 2000 }).should('exist')
+      if (!shouldError) cy.contains(fileName, { timeout: 2000 }).should('exist')
     })
 
   cy.contains('button', 'Submit Data Files').click()
-}
 
-export const waitForFileSubmissionToAppear = () => {
-  cy.wait('@dataFileSubmit').then(({ response }) => {
-    const id = response?.body?.id
-    if (!id) throw new Error('Missing data_file id in response')
-    return cy.waitForDataFileSummary(id) // returns the poller
-  })
+  if (!shouldError) {
+    cy.wait('@dataFileSubmit').then(({ response }) => {
+      const id = response?.body?.id
+      if (!id) throw new Error('Missing data_file id in response')
+      return cy.waitForDataFileSummary(id) // returns the poller
+    })
+  }
 }
 
 export const openSubmissionHistory = () => {

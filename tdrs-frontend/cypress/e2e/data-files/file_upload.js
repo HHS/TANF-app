@@ -45,14 +45,13 @@ When(
     df.openDataFilesAndSearch(program, year, quarter)
     df.uploadSectionFile(SECTION_INPUT_ID[section], fileName)
 
-    cy.contains('Successfully submitted', { timeout: 10000 }).should('exist')
+    cy.contains('Successfully submitted').should('exist')
   }
 )
 
 Then(
   '{string} sees the {string} Section {string} submission in Submission History',
   (actor, program, section) => {
-    df.waitForFileSubmissionToAppear()
     df.openSubmissionHistory()
     df.getLatestSubmissionHistoryRow(section)
       .should('exist')
@@ -88,7 +87,7 @@ When(
     const fileName = UPLOAD_FILE_INFO['SSP'][1]['fileName']
 
     df.openDataFilesAndSearch('TANF', '2025', 'Q1')
-    df.uploadSectionFile(SECTION_INPUT_ID[1], fileName)
+    df.uploadSectionFile(SECTION_INPUT_ID[1], fileName, true)
   }
 )
 
@@ -104,7 +103,6 @@ When('{string} selects a data file for the wrong section', (actor) => {
 })
 
 Then('{string} sees rejected status in submission history', (actor) => {
-  df.waitForFileSubmissionToAppear()
   df.openSubmissionHistory()
   df.getLatestSubmissionHistoryRow(1)
     .should('exist')
