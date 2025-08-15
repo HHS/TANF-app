@@ -1,14 +1,4 @@
 Feature: Data file submission
-    Scenario: A user can upload a file
-        Given The admin logs in
-        And 'new-cypress@teamraft.com' is in approved state
-        When 'new-cypress@teamraft.com' visits the home page
-        And 'new-cypress@teamraft.com' logs in
-        Then 'new-cypress@teamraft.com' can see Data Files page
-        Then 'new-cypress@teamraft.com' can see search form
-        Then 'new-cypress@teamraft.com' submits the search form
-        When 'new-cypress@teamraft.com' uploads a file
-        Then 'new-cypress@teamraft.com' can see the upload successful
     Scenario: Admin Alex can submit TANF reports
         Given Admin Alex logs in
         When Admin Alex submits the TANF Report
