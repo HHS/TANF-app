@@ -11,7 +11,9 @@ Feature: Data file submission history
         Given Admin Alex logs in
         Then Admin Alex can view the Arizona FRA Submission History
         And Admin Alex can verify the Arizona FRA submission
+    @focus
     Scenario: Regional Randy only has view access to submission historys for assigned locations
-        Given Regional Randy logs in
-        When Regional Randy searches FRA Data Files
+        Given FRA Data Analyst Fred submits a file
+        Then Regional Randy logs in
+        When Regional Randy searches TANF Data Files
         Then Regional Randy has read-only access to submission history

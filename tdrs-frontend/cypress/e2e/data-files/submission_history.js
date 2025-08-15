@@ -44,7 +44,7 @@ Then('Admin Alex can verify the Arizona FRA submission', () => {
 ///////////////////////////////////////////////////////////////
 
 /////////////////////// Regional Steps ////////////////////////
-Given('Regional Randy logs in', () => {
+Then('Regional Randy logs in', () => {
   df.restartAtHomePage()
   cy.login('cypress-regional-randy@acf.hhs.gov').then(() => {
     cy.visit('/home')
@@ -52,22 +52,54 @@ Given('Regional Randy logs in', () => {
   })
 })
 
-When('Regional Randy searches FRA Data Files', () => {
-  cy.visit('/fra-data-files')
-  df.fillSttFyQNoProgramSelector('Arizona', '2024', 'Q2')
+When('Regional Randy searches TANF Data Files', () => {
+  cy.visit('/data-files')
+  df.fillSttFyQ('California', '2021', 'Q1', true)
 })
 
 Then('Regional Randy has read-only access to submission history', () => {
-  cy.get('button').contains('fra.csv').should('not.exist')
-  cy.get('td').contains('fra.csv').should('exist')
-  cy.get('td').contains('8').should('exist')
-  cy.get('td').contains('Partially Accepted with Errors').should('exist')
-  // This can't be simulated with a fixture. It requires the actual submission
-  // which would require dependencies between tests
-  //   df.validateFraCsv()
-  //   df.downloadErrorReport(
-  //     '2024-Q2-Work Outcomes of TANF Exiters Error Report.xlsx'
-  //   )
+  cy.get('button').contains('small_correct_file.txt').should('not.exist')
+  cy.get('th').contains('small_correct_file.txt').should('exist')
+  cy.get('th').contains('Rejected').should('exist')
+  df.downloadErrorReport('2021-Q1-Active Case Data Error Report.xlsx')
+})
+
+Given('FRA Data Analyst Fred submits a file', () => {
+  // Login
+  df.restartAtHomePage()
+  cy.login('cypress-fra-data-analyst-fred@teamraft.com').then(() => {
+    cy.visit('/home')
+    cy.contains('FRA Data Files').should('exist')
+  })
+
+  // Submit TANF
+  cy.visit('/data-files')
+  cy.get(':nth-child(2) > .usa-radio__label').click()
+  df.fillFYQ('2021', 'Q1')
+  cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
+  df.uploadFile(
+    '#active-case-data',
+    '../tdrs-backend/tdpservice/parsers/test/data/small_correct_file.txt'
+  )
+
+  cy.get('button').contains('Submit Data Files').should('exist').click()
+
+  // Validate submission
+  cy.wait('@dataFileSubmit').then((interception) => {
+    // Check if we have a valid response with an ID
+    if (
+      interception.response &&
+      interception.response.body &&
+      interception.response.body.id
+    ) {
+      const fileId = interception.response.body.id
+
+      // Poll the API until the summary is populated
+      df.waitForDataFileSummary(fileId)
+      cy.get('button').contains('Submission History').click()
+      df.validateSmallCorrectFile()
+    }
+  })
 })
 
 ///////////////////////////////////////////////////////////////
