@@ -13,10 +13,12 @@ export const fillFYQ = (fiscal_year, quarter) => {
   cy.get('#reportingYears').should('exist').select(fiscal_year)
   cy.get('#quarter').should('exist').select(quarter)
   cy.get('button').contains('Search').should('exist').click()
+  cy.wait(100)
 }
 
 export const uploadFile = (file_input, file_path) => {
   cy.get(file_input).selectFile(file_path, { action: 'drag-drop' })
+  cy.wait(500)
 }
 
 export const validateSmallCorrectFile = () => {
@@ -64,6 +66,7 @@ export const fillSttFyQ = (stt, fy, q, isTanf) => {
       cy.get('#reportingYears').should('exist').select(fy)
       cy.get('#quarter').should('exist').select(q)
       cy.get('button').contains('Search').should('exist').click()
+      cy.wait(100)
     })
 }
 
@@ -74,6 +77,7 @@ export const fillSttFyQNoProgramSelector = (stt, fy, q) => {
       cy.get('#reportingYears').should('exist').select(fy)
       cy.get('#quarter').should('exist').select(q)
       cy.get('button').contains('Search').should('exist').click()
+      cy.wait(100)
     })
 }
 
