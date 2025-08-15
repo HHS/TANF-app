@@ -5,7 +5,7 @@ import * as df from '../common-steps/data_files.js'
 ///////////////////////// Admin Steps /////////////////////////
 Given('Admin Alex logs in', () => {
   df.restartAtHomePage()
-  cy.login('admin-alex@acf.hhs.gov').then(() => {
+  cy.login('cypress-admin-alex@acf.hhs.gov').then(() => {
     cy.visit('/home')
     cy.contains('FRA Data Files').should('exist')
     cy.contains('Admin').should('exist')
@@ -126,7 +126,7 @@ Then('Admin Alex can download the FRA error report', () => {
 /////////////////// FRA Data Analyst Steps ///////////////////
 Given('FRA Data Analyst Fred logs in', () => {
   df.restartAtHomePage()
-  cy.login('fra-data-analyst-fred@teamraft.com').then(() => {
+  cy.login('cypress-fra-data-analyst-fred@teamraft.com').then(() => {
     cy.visit('/home')
     cy.contains('FRA Data Files').should('exist')
   })

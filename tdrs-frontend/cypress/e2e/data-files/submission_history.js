@@ -46,7 +46,7 @@ Then('Admin Alex can verify the Arizona FRA submission', () => {
 /////////////////////// Regional Steps ////////////////////////
 Given('Regional Randy logs in', () => {
   df.restartAtHomePage()
-  cy.login('regional-randy@acf.hhs.gov').then(() => {
+  cy.login('cypress-regional-randy@acf.hhs.gov').then(() => {
     cy.visit('/home')
     cy.contains('FRA Data Files').should('exist')
   })
