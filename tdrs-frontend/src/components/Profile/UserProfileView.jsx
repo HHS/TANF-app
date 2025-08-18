@@ -14,6 +14,7 @@ const UserProfileView = ({
   isAccessRequestPending,
   onEdit,
   type = 'profile',
+  hasFRAAccess = false,
 }) => {
   // Sections for the user profile view (readability)
   const EditProfileButton = ({ onEdit }) => (
@@ -113,7 +114,11 @@ const UserProfileView = ({
       <div data-testid="user-profile" className="margin-top-5 margin-bottom-3">
         <div data-testid="user-profile-container">
           <div className="margin-top-4 margin-bottom-3">
-            <UserProfileDetails user={user} isAMSUser={isAMSUser} />
+            <UserProfileDetails
+              user={user}
+              isAMSUser={isAMSUser}
+              hasFRAAccess={hasFRAAccess}
+            />
           </div>
         </div>
       </div>

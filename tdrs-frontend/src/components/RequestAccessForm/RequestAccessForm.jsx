@@ -20,16 +20,21 @@ function RequestAccessForm({
   type = 'access request',
 }) {
   const errorRef = useRef(null)
-
   const isAMSUser = user?.email?.includes('@acf.hhs.gov')
-  const primaryRole = user?.roles?.[0]
 
   const [errors, setErrors] = useState({})
   const [profileInfo, setProfileInfo] = useState({
     firstName: initialValues.firstName || '',
     lastName: initialValues.lastName || '',
     stt: initialValues.stt || '',
-    hasFRAAccess: initialValues.hasFRAAccess ?? (isAMSUser ? false : null),
+    hasFRAAccess:
+      typeof initialValues.hasFRAAccess !== 'undefined'
+        ? initialValues.hasFRAAccess
+        : isAMSUser
+          ? null
+          : initialValues.jurisdictionType === 'tribe'
+            ? false
+            : true,
     regions:
       isAMSUser && initialValues.regions
         ? new Set(initialValues.regions)
@@ -63,6 +68,13 @@ function RequestAccessForm({
       if (fieldName === 'stt') {
         return null // STT is read-only in edit mode
       }
+
+      if (
+        fieldName === 'hasFRAAccess' &&
+        (isAMSUser || jurisdictionType === 'tribe')
+      ) {
+        return null
+      }
     }
 
     const field = {
@@ -85,10 +97,13 @@ function RequestAccessForm({
   const setJurisdictionType = (val) => {
     setStt('')
     setJurisdictionTypeInputValue(val)
+
     if (val === 'tribe') {
       setHasFRAAccess(false)
+    } else if (!isAMSUser) {
+      setHasFRAAccess(true)
     } else {
-      setHasFRAAccess(null)
+      setHasFRAAccess(null) // AMS users shouldn't be setting FRA access
     }
   }
 
@@ -285,7 +300,6 @@ function RequestAccessForm({
         {editMode && !isAMSUser && (
           <div>
             <hr className="form-section-divider" />
-            <ReadOnlyRow label="User Type" value={primaryRole?.name} />
             <ReadOnlyRow
               label="Jurisdiction Type"
               value={

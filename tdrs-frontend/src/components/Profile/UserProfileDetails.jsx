@@ -3,15 +3,11 @@ import ProfileRow from './ProfileRow'
 import JurisdictionLocationInfo from './JurisdictionLocationInfo'
 import { getRegionNameById } from '../../utils/regions'
 
-const UserProfileDetails = ({ user, isAMSUser }) => {
+const UserProfileDetails = ({ user, isAMSUser, hasFRAAccess = false }) => {
   // Most higher-env users will only have a single role, so just grab the first one.
-  const primaryRole = user?.roles?.[0]
   const userJurisdiction = user?.stt?.type || 'state'
   const userLocationName = user?.stt?.name || 'Federal Government'
   const userRegions = user?.regions
-  const userIsReportingFRA = user?.permissions?.includes('has_fra_access')
-    ? 'Yes'
-    : 'No'
 
   return (
     <div data-testid="user-profile-info">
@@ -20,7 +16,6 @@ const UserProfileDetails = ({ user, isAMSUser }) => {
         value={`${user?.first_name || ''} ${user?.last_name || ''}`}
       />
       <hr className="margin-right-8 margin-top-2 margin-bottom-2" />
-      <ProfileRow label="User Type" value={primaryRole?.name} />
       {isAMSUser ? (
         <>
           <ProfileRow
@@ -52,7 +47,10 @@ const UserProfileDetails = ({ user, isAMSUser }) => {
             formType={'profile'}
           />
           {userJurisdiction !== 'tribe' && !isAMSUser && (
-            <ProfileRow label="Reporting FRA" value={userIsReportingFRA} />
+            <ProfileRow
+              label="Reporting FRA"
+              value={hasFRAAccess ? 'Yes' : 'No'}
+            />
           )}
         </>
       )}

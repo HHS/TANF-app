@@ -19,6 +19,9 @@ function Profile({
   setInEditMode,
 }) {
   const isAMSUser = user?.email?.includes('@acf.hhs.gov')
+  const userPermissions = user?.permissions?.map((p) => p.codename)
+  const hasFRAAccess = userPermissions.includes('has_fra_access')
+
   const missingAccessRequest = useSelector(accountIsMissingAccessRequest)
   const isAccessRequestPending = useSelector(accountIsInReview)
 
@@ -42,7 +45,7 @@ function Profile({
           firstName: user?.first_name || '',
           lastName: user?.last_name || '',
           stt: user?.stt?.name || '',
-          hasFRAAccess: user?.permissions?.includes('has_fra_access') ?? null,
+          hasFRAAccess: hasFRAAccess ?? null,
           regions: user?.regions || new Set(),
           jurisdictionType: user?.stt?.type || 'state',
         }}
@@ -59,6 +62,7 @@ function Profile({
       isAccessRequestPending={isAccessRequestPending}
       onEdit={onEdit}
       type={type}
+      hasFRAAccess={hasFRAAccess ?? null}
     />
   )
 }
