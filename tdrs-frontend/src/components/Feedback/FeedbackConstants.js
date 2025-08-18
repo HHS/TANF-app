@@ -3,7 +3,6 @@
 // Feedback Types
 export const GENERAL_FEEDBACK_TYPE = 'general_feedback'
 export const TANF_FEEDBACK_TYPE = 'tanf_submission_feedback'
-export const SSP_MOE_FEEDBACK_TYPE = 'ssp_moe_submission_feedback'
 export const FRA_FEEDBACK_TYPE = 'fra_submission_feedback'
 
 // Feedback Header & Email Info

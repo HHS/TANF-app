@@ -16,7 +16,6 @@ import {
 } from './FeedbackConstants'
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
-const VALID_PROGRAM_TYPES = ['TANF', 'SSP', 'FRA']
 
 const ratingMessageMap = {
   1: POOR_AND_BAD_FEEDBACK,
@@ -36,6 +35,7 @@ const FeedbackForm = ({
 }) => {
   const formRef = useRef(null)
   const authenticated = useSelector((state) => state.auth.authenticated)
+  const { widgetId } = useSelector((state) => state.feedbackWidget)
 
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [selectedRatingsOption, setSelectedRatingsOption] = useState(undefined)
@@ -64,12 +64,6 @@ const FeedbackForm = ({
     }
   }
 
-  const programType = isGeneral
-    ? null
-    : VALID_PROGRAM_TYPES.includes(dataType)
-      ? dataType
-      : null
-
   const handleSubmit = useCallback(async () => {
     if (!selectedRatingsOption) {
       setHasError(true)
@@ -80,6 +74,7 @@ const FeedbackForm = ({
     const feedbackType = isGeneral ? GENERAL_FEEDBACK_TYPE : getFeedbackType()
 
     // TODO: figure out what these 2 values should be ------
+    // TODO: program_types is removed now need to make that update in the backend
     // Set component and widget_id -------------------------
     const component = isGeneral
       ? 'general-feedback-modal'
@@ -93,7 +88,6 @@ const FeedbackForm = ({
       anonymous: isAnonymous,
       page_url: window.location.href,
       feedback_type: feedbackType,
-      program_type: programType,
       component: isGeneral ? 'general' : 'widget',
     }
 
