@@ -179,7 +179,7 @@ class XlsxDecoder(BaseDecoder):
 
     def get_header(self):
         """Get the first line in the file. Assumed to be the header."""
-        for raw_data in self.work_book.active.iter_rows(values_only=True):
+        for raw_data in self.work_book.worksheets[0].iter_rows(values_only=True):
             length = len(raw_data)
             return TupleRow(
                 data=raw_data,
@@ -191,7 +191,7 @@ class XlsxDecoder(BaseDecoder):
 
     def decode(self):
         """Decode and yield each row."""
-        for raw_data in self.work_book.active.iter_rows(values_only=True):
+        for raw_data in self.work_book.worksheets[0].iter_rows(values_only=True):
             self.current_row_num += 1
             if (
                 not len(raw_data)
@@ -218,7 +218,7 @@ class DecoderFactory:
         """Try and determine what decoder to use based on file encoding and magic numbers."""
         # We need to guarantee that the file pointer is at the first byte
         raw_file.seek(0)
-        extension = os.path.splitext(raw_file.name)[-1]
+        extension = os.path.splitext(raw_file.name)[-1].lower()
 
         # If our file has size zero, use the extension to try and determine the correct decoder. Default to UTF8 in
         # the worst case.

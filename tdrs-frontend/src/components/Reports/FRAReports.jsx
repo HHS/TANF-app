@@ -12,7 +12,12 @@ import {
   accountCanSelectStt,
   accountIsRegionalStaff,
 } from '../../selectors/auth'
-import { handlePreview, tryGetUTF8EncodedFile } from '../FileUpload/utils'
+import {
+  checkPreviewDependencies,
+  removeOldPreviews,
+  handlePreview,
+  tryGetUTF8EncodedFile,
+} from '../FileUpload/utils'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
 import Modal from '../Modal'
 import {
@@ -33,6 +38,7 @@ import { fetchSttList } from '../../actions/sttList'
 import { DropdownSelect, RadioSelect } from '../Form'
 import { PaginatedComponent } from '../Paginator/Paginator'
 import { Spinner } from '../Spinner'
+import { openFeedbackWidget } from '../../reducers/feedbackWidget'
 
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
@@ -260,19 +266,24 @@ const UploadForm = ({
 
   /* istanbul ignore next */
   useEffect(() => {
+    const targetClassName = '.usa-file-input__target input#fra-file-upload'
     const trySettingPreview = () => {
-      const targetClassName = '.usa-file-input__target input#fra-file-upload'
-      const previewState = handlePreview(file?.fileName, targetClassName)
+      const previewState = handlePreview(file?.name, targetClassName)
       if (!previewState) {
         setTimeout(trySettingPreview, 100)
       }
     }
-    if (file?.id) {
+    if (file?.name) {
       trySettingPreview()
+    } else {
+      // When the file upload modal is cancelled we need to remove our hiding logic
+      const deps = checkPreviewDependencies(targetClassName)
+      if (deps.rendered) removeOldPreviews(deps.dropTarget, deps.instructions)
     }
   }, [file])
 
   const onFileChanged = async (e) => {
+    setSelectedFile(null)
     setError(null)
     setLocalAlertState({
       active: false,
@@ -301,15 +312,16 @@ const UploadForm = ({
         filereader.readAsArrayBuffer(fileInputValue)
       })
 
+    const { result } = await loadFile()
+
     const isCsv = csvExtension.exec(fileInputValue.name)
     const isXlsx = xlsxExtension.exec(fileInputValue.name)
 
     if (!isCsv && !isXlsx) {
+      createFileInputErrorState(input, dropTarget)
       setError(INVALID_EXT_ERROR)
       return
     }
-
-    const { result } = await loadFile()
 
     const isImg = fileTypeChecker.validateFileType(result, imgFileTypes)
     if (isImg) {
@@ -496,7 +508,11 @@ const SubmissionHistory = ({
         </thead>
         <tbody>
           {data.map((file) => (
-            <SubmissionHistoryRow file={file} handleDownload={handleDownload} />
+            <SubmissionHistoryRow
+              file={file}
+              handleDownload={handleDownload}
+              isRegionalStaff={isRegionalStaff}
+            />
           ))}
         </tbody>
       </>
@@ -759,6 +775,7 @@ const FRAReports = () => {
 
       // Complete the submission process
       onSubmitComplete()
+      dispatch(openFeedbackWidget('fra'))
 
       const WAIT_TIME = 2000 // #
       let statusTimeout = null
@@ -887,7 +904,7 @@ const FRAReports = () => {
   }, [submissionStatusTimer])
 
   return (
-    <>
+    <div className="page-container" style={{ position: 'relative' }}>
       <div className={classNames({ 'border-bottom': isUploadReportToggled })}>
         <SearchForm
           handleSearch={handleSearch}
@@ -962,7 +979,6 @@ const FRAReports = () => {
           </div>
         </>
       )}
-
       <Modal
         title="Files Not Submitted"
         message="Your uploaded files have not been submitted. Searching without submitting will discard your changes and remove any uploaded files."
@@ -988,7 +1004,7 @@ const FRAReports = () => {
           },
         ]}
       />
-    </>
+    </div>
   )
 }
 
