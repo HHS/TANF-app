@@ -12,9 +12,9 @@ Then('Admin Alex can view the Illinois TANF Submission History', () => {
 })
 
 Then('Admin Alex can verify the Illinois TANF submission', () => {
-  df.table_contains('small_tanf_section1.txt')
-  df.table_contains('1')
-  df.table_contains('Accepted with Errors')
+  df.table_first_row_contains('small_tanf_section1.txt')
+  df.table_first_row_contains('1')
+  df.table_first_row_contains('Accepted with Errors')
 })
 
 // SSP steps
@@ -25,9 +25,9 @@ Then('Admin Alex can view the Missouri SSP Submission History', () => {
 })
 
 Then('Admin Alex can verify the Missouri SSP submission', () => {
-  df.table_contains('small_ssp_section1.txt')
-  df.table_contains('1')
-  df.table_contains('Accepted with Errors')
+  df.table_first_row_contains('small_ssp_section1.txt')
+  df.table_first_row_contains('1')
+  df.table_first_row_contains('Accepted with Errors')
 })
 
 // FRA steps
@@ -37,9 +37,9 @@ Then('Admin Alex can view the Arizona FRA Submission History', () => {
 })
 
 Then('Admin Alex can verify the Arizona FRA submission', () => {
-  df.table_contains('fra.csv', false)
-  df.table_contains('8', false)
-  df.table_contains('Partially Accepted with Errors', false)
+  df.table_first_row_contains('fra.csv')
+  df.table_first_row_contains('8')
+  df.table_first_row_contains('Partially Accepted with Errors')
 })
 ///////////////////////////////////////////////////////////////
 
@@ -59,8 +59,8 @@ When('Regional Randy searches TANF Data Files', () => {
 
 Then('Regional Randy has read-only access to submission history', () => {
   cy.get('button').contains('small_correct_file.txt').should('not.exist')
-  df.table_contains('small_correct_file.txt')
-  df.table_contains('Rejected')
+  df.table_first_row_contains('small_correct_file.txt')
+  df.table_first_row_contains('Rejected')
   df.downloadErrorReport('2021-Q1-Active Case Data Error Report.xlsx')
 })
 

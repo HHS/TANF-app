@@ -24,34 +24,31 @@ export const uploadFile = (file_input, file_path) => {
   )
 }
 
-export const table_contains = (value, isTh = true) => {
-  cy.get(isTh ? 'th' : 'td')
-    .contains(value)
-    .should('exist')
+export const table_first_row_contains = (value) => {
+  cy.get('tbody > :nth-child(1)').contains(value).should('exist')
 }
 
 export const validateSmallCorrectFile = () => {
-  table_contains('small_correct_file.txt')
-  table_contains('1')
-  table_contains('Rejected')
-  table_contains('2021-Q1-Active Case Data Error Report.xlsx')
+  table_first_row_contains('small_correct_file.txt')
+  table_first_row_contains('1')
+  table_first_row_contains('Rejected')
+  table_first_row_contains('2021-Q1-Active Case Data Error Report.xlsx')
 }
 
 export const validateSmallSSPFile = () => {
-  table_contains('small_ssp_section1.txt')
-  table_contains('1')
-  table_contains('5')
-  table_contains('Partially Accepted with Errors')
-  table_contains('2024-Q1-SSP Active Case Data Error Report.xlsx')
+  table_first_row_contains('small_ssp_section1.txt')
+  table_first_row_contains('1')
+  table_first_row_contains('5')
+  table_first_row_contains('Partially Accepted with Errors')
+  table_first_row_contains('2024-Q1-SSP Active Case Data Error Report.xlsx')
 }
 
 export const validateFraCsv = () => {
-  table_contains('fra.csv', false)
-  table_contains('8', false)
-  table_contains('Partially Accepted with Errors', false)
-  table_contains(
-    '2024-Q2-Work Outcomes of TANF Exiters Error Report.xlsx',
-    false
+  table_first_row_contains('fra.csv')
+  table_first_row_contains('8')
+  table_first_row_contains('Partially Accepted with Errors')
+  table_first_row_contains(
+    '2024-Q2-Work Outcomes of TANF Exiters Error Report.xlsx'
   )
 }
 
