@@ -173,7 +173,8 @@ When('FRA Data Analyst Fred uploads incorrect file type', () => {
   df.fillFYQ('2024', 'Q2')
   df.uploadFile(
     '#fra-file-upload',
-    '../tdrs-backend/tdpservice/parsers/test/data/small_correct_file.txt'
+    '../tdrs-backend/tdpservice/parsers/test/data/small_correct_file.txt',
+    true
   )
 })
 
