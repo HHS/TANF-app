@@ -9,7 +9,14 @@ import {
   GOOD_FEEDBACK,
   GREAT_FEEDBACK,
   POOR_AND_BAD_FEEDBACK,
+  GENERAL_FEEDBACK_TYPE,
+  TANF_FEEDBACK_TYPE,
+  SSP_MOE_FEEDBACK_TYPE,
+  FRA_FEEDBACK_TYPE,
 } from './FeedbackConstants'
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
+const VALID_PROGRAM_TYPES = ['TANF', 'SSP', 'FRA']
 
 const ratingMessageMap = {
   1: POOR_AND_BAD_FEEDBACK,
@@ -19,13 +26,13 @@ const ratingMessageMap = {
   5: GREAT_FEEDBACK,
 }
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
-
 const FeedbackForm = ({
   isGeneralFeedback,
   onFeedbackSubmit,
   onRequestSuccess,
   onRequestError,
+  dataType = null,
+  dataFile = null,
 }) => {
   const formRef = useRef(null)
   const authenticated = useSelector((state) => state.auth.authenticated)
@@ -35,6 +42,11 @@ const FeedbackForm = ({
   const [feedbackMessage, setFeedbackMessage] = useState('')
   const [hasError, setHasError] = useState(false)
 
+  // Determine values based on props and state
+  const isGeneral = isGeneralFeedback
+  const isTANF = dataType === 'TANF'
+  const isSSP = dataType === 'SSP'
+
   const resetStatesOnceSubmitted = () => {
     setSelectedRatingsOption(undefined)
     setFeedbackMessage('')
@@ -42,24 +54,63 @@ const FeedbackForm = ({
     setIsAnonymous(false)
   }
 
+  const getFeedbackType = () => {
+    if (isTANF) {
+      return TANF_FEEDBACK_TYPE
+    } else if (isSSP) {
+      return SSP_MOE_FEEDBACK_TYPE
+    } else {
+      return FRA_FEEDBACK_TYPE
+    }
+  }
+
+  const programType = isGeneral
+    ? null
+    : VALID_PROGRAM_TYPES.includes(dataType)
+      ? dataType
+      : null
+
   const handleSubmit = useCallback(async () => {
     if (!selectedRatingsOption) {
       setHasError(true)
       return
     }
 
+    // Set feedback_type
+    const feedbackType = isGeneral ? GENERAL_FEEDBACK_TYPE : getFeedbackType()
+
+    // TODO: figure out what these 2 values should be ------
+    // Set component and widget_id -------------------------
+    const component = isGeneral
+      ? 'general-feedback-modal'
+      : 'submission-feedback-widget'
+    const widgetId = isGeneral ? '' : 'feedback-widget'
+    // ------------------------------------------------------
+
+    const payload = {
+      rating: selectedRatingsOption,
+      feedback: feedbackMessage,
+      anonymous: isAnonymous,
+      page_url: window.location.href,
+      feedback_type: feedbackType,
+      program_type: programType,
+      component: isGeneral ? 'general' : 'widget',
+    }
+
+    if (!isGeneral) {
+      // Only include widget_id for non-general feedback
+      payload.widget_id = widgetId || 'unknown-widget'
+
+      if (dataFile) {
+        payload.data_file = dataFile.trim()
+      }
+    }
+
     try {
-      const response = await axiosInstance.post(`${BACKEND_URL}/feedback/`, {
-        rating: selectedRatingsOption,
-        feedback: feedbackMessage,
-        anonymous: isAnonymous,
-        page_url: window.location.href,
-        feedback_type: isGeneralFeedback ? 'general' : 'widget', //TODO: updates this for data types
-        program_type: 'TANF', // Assuming TANF is the program type
-        component: isGeneralFeedback ? 'general' : 'widget', // Assuming widget for non-general feedback
-        widget_id: isGeneralFeedback ? '' : 'feedback-widget', // Assuming a static ID for the widget
-        data_file: '', // Assuming no specific data file for general feedback
-      })
+      const response = await axiosInstance.post(
+        `${BACKEND_URL}/feedback/`,
+        payload
+      )
 
       if (response.status === 200 || response.status === 201) {
         onFeedbackSubmit()

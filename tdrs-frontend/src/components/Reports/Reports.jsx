@@ -220,9 +220,16 @@ function Reports() {
     setTouched((currentForm) => ({ ...currentForm, stt: true }))
   }
 
+  // TODO: may need to passs in file name to this
   const handleOpenFeedbackWidget = () => {
     const lockedType = fileTypeComboBoxRequired ? fileTypeInputValue : 'tanf'
-    dispatch(openFeedbackWidget(lockedType)) // 'tanf' or 'ssp-moe'
+    dispatch(
+      openFeedbackWidget({
+        dataType: lockedType, // 'tanf' or 'ssp-moe'
+        dataFile: '',
+        widgetId: `${lockedType}-feedback-report-widget-`,
+      })
+    )
   }
 
   useEffect(() => {
