@@ -13,40 +13,46 @@ export const fillFYQ = (fiscal_year, quarter) => {
   cy.get('#reportingYears').should('exist').select(fiscal_year)
   cy.get('#quarter').should('exist').select(quarter)
   cy.get('button').contains('Search').should('exist').click()
-  cy.wait(100)
+  cy.get('.usa-file-input__input', { timeout: 1000 }).should('exist')
 }
 
 export const uploadFile = (file_input, file_path) => {
   cy.get(file_input).selectFile(file_path, { action: 'drag-drop' })
-  cy.wait(500)
+  const file_parts = file_path.split('/')
+  cy.contains(file_parts[file_parts.length - 1], { timeout: 1000 }).should(
+    'exist'
+  )
+}
+
+export const table_contains = (value, isTh = true) => {
+  cy.get(isTh ? 'th' : 'td')
+    .contains(value)
+    .should('exist')
 }
 
 export const validateSmallCorrectFile = () => {
-  cy.get('th').contains('small_correct_file.txt').should('exist')
-  cy.get('th').contains('1').should('exist')
-  cy.get('th').contains('Rejected').should('exist')
-  cy.get('th')
-    .contains('2021-Q1-Active Case Data Error Report.xlsx')
-    .should('exist')
+  table_contains('small_correct_file.txt')
+  table_contains('1')
+  table_contains('Rejected')
+  table_contains('2021-Q1-Active Case Data Error Report.xlsx')
 }
 
 export const validateSmallSSPFile = () => {
-  cy.get('th').contains('small_ssp_section1.txt').should('exist')
-  cy.get('th').contains('1').should('exist')
-  cy.get('th').contains('5').should('exist')
-  cy.get('th').contains('Partially Accepted with Errors').should('exist')
-  cy.get('th')
-    .contains('2024-Q1-SSP Active Case Data Error Report.xlsx')
-    .should('exist')
+  table_contains('small_ssp_section1.txt')
+  table_contains('1')
+  table_contains('5')
+  table_contains('Partially Accepted with Errors')
+  table_contains('2024-Q1-SSP Active Case Data Error Report.xlsx')
 }
 
 export const validateFraCsv = () => {
-  cy.get('td').contains('fra.csv').should('exist')
-  cy.get('td').contains('8').should('exist')
-  cy.get('td').contains('Partially Accepted with Errors').should('exist')
-  cy.get('td')
-    .contains('2024-Q2-Work Outcomes of TANF Exiters Error Report.xlsx')
-    .should('exist')
+  table_contains('fra.csv', false)
+  table_contains('8', false)
+  table_contains('Partially Accepted with Errors', false)
+  table_contains(
+    '2024-Q2-Work Outcomes of TANF Exiters Error Report.xlsx',
+    false
+  )
 }
 
 export const downloadErrorReport = (error_report_name) => {
@@ -54,7 +60,7 @@ export const downloadErrorReport = (error_report_name) => {
   cy.readFile(`${Cypress.config('downloadsFolder')}/${error_report_name}`)
 }
 
-export const fillSttFyQ = (stt, fy, q, isTanf) => {
+export const fillSttFyQ = (stt, fy, q, isTanf, isRegional) => {
   cy.get('#stt')
     .type(stt + '{enter}')
     .then(() => {
@@ -66,7 +72,12 @@ export const fillSttFyQ = (stt, fy, q, isTanf) => {
       cy.get('#reportingYears').should('exist').select(fy)
       cy.get('#quarter').should('exist').select(q)
       cy.get('button').contains('Search').should('exist').click()
-      cy.wait(100)
+      if (!isRegional) {
+        cy.get('.usa-file-input__input', { timeout: 1000 }).should('exist')
+      } else {
+        cy.get('.usa-file-input__input', { timeout: 1000 }).should('not.exist')
+        cy.contains('Submission History', { timeout: 1000 }).should('exist')
+      }
     })
 }
 
@@ -77,7 +88,7 @@ export const fillSttFyQNoProgramSelector = (stt, fy, q) => {
       cy.get('#reportingYears').should('exist').select(fy)
       cy.get('#quarter').should('exist').select(q)
       cy.get('button').contains('Search').should('exist').click()
-      cy.wait(100)
+      cy.get('.usa-file-input__input', { timeout: 1000 }).should('exist')
     })
 }
 

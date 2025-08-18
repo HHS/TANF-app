@@ -12,22 +12,22 @@ Then('Admin Alex can view the Illinois TANF Submission History', () => {
 })
 
 Then('Admin Alex can verify the Illinois TANF submission', () => {
-  cy.get('th').contains('small_tanf_section1.txt').should('exist')
-  cy.get('th').contains('1').should('exist')
-  cy.get('th').contains('Accepted with Errors').should('exist')
+  df.table_contains('small_tanf_section1.txt')
+  df.table_contains('1')
+  df.table_contains('Accepted with Errors')
 })
 
 // SSP steps
 Then('Admin Alex can view the Missouri SSP Submission History', () => {
   cy.visit('/data-files')
-  df.fillSttFyQ('Missouri', '2024', 'Q1', false)
+  df.fillSttFyQ('Missouri', '2024', 'Q1', false, false)
   cy.get('button').contains('Submission History').click()
 })
 
 Then('Admin Alex can verify the Missouri SSP submission', () => {
-  cy.get('th').contains('small_ssp_section1.txt').should('exist')
-  cy.get('th').contains('1').should('exist')
-  cy.get('th').contains('Accepted with Errors').should('exist')
+  df.table_contains('small_ssp_section1.txt')
+  df.table_contains('1')
+  df.table_contains('Accepted with Errors')
 })
 
 // FRA steps
@@ -37,9 +37,9 @@ Then('Admin Alex can view the Arizona FRA Submission History', () => {
 })
 
 Then('Admin Alex can verify the Arizona FRA submission', () => {
-  cy.get('td').contains('fra.csv').should('exist')
-  cy.get('td').contains('8').should('exist')
-  cy.get('td').contains('Partially Accepted with Errors').should('exist')
+  df.table_contains('fra.csv', false)
+  df.table_contains('8', false)
+  df.table_contains('Partially Accepted with Errors', false)
 })
 ///////////////////////////////////////////////////////////////
 
@@ -54,13 +54,13 @@ Then('Regional Randy logs in', () => {
 
 When('Regional Randy searches TANF Data Files', () => {
   cy.visit('/data-files')
-  df.fillSttFyQ('California', '2021', 'Q1', true)
+  df.fillSttFyQ('California', '2021', 'Q1', true, true)
 })
 
 Then('Regional Randy has read-only access to submission history', () => {
   cy.get('button').contains('small_correct_file.txt').should('not.exist')
-  cy.get('th').contains('small_correct_file.txt').should('exist')
-  cy.get('th').contains('Rejected').should('exist')
+  df.table_contains('small_correct_file.txt')
+  df.table_contains('Rejected')
   df.downloadErrorReport('2021-Q1-Active Case Data Error Report.xlsx')
 })
 

@@ -18,7 +18,7 @@ Given('Admin Alex logs in', () => {
 When('Admin Alex submits the TANF Report', () => {
   cy.visit('/data-files')
   cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
-  df.fillSttFyQ('New York', '2021', 'Q1', true)
+  df.fillSttFyQ('New York', '2021', 'Q1', true, false)
   df.uploadFile(
     '#active-case-data',
     '../tdrs-backend/tdpservice/parsers/test/data/small_correct_file.txt'
@@ -54,7 +54,7 @@ Then('Admin Alex can download the TANF error report', () => {
 When('Admin Alex submits the SSP Report', () => {
   cy.visit('/data-files')
   cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
-  df.fillSttFyQ('Iowa', '2024', 'Q1', false)
+  df.fillSttFyQ('Iowa', '2024', 'Q1', false, false)
   df.uploadFile(
     '#active-case-data',
     '../tdrs-backend/tdpservice/parsers/test/data/small_ssp_section1.txt'
@@ -90,7 +90,7 @@ Then('Admin Alex can download the SSP error report', () => {
 When('Admin Alex submits the Work Outcomes Report', () => {
   cy.visit('/fra-data-files')
   cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
-  df.fillSttFyQ('New York', '2024', 'Q2', false)
+  df.fillSttFyQ('New York', '2024', 'Q2', false, false)
   df.uploadFile(
     '#fra-file-upload',
     '../tdrs-backend/tdpservice/parsers/test/data/fra.csv'
