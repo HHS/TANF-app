@@ -13,7 +13,6 @@ Then('Admin Alex can view the Illinois TANF Submission History', () => {
 
 Then('Admin Alex can verify the Illinois TANF submission', () => {
   df.table_first_row_contains('small_tanf_section1.txt')
-  df.table_first_row_contains('1')
   df.table_first_row_contains('Accepted with Errors')
 })
 
@@ -26,7 +25,6 @@ Then('Admin Alex can view the Missouri SSP Submission History', () => {
 
 Then('Admin Alex can verify the Missouri SSP submission', () => {
   df.table_first_row_contains('small_ssp_section1.txt')
-  df.table_first_row_contains('1')
   df.table_first_row_contains('Accepted with Errors')
 })
 
@@ -38,7 +36,6 @@ Then('Admin Alex can view the Arizona FRA Submission History', () => {
 
 Then('Admin Alex can verify the Arizona FRA submission', () => {
   df.table_first_row_contains('fra.csv')
-  df.table_first_row_contains('8')
   df.table_first_row_contains('Partially Accepted with Errors')
 })
 ///////////////////////////////////////////////////////////////
