@@ -1,13 +1,18 @@
 import React from 'react'
+import { useSelector } from 'react-redux'
 import ProfileRow from './ProfileRow'
 import JurisdictionLocationInfo from './JurisdictionLocationInfo'
 import { getRegionNameById } from '../../utils/regions'
+import { accountStatusIsApproved } from '../../selectors/auth'
 
 const UserProfileDetails = ({ user, isAMSUser, hasFRAAccess = false }) => {
-  // Most higher-env users will only have a single role, so just grab the first one.
+  const userAccessRequestApproved = useSelector(accountStatusIsApproved)
+
   const userJurisdiction = user?.stt?.type || 'state'
   const userLocationName = user?.stt?.name || 'Federal Government'
-  const userRegions = user?.regions
+  const userRegions = user?.regions ?? []
+
+  const hasRegions = Array.isArray(userRegions) && userRegions.length > 0
 
   return (
     <div data-testid="user-profile-info">
@@ -17,21 +22,30 @@ const UserProfileDetails = ({ user, isAMSUser, hasFRAAccess = false }) => {
       />
       <hr className="margin-right-8 margin-top-2 margin-bottom-2" />
       {isAMSUser ? (
-        <>
-          <ProfileRow
-            label="Regional Office(s)"
-            value={
-              <>
-                {userRegions.map((region, index) => (
-                  <div
-                    key={index}
-                  >{`Region ${region.id} (${getRegionNameById(region.id)})`}</div>
-                ))}
-              </>
-            }
-          />
-          <hr className="margin-right-8 margin-top-3 margin-bottom-2" />
-        </>
+        hasRegions ? (
+          <>
+            <ProfileRow
+              label="Regional Office(s)"
+              value={
+                <>
+                  {userRegions.map((region, index) => (
+                    <div key={index}>
+                      {`Region ${region.id} (${getRegionNameById(region.id)})`}
+                    </div>
+                  ))}
+                </>
+              }
+            />
+            <hr className="margin-right-8 margin-top-3 margin-bottom-2" />
+          </>
+        ) : (
+          !userAccessRequestApproved && (
+            <>
+              <ProfileRow label="Regional Office(s)" value="None selected" />
+              <hr className="margin-right-8 margin-top-3 margin-bottom-2" />
+            </>
+          )
+        )
       ) : (
         <>
           <ProfileRow

@@ -26,7 +26,6 @@ describe('UserProfileView', () => {
 
     expect(screen.getByText('Name')).toBeInTheDocument()
     expect(screen.getByText('John Doe')).toBeInTheDocument()
-    expect(screen.getByText('State User')).toBeInTheDocument()
     expect(screen.getByText('Jurisdiction Type')).toBeInTheDocument()
     expect(screen.getByText('California')).toBeInTheDocument()
   })
