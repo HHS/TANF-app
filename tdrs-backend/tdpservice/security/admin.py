@@ -6,7 +6,7 @@ from tdpservice.security.models import ClamAVFileScan, OwaspZapScan, SecurityEve
 
 
 @admin.register(ClamAVFileScan)
-class ClamAVFileScanAdmin(ReadOnlyAdminMixin):
+class ClamAVFileScanAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     """Admin interface for Clam AV File Scan instances."""
 
     list_display = [
@@ -31,7 +31,7 @@ class ClamAVFileScanAdmin(ReadOnlyAdminMixin):
 
 
 @admin.register(OwaspZapScan)
-class OwaspZapScanAdmin(ReadOnlyAdminMixin):
+class OwaspZapScanAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     """Admin interface for OWASP Zap Scan reports."""
 
     list_display = [
@@ -50,7 +50,7 @@ class OwaspZapScanAdmin(ReadOnlyAdminMixin):
 
 
 @admin.register(SecurityEventToken)
-class SecurityEventTokenAdmin(ReadOnlyAdminMixin):
+class SecurityEventTokenAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     """Admin interface for Security Event Tokens."""
 
     list_display = (
