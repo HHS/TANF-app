@@ -15,9 +15,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from tdpservice.core.utils import log
 from tdpservice.security.event_handler import SecurityEventHandler
-from tdpservice.security.models import SecurityEventToken
 from tdpservice.security.utils import token_is_valid
 from tdpservice.users.models import AccountApprovalStatusChoices, User
 
@@ -120,25 +118,11 @@ class SecurityEventTokenView(APIView):
                 logger.error("No events found in JWT")
                 raise ValidationError("No events found in JWT")
 
-            system_user, created = User.objects.get_or_create(username="system")
-            logger_context = {
-                "user_id": system_user.id,
-                "content_type": SecurityEventToken,
-                "object_id": None,
-            }
-            log(
-                f"Received valid security events: \n\n{events}",
-                logger_context,
-            )
-
             # Process each event in the JWT
+            logger.info(f"Processing security events: {events}")
             for event_type, event_data in events.items():
                 SecurityEventHandler.handle_event(event_type, event_data, decoded_jwt)
-
-            log(
-                "Successfully processed events.",
-                logger_context,
-            )
+            logger.info("Successfully processed security events.")
 
             return Response(status=status.HTTP_200_OK)
 

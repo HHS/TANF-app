@@ -15,6 +15,7 @@ from rest_framework import status
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
 
+from tdpservice.core.utils import log
 from tdpservice.security.models import SecurityEventToken, SecurityEventType
 
 from ..authentication import CustomAuthentication
@@ -126,6 +127,12 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         user = User.objects.filter(email=email).first()
 
         if user and auth_options.get("login_gov_uuid", False):
+            # Setup log context
+            logger_context = {
+                "user_id": user.id,
+                "content_type": SecurityEventToken,
+                "object_id": user.id,
+            }
             # Check if last security event was account_purged
             last_security_event = (
                 SecurityEventToken.objects.filter(user=user)
@@ -136,6 +143,11 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 last_security_event
                 and last_security_event.event_type == SecurityEventType.ACCOUNT_PURGED
             ):
+                log(
+                    f"Detected user: {user.username} has recreated their Login.gov account "
+                    "after deleting it. Updating their login_gov_uuid.",
+                    logger_context,
+                )
                 # Update user login_gov_uuid
                 user.login_gov_uuid = decoded_token_data.get("sub")
                 user.save()
@@ -143,6 +155,11 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             else:
                 user = None
                 login_msg = "User Login.gov UUID changed without account purge. Preventing login."
+                log(
+                    f"User: {user.username} Login.gov UUID changed without an account purge "
+                    "event from Login.gov. Preventing login.",
+                    logger_context,
+                )
         else:
             # Delete the username key if it exists in auth_options, as it will conflict with the first argument
             # of `create_user`.

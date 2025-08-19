@@ -6,7 +6,7 @@ from tdpservice.security.models import ClamAVFileScan, OwaspZapScan, SecurityEve
 
 
 @admin.register(ClamAVFileScan)
-class ClamAVFileScanAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
+class ClamAVFileScanAdmin(ReadOnlyAdminMixin):
     """Admin interface for Clam AV File Scan instances."""
 
     list_display = [
@@ -31,7 +31,7 @@ class ClamAVFileScanAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(OwaspZapScan)
-class OwaspZapScanAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
+class OwaspZapScanAdmin(ReadOnlyAdminMixin):
     """Admin interface for OWASP Zap Scan reports."""
 
     list_display = [
@@ -50,7 +50,7 @@ class OwaspZapScanAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(SecurityEventToken)
-class SecurityEventTokenAdmin(admin.ModelAdmin, ReadOnlyAdminMixin):
+class SecurityEventTokenAdmin(ReadOnlyAdminMixin):
     """Admin interface for Security Event Tokens."""
 
     list_display = (
@@ -62,7 +62,13 @@ class SecurityEventTokenAdmin(admin.ModelAdmin, ReadOnlyAdminMixin):
         "processed",
     )
     list_filter = ("user", "event_type", "processed", "received_at")
-    search_fields = ("user__username", "user__email", "email", "event_type")
+    search_fields = (
+        "user__username",
+        "user__email",
+        "email",
+        "event_type",
+        "event_data",
+    )
     readonly_fields = (
         "id",
         "jwt_id",
