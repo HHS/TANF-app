@@ -119,7 +119,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         """Handle user email exceptions."""
         pass
 
-    def _handle_user(self, email, decoded_token_data, auth_options):
+    def _handle_user(self, email, sub, auth_options):
         """Handle user."""
         User = get_user_model()
 
@@ -145,11 +145,11 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             ):
                 log(
                     f"Detected user: {user.username} has recreated their Login.gov account "
-                    f"after deleting it. Updating their login_gov_uuid: \n{decoded_token_data}.",
+                    f"after deleting it. Updating their login_gov_uuid.",
                     logger_context,
                 )
                 # Update user login_gov_uuid
-                user.login_gov_uuid = decoded_token_data.get("sub")
+                user.login_gov_uuid = sub
                 user.is_active = True
                 user.save()
                 login_msg = "User updated Login.gov UUID."
@@ -232,7 +232,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 f"Login failed, user account is inactive: {user.username}"
             )
         else:
-            user, login_msg = self._handle_user(email, decoded_token_data, auth_options)
+            user, login_msg = self._handle_user(email, sub, auth_options)
 
         self.verify_email(user)
         self.login_user(request, user, login_msg)
