@@ -145,11 +145,12 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             ):
                 log(
                     f"Detected user: {user.username} has recreated their Login.gov account "
-                    "after deleting it. Updating their login_gov_uuid.",
+                    f"after deleting it. Updating their login_gov_uuid: \n{decoded_token_data}.",
                     logger_context,
                 )
                 # Update user login_gov_uuid
                 user.login_gov_uuid = decoded_token_data.get("sub")
+                user.is_active = True
                 user.save()
                 login_msg = "User updated Login.gov UUID."
             else:

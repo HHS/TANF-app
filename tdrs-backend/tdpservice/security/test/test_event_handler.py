@@ -72,12 +72,11 @@ class TestSecurityEventHandler:
         event_type = SecurityEventType.ACCOUNT_DISABLED
         SecurityEventHandler.handle_event(event_type, event_data, decoded_jwt)
 
+        previous_status = stt_data_analyst.account_approval_status
+
         stt_data_analyst.refresh_from_db()
 
-        assert (
-            stt_data_analyst.account_approval_status
-            == AccountApprovalStatusChoices.DEACTIVATED
-        )
+        assert stt_data_analyst.account_approval_status == previous_status
         assert stt_data_analyst.is_active is False
         assert SecurityEventToken.objects.count() == 1
         token = SecurityEventToken.objects.first()
@@ -94,9 +93,6 @@ class TestSecurityEventHandler:
     @pytest.mark.django_db
     def test_account_enabled(self, stt_data_analyst, event_data, decoded_jwt):
         """Test handling of account-enabled event."""
-        stt_data_analyst.account_approval_status = (
-            AccountApprovalStatusChoices.DEACTIVATED
-        )
         stt_data_analyst.is_active = False
         stt_data_analyst.save()
 
@@ -128,12 +124,11 @@ class TestSecurityEventHandler:
         event_type = SecurityEventType.ACCOUNT_PURGED
         SecurityEventHandler.handle_event(event_type, event_data, decoded_jwt)
 
+        previous_status = stt_data_analyst.account_approval_status
+
         stt_data_analyst.refresh_from_db()
 
-        assert (
-            stt_data_analyst.account_approval_status
-            == AccountApprovalStatusChoices.DEACTIVATED
-        )
+        assert stt_data_analyst.account_approval_status == previous_status
         assert stt_data_analyst.is_active is False
         assert SecurityEventToken.objects.count() == 1
         token = SecurityEventToken.objects.first()

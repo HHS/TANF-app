@@ -6,7 +6,7 @@ from datetime import datetime
 from django.utils import timezone
 
 from tdpservice.security.models import SecurityEventToken, SecurityEventType
-from tdpservice.users.models import AccountApprovalStatusChoices, User
+from tdpservice.users.models import User
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,6 @@ class SecurityEventHandler:
     def _handle_account_disabled(security_event):
         """Handle account-disabled event."""
         user = security_event.user
-        user.account_approval_status = AccountApprovalStatusChoices.DEACTIVATED
         user.is_active = False
         user.save()
         logger.info(f"User {user.username} account disabled due to Login.gov event")
@@ -36,14 +35,9 @@ class SecurityEventHandler:
     def _handle_account_enabled(security_event):
         """Handle account-enabled event."""
         user = security_event.user
-        if user.account_approval_status == AccountApprovalStatusChoices.DEACTIVATED:
-            # Only re-enable if previously deactivated, don't override other statuses
-            user.account_approval_status = AccountApprovalStatusChoices.APPROVED
-            user.is_active = True
-            user.save()
-            logger.info(
-                f"User {user.username} account re-enabled due to Login.gov event"
-            )
+        user.is_active = True
+        user.save()
+        logger.info(f"User {user.username} account re-enabled due to Login.gov event")
 
     def _handle_account_purged(security_event):
         """Handle account-purged event when a user deletes their Login.gov account."""
@@ -52,7 +46,6 @@ class SecurityEventHandler:
 
         # Set login_gov_uuid to null and deactivate user
         user.login_gov_uuid = None
-        user.account_approval_status = AccountApprovalStatusChoices.DEACTIVATED
         user.is_active = False
         user.save()
 
