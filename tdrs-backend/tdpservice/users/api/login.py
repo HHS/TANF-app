@@ -153,13 +153,13 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 user.save()
                 login_msg = "User updated Login.gov UUID."
             else:
-                user = None
-                login_msg = "User Login.gov UUID changed without account purge. Preventing login."
                 log(
                     f"User: {user.username} Login.gov UUID changed without an account purge "
                     "event from Login.gov. Preventing login.",
                     logger_context,
                 )
+                user = None
+                login_msg = "User Login.gov UUID changed without account purge. Preventing login."
         else:
             # Delete the username key if it exists in auth_options, as it will conflict with the first argument
             # of `create_user`.
