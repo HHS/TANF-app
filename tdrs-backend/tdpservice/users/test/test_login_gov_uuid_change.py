@@ -28,13 +28,12 @@ def test_login_gov_uuid_change_with_account_purged(user):
         issued_at=timezone.now(),
     )
 
-    decoded_token_data = {"sub": new_login_gov_uuid}
     auth_options = {"login_gov_uuid": True}
 
     token_auth = TokenAuthorizationOIDC()
 
     result_user, login_msg = token_auth._handle_user(
-        user.email, decoded_token_data, auth_options
+        user.email, new_login_gov_uuid, auth_options
     )
 
     user.refresh_from_db()
@@ -62,12 +61,11 @@ def test_login_gov_uuid_change_without_account_purged(user):
         issued_at=timezone.now(),
     )
 
-    decoded_token_data = {"sub": new_login_gov_uuid}
     auth_options = {"login_gov_uuid": True}
 
     token_auth = TokenAuthorizationOIDC()
     result_user, login_msg = token_auth._handle_user(
-        user.email, decoded_token_data, auth_options
+        user.email, new_login_gov_uuid, auth_options
     )
 
     user.refresh_from_db()
@@ -89,12 +87,11 @@ def test_login_gov_uuid_change_no_security_events(user):
 
     # No security events created
 
-    decoded_token_data = {"sub": new_login_gov_uuid}
     auth_options = {"login_gov_uuid": True}
 
     token_auth = TokenAuthorizationOIDC()
     result_user, login_msg = token_auth._handle_user(
-        user.email, decoded_token_data, auth_options
+        user.email, new_login_gov_uuid, auth_options
     )
 
     user.refresh_from_db()
