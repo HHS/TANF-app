@@ -30,7 +30,6 @@ describe('UserProfileDetails component', () => {
 
     expect(screen.getByText('Name')).toBeInTheDocument()
     expect(screen.getByText('Alice Smith')).toBeInTheDocument()
-    expect(screen.getByText('User Type')).toBeInTheDocument()
     expect(screen.getByText('Admin')).toBeInTheDocument()
 
     const jurisdictionRow = screen
@@ -63,7 +62,6 @@ describe('UserProfileDetails component', () => {
 
     expect(screen.getByText('Name')).toBeInTheDocument()
     expect(screen.getByText('Alice Smith')).toBeInTheDocument()
-    expect(screen.getByText('User Type')).toBeInTheDocument()
     expect(screen.getByText('Admin')).toBeInTheDocument()
 
     const jurisdictionRow = screen
@@ -96,7 +94,6 @@ describe('UserProfileDetails component', () => {
 
     expect(screen.getByText('Name')).toBeInTheDocument()
     expect(screen.getByText('Alice Smith')).toBeInTheDocument()
-    expect(screen.getByText('User Type')).toBeInTheDocument()
     expect(screen.getByText('AMS Reviewer')).toBeInTheDocument()
 
     const regionRow = screen
@@ -125,7 +122,6 @@ describe('UserProfileDetails component', () => {
 
     expect(screen.getByText('Name')).toBeInTheDocument()
     expect(screen.getByText('Alice Smith')).toBeInTheDocument()
-    expect(screen.getByText('User Type')).toBeInTheDocument()
     expect(screen.getByText('AMS Reviewer')).toBeInTheDocument()
 
     // Regional Office(s) label is rendered
@@ -144,7 +140,6 @@ describe('UserProfileDetails component', () => {
 
     expect(screen.getByText('Name')).toBeInTheDocument()
     expect(screen.queryByText('Alice Smith')).not.toBeInTheDocument()
-    expect(screen.getByText('User Type')).toBeInTheDocument()
 
     const jurisdictionRow = screen
       .getByText('Jurisdiction Type')
