@@ -112,31 +112,3 @@ Then('{string} sees rejected status in submission history', (actor) => {
     })
 })
 
-// TODO: Remove in favor of When 'user' uploads a TANF Seciton '' data file for year '' and quarter ''
-When('{string} uploads a file', (username) => {
-  cy.wait(1000).then(() => {
-    cy.get('#closed-case-data').selectFile(
-      '../tdrs-backend/tdpservice/parsers/test/data/small_correct_file.txt',
-      { action: 'drag-drop' }
-    )
-    cy.get('button').contains('Submit Data Files').should('exist').click()
-  })
-})
-
-// TODO: Remove in favor of When 'user' uploads a TANF Seciton '' data file for year '' and quarter ''
-Then('{string} can see the upload successful', (username) => {
-  cy.wait(3000).then(() => {
-    cy.contains(/Successfully|No changes/g).should('exist')
-  })
-})
-
-// TODO: Remove in favor of When 'user' uploads a TANF Seciton '' data file for year '' and quarter ''
-When('{string} uploads a TANF Section 1 data file', (username) => {
-  cy.wait(1000).then(() => {
-    cy.get('#active-case-data').selectFile(
-      '../tdrs-backend/tdpservice/parsers/test/data/small_correct_file.txt',
-      { action: 'drag-drop' }
-    )
-    cy.get('button').contains('Submit Data Files').should('exist').click()
-  })
-})
