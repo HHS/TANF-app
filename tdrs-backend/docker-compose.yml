@@ -295,6 +295,7 @@ services:
       - localstack
       - postgres
       - redis-server
+      - celery
 
   redis-server:
     image: redis:alpine
