@@ -111,4 +111,3 @@ Then('{string} sees rejected status in submission history', (actor) => {
       cy.contains('Rejected').should('exist')
     })
 })
-
