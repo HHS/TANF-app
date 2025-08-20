@@ -169,7 +169,7 @@
     },
     {
         "model": "users.user",
-        "pk": "52c74bad-a4d8-4676-b7ce-e92758d21b80",
+        "pk": "8c3d40a6-8964-44ae-95cc-7939b71a929f",
         "fields": {
             "password": "",
             "last_login": null,
@@ -181,7 +181,7 @@
             "is_staff": false,
             "is_active": true,
             "date_joined": "2025-02-20T20:23:35.309Z",
-            "stt": 1,
+            "stt": null,
             "login_gov_uuid": null,
             "hhs_id": null,
             "deactivated": false,
@@ -197,7 +197,7 @@
     },
     {
         "model": "users.user",
-        "pk": "52c74bad-a4d8-4676-b7ce-e92758d21b80",
+        "pk": "de814708-07fe-4c40-acd8-2475cc8d363f",
         "fields": {
             "password": "",
             "last_login": null,
@@ -209,7 +209,7 @@
             "is_staff": false,
             "is_active": true,
             "date_joined": "2025-02-20T20:23:35.309Z",
-            "stt": 1,
+            "stt": null,
             "login_gov_uuid": null,
             "hhs_id": null,
             "deactivated": false,
