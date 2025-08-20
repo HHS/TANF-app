@@ -18,10 +18,6 @@ export const ACTORS = {
     role: 'DIGIT Team',
     username: 'diana-cypress@teamraft.com',
   },
-  'ACF OCIO Andre': {
-    role: 'ACF OCIO',
-    username: 'andre-cypress@teamraft.com',
-  },
   'Regional Staff Cypress': {
     role: 'OFA Regional Staff',
     username: 'cypress-regional-staff@teamraft.com',
