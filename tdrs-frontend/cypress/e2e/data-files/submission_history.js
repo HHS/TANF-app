@@ -4,19 +4,6 @@ import * as df from '../common-steps/data_files.js'
 
 ///////////////////////// Admin Steps /////////////////////////
 
-Then(
-  '{string} can view the {string} {string} {string} {string} Submission History',
-  (actor, stt, program_type, fiscal_year, quarter) => {
-    if (program_type === 'TANF' || program_type === 'SSP') {
-      cy.visit('/data-files')
-    } else {
-      cy.visit('/fra-data-files')
-    }
-    df.fillSttFyQNoProgramSelector(stt, fiscal_year, quarter)
-    cy.get('button').contains('Submission History').click()
-  }
-)
-
 // TANF steps
 Then('Admin Alex can view the Illinois TANF Submission History', () => {
   cy.visit('/data-files')
@@ -54,13 +41,6 @@ Then('Admin Alex can verify the Arizona FRA submission', () => {
 ///////////////////////////////////////////////////////////////
 
 /////////////////////// Regional Steps ////////////////////////
-Then('Regional Randy logs in', () => {
-  df.restartAtHomePage()
-  cy.login('cypress-regional-randy@acf.hhs.gov').then(() => {
-    cy.visit('/home')
-    cy.contains('FRA Data Files').should('exist')
-  })
-})
 
 When('Regional Randy searches TANF Data Files', () => {
   cy.visit('/data-files')
