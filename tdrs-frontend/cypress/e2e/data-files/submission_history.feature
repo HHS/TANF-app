@@ -16,7 +16,6 @@ Feature: Data file submission history
         Then Regional Randy logs in
         When Regional Randy searches TANF Data Files
         Then Regional Randy has read-only access to submission history
-Feature: Approved Regional Staff can view submission history
     Scenario: A user can upload a file
         Given The admin logs in
             And A file exists in submission history

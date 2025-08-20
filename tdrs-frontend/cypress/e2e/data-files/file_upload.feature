@@ -37,7 +37,6 @@ Feature: Data file submission
         And FRA Data Analyst Fred can download the SSP error report
         # And Regional Randy gets an email (determine exact)
 
-Feature: Approved Data Analysts can upload data files
     Scenario Outline: <actor> can submit a <program> Section <section> data file
         Given '<actor>' logs in
         When '<actor>' uploads a '<program>' Section '<section>' data file
