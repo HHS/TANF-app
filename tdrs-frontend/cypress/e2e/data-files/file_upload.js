@@ -1,18 +1,8 @@
 /* eslint-disable no-undef */
-import { Given, When, Then } from '@badeball/cypress-cucumber-preprocessor'
+import { When, Then } from '@badeball/cypress-cucumber-preprocessor'
 import * as df from '../common-steps/data_files.js'
 
 ///////////////////////// Admin Steps /////////////////////////
-Given('Admin Alex logs in', () => {
-  df.restartAtHomePage()
-  cy.login('cypress-admin-alex@acf.hhs.gov').then(() => {
-    cy.visit('/home')
-    cy.contains('FRA Data Files').should('exist')
-    cy.contains('Admin').should('exist')
-    cy.contains('Alerts').should('exist')
-    cy.contains('Grafana').should('exist')
-  })
-})
 
 // TANF steps
 When('Admin Alex submits the TANF Report', () => {
@@ -234,13 +224,6 @@ Then('Admin Alex can download the FRA error report', () => {
 ///////////////////////////////////////////////////////////////
 
 /////////////////// FRA Data Analyst Steps ///////////////////
-Given('FRA Data Analyst Fred logs in', () => {
-  df.restartAtHomePage()
-  cy.login('cypress-fra-data-analyst-fred@teamraft.com').then(() => {
-    cy.visit('/home')
-    cy.contains('FRA Data Files').should('exist')
-  })
-})
 
 // FRA steps
 When('FRA Data Analyst Fred submits the Work Outcomes Report', () => {

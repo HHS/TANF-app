@@ -22,6 +22,18 @@ export const ACTORS = {
     role: 'Data Analyst',
     username: 'new-cypress@teamraft.com',
   },
+  'Regional Randy': {
+    role: 'Regional Staff',
+    username: 'cypress-regional-randy@acf.hhs.gov',
+  },
+  'Admin Alex': {
+    role: 'OFA System Admin',
+    username: 'cypress-admin-alex@acf.hhs.gov',
+  },
+  'FRA Data Analyst Fred': {
+    role: 'Data Analyst',
+    username: 'cypress-fra-data-analyst-fred@teamraft.com',
+  },
 }
 
 Given('{string} logs in', (actor) => {
