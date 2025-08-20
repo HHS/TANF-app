@@ -283,15 +283,18 @@ const FeedbackForm = ({
             <h3>Tell us more</h3>
           ) : (
             selectedRatingsOption && (
-              <p
+              <div
+                aria-live="polite"
+                aria-atomic="true"
                 className="margin-left-1 margin-bottom-1 margin-top-1"
                 style={{
                   fontSize: '0.90rem',
                   color: '#575c64',
+                  minHeight: '1.2em', // helps avoid layout shift
                 }}
               >
-                {ratingMessageMap[selectedRatingsOption]}
-              </p>
+                <p>{ratingMessageMap[selectedRatingsOption]}</p>
+              </div>
             )
           )}
           <textarea
