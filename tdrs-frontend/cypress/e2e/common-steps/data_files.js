@@ -1,13 +1,20 @@
 /* eslint-disable no-undef */
 import { When, Then } from '@badeball/cypress-cucumber-preprocessor'
+import { ACTORS } from './common-steps'
 
 const TEST_DATA_DIR = '../tdrs-backend/tdpservice/parsers/test/data'
 
-export const openDataFilesAndSearch = (program, year, quarter) => {
+export const openDataFilesAndSearch = (actor, program, year, quarter) => {
+  const rolesNotAssignedSTT = new Set(['DIGIT Team'])
+  const { role } = ACTORS[actor]
+
   cy.visit('/data-files')
   cy.contains('Data Files').should('exist')
 
   // Submit search form
+  if (rolesNotAssignedSTT.has(role)) {
+    cy.get('#stt').should('exist').type('Alabama{enter}')
+  }
   if (program === 'SSP') cy.get('label[for="ssp-moe"]').click()
 
   cy.get('#reportingYears').should('exist').select(year)

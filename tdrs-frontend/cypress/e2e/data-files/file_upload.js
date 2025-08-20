@@ -42,7 +42,7 @@ When(
   (actor, program, section) => {
     const { year, quarter, fileName } = UPLOAD_FILE_INFO[program][section]
 
-    df.openDataFilesAndSearch(program, year, quarter)
+    df.openDataFilesAndSearch(actor, program, year, quarter)
     df.uploadSectionFile(SECTION_INPUT_ID[section], fileName)
 
     cy.contains('Successfully submitted').should('exist')
@@ -77,7 +77,7 @@ Then(
 When('Data Analyst Tim selects a TANF data file for the wrong year', () => {
   const fileName = UPLOAD_FILE_INFO['TANF'][1]['fileName']
 
-  df.openDataFilesAndSearch('TANF', '2025', 'Q1')
+  df.openDataFilesAndSearch(actor, 'TANF', '2025', 'Q1')
   df.uploadSectionFile(SECTION_INPUT_ID[1], fileName, true)
 })
 
@@ -86,7 +86,7 @@ When(
   () => {
     const fileName = UPLOAD_FILE_INFO['SSP'][1]['fileName']
 
-    df.openDataFilesAndSearch('TANF', '2025', 'Q1')
+    df.openDataFilesAndSearch(actor, 'TANF', '2025', 'Q1')
     df.uploadSectionFile(SECTION_INPUT_ID[1], fileName, true)
   }
 )
@@ -98,7 +98,7 @@ Then('{string} sees the error message: {string}', (actor, errorMessage) => {
 When('{string} selects a data file for the wrong section', (actor) => {
   const fileName = 'aggregates_rejected.txt'
 
-  df.openDataFilesAndSearch('TANF', '2021', 'Q1')
+  df.openDataFilesAndSearch(actor, 'TANF', '2021', 'Q1')
   df.uploadSectionFile(SECTION_INPUT_ID[1], fileName)
 })
 

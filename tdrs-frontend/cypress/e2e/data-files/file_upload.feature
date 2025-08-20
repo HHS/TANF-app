@@ -1,5 +1,6 @@
 Feature: Approved Data Analysts can upload data files
     
+    @focus
     Scenario Outline: <actor> can submit a <program> Section <section> data file
         Given '<actor>' logs in
         When '<actor>' uploads a '<program>' Section '<section>' data file
@@ -20,6 +21,9 @@ Feature: Approved Data Analysts can upload data files
         | Data Analyst Tara     | TRIBAL  | 1       |
         | Data Analyst Tara     | TRIBAL  | 2       |
         | Data Analyst Tara     | TRIBAL  | 3       |
+        # We're only checking that non Data Analysts can submit a file
+        # No need to test all programs and sections since they were tested above
+        | DIGIT Diana           | TANF    | 1       |
 
     # Edge / failure cases for TANF Data Analyst Tim
 
