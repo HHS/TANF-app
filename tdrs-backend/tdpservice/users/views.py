@@ -114,21 +114,27 @@ class CypressAdminUserViewSet(
     ]
     serializer_class = UserSerializer
 
+    def set_status(self, pk, approval_status):
+        """Update the user with the provided approval status."""
+        u = get_object_or_404(self.queryset, pk=pk)
+        u.account_approval_status = approval_status
+        u.save()
+        return Response(status=status.HTTP_200_OK)
+
     @action(methods=["PATCH"], detail=True)
-    def approve_user(self, request, pk):
-        """Update user with provided approval status."""
-        print("pk")
-        print(pk)
-        item = get_object_or_404(self.queryset, pk=pk)
-        serializer = self.serializer_class(
-            item, data=request.data, partial=True
-        )  # set partial=True to update a data partially
-        if serializer.is_valid():
-            serializer.save(
-                account_approval_status=AccountApprovalStatusChoices.APPROVED
-            )
-            return Response(status=status.HTTP_200_OK, data=serializer.data)
-        return Response(status=status.HTTP_400_BAD_REQUEST, data="wrong parameters")
+    def set_initial(self, request, pk):
+        """Update user with initial approval status."""
+        return self.set_status(pk, AccountApprovalStatusChoices.INITIAL)
+
+    @action(methods=["PATCH"], detail=True)
+    def set_pending(self, request, pk):
+        """Update user with pending approval status."""
+        return self.set_status(pk, AccountApprovalStatusChoices.PENDING)
+
+    @action(methods=["PATCH"], detail=True)
+    def set_approved(self, request, pk):
+        """Update user with approved status."""
+        return self.set_status(pk, AccountApprovalStatusChoices.APPROVED)
 
 
 class GroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
