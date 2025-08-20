@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import '../../assets/Profile.scss'
 
+// Helper functions
+const addRegion = (regionsSet, id, name) => {
+  const newSet = new Set(regionsSet)
+  newSet.add({ id, name })
+  return newSet
+}
+
+const removeRegionById = (regionsSet, id) => {
+  return new Set(Array.from(regionsSet).filter((r) => r.id !== id))
+}
+
 function RegionSelector({
   setErrors,
   errors,
@@ -11,11 +22,9 @@ function RegionSelector({
   displayingError,
   validateRegions,
   regionError,
+  regional,
+  setRegional,
 }) {
-  const [regional, setRegional] = useState(() => {
-    return profileInfo?.regions instanceof Set && profileInfo.regions.size > 0
-  })
-
   const [previousRegions, setPreviousRegions] = useState(
     profileInfo?.regions || new Set()
   )
@@ -42,38 +51,37 @@ function RegionSelector({
 
   const handleRegionChange = (event, regionId) => {
     const { name, checked } = event.target
-    const { [name]: removedError, ...rest } = errors
+    const regionName = regionsNames[regionId - 1]
 
-    const currentRegions = new Set(profileInfo.regions || [])
+    const currentRegions = profileInfo.regions || new Set()
 
-    if (!checked) {
-      for (let region of currentRegions) {
-        if (region.id === regionId) {
-          currentRegions.delete(region)
-          break
-        }
+    const updatedRegions = checked
+      ? addRegion(currentRegions, regionId, regionName)
+      : removeRegionById(currentRegions, regionId)
+
+    const error = validateRegions(updatedRegions)
+
+    setErrors((prev) => {
+      const { [name]: removed, ...rest } = prev
+      // Only remove 'form' if it's already present
+      const { form, ...errorsWithoutForm } = rest
+      return {
+        ...errorsWithoutForm,
+        ...(error && {
+          [name]: touched[name] && regionError,
+        }),
       }
-    } else {
-      const regionName = regionsNames[regionId - 1]
-      currentRegions.add({ id: regionId, name: regionName })
-    }
-
-    const error = validateRegions(currentRegions)
-
-    setErrors({
-      ...rest,
-      ...(error && { [name]: touched[name] && error }),
     })
 
-    setProfileInfo({
-      ...profileInfo,
-      regions: currentRegions,
-    })
+    setProfileInfo((prev) => ({
+      ...prev,
+      regions: updatedRegions,
+    }))
   }
 
   const excludeRegions = (state) => {
-    const { regions, ...newState } = state
-    return newState
+    const { regions, form, ...rest } = state
+    return rest
   }
 
   return (
@@ -92,18 +100,24 @@ function RegionSelector({
               value="regional"
               checked={regional}
               onChange={() => {
+                // Clear form error for reset
+                setErrors((prev) => {
+                  const { form, ...rest } = prev
+                  return form ? rest : prev
+                })
+
                 if (displayingError) {
-                  setTouched({ ...touched, regions: true })
-                  setErrors({
-                    ...errors,
+                  setTouched((prev) => ({ ...prev, regions: true }))
+                  setErrors((prev) => ({
+                    ...prev,
                     regions: regionError,
-                  })
+                  }))
                 }
-                setProfileInfo({
-                  ...profileInfo,
+                setProfileInfo((prev) => ({
+                  ...prev,
                   regions: previousRegions,
                   hasFRAAccess: true,
-                })
+                }))
                 setRegional(true)
               }}
             />
@@ -120,13 +134,19 @@ function RegionSelector({
               value="central"
               checked={!regional}
               onChange={() => {
-                setPreviousRegions(profileInfo.regions ?? new Set())
-                setErrors(excludeRegions(errors))
-                setTouched(excludeRegions(touched))
-                setProfileInfo({
-                  ...excludeRegions(profileInfo),
-                  hasFRAAccess: false,
+                // Clear form error on change
+                setErrors((prev) => {
+                  const { form, ...rest } = excludeRegions(prev)
+                  return form ? rest : prev
                 })
+
+                setPreviousRegions(profileInfo.regions ?? new Set())
+                setTouched((prev) => excludeRegions(prev))
+                setProfileInfo((prev) => ({
+                  ...excludeRegions(prev),
+                  regions: new Set(),
+                  hasFRAAccess: false,
+                }))
                 setRegional(false)
               }}
             />

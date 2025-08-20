@@ -292,6 +292,58 @@ describe('RequestAccessForm', () => {
     const mockDispatch = jest.fn()
     await dispatchedThunk(mockDispatch)
 
+    expect(mockDispatch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'PATCH_REQUEST_ACCESS',
+      })
+    )
+  })
+
+  it('dispatches updateUserRequest (profile) in editMode when data changes', async () => {
+    const initialValues = {
+      firstName: 'John',
+      lastName: 'Doe',
+      stt: 'Texas',
+      hasFRAAccess: false,
+      regions: new Set(),
+    }
+
+    const props = {
+      editMode: true,
+      type: 'profile',
+      initialValues,
+    }
+
+    const storeOverrides = {
+      auth: { authenticated: true, user: defaultUser },
+      stts: { loading: false, sttList: defaultSTTList },
+    }
+
+    const { store } = setup(props, storeOverrides)
+    // Spy on store.dispatch to monitor calls
+    const dispatchSpy = jest.spyOn(store, 'dispatch')
+
+    const lastNameInput = screen.getByLabelText(/Last Name/i)
+    fireEvent.change(lastNameInput, { target: { value: '' } })
+    fireEvent.change(lastNameInput, {
+      target: { value: 'Smith' },
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /Save Changes/i }))
+
+    // Wait for the thunk to be dispatched
+    await waitFor(() => {
+      expect(dispatchSpy).toHaveBeenCalledWith(expect.any(Function))
+    })
+
+    // Now, invoke the dispatched thunk manually with a mock dispatch to verify action payload
+    const dispatchedThunk = dispatchSpy.mock.calls.find(
+      (call) => typeof call[0] === 'function'
+    )[0]
+
+    const mockDispatch = jest.fn()
+    await dispatchedThunk(mockDispatch)
+
     expect(mockDispatch).toHaveBeenCalledWith({
       type: UPDATE_USER_REQUEST_SUCCESS,
       user: {

@@ -11,6 +11,36 @@ import RegionSelector from './RegionSelector'
 import FRASelector from './FRASelector'
 import '../../assets/Profile.scss'
 
+// Helper function
+const getInitialProfileInfo = (
+  initialValues,
+  isAMSUser,
+  editMode,
+  alreadyHasFRAAccess
+) => {
+  let hasFRAAccess = null
+  const isTribal = initialValues.jurisdictionType === 'tribe'
+
+  if (editMode) {
+    hasFRAAccess = alreadyHasFRAAccess
+  } else if (isAMSUser || isTribal) {
+    hasFRAAccess = false
+  } else if (typeof initialValues.hasFRAAccess !== 'undefined') {
+    hasFRAAccess = initialValues.hasFRAAccess
+  }
+
+  return {
+    firstName: initialValues.firstName || '',
+    lastName: initialValues.lastName || '',
+    stt: initialValues.stt || '',
+    hasFRAAccess,
+    regions:
+      isAMSUser && initialValues.regions
+        ? new Set(initialValues.regions)
+        : new Set(),
+  }
+}
+
 function RequestAccessForm({
   user,
   sttList,
@@ -21,41 +51,37 @@ function RequestAccessForm({
 }) {
   const errorRef = useRef(null)
   const isAMSUser = user?.email?.includes('@acf.hhs.gov')
+  const originallyHadFRAAccess = initialValues.hasFRAAccess ?? null
 
-  const [errors, setErrors] = useState({})
-  const [profileInfo, setProfileInfo] = useState({
-    firstName: initialValues.firstName || '',
-    lastName: initialValues.lastName || '',
-    stt: initialValues.stt || '',
-    hasFRAAccess:
-      typeof initialValues.hasFRAAccess !== 'undefined'
-        ? initialValues.hasFRAAccess
-        : isAMSUser
-          ? null
-          : initialValues.jurisdictionType === 'tribe'
-            ? false
-            : true,
-    regions:
-      isAMSUser && initialValues.regions
-        ? new Set(initialValues.regions)
-        : new Set(),
-  })
+  const [profileInfo, setProfileInfo] = useState(
+    getInitialProfileInfo(
+      initialValues,
+      isAMSUser,
+      editMode,
+      originallyHadFRAAccess
+    )
+  )
   const [originalData] = useState(profileInfo)
+  const [errors, setErrors] = useState({})
+  const [touched, setTouched] = useState({})
+  const [jurisdictionType, setJurisdictionTypeInputValue] = useState(
+    initialValues.jurisdictionType || 'state'
+  )
+  const [regional, setRegional] = useState(
+    profileInfo?.regions instanceof Set && profileInfo.regions.size > 0
+  )
+  const [originalRegional] = useState(
+    profileInfo?.regions instanceof Set && profileInfo.regions.size > 0
+  )
 
   const dispatch = useDispatch()
-  const [touched, setTouched] = useState({})
   const fieldErrorKeys = Object.keys(errors).filter((key) => key !== 'form')
   const hasFieldErrors =
     fieldErrorKeys.length > 0 && Object.keys(touched).length > 0
 
   const showErrorSummary = hasFieldErrors || !!errors.form
 
-  const [jurisdictionType, setJurisdictionTypeInputValue] = useState(
-    initialValues.jurisdictionType || 'state'
-  )
-
   const regionError = 'At least one Region is required'
-
   const validateRegions = (regions) => {
     if (regions?.size === 0) {
       return regionError
@@ -66,7 +92,7 @@ function RequestAccessForm({
   const validation = (fieldName, fieldValue) => {
     if (editMode) {
       if (fieldName === 'stt') {
-        return null // STT is read-only in edit mode
+        return null
       }
 
       if (
@@ -164,17 +190,34 @@ function RequestAccessForm({
     evt.preventDefault()
 
     if (editMode) {
-      const hasChanges = Object.keys(profileInfo).some((key) => {
-        if (typeof profileInfo[key] === 'object') {
-          return (
-            JSON.stringify(profileInfo[key]) !==
-            JSON.stringify(originalData[key])
-          )
-        }
-        return profileInfo[key] !== originalData[key]
-      })
+      const hasChanges = () => {
+        const profileChanged = Object.keys(profileInfo).some((key) => {
+          if (key === 'regions') {
+            const newRegions = Array.from(profileInfo[key])
+              .map((r) => r.id)
+              .sort()
+            const originalRegions = Array.from(originalData[key])
+              .map((r) => r.id)
+              .sort()
+            return (
+              JSON.stringify(newRegions) !== JSON.stringify(originalRegions)
+            )
+          }
 
-      if (!hasChanges) {
+          if (typeof profileInfo[key] === 'object') {
+            return (
+              JSON.stringify(profileInfo[key]) !==
+              JSON.stringify(originalData[key])
+            )
+          }
+          return profileInfo[key] !== originalData[key]
+        })
+
+        const regionalChanged = regional !== originalRegional
+        return profileChanged || regionalChanged
+      }
+
+      if (!hasChanges()) {
         setErrors({ form: 'No changes have been made.' })
         setTimeout(() => errorRef.current?.focus(), 0)
         return
@@ -202,7 +245,8 @@ function RequestAccessForm({
         touched: { ...touched },
       }
     )
-    const regionError = isAMSUser ? validateRegions(profileInfo.regions) : null
+    const regionError =
+      isAMSUser && regional ? validateRegions(profileInfo.regions) : null
 
     const combinedErrors = {
       ...formValidation.errors,
@@ -217,38 +261,34 @@ function RequestAccessForm({
     setTouched(combinedTouched)
 
     if (!Object.values(combinedErrors).length) {
+      const sttObj = sttList.find((stt) => stt.name === profileInfo.stt)
+      const payload = {
+        ...profileInfo,
+        stt: sttObj,
+        regions: Array.from(profileInfo.regions).map((region) => region.id),
+      }
+
       if (editMode) {
-        // TODO: update with real API call
-        // For now, we will use the mock action to simulate an update
-        return dispatch(
-          updateUserRequest({
-            ...profileInfo,
-            stt: sttList.find((stt) => stt.name === profileInfo.stt),
+        if (type === 'access request') {
+          // PATCH call for updating Access Request
+          return dispatch(requestAccess(payload)).then(() => {
+            onCancel() // toggles editMode to false after update
           })
-        ).then(() => {
+        }
+        // TODO: update with real API call (need to rename mock function name to reflect profile)
+        // Simulate profile update
+        return dispatch(updateUserRequest(payload)).then(() => {
           onCancel() // toggles editMode to false after update
         })
       } else {
-        return dispatch(
-          requestAccess({
-            ...profileInfo,
-            stt: sttList.find((stt) => stt.name === profileInfo.stt),
-          })
-        )
+        // Submit new access request
+        return dispatch(requestAccess(payload))
       }
     }
 
     return setTimeout(() => errorRef.current.focus(), 0)
   }
 
-  const ReadOnlyRow = ({ label, value }) => (
-    <div className="read-only-row">
-      <div className="label">{label}</div>
-      <div className="value">{value}</div>
-    </div>
-  )
-
-  // Props for RegionSelector
   const regionSelectorProps = {
     setErrors,
     errors,
@@ -259,7 +299,16 @@ function RequestAccessForm({
     displayingError: hasFieldErrors,
     validateRegions,
     regionError,
+    regional,
+    setRegional,
   }
+
+  const ReadOnlyRow = ({ label, value }) => (
+    <div className="read-only-row">
+      <div className="label">{label}</div>
+      <div className="value">{value}</div>
+    </div>
+  )
 
   return (
     <div className="margin-top-5 margin-bottom-5">

@@ -19,7 +19,7 @@ function Profile({
   setInEditMode,
 }) {
   const isAMSUser = user?.email?.includes('@acf.hhs.gov')
-  const userPermissions = user?.permissions?.map((p) => p.codename)
+  const userPermissions = user?.permissions?.map((p) => p.codename) || []
   const hasFRAAccess = userPermissions.includes('has_fra_access')
 
   const missingAccessRequest = useSelector(accountIsMissingAccessRequest)

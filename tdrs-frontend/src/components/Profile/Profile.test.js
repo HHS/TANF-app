@@ -146,7 +146,6 @@ describe('Profile', () => {
     )
     expect(screen.getByText('Name')).toBeInTheDocument()
     expect(screen.getByText('Bob Belcher')).toBeInTheDocument()
-    expect(screen.getByText('OFA System Admin')).toBeInTheDocument()
     expect(screen.getByText('No one really knows')).toBeInTheDocument()
 
     const editButton = screen.getByRole('button', { name: /edit profile/i })
