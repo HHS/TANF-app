@@ -44,19 +44,19 @@ Feature: Data file submission
         And '<actor>' can download the '<program>' Section '<section>' error report
         # TODO: And Regional Randy gets an email (determine exact)
 
-    Examples:
-        | actor                 | program | section |
-        | Data Analyst Tim      | TANF    | 1       |
-        | Data Analyst Tim      | TANF    | 2       |
-        | Data Analyst Tim      | TANF    | 3       |
-        | Data Analyst Tim      | TANF    | 4       |
-        | Data Analyst Stefani  | SSP     | 1       |
-        | Data Analyst Stefani  | SSP     | 2       |
-        | Data Analyst Stefani  | SSP     | 3       |
-        | Data Analyst Stefani  | SSP     | 4       |
-        | Data Analyst Tara     | TRIBAL  | 1       |
-        | Data Analyst Tara     | TRIBAL  | 2       |
-        | Data Analyst Tara     | TRIBAL  | 3       |
+        Examples:
+            | actor                 | program | section |
+            | Data Analyst Tim      | TANF    | 1       |
+            | Data Analyst Tim      | TANF    | 2       |
+            | Data Analyst Tim      | TANF    | 3       |
+            | Data Analyst Tim      | TANF    | 4       |
+            | Data Analyst Stefani  | SSP     | 1       |
+            | Data Analyst Stefani  | SSP     | 2       |
+            | Data Analyst Stefani  | SSP     | 3       |
+            | Data Analyst Stefani  | SSP     | 4       |
+            | Data Analyst Tara     | TRIBAL  | 1       |
+            | Data Analyst Tara     | TRIBAL  | 2       |
+            | Data Analyst Tara     | TRIBAL  | 3       |
 
     # Edge / failure cases for TANF Data Analyst Tim
 
