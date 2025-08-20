@@ -2,6 +2,7 @@
 tdrs-frontend/node_modules/
 tdrs-frontend/build/
 tdrs-frontend/coverage/
+tdrs-frontend/cypress/downloads/
 tdrs-frontend/cypress/videos/
 tdrs-frontend/cypress/screenshots/
 tdrs-frontend/cypress/fixtures/example.json
