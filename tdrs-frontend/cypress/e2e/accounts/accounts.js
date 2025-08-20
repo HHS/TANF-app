@@ -1,5 +1,6 @@
 /* eslint-disable no-undef */
 import { When, Then } from '@badeball/cypress-cucumber-preprocessor'
+import { ACTORS } from '../common-steps/common-steps'
 
 const loginGovRequestAccessFlow = (
   firstName,
@@ -67,25 +68,21 @@ const verifyPageAccess = (page) => {
   }
 }
 
-When('Unapproved Alex requests access', (name) => {
-  amsRequestAccessFlow('Unapproved Alex', 'Cypress', null, false)
+When('{string} requests access', (actorName) => {
+  const actor = ACTORS[actorName]
+  const amsRoles = ['System Admin', 'DIGIT Team', 'ACF OCIO']
+  const regionalRoles = ['OFA Regional Staff']
+
+  if (Cypress._.includes(amsRoles, actor.role)) {
+    amsRequestAccessFlow(actorName, 'Cypress', null, false)
+  } else if (Cypress._.includes(regionalRoles, actor.role)) {
+    amsRequestAccessFlow(actorName, 'Cypress', 'Dallas,Chicago', true)
+  } else {
+    const hasFra = Cypress._.get(actor, 'hasFra', false)
+    loginGovRequestAccessFlow(actorName, 'Cypress', 'Arkansas', hasFra)
+  }
 })
-When('Unapproved Diana requests access', (name) => {
-  amsRequestAccessFlow('Unapproved Diana', 'Cypress', null, false)
-})
-When('Unapproved Olivia requests access', (name) => {
-  amsRequestAccessFlow('Unapproved Olivia', 'Cypress', null, false)
-})
-When('Unapproved Dave requests access', (name) => {
-  loginGovRequestAccessFlow('Unapproved Dave', 'Cypress', 'Arkansas', false)
-})
-When('Unapproved Fred requests access with FRA', (name) => {
-  loginGovRequestAccessFlow('Unapproved Fred', 'Cypress', 'Arkansas', true)
-})
-When('Unapproved Randy requests access', (name) => {
-  amsRequestAccessFlow('Unapproved Randy', 'Cypress', 'Dallas,Chicago', true)
-})
-Then('Unapproved Alex can access xyz', () => {})
+
 Then('Admin Alex gets an email', () => {})
 
 Then('{string} can access {string}', (name, pageStr) => {

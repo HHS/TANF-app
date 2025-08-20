@@ -41,6 +41,7 @@ export const ACTORS = {
   'Unapproved Fred': {
     role: 'Data Analyst',
     username: 'cypress-unapproved-fred@teamraft.com',
+    hasFra: true,
   },
   'Unapproved Randy': {
     role: 'OFA Regional Staff',
