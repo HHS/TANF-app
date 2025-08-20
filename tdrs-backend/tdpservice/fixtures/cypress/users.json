@@ -84,6 +84,90 @@
         }
     },
     {
+        "model": "users.user",
+        "pk": "cc0760c1-930d-4323-9a5d-b3fa76f33bd5",
+        "fields": {
+            "password": "",
+            "last_login": null,
+            "is_superuser": false,
+            "username": "tim-cypress@teamraft.com",
+            "first_name": "Tim",
+            "last_name": "Doe",
+            "email": "tim-cypress@teamraft.com",
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2025-02-20T20:23:35.309Z",
+            "stt": 14,
+            "login_gov_uuid": null,
+            "hhs_id": null,
+            "deactivated": false,
+            "access_request": false,
+            "account_approval_status": "Approved",
+            "access_requested_date": "0001-01-01T00:00:00Z",
+            "feature_flags": {},
+            "groups": [
+                2
+            ],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "users.user",
+        "pk": "265e04c4-40eb-442d-9a97-632613f348d7",
+        "fields": {
+            "password": "",
+            "last_login": null,
+            "is_superuser": false,
+            "username": "stefani-cypress@teamraft.com",
+            "first_name": "Stefani",
+            "last_name": "Doe",
+            "email": "stefani-cypress@teamraft.com",
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2025-02-20T20:23:35.309Z",
+            "stt": 5,
+            "login_gov_uuid": null,
+            "hhs_id": null,
+            "deactivated": false,
+            "access_request": false,
+            "account_approval_status": "Approved",
+            "access_requested_date": "0001-01-01T00:00:00Z",
+            "feature_flags": {},
+            "groups": [
+                2
+            ],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "users.user",
+        "pk": "52c74bad-a4d8-4676-b7ce-e92758d21b80",
+        "fields": {
+            "password": "",
+            "last_login": null,
+            "is_superuser": false,
+            "username": "tara-cypress@teamraft.com",
+            "first_name": "Tara",
+            "last_name": "Doe",
+            "email": "tara-cypress@teamraft.com",
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2025-02-20T20:23:35.309Z",
+            "stt": 72,
+            "login_gov_uuid": null,
+            "hhs_id": null,
+            "deactivated": false,
+            "access_request": false,
+            "account_approval_status": "Approved",
+            "access_requested_date": "0001-01-01T00:00:00Z",
+            "feature_flags": {},
+            "groups": [
+                2
+            ],
+            "user_permissions": []
+        }
+    },
+    {
         "model": "users.regionmeta",
         "pk": 7,
         "fields": {
