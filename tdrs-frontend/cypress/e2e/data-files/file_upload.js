@@ -44,16 +44,52 @@ Then('{string} can download the {string} error report', (actor, program) => {
   }
 })
 
-///////////////////////// Admin Steps /////////////////////////
+When('{string} submits the Work Outcomes Report', (actor) => {
+  cy.visit('/fra-data-files')
+  cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
+  if (actor.includes('Admin')) {
+    df.fillSttFyQ('New York', '2024', 'Q2', false, false)
+  } else {
+    df.fillFYQ('2024', 'Q2')
+  }
+  df.uploadFile(
+    '#fra-file-upload',
+    '../tdrs-backend/tdpservice/parsers/test/data/fra.csv'
+  )
+  cy.get('button').contains('Submit Report').should('exist').click()
+})
 
-// TANF steps
-When('Admin Alex submits the TANF Report', () => {
+When('{string} submits the TANF Report', (actor) => {
   cy.visit('/data-files')
   cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
-  df.fillSttFyQ('New York', '2021', 'Q1', true, false)
+  if (actor.includes('Admin')) {
+    df.fillSttFyQ('New York', '2021', 'Q1', true, false)
+  } else if (actor.includes('FRA')) {
+    df.fillFyQProgram('2021', 'Q1', 'TANF')
+  } else {
+    df.fillFYQ('2021', 'Q1')
+  }
   df.uploadFile(
     '#active-case-data',
     '../tdrs-backend/tdpservice/parsers/test/data/small_correct_file.txt'
+  )
+
+  cy.get('button').contains('Submit Data Files').should('exist').click()
+})
+
+When('{string} submits the SSP Report', (actor) => {
+  cy.visit('/data-files')
+  cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
+  if (actor.includes('Admin')) {
+    df.fillSttFyQ('Iowa', '2024', 'Q1', false, false)
+  } else if (actor.includes('FRA')) {
+    df.fillFyQProgram('2024', 'Q1', 'SSP')
+  } else {
+    df.fillFYQ('2024', 'Q1')
+  }
+  df.uploadFile(
+    '#active-case-data',
+    '../tdrs-backend/tdpservice/parsers/test/data/small_ssp_section1.txt'
   )
 
   cy.get('button').contains('Submit Data Files').should('exist').click()
@@ -169,46 +205,11 @@ Then('{string} sees rejected status in submission history', (actor) => {
     })
 })
 
-// SSP steps
-When('Admin Alex submits the SSP Report', () => {
-  cy.visit('/data-files')
-  cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
-  df.fillSttFyQ('Iowa', '2024', 'Q1', false, false)
-  df.uploadFile(
-    '#active-case-data',
-    '../tdrs-backend/tdpservice/parsers/test/data/small_ssp_section1.txt'
-  )
-
-  cy.get('button').contains('Submit Data Files').should('exist').click()
-})
-
-// FRA steps
-When('Admin Alex submits the Work Outcomes Report', () => {
-  cy.visit('/fra-data-files')
-  cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
-  df.fillSttFyQ('New York', '2024', 'Q2', false, false)
-  df.uploadFile(
-    '#fra-file-upload',
-    '../tdrs-backend/tdpservice/parsers/test/data/fra.csv'
-  )
-  cy.get('button').contains('Submit Report').should('exist').click()
-})
-
 ///////////////////////////////////////////////////////////////
 
 /////////////////// FRA Data Analyst Steps ///////////////////
 
 // FRA steps
-When('FRA Data Analyst Fred submits the Work Outcomes Report', () => {
-  cy.visit('/fra-data-files')
-  df.fillFYQ('2024', 'Q2')
-  cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
-  df.uploadFile(
-    '#fra-file-upload',
-    '../tdrs-backend/tdpservice/parsers/test/data/fra.csv'
-  )
-  cy.get('button').contains('Submit Report').should('exist').click()
-})
 
 When('FRA Data Analyst Fred uploads incorrect file type', () => {
   cy.visit('/fra-data-files')
@@ -224,34 +225,6 @@ Then('FRA Data Analyst Fred sees the incorrect file type error', () => {
   cy.contains(
     'Invalid extension. Accepted file types are: .csv or .xlsx.'
   ).should('exist')
-})
-
-// TANF steps
-When('FRA Data Analyst Fred submits the TANF Report', () => {
-  cy.visit('/data-files')
-  cy.get(':nth-child(2) > .usa-radio__label').click()
-  df.fillFYQ('2021', 'Q1')
-  cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
-  df.uploadFile(
-    '#active-case-data',
-    '../tdrs-backend/tdpservice/parsers/test/data/small_correct_file.txt'
-  )
-
-  cy.get('button').contains('Submit Data Files').should('exist').click()
-})
-
-// SSP steps
-When('FRA Data Analyst Fred submits the SSP Report', () => {
-  cy.visit('/data-files')
-  cy.get(':nth-child(3) > .usa-radio__label').click()
-  df.fillFYQ('2024', 'Q1')
-  cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
-  df.uploadFile(
-    '#active-case-data',
-    '../tdrs-backend/tdpservice/parsers/test/data/small_ssp_section1.txt'
-  )
-
-  cy.get('button').contains('Submit Data Files').should('exist').click()
 })
 
 ///////////////////////////////////////////////////////////////

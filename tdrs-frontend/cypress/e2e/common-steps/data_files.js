@@ -87,6 +87,18 @@ export const fillSttFyQNoProgramSelector = (stt, fy, q) => {
     })
 }
 
+export const fillFyQProgram = (fy, q, program) => {
+  if (program === 'TANF') {
+    cy.get(':nth-child(2) > .usa-radio__label').click()
+  } else {
+    cy.get(':nth-child(3) > .usa-radio__label').click()
+  }
+  cy.get('#reportingYears').should('exist').select(fy)
+  cy.get('#quarter').should('exist').select(q)
+  cy.get('button').contains('Search').should('exist').click()
+  cy.get('.usa-file-input__input', { timeout: 1000 }).should('exist')
+}
+
 export const waitForDataFileSummary = (
   fileId,
   maxAttempts = 60,
