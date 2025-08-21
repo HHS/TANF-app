@@ -1047,12 +1047,15 @@ class TestCaseConsistencyValidator:
 
         (T4Factory, t4_schema, t4_model_name, rpt_item_num, case_item_num) = T4Stuff
         (T5Factory, t5_schema, t5_model_name) = T5Stuff
+        error_generator = ErrorGeneratorFactory(small_correct_file).get_generator(
+            ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+        )
 
         case_consistency_validator = ExplodingSection2Validator(
             header,
             header["program_type"],
             stt_type,
-            util.make_generate_case_consistency_parser_error(small_correct_file),
+            error_generator,
         )
 
         t4s = [
