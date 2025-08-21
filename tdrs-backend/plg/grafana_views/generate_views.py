@@ -76,7 +76,7 @@ def handle_field(field, formatted_fields, is_admin):
             f''' --
         -- Calculate if SSN is valid
         CASE
-            WHEN "{field}" !~ '^(1{{9}}|2{{9}}|3{{9}}|4{{9}}|5{{9}}|6{{9}}|7{{9}}|8{{9}}|9{{9}})$' THEN 1
+            WHEN "{field}" !~ '^(0{{9}}|1{{9}}|2{{9}}|3{{9}}|4{{9}}|5{{9}}|6{{9}}|7{{9}}|8{{9}}|9{{9}})$' THEN 1
             ELSE 0
         END AS "SSN_VALID"'''.strip()
         )
@@ -202,9 +202,9 @@ def handle_table_name(schema_type, schema_name):
 def handle_where_clause(record_type):
     """Add custom where clause based on record type."""
     if "3" in record_type:
-        return 'AND "FAMILY_AFFILIATION" != 0 AND "SEX" != 0'
+        return 'AND "FAMILY_AFFILIATION" != 0 AND "FAMILY_AFFILIATION" IS NOT NULL AND "SEX" != 0 AND "SEX" IS NOT NULL'
     elif "7" in record_type:
-        return "AND \"FAMILIES_MONTH\" != 0 AND \"TDRS_SECTION_IND\" NOT BETWEEN '1' AND '2'"
+        return 'AND "FAMILIES_MONTH" != 0 AND "FAMILIES_MONTH" IS NOT NULL AND "TDRS_SECTION_IND" NOT IN (\'1\', \'2\', \'\') AND "TDRS_SECTION_IND" IS NOT NULL'
     else:
         return ""
 
