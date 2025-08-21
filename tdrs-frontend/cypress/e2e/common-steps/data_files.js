@@ -18,6 +18,7 @@ export const fillFYQ = (fiscal_year, quarter) => {
 
 export const uploadFile = (file_input, file_path, willError = false) => {
   cy.get(file_input).selectFile(file_path, { action: 'drag-drop' })
+  cy.wait(100)
   if (!willError) {
     const file_parts = file_path.split('/')
     cy.contains(file_parts[file_parts.length - 1], { timeout: 1000 }).should(

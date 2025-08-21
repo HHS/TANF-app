@@ -59,7 +59,7 @@ Given('FRA Data Analyst Fred submits a file', () => {
   df.restartAtHomePage()
   cy.login('cypress-fra-data-analyst-fred@teamraft.com').then(() => {
     cy.visit('/home')
-    cy.contains('FRA Data Files').should('exist')
+    cy.get('a.usa-nav__link').contains('FRA Data Files').should('exist')
   })
 
   // Submit TANF
