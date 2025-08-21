@@ -26,7 +26,7 @@ def make_validator(validator_func, error_func):
                 return Result()
         except Exception:
             logger.exception("Caught exception in validator.")
-        return Result(valid=False, error=error_func(eargs))
+        return Result(valid=False, error_message=error_func(eargs))
 
     return validator
 

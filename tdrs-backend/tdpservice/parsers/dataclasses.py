@@ -118,7 +118,7 @@ class Result:
     """Dataclass representing a validator's evaluated result."""
 
     valid: bool = True
-    error: str | None = None
+    error_message: str | None = None
     field_names: list = field(default_factory=list)
     deprecated: bool = False
 
@@ -144,3 +144,16 @@ class ValidationErrorArgs:
     row_schema: object  # RowSchema causes circular import
     friendly_name: str
     item_num: str
+
+
+@dataclass
+class ErrorGeneratorArgs:
+    """Dataclass to obscure args for ErrorGeneratorTypes."""
+
+    record: DefaultDict | Model
+    schema: object  # RowSchema causes circular import
+    error_message: str
+    offending_field: object | None = None  # Field causes circular import
+    fields: list | None = None
+    deprecated: bool = False
+    row_number: int | None = None

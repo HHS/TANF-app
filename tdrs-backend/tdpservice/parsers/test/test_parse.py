@@ -201,6 +201,7 @@ def test_parse_big_file(big_file, dfs):
         program_type=big_file.prog_type,
     )
     parser.parse_and_validate()
+
     dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
 
