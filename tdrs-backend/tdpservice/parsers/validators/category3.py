@@ -261,7 +261,7 @@ def sumIsEqual(condition_field_name, sum_fields=[]):
             return Result(field_names=fields)
         return Result(
             valid=False,
-            error=(
+            error_message=(
                 f"The sum of {', '.join(sum_fields)} does not equal "
                 f"{condition_field_name} {condition_field.friendly_name} Item {condition_field.item}."
             ),
@@ -285,7 +285,7 @@ def sumIsLarger(fields, val):
 
         return Result(
             valid=False,
-            error=(
+            error_message=(
                 f"No benefit amounts detected for this case. "
                 f"The total sum of {', '.join(fields)} must be greater than {val}."
             ),
