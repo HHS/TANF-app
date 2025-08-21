@@ -70,7 +70,7 @@ class SecurityEventHandler:
 
     def _handle_email_changed(security_event):
         """Handle email-changed event."""
-        new_email, old_email = _get_emails(security_event)
+        new_email, old_email = SecurityEventHandler._get_emails(security_event)
 
         user = security_event.user
         user.email = new_email
@@ -80,7 +80,7 @@ class SecurityEventHandler:
 
     def _handle_email_recycled(security_event):
         """Handle email-recycled event."""
-        new_email, old_email = _get_emails(security_event)
+        new_email, old_email = SecurityEventHandler._get_emails(security_event)
         user = security_event.user
         logger.info(f"User {user.username} recycled extra email address {old_email}")
 
@@ -119,7 +119,7 @@ class SecurityEventHandler:
 
     @classmethod
     def _get_user(cls, subject):
-        """Get User model from email or UUID"""
+        """Get User model from email or UUID."""
         if "sub" in subject:
             user_qset = User.objects.filter(login_gov_uuid=subject.get("sub"))
             if user_qset.exists() and user_qset.count() == 1:
