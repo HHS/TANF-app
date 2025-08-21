@@ -12,7 +12,7 @@ from tdpservice.stts.serializers import (
     RegionPrimaryKeyRelatedField,
     STTPrimaryKeyRelatedField,
 )
-from tdpservice.users.models import Feedback, User
+from tdpservice.users.models import Feedback, User, FeedbackAttachment
 
 logger = logging.getLogger(__name__)
 
@@ -202,10 +202,31 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
         return instance
 
+class FeedbackAttachmentsSerializer(serializers.ModelSerializer):
+    """Serializer for feedback datafile attachments."""
+
+    class Meta:
+        """Serializer metadata"""
+
+        model = FeedbackAttachment
+        fields = (
+            "content_type",
+            "object_id",
+            "content_object",
+        )
 
 class FeedbackSerializer(serializers.ModelSerializer):
     """Serializer for user feedback."""
 
+    data_files = serializers.ListField(
+        child=serializers.IntegerField(),
+        write_only=True,
+        required=False,
+        help_text="List of DataFile IDs to associate with this feedback"
+    )
+
+    # might need to change this to FeedbackAttachmentSerializer instead of GroupSerializer
+    feedback_attachments = FeedbackAttachmentsSerializer(many=True, read_only=True, source="feedback_attachments")
     class Meta:
         """Serializer metadata."""
 
@@ -217,10 +238,10 @@ class FeedbackSerializer(serializers.ModelSerializer):
             "anonymous",
             "page_url",
             "feedback_type",
-            "program_type",
             "component",
             "widget_id",
-            "data_file",
+            "data_files",
+            "feedback_attachments",
         )
         read_only_fields = (
             "id",
@@ -230,6 +251,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
             "reviewed_by",
         )
 
+    # might need to update this
     def create(self, validated_data):
         """Create a new feedback instance."""
         return Feedback.objects.create(**validated_data, created_at=timezone.now())

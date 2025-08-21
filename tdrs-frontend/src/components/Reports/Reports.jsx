@@ -221,13 +221,13 @@ function Reports() {
   }
 
   // TODO: may need to passs in file name to this
-  const handleOpenFeedbackWidget = () => {
+  const handleOpenFeedbackWidget = (uploadedFiles) => {
     const lockedType = fileTypeComboBoxRequired ? fileTypeInputValue : 'tanf'
     dispatch(
       openFeedbackWidget({
-        dataType: lockedType, // 'tanf' or 'ssp-moe'
-        dataFile: '',
-        widgetId: `${lockedType}-feedback-report-widget-`,
+        dataType: lockedType,
+        dataFiles: uploadedFiles,
+        widgetId: `${lockedType}-report-submission-feedback`,
       })
     )
   }

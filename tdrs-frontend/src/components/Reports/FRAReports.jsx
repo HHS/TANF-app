@@ -778,8 +778,8 @@ const FRAReports = () => {
       dispatch(
         openFeedbackWidget({
           dataType: 'fra',
-          dataFile: datafile?.name,
-          widgetId: 'fra-report-feedback-', // TODO: figure out what this needs to be
+          dataFiles: datafile,
+          widgetId: 'fra-report-submission-feedback',
         })
       )
 

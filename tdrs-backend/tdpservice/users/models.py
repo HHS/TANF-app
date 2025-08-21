@@ -6,6 +6,8 @@ import uuid
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
@@ -51,6 +53,22 @@ class Rating(models.IntegerChoices):
     GOOD = 4
     VERY_GOOD = 5
 
+class FeedbackAttachment(models.Model):
+    """Generic many-to-many attachment between DataFile and any model."""
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.IntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+    feedback = models.ForeignKey("users.Feedback", on_delete=models.CASCADE, related_name='feedback_attachments')
+
+    attached_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('content_type', 'object_id', 'feedback')
+
+    def __str__(self):
+        return f"{self.feedback} attached to {self.content_object}"
 
 class Feedback(Reviewable):
     """Model to capture and review user feedback."""
@@ -85,10 +103,8 @@ class Feedback(Reviewable):
     # --- Metadata for fields ---
     page_url = models.URLField(blank=True, null=True)
     feedback_type = models.CharField(max_length=20, blank=True, null=True)
-    program_type = models.CharField(max_length=100, blank=True)  # e.g., 'undergrad', 'phd', etc.
-    component = models.CharField(max_length=100, blank=True)     # e.g., 'sidebar', 'footer'
+    component = models.CharField(max_length=100, blank=True)
     widget_id = models.CharField(max_length=100, blank=True)
-    data_file = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
         """Return a string representation of the object."""
@@ -96,6 +112,16 @@ class Feedback(Reviewable):
             f"User: {self.user.username if self.user is not None else 'Anonymous'} - "
             f"Rating: {self.rating} - Acked: {self.acked}"
         )
+    
+    def attached_data_files(self):
+        """Return a list of attached data files."""
+        from tdpservice.data_files.models import DataFile
+        
+        return [
+            a.content_object
+            for a in self.feedback_attachments.all()
+            if isinstance(a.content_object, DataFile)
+        ]
 
     def acknowledge(self, admin_user):
         """Acknowledge the feedback."""
@@ -107,7 +133,6 @@ class Feedback(Reviewable):
         self.reviewed_by = admin_user
         self.save()
         return True
-
 
 class User(AbstractUser):
     """Define user fields and methods."""

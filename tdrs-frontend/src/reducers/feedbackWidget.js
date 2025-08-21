@@ -5,13 +5,13 @@ const CLOSE_FEEDBACK_WIDGET = 'feedbackWidget/CLOSE_FEEDBACK_WIDGET'
 
 export const openFeedbackWidget = ({
   dataType = null,
-  dataFile = null,
+  dataFiles = null,
   widgetId = 'feedback-widget',
 } = {}) => ({
   type: OPEN_FEEDBACK_WIDGET,
   payload: {
     dataType,
-    dataFile,
+    dataFiles,
     widgetId,
   },
 })
@@ -23,7 +23,7 @@ export const closeFeedbackWidget = () => ({
 const initialState = {
   isOpen: false,
   dataType: null,
-  dataFile: null,
+  dataFiles: null,
   widgetId: null,
 }
 
@@ -34,7 +34,7 @@ export default function feedbackReducer(state = initialState, action) {
         ...state,
         isOpen: true,
         dataType: action.payload.dataType,
-        dataFile: action.payload.dataFile,
+        dataFiles: action.payload.dataFiles,
         widgetId: action.payload.widgetId,
       }
     case CLOSE_FEEDBACK_WIDGET:

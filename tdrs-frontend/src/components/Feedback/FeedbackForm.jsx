@@ -11,7 +11,6 @@ import {
   POOR_AND_BAD_FEEDBACK,
   GENERAL_FEEDBACK_TYPE,
   TANF_FEEDBACK_TYPE,
-  SSP_MOE_FEEDBACK_TYPE,
   FRA_FEEDBACK_TYPE,
 } from './FeedbackConstants'
 
@@ -31,11 +30,10 @@ const FeedbackForm = ({
   onRequestSuccess,
   onRequestError,
   dataType = null,
-  dataFile = null,
 }) => {
   const formRef = useRef(null)
   const authenticated = useSelector((state) => state.auth.authenticated)
-  const { widgetId } = useSelector((state) => state.feedbackWidget)
+  const { widgetId, dataFiles } = useSelector((state) => state.feedbackWidget)
 
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [selectedRatingsOption, setSelectedRatingsOption] = useState(undefined)
@@ -57,8 +55,6 @@ const FeedbackForm = ({
   const getFeedbackType = () => {
     if (isTANF) {
       return TANF_FEEDBACK_TYPE
-    } else if (isSSP) {
-      return SSP_MOE_FEEDBACK_TYPE
     } else {
       return FRA_FEEDBACK_TYPE
     }
@@ -73,30 +69,28 @@ const FeedbackForm = ({
     // Set feedback_type
     const feedbackType = isGeneral ? GENERAL_FEEDBACK_TYPE : getFeedbackType()
 
-    // TODO: figure out what these 2 values should be ------
-    // TODO: program_types is removed now need to make that update in the backend
-    // Set component and widget_id -------------------------
-    const component = isGeneral
-      ? 'general-feedback-modal'
-      : 'submission-feedback-widget'
-    const widgetId = isGeneral ? '' : 'feedback-widget'
+    // TODO: still need to figure out how to get component info or some context for component value
+    // Set component -------------------------
+    const component = isGeneral ? 'general-website' : 'data-file-submission'
     // ------------------------------------------------------
 
+    // Setup payload
     const payload = {
       rating: selectedRatingsOption,
       feedback: feedbackMessage,
       anonymous: isAnonymous,
       page_url: window.location.href,
       feedback_type: feedbackType,
-      component: isGeneral ? 'general' : 'widget',
+      component: component,
     }
 
     if (!isGeneral) {
-      // Only include widget_id for non-general feedback
-      payload.widget_id = widgetId || 'unknown-widget'
+      // Only include widget_id and data files for non-general feedback
+      payload.widget_id = widgetId || 'unknown-submission-feedback'
 
-      if (dataFile) {
-        payload.data_file = dataFile.trim()
+      // include data files
+      if (dataFiles) {
+        payload.data_files = dataFiles.map((file) => file.id)
       }
     }
 
@@ -128,9 +122,11 @@ const FeedbackForm = ({
     }
   }, [
     selectedRatingsOption,
+    isGeneral,
     feedbackMessage,
     isAnonymous,
-    isGeneralFeedback,
+    widgetId,
+    dataFiles,
     onFeedbackSubmit,
     onRequestSuccess,
     onRequestError,

@@ -75,6 +75,23 @@ class UserAdmin(admin.ModelAdmin):
         """Disable User object creation through Django Admin."""
         return False
 
+class HasAttachmentFilter(admin.SimpleListFilter):
+    """Filter feedback based if it has datafiles associated or not."""
+
+    title = 'Has attached data files'
+    parameter_name = 'has_attachments'
+
+    def lookups(self, request, model_admin):
+        return [ 
+            ('yes', 'Yes'),
+            ('no', 'No'),
+        ]
+
+    def queryset(self, request, queryset):
+        if self.value() == 'yes':
+            return queryset.filter(attachments__isnull=False).distinct()
+        if self.value() == 'no':
+            return queryset.filter(attachments__isnull=True)
 
 class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     """Customize the feedback admin functions."""
@@ -87,7 +104,8 @@ class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "acked",
         "quick_ack",
     ]
-    list_filter = ["created_at", "rating", "acked"]
+    readonly_fields = ("attached_data_files_list",)
+    list_filter = ["created_at", "rating", "acked", HasAttachmentFilter]
     change_form_template = "feedback_admin_template.html"
     actions = ["ack_selected_feedback"]
 
@@ -130,6 +148,23 @@ class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         return obj.feedback[:50] + "..." if len(obj.feedback) > 50 else obj.feedback
 
     feedback_list_display.short_description = "Feedback"
+
+    def attached_data_files_list(self, obj):
+        """Show a list of data files attached to this feedback."""
+        files = obj.attached_data_files()
+        if not files:
+            return "No attached files"
+
+        links = []
+        for f in files:
+            # Show file section, year, quarter as a link to its admin change page
+            url = f"/admin/data_files/datafile/{f.id}/change/"
+            label = f"{f.section} ({f.year} {f.quarter})"
+            links.append(f"<a href='{url}' target='_blank'>{label}</a>")
+
+        return mark_safe("<br>".join(links))
+
+    attached_data_files_list.short_description = "Attached Data Files"
 
     def quick_ack(self, obj):
         """Display quick action button for unacknowledged feedback."""
