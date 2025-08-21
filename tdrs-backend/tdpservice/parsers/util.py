@@ -4,14 +4,10 @@ from datetime import datetime
 from pathlib import Path
 
 from django.contrib.admin.models import ADDITION
-from django.contrib.contenttypes.models import ContentType
 
 from tdpservice.core.utils import log
 from tdpservice.data_files.models import DataFile
 from tdpservice.parsers.dataclasses import RawRow
-from tdpservice.parsers.models import ParserErrorCategoryChoices
-
-from .models import ParserError
 
 logger = logging.getLogger(__name__)
 
