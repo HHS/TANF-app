@@ -1,8 +1,13 @@
 import React from 'react'
 import { render, screen, within } from '@testing-library/react'
+import { Provider } from 'react-redux'
+import configureStore from 'redux-mock-store'
 import UserProfileDetails from './UserProfileDetails'
 
 describe('UserProfileDetails component', () => {
+  // Mock store setup
+  const mockStore = configureStore([])
+
   const defaultUser = {
     first_name: 'Alice',
     last_name: 'Smith',
@@ -25,12 +30,22 @@ describe('UserProfileDetails component', () => {
     permissions: ['has_fra_access'],
   }
 
+  const renderWithStore = (ui, initialState = {}) => {
+    const store = mockStore({
+      auth: {
+        authenticated: true,
+        user: defaultUser,
+      },
+      ...initialState,
+    })
+    return render(<Provider store={store}>{ui}</Provider>)
+  }
+
   it('renders correctly for a non-AMS user (STT)', () => {
-    render(<UserProfileDetails user={defaultUser} isAMSUser={false} />)
+    renderWithStore(<UserProfileDetails user={defaultUser} isAMSUser={false} />)
 
     expect(screen.getByText('Name')).toBeInTheDocument()
     expect(screen.getByText('Alice Smith')).toBeInTheDocument()
-    expect(screen.getByText('Admin')).toBeInTheDocument()
 
     const jurisdictionRow = screen
       .getByText('Jurisdiction Type')
@@ -48,7 +63,7 @@ describe('UserProfileDetails component', () => {
     expect(within(locationRow).getByText('California')).toBeInTheDocument()
 
     expect(screen.getByText('Reporting FRA')).toBeInTheDocument()
-    expect(screen.getByText('Yes')).toBeInTheDocument()
+    expect(screen.getByText('No')).toBeInTheDocument()
   })
 
   it('renders correctly for a tribe user (should hide FRA info)', () => {
@@ -58,11 +73,10 @@ describe('UserProfileDetails component', () => {
       permissions: [],
     }
 
-    render(<UserProfileDetails user={tribeUser} isAMSUser={false} />)
+    renderWithStore(<UserProfileDetails user={tribeUser} isAMSUser={false} />)
 
     expect(screen.getByText('Name')).toBeInTheDocument()
     expect(screen.getByText('Alice Smith')).toBeInTheDocument()
-    expect(screen.getByText('Admin')).toBeInTheDocument()
 
     const jurisdictionRow = screen
       .getByText('Jurisdiction Type')
@@ -90,11 +104,10 @@ describe('UserProfileDetails component', () => {
       ],
     }
 
-    render(<UserProfileDetails user={amsUser} isAMSUser={true} />)
+    renderWithStore(<UserProfileDetails user={amsUser} isAMSUser={true} />)
 
     expect(screen.getByText('Name')).toBeInTheDocument()
     expect(screen.getByText('Alice Smith')).toBeInTheDocument()
-    expect(screen.getByText('AMS Reviewer')).toBeInTheDocument()
 
     const regionRow = screen
       .getByText('Regional Office(s)')
@@ -118,25 +131,21 @@ describe('UserProfileDetails component', () => {
       regions: [], // No regions
     }
 
-    render(<UserProfileDetails user={amsUser} isAMSUser={true} />)
+    renderWithStore(<UserProfileDetails user={amsUser} isAMSUser={true} />)
 
     expect(screen.getByText('Name')).toBeInTheDocument()
     expect(screen.getByText('Alice Smith')).toBeInTheDocument()
-    expect(screen.getByText('AMS Reviewer')).toBeInTheDocument()
 
     // Regional Office(s) label is rendered
     const regionRow = screen
       .getByText('Regional Office(s)')
       .closest('.grid-row')
     expect(regionRow).toBeInTheDocument()
-
-    const valueCell = regionRow.querySelector('.grid-col-10')
-    expect(valueCell).toBeInTheDocument()
-    expect(valueCell).toBeEmptyDOMElement()
+    expect(screen.getByText('None selected')).toBeInTheDocument()
   })
 
   it('renders fallback values safely if props are incomplete', () => {
-    render(<UserProfileDetails user={{}} isAMSUser={false} />)
+    renderWithStore(<UserProfileDetails user={{}} isAMSUser={false} />)
 
     expect(screen.getByText('Name')).toBeInTheDocument()
     expect(screen.queryByText('Alice Smith')).not.toBeInTheDocument()

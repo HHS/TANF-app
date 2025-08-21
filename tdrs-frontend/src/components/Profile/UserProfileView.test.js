@@ -1,6 +1,11 @@
 import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
+import { Provider } from 'react-redux'
+import configureStore from 'redux-mock-store'
 import UserProfileView from './UserProfileView' // Adjust path as needed
+
+// Mock store setup
+const mockStore = configureStore([])
 
 const mockUser = {
   first_name: 'John',
@@ -18,9 +23,20 @@ const mockUser = {
   status: 'in_review',
 }
 
+const renderWithStore = (ui, initialState = {}) => {
+  const store = mockStore({
+    auth: {
+      authenticated: true,
+      user: mockUser,
+    },
+    ...initialState,
+  })
+  return render(<Provider store={store}>{ui}</Provider>)
+}
+
 describe('UserProfileView', () => {
   it('renders user full name, role, state, and jurisdiction info', () => {
-    render(
+    renderWithStore(
       <UserProfileView user={mockUser} isAMSUser={false} onEdit={jest.fn()} />
     )
 
@@ -31,7 +47,7 @@ describe('UserProfileView', () => {
   })
 
   it('shows access request pending alert if user is in review', () => {
-    render(
+    renderWithStore(
       <UserProfileView
         user={mockUser}
         isAMSUser={false}
@@ -48,7 +64,7 @@ describe('UserProfileView', () => {
 
   it('calls onEdit when Edit button is clicked', () => {
     const handleEdit = jest.fn()
-    render(
+    renderWithStore(
       <UserProfileView user={mockUser} isAMSUser={false} onEdit={handleEdit} />
     )
 
@@ -58,7 +74,7 @@ describe('UserProfileView', () => {
 
   it('renders correct message for AMS users', () => {
     const amsUser = { ...mockUser, email: 'jane@acf.hhs.gov' }
-    render(
+    renderWithStore(
       <UserProfileView
         user={amsUser}
         isAMSUser={true}
@@ -75,7 +91,7 @@ describe('UserProfileView', () => {
   })
 
   it('renders login.gov info for non-AMS users', () => {
-    render(
+    renderWithStore(
       <UserProfileView user={mockUser} isAMSUser={false} onEdit={jest.fn()} />
     )
 
