@@ -216,8 +216,9 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         user = CustomAuthentication.authenticate(**auth_options)
         logging.debug("user obj:{}".format(user))
 
-        if user and user.is_active and user.deactivated:
-            login_msg = "Inactive User Found"
+        if user and user.is_active:
+            if user.deactivated:
+                login_msg = "Inactive User Found"
 
         elif user and not user.is_active:
             raise InactiveUser(
