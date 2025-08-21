@@ -216,16 +216,8 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         user = CustomAuthentication.authenticate(**auth_options)
         logging.debug("user obj:{}".format(user))
 
-        if user and user.is_active:
-            # Users are able to update their emails on login.gov
-            # Update the User with the latest email from the decoded_payload.
-            if user.username != email:
-                user.email = email
-                user.username = email
-                user.save()
-
-            if user.deactivated:
-                login_msg = "Inactive User Found"
+        if user and user.is_active and user.deactivated:
+            login_msg = "Inactive User Found"
 
         elif user and not user.is_active:
             raise InactiveUser(

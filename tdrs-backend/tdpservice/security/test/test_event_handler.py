@@ -213,7 +213,7 @@ class TestSecurityEventHandler:
         with caplog.at_level(logging.WARNING):
             SecurityEventHandler.handle_event(event_type, event_data, decoded_jwt)
 
-        assert "No 'sub' found in subject" in caplog.text
+        assert "No user info found in subject of security event." in caplog.text
 
     @pytest.mark.django_db
     def test_handle_event_user_not_found(self, caplog):
@@ -227,7 +227,4 @@ class TestSecurityEventHandler:
         with caplog.at_level(logging.ERROR):
             SecurityEventHandler.handle_event(event_type, event_data, decoded_jwt)
 
-        assert (
-            f"No user found with login_gov_uuid: {login_gov_uuid}. SKIPPING."
-            in caplog.text
-        )
+        assert f"No user found with login_gov_uuid: {login_gov_uuid}" in caplog.text

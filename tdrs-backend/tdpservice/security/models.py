@@ -252,11 +252,23 @@ class SecurityEventType(models.TextChoices):
     ACCOUNT_PURGED = (
         "https://schemas.openid.net/secevent/risc/event-type/account-purged"
     )
+    MFA_LOCKED = (
+        "https://schemas.login.gov/secevent/risc/event-type/mfa-limit-account-locked"
+    )
+    EMAIL_CHANGED = (
+        "https://schemas.openid.net/secevent/risc/event-type/identifier-changed"
+    )
+    EMAIL_RECYCLED = (
+        "https://schemas.openid.net/secevent/risc/event-type/identifier-recycled"
+    )
     PASSWORD_RESET = "https://schemas.login.gov/secevent/risc/event-type/password-reset"
     RECOVERY_ACTIVATED = (
         "https://schemas.openid.net/secevent/risc/event-type/recovery-activated"
     )
     RECOVERY_INFORMATION_CHANGED = "https://schemas.openid.net/secevent/risc/event-type/recovery-information-changed"
+    REPROOF_COMPLETE = (
+        "https://schemas.login.gov/secevent/risc/event-type/reproof-completed"
+    )
 
     # This should always be last in the list
     UNKNOWN_EVENT = "unknown-event-type"
