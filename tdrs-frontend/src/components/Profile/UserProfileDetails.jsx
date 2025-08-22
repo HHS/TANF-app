@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux'
 import ProfileRow from './ProfileRow'
 import JurisdictionLocationInfo from './JurisdictionLocationInfo'
 import { getRegionNameById } from '../../utils/regions'
+import { FORM_TYPES } from '../../utils/formHelpers'
 import { accountStatusIsApproved } from '../../selectors/auth'
 
 const UserProfileDetails = ({ user, isAMSUser, hasFRAAccess = false }) => {
@@ -58,7 +59,7 @@ const UserProfileDetails = ({ user, isAMSUser, hasFRAAccess = false }) => {
           <JurisdictionLocationInfo
             jurisdictionType={userJurisdiction}
             locationName={userLocationName}
-            formType={'profile'}
+            formType={FORM_TYPES.PROFILE}
           />
           {userJurisdiction !== 'tribe' && !isAMSUser && (
             <ProfileRow

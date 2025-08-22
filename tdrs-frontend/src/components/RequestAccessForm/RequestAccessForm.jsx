@@ -12,8 +12,7 @@ import {
   FORM_TYPES,
 } from '../../utils/formHelpers'
 import JurisdictionSelector from './JurisdictionSelector'
-import {
-  JurisdictionLocationInfo,
+import JurisdictionLocationInfo, {
   JURISDICTION_TYPES,
 } from '../Profile/JurisdictionLocationInfo'
 import RegionSelector from './RegionSelector'
