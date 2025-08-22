@@ -18,7 +18,7 @@ export const openDataFilesAndSearch = (program, year, quarter) => {
 export const uploadSectionFile = (
   inputSelector,
   fileName,
-  shouldError = false
+  shouldRejectInput = false
 ) => {
   const filePath = `${TEST_DATA_DIR}/${fileName}`
 
@@ -29,7 +29,7 @@ export const uploadSectionFile = (
   })
 
   // wait on the ui to update with the selected data file above
-  if (!shouldError) {
+  if (!shouldRejectInput) {
     cy.get('.usa-file-input__preview-image', { timeout: 10000 }).should(
       'not.have.class',
       'is-loading'
@@ -38,7 +38,7 @@ export const uploadSectionFile = (
 
   cy.contains('button', 'Submit Data Files').click()
 
-  if (!shouldError) {
+  if (!shouldRejectInput) {
     cy.wait('@dataFileSubmit', { timeout: 60000 }).then(({ response }) => {
       const id = response?.body?.id
       if (!id) throw new Error('Missing data_file id in response')
