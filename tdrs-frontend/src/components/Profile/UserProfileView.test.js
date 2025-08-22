@@ -2,7 +2,7 @@ import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
-import UserProfileView from './UserProfileView' // Adjust path as needed
+import UserProfileView from './UserProfileView'
 
 // Mock store setup
 const mockStore = configureStore([])

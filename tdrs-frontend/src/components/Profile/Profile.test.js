@@ -102,7 +102,7 @@ describe('Profile', () => {
     // returning <Navigate> without a parent <Router> throws an exception
   })
 
-  it('Should not display region for federal staff.', () => {
+  it('should not display region for federal staff.', () => {
     const store = mockStore({
       auth: {
         authenticated: true,
@@ -244,5 +244,33 @@ describe('Profile', () => {
         </MemoryRouter>
       </Provider>
     )
+  })
+
+  it('calls setInEditMode with correct arguments', () => {
+    const mockSetInEditMode = jest.fn()
+
+    const store = mockStore({
+      auth: {
+        authenticated: true,
+        user: baseUser,
+      },
+    })
+
+    render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Profile
+            isEditing={true}
+            user={baseUser}
+            sttList={[]}
+            onCancel={jest.fn()}
+            type="profile"
+            setInEditMode={mockSetInEditMode}
+          />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    expect(mockSetInEditMode).toHaveBeenCalledWith(true, 'profile')
   })
 })
