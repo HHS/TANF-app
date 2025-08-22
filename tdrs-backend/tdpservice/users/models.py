@@ -102,7 +102,7 @@ class Feedback(Reviewable):
 
     # --- Metadata for fields ---
     page_url = models.URLField(blank=True, null=True)
-    feedback_type = models.CharField(max_length=20, blank=True, null=True)
+    feedback_type = models.CharField(max_length=30, blank=True, null=True)
     component = models.CharField(max_length=100, blank=True)
     widget_id = models.CharField(max_length=100, blank=True)
 

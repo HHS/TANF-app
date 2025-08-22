@@ -166,7 +166,7 @@ const FeedbackWidget = React.forwardRef(
                 <p
                   ref={thankYouHeadingRef}
                   id="feedbackThankYouWidgetHeader"
-                  className="font-serif-xs margin-left-0 text-normal"
+                  className="font-serif-xs margin-left-0 text-normal no-focus-outline"
                   tabIndex={-1}
                   aria-describedby="widgetThankYouDesc"
                 >

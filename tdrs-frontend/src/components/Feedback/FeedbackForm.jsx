@@ -43,7 +43,6 @@ const FeedbackForm = ({
   // Determine values based on props and state
   const isGeneral = isGeneralFeedback
   const isTANF = dataType === 'TANF'
-  const isSSP = dataType === 'SSP'
 
   const resetStatesOnceSubmitted = () => {
     setSelectedRatingsOption(undefined)
@@ -89,8 +88,12 @@ const FeedbackForm = ({
       payload.widget_id = widgetId || 'unknown-submission-feedback'
 
       // include data files
-      if (dataFiles) {
+      if (Array.isArray(dataFiles)) {
         payload.data_files = dataFiles.map((file) => file.id)
+      } else if (dataFiles) {
+        payload.data_files = [dataFiles.id]
+      } else {
+        payload.data_files = []
       }
     }
 

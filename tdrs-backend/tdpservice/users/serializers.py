@@ -204,7 +204,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class FeedbackAttachmentsSerializer(serializers.ModelSerializer):
     """Serializer for feedback datafile attachments."""
+    from tdpservice.data_files.serializers import DataFileSerializer
 
+    content_object = DataFileSerializer(read_only=True)
     class Meta:
         """Serializer metadata"""
 
@@ -226,7 +228,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
     )
 
     # might need to change this to FeedbackAttachmentSerializer instead of GroupSerializer
-    feedback_attachments = FeedbackAttachmentsSerializer(many=True, read_only=True, source="feedback_attachments")
+    feedback_attachments = FeedbackAttachmentsSerializer(many=True, read_only=True)
     class Meta:
         """Serializer metadata."""
 
@@ -254,4 +256,20 @@ class FeedbackSerializer(serializers.ModelSerializer):
     # might need to update this
     def create(self, validated_data):
         """Create a new feedback instance."""
-        return Feedback.objects.create(**validated_data, created_at=timezone.now())
+        from tdpservice.data_files.models import DataFile
+        
+        data_files = validated_data.pop("data_files", [])
+
+        feedback = Feedback.objects.create(
+            **validated_data,
+            created_at=timezone.now()
+        )
+
+        # Create FeedbackAttachment objects
+        for file_id in data_files:
+            FeedbackAttachment.objects.create(
+                feedback=feedback,
+                content_object=DataFile.objects.get(id=file_id)
+            )
+
+        return feedback
