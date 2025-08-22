@@ -23,12 +23,18 @@ export const uploadSectionFile = (
   const filePath = `${TEST_DATA_DIR}/${fileName}`
 
   cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
-  cy.get(inputSelector)
-    .selectFile(filePath, { action: 'drag-drop' })
-    .prev()
-    .within(() => {
-      if (!shouldError) cy.contains(fileName, { timeout: 2000 }).should('exist')
-    })
+  cy.get(inputSelector).selectFile(filePath, {
+    action: 'drag-drop',
+    timeout: 10000,
+  })
+
+  // wait on the ui to update with the selected data file above
+  if (!shouldError) {
+    cy.get('.usa-file-input__preview-image', { timeout: 10000 }).should(
+      'not.have.class',
+      'is-loading'
+    )
+  }
 
   cy.contains('button', 'Submit Data Files').click()
 
