@@ -1,5 +1,10 @@
 // utils/formHelpers.js
 
+export const FORM_TYPES = Object.freeze({
+  ACCESS_REQUEST: 'access request',
+  PROFILE: 'profile',
+})
+
 export const getInitialProfileInfo = (
   initialValues,
   isAMSUser,

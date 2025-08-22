@@ -1,4 +1,11 @@
 import ProfileRow from './ProfileRow'
+import { FORM_TYPES } from '../../utils/formHelpers'
+
+export const JURISDICTION_TYPES = {
+  STATE: 'state',
+  TRIBE: 'tribe',
+  TERRITORY: 'territory',
+}
 
 const JurisdictionLocationInfo = ({
   jurisdictionType,
@@ -6,10 +13,10 @@ const JurisdictionLocationInfo = ({
   formType,
 }) => {
   let label = 'State'
-  if (jurisdictionType === 'territory') label = 'Territory'
-  else if (jurisdictionType === 'tribe') label = 'Tribe'
+  if (jurisdictionType === JURISDICTION_TYPES.TERRITORY) label = 'Territory'
+  else if (jurisdictionType === JURISDICTION_TYPES.TRIBE) label = 'Tribe'
 
-  if (formType === 'access request') {
+  if (formType === FORM_TYPES.ACCESS_REQUEST) {
     return (
       <div className="read-only-row">
         <div className="label">{label}</div>

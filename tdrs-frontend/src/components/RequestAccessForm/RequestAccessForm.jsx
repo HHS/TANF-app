@@ -6,9 +6,16 @@ import STTComboBox from '../STTComboBox'
 import ReadOnlyRow from './ReadOnlyRow'
 import { requestAccess } from '../../actions/requestAccess'
 import { updateUserRequest } from '../../actions/mockUpdateUserRequest'
-import { getInitialProfileInfo, clearFormError } from '../../utils/formHelpers'
+import {
+  getInitialProfileInfo,
+  clearFormError,
+  FORM_TYPES,
+} from '../../utils/formHelpers'
 import JurisdictionSelector from './JurisdictionSelector'
-import JurisdictionLocationInfo from '../Profile/JurisdictionLocationInfo'
+import {
+  JurisdictionLocationInfo,
+  JURISDICTION_TYPES,
+} from '../Profile/JurisdictionLocationInfo'
 import RegionSelector from './RegionSelector'
 import FRASelector from './FRASelector'
 import '../../assets/Profile.scss'
@@ -37,7 +44,7 @@ function RequestAccessForm({
   const [errors, setErrors] = useState({})
   const [touched, setTouched] = useState({})
   const [jurisdictionType, setJurisdictionTypeInputValue] = useState(
-    initialValues.jurisdictionType || 'state'
+    initialValues.jurisdictionType || JURISDICTION_TYPES.STATE
   )
   const [regional, setRegional] = useState(
     profileInfo?.regions instanceof Set && profileInfo.regions.size > 0
@@ -69,7 +76,7 @@ function RequestAccessForm({
 
       if (
         fieldName === 'hasFRAAccess' &&
-        (isAMSUser || jurisdictionType === 'tribe')
+        (isAMSUser || jurisdictionType === JURISDICTION_TYPES.TRIBE)
       ) {
         return null
       }
@@ -327,7 +334,7 @@ function RequestAccessForm({
             <JurisdictionLocationInfo
               jurisdictionType={jurisdictionType}
               locationName={profileInfo.stt || 'Federal Government'}
-              formType={'access request'}
+              formType={FORM_TYPES.ACCESS_REQUEST}
             />
             <hr className="form-section-divider" />
           </div>
@@ -354,7 +361,7 @@ function RequestAccessForm({
           </>
         )}
 
-        {jurisdictionType !== 'tribe' && !isAMSUser && (
+        {jurisdictionType !== JURISDICTION_TYPES.TRIBE && !isAMSUser && (
           <FRASelector
             hasFRAAccess={profileInfo.hasFRAAccess}
             setHasFRAAccess={setHasFRAAccess}

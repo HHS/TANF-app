@@ -8,6 +8,7 @@ import {
   accountIsInReview,
   accountIsMissingAccessRequest,
 } from '../../selectors/auth'
+import { JURISDICTION_TYPES } from './JurisdictionLocationInfo'
 
 function Profile({
   isEditing = false,
@@ -47,7 +48,7 @@ function Profile({
           stt: user?.stt?.name || '',
           hasFRAAccess: hasFRAAccess ?? null,
           regions: user?.regions || new Set(),
-          jurisdictionType: user?.stt?.type || 'state',
+          jurisdictionType: user?.stt?.type || JURISDICTION_TYPES.STATE,
         }}
         onCancel={onCancel}
         type={type}
