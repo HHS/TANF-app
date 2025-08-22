@@ -22,32 +22,75 @@ export const ACTORS = {
     role: 'Data Analyst',
     username: 'new-cypress@teamraft.com',
   },
+  'Unapproved Alex': {
+    role: 'System Admin',
+    username: 'cypress-unapproved-alex@acf.hhs.gov',
+  },
+  'Unapproved Diana': {
+    role: 'DIGIT Team',
+    username: 'cypress-unapproved-diana@acf.hhs.gov',
+  },
+  'Unapproved Olivia': {
+    role: 'ACF OCIO',
+    username: 'cypress-unapproved-olivia@acf.hhs.gov',
+  },
+  'Unapproved Dave': {
+    role: 'Data Analyst',
+    username: 'cypress-unapproved-dave@teamraft.com',
+  },
+  'Unapproved Fred': {
+    role: 'Data Analyst',
+    username: 'cypress-unapproved-fred@teamraft.com',
+    hasFra: true,
+  },
+  'Unapproved Randy': {
+    role: 'OFA Regional Staff',
+    username: 'cypress-unapproved-randy@acf.hhs.gov',
+  },
+}
+
+const setAccountStatus = (actor, status) => {
+  let endpoint = null
+  switch (status) {
+    case 'Approved':
+      endpoint = 'set_approved'
+      break
+    case 'Initial':
+      endpoint = 'set_initial'
+      break
+    case 'Pending':
+      endpoint = 'set_pending'
+      break
+    default:
+      break
+  }
+
+  cy.get('@cypressUsers').then((cypressUsers) => {
+    cy.log(cypressUsers)
+    const username = ACTORS[actor].username
+    cy.log(username)
+    const user = Cypress._.find(cypressUsers, (u) => u.username === username)
+
+    cy.log(user)
+    cy.adminApiRequest('PATCH', `/cypress-users/${user.id}/${endpoint}/`)
+  })
 }
 
 Given('{string} logs in', (actor) => {
-  cy.clearCookie('sessionid')
-  cy.clearCookie('csrftoken')
-  cy.intercept('/v1/stts/alpha').as('getSttSearchList')
   cy.visit('/')
+  cy.adminLogin('cypress-admin-alex@teamraft.com')
   cy.contains('Sign into TANF Data Portal', { timeout: 30000 })
-  // TODO: add if statement for cy.adminLogin
+
   cy.login(ACTORS[actor].username)
+
+  // if unapproved, reset
+  if (Cypress._.startsWith(actor, 'Unapproved')) {
+    setAccountStatus(actor, 'Initial')
+  }
 })
 
-// TODO: Remove in favor of Given 'user' logs in
-When('{string} visits the home page', (username) => {
-  cy.clearCookie('sessionid')
-  cy.clearCookie('csrftoken')
-  cy.intercept('/v1/stts/alpha').as('getSttSearchList')
-  cy.visit('/')
-  cy.contains('Sign into TANF Data Portal', { timeout: 30000 })
-})
-
-// TODO: Remove in favor of Given 'user' logs in
-// Add adminLogin as if statement above
-Given('The admin logs in', () => {
-  cy.visit('/')
-  cy.adminLogin('cypress-admin@teamraft.com')
+When('Admin Alex approves {string}', (actor) => {
+  setAccountStatus(actor, 'Approved')
 })
 
 Given('A file exists in submission history', () => {

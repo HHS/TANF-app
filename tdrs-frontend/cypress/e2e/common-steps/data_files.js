@@ -36,7 +36,9 @@ export const uploadSectionFile = (
     )
   }
 
-  cy.contains('button', 'Submit Data Files').click()
+  cy.wait(100).then(() =>
+    cy.contains('button', 'Submit Data Files').should('be.enabled').click()
+  )
 
   if (!shouldRejectInput) {
     cy.wait('@dataFileSubmit', { timeout: 60000 }).then(({ response }) => {

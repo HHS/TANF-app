@@ -1,5 +1,10 @@
 /* eslint-disable no-undef */
-import { When, Then } from '@badeball/cypress-cucumber-preprocessor'
+import { Given, Then } from '@badeball/cypress-cucumber-preprocessor'
+
+Given('The admin logs in', () => {
+  cy.visit('/')
+  cy.adminLogin('cypress-admin@teamraft.com')
+})
 
 Then('{string} can see submission history', (username) => {
   cy.get('h3').contains('Submission History').should('exist', { timeout: 5000 })
