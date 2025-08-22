@@ -15,6 +15,8 @@ from rest_framework import status
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
 
+from tdpservice.users.serializers import UserSerializer
+
 from ..authentication import CustomAuthentication
 from .login_redirect_oidc import LoginRedirectAMS
 from .utils import (
@@ -430,7 +432,11 @@ class CypressLoginDotGovAuthenticationOverride(TokenAuthorizationOIDC):
         )
         logger.info("cypress user %s logged in on %s", u.username, timezone.now())
 
-        response = {"authenticated": True}
+        response = {
+            "authenticated": True,
+            "user": UserSerializer(u, context={"request", request}).data
+        }
+
         if u.is_superuser:
             cypress_users = User.objects.exclude(username__contains="admin").filter(
                 username__contains="cypress"
