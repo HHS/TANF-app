@@ -8,13 +8,8 @@ from tdpservice.parsers import schema_defs
 from tdpservice.parsers.base_parser import BaseParser
 from tdpservice.parsers.case_consistency_validator import CaseConsistencyValidator
 from tdpservice.parsers.dataclasses import HeaderResult, Position
-from tdpservice.parsers.models import ParserErrorCategoryChoices
+from tdpservice.parsers.error_generator import ErrorGeneratorArgs, ErrorGeneratorType
 from tdpservice.parsers.schema_defs.utils import ProgramManager
-from tdpservice.parsers.util import (
-    make_generate_case_consistency_parser_error,
-    make_generate_file_precheck_parser_error,
-    make_generate_parser_error,
-)
 from tdpservice.parsers.validators import category1
 from tdpservice.parsers.validators.util import value_is_empty
 
@@ -44,8 +39,8 @@ class TanfDataReportParser(BaseParser):
         self._init_schema_manager(header_result.program_type)
         self.schema_manager.update_encrypted_fields(header_result.is_encrypted)
 
-        cat4_error_generator = make_generate_case_consistency_parser_error(
-            self.datafile
+        cat4_error_generator = self.error_generator_factory.get_generator(
+            ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
         )
         self.case_consistency_validator = CaseConsistencyValidator(
             header_result.header,
@@ -69,8 +64,9 @@ class TanfDataReportParser(BaseParser):
             is_last_line = offset == file_length
             self.evaluate_trailer(is_last_line)
 
-            generate_error = make_generate_parser_error(
-                self.datafile, self.current_row_num
+            generate_error = self.error_generator_factory.get_generator(
+                ErrorGeneratorType.MSG_ONLY_PRECHECK,
+                self.current_row_num,
             )
 
             if self.header_count > 1:
@@ -78,13 +74,13 @@ class TanfDataReportParser(BaseParser):
                     "Preparser Error -> Multiple headers found for file: "
                     f"{self.datafile.id} on line: {self.current_row_num}."
                 )
-                err_obj = generate_error(
-                    schema=None,
-                    error_category=ParserErrorCategoryChoices.PRE_CHECK,
-                    error_message="Multiple headers found.",
+                generator_args = ErrorGeneratorArgs(
                     record=None,
-                    field=None,
+                    schema=None,
+                    error_message="Multiple headers found.",
+                    fields=[],
                 )
+                err_obj = generate_error(generator_args=generator_args)
                 preparse_error = {self.current_row_num: [err_obj]}
                 self.unsaved_parser_errors = dict()
                 self.unsaved_parser_errors.update(preparse_error)
@@ -97,7 +93,7 @@ class TanfDataReportParser(BaseParser):
                 prev_sum = self.header_count + self.trailer_count
                 continue
 
-            manager_result = self.schema_manager.parse_and_validate(row, generate_error)
+            manager_result = self.schema_manager.parse_and_validate(row)
             records = manager_result.records
             schemas = manager_result.schemas
             num_records = len(records)
@@ -153,13 +149,13 @@ class TanfDataReportParser(BaseParser):
                 f"Preparser Error -> No headers found for file: {self.datafile.id}."
             )
             self.errors.update({"model": ["No headers found."]})
-            err_obj = generate_error(
-                schema=None,
-                error_category=ParserErrorCategoryChoices.PRE_CHECK,
-                error_message="No headers found.",
+            generator_args = ErrorGeneratorArgs(
                 record=None,
-                field=None,
+                schema=None,
+                error_message="No headers found.",
+                fields=[],
             )
+            err_obj = generate_error(generator_args=generator_args)
             self.rollback_records()
             self.rollback_parser_errors()
             preparse_error = {self.current_row_num: [err_obj]}
@@ -211,8 +207,11 @@ class TanfDataReportParser(BaseParser):
         """Validate header and header fields."""
         # parse & validate header
         header_row = self.decoder.get_header()
-        header, header_is_valid, header_errors = schema_defs.header.parse_and_validate(
-            header_row, make_generate_file_precheck_parser_error(self.datafile, 1)
+        header_row.row_num = 1
+        header_schema = schema_defs.header
+        header_schema.prepare(self.datafile)
+        header, header_is_valid, header_errors = header_schema.parse_and_validate(
+            header_row
         )
         if not header_is_valid:
             logger.info(
@@ -248,13 +247,15 @@ class TanfDataReportParser(BaseParser):
         section = header["type"]
         logger.debug(f"Program type: {program_type}, Section: {section}.")
 
+        generate_error = self.error_generator_factory.get_generator(
+            ErrorGeneratorType.MSG_ONLY_PRECHECK, 1
+        )
+
         # Validate tribe code in submission across program type and fips code
-        generate_error = make_generate_parser_error(self.datafile, 1)
         tribe_result = category1.validate_tribe_fips_program_agree(
             header["program_type"],
             field_values["tribe_code"],
             field_values["state_fips"],
-            generate_error,
         )
 
         if not tribe_result.valid:
@@ -263,7 +264,14 @@ class TanfDataReportParser(BaseParser):
                 + f"({header['program_type']}) and FIPS Code ({field_values['state_fips']}).",
             )
             self.num_errors += 1
-            self.unsaved_parser_errors.update({1: [tribe_result.error]})
+            generator_args = ErrorGeneratorArgs(
+                record=None,
+                schema=None,
+                error_message=tribe_result.error_message,
+                fields=[],
+            )
+            err_obj = generate_error(generator_args=generator_args)
+            self.unsaved_parser_errors.update({1: [err_obj]})
             self.bulk_create_errors(flush=True)
             return HeaderResult(is_valid=False)
 
@@ -271,27 +279,40 @@ class TanfDataReportParser(BaseParser):
         section_result = category1.validate_header_section_matches_submission(
             self.datafile,
             ProgramManager.get_section(program_type, section),
-            make_generate_parser_error(self.datafile, 1),
         )
 
         if not section_result.valid:
             logger.info(
-                f"Preparser Error -> Section is not valid: {section_result.error}"
+                f"Preparser Error -> Section is not valid: {section_result.error_message}"
             )
             self.num_errors += 1
-            self.unsaved_parser_errors.update({1: [section_result.error]})
+            generator_args = ErrorGeneratorArgs(
+                record=None,
+                schema=None,
+                error_message=section_result.error_message,
+                fields=[],
+            )
+            err_obj = generate_error(generator_args=generator_args)
+            self.unsaved_parser_errors.update({1: [err_obj]})
             self.bulk_create_errors(flush=True)
             return HeaderResult(is_valid=False)
 
         rpt_month_year_result = category1.validate_header_rpt_month_year(
-            self.datafile, header, make_generate_parser_error(self.datafile, 1)
+            self.datafile, header
         )
         if not rpt_month_year_result.valid:
             logger.info(
-                f"Preparser Error -> Rpt Month Year is not valid: {rpt_month_year_result.error}"
+                f"Preparser Error -> Rpt Month Year is not valid: {rpt_month_year_result.error_message}"
             )
             self.num_errors += 1
-            self.unsaved_parser_errors.update({1: [rpt_month_year_result.error]})
+            generator_args = ErrorGeneratorArgs(
+                record=None,
+                schema=None,
+                error_message=rpt_month_year_result.error_message,
+                fields=[],
+            )
+            err_obj = generate_error(generator_args=generator_args)
+            self.unsaved_parser_errors.update({1: [err_obj]})
             self.bulk_create_errors(flush=True)
             return HeaderResult(is_valid=False)
 
@@ -311,28 +332,30 @@ class TanfDataReportParser(BaseParser):
     def evaluate_trailer(self, is_last_line):
         """Validate datafile trailer and generate associated errors if any."""
         if self.trailer_count > 1 and not self.multiple_trailer_errors:
+            generator_args = ErrorGeneratorArgs(
+                record=None,
+                schema=None,
+                error_message="Multiple trailers found.",
+                fields=[],
+            )
+            generate_error = self.error_generator_factory.get_error_generator(
+                ErrorGeneratorType.MSG_ONLY_PRECHECK,
+                self.current_row_num,
+            )
+            err_obj = generate_error(generator_args=generator_args)
             errors = (
                 True,
-                [
-                    make_generate_parser_error(self.datafile, self.current_row_num)(
-                        schema=None,
-                        error_category=ParserErrorCategoryChoices.PRE_CHECK,
-                        error_message="Multiple trailers found.",
-                        record=None,
-                        field=None,
-                    )
-                ],
+                [err_obj],
             )
             self._generate_trailer_errors(errors)
         if self.trailer_count == 1 or is_last_line:
+            trailer_schema = schema_defs.trailer
+            trailer_schema.prepare(self.datafile)
             (
                 record,
                 trailer_is_valid,
                 trailer_errors,
-            ) = schema_defs.trailer.parse_and_validate(
-                self.current_row,
-                make_generate_parser_error(self.datafile, self.current_row_num),
-            )
+            ) = trailer_schema.parse_and_validate(self.current_row)
             self._generate_trailer_errors(trailer_errors)
 
     def _generate_trailer_errors(self, trailer_errors):
