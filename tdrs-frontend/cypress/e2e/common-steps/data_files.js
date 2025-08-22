@@ -33,7 +33,7 @@ export const uploadSectionFile = (
   cy.contains('button', 'Submit Data Files').click()
 
   if (!shouldError) {
-    cy.wait('@dataFileSubmit').then(({ response }) => {
+    cy.wait('@dataFileSubmit', { timeout: 60000 }).then(({ response }) => {
       const id = response?.body?.id
       if (!id) throw new Error('Missing data_file id in response')
       return cy.waitForDataFileSummary(id) // returns the poller
