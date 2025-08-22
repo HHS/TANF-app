@@ -24,3 +24,13 @@ export const getRegionNameById = (id) => {
   }
   return 'Unknown'
 }
+
+export const addRegion = (regionsSet, id, name) => {
+  const newSet = new Set(regionsSet)
+  newSet.add({ id, name })
+  return newSet
+}
+
+export const removeRegionById = (regionsSet, id) => {
+  return new Set(Array.from(regionsSet).filter((r) => r.id !== id))
+}

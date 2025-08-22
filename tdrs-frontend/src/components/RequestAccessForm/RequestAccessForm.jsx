@@ -3,43 +3,15 @@ import Button from '../Button'
 import { useDispatch } from 'react-redux'
 import FormGroup from '../FormGroup'
 import STTComboBox from '../STTComboBox'
+import ReadOnlyRow from './ReadOnlyRow'
 import { requestAccess } from '../../actions/requestAccess'
 import { updateUserRequest } from '../../actions/mockUpdateUserRequest'
+import { getInitialProfileInfo, clearFormError } from '../../utils/formHelpers'
 import JurisdictionSelector from './JurisdictionSelector'
 import JurisdictionLocationInfo from '../Profile/JurisdictionLocationInfo'
 import RegionSelector from './RegionSelector'
 import FRASelector from './FRASelector'
 import '../../assets/Profile.scss'
-
-// Helper function
-const getInitialProfileInfo = (
-  initialValues,
-  isAMSUser,
-  editMode,
-  alreadyHasFRAAccess
-) => {
-  let hasFRAAccess = null
-  const isTribal = initialValues.jurisdictionType === 'tribe'
-
-  if (editMode) {
-    hasFRAAccess = alreadyHasFRAAccess
-  } else if (isAMSUser || isTribal) {
-    hasFRAAccess = false
-  } else if (typeof initialValues.hasFRAAccess !== 'undefined') {
-    hasFRAAccess = initialValues.hasFRAAccess
-  }
-
-  return {
-    firstName: initialValues.firstName || '',
-    lastName: initialValues.lastName || '',
-    stt: initialValues.stt || '',
-    hasFRAAccess,
-    regions:
-      isAMSUser && initialValues.regions
-        ? new Set(initialValues.regions)
-        : new Set(),
-  }
-}
 
 function RequestAccessForm({
   user,
@@ -141,6 +113,10 @@ function RequestAccessForm({
   }
 
   const setHasFRAAccess = (hasFRAAccess) => {
+    if (errors.form) {
+      setErrors(clearFormError(errors))
+    }
+
     setProfileInfo((currentState) => ({
       ...currentState,
       hasFRAAccess: hasFRAAccess,
@@ -161,8 +137,7 @@ function RequestAccessForm({
   const handleChange = ({ name, value }) => {
     // Clear form error if present on any change
     if (errors.form) {
-      const { form, ...rest } = errors
-      setErrors(rest)
+      setErrors(clearFormError(errors))
     }
 
     // Remove error for this field if present
@@ -302,13 +277,6 @@ function RequestAccessForm({
     regional,
     setRegional,
   }
-
-  const ReadOnlyRow = ({ label, value }) => (
-    <div className="read-only-row">
-      <div className="label">{label}</div>
-      <div className="value">{value}</div>
-    </div>
-  )
 
   return (
     <div className="margin-top-5 margin-bottom-5">

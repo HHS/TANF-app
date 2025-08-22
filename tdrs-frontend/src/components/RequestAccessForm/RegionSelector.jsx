@@ -1,16 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import '../../assets/Profile.scss'
-
-// Helper functions
-const addRegion = (regionsSet, id, name) => {
-  const newSet = new Set(regionsSet)
-  newSet.add({ id, name })
-  return newSet
-}
-
-const removeRegionById = (regionsSet, id) => {
-  return new Set(Array.from(regionsSet).filter((r) => r.id !== id))
-}
+import { regionNames, addRegion, removeRegionById } from '../../utils/regions'
 
 function RegionSelector({
   setErrors,
@@ -30,28 +20,26 @@ function RegionSelector({
   )
 
   const regionKey = 'regions'
-  const regionsNames = [
-    'Boston',
-    'New York',
-    'Philadelphia',
-    'Atlanta',
-    'Chicago',
-    'Dallas',
-    'Kansas City',
-    'Denver',
-    'San Francisco',
-    'Seattle',
-  ]
 
   useEffect(() => {
-    if (regional) {
+    if (regional && profileInfo.regions instanceof Set) {
       setPreviousRegions(new Set(profileInfo.regions))
     }
   }, [profileInfo.regions, regional])
 
+  const selectedRegionIds = useMemo(
+    () => new Set(Array.from(profileInfo.regions || []).map((r) => r.id)),
+    [profileInfo.regions]
+  )
+
+  const clearFormError = (prevErrors) => {
+    const { form, ...rest } = prevErrors
+    return rest
+  }
+
   const handleRegionChange = (event, regionId) => {
     const { name, checked } = event.target
-    const regionName = regionsNames[regionId - 1]
+    const regionName = regionNames[regionId - 1]
 
     const currentRegions = profileInfo.regions || new Set()
 
@@ -62,11 +50,9 @@ function RegionSelector({
     const error = validateRegions(updatedRegions)
 
     setErrors((prev) => {
-      const { [name]: removed, ...rest } = prev
-      // Only remove 'form' if it's already present
-      const { form, ...errorsWithoutForm } = rest
+      const { [name]: _, ...rest } = clearFormError(prev)
       return {
-        ...errorsWithoutForm,
+        ...rest,
         ...(error && {
           [name]: touched[name] && regionError,
         }),
@@ -84,6 +70,40 @@ function RegionSelector({
     return rest
   }
 
+  const handleRegionalYes = () => {
+    // Clear form error for reset
+    setErrors((prev) => clearFormError(prev))
+    if (displayingError) {
+      setTouched((prev) => ({ ...prev, regions: true }))
+      setErrors((prev) => ({
+        ...prev,
+        regions: regionError,
+      }))
+    }
+    setProfileInfo((prev) => ({
+      ...prev,
+      regions: previousRegions,
+      hasFRAAccess: true,
+    }))
+    setRegional(true)
+  }
+
+  const handleRegionalNo = () => {
+    // Clear form error and regions error when selecting "No"
+    setErrors((prev) => {
+      const { form, regions, ...rest } = prev
+      return rest
+    })
+    setPreviousRegions(profileInfo.regions ?? new Set())
+    setTouched((prev) => excludeRegions(prev))
+    setProfileInfo((prev) => ({
+      ...excludeRegions(prev),
+      regions: new Set(),
+      hasFRAAccess: false,
+    }))
+    setRegional(false)
+  }
+
   return (
     <>
       <div className="usa-form-group">
@@ -99,27 +119,7 @@ function RegionSelector({
               name="regionalType"
               value="regional"
               checked={regional}
-              onChange={() => {
-                // Clear form error for reset
-                setErrors((prev) => {
-                  const { form, ...rest } = prev
-                  return form ? rest : prev
-                })
-
-                if (displayingError) {
-                  setTouched((prev) => ({ ...prev, regions: true }))
-                  setErrors((prev) => ({
-                    ...prev,
-                    regions: regionError,
-                  }))
-                }
-                setProfileInfo((prev) => ({
-                  ...prev,
-                  regions: previousRegions,
-                  hasFRAAccess: true,
-                }))
-                setRegional(true)
-              }}
+              onChange={handleRegionalYes}
             />
             <label className="usa-radio__label" htmlFor="regional">
               Yes
@@ -133,22 +133,7 @@ function RegionSelector({
               name="regionalType"
               value="central"
               checked={!regional}
-              onChange={() => {
-                // Clear form error on change
-                setErrors((prev) => {
-                  const { form, ...rest } = excludeRegions(prev)
-                  return form ? rest : prev
-                })
-
-                setPreviousRegions(profileInfo.regions ?? new Set())
-                setTouched((prev) => excludeRegions(prev))
-                setProfileInfo((prev) => ({
-                  ...excludeRegions(prev),
-                  regions: new Set(),
-                  hasFRAAccess: false,
-                }))
-                setRegional(false)
-              }}
+              onChange={handleRegionalNo}
             />
             <label className="usa-radio__label" htmlFor="central">
               No
@@ -179,11 +164,9 @@ function RegionSelector({
                 {errors.regions}
               </span>
             )}
-            {regionsNames.map((region, index) => {
+            {regionNames.map((region, index) => {
               const regionId = index + 1
-              const isChecked = Array.from(profileInfo?.regions || []).some(
-                (r) => r.id === regionId
-              )
+              const isChecked = selectedRegionIds.has(regionId)
               return (
                 <div key={region} className="usa-checkbox">
                   <input
