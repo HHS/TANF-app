@@ -9,6 +9,8 @@ from django.urls import reverse
 
 import jwt
 import pytest
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 
@@ -82,24 +84,38 @@ class TestSecurityEventTokenView:
         return "67f4cbf5-1615-4aa4-9e63-2f3b270acf05"
 
     @pytest.fixture
-    def mock_jwt_token(self):
-        """Return a mock JWT token.
+    def rsa_key_pair(self):
+        """Generate a shared RSA key pair for testing."""
+        private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=2048,
+        )
+        return private_key
 
-        Payload:
-          {
+    @pytest.fixture
+    def mock_jwt_token(self, rsa_key_pair):
+        """Return a mock JWT token."""
+        payload = {
             "events": {
                 "https://schemas.openid.net/secevent/risc/event-type/account-disabled": {
-                "subject": {
-                    "sub": "67f4cbf5-1615-4aa4-9e63-2f3b270acf05"
-                }
+                    "subject": {"sub": "67f4cbf5-1615-4aa4-9e63-2f3b270acf05"}
                 }
             },
             "iss": "https://login.gov",
             "iat": 1620000000,
-            "jti": "test_jti"
-          }
-        """
-        return "eyJhbGciOiJSUzI1NiIsImtpZCI6InRlc3Rfa2lkIn0.eyJldmVudHMiOnsiaHR0cHM6Ly9zY2hlbWFzLm9wZW5pZC5uZXQvc2VjZXZlbnQvcmlzYy9ldmVudC10eXBlL2FjY291bnQtZGlzYWJsZWQiOnsic3ViamVjdCI6eyJzdWIiOiI2N2Y0Y2JmNS0xNjE1LTRhYTQtOWU2My0yZjNiMjcwYWNmMDUifX19LCJpc3MiOiJodHRwczovL2xvZ2luLmdvdiIsImlhdCI6MTYyMDAwMDAwMCwianRpIjoidGVzdF9qdGkifQ.signature"
+            "jti": "test_jti",
+        }
+
+        # Encode with the private key
+        private_key_pem = rsa_key_pair.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.NoEncryption(),
+        )
+
+        return jwt.encode(
+            payload, private_key_pem, algorithm="RS256", headers={"kid": "test_kid"}
+        )
 
     @pytest.fixture
     def mock_well_known_config(self):
@@ -123,9 +139,9 @@ class TestSecurityEventTokenView:
         }
 
     @pytest.fixture
-    def mock_public_key(self):
+    def mock_public_key(self, rsa_key_pair):
         """Return a mock public key."""
-        return MagicMock()
+        return rsa_key_pair.public_key()
 
     @pytest.fixture
     def mock_decoded_jwt(self, mock_sub_claim):

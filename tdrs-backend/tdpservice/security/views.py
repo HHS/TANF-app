@@ -76,6 +76,8 @@ class SecurityEventTokenView(APIView):
             logger.error(f"No public key found for kid: {key_id}")
             raise ValidationError("No public key found for kid")
 
+        return public_key
+
     def post(self, request, *args, **kwargs):
         """Process incoming Security Event Token from Login.gov."""
         try:
