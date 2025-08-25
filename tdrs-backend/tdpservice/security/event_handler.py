@@ -14,12 +14,6 @@ logger = logging.getLogger(__name__)
 class SecurityEventHandler:
     """Handler for security events."""
 
-    # Should we care about these?
-    # Account Locked Due to MFA (Multi-Factor Authentication) Limit Reached
-    # Identifier Changed
-    # Identifier Recycled
-    # Reproofing Completed
-
     def _handle_unknown_event(security_event):
         """Handle unimplemented or unknown events."""
         logger.warning(f"No handler for event type: {security_event.event_type}")
@@ -130,7 +124,7 @@ class SecurityEventHandler:
                 )
         elif "email" in subject:
             # Check both emails in the subject to see if we have the user
-            user_qset = User.objects.filter(email=subject.get("email"))
+            user_qset = User.objects.filter(username=subject.get("email"))
             if user_qset.exists() and user_qset.count() == 1:
                 return user_qset.first()
 
@@ -148,7 +142,7 @@ class SecurityEventHandler:
     def handle_event(cls, event_type, event_data, decoded_jwt):
         """Handle specific event types."""
         try:
-            subject = event_data.get("subject")
+            subject = event_data.get("subject", {})
             user = cls._get_user(subject)
 
             # Convert Unix timestamp to datetime if present
