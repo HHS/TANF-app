@@ -280,7 +280,7 @@ def main(is_admin):
 
             # Modify the query to create a view
             view_name = f'{"admin_" if is_admin else ""}{schema_type}_{schema_name}'
-            view_query = f"""CREATE OR REPLACE VIEW "{view_name}" AS {query}"""
+            view_query = f"""DROP VIEW IF EXISTS {view_name};\n\nCREATE OR REPLACE VIEW "{view_name}" AS {query}"""
 
             # Write to a file
             output_file = os.path.join(output_dir, f"{view_name}.sql")
