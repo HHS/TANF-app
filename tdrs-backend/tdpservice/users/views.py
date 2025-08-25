@@ -1,4 +1,5 @@
 """Define API views for user class."""
+
 import datetime
 import logging
 
@@ -15,6 +16,7 @@ from rest_framework.response import Response
 
 from tdpservice.users.models import AccountApprovalStatusChoices, Feedback, User
 from tdpservice.users.permissions import (
+    CypressAdminAccountPermissions,
     DjangoModelCRUDPermissions,
     FeedbackPermissions,
     IsApprovedPermission,
@@ -92,6 +94,47 @@ class UserViewSet(
             "Access request for user: %s on %s", self.request.user, timezone.now()
         )
         return Response(serializer.data)
+
+
+class CypressAdminUserViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
+    """User accounts viewset for Cypress test updates."""
+
+    queryset = User.objects.select_related("stt").prefetch_related(
+        "groups__permissions"
+    )
+    permission_classes = [
+        IsAuthenticated,
+        IsApprovedPermission,
+        CypressAdminAccountPermissions,
+    ]
+    serializer_class = UserSerializer
+
+    def set_status(self, pk, approval_status):
+        """Update the user with the provided approval status."""
+        u = get_object_or_404(self.queryset, pk=pk)
+        u.account_approval_status = approval_status
+        u.save()
+        return Response(status=status.HTTP_200_OK)
+
+    @action(methods=["PATCH"], detail=True)
+    def set_initial(self, request, pk):
+        """Update user with initial approval status."""
+        return self.set_status(pk, AccountApprovalStatusChoices.INITIAL)
+
+    @action(methods=["PATCH"], detail=True)
+    def set_pending(self, request, pk):
+        """Update user with pending approval status."""
+        return self.set_status(pk, AccountApprovalStatusChoices.PENDING)
+
+    @action(methods=["PATCH"], detail=True)
+    def set_approved(self, request, pk):
+        """Update user with approved status."""
+        return self.set_status(pk, AccountApprovalStatusChoices.APPROVED)
 
 
 class GroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):

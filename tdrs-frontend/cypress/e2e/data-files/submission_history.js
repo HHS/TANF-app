@@ -94,6 +94,11 @@ Given('FRA Data Analyst Fred submits a file', () => {
 
 ///////////////////////////////////////////////////////////////
 
+Given('The admin logs in', () => {
+  cy.visit('/')
+  cy.adminLogin('cypress-admin@teamraft.com')
+})
+
 Then('{string} can see submission history', (username) => {
   cy.get('h3').contains('Submission History').should('exist', { timeout: 5000 })
   cy.get('caption')

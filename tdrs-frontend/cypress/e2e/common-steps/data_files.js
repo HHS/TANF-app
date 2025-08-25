@@ -175,7 +175,9 @@ export const uploadSectionFile = (
       if (!shouldError) cy.contains(fileName, { timeout: 2000 }).should('exist')
     })
 
-  cy.contains('button', 'Submit Data Files').click()
+  cy.wait(100).then(() =>
+    cy.contains('button', 'Submit Data Files').should('be.enabled').click()
+  )
 
   if (!shouldError) {
     cy.wait('@dataFileSubmit').then(({ response }) => {
