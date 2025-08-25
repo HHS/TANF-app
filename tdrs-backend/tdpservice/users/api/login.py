@@ -137,7 +137,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             logger_context = {
                 "user_id": user.id,
                 "content_type": SecurityEventToken,
-                "object_id": last_security_event.id,
+                "object_id": last_security_event.id if last_security_event else None,
             }
             if (
                 last_security_event
