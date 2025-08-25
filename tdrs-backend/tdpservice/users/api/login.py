@@ -124,21 +124,21 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         User = get_user_model()
 
         # Check if a user with the same email already exists
-        user = User.objects.filter(email=email).first()
+        user = User.objects.filter(username=email).first()
 
         if user and auth_options.get("login_gov_uuid", False):
-            # Setup log context
-            logger_context = {
-                "user_id": user.id,
-                "content_type": SecurityEventToken,
-                "object_id": user.id,
-            }
             # Check if last security event was account_purged
             last_security_event = (
                 SecurityEventToken.objects.filter(user=user)
                 .order_by("-received_at")
                 .first()
             )
+            # Setup log context
+            logger_context = {
+                "user_id": user.id,
+                "content_type": SecurityEventToken,
+                "object_id": last_security_event.id,
+            }
             if (
                 last_security_event
                 and last_security_event.event_type == SecurityEventType.ACCOUNT_PURGED
