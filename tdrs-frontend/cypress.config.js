@@ -14,6 +14,9 @@ module.exports = defineConfig({
       cypressToken: 'local-cypress-token',
     },
 
+    viewportHeight: 1000,
+    viewportWidth: 1600,
+
     async setupNodeEvents(on, config) {
       // implement node event listeners here
       await preprocessor.addCucumberPreprocessorPlugin(on, config)
