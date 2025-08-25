@@ -88,7 +88,13 @@ const setAccountStatus = (actor, status) => {
   })
 }
 
+export const clearCookies = () => {
+  cy.clearCookie('sessionid')
+  cy.clearCookie('csrftoken')
+}
+
 Given('{string} logs in', (actor) => {
+  clearCookies()
   cy.visit('/')
   cy.adminLogin('cypress-admin-alex@teamraft.com')
   cy.contains('Sign into TANF Data Portal', { timeout: 30000 })

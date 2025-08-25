@@ -1,9 +1,9 @@
 /* eslint-disable no-undef */
 import { When, Then } from '@badeball/cypress-cucumber-preprocessor'
+import { clearCookies } from './common-steps'
 
 export const restartAtHomePage = () => {
-  cy.clearCookie('sessionid')
-  cy.clearCookie('csrftoken')
+  clearCookies()
   cy.intercept('/v1/stts/alpha').as('getSttSearchList')
   cy.visit('/')
   cy.contains('Sign into TANF Data Portal', { timeout: 30000 })
