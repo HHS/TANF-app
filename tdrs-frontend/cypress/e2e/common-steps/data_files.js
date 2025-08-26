@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 import { When, Then } from '@badeball/cypress-cucumber-preprocessor'
-import { ACTORS, clearCookies } from './common-steps'
+import { clearCookies } from './common-steps'
 
 export const restartAtHomePage = () => {
   clearCookies()
@@ -148,16 +148,13 @@ export const waitForDataFileSummary = (
 }
 const TEST_DATA_DIR = '../tdrs-backend/tdpservice/parsers/test/data'
 
-export const openDataFilesAndSearch = (actor, program, year, quarter) => {
-  const rolesNotAssignedSTT = new Set(['DIGIT Team'])
-  const { role } = ACTORS[actor]
-
+export const openDataFilesAndSearch = (program, year, quarter, stt = '') => {
   cy.visit('/data-files')
   cy.contains('Data Files').should('exist')
 
   // Submit search form
-  if (rolesNotAssignedSTT.has(role)) {
-    cy.get('#stt').should('exist').type('Alabama{enter}')
+  if (stt) {
+    cy.get('#stt').should('exist').type(`${stt}{enter}`)
   }
   if (program === 'SSP') cy.get('label[for="ssp-moe"]').click()
 
