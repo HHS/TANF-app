@@ -163,24 +163,30 @@ export const openDataFilesAndSearch = (program, year, quarter) => {
 export const uploadSectionFile = (
   inputSelector,
   fileName,
-  shouldError = false
+  shouldRejectInput = false
 ) => {
   const filePath = `${TEST_DATA_DIR}/${fileName}`
 
   cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
-  cy.get(inputSelector)
-    .selectFile(filePath, { action: 'drag-drop' })
-    .prev()
-    .within(() => {
-      if (!shouldError) cy.contains(fileName, { timeout: 2000 }).should('exist')
-    })
+  cy.get(inputSelector).selectFile(filePath, {
+    action: 'drag-drop',
+    timeout: 10000,
+  })
+
+  // wait on the ui to update with the selected data file above
+  if (!shouldRejectInput) {
+    cy.get('.usa-file-input__preview-image', { timeout: 10000 }).should(
+      'not.have.class',
+      'is-loading'
+    )
+  }
 
   cy.wait(100).then(() =>
     cy.contains('button', 'Submit Data Files').should('be.enabled').click()
   )
 
-  if (!shouldError) {
-    cy.wait('@dataFileSubmit').then(({ response }) => {
+  if (!shouldRejectInput) {
+    cy.wait('@dataFileSubmit', { timeout: 60000 }).then(({ response }) => {
       const id = response?.body?.id
       if (!id) throw new Error('Missing data_file id in response')
       return cy.waitForDataFileSummary(id) // returns the poller

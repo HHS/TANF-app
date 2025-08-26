@@ -40,9 +40,7 @@ Cypress.Commands.add('login', (username) => {
       .invoke('dispatch', {
         type: 'SET_AUTH',
         payload: {
-          user: {
-            email: username,
-          },
+          user: response?.body?.user
         },
       })
 
