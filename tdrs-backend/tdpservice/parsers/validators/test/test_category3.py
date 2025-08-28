@@ -32,7 +32,7 @@ def _make_eargs(val):
 def _validate_and_assert(validator, val, exp_result, exp_message):
     result = validator(val, _make_eargs(val))
     assert result.valid == exp_result
-    assert result.error == exp_message
+    assert result.error_message == exp_message
     assert result.deprecated is False
 
 
@@ -404,7 +404,7 @@ def test_ifThenAlso(condition_val, result_val, exp_result, exp_message, exp_fiel
     )
     result = _validator(instance, schema)
     assert result.valid == exp_result
-    assert result.error == exp_message
+    assert result.error_message == exp_message
     assert result.field_names == exp_fields
 
 
@@ -475,7 +475,7 @@ def test_ifThenAlso_or(condition_val, result_val, exp_result, exp_message, exp_f
     )
     result = _validator(instance, schema)
     assert result.valid == exp_result
-    assert result.error == exp_message
+    assert result.error_message == exp_message
     assert result.field_names == exp_fields
 
 
@@ -502,7 +502,7 @@ def test_orValidators(val, exp_result, exp_message):
 
     result = _validator(val, eargs)
     assert result.valid == exp_result
-    assert result.error == exp_message
+    assert result.error_message == exp_message
 
 
 def test_sumIsEqual():
@@ -545,8 +545,8 @@ def test_sumIsEqual():
     )
     assert result.valid is False
     assert (
-        result.error
-        == "T1: The sum of TestField1, TestField3 does not equal TestField2 test2 Item 2."
+        result.error_message
+        == "The sum of TestField1, TestField3 does not equal TestField2 test2 Item 2."
     )
     assert result.field_names == ["TestField2", "TestField1", "TestField3"]
 
@@ -555,7 +555,7 @@ def test_sumIsEqual():
         instance, schema
     )
     assert result.valid is True
-    assert result.error is None
+    assert result.error_message is None
     assert result.field_names == ["TestField2", "TestField1", "TestField3"]
 
 
@@ -596,16 +596,15 @@ def test_sumIsLarger():
     }
     result = category3.sumIsLarger(["TestField1", "TestField3"], 10)(instance, schema)
     assert result.valid is False
-    assert result.error == (
-        "T1: No benefits detected for this case. The total sum "
-        "of TestField1, TestField3 must be greater than 10."
+    assert result.error_message == (
+        "No benefit amounts detected for this case. The total sum of TestField1, TestField3 must be greater than 10."
     )
     assert result.field_names == ["TestField1", "TestField3"]
 
     instance["TestField3"] = 9
     result = category3.sumIsLarger(["TestField1", "TestField3"], 10)(instance, schema)
     assert result.valid is True
-    assert result.error is None
+    assert result.error_message is None
     assert result.field_names == ["TestField1", "TestField3"]
 
 
@@ -633,7 +632,7 @@ def test_suppress_for_fra_pilot_state():
             ),
         ],
     )
-    schema.set_datafile(datafile)
+    schema.prepare(datafile)
 
     record = {
         "WORK_ELIGIBLE_INDICATOR": "1",
@@ -655,7 +654,7 @@ def test_suppress_for_fra_pilot_state():
 
     result = validate(record, schema)
     assert result.valid
-    assert result.error is None
+    assert result.error_message is None
 
 
 def test_validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
@@ -704,7 +703,7 @@ def test_validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
     }
     result = category3.validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE()(instance, schema)
     assert result.valid is False
-    assert result.error == (
+    assert result.error_message == (
         "T1: Since Item 1 (work eligible indicator) is 11 and Item 3 (Age) is less than 19, "
         "then Item 2 (relationship w/ head of household) must not be 1."
     )
@@ -717,7 +716,7 @@ def test_validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
     instance["DATE_OF_BIRTH"] = "19950101"
     result = category3.validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE()(instance, schema)
     assert result.valid is True
-    assert result.error is None
+    assert result.error_message is None
     assert result.field_names == [
         "WORK_ELIGIBLE_INDICATOR",
         "RELATIONSHIP_HOH",
@@ -773,7 +772,7 @@ def test_deprecate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
         instance, schema
     )
     assert result.valid is False
-    assert result.error == (
+    assert result.error_message == (
         "T1: Since Item 1 (work eligible indicator) is 11 and Item 3 (Age) is less than 19, "
         "then Item 2 (relationship w/ head of household) must not be 1."
     )
@@ -787,7 +786,7 @@ def test_deprecate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
     instance["DATE_OF_BIRTH"] = "19950101"
     result = category3.validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE()(instance, schema)
     assert result.valid is True
-    assert result.error is None
+    assert result.error_message is None
     assert result.field_names == [
         "WORK_ELIGIBLE_INDICATOR",
         "RELATIONSHIP_HOH",
@@ -864,6 +863,6 @@ def test_deprecate_ifThenAlso(
     )
     result = _validator(instance, schema)
     assert result.valid == exp_result
-    assert result.error == exp_message
+    assert result.error_message == exp_message
     assert result.field_names == exp_fields
     assert result.deprecated is True

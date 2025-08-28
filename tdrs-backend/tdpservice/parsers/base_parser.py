@@ -7,9 +7,13 @@ from abc import ABC, abstractmethod
 from django.conf import settings
 from django.db.utils import DatabaseError
 
-from tdpservice.parsers import util
 from tdpservice.parsers.decoders import DecoderFactory
-from tdpservice.parsers.models import ParserError, ParserErrorCategoryChoices
+from tdpservice.parsers.error_generator import (
+    ErrorGeneratorArgs,
+    ErrorGeneratorFactory,
+    ErrorGeneratorType,
+)
+from tdpservice.parsers.models import ParserError
 from tdpservice.parsers.schema_manager import SchemaManager
 from tdpservice.parsers.util import (
     DecoderUnknownException,
@@ -26,6 +30,7 @@ class BaseParser(ABC):
     def __init__(self, datafile, dfs, section):
         super().__init__()
         self.datafile = datafile
+        self.error_generator_factory = ErrorGeneratorFactory(datafile)
         self.dfs = dfs
         self.section = section
         self.program_type = None
@@ -63,14 +68,16 @@ class BaseParser(ABC):
                 )
             else:
                 msg = "Could not determine encoding of TANF file. Ensure the file is UTF-8 encoded."
-            generate_error = util.make_generate_parser_error(self.datafile, 0)
-            err_obj = generate_error(
-                schema=None,
-                error_category=ParserErrorCategoryChoices.PRE_CHECK,
-                error_message=msg,
-                record=None,
-                field=None,
+            generate_error = self.error_generator_factory.get_generator(
+                ErrorGeneratorType.MSG_ONLY_PRECHECK, 0
             )
+            generator_args = ErrorGeneratorArgs(
+                record=None,
+                schema=None,
+                error_message=msg,
+                fields=[],
+            )
+            err_obj = generate_error(generator_args=generator_args)
             self.unsaved_parser_errors.update({0: [err_obj]})
             self.num_errors += 1
             self.bulk_create_errors(flush=True)
@@ -207,14 +214,16 @@ class BaseParser(ABC):
         )
         if self.dfs.total_number_of_records_created == 0 and not no_records_allowed:
             errors = {}
-            generate_error = util.make_generate_parser_error(self.datafile, 0)
-            err_obj = generate_error(
-                schema=None,
-                error_category=ParserErrorCategoryChoices.PRE_CHECK,
-                error_message="No records created.",
-                record=None,
-                field=None,
+            generate_error = self.error_generator_factory.get_generator(
+                ErrorGeneratorType.MSG_ONLY_PRECHECK, 0
             )
+            generator_args = ErrorGeneratorArgs(
+                record=None,
+                schema=None,
+                error_message="No records created.",
+                fields=[],
+            )
+            err_obj = generate_error(generator_args=generator_args)
             errors["no_records_created"] = [err_obj]
             self.unsaved_parser_errors.update(errors)
             self.num_errors += 1

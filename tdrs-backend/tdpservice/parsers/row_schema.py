@@ -3,9 +3,14 @@
 import logging
 from abc import ABC, abstractmethod
 
-from tdpservice.parsers.dataclasses import RawRow, SchemaResult, ValidationErrorArgs
+from tdpservice.parsers.dataclasses import (
+    ErrorGeneratorArgs,
+    RawRow,
+    SchemaResult,
+    ValidationErrorArgs,
+)
+from tdpservice.parsers.error_generator import ErrorGeneratorFactory, ErrorGeneratorType
 from tdpservice.parsers.fields import Field
-from tdpservice.parsers.models import ParserErrorCategoryChoices
 from tdpservice.parsers.util import get_record_value_by_field_name
 from tdpservice.parsers.validators.category2 import format_error_context
 from tdpservice.parsers.validators.util import value_is_empty
@@ -31,6 +36,7 @@ class RowSchema(ABC):
         self.model = model
         self.fields = list() if not fields else fields
         self.datafile = None
+        self.error_generator_factory = None
         self.generate_hashes_func = generate_hashes_func
         self.should_skip_partial_dup_func = should_skip_partial_dup_func
         self.preparsing_validators = []
@@ -38,14 +44,12 @@ class RowSchema(ABC):
             self.preparsing_validators = preparsing_validators
         self.quiet_preparser_errors = quiet_preparser_errors
 
-        self.field_error_type = ParserErrorCategoryChoices.FIELD_VALUE
-        self.record_precheck_error_type = ParserErrorCategoryChoices.RECORD_PRE_CHECK
-        self.value_consisistency_error_type = (
-            ParserErrorCategoryChoices.VALUE_CONSISTENCY
-        )
+        self.field_error_generator_type = ErrorGeneratorType.FIELD_VALUE
+        self.precheck_error_generator_type = ErrorGeneratorType.RECORD_PRE_CHECK
+        self.postparsing_error_generator_type = ErrorGeneratorType.VALUE_CONSISTENCY
 
     @abstractmethod
-    def parse_and_validate(self, row: RawRow, generate_error) -> SchemaResult:
+    def parse_and_validate(self, row: RawRow) -> SchemaResult:
         """To be overriden in child class."""
         pass
 
@@ -64,9 +68,10 @@ class RowSchema(ABC):
 
         return record
 
-    def set_datafile(self, datafile):
-        """Datafile setter."""
+    def prepare(self, datafile):
+        """Prepare schema to validate."""
         self.datafile = datafile
+        self.error_generator_factory = ErrorGeneratorFactory(self.datafile)
 
     def _add_field(self, item, name, length, position, type):
         """Add a field to the schema."""
@@ -81,10 +86,15 @@ class RowSchema(ABC):
         """Get all fields from the schema."""
         return self.fields
 
-    def run_field_validators(self, record, generate_error):
+    def run_field_validators(self, record, row_number):
         """Run all validators for each field in the parsed model."""
         is_valid = True
         errors = []
+
+        generate_error = self.error_generator_factory.get_generator(
+            generator_type=self.field_error_generator_type,
+            row_number=row_number,
+        )
 
         for field in self.fields:
             value = get_record_value_by_field_name(record, field.name)
@@ -94,6 +104,7 @@ class RowSchema(ABC):
                 friendly_name=field.friendly_name,
                 item_num=field.item,
             )
+
             is_empty = value_is_empty(value, len(field.position))
             if field.required and not is_empty:
                 for validator in field.validators:
@@ -103,40 +114,50 @@ class RowSchema(ABC):
                         if (not result.valid and not field.ignore_errors)
                         else is_valid
                     )
-                    if result.error:
+                    if result.error_message:
+                        generator_args = ErrorGeneratorArgs(
+                            record=record,
+                            schema=self,
+                            error_message=result.error_message,
+                            offending_field=field,
+                            fields=self.fields,
+                            deprecated=result.deprecated,
+                        )
                         errors.append(
                             generate_error(
-                                schema=self,
-                                error_category=self.field_error_type,
-                                error_message=result.error,
-                                record=record,
-                                field=field,
-                                deprecated=result.deprecated,
+                                generator_args=generator_args,
                             )
                         )
             elif field.required:
                 is_valid = False
+                generator_args = ErrorGeneratorArgs(
+                    record=record,
+                    schema=self,
+                    error_message=(
+                        f"{format_error_context(eargs)} "
+                        "field is required but a value was not provided."
+                    ),
+                    offending_field=field,
+                    fields=self.fields,
+                )
                 errors.append(
                     generate_error(
-                        schema=self,
-                        error_category=self.field_error_type,
-                        error_message=(
-                            f"{format_error_context(eargs)} "
-                            "field is required but a value was not provided."
-                        ),
-                        record=record,
-                        field=field,
+                        generator_args=generator_args,
                     )
                 )
 
         return is_valid, errors
 
-    def run_preparsing_validators(self, row: RawRow, record, generate_error):
+    def run_preparsing_validators(self, row: RawRow, record):
         """Run each of the `preparsing_validator` functions in the schema against the un-parsed row."""
         is_valid = True
         errors = []
 
         field = self.get_field_by_name("RecordType")
+        generate_error = self.error_generator_factory.get_generator(
+            generator_type=self.precheck_error_generator_type,
+            row_number=row.row_num,
+        )
 
         for validator in self.preparsing_validators:
             eargs = ValidationErrorArgs(
@@ -154,17 +175,18 @@ class RowSchema(ABC):
                 if type(self.quiet_preparser_errors) is bool
                 else self.quiet_preparser_errors(row)
             )
-            if result.error and not is_quiet_preparser_errors:
-                errors.append(
-                    generate_error(
-                        schema=self,
-                        error_category=self.record_precheck_error_type,
-                        error_message=result.error,
-                        record=record,
-                        field=self.fields,
-                        deprecated=result.deprecated,
-                    )
-                )
+
+            generator_args = ErrorGeneratorArgs(
+                record=record,
+                schema=self,
+                error_message=result.error_message,
+                offending_field=field,
+                fields=self.fields,
+                deprecated=result.deprecated,
+            )
+
+            if result.error_message and not is_quiet_preparser_errors:
+                errors.append(generate_error(generator_args=generator_args))
         return is_valid, errors
 
     def get_field_values_by_names(self, row: RawRow, names={}):
@@ -215,7 +237,7 @@ class TanfDataReportSchema(RowSchema):
         if postparsing_validators is not None:
             self.postparsing_validators = postparsing_validators
 
-    def parse_and_validate(self, row: RawRow, generate_error):
+    def parse_and_validate(self, row: RawRow):
         """Run all validation steps in order, and parse the given row into a record."""
         errors = []
 
@@ -224,7 +246,7 @@ class TanfDataReportSchema(RowSchema):
 
         # run preparsing validators
         preparsing_is_valid, preparsing_errors = self.run_preparsing_validators(
-            row, record, generate_error
+            row, record
         )
         is_quiet_preparser_errors = (
             self.quiet_preparser_errors
@@ -238,13 +260,11 @@ class TanfDataReportSchema(RowSchema):
             return SchemaResult(None, False, preparsing_errors)
 
         # run field validators
-        fields_are_valid, field_errors = self.run_field_validators(
-            record, generate_error
-        )
+        fields_are_valid, field_errors = self.run_field_validators(record, row.row_num)
 
         # run postparsing validators
         postparsing_is_valid, postparsing_errors = self.run_postparsing_validators(
-            record, generate_error
+            record, row.row_num
         )
 
         is_valid = fields_are_valid and postparsing_is_valid
@@ -252,27 +272,29 @@ class TanfDataReportSchema(RowSchema):
 
         return SchemaResult(record, is_valid, errors)
 
-    def run_postparsing_validators(self, instance, generate_error):
+    def run_postparsing_validators(self, record, row_number):
         """Run each of the `postparsing_validator` functions against the parsed model."""
         is_valid = True
         errors = []
+        generate_error = self.error_generator_factory.get_generator(
+            self.postparsing_error_generator_type, row_number
+        )
 
         for validator in self.postparsing_validators:
-            result = validator(instance, self)
+            result = validator(record, self)
             is_valid = False if not result.valid else is_valid
-            if result.error:
+            if result.error_message:
                 # get field from field name
                 fields = [self.get_field_by_name(name) for name in result.field_names]
-                errors.append(
-                    generate_error(
-                        schema=self,
-                        error_category=self.value_consisistency_error_type,
-                        error_message=result.error,
-                        record=instance,
-                        field=fields,
-                        deprecated=result.deprecated,
-                    )
+                generator_args = ErrorGeneratorArgs(
+                    record=record,
+                    schema=self,
+                    error_message=result.error_message,
+                    offending_field=fields[-1],
+                    fields=fields,
+                    deprecated=result.deprecated,
                 )
+                errors.append(generate_error(generator_args=generator_args))
         return is_valid, errors
 
 
@@ -308,7 +330,8 @@ class HeaderSchema(TanfDataReportSchema):
         if postparsing_validators is not None:
             self.postparsing_validators = postparsing_validators
 
-        self.record_precheck_error_type = ParserErrorCategoryChoices.PRE_CHECK
+        self.precheck_error_generator_type = ErrorGeneratorType.PRE_CHECK
+        self.field_error_generator_type = ErrorGeneratorType.PRE_CHECK
 
 
 class FRASchema(RowSchema):
@@ -334,10 +357,10 @@ class FRASchema(RowSchema):
             quiet_preparser_errors,
         )
 
-        self.record_precheck_error_type = ParserErrorCategoryChoices.CASE_CONSISTENCY
-        self.field_error_type = ParserErrorCategoryChoices.CASE_CONSISTENCY
+        self.precheck_error_generator_type = ErrorGeneratorType.FRA
+        self.field_error_generator_type = ErrorGeneratorType.FRA
 
-    def parse_and_validate(self, row: RawRow, generate_error):
+    def parse_and_validate(self, row: RawRow):
         """Run all validation steps in order, and parse the given row into a record."""
         # Parse FRA row and run field validators, waiting for guidance on other categories of validators
         # The implementor should reference `UpdatedErrorReport.xlsx` to gain insight into appropriate
@@ -348,7 +371,7 @@ class FRASchema(RowSchema):
 
         # run preparsing validators
         preparsing_is_valid, preparsing_errors = self.run_preparsing_validators(
-            row, record, generate_error
+            row, record
         )
         is_quiet_preparser_errors = (
             self.quiet_preparser_errors
@@ -362,68 +385,66 @@ class FRASchema(RowSchema):
                 f"{len(preparsing_errors)} category4 preparser error(s) encountered."
             )
 
-        fields_are_valid, field_errors = self.run_field_validators(
-            record, generate_error
-        )
+        fields_are_valid, field_errors = self.run_field_validators(record, row.row_num)
 
         is_valid = fields_are_valid and preparsing_is_valid
 
         return SchemaResult(record, is_valid, field_errors + preparsing_errors)
 
-    def run_field_validators(self, record, generate_error):
-        """
-        Run all validators for each field in the parsed model.
+    # def run_field_validators(self, record, row_number):
+    #     """
+    #     Run all validators for each field in the parsed model.
 
-        NOTE: FRA (for the moment) needs all field based validators to produce category1 errors. This is the same exact
-        logic as RowSchema.run_field_validators, but we need to override it here to ensure that the error category is
-        correct.
-        """
-        is_valid = True
-        errors = []
+    #     NOTE: FRA (for the moment) needs all field based validators to produce category4 errors. This is the same exact
+    #     logic as RowSchema.run_field_validators, but we need to override it here to ensure that the error category is
+    #     correct.
+    #     """
+    #     is_valid = True
+    #     errors = []
 
-        for field in self.fields:
-            value = get_record_value_by_field_name(record, field.name)
-            eargs = ValidationErrorArgs(
-                value=value,
-                row_schema=self,
-                friendly_name=field.friendly_name,
-                item_num=field.item,
-            )
-            is_empty = value_is_empty(value, len(field.position))
-            if field.required and not is_empty:
-                for validator in field.validators:
-                    result = validator(value, eargs)
-                    is_valid = (
-                        False
-                        if (not result.valid and not field.ignore_errors)
-                        else is_valid
-                    )
-                    if result.error:
-                        errors.append(
-                            generate_error(
-                                schema=self,
-                                error_category=self.field_error_type,
-                                error_message=result.error,
-                                record=record,
-                                offending_field=field,
-                                fields=self.fields,
-                                deprecated=result.deprecated,
-                            )
-                        )
-            elif field.required:
-                is_valid = False
-                errors.append(
-                    generate_error(
-                        schema=self,
-                        error_category=ParserErrorCategoryChoices.PRE_CHECK,
-                        error_message=(
-                            f"{format_error_context(eargs)} "
-                            "field is required but a value was not provided."
-                        ),
-                        record=record,
-                        offending_field=field,
-                        fields=self.fields,
-                    )
-                )
+    #     for field in self.fields:
+    #         value = get_record_value_by_field_name(record, field.name)
+    #         eargs = ValidationErrorArgs(
+    #             value=value,
+    #             row_schema=self,
+    #             friendly_name=field.friendly_name,
+    #             item_num=field.item,
+    #         )
+    #         is_empty = value_is_empty(value, len(field.position))
+    #         if field.required and not is_empty:
+    #             for validator in field.validators:
+    #                 result = validator(value, eargs)
+    #                 is_valid = (
+    #                     False
+    #                     if (not result.valid and not field.ignore_errors)
+    #                     else is_valid
+    #                 )
+    #                 if result.error_message:
+    #                     errors.append(
+    #                         generate_error(
+    #                             schema=self,
+    #                             error_category=self.field_error_type,
+    #                             error_message=result.error_message,
+    #                             record=record,
+    #                             offending_field=field,
+    #                             fields=self.fields,
+    #                             deprecated=result.deprecated,
+    #                         )
+    #                     )
+    #         elif field.required:
+    #             is_valid = False
+    #             errors.append(
+    #                 generate_error(
+    #                     schema=self,
+    #                     error_category=ParserErrorCategoryChoices.PRE_CHECK,
+    #                     error_message=(
+    #                         f"{format_error_context(eargs)} "
+    #                         "field is required but a value was not provided."
+    #                     ),
+    #                     record=record,
+    #                     offending_field=field,
+    #                     fields=self.fields,
+    #                 )
+    #             )
 
-        return is_valid, errors
+    #     return is_valid, errors

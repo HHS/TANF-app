@@ -218,7 +218,7 @@ class DecoderFactory:
         """Try and determine what decoder to use based on file encoding and magic numbers."""
         # We need to guarantee that the file pointer is at the first byte
         raw_file.seek(0)
-        extension = os.path.splitext(raw_file.name)[-1]
+        extension = os.path.splitext(raw_file.name)[-1].lower()
 
         # If our file has size zero, use the extension to try and determine the correct decoder. Default to UTF8 in
         # the worst case.

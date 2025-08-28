@@ -27,7 +27,7 @@ def _validate_and_assert(
 ):
     result = validator(line, _make_eargs(line))
     assert result.valid == exp_result
-    assert result.error == exp_message
+    assert result.error_message == exp_message
     assert result.deprecated == exp_deprecated
 
 

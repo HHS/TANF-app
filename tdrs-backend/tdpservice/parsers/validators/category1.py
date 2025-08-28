@@ -1,7 +1,6 @@
 """Overloads and custom validators for category 1 (preparsing)."""
 
 from tdpservice.parsers.dataclasses import RawRow, ValidationErrorArgs
-from tdpservice.parsers.models import ParserErrorCategoryChoices
 from tdpservice.parsers.util import fiscal_to_calendar, year_month_to_year_quarter
 from tdpservice.parsers.validators import base
 from tdpservice.parsers.validators.util import (
@@ -123,7 +122,7 @@ def validate_fieldYearMonth_with_headerYearQuarter():
         if not is_valid:
             return Result(
                 valid=False,
-                error=(
+                error_message=(
                     f"{eargs.row_schema.record_type}: Reporting month year {val} "
                     f"does not match file reporting year:{eargs.row_schema.datafile.year}, "
                     f"quarter:{eargs.row_schema.datafile.quarter}."
@@ -144,7 +143,7 @@ def validate_exit_date_against_fiscal_period():
         if not is_valid:
             return Result(
                 valid=False,
-                error=(
+                error_message=(
                     f"Exit date ({val}) is not valid. Date must be in the range of "
                     f"{eargs.row_schema.datafile.fiscal_year}"
                 ),
@@ -175,11 +174,11 @@ def t3_m3_child_validator(which_child):
         elif not len(row) >= 60:
             return Result(
                 valid=False,
-                error=f"The first child record is too short at {len(row)} "
+                error_message=f"The first child record is too short at {len(row)} "
                 "characters and must be at least 60 characters.",
             )
         else:
-            return Result(valid=False, error="The first child record is empty.")
+            return Result(valid=False, error_message="The first child record is empty.")
 
     def t3_second_child_validator_func(row: RawRow, eargs):
         if (
@@ -192,13 +191,15 @@ def t3_m3_child_validator(which_child):
         elif not len(row) >= 101:
             return Result(
                 valid=False,
-                error=(
+                error_message=(
                     f"The second child record is too short at {len(row)} "
                     "characters and must be at least 101 characters."
                 ),
             )
         else:
-            return Result(valid=False, error="The second child record is empty.")
+            return Result(
+                valid=False, error_message="The second child record is empty."
+            )
 
     return (
         t3_first_child_validator_func
@@ -222,9 +223,7 @@ def calendarQuarterIsValid(start=0, end=None):
 # file pre-check validators
 # TODO: the validators below are called explicitly with the ability to generate an error. They need a different method
 # to deprecate themselves if we ever choose to.
-def validate_tribe_fips_program_agree(
-    program_type, tribe_code, state_fips_code, generate_error
-):
+def validate_tribe_fips_program_agree(program_type, tribe_code, state_fips_code):
     """Validate tribe code, fips code, and program type all agree with eachother."""
     is_valid = False
 
@@ -235,38 +234,30 @@ def validate_tribe_fips_program_agree(
     else:
         is_valid = value_is_empty(tribe_code, 3, extra_vals={"0" * 3})
 
-    error = None
+    error_message = None
     if not is_valid:
-        error = generate_error(
-            schema=None,
-            error_category=ParserErrorCategoryChoices.PRE_CHECK,
-            error_message=f"Tribe Code ({tribe_code}) inconsistency with Program Type ({program_type}) and "
-            + f"FIPS Code ({state_fips_code}).",
-            record=None,
-            field=None,
+        error_message = (
+            f"Tribe Code ({tribe_code}) inconsistency with Program Type ({program_type}) and "
+            f"FIPS Code ({state_fips_code})."
         )
 
-    return Result(valid=is_valid, error=error)
+    return Result(valid=is_valid, error_message=error_message)
 
 
-def validate_header_section_matches_submission(datafile, section, generate_error):
+def validate_header_section_matches_submission(datafile, section):
     """Validate header section matches submission section."""
     is_valid = datafile.section == section
 
-    error = None
+    error_message = None
     if not is_valid:
-        error = generate_error(
-            schema=None,
-            error_category=ParserErrorCategoryChoices.PRE_CHECK,
-            error_message=f"Data does not match the expected layout for {datafile.section}.",
-            record=None,
-            field=None,
+        error_message = (
+            f"Data does not match the expected layout for {datafile.section}."
         )
 
-    return Result(valid=is_valid, error=error)
+    return Result(valid=is_valid, error_message=error_message)
 
 
-def validate_header_rpt_month_year(datafile, header, generate_error):
+def validate_header_rpt_month_year(datafile, header):
     """Validate header rpt_month_year."""
     # the header year/quarter represent a calendar period, and frontend year/qtr represents a fiscal period
     header_calendar_qtr = f"Q{header['quarter']}"
@@ -282,14 +273,10 @@ def validate_header_rpt_month_year(datafile, header, generate_error):
         and file_calendar_qtr == header_calendar_qtr
     )
 
-    error = None
+    error_message = None
     if not is_valid:
-        error = generate_error(
-            schema=None,
-            error_category=ParserErrorCategoryChoices.PRE_CHECK,
-            error_message=f"Submitted reporting year:{header['year']}, quarter:Q{header['quarter']} doesn't match "
-            + f"file reporting year:{datafile.year}, quarter:{datafile.quarter}.",
-            record=None,
-            field=None,
+        error_message = (
+            f"Submitted reporting year:{header['year']}, quarter:Q{header['quarter']} doesn't match "
+            + f"file reporting year:{datafile.year}, quarter:{datafile.quarter}."
         )
-    return Result(valid=is_valid, error=error)
+    return Result(valid=is_valid, error_message=error_message)

@@ -27,6 +27,8 @@ class ParserErrorAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "case_number",
         "error_message",
         "error_type",
+        "fields_json",
+        "values_json",
     ]
 
 

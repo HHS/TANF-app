@@ -1,4 +1,5 @@
 """Set permissions for users."""
+
 import logging
 from collections import ChainMap
 from copy import deepcopy
@@ -286,3 +287,27 @@ class FeedbackPermissions(permissions.BasePermission):
 
         # Non-admin users can only access their own feedback
         return obj.user == request.user
+
+
+class CypressAdminAccountPermissions(permissions.BasePermission):
+    """Permission class for Cypress viewsets.
+
+    Permissions rules:
+    - Only approved admin users with `cypress-` usernames may modify data
+    """
+
+    def has_permission(self, request, view):
+        """Admin cypress users have access to all data."""
+        is_admin = request.user.groups.filter(
+            name__in=["OFA System Admin", "OFA Admin"]
+        ).exists()
+
+        return is_admin and request.user.username.startswith("cypress-")
+
+    def has_object_permission(self, request, view, obj):
+        """Admin cypress users can modify objects."""
+        is_admin = request.user.groups.filter(
+            name__in=["OFA System Admin", "OFA Admin"]
+        ).exists()
+
+        return is_admin and request.user.username.startswith("cypress-")

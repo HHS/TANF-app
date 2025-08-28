@@ -72,11 +72,15 @@ export const accountCanViewAdmin = (state) =>
     'System Owner',
   ].includes(selectPrimaryUserRole(state)?.name)
 
-export const accountCanViewPlg = (state) =>
+export const accountCanViewGrafana = (state) =>
   accountStatusIsApproved(state) &&
   ['OFA System Admin', 'Developer', 'DIGIT Team'].includes(
     selectPrimaryUserRole(state)?.name
   )
+
+export const accountCanViewAlerts = (state) =>
+  accountStatusIsApproved(state) &&
+  ['OFA System Admin', 'Developer'].includes(selectPrimaryUserRole(state)?.name)
 
 export const accountIsRegionalStaff = (state) =>
   accountStatusIsApproved(state) &&
