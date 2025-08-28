@@ -153,6 +153,7 @@ class CaseConsistencyValidator:
         self.duplicate_manager.add_record(
             record, latest_case_hash, schema, row, line_number
         )
+
         self.num_errors += self.duplicate_manager.get_num_dup_errors(
             case_hash_to_remove
         )
