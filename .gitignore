@@ -2,6 +2,7 @@
 tdrs-frontend/node_modules/
 tdrs-frontend/build/
 tdrs-frontend/coverage/
+tdrs-frontend/cypress/downloads/
 tdrs-frontend/cypress/videos/
 tdrs-frontend/cypress/screenshots/
 tdrs-frontend/cypress/fixtures/example.json
@@ -11,6 +12,7 @@ tdrs-frontend/yarn-error.log*
 tdrs-frontend/vars-frontend.yml
 tdrs-frontend/pa11y-screenshots/*
 .eslintcache
+downloads/
 
 # Don't commit local environment override files
 tdrs-frontend/.env*.local
