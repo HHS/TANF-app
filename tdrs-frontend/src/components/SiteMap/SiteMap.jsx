@@ -3,9 +3,9 @@ import { useSelector } from 'react-redux'
 import {
   accountStatusIsApproved,
   accountCanViewAdmin,
-  selectUserPermissions,
   accountCanViewGrafana,
   accountCanViewAlerts,
+  selectUserPermissions,
 } from '../../selectors/auth'
 
 const SiteMap = ({ user }) => {
