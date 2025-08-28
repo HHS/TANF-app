@@ -1,11 +1,12 @@
 """Test the CaseConsistencyValidator and SortedRecordSchemaPairs classes."""
 
-from io import StringIO
 import logging
+from io import StringIO
 
 import pytest
 
 from tdpservice.parsers.dataclasses import RawRow
+from tdpservice.parsers.error_generator import ErrorGeneratorFactory, ErrorGeneratorType
 from tdpservice.parsers.models import ParserErrorCategoryChoices
 from tdpservice.parsers.test import factories
 from tdpservice.stts.models import STT
@@ -34,9 +35,9 @@ class TestCaseConsistencyValidator:
             row_num=1,
             record_type="HEADER",
         )
-        return schema_defs.header.parse_and_validate(
-            row, util.make_generate_file_precheck_parser_error(datafile, 1)
-        )
+        header_schema = schema_defs.header
+        header_schema.prepare(datafile)
+        return header_schema.parse_and_validate(row)
 
     @pytest.fixture
     def tanf_s1_records(self):
@@ -83,7 +84,9 @@ class TestCaseConsistencyValidator:
             small_correct_file_header,
             small_correct_file_header["program_type"],
             STT.EntityType.STATE,
-            util.make_generate_case_consistency_parser_error(small_correct_file),
+            ErrorGeneratorFactory(small_correct_file).get_generator(
+                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+            ),
         )
 
         line_number = 1
@@ -221,7 +224,9 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             stt_type,
-            util.make_generate_case_consistency_parser_error(small_correct_file),
+            ErrorGeneratorFactory(small_correct_file).get_generator(
+                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+            ),
         )
 
         t1s = [
@@ -329,7 +334,9 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             stt_type,
-            util.make_generate_case_consistency_parser_error(small_correct_file),
+            ErrorGeneratorFactory(small_correct_file).get_generator(
+                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+            ),
         )
 
         t1s = [
@@ -408,7 +415,9 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             stt_type,
-            util.make_generate_case_consistency_parser_error(small_correct_file),
+            ErrorGeneratorFactory(small_correct_file).get_generator(
+                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+            ),
         )
 
         t2s = [
@@ -542,7 +551,9 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             stt_type,
-            util.make_generate_case_consistency_parser_error(small_correct_file),
+            ErrorGeneratorFactory(small_correct_file).get_generator(
+                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+            ),
         )
 
         t1s = [
@@ -647,7 +658,9 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             stt_type,
-            util.make_generate_case_consistency_parser_error(small_correct_file),
+            ErrorGeneratorFactory(small_correct_file).get_generator(
+                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+            ),
         )
 
         t4s = [
@@ -743,7 +756,9 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             stt_type,
-            util.make_generate_case_consistency_parser_error(small_correct_file),
+            ErrorGeneratorFactory(small_correct_file).get_generator(
+                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+            ),
         )
 
         t4s = [
@@ -839,7 +854,9 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             stt_type,
-            util.make_generate_case_consistency_parser_error(small_correct_file),
+            ErrorGeneratorFactory(small_correct_file).get_generator(
+                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+            ),
         )
 
         t4s = [
@@ -943,7 +960,9 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             stt_type,
-            util.make_generate_case_consistency_parser_error(small_correct_file),
+            ErrorGeneratorFactory(small_correct_file).get_generator(
+                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+            ),
         )
 
         t4s = [
@@ -1028,12 +1047,15 @@ class TestCaseConsistencyValidator:
 
         (T4Factory, t4_schema, t4_model_name, rpt_item_num, case_item_num) = T4Stuff
         (T5Factory, t5_schema, t5_model_name) = T5Stuff
+        error_generator = ErrorGeneratorFactory(small_correct_file).get_generator(
+            ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+        )
 
         case_consistency_validator = ExplodingSection2Validator(
             header,
             header["program_type"],
             stt_type,
-            util.make_generate_case_consistency_parser_error(small_correct_file),
+            error_generator,
         )
 
         t4s = [
@@ -1119,7 +1141,9 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             stt_type,
-            util.make_generate_case_consistency_parser_error(small_correct_file),
+            ErrorGeneratorFactory(small_correct_file).get_generator(
+                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+            ),
         )
 
         t5s = [
@@ -1204,7 +1228,9 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             STT.EntityType.TERRITORY,
-            util.make_generate_case_consistency_parser_error(small_correct_file),
+            ErrorGeneratorFactory(small_correct_file).get_generator(
+                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+            ),
         )
 
         t4s = [
@@ -1293,7 +1319,9 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             STT.EntityType.TERRITORY,
-            util.make_generate_case_consistency_parser_error(small_correct_file),
+            ErrorGeneratorFactory(small_correct_file).get_generator(
+                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+            ),
         )
 
         t4s = [
@@ -1387,7 +1415,9 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             STT.EntityType.TERRITORY,
-            util.make_generate_case_consistency_parser_error(small_correct_file),
+            ErrorGeneratorFactory(small_correct_file).get_generator(
+                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+            ),
         )
 
         t4s = [
@@ -1476,7 +1506,9 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             STT.EntityType.STATE,
-            util.make_generate_case_consistency_parser_error(small_correct_file),
+            ErrorGeneratorFactory(small_correct_file).get_generator(
+                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+            ),
         )
 
         t4s = [
@@ -1575,7 +1607,9 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             STT.EntityType.TERRITORY,
-            util.make_generate_case_consistency_parser_error(small_correct_file),
+            ErrorGeneratorFactory(small_correct_file).get_generator(
+                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+            ),
         )
 
         t4s = [
@@ -1674,7 +1708,9 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             STT.EntityType.STATE,
-            util.make_generate_case_consistency_parser_error(small_correct_file),
+            ErrorGeneratorFactory(small_correct_file).get_generator(
+                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+            ),
         )
 
         t4s = [
@@ -1765,7 +1801,9 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             stt_type,
-            util.make_generate_case_consistency_parser_error(small_correct_file),
+            ErrorGeneratorFactory(small_correct_file).get_generator(
+                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+            ),
         )
 
         t1 = T1Factory.build(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
@@ -1896,7 +1934,9 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             stt_type,
-            util.make_generate_case_consistency_parser_error(small_correct_file),
+            ErrorGeneratorFactory(small_correct_file).get_generator(
+                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+            ),
         )
 
         t1 = T1Factory.build(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
@@ -2041,7 +2081,9 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             STT.EntityType.STATE,
-            util.make_generate_case_consistency_parser_error(small_correct_file),
+            ErrorGeneratorFactory(small_correct_file).get_generator(
+                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+            ),
         )
 
         line_number = 1
@@ -2126,7 +2168,9 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             STT.EntityType.STATE,
-            util.make_generate_case_consistency_parser_error(small_correct_file),
+            ErrorGeneratorFactory(small_correct_file).get_generator(
+                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+            ),
         )
 
         line_number = 1
@@ -2227,7 +2271,9 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             STT.EntityType.STATE,
-            util.make_generate_case_consistency_parser_error(small_correct_file),
+            ErrorGeneratorFactory(small_correct_file).get_generator(
+                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+            ),
         )
 
         line_number = 1
@@ -2291,7 +2337,9 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             STT.EntityType.STATE,
-            util.make_generate_case_consistency_parser_error(small_correct_file),
+            ErrorGeneratorFactory(small_correct_file).get_generator(
+                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+            ),
         )
 
         line_number = 1
