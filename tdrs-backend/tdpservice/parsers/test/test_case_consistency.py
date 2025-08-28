@@ -1,6 +1,5 @@
 """Test the CaseConsistencyValidator and SortedRecordSchemaPairs classes."""
 
-from io import StringIO
 import logging
 from io import StringIO
 
