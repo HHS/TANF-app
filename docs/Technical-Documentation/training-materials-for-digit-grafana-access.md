@@ -6,7 +6,8 @@ Grafana enables DIGIT to query, visualize, alert on, and explore [metrics, logs,
 
 Access Grafana by clicking the link in the top navigation of TANF Data Portal and log in using your assigned username and password.
 
-<div align="left"><figure><img src="../../../.gitbook/assets/Screenshot 2025-08-05 at 12.21.16 PM.png" alt="" width="563"><figcaption><p>The top navigation menu on TANF Data Portal includes a link to Grafana.</p></figcaption></figure></div>
+<img width="599" height="169" alt="Screenshot 2025-08-05 at 12 21 16 PM" src="https://github.com/user-attachments/assets/a5afb86f-839f-47c2-a848-91ee72cad6f5" />
+The top navigation menu on TANF Data Portal includes a link to Grafana.
 
 With your access, you can:
 
@@ -15,7 +16,9 @@ With your access, you can:
 * Export individual widgets from dashboards
 * Run queries to explore data as needed
 
-<figure><img src="/images/grafana-guide/Screenshot 2025-05-30 at 10.19.15 AM.png" alt=""><figcaption><p>Login screen for Grafana</p></figcaption></figure>
+
+<img width="1625" height="879" alt="Screenshot 2025-05-30 at 10 19 15 AM" src="https://github.com/user-attachments/assets/5227945c-f90b-46b6-b679-09a6e0bd93bb" />
+Login screen for Grafana
 
 If you encounter any issues logging in or accessing certain features, please contact **tanfdata@acf.hhs.gov**.
 
@@ -31,13 +34,17 @@ _Note: Time settings are saved on a per-dashboard basis._
 
 To view the **time range** setting on a dashboard, hover over the time menu located in the top menu.
 
-<div align="left"><figure><img src="images/grafana-guide/Screenshot 2025-06-23 at 11.04.41 AM.png" alt="The &#x22;Share&#x22; button is located at the top of the page, in the second row of content, to the right of the Dashboard breadcrumb navigation"><figcaption><p>The <strong>Time</strong> menu is located at the top of the page, to the right of the <strong>Share</strong> button</p></figcaption></figure></div>
+<img width="1190" height="88" alt="Screenshot 2025-06-23 at 11 04 41 AM" src="https://github.com/user-attachments/assets/f8c51027-130a-4e5b-b4e7-9f2a93096b36" />
+The <strong>Time</strong> menu is located at the top of the page, to the right of the <strong>Share</strong> button
 
-<div align="left"><figure><img src="/images/grafana-guide/Screenshot 2025-06-25 at 11.09.27 AM.png" alt="" width="248"><figcaption><p>Hovering over the menu displays the current time range setting</p></figcaption></figure></div>
+
+<img width="165" height="152" alt="Screenshot 2025-06-25 at 11 09 27 AM" src="https://github.com/user-attachments/assets/0b390fe0-4722-4930-9d14-de7fec638d7f" />
+Hovering over the menu displays the current time range setting
 
 DIGIT dashboards reflect the most recent records, so choose a time range within the last 24 hours. To adjust the **time range** on a dashboard, click the time menu to select a relative time range or set custom absolute time ranges.
 
-<div align="left"><figure><img src="/images/grafana-guide/Screenshot 2025-06-25 at 11.09.43 AM.png" alt="" width="563"><figcaption><p>The time menu provides inputs to set absolute and relative time ranges or select common or recently used time ranges</p></figcaption></figure></div>
+<img width="548" height="435" alt="Screenshot 2025-06-25 at 11 09 43 AM" src="https://github.com/user-attachments/assets/f9660be1-1c88-4415-b22f-950ea325bedc" />
+The time menu provides inputs to set absolute and relative time ranges or select common or recently used time ranges
 
 The **timezone** and **fiscal year** settings can be changed from the **time** menu by clicking the **Change time settings** button.
 
@@ -49,7 +56,8 @@ _Additional information about supported time units and relative ranges can be fo
 
 Variables can be used to dynamically change the data displayed on a dashboard. They are displayed as dropdown lists at the top of the dashboard.
 
-<figure><img src="/images/grafana-guide/Screenshot 2025-06-25 at 12.25.03 PM.png" alt=""><figcaption><p>Variables are located at the top of the dashboard and appear as dropdown menus</p></figcaption></figure>
+<img width="1418" height="141" alt="Screenshot 2025-06-25 at 12 25 03 PM" src="https://github.com/user-attachments/assets/4245f206-f516-415d-aa87-964f7f6b2052" />
+Variables are located at the top of the dashboard and appear as dropdown menus
 
 _Advanced documentation about creating and working with variables can be found in the_ [_Variables_](https://grafana.com/docs/grafana/latest/dashboards/variables/) _section of the Grafana documentation site._
 
@@ -57,11 +65,14 @@ _Advanced documentation about creating and working with variables can be found i
 
 1. Click the **Menu** in the upper right corner of a panel, and select **Inspect**, then select **Data** (keyboard shortcut i)
 
-<div align="left"><figure><img src="/images/grafana-guide/Screenshot 2025-07-22 at 4.14.01 PM.png" alt="" width="328"><figcaption><p>Clicking <strong>Inspect</strong> will open a side panel to look at the data, stats, and JSON </p></figcaption></figure></div>
+<img width="328" height="183" alt="Screenshot 2025-07-22 at 4 14 01 PM" src="https://github.com/user-attachments/assets/de16f3d4-06e2-4e92-b1f6-c0d88fbb01a8" />
+Clicking <strong>Inspect</strong> will open a side panel to look at the data, stats, and JSON
 
 2. Click **Data options** to adjust settings, then click **Download CSV**
 
-<div align="left"><figure><img src="/images/grafana-guide/Screenshot 2025-07-22 at 4.15.14 PM.png" alt=""><figcaption><p>Clicking <strong>Data options</strong> opens a dropdown to toggle <strong>Formatted data</strong> and <strong>Download for Excel</strong></p></figcaption></figure></div>
+
+<img width="620" height="300" alt="Screenshot 2025-07-22 at 4 15 14 PM" src="https://github.com/user-attachments/assets/819ada6d-8506-46e6-87e1-2837e642f82d" />
+Clicking <strong>Data options</strong> opens a dropdown to toggle <strong>Formatted data</strong> and <strong>Download for Excel</strong>
 
 ## Querying  Datasets&#x20;
 
@@ -78,7 +89,8 @@ You can use the Query inspector to inspect raw data, export data to a CSV file, 
 
 For queries that could potentially return more than 1 million records at a time, it is recommended to filter records by reporting month.&#x20;
 
-<figure><img src="/images/grafana-guide/Screenshot (32).png" alt=""><figcaption><p>A warning will occur when the 1 million row limit is reached.</p></figcaption></figure>
+<img width="1575" height="543" alt="Screenshot (32)" src="https://github.com/user-attachments/assets/5e70c74d-edd3-4d70-a7ad-3538a72b63f1" />
+A warning will occur when the 1 million row limit is reached.
 
 If you receive a Warning that there are more than 20 columns in the query, you can choose to show all columns.
 
@@ -87,7 +99,8 @@ If you receive a Warning that there are more than 20 columns in the query, you c
 5. To export the query results, click the **Query inspector** button at the bottom of the query row, then select the **Data** tab
 6. [Open the **Data options** section to change the settings as needed, then click the **Download CSV** button](#user-content-fn-3)
 
-<figure><img src="/images/grafana-guide/Screenshot 2025-06-30 at 3.17.48 PM.png" alt=""><figcaption><p>The <strong>Query inspector</strong> button is below the query row, and opens a panel below with tabs for Stats, Query, JSON, and Data. Select the <strong>Data</strong> tab to download a CSV</p></figcaption></figure>
+<img width="1033" height="588" alt="Screenshot 2025-06-30 at 3 17 48 PM" src="https://github.com/user-attachments/assets/c5a370d6-c908-4622-8026-9269076ff062" />
+The <strong>Query inspector</strong> button is below the query row, and opens a panel below with tabs for Stats, Query, JSON, and Data. Select the <strong>Data</strong> tab to download a CSV
 
 ### Examples of common SQL queries
 
@@ -103,7 +116,9 @@ To use the **Builder** UI to create a query to preview data from a table:
 1. Select the **Column** (selecting \* means you would like to retrieve all columns)
 2. _(Optional)_ Ensure the **Order** toggle is selected to limit results
 
-<figure><img src="/images/grafana-guide/Screenshot 2025-06-30 at 2.00.16 PM.png" alt=""><figcaption><p>An example of using the <strong>Builder</strong> UI to preview data from a table</p></figcaption></figure>
+
+<img width="1101" height="564" alt="Screenshot 2025-06-30 at 2 00 16 PM" src="https://github.com/user-attachments/assets/5c18f601-38a8-43a2-aa0e-a74c7b6b1eae" />
+An example of using the <strong>Builder</strong> UI to preview data from a table
 
 The same query can be written in SQL and run in the **Code** view
 
@@ -125,7 +140,9 @@ To build a query that compares the total number of records versus unique cases:
     _Note: The Builder UI does not provide a way to remove duplicate rows from the result set using the_ DISTINCT _keyword; if this action is desired, using the Code method to input your query will provide more flexibility_
 5. Click the **Run query** button
 
-<figure><img src="/images/grafana-guide/Screenshot 2025-06-30 at 2.30.23 PM.png" alt=""><figcaption><p>An example of using the <strong>Builder</strong> UI to aggregate data to compare total records versus unique cases</p></figcaption></figure>
+
+<img width="1108" height="587" alt="Screenshot 2025-06-30 at 2 30 23 PM" src="https://github.com/user-attachments/assets/f3230490-09a9-4cad-833f-23d9463d08d6" />
+An example of using the <strong>Builder</strong> UI to aggregate data to compare total records versus unique cases
 
 The same query can be written in SQL and run in the **Code** view:
 
@@ -150,7 +167,9 @@ FROM tanf_t1;-- TANF, active t1 (family-level) records
     _Note: The Builder UI limits ordering to one attribute, if multiple ordering attributes are desired, the Code option will provide more flexibility_
 9. Click the **Run query** button
 
-<figure><img src="/images/grafana-guide/Screenshot 2025-06-30 at 4.15.05 PM.png" alt=""><figcaption><p>An example of using the <strong>Builder</strong> UI to group data by column and order by data type</p></figcaption></figure>
+
+<img width="889" height="622" alt="Screenshot 2025-06-30 at 4 15 05 PM" src="https://github.com/user-attachments/assets/9f89b3b1-e429-4207-b588-56d5b39eaee5" />
+An example of using the <strong>Builder</strong> UI to group data by column and order by data type
 
 The same query can be written in SQL and run in the **Code** view:
 
