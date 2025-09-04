@@ -40,9 +40,7 @@ Cypress.Commands.add('login', (username) => {
       .invoke('dispatch', {
         type: 'SET_AUTH',
         payload: {
-          user: {
-            email: username,
-          },
+          user: response?.body?.user
         },
       })
 
@@ -160,7 +158,7 @@ Cypress.Commands.add(
 
 Cypress.Commands.add(
   'waitForDataFileSummary',
-  (fileId, maxAttempts = 60, interval = 1000) => {
+  (fileId, maxAttempts = 60, interval = 2000) => {
     // Function to check if summary exists and is populated
     const checkSummary = (response) => {
       return (
