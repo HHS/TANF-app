@@ -267,8 +267,9 @@ services:
       - GRAFANA_USER
       - OFA_DB_PASSWORD
       - OFA_DB_USER
-
       - OTEL_PYTHON_DJANGO_EXCLUDED_URLS
+      - SENTRY_DSN
+      - ENABLE_SENTRY
     volumes:
       - .:/tdpapp
       - logs:/tmp
