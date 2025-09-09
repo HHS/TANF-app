@@ -14,6 +14,10 @@ export const ACTORS = {
     role: 'Data Analyst',
     username: 'tara-cypress@teamraft.com',
   },
+  'DIGIT Diana': {
+    role: 'DIGIT Team',
+    username: 'diana-cypress@teamraft.com',
+  },
   'Regional Staff Cypress': {
     role: 'OFA Regional Staff',
     username: 'cypress-regional-staff@teamraft.com',
@@ -21,6 +25,18 @@ export const ACTORS = {
   'New Cypress': {
     role: 'Data Analyst',
     username: 'new-cypress@teamraft.com',
+  },
+  'Regional Randy': {
+    role: 'Regional Staff',
+    username: 'cypress-regional-randy@acf.hhs.gov',
+  },
+  'Admin Alex': {
+    role: 'OFA System Admin',
+    username: 'cypress-admin-alex@acf.hhs.gov',
+  },
+  'FRA Data Analyst Fred': {
+    role: 'Data Analyst',
+    username: 'cypress-fra-data-analyst-fred@teamraft.com',
   },
   'Unapproved Alex': {
     role: 'System Admin',
@@ -76,7 +92,13 @@ const setAccountStatus = (actor, status) => {
   })
 }
 
+export const clearCookies = () => {
+  cy.clearCookie('sessionid')
+  cy.clearCookie('csrftoken')
+}
+
 Given('{string} logs in', (actor) => {
+  clearCookies()
   cy.visit('/')
   cy.adminLogin('cypress-admin-alex@teamraft.com')
   cy.contains('Sign into TANF Data Portal', { timeout: 30000 })
