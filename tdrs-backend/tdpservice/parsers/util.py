@@ -221,9 +221,7 @@ def generate_t1_t4_hashes(row: RawRow, record):
         f"Partial Hash Field Values: for T1/T4: {record.RecordType} {str(record.RPT_MONTH_YEAR)} "
     )
     return hash(row), hash(
-        record.RecordType
-        + str(record.RPT_MONTH_YEAR or "")
-        + str(record.CASE_NUMBER or "")
+        (record.RecordType, record.RPT_MONTH_YEAR, record.CASE_NUMBER)
     )
 
 
@@ -233,12 +231,14 @@ def generate_t2_t3_t5_hashes(row: RawRow, record):
         f"Partial Hash Field Values: for T2/T3/T5: {record.RecordType} {str(record.RPT_MONTH_YEAR)} "
     )
     return hash(row), hash(
-        record.RecordType
-        + str(record.RPT_MONTH_YEAR or "")
-        + str(record.CASE_NUMBER or "")
-        + str(record.FAMILY_AFFILIATION or "")
-        + str(record.DATE_OF_BIRTH or "")
-        + str(record.SSN or "")
+        (
+            record.RecordType,
+            record.RPT_MONTH_YEAR,
+            record.CASE_NUMBER,
+            record.FAMILY_AFFILIATION,
+            record.DATE_OF_BIRTH,
+            record.SSN,
+        )
     )
 
 

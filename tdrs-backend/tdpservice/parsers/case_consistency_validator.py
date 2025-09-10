@@ -112,7 +112,7 @@ class CaseConsistencyValidator:
         # record type.
         if not self.case_is_section_one_or_two:
             return hash(record.RecordType)
-        return hash(str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER)
+        return hash((record.RPT_MONTH_YEAR, record.CASE_NUMBER))
 
     def add_record(self, record, schema, row: RawRow, line_number, case_has_errors):
         """Add record to cache, validate if new case is detected, and check for duplicate errors.
