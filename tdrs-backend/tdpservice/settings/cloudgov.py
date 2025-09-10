@@ -4,6 +4,10 @@ import json
 import logging
 import os
 from distutils.util import strtobool
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
+import django
 
 from tdpservice.settings.common import Common
 
@@ -259,3 +263,23 @@ class Production(CloudGov):
         "LOGIN_GOV_WELL_KNOWN_CONFIG",
         "https://secure.login.gov/.well-known/openid-configuration",
     )
+    sentry_sdk.init(
+            dsn=os.getenv("SENTRY_DSN"),
+            environment='production',
+            # Set traces_sample_rate to 1.0 to capture 100%
+            # of transactions for performance monitoring.
+            integrations=[
+                DjangoIntegration(
+                    transaction_style="url",
+                    middleware_spans=True,
+                    signals_spans=True,
+                    signals_denylist=[
+                        django.db.models.signals.pre_init,
+                        django.db.models.signals.post_init,
+                    ],
+                    cache_spans=False,
+                ),
+                LoggingIntegration(level=logging.ERROR, event_level=logging.ERROR),
+            ],
+            traces_sample_rate=1.0,
+        )
