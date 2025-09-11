@@ -148,11 +148,14 @@ export const waitForDataFileSummary = (
 }
 const TEST_DATA_DIR = '../tdrs-backend/tdpservice/parsers/test/data'
 
-export const openDataFilesAndSearch = (program, year, quarter) => {
+export const openDataFilesAndSearch = (program, year, quarter, stt = '') => {
   cy.visit('/data-files')
   cy.contains('Data Files').should('exist')
 
   // Submit search form
+  if (stt) {
+    cy.get('#stt').should('exist').type(`${stt}{enter}`)
+  }
   if (program === 'SSP') cy.get('label[for="ssp-moe"]').click()
 
   cy.get('#reportingYears').should('exist').select(year)
