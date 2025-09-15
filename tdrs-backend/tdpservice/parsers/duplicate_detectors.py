@@ -6,8 +6,7 @@ from enum import IntEnum
 from django.conf import settings
 
 from tdpservice.parsers.dataclasses import RawRow
-
-from .models import ParserErrorCategoryChoices
+from tdpservice.parsers.error_generator import ErrorGeneratorArgs
 
 logger = logging.getLogger(__name__)
 
@@ -122,14 +121,14 @@ class DuplicateDetector(ABC):
         @param is_new_max_precedence: boolean indicating if this error has the new max precedence
         """
         if has_precedence:
-            error = self.generate_error(
-                error_category=ParserErrorCategoryChoices.CASE_CONSISTENCY,
-                line_number=line_number,
-                schema=schema,
+            generator_args = ErrorGeneratorArgs(
                 record=record,
-                field=schema.fields,
+                schema=schema,
                 error_message=err_msg,
+                fields=schema.fields,
+                row_number=line_number,
             )
+            error = self.generate_error(generator_args)
             if is_new_max_precedence:
                 self.manager_error_dict[self.my_hash] = [error]
             else:

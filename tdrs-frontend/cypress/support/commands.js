@@ -40,9 +40,7 @@ Cypress.Commands.add('login', (username) => {
       .invoke('dispatch', {
         type: 'SET_AUTH',
         payload: {
-          user: {
-            email: username,
-          },
+          user: response?.body?.user,
         },
       })
 
@@ -87,6 +85,7 @@ Cypress.Commands.add(
     cy.get('@adminSessionId').then((sessionId) =>
       cy.setCookie('sessionid', sessionId)
     )
+    cy.clearCookie('csrftoken')
     cy.get('@adminCsrfToken').then((csrfToken) => {
       cy.setCookie('csrftoken', csrfToken)
       options.headers['X-CSRFToken'] = csrfToken
@@ -120,8 +119,11 @@ Cypress.Commands.add(
     options = {
       method,
       body,
-      headers,
       url: `${Cypress.env('apiUrl')}${path}`,
+      headers: {
+        ...headers,
+        Referer: `${Cypress.env('apiUrl')}`,
+      },
     }
 
     cy.get('@adminSessionId').then((sessionId) =>
@@ -155,5 +157,51 @@ Cypress.Commands.add(
     }
 
     return cy.get('@response')
+  }
+)
+
+Cypress.Commands.add(
+  'waitForDataFileSummary',
+  (fileId, maxAttempts = 60, interval = 2000) => {
+    // Function to check if summary exists and is populated
+    const checkSummary = (response) => {
+      return (
+        response &&
+        response.body &&
+        response.body.summary &&
+        Object.keys(response.body.summary).length > 0 &&
+        response.body.summary.status !== 'Pending'
+      )
+    }
+
+    const pollForProcessing = (attempt = 0) => {
+      // If we've exceeded max attempts, should we do anything else?
+      if (attempt >= maxAttempts) {
+        cy.log(
+          `Warning: Data file ${fileId} processing timeout after ${maxAttempts} attempts`
+        )
+        return cy.wrap({ id: fileId })
+      }
+
+      return cy
+        .request({
+          method: 'GET',
+          url: `${Cypress.env('apiUrl')}/data_files/${fileId}/`,
+          failOnStatusCode: false,
+        })
+        .then((response) => {
+          // If summary is populated, return the response
+          if (checkSummary(response)) {
+            return response
+          }
+
+          // Otherwise, wait and try again
+          cy.wait(interval)
+          return pollForProcessing(attempt + 1)
+        })
+    }
+
+    // Start polling
+    return pollForProcessing()
   }
 )

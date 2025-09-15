@@ -19,17 +19,18 @@ from tdpservice.parsers.aggregates import (
     fra_total_errors,
     total_errors_by_month,
 )
+from tdpservice.parsers.error_generator import (
+    ErrorGeneratorArgs,
+    ErrorGeneratorFactory,
+    ErrorGeneratorType,
+)
 from tdpservice.parsers.factory import ParserFactory
 from tdpservice.parsers.models import (
     DataFileSummary,
     ParserError,
     ParserErrorCategoryChoices,
 )
-from tdpservice.parsers.util import (
-    DecoderUnknownException,
-    log_parser_exception,
-    make_generate_parser_error,
-)
+from tdpservice.parsers.util import DecoderUnknownException, log_parser_exception
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 from tdpservice.users.models import AccountApprovalStatusChoices, User
 
@@ -142,18 +143,20 @@ def parse(data_file_id, reparse_id=None):
         )
         set_reparse_file_meta_model_failed_state(reparse_id, file_meta)
     except Exception as e:
-        generate_error = make_generate_parser_error(data_file, None)
-        error = generate_error(
+        generate_error = ErrorGeneratorFactory(data_file).get_error_generator(
+            ErrorGeneratorType.MSG_ONLY_PRECHECK,
+            None,
+        )
+        generator_args = ErrorGeneratorArgs(
+            record=None,
             schema=None,
-            error_category=ParserErrorCategoryChoices.PRE_CHECK,
             error_message=(
                 "We're sorry, an unexpected error has occurred and the file has been "
                 "rejected. Please contact the TDP support team at TANFData@acf.hhs.gov "
                 "for further assistance."
             ),
-            record=None,
-            field=None,
         )
+        error = generate_error(generator_args=generator_args)
         error.save()
         dfs.set_status(DataFileSummary.Status.REJECTED)
         dfs.save()

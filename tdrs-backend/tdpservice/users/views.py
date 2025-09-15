@@ -14,18 +14,29 @@ from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from tdpservice.users.models import AccountApprovalStatusChoices, Feedback, User
+from tdpservice.users.models import (
+    User,
+    AccountApprovalStatusChoices,
+    UserChangeRequest,
+    ChangeRequestAuditLog,
+    Feedback,
+)
 from tdpservice.users.permissions import (
+    CypressAdminAccountPermissions,
     DjangoModelCRUDPermissions,
     FeedbackPermissions,
     IsApprovedPermission,
     UserPermissions,
-)
+    IsOwnerOrAdmin
+    )
 from tdpservice.users.serializers import (
     FeedbackSerializer,
     GroupSerializer,
     UserProfileSerializer,
     UserSerializer,
+    UserProfileChangeRequestSerializer,
+    UserChangeRequestSerializer,
+    ChangeRequestAuditLogSerializer
 )
 
 logger = logging.getLogger(__name__)
@@ -47,6 +58,8 @@ class UserViewSet(
         """Return the serializer class."""
         return {
             "request_access": UserProfileSerializer,
+            "profile": UserProfileSerializer,
+            "update_profile": UserProfileChangeRequestSerializer,
         }.get(self.action, UserSerializer)
 
     def get_queryset(self):
@@ -94,6 +107,77 @@ class UserViewSet(
         )
         return Response(serializer.data)
 
+    @action(methods=["GET"], detail=False)
+    def profile(self, request):
+        """Get the current user's profile."""
+        serializer = self.get_serializer(self.request.user)
+        return Response(serializer.data)
+
+    @action(methods=["PATCH"], detail=False)
+    def update_profile(self, request):
+        """Update the current user's profile through change requests."""
+        serializer = self.get_serializer(self.request.user, request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        # Check if any change requests were created
+        user = self.request.user
+        pending_requests = user.get_pending_change_requests()
+
+        if pending_requests.exists():
+            logger.info(
+                "Change requests created for user: %s on %s", user, timezone.now()
+            )
+            # Return the updated serializer data with pending change request info
+            return Response({
+                'user': self.get_serializer(user).data,
+                'message': 'Your requested changes have been submitted for approval.',
+                'pending_requests': pending_requests.count()
+            })
+
+        return Response(serializer.data)
+
+
+class CypressAdminUserViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
+    """User accounts viewset for Cypress test updates."""
+
+    queryset = User.objects.select_related("stt").prefetch_related(
+        "groups__permissions"
+    )
+    permission_classes = [
+        IsAuthenticated,
+        IsApprovedPermission,
+        CypressAdminAccountPermissions,
+    ]
+    serializer_class = UserSerializer
+
+    def set_status(self, pk, approval_status):
+        """Update the user with the provided approval status."""
+        u = get_object_or_404(self.queryset, pk=pk)
+        u.account_approval_status = approval_status
+        u.save()
+        return Response(status=status.HTTP_200_OK)
+
+    @action(methods=["PATCH"], detail=True)
+    def set_initial(self, request, pk):
+        """Update user with initial approval status."""
+        return self.set_status(pk, AccountApprovalStatusChoices.INITIAL)
+
+    @action(methods=["PATCH"], detail=True)
+    def set_pending(self, request, pk):
+        """Update user with pending approval status."""
+        return self.set_status(pk, AccountApprovalStatusChoices.PENDING)
+
+    @action(methods=["PATCH"], detail=True)
+    def set_approved(self, request, pk):
+        """Update user with approved status."""
+        return self.set_status(pk, AccountApprovalStatusChoices.APPROVED)
+
 
 class GroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     """GET for groups (roles)."""
@@ -103,6 +187,40 @@ class GroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     permission_classes = [DjangoModelCRUDPermissions, IsApprovedPermission]
     serializer_class = GroupSerializer
 
+
+class UserChangeRequestViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for user change requests."""
+
+    serializer_class = UserChangeRequestSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
+
+    def get_queryset(self):
+        """Filter queryset based on user permissions."""
+        user = self.request.user
+        if user.is_ofa_sys_admin:
+            return UserChangeRequest.objects.all()
+
+        return UserChangeRequest.objects.filter(user=user)
+
+    def perform_create(self, serializer):
+        """Set user to current user if not specified."""
+        data = serializer.validated_data
+        if 'user' not in data:
+            data['user'] = self.request.user
+        serializer.save()
+
+class ChangeRequestAuditLogViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for change request audit logs."""
+
+    serializer_class = ChangeRequestAuditLogSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Only allow admins to access audit logs."""
+        user = self.request.user
+        if not user.is_ofa_sys_admin:
+            return ChangeRequestAuditLog.objects.none()
+        return ChangeRequestAuditLog.objects.all()
 
 class FeedbackViewSet(
     mixins.CreateModelMixin,

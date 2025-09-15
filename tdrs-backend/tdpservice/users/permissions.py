@@ -1,4 +1,5 @@
 """Set permissions for users."""
+
 import logging
 from collections import ChainMap
 from copy import deepcopy
@@ -127,6 +128,18 @@ class IsApprovedPermission(permissions.DjangoModelPermissions):
             and request.user.account_approval_status
             == AccountApprovalStatusChoices.APPROVED
         )
+
+
+class IsOwnerOrAdmin(permissions.DjangoModelPermissions):
+    """Permission to only allow owners of a change request or admins to view it."""
+
+    def has_object_permission(self, request, view, obj):
+        """Check if user is owner or admin."""
+        if request.user.is_ofa_sys_admin:
+            return True
+
+        # Allow owners
+        return obj.user == request.user
 
 
 class DjangoModelCRUDPermissions(permissions.DjangoModelPermissions):
@@ -286,3 +299,27 @@ class FeedbackPermissions(permissions.BasePermission):
 
         # Non-admin users can only access their own feedback
         return obj.user == request.user
+
+
+class CypressAdminAccountPermissions(permissions.BasePermission):
+    """Permission class for Cypress viewsets.
+
+    Permissions rules:
+    - Only approved admin users with `cypress-` usernames may modify data
+    """
+
+    def has_permission(self, request, view):
+        """Admin cypress users have access to all data."""
+        is_admin = request.user.groups.filter(
+            name__in=["OFA System Admin", "OFA Admin"]
+        ).exists()
+
+        return is_admin and request.user.username.startswith("cypress-")
+
+    def has_object_permission(self, request, view, obj):
+        """Admin cypress users can modify objects."""
+        is_admin = request.user.groups.filter(
+            name__in=["OFA System Admin", "OFA Admin"]
+        ).exists()
+
+        return is_admin and request.user.username.startswith("cypress-")

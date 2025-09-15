@@ -299,7 +299,7 @@ t1 = [
             Field(
                 item="16",
                 name="AMT_FOOD_STAMP_ASSISTANCE",
-                friendly_name="Amount of Food Stamp Assistance",
+                friendly_name="Food Stamp Assistance",
                 type=FieldType.NUMERIC,
                 startIndex=38,
                 endIndex=42,
@@ -323,7 +323,7 @@ t1 = [
             Field(
                 item="18",
                 name="AMT_SUB_CC",
-                friendly_name="Amount of Subsidized Child Care",
+                friendly_name="Subsidized Child Care",
                 type=FieldType.NUMERIC,
                 startIndex=43,
                 endIndex=47,
@@ -359,7 +359,7 @@ t1 = [
             Field(
                 item="21A",
                 name="CASH_AMOUNT",
-                friendly_name="Cash Amount",
+                friendly_name="Cash",
                 type=FieldType.NUMERIC,
                 startIndex=55,
                 endIndex=59,
@@ -383,7 +383,7 @@ t1 = [
             Field(
                 item="22A",
                 name="CC_AMOUNT",
-                friendly_name="TANF Child Care Care Amount",
+                friendly_name="TANF Child Care",
                 type=FieldType.NUMERIC,
                 startIndex=62,
                 endIndex=66,
@@ -419,7 +419,7 @@ t1 = [
             Field(
                 item="23A",
                 name="TRANSP_AMOUNT",
-                friendly_name="Transportation Amount",
+                friendly_name="Transportation",
                 type=FieldType.NUMERIC,
                 startIndex=71,
                 endIndex=75,
@@ -443,7 +443,7 @@ t1 = [
             Field(
                 item="24A",
                 name="TRANSITION_SERVICES_AMOUNT",
-                friendly_name="Transitional Services Amount",
+                friendly_name="Transitional Services",
                 type=FieldType.NUMERIC,
                 startIndex=78,
                 endIndex=82,
@@ -467,7 +467,7 @@ t1 = [
             Field(
                 item="25A",
                 name="OTHER_AMOUNT",
-                friendly_name="Other Amount",
+                friendly_name="Other",
                 type=FieldType.NUMERIC,
                 startIndex=85,
                 endIndex=89,

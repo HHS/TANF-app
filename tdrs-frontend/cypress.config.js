@@ -1,6 +1,7 @@
 const { defineConfig } = require('cypress')
 const webpack = require('@cypress/webpack-preprocessor')
 const preprocessor = require('@badeball/cypress-cucumber-preprocessor')
+const fs = require('fs')
 
 module.exports = defineConfig({
   e2e: {
@@ -12,6 +13,9 @@ module.exports = defineConfig({
       adminUrl: 'http://localhost:3000/admin',
       cypressToken: 'local-cypress-token',
     },
+
+    viewportHeight: 1000,
+    viewportWidth: 1600,
 
     async setupNodeEvents(on, config) {
       // implement node event listeners here
@@ -35,6 +39,20 @@ module.exports = defineConfig({
           ],
         },
       }
+
+      // Register custom task to execute JS in Node Environment
+      on('task', {
+        deleteDownloadFile(fileName) {
+          const filePath = `${config.downloadsFolder}/${fileName}`
+
+          if (fs.existsSync(filePath)) {
+            fs.rmSync(filePath)
+            return filePath
+          } else {
+            throw new Error(`File not found: ${filePath}`)
+          }
+        },
+      })
 
       on('file:preprocessor', webpack({ webpackOptions }))
 

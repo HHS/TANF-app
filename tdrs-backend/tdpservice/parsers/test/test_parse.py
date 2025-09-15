@@ -201,6 +201,7 @@ def test_parse_big_file(big_file, dfs):
         program_type=big_file.prog_type,
     )
     parser.parse_and_validate()
+
     dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
 
@@ -1839,10 +1840,12 @@ def test_parse_tanf_section_1_file_with_bad_update_indicator(
     parser.parse_and_validate()
 
     parser_errors = ParserError.objects.filter(
-        file=tanf_section_1_file_with_bad_update_indicator
+        file=tanf_section_1_file_with_bad_update_indicator,
     )
 
-    assert parser_errors.count() == 5
+    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+
+    assert parser_errors.count() == 4
 
     error_messages = [error.error_message for error in parser_errors]
 

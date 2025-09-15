@@ -21,7 +21,7 @@ services:
       - vault_logs:/vault/logs
     command: ["sh", "-c", "chown -R 100:1000 /vault/data /vault/logs && chmod -R 755 /vault/data /vault/logs"]
 
-  
+
 
   # HashiCorp Vault Community Edition
   vault:
@@ -41,7 +41,7 @@ services:
       - IPC_LOCK  # Required for Vault's memory locking
     volumes:
       - vault_data:/vault/data:rw      # Secret storage for demo. Vault can also use S3, postgres or other
-      - vault_logs:/vault/logs:rw  
+      - vault_logs:/vault/logs:rw
       - ./vault:/vault:rw  # Configuration files
     command: ["server", "-dev", "-config=/vault/vault.hcl"] # for local environment, use -dev for simplicity
     # Note: In production, you should not use -dev mode and should configure Vault properly with TLS and secure storage.
@@ -61,7 +61,7 @@ services:
       - ./vault/vault_agent/templates:/vault_agent/templates:ro
     command: ["sh", "-c", "echo \"$VAULT_TOKEN\" > /tmp/vault-token && vault agent -config=/vault_agent/config/agent.hcl"]
     cap_add:
-      - IPC_LOCK         
+      - IPC_LOCK
 
   postgres:
     image: postgres:15.7
@@ -267,8 +267,9 @@ services:
       - GRAFANA_USER
       - OFA_DB_PASSWORD
       - OFA_DB_USER
-
       - OTEL_PYTHON_DJANGO_EXCLUDED_URLS
+      - SENTRY_DSN
+      - ENABLE_SENTRY
     volumes:
       - .:/tdpapp
       - logs:/tmp
@@ -289,12 +290,14 @@ services:
       ./gunicorn_start.sh"
     ports:
       - "5555:5555"
+      - "8989:8080"
     tty: true
     depends_on:
       - clamav-rest
       - localstack
       - postgres
       - redis-server
+      - celery
 
   redis-server:
     image: redis:alpine
