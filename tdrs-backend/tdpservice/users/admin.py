@@ -25,8 +25,14 @@ class UserForm(forms.ModelForm):
         """Define customizations."""
 
         model = User
-        exclude = ['password']
-        readonly_fields = ['last_login', 'date_joined', 'login_gov_uuid', 'hhs_id', 'access_request']
+        exclude = ["password"]
+        readonly_fields = [
+            "last_login",
+            "date_joined",
+            "login_gov_uuid",
+            "hhs_id",
+            "access_request",
+        ]
 
     def clean(self):
         """Add extra validation for locations based on roles."""
@@ -56,8 +62,15 @@ class RegionInline(admin.TabularInline):
 class UserAdmin(admin.ModelAdmin):
     """Customize the user admin functions."""
 
-    exclude = ['password', 'is_active']
-    readonly_fields = ['last_login', 'date_joined', 'login_gov_uuid', 'hhs_id', 'access_request', 'deactivated']
+    exclude = ["password", "is_active"]
+    readonly_fields = [
+        "last_login",
+        "date_joined",
+        "login_gov_uuid",
+        "hhs_id",
+        "access_request",
+        "deactivated",
+    ]
 
     form = UserForm
     list_filter = ("account_approval_status", "stt")
@@ -75,23 +88,25 @@ class UserAdmin(admin.ModelAdmin):
         """Disable User object creation through Django Admin."""
         return False
 
+
 class HasAttachmentFilter(admin.SimpleListFilter):
     """Filter feedback based if it has datafiles associated or not."""
 
-    title = 'Has attached data files'
-    parameter_name = 'has_attachments'
+    title = "Has attached data files"
+    parameter_name = "has_attachments"
 
     def lookups(self, request, model_admin):
-        return [ 
-            ('yes', 'Yes'),
-            ('no', 'No'),
+        return [
+            ("yes", "Yes"),
+            ("no", "No"),
         ]
 
     def queryset(self, request, queryset):
-        if self.value() == 'yes':
+        if self.value() == "yes":
             return queryset.filter(attachments__isnull=False).distinct()
-        if self.value() == 'no':
+        if self.value() == "no":
             return queryset.filter(attachments__isnull=True)
+
 
 class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     """Customize the feedback admin functions."""

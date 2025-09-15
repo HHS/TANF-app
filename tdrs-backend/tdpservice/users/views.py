@@ -1,4 +1,5 @@
 """Define API views for user class."""
+
 import datetime
 import logging
 
@@ -115,9 +116,9 @@ class FeedbackViewSet(
     serializer_class = FeedbackSerializer
     permission_classes = (FeedbackPermissions,)
 
-    def create(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         """Create feedback with user."""
-        response = super().create(request, *args, **kwargs)
+        response = self.create(request, *args, **kwargs)
         if response.status_code != status.HTTP_201_CREATED:
             return response
 

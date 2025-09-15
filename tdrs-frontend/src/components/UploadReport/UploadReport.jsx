@@ -87,10 +87,13 @@ function UploadReport({ handleCancel, stt, openWidget }) {
             uploadedFiles,
             user,
             ssp: selectedFileType === 'ssp-moe',
+            onComplete: (fileIds) => {
+              openWidget(fileIds)
+            },
           })
         )
       )
-      openWidget(files)
+      // openWidget(files)
     } catch (error) {
       console.error('Error during form submission:', error)
       setLocalAlertState({

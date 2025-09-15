@@ -89,11 +89,16 @@ const FeedbackForm = ({
 
       // include data files
       if (Array.isArray(dataFiles)) {
-        payload.data_files = dataFiles.map((file) => file.id)
+        payload.attachments = dataFiles.map((fileId) => ({
+          content_type: 'datafile',
+          object_id: fileId,
+        }))
       } else if (dataFiles) {
-        payload.data_files = [dataFiles.id]
+        payload.attachments = [
+          { content_type: 'data_file', object_id: dataFiles.id },
+        ]
       } else {
-        payload.data_files = []
+        payload.attachments = []
       }
     }
 

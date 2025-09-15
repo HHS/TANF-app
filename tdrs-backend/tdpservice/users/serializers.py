@@ -3,16 +3,19 @@
 import logging
 
 from django.contrib.auth.models import Group, Permission
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-from rest_framework import serializers
-from rest_framework.utils import model_meta
 from django.utils import timezone
 
+from rest_framework import serializers
+from rest_framework.utils import model_meta
+
+from tdpservice.data_files.models import DataFile
 from tdpservice.stts.serializers import (
     RegionPrimaryKeyRelatedField,
     STTPrimaryKeyRelatedField,
 )
-from tdpservice.users.models import Feedback, User, FeedbackAttachment
+from tdpservice.users.models import Feedback, FeedbackAttachment, User
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +100,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     permissions = PermissionSerializer(
         many=True,
         read_only=True,
-        source='user_permissions.all',
+        source="user_permissions.all",
     )
 
     class Meta:
@@ -105,25 +108,25 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
         model = User
         fields = [
-            'id',
-            'first_name',
-            'last_name',
-            'email',
-            'stt',
-            'regions',
-            'login_gov_uuid',
-            'hhs_id',
-            'roles',
-            'groups',
-            'is_superuser',
-            'is_staff',
-            'last_login',
-            'date_joined',
-            'access_request',
-            'access_requested_date',
-            'account_approval_status',
-            'feature_flags',
-            'permissions',
+            "id",
+            "first_name",
+            "last_name",
+            "email",
+            "stt",
+            "regions",
+            "login_gov_uuid",
+            "hhs_id",
+            "roles",
+            "groups",
+            "is_superuser",
+            "is_staff",
+            "last_login",
+            "date_joined",
+            "access_request",
+            "access_requested_date",
+            "account_approval_status",
+            "feature_flags",
+            "permissions",
         ]
         read_only_fields = (
             "id",
@@ -157,21 +160,23 @@ class UserProfileSerializer(serializers.ModelSerializer):
         # The only modification is to the line 1033 in rest_framework.serializers.ModelSerializer::update.
         # The User model M2M fields are passed as a kwargs to `save()` so that the email context can access the
         # fields.
-        serializers.raise_errors_on_nested_writes('update', self, validated_data)
+        serializers.raise_errors_on_nested_writes("update", self, validated_data)
         info = model_meta.get_field_info(instance)
 
         # Handle group assignment for FRA access
-        request = self.context.get('request')
+        request = self.context.get("request")
         if request:
-            has_fra_access = request.data.get('has_fra_access')
+            has_fra_access = request.data.get("has_fra_access")
             try:
-                fra_permission = Permission.objects.get(codename='has_fra_access')
+                fra_permission = Permission.objects.get(codename="has_fra_access")
                 if has_fra_access:
                     instance.user_permissions.add(fra_permission)
                 else:
                     instance.user_permissions.remove(fra_permission)
             except Permission.DoesNotExist:
-                raise serializers.ValidationError('has_fra_access permission does not exist.')
+                raise serializers.ValidationError(
+                    "has_fra_access permission does not exist."
+                )
 
         # Simply set each attribute on the instance, and then save it.
         # Note that unlike `.create()` we don't need to treat many-to-many
@@ -202,33 +207,43 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
         return instance
 
+
+class ContentTypeField(serializers.RelatedField):
+    """Serializes the content_type relationship based on a string."""
+
+    queryset = ContentType.objects.all()
+
+    def to_representation(self, value):
+        """Convert to string representation for serializer."""
+        return value.model
+
+    def to_internal_value(self, data):
+        """Convert to model used in relationship."""
+        content_type = self.queryset.get(model=data)
+        return content_type
+
+
 class FeedbackAttachmentsSerializer(serializers.ModelSerializer):
     """Serializer for feedback datafile attachments."""
-    from tdpservice.data_files.serializers import DataFileSerializer
 
-    content_object = DataFileSerializer(read_only=True)
+    content_type = ContentTypeField()
+
     class Meta:
-        """Serializer metadata"""
+        """Serializer metadata."""
 
         model = FeedbackAttachment
         fields = (
             "content_type",
             "object_id",
-            "content_object",
         )
+
 
 class FeedbackSerializer(serializers.ModelSerializer):
     """Serializer for user feedback."""
 
-    data_files = serializers.ListField(
-        child=serializers.IntegerField(),
-        write_only=True,
-        required=False,
-        help_text="List of DataFile IDs to associate with this feedback"
-    )
-
     # might need to change this to FeedbackAttachmentSerializer instead of GroupSerializer
-    feedback_attachments = FeedbackAttachmentsSerializer(many=True, read_only=True)
+    attachments = FeedbackAttachmentsSerializer(many=True)
+
     class Meta:
         """Serializer metadata."""
 
@@ -242,8 +257,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
             "feedback_type",
             "component",
             "widget_id",
-            "data_files",
-            "feedback_attachments",
+            "attachments",
         )
         read_only_fields = (
             "id",
@@ -256,20 +270,16 @@ class FeedbackSerializer(serializers.ModelSerializer):
     # might need to update this
     def create(self, validated_data):
         """Create a new feedback instance."""
-        from tdpservice.data_files.models import DataFile
-        
-        data_files = validated_data.pop("data_files", [])
 
-        feedback = Feedback.objects.create(
-            **validated_data,
-            created_at=timezone.now()
-        )
+        attachments = validated_data.pop("attachments", [])
+        feedback = Feedback.objects.create(**validated_data, created_at=timezone.now())
 
         # Create FeedbackAttachment objects
-        for file_id in data_files:
+        for item in attachments:
             FeedbackAttachment.objects.create(
                 feedback=feedback,
-                content_object=DataFile.objects.get(id=file_id)
+                object_id=item["object_id"],
+                content_type=item["content_type"],
             )
 
         return feedback
