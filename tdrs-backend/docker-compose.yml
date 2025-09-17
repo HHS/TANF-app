@@ -290,6 +290,7 @@ services:
       ./gunicorn_start.sh"
     ports:
       - "5555:5555"
+      - "8989:8080"
     tty: true
     depends_on:
       - clamav-rest
