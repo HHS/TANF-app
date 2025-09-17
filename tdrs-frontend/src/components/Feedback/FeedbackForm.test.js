@@ -276,7 +276,10 @@ describe('Feedback Form tests', () => {
         expect.stringContaining('/feedback/'),
         {
           rating: 4,
+          component: 'general-website',
           feedback: 'Great!! test feedback',
+          feedback_type: 'general_feedback',
+          page_url: 'http://localhost/',
           anonymous: true,
         }
       )
@@ -301,6 +304,9 @@ describe('Feedback Form tests', () => {
       expect(axiosInstance.post).toHaveBeenCalledWith(
         expect.stringContaining('/feedback/'),
         {
+          component: 'general-website',
+          feedback_type: 'general_feedback',
+          page_url: 'http://localhost/',
           rating: 3,
           feedback: '',
           anonymous: false,
@@ -506,6 +512,11 @@ describe('Feedback Form tests', () => {
 
     await waitFor(() => {
       expect(axiosInstance.post).toHaveBeenCalledWith(expect.any(String), {
+        attachments: [],
+        component: 'data-file-submission',
+        feedback_type: 'fra_submission_feedback',
+        page_url: 'http://localhost/',
+        widget_id: 'unknown-submission-feedback',
         rating: 5,
         feedback: '', // comment left blank
         anonymous: false, // anonymous checkbox hidden
