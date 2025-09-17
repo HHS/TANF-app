@@ -639,7 +639,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
     """Serializer for user feedback."""
 
     # might need to change this to FeedbackAttachmentSerializer instead of GroupSerializer
-    attachments = FeedbackAttachmentsSerializer(many=True)
+    attachments = FeedbackAttachmentsSerializer(many=True, required=False)
 
     class Meta:
         """Serializer metadata."""
