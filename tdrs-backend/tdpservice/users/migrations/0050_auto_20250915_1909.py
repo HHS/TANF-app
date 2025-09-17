@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
     dependencies = [
         ("contenttypes", "0002_remove_content_type_name"),
-        ("users", "0048_grant_fra_access_to_users"),
+        ("users", "0049_changerequestauditlog_userchangerequest"),
     ]
 
     operations = [
