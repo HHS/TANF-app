@@ -5,26 +5,25 @@ import logging
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-
 from django.utils import timezone
-
-from rest_framework import serializers
-from rest_framework.utils import model_meta
-
 from django.utils.translation import gettext_lazy as _
-from tdpservice.users.models import User, UserChangeRequest, ChangeRequestAuditLog, Feedback, FeedbackAttachment
-from tdpservice.stts.models import STT
-from django.utils import timezone
+
 from rest_framework import serializers
 from rest_framework.utils import model_meta
-from tdpservice.users.models import AccountApprovalStatusChoices
 
-from tdpservice.data_files.models import DataFile
+from tdpservice.stts.models import STT
 from tdpservice.stts.serializers import (
     RegionPrimaryKeyRelatedField,
     STTPrimaryKeyRelatedField,
 )
-
+from tdpservice.users.models import (
+    AccountApprovalStatusChoices,
+    ChangeRequestAuditLog,
+    Feedback,
+    FeedbackAttachment,
+    User,
+    UserChangeRequest,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -72,17 +71,17 @@ class UserSerializer(serializers.ModelSerializer):
             "last_name",
             "access_request",
             "account_approval_status",
-            'groups',
-            'is_superuser',
-            'is_staff',
-            'stt',
-            'regions',
-            'login_gov_uuid',
-            'hhs_id',
-            'last_login',
-            'date_joined',
-            'access_requested_date',
-            'feature_flags',
+            "groups",
+            "is_superuser",
+            "is_staff",
+            "stt",
+            "regions",
+            "login_gov_uuid",
+            "hhs_id",
+            "last_login",
+            "date_joined",
+            "access_requested_date",
+            "feature_flags",
         )
         read_only_fields = (
             "id",
@@ -139,20 +138,20 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "permissions",
         ]
         read_only_fields = (
-            'id',
-            'email',
-            'login_gov_uuid',
-            'hhs_id',
-            'groups',
-            'roles',
-            'is_staff',
-            'is_superuser',
-            'last_login',
-            'date_joined',
-            'access_request',
-            'access_requested_date',
-            'account_approval_status',
-            'feature_flags',
+            "id",
+            "email",
+            "login_gov_uuid",
+            "hhs_id",
+            "groups",
+            "roles",
+            "is_staff",
+            "is_superuser",
+            "last_login",
+            "date_joined",
+            "access_request",
+            "access_requested_date",
+            "account_approval_status",
+            "feature_flags",
         )
 
         """Enforce first and last name to be in API call and not empty"""
@@ -264,50 +263,55 @@ class UserProfileChangeRequestSerializer(UserProfileSerializer):
 
         # Add the new fields to the existing fields list
         fields = UserProfileSerializer.Meta.fields + [
-            'create_change_requests',
-            'has_pending_first_name_change',
-            'has_pending_last_name_change',
-            'has_pending_regions_change',
-            'has_pending_feature_flags_change',
-            'has_fra_access',
+            "create_change_requests",
+            "has_pending_first_name_change",
+            "has_pending_last_name_change",
+            "has_pending_regions_change",
+            "has_pending_feature_flags_change",
+            "has_fra_access",
         ]
 
     def validate_regions(self, value):
         """Validate regions field."""
         """Ensure that the regions are valid."""
         if not value:
-            raise serializers.ValidationError(_('Regions cannot be empty.'))
+            raise serializers.ValidationError(_("Regions cannot be empty."))
         if not isinstance(value, list):
-            raise serializers.ValidationError(_('Regions must be a list of IDs.'))
+            raise serializers.ValidationError(_("Regions must be a list of IDs."))
         return value
 
     def validate_stt(self, value):
         """Validate STT field."""
-        if self.instance.account_approval_status == AccountApprovalStatusChoices.APPROVED:
-            raise serializers.ValidationError(_('STT cannot be changed once the account is approved.'))
+        if (
+            self.instance.account_approval_status
+            == AccountApprovalStatusChoices.APPROVED
+        ):
+            raise serializers.ValidationError(
+                _("STT cannot be changed once the account is approved.")
+            )
         return value
 
     def get_has_pending_first_name_change(self, obj):
         """Check if there's a pending change request for first_name."""
-        return obj.has_pending_change_for_field('first_name')
+        return obj.has_pending_change_for_field("first_name")
 
     def get_has_pending_last_name_change(self, obj):
         """Check if there's a pending change request for last_name."""
-        return obj.has_pending_change_for_field('last_name')
+        return obj.has_pending_change_for_field("last_name")
 
     def get_has_pending_regions_change(self, obj):
         """Check if there's a pending change request for regions."""
-        return obj.has_pending_change_for_field('regions')
+        return obj.has_pending_change_for_field("regions")
 
     def get_has_pending_feature_flags_change(self, obj):
         """Check if there's a pending change request for feature flags."""
-        return obj.has_pending_change_for_field('feature_flags')
+        return obj.has_pending_change_for_field("feature_flags")
 
     def _handle_regions(self, validated_data, instance, pending_request=None):
         """Handle the regions field specifically for change requests."""
         change_requests = []
-        new_regions = validated_data['regions']
-        current_regions = set(instance.regions.all().values_list('id', flat=True))
+        new_regions = validated_data["regions"]
+        current_regions = set(instance.regions.all().values_list("id", flat=True))
         new_region_ids = set(region.id for region in new_regions)
 
         if pending_request:
@@ -321,16 +325,18 @@ class UserProfileChangeRequestSerializer(UserProfileSerializer):
         elif current_regions != new_region_ids:
             # Store as a list of IDs
             change_request = instance.request_change(
-                field_name='regions',
+                field_name="regions",
                 requested_value=list(new_region_ids),
                 current_value=list(current_regions),
-                requested_by=self.context['request'].user
+                requested_by=self.context["request"].user,
             )
             change_requests.append(change_request)
 
         return change_requests
 
-    def _handle_change_permissions(self, validated_data, instance, permission, pending_request=None):
+    def _handle_change_permissions(
+        self, validated_data, instance, permission, pending_request=None
+    ):
         """Handle the has_fra_access field."""
         changing_permission = validated_data.get(permission, None)
         try:
@@ -350,7 +356,7 @@ class UserProfileChangeRequestSerializer(UserProfileSerializer):
             change_request = instance.request_change(
                 field_name=permission,
                 requested_value=changing_permission,
-                requested_by=self.context['request'].user
+                requested_by=self.context["request"].user,
             )
             return change_request
 
@@ -360,37 +366,48 @@ class UserProfileChangeRequestSerializer(UserProfileSerializer):
             # handle existing pending requests
             if pending_request.field_name in validated_data:
                 # Update the requested value
-                if pending_request.field_name == 'regions':
-                    self._handle_regions(validated_data, instance, pending_request=pending_request)
-                elif pending_request.field_name == 'has_fra_access':
-                    self._handle_change_permissions(validated_data, instance, "has_fra_access", pending_request=pending_request)
+                if pending_request.field_name == "regions":
+                    self._handle_regions(
+                        validated_data, instance, pending_request=pending_request
+                    )
+                elif pending_request.field_name == "has_fra_access":
+                    self._handle_change_permissions(
+                        validated_data,
+                        instance,
+                        "has_fra_access",
+                        pending_request=pending_request,
+                    )
                 else:
                     # For other fields, just update the requested value
                     # if field is not string, get the field value from instance
                     if isinstance(validated_data[pending_request.field_name], STT):
-                        pending_request.requested_value = validated_data[pending_request.field_name].id
+                        pending_request.requested_value = validated_data[
+                            pending_request.field_name
+                        ].id
                     else:
-                        pending_request.requested_value = validated_data[pending_request.field_name]
+                        pending_request.requested_value = validated_data[
+                            pending_request.field_name
+                        ]
                     pending_request.save()
 
                 # Log the update in the audit log
                 ChangeRequestAuditLog.objects.create(
                     change_request=pending_request,
-                    action='updated',
-                    performed_by=self.context['request'].user,
+                    action="updated",
+                    performed_by=self.context["request"].user,
                     details={
-                        'field': pending_request.field_name,
-                        'requested_value': str(pending_request.requested_value)
-                    }
+                        "field": pending_request.field_name,
+                        "requested_value": str(pending_request.requested_value),
+                    },
                 )
                 validated_data.pop(pending_request.field_name, None)
 
     def _handle_new_request(self, validated_data, instance):
         """Handle creating a new change request for the user."""
-        user = self.context['request'].user
+        user = self.context["request"].user
         change_requests = []
 
-        for field_name in ['first_name', 'last_name', 'stt']:
+        for field_name in ["first_name", "last_name", "stt"]:
             if field_name in validated_data:
                 new_value = validated_data[field_name]
                 current_value = getattr(instance, field_name)
@@ -399,7 +416,11 @@ class UserProfileChangeRequestSerializer(UserProfileSerializer):
                 if isinstance(current_value, STT):
                     current_value = current_value.id
 
-                if field_name == 'stt' and user.account_approval_status == AccountApprovalStatusChoices.APPROVED:
+                if (
+                    field_name == "stt"
+                    and user.account_approval_status
+                    == AccountApprovalStatusChoices.APPROVED
+                ):
                     continue
                 elif new_value != current_value:
                     # Create a change request
@@ -407,31 +428,35 @@ class UserProfileChangeRequestSerializer(UserProfileSerializer):
                         field_name=field_name,
                         requested_value=new_value,
                         current_value=current_value,
-                        requested_by=user
+                        requested_by=user,
                     )
                     change_requests.append(change_request)
 
-        if 'regions' in validated_data:
+        if "regions" in validated_data:
             self._handle_regions(validated_data, instance)
 
-        if 'has_fra_access' in validated_data:
+        if "has_fra_access" in validated_data:
             self._handle_change_permissions(validated_data, instance, "has_fra_access")
 
     def update(self, instance, validated_data):
         """Handle updates by either creating change requests or updating directly."""
         # Extract and remove the create_change_requests flag
-        create_change_requests = validated_data.pop('create_change_requests', False)
+        create_change_requests = validated_data.pop("create_change_requests", False)
 
-        user = self.context['request'].user
+        user = self.context["request"].user
         pending_requests = user.get_pending_change_requests()
         # If not creating change requests, use the parent update method
         # This is for direct updates, bypassing change requests
         if not create_change_requests:
             # Only admins can bypass change requests
             if not (user.is_an_admin or user.is_ofa_sys_admin):
-                raise serializers.ValidationError({
-                    'create_change_requests': _('Only administrators can update user profiles directly.')
-                })
+                raise serializers.ValidationError(
+                    {
+                        "create_change_requests": _(
+                            "Only administrators can update user profiles directly."
+                        )
+                    }
+                )
             return super().update(instance, validated_data)
         # If there are pending requests, handle them first
         if pending_requests.exists():
@@ -442,6 +467,7 @@ class UserProfileChangeRequestSerializer(UserProfileSerializer):
 
         return instance
 
+
 class UserChangeRequestSerializer(serializers.ModelSerializer):
     """Serializer for user change requests."""
 
@@ -450,25 +476,29 @@ class UserChangeRequestSerializer(serializers.ModelSerializer):
 
         model = UserChangeRequest
         fields = [
-            'id', 'user', 'field_name',
-            'requested_value', 'status', 'requested_at'
+            "id",
+            "user",
+            "field_name",
+            "requested_value",
+            "status",
+            "requested_at",
         ]
-        read_only_fields = ['status', 'requested_at']
+        read_only_fields = ["status", "requested_at"]
 
     def create(self, validated_data):
         """Create a new change request with current value automatically set."""
-        user = validated_data['user']
-        field_name = validated_data['field_name']
+        user = validated_data["user"]
+        field_name = validated_data["field_name"]
 
         # Get the current value from the user object
         try:
-            current_value = getattr(user, field_name, '')
+            current_value = getattr(user, field_name, "")
         except (AttributeError, TypeError):
-            current_value = ''
+            current_value = ""
 
         # Set the current value and requested_by
-        validated_data['current_value'] = current_value
-        validated_data['requested_by'] = self.context['request'].user
+        validated_data["current_value"] = current_value
+        validated_data["requested_by"] = self.context["request"].user
 
         # Create the change request
         change_request = super().create(validated_data)
@@ -476,43 +506,54 @@ class UserChangeRequestSerializer(serializers.ModelSerializer):
         # Create audit log entry
         ChangeRequestAuditLog.objects.create(
             change_request=change_request,
-            action='created',
-            performed_by=self.context['request'].user,
+            action="created",
+            performed_by=self.context["request"].user,
             details={
-                'field': field_name,
-                'requested_value': validated_data['requested_value']
-            }
+                "field": field_name,
+                "requested_value": validated_data["requested_value"],
+            },
         )
 
         return change_request
 
     def validate(self, data):
         """Validate that the field exists and is editable."""
-        field_name = data.get('field_name')
-        user = data.get('user')
+        field_name = data.get("field_name")
+        user = data.get("user")
 
         # Check if the field exists on the User model
-        if not hasattr(User, field_name) and field_name not in ['has_fra_access']:
-            raise serializers.ValidationError({
-                'field_name': _('This field does not exist on the User model.')
-            })
+        if not hasattr(User, field_name) and field_name not in ["has_fra_access"]:
+            raise serializers.ValidationError(
+                {"field_name": _("This field does not exist on the User model.")}
+            )
 
         # Check if the field is in the list of allowed fields for change requests
         allowed_fields = [
-            'first_name', 'last_name', 'regions', 'has_fra_access',
+            "first_name",
+            "last_name",
+            "regions",
+            "has_fra_access",
         ]
         if field_name not in allowed_fields:
-            raise serializers.ValidationError({
-                'field_name': _('This field cannot be changed through a change request.')
-            })
+            raise serializers.ValidationError(
+                {
+                    "field_name": _(
+                        "This field cannot be changed through a change request."
+                    )
+                }
+            )
 
         # Ensure the requested value is different from the current value
-        current_value = str(getattr(user, field_name, ''))
-        requested_value = data.get('requested_value', '')
+        current_value = str(getattr(user, field_name, ""))
+        requested_value = data.get("requested_value", "")
         if current_value == requested_value:
-            raise serializers.ValidationError({
-                'requested_value': _('The requested value is the same as the current value.')
-            })
+            raise serializers.ValidationError(
+                {
+                    "requested_value": _(
+                        "The requested value is the same as the current value."
+                    )
+                }
+            )
 
         return data
 
@@ -520,43 +561,55 @@ class UserChangeRequestSerializer(serializers.ModelSerializer):
 class AdminChangeRequestSerializer(serializers.ModelSerializer):
     """Serializer for admin management of change requests."""
 
-    user_email = serializers.EmailField(source='user.email', read_only=True)
-    user_username = serializers.CharField(source='user.username', read_only=True)
+    user_email = serializers.EmailField(source="user.email", read_only=True)
+    user_username = serializers.CharField(source="user.username", read_only=True)
 
     class Meta:
         """Meta class for serializer configuration."""
 
         model = UserChangeRequest
         fields = [
-            'id', 'user', 'user_email', 'user_username', 'field_name',
-            'current_value', 'requested_value', 'status', 'requested_at',
-            'reviewed_at', 'reviewed_by', 'notes'
+            "id",
+            "user",
+            "user_email",
+            "user_username",
+            "field_name",
+            "current_value",
+            "requested_value",
+            "status",
+            "requested_at",
+            "reviewed_at",
+            "reviewed_by",
+            "notes",
         ]
         read_only_fields = [
-            'user', 'field_name', 'current_value',
-            'requested_value', 'requested_at'
+            "user",
+            "field_name",
+            "current_value",
+            "requested_value",
+            "requested_at",
         ]
 
     def validate_status(self, value):
         """Validate status transitions."""
-        instance = getattr(self, 'instance', None)
-        if instance and instance.status != 'pending' and value != instance.status:
+        instance = getattr(self, "instance", None)
+        if instance and instance.status != "pending" and value != instance.status:
             raise serializers.ValidationError(
-                _('Cannot change status of a request that has already been processed.')
+                _("Cannot change status of a request that has already been processed.")
             )
         return value
 
     def update(self, instance, validated_data):
         """Update the change request and apply changes if approved."""
-        status = validated_data.get('status')
-        notes = validated_data.get('notes')
-        user = self.context['request'].user
+        status = validated_data.get("status")
+        notes = validated_data.get("notes")
+        user = self.context["request"].user
 
         # If status is changing to approved or rejected, handle appropriately
-        if status and instance.status == 'pending':
-            if status == 'approved':
+        if status and instance.status == "pending":
+            if status == "approved":
                 instance.approve(user, notes)
-            elif status == 'rejected':
+            elif status == "rejected":
                 instance.reject(user, notes)
             return instance
 
@@ -571,7 +624,14 @@ class ChangeRequestAuditLogSerializer(serializers.ModelSerializer):
         """Meta class for serializer configuration."""
 
         model = ChangeRequestAuditLog
-        fields = ['id', 'change_request', 'action', 'performed_by', 'timestamp', 'details']
+        fields = [
+            "id",
+            "change_request",
+            "action",
+            "performed_by",
+            "timestamp",
+            "details",
+        ]
         read_only_fields = fields
 
 
