@@ -5,6 +5,7 @@ import logging
 from abc import ABC, abstractmethod
 
 from django.conf import settings
+from django.db.models import Count, Q
 from django.db.utils import DatabaseError
 
 from tdpservice.parsers.decoders import DecoderFactory
@@ -17,6 +18,7 @@ from tdpservice.parsers.models import ParserError
 from tdpservice.parsers.schema_manager import SchemaManager
 from tdpservice.parsers.util import (
     DecoderUnknownException,
+    FrozenDict,
     Records,
     log_parser_exception,
 )
@@ -34,6 +36,7 @@ class BaseParser(ABC):
         self.dfs = dfs
         self.section = section
         self.program_type = None
+        self.is_active_or_closed = "Active" in self.section or "Closed" in self.section
 
         self.current_row = None
         self.current_row_num = 0
@@ -231,6 +234,7 @@ class BaseParser(ABC):
             self.unsaved_parser_errors.update(errors)
             self.num_errors += 1
 
+    # TODO: Delete this method
     def _delete_serialized_records(self, duplicate_manager):
         """Delete all records that have already been serialized to the DB that have cat4 errors."""
         total_deleted = 0
@@ -261,3 +265,149 @@ class BaseParser(ABC):
                     ),
                     "error",
                 )
+
+    def add_case_to_remove(self, should_remove, case_id: FrozenDict):
+        """Add case ID to set of IDs to be removed later."""
+        if should_remove:
+            self.serialized_cases.add(case_id)
+
+    def _delete_serialized_cases(self):
+        """Delete all cases that have already been serialized to the DB with cat4 errors."""
+        if len(self.serialized_cases):
+            cases = Q()
+            for case in self.serialized_cases:
+                cases |= Q(**case)
+                print(f"Deleting case with cat4: {case}")
+            for schemas in self.schema_manager.schema_map.values():
+                schema = schemas[0]
+                num_deleted, _ = schema.model.objects.filter(
+                    cases, datafile=self.datafile
+                ).delete()
+                self.dfs.total_number_of_records_created -= num_deleted
+
+    # TODO: paginate this
+    def _delete_exact_dups(self):
+        """Delete exact duplicate records from the DB."""
+        duplicate_error_generator = self.error_generator_factory.get_generator(
+            ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+        )
+        for schemas in self.schema_manager.schema_map.values():
+            schema = schemas[0]
+
+            fields = [f.name for f in schema.fields if f.name != "BLANK"]
+            duplicate_vals = (
+                schema.model.objects.filter(datafile=self.datafile)
+                .values(*fields)
+                .annotate(row_count=Count("line_number", distinct=True))
+                .filter(row_count__gt=1)
+            )
+            dup_errors = []
+            for dup_vals_dict in duplicate_vals:
+                dup_vals_dict.pop("row_count", None)
+                dup_records = schema.model.objects.filter(**dup_vals_dict).order_by(
+                    "line_number"
+                )
+                record = dup_records.first()
+                for dup in dup_records[1:]:
+                    record_type = dup_vals_dict.get("RecordType", None)
+                    generator_args = ErrorGeneratorArgs(
+                        record=record,
+                        schema=schema,
+                        error_message=f"Duplicate record detected with record type {record_type} at line {dup.line_number}. Record is a duplicate of the record at line number {record.line_number}.",
+                        fields=schema.fields,
+                        row_number=record.line_number,
+                    )
+                    # Perform Error Generation
+                    dup_errors.append(
+                        duplicate_error_generator(generator_args=generator_args)
+                    )
+
+                case_id_to_delete = (
+                    FrozenDict(RecordType=record.RecordType)
+                    if not self.is_active_or_closed
+                    else FrozenDict(
+                        RPT_MONTH_YEAR=record.RPT_MONTH_YEAR,
+                        CASE_NUMBER=record.CASE_NUMBER,
+                    )
+                )
+                # We add the case ID here because a case with a duplicate record must be purged in it's entirety.
+                self.serialized_cases.add(case_id_to_delete)
+                num_deleted = dup_records._raw_delete(dup_records.db)
+                self.dfs.total_number_of_records_created -= num_deleted
+
+            self.unsaved_parser_errors[None] = (
+                self.unsaved_parser_errors.get(None, []) + dup_errors
+            )
+
+    def _get_partial_dup_error_msg(
+        self, schema, record_type, curr_line_number, existing_line_number
+    ):
+        """Generate partial duplicate error message with friendly names."""
+        field_names = schema.get_partial_hash_members_func()
+        err_msg = (
+            f"Partial duplicate record detected with record type "
+            f"{record_type} at line {curr_line_number}. Record is a partial duplicate of the "
+            f"record at line number {existing_line_number}. Duplicated fields causing error: "
+        )
+        for i, name in enumerate(field_names):
+            field = schema.get_field_by_name(name)
+            item_and_name = f"Item {field.item} ({field.friendly_name})"
+            if i == len(field_names) - 1 and len(field_names) != 1:
+                err_msg += f"and {item_and_name}."
+            elif len(field_names) == 1:
+                err_msg += f"{item_and_name}."
+            else:
+                err_msg += f"{item_and_name}, "
+        return err_msg
+
+    # TODO: paginate this
+    def _delete_partial_dups(self):
+        """Delete partial duplicate records from the DB."""
+        duplicate_error_generator = self.error_generator_factory.get_generator(
+            ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+        )
+        for schemas in self.schema_manager.schema_map.values():
+            schema = schemas[0]
+            fields = schema.get_partial_hash_members_func()
+            dups = (
+                schema.model.objects.filter(datafile=self.datafile)
+                .values(*fields)
+                .annotate(row_count=Count("line_number", distinct=True))
+                .filter(row_count__gt=1)
+            )
+            dup_errors = []
+            for d in dups:
+                d.pop("row_count", None)
+                dup_records = schema.model.objects.filter(**d).order_by("line_number")
+                record = dup_records.first()
+                for dup in dup_records[1:]:
+                    record_type = d.get("RecordType", None)
+                    generator_args = ErrorGeneratorArgs(
+                        record=record,
+                        schema=schema,
+                        error_message=self._get_partial_dup_error_msg(
+                            schema, record_type, dup.line_number, record.line_number
+                        ),
+                        fields=schema.fields,
+                        row_number=record.line_number,
+                    )
+                    # Perform Error Generation
+                    dup_errors.append(
+                        duplicate_error_generator(generator_args=generator_args)
+                    )
+                case_id_to_delete = (
+                    FrozenDict(RecordType=record.RecordType)
+                    if not self.is_active_or_closed
+                    else FrozenDict(
+                        RPT_MONTH_YEAR=record.RPT_MONTH_YEAR,
+                        CASE_NUMBER=record.CASE_NUMBER,
+                    )
+                )
+                # We add the case ID here because a case with a duplicate record must be purged in it's entirety.
+                self.serialized_cases.add(case_id_to_delete)
+                num_deleted, _ = dup_records.delete()
+                self.dfs.total_number_of_records_created -= num_deleted
+
+            self.unsaved_parser_errors[None] = (
+                self.unsaved_parser_errors.get(None, []) + dup_errors
+            )

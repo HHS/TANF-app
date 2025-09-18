@@ -132,8 +132,16 @@ def get_years_apart(rpt_month_year_date, date):
     return age
 
 
+class FrozenDict(dict):
+    """Frozen dictionary for use as a hashable key."""
+
+    def __hash__(self):
+        """Return a hash of the dictionary."""
+        return hash((frozenset(self), frozenset(self.values())))
+
+
 class Records:
-    """Maintains a dict of records where Key=Model and Value=[Record]"""
+    """Maintains a dict of records where Key=Model and Value=[Record]."""
 
     def __init__(self):
         self.cases = dict()

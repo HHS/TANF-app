@@ -7,6 +7,7 @@ from datetime import datetime
 from tdpservice.parsers.dataclasses import RawRow, ValidationErrorArgs
 from tdpservice.parsers.error_generator import ErrorGeneratorArgs
 from tdpservice.parsers.schema_defs.utils import ProgramManager
+from tdpservice.parsers.util import FrozenDict
 from tdpservice.parsers.validators.category3 import format_error_context
 from tdpservice.stts.models import STT
 
@@ -14,11 +15,6 @@ from .duplicate_manager import DuplicateManager
 from .util import get_years_apart
 
 logger = logging.getLogger(__name__)
-
-
-class FrozenDict(dict):
-    def __hash__(self):
-        return hash((frozenset(self), frozenset(self.values())))
 
 
 class CaseConsistencyValidator:
