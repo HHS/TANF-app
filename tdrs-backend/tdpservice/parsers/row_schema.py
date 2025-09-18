@@ -57,6 +57,9 @@ class RowSchema(ABC):
         """Create a model for the row based on the schema."""
         record = self.model()
 
+        if not isinstance(record, dict):
+            record.line_number = row.row_num
+
         for field in self.fields:
             value = field.parse_value(row)
 

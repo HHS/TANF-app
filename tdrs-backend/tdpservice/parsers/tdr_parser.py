@@ -52,7 +52,7 @@ class TanfDataReportParser(BaseParser):
         prev_sum = 0
         file_length = len(self.datafile.file)
         offset = 0
-        case_hash = None
+        current_case_id = None
         for row in self.decoder.decode():
             offset += row.raw_length()
             self.current_row = row
@@ -117,20 +117,17 @@ class TanfDataReportParser(BaseParser):
                     record_has_errors = len(record_errors) > 0
                     (
                         should_remove,
-                        case_hash_to_remove,
-                        case_hash,
+                        case_id_to_remove,
+                        current_case_id,
                     ) = self.case_consistency_validator.add_record(
                         record, schema, row, self.current_row_num, record_has_errors
                     )
                     self.unsaved_records.add_record(
-                        case_hash, (record, schema.model), self.current_row_num
+                        current_case_id, (record, schema.model), self.current_row_num
                     )
-                    was_removed = self.unsaved_records.remove_case_due_to_errors(
-                        should_remove, case_hash_to_remove
-                    )
-                    self.case_consistency_validator.update_removed(
-                        case_hash_to_remove, should_remove, was_removed
-                    )
+                    if should_remove:
+                        self.serialized_cases.add(case_id_to_remove)
+
                     self.dfs.total_number_of_records_in_file += 1
 
             # Add any generated cat4 errors to our error data structure & clear our caches errors list
@@ -163,18 +160,20 @@ class TanfDataReportParser(BaseParser):
             return
 
         should_remove = self.validate_case_consistency()
-        was_removed = self.unsaved_records.remove_case_due_to_errors(
-            should_remove, case_hash
-        )
-        self.case_consistency_validator.update_removed(
-            case_hash, should_remove, was_removed
-        )
+        if should_remove:
+            self.serialized_cases.add(case_id_to_remove)
 
         # Only checking "all_created" here because records remained cached if bulk create fails.
         # This is the last chance to successfully create the records.
         all_created = self.bulk_create_records(self.header_count, flush=True)
 
-        self.delete_serialized_records()
+        # Order matters. If a case had case consistency errors and duplicate errors, only the case consistency errors are reflected. We want to keep this order
+        # because that is what happens for the in-memory case now also. I.e. if a case is removed from the in memory cache it won't generate duplicate errors
+        # if they exist.
+        self._delete_exact_dups()
+        self._delete_partial_dups()
+        self._delete_serialized_cases()
+
         self.create_no_records_created_pre_check_error()
 
         if not all_created:
@@ -193,15 +192,135 @@ class TanfDataReportParser(BaseParser):
         )
         self.case_consistency_validator.clear_errors()
 
-        self.bulk_create_errors(flush=True)
-
         logger.debug(
             f"Cat4 validator cached {self.case_consistency_validator.total_cases_cached} cases and "
             f"validated {self.case_consistency_validator.total_cases_validated} of them."
         )
+
+        self.bulk_create_errors(flush=True)
         self.dfs.save()
 
         return
+
+    def _delete_serialized_cases(self):
+        from django.db.models import Q
+
+        if len(self.serialized_cases):
+            cases = Q()
+            for case in self.serialized_cases:
+                cases |= Q(**case)
+            for schemas in self.schema_manager.schema_map.values():
+                schema = schemas[0]
+                num_deleted, _ = schema.model.objects.filter(
+                    cases, datafile=self.datafile
+                ).delete()
+                self.dfs.total_number_of_records_created -= num_deleted
+
+    def _delete_exact_dups(self):
+        """"""
+        from django.db.models import Count, Q
+
+        duplicate_error_generator = self.error_generator_factory.get_generator(
+            ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+        )
+        for schemas in self.schema_manager.schema_map.values():
+            schema = schemas[0]
+
+            fields = [f.name for f in schema.fields if f.name != "BLANK"]
+            dups = (
+                schema.model.objects.filter(datafile=self.datafile)
+                .values(*fields)
+                .annotate(row_count=Count("line_number", distinct=True))
+                .filter(row_count__gt=1)
+            )
+            dup_errors = []
+            print(f"Count: {schema.model.objects.count()}")
+            for d in dups:
+                d.pop("row_count", None)
+                dup_records = schema.model.objects.filter(**d).order_by("line_number")
+                record = dup_records.first()
+                for dup in dup_records[1:]:
+                    record_type = d.get("RecordType", None)
+                    generator_args = ErrorGeneratorArgs(
+                        record=record,
+                        schema=schema,
+                        error_message=f"Duplicate record detected with record type {record_type} at line {dup.line_number}. Record is a duplicate of the record at line number {record.line_number}.",
+                        fields=schema.fields,
+                        row_number=record.line_number,
+                    )
+                    # Perform Error Generation
+                    dup_errors.append(
+                        duplicate_error_generator(generator_args=generator_args)
+                    )
+                num_deleted, _ = dup_records.delete()
+                self.dfs.total_number_of_records_created -= num_deleted
+
+            self.unsaved_parser_errors[None] = (
+                self.unsaved_parser_errors.get(None, []) + dup_errors
+            )
+
+    def __get_partial_dup_error_msg(
+        self, schema, record_type, curr_line_number, existing_line_number
+    ):
+        """Generate partial duplicate error message with friendly names."""
+        field_names = schema.get_partial_hash_members_func()
+        err_msg = (
+            f"Partial duplicate record detected with record type "
+            f"{record_type} at line {curr_line_number}. Record is a partial duplicate of the "
+            f"record at line number {existing_line_number}. Duplicated fields causing error: "
+        )
+        for i, name in enumerate(field_names):
+            field = schema.get_field_by_name(name)
+            item_and_name = f"Item {field.item} ({field.friendly_name})"
+            if i == len(field_names) - 1 and len(field_names) != 1:
+                err_msg += f"and {item_and_name}."
+            elif len(field_names) == 1:
+                err_msg += f"{item_and_name}."
+            else:
+                err_msg += f"{item_and_name}, "
+        return err_msg
+
+    def _delete_partial_dups(self):
+        from django.db.models import Count, Q
+
+        duplicate_error_generator = self.error_generator_factory.get_generator(
+            ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+        )
+        for schemas in self.schema_manager.schema_map.values():
+            schema = schemas[0]
+            fields = schema.get_partial_hash_members_func()
+            dups = (
+                schema.model.objects.filter(datafile=self.datafile)
+                .values(*fields)
+                .annotate(row_count=Count("line_number", distinct=True))
+                .filter(row_count__gt=1)
+            )
+            dup_errors = []
+            for d in dups:
+                d.pop("row_count", None)
+                dup_records = schema.model.objects.filter(**d).order_by("line_number")
+                record = dup_records.first()
+                for dup in dup_records[1:]:
+                    record_type = d.get("RecordType", None)
+                    generator_args = ErrorGeneratorArgs(
+                        record=record,
+                        schema=schema,
+                        error_message=self.__get_partial_dup_error_msg(
+                            schema, record_type, dup.line_number, record.line_number
+                        ),
+                        fields=schema.fields,
+                        row_number=record.line_number,
+                    )
+                    # Perform Error Generation
+                    dup_errors.append(
+                        duplicate_error_generator(generator_args=generator_args)
+                    )
+                num_deleted, _ = dup_records.delete()
+                self.dfs.total_number_of_records_created -= num_deleted
+
+            self.unsaved_parser_errors[None] = (
+                self.unsaved_parser_errors.get(None, []) + dup_errors
+            )
 
     def _validate_header(self):
         """Validate header and header fields."""

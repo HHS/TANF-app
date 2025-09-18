@@ -17,7 +17,7 @@ from tdpservice.parsers.models import ParserError
 from tdpservice.parsers.schema_manager import SchemaManager
 from tdpservice.parsers.util import (
     DecoderUnknownException,
-    SortedRecords,
+    Records,
     log_parser_exception,
 )
 
@@ -40,9 +40,12 @@ class BaseParser(ABC):
 
         # Specifying unsaved_records here may or may not work for FRA files. If not, we can move it down the
         # inheritance hierarchy.
-        self.unsaved_records = SortedRecords(section)
+        self.unsaved_records = Records()
         self.unsaved_parser_errors = dict()
         self.num_errors = 0
+
+        # Track cases that have already been serialized that need to be removed because of a case consistency error.
+        self.serialized_cases = set()
 
         # Initialized decoder.
         self._init_decoder()

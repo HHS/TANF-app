@@ -132,6 +132,34 @@ def get_years_apart(rpt_month_year_date, date):
     return age
 
 
+class Records:
+    """Maintains a dict of records where Key=Model and Value=[Record]"""
+
+    def __init__(self):
+        self.cases = dict()
+
+    def add_record(self, case_id, record_model_pair, line_num):
+        """Add a record_doc_pair to the dict."""
+        record, model = record_model_pair
+        if case_id is not None:
+            self.cases.setdefault(model, dict())[record] = None
+        else:
+            logger.error(f"Error: Case id for record at line #{line_num} was None!")
+
+    def get_bulk_create_struct(self):
+        """Return dict of form {document: {record: None}} for bulk_create_records to consume."""
+        return self.cases
+
+    def clear(self, all_created):
+        """Reset the dict if all records were created."""
+        if all_created:
+            # We don't want to re-assign self.cases here because we lose the keys of the record/doc types we've already
+            # made. If we don't maintain that state we might not delete everything if we need to roll the records back
+            # at the end of, or during parsing.
+            for key in self.cases.keys():
+                self.cases[key] = {}
+
+
 class SortedRecords:
     """Maintains a dict sorted by hash_val and model type.
 
