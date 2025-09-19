@@ -11,7 +11,6 @@ from tdpservice.parsers.util import FrozenDict
 from tdpservice.parsers.validators.category3 import format_error_context
 from tdpservice.stts.models import STT
 
-from .duplicate_manager import DuplicateManager
 from .util import get_years_apart
 
 logger = logging.getLogger(__name__)
@@ -23,7 +22,6 @@ class CaseConsistencyValidator:
     def __init__(self, header, program_type, stt_type, generate_error):
         self.header = header
         self.sorted_cases = dict()
-        self.duplicate_manager = DuplicateManager(generate_error)
         self.current_rpt_month_year = None
         self.current_case_id = None
         self.case_has_errors = False
@@ -73,13 +71,9 @@ class CaseConsistencyValidator:
     def clear_errors(self, clear_dup=True):
         """Reset generated errors."""
         self.generated_errors = []
-        if clear_dup:
-            self.duplicate_manager.clear_errors()
 
     def get_generated_errors(self):
         """Return all errors generated for the current validated case."""
-        dup_errors = self.duplicate_manager.get_generated_errors()
-        self.generated_errors.extend(dup_errors)
         return self.generated_errors
 
     def num_generated_errors(self):
@@ -96,10 +90,6 @@ class CaseConsistencyValidator:
         self.sorted_cases = dict()
         if seed_record_triplet:
             self.add_record_to_structs(seed_record_triplet)
-
-    def update_removed(self, case_hash, should_remove, was_removed):
-        """Notify duplicate manager's CaseDuplicateDetectors whether they need to mark their records for DB removal."""
-        self.duplicate_manager.update_removed(case_hash, should_remove, was_removed)
 
     def _get_case_id(self, record):
         # Section 3/4 records don't have a CASE_NUMBER, and they're broken into multiple records for the same line.
