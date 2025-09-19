@@ -2,14 +2,16 @@
 
 import logging
 
+from django.db.models import Count
+
 from tdpservice.parsers.base_parser import BaseParser
 from tdpservice.parsers.dataclasses import HeaderResult, Position
-from tdpservice.parsers.duplicate_manager import DuplicateManager
 from tdpservice.parsers.error_generator import (
     ErrorGeneratorArgs,
     ErrorGeneratorFactory,
     ErrorGeneratorType,
 )
+from tdpservice.parsers.util import FrozenDict
 
 logger = logging.getLogger(__name__)
 
@@ -23,10 +25,6 @@ class FRAParser(BaseParser):
 
     def __init__(self, datafile, dfs, section):
         super().__init__(datafile, dfs, section)
-        duplicate_error_generator = self.error_generator_factory.get_generator(
-            ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
-        )
-        self.duplicate_manager = DuplicateManager(duplicate_error_generator)
 
     def _create_header_error(self):
         """Create FRA header error and return invalid HeaderResult."""
@@ -94,25 +92,6 @@ class FRAParser(BaseParser):
                         row_hash, (record, schema.model), self.current_row_num
                     )
 
-                self.duplicate_manager.add_record(
-                    record, row_hash, schema, row, self.current_row_num
-                )
-                num_dup_errors = self.duplicate_manager.get_num_dup_errors(row_hash)
-
-                should_remove = num_dup_errors > 0 or len(record_errors) > 0
-                was_removed = self.unsaved_records.remove_case_due_to_errors(
-                    should_remove, row_hash
-                )
-                self.duplicate_manager.update_removed(
-                    row_hash, should_remove, was_removed
-                )
-
-            dup_errors = self.duplicate_manager.get_generated_errors()
-            self.num_errors += len(dup_errors)
-            self.unsaved_parser_errors[None] = (
-                self.unsaved_parser_errors.get(None, []) + dup_errors
-            )
-            self.duplicate_manager.clear_errors()
             self.bulk_create_records(1)
             self.bulk_create_errors()
 
@@ -121,7 +100,7 @@ class FRAParser(BaseParser):
         all_created = self.bulk_create_records(1, flush=True)
 
         # Must happen after last bulk create
-        self._delete_serialized_records(self.duplicate_manager)
+        self._delete_exact_dups()
         self.create_no_records_created_pre_check_error()
 
         if not all_created:
@@ -137,3 +116,57 @@ class FRAParser(BaseParser):
         self.dfs.save()
 
         return
+
+    def _delete_exact_dups(self):
+        """Delete exact duplicate records from the DB."""
+        duplicate_error_generator = self.error_generator_factory.get_generator(
+            ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+        )
+        for schemas in self.schema_manager.schema_map.values():
+            schema = schemas[0]
+
+            fields = [f.name for f in schema.fields]
+            duplicate_vals = (
+                schema.model.objects.filter(datafile=self.datafile)
+                .exclude(SSN="999999999")
+                .values(*fields)
+                .annotate(row_count=Count("line_number", distinct=True))
+                .filter(row_count__gt=1)
+            )
+            dup_errors = []
+            for dup_vals_dict in duplicate_vals:
+                dup_vals_dict.pop("row_count", None)
+                dup_records = schema.model.objects.filter(**dup_vals_dict).order_by(
+                    "line_number"
+                )
+                record = dup_records.first()
+                for dup in dup_records[1:]:
+                    record_type = dup_vals_dict.get("RecordType", None)
+                    generator_args = ErrorGeneratorArgs(
+                        record=record,
+                        schema=schema,
+                        error_message=f"Duplicate record detected with record type {record_type} at line {dup.line_number}. Record is a duplicate of the record at line number {record.line_number}.",
+                        fields=schema.fields,
+                        row_number=record.line_number,
+                    )
+                    # Perform Error Generation
+                    dup_errors.append(
+                        duplicate_error_generator(generator_args=generator_args)
+                    )
+
+                case_id_to_delete = (
+                    FrozenDict(RecordType=record.RecordType)
+                    if not self.is_active_or_closed
+                    else FrozenDict(
+                        RPT_MONTH_YEAR=record.RPT_MONTH_YEAR,
+                        CASE_NUMBER=record.CASE_NUMBER,
+                    )
+                )
+                # We add the case ID here because a case with a duplicate record must be purged in it's entirety.
+                self.serialized_cases.add(case_id_to_delete)
+                num_deleted = dup_records._raw_delete(dup_records.db)
+                self.dfs.total_number_of_records_created -= num_deleted
+
+            self.unsaved_parser_errors[None] = (
+                self.unsaved_parser_errors.get(None, []) + dup_errors
+            )

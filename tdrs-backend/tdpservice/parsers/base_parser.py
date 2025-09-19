@@ -234,38 +234,6 @@ class BaseParser(ABC):
             self.unsaved_parser_errors.update(errors)
             self.num_errors += 1
 
-    # TODO: Delete this method
-    def _delete_serialized_records(self, duplicate_manager):
-        """Delete all records that have already been serialized to the DB that have cat4 errors."""
-        total_deleted = 0
-        for model, ids in duplicate_manager.get_records_to_remove().items():
-            try:
-                qset = model.objects.filter(id__in=ids)
-                # WARNING: we can use `_raw_delete` in this case because our record models don't have cascading
-                # dependencies. If that ever changes, we should NOT use `_raw_delete`.
-                num_deleted = qset._raw_delete(qset.db)
-                total_deleted += num_deleted
-                self.dfs.total_number_of_records_created -= num_deleted
-                logger.debug(f"Deleted {num_deleted} records of type: {model}.")
-            except DatabaseError as e:
-                log_parser_exception(
-                    self.datafile,
-                    (
-                        f"Encountered error while deleting database records for model {model}. "
-                        f"Exception: \n{e}"
-                    ),
-                    "error",
-                )
-            except Exception as e:
-                log_parser_exception(
-                    self.datafile,
-                    (
-                        f"Encountered generic exception while deleting records of type {model}. "
-                        f"Exception: \n{e}"
-                    ),
-                    "error",
-                )
-
     def add_case_to_remove(self, should_remove, case_id: FrozenDict):
         """Add case ID to set of IDs to be removed later."""
         if should_remove:
