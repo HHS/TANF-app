@@ -213,7 +213,7 @@ class TanfDataReportParser(BaseParser):
             logger.info(
                 f"Preparser Error: {len(header_errors)} header errors encountered."
             )
-            self.num_errors += 1
+            self.num_errors += len(header_errors)
             self.unsaved_parser_errors.update({1: header_errors})
             self.bulk_create_errors(flush=True)
             return HeaderResult(is_valid=False)
@@ -221,9 +221,8 @@ class TanfDataReportParser(BaseParser):
             logger.info(
                 f"Preparser Warning: {len(header_errors)} header warnings encountered."
             )
-            self.num_errors += 1
+            self.num_errors += len(header_errors)
             self.unsaved_parser_errors.update({1: header_errors})
-            self.bulk_create_errors(flush=True)
 
         # Grab important fields from header
         field_values = schema_defs.header.get_field_values_by_names(

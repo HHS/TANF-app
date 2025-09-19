@@ -16,6 +16,7 @@ class ErrorGeneratorType(Enum):
     PRE_CHECK = "pre_check"
     RECORD_PRE_CHECK = "record_pre_check"
     FIELD_VALUE = "field_value"
+    HEADER_FIELD_VALUE = "header_field_value"
     VALUE_CONSISTENCY = "value_consistency"
     CASE_CONSISTENCY = "case_consistency"
     FRA = "fra_parser_error"
@@ -40,6 +41,8 @@ class ErrorGeneratorFactory:
                 return self.create_generate_record_precheck_error(row_number)
             case ErrorGeneratorType.FIELD_VALUE:
                 return self.create_generate_field_value_error(row_number)
+            case ErrorGeneratorType.HEADER_FIELD_VALUE:
+                return self.create_generate_header_field_value_error(row_number)
             case ErrorGeneratorType.VALUE_CONSISTENCY:
                 return self.create_generate_value_consistency_error(row_number)
             case ErrorGeneratorType.CASE_CONSISTENCY:
@@ -194,6 +197,32 @@ class ErrorGeneratorFactory:
             )
 
         return generate_field_value_error
+
+    def create_generate_header_field_value_error(self, row_number):
+        """Create a field value error generator."""
+
+        def generate_header_field_value_error(generator_args: ErrorGeneratorArgs):
+            """Generate a field value error."""
+            field = generator_args.offending_field
+            record = generator_args.record
+            fields_json = self._generate_fields_json([field])
+            values_json = self._generate_values_json([field], record)
+            return ParserError(
+                file=self.datafile,
+                row_number=row_number,
+                column_number=getattr(field, "item", ""),
+                item_number=getattr(field, "item", ""),
+                field_name=getattr(field, "name", ""),
+                rpt_month_year=getattr(record, "RPT_MONTH_YEAR", None),
+                case_number=getattr(record, "CASE_NUMBER", None),
+                error_message=generator_args.error_message,
+                error_type=ParserErrorCategoryChoices.FIELD_VALUE,
+                fields_json=fields_json,
+                values_json=values_json,
+                deprecated=generator_args.deprecated,
+            )
+
+        return generate_header_field_value_error
 
     def create_generate_value_consistency_error(self, row_number):
         """Create a value consistency error generator."""
