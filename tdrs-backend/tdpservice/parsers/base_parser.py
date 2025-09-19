@@ -245,7 +245,6 @@ class BaseParser(ABC):
             cases = Q()
             for case in self.serialized_cases:
                 cases |= Q(**case)
-                print(f"Deleting case with cat4: {case}")
             for schemas in self.schema_manager.schema_map.values():
                 schema = schemas[0]
                 num_deleted, _ = schema.model.objects.filter(
