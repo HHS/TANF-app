@@ -634,8 +634,8 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile, dfs):
 
     assert parser_errors.count() == 31726
 
-    # assert SSP_M1.objects.count() == expected_m1_record_count
-    # assert SSP_M2.objects.count() == expected_m2_record_count
+    assert SSP_M1.objects.count() == expected_m1_record_count
+    assert SSP_M2.objects.count() == expected_m2_record_count
     assert SSP_M3.objects.count() == expected_m3_record_count
 
 
