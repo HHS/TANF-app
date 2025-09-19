@@ -278,11 +278,11 @@ class BaseParser(ABC):
                 for dup in dup_records[1:]:
                     record_type = dup_vals_dict.get("RecordType", None)
                     generator_args = ErrorGeneratorArgs(
-                        record=record,
+                        record=dup,
                         schema=schema,
                         error_message=f"Duplicate record detected with record type {record_type} at line {dup.line_number}. Record is a duplicate of the record at line number {record.line_number}.",
                         fields=schema.fields,
-                        row_number=record.line_number,
+                        row_number=dup.line_number,
                     )
                     # Perform Error Generation
                     dup_errors.append(
@@ -350,13 +350,13 @@ class BaseParser(ABC):
                 for dup in dup_records[1:]:
                     record_type = d.get("RecordType", None)
                     generator_args = ErrorGeneratorArgs(
-                        record=record,
+                        record=dup,
                         schema=schema,
                         error_message=self._get_partial_dup_error_msg(
                             schema, record_type, dup.line_number, record.line_number
                         ),
                         fields=schema.fields,
-                        row_number=record.line_number,
+                        row_number=dup.line_number,
                     )
                     # Perform Error Generation
                     dup_errors.append(

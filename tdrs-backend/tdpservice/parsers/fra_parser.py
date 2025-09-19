@@ -142,15 +142,15 @@ class FRAParser(BaseParser):
                 record = dup_records.first()
                 for dup in dup_records[1:]:
                     generator_args = ErrorGeneratorArgs(
-                        record=record,
+                        record=dup,
                         schema=schema,
                         error_message=(
                             "Duplicate Social Security Number within a month. Check that individual SSNs "
-                            "within a single exit month are not included more than once. SSN is a duplicate "
-                            f"of the record at line number {record.line_number}."
+                            "within a single exit month are not included more than once. Record at line number "
+                            f"{dup.line_number} is a duplicate of the record at line number {record.line_number}."
                         ),
                         fields=schema.fields,
-                        row_number=record.line_number,
+                        row_number=dup.line_number,
                     )
                     # Perform Error Generation
                     dup_errors.append(
