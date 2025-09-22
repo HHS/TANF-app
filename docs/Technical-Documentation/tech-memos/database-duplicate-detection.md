@@ -312,7 +312,7 @@ To ensure efficient duplicate detection queries:
 
 ## Use and Test Cases to Consider
 
-Consider some performance testing along with a guarentee that all existing unit tests and integration tests still pass.
+Consider some performance testing along with a guarantee that all existing unit tests and integration tests still pass.
 
 ### Performance Testing
 - **Large File Processing**: Test with files containing 3-10 million records
