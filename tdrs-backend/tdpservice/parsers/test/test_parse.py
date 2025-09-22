@@ -2062,21 +2062,21 @@ def test_zero_filled_fips_code_file(test_file_zero_filled_fips_code, dfs):
             "T4",
             3,
         ),  # This forces an in memory and database deletion of records.
-        ("tanf_s3_exact_dup_file", 10000, TANF_T6, "T6", 1),
+        ("tanf_s3_exact_dup_file", 10000, TANF_T6, "T6", 3),
         (
             "tanf_s3_exact_dup_file",
             1,
             TANF_T6,
             "T6",
-            1,
+            3,
         ),  # This forces an in memory and database deletion of records.
-        ("tanf_s4_exact_dup_file", 10000, TANF_T7, "T7", 1),
+        ("tanf_s4_exact_dup_file", 10000, TANF_T7, "T7", 18),
         (
             "tanf_s4_exact_dup_file",
             1,
             TANF_T7,
             "T7",
-            1,
+            18,
         ),  # This forces an in memory and database deletion of records.
         ("ssp_s1_exact_dup_file", 10000, SSP_M1, "M1", 3),
         (
@@ -2094,21 +2094,21 @@ def test_zero_filled_fips_code_file(test_file_zero_filled_fips_code, dfs):
             "M4",
             3,
         ),  # This forces an in memory and database deletion of records.
-        ("ssp_s3_exact_dup_file", 10000, SSP_M6, "M6", 1),
+        ("ssp_s3_exact_dup_file", 10000, SSP_M6, "M6", 3),
         (
             "ssp_s3_exact_dup_file",
             1,
             SSP_M6,
             "M6",
-            1,
+            3,
         ),  # This forces an in memory and database deletion of records.
-        ("ssp_s4_exact_dup_file", 10000, SSP_M7, "M7", 1),
+        ("ssp_s4_exact_dup_file", 10000, SSP_M7, "M7", 12),
         (
             "ssp_s4_exact_dup_file",
             1,
             SSP_M7,
             "M7",
-            1,
+            12,
         ),  # This forces an in memory and database deletion of records.
     ],
 )
@@ -2158,26 +2158,6 @@ def test_parse_duplicate(
         ("tanf_s2_partial_dup_file", 10000, TANF_T5, "T5", 3, "partial_dup_t5_err_msg"),
         # This forces an in memory and database deletion of records.
         ("tanf_s2_partial_dup_file", 1, TANF_T5, "T5", 3, "partial_dup_t5_err_msg"),
-        (
-            "tanf_s3_partial_dup_file",
-            10000,
-            TANF_T6,
-            "T6",
-            1,
-            "partial_dup_s3_s4_err_msg",
-        ),
-        # This forces an in memory and database deletion of records.
-        ("tanf_s3_partial_dup_file", 1, TANF_T6, "T6", 1, "partial_dup_s3_s4_err_msg"),
-        (
-            "tanf_s4_partial_dup_file",
-            10000,
-            TANF_T7,
-            "T7",
-            1,
-            "partial_dup_s3_s4_err_msg",
-        ),
-        # This forces an in memory and database deletion of records.
-        ("tanf_s4_partial_dup_file", 1, TANF_T7, "T7", 1, "partial_dup_s3_s4_err_msg"),
         ("ssp_s1_partial_dup_file", 10000, SSP_M1, "M1", 3, "partial_dup_t1_err_msg"),
         # This forces an in memory and database deletion of records.
         ("ssp_s1_partial_dup_file", 1, SSP_M1, "M1", 3, "partial_dup_t1_err_msg"),
@@ -2216,6 +2196,7 @@ def test_parse_partial_duplicate(
     assert parser_errors.count() == num_errors
 
     dup_error = parser_errors.first()
+    print("Generated Error: ", dup_error.error_message)
     assert expected_error_msg.format(record_type=record_type) in dup_error.error_message
 
     model.objects.count() == 0

@@ -310,7 +310,7 @@ class BaseParser(ABC):
         self, schema, record_type, curr_line_number, existing_line_number
     ):
         """Generate partial duplicate error message with friendly names."""
-        field_names = schema.get_partial_hash_members_func()
+        field_names = schema.get_partial_dup_fields()
         err_msg = (
             f"Partial duplicate record detected with record type "
             f"{record_type} at line {curr_line_number}. Record is a partial duplicate of the "
@@ -330,33 +330,44 @@ class BaseParser(ABC):
     # TODO: paginate this
     def _delete_partial_dups(self):
         """Delete partial duplicate records from the DB."""
+        # Partial duplicates are only relevant for active and closed case files
+        if not self.is_active_or_closed:
+            return
+
         duplicate_error_generator = self.error_generator_factory.get_generator(
             ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
         )
         for schemas in self.schema_manager.schema_map.values():
             schema = schemas[0]
-            fields = schema.get_partial_hash_members_func()
-            dups = (
-                schema.model.objects.filter(datafile=self.datafile)
-                .values(*fields)
+            fields = schema.get_partial_dup_fields()
+            records = schema.model.objects.filter(datafile=self.datafile)
+            if schema.partial_dup_exclusion_query is not None:
+                records = records.exclude(schema.partial_dup_exclusion_query)
+            partial_dups_values = (
+                records.values(*fields)
                 .annotate(row_count=Count("line_number", distinct=True))
                 .filter(row_count__gt=1)
             )
             dup_errors = []
-            for d in dups:
-                d.pop("row_count", None)
-                dup_records = schema.model.objects.filter(**d).order_by("line_number")
-                record = dup_records.first()
-                for dup in dup_records[1:]:
-                    record_type = d.get("RecordType", None)
+            for partial_dup_values in partial_dups_values:
+                partial_dup_values.pop("row_count", None)
+                partial_dup_records = records.filter(**partial_dup_values).order_by(
+                    "line_number"
+                )
+                record = partial_dup_records.first()
+                for offending_record in partial_dup_records[1:]:
+                    record_type = partial_dup_values.get("RecordType", None)
                     generator_args = ErrorGeneratorArgs(
-                        record=dup,
+                        record=offending_record,
                         schema=schema,
                         error_message=self._get_partial_dup_error_msg(
-                            schema, record_type, dup.line_number, record.line_number
+                            schema,
+                            record_type,
+                            offending_record.line_number,
+                            record.line_number,
                         ),
                         fields=schema.fields,
-                        row_number=dup.line_number,
+                        row_number=offending_record.line_number,
                     )
                     # Perform Error Generation
                     dup_errors.append(
@@ -370,9 +381,9 @@ class BaseParser(ABC):
                         CASE_NUMBER=record.CASE_NUMBER,
                     )
                 )
-                # We add the case ID here because a case with a duplicate record must be purged in it's entirety.
+                # We add the case ID here because a case with a partial duplicate record must be purged in it's entirety.
                 self.serialized_cases.add(case_id_to_delete)
-                num_deleted, _ = dup_records.delete()
+                num_deleted, _ = partial_dup_records.delete()
                 self.dfs.total_number_of_records_created -= num_deleted
 
             self.unsaved_parser_errors[None] = (

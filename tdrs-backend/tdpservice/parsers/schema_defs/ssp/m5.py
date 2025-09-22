@@ -1,13 +1,12 @@
 """Schema for SSP M5 record type."""
 
+from django.db.models import Q
+
 from tdpservice.parsers.dataclasses import FieldType
 from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.transforms import ssp_ssn_decryption_func
-from tdpservice.parsers.util import (
-    generate_t2_t3_t5_hashes,
-    get_t2_t3_t5_partial_hash_members,
-)
+from tdpservice.parsers.util import get_t2_t3_t5_partial_hash_members
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.search_indexes.models.ssp import SSP_M5
 
@@ -15,10 +14,8 @@ m5 = [
     TanfDataReportSchema(
         record_type="M5",
         model=SSP_M5,
-        generate_hashes_func=generate_t2_t3_t5_hashes,
-        should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION
-        in {3, 4, 5},
-        get_partial_hash_members_func=get_t2_t3_t5_partial_hash_members,
+        partial_dup_exclusion_query=Q(FAMILY_AFFILIATION__in=(3, 4, 5)),
+        get_partial_dup_fields=get_t2_t3_t5_partial_hash_members,
         preparsing_validators=[
             category1.recordHasLengthOfAtLeast(66),
             category1.caseNumberNotEmpty(8, 19),

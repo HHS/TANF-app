@@ -4,10 +4,7 @@ from tdpservice.parsers.dataclasses import FieldType
 from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.transforms import zero_pad
-from tdpservice.parsers.util import (
-    generate_t1_t4_hashes,
-    get_t1_t4_partial_hash_members,
-)
+from tdpservice.parsers.util import get_t1_t4_partial_hash_members
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T1
 
@@ -15,8 +12,7 @@ t1 = [
     TanfDataReportSchema(
         record_type="T1",
         model=Tribal_TANF_T1,
-        generate_hashes_func=generate_t1_t4_hashes,
-        get_partial_hash_members_func=get_t1_t4_partial_hash_members,
+        get_partial_dup_fields=get_t1_t4_partial_hash_members,
         preparsing_validators=[
             category1.recordHasLengthOfAtLeast(117),
             category1.caseNumberNotEmpty(8, 19),
