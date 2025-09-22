@@ -2,7 +2,7 @@
 
 **Audience**: TDP Software Engineers <br>
 **Subject**: Migration from In-Memory to Database-Based Duplicate Detection <br>
-**Date**: January 22, 2025 <br>
+**Date**: September 22, 2025 <br>
 
 ## Summary
 
