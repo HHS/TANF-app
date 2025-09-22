@@ -2,7 +2,6 @@
 
 import logging
 
-from tdpservice.parsers.base_parser import BaseParser
 from tdpservice.parsers.dataclasses import HeaderResult, Position
 from tdpservice.parsers.duplicate_manager import DuplicateManager
 from tdpservice.parsers.error_generator import (
@@ -10,6 +9,7 @@ from tdpservice.parsers.error_generator import (
     ErrorGeneratorFactory,
     ErrorGeneratorType,
 )
+from tdpservice.parsers.parser_classes.base_parser import BaseParser
 
 logger = logging.getLogger(__name__)
 
