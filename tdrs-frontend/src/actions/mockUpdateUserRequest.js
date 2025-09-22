@@ -1,27 +1,42 @@
+import axios from 'axios'
+import { logErrorToServer } from '../utils/eventLogger'
+import { SET_AUTH } from './auth'
+
 // actions/mockUpdateUserRequest.js
 export const UPDATE_USER_REQUEST_SUCCESS = 'UPDATE_USER_REQUEST_SUCCESS'
+export const PATCH_REQUEST_USER_UPDATE = 'PATCH_REQUEST_USER_UPDATE'
+export const SET_REQUEST_USER_UPDATE = 'SET_REQUEST_USER_UPDATE'
+export const SET_REQUEST_USER_UPDATE_ERROR = 'SET_REQUEST_USER_UPDATE_ERROR'
+export const CLEAR_REQUEST_USER_UPDATE = 'CLEAR_REQUEST_USER_UPDATE'
 
 export const updateUserRequest =
   ({ firstName, lastName, stt, regions, hasFRAAccess }) =>
   async (dispatch) => {
-    const user = {
-      first_name: firstName,
-      last_name: lastName,
-      stt: stt?.id,
-      regions: regions ? [...regions] : [],
-      has_fra_access: hasFRAAccess,
-    }
+    dispatch({ type: PATCH_REQUEST_USER_UPDATE })
+    try {
+      const URL = `${process.env.REACT_APP_BACKEND_URL}/users/update_profile/`
+      const user = {
+        first_name: firstName,
+        last_name: lastName,
+        stt: stt?.id,
+        regions: regions ? [...regions] : [],
+        has_fra_access: hasFRAAccess,
+      }
+      const { data } = await axios.patch(URL, user, {
+        withCredentials: true,
+      })
 
-    console.log('[Stubbed] updateUserRequest called with:', user)
-
-    // simulate a delay like a real API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
+      if (data) {
+        dispatch({ type: SET_REQUEST_USER_UPDATE })
         dispatch({
-          type: UPDATE_USER_REQUEST_SUCCESS,
-          user, // this could be returned user data
+          type: SET_AUTH,
+          payload: { user: data },
         })
-        resolve()
-      }, 500)
-    })
+      } else {
+        dispatch({ type: CLEAR_REQUEST_USER_UPDATE })
+      }
+    } catch (error) {
+      logErrorToServer(SET_REQUEST_USER_UPDATE_ERROR)
+      dispatch({ type: SET_REQUEST_USER_UPDATE_ERROR, payload: { error } })
+    }
   }
