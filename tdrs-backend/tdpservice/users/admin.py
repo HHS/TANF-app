@@ -42,6 +42,33 @@ class UserForm(forms.ModelForm):
         return cleaned_data
 
 
+class RegionsInlineFormSet(forms.models.BaseInlineFormSet):
+    """Custom formset for region inlines."""
+
+    def clean(self):
+        """Validate region inlines."""
+        super().clean()
+        cleaned_data = self.cleaned_data[0]
+        user = cleaned_data.get("user")
+        """
+        Have to validate regions against existing and new user roles.
+        Currently, if form request includes a new region and user roles, then changes
+        are validated against only the existing user roles.
+        """
+        if user:
+            regional = user.regions.all().count() + len(cleaned_data.get("regions", []))
+            existing_roles_not_regional = not user.is_regional_staff and not user.is_data_analyst and not user.is_developer
+            coming_roles = cleaned_data.get("roles", [])
+            coming_roles_not_regional = any(role in coming_roles for role in ["Regional Staff", "Data Analyst", "Developer"])
+            if regional and user.stt:
+                raise ValidationError(
+                    "A user may only have a Region or STT assigned, not both."
+                )
+            elif existing_roles_not_regional or coming_roles_not_regional:
+                raise ValidationError(
+                    "Users other than Regional Staff, Developers, Data Analysts do not get assigned a location."
+                )
+
 class RegionInline(admin.TabularInline):
     """Inline model for many to many relationship."""
 
@@ -50,6 +77,7 @@ class RegionInline(admin.TabularInline):
     verbose_name_plural = "Regions"
     can_delete = True
     ordering = ["-pk"]
+    formset = RegionsInlineFormSet
 
 
 class UserAdmin(admin.ModelAdmin):
