@@ -262,30 +262,30 @@ class BaseParser(ABC):
             schema = schemas[0]
 
             fields = [f.name for f in schema.fields if f.name != "BLANK"]
-            duplicate_vals = (
-                schema.model.objects.filter(datafile=self.datafile)
-                .values(*fields)
+            records = schema.model.objects.filter(datafile=self.datafile)
+            duplicates_vals = (
+                records.values(*fields)
                 .annotate(row_count=Count("line_number", distinct=True))
                 .filter(row_count__gt=1)
             )
-            dup_errors = []
-            for dup_vals_dict in duplicate_vals:
-                dup_vals_dict.pop("row_count", None)
-                dup_records = schema.model.objects.filter(**dup_vals_dict).order_by(
+            duplicate_errors = []
+            for duplicate_vals in duplicates_vals:
+                duplicate_vals.pop("row_count", None)
+                duplicate_records = records.filter(**duplicate_vals).order_by(
                     "line_number"
                 )
-                record = dup_records.first()
-                for dup in dup_records[1:]:
-                    record_type = dup_vals_dict.get("RecordType", None)
+                record = duplicate_records.first()
+                for offending_record in duplicate_records[1:]:
+                    record_type = duplicate_vals.get("RecordType", None)
                     generator_args = ErrorGeneratorArgs(
-                        record=dup,
+                        record=offending_record,
                         schema=schema,
-                        error_message=f"Duplicate record detected with record type {record_type} at line {dup.line_number}. Record is a duplicate of the record at line number {record.line_number}.",
+                        error_message=f"Duplicate record detected with record type {record_type} at line {offending_record.line_number}. Record is a duplicate of the record at line number {record.line_number}.",
                         fields=schema.fields,
-                        row_number=dup.line_number,
+                        row_number=offending_record.line_number,
                     )
                     # Perform Error Generation
-                    dup_errors.append(
+                    duplicate_errors.append(
                         duplicate_error_generator(generator_args=generator_args)
                     )
 
@@ -299,11 +299,11 @@ class BaseParser(ABC):
                 )
                 # We add the case ID here because a case with a duplicate record must be purged in it's entirety.
                 self.serialized_cases.add(case_id_to_delete)
-                num_deleted = dup_records._raw_delete(dup_records.db)
+                num_deleted = duplicate_records._raw_delete(duplicate_records.db)
                 self.dfs.total_number_of_records_created -= num_deleted
 
             self.unsaved_parser_errors[None] = (
-                self.unsaved_parser_errors.get(None, []) + dup_errors
+                self.unsaved_parser_errors.get(None, []) + duplicate_errors
             )
 
     def _get_partial_dup_error_msg(
@@ -348,7 +348,7 @@ class BaseParser(ABC):
                 .annotate(row_count=Count("line_number", distinct=True))
                 .filter(row_count__gt=1)
             )
-            dup_errors = []
+            partial_duplicate_errors = []
             for partial_dup_values in partial_dups_values:
                 partial_dup_values.pop("row_count", None)
                 partial_dup_records = records.filter(**partial_dup_values).order_by(
@@ -370,7 +370,7 @@ class BaseParser(ABC):
                         row_number=offending_record.line_number,
                     )
                     # Perform Error Generation
-                    dup_errors.append(
+                    partial_duplicate_errors.append(
                         duplicate_error_generator(generator_args=generator_args)
                     )
                 case_id_to_delete = (
@@ -387,5 +387,5 @@ class BaseParser(ABC):
                 self.dfs.total_number_of_records_created -= num_deleted
 
             self.unsaved_parser_errors[None] = (
-                self.unsaved_parser_errors.get(None, []) + dup_errors
+                self.unsaved_parser_errors.get(None, []) + partial_duplicate_errors
             )
