@@ -1,4 +1,5 @@
 """Fixtures for parsing integration tests."""
+
 import pytest
 
 from tdpservice.data_files.models import DataFile
@@ -925,7 +926,8 @@ def fra_xlsx(stt_user, stt):
 @pytest.fixture
 def fra_multi_sheet_xlsx(stt_user, stt):
     """Fixture for xlsx fra file."""
-    return util.create_test_datafile('fra_multi_sheet.xlsx', stt_user, stt)
+    return util.create_test_datafile("fra_multi_sheet.xlsx", stt_user, stt)
+
 
 @pytest.fixture
 def unknown_png(stt_user, stt):
@@ -1049,3 +1051,27 @@ def section2_no_records():
         file__data=(b"HEADER20244C06   TAN1ED\n" b"TRAILER0000001         "),
     )
     return parsing_file
+
+
+@pytest.fixture
+def program_audit_ftanf(stt, stt_user):
+    """Fixture for valid Program Audit file with extraneous data."""
+    return util.create_test_datafile(
+        "PI_Audit_FTANF.txt", stt_user, stt, DataFile.Section.PROGRAM_AUDIT
+    )
+
+
+@pytest.fixture
+def program_audit_space_fill(stt, stt_user):
+    """Fixture for valid Program Audit file with space fill."""
+    return util.create_test_datafile(
+        "PI_Audit_space-fill.txt", stt_user, stt, DataFile.Section.PROGRAM_AUDIT
+    )
+
+
+@pytest.fixture
+def program_audit_zero_fill(stt, stt_user):
+    """Fixture for valid Program Audit file with zero fill."""
+    return util.create_test_datafile(
+        "PI_Audit_zero-fill.txt", stt_user, stt, DataFile.Section.PROGRAM_AUDIT
+    )

@@ -1,6 +1,5 @@
 """Test the implementation of the parse_file method with realistic datafiles."""
 
-
 import logging
 import os
 
@@ -2475,3 +2474,39 @@ def test_parse_section2_no_records(section2_no_records, dfs):
     errors = ParserError.objects.filter(file=datafile).order_by("id")
     assert errors.count() == 0
     assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
+
+
+@pytest.mark.parametrize(
+    "file",
+    [
+        ("program_audit_ftanf"),
+        ("program_audit_space_fill"),
+        ("program_audit_zero_fill"),
+    ],
+)
+@pytest.mark.django_db()
+def test_parse_program_audit(request, file, dfs):
+    """Test parsing Program Audit files."""
+    datafile = request.getfixturevalue(file)
+    datafile.year = 2024
+    datafile.quarter = "Q1"
+
+    dfs.datafile = datafile
+    dfs.save()
+
+    parser = ParserFactory.get_instance(
+        datafile=datafile,
+        dfs=dfs,
+        section=datafile.section,
+        program_type=datafile.prog_type,
+    )
+    parser.parse_and_validate()
+
+    assert TANF_Exiter1.objects.all().count() == 0
+
+    errors = ParserError.objects.filter(file=datafile).order_by("id")
+    assert len(errors) == 1
+    for e in errors:
+        assert e.error_message == "File does not begin with FRA data."
+        assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert dfs.get_status() == DataFileSummary.Status.REJECTED
