@@ -7,7 +7,6 @@ from django.contrib.admin.models import ADDITION
 
 from tdpservice.core.utils import log
 from tdpservice.data_files.models import DataFile
-from tdpservice.parsers.dataclasses import RawRow
 
 logger = logging.getLogger(__name__)
 

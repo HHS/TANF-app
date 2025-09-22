@@ -1,6 +1,5 @@
 """Test the methods of HeaderSchema to ensure parsing and validation work in all individual cases."""
 
-import logging
 from datetime import datetime
 
 import pytest
