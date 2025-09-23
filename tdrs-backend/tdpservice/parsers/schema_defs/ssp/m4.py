@@ -4,7 +4,7 @@ from tdpservice.parsers.dataclasses import FieldType
 from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.transforms import zero_pad
-from tdpservice.parsers.util import get_t1_t4_partial_hash_members
+from tdpservice.parsers.util import get_t1_t4_partial_dup_fields
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.search_indexes.models.ssp import SSP_M4
 
@@ -12,7 +12,7 @@ m4 = [
     TanfDataReportSchema(
         record_type="M4",
         model=SSP_M4,
-        get_partial_dup_fields=get_t1_t4_partial_hash_members,
+        get_partial_dup_fields=get_t1_t4_partial_dup_fields,
         preparsing_validators=[
             category1.recordHasLengthOfAtLeast(34),
             category1.caseNumberNotEmpty(8, 19),

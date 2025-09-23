@@ -6,7 +6,7 @@ from tdpservice.parsers.dataclasses import FieldType
 from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.transforms import tanf_ssn_decryption_func
-from tdpservice.parsers.util import get_t2_t3_t5_partial_hash_members
+from tdpservice.parsers.util import get_t2_t3_t5_partial_dup_fields
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.parsers.validators.util import is_quiet_preparser_errors
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T3
@@ -18,7 +18,7 @@ child_one = TanfDataReportSchema(
     record_type="T3",
     model=Tribal_TANF_T3,
     partial_dup_exclusion_query=Q(FAMILY_AFFILIATION__in=(2, 4, 5)),
-    get_partial_dup_fields=get_t2_t3_t5_partial_hash_members,
+    get_partial_dup_fields=get_t2_t3_t5_partial_dup_fields,
     preparsing_validators=[
         category1.t3_m3_child_validator(FIRST_CHILD),
         category1.caseNumberNotEmpty(8, 19),
@@ -329,7 +329,7 @@ child_two = TanfDataReportSchema(
     record_type="T3",
     model=Tribal_TANF_T3,
     partial_dup_exclusion_query=Q(FAMILY_AFFILIATION__in=(2, 4, 5)),
-    get_partial_dup_fields=get_t2_t3_t5_partial_hash_members,
+    get_partial_dup_fields=get_t2_t3_t5_partial_dup_fields,
     quiet_preparser_errors=is_quiet_preparser_errors(min_length=61),
     preparsing_validators=[
         category1.t3_m3_child_validator(SECOND_CHILD),

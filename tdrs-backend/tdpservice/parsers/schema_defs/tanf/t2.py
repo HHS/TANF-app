@@ -6,7 +6,7 @@ from tdpservice.parsers.dataclasses import FieldType
 from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.transforms import tanf_ssn_decryption_func
-from tdpservice.parsers.util import get_t2_t3_t5_partial_hash_members
+from tdpservice.parsers.util import get_t2_t3_t5_partial_dup_fields
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.search_indexes.models.tanf import TANF_T2
 
@@ -15,7 +15,7 @@ t2 = [
         record_type="T2",
         model=TANF_T2,
         partial_dup_exclusion_query=Q(FAMILY_AFFILIATION__in=(3, 5)),
-        get_partial_dup_fields=get_t2_t3_t5_partial_hash_members,
+        get_partial_dup_fields=get_t2_t3_t5_partial_dup_fields,
         preparsing_validators=[
             category1.recordHasLengthOfAtLeast(156),
             category1.caseNumberNotEmpty(8, 19),
