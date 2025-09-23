@@ -105,7 +105,11 @@ const FeedbackForm = ({
     try {
       const response = await axiosInstance.post(
         `${BACKEND_URL}/feedback/`,
-        payload
+        payload,
+        {
+          headers: { 'Content-Type': 'application/json' },
+          withCredentials: true,
+        }
       )
 
       if (response.status === 200 || response.status === 201) {
