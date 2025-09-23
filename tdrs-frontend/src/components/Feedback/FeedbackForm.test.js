@@ -281,6 +281,10 @@ describe('Feedback Form tests', () => {
           feedback_type: 'general_feedback',
           page_url: 'http://localhost/',
           anonymous: true,
+        },
+        {
+          headers: { 'Content-Type': 'application/json' },
+          withCredentials: true,
         }
       )
     })
@@ -310,6 +314,10 @@ describe('Feedback Form tests', () => {
           rating: 3,
           feedback: '',
           anonymous: false,
+        },
+        {
+          headers: { 'Content-Type': 'application/json' },
+          withCredentials: true,
         }
       )
     )
@@ -511,16 +519,23 @@ describe('Feedback Form tests', () => {
     fireEvent.click(screen.getByRole('button', { name: /send feedback/i }))
 
     await waitFor(() => {
-      expect(axiosInstance.post).toHaveBeenCalledWith(expect.any(String), {
-        attachments: [],
-        component: 'data-file-submission',
-        feedback_type: 'fra_submission_feedback',
-        page_url: 'http://localhost/',
-        widget_id: 'unknown-submission-feedback',
-        rating: 5,
-        feedback: '', // comment left blank
-        anonymous: false, // anonymous checkbox hidden
-      })
+      expect(axiosInstance.post).toHaveBeenCalledWith(
+        expect.any(String),
+        {
+          attachments: [],
+          component: 'data-file-submission',
+          feedback_type: 'fra_submission_feedback',
+          page_url: 'http://localhost/',
+          widget_id: 'unknown-submission-feedback',
+          rating: 5,
+          feedback: '', // comment left blank
+          anonymous: false, // anonymous checkbox hidden
+        },
+        {
+          headers: { 'Content-Type': 'application/json' },
+          withCredentials: true,
+        }
+      )
       expect(onSubmit).toHaveBeenCalled()
     })
   })
