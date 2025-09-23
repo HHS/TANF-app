@@ -70,9 +70,16 @@ class RegionsInlineFormSet(forms.models.BaseInlineFormSet):
         """
         if user:
             regional = user.regions.all().count() + len(cleaned_data.get("regions", []))
-            existing_roles_not_regional = not user.is_regional_staff and not user.is_data_analyst and not user.is_developer
+            existing_roles_not_regional = (
+                not user.is_regional_staff
+                and not user.is_data_analyst
+                and not user.is_developer
+            )
             coming_roles = cleaned_data.get("roles", [])
-            coming_roles_not_regional = any(role in coming_roles for role in ["Regional Staff", "Data Analyst", "Developer"])
+            coming_roles_not_regional = any(
+                role in coming_roles
+                for role in ["Regional Staff", "Data Analyst", "Developer"]
+            )
             if regional and user.stt:
                 raise ValidationError(
                     "A user may only have a Region or STT assigned, not both."
@@ -81,6 +88,7 @@ class RegionsInlineFormSet(forms.models.BaseInlineFormSet):
                 raise ValidationError(
                     "Users other than Regional Staff, Developers, Data Analysts do not get assigned a location."
                 )
+
 
 class RegionInline(admin.TabularInline):
     """Inline model for many to many relationship."""
@@ -515,7 +523,8 @@ class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         links = []
         for f in files:
             # Show file section, year, quarter as a link to its admin change page
-            url = f"/admin/data_files/datafile/{f.id}/change/"
+            url = reverse("admin:data_files_datafile_change", args=[f.id])
+            # url = f"/admin/data_files/datafile/{f.id}/change/"
             label = f"{f.section} ({f.year} {f.quarter})"
             links.append(f"<a href='{url}' target='_blank'>{label}</a>")
 
