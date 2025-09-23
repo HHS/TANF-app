@@ -15,28 +15,28 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from tdpservice.users.models import (
-    User,
     AccountApprovalStatusChoices,
-    UserChangeRequest,
     ChangeRequestAuditLog,
     Feedback,
+    User,
+    UserChangeRequest,
 )
 from tdpservice.users.permissions import (
     CypressAdminAccountPermissions,
     DjangoModelCRUDPermissions,
     FeedbackPermissions,
     IsApprovedPermission,
+    IsOwnerOrAdmin,
     UserPermissions,
-    IsOwnerOrAdmin
-    )
+)
 from tdpservice.users.serializers import (
+    ChangeRequestAuditLogSerializer,
     FeedbackSerializer,
     GroupSerializer,
+    UserChangeRequestSerializer,
+    UserProfileChangeRequestSerializer,
     UserProfileSerializer,
     UserSerializer,
-    UserProfileChangeRequestSerializer,
-    UserChangeRequestSerializer,
-    ChangeRequestAuditLogSerializer
 )
 
 logger = logging.getLogger(__name__)
@@ -129,11 +129,13 @@ class UserViewSet(
                 "Change requests created for user: %s on %s", user, timezone.now()
             )
             # Return the updated serializer data with pending change request info
-            return Response({
-                'user': self.get_serializer(user).data,
-                'message': 'Your requested changes have been submitted for approval.',
-                'pending_requests': pending_requests.count()
-            })
+            return Response(
+                {
+                    "user": self.get_serializer(user).data,
+                    "message": "Your requested changes have been submitted for approval.",
+                    "pending_requests": pending_requests.count(),
+                }
+            )
 
         return Response(serializer.data)
 
@@ -205,9 +207,10 @@ class UserChangeRequestViewSet(viewsets.ReadOnlyModelViewSet):
     def perform_create(self, serializer):
         """Set user to current user if not specified."""
         data = serializer.validated_data
-        if 'user' not in data:
-            data['user'] = self.request.user
+        if "user" not in data:
+            data["user"] = self.request.user
         serializer.save()
+
 
 class ChangeRequestAuditLogViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for change request audit logs."""
@@ -222,6 +225,7 @@ class ChangeRequestAuditLogViewSet(viewsets.ReadOnlyModelViewSet):
             return ChangeRequestAuditLog.objects.none()
         return ChangeRequestAuditLog.objects.all()
 
+
 class FeedbackViewSet(
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
@@ -234,9 +238,9 @@ class FeedbackViewSet(
     serializer_class = FeedbackSerializer
     permission_classes = (FeedbackPermissions,)
 
-    def post(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):
         """Create feedback with user."""
-        response = self.create(request, *args, **kwargs)
+        response = super().create(request, *args, **kwargs)
         if response.status_code != status.HTTP_201_CREATED:
             return response
 
