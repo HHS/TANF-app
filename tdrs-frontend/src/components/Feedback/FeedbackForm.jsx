@@ -95,7 +95,7 @@ const FeedbackForm = ({
         }))
       } else if (dataFiles) {
         payload.attachments = [
-          { content_type: 'data_file', object_id: dataFiles.id },
+          { content_type: 'datafile', object_id: dataFiles.id },
         ]
       } else {
         payload.attachments = []
