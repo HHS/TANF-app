@@ -2,7 +2,6 @@ import axios from 'axios'
 import { logErrorToServer } from '../utils/eventLogger'
 import { SET_AUTH } from './auth'
 
-// actions/mockUpdateUserRequest.js
 export const UPDATE_USER_REQUEST_SUCCESS = 'UPDATE_USER_REQUEST_SUCCESS'
 export const PATCH_REQUEST_USER_UPDATE = 'PATCH_REQUEST_USER_UPDATE'
 export const SET_REQUEST_USER_UPDATE = 'SET_REQUEST_USER_UPDATE'

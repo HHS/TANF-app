@@ -5,7 +5,7 @@ import FormGroup from '../FormGroup'
 import STTComboBox from '../STTComboBox'
 import ReadOnlyRow from './ReadOnlyRow'
 import { requestAccess } from '../../actions/requestAccess'
-import { updateUserRequest } from '../../actions/mockUpdateUserRequest'
+import { updateUserRequest } from '../../actions/updateUserRequest'
 import {
   getInitialProfileInfo,
   clearFormError,

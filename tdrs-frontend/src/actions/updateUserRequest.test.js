@@ -3,7 +3,7 @@ import { thunk } from 'redux-thunk'
 import {
   updateUserRequest,
   UPDATE_USER_REQUEST_SUCCESS,
-} from './mockUpdateUserRequest'
+} from './updateUserRequest'
 
 const middlewares = [thunk]
 const mockStore = configureStore(middlewares)

@@ -3,7 +3,7 @@ import {
   SET_REQUEST_USER_UPDATE_ERROR,
   CLEAR_REQUEST_USER_UPDATE,
   PATCH_REQUEST_USER_UPDATE,
-} from '../actions/mockUpdateUserRequest'
+} from '../actions/updateUserRequest'
 
 const initialState = {
   requestUpdateUser: false,
