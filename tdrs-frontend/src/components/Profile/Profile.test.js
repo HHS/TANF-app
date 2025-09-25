@@ -55,7 +55,7 @@ describe('Profile', () => {
     render(
       <Provider store={store}>
         <MemoryRouter>
-          <Profile />
+          <Profile type={'access request'} />
         </MemoryRouter>
       </Provider>
     )

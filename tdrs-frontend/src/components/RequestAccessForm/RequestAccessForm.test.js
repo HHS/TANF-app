@@ -3,7 +3,14 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import configureStore from '../../configureStore'
 import RequestAccessForm from './RequestAccessForm'
-import { UPDATE_USER_REQUEST_SUCCESS } from '../../actions/updateUserRequest'
+import {
+  PATCH_REQUEST_USER_UPDATE,
+  SET_REQUEST_USER_UPDATE,
+  SET_REQUEST_USER_UPDATE_ERROR,
+  UPDATE_USER_REQUEST_SUCCESS,
+} from '../../actions/updateUserRequest'
+import { SET_AUTH } from '../../actions/auth'
+import axios from 'axios'
 
 jest.mock('../STTComboBox', () => (props) => {
   return (
@@ -319,6 +326,17 @@ describe('RequestAccessForm', () => {
       stts: { loading: false, sttList: defaultSTTList },
     }
 
+    const apiUserResponse = {
+      id: 'some-id',
+      first_name: 'John',
+      last_name: 'Smith',
+      stt: 6,
+      regions: [],
+      has_fra_access: false,
+      pending_requests: 1,
+    }
+    axios.patch.mockResolvedValue({ data: apiUserResponse })
+
     const { store } = setup(props, storeOverrides)
     // Spy on store.dispatch to monitor calls
     const dispatchSpy = jest.spyOn(store, 'dispatch')
@@ -344,15 +362,19 @@ describe('RequestAccessForm', () => {
     const mockDispatch = jest.fn()
     await dispatchedThunk(mockDispatch)
 
-    expect(mockDispatch).toHaveBeenCalledWith({
-      type: UPDATE_USER_REQUEST_SUCCESS,
-      user: {
-        first_name: 'John',
-        last_name: 'Smith',
-        stt: 6,
-        regions: [],
-        has_fra_access: false,
-      },
+    expect(mockDispatch).toHaveBeenNthCalledWith(1, {
+      type: PATCH_REQUEST_USER_UPDATE,
     })
+    expect(mockDispatch).toHaveBeenNthCalledWith(2, {
+      type: SET_REQUEST_USER_UPDATE,
+    })
+    expect(mockDispatch).toHaveBeenNthCalledWith(3, {
+      type: SET_AUTH,
+      payload: { user: apiUserResponse },
+    })
+
+    expect(mockDispatch).not.toHaveBeenCalledWith(
+      expect.objectContaining({ type: SET_REQUEST_USER_UPDATE_ERROR })
+    )
   })
 })

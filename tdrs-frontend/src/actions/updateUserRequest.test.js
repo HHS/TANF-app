@@ -1,6 +1,10 @@
+import axios from 'axios'
 import configureStore from 'redux-mock-store'
 import { thunk } from 'redux-thunk'
+import { SET_AUTH } from './auth'
 import {
+  PATCH_REQUEST_USER_UPDATE,
+  SET_REQUEST_USER_UPDATE,
   updateUserRequest,
   UPDATE_USER_REQUEST_SUCCESS,
 } from './updateUserRequest'
@@ -24,22 +28,24 @@ describe('updateUserRequest', () => {
       hasFRAAccess: true,
     }
 
-    const expectedUser = {
+    const apiUserResponse = {
+      id: 'some-id',
       first_name: 'Jane',
       last_name: 'Doe',
       stt: 2,
       regions: [],
       has_fra_access: true,
+      pending_requests: 1,
     }
+    axios.patch.mockResolvedValue({ data: apiUserResponse })
 
     await store.dispatch(updateUserRequest(mockInput))
 
     const actions = store.getActions()
     expect(actions).toEqual([
-      {
-        type: UPDATE_USER_REQUEST_SUCCESS,
-        user: expectedUser,
-      },
+      { type: PATCH_REQUEST_USER_UPDATE },
+      { type: SET_REQUEST_USER_UPDATE },
+      { type: SET_AUTH, payload: { user: apiUserResponse } },
     ])
   })
 
@@ -53,22 +59,24 @@ describe('updateUserRequest', () => {
       hasFRAAccess: false,
     }
 
-    const expectedUser = {
+    const apiUserResponse = {
+      id: 'some-id-2',
       first_name: 'John',
       last_name: 'Smith',
       stt: undefined,
       regions: [],
       has_fra_access: false,
+      pending_requests: 0,
     }
+    axios.patch.mockResolvedValue({ data: apiUserResponse })
 
     await store.dispatch(updateUserRequest(mockInput))
 
     const actions = store.getActions()
     expect(actions).toEqual([
-      {
-        type: UPDATE_USER_REQUEST_SUCCESS,
-        user: expectedUser,
-      },
+      { type: PATCH_REQUEST_USER_UPDATE },
+      { type: SET_REQUEST_USER_UPDATE },
+      { type: SET_AUTH, payload: { user: apiUserResponse } },
     ])
   })
 })

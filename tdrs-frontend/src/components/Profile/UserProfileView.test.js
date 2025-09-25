@@ -53,10 +53,61 @@ describe('UserProfileView', () => {
         isAMSUser={false}
         isAccessRequestPending={true}
         onEdit={jest.fn()}
-        type="profile"
+        type="access request"
       />
     )
 
+    expect(
+      screen.getByText(/your request for access is currently being reviewed/i)
+    ).toBeInTheDocument()
+  })
+
+  it('shows profile change pending alert on Profile page', () => {
+    renderWithStore(
+      <UserProfileView
+        user={mockUser}
+        isAMSUser={false}
+        isProfileChangePending={true}
+        onEdit={jest.fn()}
+        type="profile"
+      />
+    )
+    expect(
+      screen.getByText(
+        /your profile change request is currently being reviewed/i
+      )
+    ).toBeInTheDocument()
+  })
+
+  it('shows profile change pending alert on Profile page even if access request pending is True', () => {
+    renderWithStore(
+      <UserProfileView
+        user={mockUser}
+        isAMSUser={false}
+        isAccessRequestPending={true}
+        isProfileChangePending={true}
+        onEdit={jest.fn()}
+        type="profile"
+      />
+    )
+    expect(
+      screen.getByText(
+        /your profile change request is currently being reviewed/i
+      )
+    ).toBeInTheDocument()
+  })
+
+  it('shows access request pending alert on Profile page even if profile change pending is True', () => {
+    renderWithStore(
+      <UserProfileView
+        user={mockUser}
+        isAMSUser={false}
+        isAccessRequestPending={true}
+        isProfileChangePending={true}
+        onEdit={jest.fn()}
+        type="access request"
+      />
+    )
     expect(
       screen.getByText(/your request for access is currently being reviewed/i)
     ).toBeInTheDocument()
