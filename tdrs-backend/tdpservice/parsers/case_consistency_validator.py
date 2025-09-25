@@ -155,7 +155,7 @@ class CaseConsistencyValidator:
                         record,
                         line_num=line_number,
                         msg=(
-                            f"Malformed case. No case should ever have more than 35 records "
+                            "Malformed case. No case should ever have more than 35 records "
                             "in it for a given reporting month and year. Deleting all records in case."
                         ),
                     )
