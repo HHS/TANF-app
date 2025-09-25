@@ -1,5 +1,8 @@
+import ast
+from shlex import join
 from tdpservice.email.email import automated_email, log
 from tdpservice.email.email_enums import EmailType
+from tdpservice.stts.models import Region
 
 FIELD_LABELS = {
     "first_name": "First name",
@@ -9,13 +12,45 @@ FIELD_LABELS = {
 }
 
 
+def _readable_field_values(field_name: str, current_value: str, requested_value: str):
+    """Turn DB values into human readble strings for the email."""
+    if field_name == "regions":
+        def ids_to_names(s: str) -> str:
+            try:
+                ids = ast.literal_eval(s) if s else []
+            except Exception:
+                ids = []
+            names = list(
+                Region.objects.filter(id__in=ids)
+                .order_by("pk")
+                .values_list("name", flat=True)
+            )
+            return ", ".join(names) if names else "None"
+
+        return ids_to_names(current_value), ids_to_names(requested_value)
+    elif field_name == "has_fra_access":
+        def yesOrNo(s: str) -> str:
+            return "Yes" if s == "True" else "No"
+        return yesOrNo(current_value), yesOrNo(requested_value)
+
+    # For basic fields
+    return (current_value or "", requested_value or "")
+
+
 def send_change_request_status_email(change_request, isApproved: bool, url):
     """Send an email to a user when their profile change request is approved/denied."""
     from tdpservice.users.models import User
+
     user: User = change_request.user
 
     field_label = FIELD_LABELS.get(
         change_request.field_name, change_request.field_name.title()
+    )
+
+    current_value, requested_value = _readable_field_values(
+        change_request.field_name,
+        change_request.current_value,
+        change_request.requested_value,
     )
 
     template_path = (
@@ -29,8 +64,8 @@ def send_change_request_status_email(change_request, isApproved: bool, url):
     email_context = {
         "first_name": user.first_name,
         "field_label": field_label,
-        "current_value": change_request.current_value,
-        "requested_value": change_request.requested_value,
+        "current_value": current_value,
+        "requested_value": requested_value,
         "notes": change_request.notes or "",
         "url": url,
     }
