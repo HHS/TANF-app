@@ -13,6 +13,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from tdpservice.email.helpers.account_status import send_approval_status_update_email
+from tdpservice.email.helpers.profile_change_request import send_change_request_status_email
 from tdpservice.stts.models import STT, Region
 from tdpservice.users.mixins import ReviewerMixin as Reviewable
 
@@ -164,6 +165,13 @@ class UserChangeRequest(Reviewable):
             self.notes = notes
         self.save()
 
+        # Send email
+        try:
+            send_change_request_status_email(self, isApproved=True, url=settings.FRONTEND_BASE_URL)
+
+        except Exception as e:
+            logger.exception("Failed to send a, UserChangeRequestpproval email for profile change request %s: %s", self.id, e)
+
         return True
 
     def reject(self, admin_user, notes=None):
@@ -178,6 +186,12 @@ class UserChangeRequest(Reviewable):
         if notes:
             self.notes = notes
         self.save()
+
+        # Send email
+        try:
+            send_change_request_status_email(self, isApproved=False, url=settings.FRONTEND_BASE_URL)
+        except Exception as e:
+            logger.exception("Failed to send rejection email for profile change request %s: %s", self.id, e)
 
         return True
 

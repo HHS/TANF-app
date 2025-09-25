@@ -256,8 +256,6 @@ function RequestAccessForm({
             onCancel() // toggles editMode to false after update
           })
         }
-        // TODO: update with real API call (need to rename mock function name to reflect profile)
-        // Simulate profile update
         return dispatch(updateUserRequest(payload)).then(() => {
           onCancel() // toggles editMode to false after update
         })
