@@ -11,7 +11,6 @@ from tdpservice.parsers.error_generator import (
     ErrorGeneratorFactory,
     ErrorGeneratorType,
 )
-from tdpservice.parsers.util import FrozenDict
 
 logger = logging.getLogger(__name__)
 
