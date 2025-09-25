@@ -186,6 +186,26 @@ class Development(CloudGov):
         "PATCH",
         "POST",
     )
+    sentry_sdk.init(
+            dsn=os.getenv("SENTRY_DSN"),
+            environment='development',
+            # Set traces_sample_rate to 1.0 to capture 100%
+            # of transactions for performance monitoring.
+            integrations=[
+                DjangoIntegration(
+                    transaction_style="url",
+                    middleware_spans=True,
+                    signals_spans=True,
+                    signals_denylist=[
+                        django.db.models.signals.pre_init,
+                        django.db.models.signals.post_init,
+                    ],
+                    cache_spans=False,
+                ),
+                LoggingIntegration(level=logging.ERROR, event_level=logging.ERROR),
+            ],
+            traces_sample_rate=1.0,
+        )
 
 
 class Staging(CloudGov):
@@ -211,6 +231,26 @@ class Staging(CloudGov):
         "OIDC_RP_CLIENT_ID",
         "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-staging",
     )
+    sentry_sdk.init(
+            dsn=os.getenv("SENTRY_DSN"),
+            environment='staging',
+            # Set traces_sample_rate to 1.0 to capture 100%
+            # of transactions for performance monitoring.
+            integrations=[
+                DjangoIntegration(
+                    transaction_style="url",
+                    middleware_spans=True,
+                    signals_spans=True,
+                    signals_denylist=[
+                        django.db.models.signals.pre_init,
+                        django.db.models.signals.post_init,
+                    ],
+                    cache_spans=False,
+                ),
+                LoggingIntegration(level=logging.ERROR, event_level=logging.ERROR),
+            ],
+            traces_sample_rate=1.0,
+        )
 
 
 class Production(CloudGov):
