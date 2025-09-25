@@ -149,7 +149,7 @@ class Records:
         """Add a record_doc_pair to the dict."""
         record, model = record_model_pair
         if case_id is not None:
-            self.cases.setdefault(model, dict())[record] = None
+            self.cases.setdefault(model, []).append(record)
         else:
             logger.error(f"Error: Case id for record at line #{line_num} was None!")
 
@@ -164,7 +164,7 @@ class Records:
             # made. If we don't maintain that state we might not delete everything if we need to roll the records back
             # at the end of, or during parsing.
             for key in self.cases.keys():
-                self.cases[key] = {}
+                self.cases[key].clear()
 
 
 def get_t1_t4_partial_dup_fields():
