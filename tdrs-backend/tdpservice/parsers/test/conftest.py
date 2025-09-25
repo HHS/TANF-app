@@ -925,7 +925,8 @@ def fra_xlsx(stt_user, stt):
 @pytest.fixture
 def fra_multi_sheet_xlsx(stt_user, stt):
     """Fixture for xlsx fra file."""
-    return util.create_test_datafile('fra_multi_sheet.xlsx', stt_user, stt)
+    return util.create_test_datafile("fra_multi_sheet.xlsx", stt_user, stt)
+
 
 @pytest.fixture
 def unknown_png(stt_user, stt):
@@ -1047,5 +1048,23 @@ def section2_no_records():
         file__name="section2_no_records.txt",
         file__section="Closed Case Data",
         file__data=(b"HEADER20244C06   TAN1ED\n" b"TRAILER0000001         "),
+    )
+    return parsing_file
+
+
+@pytest.fixture
+def tanf_s1_federally_funded_recipients():
+    """Fixture for a section 1 file that verifies the generate_funded_ssn_errors function."""
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter="Q1",
+        file__name="s1_federally_funded_recipients.txt",
+        file__section="Active Case Data",
+        file__data=(
+            b"HEADER20204A06   TAN1ED\n"
+            b"T12020101111111111223003403361110213120000300000000000008730010000000000000000000000000000000000222222000000002229012                                       \n"
+            b"T2202010111111111121219740114TTTTTTY@W2221222222221012212110014722011400000000000000000000000000000000000000000000000000000000000000000000000000000000000291\n"
+            b"TRAILER0000002         "
+        ),
     )
     return parsing_file

@@ -2475,3 +2475,30 @@ def test_parse_section2_no_records(section2_no_records, dfs):
     errors = ParserError.objects.filter(file=datafile).order_by("id")
     assert errors.count() == 0
     assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
+
+
+@pytest.mark.django_db
+def test_parse_tanf_s1_federally_funded_recipients(
+    tanf_s1_federally_funded_recipients, dfs
+):
+    """Test parsing of ADS.E2J.FTP1.TS06."""
+    dfs.datafile = tanf_s1_federally_funded_recipients
+
+    parser = ParserFactory.get_instance(
+        datafile=tanf_s1_federally_funded_recipients,
+        dfs=dfs,
+        section=tanf_s1_federally_funded_recipients.section,
+        program_type=tanf_s1_federally_funded_recipients.prog_type,
+    )
+    parser.parse_and_validate()
+
+    errors = ParserError.objects.filter(
+        file=tanf_s1_federally_funded_recipients
+    ).order_by("id")
+
+    dfs.status = dfs.get_status()
+    assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+    assert (
+        errors.last().error_message
+        == "Federally funded recipients must have a valid SSN."
+    )

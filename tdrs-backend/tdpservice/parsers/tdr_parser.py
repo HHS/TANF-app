@@ -4,13 +4,14 @@ import logging
 
 from django.conf import settings
 
+from tdpservice.data_files.models import DataFile
 from tdpservice.parsers import schema_defs
 from tdpservice.parsers.base_parser import BaseParser
 from tdpservice.parsers.case_consistency_validator import CaseConsistencyValidator
-from tdpservice.parsers.dataclasses import HeaderResult, Position
+from tdpservice.parsers.dataclasses import HeaderResult, Position, ValidationErrorArgs
 from tdpservice.parsers.error_generator import ErrorGeneratorArgs, ErrorGeneratorType
 from tdpservice.parsers.schema_defs.utils import ProgramManager
-from tdpservice.parsers.validators import category1
+from tdpservice.parsers.validators import category1, category2
 from tdpservice.parsers.validators.util import value_is_empty
 
 logger = logging.getLogger(__name__)
@@ -193,6 +194,8 @@ class TanfDataReportParser(BaseParser):
         )
         self.case_consistency_validator.clear_errors()
 
+        self.generate_funded_ssn_errors()
+
         self.bulk_create_errors(flush=True)
 
         logger.debug(
@@ -367,3 +370,82 @@ class TanfDataReportParser(BaseParser):
         """Delete all records that have already been serialized to the DB that have cat4 errors."""
         duplicate_manager = self.case_consistency_validator.duplicate_manager
         self._delete_serialized_records(duplicate_manager)
+
+    def generate_funded_ssn_errors(self):
+        """Generate SSN validation errors for T1/T2 records with specific funding stream and family affiliation."""
+        if self.section == DataFile.Section.ACTIVE_CASE_DATA:
+            t1_schema = None
+            t2_schema = None
+            for schemas in self.schema_manager.schema_map.values():
+                schema = schemas[0]
+                if schema.record_type == "T1":
+                    t1_schema = schema
+                elif schema.record_type == "T2":
+                    t2_schema = schema
+
+            if not t1_schema or not t2_schema:
+                return
+
+            # Get T1 records with FUNDING_STREAM = 1
+            t1_records = t1_schema.model.objects.filter(
+                datafile=self.datafile, FUNDING_STREAM=1
+            )
+
+            # Get T2 records with FAMILY_AFFILIATION = 1 that belong to the same cases as T1 records
+            t1_case_numbers = t1_records.values_list("CASE_NUMBER", flat=True)
+            t2_records = t2_schema.model.objects.filter(
+                datafile=self.datafile,
+                FAMILY_AFFILIATION=1,
+                CASE_NUMBER__in=t1_case_numbers,
+            )
+
+            current_index = settings.BULK_CREATE_BATCH_SIZE
+            prev_index = 0
+            num_records = t2_records.count()
+            validator = category2.ssnAllOf(
+                category2.isNumber(),
+                category2.intHasLength(9),
+                category2.valueNotAt(slice(0, 3), "000"),
+                category2.valueNotAt(slice(0, 3), "666"),
+                category2.valueNotAt(slice(3, 5), "00"),
+                category2.valueNotAt(slice(5, 9), "0000"),
+                error_message="Federally funded recipients must have a valid SSN.",
+            )
+            fields = ("FUNDING_STREAM", "FAMILY_AFFILIATION", "SSN")
+            error_generator = self.error_generator_factory.get_generator(
+                ErrorGeneratorType.VALUE_CONSISTENCY, None
+            )
+            while True:
+                # Validate SSN for each T2 record
+                for t2_record in t2_records[prev_index:current_index]:
+                    ssn = getattr(t2_record, "SSN", None)
+                    if ssn:
+                        eargs = ValidationErrorArgs(
+                            value=ssn,
+                            row_schema=t2_schema,
+                            friendly_name="Social Security Number",
+                            item_num="33",
+                        )
+                        result = validator(ssn, eargs)
+                        if not result.valid:
+                            generator_args = ErrorGeneratorArgs(
+                                record=t2_record,
+                                schema=t2_schema,
+                                error_message=result.error_message,
+                                offending_field=fields[-1],
+                                fields=fields,
+                                deprecated=result.deprecated,
+                                row_number=t2_record.line_number,
+                            )
+                            self.unsaved_parser_errors.update(
+                                {
+                                    "funded_recipient_ssn": [
+                                        error_generator(generator_args=generator_args)
+                                    ]
+                                }
+                            )
+
+                prev_index = current_index
+                current_index += settings.BULK_CREATE_BATCH_SIZE
+                if prev_index >= num_records:
+                    break

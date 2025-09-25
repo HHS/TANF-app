@@ -5,9 +5,10 @@ import uuid
 from django.db import models
 
 from tdpservice.data_files.models import DataFile
+from tdpservice.search_indexes.models.mixins import LineNumberMixin
 
 
-class TANF_T1(models.Model):
+class TANF_T1(LineNumberMixin):
     """Parsed record representing a T1 data submission."""
 
     class Meta:
@@ -73,7 +74,7 @@ class TANF_T1(models.Model):
     FAMILY_NEW_CHILD = models.IntegerField(null=True, blank=False)
 
 
-class TANF_T2(models.Model):
+class TANF_T2(LineNumberMixin):
     """Parsed record representing a T2 data submission."""
 
     class Meta:
@@ -163,7 +164,7 @@ class TANF_T2(models.Model):
     OTHER_UNEARNED_INCOME = models.CharField(max_length=4, null=True, blank=False)
 
 
-class TANF_T3(models.Model):
+class TANF_T3(LineNumberMixin):
     """Parsed record representing a T3 data submission."""
 
     class Meta:
@@ -205,7 +206,7 @@ class TANF_T3(models.Model):
     OTHER_UNEARNED_INCOME = models.CharField(max_length=4, null=True, blank=False)
 
 
-class TANF_T4(models.Model):
+class TANF_T4(LineNumberMixin):
     """Parsed record representing a T4 data submission."""
 
     class Meta:
@@ -238,7 +239,7 @@ class TANF_T4(models.Model):
     REC_SUB_CC = models.IntegerField(null=True, blank=False)
 
 
-class TANF_T5(models.Model):
+class TANF_T5(LineNumberMixin):
     """Parsed record representing a T5 data submission."""
 
     class Meta:
@@ -290,7 +291,7 @@ class TANF_T5(models.Model):
     AMOUNT_UNEARNED_INCOME = models.CharField(max_length=4, null=True, blank=False)
 
 
-class TANF_T6(models.Model):
+class TANF_T6(LineNumberMixin):
     """Parsed record representing a T6 data submission."""
 
     class Meta:
@@ -328,7 +329,7 @@ class TANF_T6(models.Model):
     NUM_CLOSED_CASES = models.IntegerField(null=True, blank=True)
 
 
-class TANF_T7(models.Model):
+class TANF_T7(LineNumberMixin):
     """Parsed record representing a T7 data submission."""
 
     class Meta:
