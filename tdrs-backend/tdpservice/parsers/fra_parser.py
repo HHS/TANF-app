@@ -117,59 +117,36 @@ class FRAParser(BaseParser):
 
         return
 
+    def _generate_exact_dup_error_msg(
+        self, schema, record_type, curr_line_number, existing_line_number
+    ):
+        """Generate exact duplicate error message for FRA records."""
+        return (
+            "Duplicate Social Security Number within a month. Check that individual SSNs "
+            "within a single exit month are not included more than once. Record at line number "
+            f"{curr_line_number} is a duplicate of the record at line number {existing_line_number}."
+        )
+
     def _delete_exact_dups(self):
         """Delete exact duplicate records from the DB."""
-        duplicate_error_generator = self.error_generator_factory.get_generator(
-            ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
-        )
         for schemas in self.schema_manager.schema_map.values():
             schema = schemas[0]
-
             fields = [f.name for f in schema.fields]
-            duplicate_vals = (
-                schema.model.objects.filter(datafile=self.datafile)
-                .exclude(SSN="999999999")
-                .values(*fields)
-                .annotate(row_count=Count("line_number", distinct=True))
-                .filter(row_count__gt=1)
-            )
-            dup_errors = []
-            for dup_vals_dict in duplicate_vals:
-                dup_vals_dict.pop("row_count", None)
-                dup_records = schema.model.objects.filter(**dup_vals_dict).order_by(
-                    "line_number"
-                )
-                record = dup_records.first()
-                for dup in dup_records[1:]:
-                    generator_args = ErrorGeneratorArgs(
-                        record=dup,
-                        schema=schema,
-                        error_message=(
-                            "Duplicate Social Security Number within a month. Check that individual SSNs "
-                            "within a single exit month are not included more than once. Record at line number "
-                            f"{dup.line_number} is a duplicate of the record at line number {record.line_number}."
-                        ),
-                        fields=schema.fields,
-                        row_number=dup.line_number,
-                    )
-                    # Perform Error Generation
-                    dup_errors.append(
-                        duplicate_error_generator(generator_args=generator_args)
-                    )
+            records = schema.model.objects.filter(datafile=self.datafile)
 
-                case_id_to_delete = (
-                    FrozenDict(RecordType=record.RecordType)
-                    if not self.is_active_or_closed
-                    else FrozenDict(
-                        RPT_MONTH_YEAR=record.RPT_MONTH_YEAR,
-                        CASE_NUMBER=record.CASE_NUMBER,
-                    )
+            while True:
+                # We have to re-evaluate this query each time after we call _raw_delete because it changes the OFFSET
+                # that Postgres manages to help us slice the query set to avoid bringing the whole thing it into memory.
+                # This functions exactly the same as the Paginator but allows us to avoid the OFFSET problem it
+                # by caching the underlying query/DB state.
+                duplicate_vals = (
+                    records.exclude(SSN="999999999")
+                    .values(*fields)
+                    .annotate(row_count=Count("line_number", distinct=True))
+                    .filter(row_count__gt=1)
                 )
-                # We add the case ID here because a case with a duplicate record must be purged in it's entirety.
-                self.serialized_cases.add(case_id_to_delete)
-                num_deleted = dup_records._raw_delete(dup_records.db)
-                self.dfs.total_number_of_records_created -= num_deleted
-
-            self.unsaved_parser_errors[None] = (
-                self.unsaved_parser_errors.get(None, []) + dup_errors
-            )
+                if not duplicate_vals:
+                    break
+                self._generate_errors_and_delete_dups(
+                    records, duplicate_vals, schema, self._generate_exact_dup_error_msg
+                )

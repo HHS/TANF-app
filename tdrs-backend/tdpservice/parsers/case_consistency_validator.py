@@ -4,7 +4,7 @@ import logging
 import warnings
 from datetime import datetime
 
-from tdpservice.parsers.dataclasses import RawRow, ValidationErrorArgs
+from tdpservice.parsers.dataclasses import ValidationErrorArgs
 from tdpservice.parsers.error_generator import ErrorGeneratorArgs
 from tdpservice.parsers.schema_defs.utils import ProgramManager
 from tdpservice.parsers.util import FrozenDict
@@ -113,16 +113,15 @@ class CaseConsistencyValidator:
             RPT_MONTH_YEAR=record.RPT_MONTH_YEAR, CASE_NUMBER=record.CASE_NUMBER
         )
 
-    def add_record(self, record, schema, row: RawRow, line_number, case_has_errors):
+    def add_record(self, record, schema, line_number, case_has_errors):
         """Add record to cache, validate if new case is detected, and check for duplicate errors.
 
         @param record: a Django model representing a datafile record
         @param schema: the schema from which the record was created
-        @param row: the RawRow parsed from the decoder
         @param line_number: the line number the record was generated from in the datafile
         @param case_has_errors: boolean indictating whether the record's case has any cat2 or cat3 errors
-        @return: (boolean indicating existence of cat4 errors, a hash value generated from fields in the record
-                 based on the records section)
+        @return: (boolean indicating existence of cat4 errors, a case ID to remove if it has errors, and the current
+                  case ID)
         """
         self.num_errors = 0
         current_case_id = self._get_case_id(record)

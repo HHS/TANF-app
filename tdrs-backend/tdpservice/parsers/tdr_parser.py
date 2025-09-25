@@ -120,7 +120,7 @@ class TanfDataReportParser(BaseParser):
                         case_id_to_remove,
                         current_case_id,
                     ) = self.case_consistency_validator.add_record(
-                        record, schema, row, self.current_row_num, record_has_errors
+                        record, schema, self.current_row_num, record_has_errors
                     )
                     self.unsaved_records.add_record(
                         current_case_id, (record, schema.model), self.current_row_num
