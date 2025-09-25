@@ -157,8 +157,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
         }
 
     def get_pending_requests(self, obj):
+        """Get the pending change requests for a user."""
         return obj.get_pending_change_requests().count()
-
 
     def update(self, instance, validated_data):
         """Perform model validation before saving."""

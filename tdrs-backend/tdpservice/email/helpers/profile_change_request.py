@@ -1,6 +1,7 @@
+"""Helper methods for sending emails to users about their profile change request."""
+
 import ast
-from shlex import join
-from tdpservice.email.email import automated_email, log
+from tdpservice.email.email import automated_email
 from tdpservice.email.email_enums import EmailType
 from tdpservice.stts.models import Region
 
@@ -15,6 +16,7 @@ FIELD_LABELS = {
 def _readable_field_values(field_name: str, current_value: str, requested_value: str):
     """Turn DB values into human readble strings for the email."""
     if field_name == "regions":
+
         def ids_to_names(s: str) -> str:
             try:
                 ids = ast.literal_eval(s) if s else []
@@ -29,8 +31,10 @@ def _readable_field_values(field_name: str, current_value: str, requested_value:
 
         return ids_to_names(current_value), ids_to_names(requested_value)
     elif field_name == "has_fra_access":
+
         def yesOrNo(s: str) -> str:
             return "Yes" if s == "True" else "No"
+
         return yesOrNo(current_value), yesOrNo(requested_value)
 
     # For basic fields
