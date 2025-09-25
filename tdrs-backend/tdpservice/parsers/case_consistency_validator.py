@@ -21,7 +21,17 @@ class CaseConsistencyValidator:
 
     def __init__(self, header, program_type, stt_type, generate_error):
         self.header = header
+
+        ######
+        # In the event we receive an extremely large file with records all in the SAME case, this dictionary will grow
+        # linearly with the number of records in the file because the validator never encounters a new/different case
+        # number. Therefore, it continues storing records for the case, never validates until the very end, and could
+        # cause an OOM error. To remedy this, we know that a valid case will never have more than X records in it. Thus,
+        # if we breach X records in the case, we indicate a failure and remove the whole case from the DB.
         self.sorted_cases = dict()
+        self.num_records_in_case = 0
+        ######
+
         self.current_rpt_month_year = None
         self.current_case_id = None
         self.case_has_errors = False
@@ -68,7 +78,7 @@ class CaseConsistencyValidator:
         )
         self.generated_errors.append(self.generate_error(generator_args))
 
-    def clear_errors(self, clear_dup=True):
+    def clear_errors(self):
         """Reset generated errors."""
         self.generated_errors = []
 
@@ -118,6 +128,7 @@ class CaseConsistencyValidator:
         current_case_id = self._get_case_id(record)
         case_id_to_remove = current_case_id
         self.current_rpt_month_year = record.RPT_MONTH_YEAR
+
         if self.case_is_section_one_or_two:
             if (
                 current_case_id != self.current_case_id
@@ -128,12 +139,29 @@ class CaseConsistencyValidator:
                 self.case_has_errors = case_has_errors
                 self.has_validated = False
                 case_id_to_remove = self.current_case_id
+                self.num_records_in_case = 0
             else:
                 self.case_has_errors = (
                     self.case_has_errors if self.case_has_errors else case_has_errors
                 )
                 self.add_record_to_structs((record, schema, line_number))
                 self.has_validated = False
+                self.num_records_in_case += 1
+
+                # TODO: Get feedback on this
+                if self.num_records_in_case > 35:
+                    self.__generate_and_add_error(
+                        schema,
+                        record,
+                        line_num=line_number,
+                        msg=(
+                            f"Malformed case. No case should ever have more than 35 records "
+                            "in it for a given reporting month and year. Deleting all records in case."
+                        ),
+                    )
+                    self.clear_structs((record, schema, line_number))
+                    self.num_records_in_case = 0
+                    return True, self.current_case_id, current_case_id
 
         self.current_case_id = current_case_id
 
