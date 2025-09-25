@@ -33,6 +33,15 @@ export const updateUserRequest =
         dispatch({
           type: SET_AUTH,
           payload: { user: data },
+          // payload: {
+          //   user: {
+          //     ...(data.user ?? data),
+          //     pending_requests:
+          //       data?.pending_requests ??
+          //       (data.user ?? data)?.pending_requests ??
+          //       0,
+          //   },
+          // },
         })
       } else {
         dispatch({ type: CLEAR_REQUEST_USER_UPDATE })

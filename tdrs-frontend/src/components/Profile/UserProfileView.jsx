@@ -12,6 +12,7 @@ const UserProfileView = ({
   user,
   isAMSUser,
   isAccessRequestPending,
+  isProfileChangePending,
   onEdit,
   type = 'profile',
   hasFRAAccess = false,
@@ -96,15 +97,24 @@ const UserProfileView = ({
     </>
   )
 
+  const showRequestBanner =
+    type === 'profile' ? isProfileChangePending : isAccessRequestPending
+
+  const bannerText = {
+    'access request': 'Your request for access',
+    profile: 'Your profile change request',
+  }
+
   return (
     <div className="usa-prose">
-      {isAccessRequestPending && (
+      {showRequestBanner && (
         <div>
           <div className="usa-alert usa-alert--info margin-top-3 margin-right-8">
             <div className="usa-alert__body" role="alert">
               <p className="usa-alert__text" id="page-alert">
-                Your request for access is currently being reviewed by an OFA
-                Admin. We’ll send you an email when it’s been approved.
+                {bannerText[type] ?? 'Your request'} is currently being reviewed
+                by an OFA Admin. We’ll send you an email when it’s been
+                approved.
               </p>
             </div>
           </div>

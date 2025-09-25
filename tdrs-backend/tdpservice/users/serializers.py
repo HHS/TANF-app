@@ -103,6 +103,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         read_only=True,
         source='user_permissions.all',
     )
+    pending_requests = serializers.SerializerMethodField()
 
     class Meta:
         """Metadata."""
@@ -128,6 +129,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'account_approval_status',
             'feature_flags',
             'permissions',
+            'pending_requests',
         ]
         read_only_fields = (
             'id',
@@ -153,6 +155,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "stt": {"allow_blank": True, "required": False},
             "regions": {"allow_blank": True, "required": False},
         }
+
+    def get_pending_requests(self, obj):
+        return obj.get_pending_change_requests().count()
+
 
     def update(self, instance, validated_data):
         """Perform model validation before saving."""

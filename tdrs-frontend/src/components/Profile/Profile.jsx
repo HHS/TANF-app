@@ -5,6 +5,7 @@ import { Navigate } from 'react-router-dom'
 import RequestAccessForm from '../RequestAccessForm/RequestAccessForm'
 import UserProfileView from './UserProfileView'
 import {
+  accountHasPendingProfileChange,
   accountIsInReview,
   accountIsMissingAccessRequest,
 } from '../../selectors/auth'
@@ -25,6 +26,7 @@ function Profile({
 
   const missingAccessRequest = useSelector(accountIsMissingAccessRequest)
   const isAccessRequestPending = useSelector(accountIsInReview)
+  const isProfileChangePending = useSelector(accountHasPendingProfileChange)
 
   useEffect(() => {
     if (setInEditMode) {
@@ -61,6 +63,7 @@ function Profile({
       user={user}
       isAMSUser={isAMSUser}
       isAccessRequestPending={isAccessRequestPending}
+      isProfileChangePending={isProfileChangePending}
       onEdit={onEdit}
       type={type}
       hasFRAAccess={hasFRAAccess ?? null}
