@@ -1073,7 +1073,7 @@ def test_parse_tanf_section1_blanks_file(tanf_section1_file_with_blanks, dfs):
 
     parser_errors = ParserError.objects.filter(file=tanf_section1_file_with_blanks)
 
-    assert parser_errors.count() == 22
+    assert parser_errors.count() == 23
 
     # Should only be cat3 validator errors
     for error in parser_errors:
@@ -1845,7 +1845,7 @@ def test_parse_tanf_section_1_file_with_bad_update_indicator(
 
     assert dfs.get_status() == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
 
-    assert parser_errors.count() == 4
+    assert parser_errors.count() == 5
 
     error_messages = [error.error_message for error in parser_errors]
 
