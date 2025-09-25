@@ -3,7 +3,7 @@ import configureStore from 'redux-mock-store'
 import { thunk } from 'redux-thunk'
 import { SET_AUTH } from './auth'
 import {
-    CLEAR_REQUEST_USER_UPDATE,
+  CLEAR_REQUEST_USER_UPDATE,
   PATCH_REQUEST_USER_UPDATE,
   SET_REQUEST_USER_UPDATE,
   SET_REQUEST_USER_UPDATE_ERROR,
