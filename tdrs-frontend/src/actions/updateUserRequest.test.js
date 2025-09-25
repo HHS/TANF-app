@@ -6,14 +6,13 @@ import {
   PATCH_REQUEST_USER_UPDATE,
   SET_REQUEST_USER_UPDATE,
   updateUserRequest,
-  UPDATE_USER_REQUEST_SUCCESS,
 } from './updateUserRequest'
 
 const middlewares = [thunk]
 const mockStore = configureStore(middlewares)
 
 describe('updateUserRequest', () => {
-  it('dispatches UPDATE_USER_REQUEST_SUCCESS with correct user data', async () => {
+  it('dispatches SET_REQUEST_USER_UPDATE with correct user data', async () => {
     const store = mockStore()
 
     const mockInput = {

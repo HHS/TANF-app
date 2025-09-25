@@ -2,7 +2,6 @@ import axios from 'axios'
 import { logErrorToServer } from '../utils/eventLogger'
 import { SET_AUTH } from './auth'
 
-export const UPDATE_USER_REQUEST_SUCCESS = 'UPDATE_USER_REQUEST_SUCCESS'
 export const PATCH_REQUEST_USER_UPDATE = 'PATCH_REQUEST_USER_UPDATE'
 export const SET_REQUEST_USER_UPDATE = 'SET_REQUEST_USER_UPDATE'
 export const SET_REQUEST_USER_UPDATE_ERROR = 'SET_REQUEST_USER_UPDATE_ERROR'
@@ -33,15 +32,6 @@ export const updateUserRequest =
         dispatch({
           type: SET_AUTH,
           payload: { user: data },
-          // payload: {
-          //   user: {
-          //     ...(data.user ?? data),
-          //     pending_requests:
-          //       data?.pending_requests ??
-          //       (data.user ?? data)?.pending_requests ??
-          //       0,
-          //   },
-          // },
         })
       } else {
         dispatch({ type: CLEAR_REQUEST_USER_UPDATE })

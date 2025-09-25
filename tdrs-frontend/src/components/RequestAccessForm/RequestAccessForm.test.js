@@ -7,7 +7,6 @@ import {
   PATCH_REQUEST_USER_UPDATE,
   SET_REQUEST_USER_UPDATE,
   SET_REQUEST_USER_UPDATE_ERROR,
-  UPDATE_USER_REQUEST_SUCCESS,
 } from '../../actions/updateUserRequest'
 import { SET_AUTH } from '../../actions/auth'
 import axios from 'axios'
