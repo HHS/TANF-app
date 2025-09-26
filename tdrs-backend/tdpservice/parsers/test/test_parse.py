@@ -2481,7 +2481,7 @@ def test_parse_section2_no_records(section2_no_records, dfs):
 def test_parse_tanf_s1_federally_funded_recipients(
     tanf_s1_federally_funded_recipients, dfs
 ):
-    """Test parsing of ADS.E2J.FTP1.TS06."""
+    """Test parsing file that generates the tanf_s1_federally_funded_recipients error."""
     dfs.datafile = tanf_s1_federally_funded_recipients
 
     parser = ParserFactory.get_instance(
