@@ -246,20 +246,21 @@ class UserChangeRequestMixin:
             requested_by = self
 
         # Get the current value
-        try:
-            if current_value is not None:
-                current_value = str(current_value)
-            else:
-                current_value = str(getattr(self, field_name, ''))
-        except (AttributeError, TypeError):
-            current_value = ''
+        if current_value is None:
+            try:
+                if Permission.objects.filter(codename=field_name).exists():
+                    current_value = self.user_permissions.filter(codename=field_name).exists()
+                else:
+                    current_value = getattr(self, field_name, '')
+            except (AttributeError, TypeError):
+                current_value = ''
 
         # Create the change request
         change_request = UserChangeRequest.objects.create(
             user=self,
             requested_by=requested_by,
             field_name=field_name,
-            current_value=current_value,
+            current_value=str(current_value),
             requested_value=str(requested_value)
         )
 
