@@ -371,6 +371,59 @@ class TanfDataReportParser(BaseParser):
         duplicate_manager = self.case_consistency_validator.duplicate_manager
         self._delete_serialized_records(duplicate_manager)
 
+    def _generate_funded_ssn_errors(self, t2_records, t2_schema):
+        """Inner function to validate and generate errors."""
+        current_index = settings.BULK_CREATE_BATCH_SIZE
+        prev_index = 0
+        num_records = t2_records.count()
+        validator = category2.ssnAllOf(
+            category2.isNumber(),
+            category2.intHasLength(9),
+            category2.valueNotAt(slice(0, 3), "000"),
+            category2.valueNotAt(slice(0, 3), "666"),
+            category2.valueNotAt(slice(3, 5), "00"),
+            category2.valueNotAt(slice(5, 9), "0000"),
+            error_message="Federally funded recipients must have a valid SSN.",  # TODO: need input on this
+        )
+        fields = ("FUNDING_STREAM", "FAMILY_AFFILIATION", "SSN")
+        error_generator = self.error_generator_factory.get_generator(
+            ErrorGeneratorType.VALUE_CONSISTENCY, None
+        )
+        while True:
+            # Validate SSN for each T2 record
+            for t2_record in t2_records[prev_index:current_index]:
+                ssn = getattr(t2_record, "SSN", None)
+                if ssn:
+                    eargs = ValidationErrorArgs(
+                        value=ssn,
+                        row_schema=t2_schema,
+                        friendly_name="Social Security Number",
+                        item_num="33",
+                    )
+                    result = validator(ssn, eargs)
+                    if not result.valid:
+                        generator_args = ErrorGeneratorArgs(
+                            record=t2_record,
+                            schema=t2_schema,
+                            error_message=result.error_message,
+                            offending_field=fields[-1],
+                            fields=fields,
+                            deprecated=result.deprecated,
+                            row_number=t2_record.line_number,
+                        )
+                        self.unsaved_parser_errors.update(
+                            {
+                                "funded_recipient_ssn": [
+                                    error_generator(generator_args=generator_args)
+                                ]
+                            }
+                        )
+
+            prev_index = current_index
+            current_index += settings.BULK_CREATE_BATCH_SIZE
+            if prev_index >= num_records:
+                break
+
     def generate_funded_ssn_errors(self):
         """Generate SSN validation errors for T1/T2 records with specific funding stream and family affiliation."""
         if self.section == DataFile.Section.ACTIVE_CASE_DATA:
@@ -399,53 +452,4 @@ class TanfDataReportParser(BaseParser):
                 CASE_NUMBER__in=t1_case_numbers,
             )
 
-            current_index = settings.BULK_CREATE_BATCH_SIZE
-            prev_index = 0
-            num_records = t2_records.count()
-            validator = category2.ssnAllOf(
-                category2.isNumber(),
-                category2.intHasLength(9),
-                category2.valueNotAt(slice(0, 3), "000"),
-                category2.valueNotAt(slice(0, 3), "666"),
-                category2.valueNotAt(slice(3, 5), "00"),
-                category2.valueNotAt(slice(5, 9), "0000"),
-                error_message="Federally funded recipients must have a valid SSN.",
-            )
-            fields = ("FUNDING_STREAM", "FAMILY_AFFILIATION", "SSN")
-            error_generator = self.error_generator_factory.get_generator(
-                ErrorGeneratorType.VALUE_CONSISTENCY, None
-            )
-            while True:
-                # Validate SSN for each T2 record
-                for t2_record in t2_records[prev_index:current_index]:
-                    ssn = getattr(t2_record, "SSN", None)
-                    if ssn:
-                        eargs = ValidationErrorArgs(
-                            value=ssn,
-                            row_schema=t2_schema,
-                            friendly_name="Social Security Number",
-                            item_num="33",
-                        )
-                        result = validator(ssn, eargs)
-                        if not result.valid:
-                            generator_args = ErrorGeneratorArgs(
-                                record=t2_record,
-                                schema=t2_schema,
-                                error_message=result.error_message,
-                                offending_field=fields[-1],
-                                fields=fields,
-                                deprecated=result.deprecated,
-                                row_number=t2_record.line_number,
-                            )
-                            self.unsaved_parser_errors.update(
-                                {
-                                    "funded_recipient_ssn": [
-                                        error_generator(generator_args=generator_args)
-                                    ]
-                                }
-                            )
-
-                prev_index = current_index
-                current_index += settings.BULK_CREATE_BATCH_SIZE
-                if prev_index >= num_records:
-                    break
+            self._generate_funded_ssn_errors(t2_records, t2_schema)
