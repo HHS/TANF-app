@@ -340,7 +340,7 @@ class TanfDataReportParser(BaseParser):
                 error_message="Multiple trailers found.",
                 fields=[],
             )
-            generate_error = self.error_generator_factory.get_error_generator(
+            generate_error = self.error_generator_factory.get_generator(
                 ErrorGeneratorType.MSG_ONLY_PRECHECK,
                 self.current_row_num,
             )
@@ -371,7 +371,7 @@ class TanfDataReportParser(BaseParser):
         duplicate_manager = self.case_consistency_validator.duplicate_manager
         self._delete_serialized_records(duplicate_manager)
 
-    def _generate_funded_ssn_errors(self, t2_records, t2_schema):
+    def _generate_funded_ssn_errors(self, t2_schema, t2_records, t1_schema):
         """Inner function to validate and generate errors."""
         current_index = settings.BULK_CREATE_BATCH_SIZE
         prev_index = 0
@@ -385,10 +385,11 @@ class TanfDataReportParser(BaseParser):
             category2.valueNotAt(slice(5, 9), "0000"),
             error_message="Federally funded recipients must have a valid SSN.",  # TODO: need input on this
         )
-        fields = ("FUNDING_STREAM", "FAMILY_AFFILIATION", "SSN")
-        error_generator = self.error_generator_factory.get_generator(
-            ErrorGeneratorType.VALUE_CONSISTENCY, None
-        )
+        t1_field_names = ("FUNDING_STREAM",)
+        t2_field_names = ("FAMILY_AFFILIATION", "SSN")
+        t1_fields = [t1_schema.get_field_by_name(name) for name in t1_field_names]
+        t2_fields = [t2_schema.get_field_by_name(name) for name in t2_field_names]
+        fields = t1_fields + t2_fields
         while True:
             # Validate SSN for each T2 record
             for t2_record in t2_records[prev_index:current_index]:
@@ -397,11 +398,14 @@ class TanfDataReportParser(BaseParser):
                     eargs = ValidationErrorArgs(
                         value=ssn,
                         row_schema=t2_schema,
-                        friendly_name="Social Security Number",
-                        item_num="33",
+                        friendly_name=fields[-1].friendly_name,
+                        item_num=fields[-1].item,
                     )
                     result = validator(ssn, eargs)
                     if not result.valid:
+                        error_generator = self.error_generator_factory.get_generator(
+                            ErrorGeneratorType.VALUE_CONSISTENCY, t2_record.line_number
+                        )
                         generator_args = ErrorGeneratorArgs(
                             record=t2_record,
                             schema=t2_schema,
@@ -452,4 +456,4 @@ class TanfDataReportParser(BaseParser):
                 CASE_NUMBER__in=t1_case_numbers,
             )
 
-            self._generate_funded_ssn_errors(t2_records, t2_schema)
+            self._generate_funded_ssn_errors(t2_schema, t2_records, t1_schema)

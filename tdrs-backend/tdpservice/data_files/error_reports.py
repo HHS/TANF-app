@@ -327,6 +327,7 @@ class ActiveClosedErrorReport(TanfDataErrorReportBase):
             ("FAMILY_AFFILIATION", "EDUCATION_LEVEL"),
             ("FAMILY_AFFILIATION", "WORK_ELIGIBLE_INDICATOR"),
             ("CITIZENSHIP_STATUS", "WORK_ELIGIBLE_INDICATOR"),
+            ("FUNDING_STREAM", "FAMILY_AFFILIATION", "SSN"),
         )
 
         # All cat1/4 errors
