@@ -24,14 +24,16 @@ Example from TANF T1 schema showing the problematic pattern:
 
 ```python
 Field(
-    item="27",
-    name="WAIVER_EVAL_CONTROL_GRPS",
-    friendly_name="waiver evaluation control groups",
-    type=FieldType.ALPHA_NUMERIC, # ← Stored as string
-    startIndex=113,
-    endIndex=114,
-    required=False,
-    validators=[category2.isBetween(0, 9, inclusive=True, cast=int)], # ← Triggers cast=int
+    item="38",
+    name="RELATIONSHIP_HOH",
+    friendly_name="Relationship to Head-of-Household",
+    type=FieldType.ALPHA_NUMERIC,
+    startIndex=51,
+    endIndex=53,
+    required=True,
+    validators=[
+        category2.isBetween(1, 10, inclusive=True, cast=int), # ← Triggers cast=int
+    ],
 )
 ```
 
@@ -74,16 +76,30 @@ All alpha numeric field definitions that are numerics with leading zeros will be
 ```python
 # Current approach (causes hotspot)
 Field(
-    name="NBR_FAMILY_MEMBERS",
-    type=FieldType.NUMERIC,  # Stored as string internally
-    validators=[category2.isBetween(1, 99, inclusive=True, cast=int)],  # ← Triggers casting
+    item="38",
+    name="RELATIONSHIP_HOH",
+    friendly_name="Relationship to Head-of-Household",
+    type=FieldType.ALPHA_NUMERIC,
+    startIndex=51,
+    endIndex=53,
+    required=True,
+    validators=[
+        category2.isBetween(1, 10, inclusive=True, cast=int),
+    ],
 )
 
 # New approach (optimized)
 Field(
-    name="NBR_FAMILY_MEMBERS",
-    type=FieldType.NUMERIC,  # Stored as native integer
-    validators=[category2.isBetween(1, 99, inclusive=True)],  # ← Direct integer validation
+    item="38",
+    name="RELATIONSHIP_HOH",
+    friendly_name="Relationship to Head-of-Household",
+    type=FieldType.NUMERIC,
+    startIndex=51,
+    endIndex=53,
+    required=True,
+    validators=[
+        category2.isBetween(1, 10, inclusive=True),
+    ],
 )
 ```
 
