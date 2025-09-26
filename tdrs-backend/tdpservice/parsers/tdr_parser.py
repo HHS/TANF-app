@@ -422,6 +422,8 @@ class TanfDataReportParser(BaseParser):
                                 ]
                             }
                         )
+                        self.num_errors += 1
+                        self.bulk_create_errors()
 
             prev_index = current_index
             current_index += settings.BULK_CREATE_BATCH_SIZE
