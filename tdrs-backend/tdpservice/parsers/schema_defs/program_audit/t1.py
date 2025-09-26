@@ -8,12 +8,12 @@ from tdpservice.parsers.util import (
     get_t1_t4_partial_hash_members,
 )
 from tdpservice.parsers.validators import category1, category2, category3
-from tdpservice.search_indexes.models.tanf import TANF_T1
+from tdpservice.search_indexes.models.program_audit import ProgramAudit_T1
 
 t1 = [
     TanfDataReportSchema(
         record_type="T1",
-        model=TANF_T1,
+        model=ProgramAudit_T1,
         generate_hashes_func=generate_t1_t4_hashes,
         get_partial_hash_members_func=get_t1_t4_partial_hash_members,
         preparsing_validators=[

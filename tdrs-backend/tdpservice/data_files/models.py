@@ -171,6 +171,11 @@ class DataFile(FileRecord):
                 cls.STRATUM_DATA,
             ]
 
+        @classmethod
+        def is_program_audit(cls, section: str) -> bool:
+            """Determine if the section is Program Audit."""
+            return section in [cls.PROGRAM_AUDIT]
+
     @staticmethod
     def get_fra_section_list():
         """Return FRA section list."""
@@ -239,8 +244,12 @@ class DataFile(FileRecord):
             return "SSP"
         elif self.Section.is_fra(self.section):
             return "FRA"
-        else:
+        elif self.Section.is_program_audit(self.section):
+            return "Program Audit"
+        elif self.Section.is_tanf(self.section):
             return "TAN"
+        else:
+            raise ValueError("Unsupported program type.")
 
     @property
     def filename(self):

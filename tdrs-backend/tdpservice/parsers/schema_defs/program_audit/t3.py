@@ -10,14 +10,14 @@ from tdpservice.parsers.util import (
 )
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.parsers.validators.util import is_quiet_preparser_errors
-from tdpservice.search_indexes.models.tanf import TANF_T3
+from tdpservice.search_indexes.models.program_audit import ProgramAudit_T3
 
 FIRST_CHILD = 1
 SECOND_CHILD = 2
 
 child_one = TanfDataReportSchema(
     record_type="T3",
-    model=TANF_T3,
+    model=ProgramAudit_T3,
     generate_hashes_func=generate_t2_t3_t5_hashes,
     should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {2, 4, 5},
     get_partial_hash_members_func=get_t2_t3_t5_partial_hash_members,
@@ -183,7 +183,7 @@ child_one = TanfDataReportSchema(
 
 child_two = TanfDataReportSchema(
     record_type="T3",
-    model=TANF_T3,
+    model=ProgramAudit_T3,
     generate_hashes_func=generate_t2_t3_t5_hashes,
     should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {2, 4, 5},
     get_partial_hash_members_func=get_t2_t3_t5_partial_hash_members,

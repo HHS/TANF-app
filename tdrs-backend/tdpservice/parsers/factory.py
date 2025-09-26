@@ -12,7 +12,7 @@ class ParserFactory:
     def get_class(cls, program_type):
         """Return the correct parser class to be constructed manually."""
         match program_type:
-            case "TANF" | "SSP":
+            case "TAN" | "SSP":
                 return TanfDataReportParser
             case "FRA":
                 return FRAParser

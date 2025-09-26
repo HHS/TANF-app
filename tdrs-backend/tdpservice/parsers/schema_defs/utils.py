@@ -65,6 +65,13 @@ class ProgramManager:
     # FRA schemas
     fra_work_outcomes_tanf_exiters = {"TE1": schema_defs.fra.te1}
 
+    # Program Audit schemas
+    program_audit_schemas = {
+        "T1": schema_defs.program_audit.t1,
+        "T2": schema_defs.program_audit.t2,
+        "T3": schema_defs.program_audit.t3,
+    }
+
     @classmethod
     def get_section(cls, program_type: str, section_abbrev: str):
         """Get full section name given the program type and section abbreviation used in the datafile."""
@@ -111,6 +118,8 @@ class ProgramManager:
     @classmethod
     def get_schemas(cls, program_type: str, section: DataFile.Section | str):
         """Get all schemas for a program type and section."""
+        print("program_type")
+        print(program_type)
         match program_type:
             case "TAN":
                 match section:
@@ -150,3 +159,5 @@ class ProgramManager:
                         return {}
                     case DataFile.Section.FRA_SUPPLEMENT_WORK_OUTCOMES:
                         return {}
+            case "Program Audit":
+                return cls.program_audit_schemas

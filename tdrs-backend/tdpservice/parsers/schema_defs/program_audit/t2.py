@@ -9,12 +9,12 @@ from tdpservice.parsers.util import (
     get_t2_t3_t5_partial_hash_members,
 )
 from tdpservice.parsers.validators import category1, category2, category3
-from tdpservice.search_indexes.models.tanf import TANF_T2
+from tdpservice.search_indexes.models.program_audit import ProgramAudit_T2
 
 t2 = [
     TanfDataReportSchema(
         record_type="T2",
-        model=TANF_T2,
+        model=ProgramAudit_T2,
         generate_hashes_func=generate_t2_t3_t5_hashes,
         should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {3, 5},
         get_partial_hash_members_func=get_t2_t3_t5_partial_hash_members,
