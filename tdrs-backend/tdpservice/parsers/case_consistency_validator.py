@@ -4,6 +4,8 @@ import logging
 import warnings
 from datetime import datetime
 
+from django.conf import settings
+
 from tdpservice.parsers.dataclasses import ValidationErrorArgs
 from tdpservice.parsers.error_generator import ErrorGeneratorArgs
 from tdpservice.parsers.schema_defs.utils import ProgramManager
@@ -147,15 +149,16 @@ class CaseConsistencyValidator:
                 self.has_validated = False
                 self.num_records_in_case += 1
 
-                # TODO: Get feedback on this
-                if self.num_records_in_case > 35:
+                # TODO: Get feedback on the error message
+                if self.num_records_in_case > settings.MAX_NUMBER_RECORDS_PER_CASE:
                     self.__generate_and_add_error(
                         schema,
                         record,
                         line_num=line_number,
                         msg=(
-                            "Malformed case. No case should ever have more than 35 records "
-                            "in it for a given reporting month and year. Deleting all records in case."
+                            "Malformed case. No case should ever have more than "
+                            f"{settings.MAX_NUMBER_RECORDS_PER_CASE} records in it for a given "
+                            "reporting month and year. Deleting all records in case."
                         ),
                     )
                     self.clear_structs((record, schema, line_number))
