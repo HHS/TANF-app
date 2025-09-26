@@ -43,9 +43,7 @@ def _readable_field_values(field_name: str, current_value: str, requested_value:
 
 def send_change_request_status_email(change_request, isApproved: bool, url):
     """Send an email to a user when their profile change request is approved/denied."""
-    from tdpservice.users.models import User
-
-    user: User = change_request.user
+    user = change_request.user
 
     field_label = FIELD_LABELS.get(
         change_request.field_name, change_request.field_name.title()
