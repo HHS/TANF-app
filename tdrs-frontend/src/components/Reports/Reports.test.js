@@ -54,10 +54,10 @@ describe('Reports', () => {
     stts: {
       sttList: [
         {
-          id: 1,
+          id: 6,
           type: 'state',
-          code: 'AL',
-          name: 'Alabama',
+          code: 'CA',
+          name: 'California',
           ssp: true,
           num_sections: 4,
         },
@@ -820,7 +820,7 @@ describe('Reports', () => {
           ...initialState.auth.user,
           roles: [],
           stt: {
-            name: 'Alabama',
+            name: 'California',
           },
         },
       },
@@ -832,7 +832,7 @@ describe('Reports', () => {
       </Provider>
     )
 
-    expect(getByText('File Type*')).toBeInTheDocument()
+    expect(getByText('SSP-MOE')).toBeInTheDocument()
   })
 
   // should not render the File Type section if the user is not an OFA Admin and the stt has ssp set to false
@@ -857,7 +857,7 @@ describe('Reports', () => {
       </Provider>
     )
 
-    expect(queryByText('File Type*')).not.toBeInTheDocument()
+    expect(queryByText('SSP-MOE')).not.toBeInTheDocument()
   })
 
   it('OFA Admin should see the data files section when they select a stt with ssp set to true', () => {
@@ -865,7 +865,7 @@ describe('Reports', () => {
       ...initialState,
       reports: {
         ...initialState.reports,
-        stt: 'Alabama',
+        stt: 'California',
       },
     })
 
@@ -875,7 +875,7 @@ describe('Reports', () => {
       </Provider>
     )
 
-    expect(getByText('File Type*')).toBeInTheDocument()
+    expect(getByText('SSP-MOE')).toBeInTheDocument()
   })
 
   it('OFA Admin should not see the data files section when they select a stt with ssp set to false', () => {
@@ -893,7 +893,7 @@ describe('Reports', () => {
       </Provider>
     )
 
-    expect(queryByText('File Type*')).not.toBeInTheDocument()
+    expect(queryByText('SSP-MOE')).not.toBeInTheDocument()
   })
 
   it('only allows OFA Regional Staff to view Submission History', async () => {
