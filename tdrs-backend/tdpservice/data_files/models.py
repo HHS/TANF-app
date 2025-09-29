@@ -128,6 +128,8 @@ class DataFile(FileRecord):
         FRA_SECONDRY_SCHOOL_ATTAINMENT = "Secondary School Attainment"
         FRA_SUPPLEMENT_WORK_OUTCOMES = "Supplemental Work Outcomes"
 
+        PROGRAM_AUDIT = "Program Audit"
+
         @classmethod
         def is_fra(cls, section: str) -> bool:
             """Determine if the section is a FRA section."""
