@@ -1083,12 +1083,7 @@ def section2_no_records():
 def program_audit_ftanf(stt, stt_user):
     """Fixture for valid Program Audit file with extraneous data."""
     return util.create_test_datafile(
-        "PI_Audit_FTANF.txt",
-        stt_user,
-        stt,
-        DataFile.Section.ACTIVE_CASE_DATA,
-        DataFile.ProgramType.TANF,
-        is_program_audit=True,
+        "PI_Audit_FTANF.txt", stt_user, stt, DataFile.Section.PROGRAM_AUDIT
     )
 
 
@@ -1096,12 +1091,7 @@ def program_audit_ftanf(stt, stt_user):
 def program_audit_space_fill(stt, stt_user):
     """Fixture for valid Program Audit file with space fill."""
     return util.create_test_datafile(
-        "PI_Audit_space-fill.txt",
-        stt_user,
-        stt,
-        DataFile.Section.ACTIVE_CASE_DATA,
-        DataFile.ProgramType.TANF,
-        is_program_audit=True,
+        "PI_Audit_space-fill.txt", stt_user, stt, DataFile.Section.PROGRAM_AUDIT
     )
 
 
@@ -1109,10 +1099,5 @@ def program_audit_space_fill(stt, stt_user):
 def program_audit_zero_fill(stt, stt_user):
     """Fixture for valid Program Audit file with zero fill."""
     return util.create_test_datafile(
-        "PI_Audit_zero-fill.txt",
-        stt_user,
-        stt,
-        DataFile.Section.ACTIVE_CASE_DATA,
-        DataFile.ProgramType.TANF,
-        is_program_audit=True,
+        "PI_Audit_zero-fill.txt", stt_user, stt, DataFile.Section.PROGRAM_AUDIT
     )
