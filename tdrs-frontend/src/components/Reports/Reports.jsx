@@ -10,7 +10,7 @@ import {
   setQuarter,
   setFileType,
 } from '../../actions/reports'
-import UploadReport from '../UploadReport'
+import FileUploadForm from '../FileUploadForm'
 import STTComboBox from '../STTComboBox'
 import { fetchSttList } from '../../actions/sttList'
 import Modal from '../Modal'
@@ -23,6 +23,7 @@ import {
 } from '../../selectors/auth'
 import { quarters, constructYearOptions } from './utils'
 import { openFeedbackWidget } from '../../reducers/feedbackWidget'
+import RadioSelect from '../Form/RadioSelect'
 
 const FiscalQuarterExplainer = () => (
   <table className="usa-table usa-table--striped margin-top-4 desktop:width-tablet mobile:width-full">
@@ -137,15 +138,11 @@ function Reports() {
 
   const [selectedSubmissionTab, setSelectedSubmissionTab] = useState(1)
 
-  const fileTypeComboBoxRequired = fileTypeStt?.ssp ? fileTypeStt.ssp : false
-
   const resetPreviousValues = () => {
     setQuarterInputValue(selectedQuarter || '')
     setYearInputValue(selectedYear || '')
     setSttInputValue(selectedStt || '')
-    setFileTypeInputValue(
-      fileTypeComboBoxRequired ? selectedFileType || '' : 'tanf'
-    )
+    setFileTypeInputValue(selectedFileType || '')
   }
 
   const handleSearch = () => {
@@ -159,7 +156,7 @@ function Reports() {
         ? sttInputValue
         : currentStt,
       quarterInputValue,
-      fileTypeComboBoxRequired ? fileTypeInputValue : 'tanf',
+      fileTypeInputValue,
     ].filter(Boolean)
 
     if (form.length === 4) {
@@ -175,9 +172,7 @@ function Reports() {
       dispatch(setYear(yearInputValue))
       dispatch(setQuarter(quarterInputValue))
       dispatch(setStt(sttInputValue))
-      dispatch(
-        setFileType(fileTypeComboBoxRequired ? fileTypeInputValue : 'tanf')
-      )
+      dispatch(setFileType(fileTypeInputValue))
 
       // Restore upload sections to the page
       setTimeout(() => setIsToggled(true), 0)
@@ -221,8 +216,7 @@ function Reports() {
   }
 
   const handleOpenFeedbackWidget = () => {
-    const lockedType = fileTypeComboBoxRequired ? fileTypeInputValue : 'tanf'
-    dispatch(openFeedbackWidget(lockedType)) // 'tanf' or 'ssp-moe'
+    dispatch(openFeedbackWidget(fileTypeInputValue))
   }
 
   useEffect(() => {
@@ -237,7 +231,7 @@ function Reports() {
         yearInputValue,
         sttInputValue,
         quarterInputValue,
-        fileTypeComboBoxRequired ? fileTypeInputValue : 'tanf',
+        fileTypeInputValue,
       ].filter(Boolean)
       const touchedFields = Object.keys(touched).length
 
@@ -267,9 +261,17 @@ function Reports() {
     isDIGITTeam,
     isSystemAdmin,
     isRegionalStaff,
-    fileTypeComboBoxRequired,
     currentStt,
   ])
+
+  const radio_options = [
+    { label: 'TANF', value: 'tanf' },
+    ...(fileTypeStt?.ssp ? [{ label: 'SSP-MOE', value: 'ssp-moe' }] : []),
+    {
+      label: 'Program Integrity Audit',
+      value: 'program-integrity-audit',
+    },
+  ]
 
   return (
     <div className="page-container" style={{ position: 'relative' }}>
@@ -319,51 +321,15 @@ function Reports() {
                   />
                 </div>
               )}
-              {(fileTypeStt?.ssp ? fileTypeStt.ssp : false) && (
-                <div className="usa-form-group margin-top-4">
-                  <label className="usa-label text-bold" htmlFor="reportType">
-                    {formValidation.fileType && (
-                      <div
-                        className="usa-error-message"
-                        id="reportType-error-alert"
-                      >
-                        A file type selection is required
-                      </div>
-                    )}
-                    <fieldset className="usa-fieldset">
-                      <legend className="usa-label text-bold">
-                        File Type*
-                      </legend>
-                      <div className="usa-radio">
-                        <input
-                          className="usa-radio__input"
-                          id="tanf"
-                          type="radio"
-                          name="reportType"
-                          value="tanf"
-                          onChange={() => setFileTypeInputValue('tanf')}
-                        />
-                        <label className="usa-radio__label" htmlFor="tanf">
-                          TANF
-                        </label>
-                      </div>
-                      <div className="usa-radio">
-                        <input
-                          className="usa-radio__input"
-                          id="ssp-moe"
-                          type="radio"
-                          name="reportType"
-                          value="ssp-moe"
-                          onChange={() => setFileTypeInputValue('ssp-moe')}
-                        />
-                        <label className="usa-radio__label" htmlFor="ssp-moe">
-                          SSP-MOE
-                        </label>
-                      </div>
-                    </fieldset>
-                  </label>
-                </div>
-              )}
+              <RadioSelect
+                label="File Type"
+                fieldName="reportType"
+                setValue={setFileTypeInputValue}
+                options={radio_options}
+                valid={!formValidation.fileType}
+                value={fileTypeInputValue}
+                classes="margin-top-4"
+              />
             </div>
           </div>
           <div className="grid-row grid-gap">
@@ -501,7 +467,7 @@ function Reports() {
           )}
 
           {!isRegionalStaff && selectedSubmissionTab === 1 && (
-            <UploadReport
+            <FileUploadForm
               stt={stt}
               handleCancel={() => {
                 setIsToggled(false)
