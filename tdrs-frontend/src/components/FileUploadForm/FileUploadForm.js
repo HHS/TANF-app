@@ -4,15 +4,14 @@ import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 import { fireEvent, render, waitFor } from '@testing-library/react'
 import axios from 'axios'
-import Reports from '../Reports/Reports'
 
 import { v4 as uuidv4 } from 'uuid'
 
 import { PREVIEW_HEADING_CLASS } from '../FileUpload/utils'
 
-import UploadReport from './UploadReport'
+import FileUploadForm from './FileUploadForm'
 
-describe('UploadReport', () => {
+describe('FileUploadForm', () => {
   const initialState = {
     auth: { user: { email: 'test@test.com' }, authenticated: true },
     reports: {
@@ -59,7 +58,7 @@ describe('UploadReport', () => {
     const store = mockStore(initialState)
     const { container } = render(
       <Provider store={store}>
-        <UploadReport handleCancel={handleCancel} header="Some header" />
+        <FileUploadForm handleCancel={handleCancel} header="Some header" />
       </Provider>
     )
 
@@ -75,7 +74,7 @@ describe('UploadReport', () => {
 
     const { getByLabelText, getByText, container } = render(
       <Provider store={store}>
-        <UploadReport handleCancel={handleCancel} header="Some header" />
+        <FileUploadForm handleCancel={handleCancel} header="Some header" />
       </Provider>
     )
 
@@ -105,7 +104,7 @@ describe('UploadReport', () => {
 
     const { getByLabelText, getByText, container } = render(
       <Provider store={store}>
-        <UploadReport handleCancel={handleCancel} header="Some header" />
+        <FileUploadForm handleCancel={handleCancel} header="Some header" />
       </Provider>
     )
 
@@ -138,7 +137,7 @@ describe('UploadReport', () => {
 
     const { container } = render(
       <Provider store={store}>
-        <UploadReport handleCancel={handleCancel} header="Some header" />
+        <FileUploadForm handleCancel={handleCancel} header="Some header" />
       </Provider>
     )
     setTimeout(() => {
@@ -189,7 +188,7 @@ describe('UploadReport', () => {
 
     const { container } = render(
       <Provider store={store}>
-        <UploadReport handleCancel={handleCancel} header="Some header" />
+        <FileUploadForm handleCancel={handleCancel} header="Some header" />
       </Provider>
     )
 
@@ -202,7 +201,7 @@ describe('UploadReport', () => {
     const store = mockStore(initialState)
     const { container } = render(
       <Provider store={store}>
-        <UploadReport handleCancel={handleCancel} header="Some header" />
+        <FileUploadForm handleCancel={handleCancel} header="Some header" />
       </Provider>
     )
 
@@ -219,7 +218,7 @@ describe('UploadReport', () => {
 
     const { getByLabelText, getByText } = render(
       <Provider store={store}>
-        <UploadReport handleCancel={handleCancel} header="Some header" />
+        <FileUploadForm handleCancel={handleCancel} header="Some header" />
       </Provider>
     )
 
