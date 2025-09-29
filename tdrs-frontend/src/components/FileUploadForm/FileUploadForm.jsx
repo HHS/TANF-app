@@ -11,7 +11,7 @@ import { fileUploadSections } from '../../reducers/reports'
 import { useEventLogger } from '../../utils/eventLogger'
 import { useFormSubmission } from '../../hooks/useFormSubmission'
 
-function UploadReport({ handleCancel, stt, openWidget }) {
+function FileUploadForm({ handleCancel, stt, openWidget }) {
   // The currently selected year from the reportingYears dropdown
   const selectedYear = useSelector((state) => state.reports.year)
   // The selected quarter in the dropdown tied to our redux `reports` state
@@ -156,9 +156,9 @@ function UploadReport({ handleCancel, stt, openWidget }) {
   )
 }
 
-UploadReport.propTypes = {
+FileUploadForm.propTypes = {
   handleCancel: PropTypes.func.isRequired,
   stt: PropTypes.object,
 }
 
-export default UploadReport
+export default FileUploadForm
