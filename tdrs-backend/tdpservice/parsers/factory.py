@@ -1,8 +1,6 @@
 """Factory class for all parser classes."""
 
-from tdpservice.data_files.models import DataFile
 from tdpservice.parsers.parser_classes.fra_parser import FRAParser
-from tdpservice.parsers.parser_classes.program_audit_parser import ProgramAuditParser
 from tdpservice.parsers.parser_classes.tdr_parser import TanfDataReportParser
 
 
