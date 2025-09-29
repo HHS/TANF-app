@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 import { PREVIEW_HEADING_CLASS } from '../FileUpload/utils'
 
-import FileUploadForm from './FileUploadForm'
+import FileUploadForm from './FileUploadForm.test'
 
 describe('FileUploadForm', () => {
   const initialState = {
