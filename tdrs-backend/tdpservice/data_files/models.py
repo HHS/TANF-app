@@ -1,4 +1,5 @@
 """Define data file models."""
+
 import logging
 import os
 from hashlib import sha256
@@ -128,6 +129,8 @@ class DataFile(FileRecord):
         FRA_WORK_OUTCOME_TANF_EXITERS = "Work Outcomes of TANF Exiters"
         FRA_SECONDRY_SCHOOL_ATTAINMENT = "Secondary School Attainment"
         FRA_SUPPLEMENT_WORK_OUTCOMES = "Supplemental Work Outcomes"
+
+        PROGRAM_AUDIT = "Program Audit"
 
         @classmethod
         def is_fra(cls, section: str) -> bool:
