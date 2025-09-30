@@ -254,7 +254,7 @@ class BaseParser(ABC):
                 ).delete()
                 self.dfs.total_number_of_records_created -= num_deleted
             logger.info(
-                f"Deleted {self.dfs.total_number_of_records_created - start_num} records with cat4 errors."
+                f"Deleted {start_num - self.dfs.total_number_of_records_created} records with cat4 errors."
             )
 
     def _generate_exact_dup_error_msg(
