@@ -40,7 +40,7 @@ Cypress.Commands.add('login', (username) => {
       .invoke('dispatch', {
         type: 'SET_AUTH',
         payload: {
-          user: response?.body?.user
+          user: response?.body?.user,
         },
       })
 
@@ -85,6 +85,7 @@ Cypress.Commands.add(
     cy.get('@adminSessionId').then((sessionId) =>
       cy.setCookie('sessionid', sessionId)
     )
+    cy.clearCookie('csrftoken')
     cy.get('@adminCsrfToken').then((csrfToken) => {
       cy.setCookie('csrftoken', csrfToken)
       options.headers['X-CSRFToken'] = csrfToken
@@ -118,8 +119,11 @@ Cypress.Commands.add(
     options = {
       method,
       body,
-      headers,
       url: `${Cypress.env('apiUrl')}${path}`,
+      headers: {
+        ...headers,
+        Referer: `${Cypress.env('apiUrl')}`,
+      },
     }
 
     cy.get('@adminSessionId').then((sessionId) =>

@@ -168,6 +168,34 @@
         }
     },
     {
+        "model": "users.user",
+        "pk": "8c3d40a6-8964-44ae-95cc-7939b71a929f",
+        "fields": {
+            "password": "",
+            "last_login": null,
+            "is_superuser": false,
+            "username": "diana-cypress@teamraft.com",
+            "first_name": "Diana",
+            "last_name": "Doe",
+            "email": "diana-cypress@teamraft.com",
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2025-02-20T20:23:35.309Z",
+            "stt": null,
+            "login_gov_uuid": null,
+            "hhs_id": null,
+            "deactivated": false,
+            "access_request": false,
+            "account_approval_status": "Approved",
+            "access_requested_date": "0001-01-01T00:00:00Z",
+            "feature_flags": {},
+            "groups": [
+                8
+            ],
+            "user_permissions": []
+        }
+    },
+    {
         "model": "users.regionmeta",
         "pk": 7,
         "fields": {

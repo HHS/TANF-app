@@ -131,11 +131,11 @@ const UPLOAD_FILE_INFO = {
 // STEPS ----------
 
 When(
-  '{string} uploads a {string} Section {string} data file',
-  (actor, program, section) => {
+  '{string} uploads a {string} Section {string} data file for {string}',
+  (actor, program, section, stt) => {
     const { year, quarter, fileName } = UPLOAD_FILE_INFO[program][section]
 
-    df.openDataFilesAndSearch(program, year, quarter)
+    df.openDataFilesAndSearch(program, year, quarter, stt)
     df.uploadSectionFile(SECTION_INPUT_ID[section], fileName)
 
     cy.contains('Successfully submitted').should('exist')

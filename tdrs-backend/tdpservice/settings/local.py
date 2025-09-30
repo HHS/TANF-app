@@ -2,7 +2,9 @@
 import logging
 import os
 from distutils.util import strtobool
-
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
 import django
 
 from .common import Common
@@ -46,12 +48,9 @@ class Local(Common):
 
     if os.getenv("ENABLE_SENTRY", "no") == "yes":
         # SENTRY
-        import sentry_sdk
-        from sentry_sdk.integrations.django import DjangoIntegration
-        from sentry_sdk.integrations.logging import LoggingIntegration
-
         sentry_sdk.init(
-            dsn="http://43ebf8abe1434ec6aea2c7b92c465a0e@host.docker.internal:9001/2",
+            dsn=os.getenv("SENTRY_DSN"),
+            environment='local',
             # Set traces_sample_rate to 1.0 to capture 100%
             # of transactions for performance monitoring.
             integrations=[
