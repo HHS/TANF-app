@@ -1,15 +1,7 @@
 import { React } from 'react'
 import classNames from 'classnames'
 
-const RadioSelect = ({
-  label,
-  fieldName,
-  setValue,
-  options,
-  valid,
-  value,
-  classes,
-}) => (
+const RadioSelect = ({ label, fieldName, setValue, options, classes }) => (
   <div className={classNames('usa-form-group', classes)}>
     <fieldset className="usa-fieldset">
       <legend className="usa-label text-bold">{label}</legend>
