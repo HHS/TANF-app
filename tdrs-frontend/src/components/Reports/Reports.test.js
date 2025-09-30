@@ -1,5 +1,11 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  getByLabelText,
+} from '@testing-library/react'
 
 import { Provider } from 'react-redux'
 import { thunk } from 'redux-thunk'
@@ -9,6 +15,23 @@ import Reports from './Reports'
 import { SET_FILE, upload } from '../../actions/reports'
 
 describe('Reports', () => {
+  let originalScrollIntoView
+
+  beforeEach(() => {
+    // Save the original scrollIntoView
+    originalScrollIntoView = window.HTMLElement.prototype.scrollIntoView
+    // Mock it for all tests
+    window.HTMLElement.prototype.scrollIntoView = jest.fn()
+  })
+
+  afterEach(() => {
+    // Restore the original scrollIntoView
+    window.HTMLElement.prototype.scrollIntoView = originalScrollIntoView
+    // Clear all jest mocks and restore all spies
+    jest.clearAllMocks()
+    jest.restoreAllMocks()
+  })
+
   const initialState = {
     reports: {
       files: [
@@ -45,11 +68,30 @@ describe('Reports', () => {
           uuid: null,
         },
       ],
+      submittedFiles: [
+        {
+          section: 'Active Case Data',
+          fileName: null,
+          error: null,
+        },
+        {
+          section: 'Closed Case Data',
+          fileName: null,
+          error: null,
+        },
+        {
+          section: 'Aggregate Data',
+          fileName: null,
+          error: null,
+        },
+        {
+          section: 'Stratum Data',
+          fileName: null,
+          error: null,
+        },
+      ],
       error: null,
-      year: '',
       stt: '',
-      quarter: '',
-      fileType: 'tanf',
     },
     stts: {
       sttList: [
@@ -93,6 +135,21 @@ describe('Reports', () => {
     new File(contents, name, {
       type: 'text/plain',
     })
+
+  const setReportInputs = (year = null, quarter = null, getByLabelText) => {
+    if (year) {
+      const yearSelect = getByLabelText(/Fiscal Year/)
+      fireEvent.change(yearSelect, {
+        target: { value: year },
+      })
+    }
+    if (quarter) {
+      const quarterSelect = getByLabelText(/Fiscal Quarter/)
+      fireEvent.change(quarterSelect, {
+        target: { value: quarter },
+      })
+    }
+  }
 
   it('should render the Fiscal Year dropdown with however many years and a placeholder', () => {
     const store = mockStore(initialState)
@@ -193,23 +250,20 @@ describe('Reports', () => {
       reports: {
         ...initialState.reports,
         year: '2021',
-        stt: 'Florida',
+        stt: 'California',
         quarter: 'Q3',
         fileType: 'tanf',
       },
     })
 
-    const { getByText, queryByText } = render(
+    const { getByText, getByLabelText } = render(
       <Provider store={store}>
         <Reports />
       </Provider>
     )
 
-    expect(
-      queryByText('Section 1 - TANF - Active Case Data')
-    ).not.toBeInTheDocument()
+    setReportInputs('2021', 'Q3', getByLabelText)
 
-    fireEvent.click(getByText(/Search/, { selector: 'button' }))
     await waitFor(() => {
       expect(
         getByText('Section 1 - TANF - Active Case Data')
@@ -227,24 +281,17 @@ describe('Reports', () => {
       ...initialState,
       reports: {
         ...initialState.reports,
-        year: '2021',
-        stt: 'Florida',
-        quarter: 'Q3',
-        fileType: 'tanf',
+        stt: 'California',
       },
     })
 
-    const { getByText, getByLabelText, queryByText } = render(
+    const { getByLabelText, queryByText } = render(
       <Provider store={store}>
         <Reports />
       </Provider>
     )
 
-    expect(
-      queryByText('Section 1 - TANF - Active Case Data')
-    ).not.toBeInTheDocument()
-
-    fireEvent.click(getByText(/Search/, { selector: 'button' }))
+    setReportInputs('2021', 'Q3', getByLabelText)
 
     await waitFor(() => {
       expect(
@@ -260,9 +307,11 @@ describe('Reports', () => {
       },
     })
 
-    expect(
-      queryByText('Section 1 - TANF - Active Case Data')
-    ).toBeInTheDocument()
+    await waitFor(() => {
+      expect(
+        queryByText('Section 1 - TANF - Active Case Data')
+      ).toBeInTheDocument()
+    })
   })
 
   it('should de-render when Cancel is clicked', async () => {
@@ -270,19 +319,18 @@ describe('Reports', () => {
       ...initialState,
       reports: {
         ...initialState.reports,
-        year: '2021',
-        stt: 'Florida',
-        quarter: 'Q3',
+        stt: 'California',
       },
     })
 
-    const { getByText, queryByText } = render(
+    const { getByText, getByLabelText, queryByText } = render(
       <Provider store={store}>
         <Reports />
       </Provider>
     )
 
-    fireEvent.click(getByText(/Search/, { selector: 'button' }))
+    setReportInputs('2021', 'Q3', getByLabelText)
+
     await waitFor(() => {
       expect(
         getByText('Section 1 - TANF - Active Case Data')
@@ -291,9 +339,11 @@ describe('Reports', () => {
 
     fireEvent.click(getByText(/Cancel/))
 
-    expect(
-      queryByText('Section 1 - TANF - Active Case Data')
-    ).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(
+        queryByText('Section 1 - TANF - Active Case Data')
+      ).not.toBeInTheDocument()
+    })
   })
 
   it('should make a request with the selections and upload payloads after clicking Submit Data Files', async () => {
@@ -301,16 +351,11 @@ describe('Reports', () => {
       ...initialState,
       reports: {
         ...initialState.reports,
-        year: '2021',
-        stt: 'Florida',
-        quarter: 'Q3',
-        fileType: 'tanf',
+        stt: 'California',
       },
     })
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
-
-    window.HTMLElement.prototype.scrollIntoView = jest.fn(() => null)
 
     const { getByText, getByLabelText, getByRole } = render(
       <Provider store={store}>
@@ -318,7 +363,7 @@ describe('Reports', () => {
       </Provider>
     )
 
-    fireEvent.click(getByText(/Search/, { selector: 'button' }))
+    setReportInputs('2021', 'Q3', getByLabelText)
 
     await waitFor(() => {
       fireEvent.change(getByLabelText('Section 1 - TANF - Active Case Data'), {
@@ -349,16 +394,14 @@ describe('Reports', () => {
     await waitFor(() => expect(getByText('section2.txt')).toBeInTheDocument())
     await waitFor(() => expect(getByText('section3.txt')).toBeInTheDocument())
     await waitFor(() => expect(getByText('section4.txt')).toBeInTheDocument())
-    expect(store.dispatch).toHaveBeenCalledTimes(17)
+    expect(store.dispatch).toHaveBeenCalledTimes(14)
 
-    // There should be 4 more dispatches upon making the submission,
-    // one request to /reports for each file
     await waitFor(() =>
       expect(getByText('Submit Data Files')).toBeInTheDocument()
     )
     fireEvent.click(getByText('Submit Data Files'))
     await waitFor(() => getByRole('alert'))
-    expect(store.dispatch).toHaveBeenCalledTimes(19)
+    expect(store.dispatch).toHaveBeenCalledTimes(16)
   })
 
   it('should add files to the redux state when dispatching uploads', async () => {
@@ -415,26 +458,6 @@ describe('Reports', () => {
     })
   })
 
-  it('should display error labels when user tries to search without making selections', async () => {
-    const store = mockStore(initialState)
-
-    const { getByText } = render(
-      <Provider store={store}>
-        <Reports />
-      </Provider>
-    )
-
-    fireEvent.click(getByText(/Search/, { selector: 'button' }))
-
-    await waitFor(() => {
-      expect(getByText('A fiscal year is required')).toBeInTheDocument()
-      expect(getByText('A fiscal quarter is required')).toBeInTheDocument()
-      expect(
-        getByText('A state, tribe, or territory is required')
-      ).toBeInTheDocument()
-    })
-  })
-
   describe('search form behaviors', () => {
     const setUpSearchFormBehaviors = async () => {
       // set initial search parameters in initialState
@@ -457,10 +480,7 @@ describe('Reports', () => {
         },
         reports: {
           ...initialState.reports,
-          year: '2021',
           stt: 'Alaska',
-          quarter: 'Q3',
-          fileType: 'tanf',
         },
       })
 
@@ -470,10 +490,12 @@ describe('Reports', () => {
         </Provider>
       )
 
+      setReportInputs('2021', 'Q3', getByLabelText)
+
       await waitFor(() => {
         expect(
           queryByText('Section 1 - TANF - Active Case Data')
-        ).not.toBeInTheDocument()
+        ).toBeInTheDocument()
         expect(getByText('2021', { selector: 'option' }).selected).toBe(true)
         expect(
           getByText('Quarter 3 (April - June)', { selector: 'option' }).selected
@@ -487,9 +509,6 @@ describe('Reports', () => {
       const { getByText, getByLabelText, queryByText } =
         await setUpSearchFormBehaviors()
 
-      // search
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
-
       await waitFor(() => {
         expect(
           getByText('Section 1 - TANF - Active Case Data')
@@ -501,21 +520,7 @@ describe('Reports', () => {
         ).toBeInTheDocument()
       })
 
-      // make a change to the search selections, but don't click search
-      console.log('change year')
-
-      fireEvent.change(getByLabelText(/Fiscal Year/), {
-        target: { value: '2022' },
-      })
-      fireEvent.select(getByLabelText(/Fiscal Year/), {
-        target: { value: '2022' },
-      })
-      fireEvent.change(getByLabelText(/Quarter/), {
-        target: { value: 'Q2' },
-      })
-      fireEvent.select(getByLabelText(/Quarter/), {
-        target: { value: 'Q2' },
-      })
+      setReportInputs('2022', 'Q2', getByLabelText)
 
       // the header should not update
       await waitFor(() =>
@@ -526,9 +531,6 @@ describe('Reports', () => {
         ).not.toBeInTheDocument()
       )
 
-      // click search and assert the header updates
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
-
       await waitFor(() =>
         expect(
           getByText(
@@ -538,12 +540,9 @@ describe('Reports', () => {
       )
     })
 
-    it('should present a message when searching without first submitting uploaded files', async () => {
+    it('should present a warning modal when cancelling without first submitting uploaded files', async () => {
       const { getByText, queryByText, getByLabelText } =
         await setUpSearchFormBehaviors()
-
-      // search
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
       await waitFor(() => {
         expect(
@@ -574,20 +573,7 @@ describe('Reports', () => {
 
       await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
 
-      // make a change to the search selections and click search
-      fireEvent.change(getByLabelText(/Fiscal Year/), {
-        target: { value: '2022' },
-      })
-      fireEvent.select(getByLabelText(/Fiscal Year/), {
-        target: { value: '2022' },
-      })
-      await waitFor(() =>
-        expect(getByText('2022', { selector: 'option' }).selected).toBe(true)
-      )
-
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
-
-      // the modal should display
+      fireEvent.click(getByText(/Cancel/, { selector: 'button' }))
 
       await waitFor(() =>
         expect(queryByText('Files Not Submitted')).toBeInTheDocument()
@@ -598,9 +584,6 @@ describe('Reports', () => {
       const { getByText, queryByText, getByLabelText } =
         await setUpSearchFormBehaviors()
 
-      // search
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
-
       await waitFor(() => {
         expect(
           getByText('Section 1 - TANF - Active Case Data')
@@ -630,18 +613,7 @@ describe('Reports', () => {
 
       await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
 
-      // make a change to the search selections and click search
-      fireEvent.change(getByLabelText(/Fiscal Year/), {
-        target: { value: '2022' },
-      })
-      fireEvent.select(getByLabelText(/Fiscal Year/), {
-        target: { value: '2022' },
-      })
-      await waitFor(() =>
-        expect(getByText('2022', { selector: 'option' }).selected).toBe(true)
-      )
-
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
+      fireEvent.click(getByText(/Cancel/, { selector: 'button' }))
 
       // the modal should display
       await waitFor(() =>
@@ -661,9 +633,6 @@ describe('Reports', () => {
     it('should allow the user to discard un-submitted files and continue with the new search', async () => {
       const { getByText, queryByText, getByLabelText } =
         await setUpSearchFormBehaviors()
-
-      // search
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
       await waitFor(() => {
         expect(
@@ -694,20 +663,7 @@ describe('Reports', () => {
 
       await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
 
-      //fireEvent.click(getByLabelText(/TANF/))
-
-      // make a change to the search selections and click search
-      fireEvent.change(getByLabelText(/Fiscal Year/), {
-        target: { value: '2022' },
-      })
-      fireEvent.select(getByLabelText(/Fiscal Year/), {
-        target: { value: '2022' },
-      })
-      await waitFor(() =>
-        expect(getByText('2022', { selector: 'option' }).selected).toBe(true)
-      )
-
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
+      fireEvent.click(getByText(/Cancel/, { selector: 'button' }))
 
       // the modal should display
       await waitFor(() =>
@@ -715,23 +671,17 @@ describe('Reports', () => {
       )
 
       // click cancel
-      fireEvent.click(
-        getByText(/Discard and Search/, { selector: '#modal button' })
-      )
+      fireEvent.click(getByText(/OK/, { selector: '#modal button' }))
 
       // assert file is cleared, search params are updated
       await waitFor(() => {
         expect(queryByText('section1.txt')).not.toBeInTheDocument()
-        expect(getByText('2022', { selector: 'option' }).selected).toBe(true)
       })
     })
 
     it('Shows submission history when the Submission History tab is clicked', async () => {
       const { getByText, queryAllByText, queryByText } =
         await setUpSearchFormBehaviors()
-
-      // search
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
       await waitFor(() => {
         expect(
@@ -901,9 +851,7 @@ describe('Reports', () => {
       ...initialState,
       reports: {
         ...initialState.reports,
-        year: '2021',
         stt: 'Alaska',
-        quarter: 'Q3',
       },
       auth: {
         ...initialState.auth,
@@ -914,13 +862,13 @@ describe('Reports', () => {
       },
     })
 
-    const { getByText, queryByText } = render(
+    const { getByLabelText, queryByText } = render(
       <Provider store={store}>
         <Reports />
       </Provider>
     )
 
-    fireEvent.click(getByText(/Search/, { selector: 'button' }))
+    setReportInputs('2021', 'Q3', getByLabelText)
 
     await waitFor(() => {
       expect(queryByText('Submission History')).toBeInTheDocument()
@@ -936,17 +884,13 @@ describe('Reports', () => {
       ...initialState,
       reports: {
         ...initialState.reports,
-        year: (currentYear - 1).toString(),
-        stt: 'Florida',
+        stt: 'California',
         quarter: 'Q3',
-        fileType: 'tanf',
       },
     })
 
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
-
-    window.HTMLElement.prototype.scrollIntoView = jest.fn(() => null)
 
     const { getByText, getByLabelText } = render(
       <Provider store={store}>
@@ -954,7 +898,7 @@ describe('Reports', () => {
       </Provider>
     )
 
-    fireEvent.click(getByText(/Search/, { selector: 'button' }))
+    setReportInputs((currentYear - 1).toString(), 'Q3', getByLabelText)
 
     await waitFor(() => {
       expect(
@@ -989,16 +933,11 @@ describe('Reports', () => {
       ...initialState,
       reports: {
         ...initialState.reports,
-        fileType: 'tanf',
-        year: '2021',
-        stt: 'Florida',
-        quarter: 'Q3',
+        stt: 'California',
       },
     })
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
-
-    window.HTMLElement.prototype.scrollIntoView = jest.fn(() => null)
 
     const { getByText, getByLabelText } = render(
       <Provider store={store}>
@@ -1006,7 +945,7 @@ describe('Reports', () => {
       </Provider>
     )
 
-    fireEvent.click(getByText(/Search/, { selector: 'button' }))
+    setReportInputs('2021', 'Q3', getByLabelText)
 
     await waitFor(() => {
       expect(
