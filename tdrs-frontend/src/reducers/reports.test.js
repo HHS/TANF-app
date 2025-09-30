@@ -6,10 +6,8 @@ import {
   CLEAR_FILE,
   FILE_EXT_ERROR,
   SET_FILE_ERROR,
-  SET_SELECTED_YEAR,
   SET_SELECTED_STT,
   SET_FILE_LIST,
-  SET_SELECTED_QUARTER,
   SET_FILE_SUBMITTED,
 } from '../actions/reports'
 
@@ -453,89 +451,6 @@ describe('reducers/reports', () => {
       submittedFiles: initialState.submittedFiles,
       year: '',
       stt: 'florida',
-      quarter: '',
-      fileType: '',
-    })
-  })
-
-  it('should handle "SET_SELECTED_QUARTER"', () => {
-    expect(
-      reducer(undefined, {
-        type: SET_SELECTED_QUARTER,
-        payload: {
-          quarter: 'Q1',
-        },
-      })
-    ).toEqual({
-      files: initialState.files,
-      submittedFiles: initialState.submittedFiles,
-      year: '',
-      stt: '',
-      quarter: 'Q1',
-      fileType: '',
-    })
-
-    expect(
-      reducer(undefined, {
-        type: SET_SELECTED_QUARTER,
-        payload: {
-          quarter: 'Q2',
-        },
-      })
-    ).toEqual({
-      files: initialState.files,
-      submittedFiles: initialState.submittedFiles,
-      year: '',
-      stt: '',
-      quarter: 'Q2',
-      fileType: '',
-    })
-
-    expect(
-      reducer(undefined, {
-        type: SET_SELECTED_QUARTER,
-        payload: {
-          quarter: 'Q3',
-        },
-      })
-    ).toEqual({
-      files: initialState.files,
-      submittedFiles: initialState.submittedFiles,
-      year: '',
-      stt: '',
-      quarter: 'Q3',
-      fileType: '',
-    })
-    expect(
-      reducer(undefined, {
-        type: SET_SELECTED_QUARTER,
-        payload: {
-          quarter: 'Q4',
-        },
-      })
-    ).toEqual({
-      files: initialState.files,
-      submittedFiles: initialState.submittedFiles,
-      year: '',
-      stt: '',
-      quarter: 'Q4',
-      fileType: '',
-    })
-  })
-
-  it('should handle "SET_SELECTED_YEAR"', () => {
-    expect(
-      reducer(undefined, {
-        type: SET_SELECTED_YEAR,
-        payload: {
-          year: '2021',
-        },
-      })
-    ).toEqual({
-      files: initialState.files,
-      submittedFiles: initialState.submittedFiles,
-      year: '2021',
-      stt: '',
       quarter: '',
       fileType: '',
     })
