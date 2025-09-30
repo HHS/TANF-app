@@ -118,8 +118,6 @@ class ProgramManager:
     @classmethod
     def get_schemas(cls, program_type: str, section: DataFile.Section | str):
         """Get all schemas for a program type and section."""
-        print("program_type")
-        print(program_type)
         match program_type:
             case "TAN":
                 match section:

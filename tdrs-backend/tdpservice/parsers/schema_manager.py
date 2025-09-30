@@ -43,7 +43,6 @@ class SchemaManager:
             return ManagerPVResult(records=records, schemas=schemas)
         except Exception as e:
             logger.exception("Exception in SchemaManager.parse_and_validate")
-            print(e)
             generator_args = ErrorGeneratorArgs(
                 record=None,
                 schema=None,
