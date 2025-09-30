@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import { fileInput } from '@uswds/uswds/src/js/components'
@@ -11,14 +11,16 @@ import { fileUploadSections } from '../../reducers/reports'
 import { useEventLogger } from '../../utils/eventLogger'
 import { useFormSubmission } from '../../hooks/useFormSubmission'
 
-function FileUploadForm({ handleCancel, stt, openWidget }) {
-  // The currently selected year from the reportingYears dropdown
-  const selectedYear = useSelector((state) => state.reports.year)
-  // The selected quarter in the dropdown tied to our redux `reports` state
-  const selectedQuarter = useSelector((state) => state.reports.quarter)
-  // The selected File Type value from redux
-  const selectedFileType = useSelector((state) => state.reports.fileType)
-
+function FileUploadForm({
+  handleCancel,
+  stt,
+  year,
+  quarter,
+  fileType,
+  openWidget,
+  localAlert,
+  setLocalAlertState,
+}) {
   // The set of uploaded files in our Redux state
   const files = useSelector((state) => state.reports.submittedFiles)
 
@@ -28,14 +30,6 @@ function FileUploadForm({ handleCancel, stt, openWidget }) {
   // The number of sections this stt submits data for and it's ID
   const stt_id = stt?.id
   const num_sections = stt === undefined ? 4 : stt.num_sections
-
-  // TODO: Move this to Redux state so we can modify this value outside of
-  // this component without having to pass the setter function around
-  const [localAlert, setLocalAlertState] = useState({
-    active: false,
-    type: null,
-    message: null,
-  })
 
   // Use the form submission hook
   const { isSubmitting, executeSubmission } = useFormSubmission()
@@ -78,15 +72,15 @@ function FileUploadForm({ handleCancel, stt, openWidget }) {
       await executeSubmission(() =>
         dispatch(
           submit({
-            quarter: selectedQuarter,
-            year: selectedYear,
+            quarter: quarter,
+            year: year,
             formattedSections,
             logger,
             setLocalAlertState,
             stt: stt_id,
             uploadedFiles,
             user,
-            ssp: selectedFileType === 'ssp-moe',
+            ssp: fileType === 'ssp-moe',
           })
         )
       )
@@ -133,6 +127,9 @@ function FileUploadForm({ handleCancel, stt, openWidget }) {
             <FileUpload
               key={section}
               section={`${index + 1} - ${section}`}
+              year={year}
+              quarter={quarter}
+              fileType={fileType}
               setLocalAlertState={setLocalAlertState}
             />
           )

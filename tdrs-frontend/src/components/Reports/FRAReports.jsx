@@ -56,10 +56,8 @@ const SelectSTT = ({ valid, value, setValue }) => (
   </div>
 )
 
-const SelectReportType = ({ valid, value, setValue, options }) => (
+const SelectReportType = ({ options, setValue }) => (
   <RadioSelect
-    valid={valid}
-    value={value}
     label="File Type"
     fieldName="reportType"
     classes="margin-top-4"
@@ -212,7 +210,6 @@ const SearchForm = ({
               />
             )}
             <SelectReportType
-              value={form.reportType.value}
               options={reportTypeOptions}
               setValue={(val) => setFormValue('reportType', val)}
             />

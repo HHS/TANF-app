@@ -86,13 +86,10 @@ const load = (file, section, input, dropTarget, dispatch) => {
   })
 }
 
-function FileUpload({ section, setLocalAlertState }) {
+function FileUpload({ section, year, quarter, fileType, setLocalAlertState }) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
   // The set of uploaded files in our Redux state
   const files = useSelector((state) => state.reports.submittedFiles)
-  const selectedYear = useSelector((state) => state.reports.year)
-  const selectedQuarter = useSelector((state) => state.reports.quarter)
-  const selectedFileType = useSelector((state) => state.reports.fileType)
 
   const dispatch = useDispatch()
 
@@ -103,7 +100,7 @@ function FileUpload({ section, setLocalAlertState }) {
     'Section ' +
     sectionNumber +
     ' - ' +
-    selectedFileType?.toUpperCase() +
+    fileType?.toUpperCase() +
     ' - ' +
     sectionName
 
@@ -180,14 +177,9 @@ function FileUpload({ section, setLocalAlertState }) {
     if (!error) {
       // Get the correctly encoded file
       const { encodedFile, header } = await tryGetUTF8EncodedFile(result, file)
-      const selectedProgramType = selectedFileType.slice(0, 3).toUpperCase()
+      const selectedProgramType = fileType.slice(0, 3).toUpperCase()
       const { isValid, calendarFiscalResult, programTypeResult } =
-        await validateHeader(
-          header,
-          selectedYear,
-          selectedQuarter,
-          selectedProgramType
-        )
+        await validateHeader(header, year, quarter, selectedProgramType)
       if (isValid) {
         dispatch(upload({ file: encodedFile, section }))
       } else if (!programTypeResult.isValid) {
@@ -200,6 +192,7 @@ function FileUpload({ section, setLocalAlertState }) {
           formattedSelectedProgramType = 'TANF'
         }
         // Handle specific program type cases
+        createFileInputErrorState(input, dropTarget)
         dispatch({
           type: SET_FILE_ERROR,
           payload: {
@@ -242,11 +235,7 @@ function FileUpload({ section, setLocalAlertState }) {
           default:
             error_period = ''
         }
-        try {
-          createFileInputErrorState(input, dropTarget)
-        } catch (e) {
-          console.log('Error: ', e)
-        }
+        createFileInputErrorState(input, dropTarget)
         dispatch({
           type: SET_FILE_ERROR,
           payload: {
@@ -313,7 +302,6 @@ function FileUpload({ section, setLocalAlertState }) {
 
 FileUpload.propTypes = {
   section: PropTypes.string.isRequired,
-  setLocalAlertState: PropTypes.func.isRequired,
 }
 
 export default FileUpload
