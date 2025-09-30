@@ -20,7 +20,7 @@ child_one = TanfDataReportSchema(
     get_partial_dup_fields=get_t2_t3_t5_partial_dup_fields,
     partial_dup_exclusion_query=Q(FAMILY_AFFILIATION__in=(2, 4, 5)),
     preparsing_validators=[
-        category1.t3_m3_child_validator(FIRST_CHILD),
+        category1.program_audit_t3_validator(FIRST_CHILD),
         category1.caseNumberNotEmpty(8, 19),
         category1.or_priority_validators(
             [
@@ -30,60 +30,6 @@ child_one = TanfDataReportSchema(
         ),
     ],
     postparsing_validators=[
-        category3.ifThenAlso(
-            condition_field_name="FAMILY_AFFILIATION",
-            condition_function=category3.isOneOf((1, 2)),
-            result_field_name="RACE_HISPANIC",
-            result_function=category3.isBetween(1, 2, inclusive=True),
-        ),
-        category3.ifThenAlso(
-            condition_field_name="FAMILY_AFFILIATION",
-            condition_function=category3.isOneOf((1, 2)),
-            result_field_name="RACE_AMER_INDIAN",
-            result_function=category3.isBetween(1, 2, inclusive=True),
-        ),
-        category3.ifThenAlso(
-            condition_field_name="FAMILY_AFFILIATION",
-            condition_function=category3.isOneOf((1, 2)),
-            result_field_name="RACE_ASIAN",
-            result_function=category3.isBetween(1, 2, inclusive=True),
-        ),
-        category3.ifThenAlso(
-            condition_field_name="FAMILY_AFFILIATION",
-            condition_function=category3.isOneOf((1, 2)),
-            result_field_name="RACE_BLACK",
-            result_function=category3.isBetween(1, 2, inclusive=True),
-        ),
-        category3.ifThenAlso(
-            condition_field_name="FAMILY_AFFILIATION",
-            condition_function=category3.isOneOf((1, 2)),
-            result_field_name="RACE_HAWAIIAN",
-            result_function=category3.isBetween(1, 2, inclusive=True),
-        ),
-        category3.ifThenAlso(
-            condition_field_name="FAMILY_AFFILIATION",
-            condition_function=category3.isOneOf((1, 2)),
-            result_field_name="RACE_WHITE",
-            result_function=category3.isBetween(1, 2, inclusive=True),
-        ),
-        category3.ifThenAlso(
-            condition_field_name="FAMILY_AFFILIATION",
-            condition_function=category3.isOneOf((1, 2)),
-            result_field_name="RELATIONSHIP_HOH",
-            result_function=category3.isBetween(4, 9, inclusive=True, cast=int),
-        ),
-        category3.ifThenAlso(
-            condition_field_name="FAMILY_AFFILIATION",
-            condition_function=category3.isOneOf((1, 2)),
-            result_field_name="PARENT_MINOR_CHILD",
-            result_function=category3.isOneOf((2, 3)),
-        ),
-        category3.ifThenAlso(
-            condition_field_name="FAMILY_AFFILIATION",
-            condition_function=category3.isEqual(1),
-            result_field_name="EDUCATION_LEVEL",
-            result_function=category3.isNotEqual("99"),
-        ),
         category3.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
             condition_function=category3.isEqual(1),
@@ -116,7 +62,10 @@ child_one = TanfDataReportSchema(
             startIndex=2,
             endIndex=8,
             required=True,
-            validators=[],
+            validators=[
+                category2.dateYearIsLargerThan(2023),
+                category2.dateMonthIsValid(),
+            ],
         ),
         Field(
             item="6",
@@ -186,7 +135,7 @@ child_two = TanfDataReportSchema(
     partial_dup_exclusion_query=Q(FAMILY_AFFILIATION__in=(2, 4, 5)),
     quiet_preparser_errors=is_quiet_preparser_errors(min_length=61),
     preparsing_validators=[
-        category1.t3_m3_child_validator(SECOND_CHILD),
+        category1.program_audit_t3_validator(SECOND_CHILD),
         category1.caseNumberNotEmpty(8, 19),
         category1.or_priority_validators(
             [
@@ -197,60 +146,6 @@ child_two = TanfDataReportSchema(
     ],
     # all conditions from first child should be met, otherwise we don't parse second child
     postparsing_validators=[
-        category3.ifThenAlso(
-            condition_field_name="FAMILY_AFFILIATION",
-            condition_function=category3.isOneOf((1, 2)),
-            result_field_name="RACE_HISPANIC",
-            result_function=category3.isBetween(1, 2, inclusive=True),
-        ),
-        category3.ifThenAlso(
-            condition_field_name="FAMILY_AFFILIATION",
-            condition_function=category3.isOneOf((1, 2)),
-            result_field_name="RACE_AMER_INDIAN",
-            result_function=category3.isBetween(1, 2, inclusive=True),
-        ),
-        category3.ifThenAlso(
-            condition_field_name="FAMILY_AFFILIATION",
-            condition_function=category3.isOneOf((1, 2)),
-            result_field_name="RACE_ASIAN",
-            result_function=category3.isBetween(1, 2, inclusive=True),
-        ),
-        category3.ifThenAlso(
-            condition_field_name="FAMILY_AFFILIATION",
-            condition_function=category3.isOneOf((1, 2)),
-            result_field_name="RACE_BLACK",
-            result_function=category3.isBetween(1, 2, inclusive=True),
-        ),
-        category3.ifThenAlso(
-            condition_field_name="FAMILY_AFFILIATION",
-            condition_function=category3.isOneOf((1, 2)),
-            result_field_name="RACE_HAWAIIAN",
-            result_function=category3.isBetween(1, 2, inclusive=True),
-        ),
-        category3.ifThenAlso(
-            condition_field_name="FAMILY_AFFILIATION",
-            condition_function=category3.isOneOf((1, 2)),
-            result_field_name="RACE_WHITE",
-            result_function=category3.isBetween(1, 2, inclusive=True),
-        ),
-        category3.ifThenAlso(
-            condition_field_name="FAMILY_AFFILIATION",
-            condition_function=category3.isOneOf((1, 2)),
-            result_field_name="RELATIONSHIP_HOH",
-            result_function=category3.isBetween(4, 9, inclusive=True, cast=int),
-        ),
-        category3.ifThenAlso(
-            condition_field_name="FAMILY_AFFILIATION",
-            condition_function=category3.isOneOf((1, 2)),
-            result_field_name="PARENT_MINOR_CHILD",
-            result_function=category3.isOneOf((2, 3)),
-        ),
-        category3.ifThenAlso(
-            condition_field_name="FAMILY_AFFILIATION",
-            condition_function=category3.isEqual(1),
-            result_field_name="EDUCATION_LEVEL",
-            result_function=category3.isNotEqual("99"),
-        ),
         category3.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
             condition_function=category3.isEqual(1),
@@ -283,7 +178,10 @@ child_two = TanfDataReportSchema(
             startIndex=2,
             endIndex=8,
             required=True,
-            validators=[],
+            validators=[
+                category2.dateYearIsLargerThan(2023),
+                category2.dateMonthIsValid(),
+            ],
         ),
         Field(
             item="6",

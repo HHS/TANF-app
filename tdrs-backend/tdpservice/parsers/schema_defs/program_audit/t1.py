@@ -13,7 +13,7 @@ t1 = [
         model=ProgramAudit_T1,
         get_partial_dup_fields=get_t1_t4_partial_dup_fields,
         preparsing_validators=[
-            category1.recordHasLengthOfAtLeast(117),
+            category1.recordHasLengthOfAtLeast(59),
             category1.caseNumberNotEmpty(8, 19),
             category1.or_priority_validators(
                 [
@@ -22,102 +22,7 @@ t1 = [
                 ]
             ),
         ],
-        postparsing_validators=[
-            category3.ifThenAlso(
-                condition_field_name="CASH_AMOUNT",
-                condition_function=category3.isGreaterThan(0),
-                result_field_name="NBR_MONTHS",
-                result_function=category3.isGreaterThan(0),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="CC_AMOUNT",
-                condition_function=category3.isGreaterThan(0),
-                result_field_name="CHILDREN_COVERED",
-                result_function=category3.isGreaterThan(0),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="CC_AMOUNT",
-                condition_function=category3.isGreaterThan(0),
-                result_field_name="CC_NBR_MONTHS",
-                result_function=category3.isGreaterThan(0),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="TRANSP_AMOUNT",
-                condition_function=category3.isGreaterThan(0),
-                result_field_name="TRANSP_NBR_MONTHS",
-                result_function=category3.isGreaterThan(0),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="TRANSITION_SERVICES_AMOUNT",
-                condition_function=category3.isGreaterThan(0),
-                result_field_name="TRANSITION_NBR_MONTHS",
-                result_function=category3.isGreaterThan(0),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="OTHER_AMOUNT",
-                condition_function=category3.isGreaterThan(0),
-                result_field_name="OTHER_NBR_MONTHS",
-                result_function=category3.isGreaterThan(0),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="SANC_REDUCTION_AMT",
-                condition_function=category3.isGreaterThan(0),
-                result_field_name="WORK_REQ_SANCTION",
-                result_function=category3.isOneOf((1, 2)),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="SANC_REDUCTION_AMT",
-                condition_function=category3.isGreaterThan(0),
-                result_field_name="SANC_TEEN_PARENT",
-                result_function=category3.isOneOf((1, 2)),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="SANC_REDUCTION_AMT",
-                condition_function=category3.isGreaterThan(0),
-                result_field_name="NON_COOPERATION_CSE",
-                result_function=category3.isOneOf((1, 2)),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="SANC_REDUCTION_AMT",
-                condition_function=category3.isGreaterThan(0),
-                result_field_name="FAILURE_TO_COMPLY",
-                result_function=category3.isOneOf((1, 2)),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="SANC_REDUCTION_AMT",
-                condition_function=category3.isGreaterThan(0),
-                result_field_name="OTHER_SANCTION",
-                result_function=category3.isOneOf((1, 2)),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="OTHER_TOTAL_REDUCTIONS",
-                condition_function=category3.isGreaterThan(0),
-                result_field_name="FAMILY_CAP",
-                result_function=category3.isOneOf((1, 2)),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="OTHER_TOTAL_REDUCTIONS",
-                condition_function=category3.isGreaterThan(0),
-                result_field_name="REDUCTIONS_ON_RECEIPTS",
-                result_function=category3.isOneOf((1, 2)),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="OTHER_TOTAL_REDUCTIONS",
-                condition_function=category3.isGreaterThan(0),
-                result_field_name="OTHER_NON_SANCTION",
-                result_function=category3.isOneOf((1, 2)),
-            ),
-            category3.sumIsLarger(
-                (
-                    "AMT_FOOD_STAMP_ASSISTANCE",
-                    "AMT_SUB_CC",
-                    "CASH_AMOUNT",
-                    "CC_AMOUNT",
-                    "TRANSP_AMOUNT",
-                ),
-                0,
-            ),
-        ],
+        postparsing_validators=[],
         fields=[
             Field(
                 item="0",
@@ -138,7 +43,7 @@ t1 = [
                 endIndex=8,
                 required=True,
                 validators=[
-                    category2.dateYearIsLargerThan(1998),
+                    category2.dateYearIsLargerThan(2023),  # add month 10 validation
                     category2.dateMonthIsValid(),
                 ],
             ),

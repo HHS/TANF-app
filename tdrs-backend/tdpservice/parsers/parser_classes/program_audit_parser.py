@@ -10,7 +10,6 @@ from tdpservice.parsers.case_consistency_validator import CaseConsistencyValidat
 from tdpservice.parsers.dataclasses import HeaderResult, Position
 from tdpservice.parsers.error_generator import ErrorGeneratorArgs, ErrorGeneratorType
 from tdpservice.parsers.parser_classes.base_parser import BaseParser
-from tdpservice.parsers.schema_defs.utils import ProgramManager
 from tdpservice.parsers.validators import category1
 from tdpservice.parsers.validators.util import value_is_empty
 
@@ -22,7 +21,7 @@ TRAILER_POSITION = Position(0, 7)
 
 
 class ProgramAuditParser(BaseParser):
-    """Parser for TANF, SSP, and Tribal datafiles."""
+    """Parser for Program Audit datafiles."""
 
     def __init__(self, datafile, dfs, section):
         super().__init__(datafile, dfs, section)
@@ -37,7 +36,7 @@ class ProgramAuditParser(BaseParser):
         if not header_result.is_valid:
             return
 
-        self._init_schema_manager("Program Audit")
+        self._init_schema_manager(DataFile.Section.PROGRAM_AUDIT)
         self.schema_manager.update_encrypted_fields(header_result.is_encrypted)
 
         cat4_error_generator = self.error_generator_factory.get_generator(
@@ -53,7 +52,7 @@ class ProgramAuditParser(BaseParser):
         prev_sum = 0
         file_length = len(self.datafile.file)
         offset = 0
-        case_hash = None
+        current_case_id = None
         for row in self.decoder.decode():
             offset += row.raw_length()
             self.current_row = row
@@ -118,20 +117,16 @@ class ProgramAuditParser(BaseParser):
                     record_has_errors = len(record_errors) > 0
                     (
                         should_remove,
-                        case_hash_to_remove,
-                        case_hash,
+                        case_id_to_remove,
+                        current_case_id,
                     ) = self.case_consistency_validator.add_record(
-                        record, schema, row, self.current_row_num, record_has_errors
+                        record, schema, self.current_row_num, record_has_errors
                     )
                     self.unsaved_records.add_record(
-                        case_hash, (record, schema.model), self.current_row_num
+                        current_case_id, (record, schema.model), self.current_row_num
                     )
-                    was_removed = self.unsaved_records.remove_case_due_to_errors(
-                        should_remove, case_hash_to_remove
-                    )
-                    self.case_consistency_validator.update_removed(
-                        case_hash_to_remove, should_remove, was_removed
-                    )
+                    self.add_case_to_remove(should_remove, case_id_to_remove)
+
                     self.dfs.total_number_of_records_in_file += 1
 
             # Add any generated cat4 errors to our error data structure & clear our caches errors list
@@ -164,18 +159,18 @@ class ProgramAuditParser(BaseParser):
             return
 
         should_remove = self.validate_case_consistency()
-        was_removed = self.unsaved_records.remove_case_due_to_errors(
-            should_remove, case_hash
-        )
-        self.case_consistency_validator.update_removed(
-            case_hash, should_remove, was_removed
-        )
+        self.add_case_to_remove(should_remove, current_case_id)
 
         # Only checking "all_created" here because records remained cached if bulk create fails.
         # This is the last chance to successfully create the records.
         all_created = self.bulk_create_records(self.header_count, flush=True)
 
-        self.delete_serialized_records()
+        # Order matters. To ensure we also catch duplicate records, we check for them before deleting cases with cat4
+        # Errors.
+        self._delete_exact_dups()
+        self._delete_partial_dups()
+        self._delete_serialized_cases()
+
         self.create_no_records_created_pre_check_error()
 
         if not all_created:
@@ -194,12 +189,12 @@ class ProgramAuditParser(BaseParser):
         )
         self.case_consistency_validator.clear_errors()
 
-        self.bulk_create_errors(flush=True)
-
         logger.debug(
             f"Cat4 validator cached {self.case_consistency_validator.total_cases_cached} cases and "
             f"validated {self.case_consistency_validator.total_cases_validated} of them."
         )
+
+        self.bulk_create_errors(flush=True)
         self.dfs.save()
 
         return
@@ -209,7 +204,7 @@ class ProgramAuditParser(BaseParser):
         # parse & validate header
         header_row = self.decoder.get_header()
         header_row.row_num = 1
-        header_schema = schema_defs.header
+        header_schema = schema_defs.program_audit.header
         header_schema.prepare(self.datafile)
         header, header_is_valid, header_errors = header_schema.parse_and_validate(
             header_row
@@ -230,7 +225,7 @@ class ProgramAuditParser(BaseParser):
             self.unsaved_parser_errors.update({1: header_errors})
 
         # Grab important fields from header
-        field_values = schema_defs.header.get_field_values_by_names(
+        field_values = schema_defs.program_audit.header.get_field_values_by_names(
             header_row, {"encryption", "tribe_code", "state_fips"}
         )
         is_encrypted = field_values["encryption"] == "E"
@@ -349,7 +344,7 @@ class ProgramAuditParser(BaseParser):
             )
             self._generate_trailer_errors(errors)
         if self.trailer_count == 1 or is_last_line:
-            trailer_schema = schema_defs.trailer
+            trailer_schema = schema_defs.program_audit.trailer
             trailer_schema.prepare(self.datafile)
             (
                 record,
@@ -363,8 +358,3 @@ class ProgramAuditParser(BaseParser):
         if settings.GENERATE_TRAILER_ERRORS:
             self.unsaved_parser_errors.update({"trailer": trailer_errors})
             self.num_errors += len(trailer_errors)
-
-    def delete_serialized_records(self):
-        """Delete all records that have already been serialized to the DB that have cat4 errors."""
-        duplicate_manager = self.case_consistency_validator.duplicate_manager
-        self._delete_serialized_records(duplicate_manager)

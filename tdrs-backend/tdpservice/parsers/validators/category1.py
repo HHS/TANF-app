@@ -208,6 +208,49 @@ def t3_m3_child_validator(which_child):
     )
 
 
+def program_audit_t3_validator(which_child):
+    """T3 child length validator for Program Audit."""
+
+    def t3_first_child_validator_func(row: RawRow, eargs):
+        if not _is_empty(row, 1, 52) and len(row) >= 52:
+            return Result()
+        elif not len(row) >= 52:
+            return Result(
+                valid=False,
+                error_message=f"The first child record is too short at {len(row)} "
+                "characters and must be at least 52 characters.",
+            )
+        else:
+            return Result(valid=False, error_message="The first child record is empty.")
+
+    def t3_second_child_validator_func(row: RawRow, eargs):
+        if (
+            not _is_empty(row, 60, 93)
+            and len(row) >= 93
+            and not _is_empty(row, 8, 19)
+            and not _is_all_zeros(row, 60, 93)
+        ):
+            return Result()
+        elif not len(row) >= 93:
+            return Result(
+                valid=False,
+                error_message=(
+                    f"The second child record is too short at {len(row)} "
+                    "characters and must be at least 93 characters."
+                ),
+            )
+        else:
+            return Result(
+                valid=False, error_message="The second child record is empty."
+            )
+
+    return (
+        t3_first_child_validator_func
+        if which_child == 1
+        else t3_second_child_validator_func
+    )
+
+
 def calendarQuarterIsValid(start=0, end=None):
     """Validate that the calendar quarter value is valid."""
     return make_validator(

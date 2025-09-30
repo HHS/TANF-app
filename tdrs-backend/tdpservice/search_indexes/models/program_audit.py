@@ -5,9 +5,10 @@ import uuid
 from django.db import models
 
 from tdpservice.data_files.models import DataFile
+from tdpservice.search_indexes.models.mixins import LineNumberMixin
 
 
-class ProgramAudit_T1(models.Model):
+class ProgramAudit_T1(LineNumberMixin):
     """Parsed record representing a T1 data submission."""
 
     class Meta:
@@ -32,7 +33,7 @@ class ProgramAudit_T1(models.Model):
     CASH_AMOUNT = models.IntegerField(null=True, blank=False)
 
 
-class ProgramAudit_T2(models.Model):
+class ProgramAudit_T2(LineNumberMixin):
     """Parsed record representing a T2 data submission."""
 
     class Meta:
@@ -60,7 +61,7 @@ class ProgramAudit_T2(models.Model):
     CITIZENSHIP_STATUS = models.IntegerField(null=True, blank=False)
 
 
-class ProgramAudit_T3(models.Model):
+class ProgramAudit_T3(LineNumberMixin):
     """Parsed record representing a T3 data submission."""
 
     class Meta:

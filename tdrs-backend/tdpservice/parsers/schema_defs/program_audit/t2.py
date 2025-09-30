@@ -17,7 +17,7 @@ t2 = [
         get_partial_dup_fields=get_t2_t3_t5_partial_dup_fields,
         partial_dup_exclusion_query=Q(FAMILY_AFFILIATION__in=(3, 5)),
         preparsing_validators=[
-            category1.recordHasLengthOfAtLeast(156),
+            category1.recordHasLengthOfAtLeast(58),
             category1.caseNumberNotEmpty(8, 19),
             category1.or_priority_validators(
                 [
@@ -29,121 +29,10 @@ t2 = [
         postparsing_validators=[
             category3.ifThenAlso(
                 condition_field_name="FAMILY_AFFILIATION",
-                condition_function=category3.isBetween(1, 3, inclusive=True),
-                result_field_name="RACE_HISPANIC",
-                result_function=category3.isBetween(1, 2, inclusive=True),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="FAMILY_AFFILIATION",
-                condition_function=category3.isBetween(1, 3, inclusive=True),
-                result_field_name="RACE_AMER_INDIAN",
-                result_function=category3.isBetween(1, 2, inclusive=True),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="FAMILY_AFFILIATION",
-                condition_function=category3.isBetween(1, 3, inclusive=True),
-                result_field_name="RACE_ASIAN",
-                result_function=category3.isBetween(1, 2, inclusive=True),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="FAMILY_AFFILIATION",
-                condition_function=category3.isBetween(1, 3, inclusive=True),
-                result_field_name="RACE_BLACK",
-                result_function=category3.isBetween(1, 2, inclusive=True),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="FAMILY_AFFILIATION",
-                condition_function=category3.isBetween(1, 3, inclusive=True),
-                result_field_name="RACE_HAWAIIAN",
-                result_function=category3.isBetween(1, 2, inclusive=True),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="FAMILY_AFFILIATION",
-                condition_function=category3.isBetween(1, 3, inclusive=True),
-                result_field_name="RACE_WHITE",
-                result_function=category3.isBetween(1, 2, inclusive=True),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="FAMILY_AFFILIATION",
-                condition_function=category3.isBetween(1, 3, inclusive=True),
-                result_field_name="MARITAL_STATUS",
-                result_function=category3.isBetween(1, 5, inclusive=True),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="FAMILY_AFFILIATION",
-                condition_function=category3.isBetween(1, 2, inclusive=True),
-                result_field_name="PARENT_MINOR_CHILD",
-                result_function=category3.isBetween(1, 3, inclusive=True),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="FAMILY_AFFILIATION",
-                condition_function=category3.isBetween(1, 3, inclusive=True),
-                result_field_name="EDUCATION_LEVEL",
-                result_function=category3.orValidators(
-                    [
-                        category3.isBetween(0, 16, inclusive=True, cast=int),
-                        category3.isEqual(98, cast=int),
-                    ],
-                    if_result=True,
-                ),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="FAMILY_AFFILIATION",
                 condition_function=category3.isEqual(1),
                 result_field_name="CITIZENSHIP_STATUS",
                 result_function=category3.isOneOf((1, 2, 3)),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="FAMILY_AFFILIATION",
-                condition_function=category3.isBetween(1, 3, inclusive=True),
-                result_field_name="COOPERATION_CHILD_SUPPORT",
-                result_function=category3.isOneOf((1, 2, 9)),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="FAMILY_AFFILIATION",
-                condition_function=category3.isBetween(1, 3, inclusive=True),
-                result_field_name="EMPLOYMENT_STATUS",
-                result_function=category3.isBetween(1, 3, inclusive=True),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="FAMILY_AFFILIATION",
-                condition_function=category3.isOneOf((1, 2)),
-                result_field_name="WORK_ELIGIBLE_INDICATOR",
-                result_function=category3.orValidators(
-                    [
-                        category3.isBetween(1, 9, inclusive=True, cast=int),
-                        category3.isOneOf(("11", "12")),
-                    ],
-                    if_result=True,
-                ),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="FAMILY_AFFILIATION",
-                condition_function=category3.isOneOf((1, 2)),
-                result_field_name="WORK_PART_STATUS",
-                result_function=category3.isOneOf(
-                    ["01", "02", "05", "07", "09", "15", "17", "18", "19", "99"]
-                ),
-            ),
-            category3.suppress_for_fra_pilot_state(
-                "WORK_ELIGIBLE_INDICATOR",
-                "WORK_PART_STATUS",
-                category3.ifThenAlso(
-                    condition_field_name="WORK_ELIGIBLE_INDICATOR",
-                    condition_function=category3.isBetween(
-                        1, 5, inclusive=True, cast=int
-                    ),
-                    result_field_name="WORK_PART_STATUS",
-                    result_function=category3.isNotEqual("99"),
-                ),
-            ),
-            category3.ifThenAlso(
-                condition_field_name="WORK_ELIGIBLE_INDICATOR",
-                condition_function=category3.isBetween(1, 5, inclusive=True, cast=int),
-                result_field_name="SSN",
-                result_function=category3.validateSSN(),
-            ),
-            category3.validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE(),
+            )
         ],
         fields=[
             Field(
@@ -165,7 +54,7 @@ t2 = [
                 endIndex=8,
                 required=True,
                 validators=[
-                    category2.dateYearIsLargerThan(1998),
+                    category2.dateYearIsLargerThan(2023),
                     category2.dateMonthIsValid(),
                 ],
             ),
