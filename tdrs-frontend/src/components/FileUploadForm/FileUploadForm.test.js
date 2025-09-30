@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 import { PREVIEW_HEADING_CLASS } from '../FileUpload/utils'
 
-import FileUploadForm from './FileUploadForm.test'
+import FileUploadForm from './FileUploadForm'
 
 describe('FileUploadForm', () => {
   const initialState = {
@@ -54,11 +54,33 @@ describe('FileUploadForm', () => {
   const mockStore = configureStore([thunk])
   const handleCancel = jest.fn()
 
+  const getUploadProps = () => {
+    return {
+      stt: initialState.reports.stt,
+      year: '2021',
+      quarter: 'Q3',
+      fileType: 'tanf',
+      openWidget: jest.fn(),
+      localAlert: {},
+      setLocalAlertState: jest.fn(),
+    }
+  }
+
   it('should render four inputs for uploading files', () => {
     const store = mockStore(initialState)
+    const props = getUploadProps()
     const { container } = render(
       <Provider store={store}>
-        <FileUploadForm handleCancel={handleCancel} header="Some header" />
+        <FileUploadForm
+          handleCancel={handleCancel}
+          stt={props.stt}
+          year={props.year}
+          quarter={props.quarter}
+          fileType={props.fileType}
+          openWidget={props.openWidget}
+          localAlert={props.localAlert}
+          setLocalAlertState={props.setLocalAlertState}
+        />
       </Provider>
     )
 
@@ -72,9 +94,19 @@ describe('FileUploadForm', () => {
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
+    const props = getUploadProps()
     const { getByLabelText, getByText, container } = render(
       <Provider store={store}>
-        <FileUploadForm handleCancel={handleCancel} header="Some header" />
+        <FileUploadForm
+          handleCancel={handleCancel}
+          stt={props.stt}
+          year={props.year}
+          quarter={props.quarter}
+          fileType={props.fileType}
+          openWidget={props.openWidget}
+          localAlert={props.localAlert}
+          setLocalAlertState={props.setLocalAlertState}
+        />
       </Provider>
     )
 
@@ -102,9 +134,19 @@ describe('FileUploadForm', () => {
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
-    const { getByLabelText, getByText, container } = render(
+    const props = getUploadProps()
+    const { getByLabelText, container } = render(
       <Provider store={store}>
-        <FileUploadForm handleCancel={handleCancel} header="Some header" />
+        <FileUploadForm
+          handleCancel={handleCancel}
+          stt={props.stt}
+          year={props.year}
+          quarter={props.quarter}
+          fileType={props.fileType}
+          openWidget={props.openWidget}
+          localAlert={props.localAlert}
+          setLocalAlertState={props.setLocalAlertState}
+        />
       </Provider>
     )
 
@@ -123,7 +165,6 @@ describe('FileUploadForm', () => {
       })
     })
 
-    //await waitFor(() => expect(getByText('test.html')).toBeInTheDocument()))
     await waitFor(() => {
       expect(store.dispatch).toHaveBeenCalledTimes(3)
       expect(container.querySelectorAll('.has-invalid-file').length).toBe(1)
@@ -135,9 +176,19 @@ describe('FileUploadForm', () => {
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
+    const props = getUploadProps()
     const { container } = render(
       <Provider store={store}>
-        <FileUploadForm handleCancel={handleCancel} header="Some header" />
+        <FileUploadForm
+          handleCancel={handleCancel}
+          stt={props.stt}
+          year={props.year}
+          quarter={props.quarter}
+          fileType={props.fileType}
+          openWidget={props.openWidget}
+          localAlert={props.localAlert}
+          setLocalAlertState={props.setLocalAlertState}
+        />
       </Provider>
     )
     setTimeout(() => {
@@ -186,9 +237,19 @@ describe('FileUploadForm', () => {
       },
     })
 
+    const props = getUploadProps()
     const { container } = render(
       <Provider store={store}>
-        <FileUploadForm handleCancel={handleCancel} header="Some header" />
+        <FileUploadForm
+          handleCancel={handleCancel}
+          stt={props.stt}
+          year={props.year}
+          quarter={props.quarter}
+          fileType={props.fileType}
+          openWidget={props.openWidget}
+          localAlert={props.localAlert}
+          setLocalAlertState={props.setLocalAlertState}
+        />
       </Provider>
     )
 
@@ -199,9 +260,19 @@ describe('FileUploadForm', () => {
 
   it('should render a div without class "usa-form-group--error" if there is NOT an error', () => {
     const store = mockStore(initialState)
+    const props = getUploadProps()
     const { container } = render(
       <Provider store={store}>
-        <FileUploadForm handleCancel={handleCancel} header="Some header" />
+        <FileUploadForm
+          handleCancel={handleCancel}
+          stt={props.stt}
+          year={props.year}
+          quarter={props.quarter}
+          fileType={props.fileType}
+          openWidget={props.openWidget}
+          localAlert={props.localAlert}
+          setLocalAlertState={props.setLocalAlertState}
+        />
       </Provider>
     )
 
@@ -216,9 +287,19 @@ describe('FileUploadForm', () => {
       Promise.resolve({ data: { id: 1 } })
     )
 
+    const props = getUploadProps()
     const { getByLabelText, getByText } = render(
       <Provider store={store}>
-        <FileUploadForm handleCancel={handleCancel} header="Some header" />
+        <FileUploadForm
+          handleCancel={handleCancel}
+          stt={props.stt}
+          year={props.year}
+          quarter={props.quarter}
+          fileType={props.fileType}
+          openWidget={props.openWidget}
+          localAlert={props.localAlert}
+          setLocalAlertState={props.setLocalAlertState}
+        />
       </Provider>
     )
 
