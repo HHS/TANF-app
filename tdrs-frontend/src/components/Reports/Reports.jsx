@@ -198,6 +198,7 @@ function Reports() {
     setFileTypeInputValue(value)
     if (value === 'program-integrity-audit') {
       setQuarterInputValue('')
+      setYearInputValue('')
     }
   }
 
@@ -292,7 +293,11 @@ function Reports() {
                   <option value="" disabled hidden>
                     - Select Fiscal Year -
                   </option>
-                  {constructYearOptions()}
+                  {constructYearOptions(
+                    fileTypeInputValue === 'program-integrity-audit'
+                      ? 2024
+                      : 2021
+                  )}
                 </select>
               </label>
             </div>
@@ -380,7 +385,7 @@ function Reports() {
 
             {!isRegionalStaff && selectedSubmissionTab === 1 && (
               <FileUploadForm
-                stt={stt}
+                stt={fileTypeStt}
                 year={yearInputValue}
                 quarter={quarterInputValue}
                 fileType={fileTypeInputValue}
@@ -402,7 +407,7 @@ function Reports() {
                 filterValues={{
                   quarter: quarterInputValue,
                   year: yearInputValue,
-                  stt: stt,
+                  stt: fileTypeStt,
                   file_type: fileTypeInputValue,
                 }}
                 reprocessedState={{
