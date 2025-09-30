@@ -343,7 +343,7 @@ function Reports() {
         yearInputValue &&
         (quarterInputValue ||
           fileTypeInputValue === 'program-integrity-audit') &&
-        (canSelectSTT ? stt : true) && (
+        fileTypeStt && (
           <>
             <hr />
             <h2
@@ -351,7 +351,7 @@ function Reports() {
               className="font-serif-xl margin-top-5 margin-bottom-0 text-normal"
               tabIndex="-1"
             >
-              {`${currentStt} - ${fileTypeInputValue.toUpperCase()} - Fiscal Year ${yearInputValue} - ${
+              {`${fileTypeStt.name} - ${fileTypeInputValue.toUpperCase()} - Fiscal Year ${yearInputValue} - ${
                 quarters[quarterInputValue]
               }`}
             </h2>
