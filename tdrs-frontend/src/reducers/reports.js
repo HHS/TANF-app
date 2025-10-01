@@ -8,7 +8,10 @@ import {
   SET_FILE_LIST,
   CLEAR_FILE_LIST,
   SET_FILE_SUBMITTED,
+  REINITIALIZE_SUBMITTED_FILES,
 } from '../actions/reports'
+
+import { programIntegrityAuditLabels } from '../components/Reports/utils'
 
 const getFileIndex = (files, section) =>
   files.findIndex((currentFile) => currentFile.section.includes(section))
@@ -83,6 +86,24 @@ const initialState = {
 const reports = (state = initialState, action) => {
   const { type, payload = {} } = action
   switch (type) {
+    case REINITIALIZE_SUBMITTED_FILES: {
+      const { fileType } = payload
+      const sections =
+        fileType === 'program-integrity-audit'
+          ? programIntegrityAuditLabels
+          : fileUploadSections
+
+      return {
+        ...state,
+        submittedFiles: sections.map((section) => ({
+          section,
+          fileName: null,
+          error: null,
+          uuid: null,
+          fileType: null,
+        })),
+      }
+    }
     case SET_FILE: {
       const { file, fileName, section, uuid, fileType } = payload
       const updatedFiles = getUpdatedFiles({
@@ -119,10 +140,20 @@ const reports = (state = initialState, action) => {
       return { ...state, submittedFiles: updatedFiles }
     }
     case CLEAR_FILE_LIST: {
+      const { fileType } = payload
       return {
         ...state,
         files: initialState.files,
-        submittedFiles: initialState.submittedFiles,
+        submittedFiles:
+          fileType !== 'program-integrity-audit'
+            ? initialState.submittedFiles
+            : programIntegrityAuditLabels.map((section) => ({
+                section,
+                fileName: null,
+                error: null,
+                uuid: null,
+                fileType: null,
+              })),
       }
     }
     case SET_FILE_ERROR: {

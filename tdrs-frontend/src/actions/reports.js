@@ -23,17 +23,25 @@ export const SET_FILE_LIST = 'SET_FILE_LIST'
 export const FETCH_FILE_LIST_ERROR = 'FETCH_FILE_LIST_ERROR'
 export const DOWNLOAD_DIALOG_OPEN = 'DOWNLOAD_DIALOG_OPEN'
 
+export const REINITIALIZE_SUBMITTED_FILES = 'REINITIALIZE_SUBMITTED_FILES'
+
+export const reinitializeSubmittedFiles = (fileType) => (dispatch) => {
+  dispatch({ type: REINITIALIZE_SUBMITTED_FILES, payload: { fileType } })
+}
+
 export const clearFile =
   ({ section }) =>
   (dispatch) => {
     dispatch({ type: CLEAR_FILE, payload: { section } })
   }
 
-export const clearFileList = () => (dispatch) => {
-  // Clean up any DOM error states before clearing Redux state
-  removeFileInputErrorState()
-  dispatch({ type: CLEAR_FILE_LIST })
-}
+export const clearFileList =
+  ({ fileType }) =>
+  (dispatch) => {
+    // Clean up any DOM error states before clearing Redux state
+    removeFileInputErrorState()
+    dispatch({ type: CLEAR_FILE_LIST, payload: { fileType } })
+  }
 
 export const clearError =
   ({ section }) =>
@@ -166,7 +174,7 @@ export const submit =
         section: file.section,
         year,
         stt,
-        quarter,
+        quarter: quarter ? quarter : file.quarter,
         ssp,
       }
       for (const [key, value] of Object.entries(dataFile)) {

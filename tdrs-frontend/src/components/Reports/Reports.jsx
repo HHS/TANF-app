@@ -1,112 +1,38 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import classNames from 'classnames'
 
 import { clearFileList } from '../../actions/reports'
-import FileUploadForm from '../FileUploadForm'
 import STTComboBox from '../STTComboBox'
 import { fetchSttList } from '../../actions/sttList'
 import Modal from '../Modal'
-import SegmentedControl from '../SegmentedControl'
-import SubmissionHistory from '../SubmissionHistory'
 import ReprocessedModal from '../SubmissionHistory/ReprocessedModal'
 import {
   selectPrimaryUserRole,
   accountIsRegionalStaff,
 } from '../../selectors/auth'
-import { quarters, constructYearOptions } from './utils'
-import { openFeedbackWidget } from '../../reducers/feedbackWidget'
 import RadioSelect from '../Form/RadioSelect'
+import TanfSspReports from './TanfSspReports'
+import ProgramIntegrityAuditReports from './ProgramIntegrityAuditReports'
+import { ReportsProvider, useReportsContext } from './ReportsContext'
 
-const FiscalQuarterExplainer = () => (
-  <table className="usa-table usa-table--striped margin-top-4 desktop:width-tablet mobile:width-full">
-    <caption>TANF/SSP Data Reporting Guidelines</caption>
-    <thead>
-      <tr>
-        <th>Fiscal Year (FY) &amp; Quarter (Q)</th>
-        <th>Calendar Period</th>
-        <th>Due Date</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>FY Q1</td>
-        <td>Oct 1 - Dec 31</td>
-        <td>February 14</td>
-      </tr>
-      <tr>
-        <td>FY Q2</td>
-        <td>Jan 1 - Mar 31</td>
-        <td>May 15</td>
-      </tr>
-      <tr>
-        <td>FY Q3</td>
-        <td>Apr 1 - Jun 30</td>
-        <td>August 14</td>
-      </tr>
-      <tr>
-        <td>FY Q4</td>
-        <td>Jul 1 - Sep 30</td>
-        <td>November 14</td>
-      </tr>
-    </tbody>
-  </table>
-)
+function ReportsContent() {
+  const {
+    fileTypeInputValue,
+    sttInputValue,
+    setSttInputValue,
+    errorModalVisible,
+    setErrorModalVisible,
+    reprocessedModalVisible,
+    setReprocessedModalVisible,
+    reprocessedDate,
+    handleClear,
+    selectFileType,
+    setLocalAlertState,
+  } = useReportsContext()
 
-const ProgramIntegrityAuditExplainer = () => {
-  const currentYear = new Date().getFullYear()
-  return (
-    <>
-      <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
-        <div className="usa-alert usa-alert--slim usa-alert--info">
-          <div className="usa-alert__body" role="alert">
-            <p className="usa-alert__text">
-              For Additional guidance please refer to the Program Instruction
-              for this new reporting requirement.
-            </p>
-          </div>
-        </div>
-      </div>
-      <table className="usa-table usa-table--striped">
-        <caption>Audit Reporting</caption>
-        <thead>
-          <tr>
-            <th>Fiscal Year (FY)</th>
-            <th>Due Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Array.from({ length: currentYear - 2024 }).map((_, index) => (
-            <tr key={index}>
-              <td>FY {currentYear - (index + 1)}</td>
-              <td>November 14, {currentYear - index}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </>
-  )
-}
-
-/**
- * Reports is the home page for users to file a report.
- * The user can select a year
- * for the report that they would like to upload and then click on
- * `Search` to begin uploading files for that year.
- */
-function Reports() {
-  const [yearInputValue, setYearInputValue] = useState('')
-  const [quarterInputValue, setQuarterInputValue] = useState('')
-  const [fileTypeInputValue, setFileTypeInputValue] = useState('tanf')
-
-  // The selected stt in the dropdown tied to our redux `reports` state
-  const selectedStt = useSelector((state) => state.reports.stt)
-  const [sttInputValue, setSttInputValue] = useState(selectedStt)
-
-  // The logged in user saved in our redux `auth` state object
-  const user = useSelector((state) => {
-    return state.auth.user
-  })
+  const dispatch = useDispatch()
+  const user = useSelector((state) => state.auth.user)
   const isOFAAdmin = useSelector(selectPrimaryUserRole)?.name === 'OFA Admin'
   const isDIGITTeam = useSelector(selectPrimaryUserRole)?.name === 'DIGIT Team'
   const isSystemAdmin =
@@ -117,21 +43,26 @@ function Reports() {
 
   const sttList = useSelector((state) => state?.stts?.sttList)
 
-  const [errorModalVisible, setErrorModalVisible] = useState(false)
-  const files = useSelector((state) => state.reports.submittedFiles)
-  const uploadedFiles = files?.filter((file) => file.fileName && !file.id)
-
   const userProfileStt = user?.stt?.name
 
-  const dispatch = useDispatch()
-  const [isUploadReportToggled, setIsToggled] = useState(false)
+  const headerRef = useRef(null)
+  useEffect(() => {
+    if (headerRef && headerRef.current) {
+      headerRef.current.focus()
+    }
+  }, [])
 
-  const [reprocessedModalVisible, setReprocessedModalVisible] = useState(false)
-  const [reprocessedDate, setReprocessedDate] = useState('')
+  useEffect(() => {
+    if (sttList.length === 0) {
+      dispatch(fetchSttList())
+    }
+  }, [dispatch, sttList])
+
+  const redux_stt = useSelector((state) => state.reports.stt)
 
   const currentStt =
     isOFAAdmin || isDIGITTeam || isSystemAdmin || isRegionalStaff
-      ? selectedStt
+      ? redux_stt
       : userProfileStt
 
   const stt = sttList?.find((stt) => stt?.name === currentStt)
@@ -148,30 +79,6 @@ function Reports() {
       !currentStt) ||
     (isRegionalStaff && user?.regions?.length === 0)
 
-  // Ensure newly rendered header is focused,
-  // else it won't be read be screen readers.
-  const headerRef = useRef(null)
-  useEffect(() => {
-    if (headerRef && headerRef.current) {
-      headerRef.current.focus()
-    }
-  }, [])
-
-  const [selectedSubmissionTab, setSelectedSubmissionTab] = useState(1)
-
-  // Non-OFA Admin users will be unable to select an STT
-  // prefer => `auth.user.stt`
-
-  const handleOpenFeedbackWidget = () => {
-    dispatch(openFeedbackWidget(fileTypeInputValue))
-  }
-
-  useEffect(() => {
-    if (sttList.length === 0) {
-      dispatch(fetchSttList())
-    }
-  }, [dispatch, sttList])
-
   const radio_options = [
     { label: 'TANF', value: 'tanf' },
     ...(fileTypeStt?.ssp ? [{ label: 'SSP-MOE', value: 'ssp-moe' }] : []),
@@ -181,47 +88,6 @@ function Reports() {
     },
   ]
 
-  const handleClear = () => {
-    setIsToggled(false)
-    dispatch(clearFileList())
-    setYearInputValue('')
-    setQuarterInputValue('')
-  }
-
-  const [localAlert, setLocalAlertState] = useState({
-    active: false,
-    type: null,
-    message: null,
-  })
-
-  const selectFileType = (value) => {
-    setFileTypeInputValue(value)
-    if (value === 'program-integrity-audit') {
-      setQuarterInputValue('')
-      setYearInputValue('')
-    }
-  }
-
-  const selectYear = ({ target: { value } }) => {
-    setYearInputValue(value)
-    setLocalAlertState({
-      active: false,
-      type: null,
-      message: null,
-    })
-    dispatch(clearFileList())
-  }
-
-  const selectQuarter = ({ target: { value } }) => {
-    setQuarterInputValue(value)
-    setLocalAlertState({
-      active: false,
-      type: null,
-      message: null,
-    })
-    dispatch(clearFileList())
-  }
-
   const selectStt = (value) => {
     setSttInputValue(value)
     setLocalAlertState({
@@ -229,15 +95,14 @@ function Reports() {
       type: null,
       message: null,
     })
-    clearFileList()
-    dispatch(clearFileList())
+    dispatch(clearFileList({ fileType: fileTypeInputValue }))
   }
 
   return (
     <div className="page-container" style={{ position: 'relative' }}>
       <div
         className={classNames({
-          'border-bottom': isUploadReportToggled,
+          'border-bottom': fileTypeInputValue,
         })}
       >
         {missingStt && (
@@ -272,152 +137,20 @@ function Reports() {
             />
           </div>
         </div>
-        <div className="grid-row grid-gap">
-          <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-auto">
-            <div
-              className={classNames('usa-form-group maxw-mobile margin-top-4')}
-            >
-              <label
-                className="usa-label text-bold margin-top-4"
-                htmlFor="reportingYears"
-              >
-                Fiscal Year (October - September)*
-                <select
-                  className={classNames('usa-select maxw-mobile')}
-                  name="reportingYears"
-                  id="reportingYears"
-                  onChange={selectYear}
-                  value={yearInputValue}
-                  aria-describedby="years-error-alert"
-                >
-                  <option value="" disabled hidden>
-                    - Select Fiscal Year -
-                  </option>
-                  {constructYearOptions(
-                    fileTypeInputValue === 'program-integrity-audit'
-                      ? 2024
-                      : 2021
-                  )}
-                </select>
-              </label>
-            </div>
-            {fileTypeInputValue !== 'program-integrity-audit' && (
-              <div
-                className={classNames(
-                  'usa-form-group maxw-mobile margin-top-4'
-                )}
-              >
-                <label
-                  className="usa-label text-bold margin-top-4"
-                  htmlFor="quarter"
-                >
-                  Fiscal Quarter*
-                  <select
-                    className={classNames('usa-select maxw-mobile')}
-                    name="quarter"
-                    id="quarter"
-                    onChange={selectQuarter}
-                    value={quarterInputValue}
-                    aria-describedby="quarter-error-alert"
-                  >
-                    <option value="" disabled hidden>
-                      - Select Quarter -
-                    </option>
-                    {Object.entries(quarters).map(
-                      ([quarter, quarterDescription]) => (
-                        <option value={quarter} key={quarter}>
-                          {quarterDescription}
-                        </option>
-                      )
-                    )}
-                  </select>
-                </label>
-              </div>
-            )}
-          </div>
-          <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
-            {fileTypeInputValue === 'program-integrity-audit' ? (
-              <ProgramIntegrityAuditExplainer />
-            ) : (
-              <FiscalQuarterExplainer />
-            )}
-          </div>
-        </div>
-      </div>
-      {fileTypeInputValue &&
-        yearInputValue &&
-        (quarterInputValue ||
-          fileTypeInputValue === 'program-integrity-audit') &&
-        fileTypeStt && (
-          <>
-            <hr />
-            <h2
-              ref={headerRef}
-              className="font-serif-xl margin-top-5 margin-bottom-0 text-normal"
-              tabIndex="-1"
-            >
-              {`${fileTypeStt.name} - ${fileTypeInputValue.toUpperCase()} - Fiscal Year ${yearInputValue} - ${
-                quarters[quarterInputValue]
-              }`}
-            </h2>
 
-            {isRegionalStaff ? (
-              <h3 className="font-sans-lg margin-top-5 margin-bottom-2 text-bold">
-                Submission History
-              </h3>
-            ) : (
-              <SegmentedControl
-                buttons={[
-                  {
-                    id: 1,
-                    label: 'Current Submission',
-                    onSelect: () => setSelectedSubmissionTab(1),
-                  },
-                  {
-                    id: 2,
-                    label: 'Submission History',
-                    onSelect: () => setSelectedSubmissionTab(2),
-                  },
-                ]}
-                selected={selectedSubmissionTab}
-              />
-            )}
-
-            {!isRegionalStaff && selectedSubmissionTab === 1 && (
-              <FileUploadForm
-                stt={fileTypeStt}
-                year={yearInputValue}
-                quarter={quarterInputValue}
-                fileType={fileTypeInputValue}
-                handleCancel={() => {
-                  if (uploadedFiles.length > 0) {
-                    setErrorModalVisible(true)
-                  } else {
-                    handleClear()
-                  }
-                }}
-                openWidget={handleOpenFeedbackWidget}
-                localAlert={localAlert}
-                setLocalAlertState={setLocalAlertState}
-              />
-            )}
-
-            {(isRegionalStaff || selectedSubmissionTab === 2) && (
-              <SubmissionHistory
-                filterValues={{
-                  quarter: quarterInputValue,
-                  year: yearInputValue,
-                  stt: fileTypeStt,
-                  file_type: fileTypeInputValue,
-                }}
-                reprocessedState={{
-                  setModalVisible: setReprocessedModalVisible,
-                  setDate: setReprocessedDate,
-                }}
-              />
-            )}
-          </>
+        {fileTypeInputValue === 'program-integrity-audit' ? (
+          <ProgramIntegrityAuditReports
+            stt={stt ? stt : fileTypeStt}
+            isRegionalStaff={isRegionalStaff}
+          />
+        ) : (
+          <TanfSspReports
+            stt={stt ? stt : fileTypeStt}
+            isRegionalStaff={isRegionalStaff}
+          />
         )}
+      </div>
+
       <Modal
         title="Files Not Submitted"
         message="Your uploaded files have not been submitted. Clicking 'OK' will discard your changes and remove any uploaded files."
@@ -446,6 +179,14 @@ function Reports() {
         setModalVisible={setReprocessedModalVisible}
       />
     </div>
+  )
+}
+
+function Reports() {
+  return (
+    <ReportsProvider>
+      <ReportsContent />
+    </ReportsProvider>
   )
 }
 

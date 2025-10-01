@@ -182,7 +182,8 @@ export const tryGetUTF8EncodedFile = async function (fileBytes, file) {
 const validateCalendarToFiscalYearQuarter = (
   header,
   selectedFiscalYear,
-  selectedFiscalQuarter
+  selectedFiscalQuarter,
+  selectedProgramType
 ) => {
   const CalendarToFiscalYearQuarter = (calendarYear, calendarQuarter) => {
     let quarter = parseInt(calendarQuarter)
@@ -206,7 +207,9 @@ const validateCalendarToFiscalYearQuarter = (
     isValid:
       yearQuarter &&
       fileFiscalYear === selectedFiscalYear &&
-      fileFiscalQuarter === selectedFiscalQuarter.slice(1, 2),
+      selectedProgramType === 'PRO'
+        ? true
+        : fileFiscalQuarter === selectedFiscalQuarter.slice(1, 2),
     fileFiscalYear,
     fileFiscalQuarter,
   }
@@ -215,11 +218,28 @@ const validateCalendarToFiscalYearQuarter = (
 const validateProgramType = (header, selectedProgramType) => {
   const progTypeRegex = '(TAN|tan|SSP|ssp)'
   const progType = header.match(progTypeRegex)
+
+  if (!progType) {
+    return {
+      isValid: false,
+      progType: null,
+    }
+  }
+
+  const fileProgType = progType[0].toUpperCase()
+
+  // Program Integrity Audit (PRO) accepts TANF files
+  if (selectedProgramType === 'PRO' && fileProgType === 'TAN') {
+    return {
+      isValid: true,
+      progType: fileProgType,
+    }
+  }
+
+  // Standard validation: file type must match selected type
   return {
-    isValid: !!progType
-      ? progType[0].toUpperCase() === selectedProgramType
-      : false,
-    progType: !!progType ? progType[0] : null,
+    isValid: fileProgType === selectedProgramType,
+    progType: fileProgType,
   }
 }
 
@@ -232,10 +252,10 @@ export const validateHeader = async function (
   const calendarFiscalResult = validateCalendarToFiscalYearQuarter(
     header,
     selectedFiscalYear,
-    selectedFiscalQuarter
+    selectedFiscalQuarter,
+    selectedProgramType
   )
   const programTypeResult = validateProgramType(header, selectedProgramType)
-  console.log(JSON.stringify(selectedProgramType, null, 2))
   return {
     isValid: calendarFiscalResult.isValid && programTypeResult.isValid,
     calendarFiscalResult,
