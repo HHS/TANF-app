@@ -2,9 +2,9 @@ import React from 'react'
 import { fireEvent, waitFor, render } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import configureStore from '../../configureStore'
-import SectionFileUploadForm from './SectionFileUploadForm'
+import QuarterFileUploadForm from './QuarterFileUploadForm'
 import { ReportsProvider } from '../Reports/ReportsContext'
-import { fileUploadSections } from '../../reducers/reports'
+import * as reportsActions from '../../actions/reports'
 import { useFormSubmission } from '../../hooks/useFormSubmission'
 import { useEventLogger } from '../../utils/eventLogger'
 
@@ -20,7 +20,14 @@ jest.mock('@uswds/uswds/src/js/components', () => ({
 // Mock FileUpload component
 jest.mock('../FileUpload', () => ({
   __esModule: true,
-  default: ({ section, year, quarter, fileType, label, setLocalAlertState }) => (
+  default: ({
+    section,
+    year,
+    quarter,
+    fileType,
+    label,
+    setLocalAlertState,
+  }) => (
     <div data-testid={`file-upload-${section}`}>
       <label>{label}</label>
       <input
@@ -56,7 +63,10 @@ const initialState = {
 
 const mockStore = (initial = initialState) => configureStore(initial)
 
-describe('SectionFileUploadForm', () => {
+const makeTestFile = (name, contents = ['test'], type = 'text/plain') =>
+  new File(contents, name, { type })
+
+describe('QuarterFileUploadForm', () => {
   let mockExecuteSubmission
   let mockLogger
   let mockDispatch
@@ -85,46 +95,35 @@ describe('SectionFileUploadForm', () => {
     jest.clearAllMocks()
   })
 
-  const renderComponent = (storeState = initialState, stt = { id: 1, num_sections: 4 }) => {
+  const renderComponent = (storeState = initialState, stt = { id: 1 }) => {
     const store = mockStore(storeState)
     mockDispatch = jest.spyOn(store, 'dispatch')
 
     return render(
       <Provider store={store}>
         <ReportsProvider>
-          <SectionFileUploadForm stt={stt} />
+          <QuarterFileUploadForm stt={stt} />
         </ReportsProvider>
       </Provider>
     )
   }
 
   describe('Rendering', () => {
-    it('renders all four section file upload inputs by default', () => {
+    it('renders all four quarter file upload inputs', () => {
       const { getByTestId } = renderComponent()
 
-      expect(getByTestId('file-upload-Active Case Data')).toBeInTheDocument()
-      expect(getByTestId('file-upload-Closed Case Data')).toBeInTheDocument()
-      expect(getByTestId('file-upload-Aggregate Data')).toBeInTheDocument()
-      expect(getByTestId('file-upload-Stratum Data')).toBeInTheDocument()
-    })
-
-    it('renders correct number of sections based on stt.num_sections', () => {
-      const stt = { id: 1, num_sections: 2 }
-      const { getByTestId, queryByTestId } = renderComponent(initialState, stt)
-
-      expect(getByTestId('file-upload-Active Case Data')).toBeInTheDocument()
-      expect(getByTestId('file-upload-Closed Case Data')).toBeInTheDocument()
-      expect(queryByTestId('file-upload-Aggregate Data')).not.toBeInTheDocument()
-      expect(queryByTestId('file-upload-Stratum Data')).not.toBeInTheDocument()
-    })
-
-    it('renders 4 sections when stt is undefined', () => {
-      const { getByTestId } = renderComponent(initialState, undefined)
-
-      expect(getByTestId('file-upload-Active Case Data')).toBeInTheDocument()
-      expect(getByTestId('file-upload-Closed Case Data')).toBeInTheDocument()
-      expect(getByTestId('file-upload-Aggregate Data')).toBeInTheDocument()
-      expect(getByTestId('file-upload-Stratum Data')).toBeInTheDocument()
+      expect(
+        getByTestId('file-upload-Quarter 1 (October - December)')
+      ).toBeInTheDocument()
+      expect(
+        getByTestId('file-upload-Quarter 2 (January - March)')
+      ).toBeInTheDocument()
+      expect(
+        getByTestId('file-upload-Quarter 3 (April - June)')
+      ).toBeInTheDocument()
+      expect(
+        getByTestId('file-upload-Quarter 4 (July - September)')
+      ).toBeInTheDocument()
     })
 
     it('renders submit and cancel buttons', () => {
@@ -146,15 +145,6 @@ describe('SectionFileUploadForm', () => {
 
       expect(fileInput.init).toHaveBeenCalled()
     })
-
-    it('renders section labels with correct format', () => {
-      const { getByText } = renderComponent()
-
-      expect(getByText('Section 1 TANF - Active Case Data')).toBeInTheDocument()
-      expect(getByText('Section 2 TANF - Closed Case Data')).toBeInTheDocument()
-      expect(getByText('Section 3 TANF - Aggregate Data')).toBeInTheDocument()
-      expect(getByText('Section 4 TANF - Stratum Data')).toBeInTheDocument()
-    })
   })
 
   describe('Form Submission', () => {
@@ -174,7 +164,9 @@ describe('SectionFileUploadForm', () => {
       await waitFor(() => {
         const alert = getByRole('alert')
         expect(alert).toBeInTheDocument()
-        expect(alert).toHaveTextContent('No changes have been made to data files')
+        expect(alert).toHaveTextContent(
+          'No changes have been made to data files'
+        )
       })
 
       expect(mockExecuteSubmission).not.toHaveBeenCalled()
@@ -183,10 +175,9 @@ describe('SectionFileUploadForm', () => {
     it('submits successfully with uploaded files', async () => {
       const uploadedFile = {
         fileName: 'test.txt',
-        section: 'Active Case Data',
-        fileType: 'tanf',
+        section: 'Quarter 1 (October - December)',
+        fileType: 'pia',
         year: '2024',
-        quarter: 'Q1',
       }
 
       const storeState = {
@@ -210,19 +201,26 @@ describe('SectionFileUploadForm', () => {
       })
     })
 
-    it('passes correct parameters to submit action', async () => {
-      const uploadedFile = {
-        fileName: 'test.txt',
-        section: 'Active Case Data',
-        fileType: 'tanf',
-        year: '2024',
-        quarter: 'Q1',
-      }
+    it('transforms files correctly before submission', async () => {
+      const uploadedFiles = [
+        {
+          fileName: 'q1.txt',
+          section: 'Quarter 1 (October - December)',
+          fileType: 'pia',
+          year: '2024',
+        },
+        {
+          fileName: 'q2.txt',
+          section: 'Quarter 2 (January - March)',
+          fileType: 'pia',
+          year: '2024',
+        },
+      ]
 
       const storeState = {
         ...initialState,
         reports: {
-          submittedFiles: [uploadedFile],
+          submittedFiles: uploadedFiles,
         },
       }
 
@@ -236,18 +234,26 @@ describe('SectionFileUploadForm', () => {
       fireEvent.click(submitButton)
 
       await waitFor(() => {
-        expect(mockExecuteSubmission).toHaveBeenCalledWith(expect.any(Function))
+        expect(mockExecuteSubmission).toHaveBeenCalled()
       })
+
+      // Verify executeSubmission was called with a function
+      expect(mockExecuteSubmission).toHaveBeenCalledWith(expect.any(Function))
     })
 
-    it('formats sections correctly for single file', () => {
+    it('formats quarters correctly in success message', async () => {
       const uploadedFiles = [
         {
-          fileName: 'test.txt',
-          section: 'Active Case Data',
-          fileType: 'tanf',
+          fileName: 'q1.txt',
+          section: 'Quarter 1 (October - December)',
+          fileType: 'pia',
           year: '2024',
-          quarter: 'Q1',
+        },
+        {
+          fileName: 'q3.txt',
+          section: 'Quarter 3 (April - June)',
+          fileType: 'pia',
+          year: '2024',
         },
       ]
 
@@ -258,46 +264,26 @@ describe('SectionFileUploadForm', () => {
         },
       }
 
-      renderComponent(storeState)
-      // Component renders without errors
-    })
+      mockExecuteSubmission.mockImplementation(async (fn) => {
+        await fn()
+      })
 
-    it('formats sections correctly for multiple files with "and"', () => {
-      const uploadedFiles = [
-        {
-          fileName: 'test1.txt',
-          section: 'Active Case Data',
-          fileType: 'tanf',
-          year: '2024',
-          quarter: 'Q1',
-        },
-        {
-          fileName: 'test2.txt',
-          section: 'Closed Case Data',
-          fileType: 'tanf',
-          year: '2024',
-          quarter: 'Q1',
-        },
-      ]
+      const { getByText } = renderComponent(storeState)
 
-      const storeState = {
-        ...initialState,
-        reports: {
-          submittedFiles: uploadedFiles,
-        },
-      }
+      const submitButton = getByText('Submit Data Files')
+      fireEvent.click(submitButton)
 
-      renderComponent(storeState)
-      // Component renders without errors
+      await waitFor(() => {
+        expect(mockExecuteSubmission).toHaveBeenCalled()
+      })
     })
 
     it('handles submission errors gracefully', async () => {
       const uploadedFile = {
         fileName: 'test.txt',
-        section: 'Active Case Data',
-        fileType: 'tanf',
+        section: 'Quarter 1 (October - December)',
+        fileType: 'pia',
         year: '2024',
-        quarter: 'Q1',
       }
 
       const storeState = {
@@ -309,8 +295,6 @@ describe('SectionFileUploadForm', () => {
 
       const error = new Error('Submission failed')
       mockExecuteSubmission.mockRejectedValue(error)
-
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
 
       const { getByText, getByRole } = renderComponent(storeState)
 
@@ -324,13 +308,6 @@ describe('SectionFileUploadForm', () => {
           'An error occurred during submission. Please try again.'
         )
       })
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Error during form submission:',
-        error
-      )
-
-      consoleErrorSpy.mockRestore()
     })
 
     it('disables submit button when isSubmitting is true', () => {
@@ -360,10 +337,9 @@ describe('SectionFileUploadForm', () => {
     it('calls handleOpenFeedbackWidget after successful submission', async () => {
       const uploadedFile = {
         fileName: 'test.txt',
-        section: 'Active Case Data',
-        fileType: 'tanf',
+        section: 'Quarter 1 (October - December)',
+        fileType: 'pia',
         year: '2024',
-        quarter: 'Q1',
       }
 
       const storeState = {
@@ -391,76 +367,15 @@ describe('SectionFileUploadForm', () => {
         expect(mockDispatch).toHaveBeenCalled()
       })
     })
-
-    it('passes ssp flag correctly for ssp-moe file type', async () => {
-      const uploadedFile = {
-        fileName: 'test.txt',
-        section: 'Active Case Data',
-        fileType: 'ssp-moe',
-        year: '2024',
-        quarter: 'Q1',
-      }
-
-      const storeState = {
-        ...initialState,
-        reports: {
-          submittedFiles: [uploadedFile],
-        },
-      }
-
-      mockExecuteSubmission.mockImplementation(async (fn) => {
-        await fn()
-      })
-
-      const { getByText } = renderComponent(storeState)
-
-      const submitButton = getByText('Submit Data Files')
-      fireEvent.click(submitButton)
-
-      await waitFor(() => {
-        expect(mockExecuteSubmission).toHaveBeenCalled()
-      })
-    })
-
-    it('passes ssp flag as false for non-ssp-moe file types', async () => {
-      const uploadedFile = {
-        fileName: 'test.txt',
-        section: 'Active Case Data',
-        fileType: 'tanf',
-        year: '2024',
-        quarter: 'Q1',
-      }
-
-      const storeState = {
-        ...initialState,
-        reports: {
-          submittedFiles: [uploadedFile],
-        },
-      }
-
-      mockExecuteSubmission.mockImplementation(async (fn) => {
-        await fn()
-      })
-
-      const { getByText } = renderComponent(storeState)
-
-      const submitButton = getByText('Submit Data Files')
-      fireEvent.click(submitButton)
-
-      await waitFor(() => {
-        expect(mockExecuteSubmission).toHaveBeenCalled()
-      })
-    })
   })
 
   describe('Cancel Functionality', () => {
     it('shows error modal when cancel is clicked with uploaded files', async () => {
       const uploadedFile = {
         fileName: 'test.txt',
-        section: 'Active Case Data',
-        fileType: 'tanf',
+        section: 'Quarter 1 (October - December)',
+        fileType: 'pia',
         year: '2024',
-        quarter: 'Q1',
       }
 
       const storeState = {
@@ -476,6 +391,7 @@ describe('SectionFileUploadForm', () => {
       fireEvent.click(cancelButton)
 
       // The error modal visibility is controlled by ReportsContext
+      // We can verify the state change through the context
       await waitFor(() => {
         expect(cancelButton).toBeInTheDocument()
       })
@@ -542,23 +458,16 @@ describe('SectionFileUploadForm', () => {
         expect(alert).toBeInTheDocument()
       })
     })
-
-    it('does not scroll when alert is not active', () => {
-      renderComponent()
-
-      expect(window.HTMLElement.prototype.scrollIntoView).not.toHaveBeenCalled()
-    })
   })
 
-  describe('Section Formatting', () => {
-    it('maps section indices correctly', () => {
+  describe('Quarter Formatting', () => {
+    it('formats single quarter correctly', () => {
       const uploadedFiles = [
         {
-          fileName: 'test1.txt',
-          section: 'Active Case Data',
-          fileType: 'tanf',
+          fileName: 'q1.txt',
+          section: 'Quarter 1 (October - December)',
+          fileType: 'pia',
           year: '2024',
-          quarter: 'Q1',
         },
       ]
 
@@ -573,28 +482,19 @@ describe('SectionFileUploadForm', () => {
       // Component renders without errors
     })
 
-    it('handles multiple sections with proper formatting', () => {
+    it('formats multiple quarters with "and" correctly', () => {
       const uploadedFiles = [
         {
-          fileName: 'test1.txt',
-          section: 'Active Case Data',
-          fileType: 'tanf',
+          fileName: 'q1.txt',
+          section: 'Quarter 1 (October - December)',
+          fileType: 'pia',
           year: '2024',
-          quarter: 'Q1',
         },
         {
-          fileName: 'test2.txt',
-          section: 'Aggregate Data',
-          fileType: 'tanf',
+          fileName: 'q2.txt',
+          section: 'Quarter 2 (January - March)',
+          fileType: 'pia',
           year: '2024',
-          quarter: 'Q1',
-        },
-        {
-          fileName: 'test3.txt',
-          section: 'Stratum Data',
-          fileType: 'tanf',
-          year: '2024',
-          quarter: 'Q1',
         },
       ]
 
@@ -614,29 +514,29 @@ describe('SectionFileUploadForm', () => {
     it('passes correct props to FileUpload components', () => {
       const { getByTestId } = renderComponent()
 
-      const activeUpload = getByTestId('file-upload-Active Case Data')
-      const input = activeUpload.querySelector('input')
+      const q1Upload = getByTestId('file-upload-Quarter 1 (October - December)')
+      const input = q1Upload.querySelector('input')
 
-      expect(input).toHaveAttribute('data-section', 'Active Case Data')
-      expect(input).toHaveAttribute('data-filetype', 'tanf')
+      expect(input).toHaveAttribute(
+        'data-section',
+        'Quarter 1 (October - December)'
+      )
+      expect(input).toHaveAttribute('data-quarter', '1')
     })
 
-    it('renders FileUpload for each section in correct order', () => {
+    it('renders FileUpload for each quarter in correct order', () => {
       const { getByTestId } = renderComponent()
 
-      fileUploadSections.forEach((section) => {
-        expect(getByTestId(`file-upload-${section}`)).toBeInTheDocument()
+      const uploads = [
+        'file-upload-Quarter 1 (October - December)',
+        'file-upload-Quarter 2 (January - March)',
+        'file-upload-Quarter 3 (April - June)',
+        'file-upload-Quarter 4 (July - September)',
+      ]
+
+      uploads.forEach((testId) => {
+        expect(getByTestId(testId)).toBeInTheDocument()
       })
-    })
-
-    it('passes year and quarter from context to FileUpload', () => {
-      const { getByTestId } = renderComponent()
-
-      const activeUpload = getByTestId('file-upload-Active Case Data')
-      const input = activeUpload.querySelector('input')
-
-      expect(input).toHaveAttribute('data-year', '')
-      expect(input).toHaveAttribute('data-quarter', '')
     })
   })
 
@@ -644,10 +544,9 @@ describe('SectionFileUploadForm', () => {
     it('uses stt.id when stt is provided', async () => {
       const uploadedFile = {
         fileName: 'test.txt',
-        section: 'Active Case Data',
-        fileType: 'tanf',
+        section: 'Quarter 1 (October - December)',
+        fileType: 'pia',
         year: '2024',
-        quarter: 'Q1',
       }
 
       const storeState = {
@@ -657,7 +556,7 @@ describe('SectionFileUploadForm', () => {
         },
       }
 
-      const stt = { id: 42, name: 'Test State', num_sections: 4 }
+      const stt = { id: 42, name: 'Test State' }
 
       mockExecuteSubmission.mockImplementation(async (fn) => {
         await fn()
@@ -676,10 +575,9 @@ describe('SectionFileUploadForm', () => {
     it('handles undefined stt gracefully', async () => {
       const uploadedFile = {
         fileName: 'test.txt',
-        section: 'Active Case Data',
-        fileType: 'tanf',
+        section: 'Quarter 1 (October - December)',
+        fileType: 'pia',
         year: '2024',
-        quarter: 'Q1',
       }
 
       const storeState = {
@@ -701,47 +599,6 @@ describe('SectionFileUploadForm', () => {
       await waitFor(() => {
         expect(mockExecuteSubmission).toHaveBeenCalled()
       })
-    })
-
-    it('renders only num_sections when specified', () => {
-      const stt = { id: 1, num_sections: 3 }
-      const { getByTestId, queryByTestId } = renderComponent(initialState, stt)
-
-      expect(getByTestId('file-upload-Active Case Data')).toBeInTheDocument()
-      expect(getByTestId('file-upload-Closed Case Data')).toBeInTheDocument()
-      expect(getByTestId('file-upload-Aggregate Data')).toBeInTheDocument()
-      expect(queryByTestId('file-upload-Stratum Data')).not.toBeInTheDocument()
-    })
-
-    it('renders only 1 section when num_sections is 1', () => {
-      const stt = { id: 1, num_sections: 1 }
-      const { getByTestId, queryByTestId } = renderComponent(initialState, stt)
-
-      expect(getByTestId('file-upload-Active Case Data')).toBeInTheDocument()
-      expect(queryByTestId('file-upload-Closed Case Data')).not.toBeInTheDocument()
-      expect(queryByTestId('file-upload-Aggregate Data')).not.toBeInTheDocument()
-      expect(queryByTestId('file-upload-Stratum Data')).not.toBeInTheDocument()
-    })
-
-    it('uses default 4 sections when stt has no num_sections property', () => {
-      const stt = { id: 1 } // No num_sections property
-      const { getByTestId } = renderComponent(initialState, stt)
-
-      expect(getByTestId('file-upload-Active Case Data')).toBeInTheDocument()
-      expect(getByTestId('file-upload-Closed Case Data')).toBeInTheDocument()
-      expect(getByTestId('file-upload-Aggregate Data')).toBeInTheDocument()
-      expect(getByTestId('file-upload-Stratum Data')).toBeInTheDocument()
-    })
-
-    it('uses stt.num_sections when it is 0 (falsy but defined)', () => {
-      const stt = { id: 1, num_sections: 0 }
-      const { queryByTestId } = renderComponent(initialState, stt)
-
-      // Should render 0 sections (slice(0, 0) returns empty array)
-      expect(queryByTestId('file-upload-Active Case Data')).not.toBeInTheDocument()
-      expect(queryByTestId('file-upload-Closed Case Data')).not.toBeInTheDocument()
-      expect(queryByTestId('file-upload-Aggregate Data')).not.toBeInTheDocument()
-      expect(queryByTestId('file-upload-Stratum Data')).not.toBeInTheDocument()
     })
   })
 
@@ -770,14 +627,13 @@ describe('SectionFileUploadForm', () => {
       expect(getByText('Submit Data Files')).toBeInTheDocument()
     })
 
-    it('handles files with sections not in fileUploadSections', () => {
+    it('handles files with invalid section names', () => {
       const uploadedFiles = [
         {
           fileName: 'test.txt',
-          section: 'Unknown Section',
-          fileType: 'tanf',
+          section: 'Invalid Section',
+          fileType: 'pia',
           year: '2024',
-          quarter: 'Q1',
         },
       ]
 
@@ -807,31 +663,52 @@ describe('SectionFileUploadForm', () => {
 
       await waitFor(() => {
         const alert = getByRole('alert')
-        expect(alert).toHaveTextContent('No changes have been made to data files')
+        expect(alert).toHaveTextContent(
+          'No changes have been made to data files'
+        )
       })
 
       expect(mockExecuteSubmission).not.toHaveBeenCalled()
     })
-
-    it('handles zero num_sections', () => {
-      const stt = { id: 1, num_sections: 0 }
-      const { queryByTestId } = renderComponent(initialState, stt)
-
-      expect(queryByTestId('file-upload-Active Case Data')).not.toBeInTheDocument()
-      expect(queryByTestId('file-upload-Closed Case Data')).not.toBeInTheDocument()
-      expect(queryByTestId('file-upload-Aggregate Data')).not.toBeInTheDocument()
-      expect(queryByTestId('file-upload-Stratum Data')).not.toBeInTheDocument()
-    })
   })
 
-  describe('File Type Handling', () => {
-    it('displays correct file type in labels for TANF', () => {
-      const { getByText } = renderComponent()
+  describe('Console Logging', () => {
+    it('logs submission process', async () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation()
 
-      expect(getByText('Section 1 TANF - Active Case Data')).toBeInTheDocument()
+      const uploadedFile = {
+        fileName: 'test.txt',
+        section: 'Quarter 1 (October - December)',
+        fileType: 'pia',
+        year: '2024',
+      }
+
+      const storeState = {
+        ...initialState,
+        reports: {
+          submittedFiles: [uploadedFile],
+        },
+      }
+
+      mockExecuteSubmission.mockImplementation(async (fn) => {
+        await fn()
+      })
+
+      const { getByText } = renderComponent(storeState)
+
+      const submitButton = getByText('Submit Data Files')
+      fireEvent.click(submitButton)
+
+      await waitFor(() => {
+        expect(consoleSpy).toHaveBeenCalledWith('onSubmit called')
+      })
+
+      consoleSpy.mockRestore()
     })
 
-    it('displays correct file type in labels for SSP-MOE', () => {
+    it('logs error when no files uploaded', async () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation()
+
       const storeState = {
         ...initialState,
         reports: {
@@ -841,41 +718,14 @@ describe('SectionFileUploadForm', () => {
 
       const { getByText } = renderComponent(storeState)
 
-      // Note: The file type comes from ReportsContext, which defaults to 'tanf'
-      // In a real scenario, the context would need to be set to 'ssp-moe'
-      expect(getByText('Section 1 TANF - Active Case Data')).toBeInTheDocument()
-    })
-  })
+      const submitButton = getByText('Submit Data Files')
+      fireEvent.click(submitButton)
 
-  describe('Context Integration', () => {
-    it('uses yearInputValue from context', () => {
-      const { getByTestId } = renderComponent()
+      await waitFor(() => {
+        expect(consoleSpy).toHaveBeenCalledWith('Setting error alert')
+      })
 
-      const activeUpload = getByTestId('file-upload-Active Case Data')
-      const input = activeUpload.querySelector('input')
-
-      // Year comes from ReportsContext, which defaults to ''
-      expect(input).toHaveAttribute('data-year', '')
-    })
-
-    it('uses quarterInputValue from context', () => {
-      const { getByTestId } = renderComponent()
-
-      const activeUpload = getByTestId('file-upload-Active Case Data')
-      const input = activeUpload.querySelector('input')
-
-      // Quarter comes from ReportsContext, which defaults to ''
-      expect(input).toHaveAttribute('data-quarter', '')
-    })
-
-    it('uses fileTypeInputValue from context', () => {
-      const { getByTestId } = renderComponent()
-
-      const activeUpload = getByTestId('file-upload-Active Case Data')
-      const input = activeUpload.querySelector('input')
-
-      // File type comes from ReportsContext, which defaults to 'tanf'
-      expect(input).toHaveAttribute('data-filetype', 'tanf')
+      consoleSpy.mockRestore()
     })
   })
 })
