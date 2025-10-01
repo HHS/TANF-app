@@ -120,17 +120,17 @@ def parse(data_file_id, reparse_id=None):
                 ReparseMeta.objects.get(pk=reparse_id)
             )
         else:
-            recipients = (
-                User.objects.filter(
+            qs = User.objects.filter(
                     stt=data_file.stt,
                     account_approval_status=AccountApprovalStatusChoices.APPROVED,
-                    groups=Group.objects.get(name="Data Analyst"),
-                )
-                .values_list("username", flat=True)
-                .distinct()
-            )
+                    groups__name="Data Analyst")
 
+            if data_file.prog_type == "FRA":
+                qs = qs.filter(user_permissions__codename="has_fra_access")
+
+            recipients = qs.values_list("username", flat=True).distinct()
             send_data_submitted_email(dfs, recipients)
+
     except DecoderUnknownException:
         dfs.set_status(DataFileSummary.Status.REJECTED)
         dfs.save()
