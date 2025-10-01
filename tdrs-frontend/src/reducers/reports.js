@@ -128,6 +128,9 @@ const reports = (state = initialState, action) => {
       return {
         ...state,
         submittedFiles: state.submittedFiles.map((file) =>
+          // Match by uuid (slug) or section to handle transformed files because submitting PIA files changes
+          // their section from `Quarter X (Month Y to Month Z)` to `Program Audit` for the backend.
+          submittedFile?.slug === file.uuid ||
           submittedFile?.section.includes(file.section)
             ? serializeApiDataFile(submittedFile)
             : file
