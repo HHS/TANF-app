@@ -7,7 +7,7 @@ const RadioSelect = ({ label, fieldName, setValue, options, classes }) => (
       <legend className="usa-label text-bold">{label}</legend>
 
       {options.map(({ label, value, disabled }, index) => (
-        <div className="usa-radio">
+        <div className="usa-radio" key={`${value}-${index}`}>
           <input
             className="usa-radio__input"
             id={value}
