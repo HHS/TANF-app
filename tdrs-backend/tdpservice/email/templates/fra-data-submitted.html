@@ -30,11 +30,11 @@
                 <td style="padding: 8px; border-style: solid; border-color: #000000; border-width: 1px;">{{ section_name }}</td>
                 <td style="padding: 8px; border-style: solid; border-color: #000000; border-width: 1px;">{{ submitted_by }}</td>
                 <td style="padding: 8px; border-style: solid; border-color: #000000; border-width: 1px;">{{ status }}</td>
-                <td style="padding: 8px; border-style: solid; border-color: #000000; border-width: 1px;">N/A
+                <td style="padding: 8px; border-style: solid; border-color: #000000; border-width: 1px;">
                     {% if status == "Accepted" %}
                         N/A
                     {% else %}
-                        {{ error_report }}                    
+                        Error Report Available
                     {% endif %}
                 </td>
             </tr>
