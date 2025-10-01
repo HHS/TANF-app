@@ -1,0 +1,116 @@
+import React from 'react'
+import { useDispatch } from 'react-redux'
+import classNames from 'classnames'
+import { clearFileList } from '../../actions/reports'
+import { constructYearOptions } from './utils'
+import { ProgramIntegrityAuditExplainer } from './Explainers'
+import QuarterFileUploadForm from '../FileUploadForm/QuarterFileUploadForm'
+import QuarterSubmissionHistory from '../SubmissionHistory/QuarterSubmissionHistory'
+import SegmentedControl from '../SegmentedControl'
+import { useReportsContext } from './ReportsContext'
+
+const ProgramIntegrityAuditReports = ({ stt, isRegionalStaff }) => {
+  const dispatch = useDispatch()
+
+  const {
+    yearInputValue,
+    setYearInputValue,
+    fileTypeInputValue,
+    selectedSubmissionTab,
+    setSelectedSubmissionTab,
+    setLocalAlertState,
+    headerRef,
+  } = useReportsContext()
+
+  const selectYear = ({ target: { value } }) => {
+    setYearInputValue(value)
+    setLocalAlertState({ active: false, type: null, message: null })
+    dispatch(clearFileList({ fileType: fileTypeInputValue }))
+  }
+
+  return (
+    <>
+      <div className="grid-row grid-gap">
+        <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-auto">
+          <div
+            className={classNames('usa-form-group maxw-mobile margin-top-4')}
+          >
+            <label
+              className="usa-label text-bold margin-top-4"
+              htmlFor="reportingYears"
+            >
+              Fiscal Year (October - September)*
+              <select
+                className={classNames('usa-select maxw-mobile')}
+                name="reportingYears"
+                id="reportingYears"
+                onChange={selectYear}
+                value={yearInputValue}
+                aria-describedby="years-error-alert"
+              >
+                <option value="" disabled hidden>
+                  - Select Fiscal Year -
+                </option>
+                {constructYearOptions(2024)}
+              </select>
+            </label>
+          </div>
+        </div>
+        <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
+          <ProgramIntegrityAuditExplainer />
+        </div>
+      </div>
+
+      {yearInputValue && stt && (
+        <>
+          <hr />
+          <h2
+            ref={headerRef}
+            className="font-serif-xl margin-top-5 margin-bottom-0 text-normal"
+            tabIndex="-1"
+          >
+            {`${stt.name} - Program Integrity Audit - Fiscal Year ${yearInputValue}`}
+          </h2>
+
+          {isRegionalStaff ? (
+            <h3 className="font-sans-lg margin-top-5 margin-bottom-2 text-bold">
+              Submission History
+            </h3>
+          ) : (
+            <SegmentedControl
+              buttons={[
+                {
+                  id: 1,
+                  label: 'Current Submission',
+                  onSelect: () => setSelectedSubmissionTab(1),
+                },
+                {
+                  id: 2,
+                  label: 'Submission History',
+                  onSelect: () => setSelectedSubmissionTab(2),
+                },
+              ]}
+              selected={selectedSubmissionTab}
+            />
+          )}
+
+          {!isRegionalStaff && selectedSubmissionTab === 1 && (
+            <QuarterFileUploadForm stt={stt} />
+          )}
+
+          {(isRegionalStaff || selectedSubmissionTab === 2) && (
+            <QuarterSubmissionHistory
+              filterValues={{
+                year: yearInputValue,
+                stt: stt,
+                file_type: fileTypeInputValue,
+              }}
+            />
+          )}
+        </>
+      )}
+    </>
+  )
+}
+
+export default ProgramIntegrityAuditReports
