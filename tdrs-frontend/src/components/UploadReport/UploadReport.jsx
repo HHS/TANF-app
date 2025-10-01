@@ -93,7 +93,6 @@ function UploadReport({ handleCancel, stt, openWidget }) {
           })
         )
       )
-      // openWidget(files)
     } catch (error) {
       console.error('Error during form submission:', error)
       setLocalAlertState({

@@ -42,21 +42,12 @@ const FeedbackForm = ({
 
   // Determine values based on props and state
   const isGeneral = isGeneralFeedback
-  const isTANF = dataType === 'TANF'
 
   const resetStatesOnceSubmitted = () => {
     setSelectedRatingsOption(undefined)
     setFeedbackMessage('')
     setHasError(false)
     setIsAnonymous(false)
-  }
-
-  const getFeedbackType = () => {
-    if (isTANF) {
-      return TANF_FEEDBACK_TYPE
-    } else {
-      return FRA_FEEDBACK_TYPE
-    }
   }
 
   const handleSubmit = useCallback(async () => {
@@ -66,7 +57,7 @@ const FeedbackForm = ({
     }
 
     // Set feedback_type
-    const feedbackType = isGeneral ? GENERAL_FEEDBACK_TYPE : getFeedbackType()
+    const feedbackType = isGeneral ? GENERAL_FEEDBACK_TYPE : dataType
 
     // TODO: still need to figure out how to get component info or some context for component value
     // Set component -------------------------

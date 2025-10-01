@@ -154,6 +154,7 @@ const FeedbackWidget = React.forwardRef(
                 onFeedbackSubmit={handleFeedbackSubmit}
                 onRequestSuccess={handleRequestSuccess}
                 onRequestError={handleRequestError}
+                dataType={dataType}
               />
             </>
           ) : (
