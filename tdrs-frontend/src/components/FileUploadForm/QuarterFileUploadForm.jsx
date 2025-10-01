@@ -54,14 +54,22 @@ const QuarterFileUploadForm = ({ stt }) => {
   const onSubmit = async (event) => {
     event.preventDefault()
 
+    console.log('onSubmit called')
+    console.log('uploadedFiles.length:', uploadedFiles.length)
+    console.log('localAlert before:', localAlert)
+
     if (uploadedFiles.length === 0) {
+      console.log('Setting error alert')
       setLocalAlertState({
         active: true,
         type: 'error',
         message: 'No changes have been made to data files',
       })
+      console.log('Error alert set, returning early')
       return
     }
+
+    console.log('Proceeding with submission')
 
     try {
       // Transform files: set section to "Program Audit" and quarter to Q1-Q4
@@ -116,6 +124,7 @@ const QuarterFileUploadForm = ({ stt }) => {
   }, [])
 
   useEffect(() => {
+    console.log('localAlert changed:', localAlert)
     if (localAlert.active && alertRef && alertRef.current) {
       alertRef.current.scrollIntoView({ behavior: 'smooth' })
     }
@@ -152,7 +161,7 @@ const QuarterFileUploadForm = ({ stt }) => {
           <Button
             className="card:margin-y-1"
             type="submit"
-            disabled={isSubmitting || uploadedFiles.length === 0}
+            disabled={isSubmitting}
           >
             {isSubmitting ? 'Submitting...' : 'Submit Data Files'}
           </Button>
