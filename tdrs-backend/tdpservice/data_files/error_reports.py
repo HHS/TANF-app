@@ -22,7 +22,12 @@ class ErrorReportFactory:
         """Get error report generator."""
         active = DataFile.Section.ACTIVE_CASE_DATA
         closed = DataFile.Section.CLOSED_CASE_DATA
-        if active in datafile.section or closed in datafile.section:
+        audit = DataFile.Section.PROGRAM_AUDIT
+        if (
+            active in datafile.section
+            or closed in datafile.section
+            or audit in datafile.section
+        ):
             return ActiveClosedErrorReport(datafile)
         elif (
             DataFile.Section.AGGREGATE_DATA in datafile.section
