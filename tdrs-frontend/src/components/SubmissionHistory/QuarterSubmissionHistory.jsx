@@ -8,7 +8,7 @@ import {
 } from '../Reports/utils'
 import { CaseAggregatesTable } from './CaseAggregatesTable'
 
-const QuarterSection = ({ quarter, label, files, reprocessedState }) => {
+const QuarterSection = ({ label, files, reprocessedState }) => {
   const pageSize = 5
   const [resultsPage, setResultsPage] = useState(1)
 
@@ -84,7 +84,6 @@ const QuarterSubmissionHistory = ({ filterValues, reprocessedState }) => {
           return (
             <QuarterSection
               key={quarterLabel}
-              quarter={quarterCode}
               label={quarterLabel}
               files={filteredFiles}
               reprocessedState={reprocessedState}

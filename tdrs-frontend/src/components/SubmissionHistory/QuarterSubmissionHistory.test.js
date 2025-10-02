@@ -1,49 +1,12 @@
 import React from 'react'
-import { render, waitFor, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { Provider } from 'react-redux'
-import configureStore from '../../configureStore'
+import appConfigureStore from '../../configureStore'
 import QuarterSubmissionHistory from './QuarterSubmissionHistory'
 import * as reportsActions from '../../actions/reports'
 
-// Mock dependencies
+// Mock only external actions
 jest.mock('../../actions/reports')
-jest.mock('./TotalAggregatesTable', () => ({
-  TotalAggregatesTable: ({ files, reprocessedState }) => (
-    <tbody data-testid="total-aggregates-table">
-      {files.map((file, index) => (
-        <tr key={index} data-testid={`file-row-${file.id}`}>
-          <td>{file.fileName}</td>
-          <td>{file.quarter}</td>
-          <td>{file.section}</td>
-        </tr>
-      ))}
-    </tbody>
-  ),
-}))
-
-jest.mock('../Paginator', () => ({
-  __esModule: true,
-  default: ({ pages, selected, onChange }) => (
-    <div data-testid="paginator">
-      <button
-        data-testid="prev-page"
-        onClick={() => onChange(selected - 1)}
-        disabled={selected === 1}
-      >
-        Previous
-      </button>
-      <span data-testid="current-page">{selected}</span>
-      <span data-testid="total-pages">{pages}</span>
-      <button
-        data-testid="next-page"
-        onClick={() => onChange(selected + 1)}
-        disabled={selected === pages}
-      >
-        Next
-      </button>
-    </div>
-  ),
-}))
 
 const initialState = {
   auth: {
@@ -65,10 +28,7 @@ const initialState = {
   },
 }
 
-const mockStore = (initial = initialState) => configureStore(initial)
-
 describe('QuarterSubmissionHistory', () => {
-  let mockDispatch
   let mockGetAvailableFileList
 
   beforeEach(() => {
@@ -83,27 +43,32 @@ describe('QuarterSubmissionHistory', () => {
     jest.clearAllMocks()
   })
 
-  const renderComponent = (
+  const setup = (
     storeState = initialState,
     filterValues = { year: '2024', stt: { id: 1 } },
-    reprocessedState = [false, jest.fn()]
+    reprocessedState = { setDate: jest.fn(), setModalVisible: jest.fn() }
   ) => {
-    const store = mockStore(storeState)
-    mockDispatch = jest.spyOn(store, 'dispatch')
+    const store = appConfigureStore(storeState)
+    const mockDispatch = jest.fn(store.dispatch)
+    store.dispatch = mockDispatch
 
-    return render(
-      <Provider store={store}>
-        <QuarterSubmissionHistory
-          filterValues={filterValues}
-          reprocessedState={reprocessedState}
-        />
-      </Provider>
-    )
+    return {
+      ...render(
+        <Provider store={store}>
+          <QuarterSubmissionHistory
+            filterValues={filterValues}
+            reprocessedState={reprocessedState}
+          />
+        </Provider>
+      ),
+      store,
+      mockDispatch,
+    }
   }
 
   describe('Rendering', () => {
     it('renders the Knowledge Center link', () => {
-      renderComponent()
+      setup()
 
       const link = screen.getByRole('link', {
         name: /Knowledge Center error reports guidance/i,
@@ -118,7 +83,7 @@ describe('QuarterSubmissionHistory', () => {
     })
 
     it('renders all four quarter sections', () => {
-      renderComponent()
+      setup()
 
       expect(
         screen.getByText('Quarter 1 (October - December)')
@@ -133,14 +98,14 @@ describe('QuarterSubmissionHistory', () => {
     })
 
     it('renders tables for each quarter', () => {
-      renderComponent()
+      setup()
 
       const tables = screen.getAllByRole('table')
       expect(tables).toHaveLength(4)
     })
 
     it('displays "No data available" when no files exist for a quarter', () => {
-      renderComponent()
+      setup()
 
       const noDataMessages = screen.getAllByText('No data available.')
       expect(noDataMessages).toHaveLength(4)
@@ -150,24 +115,31 @@ describe('QuarterSubmissionHistory', () => {
   describe('Data Fetching', () => {
     it('dispatches getAvailableFileList on mount', () => {
       const filterValues = { year: '2024', stt: { id: 1 } }
-      renderComponent(initialState, filterValues)
+      const { store } = setup(initialState, filterValues)
 
-      expect(mockGetAvailableFileList).toHaveBeenCalledWith(filterValues)
-      expect(mockDispatch).toHaveBeenCalled()
+      // Component sets quarter to null when fetching files
+      expect(mockGetAvailableFileList).toHaveBeenCalledWith({
+        ...filterValues,
+        quarter: null,
+      })
+      expect(store.dispatch).toHaveBeenCalled()
     })
 
     it('only fetches files once', () => {
       const filterValues = { year: '2024', stt: { id: 1 } }
-      const { rerender } = renderComponent(initialState, filterValues)
+      const { rerender, store } = setup(initialState, filterValues)
 
       expect(mockGetAvailableFileList).toHaveBeenCalledTimes(1)
 
       // Rerender with same props
       rerender(
-        <Provider store={mockStore(initialState)}>
+        <Provider store={store}>
           <QuarterSubmissionHistory
             filterValues={filterValues}
-            reprocessedState={[false, jest.fn()]}
+            reprocessedState={{
+              setDate: jest.fn(),
+              setModalVisible: jest.fn(),
+            }}
           />
         </Provider>
       )
@@ -183,9 +155,13 @@ describe('QuarterSubmissionHistory', () => {
         stt: { id: 42 },
         file_type: 'pia',
       }
-      renderComponent(initialState, filterValues)
+      setup(initialState, filterValues)
 
-      expect(mockGetAvailableFileList).toHaveBeenCalledWith(filterValues)
+      // Component sets quarter to null when fetching files
+      expect(mockGetAvailableFileList).toHaveBeenCalledWith({
+        ...filterValues,
+        quarter: null,
+      })
     })
   })
 
@@ -201,6 +177,8 @@ describe('QuarterSubmissionHistory', () => {
               section: 'Program Audit',
               quarter: 'Q1',
               year: '2024',
+              createdAt: '2024-01-15T10:00:00Z',
+              submittedBy: 'user1@example.com',
             },
             {
               id: 2,
@@ -208,6 +186,8 @@ describe('QuarterSubmissionHistory', () => {
               section: 'Program Audit',
               quarter: 'Q2',
               year: '2024',
+              createdAt: '2024-02-15T10:00:00Z',
+              submittedBy: 'user2@example.com',
             },
             {
               id: 3,
@@ -215,20 +195,28 @@ describe('QuarterSubmissionHistory', () => {
               section: 'Program Audit',
               quarter: 'Q1',
               year: '2024',
+              createdAt: '2024-01-20T10:00:00Z',
+              submittedBy: 'user3@example.com',
             },
           ],
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
-      // Q1 should have 2 files
-      const q1Table = screen.getAllByTestId('total-aggregates-table')[0]
-      expect(q1Table.querySelectorAll('tr')).toHaveLength(2)
+      // Q1 should have 2 files (each file creates 3 rows in CaseAggregatesTable)
+      const tables = screen.getAllByRole('table')
+      const q1Table = tables[0]
+      const q1Bodies = within(q1Table).getAllByRole('rowgroup')
+      const q1Body = q1Bodies[1] // tbody is the second rowgroup (thead is first)
+      // 2 files * 3 rows each = 6 rows
+      expect(within(q1Body).getAllByRole('row')).toHaveLength(6)
 
-      // Q2 should have 1 file
-      const q2Table = screen.getAllByTestId('total-aggregates-table')[1]
-      expect(q2Table.querySelectorAll('tr')).toHaveLength(1)
+      // Q2 should have 1 file (3 rows)
+      const q2Table = tables[1]
+      const q2Bodies = within(q2Table).getAllByRole('rowgroup')
+      const q2Body = q2Bodies[1]
+      expect(within(q2Body).getAllByRole('row')).toHaveLength(3)
     })
 
     it('only displays files with Program Audit section', () => {
@@ -254,11 +242,11 @@ describe('QuarterSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
       // Only the Program Audit file should be displayed
-      expect(screen.getByTestId('file-row-1')).toBeInTheDocument()
-      expect(screen.queryByTestId('file-row-2')).not.toBeInTheDocument()
+      expect(screen.getByText('file1.txt')).toBeInTheDocument()
+      expect(screen.queryByText('file2.txt')).not.toBeInTheDocument()
     })
 
     it('displays files in correct quarter sections', () => {
@@ -284,17 +272,17 @@ describe('QuarterSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
       // Q1 file should be visible
-      expect(screen.getByTestId('file-row-1')).toBeInTheDocument()
+      expect(screen.getByText('q1-file.txt')).toBeInTheDocument()
 
       // Q3 file should be visible
-      expect(screen.getByTestId('file-row-2')).toBeInTheDocument()
+      expect(screen.getByText('q3-file.txt')).toBeInTheDocument()
 
-      // Verify they are in different tables by checking the table structure
-      const tables = screen.getAllByTestId('total-aggregates-table')
-      expect(tables.length).toBeGreaterThanOrEqual(2)
+      // Verify they are in different tables
+      const tables = screen.getAllByRole('table')
+      expect(tables.length).toBe(4)
     })
 
     it('handles empty files array', () => {
@@ -305,7 +293,7 @@ describe('QuarterSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
       const noDataMessages = screen.getAllByText('No data available.')
       expect(noDataMessages).toHaveLength(4)
@@ -319,7 +307,7 @@ describe('QuarterSubmissionHistory', () => {
         },
       }
 
-      const { container } = renderComponent(filesState)
+      const { container } = setup(filesState)
 
       // Should render without crashing when files is an empty array
       expect(container).toBeInTheDocument()
@@ -357,9 +345,11 @@ describe('QuarterSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
-      expect(screen.queryByTestId('paginator')).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('navigation', { name: 'Pagination' })
+      ).not.toBeInTheDocument()
     })
 
     it('shows paginator when files exceed page size of 5', () => {
@@ -376,9 +366,11 @@ describe('QuarterSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
-      expect(screen.getByTestId('paginator')).toBeInTheDocument()
+      expect(
+        screen.getByRole('navigation', { name: 'Pagination' })
+      ).toBeInTheDocument()
     })
 
     it('displays correct number of pages', () => {
@@ -395,11 +387,13 @@ describe('QuarterSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
       // 12 files with page size 5 should result in 3 pages
-      const totalPages = screen.getByTestId('total-pages')
-      expect(totalPages).toHaveTextContent('3')
+      const pagination = screen.getByRole('navigation', { name: 'Pagination' })
+      const pageButtons = within(pagination).getAllByRole('button')
+      // Should have Previous, 1, 2, 3, Next = 5 buttons
+      expect(pageButtons).toHaveLength(5)
     })
 
     it('displays only 5 files per page', () => {
@@ -416,10 +410,14 @@ describe('QuarterSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
-      const q1Table = screen.getAllByTestId('total-aggregates-table')[0]
-      expect(q1Table.querySelectorAll('tr')).toHaveLength(5)
+      const tables = screen.getAllByRole('table')
+      const q1Table = tables[0]
+      const q1Bodies = within(q1Table).getAllByRole('rowgroup')
+      const tbody = q1Bodies[1] // tbody is the second rowgroup
+      // 5 files * 3 rows each = 15 rows
+      expect(within(tbody).getAllByRole('row')).toHaveLength(15)
     })
 
     it('changes page when pagination button is clicked', () => {
@@ -436,17 +434,25 @@ describe('QuarterSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
       // Verify paginator is present
-      expect(screen.getByTestId('paginator')).toBeInTheDocument()
+      const pagination = screen.getByRole('navigation', { name: 'Pagination' })
+      expect(pagination).toBeInTheDocument()
 
-      // Verify initial state shows page 1
-      expect(screen.getByTestId('current-page')).toHaveTextContent('1')
+      // Verify page 1 button is marked as current
+      const page1Button = within(pagination).getByRole('button', {
+        name: 'Page 1',
+        current: 'page',
+      })
+      expect(page1Button).toBeInTheDocument()
 
-      // Verify only 5 files are shown on first page
-      const q1Table = screen.getAllByTestId('total-aggregates-table')[0]
-      expect(q1Table.querySelectorAll('tr')).toHaveLength(5)
+      // Verify only 5 files are shown on first page (5 files * 3 rows = 15 rows)
+      const tables = screen.getAllByRole('table')
+      const q1Table = tables[0]
+      const q1Bodies = within(q1Table).getAllByRole('rowgroup')
+      const tbody = q1Bodies[1] // tbody is the second rowgroup
+      expect(within(tbody).getAllByRole('row')).toHaveLength(15)
     })
 
     it('maintains separate pagination state for each quarter', () => {
@@ -472,16 +478,18 @@ describe('QuarterSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
-      const paginators = screen.getAllByTestId('paginator')
+      const paginators = screen.getAllByRole('navigation', {
+        name: 'Pagination',
+      })
       expect(paginators).toHaveLength(2)
     })
   })
 
   describe('QuarterSection Component', () => {
     it('renders table with correct caption', () => {
-      renderComponent()
+      setup()
 
       const tables = screen.getAllByRole('table')
       expect(tables[0]).toHaveAccessibleName('Quarter 1 (October - December)')
@@ -491,7 +499,7 @@ describe('QuarterSubmissionHistory', () => {
     })
 
     it('applies correct CSS classes to table container', () => {
-      const { container } = renderComponent()
+      const { container } = setup()
 
       const tableContainers = container.querySelectorAll(
         '.submission-history-section.usa-table-container--scrollable'
@@ -500,7 +508,7 @@ describe('QuarterSubmissionHistory', () => {
     })
 
     it('table container has correct tabIndex', () => {
-      const { container } = renderComponent()
+      const { container } = setup()
 
       const tableContainers = container.querySelectorAll(
         '.submission-history-section'
@@ -511,7 +519,7 @@ describe('QuarterSubmissionHistory', () => {
     })
 
     it('table has correct USWDS classes', () => {
-      const { container } = renderComponent()
+      const { container } = setup()
 
       const tables = container.querySelectorAll('table')
       tables.forEach((table) => {
@@ -522,7 +530,7 @@ describe('QuarterSubmissionHistory', () => {
   })
 
   describe('Props Handling', () => {
-    it('passes reprocessedState to TotalAggregatesTable', () => {
+    it('passes reprocessedState to CaseAggregatesTable', () => {
       const reprocessedState = [true, jest.fn()]
       const filesState = {
         ...initialState,
@@ -539,18 +547,14 @@ describe('QuarterSubmissionHistory', () => {
         },
       }
 
-      renderComponent(
-        filesState,
-        { year: '2024', stt: { id: 1 } },
-        reprocessedState
-      )
+      setup(filesState, { year: '2024', stt: { id: 1 } }, reprocessedState)
 
-      // TotalAggregatesTable should receive reprocessedState
-      expect(screen.getByTestId('total-aggregates-table')).toBeInTheDocument()
+      // CaseAggregatesTable should render with the file
+      expect(screen.getByText('file1.txt')).toBeInTheDocument()
     })
 
     it('handles missing filterValues gracefully', () => {
-      const { container } = renderComponent(initialState, undefined)
+      const { container } = setup(initialState, undefined)
 
       // Component should still render without crashing
       expect(container).toBeInTheDocument()
@@ -566,9 +570,13 @@ describe('QuarterSubmissionHistory', () => {
         section: 'Program Audit',
       }
 
-      renderComponent(initialState, filterValues)
+      setup(initialState, filterValues)
 
-      expect(mockGetAvailableFileList).toHaveBeenCalledWith(filterValues)
+      // Component sets quarter to null when fetching files
+      expect(mockGetAvailableFileList).toHaveBeenCalledWith({
+        ...filterValues,
+        quarter: null,
+      })
     })
   })
 
@@ -588,7 +596,7 @@ describe('QuarterSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
       // Should not crash
       expect(
@@ -612,7 +620,7 @@ describe('QuarterSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
       // Should not crash and file should not appear in any quarter
       // Since no valid files exist, all quarters should show "No data available"
@@ -636,10 +644,10 @@ describe('QuarterSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
       // File should not be displayed since section is not 'Program Audit'
-      expect(screen.queryByTestId('file-row-1')).not.toBeInTheDocument()
+      expect(screen.queryByText('file1.txt')).not.toBeInTheDocument()
     })
 
     it('handles large number of files efficiently', () => {
@@ -656,7 +664,7 @@ describe('QuarterSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
       // Should render without performance issues
       expect(
@@ -694,18 +702,18 @@ describe('QuarterSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
       // Should display valid files
-      expect(screen.getByTestId('file-row-1')).toBeInTheDocument()
-      expect(screen.getByTestId('file-row-2')).toBeInTheDocument()
-      expect(screen.getByTestId('file-row-3')).toBeInTheDocument()
+      expect(screen.getByText('valid-file.txt')).toBeInTheDocument()
+      expect(screen.getByText('another-valid.txt')).toBeInTheDocument()
+      expect(screen.getByText('third-file.txt')).toBeInTheDocument()
     })
   })
 
   describe('Accessibility', () => {
     it('has accessible link for Knowledge Center', () => {
-      renderComponent()
+      setup()
 
       const link = screen.getByRole('link', {
         name: /Knowledge Center error reports guidance/i,
@@ -717,7 +725,7 @@ describe('QuarterSubmissionHistory', () => {
     })
 
     it('tables have proper captions for screen readers', () => {
-      renderComponent()
+      setup()
 
       const captions = [
         'Quarter 1 (October - December)',
@@ -732,7 +740,7 @@ describe('QuarterSubmissionHistory', () => {
     })
 
     it('table containers are keyboard accessible', () => {
-      const { container } = renderComponent()
+      const { container } = setup()
 
       const tableContainers = container.querySelectorAll(
         '.submission-history-section'
@@ -760,16 +768,16 @@ describe('QuarterSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
-      expect(screen.getByTestId('file-row-1')).toBeInTheDocument()
+      expect(screen.getByText('test-file.txt')).toBeInTheDocument()
     })
 
     it('updates when Redux store changes', () => {
-      const { rerender } = renderComponent()
+      const { rerender } = setup()
 
       // Initially no files
-      expect(screen.queryByTestId('file-row-1')).not.toBeInTheDocument()
+      expect(screen.queryByText('new-file.txt')).not.toBeInTheDocument()
 
       // Update store with files
       const updatedState = {
@@ -787,19 +795,24 @@ describe('QuarterSubmissionHistory', () => {
         },
       }
 
-      const updatedStore = mockStore(updatedState)
+      const updatedStore = appConfigureStore(updatedState)
+      const mockDispatch = jest.fn(updatedStore.dispatch)
+      updatedStore.dispatch = mockDispatch
 
       rerender(
         <Provider store={updatedStore}>
           <QuarterSubmissionHistory
             filterValues={{ year: '2024', stt: { id: 1 } }}
-            reprocessedState={[false, jest.fn()]}
+            reprocessedState={{
+              setDate: jest.fn(),
+              setModalVisible: jest.fn(),
+            }}
           />
         </Provider>
       )
 
       // File should now be visible
-      expect(screen.getByTestId('file-row-1')).toBeInTheDocument()
+      expect(screen.getByText('new-file.txt')).toBeInTheDocument()
     })
   })
 })
