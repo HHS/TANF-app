@@ -3,8 +3,8 @@
 from django.db import models
 
 
-class LineNumberMixin(models.Model):
-    """Mixin for models that have a line number."""
+class RecordMixin(models.Model):
+    """Base mixin for parsed records."""
 
     class Meta:
         """Meta for mixin."""
