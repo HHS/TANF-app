@@ -15,6 +15,7 @@ import { programIntegrityAuditLabels } from '../components/Reports/utils'
 
 const getFileIndex = (files, section) =>
   files.findIndex((currentFile) => currentFile.section.includes(section))
+
 const getFile = (files, section) =>
   files
     .sort((a, b) => b.id - a.id)
