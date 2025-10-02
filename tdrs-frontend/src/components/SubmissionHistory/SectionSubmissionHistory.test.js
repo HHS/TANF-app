@@ -1,64 +1,13 @@
 import React from 'react'
-import { render, waitFor, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { Provider } from 'react-redux'
-import configureStore from '../../configureStore'
+import appConfigureStore from '../../configureStore'
 import SectionSubmissionHistory from './SectionSubmissionHistory'
 import * as reportsActions from '../../actions/reports'
 import { fileUploadSections } from '../../reducers/reports'
 
-// Mock dependencies
+// Mock only external actions
 jest.mock('../../actions/reports')
-jest.mock('./CaseAggregatesTable', () => ({
-  CaseAggregatesTable: ({ files, reprocessedState }) => (
-    <tbody data-testid="case-aggregates-table">
-      {files.map((file, index) => (
-        <tr key={index} data-testid={`file-row-${file.id}`}>
-          <td>{file.fileName}</td>
-          <td>{file.section}</td>
-          <td>Case Aggregates</td>
-        </tr>
-      ))}
-    </tbody>
-  ),
-}))
-
-jest.mock('./TotalAggregatesTable', () => ({
-  TotalAggregatesTable: ({ files, reprocessedState }) => (
-    <tbody data-testid="total-aggregates-table">
-      {files.map((file, index) => (
-        <tr key={index} data-testid={`file-row-${file.id}`}>
-          <td>{file.fileName}</td>
-          <td>{file.section}</td>
-          <td>Total Aggregates</td>
-        </tr>
-      ))}
-    </tbody>
-  ),
-}))
-
-jest.mock('../Paginator', () => ({
-  __esModule: true,
-  default: ({ pages, selected, onChange }) => (
-    <div data-testid="paginator">
-      <button
-        data-testid="prev-page"
-        onClick={() => onChange(selected - 1)}
-        disabled={selected === 1}
-      >
-        Previous
-      </button>
-      <span data-testid="current-page">{selected}</span>
-      <span data-testid="total-pages">{pages}</span>
-      <button
-        data-testid="next-page"
-        onClick={() => onChange(selected + 1)}
-        disabled={selected === pages}
-      >
-        Next
-      </button>
-    </div>
-  ),
-}))
 
 const initialState = {
   auth: {
@@ -81,10 +30,7 @@ const initialState = {
   },
 }
 
-const mockStore = (initial = initialState) => configureStore(initial)
-
 describe('SectionSubmissionHistory', () => {
-  let mockDispatch
   let mockGetAvailableFileList
 
   beforeEach(() => {
@@ -99,31 +45,36 @@ describe('SectionSubmissionHistory', () => {
     jest.clearAllMocks()
   })
 
-  const renderComponent = (
+  const setup = (
     storeState = initialState,
     filterValues = {
       year: '2024',
       quarter: 'Q1',
       stt: { id: 1, num_sections: 4 },
     },
-    reprocessedState = [false, jest.fn()]
+    reprocessedState = { setDate: jest.fn(), setModalVisible: jest.fn() }
   ) => {
-    const store = mockStore(storeState)
-    mockDispatch = jest.spyOn(store, 'dispatch')
+    const store = appConfigureStore(storeState)
+    const mockDispatch = jest.fn(store.dispatch)
+    store.dispatch = mockDispatch
 
-    return render(
-      <Provider store={store}>
-        <SectionSubmissionHistory
-          filterValues={filterValues}
-          reprocessedState={reprocessedState}
-        />
-      </Provider>
-    )
+    return {
+      ...render(
+        <Provider store={store}>
+          <SectionSubmissionHistory
+            filterValues={filterValues}
+            reprocessedState={reprocessedState}
+          />
+        </Provider>
+      ),
+      store,
+      mockDispatch,
+    }
   }
 
   describe('Rendering', () => {
     it('renders the Knowledge Center link', () => {
-      renderComponent()
+      setup()
 
       const link = screen.getByRole('link', {
         name: /Knowledge Center error reports guidance/i,
@@ -138,7 +89,7 @@ describe('SectionSubmissionHistory', () => {
     })
 
     it('renders all four section histories by default', () => {
-      renderComponent()
+      setup()
 
       expect(
         screen.getByText('Section 1 - Active Case Data')
@@ -157,7 +108,7 @@ describe('SectionSubmissionHistory', () => {
         stt: { id: 1, num_sections: 2 },
       }
 
-      renderComponent(initialState, filterValues)
+      setup(initialState, filterValues)
 
       expect(
         screen.getByText('Section 1 - Active Case Data')
@@ -174,14 +125,14 @@ describe('SectionSubmissionHistory', () => {
     })
 
     it('renders tables for each section', () => {
-      renderComponent()
+      setup()
 
       const tables = screen.getAllByRole('table')
       expect(tables).toHaveLength(4)
     })
 
     it('displays "No data available" when no files exist for a section', () => {
-      renderComponent()
+      setup()
 
       const noDataMessages = screen.getAllByText('No data available.')
       expect(noDataMessages).toHaveLength(4)
@@ -195,10 +146,10 @@ describe('SectionSubmissionHistory', () => {
         quarter: 'Q1',
         stt: { id: 1, num_sections: 4 },
       }
-      renderComponent(initialState, filterValues)
+      const { store } = setup(initialState, filterValues)
 
       expect(mockGetAvailableFileList).toHaveBeenCalledWith(filterValues)
-      expect(mockDispatch).toHaveBeenCalled()
+      expect(store.dispatch).toHaveBeenCalled()
     })
 
     it('only fetches files once', () => {
@@ -207,16 +158,19 @@ describe('SectionSubmissionHistory', () => {
         quarter: 'Q1',
         stt: { id: 1, num_sections: 4 },
       }
-      const { rerender } = renderComponent(initialState, filterValues)
+      const { rerender, store } = setup(initialState, filterValues)
 
       expect(mockGetAvailableFileList).toHaveBeenCalledTimes(1)
 
       // Rerender with same props
       rerender(
-        <Provider store={mockStore(initialState)}>
+        <Provider store={store}>
           <SectionSubmissionHistory
             filterValues={filterValues}
-            reprocessedState={[false, jest.fn()]}
+            reprocessedState={{
+              setDate: jest.fn(),
+              setModalVisible: jest.fn(),
+            }}
           />
         </Provider>
       )
@@ -232,7 +186,7 @@ describe('SectionSubmissionHistory', () => {
         stt: { id: 42, num_sections: 3 },
         file_type: 'tanf',
       }
-      renderComponent(initialState, filterValues)
+      setup(initialState, filterValues)
 
       expect(mockGetAvailableFileList).toHaveBeenCalledWith(filterValues)
     })
@@ -269,14 +223,14 @@ describe('SectionSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
       // Active Case Data should have 2 files
-      expect(screen.getByTestId('file-row-1')).toBeInTheDocument()
-      expect(screen.getByTestId('file-row-3')).toBeInTheDocument()
+      expect(screen.getByText('file1.txt')).toBeInTheDocument()
+      expect(screen.getByText('file3.txt')).toBeInTheDocument()
 
       // Closed Case Data should have 1 file
-      expect(screen.getByTestId('file-row-2')).toBeInTheDocument()
+      expect(screen.getByText('file2.txt')).toBeInTheDocument()
     })
 
     it('displays files in correct section tables', () => {
@@ -302,11 +256,11 @@ describe('SectionSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
       // Both files should be visible
-      expect(screen.getByTestId('file-row-1')).toBeInTheDocument()
-      expect(screen.getByTestId('file-row-2')).toBeInTheDocument()
+      expect(screen.getByText('active-file.txt')).toBeInTheDocument()
+      expect(screen.getByText('aggregate-file.txt')).toBeInTheDocument()
     })
 
     it('handles empty files array', () => {
@@ -317,7 +271,7 @@ describe('SectionSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
       const noDataMessages = screen.getAllByText('No data available.')
       expect(noDataMessages).toHaveLength(4)
@@ -339,10 +293,10 @@ describe('SectionSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
       // File should be matched because section.includes('Active Case Data')
-      expect(screen.getByTestId('file-row-1')).toBeInTheDocument()
+      expect(screen.getByText('file1.txt')).toBeInTheDocument()
     })
   })
 
@@ -363,9 +317,11 @@ describe('SectionSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
-      expect(screen.getByTestId('case-aggregates-table')).toBeInTheDocument()
+      // Verify file is displayed with CaseAggregatesTable structure
+      expect(screen.getByText('file1.txt')).toBeInTheDocument()
+      expect(screen.getByText('Cases Without Errors')).toBeInTheDocument()
     })
 
     it('uses CaseAggregatesTable for section 2', () => {
@@ -375,7 +331,7 @@ describe('SectionSubmissionHistory', () => {
           files: [
             {
               id: 1,
-              fileName: 'file1.txt',
+              fileName: 'file2.txt',
               section: 'Closed Case Data',
               quarter: 'Q1',
               year: '2024',
@@ -384,9 +340,11 @@ describe('SectionSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
-      expect(screen.getByTestId('case-aggregates-table')).toBeInTheDocument()
+      // Verify file is displayed with CaseAggregatesTable structure
+      expect(screen.getByText('file2.txt')).toBeInTheDocument()
+      expect(screen.getByText('Cases Without Errors')).toBeInTheDocument()
     })
 
     it('uses TotalAggregatesTable for section 3', () => {
@@ -405,9 +363,11 @@ describe('SectionSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
-      expect(screen.getByTestId('total-aggregates-table')).toBeInTheDocument()
+      // Verify file is displayed with TotalAggregatesTable structure
+      expect(screen.getByText('file1.txt')).toBeInTheDocument()
+      expect(screen.getByText('Total Errors')).toBeInTheDocument()
     })
 
     it('uses TotalAggregatesTable for section 4', () => {
@@ -426,9 +386,11 @@ describe('SectionSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
-      expect(screen.getByTestId('total-aggregates-table')).toBeInTheDocument()
+      // Verify file is displayed with TotalAggregatesTable structure
+      expect(screen.getByText('file1.txt')).toBeInTheDocument()
+      expect(screen.getByText('Total Errors')).toBeInTheDocument()
     })
   })
 
@@ -456,9 +418,11 @@ describe('SectionSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
-      expect(screen.queryByTestId('paginator')).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('navigation', { name: 'Pagination' })
+      ).not.toBeInTheDocument()
     })
 
     it('shows paginator when files exceed page size of 5', () => {
@@ -475,9 +439,11 @@ describe('SectionSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
-      expect(screen.getByTestId('paginator')).toBeInTheDocument()
+      expect(
+        screen.getByRole('navigation', { name: 'Pagination' })
+      ).toBeInTheDocument()
     })
 
     it('displays correct number of pages', () => {
@@ -494,11 +460,13 @@ describe('SectionSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
       // 12 files with page size 5 should result in 3 pages
-      const totalPages = screen.getByTestId('total-pages')
-      expect(totalPages).toHaveTextContent('3')
+      const pagination = screen.getByRole('navigation', { name: 'Pagination' })
+      const pageButtons = within(pagination).getAllByRole('button')
+      // Should have Previous, 1, 2, 3, Next = 5 buttons
+      expect(pageButtons).toHaveLength(5)
     })
 
     it('displays only 5 files per page', () => {
@@ -515,10 +483,13 @@ describe('SectionSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
-      const table = screen.getByTestId('case-aggregates-table')
-      expect(table.querySelectorAll('tr')).toHaveLength(5)
+      const tables = screen.getAllByRole('table')
+      const activeTable = tables[0]
+      const tbody = within(activeTable).getAllByRole('rowgroup')[1]
+      // 5 files * 3 rows each = 15 rows
+      expect(within(tbody).getAllByRole('row')).toHaveLength(15)
     })
 
     it('changes page when pagination button is clicked', () => {
@@ -535,17 +506,24 @@ describe('SectionSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
       // Verify paginator is present
-      expect(screen.getByTestId('paginator')).toBeInTheDocument()
+      const pagination = screen.getByRole('navigation', { name: 'Pagination' })
+      expect(pagination).toBeInTheDocument()
 
-      // Verify initial state shows page 1
-      expect(screen.getByTestId('current-page')).toHaveTextContent('1')
+      // Verify page 1 button is marked as current
+      const page1Button = within(pagination).getByRole('button', {
+        name: 'Page 1',
+        current: 'page',
+      })
+      expect(page1Button).toBeInTheDocument()
 
-      // Verify only 5 files are shown on first page
-      const table = screen.getByTestId('case-aggregates-table')
-      expect(table.querySelectorAll('tr')).toHaveLength(5)
+      // Verify only 5 files are shown on first page (5 files * 3 rows = 15 rows)
+      const tables = screen.getAllByRole('table')
+      const activeTable = tables[0]
+      const tbody = within(activeTable).getAllByRole('rowgroup')[1]
+      expect(within(tbody).getAllByRole('row')).toHaveLength(15)
     })
 
     it('maintains separate pagination state for each section', () => {
@@ -571,16 +549,18 @@ describe('SectionSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
-      const paginators = screen.getAllByTestId('paginator')
+      const paginators = screen.getAllByRole('navigation', {
+        name: 'Pagination',
+      })
       expect(paginators).toHaveLength(2)
     })
   })
 
   describe('SectionHistory Component', () => {
     it('renders table with correct caption format', () => {
-      renderComponent()
+      setup()
 
       const tables = screen.getAllByRole('table')
       expect(tables[0]).toHaveAccessibleName('Section 1 - Active Case Data')
@@ -590,7 +570,7 @@ describe('SectionSubmissionHistory', () => {
     })
 
     it('applies correct CSS classes to table container', () => {
-      const { container } = renderComponent()
+      const { container } = setup()
 
       const tableContainers = container.querySelectorAll(
         '.submission-history-section.usa-table-container--scrollable'
@@ -599,7 +579,7 @@ describe('SectionSubmissionHistory', () => {
     })
 
     it('table container has correct tabIndex', () => {
-      const { container } = renderComponent()
+      const { container } = setup()
 
       const tableContainers = container.querySelectorAll(
         '.submission-history-section'
@@ -610,7 +590,7 @@ describe('SectionSubmissionHistory', () => {
     })
 
     it('table has correct USWDS classes', () => {
-      const { container } = renderComponent()
+      const { container } = setup()
 
       const tables = container.querySelectorAll('table')
       tables.forEach((table) => {
@@ -638,10 +618,10 @@ describe('SectionSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState, undefined, reprocessedState)
+      setup(filesState, undefined, reprocessedState)
 
-      // Table component should receive reprocessedState
-      expect(screen.getByTestId('case-aggregates-table')).toBeInTheDocument()
+      // Table component should render with the file
+      expect(screen.getByText('file1.txt')).toBeInTheDocument()
     })
 
     it('handles filterValues with all properties', () => {
@@ -653,7 +633,7 @@ describe('SectionSubmissionHistory', () => {
         section: 'Active Case Data',
       }
 
-      renderComponent(initialState, filterValues)
+      setup(initialState, filterValues)
 
       expect(mockGetAvailableFileList).toHaveBeenCalledWith(filterValues)
     })
@@ -665,7 +645,7 @@ describe('SectionSubmissionHistory', () => {
         stt: { id: 1, num_sections: 1 },
       }
 
-      renderComponent(initialState, filterValues)
+      setup(initialState, filterValues)
 
       // Only section 1 should be rendered
       expect(
@@ -694,11 +674,11 @@ describe('SectionSubmissionHistory', () => {
         },
       }
 
-      const { container } = renderComponent(filesState)
+      const { container } = setup(filesState)
 
       // Should render without crashing
       expect(container).toBeInTheDocument()
-      expect(screen.getByTestId('file-row-1')).toBeInTheDocument()
+      expect(screen.getByText('file1.txt')).toBeInTheDocument()
     })
 
     it('handles num_sections of 0', () => {
@@ -708,7 +688,7 @@ describe('SectionSubmissionHistory', () => {
         stt: { id: 1, num_sections: 0 },
       }
 
-      renderComponent(initialState, filterValues)
+      setup(initialState, filterValues)
 
       // No sections should be rendered
       expect(
@@ -730,7 +710,7 @@ describe('SectionSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
       // Should render without performance issues
       expect(
@@ -754,10 +734,10 @@ describe('SectionSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
       // File should not appear in any section
-      expect(screen.queryByTestId('file-row-1')).not.toBeInTheDocument()
+      expect(screen.queryByText('file1.txt')).not.toBeInTheDocument()
     })
 
     it('handles num_sections greater than available sections', () => {
@@ -767,7 +747,7 @@ describe('SectionSubmissionHistory', () => {
         stt: { id: 1, num_sections: 10 },
       }
 
-      renderComponent(initialState, filterValues)
+      setup(initialState, filterValues)
 
       // Should only render 4 sections (max available)
       const tables = screen.getAllByRole('table')
@@ -782,7 +762,7 @@ describe('SectionSubmissionHistory', () => {
         },
       }
 
-      const { container } = renderComponent(filesState)
+      const { container } = setup(filesState)
 
       // Should render without crashing when files is an empty array
       expect(container).toBeInTheDocument()
@@ -798,7 +778,7 @@ describe('SectionSubmissionHistory', () => {
 
   describe('Accessibility', () => {
     it('has accessible link for Knowledge Center', () => {
-      renderComponent()
+      setup()
 
       const link = screen.getByRole('link', {
         name: /Knowledge Center error reports guidance/i,
@@ -810,7 +790,7 @@ describe('SectionSubmissionHistory', () => {
     })
 
     it('tables have proper captions for screen readers', () => {
-      renderComponent()
+      setup()
 
       const captions = [
         'Section 1 - Active Case Data',
@@ -825,7 +805,7 @@ describe('SectionSubmissionHistory', () => {
     })
 
     it('table containers are keyboard accessible', () => {
-      const { container } = renderComponent()
+      const { container } = setup()
 
       const tableContainers = container.querySelectorAll(
         '.submission-history-section'
@@ -853,16 +833,16 @@ describe('SectionSubmissionHistory', () => {
         },
       }
 
-      renderComponent(filesState)
+      setup(filesState)
 
-      expect(screen.getByTestId('file-row-1')).toBeInTheDocument()
+      expect(screen.getByText('test-file.txt')).toBeInTheDocument()
     })
 
     it('updates when Redux store changes', () => {
-      const { rerender } = renderComponent()
+      const { rerender } = setup()
 
       // Initially no files
-      expect(screen.queryByTestId('file-row-1')).not.toBeInTheDocument()
+      expect(screen.queryByText('new-file.txt')).not.toBeInTheDocument()
 
       // Update store with files
       const updatedState = {
@@ -880,7 +860,9 @@ describe('SectionSubmissionHistory', () => {
         },
       }
 
-      const updatedStore = mockStore(updatedState)
+      const updatedStore = appConfigureStore(updatedState)
+      const mockDispatch = jest.fn(updatedStore.dispatch)
+      updatedStore.dispatch = mockDispatch
 
       rerender(
         <Provider store={updatedStore}>
@@ -890,13 +872,16 @@ describe('SectionSubmissionHistory', () => {
               quarter: 'Q1',
               stt: { id: 1, num_sections: 4 },
             }}
-            reprocessedState={[false, jest.fn()]}
+            reprocessedState={{
+              setDate: jest.fn(),
+              setModalVisible: jest.fn(),
+            }}
           />
         </Provider>
       )
 
       // File should now be visible
-      expect(screen.getByTestId('file-row-1')).toBeInTheDocument()
+      expect(screen.getByText('new-file.txt')).toBeInTheDocument()
     })
   })
 
@@ -908,7 +893,7 @@ describe('SectionSubmissionHistory', () => {
         stt: { id: 1, num_sections: 1 },
       }
 
-      renderComponent(initialState, filterValues)
+      setup(initialState, filterValues)
 
       expect(
         screen.getByText('Section 1 - Active Case Data')
@@ -931,7 +916,7 @@ describe('SectionSubmissionHistory', () => {
         stt: { id: 1, num_sections: 3 },
       }
 
-      renderComponent(initialState, filterValues)
+      setup(initialState, filterValues)
 
       expect(
         screen.getByText('Section 1 - Active Case Data')
@@ -952,7 +937,7 @@ describe('SectionSubmissionHistory', () => {
         stt: { id: 1, num_sections: 4 },
       }
 
-      renderComponent(initialState, filterValues)
+      setup(initialState, filterValues)
 
       expect(
         screen.getByText('Section 1 - Active Case Data')
