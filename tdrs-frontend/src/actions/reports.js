@@ -4,6 +4,7 @@ import axios from 'axios'
 import axiosInstance from '../axios-instance'
 import { logErrorToServer } from '../utils/eventLogger'
 import removeFileInputErrorState from '../utils/removeFileInputErrorState'
+import { quarters } from '../components/Reports/utils'
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
 
@@ -152,6 +153,15 @@ export const upload =
     return true
   }
 
+// For now because we consider Program Audit to be the section and program type in the backend, that is what is
+// returned to the frontend for the submittedFile's section. However, the frontend maps the Program Audit file's
+// section to be the quarter labels. Thus, we need this function to map the backend to the frontend.
+const map_section = (fileType, submittedFile) => {
+  if (fileType === 'program-integrity-audit') {
+    submittedFile.section = quarters[submittedFile.quarter]
+  }
+}
+
 export const submit =
   ({
     formattedSections,
@@ -163,6 +173,7 @@ export const submit =
     user,
     year,
     ssp,
+    fileType,
   }) =>
   async (dispatch) => {
     const submissionRequests = uploadedFiles.map((file) => {
@@ -202,6 +213,7 @@ export const submit =
 
         const submittedFiles = responses.reduce((result, response) => {
           const submittedFile = response?.data
+          map_section(fileType, submittedFile)
           dispatch({
             type: SET_FILE_SUBMITTED,
             payload: { submittedFile },
