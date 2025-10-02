@@ -203,13 +203,20 @@ const validateCalendarToFiscalYearQuarter = (
     fileYear,
     fileQuarter
   )
+
+  let isValid = false
+  if (selectedProgramType === 'PRO') {
+    // For Program Integrity Audit files, only validate year
+    isValid = yearQuarter && fileFiscalYear === selectedFiscalYear
+  } else {
+    // For TANF/SSP files, validate both year and quarter
+    isValid = yearQuarter &&
+              fileFiscalYear === selectedFiscalYear &&
+              fileFiscalQuarter === selectedFiscalQuarter.slice(1, 2)
+  }
+
   return {
-    isValid:
-      yearQuarter &&
-      fileFiscalYear === selectedFiscalYear &&
-      selectedProgramType === 'PRO'
-        ? true
-        : fileFiscalQuarter === selectedFiscalQuarter.slice(1, 2),
+    isValid,
     fileFiscalYear,
     fileFiscalQuarter,
   }
