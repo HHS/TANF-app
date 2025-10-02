@@ -10,41 +10,7 @@ import { useEventLogger } from '../../utils/eventLogger'
 import { useFormSubmission } from '../../hooks/useFormSubmission'
 import { useReportsContext } from '../Reports/ReportsContext'
 
-<<<<<<<< HEAD:tdrs-frontend/src/components/FileUploadForms/SectionFileUploadForm.jsx
 const SectionFileUploadForm = ({ stt }) => {
-========
-function FileUploadForm({ handleCancel, stt, openWidget }) {
-  // The currently selected year from the reportingYears dropdown
-  const selectedYear = useSelector((state) => state.reports.year)
-  // The selected quarter in the dropdown tied to our redux `reports` state
-  const selectedQuarter = useSelector((state) => state.reports.quarter)
-  // The selected File Type value from redux
-  const selectedFileType = useSelector((state) => state.reports.fileType)
-
-  // The set of uploaded files in our Redux state
-  const files = useSelector((state) => state.reports.submittedFiles)
-
-  // The logged in user in our Redux state
-  const user = useSelector((state) => state.auth.user)
-
-  // The number of sections this stt submits data for and it's ID
-  const stt_id = stt?.id
-  const num_sections = stt === undefined ? 4 : stt.num_sections
-
-  // TODO: Move this to Redux state so we can modify this value outside of
-  // this component without having to pass the setter function around
-  const [localAlert, setLocalAlertState] = useState({
-    active: false,
-    type: null,
-    message: null,
-  })
-
-  // Use the form submission hook
-  const { isSubmitting, executeSubmission } = useFormSubmission()
-
-  const alertRef = useRef(null)
-
->>>>>>>> 1467a6ef01aad2a38eec9643db26cf188ea5dd7b:tdrs-frontend/src/components/FileUploadForm/FileUploadForm.jsx
   const dispatch = useDispatch()
   const logger = useEventLogger()
 
@@ -183,13 +149,4 @@ function FileUploadForm({ handleCancel, stt, openWidget }) {
   )
 }
 
-<<<<<<<< HEAD:tdrs-frontend/src/components/FileUploadForms/SectionFileUploadForm.jsx
 export default SectionFileUploadForm
-========
-FileUploadForm.propTypes = {
-  handleCancel: PropTypes.func.isRequired,
-  stt: PropTypes.object,
-}
-
-export default FileUploadForm
->>>>>>>> 1467a6ef01aad2a38eec9643db26cf188ea5dd7b:tdrs-frontend/src/components/FileUploadForm/FileUploadForm.jsx
