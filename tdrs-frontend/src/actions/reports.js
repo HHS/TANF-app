@@ -56,12 +56,13 @@ export const getAvailableFileList =
       type: FETCH_FILE_LIST,
     })
     try {
-      const response = await axios.get(
-        `${BACKEND_URL}/data_files/?year=${year}&quarter=${quarter}&stt=${stt.id}&file_type=${file_type}`,
-        {
-          responseType: 'json',
-        }
-      )
+      let url = `${BACKEND_URL}/data_files/?year=${year}&stt=${stt.id}&file_type=${file_type}`
+      if (quarter) {
+        url += `&quarter=${quarter}`
+      }
+      const response = await axios.get(url, {
+        responseType: 'json',
+      })
       dispatch({
         type: SET_FILE_LIST,
         payload: {

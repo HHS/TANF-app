@@ -53,7 +53,7 @@ const QuarterSubmissionHistory = ({ filterValues, reprocessedState }) => {
 
   useEffect(() => {
     if (!hasFetchedFiles) {
-      dispatch(getAvailableFileList(filterValues))
+      dispatch(getAvailableFileList({ ...filterValues, quarter: null }))
       setHasFetchedFiles(true)
     }
   }, [hasFetchedFiles, files, dispatch, filterValues])
