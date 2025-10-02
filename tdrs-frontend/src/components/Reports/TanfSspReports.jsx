@@ -21,6 +21,8 @@ const TanfSspReports = ({ stt, isRegionalStaff }) => {
     selectedSubmissionTab,
     setSelectedSubmissionTab,
     setLocalAlertState,
+    setReprocessedModalVisible,
+    setReprocessedDate,
     headerRef,
   } = useReportsContext()
 
@@ -142,6 +144,10 @@ const TanfSspReports = ({ stt, isRegionalStaff }) => {
                 year: yearInputValue,
                 stt: stt,
                 file_type: fileTypeInputValue,
+              }}
+              reprocessedState={{
+                setModalVisible: setReprocessedModalVisible,
+                setDate: setReprocessedDate,
               }}
             />
           )}
