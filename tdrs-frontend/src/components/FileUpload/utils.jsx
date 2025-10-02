@@ -210,9 +210,10 @@ const validateCalendarToFiscalYearQuarter = (
     isValid = yearQuarter && fileFiscalYear === selectedFiscalYear
   } else {
     // For TANF/SSP files, validate both year and quarter
-    isValid = yearQuarter &&
-              fileFiscalYear === selectedFiscalYear &&
-              fileFiscalQuarter === selectedFiscalQuarter.slice(1, 2)
+    isValid =
+      yearQuarter &&
+      fileFiscalYear === selectedFiscalYear &&
+      fileFiscalQuarter === selectedFiscalQuarter.slice(1, 2)
   }
 
   return {
