@@ -57,6 +57,8 @@ def get_prog_from_section(str_section):
         return "SSP"
     elif str_section.startswith("Tribal"):
         return "Tribal TAN"
+    elif str_section.startswith("Pro"):
+        return "Program Audit"
     else:
         return "TAN"
 
