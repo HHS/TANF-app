@@ -3,7 +3,6 @@
 from __future__ import absolute_import
 
 from django.conf import settings
-from django.contrib.auth.models import Group
 from django.core.files import File
 from django.db.utils import DatabaseError
 from django.utils import timezone

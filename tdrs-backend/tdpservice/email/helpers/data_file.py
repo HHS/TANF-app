@@ -5,7 +5,6 @@ from django.conf import settings
 from tdpservice.data_files.models import DataFile
 from tdpservice.email.email import automated_email, log
 from tdpservice.email.email_enums import EmailType
-from tdpservice.parsers.util import get_prog_from_section
 from tdpservice.users.models import User
 
 
@@ -31,7 +30,7 @@ def send_data_submitted_email(
 
     section_name = datafile.section
 
-    file_type = datafile.prog_type # e.g. "TAN", "SSP", "FRA"
+    file_type = datafile.prog_type  # e.g. "TAN", "SSP", "FRA"
     # TANF and Tribal TANF file types are stored as "TAN" in prog_type
     if file_type == "TAN":
         if section_name.startswith("Tribal"):
@@ -59,6 +58,7 @@ def send_data_submitted_email(
         f"Data file submitted; emailing Data Analysts {list(recipients)}",
         logger_context=logger_context,
     )
+    DataFileSummary.Status.ACCEPTED_WITH_ERRORS
 
     match datafile_summary.status:
         case DataFileSummary.Status.PENDING:
