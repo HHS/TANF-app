@@ -333,7 +333,7 @@ class ProgramAuditParser(BaseParser):
                 error_message="Multiple trailers found.",
                 fields=[],
             )
-            generate_error = self.error_generator_factory.get_error_generator(
+            generate_error = self.error_generator_factory.get_generator(
                 ErrorGeneratorType.MSG_ONLY_PRECHECK,
                 self.current_row_num,
             )
