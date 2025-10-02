@@ -112,8 +112,6 @@ class ProgramManager:
         is_program_audit: bool = False,
     ):
         """Get all schemas for a program type and section."""
-        print("program_type")
-        print(program_type)
         match program_type:
             case DataFile.ProgramType.TANF:
                 match section:

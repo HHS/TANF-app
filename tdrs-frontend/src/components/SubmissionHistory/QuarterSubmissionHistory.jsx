@@ -6,7 +6,7 @@ import {
   programIntegrityAuditLabels,
   PROGRAM_INTEGRITY_SECTION,
 } from '../Reports/utils'
-import { TotalAggregatesTable } from './TotalAggregatesTable'
+import { CaseAggregatesTable } from './CaseAggregatesTable'
 
 const QuarterSection = ({ quarter, label, files, reprocessedState }) => {
   const pageSize = 5
@@ -26,7 +26,7 @@ const QuarterSection = ({ quarter, label, files, reprocessedState }) => {
       <table className="usa-table usa-table--striped">
         <caption>{label}</caption>
         {files && files.length > 0 ? (
-          <TotalAggregatesTable
+          <CaseAggregatesTable
             files={files.slice(pageStart, pageEnd)}
             reprocessedState={reprocessedState}
           />
