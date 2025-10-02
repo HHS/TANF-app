@@ -43,7 +43,7 @@ t1 = [
                 endIndex=8,
                 required=True,
                 validators=[
-                    category2.dateYearIsLargerThan(2023),  # add month 10 validation
+                    category2.dateYearMonthIsLargerThan(2023, 10),
                     category2.dateMonthIsValid(),
                 ],
             ),

@@ -1,6 +1,5 @@
 """Test category2 validators."""
 
-
 import pytest
 
 from tdpservice.parsers.dataclasses import ValidationErrorArgs
@@ -366,6 +365,74 @@ def test_isNotZero(val, number_of_zeros, kwargs, exp_result, exp_message):
 def test_dateYearIsLargerThan(val, year, kwargs, exp_result, exp_message):
     """Test dateYearIsLargerThan validator error messages."""
     _validator = category2.dateYearIsLargerThan(year, **kwargs)
+    _validate_and_assert(_validator, val, exp_result, exp_message)
+
+
+@pytest.mark.parametrize(
+    "val, year, month, kwargs, exp_result, exp_message",
+    [
+        (
+            "201001",
+            2010,
+            2,
+            {},
+            False,
+            "Test Item 1 (test field): If year equals 2010 month must be larger than 2.",
+        ),
+        (
+            "202010",
+            2010,
+            8,
+            {},
+            True,
+            None,
+        ),
+        (
+            "200901",
+            2010,
+            2,
+            {},
+            False,
+            "Test Item 1 (test field): Must be larger than 201002.",
+        ),
+        (
+            "202001",
+            2010,
+            8,
+            {},
+            True,
+            None,
+        ),
+    ],
+)
+def test_dateYearMonthIsLargerThan(val, year, month, kwargs, exp_result, exp_message):
+    """Test dateYearMonthIsLargerThan validator error messages."""
+    _validator = category2.dateYearMonthIsLargerThan(year, month, **kwargs)
+    _validate_and_assert(_validator, val, exp_result, exp_message)
+
+
+@pytest.mark.parametrize(
+    "val, month, kwargs, exp_result, exp_message",
+    [
+        (
+            "201001",
+            2,
+            {},
+            False,
+            "Test Item 1 (test field): Month 01 must be larger than 2.",
+        ),
+        (
+            "202010",
+            8,
+            {},
+            True,
+            None,
+        ),
+    ],
+)
+def test_dateMonthIsLargerThan(val, month, kwargs, exp_result, exp_message):
+    """Test dateMonthIsLargerThan validator error messages."""
+    _validator = category2.dateMonthIsLargerThan(month, **kwargs)
     _validate_and_assert(_validator, val, exp_result, exp_message)
 
 

@@ -54,7 +54,7 @@ t2 = [
                 endIndex=8,
                 required=True,
                 validators=[
-                    category2.dateYearIsLargerThan(2023),
+                    category2.dateYearMonthIsLargerThan(2023, 10),
                     category2.dateMonthIsValid(),
                 ],
             ),
