@@ -10,8 +10,8 @@ import { useEventLogger } from '../../utils/eventLogger'
 import { useFormSubmission } from '../../hooks/useFormSubmission'
 import { useReportsContext } from '../Reports/ReportsContext'
 
-<<<<<<<< HEAD:tdrs-frontend/src/components/FileUploadForms/SectionFileUploadForm.jsx
 const SectionFileUploadForm = ({ stt }) => {
+<<<<<<< HEAD
 ========
 function FileUploadForm({ handleCancel, stt, openWidget }) {
   // The currently selected year from the reportingYears dropdown
@@ -45,6 +45,8 @@ function FileUploadForm({ handleCancel, stt, openWidget }) {
   const alertRef = useRef(null)
 
 >>>>>>>> f14008915 (- Use radio component on Reports page):tdrs-frontend/src/components/FileUploadForm/FileUploadForm.jsx
+=======
+>>>>>>> 665523ee9 (- resolve conflicts)
   const dispatch = useDispatch()
   const logger = useEventLogger()
 
@@ -183,8 +185,8 @@ function FileUploadForm({ handleCancel, stt, openWidget }) {
   )
 }
 
-<<<<<<<< HEAD:tdrs-frontend/src/components/FileUploadForms/SectionFileUploadForm.jsx
 export default SectionFileUploadForm
+<<<<<<< HEAD
 ========
 FileUploadForm.propTypes = {
   handleCancel: PropTypes.func.isRequired,
@@ -193,3 +195,5 @@ FileUploadForm.propTypes = {
 
 export default FileUploadForm
 >>>>>>>> f14008915 (- Use radio component on Reports page):tdrs-frontend/src/components/FileUploadForm/FileUploadForm.jsx
+=======
+>>>>>>> 665523ee9 (- resolve conflicts)
