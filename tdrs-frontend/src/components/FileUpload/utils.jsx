@@ -182,8 +182,7 @@ export const tryGetUTF8EncodedFile = async function (fileBytes, file) {
 const validateCalendarToFiscalYearQuarter = (
   header,
   selectedFiscalYear,
-  selectedFiscalQuarter,
-  selectedProgramType
+  selectedFiscalQuarter
 ) => {
   const CalendarToFiscalYearQuarter = (calendarYear, calendarQuarter) => {
     let quarter = parseInt(calendarQuarter)
@@ -204,17 +203,10 @@ const validateCalendarToFiscalYearQuarter = (
     fileQuarter
   )
 
-  let isValid = false
-  if (selectedProgramType === 'PRO') {
-    // For Program Integrity Audit files, only validate year
-    isValid = yearQuarter && fileFiscalYear === selectedFiscalYear
-  } else {
-    // For TANF/SSP files, validate both year and quarter
-    isValid =
-      yearQuarter &&
-      fileFiscalYear === selectedFiscalYear &&
-      fileFiscalQuarter === selectedFiscalQuarter.slice(1, 2)
-  }
+  const isValid =
+    yearQuarter &&
+    fileFiscalYear === selectedFiscalYear &&
+    fileFiscalQuarter === selectedFiscalQuarter.slice(1, 2)
 
   return {
     isValid,
@@ -260,8 +252,7 @@ export const validateHeader = async function (
   const calendarFiscalResult = validateCalendarToFiscalYearQuarter(
     header,
     selectedFiscalYear,
-    selectedFiscalQuarter,
-    selectedProgramType
+    selectedFiscalQuarter
   )
   const programTypeResult = validateProgramType(header, selectedProgramType)
   return {

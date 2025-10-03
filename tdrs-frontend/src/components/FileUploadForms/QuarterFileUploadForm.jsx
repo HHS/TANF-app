@@ -150,7 +150,7 @@ const QuarterFileUploadForm = ({ stt }) => {
             key={quarterLabel}
             section={quarterLabel}
             year={yearInputValue}
-            quarter={index + 1}
+            quarter={`Q${index + 1}`}
             fileType={fileTypeInputValue}
             label={quarterLabel}
             setLocalAlertState={setLocalAlertState}
