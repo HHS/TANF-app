@@ -162,10 +162,14 @@ describe('SectionFileUploadForm', () => {
     it('renders section labels with correct format', () => {
       const { getByText } = renderComponent()
 
-      expect(getByText('Section 1 TANF - Active Case Data')).toBeInTheDocument()
-      expect(getByText('Section 2 TANF - Closed Case Data')).toBeInTheDocument()
-      expect(getByText('Section 3 TANF - Aggregate Data')).toBeInTheDocument()
-      expect(getByText('Section 4 TANF - Stratum Data')).toBeInTheDocument()
+      expect(
+        getByText('Section 1 - TANF - Active Case Data')
+      ).toBeInTheDocument()
+      expect(
+        getByText('Section 2 - TANF - Closed Case Data')
+      ).toBeInTheDocument()
+      expect(getByText('Section 3 - TANF - Aggregate Data')).toBeInTheDocument()
+      expect(getByText('Section 4 - TANF - Stratum Data')).toBeInTheDocument()
     })
   })
 
@@ -860,7 +864,9 @@ describe('SectionFileUploadForm', () => {
     it('displays correct file type in labels for TANF', () => {
       const { getByText } = renderComponent()
 
-      expect(getByText('Section 1 TANF - Active Case Data')).toBeInTheDocument()
+      expect(
+        getByText('Section 1 - TANF - Active Case Data')
+      ).toBeInTheDocument()
     })
 
     it('displays correct file type in labels for SSP-MOE', () => {
@@ -875,7 +881,9 @@ describe('SectionFileUploadForm', () => {
 
       // Note: The file type comes from ReportsContext, which defaults to 'tanf'
       // In a real scenario, the context would need to be set to 'ssp-moe'
-      expect(getByText('Section 1 TANF - Active Case Data')).toBeInTheDocument()
+      expect(
+        getByText('Section 1 - TANF - Active Case Data')
+      ).toBeInTheDocument()
     })
   })
 
