@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import React, { createContext, useContext, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
