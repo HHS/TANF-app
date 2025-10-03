@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import classNames from 'classnames'
 
-import { clearFileList } from '../../actions/reports'
 import STTComboBox from '../STTComboBox'
 import { fetchSttList } from '../../actions/sttList'
 import Modal from '../Modal'
@@ -12,15 +11,14 @@ import {
   accountIsRegionalStaff,
 } from '../../selectors/auth'
 import RadioSelect from '../Form/RadioSelect'
-import TanfSspReports from './TanfSspReports'
-import ProgramIntegrityAuditReports from './ProgramIntegrityAuditReports'
+import TanfSspReports from './tdr/TanfSspReports'
+import ProgramIntegrityAuditReports from './pia/ProgramIntegrityAuditReports'
 import { ReportsProvider, useReportsContext } from './ReportsContext'
 
 function ReportsContent() {
   const {
     fileTypeInputValue,
     sttInputValue,
-    setSttInputValue,
     errorModalVisible,
     setErrorModalVisible,
     reprocessedModalVisible,
@@ -28,7 +26,7 @@ function ReportsContent() {
     reprocessedDate,
     handleClear,
     selectFileType,
-    setLocalAlertState,
+    selectStt,
   } = useReportsContext()
 
   const dispatch = useDispatch()
@@ -87,16 +85,6 @@ function ReportsContent() {
       value: 'program-integrity-audit',
     },
   ]
-
-  const selectStt = (value) => {
-    setSttInputValue(value)
-    setLocalAlertState({
-      active: false,
-      type: null,
-      message: null,
-    })
-    dispatch(clearFileList({ fileType: fileTypeInputValue }))
-  }
 
   return (
     <div className="page-container" style={{ position: 'relative' }}>

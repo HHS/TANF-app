@@ -59,23 +59,57 @@ export const ReportsProvider = ({ children }) => {
   }
 
   const selectFileType = (value) => {
-    setFileTypeInputValue(value)
-    setYearInputValue('')
-    setQuarterInputValue('')
-    dispatch(clearFileList({ fileType: value }))
-    dispatch(reinitializeSubmittedFiles(value))
+    if (uploadedFiles.length > 0) {
+      setErrorModalVisible(true)
+    } else {
+      setFileTypeInputValue(value)
+      setYearInputValue('')
+      setQuarterInputValue('')
+      dispatch(clearFileList({ fileType: value }))
+      dispatch(reinitializeSubmittedFiles(value))
+    }
+  }
+
+  const selectYear = ({ target: { value } }) => {
+    if (uploadedFiles.length > 0) {
+      setErrorModalVisible(true)
+    } else {
+      setYearInputValue(value)
+      setLocalAlertState({ active: false, type: null, message: null })
+      dispatch(clearFileList({ fileType: fileTypeInputValue }))
+    }
+  }
+
+  const selectQuarter = ({ target: { value } }) => {
+    if (uploadedFiles.length > 0) {
+      setErrorModalVisible(true)
+    } else {
+      setQuarterInputValue(value)
+      setLocalAlertState({ active: false, type: null, message: null })
+      dispatch(clearFileList({ fileType: fileTypeInputValue }))
+    }
+  }
+
+  const selectStt = (value) => {
+    if (uploadedFiles.length > 0) {
+      setErrorModalVisible(true)
+    } else {
+      setSttInputValue(value)
+      setLocalAlertState({
+        active: false,
+        type: null,
+        message: null,
+      })
+      dispatch(clearFileList({ fileType: fileTypeInputValue }))
+    }
   }
 
   const value = {
     // State
-    yearInputValue,
-    setYearInputValue,
-    quarterInputValue,
-    setQuarterInputValue,
-    fileTypeInputValue,
-    setFileTypeInputValue,
     sttInputValue,
-    setSttInputValue,
+    fileTypeInputValue,
+    yearInputValue,
+    quarterInputValue,
     errorModalVisible,
     setErrorModalVisible,
     reprocessedModalVisible,
@@ -95,6 +129,9 @@ export const ReportsProvider = ({ children }) => {
     handleClear,
     handleOpenFeedbackWidget,
     selectFileType,
+    selectYear,
+    selectQuarter,
+    selectStt,
   }
 
   return (
