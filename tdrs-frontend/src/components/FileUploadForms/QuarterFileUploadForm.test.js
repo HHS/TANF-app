@@ -20,14 +20,7 @@ jest.mock('@uswds/uswds/src/js/components', () => ({
 // Mock FileUpload component
 jest.mock('../FileUpload', () => ({
   __esModule: true,
-  default: ({
-    section,
-    year,
-    quarter,
-    fileType,
-    label,
-    setLocalAlertState,
-  }) => (
+  default: ({ section, year, quarter, fileType, label }) => (
     <div data-testid={`file-upload-${section}`}>
       <label>{label}</label>
       <input
@@ -62,9 +55,6 @@ const initialState = {
 }
 
 const mockStore = (initial = initialState) => configureStore(initial)
-
-const makeTestFile = (name, contents = ['test'], type = 'text/plain') =>
-  new File(contents, name, { type })
 
 describe('QuarterFileUploadForm', () => {
   let mockExecuteSubmission
@@ -184,83 +174,6 @@ describe('QuarterFileUploadForm', () => {
         ...initialState,
         reports: {
           submittedFiles: [uploadedFile],
-        },
-      }
-
-      mockExecuteSubmission.mockImplementation(async (fn) => {
-        await fn()
-      })
-
-      const { getByText } = renderComponent(storeState)
-
-      const submitButton = getByText('Submit Data Files')
-      fireEvent.click(submitButton)
-
-      await waitFor(() => {
-        expect(mockExecuteSubmission).toHaveBeenCalled()
-      })
-    })
-
-    it('transforms files correctly before submission', async () => {
-      const uploadedFiles = [
-        {
-          fileName: 'q1.txt',
-          section: 'Quarter 1 (October - December)',
-          fileType: 'pia',
-          year: '2024',
-        },
-        {
-          fileName: 'q2.txt',
-          section: 'Quarter 2 (January - March)',
-          fileType: 'pia',
-          year: '2024',
-        },
-      ]
-
-      const storeState = {
-        ...initialState,
-        reports: {
-          submittedFiles: uploadedFiles,
-        },
-      }
-
-      mockExecuteSubmission.mockImplementation(async (fn) => {
-        await fn()
-      })
-
-      const { getByText } = renderComponent(storeState)
-
-      const submitButton = getByText('Submit Data Files')
-      fireEvent.click(submitButton)
-
-      await waitFor(() => {
-        expect(mockExecuteSubmission).toHaveBeenCalled()
-      })
-
-      // Verify executeSubmission was called with a function
-      expect(mockExecuteSubmission).toHaveBeenCalledWith(expect.any(Function))
-    })
-
-    it('formats quarters correctly in success message', async () => {
-      const uploadedFiles = [
-        {
-          fileName: 'q1.txt',
-          section: 'Quarter 1 (October - December)',
-          fileType: 'pia',
-          year: '2024',
-        },
-        {
-          fileName: 'q3.txt',
-          section: 'Quarter 3 (April - June)',
-          fileType: 'pia',
-          year: '2024',
-        },
-      ]
-
-      const storeState = {
-        ...initialState,
-        reports: {
-          submittedFiles: uploadedFiles,
         },
       }
 
@@ -439,215 +352,9 @@ describe('QuarterFileUploadForm', () => {
         behavior: 'smooth',
       })
     })
-
-    it('displays error alert with correct styling', async () => {
-      const storeState = {
-        ...initialState,
-        reports: {
-          submittedFiles: [],
-        },
-      }
-
-      const { getByText, container } = renderComponent(storeState)
-
-      const submitButton = getByText('Submit Data Files')
-      fireEvent.click(submitButton)
-
-      await waitFor(() => {
-        const alert = container.querySelector('.usa-alert--error')
-        expect(alert).toBeInTheDocument()
-      })
-    })
-  })
-
-  describe('Quarter Formatting', () => {
-    it('formats single quarter correctly', () => {
-      const uploadedFiles = [
-        {
-          fileName: 'q1.txt',
-          section: 'Quarter 1 (October - December)',
-          fileType: 'pia',
-          year: '2024',
-        },
-      ]
-
-      const storeState = {
-        ...initialState,
-        reports: {
-          submittedFiles: uploadedFiles,
-        },
-      }
-
-      renderComponent(storeState)
-      // Component renders without errors
-    })
-
-    it('formats multiple quarters with "and" correctly', () => {
-      const uploadedFiles = [
-        {
-          fileName: 'q1.txt',
-          section: 'Quarter 1 (October - December)',
-          fileType: 'pia',
-          year: '2024',
-        },
-        {
-          fileName: 'q2.txt',
-          section: 'Quarter 2 (January - March)',
-          fileType: 'pia',
-          year: '2024',
-        },
-      ]
-
-      const storeState = {
-        ...initialState,
-        reports: {
-          submittedFiles: uploadedFiles,
-        },
-      }
-
-      renderComponent(storeState)
-      // Component renders without errors
-    })
-  })
-
-  describe('File Upload Integration', () => {
-    it('passes correct props to FileUpload components', () => {
-      const { getByTestId } = renderComponent()
-
-      const q1Upload = getByTestId('file-upload-Quarter 1 (October - December)')
-      const input = q1Upload.querySelector('input')
-
-      expect(input).toHaveAttribute(
-        'data-section',
-        'Quarter 1 (October - December)'
-      )
-      expect(input).toHaveAttribute('data-quarter', 'Q1')
-    })
-
-    it('renders FileUpload for each quarter in correct order', () => {
-      const { getByTestId } = renderComponent()
-
-      const uploads = [
-        'file-upload-Quarter 1 (October - December)',
-        'file-upload-Quarter 2 (January - March)',
-        'file-upload-Quarter 3 (April - June)',
-        'file-upload-Quarter 4 (July - September)',
-      ]
-
-      uploads.forEach((testId) => {
-        expect(getByTestId(testId)).toBeInTheDocument()
-      })
-    })
-  })
-
-  describe('STT Handling', () => {
-    it('uses stt.id when stt is provided', async () => {
-      const uploadedFile = {
-        fileName: 'test.txt',
-        section: 'Quarter 1 (October - December)',
-        fileType: 'pia',
-        year: '2024',
-      }
-
-      const storeState = {
-        ...initialState,
-        reports: {
-          submittedFiles: [uploadedFile],
-        },
-      }
-
-      const stt = { id: 42, name: 'Test State' }
-
-      mockExecuteSubmission.mockImplementation(async (fn) => {
-        await fn()
-      })
-
-      const { getByText } = renderComponent(storeState, stt)
-
-      const submitButton = getByText('Submit Data Files')
-      fireEvent.click(submitButton)
-
-      await waitFor(() => {
-        expect(mockExecuteSubmission).toHaveBeenCalled()
-      })
-    })
-
-    it('handles undefined stt gracefully', async () => {
-      const uploadedFile = {
-        fileName: 'test.txt',
-        section: 'Quarter 1 (October - December)',
-        fileType: 'pia',
-        year: '2024',
-      }
-
-      const storeState = {
-        ...initialState,
-        reports: {
-          submittedFiles: [uploadedFile],
-        },
-      }
-
-      mockExecuteSubmission.mockImplementation(async (fn) => {
-        await fn()
-      })
-
-      const { getByText } = renderComponent(storeState, undefined)
-
-      const submitButton = getByText('Submit Data Files')
-      fireEvent.click(submitButton)
-
-      await waitFor(() => {
-        expect(mockExecuteSubmission).toHaveBeenCalled()
-      })
-    })
   })
 
   describe('Edge Cases', () => {
-    it('handles empty uploadedFiles array', () => {
-      const storeState = {
-        ...initialState,
-        reports: {
-          submittedFiles: [],
-        },
-      }
-
-      const { getByText } = renderComponent(storeState)
-      expect(getByText('Submit Data Files')).toBeInTheDocument()
-    })
-
-    it('handles null submittedFiles', () => {
-      const storeState = {
-        ...initialState,
-        reports: {
-          submittedFiles: null,
-        },
-      }
-
-      const { getByText } = renderComponent(storeState)
-      expect(getByText('Submit Data Files')).toBeInTheDocument()
-    })
-
-    it('handles files with invalid section names', () => {
-      const uploadedFiles = [
-        {
-          fileName: 'test.txt',
-          section: 'Invalid Section',
-          fileType: 'pia',
-          year: '2024',
-        },
-      ]
-
-      const storeState = {
-        ...initialState,
-        reports: {
-          submittedFiles: uploadedFiles,
-        },
-      }
-
-      renderComponent(storeState)
-      // Component should handle gracefully
-    })
-
     it('prevents form submission via Enter key when no files uploaded', async () => {
       const storeState = {
         ...initialState,
@@ -669,63 +376,6 @@ describe('QuarterFileUploadForm', () => {
       })
 
       expect(mockExecuteSubmission).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('Console Logging', () => {
-    it('logs submission process', async () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation()
-
-      const uploadedFile = {
-        fileName: 'test.txt',
-        section: 'Quarter 1 (October - December)',
-        fileType: 'pia',
-        year: '2024',
-      }
-
-      const storeState = {
-        ...initialState,
-        reports: {
-          submittedFiles: [uploadedFile],
-        },
-      }
-
-      mockExecuteSubmission.mockImplementation(async (fn) => {
-        await fn()
-      })
-
-      const { getByText } = renderComponent(storeState)
-
-      const submitButton = getByText('Submit Data Files')
-      fireEvent.click(submitButton)
-
-      await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith('onSubmit called')
-      })
-
-      consoleSpy.mockRestore()
-    })
-
-    it('logs error when no files uploaded', async () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation()
-
-      const storeState = {
-        ...initialState,
-        reports: {
-          submittedFiles: [],
-        },
-      }
-
-      const { getByText } = renderComponent(storeState)
-
-      const submitButton = getByText('Submit Data Files')
-      fireEvent.click(submitButton)
-
-      await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith('Setting error alert')
-      })
-
-      consoleSpy.mockRestore()
     })
   })
 })

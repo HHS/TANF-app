@@ -1,11 +1,5 @@
 import React from 'react'
-import {
-  render,
-  screen,
-  fireEvent,
-  waitFor,
-  getByLabelText,
-} from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 
 import { Provider } from 'react-redux'
 import { thunk } from 'redux-thunk'
@@ -969,6 +963,65 @@ describe('Reports', () => {
           'File may correspond to SSP instead of TANF. Please verify the file type.'
         )
       ).toBeInTheDocument()
+    })
+  })
+
+  it('should show Fiscal Year only when selecting program audit', async () => {
+    const store = appConfigureStore(initialState)
+    const origDispatch = store.dispatch
+    store.dispatch = jest.fn(origDispatch)
+
+    const { getByLabelText, getByText, queryByText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    const radio_button = getByLabelText('Program Integrity Audit')
+
+    fireEvent.click(radio_button)
+
+    await waitFor(() => {
+      expect(
+        getByText('Fiscal Year (October - September)*')
+      ).toBeInTheDocument()
+      expect(queryByText('Fiscal Quarter*')).not.toBeInTheDocument()
+    })
+  })
+
+  it('should render 4 file inputs for each quarter', async () => {
+    const store = mockStore(initialState)
+    const origDispatch = store.dispatch
+    store.dispatch = jest.fn(origDispatch)
+
+    const { getByLabelText, getByText, queryByText, getByTestId } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    const stt = getByTestId('stt-combobox')
+    fireEvent.change(stt, { target: { value: 'California' } })
+
+    const radio_button = getByLabelText('Program Integrity Audit')
+
+    fireEvent.click(radio_button)
+
+    await waitFor(() => {
+      expect(
+        getByText('Fiscal Year (October - September)*')
+      ).toBeInTheDocument()
+      expect(queryByText('Fiscal Quarter*')).not.toBeInTheDocument()
+    })
+
+    const fiscal_year = getByLabelText('Fiscal Year (October - September)*')
+    fireEvent.change(fiscal_year, { target: { value: '2025' } })
+
+    await waitFor(() => {
+      expect(queryByText('Quarter 1 (October - December)')).toBeInTheDocument()
+      expect(queryByText('Quarter 2 (January - March)')).toBeInTheDocument()
+      expect(queryByText('Quarter 3 (April - June)')).toBeInTheDocument()
+      expect(queryByText('Quarter 4 (July - September)')).toBeInTheDocument()
     })
   })
 })
