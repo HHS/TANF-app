@@ -521,7 +521,7 @@ describe('QuarterFileUploadForm', () => {
         'data-section',
         'Quarter 1 (October - December)'
       )
-      expect(input).toHaveAttribute('data-quarter', '1')
+      expect(input).toHaveAttribute('data-quarter', 'Q1')
     })
 
     it('renders FileUpload for each quarter in correct order', () => {
