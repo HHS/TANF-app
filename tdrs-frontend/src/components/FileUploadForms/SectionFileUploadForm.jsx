@@ -122,7 +122,7 @@ const SectionFileUploadForm = ({ stt }) => {
           <FileUpload
             key={section}
             section={section}
-            label={`Section ${index + 1} ${fileTypeInputValue.toUpperCase()} - ${section}`}
+            label={`Section ${index + 1} - ${fileTypeInputValue.toUpperCase()} - ${section}`}
             year={yearInputValue}
             quarter={quarterInputValue}
             fileType={fileTypeInputValue}
