@@ -57,7 +57,6 @@ function FileUploadForm({ handleCancel, stt, openWidget }) {
     localAlert,
     setLocalAlertState,
     uploadedFiles,
-    errorModalVisible,
     setErrorModalVisible,
     handleClear,
     handleOpenFeedbackWidget,

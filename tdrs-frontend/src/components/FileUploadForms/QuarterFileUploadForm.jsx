@@ -24,7 +24,6 @@ const QuarterFileUploadForm = ({ stt }) => {
     localAlert,
     setLocalAlertState,
     uploadedFiles,
-    errorModalVisible,
     setErrorModalVisible,
     handleClear,
     handleOpenFeedbackWidget,

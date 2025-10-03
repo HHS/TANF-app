@@ -1,62 +1,27 @@
 import React from 'react'
-import { useDispatch } from 'react-redux'
-import classNames from 'classnames'
-import { clearFileList } from '../../actions/reports'
-import { constructYearOptions } from './utils'
-import { ProgramIntegrityAuditExplainer } from './Explainers'
-import QuarterFileUploadForm from '../FileUploadForms/QuarterFileUploadForm'
-import QuarterSubmissionHistory from '../SubmissionHistory/QuarterSubmissionHistory'
-import SegmentedControl from '../SegmentedControl'
-import { useReportsContext } from './ReportsContext'
+import { ProgramIntegrityAuditExplainer } from '../components/Explainers'
+import QuarterFileUploadForm from '../../FileUploadForms/QuarterFileUploadForm'
+import QuarterSubmissionHistory from '../../SubmissionHistory/QuarterSubmissionHistory'
+import SegmentedControl from '../../SegmentedControl'
+import FiscalYearSelect from '../components/FiscalYearSelect'
+import { useReportsContext } from '../ReportsContext'
 
 const ProgramIntegrityAuditReports = ({ stt, isRegionalStaff }) => {
-  const dispatch = useDispatch()
-
   const {
     yearInputValue,
-    setYearInputValue,
     fileTypeInputValue,
     selectedSubmissionTab,
     setSelectedSubmissionTab,
-    setLocalAlertState,
     setReprocessedModalVisible,
     setReprocessedDate,
     headerRef,
   } = useReportsContext()
 
-  const selectYear = ({ target: { value } }) => {
-    setYearInputValue(value)
-    setLocalAlertState({ active: false, type: null, message: null })
-    dispatch(clearFileList({ fileType: fileTypeInputValue }))
-  }
-
   return (
     <>
       <div className="grid-row grid-gap">
         <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-auto">
-          <div
-            className={classNames('usa-form-group maxw-mobile margin-top-4')}
-          >
-            <label
-              className="usa-label text-bold margin-top-4"
-              htmlFor="reportingYears"
-            >
-              Fiscal Year (October - September)*
-              <select
-                className={classNames('usa-select maxw-mobile')}
-                name="reportingYears"
-                id="reportingYears"
-                onChange={selectYear}
-                value={yearInputValue}
-                aria-describedby="years-error-alert"
-              >
-                <option value="" disabled hidden>
-                  - Select Fiscal Year -
-                </option>
-                {constructYearOptions(2024)}
-              </select>
-            </label>
-          </div>
+          <FiscalYearSelect startYear={2024} />
         </div>
         <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
           <ProgramIntegrityAuditExplainer />
