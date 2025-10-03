@@ -222,7 +222,7 @@ describe('Feedback component', () => {
       selector({
         feedbackWidget: {
           isOpen: true,
-          lockedDataType: 'tanf',
+          dataType: 'tanf',
         },
       })
     )

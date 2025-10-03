@@ -509,7 +509,11 @@ describe('Feedback Form tests', () => {
     const onSubmit = jest.fn()
 
     render(
-      <FeedbackForm isGeneralFeedback={false} onFeedbackSubmit={onSubmit} />
+      <FeedbackForm
+        isGeneralFeedback={false}
+        onFeedbackSubmit={onSubmit}
+        dataType="fra_submission_feedback"
+      />
     )
 
     // Provide required rating
