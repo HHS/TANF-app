@@ -53,13 +53,14 @@ const SelectSTT = ({ value, setValue }) => (
   </div>
 )
 
-const SelectReportType = ({ options, setValue }) => (
+const SelectReportType = ({ options, setValue, selectedValue }) => (
   <RadioSelect
     label="File Type"
     fieldName="reportType"
     classes="margin-top-4"
     options={options}
     setValue={setValue}
+    selectedValue={selectedValue}
   />
 )
 
@@ -103,6 +104,7 @@ const Inputs = ({
   sttValue,
   selectStt,
   selectReportType,
+  reportTypeValue,
   needsSttSelection,
   userProfileStt,
 }) => {
@@ -126,6 +128,7 @@ const Inputs = ({
           <SelectReportType
             options={reportTypeOptions}
             setValue={selectReportType}
+            selectedValue={reportTypeValue}
           />
         </div>
       </div>
@@ -505,10 +508,12 @@ const FRAReportsContent = () => {
     headerRef,
     alertRef,
     selectStt,
+    selectFileType,
     selectYear,
     selectQuarter,
     handleClearAll,
     handleClearFilesOnly,
+    cancelPendingChange,
   } = useReportsContext()
 
   // Use the form submission hook to prevent multiple submissions
@@ -768,7 +773,7 @@ const FRAReportsContent = () => {
           fiscalYearValue={yearInputValue}
           fiscalQuarterValue={quarterInputValue}
           selectStt={selectStt}
-          selectReportType={() => {}} // Report type is fixed
+          selectReportType={selectFileType}
           selectFiscalYear={selectYear}
           selectFiscalQuarter={selectQuarter}
           needsSttSelection={needsSttSelection}
@@ -843,6 +848,7 @@ const FRAReportsContent = () => {
             key: '1',
             text: 'Cancel',
             onClick: () => {
+              cancelPendingChange()
               setErrorModalVisible(false)
             },
           },
