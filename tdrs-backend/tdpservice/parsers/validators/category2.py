@@ -176,16 +176,16 @@ def dateYearMonthIsLargerThan(year, month, **kwargs):
     """Validate that in a rpt_month_year, the year and month are larger than the given params."""
 
     def _validator(value: str):
-        value_year = int(value[:4])
-        value_month = int(value[4:])
+        value_year = int(str(value)[:4])
+        value_month = int(str(value)[4:])
 
         _year_validator = base.isGreaterThan(year, **kwargs)
-        _month_validator = base.isGreaterThan(month, **kwargs)
+        _month_validator = base.isGreaterThan(month, inclusive=True, **kwargs)
 
         if value_year == year:
             return make_validator(
                 lambda _: _month_validator(value_month),
-                lambda eargs: f"{format_error_context(eargs)} If year equals {year} month must be larger than {month}.",
+                lambda eargs: f"{format_error_context(eargs)} If year equals {year} month must be at least {month}.",
             )
 
         return make_validator(
