@@ -21,10 +21,12 @@ function ReportsContent() {
     sttInputValue,
     errorModalVisible,
     setErrorModalVisible,
+    modalTriggerSource,
     reprocessedModalVisible,
     setReprocessedModalVisible,
     reprocessedDate,
-    handleClear,
+    handleClearAll,
+    handleClearFilesOnly,
     selectFileType,
     selectStt,
   } = useReportsContext()
@@ -156,7 +158,11 @@ function ReportsContent() {
             text: 'OK',
             onClick: () => {
               setErrorModalVisible(false)
-              handleClear()
+              if (modalTriggerSource === 'cancel') {
+                handleClearAll()
+              } else {
+                handleClearFilesOnly()
+              }
             },
           },
         ]}

@@ -57,9 +57,14 @@ export const removeOldPreviews = (dropTarget, instructions) => {
   if (filePreviews !== null) {
     if (instructions) {
       instructions.classList.remove(HIDDEN_CLASS)
+      // Also remove the hidden attribute for proper reset
+      instructions.removeAttribute('hidden')
     }
     Array.prototype.forEach.call(filePreviews, removeImages)
   }
+
+  // Remove the has-file class to fully reset the visual state
+  dropTarget.classList.remove('usa-file-input--has-file')
 }
 
 export const checkPreviewDependencies = (targetClassName) => {

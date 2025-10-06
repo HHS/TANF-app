@@ -25,7 +25,8 @@ const QuarterFileUploadForm = ({ stt }) => {
     setLocalAlertState,
     uploadedFiles,
     setErrorModalVisible,
-    handleClear,
+    setModalTriggerSource,
+    handleClearAll,
     handleOpenFeedbackWidget,
   } = useReportsContext()
 
@@ -104,9 +105,10 @@ const QuarterFileUploadForm = ({ stt }) => {
 
   const handleCancel = () => {
     if (uploadedFiles.length > 0) {
+      setModalTriggerSource('cancel')
       setErrorModalVisible(true)
     } else {
-      handleClear()
+      handleClearAll()
     }
   }
 

@@ -493,6 +493,8 @@ const FRAReportsContent = () => {
     quarterInputValue,
     errorModalVisible,
     setErrorModalVisible,
+    modalTriggerSource,
+    setModalTriggerSource,
     localAlert,
     setLocalAlertState,
     fraSelectedFile,
@@ -505,7 +507,8 @@ const FRAReportsContent = () => {
     selectStt,
     selectYear,
     selectQuarter,
-    handleClear,
+    handleClearAll,
+    handleClearFilesOnly,
   } = useReportsContext()
 
   // Use the form submission hook to prevent multiple submissions
@@ -723,9 +726,10 @@ const FRAReportsContent = () => {
 
   const handleCancel = () => {
     if (fraHasUploadedFile) {
+      setModalTriggerSource('cancel')
       setErrorModalVisible(true)
     } else {
-      handleClear()
+      handleClearAll()
     }
   }
 
@@ -847,7 +851,11 @@ const FRAReportsContent = () => {
             text: 'OK',
             onClick: () => {
               setErrorModalVisible(false)
-              handleClear()
+              if (modalTriggerSource === 'cancel') {
+                handleClearAll()
+              } else {
+                handleClearFilesOnly()
+              }
             },
           },
         ]}
