@@ -168,7 +168,9 @@ class ProgramAuditParser(BaseParser):
         # Order matters. To ensure we also catch duplicate records, we check for them before deleting cases with cat4
         # Errors.
         self._delete_exact_dups()
+        # exact_duplicates = self._mark_exact_dups()
         self._delete_partial_dups()
+        # partial_duplicates = self._mark_partial_dups(exact_duplicates)
         self._delete_serialized_cases()
 
         self.create_no_records_created_pre_check_error()
@@ -333,7 +335,7 @@ class ProgramAuditParser(BaseParser):
                 error_message="Multiple trailers found.",
                 fields=[],
             )
-            generate_error = self.error_generator_factory.get_error_generator(
+            generate_error = self.error_generator_factory.get_generator(
                 ErrorGeneratorType.MSG_ONLY_PRECHECK,
                 self.current_row_num,
             )
@@ -358,3 +360,6 @@ class ProgramAuditParser(BaseParser):
         if settings.GENERATE_TRAILER_ERRORS:
             self.unsaved_parser_errors.update({"trailer": trailer_errors})
             self.num_errors += len(trailer_errors)
+
+    def _delete_duplicates(self, record, duplicate_records):
+        pass

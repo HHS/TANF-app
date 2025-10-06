@@ -284,53 +284,75 @@ class BaseParser(ABC):
                 err_msg += f"{item_and_name}, "
         return err_msg
 
-    def _generate_errors_and_delete_dups(
-        self, all_records, dup_queryset, schema, generate_error_msg
+    def _generate_errors(
+        self,
+        first_record,
+        duplicate_records,
+        duplicate_vals,
+        schema,
+        generate_error_msg,
     ):
-        """Generate duplicate errors per duplicate group and delete the duplicates."""
         duplicate_error_generator = self.error_generator_factory.get_generator(
             ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
         )
+        for offending_record in duplicate_records[1:]:
+            record_type = duplicate_vals.get("RecordType", None)
+            generator_args = ErrorGeneratorArgs(
+                record=offending_record,
+                schema=schema,
+                error_message=generate_error_msg(
+                    schema,
+                    record_type,
+                    offending_record.line_number,
+                    first_record.line_number,
+                ),
+                fields=schema.fields,
+                row_number=offending_record.line_number,
+            )
+            # Perform Error Generation
+            self.num_errors += 1
+            self.unsaved_parser_errors.setdefault(None, []).append(
+                duplicate_error_generator(generator_args=generator_args)
+            )
+            self.bulk_create_errors()
+
+    def _delete_duplicates(self, record, duplicate_records):
+        case_id_to_delete = (
+            FrozenDict(RecordType=record.RecordType)
+            if not self.is_active_or_closed
+            else FrozenDict(
+                RPT_MONTH_YEAR=record.RPT_MONTH_YEAR,
+                CASE_NUMBER=record.CASE_NUMBER,
+            )
+        )
+
+        # We add the case ID here because a case with a duplicate record must be purged in it's entirety.
+        self.serialized_cases.add(case_id_to_delete)
+        num_deleted = duplicate_records._raw_delete(duplicate_records.db)
+        self.dfs.total_number_of_records_created -= num_deleted
+
+    def _generate_errors_and_delete_dups(
+        self,
+        all_records,
+        dup_queryset,
+        schema,
+        generate_error_msg,
+    ):
+        """Generate duplicate errors per duplicate group and delete the duplicates."""
         start_num = self.dfs.total_number_of_records_created
+        # delete_skipped_for_ids = set()
         for duplicate_vals in dup_queryset[: settings.BULK_CREATE_BATCH_SIZE]:
             duplicate_vals.pop("row_count", None)
             duplicate_records = all_records.filter(**duplicate_vals).order_by(
                 "line_number"
             )
             record = duplicate_records.first()
-            for offending_record in duplicate_records[1:]:
-                record_type = duplicate_vals.get("RecordType", None)
-                generator_args = ErrorGeneratorArgs(
-                    record=offending_record,
-                    schema=schema,
-                    error_message=generate_error_msg(
-                        schema,
-                        record_type,
-                        offending_record.line_number,
-                        record.line_number,
-                    ),
-                    fields=schema.fields,
-                    row_number=offending_record.line_number,
-                )
-                # Perform Error Generation
-                self.num_errors += 1
-                self.unsaved_parser_errors.setdefault(None, []).append(
-                    duplicate_error_generator(generator_args=generator_args)
-                )
-                self.bulk_create_errors()
-
-            case_id_to_delete = (
-                FrozenDict(RecordType=record.RecordType)
-                if not self.is_active_or_closed
-                else FrozenDict(
-                    RPT_MONTH_YEAR=record.RPT_MONTH_YEAR,
-                    CASE_NUMBER=record.CASE_NUMBER,
-                )
+            self._generate_errors(
+                record, duplicate_records, duplicate_vals, schema, generate_error_msg
             )
-            # We add the case ID here because a case with a duplicate record must be purged in it's entirety.
-            self.serialized_cases.add(case_id_to_delete)
-            num_deleted = duplicate_records._raw_delete(duplicate_records.db)
-            self.dfs.total_number_of_records_created -= num_deleted
+
+            self._delete_duplicates(record, duplicate_records)
+
         logger.info(
             f"Deleted {start_num - self.dfs.total_number_of_records_created} duplicates."
         )
