@@ -60,16 +60,16 @@ export const ReportsProvider = ({ isFra = false, children }) => {
 
   // Actions
   const handleClear = () => {
-    dispatch(clearFileList({ fileType: fileTypeInputValue }))
-    setYearInputValue('')
-    setQuarterInputValue('')
-  }
-
-  const handleFraClear = () => {
-    setFraSelectedFile(null)
-    setFraUploadError(null)
-    setYearInputValue('')
-    setQuarterInputValue('')
+    if (isFra) {
+      setFraSelectedFile(null)
+      setFraUploadError(null)
+      setYearInputValue('')
+      setQuarterInputValue('')
+    } else {
+      dispatch(clearFileList({ fileType: fileTypeInputValue }))
+      setYearInputValue('')
+      setQuarterInputValue('')
+    }
   }
 
   const handleOpenFeedbackWidget = () => {
@@ -81,8 +81,6 @@ export const ReportsProvider = ({ isFra = false, children }) => {
       setErrorModalVisible(true)
     } else {
       setFileTypeInputValue(value)
-      setYearInputValue('')
-      setQuarterInputValue('')
       dispatch(clearFileList({ fileType: value }))
       dispatch(reinitializeSubmittedFiles(value))
     }
@@ -153,7 +151,6 @@ export const ReportsProvider = ({ isFra = false, children }) => {
 
     // Actions
     handleClear,
-    handleFraClear,
     handleOpenFeedbackWidget,
     selectFileType,
     selectYear,

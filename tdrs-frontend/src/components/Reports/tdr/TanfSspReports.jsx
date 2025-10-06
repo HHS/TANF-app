@@ -1,5 +1,4 @@
 import React from 'react'
-import classNames from 'classnames'
 import { quarters } from '../utils'
 import { FiscalQuarterExplainer } from '../components/Explainers'
 import SectionFileUploadForm from '../../FileUploadForms/SectionFileUploadForm'
@@ -13,7 +12,6 @@ const TanfSspReports = ({ stt, isRegionalStaff }) => {
   const {
     yearInputValue,
     quarterInputValue,
-    selectQuarter,
     fileTypeInputValue,
     selectedSubmissionTab,
     setSelectedSubmissionTab,
