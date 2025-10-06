@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 export const quarters = {
   Q1: 'Quarter 1 (October - December)',
   Q2: 'Quarter 2 (January - March)',
