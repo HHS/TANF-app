@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useFormSubmission } from '../../hooks/useFormSubmission'
 import { useDispatch, useSelector } from 'react-redux'
 import classNames from 'classnames'
@@ -499,13 +499,13 @@ const FRAReportsContent = () => {
     setFraSelectedFile,
     fraUploadError,
     setFraUploadError,
+    fraHasUploadedFile,
     headerRef,
     alertRef,
     selectStt,
-    selectFileType,
     selectYear,
     selectQuarter,
-    handleFraClear,
+    handleClear,
   } = useReportsContext()
 
   // Use the form submission hook to prevent multiple submissions
@@ -721,6 +721,14 @@ const FRAReportsContent = () => {
     return null
   }
 
+  const handleCancel = () => {
+    if (fraHasUploadedFile) {
+      setErrorModalVisible(true)
+    } else {
+      handleClear()
+    }
+  }
+
   useEffect(() => {
     if (headerRef && headerRef.current) {
       headerRef.current.focus()
@@ -795,7 +803,7 @@ const FRAReportsContent = () => {
               )}
               <UploadForm
                 handleUpload={handleUpload}
-                handleCancel={handleFraClear}
+                handleCancel={handleCancel}
                 setLocalAlertState={setLocalAlertState}
                 file={fraSelectedFile}
                 setSelectedFile={setFraSelectedFile}
@@ -839,7 +847,7 @@ const FRAReportsContent = () => {
             text: 'OK',
             onClick: () => {
               setErrorModalVisible(false)
-              handleFraClear()
+              handleClear()
             },
           },
         ]}
