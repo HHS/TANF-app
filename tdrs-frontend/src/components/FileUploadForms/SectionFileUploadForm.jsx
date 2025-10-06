@@ -58,7 +58,8 @@ function FileUploadForm({ handleCancel, stt, openWidget }) {
     setLocalAlertState,
     uploadedFiles,
     setErrorModalVisible,
-    handleClear,
+    setModalTriggerSource,
+    handleClearAll,
     handleOpenFeedbackWidget,
   } = useReportsContext()
 
@@ -123,9 +124,10 @@ function FileUploadForm({ handleCancel, stt, openWidget }) {
 
   const handleCancel = () => {
     if (uploadedFiles.length > 0) {
+      setModalTriggerSource('cancel')
       setErrorModalVisible(true)
     } else {
-      handleClear()
+      handleClearAll()
     }
   }
 

@@ -34,6 +34,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
 
   // Modal state
   const [errorModalVisible, setErrorModalVisible] = useState(false)
+  const [modalTriggerSource, setModalTriggerSource] = useState(null) // 'cancel' or 'input-change'
   const [reprocessedModalVisible, setReprocessedModalVisible] = useState(false)
   const [reprocessedDate, setReprocessedDate] = useState('')
 
@@ -59,16 +60,28 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   const fraHasUploadedFile = fraSelectedFile && !fraSelectedFile.id
 
   // Actions
-  const handleClear = () => {
+  const handleClearAll = () => {
+    // Clear everything including STT, year, quarter
     if (isFra) {
       setFraSelectedFile(null)
       setFraUploadError(null)
       setYearInputValue('')
       setQuarterInputValue('')
+      setSttInputValue('')
     } else {
       dispatch(clearFileList({ fileType: fileTypeInputValue }))
       setYearInputValue('')
       setQuarterInputValue('')
+    }
+  }
+
+  const handleClearFilesOnly = () => {
+    // Clear only file inputs/previews, keep STT, year, quarter
+    if (isFra) {
+      setFraSelectedFile(null)
+      setFraUploadError(null)
+    } else {
+      dispatch(clearFileList({ fileType: fileTypeInputValue }))
     }
   }
 
@@ -78,6 +91,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
 
   const selectFileType = (value) => {
     if (uploadedFiles.length > 0 || fraHasUploadedFile) {
+      setModalTriggerSource('input-change')
       setErrorModalVisible(true)
     } else {
       setFileTypeInputValue(value)
@@ -88,6 +102,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
 
   const selectYear = ({ target: { value } }) => {
     if (uploadedFiles.length > 0 || fraHasUploadedFile) {
+      setModalTriggerSource('input-change')
       setErrorModalVisible(true)
     } else {
       setYearInputValue(value)
@@ -98,6 +113,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
 
   const selectQuarter = ({ target: { value } }) => {
     if (uploadedFiles.length > 0 || fraHasUploadedFile) {
+      setModalTriggerSource('input-change')
       setErrorModalVisible(true)
     } else {
       setQuarterInputValue(value)
@@ -108,6 +124,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
 
   const selectStt = (value) => {
     if (uploadedFiles.length > 0 || fraHasUploadedFile) {
+      setModalTriggerSource('input-change')
       setErrorModalVisible(true)
     } else {
       setSttInputValue(value)
@@ -128,6 +145,8 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     quarterInputValue,
     errorModalVisible,
     setErrorModalVisible,
+    modalTriggerSource,
+    setModalTriggerSource,
     reprocessedModalVisible,
     setReprocessedModalVisible,
     reprocessedDate,
@@ -150,7 +169,8 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     fraHasUploadedFile,
 
     // Actions
-    handleClear,
+    handleClearAll,
+    handleClearFilesOnly,
     handleOpenFeedbackWidget,
     selectFileType,
     selectYear,
