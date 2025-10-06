@@ -70,7 +70,7 @@ When('{string} submits the TANF Report', (actor) => {
     df.fillFYQ('2021', 'Q1')
   }
   df.uploadFile(
-    '#active-case-data',
+    '#active_case_data',
     '../tdrs-backend/tdpservice/parsers/test/data/small_correct_file.txt'
   )
 
@@ -88,7 +88,7 @@ When('{string} submits the SSP Report', (actor) => {
     df.fillFYQ('2024', 'Q1')
   }
   df.uploadFile(
-    '#active-case-data',
+    '#active_case_data',
     '../tdrs-backend/tdpservice/parsers/test/data/small_ssp_section1.txt'
   )
 
@@ -98,10 +98,10 @@ When('{string} submits the SSP Report', (actor) => {
 // Constants ----------
 
 const SECTION_INPUT_ID = {
-  1: '#active-case-data',
-  2: '#closed-case-data',
-  3: '#aggregate-data',
-  4: '#stratum-data',
+  1: '#active_case_data',
+  2: '#closed_case_data',
+  3: '#aggregate_data',
+  4: '#stratum_data',
 }
 
 const UPLOAD_FILE_INFO = {

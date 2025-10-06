@@ -12,7 +12,6 @@ export const restartAtHomePage = () => {
 export const fillFYQ = (fiscal_year, quarter) => {
   cy.get('#reportingYears').should('exist').select(fiscal_year)
   cy.get('#quarter').should('exist').select(quarter)
-  cy.get('button').contains('Search').should('exist').click()
   cy.get('.usa-file-input__input', { timeout: 1000 }).should('exist')
 }
 
@@ -67,7 +66,6 @@ export const fillSttFyQ = (stt, fy, q, isTanf, isRegional) => {
       }
       cy.get('#reportingYears').should('exist').select(fy)
       cy.get('#quarter').should('exist').select(q)
-      cy.get('button').contains('Search').should('exist').click()
       if (!isRegional) {
         cy.get('.usa-file-input__input', { timeout: 1000 }).should('exist')
       } else {
@@ -83,7 +81,6 @@ export const fillSttFyQNoProgramSelector = (stt, fy, q) => {
     .then(() => {
       cy.get('#reportingYears').should('exist').select(fy)
       cy.get('#quarter').should('exist').select(q)
-      cy.get('button').contains('Search').should('exist').click()
       cy.get('.usa-file-input__input', { timeout: 1000 }).should('exist')
     })
 }
@@ -96,7 +93,6 @@ export const fillFyQProgram = (fy, q, program) => {
   }
   cy.get('#reportingYears').should('exist').select(fy)
   cy.get('#quarter').should('exist').select(q)
-  cy.get('button').contains('Search').should('exist').click()
   cy.get('.usa-file-input__input', { timeout: 1000 }).should('exist')
 }
 
@@ -160,7 +156,6 @@ export const openDataFilesAndSearch = (program, year, quarter, stt = '') => {
 
   cy.get('#reportingYears').should('exist').select(year)
   cy.get('#quarter').should('exist').select(quarter) // Q1, Q2, Q3, Q4
-  cy.get('button').contains('Search').should('exist').click()
 }
 
 export const uploadSectionFile = (
@@ -273,8 +268,6 @@ Then(
   (username, year, quarter) => {
     cy.get('#reportingYears').should('exist').select(year)
     cy.get('#quarter').should('exist').select(quarter) // Q1, Q2, Q3, Q4
-    cy.get('button').contains('Search').should('exist')
-    cy.get('button').contains('Search').should('exist').click()
   }
 )
 
