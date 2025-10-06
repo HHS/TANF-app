@@ -27,6 +27,7 @@ function ReportsContent() {
     reprocessedDate,
     handleClearAll,
     handleClearFilesOnly,
+    cancelPendingChange,
     selectFileType,
     selectStt,
   } = useReportsContext()
@@ -124,6 +125,7 @@ function ReportsContent() {
               setValue={selectFileType}
               options={radio_options}
               classes="margin-top-4"
+              selectedValue={fileTypeInputValue}
             />
           </div>
         </div>
@@ -150,6 +152,7 @@ function ReportsContent() {
             key: '1',
             text: 'Cancel',
             onClick: () => {
+              cancelPendingChange()
               setErrorModalVisible(false)
             },
           },

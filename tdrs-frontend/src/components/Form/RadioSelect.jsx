@@ -1,7 +1,14 @@
 import { React } from 'react'
 import classNames from 'classnames'
 
-const RadioSelect = ({ label, fieldName, setValue, options, classes }) => (
+const RadioSelect = ({
+  label,
+  fieldName,
+  setValue,
+  options,
+  classes,
+  selectedValue,
+}) => (
   <div className={classNames('usa-form-group', classes)}>
     <fieldset className="usa-fieldset">
       <legend className="usa-label text-bold">{label}</legend>
@@ -14,7 +21,7 @@ const RadioSelect = ({ label, fieldName, setValue, options, classes }) => (
             type="radio"
             name={fieldName}
             value={value}
-            defaultChecked={index === 0}
+            checked={selectedValue ? selectedValue === value : index === 0}
             onChange={() => setValue(value)}
             disabled={!!disabled}
           />

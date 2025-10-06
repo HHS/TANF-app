@@ -104,6 +104,10 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     setPendingChange({ type: null, value: null })
   }
 
+  const cancelPendingChange = () => {
+    setPendingChange({ type: null, value: null })
+  }
+
   const handleOpenFeedbackWidget = () => {
     dispatch(openFeedbackWidget(fileTypeInputValue))
   }
@@ -195,6 +199,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     // Actions
     handleClearAll,
     handleClearFilesOnly,
+    cancelPendingChange,
     handleOpenFeedbackWidget,
     selectFileType,
     selectYear,
