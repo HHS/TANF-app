@@ -122,6 +122,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
       setLocalAlertState({ active: false, type: null, message: null })
       dispatch(clearFileList({ fileType: value }))
       dispatch(reinitializeSubmittedFiles(value))
+      setFraSelectedFile(null)
     }
   }
 
@@ -134,6 +135,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
       setYearInputValue(value)
       setLocalAlertState({ active: false, type: null, message: null })
       dispatch(clearFileList({ fileType: fileTypeInputValue }))
+      setFraSelectedFile(null)
     }
   }
 
@@ -146,6 +148,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
       setQuarterInputValue(value)
       setLocalAlertState({ active: false, type: null, message: null })
       dispatch(clearFileList({ fileType: fileTypeInputValue }))
+      setFraSelectedFile(null)
     }
   }
 
@@ -162,6 +165,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
         message: null,
       })
       dispatch(clearFileList({ fileType: fileTypeInputValue }))
+      setFraSelectedFile(null)
     }
   }
 
