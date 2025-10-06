@@ -17,14 +17,20 @@ export const useReportsContext = () => {
   return context
 }
 
-export const ReportsProvider = ({ children }) => {
+export const ReportsProvider = ({ isFra = false, children }) => {
   const dispatch = useDispatch()
 
   // Form state
   const [yearInputValue, setYearInputValue] = useState('')
   const [quarterInputValue, setQuarterInputValue] = useState('')
-  const [fileTypeInputValue, setFileTypeInputValue] = useState('tanf')
+  const [fileTypeInputValue, setFileTypeInputValue] = useState(
+    isFra ? 'workOutcomesOfTanfExiters' : 'tanf'
+  )
   const [sttInputValue, setSttInputValue] = useState('')
+
+  // FRA-specific upload state
+  const [fraSelectedFile, setFraSelectedFile] = useState(null)
+  const [fraUploadError, setFraUploadError] = useState(null)
 
   // Modal state
   const [errorModalVisible, setErrorModalVisible] = useState(false)
@@ -43,14 +49,25 @@ export const ReportsProvider = ({ children }) => {
 
   // Refs
   const headerRef = useRef(null)
+  const alertRef = useRef(null)
 
   // Redux selectors
   const files = useSelector((state) => state.reports.submittedFiles)
   const uploadedFiles = files?.filter((file) => file.fileName && !file.id)
 
+  // FRA-specific derived state
+  const fraHasUploadedFile = fraSelectedFile && !fraSelectedFile.id
+
   // Actions
   const handleClear = () => {
     dispatch(clearFileList({ fileType: fileTypeInputValue }))
+    setYearInputValue('')
+    setQuarterInputValue('')
+  }
+
+  const handleFraClear = () => {
+    setFraSelectedFile(null)
+    setFraUploadError(null)
     setYearInputValue('')
     setQuarterInputValue('')
   }
@@ -60,7 +77,7 @@ export const ReportsProvider = ({ children }) => {
   }
 
   const selectFileType = (value) => {
-    if (uploadedFiles.length > 0) {
+    if (uploadedFiles.length > 0 || fraHasUploadedFile) {
       setErrorModalVisible(true)
     } else {
       setFileTypeInputValue(value)
@@ -72,7 +89,7 @@ export const ReportsProvider = ({ children }) => {
   }
 
   const selectYear = ({ target: { value } }) => {
-    if (uploadedFiles.length > 0) {
+    if (uploadedFiles.length > 0 || fraHasUploadedFile) {
       setErrorModalVisible(true)
     } else {
       setYearInputValue(value)
@@ -82,7 +99,7 @@ export const ReportsProvider = ({ children }) => {
   }
 
   const selectQuarter = ({ target: { value } }) => {
-    if (uploadedFiles.length > 0) {
+    if (uploadedFiles.length > 0 || fraHasUploadedFile) {
       setErrorModalVisible(true)
     } else {
       setQuarterInputValue(value)
@@ -92,7 +109,7 @@ export const ReportsProvider = ({ children }) => {
   }
 
   const selectStt = (value) => {
-    if (uploadedFiles.length > 0) {
+    if (uploadedFiles.length > 0 || fraHasUploadedFile) {
       setErrorModalVisible(true)
     } else {
       setSttInputValue(value)
@@ -122,12 +139,21 @@ export const ReportsProvider = ({ children }) => {
     selectedSubmissionTab,
     setSelectedSubmissionTab,
     headerRef,
+    alertRef,
+
+    // FRA-specific state
+    fraSelectedFile,
+    setFraSelectedFile,
+    fraUploadError,
+    setFraUploadError,
 
     // Derived state
     uploadedFiles,
+    fraHasUploadedFile,
 
     // Actions
     handleClear,
+    handleFraClear,
     handleOpenFeedbackWidget,
     selectFileType,
     selectYear,
