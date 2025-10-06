@@ -55,7 +55,7 @@ describe('FRA Reports Page', () => {
     // search form elements exist
     expect(getByText('File Type')).toBeInTheDocument()
     expect(getByText('Fiscal Year (October - September)*')).toBeInTheDocument()
-    expect(getByText('Quarter*')).toBeInTheDocument()
+    expect(getByText('Fiscal Quarter*')).toBeInTheDocument()
     expect(getByText('FRA Data Reporting Guidelines')).toBeInTheDocument()
     expect(getByText('Work Outcomes of TANF Exiters')).toBeInTheDocument()
 
@@ -149,106 +149,17 @@ describe('FRA Reports Page', () => {
       expect(getByText('An STT is not set for this user.')).toBeInTheDocument()
     })
 
-    it('Shows errors if required values are not set', () => {
-      const state = {
-        ...initialState,
-        auth: {
-          authenticated: true,
-          user: {
-            email: 'hi@bye.com',
-            stt: null,
-            roles: [{ id: 1, name: 'OFA System Admin', permission: [] }],
-            account_approval_status: 'Approved',
-          },
-        },
-      }
-
-      const store = mockStore(state)
-
-      const { getByText, queryByText } = render(
-        <Provider store={store}>
-          <FRAReports />
-        </Provider>
-      )
-
-      // don't fill out any form values
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
-
-      // upload form not displayed
-      expect(queryByText('Submit Report')).not.toBeInTheDocument()
-
-      // fields all have errors
-      expect(
-        getByText('A state, tribe, or territory is required')
-      ).toBeInTheDocument()
-      expect(getByText('A fiscal year is required')).toBeInTheDocument()
-      expect(getByText('A quarter is required')).toBeInTheDocument()
-      expect(getByText('There are 3 error(s) in this form')).toBeInTheDocument()
-    })
-
-    it('Updates form validation if values are changed', async () => {
-      const state = {
-        ...initialState,
-        auth: {
-          authenticated: true,
-          user: {
-            email: 'hi@bye.com',
-            stt: null,
-            roles: [{ id: 1, name: 'OFA System Admin', permission: [] }],
-            account_approval_status: 'Approved',
-          },
-        },
-      }
-
-      const store = mockStore(state)
-
-      const { getByText, queryByText, getByLabelText } = render(
-        <Provider store={store}>
-          <FRAReports />
-        </Provider>
-      )
-
-      // don't fill out any form values
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
-
-      // upload form not displayed
-      expect(queryByText('Submit Report')).not.toBeInTheDocument()
-
-      // fields all have errors
-      expect(
-        getByText('A state, tribe, or territory is required')
-      ).toBeInTheDocument()
-      expect(getByText('A fiscal year is required')).toBeInTheDocument()
-      expect(getByText('A quarter is required')).toBeInTheDocument()
-      expect(getByText('There are 3 error(s) in this form')).toBeInTheDocument()
-
-      const yearsDropdown = getByLabelText(
-        'Fiscal Year (October - September)*',
-        { exact: false }
-      )
-      fireEvent.change(yearsDropdown, { target: { value: '2021' } })
-
-      await waitFor(() => {
-        expect(queryByText('A fiscal year is required')).not.toBeInTheDocument()
-        expect(
-          getByText('There are 2 error(s) in this form')
-        ).toBeInTheDocument()
-      })
-
-      const quarterDropdown = getByLabelText('Quarter*', { exact: false })
-      fireEvent.change(quarterDropdown, { target: { value: 'Q1' } })
-
-      await waitFor(() => {
-        expect(queryByText('A quarter is required')).not.toBeInTheDocument()
-        expect(
-          getByText('There is 1 error(s) in this form')
-        ).toBeInTheDocument()
-      })
-    })
-
     it('Shows upload form once search has been clicked', async () => {
       jest.mock('axios')
       const mockAxios = axios
+
+      let searchUrl = null
+      mockAxios.get.mockImplementation((url) => {
+        if (url.includes('/data_files/')) {
+          searchUrl = url
+        }
+        return Promise.resolve({ data: [] })
+      })
 
       const state = {
         ...initialState,
@@ -276,24 +187,14 @@ describe('FRA Reports Page', () => {
         </Provider>
       )
 
-      // fill out the form values before clicking search
+      // fill out the form values - this will trigger the API call
       const yearsDropdown = getByLabelText('Fiscal Year (October - September)*')
       fireEvent.change(yearsDropdown, { target: { value: '2021' } })
 
-      const quarterDropdown = getByLabelText('Quarter*')
+      const quarterDropdown = getByLabelText('Fiscal Quarter*')
       fireEvent.change(quarterDropdown, { target: { value: 'Q1' } })
 
-      let searchUrl = null
-      mockAxios.get.mockImplementation((url) => {
-        if (url.includes('/data_files/')) {
-          searchUrl = url
-        }
-        return {}
-      })
-
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
-
-      // upload form displayed
+      // Wait for the API call to complete and upload form to be displayed
       await waitFor(() => {
         expect(
           getByText(
@@ -363,10 +264,8 @@ describe('FRA Reports Page', () => {
       const yearsDropdown = getByLabelText('Fiscal Year (October - September)*')
       fireEvent.change(yearsDropdown, { target: { value: '2021' } })
 
-      const quarterDropdown = getByLabelText('Quarter*')
+      const quarterDropdown = getByLabelText('Fiscal Quarter*')
       fireEvent.change(quarterDropdown, { target: { value: 'Q1' } })
-
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
       await waitFor(() => {
         expect(
@@ -410,7 +309,7 @@ describe('FRA Reports Page', () => {
           )
         ).toBeInTheDocument()
       )
-      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(4))
+      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(6))
     })
 
     it('Allows xlsx files to be selected and submitted', async () => {
@@ -442,7 +341,7 @@ describe('FRA Reports Page', () => {
           )
         ).toBeInTheDocument()
       )
-      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(4))
+      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(6))
     })
 
     it('Shows a spinner until submission history updates', async () => {
@@ -529,7 +428,7 @@ describe('FRA Reports Page', () => {
           )
         ).toBeInTheDocument()
       )
-      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(4))
+      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(6))
 
       jest.runOnlyPendingTimers()
 
@@ -568,7 +467,7 @@ describe('FRA Reports Page', () => {
       await waitFor(() =>
         expect(getByText('Error: Mock fail response')).toBeInTheDocument()
       )
-      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(2))
+      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(4))
     })
 
     it('Shows an error if a no file is selected for submission', async () => {
@@ -603,10 +502,10 @@ describe('FRA Reports Page', () => {
       fireEvent.click(submitButton)
 
       await waitFor(() => getByRole('alert'))
-      expect(dispatch).toHaveBeenCalledTimes(1)
+      expect(dispatch).toHaveBeenCalledTimes(3)
     })
 
-    it('Shows a message if search is clicked with an non-uploaded file', async () => {
+    it('Shows a message if input is changed with an non-uploaded file', async () => {
       const { getByText, container, getByLabelText, queryByText } =
         await setup()
 
@@ -626,7 +525,13 @@ describe('FRA Reports Page', () => {
       const yearsDropdown = getByLabelText('Fiscal Year (October - September)*')
       fireEvent.change(yearsDropdown, { target: { value: '2024' } })
 
-      const quarterDropdown = getByLabelText('Quarter*')
+      await waitFor(() =>
+        expect(queryByText('Files Not Submitted')).toBeInTheDocument()
+      )
+
+      fireEvent.click(getByText(/OK/, { selector: '#modal button' }))
+
+      const quarterDropdown = getByLabelText('Fiscal Quarter*')
       fireEvent.change(quarterDropdown, { target: { value: 'Q2' } })
 
       await waitFor(() => {
@@ -635,12 +540,6 @@ describe('FRA Reports Page', () => {
             .selected
         ).toBe(true)
       })
-
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
-
-      await waitFor(() =>
-        expect(queryByText('Files Not Submitted')).toBeInTheDocument()
-      )
     })
 
     it('Cancels the upload if Cancel is clicked', async () => {
@@ -661,6 +560,12 @@ describe('FRA Reports Page', () => {
 
       fireEvent.click(getByText(/Cancel/, { selector: 'button' }))
 
+      await waitFor(() =>
+        expect(queryByText('Files Not Submitted')).toBeInTheDocument()
+      )
+
+      fireEvent.click(getByText(/OK/, { selector: '#modal button' }))
+
       await waitFor(() => {
         expect(
           queryByText(
@@ -671,9 +576,15 @@ describe('FRA Reports Page', () => {
       })
     })
 
-    it('Does not show a message if search is clicked after uploading a file', async () => {
-      const { getByText, container, getByLabelText, queryByText, dispatch } =
-        await setup()
+    it('Does not show a message if input is changed after uploading a file', async () => {
+      const {
+        getByText,
+        getByRole,
+        container,
+        getByLabelText,
+        queryByText,
+        dispatch,
+      } = await setup()
 
       const uploadForm = container.querySelector('#fra-file-upload')
       fireEvent.change(uploadForm, {
@@ -688,12 +599,14 @@ describe('FRA Reports Page', () => {
       )
 
       fireEvent.click(getByText(/Submit Report/, { selector: 'button' }))
-      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(2))
+      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(4))
+
+      await waitFor(() => getByRole('alert'))
 
       const yearsDropdown = getByLabelText('Fiscal Year (October - September)*')
       fireEvent.change(yearsDropdown, { target: { value: '2024' } })
 
-      const quarterDropdown = getByLabelText('Quarter*')
+      const quarterDropdown = getByLabelText('Fiscal Quarter*')
       fireEvent.change(quarterDropdown, { target: { value: 'Q2' } })
 
       await waitFor(() => {
@@ -702,8 +615,6 @@ describe('FRA Reports Page', () => {
             .selected
         ).toBe(true)
       })
-
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
       await waitFor(() =>
         expect(queryByText('Files Not Submitted')).not.toBeInTheDocument()
@@ -730,18 +641,6 @@ describe('FRA Reports Page', () => {
       const yearsDropdown = getByLabelText('Fiscal Year (October - September)*')
       fireEvent.change(yearsDropdown, { target: { value: '2024' } })
 
-      const quarterDropdown = getByLabelText('Quarter*')
-      fireEvent.change(quarterDropdown, { target: { value: 'Q2' } })
-      await waitFor(() => {
-        expect(getByText('2024', { selector: 'option' }).selected).toBe(true)
-        expect(
-          getByText('Quarter 2 (January - March)', { selector: 'option' })
-            .selected
-        ).toBe(true)
-      })
-
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
-
       await waitFor(() =>
         expect(queryByText('Files Not Submitted')).toBeInTheDocument()
       )
@@ -751,7 +650,7 @@ describe('FRA Reports Page', () => {
 
       // assert file still exists, search params are the same as initial, dispatch not called
       await waitFor(() => {
-        expect(dispatch).toHaveBeenCalledTimes(1)
+        expect(dispatch).toHaveBeenCalledTimes(3)
         expect(queryByText('Files Not Submitted')).not.toBeInTheDocument()
         expect(
           getByText(
@@ -767,7 +666,7 @@ describe('FRA Reports Page', () => {
     })
 
     it('Allows the user to discard the error modal and continue with a new search', async () => {
-      const { getByText, queryByText, getByLabelText, container, dispatch } =
+      const { getByText, queryByText, getByLabelText, container } =
         await setup()
 
       const uploadForm = container.querySelector('#fra-file-upload')
@@ -782,12 +681,23 @@ describe('FRA Reports Page', () => {
         ).toBeInTheDocument()
       )
 
-      // make a change to the search selections and click search
+      // make a change to the search selections
       const yearsDropdown = getByLabelText('Fiscal Year (October - September)*')
       fireEvent.change(yearsDropdown, { target: { value: '2024' } })
 
-      const quarterDropdown = getByLabelText('Quarter*')
+      await waitFor(() =>
+        expect(queryByText('Files Not Submitted')).toBeInTheDocument()
+      )
+
+      // click discard
+      const button = getByText(/OK/, {
+        selector: '#modal button',
+      })
+      fireEvent.click(button)
+
+      const quarterDropdown = getByLabelText('Fiscal Quarter*')
       fireEvent.change(quarterDropdown, { target: { value: 'Q2' } })
+
       await waitFor(() => {
         expect(getByText('2024', { selector: 'option' }).selected).toBe(true)
         expect(
@@ -795,18 +705,6 @@ describe('FRA Reports Page', () => {
             .selected
         ).toBe(true)
       })
-
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
-
-      await waitFor(() =>
-        expect(queryByText('Files Not Submitted')).toBeInTheDocument()
-      )
-
-      // click discard
-      const button = getByText(/Discard and Search/, {
-        selector: '#modal button',
-      })
-      fireEvent.click(button)
 
       // assert file discarded, search params updated
       await waitFor(() => {
@@ -880,10 +778,8 @@ describe('FRA Reports Page', () => {
       const yearsDropdown = getByLabelText('Fiscal Year (October - September)*')
       fireEvent.change(yearsDropdown, { target: { value: '2021' } })
 
-      const quarterDropdown = getByLabelText('Quarter*')
+      const quarterDropdown = getByLabelText('Fiscal Quarter*')
       fireEvent.change(quarterDropdown, { target: { value: 'Q1' } })
-
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
       await waitFor(() => {
         expect(
