@@ -216,6 +216,33 @@ describe('RequestAccessForm', () => {
     ).toBeInTheDocument()
   })
 
+  it('AMS user with current region selection will have fieldset disabled', () => {
+    const initialValues = {
+      firstName: 'John',
+      lastName: 'Doe',
+      stt: 'Texas',
+      hasFRAAccess: false,
+      regions: new Set([{ id: 1, name: 'Boston' }]),
+    }
+
+    setup(
+      {
+        editMode: true,
+        user: amsUser,
+        originalRegional: true,
+        type: 'profile',
+        initialValues,
+      },
+      { auth: { user: amsUser } }
+    )
+
+    expect(
+      screen.getByRole('group', {
+        name: /Do you work for an OFA Regional Office?/i,
+      })
+    ).toHaveProperty('disabled', true)
+  })
+
   it('validates region selection for AMS user', async () => {
     const props = {
       editMode: true,
