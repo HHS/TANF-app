@@ -10,6 +10,7 @@ export const restartAtHomePage = () => {
 }
 
 export const fillFYQ = (fiscal_year, quarter) => {
+  cy.wait(100)
   cy.get('#reportingYears').should('exist').select(fiscal_year)
   cy.get('#quarter').should('exist').select(quarter)
   cy.get('.usa-file-input__input', { timeout: 1000 }).should('exist')
@@ -56,6 +57,7 @@ export const downloadErrorReport = (error_report_name) => {
 }
 
 export const fillSttFyQ = (stt, fy, q, isTanf, isRegional) => {
+  cy.wait(100)
   cy.get('#stt')
     .type(stt + '{enter}')
     .then(() => {
@@ -76,6 +78,7 @@ export const fillSttFyQ = (stt, fy, q, isTanf, isRegional) => {
 }
 
 export const fillSttFyQNoProgramSelector = (stt, fy, q) => {
+  cy.wait(100)
   cy.get('#stt')
     .type(stt + '{enter}')
     .then(() => {
@@ -86,6 +89,7 @@ export const fillSttFyQNoProgramSelector = (stt, fy, q) => {
 }
 
 export const fillFyQProgram = (fy, q, program) => {
+  cy.wait(100)
   if (program === 'TANF') {
     cy.get(':nth-child(2) > .usa-radio__label').click()
   } else {
