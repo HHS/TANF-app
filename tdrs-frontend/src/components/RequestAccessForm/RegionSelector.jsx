@@ -14,6 +14,8 @@ function RegionSelector({
   regionError,
   regional,
   setRegional,
+  originalRegional,
+  type,
 }) {
   const [previousRegions, setPreviousRegions] = useState(
     profileInfo?.regions || new Set()
@@ -104,13 +106,25 @@ function RegionSelector({
     setRegional(false)
   }
 
+  const isRegionalButtonDisabled = originalRegional && type === 'profile'
+
   return (
     <>
       <div className="usa-form-group">
-        <fieldset className="usa-fieldset">
+        <fieldset
+          className="usa-fieldset"
+          disabled={isRegionalButtonDisabled}
+          aria-describedby="regional-button-disabled-msg"
+        >
           <legend className="usa-label text-bold">
             Do you work for an OFA Regional Office?*
           </legend>
+          {isRegionalButtonDisabled && (
+            <div id="regional-button-disabled-msg" className="usa-hint">
+              Regional users cannot remove their regional status through this
+              portal.
+            </div>
+          )}
           <div className="usa-radio">
             <input
               className="usa-radio__input"

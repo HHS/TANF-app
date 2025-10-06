@@ -280,6 +280,8 @@ function RequestAccessForm({
     regionError,
     regional,
     setRegional,
+    originalRegional,
+    type,
   }
 
   return (
