@@ -27,6 +27,10 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     isFra ? 'workOutcomesOfTanfExiters' : 'tanf'
   )
   const [sttInputValue, setSttInputValue] = useState('')
+  const [pendingChange, setPendingChange] = useState({
+    type: null,
+    value: null,
+  })
 
   // FRA-specific upload state
   const [fraSelectedFile, setFraSelectedFile] = useState(null)
@@ -83,6 +87,21 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     } else {
       dispatch(clearFileList({ fileType: fileTypeInputValue }))
     }
+    switch (pendingChange.type) {
+      case 'fileType':
+        setFileTypeInputValue(pendingChange.value)
+        break
+      case 'year':
+        setYearInputValue(pendingChange.value)
+        break
+      case 'quarter':
+        setQuarterInputValue(pendingChange.value)
+        break
+      case 'stt':
+        setSttInputValue(pendingChange.value)
+        break
+    }
+    setPendingChange({ type: null, value: null })
   }
 
   const handleOpenFeedbackWidget = () => {
@@ -92,9 +111,11 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   const selectFileType = (value) => {
     if (uploadedFiles.length > 0 || fraHasUploadedFile) {
       setModalTriggerSource('input-change')
+      setPendingChange({ type: 'fileType', value })
       setErrorModalVisible(true)
     } else {
       setFileTypeInputValue(value)
+      setLocalAlertState({ active: false, type: null, message: null })
       dispatch(clearFileList({ fileType: value }))
       dispatch(reinitializeSubmittedFiles(value))
     }
@@ -103,6 +124,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   const selectYear = ({ target: { value } }) => {
     if (uploadedFiles.length > 0 || fraHasUploadedFile) {
       setModalTriggerSource('input-change')
+      setPendingChange({ type: 'year', value })
       setErrorModalVisible(true)
     } else {
       setYearInputValue(value)
@@ -114,6 +136,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   const selectQuarter = ({ target: { value } }) => {
     if (uploadedFiles.length > 0 || fraHasUploadedFile) {
       setModalTriggerSource('input-change')
+      setPendingChange({ type: 'quarter', value })
       setErrorModalVisible(true)
     } else {
       setQuarterInputValue(value)
@@ -125,6 +148,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   const selectStt = (value) => {
     if (uploadedFiles.length > 0 || fraHasUploadedFile) {
       setModalTriggerSource('input-change')
+      setPendingChange({ type: 'stt', value })
       setErrorModalVisible(true)
     } else {
       setSttInputValue(value)
