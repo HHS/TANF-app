@@ -156,9 +156,8 @@ class CaseConsistencyValidator:
                         record,
                         line_num=line_number,
                         msg=(
-                            "Malformed case. No case should ever have more than "
-                            f"{settings.MAX_NUMBER_RECORDS_PER_CASE} records in it for a given "
-                            "reporting month and year. Deleting all records in case."
+                            f"Case should not have more than {settings.MAX_NUMBER_RECORDS_PER_CASE} "
+                            "records for a given reporting month and year."
                         ),
                     )
                     self.clear_structs((record, schema, line_number))
