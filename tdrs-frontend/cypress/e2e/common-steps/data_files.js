@@ -10,7 +10,7 @@ export const restartAtHomePage = () => {
 }
 
 export const fillFYQ = (fiscal_year, quarter) => {
-  cy.wait(100)
+  cy.wait(1000)
   cy.get('#reportingYears').should('exist').select(fiscal_year)
   cy.get('#quarter').should('exist').select(quarter)
   cy.get('.usa-file-input__input', { timeout: 1000 }).should('exist')
@@ -18,7 +18,7 @@ export const fillFYQ = (fiscal_year, quarter) => {
 
 export const uploadFile = (file_input, file_path, willError = false) => {
   cy.get(file_input).selectFile(file_path, { action: 'drag-drop' })
-  cy.wait(100)
+  cy.wait(1000)
   if (!willError) {
     const file_parts = file_path.split('/')
     cy.contains(file_parts[file_parts.length - 1], { timeout: 1000 }).should(
@@ -57,7 +57,7 @@ export const downloadErrorReport = (error_report_name) => {
 }
 
 export const fillSttFyQ = (stt, fy, q, isTanf, isRegional) => {
-  cy.wait(100)
+  cy.wait(1000)
   cy.get('#stt')
     .type(stt + '{enter}')
     .then(() => {
@@ -78,7 +78,7 @@ export const fillSttFyQ = (stt, fy, q, isTanf, isRegional) => {
 }
 
 export const fillSttFyQNoProgramSelector = (stt, fy, q) => {
-  cy.wait(100)
+  cy.wait(1000)
   cy.get('#stt')
     .type(stt + '{enter}')
     .then(() => {
@@ -89,7 +89,7 @@ export const fillSttFyQNoProgramSelector = (stt, fy, q) => {
 }
 
 export const fillFyQProgram = (fy, q, program) => {
-  cy.wait(100)
+  cy.wait(1000)
   if (program === 'TANF') {
     cy.get(':nth-child(2) > .usa-radio__label').click()
   } else {
