@@ -8,6 +8,8 @@ export const SSP_MOE_DATA_UPLOAD_FEEDBACK_HEADER =
   'How was your experience uploading SSP-MOE data?'
 export const TANF_DATA_UPLOAD_FEEDBACK_HEADER =
   'How was your experience uploading TANF data?'
+export const PIA_TANF_DATA_UPLOAD_FEEDBACK_HEADER =
+  'How was your experience uploading TANF Program Integrity Audit data?'
 export const FRA_DATA_UPLOAD_FEEDBACK_HEADER =
   'How was your experience uploading FRA data?'
 
