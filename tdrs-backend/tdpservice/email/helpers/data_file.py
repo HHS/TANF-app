@@ -58,7 +58,6 @@ def send_data_submitted_email(
         f"Data file submitted; emailing Data Analysts {list(recipients)}",
         logger_context=logger_context,
     )
-    DataFileSummary.Status.ACCEPTED_WITH_ERRORS
 
     match datafile_summary.status:
         case DataFileSummary.Status.PENDING:
