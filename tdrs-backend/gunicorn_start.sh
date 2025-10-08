@@ -27,6 +27,6 @@ fi
 
 gunicorn_cmd="gunicorn $gunicorn_params"
 
-python manage.py runscript create_grafana_readonly_postgres_user --script-args "$GRAFANA_PASSWORD" "$GRAFANA_USER"
+python manage.py runscript create_grafana_readonly_postgres_users --script-args "$GRAFANA_PASSWORD" "$GRAFANA_USER"
 
 exec $gunicorn_cmd
