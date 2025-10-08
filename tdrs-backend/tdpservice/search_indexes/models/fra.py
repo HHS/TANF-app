@@ -5,10 +5,10 @@ import uuid
 from django.db import models
 
 from tdpservice.data_files.models import DataFile
-from tdpservice.search_indexes.models.mixins import LineNumberMixin
+from tdpservice.search_indexes.models.mixins import RecordMixin
 
 
-class TANF_Exiter1(LineNumberMixin):
+class TANF_Exiter1(RecordMixin):
     """Parsed record representing an FRA data submission."""
 
     class Meta:

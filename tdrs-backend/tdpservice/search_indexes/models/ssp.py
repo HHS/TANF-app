@@ -5,10 +5,10 @@ import uuid
 from django.db import models
 
 from tdpservice.data_files.models import DataFile
-from tdpservice.search_indexes.models.mixins import LineNumberMixin
+from tdpservice.search_indexes.models.mixins import RecordMixin
 
 
-class SSP_M1(LineNumberMixin):
+class SSP_M1(RecordMixin):
     """Parsed record representing an SSP M1 data submission."""
 
     class Meta:
@@ -71,7 +71,7 @@ class SSP_M1(LineNumberMixin):
     WAIVER_EVAL_CONTROL_GRPS = models.IntegerField(null=True, blank=False)
 
 
-class SSP_M2(LineNumberMixin):
+class SSP_M2(RecordMixin):
     """Parsed record representing an SSP M2 data submission."""
 
     class Meta:
@@ -159,7 +159,7 @@ class SSP_M2(LineNumberMixin):
     OTHER_UNEARNED_INCOME = models.IntegerField(null=True, blank=False)
 
 
-class SSP_M3(LineNumberMixin):
+class SSP_M3(RecordMixin):
     """Parsed record representing an SSP M3 data submission."""
 
     class Meta:
@@ -202,7 +202,7 @@ class SSP_M3(LineNumberMixin):
     OTHER_UNEARNED_INCOME = models.IntegerField(null=True, blank=False)
 
 
-class SSP_M4(LineNumberMixin):
+class SSP_M4(RecordMixin):
     """Parsed record representing an SSP M1 data submission."""
 
     class Meta:
@@ -234,7 +234,7 @@ class SSP_M4(LineNumberMixin):
     REC_SUB_CC = models.IntegerField(null=True, blank=False)
 
 
-class SSP_M5(LineNumberMixin):
+class SSP_M5(RecordMixin):
     """Parsed record representing an SSP M1 data submission."""
 
     class Meta:
@@ -282,7 +282,7 @@ class SSP_M5(LineNumberMixin):
     AMOUNT_UNEARNED_INCOME = models.CharField(max_length=4, null=True, blank=False)
 
 
-class SSP_M6(LineNumberMixin):
+class SSP_M6(RecordMixin):
     """Parsed record representing an M6 data submission."""
 
     class Meta:
@@ -316,7 +316,7 @@ class SSP_M6(LineNumberMixin):
     CLOSED_CASES = models.IntegerField(null=True, blank=True)
 
 
-class SSP_M7(LineNumberMixin):
+class SSP_M7(RecordMixin):
     """Parsed record representing an SSP M3 data submission."""
 
     class Meta:

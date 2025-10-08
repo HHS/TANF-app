@@ -53,7 +53,7 @@ class TanfDataReportParser(BaseParser):
         prev_sum = 0
         file_length = len(self.datafile.file)
         offset = 0
-        case_hash = None
+        current_case_id = None
         for row in self.decoder.decode():
             offset += row.raw_length()
             self.current_row = row
@@ -118,20 +118,16 @@ class TanfDataReportParser(BaseParser):
                     record_has_errors = len(record_errors) > 0
                     (
                         should_remove,
-                        case_hash_to_remove,
-                        case_hash,
+                        case_id_to_remove,
+                        current_case_id,
                     ) = self.case_consistency_validator.add_record(
-                        record, schema, row, self.current_row_num, record_has_errors
+                        record, schema, self.current_row_num, record_has_errors
                     )
                     self.unsaved_records.add_record(
-                        case_hash, (record, schema.model), self.current_row_num
+                        current_case_id, (record, schema.model), self.current_row_num
                     )
-                    was_removed = self.unsaved_records.remove_case_due_to_errors(
-                        should_remove, case_hash_to_remove
-                    )
-                    self.case_consistency_validator.update_removed(
-                        case_hash_to_remove, should_remove, was_removed
-                    )
+                    self.add_case_to_remove(should_remove, case_id_to_remove)
+
                     self.dfs.total_number_of_records_in_file += 1
 
             # Add any generated cat4 errors to our error data structure & clear our caches errors list
@@ -164,18 +160,18 @@ class TanfDataReportParser(BaseParser):
             return
 
         should_remove = self.validate_case_consistency()
-        was_removed = self.unsaved_records.remove_case_due_to_errors(
-            should_remove, case_hash
-        )
-        self.case_consistency_validator.update_removed(
-            case_hash, should_remove, was_removed
-        )
+        self.add_case_to_remove(should_remove, current_case_id)
 
         # Only checking "all_created" here because records remained cached if bulk create fails.
         # This is the last chance to successfully create the records.
         all_created = self.bulk_create_records(self.header_count, flush=True)
 
-        self.delete_serialized_records()
+        # Order matters. To ensure we also catch duplicate records, we check for them before deleting cases with cat4
+        # Errors.
+        self._delete_exact_dups()
+        self._delete_partial_dups()
+        self._delete_serialized_cases()
+
         self.create_no_records_created_pre_check_error()
 
         if not all_created:
@@ -202,6 +198,8 @@ class TanfDataReportParser(BaseParser):
             f"Cat4 validator cached {self.case_consistency_validator.total_cases_cached} cases and "
             f"validated {self.case_consistency_validator.total_cases_validated} of them."
         )
+
+        self.bulk_create_errors(flush=True)
         self.dfs.save()
 
         return
@@ -365,11 +363,6 @@ class TanfDataReportParser(BaseParser):
         if settings.GENERATE_TRAILER_ERRORS:
             self.unsaved_parser_errors.update({"trailer": trailer_errors})
             self.num_errors += len(trailer_errors)
-
-    def delete_serialized_records(self):
-        """Delete all records that have already been serialized to the DB that have cat4 errors."""
-        duplicate_manager = self.case_consistency_validator.duplicate_manager
-        self._delete_serialized_records(duplicate_manager)
 
     def _generate_funded_ssn_errors(self, t2_schema, t2_records, t1_schema):
         """Inner function to validate and generate errors."""
