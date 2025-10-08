@@ -1,4 +1,5 @@
 """Utility file for functions shared between all parsers even preparser."""
+
 import logging
 from datetime import datetime
 from pathlib import Path
@@ -20,6 +21,7 @@ def create_test_datafile(filename, stt_user, stt, section="Active Case Data"):
             "quarter": "Q1",
             "year": 2021,
             "section": section,
+            "program_type": "TAN",
             "user": stt_user,
             "stt": stt,
         }

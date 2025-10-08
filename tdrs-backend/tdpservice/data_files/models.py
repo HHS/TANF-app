@@ -1,4 +1,5 @@
 """Define data file models."""
+
 import logging
 import os
 from hashlib import sha256
@@ -107,6 +108,14 @@ class ReparseFileMeta(models.Model):
 class DataFile(FileRecord):
     """Represents a version of a data file."""
 
+    class ProgramType(models.TextChoices):
+        """Enum for data file program type."""
+
+        TANF = "TAN"
+        SSP = "SSP"
+        TRIBAL = "TRIBAL"
+        FRA = "FRA"
+
     class Section(models.TextChoices):
         """Enum for data file section."""
 
@@ -200,6 +209,10 @@ class DataFile(FileRecord):
         max_length=16, blank=False, null=False, choices=Quarter.choices
     )
     year = models.IntegerField()
+
+    program_type = models.CharField(
+        max_length=32, blank=False, null=False, choices=ProgramType.choices
+    )
     section = models.CharField(
         max_length=32, blank=False, null=False, choices=Section.choices
     )
@@ -228,16 +241,18 @@ class DataFile(FileRecord):
         related_name="files",
     )
 
-    @property
-    def prog_type(self):
-        """Return the program type for a given section."""
-        # e.g., 'SSP Closed Case Data'
-        if self.Section.is_ssp(self.section):
-            return "SSP"
-        elif self.Section.is_fra(self.section):
-            return "FRA"
-        else:
-            return "TAN"
+    # is_program_audit = models.BooleanField(default=False)
+
+    # @property  # first class citizen
+    # def prog_type(self):
+    #     """Return the program type for a given section."""
+    #     # e.g., 'SSP Closed Case Data'
+    #     if self.Section.is_ssp(self.section):
+    #         return "SSP"
+    #     elif self.Section.is_fra(self.section):
+    #         return "FRA"
+    #     else:
+    #         return "TAN"
 
     @property
     def filename(self):
@@ -309,6 +324,7 @@ class DataFile(FileRecord):
                 year=data["year"],
                 quarter=data["quarter"],
                 section=data["section"],
+                program_type=data["program_type"],
                 stt=data["stt"],
             )
             or 0
@@ -320,10 +336,14 @@ class DataFile(FileRecord):
         )
 
     @classmethod
-    def find_latest_version_number(self, year, quarter, section, stt):
+    def find_latest_version_number(self, year, quarter, section, program_type, stt):
         """Locate the latest version number in a series of data files."""
         return self.objects.filter(
-            stt=stt, year=year, quarter=quarter, section=section
+            stt=stt,
+            year=year,
+            quarter=quarter,
+            section=section,
+            program_type=program_type,
         ).aggregate(Max("version"))["version__max"]
 
     @classmethod

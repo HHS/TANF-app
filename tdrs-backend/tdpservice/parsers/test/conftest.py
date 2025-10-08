@@ -1,4 +1,5 @@
 """Fixtures for parsing integration tests."""
+
 import pytest
 
 from tdpservice.data_files.models import DataFile
@@ -113,7 +114,7 @@ def empty_file(stt_user, stt):
 def small_ssp_section1_datafile(stt_user, stt):
     """Fixture for small_ssp_section1."""
     return util.create_test_datafile(
-        "small_ssp_section1.txt", stt_user, stt, "SSP Active Case Data"
+        "small_ssp_section1.txt", stt_user, stt, "Active Case Data"
     )
 
 
@@ -121,7 +122,7 @@ def small_ssp_section1_datafile(stt_user, stt):
 def ssp_section1_datafile(stt_user, stt):
     """Fixture for ssp_section1_datafile."""
     return util.create_test_datafile(
-        "ssp_section1_datafile.txt", stt_user, stt, "SSP Active Case Data"
+        "ssp_section1_datafile.txt", stt_user, stt, "Active Case Data"
     )
 
 
@@ -155,7 +156,7 @@ def bad_tanf_s1__row_missing_required_field(stt_user, stt):
 def bad_ssp_s1__row_missing_required_field(stt_user, stt):
     """Fixture for ssp_section1_datafile."""
     return util.create_test_datafile(
-        "small_bad_ssp_s1.txt", stt_user, stt, "SSP Active Case Data"
+        "small_bad_ssp_s1.txt", stt_user, stt, "Active Case Data"
     )
 
 
@@ -206,16 +207,14 @@ def bad_tanf_section4_file(stt_user, stt):
 @pytest.fixture
 def ssp_section4_file(stt_user, stt):
     """Fixture for ADS.E2J.NDM4.MS24."""
-    return util.create_test_datafile(
-        "ADS.E2J.NDM4.MS24", stt_user, stt, "SSP Stratum Data"
-    )
+    return util.create_test_datafile("ADS.E2J.NDM4.MS24", stt_user, stt, "Stratum Data")
 
 
 @pytest.fixture
 def ssp_section2_rec_oadsi_file(stt_user, stt):
     """Fixture for sp_section2_rec_oadsi_file."""
     return util.create_test_datafile(
-        "ssp_section2_rec_oadsi_file.txt", stt_user, stt, "SSP Closed Case Data"
+        "ssp_section2_rec_oadsi_file.txt", stt_user, stt, "Closed Case Data"
     )
 
 
@@ -223,7 +222,7 @@ def ssp_section2_rec_oadsi_file(stt_user, stt):
 def ssp_section2_file(stt_user, stt):
     """Fixture for ADS.E2J.NDM2.MS24."""
     return util.create_test_datafile(
-        "ADS.E2J.NDM2.MS24", stt_user, stt, "SSP Closed Case Data"
+        "ADS.E2J.NDM2.MS24", stt_user, stt, "Closed Case Data"
     )
 
 
@@ -231,7 +230,7 @@ def ssp_section2_file(stt_user, stt):
 def ssp_section3_file(stt_user, stt):
     """Fixture for ADS.E2J.FTP3.TS06."""
     return util.create_test_datafile(
-        "ADS.E2J.NDM3.MS24", stt_user, stt, "SSP Aggregate Data"
+        "ADS.E2J.NDM3.MS24", stt_user, stt, "Aggregate Data"
     )
 
 
@@ -239,7 +238,7 @@ def ssp_section3_file(stt_user, stt):
 def tribal_section_1_file(stt_user, stt):
     """Fixture for ADS.E2J.FTP4.TS06."""
     return util.create_test_datafile(
-        "ADS.E2J.FTP1.TS142", stt_user, stt, "Tribal Active Case Data"
+        "ADS.E2J.FTP1.TS142", stt_user, stt, "Active Case Data"
     )
 
 
@@ -247,7 +246,7 @@ def tribal_section_1_file(stt_user, stt):
 def tribal_section_1_inconsistency_file(stt_user, stt):
     """Fixture for ADS.E2J.FTP4.TS06."""
     return util.create_test_datafile(
-        "tribal_section_1_inconsistency.txt", stt_user, stt, "Tribal Active Case Data"
+        "tribal_section_1_inconsistency.txt", stt_user, stt, "Active Case Data"
     )
 
 
@@ -255,7 +254,7 @@ def tribal_section_1_inconsistency_file(stt_user, stt):
 def tribal_section_2_file(stt_user, stt):
     """Fixture for ADS.E2J.FTP4.TS06."""
     return util.create_test_datafile(
-        "ADS.E2J.FTP2.TS142.txt", stt_user, stt, "Tribal Closed Case Data"
+        "ADS.E2J.FTP2.TS142.txt", stt_user, stt, "Closed Case Data"
     )
 
 
@@ -263,7 +262,7 @@ def tribal_section_2_file(stt_user, stt):
 def tribal_section_3_file(stt_user, stt):
     """Fixture for ADS.E2J.FTP3.TS142."""
     return util.create_test_datafile(
-        "ADS.E2J.FTP3.TS142", stt_user, stt, "Tribal Aggregate Data"
+        "ADS.E2J.FTP3.TS142", stt_user, stt, "Aggregate Data"
     )
 
 
@@ -271,7 +270,7 @@ def tribal_section_3_file(stt_user, stt):
 def tribal_section_4_file(stt_user, stt):
     """Fixture for tribal_section_4_fake.txt."""
     return util.create_test_datafile(
-        "tribal_section_4_fake.txt", stt_user, stt, "Tribal Stratum Data"
+        "tribal_section_4_fake.txt", stt_user, stt, "Stratum Data"
     )
 
 
@@ -307,7 +306,7 @@ def tanf_section_1_file_with_bad_update_indicator(stt_user, stt):
 def tribal_section_4_bad_quarter(stt_user, stt):
     """Fixture for tribal_section_4_bad_quarter."""
     return util.create_test_datafile(
-        "tribal_section_4_fake_bad_quarter.txt", stt_user, stt, "Tribal Stratum Data"
+        "tribal_section_4_fake_bad_quarter.txt", stt_user, stt, "Stratum Data"
     )
 
 
@@ -321,6 +320,7 @@ def t4_t5_empty_values():
         original_filename="t4_t5_empty_values.txt",
         section=DataFile.Section.CLOSED_CASE_DATA,
         file__filename="t4_t5_empty_values.txt",
+        file__program_type=DataFile.ProgramType.TANF,
         file__data=(
             b"HEADER20212C06   TAN1ED\n"
             + b"T420210411111111158253  400141123113                                   \n"
@@ -341,6 +341,7 @@ def second_child_only_space_t3_file():
         original_filename="second_child_only_space_t3_file.txt",
         file__name="second_child_only_space_t3_file.txt",
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
+        file__program_type=DataFile.ProgramType.TANF,
         file__data=(
             b"HEADER20212A25   TAN1 D\n"
             + b"T120210400028221R0112014122311110232110374300000000000005450"
@@ -363,6 +364,7 @@ def one_child_t3_file():
         original_filename="one_child_t3_file.txt",
         file__name="one_child_t3_file.txt",
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
+        file__program_type=DataFile.ProgramType.TANF,
         file__data=(
             b"HEADER20212A25   TAN1 D\n"
             + b"T120210400028221R0112014122311110232110374300000000000005450"
@@ -385,6 +387,7 @@ def t3_file():
         original_filename="t3_file.txt",
         file__name="t3_file.txt",
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
+        file__program_type=DataFile.ProgramType.TANF,
         file__data=(
             b"HEADER20212A25   TAN1ED\n"
             + b"T12021044111111111512014122311110232110374300000000000005450"
@@ -409,6 +412,7 @@ def t3_file_two_child():
         original_filename="t3_file.txt",
         file__name="t3_file.txt",
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
+        file__program_type=DataFile.ProgramType.TANF,
         file__data=(
             b"HEADER20211A25   TAN1ED\n"
             + b"T12021021111111115712014122311110232110374300000000000005450"
@@ -432,6 +436,7 @@ def t3_file_two_child_with_space_filled():
         original_filename="t3_file_two_child_with_space_filled.txt",
         file__name="t3_file_two_child_with_space_filled.txt",
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
+        file__program_type=DataFile.ProgramType.TANF,
         file__data=(
             b"HEADER20211A25   TAN1ED\n"
             + b"T12021021111111115712014122311110232110374300000000000005450"
@@ -455,6 +460,7 @@ def two_child_second_filled():
         original_filename="two_child_second_filled.txt",
         file__name="two_child_second_filled.txt",
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
+        file__program_type=DataFile.ProgramType.TANF,
         file__data=(
             b"HEADER20211A25   TAN1ED\n"
             + b"T12021021111111111512014122311110232110374300000000000005450"
@@ -479,6 +485,7 @@ def t3_file_zero_filled_second():
         original_filename="t3_file_zero_filled_second.txt",
         file__name="t3_file_zero_filled_second.txt",
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
+        file__program_type=DataFile.ProgramType.TANF,
         file__data=(
             b"HEADER20212A25   TAN1ED\n"
             + b"T12021044111111111512014122311110232110374300000000000005450"
@@ -500,7 +507,8 @@ def m2_cat2_invalid_37_38_39_file():
         year=2024,
         quarter="Q1",
         file__name="m2_cat2_invalid_37_38_39_file.txt",
-        section="SSP Active Case Data",
+        section="Active Case Data",
+        file__program_type=DataFile.ProgramType.SSP,
         file__data=(
             b"HEADER20234A24   SSP1ED\n"
             b"M2202310111111111275219811103WTTT#PW@W22212222222250122000010119350000000000000000000000000000000"
@@ -518,7 +526,8 @@ def m3_cat2_invalid_68_69_file():
         year=2024,
         quarter="Q1",
         file__name="m3_cat2_invalid_68_69_file.txt",
-        section="SSP Active Case Data",
+        section="Active Case Data",
+        file__program_type=DataFile.ProgramType.SSP,
         file__data=(
             b"HEADER20234A24   SSP1ED\n"
             b"M320231011111111127420110615WTTTP99B#22212222204300000000000\n"
@@ -537,7 +546,8 @@ def m5_cat2_invalid_23_24_file():
         year=2024,
         quarter="Q1",
         file__name="m5_cat2_invalid_23_24_file.txt",
-        section="SSP Closed Case Data",
+        section="Closed Case Data",
+        file__program_type=DataFile.ProgramType.SSP,
         file__data=(
             b"HEADER20184C24   SSP1ED\n"
             b"M520181011111111161519791106WTTTY0ZB922212222222210112000112970000\n"
@@ -555,6 +565,7 @@ def test_file_zero_filled_fips_code():
         quarter="Q1",
         file__name="t3_invalid_citizenship_file.txt",
         file__section="Active Case Data",
+        file__program_type=DataFile.ProgramType.TANF,
         file__data=(
             b"HEADER20241A01000TAN2ED\n"
             b"T1202401    2132333   0140951112 43312   03   0   0   2 554145"
@@ -581,6 +592,7 @@ def tanf_s1_exact_dup_file():
         quarter="Q1",
         file__name="s1_exact_duplicate.txt",
         file__section="Active Case Data",
+        file__program_type=DataFile.ProgramType.TANF,
         file__data=(
             b"HEADER20204A06   TAN1 D\n"
             b"T12020101111111111223003403361110212120000300000000000008730010000000000000000000000"
@@ -602,6 +614,7 @@ def tanf_s2_exact_dup_file():
         section="Closed Case Data",
         file__name="s2_exact_duplicate.txt",
         file__section="Closed Case Data",
+        file__program_type=DataFile.ProgramType.TANF,
         file__data=(
             b"HEADER20204C06   TAN1ED\n"
             b"T42020101111111115825301400141123113                                   \n"
@@ -621,6 +634,7 @@ def tanf_s3_exact_dup_file():
         section="Aggregate Data",
         file__name="s3_exact_duplicate.txt",
         file__section="Aggregate Data",
+        file__program_type=DataFile.ProgramType.TANF,
         file__data=(
             b"HEADER20214G06   TAN1 D\n"
             b"T620214000127470001104500011146000043010000397700003924000084460000706800007222"
@@ -648,6 +662,7 @@ def tanf_s4_exact_dup_file():
         section="Stratum Data",
         file__name="s4_exact_duplicate.txt",
         file__section="Stratum Data",
+        file__program_type=DataFile.ProgramType.SSP,
         file__data=(
             b"HEADER20214S06   TAN1 D\n"
             b"T720214101006853700680540068454103000312400037850003180104000347400036460003583106"
@@ -668,9 +683,10 @@ def ssp_s1_exact_dup_file():
     parsing_file = ParsingFileFactory(
         year=2019,
         quarter="Q1",
-        section="SSP Active Case Data",
+        section="Active Case Data",
         file__name="s1_exact_duplicate.txt",
-        file__section="SSP Active Case Data",
+        file__section="Active Case Data",
+        file__program_type=DataFile.ProgramType.SSP,
         file__data=(
             b"HEADER20184A24   SSP1ED\n"
             b"M12018101111111112721401400351021331100273000000000000000105400000000000000000000000000000"
@@ -689,9 +705,10 @@ def ssp_s2_exact_dup_file():
     parsing_file = ParsingFileFactory(
         year=2019,
         quarter="Q1",
-        section="SSP Closed Case Data",
+        section="Closed Case Data",
         file__name="s2_exact_duplicate.txt",
-        file__section="SSP Closed Case Data",
+        file__section="Closed Case Data",
+        file__program_type=DataFile.ProgramType.SSP,
         file__data=(
             b"HEADER20184C24   SSP1ED\n"
             b"M42018101111111116120000406911161113                              \n"
@@ -708,9 +725,10 @@ def ssp_s3_exact_dup_file():
     parsing_file = ParsingFileFactory(
         year=2022,
         quarter="Q1",
-        section="SSP Aggregate Data",
+        section="Aggregate Data",
         file__name="s3_exact_duplicate.txt",
-        file__section="SSP Aggregate Data",
+        file__section="Aggregate Data",
+        file__program_type=DataFile.ProgramType.SSP,
         file__data=(
             b"HEADER20214G24   SSP1 D\n"
             b"M6202140001586900016008000159560000086100000851000008450001490500015055000150130000010300000"
@@ -731,9 +749,10 @@ def ssp_s4_exact_dup_file():
     parsing_file = ParsingFileFactory(
         year=2022,
         quarter="Q1",
-        section="SSP Stratum Data",
+        section="Stratum Data",
         file__name="s4_exact_duplicate.txt",
-        file__section="SSP Stratum Data",
+        file__section="Stratum Data",
+        file__program_type=DataFile.ProgramType.SSP,
         file__data=(
             b"HEADER20214S24   SSP1 D\n"
             b"M7202141010001769000131000011111020000748000076700007681030013352001393100140772000001202000"
@@ -756,6 +775,7 @@ def tanf_s1_partial_dup_file():
         quarter="Q1",
         file__name="s1_partial_duplicate.txt",
         file__section="Active Case Data",
+        file__program_type=DataFile.ProgramType.TANF,
         file__data=(
             b"HEADER20204A06   TAN1 D\n"
             b"T120201011111111112230034033611102121200003000000000000087300100000000000000"
@@ -777,6 +797,7 @@ def tanf_s2_partial_dup_file():
         section="Closed Case Data",
         file__name="s2_partial_duplicate.txt",
         file__section="Closed Case Data",
+        file__program_type=DataFile.ProgramType.TANF,
         file__data=(
             b"HEADER20204C06   TAN1ED\n"
             b"T520201011111111158120160206WTTTT90TY2222212 2  2 0422981      00000000\n"
@@ -793,9 +814,10 @@ def ssp_s1_partial_dup_file():
     parsing_file = ParsingFileFactory(
         year=2019,
         quarter="Q1",
-        section="SSP Active Case Data",
+        section="Active Case Data",
         file__name="s1_exact_duplicate.txt",
-        file__section="SSP Active Case Data",
+        file__section="Active Case Data",
+        file__program_type=DataFile.ProgramType.SSP,
         file__data=(
             b"HEADER20184A24   SSP1ED\n"
             b"M12018101111111112721401400351021331100273000000000000000105400000000000000000000000000"
@@ -814,9 +836,10 @@ def ssp_s2_partial_dup_file():
     parsing_file = ParsingFileFactory(
         year=2019,
         quarter="Q1",
-        section="SSP Closed Case Data",
+        section="Closed Case Data",
         file__name="s2_exact_duplicate.txt",
-        file__section="SSP Closed Case Data",
+        file__section="Closed Case Data",
+        file__program_type=DataFile.ProgramType.SSP,
         file__data=(
             b"HEADER20184C24   SSP1ED\n"
             b"M520181011111111161120150623WTTTYT#0W222122222222 0422981     0000\n"
@@ -836,6 +859,7 @@ def tanf_s3_partial_dup_file():
         section="Aggregate Data",
         file__name="s3_exact_duplicate.txt",
         file__section="Aggregate Data",
+        file__program_type=DataFile.ProgramType.TANF,
         file__data=(
             b"HEADER20214G06   TAN1 D\n"
             b"T620214000127470001104500011146000043010000397700003924000084460000706800007222"
@@ -863,6 +887,7 @@ def tanf_s4_partial_dup_file():
         section="Stratum Data",
         file__name="s4_partial_duplicate.txt",
         file__section="Stratum Data",
+        file__program_type=DataFile.ProgramType.TANF,
         file__data=(
             b"HEADER20214S06   TAN1 D\n"
             b"T720214101006853700680540068454103000312400037850003180104000347400036460003583106"
@@ -925,7 +950,8 @@ def fra_xlsx(stt_user, stt):
 @pytest.fixture
 def fra_multi_sheet_xlsx(stt_user, stt):
     """Fixture for xlsx fra file."""
-    return util.create_test_datafile('fra_multi_sheet.xlsx', stt_user, stt)
+    return util.create_test_datafile("fra_multi_sheet.xlsx", stt_user, stt)
+
 
 @pytest.fixture
 def unknown_png(stt_user, stt):
@@ -1046,6 +1072,7 @@ def section2_no_records():
         section="Closed Case Data",
         file__name="section2_no_records.txt",
         file__section="Closed Case Data",
+        file__program_type=DataFile.ProgramType.TANF,
         file__data=(b"HEADER20244C06   TAN1ED\n" b"TRAILER0000001         "),
     )
     return parsing_file

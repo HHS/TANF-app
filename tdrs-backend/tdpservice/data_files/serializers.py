@@ -1,4 +1,5 @@
 """Serialize stt data."""
+
 import logging
 
 from rest_framework import serializers
@@ -93,10 +94,18 @@ class DataFileSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         """Create a new entry with a new version number."""
         ssp = validated_data.pop("ssp")
+
         if ssp:
-            validated_data["section"] = "SSP " + validated_data["section"]
-        if validated_data.get("stt").type == "tribe":
-            validated_data["section"] = "Tribal " + validated_data["section"]
+            # validated_data["section"] = "SSP " + validated_data["section"]
+            validated_data["program_type"] = DataFile.ProgramType.SSP
+        elif validated_data.get("stt").type == "tribe":
+            # validated_data["section"] = "Tribal " + validated_data["section"]
+            validated_data["program_type"] = DataFile.ProgramType.TRIBAL
+        elif DataFile.Section.is_fra(validated_data["section"]):
+            validated_data["program_type"] = DataFile.ProgramType.FRA
+        else:
+            validated_data["program_type"] = DataFile.ProgramType.TANF
+
         data_file = DataFile.create_new_version(validated_data)
         # Determine the matching ClamAVFileScan for this DataFile.
         av_scan = ClamAVFileScan.objects.filter(

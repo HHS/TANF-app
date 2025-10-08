@@ -30,7 +30,8 @@ def send_data_submitted_email(
     text_message = None
 
     section_name = datafile.section
-    prog_type = get_prog_from_section(section_name)
+    prog_type = datafile.program_type
+    # prog_type = get_prog_from_section(section_name)
     file_type = f"{prog_type}F" if prog_type != "SSP" else prog_type
     stt_name = datafile.stt.name
     submission_date = datafile.created_at

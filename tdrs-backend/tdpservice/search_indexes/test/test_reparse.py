@@ -93,25 +93,25 @@ def parse_files(summary, f1, f2, f3, f4):
     """Parse all files."""
     summary.datafile = f1
     parser = ParserFactory.get_instance(
-        datafile=f1, dfs=summary, section=f1.section, program_type=f1.prog_type
+        datafile=f1, dfs=summary, section=f1.section, program_type=f1.program_type
     )
     parser.parse_and_validate()
 
     summary.datafile = f2
     parser = ParserFactory.get_instance(
-        datafile=f2, dfs=summary, section=f2.section, program_type=f2.prog_type
+        datafile=f2, dfs=summary, section=f2.section, program_type=f2.program_type
     )
     parser.parse_and_validate()
 
     summary.datafile = f3
     parser = ParserFactory.get_instance(
-        datafile=f3, dfs=summary, section=f3.section, program_type=f3.prog_type
+        datafile=f3, dfs=summary, section=f3.section, program_type=f3.program_type
     )
     parser.parse_and_validate()
 
     summary.datafile = f4
     parser = ParserFactory.get_instance(
-        datafile=f4, dfs=summary, section=f4.section, program_type=f4.prog_type
+        datafile=f4, dfs=summary, section=f4.section, program_type=f4.program_type
     )
     parser.parse_and_validate()
 

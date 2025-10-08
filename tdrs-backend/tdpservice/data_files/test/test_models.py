@@ -1,4 +1,5 @@
 """Module testing for data file model."""
+
 import pytest
 
 from tdpservice.data_files.models import DataFile
@@ -123,7 +124,7 @@ def test_prog_type(data_file_instance, section, program_type):
     )
 
     df.section = section
-    assert df.prog_type == program_type
+    assert df.program_type == program_type
 
 
 @pytest.mark.django_db
