@@ -16,9 +16,9 @@ GRANT {role} TO {username};
 
 def run(*args):  # noqa: C901
     """Create a read-only user for the default database."""
-    # ./manage.py runscript create_readonly_grafana_user --script-args "user1" "password1" "role1" "user2" "password" "role2"...
+    # ./manage.py runscript create_grafana_readonly_postgres_user --script-args "user1" "password1" "role1" "user2" "password" "role2"...
 
-    if len(args) % 3 != 0:
+    if len(args) % 3 != 0 or not all(args):
         print(
             "Expects args in groups of 3. E.g. 'user1' 'password1' 'role1' 'user2' 'password2' 'role2'..."
         )
