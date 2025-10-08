@@ -174,6 +174,6 @@ def parse(data_file_id, reparse_id=None):
             data_file
         )
         error_report = error_report_generator.generate()
-        update_dfs(dfs, data_file)
         set_error_report(dfs, error_report)
         logger.handlers[2].doRollover(data_file)
+        update_dfs(dfs, data_file)

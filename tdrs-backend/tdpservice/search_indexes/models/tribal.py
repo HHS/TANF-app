@@ -7,9 +7,10 @@ from django.db import models
 
 from tdpservice.data_files.models import DataFile
 from tdpservice.parsers.models import ParserError
+from tdpservice.search_indexes.models.mixins import RecordMixin
 
 
-class Tribal_TANF_T1(models.Model):
+class Tribal_TANF_T1(RecordMixin):
     """Parsed record representing a T1 data submission."""
 
     class Meta:
@@ -75,7 +76,7 @@ class Tribal_TANF_T1(models.Model):
     FAMILY_NEW_CHILD = models.IntegerField(null=True, blank=False)
 
 
-class Tribal_TANF_T2(models.Model):
+class Tribal_TANF_T2(RecordMixin):
     """Parsed record representing a T2 data submission."""
 
     class Meta:
@@ -148,7 +149,7 @@ class Tribal_TANF_T2(models.Model):
     OTHER_UNEARNED_INCOME = models.CharField(max_length=4, null=True, blank=False)
 
 
-class Tribal_TANF_T3(models.Model):
+class Tribal_TANF_T3(RecordMixin):
     """Parsed record representing a T3 data submission."""
 
     class Meta:
@@ -190,7 +191,7 @@ class Tribal_TANF_T3(models.Model):
     OTHER_UNEARNED_INCOME = models.CharField(max_length=4, null=True, blank=False)
 
 
-class Tribal_TANF_T4(models.Model):
+class Tribal_TANF_T4(RecordMixin):
     """Parsed record representing a T4 data submission."""
 
     class Meta:
@@ -223,7 +224,7 @@ class Tribal_TANF_T4(models.Model):
     REC_SUB_CC = models.IntegerField(null=True, blank=False)
 
 
-class Tribal_TANF_T5(models.Model):
+class Tribal_TANF_T5(RecordMixin):
     """Parsed record representing a T5 data submission."""
 
     class Meta:
@@ -275,7 +276,7 @@ class Tribal_TANF_T5(models.Model):
     AMOUNT_UNEARNED_INCOME = models.CharField(max_length=4, null=True, blank=False)
 
 
-class Tribal_TANF_T6(models.Model):
+class Tribal_TANF_T6(RecordMixin):
     """Parsed record representing a Tribal T6 data submission."""
 
     class Meta:
@@ -313,7 +314,7 @@ class Tribal_TANF_T6(models.Model):
     NUM_CLOSED_CASES = models.IntegerField(null=True, blank=True)
 
 
-class Tribal_TANF_T7(models.Model):
+class Tribal_TANF_T7(RecordMixin):
     """Parsed record representing a Tribal T7 data submission."""
 
     class Meta:
