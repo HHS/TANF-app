@@ -1660,3 +1660,92 @@ class TestCaseConsistencyValidator:
             f"{t5_model_name} People in states must have a valid value for Item {rec_ssi_item_num} "
             "(Received Disability Benefits: SSI)."
         )
+
+    @pytest.mark.parametrize(
+        "header,T1Stuff,T2Stuff,stt_type",
+        [
+            (
+                {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
+                (factories.TanfT1Factory, schema_defs.tanf.t1[0], "T1"),
+                (factories.TanfT2Factory, schema_defs.tanf.t2[0], "T2"),
+                STT.EntityType.STATE,
+            ),
+            (
+                {
+                    "type": "A",
+                    "program_type": "Tribal TAN",
+                    "year": 2020,
+                    "quarter": "4",
+                },
+                (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1[0], "T1"),
+                (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2[0], "T2"),
+                STT.EntityType.TRIBE,
+            ),
+            (
+                {"type": "A", "program_type": "SSP", "year": 2020, "quarter": "4"},
+                (factories.SSPM1Factory, schema_defs.ssp.m1[0], "M1"),
+                (factories.SSPM2Factory, schema_defs.ssp.m2[0], "M2"),
+                STT.EntityType.STATE,
+            ),
+        ],
+    )
+    @pytest.mark.django_db
+    def test_max_records_per_case_exceeded(
+        self, small_correct_file, header, T1Stuff, T2Stuff, stt_type
+    ):
+        """Test that exceeding MAX_NUMBER_RECORDS_PER_CASE generates an error."""
+        from django.conf import settings
+
+        (T1Factory, t1_schema, t1_model_name) = T1Stuff
+        (T2Factory, t2_schema, t2_model_name) = T2Stuff
+
+        case_consistency_validator = CaseConsistencyValidator(
+            header,
+            header["program_type"],
+            stt_type,
+            ErrorGeneratorFactory(small_correct_file).get_generator(
+                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+            ),
+        )
+
+        # Add T1 record
+        t1 = T1Factory.build(RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
+        line_number = 1
+        case_consistency_validator.add_record(t1, t1_schema, line_number, False)
+        line_number += 1
+
+        # Add records up to MAX_NUMBER_RECORDS_PER_CASE (17 by default)
+        # We already added 1 T1, so add 16 more T2 records to reach the limit
+        for i in range(settings.MAX_NUMBER_RECORDS_PER_CASE - 1):
+            t2 = T2Factory.build(
+                RPT_MONTH_YEAR=202010,
+                CASE_NUMBER="123",
+                FAMILY_AFFILIATION=1 if i == 0 else 2,
+            )
+            case_consistency_validator.add_record(t2, t2_schema, line_number, False)
+            line_number += 1
+
+        case_consistency_validator.validate()
+        errors = case_consistency_validator.get_generated_errors()
+        assert len(errors) == 0
+
+        # Add one more record to exceed the limit
+        t2_extra = T2Factory.build(
+            RPT_MONTH_YEAR=202010,
+            CASE_NUMBER="123",
+            FAMILY_AFFILIATION=2,
+        )
+        has_errors, _, _ = case_consistency_validator.add_record(
+            t2_extra, t2_schema, line_number, False
+        )
+
+        assert case_consistency_validator.num_records_in_case == 0
+        assert has_errors is True
+        errors = case_consistency_validator.get_generated_errors()
+        assert len(errors) == 1
+        assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+        assert errors[0].error_message == (
+            f"Cases must contain fewer than {settings.MAX_NUMBER_RECORDS_PER_CASE} person "
+            "(Child + Adult) records within a given reporting month and year. All records "
+            "associated with this case have been rejected."
+        )

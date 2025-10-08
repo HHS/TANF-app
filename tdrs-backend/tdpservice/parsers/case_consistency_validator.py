@@ -149,15 +149,15 @@ class CaseConsistencyValidator:
                 self.has_validated = False
                 self.num_records_in_case += 1
 
-                # TODO: Get feedback on the error message
                 if self.num_records_in_case > settings.MAX_NUMBER_RECORDS_PER_CASE:
                     self.__generate_and_add_error(
                         schema,
                         record,
                         line_num=line_number,
                         msg=(
-                            f"Case should not have more than {settings.MAX_NUMBER_RECORDS_PER_CASE} "
-                            "records for a given reporting month and year."
+                            f"Cases must contain fewer than {settings.MAX_NUMBER_RECORDS_PER_CASE} person "
+                            "(Child + Adult) records within a given reporting month and year. All records "
+                            "associated with this case have been rejected."
                         ),
                     )
                     self.clear_structs((record, schema, line_number))
