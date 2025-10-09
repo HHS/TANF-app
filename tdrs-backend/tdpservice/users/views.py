@@ -120,23 +120,6 @@ class UserViewSet(
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        # Check if any change requests were created
-        user = self.request.user
-        pending_requests = user.get_pending_change_requests()
-
-        if pending_requests.exists():
-            logger.info(
-                "Change requests created for user: %s on %s", user, timezone.now()
-            )
-            # Return the updated serializer data with pending change request info
-            return Response(
-                {
-                    "user": self.get_serializer(user).data,
-                    "message": "Your requested changes have been submitted for approval.",
-                    "pending_requests": pending_requests.count(),
-                }
-            )
-
         return Response(serializer.data)
 
 
