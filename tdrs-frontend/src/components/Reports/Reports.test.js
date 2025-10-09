@@ -931,24 +931,6 @@ describe('Reports', () => {
       },
     })
 
-    const temp_state = {
-      ...initialState,
-      reports: {
-        ...initialState.reports,
-        year: '2021',
-        stt: 'Alaska',
-        quarter: 'Q3',
-      },
-      auth: {
-        ...initialState.auth,
-        user: {
-          ...initialState.auth.user,
-          roles: [{ id: 1, name: 'OFA Regional Staff', permission: [] }],
-        },
-      },
-    }
-    console.log('STATE: ', JSON.stringify(temp_state, null, 2))
-
     const { getByText, queryByText } = render(
       <Provider store={store}>
         <Reports />
