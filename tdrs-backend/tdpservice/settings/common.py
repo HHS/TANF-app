@@ -580,3 +580,7 @@ class Common(Configuration):
     CELERY_TASK_SEND_SENT_EVENT = True
 
     FRA_PILOT_STATES = json.loads(os.getenv("FRA_PILOT_STATES", "[]"))
+
+    # Per Lauren and Yun, 1 family (case) is expected to have a maximum of 6 adults and a maximum of 10 children plus
+    # one T1 record. Thus, if a case has more than 17 records, it has an error and will not be serialized.
+    MAX_NUMBER_RECORDS_PER_CASE = os.getenv("MAX_NUMBER_RECORDS_PER_CASE", 17)

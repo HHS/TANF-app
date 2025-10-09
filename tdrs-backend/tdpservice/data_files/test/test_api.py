@@ -153,21 +153,20 @@ class DataFileAPITestBase:
         wb = DataFileAPITestBase.get_spreadsheet(response)
         sheet = wb["Error Report"]
 
-        assert sheet.cell(row=2, column=1).value == 202403
-        assert sheet.cell(row=2, column=2).value == "*****5891"
-        assert sheet.cell(row=2, column=3).value == 7
-        assert sheet.cell(row=2, column=4).value == (
+        assert sheet.cell(row=9, column=1).value == 202403
+        assert sheet.cell(row=9, column=2).value == "*****5891"
+        assert sheet.cell(row=9, column=3).value == 7
+        assert sheet.cell(row=9, column=4).value == (
             "Duplicate Social Security Number within a month. "
             "Check that individual Social Security Numbers within a "
             "single exit month are not included more than once. "
-            "Social Security Number is a duplicate of the record at "
-            "line number 6."
+            "Record at line number 7 is a duplicate of the record at line number 6."
         )
 
-        assert sheet.cell(row=3, column=1).value == 202301
-        assert sheet.cell(row=3, column=2).value == "*****5507"
-        assert sheet.cell(row=3, column=3).value == 10
-        assert sheet.cell(row=3, column=4).value == (
+        assert sheet.cell(row=2, column=1).value == 202301
+        assert sheet.cell(row=2, column=2).value == "*****5507"
+        assert sheet.cell(row=2, column=3).value == 10
+        assert sheet.cell(row=2, column=4).value == (
             "Social Security Number is not valid. Check that the Social "
             "Security Number is 9 digits, does not contain only zeroes "
             "in any one section, and does not contain dashes or other "

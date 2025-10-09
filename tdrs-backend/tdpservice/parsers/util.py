@@ -8,7 +8,6 @@ from django.contrib.admin.models import ADDITION
 
 from tdpservice.core.utils import log
 from tdpservice.data_files.models import DataFile
-from tdpservice.parsers.dataclasses import RawRow
 
 logger = logging.getLogger(__name__)
 
@@ -112,123 +111,49 @@ def get_years_apart(rpt_month_year_date, date):
     return age
 
 
-class SortedRecords:
-    """Maintains a dict sorted by hash_val and model type.
+class FrozenDict(dict):
+    """Frozen dictionary for use as a hashable key."""
 
-    Note, hash_val = `hash(str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER)` for section 1 and 2 files; but for section
-    3 and 4 files hash_val = `hash(row)`.
-    """
+    def __hash__(self):
+        """Return a hash of the dictionary."""
+        return hash((frozenset(self), frozenset(self.values())))
 
-    def __init__(self, section):
-        self.records_are_s1_or_s2 = section in {"A", "C"}
-        self.hash_sorted_cases = dict()
+
+class Records:
+    """Maintains a dict of records where Key=Model and Value=[Record]."""
+
+    def __init__(self):
         self.cases = dict()
-        self.cases_already_removed = set()
-        self.serialized_cases = set()
 
-    def add_record(self, case_hash, record_doc_pair, line_num):
-        """Add a record_doc_pair to the sorted object if the case hasn't been removed already."""
-        record, document = record_doc_pair
-
-        if case_hash in self.cases_already_removed:
-            logger.info(
-                "Record's case has already been removed due to category four errors. Not adding record with "
-                f"info: ({record.RecordType}, {getattr(record, 'CASE_NUMBER', None)})"
-            )
-            return
-
-        if case_hash is not None:
-            hashed_case = self.hash_sorted_cases.get(case_hash, {})
-            records = hashed_case.get(document, [])
-            records.append(record)
-
-            hashed_case[document] = records
-            self.hash_sorted_cases[case_hash] = hashed_case
-            # We treat the nested dictionary here as a set because dictionaries are sorted while sets aren't. If we
-            # don't have a sorted container we have test failures.
-            self.cases.setdefault(document, dict())[record] = None
+    def add_record(self, case_id, record_model_pair, line_num):
+        """Add a record_doc_pair to the dict."""
+        record, model = record_model_pair
+        if case_id is not None:
+            self.cases.setdefault(model, []).append(record)
         else:
-            logger.error(f"Error: Case hash for record at line #{line_num} was None!")
+            logger.error(f"Error: Case id for record at line #{line_num} was None!")
 
     def get_bulk_create_struct(self):
         """Return dict of form {document: {record: None}} for bulk_create_records to consume."""
         return self.cases
 
     def clear(self, all_created):
-        """Reset sorted structs if all records were created."""
+        """Reset the dict if all records were created."""
         if all_created:
-            self.serialized_cases.update(set(self.hash_sorted_cases.keys()))
-            self.hash_sorted_cases = dict()
-
             # We don't want to re-assign self.cases here because we lose the keys of the record/doc types we've already
             # made. If we don't maintain that state we might not delete everything if we need to roll the records back
             # at the end of, or during parsing.
             for key in self.cases.keys():
-                self.cases[key] = {}
-
-    def remove_case_due_to_errors(self, should_remove, case_hash):
-        """Remove all records from memory given the hash."""
-        if should_remove:
-            if case_hash in self.cases_already_removed:
-                return True
-            if case_hash in self.hash_sorted_cases:
-                self.cases_already_removed.add(case_hash)
-                removed = self.hash_sorted_cases.pop(case_hash)
-
-                case_ids = list()
-                for records in removed.values():
-                    for record in records:
-                        case_ids.append(
-                            (
-                                record.RecordType,
-                                getattr(record, "CASE_NUMBER", None),
-                                getattr(record, "RPT_MONTH_YEAR", None),
-                            )
-                        )
-                        for record_set in self.cases.values():
-                            record_set.pop(record, None)
-                    logger.info(
-                        "Case consistency errors generated, removing case from in memory cache. "
-                        f"Record(s) info: {case_ids}."
-                    )
-                return True and case_hash not in self.serialized_cases
-        return False
+                self.cases[key].clear()
 
 
-def generate_t1_t4_hashes(row: RawRow, record):
-    """Return hashes for duplicate and partial duplicate detection for T1 & T4 records."""
-    logger.debug(
-        f"Partial Hash Field Values: for T1/T4: {record.RecordType} {str(record.RPT_MONTH_YEAR)} "
-    )
-    return hash(row), hash(
-        record.RecordType
-        + str(record.RPT_MONTH_YEAR or "")
-        + str(record.CASE_NUMBER or "")
-    )
-
-
-def generate_t2_t3_t5_hashes(row: RawRow, record):
-    """Return hashes for duplicate and partial duplicate detection for T2 & T3 & T5 records."""
-    logger.debug(
-        f"Partial Hash Field Values: for T2/T3/T5: {record.RecordType} {str(record.RPT_MONTH_YEAR)} "
-    )
-    return hash(row), hash(
-        record.RecordType
-        + str(record.RPT_MONTH_YEAR or "")
-        + str(record.CASE_NUMBER or "")
-        + str(record.FAMILY_AFFILIATION or "")
-        + str(record.DATE_OF_BIRTH or "")
-        + str(record.SSN or "")
-    )
-
-
-def get_t1_t4_partial_hash_members():
-    """Return field names used to generate t1/t4 partial hashes."""
+def get_t1_t4_partial_dup_fields():
+    """Return field names used to identify t1/t4 partial duplicates."""
     return ["RecordType", "RPT_MONTH_YEAR", "CASE_NUMBER"]
 
 
-def get_t2_t3_t5_partial_hash_members():
-    """Return field names used to generate t2/t3/t5 partial hashes."""
+def get_t2_t3_t5_partial_dup_fields():
+    """Return field names used to identify t2/t3/t5 partial duplicates."""
     return [
         "RecordType",
         "RPT_MONTH_YEAR",
