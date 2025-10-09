@@ -69,6 +69,9 @@ function STTComboBox({
           aria-required="true"
           autoComplete={false}
         >
+          <option value="" disabled hidden>
+            - Select or Search -
+          </option>
           {filteredStts?.map(
             (stt) =>
               (sttType == null || stt.type === sttType) && (

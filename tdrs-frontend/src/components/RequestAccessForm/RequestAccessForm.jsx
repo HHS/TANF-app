@@ -3,11 +3,18 @@ import Button from '../Button'
 import { useDispatch } from 'react-redux'
 import FormGroup from '../FormGroup'
 import STTComboBox from '../STTComboBox'
+import ReadOnlyRow from './ReadOnlyRow'
 import { requestAccess } from '../../actions/requestAccess'
 import { updateUserRequest } from '../../actions/updateUserRequest'
-import { getInitialProfileInfo, clearFormError } from '../../utils/formHelpers'
+import {
+  getInitialProfileInfo,
+  clearFormError,
+  FORM_TYPES,
+} from '../../utils/formHelpers'
 import JurisdictionSelector from './JurisdictionSelector'
-import { JURISDICTION_TYPES } from '../Profile/JurisdictionLocationInfo'
+import JurisdictionLocationInfo, {
+  JURISDICTION_TYPES,
+} from '../Profile/JurisdictionLocationInfo'
 import RegionSelector from './RegionSelector'
 import FRASelector from './FRASelector'
 import '../../assets/Profile.scss'
@@ -314,7 +321,31 @@ function RequestAccessForm({
           handleBlur={handleBlur}
         />
 
-        {!isAMSUser && (
+        {editMode &&
+          user.account_approval_status === 'Approved' &&
+          !isAMSUser && (
+            <div>
+              <hr className="form-section-divider" />
+              <ReadOnlyRow
+                label="Jurisdiction Type"
+                value={
+                  (jurisdictionType?.charAt(0)?.toUpperCase() ?? '') +
+                  (jurisdictionType?.slice(1) ?? '')
+                }
+              />
+              <JurisdictionLocationInfo
+                jurisdictionType={jurisdictionType}
+                locationName={profileInfo.stt || 'Federal Government'}
+                formType={FORM_TYPES.ACCESS_REQUEST}
+              />
+              <hr className="form-section-divider" />
+            </div>
+          )}
+
+        {((editMode &&
+          !isAMSUser &&
+          user.account_approval_status === 'Access request') ||
+          (user.account_approval_status === 'Initial' && !isAMSUser)) && (
           <>
             <JurisdictionSelector
               jurisdictionType={jurisdictionType}
