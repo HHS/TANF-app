@@ -48,7 +48,11 @@ class DataFileAPITestBase:
     def test_fra_csv_file(self, stt_user, stt):
         """Fixture for small_incorrect_file_cross_validator."""
         test_datafile = util.create_test_datafile(
-            "fra.csv", stt_user, stt, DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS
+            "fra.csv",
+            stt_user,
+            stt,
+            DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
+            DataFile.ProgramType.FRA,
         )
         test_datafile.year = 2024
         test_datafile.quarter = "Q2"
@@ -59,7 +63,11 @@ class DataFileAPITestBase:
     def test_fra_xlsx_file(self, stt_user, stt):
         """Fixture for small_incorrect_file_cross_validator."""
         test_datafile = util.create_test_datafile(
-            "fra.xlsx", stt_user, stt, DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS
+            "fra.xlsx",
+            stt_user,
+            stt,
+            DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
+            DataFile.ProgramType.FRA,
         )
         test_datafile.year = 2024
         test_datafile.quarter = "Q2"

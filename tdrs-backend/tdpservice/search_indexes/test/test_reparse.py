@@ -11,7 +11,7 @@ from django.utils import timezone
 
 import pytest
 
-from tdpservice.data_files.models import ReparseFileMeta
+from tdpservice.data_files.models import DataFile, ReparseFileMeta
 from tdpservice.parsers import util
 from tdpservice.parsers.factory import ParserFactory
 from tdpservice.parsers.test.factories import DataFileSummaryFactory
@@ -51,7 +51,11 @@ def big_file(stt_user, stt):
 def small_ssp_section1_datafile(stt_user, stt):
     """Fixture for small_ssp_section1."""
     small_ssp_section1_datafile = util.create_test_datafile(
-        "small_ssp_section1.txt", stt_user, stt, "SSP Active Case Data"
+        "small_ssp_section1.txt",
+        stt_user,
+        stt,
+        "Active Case Data",
+        DataFile.ProgramType.SSP,
     )
     small_ssp_section1_datafile.year = 2024
     small_ssp_section1_datafile.quarter = "Q1"
@@ -63,7 +67,11 @@ def small_ssp_section1_datafile(stt_user, stt):
 def tribal_section_1_file(stt_user, stt):
     """Fixture for ADS.E2J.FTP4.TS06."""
     tribal_section_1_file = util.create_test_datafile(
-        "ADS.E2J.FTP1.TS142", stt_user, stt, "Tribal Active Case Data"
+        "ADS.E2J.FTP1.TS142",
+        stt_user,
+        stt,
+        "Active Case Data",
+        DataFile.ProgramType.TRIBAL,
     )
     tribal_section_1_file.year = 2022
     tribal_section_1_file.quarter = "Q1"

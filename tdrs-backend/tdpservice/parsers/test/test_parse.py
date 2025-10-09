@@ -1774,6 +1774,9 @@ def test_parse_aggregates_rejected_datafile(aggregates_rejected_datafile, dfs):
     """Test record rejection counting when record has more than one preparsing error."""
     aggregates_rejected_datafile.year = 2021
     aggregates_rejected_datafile.quarter = "Q1"
+
+    print(aggregates_rejected_datafile)
+
     dfs.datafile = aggregates_rejected_datafile
 
     parser = ParserFactory.get_instance(
@@ -2188,6 +2191,9 @@ def test_parse_partial_duplicate(
     dfs.datafile = datafile
 
     settings.BULK_CREATE_BATCH_SIZE = batch_size
+
+    print("test duplicates")
+    print(datafile.file)
 
     parser = ParserFactory.get_instance(
         datafile=datafile,

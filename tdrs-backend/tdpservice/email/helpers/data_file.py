@@ -5,8 +5,29 @@ from django.conf import settings
 from tdpservice.data_files.models import DataFile
 from tdpservice.email.email import automated_email, log
 from tdpservice.email.email_enums import EmailType
-from tdpservice.parsers.util import get_prog_from_section
+
+# from tdpservice.parsers.util import get_prog_from_section
 from tdpservice.users.models import User
+
+
+def get_friendly_program_type(program_type):
+    match program_type:
+        case DataFile.ProgramType.TANF:
+            return "TANF"
+        case DataFile.ProgramType.SSP:
+            return "SSP"
+        case DataFile.ProgramType.TRIBAL:
+            return "Tribal TANF"
+
+
+def get_program_section_str(program_type, section):
+    match program_type:
+        case DataFile.ProgramType.TANF:
+            return section
+        case DataFile.ProgramType.SSP:
+            return f"SSP {section}"
+        case DataFile.ProgramType.TRIBAL:
+            return f"Tribal {section}"
 
 
 def send_data_submitted_email(
@@ -29,10 +50,10 @@ def send_data_submitted_email(
     subject = None
     text_message = None
 
-    section_name = datafile.section
     prog_type = datafile.program_type
-    # prog_type = get_prog_from_section(section_name)
-    file_type = f"{prog_type}F" if prog_type != "SSP" else prog_type
+    section_name = get_program_section_str(prog_type, datafile.section)
+
+    file_type = get_friendly_program_type(prog_type)
     stt_name = datafile.stt.name
     submission_date = datafile.created_at
     fiscal_year = datafile.fiscal_year

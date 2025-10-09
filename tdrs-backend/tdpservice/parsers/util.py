@@ -13,7 +13,13 @@ from tdpservice.parsers.dataclasses import RawRow
 logger = logging.getLogger(__name__)
 
 
-def create_test_datafile(filename, stt_user, stt, section="Active Case Data"):
+def create_test_datafile(
+    filename,
+    stt_user,
+    stt,
+    section=DataFile.Section.ACTIVE_CASE_DATA,
+    program_type=DataFile.ProgramType.TANF,
+):
     """Create a test DataFile instance with the given file attached."""
     path = str(Path(__file__).parent.joinpath("test/data")) + f"/{filename}"
     datafile = DataFile.create_new_version(
@@ -21,7 +27,7 @@ def create_test_datafile(filename, stt_user, stt, section="Active Case Data"):
             "quarter": "Q1",
             "year": 2021,
             "section": section,
-            "program_type": "TAN",
+            "program_type": program_type,
             "user": stt_user,
             "stt": stt,
         }
@@ -37,34 +43,6 @@ def clean_options_string(options, remove=["'", '"', " "]):
     """Return a prettied-up version of an options array."""
     options_str = ", ".join(str(o) for o in options)
     return f"[{options_str}]"
-
-
-"""
-text -> section YES
-text -> models{} YES
-text -> model YES
-datafile -> model
-    ^ section -> program -> model
-datafile -> text
-model -> text YES
-section -> text
-
-text**: input string from the header/file
-"""
-
-
-def get_prog_from_section(str_section):
-    """Return the program type for a given section."""
-    # e.g., 'SSP Closed Case Data'
-    if str_section.startswith("SSP"):
-        return "SSP"
-    elif str_section.startswith("Tribal"):
-        return "Tribal TAN"
-    else:
-        return "TAN"
-
-    # TODO: if given a datafile (section), we can reverse back to the program b/c the
-    # section string has "tribal/ssp" in it, then process of elimination we have tanf
 
 
 def fiscal_to_calendar(year, fiscal_quarter):

@@ -119,15 +119,15 @@ class DataFile(FileRecord):
     class Section(models.TextChoices):
         """Enum for data file section."""
 
-        TRIBAL_CLOSED_CASE_DATA = "Tribal Closed Case Data"
-        TRIBAL_ACTIVE_CASE_DATA = "Tribal Active Case Data"
-        TRIBAL_AGGREGATE_DATA = "Tribal Aggregate Data"
-        TRIBAL_STRATUM_DATA = "Tribal Stratum Data"
+        # TRIBAL_CLOSED_CASE_DATA = "Tribal Closed Case Data"
+        # TRIBAL_ACTIVE_CASE_DATA = "Tribal Active Case Data"
+        # TRIBAL_AGGREGATE_DATA = "Tribal Aggregate Data"
+        # TRIBAL_STRATUM_DATA = "Tribal Stratum Data"
 
-        SSP_AGGREGATE_DATA = "SSP Aggregate Data"
-        SSP_CLOSED_CASE_DATA = "SSP Closed Case Data"
-        SSP_ACTIVE_CASE_DATA = "SSP Active Case Data"
-        SSP_STRATUM_DATA = "SSP Stratum Data"
+        # SSP_AGGREGATE_DATA = "SSP Aggregate Data"
+        # SSP_CLOSED_CASE_DATA = "SSP Closed Case Data"
+        # SSP_ACTIVE_CASE_DATA = "SSP Active Case Data"
+        # SSP_STRATUM_DATA = "SSP Stratum Data"
 
         ACTIVE_CASE_DATA = "Active Case Data"
         CLOSED_CASE_DATA = "Closed Case Data"
@@ -147,35 +147,35 @@ class DataFile(FileRecord):
                 cls.FRA_SUPPLEMENT_WORK_OUTCOMES,
             ]
 
-        @classmethod
-        def is_ssp(cls, section: str) -> bool:
-            """Determine if the section is an SSP section."""
-            return section in [
-                cls.SSP_AGGREGATE_DATA,
-                cls.SSP_ACTIVE_CASE_DATA,
-                cls.SSP_CLOSED_CASE_DATA,
-                cls.SSP_STRATUM_DATA,
-            ]
+        # @classmethod
+        # def is_ssp(cls, section: str) -> bool:
+        #     """Determine if the section is an SSP section."""
+        #     return section in [
+        #         cls.SSP_AGGREGATE_DATA,
+        #         cls.SSP_ACTIVE_CASE_DATA,
+        #         cls.SSP_CLOSED_CASE_DATA,
+        #         cls.SSP_STRATUM_DATA,
+        #     ]
 
-        @classmethod
-        def is_tribal(cls, section: str) -> bool:
-            """Determine if the section is a Tribal section."""
-            return section in [
-                cls.TRIBAL_AGGREGATE_DATA,
-                cls.TRIBAL_ACTIVE_CASE_DATA,
-                cls.TRIBAL_CLOSED_CASE_DATA,
-                cls.TRIBAL_STRATUM_DATA,
-            ]
+        # @classmethod
+        # def is_tribal(cls, section: str) -> bool:
+        #     """Determine if the section is a Tribal section."""
+        #     return section in [
+        #         cls.TRIBAL_AGGREGATE_DATA,
+        #         cls.TRIBAL_ACTIVE_CASE_DATA,
+        #         cls.TRIBAL_CLOSED_CASE_DATA,
+        #         cls.TRIBAL_STRATUM_DATA,
+        #     ]
 
-        @classmethod
-        def is_tanf(cls, section: str) -> bool:
-            """Determine if the section is a TANF section."""
-            return section in [
-                cls.ACTIVE_CASE_DATA,
-                cls.CLOSED_CASE_DATA,
-                cls.AGGREGATE_DATA,
-                cls.STRATUM_DATA,
-            ]
+        # @classmethod
+        # def is_tanf(cls, section: str) -> bool:
+        #     """Determine if the section is a TANF section."""
+        #     return section in [
+        #         cls.ACTIVE_CASE_DATA,
+        #         cls.CLOSED_CASE_DATA,
+        #         cls.AGGREGATE_DATA,
+        #         cls.STRATUM_DATA,
+        #     ]
 
     @staticmethod
     def get_fra_section_list():
@@ -199,7 +199,7 @@ class DataFile(FileRecord):
 
         constraints = [
             models.UniqueConstraint(
-                fields=("section", "version", "quarter", "year", "stt"),
+                fields=("program_type", "section", "version", "quarter", "year", "stt"),
                 name="constraint_name",
             )
         ]
@@ -330,6 +330,9 @@ class DataFile(FileRecord):
             or 0
         ) + 1
 
+        print("create_new_version - data: ")
+        print(data)
+
         return DataFile.objects.create(
             version=version,
             **data,
@@ -347,15 +350,18 @@ class DataFile(FileRecord):
         ).aggregate(Max("version"))["version__max"]
 
     @classmethod
-    def find_latest_version(self, year, quarter, section, stt):
+    def find_latest_version(self, year, quarter, section, program_type, stt):
         """Locate the latest version of a data file."""
-        version = self.find_latest_version_number(year, quarter, section, stt)
+        version = self.find_latest_version_number(
+            year, quarter, section, program_type, stt
+        )
 
         return self.objects.filter(
             version=version,
             year=year,
             quarter=quarter,
             section=section,
+            program_type=program_type,
             stt=stt,
         ).first()
 

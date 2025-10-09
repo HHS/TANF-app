@@ -3,7 +3,7 @@
 from django.db import migrations, models
 
 
-def get_program_type_from_section(section, choices):
+def get_program_type_from_section(section):
     if section.startswith("Tribal"):
         return "TRIBAL"
     elif section.startswith("SSP"):

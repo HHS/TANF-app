@@ -4,6 +4,7 @@ import logging
 
 from django.conf import settings
 
+from tdpservice.data_files.models import DataFile
 from tdpservice.parsers import schema_defs
 from tdpservice.parsers.base_parser import BaseParser
 from tdpservice.parsers.case_consistency_validator import CaseConsistencyValidator
@@ -241,7 +242,7 @@ class TanfDataReportParser(BaseParser):
         logger.debug(f"Datafile: {repr(self.datafile)}, is Tribal: {is_tribal}.")
 
         program_type = (
-            f"Tribal {header['program_type']}" if is_tribal else header["program_type"]
+            DataFile.ProgramType.TRIBAL if is_tribal else header["program_type"]
         )
         section = header["type"]
         logger.debug(f"Program type: {program_type}, Section: {section}.")
