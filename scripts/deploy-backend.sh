@@ -52,6 +52,8 @@ set_cf_envs()
   "LOGGING_LEVEL"
   "JWT_KEY"
   "SENDGRID_API_KEY"
+  "OFA_READ_ONLY_PASSWORD"
+  "OFA_ADMIN_READ_ONLY_PASSWORD"
   )
 
   APP=$1
@@ -274,7 +276,7 @@ if [[ $DEPLOY_STRATEGY == 'rebuild' ]]; then
   cf delete "$CGAPPNAME_BACKEND" -r -f
   cf delete "$CGAPPNAME_CELERY" -r -f
 fi
- 
+
 add_service_bindings
 
 if [[ $DEPLOY_STRATEGY == 'rebuild' ]]; then
