@@ -40,3 +40,13 @@ admin.site.register(models.ssp.SSP_M7, ssp.SSP_M7Admin)
 admin.site.register(models.reparse_meta.ReparseMeta, reparse_meta.ReparseMetaAdmin)
 
 admin.site.register(models.fra.TANF_Exiter1, fra.TANF_Exiter1Admin)
+
+admin.site.register(
+    models.program_audit.ProgramAudit_T1, program_audit.ProgramAudit_T1Admin
+)
+admin.site.register(
+    models.program_audit.ProgramAudit_T2, program_audit.ProgramAudit_T2Admin
+)
+admin.site.register(
+    models.program_audit.ProgramAudit_T3, program_audit.ProgramAudit_T3Admin
+)
