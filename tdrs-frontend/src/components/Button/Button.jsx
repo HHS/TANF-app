@@ -5,19 +5,19 @@ import classnames from 'classnames'
 function Button({
   type,
   children,
-  secondary,
-  base,
-  accent,
-  outline,
-  inverse,
-  size,
-  unstyled,
-  onClick,
-  className,
-  disabled,
-  target,
+  secondary = false,
+  base = false,
+  accent = false,
+  outline = false,
+  inverse = false,
+  size = '',
+  unstyled = false,
+  onClick = null,
+  className = null,
+  disabled = false,
+  target = '_blank',
   href,
-  buttonKey,
+  buttonKey = null,
 }) {
   const isBig = size ? size === 'big' : false
   const isSmall = size ? size === 'small' : false
@@ -91,20 +91,6 @@ Button.propTypes = {
   target: PropTypes.string,
   href: PropTypes.string,
   buttonkey: PropTypes.string,
-}
-Button.defaultProps = {
-  secondary: false,
-  base: false,
-  accent: false,
-  outline: false,
-  inverse: false,
-  size: '',
-  unstyled: false,
-  onClick: null,
-  className: null,
-  disabled: false,
-  target: '_blank',
-  buttonkey: null,
 }
 
 export default Button
