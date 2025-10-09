@@ -96,10 +96,8 @@ class DataFileSerializer(serializers.ModelSerializer):
         ssp = validated_data.pop("ssp")
 
         if ssp:
-            # validated_data["section"] = "SSP " + validated_data["section"]
             validated_data["program_type"] = DataFile.ProgramType.SSP
         elif validated_data.get("stt").type == "tribe":
-            # validated_data["section"] = "Tribal " + validated_data["section"]
             validated_data["program_type"] = DataFile.ProgramType.TRIBAL
         elif DataFile.Section.is_fra(validated_data["section"]):
             validated_data["program_type"] = DataFile.ProgramType.FRA

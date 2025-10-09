@@ -119,16 +119,6 @@ class DataFile(FileRecord):
     class Section(models.TextChoices):
         """Enum for data file section."""
 
-        # TRIBAL_CLOSED_CASE_DATA = "Tribal Closed Case Data"
-        # TRIBAL_ACTIVE_CASE_DATA = "Tribal Active Case Data"
-        # TRIBAL_AGGREGATE_DATA = "Tribal Aggregate Data"
-        # TRIBAL_STRATUM_DATA = "Tribal Stratum Data"
-
-        # SSP_AGGREGATE_DATA = "SSP Aggregate Data"
-        # SSP_CLOSED_CASE_DATA = "SSP Closed Case Data"
-        # SSP_ACTIVE_CASE_DATA = "SSP Active Case Data"
-        # SSP_STRATUM_DATA = "SSP Stratum Data"
-
         ACTIVE_CASE_DATA = "Active Case Data"
         CLOSED_CASE_DATA = "Closed Case Data"
         AGGREGATE_DATA = "Aggregate Data"
@@ -146,36 +136,6 @@ class DataFile(FileRecord):
                 cls.FRA_SECONDRY_SCHOOL_ATTAINMENT,
                 cls.FRA_SUPPLEMENT_WORK_OUTCOMES,
             ]
-
-        # @classmethod
-        # def is_ssp(cls, section: str) -> bool:
-        #     """Determine if the section is an SSP section."""
-        #     return section in [
-        #         cls.SSP_AGGREGATE_DATA,
-        #         cls.SSP_ACTIVE_CASE_DATA,
-        #         cls.SSP_CLOSED_CASE_DATA,
-        #         cls.SSP_STRATUM_DATA,
-        #     ]
-
-        # @classmethod
-        # def is_tribal(cls, section: str) -> bool:
-        #     """Determine if the section is a Tribal section."""
-        #     return section in [
-        #         cls.TRIBAL_AGGREGATE_DATA,
-        #         cls.TRIBAL_ACTIVE_CASE_DATA,
-        #         cls.TRIBAL_CLOSED_CASE_DATA,
-        #         cls.TRIBAL_STRATUM_DATA,
-        #     ]
-
-        # @classmethod
-        # def is_tanf(cls, section: str) -> bool:
-        #     """Determine if the section is a TANF section."""
-        #     return section in [
-        #         cls.ACTIVE_CASE_DATA,
-        #         cls.CLOSED_CASE_DATA,
-        #         cls.AGGREGATE_DATA,
-        #         cls.STRATUM_DATA,
-        #     ]
 
     @staticmethod
     def get_fra_section_list():
@@ -240,19 +200,6 @@ class DataFile(FileRecord):
         help_text="Reparse events this file has been associated with.",
         related_name="files",
     )
-
-    # is_program_audit = models.BooleanField(default=False)
-
-    # @property  # first class citizen
-    # def prog_type(self):
-    #     """Return the program type for a given section."""
-    #     # e.g., 'SSP Closed Case Data'
-    #     if self.Section.is_ssp(self.section):
-    #         return "SSP"
-    #     elif self.Section.is_fra(self.section):
-    #         return "FRA"
-    #     else:
-    #         return "TAN"
 
     @property
     def filename(self):

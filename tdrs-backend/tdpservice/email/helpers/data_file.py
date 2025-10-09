@@ -11,6 +11,7 @@ from tdpservice.users.models import User
 
 
 def get_friendly_program_type(program_type):
+    """Return the human-readable name for a given program type."""
     match program_type:
         case DataFile.ProgramType.TANF:
             return "TANF"
@@ -21,6 +22,7 @@ def get_friendly_program_type(program_type):
 
 
 def get_program_section_str(program_type, section):
+    """Return the human-readable section name, including program type."""
     match program_type:
         case DataFile.ProgramType.TANF:
             return section

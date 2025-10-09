@@ -13,9 +13,7 @@ from tdpservice.parsers.util import (  # get_prog_from_section,
 
 def case_aggregates_by_month(df, dfs_status):
     """Return case aggregates by month."""
-    section = str(df.section)  # section -> text
     program_type = str(df.program_type)
-    # program_type = get_prog_from_section(section)  # section -> program_type -> text
 
     # from datafile year/quarter, generate short month names for each month in quarter ala 'Jan', 'Feb', 'Mar'
     calendar_year, calendar_qtr = fiscal_to_calendar(df.year, df.quarter)
