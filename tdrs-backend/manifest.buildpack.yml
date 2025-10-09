@@ -4,7 +4,7 @@ applications:
   memory: 1G
   instances: 1
   disk_quota: 7G
-  command: ./gunicorn_start.sh cloud
+  command: "./gunicorn_start.sh cloud"
   buildpacks:
   - https://github.com/cloudfoundry/apt-buildpack
   - https://github.com/cloudfoundry/python-buildpack.git#v1.8.3
