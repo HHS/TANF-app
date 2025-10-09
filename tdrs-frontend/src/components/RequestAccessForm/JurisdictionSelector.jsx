@@ -12,6 +12,7 @@ function JurisdictionSelector({ jurisdictionType, setJurisdictionType }) {
             value="state"
             checked={jurisdictionType === 'state'}
             onChange={() => setJurisdictionType('state')}
+            onClick={() => setJurisdictionType('state')}
           />
           <label className="usa-radio__label" htmlFor="state">
             State
@@ -26,6 +27,7 @@ function JurisdictionSelector({ jurisdictionType, setJurisdictionType }) {
             value="tribe"
             checked={jurisdictionType === 'tribe'}
             onChange={() => setJurisdictionType('tribe')}
+            onClick={() => setJurisdictionType('tribe')}
           />
           <label className="usa-radio__label" htmlFor="tribe">
             Tribe
@@ -40,6 +42,7 @@ function JurisdictionSelector({ jurisdictionType, setJurisdictionType }) {
             value="territory"
             checked={jurisdictionType === 'territory'}
             onChange={() => setJurisdictionType('territory')}
+            onClick={() => setJurisdictionType('territory')}
           />
           <label className="usa-radio__label" htmlFor="territory">
             Territory
