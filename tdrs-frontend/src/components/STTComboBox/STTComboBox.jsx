@@ -51,35 +51,34 @@ function STTComboBox({
 
   return (
     <>
-      <ComboBox
-        name="stt"
-        label={
-          sttType ? `${toTitleCase(sttType)}*` : 'State, Tribe, or Territory*'
-        }
-        error={
-          error
-            ? `A ${sttType || 'state, tribe, or territory'} is required`
-            : undefined
-        }
-        handleSelect={selectStt}
-        selected={selectedStt}
-        handleBlur={handleBlur}
-        placeholder="- Select or Search -"
-        aria-required="true"
-        autoComplete={false}
-      >
-        <option value="" disabled hidden>
-          - Select or Search -
-        </option>
-        {filteredStts?.map(
-          (stt) =>
-            (sttType == null || stt.type === sttType) && (
-              <option className="sttOption" key={stt.id} value={stt.name}>
-                {stt.name}
-              </option>
-            )
-        )}
-      </ComboBox>
+      {filteredStts.length > 0 && (
+        <ComboBox
+          name="stt"
+          label={
+            sttType ? `${toTitleCase(sttType)}*` : 'State, Tribe, or Territory*'
+          }
+          error={
+            error
+              ? `A ${sttType || 'state, tribe, or territory'} is required`
+              : undefined
+          }
+          handleSelect={selectStt}
+          selected={selectedStt}
+          handleBlur={handleBlur}
+          placeholder="- Select or Search -"
+          aria-required="true"
+          autoComplete={false}
+        >
+          {filteredStts?.map(
+            (stt) =>
+              (sttType == null || stt.type === sttType) && (
+                <option className="sttOption" key={stt.id} value={stt.name}>
+                  {stt.name}
+                </option>
+              )
+          )}
+        </ComboBox>
+      )}
       <Modal
         title="TDP systems are currently experiencing technical difficulties."
         message="Please sign out and try signing in again. If the issue persists contact support at tanfdata@acf.hhs.gov."

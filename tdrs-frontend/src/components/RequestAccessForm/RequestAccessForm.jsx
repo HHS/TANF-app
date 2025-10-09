@@ -3,18 +3,11 @@ import Button from '../Button'
 import { useDispatch } from 'react-redux'
 import FormGroup from '../FormGroup'
 import STTComboBox from '../STTComboBox'
-import ReadOnlyRow from './ReadOnlyRow'
 import { requestAccess } from '../../actions/requestAccess'
 import { updateUserRequest } from '../../actions/updateUserRequest'
-import {
-  getInitialProfileInfo,
-  clearFormError,
-  FORM_TYPES,
-} from '../../utils/formHelpers'
+import { getInitialProfileInfo, clearFormError } from '../../utils/formHelpers'
 import JurisdictionSelector from './JurisdictionSelector'
-import JurisdictionLocationInfo, {
-  JURISDICTION_TYPES,
-} from '../Profile/JurisdictionLocationInfo'
+import { JURISDICTION_TYPES } from '../Profile/JurisdictionLocationInfo'
 import RegionSelector from './RegionSelector'
 import FRASelector from './FRASelector'
 import '../../assets/Profile.scss'
@@ -320,28 +313,13 @@ function RequestAccessForm({
           handleChange={handleChange}
           handleBlur={handleBlur}
         />
-        {editMode && !isAMSUser && (
-          <div>
-            <hr className="form-section-divider" />
-            <ReadOnlyRow
-              label="Jurisdiction Type"
-              value={
-                (jurisdictionType?.charAt(0)?.toUpperCase() ?? '') +
-                (jurisdictionType?.slice(1) ?? '')
-              }
-            />
-            <JurisdictionLocationInfo
-              jurisdictionType={jurisdictionType}
-              locationName={profileInfo.stt || 'Federal Government'}
-              formType={FORM_TYPES.ACCESS_REQUEST}
-            />
-            <hr className="form-section-divider" />
-          </div>
-        )}
 
-        {!editMode && !isAMSUser && (
+        {!isAMSUser && (
           <>
-            <JurisdictionSelector setJurisdictionType={setJurisdictionType} />
+            <JurisdictionSelector
+              jurisdictionType={jurisdictionType}
+              setJurisdictionType={setJurisdictionType}
+            />
             {jurisdictionType && (
               <div
                 className={`usa-form-group ${

@@ -1,4 +1,4 @@
-function JurisdictionSelector({ setJurisdictionType }) {
+function JurisdictionSelector({ jurisdictionType, setJurisdictionType }) {
   return (
     <div className="usa-form-group">
       <fieldset className="usa-fieldset">
@@ -10,7 +10,7 @@ function JurisdictionSelector({ setJurisdictionType }) {
             type="radio"
             name="jurisdictionType"
             value="state"
-            defaultChecked
+            checked={jurisdictionType === 'state'}
             onChange={() => setJurisdictionType('state')}
           />
           <label className="usa-radio__label" htmlFor="state">
@@ -24,6 +24,7 @@ function JurisdictionSelector({ setJurisdictionType }) {
             type="radio"
             name="jurisdictionType"
             value="tribe"
+            checked={jurisdictionType === 'tribe'}
             onChange={() => setJurisdictionType('tribe')}
           />
           <label className="usa-radio__label" htmlFor="tribe">
@@ -37,6 +38,7 @@ function JurisdictionSelector({ setJurisdictionType }) {
             type="radio"
             name="jurisdictionType"
             value="territory"
+            checked={jurisdictionType === 'territory'}
             onChange={() => setJurisdictionType('territory')}
           />
           <label className="usa-radio__label" htmlFor="territory">
