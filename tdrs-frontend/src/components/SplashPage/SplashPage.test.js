@@ -142,7 +142,7 @@ describe('SplashPage', () => {
               path="/home"
               element={
                 <PrivateRoute title="Welcome to TDP">
-                  <Home />
+                  <Home setInEditMode={jest.fn()} />
                 </PrivateRoute>
               }
             />
