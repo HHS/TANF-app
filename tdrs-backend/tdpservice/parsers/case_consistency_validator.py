@@ -7,7 +7,7 @@ from datetime import datetime
 from django.conf import settings
 
 from tdpservice.data_files.models import DataFile
-from tdpservice.parsers.dataclasses import RawRow, ValidationErrorArgs
+from tdpservice.parsers.dataclasses import ValidationErrorArgs
 from tdpservice.parsers.error_generator import ErrorGeneratorArgs
 from tdpservice.parsers.schema_defs.utils import ProgramManager
 from tdpservice.parsers.util import FrozenDict
