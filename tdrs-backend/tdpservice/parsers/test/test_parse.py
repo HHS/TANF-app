@@ -16,6 +16,11 @@ from tdpservice.parsers.models import (
     ParserErrorCategoryChoices,
 )
 from tdpservice.search_indexes.models.fra import TANF_Exiter1
+from tdpservice.search_indexes.models.program_audit import (
+    ProgramAudit_T1,
+    ProgramAudit_T2,
+    ProgramAudit_T3,
+)
 from tdpservice.search_indexes.models.ssp import (
     SSP_M1,
     SSP_M2,
@@ -2469,3 +2474,70 @@ def test_parse_section2_no_records(section2_no_records, dfs):
     errors = ParserError.objects.filter(file=datafile).order_by("id")
     assert errors.count() == 0
     assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
+
+
+@pytest.mark.django_db()
+def test_parse_program_audit_ftanf(request, program_audit_ftanf, dfs):
+    """Test parsing Program Audit files."""
+    datafile = program_audit_ftanf
+    datafile.year = 2024
+    datafile.quarter = "Q2"
+
+    dfs.datafile = datafile
+    dfs.save()
+
+    parser = ParserFactory.get_instance(
+        datafile=datafile,
+        dfs=dfs,
+        section=datafile.section,
+        program_type=datafile.program_type,
+        is_program_audit=datafile.is_program_audit,
+    )
+    parser.parse_and_validate()
+
+    assert ProgramAudit_T1.objects.all().count() == 1
+    assert ProgramAudit_T2.objects.all().count() == 2
+    assert ProgramAudit_T3.objects.all().count() == 1
+
+    errors = ParserError.objects.filter(file=datafile).order_by("id")
+    assert len(errors) == 2
+    for e in errors:
+        assert e.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+
+
+@pytest.mark.parametrize(
+    "file",
+    [
+        ("program_audit_space_fill"),
+        ("program_audit_zero_fill"),
+    ],
+)
+@pytest.mark.django_db()
+def test_parse_program_audit_space_zero_fill(request, file, dfs):
+    """Test parsing Program Audit files."""
+    datafile = request.getfixturevalue(file)
+    datafile.year = 2024
+    datafile.quarter = "Q1"
+
+    dfs.datafile = datafile
+    dfs.save()
+
+    parser = ParserFactory.get_instance(
+        datafile=datafile,
+        dfs=dfs,
+        section=datafile.section,
+        program_type=datafile.program_type,
+        is_program_audit=datafile.is_program_audit,
+    )
+    parser.parse_and_validate()
+
+    assert ProgramAudit_T1.objects.all().count() == 1
+    assert ProgramAudit_T2.objects.all().count() == 1
+    assert ProgramAudit_T3.objects.all().count() == 3
+
+    errors = ParserError.objects.filter(file=datafile).order_by("id")
+    assert len(errors) == 12
+    for e in errors:
+        assert e.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
