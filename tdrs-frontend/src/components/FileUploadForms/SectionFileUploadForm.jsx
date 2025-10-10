@@ -11,45 +11,6 @@ import { useFormSubmission } from '../../hooks/useFormSubmission'
 import { useReportsContext } from '../Reports/ReportsContext'
 
 const SectionFileUploadForm = ({ stt }) => {
-<<<<<<< HEAD
-<<<<<<< HEAD
-========
-function FileUploadForm({ handleCancel, stt, openWidget }) {
-  // The currently selected year from the reportingYears dropdown
-  const selectedYear = useSelector((state) => state.reports.year)
-  // The selected quarter in the dropdown tied to our redux `reports` state
-  const selectedQuarter = useSelector((state) => state.reports.quarter)
-  // The selected File Type value from redux
-  const selectedFileType = useSelector((state) => state.reports.fileType)
-
-  // The set of uploaded files in our Redux state
-  const files = useSelector((state) => state.reports.submittedFiles)
-
-  // The logged in user in our Redux state
-  const user = useSelector((state) => state.auth.user)
-
-  // The number of sections this stt submits data for and it's ID
-  const stt_id = stt?.id
-  const num_sections = stt === undefined ? 4 : stt.num_sections
-
-  // TODO: Move this to Redux state so we can modify this value outside of
-  // this component without having to pass the setter function around
-  const [localAlert, setLocalAlertState] = useState({
-    active: false,
-    type: null,
-    message: null,
-  })
-
-  // Use the form submission hook
-  const { isSubmitting, executeSubmission } = useFormSubmission()
-
-  const alertRef = useRef(null)
-
->>>>>>>> f14008915 (- Use radio component on Reports page):tdrs-frontend/src/components/FileUploadForm/FileUploadForm.jsx
-=======
->>>>>>> 665523ee9 (- resolve conflicts)
-=======
->>>>>>> 16b8353dc17f7965b35859ea56dfdd8c4fa0857c
   const dispatch = useDispatch()
   const logger = useEventLogger()
 
@@ -190,17 +151,3 @@ function FileUploadForm({ handleCancel, stt, openWidget }) {
 }
 
 export default SectionFileUploadForm
-<<<<<<< HEAD
-<<<<<<< HEAD
-========
-FileUploadForm.propTypes = {
-  handleCancel: PropTypes.func.isRequired,
-  stt: PropTypes.object,
-}
-
-export default FileUploadForm
->>>>>>>> f14008915 (- Use radio component on Reports page):tdrs-frontend/src/components/FileUploadForm/FileUploadForm.jsx
-=======
->>>>>>> 665523ee9 (- resolve conflicts)
-=======
->>>>>>> 16b8353dc17f7965b35859ea56dfdd8c4fa0857c
