@@ -6,10 +6,10 @@ from django.conf import settings
 
 from tdpservice.data_files.models import DataFile
 from tdpservice.parsers import schema_defs
-from tdpservice.parsers.base_parser import BaseParser
 from tdpservice.parsers.case_consistency_validator import CaseConsistencyValidator
 from tdpservice.parsers.dataclasses import HeaderResult, Position
 from tdpservice.parsers.error_generator import ErrorGeneratorArgs, ErrorGeneratorType
+from tdpservice.parsers.parser_classes.base_parser import BaseParser
 from tdpservice.parsers.schema_defs.utils import ProgramManager
 from tdpservice.parsers.validators import category1
 from tdpservice.parsers.validators.util import value_is_empty
