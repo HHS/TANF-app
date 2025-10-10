@@ -71,8 +71,9 @@ const QuarterFileUploadForm = ({ stt }) => {
 
         return {
           ...file,
-          section: PROGRAM_INTEGRITY_SECTION,
+          section: 'Active Case Data',
           quarter: quarterCode,
+          is_program_audit: true,
         }
       })
 

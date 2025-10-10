@@ -48,7 +48,6 @@ function STTComboBox({
   const onSignOut = () => {
     window.location.href = `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`
   }
-  console.log('Rendering with STT: ', selectedStt)
 
   return (
     <>
