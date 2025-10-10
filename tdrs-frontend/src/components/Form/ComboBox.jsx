@@ -48,6 +48,19 @@ const ComboBox = ({
     }
   })
 
+  // Update the combo box display when selected value changes. This is required
+  // to ensure that the combo box display is updated when the selected value
+  // changes from higher up in the component hierarchy. This is a USWDS issue
+  // that we can't step around because USWDS state and react state don't always
+  // agree.
+  useEffect(() => {
+    // Update the USWDS combo box display input
+    const comboBoxInput = document.querySelector('.usa-combo-box__input')
+    if (comboBoxInput && comboBoxInput.value !== selected) {
+      comboBoxInput.value = selected
+    }
+  }, [selected])
+
   return (
     <>
       {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
@@ -62,7 +75,11 @@ const ComboBox = ({
           </div>
         )}
       </label>
-      <div className="usa-combo-box" data-placeholder={placeholder}>
+      <div
+        className="usa-combo-box"
+        data-placeholder={placeholder}
+        data-default-value={selected}
+      >
         {/* eslint-disable-next-line jsx-a11y/no-onchange */}
         <select
           autoComplete={autoComplete ? 'on' : 'off'}
