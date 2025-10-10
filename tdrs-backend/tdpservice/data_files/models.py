@@ -128,8 +128,6 @@ class DataFile(FileRecord):
         FRA_SECONDRY_SCHOOL_ATTAINMENT = "Secondary School Attainment"
         FRA_SUPPLEMENT_WORK_OUTCOMES = "Supplemental Work Outcomes"
 
-        PROGRAM_AUDIT = "Program Audit"
-
         @classmethod
         def is_fra(cls, section: str) -> bool:
             """Determine if the section is a FRA section."""
@@ -279,9 +277,6 @@ class DataFile(FileRecord):
             )
             or 0
         ) + 1
-
-        print("create_new_version - data: ")
-        print(data)
 
         return DataFile.objects.create(
             version=version,
