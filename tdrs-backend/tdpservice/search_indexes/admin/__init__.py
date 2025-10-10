@@ -11,16 +11,6 @@ admin.site.register(models.tanf.TANF_T5, tanf.TANF_T5Admin)
 admin.site.register(models.tanf.TANF_T6, tanf.TANF_T6Admin)
 admin.site.register(models.tanf.TANF_T7, tanf.TANF_T7Admin)
 
-admin.site.register(
-    models.program_audit.ProgramAudit_T1, program_audit.ProgramAudit_T1Admin
-)
-admin.site.register(
-    models.program_audit.ProgramAudit_T2, program_audit.ProgramAudit_T2Admin
-)
-admin.site.register(
-    models.program_audit.ProgramAudit_T3, program_audit.ProgramAudit_T3Admin
-)
-
 admin.site.register(models.tribal.Tribal_TANF_T1, tribal.Tribal_TANF_T1Admin)
 admin.site.register(models.tribal.Tribal_TANF_T2, tribal.Tribal_TANF_T2Admin)
 admin.site.register(models.tribal.Tribal_TANF_T3, tribal.Tribal_TANF_T3Admin)
