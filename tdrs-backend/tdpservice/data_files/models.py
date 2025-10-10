@@ -277,9 +277,6 @@ class DataFile(FileRecord):
             or 0
         ) + 1
 
-        print("create_new_version - data: ")
-        print(data)
-
         return DataFile.objects.create(
             version=version,
             **data,

@@ -4,7 +4,7 @@ from django.db.models import Q as Query
 
 from tdpservice.parsers.models import ParserError, ParserErrorCategoryChoices
 from tdpservice.parsers.schema_defs.utils import ProgramManager
-from tdpservice.parsers.util import (  # get_prog_from_section,
+from tdpservice.parsers.util import (
     fiscal_to_calendar,
     month_to_int,
     transform_to_months,
