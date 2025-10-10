@@ -176,6 +176,7 @@ class DataFile(FileRecord):
     section = models.CharField(
         max_length=32, blank=False, null=False, choices=Section.choices
     )
+    is_program_audit = models.BooleanField(default=False)
 
     version = models.IntegerField()
 
