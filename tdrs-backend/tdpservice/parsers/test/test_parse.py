@@ -2481,7 +2481,7 @@ def test_parse_program_audit_ftanf(request, program_audit_ftanf, dfs):
     """Test parsing Program Audit files."""
     datafile = program_audit_ftanf
     datafile.year = 2024
-    datafile.quarter = "Q1"
+    datafile.quarter = "Q2"
 
     dfs.datafile = datafile
     dfs.save()
@@ -2490,24 +2490,33 @@ def test_parse_program_audit_ftanf(request, program_audit_ftanf, dfs):
         datafile=datafile,
         dfs=dfs,
         section=datafile.section,
-        program_type=datafile.prog_type,
+        program_type=datafile.program_type,
+        is_program_audit=datafile.is_program_audit,
     )
     parser.parse_and_validate()
 
-    assert TANF_Exiter1.objects.all().count() == 0
+    assert ProgramAudit_T1.objects.all().count() == 1
+    assert ProgramAudit_T2.objects.all().count() == 2
+    assert ProgramAudit_T3.objects.all().count() == 1
 
     errors = ParserError.objects.filter(file=datafile).order_by("id")
-    assert len(errors) == 1
+    assert len(errors) == 2
     for e in errors:
-        assert e.error_message == "File does not begin with FRA data."
-        assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert dfs.get_status() == DataFileSummary.Status.REJECTED
+        assert e.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
 
 
+@pytest.mark.parametrize(
+    "file",
+    [
+        ("program_audit_space_fill"),
+        ("program_audit_zero_fill"),
+    ],
+)
 @pytest.mark.django_db()
-def test_parse_program_audit_space_fill(request, program_audit_space_fill, dfs):
+def test_parse_program_audit_space_zero_fill(request, file, dfs):
     """Test parsing Program Audit files."""
-    datafile = program_audit_space_fill
+    datafile = request.getfixturevalue(file)
     datafile.year = 2024
     datafile.quarter = "Q1"
 
@@ -2518,43 +2527,17 @@ def test_parse_program_audit_space_fill(request, program_audit_space_fill, dfs):
         datafile=datafile,
         dfs=dfs,
         section=datafile.section,
-        program_type=datafile.prog_type,
+        program_type=datafile.program_type,
+        is_program_audit=datafile.is_program_audit,
     )
     parser.parse_and_validate()
 
-    assert TANF_Exiter1.objects.all().count() == 0
+    assert ProgramAudit_T1.objects.all().count() == 1
+    assert ProgramAudit_T2.objects.all().count() == 1
+    assert ProgramAudit_T3.objects.all().count() == 3
 
     errors = ParserError.objects.filter(file=datafile).order_by("id")
-    assert len(errors) == 1
+    assert len(errors) == 12
     for e in errors:
-        assert e.error_message == "File does not begin with FRA data."
-        assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert dfs.get_status() == DataFileSummary.Status.REJECTED
-
-
-@pytest.mark.django_db()
-def test_parse_program_audit_zero_fill(request, program_audit_zero_fill, dfs):
-    """Test parsing Program Audit files."""
-    datafile = program_audit_zero_fill
-    datafile.year = 2024
-    datafile.quarter = "Q1"
-
-    dfs.datafile = datafile
-    dfs.save()
-
-    parser = ParserFactory.get_instance(
-        datafile=datafile,
-        dfs=dfs,
-        section=datafile.section,
-        program_type=datafile.prog_type,
-    )
-    parser.parse_and_validate()
-
-    assert TANF_Exiter1.objects.all().count() == 0
-
-    errors = ParserError.objects.filter(file=datafile).order_by("id")
-    assert len(errors) == 1
-    for e in errors:
-        assert e.error_message == "File does not begin with FRA data."
-        assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert dfs.get_status() == DataFileSummary.Status.REJECTED
+        assert e.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED_WITH_ERRORS

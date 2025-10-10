@@ -338,7 +338,6 @@ class BaseParser(ABC):
     ):
         """Generate duplicate errors per duplicate group and delete the duplicates."""
         start_num = self.dfs.total_number_of_records_created
-        # delete_skipped_for_ids = set()
         for duplicate_vals in dup_queryset[: settings.BULK_CREATE_BATCH_SIZE]:
             duplicate_vals.pop("row_count", None)
             duplicate_records = all_records.filter(**duplicate_vals).order_by(

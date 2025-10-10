@@ -50,18 +50,10 @@ def update_dfs(dfs, data_file):
     """Update DataFileSummary fields."""
     dfs.status = dfs.get_status()
 
-    active = DataFile.Section.ACTIVE_CASE_DATA
-    closed = DataFile.Section.CLOSED_CASE_DATA
-    audit = DataFile.Section.PROGRAM_AUDIT
-
-    if data_file.prog_type == "FRA":
+    if data_file.program_type == "FRA":
         dfs.case_aggregates = fra_total_errors(data_file)
     else:
-        if (
-            active in data_file.section
-            or closed in data_file.section
-            or audit in data_file.section
-        ):
+        if "Case Data" in data_file.section:
             dfs.case_aggregates = case_aggregates_by_month(data_file, dfs.status)
         else:
             dfs.case_aggregates = total_errors_by_month(data_file, dfs.status)
@@ -147,11 +139,11 @@ def parse(data_file_id, reparse_id=None):
         log_parser_exception(
             data_file,
             f"Encountered Database exception in parser_task.py: \n{e}",
-            "exception",
+            "error",
         )
         set_reparse_file_meta_model_failed_state(reparse_id, file_meta)
     except Exception as e:
-        generate_error = ErrorGeneratorFactory(data_file).get_generator(
+        generate_error = ErrorGeneratorFactory(data_file).get_error_generator(
             ErrorGeneratorType.MSG_ONLY_PRECHECK,
             None,
         )
@@ -174,7 +166,7 @@ def parse(data_file_id, reparse_id=None):
                 f"Uncaught exception while parsing datafile: {data_file.pk}! Please review the logs to "
                 f"see if manual intervention is required. Exception: \n{e}"
             ),
-            "exception",
+            "critical",
         )
         set_reparse_file_meta_model_failed_state(reparse_id, file_meta)
     finally:
