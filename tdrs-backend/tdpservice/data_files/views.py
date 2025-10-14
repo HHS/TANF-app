@@ -131,11 +131,11 @@ class DataFileViewSet(ModelViewSet):
             file_type = self.request.query_params.get("file_type", None)
 
             if file_type == "ssp-moe":
-                queryset = queryset.filter(section__contains="SSP")
+                queryset = queryset.filter(program_type=DataFile.ProgramType.SSP)
             elif file_type in FRA_SECTION_LIST:
                 queryset = queryset.filter(section=file_type)
             else:
-                queryset = queryset.exclude(section__contains="SSP")
+                queryset = queryset.exclude(program_type=DataFile.ProgramType.SSP)
 
         return queryset
 
