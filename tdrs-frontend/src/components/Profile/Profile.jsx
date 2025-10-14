@@ -1,97 +1,73 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { Navigate } from 'react-router-dom'
 
-import loginLogo from '../../assets/login-gov-logo.svg'
-import Button from '../Button'
+import RequestAccessForm from '../RequestAccessForm/RequestAccessForm'
+import UserProfileView from './UserProfileView'
 import {
+  accountHasPendingProfileChange,
   accountIsInReview,
   accountIsMissingAccessRequest,
 } from '../../selectors/auth'
+import { JURISDICTION_TYPES } from './JurisdictionLocationInfo'
 
-function Profile() {
-  const user = useSelector((state) => state.auth.user)
-  // Most higher-env users will only have a single role, so just grab the first one.
-  const primaryRole = user?.roles?.[0]
+function Profile({
+  isEditing = false,
+  onEdit,
+  type,
+  user,
+  sttList = [],
+  onCancel,
+  setInEditMode,
+}) {
+  const isAMSUser = user?.email?.includes('@acf.hhs.gov')
+  const userPermissions = user?.permissions?.map((p) => p.codename) || []
+  const hasFRAAccess = userPermissions.includes('has_fra_access')
+
   const missingAccessRequest = useSelector(accountIsMissingAccessRequest)
   const isAccessRequestPending = useSelector(accountIsInReview)
+  const isProfileChangePending = useSelector(accountHasPendingProfileChange)
 
-  const isAMSUser = user?.email?.includes('@acf.hhs.gov')
+  useEffect(() => {
+    if (setInEditMode) {
+      setInEditMode(isEditing, type)
+    }
+  }, [isEditing, type, setInEditMode])
 
   if (missingAccessRequest) {
     return <Navigate to="/home" />
   }
 
+  if (isEditing) {
+    return (
+      <RequestAccessForm
+        user={user}
+        sttList={sttList}
+        editMode={isEditing}
+        initialValues={{
+          firstName: user?.first_name || '',
+          lastName: user?.last_name || '',
+          stt: user?.stt?.name || '',
+          hasFRAAccess: hasFRAAccess ?? null,
+          regions: user?.regions || new Set(),
+          jurisdictionType: user?.stt?.type || JURISDICTION_TYPES.STATE,
+        }}
+        onCancel={onCancel}
+        type={type}
+      />
+    )
+  }
+
   return (
-    <div className="usa-prose">
-      {isAccessRequestPending && (
-        <div className="usa-alert usa-alert--info margin-top-3">
-          <div className="usa-alert__body">
-            <p className="usa-alert__text" id="page-alert">
-              Your request for access is currently being reviewed by an OFA
-              Admin. We’ll send you an email when it’s been approved.
-            </p>
-          </div>
-        </div>
-      )}
-      <div>
-        <p id="full-name" className="text-bold">
-          {user?.first_name} {user?.last_name}
-        </p>
-        <p>{user?.email}</p>
-        <p>{primaryRole?.name}</p>
-        {(() => {
-          const stt = user?.stt?.name || 'Federal Government'
-          const region = user?.stt?.region || user?.region?.id
-
-          if (stt === 'Federal Government' && !region) {
-            return <p> {stt} </p>
-          } else {
-            return (
-              <>
-                <p> {stt} </p>
-                <p> Region {region} </p>
-              </>
-            )
-          }
-        })()}
-      </div>
-      <div className="margin-top-5">
-        <p className="text-bold">Email and Password</p>
-
-        {isAMSUser ? (
-          <p>
-            You will receive all communications from the TANF Data Portal via
-            your ACF email address.
-          </p>
-        ) : (
-          <>
-            <p>
-              You will receive all communications from the TANF Data Portal via
-              the email address you registered with Login.gov. Your email or
-              password can be managed via Login.gov
-            </p>
-            <Button
-              className="sign-in-button"
-              type="button"
-              id="loginDotGovSignIn"
-              target={'_self'}
-              href={`${process.env.REACT_APP_LOGIN_GOV_URL}`}
-            >
-              <div className="mobile:margin-x-auto mobile-lg:margin-0">
-                Manage Your Account at{' '}
-                <img
-                  className="mobile:margin-x-auto mobile:padding-top-1 mobile-lg:margin-0 mobile-lg:padding-top-0 width-15 padding-left-1"
-                  src={loginLogo}
-                  alt="Login.gov"
-                />
-              </div>
-              <span className="visually-hidden">Opens in a new website</span>
-            </Button>
-          </>
-        )}
-      </div>
-    </div>
+    <UserProfileView
+      user={user}
+      isAMSUser={isAMSUser}
+      isAccessRequestPending={isAccessRequestPending}
+      isProfileChangePending={isProfileChangePending}
+      onEdit={onEdit}
+      type={type}
+      hasFRAAccess={hasFRAAccess ?? null}
+    />
   )
 }
 
