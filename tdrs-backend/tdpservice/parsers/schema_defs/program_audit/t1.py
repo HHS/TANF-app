@@ -4,7 +4,7 @@ from tdpservice.parsers.dataclasses import FieldType
 from tdpservice.parsers.fields import Field
 from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.util import get_t1_t4_partial_dup_fields
-from tdpservice.parsers.validators import category1, category2, category3
+from tdpservice.parsers.validators import category1, category2
 from tdpservice.search_indexes.models.program_audit import ProgramAudit_T1
 
 t1 = [

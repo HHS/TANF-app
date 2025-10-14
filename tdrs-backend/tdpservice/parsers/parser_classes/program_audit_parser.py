@@ -4,7 +4,6 @@ import logging
 
 from django.conf import settings
 
-from tdpservice.data_files.models import DataFile
 from tdpservice.parsers import schema_defs
 from tdpservice.parsers.case_consistency_validator import CaseConsistencyValidator
 from tdpservice.parsers.dataclasses import HeaderResult, Position
