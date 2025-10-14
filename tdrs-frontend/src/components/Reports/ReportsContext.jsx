@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import {
   clearFileList,
   reinitializeSubmittedFiles,
+  setStt,
 } from '../../actions/reports'
 import { openFeedbackWidget } from '../../reducers/feedbackWidget'
 
@@ -99,9 +100,16 @@ export const ReportsProvider = ({ isFra = false, children }) => {
         break
       case 'stt':
         setSttInputValue(pendingChange.value)
+        dispatch(setStt(pendingChange.value))
+        // Check if current file type is valid for the new STT
+        if (pendingChange.sttObject && fileTypeInputValue === 'ssp-moe' && !pendingChange.sttObject.ssp) {
+          setFileTypeInputValue('tanf')
+          dispatch(clearFileList({ fileType: 'tanf' }))
+          dispatch(reinitializeSubmittedFiles('tanf'))
+        }
         break
     }
-    setPendingChange({ type: null, value: null })
+    setPendingChange({ type: null, value: null, sttObject: null })
   }
 
   const cancelPendingChange = () => {
@@ -152,19 +160,30 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     }
   }
 
-  const selectStt = (value) => {
+  const selectStt = (value, sttObject = null) => {
     if (uploadedFiles.length > 0 || fraHasUploadedFile) {
       setModalTriggerSource('input-change')
-      setPendingChange({ type: 'stt', value })
+      setPendingChange({ type: 'stt', value, sttObject })
       setErrorModalVisible(true)
     } else {
       setSttInputValue(value)
+      dispatch(setStt(value))
       setLocalAlertState({
         active: false,
         type: null,
         message: null,
       })
-      dispatch(clearFileList({ fileType: fileTypeInputValue }))
+
+      // Check if current file type is valid for the new STT
+      // If SSP is selected but new STT doesn't support SSP, reset to TANF
+      if (sttObject && fileTypeInputValue === 'ssp-moe' && !sttObject.ssp) {
+        setFileTypeInputValue('tanf')
+        dispatch(clearFileList({ fileType: 'tanf' }))
+        dispatch(reinitializeSubmittedFiles('tanf'))
+      } else {
+        dispatch(clearFileList({ fileType: fileTypeInputValue }))
+      }
+
       setFraSelectedFile(null)
     }
   }

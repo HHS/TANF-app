@@ -1041,4 +1041,154 @@ describe('Reports', () => {
       expect(queryByText('Quarter 4 (July - September)')).toBeInTheDocument()
     })
   })
+
+  it('should reset file type to TANF when changing from an STT with SSP to one without SSP', async () => {
+    const store = appConfigureStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        stt: 'California',
+      },
+    })
+
+    const { getByLabelText, getByTestId, queryByText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    // Select California (has SSP)
+    const sttDropdown = getByTestId('stt-combobox')
+    fireEvent.change(sttDropdown, { target: { value: 'California' } })
+
+    await waitFor(() => {
+      expect(queryByText('SSP-MOE')).toBeInTheDocument()
+    })
+
+    // Select SSP-MOE file type
+    const sspRadio = getByLabelText('SSP-MOE')
+    fireEvent.click(sspRadio)
+
+    await waitFor(() => {
+      expect(sspRadio.checked).toBe(true)
+    })
+
+    // Set year and quarter to view submission history
+    setReportInputs('2021', 'Q3', getByLabelText)
+
+    await waitFor(() => {
+      expect(
+        queryByText(
+          'California - SSP-MOE - Fiscal Year 2021 - Quarter 3 (April - June)'
+        )
+      ).toBeInTheDocument()
+    })
+
+    // Change to Alaska (no SSP)
+    fireEvent.change(sttDropdown, { target: { value: 'Alaska' } })
+
+    await waitFor(() => {
+      // SSP-MOE option should no longer be visible
+      expect(queryByText('SSP-MOE')).not.toBeInTheDocument()
+
+      // TANF should be selected
+      const tanfRadio = getByLabelText('TANF')
+      expect(tanfRadio.checked).toBe(true)
+
+      // Header should show TANF, not SSP-MOE
+      expect(
+        queryByText(
+          'Alaska - TANF - Fiscal Year 2021 - Quarter 3 (April - June)'
+        )
+      ).toBeInTheDocument()
+
+      // Should not show SSP-MOE in header
+      expect(
+        queryByText(
+          'Alaska - SSP-MOE - Fiscal Year 2021 - Quarter 3 (April - June)'
+        )
+      ).not.toBeInTheDocument()
+    })
+  })
+
+  it('should reset file type to TANF when confirming STT change with uploaded files from SSP to non-SSP STT', async () => {
+    const store = appConfigureStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        stt: 'California',
+      },
+    })
+
+    const { getByLabelText, getByTestId, getByText, queryByText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    // Select California (has SSP)
+    const sttDropdown = getByTestId('stt-combobox')
+    fireEvent.change(sttDropdown, { target: { value: 'California' } })
+
+    // Select SSP-MOE file type
+    const sspRadio = getByLabelText('SSP-MOE')
+    fireEvent.click(sspRadio)
+
+    // Set year and quarter
+    setReportInputs('2021', 'Q3', getByLabelText)
+
+    await waitFor(() => {
+      expect(
+        getByText('Section 1 - SSP-MOE - Active Case Data')
+      ).toBeInTheDocument()
+    })
+
+    // Upload a file
+    await waitFor(() => {
+      fireEvent.change(
+        getByLabelText('Section 1 - SSP-MOE - Active Case Data'),
+        {
+          target: {
+            files: [
+              makeTestFile('section1.txt', ['HEADER20212A53000SSP1ED\n']),
+            ],
+          },
+        }
+      )
+    })
+
+    await waitFor(() => {
+      expect(getByText('section1.txt')).toBeInTheDocument()
+    })
+
+    // Try to change to Alaska (no SSP)
+    fireEvent.change(sttDropdown, { target: { value: 'Alaska' } })
+
+    // Modal should appear
+    await waitFor(() => {
+      expect(queryByText('Files Not Submitted')).toBeInTheDocument()
+    })
+
+    // Click OK to discard files and change STT
+    fireEvent.click(getByText(/OK/, { selector: '#modal button' }))
+
+    await waitFor(() => {
+      // SSP-MOE option should no longer be visible
+      expect(queryByText('SSP-MOE')).not.toBeInTheDocument()
+
+      // TANF should be selected
+      const tanfRadio = getByLabelText('TANF')
+      expect(tanfRadio.checked).toBe(true)
+
+      // Header should show TANF
+      expect(
+        queryByText(
+          'Alaska - TANF - Fiscal Year 2021 - Quarter 3 (April - June)'
+        )
+      ).toBeInTheDocument()
+
+      // File should be cleared
+      expect(queryByText('section1.txt')).not.toBeInTheDocument()
+    })
+  })
 })

@@ -772,7 +772,10 @@ const FRAReportsContent = () => {
           reportTypeValue={fileTypeInputValue}
           fiscalYearValue={yearInputValue}
           fiscalQuarterValue={quarterInputValue}
-          selectStt={selectStt}
+          selectStt={(value) => {
+            const selectedSttObject = sttList?.find((s) => s?.name === value)
+            selectStt(value, selectedSttObject)
+          }}
           selectReportType={selectFileType}
           selectFiscalYear={selectYear}
           selectFiscalQuarter={selectQuarter}
