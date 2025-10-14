@@ -1,10 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import Paginator from '../Paginator'
 import { getAvailableFileList } from '../../actions/reports'
-import {
-  programIntegrityAuditLabels,
-} from '../Reports/utils'
+import { programIntegrityAuditLabels } from '../Reports/utils'
 import { CaseAggregatesTable } from './CaseAggregatesTable'
 
 const QuarterSection = ({ label, files, reprocessedState }) => {
@@ -74,10 +72,7 @@ const QuarterSubmissionHistory = ({ filterValues, reprocessedState }) => {
       <div>
         {programIntegrityAuditLabels.map((quarterLabel, index) => {
           const quarterCode = `Q${index + 1}`
-          const filteredFiles = files.filter(
-            (f) =>
-              f.quarter === quarterCode
-          )
+          const filteredFiles = files.filter((f) => f.quarter === quarterCode)
 
           return (
             <QuarterSection
