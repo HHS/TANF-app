@@ -40,7 +40,7 @@ export const validateSmallCorrectFile = () => {
 export const validateSmallSSPFile = () => {
   table_first_row_contains('small_ssp_section1.txt')
   table_first_row_contains('Partially Accepted with Errors')
-  table_first_row_contains('2024-Q1-SSP Active Case Data Error Report.xlsx')
+  table_first_row_contains('2024-Q1-Active Case Data Error Report.xlsx')
 }
 
 export const validateFraCsv = () => {
@@ -216,31 +216,17 @@ export const getLatestSubmissionHistoryRow = (section) => {
 }
 
 export const downloadErrorReportAndAssert = (
-  program,
   section,
   year,
   quarter,
   deleteAfter = true
 ) => {
-  const ERROR_REPORT_LABEL = {
-    TANF: {
-      1: 'Active Case Data',
-      2: 'Closed Case Data',
-      3: 'Aggregate Data',
-      4: 'Stratum Data',
-    },
-    SSP: {
-      1: 'SSP Active Case Data',
-      2: 'SSP Closed Case Data',
-      3: 'SSP Aggregate Data',
-      4: 'SSP Stratum Data',
-    },
-    TRIBAL: {
-      1: 'Tribal Active Case Data',
-      2: 'Tribal Closed Case Data',
-      3: 'Tribal Aggregate Data',
-    },
-  }
+  const ERROR_REPORT_LABELS = [
+    'Active Case Data',
+    'Closed Case Data',
+    'Aggregate Data',
+    'Stratum Data',
+  ]
 
   // Download error report
   cy.intercept('GET', '/v1/data_files/*/download_error_report/').as(
@@ -250,7 +236,7 @@ export const downloadErrorReportAndAssert = (
   cy.wait('@downloadErrorReport').its('response.statusCode').should('eq', 200)
 
   // Assert Error Report successfully downloaded
-  const fileName = `${year}-${quarter}-${ERROR_REPORT_LABEL[program][section]} Error Report.xlsx`
+  const fileName = `${year}-${quarter}-${ERROR_REPORT_LABELS[section - 1]} Error Report.xlsx`
   const downloadedFilePath = `${Cypress.config('downloadsFolder')}/${fileName}`
 
   cy.readFile(downloadedFilePath, { timeout: 30000 }).should('exist')
