@@ -157,6 +157,7 @@ export const upload =
 // returned to the frontend for the submittedFile's section. However, the frontend maps the Program Audit file's
 // section to be the quarter labels. Thus, we need this function to map the backend to the frontend.
 const map_section = (fileType, submittedFile) => {
+  console.log(fileType)
   if (fileType === 'program-integrity-audit') {
     submittedFile.section = quarters[submittedFile.quarter]
   }
@@ -188,6 +189,7 @@ export const submit =
         stt,
         quarter: quarter ? quarter : file.quarter,
         ssp,
+        is_program_audit: file.is_program_audit ? file.is_program_audit : false,
       }
       for (const [key, value] of Object.entries(dataFile)) {
         formData.append(key, value)

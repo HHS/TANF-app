@@ -97,6 +97,7 @@ def parse(data_file_id, reparse_id=None):
             dfs=dfs,
             section=data_file.section,
             program_type=data_file.program_type,
+            is_program_audit=data_file.is_program_audit,
         )
         parser.parse_and_validate()
         update_dfs(dfs, data_file)

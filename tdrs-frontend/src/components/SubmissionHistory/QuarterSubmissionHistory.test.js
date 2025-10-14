@@ -1,5 +1,4 @@
-import React from 'react'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, within, fireEvent } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import appConfigureStore from '../../configureStore'
 import QuarterSubmissionHistory from './QuarterSubmissionHistory'
@@ -174,7 +173,7 @@ describe('QuarterSubmissionHistory', () => {
             {
               id: 1,
               fileName: 'file1.txt',
-              section: 'Program Audit',
+              section: 'Active Case Data',
               quarter: 'Q1',
               year: '2024',
               createdAt: '2024-01-15T10:00:00Z',
@@ -183,7 +182,7 @@ describe('QuarterSubmissionHistory', () => {
             {
               id: 2,
               fileName: 'file2.txt',
-              section: 'Program Audit',
+              section: 'Active Case Data',
               quarter: 'Q2',
               year: '2024',
               createdAt: '2024-02-15T10:00:00Z',
@@ -192,7 +191,7 @@ describe('QuarterSubmissionHistory', () => {
             {
               id: 3,
               fileName: 'file3.txt',
-              section: 'Program Audit',
+              section: 'Active Case Data',
               quarter: 'Q1',
               year: '2024',
               createdAt: '2024-01-20T10:00:00Z',
@@ -219,36 +218,6 @@ describe('QuarterSubmissionHistory', () => {
       expect(within(q2Body).getAllByRole('row')).toHaveLength(3)
     })
 
-    it('only displays files with Program Audit section', () => {
-      const filesState = {
-        ...initialState,
-        reports: {
-          files: [
-            {
-              id: 1,
-              fileName: 'file1.txt',
-              section: 'Program Audit',
-              quarter: 'Q1',
-              year: '2024',
-            },
-            {
-              id: 2,
-              fileName: 'file2.txt',
-              section: 'Active Case Data',
-              quarter: 'Q1',
-              year: '2024',
-            },
-          ],
-        },
-      }
-
-      setup(filesState)
-
-      // Only the Program Audit file should be displayed
-      expect(screen.getByText('file1.txt')).toBeInTheDocument()
-      expect(screen.queryByText('file2.txt')).not.toBeInTheDocument()
-    })
-
     it('displays files in correct quarter sections', () => {
       const filesState = {
         ...initialState,
@@ -257,14 +226,14 @@ describe('QuarterSubmissionHistory', () => {
             {
               id: 1,
               fileName: 'q1-file.txt',
-              section: 'Program Audit',
+              section: 'Active Case Data',
               quarter: 'Q1',
               year: '2024',
             },
             {
               id: 2,
               fileName: 'q3-file.txt',
-              section: 'Program Audit',
+              section: 'Active Case Data',
               quarter: 'Q3',
               year: '2024',
             },
@@ -330,14 +299,14 @@ describe('QuarterSubmissionHistory', () => {
             {
               id: 1,
               fileName: 'file1.txt',
-              section: 'Program Audit',
+              section: 'Active Case Data',
               quarter: 'Q1',
               year: '2024',
             },
             {
               id: 2,
               fileName: 'file2.txt',
-              section: 'Program Audit',
+              section: 'Active Case Data',
               quarter: 'Q1',
               year: '2024',
             },
@@ -359,7 +328,7 @@ describe('QuarterSubmissionHistory', () => {
           files: Array.from({ length: 6 }, (_, i) => ({
             id: i + 1,
             fileName: `file${i + 1}.txt`,
-            section: 'Program Audit',
+            section: 'Active Case Data',
             quarter: 'Q1',
             year: '2024',
           })),
@@ -380,7 +349,7 @@ describe('QuarterSubmissionHistory', () => {
           files: Array.from({ length: 12 }, (_, i) => ({
             id: i + 1,
             fileName: `file${i + 1}.txt`,
-            section: 'Program Audit',
+            section: 'Active Case Data',
             quarter: 'Q1',
             year: '2024',
           })),
@@ -403,7 +372,7 @@ describe('QuarterSubmissionHistory', () => {
           files: Array.from({ length: 8 }, (_, i) => ({
             id: i + 1,
             fileName: `file${i + 1}.txt`,
-            section: 'Program Audit',
+            section: 'Active Case Data',
             quarter: 'Q1',
             year: '2024',
           })),
@@ -427,7 +396,7 @@ describe('QuarterSubmissionHistory', () => {
           files: Array.from({ length: 8 }, (_, i) => ({
             id: i + 1,
             fileName: `file${i + 1}.txt`,
-            section: 'Program Audit',
+            section: 'Active Case Data',
             quarter: 'Q1',
             year: '2024',
           })),
@@ -453,6 +422,22 @@ describe('QuarterSubmissionHistory', () => {
       const q1Bodies = within(q1Table).getAllByRole('rowgroup')
       const tbody = q1Bodies[1] // tbody is the second rowgroup
       expect(within(tbody).getAllByRole('row')).toHaveLength(15)
+
+      // Click page 2 button to trigger onChange
+      const page2Button = within(pagination).getByRole('button', {
+        name: 'Page 2',
+      })
+      fireEvent.click(page2Button)
+
+      // Verify page 2 is now current
+      const updatedPagination = screen.getByRole('navigation', {
+        name: 'Pagination',
+      })
+      const currentPage2Button = within(updatedPagination).getByRole('button', {
+        name: 'Page 2',
+        current: 'page',
+      })
+      expect(currentPage2Button).toBeInTheDocument()
     })
 
     it('maintains separate pagination state for each quarter', () => {
@@ -463,14 +448,14 @@ describe('QuarterSubmissionHistory', () => {
             ...Array.from({ length: 6 }, (_, i) => ({
               id: i + 1,
               fileName: `q1-file${i + 1}.txt`,
-              section: 'Program Audit',
+              section: 'Active Case Data',
               quarter: 'Q1',
               year: '2024',
             })),
             ...Array.from({ length: 6 }, (_, i) => ({
               id: i + 7,
               fileName: `q2-file${i + 1}.txt`,
-              section: 'Program Audit',
+              section: 'Active Case Data',
               quarter: 'Q2',
               year: '2024',
             })),
@@ -539,7 +524,7 @@ describe('QuarterSubmissionHistory', () => {
             {
               id: 1,
               fileName: 'file1.txt',
-              section: 'Program Audit',
+              section: 'Active Case Data',
               quarter: 'Q1',
               year: '2024',
             },
@@ -567,7 +552,7 @@ describe('QuarterSubmissionHistory', () => {
         quarter: 'Q1',
         stt: { id: 1, name: 'California' },
         file_type: 'pia',
-        section: 'Program Audit',
+        section: 'Active Case Data',
       }
 
       setup(initialState, filterValues)
@@ -589,7 +574,7 @@ describe('QuarterSubmissionHistory', () => {
             {
               id: 1,
               fileName: 'file1.txt',
-              section: 'Program Audit',
+              section: 'Active Case Data',
               year: '2024',
             },
           ],
@@ -612,7 +597,7 @@ describe('QuarterSubmissionHistory', () => {
             {
               id: 1,
               fileName: 'file1.txt',
-              section: 'Program Audit',
+              section: 'Active Case Data',
               quarter: 'Q5',
               year: '2024',
             },
@@ -628,28 +613,6 @@ describe('QuarterSubmissionHistory', () => {
       expect(noDataMessages).toHaveLength(4)
     })
 
-    it('handles files with null section', () => {
-      const filesState = {
-        ...initialState,
-        reports: {
-          files: [
-            {
-              id: 1,
-              fileName: 'file1.txt',
-              section: null,
-              quarter: 'Q1',
-              year: '2024',
-            },
-          ],
-        },
-      }
-
-      setup(filesState)
-
-      // File should not be displayed since section is not 'Program Audit'
-      expect(screen.queryByText('file1.txt')).not.toBeInTheDocument()
-    })
-
     it('handles large number of files efficiently', () => {
       const filesState = {
         ...initialState,
@@ -657,7 +620,7 @@ describe('QuarterSubmissionHistory', () => {
           files: Array.from({ length: 100 }, (_, i) => ({
             id: i + 1,
             fileName: `file${i + 1}.txt`,
-            section: 'Program Audit',
+            section: 'Active Case Data',
             quarter: `Q${(i % 4) + 1}`,
             year: '2024',
           })),
@@ -680,21 +643,21 @@ describe('QuarterSubmissionHistory', () => {
             {
               id: 1,
               fileName: 'valid-file.txt',
-              section: 'Program Audit',
+              section: 'Active Case Data',
               quarter: 'Q1',
               year: '2024',
             },
             {
               id: 2,
               fileName: 'another-valid.txt',
-              section: 'Program Audit',
+              section: 'Active Case Data',
               quarter: 'Q2',
               year: '2024',
             },
             {
               id: 3,
               fileName: 'third-file.txt',
-              section: 'Program Audit',
+              section: 'Active Case Data',
               quarter: 'Q3',
               year: '2024',
             },
@@ -760,7 +723,7 @@ describe('QuarterSubmissionHistory', () => {
             {
               id: 1,
               fileName: 'test-file.txt',
-              section: 'Program Audit',
+              section: 'Active Case Data',
               quarter: 'Q1',
               year: '2024',
             },
@@ -787,7 +750,7 @@ describe('QuarterSubmissionHistory', () => {
             {
               id: 1,
               fileName: 'new-file.txt',
-              section: 'Program Audit',
+              section: 'Active Case Data',
               quarter: 'Q1',
               year: '2024',
             },

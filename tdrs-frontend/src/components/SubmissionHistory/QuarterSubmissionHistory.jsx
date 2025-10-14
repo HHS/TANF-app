@@ -77,7 +77,6 @@ const QuarterSubmissionHistory = ({ filterValues, reprocessedState }) => {
           const quarterCode = `Q${index + 1}`
           const filteredFiles = files.filter(
             (f) =>
-              f.section === PROGRAM_INTEGRITY_SECTION &&
               f.quarter === quarterCode
           )
 
