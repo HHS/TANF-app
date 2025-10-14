@@ -115,7 +115,9 @@ function ReportsContent() {
                 <STTComboBox
                   selectedStt={sttInputValue}
                   selectStt={(value) => {
-                    const selectedSttObject = sttList?.find((s) => s?.name === value)
+                    const selectedSttObject = sttList?.find(
+                      (s) => s?.name === value
+                    )
                     selectStt(value, selectedSttObject)
                   }}
                   error={false}

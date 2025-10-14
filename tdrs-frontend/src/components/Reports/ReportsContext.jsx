@@ -102,7 +102,11 @@ export const ReportsProvider = ({ isFra = false, children }) => {
         setSttInputValue(pendingChange.value)
         dispatch(setStt(pendingChange.value))
         // Check if current file type is valid for the new STT
-        if (pendingChange.sttObject && fileTypeInputValue === 'ssp-moe' && !pendingChange.sttObject.ssp) {
+        if (
+          pendingChange.sttObject &&
+          fileTypeInputValue === 'ssp-moe' &&
+          !pendingChange.sttObject.ssp
+        ) {
           setFileTypeInputValue('tanf')
           dispatch(clearFileList({ fileType: 'tanf' }))
           dispatch(reinitializeSubmittedFiles('tanf'))
