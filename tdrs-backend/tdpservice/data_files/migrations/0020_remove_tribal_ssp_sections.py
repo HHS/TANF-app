@@ -3,7 +3,7 @@
 from django.db import migrations, models
 
 
-def get_program_type_from_section(section):
+def get_new_section(section):
     if "Active Case Data" in section:
         return "Active Case Data"
     elif "Closed Case Data" in section:
@@ -20,7 +20,7 @@ def set_section(apps, schema_editor):
     DataFile = apps.get_model("data_files", "DataFile")
 
     for df in DataFile.objects.all():
-        df.program_type = get_program_type_from_section(df.section)
+        df.section = get_new_section(df.section)
         df.save()
 
 
