@@ -91,6 +91,12 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     switch (pendingChange.type) {
       case 'fileType':
         setFileTypeInputValue(pendingChange.value)
+        // Reset year if it's invalid for the new file type
+        const minYear =
+          pendingChange.value === 'program-integrity-audit' ? 2024 : 2021
+        if (yearInputValue && parseInt(yearInputValue) < minYear) {
+          setYearInputValue('')
+        }
         break
       case 'year':
         setYearInputValue(pendingChange.value)
@@ -135,6 +141,13 @@ export const ReportsProvider = ({ isFra = false, children }) => {
       dispatch(clearFileList({ fileType: value }))
       dispatch(reinitializeSubmittedFiles(value))
       setFraSelectedFile(null)
+
+      // Reset year if it's invalid for the new file type
+      // Program Integrity Audit starts at 2024, TANF/SSP/FRA start at 2021
+      const minYear = value === 'program-integrity-audit' ? 2024 : 2021
+      if (yearInputValue && parseInt(yearInputValue) < minYear) {
+        setYearInputValue('')
+      }
     }
   }
 

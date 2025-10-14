@@ -1191,4 +1191,86 @@ describe('Reports', () => {
       expect(queryByText('section1.txt')).not.toBeInTheDocument()
     })
   })
+
+  it('should reset fiscal year when changing from TANF to Program Integrity Audit with year < 2024', async () => {
+    const store = appConfigureStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        stt: 'California',
+      },
+    })
+
+    const { getByLabelText, queryByText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    // Set year to 2021 and quarter
+    setReportInputs('2021', 'Q3', getByLabelText)
+
+    await waitFor(() => {
+      expect(
+        queryByText(
+          'California - TANF - Fiscal Year 2021 - Quarter 3 (April - June)'
+        )
+      ).toBeInTheDocument()
+    })
+
+    // Change to Program Integrity Audit
+    const piaRadio = getByLabelText('Program Integrity Audit')
+    fireEvent.click(piaRadio)
+
+    await waitFor(() => {
+      // Year should be reset to empty
+      const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+      expect(yearSelect.value).toBe('')
+
+      // Header should not be visible since year is now empty
+      expect(
+        queryByText('California - program-integrity-audit - Fiscal Year 2021')
+      ).not.toBeInTheDocument()
+    })
+  })
+
+  it('should not reset fiscal year when changing from TANF to Program Integrity Audit with year >= 2024', async () => {
+    const store = appConfigureStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        stt: 'California',
+      },
+    })
+
+    const { getByLabelText, queryByText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    // Set year to 2024 and quarter
+    setReportInputs('2024', 'Q3', getByLabelText)
+
+    await waitFor(() => {
+      expect(
+        queryByText(
+          'California - TANF - Fiscal Year 2024 - Quarter 3 (April - June)'
+        )
+      ).toBeInTheDocument()
+    })
+
+    // Change to Program Integrity Audit
+    const piaRadio = getByLabelText('Program Integrity Audit')
+    fireEvent.click(piaRadio)
+
+    await waitFor(() => {
+      // Year should remain 2024
+      const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+      expect(yearSelect.value).toBe('2024')
+
+      // Header should be visible with the year
+      expect(queryByText('California - Fiscal Year 2024')).toBeInTheDocument()
+    })
+  })
 })
