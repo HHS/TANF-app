@@ -1201,11 +1201,15 @@ describe('Reports', () => {
       },
     })
 
-    const { getByLabelText, queryByText } = render(
+    const { getByLabelText, getByTestId, queryByText } = render(
       <Provider store={store}>
         <Reports />
       </Provider>
     )
+
+    // Select California
+    const stt = getByTestId('stt-combobox')
+    fireEvent.change(stt, { target: { value: 'California' } })
 
     // Set year to 2021 and quarter
     setReportInputs('2021', 'Q3', getByLabelText)
@@ -1229,7 +1233,7 @@ describe('Reports', () => {
 
       // Header should not be visible since year is now empty
       expect(
-        queryByText('California - program-integrity-audit - Fiscal Year 2021')
+        queryByText('California - Program Integrity Audit - Fiscal Year 2021')
       ).not.toBeInTheDocument()
     })
   })
@@ -1243,11 +1247,15 @@ describe('Reports', () => {
       },
     })
 
-    const { getByLabelText, queryByText } = render(
+    const { getByLabelText, getByTestId, queryByText } = render(
       <Provider store={store}>
         <Reports />
       </Provider>
     )
+
+    // Select California
+    const stt = getByTestId('stt-combobox')
+    fireEvent.change(stt, { target: { value: 'California' } })
 
     // Set year to 2024 and quarter
     setReportInputs('2024', 'Q3', getByLabelText)
@@ -1269,8 +1277,10 @@ describe('Reports', () => {
       const yearSelect = getByLabelText('Fiscal Year (October - September)*')
       expect(yearSelect.value).toBe('2024')
 
-      // Header should be visible with the year
-      expect(queryByText('California - Fiscal Year 2024')).toBeInTheDocument()
+      // Header should be visible with the correct format for PIA
+      expect(
+        queryByText('California - Program Integrity Audit - Fiscal Year 2024')
+      ).toBeInTheDocument()
     })
   })
 })
