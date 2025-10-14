@@ -8,7 +8,6 @@ import { submit } from '../../actions/reports'
 import {
   programIntegrityAuditLabels,
   getQuarterFromIndex,
-  PROGRAM_INTEGRITY_SECTION,
 } from '../Reports/utils'
 import { useEventLogger } from '../../utils/eventLogger'
 import { useFormSubmission } from '../../hooks/useFormSubmission'

@@ -4,7 +4,6 @@ import Paginator from '../Paginator'
 import { getAvailableFileList } from '../../actions/reports'
 import {
   programIntegrityAuditLabels,
-  PROGRAM_INTEGRITY_SECTION,
 } from '../Reports/utils'
 import { CaseAggregatesTable } from './CaseAggregatesTable'
 

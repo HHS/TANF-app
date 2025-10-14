@@ -14,8 +14,6 @@ export const programIntegrityAuditLabels = [
   'Quarter 4 (July - September)',
 ]
 
-export const PROGRAM_INTEGRITY_SECTION = 'Program Audit'
-
 // Helper to map quarter index (0-3) to quarter code (Q1-Q4)
 export const getQuarterFromIndex = (index) => {
   const quarterMap = ['Q1', 'Q2', 'Q3', 'Q4']
