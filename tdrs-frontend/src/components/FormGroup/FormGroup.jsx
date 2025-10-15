@@ -20,10 +20,10 @@ import PropTypes from 'prop-types'
  * to handle the blur event of the input.
  */
 function FormGroup({
-  error,
+  error = '',
   label,
   name,
-  inputValue,
+  inputValue = '',
   handleChange,
   handleBlur,
 }) {
@@ -63,11 +63,6 @@ FormGroup.propTypes = {
   inputValue: PropTypes.string,
   handleChange: PropTypes.func.isRequired,
   handleBlur: PropTypes.func.isRequired,
-}
-
-FormGroup.defaultProps = {
-  error: '',
-  inputValue: '',
 }
 
 export default FormGroup
