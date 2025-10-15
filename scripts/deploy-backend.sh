@@ -141,13 +141,24 @@ update_backend()
       exit
     fi
 
+    args=("$APP")
+    args+=("--no-route")
+    args+=("-f $MANIFEST")
+    args+=("-t 180")
+
+    # TODO: Change space back to prod
+    if [[ "$APP" = "$CGAPPNAME_CELERY" && "$CF_SPACE" = "tanf-dev" ]]; then
+      args+=("-m 2G")
+    fi
+
     if [ "$STRATEGY" = "rolling" ] ; then
         set_cf_envs "$APP"
         # Do a zero downtime deploy.  This requires enough memory for
         # two apps to exist in the org/space at one time.
-        cf push "$APP" --no-route -f "$MANIFEST" -t 180 --strategy rolling || exit 1
+        args+=("--strategy rolling")
+        cf push "${args[@]}" || exit 1
     else
-        cf push "$APP" --no-route -f "$MANIFEST" -t 180
+        cf push "${args[@]}"
 
         # set up JWT key if needed
         if cf e "$APP" | grep -q JWT_KEY ; then
@@ -274,7 +285,7 @@ if [[ $DEPLOY_STRATEGY == 'rebuild' ]]; then
   cf delete "$CGAPPNAME_BACKEND" -r -f
   cf delete "$CGAPPNAME_CELERY" -r -f
 fi
- 
+
 add_service_bindings
 
 if [[ $DEPLOY_STRATEGY == 'rebuild' ]]; then
