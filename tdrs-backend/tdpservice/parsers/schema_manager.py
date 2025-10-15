@@ -2,6 +2,8 @@
 
 import logging
 
+from billiard.einfo import ExceptionInfo
+
 from tdpservice.parsers.dataclasses import ManagerPVResult
 from tdpservice.parsers.error_generator import (
     ErrorGeneratorArgs,
@@ -44,7 +46,7 @@ class SchemaManager:
                 record, is_valid, errors = schema.parse_and_validate(row)
                 records.append((record, is_valid, errors))
             return ManagerPVResult(records=records, schemas=schemas)
-        except Exception as e:
+        except ExceptionInfo:
             logger.exception("Exception in SchemaManager.parse_and_validate")
             generator_args = ErrorGeneratorArgs(
                 record=None,
