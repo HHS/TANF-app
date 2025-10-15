@@ -268,8 +268,7 @@ services:
       - OFA_DB_PASSWORD
       - OFA_DB_USER
       - OTEL_PYTHON_DJANGO_EXCLUDED_URLS
-      - SENTRY_DSN
-      - ENABLE_SENTRY
+      - CGAPPNAME_BACKEND
     volumes:
       - .:/tdpapp
       - logs:/tmp
@@ -345,7 +344,10 @@ services:
       - .:/tdpapp
       - logs:/tmp
     image: tdp
-    build: .
+    build: 
+      context: .
+      args:
+        REGISTRY_OWNER: ${REGISTRY_OWNER:-hhs}
     command: bash -c "./wait_for_services.sh && ./celery_start.sh"
     depends_on:
       - localstack
