@@ -143,21 +143,23 @@ update_backend()
 
     args=("$APP")
     args+=("--no-route")
-    args+=("-f $MANIFEST")
-    args+=("-t 180")
+    args+=("-f")
+    args+=("$MANIFEST")
+    args+=("-t")
+    args+=("180")
 
     # TODO: Change space back to prod
     if [[ "$APP" = "$CGAPPNAME_CELERY" && "$CF_SPACE" = "tanf-dev" ]]; then
-      args+=("-m 2G")
+      args+=("-m")
+      args+=("2G")
     fi
 
     if [ "$STRATEGY" = "rolling" ] ; then
         set_cf_envs "$APP"
         # Do a zero downtime deploy.  This requires enough memory for
         # two apps to exist in the org/space at one time.
-        args+=("--strategy rolling")
-        echo cf push "${args[@]}"
-        ls -lha
+        args+=("--strategy")
+        args+=("rolling")
         cf push "${args[@]}" || exit 1
     else
         cf push "${args[@]}"
