@@ -46,7 +46,7 @@ class SchemaManager:
                 record, is_valid, errors = schema.parse_and_validate(row)
                 records.append((record, is_valid, errors))
             return ManagerPVResult(records=records, schemas=schemas)
-        except ExceptionInfo:
+        except Exception:
             logger.exception("Exception in SchemaManager.parse_and_validate")
             generator_args = ErrorGeneratorArgs(
                 record=None,
