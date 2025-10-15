@@ -1,4 +1,5 @@
 """Check if user is authorized."""
+
 import logging
 from wsgiref.util import FileWrapper
 

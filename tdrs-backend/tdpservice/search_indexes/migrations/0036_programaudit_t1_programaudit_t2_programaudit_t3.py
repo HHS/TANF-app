@@ -7,7 +7,7 @@ import uuid
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("data_files", "0022_datafile_is_program_audit"),
+        ("data_files", "0021_datafile_is_program_audit"),
         ("search_indexes", "0035_add_line_number"),
     ]
 

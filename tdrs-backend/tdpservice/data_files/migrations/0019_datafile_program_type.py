@@ -15,6 +15,7 @@ def get_program_type_from_section(section):
 
 
 def set_program_type_based_on_section(apps, schema_editor):
+    print("migrating program type")
     DataFile = apps.get_model("data_files", "DataFile")
 
     for df in DataFile.objects.all():

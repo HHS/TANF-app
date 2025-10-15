@@ -50,7 +50,7 @@ def update_dfs(dfs, data_file):
     """Update DataFileSummary fields."""
     dfs.status = dfs.get_status()
 
-    if data_file.program_type == "FRA":
+    if data_file.program_type == DataFile.ProgramType.FRA:
         dfs.case_aggregates = fra_total_errors(data_file)
     else:
         if "Case Data" in data_file.section:
