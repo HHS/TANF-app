@@ -230,7 +230,7 @@ tasks:
     desc: Open a shell in the frontend container
     dir: tdrs-frontend
     cmds:
-      - docker compose -f docker-compose.yml exec tdp-frontend bash
+      - docker compose -f docker-compose.yml exec tdp-frontend sh
 
   up:
     desc: Start both frontend and backend web servers
