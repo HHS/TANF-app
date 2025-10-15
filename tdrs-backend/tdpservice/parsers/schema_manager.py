@@ -2,8 +2,6 @@
 
 import logging
 
-from billiard.einfo import ExceptionInfo
-
 from tdpservice.parsers.dataclasses import ManagerPVResult
 from tdpservice.parsers.error_generator import (
     ErrorGeneratorArgs,
