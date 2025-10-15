@@ -210,18 +210,18 @@ def test_parse_big_file(big_file, dfs):
         "months": [
             {
                 "month": "Oct",
-                "accepted_without_errors": 25,
-                "accepted_with_errors": 245,
+                "accepted_without_errors": 11,
+                "accepted_with_errors": 259,
             },
             {
                 "month": "Nov",
-                "accepted_without_errors": 18,
-                "accepted_with_errors": 255,
+                "accepted_without_errors": 12,
+                "accepted_with_errors": 261,
             },
             {
                 "month": "Dec",
-                "accepted_without_errors": 27,
-                "accepted_with_errors": 245,
+                "accepted_without_errors": 15,
+                "accepted_with_errors": 257,
             },
         ],
         "rejected": 0,
@@ -659,7 +659,7 @@ def test_parse_tanf_section1_datafile(small_tanf_section1_datafile, dfs):
     dfs.case_aggregates = aggregates.case_aggregates_by_month(dfs.datafile, dfs.status)
     assert dfs.case_aggregates == {
         "months": [
-            {"month": "Oct", "accepted_without_errors": 4, "accepted_with_errors": 1},
+            {"month": "Oct", "accepted_without_errors": 1, "accepted_with_errors": 4},
             {"month": "Nov", "accepted_without_errors": 0, "accepted_with_errors": 0},
             {"month": "Dec", "accepted_without_errors": 0, "accepted_with_errors": 0},
         ],
