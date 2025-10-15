@@ -21,6 +21,7 @@ import { useRUM } from './hooks/useRUM'
  *
  * Displays a modal when the user clicks the Give Feedback button
  */
+
 function App() {
   const user = useSelector((state) => state.auth.user)
   const { setUserInfo } = useRUM()
