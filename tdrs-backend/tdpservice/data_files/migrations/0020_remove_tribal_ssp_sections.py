@@ -17,6 +17,7 @@ def get_new_section(section):
 
 
 def set_section(apps, schema_editor):
+    print("migrating section")
     DataFile = apps.get_model("data_files", "DataFile")
 
     for df in DataFile.objects.all():
@@ -30,6 +31,11 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # need to first remove the constraint since `section` will now be the same across all program types
+        migrations.RemoveConstraint(
+            model_name="datafile",
+            name="constraint_name",
+        ),
         migrations.AlterField(
             model_name="datafile",
             name="section",
@@ -48,5 +54,13 @@ class Migration(migrations.Migration):
         ),
         migrations.RunPython(
             set_section,
+        ),
+        # we add back the constraint including the new `program_type` field
+        migrations.AddConstraint(
+            model_name="datafile",
+            constraint=models.UniqueConstraint(
+                fields=("program_type", "section", "version", "quarter", "year", "stt"),
+                name="constraint_name",
+            ),
         ),
     ]
