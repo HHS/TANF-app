@@ -11,6 +11,7 @@ tdrs-frontend/yarn-debug.log*
 tdrs-frontend/yarn-error.log*
 tdrs-frontend/vars-frontend.yml
 tdrs-frontend/pa11y-screenshots/*
+tdrs-frontend/cypress/reports*
 .eslintcache
 downloads/
 
