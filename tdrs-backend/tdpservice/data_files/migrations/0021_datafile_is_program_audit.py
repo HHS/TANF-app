@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("data_files", "0021_add_program_to_constraint"),
+        ("data_files", "0020_remove_tribal_ssp_sections"),
     ]
 
     operations = [
