@@ -8,17 +8,23 @@ from tdpservice.data_files.models import DataFile
 from tdpservice.parsers import schema_defs
 from tdpservice.parsers.base_parser import BaseParser
 from tdpservice.parsers.case_consistency_validator import CaseConsistencyValidator
-from tdpservice.parsers.dataclasses import HeaderResult, Position, ValidationErrorArgs
+from tdpservice.parsers.constants import (
+    HEADER_POSITION,
+    INVALID_SSN_AREA_NUMBERS,
+    INVALID_SSN_GROUP_NUMBERS,
+    INVALID_SSN_SERIAL_NUMBERS,
+    SSN_AREA_NUMBER_POSITION,
+    SSN_GROUP_NUMBER_POSITION,
+    SSN_SERIAL_NUMBER_POSITION,
+    TRAILER_POSITION,
+)
+from tdpservice.parsers.dataclasses import HeaderResult, ValidationErrorArgs
 from tdpservice.parsers.error_generator import ErrorGeneratorArgs, ErrorGeneratorType
 from tdpservice.parsers.schema_defs.utils import ProgramManager
 from tdpservice.parsers.validators import category1, category2
 from tdpservice.parsers.validators.util import value_is_empty
 
 logger = logging.getLogger(__name__)
-
-
-HEADER_POSITION = Position(0, 6)
-TRAILER_POSITION = Position(0, 7)
 
 
 class TanfDataReportParser(BaseParser):
@@ -369,10 +375,18 @@ class TanfDataReportParser(BaseParser):
         validator = category2.ssnAllOf(
             category2.isNumber(),
             category2.intHasLength(9),
-            category2.valueNotAt(slice(0, 3), "000"),
-            category2.valueNotAt(slice(0, 3), "666"),
-            category2.valueNotAt(slice(3, 5), "00"),
-            category2.valueNotAt(slice(5, 9), "0000"),
+            *[
+                category2.valueNotAt(SSN_AREA_NUMBER_POSITION, area_num)
+                for area_num in INVALID_SSN_AREA_NUMBERS
+            ],
+            *[
+                category2.valueNotAt(SSN_GROUP_NUMBER_POSITION, group_num)
+                for group_num in INVALID_SSN_GROUP_NUMBERS
+            ],
+            *[
+                category2.valueNotAt(SSN_SERIAL_NUMBER_POSITION, serial_num)
+                for serial_num in INVALID_SSN_SERIAL_NUMBERS
+            ],
             error_message=(
                 "Social Security Number is not valid. Check that the SSN is 9 digits, "
                 "does not contain only zeroes in any one section, and does not contain "
