@@ -1,14 +1,12 @@
 """Schema for FRA Work Outcome TANF Exiters records."""
 
 from tdpservice.parsers.constants import (
-    HEADER_POSITION,
     INVALID_SSN_AREA_NUMBERS,
     INVALID_SSN_GROUP_NUMBERS,
     INVALID_SSN_SERIAL_NUMBERS,
     SSN_AREA_NUMBER_POSITION,
     SSN_GROUP_NUMBER_POSITION,
     SSN_SERIAL_NUMBER_POSITION,
-    TRAILER_POSITION,
 )
 from tdpservice.parsers.dataclasses import FieldType, Position
 from tdpservice.parsers.fields import Field
@@ -46,15 +44,15 @@ te1 = [
                         category2.isNumber(),
                         category2.intHasLength(9),
                         *[
-                            category2.valueNotAt(slice(0, 3), area_num)
+                            category2.valueNotAt(SSN_AREA_NUMBER_POSITION, area_num)
                             for area_num in INVALID_SSN_AREA_NUMBERS
                         ],
                         *[
-                            category2.valueNotAt(slice(3, 5), group_num)
+                            category2.valueNotAt(SSN_GROUP_NUMBER_POSITION, group_num)
                             for group_num in INVALID_SSN_GROUP_NUMBERS
                         ],
                         *[
-                            category2.valueNotAt(slice(5, 9), serial_num)
+                            category2.valueNotAt(SSN_SERIAL_NUMBER_POSITION, serial_num)
                             for serial_num in INVALID_SSN_SERIAL_NUMBERS
                         ],
                     ),
