@@ -1,126 +1,86 @@
-import React, { useEffect, useRef } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { fileInput } from '@uswds/uswds/src/js/components'
+import React from 'react'
 import classNames from 'classnames'
 import Button from '../Button'
 import FileUpload from '../FileUpload'
-import { submit } from '../../actions/reports'
 import {
   programIntegrityAuditLabels,
   getQuarterFromIndex,
 } from '../Reports/utils'
-import { useEventLogger } from '../../utils/eventLogger'
-import { useFormSubmission } from '../../hooks/useFormSubmission'
-import { useReportsContext } from '../Reports/ReportsContext'
+import { useFileUploadForm } from '../../hooks/useFileUploadForm'
 
 const QuarterFileUploadForm = ({ stt }) => {
-  const dispatch = useDispatch()
-  const logger = useEventLogger()
+  // Transform files for Program Integrity Audit submission
+  const transformFiles = (uploadedFiles) => {
+    return uploadedFiles.map((file) => {
+      const index = programIntegrityAuditLabels.indexOf(file.section)
+      const quarterCode = getQuarterFromIndex(index)
+
+      return {
+        ...file,
+        section: 'Active Case Data',
+        quarter: quarterCode,
+        is_program_audit: true,
+      }
+    })
+  }
+
+  // Format quarters for success message (Q1, Q2, etc.)
+  const formatSections = (uploadedFiles) => {
+    const uploadedQuarters = uploadedFiles
+      ? uploadedFiles
+          .map((file) => {
+            const index = programIntegrityAuditLabels.indexOf(file.section)
+            return index !== -1 ? getQuarterFromIndex(index) : file.section
+          })
+          .join(', ')
+          .split(' ')
+      : []
+
+    if (uploadedQuarters.length > 1) {
+      uploadedQuarters.splice(uploadedQuarters.length - 1, 0, 'and')
+    }
+
+    return uploadedQuarters.join(' ')
+  }
+
+  // Generate submit payload for Program Integrity Audit
+  const getSubmitPayload = ({
+    year,
+    formattedSections,
+    logger,
+    setLocalAlertState,
+    stt,
+    uploadedFiles,
+    user,
+    fileType,
+  }) => ({
+    quarter: null, // Not used for PIA
+    year,
+    formattedSections,
+    logger,
+    setLocalAlertState,
+    stt,
+    uploadedFiles,
+    user,
+    ssp: false,
+    fileType,
+  })
 
   const {
     yearInputValue,
     fileTypeInputValue,
     localAlert,
+    isSubmitting,
+    alertRef,
+    onSubmit,
+    handleCancel,
     setLocalAlertState,
-    uploadedFiles,
-    setErrorModalVisible,
-    setModalTriggerSource,
-    handleClearAll,
-    handleOpenFeedbackWidget,
-  } = useReportsContext()
-
-  const user = useSelector((state) => state.auth.user)
-  const { isSubmitting, executeSubmission } = useFormSubmission()
-  const alertRef = useRef(null)
-
-  // Format quarters for success message (Q1, Q2, etc.)
-  const uploadedQuarters = uploadedFiles
-    ? uploadedFiles
-        .map((file) => {
-          const index = programIntegrityAuditLabels.indexOf(file.section)
-          return index !== -1 ? getQuarterFromIndex(index) : file.section
-        })
-        .join(', ')
-        .split(' ')
-    : []
-
-  if (uploadedQuarters.length > 1) {
-    uploadedQuarters.splice(uploadedQuarters.length - 1, 0, 'and')
-  }
-
-  const formattedQuarters = uploadedQuarters.join(' ')
-
-  const onSubmit = async (event) => {
-    event.preventDefault()
-
-    if (uploadedFiles.length === 0) {
-      setLocalAlertState({
-        active: true,
-        type: 'error',
-        message: 'No changes have been made to data files',
-      })
-      return
-    }
-
-    try {
-      // Transform files: set section to "Program Audit" and quarter to Q1-Q4
-      const filesToSubmit = uploadedFiles.map((file) => {
-        const index = programIntegrityAuditLabels.indexOf(file.section)
-        const quarterCode = getQuarterFromIndex(index)
-
-        return {
-          ...file,
-          section: 'Active Case Data',
-          quarter: quarterCode,
-          is_program_audit: true,
-        }
-      })
-
-      await executeSubmission(() =>
-        dispatch(
-          submit({
-            quarter: null, // Not used for PIA
-            year: yearInputValue,
-            formattedSections: formattedQuarters,
-            logger,
-            setLocalAlertState,
-            stt: stt?.id,
-            uploadedFiles: filesToSubmit,
-            user,
-            ssp: false,
-            fileType: fileTypeInputValue,
-          })
-        )
-      )
-      handleOpenFeedbackWidget()
-    } catch (error) {
-      console.error('Error during form submission:', error)
-      setLocalAlertState({
-        active: true,
-        type: 'error',
-        message: 'An error occurred during submission. Please try again.',
-      })
-    }
-  }
-
-  const handleCancel = () => {
-    if (uploadedFiles.length > 0) {
-      setModalTriggerSource('cancel')
-      setErrorModalVisible(true)
-    } else {
-      handleClearAll()
-    }
-  }
-
-  useEffect(() => {
-    fileInput.init()
-  }, [])
-
-  useEffect(() => {
-    if (localAlert.active && alertRef && alertRef.current) {
-      alertRef.current.scrollIntoView({ behavior: 'smooth' })
-    }
-  }, [localAlert, alertRef])
+  } = useFileUploadForm({
+    stt,
+    transformFiles,
+    formatSections,
+    getSubmitPayload,
+  })
 
   return (
     <>

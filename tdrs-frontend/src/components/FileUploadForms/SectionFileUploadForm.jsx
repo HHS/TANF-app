@@ -1,109 +1,72 @@
-import React, { useEffect, useRef } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { fileInput } from '@uswds/uswds/src/js/components'
+import React from 'react'
 import classNames from 'classnames'
 import Button from '../Button'
 import FileUpload from '../FileUpload'
-import { submit } from '../../actions/reports'
 import { fileUploadSections } from '../../reducers/reports'
-import { useEventLogger } from '../../utils/eventLogger'
-import { useFormSubmission } from '../../hooks/useFormSubmission'
-import { useReportsContext } from '../Reports/ReportsContext'
+import { useFileUploadForm } from '../../hooks/useFileUploadForm'
 
 const SectionFileUploadForm = ({ stt }) => {
-  const dispatch = useDispatch()
-  const logger = useEventLogger()
+  const num_sections = stt === undefined ? 4 : stt.num_sections
+
+  // No file transformation needed for section uploads
+  const transformFiles = null
+
+  // Format sections for success message (1, 2, 3, etc.)
+  const formatSections = (uploadedFiles) => {
+    const uploadedSections = uploadedFiles
+      ? uploadedFiles
+          .map((file) => fileUploadSections.indexOf(file.section) + 1)
+          .join(', ')
+          .split(' ')
+      : []
+
+    if (uploadedSections.length > 1) {
+      uploadedSections.splice(uploadedSections.length - 1, 0, 'and')
+    }
+
+    return uploadedSections.join(' ')
+  }
+
+  // Generate submit payload for section uploads
+  const getSubmitPayload = ({
+    quarter,
+    year,
+    formattedSections,
+    logger,
+    setLocalAlertState,
+    stt,
+    uploadedFiles,
+    user,
+    fileType,
+  }) => ({
+    quarter,
+    year,
+    formattedSections,
+    logger,
+    setLocalAlertState,
+    stt,
+    uploadedFiles,
+    user,
+    ssp: fileType === 'ssp-moe',
+    fileType,
+  })
 
   const {
     yearInputValue,
     quarterInputValue,
     fileTypeInputValue,
     localAlert,
+    isSubmitting,
+    alertRef,
+    onSubmit,
+    handleCancel,
     setLocalAlertState,
-    uploadedFiles,
-    setErrorModalVisible,
-    setModalTriggerSource,
-    handleClearAll,
-    handleOpenFeedbackWidget,
-  } = useReportsContext()
-
-  const user = useSelector((state) => state.auth.user)
-  const { isSubmitting, executeSubmission } = useFormSubmission()
-  const alertRef = useRef(null)
-
-  const num_sections = stt === undefined ? 4 : stt.num_sections
-
-  const uploadedSections = uploadedFiles
-    ? uploadedFiles
-        .map((file) => fileUploadSections.indexOf(file.section) + 1)
-        .join(', ')
-        .split(' ')
-    : []
-
-  if (uploadedSections.length > 1) {
-    uploadedSections.splice(uploadedSections.length - 1, 0, 'and')
-  }
-
-  const formattedSections = uploadedSections.join(' ')
-
-  const onSubmit = async (event) => {
-    event.preventDefault()
-
-    if (uploadedFiles.length === 0) {
-      setLocalAlertState({
-        active: true,
-        type: 'error',
-        message: 'No changes have been made to data files',
-      })
-      return
-    }
-
-    try {
-      await executeSubmission(() =>
-        dispatch(
-          submit({
-            quarter: quarterInputValue,
-            year: yearInputValue,
-            formattedSections,
-            logger,
-            setLocalAlertState,
-            stt: stt?.id,
-            uploadedFiles,
-            user,
-            ssp: fileTypeInputValue === 'ssp-moe',
-            fileType: fileTypeInputValue,
-          })
-        )
-      )
-      handleOpenFeedbackWidget()
-    } catch (error) {
-      console.error('Error during form submission:', error)
-      setLocalAlertState({
-        active: true,
-        type: 'error',
-        message: 'An error occurred during submission. Please try again.',
-      })
-    }
-  }
-
-  const handleCancel = () => {
-    if (uploadedFiles.length > 0) {
-      setModalTriggerSource('cancel')
-      setErrorModalVisible(true)
-    } else {
-      handleClearAll()
-    }
-  }
-
-  useEffect(() => {
-    fileInput.init()
-  }, [])
-
-  useEffect(() => {
-    if (localAlert.active && alertRef && alertRef.current) {
-      alertRef.current.scrollIntoView({ behavior: 'smooth' })
-    }
-  }, [localAlert, alertRef])
+  } = useFileUploadForm({
+    stt,
+    transformFiles,
+    formatSections,
+    getSubmitPayload,
+  })
 
   return (
     <>

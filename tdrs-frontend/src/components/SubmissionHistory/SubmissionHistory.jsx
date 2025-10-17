@@ -6,8 +6,8 @@ import { getAvailableFileList } from '../../actions/reports'
 import { fileUploadSections } from '../../reducers/reports'
 import { useEffect } from 'react'
 import { useState } from 'react'
-import { CaseAggregatesTable } from './CaseAggregatesTable'
-import { TotalAggregatesTable } from './TotalAggregatesTable'
+import { CaseAggregatesTable } from './components/CaseAggregatesTable'
+import { TotalAggregatesTable } from './components/TotalAggregatesTable'
 
 const SectionSubmissionHistory = ({
   section,
