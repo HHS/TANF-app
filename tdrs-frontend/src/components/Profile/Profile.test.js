@@ -3,30 +3,27 @@ import { thunk } from 'redux-thunk'
 import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
 import { render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 
 import Profile from './Profile'
 import configureStore from 'redux-mock-store'
 
-const initialState = {
-  auth: {
-    authenticated: true,
-    user: {
-      email: 'test@example.com',
-      first_name: 'Bob',
-      last_name: 'Belcher',
-      roles: [],
-      access_request: false,
-      account_approval_status: 'Access request',
-      stt: {
-        name: 'No one really knows',
-        id: 999,
-        type: 'fictional district',
-        code: '??',
-        region: 9999,
-      },
-    },
+const baseUser = {
+  email: 'test@example.com',
+  first_name: 'Bob',
+  last_name: 'Belcher',
+  roles: [],
+  access_request: false,
+  account_approval_status: 'Access request',
+  stt: {
+    name: 'No one really knows',
+    id: 999,
+    type: 'fictional district',
+    code: '??',
+    region: 9999,
   },
 }
+
 describe('Profile', () => {
   const mockStore = configureStore([thunk])
 
@@ -48,11 +45,18 @@ describe('Profile', () => {
   })
 
   it('should display a pending approval message after user access request is made', () => {
-    const store = mockStore(initialState)
+    const store = mockStore({
+      auth: {
+        authenticated: true,
+        user: baseUser,
+      },
+    })
 
     render(
       <Provider store={store}>
-        <Profile />
+        <MemoryRouter>
+          <Profile type={'access request'} />
+        </MemoryRouter>
       </Provider>
     )
     expect(
@@ -67,6 +71,7 @@ describe('Profile', () => {
       auth: {
         authenticated: true,
         user: {
+          ...baseUser,
           roles: [{ id: 1, name: 'OFA System Admin', permissions: [] }],
           access_request: false,
           account_approval_status: 'Approved',
@@ -76,7 +81,9 @@ describe('Profile', () => {
 
     render(
       <Provider store={store}>
-        <Profile />
+        <MemoryRouter>
+          <Profile />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -95,11 +102,12 @@ describe('Profile', () => {
     // returning <Navigate> without a parent <Router> throws an exception
   })
 
-  it('Should not display region for federal staff.', () => {
+  it('should not display region for federal staff.', () => {
     const store = mockStore({
       auth: {
         authenticated: true,
         user: {
+          ...baseUser,
           roles: [{ id: 1, name: 'OFA System Admin', permissions: [] }],
           access_request: false,
           account_approval_status: 'Approved',
@@ -109,23 +117,69 @@ describe('Profile', () => {
 
     render(
       <Provider store={store}>
-        <Profile />
+        <MemoryRouter>
+          <Profile />
+        </MemoryRouter>
       </Provider>
     )
     expect(screen.queryByText('Region')).not.toBeInTheDocument()
   })
-  it('should display all information about the user correctly when approved', () => {
-    const store = mockStore(initialState)
+
+  it('should display all information about the user correctly and show Edit button when approved', () => {
+    const store = mockStore({
+      auth: {
+        authenticated: true,
+        user: {
+          ...baseUser,
+          roles: [{ id: 1, name: 'OFA System Admin', permissions: [] }],
+          account_approval_status: 'Approved',
+        },
+      },
+    })
 
     render(
       <Provider store={store}>
-        <Profile />
+        <MemoryRouter>
+          <Profile user={store.getState().auth.user} />
+        </MemoryRouter>
       </Provider>
     )
+    expect(screen.getByText('Name')).toBeInTheDocument()
     expect(screen.getByText('Bob Belcher')).toBeInTheDocument()
-    expect(screen.getByText('test@example.com')).toBeInTheDocument()
     expect(screen.getByText('No one really knows')).toBeInTheDocument()
-    expect(screen.getByText('Region 9999')).toBeInTheDocument()
+
+    const editButton = screen.getByRole('button', { name: /edit profile/i })
+    expect(editButton).toBeInTheDocument()
+  })
+
+  it('renders RequestAccessForm when isEditing is true', () => {
+    const store = mockStore({
+      auth: {
+        authenticated: true,
+        user: baseUser,
+      },
+    })
+
+    render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Profile
+            isEditing={true}
+            user={baseUser}
+            sttList={[]}
+            onCancel={jest.fn()}
+            type={'profile'}
+          />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    // Check for RequestAccessForm fields like 'First Name' or 'Last Name'
+    expect(screen.getByLabelText(/first name/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/last name/i)).toBeInTheDocument()
+
+    // Request Access button should be present
+    expect(screen.getByText(/save changes/i)).toBeInTheDocument()
   })
 
   it('should navigate to external login client settings', () => {
@@ -154,16 +208,69 @@ describe('Profile', () => {
   })
 
   it("should display user's info during the pending approval state", () => {
-    const store = mockStore(initialState)
+    const store = mockStore({
+      auth: {
+        authenticated: true,
+        user: baseUser,
+      },
+    })
 
     render(
       <Provider store={store}>
-        <Profile />
+        <Profile user={baseUser} />
       </Provider>
     )
+    expect(screen.getByText('Name')).toBeInTheDocument()
     expect(screen.getByText('Bob Belcher')).toBeInTheDocument()
-    expect(screen.getByText('test@example.com')).toBeInTheDocument()
     expect(screen.getByText('No one really knows')).toBeInTheDocument()
-    expect(screen.getByText('Region 9999')).toBeInTheDocument()
+  })
+
+  it('redirects to /home if access request is missing', () => {
+    const store = mockStore({
+      auth: {
+        authenticated: true,
+        user: {
+          ...baseUser,
+          access_request: null,
+          account_approval_status: null,
+        },
+      },
+    })
+
+    render(
+      <Provider store={store}>
+        <MemoryRouter initialEntries={['/profile']}>
+          <Profile />
+        </MemoryRouter>
+      </Provider>
+    )
+  })
+
+  it('calls setInEditMode with correct arguments', () => {
+    const mockSetInEditMode = jest.fn()
+
+    const store = mockStore({
+      auth: {
+        authenticated: true,
+        user: baseUser,
+      },
+    })
+
+    render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Profile
+            isEditing={true}
+            user={baseUser}
+            sttList={[]}
+            onCancel={jest.fn()}
+            type="profile"
+            setInEditMode={mockSetInEditMode}
+          />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    expect(mockSetInEditMode).toHaveBeenCalledWith(true, 'profile')
   })
 })

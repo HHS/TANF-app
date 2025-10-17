@@ -103,6 +103,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         read_only=True,
         source='user_permissions.all',
     )
+    pending_requests = serializers.SerializerMethodField()
 
     class Meta:
         """Metadata."""
@@ -128,6 +129,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'account_approval_status',
             'feature_flags',
             'permissions',
+            'pending_requests',
         ]
         read_only_fields = (
             'id',
@@ -153,6 +155,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "stt": {"allow_blank": True, "required": False},
             "regions": {"allow_blank": True, "required": False},
         }
+
+    def get_pending_requests(self, obj):
+        """Get the pending change requests for a user."""
+        return obj.get_pending_change_requests().count()
 
     def update(self, instance, validated_data):
         """Perform model validation before saving."""
@@ -292,15 +298,18 @@ class UserProfileChangeRequestSerializer(UserProfileSerializer):
     def _handle_change_permissions(self, validated_data, instance, permission, pending_request=None):
         """Handle the has_fra_access field."""
         changing_permission = validated_data.get(permission, None)
+        if changing_permission is None:
+            return None
+
         try:
-            existing_permission = instance.user_permissions.get(codename=permission)
+            existing_permission = instance.user_permissions.filter(codename=permission).exists()
         except Permission.DoesNotExist:
             existing_permission = None
 
         if pending_request:
-            if pending_request.requested_value != changing_permission:
+            if pending_request.requested_value != str(changing_permission):
                 # Update the existing pending request
-                pending_request.requested_value = changing_permission
+                pending_request.requested_value = str(changing_permission)
                 pending_request.save()
             return pending_request
         # New request

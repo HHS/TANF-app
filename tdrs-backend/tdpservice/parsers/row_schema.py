@@ -26,8 +26,7 @@ class RowSchema(ABC):
         record_type,
         model,
         fields,
-        generate_hashes_func,
-        should_skip_partial_dup_func,
+        partial_dup_exclusion_query,
         preparsing_validators,
         quiet_preparser_errors,
     ):
@@ -37,8 +36,7 @@ class RowSchema(ABC):
         self.fields = list() if not fields else fields
         self.datafile = None
         self.error_generator_factory = None
-        self.generate_hashes_func = generate_hashes_func
-        self.should_skip_partial_dup_func = should_skip_partial_dup_func
+        self.partial_dup_exclusion_query = partial_dup_exclusion_query
         self.preparsing_validators = []
         if preparsing_validators is not None:
             self.preparsing_validators = preparsing_validators
@@ -56,6 +54,9 @@ class RowSchema(ABC):
     def parse_row(self, row: RawRow):
         """Create a model for the row based on the schema."""
         record = self.model()
+
+        if not isinstance(record, dict):
+            record.line_number = row.row_num
 
         for field in self.fields:
             value = field.parse_value(row)
@@ -213,10 +214,8 @@ class TanfDataReportSchema(RowSchema):
         record_type="T1",
         model=None,
         fields=None,
-        # The default hash function covers all program types with record types ending in a 6 or 7.
-        generate_hashes_func=lambda row, record: (hash(row), hash(record.RecordType)),
-        should_skip_partial_dup_func=lambda record: False,
-        get_partial_hash_members_func=lambda: ["RecordType"],
+        partial_dup_exclusion_query=None,
+        get_partial_dup_fields=lambda: ["RecordType"],
         preparsing_validators=None,
         postparsing_validators=None,
         quiet_preparser_errors=False,
@@ -225,13 +224,12 @@ class TanfDataReportSchema(RowSchema):
             record_type,
             model,
             fields,
-            generate_hashes_func,
-            should_skip_partial_dup_func,
+            partial_dup_exclusion_query,
             preparsing_validators,
             quiet_preparser_errors,
         )
 
-        self.get_partial_hash_members_func = get_partial_hash_members_func
+        self.get_partial_dup_fields = get_partial_dup_fields
         self.preparsing_validators = preparsing_validators
         self.postparsing_validators = []
         if postparsing_validators is not None:
@@ -306,10 +304,8 @@ class HeaderSchema(TanfDataReportSchema):
         record_type="HEADER",
         model=None,
         fields=None,
-        # The default hash function covers all program types with record types ending in a 6 or 7.
-        generate_hashes_func=lambda row, record: (hash(row), hash(record.RecordType)),
-        should_skip_partial_dup_func=lambda record: False,
-        get_partial_hash_members_func=lambda: ["RecordType"],
+        partial_dup_exclusion_query=None,
+        get_partial_dup_fields=lambda: ["RecordType"],
         preparsing_validators=None,
         postparsing_validators=None,
         quiet_preparser_errors=False,
@@ -318,13 +314,12 @@ class HeaderSchema(TanfDataReportSchema):
             record_type,
             model,
             fields,
-            generate_hashes_func,
-            should_skip_partial_dup_func,
+            partial_dup_exclusion_query,
             preparsing_validators,
             quiet_preparser_errors,
         )
 
-        self.get_partial_hash_members_func = get_partial_hash_members_func
+        self.get_partial_dup_fields = get_partial_dup_fields
         self.preparsing_validators = preparsing_validators
         self.postparsing_validators = []
         if postparsing_validators is not None:
@@ -342,8 +337,7 @@ class FRASchema(RowSchema):
         record_type="FRA_RECORD",
         model=None,
         fields=None,
-        generate_hashes_func=lambda row, record: (hash(row), hash(record.RecordType)),
-        should_skip_partial_dup_func=lambda record: True,
+        partial_dup_exclusion_query=None,
         preparsing_validators=None,
         quiet_preparser_errors=False,
     ):
@@ -351,8 +345,7 @@ class FRASchema(RowSchema):
             record_type,
             model,
             fields,
-            generate_hashes_func,
-            should_skip_partial_dup_func,
+            partial_dup_exclusion_query,
             preparsing_validators,
             quiet_preparser_errors,
         )

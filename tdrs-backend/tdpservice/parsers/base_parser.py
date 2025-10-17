@@ -5,6 +5,7 @@ import logging
 from abc import ABC, abstractmethod
 
 from django.conf import settings
+from django.db.models import Count, Q
 from django.db.utils import DatabaseError
 
 from tdpservice.parsers.decoders import DecoderFactory
@@ -17,7 +18,8 @@ from tdpservice.parsers.models import ParserError
 from tdpservice.parsers.schema_manager import SchemaManager
 from tdpservice.parsers.util import (
     DecoderUnknownException,
-    SortedRecords,
+    FrozenDict,
+    Records,
     log_parser_exception,
 )
 
@@ -34,15 +36,19 @@ class BaseParser(ABC):
         self.dfs = dfs
         self.section = section
         self.program_type = None
+        self.is_active_or_closed = "Active" in self.section or "Closed" in self.section
 
         self.current_row = None
         self.current_row_num = 0
 
         # Specifying unsaved_records here may or may not work for FRA files. If not, we can move it down the
         # inheritance hierarchy.
-        self.unsaved_records = SortedRecords(section)
+        self.unsaved_records = Records()
         self.unsaved_parser_errors = dict()
         self.num_errors = 0
+
+        # Track cases that have already been serialized that need to be removed because of a case consistency error.
+        self.serialized_cases = set()
 
         # Initialized decoder.
         self._init_decoder()
@@ -228,33 +234,163 @@ class BaseParser(ABC):
             self.unsaved_parser_errors.update(errors)
             self.num_errors += 1
 
-    def _delete_serialized_records(self, duplicate_manager):
-        """Delete all records that have already been serialized to the DB that have cat4 errors."""
-        total_deleted = 0
-        for model, ids in duplicate_manager.get_records_to_remove().items():
-            try:
-                qset = model.objects.filter(id__in=ids)
-                # WARNING: we can use `_raw_delete` in this case because our record models don't have cascading
-                # dependencies. If that ever changes, we should NOT use `_raw_delete`.
-                num_deleted = qset._raw_delete(qset.db)
-                total_deleted += num_deleted
+    def add_case_to_remove(self, should_remove, case_id: FrozenDict):
+        """Add case ID to set of IDs to be removed later."""
+        if should_remove:
+            self.serialized_cases.add(case_id)
+
+    def _delete_serialized_cases(self):
+        """Delete all cases that have already been serialized to the DB with cat4 errors."""
+        if len(self.serialized_cases):
+            logger.info("Deleting records with cat4 errors.")
+            start_num = self.dfs.total_number_of_records_created
+            cases = Q()
+            for case in self.serialized_cases:
+                cases |= Q(**case)
+            for schemas in self.schema_manager.schema_map.values():
+                schema = schemas[0]
+                num_deleted, _ = schema.model.objects.filter(
+                    cases, datafile=self.datafile
+                ).delete()
                 self.dfs.total_number_of_records_created -= num_deleted
-                logger.debug(f"Deleted {num_deleted} records of type: {model}.")
-            except DatabaseError as e:
-                log_parser_exception(
-                    self.datafile,
-                    (
-                        f"Encountered error while deleting database records for model {model}. "
-                        f"Exception: \n{e}"
+            logger.info(
+                f"Deleted {start_num - self.dfs.total_number_of_records_created} records with cat4 errors."
+            )
+
+    def _generate_exact_dup_error_msg(
+        self, schema, record_type, curr_line_number, existing_line_number
+    ):
+        """Generate exact duplicate error message."""
+        return f"Duplicate record detected with record type {record_type} at line {curr_line_number}. Record is a duplicate of the record at line number {existing_line_number}."
+
+    def _generate_partial_dup_error_msg(
+        self, schema, record_type, curr_line_number, existing_line_number
+    ):
+        """Generate partial duplicate error message with friendly names."""
+        field_names = schema.get_partial_dup_fields()
+        err_msg = (
+            f"Partial duplicate record detected with record type "
+            f"{record_type} at line {curr_line_number}. Record is a partial duplicate of the "
+            f"record at line number {existing_line_number}. Duplicated fields causing error: "
+        )
+        for i, name in enumerate(field_names):
+            field = schema.get_field_by_name(name)
+            item_and_name = f"Item {field.item} ({field.friendly_name})"
+            if i == len(field_names) - 1 and len(field_names) != 1:
+                err_msg += f"and {item_and_name}."
+            elif len(field_names) == 1:
+                err_msg += f"{item_and_name}."
+            else:
+                err_msg += f"{item_and_name}, "
+        return err_msg
+
+    def _generate_errors_and_delete_dups(
+        self, all_records, dup_queryset, schema, generate_error_msg
+    ):
+        """Generate duplicate errors per duplicate group and delete the duplicates."""
+        duplicate_error_generator = self.error_generator_factory.get_generator(
+            ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
+        )
+        start_num = self.dfs.total_number_of_records_created
+        for duplicate_vals in dup_queryset[: settings.BULK_CREATE_BATCH_SIZE]:
+            duplicate_vals.pop("row_count", None)
+            duplicate_records = all_records.filter(**duplicate_vals).order_by(
+                "line_number"
+            )
+            record = duplicate_records.first()
+            for offending_record in duplicate_records[1:]:
+                record_type = duplicate_vals.get("RecordType", None)
+                generator_args = ErrorGeneratorArgs(
+                    record=offending_record,
+                    schema=schema,
+                    error_message=generate_error_msg(
+                        schema,
+                        record_type,
+                        offending_record.line_number,
+                        record.line_number,
                     ),
-                    "error",
+                    fields=schema.fields,
+                    row_number=offending_record.line_number,
                 )
-            except Exception as e:
-                log_parser_exception(
-                    self.datafile,
-                    (
-                        f"Encountered generic exception while deleting records of type {model}. "
-                        f"Exception: \n{e}"
-                    ),
-                    "error",
+                # Perform Error Generation
+                self.num_errors += 1
+                self.unsaved_parser_errors.setdefault(None, []).append(
+                    duplicate_error_generator(generator_args=generator_args)
+                )
+                self.bulk_create_errors()
+
+            case_id_to_delete = (
+                FrozenDict(RecordType=record.RecordType)
+                if not self.is_active_or_closed
+                else FrozenDict(
+                    RPT_MONTH_YEAR=record.RPT_MONTH_YEAR,
+                    CASE_NUMBER=record.CASE_NUMBER,
+                )
+            )
+            # We add the case ID here because a case with a duplicate record must be purged in it's entirety.
+            self.serialized_cases.add(case_id_to_delete)
+            num_deleted = duplicate_records._raw_delete(duplicate_records.db)
+            self.dfs.total_number_of_records_created -= num_deleted
+        logger.info(
+            f"Deleted {start_num - self.dfs.total_number_of_records_created} duplicates."
+        )
+
+    def _delete_exact_dups(self):
+        """Delete exact duplicate records from the DB."""
+        logger.info("Deleting exact duplicates.")
+        for schemas in self.schema_manager.schema_map.values():
+            schema = schemas[0]
+
+            fields = [f.name for f in schema.fields if f.name != "BLANK"]
+            records = schema.model.objects.filter(datafile=self.datafile)
+
+            while True:
+                # We have to re-evaluate this query each time after we call _raw_delete because it changes the OFFSET
+                # that Postgres manages to help us slice the query set to avoid bringing the whole thing it into memory.
+                # This functions exactly the same as the Paginator but allows us to avoid the OFFSET problem it
+                # by caching the underlying query/DB state.
+                duplicates_vals = (
+                    records.values(*fields)
+                    .annotate(row_count=Count("line_number", distinct=True))
+                    .filter(row_count__gt=1)
+                )
+                if not duplicates_vals:
+                    break
+                self._generate_errors_and_delete_dups(
+                    records, duplicates_vals, schema, self._generate_exact_dup_error_msg
+                )
+
+    def _delete_partial_dups(self):
+        """Delete partial duplicate records from the DB."""
+        # Partial duplicates are only relevant for active and closed case files
+        if not self.is_active_or_closed:
+            return
+
+        logger.info("Deleting partial duplicates.")
+        for schemas in self.schema_manager.schema_map.values():
+            schema = schemas[0]
+            fields = schema.get_partial_dup_fields()
+            records = schema.model.objects.filter(datafile=self.datafile)
+
+            while True:
+                # We have to re-evaluate this query each time after we call _raw_delete because it changes the OFFSET
+                # that Postgres manages to help us slice the query set to avoid bringing the whole thing it into memory.
+                # This functions exactly the same as the Paginator but allows us to avoid the OFFSET problem it
+                # by caching the underlying query/DB state.
+                if schema.partial_dup_exclusion_query is not None:
+                    records = records.exclude(schema.partial_dup_exclusion_query)
+                partial_dups_values = (
+                    records.values(*fields)
+                    .annotate(row_count=Count("line_number", distinct=True))
+                    .filter(row_count__gt=1)
+                )
+
+                if not partial_dups_values:
+                    break
+
+                self._generate_errors_and_delete_dups(
+                    records,
+                    partial_dups_values,
+                    schema,
+                    self._generate_partial_dup_error_msg,
                 )

@@ -31,7 +31,6 @@ function FRASelector({ hasFRAAccess, setHasFRAAccess, error }) {
             aria-describedby="fra-selector-error-message"
             name="hasFRAAccess"
             value="true"
-            defaultChecked
             checked={hasFRAAccess === true}
             onChange={() => setHasFRAAccess(true)}
           />

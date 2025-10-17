@@ -1,13 +1,12 @@
 """Schema for Tribal TANF T2 row of all submission types."""
 
+from django.db.models import Q
+
 from tdpservice.parsers.dataclasses import FieldType
 from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.transforms import tanf_ssn_decryption_func, zero_pad
-from tdpservice.parsers.util import (
-    generate_t2_t3_t5_hashes,
-    get_t2_t3_t5_partial_hash_members,
-)
+from tdpservice.parsers.util import get_t2_t3_t5_partial_dup_fields
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T2
 
@@ -15,9 +14,8 @@ t2 = [
     TanfDataReportSchema(
         record_type="T2",
         model=Tribal_TANF_T2,
-        generate_hashes_func=generate_t2_t3_t5_hashes,
-        should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {3, 5},
-        get_partial_hash_members_func=get_t2_t3_t5_partial_hash_members,
+        partial_dup_exclusion_query=Q(FAMILY_AFFILIATION__in=(3, 5)),
+        get_partial_dup_fields=get_t2_t3_t5_partial_dup_fields,
         preparsing_validators=[
             category1.recordHasLengthOfAtLeast(122),
             category1.caseNumberNotEmpty(8, 19),

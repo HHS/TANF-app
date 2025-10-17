@@ -1,3 +1,60 @@
 .usa-combo-box__input--error {
   border: .25rem solid #b50909;
 }
+
+.form-section-divider {
+  width: 100vw;
+  max-width: 50rem; /* Match the form's max width */
+  margin-left: auto;
+  margin-right: auto;
+  border: none;
+  border-top: 2px solid black;
+  margin-top: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.button-container {
+  display: flex;
+}
+
+.request-access-button {
+  min-width: '300px'
+} 
+
+.read-only-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.read-only-row .label {
+  font-weight: bold;
+  min-width: 200px; /* Ensure label has enough space */
+  margin-right: 2rem;
+}
+
+.read-only-row .value {
+  flex: 1;
+  white-space: nowrap;
+}
+
+.region-selector-wrapper {
+  margin-bottom: 0 !important; // Prevents white space from stacking
+  padding-bottom: 0;
+
+  fieldset {
+    margin: 0;
+    padding: 0;
+    border: none;
+  }
+
+  .region-checkbox-group {
+    margin-bottom: 0; // Removes space under checkbox list
+  }
+
+  .usa-checkbox:last-child {
+    margin-bottom: 0 !important; // Remove any trailing margin
+  }
+}

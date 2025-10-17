@@ -91,23 +91,11 @@ class TestCaseConsistencyValidator:
 
         line_number = 1
         for record, schema in zip(tanf_s1_records, tanf_s1_schemas):
-            line = str(record)
-            length = len(line)
-            row = RawRow(
-                data=line,
-                raw_len=length,
-                decoded_len=length,
-                row_num=line_number,
-                record_type=schema.record_type,
-            )
-            case_consistency_validator.add_record(
-                record, schema, row, line_number, True
-            )
+            case_consistency_validator.add_record(record, schema, line_number, True)
             line_number += 1
 
         assert case_consistency_validator.has_validated is False
         assert case_consistency_validator.case_has_errors is True
-        assert len(case_consistency_validator.cases) == 4
         assert case_consistency_validator.total_cases_cached == 0
         assert case_consistency_validator.total_cases_validated == 0
 
@@ -116,21 +104,11 @@ class TestCaseConsistencyValidator:
         t1.CASE_NUMBER = "2"
         t1.RPT_MONTH_YEAR = 2
         line_number += 1
-        line = str(t1)
-        length = len(line)
-        row1 = RawRow(
-            data=line,
-            raw_len=length,
-            decoded_len=length,
-            row_num=line_number,
-            record_type=t1.RecordType,
-        )
         case_consistency_validator.add_record(
-            t1, tanf_s1_schemas[0], row1, line_number, False
+            t1, tanf_s1_schemas[0], line_number, False
         )
         assert case_consistency_validator.has_validated is False
         assert case_consistency_validator.case_has_errors is False
-        assert len(case_consistency_validator.cases) == 1
         assert case_consistency_validator.total_cases_cached == 1
         assert case_consistency_validator.total_cases_validated == 1
 
@@ -142,41 +120,22 @@ class TestCaseConsistencyValidator:
         t3.CASE_NUMBER = "2"
         t3.RPT_MONTH_YEAR = 2
         line_number += 1
-        line = str(t2)
-        length = len(line)
-        row2 = RawRow(
-            data=line,
-            raw_len=length,
-            decoded_len=length,
-            row_num=line_number,
-            record_type=t1.RecordType,
-        )
         case_consistency_validator.add_record(
-            t2, tanf_s1_schemas[1], row2, line_number, False
+            t2, tanf_s1_schemas[1], line_number, False
         )
         line_number += 1
-        line = str(t3)
-        length = len(line)
-        row3 = RawRow(
-            data=line,
-            raw_len=length,
-            decoded_len=length,
-            row_num=line_number,
-            record_type=t1.RecordType,
-        )
         case_consistency_validator.add_record(
-            t3, tanf_s1_schemas[2], row3, line_number, False
+            t3, tanf_s1_schemas[2], line_number, False
         )
         assert case_consistency_validator.case_has_errors is False
 
         line_number += 1
         case_consistency_validator.add_record(
-            tanf_s1_records[0], tanf_s1_schemas[0], row3, line_number, True
+            tanf_s1_records[0], tanf_s1_schemas[0], line_number, True
         )
 
         assert case_consistency_validator.has_validated is False
         assert case_consistency_validator.case_has_errors is True
-        assert len(case_consistency_validator.cases) == 1
         assert case_consistency_validator.total_cases_cached == 2
         assert case_consistency_validator.total_cases_validated == 2
 
@@ -237,9 +196,7 @@ class TestCaseConsistencyValidator:
         ]
         line_number = 1
         for t1 in t1s:
-            case_consistency_validator.add_record(
-                t1, t1_schema, str(t1), line_number, False
-            )
+            case_consistency_validator.add_record(t1, t1_schema, line_number, False)
             line_number += 1
 
         t2s = [
@@ -255,9 +212,7 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t2 in t2s:
-            case_consistency_validator.add_record(
-                t2, t2_schema, str(t2), line_number, False
-            )
+            case_consistency_validator.add_record(t2, t2_schema, line_number, False)
             line_number += 1
 
         t3s = [
@@ -273,9 +228,7 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t3 in t3s:
-            case_consistency_validator.add_record(
-                t3, t3_schema, str(t3), line_number, False
-            )
+            case_consistency_validator.add_record(t3, t3_schema, line_number, False)
 
         num_errors = case_consistency_validator.validate()
 
@@ -344,9 +297,7 @@ class TestCaseConsistencyValidator:
         ]
         line_number = 1
         for t1 in t1s:
-            case_consistency_validator.add_record(
-                t1, t1_schema, str(t1), line_number, False
-            )
+            case_consistency_validator.add_record(t1, t1_schema, line_number, False)
             line_number += 1
 
         num_errors = case_consistency_validator.validate()
@@ -434,9 +385,7 @@ class TestCaseConsistencyValidator:
         ]
         line_number = 1
         for t2 in t2s:
-            case_consistency_validator.add_record(
-                t2, t2_schema, str(t2), line_number, False
-            )
+            case_consistency_validator.add_record(t2, t2_schema, line_number, False)
             line_number += 1
 
         t3s = [
@@ -452,9 +401,7 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t3 in t3s:
-            case_consistency_validator.add_record(
-                t3, t3_schema, str(t3), line_number, False
-            )
+            case_consistency_validator.add_record(t3, t3_schema, line_number, False)
 
         num_errors = case_consistency_validator.validate()
 
@@ -561,9 +508,7 @@ class TestCaseConsistencyValidator:
         ]
         line_number = 1
         for t1 in t1s:
-            case_consistency_validator.add_record(
-                t1, t1_schema, str(t1), line_number, False
-            )
+            case_consistency_validator.add_record(t1, t1_schema, line_number, False)
             line_number += 1
 
         t2s = [
@@ -579,9 +524,7 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t2 in t2s:
-            case_consistency_validator.add_record(
-                t2, t2_schema, str(t2), line_number, False
-            )
+            case_consistency_validator.add_record(t2, t2_schema, line_number, False)
             line_number += 1
 
         t3s = [
@@ -597,15 +540,13 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t3 in t3s:
-            case_consistency_validator.add_record(
-                t3, t3_schema, str(t3), line_number, False
-            )
+            case_consistency_validator.add_record(t3, t3_schema, line_number, False)
 
         num_errors = case_consistency_validator.validate()
 
         errors = case_consistency_validator.get_generated_errors()
 
-        assert len(errors) == 2
+        assert len(errors) == 1
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         is_tribal = "Tribal" in header["program_type"]
@@ -671,9 +612,7 @@ class TestCaseConsistencyValidator:
         ]
         line_number = 1
         for t4 in t4s:
-            case_consistency_validator.add_record(
-                t4, t4_schema, str(t4), line_number, False
-            )
+            case_consistency_validator.add_record(t4, t4_schema, line_number, False)
             line_number += 1
 
         t5s = [
@@ -693,9 +632,7 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t5 in t5s:
-            case_consistency_validator.add_record(
-                t5, t5_schema, str(t5), line_number, False
-            )
+            case_consistency_validator.add_record(t5, t5_schema, line_number, False)
             line_number += 1
 
         num_errors = case_consistency_validator.validate()
@@ -768,9 +705,7 @@ class TestCaseConsistencyValidator:
         ]
         line_number = 1
         for t4 in t4s:
-            case_consistency_validator.add_record(
-                t4, t4_schema, str(t4), line_number, False
-            )
+            case_consistency_validator.add_record(t4, t4_schema, line_number, False)
             line_number += 1
 
         t5s = [
@@ -792,9 +727,7 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t5 in t5s:
-            case_consistency_validator.add_record(
-                t5, t5_schema, str(t5), line_number, False
-            )
+            case_consistency_validator.add_record(t5, t5_schema, line_number, False)
             line_number += 1
 
         num_errors = case_consistency_validator.validate()
@@ -866,9 +799,7 @@ class TestCaseConsistencyValidator:
         ]
         line_number = 1
         for t4 in t4s:
-            case_consistency_validator.add_record(
-                t4, t4_schema, str(t4), line_number, False
-            )
+            case_consistency_validator.add_record(t4, t4_schema, line_number, False)
             line_number += 1
 
         t5s = [
@@ -892,9 +823,7 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t5 in t5s:
-            case_consistency_validator.add_record(
-                t5, t5_schema, str(t5), line_number, False
-            )
+            case_consistency_validator.add_record(t5, t5_schema, line_number, False)
             line_number += 1
 
         num_errors = case_consistency_validator.validate()
@@ -973,9 +902,7 @@ class TestCaseConsistencyValidator:
         ]
         line_number = 1
         for t4 in t4s:
-            case_consistency_validator.add_record(
-                t4, t4_schema, str(t4), line_number, False
-            )
+            case_consistency_validator.add_record(t4, t4_schema, line_number, False)
             line_number += 1
 
         num_errors = case_consistency_validator.validate()
@@ -1066,9 +993,7 @@ class TestCaseConsistencyValidator:
         ]
         line_number = 1
         for t4 in t4s:
-            case_consistency_validator.add_record(
-                t4, t4_schema, str(t4), line_number, False
-            )
+            case_consistency_validator.add_record(t4, t4_schema, line_number, False)
             line_number += 1
 
         num_errors = case_consistency_validator.validate()
@@ -1164,9 +1089,7 @@ class TestCaseConsistencyValidator:
         ]
         line_number = 1
         for t5 in t5s:
-            case_consistency_validator.add_record(
-                t5, t5_schema, str(t5), line_number, False
-            )
+            case_consistency_validator.add_record(t5, t5_schema, line_number, False)
             line_number += 1
 
         num_errors = case_consistency_validator.validate()
@@ -1241,9 +1164,7 @@ class TestCaseConsistencyValidator:
         ]
         line_number = 1
         for t4 in t4s:
-            case_consistency_validator.add_record(
-                t4, t4_schema, str(t4), line_number, False
-            )
+            case_consistency_validator.add_record(t4, t4_schema, line_number, False)
             line_number += 1
 
         t5s = [
@@ -1265,9 +1186,7 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t5 in t5s:
-            case_consistency_validator.add_record(
-                t5, t5_schema, str(t5), line_number, False
-            )
+            case_consistency_validator.add_record(t5, t5_schema, line_number, False)
             line_number += 1
 
         num_errors = case_consistency_validator.validate()
@@ -1332,9 +1251,7 @@ class TestCaseConsistencyValidator:
         ]
         line_number = 1
         for t4 in t4s:
-            case_consistency_validator.add_record(
-                t4, t4_schema, str(t4), line_number, False
-            )
+            case_consistency_validator.add_record(t4, t4_schema, line_number, False)
             line_number += 1
 
         t5s = [
@@ -1356,9 +1273,7 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t5 in t5s:
-            case_consistency_validator.add_record(
-                t5, t5_schema, str(t5), line_number, False
-            )
+            case_consistency_validator.add_record(t5, t5_schema, line_number, False)
             line_number += 1
 
         num_errors = case_consistency_validator.validate()
@@ -1428,9 +1343,7 @@ class TestCaseConsistencyValidator:
         ]
         line_number = 1
         for t4 in t4s:
-            case_consistency_validator.add_record(
-                t4, t4_schema, str(t4), line_number, False
-            )
+            case_consistency_validator.add_record(t4, t4_schema, line_number, False)
             line_number += 1
 
         t5s = [
@@ -1452,9 +1365,7 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t5 in t5s:
-            case_consistency_validator.add_record(
-                t5, t5_schema, str(t5), line_number, False
-            )
+            case_consistency_validator.add_record(t5, t5_schema, line_number, False)
             line_number += 1
 
         num_errors = case_consistency_validator.validate()
@@ -1519,9 +1430,7 @@ class TestCaseConsistencyValidator:
         ]
         line_number = 1
         for t4 in t4s:
-            case_consistency_validator.add_record(
-                t4, t4_schema, str(t4), line_number, False
-            )
+            case_consistency_validator.add_record(t4, t4_schema, line_number, False)
             line_number += 1
 
         t5s = [
@@ -1543,9 +1452,7 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t5 in t5s:
-            case_consistency_validator.add_record(
-                t5, t5_schema, str(t5), line_number, False
-            )
+            case_consistency_validator.add_record(t5, t5_schema, line_number, False)
             line_number += 1
 
         num_errors = case_consistency_validator.validate()
@@ -1620,9 +1527,7 @@ class TestCaseConsistencyValidator:
         ]
         line_number = 1
         for t4 in t4s:
-            case_consistency_validator.add_record(
-                t4, t4_schema, str(t4), line_number, False
-            )
+            case_consistency_validator.add_record(t4, t4_schema, line_number, False)
             line_number += 1
 
         t5s = [
@@ -1644,9 +1549,7 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t5 in t5s:
-            case_consistency_validator.add_record(
-                t5, t5_schema, str(t5), line_number, False
-            )
+            case_consistency_validator.add_record(t5, t5_schema, line_number, False)
             line_number += 1
 
         num_errors = case_consistency_validator.validate()
@@ -1721,9 +1624,7 @@ class TestCaseConsistencyValidator:
         ]
         line_number = 1
         for t4 in t4s:
-            case_consistency_validator.add_record(
-                t4, t4_schema, str(t4), line_number, False
-            )
+            case_consistency_validator.add_record(t4, t4_schema, line_number, False)
             line_number += 1
 
         t5s = [
@@ -1745,9 +1646,7 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t5 in t5s:
-            case_consistency_validator.add_record(
-                t5, t5_schema, str(t5), line_number, False
-            )
+            case_consistency_validator.add_record(t5, t5_schema, line_number, False)
             line_number += 1
 
         num_errors = case_consistency_validator.validate()
@@ -1763,39 +1662,42 @@ class TestCaseConsistencyValidator:
         )
 
     @pytest.mark.parametrize(
-        "header,T1Stuff,T2Stuff,T3Stuff,stt_type",
+        "header,T1Stuff,T2Stuff,stt_type",
         [
             (
                 {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
                 (factories.TanfT1Factory, schema_defs.tanf.t1[0], "T1"),
                 (factories.TanfT2Factory, schema_defs.tanf.t2[0], "T2"),
-                (factories.TanfT3Factory, schema_defs.tanf.t3[0], "T3"),
                 STT.EntityType.STATE,
             ),
             (
-                {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
+                {
+                    "type": "A",
+                    "program_type": "Tribal TAN",
+                    "year": 2020,
+                    "quarter": "4",
+                },
                 (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1[0], "T1"),
                 (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2[0], "T2"),
-                (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3[0], "T3"),
-                STT.EntityType.STATE,
+                STT.EntityType.TRIBE,
             ),
             (
-                {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
+                {"type": "A", "program_type": "SSP", "year": 2020, "quarter": "4"},
                 (factories.SSPM1Factory, schema_defs.ssp.m1[0], "M1"),
                 (factories.SSPM2Factory, schema_defs.ssp.m2[0], "M2"),
-                (factories.SSPM3Factory, schema_defs.ssp.m3[0], "M3"),
                 STT.EntityType.STATE,
             ),
         ],
     )
     @pytest.mark.django_db
-    def test_section1_duplicate_records(
-        self, small_correct_file, header, T1Stuff, T2Stuff, T3Stuff, stt_type
+    def test_max_records_per_case_exceeded(
+        self, small_correct_file, header, T1Stuff, T2Stuff, stt_type
     ):
-        """Test section 1 exact duplicate records."""
+        """Test that exceeding MAX_NUMBER_RECORDS_PER_CASE generates an error."""
+        from django.conf import settings
+
         (T1Factory, t1_schema, t1_model_name) = T1Stuff
         (T2Factory, t2_schema, t2_model_name) = T2Stuff
-        (T3Factory, t3_schema, t3_model_name) = T3Stuff
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
@@ -1806,567 +1708,44 @@ class TestCaseConsistencyValidator:
             ),
         )
 
-        t1 = T1Factory.build(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
+        # Add T1 record
+        t1 = T1Factory.build(RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
         line_number = 1
-        case_consistency_validator.add_record(
-            t1, t1_schema, str(t1), line_number, False
-        )
+        case_consistency_validator.add_record(t1, t1_schema, line_number, False)
         line_number += 1
 
-        t2 = T2Factory.build(
-            RecordType="T2",
-            RPT_MONTH_YEAR=202010,
-            CASE_NUMBER="123",
-            FAMILY_AFFILIATION=1,
-            SSN="111111111",
-            DATE_OF_BIRTH="22222222",
-        )
-        case_consistency_validator.add_record(
-            t2, t2_schema, str(t2), line_number, False
-        )
-        line_number += 1
-
-        t3s = [
-            T3Factory.build(
-                RecordType="T3",
+        # Add records up to MAX_NUMBER_RECORDS_PER_CASE (17 by default)
+        # We already added 1 T1, so add 16 more T2 records to reach the limit
+        for i in range(settings.MAX_NUMBER_RECORDS_PER_CASE - 1):
+            t2 = T2Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
-                SSN="111111111",
-                DATE_OF_BIRTH="22222222",
-            ),
-            T3Factory.build(
-                RecordType="T3",
-                RPT_MONTH_YEAR=202010,
-                CASE_NUMBER="123",
-                SSN="111111111",
-                DATE_OF_BIRTH="22222222",
-            ),
-        ]
-
-        for t3 in t3s:
-            case_consistency_validator.add_record(
-                t3, t3_schema, str(t3), line_number, False
+                FAMILY_AFFILIATION=1 if i == 0 else 2,
             )
+            case_consistency_validator.add_record(t2, t2_schema, line_number, False)
+            line_number += 1
 
-        t1_dup = T1Factory.build(
-            RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER="123"
-        )
-        line_number += 1
-        has_errors, _, _ = case_consistency_validator.add_record(
-            t1_dup, t1_schema, str(t1), line_number, False
-        )
-        line_number += 1
-        assert has_errors
-
-        t2_dup = T2Factory.build(
-            RecordType="T2",
-            RPT_MONTH_YEAR=202010,
-            CASE_NUMBER="123",
-            FAMILY_AFFILIATION=1,
-            SSN="111111111",
-            DATE_OF_BIRTH="22222222",
-        )
-        has_errors, _, _ = case_consistency_validator.add_record(
-            t2_dup, t2_schema, str(t2), line_number, False
-        )
-        line_number += 1
-        assert has_errors
-
-        t3_dup = T3Factory.build(
-            RecordType="T3",
-            RPT_MONTH_YEAR=202010,
-            CASE_NUMBER="123",
-            FAMILY_AFFILIATION=1,
-            SSN="111111111",
-            DATE_OF_BIRTH="22222222",
-        )
-        has_errors, _, _ = case_consistency_validator.add_record(
-            t3_dup, t3_schema, str(t3s[0]), line_number, False
-        )
-        line_number += 1
-        assert has_errors
-
-        errors = case_consistency_validator.get_generated_errors()
-        assert len(errors) == 3
-        for i, error in enumerate(errors):
-            expected_msg = (
-                f"Duplicate record detected with record type T{i + 1} at line {i + 4}. Record is a "
-                + f"duplicate of the record at line number {i + 1}."
-            )
-            assert error.error_message == expected_msg
-
-    @pytest.mark.parametrize(
-        "header,T1Stuff,T2Stuff,T3Stuff,stt_type",
-        [
-            (
-                {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-                (factories.TanfT1Factory, schema_defs.tanf.t1[0], "T1"),
-                (factories.TanfT2Factory, schema_defs.tanf.t2[0], "T2"),
-                (factories.TanfT3Factory, schema_defs.tanf.t3[0], "T3"),
-                STT.EntityType.STATE,
-            ),
-            (
-                {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-                (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1[0], "T1"),
-                (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2[0], "T2"),
-                (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3[0], "T3"),
-                STT.EntityType.STATE,
-            ),
-            (
-                {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-                (factories.SSPM1Factory, schema_defs.ssp.m1[0], "M1"),
-                (factories.SSPM2Factory, schema_defs.ssp.m2[0], "M2"),
-                (factories.SSPM3Factory, schema_defs.ssp.m3[0], "M3"),
-                STT.EntityType.STATE,
-            ),
-        ],
-    )
-    @pytest.mark.django_db
-    def test_section1_partial_duplicate_records_and_precedence(
-        self, small_correct_file, header, T1Stuff, T2Stuff, T3Stuff, stt_type
-    ):
-        """Test section 1 partial duplicate records."""
-        (T1Factory, t1_schema, t1_model_name) = T1Stuff
-        (T2Factory, t2_schema, t2_model_name) = T2Stuff
-        (T3Factory, t3_schema, t3_model_name) = T3Stuff
-
-        case_consistency_validator = CaseConsistencyValidator(
-            header,
-            header["program_type"],
-            stt_type,
-            ErrorGeneratorFactory(small_correct_file).get_generator(
-                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
-            ),
-        )
-
-        t1 = T1Factory.build(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
-        line_number = 1
-        case_consistency_validator.add_record(
-            t1, t1_schema, str(t1), line_number, False
-        )
-        line_number += 1
-
-        t2 = T2Factory.build(
-            RecordType="T2",
-            RPT_MONTH_YEAR=202010,
-            CASE_NUMBER="123",
-            FAMILY_AFFILIATION=1,
-            SSN="111111111",
-            DATE_OF_BIRTH="22222222",
-        )
-        case_consistency_validator.add_record(
-            t2, t2_schema, str(t2), line_number, False
-        )
-        line_number += 1
-
-        t3s = [
-            T3Factory.build(
-                RecordType="T3",
-                RPT_MONTH_YEAR=202010,
-                CASE_NUMBER="123",
-                SSN="111111111",
-                DATE_OF_BIRTH="22222222",
-            ),
-            T3Factory.build(
-                RecordType="T3",
-                RPT_MONTH_YEAR=202010,
-                CASE_NUMBER="123",
-                SSN="111111111",
-                DATE_OF_BIRTH="22222222",
-            ),
-        ]
-
-        for t3 in t3s:
-            case_consistency_validator.add_record(
-                t3, t3_schema, str(t3), line_number, False
-            )
-
-        # Introduce partial dups
-        t1_dup = T1Factory.build(
-            RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER="123"
-        )
-        line_number += 1
-        has_errors, _, _ = case_consistency_validator.add_record(
-            t1_dup, t1_schema, str(t1_dup), line_number, False
-        )
-        line_number += 1
-        assert has_errors
-
-        t2_dup = T2Factory.build(
-            RecordType="T2",
-            RPT_MONTH_YEAR=202010,
-            CASE_NUMBER="123",
-            FAMILY_AFFILIATION=1,
-            SSN="111111111",
-            DATE_OF_BIRTH="22222222",
-        )
-        has_errors, _, _ = case_consistency_validator.add_record(
-            t2_dup, t2_schema, str(t2_dup), line_number, False
-        )
-        line_number += 1
-        assert has_errors
-
-        t3_dup = T3Factory.build(
-            RecordType="T3",
-            RPT_MONTH_YEAR=202010,
-            CASE_NUMBER="123",
-            FAMILY_AFFILIATION=1,
-            SSN="111111111",
-            DATE_OF_BIRTH="22222222",
-        )
-        has_errors, _, _ = case_consistency_validator.add_record(
-            t3_dup, t3_schema, str(t3_dup), line_number, False
-        )
-        line_number += 1
-        assert has_errors
-
-        errors = case_consistency_validator.get_generated_errors()
-        assert len(errors) == 3
-        for i, error in enumerate(errors):
-            expected_msg = (
-                f"Partial duplicate record detected with record type T{i + 1} at line {i + 4}. "
-                + f"Record is a partial duplicate of the record at line number {i + 1}."
-            )
-            assert expected_msg in error.error_message
-
-        # We don't want to clear dup errors to show that when our errors change precedence, errors with lower precedence
-        # are automatically replaced with the errors of higher precedence.
-        case_consistency_validator.clear_errors(clear_dup=False)
-
-        t1_complete_dup = T1Factory.build(
-            RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER="123"
-        )
-        has_errors, _, _ = case_consistency_validator.add_record(
-            t1_complete_dup, t1_schema, str(t1), line_number, False
-        )
-
-        errors = case_consistency_validator.get_generated_errors()
-        assert len(errors) == 1
-        for i, error in enumerate(errors):
-            expected_msg = (
-                f"Duplicate record detected with record type T{i + 1} at line 7. Record is a "
-                + f"duplicate of the record at line number {i + 1}."
-            )
-            assert error.error_message == expected_msg
-
-    @pytest.mark.parametrize(
-        "header,T4Stuff,T5Stuff",
-        [
-            (
-                {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-                (factories.TanfT4Factory, schema_defs.tanf.t4[0], "T4"),
-                (factories.TanfT5Factory, schema_defs.tanf.t5[0], "T5"),
-            ),
-            (
-                {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-                (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4[0], "T4"),
-                (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5[0], "T5"),
-            ),
-            (
-                {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-                (factories.SSPM4Factory, schema_defs.ssp.m4[0], "M4"),
-                (factories.SSPM5Factory, schema_defs.ssp.m5[0], "M5"),
-            ),
-        ],
-    )
-    @pytest.mark.django_db
-    def test_section2_duplicate_records(
-        self, small_correct_file, header, T4Stuff, T5Stuff
-    ):
-        """Test records are related validator section 2 success case."""
-        (T4Factory, t4_schema, t4_model_name) = T4Stuff
-        (T5Factory, t5_schema, t5_model_name) = T5Stuff
-
-        case_consistency_validator = CaseConsistencyValidator(
-            header,
-            header["program_type"],
-            STT.EntityType.STATE,
-            ErrorGeneratorFactory(small_correct_file).get_generator(
-                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
-            ),
-        )
-
-        line_number = 1
-        t4 = T4Factory.build(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
-        case_consistency_validator.add_record(
-            t4, t4_schema, str(t4), line_number, False
-        )
-        line_number += 1
-
-        t5 = T5Factory.build(
-            RecordType="T5",
-            RPT_MONTH_YEAR=202010,
-            CASE_NUMBER="123",
-            FAMILY_AFFILIATION=1,
-            SSN="111111111",
-            DATE_OF_BIRTH="22222222",
-        )
-        case_consistency_validator.add_record(
-            t5, t5_schema, str(t5), line_number, False
-        )
-        line_number += 1
-
-        t4_dup = T4Factory.build(
-            RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER="123"
-        )
-        case_consistency_validator.add_record(
-            t4_dup, t4_schema, str(t4), line_number, False
-        )
-        line_number += 1
-
-        t5_dup = T5Factory.build(
-            RecordType="T5",
-            RPT_MONTH_YEAR=202010,
-            CASE_NUMBER="123",
-            FAMILY_AFFILIATION=1,
-            SSN="111111111",
-            DATE_OF_BIRTH="22222222",
-        )
-        case_consistency_validator.add_record(
-            t5_dup, t5_schema, str(t5), line_number, False
-        )
-        line_number += 1
-
-        errors = case_consistency_validator.get_generated_errors()
-        assert len(errors) == 2
-        for i, error in enumerate(errors):
-            expected_msg = (
-                f"Duplicate record detected with record type T{i + 4} at line {i + 3}. Record is a "
-                + f"duplicate of the record at line number {i + 1}."
-            )
-            assert error.error_message == expected_msg
-
-    @pytest.mark.parametrize(
-        "header,T4Stuff,T5Stuff",
-        [
-            (
-                {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-                (factories.TanfT4Factory, schema_defs.tanf.t4[0], "T4"),
-                (factories.TanfT5Factory, schema_defs.tanf.t5[0], "T5"),
-            ),
-            (
-                {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-                (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4[0], "T4"),
-                (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5[0], "T5"),
-            ),
-            (
-                {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-                (factories.SSPM4Factory, schema_defs.ssp.m4[0], "M4"),
-                (factories.SSPM5Factory, schema_defs.ssp.m5[0], "M5"),
-            ),
-        ],
-    )
-    @pytest.mark.django_db
-    def test_section2_partial_duplicate_records_and_precedence(
-        self, small_correct_file, header, T4Stuff, T5Stuff
-    ):
-        """Test records are related validator section 2 success case."""
-        (T4Factory, t4_schema, t4_model_name) = T4Stuff
-        (T5Factory, t5_schema, t5_model_name) = T5Stuff
-
-        case_consistency_validator = CaseConsistencyValidator(
-            header,
-            header["program_type"],
-            STT.EntityType.STATE,
-            ErrorGeneratorFactory(small_correct_file).get_generator(
-                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
-            ),
-        )
-
-        line_number = 1
-        t4 = T4Factory.build(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
-        case_consistency_validator.add_record(
-            t4, t4_schema, str(t4), line_number, False
-        )
-        line_number += 1
-
-        t5 = T5Factory.build(
-            RecordType="T5",
-            RPT_MONTH_YEAR=202010,
-            CASE_NUMBER="123",
-            FAMILY_AFFILIATION=1,
-            SSN="111111111",
-            DATE_OF_BIRTH="22222222",
-        )
-        case_consistency_validator.add_record(
-            t5, t5_schema, str(t5), line_number, False
-        )
-        line_number += 1
-
-        t4_dup = T4Factory.build(
-            RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER="123"
-        )
-        case_consistency_validator.add_record(
-            t4_dup, t4_schema, str(t4_dup), line_number, False
-        )
-        line_number += 1
-
-        t5_dup = T5Factory.build(
-            RecordType="T5",
-            RPT_MONTH_YEAR=202010,
-            CASE_NUMBER="123",
-            FAMILY_AFFILIATION=1,
-            SSN="111111111",
-            DATE_OF_BIRTH="22222222",
-        )
-        case_consistency_validator.add_record(
-            t5_dup, t5_schema, str(t5_dup), line_number, False
-        )
-        line_number += 1
-
-        errors = case_consistency_validator.get_generated_errors()
-        assert len(errors) == 2
-        for i, error in enumerate(errors):
-            expected_msg = (
-                f"Partial duplicate record detected with record type T{i + 4} at line {i + 3}. "
-                + f"Record is a partial duplicate of the record at line number {i + 1}."
-            )
-            assert expected_msg in error.error_message
-
-        # We don't want to clear dup errors to show that when our errors change precedence, errors with lower precedence
-        # are automatically replaced with the errors of higher precedence.
-        case_consistency_validator.clear_errors(clear_dup=False)
-
-        t4_complete_dup = T4Factory.build(
-            RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER="123"
-        )
-        has_errors, _, _ = case_consistency_validator.add_record(
-            t4_complete_dup, t4_schema, str(t4), line_number, False
-        )
-
-        errors = case_consistency_validator.get_generated_errors()
-        assert len(errors) == 1
-        for i, error in enumerate(errors):
-            expected_msg = (
-                f"Duplicate record detected with record type T{i + 4} at line 5. Record is a "
-                + f"duplicate of the record at line number {i + 1}."
-            )
-            assert error.error_message == expected_msg
-
-    @pytest.mark.parametrize(
-        "header,record_stuff",
-        [
-            (
-                {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-                (factories.TanfT2Factory, schema_defs.tanf.t2[0], "T2"),
-            ),
-            (
-                {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-                (factories.TanfT3Factory, schema_defs.tanf.t3[0], "T3"),
-            ),
-            (
-                {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-                (factories.TanfT5Factory, schema_defs.tanf.t5[0], "T5"),
-            ),
-        ],
-    )
-    @pytest.mark.django_db
-    def test_family_affiliation_negate_partial_duplicate(
-        self, small_correct_file, header, record_stuff
-    ):
-        """Test records are related validator section 2 success case."""
-        (Factory, schema, model_name) = record_stuff
-
-        case_consistency_validator = CaseConsistencyValidator(
-            header,
-            header["program_type"],
-            STT.EntityType.STATE,
-            ErrorGeneratorFactory(small_correct_file).get_generator(
-                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
-            ),
-        )
-
-        line_number = 1
-        first_record = Factory.build(
-            RecordType=model_name, RPT_MONTH_YEAR=202010, CASE_NUMBER="123"
-        )
-        case_consistency_validator.add_record(
-            first_record, schema, str(first_record), line_number, False
-        )
-        line_number += 1
-
-        second_record = Factory.build(
-            RecordType=model_name,
-            RPT_MONTH_YEAR=202010,
-            CASE_NUMBER="123",
-            FAMILY_AFFILIATION=5,
-        )
-        case_consistency_validator.add_record(
-            second_record, schema, str(second_record), line_number, False
-        )
-        line_number += 1
-
+        case_consistency_validator.validate()
         errors = case_consistency_validator.get_generated_errors()
         assert len(errors) == 0
 
-    @pytest.mark.parametrize(
-        "header,record_stuff",
-        [
-            (
-                {"type": "G", "program_type": "TAN", "year": 2020, "quarter": "4"},
-                (factories.TanfT6Factory, schema_defs.tanf.t6[0], "T6"),
-            ),
-            (
-                {"type": "G", "program_type": "TAN", "year": 2020, "quarter": "4"},
-                (factories.TribalTanfT6Factory, schema_defs.tribal_tanf.t6[0], "T6"),
-            ),
-            (
-                {"type": "G", "program_type": "TAN", "year": 2020, "quarter": "4"},
-                (factories.SSPM6Factory, schema_defs.ssp.m6[0], "M6"),
-            ),
-            (
-                {"type": "S", "program_type": "TAN", "year": 2020, "quarter": "4"},
-                (factories.TanfT7Factory, schema_defs.tanf.t7[0], "T7"),
-            ),
-            (
-                {"type": "S", "program_type": "TAN", "year": 2020, "quarter": "4"},
-                (factories.TribalTanfT7Factory, schema_defs.tribal_tanf.t7[0], "T7"),
-            ),
-            (
-                {"type": "S", "program_type": "TAN", "year": 2020, "quarter": "4"},
-                (factories.SSPM7Factory, schema_defs.ssp.m7[0], "M7"),
-            ),
-        ],
-    )
-    @pytest.mark.django_db
-    def test_s3_s4_duplicates(self, small_correct_file, header, record_stuff):
-        """Test records are related validator section 2 success case."""
-        (Factory, schema, model_name) = record_stuff
-
-        case_consistency_validator = CaseConsistencyValidator(
-            header,
-            header["program_type"],
-            STT.EntityType.STATE,
-            ErrorGeneratorFactory(small_correct_file).get_generator(
-                ErrorGeneratorType.DYNAMIC_ROW_CASE_CONSISTENCY, None
-            ),
+        # Add one more record to exceed the limit
+        t2_extra = T2Factory.build(
+            RPT_MONTH_YEAR=202010,
+            CASE_NUMBER="123",
+            FAMILY_AFFILIATION=2,
+        )
+        has_errors, _, _ = case_consistency_validator.add_record(
+            t2_extra, t2_schema, line_number, False
         )
 
-        line_number = 1
-        # Because the line number is not changing in the loop, we know these records are coming from a single record in
-        # the file. If the line number was changing, we would be flagging duplicate errors.
-        first_record = None
-        for i in range(5):
-            record = Factory.build(RecordType=model_name, RPT_MONTH_YEAR=202010)
-            if i == 0:
-                first_record = record
-            case_consistency_validator.add_record(
-                record, schema, str(record), line_number, False
-            )
-        line_number += 1
-
-        errors = case_consistency_validator.get_generated_errors()
-        assert len(errors) == 0
-
-        second_record = Factory.build(RecordType=model_name, RPT_MONTH_YEAR=202010)
-        case_consistency_validator.add_record(
-            second_record, schema, str(first_record), line_number, False
-        )
-
+        assert case_consistency_validator.num_records_in_case == 0
+        assert has_errors is True
         errors = case_consistency_validator.get_generated_errors()
         assert len(errors) == 1
-        assert (
-            errors[0].error_message
-            == f"Duplicate record detected with record type {model_name} at line 2. "
-            + "Record is a duplicate of the record at line number 1."
+        assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+        assert errors[0].error_message == (
+            f"Cases must contain fewer than {settings.MAX_NUMBER_RECORDS_PER_CASE} person "
+            "(Child + Adult) records within a given reporting month and year. All records "
+            "associated with this case have been rejected."
         )

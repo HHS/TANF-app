@@ -4,13 +4,15 @@ import logging
 import warnings
 from datetime import datetime
 
-from tdpservice.parsers.dataclasses import RawRow, ValidationErrorArgs
+from django.conf import settings
+
+from tdpservice.parsers.dataclasses import ValidationErrorArgs
 from tdpservice.parsers.error_generator import ErrorGeneratorArgs
 from tdpservice.parsers.schema_defs.utils import ProgramManager
+from tdpservice.parsers.util import FrozenDict
 from tdpservice.parsers.validators.category3 import format_error_context
 from tdpservice.stts.models import STT
 
-from .duplicate_manager import DuplicateManager
 from .util import get_years_apart
 
 logger = logging.getLogger(__name__)
@@ -21,12 +23,19 @@ class CaseConsistencyValidator:
 
     def __init__(self, header, program_type, stt_type, generate_error):
         self.header = header
+
+        ######
+        # In the event we receive an extremely large file with records all in the SAME case, this dictionary will grow
+        # linearly with the number of records in the file because the validator never encounters a new/different case
+        # number. Therefore, it continues storing records for the case, never validates until the very end, and could
+        # cause an OOM error. To remedy this, we know that a valid case will never have more than X records in it. Thus,
+        # if we breach X records in the case, we indicate a failure and remove the whole case from the DB.
         self.sorted_cases = dict()
-        self.cases = list()
-        self.duplicate_manager = DuplicateManager(generate_error)
+        self.num_records_in_case = 0
+        ######
+
         self.current_rpt_month_year = None
-        self.current_case = None
-        self.current_case_hash = None
+        self.current_case_id = None
         self.case_has_errors = False
         self.section = header["type"]
         self.case_is_section_one_or_two = self.section in {"A", "C"}
@@ -71,16 +80,12 @@ class CaseConsistencyValidator:
         )
         self.generated_errors.append(self.generate_error(generator_args))
 
-    def clear_errors(self, clear_dup=True):
+    def clear_errors(self):
         """Reset generated errors."""
         self.generated_errors = []
-        if clear_dup:
-            self.duplicate_manager.clear_errors()
 
     def get_generated_errors(self):
         """Return all errors generated for the current validated case."""
-        dup_errors = self.duplicate_manager.get_generated_errors()
-        self.generated_errors.extend(dup_errors)
         return self.generated_errors
 
     def num_generated_errors(self):
@@ -91,75 +96,77 @@ class CaseConsistencyValidator:
         """Add record_schema_pair to structs."""
         record = record_triplet[0]
         self.sorted_cases.setdefault(type(record), []).append(record_triplet)
-        self.cases.append(record_triplet)
 
     def clear_structs(self, seed_record_triplet=None):
         """Reset and optionally seed the structs."""
         self.sorted_cases = dict()
-        self.cases = list()
         if seed_record_triplet:
             self.add_record_to_structs(seed_record_triplet)
 
-    def update_removed(self, case_hash, should_remove, was_removed):
-        """Notify duplicate manager's CaseDuplicateDetectors whether they need to mark their records for DB removal."""
-        self.duplicate_manager.update_removed(case_hash, should_remove, was_removed)
-
-    def _get_case_hash(self, record):
+    def _get_case_id(self, record):
         # Section 3/4 records don't have a CASE_NUMBER, and they're broken into multiple records for the same line.
         # The duplicate manager saves us from dupe validating the records on teh same line, however, we use record
         # type as the "case number" here because there should only ever be one line in a section 3/4 file with a
         # record type. If we generate the same hash twice we guarentee an error and therefore need only check the
         # record type.
         if not self.case_is_section_one_or_two:
-            return hash(record.RecordType)
-        return hash(str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER)
+            return FrozenDict(RecordType=record.RecordType)
+        return FrozenDict(
+            RPT_MONTH_YEAR=record.RPT_MONTH_YEAR, CASE_NUMBER=record.CASE_NUMBER
+        )
 
-    def add_record(self, record, schema, row: RawRow, line_number, case_has_errors):
+    def add_record(self, record, schema, line_number, case_has_errors):
         """Add record to cache, validate if new case is detected, and check for duplicate errors.
 
         @param record: a Django model representing a datafile record
         @param schema: the schema from which the record was created
-        @param row: the RawRow parsed from the decoder
         @param line_number: the line number the record was generated from in the datafile
         @param case_has_errors: boolean indictating whether the record's case has any cat2 or cat3 errors
-        @return: (boolean indicating existence of cat4 errors, a hash value generated from fields in the record
-                 based on the records section)
+        @return: (boolean indicating existence of cat4 errors, a case ID to remove if it has errors, and the current
+                  case ID)
         """
         self.num_errors = 0
-        latest_case_hash = self._get_case_hash(record)
-        case_hash_to_remove = latest_case_hash
+        current_case_id = self._get_case_id(record)
+        case_id_to_remove = current_case_id
         self.current_rpt_month_year = record.RPT_MONTH_YEAR
+
         if self.case_is_section_one_or_two:
             if (
-                latest_case_hash != self.current_case_hash
-                and self.current_case_hash is not None
+                current_case_id != self.current_case_id
+                and self.current_case_id is not None
             ):
                 self.validate()
                 self.clear_structs((record, schema, line_number))
                 self.case_has_errors = case_has_errors
                 self.has_validated = False
-                case_hash_to_remove = self.current_case_hash
+                case_id_to_remove = self.current_case_id
+                self.num_records_in_case = 0
             else:
                 self.case_has_errors = (
                     self.case_has_errors if self.case_has_errors else case_has_errors
                 )
                 self.add_record_to_structs((record, schema, line_number))
                 self.has_validated = False
-            self.current_case = record.CASE_NUMBER
+                self.num_records_in_case += 1
 
-        # Need to return the hash of what we just cat4 validated, i.e. case_hash_to_remove = self.current_case_hash. If
-        # we didn't cat4 validate then we return the latest case hash, i.e. case_hash_to_remove = latest_case_hash.
-        # However, we always call self.duplicate_manager.add_record with the latest case_hash.
-        self.duplicate_manager.add_record(
-            record, latest_case_hash, schema, row, line_number
-        )
-        self.num_errors += self.duplicate_manager.get_num_dup_errors(
-            case_hash_to_remove
-        )
+                if self.num_records_in_case > settings.MAX_NUMBER_RECORDS_PER_CASE:
+                    self.__generate_and_add_error(
+                        schema,
+                        record,
+                        line_num=line_number,
+                        msg=(
+                            f"Cases must contain fewer than {settings.MAX_NUMBER_RECORDS_PER_CASE} person "
+                            "(Child + Adult) records within a given reporting month and year. All records "
+                            "associated with this case have been rejected."
+                        ),
+                    )
+                    self.clear_structs((record, schema, line_number))
+                    self.num_records_in_case = 0
+                    return True, self.current_case_id, current_case_id
 
-        self.current_case_hash = latest_case_hash
+        self.current_case_id = current_case_id
 
-        return self.num_errors > 0, case_hash_to_remove, latest_case_hash
+        return self.num_errors > 0, case_id_to_remove, current_case_id
 
     def validate(self):
         """Perform category four validation on all cached records."""
@@ -180,9 +187,6 @@ class CaseConsistencyValidator:
         """Private validate, lint complexity."""
         self.total_cases_validated += 1
         self.has_validated = True
-        logger.debug(
-            f"Attempting to execute Cat4 validation for case: {self.current_case}."
-        )
 
         if self.section == "A":
             self.__validate_section1()
@@ -190,8 +194,8 @@ class CaseConsistencyValidator:
             self.__validate_section2()
         else:
             self.total_cases_validated -= 1
-            logger.warn(
-                f"Case: {self.current_case} has no errors but has either an incorrect program type: "
+            logger.warning(
+                f"Current case has no errors but has either an incorrect program type: "
                 f"{self.program_type} or an incorrect section: {self.section}. No validation occurred."
             )
             self.has_validated = False
