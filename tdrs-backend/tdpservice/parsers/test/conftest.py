@@ -1085,6 +1085,7 @@ def tanf_s1_federally_funded_recipients():
     parsing_file = ParsingFileFactory(
         year=2021,
         quarter="Q1",
+        program_type=DataFile.ProgramType.TANF,
         file__name="s1_federally_funded_recipients.txt",
         file__section="Active Case Data",
         file__data=(

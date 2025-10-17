@@ -2482,7 +2482,7 @@ def test_parse_tanf_s1_federally_funded_recipients(
         datafile=tanf_s1_federally_funded_recipients,
         dfs=dfs,
         section=tanf_s1_federally_funded_recipients.section,
-        program_type=tanf_s1_federally_funded_recipients.prog_type,
+        program_type=tanf_s1_federally_funded_recipients.program_type,
     )
     parser.parse_and_validate()
 
