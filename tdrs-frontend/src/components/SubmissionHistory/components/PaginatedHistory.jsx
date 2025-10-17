@@ -1,14 +1,21 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Paginator from '../../Paginator'
+import { Spinner } from '../../Spinner'
 
 export const PaginatedHistory = ({
   caption,
   files,
+  loading,
   reprocessedState,
   TableComponent,
 }) => {
   const pageSize = 5
   const [resultsPage, setResultsPage] = useState(1)
+
+  // Reset state to initial state if the files change
+  useEffect(() => {
+    setResultsPage(1)
+  }, [files])
 
   const pages =
     files && files.length > pageSize ? Math.ceil(files.length / pageSize) : 1
@@ -23,7 +30,12 @@ export const PaginatedHistory = ({
     >
       <table className="usa-table usa-table--striped">
         <caption>{caption}</caption>
-        {files && files.length > 0 ? (
+        {loading ? (
+          <>
+            <Spinner visible={true} />
+            <span className="margin-left-1">Loading submission history...</span>
+          </>
+        ) : files && files.length > 0 ? (
           <TableComponent
             files={files.slice(pageStart, pageEnd)}
             reprocessedState={reprocessedState}

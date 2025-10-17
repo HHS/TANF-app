@@ -9,6 +9,8 @@ import {
   CLEAR_FILE_LIST,
   SET_FILE_SUBMITTED,
   REINITIALIZE_SUBMITTED_FILES,
+  FETCH_FILE_LIST,
+  FETCH_FILE_LIST_ERROR,
 } from '../actions/reports'
 
 import { programIntegrityAuditLabels } from '../components/Reports/utils'
@@ -82,11 +84,18 @@ const initialState = {
   stt: '',
   quarter: '',
   fileType: '',
+  loading: false,
 }
 
 const reports = (state = initialState, action) => {
   const { type, payload = {} } = action
   switch (type) {
+    case FETCH_FILE_LIST: {
+      return {
+        ...state,
+        loading: true,
+      }
+    }
     case REINITIALIZE_SUBMITTED_FILES: {
       const { fileType } = payload
       const sections =
@@ -122,6 +131,13 @@ const reports = (state = initialState, action) => {
       return {
         ...state,
         files: data.map((f) => serializeApiDataFile(f)),
+        loading: false,
+      }
+    }
+    case FETCH_FILE_LIST_ERROR: {
+      return {
+        ...state,
+        loading: false,
       }
     }
     case SET_FILE_SUBMITTED: {

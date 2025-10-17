@@ -6,7 +6,7 @@ import KnowledgeCenterLink from './components/KnowledgeCenterLink'
 import { useSubmissionHistory } from '../../hooks/useSubmissionHistory'
 
 const SectionSubmissionHistory = ({ filterValues, reprocessedState }) => {
-  const { files } = useSubmissionHistory(filterValues)
+  const { files, loading } = useSubmissionHistory(filterValues)
   const num_sections = filterValues.stt.num_sections
 
   return (
@@ -25,6 +25,7 @@ const SectionSubmissionHistory = ({ filterValues, reprocessedState }) => {
               key={section}
               caption={`Section ${sectionNumber} - ${section}`}
               files={files.filter((f) => f.section.includes(section))}
+              loading={loading}
               reprocessedState={reprocessedState}
               TableComponent={TableComponent}
             />

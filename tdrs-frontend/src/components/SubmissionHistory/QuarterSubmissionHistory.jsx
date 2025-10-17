@@ -5,7 +5,7 @@ import KnowledgeCenterLink from './components/KnowledgeCenterLink'
 import { useSubmissionHistory } from '../../hooks/useSubmissionHistory'
 
 const QuarterSubmissionHistory = ({ filterValues, reprocessedState }) => {
-  const { files } = useSubmissionHistory({ ...filterValues, quarter: null })
+  const { files, loading } = useSubmissionHistory({ ...filterValues, quarter: null })
 
   return (
     <>
@@ -20,6 +20,7 @@ const QuarterSubmissionHistory = ({ filterValues, reprocessedState }) => {
               key={quarterLabel}
               caption={quarterLabel}
               files={filteredFiles}
+              loading={loading}
               reprocessedState={reprocessedState}
               TableComponent={CaseAggregatesTable}
             />

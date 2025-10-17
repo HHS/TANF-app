@@ -91,11 +91,7 @@ function ReportsContent() {
 
   return (
     <div className="page-container" style={{ position: 'relative' }}>
-      <div
-        className={classNames({
-          'border-bottom': fileTypeInputValue,
-        })}
-      >
+      <div>
         {missingStt && (
           <div className="margin-top-4 usa-error-message" role="alert">
             An STT is not set for this user.

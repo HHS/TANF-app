@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { getAvailableFileList } from '../actions/reports'
 
@@ -11,18 +11,23 @@ import { getAvailableFileList } from '../actions/reports'
  */
 export const useSubmissionHistory = (filterValues) => {
   const dispatch = useDispatch()
-  const [hasFetchedFiles, setHasFetchedFiles] = useState(false)
-  const { files } = useSelector((state) => state.reports)
+  const { files, loading } = useSelector((state) => state.reports)
+  const prevFilterValuesRef = useRef()
 
   useEffect(() => {
-    if (!hasFetchedFiles) {
+    // Serialize filterValues for comparison
+    const currentFilters = JSON.stringify(filterValues)
+    const prevFilters = prevFilterValuesRef.current
+
+    // Fetch if this is the first render or if filterValues have changed
+    if (!prevFilters || currentFilters !== prevFilters) {
       dispatch(getAvailableFileList(filterValues))
-      setHasFetchedFiles(true)
+      prevFilterValuesRef.current = currentFilters
     }
-  }, [hasFetchedFiles, files, dispatch, filterValues])
+  }, [dispatch, filterValues])
 
   return {
     files,
-    hasFetchedFiles,
+    loading,
   }
 }
