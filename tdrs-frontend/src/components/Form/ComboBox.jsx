@@ -62,7 +62,11 @@ const ComboBox = ({
           </div>
         )}
       </label>
-      <div className="usa-combo-box" data-placeholder={placeholder}>
+      <div
+        className="usa-combo-box"
+        data-placeholder={placeholder}
+        data-default-value={selected}
+      >
         {/* eslint-disable-next-line jsx-a11y/no-onchange */}
         <select
           autoComplete={autoComplete ? 'on' : 'off'}

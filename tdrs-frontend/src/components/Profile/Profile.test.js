@@ -158,6 +158,9 @@ describe('Profile', () => {
         authenticated: true,
         user: baseUser,
       },
+      stts: {
+        sttList: [],
+      },
     })
 
     render(
@@ -253,6 +256,9 @@ describe('Profile', () => {
       auth: {
         authenticated: true,
         user: baseUser,
+      },
+      stts: {
+        sttList: [],
       },
     })
 
