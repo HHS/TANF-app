@@ -142,7 +142,7 @@ def parse(data_file_id, reparse_id=None):
         )
         set_reparse_file_meta_model_failed_state(reparse_id, file_meta)
     except Exception as e:
-        generate_error = ErrorGeneratorFactory(data_file).get_error_generator(
+        generate_error = ErrorGeneratorFactory(data_file).get_generator(
             ErrorGeneratorType.MSG_ONLY_PRECHECK,
             None,
         )

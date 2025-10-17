@@ -910,6 +910,23 @@ describe('Reports', () => {
         user: {
           ...initialState.auth.user,
           roles: [{ id: 1, name: 'OFA Regional Staff', permission: [] }],
+          regions: [
+            {
+              id: 10,
+              stts: [
+                {
+                  id: 2,
+                  name: 'Alaska',
+                  num_sections: 3,
+                  postal_code: 'AK',
+                  region: 10,
+                  ssp: false,
+                  stt_code: '02',
+                  type: 'state',
+                },
+              ],
+            },
+          ],
         },
       },
     })
