@@ -465,6 +465,7 @@ class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "user_list_display",
         "created_at",
         "rating",
+        "feedback_type",
         "feedback_list_display",
         "acked",
         "quick_ack",
