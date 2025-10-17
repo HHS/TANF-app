@@ -49,7 +49,7 @@ def update_dfs(dfs, data_file):
     """Update DataFileSummary fields."""
     dfs.status = dfs.get_status()
 
-    if data_file.prog_type == "FRA":
+    if data_file.program_type == DataFile.ProgramType.FRA:
         dfs.case_aggregates = fra_total_errors(data_file)
     else:
         if "Case Data" in data_file.section:
@@ -95,7 +95,7 @@ def parse(data_file_id, reparse_id=None):
             datafile=data_file,
             dfs=dfs,
             section=data_file.section,
-            program_type=data_file.prog_type,
+            program_type=data_file.program_type,
         )
         parser.parse_and_validate()
         update_dfs(dfs, data_file)
@@ -120,11 +120,12 @@ def parse(data_file_id, reparse_id=None):
             )
         else:
             qs = User.objects.filter(
-                    stt=data_file.stt,
-                    account_approval_status=AccountApprovalStatusChoices.APPROVED,
-                    groups__name="Data Analyst")
+                stt=data_file.stt,
+                account_approval_status=AccountApprovalStatusChoices.APPROVED,
+                groups__name="Data Analyst",
+            )
 
-            if data_file.prog_type == "FRA":
+            if data_file.program_type == DataFile.ProgramType.FRA:
                 qs = qs.filter(user_permissions__codename="has_fra_access")
 
             recipients = qs.values_list("username", flat=True).distinct()

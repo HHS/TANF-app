@@ -8,6 +8,32 @@ from tdpservice.email.email_enums import EmailType
 from tdpservice.users.models import User
 
 
+def get_friendly_program_type(program_type):
+    """Return the human-readable name for a given program type."""
+    match program_type:
+        case DataFile.ProgramType.TANF:
+            return "TANF"
+        case DataFile.ProgramType.SSP:
+            return "SSP"
+        case DataFile.ProgramType.TRIBAL:
+            return "Tribal TANF"
+        case DataFile.ProgramType.FRA:
+            return "FRA"
+
+
+def get_program_section_str(program_type, section):
+    """Return the human-readable section name, including program type."""
+    match program_type:
+        case DataFile.ProgramType.TANF:
+            return section
+        case DataFile.ProgramType.SSP:
+            return f"SSP {section}"
+        case DataFile.ProgramType.TRIBAL:
+            return f"Tribal {section}"
+        case DataFile.ProgramType.FRA:
+            return section
+
+
 def send_data_submitted_email(
     datafile_summary,
     recipients,
@@ -28,15 +54,10 @@ def send_data_submitted_email(
     subject = None
     text_message = None
 
-    section_name = datafile.section
+    prog_type = datafile.program_type
+    section_name = get_program_section_str(prog_type, datafile.section)
 
-    file_type = datafile.prog_type  # e.g. "TAN", "SSP", "FRA"
-    # TANF and Tribal TANF file types are stored as "TAN" in prog_type
-    if file_type == "TAN":
-        if section_name.startswith("Tribal"):
-            file_type = f"Tribal {file_type}"
-        file_type = f"{file_type}F"
-
+    file_type = get_friendly_program_type(prog_type)
     stt_name = datafile.stt.name
     submission_date = datafile.created_at
     fiscal_year = datafile.fiscal_year
