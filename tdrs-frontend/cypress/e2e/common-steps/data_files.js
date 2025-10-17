@@ -10,18 +10,18 @@ export const restartAtHomePage = () => {
 }
 
 export const fillFYQ = (fiscal_year, quarter) => {
-  cy.wait(1000)
-  cy.get('#reportingYears').should('exist').select(fiscal_year)
+  cy.get('#reportingYears', { timeout: 1000 })
+    .should('exist')
+    .select(fiscal_year)
   cy.get('#quarter').should('exist').select(quarter)
   cy.get('.usa-file-input__input', { timeout: 1000 }).should('exist')
 }
 
 export const uploadFile = (file_input, file_path, willError = false) => {
   cy.get(file_input).selectFile(file_path, { action: 'drag-drop' })
-  cy.wait(1000)
   if (!willError) {
     const file_parts = file_path.split('/')
-    cy.contains(file_parts[file_parts.length - 1], { timeout: 1000 }).should(
+    cy.contains(file_parts[file_parts.length - 1], { timeout: 3000 }).should(
       'exist'
     )
   }
@@ -57,8 +57,7 @@ export const downloadErrorReport = (error_report_name) => {
 }
 
 export const fillSttFyQ = (stt, fy, q, isTanf, isRegional) => {
-  cy.wait(1000)
-  cy.get('#stt')
+  cy.get('#stt', { timeout: 1000 })
     .type(stt + '{enter}')
     .then(() => {
       if (isTanf) {
@@ -78,8 +77,7 @@ export const fillSttFyQ = (stt, fy, q, isTanf, isRegional) => {
 }
 
 export const fillSttFyQNoProgramSelector = (stt, fy, q) => {
-  cy.wait(1000)
-  cy.get('#stt')
+  cy.get('#stt', { timeout: 1000 })
     .type(stt + '{enter}')
     .then(() => {
       cy.get('#reportingYears').should('exist').select(fy)
@@ -89,11 +87,17 @@ export const fillSttFyQNoProgramSelector = (stt, fy, q) => {
 }
 
 export const fillFyQProgram = (fy, q, program) => {
-  cy.wait(1000)
+  cy.contains(program, { timeout: 1000 }).should('exist')
   if (program === 'TANF') {
-    cy.get(':nth-child(2) > .usa-radio__label').click()
+    cy.get(':nth-child(2) > .usa-radio__label', { timeout: 1000 })
+      .contains(program)
+      .should('exist')
+    cy.get(':nth-child(2) > .usa-radio__label', { timeout: 1000 }).click()
   } else {
-    cy.get(':nth-child(3) > .usa-radio__label').click()
+    cy.get(':nth-child(3) > .usa-radio__label')
+      .contains(program, { timeout: 1000 })
+      .should('exist')
+    cy.get(':nth-child(3) > .usa-radio__label', { timeout: 1000 }).click()
   }
   cy.get('#reportingYears').should('exist').select(fy)
   cy.get('#quarter').should('exist').select(q)
