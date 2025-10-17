@@ -157,10 +157,13 @@ export const upload =
 // returned to the frontend for the submittedFile's section. However, the frontend maps the Program Audit file's
 // section to be the quarter labels. Thus, we need this function to map the backend to the frontend.
 const map_section = (fileType, submittedFile) => {
-  console.log(fileType)
   if (fileType === 'program-integrity-audit') {
-    submittedFile.section = quarters[submittedFile.quarter]
+    return {
+      ...submittedFile,
+      section: quarters[submittedFile.quarter],
+    }
   }
+  return submittedFile
 }
 
 export const submit =
@@ -214,8 +217,7 @@ export const submit =
         removeFileInputErrorState()
 
         const submittedFiles = responses.reduce((result, response) => {
-          const submittedFile = response?.data
-          map_section(fileType, submittedFile)
+          const submittedFile = map_section(fileType, response?.data)
           dispatch({
             type: SET_FILE_SUBMITTED,
             payload: { submittedFile },
