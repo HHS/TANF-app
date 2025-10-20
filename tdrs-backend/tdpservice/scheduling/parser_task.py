@@ -3,7 +3,6 @@
 from __future__ import absolute_import
 
 from django.conf import settings
-from django.contrib.auth.models import Group
 from django.core.files import File
 from django.db.utils import DatabaseError
 from django.utils import timezone
@@ -50,7 +49,7 @@ def update_dfs(dfs, data_file):
     """Update DataFileSummary fields."""
     dfs.status = dfs.get_status()
 
-    if data_file.prog_type == "FRA":
+    if data_file.program_type == DataFile.ProgramType.FRA:
         dfs.case_aggregates = fra_total_errors(data_file)
     else:
         if "Case Data" in data_file.section:
@@ -96,7 +95,7 @@ def parse(data_file_id, reparse_id=None):
             datafile=data_file,
             dfs=dfs,
             section=data_file.section,
-            program_type=data_file.prog_type,
+            program_type=data_file.program_type,
         )
         parser.parse_and_validate()
         update_dfs(dfs, data_file)
@@ -120,17 +119,18 @@ def parse(data_file_id, reparse_id=None):
                 ReparseMeta.objects.get(pk=reparse_id)
             )
         else:
-            recipients = (
-                User.objects.filter(
-                    stt=data_file.stt,
-                    account_approval_status=AccountApprovalStatusChoices.APPROVED,
-                    groups=Group.objects.get(name="Data Analyst"),
-                )
-                .values_list("username", flat=True)
-                .distinct()
+            qs = User.objects.filter(
+                stt=data_file.stt,
+                account_approval_status=AccountApprovalStatusChoices.APPROVED,
+                groups__name="Data Analyst",
             )
 
+            if data_file.program_type == DataFile.ProgramType.FRA:
+                qs = qs.filter(user_permissions__codename="has_fra_access")
+
+            recipients = qs.values_list("username", flat=True).distinct()
             send_data_submitted_email(dfs, recipients)
+
     except DecoderUnknownException:
         dfs.set_status(DataFileSummary.Status.REJECTED)
         dfs.save()

@@ -248,7 +248,7 @@ class TanfDataReportParser(BaseParser):
         logger.debug(f"Datafile: {repr(self.datafile)}, is Tribal: {is_tribal}.")
 
         program_type = (
-            f"Tribal {header['program_type']}" if is_tribal else header["program_type"]
+            DataFile.ProgramType.TRIBAL if is_tribal else header["program_type"]
         )
         section = header["type"]
         logger.debug(f"Program type: {program_type}, Section: {section}.")
