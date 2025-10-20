@@ -1,4 +1,5 @@
 """Test function for sending upcoming data deadline reminders."""
+
 from datetime import datetime
 
 from django.contrib.auth.models import Group
@@ -82,6 +83,7 @@ def test_upcoming_deadline_sends_some_sections_submitted(
     _ = DataFile.create_new_version(
         {
             "section": "Active Case Data",
+            "program_type": "TAN",
             "quarter": fiscal_quarter,
             "year": fiscal_year,
             "stt": stt,
@@ -131,6 +133,7 @@ def test_upcoming_deadline_no_send_when_all_sections_complete(
     _ = DataFile.create_new_version(
         {
             "section": "Active Case Data",
+            "program_type": "TAN",
             "quarter": fiscal_quarter,
             "year": fiscal_year,
             "stt": stt,
@@ -141,6 +144,7 @@ def test_upcoming_deadline_no_send_when_all_sections_complete(
     _ = DataFile.create_new_version(
         {
             "section": "Closed Case Data",
+            "program_type": "TAN",
             "quarter": fiscal_quarter,
             "year": fiscal_year,
             "stt": stt,
