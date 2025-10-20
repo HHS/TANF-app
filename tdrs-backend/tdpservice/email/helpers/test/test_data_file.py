@@ -5,7 +5,10 @@ from django.core import mail
 import pytest
 
 from tdpservice.data_files.models import DataFile
-from tdpservice.email.helpers.data_file import send_data_submitted_email
+from tdpservice.email.helpers.data_file import (
+    send_data_submitted_email,
+    send_stuck_file_email,
+)
 from tdpservice.parsers.models import DataFileSummary
 
 
@@ -144,6 +147,21 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
             "TANF",
             DataFile.ProgramType.TANF,
         ),
+        # fra
+        (
+            DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
+            DataFileSummary.Status.ACCEPTED,
+            f"{DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS} Successfully Submitted",
+            "FRA",
+            DataFile.ProgramType.FRA,
+        ),
+        (
+            DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
+            DataFileSummary.Status.REJECTED,
+            f"Action Required: {DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS} Contains Errors",
+            "FRA",
+            DataFile.ProgramType.FRA,
+        ),
     ],
 )
 def test_send_data_submitted_email(
@@ -180,3 +198,37 @@ def test_send_data_submitted_email(
     assert len(mail.outbox) == 1
     assert mail.outbox[0].subject == subject
     assert mail.outbox[0].body == msg
+
+
+@pytest.mark.django_db
+def test_send_stuck_file_email(user, stt):
+    """Test that the send_stuck_file_email function runs."""
+
+    df1 = DataFile(
+        user=user,
+        section=DataFile.Section.ACTIVE_CASE_DATA,
+        program_type=DataFile.ProgramType.TANF,
+        quarter="Q1",
+        year=2025,
+        stt=stt,
+    )
+    df2 = DataFile(
+        user=user,
+        section=DataFile.Section.CLOSED_CASE_DATA,
+        program_type=DataFile.ProgramType.TANF,
+        quarter="Q1",
+        year=2025,
+        stt=stt,
+    )
+    stuck_files = [df1, df2]
+
+    recipients = ["test@not-real.com"]
+
+    send_stuck_file_email(stuck_files, recipients)
+
+    assert len(mail.outbox) == 1
+    assert (
+        mail.outbox[0].subject
+        == "List of submitted files with pending status after 1 hour"
+    )
+    assert mail.outbox[0].body == "The system has detected stuck files."

@@ -257,8 +257,16 @@ def dateHasFormat(format: str, **kwargs):
     )
 
 
-def fraSSNAllOf(*funcs, **kwargs):
-    """Aggregate validator for all FRA SSN validators."""
+def ssnAllOf(*funcs, **kwargs):
+    """Aggregate validator for all SSN validators."""
+    error_message = (
+        "Social Security Number is not valid. Check that the SSN is 9 digits, "
+        "does not contain only zeroes in any one section, and does not contain "
+        "dashes or other punctuation. "
+        "Enter 999999999 if an individual does not have an SSN."
+    )
+    if "error_message" in kwargs:
+        error_message = kwargs["error_message"]
 
     def validator(val, eargs):
         is_valid = all([validator(val, eargs).valid for validator in funcs])
@@ -266,12 +274,12 @@ def fraSSNAllOf(*funcs, **kwargs):
             return Result()
         return Result(
             valid=False,
-            error_message=(
-                "Social Security Number is not valid. Check that the SSN is 9 digits, "
-                "does not contain only zeroes in any one section, and does not contain "
-                "dashes or other punctuation. "
-                "Enter 999999999 if an individual does not have an SSN."
-            ),
+            error_message=error_message,
         )
 
     return validator
+
+
+def fraSSNAllOf(*funcs, **kwargs):
+    """Aggregate validator for all FRA SSN validators."""
+    return ssnAllOf(*funcs, **kwargs)

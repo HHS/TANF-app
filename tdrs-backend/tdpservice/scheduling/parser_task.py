@@ -3,7 +3,6 @@
 from __future__ import absolute_import
 
 from django.conf import settings
-from django.contrib.auth.models import Group
 from django.core.files import File
 from django.db.utils import DatabaseError
 from django.utils import timezone
@@ -120,17 +119,18 @@ def parse(data_file_id, reparse_id=None):
                 ReparseMeta.objects.get(pk=reparse_id)
             )
         else:
-            recipients = (
-                User.objects.filter(
-                    stt=data_file.stt,
-                    account_approval_status=AccountApprovalStatusChoices.APPROVED,
-                    groups=Group.objects.get(name="Data Analyst"),
-                )
-                .values_list("username", flat=True)
-                .distinct()
+            qs = User.objects.filter(
+                stt=data_file.stt,
+                account_approval_status=AccountApprovalStatusChoices.APPROVED,
+                groups__name="Data Analyst",
             )
 
+            if data_file.program_type == DataFile.ProgramType.FRA:
+                qs = qs.filter(user_permissions__codename="has_fra_access")
+
+            recipients = qs.values_list("username", flat=True).distinct()
             send_data_submitted_email(dfs, recipients)
+
     except DecoderUnknownException:
         dfs.set_status(DataFileSummary.Status.REJECTED)
         dfs.save()
@@ -143,7 +143,7 @@ def parse(data_file_id, reparse_id=None):
         )
         set_reparse_file_meta_model_failed_state(reparse_id, file_meta)
     except Exception as e:
-        generate_error = ErrorGeneratorFactory(data_file).get_error_generator(
+        generate_error = ErrorGeneratorFactory(data_file).get_generator(
             ErrorGeneratorType.MSG_ONLY_PRECHECK,
             None,
         )
