@@ -159,7 +159,15 @@ class DataFile(FileRecord):
 
         constraints = [
             models.UniqueConstraint(
-                fields=("program_type", "section", "version", "quarter", "year", "stt"),
+                fields=(
+                    "program_type",
+                    "section",
+                    "version",
+                    "quarter",
+                    "year",
+                    "stt",
+                    "is_program_audit",
+                ),
                 name="constraint_name",
             )
         ]
