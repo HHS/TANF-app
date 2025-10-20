@@ -320,28 +320,37 @@ function RequestAccessForm({
           handleChange={handleChange}
           handleBlur={handleBlur}
         />
-        {editMode && !isAMSUser && (
-          <div>
-            <hr className="form-section-divider" />
-            <ReadOnlyRow
-              label="Jurisdiction Type"
-              value={
-                (jurisdictionType?.charAt(0)?.toUpperCase() ?? '') +
-                (jurisdictionType?.slice(1) ?? '')
-              }
-            />
-            <JurisdictionLocationInfo
-              jurisdictionType={jurisdictionType}
-              locationName={profileInfo.stt || 'Federal Government'}
-              formType={FORM_TYPES.ACCESS_REQUEST}
-            />
-            <hr className="form-section-divider" />
-          </div>
-        )}
 
-        {!editMode && !isAMSUser && (
+        {editMode &&
+          user.account_approval_status === 'Approved' &&
+          !isAMSUser && (
+            <div>
+              <hr className="form-section-divider" />
+              <ReadOnlyRow
+                label="Jurisdiction Type"
+                value={
+                  (jurisdictionType?.charAt(0)?.toUpperCase() ?? '') +
+                  (jurisdictionType?.slice(1) ?? '')
+                }
+              />
+              <JurisdictionLocationInfo
+                jurisdictionType={jurisdictionType}
+                locationName={profileInfo.stt || 'Federal Government'}
+                formType={FORM_TYPES.ACCESS_REQUEST}
+              />
+              <hr className="form-section-divider" />
+            </div>
+          )}
+
+        {((editMode &&
+          !isAMSUser &&
+          user.account_approval_status === 'Access request') ||
+          (user.account_approval_status === 'Initial' && !isAMSUser)) && (
           <>
-            <JurisdictionSelector setJurisdictionType={setJurisdictionType} />
+            <JurisdictionSelector
+              jurisdictionType={jurisdictionType}
+              setJurisdictionType={setJurisdictionType}
+            />
             {jurisdictionType && (
               <div
                 className={`usa-form-group ${

@@ -1,4 +1,4 @@
-"""Schema for T1 record type."""
+"""Schema for T2 record type."""
 
 from django.db.models import Q
 

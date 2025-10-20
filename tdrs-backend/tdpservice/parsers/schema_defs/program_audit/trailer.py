@@ -1,4 +1,4 @@
-"""Schema for TRAILER row of all submission types."""
+"""Schema for TRAILER row of program audit submissions."""
 
 from tdpservice.parsers.dataclasses import FieldType
 from tdpservice.parsers.fields import Field
