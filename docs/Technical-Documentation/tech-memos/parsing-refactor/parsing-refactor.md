@@ -366,7 +366,7 @@ def parse(data_file_id, reparse_id=None):
         dfs = DataFileSummary.objects.create(datafile=data_file, status=DataFileSummary.Status.PENDING)
         parser = ParserFactory.get_instance(datafile=data_file, dfs=dfs,
                                             section=data_file.section,
-                                            program_type=data_file.prog_type)
+                                            program_type=data_file.program_type)
         errors = parser.parse_and_validate()
         # Rest of the file is exactly the same and is ommitted for brevity.
 ```
