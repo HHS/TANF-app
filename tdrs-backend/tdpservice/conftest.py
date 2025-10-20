@@ -1,4 +1,5 @@
 """Globally available pytest fixtures."""
+
 import uuid
 from io import StringIO
 
@@ -142,6 +143,7 @@ def ofa_system_admin():
     ofa_sys_adming.save()
     return ofa_sys_adming
 
+
 @pytest.fixture
 def data_analyst(stt):
     """Return a data analyst user."""
@@ -265,6 +267,7 @@ def base_data_file_data(fake_file_name, data_analyst):
         "slug": str(uuid.uuid4()),
         "extension": "txt",
         "section": "Active Case Data",
+        "program_type": "TAN",
         "user": str(data_analyst.id),
         "quarter": "Q1",
         "year": 2020,
@@ -311,6 +314,7 @@ def other_base_regional_data_file_data(fake_file_name, regional_user, other_stt)
         "slug": str(uuid.uuid4()),
         "extension": "txt",
         "section": "Active Case Data",
+        "program_type": "TAN",
         "user": str(regional_user.id),
         "regions": [other_stt.region.id],
         "quarter": "Q1",

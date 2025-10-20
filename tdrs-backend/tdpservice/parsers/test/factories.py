@@ -1,4 +1,5 @@
 """Factories for generating test data for parsers."""
+
 from django.utils import timezone
 
 import factory
@@ -33,6 +34,7 @@ class ParsingFileFactory(factory.django.DjangoModelFactory):
     slug = "data_file-txt-slug"
     extension = "txt"
     section = "Active Case Data"
+    program_type = "TAN"
     quarter = "Q1"
     year = 2020
     version = 1

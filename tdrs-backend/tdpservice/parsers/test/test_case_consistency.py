@@ -152,7 +152,7 @@ class TestCaseConsistencyValidator:
             (
                 {
                     "type": "A",
-                    "program_type": "Tribal TAN",
+                    "program_type": "TRIBAL",
                     "year": 2020,
                     "quarter": "4",
                 },
@@ -250,7 +250,7 @@ class TestCaseConsistencyValidator:
             (
                 {
                     "type": "A",
-                    "program_type": "Tribal TAN",
+                    "program_type": "TRIBAL",
                     "year": 2020,
                     "quarter": "4",
                 },
@@ -307,7 +307,7 @@ class TestCaseConsistencyValidator:
         assert len(errors) == 1
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
-        is_tribal = "Tribal" in header["program_type"]
+        is_tribal = "TRIBAL" in header["program_type"]
         case_num = "Case Number"
         case_num += "--TANF" if is_tribal else ""
         assert errors[0].error_message == (
@@ -329,7 +329,7 @@ class TestCaseConsistencyValidator:
             (
                 {
                     "type": "A",
-                    "program_type": "Tribal TAN",
+                    "program_type": "TRIBAL",
                     "year": 2020,
                     "quarter": "4",
                 },
@@ -411,7 +411,7 @@ class TestCaseConsistencyValidator:
         assert num_errors == 4
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
 
-        is_tribal = "Tribal" in header["program_type"]
+        is_tribal = "TRIBAL" in header["program_type"]
         case_num = "Case Number"
         case_num += "--TANF" if is_tribal else ""
         assert errors[0].error_message == (
@@ -451,7 +451,7 @@ class TestCaseConsistencyValidator:
             (
                 {
                     "type": "A",
-                    "program_type": "Tribal TAN",
+                    "program_type": "TRIBAL",
                     "year": 2020,
                     "quarter": "4",
                 },
@@ -549,7 +549,7 @@ class TestCaseConsistencyValidator:
         assert len(errors) == 1
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
-        is_tribal = "Tribal" in header["program_type"]
+        is_tribal = "TRIBAL" in header["program_type"]
         case_num = "Case Number"
         case_num += "--TANF" if is_tribal else ""
         assert errors[0].error_message == (
@@ -571,7 +571,7 @@ class TestCaseConsistencyValidator:
             (
                 {
                     "type": "C",
-                    "program_type": "Tribal TAN",
+                    "program_type": "TRIBAL",
                     "year": 2020,
                     "quarter": "4",
                 },
@@ -654,7 +654,7 @@ class TestCaseConsistencyValidator:
             (
                 {
                     "type": "C",
-                    "program_type": "Tribal TAN",
+                    "program_type": "TRIBAL",
                     "year": 2020,
                     "quarter": "4",
                 },
@@ -755,7 +755,7 @@ class TestCaseConsistencyValidator:
             (
                 {
                     "type": "C",
-                    "program_type": "Tribal TAN",
+                    "program_type": "TRIBAL",
                     "year": 2020,
                     "quarter": "4",
                 },
@@ -833,7 +833,7 @@ class TestCaseConsistencyValidator:
         assert len(errors) == 1
         assert num_errors == 0
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
-        is_tribal = "Tribal" in header["program_type"]
+        is_tribal = "TRIBAL" in header["program_type"]
         tribe_or_fed = "Tribal" if is_tribal else "Federal"
         assert errors[0].error_message == (
             "At least one person who is head-of-household or spouse of "
@@ -855,7 +855,7 @@ class TestCaseConsistencyValidator:
             (
                 {
                     "type": "C",
-                    "program_type": "Tribal TAN",
+                    "program_type": "TRIBAL",
                     "year": 2020,
                     "quarter": "4",
                 },
@@ -912,7 +912,7 @@ class TestCaseConsistencyValidator:
         assert len(errors) == 1
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
-        is_tribal = "Tribal" in header["program_type"]
+        is_tribal = "TRIBAL" in header["program_type"]
         case_num = "Case Number"
         case_num += "--TANF" if is_tribal else ""
         assert errors[0].error_message == (
@@ -933,7 +933,7 @@ class TestCaseConsistencyValidator:
             (
                 {
                     "type": "C",
-                    "program_type": "Tribal TAN",
+                    "program_type": "TRIBAL",
                     "year": 2020,
                     "quarter": "4",
                 },
@@ -1007,7 +1007,7 @@ class TestCaseConsistencyValidator:
         assert num_errors == 1
         assert "Uncaught exception during category four validation." in logs
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
-        is_tribal = "Tribal" in header["program_type"]
+        is_tribal = "TRIBAL" in header["program_type"]
         case_num = "Case Number"
         case_num += "--TANF" if is_tribal else ""
         assert errors[0].error_message == (
@@ -1032,7 +1032,7 @@ class TestCaseConsistencyValidator:
             (
                 {
                     "type": "C",
-                    "program_type": "Tribal TAN",
+                    "program_type": "TRIBAL",
                     "year": 2020,
                     "quarter": "4",
                 },
@@ -1099,7 +1099,7 @@ class TestCaseConsistencyValidator:
         assert len(errors) == 2
         assert num_errors == 2
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
-        is_tribal = "Tribal" in header["program_type"]
+        is_tribal = "TRIBAL" in header["program_type"]
         case_num = "Case Number"
         case_num += "--TANF" if is_tribal else ""
         assert errors[0].error_message == (
@@ -1125,7 +1125,7 @@ class TestCaseConsistencyValidator:
             (
                 {
                     "type": "C",
-                    "program_type": "Tribal TAN",
+                    "program_type": "TRIBAL",
                     "year": 2020,
                     "quarter": "4",
                 },
@@ -1207,7 +1207,7 @@ class TestCaseConsistencyValidator:
             (
                 {
                     "type": "C",
-                    "program_type": "Tribal TAN",
+                    "program_type": "TRIBAL",
                     "year": 2020,
                     "quarter": "4",
                 },
@@ -1304,7 +1304,7 @@ class TestCaseConsistencyValidator:
             (
                 {
                     "type": "C",
-                    "program_type": "Tribal TAN",
+                    "program_type": "TRIBAL",
                     "year": 2020,
                     "quarter": "4",
                 },
@@ -1386,7 +1386,7 @@ class TestCaseConsistencyValidator:
             (
                 {
                     "type": "C",
-                    "program_type": "Tribal TAN",
+                    "program_type": "TRIBAL",
                     "year": 2020,
                     "quarter": "4",
                 },
@@ -1483,7 +1483,7 @@ class TestCaseConsistencyValidator:
             (
                 {
                     "type": "C",
-                    "program_type": "Tribal TAN",
+                    "program_type": "TRIBAL",
                     "year": 2020,
                     "quarter": "4",
                 },
@@ -1580,7 +1580,7 @@ class TestCaseConsistencyValidator:
             (
                 {
                     "type": "C",
-                    "program_type": "Tribal TAN",
+                    "program_type": "TRIBAL",
                     "year": 2020,
                     "quarter": "4",
                 },

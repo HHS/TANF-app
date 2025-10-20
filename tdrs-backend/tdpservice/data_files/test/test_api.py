@@ -1,4 +1,5 @@
 """Tests for DataFiles Application."""
+
 import io
 import os
 
@@ -47,7 +48,11 @@ class DataFileAPITestBase:
     def test_fra_csv_file(self, stt_user, stt):
         """Fixture for small_incorrect_file_cross_validator."""
         test_datafile = util.create_test_datafile(
-            "fra.csv", stt_user, stt, DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS
+            "fra.csv",
+            stt_user,
+            stt,
+            DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
+            DataFile.ProgramType.FRA,
         )
         test_datafile.year = 2024
         test_datafile.quarter = "Q2"
@@ -58,7 +63,11 @@ class DataFileAPITestBase:
     def test_fra_xlsx_file(self, stt_user, stt):
         """Fixture for small_incorrect_file_cross_validator."""
         test_datafile = util.create_test_datafile(
-            "fra.xlsx", stt_user, stt, DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS
+            "fra.xlsx",
+            stt_user,
+            stt,
+            DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
+            DataFile.ProgramType.FRA,
         )
         test_datafile.year = 2024
         test_datafile.quarter = "Q2"
@@ -69,7 +78,7 @@ class DataFileAPITestBase:
     def test_ssp_datafile(self, stt_user, stt):
         """Fixture for small_ssp_section1."""
         df = util.create_test_datafile(
-            "small_ssp_section1.txt", stt_user, stt, "SSP Active Case Data"
+            "small_ssp_section1.txt", stt_user, stt, "Active Case Data"
         )
         df.year = 2024
         df.quarter = "Q1"
@@ -377,7 +386,7 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
             datafile=datafile,
             dfs=dfs,
             section=datafile.section,
-            program_type=datafile.prog_type,
+            program_type=datafile.program_type,
         )
         parser.parse_and_validate()
 
@@ -396,7 +405,7 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
             datafile=test_datafile,
             dfs=dfs,
             section=test_datafile.section,
-            program_type=test_datafile.prog_type,
+            program_type=test_datafile.program_type,
         )
         parser.parse_and_validate()
 
@@ -415,7 +424,7 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
             datafile=test_ssp_datafile,
             dfs=dfs,
             section=test_ssp_datafile.section,
-            program_type=test_ssp_datafile.prog_type,
+            program_type=test_ssp_datafile.program_type,
         )
         parser.parse_and_validate()
         response = self.download_error_report_file(api_client, test_ssp_datafile.id)
@@ -433,7 +442,7 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
             datafile=test_datafile,
             dfs=dfs,
             section=test_datafile.section,
-            program_type=test_datafile.prog_type,
+            program_type=test_datafile.program_type,
         )
         parser.parse_and_validate()
 
@@ -488,14 +497,14 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         data_file_data["ssp"] = True
 
         response = self.post_data_file(api_client, data_file_data)
-        assert response.data["section"] == "SSP Active Case Data"
+        assert response.data["section"] == "Active Case Data"
 
     def test_data_file_data_upload_tribe(self, api_client, data_file_data, stt):
         """Test that when we upload a file for Tribe the section name is updated."""
         stt.type = "tribe"
         stt.save()
         response = self.post_data_file(api_client, data_file_data)
-        assert "Tribal Active Case Data" == response.data["section"]
+        assert "Active Case Data" == response.data["section"]
         stt.type = ""
         stt.save()
 
@@ -598,6 +607,7 @@ def multi_year_data_file_data(user, stt):
             "stt": stt,
             "year": 2020,
             "section": "Active Case Data",
+            "program_type": "TAN",
         },
         {
             "original_filename": "data_file.txt",
@@ -606,6 +616,7 @@ def multi_year_data_file_data(user, stt):
             "stt": stt,
             "year": 2021,
             "section": "Active Case Data",
+            "program_type": "TAN",
         },
         {
             "original_filename": "data_file.txt",
@@ -614,6 +625,7 @@ def multi_year_data_file_data(user, stt):
             "stt": stt,
             "year": 2022,
             "section": "Active Case Data",
+            "program_type": "TAN",
         },
     ]
 

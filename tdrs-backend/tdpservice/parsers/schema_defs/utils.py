@@ -69,7 +69,11 @@ class ProgramManager:
     def get_section(cls, program_type: str, section_abbrev: str):
         """Get full section name given the program type and section abbreviation used in the datafile."""
         match program_type:
-            case "TAN":
+            case (
+                DataFile.ProgramType.TANF
+                | DataFile.ProgramType.SSP
+                | DataFile.ProgramType.TRIBAL
+            ):
                 match section_abbrev:
                     case "A":
                         return DataFile.Section.ACTIVE_CASE_DATA
@@ -79,26 +83,6 @@ class ProgramManager:
                         return DataFile.Section.AGGREGATE_DATA
                     case "S":
                         return DataFile.Section.STRATUM_DATA
-            case "SSP":
-                match section_abbrev:
-                    case "A":
-                        return DataFile.Section.SSP_ACTIVE_CASE_DATA
-                    case "C":
-                        return DataFile.Section.SSP_CLOSED_CASE_DATA
-                    case "G":
-                        return DataFile.Section.SSP_AGGREGATE_DATA
-                    case "S":
-                        return DataFile.Section.SSP_STRATUM_DATA
-            case "Tribal TAN":
-                match section_abbrev:
-                    case "A":
-                        return DataFile.Section.TRIBAL_ACTIVE_CASE_DATA
-                    case "C":
-                        return DataFile.Section.TRIBAL_CLOSED_CASE_DATA
-                    case "G":
-                        return DataFile.Section.TRIBAL_AGGREGATE_DATA
-                    case "S":
-                        return DataFile.Section.TRIBAL_STRATUM_DATA
 
     @classmethod
     def get_schema(
@@ -112,7 +96,7 @@ class ProgramManager:
     def get_schemas(cls, program_type: str, section: DataFile.Section | str):
         """Get all schemas for a program type and section."""
         match program_type:
-            case "TAN":
+            case DataFile.ProgramType.TANF:
                 match section:
                     case DataFile.Section.ACTIVE_CASE_DATA | "A":
                         return cls.tan_active_schemas
@@ -122,27 +106,27 @@ class ProgramManager:
                         return cls.tan_agg_schemas
                     case DataFile.Section.STRATUM_DATA | "S":
                         return cls.tan_strat_schemas
-            case "SSP":
+            case DataFile.ProgramType.SSP:
                 match section:
-                    case DataFile.Section.SSP_ACTIVE_CASE_DATA | "A":
+                    case DataFile.Section.ACTIVE_CASE_DATA | "A":
                         return cls.ssp_active_schemas
-                    case DataFile.Section.SSP_CLOSED_CASE_DATA | "C":
+                    case DataFile.Section.CLOSED_CASE_DATA | "C":
                         return cls.ssp_closed_schemas
-                    case DataFile.Section.SSP_AGGREGATE_DATA | "G":
+                    case DataFile.Section.AGGREGATE_DATA | "G":
                         return cls.ssp_agg_schemas
-                    case DataFile.Section.SSP_STRATUM_DATA | "S":
+                    case DataFile.Section.STRATUM_DATA | "S":
                         return cls.ssp_strat_schemas
-            case "Tribal TAN":
+            case DataFile.ProgramType.TRIBAL:
                 match section:
-                    case DataFile.Section.TRIBAL_ACTIVE_CASE_DATA | "A":
+                    case DataFile.Section.ACTIVE_CASE_DATA | "A":
                         return cls.tribal_active_schemas
-                    case DataFile.Section.TRIBAL_CLOSED_CASE_DATA | "C":
+                    case DataFile.Section.CLOSED_CASE_DATA | "C":
                         return cls.tribal_closed_schemas
-                    case DataFile.Section.TRIBAL_AGGREGATE_DATA | "G":
+                    case DataFile.Section.AGGREGATE_DATA | "G":
                         return cls.tribal_agg_schemas
-                    case DataFile.Section.TRIBAL_STRATUM_DATA | "S":
+                    case DataFile.Section.STRATUM_DATA | "S":
                         return cls.tribal_strat_schemas
-            case "FRA":
+            case DataFile.ProgramType.FRA:
                 match section:
                     case DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS:
                         return cls.fra_work_outcomes_tanf_exiters

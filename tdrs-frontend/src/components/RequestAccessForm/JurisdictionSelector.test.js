@@ -5,11 +5,16 @@ import JurisdictionSelector from './JurisdictionSelector'
 
 describe('JurisdictionSelector', () => {
   let mockSetJurisdictionType
+  let mockJurisdictionType
 
   beforeEach(() => {
     mockSetJurisdictionType = jest.fn()
+    mockJurisdictionType = 'state'
     render(
-      <JurisdictionSelector setJurisdictionType={mockSetJurisdictionType} />
+      <JurisdictionSelector
+        jurisdictionType={mockJurisdictionType}
+        setJurisdictionType={mockSetJurisdictionType}
+      />
     )
   })
 

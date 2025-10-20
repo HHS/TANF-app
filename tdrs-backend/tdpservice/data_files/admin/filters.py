@@ -1,4 +1,5 @@
 """Filter classes for DataFiles admin page."""
+
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 
@@ -53,6 +54,11 @@ class VersionFilter(MostRecentVersionFilter):
         """Sort queryset to show latest records."""
         if self.value() is None and queryset.exists():
             return queryset.order_by(
-                "stt__stt_code", "year", "quarter", "section", "-version"
-            ).distinct("stt__stt_code", "year", "quarter", "section")
+                "stt__stt_code",
+                "year",
+                "quarter",
+                "program_type",
+                "section",
+                "-version",
+            ).distinct("stt__stt_code", "year", "quarter", "program_type", "section")
         return queryset
