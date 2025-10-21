@@ -4,22 +4,12 @@ import logging
 
 from django.conf import settings
 from django.core.paginator import Paginator
-from django.db.models import Count, Q
+from django.db.models import Count
 
 from tdpservice.parsers import schema_defs
-from tdpservice.parsers.case_consistency_validator import CaseConsistencyValidator
-from tdpservice.parsers.dataclasses import HeaderResult, Position
-from tdpservice.parsers.error_generator import ErrorGeneratorArgs, ErrorGeneratorType
-from tdpservice.parsers.parser_classes.base_parser import BaseParser
 from tdpservice.parsers.parser_classes.tdr_parser import TanfDataReportParser
-from tdpservice.parsers.validators import category1
-from tdpservice.parsers.validators.util import value_is_empty
 
 logger = logging.getLogger(__name__)
-
-
-HEADER_POSITION = Position(0, 6)
-TRAILER_POSITION = Position(0, 7)
 
 
 class ProgramAuditParser(TanfDataReportParser):
