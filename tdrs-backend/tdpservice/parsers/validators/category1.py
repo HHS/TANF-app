@@ -193,7 +193,7 @@ def t3_m3_child_validator(which_child, first_record_len=60, second_record_len=10
                 valid=False,
                 error_message=(
                     f"The second child record is too short at {len(row)} "
-                    "characters and must be at least {second_record_len} characters."
+                    f"characters and must be at least {second_record_len} characters."
                 ),
             )
         else:

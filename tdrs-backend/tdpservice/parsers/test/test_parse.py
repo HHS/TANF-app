@@ -2574,7 +2574,7 @@ def test_parse_program_audit_space_zero_fill(request, file, dfs):
     for e in errors:
         print(e)
         # assert e.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert len(errors) == 12
+    assert len(errors) == 13
     assert dfs.get_status() == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
 
 
