@@ -1,4 +1,4 @@
-"""TANF/SSP/Tribal parser class."""
+"""Program audit parser class."""
 
 import logging
 
@@ -13,6 +13,8 @@ logger = logging.getLogger(__name__)
 
 
 class ProgramAuditParser(TanfDataReportParser):
+    """Parser class for TANF/SSP/Tribal program audit."""
+
     def __init__(self, datafile, dfs, section):
         super().__init__(datafile, dfs, section)
         self.header_schema = schema_defs.program_audit.header
