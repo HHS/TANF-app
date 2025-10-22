@@ -152,6 +152,7 @@ export const submit =
     user,
     year,
     ssp,
+    onComplete = () => null,
   }) =>
   async (dispatch) => {
     const submissionRequests = uploadedFiles.map((file) => {
@@ -202,15 +203,18 @@ export const submit =
         }, [])
 
         // Create LogEntries in Django for each created ReportFile
+        const fileIds = responses.map((response) => response?.data?.id)
         logger.alert(
           `Submitted ${
             submittedFiles.length
           } data file(s): ${submittedFiles.join(', ')}`,
           {
-            files: responses.map((response) => response?.data?.id),
+            files: fileIds,
             activity: 'upload',
           }
         )
+
+        onComplete(fileIds)
       })
       .catch((error) => {
         const error_response = error.response?.data
