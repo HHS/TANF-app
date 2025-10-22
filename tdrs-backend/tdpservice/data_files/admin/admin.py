@@ -88,7 +88,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
                     "quarter",
                     "year",
                     "section",
-                    "prog_type",
+                    "program_type",
                     "stt",
                     "version",
                 ),
@@ -141,9 +141,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         """Return the queryset."""
         qs = super().get_queryset(request)
         # return data files based on user's section
-        if not (
-            request.user.has_fra_access or request.user.is_an_admin
-        ):
+        if not (request.user.has_fra_access or request.user.is_an_admin):
             filtered_for_fra = qs.exclude(section__in=DataFile.get_fra_section_list())
             return filtered_for_fra
         else:
@@ -301,6 +299,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "stt",
         "year",
         "quarter",
+        "program_type",
         "section",
         "version",
         "data_file_summary",
@@ -311,6 +310,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "stt",
         "year",
         "quarter",
+        "program_type",
         "section",
         "summary__status",
         "stt__type",
