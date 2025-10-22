@@ -15,28 +15,28 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from tdpservice.users.models import (
-    User,
     AccountApprovalStatusChoices,
-    UserChangeRequest,
     ChangeRequestAuditLog,
     Feedback,
+    User,
+    UserChangeRequest,
 )
 from tdpservice.users.permissions import (
     CypressAdminAccountPermissions,
     DjangoModelCRUDPermissions,
     FeedbackPermissions,
     IsApprovedPermission,
+    IsOwnerOrAdmin,
     UserPermissions,
-    IsOwnerOrAdmin
-    )
+)
 from tdpservice.users.serializers import (
+    ChangeRequestAuditLogSerializer,
     FeedbackSerializer,
     GroupSerializer,
+    UserChangeRequestSerializer,
+    UserProfileChangeRequestSerializer,
     UserProfileSerializer,
     UserSerializer,
-    UserProfileChangeRequestSerializer,
-    UserChangeRequestSerializer,
-    ChangeRequestAuditLogSerializer
 )
 
 logger = logging.getLogger(__name__)
@@ -190,9 +190,10 @@ class UserChangeRequestViewSet(viewsets.ReadOnlyModelViewSet):
     def perform_create(self, serializer):
         """Set user to current user if not specified."""
         data = serializer.validated_data
-        if 'user' not in data:
-            data['user'] = self.request.user
+        if "user" not in data:
+            data["user"] = self.request.user
         serializer.save()
+
 
 class ChangeRequestAuditLogViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for change request audit logs."""
@@ -206,6 +207,7 @@ class ChangeRequestAuditLogViewSet(viewsets.ReadOnlyModelViewSet):
         if not user.is_ofa_sys_admin:
             return ChangeRequestAuditLog.objects.none()
         return ChangeRequestAuditLog.objects.all()
+
 
 class FeedbackViewSet(
     mixins.CreateModelMixin,
