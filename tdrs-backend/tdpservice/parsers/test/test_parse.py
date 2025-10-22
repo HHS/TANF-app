@@ -2504,6 +2504,27 @@ def test_parse_program_audit_ftanf(request, program_audit_ftanf, dfs):
     for e in errors:
         assert e.error_type == ParserErrorCategoryChoices.FIELD_VALUE
     assert dfs.get_status() == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+    dfs.case_aggregates = aggregates.case_aggregates_by_month(dfs.datafile, dfs.status)
+    assert dfs.case_aggregates == {
+        "months": [
+            {
+                "month": "Jan",
+                "accepted_without_errors": 0,
+                "accepted_with_errors": 0,
+            },
+            {
+                "month": "Feb",
+                "accepted_without_errors": 0,
+                "accepted_with_errors": 0,
+            },
+            {
+                "month": "Mar",
+                "accepted_without_errors": 0,
+                "accepted_with_errors": 1,
+            },
+        ],
+        "rejected": 0,
+    }
 
 
 @pytest.mark.django_db()
@@ -2538,6 +2559,27 @@ def test_parse_program_audit_duplicates(request, program_audit_duplicates, dfs):
     assert duplicate_errors.count() == 2
 
     assert dfs.get_status() == DataFileSummary.Status.PARTIALLY_ACCEPTED
+    dfs.case_aggregates = aggregates.case_aggregates_by_month(dfs.datafile, dfs.status)
+    assert dfs.case_aggregates == {
+        "months": [
+            {
+                "month": "Jan",
+                "accepted_without_errors": 0,
+                "accepted_with_errors": 0,
+            },
+            {
+                "month": "Feb",
+                "accepted_without_errors": 0,
+                "accepted_with_errors": 0,
+            },
+            {
+                "month": "Mar",
+                "accepted_without_errors": 0,
+                "accepted_with_errors": 1,
+            },
+        ],
+        "rejected": 2,
+    }
 
 
 @pytest.mark.parametrize(
@@ -2576,6 +2618,27 @@ def test_parse_program_audit_space_zero_fill(request, file, dfs):
         # assert e.error_type == ParserErrorCategoryChoices.FIELD_VALUE
     assert len(errors) == 13
     assert dfs.get_status() == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+    dfs.case_aggregates = aggregates.case_aggregates_by_month(dfs.datafile, dfs.status)
+    assert dfs.case_aggregates == {
+        "months": [
+            {
+                "month": "Oct",
+                "accepted_without_errors": 0,
+                "accepted_with_errors": 1,
+            },
+            {
+                "month": "Nov",
+                "accepted_without_errors": 0,
+                "accepted_with_errors": 0,
+            },
+            {
+                "month": "Dec",
+                "accepted_without_errors": 0,
+                "accepted_with_errors": 0,
+            },
+        ],
+        "rejected": 0,
+    }
 
 
 @pytest.mark.django_db
