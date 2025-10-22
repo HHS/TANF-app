@@ -148,8 +148,7 @@ update_backend()
     args+=("-t")
     args+=("180")
 
-    # TODO: Change space back to prod
-    if [[ "$APP" = "$CGAPPNAME_CELERY" && "$CF_SPACE" = "tanf-dev" ]]; then
+    if [[ "$APP" = "$CGAPPNAME_CELERY" && "$CF_SPACE" = "tanf-prod" ]]; then
       args+=("-m")
       args+=("2G")
     fi
