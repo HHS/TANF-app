@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from tdpservice.reports.models import ReportFile
-from tdpservice.reports.serializers import ReportFileSerializer
+from tdpservice.reports.serializers import ReportFileSerializer, ReportIngestSerializer
 from tdpservice.users.permissions import ReportFilePermissions
 
 
@@ -25,6 +25,17 @@ class ReportFileViewSet(ModelViewSet):
         context["user"] = self.request.user
         return context
 
+    @action(methods=["post"], detail=False)
+    def master(self, request, pk=None):
+        """Admins can upload a master zips containing multiple zips."""
+        serializer = ReportIngestSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+
+        ingest = serializer.save() # creates a ReportIngest record and stores master zip to S3
+
+        # TODO: implement celery task: process_master_zip.delay(ingest.id)
+
+        return Response(ReportIngestSerializer(ingest).data, status=status.HTTP_202_ACCEPTED)
 
     @action(methods=["get"], detail=True)
     def download(self, request, pk=None):

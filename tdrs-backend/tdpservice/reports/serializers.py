@@ -1,7 +1,8 @@
 from django.utils.crypto import get_random_string
 from rest_framework import serializers
 
-from tdpservice.reports.models import ReportFile
+from tdpservice.backends import DataFilesS3Storage
+from tdpservice.reports.models import ReportFile, ReportIngest
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
 
@@ -56,3 +57,59 @@ class ReportFileSerializer(serializers.ModelSerializer):
 
         return file
             
+
+class ReportIngestSerializer(serializers.ModelSerializer):
+    """Serializer for Report Ingest."""
+    master_zip = serializers.FileField(write_only=True)
+
+    class Meta:
+        model = ReportIngest
+        fields = [
+            "id",
+            "master_zip",             # write-only input
+            "original_filename",      # populated from upload, read-only to clients
+            "s3_key",                 # read-only (where we stored it)
+            "status",
+            "created_at",
+            "processed_at",
+            "num_reports_created",
+            "error_message",
+        ]
+        read_only_fields = [
+            "id",
+            "original_filename",
+            "s3_key",
+            "status",
+            "created_at",
+            "processed_at",
+            "num_reports_created",
+            "error_message",
+        ]
+
+
+    def create(self, validated_data):
+        """Create a ReportIngest record for a master zip file upload."""
+        file = validated_data.pop("master_zip")
+
+        storage = DataFilesS3Storage()
+        key = f"reports/master/{get_random_string(12)}-{f.name}"
+        s3_key = storage.save(key, f)
+
+        user = self.context["request"].user
+        ingest = ReportIngest.objects.create(
+            uploaded_by=user,
+            original_filename=file.name,
+            s3_key=s3_key,
+        )
+        
+        return ingest
+
+
+    def validate_master_zip(self, master_zip):
+        """Validate the file field."""
+        file_name = master_zip.name.lower()
+
+        if not file_name.endswith(".zip"):
+            raise serializers.ValidationError("File must be a zip folder")
+
+        return file

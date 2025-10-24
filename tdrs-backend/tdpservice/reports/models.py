@@ -130,3 +130,19 @@ class ReportFile(File):
             section=section,
             stt=stt,
         ).first()
+
+class ReportIngest(models.Model):
+    class Status(models.TextChoices):
+        PENDING = "PENDING"
+        PROCESSING = "PROCESSING"
+        SUCCEEDED = "SUCCEEDED"
+        FAILED = "FAILED"
+
+    uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="report_ingests")
+    original_filename = models.CharField(max_length=256)
+    s3_key = models.CharField(max_length=1024)  # where the master zip lives
+    created_at = models.DateTimeField(auto_now_add=True)
+    processed_at = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(max_length=16, choices=Status.choices, default=Status.PENDING)
+    num_reports_created = models.PositiveIntegerField(default=0)
+    error_message = models.TextField(null=True, blank=True)
