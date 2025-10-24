@@ -11,7 +11,7 @@ from tdpservice.users.models import User
 
 def get_s3_upload_path(instance, filename):
     """Produce a unique upload path for S3 files for a given STT and Quarter."""
-    return os.path.join(f"data_files/{instance.stt.id}/{instance.quarter}", filename)
+    return os.path.join(f"reports/{instance.year}/{instance.quarter}/{instance.stt.id}/{instance.section}/", filename)
 
 
 # The Report File model was starting to explode, and I think that keeping this logic

@@ -160,6 +160,39 @@ class DjangoModelCRUDPermissions(permissions.DjangoModelPermissions):
         # We also want to check for the `view` permission for GET requests.
         self.perms_map["GET"] = ["%(app_label)s.view_%(model_name)s"]
 
+class ReportFilePermissions(DjangoModelCRUDPermissions):
+    """Permission for report file downloads & uploads."""
+
+    def has_permission(self, request, view):
+        """Check if a user has the relevant Model Permissions for ReportFile."""
+        logging.debug(f"{self.__class__.__name__}: {request} ; {view}")
+
+        # Check for existenc of `report_file.view_reportfile` Permission
+        has_permission = super().has_permission(request, view)
+
+        # Only Admin are allowed to submit feedback reports
+        if has_permission and hasattr(view, "action"):
+            if view.action in ["create"] and not request.user.is_an_admin: # NOTE: Is this the correct group?
+                return False
+
+        # Data Analysts are limited to only report files for their designated STT
+        # NOTE: Will Regional Staff use report files?
+        if has_permission and request.user.is_data_analyst:
+            return is_own_stt(request.user, get_requested_stt(request, view))
+
+        return has_permission
+
+    def has_object_permission(self, request, view, obj):
+        """Check if a user cn interact with a specific report file, based on STT."""
+        # Data Analysts can only see report files uploaded for their designated STT
+        if request.user.is_data_analyst:
+            user_stt = request.user.stt.id if hasattr(request.user, "stt") else None
+            return user_stt == obj.stt_id
+
+        # NOTE: Will Regional Staff user report files?
+
+        return super().has_object_permission(request, view, obj)
+
 
 class DataFilePermissions(DjangoModelCRUDPermissions):
     """Permission for data file downloads & uploads."""
