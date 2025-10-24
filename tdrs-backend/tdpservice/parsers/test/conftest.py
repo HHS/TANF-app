@@ -1093,6 +1093,19 @@ def program_audit_ftanf(stt, stt_user):
 
 
 @pytest.fixture
+def program_audit_duplicates(stt, stt_user):
+    """Fixture for valid Program Audit file with extraneous data."""
+    return util.create_test_datafile(
+        "PI_Audit_duplicates.txt",
+        stt_user,
+        stt,
+        DataFile.Section.ACTIVE_CASE_DATA,
+        DataFile.ProgramType.TANF,
+        is_program_audit=True,
+    )
+
+
+@pytest.fixture
 def program_audit_space_fill(stt, stt_user):
     """Fixture for valid Program Audit file with space fill."""
     return util.create_test_datafile(
