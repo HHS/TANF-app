@@ -62,7 +62,7 @@ class ReportFile(File):
         constraints = [
             models.UniqueConstraint(
                 fields=("section", "version", "quarter", "year", "stt"),
-                name="constraint_name",
+                name="unique_reports_reportfile_fields",
             )
         ]
 
@@ -78,10 +78,10 @@ class ReportFile(File):
     version = models.IntegerField()
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="user", blank=False, null=False
+        User, on_delete=models.CASCADE, related_name="report_files", blank=False, null=False
     )
     stt = models.ForeignKey(
-        STT, on_delete=models.CASCADE, related_name="sttRef", blank=False, null=False
+        STT, on_delete=models.CASCADE, related_name="report_files", blank=False, null=False
     )
 
     # NOTE: `file` is only temporarily nullable until we complete the issue:
