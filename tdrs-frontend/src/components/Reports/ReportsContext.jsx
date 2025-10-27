@@ -1,5 +1,5 @@
 /* istanbul ignore file */
-import React, { createContext, useContext, useState, useRef } from 'react'
+import { createContext, useContext, useState, useRef, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   clearFileList,
@@ -7,6 +7,7 @@ import {
   setStt,
 } from '../../actions/reports'
 import { openFeedbackWidget } from '../../reducers/feedbackWidget'
+import { useSearchParams } from 'react-router-dom'
 
 const ReportsContext = createContext()
 
@@ -21,17 +22,62 @@ export const useReportsContext = () => {
 export const ReportsProvider = ({ isFra = false, children }) => {
   const dispatch = useDispatch()
 
+  // Search params
+  const [searchParams, setSearchParams] = useSearchParams()
+
   // Form state
-  const [yearInputValue, setYearInputValue] = useState('')
-  const [quarterInputValue, setQuarterInputValue] = useState('')
-  const [fileTypeInputValue, setFileTypeInputValue] = useState(
-    isFra ? 'workOutcomesOfTanfExiters' : 'tanf'
+  const [yearInputValue, setYearInputValue] = useState(
+    searchParams.get('fy') || ''
   )
-  const [sttInputValue, setSttInputValue] = useState('')
+  const [quarterInputValue, setQuarterInputValue] = useState(
+    searchParams.get('q') || ''
+  )
+  const [fileTypeInputValue, setFileTypeInputValue] = useState(
+    searchParams.get('type')
+      ? searchParams.get('type')
+      : isFra
+        ? 'workOutcomesOfTanfExiters'
+        : 'tanf'
+  )
+  const [sttInputValue, setSttInputValue] = useState(
+    searchParams.get('stt') || ''
+  )
+
+  const [selectedSubmissionTab, setSelectedSubmissionTab] = useState(
+    parseInt(searchParams.get('tab')) || 1
+  )
+
   const [pendingChange, setPendingChange] = useState({
     type: null,
     value: null,
   })
+
+  useEffect(() => {
+    const newParams = new URLSearchParams()
+    if (yearInputValue) {
+      newParams.set('fy', yearInputValue)
+    }
+    if (quarterInputValue) {
+      newParams.set('q', quarterInputValue)
+    }
+    if (fileTypeInputValue) {
+      newParams.set('type', fileTypeInputValue)
+    }
+    if (sttInputValue) {
+      newParams.set('stt', sttInputValue)
+    }
+    if (selectedSubmissionTab) {
+      newParams.set('tab', selectedSubmissionTab)
+    }
+    setSearchParams(newParams)
+  }, [
+    yearInputValue,
+    quarterInputValue,
+    fileTypeInputValue,
+    sttInputValue,
+    selectedSubmissionTab,
+    setSearchParams,
+  ])
 
   // FRA-specific upload state
   const [fraSelectedFile, setFraSelectedFile] = useState(null)
@@ -49,9 +95,6 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     type: null,
     message: null,
   })
-
-  // Tab state
-  const [selectedSubmissionTab, setSelectedSubmissionTab] = useState(1)
 
   // Refs
   const headerRef = useRef(null)
