@@ -1,12 +1,14 @@
 """Define user model."""
 
+import ast
 import datetime
 import logging
 import uuid
-import ast
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, Permission
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
@@ -47,9 +49,10 @@ class RegionMeta(models.Model):
 class UserChangeRequestStatus(models.TextChoices):
     """Enum of options for change request status."""
 
-    PENDING = "pending", _('Pending')
-    APPROVED = "approved", _('Approved')
-    REJECTED = "rejected", _('Rejected')
+    PENDING = "pending", _("Pending")
+    APPROVED = "approved", _("Approved")
+    REJECTED = "rejected", _("Rejected")
+
 
 class UserChangeRequest(Reviewable):
     """Model to track user information change requests."""
@@ -57,54 +60,48 @@ class UserChangeRequest(Reviewable):
     class Meta:
         """Define meta attributes."""
 
-        ordering = ['-requested_at']
-        verbose_name = _('User Change Request')
-        verbose_name_plural = _('User Change Requests')
+        ordering = ["-requested_at"]
+        verbose_name = _("User Change Request")
+        verbose_name_plural = _("User Change Requests")
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
-        'users.User',
-        on_delete=models.CASCADE,
-        related_name='change_requests'
+        "users.User", on_delete=models.CASCADE, related_name="change_requests"
     )
     requested_by = models.ForeignKey(
-        'users.User',
-        on_delete=models.CASCADE,
-        related_name='requested_changes'
+        "users.User", on_delete=models.CASCADE, related_name="requested_changes"
     )
     field_name = models.CharField(
         max_length=100,
-        help_text=_('The name of the field being changed, possible values include: first_name, last_name, regions and has_fra_access')
+        help_text=_(
+            "The name of the field being changed, possible values include: first_name, last_name, regions and has_fra_access"
+        ),
     )
     current_value = models.TextField(
-        blank=True,
-        help_text=_('The current value of the field')
+        blank=True, help_text=_("The current value of the field")
     )
     requested_value = models.TextField(
-        blank=True,
-        help_text=_('The requested new value for the field')
+        blank=True, help_text=_("The requested new value for the field")
     )
     status = models.CharField(
         max_length=20,
         choices=UserChangeRequestStatus.choices,
         default=UserChangeRequestStatus.PENDING,
-        help_text=_('The current status of this change request')
+        help_text=_("The current status of this change request"),
     )
     requested_at = models.DateTimeField(
-        auto_now_add=True,
-        help_text=_('When this change was requested')
+        auto_now_add=True, help_text=_("When this change was requested")
     )
     reviewed_by = models.ForeignKey(
-        'users.User',
+        "users.User",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='reviewed_changes',
-        help_text=_('The admin who reviewed this change request')
+        related_name="reviewed_changes",
+        help_text=_("The admin who reviewed this change request"),
     )
     notes = models.TextField(
-        blank=True,
-        help_text=_('Admin notes on approval/rejection')
+        blank=True, help_text=_("Admin notes on approval/rejection")
     )
 
     def __str__(self):
@@ -113,20 +110,20 @@ class UserChangeRequest(Reviewable):
 
     def __apply_change(self, user, field_name, new_value):
         """Apply the change to the user."""
-        if field_name == 'regions':
+        if field_name == "regions":
             field_name = None
             user.regions.remove(*user.regions.all())  # Clear existing regions
             regions = ast.literal_eval(new_value)
             for region in regions:
                 user.regions.add(region)
-        elif field_name == 'has_fra_access':
+        elif field_name == "has_fra_access":
             field_name = None
-            fra_permission = Permission.objects.get(codename='has_fra_access')
-            if new_value == 'True':
+            fra_permission = Permission.objects.get(codename="has_fra_access")
+            if new_value == "True":
                 user.user_permissions.add(fra_permission)
             else:
                 user.user_permissions.remove(fra_permission)
-        elif field_name == 'stt':
+        elif field_name == "stt":
             stt = STT.objects.get(id=new_value)
             user.stt = stt
         else:
@@ -202,33 +199,28 @@ class ChangeRequestAuditLog(models.Model):
     class Meta:
         """Define meta attributes."""
 
-        ordering = ['-timestamp']
-        verbose_name = _('Change Request Audit Log')
-        verbose_name_plural = _('Change Request Audit Logs')
+        ordering = ["-timestamp"]
+        verbose_name = _("Change Request Audit Log")
+        verbose_name_plural = _("Change Request Audit Logs")
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     change_request = models.ForeignKey(
-        UserChangeRequest,
-        on_delete=models.CASCADE,
-        related_name='audit_logs'
+        UserChangeRequest, on_delete=models.CASCADE, related_name="audit_logs"
     )
     action = models.CharField(
-        max_length=50,
-        help_text=_('The action performed (created, approved, rejected)')
+        max_length=50, help_text=_("The action performed (created, approved, rejected)")
     )
     performed_by = models.ForeignKey(
-        'users.User',
+        "users.User",
         on_delete=models.SET_NULL,
         null=True,
-        related_name='change_request_actions'
+        related_name="change_request_actions",
     )
     timestamp = models.DateTimeField(
-        auto_now_add=True,
-        help_text=_('When this action was performed')
+        auto_now_add=True, help_text=_("When this action was performed")
     )
     details = models.JSONField(
-        default=dict,
-        help_text=_('Additional details about the action')
+        default=dict, help_text=_("Additional details about the action")
     )
 
     def __str__(self):
@@ -239,7 +231,9 @@ class ChangeRequestAuditLog(models.Model):
 class UserChangeRequestMixin:
     """Mixin to add change request functionality to the User model."""
 
-    def request_change(self, field_name, requested_value, requested_by=None, current_value=None):
+    def request_change(
+        self, field_name, requested_value, requested_by=None, current_value=None
+    ):
         """Create a change request for this user."""
         # Default to self if no requester specified
         if requested_by is None:
@@ -269,17 +263,15 @@ class UserChangeRequestMixin:
     def get_pending_change_requests(self):
         """Get all pending change requests for this user."""
         return UserChangeRequest.objects.filter(
-            user=self,
-            status=UserChangeRequestStatus.PENDING
+            user=self, status=UserChangeRequestStatus.PENDING
         )
 
     def has_pending_change_for_field(self, field_name):
         """Check if there's a pending change request for a specific field."""
         return UserChangeRequest.objects.filter(
-            user=self,
-            field_name=field_name,
-            status=UserChangeRequestStatus.PENDING
+            user=self, field_name=field_name, status=UserChangeRequestStatus.PENDING
         ).exists()
+
 
 class Rating(models.IntegerChoices):
     """Likert like rating scale."""
@@ -289,6 +281,29 @@ class Rating(models.IntegerChoices):
     NEUTRAL = 3
     GOOD = 4
     VERY_GOOD = 5
+
+
+class FeedbackAttachment(models.Model):
+    """Generic many-to-many attachment between DataFile and any model."""
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.IntegerField()
+    content_object = GenericForeignKey("content_type", "object_id")
+
+    feedback = models.ForeignKey(
+        "users.Feedback", on_delete=models.CASCADE, related_name="attachments"
+    )
+
+    attached_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        """Meta model attributes."""
+
+        unique_together = ("content_type", "object_id", "feedback")
+
+    def __str__(self):
+        """Convert to string representation."""
+        return f"{self.feedback} attached to {self.content_object}"
 
 
 class Feedback(Reviewable):
@@ -321,12 +336,28 @@ class Feedback(Reviewable):
 
     acked = models.BooleanField(default=False)
 
+    # --- Metadata for fields ---
+    page_url = models.URLField(blank=True, null=True)
+    feedback_type = models.CharField(max_length=30, blank=True, null=True)
+    component = models.CharField(max_length=100, blank=True)
+    widget_id = models.CharField(max_length=100, blank=True)
+
     def __str__(self):
         """Return a string representation of the object."""
         return (
             f"User: {self.user.username if self.user is not None else 'Anonymous'} - "
             f"Rating: {self.rating} - Acked: {self.acked}"
         )
+
+    def attached_data_files(self):
+        """Return a list of attached data files."""
+        from tdpservice.data_files.models import DataFile
+
+        return [
+            a.content_object
+            for a in self.attachments.all()
+            if isinstance(a.content_object, DataFile)
+        ]
 
     def acknowledge(self, admin_user):
         """Acknowledge the feedback."""
@@ -547,7 +578,7 @@ class User(AbstractUser, UserChangeRequestMixin):
         # kwargs are passed via the serializer. Kwargs that do not exist in the base model must be removed befor the
         # call to super(User, self).save(*args, **kwargs) below.
         regions = kwargs.pop("regions", [])
-        updated_fields = kwargs.pop('updated_fields', None)
+        updated_fields = kwargs.pop("updated_fields", None)
 
         if not self._adding:
             if self._loaded_values is None:
