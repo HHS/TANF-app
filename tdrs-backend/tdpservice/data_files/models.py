@@ -7,7 +7,8 @@ from io import StringIO
 from typing import Union
 
 from django.conf import settings
-from django.contrib.admin.models import ADDITION, ContentType, LogEntry
+from django.contrib.admin.models import ADDITION, LogEntry
+from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import File
 from django.db import models
 from django.db.models import Max
@@ -57,7 +58,6 @@ def get_s3_upload_path(instance, filename):
         f"data_files/{instance.year}/{instance.quarter}/{instance.stt.id}/{instance.section}/",
         filename,
     )
-
 
 # The Data File model was starting to explode, and I think that keeping this logic
 # in its own abstract class is better for documentation purposes.
