@@ -1,6 +1,7 @@
 """Filter classes for DataFiles admin page."""
 
 from django.contrib import admin
+from django.db.models import F, Max, OuterRef, Subquery
 from django.utils.translation import ugettext_lazy as _
 
 from tdpservice.core.filters import MostRecentVersionFilter
@@ -53,12 +54,23 @@ class VersionFilter(MostRecentVersionFilter):
     def queryset(self, request, queryset):
         """Sort queryset to show latest records."""
         if self.value() is None and queryset.exists():
-            return queryset.order_by(
-                "stt__stt_code",
-                "year",
-                "quarter",
-                "program_type",
-                "section",
-                "-version",
-            ).distinct("stt__stt_code", "year", "quarter", "program_type", "section")
+            # Subquery to find the max version for each group
+            max_versions = (
+                queryset.filter(
+                    stt__stt_code=OuterRef("stt__stt_code"),
+                    year=OuterRef("year"),
+                    quarter=OuterRef("quarter"),
+                    program_type=OuterRef("program_type"),
+                    section=OuterRef("section"),
+                )
+                .values("stt__stt_code", "year", "quarter", "program_type", "section")
+                .annotate(max_version=Max("version"))
+                .values("max_version")
+            )
+
+            # Filter to only records with the max version
+            return queryset.annotate(max_version=Subquery(max_versions)).filter(
+                version=F("max_version")
+            )
+
         return queryset
