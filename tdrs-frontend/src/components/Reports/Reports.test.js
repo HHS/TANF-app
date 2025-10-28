@@ -7,6 +7,7 @@ import configureStore from 'redux-mock-store'
 import appConfigureStore from '../../configureStore'
 import Reports from './Reports'
 import { SET_FILE, upload } from '../../actions/reports'
+import { MemoryRouter } from 'react-router-dom'
 
 describe('Reports', () => {
   const initialState = {
@@ -98,7 +99,9 @@ describe('Reports', () => {
     const store = mockStore(initialState)
     const { getByLabelText } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -123,7 +126,9 @@ describe('Reports', () => {
     const store = mockStore(initialState)
     const { getByTestId } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -150,7 +155,9 @@ describe('Reports', () => {
 
     const { queryByTestId } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -163,7 +170,9 @@ describe('Reports', () => {
     const store = mockStore(initialState)
     const { getByText, getByLabelText } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -201,7 +210,9 @@ describe('Reports', () => {
 
     const { getByText, queryByText } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -236,7 +247,9 @@ describe('Reports', () => {
 
     const { getByText, getByLabelText, queryByText } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -278,7 +291,9 @@ describe('Reports', () => {
 
     const { getByText, queryByText } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -314,7 +329,9 @@ describe('Reports', () => {
 
     const { getByText, getByLabelText, getByRole } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -420,7 +437,9 @@ describe('Reports', () => {
 
     const { getByText } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -466,7 +485,9 @@ describe('Reports', () => {
 
       const { getByText, queryByText, getByLabelText, queryAllByText } = render(
         <Provider store={store}>
-          <Reports />
+          <MemoryRouter>
+            <Reports />
+          </MemoryRouter>
         </Provider>
       )
 
@@ -773,7 +794,9 @@ describe('Reports', () => {
 
     const { getByLabelText } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -800,7 +823,9 @@ describe('Reports', () => {
 
     const { getByLabelText } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -828,7 +853,9 @@ describe('Reports', () => {
 
     const { getByText } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -853,7 +880,9 @@ describe('Reports', () => {
 
     const { queryByText } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -871,7 +900,9 @@ describe('Reports', () => {
 
     const { getByText } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -889,7 +920,9 @@ describe('Reports', () => {
 
     const { queryByText } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -933,7 +966,9 @@ describe('Reports', () => {
 
     const { getByText, queryByText } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -967,7 +1002,9 @@ describe('Reports', () => {
 
     const { getByText, getByLabelText } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -1019,7 +1056,9 @@ describe('Reports', () => {
 
     const { getByText, getByLabelText } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
