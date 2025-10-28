@@ -1,3 +1,4 @@
+"""Define API views for reports app."""
 
 from wsgiref.util import FileWrapper
 from django.http import FileResponse
@@ -28,18 +29,24 @@ class ReportFileViewSet(ModelViewSet):
     @action(methods=["post"], detail=False)
     def master(self, request, pk=None):
         """Admins can upload a master zips containing multiple zips."""
-        serializer = ReportIngestSerializer(data=request.data, context={"user": request.user})
+        serializer = ReportIngestSerializer(
+            data=request.data, context={"user": request.user}
+        )
         serializer.is_valid(raise_exception=True)
 
-        ingest = serializer.save() # creates a ReportIngest record and stores master zip to S3
+        # creates a ReportIngest record and stores master zip to S3
+        ingest = (
+            serializer.save()
+        )
 
         # TODO: implement celery task: process_master_zip.delay(ingest.id)
 
-        return Response(ReportIngestSerializer(ingest).data, status=status.HTTP_202_ACCEPTED)
+        return Response(
+            ReportIngestSerializer(ingest).data, status=status.HTTP_202_ACCEPTED
+        )
 
     @action(methods=["get"], detail=True)
     def download(self, request, pk=None):
         """Retrieve a file from s3 then stream it to the client."""
         obj = self.get_object()
         return FileResponse(FileWrapper(obj.file), filename=obj.original_filename)
-

@@ -160,6 +160,7 @@ class DjangoModelCRUDPermissions(permissions.DjangoModelPermissions):
         # We also want to check for the `view` permission for GET requests.
         self.perms_map["GET"] = ["%(app_label)s.view_%(model_name)s"]
 
+
 class ReportFilePermissions(DjangoModelCRUDPermissions):
     """Permission for report file downloads & uploads."""
 
@@ -172,7 +173,9 @@ class ReportFilePermissions(DjangoModelCRUDPermissions):
 
         # Only Admin are allowed to submit feedback reports
         if has_permission and hasattr(view, "action"):
-            if view.action in ["create"] and not request.user.is_an_admin: # NOTE: Is this the correct group?
+            if (
+                view.action in ["create"] and not request.user.is_an_admin
+            ):  # NOTE: Is this the correct group?
                 return False
 
         # Data Analysts are limited to only report files for their designated STT

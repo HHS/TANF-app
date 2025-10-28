@@ -30,10 +30,3 @@ class ReportFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "original_filename",
         "slug",
     ]
-
-    def download_link(self, obj):
-        if obj.file:
-            return format_html("<a href='/admin/reports/reportfile/{}/change/'>Open</a>", obj.pk)
-        return "-"
-
-    download_link.short_description = "Admin"

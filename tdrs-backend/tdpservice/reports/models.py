@@ -1,4 +1,5 @@
 """Define report models."""
+
 import os
 
 from django.db import models
@@ -11,7 +12,10 @@ from tdpservice.users.models import User
 
 def get_s3_upload_path(instance, filename):
     """Produce a unique upload path for S3 files for a given STT and Quarter."""
-    return os.path.join(f"reports/{instance.year}/{instance.quarter}/{instance.stt.id}/{instance.section}/", filename)
+    return os.path.join(
+        f"reports/{instance.year}/{instance.quarter}/{instance.stt.id}/{instance.section}/",
+        filename,
+    )
 
 
 # The Report File model was starting to explode, and I think that keeping this logic
@@ -78,10 +82,18 @@ class ReportFile(File):
     version = models.IntegerField()
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="report_files", blank=False, null=False
+        User,
+        on_delete=models.CASCADE,
+        related_name="report_files",
+        blank=False,
+        null=False,
     )
     stt = models.ForeignKey(
-        STT, on_delete=models.CASCADE, related_name="report_files", blank=False, null=False
+        STT,
+        on_delete=models.CASCADE,
+        related_name="report_files",
+        blank=False,
+        null=False,
     )
 
     # NOTE: `file` is only temporarily nullable until we complete the issue:
@@ -131,18 +143,27 @@ class ReportFile(File):
             stt=stt,
         ).first()
 
+
 class ReportIngest(models.Model):
+    """ReportIngest is an intermediary model for submitting a zip file containing multiple zips to be parsed into ReportFile records."""
+
     class Status(models.TextChoices):
+        """Whether or not a ReportIngest record has been parsed into ReportFile records."""
+
         PENDING = "PENDING"
         PROCESSING = "PROCESSING"
         SUCCEEDED = "SUCCEEDED"
         FAILED = "FAILED"
 
-    uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="report_ingests")
+    uploaded_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="report_ingests"
+    )
     original_filename = models.CharField(max_length=256)
     s3_key = models.CharField(max_length=1024)  # where the master zip lives
     created_at = models.DateTimeField(auto_now_add=True)
     processed_at = models.DateTimeField(null=True, blank=True)
-    status = models.CharField(max_length=16, choices=Status.choices, default=Status.PENDING)
+    status = models.CharField(
+        max_length=16, choices=Status.choices, default=Status.PENDING
+    )
     num_reports_created = models.PositiveIntegerField(default=0)
     error_message = models.TextField(null=True, blank=True)

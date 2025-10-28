@@ -1,4 +1,4 @@
-"""API tests for the ReportFileViewSet."""
+"""Tests for ReportFileViewSet."""
 
 import pytest
 from rest_framework import status
@@ -14,7 +14,8 @@ class TestReportFileViewAsOFAAdmin:
 
     @pytest.fixture
     def api_client_logged_in(self, api_client, ofa_admin):
-        """API client authenticated as admin."""
+        """Return an API client authenticated as an admin user."""
+
         api_client.login(username=ofa_admin.username, password="test_password")
         return api_client
 
@@ -45,13 +46,8 @@ class TestReportFileViewAsOFAAdmin:
         # mock_storage_save,
         # mock_celery_delay,
     ):
-        """
-        Admin can POST to /master with a zip.
-        Should:
-        - create a ReportIngest row
-        - enqueue Celery task
-        - respond 202
-        """
+        """Admin can POST to /master with a zip."""
+
         resp = api_client_logged_in.post(
             f"{self.root_url}master/",
             data={"master_zip": master_zip_file},
@@ -88,6 +84,8 @@ class TestReportFileViewAsDataAnalyst:
 
     @pytest.fixture
     def api_client_logged_in(self, api_client, data_analyst):
+        """Return an API client authenticated as an data analyst user."""
+
         api_client.login(username=data_analyst.username, password="test_password")
         return api_client
 

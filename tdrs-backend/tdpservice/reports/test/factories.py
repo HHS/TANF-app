@@ -1,5 +1,6 @@
 """Generate test data for Report files."""
 
+import uuid
 import factory
 
 from tdpservice.reports.models import ReportIngest
@@ -11,6 +12,8 @@ class ReportFileFactory(factory.django.DjangoModelFactory):
     """Factory to generate ReportFile instances."""
 
     class Meta:
+        """Metadata."""
+
         model = "reports.ReportFile"
 
     original_filename = "report.zip"
@@ -33,6 +36,8 @@ class ReportIngestFactory(factory.django.DjangoModelFactory):
     """Factory to generate ReportIngest instances."""
 
     class Meta:
+        """Metadata."""
+
         model = "reports.ReportIngest"
 
     uploaded_by = factory.SubFactory(UserFactory)

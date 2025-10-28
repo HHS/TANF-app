@@ -1,3 +1,4 @@
+"""Pytest fixtures for the reports app."""
 import pytest
 
 from tdpservice.conftest import create_temporary_file

@@ -90,4 +90,3 @@ def test_find_latest_version(report_file_instance):
 
     assert latest_obj.id == newer.id
     assert latest_obj.version == newer.version
-

@@ -2,7 +2,6 @@
 
 import pytest
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import ValidationError
 
 from tdpservice.reports.serializers import (
     ReportFileSerializer,
