@@ -775,7 +775,13 @@ const FRAReports = () => {
 
       // Complete the submission process
       onSubmitComplete()
-      dispatch(openFeedbackWidget('fra'))
+      dispatch(
+        openFeedbackWidget({
+          dataType: 'fra',
+          dataFiles: datafile,
+          widgetId: 'fra-report-submission-feedback',
+        })
+      )
 
       const WAIT_TIME = 2000 // #
       let statusTimeout = null

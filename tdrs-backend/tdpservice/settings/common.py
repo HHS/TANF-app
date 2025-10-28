@@ -7,17 +7,16 @@ import os
 from distutils.util import strtobool
 from os.path import join
 from typing import Any, Optional
-import sentry_sdk
 
+import django
 from django.core.exceptions import ImproperlyConfigured
 
+import sentry_sdk
 from celery.schedules import crontab
 from configurations import Configuration
 from corsheaders.defaults import default_headers
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
-
-import django
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -34,6 +33,7 @@ def get_required_env_var_setting(
         )
 
     return env_var
+
 
 def init_sentry(sentry_dsn, environment: str = "ERROR") -> None:
     """Initialize Sentry for error tracking."""
@@ -53,13 +53,12 @@ def init_sentry(sentry_dsn, environment: str = "ERROR") -> None:
                 ],
                 cache_spans=False,
             ),
-            LoggingIntegration(
-                level=logging.ERROR, event_level=logging.ERROR
-            ),
+            LoggingIntegration(level=logging.ERROR, event_level=logging.ERROR),
         ],
         traces_sample_rate=1.0,
         enable_logs=True,
     )
+
 
 class Common(Configuration):
     """Define configuration class."""
@@ -612,11 +611,21 @@ class Common(Configuration):
 
     FRA_PILOT_STATES = json.loads(os.getenv("FRA_PILOT_STATES", "[]"))
 
+    # Cloud.gov SET integration settings
+    LOGIN_GOV_SET_AUDIENCE = os.getenv(
+        "LOGIN_GOV_SET_AUDIENCE",
+        "https://tdp-frontend-raft.apps.cloud.gov/v1/security/event-token/",
+    )
+    LOGIN_GOV_WELL_KNOWN_CONFIG = os.getenv(
+        "LOGIN_GOV_WELL_KNOWN_CONFIG",
+        "https://idp.int.identitysandbox.gov/.well-known/openid-configuration",
+    )
+
     # Sentry config
     SENTRY_DSN = os.getenv("SENTRY_DSN", None)
     SENTRY_ENVIRONMENT = os.getenv("CGAPPNAME_BACKEND", "ERROR")
     if SENTRY_DSN:
-        init_sentry(sentry_dsn = SENTRY_DSN, environment = SENTRY_ENVIRONMENT)
+        init_sentry(sentry_dsn=SENTRY_DSN, environment=SENTRY_ENVIRONMENT)
 
     # Per Lauren and Yun, 1 family (case) is expected to have a maximum of 6 adults and a maximum of 10 children plus
     # one T1 record. Thus, if a case has more than 17 records, it has an error and will not be serialized.
