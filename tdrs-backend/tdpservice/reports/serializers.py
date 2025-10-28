@@ -92,10 +92,10 @@ class ReportIngestSerializer(serializers.ModelSerializer):
         file = validated_data.pop("master_zip")
 
         storage = DataFilesS3Storage()
-        key = f"reports/master/{get_random_string(12)}-{f.name}"
-        s3_key = storage.save(key, f)
+        key = f"reports/master/{get_random_string(12)}-{file.name}"
+        s3_key = storage.save(key, file)
 
-        user = self.context["request"].user
+        user = self.context["user"]
         ingest = ReportIngest.objects.create(
             uploaded_by=user,
             original_filename=file.name,
@@ -112,4 +112,4 @@ class ReportIngestSerializer(serializers.ModelSerializer):
         if not file_name.endswith(".zip"):
             raise serializers.ValidationError("File must be a zip folder")
 
-        return file
+        return master_zip
