@@ -52,7 +52,22 @@ class VersionFilter(MostRecentVersionFilter):
     parameter_name = "created_at"
 
     def queryset(self, request, queryset):
-        """Sort queryset to show latest records."""
+        """
+        Sort queryset to show latest records.
+
+        Example of what the query looks like for reference:
+        SELECT df.*,
+            (SELECT MAX(version)
+                FROM data_files df2
+                WHERE df2.stt_code = df.stt_code
+                AND df2.year = df.year
+                AND df2.quarter = df.quarter
+                AND df2.program_type = df.program_type
+                AND df2.section = df.section
+            ) AS max_version
+        FROM data_files df
+        WHERE df.version = max_version
+        """
         if self.value() is None and queryset.exists():
             # Subquery to find the max version for each group
             max_versions = (
