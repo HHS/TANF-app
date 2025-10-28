@@ -18,6 +18,10 @@ def test_ofa_admin_permissions(ofa_admin):
         "users.change_user",
         "users.view_user",
         "users.has_fra_access",
+        "reports.add_reportfile",
+        "reports.add_reportingest",
+        "reports.view_reportfile",
+        "reports.view_reportingest"
     }
     group_permissions = ofa_admin.get_group_permissions()
     assert group_permissions == expected_permissions
@@ -56,12 +60,6 @@ def test_ofa_system_admin_permissions(ofa_system_admin):
         "data_files.view_datafile",
         "security.view_clamavfilescan",
         "security.view_owaspzapscan",
-        "security.add_securityeventtoken",
-        "security.view_securityeventtoken",
-        "security.change_securityeventtoken",
-        "sessions.add_session",
-        "sessions.change_session",
-        "sessions.view_session",
         "stts.add_region",
         "stts.add_stt",
         "stts.change_region",
@@ -113,9 +111,6 @@ def test_ofa_system_admin_permissions(ofa_system_admin):
         "search_indexes.add_tanf_t7",
         "search_indexes.view_tanf_t7",
         "search_indexes.change_tanf_t7",
-        "search_indexes.add_tanf_exiter1",
-        "search_indexes.view_tanf_exiter1",
-        "search_indexes.change_tanf_exiter1",
         "parsers.add_parsererror",
         "parsers.change_parsererror",
         "parsers.view_parsererror",
@@ -181,6 +176,7 @@ def test_data_analyst_permissions(data_analyst):
     expected_permissions = {
         "data_files.add_datafile",
         "data_files.view_datafile",
+        "reports.view_reportfile"
     }
     group_permissions = data_analyst.get_group_permissions()
     assert group_permissions == expected_permissions
