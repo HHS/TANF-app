@@ -8,7 +8,7 @@ from rest_framework.viewsets import ModelViewSet
 
 from tdpservice.reports.models import ReportFile
 from tdpservice.reports.serializers import ReportFileSerializer, ReportIngestSerializer
-from tdpservice.users.permissions import ReportFilePermissions
+from tdpservice.users.permissions import IsApprovedPermission, ReportFilePermissions
 
 
 class ReportFileViewSet(ModelViewSet):
@@ -17,7 +17,7 @@ class ReportFileViewSet(ModelViewSet):
     http_method_names = ["get", "post", "head"]
     queryset = ReportFile.objects.all().order_by("-created_at")
     serializer_class = ReportFileSerializer
-    permission_classes = [ReportFilePermissions]
+    permission_classes = [ReportFilePermissions, IsApprovedPermission]
 
     def get_serializer_context(self):
         """Retrieve additional context required by serializer."""
@@ -28,7 +28,7 @@ class ReportFileViewSet(ModelViewSet):
     @action(methods=["post"], detail=False)
     def master(self, request, pk=None):
         """Admins can upload a master zips containing multiple zips."""
-        serializer = ReportIngestSerializer(data=request.data, context={"request": request})
+        serializer = ReportIngestSerializer(data=request.data, context={"user": request.user})
         serializer.is_valid(raise_exception=True)
 
         ingest = serializer.save() # creates a ReportIngest record and stores master zip to S3
