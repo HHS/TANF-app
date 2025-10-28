@@ -1,6 +1,5 @@
 """Add Reports to Django Admin."""
 
-
 from django.contrib import admin
 
 from tdpservice.core.utils import ReadOnlyAdminMixin
@@ -20,4 +19,21 @@ class ReportFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "year",
         "section",
     ]
+    list_filter = [
+        "stt",
+        "year",
+        "quarter",
+        "section",
+        "user",
+    ]
+    search_fields = [
+        "original_filename",
+        "slug",
+    ]
 
+    def download_link(self, obj):
+        if obj.file:
+            return format_html("<a href='/admin/reports/reportfile/{}/change/'>Open</a>", obj.pk)
+        return "-"
+
+    download_link.short_description = "Admin"
