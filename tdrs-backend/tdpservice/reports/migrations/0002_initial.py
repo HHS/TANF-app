@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("data_files", "0019_rename_indexes"),
+        ("data_files", "0021_rename_indexes"),
         ("stts", "0011_add_region_name"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
