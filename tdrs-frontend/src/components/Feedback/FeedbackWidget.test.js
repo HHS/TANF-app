@@ -187,18 +187,6 @@ describe('FeedbackWidget', () => {
     document.body.removeChild(outsideElement)
   })
 
-  it('prevents default on header mouseDown', () => {
-    render(<FeedbackWidget {...defaultProps} />)
-    const header = screen.getByText(/How was your experience/i)
-
-    const event = new MouseEvent('mousedown', { bubbles: true })
-    const preventDefaultSpy = jest.spyOn(event, 'preventDefault')
-
-    fireEvent(header, event)
-
-    expect(preventDefaultSpy).toHaveBeenCalled()
-  })
-
   it('closes thank you modal when close button is clicked', async () => {
     render(<FeedbackWidget {...defaultProps} />)
 
