@@ -243,19 +243,41 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   const handleFieldSelection = (fieldName) => {
     // Define the correct order with field values
     const fieldOrder = [
-      { name: 'stt', hasValue: () => !canSelectStt || !!sttInputValue },
-      { name: 'fileType', hasValue: () => !!fileTypeInputValue },
-      { name: 'year', hasValue: () => !!yearInputValue },
-      { name: 'quarter', hasValue: () => !!quarterInputValue },
+      {
+        name: 'stt',
+        isTouched: () => sttTouched,
+        hasValue: () => !canSelectStt || !!sttInputValue,
+        isRequired: () => canSelectStt,
+      },
+      {
+        name: 'fileType',
+        isTouched: () => fileTypeTouched,
+        hasValue: () => !!fileTypeInputValue,
+        isRequired: () => true,
+      },
+      {
+        name: 'year',
+        isTouched: () => yearTouched,
+        hasValue: () => !!yearInputValue,
+        isRequired: () => true,
+      },
+      {
+        name: 'quarter',
+        isTouched: () => quarterTouched,
+        hasValue: () => !!quarterInputValue,
+        isRequired: () => true,
+      },
     ]
 
     // Find the index of the current field
     const currentFieldIndex = fieldOrder.findIndex((f) => f.name === fieldName)
 
-    // Check if any required previous fields are missing
+    // Check if any required previous fields are empty (regardless of touched state)
+    // A field with a value is considered valid even if not explicitly touched
     let orderBroken = false
     for (let i = 0; i < currentFieldIndex; i++) {
-      if (!fieldOrder[i].hasValue()) {
+      const field = fieldOrder[i]
+      if (field.isRequired() && !field.hasValue()) {
         orderBroken = true
         break
       }
