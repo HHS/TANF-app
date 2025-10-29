@@ -38,6 +38,16 @@ const ProgramIntegrityAuditReports = ({ stt, isRegionalStaff }) => {
           >
             {`${stt.name} - Program Integrity Audit - Fiscal Year ${yearInputValue}`}
           </h2>
+          <div className="mobile:grid-container mobile:margin-top-4 mobile:padding-0 desktop:padding-0 desktop:grid-col-fill">
+            <div className="usa-alert usa-alert--slim usa-alert--info">
+              <div className="usa-alert__body" role="alert">
+                <p className="usa-alert__text">
+                  For Additional guidance please refer to the Program
+                  Instruction for this new reporting requirement.
+                </p>
+              </div>
+            </div>
+          </div>
 
           {isRegionalStaff ? (
             <h3 className="font-sans-lg margin-top-5 margin-bottom-2 text-bold">

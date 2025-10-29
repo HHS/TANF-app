@@ -37,17 +37,7 @@ export const ProgramIntegrityAuditExplainer = () => {
   const currentYear = new Date().getFullYear()
   return (
     <>
-      <div className="mobile:grid-container mobile:margin-top-4 mobile:padding-0 desktop:padding-0 desktop:grid-col-fill">
-        <div className="usa-alert usa-alert--slim usa-alert--info">
-          <div className="usa-alert__body" role="alert">
-            <p className="usa-alert__text">
-              For Additional guidance please refer to the Program Instruction
-              for this new reporting requirement.
-            </p>
-          </div>
-        </div>
-      </div>
-      <table className="usa-table usa-table--striped">
+      <table className="usa-table usa-table--striped margin-top-4">
         <caption>Audit Reporting Guidelines</caption>
         <thead>
           <tr>
