@@ -59,6 +59,7 @@ def get_s3_upload_path(instance, filename):
         filename,
     )
 
+
 # The Data File model was starting to explode, and I think that keeping this logic
 # in its own abstract class is better for documentation purposes.
 class FileRecord(models.Model):
@@ -159,7 +160,15 @@ class DataFile(FileRecord):
 
         constraints = [
             models.UniqueConstraint(
-                fields=("program_type", "section", "version", "quarter", "year", "stt"),
+                fields=(
+                    "program_type",
+                    "section",
+                    "version",
+                    "quarter",
+                    "year",
+                    "stt",
+                    "is_program_audit",
+                ),
                 name="constraint_name",
             )
         ]
@@ -176,6 +185,7 @@ class DataFile(FileRecord):
     section = models.CharField(
         max_length=32, blank=False, null=False, choices=Section.choices
     )
+    is_program_audit = models.BooleanField(default=False)
 
     version = models.IntegerField()
 
