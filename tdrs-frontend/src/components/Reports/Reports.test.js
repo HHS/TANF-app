@@ -1226,16 +1226,16 @@ describe('Reports', () => {
     const piaRadio = getByLabelText('Program Integrity Audit')
     fireEvent.click(piaRadio)
 
+    // Year should be reset to empty - use getElementById since the label contains error message
     await waitFor(() => {
-      // Year should be reset to empty
-      const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+      const yearSelect = document.getElementById('reportingYears')
       expect(yearSelect.value).toBe('')
-
-      // Header should not be visible since year is now empty
-      expect(
-        queryByText('California - Program Integrity Audit - Fiscal Year 2021')
-      ).not.toBeInTheDocument()
     })
+
+    // Header should not be visible since year is now empty
+    expect(
+      queryByText('California - Program Integrity Audit - Fiscal Year 2021')
+    ).not.toBeInTheDocument()
   })
 
   it('should not reset fiscal year when changing from TANF to Program Integrity Audit with year >= 2024', async () => {
@@ -1281,6 +1281,117 @@ describe('Reports', () => {
       expect(
         queryByText('California - Program Integrity Audit - Fiscal Year 2024')
       ).toBeInTheDocument()
+    })
+  })
+
+  describe('Form validation', () => {
+    it('should show error when fiscal year field is blurred without selection', async () => {
+      const store = mockStore(initialState)
+      const { getByLabelText, queryByText } = render(
+        <Provider store={store}>
+          <Reports />
+        </Provider>
+      )
+
+      const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+
+      // Blur the field without selecting a value
+      fireEvent.blur(yearSelect)
+
+      await waitFor(() => {
+        expect(queryByText('A fiscal year is required')).toBeInTheDocument()
+      })
+    })
+
+    it('should clear fiscal year error when a value is selected', async () => {
+      const store = mockStore(initialState)
+      const { getByLabelText, queryByText } = render(
+        <Provider store={store}>
+          <Reports />
+        </Provider>
+      )
+
+      const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+
+      // Blur without selection to trigger error
+      fireEvent.blur(yearSelect)
+
+      await waitFor(() => {
+        expect(queryByText('A fiscal year is required')).toBeInTheDocument()
+      })
+
+      // Select a year
+      fireEvent.change(yearSelect, { target: { value: '2021' } })
+
+      await waitFor(() => {
+        expect(queryByText('A fiscal year is required')).not.toBeInTheDocument()
+      })
+    })
+
+    it('should show error when fiscal quarter field is blurred without selection', async () => {
+      const store = mockStore(initialState)
+      const { getByLabelText, queryByText } = render(
+        <Provider store={store}>
+          <Reports />
+        </Provider>
+      )
+
+      const quarterSelect = getByLabelText('Fiscal Quarter*')
+
+      // Blur the field without selecting a value
+      fireEvent.blur(quarterSelect)
+
+      await waitFor(() => {
+        expect(queryByText('A fiscal quarter is required')).toBeInTheDocument()
+      })
+    })
+
+    it('should clear fiscal quarter error when a value is selected', async () => {
+      const store = mockStore(initialState)
+      const { getByLabelText, queryByText } = render(
+        <Provider store={store}>
+          <Reports />
+        </Provider>
+      )
+
+      const quarterSelect = getByLabelText('Fiscal Quarter*')
+
+      // Blur without selection to trigger error
+      fireEvent.blur(quarterSelect)
+
+      await waitFor(() => {
+        expect(queryByText('A fiscal quarter is required')).toBeInTheDocument()
+      })
+
+      // Select a quarter
+      fireEvent.change(quarterSelect, { target: { value: 'Q1' } })
+
+      await waitFor(() => {
+        expect(
+          queryByText('A fiscal quarter is required')
+        ).not.toBeInTheDocument()
+      })
+    })
+
+    it('should show error when file type is touched and empty', async () => {
+      const store = mockStore(initialState)
+      const { getByLabelText, queryByText } = render(
+        <Provider store={store}>
+          <Reports />
+        </Provider>
+      )
+
+      const tanfRadio = getByLabelText('TANF')
+
+      // Click the radio button (it's already selected by default, so this marks it as touched)
+      fireEvent.click(tanfRadio)
+
+      // Since TANF is selected by default, there should be no error
+      await waitFor(() => {
+        expect(
+          queryByText('A file type selection is required')
+        ).not.toBeInTheDocument()
+      })
     })
   })
 })
