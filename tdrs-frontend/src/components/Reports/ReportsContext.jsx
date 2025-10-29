@@ -33,6 +33,12 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     value: null,
   })
 
+  // Touched state for validation
+  const [yearTouched, setYearTouched] = useState(false)
+  const [quarterTouched, setQuarterTouched] = useState(false)
+  const [fileTypeTouched, setFileTypeTouched] = useState(false)
+  const [sttTouched, setSttTouched] = useState(false)
+
   // FRA-specific upload state
   const [fraSelectedFile, setFraSelectedFile] = useState(null)
   const [fraUploadError, setFraUploadError] = useState(null)
@@ -137,6 +143,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   }
 
   const selectFileType = (value) => {
+    setFileTypeTouched(true)
     if (uploadedFiles.length > 0 || fraHasUploadedFile) {
       setModalTriggerSource('input-change')
       setPendingChange({ type: 'fileType', value })
@@ -158,6 +165,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   }
 
   const selectYear = ({ target: { value } }) => {
+    setYearTouched(true)
     if (uploadedFiles.length > 0 || fraHasUploadedFile) {
       setModalTriggerSource('input-change')
       setPendingChange({ type: 'year', value })
@@ -171,6 +179,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   }
 
   const selectQuarter = ({ target: { value } }) => {
+    setQuarterTouched(true)
     if (uploadedFiles.length > 0 || fraHasUploadedFile) {
       setModalTriggerSource('input-change')
       setPendingChange({ type: 'quarter', value })
@@ -184,6 +193,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   }
 
   const selectStt = (value, sttObject = null) => {
+    setSttTouched(true)
     if (uploadedFiles.length > 0 || fraHasUploadedFile) {
       setModalTriggerSource('input-change')
       setPendingChange({ type: 'stt', value, sttObject })
@@ -210,6 +220,20 @@ export const ReportsProvider = ({ isFra = false, children }) => {
       setFraSelectedFile(null)
     }
   }
+
+  const handleYearBlur = () => {
+    setYearTouched(true)
+  }
+
+  const handleQuarterBlur = () => {
+    setQuarterTouched(true)
+  }
+
+  // Validation helpers
+  const getYearError = () => yearTouched && !yearInputValue
+  const getQuarterError = () => quarterTouched && !quarterInputValue
+  const getFileTypeError = () => fileTypeTouched && !fileTypeInputValue
+  const getSttError = () => sttTouched && !sttInputValue
 
   const value = {
     // State
@@ -242,6 +266,16 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     uploadedFiles,
     fraHasUploadedFile,
 
+    // Validation state
+    yearTouched,
+    quarterTouched,
+    fileTypeTouched,
+    sttTouched,
+    getYearError,
+    getQuarterError,
+    getFileTypeError,
+    getSttError,
+
     // Actions
     handleClearAll,
     handleClearFilesOnly,
@@ -251,6 +285,8 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     selectYear,
     selectQuarter,
     selectStt,
+    handleYearBlur,
+    handleQuarterBlur,
   }
 
   return (

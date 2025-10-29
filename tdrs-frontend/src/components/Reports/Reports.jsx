@@ -30,6 +30,8 @@ function ReportsContent() {
     cancelPendingChange,
     selectFileType,
     selectStt,
+    getSttError,
+    getFileTypeError,
   } = useReportsContext()
 
   const dispatch = useDispatch()
@@ -116,7 +118,7 @@ function ReportsContent() {
                     )
                     selectStt(value, selectedSttObject)
                   }}
-                  error={false}
+                  error={getSttError()}
                 />
               </div>
             )}
@@ -127,6 +129,8 @@ function ReportsContent() {
               options={radio_options}
               classes="margin-top-4"
               selectedValue={fileTypeInputValue}
+              error={getFileTypeError()}
+              errorMessage="A file type selection is required"
             />
           </div>
         </div>
