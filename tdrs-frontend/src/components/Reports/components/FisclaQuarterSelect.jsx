@@ -4,8 +4,12 @@ import { quarters } from '../utils'
 import { useReportsContext } from '../ReportsContext'
 
 const FiscalQuarterSelect = () => {
-  const { quarterInputValue, selectQuarter, getQuarterError, handleQuarterBlur } =
-    useReportsContext()
+  const {
+    quarterInputValue,
+    selectQuarter,
+    getQuarterError,
+    handleQuarterBlur,
+  } = useReportsContext()
   const hasError = getQuarterError()
 
   return (
