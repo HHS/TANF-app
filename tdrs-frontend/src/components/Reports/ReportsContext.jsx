@@ -7,6 +7,7 @@ import {
   setStt,
 } from '../../actions/reports'
 import { openFeedbackWidget } from '../../reducers/feedbackWidget'
+import { accountCanSelectStt } from '../../selectors/auth'
 
 const ReportsContext = createContext()
 
@@ -20,6 +21,7 @@ export const useReportsContext = () => {
 
 export const ReportsProvider = ({ isFra = false, children }) => {
   const dispatch = useDispatch()
+  const canSelectStt = useSelector(accountCanSelectStt)
 
   // Form state
   const [yearInputValue, setYearInputValue] = useState('')
@@ -144,6 +146,8 @@ export const ReportsProvider = ({ isFra = false, children }) => {
 
   const selectFileType = (value) => {
     setFileTypeTouched(true)
+    handleFieldSelection('fileType')
+
     if (uploadedFiles.length > 0 || fraHasUploadedFile) {
       setModalTriggerSource('input-change')
       setPendingChange({ type: 'fileType', value })
@@ -166,6 +170,8 @@ export const ReportsProvider = ({ isFra = false, children }) => {
 
   const selectYear = ({ target: { value } }) => {
     setYearTouched(true)
+    handleFieldSelection('year')
+
     if (uploadedFiles.length > 0 || fraHasUploadedFile) {
       setModalTriggerSource('input-change')
       setPendingChange({ type: 'year', value })
@@ -180,6 +186,8 @@ export const ReportsProvider = ({ isFra = false, children }) => {
 
   const selectQuarter = ({ target: { value } }) => {
     setQuarterTouched(true)
+    handleFieldSelection('quarter')
+
     if (uploadedFiles.length > 0 || fraHasUploadedFile) {
       setModalTriggerSource('input-change')
       setPendingChange({ type: 'quarter', value })
@@ -194,6 +202,8 @@ export const ReportsProvider = ({ isFra = false, children }) => {
 
   const selectStt = (value, sttObject = null) => {
     setSttTouched(true)
+    handleFieldSelection('stt')
+
     if (uploadedFiles.length > 0 || fraHasUploadedFile) {
       setModalTriggerSource('input-change')
       setPendingChange({ type: 'stt', value, sttObject })
@@ -229,11 +239,75 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     setQuarterTouched(true)
   }
 
-  // Validation helpers
-  const getYearError = () => yearTouched && !yearInputValue
-  const getQuarterError = () => quarterTouched && !quarterInputValue
-  const getFileTypeError = () => fileTypeTouched && !fileTypeInputValue
-  const getSttError = () => sttTouched && !sttInputValue
+  // Helper to check if order is broken and mark all fields as touched
+  const handleFieldSelection = (fieldName) => {
+    // Define the correct order with field values
+    const fieldOrder = [
+      { name: 'stt', hasValue: () => !canSelectStt || !!sttInputValue },
+      { name: 'fileType', hasValue: () => !!fileTypeInputValue },
+      { name: 'year', hasValue: () => !!yearInputValue },
+      { name: 'quarter', hasValue: () => !!quarterInputValue },
+    ]
+
+    // Find the index of the current field
+    const currentFieldIndex = fieldOrder.findIndex((f) => f.name === fieldName)
+
+    // Check if any required previous fields are missing
+    let orderBroken = false
+    for (let i = 0; i < currentFieldIndex; i++) {
+      if (!fieldOrder[i].hasValue()) {
+        orderBroken = true
+        break
+      }
+    }
+
+    // If order is broken, mark all fields as touched
+    if (orderBroken) {
+      if (canSelectStt) setSttTouched(true)
+      setFileTypeTouched(true)
+      setYearTouched(true)
+      setQuarterTouched(true)
+    }
+  }
+
+  // Validation helpers with sequential order enforcement
+  // Order: STT (if applicable) -> File Type -> Fiscal Year -> Fiscal Quarter
+
+  const getSttError = () => {
+    // Only show error if user can select STT and hasn't selected one
+    if (!canSelectStt) return false
+    return sttTouched && !sttInputValue
+  }
+
+  const getFileTypeError = () => {
+    // Show error if:
+    // 1. Field was touched and is empty, OR
+    // 2. Previous required field (STT) is not filled AND this field was touched
+    if (canSelectStt && !sttInputValue) {
+      return fileTypeTouched && !fileTypeInputValue
+    }
+    return fileTypeTouched && !fileTypeInputValue
+  }
+
+  const getYearError = () => {
+    // Only show error if the field is empty
+    if (yearInputValue) return false
+
+    // Show error if field was touched OR any previous required field is invalid
+    if (!yearTouched) return false
+
+    return true
+  }
+
+  const getQuarterError = () => {
+    // Only show error if the field is empty
+    if (quarterInputValue) return false
+
+    // Show error if field was touched OR any previous required field is invalid
+    if (!quarterTouched) return false
+
+    return true
+  }
 
   const value = {
     // State
