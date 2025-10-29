@@ -127,11 +127,13 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   }
 
   const handleOpenFeedbackWidget = () => {
-    dispatch(openFeedbackWidget({
-          dataType: fileTypeInputValue,
-          dataFiles: uploadedFiles,
-          widgetId: `${fileTypeInputValue}-report-submission-feedback`,
-    }))
+    dispatch(
+      openFeedbackWidget({
+        dataType: fileTypeInputValue,
+        dataFiles: uploadedFiles,
+        widgetId: `${fileTypeInputValue}-report-submission-feedback`,
+      })
+    )
   }
 
   const selectFileType = (value) => {
