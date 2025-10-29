@@ -48,7 +48,7 @@ export const ProgramIntegrityAuditExplainer = () => {
         </div>
       </div>
       <table className="usa-table usa-table--striped">
-        <caption>Audit Reporting</caption>
+        <caption>Audit Reporting Guidelines</caption>
         <thead>
           <tr>
             <th>Fiscal Year (FY)</th>
