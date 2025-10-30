@@ -1,4 +1,5 @@
 """Test appropriate permissions are assigned to each Group."""
+
 import pytest
 
 
@@ -165,6 +166,15 @@ def test_ofa_system_admin_permissions(ofa_system_admin):
         "data_files.add_reparsefilemeta",
         "data_files.view_reparsefilemeta",
         "data_files.change_reparsefilemeta",
+        "search_indexes.add_programaudit_t1",
+        "search_indexes.view_programaudit_t1",
+        "search_indexes.change_programaudit_t1",
+        "search_indexes.add_programaudit_t2",
+        "search_indexes.view_programaudit_t2",
+        "search_indexes.change_programaudit_t2",
+        "search_indexes.add_programaudit_t3",
+        "search_indexes.view_programaudit_t3",
+        "search_indexes.change_programaudit_t3",
     }
     group_permissions = ofa_system_admin.get_group_permissions()
     assert group_permissions == expected_permissions
