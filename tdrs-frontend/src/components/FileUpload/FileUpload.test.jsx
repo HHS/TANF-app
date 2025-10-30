@@ -336,6 +336,41 @@ describe('FileUpload', () => {
       })
     })
 
+    it('shows null program type error when program type cannot be determined', async () => {
+      utils.validateHeader.mockResolvedValue({
+        isValid: false,
+        calendarFiscalResult: { isValid: true },
+        programTypeResult: { isValid: false, progType: null },
+      })
+
+      const { container, getByText } = renderComponent()
+
+      const input = container.querySelector('input[type="file"]')
+      const file = makeTestFile('test.txt')
+
+      fireEvent.change(input, { target: { files: [file] } })
+
+      await waitFor(() => {
+        // Check that the error message text is displayed
+        expect(getByText(/Could not determine the file type/i)).toBeInTheDocument()
+
+        // Check that the help link is present
+        const helpLink = container.querySelector('a[aria-label="Need help? Read header record guidance"]')
+        expect(helpLink).toBeInTheDocument()
+        expect(helpLink).toHaveAttribute('href', 'https://acf.gov/sites/default/files/documents/ofa/transmission_file_header_trailer_record.pdf')
+
+        // Verify the action was dispatched with the correct type
+        expect(mockDispatch).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: reportsActions.SET_FILE_ERROR,
+            payload: expect.objectContaining({
+              section: 'Active Case Data',
+            }),
+          })
+        )
+      })
+    })
+
     it('shows calendar/fiscal year error when validation fails', async () => {
       utils.validateHeader.mockResolvedValue({
         isValid: false,
