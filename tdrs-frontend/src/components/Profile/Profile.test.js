@@ -341,7 +341,6 @@ describe('Profile', () => {
       </Provider>
     )
 
-    // Component should render without errors
     expect(screen.getByText('Name')).toBeInTheDocument()
   })
 
@@ -367,7 +366,6 @@ describe('Profile', () => {
       </Provider>
     )
 
-    // Component should render without errors
     expect(screen.getByText('Name')).toBeInTheDocument()
   })
 
@@ -402,7 +400,6 @@ describe('Profile', () => {
       </Provider>
     )
 
-    // Should render form with regions
     expect(screen.getByLabelText(/first name/i)).toBeInTheDocument()
   })
 
@@ -436,7 +433,6 @@ describe('Profile', () => {
       </Provider>
     )
 
-    // Should render form with default empty Set for regions
     expect(screen.getByLabelText(/first name/i)).toBeInTheDocument()
   })
 
@@ -462,7 +458,6 @@ describe('Profile', () => {
       </Provider>
     )
 
-    // Component should render and identify as AMS user
     expect(screen.getByText('Name')).toBeInTheDocument()
   })
 
@@ -488,7 +483,6 @@ describe('Profile', () => {
       </Provider>
     )
 
-    // Should handle undefined permissions gracefully
     expect(screen.getByText('Name')).toBeInTheDocument()
   })
 
@@ -528,7 +522,6 @@ describe('Profile', () => {
       </Provider>
     )
 
-    // Should use JURISDICTION_TYPES.STATE as default
     expect(screen.getByLabelText(/first name/i)).toBeInTheDocument()
   })
 })
