@@ -1355,7 +1355,9 @@ describe('Reports', () => {
       const store = mockStore(state)
       const { getByLabelText, queryByText } = render(
         <Provider store={store}>
-          <Reports />
+          <MemoryRouter>
+            <Reports />
+          </MemoryRouter>
         </Provider>
       )
 
@@ -1394,7 +1396,9 @@ describe('Reports', () => {
       const store = mockStore(initialState)
       const { getByLabelText, queryByText } = render(
         <Provider store={store}>
-          <Reports />
+          <MemoryRouter>
+            <Reports />
+          </MemoryRouter>
         </Provider>
       )
 
@@ -1417,7 +1421,9 @@ describe('Reports', () => {
       const store = mockStore(initialState)
       const { getByLabelText, queryByText } = render(
         <Provider store={store}>
-          <Reports />
+          <MemoryRouter>
+            <Reports />
+          </MemoryRouter>
         </Provider>
       )
 
@@ -1439,7 +1445,9 @@ describe('Reports', () => {
       const store = mockStore(initialState)
       const { getByLabelText, queryByText } = render(
         <Provider store={store}>
-          <Reports />
+          <MemoryRouter>
+            <Reports />
+          </MemoryRouter>
         </Provider>
       )
 
@@ -1463,7 +1471,9 @@ describe('Reports', () => {
       const store = mockStore(initialState)
       const { getByLabelText, queryByText } = render(
         <Provider store={store}>
-          <Reports />
+          <MemoryRouter>
+            <Reports />
+          </MemoryRouter>
         </Provider>
       )
 
@@ -1490,7 +1500,9 @@ describe('Reports', () => {
         const store = mockStore(initialState)
         const { getByLabelText, queryByText } = render(
           <Provider store={store}>
-            <Reports />
+            <MemoryRouter>
+              <Reports />
+            </MemoryRouter>
           </Provider>
         )
 
