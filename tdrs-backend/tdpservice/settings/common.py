@@ -12,6 +12,7 @@ import django
 from django.core.exceptions import ImproperlyConfigured
 
 import sentry_sdk
+from sentry_sdk.types import SamplingContext
 from celery.schedules import crontab
 from configurations import Configuration
 from corsheaders.defaults import default_headers
@@ -34,6 +35,17 @@ def get_required_env_var_setting(
 
     return env_var
 
+SAMPLER_FILTER_URLS = ["/prometheus/metrics"]
+
+def traces_sampler(sampling_context: SamplingContext) -> float:
+    # Examine provided sampling context along with anything in the
+    # global namespace to compute the sample rate for this transaction
+    if sampling_context.get("wsgi_environ", {}).get("PATH_INFO") in SAMPLER_FILTER_URLS:
+        # Drop this transaction, by setting its sample rate to 0%
+        return 0
+    # Default sample rate for all others (replaces traces_sample_rate)
+    return 0.5
+
 
 def init_sentry(sentry_dsn, environment: str = "ERROR") -> None:
     """Initialize Sentry for error tracking."""
@@ -55,7 +67,7 @@ def init_sentry(sentry_dsn, environment: str = "ERROR") -> None:
             ),
             LoggingIntegration(level=logging.ERROR, event_level=logging.ERROR),
         ],
-        traces_sample_rate=1.0,
+        traces_sampler=traces_sampler,
         enable_logs=True,
     )
 
@@ -623,6 +635,7 @@ class Common(Configuration):
     # Sentry config
     SENTRY_DSN = os.getenv("SENTRY_DSN", None)
     SENTRY_ENVIRONMENT = os.getenv("CGAPPNAME_BACKEND", "ERROR")
+
     if SENTRY_DSN:
         init_sentry(sentry_dsn=SENTRY_DSN, environment=SENTRY_ENVIRONMENT)
 
