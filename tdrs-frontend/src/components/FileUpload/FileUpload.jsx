@@ -215,6 +215,7 @@ function FileUpload({
       let error_period
       var link = (
         <a
+          className="usa-link"
           target="_blank"
           rel="noopener noreferrer"
           href="https://tdp-project-updates.app.cloud.gov/knowledge-center/uploading-data.html#reporting-period"

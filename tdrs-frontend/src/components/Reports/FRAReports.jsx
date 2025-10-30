@@ -47,13 +47,13 @@ const INVALID_FILE_ERROR =
 const INVALID_EXT_ERROR =
   'Invalid extension. Accepted file types are: .csv or .xlsx.'
 
-const SelectSTT = ({ value, setValue }) => (
+const SelectSTT = ({ value, setValue, error }) => (
   <div className="usa-form-group maxw-mobile margin-top-4">
-    <STTComboBox selectedStt={value} selectStt={setValue} error={false} />
+    <STTComboBox selectedStt={value} selectStt={setValue} error={error} />
   </div>
 )
 
-const SelectReportType = ({ options, setValue, selectedValue }) => (
+const SelectReportType = ({ options, setValue, selectedValue, error }) => (
   <RadioSelect
     label="File Type"
     fieldName="reportType"
@@ -61,6 +61,8 @@ const SelectReportType = ({ options, setValue, selectedValue }) => (
     options={options}
     setValue={setValue}
     selectedValue={selectedValue}
+    error={error}
+    errorMessage="A file type selection is required"
   />
 )
 
@@ -107,6 +109,8 @@ const Inputs = ({
   reportTypeValue,
   needsSttSelection,
   userProfileStt,
+  sttError,
+  fileTypeError,
 }) => {
   const missingStt = !needsSttSelection && !userProfileStt
 
@@ -123,12 +127,13 @@ const Inputs = ({
       <div className="grid-row grid-gap">
         <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
           {needsSttSelection && (
-            <SelectSTT value={sttValue} setValue={selectStt} />
+            <SelectSTT value={sttValue} setValue={selectStt} error={sttError} />
           )}
           <SelectReportType
             options={reportTypeOptions}
             setValue={selectReportType}
             selectedValue={reportTypeValue}
+            error={fileTypeError}
           />
         </div>
       </div>
@@ -514,6 +519,8 @@ const FRAReportsContent = () => {
     handleClearAll,
     handleClearFilesOnly,
     cancelPendingChange,
+    getSttError,
+    getFileTypeError,
   } = useReportsContext()
 
   // Use the form submission hook to prevent multiple submissions
@@ -788,6 +795,8 @@ const FRAReportsContent = () => {
           selectFiscalQuarter={selectQuarter}
           needsSttSelection={needsSttSelection}
           userProfileStt={userProfileStt}
+          sttError={getSttError()}
+          fileTypeError={getFileTypeError()}
         />
       </div>
       {allFieldsFilled && (

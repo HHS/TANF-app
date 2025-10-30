@@ -976,4 +976,511 @@ describe('FRA Reports Page', () => {
       })
     })
   })
+
+  describe('Form validation', () => {
+    it('should show error when fiscal year field is blurred without selection', async () => {
+      const state = {
+        ...initialState,
+        auth: {
+          authenticated: true,
+          user: {
+            email: 'hi@bye.com',
+            stt: {
+              id: 2,
+              type: 'state',
+              code: 'AK',
+              name: 'Alaska',
+            },
+            roles: [{ id: 1, name: 'Data Analyst', permission: [] }],
+            account_approval_status: 'Approved',
+          },
+        },
+      }
+
+      const store = mockStore(state)
+      const { getByLabelText, queryByText } = render(
+        <Provider store={store}>
+          <FRAReports />
+        </Provider>
+      )
+
+      const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+
+      // Blur the field without selecting a value
+      fireEvent.blur(yearSelect)
+
+      await waitFor(() => {
+        expect(queryByText('A fiscal year is required')).toBeInTheDocument()
+      })
+    })
+
+    it('should clear fiscal year error when a value is selected', async () => {
+      const state = {
+        ...initialState,
+        auth: {
+          authenticated: true,
+          user: {
+            email: 'hi@bye.com',
+            stt: {
+              id: 2,
+              type: 'state',
+              code: 'AK',
+              name: 'Alaska',
+            },
+            roles: [{ id: 1, name: 'Data Analyst', permission: [] }],
+            account_approval_status: 'Approved',
+          },
+        },
+      }
+
+      const store = mockStore(state)
+      const { getByLabelText, queryByText } = render(
+        <Provider store={store}>
+          <FRAReports />
+        </Provider>
+      )
+
+      const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+
+      // Blur without selection to trigger error
+      fireEvent.blur(yearSelect)
+
+      await waitFor(() => {
+        expect(queryByText('A fiscal year is required')).toBeInTheDocument()
+      })
+
+      // Select a year
+      fireEvent.change(yearSelect, { target: { value: '2021' } })
+
+      await waitFor(() => {
+        expect(queryByText('A fiscal year is required')).not.toBeInTheDocument()
+      })
+    })
+
+    it('should show error when fiscal quarter field is blurred without selection', async () => {
+      const state = {
+        ...initialState,
+        auth: {
+          authenticated: true,
+          user: {
+            email: 'hi@bye.com',
+            stt: {
+              id: 2,
+              type: 'state',
+              code: 'AK',
+              name: 'Alaska',
+            },
+            roles: [{ id: 1, name: 'Data Analyst', permission: [] }],
+            account_approval_status: 'Approved',
+          },
+        },
+      }
+
+      const store = mockStore(state)
+      const { getByLabelText, queryByText } = render(
+        <Provider store={store}>
+          <FRAReports />
+        </Provider>
+      )
+
+      const quarterSelect = getByLabelText('Fiscal Quarter*')
+
+      // Blur the field without selecting a value
+      fireEvent.blur(quarterSelect)
+
+      await waitFor(() => {
+        expect(queryByText('A fiscal quarter is required')).toBeInTheDocument()
+      })
+    })
+
+    it('should clear fiscal quarter error when a value is selected', async () => {
+      const state = {
+        ...initialState,
+        auth: {
+          authenticated: true,
+          user: {
+            email: 'hi@bye.com',
+            stt: {
+              id: 2,
+              type: 'state',
+              code: 'AK',
+              name: 'Alaska',
+            },
+            roles: [{ id: 1, name: 'Data Analyst', permission: [] }],
+            account_approval_status: 'Approved',
+          },
+        },
+      }
+
+      const store = mockStore(state)
+      const { getByLabelText, queryByText } = render(
+        <Provider store={store}>
+          <FRAReports />
+        </Provider>
+      )
+
+      const quarterSelect = getByLabelText('Fiscal Quarter*')
+
+      // Blur without selection to trigger error
+      fireEvent.blur(quarterSelect)
+
+      await waitFor(() => {
+        expect(queryByText('A fiscal quarter is required')).toBeInTheDocument()
+      })
+
+      // Select a quarter
+      fireEvent.change(quarterSelect, { target: { value: 'Q1' } })
+
+      await waitFor(() => {
+        expect(
+          queryByText('A fiscal quarter is required')
+        ).not.toBeInTheDocument()
+      })
+    })
+
+    describe('Form order enforcement', () => {
+      it('should not show errors when filling File Type -> Year -> Quarter in order', async () => {
+        const state = {
+          ...initialState,
+          auth: {
+            authenticated: true,
+            user: {
+              email: 'hi@bye.com',
+              stt: {
+                id: 2,
+                type: 'state',
+                code: 'AK',
+                name: 'Alaska',
+              },
+              roles: [{ id: 1, name: 'Data Analyst', permission: [] }],
+              account_approval_status: 'Approved',
+            },
+          },
+        }
+
+        const store = mockStore(state)
+        const { getByLabelText, queryByText } = render(
+          <Provider store={store}>
+            <FRAReports />
+          </Provider>
+        )
+
+        const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+        const quarterSelect = getByLabelText('Fiscal Quarter*')
+
+        // No errors should show
+        expect(queryByText('A fiscal year is required')).not.toBeInTheDocument()
+        expect(
+          queryByText('A fiscal quarter is required')
+        ).not.toBeInTheDocument()
+
+        // Select year
+        fireEvent.change(yearSelect, { target: { value: '2021' } })
+
+        // Still no errors
+        expect(
+          queryByText('A fiscal quarter is required')
+        ).not.toBeInTheDocument()
+
+        // Select quarter
+        fireEvent.change(quarterSelect, { target: { value: 'Q1' } })
+
+        // No errors at any point
+        expect(queryByText('A fiscal year is required')).not.toBeInTheDocument()
+        expect(
+          queryByText('A fiscal quarter is required')
+        ).not.toBeInTheDocument()
+      })
+
+      it('should show error only on blurred field when filling in order', async () => {
+        const state = {
+          ...initialState,
+          auth: {
+            authenticated: true,
+            user: {
+              email: 'hi@bye.com',
+              stt: {
+                id: 2,
+                type: 'state',
+                code: 'AK',
+                name: 'Alaska',
+              },
+              roles: [{ id: 1, name: 'Data Analyst', permission: [] }],
+              account_approval_status: 'Approved',
+            },
+          },
+        }
+
+        const store = mockStore(state)
+        const { getByLabelText, queryByText } = render(
+          <Provider store={store}>
+            <FRAReports />
+          </Provider>
+        )
+
+        const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+
+        // Blur year without selection
+        fireEvent.blur(yearSelect)
+
+        await waitFor(() => {
+          expect(queryByText('A fiscal year is required')).toBeInTheDocument()
+        })
+
+        // Quarter should not show error (not touched yet)
+        expect(
+          queryByText('A fiscal quarter is required')
+        ).not.toBeInTheDocument()
+      })
+
+      it('should show errors on all empty fields when selecting Year first', async () => {
+        const state = {
+          ...initialState,
+          auth: {
+            authenticated: true,
+            user: {
+              email: 'hi@bye.com',
+              stt: null,
+              roles: [{ id: 1, name: 'OFA System Admin', permission: [] }],
+              account_approval_status: 'Approved',
+            },
+          },
+        }
+
+        const store = mockStore(state)
+        const { getByLabelText, queryByText } = render(
+          <Provider store={store}>
+            <FRAReports />
+          </Provider>
+        )
+
+        const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+
+        // Select year first (breaking order - STT not selected)
+        fireEvent.change(yearSelect, { target: { value: '2021' } })
+
+        await waitFor(() => {
+          // Quarter should show error (empty and touched)
+          expect(
+            queryByText('A fiscal quarter is required')
+          ).toBeInTheDocument()
+        })
+
+        // STT should show error (empty and touched)
+        expect(
+          queryByText('A state, tribe, or territory is required')
+        ).toBeInTheDocument()
+
+        // Year should not show error (has value)
+        expect(queryByText('A fiscal year is required')).not.toBeInTheDocument()
+      })
+
+      it('should show errors on all empty fields when selecting Quarter first', async () => {
+        const state = {
+          ...initialState,
+          auth: {
+            authenticated: true,
+            user: {
+              email: 'hi@bye.com',
+              stt: {
+                id: 2,
+                type: 'state',
+                code: 'AK',
+                name: 'Alaska',
+              },
+              roles: [{ id: 1, name: 'Data Analyst', permission: [] }],
+              account_approval_status: 'Approved',
+            },
+          },
+        }
+
+        const store = mockStore(state)
+        const { getByLabelText, queryByText } = render(
+          <Provider store={store}>
+            <FRAReports />
+          </Provider>
+        )
+
+        const quarterSelect = getByLabelText('Fiscal Quarter*')
+
+        // Select quarter first (breaking order)
+        fireEvent.change(quarterSelect, { target: { value: 'Q1' } })
+
+        await waitFor(() => {
+          // Year should show error (empty and touched)
+          expect(queryByText('A fiscal year is required')).toBeInTheDocument()
+        })
+
+        // Quarter should not show error (has value)
+        expect(
+          queryByText('A fiscal quarter is required')
+        ).not.toBeInTheDocument()
+      })
+
+      it('should not show error on fields with valid values even when order is broken', async () => {
+        const state = {
+          ...initialState,
+          auth: {
+            authenticated: true,
+            user: {
+              email: 'hi@bye.com',
+              stt: {
+                id: 2,
+                type: 'state',
+                code: 'AK',
+                name: 'Alaska',
+              },
+              roles: [{ id: 1, name: 'Data Analyst', permission: [] }],
+              account_approval_status: 'Approved',
+            },
+          },
+        }
+
+        const store = mockStore(state)
+        const { getByLabelText, queryByText } = render(
+          <Provider store={store}>
+            <FRAReports />
+          </Provider>
+        )
+
+        const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+        const quarterSelect = getByLabelText('Fiscal Quarter*')
+
+        // Fill year first
+        fireEvent.change(yearSelect, { target: { value: '2021' } })
+
+        // Then fill quarter
+        fireEvent.change(quarterSelect, { target: { value: 'Q1' } })
+
+        await waitFor(() => {
+          // Neither year nor quarter should show errors (both have values)
+          expect(
+            queryByText('A fiscal year is required')
+          ).not.toBeInTheDocument()
+          expect(
+            queryByText('A fiscal quarter is required')
+          ).not.toBeInTheDocument()
+        })
+      })
+
+      describe('Error clearing', () => {
+        it('should clear error when empty field gets a value', async () => {
+          const state = {
+            ...initialState,
+            auth: {
+              authenticated: true,
+              user: {
+                email: 'hi@bye.com',
+                stt: {
+                  id: 2,
+                  type: 'state',
+                  code: 'AK',
+                  name: 'Alaska',
+                },
+                roles: [{ id: 1, name: 'Data Analyst', permission: [] }],
+                account_approval_status: 'Approved',
+              },
+            },
+          }
+
+          const store = mockStore(state)
+          const { getByLabelText, queryByText } = render(
+            <Provider store={store}>
+              <FRAReports />
+            </Provider>
+          )
+
+          const yearSelect = getByLabelText(
+            'Fiscal Year (October - September)*'
+          )
+          const quarterSelect = getByLabelText('Fiscal Quarter*')
+
+          // Select quarter first to trigger errors
+          fireEvent.change(quarterSelect, { target: { value: 'Q1' } })
+
+          await waitFor(() => {
+            expect(queryByText('A fiscal year is required')).toBeInTheDocument()
+          })
+
+          // Fill year
+          fireEvent.change(yearSelect, { target: { value: '2021' } })
+
+          await waitFor(() => {
+            expect(
+              queryByText('A fiscal year is required')
+            ).not.toBeInTheDocument()
+          })
+        })
+      })
+
+      describe('Admin users with STT selection', () => {
+        it('should not show errors when filling STT -> File Type -> Year -> Quarter in order', async () => {
+          const state = {
+            ...initialState,
+            auth: {
+              authenticated: true,
+              user: {
+                email: 'hi@bye.com',
+                stt: null,
+                roles: [{ id: 1, name: 'OFA System Admin', permission: [] }],
+                account_approval_status: 'Approved',
+              },
+            },
+          }
+
+          const store = mockStore(state)
+          const { getByLabelText, getByTestId, queryByText } = render(
+            <Provider store={store}>
+              <FRAReports />
+            </Provider>
+          )
+
+          const sttDropdown = getByTestId('stt-combobox')
+          const yearSelect = getByLabelText(
+            'Fiscal Year (October - September)*'
+          )
+          const quarterSelect = getByLabelText('Fiscal Quarter*')
+
+          // Select STT
+          fireEvent.change(sttDropdown, { target: { value: 'Alaska' } })
+
+          // No errors should show yet
+          await waitFor(() => {
+            expect(
+              queryByText('A fiscal year is required')
+            ).not.toBeInTheDocument()
+            expect(
+              queryByText('A fiscal quarter is required')
+            ).not.toBeInTheDocument()
+          })
+
+          // Select year
+          fireEvent.change(yearSelect, { target: { value: '2021' } })
+
+          // Still no errors
+          await waitFor(() => {
+            expect(
+              queryByText('A fiscal quarter is required')
+            ).not.toBeInTheDocument()
+          })
+
+          // Select quarter
+          fireEvent.change(quarterSelect, { target: { value: 'Q1' } })
+
+          // No errors at any point
+          await waitFor(() => {
+            expect(
+              queryByText('A state, tribe, or territory is required')
+            ).not.toBeInTheDocument()
+            expect(
+              queryByText('A fiscal year is required')
+            ).not.toBeInTheDocument()
+            expect(
+              queryByText('A fiscal quarter is required')
+            ).not.toBeInTheDocument()
+          })
+        })
+      })
+    })
+  })
 })
