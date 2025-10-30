@@ -7,6 +7,7 @@ import {
   setStt,
 } from '../../actions/reports'
 import { openFeedbackWidget } from '../../reducers/feedbackWidget'
+import { usePollingTimer } from '../../hooks/usePollingTimer'
 
 const ReportsContext = createContext()
 
@@ -63,6 +64,8 @@ export const ReportsProvider = ({ isFra = false, children }) => {
 
   // FRA-specific derived state
   const fraHasUploadedFile = fraSelectedFile && !fraSelectedFile.id
+
+  const { startPolling, isDonePolling } = usePollingTimer()
 
   // Actions
   const handleClearAll = () => {
@@ -245,6 +248,10 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     selectYear,
     selectQuarter,
     selectStt,
+
+    // polling
+    startPolling,
+    isDonePolling,
   }
 
   return (
