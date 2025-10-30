@@ -9,11 +9,7 @@ export const SET_IS_LOADING_SUBMISSION_HISTORY =
   'SET_IS_LOADING_SUBMISSION_HISTORY'
 export const SET_FRA_SUBMISSION_HISTORY = 'SET_FRA_SUBMISSION_HISTORY'
 export const SET_IS_UPLOADING_FRA_REPORT = 'SET_IS_UPLOADING_FRA_REPORT'
-export const SET_IS_LOADING_FRA_SUBMISSION_STATUS =
-  'SET_IS_LOADING_FRA_SUBMISSION_STATUS'
 export const SET_FRA_SUBMISSION_STATUS = 'SET_FRA_SUBMISSION_STATUS'
-export const SET_FRA_SUBMISSION_STATUS_TIMED_OUT =
-  'SET_FRA_SUBMISSION_STATUS_TIMED_OUT'
 
 export const getFraSubmissionHistory =
   (
@@ -149,116 +145,13 @@ export const downloadOriginalSubmission =
     }
   }
 
-const onPollError = (datafile_id, onError, dispatch) => {
-  const error = new Error(
-    'The system encountered an error, please refresh the page or press Search again.'
-  )
-  dispatch({
-    type: SET_IS_LOADING_FRA_SUBMISSION_STATUS,
-    payload: {
-      datafile_id,
-      isPerformingRequest: false,
-      isDone: true,
-      error: error,
-    },
-  })
-  onError(error)
-}
-
-export const pollFraSubmissionStatus =
-  (
-    datafile_id,
-    tryNumber,
-    test = (datafile) => null,
-    retry = () => null,
-    onSuccess = (datafile) => null,
-    onError = (error) => null
-  ) =>
-  async (dispatch) => {
-    const MAX_TRIES = 30
-
-    try {
-      if (tryNumber > MAX_TRIES) {
-        dispatch({
-          type: SET_FRA_SUBMISSION_STATUS_TIMED_OUT,
-          payload: { datafile_id },
-        })
-        throw new Error(
-          'Exceeded max number of tries to update submission status.'
-        )
-      } else {
-        dispatch({
-          type: SET_IS_LOADING_FRA_SUBMISSION_STATUS,
-          payload: {
-            datafile_id,
-            tryNumber,
-            isPerformingRequest: true,
-            isDone: false,
-            error: null,
-          },
-        })
-      }
-
-      try {
-        const response = await axios.get(
-          `${BACKEND_URL}/data_files/${datafile_id}/`
-        )
-
-        dispatch({
-          type: SET_IS_LOADING_FRA_SUBMISSION_STATUS,
-          payload: {
-            datafile_id,
-            isPerformingRequest: false,
-          },
-        })
-
-        if (!test(response?.data)) {
-          retry()
-        } else {
-          dispatch({
-            type: SET_IS_LOADING_FRA_SUBMISSION_STATUS,
-            payload: {
-              datafile_id,
-              isPerformingRequest: false,
-              isDone: true,
-              error: null,
-            },
-          })
-          dispatch({
-            type: SET_FRA_SUBMISSION_STATUS,
-            payload: {
-              datafile_id,
-              datafile: response?.data,
-            },
-          })
-          onSuccess(response?.data)
-        }
-      } catch (axiosError) {
-        // Check if the error has a response with status code
-        const statusCode = axiosError?.response?.status
-        const shouldStopPolling =
-          statusCode === 400 || statusCode === 401 || statusCode === 403
-
-        dispatch({
-          type: SET_IS_LOADING_FRA_SUBMISSION_STATUS,
-          payload: {
-            datafile_id,
-            isPerformingRequest: false,
-            error: axiosError,
-            isDone: shouldStopPolling,
-          },
-        })
-
-        // Continue polling if it's not a 400, 401, or 403 error
-        if (!shouldStopPolling) {
-          retry()
-          return
-        }
-
-        onPollError(datafile_id, onError, dispatch)
-      }
-    } catch (e) {
-      console.error(e)
-      onPollError(datafile_id, onError, dispatch)
-    }
+export const getFraSubmissionStatus = async (datafile_id) => {
+  try {
+    const response = await axios.get(
+      `${BACKEND_URL}/data_files/${datafile_id}/`
+    )
+    return response
+  } catch (axiosError) {
+    throw axiosError
   }
+}
