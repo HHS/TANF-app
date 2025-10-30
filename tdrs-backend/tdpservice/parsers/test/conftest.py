@@ -1080,6 +1080,58 @@ def section2_no_records():
 
 
 @pytest.fixture
+def program_audit_ftanf(stt, stt_user):
+    """Fixture for valid Program Audit file with extraneous data."""
+    return util.create_test_datafile(
+        "PI_Audit_FTANF.txt",
+        stt_user,
+        stt,
+        DataFile.Section.ACTIVE_CASE_DATA,
+        DataFile.ProgramType.TANF,
+        is_program_audit=True,
+    )
+
+
+@pytest.fixture
+def program_audit_duplicates(stt, stt_user):
+    """Fixture for valid Program Audit file with extraneous data."""
+    return util.create_test_datafile(
+        "PI_Audit_duplicates.txt",
+        stt_user,
+        stt,
+        DataFile.Section.ACTIVE_CASE_DATA,
+        DataFile.ProgramType.TANF,
+        is_program_audit=True,
+    )
+
+
+@pytest.fixture
+def program_audit_space_fill(stt, stt_user):
+    """Fixture for valid Program Audit file with space fill."""
+    return util.create_test_datafile(
+        "PI_Audit_space-fill.txt",
+        stt_user,
+        stt,
+        DataFile.Section.ACTIVE_CASE_DATA,
+        DataFile.ProgramType.TANF,
+        is_program_audit=True,
+    )
+
+
+@pytest.fixture
+def program_audit_zero_fill(stt, stt_user):
+    """Fixture for valid Program Audit file with zero fill."""
+    return util.create_test_datafile(
+        "PI_Audit_zero-fill.txt",
+        stt_user,
+        stt,
+        DataFile.Section.ACTIVE_CASE_DATA,
+        DataFile.ProgramType.TANF,
+        is_program_audit=True,
+    )
+
+
+@pytest.fixture
 def tanf_s1_federally_funded_recipients():
     """Fixture for a section 1 file that verifies the generate_funded_ssn_errors function."""
     parsing_file = ParsingFileFactory(

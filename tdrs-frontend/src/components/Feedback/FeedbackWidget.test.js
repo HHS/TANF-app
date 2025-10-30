@@ -36,12 +36,16 @@ describe('FeedbackWidget', () => {
 
   it('renders with TANF header', () => {
     render(<FeedbackWidget {...defaultProps} dataType="tanf" />)
-    expect(screen.getByText(/TANF/i)).toBeInTheDocument()
+    screen
+      .getAllByText(/TANF/i)
+      .forEach((element) => expect(element).toBeInTheDocument())
   })
 
   it('renders with SSP-MOE header', () => {
     render(<FeedbackWidget {...defaultProps} dataType="ssp-moe" />)
-    expect(screen.getByText(/SSP-MOE/i)).toBeInTheDocument()
+    screen
+      .getAllByText(/SSP-MOE/i)
+      .forEach((element) => expect(element).toBeInTheDocument())
   })
 
   it('renders with FRA header by default', () => {

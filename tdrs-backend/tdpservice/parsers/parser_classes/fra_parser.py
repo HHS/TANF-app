@@ -4,13 +4,13 @@ import logging
 
 from django.db.models import Count
 
-from tdpservice.parsers.base_parser import BaseParser
 from tdpservice.parsers.dataclasses import HeaderResult, Position
 from tdpservice.parsers.error_generator import (
     ErrorGeneratorArgs,
     ErrorGeneratorFactory,
     ErrorGeneratorType,
 )
+from tdpservice.parsers.parser_classes.base_parser import BaseParser
 
 logger = logging.getLogger(__name__)
 

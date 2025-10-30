@@ -276,8 +276,15 @@ describe('Feedback Form tests', () => {
         expect.stringContaining('/feedback/'),
         {
           rating: 4,
+          component: 'general-website',
           feedback: 'Great!! test feedback',
+          feedback_type: 'general_feedback',
+          page_url: 'http://localhost/',
           anonymous: true,
+        },
+        {
+          headers: { 'Content-Type': 'application/json' },
+          withCredentials: true,
         }
       )
     })
@@ -301,9 +308,16 @@ describe('Feedback Form tests', () => {
       expect(axiosInstance.post).toHaveBeenCalledWith(
         expect.stringContaining('/feedback/'),
         {
+          component: 'general-website',
+          feedback_type: 'general_feedback',
+          page_url: 'http://localhost/',
           rating: 3,
           feedback: '',
           anonymous: false,
+        },
+        {
+          headers: { 'Content-Type': 'application/json' },
+          withCredentials: true,
         }
       )
     )
@@ -495,7 +509,11 @@ describe('Feedback Form tests', () => {
     const onSubmit = jest.fn()
 
     render(
-      <FeedbackForm isGeneralFeedback={false} onFeedbackSubmit={onSubmit} />
+      <FeedbackForm
+        isGeneralFeedback={false}
+        onFeedbackSubmit={onSubmit}
+        dataType="fra_submission_feedback"
+      />
     )
 
     // Provide required rating
@@ -505,11 +523,23 @@ describe('Feedback Form tests', () => {
     fireEvent.click(screen.getByRole('button', { name: /send feedback/i }))
 
     await waitFor(() => {
-      expect(axiosInstance.post).toHaveBeenCalledWith(expect.any(String), {
-        rating: 5,
-        feedback: '', // comment left blank
-        anonymous: false, // anonymous checkbox hidden
-      })
+      expect(axiosInstance.post).toHaveBeenCalledWith(
+        expect.any(String),
+        {
+          attachments: [],
+          component: 'data-file-submission',
+          feedback_type: 'fra_submission_feedback',
+          page_url: 'http://localhost/',
+          widget_id: 'unknown-submission-feedback',
+          rating: 5,
+          feedback: '', // comment left blank
+          anonymous: false, // anonymous checkbox hidden
+        },
+        {
+          headers: { 'Content-Type': 'application/json' },
+          withCredentials: true,
+        }
+      )
       expect(onSubmit).toHaveBeenCalled()
     })
   })

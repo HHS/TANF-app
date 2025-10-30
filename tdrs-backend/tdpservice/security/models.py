@@ -1,5 +1,6 @@
 """Models for the tdpservice.security app."""
 import logging
+import uuid
 from io import StringIO
 from os.path import join
 from typing import Union
@@ -237,3 +238,70 @@ class OwaspZapScan(models.Model):
             return "Passed"
         else:
             return "Error"
+
+
+class SecurityEventType(models.TextChoices):
+    """Enum of options for accepted security events from login.gov."""
+
+    ACCOUNT_DISABLED = (
+        "https://schemas.openid.net/secevent/risc/event-type/account-disabled"
+    )
+    ACCOUNT_ENABLED = (
+        "https://schemas.openid.net/secevent/risc/event-type/account-enabled"
+    )
+    ACCOUNT_PURGED = (
+        "https://schemas.openid.net/secevent/risc/event-type/account-purged"
+    )
+    MFA_LOCKED = (
+        "https://schemas.login.gov/secevent/risc/event-type/mfa-limit-account-locked"
+    )
+    EMAIL_CHANGED = (
+        "https://schemas.openid.net/secevent/risc/event-type/identifier-changed"
+    )
+    EMAIL_RECYCLED = (
+        "https://schemas.openid.net/secevent/risc/event-type/identifier-recycled"
+    )
+    PASSWORD_RESET = "https://schemas.login.gov/secevent/risc/event-type/password-reset"
+    RECOVERY_ACTIVATED = (
+        "https://schemas.openid.net/secevent/risc/event-type/recovery-activated"
+    )
+    RECOVERY_INFORMATION_CHANGED = "https://schemas.openid.net/secevent/risc/event-type/recovery-information-changed"
+    REPROOF_COMPLETE = (
+        "https://schemas.login.gov/secevent/risc/event-type/reproof-completed"
+    )
+
+    # This should always be last in the list
+    UNKNOWN_EVENT = "unknown-event-type"
+
+
+class SecurityEventToken(models.Model):
+    """Model to store Security Event Tokens from Login.gov."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        "users.User",
+        on_delete=models.SET_NULL,
+        related_name="security_events",
+        null=True,
+        blank=True,
+    )
+    email = models.EmailField(null=True, blank=True)
+    event_type = models.CharField(max_length=255, choices=SecurityEventType.choices)
+    event_data = models.JSONField()
+    jwt_id = models.CharField(max_length=255, unique=True)
+    issuer = models.CharField(max_length=255)
+    issued_at = models.DateTimeField()
+    received_at = models.DateTimeField(auto_now_add=True)
+    processed = models.BooleanField(default=False)
+    processed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        """Meta class."""
+
+        ordering = ["-received_at"]
+        indexes = [
+            models.Index(fields=["event_type"]),
+            models.Index(fields=["user"]),
+            models.Index(fields=["email"]),
+            models.Index(fields=["processed"]),
+        ]

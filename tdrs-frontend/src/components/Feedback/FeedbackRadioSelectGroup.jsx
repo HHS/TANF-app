@@ -18,6 +18,7 @@ const feedbackRatingsList = [
         data-testid="icon-very-bad"
         title="Very Dissatisfied"
         role="svg"
+        aria-label="very bad svg icon"
       />
     ),
   },
@@ -25,19 +26,40 @@ const feedbackRatingsList = [
     label: 'Dissatisfied (2/5)',
     value: 2,
     color: 'orange',
-    icon: <BadIcon data-testid="icon-bad" title="Dissatisfied" role="svg" />,
+    icon: (
+      <BadIcon
+        data-testid="icon-bad"
+        title="Dissatisfied"
+        role="img"
+        aria-label="bad svg icon"
+      />
+    ),
   },
   {
     label: 'Fair (3/5)',
     value: 3,
     color: 'blue',
-    icon: <NeutralIcon data-testid="icon-fair" title="Fair" role="svg" />,
+    icon: (
+      <NeutralIcon
+        data-testid="icon-fair"
+        title="Fair"
+        role="img"
+        aria-label="fair svg icon"
+      />
+    ),
   },
   {
     label: 'Satisfied (4/5)',
     value: 4,
     color: 'green',
-    icon: <GoodIcon data-testid="icon-good" title="Satisfied" role="svg" />,
+    icon: (
+      <GoodIcon
+        data-testid="icon-good"
+        title="Satisfied"
+        role="img"
+        aria-label="good svg icon"
+      />
+    ),
   },
   {
     label: 'Very Satisfied (5/5)',
@@ -47,7 +69,8 @@ const feedbackRatingsList = [
       <VeryGoodIcon
         data-testid="icon-very-good"
         title="Very Satisfied"
-        role="svg"
+        role="img"
+        aria-label="very good svg icon"
       />
     ),
   },

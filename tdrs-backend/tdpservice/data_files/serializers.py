@@ -69,6 +69,7 @@ class DataFileSerializer(serializers.ModelSerializer):
             "has_error",
             "summary",
             "latest_reparse_file_meta",
+            "is_program_audit",
         ]
 
         read_only_fields = ("version",)

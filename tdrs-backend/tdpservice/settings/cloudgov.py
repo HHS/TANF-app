@@ -208,6 +208,12 @@ class Staging(CloudGov):
         "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-staging",
     )
 
+    # Cloud.gov SET integration settings
+    LOGIN_GOV_SET_AUDIENCE = os.getenv(
+        "LOGIN_GOV_SET_AUDIENCE",
+        "https://tdp-frontend-staging.acf.hhs.gov/v1/security/event-token/",
+    )
+
 
 class Production(CloudGov):
     """Settings for applications deployed in the Cloud.gov production space."""
@@ -242,4 +248,14 @@ class Production(CloudGov):
     OTEL_ENABLED = bool(strtobool(os.getenv("OTEL_ENABLED", "yes")))
     OTEL_EXPORTER_OTLP_ENDPOINT = os.getenv(
         "OTEL_EXPORTER_OTLP_ENDPOINT", "http://tempo.apps.internal:4317"
+    )
+
+    # Cloud.gov SET integration settings
+    LOGIN_GOV_SET_AUDIENCE = os.getenv(
+        "LOGIN_GOV_SET_AUDIENCE",
+        "https://tanfdata.acf.hhs.gov/v1/security/event-token/",
+    )
+    LOGIN_GOV_WELL_KNOWN_CONFIG = os.getenv(
+        "LOGIN_GOV_WELL_KNOWN_CONFIG",
+        "https://secure.login.gov/.well-known/openid-configuration",
     )

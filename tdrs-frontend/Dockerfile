@@ -1,5 +1,5 @@
-ARG REGISTRY_OWNER=raft-tech
-ARG BASE_TAG=dev-02
+ARG REGISTRY_OWNER=hhs
+ARG BASE_TAG=v0.0.7
 
 FROM ghcr.io/${REGISTRY_OWNER}/tdp-frontend-base:${BASE_TAG} AS localdev
 

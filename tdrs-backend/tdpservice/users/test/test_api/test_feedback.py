@@ -40,7 +40,16 @@ class FeedbackAPITestsBase:
     @pytest.fixture
     def feedback_data(self, user):
         """Provide an generic feedback data for users to change in different tests."""
-        return {"user": user.id, "rating": 3, "feedback": ""}
+        return {
+            "rating": 3,
+            "feedback": "",
+            "anonymous": False,
+            "page_url": "https://localhost/",
+            "feedback_type": "general-feedback",
+            "component": "general-feedback",
+            "widget_id": "general-feedback",
+            "attachments": [],
+        }
 
     def list_feedback(self, api_client):
         """List feedback."""

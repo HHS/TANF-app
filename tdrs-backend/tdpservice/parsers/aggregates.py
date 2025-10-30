@@ -19,7 +19,7 @@ def case_aggregates_by_month(df, dfs_status):
     calendar_year, calendar_qtr = fiscal_to_calendar(df.year, df.quarter)
     month_list = transform_to_months(calendar_qtr)
 
-    schemas = ProgramManager.get_schemas(program_type, df.section)
+    schemas = ProgramManager.get_schemas(program_type, df.section, df.is_program_audit)
 
     aggregate_data = {"months": [], "rejected": 0}
     all_errors = ParserError.objects.filter(file=df, deprecated=False)
