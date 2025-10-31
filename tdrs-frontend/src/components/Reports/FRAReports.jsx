@@ -248,7 +248,10 @@ const UploadForm = ({
     }
 
     setSelectedFile(fileToLoad)
-    inputRef.current.value = null
+
+    if (inputRef.current) {
+      inputRef.current.value = null
+    }
   }
 
   const onSubmit = (e) => {
@@ -632,7 +635,7 @@ const FRAReportsContent = () => {
         datafile.id,
         () => getFraSubmissionStatus(datafile.id),
         (response) => {
-          let { summary } = response.data
+          let summary = response?.data?.summary
           return summary && summary.status && summary.status !== 'Pending'
         },
         (response) => {

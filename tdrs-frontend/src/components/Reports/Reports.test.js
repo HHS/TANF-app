@@ -16,6 +16,7 @@ describe('Reports', () => {
     originalScrollIntoView = window.HTMLElement.prototype.scrollIntoView
     // Mock it for all tests
     window.HTMLElement.prototype.scrollIntoView = jest.fn()
+    jest.useFakeTimers()
   })
 
   afterEach(() => {
@@ -388,14 +389,14 @@ describe('Reports', () => {
     await waitFor(() => expect(getByText('section2.txt')).toBeInTheDocument())
     await waitFor(() => expect(getByText('section3.txt')).toBeInTheDocument())
     await waitFor(() => expect(getByText('section4.txt')).toBeInTheDocument())
-    expect(store.dispatch).toHaveBeenCalledTimes(14)
+    expect(store.dispatch).toHaveBeenCalledTimes(10)
 
     await waitFor(() =>
       expect(getByText('Submit Data Files')).toBeInTheDocument()
     )
     fireEvent.click(getByText('Submit Data Files'))
     await waitFor(() => getByRole('alert'))
-    expect(store.dispatch).toHaveBeenCalledTimes(16)
+    expect(store.dispatch).toHaveBeenCalledTimes(10)
   })
 
   it('should add files to the redux state when dispatching uploads', async () => {

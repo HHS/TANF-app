@@ -283,14 +283,14 @@ function FileUpload({
         )
       }
     }
-    inputRef.current.value = null
+    if (inputRef.current) {
+      inputRef.current.value = null
+    }
   }
 
   return (
     <div
-      className={`usa-form-group ${
-        selectedFile?.error ? 'usa-form-group--error' : ''
-      }`}
+      className={`usa-form-group ${selectedFile?.error ? 'usa-form-group--error' : ''}`}
     >
       <label className="usa-label text-bold" htmlFor={formattedSectionName}>
         {label}

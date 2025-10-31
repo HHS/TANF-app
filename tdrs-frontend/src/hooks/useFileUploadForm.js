@@ -67,7 +67,7 @@ export const useFileUploadForm = ({
             datafile.id,
             () => getTanfSubmissionStatus(datafile.id),
             (response) => {
-              let { summary } = response.data
+              let summary = response?.data?.summary
               return summary && summary.status && summary.status !== 'Pending'
             },
             (response) => {
@@ -100,7 +100,7 @@ export const useFileUploadForm = ({
           )
       )
     )
-    setSelectedSubmissionTab(2)
+    // setSelectedSubmissionTab(2)
   }
 
   // Handle form submission

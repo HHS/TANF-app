@@ -10,6 +10,7 @@ import { Provider } from 'react-redux'
 import axios from 'axios'
 import appConfigureStore from '../../configureStore'
 import SubmissionHistory from './SubmissionHistory'
+import { ReportsProvider } from '../Reports/ReportsContext'
 
 describe('SubmissionHistory', () => {
   const initialState = {
@@ -41,10 +42,12 @@ describe('SubmissionHistory', () => {
   ) =>
     render(
       <Provider store={store}>
-        <SubmissionHistory
-          filterValues={filterValues}
-          reprocessedState={reprocessedState}
-        />
+        <ReportsProvider>
+          <SubmissionHistory
+            filterValues={filterValues}
+            reprocessedState={reprocessedState}
+          />
+        </ReportsProvider>
       </Provider>
     )
 

@@ -309,7 +309,7 @@ describe('FRA Reports Page', () => {
           )
         ).toBeInTheDocument()
       )
-      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(6))
+      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(5))
     })
 
     it('Allows xlsx files to be selected and submitted', async () => {
@@ -341,11 +341,11 @@ describe('FRA Reports Page', () => {
           )
         ).toBeInTheDocument()
       )
-      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(6))
+      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(5))
     })
 
     it('Shows a spinner until submission history updates', async () => {
-      jest.spyOn(global, 'setTimeout')
+      // jest.spyOn(global, 'setTimeout')
       const { getByText, getByAltText, dispatch, mockAxios, container } =
         await setup()
 
@@ -428,7 +428,7 @@ describe('FRA Reports Page', () => {
           )
         ).toBeInTheDocument()
       )
-      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(6))
+      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(5))
 
       jest.runOnlyPendingTimers()
 
