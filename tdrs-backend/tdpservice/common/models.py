@@ -3,7 +3,7 @@ from django.db import models
 
 # The Data File model was starting to explode, and I think that keeping this logic
 # in its own abstract class is better for documentation purposes.
-class StoredFileBase(models.Model):
+class FileRecord(models.Model):
     """Abstract type representing a file stored in S3."""
 
     class Meta:

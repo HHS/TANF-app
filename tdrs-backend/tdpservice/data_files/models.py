@@ -15,7 +15,7 @@ from django.db.models import Max
 from django.utils.html import format_html
 
 from tdpservice.backends import DataFilesS3Storage
-from tdpservice.common.models import StoredFileBase
+from tdpservice.common.models import FileRecord
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
 
@@ -59,18 +59,6 @@ def get_s3_upload_path(instance, filename):
         f"data_files/{instance.year}/{instance.quarter}/{instance.stt.id}/{instance.section}/",
         filename,
     )
-
-
-class FileRecord(StoredFileBase):
-    """DEPRECATED shim. Prefer importing StoredFileBase in new code.
-
-    For now, we keep this abstract shim as to not alter the DB shema or break old imports.
-    """
-
-    class Meta:
-        """Metadata."""
-
-        abstract = True
 
 
 class ReparseFileMeta(models.Model):

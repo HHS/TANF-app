@@ -6,7 +6,7 @@ from django.db import models
 from django.db.models import Max
 
 from tdpservice.backends import DataFilesS3Storage
-from tdpservice.common.models import StoredFileBase
+from tdpservice.common.models import FileRecord
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
 
@@ -19,7 +19,7 @@ def get_s3_upload_path(instance, filename):
     )
 
 
-class ReportFile(StoredFileBase):
+class ReportFile(FileRecord):
     """Represents a version of a report file."""
 
     class Quarter(models.TextChoices):
