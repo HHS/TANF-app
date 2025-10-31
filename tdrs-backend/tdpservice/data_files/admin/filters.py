@@ -1,7 +1,7 @@
 """Filter classes for DataFiles admin page."""
 
 from django.contrib import admin
-from django.db.models import F, Max, OuterRef, Subquery
+from django.db.models import OuterRef, Subquery
 from django.utils.translation import ugettext_lazy as _
 
 from tdpservice.core.filters import MostRecentVersionFilter
