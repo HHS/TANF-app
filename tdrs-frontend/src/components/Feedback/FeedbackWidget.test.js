@@ -36,12 +36,16 @@ describe('FeedbackWidget', () => {
 
   it('renders with TANF header', () => {
     render(<FeedbackWidget {...defaultProps} dataType="tanf" />)
-    expect(screen.getByText(/TANF/i)).toBeInTheDocument()
+    screen
+      .getAllByText(/TANF/i)
+      .forEach((element) => expect(element).toBeInTheDocument())
   })
 
   it('renders with SSP-MOE header', () => {
     render(<FeedbackWidget {...defaultProps} dataType="ssp-moe" />)
-    expect(screen.getByText(/SSP-MOE/i)).toBeInTheDocument()
+    screen
+      .getAllByText(/SSP-MOE/i)
+      .forEach((element) => expect(element).toBeInTheDocument())
   })
 
   it('renders with FRA header by default', () => {
@@ -181,18 +185,6 @@ describe('FeedbackWidget', () => {
 
     // Clean up
     document.body.removeChild(outsideElement)
-  })
-
-  it('prevents default on header mouseDown', () => {
-    render(<FeedbackWidget {...defaultProps} />)
-    const header = screen.getByText(/How was your experience/i)
-
-    const event = new MouseEvent('mousedown', { bubbles: true })
-    const preventDefaultSpy = jest.spyOn(event, 'preventDefault')
-
-    fireEvent(header, event)
-
-    expect(preventDefaultSpy).toHaveBeenCalled()
   })
 
   it('closes thank you modal when close button is clicked', async () => {

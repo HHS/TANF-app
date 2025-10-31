@@ -7,7 +7,8 @@ from io import StringIO
 from typing import Union
 
 from django.conf import settings
-from django.contrib.admin.models import ADDITION, ContentType, LogEntry
+from django.contrib.admin.models import ADDITION, LogEntry
+from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import File
 from django.db import models
 from django.db.models import Max
@@ -159,7 +160,15 @@ class DataFile(FileRecord):
 
         constraints = [
             models.UniqueConstraint(
-                fields=("program_type", "section", "version", "quarter", "year", "stt"),
+                fields=(
+                    "program_type",
+                    "section",
+                    "version",
+                    "quarter",
+                    "year",
+                    "stt",
+                    "is_program_audit",
+                ),
                 name="constraint_name",
             )
         ]

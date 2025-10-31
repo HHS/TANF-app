@@ -9,7 +9,12 @@ import {
   GOOD_FEEDBACK,
   GREAT_FEEDBACK,
   POOR_AND_BAD_FEEDBACK,
+  GENERAL_FEEDBACK_TYPE,
+  TANF_FEEDBACK_TYPE,
+  FRA_FEEDBACK_TYPE,
 } from './FeedbackConstants'
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
 
 const ratingMessageMap = {
   1: POOR_AND_BAD_FEEDBACK,
@@ -19,21 +24,24 @@ const ratingMessageMap = {
   5: GREAT_FEEDBACK,
 }
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
-
 const FeedbackForm = ({
   isGeneralFeedback,
   onFeedbackSubmit,
   onRequestSuccess,
   onRequestError,
+  dataType = null,
 }) => {
   const formRef = useRef(null)
   const authenticated = useSelector((state) => state.auth.authenticated)
+  const { widgetId, dataFiles } = useSelector((state) => state.feedbackWidget)
 
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [selectedRatingsOption, setSelectedRatingsOption] = useState(undefined)
   const [feedbackMessage, setFeedbackMessage] = useState('')
   const [hasError, setHasError] = useState(false)
+
+  // Determine values based on props and state
+  const isGeneral = isGeneralFeedback
 
   const resetStatesOnceSubmitted = () => {
     setSelectedRatingsOption(undefined)
@@ -48,12 +56,52 @@ const FeedbackForm = ({
       return
     }
 
+    // Set feedback_type
+    const feedbackType = isGeneral ? GENERAL_FEEDBACK_TYPE : dataType
+
+    // TODO: still need to figure out how to get component info or some context for component value
+    // Set component -------------------------
+    const component = isGeneral ? 'general-website' : 'data-file-submission'
+    // ------------------------------------------------------
+
+    // Setup payload
+    const payload = {
+      rating: selectedRatingsOption,
+      feedback: feedbackMessage,
+      anonymous: isAnonymous,
+      page_url: window.location.href,
+      feedback_type: feedbackType,
+      component: component,
+    }
+
+    if (!isGeneral) {
+      // Only include widget_id and data files for non-general feedback
+      payload.widget_id = widgetId || 'unknown-submission-feedback'
+
+      // include data files
+      if (Array.isArray(dataFiles)) {
+        payload.attachments = dataFiles.map((fileId) => ({
+          content_type: 'datafile',
+          object_id: fileId,
+        }))
+      } else if (dataFiles) {
+        payload.attachments = [
+          { content_type: 'datafile', object_id: dataFiles.id },
+        ]
+      } else {
+        payload.attachments = []
+      }
+    }
+
     try {
-      const response = await axiosInstance.post(`${BACKEND_URL}/feedback/`, {
-        rating: selectedRatingsOption,
-        feedback: feedbackMessage,
-        anonymous: isAnonymous,
-      })
+      const response = await axiosInstance.post(
+        `${BACKEND_URL}/feedback/`,
+        payload,
+        {
+          headers: { 'Content-Type': 'application/json' },
+          withCredentials: true,
+        }
+      )
 
       if (response.status === 200 || response.status === 201) {
         onFeedbackSubmit()
@@ -77,8 +125,11 @@ const FeedbackForm = ({
     }
   }, [
     selectedRatingsOption,
+    isGeneral,
     feedbackMessage,
     isAnonymous,
+    widgetId,
+    dataFiles,
     onFeedbackSubmit,
     onRequestSuccess,
     onRequestError,
@@ -231,15 +282,18 @@ const FeedbackForm = ({
             <h3>Tell us more</h3>
           ) : (
             selectedRatingsOption && (
-              <p
+              <div
+                aria-live="polite"
+                aria-atomic="true"
                 className="margin-left-1 margin-bottom-1 margin-top-1"
                 style={{
                   fontSize: '0.90rem',
                   color: '#575c64',
+                  minHeight: '1.2em', // helps avoid layout shift
                 }}
               >
-                {ratingMessageMap[selectedRatingsOption]}
-              </p>
+                <p>{ratingMessageMap[selectedRatingsOption]}</p>
+              </div>
             )
           )}
           <textarea

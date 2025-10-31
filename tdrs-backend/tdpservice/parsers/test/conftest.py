@@ -1093,6 +1093,19 @@ def program_audit_ftanf(stt, stt_user):
 
 
 @pytest.fixture
+def program_audit_duplicates(stt, stt_user):
+    """Fixture for valid Program Audit file with extraneous data."""
+    return util.create_test_datafile(
+        "PI_Audit_duplicates.txt",
+        stt_user,
+        stt,
+        DataFile.Section.ACTIVE_CASE_DATA,
+        DataFile.ProgramType.TANF,
+        is_program_audit=True,
+    )
+
+
+@pytest.fixture
 def program_audit_space_fill(stt, stt_user):
     """Fixture for valid Program Audit file with space fill."""
     return util.create_test_datafile(
@@ -1116,3 +1129,22 @@ def program_audit_zero_fill(stt, stt_user):
         DataFile.ProgramType.TANF,
         is_program_audit=True,
     )
+
+
+@pytest.fixture
+def tanf_s1_federally_funded_recipients():
+    """Fixture for a section 1 file that verifies the generate_funded_ssn_errors function."""
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter="Q1",
+        program_type=DataFile.ProgramType.TANF,
+        file__name="s1_federally_funded_recipients.txt",
+        file__section="Active Case Data",
+        file__data=(
+            b"HEADER20204A06   TAN1ED\n"
+            b"T12020101111111111223003403361110213120000300000000000008730010000000000000000000000000000000000222222000000002229012                                       \n"
+            b"T2202010111111111121219740114TTTTTTY@W2221222222221012212110014722011400000000000000000000000000000000000000000000000000000000000000000000000000000000000291\n"
+            b"TRAILER0000002         "
+        ),
+    )
+    return parsing_file

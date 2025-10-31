@@ -20,7 +20,7 @@ child_one = TanfDataReportSchema(
     get_partial_dup_fields=get_t2_t3_t5_partial_dup_fields,
     partial_dup_exclusion_query=Q(FAMILY_AFFILIATION__in=(2, 4, 5)),
     preparsing_validators=[
-        category1.program_audit_t3_validator(FIRST_CHILD),
+        category1.t3_m3_child_validator(FIRST_CHILD, 52, 93),
         category1.caseNumberNotEmpty(8, 19),
         category1.or_priority_validators(
             [
@@ -135,7 +135,7 @@ child_two = TanfDataReportSchema(
     partial_dup_exclusion_query=Q(FAMILY_AFFILIATION__in=(2, 4, 5)),
     quiet_preparser_errors=is_quiet_preparser_errors(min_length=61),
     preparsing_validators=[
-        category1.program_audit_t3_validator(SECOND_CHILD),
+        category1.t3_m3_child_validator(SECOND_CHILD, 52, 93),
         category1.caseNumberNotEmpty(8, 19),
         category1.or_priority_validators(
             [

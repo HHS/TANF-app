@@ -30,6 +30,8 @@ function ReportsContent() {
     cancelPendingChange,
     selectFileType,
     selectStt,
+    getSttError,
+    getFileTypeError,
   } = useReportsContext()
 
   const dispatch = useDispatch()
@@ -116,17 +118,19 @@ function ReportsContent() {
                     )
                     selectStt(value, selectedSttObject)
                   }}
-                  error={false}
+                  error={getSttError()}
                 />
               </div>
             )}
             <RadioSelect
-              label="File Type"
+              label="File Type*"
               fieldName="reportType"
               setValue={selectFileType}
               options={radio_options}
               classes="margin-top-4"
               selectedValue={fileTypeInputValue}
+              error={getFileTypeError()}
+              errorMessage="A file type selection is required"
             />
           </div>
         </div>
