@@ -454,7 +454,7 @@ describe('Reports', () => {
   })
 
   describe('search form behaviors', () => {
-    const setUpSearchFormBehaviors = async () => {
+    const setUpSearchFormBehaviors = async (mockDispatch = false) => {
       // set initial search parameters in initialState
       // using a live redux store here to capture state changes
       // see: https://stackoverflow.com/a/65918951
@@ -479,6 +479,11 @@ describe('Reports', () => {
         },
       })
 
+      if (mockDispatch) {
+        const origDispatch = store.dispatch
+        store.dispatch = jest.fn(origDispatch)
+      }
+
       const { getByText, queryByText, getByLabelText, queryAllByText } = render(
         <Provider store={store}>
           <Reports />
@@ -497,7 +502,7 @@ describe('Reports', () => {
         ).toBe(true)
       })
 
-      return { getByText, queryByText, getByLabelText, queryAllByText }
+      return { getByText, queryByText, getByLabelText, queryAllByText, store }
     }
 
     it('should only update the report header when search selections are changed after clicking search', async () => {
@@ -536,8 +541,8 @@ describe('Reports', () => {
     })
 
     it('should present a warning modal when cancelling without first submitting uploaded files', async () => {
-      const { getByText, queryByText, getByLabelText } =
-        await setUpSearchFormBehaviors()
+      const { getByText, queryByText, getByLabelText, store } =
+        await setUpSearchFormBehaviors(true)
 
       await waitFor(() => {
         expect(
@@ -566,7 +571,10 @@ describe('Reports', () => {
         )
       })
 
-      await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
+      await waitFor(() => {
+        expect(getByText('section1.txt')).toBeInTheDocument()
+        expect(store.dispatch).toHaveBeenCalledTimes(5)
+      })
 
       fireEvent.click(getByText(/Cancel/, { selector: 'button' }))
 
@@ -576,8 +584,8 @@ describe('Reports', () => {
     })
 
     it('should allow the user to cancel the error modal and retain previous search selections', async () => {
-      const { getByText, queryByText, getByLabelText } =
-        await setUpSearchFormBehaviors()
+      const { getByText, queryByText, getByLabelText, store } =
+        await setUpSearchFormBehaviors(true)
 
       await waitFor(() => {
         expect(
@@ -606,7 +614,10 @@ describe('Reports', () => {
         )
       })
 
-      await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
+      await waitFor(() => {
+        expect(getByText('section1.txt')).toBeInTheDocument()
+        expect(store.dispatch).toHaveBeenCalledTimes(5)
+      })
 
       fireEvent.click(getByText(/Cancel/, { selector: 'button' }))
 
@@ -626,8 +637,8 @@ describe('Reports', () => {
     })
 
     it('should allow the user to discard un-submitted files and continue with the new search', async () => {
-      const { getByText, queryByText, getByLabelText } =
-        await setUpSearchFormBehaviors()
+      const { getByText, queryByText, getByLabelText, store } =
+        await setUpSearchFormBehaviors(true)
 
       await waitFor(() => {
         expect(
@@ -656,7 +667,10 @@ describe('Reports', () => {
         )
       })
 
-      await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
+      await waitFor(() => {
+        expect(getByText('section1.txt')).toBeInTheDocument()
+        expect(store.dispatch).toHaveBeenCalledTimes(5)
+      })
 
       fireEvent.click(getByText(/Cancel/, { selector: 'button' }))
 
@@ -1121,6 +1135,9 @@ describe('Reports', () => {
       },
     })
 
+    const origDispatch = store.dispatch
+    store.dispatch = jest.fn(origDispatch)
+
     const { getByLabelText, getByTestId, getByText, queryByText } = render(
       <Provider store={store}>
         <Reports />
@@ -1138,6 +1155,8 @@ describe('Reports', () => {
     // Set year and quarter
     setReportInputs('2021', 'Q3', getByLabelText)
 
+    console.log('HERHEREHREHREHREHREEHRHEREHERHER 1')
+
     await waitFor(() => {
       expect(
         getByText('Section 1 - SSP-MOE - Active Case Data')
@@ -1145,30 +1164,32 @@ describe('Reports', () => {
     })
 
     // Upload a file
-    await waitFor(() => {
-      fireEvent.change(
-        getByLabelText('Section 1 - SSP-MOE - Active Case Data'),
-        {
-          target: {
-            files: [
-              makeTestFile('section1.txt', ['HEADER20212A53000SSP1ED\n']),
-            ],
-          },
-        }
-      )
+    // await waitFor(() => {
+    fireEvent.change(getByLabelText('Section 1 - SSP-MOE - Active Case Data'), {
+      target: {
+        files: [makeTestFile('section1.txt', ['HEADER20212A53000SSP1ED\n'])],
+      },
     })
+    // })
 
     await waitFor(() => {
       expect(getByText('section1.txt')).toBeInTheDocument()
+      expect(store.dispatch).toHaveBeenCalledTimes(9)
     })
+
+    console.log('HERHEREHREHREHREHREEHRHEREHERHER 2')
 
     // Try to change to Alaska (no SSP)
     fireEvent.change(sttDropdown, { target: { value: 'Alaska' } })
+
+    console.log('HERHEREHREHREHREHREEHRHEREHERHER 3')
 
     // Modal should appear
     await waitFor(() => {
       expect(queryByText('Files Not Submitted')).toBeInTheDocument()
     })
+
+    console.log('HERHEREHREHREHREHREEHRHEREHERHER 4')
 
     // Click OK to discard files and change STT
     fireEvent.click(getByText(/OK/, { selector: '#modal button' }))
