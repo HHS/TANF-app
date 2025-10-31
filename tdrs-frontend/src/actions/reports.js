@@ -228,8 +228,6 @@ export const submit =
             payload: { submittedFile },
           })
 
-          onFileUploadSuccess(submittedFile)
-
           result.push(
             `${submittedFile?.original_filename} (${submittedFile?.extension})`
           )

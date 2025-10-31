@@ -53,7 +53,7 @@ export const useFileUploadForm = ({
   // Format sections for display in success message
   const formattedSections = formatSections(uploadedFiles)
 
-  const onFileUploadSuccess = (datafile) => {
+  const onFileUploadSuccess = (fileIds) => {
     dispatch(
       getAvailableFileList(
         {
@@ -62,42 +62,45 @@ export const useFileUploadForm = ({
           stt: stt,
           file_type: fileTypeInputValue,
         },
-        () =>
-          startPolling(
-            datafile.id,
-            () => getTanfSubmissionStatus(datafile.id),
-            (response) => {
-              let summary = response?.data?.summary
-              return summary && summary.status && summary.status !== 'Pending'
-            },
-            (response) => {
-              dispatch({
-                type: SET_TANF_SUBMISSION_STATUS,
-                payload: {
-                  datafile_id: datafile.id,
-                  datafile: response?.data,
-                },
-              })
-              setLocalAlertState({
-                active: true,
-                type: 'success',
-                message: 'Parsing complete.',
-              })
-            },
-            (error) => {
-              setLocalAlertState({
-                active: true,
-                type: 'error',
-                message: error.message,
-              })
-            },
-            (onError) => {
-              onError({
-                message:
-                  'Exceeded max number of tries to update submission status.',
-              })
-            }
+        () => {
+          fileIds.forEach((fileId) =>
+            startPolling(
+              fileId,
+              () => getTanfSubmissionStatus(fileId),
+              (response) => {
+                let summary = response?.data?.summary
+                return summary && summary.status && summary.status !== 'Pending'
+              },
+              (response) => {
+                dispatch({
+                  type: SET_TANF_SUBMISSION_STATUS,
+                  payload: {
+                    datafile_id: fileId,
+                    datafile: response?.data,
+                  },
+                })
+                setLocalAlertState({
+                  active: true,
+                  type: 'success',
+                  message: 'Parsing complete.',
+                })
+              },
+              (error) => {
+                setLocalAlertState({
+                  active: true,
+                  type: 'error',
+                  message: error.message,
+                })
+              },
+              (onError) => {
+                onError({
+                  message:
+                    'Exceeded max number of tries to update submission status.',
+                })
+              }
+            )
           )
+        }
       )
     )
     // setSelectedSubmissionTab(2)
