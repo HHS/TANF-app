@@ -101,14 +101,14 @@ Given('{string} logs in', (actor) => {
   clearCookies()
   cy.visit('/')
   cy.adminLogin('cypress-admin-alex@teamraft.com')
-  cy.contains('Sign into TANF Data Portal', { timeout: 30000 })
-
-  cy.login(ACTORS[actor].username)
-
   // if unapproved, reset
   if (Cypress._.startsWith(actor, 'Unapproved')) {
     setAccountStatus(actor, 'Initial')
   }
+
+  cy.contains('Sign into TANF Data Portal', { timeout: 30000 })
+
+  cy.login(ACTORS[actor].username)
 })
 
 When('Admin Alex approves {string}', (actor) => {

@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .. import models
-from . import fra, reparse_meta, ssp, tanf, tribal
+from . import fra, program_audit, reparse_meta, ssp, tanf, tribal
 
 admin.site.register(models.tanf.TANF_T1, tanf.TANF_T1Admin)
 admin.site.register(models.tanf.TANF_T2, tanf.TANF_T2Admin)
@@ -30,3 +30,13 @@ admin.site.register(models.ssp.SSP_M7, ssp.SSP_M7Admin)
 admin.site.register(models.reparse_meta.ReparseMeta, reparse_meta.ReparseMetaAdmin)
 
 admin.site.register(models.fra.TANF_Exiter1, fra.TANF_Exiter1Admin)
+
+admin.site.register(
+    models.program_audit.ProgramAudit_T1, program_audit.ProgramAudit_T1Admin
+)
+admin.site.register(
+    models.program_audit.ProgramAudit_T2, program_audit.ProgramAudit_T2Admin
+)
+admin.site.register(
+    models.program_audit.ProgramAudit_T3, program_audit.ProgramAudit_T3Admin
+)
