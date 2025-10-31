@@ -7,7 +7,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("data_files", "0020_remove_tribal_ssp_sections"),
+        ("data_files", "0022_auto_20251020_1457"),
     ]
 
     operations = [
