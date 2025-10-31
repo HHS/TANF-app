@@ -35,7 +35,6 @@ class TestReportFileViewAsOFAAdmin:
         pk = resp.data["id"]
         created = ReportFile.objects.get(id=pk)
         assert created.original_filename == report_file_data["original_filename"]
-        assert created.section == report_file_data["section"]
         assert created.extension == "zip"
         assert created.file
 

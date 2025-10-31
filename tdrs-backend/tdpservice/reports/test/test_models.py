@@ -13,7 +13,6 @@ def test_create_new_version_increments(report_file_instance):
         {
             "year": base.year,
             "quarter": base.quarter,
-            "section": base.section,
             "stt": base.stt,
             "original_filename": base.original_filename,
             "slug": base.slug,
@@ -27,7 +26,6 @@ def test_create_new_version_increments(report_file_instance):
     assert new_row.version == base.version + 1
     assert new_row.stt == base.stt
     assert new_row.user == base.user
-    assert new_row.section == base.section
     # sanity: new row got created
     assert new_row.pk is not None
 
@@ -42,7 +40,6 @@ def test_find_latest_version_number(report_file_instance):
         {
             "year": base.year,
             "quarter": base.quarter,
-            "section": base.section,
             "stt": base.stt,
             "original_filename": base.original_filename,
             "slug": base.slug,
@@ -55,7 +52,6 @@ def test_find_latest_version_number(report_file_instance):
     latest_version_number = ReportFile.find_latest_version_number(
         year=base.year,
         quarter=base.quarter,
-        section=base.section,
         stt=base.stt,
     )
 
@@ -71,7 +67,6 @@ def test_find_latest_version(report_file_instance):
         {
             "year": base.year,
             "quarter": base.quarter,
-            "section": base.section,
             "stt": base.stt,
             "original_filename": base.original_filename,
             "slug": base.slug,
@@ -84,7 +79,6 @@ def test_find_latest_version(report_file_instance):
     latest_obj = ReportFile.find_latest_version(
         year=base.year,
         quarter=base.quarter,
-        section=base.section,
         stt=base.stt,
     )
 

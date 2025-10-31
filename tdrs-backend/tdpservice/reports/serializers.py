@@ -23,7 +23,6 @@ class ReportFileSerializer(serializers.ModelSerializer):
             "id",
             "stt",
             "user",
-            "section",
             "quarter",
             "year",
             "version",

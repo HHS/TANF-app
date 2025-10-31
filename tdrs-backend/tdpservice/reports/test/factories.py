@@ -21,7 +21,6 @@ class ReportFileFactory(factory.django.DjangoModelFactory):
     extension = "zip"
     quarter = "Q1"
     year = 2024
-    section = "Active Case Data"
     version = 1
 
     user = factory.SubFactory(UserFactory)

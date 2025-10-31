@@ -51,18 +51,6 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("year", models.IntegerField()),
-                (
-                    "section",
-                    models.CharField(
-                        choices=[
-                            ("Active Case Data", "Active Case Data"),
-                            ("Closed Case Data", "Closed Case Data"),
-                            ("Aggregate Data", "Aggregate Data"),
-                            ("Stratum Data", "Stratum Data"),
-                        ],
-                        max_length=32,
-                    ),
-                ),
                 ("version", models.IntegerField()),
                 (
                     "file",
@@ -94,7 +82,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="reportfile",
             constraint=models.UniqueConstraint(
-                fields=("section", "version", "quarter", "year", "stt"),
+                fields=("version", "quarter", "year", "stt"),
                 name="unique_reports_reportfile_fields",
             ),
         ),

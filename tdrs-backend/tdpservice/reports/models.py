@@ -14,21 +14,13 @@ from tdpservice.users.models import User
 def get_s3_upload_path(instance, filename):
     """Produce a unique upload path for S3 files for a given STT and Quarter."""
     return os.path.join(
-        f"reports/{instance.year}/{instance.quarter}/{instance.stt.id}/{instance.section}/",
+        f"reports/{instance.year}/{instance.quarter}/{instance.stt.id}/",
         filename,
     )
 
 
 class ReportFile(StoredFileBase):
     """Represents a version of a report file."""
-
-    class Section(models.TextChoices):
-        """Enum for report section."""
-
-        ACTIVE_CASE_DATA = "Active Case Data"
-        CLOSED_CASE_DATA = "Closed Case Data"
-        AGGREGATE_DATA = "Aggregate Data"
-        STRATUM_DATA = "Stratum Data"
 
     class Quarter(models.TextChoices):
         """Enum for report Quarter."""
@@ -43,7 +35,7 @@ class ReportFile(StoredFileBase):
 
         constraints = [
             models.UniqueConstraint(
-                fields=("section", "version", "quarter", "year", "stt"),
+                fields=("version", "quarter", "year", "stt"),
                 name="unique_reports_reportfile_fields",
             )
         ]
@@ -53,9 +45,6 @@ class ReportFile(StoredFileBase):
         max_length=16, blank=False, null=False, choices=Quarter.choices
     )
     year = models.IntegerField()
-    section = models.CharField(
-        max_length=32, blank=False, null=False, choices=Section.choices
-    )
 
     version = models.IntegerField()
 
@@ -90,7 +79,6 @@ class ReportFile(StoredFileBase):
             self.find_latest_version_number(
                 year=data["year"],
                 quarter=data["quarter"],
-                section=data["section"],
                 stt=data["stt"],
             )
             or 0
@@ -102,22 +90,21 @@ class ReportFile(StoredFileBase):
         )
 
     @classmethod
-    def find_latest_version_number(self, year, quarter, section, stt):
+    def find_latest_version_number(self, year, quarter, stt):
         """Locate the latest version number in a series of report files."""
         return self.objects.filter(
-            stt=stt, year=year, quarter=quarter, section=section
+            stt=stt, year=year, quarter=quarter
         ).aggregate(Max("version"))["version__max"]
 
     @classmethod
-    def find_latest_version(self, year, quarter, section, stt):
+    def find_latest_version(self, year, quarter, stt):
         """Locate the latest version of a report."""
-        version = self.find_latest_version_number(year, quarter, section, stt)
+        version = self.find_latest_version_number(year, quarter, stt)
 
         return self.objects.filter(
             version=version,
             year=year,
             quarter=quarter,
-            section=section,
             stt=stt,
         ).first()
 

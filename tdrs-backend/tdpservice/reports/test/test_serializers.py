@@ -18,7 +18,6 @@ def test_report_file_serializer_valid(report_file_data, data_analyst):
 
     assert obj.pk is not None
     assert obj.original_filename == report_file_data["original_filename"]
-    assert obj.section == "Active Case Data"
 
     assert str(obj.user_id) == data_analyst.id
     assert obj.stt_id == data_analyst.stt.id

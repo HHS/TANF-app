@@ -17,13 +17,11 @@ class ReportFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "user",
         "version",
         "year",
-        "section",
     ]
     list_filter = [
         "stt",
         "year",
         "quarter",
-        "section",
         "user",
     ]
     search_fields = [
