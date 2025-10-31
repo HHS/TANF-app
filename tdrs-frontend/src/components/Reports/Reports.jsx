@@ -123,7 +123,7 @@ function ReportsContent() {
               </div>
             )}
             <RadioSelect
-              label="File Type"
+              label="File Type*"
               fieldName="reportType"
               setValue={selectFileType}
               options={radio_options}
