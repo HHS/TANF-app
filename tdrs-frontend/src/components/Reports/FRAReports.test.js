@@ -53,7 +53,7 @@ describe('FRA Reports Page', () => {
     )
 
     // search form elements exist
-    expect(getByText('File Type')).toBeInTheDocument()
+    expect(getByText('File Type*')).toBeInTheDocument()
     expect(getByText('Fiscal Year (October - September)*')).toBeInTheDocument()
     expect(getByText('Fiscal Quarter*')).toBeInTheDocument()
     expect(getByText('FRA Data Reporting Guidelines')).toBeInTheDocument()
