@@ -197,6 +197,57 @@ describe('usePollingTimer', () => {
     expect(mocks.onTimeoutFunc).toHaveBeenCalledTimes(0)
   })
 
+  it.each([404, 500])(
+    'should call retry when the backend is down',
+    async (status) => {
+      const mocks = setupMockFuncs()
+      const { mockAxios } = mocks
+      mockAxios.get.mockRejectedValue({
+        message: 'Error',
+        response: {
+          status,
+          data: { detail: 'Mock fail response' },
+        },
+      })
+
+      const { queryByText, getByTitle, getByText } = setupSingleTimerComponent(
+        mocks,
+        1000,
+        10
+      )
+
+      expect(queryByText('Done')).toBeInTheDocument()
+      expect(queryByText('Polling')).not.toBeInTheDocument()
+
+      fireEvent.click(getByTitle('Start'))
+
+      act(() => jest.advanceTimersByTime(1000))
+
+      await waitFor(() => {
+        expect(queryByText('Polling')).toBeInTheDocument()
+        expect(queryByText('Done')).not.toBeInTheDocument()
+      })
+
+      expect(mocks.requestFunc).toHaveBeenCalledTimes(1)
+      expect(mocks.onSuccessFunc).toHaveBeenCalledTimes(0)
+      expect(mocks.onErrorFunc).toHaveBeenCalledTimes(0)
+      expect(mocks.onTimeoutFunc).toHaveBeenCalledTimes(0)
+
+      // run the timers again, but don't update the mock
+      act(() => jest.advanceTimersByTime(1000))
+
+      await waitFor(() => {
+        expect(queryByText('Polling')).toBeInTheDocument()
+        expect(queryByText('Done')).not.toBeInTheDocument()
+      })
+
+      expect(mocks.requestFunc).toHaveBeenCalledTimes(2)
+      expect(mocks.onSuccessFunc).toHaveBeenCalledTimes(0)
+      expect(mocks.onErrorFunc).toHaveBeenCalledTimes(0)
+      expect(mocks.onTimeoutFunc).toHaveBeenCalledTimes(0)
+    }
+  )
+
   it.each([400, 401, 403])(
     'should stop polling and call onError if the request fails with %s error',
     async (status) => {

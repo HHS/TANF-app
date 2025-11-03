@@ -20,20 +20,7 @@ export const usePollingTimer = () => {
     timers.current[requestId] = timer
   }
 
-  const getTimer = (requestId) => {
-    if (timers.current && timers.current[requestId]) {
-      return timers.current[requestId]
-    }
-    return null
-  }
-
-  const getPollState = (requestId) => {
-    if (pollState && pollState[requestId]) {
-      return pollState[requestId]
-    }
-
-    return null
-  }
+  const getPollState = (requestId) => (pollState ? pollState[requestId] : null)
 
   const stopTimer = (requestId, deleteRef = true) => {
     clearTimeout(timers.current[requestId])
@@ -66,11 +53,11 @@ export const usePollingTimer = () => {
   const poll = async (
     requestId,
     tryNumber = 1,
-    request = () => null,
-    test = (response) => null,
-    onSuccess = (response) => null,
-    onError = (error) => null,
-    onTimeout = (onError) => null,
+    request,
+    test,
+    onSuccess,
+    onError,
+    onTimeout,
     wait_time = WAIT_TIME,
     max_tries = MAX_TRIES
   ) => {
@@ -138,13 +125,24 @@ export const usePollingTimer = () => {
     addTimer(requestId, timeout)
   }
 
+  /**
+   * Start polling the provided request function with give intervals and result steps.
+   * @param {Number} requestId - the id to track for multiple independent timers
+   * @param {Function} request - an axios request to poll
+   * @param {Function} test - takes the axios response and returns a boolean indicating whether to continue polling
+   * @param {Function} onSuccess - called when `test` returns true
+   * @param {Function} onError - called when `request` throws an exception
+   * @param {Function} onTimeout - called when the number of tries exceeds `max_tries`
+   * @param {Number} wait_time - the time to wait in ms
+   * @param {Number} max_tries - the number of requests to try before calling `onTimeout`
+   */
   const startPolling = (
     requestId,
-    request = () => null,
-    test = (response) => null,
-    onSuccess = (response) => null,
-    onError = (error, retry) => null,
-    onTimeout = (onError) => null,
+    request,
+    test,
+    onSuccess,
+    onError,
+    onTimeout,
     wait_time = WAIT_TIME,
     max_tries = MAX_TRIES
   ) => {
