@@ -77,6 +77,16 @@ class Migration(migrations.Migration):
                         to=settings.AUTH_USER_MODEL,
                     ),
                 ),
+                (
+                    "ingest",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="report_files",
+                        to="reports.reportingest",
+                    ),
+                ),
             ],
         ),
         migrations.AddConstraint(
