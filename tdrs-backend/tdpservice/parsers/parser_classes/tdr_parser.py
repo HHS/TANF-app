@@ -6,7 +6,6 @@ from django.conf import settings
 
 from tdpservice.data_files.models import DataFile
 from tdpservice.parsers import schema_defs
-from tdpservice.parsers.base_parser import BaseParser
 from tdpservice.parsers.case_consistency_validator import CaseConsistencyValidator
 from tdpservice.parsers.constants import (
     HEADER_POSITION,
@@ -20,6 +19,7 @@ from tdpservice.parsers.constants import (
 )
 from tdpservice.parsers.dataclasses import HeaderResult, ValidationErrorArgs
 from tdpservice.parsers.error_generator import ErrorGeneratorArgs, ErrorGeneratorType
+from tdpservice.parsers.parser_classes.base_parser import BaseParser
 from tdpservice.parsers.schema_defs.utils import ProgramManager
 from tdpservice.parsers.validators import category1, category2
 from tdpservice.parsers.validators.util import value_is_empty
@@ -35,7 +35,9 @@ class TanfDataReportParser(BaseParser):
         self.case_consistency_validator = None
         self.multiple_trailer_errors = False
         self.header_count = 0
+        self.header_schema = schema_defs.header
         self.trailer_count = 0
+        self.trailer_schema = schema_defs.trailer
 
     def parse_and_validate(self):
         """Parse and validate the datafile."""
@@ -215,7 +217,7 @@ class TanfDataReportParser(BaseParser):
         # parse & validate header
         header_row = self.decoder.get_header()
         header_row.row_num = 1
-        header_schema = schema_defs.header
+        header_schema = self.header_schema
         header_schema.prepare(self.datafile)
         header, header_is_valid, header_errors = header_schema.parse_and_validate(
             header_row
@@ -355,7 +357,7 @@ class TanfDataReportParser(BaseParser):
             )
             self._generate_trailer_errors(errors)
         if self.trailer_count == 1 or is_last_line:
-            trailer_schema = schema_defs.trailer
+            trailer_schema = self.trailer_schema
             trailer_schema.prepare(self.datafile)
             (
                 record,
