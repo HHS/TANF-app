@@ -100,8 +100,10 @@ class ReportIngestSerializer(serializers.ModelSerializer):
 
         user = self.context["user"]
         ingest = ReportIngest.objects.create(
-            uploaded_by=user,
             original_filename=file.name,
+            slug=file.name,
+            extension="zip",
+            uploaded_by=user,
             s3_key=s3_key,
         )
 

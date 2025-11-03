@@ -36,7 +36,7 @@ class Migration(migrations.Migration):
                 ),
                 ("original_filename", models.CharField(max_length=256)),
                 ("slug", models.CharField(max_length=256)),
-                ("extension", models.CharField(default="txt", max_length=8)),
+                ("extension", models.CharField(default="zip", max_length=8)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 (
                     "quarter",

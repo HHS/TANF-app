@@ -18,6 +18,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('original_filename', models.CharField(max_length=256)),
+                ("slug", models.CharField(max_length=256)),
+                ("extension", models.CharField(default="zip", max_length=8)),
                 ('s3_key', models.CharField(max_length=1024)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('processed_at', models.DateTimeField(blank=True, null=True)),

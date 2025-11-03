@@ -40,6 +40,10 @@ class ReportFile(FileRecord):
             )
         ]
 
+    # Override FileRecord fields
+    extension = models.CharField(max_length=8, default="zip")
+
+    # Model Fields
     created_at = models.DateTimeField(auto_now_add=True)
     quarter = models.CharField(
         max_length=16, blank=False, null=False, choices=Quarter.choices
@@ -109,7 +113,7 @@ class ReportFile(FileRecord):
         ).first()
 
 
-class ReportIngest(models.Model):
+class ReportIngest(FileRecord):
     """ReportIngest is an intermediary model for submitting a zip file containing multiple zips to be parsed into ReportFile records."""
 
     class Status(models.TextChoices):
@@ -120,10 +124,13 @@ class ReportIngest(models.Model):
         SUCCEEDED = "SUCCEEDED"
         FAILED = "FAILED"
 
+    # Override FileRecord fields
+    extension = models.CharField(max_length=8, default="zip")
+
+    # Model Fields
     uploaded_by = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="report_ingests"
     )
-    original_filename = models.CharField(max_length=256)
     s3_key = models.CharField(max_length=1024)  # where the master zip lives
     created_at = models.DateTimeField(auto_now_add=True)
     processed_at = models.DateTimeField(null=True, blank=True)
