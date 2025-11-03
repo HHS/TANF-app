@@ -1,495 +1,435 @@
-import { render, screen, act } from '@testing-library/react'
+import { render, fireEvent, waitFor, act } from '@testing-library/react'
+import axios from 'axios'
 import { usePollingTimer } from './usePollingTimer'
 
-// Helper component to test the hook
-// function TestComponent({ testFn }) {
-//   const hookResult = usePollingTimer()
-//   testFn(hookResult)
-//   return (
-//     <div data-testid="isSubmitting">{hookResult.isSubmitting.toString()}</div>
-//   )
-// }
+jest.useFakeTimers()
 
-// describe('usePollingTimer', () => {
-//   // it('should initialize with isSubmitting as false', () => {
-//   //   let hookResult
-//   //   render(
-//   //     <TestComponent
-//   //       testFn={(result) => {
-//   //         hookResult = result
-//   //       }}
-//   //     />
-//   //   )
-//   //   expect(hookResult.isSubmitting).toBe(false)
-//   //   expect(screen.getByTestId('isSubmitting').textContent).toBe('false')
-//   // })
-//   // it('should set isSubmitting to true when onSubmitStart is called', () => {
-//   //   let hookResult
-//   //   render(
-//   //     <TestComponent
-//   //       testFn={(result) => {
-//   //         hookResult = result
-//   //       }}
-//   //     />
-//   //   )
-//   //   act(() => {
-//   //     hookResult.onSubmitStart()
-//   //   })
-//   //   expect(hookResult.isSubmitting).toBe(true)
-//   //   expect(screen.getByTestId('isSubmitting').textContent).toBe('true')
-//   // })
-//   // it('should set isSubmitting to false when onSubmitComplete is called', () => {
-//   //   let hookResult
-//   //   render(
-//   //     <TestComponent
-//   //       testFn={(result) => {
-//   //         hookResult = result
-//   //       }}
-//   //     />
-//   //   )
-//   //   // First set it to true
-//   //   act(() => {
-//   //     hookResult.onSubmitStart()
-//   //   })
-//   //   // Then set it back to false
-//   //   act(() => {
-//   //     hookResult.onSubmitComplete()
-//   //   })
-//   //   expect(hookResult.isSubmitting).toBe(false)
-//   //   expect(screen.getByTestId('isSubmitting').textContent).toBe('false')
-//   // })
-//   // it('should execute the submission function and return its result', async () => {
-//   //   let hookResult
-//   //   const mockSubmitFn = jest.fn().mockResolvedValue('success')
-//   //   render(
-//   //     <TestComponent
-//   //       testFn={(result) => {
-//   //         hookResult = result
-//   //       }}
-//   //     />
-//   //   )
-//   //   let returnValue
-//   //   await act(async () => {
-//   //     returnValue = await hookResult.executeSubmission(mockSubmitFn)
-//   //   })
-//   //   expect(mockSubmitFn).toHaveBeenCalledTimes(1)
-//   //   expect(returnValue).toBe('success')
-//   //   expect(hookResult.isSubmitting).toBe(false)
-//   //   expect(screen.getByTestId('isSubmitting').textContent).toBe('false')
-//   // })
-//   // it('should call onSuccess callback when submission succeeds', async () => {
-//   //   let hookResult
-//   //   const mockSubmitFn = jest.fn().mockResolvedValue('success')
-//   //   const onSuccess = jest.fn()
-//   //   render(
-//   //     <TestComponent
-//   //       testFn={(result) => {
-//   //         hookResult = result
-//   //       }}
-//   //     />
-//   //   )
-//   //   await act(async () => {
-//   //     await hookResult.executeSubmission(mockSubmitFn, { onSuccess })
-//   //   })
-//   //   expect(onSuccess).toHaveBeenCalledWith('success')
-//   //   expect(hookResult.isSubmitting).toBe(false)
-//   // })
-//   // it('should call onError callback when submission fails', async () => {
-//   //   let hookResult
-//   //   const error = new Error('Submission failed')
-//   //   const mockSubmitFn = jest.fn().mockRejectedValue(error)
-//   //   const onError = jest.fn()
-//   //   render(
-//   //     <TestComponent
-//   //       testFn={(result) => {
-//   //         hookResult = result
-//   //       }}
-//   //     />
-//   //   )
-//   //   let promise
-//   //   await act(async () => {
-//   //     promise = hookResult.executeSubmission(mockSubmitFn, { onError })
-//   //     // Need to catch the error to prevent test failure
-//   //     try {
-//   //       await promise
-//   //     } catch (e) {
-//   //       // Expected error
-//   //     }
-//   //   })
-//   //   expect(onError).toHaveBeenCalledWith(error)
-//   //   expect(hookResult.isSubmitting).toBe(false)
-//   // })
-//   // it('should re-throw error when submission fails without onError callback', async () => {
-//   //   let hookResult
-//   //   const mockSubmitFn = jest.fn(() => {
-//   //     throw new Error('Submission failed without callback')
-//   //   })
-//   //   render(
-//   //     <TestComponent
-//   //       testFn={(result) => {
-//   //         hookResult = result
-//   //       }}
-//   //     />
-//   //   )
-//   //   let promise
-//   //   await act(async () => {
-//   //     promise = hookResult.executeSubmission(mockSubmitFn)
-//   //     try {
-//   //       await promise
-//   //     } catch (e) {
-//   //       expect(e.message).toEqual('Submission failed without callback')
-//   //     }
-//   //   })
-//   //   expect(hookResult.isSubmitting).toBe(false)
-//   // })
-//   // it('should prevent multiple submissions when isSubmitting is true', async () => {
-//   //   let hookResult
-//   //   const mockSubmitFn = jest.fn().mockResolvedValue('success')
-//   //   render(
-//   //     <TestComponent
-//   //       testFn={(result) => {
-//   //         hookResult = result
-//   //       }}
-//   //     />
-//   //   )
-//   //   // Manually set isSubmitting to true
-//   //   act(() => {
-//   //     hookResult.onSubmitStart()
-//   //   })
-//   //   // Try to execute submission while already submitting
-//   //   act(() => {
-//   //     hookResult.executeSubmission(mockSubmitFn)
-//   //   })
-//   //   // The submit function should not be called
-//   //   expect(mockSubmitFn).not.toHaveBeenCalled()
-//   // })
-//   describe('pollFraSubmissionStatus', () => {
-//     it('should not call retry if success received', async () => {
-//       const store = mockStore()
+describe('usePollingTimer', () => {
+  const setupMockFuncs = () => ({
+    mockAxios: axios,
+    requestFunc: jest.fn(() => {
+      return axios.get('/fake_status_endpoint/')
+    }),
+    testFunc: jest.fn((response) => {
+      return response?.data?.summary?.status !== 'Pending'
+    }),
+    onSuccessFunc: jest.fn((response) => response),
+    onErrorFunc: jest.fn((error) => error),
+    onTimeoutFunc: jest.fn((onError) => onError),
+  })
 
-//       const test = jest.fn(() => true)
-//       const retry = jest.fn()
-//       const onSuccess = jest.fn()
-//       const onError = jest.fn()
+  const setupSingleTimerComponent = (mockFuncs, wait_time, max_tries) => {
+    const requestId = 1
+    const TestComponent = () => {
+      const { startPolling, isDonePolling } = usePollingTimer()
+      const onClickStart = () =>
+        startPolling(
+          requestId,
+          mockFuncs.requestFunc,
+          mockFuncs.testFunc,
+          mockFuncs.onSuccessFunc,
+          mockFuncs.onErrorFunc,
+          mockFuncs.onTimeoutFunc,
+          wait_time,
+          max_tries
+        )
 
-//       mockAxios.get.mockResolvedValue({
-//         data: { id: 1, hasErrors: true, summary: { status: 'Approved' } },
-//       })
+      const IsPollingText = ({ isLoading }) => (
+        <p>{isLoading ? 'Polling' : 'Done'}</p>
+      )
 
-//       await store.dispatch(
-//         pollFraSubmissionStatus(1, 1, test, retry, onSuccess, onError)
-//       )
+      return (
+        <>
+          <button onClick={onClickStart} title="Start" />
+          <IsPollingText
+            isLoading={
+              isDonePolling && requestId in isDonePolling
+                ? !isDonePolling[requestId]
+                : false
+            }
+          />
+        </>
+      )
+    }
 
-//       const actions = store.getActions()
-//       expect(actions.length).toEqual(4)
+    return render(<TestComponent />)
+  }
 
-//       expect(actions[0].type).toBe(SET_IS_LOADING_FRA_SUBMISSION_STATUS)
-//       expect(actions[0].payload).toStrictEqual({
-//         datafile_id: 1,
-//         tryNumber: 1,
-//         isPerformingRequest: true,
-//         isDone: false,
-//         error: null,
-//       })
+  const setupMultiTimerComponent = (mockFuncs, wait_time, max_tries) => {
+    const TestComponent = () => {
+      const { startPolling, isDonePolling } = usePollingTimer()
+      const onClickStart = (requestId) =>
+        startPolling(
+          requestId,
+          mockFuncs.requestFunc,
+          mockFuncs.testFunc,
+          mockFuncs.onSuccessFunc,
+          mockFuncs.onErrorFunc,
+          mockFuncs.onTimeoutFunc,
+          wait_time,
+          max_tries
+        )
 
-//       expect(actions[1].type).toBe(SET_IS_LOADING_FRA_SUBMISSION_STATUS)
-//       expect(actions[1].payload).toStrictEqual({
-//         datafile_id: 1,
-//         isPerformingRequest: false,
-//       })
+      const IsPollingText = ({ text, isLoading }) => (
+        <p>{`${text} - ${isLoading ? 'Polling' : 'Done'}`}</p>
+      )
 
-//       expect(actions[2].type).toBe(SET_IS_LOADING_FRA_SUBMISSION_STATUS)
-//       expect(actions[2].payload).toStrictEqual({
-//         datafile_id: 1,
-//         isPerformingRequest: false,
-//         isDone: true,
-//         error: null,
-//       })
+      return (
+        <>
+          <button onClick={() => onClickStart(1)} title="Start 1" />
+          <IsPollingText
+            text="Timer 1"
+            isLoading={
+              isDonePolling && 1 in isDonePolling ? !isDonePolling[1] : false
+            }
+          />
 
-//       expect(actions[3].type).toBe(SET_FRA_SUBMISSION_STATUS)
-//       expect(actions[3].payload).toStrictEqual({
-//         datafile_id: 1,
-//         datafile: {
-//           id: 1,
-//           hasErrors: true,
-//           summary: { status: 'Approved' },
-//         },
-//       })
+          <button onClick={() => onClickStart(2)} title="Start 2" />
+          <IsPollingText
+            text="Timer 2"
+            isLoading={
+              isDonePolling && 2 in isDonePolling ? !isDonePolling[2] : false
+            }
+          />
+        </>
+      )
+    }
 
-//       expect(test).toHaveBeenCalledTimes(1)
-//       expect(retry).toHaveBeenCalledTimes(0)
-//       expect(onSuccess).toHaveBeenCalledTimes(1)
-//       expect(onError).toHaveBeenCalledTimes(0)
-//     })
+    return render(<TestComponent />)
+  }
 
-//     it('calls retry until a success is received', async () => {
-//       const store = mockStore()
+  it('should not be polling when initialized', () => {
+    const mocks = setupMockFuncs()
+    const { getByText, queryByText } = setupSingleTimerComponent(
+      mocks,
+      1000,
+      10
+    )
 
-//       let test = jest.fn((f) => f?.summary?.status !== 'Pending')
-//       const retry = jest.fn()
-//       const onSuccess = jest.fn()
-//       const onError = jest.fn()
+    expect(getByText('Done')).toBeInTheDocument()
+    expect(queryByText('Polling')).not.toBeInTheDocument()
+  })
 
-//       mockAxios.get.mockResolvedValue({
-//         data: { summary: { status: 'Pending' } },
-//       })
+  it('should start polling when startPolling called', async () => {
+    const mocks = setupMockFuncs()
+    const { mockAxios } = mocks
+    mockAxios.get.mockResolvedValue({
+      data: { id: 1, hasErrors: false, summary: { status: 'Pending' } },
+    })
 
-//       await store.dispatch(
-//         pollFraSubmissionStatus(1, 1, test, retry, onSuccess, onError)
-//       )
+    const { queryByText, getByTitle, getByText } = setupSingleTimerComponent(
+      mocks,
+      1000,
+      10
+    )
 
-//       let actions = store.getActions()
-//       expect(actions.length).toEqual(2)
+    expect(queryByText('Done')).toBeInTheDocument()
+    expect(queryByText('Polling')).not.toBeInTheDocument()
 
-//       expect(actions[0].type).toBe(SET_IS_LOADING_FRA_SUBMISSION_STATUS)
-//       expect(actions[0].payload).toStrictEqual({
-//         datafile_id: 1,
-//         tryNumber: 1,
-//         isPerformingRequest: true,
-//         isDone: false,
-//         error: null,
-//       })
+    fireEvent.click(getByTitle('Start'))
 
-//       expect(actions[1].type).toBe(SET_IS_LOADING_FRA_SUBMISSION_STATUS)
-//       expect(actions[1].payload).toStrictEqual({
-//         datafile_id: 1,
-//         isPerformingRequest: false,
-//       })
+    act(() => jest.advanceTimersByTime(1000))
 
-//       expect(test).toHaveBeenCalledTimes(1)
-//       expect(retry).toHaveBeenCalledTimes(1)
-//       expect(onSuccess).toHaveBeenCalledTimes(0)
-//       expect(onError).toHaveBeenCalledTimes(0)
+    await waitFor(() => {
+      expect(queryByText('Polling')).toBeInTheDocument()
+      expect(queryByText('Done')).not.toBeInTheDocument()
+    })
+  })
 
-//       await store.dispatch(
-//         pollFraSubmissionStatus(1, 2, test, retry, onSuccess, onError)
-//       )
+  it('should call retry until the test completes then call onSuccess', async () => {
+    const mocks = setupMockFuncs()
+    const { mockAxios } = mocks
+    mockAxios.get.mockResolvedValue({
+      data: { id: 1, hasErrors: false, summary: { status: 'Pending' } },
+    })
 
-//       actions = store.getActions()
-//       expect(actions.length).toEqual(4)
+    const { queryByText, getByTitle, getByText } = setupSingleTimerComponent(
+      mocks,
+      1000,
+      10
+    )
 
-//       expect(actions[2].type).toBe(SET_IS_LOADING_FRA_SUBMISSION_STATUS)
-//       expect(actions[2].payload).toStrictEqual({
-//         datafile_id: 1,
-//         tryNumber: 2,
-//         isPerformingRequest: true,
-//         isDone: false,
-//         error: null,
-//       })
+    expect(queryByText('Done')).toBeInTheDocument()
+    expect(queryByText('Polling')).not.toBeInTheDocument()
 
-//       expect(actions[3].type).toBe(SET_IS_LOADING_FRA_SUBMISSION_STATUS)
-//       expect(actions[3].payload).toStrictEqual({
-//         datafile_id: 1,
-//         isPerformingRequest: false,
-//       })
+    fireEvent.click(getByTitle('Start'))
 
-//       expect(test).toHaveBeenCalledTimes(2)
-//       expect(retry).toHaveBeenCalledTimes(2)
-//       expect(onSuccess).toHaveBeenCalledTimes(0)
-//       expect(onError).toHaveBeenCalledTimes(0)
+    act(() => jest.advanceTimersByTime(1000))
 
-//       mockAxios.get.mockResolvedValue({
-//         data: { id: 1, hasErrors: true, summary: { status: 'Approved' } },
-//       })
+    await waitFor(() => {
+      expect(queryByText('Polling')).toBeInTheDocument()
+      expect(queryByText('Done')).not.toBeInTheDocument()
+    })
 
-//       await store.dispatch(
-//         pollFraSubmissionStatus(1, 3, test, retry, onSuccess, onError)
-//       )
+    expect(mocks.requestFunc).toHaveBeenCalledTimes(1)
+    expect(mocks.onSuccessFunc).toHaveBeenCalledTimes(0)
+    expect(mocks.onErrorFunc).toHaveBeenCalledTimes(0)
+    expect(mocks.onTimeoutFunc).toHaveBeenCalledTimes(0)
 
-//       actions = store.getActions()
-//       expect(actions.length).toEqual(8)
+    // run the timers again, but don't update the mock
+    act(() => jest.advanceTimersByTime(1000))
 
-//       expect(actions[4].type).toBe(SET_IS_LOADING_FRA_SUBMISSION_STATUS)
-//       expect(actions[4].payload).toStrictEqual({
-//         datafile_id: 1,
-//         tryNumber: 3,
-//         isPerformingRequest: true,
-//         isDone: false,
-//         error: null,
-//       })
+    await waitFor(() => {
+      expect(queryByText('Polling')).toBeInTheDocument()
+      expect(queryByText('Done')).not.toBeInTheDocument()
+    })
 
-//       expect(actions[5].type).toBe(SET_IS_LOADING_FRA_SUBMISSION_STATUS)
-//       expect(actions[5].payload).toStrictEqual({
-//         datafile_id: 1,
-//         isPerformingRequest: false,
-//       })
+    expect(mocks.requestFunc).toHaveBeenCalledTimes(2)
+    expect(mocks.onSuccessFunc).toHaveBeenCalledTimes(0)
+    expect(mocks.onErrorFunc).toHaveBeenCalledTimes(0)
+    expect(mocks.onTimeoutFunc).toHaveBeenCalledTimes(0)
 
-//       expect(actions[6].type).toBe(SET_IS_LOADING_FRA_SUBMISSION_STATUS)
-//       expect(actions[6].payload).toStrictEqual({
-//         datafile_id: 1,
-//         isPerformingRequest: false,
-//         isDone: true,
-//         error: null,
-//       })
+    // now update the mock and run a third time
+    mockAxios.get.mockResolvedValue({
+      data: { id: 1, hasErrors: false, summary: { status: 'Approved' } },
+    })
 
-//       expect(actions[7].type).toBe(SET_FRA_SUBMISSION_STATUS)
-//       expect(actions[7].payload).toStrictEqual({
-//         datafile_id: 1,
-//         datafile: {
-//           id: 1,
-//           hasErrors: true,
-//           summary: { status: 'Approved' },
-//         },
-//       })
+    act(() => jest.advanceTimersByTime(1000))
 
-//       expect(test).toHaveBeenCalledTimes(3)
-//       expect(retry).toHaveBeenCalledTimes(2)
-//       expect(onSuccess).toHaveBeenCalledTimes(1)
-//       expect(onError).toHaveBeenCalledTimes(0)
-//     })
+    await waitFor(() => {
+      expect(queryByText('Done')).toBeInTheDocument()
+      expect(queryByText('Polling')).not.toBeInTheDocument()
+    })
 
-//     it('keeps polling during backend outage', async () => {
-//       const store = mockStore()
+    expect(mocks.requestFunc).toHaveBeenCalledTimes(3)
+    expect(mocks.onSuccessFunc).toHaveBeenCalledTimes(1)
+    expect(mocks.onErrorFunc).toHaveBeenCalledTimes(0)
+    expect(mocks.onTimeoutFunc).toHaveBeenCalledTimes(0)
+  })
 
-//       const test = jest.fn(() => true)
-//       const retry = jest.fn()
-//       const onSuccess = jest.fn()
-//       const onError = jest.fn()
+  it.each([400, 401, 403])(
+    'should stop polling and call onError if the request fails with %s error',
+    async (status) => {
+      const mocks = setupMockFuncs()
+      const { mockAxios } = mocks
 
-//       mockAxios.get.mockRejectedValue({
-//         message: 'Error',
-//         response: {
-//           status: 502,
-//           data: { detail: 'Mock fail response' },
-//         },
-//       })
+      mockAxios.get.mockRejectedValue({
+        message: 'Error',
+        response: {
+          status,
+          data: { detail: 'Mock fail response' },
+        },
+      })
 
-//       await store.dispatch(
-//         pollFraSubmissionStatus(1, 1, test, retry, onSuccess, onError)
-//       )
+      const { queryByText, getByTitle, getByText } = setupSingleTimerComponent(
+        mocks,
+        1000,
+        10
+      )
 
-//       const actions = store.getActions()
-//       expect(actions.length).toEqual(2)
+      expect(queryByText('Done')).toBeInTheDocument()
+      expect(queryByText('Polling')).not.toBeInTheDocument()
 
-//       expect(actions[0].type).toBe(SET_IS_LOADING_FRA_SUBMISSION_STATUS)
-//       expect(actions[0].payload).toStrictEqual({
-//         datafile_id: 1,
-//         tryNumber: 1,
-//         isPerformingRequest: true,
-//         isDone: false,
-//         error: null,
-//       })
+      fireEvent.click(getByTitle('Start'))
 
-//       expect(actions[1].type).toBe(SET_IS_LOADING_FRA_SUBMISSION_STATUS)
-//       expect(actions[1].payload).toStrictEqual({
-//         datafile_id: 1,
-//         isPerformingRequest: false,
-//         isDone: false,
-//         error: {
-//           message: 'Error',
-//           response: {
-//             status: 502,
-//             data: { detail: 'Mock fail response' },
-//           },
-//         },
-//       })
+      act(() => jest.advanceTimersByTime(1000))
 
-//       expect(test).toHaveBeenCalledTimes(0)
-//       expect(retry).toHaveBeenCalledTimes(1)
-//       expect(onSuccess).toHaveBeenCalledTimes(0)
-//       expect(onError).toHaveBeenCalledTimes(0)
-//     })
+      await waitFor(() => {
+        expect(queryByText('Done')).toBeInTheDocument()
+        expect(queryByText('Polling')).not.toBeInTheDocument()
+      })
 
-//     it('dispatches and calls onError when polling gets 400, 401, or 403', async () => {
-//       const store = mockStore()
+      expect(mocks.requestFunc).toHaveBeenCalledTimes(1)
+      expect(mocks.onSuccessFunc).toHaveBeenCalledTimes(0)
+      expect(mocks.onErrorFunc).toHaveBeenCalledTimes(1)
+      expect(mocks.onTimeoutFunc).toHaveBeenCalledTimes(0)
+    }
+  )
 
-//       const test = jest.fn(() => true)
-//       const retry = jest.fn()
-//       const onSuccess = jest.fn()
-//       const onError = jest.fn()
+  it('should stop polling and call onTimeout when max tries reached', async () => {
+    const mocks = setupMockFuncs()
+    const { mockAxios } = mocks
+    mockAxios.get.mockResolvedValue({
+      data: { id: 1, hasErrors: false, summary: { status: 'Pending' } },
+    })
 
-//       mockAxios.get.mockRejectedValue({
-//         message: 'Error',
-//         response: {
-//           status: 403,
-//           data: { detail: 'Mock fail response' },
-//         },
-//       })
+    const { queryByText, getByTitle, getByText } = setupSingleTimerComponent(
+      mocks,
+      1000,
+      2 // time out after 2 tries
+    )
 
-//       await store.dispatch(
-//         pollFraSubmissionStatus(1, 1, test, retry, onSuccess, onError)
-//       )
+    expect(queryByText('Done')).toBeInTheDocument()
+    expect(queryByText('Polling')).not.toBeInTheDocument()
 
-//       const actions = store.getActions()
-//       expect(actions.length).toEqual(3)
+    fireEvent.click(getByTitle('Start'))
 
-//       expect(actions[0].type).toBe(SET_IS_LOADING_FRA_SUBMISSION_STATUS)
-//       expect(actions[0].payload).toStrictEqual({
-//         datafile_id: 1,
-//         tryNumber: 1,
-//         isPerformingRequest: true,
-//         isDone: false,
-//         error: null,
-//       })
+    act(() => jest.advanceTimersByTime(1000))
 
-//       expect(actions[1].type).toBe(SET_IS_LOADING_FRA_SUBMISSION_STATUS)
-//       expect(actions[1].payload).toStrictEqual({
-//         datafile_id: 1,
-//         isPerformingRequest: false,
-//         isDone: true,
-//         error: {
-//           message: 'Error',
-//           response: {
-//             status: 403,
-//             data: { detail: 'Mock fail response' },
-//           },
-//         },
-//       })
+    await waitFor(() => {
+      expect(queryByText('Polling')).toBeInTheDocument()
+      expect(queryByText('Done')).not.toBeInTheDocument()
+    })
 
-//       expect(actions[2].type).toBe(SET_IS_LOADING_FRA_SUBMISSION_STATUS)
-//       expect(actions[2].payload).toStrictEqual({
-//         datafile_id: 1,
-//         isPerformingRequest: false,
-//         isDone: true,
-//         error: new Error(
-//           'The system encountered an error, please refresh the page or press Search again.'
-//         ),
-//       })
+    expect(mocks.requestFunc).toHaveBeenCalledTimes(1)
+    expect(mocks.onSuccessFunc).toHaveBeenCalledTimes(0)
+    expect(mocks.onErrorFunc).toHaveBeenCalledTimes(0)
+    expect(mocks.onTimeoutFunc).toHaveBeenCalledTimes(0)
 
-//       expect(test).toHaveBeenCalledTimes(0)
-//       expect(retry).toHaveBeenCalledTimes(0)
-//       expect(onSuccess).toHaveBeenCalledTimes(0)
-//       expect(onError).toHaveBeenCalledTimes(1)
-//     })
+    // fire the timer again without updating the mocks
+    act(() => jest.advanceTimersByTime(1000))
 
-//     it('dispatches and calls onError when tryNumber > MAX_TRIES', async () => {
-//       const store = mockStore()
+    await waitFor(() => {
+      expect(queryByText('Polling')).toBeInTheDocument()
+      expect(queryByText('Done')).not.toBeInTheDocument()
+    })
 
-//       const test = jest.fn(() => true)
-//       const retry = jest.fn()
-//       const onSuccess = jest.fn()
-//       const onError = jest.fn()
+    expect(mocks.requestFunc).toHaveBeenCalledTimes(2)
+    expect(mocks.onSuccessFunc).toHaveBeenCalledTimes(0)
+    expect(mocks.onErrorFunc).toHaveBeenCalledTimes(0)
 
-//       mockAxios.get.mockResolvedValue({
-//         data: { id: 1, hasErrors: true, summary: { status: 'Approved' } },
-//       })
+    // because the timer calls `poll` again immediately, but doesn't fire the request
+    // until `advanceTimersByTime` is called, the timeout is fired without
+    // advancing the timers a third time
+    expect(mocks.onTimeoutFunc).toHaveBeenCalledTimes(1)
+  })
 
-//       await store.dispatch(
-//         pollFraSubmissionStatus(1, 31, test, retry, onSuccess, onError)
-//       )
+  // it('should prevent multiple parallel timers with the same requestId', async () => {
+  //   const mocks = setupMockFuncs()
+  //   const { mockAxios } = mocks
+  //   mockAxios.get.mockResolvedValue({
+  //     data: { id: 1, hasErrors: false, summary: { status: 'Pending' } },
+  //   })
 
-//       const actions = store.getActions()
-//       expect(actions.length).toEqual(2)
+  //   const { queryByText, getByTitle, getByText } = setupSingleTimerComponent(
+  //     mocks,
+  //     1000,
+  //     10
+  //   )
 
-//       expect(actions[0].type).toBe(SET_FRA_SUBMISSION_STATUS_TIMED_OUT)
-//       expect(actions[0].payload).toEqual({
-//         datafile_id: 1,
-//       })
+  //   expect(queryByText('Done')).toBeInTheDocument()
+  //   expect(queryByText('Polling')).not.toBeInTheDocument()
 
-//       expect(actions[1].type).toBe(SET_IS_LOADING_FRA_SUBMISSION_STATUS)
-//       expect(actions[1].payload).toEqual({
-//         datafile_id: 1,
-//         isPerformingRequest: false,
-//         isDone: true,
-//         error: new Error(
-//           'The system encountered an error, please refresh the page or press Search again.'
-//         ),
-//       })
+  //   fireEvent.click(getByTitle('Start'))
 
-//       expect(test).toHaveBeenCalledTimes(0)
-//       expect(retry).toHaveBeenCalledTimes(0)
-//       expect(onSuccess).toHaveBeenCalledTimes(0)
-//       expect(onError).toHaveBeenCalledTimes(1)
-//     })
-//   })
-// })
+  //   await waitFor(() => {
+  //     expect(queryByText('Polling')).toBeInTheDocument()
+  //     expect(queryByText('Done')).not.toBeInTheDocument()
+  //   })
+
+  //   expect(mocks.requestFunc).toHaveBeenCalledTimes(1)
+  //   expect(mocks.onSuccessFunc).toHaveBeenCalledTimes(0)
+  //   expect(mocks.onErrorFunc).toHaveBeenCalledTimes(0)
+  //   expect(mocks.onTimeoutFunc).toHaveBeenCalledTimes(0)
+
+  //   // click start again, with the timer pending
+  //   console.log('click start again')
+  //   fireEvent.click(getByTitle('Start'))
+
+  //   expect(mocks.requestFunc).toHaveBeenCalledTimes(1)
+  //   expect(mocks.onSuccessFunc).toHaveBeenCalledTimes(0)
+  //   expect(mocks.onErrorFunc).toHaveBeenCalledTimes(0)
+  //   expect(mocks.onTimeoutFunc).toHaveBeenCalledTimes(0)
+  // })
+
+  it('should allow multiple parallel timers with different requestIds', async () => {
+    const mocks = setupMockFuncs()
+    const { mockAxios } = mocks
+    mockAxios.get.mockResolvedValue({
+      data: { id: 1, hasErrors: false, summary: { status: 'Pending' } },
+    })
+
+    const { queryByText, getByTitle, getByText } = setupMultiTimerComponent(
+      mocks,
+      1000,
+      10
+    )
+
+    expect(queryByText('Timer 1 - Done')).toBeInTheDocument()
+    expect(queryByText('Timer 1 - Polling')).not.toBeInTheDocument()
+    expect(queryByText('Timer 2 - Done')).toBeInTheDocument()
+    expect(queryByText('Timer 2 - Polling')).not.toBeInTheDocument()
+
+    fireEvent.click(getByTitle('Start 1'))
+
+    act(() => jest.advanceTimersByTime(1000))
+
+    await waitFor(() => {
+      expect(queryByText('Timer 1 - Polling')).toBeInTheDocument()
+      expect(queryByText('Timer 1 - Done')).not.toBeInTheDocument()
+      expect(queryByText('Timer 2 - Done')).toBeInTheDocument()
+      expect(queryByText('Timer 2 - Polling')).not.toBeInTheDocument()
+    })
+
+    expect(mocks.requestFunc).toHaveBeenCalledTimes(1) // timer 1 starts
+    expect(mocks.onSuccessFunc).toHaveBeenCalledTimes(0)
+    expect(mocks.onErrorFunc).toHaveBeenCalledTimes(0)
+    expect(mocks.onTimeoutFunc).toHaveBeenCalledTimes(0)
+
+    act(() => jest.advanceTimersByTime(1000))
+
+    fireEvent.click(getByTitle('Start 2'))
+
+    await waitFor(() => {
+      expect(queryByText('Timer 1 - Polling')).toBeInTheDocument() // timer 1 retries, timer 2 starts
+      expect(queryByText('Timer 1 - Done')).not.toBeInTheDocument()
+      expect(queryByText('Timer 2 - Polling')).toBeInTheDocument()
+      expect(queryByText('Timer 2 - Done')).not.toBeInTheDocument()
+    })
+
+    expect(mocks.requestFunc).toHaveBeenCalledTimes(3)
+    expect(mocks.onSuccessFunc).toHaveBeenCalledTimes(0)
+    expect(mocks.onErrorFunc).toHaveBeenCalledTimes(0)
+    expect(mocks.onTimeoutFunc).toHaveBeenCalledTimes(0)
+
+    await waitFor(() => {
+      expect(queryByText('Timer 1 - Polling')).toBeInTheDocument()
+      expect(queryByText('Timer 1 - Done')).not.toBeInTheDocument()
+      expect(queryByText('Timer 2 - Polling')).toBeInTheDocument()
+      expect(queryByText('Timer 2 - Done')).not.toBeInTheDocument()
+    })
+
+    act(() => jest.advanceTimersByTime(1000))
+
+    expect(mocks.requestFunc).toHaveBeenCalledTimes(5) // both timers retry
+    expect(mocks.onSuccessFunc).toHaveBeenCalledTimes(0)
+    expect(mocks.onErrorFunc).toHaveBeenCalledTimes(0)
+    expect(mocks.onTimeoutFunc).toHaveBeenCalledTimes(0)
+
+    await waitFor(() => {
+      expect(queryByText('Timer 1 - Polling')).toBeInTheDocument()
+      expect(queryByText('Timer 1 - Done')).not.toBeInTheDocument()
+      expect(queryByText('Timer 2 - Polling')).toBeInTheDocument()
+      expect(queryByText('Timer 2 - Done')).not.toBeInTheDocument()
+    })
+  })
+
+  it('should clear all timers when un-mounted', async () => {
+    jest.spyOn(global, 'setTimeout')
+    jest.spyOn(global, 'clearTimeout')
+    const mocks = setupMockFuncs()
+    const { mockAxios } = mocks
+    mockAxios.get.mockResolvedValue({
+      data: { id: 1, hasErrors: false, summary: { status: 'Pending' } },
+    })
+
+    const { queryByText, getByTitle, unmount } = setupMultiTimerComponent(
+      mocks,
+      1000,
+      10
+    )
+
+    expect(queryByText('Timer 1 - Done')).toBeInTheDocument()
+    expect(queryByText('Timer 1 - Polling')).not.toBeInTheDocument()
+    expect(queryByText('Timer 2 - Done')).toBeInTheDocument()
+    expect(queryByText('Timer 2 - Polling')).not.toBeInTheDocument()
+
+    fireEvent.click(getByTitle('Start 1'))
+    fireEvent.click(getByTitle('Start 2'))
+
+    act(() => jest.advanceTimersByTime(1000))
+
+    expect(mocks.requestFunc).toHaveBeenCalledTimes(2)
+    expect(mocks.onSuccessFunc).toHaveBeenCalledTimes(0)
+    expect(mocks.onErrorFunc).toHaveBeenCalledTimes(0)
+    expect(mocks.onTimeoutFunc).toHaveBeenCalledTimes(0)
+
+    expect(setTimeout).toHaveBeenCalledTimes(2)
+
+    act(() => jest.advanceTimersByTime(1000))
+
+    unmount()
+
+    expect(clearTimeout).toHaveBeenCalledTimes(2)
+  })
+})
