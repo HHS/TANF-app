@@ -157,5 +157,3 @@ class ReportFile(FileRecord):
             quarter=quarter,
             stt=stt,
         ).first()
-
-

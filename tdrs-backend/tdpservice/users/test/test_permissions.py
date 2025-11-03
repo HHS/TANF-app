@@ -1,6 +1,5 @@
 """Test appropriate permissions are assigned to each Group."""
 
-from _pytest import mark
 import pytest
 
 

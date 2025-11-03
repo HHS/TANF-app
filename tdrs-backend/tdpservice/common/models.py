@@ -1,3 +1,4 @@
+"""Common abstract models."""
 from django.db import models
 
 

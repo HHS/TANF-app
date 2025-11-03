@@ -28,10 +28,10 @@ class ReportFileViewSet(ModelViewSet):
         return context
 
     def get_serializer_class(self):
+        """Retrieve additional context required by serializer."""
         if getattr(self, "action", None) == "master":
             return ReportIngestSerializer
         return super().get_serializer_class()
-
 
     @action(methods=["get", "post"], detail=False)
     def master(self, request, pk=None):

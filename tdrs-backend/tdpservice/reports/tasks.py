@@ -1,3 +1,5 @@
+"""Shared celery task processing report ingestion files."""
+
 import io
 import logging
 import re
@@ -15,7 +17,7 @@ FILENAME_RE = re.compile(r"^report_(.+)_(Q[1-4])_(\d{4})\.zip$", re.IGNORECASE)
 logger = logging.getLogger(__name__)
 
 @shared_task
-def process_report_ingest(ingest_id: int):
+def process_report_ingest(ingest_id: int):  # noqa: C901
     """Process a ReportIngest record zip file into individual ReportFile records."""
     logger.debug("Begin processing report ingest file")
     ingest: ReportIngest = ReportIngest.objects.get(id=ingest_id)
@@ -42,7 +44,7 @@ def process_report_ingest(ingest_id: int):
         zip_file = zipfile.ZipFile(io.BytesIO(master_bytes))
     except zipfile.BadZipfile:
         ingest.status = ReportIngest.Status.FAILED
-        ingest.error_message = f"File is not a valid zip."
+        ingest.error_message = "File is not a valid zip."
         ingest.processed_at = timezone.now()
         ingest.save(update_fields=["status", "error_message", "processed_at"])
         return
@@ -125,6 +127,3 @@ def process_report_ingest(ingest_id: int):
     ingest.num_reports_created = num_created
     ingest.processed_at = timezone.now()
     ingest.save(update_fields=["status", "num_reports_created", "processed_at"])
-
-
-
