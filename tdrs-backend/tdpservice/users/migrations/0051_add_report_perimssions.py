@@ -109,8 +109,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('auth', '__latest__'),
-        ('users', '0021_add_dev_group'),
-        ("reports", "0002_initial"),
+        ('users', '0050_feedback_addmetafields'),
     ]
 
     operations = [

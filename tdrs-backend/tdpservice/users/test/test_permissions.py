@@ -1,5 +1,6 @@
 """Test appropriate permissions are assigned to each Group."""
 
+from _pytest import mark
 import pytest
 
 
@@ -61,6 +62,12 @@ def test_ofa_system_admin_permissions(ofa_system_admin):
         "data_files.view_datafile",
         "security.view_clamavfilescan",
         "security.view_owaspzapscan",
+        "security.add_securityeventtoken",
+        "security.view_securityeventtoken",
+        "security.change_securityeventtoken",
+        "sessions.add_session",
+        "sessions.change_session",
+        "sessions.view_session",
         "stts.add_region",
         "stts.add_stt",
         "stts.change_region",
@@ -112,6 +119,9 @@ def test_ofa_system_admin_permissions(ofa_system_admin):
         "search_indexes.add_tanf_t7",
         "search_indexes.view_tanf_t7",
         "search_indexes.change_tanf_t7",
+        "search_indexes.add_tanf_exiter1",
+        "search_indexes.view_tanf_exiter1",
+        "search_indexes.change_tanf_exiter1",
         "parsers.add_parsererror",
         "parsers.change_parsererror",
         "parsers.view_parsererror",
@@ -175,6 +185,12 @@ def test_ofa_system_admin_permissions(ofa_system_admin):
         "search_indexes.add_programaudit_t3",
         "search_indexes.view_programaudit_t3",
         "search_indexes.change_programaudit_t3",
+        'reports.view_reportfile',
+        'reports.change_reportingest',
+        'reports.change_reportfile',
+        'reports.add_reportingest',
+        'reports.add_reportfile',
+        'reports.view_reportingest'
     }
     group_permissions = ofa_system_admin.get_group_permissions()
     assert group_permissions == expected_permissions
