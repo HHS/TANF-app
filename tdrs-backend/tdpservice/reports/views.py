@@ -9,6 +9,7 @@ from rest_framework.viewsets import ModelViewSet
 
 from tdpservice.reports.models import ReportFile
 from tdpservice.reports.serializers import ReportFileSerializer, ReportIngestSerializer
+from tdpservice.reports.tasks import process_report_ingest
 from tdpservice.users.permissions import IsApprovedPermission, ReportFilePermissions
 
 
@@ -38,6 +39,7 @@ class ReportFileViewSet(ModelViewSet):
         ingest = serializer.save()
 
         # TODO: implement celery task: process_master_zip.delay(ingest.id)
+        process_report_ingest.delay(ingest.id)
 
         return Response(
             ReportIngestSerializer(ingest).data, status=status.HTTP_202_ACCEPTED
