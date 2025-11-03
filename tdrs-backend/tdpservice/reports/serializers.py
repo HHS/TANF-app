@@ -1,5 +1,6 @@
 """Serialize report data."""
 from django.utils.crypto import get_random_string
+from openpyxl.cell import read_only
 from rest_framework import serializers
 
 from tdpservice.backends import DataFilesS3Storage
@@ -13,7 +14,7 @@ class ReportFileSerializer(serializers.ModelSerializer):
 
     file = serializers.FileField(write_only=True)
     stt = serializers.PrimaryKeyRelatedField(queryset=STT.objects.all())
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         """Metadata."""
@@ -34,11 +35,19 @@ class ReportFileSerializer(serializers.ModelSerializer):
 
         read_only_fields = [
             "id",
+            "user",
             "version",
+            "original_filename",
+            "slug",
+            "extension",
+            "created_at",
         ]
 
     def create(self, validated_data):
         """Admins may directly create a single ReportFile."""
+        request_user = self.context["user"]
+        validated_data["user"] = request_user
+
         # Set filename/slug/extension defaults if missing
         upload = validated_data.get("file")
 
@@ -69,8 +78,8 @@ class ReportIngestSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "original_filename",  # populated from upload, read-only to clients
-            "s3_key",  # read-only (where we stored it)
             "status",
+            "uploaded_by",
             "created_at",
             "processed_at",
             "num_reports_created",
@@ -80,8 +89,8 @@ class ReportIngestSerializer(serializers.ModelSerializer):
         read_only_fields = [
             "id",
             "original_filename",
-            "s3_key",
             "status",
+            "uploaded_by",
             "created_at",
             "processed_at",
             "num_reports_created",

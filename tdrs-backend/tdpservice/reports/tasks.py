@@ -1,6 +1,6 @@
 import io
+import logging
 import re
-from unicodedata import name
 import zipfile
 from django.core.files.base import ContentFile
 from django.utils import timezone
@@ -12,9 +12,12 @@ from tdpservice.stts.models import STT
 # Matches: report_Arizona_Q1_2025.zip
 FILENAME_RE = re.compile(r"^report_(.+)_(Q[1-4])_(\d{4})\.zip$", re.IGNORECASE)
 
+logger = logging.getLogger(__name__)
+
 @shared_task
 def process_report_ingest(ingest_id: int):
     """Process a ReportIngest record zip file into individual ReportFile records."""
+    logger.debug("Begin processing report ingest file")
     ingest: ReportIngest = ReportIngest.objects.get(id=ingest_id)
 
     # Mark as PROCESSING
@@ -69,7 +72,7 @@ def process_report_ingest(ingest_id: int):
 
         # validate STT exists
         try:
-            STT.objects.get(name=stt_name)
+            stt = STT.objects.get(name=stt_name)
         except STT.DoesNotExist:
             ingest.status = ReportIngest.Status.FAILED
             ingest.error_message = (
