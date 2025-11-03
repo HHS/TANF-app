@@ -82,9 +82,8 @@ def bad_master_zip_file(fake_file, fake_file_name):
 def report_ingest_data(master_zip_file):
     """Return report ingest creation data."""
     return {
-        "master_zip": master_zip_file,
+        "file": master_zip_file,
         "original_filename": "master.zip",
-        "s3_key": "test",
     }
 
 
@@ -92,7 +91,6 @@ def report_ingest_data(master_zip_file):
 def bad_report_ingest_data(bad_master_zip_file, fake_file_name):
     """Return bad report ingest creation data."""
     return {
-        "master_zip": bad_master_zip_file,
+        "file": bad_master_zip_file,
         "original_filename": fake_file_name,
-        "s3_key": "test",
     }

@@ -49,7 +49,7 @@ class TestReportFileViewAsOFAAdmin:
 
         resp = api_client_logged_in.post(
             f"{self.root_url}master/",
-            data={"master_zip": master_zip_file},
+            data={"file": master_zip_file},
             format="multipart",
         )
 
