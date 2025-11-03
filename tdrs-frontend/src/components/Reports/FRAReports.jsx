@@ -424,7 +424,11 @@ const SubmissionHistory = ({
                 file={file}
                 handleDownload={handleDownload}
                 isRegionalStaff={isRegionalStaff}
-                isLoadingStatus={!isDonePolling(file.id)}
+                isLoadingStatus={
+                  isDonePolling && file.id in isDonePolling
+                    ? !isDonePolling[file.id]
+                    : false
+                }
               />
             ))}
           </tbody>

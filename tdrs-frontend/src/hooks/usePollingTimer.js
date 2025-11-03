@@ -13,7 +13,7 @@ export const usePollingTimer = () => {
       ...pollState[requestId],
       ...changes,
     }
-    setPollState(newState)
+    setPollState({ ...pollState, ...newState })
   }
 
   const addTimer = (requestId, timer) => {
@@ -24,6 +24,14 @@ export const usePollingTimer = () => {
     if (timers.current && timers.current[requestId]) {
       return timers.current[requestId]
     }
+    return null
+  }
+
+  const getPollState = (requestId) => {
+    if (pollState && pollState[requestId]) {
+      return pollState[requestId]
+    }
+
     return null
   }
 
@@ -71,8 +79,8 @@ export const usePollingTimer = () => {
       return
     }
 
-    const timer = getTimer(requestId)
-    if (timer && (timer.isPerformingRequest || timer.isDonePolling)) {
+    const requestPoll = getPollState(requestId)
+    if (requestPoll && requestPoll.isPerformingRequest) {
       finish(requestId, () =>
         onError({ message: 'Already performing request.' })
       )
@@ -154,30 +162,27 @@ export const usePollingTimer = () => {
     )
   }
 
-  const isDonePolling = (requestId = null) => {
-    if (requestId) {
-      return timers.current && timers.current[requestId]
-        ? timers.current[requestId].isDonePolling
-        : true
-    } else if (timers.current) {
-      return Object.keys(timers.current)
-        .map((t) => t.isDonePolling)
-        .some((isDone) => isDone)
-    }
-    return true
-  }
+  const isDonePolling = {}
+  Object.keys(pollState).forEach((t) => {
+    isDonePolling[t] = pollState[t].isDonePolling
+  })
 
   useEffect(() => {
     const stopAllTimers = () => {
       Object.keys(timers.current).forEach((requestId) =>
         stopTimer(requestId, false)
       )
+      setPollState({})
     }
 
-    const timer = timers.current
-    if (timer && Object.keys(timer).length === 0) {
-      stopAllTimers()
+    const onUnmount = () => {
+      const timer = timers.current
+      if (timer && Object.keys(timer).length !== 0) {
+        stopAllTimers()
+      }
     }
+
+    return onUnmount
   }, [timers])
 
   return { startPolling, isDonePolling }

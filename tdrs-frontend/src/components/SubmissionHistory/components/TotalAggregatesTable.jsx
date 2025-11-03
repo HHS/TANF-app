@@ -136,7 +136,11 @@ export const TotalAggregatesTable = ({ files, reprocessedState }) => {
             key={file.id}
             file={file}
             reprocessedState={reprocessedState}
-            isLoadingStatus={!isDonePolling(file.id)}
+            isLoadingStatus={
+              isDonePolling && file.id in isDonePolling
+                ? !isDonePolling[file.id]
+                : false
+            }
           />
         ))}
       </tbody>
