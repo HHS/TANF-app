@@ -17,6 +17,11 @@ class ProgramManager:
         "T2": schema_defs.tanf.t2,
         "T3": schema_defs.tanf.t3,
     }
+    tan_active_audit_schemas = {
+        "T1": schema_defs.program_audit.t1,
+        "T2": schema_defs.program_audit.t2,
+        "T3": schema_defs.program_audit.t3,
+    }
     tan_closed_schemas = {
         "T4": schema_defs.tanf.t4,
         "T5": schema_defs.tanf.t5,
@@ -93,12 +98,19 @@ class ProgramManager:
         return schemas.get(record_type, None)
 
     @classmethod
-    def get_schemas(cls, program_type: str, section: DataFile.Section | str):
+    def get_schemas(
+        cls,
+        program_type: str,
+        section: DataFile.Section | str,
+        is_program_audit: bool = False,
+    ):
         """Get all schemas for a program type and section."""
         match program_type:
             case DataFile.ProgramType.TANF:
                 match section:
                     case DataFile.Section.ACTIVE_CASE_DATA | "A":
+                        if is_program_audit:
+                            return cls.tan_active_audit_schemas
                         return cls.tan_active_schemas
                     case DataFile.Section.CLOSED_CASE_DATA | "C":
                         return cls.tan_closed_schemas

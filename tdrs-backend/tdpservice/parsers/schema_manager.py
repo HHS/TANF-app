@@ -22,12 +22,15 @@ class SchemaManager:
         self.error_generator_factory = ErrorGeneratorFactory(self.datafile)
         self.program_type = program_type
         self.section = section
+        self.is_program_audit = datafile.is_program_audit
         self.schema_map = None
         self._init_schema_map()
 
     def _init_schema_map(self):
         """Initialize all schemas for the program type and section."""
-        self.schema_map = ProgramManager.get_schemas(self.program_type, self.section)
+        self.schema_map = ProgramManager.get_schemas(
+            self.program_type, self.section, self.is_program_audit
+        )
         for schemas in self.schema_map.values():
             for schema in schemas:
                 schema.prepare(self.datafile)
@@ -41,8 +44,9 @@ class SchemaManager:
                 record, is_valid, errors = schema.parse_and_validate(row)
                 records.append((record, is_valid, errors))
             return ManagerPVResult(records=records, schemas=schemas)
-        except Exception:
+        except Exception as e:
             logger.exception("Exception in SchemaManager.parse_and_validate")
+            logger.exception(e)
             generator_args = ErrorGeneratorArgs(
                 record=None,
                 schema=None,

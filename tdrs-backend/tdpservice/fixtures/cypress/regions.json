@@ -1,0 +1,18 @@
+[
+    {
+        "model": "users.regionmeta",
+        "pk": 9,
+        "fields": {
+            "user": "7b7c4778-17e4-49a1-83b8-0e6a962972e9",
+            "region": 9
+        }
+    },
+    {
+        "model": "users.regionmeta",
+        "pk": 10,
+        "fields": {
+            "user": "78e10c5b-271e-4838-9e7b-b3c30773ef2e",
+            "region": 9
+        }
+    }
+]
