@@ -62,15 +62,12 @@ class ReportFileSerializer(serializers.ModelSerializer):
 class ReportIngestSerializer(serializers.ModelSerializer):
     """Serializer for Report Ingest."""
 
-    master_zip = serializers.FileField(write_only=True)
-
     class Meta:
         """Metadata."""
 
         model = ReportIngest
         fields = [
             "id",
-            "master_zip",  # write-only input
             "original_filename",  # populated from upload, read-only to clients
             "s3_key",  # read-only (where we stored it)
             "status",
@@ -78,6 +75,7 @@ class ReportIngestSerializer(serializers.ModelSerializer):
             "processed_at",
             "num_reports_created",
             "error_message",
+            "file",
         ]
         read_only_fields = [
             "id",
@@ -92,28 +90,24 @@ class ReportIngestSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         """Create a ReportIngest record for a master zip file upload."""
-        file = validated_data.pop("master_zip")
-
-        storage = DataFilesS3Storage()
-        key = f"reports/master/{get_random_string(12)}-{file.name}"
-        s3_key = storage.save(key, file)
-
+        file = validated_data.get("file")
         user = self.context["user"]
+
         ingest = ReportIngest.objects.create(
             original_filename=file.name,
             slug=file.name,
             extension="zip",
             uploaded_by=user,
-            s3_key=s3_key,
+            file=file,
         )
 
         return ingest
 
-    def validate_master_zip(self, master_zip):
+    def validate_file(self, file):
         """Validate the file field."""
-        file_name = master_zip.name.lower()
+        file_name = file.name.lower()
 
         if not file_name.endswith(".zip"):
             raise serializers.ValidationError("File must be a zip folder")
 
-        return master_zip
+        return file

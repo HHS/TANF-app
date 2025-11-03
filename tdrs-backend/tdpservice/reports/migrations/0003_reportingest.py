@@ -3,6 +3,8 @@
 from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
+import tdpservice.backends
+import tdpservice.reports.models
 
 
 class Migration(migrations.Migration):
@@ -20,13 +22,13 @@ class Migration(migrations.Migration):
                 ('original_filename', models.CharField(max_length=256)),
                 ("slug", models.CharField(max_length=256)),
                 ("extension", models.CharField(default="zip", max_length=8)),
-                ('s3_key', models.CharField(max_length=1024)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('processed_at', models.DateTimeField(blank=True, null=True)),
                 ('status', models.CharField(choices=[('PENDING', 'Pending'), ('PROCESSING', 'Processing'), ('SUCCEEDED', 'Succeeded'), ('FAILED', 'Failed')], default='PENDING', max_length=16)),
                 ('num_reports_created', models.PositiveIntegerField(default=0)),
                 ('error_message', models.TextField(blank=True, null=True)),
                 ('uploaded_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='report_ingests', to=settings.AUTH_USER_MODEL)),
+                ("file", models.FileField(blank=True, null=True, storage=tdpservice.backends.DataFilesS3Storage, upload_to=tdpservice.reports.models.get_master_upload_path)),
             ],
         ),
     ]

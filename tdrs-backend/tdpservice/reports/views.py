@@ -35,9 +35,7 @@ class ReportFileViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
 
         # creates a ReportIngest record and stores master zip to S3
-        ingest = (
-            serializer.save()
-        )
+        ingest = serializer.save()
 
         # TODO: implement celery task: process_master_zip.delay(ingest.id)
 

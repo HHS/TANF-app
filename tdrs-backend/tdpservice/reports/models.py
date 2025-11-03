@@ -1,6 +1,7 @@
 """Define report models."""
 
 import os
+import uuid
 
 from django.db import models
 from django.db.models import Max
@@ -12,7 +13,7 @@ from tdpservice.users.models import User
 
 
 def get_s3_upload_path(instance, filename):
-    """Produce a unique upload path for S3 files for a given STT and Quarter."""
+    """Produce a unique upload path for ReportFile files to S3."""
     return os.path.join(
         f"reports/{instance.year}/{instance.quarter}/{instance.stt.id}/",
         filename,
@@ -67,8 +68,6 @@ class ReportFile(FileRecord):
         null=False,
     )
 
-    # NOTE: `file` is only temporarily nullable until we complete the issue:
-    # https://github.com/raft-tech/TANF-app/issues/755
     file = models.FileField(
         storage=DataFilesS3Storage, upload_to=get_s3_upload_path, null=True, blank=True
     )
@@ -113,6 +112,15 @@ class ReportFile(FileRecord):
         ).first()
 
 
+def get_master_upload_path(instance, filename):
+    """Produce a unique upload path for ReportIngest files to S3."""
+    return os.path.join(
+        "reports",
+        "master",
+        f"{uuid.uuid4().hex}-{filename}",
+    )
+
+
 class ReportIngest(FileRecord):
     """ReportIngest is an intermediary model for submitting a zip file containing multiple zips to be parsed into ReportFile records."""
 
@@ -131,7 +139,6 @@ class ReportIngest(FileRecord):
     uploaded_by = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="report_ingests"
     )
-    s3_key = models.CharField(max_length=1024)  # where the master zip lives
     created_at = models.DateTimeField(auto_now_add=True)
     processed_at = models.DateTimeField(null=True, blank=True)
     status = models.CharField(
@@ -139,3 +146,7 @@ class ReportIngest(FileRecord):
     )
     num_reports_created = models.PositiveIntegerField(default=0)
     error_message = models.TextField(null=True, blank=True)
+
+    file = models.FileField(
+        storage=DataFilesS3Storage, upload_to=get_master_upload_path, null=True, blank=True
+    )
