@@ -107,6 +107,7 @@ def process_report_ingest(ingest_id: int):
                 "quarter": quarter,
                 "stt": stt,
                 "user": ingest.uploaded_by,  # uploader is the user on the ReportFile
+                "ingest": ingest,
                 "original_filename": filename,
                 "slug": filename,
                 "extension": "zip",
