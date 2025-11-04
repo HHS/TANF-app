@@ -57,9 +57,14 @@ export const removeOldPreviews = (dropTarget, instructions) => {
   if (filePreviews !== null) {
     if (instructions) {
       instructions.classList.remove(HIDDEN_CLASS)
+      // Also remove the hidden attribute for proper reset
+      instructions.removeAttribute('hidden')
     }
     Array.prototype.forEach.call(filePreviews, removeImages)
   }
+
+  // Remove the has-file class to fully reset the visual state
+  dropTarget.classList.remove('usa-file-input--has-file')
 }
 
 export const checkPreviewDependencies = (targetClassName) => {
@@ -202,11 +207,14 @@ const validateCalendarToFiscalYearQuarter = (
     fileYear,
     fileQuarter
   )
+
+  const isValid =
+    yearQuarter &&
+    fileFiscalYear === selectedFiscalYear &&
+    fileFiscalQuarter === selectedFiscalQuarter.slice(1, 2)
+
   return {
-    isValid:
-      yearQuarter &&
-      fileFiscalYear === selectedFiscalYear &&
-      fileFiscalQuarter === selectedFiscalQuarter.slice(1, 2),
+    isValid,
     fileFiscalYear,
     fileFiscalQuarter,
   }
@@ -215,11 +223,28 @@ const validateCalendarToFiscalYearQuarter = (
 const validateProgramType = (header, selectedProgramType) => {
   const progTypeRegex = '(TAN|tan|SSP|ssp)'
   const progType = header.match(progTypeRegex)
+
+  if (!progType) {
+    return {
+      isValid: false,
+      progType: null,
+    }
+  }
+
+  const fileProgType = progType[0].toUpperCase()
+
+  // Program Integrity Audit (PRO) accepts TANF files
+  if (selectedProgramType === 'PRO' && fileProgType === 'TAN') {
+    return {
+      isValid: true,
+      progType: fileProgType,
+    }
+  }
+
+  // Standard validation: file type must match selected type
   return {
-    isValid: !!progType
-      ? progType[0].toUpperCase() === selectedProgramType
-      : false,
-    progType: !!progType ? progType[0] : null,
+    isValid: fileProgType === selectedProgramType,
+    progType: fileProgType,
   }
 }
 
@@ -235,7 +260,6 @@ export const validateHeader = async function (
     selectedFiscalQuarter
   )
   const programTypeResult = validateProgramType(header, selectedProgramType)
-  console.log(JSON.stringify(selectedProgramType, null, 2))
   return {
     isValid: calendarFiscalResult.isValid && programTypeResult.isValid,
     calendarFiscalResult,

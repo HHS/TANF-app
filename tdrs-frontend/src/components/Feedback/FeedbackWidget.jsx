@@ -7,6 +7,7 @@ import {
   FRA_DATA_UPLOAD_FEEDBACK_HEADER,
   SSP_MOE_DATA_UPLOAD_FEEDBACK_HEADER,
   TANF_DATA_UPLOAD_FEEDBACK_HEADER,
+  PIA_TANF_DATA_UPLOAD_FEEDBACK_HEADER,
 } from './FeedbackConstants'
 
 const FeedbackWidget = React.forwardRef(
@@ -44,6 +45,8 @@ const FeedbackWidget = React.forwardRef(
     const getFeedbackWidgetHeader = () => {
       if (dataType === 'tanf') {
         return TANF_DATA_UPLOAD_FEEDBACK_HEADER
+      } else if (dataType === 'program-integrity-audit') {
+        return PIA_TANF_DATA_UPLOAD_FEEDBACK_HEADER
       } else if (dataType === 'ssp-moe') {
         return SSP_MOE_DATA_UPLOAD_FEEDBACK_HEADER
       } else {
