@@ -96,6 +96,7 @@ def parse(data_file_id, reparse_id=None):
             dfs=dfs,
             section=data_file.section,
             program_type=data_file.program_type,
+            is_program_audit=data_file.is_program_audit,
         )
         parser.parse_and_validate()
         update_dfs(dfs, data_file)
@@ -142,7 +143,7 @@ def parse(data_file_id, reparse_id=None):
             "error",
         )
         set_reparse_file_meta_model_failed_state(reparse_id, file_meta)
-    except Exception as e:
+    except Exception:
         generate_error = ErrorGeneratorFactory(data_file).get_generator(
             ErrorGeneratorType.MSG_ONLY_PRECHECK,
             None,
@@ -164,9 +165,9 @@ def parse(data_file_id, reparse_id=None):
             data_file,
             (
                 f"Uncaught exception while parsing datafile: {data_file.pk}! Please review the logs to "
-                f"see if manual intervention is required. Exception: \n{e}"
+                f"see if manual intervention is required."
             ),
-            "critical",
+            "exception",
         )
         set_reparse_file_meta_model_failed_state(reparse_id, file_meta)
     finally:

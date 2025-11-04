@@ -6,15 +6,15 @@
       - docker-compose-check
       - docker-compose-up-backend
       - run:
-          name: Run Unit Tests And Create Code Coverage Report
-          command: |
-            cd tdrs-backend;
-            docker-compose run --rm web bash -c "./wait_for_services.sh && pytest --cov-report=xml"
-      - run:
           name: Execute Python Linting Test
           command: |
             cd tdrs-backend
             docker-compose run --rm web bash -c "flake8 ."
+      - run:
+          name: Run Unit Tests And Create Code Coverage Report
+          command: |
+            cd tdrs-backend;
+            docker-compose run --rm web bash -c "./wait_for_services.sh && pytest --cov-report=xml"
       - upload-codecov:
           component: backend
           coverage-report: ./tdrs-backend/coverage.xml
@@ -79,7 +79,7 @@
           name: Setup cypress test data
           command: |
             cd tdrs-backend
-            docker-compose exec web python manage.py loaddata cypress/users cypress/data_files
+            docker-compose exec web python manage.py loaddata cypress/users cypress/data_files cypress/regions
       - run:
           name: Run Cypress e2e tests
           command: cd tdrs-frontend; npm run test:e2e-ci
