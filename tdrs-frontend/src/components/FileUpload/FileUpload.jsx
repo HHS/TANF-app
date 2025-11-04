@@ -39,6 +39,22 @@ const INVALID_EXT_ERROR = (
   </>
 )
 
+const NULL_PROGRAM_TYPE_ERROR = (
+  <>
+    Could not determine the file type. Please verify the file has a valid
+    header.&nbsp;
+    <a
+      className="usa-link"
+      href="https://acf.gov/sites/default/files/documents/ofa/transmission_file_header_trailer_record.pdf"
+      target="_blank"
+      aria-label="Need help? Read header record guidance"
+      rel="noreferrer"
+    >
+      Need help?
+    </a>
+  </>
+)
+
 const load = (file, section, input, dropTarget, dispatch) => {
   const filereader = new FileReader()
   const types = ['png', 'gif', 'jpeg']
@@ -187,18 +203,20 @@ function FileUpload({
       if (formattedSelectedProgramType === 'TAN') {
         formattedSelectedProgramType = 'TANF'
       }
+      if (formattedSelectedProgramType === 'PRO') {
+        formattedSelectedProgramType = 'TANF Program Integrity Audit'
+      }
+
+      const programTypeError = `File may correspond to ${formattedFileProgramType} instead of ${formattedSelectedProgramType}. Please verify the file type.`
       // Handle specific program type cases
       createFileInputErrorState(input, dropTarget)
       dispatch({
         type: SET_FILE_ERROR,
         payload: {
           error: {
-            message:
-              `File may correspond to ` +
-              formattedFileProgramType +
-              ` instead of ` +
-              formattedSelectedProgramType +
-              `. Please verify the file type.`,
+            message: formattedFileProgramType
+              ? programTypeError
+              : NULL_PROGRAM_TYPE_ERROR,
           },
           section,
         },

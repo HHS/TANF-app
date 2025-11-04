@@ -55,7 +55,7 @@ const SelectSTT = ({ value, setValue, error }) => (
 
 const SelectReportType = ({ options, setValue, selectedValue, error }) => (
   <RadioSelect
-    label="File Type"
+    label="File Type*"
     fieldName="reportType"
     classes="margin-top-4"
     options={options}
