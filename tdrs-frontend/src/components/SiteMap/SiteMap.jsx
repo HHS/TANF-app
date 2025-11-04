@@ -60,7 +60,7 @@ const SiteMap = ({ user }) => {
       )}
       <SiteMap.Link
         text="TDP Knowledge Center"
-        link={`${process.env.KNOWLEDGE_CENTER_LINK}/`}
+        link={`${process.env.REACT_APP_KNOWLEDGE_CENTER_LINK}/`}
         target="_blank"
       />
     </div>

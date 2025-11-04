@@ -172,7 +172,7 @@ function Header() {
                   <NavItem
                     pathname={pathname}
                     tabTitle="Help"
-                    href={`${process.env.KNOWLEDGE_CENTER_LINK}/`}
+                    href={`${process.env.REACT_APP_KNOWLEDGE_CENTER_LINK}/`}
                     target="_blank"
                   />
                 </>
