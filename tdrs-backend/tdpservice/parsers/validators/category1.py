@@ -165,35 +165,35 @@ def validateRptMonthYear():
     )
 
 
-def t3_m3_child_validator(which_child):
+def t3_m3_child_validator(which_child, first_record_len=60, second_record_len=101):
     """T3 child validator."""
 
     def t3_first_child_validator_func(row: RawRow, eargs):
-        if not _is_empty(row, 1, 60) and len(row) >= 60:
+        if not _is_empty(row, 1, first_record_len) and len(row) >= first_record_len:
             return Result()
-        elif not len(row) >= 60:
+        elif not len(row) >= first_record_len:
             return Result(
                 valid=False,
                 error_message=f"The first child record is too short at {len(row)} "
-                "characters and must be at least 60 characters.",
+                "characters and must be at least {first_record_len} characters.",
             )
         else:
             return Result(valid=False, error_message="The first child record is empty.")
 
     def t3_second_child_validator_func(row: RawRow, eargs):
         if (
-            not _is_empty(row, 60, 101)
-            and len(row) >= 101
-            and not _is_empty(row, 8, 19)
-            and not _is_all_zeros(row, 60, 101)
+            not _is_empty(row, first_record_len, second_record_len)
+            and len(row) >= second_record_len
+            and not _is_empty(row, 8, 19)  # shared fields
+            and not _is_all_zeros(row, first_record_len, second_record_len)
         ):
             return Result()
-        elif not len(row) >= 101:
+        elif not len(row) >= second_record_len:
             return Result(
                 valid=False,
                 error_message=(
                     f"The second child record is too short at {len(row)} "
-                    "characters and must be at least 101 characters."
+                    f"characters and must be at least {second_record_len} characters."
                 ),
             )
         else:
