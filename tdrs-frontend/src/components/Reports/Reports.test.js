@@ -1155,8 +1155,6 @@ describe('Reports', () => {
     // Set year and quarter
     setReportInputs('2021', 'Q3', getByLabelText)
 
-    console.log('HERHEREHREHREHREHREEHRHEREHERHER 1')
-
     await waitFor(() => {
       expect(
         getByText('Section 1 - SSP-MOE - Active Case Data')
@@ -1177,19 +1175,13 @@ describe('Reports', () => {
       expect(store.dispatch).toHaveBeenCalledTimes(9)
     })
 
-    console.log('HERHEREHREHREHREHREEHRHEREHERHER 2')
-
     // Try to change to Alaska (no SSP)
     fireEvent.change(sttDropdown, { target: { value: 'Alaska' } })
-
-    console.log('HERHEREHREHREHREHREEHRHEREHERHER 3')
 
     // Modal should appear
     await waitFor(() => {
       expect(queryByText('Files Not Submitted')).toBeInTheDocument()
     })
-
-    console.log('HERHEREHREHREHREHREEHRHEREHERHER 4')
 
     // Click OK to discard files and change STT
     fireEvent.click(getByText(/OK/, { selector: '#modal button' }))
