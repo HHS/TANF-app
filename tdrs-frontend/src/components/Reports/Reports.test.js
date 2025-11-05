@@ -8,7 +8,6 @@ import configureStore from 'redux-mock-store'
 import appConfigureStore from '../../configureStore'
 import Reports from './Reports'
 import { SET_FILE, upload } from '../../actions/reports'
-import { MemoryRouter } from 'react-router-dom'
 
 describe('Reports', () => {
   let originalScrollIntoView
