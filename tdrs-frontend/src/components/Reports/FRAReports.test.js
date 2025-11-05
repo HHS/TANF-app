@@ -4,6 +4,7 @@ import axios from 'axios'
 import { Provider } from 'react-redux'
 import { FRAReports } from '.'
 import configureStore from '../../configureStore'
+import { MemoryRouter } from 'react-router-dom'
 
 const initialState = {
   auth: {
@@ -48,7 +49,9 @@ describe('FRA Reports Page', () => {
     const store = mockStore()
     const { getByText, queryByText } = render(
       <Provider store={store}>
-        <FRAReports />
+        <MemoryRouter>
+          <FRAReports />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -82,7 +85,9 @@ describe('FRA Reports Page', () => {
 
       const { getByText, queryByText } = render(
         <Provider store={store}>
-          <FRAReports />
+          <MemoryRouter>
+            <FRAReports />
+          </MemoryRouter>
         </Provider>
       )
 
@@ -112,7 +117,9 @@ describe('FRA Reports Page', () => {
 
       const { queryByText } = render(
         <Provider store={store}>
-          <FRAReports />
+          <MemoryRouter>
+            <FRAReports />
+          </MemoryRouter>
         </Provider>
       )
 
@@ -139,7 +146,9 @@ describe('FRA Reports Page', () => {
 
       const { getByText, queryByText } = render(
         <Provider store={store}>
-          <FRAReports />
+          <MemoryRouter>
+            <FRAReports />
+          </MemoryRouter>
         </Provider>
       )
 
@@ -183,7 +192,9 @@ describe('FRA Reports Page', () => {
 
       const { getByText, queryByText, getByLabelText } = render(
         <Provider store={store}>
-          <FRAReports />
+          <MemoryRouter>
+            <FRAReports />
+          </MemoryRouter>
         </Provider>
       )
 
@@ -254,7 +265,9 @@ describe('FRA Reports Page', () => {
 
       const component = render(
         <Provider store={store}>
-          <FRAReports />
+          <MemoryRouter>
+            <FRAReports />
+          </MemoryRouter>
         </Provider>
       )
 
@@ -764,7 +777,9 @@ describe('FRA Reports Page', () => {
 
       const component = render(
         <Provider store={store}>
-          <FRAReports />
+          <MemoryRouter>
+            <FRAReports />
+          </MemoryRouter>
         </Provider>
       )
 
@@ -985,7 +1000,9 @@ describe('FRA Reports Page', () => {
       const store = mockStore(state)
       const { getByLabelText, queryByText } = render(
         <Provider store={store}>
-          <FRAReports />
+          <MemoryRouter>
+            <FRAReports />
+          </MemoryRouter>
         </Provider>
       )
 
@@ -1021,7 +1038,9 @@ describe('FRA Reports Page', () => {
       const store = mockStore(state)
       const { getByLabelText, queryByText } = render(
         <Provider store={store}>
-          <FRAReports />
+          <MemoryRouter>
+            <FRAReports />
+          </MemoryRouter>
         </Provider>
       )
 
@@ -1064,7 +1083,9 @@ describe('FRA Reports Page', () => {
       const store = mockStore(state)
       const { getByLabelText, queryByText } = render(
         <Provider store={store}>
-          <FRAReports />
+          <MemoryRouter>
+            <FRAReports />
+          </MemoryRouter>
         </Provider>
       )
 
@@ -1100,7 +1121,9 @@ describe('FRA Reports Page', () => {
       const store = mockStore(state)
       const { getByLabelText, queryByText } = render(
         <Provider store={store}>
-          <FRAReports />
+          <MemoryRouter>
+            <FRAReports />
+          </MemoryRouter>
         </Provider>
       )
 
@@ -1146,7 +1169,9 @@ describe('FRA Reports Page', () => {
         const store = mockStore(state)
         const { getByLabelText, queryByText } = render(
           <Provider store={store}>
-            <FRAReports />
+            <MemoryRouter>
+              <FRAReports />
+            </MemoryRouter>
           </Provider>
         )
 
@@ -1199,7 +1224,9 @@ describe('FRA Reports Page', () => {
         const store = mockStore(state)
         const { getByLabelText, queryByText } = render(
           <Provider store={store}>
-            <FRAReports />
+            <MemoryRouter>
+              <FRAReports />
+            </MemoryRouter>
           </Provider>
         )
 
@@ -1235,7 +1262,9 @@ describe('FRA Reports Page', () => {
         const store = mockStore(state)
         const { getByLabelText, queryByText } = render(
           <Provider store={store}>
-            <FRAReports />
+            <MemoryRouter>
+              <FRAReports />
+            </MemoryRouter>
           </Provider>
         )
 
@@ -1282,7 +1311,9 @@ describe('FRA Reports Page', () => {
         const store = mockStore(state)
         const { getByLabelText, queryByText } = render(
           <Provider store={store}>
-            <FRAReports />
+            <MemoryRouter>
+              <FRAReports />
+            </MemoryRouter>
           </Provider>
         )
 
@@ -1324,7 +1355,9 @@ describe('FRA Reports Page', () => {
         const store = mockStore(state)
         const { getByLabelText, queryByText } = render(
           <Provider store={store}>
-            <FRAReports />
+            <MemoryRouter>
+              <FRAReports />
+            </MemoryRouter>
           </Provider>
         )
 
@@ -1371,7 +1404,9 @@ describe('FRA Reports Page', () => {
           const store = mockStore(state)
           const { getByLabelText, queryByText } = render(
             <Provider store={store}>
-              <FRAReports />
+              <MemoryRouter>
+                <FRAReports />
+              </MemoryRouter>
             </Provider>
           )
 
@@ -1416,7 +1451,9 @@ describe('FRA Reports Page', () => {
           const store = mockStore(state)
           const { getByLabelText, getByTestId, queryByText } = render(
             <Provider store={store}>
-              <FRAReports />
+              <MemoryRouter>
+                <FRAReports />
+              </MemoryRouter>
             </Provider>
           )
 
