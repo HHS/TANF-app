@@ -59,7 +59,7 @@ class ReportIngest(FileRecord):
     error_message = models.TextField(null=True, blank=True)
 
     file = models.FileField(
-        storage=DataFilesS3Storage, upload_to=get_master_upload_path, null=True, blank=True
+        storage=DataFilesS3Storage, upload_to=get_master_upload_path, null=False, blank=False
     )
 
 

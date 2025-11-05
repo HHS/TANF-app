@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
                 ('quarter', models.CharField(blank=True, choices=[('Q1', 'Q1'), ('Q2', 'Q2'), ('Q3', 'Q3'), ('Q4', 'Q4')], max_length=16, null=True)),
                 ('num_reports_created', models.PositiveIntegerField(default=0)),
                 ('error_message', models.TextField(blank=True, null=True)),
-                ('file', models.FileField(blank=True, null=True, storage=tdpservice.backends.DataFilesS3Storage, upload_to=tdpservice.reports.models.get_master_upload_path)),
+                ('file', models.FileField(blank=False, null=False, storage=tdpservice.backends.DataFilesS3Storage, upload_to=tdpservice.reports.models.get_master_upload_path)),
                 ('uploaded_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='report_ingests', to=settings.AUTH_USER_MODEL)),
             ],
             options={
