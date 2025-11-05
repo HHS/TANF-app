@@ -1,8 +1,16 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+  queryAllByText,
+} from '@testing-library/react'
 
 import { Provider } from 'react-redux'
 import { thunk } from 'redux-thunk'
+import axios from 'axios'
 import configureStore from 'redux-mock-store'
 import appConfigureStore from '../../configureStore'
 import Reports from './Reports'
@@ -996,6 +1004,446 @@ describe('Reports', () => {
         )
       ).toBeInTheDocument()
     })
+  })
+
+  it('should show spinners while the upload is parsing', async () => {
+    jest.useFakeTimers()
+    jest.mock('axios')
+    const mockAxios = axios
+
+    mockAxios.post.mockResolvedValue({
+      data: {
+        id: 1,
+        original_filename: 'testFile.txt',
+        extension: 'txt',
+        quarter: 'Q1',
+        section: 'Active Case Data',
+        slug: '1234-5-6-7890',
+        year: '2021',
+        s3_version_id: '3210',
+        created_at: '2025-02-07T23:38:58+0000',
+        submitted_by: 'Test Testerson',
+        has_error: false,
+        summary: null,
+        latest_reparse_file_meta: '',
+      },
+    })
+
+    let times = 0
+    mockAxios.get.mockImplementation((url) => {
+      if (url.includes('/data_files/1/')) {
+        // status
+        times += 1
+        return Promise.resolve({
+          data: {
+            id: 1,
+            summary: {
+              status: times > 1 ? 'Approved' : 'Pending',
+            },
+            original_filename: 'testFile.txt',
+            extension: 'txt',
+            quarter: 'Q1',
+            section: 'Active Case Data',
+            slug: '1234-5-6-7890',
+            year: '2021',
+            s3_version_id: '3210',
+            created_at: '2025-02-07T23:38:58+0000',
+            submitted_by: 'Test Testerson',
+            has_error: false,
+            latest_reparse_file_meta: '',
+          },
+        })
+      } else {
+        // submission history
+        return Promise.resolve({
+          data: [
+            {
+              id: 1,
+              original_filename: 'testFile.txt',
+              extension: 'txt',
+              quarter: 'Q1',
+              section: 'Active Case Data',
+              slug: '1234-5-6-7890',
+              year: '2021',
+              s3_version_id: '3210',
+              created_at: '2025-02-07T23:38:58+0000',
+              submitted_by: 'Test Testerson',
+              has_error: false,
+              summary: { status: 'Pending' },
+              latest_reparse_file_meta: '',
+            },
+          ],
+        })
+      }
+    })
+
+    const store = appConfigureStore({
+      ...initialState,
+      auth: {
+        authenticated: true,
+        user: {
+          email: 'hi@bye.com',
+          stt: {
+            id: 2,
+            type: 'state',
+            code: 'AK',
+            name: 'Alaska',
+          },
+          roles: [{ id: 1, name: 'Developer', permission: [] }],
+        },
+      },
+      reports: {
+        ...initialState.reports,
+        stt: 'Alaska',
+      },
+    })
+    const origDispatch = store.dispatch
+    store.dispatch = jest.fn(origDispatch)
+
+    const {
+      getByText,
+      queryByText,
+      getByLabelText,
+      queryAllByTestId,
+      queryAllByText,
+    } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    setReportInputs('2021', 'Q3', getByLabelText)
+
+    await waitFor(() => {
+      expect(
+        queryByText('Section 1 - TANF - Active Case Data')
+      ).toBeInTheDocument()
+      expect(getByText('2021', { selector: 'option' }).selected).toBe(true)
+      expect(
+        getByText('Quarter 3 (April - June)', { selector: 'option' }).selected
+      ).toBe(true)
+    })
+
+    await waitFor(() => {
+      expect(
+        getByText('Section 1 - TANF - Active Case Data')
+      ).toBeInTheDocument()
+      expect(
+        getByText('Section 2 - TANF - Closed Case Data')
+      ).toBeInTheDocument()
+      expect(getByText('Section 3 - TANF - Aggregate Data')).toBeInTheDocument()
+      expect(getByText('Section 4 - TANF - Stratum Data')).toBeInTheDocument()
+    })
+
+    // add a file to be uploaded, but don't submit
+    await waitFor(() => {
+      fireEvent.change(getByLabelText('Section 1 - TANF - Active Case Data'), {
+        target: {
+          files: [makeTestFile('section1.txt', ['HEADER20212A53000TAN1ED\n'])],
+        },
+      })
+    })
+
+    await waitFor(() => {
+      expect(getByText('section1.txt')).toBeInTheDocument()
+      expect(store.dispatch).toHaveBeenCalledTimes(5)
+    })
+
+    const submitButton = getByText('Submit Data Files')
+    fireEvent.click(submitButton)
+
+    await waitFor(() =>
+      expect(
+        getByText(
+          `Successfully submitted section(s): 1 on ${new Date().toDateString()}`
+        )
+      ).toBeInTheDocument()
+    )
+    await waitFor(() => expect(store.dispatch).toHaveBeenCalledTimes(8))
+
+    // act(() => jest.advanceTimersByTime(2000))
+
+    expect(mockAxios.get).toHaveBeenCalledTimes(2)
+    expect(times).toBe(1)
+
+    fireEvent.click(getByText('Submission History'))
+
+    await waitFor(() => {
+      expect(
+        queryByText('Loading submission history...')
+      ).not.toBeInTheDocument()
+    })
+
+    expect(queryAllByTestId('spinner')).toHaveLength(6)
+    expect(getByText('testFile.txt')).toBeInTheDocument()
+    expect(queryAllByText('Pending')).toHaveLength(2)
+
+    jest.runOnlyPendingTimers()
+
+    await waitFor(() => {
+      expect(getByText('Approved')).toBeInTheDocument()
+    })
+
+    expect(queryAllByTestId('spinner')).toHaveLength(0)
+    expect(getByText('testFile.txt')).toBeInTheDocument()
+    expect(queryAllByText('Pending')).toHaveLength(0)
+    expect(getByText('Approved')).toBeInTheDocument()
+  })
+
+  it('should show spinners while multiple uploads are parsing', async () => {
+    jest.useFakeTimers()
+    jest.mock('axios')
+    const mockAxios = axios
+
+    let postTimes = 0
+    mockAxios.post.mockImplementation((url) => {
+      postTimes += 1
+
+      if (postTimes === 1) {
+        return Promise.resolve({
+          data: {
+            id: 1,
+            original_filename: 'testFile1.txt',
+            extension: 'txt',
+            quarter: 'Q1',
+            section: 'Active Case Data',
+            slug: '1234-5-6-7890',
+            year: '2021',
+            s3_version_id: '3210',
+            created_at: '2025-02-07T23:38:58+0000',
+            submitted_by: 'Test Testerson',
+            has_error: false,
+            summary: null,
+            latest_reparse_file_meta: '',
+          },
+        })
+      }
+
+      return Promise.resolve({
+        data: {
+          id: 2,
+          original_filename: 'testFile2.txt',
+          extension: 'txt',
+          quarter: 'Q1',
+          section: 'Aggregate Data',
+          slug: '1234-5-6-7890',
+          year: '2021',
+          s3_version_id: '3210',
+          created_at: '2025-02-07T23:38:58+0000',
+          submitted_by: 'Test Testerson',
+          has_error: false,
+          summary: null,
+          latest_reparse_file_meta: '',
+        },
+      })
+    })
+
+    let times1 = 0
+    let times2 = 0
+    mockAxios.get.mockImplementation((url) => {
+      if (url.includes('/data_files/1/')) {
+        // status
+        times1 += 1
+        return Promise.resolve({
+          data: {
+            id: 1,
+            summary: {
+              status: times1 > 1 ? 'Approved' : 'Pending',
+            },
+            original_filename: 'testFile1.txt',
+            extension: 'txt',
+            quarter: 'Q1',
+            section: 'Active Case Data',
+            slug: '1234-5-6-7890',
+            year: '2021',
+            s3_version_id: '3210',
+            created_at: '2025-02-07T23:38:58+0000',
+            submitted_by: 'Test Testerson',
+            has_error: false,
+            latest_reparse_file_meta: '',
+          },
+        })
+      } else if (url.includes('/data_files/2/')) {
+        // status
+        times2 += 1
+        return Promise.resolve({
+          data: {
+            id: 2,
+            summary: {
+              status: times2 > 1 ? 'Approved' : 'Pending',
+            },
+            original_filename: 'testFile2.txt',
+            extension: 'txt',
+            quarter: 'Q1',
+            section: 'Aggregate Data',
+            slug: '1234-5-6-7890',
+            year: '2021',
+            s3_version_id: '3210',
+            created_at: '2025-02-07T23:38:58+0000',
+            submitted_by: 'Test Testerson',
+            has_error: false,
+            latest_reparse_file_meta: '',
+          },
+        })
+      } else {
+        // submission history
+        return Promise.resolve({
+          data: [
+            {
+              id: 1,
+              original_filename: 'testFile1.txt',
+              extension: 'txt',
+              quarter: 'Q1',
+              section: 'Active Case Data',
+              slug: '1234-5-6-7890',
+              year: '2021',
+              s3_version_id: '3210',
+              created_at: '2025-02-07T23:38:58+0000',
+              submitted_by: 'Test Testerson',
+              has_error: false,
+              summary: { status: 'Pending' },
+              latest_reparse_file_meta: '',
+            },
+            {
+              id: 2,
+              original_filename: 'testFile2.txt',
+              extension: 'txt',
+              quarter: 'Q1',
+              section: 'Aggregate Data',
+              slug: '1234-5-6-7890',
+              year: '2021',
+              s3_version_id: '3210',
+              created_at: '2025-02-07T23:38:58+0000',
+              submitted_by: 'Test Testerson',
+              has_error: false,
+              summary: { status: 'Pending' },
+              latest_reparse_file_meta: '',
+            },
+          ],
+        })
+      }
+    })
+
+    const store = appConfigureStore({
+      ...initialState,
+      auth: {
+        authenticated: true,
+        user: {
+          email: 'hi@bye.com',
+          stt: {
+            id: 2,
+            type: 'state',
+            code: 'AK',
+            name: 'Alaska',
+          },
+          roles: [{ id: 1, name: 'Developer', permission: [] }],
+        },
+      },
+      reports: {
+        ...initialState.reports,
+        stt: 'Alaska',
+      },
+    })
+    const origDispatch = store.dispatch
+    store.dispatch = jest.fn(origDispatch)
+
+    const {
+      getByText,
+      queryByText,
+      getByLabelText,
+      queryAllByText,
+      queryAllByTestId,
+    } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    setReportInputs('2021', 'Q3', getByLabelText)
+
+    await waitFor(() => {
+      expect(
+        queryByText('Section 1 - TANF - Active Case Data')
+      ).toBeInTheDocument()
+      expect(getByText('2021', { selector: 'option' }).selected).toBe(true)
+      expect(
+        getByText('Quarter 3 (April - June)', { selector: 'option' }).selected
+      ).toBe(true)
+    })
+
+    await waitFor(() => {
+      expect(
+        getByText('Section 1 - TANF - Active Case Data')
+      ).toBeInTheDocument()
+      expect(
+        getByText('Section 2 - TANF - Closed Case Data')
+      ).toBeInTheDocument()
+      expect(getByText('Section 3 - TANF - Aggregate Data')).toBeInTheDocument()
+      expect(getByText('Section 4 - TANF - Stratum Data')).toBeInTheDocument()
+    })
+
+    // add a file to be uploaded, but don't submit
+    await waitFor(() => {
+      fireEvent.change(getByLabelText('Section 1 - TANF - Active Case Data'), {
+        target: {
+          files: [makeTestFile('section1.txt', ['HEADER20212A53000TAN1ED\n'])],
+        },
+      })
+      fireEvent.change(getByLabelText('Section 3 - TANF - Aggregate Data'), {
+        target: {
+          files: [makeTestFile('section3.txt', ['HEADER20212G53000TAN1ED\n'])],
+        },
+      })
+    })
+
+    await waitFor(() => {
+      expect(getByText('section1.txt')).toBeInTheDocument()
+      expect(getByText('section3.txt')).toBeInTheDocument()
+      expect(store.dispatch).toHaveBeenCalledTimes(8)
+    })
+
+    const submitButton = getByText('Submit Data Files')
+    fireEvent.click(submitButton)
+
+    await waitFor(() =>
+      expect(
+        getByText(
+          `Successfully submitted section(s): 1, and 3 on ${new Date().toDateString()}`
+        )
+      ).toBeInTheDocument()
+    )
+    await waitFor(() => expect(store.dispatch).toHaveBeenCalledTimes(11))
+
+    // act(() => jest.advanceTimersByTime(2000))
+
+    expect(mockAxios.get).toHaveBeenCalledTimes(3)
+    expect(times1).toBe(1)
+    expect(times2).toBe(1)
+
+    fireEvent.click(getByText('Submission History'))
+
+    await waitFor(() => {
+      expect(
+        queryByText('Loading submission history...')
+      ).not.toBeInTheDocument()
+    })
+
+    expect(queryAllByTestId('spinner')).toHaveLength(8)
+    expect(getByText('testFile1.txt')).toBeInTheDocument()
+    expect(getByText('testFile2.txt')).toBeInTheDocument()
+    expect(queryAllByText('Pending')).toHaveLength(4)
+
+    jest.runOnlyPendingTimers()
+
+    await waitFor(() => {
+      expect(queryAllByText('Approved')).toHaveLength(2)
+    })
+
+    expect(queryAllByTestId('spinner')).toHaveLength(0)
+    expect(getByText('testFile1.txt')).toBeInTheDocument()
+    expect(getByText('testFile2.txt')).toBeInTheDocument()
+    expect(queryAllByText('Pending')).toHaveLength(0)
+    expect(queryAllByText('Approved')).toHaveLength(2)
   })
 
   it('should show Fiscal Year only when selecting program audit', async () => {

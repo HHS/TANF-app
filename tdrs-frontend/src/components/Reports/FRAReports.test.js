@@ -346,8 +346,14 @@ describe('FRA Reports Page', () => {
 
     it('Shows a spinner until submission history updates', async () => {
       // jest.spyOn(global, 'setTimeout')
-      const { getByText, getByAltText, dispatch, mockAxios, container } =
-        await setup()
+      const {
+        getByText,
+        queryAllByTestId,
+        queryAllByText,
+        dispatch,
+        mockAxios,
+        container,
+      } = await setup()
 
       mockAxios.post.mockResolvedValue({
         data: {
@@ -430,10 +436,21 @@ describe('FRA Reports Page', () => {
       )
       await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(5))
 
+      expect(queryAllByTestId('spinner')).toHaveLength(3)
+      expect(queryAllByText('Pending')).toHaveLength(2)
+
       jest.runOnlyPendingTimers()
 
       expect(mockAxios.get).toHaveBeenCalledTimes(4)
       expect(times).toBe(2)
+
+      await waitFor(() => {
+        expect(getByText('Approved')).toBeInTheDocument()
+      })
+
+      expect(queryAllByTestId('spinner')).toHaveLength(0)
+      expect(queryAllByText('Pending')).toHaveLength(0)
+      expect(getByText('Approved')).toBeInTheDocument()
     })
 
     it('Shows an error if file submission failed', async () => {
