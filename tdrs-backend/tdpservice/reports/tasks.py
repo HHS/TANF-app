@@ -193,15 +193,18 @@ def process_report_ingest(ingest_id: int):  # noqa: C901
         ingest.save(update_fields=["status", "error_message", "processed_at"])
         return
 
-    # Calculate quarter from upload date
-    try:
-        quarter = calculate_quarter_from_date(ingest.created_at)
-    except ValueError as e:
-        ingest.status = ReportIngest.Status.FAILED
-        ingest.error_message = str(e)
-        ingest.processed_at = timezone.now()
-        ingest.save(update_fields=["status", "error_message", "processed_at"])
-        return
+    # Use provided quarter or calculate from upload date
+    if ingest.quarter:
+        quarter = ingest.quarter
+    else:
+        try:
+            quarter = calculate_quarter_from_date(ingest.created_at)
+        except ValueError as e:
+            ingest.status = ReportIngest.Status.FAILED
+            ingest.error_message = str(e)
+            ingest.processed_at = timezone.now()
+            ingest.save(update_fields=["status", "error_message", "processed_at"])
+            return
 
     # Extract fiscal year from top-level folder
     try:

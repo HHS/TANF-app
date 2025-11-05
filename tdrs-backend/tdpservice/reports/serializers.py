@@ -73,13 +73,14 @@ class ReportIngestSerializer(serializers.ModelSerializer):
         model = ReportIngest
         fields = [
             "id",
-            "original_filename",  # populated from upload, read-only to clients
+            "original_filename",
             "status",
             "uploaded_by",
             "created_at",
             "processed_at",
             "num_reports_created",
             "error_message",
+            "quarter",
             "file",
         ]
         read_only_fields = [
@@ -96,6 +97,7 @@ class ReportIngestSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         """Create a ReportIngest record for a master zip file upload."""
         file = validated_data.get("file")
+        quarter = validated_data.get("quarter")  # optional
         user = self.context["user"]
 
         ingest = ReportIngest.objects.create(
@@ -103,6 +105,7 @@ class ReportIngestSerializer(serializers.ModelSerializer):
             slug=file.name,
             extension="zip",
             uploaded_by=user,
+            quarter=quarter,
             file=file,
         )
 

@@ -32,6 +32,14 @@ class ReportIngest(FileRecord):
         SUCCEEDED = "SUCCEEDED"
         FAILED = "FAILED"
 
+    class Quarter(models.TextChoices):
+        """Enum for report Quarter."""
+
+        Q1 = "Q1"
+        Q2 = "Q2"
+        Q3 = "Q3"
+        Q4 = "Q4"
+
     # Override FileRecord fields
     extension = models.CharField(max_length=8, default="zip")
 
@@ -43,6 +51,9 @@ class ReportIngest(FileRecord):
     processed_at = models.DateTimeField(null=True, blank=True)
     status = models.CharField(
         max_length=16, choices=Status.choices, default=Status.PENDING
+    )
+    quarter = models.CharField(
+        max_length=16, blank=True, null=True, choices=Quarter.choices
     )
     num_reports_created = models.PositiveIntegerField(default=0)
     error_message = models.TextField(null=True, blank=True)
