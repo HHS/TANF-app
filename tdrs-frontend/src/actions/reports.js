@@ -170,19 +170,21 @@ const map_section = (fileType, submittedFile) => {
 }
 
 export const submit =
-  ({
-    formattedSections,
-    logger,
-    quarter,
-    setLocalAlertState,
-    stt,
-    uploadedFiles,
-    user,
-    year,
-    ssp,
-    fileType,
-    onComplete = () => null,
-  }) =>
+  (
+    {
+      formattedSections,
+      logger,
+      quarter,
+      setLocalAlertState,
+      stt,
+      uploadedFiles,
+      user,
+      year,
+      ssp,
+      fileType,
+    },
+    onComplete = () => null
+  ) =>
   async (dispatch) => {
     const submissionRequests = uploadedFiles.map((file) => {
       const formData = new FormData()
