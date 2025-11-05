@@ -1,8 +1,43 @@
 """Pytest fixtures for the reports app."""
+import io
 import pytest
+import zipfile
 
 from tdpservice.conftest import create_temporary_file
 from tdpservice.reports.test.factories import ReportFileFactory
+
+
+def create_nested_zip(structure):
+    """
+    Create a nested zip file structure for testing.
+
+    Args:
+        structure: dict like {
+            "2025": {
+                "Region_1": {
+                    "1": ["report1.pdf", "report2.pdf"],
+                    "2": ["report3.pdf"]
+                }
+            }
+        }
+
+    Returns:
+        BytesIO containing the zip file
+    """
+    zip_buffer = io.BytesIO()
+
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for year, regions in structure.items():
+            for region, stts in regions.items():
+                for stt_code, files in stts.items():
+                    for filename in files:
+                        # Create path: YYYY/Region/STT/filename
+                        path = f"{year}/{region}/{stt_code}/{filename}"
+                        # Add fake content
+                        zf.writestr(path, b"fake file content")
+
+    zip_buffer.seek(0)
+    return zip_buffer
 
 
 @pytest.fixture
@@ -68,8 +103,41 @@ def report_file_instance2(data_analyst):
 
 @pytest.fixture
 def master_zip_file(fake_file):
-    """Generate a fake master zipfile."""
+    """Generate a fake master zipfile (old flat structure - deprecated)."""
     return create_temporary_file(fake_file, "master.zip")
+
+
+@pytest.fixture
+def fiscal_year_master_zip():
+    """
+    Generate a nested fiscal year master zip file.
+
+    Structure: 2025/Region_1/1/report1.pdf, report2.pdf
+    """
+    structure = {
+        "2025": {
+            "Region_1": {
+                "1": ["report1.pdf", "report2.pdf"],
+            }
+        }
+    }
+    zip_buffer = create_nested_zip(structure)
+    return create_temporary_file(zip_buffer, "master.zip")
+
+
+@pytest.fixture
+def multi_stt_master_zip():
+    """Generate a nested master zip with multiple STTs."""
+    structure = {
+        "2025": {
+            "Region_1": {
+                "1": ["report1.pdf", "report2.pdf"],
+                "2": ["report3.pdf"],
+            }
+        }
+    }
+    zip_buffer = create_nested_zip(structure)
+    return create_temporary_file(zip_buffer, "master.zip")
 
 
 @pytest.fixture

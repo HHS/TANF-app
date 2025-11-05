@@ -41,15 +41,13 @@ class TestReportFileViewAsOFAAdmin:
     def test_master_upload(
         self,
         api_client_logged_in,
-        master_zip_file,
-        # mock_storage_save,
-        # mock_celery_delay,
+        fiscal_year_master_zip,
     ):
-        """Admin can POST to /master with a zip."""
+        """Admin can POST to /master with a nested fiscal year zip."""
 
         resp = api_client_logged_in.post(
             f"{self.root_url}master/",
-            data={"file": master_zip_file},
+            data={"file": fiscal_year_master_zip},
             format="multipart",
         )
 
@@ -60,10 +58,6 @@ class TestReportFileViewAsOFAAdmin:
 
         assert ingest_obj.original_filename == "master.zip"
         assert ingest_obj.status == ReportIngest.Status.PENDING
-        # assert ingest_obj.s3_key == mock_storage_save.return_value
-
-        # celery dispatched with ingest id
-        # mock_celery_delay.assert_called_once_with(ingest_obj.id)
 
     def test_download_report_file(self, api_client_logged_in, report_file_instance):
         """Stream report file to caller."""
@@ -118,12 +112,12 @@ class TestReportFileViewAsDataAnalyst:
         assert b"".join(resp.streaming_content) == report_file_instance.file.read()
 
     def test_data_analyst_master_upload_disallowed(
-        self, api_client_logged_in, master_zip_file
+        self, api_client_logged_in, fiscal_year_master_zip
     ):
         """Data Analysts cannot create master zip files."""
         resp = api_client_logged_in.post(
             f"{self.root_url}master/",
-            data={"master_zip": master_zip_file},
+            data={"file": fiscal_year_master_zip},
             format="multipart",
         )
 
