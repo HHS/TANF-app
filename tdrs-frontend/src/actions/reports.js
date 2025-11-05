@@ -4,6 +4,7 @@ import axios from 'axios'
 import axiosInstance from '../axios-instance'
 import { logErrorToServer } from '../utils/eventLogger'
 import removeFileInputErrorState from '../utils/removeFileInputErrorState'
+import { quarters } from '../components/Reports/utils'
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
 
@@ -23,15 +24,25 @@ export const SET_FILE_LIST = 'SET_FILE_LIST'
 export const FETCH_FILE_LIST_ERROR = 'FETCH_FILE_LIST_ERROR'
 export const DOWNLOAD_DIALOG_OPEN = 'DOWNLOAD_DIALOG_OPEN'
 
+export const REINITIALIZE_SUBMITTED_FILES = 'REINITIALIZE_SUBMITTED_FILES'
+
+export const reinitializeSubmittedFiles = (fileType) => (dispatch) => {
+  dispatch({ type: REINITIALIZE_SUBMITTED_FILES, payload: { fileType } })
+}
+
 export const clearFile =
   ({ section }) =>
   (dispatch) => {
     dispatch({ type: CLEAR_FILE, payload: { section } })
   }
 
-export const clearFileList = () => (dispatch) => {
-  dispatch({ type: CLEAR_FILE_LIST })
-}
+export const clearFileList =
+  ({ fileType }) =>
+  (dispatch) => {
+    // Clean up any DOM error states before clearing Redux state
+    removeFileInputErrorState()
+    dispatch({ type: CLEAR_FILE_LIST, payload: { fileType } })
+  }
 
 export const clearError =
   ({ section }) =>
@@ -46,12 +57,13 @@ export const getAvailableFileList =
       type: FETCH_FILE_LIST,
     })
     try {
-      const response = await axios.get(
-        `${BACKEND_URL}/data_files/?year=${year}&quarter=${quarter}&stt=${stt.id}&file_type=${file_type}`,
-        {
-          responseType: 'json',
-        }
-      )
+      let url = `${BACKEND_URL}/data_files/?year=${year}&stt=${stt.id}&file_type=${file_type}`
+      if (quarter) {
+        url += `&quarter=${quarter}`
+      }
+      const response = await axios.get(url, {
+        responseType: 'json',
+      })
       dispatch({
         type: SET_FILE_LIST,
         payload: {
@@ -141,6 +153,19 @@ export const upload =
     return true
   }
 
+// For now because we consider Program Audit to be the section and program type in the backend, that is what is
+// returned to the frontend for the submittedFile's section. However, the frontend maps the Program Audit file's
+// section to be the quarter labels. Thus, we need this function to map the backend to the frontend.
+const map_section = (fileType, submittedFile) => {
+  if (fileType === 'program-integrity-audit') {
+    return {
+      ...submittedFile,
+      section: quarters[submittedFile.quarter],
+    }
+  }
+  return submittedFile
+}
+
 export const submit =
   ({
     formattedSections,
@@ -152,6 +177,7 @@ export const submit =
     user,
     year,
     ssp,
+    fileType,
     onComplete = () => null,
   }) =>
   async (dispatch) => {
@@ -165,8 +191,9 @@ export const submit =
         section: file.section,
         year,
         stt,
-        quarter,
+        quarter: quarter ? quarter : file.quarter,
         ssp,
+        is_program_audit: file.is_program_audit ? file.is_program_audit : false,
       }
       for (const [key, value] of Object.entries(dataFile)) {
         formData.append(key, value)
@@ -191,7 +218,7 @@ export const submit =
         removeFileInputErrorState()
 
         const submittedFiles = responses.reduce((result, response) => {
-          const submittedFile = response?.data
+          const submittedFile = map_section(fileType, response?.data)
           dispatch({
             type: SET_FILE_SUBMITTED,
             payload: { submittedFile },
@@ -234,21 +261,7 @@ export const submit =
   }
 
 export const SET_SELECTED_STT = 'SET_SELECTED_STT'
-export const SET_SELECTED_YEAR = 'SET_SELECTED_YEAR'
-export const SET_SELECTED_QUARTER = 'SET_SELECTED_QUARTER'
-export const SET_FILE_TYPE = 'SET_FILE_TYPE'
 
 export const setStt = (stt) => (dispatch) => {
   dispatch({ type: SET_SELECTED_STT, payload: { stt } })
-}
-export const setYear = (year) => (dispatch) => {
-  dispatch({ type: SET_SELECTED_YEAR, payload: { year } })
-}
-
-export const setQuarter = (quarter) => (dispatch) => {
-  dispatch({ type: SET_SELECTED_QUARTER, payload: { quarter } })
-}
-
-export const setFileType = (fileType) => (dispatch) => {
-  dispatch({ type: SET_FILE_TYPE, payload: { fileType } })
 }
