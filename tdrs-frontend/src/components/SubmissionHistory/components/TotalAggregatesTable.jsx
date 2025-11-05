@@ -1,4 +1,3 @@
-import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   SubmissionSummaryStatusIcon,
@@ -7,26 +6,24 @@ import {
   getReprocessedDate,
   downloadFile,
   getErrorReportStatus,
-} from './helpers'
-import { accountIsRegionalStaff } from '../../selectors/auth'
-import { ReprocessedButton } from './ReprocessedModal'
+} from '../helpers'
+import { accountIsRegionalStaff } from '../../../selectors/auth'
+import { ReprocessedButton } from '../ReprocessedModal'
 
 const MonthSubRow = ({ data }) =>
   data ? (
     <>
       <th scope="row">{data.month}</th>
-      <td>{data.accepted_without_errors}</td>
-      <td>{data.accepted_with_errors}</td>
+      <td>{data.total_errors}</td>
     </>
   ) : (
     <>
       <th scope="row">-</th>
       <td>N/A</td>
-      <td>N/A</td>
     </>
   )
 
-const CaseAggregatesRow = ({ file, reprocessedState }) => {
+const TotalAggregatesRow = ({ file, reprocessedState }) => {
   const dispatch = useDispatch()
   const reprocessedDate = formatDate(getReprocessedDate(file))
   const isRegionalStaff = useSelector(accountIsRegionalStaff)
@@ -59,10 +56,6 @@ const CaseAggregatesRow = ({ file, reprocessedState }) => {
         <MonthSubRow data={file?.summary?.case_aggregates?.months?.[0]} />
 
         <th scope="rowgroup" rowSpan={3}>
-          {file.summary?.case_aggregates?.rejected || 'N/A'}
-        </th>
-
-        <th scope="rowgroup" rowSpan={3}>
           <span>
             <SubmissionSummaryStatusIcon
               status={file.summary ? file.summary.status : 'Pending'}
@@ -87,7 +80,7 @@ const CaseAggregatesRow = ({ file, reprocessedState }) => {
   )
 }
 
-export const CaseAggregatesTable = ({ files, reprocessedState }) => (
+export const TotalAggregatesTable = ({ files, reprocessedState }) => (
   <>
     <thead>
       <tr>
@@ -101,13 +94,7 @@ export const CaseAggregatesTable = ({ files, reprocessedState }) => (
           Month
         </th>
         <th scope="col" rowSpan={2}>
-          Cases Without Errors
-        </th>
-        <th scope="col" rowSpan={2}>
-          Cases With Errors
-        </th>
-        <th scope="col" rowSpan={2}>
-          Records Unable To Process
+          Total Errors
         </th>
         <th scope="col" rowSpan={2}>
           Status
@@ -119,7 +106,7 @@ export const CaseAggregatesTable = ({ files, reprocessedState }) => (
     </thead>
     <tbody>
       {files.map((file) => (
-        <CaseAggregatesRow
+        <TotalAggregatesRow
           key={file.id}
           file={file}
           reprocessedState={reprocessedState}
