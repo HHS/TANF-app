@@ -22,6 +22,22 @@ from tdpservice.reports.test.conftest import create_nested_zip
 class TestCalculateQuarterFromDate:
     """Tests for calculate_quarter_from_date function."""
 
+    # Q1: October 15 - February 14
+    def test_q1_october_start(self):
+        """Q1: October 15th (start of Q1 window)."""
+        date = datetime(2025, 10, 15)
+        assert calculate_quarter_from_date(date) == "Q1"
+
+    def test_q1_november(self):
+        """Q1: November dates should return Q1."""
+        date = datetime(2025, 11, 15)
+        assert calculate_quarter_from_date(date) == "Q1"
+
+    def test_q1_december(self):
+        """Q1: December dates should return Q1."""
+        date = datetime(2025, 12, 15)
+        assert calculate_quarter_from_date(date) == "Q1"
+
     def test_q1_january(self):
         """Q1: January dates should return Q1."""
         date = datetime(2025, 1, 15)
@@ -33,9 +49,20 @@ class TestCalculateQuarterFromDate:
         assert calculate_quarter_from_date(date) == "Q1"
 
     def test_q1_february_deadline(self):
-        """Q1: February 14th should return Q1."""
+        """Q1: February 14th (end of Q1 window)."""
         date = datetime(2025, 2, 14)
         assert calculate_quarter_from_date(date) == "Q1"
+
+    # Q2: February 15 - May 15
+    def test_q2_february_start(self):
+        """Q2: February 15th (start of Q2 window)."""
+        date = datetime(2025, 2, 15)
+        assert calculate_quarter_from_date(date) == "Q2"
+
+    def test_q2_march(self):
+        """Q2: March dates should return Q2."""
+        date = datetime(2025, 3, 15)
+        assert calculate_quarter_from_date(date) == "Q2"
 
     def test_q2_april(self):
         """Q2: April dates should return Q2."""
@@ -48,9 +75,20 @@ class TestCalculateQuarterFromDate:
         assert calculate_quarter_from_date(date) == "Q2"
 
     def test_q2_may_deadline(self):
-        """Q2: May 15th should return Q2."""
+        """Q2: May 15th (end of Q2 window)."""
         date = datetime(2025, 5, 15)
         assert calculate_quarter_from_date(date) == "Q2"
+
+    # Q3: May 16 - August 14
+    def test_q3_may_start(self):
+        """Q3: May 16th (start of Q3 window)."""
+        date = datetime(2025, 5, 16)
+        assert calculate_quarter_from_date(date) == "Q3"
+
+    def test_q3_june(self):
+        """Q3: June dates should return Q3."""
+        date = datetime(2025, 6, 15)
+        assert calculate_quarter_from_date(date) == "Q3"
 
     def test_q3_july(self):
         """Q3: July dates should return Q3."""
@@ -63,9 +101,20 @@ class TestCalculateQuarterFromDate:
         assert calculate_quarter_from_date(date) == "Q3"
 
     def test_q3_august_deadline(self):
-        """Q3: August 14th should return Q3."""
+        """Q3: August 14th (end of Q3 window)."""
         date = datetime(2025, 8, 14)
         assert calculate_quarter_from_date(date) == "Q3"
+
+    # Q4: August 15 - October 14
+    def test_q4_august_start(self):
+        """Q4: August 15th (start of Q4 window)."""
+        date = datetime(2025, 8, 15)
+        assert calculate_quarter_from_date(date) == "Q4"
+
+    def test_q4_september(self):
+        """Q4: September dates should return Q4."""
+        date = datetime(2025, 9, 15)
+        assert calculate_quarter_from_date(date) == "Q4"
 
     def test_q4_october_before_deadline(self):
         """Q4: October before 14th should return Q4."""
@@ -73,63 +122,9 @@ class TestCalculateQuarterFromDate:
         assert calculate_quarter_from_date(date) == "Q4"
 
     def test_q4_october_deadline(self):
-        """Q4: October 14th should return Q4."""
+        """Q4: October 14th (end of Q4 window)."""
         date = datetime(2025, 10, 14)
         assert calculate_quarter_from_date(date) == "Q4"
-
-    def test_invalid_date_february_after_deadline(self):
-        """Dates after Q1 deadline should raise ValueError."""
-        date = datetime(2025, 2, 15)
-        with pytest.raises(ValueError, match="outside valid submission windows"):
-            calculate_quarter_from_date(date)
-
-    def test_invalid_date_march(self):
-        """March dates should raise ValueError (outside any window)."""
-        date = datetime(2025, 3, 15)
-        with pytest.raises(ValueError, match="outside valid submission windows"):
-            calculate_quarter_from_date(date)
-
-    def test_invalid_date_may_after_deadline(self):
-        """Dates after Q2 deadline should raise ValueError."""
-        date = datetime(2025, 5, 16)
-        with pytest.raises(ValueError, match="outside valid submission windows"):
-            calculate_quarter_from_date(date)
-
-    def test_invalid_date_june(self):
-        """June dates should raise ValueError (outside any window)."""
-        date = datetime(2025, 6, 15)
-        with pytest.raises(ValueError, match="outside valid submission windows"):
-            calculate_quarter_from_date(date)
-
-    def test_invalid_date_august_after_deadline(self):
-        """Dates after Q3 deadline should raise ValueError."""
-        date = datetime(2025, 8, 15)
-        with pytest.raises(ValueError, match="outside valid submission windows"):
-            calculate_quarter_from_date(date)
-
-    def test_invalid_date_september(self):
-        """September dates should raise ValueError (outside any window)."""
-        date = datetime(2025, 9, 15)
-        with pytest.raises(ValueError, match="outside valid submission windows"):
-            calculate_quarter_from_date(date)
-
-    def test_invalid_date_october_after_deadline(self):
-        """Dates after Q4 deadline should raise ValueError."""
-        date = datetime(2025, 10, 15)
-        with pytest.raises(ValueError, match="outside valid submission windows"):
-            calculate_quarter_from_date(date)
-
-    def test_invalid_date_november(self):
-        """November dates should raise ValueError (outside any window)."""
-        date = datetime(2025, 11, 15)
-        with pytest.raises(ValueError, match="outside valid submission windows"):
-            calculate_quarter_from_date(date)
-
-    def test_invalid_date_december(self):
-        """December dates should raise ValueError (outside any window)."""
-        date = datetime(2025, 12, 15)
-        with pytest.raises(ValueError, match="outside valid submission windows"):
-            calculate_quarter_from_date(date)
 
 
 class TestExtractFiscalYear:
@@ -487,11 +482,24 @@ class TestProcessReportIngest:
         assert ingest.status == ReportIngest.Status.FAILED
         assert "not a valid zip" in ingest.error_message
 
-    def test_process_invalid_quarter_date(self, ofa_admin):
-        """Should fail with upload date outside valid windows."""
+    def test_process_quarter_q2(self, ofa_admin):
+        """Should successfully process with Q2 upload date (March)."""
+        from tdpservice.stts.models import Region, STT
+
+        # Create region and STT
+        region = Region.objects.create(id=9003, name="Test Region 3")
+        stt = STT.objects.create(
+            id=8004,
+            stt_code="1",
+            name="Test STT 1",
+            region=region,
+            postal_code="T1",
+            type="STATE"
+        )
+
         structure = {
             "2025": {
-                "Region_1": {
+                "9003": {
                     "1": ["report1.pdf"]
                 }
             }
@@ -505,20 +513,27 @@ class TestProcessReportIngest:
             content_type="application/zip"
         )
 
-        # Create with invalid date (March)
+        # Create with Q2 date (March 15)
         ingest = ReportIngest.objects.create(
             uploaded_by=ofa_admin,
             original_filename="master.zip",
             slug="master.zip",
             file=uploaded_file,
-            created_at=timezone.make_aware(datetime(2025, 3, 15))
         )
+
+        # Update created_at to Q2 window
+        ingest.created_at = timezone.make_aware(datetime(2025, 3, 15))
+        ingest.save(update_fields=["created_at"])
 
         process_report_ingest(ingest.id)
 
         ingest.refresh_from_db()
-        assert ingest.status == ReportIngest.Status.FAILED
-        assert "outside valid submission windows" in ingest.error_message
+        assert ingest.status == ReportIngest.Status.SUCCEEDED
+        assert ingest.num_reports_created == 1
+
+        # Verify quarter is Q2
+        report_file = ReportFile.objects.filter(ingest=ingest).first()
+        assert report_file.quarter == "Q2"
 
     def test_process_invalid_stt_code(self, ofa_admin):
         """Should fail with non-existent STT code."""

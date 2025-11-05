@@ -19,35 +19,30 @@ def calculate_quarter_from_date(created_at: datetime) -> str:
     """
     Calculate the quarter based on the upload date.
 
-    Q1: 01/01 - 02/14 → Q1 (for previous year Oct-Dec)
-    Q2: 04/01 - 05/15 → Q2 (for current year Jan-Mar)
-    Q3: 07/01 - 08/14 → Q3 (for current year Apr-Jun)
-    Q4: 10/01 - 10/14 → Q4 (for current year Jul-Sep)
+    Q1: 10/15 - 02/14 → Q1 (for previous year Oct-Dec)
+    Q2: 02/15 - 05/15 → Q2 (for current year Jan-Mar)
+    Q3: 05/16 - 08/14 → Q3 (for current year Apr-Jun)
+    Q4: 08/15 - 10/14 → Q4 (for current year Jul-Sep)
+
+    Covers the entire year with no gaps.
     """
-    month = created_at.month
-    day = created_at.day
+    # Use tuple comparison for cleaner date range checks
+    date_tuple = (created_at.month, created_at.day)
 
-    # Q1: January 1 - February 14
-    if (month == 1) or (month == 2 and day <= 14):
-        return "Q1"
-
-    # Q2: April 1 - May 15
-    if (month == 4) or (month == 5 and day <= 15):
+    # Q2: February 15 - May 15
+    if (2, 15) <= date_tuple <= (5, 15):
         return "Q2"
 
-    # Q3: July 1 - August 14
-    if (month == 7) or (month == 8 and day <= 14):
+    # Q3: May 16 - August 14
+    if (5, 16) <= date_tuple <= (8, 14):
         return "Q3"
 
-    # Q4: October 1 - October 14
-    if (month == 10 and day <= 14):
+    # Q4: August 15 - October 14
+    if (8, 15) <= date_tuple <= (10, 14):
         return "Q4"
 
-    # If we reach here, the date is outside valid submission windows
-    raise ValueError(
-        f"Upload date {created_at.strftime('%Y-%m-%d')} is outside valid submission windows. "
-        "Valid windows: Q1 (01/01-02/14), Q2 (04/01-05/15), Q3 (07/01-08/14), Q4 (10/01-10/14)."
-    )
+    # Q1: October 15 - February 14 (everything else, spans year boundary)
+    return "Q1"
 
 
 def extract_fiscal_year(zip_file: zipfile.ZipFile) -> int:
