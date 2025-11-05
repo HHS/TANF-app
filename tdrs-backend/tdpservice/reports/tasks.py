@@ -129,12 +129,14 @@ def bundle_stt_files(zip_file: zipfile.ZipFile, file_infos: list, stt_code: str)
     """
     Bundle all files for an STT into a single zip file.
 
-    Args:
+    Parameters
+    ----------
         zip_file: The master zip file
         file_infos: List of ZipInfo objects for files belonging to this STT
         stt_code: The STT code (for naming)
 
-    Returns:
+    Returns
+    -------
         ContentFile containing the bundled zip
     """
     # Create in-memory zip

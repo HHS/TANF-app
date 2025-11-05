@@ -331,12 +331,11 @@ class TestProcessReportIngest:
     @patch('tdpservice.reports.tasks.timezone.now')
     def test_process_valid_master_zip(self, mock_now, ofa_admin):
         """Should successfully process a valid master zip."""
-        from tdpservice.stts.test.factories import STTFactory
         from tdpservice.stts.models import Region, STT
 
         # Create region and STT with stt_code="1" directly
         region = Region.objects.create(id=9001, name="Test Region")
-        stt = STT.objects.create(
+        STT.objects.create(
             id=8001,
             stt_code="1",
             name="Test STT 1",
@@ -403,7 +402,7 @@ class TestProcessReportIngest:
         region = Region.objects.create(id=9002, name="Test Region 2")
 
         # Create STTs with stt_code="1" and "2"
-        stt1 = STT.objects.create(
+        STT.objects.create(
             id=8002,
             stt_code="1",
             name="Test STT 1",
@@ -411,7 +410,7 @@ class TestProcessReportIngest:
             postal_code="T1",
             type="STATE"
         )
-        stt2 = STT.objects.create(
+        STT.objects.create(
             id=8003,
             stt_code="2",
             name="Test STT 2",
@@ -488,7 +487,7 @@ class TestProcessReportIngest:
 
         # Create region and STT
         region = Region.objects.create(id=9003, name="Test Region 3")
-        stt = STT.objects.create(
+        STT.objects.create(
             id=8004,
             stt_code="1",
             name="Test STT 1",
@@ -541,7 +540,7 @@ class TestProcessReportIngest:
 
         # Create region and STT
         region = Region.objects.create(id=9004, name="Test Region 4")
-        stt = STT.objects.create(
+        STT.objects.create(
             id=8005,
             stt_code="1",
             name="Test STT 1",

@@ -11,7 +11,8 @@ def create_nested_zip(structure):
     """
     Create a nested zip file structure for testing.
 
-    Args:
+    Parameters
+    ----------
         structure: dict like {
             "2025": {
                 "Region_1": {
@@ -21,7 +22,8 @@ def create_nested_zip(structure):
             }
         }
 
-    Returns:
+    Returns
+    -------
         BytesIO containing the zip file
     """
     zip_buffer = io.BytesIO()
