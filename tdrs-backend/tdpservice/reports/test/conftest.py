@@ -114,6 +114,8 @@ def fiscal_year_master_zip():
 
     Structure: 2025/Region_1/1/report1.pdf, report2.pdf
     """
+    from django.core.files.uploadedfile import SimpleUploadedFile
+
     structure = {
         "2025": {
             "Region_1": {
@@ -122,12 +124,14 @@ def fiscal_year_master_zip():
         }
     }
     zip_buffer = create_nested_zip(structure)
-    return create_temporary_file(zip_buffer, "master.zip")
+    return SimpleUploadedFile("master.zip", zip_buffer.read(), content_type="application/zip")
 
 
 @pytest.fixture
 def multi_stt_master_zip():
     """Generate a nested master zip with multiple STTs."""
+    from django.core.files.uploadedfile import SimpleUploadedFile
+
     structure = {
         "2025": {
             "Region_1": {
@@ -137,7 +141,7 @@ def multi_stt_master_zip():
         }
     }
     zip_buffer = create_nested_zip(structure)
-    return create_temporary_file(zip_buffer, "master.zip")
+    return SimpleUploadedFile("master.zip", zip_buffer.read(), content_type="application/zip")
 
 
 @pytest.fixture

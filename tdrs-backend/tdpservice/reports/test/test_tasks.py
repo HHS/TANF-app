@@ -535,6 +535,60 @@ class TestProcessReportIngest:
         report_file = ReportFile.objects.filter(ingest=ingest).first()
         assert report_file.quarter == "Q2"
 
+    def test_process_with_provided_quarter(self, ofa_admin):
+        """Should use provided quarter instead of calculating from date."""
+        from tdpservice.stts.models import Region, STT
+
+        # Create region and STT
+        region = Region.objects.create(id=9004, name="Test Region 4")
+        stt = STT.objects.create(
+            id=8005,
+            stt_code="1",
+            name="Test STT 1",
+            region=region,
+            postal_code="T1",
+            type="STATE"
+        )
+
+        structure = {
+            "2025": {
+                "9004": {
+                    "1": ["report1.pdf"]
+                }
+            }
+        }
+        zip_buffer = create_nested_zip(structure)
+
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        uploaded_file = SimpleUploadedFile(
+            "master.zip",
+            zip_buffer.read(),
+            content_type="application/zip"
+        )
+
+        # Create with provided quarter Q3 (but upload date would be Q2 if calculated)
+        ingest = ReportIngest.objects.create(
+            uploaded_by=ofa_admin,
+            original_filename="master.zip",
+            slug="master.zip",
+            file=uploaded_file,
+            quarter="Q3",  # Explicitly provided
+        )
+
+        # Set created_at to Q2 window (March)
+        ingest.created_at = timezone.make_aware(datetime(2025, 3, 15))
+        ingest.save(update_fields=["created_at"])
+
+        process_report_ingest(ingest.id)
+
+        ingest.refresh_from_db()
+        assert ingest.status == ReportIngest.Status.SUCCEEDED
+        assert ingest.num_reports_created == 1
+
+        # Verify quarter is Q3 (provided), not Q2 (calculated)
+        report_file = ReportFile.objects.filter(ingest=ingest).first()
+        assert report_file.quarter == "Q3"
+
     def test_process_invalid_stt_code(self, ofa_admin):
         """Should fail with non-existent STT code."""
         structure = {
