@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchSttList } from '../../actions/sttList'
@@ -24,7 +25,8 @@ function STTComboBox({
   sttType,
 }) {
   const sttListRequest = useSelector((state) => state?.stts)
-  const filteredStts = useSelector(availableStts)
+  const location = useLocation()
+  const filteredStts = useSelector(availableStts(location.pathname))
   const dispatch = useDispatch()
   const [numTries, setNumTries] = useState(0)
   const [reachedMaxTries, setReachedMaxTries] = useState(false)
