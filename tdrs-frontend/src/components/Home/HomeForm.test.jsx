@@ -7,6 +7,7 @@ import { mount } from 'enzyme'
 import Home from '.'
 import configureStore from 'redux-mock-store'
 import * as authSelectors from '../../selectors/auth'
+import { MemoryRouter } from 'react-router-dom'
 
 // Mock the auth selectors
 jest.mock('../../selectors/auth', () => ({
@@ -62,7 +63,9 @@ describe('Pre-approval Home page', () => {
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+            <Home setInEditMode={jest.fn()} />
+          </MemoryRouter>
       </Provider>
     )
 
@@ -78,7 +81,9 @@ describe('Pre-approval Home page', () => {
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+            <Home setInEditMode={jest.fn()} />
+          </MemoryRouter>
       </Provider>
     )
 
@@ -95,7 +100,9 @@ describe('Pre-approval Home page', () => {
     const store = mockStore(initialState)
     const { container } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+            <Home setInEditMode={jest.fn()} />
+          </MemoryRouter>
       </Provider>
     )
 
@@ -116,7 +123,9 @@ describe('Pre-approval Home page', () => {
     const store = mockStore(initialState)
     const { container } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+            <Home setInEditMode={jest.fn()} />
+          </MemoryRouter>
       </Provider>
     )
 
@@ -137,7 +146,9 @@ describe('Pre-approval Home page', () => {
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+            <Home setInEditMode={jest.fn()} />
+          </MemoryRouter>
       </Provider>
     )
 
@@ -184,7 +195,9 @@ describe('Pre-approval Home page', () => {
     })
     const wrapper = mount(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+            <Home setInEditMode={jest.fn()} />
+          </MemoryRouter>
       </Provider>
     )
 
@@ -231,7 +244,9 @@ describe('Pre-approval Home page', () => {
     })
     const wrapper = mount(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+            <Home setInEditMode={jest.fn()} />
+          </MemoryRouter>
       </Provider>
     )
 
@@ -282,7 +297,9 @@ describe('Pre-approval Home page', () => {
     })
     const wrapper = mount(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+            <Home setInEditMode={jest.fn()} />
+          </MemoryRouter>
       </Provider>
     )
 
@@ -314,7 +331,9 @@ describe('Pre-approval Home page', () => {
 
     const wrapper = mount(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+            <Home setInEditMode={jest.fn()} />
+          </MemoryRouter>
       </Provider>
     )
 
@@ -354,7 +373,9 @@ describe('Pre-approval Home page', () => {
     })
     const { getByText } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+            <Home setInEditMode={jest.fn()} />
+          </MemoryRouter>
       </Provider>
     )
 
@@ -405,7 +426,9 @@ describe('Pre-approval Home page', () => {
     })
     const { getByText, queryByText } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+            <Home setInEditMode={jest.fn()} />
+          </MemoryRouter>
       </Provider>
     )
 
@@ -456,7 +479,9 @@ describe('Pre-approval Home page', () => {
     })
     const { getByText } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+            <Home setInEditMode={jest.fn()} />
+          </MemoryRouter>
       </Provider>
     )
 
@@ -507,7 +532,9 @@ describe('Pre-approval Home page', () => {
     })
     const { getByText, queryByText } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+            <Home setInEditMode={jest.fn()} />
+          </MemoryRouter>
       </Provider>
     )
 
@@ -568,7 +595,9 @@ describe('Pre-approval Home page', () => {
     })
     const { getByText } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+            <Home setInEditMode={jest.fn()} />
+          </MemoryRouter>
       </Provider>
     )
 
@@ -625,7 +654,9 @@ describe('Pre-approval Home page', () => {
     })
     const { getByText } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+            <Home setInEditMode={jest.fn()} />
+          </MemoryRouter>
       </Provider>
     )
 
@@ -685,7 +716,9 @@ describe('Pre-approval Home page', () => {
     })
     const { getByText } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+            <Home setInEditMode={jest.fn()} />
+          </MemoryRouter>
       </Provider>
     )
 
@@ -745,7 +778,9 @@ describe('Pre-approval Home page', () => {
     })
     const { getByText } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+            <Home setInEditMode={jest.fn()} />
+          </MemoryRouter>
       </Provider>
     )
 
@@ -795,7 +830,9 @@ describe('Pre-approval Home page', () => {
     })
     const wrapper = mount(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+            <Home setInEditMode={jest.fn()} />
+          </MemoryRouter>
       </Provider>
     )
 
@@ -900,7 +937,9 @@ describe('Pre-approval Home page', () => {
     })
     const wrapper = mount(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+            <Home setInEditMode={jest.fn()} />
+          </MemoryRouter>
       </Provider>
     )
 
@@ -975,7 +1014,9 @@ describe('Pre-approval Home page', () => {
     })
     const { getByLabelText } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+            <Home setInEditMode={jest.fn()} />
+          </MemoryRouter>
       </Provider>
     )
 
@@ -1024,7 +1065,9 @@ describe('Pre-approval Home page', () => {
     store.dispatch = jest.fn(origDispatch)
     const wrapper = mount(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+            <Home setInEditMode={jest.fn()} />
+          </MemoryRouter>
       </Provider>
     )
 

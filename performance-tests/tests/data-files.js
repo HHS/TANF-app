@@ -123,7 +123,7 @@ export const dataFileBrowserSubmission = async () => {
   sleep(1)
 
   const fileBuffer = await readAll(Section2File)
-  const input = await page.$('#closed-case-data')
+  const input = await page.$('#closed_case_data')
   await input.setInputFiles({
     name: 'load-test-file.txt',
     mimetype: 'text/plain',
