@@ -5,6 +5,7 @@ import { Provider } from 'react-redux'
 import { MemoryRouter } from 'react-router-dom'
 import { FRAReports } from '.'
 import configureStore from '../../configureStore'
+import { MemoryRouter } from 'react-router-dom'
 
 const initialState = {
   auth: {
