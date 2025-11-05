@@ -22,10 +22,12 @@ export const useSubmissionHistory = (filterValues) => {
     const prevFilters = prevFilterValuesRef.current
 
     // Fetch if this is the first render or if filterValues have changed
-    // if (!prevFilters && !isDonePolling()) {
-    //   return
-    // } else
-    if (!prevFilters || currentFilters !== prevFilters) {
+    if (
+      !prevFilters &&
+      Object.keys(isDonePolling).some((k) => isDonePolling[k])
+    ) {
+      return
+    } else if (!prevFilters || currentFilters !== prevFilters) {
       dispatch(getAvailableFileList(filterValues))
       prevFilterValuesRef.current = currentFilters
     }
