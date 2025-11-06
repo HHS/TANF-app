@@ -1,6 +1,6 @@
 # Test Zip Files for Reports Workflow
 
-This directory contains test zip files for manually testing the master report ingestion workflow.
+This directory contains test zip files for manually testing the report source workflow.
 
 ## File Structure
 
@@ -114,13 +114,13 @@ report.pdf  (no folders)
 
 1. **Upload via API** (requires authentication):
    ```bash
-   curl -X POST http://localhost:8080/v1/reports/master/ \
+   curl -X POST http://localhost:8080/v1/reports/report_source/ \
      -H "Authorization: Token YOUR_TOKEN" \
      -F "file=@valid_single_stt.zip"
    ```
 
-2. **Check ReportIngest status**:
-   - Visit Django admin: `http://localhost:8080/admin/reports/reportingest/`
+2. **Check ReportSource status**:
+   - Visit Django admin: `http://localhost:8080/admin/reports/reportsource/`
    - Check status field: PENDING → PROCESSING → SUCCEEDED/FAILED
    - Check `error_message` for failure details
    - Check `num_reports_created` for success count

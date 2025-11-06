@@ -12,20 +12,20 @@ from tdpservice.stts.models import STT
 from tdpservice.users.models import User
 
 
-def get_master_upload_path(instance, filename):
-    """Produce a unique upload path for ReportIngest files to S3."""
+def get_report_source_upload_path(instance, filename):
+    """Produce a unique upload path for ReportSource files to S3."""
     return os.path.join(
         "reports",
-        "master",
+        "source",
         f"{uuid.uuid4().hex}-{filename}",
     )
 
 
-class ReportIngest(FileRecord):
-    """ReportIngest is an intermediary model for submitting a zip file containing multiple zips to be parsed into ReportFile records."""
+class ReportSource(FileRecord):
+    """ReportSource is an intermediary model for submitting a zip file containing multiple zips to be parsed into ReportFile records."""
 
     class Status(models.TextChoices):
-        """Whether or not a ReportIngest record has been parsed into ReportFile records."""
+        """Whether or not a ReportSource record has been parsed into ReportFile records."""
 
         PENDING = "PENDING"
         PROCESSING = "PROCESSING"
@@ -45,7 +45,7 @@ class ReportIngest(FileRecord):
 
     # Model Fields
     uploaded_by = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="report_ingests"
+        User, on_delete=models.CASCADE, related_name="report_sources"
     )
     created_at = models.DateTimeField(auto_now_add=True)
     processed_at = models.DateTimeField(null=True, blank=True)
@@ -59,7 +59,7 @@ class ReportIngest(FileRecord):
     error_message = models.TextField(null=True, blank=True)
 
     file = models.FileField(
-        storage=DataFilesS3Storage, upload_to=get_master_upload_path, null=False, blank=False
+        storage=DataFilesS3Storage, upload_to=get_report_source_upload_path, null=False, blank=False
     )
 
 
@@ -118,8 +118,8 @@ class ReportFile(FileRecord):
         blank=False,
         null=False,
     )
-    ingest = models.ForeignKey(
-        ReportIngest,
+    source = models.ForeignKey(
+        ReportSource,
         on_delete=models.SET_NULL,
         related_name="report_files",
         blank=True,

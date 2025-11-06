@@ -20,9 +20,9 @@ def test_ofa_admin_permissions(ofa_admin):
         "users.view_user",
         "users.has_fra_access",
         "reports.add_reportfile",
-        "reports.add_reportingest",
+        "reports.add_reportsource",
         "reports.view_reportfile",
-        "reports.view_reportingest"
+        "reports.view_reportsource"
     }
     group_permissions = ofa_admin.get_group_permissions()
     assert group_permissions == expected_permissions
@@ -185,11 +185,11 @@ def test_ofa_system_admin_permissions(ofa_system_admin):
         "search_indexes.view_programaudit_t3",
         "search_indexes.change_programaudit_t3",
         'reports.view_reportfile',
-        'reports.change_reportingest',
+        'reports.change_reportsource',
         'reports.change_reportfile',
-        'reports.add_reportingest',
+        'reports.add_reportsource',
         'reports.add_reportfile',
-        'reports.view_reportingest'
+        'reports.view_reportsource'
     }
     group_permissions = ofa_system_admin.get_group_permissions()
     assert group_permissions == expected_permissions

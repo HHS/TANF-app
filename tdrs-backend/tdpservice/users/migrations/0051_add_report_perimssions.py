@@ -12,34 +12,34 @@ def set_ofa_admin_permissions(apps, schema_editor):
     """Set OFA admin permissions for the Reports app."""
     ofa_admin = apps.get_model("auth", "Group").objects.get(name="OFA Admin")
 
-    # OFA Admin Should get view and add for ReportFiles and ReportIngestion
+    # OFA Admin Should get view and add for ReportFiles and ReportSource
     report_file_permissions = get_permission_ids_for_model(
         "reports", "reportfile", filters=[view_permissions_q, add_permissions_q]
     )
 
-    report_ingest_permissions = get_permission_ids_for_model(
-        "reports", "reportingest", filters=[view_permissions_q, add_permissions_q]
+    report_source_permissions = get_permission_ids_for_model(
+        "reports", "reportsource", filters=[view_permissions_q, add_permissions_q]
     )
 
     ofa_admin.permissions.add(*report_file_permissions)
-    ofa_admin.permissions.add(*report_ingest_permissions)
+    ofa_admin.permissions.add(*report_source_permissions)
 
 
 def unset_ofa_admin_permissions(apps, schema_editor):
     """Unset OFA admin permissions for the Reports app."""
     ofa_admin = apps.get_model("auth", "Group").objects.get(name="OFA Admin")
 
-    # OFA Admin Should get view and add for ReportFiles and ReportIngestion
+    # OFA Admin Should get view and add for ReportFiles and ReportSource
     report_file_permissions = get_permission_ids_for_model(
         "reports", "reportfile", filters=[view_permissions_q, add_permissions_q]
     )
 
-    report_ingest_permissions = get_permission_ids_for_model(
-        "reports", "reportingest", filters=[view_permissions_q, add_permissions_q]
+    report_source_permissions = get_permission_ids_for_model(
+        "reports", "reportsource", filters=[view_permissions_q, add_permissions_q]
     )
 
     ofa_admin.permissions.remove(report_file_permissions)
-    ofa_admin.permissions.remove(report_ingest_permissions)
+    ofa_admin.permissions.remove(report_source_permissions)
 
 
 def set_data_analyst_permissions(apps, schema_editor):
@@ -77,13 +77,13 @@ def set_developer_permissions(apps, schema_editor):
         "reportfile",
     )
 
-    report_ingest_permissions = get_permission_ids_for_model(
+    report_source_permissions = get_permission_ids_for_model(
         "reports",
-        "reportingest",
+        "reportsource",
     )
 
     developer.permissions.add(*report_file_permissions)
-    developer.permissions.add(*report_ingest_permissions)
+    developer.permissions.add(*report_source_permissions)
 
 
 def unset_developer_permissions(apps, schema_editor):
@@ -96,13 +96,13 @@ def unset_developer_permissions(apps, schema_editor):
         "reportfile",
     )
 
-    report_ingest_permissions = get_permission_ids_for_model(
+    report_source_permissions = get_permission_ids_for_model(
         "reports",
-        "reportingest",
+        "reportsource",
     )
 
     developer.permissions.remove(*report_file_permissions)
-    developer.permissions.remove(*report_ingest_permissions)
+    developer.permissions.remove(*report_source_permissions)
 
 
 class Migration(migrations.Migration):

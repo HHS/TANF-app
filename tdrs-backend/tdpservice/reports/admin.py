@@ -4,7 +4,7 @@ from django.contrib import admin
 
 from tdpservice.core.utils import ReadOnlyAdminMixin
 
-from .models import ReportFile, ReportIngest
+from .models import ReportFile, ReportSource
 
 
 @admin.register(ReportFile)
@@ -29,9 +29,9 @@ class ReportFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "slug",
     ]
 
-@admin.register(ReportIngest)
-class ReportIngestAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
-    """Read-only Admin class for Report Ingest model."""
+@admin.register(ReportSource)
+class ReportSourceAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
+    """Read-only Admin class for Report Source model."""
 
     list_display = [
         "id",

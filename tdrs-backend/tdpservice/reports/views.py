@@ -7,9 +7,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from tdpservice.reports.models import ReportFile, ReportIngest
-from tdpservice.reports.serializers import ReportFileSerializer, ReportIngestSerializer
-from tdpservice.reports.tasks import process_report_ingest
+from tdpservice.reports.models import ReportFile, ReportSource
+from tdpservice.reports.serializers import ReportFileSerializer, ReportSourceSerializer
+from tdpservice.reports.tasks import process_report_source
 from tdpservice.users.permissions import IsApprovedPermission, ReportFilePermissions
 
 
@@ -29,16 +29,16 @@ class ReportFileViewSet(ModelViewSet):
 
     def get_serializer_class(self):
         """Retrieve additional context required by serializer."""
-        if getattr(self, "action", None) == "master":
-            return ReportIngestSerializer
+        if getattr(self, "action", None) == "report_source":
+            return ReportSourceSerializer
         return super().get_serializer_class()
 
     @action(methods=["get", "post"], detail=False)
-    def master(self, request, pk=None):
-        """Admins can upload a master zips containing multiple zips."""
+    def report_source(self, request, pk=None):
+        """Admins can upload report source zips containing multiple zips."""
         if request.method.lower() == "get":
-            ingests = ReportIngest.objects.all().order_by("-created_at")
-            serializer = self.get_serializer(ingests, many=True)
+            sources = ReportSource.objects.all().order_by("-created_at")
+            serializer = self.get_serializer(sources, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         serializer = self.get_serializer(
@@ -46,14 +46,14 @@ class ReportFileViewSet(ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
 
-        # creates a ReportIngest record and stores master zip to S3
-        ingest = serializer.save()
+        # creates a ReportSource record and stores report source zip to S3
+        source = serializer.save()
 
-        # TODO: implement celery task: process_master_zip.delay(ingest.id)
-        process_report_ingest.delay(ingest.id)
+        # Process the report source zip file
+        process_report_source.delay(source.id)
 
         return Response(
-            ReportIngestSerializer(ingest).data,
+            ReportSourceSerializer(source).data,
             status=status.HTTP_202_ACCEPTED
         )
 

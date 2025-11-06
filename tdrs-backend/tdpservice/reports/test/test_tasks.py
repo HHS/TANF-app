@@ -13,9 +13,9 @@ from tdpservice.reports.tasks import (
     extract_fiscal_year,
     find_stt_folders,
     bundle_stt_files,
-    process_report_ingest,
+    process_report_source,
 )
-from tdpservice.reports.models import ReportFile, ReportIngest
+from tdpservice.reports.models import ReportFile, ReportSource
 from tdpservice.reports.test.conftest import create_nested_zip
 
 
@@ -276,16 +276,16 @@ class TestBundleSttFiles:
             }
         }
         zip_buffer = create_nested_zip(structure)
-        master_zip = zipfile.ZipFile(zip_buffer)
+        report_source_zip = zipfile.ZipFile(zip_buffer)
 
         # Get file infos for STT "1"
         file_infos = [
-            info for info in master_zip.infolist()
+            info for info in report_source_zip.infolist()
             if not info.is_dir() and "2025/Region_1/1/" in info.filename
         ]
 
         # Bundle the files
-        bundled = bundle_stt_files(master_zip, file_infos, "1")
+        bundled = bundle_stt_files(report_source_zip, file_infos, "1")
 
         # Verify the bundle
         assert bundled.name == "stt_1_reports.zip"
@@ -308,14 +308,14 @@ class TestBundleSttFiles:
             }
         }
         zip_buffer = create_nested_zip(structure)
-        master_zip = zipfile.ZipFile(zip_buffer)
+        report_source_zip = zipfile.ZipFile(zip_buffer)
 
         file_infos = [
-            info for info in master_zip.infolist()
+            info for info in report_source_zip.infolist()
             if not info.is_dir() and "2025/Region_1/1/" in info.filename
         ]
 
-        bundled = bundle_stt_files(master_zip, file_infos, "1")
+        bundled = bundle_stt_files(report_source_zip, file_infos, "1")
 
         # Check that file is flattened (no path)
         bundled_zip = zipfile.ZipFile(io.BytesIO(bundled.read()))
@@ -325,12 +325,12 @@ class TestBundleSttFiles:
 
 
 @pytest.mark.django_db
-class TestProcessReportIngest:
-    """Tests for process_report_ingest task."""
+class TestProcessReportSource:
+    """Tests for process_report_source task."""
 
     @patch('tdpservice.reports.tasks.timezone.now')
-    def test_process_valid_master_zip(self, mock_now, ofa_admin):
-        """Should successfully process a valid master zip."""
+    def test_process_valid_report_source_zip(self, mock_now, ofa_admin):
+        """Should successfully process a valid report source zip."""
         from tdpservice.stts.models import Region, STT
 
         # Create region and STT with stt_code="1" directly
@@ -347,7 +347,7 @@ class TestProcessReportIngest:
         # Mock timezone to return a Q1 date
         mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
 
-        # Create ingest record with nested zip
+        # Create source record with nested zip
         structure = {
             "2025": {
                 "Region_1": {
@@ -359,32 +359,32 @@ class TestProcessReportIngest:
 
         from django.core.files.uploadedfile import SimpleUploadedFile
         uploaded_file = SimpleUploadedFile(
-            "master.zip",
+            "report_source.zip",
             zip_buffer.read(),
             content_type="application/zip"
         )
 
-        ingest = ReportIngest.objects.create(
+        source = ReportSource.objects.create(
             uploaded_by=ofa_admin,
-            original_filename="master.zip",
-            slug="master.zip",
+            original_filename="report_source.zip",
+            slug="report_source.zip",
             file=uploaded_file,
             created_at=timezone.make_aware(datetime(2025, 2, 1))
         )
 
-        # Process the ingest
-        process_report_ingest(ingest.id)
+        # Process the source
+        process_report_source(source.id)
 
-        # Reload ingest
-        ingest.refresh_from_db()
+        # Reload source
+        source.refresh_from_db()
 
         # Verify success
-        assert ingest.status == ReportIngest.Status.SUCCEEDED
-        assert ingest.num_reports_created == 1
-        assert ingest.processed_at is not None
+        assert source.status == ReportSource.Status.SUCCEEDED
+        assert source.num_reports_created == 1
+        assert source.processed_at is not None
 
         # Verify ReportFile was created
-        report_files = ReportFile.objects.filter(ingest=ingest)
+        report_files = ReportFile.objects.filter(source=source)
         assert report_files.count() == 1
 
         report_file = report_files.first()
@@ -433,27 +433,27 @@ class TestProcessReportIngest:
 
         from django.core.files.uploadedfile import SimpleUploadedFile
         uploaded_file = SimpleUploadedFile(
-            "master.zip",
+            "report_source.zip",
             zip_buffer.read(),
             content_type="application/zip"
         )
 
-        ingest = ReportIngest.objects.create(
+        source = ReportSource.objects.create(
             uploaded_by=ofa_admin,
-            original_filename="master.zip",
-            slug="master.zip",
+            original_filename="report_source.zip",
+            slug="report_source.zip",
             file=uploaded_file,
             created_at=timezone.make_aware(datetime(2025, 5, 1))
         )
 
-        process_report_ingest(ingest.id)
+        process_report_source(source.id)
 
-        ingest.refresh_from_db()
-        assert ingest.status == ReportIngest.Status.SUCCEEDED
-        assert ingest.num_reports_created == 2
+        source.refresh_from_db()
+        assert source.status == ReportSource.Status.SUCCEEDED
+        assert source.num_reports_created == 2
 
         # Verify both ReportFiles were created
-        report_files = ReportFile.objects.filter(ingest=ingest)
+        report_files = ReportFile.objects.filter(source=source)
         assert report_files.count() == 2
 
         stt_codes = {rf.stt.stt_code for rf in report_files}
@@ -463,23 +463,23 @@ class TestProcessReportIngest:
         """Should fail gracefully with invalid zip file."""
         from django.core.files.uploadedfile import SimpleUploadedFile
         uploaded_file = SimpleUploadedFile(
-            "master.zip",
+            "report_source.zip",
             b"not a zip file",
             content_type="application/zip"
         )
 
-        ingest = ReportIngest.objects.create(
+        source = ReportSource.objects.create(
             uploaded_by=ofa_admin,
-            original_filename="master.zip",
-            slug="master.zip",
+            original_filename="report_source.zip",
+            slug="report_source.zip",
             file=uploaded_file,
         )
 
-        process_report_ingest(ingest.id)
+        process_report_source(source.id)
 
-        ingest.refresh_from_db()
-        assert ingest.status == ReportIngest.Status.FAILED
-        assert "not a valid zip" in ingest.error_message
+        source.refresh_from_db()
+        assert source.status == ReportSource.Status.FAILED
+        assert "not a valid zip" in source.error_message
 
     def test_process_quarter_q2(self, ofa_admin):
         """Should successfully process with Q2 upload date (March)."""
@@ -507,31 +507,31 @@ class TestProcessReportIngest:
 
         from django.core.files.uploadedfile import SimpleUploadedFile
         uploaded_file = SimpleUploadedFile(
-            "master.zip",
+            "report_source.zip",
             zip_buffer.read(),
             content_type="application/zip"
         )
 
         # Create with Q2 date (March 15)
-        ingest = ReportIngest.objects.create(
+        source = ReportSource.objects.create(
             uploaded_by=ofa_admin,
-            original_filename="master.zip",
-            slug="master.zip",
+            original_filename="report_source.zip",
+            slug="report_source.zip",
             file=uploaded_file,
         )
 
         # Update created_at to Q2 window
-        ingest.created_at = timezone.make_aware(datetime(2025, 3, 15))
-        ingest.save(update_fields=["created_at"])
+        source.created_at = timezone.make_aware(datetime(2025, 3, 15))
+        source.save(update_fields=["created_at"])
 
-        process_report_ingest(ingest.id)
+        process_report_source(source.id)
 
-        ingest.refresh_from_db()
-        assert ingest.status == ReportIngest.Status.SUCCEEDED
-        assert ingest.num_reports_created == 1
+        source.refresh_from_db()
+        assert source.status == ReportSource.Status.SUCCEEDED
+        assert source.num_reports_created == 1
 
         # Verify quarter is Q2
-        report_file = ReportFile.objects.filter(ingest=ingest).first()
+        report_file = ReportFile.objects.filter(source=source).first()
         assert report_file.quarter == "Q2"
 
     def test_process_with_provided_quarter(self, ofa_admin):
@@ -560,32 +560,32 @@ class TestProcessReportIngest:
 
         from django.core.files.uploadedfile import SimpleUploadedFile
         uploaded_file = SimpleUploadedFile(
-            "master.zip",
+            "report_source.zip",
             zip_buffer.read(),
             content_type="application/zip"
         )
 
         # Create with provided quarter Q3 (but upload date would be Q2 if calculated)
-        ingest = ReportIngest.objects.create(
+        source = ReportSource.objects.create(
             uploaded_by=ofa_admin,
-            original_filename="master.zip",
-            slug="master.zip",
+            original_filename="report_source.zip",
+            slug="report_source.zip",
             file=uploaded_file,
             quarter="Q3",  # Explicitly provided
         )
 
         # Set created_at to Q2 window (March)
-        ingest.created_at = timezone.make_aware(datetime(2025, 3, 15))
-        ingest.save(update_fields=["created_at"])
+        source.created_at = timezone.make_aware(datetime(2025, 3, 15))
+        source.save(update_fields=["created_at"])
 
-        process_report_ingest(ingest.id)
+        process_report_source(source.id)
 
-        ingest.refresh_from_db()
-        assert ingest.status == ReportIngest.Status.SUCCEEDED
-        assert ingest.num_reports_created == 1
+        source.refresh_from_db()
+        assert source.status == ReportSource.Status.SUCCEEDED
+        assert source.num_reports_created == 1
 
         # Verify quarter is Q3 (provided), not Q2 (calculated)
-        report_file = ReportFile.objects.filter(ingest=ingest).first()
+        report_file = ReportFile.objects.filter(source=source).first()
         assert report_file.quarter == "Q3"
 
     def test_process_invalid_stt_code(self, ofa_admin):
@@ -601,24 +601,24 @@ class TestProcessReportIngest:
 
         from django.core.files.uploadedfile import SimpleUploadedFile
         uploaded_file = SimpleUploadedFile(
-            "master.zip",
+            "report_source.zip",
             zip_buffer.read(),
             content_type="application/zip"
         )
 
-        ingest = ReportIngest.objects.create(
+        source = ReportSource.objects.create(
             uploaded_by=ofa_admin,
-            original_filename="master.zip",
-            slug="master.zip",
+            original_filename="report_source.zip",
+            slug="report_source.zip",
             file=uploaded_file,
         )
 
         # Update created_at after creation (auto_now_add prevents setting on create)
-        ingest.created_at = timezone.make_aware(datetime(2025, 2, 1))
-        ingest.save(update_fields=["created_at"])
+        source.created_at = timezone.make_aware(datetime(2025, 2, 1))
+        source.save(update_fields=["created_at"])
 
-        process_report_ingest(ingest.id)
+        process_report_source(source.id)
 
-        ingest.refresh_from_db()
-        assert ingest.status == ReportIngest.Status.FAILED
-        assert "STT code '999' not found" in ingest.error_message
+        source.refresh_from_db()
+        assert source.status == ReportSource.Status.FAILED
+        assert "STT code '999' not found" in source.error_message

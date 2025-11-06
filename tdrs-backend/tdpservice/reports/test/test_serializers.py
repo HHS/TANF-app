@@ -1,11 +1,11 @@
-"""Tests for ReportFileSerializer and ReportIngestSerializer."""
+"""Tests for ReportFileSerializer and ReportSourceSerializer."""
 
 import pytest
 from rest_framework.exceptions import ValidationError
 
 from tdpservice.reports.serializers import (
     ReportFileSerializer,
-    ReportIngestSerializer,
+    ReportSourceSerializer,
 )
 
 
@@ -33,18 +33,18 @@ def test_report_file_serializer_invalid_file_type(bad_report_file_data, data_ana
         ser.is_valid(raise_exception=True)
 
 @pytest.mark.django_db
-def test_report_ingest_serializer_valid(report_ingest_data, data_analyst):
-    """Basic smoke test: ReportFileSerializer should validate incoming data."""
-    ser = ReportIngestSerializer(context={"user": data_analyst}, data=report_ingest_data)
+def test_report_source_serializer_valid(report_source_data, data_analyst):
+    """Basic smoke test: ReportSourceSerializer should validate incoming data."""
+    ser = ReportSourceSerializer(context={"user": data_analyst}, data=report_source_data)
     assert ser.is_valid(), ser.errors
     obj = ser.save()
 
     assert obj.pk is not None
-    assert obj.original_filename == report_ingest_data["original_filename"]
+    assert obj.original_filename == report_source_data["original_filename"]
 
 @pytest.mark.django_db
-def test_report_ingest_serializer_invalid_file_type(bad_report_ingest_data, data_analyst):
-    """Test report file serializer rejects non zip file types."""
-    ser = ReportIngestSerializer(context={"user": data_analyst}, data=bad_report_ingest_data)
+def test_report_source_serializer_invalid_file_type(bad_report_source_data, data_analyst):
+    """Test report source serializer rejects non zip file types."""
+    ser = ReportSourceSerializer(context={"user": data_analyst}, data=bad_report_source_data)
     with pytest.raises(ValidationError):
         ser.is_valid(raise_exception=True)

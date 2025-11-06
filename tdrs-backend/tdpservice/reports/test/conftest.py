@@ -104,15 +104,15 @@ def report_file_instance2(data_analyst):
 
 
 @pytest.fixture
-def master_zip_file(fake_file):
-    """Generate a fake master zipfile (old flat structure - deprecated)."""
-    return create_temporary_file(fake_file, "master.zip")
+def report_source_zip_file(fake_file):
+    """Generate a fake report source zipfile (old flat structure - deprecated)."""
+    return create_temporary_file(fake_file, "report_source.zip")
 
 
 @pytest.fixture
-def fiscal_year_master_zip():
+def fiscal_year_report_source_zip():
     """
-    Generate a nested fiscal year master zip file.
+    Generate a nested fiscal year report source zip file.
 
     Structure: 2025/Region_1/1/report1.pdf, report2.pdf
     """
@@ -126,12 +126,12 @@ def fiscal_year_master_zip():
         }
     }
     zip_buffer = create_nested_zip(structure)
-    return SimpleUploadedFile("master.zip", zip_buffer.read(), content_type="application/zip")
+    return SimpleUploadedFile("report_source.zip", zip_buffer.read(), content_type="application/zip")
 
 
 @pytest.fixture
-def multi_stt_master_zip():
-    """Generate a nested master zip with multiple STTs."""
+def multi_stt_report_source_zip():
+    """Generate a nested report source zip with multiple STTs."""
     from django.core.files.uploadedfile import SimpleUploadedFile
 
     structure = {
@@ -143,28 +143,28 @@ def multi_stt_master_zip():
         }
     }
     zip_buffer = create_nested_zip(structure)
-    return SimpleUploadedFile("master.zip", zip_buffer.read(), content_type="application/zip")
+    return SimpleUploadedFile("report_source.zip", zip_buffer.read(), content_type="application/zip")
 
 
 @pytest.fixture
-def bad_master_zip_file(fake_file, fake_file_name):
-    """Generate a base master zipfile."""
+def bad_report_source_zip_file(fake_file, fake_file_name):
+    """Generate a base report source zipfile."""
     return create_temporary_file(fake_file, fake_file_name)
 
 
 @pytest.fixture
-def report_ingest_data(master_zip_file):
-    """Return report ingest creation data."""
+def report_source_data(report_source_zip_file):
+    """Return report source creation data."""
     return {
-        "file": master_zip_file,
-        "original_filename": "master.zip",
+        "file": report_source_zip_file,
+        "original_filename": "report_source.zip",
     }
 
 
 @pytest.fixture
-def bad_report_ingest_data(bad_master_zip_file, fake_file_name):
-    """Return bad report ingest creation data."""
+def bad_report_source_data(bad_report_source_zip_file, fake_file_name):
+    """Return bad report source creation data."""
     return {
-        "file": bad_master_zip_file,
+        "file": bad_report_source_zip_file,
         "original_filename": fake_file_name,
     }

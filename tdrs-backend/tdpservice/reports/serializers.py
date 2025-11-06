@@ -1,7 +1,7 @@
 """Serialize report data."""
 from rest_framework import serializers
 
-from tdpservice.reports.models import ReportFile, ReportIngest
+from tdpservice.reports.models import ReportFile, ReportSource
 from tdpservice.stts.models import STT
 
 
@@ -64,13 +64,13 @@ class ReportFileSerializer(serializers.ModelSerializer):
         return file
 
 
-class ReportIngestSerializer(serializers.ModelSerializer):
-    """Serializer for Report Ingest."""
+class ReportSourceSerializer(serializers.ModelSerializer):
+    """Serializer for Report Source."""
 
     class Meta:
         """Metadata."""
 
-        model = ReportIngest
+        model = ReportSource
         fields = [
             "id",
             "original_filename",
@@ -95,12 +95,12 @@ class ReportIngestSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        """Create a ReportIngest record for a master zip file upload."""
+        """Create a ReportSource record for a report source zip file upload."""
         file = validated_data.get("file")
         quarter = validated_data.get("quarter")  # optional
         user = self.context["user"]
 
-        ingest = ReportIngest.objects.create(
+        source = ReportSource.objects.create(
             original_filename=file.name,
             slug=file.name,
             extension="zip",
@@ -109,7 +109,7 @@ class ReportIngestSerializer(serializers.ModelSerializer):
             file=file,
         )
 
-        return ingest
+        return source
 
     def validate_file(self, file):
         """Validate the file field."""

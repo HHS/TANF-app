@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='ReportIngest',
+            name='ReportSource',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('original_filename', models.CharField(max_length=256)),
@@ -31,8 +31,8 @@ class Migration(migrations.Migration):
                 ('quarter', models.CharField(blank=True, choices=[('Q1', 'Q1'), ('Q2', 'Q2'), ('Q3', 'Q3'), ('Q4', 'Q4')], max_length=16, null=True)),
                 ('num_reports_created', models.PositiveIntegerField(default=0)),
                 ('error_message', models.TextField(blank=True, null=True)),
-                ('file', models.FileField(blank=False, null=False, storage=tdpservice.backends.DataFilesS3Storage, upload_to=tdpservice.reports.models.get_master_upload_path)),
-                ('uploaded_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='report_ingests', to=settings.AUTH_USER_MODEL)),
+                ('file', models.FileField(blank=False, null=False, storage=tdpservice.backends.DataFilesS3Storage, upload_to=tdpservice.reports.models.get_report_source_upload_path)),
+                ('uploaded_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='report_sources', to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'abstract': False,
@@ -50,7 +50,7 @@ class Migration(migrations.Migration):
                 ('year', models.IntegerField()),
                 ('version', models.IntegerField()),
                 ('file', models.FileField(blank=True, null=True, storage=tdpservice.backends.DataFilesS3Storage, upload_to=tdpservice.reports.models.get_s3_upload_path)),
-                ('ingest', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='report_files', to='reports.reportingest')),
+                ('source', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='report_files', to='reports.reportsource')),
                 ('stt', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='report_files', to='stts.stt')),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='report_files', to=settings.AUTH_USER_MODEL)),
             ],

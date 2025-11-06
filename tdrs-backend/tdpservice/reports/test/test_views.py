@@ -3,7 +3,7 @@
 import pytest
 from rest_framework import status
 
-from tdpservice.reports.models import ReportFile, ReportIngest
+from tdpservice.reports.models import ReportFile, ReportSource
 
 
 @pytest.mark.django_db
@@ -38,26 +38,26 @@ class TestReportFileViewAsOFAAdmin:
         assert created.extension == "zip"
         assert created.file
 
-    def test_master_upload(
+    def test_report_source_upload(
         self,
         api_client_logged_in,
-        fiscal_year_master_zip,
+        fiscal_year_report_source_zip,
     ):
-        """Admin can POST to /master with a nested fiscal year zip."""
+        """Admin can POST to /report_source with a nested fiscal year zip."""
 
         resp = api_client_logged_in.post(
-            f"{self.root_url}master/",
-            data={"file": fiscal_year_master_zip},
+            f"{self.root_url}report_source/",
+            data={"file": fiscal_year_report_source_zip},
             format="multipart",
         )
 
         assert resp.status_code == status.HTTP_202_ACCEPTED
 
-        ingest_id = resp.data["id"]
-        ingest_obj = ReportIngest.objects.get(id=ingest_id)
+        source_id = resp.data["id"]
+        source_obj = ReportSource.objects.get(id=source_id)
 
-        assert ingest_obj.original_filename == "master.zip"
-        assert ingest_obj.status == ReportIngest.Status.PENDING
+        assert source_obj.original_filename == "report_source.zip"
+        assert source_obj.status == ReportSource.Status.PENDING
 
     def test_download_report_file(self, api_client_logged_in, report_file_instance):
         """Stream report file to caller."""
@@ -111,13 +111,13 @@ class TestReportFileViewAsDataAnalyst:
         assert resp.status_code == status.HTTP_200_OK
         assert b"".join(resp.streaming_content) == report_file_instance.file.read()
 
-    def test_data_analyst_master_upload_disallowed(
-        self, api_client_logged_in, fiscal_year_master_zip
+    def test_data_analyst_report_source_upload_disallowed(
+        self, api_client_logged_in, fiscal_year_report_source_zip
     ):
-        """Data Analysts cannot create master zip files."""
+        """Data Analysts cannot create report source zip files."""
         resp = api_client_logged_in.post(
-            f"{self.root_url}master/",
-            data={"file": fiscal_year_master_zip},
+            f"{self.root_url}report_source/",
+            data={"file": fiscal_year_report_source_zip},
             format="multipart",
         )
 

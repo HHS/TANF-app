@@ -1,4 +1,4 @@
-"""Shared celery task processing report ingestion files."""
+"""Shared celery task processing report source files."""
 
 import io
 import logging
@@ -8,7 +8,7 @@ from django.core.files.base import ContentFile
 from django.utils import timezone
 
 from celery import shared_task
-from tdpservice.reports.models import ReportFile, ReportIngest
+from tdpservice.reports.models import ReportFile, ReportSource
 from tdpservice.stts.models import STT
 
 
@@ -131,7 +131,7 @@ def bundle_stt_files(zip_file: zipfile.ZipFile, file_infos: list, stt_code: str)
 
     Parameters
     ----------
-        zip_file: The master zip file
+        zip_file: The report source zip file
         file_infos: List of ZipInfo objects for files belonging to this STT
         stt_code: The STT code (for naming)
 
@@ -144,7 +144,7 @@ def bundle_stt_files(zip_file: zipfile.ZipFile, file_infos: list, stt_code: str)
 
     with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as bundle_zip:
         for file_info in file_infos:
-            # Read file from master zip
+            # Read file from report source zip
             file_data = zip_file.read(file_info.filename)
 
             # Get just the filename (not the full path)
@@ -162,70 +162,70 @@ def bundle_stt_files(zip_file: zipfile.ZipFile, file_infos: list, stt_code: str)
 
 
 @shared_task
-def process_report_ingest(ingest_id: int):  # noqa: C901
-    """Process a ReportIngest record zip file into individual ReportFile records."""
-    logger.debug("Begin processing report ingest file")
-    ingest: ReportIngest = ReportIngest.objects.get(id=ingest_id)
+def process_report_source(source_id: int):  # noqa: C901
+    """Process a ReportSource record zip file into individual ReportFile records."""
+    logger.debug("Begin processing report source file")
+    source: ReportSource = ReportSource.objects.get(id=source_id)
 
     # Mark as PROCESSING
-    ingest.status = ReportIngest.Status.PROCESSING
-    ingest.error_message = ""
-    ingest.save(update_fields=["status", "error_message"])
+    source.status = ReportSource.Status.PROCESSING
+    source.error_message = ""
+    source.save(update_fields=["status", "error_message"])
 
     # Download zip from S3
     try:
-        if ingest.file:
-            ingest.file.open("rb")
-            master_bytes = ingest.file.read()
-            ingest.file.close()
+        if source.file:
+            source.file.open("rb")
+            source_bytes = source.file.read()
+            source.file.close()
     except Exception as e:
-        ingest.status = ReportIngest.Status.FAILED
-        ingest.error_message = f"Could not download master zip: {e}"
-        ingest.processed_at = timezone.now()
-        ingest.save(update_fields=["status", "error_message", "processed_at"])
+        source.status = ReportSource.Status.FAILED
+        source.error_message = f"Could not download report source zip: {e}"
+        source.processed_at = timezone.now()
+        source.save(update_fields=["status", "error_message", "processed_at"])
         return
 
     # Validate zip file
     try:
-        zip_file = zipfile.ZipFile(io.BytesIO(master_bytes))
+        zip_file = zipfile.ZipFile(io.BytesIO(source_bytes))
     except zipfile.BadZipfile:
-        ingest.status = ReportIngest.Status.FAILED
-        ingest.error_message = "File is not a valid zip."
-        ingest.processed_at = timezone.now()
-        ingest.save(update_fields=["status", "error_message", "processed_at"])
+        source.status = ReportSource.Status.FAILED
+        source.error_message = "File is not a valid zip."
+        source.processed_at = timezone.now()
+        source.save(update_fields=["status", "error_message", "processed_at"])
         return
 
     # Use provided quarter or calculate from upload date
-    if ingest.quarter:
-        quarter = ingest.quarter
+    if source.quarter:
+        quarter = source.quarter
     else:
         try:
-            quarter = calculate_quarter_from_date(ingest.created_at)
+            quarter = calculate_quarter_from_date(source.created_at)
         except ValueError as e:
-            ingest.status = ReportIngest.Status.FAILED
-            ingest.error_message = str(e)
-            ingest.processed_at = timezone.now()
-            ingest.save(update_fields=["status", "error_message", "processed_at"])
+            source.status = ReportSource.Status.FAILED
+            source.error_message = str(e)
+            source.processed_at = timezone.now()
+            source.save(update_fields=["status", "error_message", "processed_at"])
             return
 
     # Extract fiscal year from top-level folder
     try:
         fiscal_year = extract_fiscal_year(zip_file)
     except ValueError as e:
-        ingest.status = ReportIngest.Status.FAILED
-        ingest.error_message = str(e)
-        ingest.processed_at = timezone.now()
-        ingest.save(update_fields=["status", "error_message", "processed_at"])
+        source.status = ReportSource.Status.FAILED
+        source.error_message = str(e)
+        source.processed_at = timezone.now()
+        source.save(update_fields=["status", "error_message", "processed_at"])
         return
 
     # Find all STT folders and their files
     try:
         stt_files_map = find_stt_folders(zip_file, str(fiscal_year))
     except ValueError as e:
-        ingest.status = ReportIngest.Status.FAILED
-        ingest.error_message = str(e)
-        ingest.processed_at = timezone.now()
-        ingest.save(update_fields=["status", "error_message", "processed_at"])
+        source.status = ReportSource.Status.FAILED
+        source.error_message = str(e)
+        source.processed_at = timezone.now()
+        source.save(update_fields=["status", "error_message", "processed_at"])
         return
 
     # Process each STT folder
@@ -235,28 +235,28 @@ def process_report_ingest(ingest_id: int):  # noqa: C901
         try:
             stt = STT.objects.get(stt_code=stt_code)
         except STT.DoesNotExist:
-            ingest.status = ReportIngest.Status.FAILED
-            ingest.error_message = f"STT code '{stt_code}' not found in system."
-            ingest.processed_at = timezone.now()
-            ingest.save(update_fields=["status", "error_message", "processed_at"])
+            source.status = ReportSource.Status.FAILED
+            source.error_message = f"STT code '{stt_code}' not found in system."
+            source.processed_at = timezone.now()
+            source.save(update_fields=["status", "error_message", "processed_at"])
             return
 
         # Check if STT folder is empty
         if not file_infos:
-            ingest.status = ReportIngest.Status.FAILED
-            ingest.error_message = f"STT folder '{stt_code}' is empty."
-            ingest.processed_at = timezone.now()
-            ingest.save(update_fields=["status", "error_message", "processed_at"])
+            source.status = ReportSource.Status.FAILED
+            source.error_message = f"STT folder '{stt_code}' is empty."
+            source.processed_at = timezone.now()
+            source.save(update_fields=["status", "error_message", "processed_at"])
             return
 
         # Bundle all files for this STT into a single zip
         try:
             bundled_zip = bundle_stt_files(zip_file, file_infos, stt_code)
         except Exception as e:
-            ingest.status = ReportIngest.Status.FAILED
-            ingest.error_message = f"Failed to bundle files for STT '{stt_code}': {e}"
-            ingest.processed_at = timezone.now()
-            ingest.save(update_fields=["status", "error_message", "processed_at"])
+            source.status = ReportSource.Status.FAILED
+            source.error_message = f"Failed to bundle files for STT '{stt_code}': {e}"
+            source.processed_at = timezone.now()
+            source.save(update_fields=["status", "error_message", "processed_at"])
             return
 
         # Create ReportFile record
@@ -265,8 +265,8 @@ def process_report_ingest(ingest_id: int):  # noqa: C901
                 "year": fiscal_year,
                 "quarter": quarter,
                 "stt": stt,
-                "user": ingest.uploaded_by,
-                "ingest": ingest,
+                "user": source.uploaded_by,
+                "source": source,
                 "original_filename": bundled_zip.name,
                 "slug": bundled_zip.name,
                 "extension": "zip",
@@ -276,8 +276,8 @@ def process_report_ingest(ingest_id: int):  # noqa: C901
 
         num_created += 1
 
-    # Mark ingest as succeeded
-    ingest.status = ReportIngest.Status.SUCCEEDED
-    ingest.num_reports_created = num_created
-    ingest.processed_at = timezone.now()
-    ingest.save(update_fields=["status", "num_reports_created", "processed_at"])
+    # Mark source as succeeded
+    source.status = ReportSource.Status.SUCCEEDED
+    source.num_reports_created = num_created
+    source.processed_at = timezone.now()
+    source.save(update_fields=["status", "num_reports_created", "processed_at"])
