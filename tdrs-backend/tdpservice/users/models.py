@@ -15,7 +15,9 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from tdpservice.email.helpers.account_status import send_approval_status_update_email
-from tdpservice.email.helpers.profile_change_request import send_change_request_status_email
+from tdpservice.email.helpers.profile_change_request import (
+    send_change_request_status_email,
+)
 from tdpservice.stts.models import STT, Region
 from tdpservice.users.mixins import ReviewerMixin as Reviewable
 
@@ -164,10 +166,16 @@ class UserChangeRequest(Reviewable):
 
         # Send email
         try:
-            send_change_request_status_email(self, isApproved=True, url=settings.FRONTEND_BASE_URL)
+            send_change_request_status_email(
+                self, isApproved=True, url=settings.FRONTEND_BASE_URL
+            )
 
         except Exception as e:
-            logger.exception("Failed to send a, UserChangeRequestpproval email for profile change request %s: %s", self.id, e)
+            logger.exception(
+                "Failed to send a, UserChangeRequestpproval email for profile change request %s: %s",
+                self.id,
+                e,
+            )
 
         return True
 
@@ -186,9 +194,15 @@ class UserChangeRequest(Reviewable):
 
         # Send email
         try:
-            send_change_request_status_email(self, isApproved=False, url=settings.FRONTEND_BASE_URL)
+            send_change_request_status_email(
+                self, isApproved=False, url=settings.FRONTEND_BASE_URL
+            )
         except Exception as e:
-            logger.exception("Failed to send rejection email for profile change request %s: %s", self.id, e)
+            logger.exception(
+                "Failed to send rejection email for profile change request %s: %s",
+                self.id,
+                e,
+            )
 
         return True
 
@@ -243,11 +257,13 @@ class UserChangeRequestMixin:
         if current_value is None:
             try:
                 if Permission.objects.filter(codename=field_name).exists():
-                    current_value = self.user_permissions.filter(codename=field_name).exists()
+                    current_value = self.user_permissions.filter(
+                        codename=field_name
+                    ).exists()
                 else:
-                    current_value = getattr(self, field_name, '')
+                    current_value = getattr(self, field_name, "")
             except (AttributeError, TypeError):
-                current_value = ''
+                current_value = ""
 
         # Create the change request
         change_request = UserChangeRequest.objects.create(
@@ -255,7 +271,7 @@ class UserChangeRequestMixin:
             requested_by=requested_by,
             field_name=field_name,
             current_value=str(current_value),
-            requested_value=str(requested_value)
+            requested_value=str(requested_value),
         )
 
         return change_request
@@ -334,7 +350,7 @@ class Feedback(Reviewable):
 
     anonymous = models.BooleanField(default=False)
 
-    acked = models.BooleanField(default=False)
+    acked = models.BooleanField(default=False, verbose_name="Marked as read")
 
     # --- Metadata for fields ---
     page_url = models.URLField(blank=True, null=True)

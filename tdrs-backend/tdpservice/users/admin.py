@@ -539,11 +539,11 @@ class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
             return mark_safe(
                 f'<a href="{reverse("admin:acknowledge_feedback", args=[obj.pk])}" '
                 f'class="button" style="background-color: #28a745; color: white; padding: 5px; '
-                f'margin-right: 5px; text-decoration: none;">Acknowledge</a>'
+                f'margin-right: 5px; text-decoration: none;">Mark as Read</a>'
             )
         return "-"
 
-    quick_ack.short_description = "Acknowledge"
+    quick_ack.short_description = "Mark as read"
 
     def ack_selected_feedback(self, request, queryset):
         """Bulk approve selected change requests."""
@@ -560,11 +560,11 @@ class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
 
         self.message_user(
             request,
-            f"{updated} feedback(s) were successfully acknowledged.",
+            f"{updated} feedback(s) were successfully marked as read.",
             messages.SUCCESS if updated > 0 else messages.WARNING,
         )
 
-    ack_selected_feedback.short_description = "Acknowledge selected feedback"
+    ack_selected_feedback.short_description = "Mark selected as read"
 
 
 admin.site.register(User, UserAdmin)
