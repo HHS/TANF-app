@@ -106,8 +106,9 @@ class FRADataErrorReport(ErrorReportBase):
 
         row_idx = 1
         for error in self.parser_errors.iterator():
-            ssn = error.values_json.get("SSN", None)
-            exit_date = error.values_json.get("EXIT_DATE", None)
+            values_json = getattr(error, "values_json", {}) or {}
+            ssn = values_json.get("SSN", None)
+            exit_date = values_json.get("EXIT_DATE", None)
             fields_json = self.check_fields_json(
                 getattr(error, "fields_json", {}), error.field_name
             )
