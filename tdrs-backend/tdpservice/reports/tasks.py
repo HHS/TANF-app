@@ -161,8 +161,139 @@ def bundle_stt_files(zip_file: zipfile.ZipFile, file_infos: list, stt_code: str)
     return ContentFile(zip_buffer.read(), name=bundle_filename)
 
 
+def _mark_source_failed(source: ReportSource, error_message: str):
+    """Mark a ReportSource as failed with the given error message."""
+    source.status = ReportSource.Status.FAILED
+    source.error_message = error_message
+    source.processed_at = timezone.now()
+    source.save(update_fields=["status", "error_message", "processed_at"])
+
+
+def _download_and_validate_zip(source: ReportSource):
+    """
+    Download zip file from S3 and validate it.
+
+    Returns
+    -------
+        zipfile.ZipFile or None if validation fails
+    """
+    # Download zip from S3
+    try:
+        if source.file:
+            source.file.open("rb")
+            source_bytes = source.file.read()
+            source.file.close()
+    except Exception as e:
+        _mark_source_failed(source, f"Could not download report source zip: {e}")
+        return None
+
+    # Validate zip file
+    try:
+        return zipfile.ZipFile(io.BytesIO(source_bytes))
+    except zipfile.BadZipfile:
+        _mark_source_failed(source, "File is not a valid zip.")
+        return None
+
+
+def _determine_quarter(source: ReportSource):
+    """
+    Determine the quarter for the report source.
+
+    Uses the provided quarter if available, otherwise calculates from upload date.
+
+    Returns
+    -------
+        str or None if calculation fails
+    """
+    if source.quarter:
+        return source.quarter
+
+    try:
+        return calculate_quarter_from_date(source.created_at)
+    except ValueError as e:
+        _mark_source_failed(source, str(e))
+        return None
+
+
+def _extract_and_validate_structure(source: ReportSource, zip_file: zipfile.ZipFile):
+    """
+    Extract fiscal year and STT folders from zip file.
+
+    Returns
+    -------
+        tuple of (fiscal_year, stt_files_map) or (None, None) if validation fails
+    """
+    # Extract fiscal year from top-level folder
+    try:
+        fiscal_year = extract_fiscal_year(zip_file)
+    except ValueError as e:
+        _mark_source_failed(source, str(e))
+        return None, None
+
+    # Find all STT folders and their files
+    try:
+        stt_files_map = find_stt_folders(zip_file, str(fiscal_year))
+    except ValueError as e:
+        _mark_source_failed(source, str(e))
+        return None, None
+
+    return fiscal_year, stt_files_map
+
+
+def _process_stt_folder(
+    source: ReportSource,
+    zip_file: zipfile.ZipFile,
+    stt_code: str,
+    file_infos: list,
+    fiscal_year: int,
+    quarter: str,
+):
+    """
+    Process a single STT folder: validate, bundle files, and create ReportFile.
+
+    Returns
+    -------
+        bool: True if successful, False if failed
+    """
+    # Validate STT exists
+    try:
+        stt = STT.objects.get(stt_code=stt_code)
+    except STT.DoesNotExist:
+        _mark_source_failed(source, f"STT code '{stt_code}' not found in system.")
+        return False
+
+    # Check if STT folder is empty
+    if not file_infos:
+        _mark_source_failed(source, f"STT folder '{stt_code}' is empty.")
+        return False
+
+    # Bundle all files for this STT into a single zip
+    try:
+        bundled_zip = bundle_stt_files(zip_file, file_infos, stt_code)
+    except Exception as e:
+        _mark_source_failed(source, f"Failed to bundle files for STT '{stt_code}': {e}")
+        return False
+
+    # Create ReportFile record
+    ReportFile.create_new_version(
+        {
+            "year": fiscal_year,
+            "quarter": quarter,
+            "stt": stt,
+            "user": source.uploaded_by,
+            "source": source,
+            "original_filename": bundled_zip.name,
+            "slug": bundled_zip.name,
+            "extension": "zip",
+            "file": bundled_zip,
+        }
+    )
+
+    return True
+
+
 @shared_task
-def process_report_source(source_id: int):  # noqa: C901
+def process_report_source(source_id: int):
     """Process a ReportSource record zip file into individual ReportFile records."""
     logger.debug("Begin processing report source file")
     source: ReportSource = ReportSource.objects.get(id=source_id)
@@ -172,107 +303,29 @@ def process_report_source(source_id: int):  # noqa: C901
     source.error_message = ""
     source.save(update_fields=["status", "error_message"])
 
-    # Download zip from S3
-    try:
-        if source.file:
-            source.file.open("rb")
-            source_bytes = source.file.read()
-            source.file.close()
-    except Exception as e:
-        source.status = ReportSource.Status.FAILED
-        source.error_message = f"Could not download report source zip: {e}"
-        source.processed_at = timezone.now()
-        source.save(update_fields=["status", "error_message", "processed_at"])
+    # Download and validate zip file
+    zip_file = _download_and_validate_zip(source)
+    if zip_file is None:
         return
 
-    # Validate zip file
-    try:
-        zip_file = zipfile.ZipFile(io.BytesIO(source_bytes))
-    except zipfile.BadZipfile:
-        source.status = ReportSource.Status.FAILED
-        source.error_message = "File is not a valid zip."
-        source.processed_at = timezone.now()
-        source.save(update_fields=["status", "error_message", "processed_at"])
+    # Determine quarter
+    quarter = _determine_quarter(source)
+    if quarter is None:
         return
 
-    # Use provided quarter or calculate from upload date
-    if source.quarter:
-        quarter = source.quarter
-    else:
-        try:
-            quarter = calculate_quarter_from_date(source.created_at)
-        except ValueError as e:
-            source.status = ReportSource.Status.FAILED
-            source.error_message = str(e)
-            source.processed_at = timezone.now()
-            source.save(update_fields=["status", "error_message", "processed_at"])
-            return
-
-    # Extract fiscal year from top-level folder
-    try:
-        fiscal_year = extract_fiscal_year(zip_file)
-    except ValueError as e:
-        source.status = ReportSource.Status.FAILED
-        source.error_message = str(e)
-        source.processed_at = timezone.now()
-        source.save(update_fields=["status", "error_message", "processed_at"])
-        return
-
-    # Find all STT folders and their files
-    try:
-        stt_files_map = find_stt_folders(zip_file, str(fiscal_year))
-    except ValueError as e:
-        source.status = ReportSource.Status.FAILED
-        source.error_message = str(e)
-        source.processed_at = timezone.now()
-        source.save(update_fields=["status", "error_message", "processed_at"])
+    # Extract fiscal year and STT folders
+    fiscal_year, stt_files_map = _extract_and_validate_structure(source, zip_file)
+    if fiscal_year is None:
         return
 
     # Process each STT folder
     num_created = 0
     for stt_code, file_infos in stt_files_map.items():
-        # Validate STT exists
-        try:
-            stt = STT.objects.get(stt_code=stt_code)
-        except STT.DoesNotExist:
-            source.status = ReportSource.Status.FAILED
-            source.error_message = f"STT code '{stt_code}' not found in system."
-            source.processed_at = timezone.now()
-            source.save(update_fields=["status", "error_message", "processed_at"])
-            return
-
-        # Check if STT folder is empty
-        if not file_infos:
-            source.status = ReportSource.Status.FAILED
-            source.error_message = f"STT folder '{stt_code}' is empty."
-            source.processed_at = timezone.now()
-            source.save(update_fields=["status", "error_message", "processed_at"])
-            return
-
-        # Bundle all files for this STT into a single zip
-        try:
-            bundled_zip = bundle_stt_files(zip_file, file_infos, stt_code)
-        except Exception as e:
-            source.status = ReportSource.Status.FAILED
-            source.error_message = f"Failed to bundle files for STT '{stt_code}': {e}"
-            source.processed_at = timezone.now()
-            source.save(update_fields=["status", "error_message", "processed_at"])
-            return
-
-        # Create ReportFile record
-        ReportFile.create_new_version(
-            {
-                "year": fiscal_year,
-                "quarter": quarter,
-                "stt": stt,
-                "user": source.uploaded_by,
-                "source": source,
-                "original_filename": bundled_zip.name,
-                "slug": bundled_zip.name,
-                "extension": "zip",
-                "file": bundled_zip,
-            }
+        success = _process_stt_folder(
+            source, zip_file, stt_code, file_infos, fiscal_year, quarter
         )
+        if not success:
+            return
 
         num_created += 1
 
