@@ -350,7 +350,7 @@ class Feedback(Reviewable):
 
     anonymous = models.BooleanField(default=False)
 
-    acked = models.BooleanField(default=False, verbose_name="Marked as read")
+    read = models.BooleanField(default=False)
 
     # --- Metadata for fields ---
     page_url = models.URLField(blank=True, null=True)
@@ -362,7 +362,7 @@ class Feedback(Reviewable):
         """Return a string representation of the object."""
         return (
             f"User: {self.user.username if self.user is not None else 'Anonymous'} - "
-            f"Rating: {self.rating} - Acked: {self.acked}"
+            f"Rating: {self.rating} - Read: {self.read}"
         )
 
     def attached_data_files(self):
@@ -375,12 +375,12 @@ class Feedback(Reviewable):
             if isinstance(a.content_object, DataFile)
         ]
 
-    def acknowledge(self, admin_user):
-        """Acknowledge the feedback."""
-        if self.acked:
+    def mark_as_read(self, admin_user):
+        """Mark the feedback as read."""
+        if self.read:
             return False
 
-        self.acked = True
+        self.read = True
         self.reviewed_at = timezone.now()
         self.reviewed_by = admin_user
         self.save()

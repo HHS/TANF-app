@@ -467,13 +467,13 @@ class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "rating",
         "feedback_type",
         "feedback_list_display",
-        "acked",
-        "quick_ack",
+        "read",
+        "quick_mark",
     ]
     readonly_fields = ("attached_data_files_list",)
-    list_filter = ["created_at", "rating", "acked", HasAttachmentFilter]
+    list_filter = ["created_at", "rating", "read", HasAttachmentFilter]
     change_form_template = "feedback_admin_template.html"
-    actions = ["ack_selected_feedback"]
+    actions = ["mark_selected_feedback_as_read"]
 
     class Meta:
         """Meta for admin view."""
@@ -482,21 +482,21 @@ class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         verbose_name_plural = "Feedback"
 
     def get_urls(self):
-        """Add custom URLs for acknowledge action."""
+        """Add custom URLs for mark as read action."""
         urls = super().get_urls()
         custom_urls = [
             path(
-                "<path:object_id>/acknowledge/",
-                self.admin_site.admin_view(self.acknowledge_feedback),
-                name="acknowledge_feedback",
+                "<path:object_id>/mark-as-read/",
+                self.admin_site.admin_view(self.mark_feedback_as_read),
+                name="mark_feedback_as_read",
             ),
         ]
         return custom_urls + urls
 
-    def acknowledge_feedback(self, request, object_id):
-        """Acknowledge the feedback."""
+    def mark_feedback_as_read(self, request, object_id):
+        """Mark the feedback as read."""
         feedback = self.get_object(request, object_id)
-        feedback.acknowledge(request.user)
+        feedback.mark_as_read(request.user)
         return HttpResponseRedirect(reverse("admin:users_feedback_changelist"))
 
     def user_list_display(self, obj):
@@ -533,30 +533,30 @@ class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
 
     attached_data_files_list.short_description = "Attached Data Files"
 
-    def quick_ack(self, obj):
-        """Display quick action button for unacknowledged feedback."""
-        if not obj.acked:
+    def quick_mark(self, obj):
+        """Display quick action button for unread feedback."""
+        if not obj.read:
             return mark_safe(
-                f'<a href="{reverse("admin:acknowledge_feedback", args=[obj.pk])}" '
+                f'<a href="{reverse("admin:mark_feedback_as_read", args=[obj.pk])}" '
                 f'class="button" style="background-color: #28a745; color: white; padding: 5px; '
                 f'margin-right: 5px; text-decoration: none;">Mark as Read</a>'
             )
         return "-"
 
-    quick_ack.short_description = "Mark as read"
+    quick_mark.short_description = "Mark as read"
 
-    def ack_selected_feedback(self, request, queryset):
-        """Bulk approve selected change requests."""
+    def mark_selected_feedback_as_read(self, request, queryset):
+        """Bulk mark feedback as read."""
         updated = 0
-        feedback = queryset.filter(acked=False)
+        feedback = queryset.filter(read=False)
 
         for f in feedback:
-            f.acked = True
+            f.read = True
             f.reviewed_at = timezone.now()
             f.reviewed_by = request.user
             updated += 1
 
-        Feedback.objects.bulk_update(feedback, ["acked", "reviewed_at", "reviewed_by"])
+        Feedback.objects.bulk_update(feedback, ["read", "reviewed_at", "reviewed_by"])
 
         self.message_user(
             request,
@@ -564,7 +564,7 @@ class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
             messages.SUCCESS if updated > 0 else messages.WARNING,
         )
 
-    ack_selected_feedback.short_description = "Mark selected as read"
+    mark_selected_feedback_as_read.short_description = "Mark selected as read"
 
 
 admin.site.register(User, UserAdmin)
