@@ -6,6 +6,8 @@ import {
   getReprocessedDate,
   downloadFile,
   getErrorReportStatus,
+  fileStatusOrDefault,
+  getSummaryStatusLabel,
 } from '../helpers'
 import { accountIsRegionalStaff } from '../../../selectors/auth'
 import { ReprocessedButton } from '../ReprocessedModal'
@@ -47,6 +49,10 @@ const TotalAggregatesRow = ({ file, reprocessedState, isLoadingStatus }) => {
   const dispatch = useDispatch()
   const reprocessedDate = formatDate(getReprocessedDate(file))
   const isRegionalStaff = useSelector(accountIsRegionalStaff)
+
+  const hasStatus = file.summary && file.summary.status
+  const status = hasStatus ? file.summary.status : 'Pending'
+
   return (
     <>
       <tr>
@@ -79,25 +85,34 @@ const TotalAggregatesRow = ({ file, reprocessedState, isLoadingStatus }) => {
         />
 
         <th scope="rowgroup" rowSpan={3}>
-          <span>
-            <SubmissionSummaryStatusIcon
-              status={file.summary ? file.summary.status : 'Pending'}
-            />
+          {hasStatus && status !== 'Pending' ? (
+            <span>
+              <SubmissionSummaryStatusIcon status={fileStatusOrDefault(file)} />
+            </span>
+          ) : (
+            <Spinner visible={isLoadingStatus} />
+          )}
+          <span style={{ position: 'relative' }}>
+            {getSummaryStatusLabel(file)}
           </span>
-          {file.summary && file.summary.status
-            ? file.summary.status
-            : 'Pending'}
         </th>
 
         <th scope="rowgroup" rowSpan={3}>
+          <Spinner visible={isLoadingStatus} />
           {getErrorReportStatus(file)}
         </th>
       </tr>
       <tr>
-        <MonthSubRow data={file?.summary?.case_aggregates?.months?.[1]} />
+        <MonthSubRow
+          data={file?.summary?.case_aggregates?.months?.[1]}
+          isLoadingStatus={isLoadingStatus}
+        />
       </tr>
       <tr>
-        <MonthSubRow data={file?.summary?.case_aggregates?.months?.[2]} />
+        <MonthSubRow
+          data={file?.summary?.case_aggregates?.months?.[2]}
+          isLoadingStatus={isLoadingStatus}
+        />
       </tr>
     </>
   )
