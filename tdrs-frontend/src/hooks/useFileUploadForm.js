@@ -88,7 +88,7 @@ export const useFileUploadForm = ({
               (error) => {
                 setLocalAlertState({
                   active: true,
-                  type: 'error',
+                  type: error.type ? error.type : 'error',
                   message: error.message,
                 })
               },
@@ -96,6 +96,7 @@ export const useFileUploadForm = ({
                 onError({
                   message:
                     'Exceeded max number of tries to update submission status.',
+                  type: 'warning',
                 })
               }
             )
