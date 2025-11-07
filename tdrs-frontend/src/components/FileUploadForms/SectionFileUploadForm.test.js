@@ -6,6 +6,7 @@ import SectionFileUploadForm from './SectionFileUploadForm'
 import { ReportsProvider } from '../Reports/ReportsContext'
 import { useFormSubmission } from '../../hooks/useFormSubmission'
 import { useEventLogger } from '../../utils/eventLogger'
+import { MemoryRouter } from 'react-router-dom'
 
 // Mock dependencies
 jest.mock('../../hooks/useFormSubmission')
@@ -100,9 +101,11 @@ describe('SectionFileUploadForm', () => {
 
     return render(
       <Provider store={store}>
-        <ReportsProvider>
-          <SectionFileUploadForm stt={stt} />
-        </ReportsProvider>
+        <MemoryRouter>
+          <ReportsProvider>
+            <SectionFileUploadForm stt={stt} />
+          </ReportsProvider>
+        </MemoryRouter>
       </Provider>
     )
   }

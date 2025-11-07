@@ -1,12 +1,11 @@
-import React from 'react'
 import { fireEvent, waitFor, render } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import configureStore from '../../configureStore'
 import QuarterFileUploadForm from './QuarterFileUploadForm'
 import { ReportsProvider } from '../Reports/ReportsContext'
-import * as reportsActions from '../../actions/reports'
 import { useFormSubmission } from '../../hooks/useFormSubmission'
 import { useEventLogger } from '../../utils/eventLogger'
+import { MemoryRouter } from 'react-router-dom'
 
 // Mock dependencies
 jest.mock('../../hooks/useFormSubmission')
@@ -91,9 +90,11 @@ describe('QuarterFileUploadForm', () => {
 
     return render(
       <Provider store={store}>
-        <ReportsProvider>
-          <QuarterFileUploadForm stt={stt} />
-        </ReportsProvider>
+        <MemoryRouter>
+          <ReportsProvider>
+            <QuarterFileUploadForm stt={stt} />
+          </ReportsProvider>
+        </MemoryRouter>
       </Provider>
     )
   }

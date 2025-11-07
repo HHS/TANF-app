@@ -2,9 +2,9 @@ import React from 'react'
 import { fireEvent, waitFor, render, within } from '@testing-library/react'
 import axios from 'axios'
 import { Provider } from 'react-redux'
+import { MemoryRouter } from 'react-router-dom'
 import { FRAReports } from '.'
 import configureStore from '../../configureStore'
-import { MemoryRouter } from 'react-router-dom'
 
 const initialState = {
   auth: {
