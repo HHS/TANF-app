@@ -1174,7 +1174,7 @@ describe('Reports', () => {
       ).not.toBeInTheDocument()
     })
 
-    expect(queryAllByTestId('spinner')).toHaveLength(6)
+    expect(queryAllByTestId('spinner')).toHaveLength(12)
     expect(getByText('testFile.txt')).toBeInTheDocument()
     expect(queryAllByText('Pending')).toHaveLength(2)
 
@@ -1428,7 +1428,7 @@ describe('Reports', () => {
       ).not.toBeInTheDocument()
     })
 
-    expect(queryAllByTestId('spinner')).toHaveLength(8)
+    expect(queryAllByTestId('spinner')).toHaveLength(20)
     expect(getByText('testFile1.txt')).toBeInTheDocument()
     expect(getByText('testFile2.txt')).toBeInTheDocument()
     expect(queryAllByText('Pending')).toHaveLength(4)

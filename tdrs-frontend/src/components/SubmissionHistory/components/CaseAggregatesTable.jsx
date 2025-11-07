@@ -113,10 +113,16 @@ const CaseAggregatesRow = ({ file, reprocessedState, isLoadingStatus }) => {
         </th>
       </tr>
       <tr>
-        <MonthSubRow data={file?.summary?.case_aggregates?.months?.[1]} />
+        <MonthSubRow
+          data={file?.summary?.case_aggregates?.months?.[1]}
+          isLoadingStatus={isLoadingStatus}
+        />
       </tr>
       <tr>
-        <MonthSubRow data={file?.summary?.case_aggregates?.months?.[2]} />
+        <MonthSubRow
+          data={file?.summary?.case_aggregates?.months?.[2]}
+          isLoadingStatus={isLoadingStatus}
+        />
       </tr>
     </>
   )
