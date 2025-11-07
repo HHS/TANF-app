@@ -2,12 +2,12 @@ import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 
 import { Provider } from 'react-redux'
+import { MemoryRouter } from 'react-router-dom'
 import { thunk } from 'redux-thunk'
 import configureStore from 'redux-mock-store'
 import appConfigureStore from '../../configureStore'
 import Reports from './Reports'
 import { SET_FILE, upload } from '../../actions/reports'
-import { MemoryRouter } from 'react-router-dom'
 
 describe('Reports', () => {
   let originalScrollIntoView
