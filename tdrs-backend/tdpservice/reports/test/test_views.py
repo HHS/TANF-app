@@ -92,6 +92,52 @@ class TestReportFileViewAsDataAnalyst:
         returned_ids = [row["id"] for row in resp.data["results"]]
         assert report_file_instance.id in returned_ids
 
+    def test_data_analyst_only_sees_own_stt_reports(
+        self, api_client_logged_in, data_analyst, report_file_instance
+    ):
+        """Test that Data Analyst only sees reports for their assigned STT."""
+        from tdpservice.stts.models import STT, Region
+        from tdpservice.reports.test.factories import ReportFileFactory
+
+        # Create another STT (Alabama)
+        other_region, _ = Region.objects.get_or_create(id=4)
+        other_stt, _ = STT.objects.get_or_create(
+            name="Alabama", region=other_region, stt_code="01"
+        )
+
+        # Create report files for the other STT (should NOT be visible)
+        other_report_1 = ReportFileFactory.create(
+            stt=other_stt, user=data_analyst, year=2024, quarter="Q1"
+        )
+        other_report_2 = ReportFileFactory.create(
+            stt=other_stt, user=data_analyst, year=2024, quarter="Q2"
+        )
+
+        # Create an additional report for data analyst's own STT (should be visible)
+        own_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst, year=2024, quarter="Q3"
+        )
+
+        # Make request to list endpoint
+        resp = api_client_logged_in.get(self.root_url)
+
+        assert resp.status_code == status.HTTP_200_OK
+
+        # Get all returned report IDs
+        returned_ids = [row["id"] for row in resp.data["results"]]
+
+        # Verify data analyst sees their own STT's reports
+        assert report_file_instance.id in returned_ids
+        assert own_report.id in returned_ids
+
+        # Verify data analyst does NOT see other STT's reports
+        assert other_report_1.id not in returned_ids
+        assert other_report_2.id not in returned_ids
+
+        # Verify the count matches (should only see reports for their STT)
+        expected_count = 2  # report_file_instance + own_report
+        assert resp.data["count"] == expected_count
+
     def test_data_analyst_create_report_file_disallowed(
         self, api_client_logged_in, report_file_data
     ):
