@@ -10,6 +10,7 @@ from django.utils import timezone
 
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -209,12 +210,7 @@ class ChangeRequestAuditLogViewSet(viewsets.ReadOnlyModelViewSet):
         return ChangeRequestAuditLog.objects.all()
 
 
-class FeedbackViewSet(
-    mixins.CreateModelMixin,
-    mixins.RetrieveModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet,
-):
+class FeedbackViewSet(viewsets.ModelViewSet):
     """Feedback viewset."""
 
     queryset = Feedback.objects.all()
@@ -244,3 +240,7 @@ class FeedbackViewSet(
             )
         finally:
             return response
+
+    def destroy(self, request, *args, **kwargs):
+        """Override the destroy method to disallow it."""
+        return MethodNotAllowed(method="DELETE")

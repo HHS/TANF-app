@@ -118,26 +118,26 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
         model = User
         fields = [
-            'id',
-            'first_name',
-            'last_name',
-            'email',
-            'stt',
-            'regions',
-            'login_gov_uuid',
-            'hhs_id',
-            'roles',
-            'groups',
-            'is_superuser',
-            'is_staff',
-            'last_login',
-            'date_joined',
-            'access_request',
-            'access_requested_date',
-            'account_approval_status',
-            'feature_flags',
-            'permissions',
-            'pending_requests',
+            "id",
+            "first_name",
+            "last_name",
+            "email",
+            "stt",
+            "regions",
+            "login_gov_uuid",
+            "hhs_id",
+            "roles",
+            "groups",
+            "is_superuser",
+            "is_staff",
+            "last_login",
+            "date_joined",
+            "access_request",
+            "access_requested_date",
+            "account_approval_status",
+            "feature_flags",
+            "permissions",
+            "pending_requests",
         ]
         read_only_fields = (
             "id",
@@ -349,7 +349,9 @@ class UserProfileChangeRequestSerializer(UserProfileSerializer):
             return None
 
         try:
-            existing_permission = instance.user_permissions.filter(codename=permission).exists()
+            existing_permission = instance.user_permissions.filter(
+                codename=permission
+            ).exists()
         except Permission.DoesNotExist:
             existing_permission = None
 
@@ -687,5 +689,10 @@ class FeedbackSerializer(serializers.ModelSerializer):
                 object_id=item["object_id"],
                 content_type=item["content_type"],
             )
-
         return feedback
+
+    def update(self, instance, validated_data):
+        """Update a feedback instance."""
+        # Not needed in update
+        attachments = validated_data.pop("attachments", [])
+        return super().update(instance, validated_data)
