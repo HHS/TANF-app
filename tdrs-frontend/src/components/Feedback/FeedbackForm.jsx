@@ -58,16 +58,19 @@ const FeedbackForm = ({
     })
   }, [])
 
-  const updateFeedback = useCallback(async (payload) => {
-    return axiosInstance.patch(
-      `${BACKEND_URL}/feedback/${feedbackID}/`,
-      payload,
-      {
-        headers: { 'Content-Type': 'application/json' },
-        withCredentials: true,
-      }
-    )
-  }, [feedbackID])
+  const updateFeedback = useCallback(
+    async (payload) => {
+      return axiosInstance.patch(
+        `${BACKEND_URL}/feedback/${feedbackID}/`,
+        payload,
+        {
+          headers: { 'Content-Type': 'application/json' },
+          withCredentials: true,
+        }
+      )
+    },
+    [feedbackID]
+  )
 
   const handlePayloadAttachments = (payload, isGeneral) => {
     let updatedPayload = { ...payload }
