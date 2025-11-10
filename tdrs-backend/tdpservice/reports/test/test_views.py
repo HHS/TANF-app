@@ -46,12 +46,12 @@ class TestReportFileViewAsOFAAdmin:
         """Admin can POST to /report_source with a nested fiscal year zip."""
 
         resp = api_client_logged_in.post(
-            f"{self.root_url}report_source/",
+            f"{self.root_url}report-sources/",
             data={"file": fiscal_year_report_source_zip},
             format="multipart",
         )
 
-        assert resp.status_code == status.HTTP_202_ACCEPTED
+        assert resp.status_code == status.HTTP_201_CREATED
 
         source_id = resp.data["id"]
         source_obj = ReportSource.objects.get(id=source_id)
