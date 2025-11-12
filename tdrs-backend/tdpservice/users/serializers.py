@@ -694,5 +694,5 @@ class FeedbackSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         """Update a feedback instance."""
         # Not needed in update
-        attachments = validated_data.pop("attachments", [])
+        validated_data.pop("attachments", [])
         return super().update(instance, validated_data)
