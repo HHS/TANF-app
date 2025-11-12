@@ -467,7 +467,6 @@ class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "rating",
         "feedback_type",
         "feedback_list_display",
-        "read",
         "quick_mark",
     ]
     readonly_fields = ("attached_data_files_list",)
@@ -541,9 +540,9 @@ class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
                 f'class="button" style="background-color: #28a745; color: white; padding: 5px; '
                 f'margin-right: 5px; text-decoration: none;">Mark as Read</a>'
             )
-        return "-"
+        return mark_safe('<img src="/static/admin/img/icon-yes.svg" alt="True" />')
 
-    quick_mark.short_description = "Mark as read"
+    quick_mark.short_description = "Read"
 
     def mark_selected_feedback_as_read(self, request, queryset):
         """Bulk mark feedback as read."""
