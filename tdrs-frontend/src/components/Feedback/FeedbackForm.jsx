@@ -10,8 +10,6 @@ import {
   GREAT_FEEDBACK,
   POOR_AND_BAD_FEEDBACK,
   GENERAL_FEEDBACK_TYPE,
-  TANF_FEEDBACK_TYPE,
-  FRA_FEEDBACK_TYPE,
 } from './FeedbackConstants'
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
@@ -131,7 +129,7 @@ const FeedbackForm = ({
         }
         return response
       } catch (error) {
-        console.error('Error submitting rating:', error)
+        console.error('Error submitting feedback:', error)
         onRequestError?.()
       }
     },
