@@ -540,7 +540,9 @@ class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
                 f'class="button" style="background-color: #28a745; color: white; padding: 5px; '
                 f'margin-right: 5px; text-decoration: none;">Mark as Read</a>'
             )
-        return mark_safe('<img src="/static/admin/img/icon-yes.svg" alt="True" /> Read')
+        return mark_safe(
+            '<img src="/static/admin/img/icon-yes.svg" alt="True" /> <span style="color: #4B8340;">Read</span>'
+        )
 
     quick_mark.short_description = "Status"
 
