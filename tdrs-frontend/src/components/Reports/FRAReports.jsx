@@ -575,7 +575,8 @@ const FRAReportsContent = () => {
     (needsSttSelection ? !!currentStt : !!userProfileStt) &&
     !!fileTypeInputValue &&
     !!yearInputValue &&
-    !!quarterInputValue
+    !!quarterInputValue &&
+    !!stt
 
   // Automatically fetch submission history when all fields are filled
   useEffect(() => {

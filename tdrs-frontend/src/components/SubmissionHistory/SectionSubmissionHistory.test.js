@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, within, fireEvent } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import appConfigureStore from '../../configureStore'
 import SectionSubmissionHistory from './SectionSubmissionHistory'
@@ -954,6 +954,170 @@ describe('SectionSubmissionHistory', () => {
       ).toBeInTheDocument()
       expect(screen.getByText('Section 3 - Aggregate Data')).toBeInTheDocument()
       expect(screen.getByText('Section 4 - Stratum Data')).toBeInTheDocument()
+    })
+  })
+
+  describe('TotalAggregatesTable coverage', () => {
+    it('renders file download button for non-regional staff', () => {
+      const mockDownload = jest.fn(() => () => ({ type: 'DOWNLOAD_FILE' }))
+      reportsActions.download = mockDownload
+
+      const filesState = {
+        ...initialState,
+        reports: {
+          files: [
+            {
+              id: 1,
+              fileName: 'aggregate-file.txt',
+              section: 'Aggregate Data',
+              quarter: 'Q1',
+              year: '2024',
+              createdAt: '2024-01-01',
+              submittedBy: 'test@example.com',
+            },
+          ],
+        },
+      }
+
+      const { mockDispatch } = setup(filesState)
+
+      const downloadButton = screen.getByRole('button', {
+        name: 'aggregate-file.txt',
+      })
+      expect(downloadButton).toBeInTheDocument()
+
+      fireEvent.click(downloadButton)
+      expect(mockDispatch).toHaveBeenCalled()
+    })
+
+    it('renders filename as text for regional staff', () => {
+      const regionalStaffState = {
+        auth: {
+          authenticated: true,
+          user: {
+            email: 'regional@example.com',
+            stt: {
+              id: 1,
+              type: 'state',
+              code: 'CA',
+              name: 'California',
+              num_sections: 4,
+            },
+            roles: [{ id: 2, name: 'OFA Regional Staff', permission: [] }],
+            account_approval_status: 'Approved',
+          },
+        },
+        reports: {
+          files: [
+            {
+              id: 1,
+              fileName: 'aggregate-file.txt',
+              section: 'Aggregate Data',
+              quarter: 'Q1',
+              year: '2024',
+              createdAt: '2024-01-01',
+              submittedBy: 'test@example.com',
+            },
+          ],
+        },
+      }
+
+      setup(regionalStaffState)
+
+      expect(screen.getByText('aggregate-file.txt')).toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: 'aggregate-file.txt' })
+      ).not.toBeInTheDocument()
+    })
+
+    it('renders row with null data', () => {
+      const filesState = {
+        ...initialState,
+        reports: {
+          files: [
+            {
+              id: 1,
+              fileName: 'aggregate-file.txt',
+              section: 'Aggregate Data',
+              quarter: 'Q1',
+              year: '2024',
+              createdAt: '2024-01-01',
+              submittedBy: 'test@example.com',
+              summary: {
+                case_aggregates: {
+                  months: [null, null, null],
+                },
+              },
+            },
+          ],
+        },
+      }
+
+      setup(filesState)
+
+      const naElements = screen.getAllByText('N/A')
+      expect(naElements.length).toBeGreaterThan(0)
+    })
+
+    it('renders row with valid month data', () => {
+      const filesState = {
+        ...initialState,
+        reports: {
+          files: [
+            {
+              id: 1,
+              fileName: 'aggregate-file.txt',
+              section: 'Aggregate Data',
+              quarter: 'Q1',
+              year: '2024',
+              createdAt: '2024-01-01',
+              submittedBy: 'test@example.com',
+              summary: {
+                case_aggregates: {
+                  months: [
+                    { month: 'January', total_errors: 5 },
+                    { month: 'February', total_errors: 3 },
+                    { month: 'March', total_errors: 0 },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      }
+
+      setup(filesState)
+
+      expect(screen.getByText('January')).toBeInTheDocument()
+      expect(screen.getByText('February')).toBeInTheDocument()
+      expect(screen.getByText('March')).toBeInTheDocument()
+      expect(screen.getByText('5')).toBeInTheDocument()
+      expect(screen.getByText('3')).toBeInTheDocument()
+    })
+
+    it('renders status as Pending when summary is null', () => {
+      const filesState = {
+        ...initialState,
+        reports: {
+          files: [
+            {
+              id: 1,
+              fileName: 'aggregate-file.txt',
+              section: 'Aggregate Data',
+              quarter: 'Q1',
+              year: '2024',
+              createdAt: '2024-01-01',
+              submittedBy: 'test@example.com',
+              summary: null,
+            },
+          ],
+        },
+      }
+
+      setup(filesState)
+
+      const pendingElements = screen.getAllByText('Pending')
+      expect(pendingElements.length).toBeGreaterThan(0)
     })
   })
 })

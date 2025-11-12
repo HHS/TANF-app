@@ -58,6 +58,11 @@ const SiteMap = ({ user }) => {
           link={`${process.env.REACT_APP_BACKEND_HOST}/alerts/`}
         />
       )}
+      <SiteMap.Link
+        text="Knowledge Center"
+        link={`${process.env.REACT_APP_KNOWLEDGE_CENTER_LINK}/`}
+        target="_blank"
+      />
     </div>
   )
 }
