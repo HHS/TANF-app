@@ -269,7 +269,7 @@ class FeedbackPermissions(permissions.BasePermission):
     def has_permission(self, request, view):
         """Check if user has permission to access Feedback resources."""
         # Allow all create actions
-        if request.method == "POST":
+        if request.method == "POST" or request.method == "PATCH":
             return True
 
         # For list and retrieve actions, only authenticated users are allowed
@@ -288,6 +288,10 @@ class FeedbackPermissions(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         """Check if user has permission to access a specific Feedback object."""
+        # Allow all patch actions
+        if request.method == "PATCH":
+            return True
+
         # Check if user is an admin
         is_admin = request.user.groups.filter(
             name__in=["OFA System Admin", "OFA Admin"]
