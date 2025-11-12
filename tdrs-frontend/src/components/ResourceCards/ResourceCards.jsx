@@ -41,7 +41,7 @@ function ResourceCards() {
             <li className="usa-card--header-first padding-bottom-4 desktop:padding-right-2 desktop:grid-col-6 mobile:grid-col-12">
               <Card
                 buttonId="viewKnowledgeCenterButton"
-                title="TDP Knowledge Center"
+                title="Need help with TDP?"
                 body="The knowledge center contains resources on all things TDP from account creation to data submission."
                 link="http://tdp-project-updates.app.cloud.gov/knowledge-center/"
                 linkText="View Knowledge Center"
