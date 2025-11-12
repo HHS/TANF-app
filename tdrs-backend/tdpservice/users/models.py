@@ -170,11 +170,11 @@ class UserChangeRequest(Reviewable):
                 self, isApproved=True, url=settings.FRONTEND_BASE_URL
             )
 
-        except Exception as e:
+        except Exception as exception:
             logger.exception(
                 "Failed to send a, UserChangeRequestpproval email for profile change request %s: %s",
                 self.id,
-                e,
+                exception,
             )
 
         return True
@@ -197,11 +197,11 @@ class UserChangeRequest(Reviewable):
             send_change_request_status_email(
                 self, isApproved=False, url=settings.FRONTEND_BASE_URL
             )
-        except Exception as e:
+        except Exception as exception:
             logger.exception(
                 "Failed to send rejection email for profile change request %s: %s",
                 self.id,
-                e,
+                exception,
             )
 
         return True
