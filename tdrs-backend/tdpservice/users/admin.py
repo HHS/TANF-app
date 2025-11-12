@@ -540,9 +540,9 @@ class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
                 f'class="button" style="background-color: #28a745; color: white; padding: 5px; '
                 f'margin-right: 5px; text-decoration: none;">Mark as Read</a>'
             )
-        return mark_safe('<img src="/static/admin/img/icon-yes.svg" alt="True" />')
+        return mark_safe('<img src="/static/admin/img/icon-yes.svg" alt="True" /> Read')
 
-    quick_mark.short_description = "Read"
+    quick_mark.short_description = "Status"
 
     def mark_selected_feedback_as_read(self, request, queryset):
         """Bulk mark feedback as read."""
