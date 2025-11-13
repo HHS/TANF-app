@@ -112,6 +112,6 @@ class FeedbackFactory(factory.django.DjangoModelFactory):
     created_at = factory.LazyFunction(timezone.now)
     rating = factory.fuzzy.FuzzyChoice([choice for choice in Rating])
     feedback = factory.Faker("paragraph")
-    acked = False
+    read = False
     reviewed_at = None
     reviewed_by = None

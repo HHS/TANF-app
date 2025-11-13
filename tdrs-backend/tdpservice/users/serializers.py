@@ -670,7 +670,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
         read_only_fields = (
             "id",
             "user",
-            "acked",
+            "read",
             "reviewed_at",
             "reviewed_by",
         )
