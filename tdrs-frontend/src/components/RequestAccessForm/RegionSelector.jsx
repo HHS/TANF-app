@@ -78,11 +78,13 @@ function RegionSelector({
     setErrors((prev) => clearFormError(prev))
     if (displayingError) {
       setTouched((prev) => ({ ...prev, regions: true, regionalType: true }))
-      setErrors((prev) => ({
-        ...prev,
-        regionalType: null,
-        regions: regionError,
-      }))
+      setErrors((prev) => {
+        const { regions, regionalType, ...rest } = prev
+        return {
+          ...rest,
+          regions: regionError,
+        }
+      })
     }
     setProfileInfo((prev) => ({
       ...prev,
