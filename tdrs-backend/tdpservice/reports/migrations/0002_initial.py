@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
                 ('num_reports_created', models.PositiveIntegerField(default=0)),
                 ('error_message', models.TextField(blank=True, null=True)),
                 ('file', models.FileField(blank=False, null=False, storage=tdpservice.backends.DataFilesS3Storage, upload_to=tdpservice.reports.models.get_report_source_upload_path)),
-                ('uploaded_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='report_sources', to=settings.AUTH_USER_MODEL)),
+                ('uploaded_by', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='report_sources', to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'abstract': False,
@@ -51,8 +51,8 @@ class Migration(migrations.Migration):
                 ('version', models.IntegerField()),
                 ('file', models.FileField(blank=True, null=True, storage=tdpservice.backends.DataFilesS3Storage, upload_to=tdpservice.reports.models.get_s3_upload_path)),
                 ('source', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='report_files', to='reports.reportsource')),
-                ('stt', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='report_files', to='stts.stt')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='report_files', to=settings.AUTH_USER_MODEL)),
+                ('stt', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='report_files', to='stts.stt')),
+                ('user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='report_files', to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.AddConstraint(

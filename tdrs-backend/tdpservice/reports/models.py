@@ -45,7 +45,11 @@ class ReportSource(FileRecord):
 
     # Model Fields
     uploaded_by = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="report_sources"
+        User,
+        on_delete=models.SET_NULL,
+        related_name="report_sources",
+        blank=False,
+        null=True,
     )
     created_at = models.DateTimeField(auto_now_add=True)
     processed_at = models.DateTimeField(null=True, blank=True)
@@ -59,7 +63,10 @@ class ReportSource(FileRecord):
     error_message = models.TextField(null=True, blank=True)
 
     file = models.FileField(
-        storage=DataFilesS3Storage, upload_to=get_report_source_upload_path, null=False, blank=False
+        storage=DataFilesS3Storage,
+        upload_to=get_report_source_upload_path,
+        null=False,
+        blank=False,
     )
 
 
@@ -106,17 +113,17 @@ class ReportFile(FileRecord):
 
     user = models.ForeignKey(
         User,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name="report_files",
         blank=False,
-        null=False,
+        null=True,
     )
     stt = models.ForeignKey(
         STT,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name="report_files",
         blank=False,
-        null=False,
+        null=True,
     )
     source = models.ForeignKey(
         ReportSource,
@@ -153,9 +160,9 @@ class ReportFile(FileRecord):
     @classmethod
     def find_latest_version_number(self, year, quarter, stt):
         """Locate the latest version number in a series of report files."""
-        return self.objects.filter(
-            stt=stt, year=year, quarter=quarter
-        ).aggregate(Max("version"))["version__max"]
+        return self.objects.filter(stt=stt, year=year, quarter=quarter).aggregate(
+            Max("version")
+        )["version__max"]
 
     @classmethod
     def find_latest_version(self, year, quarter, stt):
