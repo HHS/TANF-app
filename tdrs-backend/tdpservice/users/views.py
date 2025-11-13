@@ -223,23 +223,33 @@ class FeedbackViewSet(viewsets.ModelViewSet):
         if response.status_code != status.HTTP_201_CREATED:
             return response
 
-        try:
-            feedback_id = response.data["id"]
-            feedback = Feedback.objects.get(id=feedback_id)
+        feedback_id = response.data["id"]
+        feedback = Feedback.objects.get(id=feedback_id)
 
-            # Force anonymity if user is None to prevent us from know if authenticated users chose to remain anonymous
-            if request.user is None or isinstance(request.user, AnonymousUser):
-                feedback.anonymous = True
+        # Force anonymity if user is None to prevent us from know if authenticated users chose to remain anonymous
+        if request.user is None or isinstance(request.user, AnonymousUser):
+            feedback.anonymous = True
 
-            if not feedback.anonymous:
-                feedback.user = request.user
-            feedback.save()
-        except ObjectDoesNotExist:
-            logger.exception(
-                "Failed to update the user field on the Feedback model because it does not exist."
-            )
-        finally:
+        if not feedback.anonymous:
+            feedback.user = request.user
+        feedback.save()
+
+        return response
+
+    def update(self, request, *args, **kwargs):
+        """Update feedback."""
+        response = super().update(request, *args, **kwargs)
+
+        if response.status_code != status.HTTP_200_OK:
             return response
+
+        feedback_id = response.data["id"]
+        feedback = Feedback.objects.get(id=feedback_id)
+
+        feedback.user = None if feedback.anonymous else request.user
+        feedback.save()
+
+        return response
 
     def destroy(self, request, *args, **kwargs):
         """Override the destroy method to disallow it."""
