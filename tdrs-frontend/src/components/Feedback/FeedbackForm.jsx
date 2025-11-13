@@ -33,7 +33,7 @@ const FeedbackForm = ({
   const authenticated = useSelector((state) => state.auth.authenticated)
   const { widgetId, dataFiles } = useSelector((state) => state.feedbackWidget)
 
-  const [isAnonymous, setIsAnonymous] = useState(false)
+  const [isAnonymous, setIsAnonymous] = useState(authenticated ? false : true)
   const [selectedRatingsOption, setSelectedRatingsOption] = useState(undefined)
   const [feedbackMessage, setFeedbackMessage] = useState('')
   const [hasError, setHasError] = useState(false)
