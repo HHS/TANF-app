@@ -8,7 +8,7 @@ from rest_framework.viewsets import ModelViewSet
 from tdpservice.reports.models import ReportFile, ReportSource
 from tdpservice.reports.serializers import ReportFileSerializer, ReportSourceSerializer
 from tdpservice.reports.tasks import process_report_source
-from tdpservice.users.permissions import IsApprovedPermission, ReportFilePermissions
+from tdpservice.users.permissions import IsApprovedPermission, ReportFilePermissions, ReportSourcePermissions
 
 
 class ReportFileViewSet(ModelViewSet):
@@ -48,7 +48,7 @@ class ReportSourceViewSet(ModelViewSet):
     http_method_names = ["get", "post", "head", "options"]
     queryset = ReportSource.objects.all().order_by("-created_at")
     serializer_class = ReportSourceSerializer
-    permission_classes = [ReportFilePermissions, IsApprovedPermission]
+    permission_classes = [ReportSourcePermissions, IsApprovedPermission]
 
     def get_serializer_context(self):
         """Retrieve additional context required by serializer."""

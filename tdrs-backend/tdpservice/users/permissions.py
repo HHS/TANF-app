@@ -168,7 +168,7 @@ class ReportFilePermissions(DjangoModelCRUDPermissions):
         """Check if a user has the relevant Model Permissions for ReportFile."""
         logging.debug(f"{self.__class__.__name__}: {request} ; {view}")
 
-        # Check for existenc of `report_file.view_reportfile` Permission
+        # Check for existenc of `reports.view_reportfile` Permission
         has_permission = super().has_permission(request, view)
 
         # Only Admin are allowed to submit feedback reports
@@ -194,6 +194,28 @@ class ReportFilePermissions(DjangoModelCRUDPermissions):
 
         # NOTE: Will Regional Staff user report files?
 
+        return super().has_object_permission(request, view, obj)
+
+
+class ReportSourcePermissions(DjangoModelCRUDPermissions):
+    """Permission for report source downloads & uploads."""
+
+    def has_permission(self, request, view):
+        """Check if a user has the relevant Model Permissions for RerportSource."""
+        logging.debug(f"{self.__class__.__name__}: {request} ; {view}")
+
+        # Check for existence of `reports.view_reportsource` Permission
+        has_permission = super().has_permission(request, view)
+
+        # Only Admin are allowed to submit report sources
+        if has_permission and hasattr(view, "action"):
+            if view.action in ["create"] and not request.user.is_an_admin:
+                return False
+
+        return has_permission
+
+    def has_object_permission(self, request, view, obj):
+        """Check if a user can interact with a specific report source."""
         return super().has_object_permission(request, view, obj)
 
 
