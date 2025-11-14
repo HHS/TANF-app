@@ -18,7 +18,7 @@ from tdpservice.search_indexes.models.fra import TANF_Exiter1
 
 
 def tranform_exit_date(value, **kwargs):
-    """transform function to handle datetime to int coercion."""
+    """Transform function to handle datetime to int coercion."""
     if isinstance(value, int):
         return value
     if isinstance(value, str):
