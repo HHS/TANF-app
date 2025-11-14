@@ -114,57 +114,55 @@ function RegionSelector({
 
   return (
     <>
-      <div className="usa-form-group">
+      <div
+        className={`usa-form-group ${errors[isRegionalKey] ? 'usa-form-group--error' : ''} region-selector-wrapper`}
+      >
         <fieldset
           className="usa-fieldset"
           disabled={isRegionalButtonDisabled}
           aria-describedby="regional-button-disabled-msg"
         >
-          <div
-            className={`usa-form-group ${errors[isRegionalKey] ? 'usa-form-group--error' : ''} region-selector-wrapper`}
-          >
-            <legend className="usa-label text-bold">
-              Do you work for an OFA Regional Office?*
-            </legend>
-            {isRegionalButtonDisabled && (
-              <div id="regional-button-disabled-msg" className="usa-hint">
-                Regional users cannot remove their regional status through this
-                portal.
-              </div>
-            )}
-            {isRegionalKey in errors && (
-              <span className="usa-error-message" id="isRegional-error-message">
-                {errors[isRegionalKey]}
-              </span>
-            )}
-            <div className="usa-radio">
-              <input
-                className="usa-radio__input"
-                id="regional"
-                type="radio"
-                name={isRegionalKey}
-                value="regional"
-                checked={regional === true}
-                onChange={handleRegionalYes}
-              />
-              <label className="usa-radio__label" htmlFor="regional">
-                Yes
-              </label>
+          <legend className="usa-label text-bold">
+            Do you work for an OFA Regional Office?*
+          </legend>
+          {isRegionalButtonDisabled && (
+            <div id="regional-button-disabled-msg" className="usa-hint">
+              Regional users cannot remove their regional status through this
+              portal.
             </div>
-            <div className="usa-radio">
-              <input
-                className="usa-radio__input"
-                id="central"
-                type="radio"
-                name={isRegionalKey}
-                value="central"
-                checked={regional === false}
-                onChange={handleRegionalNo}
-              />
-              <label className="usa-radio__label" htmlFor="central">
-                No
-              </label>
-            </div>
+          )}
+          {isRegionalKey in errors && (
+            <span className="usa-error-message" id="isRegional-error-message">
+              {errors[isRegionalKey]}
+            </span>
+          )}
+          <div className="usa-radio">
+            <input
+              className="usa-radio__input"
+              id="regional"
+              type="radio"
+              name={isRegionalKey}
+              value="regional"
+              checked={regional === true}
+              onChange={handleRegionalYes}
+            />
+            <label className="usa-radio__label" htmlFor="regional">
+              Yes
+            </label>
+          </div>
+          <div className="usa-radio">
+            <input
+              className="usa-radio__input"
+              id="central"
+              type="radio"
+              name={isRegionalKey}
+              value="central"
+              checked={regional === false}
+              onChange={handleRegionalNo}
+            />
+            <label className="usa-radio__label" htmlFor="central">
+              No
+            </label>
           </div>
         </fieldset>
       </div>
