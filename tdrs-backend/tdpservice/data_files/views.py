@@ -136,7 +136,11 @@ class DataFileViewSet(ModelViewSet):
             elif file_type in FRA_SECTION_LIST:
                 queryset = queryset.filter(section=file_type)
             else:
-                queryset = queryset.exclude(program_type=DataFile.ProgramType.SSP)
+                is_program_audit = file_type == "program-integrity-audit"
+                queryset = queryset.filter(
+                    program_type=DataFile.ProgramType.TANF,
+                    is_program_audit=is_program_audit,
+                )
 
         return queryset
 
