@@ -1,5 +1,7 @@
 """Schema for FRA Work Outcome TANF Exiters records."""
 
+from datetime import datetime
+
 from tdpservice.parsers.constants import (
     INVALID_SSN_AREA_NUMBERS,
     INVALID_SSN_GROUP_NUMBERS,
@@ -9,10 +11,23 @@ from tdpservice.parsers.constants import (
     SSN_SERIAL_NUMBER_POSITION,
 )
 from tdpservice.parsers.dataclasses import FieldType, Position
-from tdpservice.parsers.fields import Field
+from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import FRASchema
 from tdpservice.parsers.validators import category1, category2
 from tdpservice.search_indexes.models.fra import TANF_Exiter1
+
+
+def tranform_exit_date(value, **kwargs):
+    """transform function to handle datetime to int coercion."""
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str):
+        # Note: No type check here to allow exception to bubble up instead of searching for a fake None type
+        return int(value)
+    if isinstance(value, datetime):
+        return int(value.strftime("%Y%m"))
+    return value
+
 
 te1 = [
     FRASchema(
@@ -22,15 +37,17 @@ te1 = [
             category1.validate_exit_date_against_fiscal_period(),
         ],
         fields=[
-            Field(
+            TransformField(
                 item="A",
                 name="EXIT_DATE",
                 friendly_name="Exit Date",
                 type=FieldType.NUMERIC,
-                position=Position(start=0),
+                startIndex=0,
+                endIndex=1,
                 required=True,
                 validators=[],
                 is_encrypted=False,
+                transform_func=tranform_exit_date,
             ),
             Field(
                 item="B",
