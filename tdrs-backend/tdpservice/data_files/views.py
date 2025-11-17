@@ -4,6 +4,7 @@ import logging
 from wsgiref.util import FileWrapper
 
 from django.conf import settings
+from django.db.models import Q
 from django.http import FileResponse, Http404, HttpResponse
 
 from django_filters import rest_framework as filters
@@ -137,10 +138,10 @@ class DataFileViewSet(ModelViewSet):
                 queryset = queryset.filter(section=file_type)
             else:
                 is_program_audit = file_type == "program-integrity-audit"
-                queryset = queryset.filter(
-                    program_type=DataFile.ProgramType.TANF,
-                    is_program_audit=is_program_audit,
-                )
+                query = Q(program_type=DataFile.ProgramType.TANF) | Q(
+                    program_type=DataFile.ProgramType.TRIBAL
+                ) & Q(is_program_audit=is_program_audit)
+                queryset = queryset.filter(query)
 
         return queryset
 
