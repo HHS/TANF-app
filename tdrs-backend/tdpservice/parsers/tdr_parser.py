@@ -4,20 +4,27 @@ import logging
 
 from django.conf import settings
 
+from tdpservice.data_files.models import DataFile
 from tdpservice.parsers import schema_defs
 from tdpservice.parsers.base_parser import BaseParser
 from tdpservice.parsers.case_consistency_validator import CaseConsistencyValidator
-from tdpservice.parsers.dataclasses import HeaderResult, Position
+from tdpservice.parsers.constants import (
+    HEADER_POSITION,
+    INVALID_SSN_AREA_NUMBERS,
+    INVALID_SSN_GROUP_NUMBERS,
+    INVALID_SSN_SERIAL_NUMBERS,
+    SSN_AREA_NUMBER_POSITION,
+    SSN_GROUP_NUMBER_POSITION,
+    SSN_SERIAL_NUMBER_POSITION,
+    TRAILER_POSITION,
+)
+from tdpservice.parsers.dataclasses import HeaderResult, ValidationErrorArgs
 from tdpservice.parsers.error_generator import ErrorGeneratorArgs, ErrorGeneratorType
 from tdpservice.parsers.schema_defs.utils import ProgramManager
-from tdpservice.parsers.validators import category1
+from tdpservice.parsers.validators import category1, category2
 from tdpservice.parsers.validators.util import value_is_empty
 
 logger = logging.getLogger(__name__)
-
-
-HEADER_POSITION = Position(0, 6)
-TRAILER_POSITION = Position(0, 7)
 
 
 class TanfDataReportParser(BaseParser):
@@ -52,7 +59,7 @@ class TanfDataReportParser(BaseParser):
         prev_sum = 0
         file_length = len(self.datafile.file)
         offset = 0
-        case_hash = None
+        current_case_id = None
         for row in self.decoder.decode():
             offset += row.raw_length()
             self.current_row = row
@@ -117,20 +124,16 @@ class TanfDataReportParser(BaseParser):
                     record_has_errors = len(record_errors) > 0
                     (
                         should_remove,
-                        case_hash_to_remove,
-                        case_hash,
+                        case_id_to_remove,
+                        current_case_id,
                     ) = self.case_consistency_validator.add_record(
-                        record, schema, row, self.current_row_num, record_has_errors
+                        record, schema, self.current_row_num, record_has_errors
                     )
                     self.unsaved_records.add_record(
-                        case_hash, (record, schema.model), self.current_row_num
+                        current_case_id, (record, schema.model), self.current_row_num
                     )
-                    was_removed = self.unsaved_records.remove_case_due_to_errors(
-                        should_remove, case_hash_to_remove
-                    )
-                    self.case_consistency_validator.update_removed(
-                        case_hash_to_remove, should_remove, was_removed
-                    )
+                    self.add_case_to_remove(should_remove, case_id_to_remove)
+
                     self.dfs.total_number_of_records_in_file += 1
 
             # Add any generated cat4 errors to our error data structure & clear our caches errors list
@@ -163,18 +166,18 @@ class TanfDataReportParser(BaseParser):
             return
 
         should_remove = self.validate_case_consistency()
-        was_removed = self.unsaved_records.remove_case_due_to_errors(
-            should_remove, case_hash
-        )
-        self.case_consistency_validator.update_removed(
-            case_hash, should_remove, was_removed
-        )
+        self.add_case_to_remove(should_remove, current_case_id)
 
         # Only checking "all_created" here because records remained cached if bulk create fails.
         # This is the last chance to successfully create the records.
         all_created = self.bulk_create_records(self.header_count, flush=True)
 
-        self.delete_serialized_records()
+        # Order matters. To ensure we also catch duplicate records, we check for them before deleting cases with cat4
+        # Errors.
+        self._delete_exact_dups()
+        self._delete_partial_dups()
+        self._delete_serialized_cases()
+
         self.create_no_records_created_pre_check_error()
 
         if not all_created:
@@ -193,12 +196,16 @@ class TanfDataReportParser(BaseParser):
         )
         self.case_consistency_validator.clear_errors()
 
+        self.generate_funded_ssn_errors()
+
         self.bulk_create_errors(flush=True)
 
         logger.debug(
             f"Cat4 validator cached {self.case_consistency_validator.total_cases_cached} cases and "
             f"validated {self.case_consistency_validator.total_cases_validated} of them."
         )
+
+        self.bulk_create_errors(flush=True)
         self.dfs.save()
 
         return
@@ -241,7 +248,7 @@ class TanfDataReportParser(BaseParser):
         logger.debug(f"Datafile: {repr(self.datafile)}, is Tribal: {is_tribal}.")
 
         program_type = (
-            f"Tribal {header['program_type']}" if is_tribal else header["program_type"]
+            DataFile.ProgramType.TRIBAL if is_tribal else header["program_type"]
         )
         section = header["type"]
         logger.debug(f"Program type: {program_type}, Section: {section}.")
@@ -337,7 +344,7 @@ class TanfDataReportParser(BaseParser):
                 error_message="Multiple trailers found.",
                 fields=[],
             )
-            generate_error = self.error_generator_factory.get_error_generator(
+            generate_error = self.error_generator_factory.get_generator(
                 ErrorGeneratorType.MSG_ONLY_PRECHECK,
                 self.current_row_num,
             )
@@ -363,7 +370,95 @@ class TanfDataReportParser(BaseParser):
             self.unsaved_parser_errors.update({"trailer": trailer_errors})
             self.num_errors += len(trailer_errors)
 
-    def delete_serialized_records(self):
-        """Delete all records that have already been serialized to the DB that have cat4 errors."""
-        duplicate_manager = self.case_consistency_validator.duplicate_manager
-        self._delete_serialized_records(duplicate_manager)
+    def _generate_funded_ssn_errors(self, t2_schema, t2_records, t1_schema):
+        """Inner function to validate and generate errors."""
+        validator = category2.ssnAllOf(
+            category2.isNumber(),
+            category2.intHasLength(9),
+            *[
+                category2.valueNotAt(SSN_AREA_NUMBER_POSITION, area_num)
+                for area_num in INVALID_SSN_AREA_NUMBERS
+            ],
+            *[
+                category2.valueNotAt(SSN_GROUP_NUMBER_POSITION, group_num)
+                for group_num in INVALID_SSN_GROUP_NUMBERS
+            ],
+            *[
+                category2.valueNotAt(SSN_SERIAL_NUMBER_POSITION, serial_num)
+                for serial_num in INVALID_SSN_SERIAL_NUMBERS
+            ],
+            error_message=(
+                "Social Security Number is not valid. Check that the SSN is 9 digits, "
+                "does not contain only zeroes in any one section, and does not contain "
+                "dashes or other punctuation."
+            ),
+        )
+
+        t1_fields = [t1_schema.get_field_by_name(name) for name in ("FUNDING_STREAM",)]
+        t2_fields = [
+            t2_schema.get_field_by_name(name) for name in ("FAMILY_AFFILIATION", "SSN")
+        ]
+        fields = t1_fields + t2_fields
+        # Validate SSN for each T2 record
+        for t2_record in t2_records.iterator(
+            chunk_size=settings.BULK_CREATE_BATCH_SIZE
+        ):
+            ssn = getattr(t2_record, "SSN", None)
+            if ssn:
+                eargs = ValidationErrorArgs(
+                    value=ssn,
+                    row_schema=t2_schema,
+                    friendly_name=fields[-1].friendly_name,
+                    item_num=fields[-1].item,
+                )
+                result = validator(ssn, eargs)
+                if not result.valid:
+                    error_generator = self.error_generator_factory.get_generator(
+                        ErrorGeneratorType.VALUE_CONSISTENCY, t2_record.line_number
+                    )
+                    generator_args = ErrorGeneratorArgs(
+                        record=t2_record,
+                        schema=t2_schema,
+                        error_message=result.error_message,
+                        offending_field=fields[-1],
+                        fields=fields,
+                        deprecated=result.deprecated,
+                        row_number=t2_record.line_number,
+                    )
+                    if "funded_recipient_ssn" not in self.unsaved_parser_errors:
+                        self.unsaved_parser_errors["funded_recipient_ssn"] = []
+                    self.unsaved_parser_errors["funded_recipient_ssn"].append(
+                        error_generator(generator_args=generator_args)
+                    )
+                    self.num_errors += 1
+                    self.bulk_create_errors()
+
+    def generate_funded_ssn_errors(self):
+        """Generate SSN validation errors for T1/T2 records with specific funding stream and family affiliation."""
+        if self.section == DataFile.Section.ACTIVE_CASE_DATA:
+            t1_schema = None
+            t2_schema = None
+            for schemas in self.schema_manager.schema_map.values():
+                schema = schemas[0]
+                if schema.record_type == "T1":
+                    t1_schema = schema
+                elif schema.record_type == "T2":
+                    t2_schema = schema
+
+            if not t1_schema or not t2_schema:
+                return
+
+            # Get T1 records with FUNDING_STREAM = 1
+            t1_records = t1_schema.model.objects.filter(
+                datafile=self.datafile, FUNDING_STREAM=1
+            )
+
+            # Get T2 records with FAMILY_AFFILIATION = 1 that belong to the same cases as T1 records
+            t1_case_numbers = t1_records.values_list("CASE_NUMBER", flat=True)
+            t2_records = t2_schema.model.objects.filter(
+                datafile=self.datafile,
+                FAMILY_AFFILIATION=1,
+                CASE_NUMBER__in=t1_case_numbers,
+            )
+
+            self._generate_funded_ssn_errors(t2_schema, t2_records, t1_schema)

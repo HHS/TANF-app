@@ -1,6 +1,5 @@
 """Test the implementation of the parse_file method with realistic datafiles."""
 
-
 import logging
 import os
 
@@ -64,7 +63,7 @@ def test_parse_small_correct_file(small_correct_file, dfs):
         datafile=small_correct_file,
         dfs=dfs,
         section=small_correct_file.section,
-        program_type=small_correct_file.prog_type,
+        program_type=small_correct_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -111,7 +110,7 @@ def test_parse_section_mismatch(small_correct_file, dfs):
         datafile=small_correct_file,
         dfs=dfs,
         section=small_correct_file.section,
-        program_type=small_correct_file.prog_type,
+        program_type=small_correct_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -165,7 +164,7 @@ def test_parse_wrong_program_type(small_correct_file, dfs):
         datafile=small_correct_file,
         dfs=dfs,
         section=small_correct_file.section,
-        program_type=small_correct_file.prog_type,
+        program_type=small_correct_file.program_type,
     )
     parser.parse_and_validate()
     assert dfs.get_status() == DataFileSummary.Status.REJECTED
@@ -198,7 +197,7 @@ def test_parse_big_file(big_file, dfs):
         datafile=big_file,
         dfs=dfs,
         section=big_file.section,
-        program_type=big_file.prog_type,
+        program_type=big_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -210,18 +209,18 @@ def test_parse_big_file(big_file, dfs):
         "months": [
             {
                 "month": "Oct",
-                "accepted_without_errors": 25,
-                "accepted_with_errors": 245,
+                "accepted_without_errors": 11,
+                "accepted_with_errors": 259,
             },
             {
                 "month": "Nov",
-                "accepted_without_errors": 18,
-                "accepted_with_errors": 255,
+                "accepted_without_errors": 12,
+                "accepted_with_errors": 261,
             },
             {
                 "month": "Dec",
-                "accepted_without_errors": 27,
-                "accepted_with_errors": 245,
+                "accepted_without_errors": 15,
+                "accepted_with_errors": 257,
             },
         ],
         "rejected": 0,
@@ -239,7 +238,7 @@ def test_parse_bad_test_file(bad_test_file, dfs):
         datafile=bad_test_file,
         dfs=dfs,
         section=bad_test_file.section,
-        program_type=bad_test_file.prog_type,
+        program_type=bad_test_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -262,7 +261,7 @@ def test_parse_bad_file_missing_header(bad_file_missing_header, dfs):
         datafile=bad_file_missing_header,
         dfs=dfs,
         section=bad_file_missing_header.section,
-        program_type=bad_file_missing_header.prog_type,
+        program_type=bad_file_missing_header.program_type,
     )
     parser.parse_and_validate()
     dfs.datafile = bad_file_missing_header
@@ -293,7 +292,7 @@ def test_parse_bad_file_multiple_headers(bad_file_multiple_headers, dfs):
         datafile=bad_file_multiple_headers,
         dfs=dfs,
         section=bad_file_multiple_headers.section,
-        program_type=bad_file_multiple_headers.prog_type,
+        program_type=bad_file_multiple_headers.program_type,
     )
     parser.parse_and_validate()
     dfs.datafile = bad_file_multiple_headers
@@ -320,7 +319,7 @@ def test_parse_big_bad_test_file(big_bad_test_file, dfs):
         datafile=big_bad_test_file,
         dfs=dfs,
         section=big_bad_test_file.section,
-        program_type=big_bad_test_file.prog_type,
+        program_type=big_bad_test_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -347,7 +346,7 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
         datafile=bad_trailer_file,
         dfs=dfs,
         section=bad_trailer_file.section,
-        program_type=bad_trailer_file.prog_type,
+        program_type=bad_trailer_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -399,7 +398,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
         datafile=bad_trailer_file_2,
         dfs=dfs,
         section=bad_trailer_file_2.section,
-        program_type=bad_trailer_file_2.prog_type,
+        program_type=bad_trailer_file_2.program_type,
     )
     parser.parse_and_validate()
 
@@ -491,7 +490,7 @@ def test_parse_empty_file(empty_file, dfs):
         datafile=empty_file,
         dfs=dfs,
         section=empty_file.section,
-        program_type=empty_file.prog_type,
+        program_type=empty_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -549,7 +548,7 @@ def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile, dfs):
         datafile=small_ssp_section1_datafile,
         dfs=dfs,
         section=small_ssp_section1_datafile.section,
-        program_type=small_ssp_section1_datafile.prog_type,
+        program_type=small_ssp_section1_datafile.program_type,
     )
     parser.parse_and_validate()
 
@@ -591,7 +590,7 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile, dfs):
         datafile=ssp_section1_datafile,
         dfs=dfs,
         section=ssp_section1_datafile.section,
-        program_type=ssp_section1_datafile.prog_type,
+        program_type=ssp_section1_datafile.program_type,
     )
     parser.parse_and_validate()
 
@@ -612,7 +611,8 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile, dfs):
     cat4_errors = parser_errors.filter(
         error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY
     ).order_by("id")
-    assert cat4_errors.count() == 2
+
+    assert cat4_errors.count() == 3
     assert (
         cat4_errors[0].error_message
         == "Duplicate record detected with record type M3 at line 453. "
@@ -623,8 +623,15 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile, dfs):
         == "Duplicate record detected with record type M3 at line 3273. "
         + "Record is a duplicate of the record at line number 3272."
     )
+    assert (
+        cat4_errors[2].error_message
+        == "Partial duplicate record detected with record type M3 at line 3275. "
+        + "Record is a partial duplicate of the record at line number 3274. Duplicated fields "
+        + "causing error: Item 0 (Record Type), Item 3 (Reporting Year and Month), Item 5 (Case Number), "
+        + "Item 60 (Family Affiliation), Item 61 (Date of Birth), and Item 62 (Social Security Number)."
+    )
 
-    assert parser_errors.count() == 31725
+    assert parser_errors.count() == 31726
 
     assert SSP_M1.objects.count() == expected_m1_record_count
     assert SSP_M2.objects.count() == expected_m2_record_count
@@ -642,7 +649,7 @@ def test_parse_tanf_section1_datafile(small_tanf_section1_datafile, dfs):
         datafile=small_tanf_section1_datafile,
         dfs=dfs,
         section=small_tanf_section1_datafile.section,
-        program_type=small_tanf_section1_datafile.prog_type,
+        program_type=small_tanf_section1_datafile.program_type,
     )
     parser.parse_and_validate()
 
@@ -651,7 +658,7 @@ def test_parse_tanf_section1_datafile(small_tanf_section1_datafile, dfs):
     dfs.case_aggregates = aggregates.case_aggregates_by_month(dfs.datafile, dfs.status)
     assert dfs.case_aggregates == {
         "months": [
-            {"month": "Oct", "accepted_without_errors": 4, "accepted_with_errors": 1},
+            {"month": "Oct", "accepted_without_errors": 1, "accepted_with_errors": 4},
             {"month": "Nov", "accepted_without_errors": 0, "accepted_with_errors": 0},
             {"month": "Dec", "accepted_without_errors": 0, "accepted_with_errors": 0},
         ],
@@ -688,7 +695,7 @@ def test_parse_tanf_section1_datafile_obj_counts(small_tanf_section1_datafile, d
         datafile=small_tanf_section1_datafile,
         dfs=dfs,
         section=small_tanf_section1_datafile.section,
-        program_type=small_tanf_section1_datafile.prog_type,
+        program_type=small_tanf_section1_datafile.program_type,
     )
     parser.parse_and_validate()
 
@@ -710,7 +717,7 @@ def test_parse_tanf_section1_datafile_t3s(small_tanf_section1_datafile, dfs):
         datafile=small_tanf_section1_datafile,
         dfs=dfs,
         section=small_tanf_section1_datafile.section,
-        program_type=small_tanf_section1_datafile.prog_type,
+        program_type=small_tanf_section1_datafile.program_type,
     )
     parser.parse_and_validate()
 
@@ -747,7 +754,7 @@ def test_parse_super_big_s1_file(super_big_s1_file, dfs):
         datafile=super_big_s1_file,
         dfs=dfs,
         section=super_big_s1_file.section,
-        program_type=super_big_s1_file.prog_type,
+        program_type=super_big_s1_file.program_type,
     )
     parser.parse_and_validate()
     expected_t1_record_count = 96607
@@ -776,7 +783,7 @@ def test_parse_big_s1_file_with_rollback(big_s1_rollback_file, dfs):
         datafile=big_s1_rollback_file,
         dfs=dfs,
         section=big_s1_rollback_file.section,
-        program_type=big_s1_rollback_file.prog_type,
+        program_type=big_s1_rollback_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -809,7 +816,7 @@ def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field
         datafile=bad_tanf_s1__row_missing_required_field,
         dfs=dfs,
         section=bad_tanf_s1__row_missing_required_field.section,
-        program_type=bad_tanf_s1__row_missing_required_field.prog_type,
+        program_type=bad_tanf_s1__row_missing_required_field.program_type,
     )
     parser.parse_and_validate()
 
@@ -857,7 +864,7 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
         datafile=bad_ssp_s1__row_missing_required_field,
         dfs=dfs,
         section=bad_ssp_s1__row_missing_required_field.section,
-        program_type=bad_ssp_s1__row_missing_required_field.prog_type,
+        program_type=bad_ssp_s1__row_missing_required_field.program_type,
     )
     parser.parse_and_validate()
 
@@ -922,7 +929,7 @@ def test_dfs_set_case_aggregates(small_correct_file, dfs):
         datafile=small_correct_file,
         dfs=dfs,
         section=small_correct_file.section,
-        program_type=small_correct_file.prog_type,
+        program_type=small_correct_file.program_type,
     )
     parser.parse_and_validate()
     dfs.file = small_correct_file
@@ -950,7 +957,7 @@ def test_parse_small_tanf_section2_file(small_tanf_section2_file, dfs):
         datafile=small_tanf_section2_file,
         dfs=dfs,
         section=small_tanf_section2_file.section,
-        program_type=small_tanf_section2_file.prog_type,
+        program_type=small_tanf_section2_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -984,7 +991,7 @@ def test_parse_tanf_section2_file(tanf_section2_file, dfs):
         datafile=tanf_section2_file,
         dfs=dfs,
         section=tanf_section2_file.section,
-        program_type=tanf_section2_file.prog_type,
+        program_type=tanf_section2_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -1014,7 +1021,7 @@ def test_parse_tanf_section3_file(tanf_section3_file, dfs):
         datafile=tanf_section3_file,
         dfs=dfs,
         section=tanf_section3_file.section,
-        program_type=tanf_section3_file.prog_type,
+        program_type=tanf_section3_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -1067,13 +1074,13 @@ def test_parse_tanf_section1_blanks_file(tanf_section1_file_with_blanks, dfs):
         datafile=tanf_section1_file_with_blanks,
         dfs=dfs,
         section=tanf_section1_file_with_blanks.section,
-        program_type=tanf_section1_file_with_blanks.prog_type,
+        program_type=tanf_section1_file_with_blanks.program_type,
     )
     parser.parse_and_validate()
 
     parser_errors = ParserError.objects.filter(file=tanf_section1_file_with_blanks)
 
-    assert parser_errors.count() == 22
+    assert parser_errors.count() == 23
 
     # Should only be cat3 validator errors
     for error in parser_errors:
@@ -1100,7 +1107,7 @@ def test_parse_tanf_section4_file(tanf_section4_file, dfs):
         datafile=tanf_section4_file,
         dfs=dfs,
         section=tanf_section4_file.section,
-        program_type=tanf_section4_file.prog_type,
+        program_type=tanf_section4_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -1148,7 +1155,7 @@ def test_parse_bad_tanf_section4_file(bad_tanf_section4_file, dfs):
         datafile=bad_tanf_section4_file,
         dfs=dfs,
         section=bad_tanf_section4_file.section,
-        program_type=bad_tanf_section4_file.prog_type,
+        program_type=bad_tanf_section4_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -1193,7 +1200,7 @@ def test_parse_ssp_section4_file(ssp_section4_file, dfs):
         datafile=ssp_section4_file,
         dfs=dfs,
         section=ssp_section4_file.section,
-        program_type=ssp_section4_file.prog_type,
+        program_type=ssp_section4_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -1229,7 +1236,7 @@ def test_parse_ssp_section2_rec_oadsi_file(ssp_section2_rec_oadsi_file, dfs):
         datafile=ssp_section2_rec_oadsi_file,
         dfs=dfs,
         section=ssp_section2_rec_oadsi_file.section,
-        program_type=ssp_section2_rec_oadsi_file.prog_type,
+        program_type=ssp_section2_rec_oadsi_file.program_type,
     )
     parser.parse_and_validate()
     parser_errors = ParserError.objects.filter(file=ssp_section2_rec_oadsi_file)
@@ -1249,7 +1256,7 @@ def test_parse_ssp_section2_file(ssp_section2_file, dfs):
         datafile=ssp_section2_file,
         dfs=dfs,
         section=ssp_section2_file.section,
-        program_type=ssp_section2_file.prog_type,
+        program_type=ssp_section2_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -1292,7 +1299,7 @@ def test_parse_ssp_section3_file(ssp_section3_file, dfs):
         datafile=ssp_section3_file,
         dfs=dfs,
         section=ssp_section3_file.section,
-        program_type=ssp_section3_file.prog_type,
+        program_type=ssp_section3_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -1350,7 +1357,7 @@ def test_rpt_month_year_mismatch(header_datafile, dfs):
         datafile=datafile,
         dfs=dfs,
         section=datafile.section,
-        program_type=datafile.prog_type,
+        program_type=datafile.program_type,
     )
     parser.parse_and_validate()
 
@@ -1367,7 +1374,7 @@ def test_rpt_month_year_mismatch(header_datafile, dfs):
         datafile=datafile,
         dfs=dfs,
         section=datafile.section,
-        program_type=datafile.prog_type,
+        program_type=datafile.program_type,
     )
     parser.parse_and_validate()
 
@@ -1396,7 +1403,7 @@ def test_parse_tribal_section_1_file(tribal_section_1_file, dfs):
         datafile=tribal_section_1_file,
         dfs=dfs,
         section=tribal_section_1_file.section,
-        program_type=tribal_section_1_file.prog_type,
+        program_type=tribal_section_1_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -1438,7 +1445,7 @@ def test_parse_tribal_section_1_inconsistency_file(
         datafile=tribal_section_1_inconsistency_file,
         dfs=dfs,
         section=tribal_section_1_inconsistency_file.section,
-        program_type=tribal_section_1_inconsistency_file.prog_type,
+        program_type=tribal_section_1_inconsistency_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -1466,7 +1473,7 @@ def test_parse_tribal_section_2_file(tribal_section_2_file, dfs):
         datafile=tribal_section_2_file,
         dfs=dfs,
         section=tribal_section_2_file.section,
-        program_type=tribal_section_2_file.prog_type,
+        program_type=tribal_section_2_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -1508,7 +1515,7 @@ def test_parse_tribal_section_3_file(tribal_section_3_file, dfs):
         datafile=tribal_section_3_file,
         dfs=dfs,
         section=tribal_section_3_file.section,
-        program_type=tribal_section_3_file.prog_type,
+        program_type=tribal_section_3_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -1547,7 +1554,7 @@ def test_parse_tribal_section_4_file(tribal_section_4_file, dfs):
         datafile=tribal_section_4_file,
         dfs=dfs,
         section=tribal_section_4_file.section,
-        program_type=tribal_section_4_file.prog_type,
+        program_type=tribal_section_4_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -1612,7 +1619,7 @@ def test_misformatted_multi_records(
         datafile=file_fixture,
         dfs=dfs,
         section=file_fixture.section,
-        program_type=file_fixture.prog_type,
+        program_type=file_fixture.program_type,
     )
     parser.parse_and_validate()
     parser_errors = ParserError.objects.filter(file=file_fixture)
@@ -1645,7 +1652,7 @@ def test_empty_t4_t5_values(t4_t5_empty_values, dfs):
         datafile=t4_t5_empty_values,
         dfs=dfs,
         section=t4_t5_empty_values.section,
-        program_type=t4_t5_empty_values.prog_type,
+        program_type=t4_t5_empty_values.program_type,
     )
     parser.parse_and_validate()
     parser_errors = ParserError.objects.filter(file=t4_t5_empty_values)
@@ -1672,7 +1679,7 @@ def test_parse_t2_invalid_dob(t2_invalid_dob_file, dfs):
         datafile=t2_invalid_dob_file,
         dfs=dfs,
         section=t2_invalid_dob_file.section,
-        program_type=t2_invalid_dob_file.prog_type,
+        program_type=t2_invalid_dob_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -1707,7 +1714,7 @@ def test_parse_tanf_section4_file_with_errors(tanf_section_4_file_with_errors, d
         datafile=tanf_section_4_file_with_errors,
         dfs=dfs,
         section=tanf_section_4_file_with_errors.section,
-        program_type=tanf_section_4_file_with_errors.prog_type,
+        program_type=tanf_section_4_file_with_errors.program_type,
     )
     parser.parse_and_validate()
 
@@ -1752,7 +1759,7 @@ def test_parse_no_records_file(no_records_file, dfs):
         datafile=no_records_file,
         dfs=dfs,
         section=no_records_file.section,
-        program_type=no_records_file.prog_type,
+        program_type=no_records_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -1775,13 +1782,16 @@ def test_parse_aggregates_rejected_datafile(aggregates_rejected_datafile, dfs):
     """Test record rejection counting when record has more than one preparsing error."""
     aggregates_rejected_datafile.year = 2021
     aggregates_rejected_datafile.quarter = "Q1"
+
+    print(aggregates_rejected_datafile)
+
     dfs.datafile = aggregates_rejected_datafile
 
     parser = ParserFactory.get_instance(
         datafile=aggregates_rejected_datafile,
         dfs=dfs,
         section=aggregates_rejected_datafile.section,
-        program_type=aggregates_rejected_datafile.prog_type,
+        program_type=aggregates_rejected_datafile.program_type,
     )
     parser.parse_and_validate()
 
@@ -1835,7 +1845,7 @@ def test_parse_tanf_section_1_file_with_bad_update_indicator(
         datafile=tanf_section_1_file_with_bad_update_indicator,
         dfs=dfs,
         section=tanf_section_1_file_with_bad_update_indicator.section,
-        program_type=tanf_section_1_file_with_bad_update_indicator.prog_type,
+        program_type=tanf_section_1_file_with_bad_update_indicator.program_type,
     )
     parser.parse_and_validate()
 
@@ -1845,7 +1855,7 @@ def test_parse_tanf_section_1_file_with_bad_update_indicator(
 
     assert dfs.get_status() == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
 
-    assert parser_errors.count() == 4
+    assert parser_errors.count() == 5
 
     error_messages = [error.error_message for error in parser_errors]
 
@@ -1867,7 +1877,7 @@ def test_parse_tribal_section_4_bad_quarter(tribal_section_4_bad_quarter, dfs):
         datafile=tribal_section_4_bad_quarter,
         dfs=dfs,
         section=tribal_section_4_bad_quarter.section,
-        program_type=tribal_section_4_bad_quarter.prog_type,
+        program_type=tribal_section_4_bad_quarter.program_type,
     )
     parser.parse_and_validate()
     parser_errors = ParserError.objects.filter(
@@ -1896,7 +1906,7 @@ def test_parse_t3_cat2_invalid_citizenship(t3_cat2_invalid_citizenship_file, dfs
         datafile=t3_cat2_invalid_citizenship_file,
         dfs=dfs,
         section=t3_cat2_invalid_citizenship_file.section,
-        program_type=t3_cat2_invalid_citizenship_file.prog_type,
+        program_type=t3_cat2_invalid_citizenship_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -1926,7 +1936,7 @@ def test_parse_m2_cat2_invalid_37_38_39_file(m2_cat2_invalid_37_38_39_file, dfs)
         datafile=m2_cat2_invalid_37_38_39_file,
         dfs=dfs,
         section=m2_cat2_invalid_37_38_39_file.section,
-        program_type=m2_cat2_invalid_37_38_39_file.prog_type,
+        program_type=m2_cat2_invalid_37_38_39_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -1956,7 +1966,7 @@ def test_parse_m3_cat2_invalid_68_69_file(m3_cat2_invalid_68_69_file, dfs):
         datafile=m3_cat2_invalid_68_69_file,
         dfs=dfs,
         section=m3_cat2_invalid_68_69_file.section,
-        program_type=m3_cat2_invalid_68_69_file.prog_type,
+        program_type=m3_cat2_invalid_68_69_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -1993,7 +2003,7 @@ def test_parse_m5_cat2_invalid_23_24_file(m5_cat2_invalid_23_24_file, dfs):
         datafile=m5_cat2_invalid_23_24_file,
         dfs=dfs,
         section=m5_cat2_invalid_23_24_file.section,
-        program_type=m5_cat2_invalid_23_24_file.prog_type,
+        program_type=m5_cat2_invalid_23_24_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -2023,7 +2033,7 @@ def test_zero_filled_fips_code_file(test_file_zero_filled_fips_code, dfs):
         datafile=test_file_zero_filled_fips_code,
         dfs=dfs,
         section=test_file_zero_filled_fips_code.section,
-        program_type=test_file_zero_filled_fips_code.prog_type,
+        program_type=test_file_zero_filled_fips_code.program_type,
     )
     parser.parse_and_validate()
 
@@ -2054,21 +2064,21 @@ def test_zero_filled_fips_code_file(test_file_zero_filled_fips_code, dfs):
             "T4",
             3,
         ),  # This forces an in memory and database deletion of records.
-        ("tanf_s3_exact_dup_file", 10000, TANF_T6, "T6", 1),
+        ("tanf_s3_exact_dup_file", 10000, TANF_T6, "T6", 3),
         (
             "tanf_s3_exact_dup_file",
             1,
             TANF_T6,
             "T6",
-            1,
+            3,
         ),  # This forces an in memory and database deletion of records.
-        ("tanf_s4_exact_dup_file", 10000, TANF_T7, "T7", 1),
+        ("tanf_s4_exact_dup_file", 10000, TANF_T7, "T7", 18),
         (
             "tanf_s4_exact_dup_file",
             1,
             TANF_T7,
             "T7",
-            1,
+            18,
         ),  # This forces an in memory and database deletion of records.
         ("ssp_s1_exact_dup_file", 10000, SSP_M1, "M1", 3),
         (
@@ -2086,21 +2096,21 @@ def test_zero_filled_fips_code_file(test_file_zero_filled_fips_code, dfs):
             "M4",
             3,
         ),  # This forces an in memory and database deletion of records.
-        ("ssp_s3_exact_dup_file", 10000, SSP_M6, "M6", 1),
+        ("ssp_s3_exact_dup_file", 10000, SSP_M6, "M6", 3),
         (
             "ssp_s3_exact_dup_file",
             1,
             SSP_M6,
             "M6",
-            1,
+            3,
         ),  # This forces an in memory and database deletion of records.
-        ("ssp_s4_exact_dup_file", 10000, SSP_M7, "M7", 1),
+        ("ssp_s4_exact_dup_file", 10000, SSP_M7, "M7", 12),
         (
             "ssp_s4_exact_dup_file",
             1,
             SSP_M7,
             "M7",
-            1,
+            12,
         ),  # This forces an in memory and database deletion of records.
     ],
 )
@@ -2118,7 +2128,7 @@ def test_parse_duplicate(
         datafile=datafile,
         dfs=dfs,
         section=datafile.section,
-        program_type=datafile.prog_type,
+        program_type=datafile.program_type,
     )
     parser.parse_and_validate()
 
@@ -2150,26 +2160,6 @@ def test_parse_duplicate(
         ("tanf_s2_partial_dup_file", 10000, TANF_T5, "T5", 3, "partial_dup_t5_err_msg"),
         # This forces an in memory and database deletion of records.
         ("tanf_s2_partial_dup_file", 1, TANF_T5, "T5", 3, "partial_dup_t5_err_msg"),
-        (
-            "tanf_s3_partial_dup_file",
-            10000,
-            TANF_T6,
-            "T6",
-            1,
-            "partial_dup_s3_s4_err_msg",
-        ),
-        # This forces an in memory and database deletion of records.
-        ("tanf_s3_partial_dup_file", 1, TANF_T6, "T6", 1, "partial_dup_s3_s4_err_msg"),
-        (
-            "tanf_s4_partial_dup_file",
-            10000,
-            TANF_T7,
-            "T7",
-            1,
-            "partial_dup_s3_s4_err_msg",
-        ),
-        # This forces an in memory and database deletion of records.
-        ("tanf_s4_partial_dup_file", 1, TANF_T7, "T7", 1, "partial_dup_s3_s4_err_msg"),
         ("ssp_s1_partial_dup_file", 10000, SSP_M1, "M1", 3, "partial_dup_t1_err_msg"),
         # This forces an in memory and database deletion of records.
         ("ssp_s1_partial_dup_file", 1, SSP_M1, "M1", 3, "partial_dup_t1_err_msg"),
@@ -2190,11 +2180,14 @@ def test_parse_partial_duplicate(
 
     settings.BULK_CREATE_BATCH_SIZE = batch_size
 
+    print("test duplicates")
+    print(datafile.file)
+
     parser = ParserFactory.get_instance(
         datafile=datafile,
         dfs=dfs,
         section=datafile.section,
-        program_type=datafile.prog_type,
+        program_type=datafile.program_type,
     )
     parser.parse_and_validate()
 
@@ -2208,6 +2201,7 @@ def test_parse_partial_duplicate(
     assert parser_errors.count() == num_errors
 
     dup_error = parser_errors.first()
+    print("Generated Error: ", dup_error.error_message)
     assert expected_error_msg.format(record_type=record_type) in dup_error.error_message
 
     model.objects.count() == 0
@@ -2228,7 +2222,7 @@ def test_parse_cat_4_edge_case_file(cat4_edge_case_file, dfs):
         datafile=cat4_edge_case_file,
         dfs=dfs,
         section=cat4_edge_case_file.section,
-        program_type=cat4_edge_case_file.prog_type,
+        program_type=cat4_edge_case_file.program_type,
     )
     parser.parse_and_validate()
 
@@ -2274,7 +2268,7 @@ def test_parse_fra_work_outcome_exiters(request, file, dfs):
         datafile=datafile,
         dfs=dfs,
         section=datafile.section,
-        program_type=datafile.prog_type,
+        program_type=datafile.program_type,
     )
     parser.parse_and_validate()
 
@@ -2310,7 +2304,7 @@ def test_parse_fra_bad_header(request, file, dfs):
         datafile=datafile,
         dfs=dfs,
         section=datafile.section,
-        program_type=datafile.prog_type,
+        program_type=datafile.program_type,
     )
     parser.parse_and_validate()
 
@@ -2345,7 +2339,7 @@ def test_parse_fra_empty_first_row(request, file, dfs):
         datafile=datafile,
         dfs=dfs,
         section=datafile.section,
-        program_type=datafile.prog_type,
+        program_type=datafile.program_type,
     )
     parser.parse_and_validate()
 
@@ -2382,7 +2376,7 @@ def test_parse_fra_ofa_test_cases(request, file, dfs):
         datafile=datafile,
         dfs=dfs,
         section=datafile.section,
-        program_type=datafile.prog_type,
+        program_type=datafile.program_type,
     )
     parser.parse_and_validate()
 
@@ -2413,7 +2407,7 @@ def test_parse_fra_formula_fields(fra_formula_fields_test_xlsx, dfs):
         datafile=datafile,
         dfs=dfs,
         section=datafile.section,
-        program_type=datafile.prog_type,
+        program_type=datafile.program_type,
     )
     parser.parse_and_validate()
 
@@ -2440,7 +2434,7 @@ def test_parse_fra_decoder_unknown(fra_decoder_unknown, dfs):
             datafile=datafile,
             dfs=dfs,
             section=datafile.section,
-            program_type=datafile.prog_type,
+            program_type=datafile.program_type,
         )
         parser.parse_and_validate()
     except util.DecoderUnknownException:
@@ -2468,10 +2462,37 @@ def test_parse_section2_no_records(section2_no_records, dfs):
         datafile=datafile,
         dfs=dfs,
         section=datafile.section,
-        program_type=datafile.prog_type,
+        program_type=datafile.program_type,
     )
     parser.parse_and_validate()
 
     errors = ParserError.objects.filter(file=datafile).order_by("id")
     assert errors.count() == 0
     assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
+
+
+@pytest.mark.django_db
+def test_parse_tanf_s1_federally_funded_recipients(
+    tanf_s1_federally_funded_recipients, dfs
+):
+    """Test parsing file that generates the tanf_s1_federally_funded_recipients error."""
+    dfs.datafile = tanf_s1_federally_funded_recipients
+
+    parser = ParserFactory.get_instance(
+        datafile=tanf_s1_federally_funded_recipients,
+        dfs=dfs,
+        section=tanf_s1_federally_funded_recipients.section,
+        program_type=tanf_s1_federally_funded_recipients.program_type,
+    )
+    parser.parse_and_validate()
+
+    errors = ParserError.objects.filter(
+        file=tanf_s1_federally_funded_recipients
+    ).order_by("id")
+
+    dfs.status = dfs.get_status()
+    assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+    assert errors.last().error_message == (
+        "Social Security Number is not valid. Check that the SSN is 9 digits, "
+        "does not contain only zeroes in any one section, and does not contain dashes or other punctuation."
+    )

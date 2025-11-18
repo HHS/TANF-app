@@ -21,13 +21,13 @@ import { comboBox } from '@uswds/uswds/src/js/components'
 const ComboBox = ({
   children,
   handleSelect,
-  selected,
-  handleBlur,
-  error,
+  selected = '',
+  handleBlur = null,
+  error = '',
   name,
-  placeholder,
+  placeholder = '',
   label,
-  autoComplete,
+  autoComplete = true,
 }) => {
   useEffect(() => {
     // The combo box was not rendering as a combo box without this line
@@ -62,7 +62,11 @@ const ComboBox = ({
           </div>
         )}
       </label>
-      <div className="usa-combo-box" data-placeholder={placeholder}>
+      <div
+        className="usa-combo-box"
+        data-placeholder={placeholder}
+        data-default-value={selected}
+      >
         {/* eslint-disable-next-line jsx-a11y/no-onchange */}
         <select
           autoComplete={autoComplete ? 'on' : 'off'}
@@ -97,14 +101,6 @@ ComboBox.propTypes = {
   placeholder: PropTypes.string,
   label: PropTypes.string.isRequired,
   autoComplete: PropTypes.bool,
-}
-
-ComboBox.defaultProps = {
-  selected: '',
-  error: '',
-  placeholder: '',
-  handleBlur: null,
-  autoComplete: true,
 }
 
 export default ComboBox

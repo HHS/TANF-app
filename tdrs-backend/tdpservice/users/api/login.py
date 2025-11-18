@@ -15,6 +15,8 @@ from rest_framework import status
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
 
+from tdpservice.core.utils import log
+from tdpservice.security.models import SecurityEventToken, SecurityEventType
 from tdpservice.users.serializers import UserSerializer
 
 from ..authentication import CustomAuthentication
@@ -118,6 +120,60 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         """Handle user email exceptions."""
         pass
 
+    def _handle_user(self, email, sub, auth_options):
+        """Handle user."""
+        User = get_user_model()
+
+        # Check if a user with the same email already exists
+        user = User.objects.filter(username=email).first()
+
+        if user and auth_options.get("login_gov_uuid", False):
+            # Check if last security event was account_purged
+            last_security_event = (
+                SecurityEventToken.objects.filter(user=user)
+                .order_by("-received_at")
+                .first()
+            )
+            # Setup log context
+            logger_context = {
+                "user_id": user.id,
+                "content_type": SecurityEventToken,
+                "object_id": last_security_event.id if last_security_event else None,
+            }
+            if (
+                last_security_event
+                and last_security_event.event_type == SecurityEventType.ACCOUNT_PURGED
+            ):
+                log(
+                    f"Detected user: {user.username} has recreated their Login.gov account "
+                    f"after deleting it. Updating their login_gov_uuid.",
+                    logger_context,
+                )
+                # Update user login_gov_uuid
+                user.login_gov_uuid = sub
+                user.is_active = True
+                user.save()
+                login_msg = "User updated Login.gov UUID."
+            else:
+                log(
+                    f"User: {user.username} Login.gov UUID changed without an account purge "
+                    "event from Login.gov. Preventing login.",
+                    logger_context,
+                )
+                user = None
+                login_msg = "User Login.gov UUID changed without account purge. Preventing login."
+        else:
+            # Delete the username key if it exists in auth_options, as it will conflict with the first argument
+            # of `create_user`.
+            auth_options.pop("username", None)
+
+            user = User.objects.create_user(email, email=email, **auth_options)
+            user.set_unusable_password()
+            user.save()
+            login_msg = "User Created"
+
+        return user, login_msg
+
     def handle_user(self, request, id_token, decoded_token_data):
         """Handle the incoming user."""
         # get user from database if they exist. if not, create a new one
@@ -162,13 +218,6 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         logging.debug("user obj:{}".format(user))
 
         if user and user.is_active:
-            # Users are able to update their emails on login.gov
-            # Update the User with the latest email from the decoded_payload.
-            if user.username != email:
-                user.email = email
-                user.username = email
-                user.save()
-
             if user.deactivated:
                 login_msg = "Inactive User Found"
 
@@ -177,17 +226,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 f"Login failed, user account is inactive: {user.username}"
             )
         else:
-            User = get_user_model()
-
-            if "username" in auth_options:
-                # Delete the username key if it exists in auth_options, as it will conflict with the first argument
-                # of `create_user`.
-                del auth_options["username"]
-
-            user = User.objects.create_user(email, email=email, **auth_options)
-            user.set_unusable_password()
-            user.save()
-            login_msg = "User Created"
+            user, login_msg = self._handle_user(email, sub, auth_options)
 
         self.verify_email(user)
         self.login_user(request, user, login_msg)
@@ -434,7 +473,7 @@ class CypressLoginDotGovAuthenticationOverride(TokenAuthorizationOIDC):
 
         response = {
             "authenticated": True,
-            "user": UserSerializer(u, context={"request", request}).data
+            "user": UserSerializer(u, context={"request", request}).data,
         }
 
         if u.is_superuser:

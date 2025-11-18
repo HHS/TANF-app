@@ -3,32 +3,63 @@ import Button from '../Button'
 import { useDispatch } from 'react-redux'
 import FormGroup from '../FormGroup'
 import STTComboBox from '../STTComboBox'
+import ReadOnlyRow from './ReadOnlyRow'
 import { requestAccess } from '../../actions/requestAccess'
+import { updateUserRequest } from '../../actions/updateUserRequest'
+import {
+  getInitialProfileInfo,
+  clearFormError,
+  FORM_TYPES,
+} from '../../utils/formHelpers'
 import JurisdictionSelector from './JurisdictionSelector'
+import JurisdictionLocationInfo, {
+  JURISDICTION_TYPES,
+} from '../Profile/JurisdictionLocationInfo'
 import RegionSelector from './RegionSelector'
 import FRASelector from './FRASelector'
+import '../../assets/Profile.scss'
 
-function RequestAccessForm({ user, sttList }) {
+function RequestAccessForm({
+  user,
+  sttList,
+  editMode = false,
+  initialValues = {},
+  onCancel,
+  type = 'access request',
+}) {
   const errorRef = useRef(null)
-
   const isAMSUser = user?.email?.includes('@acf.hhs.gov')
+  const originallyHadFRAAccess = initialValues.hasFRAAccess ?? null
 
+  const [profileInfo, setProfileInfo] = useState(
+    getInitialProfileInfo(
+      initialValues,
+      isAMSUser,
+      editMode,
+      originallyHadFRAAccess
+    )
+  )
+  const [originalData] = useState(profileInfo)
   const [errors, setErrors] = useState({})
-  const [profileInfo, setProfileInfo] = useState({
-    firstName: '',
-    lastName: '',
-    stt: '',
-    hasFRAAccess: isAMSUser ? false : null,
-  })
-  const dispatch = useDispatch()
   const [touched, setTouched] = useState({})
-  const displayingError =
-    !!Object.keys(errors).length && !!Object.keys(touched).length
+  const [jurisdictionType, setJurisdictionTypeInputValue] = useState(
+    initialValues.jurisdictionType || JURISDICTION_TYPES.STATE
+  )
+  const [regional, setRegional] = useState(
+    profileInfo?.regions instanceof Set && profileInfo.regions.size > 0
+  )
+  const [originalRegional] = useState(
+    profileInfo?.regions instanceof Set && profileInfo.regions.size > 0
+  )
 
-  const [jurisdictionType, setJurisdictionTypeInputValue] = useState('state')
+  const dispatch = useDispatch()
+  const fieldErrorKeys = Object.keys(errors).filter((key) => key !== 'form')
+  const hasFieldErrors =
+    fieldErrorKeys.length > 0 && Object.keys(touched).length > 0
+
+  const showErrorSummary = hasFieldErrors || !!errors.form
 
   const regionError = 'At least one Region is required'
-
   const validateRegions = (regions) => {
     if (regions?.size === 0) {
       return regionError
@@ -37,6 +68,19 @@ function RequestAccessForm({ user, sttList }) {
   }
 
   const validation = (fieldName, fieldValue) => {
+    if (editMode) {
+      if (fieldName === 'stt') {
+        return null
+      }
+
+      if (
+        fieldName === 'hasFRAAccess' &&
+        (isAMSUser || jurisdictionType === JURISDICTION_TYPES.TRIBE)
+      ) {
+        return null
+      }
+    }
+
     const field = {
       firstName: 'First Name',
       lastName: 'Last Name',
@@ -57,10 +101,13 @@ function RequestAccessForm({ user, sttList }) {
   const setJurisdictionType = (val) => {
     setStt('')
     setJurisdictionTypeInputValue(val)
+
     if (val === 'tribe') {
       setHasFRAAccess(false)
+    } else if (!isAMSUser) {
+      setHasFRAAccess(true)
     } else {
-      setHasFRAAccess(null)
+      setHasFRAAccess(null) // AMS users shouldn't be setting FRA access
     }
   }
 
@@ -72,13 +119,17 @@ function RequestAccessForm({ user, sttList }) {
   }
 
   const setHasFRAAccess = (hasFRAAccess) => {
+    if (errors.form) {
+      setErrors(clearFormError(errors))
+    }
+
     setProfileInfo((currentState) => ({
       ...currentState,
       hasFRAAccess: hasFRAAccess,
     }))
 
     // Remove errors when FRA Access is changed or hidden
-    if (displayingError) {
+    if (hasFieldErrors || errors.hasFRAAccess) {
       const { hasFRAAccess: removedError, ...rest } = errors
       const error = validation('hasFRAAccess', hasFRAAccess)
 
@@ -90,14 +141,24 @@ function RequestAccessForm({ user, sttList }) {
   }
 
   const handleChange = ({ name, value }) => {
+    // Clear form error if present on any change
+    if (errors.form) {
+      setErrors(clearFormError(errors))
+    }
+
+    // Remove error for this field if present
+    if (errors[name]) {
+      const { [name]: removedError, ...rest } = errors
+      setErrors(rest)
+    }
+
+    setTouched((prev) => ({ ...prev, [name]: true }))
     setProfileInfo({ ...profileInfo, [name]: value })
   }
 
   const handleBlur = (evt) => {
     const { name, value } = evt.target
-
     const { [name]: removedError, ...rest } = errors
-
     const error = validation(name, value)
 
     setErrors({
@@ -108,6 +169,41 @@ function RequestAccessForm({ user, sttList }) {
 
   const handleSubmit = (evt) => {
     evt.preventDefault()
+
+    if (editMode) {
+      const hasChanges = () => {
+        const profileChanged = Object.keys(profileInfo).some((key) => {
+          if (key === 'regions') {
+            const newRegions = Array.from(profileInfo[key])
+              .map((r) => r.id)
+              .sort()
+            const originalRegions = Array.from(originalData[key])
+              .map((r) => r.id)
+              .sort()
+            return (
+              JSON.stringify(newRegions) !== JSON.stringify(originalRegions)
+            )
+          }
+
+          if (typeof profileInfo[key] === 'object') {
+            return (
+              JSON.stringify(profileInfo[key]) !==
+              JSON.stringify(originalData[key])
+            )
+          }
+          return profileInfo[key] !== originalData[key]
+        })
+
+        const regionalChanged = regional !== originalRegional
+        return profileChanged || regionalChanged
+      }
+
+      if (!hasChanges()) {
+        setErrors({ form: 'No changes have been made.' })
+        setTimeout(() => errorRef.current?.focus(), 0)
+        return
+      }
+    }
 
     // validate the form
     const formValidation = Object.keys(profileInfo).reduce(
@@ -130,7 +226,8 @@ function RequestAccessForm({ user, sttList }) {
         touched: { ...touched },
       }
     )
-    const regionError = validateRegions(profileInfo.regions)
+    const regionError =
+      isAMSUser && regional ? validateRegions(profileInfo.regions) : null
 
     const combinedErrors = {
       ...formValidation.errors,
@@ -138,22 +235,53 @@ function RequestAccessForm({ user, sttList }) {
     }
     const combinedTouched = {
       ...formValidation.touched,
-      ...(regionError && { regions: true }),
+      ...(regionError && isAMSUser && { regions: true }),
     }
 
     setErrors(combinedErrors)
     setTouched(combinedTouched)
 
     if (!Object.values(combinedErrors).length) {
-      return dispatch(
-        requestAccess({
-          ...profileInfo,
-          stt: sttList.find((stt) => stt.name === profileInfo.stt),
+      const sttObj = sttList.find((stt) => stt.name === profileInfo.stt)
+      const payload = {
+        ...profileInfo,
+        stt: sttObj,
+        regions: Array.from(profileInfo.regions).map((region) => region.id),
+      }
+
+      if (editMode) {
+        if (type === 'access request') {
+          // PATCH call for updating Access Request
+          return dispatch(requestAccess(payload)).then(() => {
+            onCancel() // toggles editMode to false after update
+          })
+        }
+        return dispatch(updateUserRequest(payload)).then(() => {
+          onCancel() // toggles editMode to false after update
         })
-      )
+      } else {
+        // Submit new access request
+        return dispatch(requestAccess(payload))
+      }
     }
 
     return setTimeout(() => errorRef.current.focus(), 0)
+  }
+
+  const regionSelectorProps = {
+    setErrors,
+    errors,
+    setTouched,
+    touched,
+    setProfileInfo,
+    profileInfo,
+    displayingError: hasFieldErrors,
+    validateRegions,
+    regionError,
+    regional,
+    setRegional,
+    originalRegional,
+    type,
   }
 
   return (
@@ -166,13 +294,15 @@ function RequestAccessForm({ user, sttList }) {
       <form className="usa-form" onSubmit={handleSubmit}>
         <div
           className={`usa-error-message ${
-            displayingError ? 'display-block' : 'display-none'
+            showErrorSummary ? 'display-block' : 'display-none'
           }`}
           ref={errorRef}
           tabIndex="-1"
           role="alert"
         >
-          There are {Object.keys(errors).length} errors in this form
+          {errors.form
+            ? errors.form
+            : `There are ${Object.keys(errors).length} errors in this form`}
         </div>
         <FormGroup
           error={errors.firstName}
@@ -190,47 +320,88 @@ function RequestAccessForm({ user, sttList }) {
           handleChange={handleChange}
           handleBlur={handleBlur}
         />
-        {!isAMSUser && (
-          <JurisdictionSelector setJurisdictionType={setJurisdictionType} />
-        )}
-        {jurisdictionType && !isAMSUser && (
-          <div
-            className={`usa-form-group ${
-              errors.stt ? 'usa-form-group--error' : ''
-            }`}
-          >
-            <STTComboBox
-              selectStt={setStt}
-              error={Boolean(errors.stt)}
-              selectedStt={profileInfo?.stt}
-              handleBlur={handleBlur}
-              sttType={jurisdictionType}
+
+        {editMode &&
+          user.account_approval_status === 'Approved' &&
+          !isAMSUser && (
+            <div>
+              <hr className="form-section-divider" />
+              <ReadOnlyRow
+                label="Jurisdiction Type"
+                value={
+                  (jurisdictionType?.charAt(0)?.toUpperCase() ?? '') +
+                  (jurisdictionType?.slice(1) ?? '')
+                }
+              />
+              <JurisdictionLocationInfo
+                jurisdictionType={jurisdictionType}
+                locationName={profileInfo.stt || 'Federal Government'}
+                formType={FORM_TYPES.ACCESS_REQUEST}
+              />
+              <hr className="form-section-divider" />
+            </div>
+          )}
+
+        {((editMode &&
+          !isAMSUser &&
+          user.account_approval_status === 'Access request') ||
+          (user.account_approval_status === 'Initial' && !isAMSUser)) && (
+          <>
+            <JurisdictionSelector
+              jurisdictionType={jurisdictionType}
+              setJurisdictionType={setJurisdictionType}
             />
-          </div>
+            {jurisdictionType && (
+              <div
+                className={`usa-form-group ${
+                  errors.stt ? 'usa-form-group--error' : ''
+                }`}
+              >
+                <STTComboBox
+                  selectStt={setStt}
+                  error={Boolean(errors.stt)}
+                  selectedStt={profileInfo?.stt}
+                  handleBlur={handleBlur}
+                  sttType={jurisdictionType}
+                />
+              </div>
+            )}
+          </>
         )}
-        {isAMSUser && (
-          <RegionSelector
-            setErrors={setErrors}
-            errors={errors}
-            setTouched={setTouched}
-            touched={touched}
-            setProfileInfo={setProfileInfo}
-            profileInfo={profileInfo}
-            displayingError={displayingError}
-            validateRegions={validateRegions}
-            regionError={regionError}
-          />
-        )}
-        {jurisdictionType !== 'tribe' && !isAMSUser && (
+
+        {jurisdictionType !== JURISDICTION_TYPES.TRIBE && !isAMSUser && (
           <FRASelector
             hasFRAAccess={profileInfo.hasFRAAccess}
             setHasFRAAccess={setHasFRAAccess}
             error={errors.hasFRAAccess}
           />
         )}
-        <Button type="submit" className="width-full request-access-button">
-          Request Access
-        </Button>
+
+        {isAMSUser && <RegionSelector {...regionSelectorProps} />}
+
+        {!editMode ? (
+          <Button type="submit" className="width-full request-access-button">
+            Request Access
+          </Button>
+        ) : (
+          <div className="usa-button-group margin-top-3">
+            <button
+              type="submit"
+              className="usa-button"
+              style={{ minWidth: '300px' }}
+            >
+              {type === 'profile' ? 'Save Changes' : 'Update Request'}
+            </button>
+            <button
+              type="button"
+              className="usa-button margin-left-2"
+              style={{ minWidth: '200px' }}
+              onClick={onCancel}
+            >
+              Cancel
+            </button>
+          </div>
+        )}
       </form>
     </div>
   )

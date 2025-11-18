@@ -14,17 +14,27 @@ from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from tdpservice.users.models import AccountApprovalStatusChoices, Feedback, User
+from tdpservice.users.models import (
+    AccountApprovalStatusChoices,
+    ChangeRequestAuditLog,
+    Feedback,
+    User,
+    UserChangeRequest,
+)
 from tdpservice.users.permissions import (
     CypressAdminAccountPermissions,
     DjangoModelCRUDPermissions,
     FeedbackPermissions,
     IsApprovedPermission,
+    IsOwnerOrAdmin,
     UserPermissions,
 )
 from tdpservice.users.serializers import (
+    ChangeRequestAuditLogSerializer,
     FeedbackSerializer,
     GroupSerializer,
+    UserChangeRequestSerializer,
+    UserProfileChangeRequestSerializer,
     UserProfileSerializer,
     UserSerializer,
 )
@@ -48,6 +58,8 @@ class UserViewSet(
         """Return the serializer class."""
         return {
             "request_access": UserProfileSerializer,
+            "profile": UserProfileSerializer,
+            "update_profile": UserProfileChangeRequestSerializer,
         }.get(self.action, UserSerializer)
 
     def get_queryset(self):
@@ -93,6 +105,21 @@ class UserViewSet(
         logger.info(
             "Access request for user: %s on %s", self.request.user, timezone.now()
         )
+        return Response(serializer.data)
+
+    @action(methods=["GET"], detail=False)
+    def profile(self, request):
+        """Get the current user's profile."""
+        serializer = self.get_serializer(self.request.user)
+        return Response(serializer.data)
+
+    @action(methods=["PATCH"], detail=False)
+    def update_profile(self, request):
+        """Update the current user's profile through change requests."""
+        serializer = self.get_serializer(self.request.user, request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
         return Response(serializer.data)
 
 
@@ -144,6 +171,42 @@ class GroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     queryset = Group.objects.all()
     permission_classes = [DjangoModelCRUDPermissions, IsApprovedPermission]
     serializer_class = GroupSerializer
+
+
+class UserChangeRequestViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for user change requests."""
+
+    serializer_class = UserChangeRequestSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
+
+    def get_queryset(self):
+        """Filter queryset based on user permissions."""
+        user = self.request.user
+        if user.is_ofa_sys_admin:
+            return UserChangeRequest.objects.all()
+
+        return UserChangeRequest.objects.filter(user=user)
+
+    def perform_create(self, serializer):
+        """Set user to current user if not specified."""
+        data = serializer.validated_data
+        if "user" not in data:
+            data["user"] = self.request.user
+        serializer.save()
+
+
+class ChangeRequestAuditLogViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for change request audit logs."""
+
+    serializer_class = ChangeRequestAuditLogSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Only allow admins to access audit logs."""
+        user = self.request.user
+        if not user.is_ofa_sys_admin:
+            return ChangeRequestAuditLog.objects.none()
+        return ChangeRequestAuditLog.objects.all()
 
 
 class FeedbackViewSet(
