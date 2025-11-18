@@ -622,3 +622,59 @@ class TestProcessReportSource:
         source.refresh_from_db()
         assert source.status == ReportSource.Status.FAILED
         assert "STT code '999' not found" in source.error_message
+
+    def test_process_with_provided_year_overrides_zip_structure(self, ofa_admin):
+        """Should use provided year instead of zip structure year for ReportFile records."""
+        from tdpservice.stts.models import Region, STT
+
+        # Create region and STT
+        region = Region.objects.create(id=9005, name="Test Region 5")
+        STT.objects.create(
+            id=8006,
+            stt_code="1",
+            name="Test STT 1",
+            region=region,
+            postal_code="T1",
+            type="STATE"
+        )
+
+        # Zip has 2025 structure, but we'll provide year=2024
+        structure = {
+            "2025": {
+                "9005": {
+                    "1": ["report1.pdf"]
+                }
+            }
+        }
+        zip_buffer = create_nested_zip(structure)
+
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        uploaded_file = SimpleUploadedFile(
+            "report_source.zip",
+            zip_buffer.read(),
+            content_type="application/zip"
+        )
+
+        # Create with provided year=2024 and quarter=Q4
+        source = ReportSource.objects.create(
+            uploaded_by=ofa_admin,
+            original_filename="report_source.zip",
+            slug="report_source.zip",
+            file=uploaded_file,
+            quarter="Q4",  # Explicitly provided
+            year=2024,  # Explicitly provided - different from zip structure (2025)
+        )
+
+        source.created_at = timezone.make_aware(datetime(2025, 3, 15))
+        source.save(update_fields=["created_at"])
+
+        process_report_source(source.id)
+
+        source.refresh_from_db()
+        assert source.status == ReportSource.Status.SUCCEEDED
+        assert source.num_reports_created == 1
+
+        # Verify year is 2024 (provided), not 2025 (from zip structure)
+        report_file = ReportFile.objects.filter(source=source).first()
+        assert report_file.year == 2024
+        assert report_file.quarter == "Q4"

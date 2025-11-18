@@ -81,6 +81,7 @@ class ReportSourceSerializer(serializers.ModelSerializer):
             "num_reports_created",
             "error_message",
             "quarter",
+            "year",
             "file",
         ]
         read_only_fields = [
@@ -98,6 +99,7 @@ class ReportSourceSerializer(serializers.ModelSerializer):
         """Create a ReportSource record for a report source zip file upload."""
         file = validated_data.get("file")
         quarter = validated_data.get("quarter")  # optional
+        year = validated_data.get("year")  # optional
         user = self.context["user"]
 
         source = ReportSource.objects.create(
@@ -106,6 +108,7 @@ class ReportSourceSerializer(serializers.ModelSerializer):
             extension="zip",
             uploaded_by=user,
             quarter=quarter,
+            year=year,
             file=file,
         )
 

@@ -59,6 +59,7 @@ class ReportSource(FileRecord):
     quarter = models.CharField(
         max_length=16, blank=True, null=True, choices=Quarter.choices
     )
+    year = models.IntegerField(blank=True, null=True)
     num_reports_created = models.PositiveIntegerField(default=0)
     error_message = models.TextField(null=True, blank=True)
 

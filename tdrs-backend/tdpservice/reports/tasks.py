@@ -219,25 +219,32 @@ def _extract_and_validate_structure(source: ReportSource, zip_file: zipfile.ZipF
     """
     Extract fiscal year and STT folders from zip file.
 
+    If year is set on the source model, use it for creating ReportFiles but still
+    parse the zip structure based on whatever year folder exists in the zip.
+    Otherwise, extract year from the zip file structure and use it for both parsing and creation.
+
     Returns
     -------
-        tuple of (fiscal_year, stt_files_map) or (None, None) if validation fails
+        tuple of (fiscal_year_for_reports, stt_files_map) or (None, None) if validation fails
     """
-    # Extract fiscal year from top-level folder
+    # First, extract the fiscal year from the zip structure (always needed for parsing)
     try:
-        fiscal_year = extract_fiscal_year(zip_file)
+        fiscal_year_in_zip = extract_fiscal_year(zip_file)
     except ValueError as e:
         _mark_source_failed(source, str(e))
         return None, None
 
-    # Find all STT folders and their files
+    # Find all STT folders and their files using the year from the zip structure
     try:
-        stt_files_map = find_stt_folders(zip_file, str(fiscal_year))
+        stt_files_map = find_stt_folders(zip_file, str(fiscal_year_in_zip))
     except ValueError as e:
         _mark_source_failed(source, str(e))
         return None, None
 
-    return fiscal_year, stt_files_map
+    # Use year from model if provided, otherwise use the year from the zip structure
+    fiscal_year_for_reports = source.year if source.year else fiscal_year_in_zip
+
+    return fiscal_year_for_reports, stt_files_map
 
 
 def _process_stt_folder(
