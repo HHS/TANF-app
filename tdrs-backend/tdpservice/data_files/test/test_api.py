@@ -608,6 +608,7 @@ def multi_year_data_file_data(user, stt):
             "year": 2020,
             "section": "Active Case Data",
             "program_type": "TAN",
+            "is_program_audit": False,
         },
         {
             "original_filename": "data_file.txt",
@@ -617,6 +618,7 @@ def multi_year_data_file_data(user, stt):
             "year": 2021,
             "section": "Active Case Data",
             "program_type": "TAN",
+            "is_program_audit": False,
         },
         {
             "original_filename": "data_file.txt",
@@ -626,6 +628,7 @@ def multi_year_data_file_data(user, stt):
             "year": 2022,
             "section": "Active Case Data",
             "program_type": "TAN",
+            "is_program_audit": False,
         },
     ]
 

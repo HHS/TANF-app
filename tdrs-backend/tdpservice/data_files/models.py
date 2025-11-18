@@ -261,6 +261,7 @@ class DataFile(FileRecord):
                 section=data["section"],
                 program_type=data["program_type"],
                 stt=data["stt"],
+                is_program_audit=data["is_program_audit"],
             )
             or 0
         ) + 1
@@ -271,7 +272,9 @@ class DataFile(FileRecord):
         )
 
     @classmethod
-    def find_latest_version_number(self, year, quarter, section, program_type, stt):
+    def find_latest_version_number(
+        self, year, quarter, section, program_type, stt, is_program_audit
+    ):
         """Locate the latest version number in a series of data files."""
         return self.objects.filter(
             stt=stt,
@@ -279,13 +282,16 @@ class DataFile(FileRecord):
             quarter=quarter,
             section=section,
             program_type=program_type,
+            is_program_audit=is_program_audit,
         ).aggregate(Max("version"))["version__max"]
 
     @classmethod
-    def find_latest_version(self, year, quarter, section, program_type, stt):
+    def find_latest_version(
+        self, year, quarter, section, program_type, stt, is_program_audit
+    ):
         """Locate the latest version of a data file."""
         version = self.find_latest_version_number(
-            year, quarter, section, program_type, stt
+            year, quarter, section, program_type, stt, is_program_audit
         )
 
         return self.objects.filter(
@@ -295,6 +301,7 @@ class DataFile(FileRecord):
             section=section,
             program_type=program_type,
             stt=stt,
+            is_program_audit=is_program_audit,
         ).first()
 
     def __repr__(self):
