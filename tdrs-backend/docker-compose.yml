@@ -269,6 +269,7 @@ services:
       - OFA_DB_USER
       - OTEL_PYTHON_DJANGO_EXCLUDED_URLS
       - CGAPPNAME_BACKEND
+      - SENTRY_DSN
     volumes:
       - .:/tdpapp
       - logs:/tmp
@@ -344,7 +345,7 @@ services:
       - .:/tdpapp
       - logs:/tmp
     image: tdp
-    build: 
+    build:
       context: .
       args:
         REGISTRY_OWNER: ${REGISTRY_OWNER:-hhs}
