@@ -61,6 +61,7 @@ class VersionFilter(MostRecentVersionFilter):
                 quarter=OuterRef("quarter"),
                 program_type=OuterRef("program_type"),
                 section=OuterRef("section"),
+                is_program_audit=OuterRef("is_program_audit"),
             ).order_by("-version")
 
             # Filter to only records with the latest version
