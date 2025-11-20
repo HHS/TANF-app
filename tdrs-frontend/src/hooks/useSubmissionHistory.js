@@ -14,7 +14,7 @@ export const useSubmissionHistory = (filterValues) => {
   const dispatch = useDispatch()
   const { files, loading } = useSelector((state) => state.reports)
   const prevFilterValuesRef = useRef()
-  const { isDonePolling } = useReportsContext()
+  const { isPolling } = useReportsContext()
 
   useEffect(() => {
     // Serialize filterValues for comparison
@@ -22,16 +22,13 @@ export const useSubmissionHistory = (filterValues) => {
     const prevFilters = prevFilterValuesRef.current
 
     // Fetch if this is the first render or if filterValues have changed
-    if (
-      !prevFilters &&
-      Object.keys(isDonePolling).some((k) => isDonePolling[k])
-    ) {
+    if (!prevFilters && Object.keys(isPolling).some((k) => !isPolling[k])) {
       return
     } else if (!prevFilters || currentFilters !== prevFilters) {
       dispatch(getAvailableFileList(filterValues))
       prevFilterValuesRef.current = currentFilters
     }
-  }, [dispatch, filterValues, isDonePolling])
+  }, [dispatch, filterValues, isPolling])
 
   return {
     files,

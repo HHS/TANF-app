@@ -129,7 +129,14 @@ const CaseAggregatesRow = ({ file, reprocessedState, isLoadingStatus }) => {
 }
 
 export const CaseAggregatesTable = ({ files, reprocessedState }) => {
-  const { isDonePolling } = useReportsContext()
+  const { isPolling } = useReportsContext()
+
+  const isLoadingStatus = (fileId) => {
+    if (isPolling && fileId in isPolling) {
+      return isPolling[fileId]
+    }
+    return false
+  }
 
   return (
     <>
@@ -167,11 +174,7 @@ export const CaseAggregatesTable = ({ files, reprocessedState }) => {
             key={file.id}
             file={file}
             reprocessedState={reprocessedState}
-            isLoadingStatus={
-              isDonePolling && file.id in isDonePolling
-                ? !isDonePolling[file.id]
-                : false
-            }
+            isLoadingStatus={isLoadingStatus(file.id)}
           />
         ))}
       </tbody>

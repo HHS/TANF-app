@@ -402,7 +402,14 @@ const SubmissionHistory = ({
   handleDownload,
   isRegionalStaff,
 }) => {
-  const { isDonePolling } = useReportsContext()
+  const { isPolling } = useReportsContext()
+
+  const isLoadingStatus = (fileId) => {
+    if (isPolling && fileId in isPolling) {
+      return isPolling[fileId]
+    }
+    return false
+  }
 
   return (
     <table className="usa-table usa-table--striped">
@@ -424,11 +431,7 @@ const SubmissionHistory = ({
                 file={file}
                 handleDownload={handleDownload}
                 isRegionalStaff={isRegionalStaff}
-                isLoadingStatus={
-                  isDonePolling && file.id in isDonePolling
-                    ? !isDonePolling[file.id]
-                    : false
-                }
+                isLoadingStatus={isLoadingStatus(file.id)}
               />
             ))}
           </tbody>
@@ -649,40 +652,54 @@ const FRAReportsContent = () => {
         })
       )
 
-      startPolling(
-        datafile.id,
-        () => getFraSubmissionStatus(datafile.id),
-        (response) => {
-          let summary = response?.data?.summary
-          return summary && summary.status && summary.status !== 'Pending'
-        },
-        (response) => {
-          dispatch({
-            type: SET_FRA_SUBMISSION_STATUS,
-            payload: {
-              datafile_id: datafile.id,
-              datafile: response?.data,
-            },
-          })
-          setLocalAlertState({
-            active: true,
-            type: 'success',
-            message: 'Parsing complete.',
-          })
-        },
-        (error) => {
-          setLocalAlertState({
-            active: true,
-            type: 'error',
-            message: error.message,
-          })
-        },
-        (onError) => {
-          onError({
-            message:
-              'Exceeded max number of tries to update submission status.',
-          })
-        }
+      const pollFraSubmissionHistory = (datafile) => {
+        startPolling(
+          datafile.id,
+          () => getFraSubmissionStatus(datafile.id),
+          (response) => {
+            let summary = response?.data?.summary
+            return summary && summary.status && summary.status !== 'Pending'
+          },
+          (response) => {
+            dispatch({
+              type: SET_FRA_SUBMISSION_STATUS,
+              payload: {
+                datafile_id: datafile.id,
+                datafile: response?.data,
+              },
+            })
+            setLocalAlertState({
+              active: true,
+              type: 'success',
+              message: 'Parsing complete.',
+            })
+          },
+          (error) => {
+            setLocalAlertState({
+              active: true,
+              type: 'error',
+              message: error.message,
+            })
+          },
+          (onError) => {
+            onError({
+              message:
+                'Exceeded max number of tries to update submission status.',
+            })
+          }
+        )
+      }
+
+      dispatch(
+        getFraSubmissionHistory(
+          {
+            stt,
+            reportType: fileTypeInputValue,
+            fiscalYear: yearInputValue,
+            fiscalQuarter: quarterInputValue,
+          },
+          () => pollFraSubmissionHistory(datafile)
+        )
       )
     }
 

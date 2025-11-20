@@ -13,7 +13,7 @@ export const usePollingTimer = () => {
       ...pollState[requestId],
       ...changes,
     }
-    setPollState({ ...pollState, ...newState })
+    setPollState(newState)
   }
 
   const addTimer = (requestId, timer) => {
@@ -75,7 +75,10 @@ export const usePollingTimer = () => {
     }
 
     const retry = () => {
-      setPollStateForRequest(requestId, { isPerformingRequest: false })
+      setPollStateForRequest(requestId, {
+        isPerformingRequest: false,
+        isDonePolling: false,
+      })
       poll(
         requestId,
         tryNumber + 1,
@@ -104,10 +107,10 @@ export const usePollingTimer = () => {
         if (!shouldStopPolling) {
           retry(requestId, tryNumber)
           return
+        } else {
+          finish(requestId, () => onError(axiosError))
+          return
         }
-
-        finish(requestId, () => onError(axiosError))
-        return
       }
 
       let result = test(response)
@@ -160,28 +163,26 @@ export const usePollingTimer = () => {
     )
   }
 
-  const isDonePolling = {}
-  Object.keys(pollState).forEach((t) => {
-    isDonePolling[t] = pollState[t].isDonePolling
-  })
-
-  useEffect(() => {
-    const stopAllTimers = () => {
+  const stopAllTimers = () => {
+    const timer = timers.current
+    if (timer && Object.keys(timer).length !== 0) {
       Object.keys(timers.current).forEach((requestId) =>
         stopTimer(requestId, false)
       )
       setPollState({})
     }
+  }
 
-    const onUnmount = () => {
-      const timer = timers.current
-      if (timer && Object.keys(timer).length !== 0) {
-        stopAllTimers()
-      }
-    }
+  const isPolling = {}
+  Object.keys(pollState).forEach((t) => {
+    isPolling[t] =
+      !pollState[t].isDonePolling || pollState[t].isPerformingRequest
+  })
 
+  useEffect(() => {
+    const onUnmount = () => stopAllTimers()
     return onUnmount
   }, [timers])
 
-  return { startPolling, isDonePolling }
+  return { startPolling, isPolling, stopAllTimers }
 }

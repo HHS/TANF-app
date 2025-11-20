@@ -92,15 +92,6 @@ export const uploadFraReport =
         }
       )
 
-      dispatch(
-        getFraSubmissionHistory({
-          stt,
-          reportType,
-          fiscalQuarter,
-          fiscalYear,
-        })
-      )
-
       onSuccess(response?.data)
     } catch (error) {
       onError(error)

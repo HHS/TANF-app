@@ -44,7 +44,6 @@ export const useFileUploadForm = ({
     handleClearAll,
     handleOpenFeedbackWidget,
     startPolling,
-    setSelectedSubmissionTab,
   } = useReportsContext()
 
   const user = useSelector((state) => state.auth.user)
@@ -54,6 +53,46 @@ export const useFileUploadForm = ({
   const formattedSections = formatSections(uploadedFiles)
 
   const onFileUploadSuccess = (fileIds) => {
+    const pollSubmissionStatus = () =>
+      fileIds.forEach((fileId) => {
+        startPolling(
+          fileId,
+          () => getTanfSubmissionStatus(fileId),
+          (response) => {
+            let summary = response?.data?.summary
+            return summary && summary.status && summary.status !== 'Pending'
+          },
+          (response) => {
+            dispatch({
+              type: SET_TANF_SUBMISSION_STATUS,
+              payload: {
+                datafile_id: fileId,
+                datafile: response?.data,
+              },
+            })
+            setLocalAlertState({
+              active: true,
+              type: 'success',
+              message: 'Parsing complete.',
+            })
+          },
+          (error) => {
+            setLocalAlertState({
+              active: true,
+              type: error.type ? error.type : 'error',
+              message: error.message,
+            })
+          },
+          (onError) => {
+            onError({
+              message:
+                'Exceeded max number of tries to update submission status.',
+              type: 'warning',
+            })
+          }
+        )
+      })
+
     dispatch(
       getAvailableFileList(
         {
@@ -62,49 +101,9 @@ export const useFileUploadForm = ({
           stt: stt,
           file_type: fileTypeInputValue,
         },
-        () => {
-          fileIds.forEach((fileId) =>
-            startPolling(
-              fileId,
-              () => getTanfSubmissionStatus(fileId),
-              (response) => {
-                let summary = response?.data?.summary
-                return summary && summary.status && summary.status !== 'Pending'
-              },
-              (response) => {
-                dispatch({
-                  type: SET_TANF_SUBMISSION_STATUS,
-                  payload: {
-                    datafile_id: fileId,
-                    datafile: response?.data,
-                  },
-                })
-                setLocalAlertState({
-                  active: true,
-                  type: 'success',
-                  message: 'Parsing complete.',
-                })
-              },
-              (error) => {
-                setLocalAlertState({
-                  active: true,
-                  type: error.type ? error.type : 'error',
-                  message: error.message,
-                })
-              },
-              (onError) => {
-                onError({
-                  message:
-                    'Exceeded max number of tries to update submission status.',
-                  type: 'warning',
-                })
-              }
-            )
-          )
-        }
+        () => pollSubmissionStatus()
       )
     )
-    // setSelectedSubmissionTab(2)
   }
 
   // Handle form submission
