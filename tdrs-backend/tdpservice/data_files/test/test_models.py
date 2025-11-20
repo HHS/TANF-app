@@ -20,6 +20,7 @@ def test_create_new_data_file_version(data_file_instance):
             "slug": data_file_instance.slug,
             "extension": data_file_instance.extension,
             "user": data_file_instance.user,
+            "is_program_audit": data_file_instance.is_program_audit,
         }
     )
     assert new_version.version == data_file_instance.version + 1
@@ -39,6 +40,7 @@ def test_find_latest_version(data_file_instance):
             "slug": data_file_instance.slug,
             "extension": data_file_instance.extension,
             "user": data_file_instance.user,
+            "is_program_audit": data_file_instance.is_program_audit,
         }
     )
 
@@ -48,6 +50,7 @@ def test_find_latest_version(data_file_instance):
         section=data_file_instance.section,
         program_type=data_file_instance.program_type,
         stt=data_file_instance.stt.id,
+        is_program_audit=data_file_instance.is_program_audit,
     )
     assert latest_data_file.version == new_data_file.version
 
@@ -66,6 +69,7 @@ def test_find_latest_version_number(data_file_instance):
             "slug": data_file_instance.slug,
             "extension": data_file_instance.extension,
             "user": data_file_instance.user,
+            "is_program_audit": data_file_instance.is_program_audit,
         }
     )
 
@@ -75,6 +79,7 @@ def test_find_latest_version_number(data_file_instance):
         section=data_file_instance.section,
         program_type=data_file_instance.program_type,
         stt=data_file_instance.stt.id,
+        is_program_audit=data_file_instance.is_program_audit,
     )
     assert latest_version == new_data_file.version
 
@@ -95,6 +100,7 @@ def test_data_files_filename_is_expected(user):
                     "section": section,
                     "user": user,
                     "stt": stt,
+                    "is_program_audit": False,
                 }
             )
             assert new_data_file.filename == stt.filenames[section]
@@ -128,6 +134,7 @@ def test_prog_type(base_data_file_data, data_analyst, stt, section, program_type
             "slug": base_data_file_data["slug"],
             "extension": base_data_file_data["extension"],
             "user": data_analyst,
+            "is_program_audit": False,
         }
     )
 
@@ -149,6 +156,7 @@ def test_fiscal_year(data_file_instance):
             "slug": data_file_instance.slug,
             "extension": data_file_instance.extension,
             "user": data_file_instance.user,
+            "is_program_audit": False,
         }
     )
 

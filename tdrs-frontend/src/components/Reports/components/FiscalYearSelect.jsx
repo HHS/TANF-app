@@ -3,7 +3,7 @@ import classNames from 'classnames'
 import { constructYearOptions } from '../utils'
 import { useReportsContext } from '../ReportsContext'
 
-const FiscalYearSelect = ({ startYear }) => {
+const FiscalYearSelect = ({ startYear, endYear = null }) => {
   const { yearInputValue, selectYear, getYearError, handleYearBlur } =
     useReportsContext()
   const hasError = getYearError()
@@ -38,7 +38,7 @@ const FiscalYearSelect = ({ startYear }) => {
           <option value="" disabled hidden>
             - Select Fiscal Year -
           </option>
-          {constructYearOptions(startYear)}
+          {constructYearOptions(startYear, endYear)}
         </select>
       </label>
     </div>
