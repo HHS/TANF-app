@@ -2,13 +2,13 @@
 
 ## Overview
 
-- Completed 12 issues this sprint, including closure of several high-impact items like email templates, Promtail migration, FRA submission updates, and knowledge center changes. ( #3251, #3258, #3571, #5368, #5418, #5463, #5469, #4924, #5428, #5397, #5398 )
+- Closed a batch of backend, data validation, and admin work, reducing risk and backlog. ([#3251](https://github.com/raft-tech/TANF-app/issues/3251), [#3258](https://github.com/raft-tech/TANF-app/issues/3258), [#3571](https://github.com/raft-tech/TANF-app/issues/3571), [#4924](https://github.com/raft-tech/TANF-app/issues/4924), [#5397](https://github.com/raft-tech/TANF-app/issues/5397), [#5398](https://github.com/raft-tech/TANF-app/issues/5398), [#5463](https://github.com/raft-tech/TANF-app/issues/5463), [#5469](https://github.com/raft-tech/TANF-app/issues/5469), [#5432](https://github.com/raft-tech/TANF-app/issues/5432))
 
-- Progressed 19 issues by moving several from Backlog/Next Sprint Backlog into Current Sprint Backlog and advancing key UX/admin work, e.g., STT Feedback UI, parser refactor, and admin data flows. ( #5316, #5416, #5417, #5434 )
+- Progressed knowledge center and UI work: KC NavBar item closed, data pages refreshed, and related UI/content moved toward production. ([#5428](https://github.com/raft-tech/TANF-app/issues/5428), [#5418](https://github.com/raft-tech/TANF-app/issues/5418), [#5390](https://github.com/raft-tech/TANF-app/issues/5390), [#5417](https://github.com/raft-tech/TANF-app/issues/5417), [#5429](https://github.com/raft-tech/TANF-app/issues/5429))
 
-- Blockers slowed progress on major regional staff initiatives and design work, with items remaining Blocked. ( #3461, #3462, #3523, #5269 )
+- Moved parsing and data-quality improvements forward, including refactor of parsing logic and EXIT_MONTH/SSN validation fixes toward production. ([#5434](https://github.com/raft-tech/TANF-app/issues/5434), [#5463](https://github.com/raft-tech/TANF-app/issues/5463), [#5475](https://github.com/raft-tech/TANF-app/issues/5475))
 
-- Major initiatives gained momentum in UX and operations, with related tasks advancing into active states and related backend work closing, signaling near-term deliverables. ( #5390, #5397, #5418, #5428 )
+- Blockers and risk areas identified, with several regional staff and OFA-related tracks still blocked, signaling risk to final sprint delivery. ([#3461](https://github.com/raft-tech/TANF-app/issues/3461), [#3462](https://github.com/raft-tech/TANF-app/issues/3462), [#3523](https://github.com/raft-tech/TANF-app/issues/3523), [#3995](https://github.com/raft-tech/TANF-app/issues/3995), [#4045](https://github.com/raft-tech/TANF-app/issues/4045), [#4047](https://github.com/raft-tech/TANF-app/issues/4047))
 
 ---
 
