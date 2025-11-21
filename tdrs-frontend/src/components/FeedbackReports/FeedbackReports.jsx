@@ -259,7 +259,7 @@ function FeedbackReports() {
           />
 
           <Button
-            type="button"
+            type="submit"
             onClick={handleUpload}
             disabled={!selectedFile || loading}
             className="margin-top-2"
