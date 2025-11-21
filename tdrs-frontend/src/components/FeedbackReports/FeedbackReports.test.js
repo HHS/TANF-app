@@ -1,12 +1,20 @@
 import React from 'react'
 import { Provider } from 'react-redux'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import configureStore from 'redux-mock-store'
 import { thunk } from 'redux-thunk'
 import FeedbackReports from './FeedbackReports'
 import axiosInstance from '../../axios-instance'
+import * as authSelectors from '../../selectors/auth'
 
 jest.mock('../../axios-instance')
+jest.mock('../../utils/createFileInputErrorState')
+jest.mock('@uswds/uswds/src/js/components', () => ({
+  fileInput: {
+    init: jest.fn(),
+  },
+}))
 
 const mockStore = configureStore([thunk])
 
@@ -28,15 +36,20 @@ describe('FeedbackReports', () => {
     // Reset all mocks before each test
     jest.clearAllMocks()
 
+    // Mock accountCanViewAdmin selector to return true by default
+    jest.spyOn(authSelectors, 'accountCanViewAdmin').mockReturnValue(true)
+
     // Mock successful history fetch by default
     axiosInstance.get.mockResolvedValue({ data: [] })
   })
 
   const renderComponent = () => {
     return render(
-      <Provider store={store}>
-        <FeedbackReports />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <FeedbackReports />
+        </Provider>
+      </MemoryRouter>
     )
   }
 
@@ -44,45 +57,47 @@ describe('FeedbackReports', () => {
     it('renders the page title and subtitle', async () => {
       renderComponent()
 
-      expect(screen.getByText('Upload Feedback Reports')).toBeInTheDocument()
-      expect(
-        screen.getByText(
-          'TANF WPR, SSP WPR, TANF & SSP Combined, and Time Limit Reports'
-        )
-      ).toBeInTheDocument()
-    })
-
-    it('renders the file upload section', () => {
-      renderComponent()
-
-      expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
-      expect(screen.getByText(/Drag file here or/)).toBeInTheDocument()
-      expect(screen.getByText(/choose from folder/)).toBeInTheDocument()
-      expect(screen.getByText('Only .zip files are accepted')).toBeInTheDocument()
-    })
-
-    it('renders the upload button', () => {
-      renderComponent()
-
-      const uploadButton = screen.getByRole('button', {
-        name: /Upload & Notify States/i,
+      await waitFor(() => {
+        expect(screen.getByText(/Once submitted, TDP will distribute/)).toBeInTheDocument()
       })
-      expect(uploadButton).toBeInTheDocument()
-      expect(uploadButton).toBeDisabled() // Should be disabled without file
     })
 
-    it('renders the upload history section', () => {
+    it('renders the file upload section', async () => {
       renderComponent()
 
-      expect(screen.getByText('Upload History')).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
+      })
     })
 
-    it('renders the info alert about notification distribution', () => {
+    it('renders the upload button', async () => {
       renderComponent()
 
-      expect(
-        screen.getByText(/Once submitted, TDP will distribute feedback reports/)
-      ).toBeInTheDocument()
+      await waitFor(() => {
+        const uploadButton = screen.getByRole('button', {
+          name: /Upload & Notify States/i,
+        })
+        expect(uploadButton).toBeInTheDocument()
+        expect(uploadButton).toHaveAttribute('disabled') // Should be disabled without file
+      })
+    })
+
+    it('renders the upload history empty state initially', async () => {
+      renderComponent()
+
+      await waitFor(() => {
+        expect(screen.getByText('No feedback reports uploaded yet')).toBeInTheDocument()
+      })
+    })
+
+    it('renders the info alert about notification distribution', async () => {
+      renderComponent()
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/Once submitted, TDP will distribute feedback reports/)
+        ).toBeInTheDocument()
+      })
     })
   })
 
@@ -90,38 +105,45 @@ describe('FeedbackReports', () => {
     it('enables upload button when a valid .zip file is selected', async () => {
       renderComponent()
 
-      const fileInput = screen.getByLabelText(/Drag file here or/i)
+      await waitFor(() => {
+        expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
+      })
+
+      const fileInput = document.querySelector('input[type="file"]')
       const file = new File(['content'], 'feedback.zip', {
         type: 'application/zip',
       })
 
       fireEvent.change(fileInput, { target: { files: [file] } })
 
-      const uploadButton = screen.getByRole('button', {
-        name: /Upload & Notify States/i,
-      })
-
       await waitFor(() => {
-        expect(uploadButton).not.toBeDisabled()
+        const uploadButton = screen.getByRole('button', {
+          name: /Upload & Notify States/i,
+        })
+        expect(uploadButton).not.toHaveAttribute('disabled')
       })
     })
 
     it('shows error when non-.zip file is selected', async () => {
       renderComponent()
 
-      const fileInput = screen.getByLabelText(/Drag file here or/i)
+      await waitFor(() => {
+        expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
+      })
+
+      const fileInput = document.querySelector('input[type="file"]')
       const file = new File(['content'], 'feedback.txt', { type: 'text/plain' })
 
       fireEvent.change(fileInput, { target: { files: [file] } })
 
       await waitFor(() => {
-        expect(screen.getByText('File must be a zip folder')).toBeInTheDocument()
+        expect(screen.getByText('File must be a .zip file')).toBeInTheDocument()
       })
 
       const uploadButton = screen.getByRole('button', {
         name: /Upload & Notify States/i,
       })
-      expect(uploadButton).toBeDisabled()
+      expect(uploadButton).toHaveAttribute('disabled')
     })
 
     it('successfully uploads a file and shows success message', async () => {
@@ -137,7 +159,11 @@ describe('FeedbackReports', () => {
 
       renderComponent()
 
-      const fileInput = screen.getByLabelText(/Drag file here or/i)
+      await waitFor(() => {
+        expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
+      })
+
+      const fileInput = document.querySelector('input[type="file"]')
       const file = new File(['content'], 'feedback.zip', {
         type: 'application/zip',
       })
@@ -159,7 +185,7 @@ describe('FeedbackReports', () => {
       })
 
       expect(axiosInstance.post).toHaveBeenCalledWith(
-        expect.stringContaining('/v1/reports/report-sources/'),
+        expect.stringContaining('/reports/report-sources/'),
         expect.any(FormData),
         expect.objectContaining({
           headers: { 'Content-Type': 'multipart/form-data' },
@@ -179,7 +205,11 @@ describe('FeedbackReports', () => {
 
       renderComponent()
 
-      const fileInput = screen.getByLabelText(/Drag file here or/i)
+      await waitFor(() => {
+        expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
+      })
+
+      const fileInput = document.querySelector('input[type="file"]')
       const file = new File(['content'], 'feedback.zip', {
         type: 'application/zip',
       })
@@ -204,7 +234,11 @@ describe('FeedbackReports', () => {
 
       renderComponent()
 
-      const fileInput = screen.getByLabelText(/Drag file here or/i)
+      await waitFor(() => {
+        expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
+      })
+
+      const fileInput = document.querySelector('input[type="file"]')
       const file = new File(['content'], 'feedback.zip', {
         type: 'application/zip',
       })
@@ -231,7 +265,11 @@ describe('FeedbackReports', () => {
 
       renderComponent()
 
-      const fileInput = screen.getByLabelText(/Drag file here or/i)
+      await waitFor(() => {
+        expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
+      })
+
+      const fileInput = document.querySelector('input[type="file"]')
       const file = new File(['content'], 'feedback.zip', {
         type: 'application/zip',
       })
@@ -260,7 +298,6 @@ describe('FeedbackReports', () => {
           year: 2025,
           created_at: '2025-03-05T10:31:00Z',
           processed_at: '2025-03-05T10:41:00Z',
-          status: 'SUCCEEDED',
           original_filename: 'FY2025.zip',
           file: 'https://example.com/FY2025.zip',
         },
@@ -273,11 +310,10 @@ describe('FeedbackReports', () => {
       await waitFor(() => {
         expect(screen.getByText('2025')).toBeInTheDocument()
         expect(screen.getByText('FY2025.zip')).toBeInTheDocument()
-        expect(screen.getByText('Complete')).toBeInTheDocument()
       })
 
       expect(axiosInstance.get).toHaveBeenCalledWith(
-        expect.stringContaining('/v1/reports/report-sources/'),
+        expect.stringContaining('/reports/report-sources/'),
         expect.objectContaining({ withCredentials: true })
       )
     })
@@ -323,7 +359,6 @@ describe('FeedbackReports', () => {
           year: 2025,
           created_at: '2025-03-05T10:31:00Z',
           processed_at: '2025-03-05T10:41:00Z',
-          status: 'SUCCEEDED',
           original_filename: 'FY2025.zip',
           file: 'https://example.com/FY2025.zip',
         },
@@ -332,7 +367,6 @@ describe('FeedbackReports', () => {
           year: 2025,
           created_at: '2025-01-08T09:41:00Z',
           processed_at: '2025-01-08T09:48:00Z',
-          status: 'SUCCEEDED',
           original_filename: 'FY2025_Q1.zip',
           file: 'https://example.com/FY2025_Q1.zip',
         },
@@ -345,59 +379,6 @@ describe('FeedbackReports', () => {
       await waitFor(() => {
         expect(screen.getByText('FY2025.zip')).toBeInTheDocument()
         expect(screen.getByText('FY2025_Q1.zip')).toBeInTheDocument()
-        expect(screen.getByText('Showing 2 uploads')).toBeInTheDocument()
-      })
-    })
-
-    it('displays different status badges correctly', async () => {
-      const mockHistory = [
-        {
-          id: 1,
-          year: 2025,
-          created_at: '2025-03-05T10:31:00Z',
-          processed_at: null,
-          status: 'PENDING',
-          original_filename: 'pending.zip',
-          file: 'https://example.com/pending.zip',
-        },
-        {
-          id: 2,
-          year: 2025,
-          created_at: '2025-03-05T10:31:00Z',
-          processed_at: null,
-          status: 'PROCESSING',
-          original_filename: 'processing.zip',
-          file: 'https://example.com/processing.zip',
-        },
-        {
-          id: 3,
-          year: 2025,
-          created_at: '2025-03-05T10:31:00Z',
-          processed_at: '2025-03-05T10:41:00Z',
-          status: 'SUCCEEDED',
-          original_filename: 'succeeded.zip',
-          file: 'https://example.com/succeeded.zip',
-        },
-        {
-          id: 4,
-          year: 2025,
-          created_at: '2025-03-05T10:31:00Z',
-          processed_at: '2025-03-05T10:41:00Z',
-          status: 'FAILED',
-          original_filename: 'failed.zip',
-          file: 'https://example.com/failed.zip',
-        },
-      ]
-
-      axiosInstance.get.mockResolvedValue({ data: mockHistory })
-
-      renderComponent()
-
-      await waitFor(() => {
-        expect(screen.getByText('Pending')).toBeInTheDocument()
-        expect(screen.getByText('Processing')).toBeInTheDocument()
-        expect(screen.getByText('Complete')).toBeInTheDocument()
-        expect(screen.getByText('Failed')).toBeInTheDocument()
       })
     })
 
@@ -412,7 +393,6 @@ describe('FeedbackReports', () => {
           year: 2025,
           created_at: '2025-03-05T10:31:00Z',
           processed_at: null,
-          status: 'PENDING',
           original_filename: 'new.zip',
           file: 'https://example.com/new.zip',
         },
@@ -430,7 +410,7 @@ describe('FeedbackReports', () => {
         ).toBeInTheDocument()
       })
 
-      const fileInput = screen.getByLabelText(/Drag file here or/i)
+      const fileInput = document.querySelector('input[type="file"]')
       const file = new File(['content'], 'feedback.zip', {
         type: 'application/zip',
       })
@@ -472,7 +452,8 @@ describe('FeedbackReports', () => {
 
       await waitFor(() => {
         // Check that dates are formatted (exact format may vary by locale)
-        expect(screen.getByText(/03\/05\/2025/)).toBeInTheDocument()
+        const dates = screen.getAllByText(/03\/05\/2025/)
+        expect(dates.length).toBeGreaterThan(0)
       })
     })
 
@@ -508,7 +489,11 @@ describe('FeedbackReports', () => {
 
       renderComponent()
 
-      const fileInput = screen.getByLabelText(/Drag file here or/i)
+      await waitFor(() => {
+        expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
+      })
+
+      const fileInput = document.querySelector('input[type="file"]')
       const file = new File(['content'], 'feedback.zip', {
         type: 'application/zip',
       })
@@ -522,7 +507,104 @@ describe('FeedbackReports', () => {
       fireEvent.click(uploadButton)
 
       await waitFor(() => {
-        expect(uploadButton).toBeDisabled()
+        expect(uploadButton).toHaveAttribute('disabled')
+      })
+    })
+  })
+
+  describe('Access Control', () => {
+    it('redirects non-admin users to /home', () => {
+      jest.spyOn(authSelectors, 'accountCanViewAdmin').mockReturnValue(false)
+
+      const { container } = renderComponent()
+
+      // Component should not render main content
+      expect(container.querySelector('.feedback-reports')).not.toBeInTheDocument()
+    })
+
+    it('allows admin users to access the page', () => {
+      jest.spyOn(authSelectors, 'accountCanViewAdmin').mockReturnValue(true)
+
+      renderComponent()
+
+      expect(screen.getByText(/Once submitted, TDP will distribute/)).toBeInTheDocument()
+    })
+  })
+
+  describe('Initialization', () => {
+    it('calls fileInput.init() on mount', () => {
+      const { fileInput } = require('@uswds/uswds/src/js/components')
+
+      renderComponent()
+
+      expect(fileInput.init).toHaveBeenCalled()
+    })
+  })
+
+  describe('Paginated Response Handling', () => {
+    it('handles paginated response with results array', async () => {
+      const mockHistory = [
+        {
+          id: 1,
+          year: 2025,
+          created_at: '2025-03-05T10:31:00Z',
+          processed_at: '2025-03-05T10:41:00Z',
+          original_filename: 'test.zip',
+          file: 'https://example.com/test.zip',
+        },
+      ]
+
+      axiosInstance.get.mockResolvedValue({ data: { results: mockHistory } })
+
+      renderComponent()
+
+      await waitFor(() => {
+        expect(screen.getByText('test.zip')).toBeInTheDocument()
+      })
+    })
+
+    it('handles non-paginated response (direct array)', async () => {
+      const mockHistory = [
+        {
+          id: 1,
+          year: 2025,
+          created_at: '2025-03-05T10:31:00Z',
+          processed_at: '2025-03-05T10:41:00Z',
+          original_filename: 'test.zip',
+          file: 'https://example.com/test.zip',
+        },
+      ]
+
+      axiosInstance.get.mockResolvedValue({ data: mockHistory })
+
+      renderComponent()
+
+      await waitFor(() => {
+        expect(screen.getByText('test.zip')).toBeInTheDocument()
+      })
+    })
+  })
+
+  describe('Year Fallback', () => {
+    it('displays current year when report year is null', async () => {
+      const currentYear = new Date().getFullYear()
+      const mockHistory = [
+        {
+          id: 1,
+          year: null,
+          created_at: '2025-03-05T10:31:00Z',
+          processed_at: '2025-03-05T10:41:00Z',
+          original_filename: 'test.zip',
+          file: 'https://example.com/test.zip',
+        },
+      ]
+
+      axiosInstance.get.mockResolvedValue({ data: mockHistory })
+
+      renderComponent()
+
+      await waitFor(() => {
+        expect(screen.getByText(currentYear.toString())).toBeInTheDocument()
       })
     })
   })

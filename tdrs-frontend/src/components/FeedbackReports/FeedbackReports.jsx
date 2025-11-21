@@ -30,21 +30,6 @@ function FeedbackReports() {
   const inputRef = useRef(null)
   const userIsAdmin = useSelector(accountCanViewAdmin)
 
-  // Initialize USWDS file input component
-  useEffect(() => {
-    fileInput.init()
-  }, [])
-
-  // Fetch upload history on component mount
-  useEffect(() => {
-    fetchUploadHistory()
-  }, [])
-
-  // Redirect non-admin users (after all hooks)
-  if (!userIsAdmin) {
-    return <Navigate to="/home" />
-  }
-
   /**
    * Fetches the upload history from the backend
    */
@@ -66,6 +51,21 @@ function FeedbackReports() {
     } finally {
       setHistoryLoading(false)
     }
+  }
+
+  // Initialize USWDS file input component
+  useEffect(() => {
+    fileInput.init()
+  }, [])
+
+  // Fetch upload history on component mount
+  useEffect(() => {
+    fetchUploadHistory()
+  }, [])
+
+  // Redirect non-admin users (after all hooks)
+  if (!userIsAdmin) {
+    return <Navigate to="/home" />
   }
 
   /**
