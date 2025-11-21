@@ -22,6 +22,7 @@ function RegionSelector({
   )
 
   const regionKey = 'regions'
+  const isRegionalKey = 'regionalType'
 
   useEffect(() => {
     if (regional && profileInfo.regions instanceof Set) {
@@ -76,11 +77,14 @@ function RegionSelector({
     // Clear form error for reset
     setErrors((prev) => clearFormError(prev))
     if (displayingError) {
-      setTouched((prev) => ({ ...prev, regions: true }))
-      setErrors((prev) => ({
-        ...prev,
-        regions: regionError,
-      }))
+      setTouched((prev) => ({ ...prev, regions: true, regionalType: true }))
+      setErrors((prev) => {
+        const { regions, regionalType, ...rest } = prev
+        return {
+          ...rest,
+          regions: regionError,
+        }
+      })
     }
     setProfileInfo((prev) => ({
       ...prev,
@@ -93,10 +97,10 @@ function RegionSelector({
   const handleRegionalNo = () => {
     // Clear form error and regions error when selecting "No"
     setErrors((prev) => {
-      const { form, regions, ...rest } = prev
+      const { form, regions, regionalType, ...rest } = prev
       return rest
     })
-    setPreviousRegions(profileInfo.regions ?? new Set())
+    setPreviousRegions(new Set())
     setTouched((prev) => excludeRegions(prev))
     setProfileInfo((prev) => ({
       ...excludeRegions(prev),
@@ -110,7 +114,9 @@ function RegionSelector({
 
   return (
     <>
-      <div className="usa-form-group">
+      <div
+        className={`usa-form-group ${errors[isRegionalKey] ? 'usa-form-group--error' : ''} region-selector-wrapper`}
+      >
         <fieldset
           className="usa-fieldset"
           disabled={isRegionalButtonDisabled}
@@ -125,14 +131,19 @@ function RegionSelector({
               portal.
             </div>
           )}
+          {isRegionalKey in errors && (
+            <span className="usa-error-message" id="isRegional-error-message">
+              {errors[isRegionalKey]}
+            </span>
+          )}
           <div className="usa-radio">
             <input
               className="usa-radio__input"
               id="regional"
               type="radio"
-              name="regionalType"
+              name={isRegionalKey}
               value="regional"
-              checked={regional}
+              checked={regional === true}
               onChange={handleRegionalYes}
             />
             <label className="usa-radio__label" htmlFor="regional">
@@ -144,9 +155,9 @@ function RegionSelector({
               className="usa-radio__input"
               id="central"
               type="radio"
-              name="regionalType"
+              name={isRegionalKey}
               value="central"
-              checked={!regional}
+              checked={regional === false}
               onChange={handleRegionalNo}
             />
             <label className="usa-radio__label" htmlFor="central">

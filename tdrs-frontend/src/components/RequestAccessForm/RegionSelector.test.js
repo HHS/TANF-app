@@ -156,7 +156,7 @@ describe('RegionSelector', () => {
         mockSetProfileInfo.mock.calls[mockSetProfileInfo.mock.calls.length - 1]
       const updateFn = lastCall[0]
       const result = updateFn({ regions: new Set() })
-      expect(result.regions).toEqual(previousRegions)
+      expect(result.regions).toEqual(new Set()) // the previous regions are wiped out
     })
   })
 

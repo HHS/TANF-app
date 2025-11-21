@@ -105,6 +105,7 @@ class Common(Configuration):
         "tdpservice.email",
         "tdpservice.search_indexes",
         "tdpservice.parsers",
+        "tdpservice.reports",
     )
 
     # https://docs.djangoproject.com/en/2.0/topics/http/middleware/
