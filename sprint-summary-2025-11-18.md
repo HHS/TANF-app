@@ -2,15 +2,15 @@
 
 ## Overview
 
-- 12 issues were completed this sprint, closing core items and stabilizing the baseline. ([#3571](https://github.com/raft-tech/TANF-app/issues/3571), [#4924](https://github.com/raft-tech/TANF-app/issues/4924), [#5368](https://github.com/raft-tech/TANF-app/issues/5368), [#5397](https://github.com/raft-tech/TANF-app/issues/5397), [#5463](https://github.com/raft-tech/TANF-app/issues/5463))
+- Closed a wave of high-impact items, accelerating production readiness across admin UI, data parsing, and reporting—email templates, Promtail migration, FRA submission history, admin read state, knowledge center UI, and key data fixes. ([#3251](https://github.com/raft-tech/TANF-app/issues/3251), [#3258](https://github.com/raft-tech/TANF-app/issues/3258), [#3571](https://github.com/raft-tech/TANF-app/issues/3571), [#4924](https://github.com/raft-tech/TANF-app/issues/4924), [#5432](https://github.com/raft-tech/TANF-app/issues/5432), [#5428](https://github.com/raft-tech/TANF-app/issues/5428), [#5418](https://github.com/raft-tech/TANF-app/issues/5418), [#5397](https://github.com/raft-tech/TANF-app/issues/5397), [#5398](https://github.com/raft-tech/TANF-app/issues/5398), [#5463](https://github.com/raft-tech/TANF-app/issues/5463), [#5469](https://github.com/raft-tech/TANF-app/issues/5469))
 
-- Moved multiple high-priority items from Backlog into active workstreams, advancing E2E test work and knowledge-center tasks. ([#5316](https://github.com/raft-tech/TANF-app/issues/5316), [#5416](https://github.com/raft-tech/TANF-app/issues/5416), [#5390](https://github.com/raft-tech/TANF-app/issues/5390), [#5429](https://github.com/raft-tech/TANF-app/issues/5429))
+- Progress on testing and accessibility: ongoing E2E and a11y work with several tests moving forward and some test-related items entering Next Sprint Backlog. ([#5407](https://github.com/raft-tech/TANF-app/issues/5407), [#5420](https://github.com/raft-tech/TANF-app/issues/5420), [#5421](https://github.com/raft-tech/TANF-app/issues/5421), [#5390](https://github.com/raft-tech/TANF-app/issues/5390))
 
-- Blockers persisted for several regional staff initiatives, with 6 issues still Blocked after intake and triage. ([#3461](https://github.com/raft-tech/TANF-app/issues/3461), [#3462](https://github.com/raft-tech/TANF-app/issues/3462), [#3995](https://github.com/raft-tech/TANF-app/issues/3995), [#4045](https://github.com/raft-tech/TANF-app/issues/4045), [#4047](https://github.com/raft-tech/TANF-app/issues/4047), [#4721](https://github.com/raft-tech/TANF-app/issues/4721))
+- Parser and centralized feedback groundwork advanced: refactoring the parsing logic moved to current sprint backlog; planning for post-MVP centralized feedback started (requirements gathering moved to UX Review). ([#5434](https://github.com/raft-tech/TANF-app/issues/5434), [#5443](https://github.com/raft-tech/TANF-app/issues/5443))
 
-- Refinements to parsing and validation surfaced in the sprint backlog, setting up for stability gains post-release. ([#5434](https://github.com/raft-tech/TANF-app/issues/5434), [#5461](https://github.com/raft-tech/TANF-app/issues/5461))
+- Blockers remained a constraint; 7 items blocked, with critical regional staff and research work paused, including examples. ([#3461](https://github.com/raft-tech/TANF-app/issues/3461), [#3462](https://github.com/raft-tech/TANF-app/issues/3462), [#3523](https://github.com/raft-tech/TANF-app/issues/3523), [#4721](https://github.com/raft-tech/TANF-app/issues/4721))
 
-- UX and Knowledge Center improvements progressed to UX Review, signaling readiness for QA and staging. ([#5428](https://github.com/raft-tech/TANF-app/issues/5428), [#5406](https://github.com/raft-tech/TANF-app/issues/5406))
+- Momentum and reprioritization visible as several tasks shifted between backlogs and sprint planning for next cycle (e.g., E2E tests and knowledge center readiness in motion): move of tasks. ([#5316](https://github.com/raft-tech/TANF-app/issues/5316), [#5391](https://github.com/raft-tech/TANF-app/issues/5391), [#5420](https://github.com/raft-tech/TANF-app/issues/5420), [#5421](https://github.com/raft-tech/TANF-app/issues/5421))
 
 ---
 
