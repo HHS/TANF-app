@@ -52,10 +52,10 @@ function FeedbackReports() {
     setHistoryLoading(true)
     try {
       const response = await axiosInstance.get(
-        `${process.env.REACT_APP_BACKEND_URL}/v1/reports/report-sources/`,
+        `${process.env.REACT_APP_BACKEND_URL}/reports/report-sources/`,
         { withCredentials: true }
       )
-      setUploadHistory(response.data)
+      setUploadHistory(response.data.results || response.data)
     } catch (error) {
       console.error('Failed to fetch upload history:', error)
       setAlert({
@@ -116,7 +116,7 @@ function FeedbackReports() {
 
     try {
       await axiosInstance.post(
-        `${process.env.REACT_APP_BACKEND_URL}/v1/reports/report-sources/`,
+        `${process.env.REACT_APP_BACKEND_URL}/reports/report-sources/`,
         formData,
         {
           headers: { 'Content-Type': 'multipart/form-data' },
