@@ -2,10 +2,13 @@
 
 ## Overview
 
-- Completed 12 issues this sprint across admin, data validation, and UX work, signaling solid momentum and several domain closures ([#3251](https://github.com/raft-tech/TANF-app/issues/3251), [#3258](https://github.com/raft-tech/TANF-app/issues/3258), [#3571](https://github.com/raft-tech/TANF-app/issues/3571), [#4924](https://github.com/raft-tech/TANF-app/issues/4924), [#5398](https://github.com/raft-tech/TANF-app/issues/5398), [#5397](https://github.com/raft-tech/TANF-app/issues/5397), [#5418](https://github.com/raft-tech/TANF-app/issues/5418), [#5428](https://github.com/raft-tech/TANF-app/issues/5428), [#5432](https://github.com/raft-tech/TANF-app/issues/5432), [#5463](https://github.com/raft-tech/TANF-app/issues/5463), [#5469](https://github.com/raft-tech/TANF-app/issues/5469))
-- Progressed 19 issues into active scope by moving key work into Current Sprint Backlog and advancing refactor/training items: parsing logic tech memo, training materials, and STT Feedback UI ([#5434](https://github.com/raft-tech/TANF-app/issues/5434), [#4052](https://github.com/raft-tech/TANF-app/issues/4052), [#5417](https://github.com/raft-tech/TANF-app/issues/5417))
-- QA momentum via E2E work: two items migrated to Next Sprint Backlog to accelerate testing on Admin Feedback Reports and Program Integrity Audit Frontend ([#5421](https://github.com/raft-tech/TANF-app/issues/5421), [#5420](https://github.com/raft-tech/TANF-app/issues/5420))
-- Blockers remain a risk: 7 issues blocked, with notable blockers on regional onboarding and regional training potentially delaying milestones ([#3461](https://github.com/raft-tech/TANF-app/issues/3461), [#3462](https://github.com/raft-tech/TANF-app/issues/3462))
+- Completed 12 issues this sprint (20.3%), despite 7 blockers, delivering closures across STT communications, knowledge center, and reporting/history improvements. (3251, 3571, 5428, 5397, 5398, 5463, 5469)
+
+- Moved a key technical milestone forward by placing the parsing logic refactor tech memo into Current Sprint Backlog, setting a cleaner foundation for future iterations. (5434)
+
+- Advanced automated testing and accessibility planning, with E2E tests for Admin Feedback Reports and Program Integrity Audit frontend and one-time accessibility work moving into Next Sprint Backlog. (5407, 5420, 5421)
+
+- Progressed backlog hygiene for data validation and UI guardrails, including education-level validation and SSN logic updates slated for current sprint work. (5461, 5475)
 
 ---
 
