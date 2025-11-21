@@ -2,11 +2,13 @@
 
 ## Overview
 
-- Completed a set of high-impact items: STT submission templates updated, Promtail migrated to Alloy, FRA submission history restricted to participating STTs, and admin 'acked' column renamed to 'read'. (3251, 3258, 3571, 5432)
-- Knowledge Center progress: KC NavBar item closed and broader navigation/search work advanced to UX Review. (5428, 5429)
-- Data parsing/tech debt moved forward: refactor and cleanup parsing logic tech memo moved from Product Backlog to Current Sprint Backlog. (5434)
-- Critical data fixes completed: EXIT_MONTH datetime parsing issue resolved and PIA submission history cleaned/closed. (5463, 5469)
-- Bug fix delivered: Regional Access Request pre-selected option corrected. (4924)
+- Closed a sizable set of items, clearing backlog and delivering completions this sprint. ([#3251](https://github.com/raft-tech/TANF-app/issues/3251), [#3258](https://github.com/raft-tech/TANF-app/issues/3258), [#3571](https://github.com/raft-tech/TANF-app/issues/3571), [#4924](https://github.com/raft-tech/TANF-app/issues/4924), [#5397](https://github.com/raft-tech/TANF-app/issues/5397), [#5398](https://github.com/raft-tech/TANF-app/issues/5398), [#5418](https://github.com/raft-tech/TANF-app/issues/5418), [#5463](https://github.com/raft-tech/TANF-app/issues/5463), [#5469](https://github.com/raft-tech/TANF-app/issues/5469))
+
+- UI/Knowledge Center momentum: KC NavBar Item closed; Knowledge Center navigation and search advanced to UX Review. ([#5428](https://github.com/raft-tech/TANF-app/issues/5428), [#5429](https://github.com/raft-tech/TANF-app/issues/5429))
+
+- Data processing and validation progress: refactor/cleanup parsing logic tech memo moved to Current Sprint Backlog; Update SSN_VALID logic in SQL Views moved to Current Sprint Backlog. ([#5434](https://github.com/raft-tech/TANF-app/issues/5434), [#5475](https://github.com/raft-tech/TANF-app/issues/5475))
+
+- Testing and admin/reporting pipeline advanced: E2E tests for Admin Feedback Reports and Program Integrity Audit Frontend moved from Product Backlog to Next Sprint Backlog. ([#5421](https://github.com/raft-tech/TANF-app/issues/5421), [#5420](https://github.com/raft-tech/TANF-app/issues/5420))
 
 ---
 
