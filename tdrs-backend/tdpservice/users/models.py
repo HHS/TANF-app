@@ -492,10 +492,6 @@ class User(AbstractUser, UserChangeRequestMixin):
     def validate_location(self):
         """Throw a validation error if a user has a location type incompatable with their role."""
         regional = self.regions.count()
-        if regional and self.stt:
-            raise ValidationError(
-                _("A user may only have a Region or STT assigned, not both.")
-            )
 
         if self.groups.count() == 0 and (self.stt or regional):
             return
@@ -516,11 +512,6 @@ class User(AbstractUser, UserChangeRequestMixin):
             raise ValidationError(
                 _("Data Analyst cannot have a location type other than stt")
             )
-
-    def clean(self, *args, **kwargs):
-        """Prevent save if attributes are not necessary for a user given their role."""
-        super().clean(*args, **kwargs)
-        self.validate_location()
 
     @property
     def has_fra_access(self) -> bool:
@@ -596,6 +587,8 @@ class User(AbstractUser, UserChangeRequestMixin):
         regions = kwargs.pop("regions", [])
         updated_fields = kwargs.pop("updated_fields", None)
 
+        self.validate_location()
+
         if not self._adding:
             if self._loaded_values is None:
                 raise RuntimeError(
@@ -627,7 +620,6 @@ class User(AbstractUser, UserChangeRequestMixin):
 
                 return
 
-        logger.debug("------------ updated_fields: %s", updated_fields)
         if updated_fields and isinstance(updated_fields, list):
             super(User, self).save(update_fields=updated_fields, *args, **kwargs)
         else:

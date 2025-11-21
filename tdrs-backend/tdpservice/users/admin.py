@@ -2,9 +2,7 @@
 
 import logging
 
-from django import forms
 from django.contrib import admin, messages
-from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect
 from django.urls import path, reverse
 from django.utils import timezone
@@ -14,6 +12,7 @@ from django.utils.safestring import mark_safe
 from rest_framework.authtoken.models import TokenProxy
 
 from tdpservice.core.utils import ReadOnlyAdminMixin
+from tdpservice.users.forms import UserForm
 from tdpservice.users.models import (
     ChangeRequestAuditLog,
     Feedback,
@@ -22,85 +21,6 @@ from tdpservice.users.models import (
 )
 
 logger = logging.getLogger()
-
-
-class UserForm(forms.ModelForm):
-    """Customize the user admin form."""
-
-    class Meta:
-        """Define customizations."""
-
-        model = User
-        exclude = ["password"]
-        readonly_fields = [
-            "last_login",
-            "date_joined",
-            "login_gov_uuid",
-            "hhs_id",
-            "access_request",
-        ]
-
-    def clean(self):
-        """Add extra validation for locations based on roles."""
-        cleaned_data = super().clean()
-        groups = cleaned_data["groups"]
-        if len(groups) > 1:
-            raise ValidationError("User should not have multiple groups")
-
-        feature_flags = cleaned_data.get("feature_flags", {})
-        if not feature_flags:
-            feature_flags = {}
-        cleaned_data["feature_flags"] = feature_flags
-
-        return cleaned_data
-
-
-class RegionsInlineFormSet(forms.models.BaseInlineFormSet):
-    """Custom formset for region inlines."""
-
-    def clean(self):
-        """Validate region inlines."""
-        super().clean()
-        cleaned_data = self.cleaned_data[0]
-        user = cleaned_data.get("user")
-        """
-        Have to validate regions against existing and new user roles.
-        Currently, if form request includes a new region and user roles, then changes
-        are validated against only the existing user roles.
-        """
-        if user:
-            regional = user.regions.all().count() + len(cleaned_data.get("regions", []))
-            existing_roles_not_regional = (
-                not user.is_regional_staff
-                and not user.is_data_analyst
-                and not user.is_developer
-            )
-            coming_roles = cleaned_data.get("roles", [])
-            coming_roles_not_regional = any(
-                role in coming_roles
-                for role in ["Regional Staff", "Data Analyst", "Developer"]
-            )
-            if regional and user.stt:
-                raise ValidationError(
-                    "A user may only have a Region or STT assigned, not both."
-                )
-            elif existing_roles_not_regional or coming_roles_not_regional:
-                raise ValidationError(
-                    "Users other than Regional Staff, Developers, Data Analysts do not get assigned a location."
-                )
-
-
-class RegionInline(admin.TabularInline):
-    """Inline model for many to many relationship."""
-
-    model = User.regions.through
-    verbose_name = "Regions"
-    verbose_name_plural = "Regions"
-    can_delete = True
-    ordering = ["-pk"]
-    formset = RegionsInlineFormSet
-
-
 class UserAdmin(admin.ModelAdmin):
     """Customize the user admin functions."""
 
@@ -124,12 +44,13 @@ class UserAdmin(admin.ModelAdmin):
     ]
     autocomplete_fields = ["stt"]
 
-    inlines = [RegionInline]
-
     def has_add_permission(self, request):
         """Disable User object creation through Django Admin."""
         return False
 
+    def save_form(self, request, form, change):
+        """Override save_form to prevent saving the form when not changing."""
+        return form.save(commit=False)
 
 class HasAttachmentFilter(admin.SimpleListFilter):
     """Filter feedback based if it has datafiles associated or not."""

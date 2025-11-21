@@ -433,7 +433,6 @@
             "is_staff": true,
             "is_active": true,
             "date_joined": "2025-02-20T13:53:20.715Z",
-            "stt": 6,
             "login_gov_uuid": null,
             "hhs_id": null,
             "deactivated": false,
