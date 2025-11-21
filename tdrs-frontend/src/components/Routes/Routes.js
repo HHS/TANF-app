@@ -97,9 +97,9 @@ const AppRoutes = () => {
         path="/feedback-reports"
         element={
           <PrivateRoute
-            // TODO: add requiredPermissions for post on reports and report source
             title="Upload Feedback Reports"
             subtitle="TANF WPR, SSP WPR, TANF & SSP Combined, and Time Limit Reports"
+            requiredPermissions={['view_reportsource', 'add_reportsource']}
             requiresApproval
           >
             <FeedbackReports />
