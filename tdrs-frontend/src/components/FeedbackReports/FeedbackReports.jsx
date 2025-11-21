@@ -3,8 +3,11 @@ import { useSelector } from 'react-redux'
 import { Navigate } from 'react-router-dom'
 import Button from '../Button'
 import axiosInstance from '../../axios-instance'
-import { fileInput } from '@uswds/uswds/src/js/components'
 import { accountCanViewAdmin } from '../../selectors/auth'
+import createFileInputErrorState from '../../utils/createFileInputErrorState'
+import { fileInput } from '@uswds/uswds/src/js/components'
+
+const INVALID_EXT_ERROR = 'File must be a .zip file'
 
 /**
  * FeedbackReports component allows OFA Admins to upload quarterly feedback reports
@@ -21,15 +24,15 @@ function FeedbackReports() {
     message: null,
   })
 
-  const fileInputRef = useRef(null)
+  const [fileError, setFileError] = useState(null)
+
+  const inputRef = useRef(null)
   const user = useSelector((state) => state.auth.user)
   const userIsAdmin = useSelector(accountCanViewAdmin)
 
   // Initialize USWDS file input component
   useEffect(() => {
-    if (fileInputRef.current) {
-      fileInput.init(fileInputRef.current)
-    }
+    fileInput.init()
   }, [])
 
   // Fetch upload history on component mount
@@ -65,31 +68,38 @@ function FeedbackReports() {
     }
   }
 
+  const formattedSectionName = 'feedback_reports'
+  const ariaDescription = selectedFile
+    ? `Selected File ${selectedFile.name}. To change the selected file, click this button.`
+    : 'Drag file here or choose from folder.'
+
   /**
    * Handles file selection from the file input
    */
   const handleFileChange = (e) => {
+    setAlert({ active: false, type: null, message: null })
+    setFileError(null)
+
     const file = e.target.files[0]
     if (!file) {
       setSelectedFile(null)
       return
     }
 
+    const input = inputRef.current
+    const dropTarget = inputRef.current?.parentNode
+
     // Validate file extension
-    const fileName = file.name.toLowerCase()
-    if (!fileName.endsWith('.zip')) {
-      setAlert({
-        active: true,
-        type: 'error',
-        message: 'File must be a zip folder',
-      })
+    const re = /\.zip$/i
+    if (!re.exec(file.name)) {
+      createFileInputErrorState(input, dropTarget)
+      setFileError(INVALID_EXT_ERROR)
       setSelectedFile(null)
-      e.target.value = '' // Clear the input
       return
     }
 
     setSelectedFile(file)
-    setAlert({ active: false, type: null, message: null })
+    inputRef.current.value = null
   }
 
   /**
@@ -123,10 +133,7 @@ function FeedbackReports() {
 
       // Clear the file input
       setSelectedFile(null)
-      if (fileInputRef.current) {
-        const input = fileInputRef.current.querySelector('input[type="file"]')
-        if (input) input.value = ''
-      }
+      setFileError(null)
 
       // Refresh upload history
       fetchUploadHistory()
@@ -214,38 +221,42 @@ function FeedbackReports() {
         <hr className="margin-top-2 margin-bottom-2" />
 
         {/* File Upload Section */}
-        <div className="margin-bottom-4">
-          <h2 className="font-serif-lg margin-bottom-2">
+        <div
+          className={`usa-form-group ${fileError ? 'usa-form-group--error' : ''}`}
+        >
+          <label className="usa-label text-bold" htmlFor={formattedSectionName}>
             Feedback Reports ZIP
-          </h2>
-
-          <div ref={fileInputRef} className="usa-form-group">
-            <label className="usa-label" htmlFor="feedback-file-input">
-              Drag file here or{' '}
-              <a
-                href="#feedback-file-input"
-                onClick={(e) => {
-                  e.preventDefault()
-                  fileInputRef.current
-                    ?.querySelector('input[type="file"]')
-                    ?.click()
-                }}
+          </label>
+          <div>
+            {fileError && (
+              <div
+                className="usa-error-message"
+                id={`${formattedSectionName}-error-alert`}
+                role="alert"
               >
-                choose from folder
-              </a>
-            </label>
-            <input
-              id="feedback-file-input"
-              className="usa-file-input"
-              type="file"
-              accept=".zip"
-              onChange={handleFileChange}
-              aria-describedby="feedback-file-input-hint"
-            />
-            <div className="usa-hint" id="feedback-file-input-hint">
-              Only .zip files are accepted
-            </div>
+                {fileError}
+              </div>
+            )}
           </div>
+          <div
+            id={`${formattedSectionName}-file`}
+            aria-hidden
+            className="display-none"
+          >
+            {ariaDescription}
+          </div>
+          <input
+            ref={inputRef}
+            onChange={handleFileChange}
+            id={formattedSectionName}
+            className="usa-file-input"
+            type="file"
+            name="feedback-reports"
+            accept=".zip"
+            aria-describedby={`${formattedSectionName}-file`}
+            aria-hidden="false"
+            data-errormessage={INVALID_EXT_ERROR}
+          />
 
           <Button
             type="button"
