@@ -59,7 +59,10 @@ describe('FeedbackReportsUpload', () => {
         'aria-describedby',
         'feedback_reports-file'
       )
-      expect(fileInput).toHaveAttribute('data-errormessage', 'File must be a .zip file')
+      expect(fileInput).toHaveAttribute(
+        'data-errormessage',
+        'File must be a .zip file'
+      )
     })
 
     it('renders button with correct text', () => {
@@ -93,10 +96,7 @@ describe('FeedbackReportsUpload', () => {
       expect(errorElement).toBeInTheDocument()
       expect(errorElement).toHaveClass('usa-error-message')
       expect(errorElement).toHaveAttribute('role', 'alert')
-      expect(errorElement).toHaveAttribute(
-        'id',
-        'feedback_reports-error-alert'
-      )
+      expect(errorElement).toHaveAttribute('id', 'feedback_reports-error-alert')
     })
 
     it('does not show error message when fileError is null', () => {
@@ -113,7 +113,9 @@ describe('FeedbackReportsUpload', () => {
       const { container } = renderComponent({ selectedFile: null })
 
       const ariaDesc = container.querySelector('#feedback_reports-file')
-      expect(ariaDesc).toHaveTextContent('Drag file here or choose from folder.')
+      expect(ariaDesc).toHaveTextContent(
+        'Drag file here or choose from folder.'
+      )
     })
 
     it('shows selected file aria description when file is selected', () => {

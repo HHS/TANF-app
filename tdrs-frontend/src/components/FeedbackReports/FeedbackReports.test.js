@@ -58,7 +58,9 @@ describe('FeedbackReports', () => {
       renderComponent()
 
       await waitFor(() => {
-        expect(screen.getByText(/Once submitted, TDP will distribute/)).toBeInTheDocument()
+        expect(
+          screen.getByText(/Once submitted, TDP will distribute/)
+        ).toBeInTheDocument()
       })
     })
 
@@ -86,7 +88,9 @@ describe('FeedbackReports', () => {
       renderComponent()
 
       await waitFor(() => {
-        expect(screen.getByText('No feedback reports uploaded yet')).toBeInTheDocument()
+        expect(
+          screen.getByText('No feedback reports uploaded yet')
+        ).toBeInTheDocument()
       })
     })
 
@@ -95,7 +99,9 @@ describe('FeedbackReports', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/Once submitted, TDP will distribute feedback reports/)
+          screen.getByText(
+            /Once submitted, TDP will distribute feedback reports/
+          )
         ).toBeInTheDocument()
       })
     })
@@ -347,7 +353,9 @@ describe('FeedbackReports', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText('Failed to load upload history. Please refresh the page.')
+          screen.getByText(
+            'Failed to load upload history. Please refresh the page.'
+          )
         ).toBeInTheDocument()
       })
     })
@@ -519,7 +527,9 @@ describe('FeedbackReports', () => {
       const { container } = renderComponent()
 
       // Component should not render main content
-      expect(container.querySelector('.feedback-reports')).not.toBeInTheDocument()
+      expect(
+        container.querySelector('.feedback-reports')
+      ).not.toBeInTheDocument()
     })
 
     it('allows admin users to access the page', () => {
@@ -527,7 +537,9 @@ describe('FeedbackReports', () => {
 
       renderComponent()
 
-      expect(screen.getByText(/Once submitted, TDP will distribute/)).toBeInTheDocument()
+      expect(
+        screen.getByText(/Once submitted, TDP will distribute/)
+      ).toBeInTheDocument()
     })
   })
 
