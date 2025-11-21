@@ -269,65 +269,51 @@ function FeedbackReports() {
         </div>
 
         {/* Upload History Section */}
-        <div className="margin-bottom-2">
-          <h2 className="font-serif-lg margin-bottom-2">Upload History</h2>
-
-          {historyLoading ? (
-            <div className="padding-y-3 text-center">
-              <p className="text-base">Loading upload history...</p>
-            </div>
-          ) : uploadHistory.length === 0 ? (
-            <div className="padding-y-3 text-center border-1px border-base-lighter radius-md">
-              <p className="text-base-dark">No feedback reports uploaded yet</p>
-            </div>
-          ) : (
-            <div className="usa-table-container--scrollable" tabIndex="0">
-              <table className="usa-table usa-table--striped usa-table--borderless width-full">
-                <thead>
-                  <tr>
-                    <th scope="col">Fiscal year</th>
-                    <th scope="col">Feedback uploaded on</th>
-                    <th scope="col">Notifications sent on</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">File</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {uploadHistory.map((report) => (
-                    <tr key={report.id}>
-                      <td>{report.year || 'N/A'}</td>
-                      <td>{formatDateTime(report.created_at)}</td>
-                      <td>{formatDateTime(report.processed_at)}</td>
-                      <td>{getStatusBadge(report.status)}</td>
-                      <td>
-                        {report.original_filename ? (
-                          <a
-                            href={report.file}
-                            download={report.original_filename}
-                            className="usa-link"
-                          >
-                            {report.original_filename}
-                          </a>
-                        ) : (
-                          'N/A'
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {uploadHistory.length > 0 && (
-            <div className="margin-top-2 text-base-dark font-sans-xs">
-              <p>
-                Showing {uploadHistory.length} upload
-                {uploadHistory.length !== 1 ? 's' : ''}
-              </p>
-            </div>
-          )}
-        </div>
+        {historyLoading ? (
+          <div className="padding-y-3 text-center">
+            <p className="text-base">Loading upload history...</p>
+          </div>
+        ) : uploadHistory.length === 0 ? (
+          <div className="padding-y-3 text-center border-1px border-base-lighter radius-md">
+            <p className="text-base-dark">No feedback reports uploaded yet</p>
+          </div>
+        ) : (
+          <table className="usa-table usa-table--striped margin-top-4 desktop:width-tablet mobile:width-full">
+            <caption>Upload History</caption>
+            <thead>
+              <tr>
+                <th>Fiscal year</th>
+                <th>Feedback uploaded on</th>
+                <th>Notifications sent on</th>
+                <th>Status</th>
+                <th>File</th>
+              </tr>
+            </thead>
+            <tbody>
+              {uploadHistory.map((report) => (
+                <tr key={report.id}>
+                  <td>{report.year || 'N/A'}</td>
+                  <td>{formatDateTime(report.created_at)}</td>
+                  <td>{formatDateTime(report.processed_at)}</td>
+                  <td>{getStatusBadge(report.status)}</td>
+                  <td>
+                    {report.original_filename ? (
+                      <a
+                        href={report.file}
+                        download={report.original_filename}
+                        className="usa-link"
+                      >
+                        {report.original_filename}
+                      </a>
+                    ) : (
+                      'N/A'
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   )
