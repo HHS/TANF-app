@@ -190,6 +190,15 @@ function FeedbackReports() {
   return (
     <div className="feedback-reports">
       <div className="page-container" style={{ position: 'relative' }}>
+        {/* Description */}
+        <p className="margin-top-5 margin-bottom-0">
+          Once submitted, TDP will distribute feedback reports to TANF/SSP
+          submission history pages of each state and notify users that feedback
+          reports are available. There may be several minutes between when the
+          ZIP is uploaded and when all notifications have been sent as TDP
+          processes the reports.
+        </p>
+
         {/* Alert Messages */}
         {alert.active && (
           <div
@@ -202,18 +211,7 @@ function FeedbackReports() {
           </div>
         )}
 
-        {/* Info Box */}
-        <div className="usa-alert usa-alert--info usa-alert--slim margin-bottom-3">
-          <div className="usa-alert__body">
-            <p className="usa-alert__text">
-              Once submitted, TDP will distribute feedback reports to TANF/SSP
-              submission history pages of each state and notify users that
-              feedback reports are available. There may be several minutes
-              between when the ZIP is uploaded and when all notifications have
-              been sent as TDP processes the reports.
-            </p>
-          </div>
-        </div>
+        <hr className="margin-top-2 margin-bottom-2" />
 
         {/* File Upload Section */}
         <div className="margin-bottom-4">
