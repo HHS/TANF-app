@@ -2,15 +2,15 @@
 
 ## Overview
 
-- Closed 12 issues this sprint, moving core work from backlog or in-progress stages to done across email templates, FRA parsing, data validation, and Knowledge Center improvements. ([#3251](https://github.com/raft-tech/TANF-app/issues/3251), [#3258](https://github.com/raft-tech/TANF-app/issues/3258), [#3571](https://github.com/raft-tech/TANF-app/issues/3571), [#4924](https://github.com/raft-tech/TANF-app/issues/4924), [#5418](https://github.com/raft-tech/TANF-app/issues/5418), [#5432](https://github.com/raft-tech/TANF-app/issues/5432), [#5428](https://github.com/raft-tech/TANF-app/issues/5428), [#5463](https://github.com/raft-tech/TANF-app/issues/5463), [#5469](https://github.com/raft-tech/TANF-app/issues/5469), [#5398](https://github.com/raft-tech/TANF-app/issues/5398), [#5368](https://github.com/raft-tech/TANF-app/issues/5368), [#5397](https://github.com/raft-tech/TANF-app/issues/5397))
+- Closed several high-priority back-end/UX items, including email templates for STT submissions, migration of Promtail to Alloy, and restricting FRA submission history to participating STTs. ([#3251](https://github.com/raft-tech/TANF-app/issues/3251), [#3258](https://github.com/raft-tech/TANF-app/issues/3258), [#3571](https://github.com/raft-tech/TANF-app/issues/3571))
 
-- UX and reporting infrastructure advanced, with KC NavBar item finalized and backend support for Feedback Reports completed, enabling smoother navigation and reporting workflows. ([#5428](https://github.com/raft-tech/TANF-app/issues/5428), [#5397](https://github.com/raft-tech/TANF-app/issues/5397))
+- Improved navigation and readability with KC NavBar item completion and admin 'acked' column renamed to 'read'. ([#5428](https://github.com/raft-tech/TANF-app/issues/5428), [#5432](https://github.com/raft-tech/TANF-app/issues/5432))
 
-- Data quality fixes progressed, including the EXIT_MONTH datetime parsing fix and PIA submission history clean-up. ([#5463](https://github.com/raft-tech/TANF-app/issues/5463), [#5469](https://github.com/raft-tech/TANF-app/issues/5469))
+- Boosted data reliability by fixing EXIT_MONTH parsing in XLSX and cleaning PIA submission history of non-PIA entries. ([#5463](https://github.com/raft-tech/TANF-app/issues/5463), [#5469](https://github.com/raft-tech/TANF-app/issues/5469))
 
-- Blockers persist as risk; 7 items remain blocked, with notable blockers on regional staff initiatives that require cross-team alignment. ([#3461](https://github.com/raft-tech/TANF-app/issues/3461), [#3462](https://github.com/raft-tech/TANF-app/issues/3462))
+- Progress on data/knowledge center workflows with Refresh Tolerant Data Files Pages completed for faster documentation access. ([#5418](https://github.com/raft-tech/TANF-app/issues/5418))
 
-- E2E testing work shifted to Next Sprint Backlog for Admin and Program Integrity Frontend, reflecting reprioritization of testing in response to dependencies. ([#5420](https://github.com/raft-tech/TANF-app/issues/5420), [#5421](https://github.com/raft-tech/TANF-app/issues/5421))
+- Advancement in testing and regional onboarding planning: E2E tests for Admin Feedback Reports and Program Integrity Frontend moved toward Next Sprint Backlog, while regional onboarding items were blocked. ([#5420](https://github.com/raft-tech/TANF-app/issues/5420), [#5421](https://github.com/raft-tech/TANF-app/issues/5421), [#3461](https://github.com/raft-tech/TANF-app/issues/3461), [#3462](https://github.com/raft-tech/TANF-app/issues/3462), [#3523](https://github.com/raft-tech/TANF-app/issues/3523))
 
 ---
 
