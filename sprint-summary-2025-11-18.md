@@ -2,13 +2,11 @@
 
 ## Overview
 
-- Completed 12 issues this sprint (20.3%), despite 7 blockers, delivering closures across STT communications, knowledge center, and reporting/history improvements. (3251, 3571, 5428, 5397, 5398, 5463, 5469)
-
-- Moved a key technical milestone forward by placing the parsing logic refactor tech memo into Current Sprint Backlog, setting a cleaner foundation for future iterations. (5434)
-
-- Advanced automated testing and accessibility planning, with E2E tests for Admin Feedback Reports and Program Integrity Audit frontend and one-time accessibility work moving into Next Sprint Backlog. (5407, 5420, 5421)
-
-- Progressed backlog hygiene for data validation and UI guardrails, including education-level validation and SSN logic updates slated for current sprint work. (5461, 5475)
+- Significant closure momentum across critical admin/data work; multiple items moved to Done, including STT email templates, Promtail migration, FRA submission history restriction, admin 'acked'→'read', knowledge center alert banner, PIA submission history, and related data parsing fixes. ([#3251](https://github.com/raft-tech/TANF-app/issues/3251), [#3258](https://github.com/raft-tech/TANF-app/issues/3258), [#3571](https://github.com/raft-tech/TANF-app/issues/3571), [#4924](https://github.com/raft-tech/TANF-app/issues/4924), [#5397](https://github.com/raft-tech/TANF-app/issues/5397), [#5398](https://github.com/raft-tech/TANF-app/issues/5398), [#5469](https://github.com/raft-tech/TANF-app/issues/5469), [#5463](https://github.com/raft-tech/TANF-app/issues/5463), [#5432](https://github.com/raft-tech/TANF-app/issues/5432), [#5428](https://github.com/raft-tech/TANF-app/issues/5428), [#5418](https://github.com/raft-tech/TANF-app/issues/5418))
+- Knowledge center/UI enhancements advanced: NavBar closed; navigation work progressed to UX Review for the Knowledge Center components. ([#5428](https://github.com/raft-tech/TANF-app/issues/5428), [#5429](https://github.com/raft-tech/TANF-app/issues/5429))
+- Parsing and data handling improvements advanced: refactor parsing logic tech memo moved into Current Sprint Backlog; EXIT_MONTH parsing fix closed. ([#5434](https://github.com/raft-tech/TANF-app/issues/5434), [#5463](https://github.com/raft-tech/TANF-app/issues/5463))
+- E2E testing planning progressed: new E2E test initiatives moved from Product Backlog to Next Sprint Backlog (Program Integrity Frontend and Admin Feedback Reports). ([#5420](https://github.com/raft-tech/TANF-app/issues/5420), [#5421](https://github.com/raft-tech/TANF-app/issues/5421))
+- Post-MVP planning progressed: requirements gathering for centralized feedback reports advanced into UX Review. ([#5443](https://github.com/raft-tech/TANF-app/issues/5443))
 
 ---
 
