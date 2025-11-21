@@ -2,13 +2,11 @@
 
 ## Overview
 
-- Closed a batch of backend, data validation, and admin work, reducing risk and backlog. ([#3251](https://github.com/raft-tech/TANF-app/issues/3251), [#3258](https://github.com/raft-tech/TANF-app/issues/3258), [#3571](https://github.com/raft-tech/TANF-app/issues/3571), [#4924](https://github.com/raft-tech/TANF-app/issues/4924), [#5397](https://github.com/raft-tech/TANF-app/issues/5397), [#5398](https://github.com/raft-tech/TANF-app/issues/5398), [#5463](https://github.com/raft-tech/TANF-app/issues/5463), [#5469](https://github.com/raft-tech/TANF-app/issues/5469), [#5432](https://github.com/raft-tech/TANF-app/issues/5432))
-
-- Progressed knowledge center and UI work: KC NavBar item closed, data pages refreshed, and related UI/content moved toward production. ([#5428](https://github.com/raft-tech/TANF-app/issues/5428), [#5418](https://github.com/raft-tech/TANF-app/issues/5418), [#5390](https://github.com/raft-tech/TANF-app/issues/5390), [#5417](https://github.com/raft-tech/TANF-app/issues/5417), [#5429](https://github.com/raft-tech/TANF-app/issues/5429))
-
-- Moved parsing and data-quality improvements forward, including refactor of parsing logic and EXIT_MONTH/SSN validation fixes toward production. ([#5434](https://github.com/raft-tech/TANF-app/issues/5434), [#5463](https://github.com/raft-tech/TANF-app/issues/5463), [#5475](https://github.com/raft-tech/TANF-app/issues/5475))
-
-- Blockers and risk areas identified, with several regional staff and OFA-related tracks still blocked, signaling risk to final sprint delivery. ([#3461](https://github.com/raft-tech/TANF-app/issues/3461), [#3462](https://github.com/raft-tech/TANF-app/issues/3462), [#3523](https://github.com/raft-tech/TANF-app/issues/3523), [#3995](https://github.com/raft-tech/TANF-app/issues/3995), [#4045](https://github.com/raft-tech/TANF-app/issues/4045), [#4047](https://github.com/raft-tech/TANF-app/issues/4047))
+- Completed a set of high-impact items: STT submission templates updated, Promtail migrated to Alloy, FRA submission history restricted to participating STTs, and admin 'acked' column renamed to 'read'. (3251, 3258, 3571, 5432)
+- Knowledge Center progress: KC NavBar item closed and broader navigation/search work advanced to UX Review. (5428, 5429)
+- Data parsing/tech debt moved forward: refactor and cleanup parsing logic tech memo moved from Product Backlog to Current Sprint Backlog. (5434)
+- Critical data fixes completed: EXIT_MONTH datetime parsing issue resolved and PIA submission history cleaned/closed. (5463, 5469)
+- Bug fix delivered: Regional Access Request pre-selected option corrected. (4924)
 
 ---
 
