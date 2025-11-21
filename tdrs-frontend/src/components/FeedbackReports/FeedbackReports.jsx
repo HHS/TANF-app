@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { Navigate } from 'react-router-dom'
-import Button from '../Button'
 import axiosInstance from '../../axios-instance'
 import { accountCanViewAdmin } from '../../selectors/auth'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
 import { fileInput } from '@uswds/uswds/src/js/components'
+import FeedbackReportsUpload from './FeedbackReportsUpload'
+import FeedbackReportsHistory from './FeedbackReportsHistory'
 
 const INVALID_EXT_ERROR = 'File must be a .zip file'
 
@@ -66,11 +67,6 @@ function FeedbackReports() {
       setHistoryLoading(false)
     }
   }
-
-  const formattedSectionName = 'feedback_reports'
-  const ariaDescription = selectedFile
-    ? `Selected File ${selectedFile.name}. To change the selected file, click this button.`
-    : 'Drag file here or choose from folder.'
 
   /**
    * Handles file selection from the file input
@@ -196,97 +192,21 @@ function FeedbackReports() {
         <hr className="margin-top-2 margin-bottom-2" />
 
         {/* File Upload Section */}
-        <div
-          className={`usa-form-group ${fileError ? 'usa-form-group--error' : ''}`}
-        >
-          <label className="usa-label text-bold" htmlFor={formattedSectionName}>
-            Feedback Reports ZIP
-          </label>
-          <div>
-            {fileError && (
-              <div
-                className="usa-error-message"
-                id={`${formattedSectionName}-error-alert`}
-                role="alert"
-              >
-                {fileError}
-              </div>
-            )}
-          </div>
-          <div
-            id={`${formattedSectionName}-file`}
-            aria-hidden
-            className="display-none"
-          >
-            {ariaDescription}
-          </div>
-          <input
-            ref={inputRef}
-            onChange={handleFileChange}
-            id={formattedSectionName}
-            className="usa-file-input"
-            type="file"
-            name="feedback-reports"
-            accept=".zip"
-            aria-describedby={`${formattedSectionName}-file`}
-            aria-hidden="false"
-            data-errormessage={INVALID_EXT_ERROR}
-          />
-
-          <Button
-            type="submit"
-            onClick={handleUpload}
-            disabled={!selectedFile || loading}
-            className="margin-top-2"
-          >
-            {loading ? 'Uploading...' : 'Upload & Notify States'}
-          </Button>
-        </div>
+        <FeedbackReportsUpload
+          selectedFile={selectedFile}
+          fileError={fileError}
+          loading={loading}
+          onFileChange={handleFileChange}
+          onUpload={handleUpload}
+          inputRef={inputRef}
+        />
 
         {/* Upload History Section */}
-        {historyLoading ? (
-          <div className="padding-y-3 text-center">
-            <p className="text-base">Loading upload history...</p>
-          </div>
-        ) : uploadHistory.length === 0 ? (
-          <div className="padding-y-3 text-center border-1px border-base-lighter radius-md">
-            <p className="text-base-dark">No feedback reports uploaded yet</p>
-          </div>
-        ) : (
-          <table className="usa-table usa-table--striped margin-top-4 desktop:width-tablet mobile:width-full">
-            <caption>Upload History</caption>
-            <thead>
-              <tr>
-                <th>Fiscal year</th>
-                <th>Feedback uploaded on</th>
-                <th>Notifications sent on</th>
-                <th>File</th>
-              </tr>
-            </thead>
-            <tbody>
-              {uploadHistory.map((report) => (
-                <tr key={report.id}>
-                  <td>{report.year || new Date().getFullYear()}</td>
-                  <td>{formatDateTime(report.created_at)}</td>
-                  <td>{formatDateTime(report.processed_at)}</td>
-                  <td>
-                    {report.original_filename ? (
-                      <a
-                        href={report.file}
-                        download={report.original_filename}
-                        className="usa-link"
-                      >
-                        {report.original_filename}
-                      </a>
-                    ) : (
-                      'N/A'
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+        <FeedbackReportsHistory
+          uploadHistory={uploadHistory}
+          isLoading={historyLoading}
+          formatDateTime={formatDateTime}
+        />
       </div>
     </div>
   )
