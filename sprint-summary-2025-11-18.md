@@ -2,15 +2,13 @@
 
 ## Overview
 
-- Overall sprint momentum: completed 12 issues, progressed 19, blocked 7; 20.3% done, showing steady forward movement despite blockers. ([#3251](https://github.com/raft-tech/TANF-app/issues/3251), [#3258](https://github.com/raft-tech/TANF-app/issues/3258), [#4924](https://github.com/raft-tech/TANF-app/issues/4924), [#5368](https://github.com/raft-tech/TANF-app/issues/5368), [#5397](https://github.com/raft-tech/TANF-app/issues/5397), [#5398](https://github.com/raft-tech/TANF-app/issues/5398))
+- Completed 12 issues this sprint, reflecting a solid delivery across admin UI, FRA improvements, and Knowledge Center/Reporting enhancements. (3251, 3258, 5368, 3571, 4924, 5397, 5398, 5418, 5428, 5463, 5469)
 
-- Backlog and sequencing adjusted: FRA tasks moved toward Next Sprint Backlog and related design advanced toward staging. ([#5359](https://github.com/raft-tech/TANF-app/issues/5359), [#3485](https://github.com/raft-tech/TANF-app/issues/3485))
+- Progressed 19 issues, with several high-priority items moved into Current Sprint Backlog to firm up the scope. (5434, 5475, 5461)
 
-- Regional staff blockers identified as risk: several items remained Blocked, delaying regional onboarding and training efforts. ([#3461](https://github.com/raft-tech/TANF-app/issues/3461), [#3462](https://github.com/raft-tech/TANF-app/issues/3462), [#3523](https://github.com/raft-tech/TANF-app/issues/3523), [#3995](https://github.com/raft-tech/TANF-app/issues/3995), [#4047](https://github.com/raft-tech/TANF-app/issues/4047))
+- Blockers remained a risk, with dependencies in regional staff workstreams keeping multiple items blocked. (3461, 3462)
 
-- QA/E2E progress: accessibility tests enabled; E2E test work for Admin Feedback Reports and Program Integrity audits moved forward. ([#5407](https://github.com/raft-tech/TANF-app/issues/5407), [#5420](https://github.com/raft-tech/TANF-app/issues/5420), [#5421](https://github.com/raft-tech/TANF-app/issues/5421))
-
-- Knowledge Center/Admin UI progress: closures and readiness for release advanced, including KC NavBar, Refresh Tolerant Data Pages, FRA email, and read-status changes. ([#5428](https://github.com/raft-tech/TANF-app/issues/5428), [#5418](https://github.com/raft-tech/TANF-app/issues/5418), [#5463](https://github.com/raft-tech/TANF-app/issues/5463), [#5469](https://github.com/raft-tech/TANF-app/issues/5469), [#5432](https://github.com/raft-tech/TANF-app/issues/5432))
+- Momentum on centralized feedback and reporting initiatives, with closures advancing program integrity and Knowledge Center readiness. (5469, 5397, 5398)
 
 ---
 
