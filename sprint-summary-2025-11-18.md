@@ -2,15 +2,10 @@
 
 ## Overview
 
-- Closed several high-priority back-end/UX items, including email templates for STT submissions, migration of Promtail to Alloy, and restricting FRA submission history to participating STTs. ([#3251](https://github.com/raft-tech/TANF-app/issues/3251), [#3258](https://github.com/raft-tech/TANF-app/issues/3258), [#3571](https://github.com/raft-tech/TANF-app/issues/3571))
-
-- Improved navigation and readability with KC NavBar item completion and admin 'acked' column renamed to 'read'. ([#5428](https://github.com/raft-tech/TANF-app/issues/5428), [#5432](https://github.com/raft-tech/TANF-app/issues/5432))
-
-- Boosted data reliability by fixing EXIT_MONTH parsing in XLSX and cleaning PIA submission history of non-PIA entries. ([#5463](https://github.com/raft-tech/TANF-app/issues/5463), [#5469](https://github.com/raft-tech/TANF-app/issues/5469))
-
-- Progress on data/knowledge center workflows with Refresh Tolerant Data Files Pages completed for faster documentation access. ([#5418](https://github.com/raft-tech/TANF-app/issues/5418))
-
-- Advancement in testing and regional onboarding planning: E2E tests for Admin Feedback Reports and Program Integrity Frontend moved toward Next Sprint Backlog, while regional onboarding items were blocked. ([#5420](https://github.com/raft-tech/TANF-app/issues/5420), [#5421](https://github.com/raft-tech/TANF-app/issues/5421), [#3461](https://github.com/raft-tech/TANF-app/issues/3461), [#3462](https://github.com/raft-tech/TANF-app/issues/3462), [#3523](https://github.com/raft-tech/TANF-app/issues/3523))
+- Closed 12 items this sprint across admin, data, and reporting, delivering tangible momentum and reduced backlog (3251, 3258, 3571, 4924, 5368, 5397, 5398, 5418, 5428, 5432, 5463, 5469)
+- UX/Knowledge Center momentum: KC NavBar Item closed; Knowledge Center navigation moved to UX Review; E2E tests for Admin Feedback and Program Integrity shifted to Next Sprint Backlog; E2E tests for Editing Profile moved to Current Sprint Backlog (5316, 5428, 5429, 5420, 5421)
+- Data quality and parsing improvements advanced into the current sprint: SSN_VALID logic update, SSP item validation fix, and related feature toggle work moved to Current Sprint Backlog (5475, 5473, 5476)
+- Blockers persist with key items blocked: regional staff training/onboarding and related work (3461, 3462, 3995, 4047)
 
 ---
 
