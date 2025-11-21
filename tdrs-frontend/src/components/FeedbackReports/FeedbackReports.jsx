@@ -285,7 +285,6 @@ function FeedbackReports() {
                 <th>Fiscal year</th>
                 <th>Feedback uploaded on</th>
                 <th>Notifications sent on</th>
-                <th>Status</th>
                 <th>File</th>
               </tr>
             </thead>
@@ -295,7 +294,6 @@ function FeedbackReports() {
                   <td>{report.year || new Date().getFullYear()}</td>
                   <td>{formatDateTime(report.created_at)}</td>
                   <td>{formatDateTime(report.processed_at)}</td>
-                  <td>{getStatusBadge(report.status)}</td>
                   <td>
                     {report.original_filename ? (
                       <a
