@@ -27,7 +27,6 @@ function FeedbackReports() {
   const [fileError, setFileError] = useState(null)
 
   const inputRef = useRef(null)
-  const user = useSelector((state) => state.auth.user)
   const userIsAdmin = useSelector(accountCanViewAdmin)
 
   // Initialize USWDS file input component
@@ -168,30 +167,6 @@ function FeedbackReports() {
       minute: '2-digit',
       hour12: true,
     })
-  }
-
-  /**
-   * Gets the status badge for a report
-   */
-  const getStatusBadge = (status) => {
-    const statusMap = {
-      PENDING: { label: 'Pending', className: 'bg-base-lighter text-ink' },
-      PROCESSING: { label: 'Processing', className: 'bg-gold-20v text-ink' },
-      SUCCEEDED: {
-        label: 'Complete',
-        className: 'bg-success-lighter text-ink',
-      },
-      FAILED: { label: 'Failed', className: 'bg-error-lighter text-ink' },
-    }
-
-    const statusInfo = statusMap[status] || statusMap.PENDING
-    return (
-      <span
-        className={`usa-tag ${statusInfo.className} padding-x-1 padding-y-05 font-sans-3xs text-bold radius-md`}
-      >
-        {statusInfo.label}
-      </span>
-    )
   }
 
   return (
