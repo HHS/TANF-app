@@ -2,13 +2,15 @@
 
 ## Overview
 
-- Completed 12 issues this sprint, reflecting a solid delivery across admin UI, FRA improvements, and Knowledge Center/Reporting enhancements. (3251, 3258, 5368, 3571, 4924, 5397, 5398, 5418, 5428, 5463, 5469)
+- Cleanup and knowledge-center work closed this sprint, including Promtail migration to Alloy, STT email templates, admin 'read' change, and KC navigation/refresh tasks. ([#3258](https://github.com/raft-tech/TANF-app/issues/3258), [#3251](https://github.com/raft-tech/TANF-app/issues/3251), [#5432](https://github.com/raft-tech/TANF-app/issues/5432), [#5429](https://github.com/raft-tech/TANF-app/issues/5429), [#5398](https://github.com/raft-tech/TANF-app/issues/5398), [#5418](https://github.com/raft-tech/TANF-app/issues/5418), [#5469](https://github.com/raft-tech/TANF-app/issues/5469))
 
-- Progressed 19 issues, with several high-priority items moved into Current Sprint Backlog to firm up the scope. (5434, 5475, 5461)
+- E2E testing and UI progress advanced: admin feedback UI ongoing, Program Integrity Audit frontend tests kicked off, and accessibility tests enabled. ([#5407](https://github.com/raft-tech/TANF-app/issues/5407), [#5420](https://github.com/raft-tech/TANF-app/issues/5420), [#5421](https://github.com/raft-tech/TANF-app/issues/5421), [#5390](https://github.com/raft-tech/TANF-app/issues/5390))
 
-- Blockers remained a risk, with dependencies in regional staff workstreams keeping multiple items blocked. (3461, 3462)
+- Parsing and validation work moved into scope: refactor/parsing logic tech memo progressed and education-level validation updates added to current sprint backlog. ([#5434](https://github.com/raft-tech/TANF-app/issues/5434), [#5461](https://github.com/raft-tech/TANF-app/issues/5461))
 
-- Momentum on centralized feedback and reporting initiatives, with closures advancing program integrity and Knowledge Center readiness. (5469, 5397, 5398)
+- Backlog transitions pushed active work forward: vault backend cleanup, knowledge center updates, and STT feedback UI moved into current sprint backlog. ([#5416](https://github.com/raft-tech/TANF-app/issues/5416), [#5391](https://github.com/raft-tech/TANF-app/issues/5391), [#5417](https://github.com/raft-tech/TANF-app/issues/5417))
+
+- Design and planning progressed: post-MVP centralized feedback reports requirements moved to UX Review and design ideation advanced to current sprint backlog. ([#5443](https://github.com/raft-tech/TANF-app/issues/5443), [#5223](https://github.com/raft-tech/TANF-app/issues/5223))
 
 ---
 
