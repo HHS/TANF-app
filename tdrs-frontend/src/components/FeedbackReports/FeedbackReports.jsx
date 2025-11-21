@@ -292,7 +292,7 @@ function FeedbackReports() {
             <tbody>
               {uploadHistory.map((report) => (
                 <tr key={report.id}>
-                  <td>{report.year || 'N/A'}</td>
+                  <td>{report.year || new Date().getFullYear()}</td>
                   <td>{formatDateTime(report.created_at)}</td>
                   <td>{formatDateTime(report.processed_at)}</td>
                   <td>{getStatusBadge(report.status)}</td>
