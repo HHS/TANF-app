@@ -2,13 +2,11 @@
 
 ## Overview
 
-- Several high-impact items reached Closed this sprint, accelerating admin, data, and Knowledge Center work: Feedback Reports Backend, KC shutdown alert banner, FRA submission history tightening, EXIT_MONTH parsing fix, admin "acked"→"read", KC/Nav cleanup, and related data-file refresh work. ([#5397](https://github.com/raft-tech/TANF-app/issues/5397), [#5398](https://github.com/raft-tech/TANF-app/issues/5398), [#5469](https://github.com/raft-tech/TANF-app/issues/5469), [#5463](https://github.com/raft-tech/TANF-app/issues/5463), [#5432](https://github.com/raft-tech/TANF-app/issues/5432), [#5428](https://github.com/raft-tech/TANF-app/issues/5428), [#5418](https://github.com/raft-tech/TANF-app/issues/5418), [#4924](https://github.com/raft-tech/TANF-app/issues/4924), [#3258](https://github.com/raft-tech/TANF-app/issues/3258))
-
-- E2E testing scope expanded into this sprint by moving two test-focused items into the sprint backlog and kicking off scaffolding for the Program Integrity Audit frontend and Admin Feedback Reports tests. ([#5420](https://github.com/raft-tech/TANF-app/issues/5420), [#5421](https://github.com/raft-tech/TANF-app/issues/5421))
-
-- Knowledge Center UX progress: the full navigation and search implementation advanced to UX Review, and KC NavBar item work reached completion. ([#5429](https://github.com/raft-tech/TANF-app/issues/5429), [#5428](https://github.com/raft-tech/TANF-app/issues/5428))
-
-- Blockers persist for regional staff onboarding work (Project Updates meeting and optional training sessions), posing risk to timing and related deliverables. ([#3461](https://github.com/raft-tech/TANF-app/issues/3461), [#3462](https://github.com/raft-tech/TANF-app/issues/3462))
+- Closed key compliance/QA items: updated STT data submission emails to reflect status and errors; migrated Promtail to Alloy; FRA submission history restricted to participating STTs. ([#3251](https://github.com/raft-tech/TANF-app/issues/3251), [#3258](https://github.com/raft-tech/TANF-app/issues/3258), [#3571](https://github.com/raft-tech/TANF-app/issues/3571))
+- UX/Knowledge Center momentum: KC NavBar item closed and Knowledge Center navigation & search advanced toward UX Review. ([#5428](https://github.com/raft-tech/TANF-app/issues/5428), [#5429](https://github.com/raft-tech/TANF-app/issues/5429))
+- Moved four items from Product Backlog to Current Sprint Backlog to prep for active sprint: parsing cleanup, SSN_VALID logic, education validation, SSP item 41 validation. ([#5434](https://github.com/raft-tech/TANF-app/issues/5434), [#5475](https://github.com/raft-tech/TANF-app/issues/5475), [#5461](https://github.com/raft-tech/TANF-app/issues/5461), [#5473](https://github.com/raft-tech/TANF-app/issues/5473))
+- Blockers slowed progress; several regional initiatives remain blocked, including two regional staff training items. ([#3461](https://github.com/raft-tech/TANF-app/issues/3461), [#3462](https://github.com/raft-tech/TANF-app/issues/3462))
+- E2E and admin testing progressed: a11y e2e tests in progress and admin feedback tests moved to Next Sprint Backlog. ([#5407](https://github.com/raft-tech/TANF-app/issues/5407), [#5421](https://github.com/raft-tech/TANF-app/issues/5421))
 
 ---
 
