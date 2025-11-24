@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 const WAIT_TIME = 2000
 const MAX_TRIES = 30
@@ -7,21 +7,23 @@ export const usePollingTimer = () => {
   const timers = useRef({})
   const [pollState, setPollState] = useState({})
 
-  const setPollStateForRequest = (requestId, changes = {}) => {
-    let newState = pollState
-    newState[requestId] = {
-      ...newState[requestId],
-      ...changes,
-    }
-    setPollState({ ...newState })
-  }
+  // settimeout uses state from the time it was scheduled, not the time it executes
+  // so we MUST use the state setter callback
+  const setPollStateForRequest = (requestId, changes = {}) =>
+    setPollState((prevState) => ({
+      ...prevState,
+      [`${requestId}`]: {
+        ...prevState[requestId],
+        ...changes,
+      },
+    }))
 
   const addTimer = (requestId, timer) => {
     timers.current[requestId] = timer
   }
 
   const getPollState = (requestId) =>
-    pollState && requestId in pollState ? pollState[requestId] : null
+    pollState && requestId in pollState ? { ...pollState[requestId] } : null
 
   const stopTimer = (requestId, deleteRef = true) => {
     clearTimeout(timers.current[requestId])
@@ -167,7 +169,7 @@ export const usePollingTimer = () => {
     )
   }
 
-  const stopAllTimers = () => {
+  const stopAllTimers = useCallback(() => {
     const timer = timers.current
     if (timer && Object.keys(timer).length !== 0) {
       Object.keys(timers.current).forEach((requestId) =>
@@ -175,17 +177,18 @@ export const usePollingTimer = () => {
       )
       setPollState({})
     }
-  }
+  }, [timers])
 
   const isPolling = {}
   Object.keys(pollState).forEach((t) => {
-    isPolling[t] = !pollState[t].isDonePolling
+    isPolling[t] =
+      !pollState[t].isDonePolling || pollState[t].isPerformingRequest
   })
 
   useEffect(() => {
     const onUnmount = () => stopAllTimers()
     return onUnmount
-  }, [timers])
+  }, [timers, stopAllTimers])
 
   return { startPolling, isPolling, stopAllTimers }
 }
