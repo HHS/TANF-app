@@ -386,7 +386,6 @@ class Feedback(Reviewable):
         self.save()
         return True
 
-
 class User(AbstractUser, UserChangeRequestMixin):
     """Define user fields and methods."""
 
@@ -423,33 +422,6 @@ class User(AbstractUser, UserChangeRequestMixin):
     # See also: CustomAuthentication.py
     hhs_id = models.CharField(
         editable=False, max_length=12, blank=True, null=True, unique=True
-    )
-
-    # deprecated: use `account_approval_status`
-    # Note this is handled differently than `is_active`, which comes from AbstractUser.
-    # Django will totally prevent a user with is_active=True from authorizing.
-    # This field `deactivated` helps us to notify the user client-side of their status
-    # with an "Inactive Account" message.
-    deactivated = models.BooleanField(
-        _("deactivated"),
-        default=False,
-        help_text=_(
-            "Deprecated: use Account Approval Status instead - "
-            "Designates whether this user should be treated as active. "
-            "Unselect this instead of deleting accounts."
-        ),
-    )
-
-    # deprecated: use `account_approval_status` instead
-    # This shows access request has been submitted and needs approval. When flag is True, Admin
-    # sees the request and has to assign user to group
-    access_request = models.BooleanField(
-        default=False,
-        help_text=_(
-            "Deprecated: use Account Approval Status instead - "
-            "Designates whether this user account has requested access to TDP. "
-            "Users with this checked must have groups assigned for the application to work correctly."
-        ),
     )
 
     # replaces the deprecated `access_request` and `deactivated` fields above
@@ -492,10 +464,6 @@ class User(AbstractUser, UserChangeRequestMixin):
     def validate_location(self):
         """Throw a validation error if a user has a location type incompatable with their role."""
         regional = self.regions.count()
-        if regional and self.stt:
-            raise ValidationError(
-                _("A user may only have a Region or STT assigned, not both.")
-            )
 
         if self.groups.count() == 0 and (self.stt or regional):
             return
@@ -516,11 +484,6 @@ class User(AbstractUser, UserChangeRequestMixin):
             raise ValidationError(
                 _("Data Analyst cannot have a location type other than stt")
             )
-
-    def clean(self, *args, **kwargs):
-        """Prevent save if attributes are not necessary for a user given their role."""
-        super().clean(*args, **kwargs)
-        self.validate_location()
 
     @property
     def has_fra_access(self) -> bool:
@@ -596,6 +559,8 @@ class User(AbstractUser, UserChangeRequestMixin):
         regions = kwargs.pop("regions", [])
         updated_fields = kwargs.pop("updated_fields", None)
 
+        self.validate_location()
+
         if not self._adding:
             if self._loaded_values is None:
                 raise RuntimeError(
@@ -627,7 +592,6 @@ class User(AbstractUser, UserChangeRequestMixin):
 
                 return
 
-        logger.debug("------------ updated_fields: %s", updated_fields)
         if updated_fields and isinstance(updated_fields, list):
             super(User, self).save(update_fields=updated_fields, *args, **kwargs)
         else:

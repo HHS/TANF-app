@@ -32,6 +32,7 @@ class TestAdminTemplates(TestCase):
             password='adminpassword',
             first_name='Admin',
             last_name='User',
+            email='admin@example.com'
         )
         self.admin_user.is_active = True
         self.admin_user.save()
