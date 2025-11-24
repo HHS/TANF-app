@@ -2,27 +2,28 @@ import { render, fireEvent, waitFor, act } from '@testing-library/react'
 import axios from 'axios'
 import { usePollingTimer } from './usePollingTimer'
 
-jest.useFakeTimers()
-
 describe('usePollingTimer', () => {
-  const setupMockFuncs = () => ({
-    mockAxios: axios,
-    requestFunc: jest.fn(() => {
-      return axios.get('/fake_status_endpoint/')
-    }),
-    testFunc: jest.fn((response) => {
-      return response?.data?.summary?.status !== 'Pending'
-    }),
-    onSuccessFunc: jest.fn((response) => response),
-    onErrorFunc: jest.fn((error) => error),
-    onTimeoutFunc: jest.fn((onError) => onError),
-  })
+  const setupMockFuncs = () => {
+    jest.useFakeTimers()
+    return {
+      mockAxios: axios,
+      requestFunc: jest.fn(() => {
+        return axios.get('/fake_status_endpoint/')
+      }),
+      testFunc: jest.fn((response) => {
+        return response?.data?.summary?.status !== 'Pending'
+      }),
+      onSuccessFunc: jest.fn((response) => response),
+      onErrorFunc: jest.fn((error) => error),
+      onTimeoutFunc: jest.fn((onError) => onError),
+    }
+  }
 
   const setupSingleTimerComponent = (mockFuncs, wait_time, max_tries) => {
     const requestId = 1
     const TestComponent = () => {
-      const { startPolling, isDonePolling } = usePollingTimer()
-      const onClickStart = () =>
+      const { startPolling, isPolling } = usePollingTimer()
+      const onClickStart = () => {
         startPolling(
           requestId,
           mockFuncs.requestFunc,
@@ -33,6 +34,7 @@ describe('usePollingTimer', () => {
           wait_time,
           max_tries
         )
+      }
 
       const IsPollingText = ({ isLoading }) => (
         <p>{isLoading ? 'Polling' : 'Done'}</p>
@@ -43,9 +45,7 @@ describe('usePollingTimer', () => {
           <button onClick={onClickStart} title="Start" />
           <IsPollingText
             isLoading={
-              isDonePolling && requestId in isDonePolling
-                ? !isDonePolling[requestId]
-                : false
+              isPolling && requestId in isPolling ? isPolling[requestId] : false
             }
           />
         </>
@@ -57,7 +57,7 @@ describe('usePollingTimer', () => {
 
   const setupMultiTimerComponent = (mockFuncs, wait_time, max_tries) => {
     const TestComponent = () => {
-      const { startPolling, isDonePolling } = usePollingTimer()
+      const { startPolling, isPolling } = usePollingTimer()
       const onClickStart = (requestId) =>
         startPolling(
           requestId,
@@ -79,17 +79,13 @@ describe('usePollingTimer', () => {
           <button onClick={() => onClickStart(1)} title="Start 1" />
           <IsPollingText
             text="Timer 1"
-            isLoading={
-              isDonePolling && 1 in isDonePolling ? !isDonePolling[1] : false
-            }
+            isLoading={isPolling && 1 in isPolling ? isPolling[1] : false}
           />
 
           <button onClick={() => onClickStart(2)} title="Start 2" />
           <IsPollingText
             text="Timer 2"
-            isLoading={
-              isDonePolling && 2 in isDonePolling ? !isDonePolling[2] : false
-            }
+            isLoading={isPolling && 2 in isPolling ? isPolling[2] : false}
           />
         </>
       )
@@ -249,7 +245,7 @@ describe('usePollingTimer', () => {
   )
 
   it.each([400, 401, 403])(
-    'should stop polling and call onError if the request fails with %s error',
+    'should stop polling and call onError if the request fails with a %s error',
     async (status) => {
       const mocks = setupMockFuncs()
       const { mockAxios } = mocks

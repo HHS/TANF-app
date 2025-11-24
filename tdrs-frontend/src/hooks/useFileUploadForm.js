@@ -56,7 +56,7 @@ export const useFileUploadForm = ({
     const pollSubmissionStatus = () =>
       fileIds.forEach((fileId) => {
         startPolling(
-          fileId,
+          `${fileId}`,
           () => getTanfSubmissionStatus(fileId),
           (response) => {
             let summary = response?.data?.summary

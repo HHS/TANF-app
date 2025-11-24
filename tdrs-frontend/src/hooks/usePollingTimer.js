@@ -10,17 +10,18 @@ export const usePollingTimer = () => {
   const setPollStateForRequest = (requestId, changes = {}) => {
     let newState = pollState
     newState[requestId] = {
-      ...pollState[requestId],
+      ...newState[requestId],
       ...changes,
     }
-    setPollState(newState)
+    setPollState({ ...newState })
   }
 
   const addTimer = (requestId, timer) => {
     timers.current[requestId] = timer
   }
 
-  const getPollState = (requestId) => (pollState ? pollState[requestId] : null)
+  const getPollState = (requestId) =>
+    pollState && requestId in pollState ? pollState[requestId] : null
 
   const stopTimer = (requestId, deleteRef = true) => {
     clearTimeout(timers.current[requestId])
@@ -38,7 +39,10 @@ export const usePollingTimer = () => {
   }
 
   const start = (requestId) => {
-    setPollStateForRequest(requestId, { isPerformingRequest: true })
+    setPollStateForRequest(requestId, {
+      isDonePolling: false,
+      isPerformingRequest: true,
+    })
   }
 
   const finish = (requestId, then = () => null) => {
@@ -175,8 +179,7 @@ export const usePollingTimer = () => {
 
   const isPolling = {}
   Object.keys(pollState).forEach((t) => {
-    isPolling[t] =
-      !pollState[t].isDonePolling || pollState[t].isPerformingRequest
+    isPolling[t] = !pollState[t].isDonePolling
   })
 
   useEffect(() => {

@@ -1145,7 +1145,9 @@ describe('Reports', () => {
       queryAllByText,
     } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -1392,7 +1394,9 @@ describe('Reports', () => {
       queryAllByTestId,
     } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 

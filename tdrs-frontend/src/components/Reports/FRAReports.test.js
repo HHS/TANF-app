@@ -322,7 +322,7 @@ describe('FRA Reports Page', () => {
           )
         ).toBeInTheDocument()
       )
-      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(5))
+      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(6))
     })
 
     it('Allows xlsx files to be selected and submitted', async () => {
@@ -354,7 +354,7 @@ describe('FRA Reports Page', () => {
           )
         ).toBeInTheDocument()
       )
-      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(5))
+      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(6))
     })
 
     it('Shows a spinner until submission history updates', async () => {
@@ -447,7 +447,7 @@ describe('FRA Reports Page', () => {
           )
         ).toBeInTheDocument()
       )
-      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(5))
+      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(6))
 
       expect(queryAllByTestId('spinner')).toHaveLength(3)
       expect(queryAllByText('Pending')).toHaveLength(2)

@@ -654,7 +654,7 @@ const FRAReportsContent = () => {
 
       const pollFraSubmissionHistory = (datafile) => {
         startPolling(
-          datafile.id,
+          `${datafile.id}`,
           () => getFraSubmissionStatus(datafile.id),
           (response) => {
             let summary = response?.data?.summary

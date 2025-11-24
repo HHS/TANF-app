@@ -4,6 +4,7 @@ import appConfigureStore from '../../configureStore'
 import QuarterSubmissionHistory from './QuarterSubmissionHistory'
 import * as reportsActions from '../../actions/reports'
 import { ReportsProvider } from '../Reports/ReportsContext'
+import { MemoryRouter } from 'react-router'
 
 // Mock only external actions
 jest.mock('../../actions/reports')
@@ -55,12 +56,14 @@ describe('QuarterSubmissionHistory', () => {
     return {
       ...render(
         <Provider store={store}>
-          <ReportsProvider>
-            <QuarterSubmissionHistory
-              filterValues={filterValues}
-              reprocessedState={reprocessedState}
-            />
-          </ReportsProvider>
+          <MemoryRouter>
+            <ReportsProvider>
+              <QuarterSubmissionHistory
+                filterValues={filterValues}
+                reprocessedState={reprocessedState}
+              />
+            </ReportsProvider>
+          </MemoryRouter>
         </Provider>
       ),
       store,
@@ -136,15 +139,17 @@ describe('QuarterSubmissionHistory', () => {
       // Rerender with same props
       rerender(
         <Provider store={store}>
-          <ReportsProvider>
-            <QuarterSubmissionHistory
-              filterValues={filterValues}
-              reprocessedState={{
-                setDate: jest.fn(),
-                setModalVisible: jest.fn(),
-              }}
-            />
-          </ReportsProvider>
+          <MemoryRouter>
+            <ReportsProvider>
+              <QuarterSubmissionHistory
+                filterValues={filterValues}
+                reprocessedState={{
+                  setDate: jest.fn(),
+                  setModalVisible: jest.fn(),
+                }}
+              />
+            </ReportsProvider>
+          </MemoryRouter>
         </Provider>
       )
 
@@ -769,15 +774,17 @@ describe('QuarterSubmissionHistory', () => {
 
       rerender(
         <Provider store={updatedStore}>
-          <ReportsProvider>
-            <QuarterSubmissionHistory
-              filterValues={{ year: '2024', stt: { id: 1 } }}
-              reprocessedState={{
-                setDate: jest.fn(),
-                setModalVisible: jest.fn(),
-              }}
-            />
-          </ReportsProvider>
+          <MemoryRouter>
+            <ReportsProvider>
+              <QuarterSubmissionHistory
+                filterValues={{ year: '2024', stt: { id: 1 } }}
+                reprocessedState={{
+                  setDate: jest.fn(),
+                  setModalVisible: jest.fn(),
+                }}
+              />
+            </ReportsProvider>
+          </MemoryRouter>
         </Provider>
       )
 
