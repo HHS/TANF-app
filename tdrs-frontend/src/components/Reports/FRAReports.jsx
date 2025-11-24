@@ -694,7 +694,9 @@ const FRAReportsContent = () => {
         getFraSubmissionHistory(
           {
             stt,
-            reportType: fileTypeInputValue,
+            reportType: reportTypeOptions.find(
+              (o) => o.value === fileTypeInputValue
+            ).label,
             fiscalYear: yearInputValue,
             fiscalQuarter: quarterInputValue,
           },
