@@ -83,7 +83,6 @@ class ReparseFileMeta(models.Model):
     num_records_created = models.PositiveIntegerField(default=0)
     cat_4_errors_generated = models.PositiveIntegerField(default=0)
 
-
 class DataFile(FileRecord):
     """Represents a version of a data file."""
 

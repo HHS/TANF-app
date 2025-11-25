@@ -4,12 +4,11 @@ import logging
 
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers
-from rest_framework.utils import model_meta
+from tdpservice.users.constants import REGIONAL_ROLES
 
 from tdpservice.stts.models import STT
 from tdpservice.stts.serializers import (
@@ -69,7 +68,6 @@ class UserSerializer(serializers.ModelSerializer):
             "username",
             "first_name",
             "last_name",
-            "access_request",
             "account_approval_status",
             "groups",
             "is_superuser",
@@ -86,7 +84,6 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = (
             "id",
             "username",
-            "access_request",
             "account_approval_status",
             "groups",
             "login_gov_uuid",
@@ -132,7 +129,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "is_staff",
             "last_login",
             "date_joined",
-            "access_request",
             "access_requested_date",
             "account_approval_status",
             "feature_flags",
@@ -150,7 +146,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "is_superuser",
             "last_login",
             "date_joined",
-            "access_request",
             "access_requested_date",
             "account_approval_status",
             "feature_flags",
@@ -168,6 +163,33 @@ class UserProfileSerializer(serializers.ModelSerializer):
         """Get the pending change requests for a user."""
         return obj.get_pending_change_requests().count()
 
+    def validate(self, data):
+        """Perform object-level validation."""
+        validated_data = super().validate(data)
+        try:
+
+            groups = self.instance.groups.all()
+            regions = validated_data.get('regions')
+            stts = validated_data.get('stt')
+            # Check if the user belongs to any regional group
+            if groups:
+                has_regional_role = any(g.name in REGIONAL_ROLES for g in groups)
+            else:
+                has_regional_role = False
+
+            if has_regional_role and not (regions or stts):
+                raise serializers.ValidationError(
+                    "Users in regional roles must have at least one region assigned."
+                )
+
+        except Exception as e:
+            logger.error("Validation error in UserProfileSerializer: %s", e)
+            raise serializers.ValidationError(
+                _("An error occurred during validation. Please check your input.")
+            )
+
+        return validated_data
+
     def update(self, instance, validated_data):
         """Perform model validation before saving."""
         ###############################################################################################################
@@ -175,50 +197,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
         # The only modification is to the line 1033 in rest_framework.serializers.ModelSerializer::update.
         # The User model M2M fields are passed as a kwargs to `save()` so that the email context can access the
         # fields.
-        serializers.raise_errors_on_nested_writes("update", self, validated_data)
-        info = model_meta.get_field_info(instance)
 
-        # Handle group assignment for FRA access
-        request = self.context.get("request")
-        if request:
-            has_fra_access = request.data.get("has_fra_access")
-            try:
-                fra_permission = Permission.objects.get(codename="has_fra_access")
-                if has_fra_access:
-                    instance.user_permissions.add(fra_permission)
-                else:
-                    instance.user_permissions.remove(fra_permission)
-            except Permission.DoesNotExist:
-                raise serializers.ValidationError(
-                    "has_fra_access permission does not exist."
-                )
-
-        # Simply set each attribute on the instance, and then save it.
-        # Note that unlike `.create()` we don't need to treat many-to-many
-        # relationships as being a special case. During updates we already
-        # have an instance pk for the relationships to be associated with.
-        m2m_fields = []
         for attr, value in validated_data.items():
-            if attr in info.relations and info.relations[attr].to_many:
-                m2m_fields.append((attr, value))
+            if attr == 'regions':
+                field = getattr(instance, attr)
+                field.set(value)
             else:
                 setattr(instance, attr, value)
-
-        # We changed this line
-        instance.save(regions=validated_data.get("regions", []))
-
-        # Note that many-to-many fields are set after updating instance.
-        # Setting m2m fields triggers signals which could potentially change
-        # updated instance and we do not want it to collide with .update()
-        for attr, value in m2m_fields:
-            field = getattr(instance, attr)
-            field.set(value)
-        try:
-            instance.validate_location()
-        except ValidationError as e:
-            raise serializers.ValidationError(e.message)
-
-        return instance
+        return instance  # Don't call instance.save()
 
 
 class ContentTypeField(serializers.RelatedField):
@@ -277,9 +263,32 @@ class UserProfileChangeRequestSerializer(UserProfileSerializer):
             "has_fra_access",
         ]
 
+    def validate(self, data):
+        """Perform object-level validation."""
+        validated_data = super().validate(data)
+
+        groups = self.instance.groups.all()
+        # Check if the user belongs to any regional group
+        has_regional_role = any(g.name in REGIONAL_ROLES for g in groups)
+        if validated_data.get('regions'):
+            regions = [i.name for i in validated_data.get('regions')]
+        else:
+            regions = []
+
+        if has_regional_role and not regions:
+            raise serializers.ValidationError(
+                "Users in regional roles must have at least one region assigned."
+            )
+
+        if not has_regional_role and regions:
+            raise serializers.ValidationError(
+                "Users without regional roles should not be assigned regions."
+            )
+
+        return validated_data
+
     def validate_regions(self, value):
         """Validate regions field."""
-        """Ensure that the regions are valid."""
         if not value:
             raise serializers.ValidationError(_("Regions cannot be empty."))
         if not isinstance(value, list):
