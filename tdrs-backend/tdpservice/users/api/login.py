@@ -28,6 +28,7 @@ from .utils import (
     response_redirect,
     validate_nonce_and_state,
 )
+from tdpservice.users.models import AccountApprovalStatusChoices
 
 logger = logging.getLogger(__name__)
 
@@ -167,7 +168,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             # of `create_user`.
             auth_options.pop("username", None)
 
-            user = User.objects.create_user(email, email=email, **auth_options)
+            user = User.objects.create_user(username=email, email=email, **auth_options)
             user.set_unusable_password()
             user.save()
             login_msg = "User Created"
@@ -216,16 +217,11 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         # corresponding emails externally.
         user = CustomAuthentication.authenticate(**auth_options)
         logging.debug("user obj:{}".format(user))
-
-        if user and user.is_active:
-            if user.deactivated:
-                login_msg = "Inactive User Found"
-
-        elif user and not user.is_active:
+        if user and (not user.is_active or user.account_approval_status == AccountApprovalStatusChoices.DEACTIVATED):
             raise InactiveUser(
                 f"Login failed, user account is inactive: {user.username}"
             )
-        else:
+        elif not user:
             user, login_msg = self._handle_user(email, sub, auth_options)
 
         self.verify_email(user)
@@ -354,6 +350,7 @@ class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
 
     def verify_email(self, user):
         """Handle user email exception to disallow ACF staff to utilize non-AMS authentication."""
+
         if "@acf.hhs.gov" in user.email:
             user_groups = list(user.groups.values_list("name", flat=True))
             raise ACFUserLoginDotGov(

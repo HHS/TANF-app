@@ -2,19 +2,22 @@
 
 import logging
 
-from django import forms
 from django.contrib import admin, messages
-from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect
 from django.urls import path, reverse
 from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
+from django import forms
+from django.core.exceptions import ValidationError
 
 from rest_framework.authtoken.models import TokenProxy
 
 from tdpservice.core.utils import ReadOnlyAdminMixin
+from tdpservice.users.filters import ActiveStatusListFilter
+from tdpservice.users.forms import UserForm
 from tdpservice.users.models import (
+    AccountApprovalStatusChoices,
     ChangeRequestAuditLog,
     Feedback,
     User,
@@ -22,38 +25,6 @@ from tdpservice.users.models import (
 )
 
 logger = logging.getLogger()
-
-
-class UserForm(forms.ModelForm):
-    """Customize the user admin form."""
-
-    class Meta:
-        """Define customizations."""
-
-        model = User
-        exclude = ["password"]
-        readonly_fields = [
-            "last_login",
-            "date_joined",
-            "login_gov_uuid",
-            "hhs_id",
-            "access_request",
-        ]
-
-    def clean(self):
-        """Add extra validation for locations based on roles."""
-        cleaned_data = super().clean()
-        groups = cleaned_data["groups"]
-        if len(groups) > 1:
-            raise ValidationError("User should not have multiple groups")
-
-        feature_flags = cleaned_data.get("feature_flags", {})
-        if not feature_flags:
-            feature_flags = {}
-        cleaned_data["feature_flags"] = feature_flags
-
-        return cleaned_data
-
 
 class RegionsInlineFormSet(forms.models.BaseInlineFormSet):
     """Custom formset for region inlines."""
@@ -110,12 +81,10 @@ class UserAdmin(admin.ModelAdmin):
         "date_joined",
         "login_gov_uuid",
         "hhs_id",
-        "access_request",
-        "deactivated",
     ]
 
     form = UserForm
-    list_filter = ("account_approval_status", "stt")
+    list_filter = ("account_approval_status", "stt", ActiveStatusListFilter)
     list_display = [
         "username",
         "access_requested_date",
@@ -126,10 +95,46 @@ class UserAdmin(admin.ModelAdmin):
 
     inlines = [RegionInline]
 
+    actions = ['soft_delete_users']
+
+    def get_object(self, request, object_id, from_field=None):
+        """Get the user object, allowing for None if not found."""
+        queryset = self.model._base_manager.all()
+        return queryset.filter(pk=object_id).first()
+
+    def get_actions(self, request):
+        """Override get_action to remove delete action."""
+        actions = super().get_actions(request)
+        if 'delete_selected' in actions:
+            del actions['delete_selected']
+        return actions
+
+    @admin.action(description='Soft delete selected users (keep related data)')
+    def soft_delete_users(self, request, queryset):
+        """Soft delete selected users using deactivated flag."""
+        updated = 0
+        for user in queryset:
+            if not user.is_deactivated:
+                user.account_approval_status = AccountApprovalStatusChoices.DEACTIVATED
+                user.save()
+                updated += 1
+        self.message_user(request, f"Soft-deleted {updated} user(s).")
+
     def has_add_permission(self, request):
         """Disable User object creation through Django Admin."""
         return False
 
+    def get_queryset(self, request):
+        """Customize queryset to hide inactive users by default."""
+        qs = super().get_queryset(request)
+        # Hide inactive by default unless filter is applied
+        if "active_status" not in request.GET:
+            qs = qs.exclude(account_approval_status=AccountApprovalStatusChoices.DEACTIVATED)
+        return qs
+
+    def save_form(self, request, form, change):
+        """Override save_form to prevent saving the form when not changing."""
+        return form.save(commit=False)
 
 class HasAttachmentFilter(admin.SimpleListFilter):
     """Filter feedback based if it has datafiles associated or not."""
