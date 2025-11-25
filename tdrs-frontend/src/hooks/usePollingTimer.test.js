@@ -331,44 +331,6 @@ describe('usePollingTimer', () => {
     expect(mocks.onTimeoutFunc).toHaveBeenCalledTimes(1)
   })
 
-  // it('should prevent multiple parallel timers with the same requestId', async () => {
-  //   const mocks = setupMockFuncs()
-  //   const { mockAxios } = mocks
-  //   mockAxios.get.mockResolvedValue({
-  //     data: { id: 1, hasErrors: false, summary: { status: 'Pending' } },
-  //   })
-
-  //   const { queryByText, getByTitle, getByText } = setupSingleTimerComponent(
-  //     mocks,
-  //     1000,
-  //     10
-  //   )
-
-  //   expect(queryByText('Done')).toBeInTheDocument()
-  //   expect(queryByText('Polling')).not.toBeInTheDocument()
-
-  //   fireEvent.click(getByTitle('Start'))
-
-  //   await waitFor(() => {
-  //     expect(queryByText('Polling')).toBeInTheDocument()
-  //     expect(queryByText('Done')).not.toBeInTheDocument()
-  //   })
-
-  //   expect(mocks.requestFunc).toHaveBeenCalledTimes(1)
-  //   expect(mocks.onSuccessFunc).toHaveBeenCalledTimes(0)
-  //   expect(mocks.onErrorFunc).toHaveBeenCalledTimes(0)
-  //   expect(mocks.onTimeoutFunc).toHaveBeenCalledTimes(0)
-
-  //   // click start again, with the timer pending
-  //   console.log('click start again')
-  //   fireEvent.click(getByTitle('Start'))
-
-  //   expect(mocks.requestFunc).toHaveBeenCalledTimes(1)
-  //   expect(mocks.onSuccessFunc).toHaveBeenCalledTimes(0)
-  //   expect(mocks.onErrorFunc).toHaveBeenCalledTimes(0)
-  //   expect(mocks.onTimeoutFunc).toHaveBeenCalledTimes(0)
-  // })
-
   it('should allow multiple parallel timers with different requestIds', async () => {
     const mocks = setupMockFuncs()
     const { mockAxios } = mocks
