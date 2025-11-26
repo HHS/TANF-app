@@ -77,7 +77,7 @@ echo "Done."
 
 if [[ $app == "tdp-backend-develop" || $space == "tanf-dev" ]]; then
     echo "Applying e2e test data"
-    python manage.py loaddata cypress/users cypress/data_files cypress/regions
+    python manage.py loaddata cypress/users cypress/data_files cypress/regions cypress/profile_editing_regions cypress/profile_editing_users
     echo "Done."
 fi
 
