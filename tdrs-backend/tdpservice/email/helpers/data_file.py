@@ -4,7 +4,7 @@ from django.conf import settings
 
 from tdpservice.data_files.models import DataFile
 from tdpservice.email.email import automated_email, log
-from tdpservice.email.email_enums import EmailType
+from tdpservice.email.email_enums import AdminEmail, DataFileEmail
 from tdpservice.users.models import User
 
 
@@ -87,10 +87,10 @@ def send_data_submitted_email(
         case DataFileSummary.Status.ACCEPTED:
             match file_type:
                 case "FRA":
-                    template_path = EmailType.FRA_SUBMITTED.value
+                    # template_path = EmailType.FRA_SUBMITTED.value
                     subject = f"{section_name} Successfully Submitted"
                 case _:
-                    template_path = EmailType.DATA_SUBMITTED.value
+                    # template_path = EmailType.DATA_SUBMITTED.value
                     subject = f"{section_name} Processed Without Errors"
             text_message = (
                 f"{file_type} has been submitted and processed without errors."
@@ -99,10 +99,10 @@ def send_data_submitted_email(
         case _:
             match file_type:
                 case "FRA":
-                    template_path = EmailType.FRA_SUBMITTED.value
+                    # template_path = EmailType.FRA_SUBMITTED.value
                     subject = f"Action Required: {section_name} Contains Errors"
                 case _:
-                    template_path = EmailType.DATA_SUBMITTED.value
+                    # template_path = EmailType.DATA_SUBMITTED.value
                     subject = f"{section_name} Processed With Errors"
             text_message = f"{file_type} has been submitted and processed with errors."
 
@@ -122,7 +122,7 @@ def send_stuck_file_email(stuck_files, recipients):
     """Send an email to sys admins with details of files stuck in Pending."""
     logger_context = {"user_id": User.objects.get_or_create(username="system")[0].pk}
 
-    template_path = EmailType.STUCK_FILE_LIST.value
+    template_path = AdminEmail.STUCK_FILE_LIST.value
     subject = "List of submitted files with pending status after 1 hour"
     text_message = "The system has detected stuck files."
 
