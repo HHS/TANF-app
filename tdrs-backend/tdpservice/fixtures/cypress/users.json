@@ -409,6 +409,7 @@
             "date_joined": "2025-02-20T13:53:20.715Z",
             "login_gov_uuid": null,
             "hhs_id": null,
+            "stt": null,
             "account_approval_status": "Initial",
             "access_requested_date": "0001-01-01T00:00:00Z",
             "feature_flags": {},

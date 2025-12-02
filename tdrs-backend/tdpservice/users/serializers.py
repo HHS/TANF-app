@@ -698,5 +698,10 @@ class FeedbackSerializer(serializers.ModelSerializer):
                 object_id=item["object_id"],
                 content_type=item["content_type"],
             )
-
         return feedback
+
+    def update(self, instance, validated_data):
+        """Update a feedback instance."""
+        # Not needed in update
+        validated_data.pop("attachments", [])
+        return super().update(instance, validated_data)
