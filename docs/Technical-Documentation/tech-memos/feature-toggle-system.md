@@ -339,7 +339,7 @@ to grow the caching architecture without potentially more costly re-factors.
 
 Feature flags will be primarily managed via the admin console. When a feature flag is created, updated, or deleted the cache becomes
 invalid and requires an appropriate update. This can be easily handled with signals. See an example below of a signal receiver for the
-`post_save` signal. The same pattern can be applied to the `post_delete` signal.
+`post_save` signal. The same pattern can be applied to the `post_delete` signal to delete keys as necessary.
 
 **Location**: `tdrs-backend/tdpservice/core/signals.py`
 
@@ -405,42 +405,54 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from .services import feature_cache
+from .serializers import FeatureFlagSerializer
 import logging
 
 logger = logging.getLogger(__name__)
+
+def get_all_feature_flags() -> Dict[str, Dict[str, Any]]:
+    """Get all feature flags. """
+    cache_key = "feature_flags:all"
+    cached = feature_cache.get(cache_key)
+
+    if cached is not None:
+        return cached
+
+    flags = FeatureFlag.objects.all()
+    result = {
+        flag.feature_name: {
+            'enabled': flag.enabled,
+            'config': flag.config
+        }
+        for flag in flags
+    }
+
+    feature_cache.set(cache_key, result, DEFAULT_CACHE_TIMEOUT)
+    return result
 
 class FeatureFlagsView(APIView):
     """View for retrieving all feature flags."""
     permission_classes = [IsAuthenticated]
 
-    def get_all_feature_flags() -> Dict[str, Dict[str, Any]]:
-        """Get all feature flags. """
-        cache_key = "feature_flags:all"
-        cached = feature_cache.get(cache_key)
-
-        if cached is not None:
-            return cached
-
-        flags = FeatureFlag.objects.all()
-        result = {
-            flag.feature_name: {
-                'enabled': flag.enabled,
-                'config': flag.config
-            }
-            for flag in flags
-        }
-
-        feature_cache.set(cache_key, result, DEFAULT_CACHE_TIMEOUT)
-        return result
-
     def get(self, request):
         key = request.query_params.get('key')
         if not key:
-            flags = self.get_all_feature_flags()
-            return Response(flags)
+            flags = get_all_feature_flags()
+            serialized = {
+                name: FeatureFlagSerializer(data).data
+                for name, data in flags.items()
+            }
+            return Response(serialized)
         flag = feature_cache.get(key)
-        return Response({key: flag})
+        if flag is None:
+            return Response({key: {}})
+        serializer = FeatureFlagSerializer(flag)
+        return Response({key: serializer.data})
 ```
+
+Note that the `get_all_feature_flags` function is not performing any exception handling. While the cache service does have handling
+internally, in the case that Redis is unavailable the view should perform its own exception handling and fallback handling to ensure
+a proper response is returned to the frontend.
 
 
 ## Frontend
@@ -551,17 +563,15 @@ import { useSelector } from 'react-redux';
 
 export const useFeatureFlag = (featureName) => {
 
+  const flags = useSelector(state => state.featureFlags.flags)
+
   const getFlag = (featureName) => {
     // Note we don't store flags in a state variable to ensure the hook always accesses the latest redux state
-    return useSelector((state) =>
-      state.featureFlags.flags[featureName]
-    );
+    return flags[featureName]
   }
 
   const getFlags = () => {
-    return useSelector((state) =>
-      state.featureFlags.flags
-    );
+    return flags
   }
 
   return {
