@@ -45,17 +45,19 @@ class DataFileEmail(Enum):
     # FRA_SUBMITTED = "fra-data-submitted.html"
     UPCOMING_SUBMISSION_DEADLINE = "upcoming-submission-deadline.html"
 
-    class TANF(Enum):
-        ACCEPTED = "tanf/accepted.html"
-        ACCEPTED_WITH_ERRORS = "tanf/accepted_with_errors.html"
-        PARTIALLY_ACCEPTED = "tanf/partially_accepted.html"
-        REJECTED = "tanf/rejected.html"
 
-    class FRA(Enum):
-        ACCEPTED = "fra/accepted.html"
-        ACCEPTED_WITH_ERRORS = "fra/accepted_with_errors.html"
-        PARTIALLY_ACCEPTED = "fra/partially_accepted.html"
-        REJECTED = "fra/rejected.html"
+class TanfDataFileEmail(Enum):
+    ACCEPTED = "tanf/accepted.html"
+    ACCEPTED_WITH_ERRORS = "tanf/accepted_with_errors.html"
+    PARTIALLY_ACCEPTED = "tanf/partially_accepted.html"
+    REJECTED = "tanf/rejected.html"
+
+
+class FraDataFileEmail(Enum):
+    ACCEPTED = "fra/accepted.html"
+    ACCEPTED_WITH_ERRORS = "fra/accepted_with_errors.html"
+    PARTIALLY_ACCEPTED = "fra/partially_accepted.html"
+    REJECTED = "fra/rejected.html"
 
 
 class AdminEmail(Enum):

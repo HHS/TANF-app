@@ -4,7 +4,7 @@ from django.conf import settings
 
 from tdpservice.data_files.models import DataFile
 from tdpservice.email.email import automated_email, log
-from tdpservice.email.email_enums import AdminEmail, DataFileEmail
+from tdpservice.email.email_enums import AdminEmail, FraDataFileEmail, TanfDataFileEmail
 from tdpservice.users.models import User
 
 
@@ -32,6 +32,37 @@ def get_program_section_str(program_type, section):
             return f"Tribal {section}"
         case DataFile.ProgramType.FRA:
             return section
+
+
+def get_tanf_aggregates_context_count(datafile_summary):
+    """Return the sum of cases with and without errors across all months for TANF files."""
+    cases_without_errors = 0
+    cases_with_errors = 0
+    for month in datafile_summary.case_aggregates["months"]:
+        cases_without_errors += (
+            0
+            if month["accepted_without_errors"] == "N/A"
+            else month["accepted_without_errors"]
+        )
+        cases_with_errors += (
+            0
+            if month["accepted_with_errors"] == "N/A"
+            else month["accepted_with_errors"]
+        )
+
+    return {
+        "cases_without_errors": cases_without_errors,
+        "cases_with_errors": cases_with_errors,
+        "records_unable_to_process": datafile_summary.case_aggregates["rejected"],
+    }
+
+
+def get_fra_aggregates_context_count(datafile_summary):
+    """Return the relevant context data from case aggregates for FRA files."""
+    return {
+        "records_created": datafile_summary.total_number_of_records_created,
+        "total_errors": datafile_summary.case_aggregates["total_errors"],
+    }
 
 
 def send_data_submitted_email(
@@ -75,38 +106,75 @@ def send_data_submitted_email(
         "url": settings.FRONTEND_BASE_URL,
     }
 
+    match prog_type:
+        case (
+            DataFile.ProgramType.TANF
+            | DataFile.ProgramType.SSP
+            | DataFile.ProgramType.TRIBAL
+        ):
+            context.update(get_tanf_aggregates_context_count(datafile_summary))
+
+            match datafile_summary.status:
+                case DataFileSummary.Status.ACCEPTED:
+                    template_path = TanfDataFileEmail.ACCEPTED.value
+                    subject = f"{section_name} Successfully Submitted Without Errors"
+                    text_message = (
+                        f"{file_type} has been submitted and processed without errors."
+                    )
+                case DataFileSummary.Status.ACCEPTED_WITH_ERRORS:
+                    template_path = TanfDataFileEmail.ACCEPTED_WITH_ERRORS.value
+                    subject = f"Action Required: {section_name} Contains Errors"
+                    text_message = (
+                        f"{file_type} has been submitted and processed with errors."
+                    )
+                case DataFileSummary.Status.PARTIALLY_ACCEPTED:
+                    template_path = TanfDataFileEmail.PARTIALLY_ACCEPTED.value
+                    subject = f"Action Required: {section_name} Contains Errors"
+                    text_message = (
+                        f"{file_type} has been submitted and processed with errors."
+                    )
+                case DataFileSummary.Status.REJECTED:
+                    template_path = TanfDataFileEmail.REJECTED.value
+                    subject = f"Action Required: {section_name} Contains Errors"
+                    text_message = (
+                        f"{file_type} has been submitted and processed with errors."
+                    )
+
+        case DataFile.ProgramType.FRA:
+            context.update(get_fra_aggregates_context_count(datafile_summary))
+
+            match datafile_summary.status:
+                case DataFileSummary.Status.ACCEPTED:
+                    template_path = FraDataFileEmail.ACCEPTED.value
+                    subject = f"{section_name} Successfully Submitted"
+                    text_message = (
+                        f"{file_type} has been submitted and processed without errors."
+                    )
+                case DataFileSummary.Status.ACCEPTED_WITH_ERRORS:
+                    template_path = FraDataFileEmail.ACCEPTED_WITH_ERRORS.value
+                    subject = f"Action Required: {section_name} Contains Errors"
+                    text_message = (
+                        f"{file_type} has been submitted and processed with errors."
+                    )
+                case DataFileSummary.Status.PARTIALLY_ACCEPTED:
+                    template_path = FraDataFileEmail.PARTIALLY_ACCEPTED.value
+                    subject = f"Action Required: {section_name} Contains Errors"
+                    text_message = (
+                        f"{file_type} has been submitted and processed with errors."
+                    )
+                case DataFileSummary.Status.REJECTED:
+                    template_path = FraDataFileEmail.REJECTED.value
+                    subject = f"Action Required: {section_name} Contains Errors"
+                    text_message = (
+                        f"{file_type} has been submitted and processed with errors."
+                    )
+
+    context.update({"subject": subject})
+
     log(
         f"Data file submitted; emailing Data Analysts {list(recipients)}",
         logger_context=logger_context,
     )
-
-    match datafile_summary.status:
-        case DataFileSummary.Status.PENDING:
-            return
-
-        case DataFileSummary.Status.ACCEPTED:
-            match file_type:
-                case "FRA":
-                    # template_path = EmailType.FRA_SUBMITTED.value
-                    subject = f"{section_name} Successfully Submitted"
-                case _:
-                    # template_path = EmailType.DATA_SUBMITTED.value
-                    subject = f"{section_name} Processed Without Errors"
-            text_message = (
-                f"{file_type} has been submitted and processed without errors."
-            )
-
-        case _:
-            match file_type:
-                case "FRA":
-                    # template_path = EmailType.FRA_SUBMITTED.value
-                    subject = f"Action Required: {section_name} Contains Errors"
-                case _:
-                    # template_path = EmailType.DATA_SUBMITTED.value
-                    subject = f"{section_name} Processed With Errors"
-            text_message = f"{file_type} has been submitted and processed with errors."
-
-    context.update({"subject": subject})
 
     automated_email(
         email_path=template_path,
