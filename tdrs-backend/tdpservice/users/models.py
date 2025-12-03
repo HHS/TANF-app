@@ -15,7 +15,9 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from tdpservice.email.helpers.account_status import send_approval_status_update_email
-from tdpservice.email.helpers.profile_change_request import send_change_request_status_email
+from tdpservice.email.helpers.profile_change_request import (
+    send_change_request_status_email,
+)
 from tdpservice.stts.models import STT, Region
 from tdpservice.users.mixins import ReviewerMixin as Reviewable
 
@@ -164,10 +166,16 @@ class UserChangeRequest(Reviewable):
 
         # Send email
         try:
-            send_change_request_status_email(self, isApproved=True, url=settings.FRONTEND_BASE_URL)
+            send_change_request_status_email(
+                self, isApproved=True, url=settings.FRONTEND_BASE_URL
+            )
 
-        except Exception as e:
-            logger.exception("Failed to send a, UserChangeRequestpproval email for profile change request %s: %s", self.id, e)
+        except Exception as exception:
+            logger.exception(
+                "Failed to send a, UserChangeRequestpproval email for profile change request %s: %s",
+                self.id,
+                exception,
+            )
 
         return True
 
@@ -186,9 +194,15 @@ class UserChangeRequest(Reviewable):
 
         # Send email
         try:
-            send_change_request_status_email(self, isApproved=False, url=settings.FRONTEND_BASE_URL)
-        except Exception as e:
-            logger.exception("Failed to send rejection email for profile change request %s: %s", self.id, e)
+            send_change_request_status_email(
+                self, isApproved=False, url=settings.FRONTEND_BASE_URL
+            )
+        except Exception as exception:
+            logger.exception(
+                "Failed to send rejection email for profile change request %s: %s",
+                self.id,
+                exception,
+            )
 
         return True
 
@@ -243,11 +257,13 @@ class UserChangeRequestMixin:
         if current_value is None:
             try:
                 if Permission.objects.filter(codename=field_name).exists():
-                    current_value = self.user_permissions.filter(codename=field_name).exists()
+                    current_value = self.user_permissions.filter(
+                        codename=field_name
+                    ).exists()
                 else:
-                    current_value = getattr(self, field_name, '')
+                    current_value = getattr(self, field_name, "")
             except (AttributeError, TypeError):
-                current_value = ''
+                current_value = ""
 
         # Create the change request
         change_request = UserChangeRequest.objects.create(
@@ -255,7 +271,7 @@ class UserChangeRequestMixin:
             requested_by=requested_by,
             field_name=field_name,
             current_value=str(current_value),
-            requested_value=str(requested_value)
+            requested_value=str(requested_value),
         )
 
         return change_request
@@ -334,7 +350,7 @@ class Feedback(Reviewable):
 
     anonymous = models.BooleanField(default=False)
 
-    acked = models.BooleanField(default=False)
+    read = models.BooleanField(default=False)
 
     # --- Metadata for fields ---
     page_url = models.URLField(blank=True, null=True)
@@ -346,7 +362,7 @@ class Feedback(Reviewable):
         """Return a string representation of the object."""
         return (
             f"User: {self.user.username if self.user is not None else 'Anonymous'} - "
-            f"Rating: {self.rating} - Acked: {self.acked}"
+            f"Rating: {self.rating} - Read: {self.read}"
         )
 
     def attached_data_files(self):
@@ -359,17 +375,16 @@ class Feedback(Reviewable):
             if isinstance(a.content_object, DataFile)
         ]
 
-    def acknowledge(self, admin_user):
-        """Acknowledge the feedback."""
-        if self.acked:
+    def mark_as_read(self, admin_user):
+        """Mark the feedback as read."""
+        if self.read:
             return False
 
-        self.acked = True
+        self.read = True
         self.reviewed_at = timezone.now()
         self.reviewed_by = admin_user
         self.save()
         return True
-
 
 class User(AbstractUser, UserChangeRequestMixin):
     """Define user fields and methods."""
@@ -407,33 +422,6 @@ class User(AbstractUser, UserChangeRequestMixin):
     # See also: CustomAuthentication.py
     hhs_id = models.CharField(
         editable=False, max_length=12, blank=True, null=True, unique=True
-    )
-
-    # deprecated: use `account_approval_status`
-    # Note this is handled differently than `is_active`, which comes from AbstractUser.
-    # Django will totally prevent a user with is_active=True from authorizing.
-    # This field `deactivated` helps us to notify the user client-side of their status
-    # with an "Inactive Account" message.
-    deactivated = models.BooleanField(
-        _("deactivated"),
-        default=False,
-        help_text=_(
-            "Deprecated: use Account Approval Status instead - "
-            "Designates whether this user should be treated as active. "
-            "Unselect this instead of deleting accounts."
-        ),
-    )
-
-    # deprecated: use `account_approval_status` instead
-    # This shows access request has been submitted and needs approval. When flag is True, Admin
-    # sees the request and has to assign user to group
-    access_request = models.BooleanField(
-        default=False,
-        help_text=_(
-            "Deprecated: use Account Approval Status instead - "
-            "Designates whether this user account has requested access to TDP. "
-            "Users with this checked must have groups assigned for the application to work correctly."
-        ),
     )
 
     # replaces the deprecated `access_request` and `deactivated` fields above
@@ -476,10 +464,6 @@ class User(AbstractUser, UserChangeRequestMixin):
     def validate_location(self):
         """Throw a validation error if a user has a location type incompatable with their role."""
         regional = self.regions.count()
-        if regional and self.stt:
-            raise ValidationError(
-                _("A user may only have a Region or STT assigned, not both.")
-            )
 
         if self.groups.count() == 0 and (self.stt or regional):
             return
@@ -500,11 +484,6 @@ class User(AbstractUser, UserChangeRequestMixin):
             raise ValidationError(
                 _("Data Analyst cannot have a location type other than stt")
             )
-
-    def clean(self, *args, **kwargs):
-        """Prevent save if attributes are not necessary for a user given their role."""
-        super().clean(*args, **kwargs)
-        self.validate_location()
 
     @property
     def has_fra_access(self) -> bool:
@@ -580,6 +559,8 @@ class User(AbstractUser, UserChangeRequestMixin):
         regions = kwargs.pop("regions", [])
         updated_fields = kwargs.pop("updated_fields", None)
 
+        self.validate_location()
+
         if not self._adding:
             if self._loaded_values is None:
                 raise RuntimeError(
@@ -611,7 +592,6 @@ class User(AbstractUser, UserChangeRequestMixin):
 
                 return
 
-        logger.debug("------------ updated_fields: %s", updated_fields)
         if updated_fields and isinstance(updated_fields, list):
             super(User, self).save(update_fields=updated_fields, *args, **kwargs)
         else:

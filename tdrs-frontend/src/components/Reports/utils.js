@@ -34,14 +34,14 @@ export const constructYears = () => {
   return years
 }
 
-export const constructYearOptions = (startYear = 2021) => {
+export const constructYearOptions = (startYear = 2021, endYear = null) => {
   const years = []
   const today = new Date(Date.now())
 
   const fiscalYear =
     today.getMonth() > 8 ? today.getFullYear() + 1 : today.getFullYear()
 
-  for (let i = fiscalYear; i >= startYear; i--) {
+  for (let i = endYear || fiscalYear; i >= startYear; i--) {
     const option = (
       <option key={i} data-testid={i} value={i}>
         {i}

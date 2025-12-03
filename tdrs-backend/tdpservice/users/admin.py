@@ -2,9 +2,7 @@
 
 import logging
 
-from django import forms
 from django.contrib import admin, messages
-from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect
 from django.urls import path, reverse
 from django.utils import timezone
@@ -14,7 +12,10 @@ from django.utils.safestring import mark_safe
 from rest_framework.authtoken.models import TokenProxy
 
 from tdpservice.core.utils import ReadOnlyAdminMixin
+from tdpservice.users.filters import ActiveStatusListFilter
+from tdpservice.users.forms import UserForm
 from tdpservice.users.models import (
+    AccountApprovalStatusChoices,
     ChangeRequestAuditLog,
     Feedback,
     User,
@@ -22,84 +23,6 @@ from tdpservice.users.models import (
 )
 
 logger = logging.getLogger()
-
-
-class UserForm(forms.ModelForm):
-    """Customize the user admin form."""
-
-    class Meta:
-        """Define customizations."""
-
-        model = User
-        exclude = ["password"]
-        readonly_fields = [
-            "last_login",
-            "date_joined",
-            "login_gov_uuid",
-            "hhs_id",
-            "access_request",
-        ]
-
-    def clean(self):
-        """Add extra validation for locations based on roles."""
-        cleaned_data = super().clean()
-        groups = cleaned_data["groups"]
-        if len(groups) > 1:
-            raise ValidationError("User should not have multiple groups")
-
-        feature_flags = cleaned_data.get("feature_flags", {})
-        if not feature_flags:
-            feature_flags = {}
-        cleaned_data["feature_flags"] = feature_flags
-
-        return cleaned_data
-
-
-class RegionsInlineFormSet(forms.models.BaseInlineFormSet):
-    """Custom formset for region inlines."""
-
-    def clean(self):
-        """Validate region inlines."""
-        super().clean()
-        cleaned_data = self.cleaned_data[0]
-        user = cleaned_data.get("user")
-        """
-        Have to validate regions against existing and new user roles.
-        Currently, if form request includes a new region and user roles, then changes
-        are validated against only the existing user roles.
-        """
-        if user:
-            regional = user.regions.all().count() + len(cleaned_data.get("regions", []))
-            existing_roles_not_regional = (
-                not user.is_regional_staff
-                and not user.is_data_analyst
-                and not user.is_developer
-            )
-            coming_roles = cleaned_data.get("roles", [])
-            coming_roles_not_regional = any(
-                role in coming_roles
-                for role in ["Regional Staff", "Data Analyst", "Developer"]
-            )
-            if regional and user.stt:
-                raise ValidationError(
-                    "A user may only have a Region or STT assigned, not both."
-                )
-            elif existing_roles_not_regional or coming_roles_not_regional:
-                raise ValidationError(
-                    "Users other than Regional Staff, Developers, Data Analysts do not get assigned a location."
-                )
-
-
-class RegionInline(admin.TabularInline):
-    """Inline model for many to many relationship."""
-
-    model = User.regions.through
-    verbose_name = "Regions"
-    verbose_name_plural = "Regions"
-    can_delete = True
-    ordering = ["-pk"]
-    formset = RegionsInlineFormSet
-
 
 class UserAdmin(admin.ModelAdmin):
     """Customize the user admin functions."""
@@ -110,12 +33,10 @@ class UserAdmin(admin.ModelAdmin):
         "date_joined",
         "login_gov_uuid",
         "hhs_id",
-        "access_request",
-        "deactivated",
     ]
 
     form = UserForm
-    list_filter = ("account_approval_status", "stt")
+    list_filter = ("account_approval_status", "stt", ActiveStatusListFilter)
     list_display = [
         "username",
         "access_requested_date",
@@ -124,12 +45,46 @@ class UserAdmin(admin.ModelAdmin):
     ]
     autocomplete_fields = ["stt"]
 
-    inlines = [RegionInline]
+    actions = ['soft_delete_users']
+
+    def get_object(self, request, object_id, from_field=None):
+        """Get the user object, allowing for None if not found."""
+        queryset = self.model._base_manager.all()
+        return queryset.filter(pk=object_id).first()
+
+    def get_actions(self, request):
+        """Override get_action to remove delete action."""
+        actions = super().get_actions(request)
+        if 'delete_selected' in actions:
+            del actions['delete_selected']
+        return actions
+
+    @admin.action(description='Soft delete selected users (keep related data)')
+    def soft_delete_users(self, request, queryset):
+        """Soft delete selected users using deactivated flag."""
+        updated = 0
+        for user in queryset:
+            if not user.is_deactivated:
+                user.account_approval_status = AccountApprovalStatusChoices.DEACTIVATED
+                user.save()
+                updated += 1
+        self.message_user(request, f"Soft-deleted {updated} user(s).")
 
     def has_add_permission(self, request):
         """Disable User object creation through Django Admin."""
         return False
 
+    def get_queryset(self, request):
+        """Customize queryset to hide inactive users by default."""
+        qs = super().get_queryset(request)
+        # Hide inactive by default unless filter is applied
+        if "active_status" not in request.GET:
+            qs = qs.exclude(account_approval_status=AccountApprovalStatusChoices.DEACTIVATED)
+        return qs
+
+    def save_form(self, request, form, change):
+        """Override save_form to prevent saving the form when not changing."""
+        return form.save(commit=False)
 
 class HasAttachmentFilter(admin.SimpleListFilter):
     """Filter feedback based if it has datafiles associated or not."""
@@ -467,13 +422,12 @@ class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "rating",
         "feedback_type",
         "feedback_list_display",
-        "acked",
-        "quick_ack",
+        "quick_mark",
     ]
     readonly_fields = ("attached_data_files_list",)
-    list_filter = ["created_at", "rating", "acked", HasAttachmentFilter]
+    list_filter = ["created_at", "rating", "read", HasAttachmentFilter]
     change_form_template = "feedback_admin_template.html"
-    actions = ["ack_selected_feedback"]
+    actions = ["mark_selected_feedback_as_read"]
 
     class Meta:
         """Meta for admin view."""
@@ -482,21 +436,21 @@ class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         verbose_name_plural = "Feedback"
 
     def get_urls(self):
-        """Add custom URLs for acknowledge action."""
+        """Add custom URLs for mark as read action."""
         urls = super().get_urls()
         custom_urls = [
             path(
-                "<path:object_id>/acknowledge/",
-                self.admin_site.admin_view(self.acknowledge_feedback),
-                name="acknowledge_feedback",
+                "<path:object_id>/mark-as-read/",
+                self.admin_site.admin_view(self.mark_feedback_as_read),
+                name="mark_feedback_as_read",
             ),
         ]
         return custom_urls + urls
 
-    def acknowledge_feedback(self, request, object_id):
-        """Acknowledge the feedback."""
+    def mark_feedback_as_read(self, request, object_id):
+        """Mark the feedback as read."""
         feedback = self.get_object(request, object_id)
-        feedback.acknowledge(request.user)
+        feedback.mark_as_read(request.user)
         return HttpResponseRedirect(reverse("admin:users_feedback_changelist"))
 
     def user_list_display(self, obj):
@@ -533,38 +487,40 @@ class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
 
     attached_data_files_list.short_description = "Attached Data Files"
 
-    def quick_ack(self, obj):
-        """Display quick action button for unacknowledged feedback."""
-        if not obj.acked:
+    def quick_mark(self, obj):
+        """Display quick action button for unread feedback."""
+        if not obj.read:
             return mark_safe(
-                f'<a href="{reverse("admin:acknowledge_feedback", args=[obj.pk])}" '
+                f'<a href="{reverse("admin:mark_feedback_as_read", args=[obj.pk])}" '
                 f'class="button" style="background-color: #28a745; color: white; padding: 5px; '
-                f'margin-right: 5px; text-decoration: none;">Acknowledge</a>'
+                f'margin-right: 5px; text-decoration: none;">Mark as Read</a>'
             )
-        return "-"
+        return mark_safe(
+            '<img src="/static/admin/img/icon-yes.svg" alt="True" /> <span style="color: #4B8340;">Read</span>'
+        )
 
-    quick_ack.short_description = "Acknowledge"
+    quick_mark.short_description = "Status"
 
-    def ack_selected_feedback(self, request, queryset):
-        """Bulk approve selected change requests."""
+    def mark_selected_feedback_as_read(self, request, queryset):
+        """Bulk mark feedback as read."""
         updated = 0
-        feedback = queryset.filter(acked=False)
+        feedback = queryset.filter(read=False)
 
         for f in feedback:
-            f.acked = True
+            f.read = True
             f.reviewed_at = timezone.now()
             f.reviewed_by = request.user
             updated += 1
 
-        Feedback.objects.bulk_update(feedback, ["acked", "reviewed_at", "reviewed_by"])
+        Feedback.objects.bulk_update(feedback, ["read", "reviewed_at", "reviewed_by"])
 
         self.message_user(
             request,
-            f"{updated} feedback(s) were successfully acknowledged.",
+            f"{updated} feedback(s) were successfully marked as read.",
             messages.SUCCESS if updated > 0 else messages.WARNING,
         )
 
-    ack_selected_feedback.short_description = "Acknowledge selected feedback"
+    mark_selected_feedback_as_read.short_description = "Mark selected as read"
 
 
 admin.site.register(User, UserAdmin)

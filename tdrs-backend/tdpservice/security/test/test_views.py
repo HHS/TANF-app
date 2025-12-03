@@ -34,7 +34,6 @@ def token():
 @pytest.mark.django_db
 def test_token_is_valid(token):
     """Test token_is_valid function."""
-    logger.info(token.__dict__)
     assert token_is_valid(token) is True
     token.created = token.created.replace(year=2000)
     # token.save()
@@ -50,7 +49,7 @@ def test_generate_new_token(client):
     assert response.status_code == 302
 
     # assert if user is not ofa_sys_admin
-    user = User.objects.create_user(username="testuser", password="testpassword")
+    user = User.objects.create_user(email="testuser@example.com", username="testuser", password="testpassword")
     user.save()
     client.login(username="testuser", password="testpassword")
     response = client.get(url)

@@ -1073,7 +1073,7 @@ describe('Reports', () => {
     })
 
     const fiscal_year = getByLabelText('Fiscal Year (October - September)*')
-    fireEvent.change(fiscal_year, { target: { value: '2025' } })
+    fireEvent.change(fiscal_year, { target: { value: '2024' } })
 
     await waitFor(() => {
       expect(queryByText('Quarter 1 (October - December)')).toBeInTheDocument()

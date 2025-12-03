@@ -88,6 +88,7 @@ def test_upcoming_deadline_sends_some_sections_submitted(
             "year": fiscal_year,
             "stt": stt,
             "user": data_analyst,
+            "is_program_audit": False,
         }
     )
 
@@ -138,6 +139,7 @@ def test_upcoming_deadline_no_send_when_all_sections_complete(
             "year": fiscal_year,
             "stt": stt,
             "user": data_analyst,
+            "is_program_audit": False,
         }
     )
 
@@ -149,6 +151,7 @@ def test_upcoming_deadline_no_send_when_all_sections_complete(
             "year": fiscal_year,
             "stt": stt,
             "user": data_analyst,
+            "is_program_audit": False,
         }
     )
 

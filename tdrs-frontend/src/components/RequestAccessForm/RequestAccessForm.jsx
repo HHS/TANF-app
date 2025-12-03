@@ -45,12 +45,11 @@ function RequestAccessForm({
   const [jurisdictionType, setJurisdictionTypeInputValue] = useState(
     initialValues.jurisdictionType || JURISDICTION_TYPES.STATE
   )
-  const [regional, setRegional] = useState(
+
+  const isRegional =
     profileInfo?.regions instanceof Set && profileInfo.regions.size > 0
-  )
-  const [originalRegional] = useState(
-    profileInfo?.regions instanceof Set && profileInfo.regions.size > 0
-  )
+  const [regional, setRegional] = useState(isRegional || null)
+  const [originalRegional] = useState(isRegional || null)
 
   const dispatch = useDispatch()
   const fieldErrorKeys = Object.keys(errors).filter((key) => key !== 'form')
@@ -86,11 +85,13 @@ function RequestAccessForm({
       lastName: 'Last Name',
       stt: !isAMSUser && 'A state, tribe, or territory',
       hasFRAAccess: 'Yes or No response',
+      regionalType: 'Yes or No response',
     }[fieldName]
 
     if (
       Boolean(field) &&
       ((fieldName === 'hasFRAAccess' && fieldValue === null) ||
+        (fieldName === 'regionalType' && fieldValue === null) ||
         (typeof fieldValue === 'string' && fieldValue.trim() === ''))
     ) {
       return `${field} is required`
@@ -226,15 +227,20 @@ function RequestAccessForm({
         touched: { ...touched },
       }
     )
+    const isRegionalError = isAMSUser
+      ? validation('regionalType', regional)
+      : null
     const regionError =
       isAMSUser && regional ? validateRegions(profileInfo.regions) : null
 
     const combinedErrors = {
       ...formValidation.errors,
+      ...(isRegionalError && { regionalType: isRegionalError }),
       ...(regionError && { regions: regionError }),
     }
     const combinedTouched = {
       ...formValidation.touched,
+      ...(isRegionalError && isAMSUser && { regionalType: true }),
       ...(regionError && isAMSUser && { regions: true }),
     }
 

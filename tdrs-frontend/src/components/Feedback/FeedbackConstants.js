@@ -21,7 +21,8 @@ export const FRA_DATA_UPLOAD_FEEDBACK_HEADER =
   'How was your experience uploading FRA data?'
 
 // Feedback likert selection text
-export const GREAT_FEEDBACK = 'Fantastic. Would you like to leave a comment?'
-export const GOOD_FEEDBACK = 'Great. Would you like to leave a comment?'
-export const FAIR_FEEDBACK = 'Thanks. Any suggestions?'
-export const POOR_AND_BAD_FEEDBACK = "We're sorry. How can we improve?"
+export const GREAT_FEEDBACK = 'Fantastic. Score has been received!'
+export const GOOD_FEEDBACK = 'Great. Score has been received!'
+export const FAIR_FEEDBACK = 'Score has been received!'
+export const POOR_AND_BAD_FEEDBACK =
+  "Score has been received. We're sorry. How can we improve?"

@@ -79,6 +79,7 @@ describe('Feedback Form tests', () => {
 
   beforeEach(() => {
     axiosInstance.post.mockClear()
+    axiosInstance.patch.mockClear()
     mockOnFeedbackSubmit.mockClear()
     // Default to authenticated for most tests
     reactRedux.useSelector.mockImplementation(() => true)
@@ -247,7 +248,8 @@ describe('Feedback Form tests', () => {
   })
 
   it('submits feedback with rating, message, and anonymous flag', async () => {
-    axiosInstance.post.mockResolvedValueOnce({ status: 200 })
+    axiosInstance.post.mockResolvedValue({ status: 201, data: { id: 1 } })
+    axiosInstance.patch.mockResolvedValue({ status: 200, data: { id: 1 } })
 
     render(
       <FeedbackForm
@@ -292,7 +294,8 @@ describe('Feedback Form tests', () => {
   })
 
   it('submits with rating and no feedback message', async () => {
-    axiosInstance.post.mockResolvedValueOnce({ status: 200 })
+    axiosInstance.post.mockResolvedValue({ status: 201, data: { id: 1 } })
+    axiosInstance.patch.mockResolvedValue({ status: 200, data: { id: 1 } })
 
     render(
       <FeedbackForm
@@ -324,7 +327,8 @@ describe('Feedback Form tests', () => {
   })
 
   it('submits form using Enter key on submit button', async () => {
-    axiosInstance.post.mockResolvedValueOnce({ status: 200 })
+    axiosInstance.post.mockResolvedValue({ status: 201, data: { id: 1 } })
+    axiosInstance.patch.mockResolvedValue({ status: 200, data: { id: 1 } })
 
     render(
       <FeedbackForm
@@ -347,7 +351,9 @@ describe('Feedback Form tests', () => {
   })
 
   it('submits form with Cmd/Ctrl + Enter from inside textarea', async () => {
-    axiosInstance.post.mockResolvedValueOnce({ status: 200 })
+    axiosInstance.post.mockResolvedValue({ status: 201, data: { id: 1 } })
+    axiosInstance.patch.mockResolvedValue({ status: 200, data: { id: 1 } })
+
     render(
       <FeedbackForm
         isGeneralFeedback={true}
@@ -370,7 +376,8 @@ describe('Feedback Form tests', () => {
   })
 
   it('resets form fields after successful submission', async () => {
-    axiosInstance.post.mockResolvedValueOnce({ status: 200 })
+    axiosInstance.post.mockResolvedValue({ status: 201, data: { id: 1 } })
+    axiosInstance.patch.mockResolvedValue({ status: 200, data: { id: 1 } })
 
     render(
       <FeedbackForm
@@ -434,7 +441,7 @@ describe('Feedback Form tests', () => {
 
     await waitFor(() =>
       expect(consoleSpy).toHaveBeenCalledWith(
-        'Error submitting feedback: ',
+        'Error submitting feedback:',
         expect.any(Object)
       )
     )
@@ -454,7 +461,7 @@ describe('Feedback Form tests', () => {
 
     await waitFor(() =>
       expect(consoleSpy).toHaveBeenCalledWith(
-        'Unexpected response: ',
+        'Error submitting feedback:',
         expect.any(Object)
       )
     )
@@ -504,14 +511,13 @@ describe('Feedback Form tests', () => {
   })
 
   it('submits minimal fields when isGeneralFeedback is false', async () => {
-    axiosInstance.post.mockResolvedValueOnce({ status: 200 })
-
-    const onSubmit = jest.fn()
+    axiosInstance.post.mockResolvedValue({ status: 201, data: { id: 1 } })
+    axiosInstance.patch.mockResolvedValue({ status: 200, data: { id: 1 } })
 
     render(
       <FeedbackForm
         isGeneralFeedback={false}
-        onFeedbackSubmit={onSubmit}
+        onFeedbackSubmit={mockOnFeedbackSubmit}
         dataType="fra_submission_feedback"
       />
     )
@@ -540,7 +546,7 @@ describe('Feedback Form tests', () => {
           withCredentials: true,
         }
       )
-      expect(onSubmit).toHaveBeenCalled()
+      expect(mockOnFeedbackSubmit).toHaveBeenCalled()
     })
   })
 })

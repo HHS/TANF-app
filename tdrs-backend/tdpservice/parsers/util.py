@@ -31,6 +31,7 @@ def create_test_datafile(
             "is_program_audit": is_program_audit,
             "user": stt_user,
             "stt": stt,
+            "is_program_audit": is_program_audit,
         }
     )
 

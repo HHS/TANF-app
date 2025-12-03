@@ -15,6 +15,7 @@ from django.db.models import Max
 from django.utils.html import format_html
 
 from tdpservice.backends import DataFilesS3Storage
+from tdpservice.common.models import FileRecord
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
 
@@ -60,29 +61,6 @@ def get_s3_upload_path(instance, filename):
     )
 
 
-# The Data File model was starting to explode, and I think that keeping this logic
-# in its own abstract class is better for documentation purposes.
-class FileRecord(models.Model):
-    """Abstract type representing a file stored in S3."""
-
-    class Meta:
-        """Metadata."""
-
-        abstract = True
-
-    # Keep the file name because it will be different in s3,
-    # but the interface will still want to present the file with its
-    # original name.
-    original_filename = models.CharField(max_length=256, blank=False, null=False)
-    # Slug is the name of the file in S3
-    # NOTE: Currently unused, may be removed with a later release
-    slug = models.CharField(max_length=256, blank=False, null=False)
-    # Not all files will have the correct extension,
-    # or even have one at all. The UI will provide this information
-    # separately
-    extension = models.CharField(max_length=8, default="txt")
-
-
 class ReparseFileMeta(models.Model):
     """Meta data model representing a single file parse within a reparse execution."""
 
@@ -104,7 +82,6 @@ class ReparseFileMeta(models.Model):
 
     num_records_created = models.PositiveIntegerField(default=0)
     cat_4_errors_generated = models.PositiveIntegerField(default=0)
-
 
 class DataFile(FileRecord):
     """Represents a version of a data file."""
@@ -283,6 +260,7 @@ class DataFile(FileRecord):
                 section=data["section"],
                 program_type=data["program_type"],
                 stt=data["stt"],
+                is_program_audit=data["is_program_audit"],
             )
             or 0
         ) + 1
@@ -293,7 +271,9 @@ class DataFile(FileRecord):
         )
 
     @classmethod
-    def find_latest_version_number(self, year, quarter, section, program_type, stt):
+    def find_latest_version_number(
+        self, year, quarter, section, program_type, stt, is_program_audit
+    ):
         """Locate the latest version number in a series of data files."""
         return self.objects.filter(
             stt=stt,
@@ -301,13 +281,16 @@ class DataFile(FileRecord):
             quarter=quarter,
             section=section,
             program_type=program_type,
+            is_program_audit=is_program_audit,
         ).aggregate(Max("version"))["version__max"]
 
     @classmethod
-    def find_latest_version(self, year, quarter, section, program_type, stt):
+    def find_latest_version(
+        self, year, quarter, section, program_type, stt, is_program_audit
+    ):
         """Locate the latest version of a data file."""
         version = self.find_latest_version_number(
-            year, quarter, section, program_type, stt
+            year, quarter, section, program_type, stt, is_program_audit
         )
 
         return self.objects.filter(
@@ -317,6 +300,7 @@ class DataFile(FileRecord):
             section=section,
             program_type=program_type,
             stt=stt,
+            is_program_audit=is_program_audit,
         ).first()
 
     def __repr__(self):
