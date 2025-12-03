@@ -1,163 +1,110 @@
-Feature: User Profile Editing As a user of the TDP system I want to edit my profile information So that my account details are accurate and up-to-date
+Feature: User Profile Editing
+    As a user of the TDP system
+    I want to edit my profile information
+    So that my account details are accurate and up-to-date
 
-  # # ============================================================================
-  # # Change Request Approval Workflow
-  # # ============================================================================
+    # TODO: Change Request Approval Workflow
 
-  # TODO:
+    # ============================================================================
+    # Cancel Editing
+    # ============================================================================
+    Scenario: Data Analyst Dana cancels editing in Access Request state
+        Given 'Data Analyst Dana' logs in
+        When 'Data Analyst Dana' cancels profile editing with unsaved changes
+        Then 'Data Analyst Dana' profile shows name 'Data Analyst Dana'
 
-  # # ============================================================================
-  # # Cancel Editing
-  # # ============================================================================
-  Scenario: Data Analyst Dana cancels editing
-    Given "Data Analyst Dana" logs in
-    When they navigate to their profile page
-    And they click the edit access request button
-    And they update their first name to "Should Not Save"
-    And they click cancel
-    Then they should be back on the profile view page
-    And their profile should show name as "Data Analyst Dana"
+    Scenario: Data Analyst Donna cancels editing in Approved state
+        Given 'Data Analyst Donna' logs in
+        When 'Data Analyst Donna' cancels profile editing with unsaved changes
+        Then 'Data Analyst Donna' profile shows name 'Data Analyst Donna'
 
-  Scenario: Data Analyst Donna cancels editing in Approved state
-    Given "Data Analyst Donna" logs in
-    When they navigate to their profile page
-    And they click the edit profile button
-    And they update their first name to "Should Not Save"
-    And they click cancel
-    Then they should be back on the profile view page
-    And their profile should show name as "Data Analyst Donna"
+    # ============================================================================
+    # STT Changes
+    # ============================================================================
+    Scenario: Data Analyst Dana changes STT in Access Request state
+        Given 'Data Analyst Dana' logs in
+        When 'Data Analyst Dana' updates their STT to 'Alabama'
+        Then 'Data Analyst Dana' profile shows STT 'Alabama'
 
-  # # ============================================================================
-  # # STT Changes
-  # # ============================================================================
-  Scenario: Data Analyst Dana changes STT in Access Request state
-    Given "Data Analyst Dana" logs in
-    When they navigate to their profile page
-    And they click the edit access request button
-    And they select STT "Alabama"
-    And they click update request
-    And their profile should show State STT "Alabama"
+    Scenario: Data Analyst Donna cannot change STT in Approved state
+        Given 'Data Analyst Donna' logs in
+        When 'Data Analyst Donna' opens profile editing
+        Then the STT field is not editable
 
-  Scenario: Data Analyst Donna cannot change STT in Approved state
-    Given "Data Analyst Donna" logs in
-    When they navigate to their profile page
-    And they click the edit profile button
-    Then the STT field should not be editable
+    # ============================================================================
+    # Region Changes (Regional Staff)
+    # ============================================================================
+    Scenario: FRA OFA Regional Staff Rachel changes regions in Access Request state
+        Given 'FRA OFA Regional Staff Rachel' logs in
+        When 'FRA OFA Regional Staff Rachel' updates their regions to add 'Seattle' and remove 'Chicago'
+        Then 'FRA OFA Regional Staff Rachel' profile shows regions 'Seattle, Philadelphia'
 
-  # # ============================================================================
-  # # Region Changes (Regional Staff)
-  # # ============================================================================
-  Scenario: FRA OFA Regional Staff Rachel changes regions in Access Request state
-    Given "FRA OFA Regional Staff Rachel" logs in
-    When they navigate to their profile page
-    And they click the edit access request button
-    And they deselect region "Chicago"
-    And they select region "Seattle"
-    And they click update request
-    And their profile should show regions "Seattle, Philadelphia"
+    Scenario: FRA OFA Regional Staff Robert changes regions in Approved state
+        Given 'FRA OFA Regional Staff Robert' logs in
+        When 'FRA OFA Regional Staff Robert' updates their regions to add 'Seattle' and remove 'Chicago'
+        Then 'FRA OFA Regional Staff Robert' sees a pending change request
+        And 'FRA OFA Regional Staff Robert' profile shows regions 'Chicago, Philadelphia'
 
-  Scenario: FRA OFA Regional Staff Robert changes regions in Approved state
-    Given "FRA OFA Regional Staff Robert" logs in
-    When they navigate to their profile page
-    And they click the edit profile button
-    And they deselect region "Chicago"
-    And they select region "Seattle"
-    And they click save
-    And they should see a pending change request banner
-    And their profile should show regions "Chicago, Philadelphia"
+    # ============================================================================
+    # Validation and Error Handling
+    # ============================================================================
+    Scenario: Data Analyst Dana attempts to save with empty first name
+        Given 'Data Analyst Dana' logs in
+        When 'Data Analyst Dana' submits profile with empty first name
+        Then 'Data Analyst Dana' sees a required field error
+        And 'Data Analyst Dana' remains on the edit page
 
-  # # ============================================================================
-  # # Validation and Error Handling
-  # # ============================================================================
-  Scenario: Data Analyst Dana attempts to save with empty first name
-    Given "Data Analyst Dana" logs in
-    When they navigate to their profile page
-    And they click the edit access request button
-    And they clear the first name field
-    And they click update request
-    Then they should see an error message about required fields
-    And they should still be on the edit page
+    Scenario: Data Analyst Dana attempts to save with empty last name
+        Given 'Data Analyst Dana' logs in
+        When 'Data Analyst Dana' submits profile with empty last name
+        Then 'Data Analyst Dana' sees a required field error
+        And 'Data Analyst Dana' remains on the edit page
 
-  Scenario: Data Analyst Dana attempts to save with empty last name
-    Given "Data Analyst Dana" logs in
-    When they navigate to their profile page
-    And they click the edit access request button
-    And they clear the last name field
-    And they click update request
-    Then they should see an error message about required fields
-    And they should still be on the edit page
+    Scenario: Data Analyst Donna attempts to save without making changes
+        Given 'Data Analyst Donna' logs in
+        When 'Data Analyst Donna' submits profile without changes
+        Then 'Data Analyst Donna' sees a no changes error
+        And 'Data Analyst Donna' remains on the edit page
 
-  Scenario: Data Analyst Donna attempts to save without making changes
-    Given "Data Analyst Donna" logs in
-    When they navigate to their profile page
-    And they click the edit profile button
-    And they click save without making changes
-    Then they should see an error message about no changes made
-    And they should still be on the edit page
+    # Warning: These tests need to always run last since they modify state that isn't cleaned between scenarios
+    # ============================================================================
+    # Access Request State - Immediate Updates
+    # ============================================================================
+    Scenario: Data Analyst Dana edits profile in Access Request state
+        Given 'Data Analyst Dana' logs in
+        When 'Data Analyst Dana' updates their name to 'Data Analyst Updated' 'Dana Updated'
+        Then 'Data Analyst Dana' profile shows name 'Data Analyst Updated Dana Updated'
 
-  # Warning: These tests need to always run last since they modify state that isn't cleaned between scenarios
-  # ============================================================================
-  # Access Request State - Immediate Updates
-  # ============================================================================
-  Scenario: Data Analyst Dana edits profile in Access Request state
-    Given "Data Analyst Dana" logs in
-    When they navigate to their profile page
-    And they click the edit access request button
-    And they update their first name to "Data Analyst Updated"
-    And they update their last name to "Dana Updated"
-    And they click update request
-    And their profile should show name as "Data Analyst Updated Dana Updated"
+    Scenario: FRA Data Analyst Derek edits profile and disables FRA access in Access Request state
+        Given 'FRA Data Analyst Derek' logs in
+        When 'FRA Data Analyst Derek' updates their name to 'FRA Data Analyst Updated' and disables FRA access
+        Then 'FRA Data Analyst Derek' profile shows name 'FRA Data Analyst Updated'
+        And 'FRA Data Analyst Derek' profile does not show FRA access
 
-  Scenario: FRA Data Analyst Derek edits profile and toggles FRA access in Access Request state
-    Given "FRA Data Analyst Derek" logs in
-    When they navigate to their profile page
-    And they click the edit access request button
-    And they update their first name to "FRA Data Analyst Updated"
-    And they toggle FRA access off
-    And they click update request
-    And their profile should show name as "FRA Data Analyst Updated"
-    And their profile should not show FRA access badge
+    Scenario: FRA OFA Regional Staff Rachel edits profile in Access Request state
+        Given 'FRA OFA Regional Staff Rachel' logs in
+        When 'FRA OFA Regional Staff Rachel' updates their name to 'FRA Regional Updated' 'Rachel Updated'
+        Then 'FRA OFA Regional Staff Rachel' profile shows name 'FRA Regional Updated'
 
-  Scenario: FRA OFA Regional Staff Rachel edits profile in Access Request state
-    Given "FRA OFA Regional Staff Rachel" logs in
-    When they navigate to their profile page
-    And they click the edit access request button
-    And they update their first name to "FRA Regional Updated"
-    And they update their last name to "Rachel Updated"
-    And they click update request
-    And their profile should show name as "FRA Regional Updated"
+    # ============================================================================
+    # Approved State - Change Requests
+    # ============================================================================
+    Scenario: Data Analyst Donna edits profile in Approved state
+        Given 'Data Analyst Donna' logs in
+        When 'Data Analyst Donna' updates their name to 'Data Analyst Changed' 'Donna Changed'
+        Then 'Data Analyst Donna' sees a pending change request
+        And 'Data Analyst Donna' profile shows name 'Data Analyst Donna'
 
-  # # ============================================================================
-  # # Approved State - Change Requests
-  # # ============================================================================
-  Scenario: Data Analyst Donna edits profile in Approved state
-    Given "Data Analyst Donna" logs in
-    When they navigate to their profile page
-    And they click the edit profile button
-    And they update their first name to "Data Analyst Changed"
-    And they update their last name to "Donna Changed"
-    And they click save
-    And they should see a pending change request banner
-    And their profile should show name as "Data Analyst Donna"
+    Scenario: FRA Data Analyst David edits profile and disables FRA access in Approved state
+        Given 'FRA Data Analyst David' logs in
+        When 'FRA Data Analyst David' updates their name to 'FRA Data Analyst Changed' and disables FRA access
+        Then 'FRA Data Analyst David' sees a pending change request
+        And 'FRA Data Analyst David' profile shows name 'FRA Data Analyst David'
 
-  Scenario: FRA Data Analyst David edits profile and toggles FRA access in Approved state
-    Given "FRA Data Analyst David" logs in
-    When they navigate to their profile page
-    And they click the edit profile button
-    And they update their first name to "FRA Data Analyst Changed"
-    And they toggle FRA access off
-    And they click save
-    And they should see a pending change request banner
-    And their profile should show name as "FRA Data Analyst David"
+    Scenario: FRA OFA Regional Staff Robert edits profile in Approved state
+        Given 'FRA OFA Regional Staff Robert' logs in
+        When 'FRA OFA Regional Staff Robert' updates their name to 'FRA Regional Changed' 'Robert Changed'
+        Then 'FRA OFA Regional Staff Robert' sees a pending change request
+        And 'FRA OFA Regional Staff Robert' profile shows name 'FRA OFA Regional Staff Robert'
 
-  Scenario: FRA OFA Regional Staff Robert edits profile in Approved state
-    Given "FRA OFA Regional Staff Robert" logs in
-    When they navigate to their profile page
-    And they click the edit profile button
-    And they update their first name to "FRA Regional Changed"
-    And they update their last name to "Robert Changed"
-    And they click save
-    And they should see a pending change request banner
-    And their profile should show name as "FRA OFA Regional Staff Robert"
-
-  # TODO: verify change requests exist in DB?
+    # TODO: verify change requests exist in DB?

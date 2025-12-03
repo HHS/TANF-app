@@ -149,3 +149,13 @@ export const verifyPendingChangeRequestBanner = () => {
 export const verifyErrorMessage = (message) => {
   cy.get('.usa-error-message').should('contain', message)
 }
+
+/**
+ * Check if user is in Access Request state (not yet approved)
+ * @returns {Cypress.Chainable<boolean>} - True if user is in Access Request state
+ */
+export const isAccessRequestState = () => {
+  return cy.get('body').then(($body) => {
+    return $body.find('button:contains("Edit Access Request")').length > 0
+  })
+}

@@ -8,8 +8,8 @@ import {
   updateLastName,
   selectSTT,
   toggleFRAAccess,
-  selectRegions,
   deselectRegions,
+  selectRegions,
   clickSave,
   clickUpdateRequest,
   clickCancel,
@@ -17,125 +17,144 @@ import {
   verifyNoFRAAccessBadge,
   verifyPendingChangeRequestBanner,
   verifyErrorMessage,
+  isAccessRequestState,
 } from './profile-helpers'
 
-// Note: '{string} logs in' step is handled by common-steps.js
-// Profile editing test fixtures are loaded via apply-database-config.sh
-
 // ============================================================================
-// When Steps - User Actions
+// Helper: Open edit form based on user's approval state
 // ============================================================================
-
-When('they navigate to their profile page', () => {
+const openEditForm = () => {
   navigateToProfile()
-})
+  isAccessRequestState().then((isAccessRequest) => {
+    cy.wrap(isAccessRequest).as('isAccessRequestState')
+    if (isAccessRequest) {
+      clickEditAccessRequest()
+    } else {
+      clickEditProfile()
+    }
+  })
+}
 
-When('they click the edit profile button', () => {
-  clickEditProfile()
-})
+const submitForm = () => {
+  cy.get('@isAccessRequestState').then((isAccessRequest) => {
+    if (isAccessRequest) {
+      clickUpdateRequest()
+    } else {
+      clickSave()
+    }
+    cy.wait(1000)
+  })
+}
 
-When('they click the edit access request button', () => {
-  clickEditAccessRequest()
-})
+// ============================================================================
+// When Steps - Declarative User Actions
+// ============================================================================
 
-When('they update their first name to {string}', (firstName) => {
-  updateFirstName(firstName)
-})
-
-When('they update their last name to {string}', (lastName) => {
-  updateLastName(lastName)
-})
-
-When('they select STT {string}', (sttName) => {
-  selectSTT(sttName)
-})
-
-When('they toggle FRA access off', () => {
-  toggleFRAAccess()
-})
-
-When('they select region {string}', (regionName) => {
-  selectRegions([regionName])
-})
-
-When('they deselect region {string}', (regionName) => {
-  deselectRegions([regionName])
-})
-
-When('they click save', () => {
-  clickSave()
-  cy.wait(1000) // Wait for save operation
-})
-
-When('they click update request', () => {
-  clickUpdateRequest()
-  cy.wait(1000) // Wait for save operation
-})
-
-When('they click save without making changes', () => {
-  clickSave()
-})
-
-When('they click cancel', () => {
+When('{string} cancels profile editing with unsaved changes', () => {
+  openEditForm()
+  updateFirstName('Should Not Save')
   clickCancel()
 })
 
-When('they clear the first name field', () => {
+When('{string} updates their STT to {string}', (actor, sttName) => {
+  openEditForm()
+  selectSTT(sttName)
+  submitForm()
+})
+
+When('{string} opens profile editing', () => {
+  openEditForm()
+})
+
+When(
+  '{string} updates their regions to add {string} and remove {string}',
+  (actor, addRegion, removeRegion) => {
+    openEditForm()
+    deselectRegions([removeRegion])
+    selectRegions([addRegion])
+    submitForm()
+  }
+)
+
+When('{string} submits profile with empty first name', () => {
+  openEditForm()
   cy.get('#firstName').clear()
+  submitForm()
 })
 
-When('they clear the last name field', () => {
+When('{string} submits profile with empty last name', () => {
+  openEditForm()
   cy.get('#lastName').clear()
+  submitForm()
 })
+
+When('{string} submits profile without changes', () => {
+  openEditForm()
+  clickSave()
+})
+
+When(
+  '{string} updates their name to {string} {string}',
+  (actor, firstName, lastName) => {
+    openEditForm()
+    updateFirstName(firstName)
+    updateLastName(lastName)
+    submitForm()
+  }
+)
+
+When(
+  '{string} updates their name to {string} and disables FRA access',
+  (actor, firstName) => {
+    openEditForm()
+    updateFirstName(firstName)
+    toggleFRAAccess()
+    submitForm()
+  }
+)
 
 // ============================================================================
-// Then Steps - Assertions
+// Then Steps - Declarative Assertions
 // ============================================================================
 
-Then('they should see an error message about required fields', () => {
-  verifyErrorMessage('required')
-})
-
-Then('they should see an error message about no changes made', () => {
-  verifyErrorMessage('No changes have been made')
-})
-
-Then('their profile should show name as {string}', (name) => {
+Then('{string} profile shows name {string}', (actor, name) => {
   verifyProfileField('Name', name)
 })
 
-Then('their profile should show State STT {string}', (sttName) => {
+Then('{string} profile shows STT {string}', (actor, sttName) => {
   verifyProfileField('State', sttName)
 })
 
-Then('their profile should show regions {string}', (regions) => {
+Then('{string} profile shows regions {string}', (actor, regions) => {
   const regionList = regions.split(', ')
   regionList.forEach((region) => {
     cy.contains(region).should('be.visible')
   })
 })
 
-Then('their profile should not show FRA access badge', () => {
+Then('{string} profile does not show FRA access', () => {
   verifyNoFRAAccessBadge()
 })
 
-Then('they should see a pending change request banner', () => {
+Then('{string} sees a pending change request', () => {
   verifyPendingChangeRequestBanner()
 })
 
-Then('they should be back on the profile view page', () => {
-  cy.url().should('include', '/profile')
-  cy.get('button').contains('Edit').should('be.visible')
+Then('{string} sees a required field error', () => {
+  verifyErrorMessage('required')
 })
 
-Then('they should still be on the edit page', () => {
+Then('{string} sees a no changes error', () => {
+  verifyErrorMessage('No changes have been made')
+})
+
+Then('{string} remains on the edit page', () => {
   cy.get('button')
     .contains(new RegExp(`Save|Update Request`))
     .should('be.visible')
   cy.get('button').contains('Cancel').should('be.visible')
 })
 
-Then('the STT field should not be editable', () => {
-  // Verify the STT combobox/input is not present in the edit form
+Then('the STT field is not editable', () => {
   cy.get('#stt').should('not.exist')
 })
