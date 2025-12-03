@@ -85,11 +85,12 @@ function ReportsContent() {
   const radio_options = [
     { label: 'TANF', value: 'tanf' },
     ...(fileTypeStt?.ssp ? [{ label: 'SSP-MOE', value: 'ssp-moe' }] : []),
-    {
-      label: 'Program Integrity Audit',
-      value: 'program-integrity-audit',
-    },
+    ...(process.env.REACT_APP_SHOW_PIA === 'true'
+      ? [{ label: 'Program Integrity Audit', value: 'program-integrity-audit' }]
+      : []),
   ]
+  console.log(JSON.stringify(radio_options, null, 2))
+  console.log(JSON.stringify(process.env.REACT_APP_SHOW_PIA, null, 2))
 
   return (
     <div className="page-container" style={{ position: 'relative' }}>
@@ -135,7 +136,8 @@ function ReportsContent() {
           </div>
         </div>
 
-        {fileTypeInputValue === 'program-integrity-audit' ? (
+        {fileTypeInputValue === 'program-integrity-audit' &&
+        process.env.REACT_APP_SHOW_PIA === 'true' ? (
           <ProgramIntegrityAuditReports
             stt={stt ? stt : fileTypeStt}
             isRegionalStaff={isRegionalStaff}
