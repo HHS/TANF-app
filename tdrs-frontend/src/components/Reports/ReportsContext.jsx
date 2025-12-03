@@ -39,8 +39,9 @@ const VALID_FILE_TYPES = {
   ],
   fra: [
     'workOutcomesOfTanfExiters',
-    'secondarySchoolAttainment',
-    'supplementalWorkOutcomes',
+    // TODO: uncomment when we collect this data
+    // 'secondarySchoolAttainment',
+    // 'supplementalWorkOutcomes',
   ],
 }
 
