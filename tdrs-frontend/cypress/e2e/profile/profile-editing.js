@@ -21,7 +21,7 @@ import {
 } from './profile-helpers'
 
 // ============================================================================
-// Helper: Open edit form based on user's approval state
+// Helpers
 // ============================================================================
 const openEditForm = () => {
   navigateToProfile()
@@ -47,7 +47,7 @@ const submitForm = () => {
 }
 
 // ============================================================================
-// When Steps - Declarative User Actions
+// When Steps
 // ============================================================================
 
 When('{string} cancels profile editing with unsaved changes', () => {
@@ -114,7 +114,7 @@ When(
 )
 
 // ============================================================================
-// Then Steps - Declarative Assertions
+// Then Steps
 // ============================================================================
 
 Then('{string} profile shows name {string}', (actor, name) => {
