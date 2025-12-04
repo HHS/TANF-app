@@ -10,7 +10,7 @@
 
 - Updated STT email templates to provide clearer status and error guidance. ([#3251](https://github.com/raft-tech/TANF-app/issues/3251))
 
-- Added alert banner to Knowledge Center regarding government shutdown, ensuring awareness. ([#5398](https://github.com/raft-tech/TANF-app/issues/5398))
+- Added alert banner module to Knowledge Center codebase and saved for use in potential future scenarios. It was originally intended to notify users about the effects of the government shutdown, but it wasn't used for that after all. ([#5398](https://github.com/raft-tech/TANF-app/issues/5398))
 
 - Merged fix for a merge conflict that re-merged deleted code, stabilizing the codebase. ([#5489](https://github.com/raft-tech/TANF-app/issues/5489))
 
