@@ -177,6 +177,8 @@ function FeedbackReports() {
           processes the reports.
         </p>
 
+        <hr className="margin-top-2 margin-bottom-2" />
+
         {/* Alert Messages */}
         {alert.active && (
           <div
@@ -188,8 +190,6 @@ function FeedbackReports() {
             </div>
           </div>
         )}
-
-        <hr className="margin-top-2 margin-bottom-2" />
 
         {/* File Upload Section */}
         <FeedbackReportsUpload
