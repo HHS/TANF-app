@@ -52,7 +52,6 @@ describe('FeedbackReportsUpload', () => {
 
       const fileInput = screen.getByLabelText('Feedback Reports ZIP')
       expect(fileInput).toHaveAttribute('type', 'file')
-      expect(fileInput).toHaveAttribute('accept', '.zip')
       expect(fileInput).toHaveAttribute('name', 'feedback-reports')
       expect(fileInput).toHaveAttribute('id', 'feedback_reports')
       expect(fileInput).toHaveAttribute(

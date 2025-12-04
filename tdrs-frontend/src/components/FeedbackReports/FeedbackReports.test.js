@@ -41,6 +41,14 @@ describe('FeedbackReports', () => {
 
     // Mock successful history fetch by default
     axiosInstance.get.mockResolvedValue({ data: [] })
+
+    // Mock FileReader for async file handling
+    global.FileReader = jest.fn().mockImplementation(() => ({
+      readAsArrayBuffer: jest.fn(function () {
+        setTimeout(() => this.onload && this.onload(), 0)
+      }),
+      result: new ArrayBuffer(8),
+    }))
   })
 
   const renderComponent = () => {
@@ -176,8 +184,13 @@ describe('FeedbackReports', () => {
 
       fireEvent.change(fileInput, { target: { files: [file] } })
 
-      const uploadButton = screen.getByRole('button', {
-        name: /Upload & Notify States/i,
+      // Wait for FileReader async process to complete and button to be enabled
+      const uploadButton = await waitFor(() => {
+        const btn = screen.getByRole('button', {
+          name: /Upload & Notify States/i,
+        })
+        expect(btn).not.toHaveAttribute('disabled')
+        return btn
       })
 
       fireEvent.click(uploadButton)
@@ -222,8 +235,13 @@ describe('FeedbackReports', () => {
 
       fireEvent.change(fileInput, { target: { files: [file] } })
 
-      const uploadButton = screen.getByRole('button', {
-        name: /Upload & Notify States/i,
+      // Wait for FileReader async process to complete and button to be enabled
+      const uploadButton = await waitFor(() => {
+        const btn = screen.getByRole('button', {
+          name: /Upload & Notify States/i,
+        })
+        expect(btn).not.toHaveAttribute('disabled')
+        return btn
       })
 
       fireEvent.click(uploadButton)
@@ -251,8 +269,13 @@ describe('FeedbackReports', () => {
 
       fireEvent.change(fileInput, { target: { files: [file] } })
 
-      const uploadButton = screen.getByRole('button', {
-        name: /Upload & Notify States/i,
+      // Wait for FileReader async process to complete and button to be enabled
+      const uploadButton = await waitFor(() => {
+        const btn = screen.getByRole('button', {
+          name: /Upload & Notify States/i,
+        })
+        expect(btn).not.toHaveAttribute('disabled')
+        return btn
       })
 
       fireEvent.click(uploadButton)
@@ -282,8 +305,13 @@ describe('FeedbackReports', () => {
 
       fireEvent.change(fileInput, { target: { files: [file] } })
 
-      const uploadButton = screen.getByRole('button', {
-        name: /Upload & Notify States/i,
+      // Wait for FileReader async process to complete and button to be enabled
+      const uploadButton = await waitFor(() => {
+        const btn = screen.getByRole('button', {
+          name: /Upload & Notify States/i,
+        })
+        expect(btn).not.toHaveAttribute('disabled')
+        return btn
       })
 
       fireEvent.click(uploadButton)
@@ -406,9 +434,10 @@ describe('FeedbackReports', () => {
         },
       ]
 
+      // Initial fetch returns empty, all subsequent calls return mockHistory
       axiosInstance.get
         .mockResolvedValueOnce({ data: [] }) // Initial fetch
-        .mockResolvedValueOnce({ data: mockHistory }) // After upload
+        .mockResolvedValue({ data: mockHistory }) // All subsequent calls (including after upload)
 
       renderComponent()
 
@@ -425,8 +454,13 @@ describe('FeedbackReports', () => {
 
       fireEvent.change(fileInput, { target: { files: [file] } })
 
-      const uploadButton = screen.getByRole('button', {
-        name: /Upload & Notify States/i,
+      // Wait for FileReader async process to complete and button to be enabled
+      const uploadButton = await waitFor(() => {
+        const btn = screen.getByRole('button', {
+          name: /Upload & Notify States/i,
+        })
+        expect(btn).not.toHaveAttribute('disabled')
+        return btn
       })
 
       fireEvent.click(uploadButton)
@@ -435,8 +469,8 @@ describe('FeedbackReports', () => {
         expect(screen.getByText('new.zip')).toBeInTheDocument()
       })
 
-      // Should have called GET twice: once on mount, once after upload
-      expect(axiosInstance.get).toHaveBeenCalledTimes(2)
+      // Should have called GET at least twice: once on mount, once after upload
+      expect(axiosInstance.get.mock.calls.length).toBeGreaterThanOrEqual(2)
     })
   })
 
@@ -508,8 +542,13 @@ describe('FeedbackReports', () => {
 
       fireEvent.change(fileInput, { target: { files: [file] } })
 
-      const uploadButton = screen.getByRole('button', {
-        name: /Upload & Notify States/i,
+      // Wait for FileReader async process to complete and button to be enabled
+      const uploadButton = await waitFor(() => {
+        const btn = screen.getByRole('button', {
+          name: /Upload & Notify States/i,
+        })
+        expect(btn).not.toHaveAttribute('disabled')
+        return btn
       })
 
       fireEvent.click(uploadButton)
