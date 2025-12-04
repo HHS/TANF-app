@@ -36,32 +36,42 @@ def get_program_section_str(program_type, section):
 
 def get_tanf_aggregates_context_count(datafile_summary):
     """Return the sum of cases with and without errors across all months for TANF files."""
+    case_aggregates = datafile_summary.case_aggregates or {}
     cases_without_errors = 0
     cases_with_errors = 0
-    for month in datafile_summary.case_aggregates["months"]:
-        cases_without_errors += (
-            0
-            if month["accepted_without_errors"] == "N/A"
-            else month["accepted_without_errors"]
-        )
-        cases_with_errors += (
-            0
-            if month["accepted_with_errors"] == "N/A"
-            else month["accepted_with_errors"]
-        )
+    rejected = case_aggregates["rejected"] if "rejected" in case_aggregates else 0
+
+    if "months" in case_aggregates:
+        for month in case_aggregates["months"]:
+            cases_without_errors += (
+                month["accepted_without_errors"]
+                if "accepted_without_errors" in month
+                and month["accepted_without_errors"] != "N/A"
+                else 0
+            )
+            cases_with_errors += (
+                month["accepted_with_errors"]
+                if "accepted_with_errors" in month
+                and month["accepted_with_errors"] != "N/A"
+                else 0
+            )
 
     return {
         "cases_without_errors": cases_without_errors,
         "cases_with_errors": cases_with_errors,
-        "records_unable_to_process": datafile_summary.case_aggregates["rejected"],
+        "records_unable_to_process": rejected,
     }
 
 
 def get_fra_aggregates_context_count(datafile_summary):
     """Return the relevant context data from case aggregates for FRA files."""
+    case_aggregates = datafile_summary.case_aggregates or {}
+    total_errors = (
+        case_aggregates["total_errors"] if "total_errors" in case_aggregates else 0
+    )
     return {
         "records_created": datafile_summary.total_number_of_records_created,
-        "total_errors": datafile_summary.case_aggregates["total_errors"],
+        "total_errors": total_errors,
     }
 
 
