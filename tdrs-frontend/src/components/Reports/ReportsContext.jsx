@@ -5,6 +5,7 @@ import {
   useState,
   useRef,
   useEffect,
+  useCallback,
   useMemo,
 } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
@@ -228,6 +229,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   // Redux selectors
   const files = useSelector((state) => state.reports.submittedFiles)
   const uploadedFiles = files?.filter((file) => file.fileName && !file.id)
+  const submittedFiles = files?.filter((file) => file.fileName && file.id) || []
 
   // FRA-specific derived state
   const fraHasUploadedFile = fraSelectedFile && !fraSelectedFile.id
@@ -294,15 +296,15 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     setPendingChange({ type: null, value: null })
   }
 
-  const handleOpenFeedbackWidget = () => {
+  const handleOpenFeedbackWidget = useCallback(() => {
     dispatch(
       openFeedbackWidget({
         dataType: fileTypeInputValue,
-        dataFiles: uploadedFiles,
+        dataFiles: submittedFiles,
         widgetId: `${fileTypeInputValue}-report-submission-feedback`,
       })
     )
-  }
+  }, [dispatch, fileTypeInputValue, submittedFiles])
 
   const selectFileType = (value) => {
     setFileTypeTouched(true)

@@ -83,15 +83,21 @@ m2 = [
             ),
             category3.ifThenAlso(
                 condition_field_name="FAMILY_AFFILIATION",
-                condition_function=category3.isBetween(1, 3, inclusive=True),
+                condition_function=category3.isBetween(2, 3, inclusive=True),
                 result_field_name="EDUCATION_LEVEL",
                 result_function=category3.orValidators(
                     [
                         category3.isBetween(1, 16, inclusive=True, cast=int),
-                        category3.isEqual(98, cast=int),
+                        category3.isBetween(98, 99, inclusive=True, cast=int),
                     ],
                     if_result=True,
                 ),
+            ),
+            category3.ifThenAlso(
+                condition_field_name="FAMILY_AFFILIATION",
+                condition_function=category3.isEqual(1),
+                result_field_name="EDUCATION_LEVEL",
+                result_function=category3.isNotOneOf((0, 99), cast=int),
             ),
             category3.ifThenAlso(
                 condition_field_name="FAMILY_AFFILIATION",

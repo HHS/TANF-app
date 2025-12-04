@@ -5,7 +5,7 @@ from django.utils import timezone
 import factory
 import factory.fuzzy
 
-from tdpservice.users.models import Rating
+from tdpservice.users.models import AccountApprovalStatusChoices, Rating
 
 
 class BaseUserFactory(factory.django.DjangoModelFactory):
@@ -28,7 +28,6 @@ class BaseUserFactory(factory.django.DjangoModelFactory):
     is_superuser = False
 
     login_gov_uuid = factory.Faker("uuid4")
-    deactivated = False
     account_approval_status = "Initial"
     # For testing convenience, though most users won't have both a login_gov_uuid and hhs_id
 
@@ -96,7 +95,7 @@ class InactiveUserFactory(UserFactory):
 class DeactivatedUserFactory(UserFactory):
     """Generate user with account deemed `inactive`."""
 
-    account_approval_status = "Deactivated"
+    account_approval_status = AccountApprovalStatusChoices.DEACTIVATED
 
 
 class FeedbackFactory(factory.django.DjangoModelFactory):
