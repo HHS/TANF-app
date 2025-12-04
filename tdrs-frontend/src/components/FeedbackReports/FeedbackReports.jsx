@@ -77,14 +77,27 @@ function FeedbackReports() {
     setAlert({ active: false, type: null, message: null })
 
     const fileInputValue = e.target.files[0]
+    if (!fileInputValue) return
+
     const input = inputRef.current
-    console.log(input)
     const dropTarget = input.parentNode
-    console.log(dropTarget)
 
-    // const filereader = new FileReader()
+    // Read file to allow USWDS time to create preview elements
+    const loadFile = () =>
+      new Promise((resolve, reject) => {
+        const filereader = new FileReader()
+        filereader.onerror = () => {
+          filereader.abort()
+          reject(new Error('Problem loading input file'))
+        }
+        filereader.onload = () => resolve()
+        filereader.readAsArrayBuffer(fileInputValue)
+      })
+
+    await loadFile()
+
+    // Validate file extension after USWDS has created preview
     const zipExtension = /(\.zip)$/i
-
     const isZip = zipExtension.exec(fileInputValue.name)
 
     if (!isZip) {
