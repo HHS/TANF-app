@@ -106,6 +106,15 @@ function FeedbackReports() {
       return
     }
 
+    // Clean up any leftover error state from previous invalid file
+    const instructions = dropTarget.querySelector(
+      '.usa-file-input__instructions'
+    )
+    if (instructions) {
+      instructions.classList.remove('display-block')
+    }
+    dropTarget.classList.remove('has-invalid-file')
+
     setSelectedFile(fileInputValue)
     inputRef.current.value = null
   }
