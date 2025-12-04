@@ -71,57 +71,49 @@ const validateUrlParams = (searchParams, isFra, sttList) => {
   let hasInvalidParam = false
 
   // Validate fiscal year (must be a valid year between 2021 and current fiscal year)
-  if (fiscalYear) {
-    const year = parseInt(fiscalYear, 10)
-    const currentFiscalYear = getCurrentFiscalYear()
-    const minYear = 2021
-    if (!isNaN(year) && year >= minYear && year <= currentFiscalYear) {
-      validatedFy = fiscalYear
-    } else {
-      hasInvalidParam = true
-    }
+  // For program-integrity-audit, only 2024 is allowed
+  const year = parseInt(fiscalYear, 10)
+  const currentFiscalYear = getCurrentFiscalYear()
+  const minYear = type === 'program-integrity-audit' ? 2024 : 2021
+  const maxYear = type === 'program-integrity-audit' ? 2024 : currentFiscalYear
+  if (!isNaN(year) && year >= minYear && year <= maxYear) {
+    validatedFy = fiscalYear
+  } else {
+    hasInvalidParam = true
   }
 
   // Validate quarter (must be Q1, Q2, Q3, or Q4)
-  if (quarter) {
-    if (VALID_QUARTERS.includes(quarter)) {
-      validatedQ = quarter
-    } else {
-      hasInvalidParam = true
-    }
+  if (VALID_QUARTERS.includes(quarter)) {
+    validatedQ = quarter
+  } else {
+    hasInvalidParam = true
   }
 
   // Validate file type
-  if (type) {
-    const validTypes = isFra ? VALID_FILE_TYPES.fra : VALID_FILE_TYPES.reports
-    if (validTypes.includes(type)) {
-      validatedType = type
-    } else {
-      hasInvalidParam = true
-    }
+  const validTypes = isFra ? VALID_FILE_TYPES.fra : VALID_FILE_TYPES.reports
+  if (validTypes.includes(type)) {
+    validatedType = type
+  } else {
+    hasInvalidParam = true
   }
 
   // Validate STT (must exist in the STT list if provided)
-  if (stt) {
-    if (sttList && sttList.length > 0) {
-      if (sttList.some((s) => s?.name === stt)) {
-        validatedStt = stt
-      } else {
-        hasInvalidParam = true
-      }
-    } else {
-      // STT list not loaded yet, keep the value for now
+  if (sttList && sttList.length > 0) {
+    if (sttList.some((s) => s?.name === stt)) {
       validatedStt = stt
-    }
-  }
-
-  // Validate tab (must be 1 or 2)
-  if (tab) {
-    if (tab === '1' || tab === '2') {
-      validatedTab = parseInt(tab, 10)
     } else {
       hasInvalidParam = true
     }
+  } else {
+    // STT list not loaded yet, keep the value for now
+    validatedStt = stt
+  }
+
+  // Validate tab (must be 1 or 2)
+  if (tab === '1' || tab === '2') {
+    validatedTab = parseInt(tab, 10)
+  } else {
+    hasInvalidParam = true
   }
 
   return {
@@ -143,7 +135,8 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   const [searchParams, setSearchParams] = useSearchParams()
   const [hasValidatedParams, setHasValidatedParams] = useState(false)
 
-  // Get validated params (without STT validation since list may not be loaded)
+  // Get validated params (without STT validation since it will never be loaded since we have to wait for fetchSTTs to
+  // run.
   const validatedParams = useMemo(
     () => validateUrlParams(searchParams, isFra, []),
     [searchParams, isFra]
