@@ -116,6 +116,13 @@ def send_data_submitted_email(
         "url": settings.FRONTEND_BASE_URL,
     }
 
+    if datafile_summary.status == DataFileSummary.Status.PENDING:
+        log(
+            "Email triggered for pending data file, skipping.",
+            logger_context=logger_context,
+        )
+        return
+
     match prog_type:
         case (
             DataFile.ProgramType.TANF
@@ -156,7 +163,7 @@ def send_data_submitted_email(
             match datafile_summary.status:
                 case DataFileSummary.Status.ACCEPTED:
                     template_path = FraDataFileEmail.ACCEPTED.value
-                    subject = f"{section_name} Successfully Submitted"
+                    subject = f"{section_name} Successfully Submitted Without Errors"
                     text_message = (
                         f"{file_type} has been submitted and processed without errors."
                     )
