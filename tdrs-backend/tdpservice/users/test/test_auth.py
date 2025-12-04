@@ -1306,13 +1306,6 @@ class TestLoginParam:
         "login_handler,fix_mock_config,fix_mock,fix_states_factory,fix_req_factory",
         [
             (
-                "LoginDotGov",
-                "mock",
-                "mock",
-                "states_factory",
-                "req_factory",
-            ),  # LoginDotGov
-            (
                 "AMS",
                 "mock_ams_configuration",
                 "mock_decode",
@@ -1357,24 +1350,6 @@ class TestLoginParam:
                 "test_new_email@example.com",
                 states["nonce"],
             )
-        # Test LoginDotGov
-        elif login_handler == "LoginDotGov":
-            # run associated fixtures for LoginDotGov
-            mock = request.getfixturevalue(fix_mock)
-            states_factory = request.getfixturevalue(fix_states_factory)
-            req_factory = request.getfixturevalue(fix_req_factory)
-
-            user.username = "test_old_email@example.com"
-            user.save()
-            states = states_factory
-            request = req_factory
-            request = create_session(request, states_factory)
-            view = TokenAuthorizationLoginDotGov.as_view()
-            mock_post, mock_decode = mock
-            mock_decode.return_value = decoded_token(
-                "test_new_email@example.com", states["nonce"], sub=user.login_gov_uuid
-            )
-
         response = view(request)
         # Ensure the user's username was updated with new email.
         assert User.objects.filter(username="test_new_email@example.com").exists()

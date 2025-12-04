@@ -1,4 +1,11 @@
 // FeedbackConstants.js
+
+// Feedback Types
+export const GENERAL_FEEDBACK_TYPE = 'general_feedback'
+export const TANF_FEEDBACK_TYPE = 'tanf_submission_feedback'
+export const FRA_FEEDBACK_TYPE = 'fra_submission_feedback'
+
+// Feedback Header & Email Info
 export const FEEDBACK_MODAL_HEADER =
   'Your feedback is important to us! We use it to ensure that the TANF Data Portal is meeting your needs and better serve you and your team.'
 export const FEEDBACK_SUCCESS_RESPONSE_HEADER = 'Thank you for your feedback'
@@ -8,10 +15,14 @@ export const SSP_MOE_DATA_UPLOAD_FEEDBACK_HEADER =
   'How was your experience uploading SSP-MOE data?'
 export const TANF_DATA_UPLOAD_FEEDBACK_HEADER =
   'How was your experience uploading TANF data?'
+export const PIA_TANF_DATA_UPLOAD_FEEDBACK_HEADER =
+  'How was your experience uploading TANF Program Integrity Audit data?'
 export const FRA_DATA_UPLOAD_FEEDBACK_HEADER =
   'How was your experience uploading FRA data?'
 
-export const GREAT_FEEDBACK = 'Fantastic. Would you like to leave a comment?'
-export const GOOD_FEEDBACK = 'Great. Would you like to leave a comment?'
-export const FAIR_FEEDBACK = 'Thanks. Any suggestions?'
-export const POOR_AND_BAD_FEEDBACK = "We're sorry. How can we improve?"
+// Feedback likert selection text
+export const GREAT_FEEDBACK = 'Fantastic. Score has been received!'
+export const GOOD_FEEDBACK = 'Great. Score has been received!'
+export const FAIR_FEEDBACK = 'Score has been received!'
+export const POOR_AND_BAD_FEEDBACK =
+  "Score has been received. We're sorry. How can we improve?"

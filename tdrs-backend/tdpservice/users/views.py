@@ -4,30 +4,41 @@ import datetime
 import logging
 
 from django.contrib.auth.models import AnonymousUser, Group
-from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from tdpservice.users.models import AccountApprovalStatusChoices, Feedback, User
+from tdpservice.users.models import (
+    AccountApprovalStatusChoices,
+    ChangeRequestAuditLog,
+    Feedback,
+    User,
+    UserChangeRequest,
+)
 from tdpservice.users.permissions import (
     CypressAdminAccountPermissions,
     DjangoModelCRUDPermissions,
     FeedbackPermissions,
     IsApprovedPermission,
+    IsOwnerOrAdmin,
     UserPermissions,
 )
 from tdpservice.users.serializers import (
+    ChangeRequestAuditLogSerializer,
     FeedbackSerializer,
     GroupSerializer,
+    UserChangeRequestSerializer,
+    UserProfileChangeRequestSerializer,
     UserProfileSerializer,
     UserSerializer,
 )
+from django.contrib.auth.models import Permission
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +59,8 @@ class UserViewSet(
         """Return the serializer class."""
         return {
             "request_access": UserProfileSerializer,
+            "profile": UserProfileSerializer,
+            "update_profile": UserProfileChangeRequestSerializer,
         }.get(self.action, UserSerializer)
 
     def get_queryset(self):
@@ -84,15 +97,64 @@ class UserViewSet(
         """Update request.user with provided data, set `account_approval_status` to 'Access Request'."""
         if request.method == "GET":
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        serializer = self.get_serializer(self.request.user, request.data)
+
+        # If PATCH
+        user = request.user
+
+        logger.info(
+            "Access request for user: %s on %s", request.user.id, timezone.now()
+        )
+
+        serializer = self.get_serializer(user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.save(
+        instance = serializer.save(
             account_approval_status=AccountApprovalStatusChoices.ACCESS_REQUEST,
             access_requested_date=datetime.datetime.now(),
-        )
-        logger.info(
-            "Access request for user: %s on %s", self.request.user, timezone.now()
-        )
+        )  # DRF ignores commit, but semantically clearer
+        for field, value in serializer.validated_data.items():
+            try:
+                if not field == "regions":  # M2M handled separately
+                    setattr(instance, field, value)
+            except AttributeError as e:
+                logger.error(
+                    "Failed to set attribute %s on user %s: %s", field, user.id, e
+                )
+        instance.save()
+
+        # Handle FRA permission logic here
+        has_fra_access = request.data.get("has_fra_access")
+        try:
+            fra_permission = Permission.objects.get(codename="has_fra_access")
+            if has_fra_access:
+                instance.user_permissions.add(fra_permission)
+            else:
+                instance.user_permissions.remove(fra_permission)
+        except Permission.DoesNotExist:
+            return Response(
+                {"detail": "has_fra_access permission does not exist."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Handle M2M relations safely
+        regions = serializer.validated_data.get("regions", None)
+        if regions is not None:
+            instance.regions.set(regions)
+
+        return Response(UserProfileSerializer(instance).data)
+
+    @action(methods=["GET"], detail=False)
+    def profile(self, request):
+        """Get the current user's profile."""
+        serializer = self.get_serializer(self.request.user)
+        return Response(serializer.data)
+
+    @action(methods=["PATCH"], detail=False)
+    def update_profile(self, request):
+        """Update the current user's profile through change requests."""
+        serializer = self.get_serializer(self.request.user, request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
         return Response(serializer.data)
 
 
@@ -146,12 +208,43 @@ class GroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     serializer_class = GroupSerializer
 
 
-class FeedbackViewSet(
-    mixins.CreateModelMixin,
-    mixins.RetrieveModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet,
-):
+class UserChangeRequestViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for user change requests."""
+
+    serializer_class = UserChangeRequestSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
+
+    def get_queryset(self):
+        """Filter queryset based on user permissions."""
+        user = self.request.user
+        if user.is_ofa_sys_admin:
+            return UserChangeRequest.objects.all()
+
+        return UserChangeRequest.objects.filter(user=user)
+
+    def perform_create(self, serializer):
+        """Set user to current user if not specified."""
+        data = serializer.validated_data
+        if "user" not in data:
+            data["user"] = self.request.user
+        serializer.save()
+
+
+class ChangeRequestAuditLogViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for change request audit logs."""
+
+    serializer_class = ChangeRequestAuditLogSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Only allow admins to access audit logs."""
+        user = self.request.user
+        if not user.is_ofa_sys_admin:
+            return ChangeRequestAuditLog.objects.none()
+        return ChangeRequestAuditLog.objects.all()
+
+
+class FeedbackViewSet(viewsets.ModelViewSet):
     """Feedback viewset."""
 
     queryset = Feedback.objects.all()
@@ -164,20 +257,34 @@ class FeedbackViewSet(
         if response.status_code != status.HTTP_201_CREATED:
             return response
 
-        try:
-            feedback_id = response.data["id"]
-            feedback = Feedback.objects.get(id=feedback_id)
+        feedback_id = response.data["id"]
+        feedback = Feedback.objects.get(id=feedback_id)
 
-            # Force anonymity if user is None to prevent us from know if authenticated users chose to remain anonymous
-            if request.user is None or isinstance(request.user, AnonymousUser):
-                feedback.anonymous = True
+        # Force anonymity if user is None to prevent us from know if authenticated users chose to remain anonymous
+        if request.user is None or isinstance(request.user, AnonymousUser):
+            feedback.anonymous = True
 
-            if not feedback.anonymous:
-                feedback.user = request.user
-            feedback.save()
-        except ObjectDoesNotExist:
-            logger.exception(
-                "Failed to update the user field on the Feedback model because it does not exist."
-            )
-        finally:
+        if not feedback.anonymous:
+            feedback.user = request.user
+        feedback.save()
+
+        return response
+
+    def update(self, request, *args, **kwargs):
+        """Update feedback."""
+        response = super().update(request, *args, **kwargs)
+
+        if response.status_code != status.HTTP_200_OK:
             return response
+
+        feedback_id = response.data["id"]
+        feedback = Feedback.objects.get(id=feedback_id)
+
+        feedback.user = None if feedback.anonymous else request.user
+        feedback.save()
+
+        return response
+
+    def destroy(self, request, *args, **kwargs):
+        """Override the destroy method to disallow it."""
+        return MethodNotAllowed(method="DELETE")

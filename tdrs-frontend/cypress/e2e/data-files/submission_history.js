@@ -68,7 +68,7 @@ Given('FRA Data Analyst Fred submits a file', () => {
   df.fillFYQ('2021', 'Q1')
   cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
   df.uploadFile(
-    '#active-case-data',
+    '#active_case_data',
     '../tdrs-backend/tdpservice/parsers/test/data/small_correct_file.txt'
   )
 
@@ -108,7 +108,7 @@ Then('{string} can see submission history', (username) => {
 
 Then('{string} cannot see the upload form', (username) => {
   cy.get('button').contains('Current Submission').should('not.exist')
-  cy.get('#active-case-data').should('not.exist')
+  cy.get('#active_case_data').should('not.exist')
 })
 
 Then('{string} sees the file in submission history', (username) => {

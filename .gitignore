@@ -11,6 +11,7 @@ tdrs-frontend/yarn-debug.log*
 tdrs-frontend/yarn-error.log*
 tdrs-frontend/vars-frontend.yml
 tdrs-frontend/pa11y-screenshots/*
+tdrs-frontend/cypress/reports*
 .eslintcache
 downloads/
 
@@ -123,3 +124,9 @@ cypress.env.json
 # DB seeds
 tdrs-backend/*.pg
 tdrs-backend/django.log
+
+# Pytest cache
+tdrs-backend/.pytest_cache/*
+
+# frontend cypress test results
+tdrs-frontend/test-results*.xml

@@ -16,9 +16,7 @@ function Feedback() {
   // Redux state for widget (used on /reports)
   const dispatch = useDispatch()
   const isWidgetOpen = useSelector((state) => state.feedbackWidget.isOpen)
-  const lockedDataType = useSelector(
-    (state) => state.feedbackWidget.lockedDataType
-  )
+  const feedbackDataType = useSelector((state) => state.feedbackWidget.dataType)
 
   // Feedback Modal local state
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -53,7 +51,7 @@ function Feedback() {
           <FeedbackWidget
             isOpen={isWidgetOpen}
             onClose={handleWidgetClose}
-            dataType={lockedDataType}
+            dataType={feedbackDataType}
           />
         </div>
       ) : (

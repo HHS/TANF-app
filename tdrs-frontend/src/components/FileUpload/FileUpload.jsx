@@ -39,6 +39,22 @@ const INVALID_EXT_ERROR = (
   </>
 )
 
+const NULL_PROGRAM_TYPE_ERROR = (
+  <>
+    Could not determine the file type. Please verify the file has a valid
+    header.&nbsp;
+    <a
+      className="usa-link"
+      href="https://acf.gov/sites/default/files/documents/ofa/transmission_file_header_trailer_record.pdf"
+      target="_blank"
+      aria-label="Need help? Read header record guidance"
+      rel="noreferrer"
+    >
+      Need help?
+    </a>
+  </>
+)
+
 const load = (file, section, input, dropTarget, dispatch) => {
   const filereader = new FileReader()
   const types = ['png', 'gif', 'jpeg']
@@ -86,41 +102,36 @@ const load = (file, section, input, dropTarget, dispatch) => {
   })
 }
 
-function FileUpload({ section, setLocalAlertState }) {
+function FileUpload({
+  section,
+  year,
+  quarter,
+  fileType,
+  label,
+  setLocalAlertState,
+}) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
   // The set of uploaded files in our Redux state
   const files = useSelector((state) => state.reports.submittedFiles)
-  const selectedYear = useSelector((state) => state.reports.year)
-  const selectedQuarter = useSelector((state) => state.reports.quarter)
-  const selectedFileType = useSelector((state) => state.reports.fileType)
 
   const dispatch = useDispatch()
 
-  // e.g. "1 - Active Case Data" => ["1", "Active Case Data"]
-  const [sectionNumber, sectionName] = section.split(' - ')
-
-  const formattedSectionNameLabel =
-    'Section ' +
-    sectionNumber +
-    ' - ' +
-    selectedFileType?.toUpperCase() +
-    ' - ' +
-    sectionName
-
   const hasFile = files?.some(
-    (file) => file.section.includes(sectionName) && file.uuid
+    (file) => file.section.includes(section) && file.uuid
   )
 
   const hasPreview = files?.some(
-    (file) => file.section.includes(sectionName) && file.name
+    (file) => file.section.includes(section) && file.name
   )
 
-  const selectedFile = files?.find((file) => file.section.includes(sectionName))
+  const selectedFile = files?.find((file) => file.section.includes(section))
 
+  // Sanitize section name for use as CSS selector ID
+  // Remove parentheses, hyphens, and other special characters
   const formattedSectionName = selectedFile?.section
-    .split(' ')
-    .map((word) => word.toLowerCase())
-    .join('-')
+    .toLowerCase()
+    .replace(/[()]/g, '') // Remove parentheses
+    .replace(/\s+/g, '_') // Replace spaces with underscores
 
   const targetClassName = getTargetClassName(formattedSectionName)
 
@@ -177,93 +188,118 @@ function FileUpload({ section, setLocalAlertState }) {
       dispatch
     )
 
+    const dispatchProgramTypeError = (
+      programTypeResult,
+      selectedProgramType,
+      input,
+      dropTarget,
+      section
+    ) => {
+      let formattedFileProgramType = programTypeResult.progType
+      let formattedSelectedProgramType = selectedProgramType
+      if (formattedFileProgramType === 'TAN') {
+        formattedFileProgramType = 'TANF'
+      }
+      if (formattedSelectedProgramType === 'TAN') {
+        formattedSelectedProgramType = 'TANF'
+      }
+      if (formattedSelectedProgramType === 'PRO') {
+        formattedSelectedProgramType = 'TANF Program Integrity Audit'
+      }
+
+      const programTypeError = `File may correspond to ${formattedFileProgramType} instead of ${formattedSelectedProgramType}. Please verify the file type.`
+      // Handle specific program type cases
+      createFileInputErrorState(input, dropTarget)
+      dispatch({
+        type: SET_FILE_ERROR,
+        payload: {
+          error: {
+            message: formattedFileProgramType
+              ? programTypeError
+              : NULL_PROGRAM_TYPE_ERROR,
+          },
+          section,
+        },
+      })
+    }
+
+    const dispatchCalendarFiscalError = (
+      calendarFiscalResult,
+      input,
+      dropTarget,
+      section
+    ) => {
+      // Handle fiscal year and quarter mismatch
+      let error_period
+      var link = (
+        <a
+          className="usa-link"
+          target="_blank"
+          rel="noopener noreferrer"
+          href="https://tdp-project-updates.app.cloud.gov/knowledge-center/uploading-data.html#reporting-period"
+        >
+          Need help?
+        </a>
+      )
+      switch (calendarFiscalResult.fileFiscalQuarter) {
+        case '1':
+          error_period = 'Oct 1 - Dec 31, '
+          break
+        case '2':
+          error_period = 'Jan 1 - Mar 31, '
+          break
+        case '3':
+          error_period = 'Apr 1 - Jun 30, '
+          break
+        case '4':
+          error_period = 'Jul 1 - Sep 30, '
+          break
+        default:
+          error_period = ''
+      }
+      createFileInputErrorState(input, dropTarget)
+      dispatch({
+        type: SET_FILE_ERROR,
+        payload: {
+          error: {
+            message:
+              `File contains data from ` +
+              error_period +
+              `which belongs to Fiscal Year ` +
+              calendarFiscalResult.fileFiscalYear +
+              `, Quarter ` +
+              calendarFiscalResult.fileFiscalQuarter +
+              `. Adjust your search parameters or upload a different file.`,
+            link: link,
+          },
+          section,
+        },
+      })
+    }
+
     if (!error) {
       // Get the correctly encoded file
       const { encodedFile, header } = await tryGetUTF8EncodedFile(result, file)
-      const selectedProgramType = selectedFileType.slice(0, 3).toUpperCase()
+      const selectedProgramType = fileType.slice(0, 3).toUpperCase()
       const { isValid, calendarFiscalResult, programTypeResult } =
-        await validateHeader(
-          header,
-          selectedYear,
-          selectedQuarter,
-          selectedProgramType
-        )
+        await validateHeader(header, year, quarter, selectedProgramType)
       if (isValid) {
         dispatch(upload({ file: encodedFile, section }))
       } else if (!programTypeResult.isValid) {
-        let formattedFileProgramType = programTypeResult.progType
-        let formattedSelectedProgramType = selectedProgramType
-        if (formattedFileProgramType === 'TAN') {
-          formattedFileProgramType = 'TANF'
-        }
-        if (formattedSelectedProgramType === 'TAN') {
-          formattedSelectedProgramType = 'TANF'
-        }
-        // Handle specific program type cases
-        dispatch({
-          type: SET_FILE_ERROR,
-          payload: {
-            error: {
-              message:
-                `File may correspond to ` +
-                formattedFileProgramType +
-                ` instead of ` +
-                formattedSelectedProgramType +
-                `. Please verify the file type.`,
-            },
-            section,
-          },
-        })
-      } else if (!calendarFiscalResult.isValid) {
-        // Handle fiscal year and quarter mismatch
-        let error_period
-        var link = (
-          <a
-            target="_blank"
-            rel="noopener noreferrer"
-            href="https://tdp-project-updates.app.cloud.gov/knowledge-center/uploading-data.html#reporting-period"
-          >
-            Need help?
-          </a>
+        dispatchProgramTypeError(
+          programTypeResult,
+          selectedProgramType,
+          input,
+          dropTarget,
+          section
         )
-        switch (calendarFiscalResult.fileFiscalQuarter) {
-          case '1':
-            error_period = 'Oct 1 - Dec 31, '
-            break
-          case '2':
-            error_period = 'Jan 1 - Mar 31, '
-            break
-          case '3':
-            error_period = 'Apr 1 - Jun 30, '
-            break
-          case '4':
-            error_period = 'Jul 1 - Sep 30, '
-            break
-          default:
-            error_period = ''
-        }
-        try {
-          createFileInputErrorState(input, dropTarget)
-        } catch (e) {
-          console.log('Error: ', e)
-        }
-        dispatch({
-          type: SET_FILE_ERROR,
-          payload: {
-            error: {
-              message:
-                `File contains data from ` +
-                error_period +
-                `which belongs to Fiscal Year ` +
-                calendarFiscalResult.fileFiscalYear +
-                `, Quarter ` +
-                calendarFiscalResult.fileFiscalQuarter +
-                `. Adjust your search parameters or upload a different file.`,
-              link: link,
-            },
-            section,
-          },
-        })
+      } else if (!calendarFiscalResult.isValid) {
+        dispatchCalendarFiscalError(
+          calendarFiscalResult,
+          input,
+          dropTarget,
+          section
+        )
       }
     }
     inputRef.current.value = null
@@ -276,7 +312,7 @@ function FileUpload({ section, setLocalAlertState }) {
       }`}
     >
       <label className="usa-label text-bold" htmlFor={formattedSectionName}>
-        {formattedSectionNameLabel}
+        {label}
       </label>
       <div>
         {selectedFile?.error && (
@@ -302,7 +338,7 @@ function FileUpload({ section, setLocalAlertState }) {
         id={formattedSectionName}
         className="usa-file-input"
         type="file"
-        name={sectionName}
+        name={section}
         aria-describedby={`${formattedSectionName}-file`}
         aria-hidden="false"
         data-errormessage={INVALID_FILE_ERROR}
@@ -313,7 +349,6 @@ function FileUpload({ section, setLocalAlertState }) {
 
 FileUpload.propTypes = {
   section: PropTypes.string.isRequired,
-  setLocalAlertState: PropTypes.func.isRequired,
 }
 
 export default FileUpload

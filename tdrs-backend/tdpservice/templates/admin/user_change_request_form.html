@@ -1,0 +1,37 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+
+{% block content %}
+<div class="module">
+    <h2>User Change Request Details</h2>
+    <div style="display: flex; margin-bottom: 20px;">
+        <div style="flex: 1; padding: 10px; border: 1px solid #ccc; margin-right: 10px;">
+            <h3>Current Value</h3>
+            <pre>{{ original.current_value }}</pre>
+        </div>
+        <div style="flex: 1; padding: 10px; border: 1px solid #ccc; margin-left: 10px;">
+            <h3>Requested Value</h3>
+            <pre>{{ original.requested_value }}</pre>
+        </div>
+    </div>
+    
+    {% if original.status == 'pending' %}
+    <div style="margin-bottom: 20px;">
+        <form method="post" action="{% url 'admin:approve_change_request' original.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="button" style="background-color: #28a745; color: white;">
+                Approve Change
+            </button>
+        </form>
+        <form method="post" action="{% url 'admin:reject_change_request' original.pk %}" style="margin-top: 10px;">
+            {% csrf_token %}
+            <button type="submit" class="button" style="background-color: #dc3545; color: white;">
+                Reject Change
+            </button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
+{{ block.super }}
+{% endblock %}

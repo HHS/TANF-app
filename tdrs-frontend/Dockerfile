@@ -1,5 +1,5 @@
 ARG REGISTRY_OWNER=hhs
-ARG BASE_TAG=v0.0.5
+ARG BASE_TAG=v0.0.7
 
 FROM ghcr.io/${REGISTRY_OWNER}/tdp-frontend-base:${BASE_TAG} AS localdev
 

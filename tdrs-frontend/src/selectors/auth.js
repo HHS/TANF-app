@@ -61,6 +61,9 @@ export const accountIsMissingAccessRequest = (state) =>
   accountStatusIsInitial(state) ||
   accountStatusIsDenied(state)
 
+export const accountHasPendingProfileChange = (state) =>
+  (selectUser(state)?.pending_requests ?? 0) > 0
+
 export const accountCanViewAdmin = (state) =>
   accountStatusIsApproved(state) &&
   [

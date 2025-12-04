@@ -1,4 +1,5 @@
 """Define data file models."""
+
 import logging
 import os
 from hashlib import sha256
@@ -6,13 +7,15 @@ from io import StringIO
 from typing import Union
 
 from django.conf import settings
-from django.contrib.admin.models import ADDITION, ContentType, LogEntry
+from django.contrib.admin.models import ADDITION, LogEntry
+from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import File
 from django.db import models
 from django.db.models import Max
 from django.utils.html import format_html
 
 from tdpservice.backends import DataFilesS3Storage
+from tdpservice.common.models import FileRecord
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
 
@@ -58,29 +61,6 @@ def get_s3_upload_path(instance, filename):
     )
 
 
-# The Data File model was starting to explode, and I think that keeping this logic
-# in its own abstract class is better for documentation purposes.
-class FileRecord(models.Model):
-    """Abstract type representing a file stored in S3."""
-
-    class Meta:
-        """Metadata."""
-
-        abstract = True
-
-    # Keep the file name because it will be different in s3,
-    # but the interface will still want to present the file with its
-    # original name.
-    original_filename = models.CharField(max_length=256, blank=False, null=False)
-    # Slug is the name of the file in S3
-    # NOTE: Currently unused, may be removed with a later release
-    slug = models.CharField(max_length=256, blank=False, null=False)
-    # Not all files will have the correct extension,
-    # or even have one at all. The UI will provide this information
-    # separately
-    extension = models.CharField(max_length=8, default="txt")
-
-
 class ReparseFileMeta(models.Model):
     """Meta data model representing a single file parse within a reparse execution."""
 
@@ -103,22 +83,19 @@ class ReparseFileMeta(models.Model):
     num_records_created = models.PositiveIntegerField(default=0)
     cat_4_errors_generated = models.PositiveIntegerField(default=0)
 
-
 class DataFile(FileRecord):
     """Represents a version of a data file."""
 
+    class ProgramType(models.TextChoices):
+        """Enum for data file program type."""
+
+        TANF = "TAN"
+        SSP = "SSP"
+        TRIBAL = "TRIBAL"
+        FRA = "FRA"
+
     class Section(models.TextChoices):
         """Enum for data file section."""
-
-        TRIBAL_CLOSED_CASE_DATA = "Tribal Closed Case Data"
-        TRIBAL_ACTIVE_CASE_DATA = "Tribal Active Case Data"
-        TRIBAL_AGGREGATE_DATA = "Tribal Aggregate Data"
-        TRIBAL_STRATUM_DATA = "Tribal Stratum Data"
-
-        SSP_AGGREGATE_DATA = "SSP Aggregate Data"
-        SSP_CLOSED_CASE_DATA = "SSP Closed Case Data"
-        SSP_ACTIVE_CASE_DATA = "SSP Active Case Data"
-        SSP_STRATUM_DATA = "SSP Stratum Data"
 
         ACTIVE_CASE_DATA = "Active Case Data"
         CLOSED_CASE_DATA = "Closed Case Data"
@@ -136,36 +113,6 @@ class DataFile(FileRecord):
                 cls.FRA_WORK_OUTCOME_TANF_EXITERS,
                 cls.FRA_SECONDRY_SCHOOL_ATTAINMENT,
                 cls.FRA_SUPPLEMENT_WORK_OUTCOMES,
-            ]
-
-        @classmethod
-        def is_ssp(cls, section: str) -> bool:
-            """Determine if the section is an SSP section."""
-            return section in [
-                cls.SSP_AGGREGATE_DATA,
-                cls.SSP_ACTIVE_CASE_DATA,
-                cls.SSP_CLOSED_CASE_DATA,
-                cls.SSP_STRATUM_DATA,
-            ]
-
-        @classmethod
-        def is_tribal(cls, section: str) -> bool:
-            """Determine if the section is a Tribal section."""
-            return section in [
-                cls.TRIBAL_AGGREGATE_DATA,
-                cls.TRIBAL_ACTIVE_CASE_DATA,
-                cls.TRIBAL_CLOSED_CASE_DATA,
-                cls.TRIBAL_STRATUM_DATA,
-            ]
-
-        @classmethod
-        def is_tanf(cls, section: str) -> bool:
-            """Determine if the section is a TANF section."""
-            return section in [
-                cls.ACTIVE_CASE_DATA,
-                cls.CLOSED_CASE_DATA,
-                cls.AGGREGATE_DATA,
-                cls.STRATUM_DATA,
             ]
 
     @staticmethod
@@ -190,7 +137,15 @@ class DataFile(FileRecord):
 
         constraints = [
             models.UniqueConstraint(
-                fields=("section", "version", "quarter", "year", "stt"),
+                fields=(
+                    "program_type",
+                    "section",
+                    "version",
+                    "quarter",
+                    "year",
+                    "stt",
+                    "is_program_audit",
+                ),
                 name="constraint_name",
             )
         ]
@@ -200,9 +155,14 @@ class DataFile(FileRecord):
         max_length=16, blank=False, null=False, choices=Quarter.choices
     )
     year = models.IntegerField()
+
+    program_type = models.CharField(
+        max_length=32, blank=False, null=False, choices=ProgramType.choices
+    )
     section = models.CharField(
         max_length=32, blank=False, null=False, choices=Section.choices
     )
+    is_program_audit = models.BooleanField(default=False)
 
     version = models.IntegerField()
 
@@ -227,17 +187,6 @@ class DataFile(FileRecord):
         help_text="Reparse events this file has been associated with.",
         related_name="files",
     )
-
-    @property
-    def prog_type(self):
-        """Return the program type for a given section."""
-        # e.g., 'SSP Closed Case Data'
-        if self.Section.is_ssp(self.section):
-            return "SSP"
-        elif self.Section.is_fra(self.section):
-            return "FRA"
-        else:
-            return "TAN"
 
     @property
     def filename(self):
@@ -309,7 +258,9 @@ class DataFile(FileRecord):
                 year=data["year"],
                 quarter=data["quarter"],
                 section=data["section"],
+                program_type=data["program_type"],
                 stt=data["stt"],
+                is_program_audit=data["is_program_audit"],
             )
             or 0
         ) + 1
@@ -320,23 +271,36 @@ class DataFile(FileRecord):
         )
 
     @classmethod
-    def find_latest_version_number(self, year, quarter, section, stt):
+    def find_latest_version_number(
+        self, year, quarter, section, program_type, stt, is_program_audit
+    ):
         """Locate the latest version number in a series of data files."""
         return self.objects.filter(
-            stt=stt, year=year, quarter=quarter, section=section
+            stt=stt,
+            year=year,
+            quarter=quarter,
+            section=section,
+            program_type=program_type,
+            is_program_audit=is_program_audit,
         ).aggregate(Max("version"))["version__max"]
 
     @classmethod
-    def find_latest_version(self, year, quarter, section, stt):
+    def find_latest_version(
+        self, year, quarter, section, program_type, stt, is_program_audit
+    ):
         """Locate the latest version of a data file."""
-        version = self.find_latest_version_number(year, quarter, section, stt)
+        version = self.find_latest_version_number(
+            year, quarter, section, program_type, stt, is_program_audit
+        )
 
         return self.objects.filter(
             version=version,
             year=year,
             quarter=quarter,
             section=section,
+            program_type=program_type,
             stt=stt,
+            is_program_audit=is_program_audit,
         ).first()
 
     def __repr__(self):

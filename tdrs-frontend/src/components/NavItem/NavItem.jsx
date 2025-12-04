@@ -8,8 +8,9 @@ import PropTypes from 'prop-types'
  * on the navigation tab.
  * @param {string} href - The path for where the user should
  * be redirected on click.
+ * @param {string} target - the target for which to open the link (default: "_self")
  */
-function NavItem({ pathname, tabTitle, href }) {
+function NavItem({ pathname, tabTitle, href, target }) {
   return (
     <li className="usa-nav__primary-item">
       <a
@@ -19,6 +20,7 @@ function NavItem({ pathname, tabTitle, href }) {
         id={tabTitle.replace(/ /g, '-').toLowerCase()}
         className={`usa-nav__link ${pathname === href ? 'usa-current' : ''}`}
         aria-current={href === pathname ? 'page' : undefined}
+        target={target ? target : '_self'}
       >
         <span>{tabTitle}</span>
       </a>

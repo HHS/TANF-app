@@ -12,16 +12,6 @@ function Footer() {
           <div className="mobile-lg:grid-col-8">
             <nav className="usa-footer__nav" aria-label="Footer navigation">
               <ul className="grid-row grid-gap">
-                <li className="mobile-lg:grid-col-6 desktop:grid-col-auto usa-footer__primary-content">
-                  <a
-                    className="usa-footer__primary-link"
-                    href="https://www.acf.hhs.gov/privacy-policy"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Privacy Policy
-                  </a>
-                </li>
                 {authenticated ? (
                   <li className="mobile-lg:grid-col-6 desktop:grid-col-auto usa-footer__primary-content">
                     <a
@@ -34,6 +24,26 @@ function Footer() {
                     </a>
                   </li>
                 ) : null}
+                <li className="mobile-lg:grid-col-6 desktop:grid-col-auto usa-footer__primary-content">
+                  <a
+                    className="usa-footer__primary-link"
+                    href={process.env.REACT_APP_KNOWLEDGE_CENTER_LINK}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Knowledge Center
+                  </a>
+                </li>
+                <li className="mobile-lg:grid-col-6 desktop:grid-col-auto usa-footer__primary-content">
+                  <a
+                    className="usa-footer__primary-link"
+                    href="https://www.acf.hhs.gov/privacy-policy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Privacy Policy
+                  </a>
+                </li>
                 <li className="mobile-lg:grid-col-6 desktop:grid-col-auto usa-footer__primary-content">
                   <a
                     className="usa-footer__primary-link"

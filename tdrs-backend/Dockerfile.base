@@ -1,3 +1,7 @@
+# Use the following commands to build and push multi-arch images to GitHub Container Registry
+# docker buildx create --name mybuilder --driver=docker-container --use
+# docker buildx build -t ghcr.io/raft-tech/tdp-backend-base:dev-02 -f Dockerfile.base . --platform linux/amd64,linux/arm64 --push
+
 FROM python:3.10.8-slim-bullseye
 ENV PYTHONUNBUFFERED=1
 

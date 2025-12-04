@@ -5,7 +5,7 @@ from django.utils import timezone
 import factory
 import factory.fuzzy
 
-from tdpservice.users.models import Rating
+from tdpservice.users.models import AccountApprovalStatusChoices, Rating
 
 
 class BaseUserFactory(factory.django.DjangoModelFactory):
@@ -20,7 +20,7 @@ class BaseUserFactory(factory.django.DjangoModelFactory):
     id = factory.Faker("uuid4")
     username = factory.Sequence(lambda n: "testuser%d@test.com" % n)
     password = "test_password"  # Static password so we can login.
-    email = factory.Faker("email")
+    email = factory.LazyAttribute(lambda obj: obj.username)
     first_name = factory.Faker("first_name")
     last_name = factory.Faker("last_name")
     is_active = True
@@ -28,7 +28,6 @@ class BaseUserFactory(factory.django.DjangoModelFactory):
     is_superuser = False
 
     login_gov_uuid = factory.Faker("uuid4")
-    deactivated = False
     account_approval_status = "Initial"
     # For testing convenience, though most users won't have both a login_gov_uuid and hhs_id
 
@@ -96,7 +95,7 @@ class InactiveUserFactory(UserFactory):
 class DeactivatedUserFactory(UserFactory):
     """Generate user with account deemed `inactive`."""
 
-    account_approval_status = "Deactivated"
+    account_approval_status = AccountApprovalStatusChoices.DEACTIVATED
 
 
 class FeedbackFactory(factory.django.DjangoModelFactory):
@@ -112,6 +111,6 @@ class FeedbackFactory(factory.django.DjangoModelFactory):
     created_at = factory.LazyFunction(timezone.now)
     rating = factory.fuzzy.FuzzyChoice([choice for choice in Rating])
     feedback = factory.Faker("paragraph")
-    acked = False
+    read = False
     reviewed_at = None
     reviewed_by = None

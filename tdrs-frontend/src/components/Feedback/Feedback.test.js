@@ -222,7 +222,7 @@ describe('Feedback component', () => {
       selector({
         feedbackWidget: {
           isOpen: true,
-          lockedDataType: 'tanf',
+          dataType: 'tanf',
         },
       })
     )
@@ -230,9 +230,11 @@ describe('Feedback component', () => {
     render(<Feedback />)
 
     expect(screen.getByTestId('feedback-widget')).toBeInTheDocument()
-    expect(
-      screen.getByText(/how was your experience uploading tanf/i)
-    ).toBeInTheDocument()
+    screen
+      .getAllByText(/how was your experience uploading tanf/i)
+      .forEach((element) => {
+        expect(element).toBeInTheDocument()
+      })
   })
 
   it('does not render widget if isWidgetOpen is false even on matching path', () => {

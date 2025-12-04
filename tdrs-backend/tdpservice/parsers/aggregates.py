@@ -1,11 +1,11 @@
 """Aggregate methods for the parsers."""
+
 from django.db.models import Q as Query
 
 from tdpservice.parsers.models import ParserError, ParserErrorCategoryChoices
 from tdpservice.parsers.schema_defs.utils import ProgramManager
 from tdpservice.parsers.util import (
     fiscal_to_calendar,
-    get_prog_from_section,
     month_to_int,
     transform_to_months,
 )
@@ -13,14 +13,13 @@ from tdpservice.parsers.util import (
 
 def case_aggregates_by_month(df, dfs_status):
     """Return case aggregates by month."""
-    section = str(df.section)  # section -> text
-    program_type = get_prog_from_section(section)  # section -> program_type -> text
+    program_type = str(df.program_type)
 
     # from datafile year/quarter, generate short month names for each month in quarter ala 'Jan', 'Feb', 'Mar'
     calendar_year, calendar_qtr = fiscal_to_calendar(df.year, df.quarter)
     month_list = transform_to_months(calendar_qtr)
 
-    schemas = ProgramManager.get_schemas(program_type, df.section)
+    schemas = ProgramManager.get_schemas(program_type, df.section, df.is_program_audit)
 
     aggregate_data = {"months": [], "rejected": 0}
     all_errors = ParserError.objects.filter(file=df, deprecated=False)

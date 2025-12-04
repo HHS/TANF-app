@@ -1,6 +1,5 @@
 """Test the methods of HeaderSchema to ensure parsing and validation work in all individual cases."""
 
-import logging
 from datetime import datetime
 
 import pytest
@@ -9,12 +8,7 @@ from tdpservice.parsers.dataclasses import FieldType, RawRow
 
 from ..fields import Field
 from ..row_schema import HeaderSchema
-from ..util import (
-    clean_options_string,
-    create_test_datafile,
-    generate_t2_t3_t5_hashes,
-    get_years_apart,
-)
+from ..util import clean_options_string, create_test_datafile, get_years_apart
 from ..validators.util import deprecate_call, deprecate_validator, make_validator
 
 
@@ -578,21 +572,3 @@ def test_clean_options_string(options, expected):
     """Test `clean_options_string` util func."""
     result = clean_options_string(options)
     assert result == expected
-
-
-@pytest.mark.django_db()
-def test_empty_SSN_DOB_space_filled(caplog):
-    """Test empty_SSN_DOB_space_filled."""
-    line = "fake_line"
-
-    class record:
-        CASE_NUMBER = "fake_case_number"
-        SSN = None
-        DATE_OF_BIRTH = None
-        FAMILY_AFFILIATION = "fake_family_affiliation"
-        RPT_MONTH_YEAR = "202310"
-        RecordType = "T2"
-
-    with caplog.at_level(logging.ERROR):
-        generate_t2_t3_t5_hashes(line, record)
-    assert caplog.text == ""

@@ -5,8 +5,33 @@ from django.conf import settings
 from tdpservice.data_files.models import DataFile
 from tdpservice.email.email import automated_email, log
 from tdpservice.email.email_enums import EmailType
-from tdpservice.parsers.util import get_prog_from_section
 from tdpservice.users.models import User
+
+
+def get_friendly_program_type(program_type):
+    """Return the human-readable name for a given program type."""
+    match program_type:
+        case DataFile.ProgramType.TANF:
+            return "TANF"
+        case DataFile.ProgramType.SSP:
+            return "SSP"
+        case DataFile.ProgramType.TRIBAL:
+            return "Tribal TANF"
+        case DataFile.ProgramType.FRA:
+            return "FRA"
+
+
+def get_program_section_str(program_type, section):
+    """Return the human-readable section name, including program type."""
+    match program_type:
+        case DataFile.ProgramType.TANF:
+            return section
+        case DataFile.ProgramType.SSP:
+            return f"SSP {section}"
+        case DataFile.ProgramType.TRIBAL:
+            return f"Tribal {section}"
+        case DataFile.ProgramType.FRA:
+            return section
 
 
 def send_data_submitted_email(
@@ -29,9 +54,10 @@ def send_data_submitted_email(
     subject = None
     text_message = None
 
-    section_name = datafile.section
-    prog_type = get_prog_from_section(section_name)
-    file_type = f"{prog_type}F" if prog_type != "SSP" else prog_type
+    prog_type = datafile.program_type
+    section_name = get_program_section_str(prog_type, datafile.section)
+
+    file_type = get_friendly_program_type(prog_type)
     stt_name = datafile.stt.name
     submission_date = datafile.created_at
     fiscal_year = datafile.fiscal_year
@@ -44,6 +70,7 @@ def send_data_submitted_email(
         "section_name": section_name,
         "submitted_by": submitted_by,
         "file_type": file_type,
+        "status": datafile_summary.status,
         "has_errors": datafile_summary.status != DataFileSummary.Status.ACCEPTED,
         "url": settings.FRONTEND_BASE_URL,
     }
@@ -58,15 +85,25 @@ def send_data_submitted_email(
             return
 
         case DataFileSummary.Status.ACCEPTED:
-            template_path = EmailType.DATA_SUBMITTED.value
-            subject = f"{section_name} Processed Without Errors"
+            match file_type:
+                case "FRA":
+                    template_path = EmailType.FRA_SUBMITTED.value
+                    subject = f"{section_name} Successfully Submitted"
+                case _:
+                    template_path = EmailType.DATA_SUBMITTED.value
+                    subject = f"{section_name} Processed Without Errors"
             text_message = (
                 f"{file_type} has been submitted and processed without errors."
             )
 
         case _:
-            template_path = EmailType.DATA_SUBMITTED.value
-            subject = f"{section_name} Processed With Errors"
+            match file_type:
+                case "FRA":
+                    template_path = EmailType.FRA_SUBMITTED.value
+                    subject = f"Action Required: {section_name} Contains Errors"
+                case _:
+                    template_path = EmailType.DATA_SUBMITTED.value
+                    subject = f"{section_name} Processed With Errors"
             text_message = f"{file_type} has been submitted and processed with errors."
 
     context.update({"subject": subject})

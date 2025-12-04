@@ -299,8 +299,8 @@ class ErrorGeneratorFactory:
                 error_type=ParserErrorCategoryChoices.PRE_CHECK,
                 content_type=None,
                 object_id=None,
-                fields_json=None,
-                values_json=None,
+                fields_json={},
+                values_json={},
                 deprecated=generator_args.deprecated,
             )
 
@@ -325,8 +325,8 @@ class ErrorGeneratorFactory:
                 error_type=ParserErrorCategoryChoices.RECORD_PRE_CHECK,
                 content_type=None,
                 object_id=None,
-                fields_json=None,
-                values_json=None,
+                fields_json={},
+                values_json={},
                 deprecated=generator_args.deprecated,
             )
 

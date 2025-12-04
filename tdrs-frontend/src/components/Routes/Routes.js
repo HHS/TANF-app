@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import NoMatch from '../NoMatch'
 import SplashPage from '../SplashPage'
@@ -11,7 +11,6 @@ import { accountIsInReview } from '../../selectors/auth'
 import { faro, FaroRoutes } from '@grafana/faro-react'
 
 import SiteMap from '../SiteMap'
-
 import Home from '../Home'
 
 /* istanbul ignore next */
@@ -30,9 +29,21 @@ const RouteProvider = ({ children }) => {
  */
 const AppRoutes = () => {
   const user = useSelector((state) => state.auth.user)
-
   const userAccountInReview = useSelector(accountIsInReview)
-  const homeTitle = userAccountInReview ? 'Request Submitted' : 'Welcome to TDP'
+
+  const [isInEditMode, setIsInEditMode] = useState(false)
+
+  const homeTitle = isInEditMode
+    ? 'Edit Access Request'
+    : userAccountInReview
+      ? 'Request Submitted'
+      : 'Welcome to TDP'
+
+  const profileTitle = isInEditMode ? 'Edit Profile' : 'My Profile'
+
+  const setEditState = (isEditing) => {
+    setIsInEditMode(isEditing)
+  }
 
   return (
     <RouteProvider>
@@ -43,13 +54,13 @@ const AppRoutes = () => {
         path="/home"
         element={
           <PrivateRoute title={homeTitle}>
-            <Home />
+            <Home setInEditMode={setEditState} />
           </PrivateRoute>
         }
       />
       <Route
         exact
-        path="/data-files"
+        path="/data-files/:fy?/:q?/:type?/:stt?/:tab?"
         element={
           <PrivateRoute
             title="TANF Data Files"
@@ -63,7 +74,7 @@ const AppRoutes = () => {
       />
       <Route
         exact
-        path="/fra-data-files"
+        path="/fra-data-files/:fy?/:q?/:type?/:stt?/:tab?"
         element={
           <PrivateRoute
             title="FRA Data Files"
@@ -93,8 +104,15 @@ const AppRoutes = () => {
         exact
         path="/profile"
         element={
-          <PrivateRoute title="Profile">
-            <Profile />
+          <PrivateRoute title={profileTitle}>
+            <Profile
+              isEditing={isInEditMode}
+              onEdit={() => setEditState(true)}
+              onCancel={() => setEditState(false)}
+              type="profile"
+              user={user}
+              setInEditMode={setEditState}
+            />
           </PrivateRoute>
         }
       />

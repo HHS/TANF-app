@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
+import classNames from 'classnames'
 import { comboBox } from '@uswds/uswds/src/js/components'
 
 /**
@@ -21,13 +22,13 @@ import { comboBox } from '@uswds/uswds/src/js/components'
 const ComboBox = ({
   children,
   handleSelect,
-  selected,
-  handleBlur,
-  error,
+  selected = '',
+  handleBlur = null,
+  error = '',
   name,
-  placeholder,
+  placeholder = '',
   label,
-  autoComplete,
+  autoComplete = true,
 }) => {
   useEffect(() => {
     // The combo box was not rendering as a combo box without this line
@@ -48,8 +49,25 @@ const ComboBox = ({
     }
   })
 
+  // Update the combo box display when selected value changes. This is required
+  // to ensure that the combo box display is updated when the selected value
+  // changes from higher up in the component hierarchy. This is a USWDS issue
+  // that we can't step around because USWDS state and react state don't always
+  // agree.
+  useEffect(() => {
+    // Update the USWDS combo box display input
+    const comboBoxInput = document.querySelector('.usa-combo-box__input')
+    if (comboBoxInput && comboBoxInput.value !== selected) {
+      comboBoxInput.value = selected
+    }
+  }, [selected])
+
   return (
-    <>
+    <div
+      className={classNames('usa-form-group', {
+        'usa-form-group--error': error,
+      })}
+    >
       {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
       <label
         className={`usa-label text-bold ${error ? 'usa-label--error' : ''}`}
@@ -62,7 +80,11 @@ const ComboBox = ({
           </div>
         )}
       </label>
-      <div className="usa-combo-box" data-placeholder={placeholder}>
+      <div
+        className="usa-combo-box"
+        data-placeholder={placeholder}
+        data-default-value={selected}
+      >
         {/* eslint-disable-next-line jsx-a11y/no-onchange */}
         <select
           autoComplete={autoComplete ? 'on' : 'off'}
@@ -80,7 +102,7 @@ const ComboBox = ({
           {children}
         </select>
       </div>
-    </>
+    </div>
   )
 }
 
@@ -97,14 +119,6 @@ ComboBox.propTypes = {
   placeholder: PropTypes.string,
   label: PropTypes.string.isRequired,
   autoComplete: PropTypes.bool,
-}
-
-ComboBox.defaultProps = {
-  selected: '',
-  error: '',
-  placeholder: '',
-  handleBlur: null,
-  autoComplete: true,
 }
 
 export default ComboBox

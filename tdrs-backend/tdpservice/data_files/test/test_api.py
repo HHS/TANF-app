@@ -1,4 +1,5 @@
 """Tests for DataFiles Application."""
+
 import io
 import os
 
@@ -47,7 +48,11 @@ class DataFileAPITestBase:
     def test_fra_csv_file(self, stt_user, stt):
         """Fixture for small_incorrect_file_cross_validator."""
         test_datafile = util.create_test_datafile(
-            "fra.csv", stt_user, stt, DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS
+            "fra.csv",
+            stt_user,
+            stt,
+            DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
+            DataFile.ProgramType.FRA,
         )
         test_datafile.year = 2024
         test_datafile.quarter = "Q2"
@@ -58,7 +63,11 @@ class DataFileAPITestBase:
     def test_fra_xlsx_file(self, stt_user, stt):
         """Fixture for small_incorrect_file_cross_validator."""
         test_datafile = util.create_test_datafile(
-            "fra.xlsx", stt_user, stt, DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS
+            "fra.xlsx",
+            stt_user,
+            stt,
+            DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
+            DataFile.ProgramType.FRA,
         )
         test_datafile.year = 2024
         test_datafile.quarter = "Q2"
@@ -69,7 +78,7 @@ class DataFileAPITestBase:
     def test_ssp_datafile(self, stt_user, stt):
         """Fixture for small_ssp_section1."""
         df = util.create_test_datafile(
-            "small_ssp_section1.txt", stt_user, stt, "SSP Active Case Data"
+            "small_ssp_section1.txt", stt_user, stt, "Active Case Data"
         )
         df.year = 2024
         df.quarter = "Q1"
@@ -144,21 +153,20 @@ class DataFileAPITestBase:
         wb = DataFileAPITestBase.get_spreadsheet(response)
         sheet = wb["Error Report"]
 
-        assert sheet.cell(row=2, column=1).value == 202403
-        assert sheet.cell(row=2, column=2).value == "*****5891"
-        assert sheet.cell(row=2, column=3).value == 7
-        assert sheet.cell(row=2, column=4).value == (
+        assert sheet.cell(row=9, column=1).value == 202403
+        assert sheet.cell(row=9, column=2).value == "*****5891"
+        assert sheet.cell(row=9, column=3).value == 7
+        assert sheet.cell(row=9, column=4).value == (
             "Duplicate Social Security Number within a month. "
             "Check that individual Social Security Numbers within a "
             "single exit month are not included more than once. "
-            "Social Security Number is a duplicate of the record at "
-            "line number 6."
+            "Record at line number 7 is a duplicate of the record at line number 6."
         )
 
-        assert sheet.cell(row=3, column=1).value == 202301
-        assert sheet.cell(row=3, column=2).value == "*****5507"
-        assert sheet.cell(row=3, column=3).value == 10
-        assert sheet.cell(row=3, column=4).value == (
+        assert sheet.cell(row=2, column=1).value == 202301
+        assert sheet.cell(row=2, column=2).value == "*****5507"
+        assert sheet.cell(row=2, column=3).value == 10
+        assert sheet.cell(row=2, column=4).value == (
             "Social Security Number is not valid. Check that the Social "
             "Security Number is 9 digits, does not contain only zeroes "
             "in any one section, and does not contain dashes or other "
@@ -378,7 +386,7 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
             datafile=datafile,
             dfs=dfs,
             section=datafile.section,
-            program_type=datafile.prog_type,
+            program_type=datafile.program_type,
         )
         parser.parse_and_validate()
 
@@ -397,7 +405,7 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
             datafile=test_datafile,
             dfs=dfs,
             section=test_datafile.section,
-            program_type=test_datafile.prog_type,
+            program_type=test_datafile.program_type,
         )
         parser.parse_and_validate()
 
@@ -416,7 +424,7 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
             datafile=test_ssp_datafile,
             dfs=dfs,
             section=test_ssp_datafile.section,
-            program_type=test_ssp_datafile.prog_type,
+            program_type=test_ssp_datafile.program_type,
         )
         parser.parse_and_validate()
         response = self.download_error_report_file(api_client, test_ssp_datafile.id)
@@ -434,7 +442,7 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
             datafile=test_datafile,
             dfs=dfs,
             section=test_datafile.section,
-            program_type=test_datafile.prog_type,
+            program_type=test_datafile.program_type,
         )
         parser.parse_and_validate()
 
@@ -489,14 +497,14 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         data_file_data["ssp"] = True
 
         response = self.post_data_file(api_client, data_file_data)
-        assert response.data["section"] == "SSP Active Case Data"
+        assert response.data["section"] == "Active Case Data"
 
     def test_data_file_data_upload_tribe(self, api_client, data_file_data, stt):
         """Test that when we upload a file for Tribe the section name is updated."""
         stt.type = "tribe"
         stt.save()
         response = self.post_data_file(api_client, data_file_data)
-        assert "Tribal Active Case Data" == response.data["section"]
+        assert "Active Case Data" == response.data["section"]
         stt.type = ""
         stt.save()
 
@@ -599,6 +607,8 @@ def multi_year_data_file_data(user, stt):
             "stt": stt,
             "year": 2020,
             "section": "Active Case Data",
+            "program_type": "TAN",
+            "is_program_audit": False,
         },
         {
             "original_filename": "data_file.txt",
@@ -607,6 +617,8 @@ def multi_year_data_file_data(user, stt):
             "stt": stt,
             "year": 2021,
             "section": "Active Case Data",
+            "program_type": "TAN",
+            "is_program_audit": False,
         },
         {
             "original_filename": "data_file.txt",
@@ -615,6 +627,8 @@ def multi_year_data_file_data(user, stt):
             "stt": stt,
             "year": 2022,
             "section": "Active Case Data",
+            "program_type": "TAN",
+            "is_program_audit": False,
         },
     ]
 

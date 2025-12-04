@@ -1,0 +1,15 @@
+{
+  "reporterEnabled": "cypress/reporters/custom.js, mochawesome",
+  "customReporter": {
+    "reporter": "cypress/reporters/custom.js",
+    "reporterOptions": {
+      "mochaFile": "cypress/reports/custom-report-[hash].xml"
+    }
+  },
+  "mochawesomeReporterOptions": {
+    "reportDir": "cypress/reports/json",
+    "overwrite": false,
+    "html": false,
+    "json": true
+  }
+}
