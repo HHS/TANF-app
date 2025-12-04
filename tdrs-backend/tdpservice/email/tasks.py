@@ -14,7 +14,7 @@ from celery import shared_task
 
 from tdpservice.data_files.models import DataFile
 from tdpservice.email.email import automated_email, log
-from tdpservice.email.email_enums import UserAccountEmail
+from tdpservice.email.email_enums import DataFileEmail
 from tdpservice.email.helpers.account_access_requests import (
     send_num_access_requests_email,
 )
@@ -200,7 +200,7 @@ def send_data_submission_reminder(due_date, reporting_period, fiscal_quarter):
         if not submitted_all_sections:
             reminder_locations.append(loc)
 
-    template_path = UserAccountEmail.UPCOMING_SUBMISSION_DEADLINE.value
+    template_path = DataFileEmail.UPCOMING_SUBMISSION_DEADLINE.value
     text_message = f"Your datafiles are due by {due_date}."
 
     all_data_analysts = User.objects.all().filter(
