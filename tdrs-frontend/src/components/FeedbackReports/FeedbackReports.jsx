@@ -71,29 +71,29 @@ function FeedbackReports() {
   /**
    * Handles file selection from the file input
    */
-  const handleFileChange = (e) => {
-    setAlert({ active: false, type: null, message: null })
+  const handleFileChange = async (e) => {
+    setSelectedFile(null)
     setFileError(null)
+    setAlert({ active: false, type: null, message: null })
 
-    const file = e.target.files[0]
-    if (!file) {
-      setSelectedFile(null)
-      return
-    }
-
+    const fileInputValue = e.target.files[0]
     const input = inputRef.current
-    const dropTarget = inputRef.current?.parentNode
+    console.log(input)
+    const dropTarget = input.parentNode
+    console.log(dropTarget)
 
-    // Validate file extension
-    const re = /\.zip$/i
-    if (!re.exec(file.name)) {
+    // const filereader = new FileReader()
+    const zipExtension = /(\.zip)$/i
+
+    const isZip = zipExtension.exec(fileInputValue.name)
+
+    if (!isZip) {
       createFileInputErrorState(input, dropTarget)
       setFileError(INVALID_EXT_ERROR)
-      setSelectedFile(null)
       return
     }
 
-    setSelectedFile(file)
+    setSelectedFile(fileInputValue)
     inputRef.current.value = null
   }
 

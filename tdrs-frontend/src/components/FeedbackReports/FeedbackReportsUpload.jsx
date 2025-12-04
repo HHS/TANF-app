@@ -53,7 +53,6 @@ function FeedbackReportsUpload({
         className="usa-file-input"
         type="file"
         name="feedback-reports"
-        accept=".zip"
         aria-describedby={`${formattedSectionName}-file`}
         aria-hidden="false"
         data-errormessage={INVALID_EXT_ERROR}
