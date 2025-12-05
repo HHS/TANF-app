@@ -85,6 +85,7 @@ describe('FeedbackReportsHistory', () => {
         year: 2025,
         created_at: '2025-03-05T10:31:00Z',
         processed_at: '2025-03-05T10:41:00Z',
+        status: 'SUCCEEDED',
         original_filename: 'FY2025.zip',
         file: 'https://example.com/FY2025.zip',
       },
@@ -108,6 +109,8 @@ describe('FeedbackReportsHistory', () => {
       expect(screen.getByText('Fiscal year')).toBeInTheDocument()
       expect(screen.getByText('Feedback uploaded on')).toBeInTheDocument()
       expect(screen.getByText('Notifications sent on')).toBeInTheDocument()
+      expect(screen.getByText('Status')).toBeInTheDocument()
+      expect(screen.getByText('Error')).toBeInTheDocument()
       expect(screen.getByText('File')).toBeInTheDocument()
     })
 
@@ -379,6 +382,66 @@ describe('FeedbackReportsHistory', () => {
       // Should still render the filename link even if file URL is null
       // (or show N/A if original_filename is falsy)
       expect(screen.getByText('test.zip')).toBeInTheDocument()
+    })
+  })
+
+  describe('Status Display', () => {
+    it('displays status value in table', () => {
+      const mockData = [
+        {
+          id: 1,
+          year: 2025,
+          created_at: '2025-03-05T10:31:00Z',
+          processed_at: '2025-03-05T10:41:00Z',
+          status: 'SUCCEEDED',
+          original_filename: 'test.zip',
+          file: 'https://example.com/test.zip',
+        },
+      ]
+
+      renderComponent({ uploadHistory: mockData, isLoading: false })
+
+      expect(screen.getByText('SUCCEEDED')).toBeInTheDocument()
+    })
+
+    it('displays error message when present', () => {
+      const mockData = [
+        {
+          id: 1,
+          year: 2025,
+          created_at: '2025-03-05T10:31:00Z',
+          processed_at: null,
+          status: 'FAILED',
+          error_message: 'Invalid ZIP structure',
+          original_filename: 'test.zip',
+          file: 'https://example.com/test.zip',
+        },
+      ]
+
+      renderComponent({ uploadHistory: mockData, isLoading: false })
+
+      expect(screen.getByText('FAILED')).toBeInTheDocument()
+      expect(screen.getByText('Invalid ZIP structure')).toBeInTheDocument()
+    })
+
+    it('displays "None" when no error message', () => {
+      const mockData = [
+        {
+          id: 1,
+          year: 2025,
+          created_at: '2025-03-05T10:31:00Z',
+          processed_at: '2025-03-05T10:41:00Z',
+          status: 'SUCCEEDED',
+          error_message: null,
+          original_filename: 'test.zip',
+          file: 'https://example.com/test.zip',
+        },
+      ]
+
+      renderComponent({ uploadHistory: mockData, isLoading: false })
+
+      expect(screen.getByText('SUCCEEDED')).toBeInTheDocument()
+      expect(screen.getByText('None')).toBeInTheDocument()
     })
   })
 })

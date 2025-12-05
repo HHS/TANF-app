@@ -24,6 +24,8 @@ function FeedbackReportsHistory({ uploadHistory, isLoading, formatDateTime }) {
               <th>Fiscal year</th>
               <th>Feedback uploaded on</th>
               <th>Notifications sent on</th>
+              <th>Status</th>
+              <th>Error</th>
               <th>File</th>
             </tr>
           </thead>
@@ -33,6 +35,8 @@ function FeedbackReportsHistory({ uploadHistory, isLoading, formatDateTime }) {
                 <td>{report.year || new Date().getFullYear()}</td>
                 <td>{formatDateTime(report.created_at)}</td>
                 <td>{formatDateTime(report.processed_at)}</td>
+                <td>{report.status}</td>
+                <td>{report.error_message || 'None'}</td>
                 <td>
                   {report.original_filename ? (
                     <a
