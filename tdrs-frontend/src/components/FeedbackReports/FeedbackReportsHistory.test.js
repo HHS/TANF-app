@@ -52,7 +52,7 @@ describe('FeedbackReportsHistory', () => {
       renderComponent({ isLoading: true })
 
       expect(
-        screen.queryByText('No feedback reports uploaded yet')
+        screen.queryByText('No data available.')
       ).not.toBeInTheDocument()
     })
   })
@@ -61,27 +61,20 @@ describe('FeedbackReportsHistory', () => {
     it('shows empty state when uploadHistory is empty array', () => {
       renderComponent({ uploadHistory: [], isLoading: false })
 
-      expect(
-        screen.getByText('No feedback reports uploaded yet')
-      ).toBeInTheDocument()
+      expect(screen.getByText('No data available.')).toBeInTheDocument()
     })
 
-    it('shows empty state with correct styling classes', () => {
-      const { container } = renderComponent({
-        uploadHistory: [],
-        isLoading: false,
-      })
-
-      const emptyDiv = container.querySelector(
-        '.padding-y-3.text-center.border-1px.border-base-lighter.radius-md'
-      )
-      expect(emptyDiv).toBeInTheDocument()
-    })
-
-    it('does not show table when empty', () => {
+    it('shows table with caption when empty', () => {
       renderComponent({ uploadHistory: [], isLoading: false })
 
-      expect(screen.queryByRole('table')).not.toBeInTheDocument()
+      expect(screen.getByRole('table')).toBeInTheDocument()
+      expect(screen.getByText('Upload History')).toBeInTheDocument()
+    })
+
+    it('does not show table headers when empty', () => {
+      renderComponent({ uploadHistory: [], isLoading: false })
+
+      expect(screen.queryByText('Fiscal year')).not.toBeInTheDocument()
     })
   })
 

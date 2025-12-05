@@ -97,7 +97,7 @@ describe('FeedbackReports', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText('No feedback reports uploaded yet')
+          screen.getByText('No data available.')
         ).toBeInTheDocument()
       })
     })
@@ -359,7 +359,7 @@ describe('FeedbackReports', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText('No feedback reports uploaded yet')
+          screen.getByText('No data available.')
         ).toBeInTheDocument()
       })
     })
@@ -443,7 +443,7 @@ describe('FeedbackReports', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText('No feedback reports uploaded yet')
+          screen.getByText('No data available.')
         ).toBeInTheDocument()
       })
 
