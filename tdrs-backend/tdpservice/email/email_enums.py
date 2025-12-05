@@ -44,7 +44,7 @@ class FraDataFileEmail(Enum):
 
 
 class AdminEmail(Enum):
-    """Email templates related to admin actions and reminders"""
+    """Email templates related to admin actions and reminders."""
 
     ACCESS_REQUEST_COUNT = "admin/access-request-count.html"
     ACCOUNT_DEACTIVATED_ADMIN = "admin/account-deactivated-admin.html"
