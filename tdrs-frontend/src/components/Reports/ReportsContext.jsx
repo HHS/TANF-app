@@ -6,6 +6,7 @@ import {
   useRef,
   useEffect,
   useCallback,
+  useMemo,
 } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -16,6 +17,7 @@ import {
 import { openFeedbackWidget } from '../../reducers/feedbackWidget'
 import { useSearchParams } from 'react-router-dom'
 import { accountCanSelectStt } from '../../selectors/auth'
+import { getCurrentFiscalYear, quarters } from './utils'
 
 const ReportsContext = createContext()
 
@@ -27,34 +29,143 @@ export const useReportsContext = () => {
   return context
 }
 
+// Valid file types for each report mode
+const VALID_FILE_TYPES = {
+  reports: [
+    'tanf',
+    'ssp-moe',
+    ...(process.env.REACT_APP_SHOW_PIA === 'true'
+      ? ['program-integrity-audit']
+      : []),
+  ],
+  fra: [
+    'workOutcomesOfTanfExiters',
+    // TODO: uncomment when we collect this data
+    // 'secondarySchoolAttainment',
+    // 'supplementalWorkOutcomes',
+  ],
+}
+
+// Valid quarters
+const VALID_QUARTERS = Object.keys(quarters) // ['Q1', 'Q2', 'Q3', 'Q4']
+
+/**
+ * Validates URL parameters for the report pages.
+ * Invalid parameters are cleared individually, valid ones are kept.
+ * @param {URLSearchParams} searchParams - URL search parameters
+ * @param {boolean} isFra - Whether this is for FRA reports
+ * @param {Array} sttList - List of valid STTs
+ */
+const validateUrlParams = (searchParams, isFra, sttList) => {
+  const fiscalYear = searchParams.get('fy')
+  const quarter = searchParams.get('q')
+  const type = searchParams.get('type')
+  const stt = searchParams.get('stt')
+  const tab = searchParams.get('tab')
+
+  const defaultType = isFra ? 'workOutcomesOfTanfExiters' : 'tanf'
+  let validatedFy = ''
+  let validatedQ = ''
+  let validatedType = defaultType
+  let validatedStt = ''
+  let validatedTab = 1
+  let hasInvalidParam = false
+
+  // Validate fiscal year (must be a valid year between 2021 and current fiscal year)
+  // For program-integrity-audit, only 2024 is allowed
+  const year = parseInt(fiscalYear, 10)
+  const currentFiscalYear = getCurrentFiscalYear()
+  const minYear = type === 'program-integrity-audit' ? 2024 : 2021
+  const maxYear = type === 'program-integrity-audit' ? 2024 : currentFiscalYear
+  if (!isNaN(year) && year >= minYear && year <= maxYear) {
+    validatedFy = fiscalYear
+  } else {
+    hasInvalidParam = true
+  }
+
+  // Validate quarter (must be Q1, Q2, Q3, or Q4)
+  if (VALID_QUARTERS.includes(quarter)) {
+    validatedQ = quarter
+  } else {
+    hasInvalidParam = true
+  }
+
+  // Validate file type
+  const validTypes = isFra ? VALID_FILE_TYPES.fra : VALID_FILE_TYPES.reports
+  if (validTypes.includes(type)) {
+    validatedType = type
+  } else {
+    hasInvalidParam = true
+  }
+
+  // Validate STT (must exist in the STT list if provided)
+  if (sttList && sttList.length > 0) {
+    if (sttList.some((s) => s?.name === stt)) {
+      validatedStt = stt
+    } else {
+      hasInvalidParam = true
+    }
+  } else {
+    // STT list not loaded yet, keep the value for now
+    validatedStt = stt
+  }
+
+  // Validate tab (must be 1 or 2)
+  if (tab === '1' || tab === '2') {
+    validatedTab = parseInt(tab, 10)
+  } else {
+    hasInvalidParam = true
+  }
+
+  return {
+    fy: validatedFy,
+    q: validatedQ,
+    type: validatedType,
+    stt: validatedStt,
+    tab: validatedTab,
+    wasInvalid: hasInvalidParam,
+  }
+}
+
 export const ReportsProvider = ({ isFra = false, children }) => {
   const dispatch = useDispatch()
   const canSelectStt = useSelector(accountCanSelectStt)
+  const sttList = useSelector((state) => state?.stts?.sttList)
 
   // Search params
   const [searchParams, setSearchParams] = useSearchParams()
+  const [hasValidatedParams, setHasValidatedParams] = useState(false)
+
+  // Get validated params (without STT validation since it will never be loaded since we have to wait for fetchSTTs to
+  // run.
+  const validatedParams = useMemo(
+    () => validateUrlParams(searchParams, isFra, []),
+    [searchParams, isFra]
+  )
 
   // Form state
-  const [yearInputValue, setYearInputValue] = useState(
-    searchParams.get('fy') || ''
-  )
-  const [quarterInputValue, setQuarterInputValue] = useState(
-    searchParams.get('q') || ''
-  )
+  const [yearInputValue, setYearInputValue] = useState(validatedParams.fy)
+  const [quarterInputValue, setQuarterInputValue] = useState(validatedParams.q)
   const [fileTypeInputValue, setFileTypeInputValue] = useState(
-    searchParams.get('type')
-      ? searchParams.get('type')
-      : isFra
-        ? 'workOutcomesOfTanfExiters'
-        : 'tanf'
+    validatedParams.type
   )
-  const [sttInputValue, setSttInputValue] = useState(
-    searchParams.get('stt') || ''
+  const [sttInputValue, setSttInputValue] = useState(validatedParams.stt)
+  const [selectedSubmissionTab, setSelectedSubmissionTab] = useState(
+    validatedParams.tab
   )
 
-  const [selectedSubmissionTab, setSelectedSubmissionTab] = useState(
-    parseInt(searchParams.get('tab')) || 1
-  )
+  // Re-validate when STT list becomes available (only validates STT param) since it might not be available yet
+  useEffect(() => {
+    if (sttList && sttList.length > 0 && !hasValidatedParams) {
+      // Check if the STT from URL is valid
+      const sttParam = searchParams.get('stt')
+      if (sttParam && !sttList.some((s) => s?.name === sttParam)) {
+        // Invalid STT in URL clear it
+        setSttInputValue('')
+      }
+      setHasValidatedParams(true)
+    }
+  }, [sttList])
 
   const [pendingChange, setPendingChange] = useState({
     type: null,
