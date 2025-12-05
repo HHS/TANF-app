@@ -72,11 +72,31 @@ def handle_field(field, formatted_fields, is_admin):
         else:
             formatted_fields.append(f'"{field}"')
 
+        regex_rules = [
+            "0{9}",
+            "1{9}",
+            "2{9}",
+            "3{9}",
+            "4{9}",
+            "5{9}",
+            "6{9}",
+            "7{9}",
+            "8{9}",
+            "9{9}",
+            ".{3}.{2}0{4}",
+            ".{3}0{2}.{4}",
+            "0{3}.{2}.{4}",
+            "6{3}.{2}.{4}",
+            "9{1}.{4}.{4}",
+        ]
+
+        regex_str = f"^({'|'.join(regex_rules)})"
+
         formatted_fields.append(
             f''' --
         -- Calculate if SSN is valid
         CASE
-            WHEN "{field}" !~ '^(0{{9}}|1{{9}}|2{{9}}|3{{9}}|4{{9}}|5{{9}}|6{{9}}|7{{9}}|8{{9}}|9{{9}})$' THEN 1
+            WHEN "{field}" !~ '{regex_str}' THEN 1
             ELSE 0
         END AS "SSN_VALID"'''.strip()
         )
