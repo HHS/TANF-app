@@ -40,7 +40,7 @@ function FeedbackReports() {
         `${process.env.REACT_APP_BACKEND_URL}/reports/report-sources/`,
         { withCredentials: true }
       )
-      setUploadHistory(response.data.results || response.data)
+      setUploadHistory(response.data.results)
     } catch (error) {
       console.error('Failed to fetch upload history:', error)
       setAlert({
