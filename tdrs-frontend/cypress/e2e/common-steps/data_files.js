@@ -18,12 +18,14 @@ export const fillFYQ = (fiscal_year, quarter) => {
 }
 
 export const uploadFile = (file_input, file_path, willError = false) => {
-  cy.get(file_input).selectFile(file_path, { action: 'drag-drop' })
+  cy.get('.usa-file-input__input', { timeout: 5000 }).should('exist')
+  cy.get(file_input).selectFile(file_path, { action: 'drag-drop', force: true })
   if (!willError) {
     const file_parts = file_path.split('/')
     cy.contains(file_parts[file_parts.length - 1], { timeout: 3000 }).should(
       'exist'
     )
+    cy.get('.usa-alert__text').should('not.exist')
   }
 }
 
