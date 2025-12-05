@@ -6,6 +6,13 @@ export const quarters = {
   Q4: 'Quarter 4 (July - September)',
 }
 
+export const getCurrentFiscalYear = () => {
+  const today = new Date(Date.now())
+  const fiscalYear =
+    today.getMonth() > 8 ? today.getFullYear() + 1 : today.getFullYear()
+  return fiscalYear
+}
+
 // Array of quarter labels for Program Integrity Audit file inputs
 export const programIntegrityAuditLabels = [
   'Quarter 1 (October - December)',
@@ -22,10 +29,8 @@ export const getQuarterFromIndex = (index) => {
 
 export const constructYears = () => {
   const years = []
-  const today = new Date(Date.now())
 
-  const fiscalYear =
-    today.getMonth() > 8 ? today.getFullYear() + 1 : today.getFullYear()
+  const fiscalYear = getCurrentFiscalYear()
 
   for (let i = fiscalYear; i >= 2021; i--) {
     years.push(i)
@@ -36,10 +41,8 @@ export const constructYears = () => {
 
 export const constructYearOptions = (startYear = 2021, endYear = null) => {
   const years = []
-  const today = new Date(Date.now())
 
-  const fiscalYear =
-    today.getMonth() > 8 ? today.getFullYear() + 1 : today.getFullYear()
+  const fiscalYear = getCurrentFiscalYear()
 
   for (let i = endYear || fiscalYear; i >= startYear; i--) {
     const option = (
