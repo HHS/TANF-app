@@ -25,7 +25,7 @@ function FeedbackReportsHistory({ uploadHistory, isLoading, formatDateTime }) {
               <th>Feedback uploaded on</th>
               <th>Notifications sent on</th>
               <th>Status</th>
-              <th>Error</th>
+              <th style={{ minWidth: '200px' }}>Error</th>
               <th>File</th>
             </tr>
           </thead>
