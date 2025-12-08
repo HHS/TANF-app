@@ -1,6 +1,7 @@
+import React from 'react'
 import { Provider } from 'react-redux'
 import ResourceCards from './ResourceCards'
-import { mount } from 'enzyme'
+import { render, screen } from '@testing-library/react'
 import { thunk } from 'redux-thunk'
 
 import configureStore from 'redux-mock-store'
@@ -16,22 +17,15 @@ describe('ResourceCards', () => {
 
     const url =
       'https://www.acf.hhs.gov/ofa/policy-guidance/tribal-tanf-data-coding-instructions'
-    global.window = Object.create(window)
-    Object.defineProperty(window, 'location', {
-      value: {
-        href: url,
-      },
-    })
 
-    const wrapper = mount(
+    render(
       <Provider store={store}>
         <ResourceCards />
       </Provider>
     )
-    const link = wrapper.find('#viewTribalCodingInstructions').getElement()
-      .props['href']
 
-    expect(link).toEqual(url)
+    const link = screen.getByRole('link', { name: /View Tribal TANF Coding Instructions/i })
+    expect(link).toHaveAttribute('href', url)
   })
 
   it('redirects to TDP Knowledge Center when View Knowledge Center clicked', async () => {
@@ -39,24 +33,14 @@ describe('ResourceCards', () => {
 
     const url = 'http://tdp-project-updates.app.cloud.gov/knowledge-center/'
 
-    global.window = Object.create(window)
-    Object.defineProperty(window, 'location', {
-      value: {
-        href: url,
-      },
-    })
-
-    const wrapper = mount(
+    render(
       <Provider store={store}>
         <ResourceCards />
       </Provider>
     )
 
-    const link = wrapper.find('#viewKnowledgeCenterButton').getElement().props[
-      'href'
-    ]
-
-    expect(link).toEqual(url)
+    const link = screen.getByRole('link', { name: /View Knowledge Center/i })
+    expect(link).toHaveAttribute('href', url)
   })
 
   it('redirects to ACF Layouts page when View Layouts clicked', () => {
@@ -64,20 +48,14 @@ describe('ResourceCards', () => {
 
     const url =
       'https://www.acf.hhs.gov/ofa/policy-guidance/final-tanf-ssp-moe-data-reporting-system-transmission-files-layouts-and-edits'
-    global.window = Object.create(window)
-    Object.defineProperty(window, 'location', {
-      value: {
-        href: url,
-      },
-    })
 
-    const wrapper = mount(
+    render(
       <Provider store={store}>
         <ResourceCards />
       </Provider>
     )
-    const link = wrapper.find('#viewLayoutsButton').getElement().props['href']
-    expect(link).toEqual(url)
+    const link = screen.getByRole('link', { name: /View Layouts & Edits/i })
+    expect(link).toHaveAttribute('href', url)
   })
 
   it('redirects to ACF Form Instructions when View ACF Form Instructions clicked', () => {
@@ -85,14 +63,12 @@ describe('ResourceCards', () => {
 
     const url = 'https://www.acf.hhs.gov/ofa/policy-guidance/acf-ofa-pi-23-04'
 
-    const wrapper = mount(
+    render(
       <Provider store={store}>
         <ResourceCards />
       </Provider>
     )
-    const link = wrapper.find('#viewACFFormInstructions').getElement().props[
-      'href'
-    ]
-    expect(link).toEqual(url)
+    const link = screen.getByRole('link', { name: /View ACF Form Instructions/i })
+    expect(link).toHaveAttribute('href', url)
   })
 })

@@ -1,6 +1,5 @@
 import React from 'react'
 import { thunk } from 'redux-thunk'
-import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
@@ -59,10 +58,9 @@ describe('Profile', () => {
         </MemoryRouter>
       </Provider>
     )
+    // Text is split across elements, so use a function matcher
     expect(
-      screen.getByText(
-        `Your request for access is currently being reviewed by an OFA Admin. We’ll send you an email when it’s been approved.`
-      )
+      screen.getByText(/is currently being reviewed by an OFA Admin/i)
     ).toBeInTheDocument()
   })
 
@@ -89,7 +87,7 @@ describe('Profile', () => {
 
     expect(
       screen.queryByText(
-        `Your request for access is currently being reviewed by an OFA Admin. We’ll send you an email when it’s been approved.`
+        `Your request for access is currently being reviewed by an OFA Admin. We'll send you an email when it's been approved.`
       )
     ).not.toBeInTheDocument()
 
@@ -199,15 +197,15 @@ describe('Profile', () => {
 
     const url = 'https://idp.int.identitysandbox.gov/account'
 
-    const wrapper = mount(
+    render(
       <Provider store={store}>
         <Profile />
       </Provider>
     )
 
-    const link = wrapper.find('#loginDotGovSignIn').getElement().props['href']
+    const link = screen.getByRole('link', { name: /Manage Your Account at.*Login\.gov/i })
 
-    expect(link).toEqual(url)
+    expect(link).toHaveAttribute('href', url)
   })
 
   it("should display user's info during the pending approval state", () => {

@@ -1,6 +1,5 @@
 import React from 'react'
 import { thunk } from 'redux-thunk'
-import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 
@@ -110,15 +109,15 @@ describe('Header', () => {
 
   it("should add usa-current class to Profile tab when on '/profile'", () => {
     const store = mockStore(initialState)
-    const wrapper = mount(
+    const { container } = render(
       <Provider store={store}>
         <Header />
       </Provider>
     )
 
-    const profileTab = wrapper.find('#profile')
+    const profileTab = container.querySelector('#profile')
 
-    expect(profileTab.hasClass('usa-current')).toEqual(true)
+    expect(profileTab).toHaveClass('usa-current')
   })
 
   it("should not add usa-current class to Welcome tab when not on '/'", () => {
@@ -136,16 +135,16 @@ describe('Header', () => {
 
   it('should have secondaryItems when user is logged in', () => {
     const store = mockStore(initialState)
-    const wrapper = mount(
+    const { container } = render(
       <Provider store={store}>
         <Header />
       </Provider>
     )
 
-    const secondaryLinks = wrapper.find('.usa-nav__secondary-item')
+    const secondaryLinks = container.querySelectorAll('.usa-nav__secondary-item')
 
     expect(secondaryLinks.length).toEqual(2)
-    expect(secondaryLinks.first().text()).toEqual('test@test.com')
+    expect(secondaryLinks[0].textContent).toEqual('test@test.com')
   })
 
   it('should NOT show any nav items when the user is NOT logged in', () => {
