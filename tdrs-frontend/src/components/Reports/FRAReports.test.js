@@ -1522,4 +1522,140 @@ describe('FRA Reports Page', () => {
       })
     })
   })
+
+  describe('URL parameter validation', () => {
+    const adminState = {
+      ...initialState,
+      auth: {
+        authenticated: true,
+        user: {
+          email: 'hi@bye.com',
+          stt: null,
+          roles: [{ id: 1, name: 'OFA System Admin', permission: [] }],
+          account_approval_status: 'Approved',
+        },
+      },
+    }
+
+    it('should accept valid URL parameters', async () => {
+      const store = mockStore(adminState)
+      const { getByLabelText } = render(
+        <Provider store={store}>
+          <MemoryRouter
+            initialEntries={[
+              '/?fy=2023&q=Q1&type=workOutcomesOfTanfExiters&stt=Alabama',
+            ]}
+          >
+            <FRAReports />
+          </MemoryRouter>
+        </Provider>
+      )
+
+      await waitFor(() => {
+        const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+        const quarterSelect = getByLabelText('Fiscal Quarter*')
+        expect(yearSelect.value).toBe('2023')
+        expect(quarterSelect.value).toBe('Q1')
+      })
+    })
+
+    it('should clear only fiscal year when it is invalid', async () => {
+      const store = mockStore(adminState)
+      const { getByLabelText } = render(
+        <Provider store={store}>
+          <MemoryRouter
+            initialEntries={[
+              '/?fy=2019&q=Q1&type=workOutcomesOfTanfExiters&stt=Alabama',
+            ]}
+          >
+            <FRAReports />
+          </MemoryRouter>
+        </Provider>
+      )
+
+      await waitFor(() => {
+        const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+        const quarterSelect = getByLabelText('Fiscal Quarter*')
+        // Only fy should be cleared, other valid params kept
+        expect(yearSelect.value).toBe('')
+        expect(quarterSelect.value).toBe('Q1')
+      })
+    })
+
+    it('should clear only quarter when it is invalid', async () => {
+      const store = mockStore(adminState)
+      const { getByLabelText } = render(
+        <Provider store={store}>
+          <MemoryRouter
+            initialEntries={[
+              '/?fy=2023&q=Q5&type=workOutcomesOfTanfExiters&stt=Alabama',
+            ]}
+          >
+            <FRAReports />
+          </MemoryRouter>
+        </Provider>
+      )
+
+      await waitFor(() => {
+        const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+        const quarterSelect = getByLabelText('Fiscal Quarter*')
+        // Only quarter should be cleared, other valid params kept
+        expect(yearSelect.value).toBe('2023')
+        expect(quarterSelect.value).toBe('')
+      })
+    })
+
+    it('should reset file type to default when it is invalid for FRA', async () => {
+      const store = mockStore(adminState)
+      const { getByLabelText } = render(
+        <Provider store={store}>
+          <MemoryRouter
+            initialEntries={['/?fy=2023&q=Q1&type=tanf&stt=Alabama']}
+          >
+            <FRAReports />
+          </MemoryRouter>
+        </Provider>
+      )
+
+      await waitFor(() => {
+        const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+        const quarterSelect = getByLabelText('Fiscal Quarter*')
+        // Year and quarter should be kept, type resets to default
+        expect(yearSelect.value).toBe('2023')
+        expect(quarterSelect.value).toBe('Q1')
+        // Work Outcomes radio should be selected (default for FRA)
+        const workOutcomesRadio = getByLabelText(
+          'Work Outcomes of TANF Exiters'
+        )
+        expect(workOutcomesRadio.checked).toBe(true)
+      })
+    })
+
+    it('should clear only STT when it is invalid', async () => {
+      const store = mockStore(adminState)
+      const { getByLabelText } = render(
+        <Provider store={store}>
+          <MemoryRouter
+            initialEntries={[
+              '/?fy=2023&q=Q1&type=workOutcomesOfTanfExiters&stt=NonExistentSTT',
+            ]}
+          >
+            <FRAReports />
+          </MemoryRouter>
+        </Provider>
+      )
+
+      await waitFor(() => {
+        const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+        const quarterSelect = getByLabelText('Fiscal Quarter*')
+        const sttInput = getByLabelText('State, Tribe, or Territory*', {
+          selector: 'input',
+        })
+        // Only STT should be cleared, other valid params kept
+        expect(yearSelect.value).toBe('2023')
+        expect(quarterSelect.value).toBe('Q1')
+        expect(sttInput.value).toBe('')
+      })
+    })
+  })
 })

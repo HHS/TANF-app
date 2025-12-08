@@ -1993,4 +1993,152 @@ describe('Reports', () => {
       })
     })
   })
+
+  describe('URL parameter validation', () => {
+    it('should accept valid URL parameters', async () => {
+      const store = mockStore(initialState)
+      const { getByLabelText } = render(
+        <Provider store={store}>
+          <MemoryRouter initialEntries={['/?fy=2023&q=Q1&type=tanf']}>
+            <Reports />
+          </MemoryRouter>
+        </Provider>
+      )
+
+      await waitFor(() => {
+        const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+        const quarterSelect = getByLabelText('Fiscal Quarter*')
+        expect(yearSelect.value).toBe('2023')
+        expect(quarterSelect.value).toBe('Q1')
+      })
+    })
+
+    it('should clear only fiscal year when it is invalid', async () => {
+      const store = mockStore(initialState)
+      const { getByLabelText } = render(
+        <Provider store={store}>
+          <MemoryRouter initialEntries={['/?fy=2019&q=Q1&type=tanf']}>
+            <Reports />
+          </MemoryRouter>
+        </Provider>
+      )
+
+      await waitFor(() => {
+        const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+        const quarterSelect = getByLabelText('Fiscal Quarter*')
+        // Only fy should be cleared, other valid params kept
+        expect(yearSelect.value).toBe('')
+        expect(quarterSelect.value).toBe('Q1')
+      })
+    })
+
+    it('should clear only quarter when it is invalid', async () => {
+      const store = mockStore(initialState)
+      const { getByLabelText } = render(
+        <Provider store={store}>
+          <MemoryRouter initialEntries={['/?fy=2023&q=Q5&type=tanf']}>
+            <Reports />
+          </MemoryRouter>
+        </Provider>
+      )
+
+      await waitFor(() => {
+        const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+        const quarterSelect = getByLabelText('Fiscal Quarter*')
+        // Only quarter should be cleared, other valid params kept
+        expect(yearSelect.value).toBe('2023')
+        expect(quarterSelect.value).toBe('')
+      })
+    })
+
+    it('should reset file type to default when it is invalid', async () => {
+      const store = mockStore(initialState)
+      const { getByLabelText } = render(
+        <Provider store={store}>
+          <MemoryRouter initialEntries={['/?fy=2023&q=Q1&type=invalid-type']}>
+            <Reports />
+          </MemoryRouter>
+        </Provider>
+      )
+
+      await waitFor(() => {
+        const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+        const quarterSelect = getByLabelText('Fiscal Quarter*')
+        // Year and quarter should be kept, type resets to default (tanf)
+        expect(yearSelect.value).toBe('2023')
+        expect(quarterSelect.value).toBe('Q1')
+        // TANF radio should be selected (default) - check by label text
+        const tanfRadio = getByLabelText('TANF')
+        expect(tanfRadio.checked).toBe(true)
+      })
+    })
+
+    it('should clear only STT when it is invalid', async () => {
+      const store = mockStore(initialState)
+      const { getByLabelText } = render(
+        <Provider store={store}>
+          <MemoryRouter
+            initialEntries={['/?fy=2023&q=Q1&type=tanf&stt=NonExistentSTT']}
+          >
+            <Reports />
+          </MemoryRouter>
+        </Provider>
+      )
+
+      await waitFor(() => {
+        const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+        const quarterSelect = getByLabelText('Fiscal Quarter*')
+        const sttInput = getByLabelText('State, Tribe, or Territory*', {
+          selector: 'input',
+        })
+        // Only STT should be cleared, other valid params kept
+        expect(yearSelect.value).toBe('2023')
+        expect(quarterSelect.value).toBe('Q1')
+        expect(sttInput.value).toBe('')
+      })
+    })
+
+    it('should accept valid STT', async () => {
+      const store = mockStore(initialState)
+      const { getByLabelText } = render(
+        <Provider store={store}>
+          <MemoryRouter
+            initialEntries={['/?fy=2023&q=Q1&type=tanf&stt=California']}
+          >
+            <Reports />
+          </MemoryRouter>
+        </Provider>
+      )
+
+      await waitFor(() => {
+        const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+        const quarterSelect = getByLabelText('Fiscal Quarter*')
+        const sttInput = getByLabelText('State, Tribe, or Territory*', {
+          selector: 'input',
+        })
+        expect(yearSelect.value).toBe('2023')
+        expect(quarterSelect.value).toBe('Q1')
+        expect(sttInput.value).toBe('California')
+      })
+    })
+
+    it('should clear only fiscal year when it is non-numeric', async () => {
+      const store = mockStore(initialState)
+      const { getByLabelText } = render(
+        <Provider store={store}>
+          <MemoryRouter initialEntries={['/?fy=abc&q=Q1&type=tanf']}>
+            <Reports />
+          </MemoryRouter>
+        </Provider>
+      )
+
+      await waitFor(() => {
+        const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+        const quarterSelect = getByLabelText('Fiscal Quarter*')
+        // Only fy should be cleared, other valid params kept
+        expect(yearSelect.value).toBe('')
+        expect(quarterSelect.value).toBe('Q1')
+      })
+    })
+  })
 })

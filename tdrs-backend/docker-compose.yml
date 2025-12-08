@@ -10,59 +10,6 @@ services:
       - ./reports:/zap/wrk/:rw
       - ../scripts/zap-hook.py:/zap/scripts/zap-hook.py:ro
 
-  # Init container to set up Vault volume permissions
-  vault-init:
-    image: alpine:3.20
-    container_name: vault-init
-    user: "0:0"
-    restart: "no"
-    volumes:
-      - vault_data:/vault/data
-      - vault_logs:/vault/logs
-    command: ["sh", "-c", "chown -R 100:1000 /vault/data /vault/logs && chmod -R 755 /vault/data /vault/logs"]
-
-
-
-  # HashiCorp Vault Community Edition
-  vault:
-    image: hashicorp/vault:latest
-    container_name: vault
-    depends_on:
-      - vault-init
-    ports:
-      - "8200:8200"  # Vault API and UI port
-    environment:
-      #VAULT_ADDR: http://0.0.0.0:8200
-      #VAULT_API_ADDR: http://0.0.0.0:8200
-      VAULT_TOKEN: ${VAULT_TOKEN}  # Set this in your .env file or export it in your shell
-      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_TOKEN}  # For development purposes, set a root token
-      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
-    cap_add:
-      - IPC_LOCK  # Required for Vault's memory locking
-    volumes:
-      - vault_data:/vault/data:rw      # Secret storage for demo. Vault can also use S3, postgres or other
-      - vault_logs:/vault/logs:rw
-      - ./vault:/vault:rw  # Configuration files
-    command: ["server", "-dev", "-config=/vault/vault.hcl"] # for local environment, use -dev for simplicity
-    # Note: In production, you should not use -dev mode and should configure Vault properly with TLS and secure storage.
-
-    # Vault Agent for credential injection
-  vault-agent:
-    image: hashicorp/vault:1.19.2
-    container_name: vault-agent
-    depends_on:
-      - vault
-    environment:
-      - VAULT_ADDR=http://vault:8200
-      - VAULT_TOKEN=${VAULT_TOKEN}
-    volumes:
-      - vault_secrets:/vault/secrets
-      - ./vault/vault_agent/config:/vault_agent/config:ro
-      - ./vault/vault_agent/templates:/vault_agent/templates:ro
-    command: ["sh", "-c", "echo \"$VAULT_TOKEN\" > /tmp/vault-token && vault agent -config=/vault_agent/config/agent.hcl"]
-    cap_add:
-      - IPC_LOCK
-
   postgres:
     image: postgres:15.7
     environment:
@@ -263,7 +210,6 @@ services:
       - AWS_S3_BUCKET_NAME
       - AWS_S3_LOGS_PREFIX
       - GRAFANA_PASSWORD
-      - VAULT_TOKEN=${VAULT_TOKEN}
       - GRAFANA_USER
       - OFA_DB_PASSWORD
       - OFA_DB_USER
@@ -273,8 +219,6 @@ services:
     volumes:
       - .:/tdpapp
       - logs:/tmp
-      - vault_logs:/tmp
-      - vault_secrets:/vault/secrets
 
     build:
       context: .
@@ -363,9 +307,6 @@ volumes:
   grafana_data:
   loki_data:
   logs:
-  vault_data: # Store Vault's encrypted data
-  vault_logs:  # Store Vault's log files
-  vault_secrets:
   tempo-data:
 
 networks:
