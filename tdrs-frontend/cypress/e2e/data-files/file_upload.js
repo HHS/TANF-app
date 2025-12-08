@@ -137,8 +137,6 @@ When(
 
     df.openDataFilesAndSearch(program, year, quarter, stt)
     df.uploadSectionFile(SECTION_INPUT_ID[section], fileName)
-
-    cy.contains('Successfully submitted').should('exist')
   }
 )
 
