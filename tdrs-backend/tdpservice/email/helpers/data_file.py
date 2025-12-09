@@ -117,10 +117,6 @@ def send_data_submitted_email(
     }
 
     if datafile_summary.status == DataFileSummary.Status.PENDING:
-        log(
-            "Email triggered for pending data file, skipping.",
-            logger_context=logger_context,
-        )
         return
 
     match prog_type:
