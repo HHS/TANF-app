@@ -203,7 +203,9 @@ describe('Profile', () => {
       </Provider>
     )
 
-    const link = screen.getByRole('link', { name: /Manage Your Account at.*Login\.gov/i })
+    const link = screen.getByRole('link', {
+      name: /Manage Your Account at.*Login\.gov/i,
+    })
 
     expect(link).toHaveAttribute('href', url)
   })

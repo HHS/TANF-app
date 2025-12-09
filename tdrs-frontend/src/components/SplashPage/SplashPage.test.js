@@ -54,7 +54,9 @@ describe('SplashPage', () => {
       </Provider>
     )
     const hero = container.querySelector('.usa-hero__callout')
-    expect(hero.querySelector('h1')).toHaveTextContent('Sign into TANF Data Portal')
+    expect(hero.querySelector('h1')).toHaveTextContent(
+      'Sign into TANF Data Portal'
+    )
   })
 
   it('does not render the page while auth is loading', () => {
@@ -96,7 +98,9 @@ describe('SplashPage', () => {
         <SplashPage />
       </Provider>
     )
-    const button = screen.getByRole('button', { name: /Sign in with.*Login\.gov.*for grantees/i })
+    const button = screen.getByRole('button', {
+      name: /Sign in with.*Login\.gov.*for grantees/i,
+    })
     fireEvent.click(button)
     expect(window.location.href).toEqual(url)
   })
@@ -117,7 +121,9 @@ describe('SplashPage', () => {
         <SplashPage />
       </Provider>
     )
-    const button = screen.getByRole('button', { name: /Sign in with ACF AMS for ACF staff/i })
+    const button = screen.getByRole('button', {
+      name: /Sign in with ACF AMS for ACF staff/i,
+    })
     fireEvent.click(button)
     expect(window.location.href).toEqual(url)
   })

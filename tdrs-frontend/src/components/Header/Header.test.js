@@ -141,7 +141,9 @@ describe('Header', () => {
       </Provider>
     )
 
-    const secondaryLinks = container.querySelectorAll('.usa-nav__secondary-item')
+    const secondaryLinks = container.querySelectorAll(
+      '.usa-nav__secondary-item'
+    )
 
     expect(secondaryLinks.length).toEqual(2)
     expect(secondaryLinks[0].textContent).toEqual('test@test.com')

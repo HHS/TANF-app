@@ -24,7 +24,9 @@ describe('ResourceCards', () => {
       </Provider>
     )
 
-    const link = screen.getByRole('link', { name: /View Tribal TANF Coding Instructions/i })
+    const link = screen.getByRole('link', {
+      name: /View Tribal TANF Coding Instructions/i,
+    })
     expect(link).toHaveAttribute('href', url)
   })
 
@@ -68,7 +70,9 @@ describe('ResourceCards', () => {
         <ResourceCards />
       </Provider>
     )
-    const link = screen.getByRole('link', { name: /View ACF Form Instructions/i })
+    const link = screen.getByRole('link', {
+      name: /View ACF Form Instructions/i,
+    })
     expect(link).toHaveAttribute('href', url)
   })
 })

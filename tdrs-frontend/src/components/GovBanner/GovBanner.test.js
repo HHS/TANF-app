@@ -34,9 +34,7 @@ describe('GovBanner', () => {
 
       render(<GovBanner />)
       expect(
-        screen.getByText(
-          /A Test Demo website of the United States government/i
-        )
+        screen.getByText(/A Test Demo website of the United States government/i)
       ).toBeInTheDocument()
     })
 
@@ -66,9 +64,7 @@ describe('GovBanner', () => {
       process.env.REACT_APP_CF_SPACE = 'tanf-prod'
       render(<GovBanner />)
       expect(
-        screen.getByText(
-          /An Official website of the United States government/i
-        )
+        screen.getByText(/An Official website of the United States government/i)
       ).toBeInTheDocument()
     })
 
