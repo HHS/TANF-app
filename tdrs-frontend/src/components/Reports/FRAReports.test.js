@@ -483,17 +483,11 @@ describe('FRA Reports Page', () => {
       await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(4))
     })
 
-    it('Shows an error if a no file is selected for submission', async () => {
-      const { getByText, dispatch, getByRole, container } = await setup()
+    it('Does not allow submission if no file is selected', async () => {
+      const { getByText } = await setup()
 
       const submitButton = getByText('Submit Report', { selector: 'button' })
-      fireEvent.click(submitButton)
-
-      await waitFor(() => {
-        expect(
-          getByText('No changes have been made to data files')
-        ).toBeInTheDocument()
-      })
+      expect(submitButton).not.toBeEnabled()
     })
 
     it('Shows an error if a non-allowed file type is selected', async () => {

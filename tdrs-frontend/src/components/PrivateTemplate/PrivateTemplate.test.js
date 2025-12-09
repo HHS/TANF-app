@@ -56,4 +56,17 @@ describe('PrivateTemplate', () => {
 
     expect(document.activeElement).not.toEqual(h1)
   })
+
+  it('should render subtitle when provided', () => {
+    const { container } = render(
+      <PrivateTemplate title={title} subtitle="Test Subtitle">
+        <div>Test</div>
+      </PrivateTemplate>
+    )
+
+    const h2 = container.querySelector('h2')
+
+    expect(h2).toBeTruthy()
+    expect(h2.textContent).toEqual('Test Subtitle')
+  })
 })
