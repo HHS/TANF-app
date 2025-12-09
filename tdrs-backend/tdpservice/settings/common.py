@@ -8,11 +8,16 @@ from distutils.util import strtobool
 from os.path import join
 from typing import Any, Optional
 
+import django
 from django.core.exceptions import ImproperlyConfigured
 
+import sentry_sdk
+from sentry_sdk.types import SamplingContext
 from celery.schedules import crontab
 from configurations import Configuration
 from corsheaders.defaults import default_headers
+from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -29,6 +34,42 @@ def get_required_env_var_setting(
         )
 
     return env_var
+
+SAMPLER_FILTER_URLS = ["/prometheus/metrics"]
+
+def traces_sampler(sampling_context: SamplingContext) -> float:
+    # Examine provided sampling context along with anything in the
+    # global namespace to compute the sample rate for this transaction
+    if sampling_context.get("wsgi_environ", {}).get("PATH_INFO") in SAMPLER_FILTER_URLS:
+        # Drop this transaction, by setting its sample rate to 0%
+        return 0
+    # Default sample rate for all others (replaces traces_sample_rate)
+    return 0.5
+
+
+def init_sentry(sentry_dsn, environment: str = "ERROR") -> None:
+    """Initialize Sentry for error tracking."""
+    sentry_sdk.init(
+        dsn=sentry_dsn,
+        environment=environment,
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for performance monitoring.
+        integrations=[
+            DjangoIntegration(
+                transaction_style="url",
+                middleware_spans=True,
+                signals_spans=True,
+                signals_denylist=[
+                    django.db.models.signals.pre_init,
+                    django.db.models.signals.post_init,
+                ],
+                cache_spans=False,
+            ),
+            LoggingIntegration(level=logging.ERROR, event_level=logging.ERROR),
+        ],
+        traces_sampler=traces_sampler,
+        enable_logs=True,
+    )
 
 
 class Common(Configuration):
@@ -64,6 +105,7 @@ class Common(Configuration):
         "tdpservice.email",
         "tdpservice.search_indexes",
         "tdpservice.parsers",
+        "tdpservice.reports",
     )
 
     # https://docs.djangoproject.com/en/2.0/topics/http/middleware/
@@ -580,3 +622,24 @@ class Common(Configuration):
     CELERY_TASK_SEND_SENT_EVENT = True
 
     FRA_PILOT_STATES = json.loads(os.getenv("FRA_PILOT_STATES", "[]"))
+
+    # Cloud.gov SET integration settings
+    LOGIN_GOV_SET_AUDIENCE = os.getenv(
+        "LOGIN_GOV_SET_AUDIENCE",
+        "https://tdp-frontend-raft.apps.cloud.gov/v1/security/event-token/",
+    )
+    LOGIN_GOV_WELL_KNOWN_CONFIG = os.getenv(
+        "LOGIN_GOV_WELL_KNOWN_CONFIG",
+        "https://idp.int.identitysandbox.gov/.well-known/openid-configuration",
+    )
+
+    # Sentry config
+    SENTRY_DSN = os.getenv("SENTRY_DSN", None)
+    SENTRY_ENVIRONMENT = os.getenv("CGAPPNAME_BACKEND", "ERROR")
+
+    if SENTRY_DSN:
+        init_sentry(sentry_dsn=SENTRY_DSN, environment=SENTRY_ENVIRONMENT)
+
+    # Per Lauren and Yun, 1 family (case) is expected to have a maximum of 6 adults and a maximum of 10 children plus
+    # one T1 record. Thus, if a case has more than 17 records, it has an error and will not be serialized.
+    MAX_NUMBER_RECORDS_PER_CASE = os.getenv("MAX_NUMBER_RECORDS_PER_CASE", 17)

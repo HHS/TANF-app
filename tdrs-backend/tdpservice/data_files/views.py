@@ -1,8 +1,10 @@
 """Check if user is authorized."""
+
 import logging
 from wsgiref.util import FileWrapper
 
 from django.conf import settings
+from django.db.models import Q
 from django.http import FileResponse, Http404, HttpResponse
 
 from django_filters import rest_framework as filters
@@ -62,6 +64,8 @@ class DataFileViewSet(ModelViewSet):
     permission_classes = [DataFilePermissions, IsApprovedPermission]
     serializer_class = DataFileSerializer
     pagination_class = None
+    SSP_FILE_TYPE = "ssp-moe"
+    PIA_FILE_TYPE = "program-integrity-audit"
 
     # TODO: Handle versioning in queryset
     # Ref: https://github.com/raft-tech/TANF-app/issues/1007
@@ -121,21 +125,22 @@ class DataFileViewSet(ModelViewSet):
     def get_queryset(self):
         """Apply custom queryset filters."""
         queryset = super().get_queryset().order_by("-created_at")
-        FRA_SECTION_LIST = [
-            DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
-            DataFile.Section.FRA_SECONDRY_SCHOOL_ATTAINMENT,
-            DataFile.Section.FRA_SUPPLEMENT_WORK_OUTCOMES,
-        ]
 
         if self.action == "list":
             file_type = self.request.query_params.get("file_type", None)
 
-            if file_type == "ssp-moe":
-                queryset = queryset.filter(section__contains="SSP")
-            elif file_type in FRA_SECTION_LIST:
-                queryset = queryset.filter(section=file_type)
+            if file_type == DataFileViewSet.SSP_FILE_TYPE:
+                queryset = queryset.filter(program_type=DataFile.ProgramType.SSP)
+            elif DataFile.Section.is_fra(file_type):
+                queryset = queryset.filter(
+                    program_type=DataFile.ProgramType.FRA, section=file_type
+                )
             else:
-                queryset = queryset.exclude(section__contains="SSP")
+                is_program_audit = file_type == DataFileViewSet.PIA_FILE_TYPE
+                query = Q(program_type=DataFile.ProgramType.TANF) | Q(
+                    program_type=DataFile.ProgramType.TRIBAL
+                ) & Q(is_program_audit=is_program_audit)
+                queryset = queryset.filter(query)
 
         return queryset
 

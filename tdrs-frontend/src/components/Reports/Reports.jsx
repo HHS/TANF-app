@@ -1,111 +1,71 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import classNames from 'classnames'
 
-import Button from '../Button'
-import {
-  clearFileList,
-  setYear,
-  setStt,
-  setQuarter,
-  setFileType,
-} from '../../actions/reports'
-import UploadReport from '../UploadReport'
 import STTComboBox from '../STTComboBox'
 import { fetchSttList } from '../../actions/sttList'
 import Modal from '../Modal'
-import SegmentedControl from '../SegmentedControl'
-import SubmissionHistory from '../SubmissionHistory'
 import ReprocessedModal from '../SubmissionHistory/ReprocessedModal'
 import {
   selectPrimaryUserRole,
   accountIsRegionalStaff,
 } from '../../selectors/auth'
-import { quarters, constructYearOptions } from './utils'
-import { openFeedbackWidget } from '../../reducers/feedbackWidget'
+import RadioSelect from '../Form/RadioSelect'
+import TanfSspReports from './tdr/TanfSspReports'
+import ProgramIntegrityAuditReports from './pia/ProgramIntegrityAuditReports'
+import { ReportsProvider, useReportsContext } from './ReportsContext'
 
-const FiscalQuarterExplainer = () => (
-  <table className="usa-table usa-table--striped margin-top-4 desktop:width-tablet mobile:width-full">
-    <caption>TANF/SSP Data Reporting Guidelines</caption>
-    <thead>
-      <tr>
-        <th>Fiscal Year (FY) &amp; Quarter (Q)</th>
-        <th>Calendar Period</th>
-        <th>Due Date</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>FY Q1</td>
-        <td>Oct 1 - Dec 31</td>
-        <td>February 14</td>
-      </tr>
-      <tr>
-        <td>FY Q2</td>
-        <td>Jan 1 - Mar 31</td>
-        <td>May 15</td>
-      </tr>
-      <tr>
-        <td>FY Q3</td>
-        <td>Apr 1 - Jun 30</td>
-        <td>August 14</td>
-      </tr>
-      <tr>
-        <td>FY Q4</td>
-        <td>Jul 1 - Sep 30</td>
-        <td>November 14</td>
-      </tr>
-    </tbody>
-  </table>
-)
+function ReportsContent() {
+  const {
+    fileTypeInputValue,
+    sttInputValue,
+    errorModalVisible,
+    setErrorModalVisible,
+    modalTriggerSource,
+    reprocessedModalVisible,
+    setReprocessedModalVisible,
+    reprocessedDate,
+    handleClearAll,
+    handleClearFilesOnly,
+    cancelPendingChange,
+    selectFileType,
+    selectStt,
+    getSttError,
+    getFileTypeError,
+  } = useReportsContext()
 
-/**
- * Reports is the home page for users to file a report.
- * The user can select a year
- * for the report that they would like to upload and then click on
- * `Search` to begin uploading files for that year.
- */
-function Reports() {
-  // The selected year in the dropdown tied to our redux `reports` state
-  const selectedYear = useSelector((state) => state.reports.year)
-  const [yearInputValue, setYearInputValue] = useState(selectedYear)
-  // The selected stt in the dropdown tied to our redux `reports` state
-  const selectedStt = useSelector((state) => state.reports.stt)
-  const [sttInputValue, setSttInputValue] = useState(selectedStt)
-  // The selected quarter in the dropdown tied to our redux `reports` state
-  const selectedQuarter = useSelector((state) => state.reports.quarter)
-  const [quarterInputValue, setQuarterInputValue] = useState(selectedQuarter)
-  // The selected file type in the dropdown tied to our redux `reports` state
-  const selectedFileType = useSelector((state) => state.reports.fileType)
-  const [fileTypeInputValue, setFileTypeInputValue] = useState(selectedFileType)
-
-  // The logged in user saved in our redux `auth` state object
+  const dispatch = useDispatch()
   const user = useSelector((state) => state.auth.user)
   const isOFAAdmin = useSelector(selectPrimaryUserRole)?.name === 'OFA Admin'
   const isDIGITTeam = useSelector(selectPrimaryUserRole)?.name === 'DIGIT Team'
   const isSystemAdmin =
     useSelector(selectPrimaryUserRole)?.name === 'OFA System Admin'
   const isRegionalStaff = useSelector(accountIsRegionalStaff)
-  const sttList = useSelector((state) => state?.stts?.sttList)
+  const canSelectSTT =
+    isOFAAdmin || isDIGITTeam || isSystemAdmin || isRegionalStaff
 
-  const [errorModalVisible, setErrorModalVisible] = useState(false)
-  const files = useSelector((state) => state.reports.submittedFiles)
-  const uploadedFiles = files?.filter((file) => file.fileName && !file.id)
+  const sttList = useSelector((state) => state?.stts?.sttList)
 
   const userProfileStt = user?.stt?.name
 
-  const dispatch = useDispatch()
-  const [isUploadReportToggled, setIsToggled] = useState(false)
+  const headerRef = useRef(null)
+  useEffect(() => {
+    if (headerRef && headerRef.current) {
+      headerRef.current.focus()
+    }
+  }, [])
 
-  const [formValidation, setFormValidationState] = useState({})
-  const [touched, setTouched] = useState({})
+  useEffect(() => {
+    if (sttList.length === 0) {
+      dispatch(fetchSttList())
+    }
+  }, [dispatch, sttList])
 
-  const [reprocessedModalVisible, setReprocessedModalVisible] = useState(false)
-  const [reprocessedDate, setReprocessedDate] = useState('')
+  const redux_stt = useSelector((state) => state.reports.stt)
 
   const currentStt =
     isOFAAdmin || isDIGITTeam || isSystemAdmin || isRegionalStaff
-      ? selectedStt
+      ? redux_stt
       : userProfileStt
 
   const stt = sttList?.find((stt) => stt?.name === currentStt)
@@ -113,8 +73,6 @@ function Reports() {
   const fileTypeStt = stt
     ? stt
     : sttList?.find((fileTypeStt) => fileTypeStt?.name === sttInputValue)
-
-  const errorsCount = formValidation.errors ? formValidation.errors : 0
 
   const missingStt =
     (!isOFAAdmin &&
@@ -124,429 +82,95 @@ function Reports() {
       !currentStt) ||
     (isRegionalStaff && user?.regions?.length === 0)
 
-  const errorsRef = useRef(null)
-
-  // Ensure newly rendered header is focused,
-  // else it won't be read be screen readers.
-  const headerRef = useRef(null)
-  useEffect(() => {
-    if (headerRef && headerRef.current) {
-      headerRef.current.focus()
-    }
-  }, [])
-
-  const [selectedSubmissionTab, setSelectedSubmissionTab] = useState(1)
-
-  const fileTypeComboBoxRequired = fileTypeStt?.ssp ? fileTypeStt.ssp : false
-
-  const resetPreviousValues = () => {
-    setQuarterInputValue(selectedQuarter || '')
-    setYearInputValue(selectedYear || '')
-    setSttInputValue(selectedStt || '')
-    setFileTypeInputValue(
-      fileTypeComboBoxRequired ? selectedFileType || '' : 'tanf'
-    )
-  }
-
-  const handleSearch = () => {
-    // Clear previous errors
-    setIsToggled(false)
-    setFormValidationState({})
-    // Filter out non-truthy values]
-    const form = [
-      yearInputValue,
-      isOFAAdmin || isDIGITTeam || isSystemAdmin || isRegionalStaff
-        ? sttInputValue
-        : currentStt,
-      quarterInputValue,
-      fileTypeComboBoxRequired ? fileTypeInputValue : 'tanf',
-    ].filter(Boolean)
-
-    if (form.length === 4) {
-      // Hide upload sections while submitting search
-      if (isUploadReportToggled) {
-        setIsToggled(false)
-      }
-
-      // Clear existing file list from state to ensure fresh results
-      dispatch(clearFileList())
-
-      // update state to the new search values
-      dispatch(setYear(yearInputValue))
-      dispatch(setQuarter(quarterInputValue))
-      dispatch(setStt(sttInputValue))
-      dispatch(
-        setFileType(fileTypeComboBoxRequired ? fileTypeInputValue : 'tanf')
-      )
-
-      // Restore upload sections to the page
-      setTimeout(() => setIsToggled(true), 0)
-    } else {
-      setIsToggled(false)
-      // create error state
-      setFormValidationState({
-        year: !selectedYear,
-        stt: !(sttInputValue || currentStt),
-        fileType: !selectedFileType,
-        quarter: !selectedQuarter,
-        errors: 4 - form.length,
-      })
-
-      setTouched({
-        year: true,
-        stt: true,
-        quarter: true,
-        fileType: true,
-      })
-      // Focus on the newly rendered error message.
-      setTimeout(() => errorsRef.current.focus(), 0)
-    }
-  }
-
-  const selectYear = ({ target: { value } }) => {
-    setYearInputValue(value)
-    setTouched((currentForm) => ({ ...currentForm, year: true }))
-  }
-
-  const selectQuarter = ({ target: { value } }) => {
-    setQuarterInputValue(value)
-    setTouched((currentForm) => ({ ...currentForm, quarter: true }))
-  }
-  // Non-OFA Admin users will be unable to select an STT
-  // prefer => `auth.user.stt`
-
-  const selectStt = (value) => {
-    setSttInputValue(value)
-    setTouched((currentForm) => ({ ...currentForm, stt: true }))
-  }
-
-  const handleOpenFeedbackWidget = () => {
-    const lockedType = fileTypeComboBoxRequired ? fileTypeInputValue : 'tanf'
-    dispatch(openFeedbackWidget(lockedType)) // 'tanf' or 'ssp-moe'
-  }
-
-  useEffect(() => {
-    if (sttList.length === 0) {
-      dispatch(fetchSttList())
-    }
-  }, [dispatch, sttList])
-
-  useEffect(() => {
-    if (!isUploadReportToggled) {
-      const form = [
-        yearInputValue,
-        sttInputValue,
-        quarterInputValue,
-        fileTypeComboBoxRequired ? fileTypeInputValue : 'tanf',
-      ].filter(Boolean)
-      const touchedFields = Object.keys(touched).length
-
-      const expected_fields =
-        isOFAAdmin || isDIGITTeam || isSystemAdmin || isRegionalStaff ? 4 : 3
-
-      const errors = touchedFields === 4 ? expected_fields - form.length : 0
-      setFormValidationState((currentState) => ({
-        ...currentState,
-        year: touched.year && !yearInputValue,
-        stt: touched.stt && !sttInputValue,
-        fileType: touched.fileType && !fileTypeInputValue,
-        quarter: touched.quarter && !quarterInputValue,
-        errors,
-      }))
-    }
-  }, [
-    sttInputValue,
-    isUploadReportToggled,
-    yearInputValue,
-    selectedStt,
-    quarterInputValue,
-    fileTypeInputValue,
-    setFormValidationState,
-    touched,
-    isOFAAdmin,
-    isDIGITTeam,
-    isSystemAdmin,
-    isRegionalStaff,
-    fileTypeComboBoxRequired,
-    currentStt,
-  ])
+  const radio_options = [
+    { label: 'TANF', value: 'tanf' },
+    ...(fileTypeStt?.ssp ? [{ label: 'SSP-MOE', value: 'ssp-moe' }] : []),
+    ...(process.env.REACT_APP_SHOW_PIA === 'true'
+      ? [{ label: 'Program Integrity Audit', value: 'program-integrity-audit' }]
+      : []),
+  ]
 
   return (
     <div className="page-container" style={{ position: 'relative' }}>
-      <div
-        className={classNames({
-          'border-bottom': isUploadReportToggled && errorsCount === 0,
-        })}
-      >
+      <div>
         {missingStt && (
           <div className="margin-top-4 usa-error-message" role="alert">
             An STT is not set for this user.
           </div>
         )}
-        {Boolean(formValidation.errors) && (
-          <div
-            className="margin-top-4 usa-error-message"
-            role="alert"
-            ref={errorsRef}
-            tabIndex="-1"
-          >
-            There {errorsCount === 1 ? 'is' : 'are'} {formValidation.errors}{' '}
-            error(s) in this form
-          </div>
-        )}
         <p className="margin-top-5 margin-bottom-0">
           Fields marked with an asterisk (*) are required.
         </p>
-        <form>
-          <div className="grid-row grid-gap">
-            <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
-              {(isOFAAdmin ||
-                isDIGITTeam ||
-                isSystemAdmin ||
-                isRegionalStaff) && (
-                <div
-                  className={classNames(
-                    'usa-form-group maxw-mobile margin-top-4',
-                    {
-                      'usa-form-group--error': formValidation.stt,
-                    }
-                  )}
-                >
-                  <STTComboBox
-                    selectedStt={sttInputValue}
-                    selectStt={selectStt}
-                    error={formValidation.stt}
-                  />
-                </div>
-              )}
-              {(fileTypeStt?.ssp ? fileTypeStt.ssp : false) && (
-                <div className="usa-form-group margin-top-4">
-                  <label className="usa-label text-bold" htmlFor="reportType">
-                    {formValidation.fileType && (
-                      <div
-                        className="usa-error-message"
-                        id="reportType-error-alert"
-                      >
-                        A file type selection is required
-                      </div>
-                    )}
-                    <fieldset className="usa-fieldset">
-                      <legend className="usa-label text-bold">
-                        File Type*
-                      </legend>
-                      <div className="usa-radio">
-                        <input
-                          className="usa-radio__input"
-                          id="tanf"
-                          type="radio"
-                          name="reportType"
-                          value="tanf"
-                          onChange={() => setFileTypeInputValue('tanf')}
-                        />
-                        <label className="usa-radio__label" htmlFor="tanf">
-                          TANF
-                        </label>
-                      </div>
-                      <div className="usa-radio">
-                        <input
-                          className="usa-radio__input"
-                          id="ssp-moe"
-                          type="radio"
-                          name="reportType"
-                          value="ssp-moe"
-                          onChange={() => setFileTypeInputValue('ssp-moe')}
-                        />
-                        <label className="usa-radio__label" htmlFor="ssp-moe">
-                          SSP-MOE
-                        </label>
-                      </div>
-                    </fieldset>
-                  </label>
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="grid-row grid-gap">
-            <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-auto">
+        <div className="grid-row grid-gap">
+          <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
+            {canSelectSTT && (
               <div
                 className={classNames(
-                  'usa-form-group maxw-mobile margin-top-4',
-                  {
-                    'usa-form-group--error': formValidation.year,
-                  }
+                  'usa-form-group maxw-mobile margin-top-4'
                 )}
               >
-                <label
-                  className="usa-label text-bold margin-top-4"
-                  htmlFor="reportingYears"
-                >
-                  Fiscal Year (October - September)*
-                  {formValidation.year && (
-                    <div className="usa-error-message" id="years-error-alert">
-                      A fiscal year is required
-                    </div>
-                  )}
-                  {/* eslint-disable-next-line */}
-              <select
-                    className={classNames('usa-select maxw-mobile', {
-                      'usa-combo-box__input--error': formValidation.year,
-                    })}
-                    name="reportingYears"
-                    id="reportingYears"
-                    onChange={selectYear}
-                    value={yearInputValue}
-                    aria-describedby="years-error-alert"
-                  >
-                    <option value="" disabled hidden>
-                      - Select Fiscal Year -
-                    </option>
-                    {constructYearOptions()}
-                  </select>
-                </label>
+                <STTComboBox
+                  selectedStt={sttInputValue}
+                  selectStt={(value) => {
+                    const selectedSttObject = sttList?.find(
+                      (s) => s?.name === value
+                    )
+                    selectStt(value, selectedSttObject)
+                  }}
+                  error={getSttError()}
+                />
               </div>
-              <div
-                className={classNames(
-                  'usa-form-group maxw-mobile margin-top-4',
-                  {
-                    'usa-form-group--error': formValidation.quarter,
-                  }
-                )}
-              >
-                <label
-                  className="usa-label text-bold margin-top-4"
-                  htmlFor="quarter"
-                >
-                  Fiscal Quarter*
-                  {formValidation.quarter && (
-                    <div className="usa-error-message" id="quarter-error-alert">
-                      A fiscal quarter is required
-                    </div>
-                  )}
-                  {/* eslint-disable-next-line */}
-              <select
-                    className={classNames('usa-select maxw-mobile', {
-                      'usa-combo-box__input--error': formValidation.quarter,
-                    })}
-                    name="quarter"
-                    id="quarter"
-                    onChange={selectQuarter}
-                    value={quarterInputValue}
-                    aria-describedby="quarter-error-alert"
-                  >
-                    <option value="" disabled hidden>
-                      - Select Quarter -
-                    </option>
-                    {Object.entries(quarters).map(
-                      ([quarter, quarterDescription]) => (
-                        <option value={quarter} key={quarter}>
-                          {quarterDescription}
-                        </option>
-                      )
-                    )}
-                  </select>
-                </label>
-              </div>
-              <Button
-                className="margin-y-4"
-                type="button"
-                onClick={() => {
-                  if (uploadedFiles && uploadedFiles.length > 0) {
-                    setErrorModalVisible(true)
-                  } else {
-                    handleSearch()
-                  }
-                }}
-              >
-                Search
-              </Button>
-            </div>
-            <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
-              <FiscalQuarterExplainer />
-            </div>
+            )}
+            <RadioSelect
+              label="File Type*"
+              fieldName="reportType"
+              setValue={selectFileType}
+              options={radio_options}
+              classes="margin-top-4"
+              selectedValue={fileTypeInputValue}
+              error={getFileTypeError()}
+              errorMessage="A file type selection is required"
+            />
           </div>
-        </form>
+        </div>
+
+        {fileTypeInputValue === 'program-integrity-audit' &&
+        process.env.REACT_APP_SHOW_PIA === 'true' ? (
+          <ProgramIntegrityAuditReports
+            stt={stt ? stt : fileTypeStt}
+            isRegionalStaff={isRegionalStaff}
+          />
+        ) : (
+          <TanfSspReports
+            stt={stt ? stt : fileTypeStt}
+            isRegionalStaff={isRegionalStaff}
+          />
+        )}
       </div>
-      {isUploadReportToggled && errorsCount === 0 && (
-        <>
-          <h2
-            ref={headerRef}
-            className="font-serif-xl margin-top-5 margin-bottom-0 text-normal"
-            tabIndex="-1"
-          >
-            {`${currentStt} - ${selectedFileType.toUpperCase()} - Fiscal Year ${selectedYear} - ${
-              quarters[selectedQuarter]
-            }`}
-          </h2>
 
-          {isRegionalStaff ? (
-            <h3 className="font-sans-lg margin-top-5 margin-bottom-2 text-bold">
-              Submission History
-            </h3>
-          ) : (
-            <SegmentedControl
-              buttons={[
-                {
-                  id: 1,
-                  label: 'Current Submission',
-                  onSelect: () => setSelectedSubmissionTab(1),
-                },
-                {
-                  id: 2,
-                  label: 'Submission History',
-                  onSelect: () => setSelectedSubmissionTab(2),
-                },
-              ]}
-              selected={selectedSubmissionTab}
-            />
-          )}
-
-          {!isRegionalStaff && selectedSubmissionTab === 1 && (
-            <UploadReport
-              stt={stt}
-              handleCancel={() => {
-                setIsToggled(false)
-                resetPreviousValues()
-                dispatch(clearFileList())
-              }}
-              openWidget={handleOpenFeedbackWidget}
-            />
-          )}
-
-          {(isRegionalStaff || selectedSubmissionTab === 2) && (
-            <SubmissionHistory
-              filterValues={{
-                quarter: quarterInputValue,
-                year: yearInputValue,
-                stt: stt,
-                file_type: fileTypeInputValue,
-              }}
-              reprocessedState={{
-                setModalVisible: setReprocessedModalVisible,
-                setDate: setReprocessedDate,
-              }}
-            />
-          )}
-        </>
-      )}
       <Modal
         title="Files Not Submitted"
-        message="Your uploaded files have not been submitted. Searching without submitting will discard your changes and remove any uploaded files."
+        message="Your uploaded files have not been submitted. Clicking 'OK' will discard your changes and remove any uploaded files."
         isVisible={errorModalVisible}
         buttons={[
           {
             key: '1',
             text: 'Cancel',
             onClick: () => {
+              cancelPendingChange()
               setErrorModalVisible(false)
-              resetPreviousValues()
             },
           },
           {
             key: '2',
-            text: 'Discard and Search',
+            text: 'OK',
             onClick: () => {
               setErrorModalVisible(false)
-              handleSearch()
+              if (modalTriggerSource === 'cancel') {
+                handleClearAll()
+              } else {
+                handleClearFilesOnly()
+              }
             },
           },
         ]}
@@ -557,6 +181,14 @@ function Reports() {
         setModalVisible={setReprocessedModalVisible}
       />
     </div>
+  )
+}
+
+function Reports() {
+  return (
+    <ReportsProvider>
+      <ReportsContent />
+    </ReportsProvider>
   )
 }
 

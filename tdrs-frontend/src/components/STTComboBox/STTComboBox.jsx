@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchSttList } from '../../actions/sttList'
@@ -16,9 +17,16 @@ import { availableStts } from '../../selectors/stts'
  * @param {function} error - Reference to stt errors object.
  */
 
-function STTComboBox({ selectStt, selectedStt, handleBlur, error, sttType }) {
+function STTComboBox({
+  selectStt,
+  selectedStt = '',
+  handleBlur = null,
+  error = null,
+  sttType,
+}) {
   const sttListRequest = useSelector((state) => state?.stts)
-  const filteredStts = useSelector(availableStts)
+  const location = useLocation()
+  const filteredStts = useSelector(availableStts(location.pathname))
   const dispatch = useDispatch()
   const [numTries, setNumTries] = useState(0)
   const [reachedMaxTries, setReachedMaxTries] = useState(false)
@@ -45,35 +53,37 @@ function STTComboBox({ selectStt, selectedStt, handleBlur, error, sttType }) {
 
   return (
     <>
-      <ComboBox
-        name="stt"
-        label={
-          sttType ? `${toTitleCase(sttType)}*` : 'State, Tribe, or Territory*'
-        }
-        error={
-          error
-            ? `A ${sttType || 'state, tribe, or territory'} is required`
-            : undefined
-        }
-        handleSelect={selectStt}
-        selected={selectedStt}
-        handleBlur={handleBlur}
-        placeholder="- Select or Search -"
-        aria-required="true"
-        autoComplete={false}
-      >
-        <option value="" disabled hidden>
-          - Select or Search -
-        </option>
-        {filteredStts?.map(
-          (stt) =>
-            (sttType == null || stt.type === sttType) && (
-              <option className="sttOption" key={stt.id} value={stt.name}>
-                {stt.name}
-              </option>
-            )
-        )}
-      </ComboBox>
+      {filteredStts.length > 0 && (
+        <ComboBox
+          name="stt"
+          label={
+            sttType ? `${toTitleCase(sttType)}*` : 'State, Tribe, or Territory*'
+          }
+          error={
+            error
+              ? `A ${sttType || 'state, tribe, or territory'} is required`
+              : undefined
+          }
+          handleSelect={selectStt}
+          selected={selectedStt}
+          handleBlur={handleBlur}
+          placeholder="- Select or Search -"
+          aria-required="true"
+          autoComplete={false}
+        >
+          <option value="" disabled hidden>
+            - Select or Search -
+          </option>
+          {filteredStts?.map(
+            (stt) =>
+              (sttType == null || stt.type === sttType) && (
+                <option className="sttOption" key={stt.id} value={stt.name}>
+                  {stt.name}
+                </option>
+              )
+          )}
+        </ComboBox>
+      )}
       <Modal
         title="TDP systems are currently experiencing technical difficulties."
         message="Please sign out and try signing in again. If the issue persists contact support at tanfdata@acf.hhs.gov."
@@ -99,9 +109,4 @@ STTComboBox.propTypes = {
   error: PropTypes.bool,
 }
 
-STTComboBox.defaultProps = {
-  handleBlur: null,
-  selectedStt: '',
-  error: null,
-}
 export default STTComboBox

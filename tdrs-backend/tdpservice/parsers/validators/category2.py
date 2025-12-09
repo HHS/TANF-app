@@ -172,6 +172,30 @@ def dateYearIsLargerThan(year, **kwargs):
     )
 
 
+def dateYearMonthIsLargerThan(year, month, **kwargs):
+    """Validate that in a rpt_month_year, the year and month are larger than the given params."""
+
+    def _validator(value: str):
+        value_year = int(str(value)[:4])
+        value_month = int(str(value)[4:])
+
+        _year_validator = base.isGreaterThan(year, **kwargs)
+        _month_validator = base.isGreaterThan(month, inclusive=True, **kwargs)
+
+        if value_year == year:
+            return make_validator(
+                lambda _: _month_validator(value_month),
+                lambda eargs: f"{format_error_context(eargs)} If year equals {year} month must be at least {month}.",
+            )
+
+        return make_validator(
+            lambda _: _year_validator(value_year),
+            lambda eargs: f"{format_error_context(eargs)} Must be larger than {year}{str(month).zfill(2)}.",
+        )
+
+    return lambda value, eargs: _validator(value)(value, eargs)
+
+
 def dateMonthIsValid(**kwargs):
     """Validate that in a monthyear combination, the month is a valid month."""
     _validator = base.dateMonthIsValid(**kwargs)
@@ -233,8 +257,16 @@ def dateHasFormat(format: str, **kwargs):
     )
 
 
-def fraSSNAllOf(*funcs, **kwargs):
-    """Aggregate validator for all FRA SSN validators."""
+def ssnAllOf(*funcs, **kwargs):
+    """Aggregate validator for all SSN validators."""
+    error_message = (
+        "Social Security Number is not valid. Check that the SSN is 9 digits, "
+        "does not contain only zeroes in any one section, and does not contain "
+        "dashes or other punctuation. "
+        "Enter 999999999 if an individual does not have an SSN."
+    )
+    if "error_message" in kwargs:
+        error_message = kwargs["error_message"]
 
     def validator(val, eargs):
         is_valid = all([validator(val, eargs).valid for validator in funcs])
@@ -242,12 +274,12 @@ def fraSSNAllOf(*funcs, **kwargs):
             return Result()
         return Result(
             valid=False,
-            error_message=(
-                "Social Security Number is not valid. Check that the SSN is 9 digits, "
-                "does not contain only zeroes in any one section, and does not contain "
-                "dashes or other punctuation. "
-                "Enter 999999999 if an individual does not have an SSN."
-            ),
+            error_message=error_message,
         )
 
     return validator
+
+
+def fraSSNAllOf(*funcs, **kwargs):
+    """Aggregate validator for all FRA SSN validators."""
+    return ssnAllOf(*funcs, **kwargs)

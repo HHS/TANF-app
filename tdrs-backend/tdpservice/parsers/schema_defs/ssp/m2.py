@@ -1,13 +1,12 @@
 """Schema for SSP M2 record type."""
 
+from django.db.models import Q
+
 from tdpservice.parsers.dataclasses import FieldType
 from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import TanfDataReportSchema
 from tdpservice.parsers.transforms import ssp_ssn_decryption_func
-from tdpservice.parsers.util import (
-    generate_t2_t3_t5_hashes,
-    get_t2_t3_t5_partial_hash_members,
-)
+from tdpservice.parsers.util import get_t2_t3_t5_partial_dup_fields
 from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.search_indexes.models.ssp import SSP_M2
 
@@ -15,9 +14,8 @@ m2 = [
     TanfDataReportSchema(
         record_type="M2",
         model=SSP_M2,
-        generate_hashes_func=generate_t2_t3_t5_hashes,
-        should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {3, 5},
-        get_partial_hash_members_func=get_t2_t3_t5_partial_hash_members,
+        partial_dup_exclusion_query=Q(FAMILY_AFFILIATION__in=(3, 5)),
+        get_partial_dup_fields=get_t2_t3_t5_partial_dup_fields,
         preparsing_validators=[
             category1.recordHasLengthOfAtLeast(150),
             category1.caseNumberNotEmpty(8, 19),
@@ -85,15 +83,21 @@ m2 = [
             ),
             category3.ifThenAlso(
                 condition_field_name="FAMILY_AFFILIATION",
-                condition_function=category3.isBetween(1, 3, inclusive=True),
+                condition_function=category3.isBetween(2, 3, inclusive=True),
                 result_field_name="EDUCATION_LEVEL",
                 result_function=category3.orValidators(
                     [
                         category3.isBetween(1, 16, inclusive=True, cast=int),
-                        category3.isEqual(98, cast=int),
+                        category3.isBetween(98, 99, inclusive=True, cast=int),
                     ],
                     if_result=True,
                 ),
+            ),
+            category3.ifThenAlso(
+                condition_field_name="FAMILY_AFFILIATION",
+                condition_function=category3.isEqual(1),
+                result_field_name="EDUCATION_LEVEL",
+                result_function=category3.isNotOneOf((0, 99), cast=int),
             ),
             category3.ifThenAlso(
                 condition_field_name="FAMILY_AFFILIATION",

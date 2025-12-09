@@ -1,8 +1,9 @@
 """Admin classes for the tdpservice.security app."""
 from django.contrib import admin
 
-from tdpservice.core.utils import ReadOnlyAdminMixin
-from tdpservice.security.models import ClamAVFileScan, OwaspZapScan
+from tdpservice.core.admin import ReadOnlyAdminMixin
+from tdpservice.security.models import ClamAVFileScan, OwaspZapScan, SecurityEventToken
+from tdpservice.users.models import AccountApprovalStatusChoices
 
 
 @admin.register(ClamAVFileScan)
@@ -29,6 +30,11 @@ class ClamAVFileScanAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         """Return human friendly file size, converted to appropriate unit."""
         return obj.file_size_humanized
 
+    def get_queryset(self, request):
+        """Override to exclude scans uploaded by deactivated users."""
+        qs = super().get_queryset(request)
+        return qs.exclude(uploaded_by__account_approval_status=AccountApprovalStatusChoices.DEACTIVATED)
+
 
 @admin.register(OwaspZapScan)
 class OwaspZapScanAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
@@ -47,3 +53,46 @@ class OwaspZapScanAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "scanned_at",
         "app_target",
     ]
+
+    def get_queryset(self, request):
+        """Override to exclude scans uploaded by deactivated users."""
+        qs = super().get_queryset(request)
+        return qs.exclude(uploaded_by__account_approval_status=AccountApprovalStatusChoices.DEACTIVATED)
+
+
+@admin.register(SecurityEventToken)
+class SecurityEventTokenAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
+    """Admin interface for Security Event Tokens."""
+
+    list_display = (
+        "event_type",
+        "user",
+        "email",
+        "issued_at",
+        "received_at",
+        "processed",
+    )
+    list_filter = ("user", "event_type", "processed", "received_at")
+    search_fields = (
+        "user__username",
+        "user__email",
+        "email",
+        "event_type",
+        "event_data",
+    )
+    readonly_fields = (
+        "id",
+        "jwt_id",
+        "issuer",
+        "issued_at",
+        "received_at",
+        "event_data",
+    )
+    date_hierarchy = "received_at"
+
+    def get_actions(self, request):
+        """Override get_action to remove delete action."""
+        actions = super().get_actions(request)
+        if "delete_selected" in actions:
+            del actions["delete_selected"]
+        return actions

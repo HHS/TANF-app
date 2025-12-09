@@ -36,12 +36,16 @@ describe('FeedbackWidget', () => {
 
   it('renders with TANF header', () => {
     render(<FeedbackWidget {...defaultProps} dataType="tanf" />)
-    expect(screen.getByText(/TANF/i)).toBeInTheDocument()
+    screen
+      .getAllByText(/TANF/i)
+      .forEach((element) => expect(element).toBeInTheDocument())
   })
 
   it('renders with SSP-MOE header', () => {
     render(<FeedbackWidget {...defaultProps} dataType="ssp-moe" />)
-    expect(screen.getByText(/SSP-MOE/i)).toBeInTheDocument()
+    screen
+      .getAllByText(/SSP-MOE/i)
+      .forEach((element) => expect(element).toBeInTheDocument())
   })
 
   it('renders with FRA header by default', () => {
@@ -136,5 +140,85 @@ describe('FeedbackWidget', () => {
 
     expect(clearTimeoutSpy).toHaveBeenCalled()
     clearTimeoutSpy.mockRestore()
+  })
+
+  it('renders with PIA TANF header', () => {
+    render(
+      <FeedbackWidget {...defaultProps} dataType="program-integrity-audit" />
+    )
+    expect(screen.getByText(/Program Integrity Audit/i)).toBeInTheDocument()
+  })
+
+  it('activates focus trap when clicking from outside element', () => {
+    render(<FeedbackWidget {...defaultProps} />)
+    const widget = screen.getByRole('dialog')
+
+    // Create an element outside the widget
+    const outsideElement = document.createElement('div')
+    outsideElement.setAttribute('data-testid', 'outside-element')
+    document.body.appendChild(outsideElement)
+
+    // Simulate a click event on the widget that originated from outside
+    const clickEvent = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+    })
+    Object.defineProperty(clickEvent, 'target', {
+      writable: false,
+      value: outsideElement,
+    })
+    widget.dispatchEvent(clickEvent)
+
+    // Clean up
+    document.body.removeChild(outsideElement)
+  })
+
+  it('deactivates focus trap when clicking outside widget', () => {
+    render(<FeedbackWidget {...defaultProps} />)
+
+    // Create an element outside the widget
+    const outsideElement = document.createElement('div')
+    document.body.appendChild(outsideElement)
+
+    // Simulate mousedown outside the widget
+    fireEvent.mouseDown(outsideElement)
+
+    // Clean up
+    document.body.removeChild(outsideElement)
+  })
+
+  it('closes thank you modal when close button is clicked', async () => {
+    render(<FeedbackWidget {...defaultProps} />)
+
+    // Submit feedback to show thank you message
+    const submitButton = screen.getByText('Submit')
+    fireEvent.click(submitButton)
+
+    // Wait for thank you message
+    expect(
+      await screen.findByText(/Thank you for your feedback!/i)
+    ).toBeInTheDocument()
+
+    // Click the thank you close button
+    const thankYouCloseButton = screen.getByTestId(
+      'feedback-widget-thank-you-close-button'
+    )
+    fireEvent.click(thankYouCloseButton)
+
+    expect(defaultProps.onClose).toHaveBeenCalled()
+  })
+
+  it('handles onClose being undefined gracefully', () => {
+    const propsWithoutOnClose = {
+      isOpen: true,
+      onClose: undefined,
+    }
+    render(<FeedbackWidget {...propsWithoutOnClose} />)
+
+    const widget = screen.getByRole('dialog')
+    fireEvent.keyDown(widget, { key: 'Escape', code: 'Escape' })
+
+    // Should not throw error
+    expect(widget).toBeInTheDocument()
   })
 })

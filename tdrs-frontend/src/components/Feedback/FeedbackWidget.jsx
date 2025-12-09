@@ -7,6 +7,7 @@ import {
   FRA_DATA_UPLOAD_FEEDBACK_HEADER,
   SSP_MOE_DATA_UPLOAD_FEEDBACK_HEADER,
   TANF_DATA_UPLOAD_FEEDBACK_HEADER,
+  PIA_TANF_DATA_UPLOAD_FEEDBACK_HEADER,
 } from './FeedbackConstants'
 
 const FeedbackWidget = React.forwardRef(
@@ -18,6 +19,7 @@ const FeedbackWidget = React.forwardRef(
     const timerRef = useRef(null)
     const widgetRef = useRef(null)
     const headerRef = useRef(null)
+    const thankYouHeadingRef = useRef(null)
     const { onKeyDown } = useFocusTrap({
       containerRef: widgetRef,
       isActive: isFocusTrapActive,
@@ -43,6 +45,8 @@ const FeedbackWidget = React.forwardRef(
     const getFeedbackWidgetHeader = () => {
       if (dataType === 'tanf') {
         return TANF_DATA_UPLOAD_FEEDBACK_HEADER
+      } else if (dataType === 'program-integrity-audit') {
+        return PIA_TANF_DATA_UPLOAD_FEEDBACK_HEADER
       } else if (dataType === 'ssp-moe') {
         return SSP_MOE_DATA_UPLOAD_FEEDBACK_HEADER
       } else {
@@ -74,7 +78,12 @@ const FeedbackWidget = React.forwardRef(
     }, [])
 
     const handleRequestSuccess = () => {
-      // Close modal after short delay
+      // Focus the thank-you heading once the view updates
+      setTimeout(() => {
+        thankYouHeadingRef.current?.focus()
+      }, 0)
+
+      // Then schedule widget closure
       timerRef.current = setTimeout(() => {
         setShowSpinner(false)
         setIsFeedbackSubmitted(false)
@@ -105,6 +114,7 @@ const FeedbackWidget = React.forwardRef(
         role="dialog"
         aria-modal="true"
         aria-labelledby="feedbackWidgetHeader"
+        aria-describedby="feedbackWidgetDesc"
         onClick={handleWidgetClick}
         onKeyDown={handleKeyDown}
       >
@@ -139,48 +149,61 @@ const FeedbackWidget = React.forwardRef(
                   <img src={closeIcon} alt="X" />
                 </button>
               </div>
+              <span id="feedbackWidgetDesc" className="usa-sr-only">
+                {`How was your experience uploading ${dataType} data? Navigate to the end of the page footer to give feedback.`}
+              </span>
               <FeedbackForm
                 isGeneralFeedback={false}
                 onFeedbackSubmit={handleFeedbackSubmit}
                 onRequestSuccess={handleRequestSuccess}
                 onRequestError={handleRequestError}
+                dataType={dataType}
               />
             </>
           ) : (
-            <div className="feedback-widget-thank-you-header">
-              <p
-                id="feedbackWidgetHeader"
-                className="font-serif-xs margin-left-0 text-normal"
-              >
-                Thank you for your feedback!
-              </p>
-              {showSpinner && (
-                <span
-                  className="spinner margin-left-1"
-                  aria-label="Loading"
-                  aria-hidden={true}
-                  role="status"
-                />
-              )}
-              <button
-                data-testid="feedback-widget-thank-you-close-button"
-                type="button"
-                className="usa-modal__close feedback-modal-close-button"
-                aria-label="Close feedback widget"
-                style={{
-                  padding: '0',
-                  alignSelf: 'center',
-                  marginTop: '0',
-                }}
-                onClick={onClose}
-              >
-                <img
-                  src={closeIcon}
-                  alt="X"
-                  style={{ width: '14px', height: 'auto' }}
-                />
-              </button>
-            </div>
+            <>
+              <span id="widgetThankYouDesc" className="usa-sr-only">
+                Your feedback helps us improve the TANF Data Portal. This
+                message will close automatically.
+              </span>
+              <div className="feedback-widget-thank-you-header">
+                <p
+                  ref={thankYouHeadingRef}
+                  id="feedbackThankYouWidgetHeader"
+                  className="font-serif-xs margin-left-0 text-normal no-focus-outline"
+                  tabIndex={-1}
+                  aria-describedby="widgetThankYouDesc"
+                >
+                  Thank you for your feedback!
+                </p>
+                {showSpinner && (
+                  <span
+                    className="spinner margin-left-1"
+                    aria-label="Loading"
+                    aria-hidden={true}
+                    role="status"
+                  />
+                )}
+                <button
+                  data-testid="feedback-widget-thank-you-close-button"
+                  type="button"
+                  className="usa-modal__close feedback-modal-close-button"
+                  aria-label="Close feedback widget"
+                  style={{
+                    padding: '0',
+                    alignSelf: 'center',
+                    marginTop: '0',
+                  }}
+                  onClick={onClose}
+                >
+                  <img
+                    src={closeIcon}
+                    alt="X"
+                    style={{ width: '14px', height: 'auto' }}
+                  />
+                </button>
+              </div>
+            </>
           )}
         </div>
       </div>

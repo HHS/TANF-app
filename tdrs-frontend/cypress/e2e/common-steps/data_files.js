@@ -10,18 +10,18 @@ export const restartAtHomePage = () => {
 }
 
 export const fillFYQ = (fiscal_year, quarter) => {
-  cy.get('#reportingYears').should('exist').select(fiscal_year)
+  cy.get('#reportingYears', { timeout: 1000 })
+    .should('exist')
+    .select(fiscal_year)
   cy.get('#quarter').should('exist').select(quarter)
-  cy.get('button').contains('Search').should('exist').click()
   cy.get('.usa-file-input__input', { timeout: 1000 }).should('exist')
 }
 
 export const uploadFile = (file_input, file_path, willError = false) => {
   cy.get(file_input).selectFile(file_path, { action: 'drag-drop' })
-  cy.wait(100)
   if (!willError) {
     const file_parts = file_path.split('/')
-    cy.contains(file_parts[file_parts.length - 1], { timeout: 1000 }).should(
+    cy.contains(file_parts[file_parts.length - 1], { timeout: 3000 }).should(
       'exist'
     )
   }
@@ -40,7 +40,7 @@ export const validateSmallCorrectFile = () => {
 export const validateSmallSSPFile = () => {
   table_first_row_contains('small_ssp_section1.txt')
   table_first_row_contains('Partially Accepted with Errors')
-  table_first_row_contains('2024-Q1-SSP Active Case Data Error Report.xlsx')
+  table_first_row_contains('2024-Q1-Active Case Data Error Report.xlsx')
 }
 
 export const validateFraCsv = () => {
@@ -57,7 +57,7 @@ export const downloadErrorReport = (error_report_name) => {
 }
 
 export const fillSttFyQ = (stt, fy, q, isTanf, isRegional) => {
-  cy.get('#stt')
+  cy.get('#stt', { timeout: 1000 })
     .type(stt + '{enter}')
     .then(() => {
       if (isTanf) {
@@ -67,7 +67,6 @@ export const fillSttFyQ = (stt, fy, q, isTanf, isRegional) => {
       }
       cy.get('#reportingYears').should('exist').select(fy)
       cy.get('#quarter').should('exist').select(q)
-      cy.get('button').contains('Search').should('exist').click()
       if (!isRegional) {
         cy.get('.usa-file-input__input', { timeout: 1000 }).should('exist')
       } else {
@@ -78,25 +77,30 @@ export const fillSttFyQ = (stt, fy, q, isTanf, isRegional) => {
 }
 
 export const fillSttFyQNoProgramSelector = (stt, fy, q) => {
-  cy.get('#stt')
+  cy.get('#stt', { timeout: 1000 })
     .type(stt + '{enter}')
     .then(() => {
       cy.get('#reportingYears').should('exist').select(fy)
       cy.get('#quarter').should('exist').select(q)
-      cy.get('button').contains('Search').should('exist').click()
       cy.get('.usa-file-input__input', { timeout: 1000 }).should('exist')
     })
 }
 
 export const fillFyQProgram = (fy, q, program) => {
+  cy.contains(program, { timeout: 1000 }).should('exist')
   if (program === 'TANF') {
-    cy.get(':nth-child(2) > .usa-radio__label').click()
+    cy.get(':nth-child(2) > .usa-radio__label', { timeout: 1000 })
+      .contains(program)
+      .should('exist')
+    cy.get(':nth-child(2) > .usa-radio__label', { timeout: 1000 }).click()
   } else {
-    cy.get(':nth-child(3) > .usa-radio__label').click()
+    cy.get(':nth-child(3) > .usa-radio__label')
+      .contains(program, { timeout: 1000 })
+      .should('exist')
+    cy.get(':nth-child(3) > .usa-radio__label', { timeout: 1000 }).click()
   }
   cy.get('#reportingYears').should('exist').select(fy)
   cy.get('#quarter').should('exist').select(q)
-  cy.get('button').contains('Search').should('exist').click()
   cy.get('.usa-file-input__input', { timeout: 1000 }).should('exist')
 }
 
@@ -160,7 +164,6 @@ export const openDataFilesAndSearch = (program, year, quarter, stt = '') => {
 
   cy.get('#reportingYears').should('exist').select(year)
   cy.get('#quarter').should('exist').select(quarter) // Q1, Q2, Q3, Q4
-  cy.get('button').contains('Search').should('exist').click()
 }
 
 export const uploadSectionFile = (
@@ -217,31 +220,17 @@ export const getLatestSubmissionHistoryRow = (section) => {
 }
 
 export const downloadErrorReportAndAssert = (
-  program,
   section,
   year,
   quarter,
   deleteAfter = true
 ) => {
-  const ERROR_REPORT_LABEL = {
-    TANF: {
-      1: 'Active Case Data',
-      2: 'Closed Case Data',
-      3: 'Aggregate Data',
-      4: 'Stratum Data',
-    },
-    SSP: {
-      1: 'SSP Active Case Data',
-      2: 'SSP Closed Case Data',
-      3: 'SSP Aggregate Data',
-      4: 'SSP Stratum Data',
-    },
-    TRIBAL: {
-      1: 'Tribal Active Case Data',
-      2: 'Tribal Closed Case Data',
-      3: 'Tribal Aggregate Data',
-    },
-  }
+  const ERROR_REPORT_LABELS = [
+    'Active Case Data',
+    'Closed Case Data',
+    'Aggregate Data',
+    'Stratum Data',
+  ]
 
   // Download error report
   cy.intercept('GET', '/v1/data_files/*/download_error_report/').as(
@@ -251,7 +240,7 @@ export const downloadErrorReportAndAssert = (
   cy.wait('@downloadErrorReport').its('response.statusCode').should('eq', 200)
 
   // Assert Error Report successfully downloaded
-  const fileName = `${year}-${quarter}-${ERROR_REPORT_LABEL[program][section]} Error Report.xlsx`
+  const fileName = `${year}-${quarter}-${ERROR_REPORT_LABELS[section - 1]} Error Report.xlsx`
   const downloadedFilePath = `${Cypress.config('downloadsFolder')}/${fileName}`
 
   cy.readFile(downloadedFilePath, { timeout: 30000 }).should('exist')
@@ -273,8 +262,6 @@ Then(
   (username, year, quarter) => {
     cy.get('#reportingYears').should('exist').select(year)
     cy.get('#quarter').should('exist').select(quarter) // Q1, Q2, Q3, Q4
-    cy.get('button').contains('Search').should('exist')
-    cy.get('button').contains('Search').should('exist').click()
   }
 )
 

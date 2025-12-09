@@ -27,6 +27,7 @@ admin.autodiscover()
 admin.site.login = login_required(admin.site.login)
 admin.site.site_header = "Django administration"
 
+
 # http://www.django-rest-framework.org/api-guide/routers/#defaultrouter
 urlpatterns = [
     # TODO: Update redirect path in login.gov to standardize all the login urls.
@@ -40,6 +41,7 @@ urlpatterns = [
     path("", include("tdpservice.users.urls")),
     path("stts/", include("tdpservice.stts.urls")),
     path("data_files/", include("tdpservice.data_files.urls")),
+    path("reports/", include("tdpservice.reports.urls")),
     path("logs/", write_logs),
     path("security/", include("tdpservice.security.urls")),
 ]
