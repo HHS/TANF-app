@@ -118,6 +118,14 @@ def send_data_submitted_email(
 
     if datafile_summary.status == DataFileSummary.Status.PENDING:
         return
+    elif datafile_summary.status == DataFileSummary.Status.ACCEPTED:
+        subject = f"{section_name} Successfully Submitted Without Errors"
+        text_message = f"{file_type} has been submitted and processed without errors."
+    else:
+        subject = f"Action Required: {section_name} Contains Errors"
+        text_message = f"{file_type} has been submitted and processed with errors."
+
+    context.update({"subject": subject})
 
     match prog_type:
         case (
@@ -127,62 +135,26 @@ def send_data_submitted_email(
         ):
             context.update(get_tanf_aggregates_context_count(datafile_summary))
 
-            match datafile_summary.status:
-                case DataFileSummary.Status.ACCEPTED:
-                    template_path = TanfDataFileEmail.ACCEPTED.value
-                    subject = f"{section_name} Successfully Submitted Without Errors"
-                    text_message = (
-                        f"{file_type} has been submitted and processed without errors."
-                    )
-                case DataFileSummary.Status.ACCEPTED_WITH_ERRORS:
-                    template_path = TanfDataFileEmail.ACCEPTED_WITH_ERRORS.value
-                    subject = f"Action Required: {section_name} Contains Errors"
-                    text_message = (
-                        f"{file_type} has been submitted and processed with errors."
-                    )
-                case DataFileSummary.Status.PARTIALLY_ACCEPTED:
-                    template_path = TanfDataFileEmail.PARTIALLY_ACCEPTED.value
-                    subject = f"Action Required: {section_name} Contains Errors"
-                    text_message = (
-                        f"{file_type} has been submitted and processed with errors."
-                    )
-                case DataFileSummary.Status.REJECTED:
-                    template_path = TanfDataFileEmail.REJECTED.value
-                    subject = f"Action Required: {section_name} Contains Errors"
-                    text_message = (
-                        f"{file_type} has been submitted and processed with errors."
-                    )
+            template_options = {
+                DataFileSummary.Status.ACCEPTED: TanfDataFileEmail.ACCEPTED.value,
+                DataFileSummary.Status.ACCEPTED_WITH_ERRORS: TanfDataFileEmail.ACCEPTED_WITH_ERRORS.value,
+                DataFileSummary.Status.PARTIALLY_ACCEPTED: TanfDataFileEmail.PARTIALLY_ACCEPTED.value,
+                DataFileSummary.Status.REJECTED: TanfDataFileEmail.REJECTED.value,
+            }
+
+            template_path = template_options[datafile_summary.status]
 
         case DataFile.ProgramType.FRA:
             context.update(get_fra_aggregates_context_count(datafile_summary))
 
-            match datafile_summary.status:
-                case DataFileSummary.Status.ACCEPTED:
-                    template_path = FraDataFileEmail.ACCEPTED.value
-                    subject = f"{section_name} Successfully Submitted Without Errors"
-                    text_message = (
-                        f"{file_type} has been submitted and processed without errors."
-                    )
-                case DataFileSummary.Status.ACCEPTED_WITH_ERRORS:
-                    template_path = FraDataFileEmail.ACCEPTED_WITH_ERRORS.value
-                    subject = f"Action Required: {section_name} Contains Errors"
-                    text_message = (
-                        f"{file_type} has been submitted and processed with errors."
-                    )
-                case DataFileSummary.Status.PARTIALLY_ACCEPTED:
-                    template_path = FraDataFileEmail.PARTIALLY_ACCEPTED.value
-                    subject = f"Action Required: {section_name} Contains Errors"
-                    text_message = (
-                        f"{file_type} has been submitted and processed with errors."
-                    )
-                case DataFileSummary.Status.REJECTED:
-                    template_path = FraDataFileEmail.REJECTED.value
-                    subject = f"Action Required: {section_name} Contains Errors"
-                    text_message = (
-                        f"{file_type} has been submitted and processed with errors."
-                    )
+            template_options = {
+                DataFileSummary.Status.ACCEPTED: FraDataFileEmail.ACCEPTED.value,
+                DataFileSummary.Status.ACCEPTED_WITH_ERRORS: FraDataFileEmail.ACCEPTED_WITH_ERRORS.value,
+                DataFileSummary.Status.PARTIALLY_ACCEPTED: FraDataFileEmail.PARTIALLY_ACCEPTED.value,
+                DataFileSummary.Status.REJECTED: FraDataFileEmail.REJECTED.value,
+            }
 
-    context.update({"subject": subject})
+            template_path = template_options[datafile_summary.status]
 
     log(
         f"Data file submitted; emailing Data Analysts {list(recipients)}",
