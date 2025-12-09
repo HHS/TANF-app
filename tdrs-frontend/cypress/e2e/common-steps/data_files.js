@@ -26,7 +26,9 @@ export const uploadFile = (file_input, file_path, willError = false) => {
       'exist'
     )
     cy.get('.usa-alert__text').should('not.exist')
-    cy.wait(5000)
+    cy.get('button')
+      .contains('Submit')
+      .should('not.be.disabled', { timeout: 5000 })
   }
 }
 
