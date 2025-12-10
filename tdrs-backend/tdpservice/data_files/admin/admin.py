@@ -18,7 +18,6 @@ from tdpservice.data_files.s3_client import S3Client
 from tdpservice.data_files.tasks import reparse_files
 from tdpservice.log_handler import S3FileHandler
 from tdpservice.parsers.models import DataFileSummary, ParserError
-from tdpservice.users.models import AccountApprovalStatusChoices
 
 logger = logging.getLogger(__name__)
 
@@ -146,13 +145,10 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         if not (request.user.has_fra_access or request.user.is_an_admin):
             filtered_for_fra = qs.exclude(
                 section__in=DataFile.get_fra_section_list(),
-                user__account_approval_status=AccountApprovalStatusChoices.DEACTIVATED
             )
             return filtered_for_fra
         else:
-            return qs.exclude(
-                user__account_approval_status=AccountApprovalStatusChoices.DEACTIVATED
-            )
+            return qs
 
     def reparse(self, request, queryset):
         """Reparse the selected data files."""
