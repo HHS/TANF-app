@@ -3,7 +3,6 @@ from django.contrib import admin
 
 from tdpservice.core.admin import ReadOnlyAdminMixin
 from tdpservice.security.models import ClamAVFileScan, OwaspZapScan, SecurityEventToken
-from tdpservice.users.models import AccountApprovalStatusChoices
 
 
 @admin.register(ClamAVFileScan)

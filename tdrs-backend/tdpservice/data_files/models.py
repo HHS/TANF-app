@@ -16,6 +16,7 @@ from django.utils.html import format_html
 
 from tdpservice.backends import DataFilesS3Storage
 from tdpservice.common.models import FileRecord
+from tdpservice.data_files.util import create_s3_log_file_path
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
 
@@ -56,7 +57,7 @@ def get_file_shasum(file: Union[File, StringIO]) -> str:
 def get_s3_upload_path(instance, filename):
     """Produce a unique upload path for S3 files for a given STT and Quarter."""
     return os.path.join(
-        f"data_files/{instance.year}/{instance.quarter}/{instance.stt.id}/{instance.section}/",
+        f"data_files/{instance.year}/{instance.quarter}/{instance.stt.id}/{instance.program_type}/{instance.section}/",
         filename,
     )
 
@@ -82,6 +83,7 @@ class ReparseFileMeta(models.Model):
 
     num_records_created = models.PositiveIntegerField(default=0)
     cat_4_errors_generated = models.PositiveIntegerField(default=0)
+
 
 class DataFile(FileRecord):
     """Represents a version of a data file."""
@@ -191,7 +193,16 @@ class DataFile(FileRecord):
     @property
     def filename(self):
         """Return the correct filename for this data file."""
-        return self.stt.filenames.get(self.section, None)
+        if self.program_type in [DataFile.ProgramType.FRA, DataFile.ProgramType.TANF]:
+            return self.stt.filenames.get(self.section, None)
+
+        program_type = (
+            self.program_type.title()
+            if self.program_type == DataFile.ProgramType.TRIBAL
+            else self.program_type
+        )
+        key = f"{program_type} {self.section}"
+        return self.stt.filenames.get(key, None)
 
     @property
     def s3_location(self):
@@ -232,10 +243,7 @@ class DataFile(FileRecord):
         LOG_PRE_FIX = "v1/data_files/logs"
         DOMAIN = settings.FRONTEND_BASE_URL
         if datafile:
-            link = (
-                f"{LOG_PRE_FIX}/{datafile.year}/{datafile.quarter}/"
-                f"{datafile.stt}/{datafile.section}"
-            )
+            link = f"{LOG_PRE_FIX}/{create_s3_log_file_path(datafile)}"
             url = f"{DOMAIN}/{link}"  # Replace with your actual S3 URL
             return format_html(
                 "<a href='{url}'>{field}</a>", field="Parser logs", url=url

@@ -10,7 +10,7 @@ from django.db.models import Count, Q
 import xlsxwriter
 
 from tdpservice.data_files.models import DataFile
-from tdpservice.data_files.util import ParserErrorCategoryChoices
+from tdpservice.data_files.parser_error_choices import ParserErrorCategoryChoices
 from tdpservice.parsers.models import ParserError
 
 
