@@ -18,7 +18,6 @@ from tdpservice.data_files.s3_client import S3Client
 from tdpservice.data_files.tasks import reparse_files
 from tdpservice.log_handler import S3FileHandler
 from tdpservice.parsers.models import DataFileSummary, ParserError
-from tdpservice.users.models import AccountApprovalStatusChoices
 
 logger = logging.getLogger(__name__)
 
