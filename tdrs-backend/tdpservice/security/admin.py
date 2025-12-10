@@ -30,11 +30,6 @@ class ClamAVFileScanAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         """Return human friendly file size, converted to appropriate unit."""
         return obj.file_size_humanized
 
-    def get_queryset(self, request):
-        """Override to exclude scans uploaded by deactivated users."""
-        qs = super().get_queryset(request)
-        return qs.exclude(uploaded_by__account_approval_status=AccountApprovalStatusChoices.DEACTIVATED)
-
 
 @admin.register(OwaspZapScan)
 class OwaspZapScanAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
@@ -53,11 +48,6 @@ class OwaspZapScanAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "scanned_at",
         "app_target",
     ]
-
-    def get_queryset(self, request):
-        """Override to exclude scans uploaded by deactivated users."""
-        qs = super().get_queryset(request)
-        return qs.exclude(uploaded_by__account_approval_status=AccountApprovalStatusChoices.DEACTIVATED)
 
 
 @admin.register(SecurityEventToken)

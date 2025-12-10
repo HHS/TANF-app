@@ -146,13 +146,10 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         if not (request.user.has_fra_access or request.user.is_an_admin):
             filtered_for_fra = qs.exclude(
                 section__in=DataFile.get_fra_section_list(),
-                user__account_approval_status=AccountApprovalStatusChoices.DEACTIVATED
             )
             return filtered_for_fra
         else:
-            return qs.exclude(
-                user__account_approval_status=AccountApprovalStatusChoices.DEACTIVATED
-            )
+            return qs
 
     def reparse(self, request, queryset):
         """Reparse the selected data files."""
