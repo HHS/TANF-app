@@ -16,6 +16,7 @@ CWD = os.path.dirname(os.path.abspath(__file__))
 
 query_template = """
 SELECT {fields}
+    data_files.program_type,
     data_files.section,
     data_files.version,
     data_files.year,
@@ -40,6 +41,7 @@ INNER JOIN
             stt_id, section, year, quarter                                 -- Group by columns
     ) most_recent
         ON data_files.stt_id = most_recent.stt_id
+        AND data_files.program_type = most_recent.program_type,
         AND data_files.section = most_recent.section
         AND data_files.version = most_recent.version
         AND data_files.year = most_recent.year
