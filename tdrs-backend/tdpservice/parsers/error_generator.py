@@ -4,7 +4,7 @@ from enum import Enum
 
 from django.contrib.contenttypes.models import ContentType
 
-from tdpservice.parsers.models import ParserErrorCategoryChoices
+from tdpservice.data_files.parser_error_choices import ParserErrorCategoryChoices
 
 from .dataclasses import ErrorGeneratorArgs
 from .models import ParserError
