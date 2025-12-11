@@ -15,6 +15,7 @@ from ..serializers import UserProfileSerializer
 
 logger = logging.getLogger(__name__)
 
+
 class AuthorizationCheck(APIView):
     """Check if user is authorized."""
 
@@ -53,7 +54,7 @@ class AuthorizationCheck(APIView):
             return res
         else:
             logger.info("Auth check FAIL for user on %s", timezone.now())
-            return Response({"authenticated": False})
+            return Response({"authenticated": False, "csrf": csrf.get_token(request)})
 
 
 class PlgAuthorizationCheck(APIView):

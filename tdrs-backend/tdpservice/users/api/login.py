@@ -17,6 +17,7 @@ from rest_framework.response import Response
 
 from tdpservice.core.utils import log
 from tdpservice.security.models import SecurityEventToken, SecurityEventType
+from tdpservice.users.models import AccountApprovalStatusChoices
 from tdpservice.users.serializers import UserSerializer
 
 from ..authentication import CustomAuthentication
@@ -28,7 +29,6 @@ from .utils import (
     response_redirect,
     validate_nonce_and_state,
 )
-from tdpservice.users.models import AccountApprovalStatusChoices
 
 logger = logging.getLogger(__name__)
 
@@ -217,7 +217,10 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         # corresponding emails externally.
         user = CustomAuthentication.authenticate(**auth_options)
         logging.debug("user obj:{}".format(user))
-        if user and (not user.is_active or user.account_approval_status == AccountApprovalStatusChoices.DEACTIVATED):
+        if user and (
+            not user.is_active
+            or user.account_approval_status == AccountApprovalStatusChoices.DEACTIVATED
+        ):
             raise InactiveUser(
                 f"Login failed, user account is inactive: {user.username}"
             )
@@ -443,7 +446,7 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
 
 
 class CypressLoginDotGovAuthenticationOverride(TokenAuthorizationOIDC):
-    """Override Login.dov authentication for Cypress users."""
+    """Override Login.gov authentication for Cypress users."""
 
     def post(self, request):
         """Create a session for the specified user, if they exist."""
