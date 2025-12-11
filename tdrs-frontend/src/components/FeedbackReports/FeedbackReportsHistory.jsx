@@ -48,7 +48,20 @@ function FeedbackReportsHistory({ data, formatDateTime }) {
           </tbody>
         </>
       ) : (
-        <span>No data available.</span>
+        <tbody>
+          <tr>
+            <td
+              colSpan="6"
+              style={{
+                border: '0',
+                backgroundColor: 'white',
+                padding: '0',
+              }}
+            >
+              No data available.
+            </td>
+          </tr>
+        </tbody>
       )}
     </table>
   )

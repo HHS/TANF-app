@@ -21,58 +21,28 @@ describe('FeedbackReportsHistory', () => {
 
   const renderComponent = (props = {}) => {
     const defaultProps = {
-      uploadHistory: [],
-      isLoading: false,
+      data: [],
       formatDateTime: mockFormatDateTime,
     }
     return render(<FeedbackReportsHistory {...defaultProps} {...props} />)
   }
 
-  describe('Loading State', () => {
-    it('shows loading state when isLoading is true', () => {
-      renderComponent({ isLoading: true })
-
-      expect(screen.getByText('Loading upload history...')).toBeInTheDocument()
-    })
-
-    it('shows loading text with correct classes', () => {
-      const { container } = renderComponent({ isLoading: true })
-
-      const loadingDiv = container.querySelector('.padding-y-3.text-center')
-      expect(loadingDiv).toBeInTheDocument()
-    })
-
-    it('does not show table when loading', () => {
-      renderComponent({ isLoading: true })
-
-      expect(screen.queryByRole('table')).not.toBeInTheDocument()
-    })
-
-    it('does not show empty state when loading', () => {
-      renderComponent({ isLoading: true })
-
-      expect(
-        screen.queryByText('No data available.')
-      ).not.toBeInTheDocument()
-    })
-  })
-
   describe('Empty State', () => {
-    it('shows empty state when uploadHistory is empty array', () => {
-      renderComponent({ uploadHistory: [], isLoading: false })
+    it('shows empty state when data is empty array', () => {
+      renderComponent({ data: [] })
 
       expect(screen.getByText('No data available.')).toBeInTheDocument()
     })
 
     it('shows table with caption when empty', () => {
-      renderComponent({ uploadHistory: [], isLoading: false })
+      renderComponent({ data: [] })
 
       expect(screen.getByRole('table')).toBeInTheDocument()
       expect(screen.getByText('Upload History')).toBeInTheDocument()
     })
 
     it('does not show table headers when empty', () => {
-      renderComponent({ uploadHistory: [], isLoading: false })
+      renderComponent({ data: [] })
 
       expect(screen.queryByText('Fiscal year')).not.toBeInTheDocument()
     })
@@ -91,20 +61,20 @@ describe('FeedbackReportsHistory', () => {
       },
     ]
 
-    it('renders table when uploadHistory has data', () => {
-      renderComponent({ uploadHistory: mockData, isLoading: false })
+    it('renders table when data has entries', () => {
+      renderComponent({ data: mockData })
 
       expect(screen.getByRole('table')).toBeInTheDocument()
     })
 
     it('renders table caption', () => {
-      renderComponent({ uploadHistory: mockData, isLoading: false })
+      renderComponent({ data: mockData })
 
       expect(screen.getByText('Upload History')).toBeInTheDocument()
     })
 
     it('renders all table headers', () => {
-      renderComponent({ uploadHistory: mockData, isLoading: false })
+      renderComponent({ data: mockData })
 
       expect(screen.getByText('Fiscal year')).toBeInTheDocument()
       expect(screen.getByText('Feedback uploaded on')).toBeInTheDocument()
@@ -116,16 +86,12 @@ describe('FeedbackReportsHistory', () => {
 
     it('applies correct table classes', () => {
       const { container } = renderComponent({
-        uploadHistory: mockData,
-        isLoading: false,
+        data: mockData,
       })
 
       const table = container.querySelector('table')
       expect(table).toHaveClass('usa-table')
       expect(table).toHaveClass('usa-table--striped')
-      expect(table).toHaveClass('margin-top-4')
-      expect(table).toHaveClass('desktop:width-tablet')
-      expect(table).toHaveClass('mobile:width-full')
     })
   })
 
@@ -142,7 +108,7 @@ describe('FeedbackReportsHistory', () => {
         },
       ]
 
-      renderComponent({ uploadHistory: mockData, isLoading: false })
+      renderComponent({ data: mockData })
 
       expect(screen.getByText('2025')).toBeInTheDocument()
       expect(screen.getByText('FY2025.zip')).toBeInTheDocument()
@@ -160,7 +126,7 @@ describe('FeedbackReportsHistory', () => {
         },
       ]
 
-      renderComponent({ uploadHistory: mockData, isLoading: false })
+      renderComponent({ data: mockData })
 
       expect(mockFormatDateTime).toHaveBeenCalledWith('2025-03-05T10:31:00Z')
     })
@@ -177,7 +143,7 @@ describe('FeedbackReportsHistory', () => {
         },
       ]
 
-      renderComponent({ uploadHistory: mockData, isLoading: false })
+      renderComponent({ data: mockData })
 
       expect(mockFormatDateTime).toHaveBeenCalledWith('2025-03-05T10:41:00Z')
     })
@@ -195,7 +161,7 @@ describe('FeedbackReportsHistory', () => {
         },
       ]
 
-      renderComponent({ uploadHistory: mockData, isLoading: false })
+      renderComponent({ data: mockData })
 
       expect(screen.getByText(currentYear.toString())).toBeInTheDocument()
     })
@@ -212,7 +178,7 @@ describe('FeedbackReportsHistory', () => {
         },
       ]
 
-      renderComponent({ uploadHistory: mockData, isLoading: false })
+      renderComponent({ data: mockData })
 
       expect(screen.getByText('2024')).toBeInTheDocument()
     })
@@ -231,7 +197,7 @@ describe('FeedbackReportsHistory', () => {
         },
       ]
 
-      renderComponent({ uploadHistory: mockData, isLoading: false })
+      renderComponent({ data: mockData })
 
       const link = screen.getByText('FY2025.zip')
       expect(link).toBeInTheDocument()
@@ -253,7 +219,7 @@ describe('FeedbackReportsHistory', () => {
         },
       ]
 
-      renderComponent({ uploadHistory: mockData, isLoading: false })
+      renderComponent({ data: mockData })
 
       // File column should show N/A for null filename
       expect(screen.getByText('N/A')).toBeInTheDocument()
@@ -271,7 +237,7 @@ describe('FeedbackReportsHistory', () => {
         },
       ]
 
-      renderComponent({ uploadHistory: mockData, isLoading: false })
+      renderComponent({ data: mockData })
 
       // File column should show N/A for empty filename
       expect(screen.getByText('N/A')).toBeInTheDocument()
@@ -307,7 +273,7 @@ describe('FeedbackReportsHistory', () => {
         },
       ]
 
-      renderComponent({ uploadHistory: mockData, isLoading: false })
+      renderComponent({ data: mockData })
 
       expect(screen.getByText('FY2025_Q1.zip')).toBeInTheDocument()
       expect(screen.getByText('FY2025_Q2.zip')).toBeInTheDocument()
@@ -335,8 +301,7 @@ describe('FeedbackReportsHistory', () => {
       ]
 
       const { container } = renderComponent({
-        uploadHistory: mockData,
-        isLoading: false,
+        data: mockData,
       })
 
       const rows = container.querySelectorAll('tbody tr')
@@ -357,7 +322,7 @@ describe('FeedbackReportsHistory', () => {
         },
       ]
 
-      renderComponent({ uploadHistory: mockData, isLoading: false })
+      renderComponent({ data: mockData })
 
       expect(mockFormatDateTime).toHaveBeenCalledWith(null)
       // formatDateTime returns 'N/A' for null, which gets rendered in the td
@@ -377,7 +342,7 @@ describe('FeedbackReportsHistory', () => {
         },
       ]
 
-      renderComponent({ uploadHistory: mockData, isLoading: false })
+      renderComponent({ data: mockData })
 
       // Should still render the filename link even if file URL is null
       // (or show N/A if original_filename is falsy)
@@ -399,7 +364,7 @@ describe('FeedbackReportsHistory', () => {
         },
       ]
 
-      renderComponent({ uploadHistory: mockData, isLoading: false })
+      renderComponent({ data: mockData })
 
       expect(screen.getByText('SUCCEEDED')).toBeInTheDocument()
     })
@@ -418,7 +383,7 @@ describe('FeedbackReportsHistory', () => {
         },
       ]
 
-      renderComponent({ uploadHistory: mockData, isLoading: false })
+      renderComponent({ data: mockData })
 
       expect(screen.getByText('FAILED')).toBeInTheDocument()
       expect(screen.getByText('Invalid ZIP structure')).toBeInTheDocument()
@@ -438,7 +403,7 @@ describe('FeedbackReportsHistory', () => {
         },
       ]
 
-      renderComponent({ uploadHistory: mockData, isLoading: false })
+      renderComponent({ data: mockData })
 
       expect(screen.getByText('SUCCEEDED')).toBeInTheDocument()
       expect(screen.getByText('None')).toBeInTheDocument()

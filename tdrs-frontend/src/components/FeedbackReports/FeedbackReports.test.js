@@ -40,7 +40,7 @@ describe('FeedbackReports', () => {
     jest.spyOn(authSelectors, 'accountCanViewAdmin').mockReturnValue(true)
 
     // Mock successful history fetch by default
-    axiosInstance.get.mockResolvedValue({ data: [] })
+    axiosInstance.get.mockResolvedValue({ data: { results: [] } })
 
     // Mock FileReader for async file handling
     global.FileReader = jest.fn().mockImplementation(() => ({
@@ -169,7 +169,7 @@ describe('FeedbackReports', () => {
         },
       })
 
-      axiosInstance.get.mockResolvedValue({ data: [] })
+      axiosInstance.get.mockResolvedValue({ data: { results: [] } })
 
       renderComponent()
 
@@ -337,7 +337,7 @@ describe('FeedbackReports', () => {
         },
       ]
 
-      axiosInstance.get.mockResolvedValue({ data: mockHistory })
+      axiosInstance.get.mockResolvedValue({ data: { results: mockHistory } })
 
       renderComponent()
 
@@ -353,7 +353,7 @@ describe('FeedbackReports', () => {
     })
 
     it('displays empty state when no history exists', async () => {
-      axiosInstance.get.mockResolvedValue({ data: [] })
+      axiosInstance.get.mockResolvedValue({ data: { results: [] } })
 
       renderComponent()
 
@@ -408,7 +408,7 @@ describe('FeedbackReports', () => {
         },
       ]
 
-      axiosInstance.get.mockResolvedValue({ data: mockHistory })
+      axiosInstance.get.mockResolvedValue({ data: { results: mockHistory } })
 
       renderComponent()
 
@@ -436,8 +436,8 @@ describe('FeedbackReports', () => {
 
       // Initial fetch returns empty, all subsequent calls return mockHistory
       axiosInstance.get
-        .mockResolvedValueOnce({ data: [] }) // Initial fetch
-        .mockResolvedValue({ data: mockHistory }) // All subsequent calls (including after upload)
+        .mockResolvedValueOnce({ data: { results: [] } }) // Initial fetch
+        .mockResolvedValue({ data: { results: mockHistory } }) // All subsequent calls (including after upload)
 
       renderComponent()
 
@@ -488,7 +488,7 @@ describe('FeedbackReports', () => {
         },
       ]
 
-      axiosInstance.get.mockResolvedValue({ data: mockHistory })
+      axiosInstance.get.mockResolvedValue({ data: { results: mockHistory } })
 
       renderComponent()
 
@@ -512,7 +512,7 @@ describe('FeedbackReports', () => {
         },
       ]
 
-      axiosInstance.get.mockResolvedValue({ data: mockHistory })
+      axiosInstance.get.mockResolvedValue({ data: { results: mockHistory } })
 
       renderComponent()
 
@@ -614,26 +614,6 @@ describe('FeedbackReports', () => {
       })
     })
 
-    it('handles non-paginated response (direct array)', async () => {
-      const mockHistory = [
-        {
-          id: 1,
-          year: 2025,
-          created_at: '2025-03-05T10:31:00Z',
-          processed_at: '2025-03-05T10:41:00Z',
-          original_filename: 'test.zip',
-          file: 'https://example.com/test.zip',
-        },
-      ]
-
-      axiosInstance.get.mockResolvedValue({ data: mockHistory })
-
-      renderComponent()
-
-      await waitFor(() => {
-        expect(screen.getByText('test.zip')).toBeInTheDocument()
-      })
-    })
   })
 
   describe('Year Fallback', () => {
@@ -650,7 +630,7 @@ describe('FeedbackReports', () => {
         },
       ]
 
-      axiosInstance.get.mockResolvedValue({ data: mockHistory })
+      axiosInstance.get.mockResolvedValue({ data: { results: mockHistory } })
 
       renderComponent()
 
