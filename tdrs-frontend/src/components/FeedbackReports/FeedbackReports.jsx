@@ -7,6 +7,8 @@ import createFileInputErrorState from '../../utils/createFileInputErrorState'
 import { fileInput } from '@uswds/uswds/src/js/components'
 import FeedbackReportsUpload from './FeedbackReportsUpload'
 import FeedbackReportsHistory from './FeedbackReportsHistory'
+import { PaginatedComponent } from '../Paginator/Paginator'
+import { Spinner } from '../Spinner'
 
 const INVALID_EXT_ERROR = 'File must be a .zip file'
 
@@ -224,11 +226,18 @@ function FeedbackReports() {
         />
 
         {/* Upload History Section */}
-        <FeedbackReportsHistory
-          uploadHistory={uploadHistory}
-          isLoading={historyLoading}
-          formatDateTime={formatDateTime}
-        />
+        <div className="submission-history-section usa-table-container">
+          {historyLoading ? (
+            <div className="submission-history-section-spinner margin-y-3">
+              <Spinner visible={true} />
+              <span className="margin-left-1">Loading upload history...</span>
+            </div>
+          ) : (
+            <PaginatedComponent pageSize={5} data={uploadHistory}>
+              <FeedbackReportsHistory formatDateTime={formatDateTime} />
+            </PaginatedComponent>
+          )}
+        </div>
       </div>
     </div>
   )

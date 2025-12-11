@@ -1,23 +1,16 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { Spinner } from '../Spinner'
 
 /**
  * FeedbackReportsHistory component displays the upload history table
  * with loading and empty states
  */
-function FeedbackReportsHistory({ uploadHistory, isLoading, formatDateTime }) {
-  if (isLoading) {
-    return (
-      <div className="padding-y-3 text-center">
-        <p className="text-base">Loading upload history...</p>
-      </div>
-    )
-  }
-
+function FeedbackReportsHistory({ data, formatDateTime }) {
   return (
-    <table className="usa-table usa-table--striped margin-top-4 desktop:width-tablet mobile:width-full">
+    <table className="usa-table usa-table--striped">
       <caption>Upload History</caption>
-      {uploadHistory.length > 0 ? (
+      {data && data.length > 0 ? (
         <>
           <thead>
             <tr>
@@ -30,7 +23,7 @@ function FeedbackReportsHistory({ uploadHistory, isLoading, formatDateTime }) {
             </tr>
           </thead>
           <tbody>
-            {uploadHistory.map((report) => (
+            {data.map((report) => (
               <tr key={report.id}>
                 <td>{report.year || new Date().getFullYear()}</td>
                 <td>{formatDateTime(report.created_at)}</td>
@@ -62,8 +55,7 @@ function FeedbackReportsHistory({ uploadHistory, isLoading, formatDateTime }) {
 }
 
 FeedbackReportsHistory.propTypes = {
-  uploadHistory: PropTypes.array.isRequired,
-  isLoading: PropTypes.bool.isRequired,
+  data: PropTypes.array,
   formatDateTime: PropTypes.func.isRequired,
 }
 
