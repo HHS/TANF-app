@@ -16,9 +16,9 @@ from tdpservice.data_files.admin.filters import LatestReparseEvent, VersionFilte
 from tdpservice.data_files.models import DataFile, LegacyFileTransfer
 from tdpservice.data_files.s3_client import S3Client
 from tdpservice.data_files.tasks import reparse_files
+from tdpservice.data_files.util import create_s3_log_file_path
 from tdpservice.log_handler import S3FileHandler
 from tdpservice.parsers.models import DataFileSummary, ParserError
-from tdpservice.users.models import AccountApprovalStatusChoices
 
 logger = logging.getLogger(__name__)
 
@@ -123,10 +123,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         # Remove the 'Logs' fieldset if the file doesn't exist
         datafile = obj
         if datafile:
-            link = (
-                f"{datafile.year}/{datafile.quarter}/"
-                f"{datafile.stt}/{datafile.section}"
-            )
+            link = create_s3_log_file_path(datafile)
             response = S3FileHandler.download_file(key=link)
             if response is not None:
                 return field_sets
@@ -146,13 +143,10 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         if not (request.user.has_fra_access or request.user.is_an_admin):
             filtered_for_fra = qs.exclude(
                 section__in=DataFile.get_fra_section_list(),
-                user__account_approval_status=AccountApprovalStatusChoices.DEACTIVATED
             )
             return filtered_for_fra
         else:
-            return qs.exclude(
-                user__account_approval_status=AccountApprovalStatusChoices.DEACTIVATED
-            )
+            return qs
 
     def reparse(self, request, queryset):
         """Reparse the selected data files."""
