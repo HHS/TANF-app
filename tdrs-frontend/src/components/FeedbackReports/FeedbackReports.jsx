@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import axiosInstance from '../../axios-instance'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
 import { fileInput } from '@uswds/uswds/src/js/components'
@@ -31,7 +31,7 @@ function FeedbackReports() {
   /**
    * Fetches the upload history from the backend
    */
-  const fetchUploadHistory = async () => {
+  const fetchUploadHistory = useCallback(async () => {
     setHistoryLoading(true)
     try {
       const response = await axiosInstance.get(
@@ -49,17 +49,13 @@ function FeedbackReports() {
     } finally {
       setHistoryLoading(false)
     }
-  }
+  }, [])
 
-  // Initialize USWDS file input component
+  // Initialize USWDS file input component and fetch upload history on mount
   useEffect(() => {
     fileInput.init()
-  }, [])
-
-  // Fetch upload history on component mount
-  useEffect(() => {
     fetchUploadHistory()
-  }, [])
+  }, [fetchUploadHistory])
 
   /**
    * Handles file selection from the file input
