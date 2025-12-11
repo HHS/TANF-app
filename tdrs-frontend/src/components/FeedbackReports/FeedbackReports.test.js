@@ -92,9 +92,7 @@ describe('FeedbackReports', () => {
       renderComponent()
 
       await waitFor(() => {
-        expect(
-          screen.getByText('No data available.')
-        ).toBeInTheDocument()
+        expect(screen.getByText('No data available.')).toBeInTheDocument()
       })
     })
 
@@ -354,9 +352,7 @@ describe('FeedbackReports', () => {
       renderComponent()
 
       await waitFor(() => {
-        expect(
-          screen.getByText('No data available.')
-        ).toBeInTheDocument()
+        expect(screen.getByText('No data available.')).toBeInTheDocument()
       })
     })
 
@@ -438,9 +434,7 @@ describe('FeedbackReports', () => {
       renderComponent()
 
       await waitFor(() => {
-        expect(
-          screen.getByText('No data available.')
-        ).toBeInTheDocument()
+        expect(screen.getByText('No data available.')).toBeInTheDocument()
       })
 
       const fileInput = document.querySelector('input[type="file"]')
@@ -586,7 +580,6 @@ describe('FeedbackReports', () => {
         expect(screen.getByText('test.zip')).toBeInTheDocument()
       })
     })
-
   })
 
   describe('Year Fallback', () => {
