@@ -6,6 +6,7 @@ import {
   accountCanViewGrafana,
   accountCanViewAlerts,
   selectUserPermissions,
+  accountCanViewFeedbackReports,
 } from '../../selectors/auth'
 
 const SiteMap = ({ user }) => {
@@ -16,10 +17,7 @@ const SiteMap = ({ user }) => {
 
   const permissions = useSelector(selectUserPermissions)
   const userHasFra = userIsApproved && permissions.includes('has_fra_access')
-  const userCanViewFeedbackReports =
-    userIsApproved &&
-    permissions.includes('view_reportsource') &&
-    permissions.includes('add_reportsource')
+  const userCanViewFeedbackReports = useSelector(accountCanViewFeedbackReports)
 
   return (
     <div className="margin-top-5">
