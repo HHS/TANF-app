@@ -1,8 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useSelector } from 'react-redux'
-import { Navigate } from 'react-router-dom'
 import axiosInstance from '../../axios-instance'
-import { accountCanViewAdmin } from '../../selectors/auth'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
 import { fileInput } from '@uswds/uswds/src/js/components'
 import FeedbackReportsUpload from './FeedbackReportsUpload'
@@ -30,7 +27,6 @@ function FeedbackReports() {
   const [fileError, setFileError] = useState(null)
 
   const inputRef = useRef(null)
-  const userIsAdmin = useSelector(accountCanViewAdmin)
 
   /**
    * Fetches the upload history from the backend
@@ -64,11 +60,6 @@ function FeedbackReports() {
   useEffect(() => {
     fetchUploadHistory()
   }, [])
-
-  // Redirect non-admin users (after all hooks)
-  if (!userIsAdmin) {
-    return <Navigate to="/home" />
-  }
 
   /**
    * Handles file selection from the file input

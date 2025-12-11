@@ -6,7 +6,6 @@ import configureStore from 'redux-mock-store'
 import { thunk } from 'redux-thunk'
 import FeedbackReports from './FeedbackReports'
 import axiosInstance from '../../axios-instance'
-import * as authSelectors from '../../selectors/auth'
 
 jest.mock('../../axios-instance')
 jest.mock('../../utils/createFileInputErrorState')
@@ -35,9 +34,6 @@ describe('FeedbackReports', () => {
 
     // Reset all mocks before each test
     jest.clearAllMocks()
-
-    // Mock accountCanViewAdmin selector to return true by default
-    jest.spyOn(authSelectors, 'accountCanViewAdmin').mockReturnValue(true)
 
     // Mock successful history fetch by default
     axiosInstance.get.mockResolvedValue({ data: { results: [] } })
@@ -556,29 +552,6 @@ describe('FeedbackReports', () => {
       await waitFor(() => {
         expect(uploadButton).toHaveAttribute('disabled')
       })
-    })
-  })
-
-  describe('Access Control', () => {
-    it('redirects non-admin users to /home', () => {
-      jest.spyOn(authSelectors, 'accountCanViewAdmin').mockReturnValue(false)
-
-      const { container } = renderComponent()
-
-      // Component should not render main content
-      expect(
-        container.querySelector('.feedback-reports')
-      ).not.toBeInTheDocument()
-    })
-
-    it('allows admin users to access the page', () => {
-      jest.spyOn(authSelectors, 'accountCanViewAdmin').mockReturnValue(true)
-
-      renderComponent()
-
-      expect(
-        screen.getByText(/Once submitted, TDP will distribute/)
-      ).toBeInTheDocument()
     })
   })
 
