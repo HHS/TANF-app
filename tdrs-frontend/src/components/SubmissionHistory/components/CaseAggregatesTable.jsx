@@ -91,12 +91,12 @@ const CaseAggregatesRow = ({ file, reprocessedState, isLoadingStatus }) => {
 
         <th scope="rowgroup" rowSpan={3}>
           {hasStatus && status !== 'Pending' ? (
+            file.summary?.case_aggregates?.rejected || 'N/A'
+          ) : (
             <>
               <Spinner visible={isLoadingStatus} />
               {'Pending'}
             </>
-          ) : (
-            file.summary?.case_aggregates?.rejected || 'N/A'
           )}
         </th>
 
