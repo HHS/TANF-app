@@ -114,22 +114,30 @@ function STTFeedbackReports() {
               </thead>
               <tbody>
                 <tr>
-                  <td>FY Q1</td>
+                  <td>
+                    <strong>FY Q1</strong>
+                  </td>
                   <td>Oct 1 - Dec 31</td>
                   <td>February 14</td>
                 </tr>
                 <tr>
-                  <td>FY Q2</td>
+                  <td>
+                    <strong>FY Q2</strong>
+                  </td>
                   <td>Jan 1 - Mar 31</td>
                   <td>May 15</td>
                 </tr>
                 <tr>
-                  <td>FY Q3</td>
+                  <td>
+                    <strong>FY Q3</strong>
+                  </td>
                   <td>Apr 1 - Jun 30</td>
                   <td>August 14</td>
                 </tr>
                 <tr>
-                  <td>FY Q4</td>
+                  <td>
+                    <strong>FY Q4</strong>
+                  </td>
                   <td>Jul 1 - Sep 30</td>
                   <td>November 14</td>
                 </tr>
