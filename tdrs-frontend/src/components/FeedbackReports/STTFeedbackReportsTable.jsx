@@ -81,10 +81,16 @@ function STTFeedbackReportsTable({ data, setAlert }) {
                 <td>
                   <button
                     type="button"
-                    className="usa-button usa-button--unstyled"
+                    className="usa-link"
                     onClick={() => handleDownload(report)}
                     disabled={downloadingId === report.id}
                     aria-label={`Download ${report.original_filename}`}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                      cursor: 'pointer',
+                    }}
                   >
                     {downloadingId === report.id
                       ? 'Downloading...'
