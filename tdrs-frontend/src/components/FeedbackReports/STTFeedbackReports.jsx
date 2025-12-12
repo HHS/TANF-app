@@ -13,6 +13,7 @@ function STTFeedbackReports() {
   const [reports, setReports] = useState([])
   const [loading, setLoading] = useState(false)
   const [selectedYear, setSelectedYear] = useState(getCurrentFiscalYear())
+  const [appliedYear, setAppliedYear] = useState(getCurrentFiscalYear())
   const [alert, setAlert] = useState({
     active: false,
     type: null,
@@ -51,10 +52,10 @@ function STTFeedbackReports() {
   }, [fetchReports])
 
   /**
-   * Filter reports by selected fiscal year
+   * Filter reports by applied fiscal year (only updates on Search click)
    */
   const filteredReports = reports.filter(
-    (report) => report.year === parseInt(selectedYear, 10)
+    (report) => report.year === parseInt(appliedYear, 10)
   )
 
   /**
@@ -62,6 +63,14 @@ function STTFeedbackReports() {
    */
   const handleYearChange = (e) => {
     setSelectedYear(e.target.value)
+  }
+
+  /**
+   * Handle search button click - applies the selected year filter
+   */
+  const handleSearch = () => {
+    setAppliedYear(selectedYear)
+    fetchReports()
   }
 
   return (
@@ -92,7 +101,7 @@ function STTFeedbackReports() {
               <button
                 type="button"
                 className="usa-button margin-top-2"
-                onClick={fetchReports}
+                onClick={handleSearch}
                 disabled={loading}
               >
                 Search
@@ -192,7 +201,7 @@ function STTFeedbackReports() {
 
         {/* Reports Table */}
         <div className="margin-top-4">
-          <h3>Fiscal Year {selectedYear} Feedback Reports</h3>
+          <h3>Fiscal Year {appliedYear} Feedback Reports</h3>
 
           <div className="submission-history-section usa-table-container">
             {loading ? (

@@ -194,14 +194,19 @@ describe('STTFeedbackReports', () => {
   })
 
   describe('Year Filtering', () => {
-    it('filters reports by selected year', async () => {
+    it('does not filter reports until Search is clicked', async () => {
+      const currentYear =
+        new Date().getMonth() > 8
+          ? new Date().getFullYear() + 1
+          : new Date().getFullYear()
+
       const mockReports = [
         {
           id: 1,
-          year: 2025,
+          year: currentYear,
           quarter: 'Q1',
           created_at: '2025-03-05T10:41:00Z',
-          original_filename: 'FY2025.zip',
+          original_filename: 'FYCurrent.zip',
         },
         {
           id: 2,
@@ -216,21 +221,64 @@ describe('STTFeedbackReports', () => {
 
       renderComponent()
 
-      // Initially select 2025
-      const yearSelect = screen.getByLabelText(/Fiscal Year/i)
-      fireEvent.change(yearSelect, { target: { value: '2025' } })
-
+      // Wait for initial load - should show current year's reports
       await waitFor(() => {
-        expect(screen.getByText('FY2025.zip')).toBeInTheDocument()
-        expect(screen.queryByText('FY2024.zip')).not.toBeInTheDocument()
+        expect(screen.getByText('FYCurrent.zip')).toBeInTheDocument()
+      })
+
+      // Change to 2024 - should NOT immediately change the displayed reports
+      const yearSelect = screen.getByLabelText(/Fiscal Year/i)
+      fireEvent.change(yearSelect, { target: { value: '2024' } })
+
+      // Reports should still show current year (not yet searched)
+      expect(screen.getByText('FYCurrent.zip')).toBeInTheDocument()
+      expect(screen.queryByText('FY2024.zip')).not.toBeInTheDocument()
+    })
+
+    it('filters reports by selected year when Search is clicked', async () => {
+      const currentYear =
+        new Date().getMonth() > 8
+          ? new Date().getFullYear() + 1
+          : new Date().getFullYear()
+
+      const mockReports = [
+        {
+          id: 1,
+          year: currentYear,
+          quarter: 'Q1',
+          created_at: '2025-03-05T10:41:00Z',
+          original_filename: 'FYCurrent.zip',
+        },
+        {
+          id: 2,
+          year: 2024,
+          quarter: 'Q4',
+          created_at: '2024-11-08T09:48:00Z',
+          original_filename: 'FY2024.zip',
+        },
+      ]
+
+      axiosInstance.get.mockResolvedValue({ data: { results: mockReports } })
+
+      renderComponent()
+
+      // Wait for initial load
+      await waitFor(() => {
+        expect(screen.getByText('FYCurrent.zip')).toBeInTheDocument()
       })
 
       // Change to 2024
+      const yearSelect = screen.getByLabelText(/Fiscal Year/i)
       fireEvent.change(yearSelect, { target: { value: '2024' } })
 
+      // Click Search button
+      const searchButton = screen.getByRole('button', { name: /Search/i })
+      fireEvent.click(searchButton)
+
+      // Now reports should be filtered to 2024
       await waitFor(() => {
         expect(screen.getByText('FY2024.zip')).toBeInTheDocument()
-        expect(screen.queryByText('FY2025.zip')).not.toBeInTheDocument()
+        expect(screen.queryByText('FYCurrent.zip')).not.toBeInTheDocument()
       })
     })
   })
