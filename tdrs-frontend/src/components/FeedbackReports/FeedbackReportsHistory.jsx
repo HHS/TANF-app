@@ -1,6 +1,5 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Spinner } from '../Spinner'
 
 /**
  * FeedbackReportsHistory component displays the upload history table
