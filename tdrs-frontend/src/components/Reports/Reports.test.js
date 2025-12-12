@@ -1215,7 +1215,7 @@ describe('Reports', () => {
 
     expect(queryAllByTestId('spinner')).toHaveLength(12)
     expect(getByText('testFile.txt')).toBeInTheDocument()
-    expect(queryAllByText('Pending')).toHaveLength(2)
+    expect(queryAllByText('Pending')).toHaveLength(3)
 
     jest.runOnlyPendingTimers()
 
@@ -1472,7 +1472,7 @@ describe('Reports', () => {
     expect(queryAllByTestId('spinner')).toHaveLength(20)
     expect(getByText('testFile1.txt')).toBeInTheDocument()
     expect(getByText('testFile2.txt')).toBeInTheDocument()
-    expect(queryAllByText('Pending')).toHaveLength(4)
+    expect(queryAllByText('Pending')).toHaveLength(5)
 
     jest.runOnlyPendingTimers()
 
