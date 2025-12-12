@@ -29,7 +29,8 @@ import {
   getFraSubmissionHistory,
   uploadFraReport,
   downloadOriginalSubmission,
-  pollFraSubmissionStatus,
+  getFraSubmissionStatus,
+  SET_FRA_SUBMISSION_STATUS,
 } from '../../actions/fraReports'
 import { fetchSttList } from '../../actions/sttList'
 import { RadioSelect } from '../Form'
@@ -253,7 +254,10 @@ const UploadForm = ({
     }
 
     setSelectedFile(fileToLoad)
-    inputRef.current.value = null
+
+    if (inputRef.current) {
+      inputRef.current.value = null
+    }
   }
 
   const onSubmit = (e) => {
@@ -335,16 +339,12 @@ const UploadForm = ({
   )
 }
 
-const SubmissionHistoryRow = ({ file, handleDownload, isRegionalStaff }) => {
-  const isLoadingStatus = useSelector((state) => {
-    const submissionStatuses = state.fraReports.submissionStatuses
-    if (!submissionStatuses || !submissionStatuses[file.id]) {
-      return false
-    }
-
-    return !submissionStatuses[file.id].isDone
-  })
-
+const SubmissionHistoryRow = ({
+  file,
+  isLoadingStatus,
+  handleDownload,
+  isRegionalStaff,
+}) => {
   const hasStatus = file.summary && file.summary.status
   const status = hasStatus ? file.summary.status : 'Pending'
   const errors = file.summary?.case_aggregates?.total_errors
@@ -393,35 +393,47 @@ const SubmissionHistory = ({
   sectionName,
   handleDownload,
   isRegionalStaff,
-}) => (
-  <table className="usa-table usa-table--striped">
-    <caption>{sectionName} Submission History</caption>
-    {data && data.length > 0 ? (
-      <>
-        <thead>
-          <tr>
-            <th>Submitted</th>
-            <th>File Name</th>
-            <th>Total Errors</th>
-            <th>Status</th>
-            <th>Error Report</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((file) => (
-            <SubmissionHistoryRow
-              file={file}
-              handleDownload={handleDownload}
-              isRegionalStaff={isRegionalStaff}
-            />
-          ))}
-        </tbody>
-      </>
-    ) : (
-      <span>No data available.</span>
-    )}
-  </table>
-)
+}) => {
+  const { isPolling } = useReportsContext()
+
+  const isLoadingStatus = (fileId) => {
+    if (isPolling && fileId in isPolling) {
+      return isPolling[fileId]
+    }
+    return false
+  }
+
+  return (
+    <table className="usa-table usa-table--striped">
+      <caption>{sectionName} Submission History</caption>
+      {data && data.length > 0 ? (
+        <>
+          <thead>
+            <tr>
+              <th>Submitted</th>
+              <th>File Name</th>
+              <th>Total Errors</th>
+              <th>Status</th>
+              <th>Error Report</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((file) => (
+              <SubmissionHistoryRow
+                file={file}
+                handleDownload={handleDownload}
+                isRegionalStaff={isRegionalStaff}
+                isLoadingStatus={isLoadingStatus(file.id)}
+              />
+            ))}
+          </tbody>
+        </>
+      ) : (
+        <span>No data available.</span>
+      )}
+    </table>
+  )
+}
 
 const ReportTypeSubtext = ({ reportType, reportTypeLabel }) => {
   let description = ''
@@ -511,6 +523,7 @@ const FRAReportsContent = () => {
     handleClearAll,
     handleClearFilesOnly,
     cancelPendingChange,
+    startPolling,
     getSttError,
     getFileTypeError,
   } = useReportsContext()
@@ -530,8 +543,6 @@ const FRAReportsContent = () => {
   )
 
   const dispatch = useDispatch()
-
-  const submissionStatusTimer = useRef(null)
 
   const reportTypeOptions = [
     {
@@ -633,41 +644,57 @@ const FRAReportsContent = () => {
         })
       )
 
-      const WAIT_TIME = 2000 // #
-      let statusTimeout = null
-
-      const pollSubmissionStatus = (tryNumber) => {
-        statusTimeout = setTimeout(
-          () =>
-            dispatch(
-              pollFraSubmissionStatus(
-                datafile.id,
-                tryNumber,
-                ({ summary }) =>
-                  summary && summary.status && summary.status !== 'Pending',
-                () => pollSubmissionStatus(tryNumber + 1),
-                () => {
-                  setLocalAlertState({
-                    active: true,
-                    type: 'success',
-                    message: 'Parsing complete.',
-                  })
-                },
-                (e) => {
-                  setLocalAlertState({
-                    active: true,
-                    type: 'error',
-                    message: e.message,
-                  })
-                }
-              )
-            ),
-          tryNumber === 1 ? 0 : WAIT_TIME
+      const pollFraSubmissionHistory = (datafile) => {
+        startPolling(
+          `${datafile.id}`,
+          () => getFraSubmissionStatus(datafile.id),
+          (response) => {
+            let summary = response?.data?.summary
+            return summary && summary.status && summary.status !== 'Pending'
+          },
+          (response) => {
+            dispatch({
+              type: SET_FRA_SUBMISSION_STATUS,
+              payload: {
+                datafile_id: datafile.id,
+                datafile: response?.data,
+              },
+            })
+            setLocalAlertState({
+              active: true,
+              type: 'success',
+              message: 'Parsing complete.',
+            })
+          },
+          (error) => {
+            setLocalAlertState({
+              active: true,
+              type: 'error',
+              message: error.message,
+            })
+          },
+          (onError) => {
+            onError({
+              message:
+                'Exceeded max number of tries to update submission status.',
+            })
+          }
         )
-        submissionStatusTimer.current = statusTimeout
       }
 
-      pollSubmissionStatus(1)
+      dispatch(
+        getFraSubmissionHistory(
+          {
+            stt,
+            reportType: reportTypeOptions.find(
+              (o) => o.value === fileTypeInputValue
+            ).label,
+            fiscalYear: yearInputValue,
+            fiscalQuarter: quarterInputValue,
+          },
+          () => pollFraSubmissionHistory(datafile)
+        )
+      )
     }
 
     const onFileUploadError = (error) => {
@@ -761,13 +788,6 @@ const FRAReportsContent = () => {
       alertRef.current.scrollIntoView({ behavior: 'smooth' })
     }
   }, [localAlert, alertRef])
-
-  useEffect(() => {
-    return () =>
-      submissionStatusTimer.current
-        ? clearTimeout(submissionStatusTimer.current)
-        : null
-  }, [submissionStatusTimer])
 
   return (
     <div className="page-container" style={{ position: 'relative' }}>
