@@ -446,12 +446,16 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
 
 
 class CypressLoginDotGovAuthenticationOverride(TokenAuthorizationOIDC):
-    """Override Login.gov authentication for Cypress users."""
+    """Override Login.gov authentication for Cypress users.
 
-    def post(self, request):
+    Uses GET request to mirror the real Login.gov/AMS OAuth callback flow,
+    which redirects back to the backend with query parameters.
+    """
+
+    def get(self, request):
         """Create a session for the specified user, if they exist."""
-        username = request.data.get("username", None)
-        token = request.data.get("token", None)
+        username = request.query_params.get("username", None)
+        token = request.headers.get("X-Cypress-Token", None)
 
         if not username or not (token and token == settings.CYPRESS_TOKEN):
             return Response({"error": "Required parameters not provided"}, status=400)
@@ -471,7 +475,7 @@ class CypressLoginDotGovAuthenticationOverride(TokenAuthorizationOIDC):
         )
         logger.info("cypress user %s logged in on %s", u.username, timezone.now())
 
-        response = {
+        response_data = {
             "authenticated": True,
             "user": UserSerializer(u, context={"request", request}).data,
         }
@@ -480,8 +484,8 @@ class CypressLoginDotGovAuthenticationOverride(TokenAuthorizationOIDC):
             cypress_users = User.objects.exclude(username__contains="admin").filter(
                 username__contains="cypress"
             )
-            response["users"] = [
+            response_data["users"] = [
                 {"username": user.username, "id": user.id} for user in cypress_users
             ]
 
-        return Response(response)
+        return Response(response_data)

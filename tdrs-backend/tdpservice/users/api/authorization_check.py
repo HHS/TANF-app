@@ -54,7 +54,7 @@ class AuthorizationCheck(APIView):
             return res
         else:
             logger.info("Auth check FAIL for user on %s", timezone.now())
-            return Response({"authenticated": False, "csrf": csrf.get_token(request)})
+            return Response({"authenticated": False})
 
 
 class PlgAuthorizationCheck(APIView):

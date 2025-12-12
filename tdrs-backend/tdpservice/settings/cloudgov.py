@@ -140,8 +140,13 @@ class CloudGov(Common):
         f"{AWS_S3_STATICFILES_ENDPOINT}/{AWS_S3_STATICFILES_BUCKET_NAME}/{APP_NAME}/"
     )
 
-    # HSTS settings
+    # Cookie settings
     SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SAMESITE = "None"
+    CSRF_COOKIE_SAMESITE = "None"
+
+    # HSTS settings
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
@@ -183,6 +188,9 @@ class Development(CloudGov):
         "POST",
     )
 
+    # Cookie settings
+    SESSION_COOKIE_DOMAIN = ".app.cloud.gov"
+
 
 class Staging(CloudGov):
     """Settings for applications deployed in the Cloud.gov staging space."""
@@ -208,6 +216,9 @@ class Staging(CloudGov):
         "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-staging",
     )
 
+    # Cookie settings
+    SESSION_COOKIE_DOMAIN = ".acf.hhs.gov"
+
     # Cloud.gov SET integration settings
     LOGIN_GOV_SET_AUDIENCE = os.getenv(
         "LOGIN_GOV_SET_AUDIENCE",
@@ -229,9 +240,12 @@ class Production(CloudGov):
         "OIDC_RP_CLIENT_ID", "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-prod"
     )
     ENABLE_DEVELOPER_GROUP = False
+
+    # Cookie settings
     SESSION_COOKIE_SAMESITE = "None"
     SESSION_COOKIE_DOMAIN = ".acf.hhs.gov"
     SESSION_COOKIE_PATH = "/;HttpOnly"
+
     MIDDLEWARE = ("tdpservice.middleware.SessionMiddleware", *Common.MIDDLEWARE)
 
     # CORS allowed origins

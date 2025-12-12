@@ -27,71 +27,47 @@
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
 Cypress.Commands.add('login', (username) => {
-  // First call auth_check to obtain CSRF token
   cy.request({
     method: 'GET',
-    url: `${Cypress.env('apiUrl')}/auth_check`,
-  }).then((authCheckResponse) => {
-    const csrfToken = authCheckResponse.body.csrf
+    url: `${Cypress.env('apiUrl')}/login/cypress`,
+    qs: { username },
+    headers: {
+      'X-Cypress-Token': Cypress.env('cypressToken'),
+    },
+  }).then((response) => {
+    cy.visit('/')
+    cy.window()
+      .its('store')
+      .invoke('dispatch', {
+        type: 'SET_AUTH',
+        payload: {
+          user: response?.body?.user,
+        },
+      })
 
-    cy.request({
-      method: 'POST',
-      url: `${Cypress.env('apiUrl')}/login/cypress`,
-      headers: {
-        'X-CSRFToken': csrfToken,
-        Referer: Cypress.config('baseUrl'),
-      },
-      body: {
-        username,
-        token: Cypress.env('cypressToken'),
-      },
-    }).then((response) => {
-      cy.visit('/')
-      cy.window()
-        .its('store')
-        .invoke('dispatch', {
-          type: 'SET_AUTH',
-          payload: {
-            user: response?.body?.user,
-          },
-        })
-
-      cy.getCookie('sessionid').its('value').as('userSessionId')
-      cy.getCookie('csrftoken').its('value').as('userCsrfToken')
-    })
+    cy.getCookie('sessionid').its('value').as('userSessionId')
+    cy.getCookie('csrftoken').its('value').as('userCsrfToken')
   })
 })
 
 Cypress.Commands.add('adminLogin', () => {
-  // First call auth_check to obtain CSRF token
   cy.request({
     method: 'GET',
-    url: `${Cypress.env('apiUrl')}/auth_check`,
-  }).then((authCheckResponse) => {
-    const csrfToken = authCheckResponse.body.csrf
+    url: `${Cypress.env('apiUrl')}/login/cypress`,
+    qs: { username: 'cypress-admin@teamraft.com' },
+    headers: {
+      'X-Cypress-Token': Cypress.env('cypressToken'),
+    },
+  }).then((response) => {
+    cy.getCookie('sessionid').its('value').as('adminSessionId')
+    cy.getCookie('csrftoken').its('value').as('adminCsrfToken')
 
-    cy.request({
-      method: 'POST',
-      url: `${Cypress.env('apiUrl')}/login/cypress`,
-      headers: {
-        'X-CSRFToken': csrfToken,
-        Referer: Cypress.config('baseUrl'),
-      },
-      body: {
-        username: 'cypress-admin@teamraft.com',
-        token: Cypress.env('cypressToken'),
-      },
-    }).then((response) => {
-      cy.getCookie('sessionid').its('value').as('adminSessionId')
-      cy.getCookie('csrftoken').its('value').as('adminCsrfToken')
-
-      // handle response, list of user emails/ids for use in adminConsoleFormRequest
-      cy.get(response.body.users).as('cypressUsers')
-    })
-
-    cy.clearCookie('sessionid')
-    cy.clearCookie('csrftoken')
+    // handle response, list of user emails/ids for use in adminConsoleFormRequest
+    cy.wrap(response.body.users).as('cypressUsers')
   })
+
+  cy.clearCookie('sessionid')
+  cy.clearCookie('csrftoken')
 })
 
 Cypress.Commands.add(
