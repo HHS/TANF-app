@@ -446,11 +446,7 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
 
 
 class CypressLoginDotGovAuthenticationOverride(TokenAuthorizationOIDC):
-    """Override Login.gov authentication for Cypress users.
-
-    Uses GET request to mirror the real Login.gov/AMS OAuth callback flow,
-    which redirects back to the backend with query parameters.
-    """
+    """Override Login.gov authentication for Cypress users."""
 
     def get(self, request):
         """Create a session for the specified user, if they exist."""
