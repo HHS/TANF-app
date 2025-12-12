@@ -68,71 +68,68 @@ function STTFeedbackReports() {
     <div className="feedback-reports">
       <div className="page-container" style={{ position: 'relative' }}>
         {/* Fiscal Year Selector and Reference Table */}
-        <div className="grid-row margin-top-5">
-          <div className="grid-col-4">
-            <label className="usa-label text-bold" htmlFor="fiscal-year-select">
-              Fiscal Year (October - September)*
-            </label>
-            <select
-              className="usa-select"
-              id="fiscal-year-select"
-              value={selectedYear}
-              onChange={handleYearChange}
-            >
-              {yearOptions.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
-            <button
-              type="button"
-              className="usa-button margin-top-2"
-              onClick={fetchReports}
-              disabled={loading}
-            >
-              Search
-            </button>
+        <div className="grid-row grid-gap margin-top-5">
+          <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-auto">
+            <div className="usa-form-group maxw-mobile margin-top-4">
+              <label
+                className="usa-label text-bold"
+                htmlFor="fiscal-year-select"
+              >
+                Fiscal Year (October - September)*
+              </label>
+              <select
+                className="usa-select maxw-mobile"
+                id="fiscal-year-select"
+                value={selectedYear}
+                onChange={handleYearChange}
+              >
+                {yearOptions.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                className="usa-button margin-top-2"
+                onClick={fetchReports}
+                disabled={loading}
+              >
+                Search
+              </button>
+            </div>
           </div>
 
-          <div className="grid-col-8">
-            <table className="usa-table usa-table--borderless">
+          <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
+            <table className="usa-table usa-table--striped margin-top-4 desktop:width-tablet mobile:width-full">
               <caption className="text-bold">
                 TANF/SSP Data Reporting Reference
               </caption>
               <thead>
                 <tr>
-                  <th>Fiscal Year (FY) & Quarter (Q)</th>
+                  <th>Fiscal Year (FY) &amp; Quarter (Q)</th>
                   <th>Calendar Period</th>
                   <th>Reporting Deadline</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td>
-                    <strong>FY Q1</strong>
-                  </td>
+                  <td>FY Q1</td>
                   <td>Oct 1 - Dec 31</td>
                   <td>February 14</td>
                 </tr>
                 <tr>
-                  <td>
-                    <strong>FY Q2</strong>
-                  </td>
+                  <td>FY Q2</td>
                   <td>Jan 1 - Mar 31</td>
                   <td>May 15</td>
                 </tr>
                 <tr>
-                  <td>
-                    <strong>FY Q3</strong>
-                  </td>
+                  <td>FY Q3</td>
                   <td>Apr 1 - Jun 30</td>
                   <td>August 14</td>
                 </tr>
                 <tr>
-                  <td>
-                    <strong>FY Q4</strong>
-                  </td>
+                  <td>FY Q4</td>
                   <td>Jul 1 - Sep 30</td>
                   <td>November 14</td>
                 </tr>
