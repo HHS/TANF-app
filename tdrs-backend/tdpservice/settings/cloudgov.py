@@ -142,8 +142,9 @@ class CloudGov(Common):
 
     # Cookie settings
     SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SAMESITE = "None"
+    SESSION_COOKIE_DOMAIN = ".app.cloud.gov"
+    CSRF_COOKIE_SECURE = True
     CSRF_COOKIE_SAMESITE = "None"
 
     # HSTS settings
@@ -187,9 +188,6 @@ class Development(CloudGov):
         "PATCH",
         "POST",
     )
-
-    # Cookie settings
-    SESSION_COOKIE_DOMAIN = ".app.cloud.gov"
 
 
 class Staging(CloudGov):
