@@ -369,6 +369,129 @@ describe('FeedbackReportsHistory', () => {
       expect(screen.getByText('SUCCEEDED')).toBeInTheDocument()
     })
 
+    it('renders clock icon for PENDING status', () => {
+      const mockData = [
+        {
+          id: 1,
+          year: 2025,
+          created_at: '2025-03-05T10:31:00Z',
+          processed_at: null,
+          status: 'PENDING',
+          original_filename: 'test.zip',
+          file: 'https://example.com/test.zip',
+        },
+      ]
+
+      const { container } = renderComponent({ data: mockData })
+
+      const icon = container.querySelector('svg')
+      expect(icon).toBeInTheDocument()
+      expect(icon).toHaveAttribute('data-icon', 'clock')
+      expect(icon).toHaveAttribute('color', '#005EA2')
+    })
+
+    it('renders clock icon for PROCESSING status', () => {
+      const mockData = [
+        {
+          id: 1,
+          year: 2025,
+          created_at: '2025-03-05T10:31:00Z',
+          processed_at: null,
+          status: 'PROCESSING',
+          original_filename: 'test.zip',
+          file: 'https://example.com/test.zip',
+        },
+      ]
+
+      const { container } = renderComponent({ data: mockData })
+
+      const icon = container.querySelector('svg')
+      expect(icon).toBeInTheDocument()
+      expect(icon).toHaveAttribute('data-icon', 'clock')
+      expect(icon).toHaveAttribute('color', '#005EA2')
+    })
+
+    it('renders check-circle icon for SUCCEEDED status', () => {
+      const mockData = [
+        {
+          id: 1,
+          year: 2025,
+          created_at: '2025-03-05T10:31:00Z',
+          processed_at: '2025-03-05T10:41:00Z',
+          status: 'SUCCEEDED',
+          original_filename: 'test.zip',
+          file: 'https://example.com/test.zip',
+        },
+      ]
+
+      const { container } = renderComponent({ data: mockData })
+
+      const icon = container.querySelector('svg')
+      expect(icon).toBeInTheDocument()
+      expect(icon).toHaveAttribute('data-icon', 'circle-check')
+      expect(icon).toHaveAttribute('color', '#40bb45')
+    })
+
+    it('renders xmark-circle icon for FAILED status', () => {
+      const mockData = [
+        {
+          id: 1,
+          year: 2025,
+          created_at: '2025-03-05T10:31:00Z',
+          processed_at: null,
+          status: 'FAILED',
+          error_message: 'Something went wrong',
+          original_filename: 'test.zip',
+          file: 'https://example.com/test.zip',
+        },
+      ]
+
+      const { container } = renderComponent({ data: mockData })
+
+      const icon = container.querySelector('svg')
+      expect(icon).toBeInTheDocument()
+      expect(icon).toHaveAttribute('data-icon', 'circle-xmark')
+      expect(icon).toHaveAttribute('color', '#bb0000')
+    })
+
+    it('renders no icon for unknown status', () => {
+      const mockData = [
+        {
+          id: 1,
+          year: 2025,
+          created_at: '2025-03-05T10:31:00Z',
+          processed_at: null,
+          status: 'UNKNOWN_STATUS',
+          original_filename: 'test.zip',
+          file: 'https://example.com/test.zip',
+        },
+      ]
+
+      const { container } = renderComponent({ data: mockData })
+
+      const icon = container.querySelector('svg')
+      expect(icon).not.toBeInTheDocument()
+    })
+
+    it('icon has margin-right-1 class', () => {
+      const mockData = [
+        {
+          id: 1,
+          year: 2025,
+          created_at: '2025-03-05T10:31:00Z',
+          processed_at: '2025-03-05T10:41:00Z',
+          status: 'SUCCEEDED',
+          original_filename: 'test.zip',
+          file: 'https://example.com/test.zip',
+        },
+      ]
+
+      const { container } = renderComponent({ data: mockData })
+
+      const icon = container.querySelector('svg')
+      expect(icon).toHaveClass('margin-right-1')
+    })
+
     it('displays error message when present', () => {
       const mockData = [
         {
