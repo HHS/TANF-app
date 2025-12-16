@@ -1,6 +1,5 @@
 import React from 'react'
-import { mount } from 'enzyme'
-import { render } from '@testing-library/react'
+import { render, fireEvent } from '@testing-library/react'
 
 import ComboBox from './ComboBox'
 
@@ -50,7 +49,7 @@ describe('ComboBox', () => {
         name: 'Arkansas',
       },
     ]
-    const wrapper = mount(
+    const { container } = render(
       <ComboBox {...props}>
         <option value="" />
         {stts.map((stt) => (
@@ -64,14 +63,11 @@ describe('ComboBox', () => {
         ))}
       </ComboBox>
     )
-    const select = wrapper.find('.usa-select')
+    const select = container.querySelector('.usa-select')
 
-    select.simulate('change', {
+    fireEvent.change(select, {
       target: {
         name: 'stt',
-        value: 'alaska',
-      },
-      detail: {
         value: 'alaska',
       },
     })
@@ -128,7 +124,7 @@ describe('ComboBox', () => {
       },
     ]
 
-    const wrapper = mount(
+    const { container } = render(
       <ComboBox {...props}>
         {stts.map((stt) => (
           <option
@@ -142,9 +138,9 @@ describe('ComboBox', () => {
       </ComboBox>
     )
 
-    const select = wrapper.find('.usa-select')
+    const select = container.querySelector('.usa-select')
 
-    select.simulate('change', {
+    fireEvent.change(select, {
       target: {
         name: 'stt',
         value: 'alaska',
