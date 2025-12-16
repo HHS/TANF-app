@@ -39,7 +39,15 @@ export const validateSmallCorrectFile = () => {
 
 export const validateSmallSSPFile = () => {
   table_first_row_contains('small_ssp_section1.txt')
-  table_first_row_contains('Partially Accepted with Errors')
+  /*
+  When we run locally/in our Docker env, the GENERATE_TRAILER_ERRORS setting is set to True
+  which generates a RECORD_PRE_CHECK_ERROR for the TRAILER record for the SSP file we use to
+  test. However, when this runs against a deployed app, the GENERATE_TRAILER_ERRORS setting
+  is set to False, so the file will be ACCEPTED_WITH_ERRORS. Hence the change to check for
+  'Accepted with Errors' with errors now since it will cover both cases with the caveat that
+  we know why the status changes for different test environments.
+  */
+  table_first_row_contains('Accepted with Errors')
   table_first_row_contains('2024-Q1-Active Case Data Error Report.xlsx')
 }
 
