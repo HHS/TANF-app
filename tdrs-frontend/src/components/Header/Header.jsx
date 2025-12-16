@@ -191,7 +191,7 @@ function Header() {
                   className={`${user && user.email ? 'display-block' : 'display-none'} usa-nav__secondary-item`}
                 >
                   {user && user.email && (
-                    <a href="/">
+                    <a href="/" className="usa-link">
                       <FontAwesomeIcon
                         className="margin-right-1"
                         icon={faUserCircle}

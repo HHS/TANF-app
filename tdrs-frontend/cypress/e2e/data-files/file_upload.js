@@ -14,7 +14,6 @@ Then(
         interception.response.body.id
       ) {
         const fileId = interception.response.body.id
-
         // Poll the API until the summary is populated
         df.waitForDataFileSummary(fileId)
         if (program === 'TANF') {

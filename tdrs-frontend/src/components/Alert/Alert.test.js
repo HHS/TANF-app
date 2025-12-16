@@ -1,6 +1,6 @@
 import React from 'react'
 import { thunk } from 'redux-thunk'
-import { mount } from 'enzyme'
+import { render, screen } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 import { ALERT_INFO, Alert } from '.'
@@ -17,14 +17,14 @@ describe('Alert.js', () => {
         body: 'more details',
       },
     })
-    const wrapper = mount(
+    render(
       <Provider store={store}>
         <Alert />
       </Provider>
     )
-    expect(wrapper.find('.usa-alert')).toExist()
-    expect(wrapper.find('h3')).toIncludeText('Hey, Look at Me!')
-    expect(wrapper.find('p')).toIncludeText('more details')
+    expect(screen.getByRole('alert')).toBeInTheDocument()
+    expect(screen.getByText('Hey, Look at Me!')).toBeInTheDocument()
+    expect(screen.getByText('more details')).toBeInTheDocument()
   })
 
   it('returns a "slim" alert if there is no body', () => {
@@ -35,22 +35,22 @@ describe('Alert.js', () => {
         heading: 'Hey, Look at Me!',
       },
     })
-    const wrapper = mount(
+    const { container } = render(
       <Provider store={store}>
         <Alert />
       </Provider>
     )
 
-    expect(wrapper.find('.usa-alert--slim')).toExist()
+    expect(container.querySelector('.usa-alert--slim')).toBeInTheDocument()
   })
 
   it('returns nothing if the "show" property is false', () => {
     const store = mockStore({ alert: { show: false } })
-    const wrapper = mount(
+    const { container } = render(
       <Provider store={store}>
         <Alert />
       </Provider>
     )
-    expect(wrapper.find('.usa-alert')).not.toExist()
+    expect(container.querySelector('.usa-alert')).not.toBeInTheDocument()
   })
 })
