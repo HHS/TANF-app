@@ -1,0 +1,182 @@
+[
+  {
+    "title": "Knowledge Center Homepage",
+    "url": "index.html",
+    "content": "Homepage: Getting Started With TDP",
+    "tags": ["start","begin"]
+  },
+  {
+    "title": "Create a New Login.gov Account",
+    "url": "create-new-login.html",
+    "content": "Step-by-step guide to creating a new Login.gov account",
+    "tags": ["account","sign up","user"]
+  },
+  {
+    "title": "Use an Existing Login.gov Account",
+    "url": "existing-login.html",
+    "content": "Step-by-step guide to using an existing login.gov account with TDP",
+    "tags": ["account","sign up","user"]
+  },
+    {
+    "title": "About Email Notifications",
+    "url": "about-email-notifications.html",
+    "content": "Step-by-step guide to creating a new login.gov account",
+    "tags": ["e-mail"]
+  },
+    {
+    "title": "Frequently Asked Questions",
+    "url": "faq.html",
+    "content": "All frequently asked questions about accessing TDP, submitting data, and bug reporting",
+    "tags": ["faq","faqs","help","problem"]
+  },
+      {
+    "title": "FAQ: Are there restrictions governing where TDP can be used?",
+    "url": "faq.html#Are there restrictions governing where TDP can be used?",
+    "content": "The TANF Data Portal can be used from any computer in the US or US Territories",
+    "ariaDescription": "Ellipses = true",
+    "tags": ["faqs"]
+  },
+      {
+    "title": "FAQ: Can multiple users on my team request access to TDP?",
+    "url": "faq.html#Can multiple users on my team request access to TDP?",
+    "content": "Yes. We're not limiting the number of users who can request access per TANF program",
+    "ariaDescription": "Ellipses = true",
+    "tags": ["faqs"]
+  },
+      {
+    "title": "FAQ: Can I access TDP with a Login.gov account that I use for other services?",
+    "url": "faq.html#Can I access TDP with a Login.gov account that I use for other services?",
+    "content": "Yes, a variety of Federal organizations utilize Login.gov",
+    "ariaDescription": "Ellipses = true",
+    "tags": ["faqs"]
+  },
+      {
+    "title": "FAQ: Can I access TDP with a Login.gov account that I use for other services?",
+    "url": "faq.html#What should I do if a member of my team should no longer have access to TDP data?",
+    "content": "If a member of your team has recently offboarded or no longer requires access to TDP & TANF data for your program, please contact us",
+    "ariaDescription": "Ellipses = true",
+    "tags": ["faqs"]
+  },
+        {
+    "title": "FAQ: Do we need to change the way we prepare our files for submission?",
+    "url": "faq.html#Do we need to change the way we prepare our files for submission?",
+    "content": "Most TANF programs should not need to make changes to the way they prepare data. However, we do require that resubmissions be made with complete rather than partial data",
+    "ariaDescription": "Ellipses = true",
+    "tags": ["faqs"]
+  },
+      {
+    "title": "FAQ: What are TDP's file update indicator requirements?",
+    "url": "faq.html#What are TDP's file update indicator requirements?",
+    "content": "The update indicator is an instruction to the system to add, update, or delete/replace records in the TDP database. 'D' is the only instruction the system accepts",
+    "ariaDescription": "Ellipses = true",
+    "tags": ["faqs"]
+  },
+      {
+    "title": "FAQ: I'm receiving an 'Invalid Extension' error when I upload my data, how do I correct it?",
+    "url": "faq.html#I'm receiving an Invalid Extension error, how do I correct it?",
+    "content": "TDP requires data files to be submitted in recognizable format but some software tools produce files which lack this information",
+    "ariaDescription": "Ellipses = true",
+    "tags": ["faqs"]
+  },
+      {
+    "title": "FAQ: How much data can I submit per day?",
+    "url": "faq.html#How much data can I submit per day?",
+    "content": "You’ll only be able to submit one quarter’s worth of data at a time, but you’re welcome to submit data for multiple quarters in sequence within the same TDP session",
+    "ariaDescription": "Ellipses = true",
+    "tags": ["faqs"]
+  },
+      {
+    "title": "FAQ: Can I submit multiple quarters of data in a single file?",
+    "url": "faq.html#Can I submit multiple quarters of data in a single file?",
+    "content": "No. Each data file can only contain data associated with the specific quarter and fiscal year you've selected to upload to on the TDP Data Files page.",
+    "tags": ["faqs"]
+  },
+      {
+    "title": "FAQ: Does “Closed Cases” mean the same thing as “Negative Cases”?",
+    "url": "faq.html#Does “Closed Cases” mean the same thing as “Negative Cases”?",
+    "content": "Yes, “Closed Cases” and “Negative Cases” both refer to Section 2 data",
+    "ariaDescription": "Ellipses = true",
+    "tags": ["faqs"]
+  },
+      {
+    "title": "FAQ: I’m not familiar with Section 4 (Stratum) data—is it required?",
+    "url": "faq.html#I’m not familiar with Section 4 (Stratum) data—is it required?",
+    "content": "No. Section 4 is only for TANF or SSP programs that submit data on a sample of their caseload rather than universe data",
+    "ariaDescription": "Ellipses = true",
+    "tags": ["faqs"]
+  },
+      {
+    "title": "FAQ: When can I expect to receive feedback on my submitted data?",
+    "url": "faq.html#When can I expect to receive feedback on my submitted data?",
+    "content": "In TDP you should receive an email from no-reply@tanfdata.acf.hhs.gov confirming that your data has been submitted shortly after submitting it",
+    "ariaDescription": "Ellipses = true",
+    "tags": ["faqs"]
+  },
+      {
+    "title": "FAQ: Where can I report a bug or other issue with TDP?",
+    "url": "faq.html#Where can I report a bug or other issue with TDP?",
+    "content": "You can anonymously submit bug reports, feedback, and ideas for making TDP better on the Give Feedback page here on the Knowledge Center",
+    "ariaDescription": "Ellipses = true",
+    "tags": ["bug","feedback","faqs"]
+  },
+      {
+    "title": "Submitting TANF Data",
+    "url": "uploading-data.html",
+    "content": "Step-by-step guide to submitting TANF data in TDP",
+    "tags": ["upload","TANF","data","files","data files","submission"]
+  },
+      {
+    "title": "Submitting FRA Data",
+    "url": "submitting-fra-data.html",
+    "content": "Step-by-step guide to submitting FRA data in TDP",
+    "tags": ["work outcomes","exiters","submission","data files","SSN","reports","social security number","ssns"]
+  },
+      {
+    "title": "Viewing Submission History",
+    "url": "view-submission-history.html",
+    "content": "Access all your previously submitted TANF data files for a given reporting period",
+    "tags": ["TANF","data files","audit"]
+  },
+      {
+    "title": "Understanding TANF Error Reports and File Structure",
+    "url": "viewing-error-reports.html",
+    "content": "How to access and interpret TANF error reports to correct errors in your data",
+    "tags": ["parsing","coding instructions","download","error type","M1","T1","M","T","header","trailer","message","pre check","ssn","social security number","SSN error","ssns"]
+  },
+      {
+    "title": "Understanding FRA Error Reports and File Structure",
+    "url": "fra-error-reports.html",
+    "content": "How to access and interpret FRA error reports to correct errors in your data",
+    "tags": ["parsing","coding instructions","download","error type","SSN","social security number","message","pre check","ssns"]
+  },
+      {
+    "title": "Resubmitting Complete Data Files",
+    "url": "complete-resubmissions.html",
+    "content": "Guidance on ensuring files you resubmit after corrections contain all cases for the reporting period, not just those modified since the original submission",
+    "tags": ["resubmssion","resubmit","data files","TANF","reports"]
+  },
+      {
+    "title": "Exporting Complete Data Using FTANF",
+    "url": "exporting-complete-data-using-ftanf.html",
+    "content": "Walkthrough of how to export complete data files rather than partial ones from FTANF",
+    "tags": ["FTANF","export","exe","resubmission"]
+  },
+      {
+    "title": "Managing Your Account",
+    "url": "managing-your-account.html",
+    "content": "Managing your account in Login.gov and on TDP's Profile page",
+    "tags": ["login.gov","profile","delete","password","user"]
+  },
+      {
+    "title": "Give Feedback",
+    "url": "give-feedback.html",
+    "content": "Give feedback on TDP or the Knowledge Center",
+    "tags": ["help","bug","contact","support","get help"]
+  },
+        {
+    "title": "Release Notes",
+    "url": "release-notes.html",
+    "content": "Find out what's new in TDP and look up all past improvements",
+    "tags": ["what's new","bug fix","updates"]
+  }
+]
