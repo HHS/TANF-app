@@ -4,6 +4,7 @@ global:
   smtp_from: 'no-reply@tanfdata.acf.hhs.gov'
   smtp_auth_username: 'apikey'
   smtp_auth_password: '{{ sendgrid_api_key }}'
+  slack_api_url: '{{ mattermost_web_hook }}'
 
 # The directory from which notification templates are read.
 templates:
@@ -32,7 +33,7 @@ route:
   repeat_interval: 5m
 
   # A default receiver
-  receiver: admin-team-emails
+  receiver: mattermost
 
   # All the above attributes are inherited by all child routes and can
   # overwritten on each.
@@ -45,12 +46,16 @@ route:
       receiver: dev-team-emails
       repeat_interval: 24h
 
-    # Send all severity CRITICAL/ERROR alerts to OFA admins
+    # Send all severity CRITICAL/ERROR alerts to OFA admin emails
     - matchers:
       - severity=~"ERROR|CRITICAL"
       receiver: admin-team-emails
       continue: true
-    # Send all severity CRITICAL/ERROR/WARNING alerts to TDP Devs
+    # Send all severity CRITICAL/ERROR/WARNING alerts to mattermost and dev team emails
+    - matchers:
+      - severity=~"ERROR|CRITICAL|WARNING"
+      receiver: mattermost
+      continue: true
     - matchers:
       - severity=~"ERROR|CRITICAL|WARNING"
       receiver: dev-team-emails
@@ -76,8 +81,6 @@ inhibit_rules:
       alertname: 'UpTime'
     equal: ['environment', 'service']
 
-
-
 receivers:
   - name: 'admin-team-emails'
     email_configs:
@@ -88,3 +91,22 @@ receivers:
     email_configs:
       - to: '{{ dev_team_emails }}'
         send_resolved: true
+
+  - name: 'mattermost'
+    slack_configs:
+      - channel: 'tdp-alerts'
+        username: 'alertmanager'
+        send_resolved: true
+        text: |-
+          {{ range .Alerts -}}
+          {{ if or (eq .Labels.severity "CRITICAL") (eq .Labels.severity "ERROR") }}
+          @here
+          {{ end }}
+          *Alert:* {{ .Annotations.title }}{{ if .Labels.severity }} - `{{ .Labels.severity }}`{{ end }}
+
+          *Description:* {{ .Annotations.description }}
+
+          *Details:*
+            {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+            {{ end }}
+          {{ end }}
