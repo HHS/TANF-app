@@ -18,12 +18,17 @@ export const fillFYQ = (fiscal_year, quarter) => {
 }
 
 export const uploadFile = (file_input, file_path, willError = false) => {
-  cy.get(file_input).selectFile(file_path, { action: 'drag-drop' })
+  cy.get('.usa-file-input__input', { timeout: 5000 }).should('exist')
+  cy.get(file_input).selectFile(file_path, { action: 'drag-drop', force: true })
   if (!willError) {
     const file_parts = file_path.split('/')
     cy.contains(file_parts[file_parts.length - 1], { timeout: 3000 }).should(
       'exist'
     )
+    cy.get('.usa-alert__text').should('not.exist')
+    cy.get('button')
+      .contains('Submit')
+      .should('not.be.disabled', { timeout: 5000 })
   }
 }
 
@@ -185,6 +190,7 @@ export const uploadSectionFile = (
   cy.get(inputSelector).selectFile(filePath, {
     action: 'drag-drop',
     timeout: 10000,
+    force: true,
   })
 
   // wait on the ui to update with the selected data file above
@@ -193,13 +199,11 @@ export const uploadSectionFile = (
       'not.have.class',
       'is-loading'
     )
-  }
-
-  cy.wait(100).then(() =>
-    cy.contains('button', 'Submit Data Files').should('be.enabled').click()
-  )
-
-  if (!shouldRejectInput) {
+    cy.get('.usa-alert__text').should('not.exist')
+    cy.get('button')
+      .contains('Submit')
+      .should('not.be.disabled', { timeout: 5000 })
+    cy.contains('button', 'Submit').should('be.enabled').click()
     cy.wait('@dataFileSubmit', { timeout: 60000 }).then(({ response }) => {
       const id = response?.body?.id
       if (!id) throw new Error('Missing data_file id in response')
