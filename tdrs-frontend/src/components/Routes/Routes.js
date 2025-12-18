@@ -29,6 +29,7 @@ const RouteProvider = ({ children }) => {
  */
 const AppRoutes = () => {
   const user = useSelector((state) => state.auth.user)
+  const sttList = useSelector((state) => state?.stts?.sttList)
   const userAccountInReview = useSelector(accountIsInReview)
 
   const [isInEditMode, setIsInEditMode] = useState(false)
@@ -39,7 +40,12 @@ const AppRoutes = () => {
       ? 'Request Submitted'
       : 'Welcome to TDP'
 
-  const profileTitle = isInEditMode ? 'Edit Profile' : 'My Profile'
+  const profileTitle = isInEditMode
+    ? userAccountInReview
+      ? 'Edit Access Request'
+      : 'Edit Profile'
+    : 'My Profile'
+  const profileType = userAccountInReview ? 'access request' : 'profile'
 
   const setEditState = (isEditing) => {
     setIsInEditMode(isEditing)
@@ -109,8 +115,9 @@ const AppRoutes = () => {
               isEditing={isInEditMode}
               onEdit={() => setEditState(true)}
               onCancel={() => setEditState(false)}
-              type="profile"
+              type={profileType}
               user={user}
+              sttList={sttList}
               setInEditMode={setEditState}
             />
           </PrivateRoute>

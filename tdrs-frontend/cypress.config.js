@@ -19,7 +19,7 @@ module.exports = defineConfig({
   },
   e2e: {
     baseUrl: 'http://localhost:3000',
-    specPattern: '**/*.feature',
+    specPattern: ['**/*.feature', 'a11y/**/*.{js,ts}'],
     env: {
       apiUrl: 'http://localhost:3000/v1',
       adminUrl: 'http://localhost:3000/admin',
