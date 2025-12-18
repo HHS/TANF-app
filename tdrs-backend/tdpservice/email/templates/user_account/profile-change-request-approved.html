@@ -1,14 +1,14 @@
-{% extends 'base.html' %}
+{% extends '../base.html' %}
 {% block content %}
 <!-- Body copy -->
 <p style="color: #000000;">
     <p>Dear {{ first_name }},</p>
 
-    <p>Your {{ field_label|lower }} change has been <strong>rejected</strong>.</p>
+    <p>Your {{ field_label|lower }} change has been <strong>approved</strong>.</p>
 
     <ul>
-      <li><p><strong>Current:</strong> {{ current_value }}</p></li>
-      <li><p><strong>Requested:</strong> {{ requested_value }}</p></li>
+      <li><p><strong>Previous:</strong> {{ current_value }}</p></li>
+      <li><p><strong>New:</strong> {{ requested_value }}</p></li>
     </ul>
 
     {% if notes %}

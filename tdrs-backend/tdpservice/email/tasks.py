@@ -14,7 +14,7 @@ from celery import shared_task
 
 from tdpservice.data_files.models import DataFile
 from tdpservice.email.email import automated_email, log
-from tdpservice.email.email_enums import EmailType
+from tdpservice.email.email_enums import DataFileEmail
 from tdpservice.email.helpers.account_access_requests import (
     send_num_access_requests_email,
 )
@@ -22,11 +22,14 @@ from tdpservice.email.helpers.account_deactivation_warning import (
     send_deactivation_warning_email,
 )
 from tdpservice.email.helpers.admin_notifications import email_admin_deactivated_user
-from tdpservice.users.models import UserChangeRequest, UserChangeRequestStatus
-
 from tdpservice.parsers.util import calendar_to_fiscal
 from tdpservice.stts.models import STT
-from tdpservice.users.models import AccountApprovalStatusChoices, User
+from tdpservice.users.models import (
+    AccountApprovalStatusChoices,
+    User,
+    UserChangeRequest,
+    UserChangeRequestStatus,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -113,22 +116,26 @@ def get_num_access_requests():
         account_approval_status=AccountApprovalStatusChoices.ACCESS_REQUEST,
     ).count()
 
+
 def get_num_permission_change_requests():
     """Return the number of users requesting permission changes."""
     number_of_user_change_requests = UserChangeRequest.objects.filter(
         status=UserChangeRequestStatus.PENDING,
         field_name__in=[
-            'has_fra_access',
-        ]).count()
+            "has_fra_access",
+        ],
+    ).count()
     return number_of_user_change_requests
+
 
 def get_num_regional_change_requests():
     """Return the number of users requesting regional changes."""
     number_of_regional_change_requests = UserChangeRequest.objects.filter(
         status=UserChangeRequestStatus.PENDING,
-        field_name='regions',
+        field_name="regions",
     ).count()
     return number_of_regional_change_requests
+
 
 @shared_task
 def email_admin_num_access_requests():
@@ -137,20 +144,22 @@ def email_admin_num_access_requests():
     num_access_requests = get_num_access_requests()
     num_permission_change_requests = get_num_permission_change_requests()
     num_regional_change_requests = get_num_regional_change_requests()
-    text_message = 'This is an automated email. Please do not reply.\n' + \
-                   'This email is to notify you of the number of users' + \
-                   ' who have requested access to the TANF Data Portal.\n' + \
-                   f'There are currently {num_access_requests} pending ' + \
-                   'access requests'
+    text_message = (
+        "This is an automated email. Please do not reply.\n"
+        + "This email is to notify you of the number of users"
+        + " who have requested access to the TANF Data Portal.\n"
+        + f"There are currently {num_access_requests} pending "
+        + "access requests"
+    )
 
     subject = "Number of Active Access Requests"
     url = f'{settings.FRONTEND_BASE_URL}{reverse("admin:users_user_changelist")}?o=-2'
     email_context = {
-        'date': datetime.today(),
-        'num_requests': num_access_requests,
-        'num_permission_change_requests' : num_permission_change_requests,
-        'num_regional_change_requests': num_regional_change_requests,
-        'admin_user_pg': url,
+        "date": datetime.today(),
+        "num_requests": num_access_requests,
+        "num_permission_change_requests": num_permission_change_requests,
+        "num_regional_change_requests": num_regional_change_requests,
+        "admin_user_pg": url,
     }
 
     send_num_access_requests_email(
@@ -191,7 +200,7 @@ def send_data_submission_reminder(due_date, reporting_period, fiscal_quarter):
         if not submitted_all_sections:
             reminder_locations.append(loc)
 
-    template_path = EmailType.UPCOMING_SUBMISSION_DEADLINE.value
+    template_path = DataFileEmail.UPCOMING_SUBMISSION_DEADLINE.value
     text_message = f"Your datafiles are due by {due_date}."
 
     all_data_analysts = User.objects.all().filter(
