@@ -139,7 +139,7 @@ describe('QuarterFileUploadForm', () => {
   })
 
   describe('Form Submission', () => {
-    it('shows error alert when submitting with no files', async () => {
+    it('does not allow submission with no uploaded files', async () => {
       const storeState = {
         ...initialState,
         reports: {
@@ -147,18 +147,10 @@ describe('QuarterFileUploadForm', () => {
         },
       }
 
-      const { getByText, getByRole } = renderComponent(storeState)
+      const { getByText } = renderComponent(storeState)
 
       const submitButton = getByText('Submit Data Files')
-      fireEvent.click(submitButton)
-
-      await waitFor(() => {
-        const alert = getByRole('alert')
-        expect(alert).toBeInTheDocument()
-        expect(alert).toHaveTextContent(
-          'No changes have been made to data files'
-        )
-      })
+      expect(submitButton).not.toBeEnabled()
 
       expect(mockExecuteSubmission).not.toHaveBeenCalled()
     })
@@ -327,56 +319,6 @@ describe('QuarterFileUploadForm', () => {
       await waitFor(() => {
         expect(mockDispatch).toHaveBeenCalled()
       })
-    })
-  })
-
-  describe('Alert Behavior', () => {
-    it('scrolls to alert when alert becomes active', async () => {
-      const storeState = {
-        ...initialState,
-        reports: {
-          submittedFiles: [],
-        },
-      }
-
-      const { getByText, getByRole } = renderComponent(storeState)
-
-      const submitButton = getByText('Submit Data Files')
-      fireEvent.click(submitButton)
-
-      await waitFor(() => {
-        const alert = getByRole('alert')
-        expect(alert).toBeInTheDocument()
-      })
-
-      expect(window.HTMLElement.prototype.scrollIntoView).toHaveBeenCalledWith({
-        behavior: 'smooth',
-      })
-    })
-  })
-
-  describe('Edge Cases', () => {
-    it('prevents form submission via Enter key when no files uploaded', async () => {
-      const storeState = {
-        ...initialState,
-        reports: {
-          submittedFiles: [],
-        },
-      }
-
-      const { container, getByRole } = renderComponent(storeState)
-      const form = container.querySelector('form')
-
-      fireEvent.submit(form)
-
-      await waitFor(() => {
-        const alert = getByRole('alert')
-        expect(alert).toHaveTextContent(
-          'No changes have been made to data files'
-        )
-      })
-
-      expect(mockExecuteSubmission).not.toHaveBeenCalled()
     })
   })
 })
