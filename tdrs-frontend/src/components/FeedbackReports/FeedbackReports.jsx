@@ -220,7 +220,7 @@ function FeedbackReports() {
               <span className="margin-left-1">Loading upload history...</span>
             </div>
           ) : (
-            <PaginatedComponent pageSize={5} data={uploadHistory}>
+            <PaginatedComponent pageSize={10} data={uploadHistory}>
               <FeedbackReportsHistory formatDateTime={formatDateTime} />
             </PaginatedComponent>
           )}
