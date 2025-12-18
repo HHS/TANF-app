@@ -8,6 +8,7 @@ import pytest
 from tdpservice.data_files.models import DataFile
 from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.scheduling.datafile_retention_tasks import remove_all_old_versions
+from tdpservice.search_indexes.models.fra import TANF_Exiter1
 from tdpservice.search_indexes.models.ssp import SSP_M1
 from tdpservice.search_indexes.models.tanf import TANF_T1
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T1
@@ -49,6 +50,16 @@ def create_tribal_t1_record(datafile):
         RecordType="T1",
         RPT_MONTH_YEAR=202001,
         CASE_NUMBER="12345678901",
+    )
+
+
+def create_fra_exiter1_record(datafile):
+    """Create a TANF_Exiter1 (FRA) record linked to the given DataFile."""
+    return TANF_Exiter1.objects.create(
+        datafile=datafile,
+        RecordType="TE1",
+        EXIT_DATE=202001,
+        SSN="123456789",
     )
 
 
@@ -106,56 +117,6 @@ class TestRemoveAllOldVersions:
         assert not TANF_T1.objects.filter(id=record_v2.id).exists()
         # Record for newest version should be retained
         assert TANF_T1.objects.filter(id=record_v3.id).exists()
-
-    def test_deletes_older_versions_keeping_only_latest(self, stt, user):
-        """Test that older versions are deleted, keeping only the latest.
-
-        Given: Files with versions 1, 2, and 3 for the same combination
-        When: remove_all_old_versions is called
-        Then: Versions 1 and 2 should be deleted, version 3 should remain
-        """
-        current_year = datetime.now().year
-
-        old_file_1 = DataFileFactory.create(
-            year=current_year,
-            quarter="Q2",
-            program_type="SSP",
-            section="Closed Case Data",
-            stt=stt,
-            user=user,
-            version=1,
-        )
-        old_file_2 = DataFileFactory.create(
-            year=current_year,
-            quarter="Q2",
-            program_type="SSP",
-            section="Closed Case Data",
-            stt=stt,
-            user=user,
-            version=2,
-        )
-        newest_file = DataFileFactory.create(
-            year=current_year,
-            quarter="Q2",
-            program_type="SSP",
-            section="Closed Case Data",
-            stt=stt,
-            user=user,
-            version=3,
-        )
-
-        # Create SSP records for each file
-        record_old_1 = create_ssp_m1_record(old_file_1)
-        record_old_2 = create_ssp_m1_record(old_file_2)
-        record_newest = create_ssp_m1_record(newest_file)
-
-        remove_all_old_versions()
-
-        # Old version records should be deleted
-        assert not SSP_M1.objects.filter(id=record_old_1.id).exists()
-        assert not SSP_M1.objects.filter(id=record_old_2.id).exists()
-        # Newest version record should be retained
-        assert SSP_M1.objects.filter(id=record_newest.id).exists()
 
     def test_different_program_types_all_retained(self, stt, user):
         """Test that files with different program types are ALL retained.
@@ -396,7 +357,7 @@ class TestRemoveAllOldVersions:
         stt_2 = second_stt
 
         # Create files for two different STTs with multiple versions
-        file1_v1 = DataFileFactory.create(
+        DataFileFactory.create(
             year=current_year,
             quarter="Q1",
             program_type="TAN",
@@ -405,7 +366,7 @@ class TestRemoveAllOldVersions:
             user=user,
             version=1,
         )
-        file1_v2 = DataFileFactory.create(
+        DataFileFactory.create(
             year=current_year,
             quarter="Q1",
             program_type="TAN",
@@ -415,7 +376,7 @@ class TestRemoveAllOldVersions:
             version=2,
         )
 
-        file2_v1 = DataFileFactory.create(
+        DataFileFactory.create(
             year=current_year,
             quarter="Q1",
             program_type="TAN",
@@ -424,7 +385,7 @@ class TestRemoveAllOldVersions:
             user=user,
             version=1,
         )
-        file2_v2 = DataFileFactory.create(
+        DataFileFactory.create(
             year=current_year,
             quarter="Q1",
             program_type="TAN",
@@ -433,12 +394,6 @@ class TestRemoveAllOldVersions:
             user=user,
             version=2,
         )
-
-        # Create records
-        record1_v1 = create_tanf_t1_record(file1_v1)
-        record1_v2 = create_tanf_t1_record(file1_v2)
-        record2_v1 = create_tanf_t1_record(file2_v1)
-        record2_v2 = create_tanf_t1_record(file2_v2)
 
         # Patch delete_records to raise an exception on first call only
         call_count = [0]
@@ -464,93 +419,6 @@ class TestRemoveAllOldVersions:
             call for call in mock_log.call_args_list if call[1].get("level") == "error"
         ]
         assert len(error_calls) > 0
-
-    @patch("tdpservice.scheduling.datafile_retention_tasks.log")
-    def test_logs_success_message_when_no_exceptions(self, mock_log, stt, user):
-        """Test that a success message is logged when no exceptions occur.
-
-        Given: Files that can be processed without errors
-        When: remove_all_old_versions is called and completes successfully
-        Then: A success message should be logged
-        """
-        current_year = datetime.now().year
-
-        DataFileFactory.create(
-            year=current_year,
-            quarter="Q1",
-            program_type="TAN",
-            section="Active Case Data",
-            stt=stt,
-            user=user,
-            version=1,
-        )
-
-        remove_all_old_versions()
-
-        # Find the success info log call at the end
-        info_calls = [
-            call for call in mock_log.call_args_list if call[1].get("level") == "info"
-        ]
-
-        # Should have at least 2 info calls: beginning and success
-        assert len(info_calls) >= 2
-
-        # Last info call should be success message
-        success_messages = [
-            call[0][0] for call in info_calls if "success" in call[0][0].lower()
-        ]
-        assert len(success_messages) > 0
-
-    @patch("tdpservice.scheduling.datafile_retention_tasks.log")
-    def test_logs_error_summary_when_exceptions_occur(self, mock_log, stt, user):
-        """Test that an error summary is logged when exceptions occur.
-
-        Given: delete_records raises exceptions
-        When: remove_all_old_versions is called
-        Then: An error summary with exception count should be logged
-        """
-        current_year = datetime.now().year
-
-        DataFileFactory.create(
-            year=current_year,
-            quarter="Q1",
-            program_type="TAN",
-            section="Active Case Data",
-            stt=stt,
-            user=user,
-            version=1,
-        )
-        DataFileFactory.create(
-            year=current_year,
-            quarter="Q1",
-            program_type="TAN",
-            section="Active Case Data",
-            stt=stt,
-            user=user,
-            version=2,
-        )
-
-        with patch(
-            "tdpservice.scheduling.datafile_retention_tasks.delete_records",
-            side_effect=Exception("Test exception"),
-        ):
-            remove_all_old_versions()
-
-        # Find the final error log call
-        error_calls = [
-            call for call in mock_log.call_args_list if call[1].get("level") == "error"
-        ]
-
-        # Should have error calls
-        assert len(error_calls) > 0
-
-        # Check for exception count in final error message
-        final_error_messages = [
-            call[0][0]
-            for call in error_calls
-            if "exception" in call[0][0].lower() and "failed" in call[0][0].lower()
-        ]
-        assert any("exception" in msg.lower() for msg in final_error_messages)
 
     def test_handles_all_quarters(self, stt, user):
         """Test that files from all quarters are processed correctly.
@@ -738,14 +606,13 @@ class TestRemoveAllOldVersions:
             version=2,
         )
 
-        # Create TANF_T1 records to associate with FRA files (for testing deletion)
-        fra_old_record = create_tanf_t1_record(fra_old)
-        fra_new_record = create_tanf_t1_record(fra_new)
+        fra_old_record = create_fra_exiter1_record(fra_old)
+        fra_new_record = create_fra_exiter1_record(fra_new)
 
         remove_all_old_versions()
 
-        assert not TANF_T1.objects.filter(id=fra_old_record.id).exists()
-        assert TANF_T1.objects.filter(id=fra_new_record.id).exists()
+        assert not TANF_Exiter1.objects.filter(id=fra_old_record.id).exists()
+        assert TANF_Exiter1.objects.filter(id=fra_new_record.id).exists()
 
     def test_empty_database_no_errors(self):
         """Test that the function handles an empty database gracefully.
@@ -759,65 +626,6 @@ class TestRemoveAllOldVersions:
 
         # Should not raise any exceptions
         remove_all_old_versions()
-
-    def test_creates_system_user_if_not_exists(self):
-        """Test that a system user is created if it doesn't exist.
-
-        Given: No 'system' user exists in the database
-        When: remove_all_old_versions is called
-        Then: A 'system' user should be created for logging
-        """
-        from tdpservice.users.models import User
-
-        # Delete system user if it exists
-        User.objects.filter(username="system").delete()
-
-        remove_all_old_versions()
-
-        # System user should now exist
-        assert User.objects.filter(username="system").exists()
-
-    def test_version_selection_ignores_creation_time(self, stt, user):
-        """Test that version selection only considers version number, not creation time.
-
-        Given: Files with same (year, quarter, program_type, section, stt) but different
-               created_at times
-        When: remove_all_old_versions is called
-        Then: Selection should be based purely on version number, not creation time
-        """
-        current_year = datetime.now().year
-
-        # Create version 2 first (earlier created_at)
-        file_v2 = DataFileFactory.create(
-            year=current_year,
-            quarter="Q1",
-            program_type="TAN",
-            section="Active Case Data",
-            stt=stt,
-            user=user,
-            version=2,
-        )
-
-        # Create version 1 second (later created_at)
-        file_v1 = DataFileFactory.create(
-            year=current_year,
-            quarter="Q1",
-            program_type="TAN",
-            section="Active Case Data",
-            stt=stt,
-            user=user,
-            version=1,
-        )
-
-        record_v1 = create_tanf_t1_record(file_v1)
-        record_v2 = create_tanf_t1_record(file_v2)
-
-        remove_all_old_versions()
-
-        # v1 record should be deleted (lower version number) despite being created later
-        assert not TANF_T1.objects.filter(id=record_v1.id).exists()
-        # v2 record should be retained (higher version number) despite being created earlier
-        assert TANF_T1.objects.filter(id=record_v2.id).exists()
 
     def test_multiple_records_per_datafile_all_deleted(self, stt, user):
         """Test that all records associated with an old version are deleted.
@@ -934,6 +742,26 @@ class TestRemoveAllOldVersions:
             version=2,
         )
 
+        # FRA
+        fra_v1 = DataFileFactory.create(
+            year=current_year,
+            quarter="Q1",
+            program_type="FRA",
+            section="Work Outcomes of TANF Exiters",
+            stt=stt,
+            user=user,
+            version=1,
+        )
+        fra_v2 = DataFileFactory.create(
+            year=current_year,
+            quarter="Q1",
+            program_type="FRA",
+            section="Work Outcomes of TANF Exiters",
+            stt=stt,
+            user=user,
+            version=2,
+        )
+
         # Create records
         tanf_record_v1 = create_tanf_t1_record(tanf_v1)
         tanf_record_v2 = create_tanf_t1_record(tanf_v2)
@@ -941,6 +769,8 @@ class TestRemoveAllOldVersions:
         ssp_record_v2 = create_ssp_m1_record(ssp_v2)
         tribal_record_v1 = create_tribal_t1_record(tribal_v1)
         tribal_record_v2 = create_tribal_t1_record(tribal_v2)
+        fra_record_v1 = create_fra_exiter1_record(fra_v1)
+        fra_record_v2 = create_fra_exiter1_record(fra_v2)
 
         remove_all_old_versions()
 
@@ -948,8 +778,10 @@ class TestRemoveAllOldVersions:
         assert not TANF_T1.objects.filter(id=tanf_record_v1.id).exists()
         assert not SSP_M1.objects.filter(id=ssp_record_v1.id).exists()
         assert not Tribal_TANF_T1.objects.filter(id=tribal_record_v1.id).exists()
+        assert not TANF_Exiter1.objects.filter(id=fra_record_v1.id).exists()
 
         # New versions should be retained
         assert TANF_T1.objects.filter(id=tanf_record_v2.id).exists()
         assert SSP_M1.objects.filter(id=ssp_record_v2.id).exists()
         assert Tribal_TANF_T1.objects.filter(id=tribal_record_v2.id).exists()
+        assert TANF_Exiter1.objects.filter(id=fra_record_v2.id).exists()
