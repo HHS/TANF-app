@@ -4,7 +4,7 @@ global:
   smtp_from: 'no-reply@tanfdata.acf.hhs.gov'
   smtp_auth_username: 'apikey'
   smtp_auth_password: '{{ sendgrid_api_key }}'
-  slack_api_url: '{{ mattermost_web_hook }}'
+  slack_api_url: '{{ mattermost_web_hook_url }}'
 # The directory from which notification templates are read.
 templates:
   - '/etc/alertmanager/template/*.tmpl'
