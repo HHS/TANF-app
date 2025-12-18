@@ -17,6 +17,7 @@ import {
 import { openFeedbackWidget } from '../../reducers/feedbackWidget'
 import { useSearchParams } from 'react-router-dom'
 import { accountCanSelectStt } from '../../selectors/auth'
+import { usePollingTimer } from '../../hooks/usePollingTimer'
 import { getCurrentFiscalYear, quarters } from './utils'
 
 const ReportsContext = createContext()
@@ -232,7 +233,9 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   const submittedFiles = files?.filter((file) => file.fileName && file.id) || []
 
   // FRA-specific derived state
-  const fraHasUploadedFile = fraSelectedFile && !fraSelectedFile.id
+  const fraHasUploadedFile = !!fraSelectedFile && !fraSelectedFile.id
+
+  const { startPolling, isPolling, stopAllTimers } = usePollingTimer()
 
   // Actions
   const handleClearAll = () => {
@@ -545,6 +548,11 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     selectStt,
     handleYearBlur,
     handleQuarterBlur,
+
+    // polling
+    startPolling,
+    isPolling,
+    stopAllTimers,
   }
 
   return (

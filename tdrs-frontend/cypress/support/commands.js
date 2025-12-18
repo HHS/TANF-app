@@ -28,13 +28,14 @@
 
 Cypress.Commands.add('login', (username) => {
   cy.request({
-    method: 'POST',
+    method: 'GET',
     url: `${Cypress.env('apiUrl')}/login/cypress`,
-    body: {
-      username,
-      token: Cypress.env('cypressToken'),
+    qs: { username },
+    headers: {
+      'X-Cypress-Token': Cypress.env('cypressToken'),
     },
   }).then((response) => {
+    cy.visit('/')
     cy.window()
       .its('store')
       .invoke('dispatch', {
@@ -51,18 +52,18 @@ Cypress.Commands.add('login', (username) => {
 
 Cypress.Commands.add('adminLogin', () => {
   cy.request({
-    method: 'POST',
+    method: 'GET',
     url: `${Cypress.env('apiUrl')}/login/cypress`,
-    body: {
-      username: 'cypress-admin@teamraft.com',
-      token: Cypress.env('cypressToken'),
+    qs: { username: 'cypress-admin@teamraft.com' },
+    headers: {
+      'X-Cypress-Token': Cypress.env('cypressToken'),
     },
   }).then((response) => {
     cy.getCookie('sessionid').its('value').as('adminSessionId')
     cy.getCookie('csrftoken').its('value').as('adminCsrfToken')
 
     // handle response, list of user emails/ids for use in adminConsoleFormRequest
-    cy.get(response.body.users).as('cypressUsers')
+    cy.wrap(response.body.users).as('cypressUsers')
   })
 
   cy.clearCookie('sessionid')

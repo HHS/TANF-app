@@ -26,6 +26,18 @@
     color: #1a4480;
 }
 
-.button-anchor {
-  text-decoration: none
+// Link-style buttons should size to content, not full width
+a.usa-button {
+  display: inline-block;   // or inline-flex if you have flex content inside
+  width: auto;
 }
+a.button-anchor,
+a.button-anchor:hover,
+a.button-anchor:focus {
+  display: inline-block;   // not block
+  width: auto;             // not 100%
+  text-decoration: underline;
+  font-weight: 600;
+  text-underline-offset: 0.08em;
+}
+
