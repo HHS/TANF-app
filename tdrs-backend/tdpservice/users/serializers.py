@@ -8,13 +8,13 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers
-from tdpservice.users.constants import REGIONAL_ROLES
 
 from tdpservice.stts.models import STT
 from tdpservice.stts.serializers import (
     RegionPrimaryKeyRelatedField,
     STTPrimaryKeyRelatedField,
 )
+from tdpservice.users.constants import REGIONAL_ROLES
 from tdpservice.users.models import (
     AccountApprovalStatusChoices,
     ChangeRequestAuditLog,
@@ -167,10 +167,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
         """Perform object-level validation."""
         validated_data = super().validate(data)
         try:
-
             groups = self.instance.groups.all()
-            regions = validated_data.get('regions')
-            stts = validated_data.get('stt')
+            regions = validated_data.get("regions")
+            stts = validated_data.get("stt")
             # Check if the user belongs to any regional group
             if groups:
                 has_regional_role = any(g.name in REGIONAL_ROLES for g in groups)
@@ -199,7 +198,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         # fields.
 
         for attr, value in validated_data.items():
-            if attr == 'regions':
+            if attr == "regions":
                 field = getattr(instance, attr)
                 field.set(value)
             else:
@@ -263,30 +262,6 @@ class UserProfileChangeRequestSerializer(UserProfileSerializer):
             "has_fra_access",
         ]
 
-    def validate(self, data):
-        """Perform object-level validation."""
-        validated_data = super().validate(data)
-
-        groups = self.instance.groups.all()
-        # Check if the user belongs to any regional group
-        has_regional_role = any(g.name in REGIONAL_ROLES for g in groups)
-        if validated_data.get('regions'):
-            regions = [i.name for i in validated_data.get('regions')]
-        else:
-            regions = []
-
-        if has_regional_role and not regions:
-            raise serializers.ValidationError(
-                "Users in regional roles must have at least one region assigned."
-            )
-
-        if not has_regional_role and regions:
-            raise serializers.ValidationError(
-                "Users without regional roles should not be assigned regions."
-            )
-
-        return validated_data
-
     def validate_regions(self, value):
         """Validate regions field."""
         if not value:
@@ -300,6 +275,7 @@ class UserProfileChangeRequestSerializer(UserProfileSerializer):
         if (
             self.instance.account_approval_status
             == AccountApprovalStatusChoices.APPROVED
+            and value != self.instance.stt
         ):
             raise serializers.ValidationError(
                 _("STT cannot be changed once the account is approved.")

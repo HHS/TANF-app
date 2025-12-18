@@ -22,7 +22,8 @@ SELECT {fields}
     data_files.quarter,
     stt.name AS "STT",                                                     -- Select stt_name from the stts table
     stt.stt_code AS "STT_CODE",                                            -- Select stt_code from the stts table
-    stt.region_id AS "REGION"                                              -- Select region from the stts table
+    stt.region_id AS "REGION",                                             -- Select region from the stts table
+    data_files.program_type
 FROM {table} {record_type}
 INNER JOIN
         data_files_datafile data_files                                     -- Join with data_files_datafile
@@ -33,17 +34,19 @@ INNER JOIN
             section,                                                       -- Select section
             year,                                                          -- Select fiscal_year
             quarter,                                                       -- Select fiscal_quarter
-            MAX(version) AS version                                        -- Get the maximum version for each group
+            MAX(version) AS version,                                       -- Get the maximum version for each group
+            program_type                                                   -- Select program_type
         FROM
             data_files_datafile                                            -- Subquery table
         GROUP BY
-            stt_id, section, year, quarter                                 -- Group by columns
+            stt_id, program_type, section, year, quarter                   -- Group by columns
     ) most_recent
         ON data_files.stt_id = most_recent.stt_id
         AND data_files.section = most_recent.section
         AND data_files.version = most_recent.version
         AND data_files.year = most_recent.year
         AND data_files.quarter = most_recent.quarter
+        AND data_files.program_type = most_recent.program_type
     INNER JOIN
         stts_stt stt                                                       -- Join with the stts table (aliased as stt)
         ON data_files.stt_id = stt.id                                      -- Join condition to match stt_id
@@ -72,11 +75,31 @@ def handle_field(field, formatted_fields, is_admin):
         else:
             formatted_fields.append(f'"{field}"')
 
+        regex_rules = [
+            "0{9}",
+            "1{9}",
+            "2{9}",
+            "3{9}",
+            "4{9}",
+            "5{9}",
+            "6{9}",
+            "7{9}",
+            "8{9}",
+            "9{9}",
+            ".{3}.{2}0{4}",
+            ".{3}0{2}.{4}",
+            "0{3}.{2}.{4}",
+            "6{3}.{2}.{4}",
+            "9{1}.{4}.{4}",
+        ]
+
+        regex_str = f"^({'|'.join(regex_rules)})"
+
         formatted_fields.append(
             f''' --
         -- Calculate if SSN is valid
         CASE
-            WHEN "{field}" !~ '^(0{{9}}|1{{9}}|2{{9}}|3{{9}}|4{{9}}|5{{9}}|6{{9}}|7{{9}}|8{{9}}|9{{9}})$' THEN 1
+            WHEN "{field}" !~ '{regex_str}' THEN 1
             ELSE 0
         END AS "SSN_VALID"'''.strip()
         )

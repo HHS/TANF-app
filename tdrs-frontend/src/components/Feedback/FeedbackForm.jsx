@@ -83,7 +83,6 @@ const FeedbackForm = ({
           object_id: file.id,
         }))
       } else if (dataFiles) {
-        console.log('Datafile: ', JSON.stringify(dataFiles, null, 2))
         updatedPayload.attachments = [
           { content_type: 'datafile', object_id: dataFiles.file.id },
         ]

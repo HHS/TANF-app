@@ -87,15 +87,6 @@
   z-index: 1000;
 }
 
-.spinner {
-  width: 18px;
-  height: 18px;
-  border: 2px solid rgba(0, 0, 0, 0.2);
-  border-top: 2px solid #000;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
 @keyframes spin {
   to {
     transform: rotate(360deg);

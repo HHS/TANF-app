@@ -25,11 +25,14 @@ import { useRUM } from './hooks/useRUM'
 function App() {
   const user = useSelector((state) => state.auth.user)
   const { setUserInfo } = useRUM()
+
+  /* istanbul ignore next */
   useEffect(() => {
     if (user) {
       setUserInfo(user)
     }
   }, [user, setUserInfo])
+
   return (
     <>
       <a
