@@ -161,6 +161,7 @@ const UploadForm = ({
   error,
   setError,
   isSubmitting,
+  fraHasUploadedFile,
 }) => {
   const inputRef = useRef(null)
 
@@ -271,15 +272,6 @@ const UploadForm = ({
       return
     }
 
-    if (!file || (file && file.id)) {
-      setLocalAlertState({
-        active: true,
-        type: 'error',
-        message: 'No changes have been made to data files',
-      })
-      return
-    }
-
     handleUpload({ file })
   }
 
@@ -333,7 +325,7 @@ const UploadForm = ({
           <Button
             className="card:margin-y-1"
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || fraHasUploadedFile === false}
           >
             {isSubmitting ? 'Submitting...' : 'Submit Report'}
           </Button>
@@ -859,6 +851,7 @@ const FRAReportsContent = () => {
                 error={fraUploadError}
                 setError={setFraUploadError}
                 isSubmitting={isSubmitting}
+                fraHasUploadedFile={fraHasUploadedFile}
               />
             </>
           )}

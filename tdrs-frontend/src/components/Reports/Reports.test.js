@@ -414,14 +414,12 @@ describe('Reports', () => {
     await waitFor(() => expect(getByText('section2.txt')).toBeInTheDocument())
     await waitFor(() => expect(getByText('section3.txt')).toBeInTheDocument())
     await waitFor(() => expect(getByText('section4.txt')).toBeInTheDocument())
-    expect(store.dispatch).toHaveBeenCalledTimes(10)
+    await waitFor(() => expect(getByText('Submit Data Files')).toBeEnabled())
+    expect(store.dispatch).toHaveBeenCalledTimes(14)
 
-    await waitFor(() =>
-      expect(getByText('Submit Data Files')).toBeInTheDocument()
-    )
     fireEvent.click(getByText('Submit Data Files'))
     await waitFor(() => getByRole('alert'))
-    expect(store.dispatch).toHaveBeenCalledTimes(10)
+    expect(store.dispatch).toHaveBeenCalledTimes(17)
   })
 
   it('should add files to the redux state when dispatching uploads', async () => {

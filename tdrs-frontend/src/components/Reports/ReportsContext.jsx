@@ -233,7 +233,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   const submittedFiles = files?.filter((file) => file.fileName && file.id) || []
 
   // FRA-specific derived state
-  const fraHasUploadedFile = fraSelectedFile && !fraSelectedFile.id
+  const fraHasUploadedFile = !!fraSelectedFile && !fraSelectedFile.id
 
   const { startPolling, isPolling, stopAllTimers } = usePollingTimer()
 

@@ -6,7 +6,7 @@ Then(
   '{string} sees the upload in {string} Submission History',
   (actor, program) => {
     // Wait for the API response and extract the file ID
-    cy.wait('@dataFileSubmit').then((interception) => {
+    cy.wait('@dataFileSubmit', { timeout: 10000 }).then((interception) => {
       // Check if we have a valid response with an ID
       if (
         interception.response &&
@@ -45,7 +45,6 @@ Then('{string} can download the {string} error report', (actor, program) => {
 
 When('{string} submits the Work Outcomes Report', (actor) => {
   cy.visit('/fra-data-files')
-  cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
   if (actor.includes('Admin')) {
     df.fillSttFyQ('New York', '2024', 'Q2', false, false)
   } else {
@@ -55,12 +54,15 @@ When('{string} submits the Work Outcomes Report', (actor) => {
     '#fra-file-upload',
     '../tdrs-backend/tdpservice/parsers/test/data/fra.csv'
   )
+  cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
   cy.get('button').contains('Submit Report').should('exist').click()
+  cy.get('div.usa-alert--success', { timeout: 10000 })
+    .should('exist')
+    .contains('Successfully')
 })
 
 When('{string} submits the TANF Report', (actor) => {
   cy.visit('/data-files')
-  cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
   if (actor.includes('Admin')) {
     df.fillSttFyQ('New York', '2021', 'Q1', true, false)
   } else if (actor.includes('FRA')) {
@@ -73,12 +75,15 @@ When('{string} submits the TANF Report', (actor) => {
     '../tdrs-backend/tdpservice/parsers/test/data/small_correct_file.txt'
   )
 
+  cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
   cy.get('button').contains('Submit Data Files').should('exist').click()
+  cy.get('div.usa-alert--success', { timeout: 10000 })
+    .should('exist')
+    .contains('Successfully')
 })
 
 When('{string} submits the SSP Report', (actor) => {
   cy.visit('/data-files')
-  cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
   if (actor.includes('Admin')) {
     df.fillSttFyQ('Iowa', '2024', 'Q1', false, false)
   } else if (actor.includes('FRA')) {
@@ -90,8 +95,11 @@ When('{string} submits the SSP Report', (actor) => {
     '#active_case_data',
     '../tdrs-backend/tdpservice/parsers/test/data/small_ssp_section1.txt'
   )
-
+  cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
   cy.get('button').contains('Submit Data Files').should('exist').click()
+  cy.get('div.usa-alert--success', { timeout: 10000 })
+    .should('exist')
+    .contains('Successfully')
 })
 
 // Constants ----------

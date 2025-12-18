@@ -176,7 +176,7 @@ describe('SectionFileUploadForm', () => {
   })
 
   describe('Form Submission', () => {
-    it('shows error alert when submitting with no files', async () => {
+    it('does not allow submission with no uploaded files', async () => {
       const storeState = {
         ...initialState,
         reports: {
@@ -184,18 +184,10 @@ describe('SectionFileUploadForm', () => {
         },
       }
 
-      const { getByText, getByRole } = renderComponent(storeState)
+      const { getByText } = renderComponent(storeState)
 
       const submitButton = getByText('Submit Data Files')
-      fireEvent.click(submitButton)
-
-      await waitFor(() => {
-        const alert = getByRole('alert')
-        expect(alert).toBeInTheDocument()
-        expect(alert).toHaveTextContent(
-          'No changes have been made to data files'
-        )
-      })
+      expect(submitButton).not.toBeEnabled()
 
       expect(mockExecuteSubmission).not.toHaveBeenCalled()
     })
@@ -517,75 +509,6 @@ describe('SectionFileUploadForm', () => {
       await waitFor(() => {
         expect(mockDispatch).toHaveBeenCalled()
       })
-    })
-  })
-
-  describe('Alert Behavior', () => {
-    it('scrolls to alert when alert becomes active', async () => {
-      const storeState = {
-        ...initialState,
-        reports: {
-          submittedFiles: [],
-        },
-      }
-
-      const { getByText, getByRole } = renderComponent(storeState)
-
-      const submitButton = getByText('Submit Data Files')
-      fireEvent.click(submitButton)
-
-      await waitFor(() => {
-        const alert = getByRole('alert')
-        expect(alert).toBeInTheDocument()
-      })
-
-      expect(window.HTMLElement.prototype.scrollIntoView).toHaveBeenCalledWith({
-        behavior: 'smooth',
-      })
-    })
-
-    it('displays error alert with correct styling', async () => {
-      const storeState = {
-        ...initialState,
-        reports: {
-          submittedFiles: [],
-        },
-      }
-
-      const { getByText, container } = renderComponent(storeState)
-
-      const submitButton = getByText('Submit Data Files')
-      fireEvent.click(submitButton)
-
-      await waitFor(() => {
-        const alert = container.querySelector('.usa-alert--error')
-        expect(alert).toBeInTheDocument()
-      })
-    })
-  })
-
-  describe('Edge Cases', () => {
-    it('prevents form submission via Enter key when no files uploaded', async () => {
-      const storeState = {
-        ...initialState,
-        reports: {
-          submittedFiles: [],
-        },
-      }
-
-      const { container, getByRole } = renderComponent(storeState)
-      const form = container.querySelector('form')
-
-      fireEvent.submit(form)
-
-      await waitFor(() => {
-        const alert = getByRole('alert')
-        expect(alert).toHaveTextContent(
-          'No changes have been made to data files'
-        )
-      })
-
-      expect(mockExecuteSubmission).not.toHaveBeenCalled()
     })
   })
 })
