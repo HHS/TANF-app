@@ -1,8 +1,9 @@
 """Helper methods for sending emails to users about their profile change request."""
 
 import ast
+
 from tdpservice.email.email import automated_email
-from tdpservice.email.email_enums import EmailType
+from tdpservice.email.email_enums import UserAccountEmail
 from tdpservice.stts.models import Region
 
 FIELD_LABELS = {
@@ -56,9 +57,9 @@ def send_change_request_status_email(change_request, isApproved: bool, url):
     )
 
     template_path = (
-        EmailType.PROFILE_CHANGE_REQUEST_APPROVED.value
+        UserAccountEmail.PROFILE_CHANGE_REQUEST_APPROVED.value
         if isApproved
-        else EmailType.PROFILE_CHANGE_REQUEST_REJECTED.value
+        else UserAccountEmail.PROFILE_CHANGE_REQUEST_REJECTED.value
     )
     recipient_email = user.email
     subject = field_label + (" change approved" if isApproved else " change denied")
