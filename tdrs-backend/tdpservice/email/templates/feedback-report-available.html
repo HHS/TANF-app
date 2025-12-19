@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<p style="color: #000000;">
+    <p>Hello,</p>
+
+    <p>
+        A new Feedback Report is available for <b>{{ stt_name }}</b> for Fiscal Year <b>{{ fiscal_year }}</b>, <b>{{ quarter }}</b>.
+    </p>
+
+    <p>
+        The report was generated on <b>{{ report_date }}</b>. Please review the feedback and, if needed, resubmit complete and accurate data.
+    </p>
+
+    <p>
+        <a
+            class="button"
+            href="{{ url }}/feedback-reports"
+            style="background-color:#336a90;border-radius:4px;color:#ffffff;display:inline-block;font-family:sans-serif;font-size:18px;font-weight:bold;line-height:60px;text-align:center;text-decoration:none;width: auto; padding-left: 24px; padding-right: 24px;-webkit-text-size-adjust:none;"
+        >
+            View Feedback Reports
+        </a>
+    </p>
+
+    <p>
+        Please contact TDP Admin team at <a href="mailto:TANFData@acf.hhs.gov" target="_blank">TANFData@acf.hhs.gov</a> if you need further assistance.
+    </p>
+
+    <p>Thank you,</p>
+    TDP Team
+</p>
+{% endblock %}

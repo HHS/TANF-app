@@ -20,3 +20,4 @@ class EmailType(Enum):
     SYSTEM_ADMIN_ROLE_CHANGED = "system-admin-role-changed.html"
     PROFILE_CHANGE_REQUEST_APPROVED = "profile-change-request-approved.html"
     PROFILE_CHANGE_REQUEST_REJECTED = "profile-change-request-rejected.html"
+    FEEDBACK_REPORT_AVAILABLE = "feedback-report-available.html"

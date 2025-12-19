@@ -20,12 +20,21 @@ class ReportFileViewSet(ModelViewSet):
     permission_classes = [ReportFilePermissions, IsApprovedPermission]
 
     def get_queryset(self):
-        """Filter reports by STT for Data Analysts."""
+        """Filter reports by STT for Data Analysts and optionally by year/quarter."""
         queryset = super().get_queryset()
 
         # Data Analysts should only see reports for their assigned STT
         if self.request.user.is_data_analyst and hasattr(self.request.user, 'stt'):
             queryset = queryset.filter(stt=self.request.user.stt)
+
+        # Support filtering by year and quarter
+        year = self.request.query_params.get('year')
+        quarter = self.request.query_params.get('quarter')
+
+        if year:
+            queryset = queryset.filter(year=year)
+        if quarter:
+            queryset = queryset.filter(quarter=quarter)
 
         return queryset
 

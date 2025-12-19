@@ -8,8 +8,10 @@ from django.core.files.base import ContentFile
 from django.utils import timezone
 
 from celery import shared_task
+from tdpservice.email.helpers.feedback_report import send_feedback_report_available_email
 from tdpservice.reports.models import ReportFile, ReportSource
 from tdpservice.stts.models import STT
+from tdpservice.users.models import User, AccountApprovalStatusChoices
 
 
 logger = logging.getLogger(__name__)
@@ -247,6 +249,25 @@ def _extract_and_validate_structure(source: ReportSource, zip_file: zipfile.ZipF
     return fiscal_year_for_reports, stt_files_map
 
 
+def _send_report_file_notification(report_file: ReportFile):
+    """
+    Send email notification to all Data Analysts for the ReportFile's STT.
+
+    Parameters
+    ----------
+        report_file: The ReportFile that was just created
+    """
+    # Query all approved Data Analysts for this STT
+    data_analysts = User.objects.filter(
+        stt=report_file.stt,
+        account_approval_status=AccountApprovalStatusChoices.APPROVED,
+        groups__name="Data Analyst",
+    ).values_list("email", flat=True).distinct()
+
+    if data_analysts:
+        send_feedback_report_available_email(report_file, list(data_analysts))
+
+
 def _process_stt_folder(
     source: ReportSource,
     zip_file: zipfile.ZipFile,
@@ -282,7 +303,7 @@ def _process_stt_folder(
         return False
 
     # Create ReportFile record
-    ReportFile.create_new_version(
+    report_file = ReportFile.create_new_version(
         {
             "year": fiscal_year,
             "quarter": quarter,
@@ -295,6 +316,9 @@ def _process_stt_folder(
             "file": bundled_zip,
         }
     )
+
+    # Send email notification to Data Analysts for this STT
+    _send_report_file_notification(report_file)
 
     return True
 

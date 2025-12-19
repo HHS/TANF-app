@@ -678,3 +678,250 @@ class TestProcessReportSource:
         report_file = ReportFile.objects.filter(source=source).first()
         assert report_file.year == 2024
         assert report_file.quarter == "Q4"
+
+
+@pytest.mark.django_db
+class TestProcessReportSourceEmailNotification:
+    """Tests for email notification when ReportFile is created."""
+
+    @patch('tdpservice.reports.tasks.send_feedback_report_available_email')
+    @patch('tdpservice.reports.tasks.timezone.now')
+    def test_sends_email_when_report_file_created(
+        self, mock_now, mock_send_email, ofa_admin
+    ):
+        """Test that email is sent when a ReportFile is created."""
+        from django.contrib.auth.models import Group
+        from tdpservice.stts.models import Region, STT
+        from tdpservice.users.models import User, AccountApprovalStatusChoices
+
+        # Create region and STT
+        region = Region.objects.create(id=9010, name="Test Region 10")
+        stt = STT.objects.create(
+            id=8010,
+            stt_code="1",
+            name="Test STT Email",
+            region=region,
+            postal_code="TE",
+            type="STATE"
+        )
+
+        # Create a Data Analyst for this STT
+        data_analyst_group, _ = Group.objects.get_or_create(name="Data Analyst")
+        data_analyst = User.objects.create(
+            username="test_analyst",
+            email="test_analyst@example.com",
+            stt=stt,
+            account_approval_status=AccountApprovalStatusChoices.APPROVED,
+        )
+        data_analyst.groups.add(data_analyst_group)
+
+        # Mock timezone
+        mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
+
+        # Create source record
+        structure = {"2025": {"Region_1": {"1": ["report.pdf"]}}}
+        zip_buffer = create_nested_zip(structure)
+
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        uploaded_file = SimpleUploadedFile(
+            "report_source.zip",
+            zip_buffer.read(),
+            content_type="application/zip"
+        )
+
+        source = ReportSource.objects.create(
+            uploaded_by=ofa_admin,
+            original_filename="report_source.zip",
+            slug="report_source.zip",
+            file=uploaded_file,
+            created_at=timezone.make_aware(datetime(2025, 2, 1))
+        )
+
+        process_report_source(source.id)
+
+        # Verify email was called
+        mock_send_email.assert_called_once()
+
+        # Verify the ReportFile and recipients
+        call_args = mock_send_email.call_args[0]
+        assert isinstance(call_args[0], ReportFile)
+        assert "test_analyst@example.com" in call_args[1]
+
+    @patch('tdpservice.reports.tasks.send_feedback_report_available_email')
+    @patch('tdpservice.reports.tasks.timezone.now')
+    def test_does_not_send_email_when_no_data_analysts(
+        self, mock_now, mock_send_email, ofa_admin
+    ):
+        """Test that no email is sent when no Data Analysts exist for STT."""
+        from tdpservice.stts.models import Region, STT
+
+        # Create region and STT with no Data Analysts
+        region = Region.objects.create(id=9011, name="Test Region 11")
+        STT.objects.create(
+            id=8011,
+            stt_code="1",
+            name="Test STT No Analysts",
+            region=region,
+            postal_code="TN",
+            type="STATE"
+        )
+
+        mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
+
+        structure = {"2025": {"Region_1": {"1": ["report.pdf"]}}}
+        zip_buffer = create_nested_zip(structure)
+
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        uploaded_file = SimpleUploadedFile(
+            "report_source.zip",
+            zip_buffer.read(),
+            content_type="application/zip"
+        )
+
+        source = ReportSource.objects.create(
+            uploaded_by=ofa_admin,
+            original_filename="report_source.zip",
+            slug="report_source.zip",
+            file=uploaded_file,
+            created_at=timezone.make_aware(datetime(2025, 2, 1))
+        )
+
+        process_report_source(source.id)
+
+        # Verify email was not called (empty list of recipients)
+        mock_send_email.assert_not_called()
+
+    @patch('tdpservice.reports.tasks.send_feedback_report_available_email')
+    @patch('tdpservice.reports.tasks.timezone.now')
+    def test_sends_email_to_multiple_data_analysts(
+        self, mock_now, mock_send_email, ofa_admin
+    ):
+        """Test that email is sent to all Data Analysts for the STT."""
+        from django.contrib.auth.models import Group
+        from tdpservice.stts.models import Region, STT
+        from tdpservice.users.models import User, AccountApprovalStatusChoices
+
+        # Create region and STT
+        region = Region.objects.create(id=9012, name="Test Region 12")
+        stt = STT.objects.create(
+            id=8012,
+            stt_code="1",
+            name="Test STT Multiple Analysts",
+            region=region,
+            postal_code="TM",
+            type="STATE"
+        )
+
+        # Create multiple Data Analysts for this STT
+        data_analyst_group, _ = Group.objects.get_or_create(name="Data Analyst")
+        analysts = []
+        for i in range(3):
+            analyst = User.objects.create(
+                username=f"analyst{i}",
+                email=f"analyst{i}@example.com",
+                stt=stt,
+                account_approval_status=AccountApprovalStatusChoices.APPROVED,
+            )
+            analyst.groups.add(data_analyst_group)
+            analysts.append(analyst)
+
+        mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
+
+        structure = {"2025": {"Region_1": {"1": ["report.pdf"]}}}
+        zip_buffer = create_nested_zip(structure)
+
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        uploaded_file = SimpleUploadedFile(
+            "report_source.zip",
+            zip_buffer.read(),
+            content_type="application/zip"
+        )
+
+        source = ReportSource.objects.create(
+            uploaded_by=ofa_admin,
+            original_filename="report_source.zip",
+            slug="report_source.zip",
+            file=uploaded_file,
+            created_at=timezone.make_aware(datetime(2025, 2, 1))
+        )
+
+        process_report_source(source.id)
+
+        # Verify email was called with all analysts
+        mock_send_email.assert_called_once()
+        call_args = mock_send_email.call_args[0]
+        recipients = call_args[1]
+
+        for analyst in analysts:
+            assert analyst.email in recipients
+
+    @patch('tdpservice.reports.tasks.send_feedback_report_available_email')
+    @patch('tdpservice.reports.tasks.timezone.now')
+    def test_only_sends_to_approved_data_analysts(
+        self, mock_now, mock_send_email, ofa_admin
+    ):
+        """Test that email is only sent to approved Data Analysts."""
+        from django.contrib.auth.models import Group
+        from tdpservice.stts.models import Region, STT
+        from tdpservice.users.models import User, AccountApprovalStatusChoices
+
+        # Create region and STT
+        region = Region.objects.create(id=9013, name="Test Region 13")
+        stt = STT.objects.create(
+            id=8013,
+            stt_code="1",
+            name="Test STT Approved Only",
+            region=region,
+            postal_code="TA",
+            type="STATE"
+        )
+
+        data_analyst_group, _ = Group.objects.get_or_create(name="Data Analyst")
+
+        # Create approved analyst
+        approved_analyst = User.objects.create(
+            username="approved_analyst",
+            email="approved@example.com",
+            stt=stt,
+            account_approval_status=AccountApprovalStatusChoices.APPROVED,
+        )
+        approved_analyst.groups.add(data_analyst_group)
+
+        # Create pending analyst (should NOT receive email)
+        pending_analyst = User.objects.create(
+            username="pending_analyst",
+            email="pending@example.com",
+            stt=stt,
+            account_approval_status=AccountApprovalStatusChoices.PENDING,
+        )
+        pending_analyst.groups.add(data_analyst_group)
+
+        mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
+
+        structure = {"2025": {"Region_1": {"1": ["report.pdf"]}}}
+        zip_buffer = create_nested_zip(structure)
+
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        uploaded_file = SimpleUploadedFile(
+            "report_source.zip",
+            zip_buffer.read(),
+            content_type="application/zip"
+        )
+
+        source = ReportSource.objects.create(
+            uploaded_by=ofa_admin,
+            original_filename="report_source.zip",
+            slug="report_source.zip",
+            file=uploaded_file,
+            created_at=timezone.make_aware(datetime(2025, 2, 1))
+        )
+
+        process_report_source(source.id)
+
+        # Verify only approved analyst received email
+        mock_send_email.assert_called_once()
+        call_args = mock_send_email.call_args[0]
+        recipients = call_args[1]
+
+        assert "approved@example.com" in recipients
+        assert "pending@example.com" not in recipients
