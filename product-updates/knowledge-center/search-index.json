@@ -119,6 +119,13 @@
     "ariaDescription": "Ellipses = true",
     "tags": ["bug","feedback","faqs"]
   },
+        {
+    "title": "FAQ: I have questions about the Program Integrity Review referenced in the Dear Colleague letter sent to TANF Administrators on August 27, 2025. Where can I find more information?",
+    "url": "faq.html#I have questions about the Program Integrity Review referenced in the Dear Colleague letter sent to TANF Administrators on August 27, 2025. Where can I find more information?",
+    "content": "ACF recognizes that TANF partners in states and territories may have questions regarding the scope, process, and expectations of the Program Integrity Review described in the Dear Colleague letter. Additional details—including specific data requirements",
+    "ariaDescription": "Ellipses = true",
+    "tags": ["bug","feedback","faqs"]
+  },
       {
     "title": "Submitting TANF Data",
     "url": "uploading-data.html",
