@@ -138,11 +138,13 @@ class DataFileViewSet(ModelViewSet):
                 )
             else:
                 is_program_audit = file_type == DataFileViewSet.PIA_FILE_TYPE
-                query = (
-                    Q(program_type=DataFile.ProgramType.TANF)
-                    | Q(program_type=DataFile.ProgramType.TRIBAL)
-                ) & Q(is_program_audit=is_program_audit)
-                queryset = queryset.filter(query)
+                queryset = queryset.filter(
+                    program_type__in=[
+                        DataFile.ProgramType.TANF,
+                        DataFile.ProgramType.TRIBAL,
+                    ],
+                    is_program_audit=is_program_audit,
+                )
 
         return queryset
 
