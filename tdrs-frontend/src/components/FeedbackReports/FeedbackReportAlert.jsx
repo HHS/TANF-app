@@ -5,7 +5,7 @@ import PropTypes from 'prop-types'
  * Alert banner displayed on TANF Data Files page when feedback reports are available.
  * Only shown to Data Analysts when reports exist for their STT and selected quarter/year.
  */
-const FeedbackReportAlert = ({ latestReportDate }) => {
+const FeedbackReportAlert = ({ latestReportDate = null }) => {
   if (!latestReportDate) return null
 
   // Format date as MM/DD/YYYY
@@ -30,10 +30,6 @@ const FeedbackReportAlert = ({ latestReportDate }) => {
 
 FeedbackReportAlert.propTypes = {
   latestReportDate: PropTypes.string,
-}
-
-FeedbackReportAlert.defaultProps = {
-  latestReportDate: null,
 }
 
 export default FeedbackReportAlert
