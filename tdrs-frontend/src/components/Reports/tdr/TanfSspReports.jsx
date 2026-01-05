@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import axiosInstance from '../../../axios-instance'
 import { quarters } from '../utils'
 import { FiscalQuarterExplainer } from '../components/Explainers'
 import SectionFileUploadForm from '../../FileUploadForms/SectionFileUploadForm'
@@ -6,9 +7,10 @@ import SectionSubmissionHistory from '../../SubmissionHistory/SectionSubmissionH
 import SegmentedControl from '../../SegmentedControl'
 import FiscalYearSelect from '../components/FiscalYearSelect'
 import FiscalQuarterSelect from '../components/FisclaQuarterSelect'
+import FeedbackReportAlert from '../../FeedbackReportAlert'
 import { useReportsContext } from '../ReportsContext'
 
-const TanfSspReports = ({ stt, isRegionalStaff }) => {
+const TanfSspReports = ({ stt, isRegionalStaff, isDataAnalyst }) => {
   const {
     yearInputValue,
     quarterInputValue,
@@ -19,6 +21,44 @@ const TanfSspReports = ({ stt, isRegionalStaff }) => {
     setReprocessedDate,
     headerRef,
   } = useReportsContext()
+
+  const [latestFeedbackReportDate, setLatestFeedbackReportDate] = useState(null)
+
+  // Fetch latest feedback report for Data Analysts
+  useEffect(() => {
+    const fetchLatestFeedbackReport = async () => {
+      // Only fetch for Data Analysts when year, quarter, and stt are selected
+      if (!isDataAnalyst || !yearInputValue || !quarterInputValue || !stt) {
+        setLatestFeedbackReportDate(null)
+        return
+      }
+
+      try {
+        const response = await axiosInstance.get(
+          `${process.env.REACT_APP_BACKEND_URL}/reports/`,
+          {
+            params: {
+              year: yearInputValue,
+              quarter: quarterInputValue,
+            },
+            withCredentials: true,
+          }
+        )
+
+        // Get the latest report (already ordered by -created_at from backend)
+        if (response.data?.results?.length > 0) {
+          setLatestFeedbackReportDate(response.data.results[0].created_at)
+        } else {
+          setLatestFeedbackReportDate(null)
+        }
+      } catch (error) {
+        console.error('Error fetching feedback reports:', error)
+        setLatestFeedbackReportDate(null)
+      }
+    }
+
+    fetchLatestFeedbackReport()
+  }, [isDataAnalyst, yearInputValue, quarterInputValue, stt])
 
   return (
     <>
@@ -42,6 +82,10 @@ const TanfSspReports = ({ stt, isRegionalStaff }) => {
           >
             {`${stt.name} - ${fileTypeInputValue.toUpperCase()} - Fiscal Year ${yearInputValue} - ${quarters[quarterInputValue]}`}
           </h2>
+
+          {isDataAnalyst && (
+            <FeedbackReportAlert latestReportDate={latestFeedbackReportDate} />
+          )}
 
           {isRegionalStaff ? (
             <h3 className="font-sans-lg margin-top-5 margin-bottom-2 text-bold">
