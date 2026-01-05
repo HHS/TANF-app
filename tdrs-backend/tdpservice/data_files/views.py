@@ -91,7 +91,8 @@ class DataFileViewSet(ModelViewSet):
 
             logger.info(
                 f"Preparing parse task: User META -> user: {request.user}, stt: {data_file.stt}. "
-                + f"Datafile META -> datafile: {data_file_id}, section: {data_file.section}, "
+                + f"Datafile META -> datafile: {data_file_id}, program type: {data_file.program_type}, "
+                + f"section: {data_file.section}, "
                 + f"quarter {data_file.quarter}, year {data_file.year}."
             )
 

@@ -10,7 +10,7 @@ from django.db import models
 
 from tdpservice.backends import DataFilesS3Storage
 from tdpservice.data_files.models import DataFile
-from tdpservice.data_files.util import ParserErrorCategoryChoices
+from tdpservice.data_files.parser_error_choices import ParserErrorCategoryChoices
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,9 @@ def get_s3_upload_path(instance, filename):
     """Produce a unique upload path for S3 files for a given STT and Quarter."""
     df = instance.datafile
 
-    file_path = f"data_files/{df.year}/{df.quarter}/{df.stt.id}/{df.section}/"
+    file_path = (
+        f"data_files/{df.year}/{df.quarter}/{df.stt.id}/{df.program_type}/{df.section}/"
+    )
 
     file_name_info = filename
 

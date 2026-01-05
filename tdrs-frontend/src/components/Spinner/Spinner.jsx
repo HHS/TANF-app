@@ -11,6 +11,7 @@ const Spinner = ({ visible }) =>
         aria-hidden={true}
         role="status"
         aria-label="Loading"
+        data-testid="spinner"
       />
     </span>
   ) : null

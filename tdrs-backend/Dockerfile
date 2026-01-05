@@ -1,5 +1,5 @@
 ARG REGISTRY_OWNER=hhs
-ARG BASE_TAG=v0.0.5
+ARG BASE_TAG=v0.0.6
 
 FROM ghcr.io/${REGISTRY_OWNER}/tdp-backend-base:${BASE_TAG}
 

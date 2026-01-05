@@ -1,14 +1,11 @@
 import React from 'react'
-import { mount } from 'enzyme'
+import { render, screen } from '@testing-library/react'
 import { thunk } from 'redux-thunk'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 import { MemoryRouter } from 'react-router-dom'
-import NoMatch from '../NoMatch'
 
 import Routes from './Routes'
-import SplashPage from '../SplashPage'
-import Home from '../Home'
 
 describe('Routes.js', () => {
   const mockStore = configureStore([thunk])
@@ -26,14 +23,14 @@ describe('Routes.js', () => {
         year: 2020,
       },
     })
-    const wrapper = mount(
+    render(
       <Provider store={store}>
         <MemoryRouter initialEntries={['/IdontExist']}>
           <Routes />
         </MemoryRouter>
       </Provider>
     )
-    expect(wrapper.find(NoMatch))
+    expect(screen.getByText(/page not found/i)).toBeInTheDocument()
   })
 
   it('routes "/" to the SplashPage page when user not authenticated', () => {
@@ -49,7 +46,7 @@ describe('Routes.js', () => {
         year: 2020,
       },
     })
-    const wrapper = mount(
+    render(
       <Provider store={store}>
         <MemoryRouter>
           <Routes />
@@ -57,7 +54,7 @@ describe('Routes.js', () => {
       </Provider>
     )
 
-    expect(wrapper.find(SplashPage)).toExist()
+    expect(screen.getByText(/Sign into TANF Data Portal/i)).toBeInTheDocument()
   })
 
   it('routes "/" to the Edit-Profile page when user is authenticated', () => {
@@ -73,7 +70,7 @@ describe('Routes.js', () => {
         year: 2020,
       },
     })
-    const wrapper = mount(
+    render(
       <Provider store={store}>
         <MemoryRouter>
           <Routes />
@@ -81,6 +78,6 @@ describe('Routes.js', () => {
       </Provider>
     )
 
-    expect(wrapper.find(Home)).toExist()
+    expect(screen.getByText(/Welcome to TDP/i)).toBeInTheDocument()
   })
 })

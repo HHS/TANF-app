@@ -6,29 +6,58 @@ import {
   getReprocessedDate,
   downloadFile,
   getErrorReportStatus,
+  fileStatusOrDefault,
+  getSummaryStatusLabel,
 } from '../helpers'
 import { accountIsRegionalStaff } from '../../../selectors/auth'
 import { ReprocessedButton } from '../ReprocessedModal'
+import { Spinner } from '../../Spinner'
+import { useReportsContext } from '../../Reports/ReportsContext'
 
-const MonthSubRow = ({ data }) =>
-  data ? (
-    <>
-      <th scope="row">{data.month}</th>
-      <td>{data.accepted_without_errors}</td>
-      <td>{data.accepted_with_errors}</td>
-    </>
-  ) : (
+const MonthSubRow = ({ data, isLoadingStatus }) => {
+  if (isLoadingStatus) {
+    return (
+      <>
+        <th scope="row">
+          <Spinner visible={isLoadingStatus} />
+        </th>
+        <td>
+          <Spinner visible={isLoadingStatus} />
+        </td>
+        <td>
+          <Spinner visible={isLoadingStatus} />
+        </td>
+      </>
+    )
+  }
+
+  if (data) {
+    return (
+      <>
+        <th scope="row">{data.month}</th>
+        <td>{data.accepted_without_errors}</td>
+        <td>{data.accepted_with_errors}</td>
+      </>
+    )
+  }
+
+  return (
     <>
       <th scope="row">-</th>
       <td>N/A</td>
       <td>N/A</td>
     </>
   )
+}
 
-const CaseAggregatesRow = ({ file, reprocessedState }) => {
+const CaseAggregatesRow = ({ file, reprocessedState, isLoadingStatus }) => {
   const dispatch = useDispatch()
   const reprocessedDate = formatDate(getReprocessedDate(file))
   const isRegionalStaff = useSelector(accountIsRegionalStaff)
+
+  const hasStatus = file.summary && file.summary.status
+  const status = hasStatus ? file.summary.status : 'Pending'
+
   return (
     <>
       <tr>
@@ -55,75 +84,106 @@ const CaseAggregatesRow = ({ file, reprocessedState }) => {
           )}
         </th>
 
-        <MonthSubRow data={file?.summary?.case_aggregates?.months?.[0]} />
+        <MonthSubRow
+          data={file?.summary?.case_aggregates?.months?.[0]}
+          isLoadingStatus={isLoadingStatus}
+        />
 
         <th scope="rowgroup" rowSpan={3}>
-          {file.summary?.case_aggregates?.rejected || 'N/A'}
+          {hasStatus && status !== 'Pending' ? (
+            file.summary?.case_aggregates?.rejected || 'N/A'
+          ) : (
+            <>
+              <Spinner visible={isLoadingStatus} />
+              {'Pending'}
+            </>
+          )}
         </th>
 
         <th scope="rowgroup" rowSpan={3}>
-          <span>
-            <SubmissionSummaryStatusIcon
-              status={file.summary ? file.summary.status : 'Pending'}
-            />
+          {hasStatus && status !== 'Pending' ? (
+            <span>
+              <SubmissionSummaryStatusIcon status={fileStatusOrDefault(file)} />
+            </span>
+          ) : (
+            <Spinner visible={isLoadingStatus} />
+          )}
+          <span style={{ position: 'relative' }}>
+            {getSummaryStatusLabel(file)}
           </span>
-          {file.summary && file.summary.status
-            ? file.summary.status
-            : 'Pending'}
         </th>
 
         <th scope="rowgroup" rowSpan={3}>
+          <Spinner visible={isLoadingStatus} />
           {getErrorReportStatus(file)}
         </th>
       </tr>
       <tr>
-        <MonthSubRow data={file?.summary?.case_aggregates?.months?.[1]} />
+        <MonthSubRow
+          data={file?.summary?.case_aggregates?.months?.[1]}
+          isLoadingStatus={isLoadingStatus}
+        />
       </tr>
       <tr>
-        <MonthSubRow data={file?.summary?.case_aggregates?.months?.[2]} />
+        <MonthSubRow
+          data={file?.summary?.case_aggregates?.months?.[2]}
+          isLoadingStatus={isLoadingStatus}
+        />
       </tr>
     </>
   )
 }
 
-export const CaseAggregatesTable = ({ files, reprocessedState }) => (
-  <>
-    <thead>
-      <tr>
-        <th scope="col" rowSpan={2}>
-          Submitted On
-        </th>
-        <th scope="col" rowSpan={2}>
-          File Name
-        </th>
-        <th scope="col" rowSpan={2}>
-          Month
-        </th>
-        <th scope="col" rowSpan={2}>
-          Cases Without Errors
-        </th>
-        <th scope="col" rowSpan={2}>
-          Cases With Errors
-        </th>
-        <th scope="col" rowSpan={2}>
-          Records Unable To Process
-        </th>
-        <th scope="col" rowSpan={2}>
-          Status
-        </th>
-        <th scope="col" rowSpan={2}>
-          Error Reports
-        </th>
-      </tr>
-    </thead>
-    <tbody>
-      {files.map((file) => (
-        <CaseAggregatesRow
-          key={file.id}
-          file={file}
-          reprocessedState={reprocessedState}
-        />
-      ))}
-    </tbody>
-  </>
-)
+export const CaseAggregatesTable = ({ files, reprocessedState }) => {
+  const { isPolling } = useReportsContext()
+
+  const isLoadingStatus = (fileId) => {
+    if (isPolling && fileId in isPolling) {
+      return isPolling[fileId]
+    }
+    return false
+  }
+
+  return (
+    <>
+      <thead>
+        <tr>
+          <th scope="col" rowSpan={2}>
+            Submitted On
+          </th>
+          <th scope="col" rowSpan={2}>
+            File Name
+          </th>
+          <th scope="col" rowSpan={2}>
+            Month
+          </th>
+          <th scope="col" rowSpan={2}>
+            Cases Without Errors
+          </th>
+          <th scope="col" rowSpan={2}>
+            Cases With Errors
+          </th>
+          <th scope="col" rowSpan={2}>
+            Records Unable To Process
+          </th>
+          <th scope="col" rowSpan={2}>
+            Status
+          </th>
+          <th scope="col" rowSpan={2}>
+            Error Reports
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {files.map((file) => (
+          <CaseAggregatesRow
+            key={file.id}
+            file={file}
+            reprocessedState={reprocessedState}
+            isLoadingStatus={isLoadingStatus(file.id)}
+          />
+        ))}
+      </tbody>
+    </>
+  )
+}

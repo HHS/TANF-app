@@ -1,7 +1,5 @@
 import React from 'react'
-import { shallow } from 'enzyme'
-
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 
 import PrivateTemplate from '.'
 
@@ -9,16 +7,16 @@ describe('PrivateTemplate', () => {
   const title = 'Test'
 
   it('should have an h1 with the title contents', () => {
-    const wrapper = shallow(
+    render(
       <PrivateTemplate title={title}>
         <div>Test</div>
       </PrivateTemplate>
     )
 
-    const h1 = wrapper.find('h1')
+    const h1 = screen.getByRole('heading', { level: 1 })
 
-    expect(h1).toExist()
-    expect(h1.text()).toEqual('Test')
+    expect(h1).toBeInTheDocument()
+    expect(h1).toHaveTextContent('Test')
   })
 
   it('should have a page title with title contents in it', () => {
@@ -55,5 +53,18 @@ describe('PrivateTemplate', () => {
     h1.parentNode.removeChild(h1)
 
     expect(document.activeElement).not.toEqual(h1)
+  })
+
+  it('should render subtitle when provided', () => {
+    const { container } = render(
+      <PrivateTemplate title={title} subtitle="Test Subtitle">
+        <div>Test</div>
+      </PrivateTemplate>
+    )
+
+    const h2 = container.querySelector('h2')
+
+    expect(h2).toBeTruthy()
+    expect(h2.textContent).toEqual('Test Subtitle')
   })
 })

@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>TDP — Knowledge Center Home</title>
+    <link rel="stylesheet" href="../css/uswds3.css" />
+    <link rel="icon" type="image/x-icon" href="../img/favicons/gov-favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="../js/uswds.min.js"></script>
+    <link href="dist/lity.css" rel="stylesheet">
+    <script src="dist/lity.js"></script>
+    <!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-M29SF96W');</script>
+<!-- End Google Tag Manager -->
+    <script src="components/desktop-navigation.js" defer></script>
+    <script src="components/mobile-navigation.js" defer></script>
+    <script src="components/shutdown-banner.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.1.0"></script>
+    <script>
+  let fuse;
+
+  fetch('search-index.json')
+    .then(res => res.json())
+    .then(data => {
+      const options = {
+        includeScore: true,
+        findAllMatches: true,
+        minMatchCharLength: 2,
+        threshold: .2,
+        distance: 100,
+        includeMatches: true,
+        keys: ['title', 'tags']
+      };
+      fuse = new Fuse(data, options);
+    });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const searchBox = document.getElementById('searchBox');
+    const resultsList = document.getElementById('results');
+
+
+    searchBox.addEventListener('input', function (e) {
+      const query = e.target.value;
+      const results = fuse.search(query);
+
+results.sort((a, b) => a.score - b.score);
+resultsCount.textContent = results.length
+  ? `${results.length} result${results.length !== 1 ? 's' : ''} found`
+  : 'No results found';
+
+
+
+      resultsList.innerHTML = results.map((result, index) => {
+        const { title, url, content, ariaDescription, tags } = result.item;
+        const resultsCount = document.getElementById('resultsCount');
+resultsCount.textContent = `${results.length} result${results.length !== 1 ? 's' : ''} found`;
+        const snippet = getSnippet(content, query);
+        const snippetId = `desc-${index}`;
+        return `<li><a href="${url}"aria-describedby="${snippetId}">${title}</a><br><div id="${snippetId}"  ${ariaDescription ? ` aria-describedby="${ariaDescription}"` : ''} >${snippet}${ariaDescription ? '<span aria-label="Ellipses, read more at the link">…</span>' : ''}</div></li>
+`;
+      }).join('');
+
+    });
+
+
+
+    function getSnippet(content, term, radius = 400) {
+      const index = content.toLowerCase().indexOf(term.toLowerCase());
+      if (index === -1) return content.slice(0, radius * 100) + '';
+      const start = Math.max(0, index - radius);
+      const end = Math.min(content.length, index + term.length + radius);
+      return '' + content.slice(start, end) + '';
+    }
+
+
+  });
+</script>
+
+
+
+  </head>
+
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8V03JLZHK0"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-8V03JLZHK0');
+</script>
+
+
+
+
+  <body>
+    <!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-M29SF96W"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+    <a class="usa-skipnav" href="#main-content">Skip to main content</a>
+
+    <!-- Here begins banner -->
+
+  <section class="usa-banner" aria-label="Official government website">
+    <div class="usa-accordion">
+      <header class="usa-banner__header">
+        <div class="usa-banner__inner">
+          <div class="grid-col-auto">
+            <img class="usa-banner__header-flag" src="../img/us_flag_small.png" alt="U.S. flag"/>
+          </div>
+          <div class="grid-col-fill tablet:grid-col-auto">
+            <p class="usa-banner__header-text">
+              An official website of the United States government
+            </p>
+            <p class="usa-banner__header-action" aria-hidden="true">
+              Here’s how you know
+            </p>
+          </div>
+          <button
+            class="usa-accordion__button usa-banner__button"
+            aria-expanded="false"
+            aria-controls="gov-banner-default">
+            <span class="usa-banner__button-text">Here’s how you know</span>
+
+          </button>
+        </div>
+      </header>
+      <div
+        class="usa-banner__content usa-accordion__content"
+        id="gov-banner-default"
+      >
+        <div class="grid-row grid-gap-lg">
+          <div class="usa-banner__guidance tablet:grid-col-6">
+            <img
+              class="usa-banner__icon usa-media-block__img"
+              src="../img/icon-dot-gov.svg"
+              role="img"
+              alt=""
+              aria-hidden="true"
+            />
+            <div class="usa-media-block__body">
+              <p>
+                <strong>Official websites use .gov</strong><br>A
+                <strong>.gov</strong> website belongs to an official government
+                organization in the United States.
+              </p>
+            </div>
+          </div>
+          <div class="usa-banner__guidance tablet:grid-col-6">
+            <img
+              class="usa-banner__icon usa-media-block__img"
+              src="../img/icon-https.svg"
+              role="img"
+              alt=""
+              aria-hidden="true"
+            />
+            <div class="usa-media-block__body">
+              <p>
+                <strong>Secure .gov websites use HTTPS</strong><br>A
+                <strong>lock</strong> (
+                <span class="icon-lock"
+                  ><svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="52"
+                    height="64"
+                    viewBox="0 0 52 64"
+                    class="usa-banner__lock-image"
+                    role="img"
+                    aria-labelledby="banner-lock-title-default banner-lock-description-default"
+                    focusable="false"
+                  >
+                    <title id="banner-lock-title-default">Lock</title>
+                    <desc id="banner-lock-description-default">A locked padlock</desc>
+                    <path
+                      fill="#000000"
+                      fill-rule="evenodd"
+                      d="M26 0c10.493 0 19 8.507 19 19v9h3a4 4 0 0 1 4 4v28a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4V32a4 4 0 0 1 4-4h3v-9C7 8.507 15.507 0 26 0zm0 8c-5.979 0-10.843 4.77-10.996 10.712L15 19v9h22v-9c0-6.075-4.925-11-11-11z"
+                    />
+                  </svg> </span
+                >) or <strong>https://</strong> means you’ve safely connected to
+                the .gov website. Share sensitive information only on official,
+                secure websites.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Here ends banner -->
+
+
+
+<!-- Here begins mobile menu -->
+
+<div class="usa-overlay"></div>
+<header class="usa-header usa-header--basic">
+  <div class="usa-nav-container">
+    <div class="usa-navbar site-header__navbar" style="">
+      <div class="usa-logo site-logo" id="logo">
+        <em class="usa-logo__text site-logo__text">
+         
+          <a href="./index.html" title="TDP Project Updates" style="display: flex;">
+             <img src="../img/logo-img.png" width="48px" alt="" aria-hidden="true" style="float: left; "><div style="display: flex; flex-direction: horizontal; width: 300px; flex-wrap: wrap; padding-left: 8px; "><div style="display: flex-item; color: #264A63; font-weight: 800;">TANF Data Portal</div><div style="display: flex-item; width: fit-content; color: #336A90">Knowledge Center</div></div>
+          </a>
+        </em>
+      </div>
+      <button class="usa-menu-btn">Menu</button>
+    </div>
+    <nav aria-label="Primary navigation" class="usa-nav">
+      <button class="usa-nav__close">
+        <img src="../img/close.svg" role="img" alt="Close" />
+      </button>
+     
+      <a href="search.html" class="usa-button usa-button--outline" style="position: relative; margin-bottom: 16px;">🔍 Search</a>
+
+      <a href="https://tanfdata.acf.hhs.gov/" class="usa-button usa-button--outline" style="position: relative; margin-bottom: 16px;">Go to TDP</a>
+<mobile-nav></mobile-nav>
+     
+      <!-- Here ends mobile menu -->
+
+
+    </nav>
+  </div>
+</header>
+
+<!-- Here begins desktop web menu -->
+
+   <div class="usa-section">
+  <div class="grid-container">
+    <div class="grid-row grid-gap">
+      <div class="usa-layout-docs__sidenav desktop:grid-col-3">
+        <nav aria-label="Secondary navigation">
+       
+              <site-nav></site-nav>
+          
+        </nav>
+      </div>
+
+      <!-- Here ends desktop web menu -->
+
+
+
+      <main
+        class="usa-layout-docs__main desktop:grid-col-9 usa-prose usa-layout-docs"
+        id="main-content">
+
+      <!-- Shutdown banner, uncomment the shut-down tag below to enable. See components/shutdown-banner.html for content -->
+
+                 <!-- <shut-down></shut-down> -->
+
+      <!-- Shutdown banner, uncomment the shut-down tag above to enable. See components/shutdown-banner.html for content -->
+
+
+
+        <h1>Search the Knowledge Center</h1>
+        <p>Search for anything or pick from common searches:</p>
+
+              <button class="search-pill" id="rnBtn">What's new?</button>
+              <button class="search-pill" id="faqBtn">FAQs</button>
+              <button class="search-pill" id="ssnBtn">SSNs</button>
+              <button class="search-pill" id="tanfBtn">TANF / SSP</button>
+              <button class="search-pill" id="fraBtn">FRA</button>
+              <button class="search-pill" id="manageBtn">Manage my account</button>
+
+
+        <div style="min-height: 22px;"></div>
+
+        <script>
+ document.addEventListener('DOMContentLoaded', () => {
+  const searchBox = document.getElementById('searchBox');
+  const suggestBtn = document.getElementById('faqBtn');
+
+  suggestBtn.addEventListener('click', () => {
+    searchBox.value = 'faqs';
+    searchBox.dispatchEvent(new Event('input', { bubbles: true }));
+    // runSearch(searchBox.value); // optional
+  });
+});
+</script>
+        <script>
+ document.addEventListener('DOMContentLoaded', () => {
+  const searchBox = document.getElementById('searchBox');
+  const suggestBtn = document.getElementById('rnBtn');
+
+  suggestBtn.addEventListener('click', () => {
+    searchBox.value = "What's new";
+    searchBox.dispatchEvent(new Event('input', { bubbles: true }));
+    // runSearch(searchBox.value); // optional
+  });
+});
+</script>
+        <script>
+ document.addEventListener('DOMContentLoaded', () => {
+  const searchBox = document.getElementById('searchBox');
+  const suggestBtn = document.getElementById('ssnBtn');
+
+  suggestBtn.addEventListener('click', () => {
+    searchBox.value = "ssns";
+    searchBox.dispatchEvent(new Event('input', { bubbles: true }));
+    // runSearch(searchBox.value); // optional
+  });
+});
+</script>
+        <script>
+ document.addEventListener('DOMContentLoaded', () => {
+  const searchBox = document.getElementById('searchBox');
+  const suggestBtn = document.getElementById('tanfBtn');
+
+  suggestBtn.addEventListener('click', () => {
+    searchBox.value = "tanf";
+    searchBox.dispatchEvent(new Event('input', { bubbles: true }));
+    // runSearch(searchBox.value); // optional
+  });
+});
+</script>
+        <script>
+ document.addEventListener('DOMContentLoaded', () => {
+  const searchBox = document.getElementById('searchBox');
+  const suggestBtn = document.getElementById('fraBtn');
+
+  suggestBtn.addEventListener('click', () => {
+    searchBox.value = "fra";
+    searchBox.dispatchEvent(new Event('input', { bubbles: true }));
+    // runSearch(searchBox.value); // optional
+  });
+});
+</script>
+        <script>
+ document.addEventListener('DOMContentLoaded', () => {
+  const searchBox = document.getElementById('searchBox');
+  const suggestBtn = document.getElementById('manageBtn');
+
+  suggestBtn.addEventListener('click', () => {
+    searchBox.value = "account";
+    searchBox.dispatchEvent(new Event('input', { bubbles: true }));
+    // runSearch(searchBox.value); // optional
+  });
+});
+</script>
+
+    <input
+      class="usa-input"
+      id="searchBox"
+      placeholder="Type here to search..."
+      style="float: none; min-width: 100%;"
+      autofocus
+    />
+
+
+<div>
+  <p id="resultsCount" aria-live="polite"></p>
+<ul id="results"></ul>
+</div>
+
+
+      
+
+        
+
+      </main>
+
+
+
+
+    </div>
+
+
+
+  </div>
+
+  <footer class="usa-footer usa-footer--slim">
+  <div class="grid-container usa-footer__return-to-top">
+    <a href="#">Return to top</a>
+  </div>
+  <div class="usa-footer__primary-section">
+    <div class="usa-footer__primary-container grid-row">
+      <div class="mobile-lg:grid-col-8">
+        <nav class="usa-footer__nav" aria-label="Footer navigation,">
+          <ul class="grid-row grid-gap">
+            <li
+              class="
+                mobile-lg:grid-col-6
+                desktop:grid-col-auto
+                usa-footer__primary-content
+              "
+            >
+              <a class="usa-footer__primary-link" href="https://www.acf.hhs.gov/privacy-policy"
+                >Privacy Policy</a
+              >
+            </li>
+
+          </ul>
+        </nav>
+      </div>
+
+    </div>
+  </div>
+  <div class="usa-footer__secondary-section">
+    <div class="grid-container" style="padding-left: 0rem !important;">
+      <div class="usa-footer__logo grid-row grid-gap-2">
+        <div class="grid-col-auto">
+          <img class="mobile-lg:maxw-mobile mobile:width-mobile" src="../img/acfofa.svg" alt="Administration for Children and Families: OFfice of Family Assistance" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // Debounce function
+  function debounce(func, delay) {
+    let timeout;
+    return function(...args) {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(this, args), delay);
+    };
+  }
+
+  // Event handler to send GA event
+  function sendTypingEvent(value) {
+    gtag('event', 'typing_pause', {
+      event_category: 'Search Interaction',
+      event_label: 'Search Bar',
+      search_term: value // or sanitize and send value if appropriate
+    });
+    console.log('Typing event sent:', value);
+  }
+
+  // Attach listener with debounce
+  const inputField = document.getElementById('searchBox');
+  const debouncedHandler = debounce(function(e) {
+    sendTypingEvent(e.target.value);
+  }, 1000); // 2-second debounce
+
+  inputField.addEventListener('input', debouncedHandler);
+</script>
+
+</footer>
+</div>

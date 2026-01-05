@@ -1,4 +1,3 @@
-import React from 'react'
 import { thunk } from 'redux-thunk'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
@@ -10,6 +9,22 @@ import PrivateRoute from '../PrivateRoute'
 import Home from '../Home'
 import SplashPage from '../SplashPage'
 import { render, screen } from '@testing-library/react'
+import { useRUM } from '../../hooks/useRUM'
+
+jest.mock('../../hooks/useRUM')
+
+const mockSetUserInfo = jest.fn()
+beforeEach(() => {
+  useRUM.mockReturnValue({
+    setUserInfo: mockSetUserInfo,
+    traceAsyncUserAction: jest.fn(),
+    traceUserAction: jest.fn(),
+    logPageView: jest.fn(),
+    logUserAction: jest.fn(),
+    logError: jest.fn(),
+  })
+  mockSetUserInfo.mockClear()
+})
 
 const initialState = {
   auth: {
@@ -117,5 +132,56 @@ describe('LoginCallback.js', () => {
       type: ALERT_INFO,
     })
     spy.mockRestore()
+  })
+
+  it('clears alert when authLoading transitions to false', () => {
+    const store = mockStore({
+      auth: {
+        authenticated: true,
+        loading: false,
+        user: { email: 'test@test.com', roles: [] },
+      },
+      stts: initialState.stts,
+    })
+    const spy = jest.spyOn(Alert, 'clearAlert')
+
+    render(
+      <Provider store={store}>
+        <MemoryRouter initialEntries={['/login']}>
+          <Routes>
+            <Route exact path="/login" element={<LoginCallback />} />
+            <Route exact path="/home" element={<div>Home</div>} />
+          </Routes>
+        </MemoryRouter>
+      </Provider>
+    )
+
+    expect(spy).toHaveBeenCalled()
+    spy.mockRestore()
+  })
+
+  it('calls setUserInfo when user is authenticated', () => {
+    const user = { email: 'test@test.com', roles: [] }
+    const store = mockStore({
+      auth: {
+        authenticated: true,
+        loading: false,
+        user,
+      },
+      stts: initialState.stts,
+    })
+
+    render(
+      <Provider store={store}>
+        <MemoryRouter initialEntries={['/login']}>
+          <Routes>
+            <Route exact path="/login" element={<LoginCallback />} />
+            <Route exact path="/home" element={<div>Home</div>} />
+          </Routes>
+        </MemoryRouter>
+      </Provider>
+    )
+
+    expect(mockSetUserInfo).toHaveBeenCalledWith(user)
   })
 })

@@ -1,13 +1,14 @@
 """Custom logging handler that sends logs to an S3 bucket."""
 
 import logging
-import logging.handlers
 import os
 
 from django.conf import settings
 
 import boto3
 from botocore.exceptions import ClientError
+
+from tdpservice.data_files.util import create_s3_log_file_path
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +34,7 @@ def change_log_filename(logger, datafile):
     handlers = getattr(logger, "handlers", [])
     new_filename = (
         f"/tmp/{datafile.year}_{datafile.quarter}_"
-        f"{datafile.stt}_{datafile.section}.log"
+        f"{datafile.stt}_{datafile.program_type}_{datafile.section}.log"
     )
     for handler in handlers:
         if isinstance(handler, S3FileHandler):
@@ -66,10 +67,7 @@ class S3FileHandler(logging.FileHandler):
         with open(self.filename, "a") as file:
             file.write("\n ___ END OF LOG ___\n\n\n")
         try:
-            key = (
-                f"{AWS_S3_LOGS_PREFIX}/{datafile.year}/{datafile.quarter}/"
-                f"{datafile.stt}/{datafile.section}"
-            )
+            key = f"{AWS_S3_LOGS_PREFIX}/{create_s3_log_file_path(datafile)}"
             self.s3_client.upload_file(
                 Filename=self.filename, Bucket=AWS_S3_BUCKET_NAME, Key=key
             )

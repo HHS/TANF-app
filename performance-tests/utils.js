@@ -1,18 +1,13 @@
 import http from 'k6/http';
 
 export const login = (username = 'cypress-admin@teamraft.com') => {
-  let url = `${__ENV.BASE_URL}/v1/login/cypress`
-  let body = {
-    username,
-    token: __ENV.CYPRESS_TOKEN
-  };
+  let url = `${__ENV.BASE_URL}/v1/login/cypress?username=${username}`
 
-  // Using a JSON string as body
-  let res = http.post(
-    url,
-    JSON.stringify(body),
-    { headers: { 'Content-Type': 'application/json' } },
-  );
+  let res = http.get(url, {
+    headers: {
+      'X-Cypress-Token': __ENV.CYPRESS_TOKEN
+    }
+  })
 
   return res
 }

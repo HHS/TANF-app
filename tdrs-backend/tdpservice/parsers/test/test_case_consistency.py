@@ -5,9 +5,9 @@ from io import StringIO
 
 import pytest
 
+from tdpservice.data_files.parser_error_choices import ParserErrorCategoryChoices
 from tdpservice.parsers.dataclasses import RawRow
 from tdpservice.parsers.error_generator import ErrorGeneratorFactory, ErrorGeneratorType
-from tdpservice.parsers.models import ParserErrorCategoryChoices
 from tdpservice.parsers.test import factories
 from tdpservice.stts.models import STT
 
