@@ -7,7 +7,7 @@ import SectionSubmissionHistory from '../../SubmissionHistory/SectionSubmissionH
 import SegmentedControl from '../../SegmentedControl'
 import FiscalYearSelect from '../components/FiscalYearSelect'
 import FiscalQuarterSelect from '../components/FisclaQuarterSelect'
-import FeedbackReportAlert from '../../FeedbackReportAlert'
+import FeedbackReportAlert from '../../FeedbackReports/FeedbackReportAlert'
 import { useReportsContext } from '../ReportsContext'
 
 const TanfSspReports = ({ stt, isRegionalStaff, isDataAnalyst }) => {
