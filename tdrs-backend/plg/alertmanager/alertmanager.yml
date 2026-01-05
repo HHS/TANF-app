@@ -80,7 +80,7 @@ receivers:
         send_resolved: true
   - name: 'mattermost'
     slack_configs:
-      - channel: 'tdp-alerts'
+      - channel: 'guest-ofa-tdp-alerts'
         username: 'alertmanager'
         send_resolved: true
         text: |-
