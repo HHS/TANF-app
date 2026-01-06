@@ -166,7 +166,13 @@ export const ReportsProvider = ({ isFra = false, children }) => {
       }
       setHasValidatedParams(true)
     }
-  }, [sttList])
+  }, [
+    sttList,
+    hasValidatedParams,
+    searchParams,
+    setSttInputValue,
+    setHasValidatedParams,
+  ])
 
   const [pendingChange, setPendingChange] = useState({
     type: null,
@@ -229,8 +235,14 @@ export const ReportsProvider = ({ isFra = false, children }) => {
 
   // Redux selectors
   const files = useSelector((state) => state.reports.submittedFiles)
-  const uploadedFiles = files?.filter((file) => file.fileName && !file.id)
-  const submittedFiles = files?.filter((file) => file.fileName && file.id) || []
+  const uploadedFiles = useMemo(
+    () => files?.filter((file) => file.fileName && !file.id),
+    [files]
+  )
+  const submittedFiles = useMemo(
+    () => files?.filter((file) => file.fileName && file.id) || [],
+    [files]
+  )
 
   // FRA-specific derived state
   const fraHasUploadedFile = !!fraSelectedFile && !fraSelectedFile.id
@@ -290,6 +302,8 @@ export const ReportsProvider = ({ isFra = false, children }) => {
           dispatch(clearFileList({ fileType: 'tanf' }))
           dispatch(reinitializeSubmittedFiles('tanf'))
         }
+        break
+      default:
         break
     }
     setPendingChange({ type: null, value: null, sttObject: null })
