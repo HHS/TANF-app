@@ -33,12 +33,12 @@ Then(
 
 Then('{string} can download the {string} error report', (actor, program) => {
   if (program === 'TANF') {
-    df.downloadErrorReport('2021-Q1-Active Case Data Error Report.xlsx')
+    df.downloadErrorReport('2021-Q1-TANF Active Case Data Error Report.xlsx')
   } else if (program === 'SSP') {
-    df.downloadErrorReport('2024-Q1-Active Case Data Error Report.xlsx')
+    df.downloadErrorReport('2024-Q1-SSP Active Case Data Error Report.xlsx')
   } else if (program === 'FRA') {
     df.downloadErrorReport(
-      '2024-Q2-Work Outcomes of TANF Exiters Error Report.xlsx'
+      '2024-Q2-FRA Work Outcomes of TANF Exiters Error Report.xlsx'
     )
   }
 })
@@ -167,7 +167,17 @@ Then(
     const { year, quarter } = UPLOAD_FILE_INFO[program][section]
 
     df.getLatestSubmissionHistoryRow(section).within(() => {
-      df.downloadErrorReportAndAssert(section, year, quarter)
+      const programPrefix =
+        program === 'TANF'
+          ? 'TANF'
+          : program === 'FRA'
+          ? 'FRA'
+          : program === 'SSP'
+          ? 'SSP'
+          : program === 'Tribal' || program === 'TRIBAL'
+          ? 'Tribal'
+          : ''
+      df.downloadErrorReportAndAssert(section, year, quarter, programPrefix)
     })
   }
 )
