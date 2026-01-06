@@ -62,6 +62,7 @@ export const serializeApiDataFile = (dataFile) => ({
   fileType: dataFile.extension,
   quarter: dataFile.quarter,
   section: dataFile.section,
+  program_type: dataFile.program_type,
   uuid: dataFile.slug,
   year: dataFile.year,
   s3_version_id: dataFile.s3_version_id,
