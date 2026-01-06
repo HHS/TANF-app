@@ -68,7 +68,7 @@ class TestSendFeedbackReportAvailableEmail:
 
             mock_email.assert_called_once()
             call_kwargs = mock_email.call_args[1]
-            assert call_kwargs["email_path"] == "feedback-report-available.html"
+            assert call_kwargs["email_path"] == "feedback/report-available.html"
 
     def test_email_context_contains_required_fields(self, mock_report_file):
         """Test that email context contains all required template variables."""
