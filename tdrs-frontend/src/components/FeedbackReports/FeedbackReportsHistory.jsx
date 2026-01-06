@@ -1,5 +1,47 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+  faCheckCircle,
+  faXmarkCircle,
+  faClock,
+} from '@fortawesome/free-solid-svg-icons'
+
+/**
+ * ReportSourceStatusIcon displays a status icon for report source processing states.
+ */
+function ReportSourceStatusIcon({ status }) {
+  let icon = null
+  let color = null
+
+  switch (status) {
+    case 'PENDING':
+    case 'PROCESSING':
+      icon = faClock
+      color = '#005EA2'
+      break
+    case 'SUCCEEDED':
+      icon = faCheckCircle
+      color = '#40bb45'
+      break
+    case 'FAILED':
+      icon = faXmarkCircle
+      color = '#bb0000'
+      break
+    default:
+      break
+  }
+
+  if (!icon) return null
+
+  return (
+    <FontAwesomeIcon className="margin-right-1" icon={icon} color={color} />
+  )
+}
+
+ReportSourceStatusIcon.propTypes = {
+  status: PropTypes.string,
+}
 
 /**
  * FeedbackReportsHistory component displays the upload history table
@@ -27,7 +69,10 @@ function FeedbackReportsHistory({ data, formatDateTime }) {
                 <td>{report.year || new Date().getFullYear()}</td>
                 <td>{formatDateTime(report.created_at)}</td>
                 <td>{formatDateTime(report.processed_at)}</td>
-                <td>{report.status}</td>
+                <td style={{ textWrap: 'nowrap' }}>
+                  <ReportSourceStatusIcon status={report.status} />
+                  {report.status}
+                </td>
                 <td>{report.error_message || 'None'}</td>
                 <td>
                   {report.original_filename ? (

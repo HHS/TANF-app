@@ -83,7 +83,7 @@ describe('FRA Reports Page', () => {
 
       const store = mockStore(state)
 
-      const { getByText, queryByText } = render(
+      const { getByText } = render(
         <Provider store={store}>
           <MemoryRouter>
             <FRAReports />
@@ -298,7 +298,7 @@ describe('FRA Reports Page', () => {
     }
 
     it('Allows csv files to be selected and submitted', async () => {
-      const { getByText, dispatch, getByRole, container } = await setup()
+      const { getByText, dispatch, container } = await setup()
 
       const uploadForm = container.querySelector('#fra-file-upload')
       fireEvent.change(uploadForm, {
@@ -326,7 +326,7 @@ describe('FRA Reports Page', () => {
     })
 
     it('Allows xlsx files to be selected and submitted', async () => {
-      const { getByText, dispatch, getByRole, container } = await setup()
+      const { getByText, dispatch, container } = await setup()
 
       const uploadForm = container.querySelector('#fra-file-upload')
       fireEvent.change(uploadForm, {
@@ -358,9 +358,15 @@ describe('FRA Reports Page', () => {
     })
 
     it('Shows a spinner until submission history updates', async () => {
-      jest.spyOn(global, 'setTimeout')
-      const { getByText, getByAltText, dispatch, mockAxios, container } =
-        await setup()
+      // jest.spyOn(global, 'setTimeout')
+      const {
+        getByText,
+        queryAllByTestId,
+        queryAllByText,
+        dispatch,
+        mockAxios,
+        container,
+      } = await setup()
 
       mockAxios.post.mockResolvedValue({
         data: {
@@ -443,16 +449,27 @@ describe('FRA Reports Page', () => {
       )
       await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(6))
 
+      expect(queryAllByTestId('spinner')).toHaveLength(3)
+      expect(queryAllByText('Pending')).toHaveLength(2)
+
       jest.runOnlyPendingTimers()
 
       expect(mockAxios.get).toHaveBeenCalledTimes(4)
       expect(times).toBe(2)
+
+      await waitFor(() => {
+        expect(getByText('Approved')).toBeInTheDocument()
+      })
+
+      expect(queryAllByTestId('spinner')).toHaveLength(0)
+      expect(queryAllByText('Pending')).toHaveLength(0)
+      expect(getByText('Approved')).toBeInTheDocument()
     })
 
     it('Shows an error if file submission failed', async () => {
       jest.mock('axios')
       const mockAxios = axios
-      const { getByText, dispatch, getByRole, container } = await setup()
+      const { getByText, dispatch, container } = await setup()
 
       mockAxios.post.mockRejectedValue({
         message: 'Error',
@@ -484,16 +501,10 @@ describe('FRA Reports Page', () => {
     })
 
     it('Shows an error if a no file is selected for submission', async () => {
-      const { getByText, dispatch, getByRole, container } = await setup()
+      const { getByText } = await setup()
 
       const submitButton = getByText('Submit Report', { selector: 'button' })
-      fireEvent.click(submitButton)
-
-      await waitFor(() => {
-        expect(
-          getByText('No changes have been made to data files')
-        ).toBeInTheDocument()
-      })
+      expect(submitButton).not.toBeEnabled()
     })
 
     it('Shows an error if a non-allowed file type is selected', async () => {
@@ -811,8 +822,7 @@ describe('FRA Reports Page', () => {
     it('Renders a message when no data is available', async () => {
       const submissionHistoryState = []
 
-      const { getByText, queryByText, getByLabelText, container, dispatch } =
-        await setup(submissionHistoryState)
+      const { getByText } = await setup(submissionHistoryState)
 
       await waitFor(() => {
         expect(getByText('No data available.')).toBeInTheDocument()
@@ -843,8 +853,7 @@ describe('FRA Reports Page', () => {
         },
       ]
 
-      const { getByText, queryByText, getByLabelText, container, dispatch } =
-        await setup(submissionHistoryApiResponse)
+      const { getByText } = await setup(submissionHistoryApiResponse)
 
       await waitFor(() => {
         expect(getByText(/by Test Testerson/)).toBeInTheDocument()
@@ -888,8 +897,9 @@ describe('FRA Reports Page', () => {
         })
       }
 
-      const { getByText, queryByText, getByLabelText, container, dispatch } =
-        await setup(submissionHistoryApiResponse)
+      const { getByText, queryByText } = await setup(
+        submissionHistoryApiResponse
+      )
 
       await waitFor(() => {
         expect(
@@ -955,8 +965,7 @@ describe('FRA Reports Page', () => {
         },
       ]
 
-      const { getByText, queryByText, getByLabelText, container, dispatch } =
-        await setup(submissionHistoryApiResponse)
+      const { getByText } = await setup(submissionHistoryApiResponse)
 
       await waitFor(() => {
         expect(getByText(/by Test Testerson/)).toBeInTheDocument()

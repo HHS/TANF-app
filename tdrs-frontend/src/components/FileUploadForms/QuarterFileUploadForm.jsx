@@ -69,6 +69,7 @@ const QuarterFileUploadForm = ({ stt }) => {
     yearInputValue,
     fileTypeInputValue,
     localAlert,
+    uploadedFiles,
     isSubmitting,
     alertRef,
     onSubmit,
@@ -112,7 +113,7 @@ const QuarterFileUploadForm = ({ stt }) => {
           <Button
             className="card:margin-y-1"
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || uploadedFiles.length === 0}
           >
             {isSubmitting ? 'Submitting...' : 'Submit Data Files'}
           </Button>

@@ -3,7 +3,7 @@
 from django.conf import settings
 
 from tdpservice.email.email import automated_email, log
-from tdpservice.email.email_enums import EmailType
+from tdpservice.email.email_enums import FeedbackReportEmail
 from tdpservice.reports.models import ReportFile
 
 
@@ -29,7 +29,7 @@ def send_feedback_report_available_email(report_file: ReportFile, recipients):
             "content_type": ReportFile,
         }
 
-    template_path = EmailType.FEEDBACK_REPORT_AVAILABLE.value
+    template_path = FeedbackReportEmail.REPORT_AVAILABLE.value
     subject = f"Feedback Report Available: {report_file.stt.name} - FY {report_file.year} {report_file.quarter}"
     text_message = (
         f"A new feedback report is available for {report_file.stt.name} "
