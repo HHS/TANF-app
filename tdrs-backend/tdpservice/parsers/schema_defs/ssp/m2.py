@@ -451,8 +451,7 @@ m2 = [
                 validators=[
                     category3.orValidators(
                         [
-                            category3.isBetween(1, 4, inclusive=True),
-                            category3.isBetween(6, 9, inclusive=True),
+                            category3.isBetween(1, 9, inclusive=True),
                             category3.isBetween(11, 12, inclusive=True),
                         ]
                     )
