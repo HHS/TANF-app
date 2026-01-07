@@ -51,7 +51,7 @@ Then('Regional Randy has read-only access to submission history', () => {
   cy.get('button').contains('small_correct_file.txt').should('not.exist')
   df.table_first_row_contains('small_correct_file.txt')
   df.table_first_row_contains('Rejected')
-  df.downloadErrorReport('2021-Q1-Active Case Data Error Report.xlsx')
+  df.downloadErrorReport('2021-Q1-TANF Active Case Data Error Report.xlsx')
 })
 
 Given('FRA Data Analyst Fred submits a file', () => {
