@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>TDP — Submitting FRA Data To TDP</title>
+    <link rel="stylesheet" href="../css/uswds3.css" />
+    <link rel="icon" type="image/x-icon" href="../img/favicons/gov-favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="../js/uswds.min.js"></script>
+    <link href="dist/lity.css" rel="stylesheet">
+    <script src="dist/lity.js"></script>
+    <script src="components/desktop-navigation.js" defer></script>
+    <script src="components/mobile-navigation.js" defer></script>
+    <script src="components/shutdown-banner.js" defer></script>
+   
+
+
+
+  </head>
+
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8V03JLZHK0"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-8V03JLZHK0');
+</script>
+
+  <body>
+    <a class="usa-skipnav" href="#main-content">Skip to main content</a>
+
+    <!-- Here begins banner -->
+
+  <section class="usa-banner" aria-label="Official government website">
+    <div class="usa-accordion">
+      <header class="usa-banner__header">
+        <div class="usa-banner__inner">
+          <div class="grid-col-auto">
+            <img class="usa-banner__header-flag" src="../img/us_flag_small.png" alt="U.S. flag"/>
+          </div>
+          <div class="grid-col-fill tablet:grid-col-auto">
+            <p class="usa-banner__header-text">
+              An official website of the United States government
+            </p>
+            <p class="usa-banner__header-action" aria-hidden="true">
+              Here’s how you know
+            </p>
+          </div>
+          <button
+            class="usa-accordion__button usa-banner__button"
+            aria-expanded="false"
+            aria-controls="gov-banner-default">
+            <span class="usa-banner__button-text">Here’s how you know</span>
+
+          </button>
+        </div>
+      </header>
+      <div
+        class="usa-banner__content usa-accordion__content"
+        id="gov-banner-default"
+      >
+        <div class="grid-row grid-gap-lg">
+          <div class="usa-banner__guidance tablet:grid-col-6">
+            <img
+              class="usa-banner__icon usa-media-block__img"
+              src="../img/icon-dot-gov.svg"
+              role="img"
+              alt=""
+              aria-hidden="true"
+            />
+            <div class="usa-media-block__body">
+              <p>
+                <strong>Official websites use .gov</strong><br>A
+                <strong>.gov</strong> website belongs to an official government
+                organization in the United States.
+              </p>
+            </div>
+          </div>
+          <div class="usa-banner__guidance tablet:grid-col-6">
+            <img
+              class="usa-banner__icon usa-media-block__img"
+              src="../img/icon-https.svg"
+              role="img"
+              alt=""
+              aria-hidden="true"
+            />
+            <div class="usa-media-block__body">
+              <p>
+                <strong>Secure .gov websites use HTTPS</strong><br>A
+                <strong>lock</strong> (
+                <span class="icon-lock"
+                  ><svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="52"
+                    height="64"
+                    viewBox="0 0 52 64"
+                    class="usa-banner__lock-image"
+                    role="img"
+                    aria-labelledby="banner-lock-title-default banner-lock-description-default"
+                    focusable="false"
+                  >
+                    <title id="banner-lock-title-default">Lock</title>
+                    <desc id="banner-lock-description-default">A locked padlock</desc>
+                    <path
+                      fill="#000000"
+                      fill-rule="evenodd"
+                      d="M26 0c10.493 0 19 8.507 19 19v9h3a4 4 0 0 1 4 4v28a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4V32a4 4 0 0 1 4-4h3v-9C7 8.507 15.507 0 26 0zm0 8c-5.979 0-10.843 4.77-10.996 10.712L15 19v9h22v-9c0-6.075-4.925-11-11-11z"
+                    />
+                  </svg> </span
+                >) or <strong>https://</strong> means you’ve safely connected to
+                the .gov website. Share sensitive information only on official,
+                secure websites.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Here ends banner -->
+
+
+
+<!-- Here begins mobile menu -->
+
+<div class="usa-overlay"></div>
+<header class="usa-header usa-header--basic">
+  <div class="usa-nav-container">
+    <div class="usa-navbar site-header__navbar" style="">
+      <div class="usa-logo site-logo" id="logo">
+        <em class="usa-logo__text site-logo__text">
+         
+          <a href="./index.html" title="TDP Project Updates" style="display: flex;">
+             <img src="../img/logo-img.png" width="48px" alt="" aria-hidden="true" style="float: left; "><div style="display: flex; flex-direction: horizontal; width: 300px; flex-wrap: wrap; padding-left: 8px; "><div style="display: flex-item; color: #264A63; font-weight: 800;">TANF Data Portal</div><div style="display: flex-item; width: fit-content; color: #336A90">Knowledge Center</div></div>
+          </a>
+        </em>
+      </div>
+      <button class="usa-menu-btn">Menu</button>
+    </div>
+    <nav aria-label="Primary navigation" class="usa-nav">
+      <button class="usa-nav__close">
+        <img src="../img/close.svg" role="img" alt="Close" />
+      </button>
+
+      <a href="search.html" class="usa-button usa-button--outline" style="position: relative; margin-bottom: 16px;">🔍 Search</a>
+
+      <a href="https://tanfdata.acf.hhs.gov/" class="usa-button usa-button--outline" style="position: relative; margin-bottom: 16px;">Go to TDP</a>
+<mobile-nav></mobile-nav>
+     
+      <!-- Here ends mobile menu -->
+
+
+    </nav>
+  </div>
+</header>
+
+<!-- Here begins desktop web menu -->
+
+   <div class="usa-section">
+  <div class="grid-container">
+    <div class="grid-row grid-gap">
+      <div class="usa-layout-docs__sidenav desktop:grid-col-3">
+        <nav aria-label="Secondary navigation">
+       
+              <site-nav></site-nav>
+          
+        </nav>
+      </div>
+
+      <!-- Here ends desktop web menu -->
+
+      <main
+        class="usa-layout-docs__main desktop:grid-col-9 usa-prose usa-layout-docs"
+        id="main-content">
+        <h1>Submitting FRA Data Files to TDP</h1>
+        <div style="min-height: 22px;"></div>
+
+        <p class="usa-intro">
+     
+        </p>
+         
+        <p>TDP admins can grant you access to the ‘FRA Data Files’ page where you’ll be able to submit your Work Outcomes of TANF Exiters data, and other future reports relevant to the FRA. If you believe you should have access to FRA Data Files but do not, please reach out to <a href="mailto:tanfdata@acf.hhs.gov">tanfdata@acf.hhs.gov</a></p>
+        <div style="min-height: 22px;"></div>
+   
+ <p>Jump to:</p>
+ <ul>
+  <li><a href="#submit">Submitting FRA Data Files</a></li>
+    <li><a href="#resubmit">Resubmitting FRA Data Files</a></li>
+  <li><a href="#submission-history">Viewing FRA Submission History</a></li>
+ </ul>
+
+   <div style="min-height: 22px;"></div>
+   
+<hr style="border: none;
+    height: 1px;
+    background: #000;
+    margin-top: 32px;
+    background: repeating-linear-gradient(90deg,#000,#000 6px,transparent 6px,transparent 12px);">
+    <div style="min-height: 22px;"></div> <div style="min-height: 22px;"></div>   
+   <h2 id="submit">Submitting FRA Data Files</h2>
+  <div style="min-height: 22px;"></div>
+     
+     <ol class="usa-process-list">
+          <li class="usa-process-list__item">
+            <h3 class="usa-process-list__heading">Choose which data you'll be submitting</h3>
+            <p class="margin-top-05">
+              Fill out the search fields for 'File Type', ‘Fiscal Year (October - September)’ , and ‘Quarter’ to identify which type and reporting period of data you’ll be uploading and click 'Search'. Note that Secondary School Attainment and Supplemental Work Outcomes file types will not be selectable until closer to their first submission date in Fiscal Year 2026. 
+              <br><br> A new area of the page will appear below the search button. 
+              <br><br> For the <strong>Work Outcomes of TANF Exiters report</strong>, the records within your data files are organized by <strong>calendar month (YYYYMM)</strong>, however, these files are submitted according to <strong>fiscal quarters</strong> and <strong>fiscal years</strong>; which run from October 1 to September 30. As an example, files that cover <strong>Calendar Year 2024 Quarter 4 (October-December)</strong> are to be reported for <strong>Fiscal Year 2025 Quarter 1</strong>. 
+                     <div style="min-height: 22px;"></div>
+              <a href="../img/fra/search.png" data-lity data-lity-desc="File type, Fiscal Year, and Quarter fields available in the search form on the FRA data files page">
+              <img src="../img/fra/search.png" alt="File type, Fiscal Year, and Quarter fields available in the search form on the FRA data files page">
+                </a>
+            </p>
+          </li>
+             <li class="usa-process-list__item">
+            <h3 class="usa-process-list__heading">Upload your files</h3>
+            <p class="margin-top-05">
+              You can either drag and drop each file to upload it or click ‘Choose from folder’ to browse your computer for the file. We recommend that you submit in .csv format, though .xlsx is also accepted so long as each data column is correctly formatted with exit dates stored as numeric or text values and social security numbers as text (to preserve all nine digits of any that begin with zeroes).
+              <div style="min-height: 22px;"></div>
+              <a href="../img/fra/submission-unfilled.png" data-lity data-lity-desc="An empty file upload for the Work Outcomes of TANF Exiters report">
+              <img src="../img/fra/submission-unfilled.png" alt="An empty file upload for the Work Outcomes of TANF Exiters report">
+                </a>
+            </p>
+          </li>
+                       <li class="usa-process-list__item">
+            <h3 class="usa-process-list__heading">Submit your files</h3>
+            <p class="margin-top-05">
+              After uploading the files you want to submit, click the ‘Submit Report’ button. You'll see a banner appear confirming that TDP has your file.
+              <div style="min-height: 22px;"></div>
+              <a href="../img/fra/submission.png" data-lity data-lity-desc="An FRA data files page with a banner highlighting successful submission of a Work Outcomes of TANF Exiters report">
+              <img src="../img/fra/submission.png" alt="An FRA data files page with a banner highlighting successful submission of a Work Outcomes of TANF Exiters report">
+                </a>
+            </p>
+          </li>
+        </ol>
+
+
+        <hr style="border: none;
+    height: 1px;
+    background: #000;
+    margin-top: 32px;
+    background: repeating-linear-gradient(90deg,#000,#000 6px,transparent 6px,transparent 12px);">
+    <div style="min-height: 22px;"></div> <div style="min-height: 22px;"></div> 
+
+        <h2 id="resubmit">How to Resubmit Data</h2>
+        <p>If you need to replace or revise any file submitted to TDP, you can do so either by dragging a new file into the section(s) you’d like to resubmit or by clicking ‘Change File’. Once the new file is selected, be sure to click the ‘Submit Report’ button again to save your changes.<br><br>
+        TDP always treats the most recently uploaded version of a file as the source of truth for a given reporting period. Make sure that any resubmissions include all data that you're submitting for that reporting period, not just the subset that's changed since your previous submission.</p>
+ <div style="min-height: 22px;"></div> 
+        <a href="../img/fra/change-file.png" data-lity data-lity-desc="File upload component with the 'Change File' button within it emphasized">
+              <img src="../img/fra/change-file.png" alt="File upload component with the 'Change File' button within it emphasized">
+                </a>
+ <div style="min-height: 22px;"></div> 
+<hr style="border: none;
+    height: 1px;
+    background: #000;
+    margin-top: 32px;
+    background: repeating-linear-gradient(90deg,#000,#000 6px,transparent 6px,transparent 12px);">
+    <div style="min-height: 22px;"></div> <div style="min-height: 22px;"></div> 
+
+        <h2 id="submission-history">Viewing FRA Submission History</h2>
+        <p>Submission History allows you to access all versions of the data files previously submitted for a given quarter via the TANF Data Portal (TDP).</p>
+         <ol class="usa-process-list">
+          <li class="usa-process-list__item">
+            <h3 class="usa-process-list__heading">Search for the reporting period and file type you'd like to view</h3>
+            <p class="margin-top-05">
+              You can complete the search fields for 'File Type', ‘Fiscal Year’, and ‘Quarter’ to identify which data you’ll be viewing.
+            </p>
+          </li>
+             <li class="usa-process-list__item">
+            <h3 class="usa-process-list__heading">Scroll down  to the "Submission and Error Reports" section</h3>
+            <p class="margin-top-05">
+              After searching for the reporting period, a table labelled with the respective File Type, followed by 'Submissions & Error Reports' will be viewable if reports have been previously submitted through TDP.
+              <div style="min-height: 22px;"></div>
+            </p>
+          </li>
+   
+        </ol>
+
+
+
+        <h3>Download Error Reports and Previously Submitted FRA Files</h3>
+<p>You can click on links in the ‘Error Report’ column to view errors and data feedback associated with any submitted file. Depending on the completeness of your data and how soon you access the Submission History tab after submitting a file, you may see other values in this column including "Pending" and "No Errors".<br><br>
+To access a copy previously uploaded to TDP, you can click the link in the ‘File Name’ column. Note: TDP will auto-rename files to specify the fiscal period and section (e.g. 2025.Q2.Work Outcomes), so depending on your original file-naming conventions, the files you download may have a different name.</p>
+ <div style="min-height: 22px;"></div> 
+        <a href="../img/fra/submission-history.png" data-lity data-lity-desc="FRA Submission history with emphasis on the ability to download a previously submitted file and an error report">
+              <img src="../img/fra/submission-history.png" alt="FRA Submission history with emphasis on the ability to download a previously submitted file and an error report">
+                </a>
+ <div style="min-height: 22px;"></div>  <div style="min-height: 22px;"></div> 
+        <h3>Understanding File Statuses and Aggregate Data</h3>
+        <p>The Submission History table includes a status which communicates how many records were processed and accepted into the database from the file. It also elaborates on that status with a count of the number of errors; or records unable to process within a file.<br><br>
+        We occasionally update validation rules to improve error report accuracy. When this happens, we may reprocess files without changing the original data. The Submission History will display the latest reprocessing date if this occurs.</p>
+ <div style="min-height: 22px;"></div> 
+         <table class="usa-table">
+  <caption>
+   File Statuses Key
+  </caption>
+  <thead>
+    <tr>
+      <th scope="col">Status</th>
+      <th scope="col">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row"><img src="../img/loader.svg" alt="" aria-hidden="true" style="width: 20px; height: 20px; position: relative; top: 4px; margin-right: 5px;">Processing</th>
+      <td>
+        Your file is being processed by TDP. If this persists for more than two hours, please reach out to <a href="mailto:TANFdata@acf.hhs.gov">TANFdata@acf.hhs.gov</a> for support.  
+      </td>
+
+    </tr>
+    <tr>
+      <th scope="row"><img src="../img/alerts/success.svg" alt="" aria-hidden="true" style="width: 20px; height: 20px; position: relative; top: 4px; margin-right: 5px;">Accepted</th>
+      <td>
+        Your file has been processed and no errors were detected by TDP. Note that OFA (Office of Family Assistance) may still reach out to you via email with additional feedback on your data.
+      </td>
+
+    </tr>
+   
+    <tr>
+      <th scope="row"><img src="../img/alerts/error.svg" alt="" aria-hidden="true" style="width: 20px; height: 20px; position: relative; top: 4px; margin-right: 5px;">Partially accepted with errors</th>
+      <td>
+        Your file was unable to fully process. This means that some of the records in the file were accepted and some of the records were rejected because they contained errors.
+      </td>
+
+    </tr>
+       <tr>
+      <th scope="row"><img src="../img/alerts/cancel.svg" alt="" aria-hidden="true" style="width: 24px; height: 24px; position: relative; top: 6px; margin-right: 5px;">Rejected</th>
+      <td>
+        Your file could not be processed and likely contains errors relating file structure/record layout.
+      </td>
+
+    </tr>
+  </tbody>
+</table>
+
+ <div style="min-height: 22px;"></div> 
+         <table class="usa-table">
+  <caption>
+   Aggregate Data Columns Key
+  </caption>
+  <thead>
+    <tr>
+      <th scope="col">Column Name</th>
+      <th scope="col">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">Total Errors</th>
+      <td>
+        Reasons for files to contain errors include invalid social security numbers, duplicate social security numbers within a single exit month, and invalid exit dates.
+      </td>
+
+    </tr>
+   
+  </tbody>
+</table>
+
+
+
+      </main>
+    </div>
+  </div>
+  <footer class="usa-footer usa-footer--slim">
+  <div class="grid-container usa-footer__return-to-top">
+    <a href="#">Return to top</a>
+  </div>
+  <div class="usa-footer__primary-section">
+    <div class="usa-footer__primary-container grid-row">
+      <div class="mobile-lg:grid-col-8">
+        <nav class="usa-footer__nav" aria-label="Footer navigation,">
+          <ul class="grid-row grid-gap">
+            <li
+              class="
+                mobile-lg:grid-col-6
+                desktop:grid-col-auto
+                usa-footer__primary-content
+              "
+            >
+              <a class="usa-footer__primary-link" href="https://www.acf.hhs.gov/privacy-policy"
+                >Privacy Policy</a
+              >
+            </li>
+
+          </ul>
+        </nav>
+      </div>
+
+    </div>
+  </div>
+  <div class="usa-footer__secondary-section">
+    <div class="grid-container" style="padding-left: 0rem !important;">
+      <div class="usa-footer__logo grid-row grid-gap-2">
+        <div class="grid-col-auto">
+          <img class="mobile-lg:maxw-mobile mobile:width-mobile" src="../img/acfofa.svg" alt="Administration for Children and Families: OFfice of Family Assistance" />
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+</div>

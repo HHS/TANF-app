@@ -5,29 +5,6 @@
       - sudo-check
       - cf-check
 
-  build-and-tag-images:
-    parameters:
-      backend-appname:
-        default: tdp-backend
-        type: string
-      frontend-appname:
-        default: tdp-frontend
-        type: string
-    steps:
-      - run:
-          name: Update Docker daemon
-          command: |
-            sudo echo '{"max-concurrent-uploads": 1}' | sudo tee /etc/docker/daemon.json
-            sudo service docker restart
-      - run:
-          name: Create builder
-          command: |
-            docker buildx create --name container-builder --driver docker-container --use --bootstrap
-      - run:
-          name: Build and tag images
-          command: |
-            ./scripts/build-and-tag-images.sh <<parameters.backend-appname>> <<parameters.frontend-appname>> ./tdrs-backend ./tdrs-frontend $CIRCLE_BUILD_NUM $CIRCLE_SHA1 "$CIRCI_DOCKER_LOGIN" tdp-circi
-
   deploy-cloud-dot-gov:
     parameters:
       environment:
@@ -105,12 +82,6 @@
       frontend-appname:
         default: tdp-frontend
         type: string
-      kibana-appname:
-        default: tdp-kibana
-        type: string
-      proxy-appname:
-        default: tdp-elastic-proxy
-        type: string
       cf-space:
         default: tanf-dev
         type: string
@@ -124,9 +95,10 @@
             sudo apt-get install -y wget
             sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.42.1/yq_linux_amd64 && chmod +x /usr/local/bin/yq
       - run:
-          name: Apply database migrations
+          name: Apply database config
+          no_output_timeout: 1h
           command: |
-            bash ./scripts/apply-remote-migrations.sh <<parameters.backend-appname>>
+            bash ./scripts/apply-database-config.sh <<parameters.backend-appname>> <<parameters.cf-space>>
       - run:
           name: Deploy backend application
           command: |
@@ -134,8 +106,6 @@
               $DEPLOY_STRATEGY \
               <<parameters.frontend-appname>> \
               <<parameters.backend-appname>> \
-              <<parameters.kibana-appname>> \
-              <<parameters.proxy-appname>> \
               <<parameters.cf-space>>
 
   deploy-clamav:
@@ -159,9 +129,6 @@
       frontend-appname:
         default: tdp-frontend
         type: string
-      kibana-appname:
-        default: tdp-kibana
-        type: string
 # So the frontend knows what space its in for the banner.
 # I am unclear if the domain is a reliable metric to make this function
 # It seems like it might not be working
@@ -183,7 +150,6 @@
               $DEPLOY_STRATEGY \
               <<parameters.frontend-appname>> \
               <<parameters.backend-appname>> \
-              <<parameters.kibana-appname>> \
               <<parameters.cf-space>> \
               <<parameters.environment>>
 
@@ -237,15 +203,14 @@
           command: |
             S3_CREDENTIALS=$(cf service-key tdp-tf-states tdp-tf-key | tail -n +2)
             {
-              echo "access_key = \"$(echo "${S3_CREDENTIALS}" | jq -r .access_key_id)\""
-              echo "secret_key = \"$(echo "${S3_CREDENTIALS}" | jq -r .secret_access_key)\""
-              echo "region = \"$(echo "${S3_CREDENTIALS}" | jq -r '.region')\""
-              echo "bucket = \"$(echo "${S3_CREDENTIALS}" | jq -r '.bucket')\""
+              echo "access_key = \"$(echo "${S3_CREDENTIALS}" | jq -r .credentials.access_key_id)\""
+              echo "secret_key = \"$(echo "${S3_CREDENTIALS}" | jq -r .credentials.secret_access_key)\""
+              echo "region = \"$(echo "${S3_CREDENTIALS}" | jq -r '.credentials.region')\""
+              echo "bucket = \"$(echo "${S3_CREDENTIALS}" | jq -r '.credentials.bucket')\""
             } >> ./backend_config.tfvars
       - run:
           name: Prepare Terraform Variables
           command: |
-            S3_CREDENTIALS=$(cf service-key tdp-tf-states tdp-tf-key | tail -n +2)
             {
               echo "cf_password = \"$<<parameters.cf-password>>\""
               echo "cf_user = \"$<<parameters.cf-username>>\""

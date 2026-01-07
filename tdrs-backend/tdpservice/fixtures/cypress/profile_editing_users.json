@@ -1,0 +1,194 @@
+[
+    {
+        "model": "users.user",
+        "pk": "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d",
+        "fields": {
+            "password": "",
+            "last_login": null,
+            "is_superuser": false,
+            "username": "cypress-data-analyst-dana@teamraft.com",
+            "first_name": "Data Analyst",
+            "last_name": "Dana",
+            "email": "cypress-data-analyst-dana@teamraft.com",
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2025-11-26T00:00:00Z",
+            "stt": 5,
+            "login_gov_uuid": null,
+            "hhs_id": null,
+            "account_approval_status": "Access request",
+            "access_requested_date": "2025-11-26T00:00:00Z",
+            "feature_flags": {},
+            "groups": [
+                [
+                    "Data Analyst"
+                ]
+            ],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "users.user",
+        "pk": "b2c3d4e5-f6a7-4b5c-9d0e-1f2a3b4c5d6e",
+        "fields": {
+            "password": "",
+            "last_login": null,
+            "is_superuser": false,
+            "username": "cypress-fra-data-analyst-derek@teamraft.com",
+            "first_name": "FRA Data Analyst",
+            "last_name": "Derek",
+            "email": "cypress-fra-data-analyst-derek@teamraft.com",
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2025-11-26T00:00:00Z",
+            "stt": 5,
+            "login_gov_uuid": null,
+            "hhs_id": null,
+            "account_approval_status": "Access request",
+            "access_requested_date": "2025-11-26T00:00:00Z",
+            "feature_flags": {},
+            "groups": [
+                [
+                    "Data Analyst"
+                ]
+            ],
+            "user_permissions": [
+                [
+                    "has_fra_access",
+                    "users",
+                    "user"
+                ]
+            ]
+        }
+    },
+    {
+        "model": "users.user",
+        "pk": "c3d4e5f6-a7b8-4c5d-0e1f-2a3b4c5d6e7f",
+        "fields": {
+            "password": "",
+            "last_login": null,
+            "is_superuser": false,
+            "username": "cypress-data-analyst-donna@teamraft.com",
+            "first_name": "Data Analyst",
+            "last_name": "Donna",
+            "email": "cypress-data-analyst-donna@teamraft.com",
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2025-11-26T00:00:00Z",
+            "stt": 5,
+            "login_gov_uuid": null,
+            "hhs_id": null,
+            "account_approval_status": "Approved",
+            "access_requested_date": "2025-11-26T00:00:00Z",
+            "feature_flags": {},
+            "groups": [
+                [
+                    "Data Analyst"
+                ]
+            ],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "users.user",
+        "pk": "d4e5f6a7-b8c9-4d5e-1f2a-3b4c5d6e7f8a",
+        "fields": {
+            "password": "",
+            "last_login": null,
+            "is_superuser": false,
+            "username": "cypress-fra-data-analyst-david@teamraft.com",
+            "first_name": "FRA Data Analyst",
+            "last_name": "David",
+            "email": "cypress-fra-data-analyst-david@teamraft.com",
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2025-11-26T00:00:00Z",
+            "stt": 5,
+            "login_gov_uuid": null,
+            "hhs_id": null,
+            "account_approval_status": "Approved",
+            "access_requested_date": "2025-11-26T00:00:00Z",
+            "feature_flags": {},
+            "groups": [
+                [
+                    "Data Analyst"
+                ]
+            ],
+            "user_permissions": [
+                [
+                    "has_fra_access",
+                    "users",
+                    "user"
+                ]
+            ]
+        }
+    },
+    {
+        "model": "users.user",
+        "pk": "e5f6a7b8-c9d0-4e5f-2a3b-4c5d6e7f8a9b",
+        "fields": {
+            "password": "",
+            "last_login": null,
+            "is_superuser": false,
+            "username": "cypress-fra-ofa-regional-staff-rachel@acf.hhs.gov",
+            "first_name": "FRA OFA Regional Staff",
+            "last_name": "Rachel",
+            "email": "cypress-fra-ofa-regional-staff-rachel@acf.hhs.gov",
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2025-11-26T00:00:00Z",
+            "stt": null,
+            "login_gov_uuid": null,
+            "hhs_id": null,
+            "account_approval_status": "Access request",
+            "access_requested_date": "2025-11-26T00:00:00Z",
+            "feature_flags": {},
+            "groups": [
+                [
+                    "OFA Regional Staff"
+                ]
+            ],
+            "user_permissions": [
+                [
+                    "has_fra_access",
+                    "users",
+                    "user"
+                ]
+            ]
+        }
+    },
+    {
+        "model": "users.user",
+        "pk": "f6a7b8c9-d0e1-4f5a-3b4c-5d6e7f8a9b0c",
+        "fields": {
+            "password": "",
+            "last_login": null,
+            "is_superuser": false,
+            "username": "cypress-fra-ofa-regional-staff-robert@acf.hhs.gov",
+            "first_name": "FRA OFA Regional Staff",
+            "last_name": "Robert",
+            "email": "cypress-fra-ofa-regional-staff-robert@acf.hhs.gov",
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2025-11-26T00:00:00Z",
+            "stt": null,
+            "login_gov_uuid": null,
+            "hhs_id": null,
+            "account_approval_status": "Approved",
+            "access_requested_date": "2025-11-26T00:00:00Z",
+            "feature_flags": {},
+            "groups": [
+                [
+                    "OFA Regional Staff"
+                ]
+            ],
+            "user_permissions": [
+                [
+                    "has_fra_access",
+                    "users",
+                    "user"
+                ]
+            ]
+        }
+    }
+]

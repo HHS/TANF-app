@@ -1,6 +1,5 @@
 import React from 'react'
 import { thunk } from 'redux-thunk'
-import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 
@@ -46,7 +45,7 @@ describe('Header', () => {
     )
     const welcomeLink = screen.getByText('Home')
     expect(welcomeLink).toBeInTheDocument()
-    const dataFilesLink = screen.getByText('Data Files')
+    const dataFilesLink = screen.getByText('TANF Data Files')
     expect(dataFilesLink).toBeInTheDocument()
     const profileLink = screen.getByText('Profile')
     expect(profileLink).toBeInTheDocument()
@@ -103,22 +102,22 @@ describe('Header', () => {
       </Provider>
     )
 
-    const dataFilesTab = screen.getByText('Data Files')
+    const dataFilesTab = screen.getByText('TANF Data Files')
 
     expect(dataFilesTab.parentNode).toHaveClass('usa-current')
   })
 
   it("should add usa-current class to Profile tab when on '/profile'", () => {
     const store = mockStore(initialState)
-    const wrapper = mount(
+    const { container } = render(
       <Provider store={store}>
         <Header />
       </Provider>
     )
 
-    const profileTab = wrapper.find('#profile')
+    const profileTab = container.querySelector('#profile')
 
-    expect(profileTab.hasClass('usa-current')).toEqual(true)
+    expect(profileTab).toHaveClass('usa-current')
   })
 
   it("should not add usa-current class to Welcome tab when not on '/'", () => {
@@ -136,16 +135,18 @@ describe('Header', () => {
 
   it('should have secondaryItems when user is logged in', () => {
     const store = mockStore(initialState)
-    const wrapper = mount(
+    const { container } = render(
       <Provider store={store}>
         <Header />
       </Provider>
     )
 
-    const secondaryLinks = wrapper.find('.usa-nav__secondary-item')
+    const secondaryLinks = container.querySelectorAll(
+      '.usa-nav__secondary-item'
+    )
 
     expect(secondaryLinks.length).toEqual(2)
-    expect(secondaryLinks.first().text()).toEqual('test@test.com')
+    expect(secondaryLinks[0].textContent).toEqual('test@test.com')
   })
 
   it('should NOT show any nav items when the user is NOT logged in', () => {
@@ -163,7 +164,7 @@ describe('Header', () => {
     )
 
     expect(queryByText('Welcome')).not.toBeInTheDocument()
-    expect(queryByText('Data Files')).not.toBeInTheDocument()
+    expect(queryByText('TANF Data Files')).not.toBeInTheDocument()
     expect(queryByText('Profile')).not.toBeInTheDocument()
     expect(queryByText('Admin')).not.toBeInTheDocument()
   })
@@ -190,7 +191,7 @@ describe('Header', () => {
       </Provider>
     )
 
-    expect(queryByText('Data Files')).not.toBeInTheDocument()
+    expect(queryByText('TANF Data Files')).not.toBeInTheDocument()
     expect(queryByText('Profile')).toBeInTheDocument()
     expect(queryByText('Admin')).toBeInTheDocument()
   })
@@ -222,7 +223,7 @@ describe('Header', () => {
       </Provider>
     )
 
-    expect(queryByText('Data Files')).not.toBeInTheDocument()
+    expect(queryByText('TANF Data Files')).not.toBeInTheDocument()
     expect(queryByText('Profile')).toBeInTheDocument()
     expect(queryByText('Admin')).not.toBeInTheDocument()
   })
@@ -236,7 +237,7 @@ describe('Header', () => {
       </Provider>
     )
 
-    expect(queryByText('Data Files')).toBeInTheDocument()
+    expect(queryByText('TANF Data Files')).toBeInTheDocument()
     expect(queryByText('Profile')).toBeInTheDocument()
     expect(queryByText('Admin')).toBeInTheDocument()
   })

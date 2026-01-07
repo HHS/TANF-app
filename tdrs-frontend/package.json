@@ -7,6 +7,9 @@
     "@fortawesome/fontawesome-svg-core": "^6.7.0",
     "@fortawesome/free-solid-svg-icons": "^6.7.0",
     "@fortawesome/react-fontawesome": "^0.2.2",
+    "@grafana/faro-react": "^1.18.1",
+    "@grafana/faro-web-sdk": "^1.18.1",
+    "@grafana/faro-web-tracing": "^1.18.1",
     "@lagunovsky/redux-react-router": "^4.3.2",
     "@uswds/uswds": "3.10.0",
     "axios": "^1.7.7",
@@ -63,22 +66,25 @@
   },
   "devDependencies": {
     "@badeball/cypress-cucumber-preprocessor": "^21.0.3",
-    "@cfaester/enzyme-adapter-react-18": "^0.8.0",
+    "@cucumber/pretty-formatter": "^2.2.0",
     "@cypress/webpack-preprocessor": "^6.0.2",
     "@faker-js/faker": "^9.2.0",
     "@redux-devtools/extension": "^3.3.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.0.1",
+    "axe-core": "^4.10.3",
     "concurrently": "^9.1.0",
-    "cypress": "^13.16.0",
-    "enzyme": "^3.11.0",
+    "cypress": "^13.17.0",
+    "cypress-axe": "^1.7.0",
+    "cypress-mochawesome-reporter": "^4.0.2",
     "eslint": "^8.16.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-config-react-app": "^7.0.1",
     "eslint-plugin-flowtype": "^8.0.3",
     "eslint-plugin-prettier": "^5.2.1",
-    "jest-enzyme": "^7.1.2",
+    "mocha-junit-reporter": "^2.2.1",
+    "mocha-multi-reporters": "^1.5.1",
     "pa11y-ci": "^3.1.0",
     "prettier": "^3.3.3",
     "react-error-overlay": "6.0.11",
@@ -107,6 +113,9 @@
       }
     },
     "transform": {},
+    "transformIgnorePatterns": [
+      "node_modules/(?!(@grafana|web-vitals)/)"
+    ],
     "moduleNameMapper": {
       "^axios$": "axios/dist/node/axios.cjs",
       "@uswds/uswds/src/js/components": "@uswds/uswds/packages/uswds-core/src/js/index.js",
@@ -116,9 +125,9 @@
   "cypress-cucumber-preprocessor": {
     "stepDefinitions": [
       "cypress/e2e/*/[filepath].js",
+      "cypress/e2e/*/*.js",
       "cypress/e2e/common-steps/*.js",
-      "cypress/e2e/accounts/*.js",
-      "cypress/e2e/integration/*.js"
+      "cypress/e2e/accounts/*.js"
     ]
   },
   "overrides": {

@@ -1,7 +1,10 @@
 """Generate test data for stts."""
 
-import factory
+import json
 import random
+
+import factory
+
 from ..models import STT, Region
 
 
@@ -32,9 +35,11 @@ class STTFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: "teststt%d" % n)
     postal_code = "TT"
     type = "STATE"
-    filenames = "{'Active Case Data': 'ADS.E2J.FTP1.TS72', 'Closed Case Data': 'ADS.E2J.FTP2.TS72', " \
-                "'Aggregate Data': 'ADS.E2J.FTP3.TS72', 'Stratum Data': 'ADS.E2J.FTP4.TS72'}"
-    stt_code = '42'
+    filenames = json.loads(
+        '{"Active Case Data": "ADS.E2J.FTP1.TS72", "Closed Case Data": "ADS.E2J.FTP2.TS72", '
+        '"Aggregate Data": "ADS.E2J.FTP3.TS72", "Stratum Data": "ADS.E2J.FTP4.TS72"}'
+    )
+    stt_code = "42"
     region = factory.SubFactory(RegionFactory)
 
     @classmethod

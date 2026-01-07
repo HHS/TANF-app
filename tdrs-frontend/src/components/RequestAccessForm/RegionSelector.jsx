@@ -1,4 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
+import '../../assets/Profile.scss'
+import { regionNames, addRegion, removeRegionById } from '../../utils/regions'
 
 function RegionSelector({
   setErrors,
@@ -10,71 +12,139 @@ function RegionSelector({
   displayingError,
   validateRegions,
   regionError,
+  regional,
+  setRegional,
+  originalRegional,
+  type,
 }) {
-  const [regional, setRegional] = useState(false)
+  const [previousRegions, setPreviousRegions] = useState(
+    profileInfo?.regions || new Set()
+  )
+
   const regionKey = 'regions'
-  const regionsNames = [
-    'Boston',
-    'New York',
-    'Philadelphia',
-    'Atlanta',
-    'Chicago',
-    'Dallas',
-    'Kansas City',
-    'Denver',
-    'San Francisco',
-    'Seattle',
-  ]
+  const isRegionalKey = 'regionalType'
 
-  const handleRegionChange = (event, regionPK) => {
-    const { name, checked } = event.target
-    const { [name]: removedError, ...rest } = errors
-    const newProfileInfo = { ...profileInfo }
-    if (!checked && newProfileInfo.regions.has(regionPK)) {
-      newProfileInfo.regions.delete(regionPK)
-    } else {
-      newProfileInfo.regions.add(regionPK)
+  useEffect(() => {
+    if (regional && profileInfo.regions instanceof Set) {
+      setPreviousRegions(new Set(profileInfo.regions))
     }
+  }, [profileInfo.regions, regional])
 
-    const error = validateRegions(newProfileInfo.regions)
+  const selectedRegionIds = useMemo(
+    () => new Set(Array.from(profileInfo.regions || []).map((r) => r.id)),
+    [profileInfo.regions]
+  )
 
-    setErrors({
-      ...rest,
-      ...(error && { [name]: touched[name] && error }),
+  const clearFormError = (prevErrors) => {
+    const { form, ...rest } = prevErrors
+    return rest
+  }
+
+  const handleRegionChange = (event, regionId) => {
+    const { name, checked } = event.target
+    const regionName = regionNames[regionId - 1]
+
+    const currentRegions = profileInfo.regions || new Set()
+
+    const updatedRegions = checked
+      ? addRegion(currentRegions, regionId, regionName)
+      : removeRegionById(currentRegions, regionId)
+
+    const error = validateRegions(updatedRegions)
+
+    setErrors((prev) => {
+      const { [name]: _, ...rest } = clearFormError(prev)
+      return {
+        ...rest,
+        ...(error && {
+          [name]: touched[name] && regionError,
+        }),
+      }
     })
-    setProfileInfo({ ...newProfileInfo })
+
+    setProfileInfo((prev) => ({
+      ...prev,
+      regions: updatedRegions,
+    }))
   }
 
   const excludeRegions = (state) => {
-    const { regions, ...newState } = state
-    return newState
+    const { regions, form, ...rest } = state
+    return rest
   }
+
+  const handleRegionalYes = () => {
+    // Clear form error for reset
+    setErrors((prev) => clearFormError(prev))
+    if (displayingError) {
+      setTouched((prev) => ({ ...prev, regions: true, regionalType: true }))
+      setErrors((prev) => {
+        const { regions, regionalType, ...rest } = prev
+        return {
+          ...rest,
+          regions: regionError,
+        }
+      })
+    }
+    setProfileInfo((prev) => ({
+      ...prev,
+      regions: previousRegions,
+      hasFRAAccess: true,
+    }))
+    setRegional(true)
+  }
+
+  const handleRegionalNo = () => {
+    // Clear form error and regions error when selecting "No"
+    setErrors((prev) => {
+      const { form, regions, regionalType, ...rest } = prev
+      return rest
+    })
+    setPreviousRegions(new Set())
+    setTouched((prev) => excludeRegions(prev))
+    setProfileInfo((prev) => ({
+      ...excludeRegions(prev),
+      regions: new Set(),
+      hasFRAAccess: false,
+    }))
+    setRegional(false)
+  }
+
+  const isRegionalButtonDisabled = originalRegional && type === 'profile'
 
   return (
     <>
-      <div className="usa-form-group">
-        <fieldset className="usa-fieldset">
+      <div
+        className={`usa-form-group ${errors[isRegionalKey] ? 'usa-form-group--error' : ''} region-selector-wrapper`}
+      >
+        <fieldset
+          className="usa-fieldset"
+          disabled={isRegionalButtonDisabled}
+          aria-describedby="regional-button-disabled-msg"
+        >
           <legend className="usa-label text-bold">
             Do you work for an OFA Regional Office?*
           </legend>
+          {isRegionalButtonDisabled && (
+            <div id="regional-button-disabled-msg" className="usa-hint">
+              Regional users cannot remove their regional status through this
+              portal.
+            </div>
+          )}
+          {isRegionalKey in errors && (
+            <span className="usa-error-message" id="isRegional-error-message">
+              {errors[isRegionalKey]}
+            </span>
+          )}
           <div className="usa-radio">
             <input
               className="usa-radio__input"
               id="regional"
               type="radio"
-              name="regionalType"
+              name={isRegionalKey}
               value="regional"
-              onChange={() => {
-                if (displayingError) {
-                  setTouched({ ...touched, regions: true })
-                  setErrors({
-                    ...errors,
-                    regions: regionError,
-                  })
-                }
-                setProfileInfo({ ...profileInfo, regions: new Set() })
-                setRegional(true)
-              }}
+              checked={regional === true}
+              onChange={handleRegionalYes}
             />
             <label className="usa-radio__label" htmlFor="regional">
               Yes
@@ -85,15 +155,10 @@ function RegionSelector({
               className="usa-radio__input"
               id="central"
               type="radio"
-              name="regionalType"
+              name={isRegionalKey}
               value="central"
-              defaultChecked
-              onChange={() => {
-                setErrors(excludeRegions(errors))
-                setTouched(excludeRegions(touched))
-                setProfileInfo(excludeRegions(profileInfo))
-                setRegional(false)
-              }}
+              checked={regional === false}
+              onChange={handleRegionalNo}
             />
             <label className="usa-radio__label" htmlFor="central">
               No
@@ -103,11 +168,13 @@ function RegionSelector({
       </div>
       {regional && (
         <div
-          className={`usa-form-group ${regionKey in errors ? 'usa-form-group--error' : ''}`}
+          className={`usa-form-group ${regionKey in errors ? 'usa-form-group--error' : ''} region-selector-wrapper`}
         >
           <fieldset className="usa-fieldset">
-            <legend className="usa-label text-bold">Region(s)*</legend>
-            <div>
+            <legend className="usa-label text-bold margin-bottom-1">
+              Select Your Regional Office(s)*
+            </legend>
+            <div className="margin-bottom-3">
               Need help?&nbsp;
               <a
                 target="_blank"
@@ -122,7 +189,9 @@ function RegionSelector({
                 {errors.regions}
               </span>
             )}
-            {regionsNames.map((region, index) => {
+            {regionNames.map((region, index) => {
+              const regionId = index + 1
+              const isChecked = selectedRegionIds.has(regionId)
               return (
                 <div key={region} className="usa-checkbox">
                   <input
@@ -132,13 +201,14 @@ function RegionSelector({
                     name={regionKey}
                     value={region}
                     aria-required="true"
-                    onChange={(event) => handleRegionChange(event, index + 1)}
+                    checked={isChecked}
+                    onChange={(event) => handleRegionChange(event, regionId)}
                   />
                   <label
                     className={`usa-checkbox__label ${'regions' in errors ? 'usa-input--error' : ''}`}
                     htmlFor={region}
                   >
-                    Region {index + 1} ({region})
+                    Region {regionId} ({region})
                   </label>
                 </div>
               )

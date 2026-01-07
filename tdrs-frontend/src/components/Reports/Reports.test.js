@@ -1,14 +1,41 @@
 import React from 'react'
-import { render, fireEvent, waitFor } from '@testing-library/react'
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+  queryAllByText,
+} from '@testing-library/react'
 
 import { Provider } from 'react-redux'
+import { MemoryRouter } from 'react-router-dom'
 import { thunk } from 'redux-thunk'
+import axios from 'axios'
 import configureStore from 'redux-mock-store'
 import appConfigureStore from '../../configureStore'
 import Reports from './Reports'
 import { SET_FILE, upload } from '../../actions/reports'
 
 describe('Reports', () => {
+  let originalScrollIntoView
+
+  beforeEach(() => {
+    // Save the original scrollIntoView
+    originalScrollIntoView = window.HTMLElement.prototype.scrollIntoView
+    // Mock it for all tests
+    window.HTMLElement.prototype.scrollIntoView = jest.fn()
+    jest.useFakeTimers()
+  })
+
+  afterEach(() => {
+    // Restore the original scrollIntoView
+    window.HTMLElement.prototype.scrollIntoView = originalScrollIntoView
+    // Clear all jest mocks and restore all spies
+    jest.clearAllMocks()
+    jest.restoreAllMocks()
+  })
+
   const initialState = {
     reports: {
       files: [
@@ -45,20 +72,40 @@ describe('Reports', () => {
           uuid: null,
         },
       ],
+      submittedFiles: [
+        {
+          section: 'Active Case Data',
+          fileName: null,
+          error: null,
+        },
+        {
+          section: 'Closed Case Data',
+          fileName: null,
+          error: null,
+        },
+        {
+          section: 'Aggregate Data',
+          fileName: null,
+          error: null,
+        },
+        {
+          section: 'Stratum Data',
+          fileName: null,
+          error: null,
+        },
+      ],
       error: null,
-      year: '',
       stt: '',
-      quarter: '',
-      fileType: 'tanf',
     },
     stts: {
       sttList: [
         {
-          id: 1,
+          id: 6,
           type: 'state',
-          code: 'AL',
-          name: 'Alabama',
+          code: 'CA',
+          name: 'California',
           ssp: true,
+          num_sections: 4,
         },
         {
           id: 2,
@@ -66,6 +113,7 @@ describe('Reports', () => {
           code: 'AK',
           name: 'Alaska',
           ssp: false,
+          num_sections: 4,
         },
       ],
       loading: false,
@@ -81,21 +129,39 @@ describe('Reports', () => {
           name: 'Alaska',
         },
         roles: [{ id: 1, name: 'OFA Admin', permission: [] }],
+        account_approval_status: 'Approved',
       },
     },
   }
   const mockStore = configureStore([thunk])
 
-  const makeTestFile = (name) =>
-    new File(['test'], name, {
+  const makeTestFile = (name, contents = ['test']) =>
+    new File(contents, name, {
       type: 'text/plain',
     })
+
+  const setReportInputs = (year = null, quarter = null, getByLabelText) => {
+    if (year) {
+      const yearSelect = getByLabelText(/Fiscal Year/)
+      fireEvent.change(yearSelect, {
+        target: { value: year },
+      })
+    }
+    if (quarter) {
+      const quarterSelect = getByLabelText(/Fiscal Quarter/)
+      fireEvent.change(quarterSelect, {
+        target: { value: quarter },
+      })
+    }
+  }
 
   it('should render the Fiscal Year dropdown with however many years and a placeholder', () => {
     const store = mockStore(initialState)
     const { getByLabelText } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -106,7 +172,7 @@ describe('Reports', () => {
     // added 1 to include the starting year
     const yearNum = fiscalYear - 2021 + 1
 
-    const select = getByLabelText('Fiscal Year*')
+    const select = getByLabelText('Fiscal Year (October - September)*')
 
     expect(select).toBeInTheDocument()
 
@@ -120,7 +186,9 @@ describe('Reports', () => {
     const store = mockStore(initialState)
     const { getByTestId } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -147,7 +215,9 @@ describe('Reports', () => {
 
     const { queryByTestId } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -160,7 +230,9 @@ describe('Reports', () => {
     const store = mockStore(initialState)
     const { getByText, getByLabelText } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -170,12 +242,12 @@ describe('Reports', () => {
 
     // Due to weirdness with USWDS, fire a change event instead of a select
     fireEvent.change(sttDropdown, {
-      target: { value: 'alaska' },
+      target: { value: 'Alaska' },
     })
 
-    expect(sttDropdown.value).toEqual('alaska')
+    expect(sttDropdown.value).toEqual('Alaska')
 
-    const yearsDropdown = getByLabelText('Fiscal Year*')
+    const yearsDropdown = getByLabelText('Fiscal Year (October - September)*')
 
     fireEvent.select(yearsDropdown, {
       target: { value: '2021' },
@@ -190,25 +262,31 @@ describe('Reports', () => {
       reports: {
         ...initialState.reports,
         year: '2021',
-        stt: 'Florida',
+        stt: 'California',
         quarter: 'Q3',
+        fileType: 'tanf',
       },
     })
 
-    const { getByText, queryByText } = render(
+    const { getByText, getByLabelText } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
-    expect(queryByText('Section 1 - Active Case Data')).not.toBeInTheDocument()
+    setReportInputs('2021', 'Q3', getByLabelText)
 
-    fireEvent.click(getByText(/Search/, { selector: 'button' }))
     await waitFor(() => {
-      expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
-      expect(getByText('Section 2 - Closed Case Data')).toBeInTheDocument()
-      expect(getByText('Section 3 - Aggregate Data')).toBeInTheDocument()
-      expect(getByText('Section 4 - Stratum Data')).toBeInTheDocument()
+      expect(
+        getByText('Section 1 - TANF - Active Case Data')
+      ).toBeInTheDocument()
+      expect(
+        getByText('Section 2 - TANF - Closed Case Data')
+      ).toBeInTheDocument()
+      expect(getByText('Section 3 - TANF - Aggregate Data')).toBeInTheDocument()
+      expect(getByText('Section 4 - TANF - Stratum Data')).toBeInTheDocument()
     })
   })
 
@@ -217,24 +295,24 @@ describe('Reports', () => {
       ...initialState,
       reports: {
         ...initialState.reports,
-        year: '2021',
-        stt: 'Florida',
-        quarter: 'Q3',
+        stt: 'California',
       },
     })
 
-    const { getByText, getByLabelText, queryByText } = render(
+    const { getByLabelText, queryByText } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
-    expect(queryByText('Section 1 - Active Case Data')).not.toBeInTheDocument()
-
-    fireEvent.click(getByText(/Search/, { selector: 'button' }))
+    setReportInputs('2021', 'Q3', getByLabelText)
 
     await waitFor(() => {
-      expect(queryByText('Section 1 - Active Case Data')).toBeInTheDocument()
+      expect(
+        queryByText('Section 1 - TANF - Active Case Data')
+      ).toBeInTheDocument()
     })
 
     const select = getByLabelText(/Fiscal Year/)
@@ -245,7 +323,11 @@ describe('Reports', () => {
       },
     })
 
-    expect(queryByText('Section 1 - Active Case Data')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(
+        queryByText('Section 1 - TANF - Active Case Data')
+      ).toBeInTheDocument()
+    })
   })
 
   it('should de-render when Cancel is clicked', async () => {
@@ -253,26 +335,33 @@ describe('Reports', () => {
       ...initialState,
       reports: {
         ...initialState.reports,
-        year: '2021',
-        stt: 'Florida',
-        quarter: 'Q3',
+        stt: 'California',
       },
     })
 
-    const { getByText, queryByText } = render(
+    const { getByText, getByLabelText, queryByText } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
-    fireEvent.click(getByText(/Search/, { selector: 'button' }))
+    setReportInputs('2021', 'Q3', getByLabelText)
+
     await waitFor(() => {
-      expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
+      expect(
+        getByText('Section 1 - TANF - Active Case Data')
+      ).toBeInTheDocument()
     })
 
     fireEvent.click(getByText(/Cancel/))
 
-    expect(queryByText('Section 1 - Active Case Data')).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(
+        queryByText('Section 1 - TANF - Active Case Data')
+      ).not.toBeInTheDocument()
+    })
   })
 
   it('should make a request with the selections and upload payloads after clicking Submit Data Files', async () => {
@@ -280,46 +369,44 @@ describe('Reports', () => {
       ...initialState,
       reports: {
         ...initialState.reports,
-        year: '2021',
-        stt: 'Florida',
-        quarter: 'Q3',
+        stt: 'California',
       },
     })
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
-    window.HTMLElement.prototype.scrollIntoView = jest.fn(() => null)
-
     const { getByText, getByLabelText, getByRole } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
-    fireEvent.click(getByText(/Search/, { selector: 'button' }))
+    setReportInputs('2021', 'Q3', getByLabelText)
 
     await waitFor(() => {
-      fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
+      fireEvent.change(getByLabelText('Section 1 - TANF - Active Case Data'), {
         target: {
-          files: [makeTestFile('section1.txt')],
+          files: [makeTestFile('section1.txt', ['HEADER20212A53000TAN1ED\n'])],
         },
       })
 
-      fireEvent.change(getByLabelText('Section 2 - Closed Case Data'), {
+      fireEvent.change(getByLabelText('Section 2 - TANF - Closed Case Data'), {
         target: {
-          files: [makeTestFile('section2.txt')],
+          files: [makeTestFile('section2.txt', ['HEADER20212C53000TAN1ED\n'])],
         },
       })
 
-      fireEvent.change(getByLabelText('Section 3 - Aggregate Data'), {
+      fireEvent.change(getByLabelText('Section 3 - TANF - Aggregate Data'), {
         target: {
-          files: [makeTestFile('section3.txt')],
+          files: [makeTestFile('section3.txt', ['HEADER20212G53000TAN1ED\n'])],
         },
       })
 
-      fireEvent.change(getByLabelText('Section 4 - Stratum Data'), {
+      fireEvent.change(getByLabelText('Section 4 - TANF - Stratum Data'), {
         target: {
-          files: [makeTestFile('section4.txt')],
+          files: [makeTestFile('section4.txt', ['HEADER20212S53000TAN1ED\n'])],
         },
       })
     })
@@ -327,16 +414,12 @@ describe('Reports', () => {
     await waitFor(() => expect(getByText('section2.txt')).toBeInTheDocument())
     await waitFor(() => expect(getByText('section3.txt')).toBeInTheDocument())
     await waitFor(() => expect(getByText('section4.txt')).toBeInTheDocument())
-    expect(store.dispatch).toHaveBeenCalledTimes(18)
+    await waitFor(() => expect(getByText('Submit Data Files')).toBeEnabled())
+    expect(store.dispatch).toHaveBeenCalledTimes(14)
 
-    // There should be 4 more dispatches upon making the submission,
-    // one request to /reports for each file
-    await waitFor(() =>
-      expect(getByText('Submit Data Files')).toBeInTheDocument()
-    )
     fireEvent.click(getByText('Submit Data Files'))
     await waitFor(() => getByRole('alert'))
-    expect(store.dispatch).toHaveBeenCalledTimes(19)
+    expect(store.dispatch).toHaveBeenCalledTimes(17)
   })
 
   it('should add files to the redux state when dispatching uploads', async () => {
@@ -393,28 +476,8 @@ describe('Reports', () => {
     })
   })
 
-  it('should display error labels when user tries to search without making selections', async () => {
-    const store = mockStore(initialState)
-
-    const { getByText } = render(
-      <Provider store={store}>
-        <Reports />
-      </Provider>
-    )
-
-    fireEvent.click(getByText(/Search/, { selector: 'button' }))
-
-    await waitFor(() => {
-      expect(getByText('A fiscal year is required')).toBeInTheDocument()
-      expect(getByText('A fiscal quarter is required')).toBeInTheDocument()
-      expect(
-        getByText('A state, tribe, or territory is required')
-      ).toBeInTheDocument()
-    })
-  })
-
   describe('search form behaviors', () => {
-    const setUpSearchFormBehaviors = async () => {
+    const setUpSearchFormBehaviors = async (mockDispatch = false) => {
       // set initial search parameters in initialState
       // using a live redux store here to capture state changes
       // see: https://stackoverflow.com/a/65918951
@@ -435,40 +498,46 @@ describe('Reports', () => {
         },
         reports: {
           ...initialState.reports,
-          year: '2021',
           stt: 'Alaska',
-          quarter: 'Q3',
         },
       })
 
+      if (mockDispatch) {
+        const origDispatch = store.dispatch
+        store.dispatch = jest.fn(origDispatch)
+      }
+
       const { getByText, queryByText, getByLabelText, queryAllByText } = render(
         <Provider store={store}>
-          <Reports />
+          <MemoryRouter>
+            <Reports />
+          </MemoryRouter>
         </Provider>
       )
 
+      setReportInputs('2021', 'Q3', getByLabelText)
+
       await waitFor(() => {
         expect(
-          queryByText('Section 1 - Active Case Data')
-        ).not.toBeInTheDocument()
+          queryByText('Section 1 - TANF - Active Case Data')
+        ).toBeInTheDocument()
         expect(getByText('2021', { selector: 'option' }).selected).toBe(true)
         expect(
           getByText('Quarter 3 (April - June)', { selector: 'option' }).selected
         ).toBe(true)
       })
 
-      return { getByText, queryByText, getByLabelText, queryAllByText }
+      return { getByText, queryByText, getByLabelText, queryAllByText, store }
     }
 
     it('should only update the report header when search selections are changed after clicking search', async () => {
       const { getByText, getByLabelText, queryByText } =
         await setUpSearchFormBehaviors()
 
-      // search
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
-
       await waitFor(() => {
-        expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
+        expect(
+          getByText('Section 1 - TANF - Active Case Data')
+        ).toBeInTheDocument()
         expect(
           getByText(
             'Alaska - TANF - Fiscal Year 2021 - Quarter 3 (April - June)'
@@ -476,21 +545,7 @@ describe('Reports', () => {
         ).toBeInTheDocument()
       })
 
-      // make a change to the search selections, but don't click search
-      console.log('change year')
-
-      fireEvent.change(getByLabelText(/Fiscal Year/), {
-        target: { value: '2022' },
-      })
-      fireEvent.select(getByLabelText(/Fiscal Year/), {
-        target: { value: '2022' },
-      })
-      fireEvent.change(getByLabelText(/Quarter/), {
-        target: { value: 'Q2' },
-      })
-      fireEvent.select(getByLabelText(/Quarter/), {
-        target: { value: 'Q2' },
-      })
+      setReportInputs('2022', 'Q2', getByLabelText)
 
       // the header should not update
       await waitFor(() =>
@@ -501,9 +556,6 @@ describe('Reports', () => {
         ).not.toBeInTheDocument()
       )
 
-      // click search and assert the header updates
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
-
       await waitFor(() =>
         expect(
           getByText(
@@ -513,87 +565,86 @@ describe('Reports', () => {
       )
     })
 
-    it('should present a message when searching without first submitting uploaded files', async () => {
-      const { getByText, queryByText, getByLabelText } =
-        await setUpSearchFormBehaviors()
-
-      // search
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
+    it('should present a warning modal when cancelling without first submitting uploaded files', async () => {
+      const { getByText, queryByText, getByLabelText, store } =
+        await setUpSearchFormBehaviors(true)
 
       await waitFor(() => {
-        expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
-        expect(getByText('Section 2 - Closed Case Data')).toBeInTheDocument()
-        expect(getByText('Section 3 - Aggregate Data')).toBeInTheDocument()
-        expect(getByText('Section 4 - Stratum Data')).toBeInTheDocument()
+        expect(
+          getByText('Section 1 - TANF - Active Case Data')
+        ).toBeInTheDocument()
+        expect(
+          getByText('Section 2 - TANF - Closed Case Data')
+        ).toBeInTheDocument()
+        expect(
+          getByText('Section 3 - TANF - Aggregate Data')
+        ).toBeInTheDocument()
+        expect(getByText('Section 4 - TANF - Stratum Data')).toBeInTheDocument()
       })
 
       // add a file to be uploaded, but don't submit
       await waitFor(() => {
-        fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
-          target: {
-            files: [makeTestFile('section1.txt')],
-          },
-        })
+        fireEvent.change(
+          getByLabelText('Section 1 - TANF - Active Case Data'),
+          {
+            target: {
+              files: [
+                makeTestFile('section1.txt', ['HEADER20212A53000TAN1ED\n']),
+              ],
+            },
+          }
+        )
       })
 
-      await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
-
-      // make a change to the search selections and click search
-      fireEvent.change(getByLabelText(/Fiscal Year/), {
-        target: { value: '2022' },
+      await waitFor(() => {
+        expect(getByText('section1.txt')).toBeInTheDocument()
+        expect(store.dispatch).toHaveBeenCalledTimes(5)
       })
-      fireEvent.select(getByLabelText(/Fiscal Year/), {
-        target: { value: '2022' },
-      })
-      await waitFor(() =>
-        expect(getByText('2022', { selector: 'option' }).selected).toBe(true)
-      )
 
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
+      fireEvent.click(getByText(/Cancel/, { selector: 'button' }))
 
-      // the modal should display
       await waitFor(() =>
         expect(queryByText('Files Not Submitted')).toBeInTheDocument()
       )
     })
 
     it('should allow the user to cancel the error modal and retain previous search selections', async () => {
-      const { getByText, queryByText, getByLabelText } =
-        await setUpSearchFormBehaviors()
-
-      // search
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
+      const { getByText, queryByText, getByLabelText, store } =
+        await setUpSearchFormBehaviors(true)
 
       await waitFor(() => {
-        expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
-        expect(getByText('Section 2 - Closed Case Data')).toBeInTheDocument()
-        expect(getByText('Section 3 - Aggregate Data')).toBeInTheDocument()
-        expect(getByText('Section 4 - Stratum Data')).toBeInTheDocument()
+        expect(
+          getByText('Section 1 - TANF - Active Case Data')
+        ).toBeInTheDocument()
+        expect(
+          getByText('Section 2 - TANF - Closed Case Data')
+        ).toBeInTheDocument()
+        expect(
+          getByText('Section 3 - TANF - Aggregate Data')
+        ).toBeInTheDocument()
+        expect(getByText('Section 4 - TANF - Stratum Data')).toBeInTheDocument()
       })
 
       // add a file to be uploaded, but don't submit
       await waitFor(() => {
-        fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
-          target: {
-            files: [makeTestFile('section1.txt')],
-          },
-        })
+        fireEvent.change(
+          getByLabelText('Section 1 - TANF - Active Case Data'),
+          {
+            target: {
+              files: [
+                makeTestFile('section1.txt', ['HEADER20212A53000TAN1ED\n']),
+              ],
+            },
+          }
+        )
       })
 
-      await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
-
-      // make a change to the search selections and click search
-      fireEvent.change(getByLabelText(/Fiscal Year/), {
-        target: { value: '2022' },
+      await waitFor(() => {
+        expect(getByText('section1.txt')).toBeInTheDocument()
+        expect(store.dispatch).toHaveBeenCalledTimes(5)
       })
-      fireEvent.select(getByLabelText(/Fiscal Year/), {
-        target: { value: '2022' },
-      })
-      await waitFor(() =>
-        expect(getByText('2022', { selector: 'option' }).selected).toBe(true)
-      )
 
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
+      fireEvent.click(getByText(/Cancel/, { selector: 'button' }))
 
       // the modal should display
       await waitFor(() =>
@@ -611,42 +662,42 @@ describe('Reports', () => {
     })
 
     it('should allow the user to discard un-submitted files and continue with the new search', async () => {
-      const { getByText, queryByText, getByLabelText } =
-        await setUpSearchFormBehaviors()
-
-      // search
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
+      const { getByText, queryByText, getByLabelText, store } =
+        await setUpSearchFormBehaviors(true)
 
       await waitFor(() => {
-        expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
-        expect(getByText('Section 2 - Closed Case Data')).toBeInTheDocument()
-        expect(getByText('Section 3 - Aggregate Data')).toBeInTheDocument()
-        expect(getByText('Section 4 - Stratum Data')).toBeInTheDocument()
+        expect(
+          getByText('Section 1 - TANF - Active Case Data')
+        ).toBeInTheDocument()
+        expect(
+          getByText('Section 2 - TANF - Closed Case Data')
+        ).toBeInTheDocument()
+        expect(
+          getByText('Section 3 - TANF - Aggregate Data')
+        ).toBeInTheDocument()
+        expect(getByText('Section 4 - TANF - Stratum Data')).toBeInTheDocument()
       })
 
       // add a file to be uploaded, but don't submit
       await waitFor(() => {
-        fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
-          target: {
-            files: [makeTestFile('section1.txt')],
-          },
-        })
+        fireEvent.change(
+          getByLabelText('Section 1 - TANF - Active Case Data'),
+          {
+            target: {
+              files: [
+                makeTestFile('section1.txt', ['HEADER20212A53000TAN1ED']),
+              ],
+            },
+          }
+        )
       })
 
-      await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
-
-      // make a change to the search selections and click search
-      fireEvent.change(getByLabelText(/Fiscal Year/), {
-        target: { value: '2022' },
+      await waitFor(() => {
+        expect(getByText('section1.txt')).toBeInTheDocument()
+        expect(store.dispatch).toHaveBeenCalledTimes(5)
       })
-      fireEvent.select(getByLabelText(/Fiscal Year/), {
-        target: { value: '2022' },
-      })
-      await waitFor(() =>
-        expect(getByText('2022', { selector: 'option' }).selected).toBe(true)
-      )
 
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
+      fireEvent.click(getByText(/Cancel/, { selector: 'button' }))
 
       // the modal should display
       await waitFor(() =>
@@ -654,14 +705,11 @@ describe('Reports', () => {
       )
 
       // click cancel
-      fireEvent.click(
-        getByText(/Discard and Search/, { selector: '#modal button' })
-      )
+      fireEvent.click(getByText(/OK/, { selector: '#modal button' }))
 
       // assert file is cleared, search params are updated
       await waitFor(() => {
         expect(queryByText('section1.txt')).not.toBeInTheDocument()
-        expect(getByText('2022', { selector: 'option' }).selected).toBe(true)
       })
     })
 
@@ -669,11 +717,10 @@ describe('Reports', () => {
       const { getByText, queryAllByText, queryByText } =
         await setUpSearchFormBehaviors()
 
-      // search
-      fireEvent.click(getByText(/Search/, { selector: 'button' }))
-
       await waitFor(() => {
-        expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
+        expect(
+          getByText('Section 1 - TANF - Active Case Data')
+        ).toBeInTheDocument()
         expect(
           getByText(
             'Alaska - TANF - Fiscal Year 2021 - Quarter 3 (April - June)'
@@ -710,11 +757,13 @@ describe('Reports', () => {
 
     const { getByLabelText } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
-    const select = getByLabelText('Fiscal Year*')
+    const select = getByLabelText('Fiscal Year (October - September)*')
     const options = select.children
     const expected = options.item(1).value
 
@@ -737,11 +786,13 @@ describe('Reports', () => {
 
     const { getByLabelText } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
-    const select = getByLabelText('Fiscal Year*')
+    const select = getByLabelText('Fiscal Year (October - September)*')
     const options = select.children
     const expected = options.item(1).value
 
@@ -757,7 +808,7 @@ describe('Reports', () => {
           ...initialState.auth.user,
           roles: [],
           stt: {
-            name: 'Alabama',
+            name: 'California',
           },
         },
       },
@@ -765,11 +816,13 @@ describe('Reports', () => {
 
     const { getByText } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
-    expect(getByText('File Type*')).toBeInTheDocument()
+    expect(getByText('SSP-MOE')).toBeInTheDocument()
   })
 
   // should not render the File Type section if the user is not an OFA Admin and the stt has ssp set to false
@@ -790,11 +843,13 @@ describe('Reports', () => {
 
     const { queryByText } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
-    expect(queryByText('File Type*')).not.toBeInTheDocument()
+    expect(queryByText('SSP-MOE')).not.toBeInTheDocument()
   })
 
   it('OFA Admin should see the data files section when they select a stt with ssp set to true', () => {
@@ -802,17 +857,19 @@ describe('Reports', () => {
       ...initialState,
       reports: {
         ...initialState.reports,
-        stt: 'Alabama',
+        stt: 'California',
       },
     })
 
     const { getByText } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
-    expect(getByText('File Type*')).toBeInTheDocument()
+    expect(getByText('SSP-MOE')).toBeInTheDocument()
   })
 
   it('OFA Admin should not see the data files section when they select a stt with ssp set to false', () => {
@@ -826,10 +883,1260 @@ describe('Reports', () => {
 
     const { queryByText } = render(
       <Provider store={store}>
-        <Reports />
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
       </Provider>
     )
 
-    expect(queryByText('File Type*')).not.toBeInTheDocument()
+    expect(queryByText('SSP-MOE')).not.toBeInTheDocument()
+  })
+
+  it('only allows OFA Regional Staff to view Submission History', async () => {
+    const store = mockStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        stt: 'Alaska',
+      },
+      auth: {
+        ...initialState.auth,
+        user: {
+          ...initialState.auth.user,
+          roles: [{ id: 1, name: 'OFA Regional Staff', permission: [] }],
+          regions: [
+            {
+              id: 10,
+              stts: [
+                {
+                  id: 2,
+                  name: 'Alaska',
+                  num_sections: 3,
+                  postal_code: 'AK',
+                  region: 10,
+                  ssp: false,
+                  stt_code: '02',
+                  type: 'state',
+                },
+              ],
+            },
+          ],
+        },
+      },
+    })
+
+    const { getByLabelText, queryByText } = render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    setReportInputs('2021', 'Q3', getByLabelText)
+
+    await waitFor(() => {
+      expect(queryByText('Submission History')).toBeInTheDocument()
+    })
+
+    expect(queryByText('Current Submission')).not.toBeInTheDocument()
+    expect(queryByText('Submit Data Files')).not.toBeInTheDocument()
+  })
+
+  it("should skip the file upload step when submitted files header doesn't match submitted year and quarter", async () => {
+    const currentYear = new Date().getFullYear()
+    const store = appConfigureStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        stt: 'California',
+        quarter: 'Q3',
+      },
+    })
+
+    const origDispatch = store.dispatch
+    store.dispatch = jest.fn(origDispatch)
+
+    const { getByText, getByLabelText } = render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    setReportInputs((currentYear - 1).toString(), 'Q3', getByLabelText)
+
+    await waitFor(() => {
+      expect(
+        getByText('Section 1 - TANF - Active Case Data')
+      ).toBeInTheDocument()
+    })
+
+    // add a file to be uploaded
+    await waitFor(() => {
+      fireEvent.change(getByLabelText('Section 1 - TANF - Active Case Data'), {
+        target: {
+          files: [
+            makeTestFile('test2.txt', [
+              `HEADER${(currentYear - 2).toString()}4A53000TAN1ED\n`,
+            ]),
+          ],
+        },
+      })
+    })
+    await waitFor(() => {
+      const divElement = screen.getByText(
+        `File contains data from Oct 1 - Dec 31, which belongs to Fiscal Year ` +
+          (currentYear - 1).toString() +
+          `, Quarter 1. Adjust your search parameters or upload a different file.`
+      )
+      expect(divElement).toBeInTheDocument()
+    })
+  })
+
+  it('should show an error message when the file program type does not match the report program type', async () => {
+    const store = appConfigureStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        stt: 'California',
+      },
+    })
+    const origDispatch = store.dispatch
+    store.dispatch = jest.fn(origDispatch)
+
+    const { getByText, getByLabelText } = render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    setReportInputs('2021', 'Q3', getByLabelText)
+
+    await waitFor(() => {
+      expect(
+        getByText('Section 1 - TANF - Active Case Data')
+      ).toBeInTheDocument()
+    })
+
+    const fileInput = getByLabelText('Section 1 - TANF - Active Case Data')
+    await waitFor(() => {
+      fireEvent.change(fileInput, {
+        target: {
+          //name: 'Active Case Data',
+          files: [makeTestFile('section2.txt', ['HEADER20212A53000SSP1ED\n'])],
+        },
+      })
+    })
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          'File may correspond to SSP instead of TANF. Please verify the file type.'
+        )
+      ).toBeInTheDocument()
+    })
+  })
+
+  it('should show spinners while the upload is parsing', async () => {
+    jest.useFakeTimers()
+    jest.mock('axios')
+    const mockAxios = axios
+
+    mockAxios.post.mockResolvedValue({
+      data: {
+        id: 1,
+        original_filename: 'testFile.txt',
+        extension: 'txt',
+        quarter: 'Q1',
+        section: 'Active Case Data',
+        slug: '1234-5-6-7890',
+        year: '2021',
+        s3_version_id: '3210',
+        created_at: '2025-02-07T23:38:58+0000',
+        submitted_by: 'Test Testerson',
+        has_error: false,
+        summary: null,
+        latest_reparse_file_meta: '',
+      },
+    })
+
+    let times = 0
+    mockAxios.get.mockImplementation((url) => {
+      if (url.includes('/data_files/1/')) {
+        // status
+        times += 1
+        return Promise.resolve({
+          data: {
+            id: 1,
+            summary: {
+              status: times > 1 ? 'Approved' : 'Pending',
+            },
+            original_filename: 'testFile.txt',
+            extension: 'txt',
+            quarter: 'Q1',
+            section: 'Active Case Data',
+            slug: '1234-5-6-7890',
+            year: '2021',
+            s3_version_id: '3210',
+            created_at: '2025-02-07T23:38:58+0000',
+            submitted_by: 'Test Testerson',
+            has_error: false,
+            latest_reparse_file_meta: '',
+          },
+        })
+      } else {
+        // submission history
+        return Promise.resolve({
+          data: [
+            {
+              id: 1,
+              original_filename: 'testFile.txt',
+              extension: 'txt',
+              quarter: 'Q1',
+              section: 'Active Case Data',
+              slug: '1234-5-6-7890',
+              year: '2021',
+              s3_version_id: '3210',
+              created_at: '2025-02-07T23:38:58+0000',
+              submitted_by: 'Test Testerson',
+              has_error: false,
+              summary: { status: 'Pending' },
+              latest_reparse_file_meta: '',
+            },
+          ],
+        })
+      }
+    })
+
+    const store = appConfigureStore({
+      ...initialState,
+      auth: {
+        authenticated: true,
+        user: {
+          email: 'hi@bye.com',
+          stt: {
+            id: 2,
+            type: 'state',
+            code: 'AK',
+            name: 'Alaska',
+          },
+          roles: [{ id: 1, name: 'Developer', permission: [] }],
+        },
+      },
+      reports: {
+        ...initialState.reports,
+        stt: 'Alaska',
+      },
+    })
+    const origDispatch = store.dispatch
+    store.dispatch = jest.fn(origDispatch)
+
+    const {
+      getByText,
+      queryByText,
+      getByLabelText,
+      queryAllByTestId,
+      queryAllByText,
+    } = render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    setReportInputs('2021', 'Q3', getByLabelText)
+
+    await waitFor(() => {
+      expect(
+        queryByText('Section 1 - TANF - Active Case Data')
+      ).toBeInTheDocument()
+      expect(getByText('2021', { selector: 'option' }).selected).toBe(true)
+      expect(
+        getByText('Quarter 3 (April - June)', { selector: 'option' }).selected
+      ).toBe(true)
+    })
+
+    await waitFor(() => {
+      expect(
+        getByText('Section 1 - TANF - Active Case Data')
+      ).toBeInTheDocument()
+      expect(
+        getByText('Section 2 - TANF - Closed Case Data')
+      ).toBeInTheDocument()
+      expect(getByText('Section 3 - TANF - Aggregate Data')).toBeInTheDocument()
+      expect(getByText('Section 4 - TANF - Stratum Data')).toBeInTheDocument()
+    })
+
+    // add a file to be uploaded, but don't submit
+    await waitFor(() => {
+      fireEvent.change(getByLabelText('Section 1 - TANF - Active Case Data'), {
+        target: {
+          files: [makeTestFile('section1.txt', ['HEADER20212A53000TAN1ED\n'])],
+        },
+      })
+    })
+
+    await waitFor(() => {
+      expect(getByText('section1.txt')).toBeInTheDocument()
+      expect(store.dispatch).toHaveBeenCalledTimes(5)
+    })
+
+    const submitButton = getByText('Submit Data Files')
+    fireEvent.click(submitButton)
+
+    await waitFor(() =>
+      expect(
+        getByText(
+          `Successfully submitted section(s): 1 on ${new Date().toDateString()}`
+        )
+      ).toBeInTheDocument()
+    )
+    await waitFor(() => expect(store.dispatch).toHaveBeenCalledTimes(8))
+
+    // act(() => jest.advanceTimersByTime(2000))
+
+    expect(mockAxios.get).toHaveBeenCalledTimes(2)
+    expect(times).toBe(1)
+
+    fireEvent.click(getByText('Submission History'))
+
+    await waitFor(() => {
+      expect(
+        queryByText('Loading submission history...')
+      ).not.toBeInTheDocument()
+    })
+
+    expect(queryAllByTestId('spinner')).toHaveLength(12)
+    expect(getByText('testFile.txt')).toBeInTheDocument()
+    expect(queryAllByText('Pending')).toHaveLength(3)
+
+    jest.runOnlyPendingTimers()
+
+    await waitFor(() => {
+      expect(getByText('Approved')).toBeInTheDocument()
+    })
+
+    expect(queryAllByTestId('spinner')).toHaveLength(0)
+    expect(getByText('testFile.txt')).toBeInTheDocument()
+    expect(queryAllByText('Pending')).toHaveLength(0)
+    expect(getByText('Approved')).toBeInTheDocument()
+  })
+
+  it('should show spinners while multiple uploads are parsing', async () => {
+    jest.useFakeTimers()
+    jest.mock('axios')
+    const mockAxios = axios
+
+    let postTimes = 0
+    mockAxios.post.mockImplementation((url) => {
+      postTimes += 1
+
+      if (postTimes === 1) {
+        return Promise.resolve({
+          data: {
+            id: 1,
+            original_filename: 'testFile1.txt',
+            extension: 'txt',
+            quarter: 'Q1',
+            section: 'Active Case Data',
+            slug: '1234-5-6-7890',
+            year: '2021',
+            s3_version_id: '3210',
+            created_at: '2025-02-07T23:38:58+0000',
+            submitted_by: 'Test Testerson',
+            has_error: false,
+            summary: null,
+            latest_reparse_file_meta: '',
+          },
+        })
+      }
+
+      return Promise.resolve({
+        data: {
+          id: 2,
+          original_filename: 'testFile2.txt',
+          extension: 'txt',
+          quarter: 'Q1',
+          section: 'Aggregate Data',
+          slug: '1234-5-6-7890',
+          year: '2021',
+          s3_version_id: '3210',
+          created_at: '2025-02-07T23:38:58+0000',
+          submitted_by: 'Test Testerson',
+          has_error: false,
+          summary: null,
+          latest_reparse_file_meta: '',
+        },
+      })
+    })
+
+    let times1 = 0
+    let times2 = 0
+    mockAxios.get.mockImplementation((url) => {
+      if (url.includes('/data_files/1/')) {
+        // status
+        times1 += 1
+        return Promise.resolve({
+          data: {
+            id: 1,
+            summary: {
+              status: times1 > 1 ? 'Approved' : 'Pending',
+            },
+            original_filename: 'testFile1.txt',
+            extension: 'txt',
+            quarter: 'Q1',
+            section: 'Active Case Data',
+            slug: '1234-5-6-7890',
+            year: '2021',
+            s3_version_id: '3210',
+            created_at: '2025-02-07T23:38:58+0000',
+            submitted_by: 'Test Testerson',
+            has_error: false,
+            latest_reparse_file_meta: '',
+          },
+        })
+      } else if (url.includes('/data_files/2/')) {
+        // status
+        times2 += 1
+        return Promise.resolve({
+          data: {
+            id: 2,
+            summary: {
+              status: times2 > 1 ? 'Approved' : 'Pending',
+            },
+            original_filename: 'testFile2.txt',
+            extension: 'txt',
+            quarter: 'Q1',
+            section: 'Aggregate Data',
+            slug: '1234-5-6-7890',
+            year: '2021',
+            s3_version_id: '3210',
+            created_at: '2025-02-07T23:38:58+0000',
+            submitted_by: 'Test Testerson',
+            has_error: false,
+            latest_reparse_file_meta: '',
+          },
+        })
+      } else {
+        // submission history
+        return Promise.resolve({
+          data: [
+            {
+              id: 1,
+              original_filename: 'testFile1.txt',
+              extension: 'txt',
+              quarter: 'Q1',
+              section: 'Active Case Data',
+              slug: '1234-5-6-7890',
+              year: '2021',
+              s3_version_id: '3210',
+              created_at: '2025-02-07T23:38:58+0000',
+              submitted_by: 'Test Testerson',
+              has_error: false,
+              summary: { status: 'Pending' },
+              latest_reparse_file_meta: '',
+            },
+            {
+              id: 2,
+              original_filename: 'testFile2.txt',
+              extension: 'txt',
+              quarter: 'Q1',
+              section: 'Aggregate Data',
+              slug: '1234-5-6-7890',
+              year: '2021',
+              s3_version_id: '3210',
+              created_at: '2025-02-07T23:38:58+0000',
+              submitted_by: 'Test Testerson',
+              has_error: false,
+              summary: { status: 'Pending' },
+              latest_reparse_file_meta: '',
+            },
+          ],
+        })
+      }
+    })
+
+    const store = appConfigureStore({
+      ...initialState,
+      auth: {
+        authenticated: true,
+        user: {
+          email: 'hi@bye.com',
+          stt: {
+            id: 2,
+            type: 'state',
+            code: 'AK',
+            name: 'Alaska',
+          },
+          roles: [{ id: 1, name: 'Developer', permission: [] }],
+        },
+      },
+      reports: {
+        ...initialState.reports,
+        stt: 'Alaska',
+      },
+    })
+    const origDispatch = store.dispatch
+    store.dispatch = jest.fn(origDispatch)
+
+    const {
+      getByText,
+      queryByText,
+      getByLabelText,
+      queryAllByText,
+      queryAllByTestId,
+    } = render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    setReportInputs('2021', 'Q3', getByLabelText)
+
+    await waitFor(() => {
+      expect(
+        queryByText('Section 1 - TANF - Active Case Data')
+      ).toBeInTheDocument()
+      expect(getByText('2021', { selector: 'option' }).selected).toBe(true)
+      expect(
+        getByText('Quarter 3 (April - June)', { selector: 'option' }).selected
+      ).toBe(true)
+    })
+
+    await waitFor(() => {
+      expect(
+        getByText('Section 1 - TANF - Active Case Data')
+      ).toBeInTheDocument()
+      expect(
+        getByText('Section 2 - TANF - Closed Case Data')
+      ).toBeInTheDocument()
+      expect(getByText('Section 3 - TANF - Aggregate Data')).toBeInTheDocument()
+      expect(getByText('Section 4 - TANF - Stratum Data')).toBeInTheDocument()
+    })
+
+    // add a file to be uploaded, but don't submit
+    await waitFor(() => {
+      fireEvent.change(getByLabelText('Section 1 - TANF - Active Case Data'), {
+        target: {
+          files: [makeTestFile('section1.txt', ['HEADER20212A53000TAN1ED\n'])],
+        },
+      })
+      fireEvent.change(getByLabelText('Section 3 - TANF - Aggregate Data'), {
+        target: {
+          files: [makeTestFile('section3.txt', ['HEADER20212G53000TAN1ED\n'])],
+        },
+      })
+    })
+
+    await waitFor(() => {
+      expect(getByText('section1.txt')).toBeInTheDocument()
+      expect(getByText('section3.txt')).toBeInTheDocument()
+      expect(store.dispatch).toHaveBeenCalledTimes(8)
+    })
+
+    const submitButton = getByText('Submit Data Files')
+    fireEvent.click(submitButton)
+
+    await waitFor(() =>
+      expect(
+        getByText(
+          `Successfully submitted section(s): 1, and 3 on ${new Date().toDateString()}`
+        )
+      ).toBeInTheDocument()
+    )
+    await waitFor(() => expect(store.dispatch).toHaveBeenCalledTimes(11))
+
+    // act(() => jest.advanceTimersByTime(2000))
+
+    expect(mockAxios.get).toHaveBeenCalledTimes(3)
+    expect(times1).toBe(1)
+    expect(times2).toBe(1)
+
+    fireEvent.click(getByText('Submission History'))
+
+    await waitFor(() => {
+      expect(
+        queryByText('Loading submission history...')
+      ).not.toBeInTheDocument()
+    })
+
+    expect(queryAllByTestId('spinner')).toHaveLength(20)
+    expect(getByText('testFile1.txt')).toBeInTheDocument()
+    expect(getByText('testFile2.txt')).toBeInTheDocument()
+    expect(queryAllByText('Pending')).toHaveLength(5)
+
+    jest.runOnlyPendingTimers()
+
+    await waitFor(() => {
+      expect(queryAllByText('Approved')).toHaveLength(2)
+    })
+
+    expect(queryAllByTestId('spinner')).toHaveLength(0)
+    expect(getByText('testFile1.txt')).toBeInTheDocument()
+    expect(getByText('testFile2.txt')).toBeInTheDocument()
+    expect(queryAllByText('Pending')).toHaveLength(0)
+    expect(queryAllByText('Approved')).toHaveLength(2)
+  })
+
+  it('should show Fiscal Year only when selecting program audit', async () => {
+    const store = appConfigureStore(initialState)
+    const origDispatch = store.dispatch
+    store.dispatch = jest.fn(origDispatch)
+
+    const { getByLabelText, getByText, queryByText } = render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    const radio_button = getByLabelText('Program Integrity Audit')
+
+    fireEvent.click(radio_button)
+
+    await waitFor(() => {
+      expect(
+        getByText('Fiscal Year (October - September)*')
+      ).toBeInTheDocument()
+      expect(queryByText('Fiscal Quarter*')).not.toBeInTheDocument()
+    })
+  })
+
+  it('should render 4 file inputs for each quarter', async () => {
+    const store = mockStore(initialState)
+    const origDispatch = store.dispatch
+    store.dispatch = jest.fn(origDispatch)
+
+    const { getByLabelText, getByText, queryByText, getByTestId } = render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    const stt = getByTestId('stt-combobox')
+    fireEvent.change(stt, { target: { value: 'California' } })
+
+    const radio_button = getByLabelText('Program Integrity Audit')
+
+    fireEvent.click(radio_button)
+
+    await waitFor(() => {
+      expect(
+        getByText('Fiscal Year (October - September)*')
+      ).toBeInTheDocument()
+      expect(queryByText('Fiscal Quarter*')).not.toBeInTheDocument()
+    })
+
+    const fiscal_year = getByLabelText('Fiscal Year (October - September)*')
+    fireEvent.change(fiscal_year, { target: { value: '2024' } })
+
+    await waitFor(() => {
+      expect(queryByText('Quarter 1 (October - December)')).toBeInTheDocument()
+      expect(queryByText('Quarter 2 (January - March)')).toBeInTheDocument()
+      expect(queryByText('Quarter 3 (April - June)')).toBeInTheDocument()
+      expect(queryByText('Quarter 4 (July - September)')).toBeInTheDocument()
+    })
+  })
+
+  it('should reset file type to TANF when changing from an STT with SSP to one without SSP', async () => {
+    const store = appConfigureStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        stt: 'California',
+      },
+    })
+
+    const { getByLabelText, getByTestId, queryByText } = render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    // Select California (has SSP)
+    const sttDropdown = getByTestId('stt-combobox')
+    fireEvent.change(sttDropdown, { target: { value: 'California' } })
+
+    await waitFor(() => {
+      expect(queryByText('SSP-MOE')).toBeInTheDocument()
+    })
+
+    // Select SSP-MOE file type
+    const sspRadio = getByLabelText('SSP-MOE')
+    fireEvent.click(sspRadio)
+
+    await waitFor(() => {
+      expect(sspRadio.checked).toBe(true)
+    })
+
+    // Set year and quarter to view submission history
+    setReportInputs('2021', 'Q3', getByLabelText)
+
+    await waitFor(() => {
+      expect(
+        queryByText(
+          'California - SSP-MOE - Fiscal Year 2021 - Quarter 3 (April - June)'
+        )
+      ).toBeInTheDocument()
+    })
+
+    // Change to Alaska (no SSP)
+    fireEvent.change(sttDropdown, { target: { value: 'Alaska' } })
+
+    await waitFor(() => {
+      // SSP-MOE option should no longer be visible
+      expect(queryByText('SSP-MOE')).not.toBeInTheDocument()
+
+      // TANF should be selected
+      const tanfRadio = getByLabelText('TANF')
+      expect(tanfRadio.checked).toBe(true)
+
+      // Header should show TANF, not SSP-MOE
+      expect(
+        queryByText(
+          'Alaska - TANF - Fiscal Year 2021 - Quarter 3 (April - June)'
+        )
+      ).toBeInTheDocument()
+
+      // Should not show SSP-MOE in header
+      expect(
+        queryByText(
+          'Alaska - SSP-MOE - Fiscal Year 2021 - Quarter 3 (April - June)'
+        )
+      ).not.toBeInTheDocument()
+    })
+  })
+
+  it('should reset file type to TANF when confirming STT change with uploaded files from SSP to non-SSP STT', async () => {
+    const store = appConfigureStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        stt: 'California',
+      },
+    })
+
+    const origDispatch = store.dispatch
+    store.dispatch = jest.fn(origDispatch)
+
+    const { getByLabelText, getByTestId, getByText, queryByText } = render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    // Select California (has SSP)
+    const sttDropdown = getByTestId('stt-combobox')
+    fireEvent.change(sttDropdown, { target: { value: 'California' } })
+
+    // Select SSP-MOE file type
+    const sspRadio = getByLabelText('SSP-MOE')
+    fireEvent.click(sspRadio)
+
+    // Set year and quarter
+    setReportInputs('2021', 'Q3', getByLabelText)
+
+    await waitFor(() => {
+      expect(
+        getByText('Section 1 - SSP-MOE - Active Case Data')
+      ).toBeInTheDocument()
+    })
+
+    // Upload a file
+    // await waitFor(() => {
+    fireEvent.change(getByLabelText('Section 1 - SSP-MOE - Active Case Data'), {
+      target: {
+        files: [makeTestFile('section1.txt', ['HEADER20212A53000SSP1ED\n'])],
+      },
+    })
+    // })
+
+    await waitFor(() => {
+      expect(getByText('section1.txt')).toBeInTheDocument()
+      expect(store.dispatch).toHaveBeenCalledTimes(9)
+    })
+
+    // Try to change to Alaska (no SSP)
+    fireEvent.change(sttDropdown, { target: { value: 'Alaska' } })
+
+    // Modal should appear
+    await waitFor(() => {
+      expect(queryByText('Files Not Submitted')).toBeInTheDocument()
+    })
+
+    // Click OK to discard files and change STT
+    fireEvent.click(getByText(/OK/, { selector: '#modal button' }))
+
+    await waitFor(() => {
+      // SSP-MOE option should no longer be visible
+      expect(queryByText('SSP-MOE')).not.toBeInTheDocument()
+
+      // TANF should be selected
+      const tanfRadio = getByLabelText('TANF')
+      expect(tanfRadio.checked).toBe(true)
+
+      // Header should show TANF
+      expect(
+        queryByText(
+          'Alaska - TANF - Fiscal Year 2021 - Quarter 3 (April - June)'
+        )
+      ).toBeInTheDocument()
+
+      // File should be cleared
+      expect(queryByText('section1.txt')).not.toBeInTheDocument()
+    })
+  })
+
+  it('should reset fiscal year when changing from TANF to Program Integrity Audit with year < 2024', async () => {
+    const store = appConfigureStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        stt: 'California',
+      },
+    })
+
+    const { getByLabelText, getByTestId, queryByText } = render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    // Select California
+    const stt = getByTestId('stt-combobox')
+    fireEvent.change(stt, { target: { value: 'California' } })
+
+    // Set year to 2021 and quarter
+    setReportInputs('2021', 'Q3', getByLabelText)
+
+    await waitFor(() => {
+      expect(
+        queryByText(
+          'California - TANF - Fiscal Year 2021 - Quarter 3 (April - June)'
+        )
+      ).toBeInTheDocument()
+    })
+
+    // Change to Program Integrity Audit
+    const piaRadio = getByLabelText('Program Integrity Audit')
+    fireEvent.click(piaRadio)
+
+    // Year should be reset to empty - use getElementById since the label contains error message
+    await waitFor(() => {
+      const yearSelect = document.getElementById('reportingYears')
+      expect(yearSelect.value).toBe('')
+    })
+
+    // Header should not be visible since year is now empty
+    expect(
+      queryByText('California - Program Integrity Audit - Fiscal Year 2021')
+    ).not.toBeInTheDocument()
+  })
+
+  it('should not reset fiscal year when changing from TANF to Program Integrity Audit with year >= 2024', async () => {
+    const store = appConfigureStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        stt: 'California',
+      },
+    })
+
+    const { getByLabelText, getByTestId, queryByText } = render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    // Select California
+    const stt = getByTestId('stt-combobox')
+    fireEvent.change(stt, { target: { value: 'California' } })
+
+    // Set year to 2024 and quarter
+    setReportInputs('2024', 'Q3', getByLabelText)
+
+    await waitFor(() => {
+      expect(
+        queryByText(
+          'California - TANF - Fiscal Year 2024 - Quarter 3 (April - June)'
+        )
+      ).toBeInTheDocument()
+    })
+
+    // Change to Program Integrity Audit
+    const piaRadio = getByLabelText('Program Integrity Audit')
+    fireEvent.click(piaRadio)
+
+    await waitFor(() => {
+      // Year should remain 2024
+      const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+      expect(yearSelect.value).toBe('2024')
+
+      // Header should be visible with the correct format for PIA
+      expect(
+        queryByText('California - Program Integrity Audit - Fiscal Year 2024')
+      ).toBeInTheDocument()
+    })
+  })
+
+  describe('Form order enforcement', () => {
+    it('should not show errors when filling File Type -> Year -> Quarter in order', async () => {
+      const state = {
+        ...initialState,
+        auth: {
+          authenticated: true,
+          user: {
+            email: 'hi@bye.com',
+            stt: {
+              id: 2,
+              type: 'state',
+              code: 'AK',
+              name: 'Alaska',
+            },
+            roles: [{ id: 1, name: 'Data Analyst', permission: [] }],
+            account_approval_status: 'Approved',
+          },
+        },
+      }
+      const store = mockStore(state)
+      const { getByLabelText, queryByText } = render(
+        <Provider store={store}>
+          <MemoryRouter>
+            <Reports />
+          </MemoryRouter>
+        </Provider>
+      )
+
+      const tanfRadio = getByLabelText('TANF')
+      const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+      const quarterSelect = getByLabelText('Fiscal Quarter*')
+
+      // File Type is already selected (TANF by default)
+      fireEvent.click(tanfRadio)
+
+      // No errors should show
+      expect(queryByText('A fiscal year is required')).not.toBeInTheDocument()
+      expect(
+        queryByText('A fiscal quarter is required')
+      ).not.toBeInTheDocument()
+
+      // Select year
+      fireEvent.change(yearSelect, { target: { value: '2021' } })
+
+      // Still no errors
+      expect(
+        queryByText('A fiscal quarter is required')
+      ).not.toBeInTheDocument()
+
+      // Select quarter
+      fireEvent.change(quarterSelect, { target: { value: 'Q1' } })
+
+      // No errors at any point
+      expect(queryByText('A fiscal year is required')).not.toBeInTheDocument()
+      expect(
+        queryByText('A fiscal quarter is required')
+      ).not.toBeInTheDocument()
+    })
+
+    it('should show error only on blurred field when filling in order', async () => {
+      const store = mockStore(initialState)
+      const { getByLabelText, queryByText } = render(
+        <Provider store={store}>
+          <MemoryRouter>
+            <Reports />
+          </MemoryRouter>
+        </Provider>
+      )
+
+      const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+
+      // Blur year without selection
+      fireEvent.blur(yearSelect)
+
+      await waitFor(() => {
+        expect(queryByText('A fiscal year is required')).toBeInTheDocument()
+      })
+
+      // Quarter should not show error (not touched yet)
+      expect(
+        queryByText('A fiscal quarter is required')
+      ).not.toBeInTheDocument()
+    })
+
+    it('should show errors on all empty fields when selecting Year first', async () => {
+      const store = mockStore(initialState)
+      const { getByLabelText, queryByText } = render(
+        <Provider store={store}>
+          <MemoryRouter>
+            <Reports />
+          </MemoryRouter>
+        </Provider>
+      )
+
+      const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+
+      // Select year first (breaking order)
+      fireEvent.change(yearSelect, { target: { value: '2021' } })
+
+      await waitFor(() => {
+        // Quarter should show error (empty and touched)
+        expect(queryByText('A fiscal quarter is required')).toBeInTheDocument()
+      })
+
+      // Year should not show error (has value)
+      expect(queryByText('A fiscal year is required')).not.toBeInTheDocument()
+    })
+
+    it('should show errors on all empty fields when selecting Quarter first', async () => {
+      const store = mockStore(initialState)
+      const { getByLabelText, queryByText } = render(
+        <Provider store={store}>
+          <MemoryRouter>
+            <Reports />
+          </MemoryRouter>
+        </Provider>
+      )
+
+      const quarterSelect = getByLabelText('Fiscal Quarter*')
+
+      // Select quarter first (breaking order)
+      fireEvent.change(quarterSelect, { target: { value: 'Q1' } })
+
+      await waitFor(() => {
+        // Year should show error (empty and touched)
+        expect(queryByText('A fiscal year is required')).toBeInTheDocument()
+      })
+
+      // Quarter should not show error (has value)
+      expect(
+        queryByText('A fiscal quarter is required')
+      ).not.toBeInTheDocument()
+    })
+
+    it('should not show error on fields with valid values even when order is broken', async () => {
+      const store = mockStore(initialState)
+      const { getByLabelText, queryByText } = render(
+        <Provider store={store}>
+          <MemoryRouter>
+            <Reports />
+          </MemoryRouter>
+        </Provider>
+      )
+
+      const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+      const quarterSelect = getByLabelText('Fiscal Quarter*')
+
+      // Fill year first
+      fireEvent.change(yearSelect, { target: { value: '2021' } })
+
+      // Then fill quarter
+      fireEvent.change(quarterSelect, { target: { value: 'Q1' } })
+
+      await waitFor(() => {
+        // Neither year nor quarter should show errors (both have values)
+        expect(queryByText('A fiscal year is required')).not.toBeInTheDocument()
+        expect(
+          queryByText('A fiscal quarter is required')
+        ).not.toBeInTheDocument()
+      })
+    })
+
+    describe('Error clearing', () => {
+      it('should clear error when empty field gets a value', async () => {
+        const store = mockStore(initialState)
+        const { getByLabelText, queryByText } = render(
+          <Provider store={store}>
+            <MemoryRouter>
+              <Reports />
+            </MemoryRouter>
+          </Provider>
+        )
+
+        const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+        const quarterSelect = getByLabelText('Fiscal Quarter*')
+
+        // Select quarter first to trigger errors
+        fireEvent.change(quarterSelect, { target: { value: 'Q1' } })
+
+        await waitFor(() => {
+          expect(queryByText('A fiscal year is required')).toBeInTheDocument()
+        })
+
+        // Fill year
+        fireEvent.change(yearSelect, { target: { value: '2021' } })
+
+        await waitFor(() => {
+          expect(
+            queryByText('A fiscal year is required')
+          ).not.toBeInTheDocument()
+        })
+      })
+    })
+  })
+
+  describe('URL parameter validation', () => {
+    it('should accept valid URL parameters', async () => {
+      const store = mockStore(initialState)
+      const { getByLabelText } = render(
+        <Provider store={store}>
+          <MemoryRouter initialEntries={['/?fy=2023&q=Q1&type=tanf']}>
+            <Reports />
+          </MemoryRouter>
+        </Provider>
+      )
+
+      await waitFor(() => {
+        const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+        const quarterSelect = getByLabelText('Fiscal Quarter*')
+        expect(yearSelect.value).toBe('2023')
+        expect(quarterSelect.value).toBe('Q1')
+      })
+    })
+
+    it('should clear only fiscal year when it is invalid', async () => {
+      const store = mockStore(initialState)
+      const { getByLabelText } = render(
+        <Provider store={store}>
+          <MemoryRouter initialEntries={['/?fy=2019&q=Q1&type=tanf']}>
+            <Reports />
+          </MemoryRouter>
+        </Provider>
+      )
+
+      await waitFor(() => {
+        const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+        const quarterSelect = getByLabelText('Fiscal Quarter*')
+        // Only fy should be cleared, other valid params kept
+        expect(yearSelect.value).toBe('')
+        expect(quarterSelect.value).toBe('Q1')
+      })
+    })
+
+    it('should clear only quarter when it is invalid', async () => {
+      const store = mockStore(initialState)
+      const { getByLabelText } = render(
+        <Provider store={store}>
+          <MemoryRouter initialEntries={['/?fy=2023&q=Q5&type=tanf']}>
+            <Reports />
+          </MemoryRouter>
+        </Provider>
+      )
+
+      await waitFor(() => {
+        const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+        const quarterSelect = getByLabelText('Fiscal Quarter*')
+        // Only quarter should be cleared, other valid params kept
+        expect(yearSelect.value).toBe('2023')
+        expect(quarterSelect.value).toBe('')
+      })
+    })
+
+    it('should reset file type to default when it is invalid', async () => {
+      const store = mockStore(initialState)
+      const { getByLabelText } = render(
+        <Provider store={store}>
+          <MemoryRouter initialEntries={['/?fy=2023&q=Q1&type=invalid-type']}>
+            <Reports />
+          </MemoryRouter>
+        </Provider>
+      )
+
+      await waitFor(() => {
+        const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+        const quarterSelect = getByLabelText('Fiscal Quarter*')
+        // Year and quarter should be kept, type resets to default (tanf)
+        expect(yearSelect.value).toBe('2023')
+        expect(quarterSelect.value).toBe('Q1')
+        // TANF radio should be selected (default) - check by label text
+        const tanfRadio = getByLabelText('TANF')
+        expect(tanfRadio.checked).toBe(true)
+      })
+    })
+
+    it('should clear only STT when it is invalid', async () => {
+      const store = mockStore(initialState)
+      const { getByLabelText } = render(
+        <Provider store={store}>
+          <MemoryRouter
+            initialEntries={['/?fy=2023&q=Q1&type=tanf&stt=NonExistentSTT']}
+          >
+            <Reports />
+          </MemoryRouter>
+        </Provider>
+      )
+
+      await waitFor(() => {
+        const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+        const quarterSelect = getByLabelText('Fiscal Quarter*')
+        const sttInput = getByLabelText('State, Tribe, or Territory*', {
+          selector: 'input',
+        })
+        // Only STT should be cleared, other valid params kept
+        expect(yearSelect.value).toBe('2023')
+        expect(quarterSelect.value).toBe('Q1')
+        expect(sttInput.value).toBe('')
+      })
+    })
+
+    it('should accept valid STT', async () => {
+      const store = mockStore(initialState)
+      const { getByLabelText } = render(
+        <Provider store={store}>
+          <MemoryRouter
+            initialEntries={['/?fy=2023&q=Q1&type=tanf&stt=California']}
+          >
+            <Reports />
+          </MemoryRouter>
+        </Provider>
+      )
+
+      await waitFor(() => {
+        const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+        const quarterSelect = getByLabelText('Fiscal Quarter*')
+        const sttInput = getByLabelText('State, Tribe, or Territory*', {
+          selector: 'input',
+        })
+        expect(yearSelect.value).toBe('2023')
+        expect(quarterSelect.value).toBe('Q1')
+        expect(sttInput.value).toBe('California')
+      })
+    })
+
+    it('should clear only fiscal year when it is non-numeric', async () => {
+      const store = mockStore(initialState)
+      const { getByLabelText } = render(
+        <Provider store={store}>
+          <MemoryRouter initialEntries={['/?fy=abc&q=Q1&type=tanf']}>
+            <Reports />
+          </MemoryRouter>
+        </Provider>
+      )
+
+      await waitFor(() => {
+        const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+        const quarterSelect = getByLabelText('Fiscal Quarter*')
+        // Only fy should be cleared, other valid params kept
+        expect(yearSelect.value).toBe('')
+        expect(quarterSelect.value).toBe('Q1')
+      })
+    })
   })
 })

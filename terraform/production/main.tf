@@ -82,19 +82,16 @@ resource "cloudfoundry_service_instance" "datafiles" {
   recursive_delete = true
 }
 
-data "cloudfoundry_service" "elasticsearch" {
-  name = "aws-elasticsearch"
+###
+# Provision Redis
+###
+
+data "cloudfoundry_service" "redis" {
+  name = "aws-elasticache-redis"
 }
 
-resource "cloudfoundry_service_instance" "elasticsearch" {
-  name                     = "es-prod"
-  space                    = data.cloudfoundry_space.space.id
-  service_plan             = data.cloudfoundry_service.elasticsearch.service_plans["es-medium"]
-  replace_on_params_change = true
-  json_params              = "{\"ElasticsearchVersion\": \"Elasticsearch_7.10\"}"
-  timeouts {
-    create = "60m"
-    update = "60m"
-    delete = "2h"
-  }
+resource "cloudfoundry_service_instance" "redis" {
+  name         = "tdp-redis-prod"
+  space        = data.cloudfoundry_space.space.id
+  service_plan = data.cloudfoundry_service.redis.service_plans["redis-3node"]
 }

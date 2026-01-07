@@ -1,43 +1,38 @@
 """Models representing parsed TRIBAL data file records submitted to TDP."""
 
 import uuid
-from django.db import models
+
 from django.contrib.contenttypes.fields import GenericRelation
+from django.db import models
+
 from tdpservice.data_files.models import DataFile
 from tdpservice.parsers.models import ParserError
+from tdpservice.search_indexes.models.mixins import RecordMixin
 
 
-class Tribal_TANF_T1(models.Model):
-    """
-    Parsed record representing a T1 data submission.
-
-    Mapped to an elastic search index.
-    """
+class Tribal_TANF_T1(RecordMixin):
+    """Parsed record representing a T1 data submission."""
 
     class Meta:
         """Meta class for the model."""
 
-        verbose_name = 'Tribal TANF T1'
+        verbose_name = "Tribal TANF T1"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
-        help_text='The parent file from which this record was created.',
+        help_text="The parent file from which this record was created.",
         null=True,
         on_delete=models.CASCADE,
-        related_name='tribal_t1_parent'
+        related_name="tribal_t1_parent",
     )
 
     error = GenericRelation(ParserError)
     RecordType = models.CharField(max_length=156, null=True, blank=False)
     RPT_MONTH_YEAR = models.IntegerField(null=True, blank=False)
     CASE_NUMBER = models.CharField(max_length=11, null=True, blank=False)
-    COUNTY_FIPS_CODE = models.CharField(
-        max_length=3,
-        null=True,
-        blank=False
-    )
+    COUNTY_FIPS_CODE = models.CharField(max_length=3, null=True, blank=False)
     STRATUM = models.CharField(max_length=2, null=True, blank=False)
     ZIP_CODE = models.CharField(max_length=5, null=True, blank=False)
     FUNDING_STREAM = models.IntegerField(null=True, blank=False)
@@ -81,26 +76,22 @@ class Tribal_TANF_T1(models.Model):
     FAMILY_NEW_CHILD = models.IntegerField(null=True, blank=False)
 
 
-class Tribal_TANF_T2(models.Model):
-    """
-    Parsed record representing a T2 data submission.
-
-    Mapped to an elastic search index.
-    """
+class Tribal_TANF_T2(RecordMixin):
+    """Parsed record representing a T2 data submission."""
 
     class Meta:
         """Meta class for the model."""
 
-        verbose_name = 'Tribal TANF T2'
+        verbose_name = "Tribal TANF T2"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
-        help_text='The parent file from which this record was created.',
+        help_text="The parent file from which this record was created.",
         null=True,
         on_delete=models.CASCADE,
-        related_name='tribal_t2_parent'
+        related_name="tribal_t2_parent",
     )
 
     RecordType = models.CharField(max_length=156, null=True, blank=False)
@@ -158,26 +149,22 @@ class Tribal_TANF_T2(models.Model):
     OTHER_UNEARNED_INCOME = models.CharField(max_length=4, null=True, blank=False)
 
 
-class Tribal_TANF_T3(models.Model):
-    """
-    Parsed record representing a T3 data submission.
-
-    Mapped to an elastic search index.
-    """
+class Tribal_TANF_T3(RecordMixin):
+    """Parsed record representing a T3 data submission."""
 
     class Meta:
         """Meta class for the model."""
 
-        verbose_name = 'Tribal TANF T3'
+        verbose_name = "Tribal TANF T3"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
-        help_text='The parent file from which this record was created.',
+        help_text="The parent file from which this record was created.",
         null=True,
         on_delete=models.CASCADE,
-        related_name='tribal_t3_parent'
+        related_name="tribal_t3_parent",
     )
 
     RecordType = models.CharField(max_length=156, null=True, blank=False)
@@ -203,26 +190,23 @@ class Tribal_TANF_T3(models.Model):
     UNEARNED_SSI = models.CharField(max_length=4, null=True, blank=False)
     OTHER_UNEARNED_INCOME = models.CharField(max_length=4, null=True, blank=False)
 
-class Tribal_TANF_T4(models.Model):
-    """
-    Parsed record representing a T4 data submission.
 
-    Mapped to an elastic search index.
-    """
+class Tribal_TANF_T4(RecordMixin):
+    """Parsed record representing a T4 data submission."""
 
     class Meta:
         """Meta class for the model."""
 
-        verbose_name = 'Tribal TANF T4'
+        verbose_name = "Tribal TANF T4"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
-        help_text='The parent file from which this record was created.',
+        help_text="The parent file from which this record was created.",
         null=True,
         on_delete=models.CASCADE,
-        related_name='tribal_t4_parent'
+        related_name="tribal_t4_parent",
     )
 
     RecordType = models.CharField(max_length=71, null=True, blank=False)
@@ -239,26 +223,23 @@ class Tribal_TANF_T4(models.Model):
     REC_FOOD_STAMPS = models.IntegerField(null=True, blank=False)
     REC_SUB_CC = models.IntegerField(null=True, blank=False)
 
-class Tribal_TANF_T5(models.Model):
-    """
-    Parsed record representing a T5 data submission.
 
-    Mapped to an elastic search index.
-    """
+class Tribal_TANF_T5(RecordMixin):
+    """Parsed record representing a T5 data submission."""
 
     class Meta:
         """Meta class for the model."""
 
-        verbose_name = 'Tribal TANF T5'
+        verbose_name = "Tribal TANF T5"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
-        help_text='The parent file from which this record was created.',
+        help_text="The parent file from which this record was created.",
         null=True,
         on_delete=models.CASCADE,
-        related_name='tribal_t5_parent'
+        related_name="tribal_t5_parent",
     )
 
     RecordType = models.CharField(max_length=71, null=True, blank=False)
@@ -287,31 +268,30 @@ class Tribal_TANF_T5(models.Model):
     EDUCATION_LEVEL = models.CharField(max_length=2, null=True, blank=False)
     CITIZENSHIP_STATUS = models.IntegerField(null=True, blank=False)
     COUNTABLE_MONTH_FED_TIME = models.CharField(max_length=3, null=True, blank=False)
-    COUNTABLE_MONTHS_STATE_TRIBE = models.CharField(max_length=2, null=True, blank=False)
+    COUNTABLE_MONTHS_STATE_TRIBE = models.CharField(
+        max_length=2, null=True, blank=False
+    )
     EMPLOYMENT_STATUS = models.IntegerField(null=True, blank=False)
     AMOUNT_EARNED_INCOME = models.CharField(max_length=4, null=True, blank=False)
     AMOUNT_UNEARNED_INCOME = models.CharField(max_length=4, null=True, blank=False)
 
-class Tribal_TANF_T6(models.Model):
-    """
-    Parsed record representing a Tribal T6 data submission.
 
-    Mapped to an elastic search index.
-    """
+class Tribal_TANF_T6(RecordMixin):
+    """Parsed record representing a Tribal T6 data submission."""
 
     class Meta:
         """Meta class for the model."""
 
-        verbose_name = 'Tribal TANF T6'
+        verbose_name = "Tribal TANF T6"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
-        help_text='The parent file from which this record was created.',
+        help_text="The parent file from which this record was created.",
         null=True,
         on_delete=models.CASCADE,
-        related_name='tribal_t6_parent'
+        related_name="tribal_t6_parent",
     )
 
     RecordType = models.CharField(max_length=156, null=True, blank=False)
@@ -333,35 +313,28 @@ class Tribal_TANF_T6(models.Model):
     NUM_OUTWEDLOCK_BIRTHS = models.IntegerField(null=True, blank=True)
     NUM_CLOSED_CASES = models.IntegerField(null=True, blank=True)
 
-class Tribal_TANF_T7(models.Model):
-    """
-    Parsed record representing a Tribal T7 data submission.
 
-    Mapped to an elastic search index.
-    """
+class Tribal_TANF_T7(RecordMixin):
+    """Parsed record representing a Tribal T7 data submission."""
 
     class Meta:
         """Meta class for the model."""
 
-        verbose_name = 'Tribal TANF T7'
+        verbose_name = "Tribal TANF T7"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
-        help_text='The parent file from which this record was created.',
+        help_text="The parent file from which this record was created.",
         null=True,
         on_delete=models.CASCADE,
-        related_name='tribal_t7_parent'
+        related_name="tribal_t7_parent",
     )
 
     RecordType = models.CharField(max_length=156, null=True, blank=False)
     CALENDAR_QUARTER = models.IntegerField(null=True, blank=True)
     RPT_MONTH_YEAR = models.IntegerField(null=True, blank=False)
-    TDRS_SECTION_IND = models.CharField(
-        max_length=1,
-        null=True,
-        blank=False
-    )
+    TDRS_SECTION_IND = models.CharField(max_length=1, null=True, blank=False)
     STRATUM = models.CharField(max_length=2, null=True, blank=False)
     FAMILIES_MONTH = models.IntegerField(null=True, blank=False)

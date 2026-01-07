@@ -2,7 +2,6 @@ import React, { useRef, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
 import fileTypeChecker from 'file-type-checker'
-import languageEncoding from 'detect-file-encoding-and-language'
 
 import {
   clearError,
@@ -10,11 +9,16 @@ import {
   SET_FILE_ERROR,
   FILE_EXT_ERROR,
   upload,
-  download,
 } from '../../actions/reports'
-import Button from '../Button'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
-import { handlePreview, getTargetClassName } from './utils'
+import {
+  handlePreview,
+  getTargetClassName,
+  tryGetUTF8EncodedFile,
+  validateHeader,
+  checkPreviewDependencies,
+  removeOldPreviews,
+} from './utils'
 
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
@@ -35,40 +39,21 @@ const INVALID_EXT_ERROR = (
   </>
 )
 
-// The package author suggests using a minimum of 500 words to determine the encoding. However, datafiles don't have
-// "words" so we're using bytes instead to determine the encoding. See: https://www.npmjs.com/package/detect-file-encoding-and-language
-const MIN_BYTES = 500
-
-/* istanbul ignore next */
-const tryGetUTF8EncodedFile = async function (fileBytes, file) {
-  // Create a small view of the file to determine the encoding.
-  const btyesView = new Uint8Array(fileBytes.slice(0, MIN_BYTES))
-  const blobView = new Blob([btyesView], { type: 'text/plain' })
-  try {
-    const fileInfo = await languageEncoding(blobView)
-    const bom = btyesView.slice(0, 3)
-    const hasBom = bom[0] === 0xef && bom[1] === 0xbb && bom[2] === 0xbf
-    if ((fileInfo && fileInfo.encoding !== 'UTF-8') || hasBom) {
-      const utf8Encoder = new TextEncoder()
-      const decoder = new TextDecoder(fileInfo.encoding)
-      const decodedString = decoder.decode(
-        hasBom ? fileBytes.slice(3) : fileBytes
-      )
-      const utf8Bytes = utf8Encoder.encode(decodedString)
-      return new File([utf8Bytes], file.name, file.options)
-    }
-    return file
-  } catch (error) {
-    // This is a last ditch fallback to ensure consistent functionality and also allows the unit tests to work in the
-    // same way they did before this change. When the unit tests (i.e. Node environment) call `languageEncoding` it
-    // expects a Buffer/string/URL object. When the browser calls `languageEncoding`, it expects a Blob/File object.
-    // There is not a convenient way or universal object to handle both cases. Thus, when the tests run the call to
-    // `languageEncoding`, it raises an exception and we return the file as is which is then dispatched as it would
-    // have been before this change.
-    console.error('Caught error while handling file encoding. Error:', error)
-    return file
-  }
-}
+const NULL_PROGRAM_TYPE_ERROR = (
+  <>
+    Could not determine the file type. Please verify the file has a valid
+    header.&nbsp;
+    <a
+      className="usa-link"
+      href="https://acf.gov/sites/default/files/documents/ofa/transmission_file_header_trailer_record.pdf"
+      target="_blank"
+      aria-label="Need help? Read header record guidance"
+      rel="noreferrer"
+    >
+      Need help?
+    </a>
+  </>
+)
 
 const load = (file, section, input, dropTarget, dispatch) => {
   const filereader = new FileReader()
@@ -84,6 +69,8 @@ const load = (file, section, input, dropTarget, dispatch) => {
       let error = false
       const re = /(\.txt|\.ms\d{2}|\.ts\d{2,3})$/i
       if (!re.exec(file.name)) {
+        createFileInputErrorState(input, dropTarget)
+
         dispatch({
           type: FILE_EXT_ERROR,
           payload: {
@@ -115,30 +102,36 @@ const load = (file, section, input, dropTarget, dispatch) => {
   })
 }
 
-function FileUpload({ section, setLocalAlertState }) {
+function FileUpload({
+  section,
+  year,
+  quarter,
+  fileType,
+  label,
+  setLocalAlertState,
+}) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
   // The set of uploaded files in our Redux state
   const files = useSelector((state) => state.reports.submittedFiles)
 
   const dispatch = useDispatch()
 
-  // e.g. "1 - Active Case Data" => ["1", "Active Case Data"]
-  const [sectionNumber, sectionName] = section.split(' - ')
-
   const hasFile = files?.some(
-    (file) => file.section.includes(sectionName) && file.uuid
+    (file) => file.section.includes(section) && file.uuid
   )
 
   const hasPreview = files?.some(
-    (file) => file.section.includes(sectionName) && file.name
+    (file) => file.section.includes(section) && file.name
   )
 
-  const selectedFile = files?.find((file) => file.section.includes(sectionName))
+  const selectedFile = files?.find((file) => file.section.includes(section))
 
+  // Sanitize section name for use as CSS selector ID
+  // Remove parentheses, hyphens, and other special characters
   const formattedSectionName = selectedFile?.section
-    .split(' ')
-    .map((word) => word.toLowerCase())
-    .join('-')
+    .toLowerCase()
+    .replace(/[()]/g, '') // Remove parentheses
+    .replace(/\s+/g, '_') // Replace spaces with underscores
 
   const targetClassName = getTargetClassName(formattedSectionName)
 
@@ -158,13 +151,13 @@ function FileUpload({ section, setLocalAlertState }) {
     }
     if (hasPreview || hasFile) {
       trySettingPreview()
+    } else {
+      // When the file upload modal is cancelled we need to remove our hiding logic
+      const deps = checkPreviewDependencies(targetClassName)
+      if (deps.rendered) removeOldPreviews(deps.dropTarget, deps.instructions)
     }
   }, [hasPreview, hasFile, fileName, targetClassName])
 
-  const downloadFile = ({ target }) => {
-    dispatch(clearError({ section: sectionName }))
-    dispatch(download(selectedFile))
-  }
   const inputRef = useRef(null)
 
   const validateAndUploadFile = async (event) => {
@@ -182,24 +175,144 @@ function FileUpload({ section, setLocalAlertState }) {
     dispatch(clearError({ section }))
     dispatch(clearFile({ section }))
 
+    if (!file) return
+
     const input = inputRef.current
     const dropTarget = inputRef.current.parentNode
 
-    const { result } = await load(file, section, input, dropTarget, dispatch)
+    const { result, error } = await load(
+      file,
+      section,
+      input,
+      dropTarget,
+      dispatch
+    )
 
-    // Get the correctly encoded file
-    const encodedFile = await tryGetUTF8EncodedFile(result, file)
-    dispatch(upload({ file: encodedFile, section }))
+    const dispatchProgramTypeError = (
+      programTypeResult,
+      selectedProgramType,
+      input,
+      dropTarget,
+      section
+    ) => {
+      let formattedFileProgramType = programTypeResult.progType
+      let formattedSelectedProgramType = selectedProgramType
+      if (formattedFileProgramType === 'TAN') {
+        formattedFileProgramType = 'TANF'
+      }
+      if (formattedSelectedProgramType === 'TAN') {
+        formattedSelectedProgramType = 'TANF'
+      }
+      if (formattedSelectedProgramType === 'PRO') {
+        formattedSelectedProgramType = 'TANF Program Integrity Audit'
+      }
+
+      const programTypeError = `File may correspond to ${formattedFileProgramType} instead of ${formattedSelectedProgramType}. Please verify the file type.`
+      // Handle specific program type cases
+      createFileInputErrorState(input, dropTarget)
+      dispatch({
+        type: SET_FILE_ERROR,
+        payload: {
+          error: {
+            message: formattedFileProgramType
+              ? programTypeError
+              : NULL_PROGRAM_TYPE_ERROR,
+          },
+          section,
+        },
+      })
+    }
+
+    const dispatchCalendarFiscalError = (
+      calendarFiscalResult,
+      input,
+      dropTarget,
+      section
+    ) => {
+      // Handle fiscal year and quarter mismatch
+      let error_period
+      var link = (
+        <a
+          className="usa-link"
+          target="_blank"
+          rel="noopener noreferrer"
+          href="https://tdp-project-updates.app.cloud.gov/knowledge-center/uploading-data.html#reporting-period"
+        >
+          Need help?
+        </a>
+      )
+      switch (calendarFiscalResult.fileFiscalQuarter) {
+        case '1':
+          error_period = 'Oct 1 - Dec 31, '
+          break
+        case '2':
+          error_period = 'Jan 1 - Mar 31, '
+          break
+        case '3':
+          error_period = 'Apr 1 - Jun 30, '
+          break
+        case '4':
+          error_period = 'Jul 1 - Sep 30, '
+          break
+        default:
+          error_period = ''
+      }
+      createFileInputErrorState(input, dropTarget)
+      dispatch({
+        type: SET_FILE_ERROR,
+        payload: {
+          error: {
+            message:
+              `File contains data from ` +
+              error_period +
+              `which belongs to Fiscal Year ` +
+              calendarFiscalResult.fileFiscalYear +
+              `, Quarter ` +
+              calendarFiscalResult.fileFiscalQuarter +
+              `. Adjust your search parameters or upload a different file.`,
+            link: link,
+          },
+          section,
+        },
+      })
+    }
+
+    if (!error) {
+      // Get the correctly encoded file
+      const { encodedFile, header } = await tryGetUTF8EncodedFile(result, file)
+      const selectedProgramType = fileType.slice(0, 3).toUpperCase()
+      const { isValid, calendarFiscalResult, programTypeResult } =
+        await validateHeader(header, year, quarter, selectedProgramType)
+      if (isValid) {
+        dispatch(upload({ file: encodedFile, section }))
+      } else if (!programTypeResult.isValid) {
+        dispatchProgramTypeError(
+          programTypeResult,
+          selectedProgramType,
+          input,
+          dropTarget,
+          section
+        )
+      } else if (!calendarFiscalResult.isValid) {
+        dispatchCalendarFiscalError(
+          calendarFiscalResult,
+          input,
+          dropTarget,
+          section
+        )
+      }
+    }
+    if (inputRef.current) {
+      inputRef.current.value = null
+    }
   }
 
   return (
     <div
-      className={`usa-form-group ${
-        selectedFile?.error ? 'usa-form-group--error' : ''
-      }`}
+      className={`usa-form-group ${selectedFile?.error ? 'usa-form-group--error' : ''}`}
     >
       <label className="usa-label text-bold" htmlFor={formattedSectionName}>
-        Section {sectionNumber} - {sectionName}
+        {label}
       </label>
       <div>
         {selectedFile?.error && (
@@ -208,7 +321,7 @@ function FileUpload({ section, setLocalAlertState }) {
             id={`${formattedSectionName}-error-alert`}
             role="alert"
           >
-            {selectedFile.error.message}
+            {selectedFile.error.message} {selectedFile.error.link}
           </div>
         )}
       </div>
@@ -225,29 +338,17 @@ function FileUpload({ section, setLocalAlertState }) {
         id={formattedSectionName}
         className="usa-file-input"
         type="file"
-        name={sectionName}
+        name={section}
         aria-describedby={`${formattedSectionName}-file`}
         aria-hidden="false"
         data-errormessage={INVALID_FILE_ERROR}
       />
-      <div style={{ marginTop: '25px' }}>
-        {hasFile && selectedFile?.id ? (
-          <Button
-            className="tanf-file-download-btn"
-            type="button"
-            onClick={downloadFile}
-          >
-            Download Section {sectionNumber}
-          </Button>
-        ) : null}
-      </div>
     </div>
   )
 }
 
 FileUpload.propTypes = {
   section: PropTypes.string.isRequired,
-  setLocalAlertState: PropTypes.func.isRequired,
 }
 
 export default FileUpload

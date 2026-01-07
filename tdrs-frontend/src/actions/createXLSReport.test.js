@@ -1,23 +1,11 @@
 import { getParseErrors } from './createXLSReport'
 
-it('should create an action to create an XLS report', () => {
-  const data_json = {
-    data: {},
-    xls_report: 'aGVsbG8=',
-  }
+it('should create a link to download an XLS report', () => {
+  const data = 'aGVsbG8='
   // atob is not available in jest
-  const expectedReturn = Error(
-    'TypeError: URL.createObjectURL is not a function'
-  )
-  expect(getParseErrors(data_json)).toEqual(expectedReturn)
-})
-
-it('should create an action to create an XLS report and throwError', () => {
-  const data_json = { data: {} }
-  const expectedReturn = Error(
-    'InvalidCharacterError: The string to be decoded contains invalid characters.'
-  )
-  expect(getParseErrors(data_json)).toEqual(expectedReturn)
+  global.URL.createObjectURL = jest.fn(() => 'myURL')
+  const expectedReturn = 'http://localhost/myURL'
+  expect(String(getParseErrors(data, 'file'))).toEqual(expectedReturn)
 })
 
 it('should create an action to create an XLS report and throwError', () => {
@@ -29,10 +17,7 @@ it('should create an action to create an XLS report and throwError', () => {
     remove: jest.fn(),
   }
   jest.spyOn(document, 'createElement').mockImplementation(() => link)
-  const data_json = {
-    data: {},
-    xls_report: 'aGVsbG8=',
-  }
+  const data = 'aGVsbG8='
   const expectedFileName = 'filename'
   const expectedReturn = {
     click: link.click,
@@ -40,16 +25,16 @@ it('should create an action to create an XLS report and throwError', () => {
     href: 'myURL',
     remove: link.remove,
   }
-  expect(getParseErrors(data_json, expectedFileName).download).toEqual(
+  expect(getParseErrors(data, expectedFileName).download).toEqual(
     expectedReturn.download
   )
-  expect(getParseErrors(data_json, expectedFileName).href).toEqual(
+  expect(getParseErrors(data, expectedFileName).href).toEqual(
     expectedReturn.href
   )
-  expect(getParseErrors(data_json, expectedFileName).click).toEqual(
+  expect(getParseErrors(data, expectedFileName).click).toEqual(
     expectedReturn.click
   )
-  expect(getParseErrors(data_json, expectedFileName).remove).toEqual(
+  expect(getParseErrors(data, expectedFileName).remove).toEqual(
     expectedReturn.remove
   )
 })

@@ -7,8 +7,8 @@ import {
   accountStatusIsApproved,
   accountIsInReview,
   accountCanViewAdmin,
-  accountCanViewKibana,
-  accountCanViewPlg,
+  accountCanViewGrafana,
+  accountCanViewAlerts,
 } from '../../selectors/auth'
 
 import NavItem from '../NavItem/NavItem'
@@ -31,8 +31,8 @@ function Header() {
   const userAccessRequestPending = useSelector(accountIsInReview)
   const userAccessRequestApproved = useSelector(accountStatusIsApproved)
   const userIsAdmin = useSelector(accountCanViewAdmin)
-  const userViewKibana = useSelector(accountCanViewKibana)
-  const userViewPlg = useSelector(accountCanViewPlg)
+  const userViewGrafana = useSelector(accountCanViewGrafana)
+  const userViewAlerts = useSelector(accountCanViewAlerts)
 
   const menuRef = useRef()
 
@@ -123,8 +123,22 @@ function Header() {
                   >
                     <NavItem
                       pathname={pathname}
-                      tabTitle="Data Files"
+                      tabTitle="TANF Data Files"
                       href="/data-files"
+                    />
+                  </PermissionGuard>
+                  <PermissionGuard
+                    requiresApproval
+                    requiredPermissions={[
+                      'view_datafile',
+                      'add_datafile',
+                      'has_fra_access',
+                    ]}
+                  >
+                    <NavItem
+                      pathname={pathname}
+                      tabTitle="FRA Data Files"
+                      href="/fra-data-files"
                     />
                   </PermissionGuard>
                   {(userAccessRequestPending || userAccessRequestApproved) && (
@@ -141,39 +155,36 @@ function Header() {
                       href={`${process.env.REACT_APP_BACKEND_HOST}/admin/`}
                     />
                   )}
-                  {userViewKibana && (
+                  {userViewGrafana && (
                     <NavItem
                       pathname={pathname}
-                      tabTitle="Kibana"
-                      href={`${process.env.REACT_APP_BACKEND_HOST}/kibana/`}
+                      tabTitle="Grafana"
+                      href={`${process.env.REACT_APP_BACKEND_HOST}/grafana/`}
                     />
                   )}
-                  {userViewPlg && (
-                    <>
-                      <NavItem
-                        pathname={pathname}
-                        tabTitle="Grafana"
-                        href={`${process.env.REACT_APP_BACKEND_HOST}/grafana/`}
-                      />
-                      <NavItem
-                        pathname={pathname}
-                        tabTitle="Alerts"
-                        href={`${process.env.REACT_APP_BACKEND_HOST}/alerts/`}
-                      />
-                    </>
+                  {userViewAlerts && (
+                    <NavItem
+                      pathname={pathname}
+                      tabTitle="Alerts"
+                      href={`${process.env.REACT_APP_BACKEND_HOST}/alerts/`}
+                    />
                   )}
+                  <NavItem
+                    pathname={pathname}
+                    tabTitle="Help"
+                    href={`${process.env.REACT_APP_KNOWLEDGE_CENTER_LINK}/`}
+                    target="_blank"
+                  />
                 </>
               )}
             </ul>
             <div className="usa-nav__secondary">
               <ul className="usa-nav__secondary-links">
                 <li
-                  className={`${
-                    user && user.email ? 'display-block' : 'display-none'
-                  } usa-nav__secondary-item`}
+                  className={`${user && user.email ? 'display-block' : 'display-none'} usa-nav__secondary-item`}
                 >
                   {user && user.email && (
-                    <a href="/">
+                    <a href="/" className="usa-link">
                       <FontAwesomeIcon
                         className="margin-right-1"
                         icon={faUserCircle}

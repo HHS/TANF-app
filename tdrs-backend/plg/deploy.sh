@@ -2,8 +2,11 @@
 set -e
 
 DEV_BACKEND_APPS=("tdp-backend-raft" "tdp-backend-qasp" "tdp-backend-a11y")
+DEV_CELERY_APPS=("tdp-celery-raft" "tdp-celery-qasp" "tdp-celery-a11y")
 STAGING_BACKEND_APPS=("tdp-backend-develop" "tdp-backend-staging")
+STAGING_CELERY_APPS=("tdp-celery-develop" "tdp-celery-staging")
 PROD_BACKEND="tdp-backend-prod"
+PROD_CELERY="tdp-celery-prod"
 
 DEV_FRONTEND_APPS=("tdp-frontend-raft" "tdp-frontend-qasp" "tdp-frontend-a11y")
 STAGING_FRONTEND_APPS=("tdp-frontend-develop" "tdp-frontend-staging")
@@ -51,8 +54,10 @@ deploy_grafana() {
     MANIFEST=manifest.tmp.yml
     cp manifest.yml $MANIFEST
 
-    yq eval -i ".datasources[0].url = \"http://prometheus.apps.internal:8080\""  $DATASOURCES
-    yq eval -i ".datasources[1].url = \"http://loki.apps.internal:8080\""  $DATASOURCES
+    yq eval -i ".datasources[0].url = \"http://mimir.apps.internal:8080/prometheus\""  $DATASOURCES
+    yq eval -i ".datasources[1].url = \"http://prometheus.apps.internal:8080\""  $DATASOURCES
+    yq eval -i ".datasources[2].url = \"http://loki.apps.internal:8080\""  $DATASOURCES
+    yq eval -i ".datasources[3].url = \"http://tempo.apps.internal:8080\""  $DATASOURCES
     yq eval -i ".applications[0].services[0] = \"$1\""  $MANIFEST
 
     cf push --no-route -f $MANIFEST -t 180  --strategy rolling
@@ -60,6 +65,20 @@ deploy_grafana() {
 
     rm $DATASOURCES
     rm $MANIFEST
+    popd
+}
+
+deploy_tempo() {
+    pushd tempo
+    cf push --no-route -f manifest.yml -t 180  --strategy rolling
+    cf map-route tempo apps.internal --hostname tempo
+    popd
+}
+
+deploy_mimir() {
+    pushd mimir
+    cf push --no-route -f manifest.yml -t 180  --strategy rolling
+    cf map-route mimir apps.internal --hostname mimir
     popd
 }
 
@@ -83,6 +102,7 @@ deploy_alertmanager() {
     cp alertmanager.yml $CONFIG
     SENDGRID_API_KEY=$(cf env tdp-backend-prod | grep SENDGRID | cut -d " " -f2-)
     yq eval -i ".global.smtp_auth_password = \"$SENDGRID_API_KEY\"" $CONFIG
+    yq eval -i ".global.slack_api_url = \"$MATTERMOST_WEBHOOK_URL\"" $CONFIG
     yq eval -i ".receivers[0].email_configs[0].to = \"${ADMIN_EMAILS}\"" $CONFIG
     yq eval -i ".receivers[1].email_configs[0].to = \"${DEV_EMAILS}\"" $CONFIG
     cf push --no-route -f manifest.yml -t 180  --strategy rolling
@@ -95,15 +115,19 @@ setup_prod_net_pols() {
     # Target prod environment just in case
     cf target -o hhs-acf-ofa -s tanf-prod
 
-    # Let grafana talk to prometheus and loki
+    # Let grafana talk to prometheus, loki, mimir, and tempo
     cf add-network-policy grafana prometheus --protocol tcp --port 8080
     cf add-network-policy grafana loki --protocol tcp --port 8080
+    cf add-network-policy grafana mimir --protocol tcp --port 8080
+    cf add-network-policy grafana tempo --protocol tcp --port 8080
 
-    # Let prometheus talk to alertmanager/grafana/loki/prod backend
+    # Let prometheus talk to alertmanager, grafana, loki, prod backend, and mimir
     cf add-network-policy prometheus alertmanager --protocol tcp --port 8080
     cf add-network-policy prometheus $PROD_BACKEND --protocol tcp --port 8080
+    cf add-network-policy prometheus $PROD_CELERY --protocol tcp --port 8080
     cf add-network-policy prometheus grafana --protocol tcp --port 8080
     cf add-network-policy prometheus loki --protocol tcp --port 8080
+    cf add-network-policy prometheus mimir --protocol tcp --port 8080
 
     # Let alertmanager/grafana talk to the prod frontend and vice versa
     cf add-network-policy alertmanager $PROD_FRONTEND --protocol tcp --port 80
@@ -113,6 +137,16 @@ setup_prod_net_pols() {
 
     # Let prod backend send logs to loki
     cf add-network-policy $PROD_BACKEND  loki -s tanf-prod --protocol tcp --port 8080
+    cf add-network-policy $PROD_CELERY  loki -s tanf-prod --protocol tcp --port 8080
+
+    # Let tempo talk to prometheus
+    cf add-network-policy tempo prometheus --protocol tcp --port 8080
+
+    # Let backend (alloy) talk to tempo
+    cf add-network-policy $PROD_BACKEND tempo --protocol tcp --port 4317
+
+    # Let frontend talk to alloy faro receiver
+    cf add-network-policy $PROD_FRONTEND $PROD_BACKEND --protocol tcp --port 12346
 
     # Add network policies to allow alertmanager/grafana to talk to all frontend apps
     for app in ${DEV_FRONTEND_APPS[@]}; do
@@ -128,26 +162,43 @@ setup_prod_net_pols() {
     for app in ${DEV_BACKEND_APPS[@]}; do
         cf add-network-policy prometheus $app -s tanf-dev --protocol tcp --port 8080
     done
+    for app in ${DEV_CELERY_APPS[@]}; do
+        cf add-network-policy prometheus $app -s tanf-dev --protocol tcp --port 9808
+    done
     for app in ${STAGING_BACKEND_APPS[@]}; do
         cf add-network-policy prometheus $app -s tanf-staging --protocol tcp --port 8080
+    done
+    for app in ${STAGING_CELERY_APPS[@]}; do
+        cf add-network-policy prometheus $app -s tanf-staging --protocol tcp --port 9808
     done
 }
 
 setup_dev_staging_net_pols() {
     # Add network policies to handle routing traffic from lower envs to the prod env
     cf target -o hhs-acf-ofa -s tanf-dev
+
     for i in ${!DEV_BACKEND_APPS[@]}; do
         cf add-network-policy ${DEV_FRONTEND_APPS[$i]} grafana -s tanf-prod --protocol tcp --port 8080
         cf add-network-policy ${DEV_BACKEND_APPS[$i]} loki -s tanf-prod --protocol tcp --port 8080
         cf add-network-policy ${DEV_FRONTEND_APPS[$i]} alertmanager -s tanf-prod --protocol tcp --port 8080
     done
 
+    for i in ${!DEV_CELERY_APPS[@]}; do
+        cf add-network-policy ${DEV_CELERY_APPS[$i]} loki -s tanf-prod --protocol tcp --port 8080
+    done
+
     cf target -o hhs-acf-ofa -s tanf-staging
+
     for i in ${!STAGING_BACKEND_APPS[@]}; do
         cf add-network-policy ${STAGING_FRONTEND_APPS[$i]} grafana -s tanf-prod --protocol tcp --port 8080
         cf add-network-policy ${STAGING_BACKEND_APPS[$i]} loki -s tanf-prod --protocol tcp --port 8080
         cf add-network-policy ${STAGING_FRONTEND_APPS[$i]} alertmanager -s tanf-prod --protocol tcp --port 8080
     done
+
+    for i in ${!STAGING_CELERY_APPS[@]}; do
+        cf add-network-policy ${STAGING_CELERY_APPS[$i]} loki -s tanf-prod --protocol tcp --port 8080
+    done
+
     cf target -o hhs-acf-ofa -s tanf-prod
 }
 
@@ -201,8 +252,10 @@ if [ "$DB_SERVICE_NAME" == "" ]; then
     err_help_exit "Error: you must include a database service name."
 fi
 if [ "$DEPLOY" == "plg" ]; then
+    deploy_mimir
     deploy_prometheus
     deploy_loki
+    deploy_tempo
     deploy_grafana $DB_SERVICE_NAME
     deploy_alertmanager
     setup_prod_net_pols

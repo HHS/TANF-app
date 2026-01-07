@@ -1,8 +1,14 @@
 """Test functions for data_file email helper."""
-import pytest
+
 from django.core import mail
-from tdpservice.email.helpers.data_file import send_data_submitted_email
+
+import pytest
+
 from tdpservice.data_files.models import DataFile
+from tdpservice.email.helpers.data_file import (
+    send_data_submitted_email,
+    send_stuck_file_email,
+)
 from tdpservice.parsers.models import DataFileSummary
 
 
@@ -12,7 +18,7 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
     df = DataFile(
         user=user,
         section=DataFile.Section.ACTIVE_CASE_DATA,
-        quarter='Q1',
+        quarter="Q1",
         year=2021,
         stt=stt,
     )
@@ -22,7 +28,7 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
         status=DataFileSummary.Status.PENDING,
     )
 
-    recipients = ['test@not-real.com']
+    recipients = ["test@not-real.com"]
 
     send_data_submitted_email(dfs, recipients)
 
@@ -30,79 +36,143 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize('section,status,subject,program_type', [
-    # tribal
-    (
-        DataFile.Section.TRIBAL_CLOSED_CASE_DATA, DataFileSummary.Status.ACCEPTED,
-        'Tribal Closed Case Data Processed Without Errors', 'Tribal TANF'
-    ),
-    (
-        DataFile.Section.TRIBAL_ACTIVE_CASE_DATA, DataFileSummary.Status.ACCEPTED,
-        'Tribal Active Case Data Processed Without Errors', 'Tribal TANF'
-    ),
-    (
-        DataFile.Section.TRIBAL_AGGREGATE_DATA, DataFileSummary.Status.ACCEPTED_WITH_ERRORS,
-        'Tribal Aggregate Data Processed With Errors', 'Tribal TANF',
-    ),
-    (
-        DataFile.Section.TRIBAL_STRATUM_DATA, DataFileSummary.Status.PARTIALLY_ACCEPTED,
-        'Tribal Stratum Data Processed With Errors', 'Tribal TANF',
-    ),
-    (
-        DataFile.Section.TRIBAL_STRATUM_DATA, DataFileSummary.Status.REJECTED,
-        'Tribal Stratum Data Processed With Errors', 'Tribal TANF',
-    ),
-
-    # ssp
-    (
-        DataFile.Section.SSP_AGGREGATE_DATA, DataFileSummary.Status.ACCEPTED,
-        'SSP Aggregate Data Processed Without Errors', 'SSP',
-    ),
-    (
-        DataFile.Section.SSP_CLOSED_CASE_DATA, DataFileSummary.Status.ACCEPTED,
-        'SSP Closed Case Data Processed Without Errors', 'SSP',
-    ),
-    (
-        DataFile.Section.SSP_ACTIVE_CASE_DATA, DataFileSummary.Status.ACCEPTED_WITH_ERRORS,
-        'SSP Active Case Data Processed With Errors', 'SSP',
-    ),
-    (
-        DataFile.Section.SSP_STRATUM_DATA, DataFileSummary.Status.PARTIALLY_ACCEPTED,
-        'SSP Stratum Data Processed With Errors', 'SSP',
-    ),
-    (
-        DataFile.Section.SSP_STRATUM_DATA, DataFileSummary.Status.REJECTED,
-        'SSP Stratum Data Processed With Errors', 'SSP',
-    ),
-
-    # tanf
-    (
-        DataFile.Section.ACTIVE_CASE_DATA, DataFileSummary.Status.ACCEPTED,
-        'Active Case Data Processed Without Errors', 'TANF',
-    ),
-    (
-        DataFile.Section.CLOSED_CASE_DATA, DataFileSummary.Status.ACCEPTED,
-        'Closed Case Data Processed Without Errors', 'TANF',
-    ),
-    (
-        DataFile.Section.AGGREGATE_DATA, DataFileSummary.Status.ACCEPTED_WITH_ERRORS,
-        'Aggregate Data Processed With Errors', 'TANF',
-    ),
-    (
-        DataFile.Section.STRATUM_DATA, DataFileSummary.Status.PARTIALLY_ACCEPTED,
-        'Stratum Data Processed With Errors', 'TANF',
-    ),
-    (
-        DataFile.Section.STRATUM_DATA, DataFileSummary.Status.REJECTED,
-        'Stratum Data Processed With Errors', 'TANF',
-    ),
-])
-def test_send_data_submitted_email(user, stt, section, status, subject, program_type):
+@pytest.mark.parametrize(
+    "section,status,subject,friendly_program_type,program_type",
+    [
+        # tribal
+        (
+            DataFile.Section.CLOSED_CASE_DATA,
+            DataFileSummary.Status.ACCEPTED,
+            f"Tribal {DataFile.Section.CLOSED_CASE_DATA} Successfully Submitted Without Errors",
+            "Tribal TANF",
+            DataFile.ProgramType.TRIBAL,
+        ),
+        (
+            DataFile.Section.ACTIVE_CASE_DATA,
+            DataFileSummary.Status.ACCEPTED,
+            f"Tribal {DataFile.Section.ACTIVE_CASE_DATA} Successfully Submitted Without Errors",
+            "Tribal TANF",
+            DataFile.ProgramType.TRIBAL,
+        ),
+        (
+            DataFile.Section.AGGREGATE_DATA,
+            DataFileSummary.Status.ACCEPTED_WITH_ERRORS,
+            f"Action Required: Tribal {DataFile.Section.AGGREGATE_DATA} Contains Errors",
+            "Tribal TANF",
+            DataFile.ProgramType.TRIBAL,
+        ),
+        (
+            DataFile.Section.STRATUM_DATA,
+            DataFileSummary.Status.PARTIALLY_ACCEPTED,
+            f"Action Required: Tribal {DataFile.Section.STRATUM_DATA} Contains Errors",
+            "Tribal TANF",
+            DataFile.ProgramType.TRIBAL,
+        ),
+        (
+            DataFile.Section.STRATUM_DATA,
+            DataFileSummary.Status.REJECTED,
+            f"Action Required: Tribal {DataFile.Section.STRATUM_DATA} Contains Errors",
+            "Tribal TANF",
+            DataFile.ProgramType.TRIBAL,
+        ),
+        # ssp
+        (
+            DataFile.Section.AGGREGATE_DATA,
+            DataFileSummary.Status.ACCEPTED,
+            f"SSP {DataFile.Section.AGGREGATE_DATA} Successfully Submitted Without Errors",
+            "SSP",
+            DataFile.ProgramType.SSP,
+        ),
+        (
+            DataFile.Section.CLOSED_CASE_DATA,
+            DataFileSummary.Status.ACCEPTED,
+            f"SSP {DataFile.Section.CLOSED_CASE_DATA} Successfully Submitted Without Errors",
+            "SSP",
+            DataFile.ProgramType.SSP,
+        ),
+        (
+            DataFile.Section.ACTIVE_CASE_DATA,
+            DataFileSummary.Status.ACCEPTED_WITH_ERRORS,
+            f"Action Required: SSP {DataFile.Section.ACTIVE_CASE_DATA} Contains Errors",
+            "SSP",
+            DataFile.ProgramType.SSP,
+        ),
+        (
+            DataFile.Section.STRATUM_DATA,
+            DataFileSummary.Status.PARTIALLY_ACCEPTED,
+            f"Action Required: SSP {DataFile.Section.STRATUM_DATA} Contains Errors",
+            "SSP",
+            DataFile.ProgramType.SSP,
+        ),
+        (
+            DataFile.Section.STRATUM_DATA,
+            DataFileSummary.Status.REJECTED,
+            f"Action Required: SSP {DataFile.Section.STRATUM_DATA} Contains Errors",
+            "SSP",
+            DataFile.ProgramType.SSP,
+        ),
+        # tanf
+        (
+            DataFile.Section.ACTIVE_CASE_DATA,
+            DataFileSummary.Status.ACCEPTED,
+            f"{DataFile.Section.ACTIVE_CASE_DATA} Successfully Submitted Without Errors",
+            "TANF",
+            DataFile.ProgramType.TANF,
+        ),
+        (
+            DataFile.Section.CLOSED_CASE_DATA,
+            DataFileSummary.Status.ACCEPTED,
+            f"{DataFile.Section.CLOSED_CASE_DATA} Successfully Submitted Without Errors",
+            "TANF",
+            DataFile.ProgramType.TANF,
+        ),
+        (
+            DataFile.Section.AGGREGATE_DATA,
+            DataFileSummary.Status.ACCEPTED_WITH_ERRORS,
+            f"Action Required: {DataFile.Section.AGGREGATE_DATA} Contains Errors",
+            "TANF",
+            DataFile.ProgramType.TANF,
+        ),
+        (
+            DataFile.Section.STRATUM_DATA,
+            DataFileSummary.Status.PARTIALLY_ACCEPTED,
+            f"Action Required: {DataFile.Section.STRATUM_DATA} Contains Errors",
+            "TANF",
+            DataFile.ProgramType.TANF,
+        ),
+        (
+            DataFile.Section.STRATUM_DATA,
+            DataFileSummary.Status.REJECTED,
+            f"Action Required: {DataFile.Section.STRATUM_DATA} Contains Errors",
+            "TANF",
+            DataFile.ProgramType.TANF,
+        ),
+        # fra
+        (
+            DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
+            DataFileSummary.Status.ACCEPTED,
+            f"{DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS} Successfully Submitted Without Errors",
+            "FRA",
+            DataFile.ProgramType.FRA,
+        ),
+        (
+            DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
+            DataFileSummary.Status.REJECTED,
+            f"Action Required: {DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS} Contains Errors",
+            "FRA",
+            DataFile.ProgramType.FRA,
+        ),
+    ],
+)
+def test_send_data_submitted_email(
+    user, stt, section, status, subject, friendly_program_type, program_type
+):
     """Test that the send_data_submitted_email function runs."""
     df = DataFile(
         user=user,
         section=section,
-        quarter='Q1',
+        program_type=program_type,
+        quarter="Q1",
         year=2021,
         stt=stt,
     )
@@ -112,15 +182,53 @@ def test_send_data_submitted_email(user, stt, section, status, subject, program_
         status=status,
     )
 
-    recipients = ['test@not-real.com']
+    recipients = ["test@not-real.com"]
 
     send_data_submitted_email(dfs, recipients)
 
     has_errors = status != DataFileSummary.Status.ACCEPTED
-    has_errors_msg = f'{program_type} has been submitted and processed with errors.'
-    no_errors_msg = f'{program_type} has been submitted and processed without errors.'
+    has_errors_msg = (
+        f"{friendly_program_type} has been submitted and processed with errors."
+    )
+    no_errors_msg = (
+        f"{friendly_program_type} has been submitted and processed without errors."
+    )
     msg = has_errors_msg if has_errors else no_errors_msg
 
     assert len(mail.outbox) == 1
     assert mail.outbox[0].subject == subject
     assert mail.outbox[0].body == msg
+
+
+@pytest.mark.django_db
+def test_send_stuck_file_email(user, stt):
+    """Test that the send_stuck_file_email function runs."""
+
+    df1 = DataFile(
+        user=user,
+        section=DataFile.Section.ACTIVE_CASE_DATA,
+        program_type=DataFile.ProgramType.TANF,
+        quarter="Q1",
+        year=2025,
+        stt=stt,
+    )
+    df2 = DataFile(
+        user=user,
+        section=DataFile.Section.CLOSED_CASE_DATA,
+        program_type=DataFile.ProgramType.TANF,
+        quarter="Q1",
+        year=2025,
+        stt=stt,
+    )
+    stuck_files = [df1, df2]
+
+    recipients = ["test@not-real.com"]
+
+    send_stuck_file_email(stuck_files, recipients)
+
+    assert len(mail.outbox) == 1
+    assert (
+        mail.outbox[0].subject
+        == "List of submitted files with pending status after 1 hour"
+    )
+    assert mail.outbox[0].body == "The system has detected stuck files."

@@ -28,21 +28,20 @@
 
 Cypress.Commands.add('login', (username) => {
   cy.request({
-    method: 'POST',
+    method: 'GET',
     url: `${Cypress.env('apiUrl')}/login/cypress`,
-    body: {
-      username,
-      token: Cypress.env('cypressToken'),
+    qs: { username },
+    headers: {
+      'X-Cypress-Token': Cypress.env('cypressToken'),
     },
   }).then((response) => {
+    cy.visit('/')
     cy.window()
       .its('store')
       .invoke('dispatch', {
         type: 'SET_AUTH',
         payload: {
-          user: {
-            email: username,
-          },
+          user: response?.body?.user,
         },
       })
 
@@ -53,18 +52,18 @@ Cypress.Commands.add('login', (username) => {
 
 Cypress.Commands.add('adminLogin', () => {
   cy.request({
-    method: 'POST',
+    method: 'GET',
     url: `${Cypress.env('apiUrl')}/login/cypress`,
-    body: {
-      username: 'cypress-admin@teamraft.com',
-      token: Cypress.env('cypressToken'),
+    qs: { username: 'cypress-admin@teamraft.com' },
+    headers: {
+      'X-Cypress-Token': Cypress.env('cypressToken'),
     },
   }).then((response) => {
     cy.getCookie('sessionid').its('value').as('adminSessionId')
     cy.getCookie('csrftoken').its('value').as('adminCsrfToken')
 
-    // handle response, list of user emails/ids for use in adminApiRequest
-    cy.get(response.body.users[0]).as('cypressUser')
+    // handle response, list of user emails/ids for use in adminConsoleFormRequest
+    cy.wrap(response.body.users).as('cypressUsers')
   })
 
   cy.clearCookie('sessionid')
@@ -72,7 +71,7 @@ Cypress.Commands.add('adminLogin', () => {
 })
 
 Cypress.Commands.add(
-  'adminApiRequest',
+  'adminConsoleFormRequest',
   (method = 'POST', path = '', body = {}) => {
     options = {
       method,
@@ -87,6 +86,7 @@ Cypress.Commands.add(
     cy.get('@adminSessionId').then((sessionId) =>
       cy.setCookie('sessionid', sessionId)
     )
+    cy.clearCookie('csrftoken')
     cy.get('@adminCsrfToken').then((csrfToken) => {
       cy.setCookie('csrftoken', csrfToken)
       options.headers['X-CSRFToken'] = csrfToken
@@ -111,5 +111,98 @@ Cypress.Commands.add(
         cy.setCookie('csrftoken', csrfToken)
       )
     }
+  }
+)
+
+Cypress.Commands.add(
+  'adminApiRequest',
+  (method = 'POST', path = '', body = {}, headers = {}) => {
+    options = {
+      method,
+      body,
+      url: `${Cypress.env('apiUrl')}${path}`,
+      headers: {
+        ...headers,
+        Referer: `${Cypress.env('apiUrl')}`,
+      },
+    }
+
+    cy.get('@adminSessionId').then((sessionId) =>
+      cy.setCookie('sessionid', sessionId)
+    )
+    cy.get('@adminCsrfToken').then((csrfToken) => {
+      cy.setCookie('csrftoken', csrfToken)
+      options.headers['X-CSRFToken'] = csrfToken
+    })
+
+    cy.request(options).then((r) => {
+      cy.wrap(r).as('response')
+    })
+
+    cy.clearCookie('sessionid')
+    cy.clearCookie('csrftoken')
+
+    const userSessionId = cy.state('aliases').userSessionId
+    const userCsrfToken = cy.state('aliases').userCsrfToken
+
+    if (userSessionId) {
+      cy.get('@userSessionId').then((sessionId) =>
+        cy.setCookie('sessionid', sessionId)
+      )
+    }
+
+    if (userCsrfToken) {
+      cy.get('@userCsrfToken').then((csrfToken) =>
+        cy.setCookie('csrftoken', csrfToken)
+      )
+    }
+
+    return cy.get('@response')
+  }
+)
+
+Cypress.Commands.add(
+  'waitForDataFileSummary',
+  (fileId, maxAttempts = 60, interval = 2000) => {
+    // Function to check if summary exists and is populated
+    const checkSummary = (response) => {
+      return (
+        response &&
+        response.body &&
+        response.body.summary &&
+        Object.keys(response.body.summary).length > 0 &&
+        response.body.summary.status !== 'Pending'
+      )
+    }
+
+    const pollForProcessing = (attempt = 0) => {
+      // If we've exceeded max attempts, should we do anything else?
+      if (attempt >= maxAttempts) {
+        cy.log(
+          `Warning: Data file ${fileId} processing timeout after ${maxAttempts} attempts`
+        )
+        return cy.wrap({ id: fileId })
+      }
+
+      return cy
+        .request({
+          method: 'GET',
+          url: `${Cypress.env('apiUrl')}/data_files/${fileId}/`,
+          failOnStatusCode: false,
+        })
+        .then((response) => {
+          // If summary is populated, return the response
+          if (checkSummary(response)) {
+            return response
+          }
+
+          // Otherwise, wait and try again
+          cy.wait(interval)
+          return pollForProcessing(attempt + 1)
+        })
+    }
+
+    // Start polling
+    return pollForProcessing()
   }
 )

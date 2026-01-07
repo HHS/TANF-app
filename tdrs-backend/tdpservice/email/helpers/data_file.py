@@ -1,9 +1,78 @@
 """Helper functions for sending data file submission emails."""
+
 from django.conf import settings
-from tdpservice.users.models import User
-from tdpservice.email.email_enums import EmailType
+
+from tdpservice.data_files.models import DataFile
 from tdpservice.email.email import automated_email, log
-from tdpservice.parsers.util import get_prog_from_section
+from tdpservice.email.email_enums import AdminEmail, FraDataFileEmail, TanfDataFileEmail
+from tdpservice.users.models import User
+
+
+def get_friendly_program_type(program_type):
+    """Return the human-readable name for a given program type."""
+    match program_type:
+        case DataFile.ProgramType.TANF:
+            return "TANF"
+        case DataFile.ProgramType.SSP:
+            return "SSP"
+        case DataFile.ProgramType.TRIBAL:
+            return "Tribal TANF"
+        case DataFile.ProgramType.FRA:
+            return "FRA"
+
+
+def get_program_section_str(program_type, section):
+    """Return the human-readable section name, including program type."""
+    match program_type:
+        case DataFile.ProgramType.TANF:
+            return section
+        case DataFile.ProgramType.SSP:
+            return f"SSP {section}"
+        case DataFile.ProgramType.TRIBAL:
+            return f"Tribal {section}"
+        case DataFile.ProgramType.FRA:
+            return section
+
+
+def get_tanf_aggregates_context_count(datafile_summary):
+    """Return the sum of cases with and without errors across all months for TANF files."""
+    case_aggregates = datafile_summary.case_aggregates or {}
+    cases_without_errors = 0
+    cases_with_errors = 0
+    rejected = case_aggregates["rejected"] if "rejected" in case_aggregates else 0
+
+    if "months" in case_aggregates:
+        for month in case_aggregates["months"]:
+            cases_without_errors += (
+                month["accepted_without_errors"]
+                if "accepted_without_errors" in month
+                and month["accepted_without_errors"] != "N/A"
+                else 0
+            )
+            cases_with_errors += (
+                month["accepted_with_errors"]
+                if "accepted_with_errors" in month
+                and month["accepted_with_errors"] != "N/A"
+                else 0
+            )
+
+    return {
+        "cases_without_errors": cases_without_errors,
+        "cases_with_errors": cases_with_errors,
+        "records_unable_to_process": rejected,
+    }
+
+
+def get_fra_aggregates_context_count(datafile_summary):
+    """Return the relevant context data from case aggregates for FRA files."""
+    case_aggregates = datafile_summary.case_aggregates or {}
+    total_errors = (
+        case_aggregates["total_errors"] if "total_errors" in case_aggregates else 0
+    )
+    return {
+        "records_created": datafile_summary.total_number_of_records_created,
+        "total_errors": total_errors,
+    }
 
 
 def send_data_submitted_email(
@@ -16,51 +85,81 @@ def send_data_submitted_email(
     datafile = datafile_summary.datafile
 
     logger_context = {
-        'user_id': datafile.user.id,
-        'object_id': datafile.id,
-        'object_repr': f"Uploaded data file for quarter: {datafile.fiscal_year}"
+        "user_id": datafile.user.id,
+        "object_id": datafile.id,
+        "object_repr": f"Uploaded data file for quarter: {datafile.fiscal_year}",
+        "content_type": DataFile,
     }
 
     template_path = None
     subject = None
     text_message = None
 
-    section_name = datafile.section
-    prog_type = get_prog_from_section(section_name)
-    file_type = f'{prog_type}F' if prog_type != 'SSP' else prog_type
+    prog_type = datafile.program_type
+    section_name = get_program_section_str(prog_type, datafile.section)
+
+    file_type = get_friendly_program_type(prog_type)
     stt_name = datafile.stt.name
     submission_date = datafile.created_at
     fiscal_year = datafile.fiscal_year
     submitted_by = datafile.submitted_by
 
     context = {
-        'stt_name': stt_name,
-        'submission_date': submission_date,
-        'fiscal_year': fiscal_year,
-        'section_name': section_name,
-        'submitted_by': submitted_by,
-        'file_type': file_type,
-        'has_errors': datafile_summary.status != DataFileSummary.Status.ACCEPTED,
-        "url": settings.FRONTEND_BASE_URL
+        "stt_name": stt_name,
+        "submission_date": submission_date,
+        "fiscal_year": fiscal_year,
+        "section_name": section_name,
+        "submitted_by": submitted_by,
+        "file_type": file_type,
+        "status": datafile_summary.status,
+        "has_errors": datafile_summary.status != DataFileSummary.Status.ACCEPTED,
+        "url": settings.FRONTEND_BASE_URL,
     }
 
-    log(f'Data file submitted; emailing Data Analysts {list(recipients)}', logger_context=logger_context)
+    if datafile_summary.status == DataFileSummary.Status.PENDING:
+        return
+    elif datafile_summary.status == DataFileSummary.Status.ACCEPTED:
+        subject = f"{section_name} Successfully Submitted Without Errors"
+        text_message = f"{file_type} has been submitted and processed without errors."
+    else:
+        subject = f"Action Required: {section_name} Contains Errors"
+        text_message = f"{file_type} has been submitted and processed with errors."
 
-    match datafile_summary.status:
-        case DataFileSummary.Status.PENDING:
-            return
+    context.update({"subject": subject})
 
-        case DataFileSummary.Status.ACCEPTED:
-            template_path = EmailType.DATA_SUBMITTED.value
-            subject = f'{section_name} Processed Without Errors'
-            text_message = f'{file_type} has been submitted and processed without errors.'
+    match prog_type:
+        case (
+            DataFile.ProgramType.TANF
+            | DataFile.ProgramType.SSP
+            | DataFile.ProgramType.TRIBAL
+        ):
+            context.update(get_tanf_aggregates_context_count(datafile_summary))
 
-        case _:
-            template_path = EmailType.DATA_SUBMITTED.value
-            subject = f'{section_name} Processed With Errors'
-            text_message = f'{file_type} has been submitted and processed with errors.'
+            template_options = {
+                DataFileSummary.Status.ACCEPTED: TanfDataFileEmail.ACCEPTED.value,
+                DataFileSummary.Status.ACCEPTED_WITH_ERRORS: TanfDataFileEmail.ACCEPTED_WITH_ERRORS.value,
+                DataFileSummary.Status.PARTIALLY_ACCEPTED: TanfDataFileEmail.PARTIALLY_ACCEPTED.value,
+                DataFileSummary.Status.REJECTED: TanfDataFileEmail.REJECTED.value,
+            }
 
-    context.update({'subject': subject})
+            template_path = template_options[datafile_summary.status]
+
+        case DataFile.ProgramType.FRA:
+            context.update(get_fra_aggregates_context_count(datafile_summary))
+
+            template_options = {
+                DataFileSummary.Status.ACCEPTED: FraDataFileEmail.ACCEPTED.value,
+                DataFileSummary.Status.ACCEPTED_WITH_ERRORS: FraDataFileEmail.ACCEPTED_WITH_ERRORS.value,
+                DataFileSummary.Status.PARTIALLY_ACCEPTED: FraDataFileEmail.PARTIALLY_ACCEPTED.value,
+                DataFileSummary.Status.REJECTED: FraDataFileEmail.REJECTED.value,
+            }
+
+            template_path = template_options[datafile_summary.status]
+
+    log(
+        f"Data file submitted; emailing Data Analysts {list(recipients)}",
+        logger_context=logger_context,
+    )
 
     automated_email(
         email_path=template_path,
@@ -68,19 +167,17 @@ def send_data_submitted_email(
         subject=subject,
         email_context=context,
         text_message=text_message,
-        logger_context=logger_context
+        logger_context=logger_context,
     )
 
 
 def send_stuck_file_email(stuck_files, recipients):
     """Send an email to sys admins with details of files stuck in Pending."""
-    logger_context = {
-        'user_id': User.objects.get_or_create(username='system')[0].pk
-    }
+    logger_context = {"user_id": User.objects.get_or_create(username="system")[0].pk}
 
-    template_path = EmailType.STUCK_FILE_LIST.value
-    subject = 'List of submitted files with pending status after 1 hour'
-    text_message = 'The system has detected stuck files.'
+    template_path = AdminEmail.STUCK_FILE_LIST.value
+    subject = "List of submitted files with pending status after 1 hour"
+    text_message = "The system has detected stuck files."
 
     context = {
         "subject": subject,
@@ -88,7 +185,10 @@ def send_stuck_file_email(stuck_files, recipients):
         "files": stuck_files,
     }
 
-    log(f'Emailing stuck files to SysAdmins: {list(recipients)}', logger_context=logger_context)
+    log(
+        f"Emailing stuck files to SysAdmins: {list(recipients)}",
+        logger_context=logger_context,
+    )
 
     automated_email(
         email_path=template_path,
@@ -96,5 +196,5 @@ def send_stuck_file_email(stuck_files, recipients):
         subject=subject,
         email_context=context,
         text_message=text_message,
-        logger_context=logger_context
+        logger_context=logger_context,
     )

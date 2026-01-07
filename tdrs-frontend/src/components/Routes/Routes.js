@@ -1,17 +1,26 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import NoMatch from '../NoMatch'
 import SplashPage from '../SplashPage'
 import Profile from '../Profile'
 import PrivateRoute from '../PrivateRoute'
 import LoginCallback from '../LoginCallback'
-import Reports from '../Reports'
+import Reports, { FRAReports } from '../Reports'
 import { useSelector } from 'react-redux'
 import { accountIsInReview } from '../../selectors/auth'
+import { faro, FaroRoutes } from '@grafana/faro-react'
 
 import SiteMap from '../SiteMap'
-
 import Home from '../Home'
+
+/* istanbul ignore next */
+const RouteProvider = ({ children }) => {
+  return !faro || !faro.api ? (
+    <Routes>{children}</Routes>
+  ) : (
+    <FaroRoutes>{children}</FaroRoutes>
+  )
+}
 
 /**
  * This component renders the routes for the app.
@@ -20,12 +29,30 @@ import Home from '../Home'
  */
 const AppRoutes = () => {
   const user = useSelector((state) => state.auth.user)
-
+  const sttList = useSelector((state) => state?.stts?.sttList)
   const userAccountInReview = useSelector(accountIsInReview)
-  const homeTitle = userAccountInReview ? 'Request Submitted' : 'Welcome to TDP'
+
+  const [isInEditMode, setIsInEditMode] = useState(false)
+
+  const homeTitle = isInEditMode
+    ? 'Edit Access Request'
+    : userAccountInReview
+      ? 'Request Submitted'
+      : 'Welcome to TDP'
+
+  const profileTitle = isInEditMode
+    ? userAccountInReview
+      ? 'Edit Access Request'
+      : 'Edit Profile'
+    : 'My Profile'
+  const profileType = userAccountInReview ? 'access request' : 'profile'
+
+  const setEditState = (isEditing) => {
+    setIsInEditMode(isEditing)
+  }
 
   return (
-    <Routes>
+    <RouteProvider>
       <Route exact path="/" element={<SplashPage />} />
       <Route exact path="/login" element={<LoginCallback />} />
       <Route
@@ -33,20 +60,39 @@ const AppRoutes = () => {
         path="/home"
         element={
           <PrivateRoute title={homeTitle}>
-            <Home />
+            <Home setInEditMode={setEditState} />
           </PrivateRoute>
         }
       />
       <Route
         exact
-        path="/data-files"
+        path="/data-files/:fy?/:q?/:type?/:stt?/:tab?"
         element={
           <PrivateRoute
-            title="Data Files"
+            title="TANF Data Files"
+            subtitle="Participation, Characteristics, and Caseload reports"
             requiredPermissions={['view_datafile', 'add_datafile']}
             requiresApproval
           >
             <Reports />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        exact
+        path="/fra-data-files/:fy?/:q?/:type?/:stt?/:tab?"
+        element={
+          <PrivateRoute
+            title="FRA Data Files"
+            subtitle="Outcomes Reports as established by the Fiscal Responsibility Act (FRA)"
+            requiredPermissions={[
+              'view_datafile',
+              'add_datafile',
+              'has_fra_access',
+            ]}
+            requiresApproval
+          >
+            <FRAReports />
           </PrivateRoute>
         }
       />
@@ -64,13 +110,21 @@ const AppRoutes = () => {
         exact
         path="/profile"
         element={
-          <PrivateRoute title="Profile">
-            <Profile />
+          <PrivateRoute title={profileTitle}>
+            <Profile
+              isEditing={isInEditMode}
+              onEdit={() => setEditState(true)}
+              onCancel={() => setEditState(false)}
+              type={profileType}
+              user={user}
+              sttList={sttList}
+              setInEditMode={setEditState}
+            />
           </PrivateRoute>
         }
       />
       <Route path="*" element={<NoMatch />} />
-    </Routes>
+    </RouteProvider>
   )
 }
 

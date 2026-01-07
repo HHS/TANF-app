@@ -1,11 +1,12 @@
 """File containing multiselect filter classes and mixins."""
 import urllib.parse
+
 from django.contrib import admin
-from django.db.models import Q
-from django.utils.translation import gettext_lazy as _
+from django.contrib.admin.options import IncorrectLookupParameters
 from django.contrib.admin.utils import reverse_field_path
 from django.core.exceptions import ValidationError
-from django.contrib.admin.options import IncorrectLookupParameters
+from django.db.models import Q
+from django.utils.translation import gettext_lazy as _
 
 
 def flatten_used_parameters(used_parameters: dict, keep_list: bool = True):
@@ -15,6 +16,7 @@ def flatten_used_parameters(used_parameters: dict, keep_list: bool = True):
     for k, v in used_parameters.items():
         if len(v) == 1 and (isinstance(v[0], list) or not keep_list):
             used_parameters[k] = v[0]
+
 
 class MultiSelectMixin(object):
     """Mixin for multi-select filters."""
@@ -39,9 +41,12 @@ class MultiSelectMixin(object):
         else:
             lookup_vals.append(val)
         if lookup_vals:
-            query_string = changelist.get_query_string({
-                self.lookup_kwarg: ','.join(lookup_vals),
-            }, [])
+            query_string = changelist.get_query_string(
+                {
+                    self.lookup_kwarg: ",".join(lookup_vals),
+                },
+                [],
+            )
         else:
             query_string = changelist.get_query_string({}, [self.lookup_kwarg])
         return query_string
@@ -51,9 +56,12 @@ class MultiSelectMixin(object):
         if self.lookup_val_isnull:
             query_string = changelist.get_query_string({}, [self.lookup_kwarg_isnull])
         else:
-            query_string = changelist.get_query_string({
-                self.lookup_kwarg_isnull: 'True',
-            }, [])
+            query_string = changelist.get_query_string(
+                {
+                    self.lookup_kwarg_isnull: "True",
+                },
+                [],
+            )
         return query_string
 
     def has_output(self):
@@ -63,8 +71,10 @@ class MultiSelectMixin(object):
     def get_facet_counts(self, pk_attname, filtered_qs):
         """Return count of __in facets."""
         if not self.lookup_kwarg.endswith("__in"):
-            raise NotImplementedError("Facets are only supported for default lookup_kwarg values, ending with '__in' "
-                                      "(got '%s')" % self.lookup_kwarg)
+            raise NotImplementedError(
+                "Facets are only supported for default lookup_kwarg values, ending with '__in' "
+                "(got '%s')" % self.lookup_kwarg
+            )
 
         orig_lookup_kwarg = self.lookup_kwarg
         self.lookup_kwarg = self.lookup_kwarg.removesuffix("in") + "exact"
@@ -77,10 +87,10 @@ class MultiSelectFilter(MultiSelectMixin, admin.AllValuesFieldListFilter):
     """Multi select filter for all kind of fields."""
 
     def __init__(self, field, request, params, model, model_admin, field_path):
-        self.lookup_kwarg = '%s__in' % field_path
-        self.lookup_kwarg_isnull = '%s__isnull' % field_path
+        self.lookup_kwarg = "%s__in" % field_path
+        self.lookup_kwarg_isnull = "%s__isnull" % field_path
         lookup_vals = request.GET.get(self.lookup_kwarg)
-        self.lookup_vals = lookup_vals.split(',') if lookup_vals else list()
+        self.lookup_vals = lookup_vals.split(",") if lookup_vals else list()
         self.lookup_val_isnull = request.GET.get(self.lookup_kwarg_isnull)
         self.empty_value_display = model_admin.get_empty_value_display()
         parent_model, reverse_path = reverse_field_path(model, field_path)
@@ -89,11 +99,12 @@ class MultiSelectFilter(MultiSelectMixin, admin.AllValuesFieldListFilter):
             queryset = model_admin.get_queryset(request)
         else:
             queryset = parent_model._default_manager.all()
-        self.lookup_choices = (queryset
-                               .distinct()
-                               .order_by(field.name)
-                               .values_list(field.name, flat=True))
-        super(admin.AllValuesFieldListFilter, self).__init__(field, request, params, model, model_admin, field_path)
+        self.lookup_choices = (
+            queryset.distinct().order_by(field.name).values_list(field.name, flat=True)
+        )
+        super(admin.AllValuesFieldListFilter, self).__init__(
+            field, request, params, model, model_admin, field_path
+        )
         flatten_used_parameters(self.used_parameters)
         self.used_parameters = self.prepare_used_parameters(self.used_parameters)
 
@@ -101,15 +112,15 @@ class MultiSelectFilter(MultiSelectMixin, admin.AllValuesFieldListFilter):
         """Preparse the query string value."""
         # mask all commas or these values will be used
         # in a comma-seperated-list as get-parameter
-        return str(value).replace(',', '%~')
+        return str(value).replace(",", "%~")
 
     def prepare_used_parameters(self, used_parameters):
         """Prepare parameters."""
         # remove comma-mask from list-values for __in-lookups
         for key, value in used_parameters.items():
-            if not key.endswith('__in'):
+            if not key.endswith("__in"):
                 continue
-            used_parameters[key] = [v.replace('%~', ',') for v in value]
+            used_parameters[key] = [v.replace("%~", ",") for v in value]
         return used_parameters
 
     def choices(self, changelist):
@@ -117,9 +128,11 @@ class MultiSelectFilter(MultiSelectMixin, admin.AllValuesFieldListFilter):
         add_facets = getattr(changelist, "add_facets", False)
         facet_counts = self.get_facet_queryset(changelist) if add_facets else None
         yield {
-            'selected': not self.lookup_vals and self.lookup_val_isnull is None,
-            'query_string': changelist.get_query_string({}, [self.lookup_kwarg, self.lookup_kwarg_isnull]),
-            'display': _('All'),
+            "selected": not self.lookup_vals and self.lookup_val_isnull is None,
+            "query_string": changelist.get_query_string(
+                {}, [self.lookup_kwarg, self.lookup_kwarg_isnull]
+            ),
+            "display": _("All"),
         }
         include_none = False
         count = None
@@ -134,32 +147,34 @@ class MultiSelectFilter(MultiSelectMixin, admin.AllValuesFieldListFilter):
             val = str(val)
             qval = self.prepare_querystring_value(val)
             yield {
-                'selected': qval in self.lookup_vals,
-                'query_string': self.querystring_for_choices(qval, changelist),
+                "selected": qval in self.lookup_vals,
+                "query_string": self.querystring_for_choices(qval, changelist),
                 "display": f"{val} ({count})" if add_facets else val,
             }
         if include_none:
             yield {
-                'selected': bool(self.lookup_val_isnull),
-                'query_string': self.querystring_for_isnull(changelist),
-                'display': empty_title,
+                "selected": bool(self.lookup_val_isnull),
+                "query_string": self.querystring_for_isnull(changelist),
+                "display": empty_title,
             }
 
 
 class MultiSelectDropdownFilter(MultiSelectFilter):
     """Multi select dropdown filter for all kind of fields."""
 
-    template = 'multiselectdropdownfilter.html'
+    template = "multiselectdropdownfilter.html"
 
     def choices(self, changelist):
         """Generate choices."""
         add_facets = getattr(changelist, "add_facets", False)
         facet_counts = self.get_facet_queryset(changelist) if add_facets else None
-        query_string = changelist.get_query_string({}, [self.lookup_kwarg, self.lookup_kwarg_isnull])
+        query_string = changelist.get_query_string(
+            {}, [self.lookup_kwarg, self.lookup_kwarg_isnull]
+        )
         yield {
-            'selected': not self.lookup_vals and self.lookup_val_isnull is None,
-            'query_string': query_string,
-            'display': _('All'),
+            "selected": not self.lookup_vals and self.lookup_val_isnull is None,
+            "query_string": query_string,
+            "display": _("All"),
         }
         include_none = False
         count = None
@@ -175,17 +190,17 @@ class MultiSelectDropdownFilter(MultiSelectFilter):
             val = str(val)
             qval = self.prepare_querystring_value(val)
             yield {
-                'selected': qval in self.lookup_vals,
-                'query_string': query_string,
+                "selected": qval in self.lookup_vals,
+                "query_string": query_string,
                 "display": f"{val} ({count})" if add_facets else val,
-                'value': urllib.parse.quote_plus(val),
-                'key': self.lookup_kwarg,
+                "value": urllib.parse.quote_plus(val),
+                "key": self.lookup_kwarg,
             }
         if include_none:
             yield {
-                'selected': bool(self.lookup_val_isnull),
-                'query_string': query_string,
+                "selected": bool(self.lookup_val_isnull),
+                "query_string": query_string,
                 "display": empty_title,
-                'value': 'True',
-                'key': self.lookup_kwarg_isnull,
+                "value": "True",
+                "key": self.lookup_kwarg_isnull,
             }

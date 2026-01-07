@@ -8,21 +8,16 @@ DEPLOY_STRATEGY=${1}
 #The application name  defined via the manifest yml for the frontend
 CGHOSTNAME_FRONTEND=${2}
 CGHOSTNAME_BACKEND=${3}
-CGAPPNAME_KIBANA=${4}
-CF_SPACE=${5}
-ENVIRONMENT=${6}
+CF_SPACE=${4}
+ENVIRONMENT=${5}
 
 env=${CF_SPACE#"tanf-"}
-
-# Update the Kibana name to include the environment
-KIBANA_BASE_URL="${CGAPPNAME_KIBANA}-${env}.apps.internal"
 
 update_frontend()
 {
     echo DEPLOY_STRATEGY: "$DEPLOY_STRATEGY"
     echo FRONTEND_HOST: "$CGHOSTNAME_FRONTEND"
     echo BACKEND_HOST: "$CGHOSTNAME_BACKEND"
-    echo KIBANA_BASE_URL: "$KIBANA_BASE_URL"
     cd tdrs-frontend || exit
 
     if [ "$CF_SPACE" = "tanf-prod" ]; then
@@ -31,12 +26,21 @@ update_frontend()
         echo "REACT_APP_BACKEND_HOST=https://tanfdata.acf.hhs.gov" >> .env.production
         echo "REACT_APP_LOGIN_GOV_URL=https://secure.login.gov/" >> .env.production
         echo "REACT_APP_CF_SPACE=$CF_SPACE" >> .env.production
+        # RUM config
+        echo "REACT_APP_ENABLE_RUM=true" >> .env.production
+        echo "REACT_APP_FARO_ENDPOINT=https://tanfdata.acf.hhs.gov/collect" >> .env.production
+        echo "REACT_APP_VERSION=v3.8.4" >> .env.production
+        # PIA
+        echo "REACT_APP_SHOW_PIA=false" >> .env.production
+        #Nginx
         echo "BACK_END=" >> .env.production
     elif [ "$CF_SPACE" = "tanf-staging" ]; then
         echo "REACT_APP_BACKEND_URL=https://$CGHOSTNAME_FRONTEND.acf.hhs.gov/v1" >> .env.development
         echo "REACT_APP_FRONTEND_URL=https://$CGHOSTNAME_FRONTEND.acf.hhs.gov" >> .env.development
         echo "REACT_APP_BACKEND_HOST=https://$CGHOSTNAME_FRONTEND.acf.hhs.gov" >> .env.development
         echo "REACT_APP_CF_SPACE=$CF_SPACE" >> .env.development
+        # PIA
+        echo "REACT_APP_SHOW_PIA=false" >> .env.development
 
         cf set-env "$CGHOSTNAME_FRONTEND" ALLOWED_ORIGIN "https://$CGHOSTNAME_FRONTEND.acf.hhs.gov"
         cf set-env "$CGHOSTNAME_FRONTEND" CONNECT_SRC '*.acf.hhs.gov'
@@ -51,7 +55,6 @@ update_frontend()
     fi
 
     cf set-env "$CGHOSTNAME_FRONTEND" BACKEND_HOST "$CGHOSTNAME_BACKEND"
-    cf set-env "$CGHOSTNAME_FRONTEND" KIBANA_BASE_URL "$KIBANA_BASE_URL"
 
     npm run build:$ENVIRONMENT
     unlink .env.production

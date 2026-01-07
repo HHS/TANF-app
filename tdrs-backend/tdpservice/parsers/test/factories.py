@@ -1,11 +1,14 @@
 """Factories for generating test data for parsers."""
-import factory
+
 from django.utils import timezone
-from tdpservice.parsers.models import DataFileSummary, ParserErrorCategoryChoices
+
+import factory
 from faker import Faker
+
 from tdpservice.data_files.test.factories import DataFileFactory
-from tdpservice.users.test.factories import UserFactory
+from tdpservice.parsers.models import DataFileSummary, ParserErrorCategoryChoices
 from tdpservice.stts.test.factories import STTFactory
+from tdpservice.users.test.factories import UserFactory
 
 
 class ReparseMetaFactory(factory.django.DjangoModelFactory):
@@ -31,13 +34,15 @@ class ParsingFileFactory(factory.django.DjangoModelFactory):
     slug = "data_file-txt-slug"
     extension = "txt"
     section = "Active Case Data"
+    program_type = "TAN"
     quarter = "Q1"
     year = 2020
     version = 1
     user = factory.SubFactory(UserFactory)
     stt = factory.SubFactory(STTFactory)
-    file = factory.django.FileField(data=b'test', filename='my_data_file.txt')
+    file = factory.django.FileField(data=b"test", filename="my_data_file.txt")
     s3_versioning_id = 0
+
 
 class DataFileSummaryFactory(factory.django.DjangoModelFactory):
     """Generate test data for data files."""
@@ -67,7 +72,7 @@ class DataFileSummaryFactory(factory.django.DjangoModelFactory):
                 "accepted_with_errors": 10,
                 "month": "Mar",
             },
-        ]
+        ],
     }
 
     datafile = factory.SubFactory(DataFileFactory)
@@ -77,6 +82,7 @@ class DataFileSummaryFactory(factory.django.DjangoModelFactory):
 
 
 fake = Faker()
+
 
 class ParserErrorFactory(factory.django.DjangoModelFactory):
     """Generate test data for parser errors."""
@@ -91,7 +97,7 @@ class ParserErrorFactory(factory.django.DjangoModelFactory):
     column_number = "1"
     item_number = "1"
     field_name = "test field name"
-    case_number = '1'
+    case_number = "1"
     rpt_month_year = 202001
     error_message = "test error message"
     error_type = ParserErrorCategoryChoices.PRE_CHECK
@@ -101,6 +107,7 @@ class ParserErrorFactory(factory.django.DjangoModelFactory):
 
     object_id = 1
     content_type_id = 1
+
 
 class TanfT1Factory(factory.django.DjangoModelFactory):
     """Generate TANF T1 record for testing."""
@@ -167,11 +174,11 @@ class TanfT2Factory(factory.django.DjangoModelFactory):
 
     RecordType = "T2"
     RPT_MONTH_YEAR = 1
-    CASE_NUMBER = '1'
+    CASE_NUMBER = "1"
     FAMILY_AFFILIATION = 1
     NONCUSTODIAL_PARENT = 1
-    DATE_OF_BIRTH = '1'
-    SSN = '1'
+    DATE_OF_BIRTH = "1"
+    SSN = "1"
     RACE_HISPANIC = 1
     RACE_AMER_INDIAN = 1
     RACE_ASIAN = 1
@@ -246,11 +253,11 @@ class TanfT3Factory(factory.django.DjangoModelFactory):
 
     RecordType = "T3"
     RPT_MONTH_YEAR = 1
-    CASE_NUMBER = '1'
+    CASE_NUMBER = "1"
 
     FAMILY_AFFILIATION = 1
-    DATE_OF_BIRTH = '1'
-    SSN = '1'
+    DATE_OF_BIRTH = "1"
+    SSN = "1"
     RACE_HISPANIC = 1
     RACE_AMER_INDIAN = 1
     RACE_ASIAN = 1
@@ -266,6 +273,7 @@ class TanfT3Factory(factory.django.DjangoModelFactory):
     CITIZENSHIP_STATUS = 1
     UNEARNED_SSI = 1
     OTHER_UNEARNED_INCOME = 1
+
 
 class TanfT4Factory(factory.django.DjangoModelFactory):
     """Generate TANF T4 record for testing."""
@@ -283,7 +291,7 @@ class TanfT4Factory(factory.django.DjangoModelFactory):
     STRATUM = 1
     ZIP_CODE = "11111"
     DISPOSITION = 1
-    CLOSURE_REASON = '02'
+    CLOSURE_REASON = "02"
     REC_SUB_HOUSING = 1
     REC_MED_ASSIST = 1
     REC_FOOD_STAMPS = 1
@@ -328,6 +336,7 @@ class TanfT5Factory(factory.django.DjangoModelFactory):
     AMOUNT_EARNED_INCOME = "1"
     AMOUNT_UNEARNED_INCOME = "1"
 
+
 class TanfT6Factory(factory.django.DjangoModelFactory):
     """Generate TANF T6 record for testing."""
 
@@ -355,6 +364,7 @@ class TanfT6Factory(factory.django.DjangoModelFactory):
     NUM_OUTWEDLOCK_BIRTHS = 1
     NUM_CLOSED_CASES = 1
 
+
 class TanfT7Factory(factory.django.DjangoModelFactory):
     """Generate TANF T7 record for testing."""
 
@@ -366,9 +376,10 @@ class TanfT7Factory(factory.django.DjangoModelFactory):
     RecordType = "T7"
     CALENDAR_QUARTER = 20204
     RPT_MONTH_YEAR = 202011
-    TDRS_SECTION_IND = '1'
-    STRATUM = '01'
+    TDRS_SECTION_IND = "1"
+    STRATUM = "01"
     FAMILIES_MONTH = 1
+
 
 class TribalTanfT1Factory(factory.django.DjangoModelFactory):
     """Generate Tribal TANF T1 record for testing."""
@@ -435,11 +446,11 @@ class TribalTanfT2Factory(factory.django.DjangoModelFactory):
 
     RecordType = "T2"
     RPT_MONTH_YEAR = 1
-    CASE_NUMBER = '1'
+    CASE_NUMBER = "1"
     FAMILY_AFFILIATION = 1
     NONCUSTODIAL_PARENT = 1
     DATE_OF_BIRTH = "1"
-    SSN = '1'
+    SSN = "1"
     RACE_HISPANIC = 1
     RACE_AMER_INDIAN = 1
     RACE_ASIAN = 1
@@ -468,22 +479,22 @@ class TribalTanfT2Factory(factory.django.DjangoModelFactory):
     SUB_PRIVATE_EMPLOYMENT = "01"
     SUB_PUBLIC_EMPLOYMENT = "01"
     OJT = "01"
-    JOB_SEARCH = '1'
-    COMM_SERVICES = '1'
-    VOCATIONAL_ED_TRAINING = '1'
-    JOB_SKILLS_TRAINING = '1'
-    ED_NO_HIGH_SCHOOL_DIPLOMA = '1'
-    SCHOOL_ATTENDENCE = '1'
-    PROVIDE_CC = '1'
-    ADD_WORK_ACTIVITIES = '1'
-    OTHER_WORK_ACTIVITIES = '1'
-    REQ_HRS_WAIVER_DEMO = '1'
-    EARNED_INCOME = '1'
-    UNEARNED_INCOME_TAX_CREDIT = '1'
-    UNEARNED_SOCIAL_SECURITY = '1'
-    UNEARNED_SSI = '1'
-    UNEARNED_WORKERS_COMP = '1'
-    OTHER_UNEARNED_INCOME = '1'
+    JOB_SEARCH = "1"
+    COMM_SERVICES = "1"
+    VOCATIONAL_ED_TRAINING = "1"
+    JOB_SKILLS_TRAINING = "1"
+    ED_NO_HIGH_SCHOOL_DIPLOMA = "1"
+    SCHOOL_ATTENDENCE = "1"
+    PROVIDE_CC = "1"
+    ADD_WORK_ACTIVITIES = "1"
+    OTHER_WORK_ACTIVITIES = "1"
+    REQ_HRS_WAIVER_DEMO = "1"
+    EARNED_INCOME = "1"
+    UNEARNED_INCOME_TAX_CREDIT = "1"
+    UNEARNED_SOCIAL_SECURITY = "1"
+    UNEARNED_SSI = "1"
+    UNEARNED_WORKERS_COMP = "1"
+    OTHER_UNEARNED_INCOME = "1"
 
 
 class TribalTanfT3Factory(factory.django.DjangoModelFactory):
@@ -496,11 +507,11 @@ class TribalTanfT3Factory(factory.django.DjangoModelFactory):
 
     RecordType = "T3"
     RPT_MONTH_YEAR = 1
-    CASE_NUMBER = '1'
+    CASE_NUMBER = "1"
 
     FAMILY_AFFILIATION = 1
     DATE_OF_BIRTH = "1"
-    SSN = '1'
+    SSN = "1"
     RACE_HISPANIC = 1
     RACE_AMER_INDIAN = 1
     RACE_ASIAN = 1
@@ -516,6 +527,7 @@ class TribalTanfT3Factory(factory.django.DjangoModelFactory):
     CITIZENSHIP_STATUS = 1
     UNEARNED_SSI = 1
     OTHER_UNEARNED_INCOME = 1
+
 
 class TribalTanfT4Factory(factory.django.DjangoModelFactory):
     """Generate Tribal TANF T4 record for testing."""
@@ -533,7 +545,7 @@ class TribalTanfT4Factory(factory.django.DjangoModelFactory):
     STRATUM = 1
     ZIP_CODE = "11111"
     DISPOSITION = 1
-    CLOSURE_REASON = '02'
+    CLOSURE_REASON = "02"
     REC_SUB_HOUSING = 1
     REC_MED_ASSIST = 1
     REC_FOOD_STAMPS = 1
@@ -578,6 +590,7 @@ class TribalTanfT5Factory(factory.django.DjangoModelFactory):
     AMOUNT_EARNED_INCOME = "1"
     AMOUNT_UNEARNED_INCOME = "1"
 
+
 class TribalTanfT6Factory(factory.django.DjangoModelFactory):
     """Generate Tribal TANF T6 record for testing."""
 
@@ -605,6 +618,7 @@ class TribalTanfT6Factory(factory.django.DjangoModelFactory):
     NUM_OUTWEDLOCK_BIRTHS = 1
     NUM_CLOSED_CASES = 1
 
+
 class TribalTanfT7Factory(factory.django.DjangoModelFactory):
     """Generate Tribal TANF T7 record for testing."""
 
@@ -615,8 +629,8 @@ class TribalTanfT7Factory(factory.django.DjangoModelFactory):
 
     CALENDAR_QUARTER = 20204
     RPT_MONTH_YEAR = 202011
-    TDRS_SECTION_IND = '1'
-    STRATUM = '01'
+    TDRS_SECTION_IND = "1"
+    STRATUM = "01"
     FAMILIES_MONTH = 1
 
 
@@ -681,11 +695,11 @@ class SSPM2Factory(factory.django.DjangoModelFactory):
 
     RecordType = "M2"
     RPT_MONTH_YEAR = 1
-    CASE_NUMBER = '1'
+    CASE_NUMBER = "1"
     FAMILY_AFFILIATION = 1
     NONCUSTODIAL_PARENT = 1
-    DATE_OF_BIRTH = '1'
-    SSN = '1'
+    DATE_OF_BIRTH = "1"
+    SSN = "1"
     RACE_HISPANIC = 1
     RACE_AMER_INDIAN = 1
     RACE_ASIAN = 1
@@ -757,11 +771,11 @@ class SSPM3Factory(factory.django.DjangoModelFactory):
 
     RecordType = "M3"
     RPT_MONTH_YEAR = 1
-    CASE_NUMBER = '1'
+    CASE_NUMBER = "1"
 
     FAMILY_AFFILIATION = 1
-    DATE_OF_BIRTH = '1'
-    SSN = '1'
+    DATE_OF_BIRTH = "1"
+    SSN = "1"
     RACE_HISPANIC = 1
     RACE_AMER_INDIAN = 1
     RACE_ASIAN = 1
@@ -777,6 +791,7 @@ class SSPM3Factory(factory.django.DjangoModelFactory):
     CITIZENSHIP_STATUS = 1
     UNEARNED_SSI = 1
     OTHER_UNEARNED_INCOME = 1
+
 
 class SSPM4Factory(factory.django.DjangoModelFactory):
     """Generate SSP M4 record for testing."""
@@ -794,11 +809,12 @@ class SSPM4Factory(factory.django.DjangoModelFactory):
     STRATUM = 1
     ZIP_CODE = "11111"
     DISPOSITION = 1
-    CLOSURE_REASON = '02'
+    CLOSURE_REASON = "02"
     REC_SUB_HOUSING = 1
     REC_MED_ASSIST = 1
     REC_FOOD_STAMPS = 1
     REC_SUB_CC = 1
+
 
 class SSPM5Factory(factory.django.DjangoModelFactory):
     """Generate SSP M5 record for testing."""
@@ -810,11 +826,11 @@ class SSPM5Factory(factory.django.DjangoModelFactory):
 
     RecordType = "M5"
     RPT_MONTH_YEAR = 1
-    CASE_NUMBER = '1'
+    CASE_NUMBER = "1"
 
     FAMILY_AFFILIATION = 1
-    DATE_OF_BIRTH = '11111111'
-    SSN = '123456789'
+    DATE_OF_BIRTH = "11111111"
+    SSN = "123456789"
     RACE_HISPANIC = 1
     RACE_AMER_INDIAN = 1
     RACE_ASIAN = 1
@@ -828,14 +844,14 @@ class SSPM5Factory(factory.django.DjangoModelFactory):
     REC_AID_AGED_BLIND = 1
     REC_SSI = 1
     MARITAL_STATUS = 1
-    RELATIONSHIP_HOH = '01'
+    RELATIONSHIP_HOH = "01"
     PARENT_MINOR_CHILD = 1
     NEEDS_OF_PREGNANT_WOMAN = 1
-    EDUCATION_LEVEL = '01'
+    EDUCATION_LEVEL = "01"
     CITIZENSHIP_STATUS = 1
     EMPLOYMENT_STATUS = 1
-    AMOUNT_EARNED_INCOME = '1000'
-    AMOUNT_UNEARNED_INCOME = '1000'
+    AMOUNT_EARNED_INCOME = "1000"
+    AMOUNT_UNEARNED_INCOME = "1000"
 
 
 class SSPM6Factory(factory.django.DjangoModelFactory):
@@ -860,6 +876,7 @@ class SSPM6Factory(factory.django.DjangoModelFactory):
     AMT_ASSISTANCE = 1
     CLOSED_CASES = 1
 
+
 class SSPM7Factory(factory.django.DjangoModelFactory):
     """Generate SSP M7 record for testing."""
 
@@ -871,6 +888,6 @@ class SSPM7Factory(factory.django.DjangoModelFactory):
     RecordType = "M7"
     CALENDAR_QUARTER = 20204
     RPT_MONTH_YEAR = 202011
-    TDRS_SECTION_IND = '1'
-    STRATUM = '01'
+    TDRS_SECTION_IND = "1"
+    STRATUM = "01"
     FAMILIES_MONTH = 1

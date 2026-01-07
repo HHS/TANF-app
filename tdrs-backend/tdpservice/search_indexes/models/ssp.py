@@ -1,41 +1,36 @@
 """Models representing parsed SSP data file records submitted to TDP."""
 
 import uuid
+
 from django.db import models
+
 from tdpservice.data_files.models import DataFile
+from tdpservice.search_indexes.models.mixins import RecordMixin
 
 
-class SSP_M1(models.Model):
-    """
-    Parsed record representing an SSP M1 data submission.
-
-    Mapped to an elastic search index.
-    """
+class SSP_M1(RecordMixin):
+    """Parsed record representing an SSP M1 data submission."""
 
     class Meta:
         """Meta class for the model."""
 
-        verbose_name = 'SSP M1'
+        verbose_name = "SSP M1"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
-        help_text='The parent file from which this record was created.',
+        help_text="The parent file from which this record was created.",
         null=True,
         on_delete=models.CASCADE,
-        related_name='m1_parent'
+        related_name="m1_parent",
     )
 
     RecordType = models.CharField(max_length=156, null=True, blank=False)
     RPT_MONTH_YEAR = models.IntegerField(null=True, blank=False)
     CASE_NUMBER = models.CharField(max_length=11, null=True, blank=False)
     FIPS_CODE = models.CharField(max_length=2, null=True, blank=False)
-    COUNTY_FIPS_CODE = models.CharField(
-        max_length=3,
-        null=True,
-        blank=False
-    )
+    COUNTY_FIPS_CODE = models.CharField(max_length=3, null=True, blank=False)
     STRATUM = models.CharField(max_length=2, null=True, blank=False)
     ZIP_CODE = models.CharField(max_length=5, null=True, blank=False)
     DISPOSITION = models.IntegerField(null=True, blank=False)
@@ -76,26 +71,22 @@ class SSP_M1(models.Model):
     WAIVER_EVAL_CONTROL_GRPS = models.IntegerField(null=True, blank=False)
 
 
-class SSP_M2(models.Model):
-    """
-    Parsed record representing an SSP M2 data submission.
-
-    Mapped to an elastic search index.
-    """
+class SSP_M2(RecordMixin):
+    """Parsed record representing an SSP M2 data submission."""
 
     class Meta:
         """Meta class for the model."""
 
-        verbose_name = 'SSP M2'
+        verbose_name = "SSP M2"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
-        help_text='The parent file from which this record was created.',
+        help_text="The parent file from which this record was created.",
         null=True,
         on_delete=models.CASCADE,
-        related_name='m2_parent'
+        related_name="m2_parent",
     )
 
     RecordType = models.CharField(max_length=156, null=True, blank=False)
@@ -168,26 +159,22 @@ class SSP_M2(models.Model):
     OTHER_UNEARNED_INCOME = models.IntegerField(null=True, blank=False)
 
 
-class SSP_M3(models.Model):
-    """
-    Parsed record representing an SSP M3 data submission.
-
-    Mapped to an elastic search index.
-    """
+class SSP_M3(RecordMixin):
+    """Parsed record representing an SSP M3 data submission."""
 
     class Meta:
         """Meta class for the model."""
 
-        verbose_name = 'SSP M3'
+        verbose_name = "SSP M3"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
-        help_text='The parent file from which this record was created.',
+        help_text="The parent file from which this record was created.",
         null=True,
         on_delete=models.CASCADE,
-        related_name='m3_parent'
+        related_name="m3_parent",
     )
 
     RecordType = models.CharField(max_length=156, null=True, blank=False)
@@ -214,36 +201,29 @@ class SSP_M3(models.Model):
     UNEARNED_SSI = models.IntegerField(null=True, blank=False)
     OTHER_UNEARNED_INCOME = models.IntegerField(null=True, blank=False)
 
-class SSP_M4(models.Model):
-    """
-    Parsed record representing an SSP M1 data submission.
 
-    Mapped to an elastic search index.
-    """
+class SSP_M4(RecordMixin):
+    """Parsed record representing an SSP M1 data submission."""
 
     class Meta:
         """Meta class for the model."""
 
-        verbose_name = 'SSP M4'
+        verbose_name = "SSP M4"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
-        help_text='The parent file from which this record was created.',
+        help_text="The parent file from which this record was created.",
         null=True,
         on_delete=models.CASCADE,
-        related_name='m4_parent'
+        related_name="m4_parent",
     )
 
     RecordType = models.CharField(max_length=156, null=True, blank=False)
     RPT_MONTH_YEAR = models.IntegerField(null=True, blank=False)
     CASE_NUMBER = models.CharField(max_length=11, null=True, blank=False)
-    COUNTY_FIPS_CODE = models.CharField(
-        max_length=3,
-        null=True,
-        blank=False
-    )
+    COUNTY_FIPS_CODE = models.CharField(max_length=3, null=True, blank=False)
     STRATUM = models.CharField(max_length=2, null=True, blank=False)
     ZIP_CODE = models.CharField(max_length=5, null=True, blank=False)
     DISPOSITION = models.IntegerField(null=True, blank=False)
@@ -253,26 +233,23 @@ class SSP_M4(models.Model):
     REC_FOOD_STAMPS = models.IntegerField(null=True, blank=False)
     REC_SUB_CC = models.IntegerField(null=True, blank=False)
 
-class SSP_M5(models.Model):
-    """
-    Parsed record representing an SSP M1 data submission.
 
-    Mapped to an elastic search index.
-    """
+class SSP_M5(RecordMixin):
+    """Parsed record representing an SSP M1 data submission."""
 
     class Meta:
         """Meta class for the model."""
 
-        verbose_name = 'SSP M5'
+        verbose_name = "SSP M5"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
-        help_text='The parent file from which this record was created.',
+        help_text="The parent file from which this record was created.",
         null=True,
         on_delete=models.CASCADE,
-        related_name='m5_parent'
+        related_name="m5_parent",
     )
 
     RecordType = models.CharField(max_length=156, null=True, blank=False)
@@ -304,26 +281,23 @@ class SSP_M5(models.Model):
     AMOUNT_EARNED_INCOME = models.CharField(max_length=4, null=True, blank=False)
     AMOUNT_UNEARNED_INCOME = models.CharField(max_length=4, null=True, blank=False)
 
-class SSP_M6(models.Model):
-    """
-    Parsed record representing an M6 data submission.
 
-    Mapped to an elastic search index.
-    """
+class SSP_M6(RecordMixin):
+    """Parsed record representing an M6 data submission."""
 
     class Meta:
         """Meta class for the model."""
 
-        verbose_name = 'SSP M6'
+        verbose_name = "SSP M6"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
-        help_text='The parent file from which this record was created.',
+        help_text="The parent file from which this record was created.",
         null=True,
         on_delete=models.CASCADE,
-        related_name='m6_parent'
+        related_name="m6_parent",
     )
 
     RecordType = models.CharField(max_length=156, null=True, blank=False)
@@ -341,35 +315,28 @@ class SSP_M6(models.Model):
     AMT_ASSISTANCE = models.IntegerField(null=True, blank=True)
     CLOSED_CASES = models.IntegerField(null=True, blank=True)
 
-class SSP_M7(models.Model):
-    """
-    Parsed record representing an SSP M3 data submission.
 
-    Mapped to an elastic search index.
-    """
+class SSP_M7(RecordMixin):
+    """Parsed record representing an SSP M3 data submission."""
 
     class Meta:
         """Meta class for the model."""
 
-        verbose_name = 'SSP M7'
+        verbose_name = "SSP M7"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
-        help_text='The parent file from which this record was created.',
+        help_text="The parent file from which this record was created.",
         null=True,
         on_delete=models.CASCADE,
-        related_name='m7_parent'
+        related_name="m7_parent",
     )
 
     RecordType = models.CharField(max_length=156, null=True, blank=False)
     CALENDAR_QUARTER = models.IntegerField(null=True, blank=True)
     RPT_MONTH_YEAR = models.IntegerField(null=True, blank=False)
-    TDRS_SECTION_IND = models.CharField(
-        max_length=1,
-        null=True,
-        blank=False
-    )
+    TDRS_SECTION_IND = models.CharField(max_length=1, null=True, blank=False)
     STRATUM = models.CharField(max_length=2, null=True, blank=False)
     FAMILIES_MONTH = models.IntegerField(null=True, blank=False)

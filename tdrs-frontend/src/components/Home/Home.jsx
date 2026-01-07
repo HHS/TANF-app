@@ -1,42 +1,41 @@
-import React from 'react'
-import Button from '../Button'
-import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import signOut from '../../utils/signOut'
 import ResourceCards from '../ResourceCards'
 import RequestAccessForm from '../RequestAccessForm/RequestAccessForm'
 import {
   accountStatusIsApproved,
   accountIsInReview,
 } from '../../selectors/auth'
+import Profile from '../Profile/Profile'
 
 /**
  * Home renders the Request Access form for creating a profile, and displays
  * a pending-approval state, before showing the user their active roles and
  * permissions once they are approved by an Admin in the backend.
  */
-function Home() {
+function Home({ setInEditMode }) {
   const user = useSelector((state) => state.auth.user)
   const sttList = useSelector((state) => state?.stts?.sttList)
 
   const userAccessInReview = useSelector(accountIsInReview)
   const userAccessRequestApproved = useSelector(accountStatusIsApproved)
 
+  const [isEditing, setIsEditing] = useState(false)
+
+  useEffect(() => {
+    setInEditMode(isEditing, 'access request')
+  }, [isEditing, setInEditMode])
+
   if (userAccessInReview) {
     return (
-      <div className="margin-top-5">
-        <div className="margin-top-5">
-          <p className="margin-top-1 margin-bottom-4" id="page-alert">
-            Your request for access is currently being reviewed by an OFA Admin.
-            We'll send you an email when it's been approved.
-          </p>
-        </div>
-        <Button type="button" onClick={signOut}>
-          <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
-          Sign Out
-        </Button>
-      </div>
+      <Profile
+        isEditing={isEditing}
+        onEdit={() => setIsEditing(true)}
+        type="access request"
+        user={user}
+        sttList={sttList}
+        onCancel={() => setIsEditing(false)}
+      />
     )
   } else if (!userAccessRequestApproved) {
     return <RequestAccessForm user={user} sttList={sttList} />
@@ -50,40 +49,6 @@ function Home() {
           data, managing your account, and utilizing other functionality please
           refer to the TDP Knowledge Center.
         </p>
-        <table className="usa-table usa-table--striped">
-          <caption>
-            <b> Data Reporting Deadlines </b>
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">Fiscal Quarter</th>
-              <th scope="col">Calendar Period</th>
-              <th scope="col">Due Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1</td>
-              <td>Oct 1 - Dec 31</td>
-              <td>February 14</td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td>Jan 1 - Mar 31</td>
-              <td>May 15</td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td>Apr 1 - Jun 30</td>
-              <td>August 14</td>
-            </tr>
-            <tr>
-              <td>4</td>
-              <td>Jul 1 - Sep 30</td>
-              <td>November 14</td>
-            </tr>
-          </tbody>
-        </table>
       </div>
       <br />
       <hr />

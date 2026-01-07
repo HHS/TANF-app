@@ -1,39 +1,27 @@
-"""Schema for HEADER row of all submission types."""
+"""Schema for T6 record type."""
 
-
-from tdpservice.parsers.transforms import calendar_quarter_to_rpt_month_year
+from tdpservice.parsers.dataclasses import FieldType
 from tdpservice.parsers.fields import Field, TransformField
-from tdpservice.parsers.row_schema import RowSchema, SchemaManager
+from tdpservice.parsers.row_schema import TanfDataReportSchema
+from tdpservice.parsers.transforms import calendar_quarter_to_rpt_month_year
 from tdpservice.parsers.validators import category1, category2, category3
-from tdpservice.search_indexes.documents.tanf import TANF_T6DataSubmissionDocument
+from tdpservice.search_indexes.models.tanf import TANF_T6
 
-s1 = RowSchema(
+s1 = TanfDataReportSchema(
     record_type="T6",
-    document=TANF_T6DataSubmissionDocument(),
+    model=TANF_T6,
     preparsing_validators=[
-        category1.recordHasLength(379),
+        category1.recordHasLengthOfAtLeast(379),
         category1.validate_fieldYearMonth_with_headerYearQuarter(),
         category1.calendarQuarterIsValid(2, 7),
     ],
     postparsing_validators=[
+        category3.sumIsEqual("NUM_APPLICATIONS", ["NUM_APPROVED", "NUM_DENIED"]),
         category3.sumIsEqual(
-            "NUM_APPLICATIONS", [
-                "NUM_APPROVED",
-                "NUM_DENIED"
-            ]
+            "NUM_FAMILIES", ["NUM_2_PARENTS", "NUM_1_PARENTS", "NUM_NO_PARENTS"]
         ),
         category3.sumIsEqual(
-            "NUM_FAMILIES", [
-                "NUM_2_PARENTS",
-                "NUM_1_PARENTS",
-                "NUM_NO_PARENTS"
-            ]
-        ),
-        category3.sumIsEqual(
-            "NUM_RECIPIENTS", [
-                "NUM_ADULT_RECIPIENTS",
-                "NUM_CHILD_RECIPIENTS"
-            ]
+            "NUM_RECIPIENTS", ["NUM_ADULT_RECIPIENTS", "NUM_CHILD_RECIPIENTS"]
         ),
     ],
     fields=[
@@ -41,7 +29,7 @@ s1 = RowSchema(
             item="0",
             name="RecordType",
             friendly_name="Record Type",
-            type="string",
+            type=FieldType.ALPHA_NUMERIC,
             startIndex=0,
             endIndex=2,
             required=True,
@@ -51,7 +39,7 @@ s1 = RowSchema(
             item="3",
             name="CALENDAR_QUARTER",
             friendly_name="Calendar Quarter",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=2,
             endIndex=7,
             required=True,
@@ -65,7 +53,7 @@ s1 = RowSchema(
             item="4",
             name="RPT_MONTH_YEAR",
             friendly_name="Reporting Year and Month",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=2,
             endIndex=7,
             required=True,
@@ -78,7 +66,7 @@ s1 = RowSchema(
             item="4A",
             name="NUM_APPLICATIONS",
             friendly_name="Total Number of Applications",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=7,
             endIndex=15,
             required=True,
@@ -88,7 +76,7 @@ s1 = RowSchema(
             item="5A",
             name="NUM_APPROVED",
             friendly_name="Total Number of Approved Applications",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=31,
             endIndex=39,
             required=True,
@@ -98,7 +86,7 @@ s1 = RowSchema(
             item="6A",
             name="NUM_DENIED",
             friendly_name="Total Number of Denied Applications",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=55,
             endIndex=63,
             required=True,
@@ -108,7 +96,7 @@ s1 = RowSchema(
             item="7A",
             name="ASSISTANCE",
             friendly_name="Total Amount of Cash Assistance",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=79,
             endIndex=91,
             required=True,
@@ -118,7 +106,7 @@ s1 = RowSchema(
             item="8A",
             name="NUM_FAMILIES",
             friendly_name="Total Number of Families",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=115,
             endIndex=123,
             required=True,
@@ -128,7 +116,7 @@ s1 = RowSchema(
             item="9A",
             name="NUM_2_PARENTS",
             friendly_name="Total Number of Two-parent Families",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=139,
             endIndex=147,
             required=True,
@@ -138,7 +126,7 @@ s1 = RowSchema(
             item="10A",
             name="NUM_1_PARENTS",
             friendly_name="Total Number of One-Parent Families",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=163,
             endIndex=171,
             required=True,
@@ -148,7 +136,7 @@ s1 = RowSchema(
             item="11A",
             name="NUM_NO_PARENTS",
             friendly_name="Total Number of No-Parent Families",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=187,
             endIndex=195,
             required=True,
@@ -158,7 +146,7 @@ s1 = RowSchema(
             item="12A",
             name="NUM_RECIPIENTS",
             friendly_name="Total Number of Recipients",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=211,
             endIndex=219,
             required=True,
@@ -168,7 +156,7 @@ s1 = RowSchema(
             item="13A",
             name="NUM_ADULT_RECIPIENTS",
             friendly_name="Total Number of Adult Recipients",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=235,
             endIndex=243,
             required=True,
@@ -178,7 +166,7 @@ s1 = RowSchema(
             item="14A",
             name="NUM_CHILD_RECIPIENTS",
             friendly_name="Total Number of Child Recipients",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=259,
             endIndex=267,
             required=True,
@@ -188,7 +176,7 @@ s1 = RowSchema(
             item="15A",
             name="NUM_NONCUSTODIALS",
             friendly_name="Total Number of Noncustodial Parents Participating in Work Activities",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=283,
             endIndex=291,
             required=True,
@@ -198,7 +186,7 @@ s1 = RowSchema(
             item="16A",
             name="NUM_BIRTHS",
             friendly_name="Total Number of Births",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=307,
             endIndex=315,
             required=True,
@@ -208,7 +196,7 @@ s1 = RowSchema(
             item="17A",
             name="NUM_OUTWEDLOCK_BIRTHS",
             friendly_name="Total Number of Non-Marital Births",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=331,
             endIndex=339,
             required=True,
@@ -218,7 +206,7 @@ s1 = RowSchema(
             item="18A",
             name="NUM_CLOSED_CASES",
             friendly_name="Total Number of Closed Cases",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=355,
             endIndex=363,
             required=True,
@@ -227,34 +215,22 @@ s1 = RowSchema(
     ],
 )
 
-s2 = RowSchema(
+s2 = TanfDataReportSchema(
     record_type="T6",
-    document=TANF_T6DataSubmissionDocument(),
+    model=TANF_T6,
     quiet_preparser_errors=True,
     preparsing_validators=[
-        category1.recordHasLength(379),
+        category1.recordHasLengthOfAtLeast(379),
         category1.validate_fieldYearMonth_with_headerYearQuarter(),
         category1.calendarQuarterIsValid(2, 7),
     ],
     postparsing_validators=[
+        category3.sumIsEqual("NUM_APPLICATIONS", ["NUM_APPROVED", "NUM_DENIED"]),
         category3.sumIsEqual(
-            "NUM_APPLICATIONS", [
-                "NUM_APPROVED",
-                "NUM_DENIED"
-            ]
+            "NUM_FAMILIES", ["NUM_2_PARENTS", "NUM_1_PARENTS", "NUM_NO_PARENTS"]
         ),
         category3.sumIsEqual(
-            "NUM_FAMILIES", [
-                "NUM_2_PARENTS",
-                "NUM_1_PARENTS",
-                "NUM_NO_PARENTS"
-            ]
-        ),
-        category3.sumIsEqual(
-            "NUM_RECIPIENTS", [
-                "NUM_ADULT_RECIPIENTS",
-                "NUM_CHILD_RECIPIENTS"
-            ]
+            "NUM_RECIPIENTS", ["NUM_ADULT_RECIPIENTS", "NUM_CHILD_RECIPIENTS"]
         ),
     ],
     fields=[
@@ -262,7 +238,7 @@ s2 = RowSchema(
             item="0",
             name="RecordType",
             friendly_name="Record Type",
-            type="string",
+            type=FieldType.ALPHA_NUMERIC,
             startIndex=0,
             endIndex=2,
             required=True,
@@ -272,7 +248,7 @@ s2 = RowSchema(
             item="3",
             name="CALENDAR_QUARTER",
             friendly_name="Calendar Quarter",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=2,
             endIndex=7,
             required=True,
@@ -286,7 +262,7 @@ s2 = RowSchema(
             item="4",
             name="RPT_MONTH_YEAR",
             friendly_name="Reporting Year and Month",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=2,
             endIndex=7,
             required=True,
@@ -299,7 +275,7 @@ s2 = RowSchema(
             item="4B",
             name="NUM_APPLICATIONS",
             friendly_name="Total Number of Applications",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=15,
             endIndex=23,
             required=True,
@@ -309,7 +285,7 @@ s2 = RowSchema(
             item="5B",
             name="NUM_APPROVED",
             friendly_name="Total Number of Approved Applications",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=39,
             endIndex=47,
             required=True,
@@ -319,7 +295,7 @@ s2 = RowSchema(
             item="6B",
             name="NUM_DENIED",
             friendly_name="Total Number of Denied Applications",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=63,
             endIndex=71,
             required=True,
@@ -329,7 +305,7 @@ s2 = RowSchema(
             item="7B",
             name="ASSISTANCE",
             friendly_name="Total Amount of Cash Assistance",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=91,
             endIndex=103,
             required=True,
@@ -339,7 +315,7 @@ s2 = RowSchema(
             item="8B",
             name="NUM_FAMILIES",
             friendly_name="Total Number of Families",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=123,
             endIndex=131,
             required=True,
@@ -349,7 +325,7 @@ s2 = RowSchema(
             item="9B",
             name="NUM_2_PARENTS",
             friendly_name="Total Number of Two-parent Families",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=147,
             endIndex=155,
             required=True,
@@ -359,7 +335,7 @@ s2 = RowSchema(
             item="10B",
             name="NUM_1_PARENTS",
             friendly_name="Total Number of One-Parent Families",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=171,
             endIndex=179,
             required=True,
@@ -369,7 +345,7 @@ s2 = RowSchema(
             item="11B",
             name="NUM_NO_PARENTS",
             friendly_name="Total Number of No-Parent Families",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=195,
             endIndex=203,
             required=True,
@@ -379,7 +355,7 @@ s2 = RowSchema(
             item="12B",
             name="NUM_RECIPIENTS",
             friendly_name="Total Number of Recipients",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=219,
             endIndex=227,
             required=True,
@@ -389,7 +365,7 @@ s2 = RowSchema(
             item="13B",
             name="NUM_ADULT_RECIPIENTS",
             friendly_name="Total Number of Adult Recipients",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=243,
             endIndex=251,
             required=True,
@@ -399,7 +375,7 @@ s2 = RowSchema(
             item="14B",
             name="NUM_CHILD_RECIPIENTS",
             friendly_name="Total Number of Child Recipients",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=267,
             endIndex=275,
             required=True,
@@ -409,7 +385,7 @@ s2 = RowSchema(
             item="15B",
             name="NUM_NONCUSTODIALS",
             friendly_name="Total Number of Noncustodial Parents Participating in Work Activities",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=291,
             endIndex=299,
             required=True,
@@ -419,7 +395,7 @@ s2 = RowSchema(
             item="16B",
             name="NUM_BIRTHS",
             friendly_name="Total Number of Births",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=315,
             endIndex=323,
             required=True,
@@ -429,7 +405,7 @@ s2 = RowSchema(
             item="17B",
             name="NUM_OUTWEDLOCK_BIRTHS",
             friendly_name="Total Number of Non-Marital Births",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=339,
             endIndex=347,
             required=True,
@@ -439,7 +415,7 @@ s2 = RowSchema(
             item="18B",
             name="NUM_CLOSED_CASES",
             friendly_name="Total Number of Closed Cases",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=363,
             endIndex=371,
             required=True,
@@ -448,34 +424,22 @@ s2 = RowSchema(
     ],
 )
 
-s3 = RowSchema(
+s3 = TanfDataReportSchema(
     record_type="T6",
-    document=TANF_T6DataSubmissionDocument(),
+    model=TANF_T6,
     quiet_preparser_errors=True,
     preparsing_validators=[
-        category1.recordHasLength(379),
+        category1.recordHasLengthOfAtLeast(379),
         category1.validate_fieldYearMonth_with_headerYearQuarter(),
         category1.calendarQuarterIsValid(2, 7),
     ],
     postparsing_validators=[
+        category3.sumIsEqual("NUM_APPLICATIONS", ["NUM_APPROVED", "NUM_DENIED"]),
         category3.sumIsEqual(
-            "NUM_APPLICATIONS", [
-                "NUM_APPROVED",
-                "NUM_DENIED"
-            ]
+            "NUM_FAMILIES", ["NUM_2_PARENTS", "NUM_1_PARENTS", "NUM_NO_PARENTS"]
         ),
         category3.sumIsEqual(
-            "NUM_FAMILIES", [
-                "NUM_2_PARENTS",
-                "NUM_1_PARENTS",
-                "NUM_NO_PARENTS"
-            ]
-        ),
-        category3.sumIsEqual(
-            "NUM_RECIPIENTS", [
-                "NUM_ADULT_RECIPIENTS",
-                "NUM_CHILD_RECIPIENTS"
-            ]
+            "NUM_RECIPIENTS", ["NUM_ADULT_RECIPIENTS", "NUM_CHILD_RECIPIENTS"]
         ),
     ],
     fields=[
@@ -483,7 +447,7 @@ s3 = RowSchema(
             item="0",
             name="RecordType",
             friendly_name="Record Type",
-            type="string",
+            type=FieldType.ALPHA_NUMERIC,
             startIndex=0,
             endIndex=2,
             required=True,
@@ -493,7 +457,7 @@ s3 = RowSchema(
             item="3",
             name="CALENDAR_QUARTER",
             friendly_name="Calendar Quarter",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=2,
             endIndex=7,
             required=True,
@@ -507,7 +471,7 @@ s3 = RowSchema(
             item="4",
             name="RPT_MONTH_YEAR",
             friendly_name="Reporting Year and Month",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=2,
             endIndex=7,
             required=True,
@@ -520,7 +484,7 @@ s3 = RowSchema(
             item="4C",
             name="NUM_APPLICATIONS",
             friendly_name="Total Number of Applications",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=23,
             endIndex=31,
             required=True,
@@ -530,7 +494,7 @@ s3 = RowSchema(
             item="5C",
             name="NUM_APPROVED",
             friendly_name="Total Number of Approved Applications",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=47,
             endIndex=55,
             required=True,
@@ -540,7 +504,7 @@ s3 = RowSchema(
             item="6C",
             name="NUM_DENIED",
             friendly_name="Total Number of Denied Applications",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=71,
             endIndex=79,
             required=True,
@@ -550,7 +514,7 @@ s3 = RowSchema(
             item="7C",
             name="ASSISTANCE",
             friendly_name="Total Amount of Cash Assistance",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=103,
             endIndex=115,
             required=True,
@@ -560,7 +524,7 @@ s3 = RowSchema(
             item="8C",
             name="NUM_FAMILIES",
             friendly_name="Total Number of Families",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=131,
             endIndex=139,
             required=True,
@@ -570,7 +534,7 @@ s3 = RowSchema(
             item="9C",
             name="NUM_2_PARENTS",
             friendly_name="Total Number of Two-parent Families",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=155,
             endIndex=163,
             required=True,
@@ -580,7 +544,7 @@ s3 = RowSchema(
             item="10C",
             name="NUM_1_PARENTS",
             friendly_name="Total Number of One-Parent Families",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=179,
             endIndex=187,
             required=True,
@@ -590,7 +554,7 @@ s3 = RowSchema(
             item="11C",
             name="NUM_NO_PARENTS",
             friendly_name="Total Number of No-Parent Families",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=203,
             endIndex=211,
             required=True,
@@ -600,7 +564,7 @@ s3 = RowSchema(
             item="12C",
             name="NUM_RECIPIENTS",
             friendly_name="Total Number of Recipients",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=227,
             endIndex=235,
             required=True,
@@ -610,7 +574,7 @@ s3 = RowSchema(
             item="13C",
             name="NUM_ADULT_RECIPIENTS",
             friendly_name="Total Number of Adult Recipients",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=251,
             endIndex=259,
             required=True,
@@ -620,7 +584,7 @@ s3 = RowSchema(
             item="14C",
             name="NUM_CHILD_RECIPIENTS",
             friendly_name="Total Number of Child Recipients",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=275,
             endIndex=283,
             required=True,
@@ -630,7 +594,7 @@ s3 = RowSchema(
             item="15C",
             name="NUM_NONCUSTODIALS",
             friendly_name="Total Number of Noncustodial Parents Participating in Work Activities",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=299,
             endIndex=307,
             required=True,
@@ -640,7 +604,7 @@ s3 = RowSchema(
             item="16C",
             name="NUM_BIRTHS",
             friendly_name="Total Number of Births",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=323,
             endIndex=331,
             required=True,
@@ -650,7 +614,7 @@ s3 = RowSchema(
             item="17C",
             name="NUM_OUTWEDLOCK_BIRTHS",
             friendly_name="Total Number of Non-Marital Births",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=347,
             endIndex=355,
             required=True,
@@ -660,7 +624,7 @@ s3 = RowSchema(
             item="18C",
             name="NUM_CLOSED_CASES",
             friendly_name="Total Number of Closed Cases",
-            type="number",
+            type=FieldType.NUMERIC,
             startIndex=371,
             endIndex=379,
             required=True,
@@ -670,4 +634,4 @@ s3 = RowSchema(
 )
 
 
-t6 = SchemaManager(schemas=[s1, s2, s3])
+t6 = [s1, s2, s3]

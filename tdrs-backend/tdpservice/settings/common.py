@@ -1,34 +1,77 @@
 """Define settings for all environments."""
 
+import json
 import logging
 import logging.handlers
 import os
-from django.utils.dateparse import parse_datetime
 from distutils.util import strtobool
 from os.path import join
 from typing import Any, Optional
 
+import django
 from django.core.exceptions import ImproperlyConfigured
-from celery.schedules import crontab
 
-from configurations import Configuration
+import sentry_sdk
 from celery.schedules import crontab
+from configurations import Configuration
+from corsheaders.defaults import default_headers
+from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
+from sentry_sdk.types import SamplingContext
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+
 def get_required_env_var_setting(
-    env_var_name: str,
-    setting_name: Optional[str] = None
+    env_var_name: str, setting_name: Optional[str] = None
 ) -> Any:
     """Retrieve setting from environment variable, otherwise raise an error."""
     env_var = os.getenv(env_var_name)
     if not env_var:
         raise ImproperlyConfigured(
-            f'Missing required setting: {setting_name or env_var_name} - must '
-            f'set {env_var_name} environment variable'
+            f"Missing required setting: {setting_name or env_var_name} - must "
+            f"set {env_var_name} environment variable"
         )
 
     return env_var
+
+
+SAMPLER_FILTER_URLS = ["/prometheus/metrics"]
+
+
+def traces_sampler(sampling_context: SamplingContext) -> float:
+    # Examine provided sampling context along with anything in the
+    # global namespace to compute the sample rate for this transaction
+    if sampling_context.get("wsgi_environ", {}).get("PATH_INFO") in SAMPLER_FILTER_URLS:
+        # Drop this transaction, by setting its sample rate to 0%
+        return 0
+    # Default sample rate for all others (replaces traces_sample_rate)
+    return 0.5
+
+
+def init_sentry(sentry_dsn, environment: str = "ERROR") -> None:
+    """Initialize Sentry for error tracking."""
+    sentry_sdk.init(
+        dsn=sentry_dsn,
+        environment=environment,
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for performance monitoring.
+        integrations=[
+            DjangoIntegration(
+                transaction_style="url",
+                middleware_spans=True,
+                signals_spans=True,
+                signals_denylist=[
+                    django.db.models.signals.pre_init,
+                    django.db.models.signals.post_init,
+                ],
+                cache_spans=False,
+            ),
+            LoggingIntegration(level=logging.ERROR, event_level=logging.ERROR),
+        ],
+        traces_sampler=traces_sampler,
+        enable_logs=True,
+    )
 
 
 class Common(Configuration):
@@ -52,8 +95,6 @@ class Common(Configuration):
         "drf_yasg",
         "django_celery_beat",
         "storages",
-        "django_elasticsearch_dsl",
-        "django_elasticsearch_dsl_drf",
         "django_prometheus",
         # Local apps
         "tdpservice.core.apps.CoreConfig",
@@ -65,6 +106,7 @@ class Common(Configuration):
         "tdpservice.email",
         "tdpservice.search_indexes",
         "tdpservice.parsers",
+        "tdpservice.reports",
     )
 
     # https://docs.djangoproject.com/en/2.0/topics/http/middleware/
@@ -83,7 +125,33 @@ class Common(Configuration):
         "tdpservice.middleware.NoCacheMiddleware",
         "django_prometheus.middleware.PrometheusAfterMiddleware",
     )
-    PROMETHEUS_LATENCY_BUCKETS = (.1, .2, .5, .6, .8, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.5, 9.0, 12.0, 15.0, 20.0, 30.0, float("inf"))
+
+    # OpenTelemetry Tracing Configuration
+    OTEL_ENABLED = bool(strtobool(os.getenv("OTEL_ENABLED", "no")))
+    OTEL_SERVICE_NAME = "tdp-backend"
+    OTEL_EXPORTER_OTLP_ENDPOINT = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "")
+    OTEL_PROPAGATORS = "tracecontext"
+
+    PROMETHEUS_LATENCY_BUCKETS = (
+        0.1,
+        0.2,
+        0.5,
+        0.6,
+        0.8,
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.5,
+        9.0,
+        12.0,
+        15.0,
+        20.0,
+        30.0,
+        float("inf"),
+    )
     PROMETHEUS_METRIC_NAMESPACE = ""
 
     APP_NAME = "dev"
@@ -91,16 +159,15 @@ class Common(Configuration):
     ROOT_URLCONF = "tdpservice.urls"
     SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
     WSGI_APPLICATION = "tdpservice.wsgi.application"
-    CORS_ORIGIN_ALLOW_ALL = True
 
     # Application URLs
-    BASE_URL = os.getenv('BASE_URL', 'http://localhost:8080/v1')
-    FRONTEND_BASE_URL = os.getenv('FRONTEND_BASE_URL', 'http://localhost:3000')
+    BASE_URL = os.getenv("BASE_URL", "http://localhost:8080/v1")
+    FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:3000")
 
     # Email Server
     EMAIL_BACKEND = "tdpservice.email.backend.SendgridEmailBackend"
     EMAIL_HOST_USER = "no-reply@tanfdata.acf.hhs.gov"
-    SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY', None)
+    SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY", None)
     SENDGRID_SANDBOX_MODE_IN_DEBUG = False
 
     # Whether to use localstack in place of a live AWS S3 environment
@@ -160,12 +227,13 @@ class Common(Configuration):
             "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
         },
     }
-    AWS_S3_DATAFILES_ACCESS_KEY = os.getenv('AWS_ACCESS_KEY')
-    AWS_S3_DATAFILES_SECRET_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
-    AWS_S3_DATAFILES_BUCKET_NAME = os.getenv('AWS_BUCKET')
-    AWS_S3_DATAFILES_REGION_NAME = os.getenv('AWS_REGION_NAME', 'us-gov-west-1')
-    AWS_S3_DATAFILES_ENDPOINT = \
-        f'https://s3-{AWS_S3_DATAFILES_REGION_NAME}.amazonaws.com'
+    AWS_S3_DATAFILES_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY")
+    AWS_S3_DATAFILES_SECRET_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+    AWS_S3_DATAFILES_BUCKET_NAME = os.getenv("AWS_BUCKET")
+    AWS_S3_DATAFILES_REGION_NAME = os.getenv("AWS_REGION_NAME", "us-gov-west-1")
+    AWS_S3_DATAFILES_ENDPOINT = (
+        f"https://s3-{AWS_S3_DATAFILES_REGION_NAME}.amazonaws.com"
+    )
 
     # Media files
     MEDIA_ROOT = join(os.path.dirname(BASE_DIR), "media")
@@ -207,7 +275,7 @@ class Common(Configuration):
 
     # Logging
     # set level as 'INFO' if env var is not set
-    LOGGING_LEVEL = os.getenv('LOGGING_LEVEL', 'INFO')
+    LOGGING_LEVEL = os.getenv("LOGGING_LEVEL", "INFO")
     LOGGING = {
         "version": 1,
         "disable_existing_loggers": False,
@@ -222,8 +290,10 @@ class Common(Configuration):
                 )
             },
             "simple": {"format": "%(levelname)s %(message)s"},
-            "color": {"()": "tdpservice.core.logger.ColorFormatter",
-                      "format": "%(asctime)s %(levelname)s %(filename)s::%(funcName)s:L%(lineno)d :  %(message)s"}
+            "color": {
+                "()": "tdpservice.core.logger.ColorFormatter",
+                "format": "%(asctime)s %(levelname)s %(filename)s::%(funcName)s:L%(lineno)d :  %(message)s",
+            },
         },
         "filters": {"require_debug_true": {"()": "django.utils.log.RequireDebugTrue"}},
         "handlers": {
@@ -241,41 +311,46 @@ class Common(Configuration):
                 "class": "logging.StreamHandler",
                 "formatter": "color",
             },
+            "s3": {
+                "class": "tdpservice.log_handler.S3FileHandler",
+                "filename": "/tmp/s3.log",
+                "formatter": "verbose",
+            },
             "file": {
                 "class": "logging.handlers.RotatingFileHandler",
                 "formatter": "verbose",
                 "filename": "/tmp/django.log",
-                "maxBytes": 1024*1024*10, # 10 MiB
+                "maxBytes": 1024 * 1024 * 10,  # 10 MiB
                 "backupCount": 5,
-            }
+            },
         },
         "loggers": {
             "tdpservice": {
-               "handlers": ["application", "file"],
-               "propagate": True,
-               "level": LOGGING_LEVEL
+                "handlers": ["application", "file"],
+                "propagate": True,
+                "level": LOGGING_LEVEL,
             },
             "tdpservice.parsers": {
-               "handlers": ["application", "file"],
-               "propagate": False,
-               "level": LOGGING_LEVEL
+                "handlers": ["application", "file", "s3"],
+                "propagate": False,
+                "level": LOGGING_LEVEL,
             },
             "django": {"handlers": ["console", "file"], "propagate": True},
             "django.server": {
                 "handlers": ["django.server", "file"],
                 "propagate": False,
-                "level": LOGGING_LEVEL
+                "level": LOGGING_LEVEL,
             },
             "django.request": {
                 "handlers": ["console", "file"],
                 "propagate": False,
-                "level": LOGGING_LEVEL
+                "level": LOGGING_LEVEL,
             },
             "django.db.backends": {"handlers": ["console", "file"], "level": "INFO"},
         },
     }
-    es_logger = logging.getLogger('elasticsearch')
-    es_logger.setLevel(getattr(logging, LOGGING_LEVEL))
+
+    PARSER_LOGGER = logging.getLogger("tdpservice.parsers")
 
     # Custom user app
     AUTH_USER_MODEL = "users.User"
@@ -283,8 +358,7 @@ class Common(Configuration):
     # Username or email for initial Django Super User
     # NOTE: In a deployed context this will default to the Product Owner
     DJANGO_SUPERUSER_NAME = get_required_env_var_setting(
-        'DJANGO_SU_NAME',
-        'DJANGO_SUPERUSER_NAME'
+        "DJANGO_SU_NAME", "DJANGO_SUPERUSER_NAME"
     )
 
     # Sessions
@@ -298,15 +372,16 @@ class Common(Configuration):
     # of API POST calls to prevent false negative authorization errors.
     # https://docs.djangoproject.com/en/2.2/ref/settings/#csrf-cookie-httponly
     CSRF_COOKIE_HTTPONLY = False
-    CSRF_TRUSTED_ORIGINS = ['https://*.app.cloud.gov', 'https://*.acf.hhs.gov']
-
+    CSRF_TRUSTED_ORIGINS = ["https://*.app.cloud.gov", "https://*.acf.hhs.gov"]
 
     # Django Rest Framework
-    DEFAULT_RENDERER_CLASSES = ['rest_framework.renderers.JSONRenderer']
-    TEST_REQUEST_RENDERER_CLASSES = ['rest_framework.renderers.JSONRenderer',
-                                     'rest_framework.renderers.MultiPartRenderer']
+    DEFAULT_RENDERER_CLASSES = ["rest_framework.renderers.JSONRenderer"]
+    TEST_REQUEST_RENDERER_CLASSES = [
+        "rest_framework.renderers.JSONRenderer",
+        "rest_framework.renderers.MultiPartRenderer",
+    ]
     if DEBUG:
-        DEFAULT_RENDERER_CLASSES.append('rest_framework.renderers.BrowsableAPIRenderer')
+        DEFAULT_RENDERER_CLASSES.append("rest_framework.renderers.BrowsableAPIRenderer")
 
     REST_FRAMEWORK = {
         "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
@@ -334,7 +409,12 @@ class Common(Configuration):
     TOKEN_EXPIRATION_HOURS = int(os.getenv("TOKEN_EXPIRATION_HOURS", 24))
 
     # CORS
+    CORS_ORIGIN_ALLOW_ALL = True
     CORS_ALLOW_CREDENTIALS = True
+    CORS_PREFLIGHT_MAX_AGE = 1800
+    CORS_ALLOW_HEADERS = list(default_headers) + [
+        "x-service-name",
+    ]
 
     # Capture all logging statements across the service in the root handler
     logger = logging.getLogger()
@@ -346,60 +426,36 @@ class Common(Configuration):
     ###
 
     # Flag for local testing to enable AV Scans
-    RAW_CLAMAV = os.getenv('CLAMAV_NEEDED', "True").strip("\"")
+    RAW_CLAMAV = os.getenv("CLAMAV_NEEDED", "True").strip('"')
     logger.debug("RAW_CLAMAV: " + str(RAW_CLAMAV))
     CLAMAV_NEEDED = bool(strtobool(RAW_CLAMAV))
 
     # The URL endpoint to send AV scan requests to (clamav-rest/clamav-nginx-proxy)
-    AV_SCAN_URL = os.getenv('AV_SCAN_URL')
+    AV_SCAN_URL = os.getenv("AV_SCAN_URL")
 
     # The factor used to determine how long to wait before retrying failed scans
     # NOTE: This value exponentially increases up to the maximum retries allowed
     # algo: {backoff factor} * (2 ** ({number of total retries} - 1))
-    AV_SCAN_BACKOFF_FACTOR = int(os.getenv('AV_SCAN_BACKOFF_FACTOR', 1))
+    AV_SCAN_BACKOFF_FACTOR = int(os.getenv("AV_SCAN_BACKOFF_FACTOR", 1))
 
     # The maximum number of times to retry failed virus scans
-    AV_SCAN_MAX_RETRIES = int(os.getenv('AV_SCAN_MAX_RETRIES', 5))
+    AV_SCAN_MAX_RETRIES = int(os.getenv("AV_SCAN_MAX_RETRIES", 5))
 
     # The number of seconds to wait for socket response from clamav-rest
-    AV_SCAN_TIMEOUT = int(os.getenv('AV_SCAN_TIMEOUT', 30))
+    AV_SCAN_TIMEOUT = int(os.getenv("AV_SCAN_TIMEOUT", 30))
 
-    # Elastic/Kibana
-    ELASTICSEARCH_DSL = {
-        'default': {
-            'hosts': os.getenv('ELASTIC_HOST', 'elastic:9200'),
-        },
-    }
-    ELASTICSEARCH_DSL_PARALLEL = True
-    ELASTICSEARCH_REINDEX_THREAD_COUNT = int(os.getenv('ELASTICSEARCH_REINDEX_THREAD_COUNT', 3))
-    ELASTICSEARCH_REINDEX_CHUNK_SIZE = int(os.getenv('ELASTICSEARCH_REINDEX_CHUNK_SIZE', 500))
-    ELASTICSEARCH_REINDEX_REQUEST_TIMEOUT = int(os.getenv('ELASTICSEARCH_REINDEX_REQUEST_TIMEOUT', 10))
-    ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_WARN = os.getenv('ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_WARN', '1s')
-    ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_INFO = os.getenv('ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_INFO', '500ms')
-    ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_TRACE = os.getenv('ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_TRACE', '0ms')
-    ELASTICSEARCH_LOG_SEARCH_SLOW_LEVEL = os.getenv('ELASTICSEARCH_LOG_SEARCH_SLOW_LEVEL', 'info')
-    ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_WARN = os.getenv('ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_WARN', '1s')
-    ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_INFO = os.getenv('ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_INFO', '500ms')
-    ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_TRACE = os.getenv('ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_TRACE', '0ms')
-    ELASTICSEARCH_LOG_INDEX_SLOW_LEVEL = os.getenv('ELASTICSEARCH_LOG_SEARCH_SLOW_LEVEL', 'info')
-    KIBANA_BASE_URL = os.getenv('KIBANA_BASE_URL', 'http://kibana:5601')
-    ELASTIC_INDEX_PREFIX = APP_NAME + '_'
-    es_logger = logging.getLogger('elasticsearch')
-    es_logger.setLevel(logging.WARNING)
+    s3_src = "s3-fips.us-gov-west-1.amazonaws.com"
 
-    s3_src = "s3-us-gov-west-1.amazonaws.com"
-
-    CSP_DEFAULT_SRC = ("'none'")
-    CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", s3_src, KIBANA_BASE_URL)
+    CSP_DEFAULT_SRC = "'none'"
+    CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", s3_src)
     CSP_IMG_SRC = ("'self'", "data:", s3_src)
     CSP_FONT_SRC = ("'self'", s3_src)
     CSP_CONNECT_SRC = ("'self'", "*.cloud.gov")
-    CSP_MANIFEST_SRC = ("'self'")
-    CSP_OBJECT_SRC = ("'none'")
-    CSP_FRAME_ANCESTORS = ("'none'")
-    CSP_FORM_ACTION = ("'self'")
-    CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", s3_src, KIBANA_BASE_URL)
-
+    CSP_MANIFEST_SRC = "'self'"
+    CSP_OBJECT_SRC = "'none'"
+    CSP_FRAME_ANCESTORS = "'none'"
+    CSP_FORM_ACTION = "'self'"
+    CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", s3_src)
 
     ####################################
     # Authentication Provider Settings #
@@ -407,160 +463,191 @@ class Common(Configuration):
 
     # Login.gov #
     LOGIN_GOV_ACR_VALUES = os.getenv(
-        'ACR_VALUES',
-        'http://idmanagement.gov/ns/assurance/ial/1'
+        "ACR_VALUES", "http://idmanagement.gov/ns/assurance/ial/1"
     )
     LOGIN_GOV_AUTHORIZATION_ENDPOINT = os.getenv(
-        'OIDC_OP_AUTHORIZATION_ENDPOINT',
-        'https://idp.int.identitysandbox.gov/openid_connect/authorize'
+        "OIDC_OP_AUTHORIZATION_ENDPOINT",
+        "https://idp.int.identitysandbox.gov/openid_connect/authorize",
     )
     LOGIN_GOV_CLIENT_ASSERTION_TYPE = os.getenv(
-        'CLIENT_ASSERTION_TYPE',
-        'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+        "CLIENT_ASSERTION_TYPE",
+        "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
     )
     LOGIN_GOV_CLIENT_ID = os.getenv(
-        'OIDC_RP_CLIENT_ID',
-        'urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-dev'
+        "OIDC_RP_CLIENT_ID",
+        "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-dev",
     )
     LOGIN_GOV_ISSUER = os.getenv(
-        'OIDC_OP_ISSUER',
-        'https://idp.int.identitysandbox.gov/'
+        "OIDC_OP_ISSUER", "https://idp.int.identitysandbox.gov/"
     )
     LOGIN_GOV_JWKS_ENDPOINT = os.getenv(
-        'OIDC_OP_JWKS_ENDPOINT',
-        'https://idp.int.identitysandbox.gov/api/openid_connect/certs'
+        "OIDC_OP_JWKS_ENDPOINT",
+        "https://idp.int.identitysandbox.gov/api/openid_connect/certs",
     )
     # JWT_KEY must be set, there is no functional default.
-    LOGIN_GOV_JWT_KEY = get_required_env_var_setting(
-        'JWT_KEY',
-        'LOGIN_GOV_JWT_KEY'
-    )
+    LOGIN_GOV_JWT_KEY = get_required_env_var_setting("JWT_KEY", "LOGIN_GOV_JWT_KEY")
     LOGIN_GOV_LOGOUT_ENDPOINT = os.getenv(
-        'OIDC_OP_LOGOUT_ENDPOINT',
-        'https://idp.int.identitysandbox.gov/openid_connect/logout'
+        "OIDC_OP_LOGOUT_ENDPOINT",
+        "https://idp.int.identitysandbox.gov/openid_connect/logout",
     )
     LOGIN_GOV_TOKEN_ENDPOINT = os.getenv(
-        'OIDC_OP_TOKEN_ENDPOINT',
-        'https://idp.int.identitysandbox.gov/api/openid_connect/token'
+        "OIDC_OP_TOKEN_ENDPOINT",
+        "https://idp.int.identitysandbox.gov/api/openid_connect/token",
     )
 
     ENABLE_DEVELOPER_GROUP = True
 
     # AMS OpenID #
     AMS_CONFIGURATION_ENDPOINT = os.getenv(
-        'AMS_CONFIGURATION_ENDPOINT',
-        'https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/.well-known/openid-configuration'
+        "AMS_CONFIGURATION_ENDPOINT",
+        "https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/.well-known/openid-configuration",
     )
 
     # The CLIENT_ID and SECRET must be set for the AMS authentication flow to work.
     # In dev and testing environments, these can be dummy values.
-    AMS_CLIENT_ID = os.getenv(
-        'AMS_CLIENT_ID',
-        ''
-    )
+    AMS_CLIENT_ID = os.getenv("AMS_CLIENT_ID", "")
 
-    AMS_CLIENT_SECRET = os.getenv(
-        'AMS_CLIENT_SECRET',
-        ''
-    )
+    AMS_CLIENT_SECRET = os.getenv("AMS_CLIENT_SECRET", "")
 
     # -------- CELERY CONFIG
-    REDIS_URI = os.getenv(
-        'REDIS_URI',
-        'redis://redis-server:6379'
-    )
+    REDIS_URI = os.getenv("REDIS_URI", "redis://redis-server:6379")
     logger.debug("REDIS_URI: " + REDIS_URI)
 
     CELERY_BROKER_URL = REDIS_URI
     CELERY_RESULT_BACKEND = REDIS_URI
-    CELERY_ACCEPT_CONTENT = ['application/json']
-    CELERY_TASK_SERIALIZER = 'json'
-    CELERY_RESULT_SERIALIZER = 'json'
-    CELERY_TIMEZONE = 'UTC'
-    CELERYD_SEND_EVENTS=True
+    CELERY_ACCEPT_CONTENT = ["application/json"]
+    CELERY_TASK_SERIALIZER = "json"
+    CELERY_RESULT_SERIALIZER = "json"
+    CELERY_TIMEZONE = "UTC"
+    CELERYD_SEND_EVENTS = True
 
     CELERY_BEAT_SCHEDULE = {
-        'Database Backup': {
-            'task': 'tdpservice.scheduling.tasks.postgres_backup',
-            'schedule': crontab(minute='0', hour='4'), # Runs at midnight EST
-            'args': "-b",
-            'options': {
-                'expires': 15.0,
+        "Database Backup": {
+            "task": "tdpservice.scheduling.tasks.postgres_backup",
+            "schedule": crontab(minute="0", hour="4"),  # Runs at midnight EST
+            "args": "-b",
+        },
+        "Account Deactivation Warning": {
+            "task": "tdpservice.email.tasks.check_for_accounts_needing_deactivation_warning",
+            "schedule": crontab(
+                day_of_week="*", hour="13", minute="0"
+            ),  # Every day at 1pm UTC (9am EST)
+            "options": {
+                "expires": 15.0,
             },
         },
-        'Account Deactivation Warning': {
-            'task': 'tdpservice.email.tasks.check_for_accounts_needing_deactivation_warning',
-            'schedule': crontab(day_of_week='*', hour='13', minute='0'), # Every day at 1pm UTC (9am EST)
-
-            'options': {
-                'expires': 15.0,
+        "Deactivate Users": {
+            "task": "tdpservice.email.tasks.deactivate_users",
+            "schedule": crontab(
+                day_of_week="*", hour="13", minute="0"
+            ),  # Every day at 1pm UTC (9am EST)
+            "options": {
+                "expires": 15.0,
             },
         },
-        'Deactivate Users': {
-            'task': 'tdpservice.email.tasks.deactivate_users',
-            'schedule': crontab(day_of_week='*', hour='13', minute='0'), # Every day at 1pm UTC (9am EST)
-            'options': {
-                'expires': 15.0,
-            },
+        "Email Admin Number of Access Requests": {
+            "task": "tdpservice.email.tasks.email_admin_num_access_requests",
+            "schedule": crontab(
+                minute="0",
+                hour="1",
+                day_of_week="*",
+                day_of_month="*",
+                month_of_year="*",
+            ),  # Every day at 1am UTC (9pm EST)
         },
-        'Email Admin Number of Access Requests' : {
-            'task': 'tdpservice.email.tasks.email_admin_num_access_requests',
-            'schedule': crontab(minute='0', hour='1', day_of_week='*', day_of_month='*', month_of_year='*'), # Every day at 1am UTC (9pm EST)
+        "Email Admin Number of Stuck Files": {
+            "task": "tdpservice.data_files.tasks.notify_stuck_files",
+            "schedule": crontab(
+                minute="0",
+                hour="1",
+                day_of_week="*",
+                day_of_month="*",
+                month_of_year="*",
+            ),  # Every day at 1am UTC (9pm EST)
         },
-        'Email Admin Number of Stuck Files' : {
-            'task': 'tdpservice.data_files.tasks.notify_stuck_files',
-            'schedule': crontab(minute='0', hour='1', day_of_week='*', day_of_month='*', month_of_year='*'), # Every day at 1am UTC (9pm EST)
-        },
-        'Email Data Analyst Q1 Upcoming Submission Deadline Reminder': {
-            'task': 'tdpservice.email.tasks.send_data_submission_reminder',
+        "Email Data Analyst Q1 Upcoming Submission Deadline Reminder": {
+            "task": "tdpservice.email.tasks.send_data_submission_reminder",
             # Feb 9 at 1pm UTC (9am EST)
-            'schedule': crontab(month_of_year='2', day_of_month='9', hour='13', minute='0'),
-            # 'schedule': crontab(minute='*/3'),
-            'kwargs': {
-                'due_date': 'February 14th',
-                'reporting_period': 'Oct - Dec',
-                'fiscal_quarter': 'Q1',
-            }
+            "schedule": crontab(
+                month_of_year="2", day_of_month="9", hour="13", minute="0"
+            ),
+            "kwargs": {
+                "due_date": "February 14th",
+                "reporting_period": "Oct - Dec",
+                "fiscal_quarter": "Q1",
+            },
         },
-        'Email Data Analyst Q2 Upcoming Submission Deadline Reminder': {
-            'task': 'tdpservice.email.tasks.send_data_submission_reminder',
+        "Email Data Analyst Q2 Upcoming Submission Deadline Reminder": {
+            "task": "tdpservice.email.tasks.send_data_submission_reminder",
             # May 10 at 1pm UTC (9am EST)
-            'schedule': crontab(month_of_year='5', day_of_month='10', hour='13', minute='0'),
-            # 'schedule': crontab(minute='*/3'),
-            'kwargs': {
-                'due_date': 'May 15th',
-                'reporting_period': 'Jan - Mar',
-                'fiscal_quarter': 'Q2',
-            }
+            "schedule": crontab(
+                month_of_year="5", day_of_month="10", hour="13", minute="0"
+            ),
+            "kwargs": {
+                "due_date": "May 15th",
+                "reporting_period": "Jan - Mar",
+                "fiscal_quarter": "Q2",
+            },
         },
-        'Email Data Analyst Q3 Upcoming Submission Deadline Reminder': {
-            'task': 'tdpservice.email.tasks.send_data_submission_reminder',
+        "Email Data Analyst Q3 Upcoming Submission Deadline Reminder": {
+            "task": "tdpservice.email.tasks.send_data_submission_reminder",
             # Aug 9 at 1pm UTC (9am EST)
-            'schedule': crontab(month_of_year='8', day_of_month='9', hour='13', minute='0'),
-            # 'schedule': crontab(minute='*/3'),
-            'kwargs': {
-                'due_date': 'August 14th',
-                'reporting_period': 'Apr - Jun',
-                'fiscal_quarter': 'Q3',
-            }
+            "schedule": crontab(
+                month_of_year="8", day_of_month="9", hour="13", minute="0"
+            ),
+            "kwargs": {
+                "due_date": "August 14th",
+                "reporting_period": "Apr - Jun",
+                "fiscal_quarter": "Q3",
+            },
         },
-        'Email Data Analyst Q4 Upcoming Submission Deadline Reminder': {
-            'task': 'tdpservice.email.tasks.send_data_submission_reminder',
+        "Email Data Analyst Q4 Upcoming Submission Deadline Reminder": {
+            "task": "tdpservice.email.tasks.send_data_submission_reminder",
             # Nov 9 at 1pm UTC (9am EST)
-            'schedule': crontab(month_of_year='11', day_of_month='9', hour='13', minute='0'),
-            # 'schedule': crontab(minute='*/3'),
-            'kwargs': {
-                'due_date': 'November 14th',
-                'reporting_period': 'Jul - Sep',
-                'fiscal_quarter': 'Q4',
-            }
+            "schedule": crontab(
+                month_of_year="11", day_of_month="9", hour="13", minute="0"
+            ),
+            "kwargs": {
+                "due_date": "November 14th",
+                "reporting_period": "Jul - Sep",
+                "fiscal_quarter": "Q4",
+            },
         },
     }
 
-    CYPRESS_TOKEN = os.getenv('CYPRESS_TOKEN', None)
+    CYPRESS_TOKEN = os.getenv("CYPRESS_TOKEN", None)
+    FIXTURE_DIRS = [os.path.join(BASE_DIR, "fixtures")]
 
     GENERATE_TRAILER_ERRORS = os.getenv("GENERATE_TRAILER_ERRORS", False)
-    IGNORE_DUPLICATE_ERROR_PRECEDENCE = os.getenv("IGNORE_DUPLICATE_ERROR_PRECEDENCE", False)
+    IGNORE_DUPLICATE_ERROR_PRECEDENCE = os.getenv(
+        "IGNORE_DUPLICATE_ERROR_PRECEDENCE", False
+    )
     BULK_CREATE_BATCH_SIZE = os.getenv("BULK_CREATE_BATCH_SIZE", 10000)
     MEDIAN_LINE_PARSE_TIME = os.getenv("MEDIAN_LINE_PARSE_TIME", 0.0005574226379394531)
     BYPASS_OFA_AUTH = os.getenv("BYPASS_OFA_AUTH", False)
+
+    CELERY_WORKER_SEND_TASK_EVENTS = True
+    CELERY_TASK_SEND_SENT_EVENT = True
+
+    FRA_PILOT_STATES = json.loads(os.getenv("FRA_PILOT_STATES", "[]"))
+
+    # Cloud.gov SET integration settings
+    LOGIN_GOV_SET_AUDIENCE = os.getenv(
+        "LOGIN_GOV_SET_AUDIENCE",
+        "https://tdp-frontend-raft.apps.cloud.gov/v1/security/event-token/",
+    )
+    LOGIN_GOV_WELL_KNOWN_CONFIG = os.getenv(
+        "LOGIN_GOV_WELL_KNOWN_CONFIG",
+        "https://idp.int.identitysandbox.gov/.well-known/openid-configuration",
+    )
+
+    # Sentry config
+    SENTRY_DSN = os.getenv("SENTRY_DSN", None)
+    SENTRY_ENVIRONMENT = os.getenv("CGAPPNAME_BACKEND", "ERROR")
+
+    if SENTRY_DSN:
+        init_sentry(sentry_dsn=SENTRY_DSN, environment=SENTRY_ENVIRONMENT)
+
+    # Per Lauren and Yun, 1 family (case) is expected to have a maximum of 6 adults and a maximum of 10 children plus
+    # one T1 record. Thus, if a case has more than 17 records, it has an error and will not be serialized.
+    MAX_NUMBER_RECORDS_PER_CASE = os.getenv("MAX_NUMBER_RECORDS_PER_CASE", 17)

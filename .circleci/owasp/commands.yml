@@ -20,17 +20,6 @@
           name: Execute OWASP ZAP vulnerability scan
           #wait up to 60min for scan
           no_output_timeout: 60m
-          command: ./scripts/zap-scanner.sh <<parameters.target>> <<parameters.environment>> <<parameters.target_env>>
+          command: ./scripts/zap-scanner.sh <<parameters.target>> <<parameters.environment>> <<parameters.target_env>> $REGISTRY_OWNER
       - store_artifacts:
           path: tdrs-<<parameters.target>>/reports/owasp_report.html
-
-  docker-compose-up-frontend:
-    steps:
-      - run:
-          name: Build and spin-up React application
-          command: |
-            cd tdrs-frontend 
-            if [ $(docker network inspect external-net 2>&1 | grep -c Scope) == 0 ]; then 
-            docker network create external-net
-            fi
-            docker-compose up -d --build

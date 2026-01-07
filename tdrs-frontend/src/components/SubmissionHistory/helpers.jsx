@@ -7,7 +7,7 @@ import {
   faXmarkCircle,
   faClock,
 } from '@fortawesome/free-solid-svg-icons'
-import { getAvailableFileList, download } from '../../actions/reports'
+import { download } from '../../actions/reports'
 import { getParseErrors } from '../../actions/createXLSReport'
 
 export const formatDate = (dateStr) => new Date(dateStr).toLocaleString()
@@ -17,7 +17,7 @@ export const downloadErrorReport = async (file, reportName) => {
     const promise = axios.get(
       `${process.env.REACT_APP_BACKEND_URL}/data_files/${file.id}/download_error_report/`,
       {
-        responseType: 'json',
+        responseType: 'blob',
       }
     )
     const dataPromise = await promise.then((response) => response.data)
@@ -34,13 +34,26 @@ export const hasReparsed = (f) =>
 export const getReprocessedDate = (f) =>
   f?.latest_reparse_file_meta?.finished_at
 
+const PROGRAM_TYPE_LABELS = {
+  TAN: 'TANF',
+  SSP: 'SSP',
+  TRIBAL: 'Tribal',
+  FRA: 'FRA',
+}
+
+export const formatProgramType = (programType) =>
+  PROGRAM_TYPE_LABELS[programType] || ''
+
 export const getErrorReportStatus = (file) => {
   if (
     file.summary &&
     file.summary.status &&
-    file.summary.status !== 'Pending'
+    file.summary.status !== 'Pending' &&
+    file.summary.status !== 'TimedOut'
   ) {
-    const errorFileName = `${file.year}-${file.quarter}-${file.section}`
+    const programTypeLabel = formatProgramType(file.program_type)
+    const programPrefix = programTypeLabel ? `${programTypeLabel} ` : ''
+    const errorFileName = `${file.year}-${file.quarter}-${programPrefix}${file.section} Error Report`
     if (file.hasError) {
       return (
         <button
@@ -89,4 +102,22 @@ export const SubmissionSummaryStatusIcon = ({ status }) => {
   return (
     <FontAwesomeIcon className="margin-right-1" icon={icon} color={color} />
   )
+}
+
+export const fileStatusOrDefault = (file) => {
+  if (!file || !file.summary || !file.summary.status) {
+    return 'Pending'
+  }
+
+  return file.summary.status
+}
+
+export const getSummaryStatusLabel = (file) => {
+  const status = fileStatusOrDefault(file)
+
+  if (status === 'TimedOut') {
+    return 'Still processing. Check back soon.'
+  }
+
+  return status
 }

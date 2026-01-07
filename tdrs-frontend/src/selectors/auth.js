@@ -2,6 +2,9 @@ const valueIsEmpty = (val) => val === null || val === undefined || val === ''
 
 export const selectUser = (state) => state.auth.user || null
 
+export const selectFeatureFlags = (state) =>
+  selectUser(state)?.feature_flags || {}
+
 // could memoize these with `createSelector` from `reselect`
 export const selectUserAccountApprovalStatus = (state) =>
   selectUser(state)?.['account_approval_status']
@@ -18,10 +21,14 @@ export const selectPrimaryUserRole = (state) => {
 
 export const selectUserPermissions = (state) => {
   const roles = selectUserRoles(state)
+  const userLevelPermissions = selectUser(state)?.permissions || []
+
   let permissions = []
   roles.forEach((role) => {
     permissions = [...permissions, ...role['permissions']]
   })
+  permissions = [...permissions, ...userLevelPermissions]
+
   return permissions.map((p) => p.codename)
 }
 
@@ -54,6 +61,9 @@ export const accountIsMissingAccessRequest = (state) =>
   accountStatusIsInitial(state) ||
   accountStatusIsDenied(state)
 
+export const accountHasPendingProfileChange = (state) =>
+  (selectUser(state)?.pending_requests ?? 0) > 0
+
 export const accountCanViewAdmin = (state) =>
   accountStatusIsApproved(state) &&
   [
@@ -65,14 +75,25 @@ export const accountCanViewAdmin = (state) =>
     'System Owner',
   ].includes(selectPrimaryUserRole(state)?.name)
 
-export const accountCanViewKibana = (state) =>
+export const accountCanViewGrafana = (state) =>
   accountStatusIsApproved(state) &&
-  (selectUser(state)?.email?.includes('@acf.hhs.gov') ||
-    process.env.REACT_APP_BYPASS_OFA_AUTH) &&
-  ['OFA System Admin', 'DIGIT Team'].includes(
+  ['OFA System Admin', 'Developer', 'DIGIT Team'].includes(
     selectPrimaryUserRole(state)?.name
   )
 
-export const accountCanViewPlg = (state) =>
+export const accountCanViewAlerts = (state) =>
   accountStatusIsApproved(state) &&
   ['OFA System Admin', 'Developer'].includes(selectPrimaryUserRole(state)?.name)
+
+export const accountIsRegionalStaff = (state) =>
+  accountStatusIsApproved(state) &&
+  selectPrimaryUserRole(state)?.name === 'OFA Regional Staff'
+
+export const accountCanSelectStt = (state) =>
+  accountStatusIsApproved(state) &&
+  [
+    'OFA System Admin',
+    'OFA Admin',
+    'DIGIT Team',
+    'OFA Regional Staff',
+  ].includes(selectPrimaryUserRole(state)?.name)

@@ -3,8 +3,8 @@
     working_directory: ~/tdp-apps
     steps:
       - checkout
+      - docker-set-registry-owner
       - docker-compose-check
-      - docker-login
       - docker-compose-up-backend
       - docker-compose-up-frontend
       - run:
@@ -26,8 +26,8 @@
     working_directory: ~/tdp-apps
     steps:
       - checkout
+      - docker-set-registry-owner
       - docker-compose-check
-      - docker-login
       - docker-compose-up-backend
       - docker-compose-up-frontend
       - run:
@@ -67,8 +67,8 @@
       - checkout
       - sudo-check
       - cf-check
+      - docker-set-registry-owner
       - docker-compose-check
-      - docker-login
       - login-cloud-dot-gov:
           cf-password: <<parameters.cf_password>>
           cf-space: <<parameters.cf_space>>

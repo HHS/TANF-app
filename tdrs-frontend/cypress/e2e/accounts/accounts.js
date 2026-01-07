@@ -1,95 +1,97 @@
 /* eslint-disable no-undef */
 import { When, Then } from '@badeball/cypress-cucumber-preprocessor'
+import { ACTORS } from '../common-steps/common-steps'
 
-Then('{string} sees a Request Access form', (username) => {
-  cy.contains('Welcome').should('exist')
-  cy.get('button').contains('Request Access').should('exist')
-})
+const loginGovRequestAccessFlow = (
+  firstName,
+  lastName,
+  stt = null,
+  fra = false
+) => {
+  cy.intercept('/v1/stts/alpha').as('getSttSearchList')
+  cy.visit('/')
 
-Then('{string} can see the hompage', (username) => {
-  cy.visit('/home')
-  cy.wait(2000).then(() => {
-    cy.contains('You have been approved for access to TDP.').should('exist')
-  })
-})
+  cy.get('#firstName').type(firstName)
+  cy.get('#lastName').type(lastName)
 
-When('{string} is in begin state', (username) => {
-  cy.get('@cypressUser').then((cypressUser) => {
-    let body = {
-      username: username,
-      first_name: '',
-      last_name: '',
-      email: username,
-      stt: '',
-      regions: [],
-      'region_metas-TOTAL_FORMS': 0,
-      'region_metas-INITIAL_FORMS': 0,
-      'region_metas-MIN_NUM_FORMS': 0,
-      'region_metas-MAX_NUM_FORMS': 0,
-      account_approval_status: 'Initial',
-      access_requested_date_0: '0001-01-01',
-      access_requested_date_1: '00:00:00',
-      _save: 'Save',
-    }
+  if (stt) {
+    cy.wait('@getSttSearchList', { timeout: 30000 }).then(() => {
+      cy.get('#stt').type(`${stt}{enter}`)
+    })
+  }
 
-    cy.adminApiRequest(
-      'POST',
-      `/users/user/${cypressUser.selector.id}/change/`,
-      body
-    )
-  })
-})
-
-When('{string} is in approved state', (username) => {
-  cy.get('@cypressUser').then((cypressUser) => {
-    let body = {
-      username: username,
-      first_name: '',
-      last_name: '',
-      email: username,
-      stt: '6',
-      regions: [],
-      'region_metas-TOTAL_FORMS': 0,
-      'region_metas-INITIAL_FORMS': 0,
-      'region_metas-MIN_NUM_FORMS': 0,
-      'region_metas-MAX_NUM_FORMS': 0,
-      groups: '2',
-      account_approval_status: 'Approved',
-      access_requested_date_0: '0001-01-01',
-      access_requested_date_1: '00:00:00',
-      _save: 'Save',
-    }
-    cy.adminApiRequest(
-      'POST',
-      `/users/user/${cypressUser.selector.id}/change/`,
-      body
-    )
-  })
-})
-
-When('{string} requests access', (username) => {
-  cy.get('#firstName').type('cypress')
-  cy.get('#lastName').type('cypress')
-
-  cy.wait('@getSttSearchList').then(() => {
-    cy.get('#stt').type('Colorado{enter}')
-  })
+  if (fra) {
+    cy.get('label[for="fra-yes"]').click()
+  } else {
+    cy.get('label[for="fra-no"]').click()
+  }
 
   cy.get('button').contains('Request Access').should('exist').click()
-  cy.wait(4000).then(() => {
-    cy.contains('Request Submitted').should('exist')
-  })
-})
+  cy.contains('Request Submitted', { timeout: 10000 }).should('exist')
+}
 
-Then('{string} sees request page again', (username) => {
+const amsRequestAccessFlow = (
+  firstName,
+  lastName,
+  regionNames = null,
+  isRegional = false
+) => {
+  // cy.intercept('/v1/stts/alpha').as('getSttSearchList') # not needed... include anyway for future steps?
+  cy.visit('/')
+  cy.get('#firstName').type(firstName)
+  cy.get('#lastName').type(lastName)
+
+  if (isRegional) {
+    cy.get('label[for="regional"]').click()
+
+    const regions = Cypress._.split(regionNames, ',').map((i) => i.trim())
+    Cypress._.forEach(regions, (region) =>
+      cy.get(`label[for="${region}"]`).should('exist').click()
+    )
+  }
+}
+
+const verifyHomePageAccess = () => {
   cy.visit('/home')
+  cy.contains('You have been approved for access to TDP.', {
+    timeout: 10000,
+  }).should('exist')
+}
+
+const verifyPageAccess = (page) => {
+  const navItem = cy.get('a.usa-nav__link').contains(page)
+  navItem.should('exist')
+
+  const dontClick = ['Admin', 'Grafana', 'Alerts']
+  if (!Cypress._.includes(dontClick, page)) {
+    navItem.click()
+    cy.get('h1', { timeout: 10000 }).contains(page).should('exist')
+  }
+}
+
+When('{string} requests access', (actorName) => {
+  const actor = ACTORS[actorName]
+  const amsRoles = ['System Admin', 'DIGIT Team', 'ACF OCIO']
+  const regionalRoles = ['OFA Regional Staff']
+
+  if (Cypress._.includes(amsRoles, actor.role)) {
+    amsRequestAccessFlow(actorName, 'Cypress', null, false)
+  } else if (Cypress._.includes(regionalRoles, actor.role)) {
+    amsRequestAccessFlow(actorName, 'Cypress', 'Dallas,Chicago', true)
+  } else {
+    const hasFra = Cypress._.get(actor, 'hasFra', false)
+    loginGovRequestAccessFlow(actorName, 'Cypress', 'Arkansas', hasFra)
+  }
 })
 
-Then('{string} cannot log in', (username) => {
-  cy.visit('/')
-  cy.contains('Inactive Account').should('exist')
+Then('Admin Alex gets an email', () => {})
+
+Then('{string} can access {string}', (name, pageStr) => {
+  verifyHomePageAccess()
+  const pages = Cypress._.split(pageStr, ',').map((i) => i.trim())
+  console.log(pageStr)
+  console.log(pages)
+  Cypress._.forEach(pages, (page) => verifyPageAccess(page))
 })
-Then('{string} sees the request still submitted', (username) => {
-  cy.visit('/')
-  cy.contains('Request Submitted').should('exist')
-})
+
+Then('{string} gets an approval email', (name) => {})

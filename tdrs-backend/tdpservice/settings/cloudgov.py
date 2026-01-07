@@ -1,29 +1,52 @@
 """Define settings classes available for environments deployed in Cloud.gov."""
 
 import json
+import logging
 import os
-from requests_aws4auth import AWS4Auth
-from elasticsearch import RequestsHttpConnection
+from distutils.util import strtobool
 
 from tdpservice.settings.common import Common
-import logging
 
 logger = logging.getLogger(__name__)
 
+
 def get_json_env_var(variable_name):
     """Retrieve and serialize a JSON environment variable."""
-    return json.loads(
-        os.getenv(variable_name, '{}')
-    )
+    return json.loads(os.getenv(variable_name, "{}"))
 
 
 def get_cloudgov_service_creds_by_instance_name(services, instance_name):
     """Retrieve credentials for a bound Cloud.gov service by instance name."""
     return next(
-        (service.get('credentials', {}) for service in services
-         if service.get('instance_name') == instance_name),
-        {}
+        (
+            service.get("credentials", {})
+            for service in services
+            if service.get("instance_name") == instance_name
+        ),
+        {},
     )
+
+
+def get_cloudgov_broker_db_numbers(cloudgov_name):
+    """
+    Get the appropriate redis broker db numbers for an environment.
+
+    Returns a tuple of (broker_db_number, results_db_number)
+    """
+    match cloudgov_name:
+        case "raft":
+            return ("0", "1")
+        case "qasp":
+            return ("2", "3")
+        case "a11y":
+            return ("4", "5")
+        case "develop":
+            return ("0", "1")
+        case "staging":
+            return ("2", "3")
+        case "prod":
+            return ("0", "1")
+    return ("0", "1")
 
 
 class CloudGov(Common):
@@ -36,60 +59,58 @@ class CloudGov(Common):
 
     # Cloud.gov exposes variables for the application and bound services via
     # VCAP_APPLICATION and VCAP_SERVICES environment variables, respectively.
-    cloudgov_app = get_json_env_var('VCAP_APPLICATION')
-    APP_NAME = cloudgov_app.get('application_name')
+    cloudgov_app = get_json_env_var("VCAP_APPLICATION")
+    APP_NAME = os.getenv("CGAPPNAME_BACKEND", "{}")
 
-    cloudgov_services = get_json_env_var('VCAP_SERVICES')
+    cloudgov_services = get_json_env_var("VCAP_SERVICES")
 
-    cloudgov_space = cloudgov_app.get('space_name', 'tanf-dev')
-    cloudgov_space_suffix = cloudgov_space.strip('tanf-')
-    cloudgov_name = cloudgov_app.get('name').split("-")[-1]  # converting "tdp-backend-name" to just "name"
+    cloudgov_space = cloudgov_app.get("space_name", "tanf-dev")
+    cloudgov_space_suffix = cloudgov_space.strip("tanf-")
+    cloudgov_name = cloudgov_app.get("name").split("-")[
+        -1
+    ]  # converting "tdp-backend-name" to just "name"
     # TODO: does this break prod?
     services_basename = cloudgov_space_suffix
 
     database_creds = get_cloudgov_service_creds_by_instance_name(
-        cloudgov_services['aws-rds'],
-        f'tdp-db-{services_basename}'
+        cloudgov_services["aws-rds"], f"tdp-db-{services_basename}"
     )
     s3_datafiles_creds = get_cloudgov_service_creds_by_instance_name(
-        cloudgov_services['s3'],
-        f'tdp-datafiles-{services_basename}'
+        cloudgov_services["s3"], f"tdp-datafiles-{services_basename}"
     )
     s3_staticfiles_creds = get_cloudgov_service_creds_by_instance_name(
-        cloudgov_services['s3'],
-        f'tdp-staticfiles-{services_basename}'
+        cloudgov_services["s3"], f"tdp-staticfiles-{services_basename}"
     )
 
     ############################################################################
 
-    INSTALLED_APPS = (*Common.INSTALLED_APPS, 'gunicorn')
+    INSTALLED_APPS = (*Common.INSTALLED_APPS, "gunicorn")
 
     ###
     # Dynamic Database configuration based on cloud.gov services
     #
-    env_based_db_name = f'tdp_db_{cloudgov_name}'
+    env_based_db_name = f"tdp_db_{cloudgov_name}"
 
     logger.debug("css: " + cloudgov_space_suffix)
-    if (cloudgov_space_suffix == "prod"):
-        db_name = database_creds['db_name']
+    if cloudgov_space_suffix == "prod":
+        db_name = database_creds["db_name"]
     else:
         db_name = env_based_db_name
 
     DATABASES = {
-        'default': {
-            'ENGINE': 'django_prometheus.db.backends.postgresql',
-            'NAME': db_name,
-            'USER': database_creds['username'],
-            'PASSWORD': database_creds['password'],
-            'HOST': database_creds['host'],
-            'PORT': database_creds['port']
+        "default": {
+            "ENGINE": "django_prometheus.db.backends.postgresql",
+            "NAME": db_name,
+            "USER": database_creds["username"],
+            "PASSWORD": database_creds["password"],
+            "HOST": database_creds["host"],
+            "PORT": database_creds["port"],
         }
     }
 
     # Username or email for initial Django Super User
     DJANGO_SUPERUSER_NAME = os.getenv(
-        'DJANGO_SU_NAME',
-        'alexandra.pennington@acf.hhs.gov'
+        "DJANGO_SU_NAME", "alexandra.pennington@acf.hhs.gov"
     )
 
     # Localstack is always disabled in a cloud.gov environment
@@ -106,81 +127,88 @@ class CloudGov(Common):
             "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
         },
     }
-    AWS_S3_DATAFILES_ACCESS_KEY = s3_datafiles_creds['access_key_id']
-    AWS_S3_DATAFILES_SECRET_KEY = s3_datafiles_creds['secret_access_key']
-    AWS_S3_DATAFILES_BUCKET_NAME = s3_datafiles_creds['bucket']
+    AWS_S3_DATAFILES_ACCESS_KEY = s3_datafiles_creds["access_key_id"]
+    AWS_S3_DATAFILES_SECRET_KEY = s3_datafiles_creds["secret_access_key"]
+    AWS_S3_DATAFILES_BUCKET_NAME = s3_datafiles_creds["bucket"]
     AWS_S3_DATAFILES_ENDPOINT = f'https://{s3_datafiles_creds["endpoint"]}'
-    AWS_S3_DATAFILES_REGION_NAME = s3_datafiles_creds['region']
+    AWS_S3_DATAFILES_REGION_NAME = s3_datafiles_creds["region"]
 
     ###
     # Store files generated by collectstatic for the admin site in designated S3
     #
-    STATICFILES_STORAGE = 'tdpservice.backends.StaticFilesS3Storage'
-    AWS_S3_STATICFILES_ACCESS_KEY = s3_staticfiles_creds['access_key_id']
-    AWS_S3_STATICFILES_SECRET_KEY = s3_staticfiles_creds['secret_access_key']
-    AWS_S3_STATICFILES_BUCKET_NAME = s3_staticfiles_creds['bucket']
+    STATICFILES_STORAGE = "tdpservice.backends.StaticFilesS3Storage"
+    AWS_S3_STATICFILES_ACCESS_KEY = s3_staticfiles_creds["access_key_id"]
+    AWS_S3_STATICFILES_SECRET_KEY = s3_staticfiles_creds["secret_access_key"]
+    AWS_S3_STATICFILES_BUCKET_NAME = s3_staticfiles_creds["bucket"]
     AWS_S3_STATICFILES_ENDPOINT = f'https://{s3_staticfiles_creds["endpoint"]}'
-    AWS_S3_STATICFILES_REGION_NAME = s3_staticfiles_creds['region']
+    AWS_S3_STATICFILES_REGION_NAME = s3_staticfiles_creds["region"]
 
-    MEDIA_URL = \
-        f'{AWS_S3_STATICFILES_ENDPOINT}/{AWS_S3_STATICFILES_BUCKET_NAME}/{APP_NAME}/'
-
-    # https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/http-caching#cache-control
-    # Response can be cached by browser and any intermediary caches
-    # (i.e. it is "public") for up to 1 day
-    # 86400 = (60 seconds x 60 minutes x 24 hours)
-    # TODO: Determine if this is still necessary
-    AWS_HEADERS = {
-        "Cache-Control": "max-age=86400, s-maxage=86400, must-revalidate",
-    }
-    # The following variables are used to configure the Django Elasticsearch
-    es_access_key = cloudgov_services['aws-elasticsearch'][0]['credentials']['access_key']
-    es_secret_key = cloudgov_services['aws-elasticsearch'][0]['credentials']['secret_key']
-    es_host = cloudgov_services['aws-elasticsearch'][0]['credentials']['uri']
-
-    awsauth = AWS4Auth(
-        es_access_key,
-        es_secret_key,
-        'us-gov-west-1',
-        'es'
+    MEDIA_URL = (
+        f"{AWS_S3_STATICFILES_ENDPOINT}/{AWS_S3_STATICFILES_BUCKET_NAME}/{APP_NAME}/"
     )
 
-    # Elastic
-    ELASTICSEARCH_DSL = {
-        'default': {
-            'hosts': es_host,
-            'http_auth': awsauth,
-            'use_ssl': True,
-            'connection_class': RequestsHttpConnection,
-        },
-    }
-    ELASTIC_INDEX_PREFIX = f'{APP_NAME}_'
+    # Cookie settings
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_SAMESITE = "None"
+    SESSION_COOKIE_DOMAIN = ".app.cloud.gov"
+    CSRF_COOKIE_SECURE = True
+    CSRF_COOKIE_SAMESITE = "None"
+
+    # HSTS settings
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_REDIRECT_EXEMPT = [r"^prometheus/.*"]
+    SECURE_SSL_REDIRECT = True
+
+    # Redis
+    if "aws-elasticache-redis" in cloudgov_services:
+        redis_settings = cloudgov_services["aws-elasticache-redis"][0]["credentials"]
+        REDIS_URI = f"rediss://:{redis_settings['password']}@{redis_settings['host']}:{redis_settings['port']}"
+
+        (broker_db_number, results_db_number) = get_cloudgov_broker_db_numbers(
+            cloudgov_name
+        )
+
+        CELERY_BROKER_URL = REDIS_URI + "/" + broker_db_number
+        CELERY_RESULT_BACKEND = REDIS_URI + "/" + broker_db_number
+
+    OTEL_EXPORTER_OTLP_ENDPOINT = os.getenv(
+        "OTEL_EXPORTER_OTLP_ENDPOINT", "http://tempo.apps.internal:4317"
+    )
 
 
 class Development(CloudGov):
     """Settings for applications deployed in the Cloud.gov dev space."""
 
     # https://docs.djangoproject.com/en/2.0/ref/settings/#allowed-hosts
-    ALLOWED_HOSTS = ['.app.cloud.gov',
-                     '.apps.internal']
+    ALLOWED_HOSTS = [".app.cloud.gov", ".apps.internal"]
     CORS_ORIGIN_ALLOW_ALL = False
-    CORS_ALLOWED_ORIGINS = ['https://*.app.cloud.gov']
+    CORS_ALLOWED_ORIGINS = [
+        "https://tdp-frontend-raft.app.cloud.gov",
+        "https://tdp-frontend-a11y.app.cloud.gov",
+        "https://tdp-frontend-qasp.app.cloud.gov",
+    ]
     CORS_ALLOW_CREDENTIALS = True
     CORS_ALLOW_METHODS = (
         "GET",
         "PATCH",
         "POST",
     )
+
 
 class Staging(CloudGov):
     """Settings for applications deployed in the Cloud.gov staging space."""
 
     ALLOWED_HOSTS = [
-        'tdp-frontend-staging.acf.hhs.gov',
-        'tdp-frontend-develop.acf.hhs.gov',
-        '.apps.internal'
-        ]
-    CORS_ALLOWED_ORIGINS = ['https://*.acf.hhs.gov']
+        "tdp-frontend-staging.acf.hhs.gov",
+        "tdp-frontend-develop.acf.hhs.gov",
+        ".apps.internal",
+    ]
+    CORS_ALLOWED_ORIGINS = [
+        "https://tdp-frontend-staging.acf.hhs.gov",
+        "https://tdp-frontend-develop.acf.hhs.gov",
+    ]
     CORS_ORIGIN_ALLOW_ALL = False
     CORS_ALLOW_CREDENTIALS = True
     CORS_ALLOW_METHODS = (
@@ -189,31 +217,44 @@ class Staging(CloudGov):
         "POST",
     )
     LOGIN_GOV_CLIENT_ID = os.getenv(
-        'OIDC_RP_CLIENT_ID',
-        'urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-staging'
+        "OIDC_RP_CLIENT_ID",
+        "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-staging",
     )
+
+    # Cookie settings
+    SESSION_COOKIE_DOMAIN = ".acf.hhs.gov"
+
+    # Cloud.gov SET integration settings
+    LOGIN_GOV_SET_AUDIENCE = os.getenv(
+        "LOGIN_GOV_SET_AUDIENCE",
+        "https://tdp-frontend-staging.acf.hhs.gov/v1/security/event-token/",
+    )
+
 
 class Production(CloudGov):
     """Settings for applications deployed in the Cloud.gov production space."""
 
     # TODO: Add production ACF domain when known
-    ALLOWED_HOSTS = ['tanfdata.acf.hhs.gov',
-                     'tdp-frontend-prod.app.cloud.gov',
-                     '.apps.internal']
+    ALLOWED_HOSTS = [
+        "tanfdata.acf.hhs.gov",
+        "tdp-frontend-prod.app.cloud.gov",
+        ".apps.internal",
+    ]
 
     LOGIN_GOV_CLIENT_ID = os.getenv(
-        'OIDC_RP_CLIENT_ID',
-        'urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-prod'
+        "OIDC_RP_CLIENT_ID", "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-prod"
     )
     ENABLE_DEVELOPER_GROUP = False
-    SESSION_COOKIE_SECURE = True
-    SESSION_COOKIE_SAMESITE = 'None'
-    SESSION_COOKIE_DOMAIN = '.acf.hhs.gov'
+
+    # Cookie settings
+    SESSION_COOKIE_SAMESITE = "None"
+    SESSION_COOKIE_DOMAIN = ".acf.hhs.gov"
     SESSION_COOKIE_PATH = "/;HttpOnly"
-    MIDDLEWARE = ('tdpservice.middleware.SessionMiddleware', *Common.MIDDLEWARE)
+
+    MIDDLEWARE = ("tdpservice.middleware.SessionMiddleware", *Common.MIDDLEWARE)
 
     # CORS allowed origins
-    CORS_ALLOWED_ORIGINS = ['https://tanfdata.acf.hhs.gov']
+    CORS_ALLOWED_ORIGINS = ["https://tanfdata.acf.hhs.gov"]
     CORS_ORIGIN_ALLOW_ALL = False
     CORS_ALLOW_CREDENTIALS = True
     CORS_ALLOW_METHODS = (
@@ -221,4 +262,19 @@ class Production(CloudGov):
         "PATCH",
         "POST",
     )
-    ELASTIC_INDEX_PREFIX = ''
+
+    # OTEL
+    OTEL_ENABLED = bool(strtobool(os.getenv("OTEL_ENABLED", "yes")))
+    OTEL_EXPORTER_OTLP_ENDPOINT = os.getenv(
+        "OTEL_EXPORTER_OTLP_ENDPOINT", "http://tempo.apps.internal:4317"
+    )
+
+    # Cloud.gov SET integration settings
+    LOGIN_GOV_SET_AUDIENCE = os.getenv(
+        "LOGIN_GOV_SET_AUDIENCE",
+        "https://tanfdata.acf.hhs.gov/v1/security/event-token/",
+    )
+    LOGIN_GOV_WELL_KNOWN_CONFIG = os.getenv(
+        "LOGIN_GOV_WELL_KNOWN_CONFIG",
+        "https://secure.login.gov/.well-known/openid-configuration",
+    )

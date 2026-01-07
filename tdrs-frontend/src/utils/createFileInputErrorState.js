@@ -30,11 +30,12 @@ export default function createFileInputErrorState(input, dropTarget) {
   if (currentErrorMessage) {
     currentErrorMessage.outerHTML = ''
     dropTarget.classList.remove('has-invalid-file')
+    instructions.classList.remove('display-block')
   }
 
   // Get rid of existing previews if they exist, and show instructions
   if (filePreviews !== null) {
-    instructions.classList.remove('display-none')
+    instructions.classList.add('display-block')
     filePreviews.parentNode.removeChild(filePreviews)
   }
   Array.prototype.forEach.call(filePreviews, function removeImages(node) {

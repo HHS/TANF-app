@@ -1,24 +1,37 @@
 """Shared celery email tasks for beat."""
 
 from __future__ import absolute_import
-from tdpservice.users.models import User, AccountApprovalStatusChoices
-from django.contrib.auth.models import Group
-from django.conf import settings
-from django.urls import reverse
-from celery import shared_task
-from datetime import datetime, timedelta, timezone
+
 import logging
-from tdpservice.email.helpers.account_access_requests import send_num_access_requests_email
-from tdpservice.email.helpers.account_deactivation_warning import send_deactivation_warning_email
-from tdpservice.stts.models import STT
+from datetime import datetime, timedelta, timezone
+
+from django.conf import settings
+from django.contrib.auth.models import Group
+from django.urls import reverse
+
+from celery import shared_task
+
 from tdpservice.data_files.models import DataFile
 from tdpservice.email.email import automated_email, log
-from tdpservice.email.email_enums import EmailType
-from tdpservice.parsers.util import calendar_to_fiscal
+from tdpservice.email.email_enums import DataFileEmail
+from tdpservice.email.helpers.account_access_requests import (
+    send_num_access_requests_email,
+)
+from tdpservice.email.helpers.account_deactivation_warning import (
+    send_deactivation_warning_email,
+)
 from tdpservice.email.helpers.admin_notifications import email_admin_deactivated_user
-
+from tdpservice.parsers.util import calendar_to_fiscal
+from tdpservice.stts.models import STT
+from tdpservice.users.models import (
+    AccountApprovalStatusChoices,
+    User,
+    UserChangeRequest,
+    UserChangeRequestStatus,
+)
 
 logger = logging.getLogger(__name__)
+
 
 @shared_task
 def deactivate_users():
@@ -34,14 +47,14 @@ def deactivate_users():
         user.save()
 
         logger_context = {
-            'user_id': user.id,
-            'object_id': user.id,
-            'object_repr': user.username,
+            "user_id": user.id,
+            "object_id": user.id,
+            "object_repr": user.username,
         }
         email_admin_deactivated_user(user)
         log(
             f"Deactivated user {user.username} for inactivity.",
-            logger_context=logger_context if not settings.DEBUG else None
+            logger_context=logger_context if not settings.DEBUG else None,
         )
 
 
@@ -59,30 +72,42 @@ def check_for_accounts_needing_deactivation_warning():
     if deactivate_in_1_day:
         send_deactivation_warning_email(deactivate_in_1_day, 1)
 
+
 def users_to_deactivate(days):
     """Return a list of users that have not logged in in the last {180 - days} days."""
     days = 180 - days
     return User.objects.filter(
         last_login__lte=datetime.now(tz=timezone.utc) - timedelta(days=days),
-        last_login__gte=datetime.now(tz=timezone.utc) - timedelta(days=days+1),
+        last_login__gte=datetime.now(tz=timezone.utc) - timedelta(days=days + 1),
         account_approval_status=AccountApprovalStatusChoices.APPROVED,
-        )
+    )
+
 
 def get_ofa_admin_user_emails():
     """Return a list of OFA System Admin and OFA Admin users."""
-    return User.objects.filter(
-        groups__in=Group.objects.filter(name__in=('OFA Admin', 'OFA System Admin'))
-    ).values_list('email', flat=True).distinct()
+    return (
+        User.objects.filter(
+            groups__in=Group.objects.filter(name__in=("OFA Admin", "OFA System Admin"))
+        )
+        .values_list("email", flat=True)
+        .distinct()
+    )
+
 
 def get_system_owner_email():
     """Return the email of the System Owner."""
     try:
-        user_email = User.objects.filter(groups__name='System Owner').values_list('email', flat=True).distinct()
+        user_email = (
+            User.objects.filter(groups__name="System Owner")
+            .values_list("email", flat=True)
+            .distinct()
+        )
     except User.DoesNotExist:
         user_email = [None]
     except User.MultipleObjectsReturned:
         user_email = user_email[0]
     return user_email
+
 
 def get_num_access_requests():
     """Return the number of users requesting access."""
@@ -90,30 +115,58 @@ def get_num_access_requests():
         account_approval_status=AccountApprovalStatusChoices.ACCESS_REQUEST,
     ).count()
 
+
+def get_num_permission_change_requests():
+    """Return the number of users requesting permission changes."""
+    number_of_user_change_requests = UserChangeRequest.objects.filter(
+        status=UserChangeRequestStatus.PENDING,
+        field_name__in=[
+            "has_fra_access",
+        ],
+    ).count()
+    return number_of_user_change_requests
+
+
+def get_num_regional_change_requests():
+    """Return the number of users requesting regional changes."""
+    number_of_regional_change_requests = UserChangeRequest.objects.filter(
+        status=UserChangeRequestStatus.PENDING,
+        field_name="regions",
+    ).count()
+    return number_of_regional_change_requests
+
+
 @shared_task
 def email_admin_num_access_requests():
     """Send all OFA System Admins an email with how many users have requested access."""
     recipient_email = get_ofa_admin_user_emails()
     num_access_requests = get_num_access_requests()
-    text_message = 'This is an automated email. Please do not reply.\n' + \
-                   'This email is to notify you of the number of users' + \
-                   ' who have requested access to the TANF Data Portal.\n' + \
-                   f'There are currently {num_access_requests} pending ' + \
-                   'access requests'
+    num_permission_change_requests = get_num_permission_change_requests()
+    num_regional_change_requests = get_num_regional_change_requests()
+    text_message = (
+        "This is an automated email. Please do not reply.\n"
+        + "This email is to notify you of the number of users"
+        + " who have requested access to the TANF Data Portal.\n"
+        + f"There are currently {num_access_requests} pending "
+        + "access requests"
+    )
 
-    subject = 'Number of Active Access Requests'
+    subject = "Number of Active Access Requests"
     url = f'{settings.FRONTEND_BASE_URL}{reverse("admin:users_user_changelist")}?o=-2'
     email_context = {
-        'date': datetime.today(),
-        'num_requests': num_access_requests,
-        'admin_user_pg': url,
+        "date": datetime.today(),
+        "num_requests": num_access_requests,
+        "num_permission_change_requests": num_permission_change_requests,
+        "num_regional_change_requests": num_regional_change_requests,
+        "admin_user_pg": url,
     }
 
-    send_num_access_requests_email(recipient_email,
-                                   text_message,
-                                   subject,
-                                   email_context,
-                                   )
+    send_num_access_requests_email(
+        recipient_email,
+        text_message,
+        subject,
+        email_context,
+    )
 
 
 @shared_task
@@ -131,7 +184,11 @@ def send_data_submission_reminder(due_date, reporting_period, fiscal_quarter):
     )
 
     for loc in all_locations:
-        submitted_sections = year_quarter_files.filter(stt=loc).values_list('section', flat=True).distinct()
+        submitted_sections = (
+            year_quarter_files.filter(stt=loc)
+            .values_list("section", flat=True)
+            .distinct()
+        )
         required_sections = loc.filenames.keys()
 
         submitted_all_sections = True
@@ -142,34 +199,34 @@ def send_data_submission_reminder(due_date, reporting_period, fiscal_quarter):
         if not submitted_all_sections:
             reminder_locations.append(loc)
 
-    template_path = EmailType.UPCOMING_SUBMISSION_DEADLINE.value
-    text_message = f'Your datafiles are due by {due_date}.'
+    template_path = DataFileEmail.UPCOMING_SUBMISSION_DEADLINE.value
+    text_message = f"Your datafiles are due by {due_date}."
 
     all_data_analysts = User.objects.all().filter(
         account_approval_status=AccountApprovalStatusChoices.APPROVED,
-        groups=Group.objects.get(name='Data Analyst')
+        groups=Group.objects.get(name="Data Analyst"),
     )
 
     for loc in reminder_locations:
-        tanf_ssp_label = 'TANF and SSP' if loc.ssp else 'TANF'
-        subject = f'Action Requested: Please submit your {tanf_ssp_label} data files'
+        tanf_ssp_label = "TANF and SSP" if loc.ssp else "TANF"
+        subject = f"Action Requested: Please submit your {tanf_ssp_label} data files"
 
         recipients = all_data_analysts.filter(stt=loc)
 
         for rec in recipients:
             context = {
-                'first_name': rec.first_name,
-                'fiscal_year': fiscal_year,
-                'fiscal_quarter': fiscal_quarter,
-                'submission_deadline': due_date,
-                'url': settings.FRONTEND_BASE_URL,
-                'subject': subject
+                "first_name": rec.first_name,
+                "fiscal_year": fiscal_year,
+                "fiscal_quarter": fiscal_quarter,
+                "submission_deadline": due_date,
+                "url": settings.FRONTEND_BASE_URL,
+                "subject": subject,
             }
 
             logger_context = {
-                'user_id': rec.id,
-                'object_id': rec.id,
-                'object_repr': rec.username,
+                "user_id": rec.id,
+                "object_id": rec.id,
+                "object_repr": rec.username,
             }
 
             automated_email(
@@ -178,20 +235,20 @@ def send_data_submission_reminder(due_date, reporting_period, fiscal_quarter):
                 subject=subject,
                 email_context=context,
                 text_message=text_message,
-                logger_context=logger_context
+                logger_context=logger_context,
             )
 
         if len(recipients) == 0:
-            system_user, created = User.objects.get_or_create(username='system')
+            system_user, created = User.objects.get_or_create(username="system")
             if created:
-                log('Created reserved system user.')
+                log("Created reserved system user.")
 
             logger_context = {
-                'user_id': system_user.pk,
-                'object_id': loc.id,
-                'object_repr': loc.name,
+                "user_id": system_user.pk,
+                "object_id": loc.id,
+                "object_repr": loc.name,
             }
             log(
                 f"{loc.name} has no recipients for data submission deadline reminder.",
-                logger_context=logger_context if not settings.DEBUG else None
+                logger_context=logger_context if not settings.DEBUG else None,
             )
