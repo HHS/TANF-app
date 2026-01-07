@@ -39,7 +39,7 @@ export const table_first_row_contains = (value) => {
 export const validateSmallCorrectFile = () => {
   table_first_row_contains('small_correct_file.txt')
   table_first_row_contains('Rejected')
-  table_first_row_contains('2021-Q1-Active Case Data Error Report.xlsx')
+  table_first_row_contains('2021-Q1-TANF Active Case Data Error Report.xlsx')
 }
 
 export const validateSmallSSPFile = () => {
@@ -53,19 +53,19 @@ export const validateSmallSSPFile = () => {
   we know why the status changes for different test environments.
   */
   table_first_row_contains('Accepted with Errors')
-  table_first_row_contains('2024-Q1-Active Case Data Error Report.xlsx')
+  table_first_row_contains('2024-Q1-SSP Active Case Data Error Report.xlsx')
 }
 
 export const validateFraCsv = () => {
   table_first_row_contains('fra.csv')
   table_first_row_contains('Partially Accepted with Errors')
   table_first_row_contains(
-    '2024-Q2-Work Outcomes of TANF Exiters Error Report.xlsx'
+    '2024-Q2-FRA Work Outcomes of TANF Exiters Error Report.xlsx'
   )
 }
 
 export const downloadErrorReport = (error_report_name) => {
-  cy.get('button').contains(error_report_name).should('exist').click()
+  cy.get('button').contains(error_report_name).should('exist').click({ force: true })
   cy.readFile(`${Cypress.config('downloadsFolder')}/${error_report_name}`)
 }
 
@@ -236,6 +236,7 @@ export const downloadErrorReportAndAssert = (
   section,
   year,
   quarter,
+  programType = '',
   deleteAfter = true
 ) => {
   const ERROR_REPORT_LABELS = [
@@ -246,16 +247,19 @@ export const downloadErrorReportAndAssert = (
   ]
 
   // Download error report
+  const programPrefix = programType ? `${programType} ` : ''
+  const fileName = `${year}-${quarter}-${programPrefix}${ERROR_REPORT_LABELS[section - 1]} Error Report.xlsx`
+  const downloadedFilePath = `${Cypress.config('downloadsFolder')}/${fileName}`
+
   cy.intercept('GET', '/v1/data_files/*/download_error_report/').as(
     'downloadErrorReport'
   )
-  cy.contains('button', 'Error Report').click()
+  cy.contains('button', fileName)
+    .should('exist')
+    .click({ force: true })
   cy.wait('@downloadErrorReport').its('response.statusCode').should('eq', 200)
 
   // Assert Error Report successfully downloaded
-  const fileName = `${year}-${quarter}-${ERROR_REPORT_LABELS[section - 1]} Error Report.xlsx`
-  const downloadedFilePath = `${Cypress.config('downloadsFolder')}/${fileName}`
-
   cy.readFile(downloadedFilePath, { timeout: 30000 }).should('exist')
   if (deleteAfter) cy.task('deleteDownloadFile', fileName)
 }
