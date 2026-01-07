@@ -141,6 +141,7 @@
       - disable-npm-audit
       - install-nodejs-packages:
           app-dir: tdrs-frontend
+          override-ci-command: npm ci --omit=dev --no-fund
       - get-app-deploy-strategy:
           appname: <<parameters.frontend-appname>>
       - run:
