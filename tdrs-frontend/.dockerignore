@@ -1,4 +1,53 @@
+# Git
 .git
+.gitignore
+
+# Dependencies (will be installed fresh)
 node_modules
-npm-debug.log
+
+# Build output (will be created fresh)
 build
+dist
+
+# Logs
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+*.log
+
+# Testing
+coverage
+.nyc_output
+cypress/videos
+cypress/screenshots
+pa11y-screenshots
+
+# IDE and editors
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.*
+!.env.development
+!.env.production
+
+# Docker files (not needed inside container)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+*.md
+docs
+
+# Misc
+.eslintcache
+.prettierignore
