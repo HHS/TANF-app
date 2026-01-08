@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react'
 import { useSelector } from 'react-redux'
+import { Link } from 'react-router-dom'
 import closeIcon from '@uswds/uswds/img/usa-icons/close.svg'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSignOutAlt, faUserCircle } from '@fortawesome/free-solid-svg-icons'
@@ -92,9 +93,9 @@ function Header() {
         <div className="grid-container-widescreen usa-nav__wide desktop:padding-left-4 desktop:border-bottom-0 mobile:border-bottom-1px mobile:padding-left-0  mobile:padding-right-0">
           <div className="usa-logo" id="extended-logo">
             <em className="usa-logo__text">
-              <a href="/" aria-label="TANF Data Portal Home">
+              <Link to="/" aria-label="TANF Data Portal Home">
                 TANF Data Portal
-              </a>
+              </Link>
             </em>
           </div>
           {authenticated && (
@@ -187,13 +188,13 @@ function Header() {
                   className={`${user && user.email ? 'display-block' : 'display-none'} usa-nav__secondary-item`}
                 >
                   {user && user.email && (
-                    <a href="/" className="usa-link">
+                    <Link to="/" className="usa-link">
                       <FontAwesomeIcon
                         className="margin-right-1"
                         icon={faUserCircle}
                       />
                       {user && user.email}
-                    </a>
+                    </Link>
                   )}
                 </li>
                 {authenticated && (

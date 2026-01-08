@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
 
 /** This component renders a message signaling to the user that this
  * page does not exist.
@@ -40,9 +41,9 @@ export default function NoMatch() {
                 <div className="margin-y-5">
                   <ul className="usa-button-group">
                     <li className="usa-button-group__item">
-                      <a href="/home" className="usa-button">
+                      <Link to="/home" className="usa-button">
                         Visit homepage
-                      </a>
+                      </Link>
                     </li>
                     <li className="usa-button-group__item">
                       <a
