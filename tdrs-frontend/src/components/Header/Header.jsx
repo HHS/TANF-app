@@ -153,6 +153,7 @@ function Header() {
                       pathname={pathname}
                       tabTitle="Admin"
                       href={`${process.env.REACT_APP_BACKEND_HOST}/admin/`}
+                      target="_blank"
                     />
                   )}
                   {userViewGrafana && (
@@ -160,6 +161,7 @@ function Header() {
                       pathname={pathname}
                       tabTitle="Grafana"
                       href={`${process.env.REACT_APP_BACKEND_HOST}/grafana/`}
+                      target="_blank"
                     />
                   )}
                   {userViewAlerts && (
@@ -167,6 +169,7 @@ function Header() {
                       pathname={pathname}
                       tabTitle="Alerts"
                       href={`${process.env.REACT_APP_BACKEND_HOST}/alerts/`}
+                      target="_blank"
                     />
                   )}
                   <NavItem

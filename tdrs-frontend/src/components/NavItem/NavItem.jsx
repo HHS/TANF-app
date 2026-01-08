@@ -1,5 +1,14 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { Link } from 'react-router-dom'
+
+function Anchor({ to, children, ...props }) {
+  return (
+    <a href={to} {...props}>
+      {children}
+    </a>
+  )
+}
 
 /**
  *
@@ -11,10 +20,11 @@ import PropTypes from 'prop-types'
  * @param {string} target - the target for which to open the link (default: "_self")
  */
 function NavItem({ pathname, tabTitle, href, target }) {
+  const LinkComponent = href.startsWith('http') ? Anchor : Link
   return (
     <li className="usa-nav__primary-item">
-      <a
-        href={href}
+      <LinkComponent
+        to={href}
         key={tabTitle}
         // dash-case the tabTitle string (e.g. Data Files => data-files)
         id={tabTitle.replace(/ /g, '-').toLowerCase()}
@@ -23,7 +33,7 @@ function NavItem({ pathname, tabTitle, href, target }) {
         target={target ? target : '_self'}
       >
         <span>{tabTitle}</span>
-      </a>
+      </LinkComponent>
     </li>
   )
 }
