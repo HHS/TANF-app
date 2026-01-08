@@ -22,7 +22,7 @@ def test_ofa_admin_permissions(ofa_admin):
         "reports.add_reportfile",
         "reports.add_reportsource",
         "reports.view_reportfile",
-        "reports.view_reportsource"
+        "reports.view_reportsource",
     }
     group_permissions = ofa_admin.get_group_permissions()
     assert group_permissions == expected_permissions
@@ -35,9 +35,6 @@ def test_ofa_system_admin_permissions(ofa_system_admin):
         "admin.add_logentry",
         "admin.change_logentry",
         "admin.view_logentry",
-        "admin_interface.add_theme",
-        "admin_interface.change_theme",
-        "admin_interface.view_theme",
         "auth.add_group",
         "auth.add_permission",
         "auth.change_group",
@@ -184,12 +181,12 @@ def test_ofa_system_admin_permissions(ofa_system_admin):
         "search_indexes.add_programaudit_t3",
         "search_indexes.view_programaudit_t3",
         "search_indexes.change_programaudit_t3",
-        'reports.view_reportfile',
-        'reports.change_reportsource',
-        'reports.change_reportfile',
-        'reports.add_reportsource',
-        'reports.add_reportfile',
-        'reports.view_reportsource'
+        "reports.view_reportfile",
+        "reports.change_reportsource",
+        "reports.change_reportfile",
+        "reports.add_reportsource",
+        "reports.add_reportfile",
+        "reports.view_reportsource",
     }
     group_permissions = ofa_system_admin.get_group_permissions()
     assert group_permissions == expected_permissions
@@ -201,7 +198,7 @@ def test_data_analyst_permissions(data_analyst):
     expected_permissions = {
         "data_files.add_datafile",
         "data_files.view_datafile",
-        "reports.view_reportfile"
+        "reports.view_reportfile",
     }
     group_permissions = data_analyst.get_group_permissions()
     assert group_permissions == expected_permissions

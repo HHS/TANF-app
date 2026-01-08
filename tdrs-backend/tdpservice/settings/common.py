@@ -78,7 +78,6 @@ class Common(Configuration):
     """Define configuration class."""
 
     INSTALLED_APPS = (
-        "admin_interface",
         "django.contrib.admin",
         "django.contrib.auth",
         "django.contrib.contenttypes",
@@ -96,6 +95,7 @@ class Common(Configuration):
         "django_celery_beat",
         "storages",
         "django_prometheus",
+        "django_json_widget",
         # Local apps
         "tdpservice.core.apps.CoreConfig",
         "tdpservice.users",
@@ -520,6 +520,8 @@ class Common(Configuration):
     CELERY_RESULT_SERIALIZER = "json"
     CELERY_TIMEZONE = "UTC"
     CELERYD_SEND_EVENTS = True
+    CELERY_ENABLE_UTC = True
+    CELERY_TASK_PROTOCOL = 1
 
     CELERY_BEAT_SCHEDULE = {
         "Database Backup": {

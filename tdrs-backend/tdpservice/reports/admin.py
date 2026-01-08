@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 from django.db.models import OuterRef, Subquery
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from tdpservice.core.filters import MostRecentVersionFilter
 from tdpservice.core.utils import ReadOnlyAdminMixin
@@ -44,17 +44,12 @@ class ReportFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "version",
         "user",
     ]
-    list_filter = [
-        "stt",
-        "year",
-        "quarter",
-        "user",
-        VersionFilter
-    ]
+    list_filter = ["stt", "year", "quarter", "user", VersionFilter]
     search_fields = [
         "original_filename",
         "slug",
     ]
+
 
 @admin.register(ReportSource)
 class ReportSourceAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):

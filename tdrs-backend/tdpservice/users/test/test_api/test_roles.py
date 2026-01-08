@@ -9,7 +9,6 @@ from rest_framework import status
 User = get_user_model()
 
 
-@pytest.mark.django_db
 @pytest.fixture(scope="function")
 def create_test_users():
     """Create users for each group."""

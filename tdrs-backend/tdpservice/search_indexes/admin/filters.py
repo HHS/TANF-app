@@ -3,7 +3,7 @@ import datetime
 
 from django.contrib.admin import SimpleListFilter
 from django.db.models import Q as Query
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from tdpservice.core.filters import MostRecentVersionFilter
 from tdpservice.search_indexes.admin.multiselect_filter import MultiSelectDropdownFilter
