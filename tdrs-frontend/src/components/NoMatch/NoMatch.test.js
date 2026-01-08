@@ -1,5 +1,6 @@
 import React from 'react'
 import { render } from '@testing-library/react'
+import { MemoryRouter } from 'react-router'
 
 import { Provider } from 'react-redux'
 import { thunk } from 'redux-thunk'
@@ -21,9 +22,11 @@ describe('NoMatch', () => {
   it('should render the welcome page with the request access subheader', () => {
     const store = mockStore(initialState)
     const { getByText } = render(
-      <Provider store={store}>
-        <NoMatch />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <NoMatch />
+        </Provider>
+      </MemoryRouter>
     )
 
     const header = getByText('Page not found')
