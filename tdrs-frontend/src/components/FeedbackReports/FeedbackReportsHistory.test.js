@@ -351,7 +351,7 @@ describe('FeedbackReportsHistory', () => {
   })
 
   describe('Status Display', () => {
-    it('displays status value in table', () => {
+    it('displays SUCCEEDED status as "Parsed & Notified"', () => {
       const mockData = [
         {
           id: 1,
@@ -366,7 +366,25 @@ describe('FeedbackReportsHistory', () => {
 
       renderComponent({ data: mockData })
 
-      expect(screen.getByText('SUCCEEDED')).toBeInTheDocument()
+      expect(screen.getByText('Parsed & Notified')).toBeInTheDocument()
+    })
+
+    it('displays other statuses in title case', () => {
+      const mockData = [
+        {
+          id: 1,
+          year: 2025,
+          created_at: '2025-03-05T10:31:00Z',
+          processed_at: null,
+          status: 'PENDING',
+          original_filename: 'test.zip',
+          file: 'https://example.com/test.zip',
+        },
+      ]
+
+      renderComponent({ data: mockData })
+
+      expect(screen.getByText('Pending')).toBeInTheDocument()
     })
 
     it('renders clock icon for PENDING status', () => {
@@ -508,7 +526,7 @@ describe('FeedbackReportsHistory', () => {
 
       renderComponent({ data: mockData })
 
-      expect(screen.getByText('FAILED')).toBeInTheDocument()
+      expect(screen.getByText('Failed')).toBeInTheDocument()
       expect(screen.getByText('Invalid ZIP structure')).toBeInTheDocument()
     })
 
@@ -528,7 +546,7 @@ describe('FeedbackReportsHistory', () => {
 
       renderComponent({ data: mockData })
 
-      expect(screen.getByText('SUCCEEDED')).toBeInTheDocument()
+      expect(screen.getByText('Parsed & Notified')).toBeInTheDocument()
       expect(screen.getByText('None')).toBeInTheDocument()
     })
   })

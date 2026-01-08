@@ -44,6 +44,18 @@ ReportSourceStatusIcon.propTypes = {
 }
 
 /**
+ * formatStatusDisplay converts status to display format.
+ * SUCCEEDED becomes "Parsed & Notified", others become title case.
+ */
+function formatStatusDisplay(status) {
+  if (status === 'SUCCEEDED') {
+    return 'Parsed & Notified'
+  }
+  if (!status) return ''
+  return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()
+}
+
+/**
  * FeedbackReportsHistory component displays the upload history table
  * with loading and empty states
  */
@@ -71,7 +83,7 @@ function FeedbackReportsHistory({ data, formatDateTime }) {
                 <td>{formatDateTime(report.processed_at)}</td>
                 <td>
                   <ReportSourceStatusIcon status={report.status} />
-                  {report.status}
+                  {formatStatusDisplay(report.status)}
                 </td>
                 <td>{report.error_message || 'None'}</td>
                 <td>
