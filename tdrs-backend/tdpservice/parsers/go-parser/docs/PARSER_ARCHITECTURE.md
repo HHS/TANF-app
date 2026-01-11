@@ -297,25 +297,30 @@ class TupleRow(RawRow):
 │  │   Uses FileSpec configuration to determine which schema applies       │   │
 │  │   to each row based on prefix (positional) or column (columnar)       │   │
 │  └──────────────────────────────────────────────────────────────────────┘   │
-│         │                                            │                      │
-│         ▼                                            ▼                      │
-│  ┌────────────────────┐                    ┌────────────────────┐           │
-│  │    ACCUMULATOR     │                    │      BATCHER       │           │
-│  │                    │                    │                    │           │
-│  │ Groups records by  │                    │ Batches independent│           │
-│  │ (RPT_MONTH_YEAR,   │                    │ records into chunks│           │
-│  │  CASE_NUMBER)      │                    │ of N records       │           │
-│  │                    │                    │                    │           │
-│  │ Outputs: CaseGroup │                    │ Outputs: Batch     │           │
-│  └─────────┬──────────┘                    └──────────┬─────────┘           │
-│            │                                          │                     │
-│            └────────────────────┬─────────────────────┘                     │
+│                                 │                                           │
+│                                 ▼                                           │
+│  ┌──────────────────────────────────────────────────────────────────────┐   │
+│  │                         ACCUMULATOR                                   │   │
+│  │                                                                       │   │
+│  │   Unified collection of records into processable units (Batches)      │   │
+│  │                                                                       │   │
+│  │   Strategy determined by config:                                      │   │
+│  │   - key_fields: groups records by composite key (RPT_MONTH_YEAR,      │   │
+│  │                 CASE_NUMBER) into RecordGroups                        │   │
+│  │   - batch_size: batches N groups together into a Batch                │   │
+│  │   - Both: groups by key, then batches N groups together               │   │
+│  │   - Neither: per-record (each record is its own group in a batch)     │   │
+│  │                                                                       │   │
+│  │   Outputs: Batch { Groups: []RecordGroup }                            │   │
+│  │                                                                       │   │
+│  └──────────────────────────────────────────────────────────────────────┘   │
+│                                 │                                           │
 │                                 ▼                                           │
 │  ┌──────────────────────────────────────────────────────────────────────┐   │
 │  │                         WORKER POOL                                   │   │
 │  │                                                                       │   │
-│  │   N goroutines that process CaseGroups or Batches in parallel         │   │
-│  │   Each worker parses all records in its work unit                     │   │
+│  │   N goroutines that process Batches in parallel                       │   │
+│  │   Each worker parses all records in all groups within the batch       │   │
 │  │                                                                       │   │
 │  └──────────────────────────────────────────────────────────────────────┘   │
 │                                 │                                           │
@@ -459,30 +464,34 @@ record_type_detection:
       schema: t3
 
 # ============================================================================
-# GROUPING CONFIGURATION
+# ACCUMULATOR CONFIGURATION
 # ============================================================================
 
-# Configuration for how records should be grouped for processing.
+# Configuration for how records are collected and grouped for processing.
+#
+# The accumulator has two independent, inclusive settings:
+#   - key_fields: Groups records by composite key (creates RecordGroups)
+#   - batch_size: Batches N groups together (creates Batches)
+#
+# The four modes are:
+#   | key_fields | batch_size | Behavior                                      |
+#   |------------|------------|-----------------------------------------------|
+#   | []         | 0          | Per-record: each record emitted individually  |
+#   | []         | 100        | Batches of 100 individual records             |
+#   | [X, Y]     | 0          | Group by key, emit each group individually    |
+#   | [X, Y]     | 10         | Group by key, then batch 10 groups together   |
 #
 # For TANF/SSP/TRIBAL Section 1 and 2 files, records with the same
 # RPT_MONTH_YEAR and CASE_NUMBER belong to the same "case" and must be
-# processed together. This is called "case grouping".
+# processed together. We use key_fields for this.
 #
-# For aggregate data (Section 3, 4) and FRA files, records are independent
-# and can be batched arbitrarily for parallel processing.
-grouping:
+# For FRA files, records are independent. We can batch them for efficiency.
+accumulator:
 
-  # Whether case-based grouping is enabled.
-  # If true, records are grouped by (RPT_MONTH_YEAR, CASE_NUMBER).
-  # If false, records are batched in chunks of batch_size.
-  enabled: true
-
-  # How to extract the grouping key from raw row data.
-  # These byte positions are used BEFORE full parsing to quickly
-  # determine which case a record belongs to.
-  #
-  # This allows us to group records efficiently without parsing all fields.
-  key_extraction:
+  # Fields to use for grouping records together.
+  # If empty, each record is its own group.
+  # If specified, records with the same composite key are grouped.
+  key_fields:
     # Position of RPT_MONTH_YEAR field (6 digits: YYYYMM)
     rpt_month_year:
       start: 2    # Byte position where the field starts (0-indexed)
@@ -493,7 +502,13 @@ grouping:
       start: 8    # Byte position where the field starts (0-indexed)
       end: 19     # Byte position where the field ends (exclusive)
 
-  # Which schemas participate in case grouping.
+  # Number of groups to batch together before dispatching to workers.
+  # If 0, each group is dispatched individually (one batch per group).
+  # If > 0, groups are collected until batch_size is reached, then dispatched.
+  # Use this to tune worker efficiency vs. memory usage.
+  batch_size: 0
+
+  # Which schemas participate in grouping.
   # HEADER and TRAILER are excluded because they're not case data.
   # T1, T2, T3 records with the same case number form a case group.
   grouped_schemas:
@@ -532,14 +547,13 @@ record_type_detection:
     - prefix: "T6"
       schema: t6
 
-grouping:
-  # No case grouping - aggregate records are independent
-  enabled: false
-
-  # Instead, batch records together for parallel processing.
-  # This is an efficiency optimization - processing one record at a time
-  # would have too much overhead.
-  batch_size: 100
+# Accumulator config: batch records for parallel processing.
+# No key_fields means each record is its own group.
+# batch_size of 100 means dispatch batches of 100 records.
+accumulator:
+  key_fields: {}        # Empty: no case-based grouping
+  batch_size: 100       # Batch 100 records together for workers
+  grouped_schemas: []   # No schemas use key-based grouping
 ```
 
 ### FileSpec for Columnar Format (FRA)
@@ -572,12 +586,12 @@ record_type_detection:
   # column: 0          # Column index containing record type
   # column_header: "Record Type"  # Or identify by header name
 
-grouping:
-  # No case grouping - each exiter record is independent
-  enabled: false
-
-  # Batch records for efficient parallel processing
-  batch_size: 100
+# Accumulator config: batch independent records for parallel processing.
+# No key_fields since FRA records don't relate to each other.
+accumulator:
+  key_fields: {}        # Empty: each record is independent
+  batch_size: 100       # Batch 100 records together for workers
+  grouped_schemas: []   # No schemas use key-based grouping
 ```
 
 ### Go Types for FileSpec
@@ -621,8 +635,8 @@ type FileSpec struct {
     // RecordTypeDetection configures how to determine the schema for each row
     RecordTypeDetection RecordTypeDetection `yaml:"record_type_detection"`
 
-    // Grouping configures how records are grouped for processing
-    Grouping GroupingConfig `yaml:"grouping"`
+    // Accumulator configures how records are collected and grouped for processing
+    Accumulator AccumulatorConfig `yaml:"accumulator"`
 }
 
 // RecordTypeDetection configures how to determine which schema applies to a row.
@@ -656,28 +670,42 @@ type PrefixMapping struct {
     Schema string `yaml:"schema"`
 }
 
-// GroupingConfig configures how records are grouped for processing.
-type GroupingConfig struct {
-    // Enabled indicates whether case-based grouping is used.
-    // If true, records are grouped by (RPT_MONTH_YEAR, CASE_NUMBER).
-    // If false, records are batched in chunks.
-    Enabled bool `yaml:"enabled"`
+// AccumulatorConfig configures how records are collected and grouped for processing.
+//
+// The accumulator uses two independent, inclusive settings:
+//   - KeyFields: Groups records by composite key (creates RecordGroups)
+//   - BatchSize: Batches N groups together (creates Batches)
+//
+// The four modes are:
+//   | KeyFields | BatchSize | Behavior                                      |
+//   |-----------|-----------|-----------------------------------------------|
+//   | nil       | 0         | Per-record: each record emitted individually  |
+//   | nil       | 100       | Batches of 100 individual records             |
+//   | set       | 0         | Group by key, emit each group individually    |
+//   | set       | 10        | Group by key, then batch 10 groups together   |
+type AccumulatorConfig struct {
+    // KeyFields defines how to extract grouping keys from raw data.
+    // If nil or empty, each record is its own group (no case-based grouping).
+    // If set, records with the same composite key are grouped together.
+    KeyFields *KeyFieldsConfig `yaml:"key_fields,omitempty"`
 
-    // KeyExtraction defines how to extract grouping keys from raw data.
-    // Only used when Enabled is true.
-    KeyExtraction *KeyExtractionConfig `yaml:"key_extraction,omitempty"`
-
-    // GroupedSchemas lists which schemas participate in case grouping.
-    // Only used when Enabled is true.
-    GroupedSchemas []string `yaml:"grouped_schemas,omitempty"`
-
-    // BatchSize is the number of records per batch when grouping is disabled.
-    // Only used when Enabled is false.
+    // BatchSize is the number of groups to batch together before dispatch.
+    // If 0, each group is dispatched individually (one batch per group).
+    // If > 0, groups are collected until batch_size is reached.
     BatchSize int `yaml:"batch_size,omitempty"`
+
+    // GroupedSchemas lists which schemas participate in key-based grouping.
+    // Schemas not in this list (e.g., HEADER, TRAILER) are processed individually.
+    GroupedSchemas []string `yaml:"grouped_schemas,omitempty"`
 }
 
-// KeyExtractionConfig defines byte positions for extracting the grouping key.
-type KeyExtractionConfig struct {
+// HasKeyFields returns true if key-based grouping is configured.
+func (c *AccumulatorConfig) HasKeyFields() bool {
+    return c.KeyFields != nil && (c.KeyFields.RptMonthYear.End > 0 || c.KeyFields.CaseNumber.End > 0)
+}
+
+// KeyFieldsConfig defines byte positions for extracting the grouping key.
+type KeyFieldsConfig struct {
     // RptMonthYear is the position of the reporting month/year field
     RptMonthYear PositionDef `yaml:"rpt_month_year"`
 
@@ -2244,35 +2272,41 @@ For files without case grouping (Section 3/4 aggregate data, FRA files), records
 
 Batching groups N independent records together for efficient processing.
 
-### Grouping vs Batching Decision Flow
+### Unified Accumulator Flow
+
+The accumulator uses two independent, inclusive settings to determine behavior:
 
 ```
-                         ┌─────────────────┐
-                         │   FileSpec      │
-                         │   Configuration │
-                         └────────┬────────┘
-                                  │
-                                  ▼
-                    ┌─────────────────────────┐
-                    │  grouping.enabled = ?   │
-                    └─────────────────────────┘
-                           │           │
-                    true   │           │  false
-                           ▼           ▼
-              ┌────────────────┐  ┌────────────────┐
-              │   ACCUMULATOR  │  │    BATCHER     │
-              │                │  │                │
-              │ Groups records │  │ Batches records│
-              │ by case key:   │  │ in chunks of N │
-              │ (RPT_MONTH_YEAR│  │ (default: 100) │
-              │ + CASE_NUMBER) │  │                │
-              │                │  │                │
-              │ Output:        │  │ Output:        │
-              │ CaseGroup      │  │ RecordBatch    │
-              └────────────────┘  └────────────────┘
+                         ┌─────────────────────┐
+                         │     FileSpec        │
+                         │  AccumulatorConfig  │
+                         └──────────┬──────────┘
+                                    │
+          ┌─────────────────────────┴─────────────────────────┐
+          │                                                   │
+          ▼                                                   ▼
+┌─────────────────────┐                         ┌─────────────────────┐
+│   key_fields set?   │                         │   batch_size > 0?   │
+└─────────────────────┘                         └─────────────────────┘
+     │          │                                    │          │
+   yes │        │ no                              yes │        │ no
+     │          │                                    │          │
+     ▼          ▼                                    ▼          ▼
+ Group by    Each record                        Batch N      Each group
+ composite   is its own                         groups       dispatched
+ key         group                              together     individually
 ```
 
-### Work Unit Types
+**The Four Modes:**
+
+| key_fields | batch_size | Behavior                                        | Use Case           |
+|------------|------------|-------------------------------------------------|--------------------|
+| `{}`       | `0`        | Per-record: each record is Batch{1 group, 1 rec}| Debugging/Testing  |
+| `{}`       | `100`      | Batch{100 groups}, each group has 1 record      | FRA, Section 3/4   |
+| `{X,Y}`    | `0`        | Each case group is its own Batch                | Low-memory TANF    |
+| `{X,Y}`    | `10`       | Batch{10 case groups}, each group has N records | High-perf TANF     |
+
+### Unified Output Types
 
 ```go
 // internal/processor/types.go
@@ -2283,70 +2317,110 @@ import (
     "go-parser/internal/schema"
 )
 
-// WorkUnit is the interface for units of work processed by the worker pool.
-type WorkUnit interface {
-    // Type returns "case" or "batch" for logging/metrics
-    Type() string
-
-    // Size returns the number of rows in this work unit
-    Size() int
-}
-
 // RawLine holds a raw row along with its detected schema.
 type RawLine struct {
     Row    decoder.Row
     Schema *schema.CompiledSchema
 }
 
-// CaseGroup holds all raw lines belonging to a single case.
-// Used for TANF/SSP/Tribal Section 1 and 2 files.
-type CaseGroup struct {
+// RecordGroup holds all raw lines belonging to a logical group.
+// For key-based grouping: all records with the same (RPT_MONTH_YEAR, CASE_NUMBER).
+// For non-keyed: each record is its own group (Key is empty).
+type RecordGroup struct {
     // Key is the composite grouping key: "YYYYMM|CASE_NUMBER"
+    // Empty string if no key_fields are configured (each record is its own group).
     Key string
 
-    // RptMonthYear is extracted from the key for convenience
+    // RptMonthYear is extracted from the key for convenience (empty if no key_fields)
     RptMonthYear string
 
-    // CaseNumber is extracted from the key for convenience
+    // CaseNumber is extracted from the key for convenience (empty if no key_fields)
     CaseNumber string
 
-    // Lines contains all rows for this case (T1, T2, T3, etc.)
+    // Lines contains all rows for this group
     Lines []RawLine
 }
 
-func (g *CaseGroup) Type() string { return "case" }
-func (g *CaseGroup) Size() int    { return len(g.Lines) }
+// TotalRecords returns the total number of records in this group.
+func (g *RecordGroup) TotalRecords() int {
+    return len(g.Lines)
+}
 
-// RecordBatch holds a batch of independent records.
-// Used for aggregate data and FRA files.
-type RecordBatch struct {
+// Batch is the unit of work dispatched to workers.
+// Contains one or more RecordGroups depending on batch_size configuration.
+type Batch struct {
     // BatchID is a sequential identifier for this batch
     BatchID int
 
-    // Lines contains the batched rows
-    Lines []RawLine
+    // Groups contains the record groups in this batch.
+    // - If key_fields set + batch_size=0: 1 group with N records (a case)
+    // - If key_fields set + batch_size=M: M groups, each with N records
+    // - If no key_fields + batch_size=N: N groups, each with 1 record
+    // - If no key_fields + batch_size=0: 1 group with 1 record
+    Groups []*RecordGroup
 }
 
-func (b *RecordBatch) Type() string { return "batch" }
-func (b *RecordBatch) Size() int    { return len(b.Lines) }
+// TotalGroups returns the number of groups in this batch.
+func (b *Batch) TotalGroups() int {
+    return len(b.Groups)
+}
+
+// TotalRecords returns the total number of records across all groups.
+func (b *Batch) TotalRecords() int {
+    total := 0
+    for _, g := range b.Groups {
+        total += len(g.Lines)
+    }
+    return total
+}
 ```
 
 ---
 
-## Accumulator Pattern
+## Accumulator
 
 ### What Does the Accumulator Do?
 
-The accumulator collects rows and groups them by case key. When all rows have been read, it outputs complete case groups for processing.
+The Accumulator is a unified component that collects records and outputs Batches for worker processing. It handles all four modes based on the `key_fields` and `batch_size` configuration:
 
+**Mode 1: Key-based grouping, no batching** (`key_fields` set, `batch_size` = 0)
 ```
 Input:  T1 (case A), T2 (case A), T1 (case B), T3 (case A), T2 (case B)
 
-Accumulator groups by case:
-  Case A: [T1, T2, T3]
-  Case B: [T1, T2]
+Accumulator groups by case key:
+  Group A: [T1, T2, T3]
+  Group B: [T1, T2]
 
-Output: CaseGroup(A), CaseGroup(B)
+Output (on Drain):
+  Batch{ Groups: [Group A] }
+  Batch{ Groups: [Group B] }
+```
+
+**Mode 2: Key-based grouping with batching** (`key_fields` set, `batch_size` = 2)
+```
+Input:  (same as above)
+
+Output (on Drain):
+  Batch{ Groups: [Group A, Group B] }  // Both cases in one batch
+```
+
+**Mode 3: No grouping, with batching** (`key_fields` empty, `batch_size` = 3)
+```
+Input:  R1, R2, R3, R4, R5
+
+Output (streaming):
+  Batch{ Groups: [{R1}, {R2}, {R3}] }  // Each record is its own group
+  Batch{ Groups: [{R4}, {R5}] }        // Remaining on Drain
+```
+
+**Mode 4: Per-record** (`key_fields` empty, `batch_size` = 0)
+```
+Input:  R1, R2, R3
+
+Output (streaming):
+  Batch{ Groups: [{R1}] }
+  Batch{ Groups: [{R2}] }
+  Batch{ Groups: [{R3}] }
 ```
 
 ### Accumulator Implementation
@@ -2363,61 +2437,99 @@ import (
     "go-parser/internal/schema"
 )
 
-// Accumulator groups records by case key for positional files with case grouping.
+// Accumulator collects records into Batches based on the AccumulatorConfig.
+//
+// The accumulator handles four modes based on key_fields and batch_size:
+//   - key_fields set, batch_size=0:  Group by key, emit each group as its own Batch
+//   - key_fields set, batch_size=N:  Group by key, batch N groups together
+//   - key_fields empty, batch_size=N: Each record is a group, batch N groups together
+//   - key_fields empty, batch_size=0: Each record is its own Batch (per-record mode)
 type Accumulator struct {
     spec     *filespec.FileSpec
     detector *RecordTypeDetector
 
-    // groups holds case groups indexed by key
-    groups map[string]*CaseGroup
-
-    // groupedSchemas is a set of schema names that participate in grouping
+    // Configuration derived from spec
+    hasKeyFields   bool
+    batchSize      int
     groupedSchemas map[string]bool
+
+    // State for key-based grouping
+    groups map[string]*RecordGroup
+
+    // State for batching
+    pendingGroups []*RecordGroup
+    batchCounter  int
 }
 
 // NewAccumulator creates an accumulator for the given file specification.
 func NewAccumulator(spec *filespec.FileSpec, detector *RecordTypeDetector) *Accumulator {
     // Build set of grouped schemas for quick lookup
     groupedSchemas := make(map[string]bool)
-    for _, name := range spec.Grouping.GroupedSchemas {
+    for _, name := range spec.Accumulator.GroupedSchemas {
         groupedSchemas[name] = true
     }
 
     return &Accumulator{
         spec:           spec,
         detector:       detector,
-        groups:         make(map[string]*CaseGroup),
+        hasKeyFields:   spec.Accumulator.HasKeyFields(),
+        batchSize:      spec.Accumulator.BatchSize,
         groupedSchemas: groupedSchemas,
+        groups:         make(map[string]*RecordGroup),
+        pendingGroups:  make([]*RecordGroup, 0),
+        batchCounter:   0,
     }
 }
 
 // Add processes a row from the file.
-// Returns (schema, isGrouped) where isGrouped indicates if the row was added to a case group.
-// Rows that are not grouped (HEADER, TRAILER) are returned for immediate processing.
-func (a *Accumulator) Add(row decoder.Row) (*schema.CompiledSchema, bool, error) {
+//
+// Returns:
+//   - batch: A complete Batch if one is ready (only in non-keyed or per-record mode)
+//   - schema: The detected schema for this row
+//   - isAccumulated: true if the row was added to a group (not HEADER/TRAILER)
+//   - err: Any error encountered
+//
+// For key-based grouping, batches are only returned from Drain() after all rows are processed.
+// For non-keyed mode with batch_size > 0, batches are returned as they fill up.
+// For per-record mode (no keys, batch_size=0), each row returns its own batch.
+func (a *Accumulator) Add(row decoder.Row) (batch *Batch, sch *schema.CompiledSchema, isAccumulated bool, err error) {
     // Detect which schema this row belongs to
-    sch, err := a.detector.Detect(row)
+    sch, err = a.detector.Detect(row)
     if err != nil {
-        return nil, false, err
+        return nil, nil, false, err
     }
 
-    // Check if this schema participates in grouping
+    // Check if this schema participates in accumulation
     schemaName := sch.RecordType
-    if !a.groupedSchemas[schemaName] {
-        // Not grouped (e.g., HEADER, TRAILER) - return for immediate processing
-        return sch, false, nil
+    if len(a.groupedSchemas) > 0 && !a.groupedSchemas[schemaName] {
+        // Not accumulated (e.g., HEADER, TRAILER) - return for immediate processing
+        return nil, sch, false, nil
     }
 
+    line := RawLine{Row: row, Schema: sch}
+
+    if a.hasKeyFields {
+        // Key-based grouping mode
+        return a.addWithKey(line, sch)
+    }
+
+    // Non-keyed mode: each record is its own group
+    return a.addWithoutKey(line, sch)
+}
+
+// addWithKey handles rows when key_fields is configured.
+// Groups are accumulated in memory and only returned via Drain().
+func (a *Accumulator) addWithKey(line RawLine, sch *schema.CompiledSchema) (*Batch, *schema.CompiledSchema, bool, error) {
     // Extract the grouping key
-    key, rptMonth, caseNum, err := a.extractKey(row)
+    key, rptMonth, caseNum, err := a.extractKey(line.Row)
     if err != nil {
-        return nil, false, fmt.Errorf("line %d: failed to extract key: %w", row.LineNum(), err)
+        return nil, nil, false, fmt.Errorf("line %d: failed to extract key: %w", line.Row.LineNum(), err)
     }
 
-    // Get or create the case group
+    // Get or create the group
     group, exists := a.groups[key]
     if !exists {
-        group = &CaseGroup{
+        group = &RecordGroup{
             Key:          key,
             RptMonthYear: rptMonth,
             CaseNumber:   caseNum,
@@ -2427,20 +2539,56 @@ func (a *Accumulator) Add(row decoder.Row) (*schema.CompiledSchema, bool, error)
     }
 
     // Add the row to the group
-    group.Lines = append(group.Lines, RawLine{Row: row, Schema: sch})
+    group.Lines = append(group.Lines, line)
 
-    return sch, true, nil
+    // For key-based grouping, batches are only returned from Drain()
+    return nil, sch, true, nil
 }
 
-// extractKey extracts the grouping key from a positional row.
+// addWithoutKey handles rows when key_fields is empty.
+// Each record is its own group. Batches may be returned immediately.
+func (a *Accumulator) addWithoutKey(line RawLine, sch *schema.CompiledSchema) (*Batch, *schema.CompiledSchema, bool, error) {
+    // Create a single-record group
+    group := &RecordGroup{
+        Key:   "", // No key for non-grouped records
+        Lines: []RawLine{line},
+    }
+
+    // Per-record mode: batch_size = 0 means emit immediately
+    if a.batchSize == 0 {
+        batch := &Batch{
+            BatchID: a.batchCounter,
+            Groups:  []*RecordGroup{group},
+        }
+        a.batchCounter++
+        return batch, sch, true, nil
+    }
+
+    // Batching mode: collect groups until batch is full
+    a.pendingGroups = append(a.pendingGroups, group)
+
+    if len(a.pendingGroups) >= a.batchSize {
+        batch := &Batch{
+            BatchID: a.batchCounter,
+            Groups:  a.pendingGroups,
+        }
+        a.batchCounter++
+        a.pendingGroups = make([]*RecordGroup, 0, a.batchSize)
+        return batch, sch, true, nil
+    }
+
+    return nil, sch, true, nil
+}
+
+// extractKey extracts the grouping key from a row.
 func (a *Accumulator) extractKey(row decoder.Row) (key, rptMonth, caseNum string, err error) {
     pr, ok := row.(*decoder.PositionalRow)
     if !ok {
-        return "", "", "", fmt.Errorf("grouping requires PositionalRow, got %T", row)
+        return "", "", "", fmt.Errorf("key-based grouping requires PositionalRow, got %T", row)
     }
 
     data := pr.Data()
-    keyConfig := a.spec.Grouping.KeyExtraction
+    keyConfig := a.spec.Accumulator.KeyFields
 
     // Validate line length
     minLen := keyConfig.CaseNumber.End
@@ -2458,105 +2606,74 @@ func (a *Accumulator) extractKey(row decoder.Row) (key, rptMonth, caseNum string
     return key, rptMonth, caseNum, nil
 }
 
-// Drain returns all accumulated case groups and clears the accumulator.
+// Drain returns all accumulated groups as Batches and resets the accumulator.
 // Call this after all rows have been processed.
-func (a *Accumulator) Drain() []*CaseGroup {
-    result := make([]*CaseGroup, 0, len(a.groups))
-    for _, group := range a.groups {
-        result = append(result, group)
+//
+// For key-based grouping:
+//   - If batch_size=0: Each group becomes its own Batch
+//   - If batch_size=N: Groups are batched together (N groups per Batch)
+//
+// For non-keyed mode:
+//   - Returns any remaining partial batch
+func (a *Accumulator) Drain() []*Batch {
+    var batches []*Batch
+
+    if a.hasKeyFields {
+        // Collect all groups from the map
+        allGroups := make([]*RecordGroup, 0, len(a.groups))
+        for _, group := range a.groups {
+            allGroups = append(allGroups, group)
+        }
+
+        if a.batchSize == 0 {
+            // Each group is its own batch
+            for _, group := range allGroups {
+                batches = append(batches, &Batch{
+                    BatchID: a.batchCounter,
+                    Groups:  []*RecordGroup{group},
+                })
+                a.batchCounter++
+            }
+        } else {
+            // Batch groups together
+            for i := 0; i < len(allGroups); i += a.batchSize {
+                end := i + a.batchSize
+                if end > len(allGroups) {
+                    end = len(allGroups)
+                }
+                batches = append(batches, &Batch{
+                    BatchID: a.batchCounter,
+                    Groups:  allGroups[i:end],
+                })
+                a.batchCounter++
+            }
+        }
+
+        // Clear accumulated groups
+        a.groups = make(map[string]*RecordGroup)
+    } else {
+        // Non-keyed mode: return any remaining pending groups
+        if len(a.pendingGroups) > 0 {
+            batches = append(batches, &Batch{
+                BatchID: a.batchCounter,
+                Groups:  a.pendingGroups,
+            })
+            a.batchCounter++
+            a.pendingGroups = make([]*RecordGroup, 0)
+        }
     }
 
-    // Clear the accumulator
-    a.groups = make(map[string]*CaseGroup)
-
-    return result
+    return batches
 }
 
-// Stats returns statistics about accumulated groups.
-func (a *Accumulator) Stats() (numGroups, totalLines int) {
+// Stats returns statistics about accumulated state.
+func (a *Accumulator) Stats() (numGroups, totalLines, pendingGroups int) {
     for _, g := range a.groups {
         numGroups++
         totalLines += len(g.Lines)
     }
+    pendingGroups = len(a.pendingGroups)
     return
-}
-```
-
-### Batcher Implementation
-
-```go
-// internal/processor/batcher.go
-package processor
-
-import (
-    "go-parser/internal/decoder"
-    "go-parser/internal/schema"
-)
-
-// Batcher collects independent records into batches for efficient processing.
-// Used for aggregate data and FRA files (no case grouping).
-type Batcher struct {
-    batchSize int
-    detector  *RecordTypeDetector
-
-    currentBatch *RecordBatch
-    batchCounter int
-}
-
-// NewBatcher creates a batcher with the specified batch size.
-func NewBatcher(batchSize int, detector *RecordTypeDetector) *Batcher {
-    if batchSize <= 0 {
-        batchSize = 100 // Default batch size
-    }
-
-    return &Batcher{
-        batchSize:    batchSize,
-        detector:     detector,
-        currentBatch: nil,
-        batchCounter: 0,
-    }
-}
-
-// Add processes a row and potentially returns a complete batch.
-// If the batch is full, it returns the batch and starts a new one.
-// Returns (batch, schema, error) where batch is nil if not yet full.
-func (b *Batcher) Add(row decoder.Row) (*RecordBatch, *schema.CompiledSchema, error) {
-    // Detect schema
-    sch, err := b.detector.Detect(row)
-    if err != nil {
-        return nil, nil, err
-    }
-
-    // Create new batch if needed
-    if b.currentBatch == nil {
-        b.currentBatch = &RecordBatch{
-            BatchID: b.batchCounter,
-            Lines:   make([]RawLine, 0, b.batchSize),
-        }
-    }
-
-    // Add row to current batch
-    b.currentBatch.Lines = append(b.currentBatch.Lines, RawLine{Row: row, Schema: sch})
-
-    // Check if batch is full
-    if len(b.currentBatch.Lines) >= b.batchSize {
-        completeBatch := b.currentBatch
-        b.batchCounter++
-        b.currentBatch = nil
-        return completeBatch, sch, nil
-    }
-
-    return nil, sch, nil
-}
-
-// Drain returns any remaining partial batch and resets the batcher.
-func (b *Batcher) Drain() *RecordBatch {
-    if b.currentBatch != nil && len(b.currentBatch.Lines) > 0 {
-        batch := b.currentBatch
-        b.currentBatch = nil
-        return batch
-    }
-    return nil
 }
 ```
 
@@ -2566,11 +2683,13 @@ func (b *Batcher) Drain() *RecordBatch {
 
 ### What Is the Worker Pool?
 
-The worker pool is a fixed number of goroutines that process work units (case groups or batches) in parallel. This provides:
+The worker pool is a fixed number of goroutines that process Batches in parallel. This provides:
 
 1. **Controlled concurrency**: We don't spawn unlimited goroutines
 2. **Backpressure**: If workers are busy, producers slow down
 3. **Resource efficiency**: Goroutines are reused
+
+With the unified Accumulator, the worker pool now uses a single channel that receives `*Batch` objects regardless of whether they contain keyed groups or independent records.
 
 ### Worker Pool Implementation
 
@@ -2602,20 +2721,42 @@ type ParseError struct {
     Message    string
 }
 
-// ParsedCase contains parsing results for a case group.
-type ParsedCase struct {
+// ParsedGroup contains parsing results for a single RecordGroup.
+type ParsedGroup struct {
+    // Key is the grouping key (empty for non-keyed records)
     Key          string
     RptMonthYear string
     CaseNumber   string
-    Records      []*ParsedRecord
-    Errors       []ParseError
+
+    // Records contains all successfully parsed records in this group
+    Records []*ParsedRecord
+
+    // Errors contains any parsing errors encountered
+    Errors []ParseError
 }
 
-// ParsedBatch contains parsing results for a record batch.
+// ParsedBatch contains parsing results for a Batch (one or more groups).
 type ParsedBatch struct {
     BatchID int
-    Records []*ParsedRecord
-    Errors  []ParseError
+    Groups  []*ParsedGroup
+}
+
+// TotalRecords returns the total number of successfully parsed records.
+func (pb *ParsedBatch) TotalRecords() int {
+    total := 0
+    for _, g := range pb.Groups {
+        total += len(g.Records)
+    }
+    return total
+}
+
+// TotalErrors returns the total number of parsing errors.
+func (pb *ParsedBatch) TotalErrors() int {
+    total := 0
+    for _, g := range pb.Groups {
+        total += len(g.Errors)
+    }
+    return total
 }
 
 // Pool manages worker goroutines for parallel parsing.
@@ -2623,13 +2764,11 @@ type Pool struct {
     numWorkers int
     extractor  parser.FieldExtractor
 
-    // Work input channels
-    caseWork  chan *processor.CaseGroup
-    batchWork chan *processor.RecordBatch
+    // Single work input channel for all Batches
+    work chan *processor.Batch
 
-    // Result output channels
-    caseResults  chan *ParsedCase
-    batchResults chan *ParsedBatch
+    // Single result output channel
+    results chan *ParsedBatch
 
     wg sync.WaitGroup
 }
@@ -2653,12 +2792,10 @@ func DefaultPoolConfig() PoolConfig {
 // NewPool creates a worker pool.
 func NewPool(format filespec.Format, config PoolConfig) *Pool {
     return &Pool{
-        numWorkers:   config.NumWorkers,
-        extractor:    parser.GetExtractor(format),
-        caseWork:     make(chan *processor.CaseGroup, config.WorkBufferSize),
-        batchWork:    make(chan *processor.RecordBatch, config.WorkBufferSize),
-        caseResults:  make(chan *ParsedCase, config.ResultBufferSize),
-        batchResults: make(chan *ParsedBatch, config.ResultBufferSize),
+        numWorkers: config.NumWorkers,
+        extractor:  parser.GetExtractor(format),
+        work:       make(chan *processor.Batch, config.WorkBufferSize),
+        results:    make(chan *ParsedBatch, config.ResultBufferSize),
     }
 }
 
@@ -2670,72 +2807,64 @@ func (p *Pool) Start(ctx context.Context) {
     }
 }
 
-// SubmitCase submits a case group for processing.
+// Submit submits a Batch for processing.
 // Blocks if the work channel is full (backpressure).
-func (p *Pool) SubmitCase(group *processor.CaseGroup) {
-    p.caseWork <- group
-}
-
-// SubmitBatch submits a record batch for processing.
-func (p *Pool) SubmitBatch(batch *processor.RecordBatch) {
-    p.batchWork <- batch
+func (p *Pool) Submit(batch *processor.Batch) {
+    p.work <- batch
 }
 
 // CloseInputs signals that no more work will be submitted.
 func (p *Pool) CloseInputs() {
-    close(p.caseWork)
-    close(p.batchWork)
+    close(p.work)
 }
 
 // Wait blocks until all workers finish, then closes result channels.
 func (p *Pool) Wait() {
     p.wg.Wait()
-    close(p.caseResults)
-    close(p.batchResults)
+    close(p.results)
 }
 
-// CaseResults returns the channel for receiving parsed case results.
-func (p *Pool) CaseResults() <-chan *ParsedCase {
-    return p.caseResults
-}
-
-// BatchResults returns the channel for receiving parsed batch results.
-func (p *Pool) BatchResults() <-chan *ParsedBatch {
-    return p.batchResults
+// Results returns the channel for receiving parsed batch results.
+func (p *Pool) Results() <-chan *ParsedBatch {
+    return p.results
 }
 
 // worker is the main worker goroutine.
 func (p *Pool) worker(ctx context.Context) {
     defer p.wg.Done()
 
-    caseOpen := true
-    batchOpen := true
-
-    for caseOpen || batchOpen {
+    for {
         select {
         case <-ctx.Done():
             return
 
-        case group, ok := <-p.caseWork:
+        case batch, ok := <-p.work:
             if !ok {
-                caseOpen = false
-                continue
+                return // Channel closed, exit
             }
-            p.caseResults <- p.processCase(group)
-
-        case batch, ok := <-p.batchWork:
-            if !ok {
-                batchOpen = false
-                continue
-            }
-            p.batchResults <- p.processBatch(batch)
+            p.results <- p.processBatch(batch)
         }
     }
 }
 
-// processCase parses all records in a case group.
-func (p *Pool) processCase(group *processor.CaseGroup) *ParsedCase {
-    result := &ParsedCase{
+// processBatch parses all records in all groups within a batch.
+func (p *Pool) processBatch(batch *processor.Batch) *ParsedBatch {
+    result := &ParsedBatch{
+        BatchID: batch.BatchID,
+        Groups:  make([]*ParsedGroup, 0, len(batch.Groups)),
+    }
+
+    for _, group := range batch.Groups {
+        parsedGroup := p.processGroup(group)
+        result.Groups = append(result.Groups, parsedGroup)
+    }
+
+    return result
+}
+
+// processGroup parses all records in a single group.
+func (p *Pool) processGroup(group *processor.RecordGroup) *ParsedGroup {
+    result := &ParsedGroup{
         Key:          group.Key,
         RptMonthYear: group.RptMonthYear,
         CaseNumber:   group.CaseNumber,
@@ -2744,30 +2873,6 @@ func (p *Pool) processCase(group *processor.CaseGroup) *ParsedCase {
     }
 
     for _, line := range group.Lines {
-        record, err := p.parseRow(line)
-        if err != nil {
-            result.Errors = append(result.Errors, ParseError{
-                LineNumber: line.Row.LineNum(),
-                RecordType: line.Schema.RecordType,
-                Message:    err.Error(),
-            })
-            continue
-        }
-        result.Records = append(result.Records, record)
-    }
-
-    return result
-}
-
-// processBatch parses all records in a batch.
-func (p *Pool) processBatch(batch *processor.RecordBatch) *ParsedBatch {
-    result := &ParsedBatch{
-        BatchID: batch.BatchID,
-        Records: make([]*ParsedRecord, 0, len(batch.Lines)),
-        Errors:  make([]ParseError, 0),
-    }
-
-    for _, line := range batch.Lines {
         record, err := p.parseRow(line)
         if err != nil {
             result.Errors = append(result.Errors, ParseError{
@@ -3034,7 +3139,8 @@ func processFile(
     }
 
     log.Printf("Processing %s Section %d file: %s", program, section, filePath)
-    log.Printf("Format: %s, Grouping: %v", spec.Format, spec.Grouping.Enabled)
+    log.Printf("Format: %s, KeyFields: %v, BatchSize: %d",
+        spec.Format, spec.Accumulator.HasKeyFields(), spec.Accumulator.BatchSize)
 
     // Step 2: Open the file and create decoder
     file, err := os.Open(filePath)
@@ -3069,12 +3175,8 @@ func processFile(
         collectorErr = collectResults(ctx, workerPool, dbWriter)
     }()
 
-    // Step 7: Process rows based on grouping configuration
-    if spec.Grouping.Enabled {
-        err = processWithGrouping(dec, spec, detector, workerPool)
-    } else {
-        err = processWithBatching(dec, spec, detector, workerPool)
-    }
+    // Step 7: Process rows through the unified Accumulator
+    err = processRows(dec, spec, detector, workerPool)
 
     if err != nil {
         workerPool.CloseInputs()
@@ -3108,7 +3210,10 @@ func createDecoder(file *os.File, spec *filespec.FileSpec) (decoder.Decoder, err
     }
 }
 
-func processWithGrouping(
+// processRows uses the unified Accumulator to process all rows.
+// The Accumulator handles all four modes (keyed, batched, both, neither)
+// based on the AccumulatorConfig in the FileSpec.
+func processRows(
     dec decoder.Decoder,
     spec *filespec.FileSpec,
     detector *parser.RecordTypeDetector,
@@ -3121,105 +3226,49 @@ func processWithGrouping(
             return err
         }
 
-        sch, isGrouped, err := acc.Add(row)
+        batch, sch, isAccumulated, err := acc.Add(row)
         if err != nil {
             log.Printf("Line %d: %v", row.LineNum(), err)
             continue
         }
 
-        // Non-grouped rows (HEADER, TRAILER) could be processed here
-        if !isGrouped && sch != nil {
-            log.Printf("Line %d: %s (not grouped)", row.LineNum(), sch.RecordType)
-        }
-    }
-
-    // Dispatch all accumulated case groups
-    for _, group := range acc.Drain() {
-        pool.SubmitCase(group)
-    }
-
-    return nil
-}
-
-func processWithBatching(
-    dec decoder.Decoder,
-    spec *filespec.FileSpec,
-    detector *parser.RecordTypeDetector,
-    pool *worker.Pool,
-) error {
-    batcher := processor.NewBatcher(spec.Grouping.BatchSize, detector)
-
-    for row, err := range dec.Rows() {
-        if err != nil {
-            return err
+        // Non-accumulated rows (HEADER, TRAILER) could be processed here
+        if !isAccumulated && sch != nil {
+            log.Printf("Line %d: %s (not accumulated)", row.LineNum(), sch.RecordType)
         }
 
-        batch, _, err := batcher.Add(row)
-        if err != nil {
-            log.Printf("Line %d: %v", row.LineNum(), err)
-            continue
-        }
-
-        // Dispatch full batches immediately
+        // For non-keyed modes, batches may be returned during iteration
         if batch != nil {
-            pool.SubmitBatch(batch)
+            pool.Submit(batch)
         }
     }
 
-    // Dispatch remaining partial batch
-    if batch := batcher.Drain(); batch != nil {
-        pool.SubmitBatch(batch)
+    // Dispatch all remaining batches (for keyed modes, this is where groups are emitted)
+    for _, batch := range acc.Drain() {
+        pool.Submit(batch)
     }
 
     return nil
 }
 
+// collectResults receives parsed batches from the worker pool and writes to database.
 func collectResults(
     ctx context.Context,
     pool *worker.Pool,
     dbWriter *writer.Writer,
 ) error {
-    caseResults := pool.CaseResults()
-    batchResults := pool.BatchResults()
-
-    caseOpen := true
-    batchOpen := true
-
-    for caseOpen || batchOpen {
-        select {
-        case pc, ok := <-caseResults:
-            if !ok {
-                caseOpen = false
-                continue
+    for pb := range pool.Results() {
+        // Log any parsing errors
+        for _, group := range pb.Groups {
+            for _, e := range group.Errors {
+                log.Printf("Parse error at line %d (%s): %s",
+                    e.LineNumber, e.RecordType, e.Message)
             }
+        }
 
-            if len(pc.Errors) > 0 {
-                for _, e := range pc.Errors {
-                    log.Printf("Parse error at line %d (%s): %s",
-                        e.LineNumber, e.RecordType, e.Message)
-                }
-            }
-
-            if err := dbWriter.WriteCase(ctx, pc); err != nil {
-                log.Printf("Failed to write case %s: %v", pc.Key, err)
-            }
-
-        case pb, ok := <-batchResults:
-            if !ok {
-                batchOpen = false
-                continue
-            }
-
-            if len(pb.Errors) > 0 {
-                for _, e := range pb.Errors {
-                    log.Printf("Parse error at line %d (%s): %s",
-                        e.LineNumber, e.RecordType, e.Message)
-                }
-            }
-
-            if err := dbWriter.WriteBatch(ctx, pb); err != nil {
-                log.Printf("Failed to write batch %d: %v", pb.BatchID, err)
-            }
+        // Write the batch to the database
+        if err := dbWriter.WriteBatch(ctx, pb); err != nil {
+            log.Printf("Failed to write batch %d: %v", pb.BatchID, err)
         }
     }
 
@@ -3344,7 +3393,7 @@ go-parser/
 
 ## Implementation Examples
 
-### Example 1: Processing a TANF Section 1 File
+### Example 1: Processing a TANF Section 1 File (Key-based Grouping)
 
 **Input file (`tanf_s1.txt`):**
 ```
@@ -3358,24 +3407,28 @@ T320201011111111115120160401WTTTT@BTB22212212204398100000000
 TRAILER0002643
 ```
 
+**Accumulator config:** `key_fields` set, `batch_size` = 0
+
 **Processing flow:**
 
-1. **Load FileSpec**: `tanf_section1.yaml` - format=positional, grouping enabled
+1. **Load FileSpec**: `tanf_section1.yaml` - format=positional, key_fields configured
 2. **Create UTF-8 Decoder**: Reads lines, produces PositionalRow objects
 3. **For each row**:
    - Detector identifies record type by prefix (HEADER, T1, T2, T3, TRAILER)
    - Accumulator extracts case key (e.g., `202010|11111111112`)
-   - Rows added to corresponding CaseGroup
-4. **After all rows read**:
-   - CaseGroup 1: `202010|11111111112` with T1, T2, T3
-   - CaseGroup 2: `202010|11111111115` with T1, T2, T3
-5. **Worker pool processes each CaseGroup**:
+   - Rows added to corresponding RecordGroup (HEADER/TRAILER skipped)
+4. **After all rows read** (Drain):
+   - RecordGroup 1: `202010|11111111112` with T1, T2, T3
+   - RecordGroup 2: `202010|11111111115` with T1, T2, T3
+   - Each group becomes its own Batch (batch_size=0)
+5. **Worker pool processes each Batch**:
+   - Each Batch has 1 RecordGroup (a case)
    - Extractor reads fields by byte position
    - ParsedRecords created for each row
 6. **Converter transforms to SQLC types**
 7. **Writer inserts into database**
 
-### Example 2: Processing an FRA CSV File
+### Example 2: Processing an FRA CSV File (Batching Only)
 
 **Input file (`fra_exiters.csv`):**
 ```csv
@@ -3384,21 +3437,40 @@ TE1,202010,22222222222,01,1,19850623,234567890,...
 TE1,202010,33333333333,01,2,19900101,345678901,...
 ```
 
+**Accumulator config:** `key_fields` empty, `batch_size` = 100
+
 **Processing flow:**
 
-1. **Load FileSpec**: `fra_section1.yaml` - format=columnar, grouping disabled, batch_size=100
+1. **Load FileSpec**: `fra_section1.yaml` - format=columnar, batch_size=100
 2. **Create CSV Decoder**: Reads CSV rows, produces ColumnarRow objects
 3. **For each row**:
    - Detector returns fixed schema (TE1) since method=fixed
-   - Batcher adds row to current batch
-   - When batch reaches 100 rows, dispatch to workers
-4. **After all rows read**:
+   - Accumulator creates single-record RecordGroup (no key_fields)
+   - Adds group to pending batch
+   - When 100 groups accumulated, Batch is returned and dispatched
+4. **After all rows read** (Drain):
    - Remaining partial batch dispatched
-5. **Worker pool processes each batch**:
+5. **Worker pool processes each Batch**:
+   - Each Batch has N RecordGroups, each with 1 record
    - Extractor reads fields by column index
    - ParsedRecords created for each row
 6. **Converter transforms to SQLC types**
 7. **Writer inserts into database**
+
+### Example 3: High-Performance TANF (Key-based + Batching)
+
+**Accumulator config:** `key_fields` set, `batch_size` = 10
+
+**Processing flow:**
+
+1. Same as Example 1 for steps 1-4
+2. **After all rows read** (Drain):
+   - RecordGroups batched in groups of 10
+   - Batch 1: Groups for cases 1-10
+   - Batch 2: Groups for cases 11-20, etc.
+3. **Worker pool processes each Batch**:
+   - Each Batch has up to 10 RecordGroups (cases)
+   - More efficient than individual case dispatch
 
 ---
 
@@ -3411,15 +3483,14 @@ This architecture provides:
 | **Multi-format support** | Separate decoders (UTF-8, CSV, XLSX) producing format-specific Row types |
 | **Declarative configuration** | YAML FileSpecs and Schemas loaded at startup |
 | **Explicit record type detection** | Prefix-based for positional, column-based or fixed for columnar |
-| **Case grouping** | Accumulator groups records by (RPT_MONTH_YEAR, CASE_NUMBER) |
-| **Efficient batching** | Batcher groups independent records for parallel processing |
-| **Parallel processing** | Worker pool with configurable number of goroutines |
+| **Unified Accumulator** | Single component handles all grouping/batching via `key_fields` and `batch_size` |
+| **Flexible grouping modes** | Four modes: per-record, batch-only, key-only, key+batch |
+| **Parallel processing** | Worker pool with single Batch channel, configurable goroutines |
 | **Database integration** | Converters transform parsed records to SQLC types |
 | **Extensibility** | Add new programs/formats by adding YAML config files |
 
-The key insight is that **configuration drives behavior**. The FileSpec tells the parser:
-- What format to expect
-- How to identify record types
-- Whether to group or batch records
+The key insight is that **configuration drives behavior**. The AccumulatorConfig tells the parser:
+- `key_fields`: How to group records (empty = no grouping)
+- `batch_size`: How many groups per batch (0 = one batch per group)
 
 This allows the same parsing code to handle very different file types with no code changes.
