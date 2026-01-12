@@ -53,6 +53,7 @@ func main() {
 	defer func() {
 		// Optionally clean up the test datafile after processing
 		// Uncomment to enable cleanup:
+		// This technically doesn't work right now since the relations can't be deleted
 		testutil.DeleteTestDatafile(ctx, pool, datafileID)
 	}()
 
