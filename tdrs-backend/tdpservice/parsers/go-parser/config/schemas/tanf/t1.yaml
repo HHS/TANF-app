@@ -15,6 +15,7 @@ fields:
   # Record identification
   - name: RecordType
     friendly_name: Record Type
+    item: "0"
     start: 0
     end: 2
     type: string
@@ -22,6 +23,7 @@ fields:
 
   - name: RPT_MONTH_YEAR
     friendly_name: Reporting Month/Year
+    item: "4"
     start: 2
     end: 8
     type: string
@@ -29,6 +31,7 @@ fields:
 
   - name: CASE_NUMBER
     friendly_name: Case Number
+    item: "6"
     start: 8
     end: 19
     type: string
@@ -36,6 +39,7 @@ fields:
 
   - name: COUNTY_FIPS_CODE
     friendly_name: County FIPS Code
+    item: "2"
     start: 19
     end: 22
     type: string
@@ -43,6 +47,7 @@ fields:
 
   - name: STRATUM
     friendly_name: Stratum
+    item: "5"
     start: 22
     end: 24
     type: string
@@ -50,6 +55,7 @@ fields:
 
   - name: ZIP_CODE
     friendly_name: ZIP Code
+    item: "7"
     start: 24
     end: 29
     type: string
@@ -57,6 +63,7 @@ fields:
 
   - name: FUNDING_STREAM
     friendly_name: Funding Stream
+    item: "8"
     start: 29
     end: 30
     type: integer
@@ -64,6 +71,7 @@ fields:
 
   - name: DISPOSITION
     friendly_name: Disposition
+    item: "9"
     start: 30
     end: 31
     type: integer
@@ -71,6 +79,7 @@ fields:
 
   - name: NEW_APPLICANT
     friendly_name: New Applicant
+    item: "10"
     start: 31
     end: 32
     type: integer
@@ -78,6 +87,7 @@ fields:
 
   - name: NBR_FAMILY_MEMBERS
     friendly_name: Number of Family Members
+    item: "11"
     start: 32
     end: 34
     type: integer
@@ -85,6 +95,7 @@ fields:
 
   - name: FAMILY_TYPE
     friendly_name: Family Type
+    item: "12"
     start: 34
     end: 35
     type: integer
@@ -92,6 +103,7 @@ fields:
 
   - name: RECEIVES_SUB_HOUSING
     friendly_name: Receives Subsidized Housing
+    item: "13"
     start: 35
     end: 36
     type: integer
@@ -99,6 +111,7 @@ fields:
 
   - name: RECEIVES_MED_ASSISTANCE
     friendly_name: Receives Medical Assistance
+    item: "14"
     start: 36
     end: 37
     type: integer
@@ -106,6 +119,7 @@ fields:
 
   - name: RECEIVES_FOOD_STAMPS
     friendly_name: Receives Food Stamps
+    item: "15"
     start: 37
     end: 38
     type: integer
@@ -113,6 +127,7 @@ fields:
 
   - name: AMT_FOOD_STAMP_ASSISTANCE
     friendly_name: Amount of Food Stamp Assistance
+    item: "16"
     start: 38
     end: 42
     type: integer
@@ -120,6 +135,7 @@ fields:
 
   - name: RECEIVES_SUB_CC
     friendly_name: Receives Subsidized Child Care
+    item: "17"
     start: 42
     end: 43
     type: integer
@@ -127,6 +143,7 @@ fields:
 
   - name: AMT_SUB_CC
     friendly_name: Amount of Subsidized Child Care
+    item: "18"
     start: 43
     end: 47
     type: integer
@@ -134,6 +151,7 @@ fields:
 
   - name: CHILD_SUPPORT_AMT
     friendly_name: Child Support Amount
+    item: "19"
     start: 47
     end: 51
     type: integer
@@ -141,6 +159,7 @@ fields:
 
   - name: FAMILY_CASH_RESOURCES
     friendly_name: Family Cash Resources
+    item: "20"
     start: 51
     end: 55
     type: integer
@@ -149,6 +168,7 @@ fields:
   # Item 21: Cash and Cash Equivalents
   - name: CASH_AMOUNT
     friendly_name: Cash Amount
+    item: "21A"
     start: 55
     end: 59
     type: integer
@@ -156,6 +176,7 @@ fields:
 
   - name: NBR_MONTHS
     friendly_name: Number of Months (Cash)
+    item: "21B"
     start: 59
     end: 62
     type: integer
@@ -164,6 +185,7 @@ fields:
   # Item 22: Child Care
   - name: CC_AMOUNT
     friendly_name: Child Care Amount
+    item: "22A"
     start: 62
     end: 66
     type: integer
@@ -171,6 +193,7 @@ fields:
 
   - name: CHILDREN_COVERED
     friendly_name: Children Covered
+    item: "22B"
     start: 66
     end: 68
     type: integer
@@ -178,6 +201,7 @@ fields:
 
   - name: CC_NBR_MONTHS
     friendly_name: Number of Months (Child Care)
+    item: "22C"
     start: 68
     end: 71
     type: integer
@@ -186,6 +210,7 @@ fields:
   # Item 23: Transportation
   - name: TRANSP_AMOUNT
     friendly_name: Transportation Amount
+    item: "23A"
     start: 71
     end: 75
     type: integer
@@ -193,6 +218,7 @@ fields:
 
   - name: TRANSP_NBR_MONTHS
     friendly_name: Number of Months (Transportation)
+    item: "23B"
     start: 75
     end: 78
     type: integer
@@ -201,6 +227,7 @@ fields:
   # Item 24: Transitional Services
   - name: TRANSITION_SERVICES_AMOUNT
     friendly_name: Transition Services Amount
+    item: "24A"
     start: 78
     end: 82
     type: integer
@@ -208,6 +235,7 @@ fields:
 
   - name: TRANSITION_NBR_MONTHS
     friendly_name: Number of Months (Transition)
+    item: "24B"
     start: 82
     end: 85
     type: integer
@@ -216,6 +244,7 @@ fields:
   # Item 25: Other
   - name: OTHER_AMOUNT
     friendly_name: Other Amount
+    item: "25A"
     start: 85
     end: 89
     type: integer
@@ -223,6 +252,7 @@ fields:
 
   - name: OTHER_NBR_MONTHS
     friendly_name: Number of Months (Other)
+    item: "25B"
     start: 89
     end: 92
     type: integer
@@ -231,6 +261,7 @@ fields:
   # Item 26A: Sanctions
   - name: SANC_REDUCTION_AMT
     friendly_name: Sanction Reduction Amount
+    item: "26AI"
     start: 92
     end: 96
     type: integer
@@ -238,6 +269,7 @@ fields:
 
   - name: WORK_REQ_SANCTION
     friendly_name: Work Requirement Sanction
+    item: "26AII"
     start: 96
     end: 97
     type: integer
@@ -245,6 +277,7 @@ fields:
 
   - name: FAMILY_SANC_ADULT
     friendly_name: Family Sanction Adult
+    item: "26AIII"
     start: 97
     end: 98
     type: integer
@@ -252,6 +285,7 @@ fields:
 
   - name: SANC_TEEN_PARENT
     friendly_name: Sanction Teen Parent
+    item: "26AIV"
     start: 98
     end: 99
     type: integer
@@ -259,6 +293,7 @@ fields:
 
   - name: NON_COOPERATION_CSE
     friendly_name: Non-Cooperation Child Support
+    item: "26AV"
     start: 99
     end: 100
     type: integer
@@ -266,6 +301,7 @@ fields:
 
   - name: FAILURE_TO_COMPLY
     friendly_name: Failure to Comply
+    item: "26AVI"
     start: 100
     end: 101
     type: integer
@@ -273,6 +309,7 @@ fields:
 
   - name: OTHER_SANCTION
     friendly_name: Other Sanction
+    item: "26AVII"
     start: 101
     end: 102
     type: integer
@@ -281,6 +318,7 @@ fields:
   # Item 26B: Recoupment
   - name: RECOUPMENT_PRIOR_OVRPMT
     friendly_name: Recoupment Prior Overpayment
+    item: "26B"
     start: 102
     end: 106
     type: integer
@@ -289,6 +327,7 @@ fields:
   # Item 26C: Other Reductions
   - name: OTHER_TOTAL_REDUCTIONS
     friendly_name: Other Total Reductions
+    item: "26CI"
     start: 106
     end: 110
     type: integer
@@ -296,6 +335,7 @@ fields:
 
   - name: FAMILY_CAP
     friendly_name: Family Cap
+    item: "26CII"
     start: 110
     end: 111
     type: integer
@@ -303,6 +343,7 @@ fields:
 
   - name: REDUCTIONS_ON_RECEIPTS
     friendly_name: Reductions on Receipts
+    item: "26CIII"
     start: 111
     end: 112
     type: integer
@@ -310,6 +351,7 @@ fields:
 
   - name: OTHER_NON_SANCTION
     friendly_name: Other Non-Sanction
+    item: "26CIV"
     start: 112
     end: 113
     type: integer
@@ -318,6 +360,7 @@ fields:
   # Items 27-29
   - name: WAIVER_EVAL_CONTROL_GRPS
     friendly_name: Waiver Evaluation Control Groups
+    item: "27"
     start: 113
     end: 114
     type: string
@@ -325,6 +368,7 @@ fields:
 
   - name: FAMILY_EXEMPT_TIME_LIMITS
     friendly_name: Family Exempt Time Limits
+    item: "28"
     start: 114
     end: 116
     type: integer
@@ -332,6 +376,7 @@ fields:
 
   - name: FAMILY_NEW_CHILD
     friendly_name: Family New Child
+    item: "29"
     start: 116
     end: 117
     type: integer
