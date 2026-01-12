@@ -1,6 +1,8 @@
 package converter
 
 import (
+	"strconv"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -19,7 +21,7 @@ func toText(v any) pgtype.Text {
 	return pgtype.Text{Valid: false}
 }
 
-// toInt4 converts an integer value to pgtype.Int4.
+// toInt4 converts value to pgtype.Int4.
 func toInt4(v any) pgtype.Int4 {
 	if v == nil {
 		return pgtype.Int4{Valid: false}
@@ -33,6 +35,12 @@ func toInt4(v any) pgtype.Int4 {
 		return pgtype.Int4{Int32: int32(n), Valid: true}
 	case float64:
 		return pgtype.Int4{Int32: int32(n), Valid: true}
+	case string:
+		result, err := strconv.Atoi(n)
+		if err != nil {
+			return pgtype.Int4{Valid: false}
+		}
+		return pgtype.Int4{Int32: int32(result), Valid: true}
 	}
 	return pgtype.Int4{Valid: false}
 }

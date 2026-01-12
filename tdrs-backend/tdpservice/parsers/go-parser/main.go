@@ -39,6 +39,7 @@ func main() {
 	program := "TANF"
 	section := 1
 	filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.FTP1.TS06"
+	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.NDM1.TS53_fake.txt"
 
 	// Create a test datafile record to satisfy foreign key constraints
 	datafileParams := testutil.DefaultDatafileParams()
