@@ -97,3 +97,8 @@ export const accountCanSelectStt = (state) =>
     'DIGIT Team',
     'OFA Regional Staff',
   ].includes(selectPrimaryUserRole(state)?.name)
+
+export const accountCanViewFeedbackReports = (state) =>
+  accountStatusIsApproved(state) &&
+  selectUserPermissions(state).includes('view_reportsource') &&
+  selectUserPermissions(state).includes('add_reportsource')
