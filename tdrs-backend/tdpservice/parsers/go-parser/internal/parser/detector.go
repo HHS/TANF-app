@@ -13,115 +13,115 @@ import (
 
 // RecordTypeDetector determines which schema applies to each row.
 type RecordTypeDetector struct {
-    spec     *filespec.FileSpec
-    registry *registry.Registry
+	spec     *filespec.FileSpec
+	registry *registry.Registry
 
-    // Cached lookup for prefix detection (sorted by prefix length, longest first)
-    sortedPrefixes []filespec.PrefixMapping
+	// Cached lookup for prefix detection (sorted by prefix length, longest first)
+	sortedPrefixes []filespec.PrefixMapping
 }
 
 // NewRecordTypeDetector creates a detector for the given file specification.
 func NewRecordTypeDetector(spec *filespec.FileSpec, registry *registry.Registry) *RecordTypeDetector {
-    d := &RecordTypeDetector{
-        spec:     spec,
-        registry: registry,
-    }
+	d := &RecordTypeDetector{
+		spec:     spec,
+		registry: registry,
+	}
 
-    // Sort prefixes by length (longest first) for correct matching
-    // This ensures "HEADER" matches before "H" would
-    if spec.RecordTypeDetection.Method == "prefix" {
-        d.sortedPrefixes = sortPrefixesByLength(spec.RecordTypeDetection.Prefixes)
-    }
+	// Sort prefixes by length (longest first) for correct matching
+	// This ensures "HEADER" matches before "H" would
+	if spec.RecordTypeDetection.Method == "prefix" {
+		d.sortedPrefixes = sortPrefixesByLength(spec.RecordTypeDetection.Prefixes)
+	}
 
-    return d
+	return d
 }
 
 // Detect determines the schema for a given row.
 // Returns the compiled schema or an error if no matching schema is found.
 func (d *RecordTypeDetector) Detect(row decoder.Row) (*schema.CompiledSchema, error) {
-    switch d.spec.RecordTypeDetection.Method {
-    case "prefix":
-        return d.detectByPrefix(row)
-    case "column":
-        return d.detectByColumn(row)
-    case "fixed":
-        return d.detectFixed()
-    default:
-        return nil, fmt.Errorf("unknown detection method: %s", d.spec.RecordTypeDetection.Method)
-    }
+	switch d.spec.RecordTypeDetection.Method {
+	case "prefix":
+		return d.detectByPrefix(row)
+	case "column":
+		return d.detectByColumn(row)
+	case "fixed":
+		return d.detectFixed()
+	default:
+		return nil, fmt.Errorf("unknown detection method: %s", d.spec.RecordTypeDetection.Method)
+	}
 }
 
 // detectByPrefix determines schema by looking at line prefix (for positional files).
 func (d *RecordTypeDetector) detectByPrefix(row decoder.Row) (*schema.CompiledSchema, error) {
-    pr, ok := row.(*decoder.PositionalRow)
-    if !ok {
-        return nil, fmt.Errorf("prefix detection requires PositionalRow, got %T", row)
-    }
+	pr, ok := row.(*decoder.PositionalRow)
+	if !ok {
+		return nil, fmt.Errorf("prefix detection requires PositionalRow, got %T", row)
+	}
 
-    data := pr.Data()
+	data := pr.Data()
 
-    // Try each prefix in order (longest first)
-    for _, mapping := range d.sortedPrefixes {
-        if strings.HasPrefix(data, mapping.Prefix) {
-            sch := d.registry.GetSchema(mapping.Schema)
-            if sch == nil {
-                return nil, fmt.Errorf("schema not found: %s", mapping.Schema)
-            }
-            return sch, nil
-        }
-    }
+	// Try each prefix in order (longest first)
+	for _, mapping := range d.sortedPrefixes {
+		if strings.HasPrefix(data, mapping.Prefix) {
+			sch := d.registry.GetSchema(mapping.Schema)
+			if sch == nil {
+				return nil, fmt.Errorf("schema not found: %s", mapping.Schema)
+			}
+			return sch, nil
+		}
+	}
 
-    // No matching prefix found
-    preview := data
-    if len(preview) > 20 {
-        preview = preview[:20] + "..."
-    }
-    return nil, fmt.Errorf("no matching prefix for line: %q", preview)
+	// No matching prefix found
+	preview := data
+	if len(preview) > 20 {
+		preview = preview[:20] + "..."
+	}
+	return nil, fmt.Errorf("no matching prefix for line: %q", preview)
 }
 
 // detectByColumn determines schema by looking at a column value (for columnar files).
 func (d *RecordTypeDetector) detectByColumn(row decoder.Row) (*schema.CompiledSchema, error) {
-    cr, ok := row.(*decoder.ColumnarRow)
-    if !ok {
-        return nil, fmt.Errorf("column detection requires ColumnarRow, got %T", row)
-    }
+	cr, ok := row.(*decoder.ColumnarRow)
+	if !ok {
+		return nil, fmt.Errorf("column detection requires ColumnarRow, got %T", row)
+	}
 
-    colIdx := d.spec.RecordTypeDetection.Column
-    val := cr.Column(colIdx)
-    if val == nil {
-        return nil, fmt.Errorf("column %d is empty or missing", colIdx)
-    }
+	colIdx := d.spec.RecordTypeDetection.Column
+	val := cr.Column(colIdx)
+	if val == nil {
+		return nil, fmt.Errorf("column %d is empty or missing", colIdx)
+	}
 
-    recordType := strings.TrimSpace(fmt.Sprintf("%v", val))
+	recordType := strings.TrimSpace(fmt.Sprintf("%v", val))
 
-    sch := d.registry.GetSchema(recordType)
-    if sch == nil {
-        return nil, fmt.Errorf("unknown record type: %s", recordType)
-    }
+	sch := d.registry.GetSchema(recordType)
+	if sch == nil {
+		return nil, fmt.Errorf("unknown record type: %s", recordType)
+	}
 
-    return sch, nil
+	return sch, nil
 }
 
 // detectFixed returns the fixed schema configured for this file type.
 func (d *RecordTypeDetector) detectFixed() (*schema.CompiledSchema, error) {
-    schemaName := d.spec.RecordTypeDetection.Schema
-    sch := d.registry.GetSchema(schemaName)
-    if sch == nil {
-        return nil, fmt.Errorf("fixed schema not found: %s", schemaName)
-    }
-    return sch, nil
+	schemaName := d.spec.RecordTypeDetection.Schema
+	sch := d.registry.GetSchema(schemaName)
+	if sch == nil {
+		return nil, fmt.Errorf("fixed schema not found: %s", schemaName)
+	}
+	return sch, nil
 }
 
 // sortPrefixesByLength returns prefixes sorted by length (longest first).
 func sortPrefixesByLength(prefixes []filespec.PrefixMapping) []filespec.PrefixMapping {
-    // Make a copy to avoid modifying the original
-    sorted := make([]filespec.PrefixMapping, len(prefixes))
-    copy(sorted, prefixes)
+	// Make a copy to avoid modifying the original
+	sorted := make([]filespec.PrefixMapping, len(prefixes))
+	copy(sorted, prefixes)
 
-    // Sort by prefix length, longest first
-    sort.Slice(sorted, func(i, j int) bool {
-        return len(sorted[i].Prefix) > len(sorted[j].Prefix)
-    })
+	// Sort by prefix length, longest first
+	sort.Slice(sorted, func(i, j int) bool {
+		return len(sorted[i].Prefix) > len(sorted[j].Prefix)
+	})
 
-    return sorted
+	return sorted
 }

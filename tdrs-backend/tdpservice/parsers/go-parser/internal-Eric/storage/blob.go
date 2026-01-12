@@ -41,7 +41,7 @@ func NewS3Storage() S3Storage {
 		log.Fatal(err)
 	}
 
-	client := s3.NewFromConfig(config, func (o *s3.Options) {
+	client := s3.NewFromConfig(config, func(o *s3.Options) {
 		o.BaseEndpoint = aws.String("http://localhost:4566/")
 		o.UsePathStyle = true
 	})
@@ -75,8 +75,6 @@ func (s S3Storage) ListBuckets(ctx context.Context) ([]types.Bucket, error) {
 	return buckets, err
 }
 
-
-
 // BucketExists checks whether a bucket exists in the current account.
 func (s S3Storage) BucketExists(ctx context.Context, bucketName string) (bool, error) {
 	_, err := s.Client.HeadBucket(ctx, &s3.HeadBucketInput{
@@ -102,8 +100,6 @@ func (s S3Storage) BucketExists(ctx context.Context, bucketName string) (bool, e
 
 	return exists, err
 }
-
-
 
 // CreateBucket creates a bucket with the specified name in the specified Region.
 func (s S3Storage) CreateBucket(ctx context.Context, name string, region string) error {
@@ -132,8 +128,6 @@ func (s S3Storage) CreateBucket(ctx context.Context, name string, region string)
 	}
 	return err
 }
-
-
 
 // UploadFile reads from a file and puts the data into an object in a bucket.
 func (s S3Storage) UploadFile(ctx context.Context, bucketName string, objectKey string, fileName string) error {
@@ -168,8 +162,6 @@ func (s S3Storage) UploadFile(ctx context.Context, bucketName string, objectKey 
 	return err
 }
 
-
-
 // UploadLargeObject uses an upload manager to upload data to an object in a bucket.
 // The upload manager breaks large data into parts and uploads the parts concurrently.
 func (s S3Storage) UploadLargeObject(ctx context.Context, bucketName string, objectKey string, largeObject []byte) error {
@@ -203,8 +195,6 @@ func (s S3Storage) UploadLargeObject(ctx context.Context, bucketName string, obj
 	return err
 }
 
-
-
 // DownloadFile gets an object from a bucket and stores it in a local file.
 func (s S3Storage) DownloadFile(ctx context.Context, bucketName string, objectKey string, fileName string) error {
 	result, err := s.Client.GetObject(ctx, &s3.GetObjectInput{
@@ -236,8 +226,6 @@ func (s S3Storage) DownloadFile(ctx context.Context, bucketName string, objectKe
 	return err
 }
 
-
-
 // DownloadLargeObject uses a download manager to download an object from a bucket.
 // The download manager gets the data in parts and writes them to a buffer until all of
 // the data has been downloaded.
@@ -257,8 +245,6 @@ func (s S3Storage) DownloadLargeObject(ctx context.Context, bucketName string, o
 	}
 	return buffer.Bytes(), err
 }
-
-
 
 // CopyToFolder copies an object in a bucket to a subfolder in the same bucket.
 func (s S3Storage) CopyToFolder(ctx context.Context, bucketName string, objectKey string, folderName string) error {
@@ -285,8 +271,6 @@ func (s S3Storage) CopyToFolder(ctx context.Context, bucketName string, objectKe
 	return err
 }
 
-
-
 // CopyToBucket copies an object in a bucket to another bucket.
 func (s S3Storage) CopyToBucket(ctx context.Context, sourceBucket string, destinationBucket string, objectKey string) error {
 	_, err := s.Client.CopyObject(ctx, &s3.CopyObjectInput{
@@ -310,8 +294,6 @@ func (s S3Storage) CopyToBucket(ctx context.Context, sourceBucket string, destin
 	}
 	return err
 }
-
-
 
 // ListObjects lists the objects in a bucket.
 func (s S3Storage) ListObjects(ctx context.Context, bucketName string) ([]types.Object, error) {
@@ -337,8 +319,6 @@ func (s S3Storage) ListObjects(ctx context.Context, bucketName string) ([]types.
 	}
 	return objects, err
 }
-
-
 
 // DeleteObjects deletes a list of objects from a bucket.
 func (s S3Storage) DeleteObjects(ctx context.Context, bucketName string, objectKeys []string) error {
@@ -377,8 +357,6 @@ func (s S3Storage) DeleteObjects(ctx context.Context, bucketName string, objectK
 	}
 	return err
 }
-
-
 
 // DeleteBucket deletes a bucket. The bucket must be empty or an error is returned.
 func (s S3Storage) DeleteBucket(ctx context.Context, bucketName string) error {

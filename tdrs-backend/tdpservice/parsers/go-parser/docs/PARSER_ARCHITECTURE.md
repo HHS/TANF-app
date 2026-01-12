@@ -1439,6 +1439,11 @@ type Registry struct {
     // schemas indexed by path (e.g., "tanf/t1", "common/header")
     schemas map[string]*schema.CompiledSchema
 
+    // metadata holds database info derived from schemas (table names, columns)
+    // Built during Load() from YAML schema field definitions
+    // See SchemaMetadata type in schema_metadata.go (same package)
+    metadata map[string]*SchemaMetadata
+
     // configDir is the root configuration directory
     configDir string
 }
@@ -1463,6 +1468,7 @@ func Load(configDir string) (*Registry, error) {
     r := &Registry{
         fileSpecs: make(map[string]*filespec.FileSpec),
         schemas:   make(map[string]*schema.CompiledSchema),
+        metadata:  make(map[string]*SchemaMetadata),
         configDir: configDir,
     }
 
@@ -1480,6 +1486,9 @@ func Load(configDir string) (*Registry, error) {
     if err := r.validateReferences(); err != nil {
         return nil, fmt.Errorf("validating references: %w", err)
     }
+
+    // Build database metadata from schema field definitions
+    r.buildAllMetadata()
 
     return r, nil
 }
@@ -1680,14 +1689,16 @@ While the Registry handles YAML configuration, the mapping between schema paths 
 The schema-to-SQLC mapping is defined in `internal/registry/schema_metadata.go` (see SQLC Integration section for details). This allows:
 
 ```go
-// The Registry provides schema configuration
+// The Registry provides schema configuration and metadata
 schema := reg.GetSchema("tanf/t1")
+meta := reg.GetSchemaMetadata("tanf/t1")  // Columns derived from YAML fields
 
 // The converter registry maps record types to SQLC converters
-converter := converter.GetConverter("T1")  // Returns func that creates db.SearchIndexesTanfT1
+conv := converter.GetConverter("T1")  // Returns func that creates db.SearchIndexesTanfT1
 
-// The writer manager uses the SQLC types directly
-writerMgr := writer.NewTANFSection1WriterManager(pool, datafileID)
+// The writer manager is created dynamically from the FileSpec
+spec := reg.GetFileSpec("TANF", 1)
+writerMgr := writer.NewWriterManager(pool, datafileID, spec, reg)
 ```
 
 ### Registry in the Data Flow
@@ -3329,91 +3340,123 @@ func ToTanfT1(record *worker.ParsedRecord, datafileID int32) *db.SearchIndexesTa
 }
 ```
 
-### Schema to SQLC Type Mapping
+### Schema to Database Mapping
 
-The Registry maps schema paths to their corresponding SQLC types and database table names. This enables the Database Writer to use the correct type for each record.
+The Registry derives database metadata from YAML schemas. Column names come directly from the schema field definitions - no separate hardcoded column lists needed.
 
 ```go
 // internal/registry/schema_metadata.go
 package registry
 
-import "go-parser/internal/db"
+import (
+    "fmt"
+    "strings"
 
-// SchemaMetadata holds database information for a schema.
+    "go-parser/internal/schema"
+)
+
+// SchemaMetadata holds database information derived from a schema.
 type SchemaMetadata struct {
-    TableName string   // PostgreSQL table name (e.g., "search_indexes_tanf_t1")
-    Columns   []string // Ordered column names for COPY
+    TableName  string   // PostgreSQL table name (e.g., "search_indexes_tanf_t1")
+    Columns    []string // Ordered column names for COPY (derived from schema fields)
+    RecordType string   // e.g., "T1", "M2"
 }
 
-// schemaMetadataMap provides the mapping from schema path to database metadata.
-// This is defined statically since the database schema is fixed.
-var schemaMetadataMap = map[string]SchemaMetadata{
-    "tanf/t1": {
-        TableName: "search_indexes_tanf_t1",
-        Columns: []string{
-            "id", "datafile_id", "line_number", `"RecordType"`, `"RPT_MONTH_YEAR"`,
-            `"CASE_NUMBER"`, `"DISPOSITION"`, `"FIPS_CODE"`, `"COUNTY_FIPS_CODE"`,
-            // ... all column names in order
-        },
-    },
-    "tanf/t2": {
-        TableName: "search_indexes_tanf_t2",
-        Columns: []string{
-            "id", "datafile_id", "line_number", `"RecordType"`, `"RPT_MONTH_YEAR"`,
-            `"CASE_NUMBER"`, `"FAMILY_AFFILIATION"`,
-            // ... all column names in order
-        },
-    },
-    "tanf/t3": {
-        TableName: "search_indexes_tanf_t3",
-        Columns: []string{
-            "id", "datafile_id", "line_number", `"RecordType"`, `"RPT_MONTH_YEAR"`,
-            `"CASE_NUMBER"`, `"FAMILY_AFFILIATION"`,
-            // ... all column names in order
-        },
-    },
-    // Additional schemas...
+// buildSchemaMetadata derives database metadata from a compiled schema.
+// Column names are extracted from the YAML schema fields - no duplication needed.
+func buildSchemaMetadata(schemaPath string, compiled *schema.CompiledSchema) *SchemaMetadata {
+    // Standard columns that appear in all record tables
+    columns := []string{"id", "datafile_id", "line_number"}
+
+    // Add columns from schema fields in order
+    // Schema field names (e.g., "RPT_MONTH_YEAR") map directly to DB columns
+    for _, field := range compiled.Fields {
+        // PostgreSQL quoted identifiers for uppercase field names
+        columns = append(columns, fmt.Sprintf(`"%s"`, field.Name))
+    }
+
+    return &SchemaMetadata{
+        TableName:  schemaPathToTableName(schemaPath),
+        Columns:    columns,
+        RecordType: compiled.RecordType,
+    }
+}
+
+// schemaPathToTableName converts a schema path to its database table name.
+// Examples:
+//   "tanf/t1"    -> "search_indexes_tanf_t1"
+//   "ssp/m2"     -> "search_indexes_ssp_m2"
+//   "tribal/t1"  -> "search_indexes_tribal_tanf_t1"
+func schemaPathToTableName(schemaPath string) string {
+    // Convert path separators and normalize
+    normalized := strings.ReplaceAll(schemaPath, "/", "_")
+    return "search_indexes_" + normalized
+}
+
+// buildAllMetadata derives database metadata from all loaded schemas.
+// Called during Load() after schemas are loaded.
+func (r *Registry) buildAllMetadata() {
+    for path, compiled := range r.schemas {
+        // Skip header/trailer - they don't have database tables
+        if compiled.RecordType == "HEADER" || compiled.RecordType == "TRAILER" {
+            continue
+        }
+        r.metadata[path] = buildSchemaMetadata(path, compiled)
+    }
 }
 
 // GetSchemaMetadata returns database metadata for a schema path.
 func (r *Registry) GetSchemaMetadata(schemaPath string) *SchemaMetadata {
-    if meta, ok := schemaMetadataMap[schemaPath]; ok {
-        return &meta
-    }
-    return nil
+    return r.metadata[schemaPath]
 }
 ```
 
 ### Converter Registry
 
-Each record type needs a converter function that transforms a parsed record into its SQLC type. These are registered at startup:
+Each record type needs a converter function that transforms a parsed record to database row values. Converters use SQLC types internally for type safety, but return `[]any` for flexibility with the dynamic WriterManager.
 
 ```go
 // internal/converter/registry.go
 package converter
 
 import (
-    "go-parser/internal/db"
     "go-parser/internal/worker"
 )
 
-// ConvertFunc converts a ParsedRecord to a SQLC type.
-// Returns the converted struct and the table name.
-type ConvertFunc func(record *worker.ParsedRecord, datafileID int32) any
+// RowConverter converts a ParsedRecord to row values for COPY.
+// Uses SQLC types internally for type safety, returns []any for flexibility.
+type RowConverter func(record *worker.ParsedRecord, datafileID int32) []any
 
 // converterRegistry maps record types to their converter functions.
-var converterRegistry = map[string]ConvertFunc{
-    "T1": func(r *worker.ParsedRecord, id int32) any { return ToTanfT1(r, id) },
-    "T2": func(r *worker.ParsedRecord, id int32) any { return ToTanfT2(r, id) },
-    "T3": func(r *worker.ParsedRecord, id int32) any { return ToTanfT3(r, id) },
-    "M1": func(r *worker.ParsedRecord, id int32) any { return ToSspM1(r, id) },
-    "M2": func(r *worker.ParsedRecord, id int32) any { return ToSspM2(r, id) },
-    "M3": func(r *worker.ParsedRecord, id int32) any { return ToSspM3(r, id) },
-    // ... additional converters
+var converterRegistry = map[string]RowConverter{
+    // TANF record types
+    "T1": convertT1,
+    "T2": convertT2,
+    "T3": convertT3,
+    "T4": convertT4,
+    "T5": convertT5,
+    "T6": convertT6,
+    "T7": convertT7,
+    // SSP record types
+    "M1": convertM1,
+    "M2": convertM2,
+    "M3": convertM3,
+    "M4": convertM4,
+    "M5": convertM5,
+    "M6": convertM6,
+    "M7": convertM7,
+    // Tribal uses same T1-T7 prefixes but different tables
+    // The WriterManager routes based on FileSpec, not just record type
+}
+
+// convertT1 converts a T1 record using SQLC types for type safety.
+func convertT1(record *worker.ParsedRecord, datafileID int32) []any {
+    sqlc := ToTanfT1(record, datafileID)  // Creates *db.SearchIndexesTanfT1
+    return TanfT1RowValues(sqlc)           // Extracts []any for COPY
 }
 
 // GetConverter returns the converter for a record type.
-func GetConverter(recordType string) ConvertFunc {
+func GetConverter(recordType string) RowConverter {
     return converterRegistry[recordType]
 }
 ```
@@ -3494,9 +3537,9 @@ For 10 million records:
 - Single INSERT: ~30-60 minutes
 - COPY: ~20-100 seconds
 
-### TableWriter Implementation (Generic with SQLC Types)
+### TableWriter Implementation (Dynamic)
 
-The TableWriter uses Go generics to provide type-safe buffering for any SQLC-generated struct type. This gives us compile-time type safety while maintaining efficient COPY operations.
+The TableWriter stores `[]any` row data for flexibility. This allows the WriterManager to create writers dynamically based on the FileSpec without needing compile-time knowledge of record types.
 
 ```go
 // internal/writer/table_writer.go
@@ -3519,35 +3562,20 @@ const (
     MaxFlushThreshold = 10000
 )
 
-// RowValuer extracts column values from a struct for COPY.
-// Each SQLC type will implement this via a helper function.
-type RowValuer interface {
-    RowValues() []any
-}
-
-// TableWriter[T] accumulates typed records for a database table and flushes
-// them efficiently using PostgreSQL's COPY protocol.
+// TableWriter accumulates row data for a database table and flushes
+// using PostgreSQL's COPY protocol.
 //
-// Type parameter T must be a SQLC-generated struct type that can be
-// converted to row values.
-//
-// Memory usage: threshold * sizeof(T) (e.g., 5000 * 1KB = 5MB)
-type TableWriter[T any] struct {
+// Memory usage: threshold * avg_row_size (e.g., 5000 * 1KB = 5MB)
+type TableWriter struct {
     tableName string
     columns   []string
-    records   []T
+    rows      [][]any
     threshold int
-    toRow     func(T) []any // Converts T to row values for COPY
 }
 
-// NewTableWriter creates a typed writer for the specified table.
-// The toRow function converts each record to a slice of values for COPY.
-func NewTableWriter[T any](
-    tableName string,
-    columns []string,
-    threshold int,
-    toRow func(T) []any,
-) *TableWriter[T] {
+// NewTableWriter creates a writer for the specified table.
+// Columns are derived from the schema metadata.
+func NewTableWriter(tableName string, columns []string, threshold int) *TableWriter {
     if threshold <= 0 {
         threshold = DefaultFlushThreshold
     }
@@ -3555,42 +3583,37 @@ func NewTableWriter[T any](
         threshold = MaxFlushThreshold
     }
 
-    return &TableWriter[T]{
+    return &TableWriter{
         tableName: tableName,
         columns:   columns,
-        records:   make([]T, 0, threshold),
+        rows:      make([][]any, 0, threshold),
         threshold: threshold,
-        toRow:     toRow,
     }
 }
 
-// Add appends a record to the buffer.
+// Add appends a row to the buffer.
 // Returns true if the flush threshold has been reached.
-func (tw *TableWriter[T]) Add(record T) bool {
-    tw.records = append(tw.records, record)
-    return len(tw.records) >= tw.threshold
+func (tw *TableWriter) Add(row []any) bool {
+    tw.rows = append(tw.rows, row)
+    return len(tw.rows) >= tw.threshold
 }
 
-// Flush writes all buffered records to the database via COPY protocol.
+// Flush writes all buffered rows to the database via COPY protocol.
 // Clears the buffer immediately after copying to release memory.
-// Returns the number of rows written.
-func (tw *TableWriter[T]) Flush(ctx context.Context, pool *pgxpool.Pool) (int64, error) {
-    if len(tw.records) == 0 {
+func (tw *TableWriter) Flush(ctx context.Context, pool *pgxpool.Pool) (int64, error) {
+    if len(tw.rows) == 0 {
         return 0, nil
     }
 
-    // Capture records and clear buffer immediately to release memory
-    records := tw.records
-    tw.records = make([]T, 0, tw.threshold)
+    // Capture rows and clear buffer immediately to release memory
+    rows := tw.rows
+    tw.rows = make([][]any, 0, tw.threshold)
 
-    // Use CopyFromSlice for type-safe COPY with our converter function
     count, err := pool.CopyFrom(
         ctx,
         pgx.Identifier{tw.tableName},
         tw.columns,
-        pgx.CopyFromSlice(len(records), func(i int) ([]any, error) {
-            return tw.toRow(records[i]), nil
-        }),
+        pgx.CopyFromRows(rows),
     )
 
     if err != nil {
@@ -3600,111 +3623,20 @@ func (tw *TableWriter[T]) Flush(ctx context.Context, pool *pgxpool.Pool) (int64,
     return count, nil
 }
 
-// Pending returns the number of records waiting to be flushed.
-func (tw *TableWriter[T]) Pending() int {
-    return len(tw.records)
+// Pending returns the number of rows waiting to be flushed.
+func (tw *TableWriter) Pending() int {
+    return len(tw.rows)
 }
 
-// Reset clears the buffer without flushing. Use with caution.
-func (tw *TableWriter[T]) Reset() {
-    tw.records = make([]T, 0, tw.threshold)
-}
-```
-
-### Row Value Extractors for SQLC Types
-
-Each SQLC type needs a function to extract its field values in the correct order for COPY:
-
-```go
-// internal/writer/row_values.go
-package writer
-
-import "go-parser/internal/db"
-
-// TanfT1RowValues extracts values from a TANF T1 record for COPY.
-// Column order must match the table definition exactly.
-func TanfT1RowValues(r *db.SearchIndexesTanfT1) []any {
-    return []any{
-        r.ID,
-        r.DatafileID,
-        r.LineNumber,
-        r.RecordType,
-        r.RPTMONTHYEAR,
-        r.CASENUMBER,
-        r.DISPOSITION,
-        r.FIPSCODE,
-        r.COUNTYFIPSCODE,
-        r.STRATUM,
-        r.ZIPCODE,
-        r.FUNDINGSTREAM,
-        r.NEWAPPLICANT,
-        r.NBRFAMILYMEMBERS,
-        r.FAMILYTYPE,
-        r.RECEIVESSUBHOUSING,
-        r.RECEIVESMEDASSISTANCE,
-        r.RECEIVESFOODSTAMPS,
-        r.AMTFOODSTAMPASSISTANCE,
-        r.RECEIVESSUBCC,
-        r.AMTSUBCC,
-        r.CHILDSUPPORTAMT,
-        r.FAMILYCASHRESOURCES,
-        r.CASHAMOUNT,
-        r.NBRMONTHS,
-        r.CCAMOUNT,
-        r.CHILDRENCOVERED,
-        r.CCNBRMONTHS,
-        r.TRANSPAMOUNT,
-        r.TRANSPNBRMONTHS,
-        r.TRANSITIONSERVICESAMOUNT,
-        r.TRANSITIONNBRMONTHS,
-        r.OTHERAMOUNT,
-        r.OTHERNBRMONTHS,
-        r.SANCREDUCTIONAMT,
-        r.WORKREQSANCTION,
-        r.FAMILYSANCADULT,
-        r.SANCTEENPARENT,
-        r.NONCOOPERATIONCSE,
-        r.FAILURETOCOMPLY,
-        r.OTHERSANCTION,
-        r.RECOUPMENTPRIOROVRPMT,
-        r.OTHERTOTALREDUCTIONS,
-        r.FAMILYCAP,
-        r.REDUCTIONSONRECEIPTS,
-        r.OTHERNONSANCTION,
-        r.WAIVEREVALCONTROLGRPS,
-        r.FAMILYEXEMPTTIMELIMITS,
-        r.FAMILYNEWCHILD,
-    }
-}
-
-// TanfT2RowValues, TanfT3RowValues, etc. follow the same pattern
-// ...
-
-// ParserErrorRowValues extracts values from a parser error for COPY.
-func ParserErrorRowValues(r *db.ParserError) []any {
-    return []any{
-        r.RowNumber,
-        r.ColumnNumber,
-        r.ItemNumber,
-        r.FieldName,
-        r.CaseNumber,
-        r.RptMonthYear,
-        r.ErrorMessage,
-        r.ErrorType,
-        r.CreatedAt,
-        r.FieldsJson,
-        r.ContentTypeID,
-        r.FileID,
-        r.ObjectID,
-        r.Deprecated,
-        r.ValuesJson,
-    }
+// TableName returns the table this writer targets.
+func (tw *TableWriter) TableName() string {
+    return tw.tableName
 }
 ```
 
-### WriterManager Implementation (Using SQLC Types)
+### WriterManager Implementation (Dynamic from FileSpec)
 
-The WriterManager uses type-safe TableWriters for each record type. Since we know the exact record types at compile time, we can use concrete SQLC types.
+The WriterManager creates writers dynamically based on the FileSpec. This allows it to handle any program/section combination without hardcoded record types.
 
 ```go
 // internal/writer/manager.go
@@ -3718,101 +3650,94 @@ import (
     "github.com/jackc/pgx/v5/pgxpool"
 
     "go-parser/internal/converter"
-    "go-parser/internal/db"
+    "go-parser/internal/filespec"
+    "go-parser/internal/registry"
     "go-parser/internal/worker"
 )
 
-// Flusher is the interface for any TableWriter that can flush.
-type Flusher interface {
-    Flush(ctx context.Context, pool *pgxpool.Pool) (int64, error)
-    Pending() int
+// RecordWriter pairs a TableWriter with its converter function.
+type RecordWriter struct {
+    writer    *TableWriter
+    converter converter.RowConverter
 }
 
-// WriterManager coordinates writes across multiple tables for a single file.
-// It uses type-safe TableWriters for each SQLC record type.
+// WriterManager coordinates writes for any file type.
+// Writers are created dynamically based on the FileSpec.
 type WriterManager struct {
     pool       *pgxpool.Pool
     datafileID int32
 
-    // Typed writers for each record type
-    t1Writer    *TableWriter[*db.SearchIndexesTanfT1]
-    t2Writer    *TableWriter[*db.SearchIndexesTanfT2]
-    t3Writer    *TableWriter[*db.SearchIndexesTanfT3]
-    errorWriter *TableWriter[*db.ParserError]
+    // Dynamic writers keyed by record type (e.g., "T1", "M2")
+    writers     map[string]*RecordWriter
+    errorWriter *TableWriter
 
     // Stats tracking
-    totalT1     int64
-    totalT2     int64
-    totalT3     int64
-    totalErrors int64
+    totalWritten map[string]int64
+    totalErrors  int64
 }
 
-// TANF Section 1 column definitions
-var (
-    tanfT1Columns = []string{
-        "id", `"RecordType"`, `"RPT_MONTH_YEAR"`, `"CASE_NUMBER"`,
-        `"DISPOSITION"`, `"FIPS_CODE"`, `"COUNTY_FIPS_CODE"`, `"STRATUM"`,
-        `"ZIP_CODE"`, `"FUNDING_STREAM"`, `"NEW_APPLICANT"`,
-        // ... all columns in order
-        "datafile_id", "line_number",
+// Error table columns (same for all file types)
+var parserErrorColumns = []string{
+    "row_number", "column_number", "item_number", "field_name",
+    "case_number", "rpt_month_year", "error_message", "error_type",
+    "created_at", "fields_json", "content_type_id", "file_id",
+    "object_id", "deprecated", "values_json",
+}
+
+// NewWriterManager creates a manager based on the FileSpec.
+// Writers are created only for the record types in this specific file.
+func NewWriterManager(
+    pool *pgxpool.Pool,
+    datafileID int32,
+    spec *filespec.FileSpec,
+    reg *registry.Registry,
+) *WriterManager {
+    wm := &WriterManager{
+        pool:         pool,
+        datafileID:   datafileID,
+        writers:      make(map[string]*RecordWriter),
+        totalWritten: make(map[string]int64),
     }
 
-    tanfT2Columns = []string{
-        "id", `"RecordType"`, `"RPT_MONTH_YEAR"`, `"CASE_NUMBER"`,
-        `"FAMILY_AFFILIATION"`, `"NONCUSTODIAL_PARENT"`, `"DATE_OF_BIRTH"`,
-        // ... all columns in order
-        "datafile_id", "line_number",
+    // Create a writer for each data record type in the FileSpec
+    for _, schemaPath := range spec.Schemas {
+        schema := reg.GetSchema(schemaPath)
+
+        // Skip header/trailer - they don't get written to database
+        if schema.RecordType == "HEADER" || schema.RecordType == "TRAILER" {
+            continue
+        }
+
+        // Get metadata (table name, columns derived from schema)
+        meta := reg.GetSchemaMetadata(schemaPath)
+        if meta == nil {
+            continue
+        }
+
+        // Get the converter for this record type
+        conv := converter.GetConverter(schema.RecordType)
+        if conv == nil {
+            log.Printf("Warning: no converter for record type %s", schema.RecordType)
+            continue
+        }
+
+        wm.writers[schema.RecordType] = &RecordWriter{
+            writer:    NewTableWriter(meta.TableName, meta.Columns, DefaultFlushThreshold),
+            converter: conv,
+        }
+
+        log.Printf("Created writer for %s -> %s (%d columns)",
+            schema.RecordType, meta.TableName, len(meta.Columns))
     }
 
-    tanfT3Columns = []string{
-        "id", `"RecordType"`, `"RPT_MONTH_YEAR"`, `"CASE_NUMBER"`,
-        `"FAMILY_AFFILIATION"`, `"DATE_OF_BIRTH"`, `"SSN"`,
-        // ... all columns in order
-        "datafile_id", "line_number",
-    }
+    // Error writer is always the same
+    wm.errorWriter = NewTableWriter("parser_error", parserErrorColumns, DefaultFlushThreshold)
 
-    parserErrorColumns = []string{
-        "row_number", "column_number", "item_number", "field_name",
-        "case_number", "rpt_month_year", "error_message", "error_type",
-        "created_at", "fields_json", "content_type_id", "file_id",
-        "object_id", "deprecated", "values_json",
-    }
-)
-
-// NewTANFSection1WriterManager creates a manager for TANF Section 1 files.
-func NewTANFSection1WriterManager(pool *pgxpool.Pool, datafileID int32) *WriterManager {
-    return &WriterManager{
-        pool:       pool,
-        datafileID: datafileID,
-        t1Writer: NewTableWriter(
-            "search_indexes_tanf_t1",
-            tanfT1Columns,
-            DefaultFlushThreshold,
-            TanfT1RowValues,
-        ),
-        t2Writer: NewTableWriter(
-            "search_indexes_tanf_t2",
-            tanfT2Columns,
-            DefaultFlushThreshold,
-            TanfT2RowValues,
-        ),
-        t3Writer: NewTableWriter(
-            "search_indexes_tanf_t3",
-            tanfT3Columns,
-            DefaultFlushThreshold,
-            TanfT3RowValues,
-        ),
-        errorWriter: NewTableWriter(
-            "parser_error",
-            parserErrorColumns,
-            DefaultFlushThreshold,
-            ParserErrorRowValues,
-        ),
-    }
+    return wm
 }
 
 // WriteBatch processes all records from a ParsedBatch.
-// Records are converted to SQLC types and routed to appropriate writers.
+// Records are converted and routed to the appropriate writer.
 func (wm *WriterManager) WriteBatch(ctx context.Context, batch *worker.ParsedBatch) error {
     for _, group := range batch.Groups {
         // Write successful records
@@ -3833,54 +3758,35 @@ func (wm *WriterManager) WriteBatch(ctx context.Context, batch *worker.ParsedBat
     return nil
 }
 
-// writeRecord converts a ParsedRecord to its SQLC type and writes it.
+// writeRecord converts and writes a single record.
 func (wm *WriterManager) writeRecord(ctx context.Context, record *worker.ParsedRecord) error {
-    switch record.Schema.RecordType {
-    case "T1":
-        sqlcRecord := converter.ToTanfT1(record, wm.datafileID)
-        if wm.t1Writer.Add(sqlcRecord) {
-            count, err := wm.t1Writer.Flush(ctx, wm.pool)
-            if err != nil {
-                return err
-            }
-            wm.totalT1 += count
-            log.Printf("Flushed %d T1 records", count)
-        }
+    rw, ok := wm.writers[record.Schema.RecordType]
+    if !ok {
+        return fmt.Errorf("no writer for record type: %s", record.Schema.RecordType)
+    }
 
-    case "T2":
-        sqlcRecord := converter.ToTanfT2(record, wm.datafileID)
-        if wm.t2Writer.Add(sqlcRecord) {
-            count, err := wm.t2Writer.Flush(ctx, wm.pool)
-            if err != nil {
-                return err
-            }
-            wm.totalT2 += count
-            log.Printf("Flushed %d T2 records", count)
-        }
+    // Convert ParsedRecord to row values using the registered converter
+    // The converter uses SQLC types internally for type safety
+    row := rw.converter(record, wm.datafileID)
 
-    case "T3":
-        sqlcRecord := converter.ToTanfT3(record, wm.datafileID)
-        if wm.t3Writer.Add(sqlcRecord) {
-            count, err := wm.t3Writer.Flush(ctx, wm.pool)
-            if err != nil {
-                return err
-            }
-            wm.totalT3 += count
-            log.Printf("Flushed %d T3 records", count)
+    // Add to buffer; flush if threshold reached
+    if rw.writer.Add(row) {
+        count, err := rw.writer.Flush(ctx, wm.pool)
+        if err != nil {
+            return err
         }
-
-    default:
-        return fmt.Errorf("unknown record type: %s", record.Schema.RecordType)
+        wm.totalWritten[rw.writer.TableName()] += count
+        log.Printf("Flushed %d %s records", count, record.Schema.RecordType)
     }
 
     return nil
 }
 
-// writeError converts and writes a parser error.
+// writeError writes a parser error.
 func (wm *WriterManager) writeError(ctx context.Context, perr worker.ParseError) error {
-    sqlcError := converter.ToParserError(perr, wm.datafileID)
+    row := converter.ToParserErrorRow(perr, wm.datafileID)
 
-    if wm.errorWriter.Add(sqlcError) {
+    if wm.errorWriter.Add(row) {
         count, err := wm.errorWriter.Flush(ctx, wm.pool)
         if err != nil {
             return err
@@ -3894,60 +3800,48 @@ func (wm *WriterManager) writeError(ctx context.Context, perr worker.ParseError)
 
 // FlushAll flushes all writers. Call this at the end of file processing.
 func (wm *WriterManager) FlushAll(ctx context.Context) error {
-    // Flush T1 writer
-    if count, err := wm.t1Writer.Flush(ctx, wm.pool); err != nil {
-        return fmt.Errorf("final flush T1: %w", err)
-    } else {
-        wm.totalT1 += count
-        if count > 0 {
-            log.Printf("Final flush: %d T1 records", count)
+    // Flush all record writers
+    for recordType, rw := range wm.writers {
+        count, err := rw.writer.Flush(ctx, wm.pool)
+        if err != nil {
+            return fmt.Errorf("final flush %s: %w", recordType, err)
         }
-    }
-
-    // Flush T2 writer
-    if count, err := wm.t2Writer.Flush(ctx, wm.pool); err != nil {
-        return fmt.Errorf("final flush T2: %w", err)
-    } else {
-        wm.totalT2 += count
+        wm.totalWritten[rw.writer.TableName()] += count
         if count > 0 {
-            log.Printf("Final flush: %d T2 records", count)
-        }
-    }
-
-    // Flush T3 writer
-    if count, err := wm.t3Writer.Flush(ctx, wm.pool); err != nil {
-        return fmt.Errorf("final flush T3: %w", err)
-    } else {
-        wm.totalT3 += count
-        if count > 0 {
-            log.Printf("Final flush: %d T3 records", count)
+            log.Printf("Final flush: %d %s records", count, recordType)
         }
     }
 
     // Flush error writer
-    if count, err := wm.errorWriter.Flush(ctx, wm.pool); err != nil {
+    count, err := wm.errorWriter.Flush(ctx, wm.pool)
+    if err != nil {
         return fmt.Errorf("final flush errors: %w", err)
-    } else {
-        wm.totalErrors += count
-        if count > 0 {
-            log.Printf("Final flush: %d errors", count)
-        }
+    }
+    wm.totalErrors += count
+    if count > 0 {
+        log.Printf("Final flush: %d errors", count)
     }
 
     return nil
 }
 
-// Stats returns the total records written by type.
-func (wm *WriterManager) Stats() (t1, t2, t3, errors int64) {
-    return wm.totalT1, wm.totalT2, wm.totalT3, wm.totalErrors
+// Stats returns the total records written per table.
+func (wm *WriterManager) Stats() (records map[string]int64, errors int64) {
+    // Return a copy to prevent modification
+    result := make(map[string]int64)
+    for k, v := range wm.totalWritten {
+        result[k] = v
+    }
+    return result, wm.totalErrors
 }
 
 // Pending returns the total number of unflushed records across all writers.
 func (wm *WriterManager) Pending() int {
-    return wm.t1Writer.Pending() +
-        wm.t2Writer.Pending() +
-        wm.t3Writer.Pending() +
-        wm.errorWriter.Pending()
+    total := wm.errorWriter.Pending()
+    for _, rw := range wm.writers {
+        total += rw.writer.Pending()
+    }
+    return total
 }
 ```
 
@@ -4009,16 +3903,33 @@ func collectResults(
     }
 
     // Log final stats
-    t1, t2, t3, errors := writerMgr.Stats()
-    log.Printf("Total written - T1: %d, T2: %d, T3: %d, Errors: %d", t1, t2, t3, errors)
+    records, errors := writerMgr.Stats()
+    for table, count := range records {
+        log.Printf("Written to %s: %d records", table, count)
+    }
+    log.Printf("Total errors: %d", errors)
 
     return nil
 }
 
-// Example usage in main:
-func processFile(ctx context.Context, pool *pgxpool.Pool, datafileID int32) error {
-    // Create the type-safe writer manager for TANF Section 1
-    writerMgr := writer.NewTANFSection1WriterManager(pool, datafileID)
+// Example usage - the WriterManager is created dynamically from the FileSpec
+func processFile(
+    ctx context.Context,
+    pool *pgxpool.Pool,
+    reg *registry.Registry,
+    program string,
+    section int,
+    datafileID int32,
+) error {
+    // Get the FileSpec for this program/section
+    spec := reg.GetFileSpec(program, section)
+    if spec == nil {
+        return fmt.Errorf("no FileSpec for %s section %d", program, section)
+    }
+
+    // Create WriterManager dynamically based on the FileSpec
+    // This works for ANY program/section - TANF, SSP, Tribal, etc.
+    writerMgr := writer.NewWriterManager(pool, datafileID, spec, reg)
 
     // ... set up worker pool and process file ...
 
@@ -4139,8 +4050,8 @@ func processFile(
     workerPool := worker.NewPool(spec.Format, poolConfig)
     workerPool.Start(ctx)
 
-    // Step 5: Create database writer
-    dbWriter := writer.NewWriter(pool, datafileID)
+    // Step 5: Create database writer (dynamically from FileSpec)
+    writerMgr := writer.NewWriterManager(pool, datafileID, spec, reg)
 
     // Step 6: Start result collector
     var collectorErr error
@@ -4148,7 +4059,7 @@ func processFile(
     wg.Add(1)
     go func() {
         defer wg.Done()
-        collectorErr = collectResults(ctx, workerPool, dbWriter)
+        collectorErr = collectResults(ctx, workerPool, writerMgr)
     }()
 
     // Step 7: Process rows through the unified Accumulator
@@ -4231,7 +4142,7 @@ func processRows(
 func collectResults(
     ctx context.Context,
     pool *worker.Pool,
-    dbWriter *writer.Writer,
+    writerMgr *writer.WriterManager,
 ) error {
     for pb := range pool.Results() {
         // Log any parsing errors
@@ -4243,10 +4154,21 @@ func collectResults(
         }
 
         // Write the batch to the database
-        if err := dbWriter.WriteBatch(ctx, pb); err != nil {
+        if err := writerMgr.WriteBatch(ctx, pb); err != nil {
             log.Printf("Failed to write batch %d: %v", pb.BatchID, err)
         }
     }
+
+    // Flush remaining records and report stats
+    if err := writerMgr.FlushAll(ctx); err != nil {
+        return fmt.Errorf("final flush: %w", err)
+    }
+
+    records, errors := writerMgr.Stats()
+    for table, count := range records {
+        log.Printf("Written to %s: %d records", table, count)
+    }
+    log.Printf("Total errors: %d", errors)
 
     return nil
 }

@@ -15,22 +15,22 @@ type Position struct {
 }
 
 type RawRow struct {
-	Data interface{}
-    RawLen int
-    DecodedLen int
-    RowNum int
-    RecordType string
+	Data       interface{}
+	RawLen     int
+	DecodedLen int
+	RowNum     int
+	RecordType string
 }
 
 func (rr *RawRow) ValueAt(pos Position) interface{} {
 	v := reflect.ValueOf(rr.Data)
-    switch v.Kind() {
-    case reflect.Slice, reflect.Array, reflect.String:
-        return v.Slice(pos.RowNum, pos.ColNum)
-    default:
+	switch v.Kind() {
+	case reflect.Slice, reflect.Array, reflect.String:
+		return v.Slice(pos.RowNum, pos.ColNum)
+	default:
 		// Should we return error
-        return nil
-    }
+		return nil
+	}
 }
 
 func (rr *RawRow) ValueAtIs(pos Position, expected interface{}) bool {
@@ -38,7 +38,7 @@ func (rr *RawRow) ValueAtIs(pos Position, expected interface{}) bool {
 }
 
 type DecoderBase struct {
-	File *os.File
+	File          *os.File
 	CurrentRowNum int
 }
 
@@ -90,10 +90,10 @@ func (d *Utf8Decoder) Decode() RawRow {
 	decodedLen := len(decodedData)
 	recordType := d.GetRecordType(decodedData)
 	return RawRow{
-		Data: decodedData,
-		RowNum: d.CurrentRowNum,
+		Data:       decodedData,
+		RowNum:     d.CurrentRowNum,
 		RecordType: recordType,
-		RawLen: rawLen,
+		RawLen:     rawLen,
 		DecodedLen: decodedLen,
 	}
 }
@@ -105,10 +105,10 @@ func (d *Utf8Decoder) GetHeader() RawRow {
 	}
 	decodedData := strings.TrimRight(rawData, "\r\n")
 	return RawRow{
-		Data: decodedData,
-		RowNum: 0,
+		Data:       decodedData,
+		RowNum:     0,
 		RecordType: "HEADER",
-		RawLen: len(rawData),
+		RawLen:     len(rawData),
 		DecodedLen: len(decodedData),
 	}
 }

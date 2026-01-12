@@ -15,9 +15,9 @@ type CeleryWorker interface {
 }
 
 type RedisWorker struct {
-	pool *redis.Pool
+	pool   *redis.Pool
 	Client *gocelery.CeleryClient
-	tasks map[string]interface{}
+	tasks  map[string]interface{}
 }
 
 func (w *RedisWorker) initTasks() {
