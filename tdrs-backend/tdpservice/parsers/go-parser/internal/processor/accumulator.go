@@ -72,8 +72,8 @@ func (a *Accumulator) Add(row decoder.Row) (batch *Batch, sch *schema.CompiledSc
 	}
 
 	// Check if this schema participates in accumulation
-	schemaName := sch.RecordType
-	if len(a.groupedSchemas) > 0 && !a.groupedSchemas[schemaName] {
+	// groupedSchemas uses schema paths (e.g., "tanf/t1"), not record types
+	if len(a.groupedSchemas) > 0 && !a.groupedSchemas[sch.Path] {
 		// Not accumulated (e.g., HEADER, TRAILER) - return for immediate processing
 		return nil, sch, false, nil
 	}

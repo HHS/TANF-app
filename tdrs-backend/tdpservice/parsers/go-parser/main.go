@@ -9,20 +9,21 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"go-parser/internal/db"
 	"go-parser/internal/decoder"
 	"go-parser/internal/filespec"
 	"go-parser/internal/parser"
 	"go-parser/internal/processor"
 	"go-parser/internal/registry"
+	"go-parser/internal/testutil"
 	"go-parser/internal/worker"
+	"go-parser/internal/writer"
 )
 
 func main() {
 	ctx := context.Background()
 
 	// Connect to database
-	pool, err := pgxpool.New(ctx, os.Getenv("DATABASE_URL"))
+	pool, err := pgxpool.New(ctx, "postgres://tdpuser:something_secure@localhost:5432/tdrs_test?sslmode=disable")//os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
@@ -37,8 +38,22 @@ func main() {
 	// Get file parameters (in real code, these come from the job queue)
 	program := "TANF"
 	section := 1
-	filePath := os.Args[1]
-	datafileID := int32(123) // From database
+	filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.FTP1.TS06"
+
+	// Create a test datafile record to satisfy foreign key constraints
+	datafileParams := testutil.DefaultDatafileParams()
+	datafileParams.ProgramType = "TAN"
+	datafileParams.Section = "Active Case Data"
+	datafileID, err := testutil.CreateTestDatafile(ctx, pool, datafileParams)
+	if err != nil {
+		log.Fatalf("Failed to create test datafile: %v", err)
+	}
+	log.Printf("Created test datafile with ID: %d", datafileID)
+	defer func() {
+		// Optionally clean up the test datafile after processing
+		// Uncomment to enable cleanup:
+		testutil.DeleteTestDatafile(ctx, pool, datafileID)
+	}()
 
 	// Process the file
 	if err := processFile(ctx, pool, reg, program, section, filePath, datafileID); err != nil {
@@ -89,7 +104,7 @@ func processFile(
 	workerPool.Start(ctx)
 
 	// Step 5: Create database writer (dynamically from FileSpec)
-	writerMgr := db.NewWriterManager(pool, datafileID, spec, reg)
+	writerMgr := writer.NewWriterManager(pool, datafileID, spec, reg)
 
 	// Step 6: Start result collector
 	var collectorErr error
@@ -180,7 +195,7 @@ func processRows(
 func collectResults(
 	ctx context.Context,
 	pool *worker.Pool,
-	writerMgr *db.WriterManager,
+	writerMgr *writer.WriterManager,
 ) error {
 	for pb := range pool.Results() {
 		// Log any parsing errors

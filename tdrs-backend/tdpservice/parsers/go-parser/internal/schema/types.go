@@ -58,6 +58,10 @@ type SchemaDef struct {
 type CompiledSchema struct {
 	*SchemaDef
 
+	// Path is the schema path (e.g., "tanf/t1", "tribal/t1")
+	// Set by the registry when loading schemas
+	Path string
+
 	// FieldsByName provides O(1) lookup by field name
 	FieldsByName map[string]*FieldDef
 

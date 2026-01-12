@@ -101,9 +101,6 @@ func (r *Registry) loadSchemas() error {
 			return fmt.Errorf("parsing %s: %w", path, err)
 		}
 
-		// Compile the schema
-		compiled := schemaDef.Compile()
-
 		// Compute the schema key (relative path without .yaml extension)
 		// e.g., "config/schemas/tanf/t1.yaml" -> "tanf/t1"
 		relPath, err := filepath.Rel(schemasDir, path)
@@ -111,6 +108,10 @@ func (r *Registry) loadSchemas() error {
 			return fmt.Errorf("computing relative path for %s: %w", path, err)
 		}
 		key := strings.TrimSuffix(relPath, ".yaml")
+
+		// Compile the schema and set its path
+		compiled := schemaDef.Compile()
+		compiled.Path = key
 
 		r.schemas[key] = compiled
 		return nil

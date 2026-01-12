@@ -98,7 +98,7 @@ func convertValue(rawValue, fieldType string) (any, error) {
 	}
 
 	switch fieldType {
-	case "int":
+	case "integer":
 		i, err := strconv.Atoi(trimmed)
 		if err != nil {
 			return nil, fmt.Errorf("cannot convert %q to int: %w", rawValue, err)

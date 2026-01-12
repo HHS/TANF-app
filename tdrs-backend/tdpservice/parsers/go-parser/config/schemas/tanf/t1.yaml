@@ -336,11 +336,3 @@ fields:
     end: 117
     type: integer
     required: false
-
-  # Blank padding
-  - name: BLANK
-    friendly_name: Blank
-    start: 117
-    end: 156
-    type: string
-    required: false

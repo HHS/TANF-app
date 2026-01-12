@@ -1,4 +1,4 @@
-package db
+package writer
 
 import (
 	"context"
@@ -25,8 +25,9 @@ type WriterManager struct {
 	pool       *pgxpool.Pool
 	datafileID int32
 
-	// Dynamic writers keyed by record type (e.g., "T1", "M2")
-	writers     map[string]*RecordWriter
+	// Writers keyed by schema path (e.g., "tanf/t1", "tribal/t1")
+	writers map[string]*RecordWriter
+
 	errorWriter *TableWriter
 
 	// Stats tracking
@@ -72,20 +73,22 @@ func NewWriterManager(
 			continue
 		}
 
-		// Get the converter for this record type
-		conv := converter.GetConverter(schema.RecordType)
+		// Get the converter for this schema path
+		// Schema path (e.g., "tanf/t1") distinguishes TANF vs Tribal T1
+		conv := converter.GetConverter(schemaPath)
 		if conv == nil {
-			log.Printf("Warning: no converter for record type %s", schema.RecordType)
+			log.Printf("Warning: no converter for schema %s", schemaPath)
 			continue
 		}
 
-		wm.writers[schema.RecordType] = &RecordWriter{
+		// Key by schema path to support different programs with same record type prefix
+		wm.writers[schemaPath] = &RecordWriter{
 			writer:    NewTableWriter(meta.TableName, meta.Columns, DefaultFlushThreshold),
 			converter: conv,
 		}
 
 		log.Printf("Created writer for %s -> %s (%d columns)",
-			schema.RecordType, meta.TableName, len(meta.Columns))
+			schemaPath, meta.TableName, len(meta.Columns))
 	}
 
 	// Error writer is always the same
@@ -118,24 +121,29 @@ func (wm *WriterManager) WriteBatch(ctx context.Context, batch *worker.ParsedBat
 }
 
 // writeRecord converts and writes a single record.
+// Some record types (like T3 with 2 children per line) produce multiple rows.
 func (wm *WriterManager) writeRecord(ctx context.Context, record *worker.ParsedRecord) error {
-	rw, ok := wm.writers[record.Schema.RecordType]
+	// Look up writer by schema path (stored in CompiledSchema)
+	rw, ok := wm.writers[record.Schema.Path]
 	if !ok {
-		return fmt.Errorf("no writer for record type: %s", record.Schema.RecordType)
+		return fmt.Errorf("no writer for schema: %s", record.Schema.Path)
 	}
 
 	// Convert ParsedRecord to row values using the registered converter
 	// The converter uses SQLC types internally for type safety
-	row := rw.converter(record, wm.datafileID)
+	// Returns [][]any to support multi-row records (e.g., T3 with 2 children)
+	rows := rw.converter(record, wm.datafileID)
 
-	// Add to buffer; flush if threshold reached
-	if rw.writer.Add(row) {
-		count, err := rw.writer.Flush(ctx, wm.pool)
-		if err != nil {
-			return err
+	// Add each row to buffer; flush if threshold reached
+	for _, row := range rows {
+		if rw.writer.Add(row) {
+			count, err := rw.writer.Flush(ctx, wm.pool)
+			if err != nil {
+				return err
+			}
+			wm.totalWritten[rw.writer.TableName()] += count
+			log.Printf("Flushed %d %s records", count, record.Schema.RecordType)
 		}
-		wm.totalWritten[rw.writer.TableName()] += count
-		log.Printf("Flushed %d %s records", count, record.Schema.RecordType)
 	}
 
 	return nil

@@ -48,7 +48,7 @@ func (d *PostitionalDecoder) Rows() iter.Seq2[Row, error] {
 			}
 
 			// Handle blank lines, comments, etc...
-			if len(line) == 0 || strings.HasPrefix(line, "#") {
+			if (len(line) == 0 && err != io.EOF) || strings.HasPrefix(line, "#") {
 				continue
 			}
 

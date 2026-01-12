@@ -1,11 +1,15 @@
 package registry
 
 import (
-	"fmt"
+	"regexp"
 	"strings"
 
 	"go-parser/internal/schema"
 )
+
+// numericSuffixPattern matches field names ending with _N where N is one or more digits.
+// Examples: FAMILY_AFFILIATION_2, STRATUM_3, CLOSURE_REASON_30
+var numericSuffixPattern = regexp.MustCompile(`_\d+$`)
 
 // SchemaMetadata holds database information derived from a schema.
 type SchemaMetadata struct {
@@ -22,9 +26,14 @@ func buildSchemaMetadata(schemaPath string, compiled *schema.CompiledSchema) *Sc
 
 	// Add columns from schema fields in order
 	// Schema field names (e.g., "RPT_MONTH_YEAR") map directly to DB columns
+	// Skip fields with numeric suffix (_2, _3, ..., _30) - these are parsing-only fields
+	// for multi-segment records (T3, T6, T7) where one input line contains data for
+	// multiple entities, but the DB stores one entity per row
 	for _, field := range compiled.Fields {
-		// PostgreSQL quoted identifiers for uppercase field names
-		columns = append(columns, fmt.Sprintf(`"%s"`, field.Name))
+		if numericSuffixPattern.MatchString(field.Name) {
+			continue
+		}
+		columns = append(columns, field.Name)
 	}
 
 	columns = append(columns, "id", "datafile_id", "line_number")

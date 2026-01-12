@@ -5,33 +5,46 @@ import (
 )
 
 // RowConverter converts a ParsedRecord to row values for COPY.
-// Uses SQLC types internally for type safety, returns []any for flexibility.
-type RowConverter func(record *worker.ParsedRecord, datafileID int32) []any
+// Uses SQLC types internally for type safety, returns [][]any for flexibility.
+// Most record types return a single row, but multi-record types like T3
+// (which contains 2 children per line) return multiple rows.
+type RowConverter func(record *worker.ParsedRecord, datafileID int32) [][]any
 
-// converterRegistry maps record types to their converter functions.
-// TODO: Implement converters for all record types.
+// converterRegistry maps schema paths to their converter functions.
+// Schema paths (e.g., "tanf/t1", "tribal/t1") allow different programs
+// with the same record type prefix to use different converters/tables.
 var converterRegistry = map[string]RowConverter{
 	// TANF record types
-	// "T1": convertT1,
-	// "T2": convertT2,
-	// "T3": convertT3,
-	// "T4": convertT4,
-	// "T5": convertT5,
-	// "T6": convertT6,
-	// "T7": convertT7,
-	// // SSP record types
-	// "M1": convertM1,
-	// "M2": convertM2,
-	// "M3": convertM3,
-	// "M4": convertM4,
-	// "M5": convertM5,
-	// "M6": convertM6,
-	// "M7": convertM7,
-	// Tribal uses same T1-T7 prefixes but different tables
-	// The WriterManager routes based on FileSpec, not just record type
+	"tanf/t1": convertTanfT1,
+	"tanf/t2": convertTanfT2,
+	"tanf/t3": convertTanfT3,
+	"tanf/t4": convertTanfT4,
+	"tanf/t5": convertTanfT5,
+	"tanf/t6": convertTanfT6,
+	"tanf/t7": convertTanfT7,
+
+	// SSP record types
+	"ssp/m1": convertSspM1,
+	"ssp/m2": convertSspM2,
+	"ssp/m3": convertSspM3,
+	"ssp/m4": convertSspM4,
+	"ssp/m5": convertSspM5,
+	"ssp/m6": convertSspM6,
+	"ssp/m7": convertSspM7,
+
+	// Tribal TANF record types (same T1-T7 prefixes but different tables)
+	"tribal/t1": convertTribalT1,
+	"tribal/t2": convertTribalT2,
+	"tribal/t3": convertTribalT3,
+	"tribal/t4": convertTribalT4,
+	"tribal/t5": convertTribalT5,
+	"tribal/t6": convertTribalT6,
+	"tribal/t7": convertTribalT7,
 }
 
-// GetConverter returns the converter for a record type.
-func GetConverter(recordType string) RowConverter {
-	return converterRegistry[recordType]
+// GetConverter returns the converter for a schema path.
+// The schema path (e.g., "tanf/t1") determines which converter to use,
+// allowing different programs with the same record type to use different tables.
+func GetConverter(schemaPath string) RowConverter {
+	return converterRegistry[schemaPath]
 }
