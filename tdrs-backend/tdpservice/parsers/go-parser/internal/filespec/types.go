@@ -98,6 +98,13 @@ type AccumulatorConfig struct {
 	// GroupedSchemas lists which schemas participate in key-based grouping.
 	// Schemas not in this list (e.g., HEADER, TRAILER) are processed individually.
 	GroupedSchemas []string `yaml:"grouped_schemas,omitempty"`
+
+	// Sorted indicates records are pre-sorted by key in the input file.
+	// When true, groups are flushed as soon as a new key is encountered,
+	// preventing memory buildup for large files. TANF, SSP, and Tribal
+	// files are typically sorted by case number within the file.
+	// When false, all groups are held in memory until Drain() is called.
+	Sorted bool `yaml:"sorted,omitempty"`
 }
 
 // HasKeyFields returns true if key-based grouping is configured.
