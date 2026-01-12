@@ -3266,6 +3266,538 @@ func ToTanfT1(record *worker.ParsedRecord, datafileID int32) *db.SearchIndexesTa
 
 ---
 
+## Database Writer
+
+### Design Constraints
+
+The Database Writer is designed for write-heavy workloads with the following constraints:
+
+1. **Memory limit**: 2GB maximum for the entire Go binary
+2. **Single file processing**: One file at a time
+3. **Limited record types**: Maximum 3 record types + parser errors per file
+4. **All inserts**: No updates or upserts - all records are new
+5. **High throughput**: Must handle millions to tens of millions of records
+
+### Memory Budget
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    2GB MEMORY BUDGET                         │
+├─────────────────────────────────────────────────────────────┤
+│  Go runtime + GC headroom:     ~200MB                       │
+│  File reading buffers:          ~50MB                       │
+│  Decoder/parsing:               ~50MB                       │
+│  Accumulator (case groups):    ~500MB  ← Largest consumer   │
+│  Worker pool channels:         ~100MB                       │
+│  Write buffers (4 writers):    ~200MB                       │
+│  Safety margin:                ~900MB                       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Architecture Overview
+
+```
+                    ┌─────────────────────────────────────┐
+                    │         WriterManager               │
+                    │                                     │
+                    │  datafileID: int32                  │
+                    │  flushThreshold: 5000               │
+                    │                                     │
+                    │  ┌─────────┐ ┌─────────┐            │
+                    │  │T1 Writer│ │T2 Writer│            │
+                    │  │ buffer  │ │ buffer  │            │
+                    │  │  5000   │ │  5000   │            │
+                    │  └─────────┘ └─────────┘            │
+                    │  ┌─────────┐ ┌───────────┐          │
+                    │  │T3 Writer│ │Err Writer │          │
+                    │  │ buffer  │ │  buffer   │          │
+                    │  │  5000   │ │   5000    │          │
+                    │  └─────────┘ └───────────┘          │
+                    │                                     │
+                    └─────────────────┬───────────────────┘
+                                      │
+                          Flush when buffer full
+                          (acquires conn from pool)
+                                      │
+                                      ▼
+                           ┌───────────────────┐
+                           │   pgxpool.Pool    │
+                           │   MaxConns: 8-10  │
+                           └───────────────────┘
+```
+
+### Why COPY Protocol?
+
+PostgreSQL's COPY protocol is 10-100x faster than INSERT for bulk data:
+
+| Method | Throughput | Use Case |
+|--------|------------|----------|
+| Single INSERT | ~1,000-5,000 rec/sec | Small updates |
+| Batched INSERT | ~10,000-50,000 rec/sec | Medium batches |
+| **COPY protocol** | ~100,000-500,000 rec/sec | Bulk loading |
+
+For 10 million records:
+- Single INSERT: ~30-60 minutes
+- COPY: ~20-100 seconds
+
+### TableWriter Implementation
+
+```go
+// internal/writer/table_writer.go
+package writer
+
+import (
+    "context"
+    "fmt"
+
+    "github.com/jackc/pgx/v5"
+    "github.com/jackc/pgx/v5/pgxpool"
+)
+
+const (
+    // DefaultFlushThreshold is the number of records per table before auto-flush.
+    // With ~1KB per record, 5000 records = ~5MB per writer.
+    DefaultFlushThreshold = 5000
+
+    // MaxFlushThreshold is a hard cap to prevent memory issues.
+    // Even if configured higher, we cap at this value.
+    MaxFlushThreshold = 10000
+)
+
+// TableWriter accumulates records for a single database table and flushes
+// them efficiently using PostgreSQL's COPY protocol.
+//
+// Memory usage: threshold * avg_record_size (e.g., 5000 * 1KB = 5MB)
+type TableWriter struct {
+    tableName string
+    columns   []string
+    rows      [][]any
+    threshold int
+}
+
+// NewTableWriter creates a writer for the specified table.
+func NewTableWriter(tableName string, columns []string, threshold int) *TableWriter {
+    if threshold <= 0 {
+        threshold = DefaultFlushThreshold
+    }
+    if threshold > MaxFlushThreshold {
+        threshold = MaxFlushThreshold
+    }
+
+    return &TableWriter{
+        tableName: tableName,
+        columns:   columns,
+        rows:      make([][]any, 0, threshold),
+        threshold: threshold,
+    }
+}
+
+// Add appends a row to the buffer.
+// Returns true if the flush threshold has been reached.
+func (tw *TableWriter) Add(row []any) bool {
+    tw.rows = append(tw.rows, row)
+    return len(tw.rows) >= tw.threshold
+}
+
+// Flush writes all buffered rows to the database via COPY protocol.
+// Clears the buffer immediately after copying to release memory.
+// Returns the number of rows written.
+func (tw *TableWriter) Flush(ctx context.Context, pool *pgxpool.Pool) (int64, error) {
+    if len(tw.rows) == 0 {
+        return 0, nil
+    }
+
+    // Capture rows and clear buffer immediately to release memory
+    // This is important: we clear BEFORE the potentially slow COPY operation
+    rows := tw.rows
+    tw.rows = make([][]any, 0, tw.threshold)
+
+    // Use COPY protocol for maximum throughput
+    // This is 10-100x faster than INSERT statements
+    count, err := pool.CopyFrom(
+        ctx,
+        pgx.Identifier{tw.tableName},
+        tw.columns,
+        pgx.CopyFromRows(rows),
+    )
+
+    if err != nil {
+        return 0, fmt.Errorf("COPY to %s: %w", tw.tableName, err)
+    }
+
+    return count, nil
+}
+
+// Pending returns the number of rows waiting to be flushed.
+func (tw *TableWriter) Pending() int {
+    return len(tw.rows)
+}
+
+// Reset clears the buffer without flushing. Use with caution.
+func (tw *TableWriter) Reset() {
+    tw.rows = make([][]any, 0, tw.threshold)
+}
+```
+
+### WriterManager Implementation
+
+```go
+// internal/writer/manager.go
+package writer
+
+import (
+    "context"
+    "fmt"
+    "log"
+
+    "github.com/jackc/pgx/v5/pgxpool"
+
+    "go-parser/internal/worker"
+)
+
+// WriterConfig defines a table that the WriterManager will write to.
+type WriterConfig struct {
+    TableName  string
+    Columns    []string
+    RecordType string // Maps to Schema.RecordType (e.g., "T1", "T2")
+}
+
+// WriterManager coordinates writes across multiple tables for a single file.
+// It routes records to the appropriate TableWriter based on record type
+// and handles automatic flushing when thresholds are reached.
+type WriterManager struct {
+    pool       *pgxpool.Pool
+    datafileID int32
+
+    // writers maps table name to its writer
+    writers map[string]*TableWriter
+
+    // recordTypeToTable maps record type (e.g., "T1") to table name
+    recordTypeToTable map[string]string
+
+    // errorWriter handles parser errors
+    errorWriter *TableWriter
+
+    // Stats tracking
+    totalWritten map[string]int64
+    totalErrors  int64
+}
+
+// NewWriterManager creates a manager for the specified tables.
+// The configs define which record types map to which tables.
+func NewWriterManager(
+    pool *pgxpool.Pool,
+    datafileID int32,
+    configs []WriterConfig,
+    errorTableName string,
+    errorColumns []string,
+) *WriterManager {
+    wm := &WriterManager{
+        pool:              pool,
+        datafileID:        datafileID,
+        writers:           make(map[string]*TableWriter),
+        recordTypeToTable: make(map[string]string),
+        totalWritten:      make(map[string]int64),
+    }
+
+    // Create writers for each configured table
+    for _, cfg := range configs {
+        wm.writers[cfg.TableName] = NewTableWriter(
+            cfg.TableName,
+            cfg.Columns,
+            DefaultFlushThreshold,
+        )
+        wm.recordTypeToTable[cfg.RecordType] = cfg.TableName
+    }
+
+    // Create error writer
+    wm.errorWriter = NewTableWriter(errorTableName, errorColumns, DefaultFlushThreshold)
+
+    return wm
+}
+
+// WriteBatch processes all records from a ParsedBatch.
+// Records are routed to appropriate tables based on their Schema.RecordType.
+// Automatically flushes writers when thresholds are reached.
+func (wm *WriterManager) WriteBatch(ctx context.Context, batch *worker.ParsedBatch) error {
+    for _, group := range batch.Groups {
+        // Write successful records
+        for _, record := range group.Records {
+            if err := wm.writeRecord(ctx, record, group); err != nil {
+                return err
+            }
+        }
+
+        // Write parser errors
+        for _, perr := range group.Errors {
+            if err := wm.writeError(ctx, perr, group); err != nil {
+                return err
+            }
+        }
+    }
+
+    return nil
+}
+
+// writeRecord converts and writes a single parsed record.
+func (wm *WriterManager) writeRecord(
+    ctx context.Context,
+    record *worker.ParsedRecord,
+    group *worker.ParsedGroup,
+) error {
+    tableName, ok := wm.recordTypeToTable[record.Schema.RecordType]
+    if !ok {
+        return fmt.Errorf("unknown record type: %s", record.Schema.RecordType)
+    }
+
+    writer := wm.writers[tableName]
+
+    // Convert ParsedRecord to row values
+    // The first column is always datafile_id
+    row := wm.recordToRow(record, group)
+
+    // Add to buffer; flush if threshold reached
+    if writer.Add(row) {
+        count, err := writer.Flush(ctx, wm.pool)
+        if err != nil {
+            return err
+        }
+        wm.totalWritten[tableName] += count
+        log.Printf("Flushed %d records to %s", count, tableName)
+    }
+
+    return nil
+}
+
+// writeError writes a parser error record.
+func (wm *WriterManager) writeError(
+    ctx context.Context,
+    perr worker.ParseError,
+    group *worker.ParsedGroup,
+) error {
+    row := []any{
+        wm.datafileID,
+        perr.LineNumber,
+        perr.RecordType,
+        group.Key,
+        perr.Message,
+    }
+
+    if wm.errorWriter.Add(row) {
+        count, err := wm.errorWriter.Flush(ctx, wm.pool)
+        if err != nil {
+            return err
+        }
+        wm.totalErrors += count
+        log.Printf("Flushed %d errors", count)
+    }
+
+    return nil
+}
+
+// recordToRow converts a ParsedRecord to a database row.
+// This creates the []any slice that COPY needs.
+func (wm *WriterManager) recordToRow(record *worker.ParsedRecord, group *worker.ParsedGroup) []any {
+    // Build row based on schema field order
+    // First column is always datafile_id
+    row := make([]any, 0, len(record.Schema.Fields)+1)
+    row = append(row, wm.datafileID)
+
+    for _, field := range record.Schema.Fields {
+        value, exists := record.Fields[field.Name]
+        if !exists {
+            row = append(row, nil)
+        } else {
+            row = append(row, value)
+        }
+    }
+
+    return row
+}
+
+// FlushAll flushes all writers. Call this at the end of file processing.
+func (wm *WriterManager) FlushAll(ctx context.Context) error {
+    // Flush all record writers
+    for tableName, writer := range wm.writers {
+        count, err := writer.Flush(ctx, wm.pool)
+        if err != nil {
+            return fmt.Errorf("final flush %s: %w", tableName, err)
+        }
+        wm.totalWritten[tableName] += count
+        if count > 0 {
+            log.Printf("Final flush: %d records to %s", count, tableName)
+        }
+    }
+
+    // Flush error writer
+    count, err := wm.errorWriter.Flush(ctx, wm.pool)
+    if err != nil {
+        return fmt.Errorf("final flush errors: %w", err)
+    }
+    wm.totalErrors += count
+    if count > 0 {
+        log.Printf("Final flush: %d errors", count)
+    }
+
+    return nil
+}
+
+// Stats returns the total records written per table.
+func (wm *WriterManager) Stats() (records map[string]int64, errors int64) {
+    // Return a copy to prevent modification
+    result := make(map[string]int64)
+    for k, v := range wm.totalWritten {
+        result[k] = v
+    }
+    return result, wm.totalErrors
+}
+
+// Pending returns the total number of unflushed records across all writers.
+func (wm *WriterManager) Pending() int {
+    total := wm.errorWriter.Pending()
+    for _, w := range wm.writers {
+        total += w.Pending()
+    }
+    return total
+}
+```
+
+### Connection Pool Configuration
+
+```go
+// internal/db/pool.go
+package db
+
+import (
+    "context"
+    "time"
+
+    "github.com/jackc/pgx/v5/pgxpool"
+)
+
+// NewPool creates a connection pool optimized for write-heavy workloads.
+func NewPool(ctx context.Context, connString string) (*pgxpool.Pool, error) {
+    config, err := pgxpool.ParseConfig(connString)
+    if err != nil {
+        return nil, err
+    }
+
+    // Connection limits
+    // With 4 table writers that may flush concurrently, plus some headroom
+    config.MaxConns = 10
+    config.MinConns = 2
+
+    // Connection lifecycle
+    // Connections are recycled periodically to handle PostgreSQL maintenance
+    config.MaxConnLifetime = 30 * time.Minute
+    config.MaxConnIdleTime = 5 * time.Minute
+
+    // Health checks
+    config.HealthCheckPeriod = 30 * time.Second
+
+    return pgxpool.NewWithConfig(ctx, config)
+}
+```
+
+### Creating WriterManager for TANF Section 1
+
+```go
+// Example: Creating a WriterManager for TANF Section 1
+func createTANFSection1Writer(pool *pgxpool.Pool, datafileID int32) *writer.WriterManager {
+    configs := []writer.WriterConfig{
+        {
+            RecordType: "T1",
+            TableName:  "tanf_t1",
+            Columns: []string{
+                "datafile_id",
+                "rpt_month_year", "case_number", "county_fips_code",
+                "stratum", "zip_code", "funding_stream", "disposition",
+                // ... all T1 columns
+            },
+        },
+        {
+            RecordType: "T2",
+            TableName:  "tanf_t2",
+            Columns: []string{
+                "datafile_id",
+                "rpt_month_year", "case_number", "family_affiliation",
+                "noncustodial_parent", "date_of_birth", "ssn",
+                // ... all T2 columns
+            },
+        },
+        {
+            RecordType: "T3",
+            TableName:  "tanf_t3",
+            Columns: []string{
+                "datafile_id",
+                "rpt_month_year", "case_number", "family_affiliation",
+                "date_of_birth", "ssn",
+                // ... all T3 columns (including child 2 fields)
+            },
+        },
+    }
+
+    errorColumns := []string{
+        "datafile_id",
+        "line_number",
+        "record_type",
+        "case_key",
+        "error_message",
+    }
+
+    return writer.NewWriterManager(pool, datafileID, configs, "parser_errors", errorColumns)
+}
+```
+
+### Integration with Result Collector
+
+```go
+// collectResults receives parsed batches and writes them to the database.
+func collectResults(
+    ctx context.Context,
+    pool *worker.Pool,
+    writerMgr *writer.WriterManager,
+) error {
+    for batch := range pool.Results() {
+        if err := writerMgr.WriteBatch(ctx, batch); err != nil {
+            return fmt.Errorf("writing batch %d: %w", batch.BatchID, err)
+        }
+    }
+
+    // Flush any remaining records
+    if err := writerMgr.FlushAll(ctx); err != nil {
+        return fmt.Errorf("final flush: %w", err)
+    }
+
+    // Log final stats
+    records, errors := writerMgr.Stats()
+    for table, count := range records {
+        log.Printf("Total written to %s: %d", table, count)
+    }
+    log.Printf("Total parser errors: %d", errors)
+
+    return nil
+}
+```
+
+### Expected Performance
+
+With this architecture and COPY protocol:
+
+| File Size | Records | Expected Time | Memory Usage |
+|-----------|---------|---------------|--------------|
+| Small | 10,000 | < 1 second | ~100MB |
+| Medium | 100,000 | ~2-5 seconds | ~200MB |
+| Large | 1,000,000 | ~20-60 seconds | ~500MB |
+| Very Large | 10,000,000 | ~3-10 minutes | ~1GB |
+
+Memory stays bounded because:
+- Each writer flushes at 5,000 records (~5MB)
+- 4 writers × 5MB = 20MB for write buffers
+- Accumulator is the main memory consumer (case groups)
+
+---
+
 ## Complete Data Flow
 
 ### Main Processing Function
