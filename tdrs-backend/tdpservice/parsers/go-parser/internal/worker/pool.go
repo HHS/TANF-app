@@ -2,6 +2,7 @@ package worker
 
 import (
 	"context"
+	"maps"
 	"sync"
 
 	"go-parser/internal/filespec"
@@ -229,23 +230,35 @@ func (p *Pool) parseRow(line processor.RawLine) ([]*ParsedRecord, error) {
 		}
 
 		// Copy shared fields into this record
-		for k, v := range sharedFields {
-			record.Fields[k] = v
-		}
+		maps.Copy(record.Fields, sharedFields)
 
-		// Parse segment-specific fields
+		// Parse segment-specific fields and track required fields
+		missingRequired := false
 		for i := range segment.Fields {
 			field := &segment.Fields[i]
+
 			value, err := p.extractor.Extract(line.Row, field)
 			if err != nil {
 				continue
 			}
 			if value != nil {
 				record.Fields[field.Name] = value
+			} else if field.Required || segIdx >= 1 {
+				// TODO: do we generate an error here?
+				// Most multi record schemas don't have the 2 through N segment's field's marked as required.
+				// Therefore if the value is nil and the field is required or the segment index is greater than 0
+				// we skip creating the record since it is invalid.
+				missingRequired = true
+				break
 			}
 		}
 
-		records = append(records, record)
+		// Only include records where all required segment-specific fields have data.
+		// This matches Python behavior where empty segments (e.g., missing second child
+		// in T3 records) are not parsed.
+		if !missingRequired {
+			records = append(records, record)
+		}
 	}
 
 	return records, nil
