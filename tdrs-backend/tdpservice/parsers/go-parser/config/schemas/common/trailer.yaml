@@ -1,0 +1,34 @@
+# Trailer Record Schema
+# Common to all TANF/SSP/Tribal submission types
+#
+# The trailer record is always the last line of a data file and contains
+# a count of records for validation purposes.
+
+record_type: TRAILER
+program: ALL
+section: ALL
+document: "Trailer Record"
+
+format: positional
+
+fields:
+  - name: title
+    friendly_name: Title
+    start: 0
+    end: 7
+    type: string
+    required: true
+
+  - name: record_count
+    friendly_name: Record Count
+    start: 7
+    end: 14
+    type: integer
+    required: true
+
+  - name: blank
+    friendly_name: Blank
+    start: 14
+    end: 23
+    type: string
+    required: false

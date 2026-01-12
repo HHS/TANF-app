@@ -1,0 +1,83 @@
+# Header Record Schema
+# Common to all TANF/SSP/Tribal submission types
+#
+# The header record is always the first line of a data file and contains
+# metadata about the submission.
+
+record_type: HEADER
+program: ALL
+section: ALL
+document: "Header Record"
+
+format: positional
+
+fields:
+  - name: title
+    friendly_name: Title
+    start: 0
+    end: 6
+    type: string
+    required: true
+
+  - name: year
+    friendly_name: Calendar Year
+    start: 6
+    end: 10
+    type: integer
+    required: true
+
+  - name: quarter
+    friendly_name: Calendar Quarter
+    start: 10
+    end: 11
+    type: string
+    required: true
+
+  - name: type
+    friendly_name: Type
+    start: 11
+    end: 12
+    type: string
+    required: true
+
+  - name: state_fips
+    friendly_name: State FIPS Code
+    start: 12
+    end: 14
+    type: string
+    required: false
+
+  - name: tribe_code
+    friendly_name: Tribe Code
+    start: 14
+    end: 17
+    type: string
+    required: false
+
+  - name: program_type
+    friendly_name: Program Type
+    start: 17
+    end: 20
+    type: string
+    required: true
+
+  - name: edit
+    friendly_name: Edit Indicator
+    start: 20
+    end: 21
+    type: string
+    required: true
+
+  - name: encryption
+    friendly_name: Encryption Indicator
+    start: 21
+    end: 22
+    type: string
+    required: false
+
+  - name: update
+    friendly_name: Update Indicator
+    start: 22
+    end: 23
+    type: string
+    required: true

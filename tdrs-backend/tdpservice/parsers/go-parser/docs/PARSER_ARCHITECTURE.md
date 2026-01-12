@@ -10,15 +10,16 @@ This document outlines the architectural design for rewriting the TDRS data file
 4. [Go Architecture Overview](#go-architecture-overview)
 5. [File Specification System](#file-specification-system)
 6. [Schema Definition System](#schema-definition-system)
-7. [Multi-Format Support](#multi-format-support)
-8. [Record Type Detection](#record-type-detection)
-9. [Record Grouping and Batching](#record-grouping-and-batching)
-10. [Accumulator Pattern](#accumulator-pattern)
-11. [Worker Pool Implementation](#worker-pool-implementation)
-12. [SQLC Integration](#sqlc-integration)
-13. [Complete Data Flow](#complete-data-flow)
-14. [Code Structure](#code-structure)
-15. [Implementation Examples](#implementation-examples)
+7. [Registry](#registry)
+8. [Multi-Format Support](#multi-format-support)
+9. [Record Type Detection](#record-type-detection)
+10. [Record Grouping and Batching](#record-grouping-and-batching)
+11. [Accumulator](#accumulator)
+12. [Worker Pool Implementation](#worker-pool-implementation)
+13. [SQLC Integration](#sqlc-integration)
+14. [Complete Data Flow](#complete-data-flow)
+15. [Code Structure](#code-structure)
+16. [Implementation Examples](#implementation-examples)
 
 ---
 
@@ -131,9 +132,9 @@ For TANF/SSP/Tribal Section 1 and 2 files, records with the same `RPT_MONTH_YEAR
 FRA files use a completely different format (CSV or XLSX) and structure:
 
 ```csv
-TE1,202010,11111111111,19740114,...
-TE1,202010,22222222222,19850623,...
-TE1,202010,33333333333,19900101,...
+202010,11111111111
+202010,22222222222
+202010,33333333333
 ```
 
 Key differences:
@@ -243,22 +244,22 @@ class TupleRow(RawRow):
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              CONFIGURATION                                   │
+│                              CONFIGURATION                                  │
 │                                                                             │
 │   ┌─────────────────────┐         ┌─────────────────────────────────────┐   │
 │   │     FileSpecs       │         │            Schemas                  │   │
 │   │                     │         │                                     │   │
-│   │  tanf_section1.yaml │────────▶│  tanf/t1.yaml, t2.yaml, t3.yaml    │   │
-│   │  tanf_section2.yaml │         │  ssp/m1.yaml, m2.yaml, ...         │   │
-│   │  fra_section1.yaml  │         │  fra/te1.yaml                      │   │
-│   │  ...                │         │  common/header.yaml, trailer.yaml  │   │
+│   │  tanf_section1.yaml │────────▶│  tanf/t1.yaml, t2.yaml, t3.yaml     │   │
+│   │  tanf_section2.yaml │         │  ssp/m1.yaml, m2.yaml, ...          │   │
+│   │  fra_section1.yaml  │         │  fra/te1.yaml                       │   │
+│   │  ...                │         │  common/header.yaml, trailer.yaml   │   │
 │   └─────────────────────┘         └─────────────────────────────────────┘   │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
                                       │
                                       ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                               REGISTRY                                       │
+│                               REGISTRY                                      │
 │                                                                             │
 │   Loads and indexes all FileSpecs and Schemas at startup                    │
 │   Provides lookup by (program, section) and by record type                  │
@@ -267,7 +268,7 @@ class TupleRow(RawRow):
                                       │
                                       ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                            FILE PROCESSING                                   │
+│                            FILE PROCESSING                                  │
 │                                                                             │
 │  ┌──────────────┐                                                           │
 │  │  Input File  │                                                           │
@@ -275,8 +276,8 @@ class TupleRow(RawRow):
 │         │                                                                   │
 │         ▼                                                                   │
 │  ┌──────────────────────────────────────────────────────────────────────┐   │
-│  │                         DECODER LAYER                                 │   │
-│  │                                                                       │   │
+│  │                         DECODER LAYER                                │   │
+│  │                                                                      │   │
 │  │   Positional Files          │           Columnar Files               │   │
 │  │   (TANF/SSP/Tribal)         │           (FRA)                        │   │
 │  │                             │                                        │   │
@@ -292,52 +293,52 @@ class TupleRow(RawRow):
 │         │                                            │                      │
 │         ▼                                            ▼                      │
 │  ┌──────────────────────────────────────────────────────────────────────┐   │
-│  │                    RECORD TYPE DETECTION                              │   │
-│  │                                                                       │   │
-│  │   Uses FileSpec configuration to determine which schema applies       │   │
-│  │   to each row based on prefix (positional) or column (columnar)       │   │
+│  │                    RECORD TYPE DETECTION                             │   │
+│  │                                                                      │   │
+│  │   Uses FileSpec configuration to determine which schema applies      │   │
+│  │   to each row based on prefix (positional) or column (columnar)      │   │
 │  └──────────────────────────────────────────────────────────────────────┘   │
 │                                 │                                           │
 │                                 ▼                                           │
 │  ┌──────────────────────────────────────────────────────────────────────┐   │
-│  │                         ACCUMULATOR                                   │   │
-│  │                                                                       │   │
-│  │   Unified collection of records into processable units (Batches)      │   │
-│  │                                                                       │   │
-│  │   Strategy determined by config:                                      │   │
-│  │   - key_fields: groups records by composite key (RPT_MONTH_YEAR,      │   │
-│  │                 CASE_NUMBER) into RecordGroups                        │   │
-│  │   - batch_size: batches N groups together into a Batch                │   │
-│  │   - Both: groups by key, then batches N groups together               │   │
-│  │   - Neither: per-record (each record is its own group in a batch)     │   │
-│  │                                                                       │   │
-│  │   Outputs: Batch { Groups: []RecordGroup }                            │   │
-│  │                                                                       │   │
+│  │                         ACCUMULATOR                                  │   │
+│  │                                                                      │   │
+│  │   Unified collection of records into processable units (Batches)     │   │
+│  │                                                                      │   │
+│  │   Strategy determined by config:                                     │   │
+│  │   - key_fields: groups records by composite key (RPT_MONTH_YEAR,     │   │
+│  │                 CASE_NUMBER) into RecordGroups                       │   │
+│  │   - batch_size: batches N groups together into a Batch               │   │
+│  │   - Both: groups by key, then batches N groups together              │   │
+│  │   - Neither: per-record (each record is its own group in a batch)    │   │
+│  │                                                                      │   │
+│  │   Outputs: Batch { Groups: []RecordGroup }                           │   │
+│  │                                                                      │   │
 │  └──────────────────────────────────────────────────────────────────────┘   │
 │                                 │                                           │
 │                                 ▼                                           │
 │  ┌──────────────────────────────────────────────────────────────────────┐   │
-│  │                         WORKER POOL                                   │   │
-│  │                                                                       │   │
-│  │   N goroutines that process Batches in parallel                       │   │
-│  │   Each worker parses all records in all groups within the batch       │   │
-│  │                                                                       │   │
+│  │                         WORKER POOL                                  │   │
+│  │                                                                      │   │
+│  │   N goroutines that process Batches in parallel                      │   │
+│  │   Each worker parses all records in all groups within the batch      │   │
+│  │                                                                      │   │
 │  └──────────────────────────────────────────────────────────────────────┘   │
 │                                 │                                           │
 │                                 ▼                                           │
 │  ┌──────────────────────────────────────────────────────────────────────┐   │
-│  │                        TYPE CONVERTER                                 │   │
-│  │                                                                       │   │
-│  │   Converts ParsedRecord (internal types) to SQLC types (DB types)     │   │
-│  │                                                                       │   │
+│  │                        TYPE CONVERTER                                │   │
+│  │                                                                      │   │
+│  │   Converts ParsedRecord (internal types) to SQLC types (DB types)    │   │
+│  │                                                                      │   │
 │  └──────────────────────────────────────────────────────────────────────┘   │
 │                                 │                                           │
 │                                 ▼                                           │
 │  ┌──────────────────────────────────────────────────────────────────────┐   │
-│  │                       DATABASE WRITER                                 │   │
-│  │                                                                       │   │
-│  │   Bulk inserts parsed records into PostgreSQL                         │   │
-│  │                                                                       │   │
+│  │                       DATABASE WRITER                                │   │
+│  │                                                                      │   │
+│  │   Bulk inserts parsed records into PostgreSQL                        │   │
+│  │                                                                      │   │
 │  └──────────────────────────────────────────────────────────────────────┘   │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -1278,139 +1279,20 @@ description: "TANF Exiter Record - Individual-level data for TANF exiters"
 # For CSV files, all values are strings and need type conversion.
 
 fields:
-  - name: RecordType
-    item: "0"
-    friendly_name: "Record Type"
-    column: 0
-    type: string
-    required: true
-    # Should always be "TE1"
-
-  - name: RPT_MONTH_YEAR
+ - name: RPT_MONTH_YEAR
     item: "1"
     friendly_name: "Reporting Year and Month"
-    column: 1
+    column: 0
     type: int
     required: true
     # Format: YYYYMM
-
-  - name: CASE_NUMBER
+ - name: SSN
     item: "2"
-    friendly_name: "Case Number"
+    friendly_name: "Reporting Year and Month"
     column: 2
-    type: string
-    required: true
-
-  - name: FIPS_CODE
-    item: "3"
-    friendly_name: "State FIPS Code"
-    column: 3
-    type: string
-    required: true
-
-  - name: FAMILY_AFFILIATION
-    item: "4"
-    friendly_name: "Family Affiliation"
-    column: 4
     type: int
     required: true
-
-  - name: DATE_OF_BIRTH
-    item: "5"
-    friendly_name: "Date of Birth"
-    column: 5
-    type: string
-    required: true
-    # Format: YYYYMMDD
-
-  - name: SSN
-    item: "6"
-    friendly_name: "Social Security Number"
-    column: 6
-    type: string
-    required: true
-
-  - name: RACE_HISPANIC
-    item: "7"
-    friendly_name: "Hispanic or Latino"
-    column: 7
-    type: int
-    required: true
-    # Values: 1 = Yes, 2 = No
-
-  - name: RACE_AMER_INDIAN
-    item: "8"
-    friendly_name: "American Indian or Alaska Native"
-    column: 8
-    type: int
-    required: true
-
-  - name: RACE_ASIAN
-    item: "9"
-    friendly_name: "Asian"
-    column: 9
-    type: int
-    required: true
-
-  - name: RACE_BLACK
-    item: "10"
-    friendly_name: "Black or African American"
-    column: 10
-    type: int
-    required: true
-
-  - name: RACE_HAWAIIAN
-    item: "11"
-    friendly_name: "Native Hawaiian or Pacific Islander"
-    column: 11
-    type: int
-    required: true
-
-  - name: RACE_WHITE
-    item: "12"
-    friendly_name: "White"
-    column: 12
-    type: int
-    required: true
-
-  - name: GENDER
-    item: "13"
-    friendly_name: "Gender"
-    column: 13
-    type: int
-    required: true
-    # Values: 1 = Male, 2 = Female
-
-  - name: EDUCATION_LEVEL
-    item: "14"
-    friendly_name: "Education Level"
-    column: 14
-    type: string
-    required: true
-
-  - name: CITIZENSHIP_STATUS
-    item: "15"
-    friendly_name: "Citizenship Status"
-    column: 15
-    type: int
-    required: true
-
-  - name: EXIT_DATE
-    item: "16"
-    friendly_name: "Exit Date"
-    column: 16
-    type: string
-    required: true
-    # Format: YYYYMMDD
-
-  - name: EXIT_REASON
-    item: "17"
-    friendly_name: "Reason for Exit"
-    column: 17
-    type: int
-    required: true
-
-  # ... additional fields as needed
+    # Format: YYYYMM
 ```
 
 ### Go Types for Schema
@@ -1458,8 +1340,8 @@ type FieldDef struct {
     ColumnHeader string `yaml:"column_header,omitempty"`
 }
 
-// RecordSchema defines the structure of a single record type.
-type RecordSchema struct {
+// SchemaDef defines the structure of a single record type.
+type SchemaDef struct {
     // RecordType is the identifier (e.g., "T1", "TE1")
     RecordType string `yaml:"record_type"`
 
@@ -1473,9 +1355,9 @@ type RecordSchema struct {
     Fields []FieldDef `yaml:"fields"`
 }
 
-// CompiledSchema wraps a RecordSchema with precomputed lookup structures.
+// CompiledSchema wraps a SchemaDef with precomputed lookup structures.
 type CompiledSchema struct {
-    *RecordSchema
+    *SchemaDef
 
     // FieldsByName provides O(1) lookup by field name
     FieldsByName map[string]*FieldDef
@@ -1485,9 +1367,9 @@ type CompiledSchema struct {
 }
 
 // Compile creates a CompiledSchema with lookup maps.
-func (s *RecordSchema) Compile() *CompiledSchema {
+func (s *SchemaDef) Compile() *CompiledSchema {
     cs := &CompiledSchema{
-        RecordSchema: s,
+        SchemaDef: s,
         FieldsByName: make(map[string]*FieldDef, len(s.Fields)),
         FieldsByItem: make(map[string]*FieldDef, len(s.Fields)),
     }
@@ -1509,11 +1391,327 @@ func (cs *CompiledSchema) GetField(name string) *FieldDef {
 
 ---
 
+## Registry
+
+### What Is the Registry?
+
+The **Registry** is the central configuration store that loads and manages all FileSpecs and Schemas at startup. It provides lookup methods for the rest of the system to access configuration without needing to know about file paths or YAML parsing.
+
+### Why Do We Need a Registry?
+
+Without a Registry, every component would need to:
+- Know where configuration files are located
+- Parse YAML files on demand
+- Handle caching to avoid repeated parsing
+- Deal with missing or invalid configuration
+
+The Registry centralizes all of this:
+- Loads all configuration once at startup
+- Validates configuration and fails fast if invalid
+- Provides simple lookup methods by program/section or schema path
+- Compiles schemas into efficient runtime structures
+
+### Registry Implementation
+
+```go
+// internal/registry/registry.go
+package registry
+
+import (
+    "fmt"
+    "os"
+    "path/filepath"
+    "strings"
+
+    "gopkg.in/yaml.v3"
+
+    "go-parser/internal/filespec"
+    "go-parser/internal/schema"
+)
+
+// Registry holds all loaded FileSpecs and Schemas.
+// It is created once at startup and provides read-only access
+// to configuration throughout the application lifetime.
+type Registry struct {
+    // fileSpecs indexed by "PROGRAM:SECTION" (e.g., "TANF:1")
+    fileSpecs map[string]*filespec.FileSpec
+
+    // schemas indexed by path (e.g., "tanf/t1", "common/header")
+    schemas map[string]*schema.CompiledSchema
+
+    // configDir is the root configuration directory
+    configDir string
+}
+
+// Load reads all configuration files from the given directory and builds the Registry.
+// Directory structure expected:
+//
+//	configDir/
+//	├── filespecs/
+//	│   ├── tanf_section1.yaml
+//	│   ├── tanf_section2.yaml
+//	│   └── ...
+//	└── schemas/
+//	    ├── common/
+//	    │   ├── header.yaml
+//	    │   └── trailer.yaml
+//	    └── tanf/
+//	        ├── t1.yaml
+//	        ├── t2.yaml
+//	        └── t3.yaml
+func Load(configDir string) (*Registry, error) {
+    r := &Registry{
+        fileSpecs: make(map[string]*filespec.FileSpec),
+        schemas:   make(map[string]*schema.CompiledSchema),
+        configDir: configDir,
+    }
+
+    // Load schemas first (FileSpecs reference them)
+    if err := r.loadSchemas(); err != nil {
+        return nil, fmt.Errorf("loading schemas: %w", err)
+    }
+
+    // Load FileSpecs
+    if err := r.loadFileSpecs(); err != nil {
+        return nil, fmt.Errorf("loading filespecs: %w", err)
+    }
+
+    // Validate that all FileSpec schema references are valid
+    if err := r.validateReferences(); err != nil {
+        return nil, fmt.Errorf("validating references: %w", err)
+    }
+
+    return r, nil
+}
+
+// loadSchemas walks the schemas directory and loads all .yaml files.
+func (r *Registry) loadSchemas() error {
+    schemasDir := filepath.Join(r.configDir, "schemas")
+
+    return filepath.Walk(schemasDir, func(path string, info os.FileInfo, err error) error {
+        if err != nil {
+            return err
+        }
+
+        // Skip directories and non-YAML files
+        if info.IsDir() || !strings.HasSuffix(path, ".yaml") {
+            return nil
+        }
+
+        // Read and parse the schema file
+        data, err := os.ReadFile(path)
+        if err != nil {
+            return fmt.Errorf("reading %s: %w", path, err)
+        }
+
+        var schemaDef schema.SchemaDef
+        if err := yaml.Unmarshal(data, &schemaDef); err != nil {
+            return fmt.Errorf("parsing %s: %w", path, err)
+        }
+
+        // Compile the schema
+        compiled, err := schema.Compile(&schemaDef)
+        if err != nil {
+            return fmt.Errorf("compiling %s: %w", path, err)
+        }
+
+        // Compute the schema key (relative path without .yaml extension)
+        // e.g., "config/schemas/tanf/t1.yaml" -> "tanf/t1"
+        relPath, err := filepath.Rel(schemasDir, path)
+        if err != nil {
+            return fmt.Errorf("computing relative path for %s: %w", path, err)
+        }
+        key := strings.TrimSuffix(relPath, ".yaml")
+
+        r.schemas[key] = compiled
+        return nil
+    })
+}
+
+// loadFileSpecs reads all .yaml files from the filespecs directory.
+func (r *Registry) loadFileSpecs() error {
+    filespecsDir := filepath.Join(r.configDir, "filespecs")
+
+    entries, err := os.ReadDir(filespecsDir)
+    if err != nil {
+        return fmt.Errorf("reading filespecs directory: %w", err)
+    }
+
+    for _, entry := range entries {
+        if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".yaml") {
+            continue
+        }
+
+        path := filepath.Join(filespecsDir, entry.Name())
+        data, err := os.ReadFile(path)
+        if err != nil {
+            return fmt.Errorf("reading %s: %w", path, err)
+        }
+
+        var spec filespec.FileSpec
+        if err := yaml.Unmarshal(data, &spec); err != nil {
+            return fmt.Errorf("parsing %s: %w", path, err)
+        }
+
+        // Index by "PROGRAM:SECTION"
+        key := fmt.Sprintf("%s:%d", spec.Program, spec.Section)
+        r.fileSpecs[key] = &spec
+    }
+
+    return nil
+}
+
+// validateReferences ensures all schema references in FileSpecs point to loaded schemas.
+func (r *Registry) validateReferences() error {
+    for specKey, spec := range r.fileSpecs {
+        // Validate schemas list
+        for _, schemaPath := range spec.Schemas {
+            if _, ok := r.schemas[schemaPath]; !ok {
+                return fmt.Errorf("filespec %s references unknown schema: %s", specKey, schemaPath)
+            }
+        }
+
+        // Validate record_type_detection prefixes
+        for _, prefix := range spec.RecordTypeDetection.Prefixes {
+            if _, ok := r.schemas[prefix.Schema]; !ok {
+                return fmt.Errorf("filespec %s prefix %q references unknown schema: %s",
+                    specKey, prefix.Prefix, prefix.Schema)
+            }
+        }
+
+        // Validate grouped_schemas
+        for _, schemaPath := range spec.Accumulator.GroupedSchemas {
+            if _, ok := r.schemas[schemaPath]; !ok {
+                return fmt.Errorf("filespec %s grouped_schemas references unknown schema: %s",
+                    specKey, schemaPath)
+            }
+        }
+    }
+
+    return nil
+}
+
+// GetFileSpec returns the FileSpec for the given program and section.
+// Returns nil if not found.
+func (r *Registry) GetFileSpec(program string, section int) *filespec.FileSpec {
+    key := fmt.Sprintf("%s:%d", program, section)
+    return r.fileSpecs[key]
+}
+
+// GetSchema returns a compiled schema by its path (e.g., "tanf/t1").
+// Returns nil if not found.
+func (r *Registry) GetSchema(path string) *schema.CompiledSchema {
+    return r.schemas[path]
+}
+
+// MustGetSchema returns a compiled schema by path, panicking if not found.
+// Use this only when you're certain the schema exists (e.g., after validation).
+func (r *Registry) MustGetSchema(path string) *schema.CompiledSchema {
+    s := r.schemas[path]
+    if s == nil {
+        panic(fmt.Sprintf("schema not found: %s", path))
+    }
+    return s
+}
+
+// ListFileSpecs returns all loaded FileSpec keys (e.g., ["TANF:1", "TANF:2", ...]).
+func (r *Registry) ListFileSpecs() []string {
+    keys := make([]string, 0, len(r.fileSpecs))
+    for k := range r.fileSpecs {
+        keys = append(keys, k)
+    }
+    return keys
+}
+
+// ListSchemas returns all loaded schema paths (e.g., ["tanf/t1", "common/header", ...]).
+func (r *Registry) ListSchemas() []string {
+    keys := make([]string, 0, len(r.schemas))
+    for k := range r.schemas {
+        keys = append(keys, k)
+    }
+    return keys
+}
+
+// Stats returns statistics about loaded configuration.
+func (r *Registry) Stats() (numFileSpecs, numSchemas int) {
+    return len(r.fileSpecs), len(r.schemas)
+}
+```
+
+### Using the Registry
+
+```go
+// At application startup
+func main() {
+    // Load all configuration
+    reg, err := registry.Load("config")
+    if err != nil {
+        log.Fatalf("Failed to load configuration: %v", err)
+    }
+
+    numSpecs, numSchemas := reg.Stats()
+    log.Printf("Loaded %d file specs and %d schemas", numSpecs, numSchemas)
+
+    // Get a FileSpec for processing
+    spec := reg.GetFileSpec("TANF", 1)
+    if spec == nil {
+        log.Fatal("No FileSpec for TANF Section 1")
+    }
+
+    // Get a schema directly (e.g., for testing)
+    t1Schema := reg.GetSchema("tanf/t1")
+    if t1Schema == nil {
+        log.Fatal("No schema for tanf/t1")
+    }
+
+    // The RecordTypeDetector uses the registry to look up schemas
+    detector := parser.NewRecordTypeDetector(spec, reg)
+}
+```
+
+### Registry in the Data Flow
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              APPLICATION STARTUP                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      ▼
+                         ┌────────────────────────┐
+                         │    registry.Load()     │
+                         │                        │
+                         │  Reads config/schemas/ │
+                         │  Reads config/filespecs│
+                         │  Validates references  │
+                         └───────────┬────────────┘
+                                     │
+                                     ▼
+                         ┌────────────────────────┐
+                         │       Registry         │
+                         │                        │
+                         │  fileSpecs: map[...]   │
+                         │  schemas: map[...]     │
+                         └───────────┬────────────┘
+                                     │
+              ┌──────────────────────┼──────────────────────┐
+              │                      │                      │
+              ▼                      ▼                      ▼
+    ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐
+    │  GetFileSpec()  │   │   GetSchema()   │   │  Used by:       │
+    │                 │   │                 │   │  - Detector     │
+    │  "TANF", 1      │   │  "tanf/t1"      │   │  - Accumulator  │
+    │       ↓         │   │       ↓         │   │  - Worker Pool  │
+    │  *FileSpec      │   │ *CompiledSchema │   │                 │
+    └─────────────────┘   └─────────────────┘   └─────────────────┘
+```
+
+---
+
 ## Multi-Format Support
 
 ### The Challenge
 
-TDRS needs to handle two fundamentally different file formats:
+TDRS needs to handle two (more?) fundamentally different file formats:
 
 1. **Positional (Fixed-Width)**: Fields are at specific byte positions
    - Used by: TANF, SSP, Tribal TANF
