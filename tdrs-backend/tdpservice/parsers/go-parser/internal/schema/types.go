@@ -11,7 +11,7 @@ type FieldDef struct {
 	// FriendlyName is a human-readable name for error messages
 	FriendlyName string `yaml:"friendly_name"`
 
-	// Type is the data type: "string" or "int"
+	// Type is the data type: "string" or "integer"
 	Type string `yaml:"type"`
 
 	// Required indicates whether the field must have a non-empty value
@@ -39,6 +39,13 @@ type FieldDef struct {
 	ColumnHeader string `yaml:"column_header,omitempty"`
 }
 
+// SegmentDef defines a segment within a record.
+// Each segment represents a repeating group of fields that produces one output row.
+type SegmentDef struct {
+	// Fields defines all fields in this segment
+	Fields []FieldDef `yaml:"fields"`
+}
+
 // SchemaDef defines the structure of a single record type.
 type SchemaDef struct {
 	// RecordType is the identifier (e.g., "T1", "TE1")
@@ -47,11 +54,25 @@ type SchemaDef struct {
 	// Program is the program this schema belongs to
 	Program string `yaml:"program"`
 
-	// Description is a human-readable description
-	Description string `yaml:"description"`
+	// Section is the section number (1, 2, 3, or 4)
+	Section int `yaml:"section,omitempty"`
 
-	// Fields defines all fields in the record
-	Fields []FieldDef `yaml:"fields"`
+	// Document is the document name for this record type
+	Document string `yaml:"document,omitempty"`
+
+	// Format is the file format: "positional" or "columnar"
+	Format string `yaml:"format,omitempty"`
+
+	// Description is a human-readable description
+	Description string `yaml:"description,omitempty"`
+
+	// Shared contains fields that are common to all segments.
+	// These fields are included in every output row.
+	Shared []FieldDef `yaml:"shared"`
+
+	// Segments contains the segment definitions.
+	// Each segment produces one output row (combined with shared fields).
+	Segments []SegmentDef `yaml:"segments"`
 }
 
 // CompiledSchema wraps a SchemaDef with precomputed lookup structures.
@@ -62,31 +83,44 @@ type CompiledSchema struct {
 	// Set by the registry when loading schemas
 	Path string
 
-	// FieldsByName provides O(1) lookup by field name
-	FieldsByName map[string]*FieldDef
-
-	// FieldsByItem provides O(1) lookup by item number
-	FieldsByItem map[string]*FieldDef
+	// SharedFieldsByName provides O(1) lookup for shared fields by name
+	SharedFieldsByName map[string]*FieldDef
 }
 
 // Compile creates a CompiledSchema with lookup maps.
 func (s *SchemaDef) Compile() *CompiledSchema {
 	cs := &CompiledSchema{
-		SchemaDef:    s,
-		FieldsByName: make(map[string]*FieldDef, len(s.Fields)),
-		FieldsByItem: make(map[string]*FieldDef, len(s.Fields)),
+		SchemaDef:          s,
+		SharedFieldsByName: make(map[string]*FieldDef, len(s.Shared)),
 	}
 
-	for i := range s.Fields {
-		field := &s.Fields[i]
-		cs.FieldsByName[field.Name] = field
-		cs.FieldsByItem[field.Item] = field
+	for i := range s.Shared {
+		field := &s.Shared[i]
+		cs.SharedFieldsByName[field.Name] = field
 	}
 
 	return cs
 }
 
-// GetField returns a field by name, or nil if not found.
-func (cs *CompiledSchema) GetField(name string) *FieldDef {
-	return cs.FieldsByName[name]
+// NumSegments returns the number of segments in this schema.
+func (cs *CompiledSchema) NumSegments() int {
+	return len(cs.Segments)
+}
+
+// GetSharedField returns a shared field by name, or nil if not found.
+func (cs *CompiledSchema) GetSharedField(name string) *FieldDef {
+	return cs.SharedFieldsByName[name]
+}
+
+// GetSegmentField returns a field from a specific segment by name, or nil if not found.
+func (cs *CompiledSchema) GetSegmentField(segmentIndex int, name string) *FieldDef {
+	if segmentIndex < 0 || segmentIndex >= len(cs.Segments) {
+		return nil
+	}
+	for i := range cs.Segments[segmentIndex].Fields {
+		if cs.Segments[segmentIndex].Fields[i].Name == name {
+			return &cs.Segments[segmentIndex].Fields[i]
+		}
+	}
+	return nil
 }

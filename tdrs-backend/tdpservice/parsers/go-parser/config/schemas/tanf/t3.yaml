@@ -9,16 +9,10 @@ record_type: T3
 program: TANF
 section: 1
 document: "TANF Active Case Data"
-
 format: positional
 
-# T3 records contain two child segments in one line.
-# This schema defines both segments with a suffix to distinguish them.
-# The parser should handle this by creating two parsed records from one line,
-# or by treating them as a single record with CHILD1_* and CHILD2_* prefixes.
-
-fields:
-  # Record identification (shared)
+# Fields shared across all segments (included in every output row)
+shared:
   - name: RecordType
     friendly_name: Record Type
     item: "0"
@@ -43,298 +37,297 @@ fields:
     type: string
     required: true
 
-  # ============================================================================
-  # CHILD 1 (positions 19-60)
-  # ============================================================================
+# Each segment produces one output row (combined with shared fields)
+# T3 has 2 segments: Child 1 and Child 2
+segments:
+  # Child 1 (positions 19-60)
+  - fields:
+      - name: FAMILY_AFFILIATION
+        friendly_name: Family Affiliation
+        item: "67"
+        start: 19
+        end: 20
+        type: integer
+        required: true
 
-  - name: FAMILY_AFFILIATION
-    friendly_name: Family Affiliation (Child 1)
-    item: "67"
-    start: 19
-    end: 20
-    type: integer
-    required: true
+      - name: DATE_OF_BIRTH
+        friendly_name: Date of Birth
+        item: "68"
+        start: 20
+        end: 28
+        type: string
+        required: true
 
-  - name: DATE_OF_BIRTH
-    friendly_name: Date of Birth (Child 1)
-    item: "68"
-    start: 20
-    end: 28
-    type: string
-    required: true
+      - name: SSN
+        friendly_name: Social Security Number
+        item: "69"
+        start: 28
+        end: 37
+        type: string
+        required: true
 
-  - name: SSN
-    friendly_name: Social Security Number (Child 1)
-    item: "69"
-    start: 28
-    end: 37
-    type: string
-    required: true
+      - name: RACE_HISPANIC
+        friendly_name: Race Hispanic
+        item: "70A"
+        start: 37
+        end: 38
+        type: integer
+        required: false
 
-  - name: RACE_HISPANIC
-    friendly_name: Race Hispanic (Child 1)
-    item: "70A"
-    start: 37
-    end: 38
-    type: integer
-    required: false
+      - name: RACE_AMER_INDIAN
+        friendly_name: Race American Indian
+        item: "70B"
+        start: 38
+        end: 39
+        type: integer
+        required: false
 
-  - name: RACE_AMER_INDIAN
-    friendly_name: Race American Indian (Child 1)
-    item: "70B"
-    start: 38
-    end: 39
-    type: integer
-    required: false
+      - name: RACE_ASIAN
+        friendly_name: Race Asian
+        item: "70C"
+        start: 39
+        end: 40
+        type: integer
+        required: false
 
-  - name: RACE_ASIAN
-    friendly_name: Race Asian (Child 1)
-    item: "70C"
-    start: 39
-    end: 40
-    type: integer
-    required: false
+      - name: RACE_BLACK
+        friendly_name: Race Black
+        item: "70D"
+        start: 40
+        end: 41
+        type: integer
+        required: false
 
-  - name: RACE_BLACK
-    friendly_name: Race Black (Child 1)
-    item: "70D"
-    start: 40
-    end: 41
-    type: integer
-    required: false
+      - name: RACE_HAWAIIAN
+        friendly_name: Race Hawaiian
+        item: "70E"
+        start: 41
+        end: 42
+        type: integer
+        required: false
 
-  - name: RACE_HAWAIIAN
-    friendly_name: Race Hawaiian (Child 1)
-    item: "70E"
-    start: 41
-    end: 42
-    type: integer
-    required: false
+      - name: RACE_WHITE
+        friendly_name: Race White
+        item: "70F"
+        start: 42
+        end: 43
+        type: integer
+        required: false
 
-  - name: RACE_WHITE
-    friendly_name: Race White (Child 1)
-    item: "70F"
-    start: 42
-    end: 43
-    type: integer
-    required: false
+      - name: SEX
+        friendly_name: Sex
+        item: "71"
+        start: 43
+        end: 44
+        type: integer
+        required: true
 
-  - name: SEX
-    friendly_name: Sex (Child 1)
-    item: "71"
-    start: 43
-    end: 44
-    type: integer
-    required: true
+      - name: RECEIVE_NONSSA_BENEFITS
+        friendly_name: Receive Non-SSA Benefits
+        item: "72A"
+        start: 44
+        end: 45
+        type: integer
+        required: true
 
-  - name: RECEIVE_NONSSA_BENEFITS
-    friendly_name: Receive Non-SSA Benefits (Child 1)
-    item: "72A"
-    start: 44
-    end: 45
-    type: integer
-    required: true
+      - name: RECEIVE_SSI
+        friendly_name: Receive SSI
+        item: "72B"
+        start: 45
+        end: 46
+        type: integer
+        required: true
 
-  - name: RECEIVE_SSI
-    friendly_name: Receive SSI (Child 1)
-    item: "72B"
-    start: 45
-    end: 46
-    type: integer
-    required: true
+      - name: RELATIONSHIP_HOH
+        friendly_name: Relationship to Head of Household
+        item: "73"
+        start: 46
+        end: 48
+        type: string
+        required: false
 
-  - name: RELATIONSHIP_HOH
-    friendly_name: Relationship to Head of Household (Child 1)
-    item: "73"
-    start: 46
-    end: 48
-    type: string
-    required: false
+      - name: PARENT_MINOR_CHILD
+        friendly_name: Parent with Minor Child
+        item: "74"
+        start: 48
+        end: 49
+        type: integer
+        required: false
 
-  - name: PARENT_MINOR_CHILD
-    friendly_name: Parent with Minor Child (Child 1)
-    item: "74"
-    start: 48
-    end: 49
-    type: integer
-    required: false
+      - name: EDUCATION_LEVEL
+        friendly_name: Education Level
+        item: "75"
+        start: 49
+        end: 51
+        type: string
+        required: true
 
-  - name: EDUCATION_LEVEL
-    friendly_name: Education Level (Child 1)
-    item: "75"
-    start: 49
-    end: 51
-    type: string
-    required: true
+      - name: CITIZENSHIP_STATUS
+        friendly_name: Citizenship Status
+        item: "76"
+        start: 51
+        end: 52
+        type: integer
+        required: false
 
-  - name: CITIZENSHIP_STATUS
-    friendly_name: Citizenship Status (Child 1)
-    item: "76"
-    start: 51
-    end: 52
-    type: integer
-    required: false
+      - name: UNEARNED_SSI
+        friendly_name: Unearned SSI
+        item: "77A"
+        start: 52
+        end: 56
+        type: string
+        required: false
 
-  - name: UNEARNED_SSI
-    friendly_name: Unearned SSI (Child 1)
-    item: "77A"
-    start: 52
-    end: 56
-    type: string
-    required: false
+      - name: OTHER_UNEARNED_INCOME
+        friendly_name: Other Unearned Income
+        item: "77B"
+        start: 56
+        end: 60
+        type: string
+        required: false
 
-  - name: OTHER_UNEARNED_INCOME
-    friendly_name: Other Unearned Income (Child 1)
-    item: "77B"
-    start: 56
-    end: 60
-    type: string
-    required: false
+  # Child 2 (positions 60-101)
+  - fields:
+      - name: FAMILY_AFFILIATION
+        friendly_name: Family Affiliation
+        item: "67"
+        start: 60
+        end: 61
+        type: integer
+        required: false
 
-  # ============================================================================
-  # CHILD 2 (positions 60-101)
-  # ============================================================================
+      - name: DATE_OF_BIRTH
+        friendly_name: Date of Birth
+        item: "68"
+        start: 61
+        end: 69
+        type: string
+        required: false
 
-  - name: FAMILY_AFFILIATION
-    friendly_name: Family Affiliation (Child 2)
-    item: "67"
-    start: 60
-    end: 61
-    type: integer
-    required: false
+      - name: SSN
+        friendly_name: Social Security Number
+        item: "69"
+        start: 69
+        end: 78
+        type: string
+        required: false
 
-  - name: DATE_OF_BIRTH
-    friendly_name: Date of Birth (Child 2)
-    item: "68"
-    start: 61
-    end: 69
-    type: string
-    required: false
+      - name: RACE_HISPANIC
+        friendly_name: Race Hispanic
+        item: "70A"
+        start: 78
+        end: 79
+        type: integer
+        required: false
 
-  - name: SSN
-    friendly_name: Social Security Number (Child 2)
-    item: "69"
-    start: 69
-    end: 78
-    type: string
-    required: false
+      - name: RACE_AMER_INDIAN
+        friendly_name: Race American Indian
+        item: "70B"
+        start: 79
+        end: 80
+        type: integer
+        required: false
 
-  - name: RACE_HISPANIC
-    friendly_name: Race Hispanic (Child 2)
-    item: "70A"
-    start: 78
-    end: 79
-    type: integer
-    required: false
+      - name: RACE_ASIAN
+        friendly_name: Race Asian
+        item: "70C"
+        start: 80
+        end: 81
+        type: integer
+        required: false
 
-  - name: RACE_AMER_INDIAN
-    friendly_name: Race American Indian (Child 2)
-    item: "70B"
-    start: 79
-    end: 80
-    type: integer
-    required: false
+      - name: RACE_BLACK
+        friendly_name: Race Black
+        item: "70D"
+        start: 81
+        end: 82
+        type: integer
+        required: false
 
-  - name: RACE_ASIAN
-    friendly_name: Race Asian (Child 2)
-    item: "70C"
-    start: 80
-    end: 81
-    type: integer
-    required: false
+      - name: RACE_HAWAIIAN
+        friendly_name: Race Hawaiian
+        item: "70E"
+        start: 82
+        end: 83
+        type: integer
+        required: false
 
-  - name: RACE_BLACK
-    friendly_name: Race Black (Child 2)
-    item: "70D"
-    start: 81
-    end: 82
-    type: integer
-    required: false
+      - name: RACE_WHITE
+        friendly_name: Race White
+        item: "70F"
+        start: 83
+        end: 84
+        type: integer
+        required: false
 
-  - name: RACE_HAWAIIAN
-    friendly_name: Race Hawaiian (Child 2)
-    item: "70E"
-    start: 82
-    end: 83
-    type: integer
-    required: false
+      - name: SEX
+        friendly_name: Sex
+        item: "71"
+        start: 84
+        end: 85
+        type: integer
+        required: false
 
-  - name: RACE_WHITE
-    friendly_name: Race White (Child 2)
-    item: "70F"
-    start: 83
-    end: 84
-    type: integer
-    required: false
+      - name: RECEIVE_NONSSA_BENEFITS
+        friendly_name: Receive Non-SSA Benefits
+        item: "72A"
+        start: 85
+        end: 86
+        type: integer
+        required: false
 
-  - name: SEX
-    friendly_name: Sex (Child 2)
-    item: "71"
-    start: 84
-    end: 85
-    type: integer
-    required: false
+      - name: RECEIVE_SSI
+        friendly_name: Receive SSI
+        item: "72B"
+        start: 86
+        end: 87
+        type: integer
+        required: false
 
-  - name: RECEIVE_NONSSA_BENEFITS
-    friendly_name: Receive Non-SSA Benefits (Child 2)
-    item: "72A"
-    start: 85
-    end: 86
-    type: integer
-    required: false
+      - name: RELATIONSHIP_HOH
+        friendly_name: Relationship to Head of Household
+        item: "73"
+        start: 87
+        end: 89
+        type: string
+        required: false
 
-  - name: RECEIVE_SSI
-    friendly_name: Receive SSI (Child 2)
-    item: "72B"
-    start: 86
-    end: 87
-    type: integer
-    required: false
+      - name: PARENT_MINOR_CHILD
+        friendly_name: Parent with Minor Child
+        item: "74"
+        start: 89
+        end: 90
+        type: integer
+        required: false
 
-  - name: RELATIONSHIP_HOH
-    friendly_name: Relationship to Head of Household (Child 2)
-    item: "73"
-    start: 87
-    end: 89
-    type: string
-    required: false
+      - name: EDUCATION_LEVEL
+        friendly_name: Education Level
+        item: "75"
+        start: 90
+        end: 92
+        type: string
+        required: false
 
-  - name: PARENT_MINOR_CHILD
-    friendly_name: Parent with Minor Child (Child 2)
-    item: "74"
-    start: 89
-    end: 90
-    type: integer
-    required: false
+      - name: CITIZENSHIP_STATUS
+        friendly_name: Citizenship Status
+        item: "76"
+        start: 92
+        end: 93
+        type: integer
+        required: false
 
-  - name: EDUCATION_LEVEL
-    friendly_name: Education Level (Child 2)
-    item: "75"
-    start: 90
-    end: 92
-    type: string
-    required: false
+      - name: UNEARNED_SSI
+        friendly_name: Unearned SSI
+        item: "77A"
+        start: 93
+        end: 97
+        type: string
+        required: false
 
-  - name: CITIZENSHIP_STATUS
-    friendly_name: Citizenship Status (Child 2)
-    item: "76"
-    start: 92
-    end: 93
-    type: integer
-    required: false
-
-  - name: UNEARNED_SSI
-    friendly_name: Unearned SSI (Child 2)
-    item: "77A"
-    start: 93
-    end: 97
-    type: string
-    required: false
-
-  - name: OTHER_UNEARNED_INCOME
-    friendly_name: Other Unearned Income (Child 2)
-    item: "77B"
-    start: 97
-    end: 101
-    type: string
-    required: false
+      - name: OTHER_UNEARNED_INCOME
+        friendly_name: Other Unearned Income
+        item: "77B"
+        start: 97
+        end: 101
+        type: string
+        required: false

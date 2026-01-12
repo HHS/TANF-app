@@ -1,15 +1,10 @@
 package registry
 
 import (
-	"regexp"
 	"strings"
 
 	"go-parser/internal/schema"
 )
-
-// numericSuffixPattern matches field names ending with _N where N is one or more digits.
-// Examples: FAMILY_AFFILIATION_2, STRATUM_3, CLOSURE_REASON_30
-var numericSuffixPattern = regexp.MustCompile(`_\d+$`)
 
 // SchemaMetadata holds database information derived from a schema.
 type SchemaMetadata struct {
@@ -19,23 +14,31 @@ type SchemaMetadata struct {
 }
 
 // buildSchemaMetadata derives database metadata from a compiled schema.
-// Column names are extracted from the YAML schema fields - no duplication needed.
+// Column names are extracted from shared fields + first segment fields.
+// All segments have the same field names (just different byte positions),
+// so we only need fields from the first segment for the database schema.
 func buildSchemaMetadata(schemaPath string, compiled *schema.CompiledSchema) *SchemaMetadata {
-	// Standard columns that appear in all record tables
-	columns := make([]string, 0, len(compiled.Fields)+3)
+	// Calculate capacity: shared + first segment fields + 3 standard columns
+	capacity := len(compiled.Shared) + 3
+	if len(compiled.Segments) > 0 {
+		capacity += len(compiled.Segments[0].Fields)
+	}
 
-	// Add columns from schema fields in order
-	// Schema field names (e.g., "RPT_MONTH_YEAR") map directly to DB columns
-	// Skip fields with numeric suffix (_2, _3, ..., _30) - these are parsing-only fields
-	// for multi-segment records (T3, T6, T7) where one input line contains data for
-	// multiple entities, but the DB stores one entity per row
-	for _, field := range compiled.Fields {
-		if numericSuffixPattern.MatchString(field.Name) {
-			continue
-		}
+	columns := make([]string, 0, capacity)
+
+	// Add shared field names
+	for _, field := range compiled.Shared {
 		columns = append(columns, field.Name)
 	}
 
+	// Add segment field names (from first segment - all segments have same names)
+	if len(compiled.Segments) > 0 {
+		for _, field := range compiled.Segments[0].Fields {
+			columns = append(columns, field.Name)
+		}
+	}
+
+	// Add standard columns that appear in all record tables
 	columns = append(columns, "id", "datafile_id", "line_number")
 
 	return &SchemaMetadata{

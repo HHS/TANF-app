@@ -8,11 +8,10 @@ record_type: T4
 program: TANF
 section: 2
 document: "TANF Closed Case Data"
-
 format: positional
 
-fields:
-  # Record identification
+# Fields shared across all segments (included in every output row)
+shared:
   - name: RecordType
     friendly_name: Record Type
     item: "0"
@@ -37,75 +36,78 @@ fields:
     type: string
     required: true
 
-  - name: COUNTY_FIPS_CODE
-    friendly_name: County FIPS Code
-    item: "2"
-    start: 19
-    end: 22
-    type: string
-    required: true
-    transform: zero_pad_3
+# Each segment produces one output row (combined with shared fields)
+segments:
+  - fields:
+      - name: COUNTY_FIPS_CODE
+        friendly_name: County FIPS Code
+        item: "2"
+        start: 19
+        end: 22
+        type: string
+        required: true
+        transform: zero_pad_3
 
-  - name: STRATUM
-    friendly_name: Stratum
-    item: "5"
-    start: 22
-    end: 24
-    type: string
-    required: false
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 22
+        end: 24
+        type: string
+        required: false
 
-  - name: ZIP_CODE
-    friendly_name: ZIP Code
-    item: "7"
-    start: 24
-    end: 29
-    type: string
-    required: true
+      - name: ZIP_CODE
+        friendly_name: ZIP Code
+        item: "7"
+        start: 24
+        end: 29
+        type: string
+        required: true
 
-  - name: DISPOSITION
-    friendly_name: Disposition
-    item: "8"
-    start: 29
-    end: 30
-    type: integer
-    required: true
+      - name: DISPOSITION
+        friendly_name: Disposition
+        item: "8"
+        start: 29
+        end: 30
+        type: integer
+        required: true
 
-  - name: CLOSURE_REASON
-    friendly_name: Reason for Closure
-    item: "9"
-    start: 30
-    end: 32
-    type: string
-    required: true
+      - name: CLOSURE_REASON
+        friendly_name: Reason for Closure
+        item: "9"
+        start: 30
+        end: 32
+        type: string
+        required: true
 
-  - name: REC_SUB_HOUSING
-    friendly_name: Received Subsidized Housing
-    item: "10"
-    start: 32
-    end: 33
-    type: integer
-    required: true
+      - name: REC_SUB_HOUSING
+        friendly_name: Received Subsidized Housing
+        item: "10"
+        start: 32
+        end: 33
+        type: integer
+        required: true
 
-  - name: REC_MED_ASSIST
-    friendly_name: Received Medical Assistance
-    item: "11"
-    start: 33
-    end: 34
-    type: integer
-    required: true
+      - name: REC_MED_ASSIST
+        friendly_name: Received Medical Assistance
+        item: "11"
+        start: 33
+        end: 34
+        type: integer
+        required: true
 
-  - name: REC_FOOD_STAMPS
-    friendly_name: Received SNAP Assistance
-    item: "12"
-    start: 34
-    end: 35
-    type: integer
-    required: true
+      - name: REC_FOOD_STAMPS
+        friendly_name: Received SNAP Assistance
+        item: "12"
+        start: 34
+        end: 35
+        type: integer
+        required: true
 
-  - name: REC_SUB_CC
-    friendly_name: Received Subsidized Child Care
-    item: "13"
-    start: 35
-    end: 36
-    type: integer
-    required: true
+      - name: REC_SUB_CC
+        friendly_name: Received Subsidized Child Care
+        item: "13"
+        start: 35
+        end: 36
+        type: integer
+        required: true

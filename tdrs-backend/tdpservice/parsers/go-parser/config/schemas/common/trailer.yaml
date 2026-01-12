@@ -6,29 +6,28 @@
 
 record_type: TRAILER
 program: ALL
-section: ALL
+section: 0
 document: "Trailer Record"
-
 format: positional
 
-fields:
-  - name: title
-    friendly_name: Title
-    start: 0
-    end: 7
-    type: string
-    required: true
+# Trailer has no shared fields (single record per line)
+shared: []
 
-  - name: record_count
-    friendly_name: Record Count
-    start: 7
-    end: 14
-    type: integer
-    required: true
+# Single segment containing all trailer fields
+segments:
+  - fields:
+      - name: title
+        friendly_name: Title
+        item: "1"
+        start: 0
+        end: 7
+        type: string
+        required: true
 
-  - name: blank
-    friendly_name: Blank
-    start: 14
-    end: 23
-    type: string
-    required: false
+      - name: record_count
+        friendly_name: Record Count
+        item: "2"
+        start: 7
+        end: 14
+        type: integer
+        required: true

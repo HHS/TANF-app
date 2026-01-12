@@ -11,10 +11,12 @@ import (
 )
 
 // ParsedRecord represents a successfully parsed record.
+// For multi-segment schemas (T3, T6, T7), one input line produces multiple ParsedRecords.
 type ParsedRecord struct {
-	Schema     *schema.CompiledSchema
-	LineNumber int
-	Fields     map[string]any
+	Schema       *schema.CompiledSchema
+	LineNumber   int
+	SegmentIndex int            // Which segment this record came from (0-indexed)
+	Fields       map[string]any // Contains shared fields + segment-specific fields
 }
 
 // ParseError represents a parsing error for a single row.
@@ -86,7 +88,7 @@ type PoolConfig struct {
 // DefaultPoolConfig returns sensible defaults.
 func DefaultPoolConfig() PoolConfig {
 	return PoolConfig{
-		NumWorkers:       8,
+		NumWorkers:       1,
 		WorkBufferSize:   256,
 		ResultBufferSize: 256,
 	}
@@ -176,7 +178,7 @@ func (p *Pool) processGroup(group *processor.RecordGroup) *ParsedGroup {
 	}
 
 	for _, line := range group.Lines {
-		record, err := p.parseRow(line)
+		records, err := p.parseRow(line)
 		if err != nil {
 			result.Errors = append(result.Errors, ParseError{
 				LineNumber: line.Row.LineNum(),
@@ -185,33 +187,66 @@ func (p *Pool) processGroup(group *processor.RecordGroup) *ParsedGroup {
 			})
 			continue
 		}
-		result.Records = append(result.Records, record)
+		result.Records = append(result.Records, records...)
 	}
 
 	return result
 }
 
-// parseRow parses a single row into a ParsedRecord.
-func (p *Pool) parseRow(line processor.RawLine) (*ParsedRecord, error) {
-	record := &ParsedRecord{
-		Schema:     line.Schema,
-		LineNumber: line.Row.LineNum(),
-		Fields:     make(map[string]any, len(line.Schema.Fields)),
+// parseRow parses a single row into one or more ParsedRecords.
+// For multi-segment schemas, one input line produces multiple records (one per segment).
+func (p *Pool) parseRow(line processor.RawLine) ([]*ParsedRecord, error) {
+	numSegments := len(line.Schema.Segments)
+	if numSegments == 0 {
+		// Schema has no segments - this shouldn't happen with the new structure
+		return nil, nil
 	}
 
-	for i := range line.Schema.Fields {
-		field := &line.Schema.Fields[i]
-
+	// Parse shared fields once (they're the same for all segments)
+	sharedFields := make(map[string]any, len(line.Schema.Shared))
+	for i := range line.Schema.Shared {
+		field := &line.Schema.Shared[i]
 		value, err := p.extractor.Extract(line.Row, field)
 		if err != nil {
-			// Log but continue - validation will catch missing required fields
 			continue
 		}
-
 		if value != nil {
-			record.Fields[field.Name] = value
+			sharedFields[field.Name] = value
 		}
 	}
 
-	return record, nil
+	// Parse each segment into a separate record
+	records := make([]*ParsedRecord, 0, numSegments)
+	for segIdx, segment := range line.Schema.Segments {
+		// Calculate field capacity: shared + segment fields
+		fieldCount := len(sharedFields) + len(segment.Fields)
+
+		record := &ParsedRecord{
+			Schema:       line.Schema,
+			LineNumber:   line.Row.LineNum(),
+			SegmentIndex: segIdx,
+			Fields:       make(map[string]any, fieldCount),
+		}
+
+		// Copy shared fields into this record
+		for k, v := range sharedFields {
+			record.Fields[k] = v
+		}
+
+		// Parse segment-specific fields
+		for i := range segment.Fields {
+			field := &segment.Fields[i]
+			value, err := p.extractor.Extract(line.Row, field)
+			if err != nil {
+				continue
+			}
+			if value != nil {
+				record.Fields[field.Name] = value
+			}
+		}
+
+		records = append(records, record)
+	}
+
+	return records, nil
 }
