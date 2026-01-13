@@ -14,12 +14,10 @@ import (
 // FieldExtractor extracts field values from rows based on the file format.
 type FieldExtractor interface {
 	// Extract extracts a field value from a row.
+	// For computed fields (SourceField != ""), looks up the source value from extractedFields.
 	// ctx may be nil if no runtime context is available.
-	Extract(row decoder.Row, field *schema.FieldDef, ctx *schema.ParseContext) (any, error)
-
-	// ExtractWithSource extracts a field that may derive its raw value from another field.
-	// extractedFields contains already-parsed fields for source lookups.
-	ExtractWithSource(
+	// extractedFields may be nil if no computed fields are expected.
+	Extract(
 		row decoder.Row,
 		field *schema.FieldDef,
 		ctx *schema.ParseContext,
@@ -42,36 +40,7 @@ func GetExtractor(format filespec.Format) FieldExtractor {
 // PositionalExtractor extracts fields from positional (fixed-width) rows.
 type PositionalExtractor struct{}
 
-func (e *PositionalExtractor) Extract(row decoder.Row, field *schema.FieldDef, ctx *schema.ParseContext) (any, error) {
-	// Type assert to PositionalRow
-	pr, ok := row.(*decoder.PositionalRow)
-	if !ok {
-		return nil, fmt.Errorf("expected PositionalRow, got %T", row)
-	}
-
-	// Extract raw string value using byte positions
-	rawValue := pr.Slice(field.Start, field.End)
-
-	// Apply transformation if specified
-	if field.Transform != nil {
-		transformed, err := transform.Apply(
-			field.Transform.Name,
-			rawValue,
-			field.Transform.Params,
-			ctx,
-		)
-		if err != nil {
-			return nil, fmt.Errorf("transform %s on field %s failed: %w",
-				field.Transform.Name, field.Name, err)
-		}
-		rawValue = transformed
-	}
-
-	// Convert to appropriate type
-	return convertValue(rawValue, field.Type)
-}
-
-func (e *PositionalExtractor) ExtractWithSource(
+func (e *PositionalExtractor) Extract(
 	row decoder.Row,
 	field *schema.FieldDef,
 	ctx *schema.ParseContext,
@@ -117,53 +86,7 @@ func (e *PositionalExtractor) ExtractWithSource(
 // ColumnarExtractor extracts fields from columnar (CSV/XLSX) rows.
 type ColumnarExtractor struct{}
 
-func (e *ColumnarExtractor) Extract(row decoder.Row, field *schema.FieldDef, ctx *schema.ParseContext) (any, error) {
-	// Type assert to ColumnarRow
-	cr, ok := row.(*decoder.ColumnarRow)
-	if !ok {
-		return nil, fmt.Errorf("expected ColumnarRow, got %T", row)
-	}
-
-	// Extract value using column index
-	val := cr.Column(field.Column)
-	if val == nil {
-		return nil, nil // Column doesn't exist
-	}
-
-	// Apply transformation if specified
-	if field.Transform != nil {
-		// Convert to string first for transformation
-		strVal := fmt.Sprintf("%v", val)
-		transformed, err := transform.Apply(
-			field.Transform.Name,
-			strVal,
-			field.Transform.Params,
-			ctx,
-		)
-		if err != nil {
-			return nil, fmt.Errorf("transform %s on field %s failed: %w",
-				field.Transform.Name, field.Name, err)
-		}
-		return convertValue(transformed, field.Type)
-	}
-
-	// Handle type conversion
-	// XLSX may return typed values, CSV returns strings
-	switch v := val.(type) {
-	case string:
-		return convertValue(v, field.Type)
-	case int, int64, float64:
-		// Already numeric - return as-is if type matches
-		if field.Type == "int" {
-			return toInt(v), nil
-		}
-		return fmt.Sprintf("%v", v), nil
-	default:
-		return convertValue(fmt.Sprintf("%v", v), field.Type)
-	}
-}
-
-func (e *ColumnarExtractor) ExtractWithSource(
+func (e *ColumnarExtractor) Extract(
 	row decoder.Row,
 	field *schema.FieldDef,
 	ctx *schema.ParseContext,
@@ -231,19 +154,5 @@ func convertValue(rawValue, fieldType string) (any, error) {
 
 	default:
 		return nil, fmt.Errorf("unknown field type: %s", fieldType)
-	}
-}
-
-// toInt converts various numeric types to int.
-func toInt(v any) int {
-	switch n := v.(type) {
-	case int:
-		return n
-	case int64:
-		return int(n)
-	case float64:
-		return int(n)
-	default:
-		return 0
 	}
 }

@@ -62,7 +62,7 @@ func ParseRecord(row decoder.Row, sch *schema.CompiledSchema) (*schema.ParsedRec
 	sharedFields := make(map[string]any, len(sch.Shared))
 	for i := range sch.Shared {
 		field := &sch.Shared[i]
-		value, err := extractor.Extract(row, field, nil)
+		value, err := extractor.Extract(row, field, nil, sharedFields)
 		if err != nil {
 			continue
 		}
@@ -93,7 +93,7 @@ func ParseRecord(row decoder.Row, sch *schema.CompiledSchema) (*schema.ParsedRec
 	// Parse segment fields
 	for i := range segment.Fields {
 		field := &segment.Fields[i]
-		value, err := extractor.Extract(row, field, nil)
+		value, err := extractor.Extract(row, field, nil, fields)
 		if err != nil {
 			continue
 		}

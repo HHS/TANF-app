@@ -205,7 +205,7 @@ func (p *Pool) parseRow(line processor.RawLine) ([]*schema.ParsedRecord, error) 
 	sharedFields := make(map[string]any, len(line.Schema.Shared))
 	for i := range line.Schema.Shared {
 		field := &line.Schema.Shared[i]
-		value, err := p.extractor.Extract(line.Row, field, p.parseCtx)
+		value, err := p.extractor.Extract(line.Row, field, p.parseCtx, sharedFields)
 		if err != nil {
 			continue
 		}
@@ -234,8 +234,7 @@ func (p *Pool) parseRow(line processor.RawLine) ([]*schema.ParsedRecord, error) 
 		missingRequired := false
 		for i := range segment.Fields {
 			field := &segment.Fields[i]
-
-			value, err := p.extractor.Extract(line.Row, field, p.parseCtx)
+			value, err := p.extractor.Extract(line.Row, field, p.parseCtx, record.Fields)
 			if err != nil {
 				continue
 			}
