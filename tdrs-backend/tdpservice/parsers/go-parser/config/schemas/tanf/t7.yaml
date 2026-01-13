@@ -6,9 +6,9 @@
 # Each stratum block is 24 bytes:
 #   - TDRS_SECTION_IND: 1 byte
 #   - STRATUM: 2 bytes
-#   - FAMILIES_MONTH_A: 7 bytes
-#   - FAMILIES_MONTH_B: 7 bytes
-#   - FAMILIES_MONTH_C: 7 bytes
+#   - FAMILIES_MONTH: 7 bytes
+#   - FAMILIES_MONTH: 7 bytes
+#   - FAMILIES_MONTH: 7 bytes
 
 record_type: T7
 program: TANF
@@ -55,7 +55,7 @@ segments:
         type: string
         required: true
 
-      - name: FAMILIES_MONTH_A
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month A
         item: "6A"
         start: 10
@@ -63,7 +63,7 @@ segments:
         type: integer
         required: true
 
-      - name: FAMILIES_MONTH_B
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month B
         item: "6B"
         start: 17
@@ -71,7 +71,7 @@ segments:
         type: integer
         required: true
 
-      - name: FAMILIES_MONTH_C
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month C
         item: "6C"
         start: 24
@@ -97,7 +97,7 @@ segments:
         type: string
         required: false
 
-      - name: FAMILIES_MONTH_A
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month A
         item: "6A"
         start: 34
@@ -105,7 +105,7 @@ segments:
         type: integer
         required: false
 
-      - name: FAMILIES_MONTH_B
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month B
         item: "6B"
         start: 41
@@ -113,7 +113,7 @@ segments:
         type: integer
         required: false
 
-      - name: FAMILIES_MONTH_C
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month C
         item: "6C"
         start: 48
@@ -139,7 +139,7 @@ segments:
         type: string
         required: false
 
-      - name: FAMILIES_MONTH_A
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month A
         item: "6A"
         start: 58
@@ -147,7 +147,7 @@ segments:
         type: integer
         required: false
 
-      - name: FAMILIES_MONTH_B
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month B
         item: "6B"
         start: 65
@@ -155,7 +155,7 @@ segments:
         type: integer
         required: false
 
-      - name: FAMILIES_MONTH_C
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month C
         item: "6C"
         start: 72
@@ -181,7 +181,7 @@ segments:
         type: string
         required: false
 
-      - name: FAMILIES_MONTH_A
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month A
         item: "6A"
         start: 82
@@ -189,7 +189,7 @@ segments:
         type: integer
         required: false
 
-      - name: FAMILIES_MONTH_B
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month B
         item: "6B"
         start: 89
@@ -197,7 +197,7 @@ segments:
         type: integer
         required: false
 
-      - name: FAMILIES_MONTH_C
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month C
         item: "6C"
         start: 96
@@ -223,7 +223,7 @@ segments:
         type: string
         required: false
 
-      - name: FAMILIES_MONTH_A
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month A
         item: "6A"
         start: 106
@@ -231,7 +231,7 @@ segments:
         type: integer
         required: false
 
-      - name: FAMILIES_MONTH_B
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month B
         item: "6B"
         start: 113
@@ -239,7 +239,7 @@ segments:
         type: integer
         required: false
 
-      - name: FAMILIES_MONTH_C
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month C
         item: "6C"
         start: 120
@@ -265,7 +265,7 @@ segments:
         type: string
         required: false
 
-      - name: FAMILIES_MONTH_A
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month A
         item: "6A"
         start: 130
@@ -273,7 +273,7 @@ segments:
         type: integer
         required: false
 
-      - name: FAMILIES_MONTH_B
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month B
         item: "6B"
         start: 137
@@ -281,7 +281,7 @@ segments:
         type: integer
         required: false
 
-      - name: FAMILIES_MONTH_C
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month C
         item: "6C"
         start: 144
@@ -307,7 +307,7 @@ segments:
         type: string
         required: false
 
-      - name: FAMILIES_MONTH_A
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month A
         item: "6A"
         start: 154
@@ -315,7 +315,7 @@ segments:
         type: integer
         required: false
 
-      - name: FAMILIES_MONTH_B
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month B
         item: "6B"
         start: 161
@@ -323,7 +323,7 @@ segments:
         type: integer
         required: false
 
-      - name: FAMILIES_MONTH_C
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month C
         item: "6C"
         start: 168
@@ -349,7 +349,7 @@ segments:
         type: string
         required: false
 
-      - name: FAMILIES_MONTH_A
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month A
         item: "6A"
         start: 178
@@ -357,7 +357,7 @@ segments:
         type: integer
         required: false
 
-      - name: FAMILIES_MONTH_B
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month B
         item: "6B"
         start: 185
@@ -365,7 +365,7 @@ segments:
         type: integer
         required: false
 
-      - name: FAMILIES_MONTH_C
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month C
         item: "6C"
         start: 192
@@ -391,7 +391,7 @@ segments:
         type: string
         required: false
 
-      - name: FAMILIES_MONTH_A
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month A
         item: "6A"
         start: 202
@@ -399,7 +399,7 @@ segments:
         type: integer
         required: false
 
-      - name: FAMILIES_MONTH_B
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month B
         item: "6B"
         start: 209
@@ -407,7 +407,7 @@ segments:
         type: integer
         required: false
 
-      - name: FAMILIES_MONTH_C
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month C
         item: "6C"
         start: 216
@@ -433,7 +433,7 @@ segments:
         type: string
         required: false
 
-      - name: FAMILIES_MONTH_A
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month A
         item: "6A"
         start: 226
@@ -441,7 +441,7 @@ segments:
         type: integer
         required: false
 
-      - name: FAMILIES_MONTH_B
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month B
         item: "6B"
         start: 233
@@ -449,7 +449,7 @@ segments:
         type: integer
         required: false
 
-      - name: FAMILIES_MONTH_C
+      - name: FAMILIES_MONTH
         friendly_name: Number of Families Month C
         item: "6C"
         start: 240
