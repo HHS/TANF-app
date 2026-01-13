@@ -99,7 +99,7 @@ def handle_field(field, formatted_fields, is_admin):
             f''' --
         -- Calculate if SSN is valid
         CASE
-            WHEN "{field}" !~ '{regex_str}' THEN 1
+            WHEN "{field}" IS NOT NULL AND "{field}" !~ '{regex_str}' AND "{field}" LIKE '%[^0-9]%' THEN 1
             ELSE 0
         END AS "SSN_VALID"'''.strip()
         )
