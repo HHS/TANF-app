@@ -2,12 +2,12 @@ package converter
 
 import (
 	"go-parser/internal/db"
-	"go-parser/internal/worker"
+	"go-parser/internal/schema"
 )
 
 // Tribal TANF T1 Converter - Case-level data for active Tribal TANF cases
 
-func convertTribalT1(record *worker.ParsedRecord, datafileID int32) [][]any {
+func convertTribalT1(record *schema.ParsedRecord, datafileID int32) [][]any {
 	f := record.Fields
 
 	rec := &db.SearchIndexesTribalTanfT1{
@@ -115,7 +115,7 @@ func convertTribalT1(record *worker.ParsedRecord, datafileID int32) [][]any {
 
 // Tribal TANF T2 Converter - Adult-level data for active Tribal TANF cases
 
-func convertTribalT2(record *worker.ParsedRecord, datafileID int32) [][]any {
+func convertTribalT2(record *schema.ParsedRecord, datafileID int32) [][]any {
 	f := record.Fields
 
 	rec := &db.SearchIndexesTribalTanfT2{
@@ -240,7 +240,7 @@ func convertTribalT2(record *worker.ParsedRecord, datafileID int32) [][]any {
 // For now, this converter only handles single-row output. Multi-row support
 // can be added when Tribal T3 schema is confirmed to have _2 suffix fields.
 
-func convertTribalT3(record *worker.ParsedRecord, datafileID int32) [][]any {
+func convertTribalT3(record *schema.ParsedRecord, datafileID int32) [][]any {
 	f := record.Fields
 
 	rec := &db.SearchIndexesTribalTanfT3{
@@ -300,7 +300,7 @@ func convertTribalT3(record *worker.ParsedRecord, datafileID int32) [][]any {
 
 // Tribal TANF T4 Converter - Case-level data for closed Tribal TANF cases
 
-func convertTribalT4(record *worker.ParsedRecord, datafileID int32) [][]any {
+func convertTribalT4(record *schema.ParsedRecord, datafileID int32) [][]any {
 	f := record.Fields
 
 	rec := &db.SearchIndexesTribalTanfT4{
@@ -342,7 +342,7 @@ func convertTribalT4(record *worker.ParsedRecord, datafileID int32) [][]any {
 
 // Tribal TANF T5 Converter - Adult-level data for closed Tribal TANF cases
 
-func convertTribalT5(record *worker.ParsedRecord, datafileID int32) [][]any {
+func convertTribalT5(record *schema.ParsedRecord, datafileID int32) [][]any {
 	f := record.Fields
 
 	rec := &db.SearchIndexesTribalTanfT5{
@@ -418,7 +418,7 @@ func convertTribalT5(record *worker.ParsedRecord, datafileID int32) [][]any {
 
 // Tribal TANF T6 Converter - Aggregate data
 
-func convertTribalT6(record *worker.ParsedRecord, datafileID int32) [][]any {
+func convertTribalT6(record *schema.ParsedRecord, datafileID int32) [][]any {
 	f := record.Fields
 
 	rec := &db.SearchIndexesTribalTanfT6{
@@ -472,7 +472,7 @@ func convertTribalT6(record *worker.ParsedRecord, datafileID int32) [][]any {
 
 // Tribal TANF T7 Converter - Stratum data
 
-func convertTribalT7(record *worker.ParsedRecord, datafileID int32) [][]any {
+func convertTribalT7(record *schema.ParsedRecord, datafileID int32) [][]any {
 	f := record.Fields
 
 	rec := &db.SearchIndexesTribalTanfT7{

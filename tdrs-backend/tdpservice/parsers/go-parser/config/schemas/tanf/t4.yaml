@@ -46,7 +46,10 @@ segments:
         end: 22
         type: string
         required: true
-        transform: zero_pad_3
+        transform:
+          name: zero_pad
+          params:
+            digits: 3
 
       - name: STRATUM
         friendly_name: Stratum

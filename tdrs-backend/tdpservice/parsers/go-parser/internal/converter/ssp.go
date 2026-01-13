@@ -2,12 +2,12 @@ package converter
 
 import (
 	"go-parser/internal/db"
-	"go-parser/internal/worker"
+	"go-parser/internal/schema"
 )
 
 // SSP M1 Converter - Case-level data for active SSP cases
 
-func convertSspM1(record *worker.ParsedRecord, datafileID int32) [][]any {
+func convertSspM1(record *schema.ParsedRecord, datafileID int32) [][]any {
 	f := record.Fields
 
 	rec := &db.SearchIndexesSspM1{
@@ -111,7 +111,7 @@ func convertSspM1(record *worker.ParsedRecord, datafileID int32) [][]any {
 
 // SSP M2 Converter - Adult-level data for active SSP cases
 
-func convertSspM2(record *worker.ParsedRecord, datafileID int32) [][]any {
+func convertSspM2(record *schema.ParsedRecord, datafileID int32) [][]any {
 	f := record.Fields
 
 	rec := &db.SearchIndexesSspM2{
@@ -263,7 +263,7 @@ func convertSspM2(record *worker.ParsedRecord, datafileID int32) [][]any {
 
 // SSP M3 Converter - Child-level data for active SSP cases
 
-func convertSspM3(record *worker.ParsedRecord, datafileID int32) [][]any {
+func convertSspM3(record *schema.ParsedRecord, datafileID int32) [][]any {
 	f := record.Fields
 
 	rec := &db.SearchIndexesSspM3{
@@ -325,7 +325,7 @@ func convertSspM3(record *worker.ParsedRecord, datafileID int32) [][]any {
 
 // SSP M4 Converter - Case-level data for closed SSP cases
 
-func convertSspM4(record *worker.ParsedRecord, datafileID int32) [][]any {
+func convertSspM4(record *schema.ParsedRecord, datafileID int32) [][]any {
 	f := record.Fields
 
 	rec := &db.SearchIndexesSspM4{
@@ -367,7 +367,7 @@ func convertSspM4(record *worker.ParsedRecord, datafileID int32) [][]any {
 
 // SSP M5 Converter - Adult-level data for closed SSP cases
 
-func convertSspM5(record *worker.ParsedRecord, datafileID int32) [][]any {
+func convertSspM5(record *schema.ParsedRecord, datafileID int32) [][]any {
 	f := record.Fields
 
 	rec := &db.SearchIndexesSspM5{
@@ -439,7 +439,7 @@ func convertSspM5(record *worker.ParsedRecord, datafileID int32) [][]any {
 
 // SSP M6 Converter - Aggregate data
 
-func convertSspM6(record *worker.ParsedRecord, datafileID int32) [][]any {
+func convertSspM6(record *schema.ParsedRecord, datafileID int32) [][]any {
 	f := record.Fields
 
 	rec := &db.SearchIndexesSspM6{
@@ -483,7 +483,7 @@ func convertSspM6(record *worker.ParsedRecord, datafileID int32) [][]any {
 
 // SSP M7 Converter - Stratum data
 
-func convertSspM7(record *worker.ParsedRecord, datafileID int32) [][]any {
+func convertSspM7(record *schema.ParsedRecord, datafileID int32) [][]any {
 	f := record.Fields
 
 	rec := &db.SearchIndexesSspM7{

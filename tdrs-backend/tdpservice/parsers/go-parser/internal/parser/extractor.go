@@ -8,11 +8,23 @@ import (
 	"go-parser/internal/decoder"
 	"go-parser/internal/filespec"
 	"go-parser/internal/schema"
+	"go-parser/internal/transform"
 )
 
 // FieldExtractor extracts field values from rows based on the file format.
 type FieldExtractor interface {
-	Extract(row decoder.Row, field *schema.FieldDef) (any, error)
+	// Extract extracts a field value from a row.
+	// ctx may be nil if no runtime context is available.
+	Extract(row decoder.Row, field *schema.FieldDef, ctx *schema.ParseContext) (any, error)
+
+	// ExtractWithSource extracts a field that may derive its raw value from another field.
+	// extractedFields contains already-parsed fields for source lookups.
+	ExtractWithSource(
+		row decoder.Row,
+		field *schema.FieldDef,
+		ctx *schema.ParseContext,
+		extractedFields map[string]any,
+	) (any, error)
 }
 
 // GetExtractor returns the appropriate extractor for the given format.
@@ -30,7 +42,7 @@ func GetExtractor(format filespec.Format) FieldExtractor {
 // PositionalExtractor extracts fields from positional (fixed-width) rows.
 type PositionalExtractor struct{}
 
-func (e *PositionalExtractor) Extract(row decoder.Row, field *schema.FieldDef) (any, error) {
+func (e *PositionalExtractor) Extract(row decoder.Row, field *schema.FieldDef, ctx *schema.ParseContext) (any, error) {
 	// Type assert to PositionalRow
 	pr, ok := row.(*decoder.PositionalRow)
 	if !ok {
@@ -41,18 +53,71 @@ func (e *PositionalExtractor) Extract(row decoder.Row, field *schema.FieldDef) (
 	rawValue := pr.Slice(field.Start, field.End)
 
 	// Apply transformation if specified
-	if field.Transform != "" {
-		rawValue = applyTransform(rawValue, field.Transform)
+	if field.Transform != nil {
+		transformed, err := transform.Apply(
+			field.Transform.Name,
+			rawValue,
+			field.Transform.Params,
+			ctx,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("transform %s on field %s failed: %w",
+				field.Transform.Name, field.Name, err)
+		}
+		rawValue = transformed
 	}
 
 	// Convert to appropriate type
 	return convertValue(rawValue, field.Type)
 }
 
+func (e *PositionalExtractor) ExtractWithSource(
+	row decoder.Row,
+	field *schema.FieldDef,
+	ctx *schema.ParseContext,
+	extractedFields map[string]any,
+) (any, error) {
+	var rawValue string
+
+	if field.SourceField != "" {
+		// Computed field - get raw value from already-extracted field
+		src, ok := extractedFields[field.SourceField]
+		if !ok {
+			return nil, fmt.Errorf("source field %s not found for computed field %s",
+				field.SourceField, field.Name)
+		}
+		rawValue = fmt.Sprintf("%v", src)
+	} else {
+		// Regular field - extract from row position
+		pr, ok := row.(*decoder.PositionalRow)
+		if !ok {
+			return nil, fmt.Errorf("expected PositionalRow, got %T", row)
+		}
+		rawValue = pr.Slice(field.Start, field.End)
+	}
+
+	// Apply transformation if specified
+	if field.Transform != nil {
+		transformed, err := transform.Apply(
+			field.Transform.Name,
+			rawValue,
+			field.Transform.Params,
+			ctx,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("transform %s on field %s failed: %w",
+				field.Transform.Name, field.Name, err)
+		}
+		rawValue = transformed
+	}
+
+	return convertValue(rawValue, field.Type)
+}
+
 // ColumnarExtractor extracts fields from columnar (CSV/XLSX) rows.
 type ColumnarExtractor struct{}
 
-func (e *ColumnarExtractor) Extract(row decoder.Row, field *schema.FieldDef) (any, error) {
+func (e *ColumnarExtractor) Extract(row decoder.Row, field *schema.FieldDef, ctx *schema.ParseContext) (any, error) {
 	// Type assert to ColumnarRow
 	cr, ok := row.(*decoder.ColumnarRow)
 	if !ok {
@@ -66,11 +131,20 @@ func (e *ColumnarExtractor) Extract(row decoder.Row, field *schema.FieldDef) (an
 	}
 
 	// Apply transformation if specified
-	if field.Transform != "" {
+	if field.Transform != nil {
 		// Convert to string first for transformation
 		strVal := fmt.Sprintf("%v", val)
-		strVal = applyTransform(strVal, field.Transform)
-		return convertValue(strVal, field.Type)
+		transformed, err := transform.Apply(
+			field.Transform.Name,
+			strVal,
+			field.Transform.Params,
+			ctx,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("transform %s on field %s failed: %w",
+				field.Transform.Name, field.Name, err)
+		}
+		return convertValue(transformed, field.Type)
 	}
 
 	// Handle type conversion
@@ -87,6 +161,53 @@ func (e *ColumnarExtractor) Extract(row decoder.Row, field *schema.FieldDef) (an
 	default:
 		return convertValue(fmt.Sprintf("%v", v), field.Type)
 	}
+}
+
+func (e *ColumnarExtractor) ExtractWithSource(
+	row decoder.Row,
+	field *schema.FieldDef,
+	ctx *schema.ParseContext,
+	extractedFields map[string]any,
+) (any, error) {
+	var rawValue string
+
+	if field.SourceField != "" {
+		// Computed field - get raw value from already-extracted field
+		src, ok := extractedFields[field.SourceField]
+		if !ok {
+			return nil, fmt.Errorf("source field %s not found for computed field %s",
+				field.SourceField, field.Name)
+		}
+		rawValue = fmt.Sprintf("%v", src)
+	} else {
+		// Regular field - extract from column
+		cr, ok := row.(*decoder.ColumnarRow)
+		if !ok {
+			return nil, fmt.Errorf("expected ColumnarRow, got %T", row)
+		}
+		val := cr.Column(field.Column)
+		if val == nil {
+			return nil, nil
+		}
+		rawValue = fmt.Sprintf("%v", val)
+	}
+
+	// Apply transformation if specified
+	if field.Transform != nil {
+		transformed, err := transform.Apply(
+			field.Transform.Name,
+			rawValue,
+			field.Transform.Params,
+			ctx,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("transform %s on field %s failed: %w",
+				field.Transform.Name, field.Name, err)
+		}
+		rawValue = transformed
+	}
+
+	return convertValue(rawValue, field.Type)
 }
 
 // convertValue converts a string value to the appropriate Go type.
@@ -125,30 +246,4 @@ func toInt(v any) int {
 	default:
 		return 0
 	}
-}
-
-// Transform function registry
-var transforms = map[string]func(string) string{
-	"zero_pad_3": func(s string) string {
-		trimmed := strings.TrimSpace(s)
-		if len(trimmed) < 3 {
-			return fmt.Sprintf("%03s", trimmed)
-		}
-		return trimmed
-	},
-	"zero_pad_5": func(s string) string {
-		trimmed := strings.TrimSpace(s)
-		if len(trimmed) < 5 {
-			return fmt.Sprintf("%05s", trimmed)
-		}
-		return trimmed
-	},
-	// Add more transforms as needed
-}
-
-func applyTransform(value, transformName string) string {
-	if fn, ok := transforms[transformName]; ok {
-		return fn(value)
-	}
-	return value // Unknown transform - return unchanged
 }

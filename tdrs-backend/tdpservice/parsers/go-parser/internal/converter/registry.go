@@ -1,14 +1,14 @@
 package converter
 
 import (
-	"go-parser/internal/worker"
+	"go-parser/internal/schema"
 )
 
 // RowConverter converts a ParsedRecord to row values for COPY.
 // Uses SQLC types internally for type safety, returns [][]any for flexibility.
 // Most record types return a single row, but multi-record types like T3
 // (which contains 2 children per line) return multiple rows.
-type RowConverter func(record *worker.ParsedRecord, datafileID int32) [][]any
+type RowConverter func(record *schema.ParsedRecord, datafileID int32) [][]any
 
 // converterRegistry maps schema paths to their converter functions.
 // Schema paths (e.g., "tanf/t1", "tribal/t1") allow different programs

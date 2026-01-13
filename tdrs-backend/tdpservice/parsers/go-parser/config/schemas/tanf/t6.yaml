@@ -34,6 +34,17 @@ shared:
 segments:
   # Month A (first month of quarter)
   - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "4"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 0
+
       - name: NUM_APPLICATIONS
         friendly_name: Total Number of Applications
         item: "4A"
@@ -156,6 +167,17 @@ segments:
 
   # Month B (second month of quarter)
   - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "4"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 1
+
       - name: NUM_APPLICATIONS
         friendly_name: Total Number of Applications
         item: "4B"
@@ -278,6 +300,17 @@ segments:
 
   # Month C (third month of quarter)
   - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "4"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 2
+
       - name: NUM_APPLICATIONS
         friendly_name: Total Number of Applications
         item: "4C"

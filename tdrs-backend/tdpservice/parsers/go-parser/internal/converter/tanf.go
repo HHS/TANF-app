@@ -2,12 +2,12 @@ package converter
 
 import (
 	"go-parser/internal/db"
-	"go-parser/internal/worker"
+	"go-parser/internal/schema"
 )
 
 // TANF T1 Converter - Case-level data for active TANF cases
 
-func convertTanfT1(record *worker.ParsedRecord, datafileID int32) [][]any {
+func convertTanfT1(record *schema.ParsedRecord, datafileID int32) [][]any {
 	f := record.Fields
 
 	// Build SQLC type for type safety
@@ -118,7 +118,7 @@ func convertTanfT1(record *worker.ParsedRecord, datafileID int32) [][]any {
 
 // TANF T2 Converter - Adult-level data for active TANF cases
 
-func convertTanfT2(record *worker.ParsedRecord, datafileID int32) [][]any {
+func convertTanfT2(record *schema.ParsedRecord, datafileID int32) [][]any {
 	f := record.Fields
 
 	rec := &db.SearchIndexesTanfT2{
@@ -277,7 +277,7 @@ func convertTanfT2(record *worker.ParsedRecord, datafileID int32) [][]any {
 // T3 records contain data for TWO children per line. This converter
 // produces 1 or 2 rows depending on whether Child 2 data is present.
 
-func convertTanfT3(record *worker.ParsedRecord, datafileID int32) [][]any {
+func convertTanfT3(record *schema.ParsedRecord, datafileID int32) [][]any {
 	f := record.Fields
 
 	// Child 1 row (always present)
@@ -401,7 +401,7 @@ func convertTanfT3(record *worker.ParsedRecord, datafileID int32) [][]any {
 
 // TANF T4 Converter - Case-level data for closed TANF cases
 
-func convertTanfT4(record *worker.ParsedRecord, datafileID int32) [][]any {
+func convertTanfT4(record *schema.ParsedRecord, datafileID int32) [][]any {
 	f := record.Fields
 
 	rec := &db.SearchIndexesTanfT4{
@@ -443,7 +443,7 @@ func convertTanfT4(record *worker.ParsedRecord, datafileID int32) [][]any {
 
 // TANF T5 Converter - Adult-level data for closed TANF cases
 
-func convertTanfT5(record *worker.ParsedRecord, datafileID int32) [][]any {
+func convertTanfT5(record *schema.ParsedRecord, datafileID int32) [][]any {
 	f := record.Fields
 
 	rec := &db.SearchIndexesTanfT5{
@@ -519,7 +519,7 @@ func convertTanfT5(record *worker.ParsedRecord, datafileID int32) [][]any {
 
 // TANF T6 Converter - Aggregate data
 
-func convertTanfT6(record *worker.ParsedRecord, datafileID int32) [][]any {
+func convertTanfT6(record *schema.ParsedRecord, datafileID int32) [][]any {
 	f := record.Fields
 
 	rec := &db.SearchIndexesTanfT6{
@@ -573,7 +573,7 @@ func convertTanfT6(record *worker.ParsedRecord, datafileID int32) [][]any {
 
 // TANF T7 Converter - Stratum data
 
-func convertTanfT7(record *worker.ParsedRecord, datafileID int32) [][]any {
+func convertTanfT7(record *schema.ParsedRecord, datafileID int32) [][]any {
 	f := record.Fields
 
 	rec := &db.SearchIndexesTanfT7{

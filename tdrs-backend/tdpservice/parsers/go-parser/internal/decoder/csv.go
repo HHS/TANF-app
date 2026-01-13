@@ -40,6 +40,12 @@ func (d *CSVDecoder) Format() filespec.Format {
 	return filespec.FormatColumnar
 }
 
+// ReadFirst returns nil for columnar files.
+// CSV/columnar files don't have a header record in the data stream.
+func (d *CSVDecoder) ReadFirst() (Row, error) {
+	return nil, nil
+}
+
 func (d *CSVDecoder) Close() error {
 	if d.closer != nil {
 		return d.closer.Close()

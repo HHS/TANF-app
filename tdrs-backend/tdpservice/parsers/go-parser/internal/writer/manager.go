@@ -10,6 +10,7 @@ import (
 	"go-parser/internal/converter"
 	"go-parser/internal/filespec"
 	"go-parser/internal/registry"
+	"go-parser/internal/schema"
 	"go-parser/internal/worker"
 )
 
@@ -122,7 +123,7 @@ func (wm *WriterManager) WriteBatch(ctx context.Context, batch *worker.ParsedBat
 
 // writeRecord converts and writes a single record.
 // Some record types (like T3 with 2 children per line) produce multiple rows.
-func (wm *WriterManager) writeRecord(ctx context.Context, record *worker.ParsedRecord) error {
+func (wm *WriterManager) writeRecord(ctx context.Context, record *schema.ParsedRecord) error {
 	// Look up writer by schema path (stored in CompiledSchema)
 	rw, ok := wm.writers[record.Schema.Path]
 	if !ok {

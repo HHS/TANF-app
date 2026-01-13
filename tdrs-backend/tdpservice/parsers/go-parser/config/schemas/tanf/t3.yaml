@@ -65,6 +65,8 @@ segments:
         end: 37
         type: string
         required: true
+        transform:
+          name: ssn_decrypt
 
       - name: RACE_HISPANIC
         friendly_name: Race Hispanic
@@ -211,6 +213,8 @@ segments:
         end: 78
         type: string
         required: false
+        transform:
+          name: ssn_decrypt
 
       - name: RACE_HISPANIC
         friendly_name: Race Hispanic

@@ -12,9 +12,11 @@ import (
 // PostitionalDecoder reads positional (fixed-width) UTF-8 text files.
 // Each line becomes a PositionalRow.
 type PostitionalDecoder struct {
-	reader  *bufio.Reader
-	closer  io.Closer
-	lineNum int
+	reader       *bufio.Reader
+	closer       io.Closer
+	lineNum      int
+	firstRow     Row  // Stores the first row if ReadFirst() was called
+	firstRowRead bool // True if ReadFirst() was called
 }
 
 // NewPostitionalDecoder creates a decoder for UTF-8 positional files.
@@ -28,6 +30,42 @@ func NewPostitionalDecoder(r io.ReadCloser) *PostitionalDecoder {
 
 func (d *PostitionalDecoder) Format() filespec.Format {
 	return filespec.FormatPositional
+}
+
+// ReadFirst reads and returns the first row of the file.
+// For positional files, this is typically the HEADER record.
+// After calling ReadFirst, Rows() will start from the second row.
+// This method should only be called once, before Rows().
+func (d *PostitionalDecoder) ReadFirst() (Row, error) {
+	if d.firstRowRead {
+		return d.firstRow, nil // Already read, return cached
+	}
+
+	// Read the first line
+	line, err := d.reader.ReadString('\n')
+	if err != nil && err != io.EOF {
+		return nil, err
+	}
+
+	// Handle empty file
+	if len(line) == 0 && err == io.EOF {
+		d.firstRowRead = true
+		return nil, nil
+	}
+
+	d.lineNum++
+	d.firstRowRead = true
+
+	// Remove trailing newline characters
+	line = strings.TrimRight(line, "\r\n")
+
+	// Detect record type from line prefix
+	recordType := detectRecordTypeFromPrefix(line)
+
+	// Create and store the row
+	d.firstRow = NewPositionalRow(d.lineNum, recordType, line)
+
+	return d.firstRow, nil
 }
 
 func (d *PostitionalDecoder) Close() error {

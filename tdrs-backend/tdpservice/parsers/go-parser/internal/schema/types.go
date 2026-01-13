@@ -1,5 +1,45 @@
 package schema
 
+// ParsedRecord represents a successfully parsed record.
+// For multi-segment schemas (T3, T6, T7), one input line produces multiple ParsedRecords.
+// This type is used for all record types including HEADER.
+type ParsedRecord struct {
+	Schema       *CompiledSchema
+	LineNumber   int
+	SegmentIndex int            // Which segment this record came from (0-indexed)
+	Fields       map[string]any // Contains shared fields + segment-specific fields
+}
+
+// ParseContext carries runtime information extracted from header
+// that affects how subsequent records are parsed.
+type ParseContext struct {
+	// Header contains the fully parsed header record.
+	// All header fields are available via Header.Fields.
+	Header *ParsedRecord
+
+	// Convenience fields extracted from Header for common use cases:
+
+	// IsEncrypted indicates whether SSN fields need decryption.
+	// Determined by header item 9 (encryption indicator = "E").
+	IsEncrypted bool
+
+	// Year is the calendar year from the header (item 2).
+	Year int
+
+	// Quarter is the calendar quarter from the header (item 3).
+	Quarter string
+}
+
+// TransformDef defines a field transformation with optional parameters.
+type TransformDef struct {
+	// Name is the transform function name (e.g., "zero_pad", "ssn_decrypt")
+	Name string `yaml:"name"`
+
+	// Params contains static configuration from the schema YAML.
+	// These are known at schema load time, not runtime.
+	Params map[string]any `yaml:"params,omitempty"`
+}
+
 // FieldDef represents a single field within a record.
 type FieldDef struct {
 	// Name is the internal field name (used in code and database)
@@ -17,8 +57,12 @@ type FieldDef struct {
 	// Required indicates whether the field must have a non-empty value
 	Required bool `yaml:"required"`
 
-	// Transform is an optional transformation to apply (e.g., "zero_pad_3")
-	Transform string `yaml:"transform,omitempty"`
+	// Transform defines an optional transformation to apply to the raw value.
+	Transform *TransformDef `yaml:"transform,omitempty"`
+
+	// SourceField references another field's raw value for computed fields.
+	// If set, the raw value comes from the named field instead of Start/End.
+	SourceField string `yaml:"source_field,omitempty"`
 
 	// === Positional Format Fields ===
 	// Used when the schema is for a positional (fixed-width) file

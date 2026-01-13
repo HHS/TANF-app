@@ -102,18 +102,37 @@ func processFile(
 	}
 	defer dec.Close()
 
-	// Step 3: Create record type detector
+	// Step 3: Read and parse header (for positional files)
+	headerRow, err := dec.ReadFirst()
+	if err != nil {
+		return fmt.Errorf("failed to read header: %w", err)
+	}
+
+	headerSchema := reg.GetSchema(parser.HeaderSchemaPath)
+	parseCtx, err := parser.ParseHeader(headerRow, headerSchema)
+	if err != nil {
+		return fmt.Errorf("failed to parse header: %w", err)
+	}
+
+	if parseCtx != nil {
+		log.Printf("Header: Year=%d, Quarter=%s, Encrypted=%v",
+			parseCtx.Year, parseCtx.Quarter, parseCtx.IsEncrypted)
+		log.Printf("Header fields: %v", parseCtx.Header.Fields)
+	}
+
+	// Step 4: Create record type detector
 	detector := parser.NewRecordTypeDetector(spec, reg)
 
-	// Step 4: Create worker pool
+	// Step 5: Create worker pool
 	poolConfig := worker.DefaultPoolConfig()
 	workerPool := worker.NewPool(spec.Format, poolConfig)
+	workerPool.SetParseContext(parseCtx) // Set context before starting workers
 	workerPool.Start(ctx)
 
-	// Step 5: Create database writer (dynamically from FileSpec)
+	// Step 6: Create database writer (dynamically from FileSpec)
 	writerMgr := writer.NewWriterManager(pool, datafileID, spec, reg)
 
-	// Step 6: Start result collector
+	// Step 7: Start result collector
 	var collectorErr error
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -122,7 +141,7 @@ func processFile(
 		collectorErr = collectResults(ctx, workerPool, writerMgr)
 	}()
 
-	// Step 7: Process rows through the unified Accumulator
+	// Step 8: Process rows through the unified Accumulator
 	err = processRows(dec, spec, detector, workerPool)
 
 	if err != nil {
@@ -131,7 +150,7 @@ func processFile(
 		return err
 	}
 
-	// Step 8: Wait for everything to complete
+	// Step 9: Wait for everything to complete
 	workerPool.CloseInputs()
 	workerPool.Wait()
 	wg.Wait()

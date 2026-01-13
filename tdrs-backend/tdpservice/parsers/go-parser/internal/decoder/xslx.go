@@ -63,6 +63,12 @@ func (d *XLSXDecoder) Close() error {
 	return nil
 }
 
+// ReadFirst returns nil for columnar files.
+// CSV/columnar files don't have a header record in the data stream.
+func (d *XLSXDecoder) ReadFirst() (Row, error) {
+	return nil, nil
+}
+
 func (d *XLSXDecoder) Rows() iter.Seq2[Row, error] {
 	return func(yield func(Row, error) bool) {
 		for d.rows.Next() {
