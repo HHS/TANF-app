@@ -230,7 +230,11 @@ func (pr *ParsedRecord) GetInt(fieldName string) int {
 
 ### 5. Worker Acquires from Pool
 
-Update `parseRow` to acquire records from the schema's pool. Note that workers only acquire - they never release. All releases happen in the router after conversion.
+Update `parseRow` to acquire records from the schema's pool and parse directly into the record's `Fields []any`.
+
+- **Shared fields**: Parsed once into a small cache (one allocation per row)
+- **Segment fields**: Parsed directly into the leased record (no temp allocation)
+- **Invalid segments**: Record is released back to pool immediately
 
 ```go
 func (p *Pool) parseRow(line processor.RawLine) ([]*schema.ParsedRecord, error) {
@@ -239,58 +243,52 @@ func (p *Pool) parseRow(line processor.RawLine) ([]*schema.ParsedRecord, error) 
         return nil, nil
     }
 
-    // Parse shared fields into temporary storage
-    sharedFields := make(map[string]any, len(line.Schema.Shared))
+    // Parse shared fields once into cache (one small allocation per row)
+    sharedCache := make(map[string]any, len(line.Schema.Shared))
     for i := range line.Schema.Shared {
         field := &line.Schema.Shared[i]
-        value, err := p.extractor.Extract(line.Row, field, p.parseCtx, sharedFields)
+        value, err := p.extractor.Extract(line.Row, field, p.parseCtx, sharedCache)
         if err != nil {
             continue
         }
         if value != nil {
-            sharedFields[field.Name] = value
+            sharedCache[field.Name] = value
         }
     }
 
-    // Parse each segment into a pooled record
+    // Parse each segment directly into a pooled record
     records := make([]*schema.ParsedRecord, 0, numSegments)
     for segIdx, segment := range line.Schema.Segments {
-        // First pass: extract segment fields into temp storage to check validity
-        segmentFields := make(map[string]any, len(segment.Fields))
-        missingRequired := false
+        // Acquire record from pool
+        record := line.Schema.AcquireRecord()
+        record.LineNumber = line.Row.LineNum()
+        record.SegmentIndex = segIdx
 
+        // Copy cached shared fields into record
+        for name, value := range sharedCache {
+            record.Set(name, value)
+        }
+
+        // Parse segment fields DIRECTLY into record (no temp allocation)
+        missingRequired := false
         for i := range segment.Fields {
             field := &segment.Fields[i]
-            value, err := p.extractor.Extract(line.Row, field, p.parseCtx, nil)
+            value, err := p.extractor.Extract(line.Row, field, p.parseCtx, record)
             if err != nil {
                 continue
             }
             if value != nil {
-                segmentFields[field.Name] = value
+                record.Set(field.Name, value)
             } else if field.Required || segIdx >= 1 {
                 missingRequired = true
                 break
             }
         }
 
-        // Skip invalid segments - don't acquire a record we won't use
         if missingRequired {
+            // Invalid segment - release record back to pool
+            line.Schema.ReleaseRecord(record)
             continue
-        }
-
-        // ACQUIRE from pool only after confirming segment is valid
-        record := line.Schema.AcquireRecord()
-        record.LineNumber = line.Row.LineNum()
-        record.SegmentIndex = segIdx
-
-        // Copy shared fields
-        for name, value := range sharedFields {
-            record.Set(name, value)
-        }
-
-        // Copy segment fields
-        for name, value := range segmentFields {
-            record.Set(name, value)
         }
 
         records = append(records, record)
@@ -300,14 +298,20 @@ func (p *Pool) parseRow(line processor.RawLine) ([]*schema.ParsedRecord, error) 
 }
 ```
 
+**Release points:**
+- **Worker**: Releases only when segment is invalid (abort case)
+- **Router**: Releases after successful conversion (normal flow)
+
 ### 6. Router Converts and Releases to Pool
 
-**This is the only place where `ParsedRecord` objects are released back to the pool.**
+**This is where valid `ParsedRecord` objects are released back to the pool.**
 
 The router is the boundary between the `ParsedRecord` world and the `[]any` database row world. After conversion, the `ParsedRecord` is no longer needed and can be immediately recycled.
 
+(Workers may also release records in the abort case when a segment is invalid - see section 5.)
+
 ```go
-// In WriterManager - the ONLY place records are released to pool
+// In WriterManager - release point for valid records in normal flow
 func (wm *WriterManager) WriteRecord(ctx context.Context, record *schema.ParsedRecord) error {
     tw, ok := wm.writers[record.Schema.Path]
     if !ok {
@@ -321,9 +325,8 @@ func (wm *WriterManager) WriteRecord(ctx context.Context, record *schema.ParsedR
     rows := conv(record, wm.datafileID)
 
     // ┌─────────────────────────────────────────────────────────────┐
-    // │ RELEASE TO POOL - This is the single point of release      │
-    // │ Workers acquire, router releases. No other code path       │
-    // │ should call ReleaseRecord().                               │
+    // │ RELEASE TO POOL - Normal flow release point                │
+    // │ Workers may also release invalid segments during parsing.  │
     // └─────────────────────────────────────────────────────────────┘
     record.Schema.ReleaseRecord(record)
 
@@ -474,43 +477,46 @@ Recommendation: Use `Get()` helper for maintainability. The map lookup overhead 
 ## Object Lifecycle Diagram
 
 ```
-                    sync.Pool (per schema)
-                    ┌─────────────────────┐
-                    │  recycled records   │
-                    └──────────┬──────────┘
-                               │
-            ┌──────────────────┴──────────────────┐
-            │ AcquireRecord()                     │ ReleaseRecord()
-            ▼                                     │
-    ┌───────────────┐                             │
-    │    Worker     │                             │
-    │  parseRow()   │                             │
-    │               │                             │
-    │  record.Set() │                             │
-    └───────┬───────┘                             │
-            │                                     │
-            ▼                                     │
-    ┌───────────────┐                             │
-    │   Validator   │  (future)                   │
-    │               │                             │
-    │  record.Get() │                             │
-    └───────┬───────┘                             │
-            │                                     │
-            ▼                                     │
-    ┌───────────────┐                             │
-    │    Router     │                             │
-    │               │                             │
-    │  convert()    │─────────────────────────────┘
-    │  send []any   │
-    └───────┬───────┘
-            │ []any (not ParsedRecord)
-            ▼
-    ┌───────────────┐
-    │ TableWriter   │
-    │               │
-    │  buffer rows  │
-    │  COPY to DB   │
-    └───────────────┘
+                      sync.Pool (per schema)
+                      ┌─────────────────────┐
+                      │  recycled records   │
+                      └──────────┬──────────┘
+                                 │
+              ┌──────────────────┼──────────────────┐
+              │ AcquireRecord()  │                  │ ReleaseRecord()
+              ▼                  │                  │
+      ┌───────────────┐          │                  │
+      │    Worker     │          │                  │
+      │  parseRow()   │          │                  │
+      │               │          │                  │
+      │  record.Set() │          │                  │
+      │               │──────────┘                  │
+      │  (invalid     │  abort: release             │
+      │   segment)    │                             │
+      └───────┬───────┘                             │
+              │ valid records                       │
+              ▼                                     │
+      ┌───────────────┐                             │
+      │   Validator   │  (future)                   │
+      │               │                             │
+      │  record.Get() │                             │
+      └───────┬───────┘                             │
+              │                                     │
+              ▼                                     │
+      ┌───────────────┐                             │
+      │    Router     │                             │
+      │               │                             │
+      │  convert()    │─────────────────────────────┘
+      │  send []any   │  normal flow: release
+      └───────┬───────┘
+              │ []any (not ParsedRecord)
+              ▼
+      ┌───────────────┐
+      │ TableWriter   │
+      │               │
+      │  buffer rows  │
+      │  COPY to DB   │
+      └───────────────┘
 ```
 
 ## Memory Comparison
