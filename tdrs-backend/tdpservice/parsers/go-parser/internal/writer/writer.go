@@ -71,7 +71,8 @@ func NewTableWriter(
 		converter:  conv,
 		// Channel buffer sized for records, not rows
 		// Records are smaller than converted rows, so this is more memory-efficient
-		recordChan: make(chan *schema.ParsedRecord, threshold),
+		// TODO: make channel buffer configurable
+		recordChan: make(chan *schema.ParsedRecord, 1000),
 		rows:       make([][]any, 0, threshold),
 	}
 }
