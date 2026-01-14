@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import axiosInstance from '../../axios-instance'
+import { downloadBlob } from '../../utils/fileDownload'
 
 /**
  * Formats a timestamp to a readable date string
@@ -40,15 +41,7 @@ function STTFeedbackReportsTable({ data, setAlert }) {
         }
       )
 
-      // Create a blob URL and trigger download
-      const url = window.URL.createObjectURL(new Blob([response.data]))
-      const link = document.createElement('a')
-      link.href = url
-      link.setAttribute('download', report.original_filename || 'report.zip')
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(url)
+      downloadBlob(response.data, report.original_filename || 'report.zip')
     } catch (error) {
       console.error('Failed to download report:', error)
       setAlert({

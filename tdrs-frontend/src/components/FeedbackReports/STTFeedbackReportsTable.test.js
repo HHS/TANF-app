@@ -2,8 +2,10 @@ import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import STTFeedbackReportsTable from './STTFeedbackReportsTable'
 import axiosInstance from '../../axios-instance'
+import { downloadBlob } from '../../utils/fileDownload'
 
 jest.mock('../../axios-instance')
+jest.mock('../../utils/fileDownload')
 
 describe('STTFeedbackReportsTable', () => {
   const mockSetAlert = jest.fn()
@@ -176,11 +178,6 @@ describe('STTFeedbackReportsTable', () => {
       const mockBlob = new Blob(['test content'], { type: 'application/zip' })
       axiosInstance.get.mockResolvedValue({ data: mockBlob })
 
-      // Mock URL.createObjectURL and revokeObjectURL
-      const mockUrl = 'blob:http://localhost:3000/mock-blob-url'
-      global.URL.createObjectURL = jest.fn(() => mockUrl)
-      global.URL.revokeObjectURL = jest.fn()
-
       const mockData = [
         {
           id: 1,
@@ -190,25 +187,7 @@ describe('STTFeedbackReportsTable', () => {
         },
       ]
 
-      // Render BEFORE mocking document.createElement
       renderComponent(mockData)
-
-      // Mock document.createElement for the anchor element only after render
-      const mockClick = jest.fn()
-      const originalCreateElement = document.createElement.bind(document)
-      jest.spyOn(document, 'createElement').mockImplementation((tagName) => {
-        if (tagName === 'a') {
-          return {
-            href: '',
-            setAttribute: jest.fn(),
-            click: mockClick,
-            style: {},
-          }
-        }
-        return originalCreateElement(tagName)
-      })
-      jest.spyOn(document.body, 'appendChild').mockImplementation(() => {})
-      jest.spyOn(document.body, 'removeChild').mockImplementation(() => {})
 
       const downloadButton = screen.getByRole('button', {
         name: /Download F33.zip/i,
@@ -225,10 +204,9 @@ describe('STTFeedbackReportsTable', () => {
         )
       })
 
-      // Cleanup mocks
-      document.createElement.mockRestore()
-      document.body.appendChild.mockRestore()
-      document.body.removeChild.mockRestore()
+      await waitFor(() => {
+        expect(downloadBlob).toHaveBeenCalledWith(mockBlob, 'F33.zip')
+      })
     })
 
     it('shows downloading state during download', async () => {
