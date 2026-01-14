@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
@@ -25,7 +26,20 @@ func main() {
 	ctx := context.Background()
 
 	// Connect to database
-	pool, err := pgxpool.New(ctx, "postgres://tdpuser:something_secure@localhost:5432/tdrs_test?sslmode=disable")//os.Getenv("DATABASE_URL"))
+	databaseUrl := "postgres://tdpuser:something_secure@localhost:5432/tdrs_test?sslmode=disable"
+	// pool, err := pgxpool.New(ctx, "postgres://tdpuser:something_secure@localhost:5432/tdrs_test?sslmode=disable")//os.Getenv("DATABASE_URL"))
+	// if err != nil {
+	// 	log.Fatalf("Failed to connect to database: %v", err)
+	// }
+	config, err := pgxpool.ParseConfig(databaseUrl)
+	if err != nil {
+		log.Fatalf("Failed to parse database URL: %v", err)
+	}
+	config.MinConns = 4
+	config.MinIdleConns = 4
+	config.MaxConns = 12
+
+	pool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
@@ -127,6 +141,9 @@ func processFile(
 	}
 	defer dec.Close()
 
+	// Start timing here for fair comparison to python patch to measure parsing time
+	startTime := time.Now()
+
 	// Step 3: Read and parse header (for positional files)
 	headerRow, err := dec.ReadFirst()
 	if err != nil {
@@ -183,6 +200,10 @@ func processFile(
 	if collectorErr != nil {
 		return collectorErr
 	}
+
+	// Stop timing here for fair comparison to python patch to measure parsing time
+	endTime := time.Now()
+	log.Printf("Time to parse: %s", endTime.Sub(startTime))
 
 	return nil
 }
