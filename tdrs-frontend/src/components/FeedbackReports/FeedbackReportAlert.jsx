@@ -1,11 +1,50 @@
-import React from 'react'
-import PropTypes from 'prop-types'
+import { useState, useEffect } from 'react'
+import axiosInstance from '../../axios-instance'
+import { useReportsContext } from '../Reports/ReportsContext'
 
 /**
  * Alert banner displayed on TANF Data Files page when feedback reports are available.
  * Only shown to Data Analysts when reports exist for their STT and selected quarter/year.
+ * Fetches the latest report internally using the `latest=true` query param.
  */
-const FeedbackReportAlert = ({ latestReportDate = null }) => {
+const FeedbackReportAlert = () => {
+  const { yearInputValue, quarterInputValue } = useReportsContext()
+  const [latestReportDate, setLatestReportDate] = useState(null)
+
+  useEffect(() => {
+    const fetchLatestFeedbackReport = async () => {
+      if (!yearInputValue || !quarterInputValue) {
+        setLatestReportDate(null)
+        return
+      }
+
+      try {
+        const response = await axiosInstance.get(
+          `${process.env.REACT_APP_BACKEND_URL}/reports/`,
+          {
+            params: {
+              year: yearInputValue,
+              quarter: quarterInputValue,
+              latest: 'true',
+            },
+            withCredentials: true,
+          }
+        )
+
+        if (response.data?.results?.length > 0) {
+          setLatestReportDate(response.data.results[0].created_at)
+        } else {
+          setLatestReportDate(null)
+        }
+      } catch (error) {
+        console.error('Error fetching feedback reports:', error)
+        setLatestReportDate(null)
+      }
+    }
+
+    fetchLatestFeedbackReport()
+  }, [yearInputValue, quarterInputValue])
+
   if (!latestReportDate) return null
 
   // Format date as MM/DD/YYYY
@@ -26,10 +65,6 @@ const FeedbackReportAlert = ({ latestReportDate = null }) => {
       </div>
     </div>
   )
-}
-
-FeedbackReportAlert.propTypes = {
-  latestReportDate: PropTypes.string,
 }
 
 export default FeedbackReportAlert
