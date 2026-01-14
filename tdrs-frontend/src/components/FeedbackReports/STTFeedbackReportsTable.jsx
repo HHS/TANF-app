@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import PropTypes from 'prop-types'
 import axiosInstance from '../../axios-instance'
 
 /**
@@ -119,11 +118,6 @@ function STTFeedbackReportsTable({ data, setAlert }) {
       )}
     </table>
   )
-}
-
-STTFeedbackReportsTable.propTypes = {
-  data: PropTypes.array,
-  setAlert: PropTypes.func.isRequired,
 }
 
 export default STTFeedbackReportsTable
