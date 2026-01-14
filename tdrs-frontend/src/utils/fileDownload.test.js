@@ -43,9 +43,7 @@ describe('fileDownload', () => {
       const blob = new Blob(['test content'])
       downloadBlob(blob, 'test.zip')
 
-      expect(window.URL.createObjectURL).toHaveBeenCalledWith(
-        expect.any(Blob)
-      )
+      expect(window.URL.createObjectURL).toHaveBeenCalledWith(expect.any(Blob))
     })
 
     it('creates an anchor element with correct attributes', () => {

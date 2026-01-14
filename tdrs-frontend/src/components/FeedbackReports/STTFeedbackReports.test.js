@@ -81,7 +81,6 @@ describe('STTFeedbackReports', () => {
       })
     })
 
-
     it('renders the Knowledge Center link', async () => {
       renderComponent()
 
@@ -295,7 +294,6 @@ describe('STTFeedbackReports', () => {
       })
     })
   })
-
 
   describe('Paginated Response Handling', () => {
     it('handles response with results array', async () => {
