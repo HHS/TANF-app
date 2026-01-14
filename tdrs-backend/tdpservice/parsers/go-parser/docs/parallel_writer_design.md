@@ -27,14 +27,39 @@ Additional findings:
 ### Pipeline Overview
 
 ```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   Decoder   │     │   Workers   │     │ Dispatchers │     │   Writers   │
-│  (1 reader) │ ──▶ │  (N parse)  │ ──▶ │ (M route)   │ ──▶ │ (K flush)   │
-└─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
-      │                   │                   │                   │
-   single            goroutine           goroutine           goroutine
-   thread              pool                pool              per table
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌───────────────────────┐
+│   Decoder   │     │   Workers   │     │ Dispatchers │     │       Writers         │
+│  (1 reader) │ ──▶ │  (N parse)  │ ──▶ │ (M route)   │ ──▶ │ (K convert + flush)   │
+└─────────────┘     └─────────────┘     └─────────────┘     └───────────────────────┘
+      │                   │                   │                        │
+   single            goroutine           goroutine               goroutine
+   thread              pool                pool                  per table
 ```
+
+### Key Design Decision: Conversion in Writers
+
+Conversion from `ParsedRecord` to database rows happens in the writer goroutines, not in dispatchers:
+
+```
+Old (conversion in dispatcher - SEQUENTIAL per batch):
+┌────────────┐     ┌─────────────────────┐     ┌────────────┐
+│ Dispatcher │ ──▶ │ convert(record)     │ ──▶ │ Send(row)  │
+│            │     │ (sequential in loop)│     │            │
+└────────────┘     └─────────────────────┘     └────────────┘
+
+New (conversion in writer - PARALLEL per table):
+┌────────────┐     ┌────────────┐     ┌─────────────────────────────┐
+│ Dispatcher │ ──▶ │Send(record)│ ──▶ │ Writer: convert + buffer    │
+│ (just route)│    │            │     │ (parallel per table)        │
+└────────────┘     └────────────┘     └─────────────────────────────┘
+```
+
+**Benefits:**
+- Conversion parallelized by table (T1, T2, T3 convert simultaneously)
+- Dispatcher becomes a simple router (faster)
+- Less data over channels (one `ParsedRecord` vs multiple rows for T3)
+- Cleaner ownership - writer owns the full transform pipeline
+- Eliminates `RecordWriter` wrapper - converter lives directly in `TableWriter`
 
 ### Detailed Data Flow
 
@@ -56,22 +81,28 @@ Additional findings:
   ┌───────────┐             ┌───────────┐             ┌───────────┐
   │Dispatcher │             │Dispatcher │             │Dispatcher │
   │     1     │             │     2     │             │     N     │
+  │ (routes   │             │ (routes   │             │ (routes   │
+  │  records) │             │  records) │             │  records) │
   └─────┬─────┘             └─────┬─────┘             └─────┬─────┘
         │                         │                         │
         └─────────────────────────┼─────────────────────────┘
+                                  │
+                                  │ ParsedRecord (not converted rows)
                                   │
         ┌─────────────────────────┼─────────────────────────┐
         │                         │                         │
         ▼                         ▼                         ▼
   ┌───────────┐             ┌───────────┐             ┌───────────┐
   │ T1 Chan   │             │ T2 Chan   │             │ T3 Chan   │
-  │ (buffered)│             │ (buffered)│             │ (buffered)│
+  │(ParsedRec)│             │(ParsedRec)│             │(ParsedRec)│
   └─────┬─────┘             └─────┬─────┘             └─────┬─────┘
         │                         │                         │
         ▼                         ▼                         ▼
   ┌───────────┐             ┌───────────┐             ┌───────────┐
   │ T1 Writer │             │ T2 Writer │             │ T3 Writer │
-  │ Goroutine │             │ Goroutine │             │ Goroutine │
+  │ convert + │             │ convert + │             │ convert + │
+  │ buffer +  │             │ buffer +  │             │ buffer +  │
+  │ COPY      │             │ COPY      │             │ COPY      │
   └─────┬─────┘             └─────┬─────┘             └─────┬─────┘
         │                         │                         │
         └─────────────────────────┼─────────────────────────┘
@@ -87,7 +118,7 @@ Additional findings:
 
 ### TableWriter (writer.go)
 
-The TableWriter is updated to run in its own goroutine with a buffered input channel:
+The TableWriter runs in its own goroutine, owns the converter, and handles the full pipeline from `ParsedRecord` to database:
 
 ```go
 package writer
@@ -101,6 +132,9 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"go-parser/internal/converter"
+	"go-parser/internal/schema"
 )
 
 const (
@@ -109,14 +143,16 @@ const (
 )
 
 type TableWriter struct {
-	tableName string
-	columns   []string
-	threshold int
+	tableName  string
+	columns    []string
+	threshold  int
+	datafileID int32
+	converter  converter.RowConverter // Converter lives here - writer owns full pipeline
 
-	// Async operation
-	rowChan chan []any
-	pool    *pgxpool.Pool
-	wg      sync.WaitGroup
+	// Async operation - channel carries ParsedRecords, not rows
+	recordChan chan *schema.ParsedRecord
+	pool       *pgxpool.Pool
+	wg         sync.WaitGroup
 
 	// Internal buffer (owned by the goroutine - no locks needed)
 	rows [][]any
@@ -129,7 +165,13 @@ type TableWriter struct {
 	errMu sync.RWMutex
 }
 
-func NewTableWriter(tableName string, columns []string, threshold int) *TableWriter {
+func NewTableWriter(
+	tableName string,
+	columns []string,
+	threshold int,
+	datafileID int32,
+	conv converter.RowConverter,
+) *TableWriter {
 	if threshold <= 0 {
 		threshold = DefaultFlushThreshold
 	}
@@ -137,12 +179,15 @@ func NewTableWriter(tableName string, columns []string, threshold int) *TableWri
 		threshold = MaxFlushThreshold
 	}
 	return &TableWriter{
-		tableName: tableName,
-		columns:   columns,
-		threshold: threshold,
-		// Channel buffer = 2x threshold for backpressure headroom
-		rowChan: make(chan []any, threshold*2),
-		rows:    make([][]any, 0, threshold),
+		tableName:  tableName,
+		columns:    columns,
+		threshold:  threshold,
+		datafileID: datafileID,
+		converter:  conv,
+		// Channel buffer sized for records, not rows
+		// Records are smaller than converted rows, so this is more memory-efficient
+		recordChan: make(chan *schema.ParsedRecord, threshold),
+		rows:       make([][]any, 0, threshold),
 	}
 }
 
@@ -153,25 +198,29 @@ func (tw *TableWriter) Start(ctx context.Context, pool *pgxpool.Pool) {
 	go tw.run(ctx)
 }
 
-// run is the main writer loop - owns all buffer operations
+// run is the main writer loop - owns conversion, buffering, and flushing
 func (tw *TableWriter) run(ctx context.Context) {
 	defer tw.wg.Done()
 
 	for {
 		select {
-		case row, ok := <-tw.rowChan:
+		case record, ok := <-tw.recordChan:
 			if !ok {
 				// Channel closed - flush remaining and exit
 				tw.flush(ctx)
 				return
 			}
-			tw.rows = append(tw.rows, row)
-			if len(tw.rows) >= tw.threshold {
-				if err := tw.flush(ctx); err != nil {
-					tw.setError(err)
-					// Drain channel to unblock senders
-					tw.drain()
-					return
+
+			// Conversion happens here, in the writer goroutine (parallel per table)
+			rows := tw.converter(record, tw.datafileID)
+			for _, row := range rows {
+				tw.rows = append(tw.rows, row)
+				if len(tw.rows) >= tw.threshold {
+					if err := tw.flush(ctx); err != nil {
+						tw.setError(err)
+						tw.drain()
+						return
+					}
 				}
 			}
 
@@ -183,15 +232,15 @@ func (tw *TableWriter) run(ctx context.Context) {
 	}
 }
 
-// Send queues a row for writing (called from dispatcher)
-func (tw *TableWriter) Send(ctx context.Context, row []any) error {
+// Send queues a ParsedRecord for conversion and writing
+func (tw *TableWriter) Send(ctx context.Context, record *schema.ParsedRecord) error {
 	// Check for prior errors
 	if err := tw.getError(); err != nil {
 		return err
 	}
 
 	select {
-	case tw.rowChan <- row:
+	case tw.recordChan <- record:
 		return nil
 	case <-ctx.Done():
 		return ctx.Err()
@@ -200,7 +249,7 @@ func (tw *TableWriter) Send(ctx context.Context, row []any) error {
 
 // Stop closes the channel and waits for the goroutine to finish
 func (tw *TableWriter) Stop() error {
-	close(tw.rowChan)
+	close(tw.recordChan)
 	tw.wg.Wait()
 	return tw.getError()
 }
@@ -229,8 +278,8 @@ func (tw *TableWriter) flush(ctx context.Context) error {
 }
 
 func (tw *TableWriter) drain() {
-	for range tw.rowChan {
-		// Discard remaining rows to unblock senders
+	for range tw.recordChan {
+		// Discard remaining records to unblock senders
 	}
 }
 
@@ -259,7 +308,7 @@ func (tw *TableWriter) TableName() string {
 
 ### WriterManager (manager.go)
 
-The WriterManager coordinates starting/stopping all writers and routing records:
+The WriterManager is simplified to just coordinate starting/stopping writers and routing records. No conversion logic here:
 
 ```go
 package writer
@@ -280,15 +329,10 @@ import (
 	"go-parser/internal/worker"
 )
 
-type RecordWriter struct {
-	writer    *TableWriter
-	converter converter.RowConverter
-}
-
 type WriterManager struct {
 	pool        *pgxpool.Pool
 	datafileID  int32
-	writers     map[string]*RecordWriter
+	writers     map[string]*TableWriter // Direct TableWriter reference, no wrapper
 	errorWriter *TableWriter
 }
 
@@ -308,12 +352,12 @@ func NewWriterManager(
 	wm := &WriterManager{
 		pool:       pool,
 		datafileID: datafileID,
-		writers:    make(map[string]*RecordWriter),
+		writers:    make(map[string]*TableWriter),
 	}
 
 	for _, schemaPath := range spec.Schemas {
-		schema := reg.GetSchema(schemaPath)
-		if schema.RecordType == "HEADER" || schema.RecordType == "TRAILER" {
+		sch := reg.GetSchema(schemaPath)
+		if sch.RecordType == "HEADER" || sch.RecordType == "TRAILER" {
 			continue
 		}
 
@@ -328,24 +372,30 @@ func NewWriterManager(
 			continue
 		}
 
-		wm.writers[schemaPath] = &RecordWriter{
-			writer:    NewTableWriter(meta.TableName, meta.Columns, DefaultFlushThreshold),
-			converter: conv,
-		}
+		// TableWriter now owns the converter
+		wm.writers[schemaPath] = NewTableWriter(
+			meta.TableName,
+			meta.Columns,
+			DefaultFlushThreshold,
+			datafileID,
+			conv,
+		)
 
 		log.Printf("Created writer for %s -> %s (%d columns)",
 			schemaPath, meta.TableName, len(meta.Columns))
 	}
 
-	wm.errorWriter = NewTableWriter("parser_error", parserErrorColumns, DefaultFlushThreshold)
+	// Error writer doesn't need a converter (errors are already in row format)
+	// For now, leave as nil or create a special error writer
+	// wm.errorWriter = NewErrorWriter(...)
 
 	return wm
 }
 
 // Start launches all writer goroutines
 func (wm *WriterManager) Start(ctx context.Context) {
-	for _, rw := range wm.writers {
-		rw.writer.Start(ctx, wm.pool)
+	for _, tw := range wm.writers {
+		tw.Start(ctx, wm.pool)
 	}
 	if wm.errorWriter != nil {
 		wm.errorWriter.Start(ctx, wm.pool)
@@ -353,19 +403,13 @@ func (wm *WriterManager) Start(ctx context.Context) {
 }
 
 // WriteRecord routes a record to the appropriate writer's channel
+// No conversion here - writer handles it
 func (wm *WriterManager) WriteRecord(ctx context.Context, record *schema.ParsedRecord) error {
-	rw, ok := wm.writers[record.Schema.Path]
+	tw, ok := wm.writers[record.Schema.Path]
 	if !ok {
 		return fmt.Errorf("no writer for schema: %s", record.Schema.Path)
 	}
-
-	rows := rw.converter(record, wm.datafileID)
-	for _, row := range rows {
-		if err := rw.writer.Send(ctx, row); err != nil {
-			return err
-		}
-	}
-	return nil
+	return tw.Send(ctx, record) // Send ParsedRecord directly
 }
 
 // WriteBatch routes all records in a batch to appropriate writers
@@ -387,16 +431,16 @@ func (wm *WriterManager) Stop() error {
 	var errMu sync.Mutex
 
 	// Stop all writers in parallel
-	for name, rw := range wm.writers {
+	for name, tw := range wm.writers {
 		wg.Add(1)
-		go func(name string, rw *RecordWriter) {
+		go func(name string, tw *TableWriter) {
 			defer wg.Done()
-			if err := rw.writer.Stop(); err != nil {
+			if err := tw.Stop(); err != nil {
 				errMu.Lock()
 				errs = append(errs, fmt.Errorf("%s: %w", name, err))
 				errMu.Unlock()
 			}
-		}(name, rw)
+		}(name, tw)
 	}
 	wg.Wait()
 
@@ -415,8 +459,8 @@ func (wm *WriterManager) Stop() error {
 // Stats returns totals from all writers
 func (wm *WriterManager) Stats() (records map[string]int64, errors int64) {
 	result := make(map[string]int64)
-	for path, rw := range wm.writers {
-		result[path] = rw.writer.TotalWritten()
+	for path, tw := range wm.writers {
+		result[path] = tw.TotalWritten()
 	}
 	if wm.errorWriter != nil {
 		errors = wm.errorWriter.TotalWritten()
@@ -427,7 +471,7 @@ func (wm *WriterManager) Stats() (records map[string]int64, errors int64) {
 
 ### Parallel Dispatchers (main.go)
 
-Multiple dispatcher goroutines compete on the Results channel:
+Multiple dispatcher goroutines compete on the Results channel. They only route - no conversion:
 
 ```go
 func collectResults(
@@ -503,13 +547,25 @@ go func() {
 
 | Aspect | Decision | Rationale |
 |--------|----------|-----------|
-| Channel buffer | `threshold * 2` | Absorbs burst without excessive memory |
+| Conversion location | Writer goroutine | Parallel per table, cleaner ownership |
+| Channel payload | `*ParsedRecord` | Smaller than converted rows, especially for T3 |
+| Channel buffer | `threshold` records | Matches flush batch size |
 | Buffer ownership | Writer goroutine only | No locks needed for row slice |
 | Error handling | First error wins, drain channel | Prevents deadlock on error |
-| Shutdown | Close channel → flush → wait | Graceful drain of pending rows |
+| Shutdown | Close channel → flush → wait | Graceful drain of pending records |
 | Stats | `atomic.Int64` | Lock-free reads from any goroutine |
 | Stop parallelism | Parallel close, parallel wait | Faster shutdown |
-| Dispatcher count | Configurable (default 4) | Balance between parallelism and overhead |
+| Dispatcher role | Route only, no conversion | Fast, simple, parallelizable |
+
+## Parallelism Comparison
+
+| Stage | Old Design | New Design |
+|-------|------------|------------|
+| Conversion | M dispatchers (batch-parallel, sequential within batch) | K writers (table-parallel) |
+| Buffering | K writers | K writers |
+| COPY | K writers | K writers |
+
+With the new design, T1, T2, and T3 records are converted simultaneously in their respective writer goroutines, rather than sequentially in dispatcher loops.
 
 ## Tuning Parameters
 
@@ -518,19 +574,19 @@ go func() {
 | `poolConfig.NumWorkers` | Parse parallelism | `runtime.NumCPU()` |
 | `numDispatchers` | Batch routing parallelism | 4-8 |
 | `threshold` | Rows per COPY | 100,000 |
-| `rowChan buffer` | Backpressure headroom | `threshold * 2` |
-| `pgxpool.MaxConns` | DB connections | `numDispatchers + numWriters + 4` |
+| `recordChan buffer` | Backpressure headroom | `threshold` |
+| `pgxpool.MaxConns` | DB connections | `numWriters + 4` |
 
 ### Connection Pool Sizing
 
-With parallel writers and dispatchers, ensure enough connections:
+With parallel writers, ensure enough connections:
 
 ```go
 numWriters := len(spec.Schemas) // T1, T2, T3, etc.
-config.MaxConns = int32(numDispatchers + numWriters + 4) // +4 headroom
+config.MaxConns = int32(numWriters + 4) // +4 headroom
 ```
 
-Each writer goroutine holds a connection during COPY. Dispatchers only send to channels (no DB connection needed).
+Each writer goroutine holds a connection during COPY. Dispatchers only route to channels (no DB connection needed).
 
 ## PostgreSQL Configuration
 
@@ -553,10 +609,11 @@ SELECT pg_reload_conf();
 
 ### Write Path
 
-With 3 tables flushing in parallel instead of sequentially:
+With 3 tables converting and flushing in parallel instead of sequentially:
 
 | Metric | Before (Sequential) | After (Parallel) |
 |--------|---------------------|------------------|
+| Conversion | Sequential in dispatcher loop | Parallel per table |
 | Flush cycle time | 3 × 500ms = 1.5s | max(500ms) = 500ms |
 | Theoretical speedup | 1x | up to 3x |
 
@@ -565,7 +622,8 @@ With 3 tables flushing in parallel instead of sequentially:
 | Stage | Before | After |
 |-------|--------|-------|
 | Parse | Parallel (N workers) | Parallel (N workers) |
-| Dispatch | Single goroutine | M dispatcher goroutines |
+| Dispatch | Single goroutine, does conversion | M goroutines, routing only |
+| Convert | Sequential in dispatch loop | Parallel per table writer |
 | Write | Sequential flush | Parallel flush per table |
 
 Actual gains depend on:
