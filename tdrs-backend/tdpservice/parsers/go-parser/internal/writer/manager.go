@@ -2,8 +2,10 @@ package writer
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
+	"sync"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
@@ -14,12 +16,6 @@ import (
 	"go-parser/internal/worker"
 )
 
-// RecordWriter pairs a TableWriter with its converter function.
-type RecordWriter struct {
-	writer    *TableWriter
-	converter converter.RowConverter
-}
-
 // WriterManager coordinates writes for any file type.
 // Writers are created dynamically based on the FileSpec.
 type WriterManager struct {
@@ -27,13 +23,10 @@ type WriterManager struct {
 	datafileID int32
 
 	// Writers keyed by schema path (e.g., "tanf/t1", "tribal/t1")
-	writers map[string]*RecordWriter
+	// Direct TableWriter reference - no wrapper needed
+	writers map[string]*TableWriter
 
 	errorWriter *TableWriter
-
-	// Stats tracking
-	totalWritten map[string]int64
-	totalErrors  int64
 }
 
 // Error table columns (same for all file types)
@@ -53,18 +46,17 @@ func NewWriterManager(
 	reg *registry.Registry,
 ) *WriterManager {
 	wm := &WriterManager{
-		pool:         pool,
-		datafileID:   datafileID,
-		writers:      make(map[string]*RecordWriter),
-		totalWritten: make(map[string]int64),
+		pool:       pool,
+		datafileID: datafileID,
+		writers:    make(map[string]*TableWriter),
 	}
 
 	// Create a writer for each data record type in the FileSpec
 	for _, schemaPath := range spec.Schemas {
-		schema := reg.GetSchema(schemaPath)
+		sch := reg.GetSchema(schemaPath)
 
 		// Skip header/trailer - they don't get written to database
-		if schema.RecordType == "HEADER" || schema.RecordType == "TRAILER" {
+		if sch.RecordType == "HEADER" || sch.RecordType == "TRAILER" {
 			continue
 		}
 
@@ -82,133 +74,99 @@ func NewWriterManager(
 			continue
 		}
 
-		// Key by schema path to support different programs with same record type prefix
-		wm.writers[schemaPath] = &RecordWriter{
-			writer:    NewTableWriter(meta.TableName, meta.Columns, DefaultFlushThreshold),
-			converter: conv,
-		}
+		// TableWriter now owns the converter - conversion happens in writer goroutine
+		wm.writers[schemaPath] = NewTableWriter(
+			meta.TableName,
+			meta.Columns,
+			DefaultFlushThreshold,
+			datafileID,
+			conv,
+		)
 
 		log.Printf("Created writer for %s -> %s (%d columns)",
 			schemaPath, meta.TableName, len(meta.Columns))
 	}
 
-	// Error writer is always the same
-	wm.errorWriter = NewTableWriter("parser_error", parserErrorColumns, DefaultFlushThreshold)
+	// TODO: Create error writer when error handling is implemented
+	// wm.errorWriter = NewErrorWriter(...)
 
 	return wm
 }
 
-// WriteBatch processes all records from a ParsedBatch.
-// Records are converted and routed to the appropriate writer.
-func (wm *WriterManager) WriteBatch(ctx context.Context, batch *worker.ParsedBatch) error {
-	for _, group := range batch.Groups {
-		// Write successful records
-		for _, record := range group.Records {
-			if err := wm.writeRecord(ctx, record); err != nil {
-				return err
-			}
-		}
-
-		// Write parser errors
-		// TODO
-		// for _, perr := range group.Errors {
-		//     if err := wm.writeError(ctx, perr); err != nil {
-		//         return err
-		//     }
-		// }
+// Start launches all writer goroutines.
+// Must be called before WriteBatch/WriteRecord.
+func (wm *WriterManager) Start(ctx context.Context) {
+	for _, tw := range wm.writers {
+		tw.Start(ctx, wm.pool)
 	}
-
-	return nil
+	if wm.errorWriter != nil {
+		wm.errorWriter.Start(ctx, wm.pool)
+	}
 }
 
-// writeRecord converts and writes a single record.
-// Some record types (like T3 with 2 children per line) produce multiple rows.
-func (wm *WriterManager) writeRecord(ctx context.Context, record *schema.ParsedRecord) error {
-	// Look up writer by schema path (stored in CompiledSchema)
-	rw, ok := wm.writers[record.Schema.Path]
+// WriteRecord routes a record to the appropriate writer's channel.
+// No conversion here - writer handles it.
+func (wm *WriterManager) WriteRecord(ctx context.Context, record *schema.ParsedRecord) error {
+	tw, ok := wm.writers[record.Schema.Path]
 	if !ok {
 		return fmt.Errorf("no writer for schema: %s", record.Schema.Path)
 	}
+	return tw.Send(ctx, record) // Send ParsedRecord directly
+}
 
-	// Convert ParsedRecord to row values using the registered converter
-	// The converter uses SQLC types internally for type safety
-	// Returns [][]any to support multi-row records (e.g., T3 with 2 children)
-	rows := rw.converter(record, wm.datafileID)
-
-	// Add each row to buffer; flush if threshold reached
-	for _, row := range rows {
-		if rw.writer.Add(row) {
-			count, err := rw.writer.Flush(ctx, wm.pool)
-			if err != nil {
+// WriteBatch routes all records in a batch to appropriate writers.
+func (wm *WriterManager) WriteBatch(ctx context.Context, batch *worker.ParsedBatch) error {
+	for _, group := range batch.Groups {
+		for _, record := range group.Records {
+			if err := wm.WriteRecord(ctx, record); err != nil {
 				return err
 			}
-			wm.totalWritten[rw.writer.TableName()] += count
-			log.Printf("Flushed %d %s records", count, record.Schema.RecordType)
 		}
 	}
-
 	return nil
 }
 
-// writeError writes a parser error.
-// TODO
-// func (wm *WriterManager) writeError(ctx context.Context, perr worker.ParseError) error {
-//     row := converter.ToParserErrorRow(perr, wm.datafileID)
+// Stop closes all channels and waits for goroutines to finish.
+// Returns combined errors from all writers.
+func (wm *WriterManager) Stop() error {
+	var errs []error
+	var wg sync.WaitGroup
+	var errMu sync.Mutex
 
-//     if wm.errorWriter.Add(row) {
-//         count, err := wm.errorWriter.Flush(ctx, wm.pool)
-//         if err != nil {
-//             return err
-//         }
-//         wm.totalErrors += count
-//         log.Printf("Flushed %d errors", count)
-//     }
+	// Stop all writers in parallel
+	for name, tw := range wm.writers {
+		wg.Add(1)
+		go func(name string, tw *TableWriter) {
+			defer wg.Done()
+			if err := tw.Stop(); err != nil {
+				errMu.Lock()
+				errs = append(errs, fmt.Errorf("%s: %w", name, err))
+				errMu.Unlock()
+			}
+		}(name, tw)
+	}
+	wg.Wait()
 
-//     return nil
-// }
-
-// FlushAll flushes all writers. Call this at the end of file processing.
-func (wm *WriterManager) FlushAll(ctx context.Context) error {
-	// Flush all record writers
-	for recordType, rw := range wm.writers {
-		count, err := rw.writer.Flush(ctx, wm.pool)
-		if err != nil {
-			return fmt.Errorf("final flush %s: %w", recordType, err)
-		}
-		wm.totalWritten[rw.writer.TableName()] += count
-		if count > 0 {
-			log.Printf("Final flush: %d %s records", count, recordType)
+	if wm.errorWriter != nil {
+		if err := wm.errorWriter.Stop(); err != nil {
+			errs = append(errs, fmt.Errorf("error_writer: %w", err))
 		}
 	}
 
-	// Flush error writer
-	count, err := wm.errorWriter.Flush(ctx, wm.pool)
-	if err != nil {
-		return fmt.Errorf("final flush errors: %w", err)
+	if len(errs) > 0 {
+		return errors.Join(errs...)
 	}
-	wm.totalErrors += count
-	if count > 0 {
-		log.Printf("Final flush: %d errors", count)
-	}
-
 	return nil
 }
 
-// Stats returns the total records written per table.
-func (wm *WriterManager) Stats() (records map[string]int64, errors int64) {
-	// Return a copy to prevent modification
+// Stats returns totals from all writers.
+func (wm *WriterManager) Stats() (records map[string]int64, errorCount int64) {
 	result := make(map[string]int64)
-	for k, v := range wm.totalWritten {
-		result[k] = v
+	for path, tw := range wm.writers {
+		result[path] = tw.TotalWritten()
 	}
-	return result, wm.totalErrors
-}
-
-// Pending returns the total number of unflushed records across all writers.
-func (wm *WriterManager) Pending() int {
-	total := wm.errorWriter.Pending()
-	for _, rw := range wm.writers {
-		total += rw.writer.Pending()
+	if wm.errorWriter != nil {
+		errorCount = wm.errorWriter.TotalWritten()
 	}
-	return total
+	return result, errorCount
 }

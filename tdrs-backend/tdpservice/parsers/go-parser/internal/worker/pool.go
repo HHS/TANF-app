@@ -2,6 +2,7 @@ package worker
 
 import (
 	"context"
+	"log"
 	"maps"
 	"sync"
 
@@ -87,7 +88,7 @@ type PoolConfig struct {
 // DefaultPoolConfig returns sensible defaults.
 func DefaultPoolConfig() PoolConfig {
 	return PoolConfig{
-		NumWorkers:       1,
+		NumWorkers:       4,
 		WorkBufferSize:   256,
 		ResultBufferSize: 256,
 	}
@@ -126,6 +127,7 @@ func (p *Pool) CloseInputs() {
 func (p *Pool) Wait() {
 	p.wg.Wait()
 	close(p.results)
+	log.Print("All lines in file have been parsed into records and queued for writing.")
 }
 
 // Results returns the channel for receiving parsed batch results.

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -36,8 +37,8 @@ func main() {
 		log.Fatalf("Failed to parse database URL: %v", err)
 	}
 	config.MinConns = 4
-	config.MinIdleConns = 4
-	config.MaxConns = 12
+	config.MinIdleConns = 1
+	config.MaxConns = 4
 
 	pool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
@@ -174,16 +175,20 @@ func processFile(
 	// Step 6: Create database writer (dynamically from FileSpec)
 	writerMgr := writer.NewWriterManager(pool, datafileID, spec, reg)
 
-	// Step 7: Start result collector
+	// Step 7: Start all writer goroutines before result collection
+	writerMgr.Start(ctx)
+
+	// Step 8: Start result collector with parallel dispatchers
 	var collectorErr error
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		collectorErr = collectResults(ctx, workerPool, writerMgr)
+		numDispatchers := 4 // Tune based on CPU cores / connection pool size
+		collectorErr = collectResults(ctx, workerPool, writerMgr, numDispatchers)
 	}()
 
-	// Step 8: Process rows through the unified Accumulator
+	// Step 9: Process rows through the unified Accumulator
 	err = processRows(dec, spec, detector, workerPool)
 
 	if err != nil {
@@ -192,7 +197,7 @@ func processFile(
 		return err
 	}
 
-	// Step 9: Wait for everything to complete
+	// Step 10: Wait for everything to complete
 	workerPool.CloseInputs()
 	workerPool.Wait()
 	wg.Wait()
@@ -285,36 +290,64 @@ func processRows(
 }
 
 // collectResults receives parsed batches from the worker pool and writes to database.
+// Multiple dispatcher goroutines compete on the Results channel for parallel processing.
 func collectResults(
 	ctx context.Context,
 	pool *worker.Pool,
 	writerMgr *writer.WriterManager,
+	numDispatchers int,
 ) error {
-	for pb := range pool.Results() {
-		// Log any parsing errors
-		for _, group := range pb.Groups {
-			for _, e := range group.Errors {
-				log.Printf("Parse error at line %d (%s): %s",
-					e.LineNumber, e.RecordType, e.Message)
+	var wg sync.WaitGroup
+	errChan := make(chan error, numDispatchers)
+
+	// Spawn multiple dispatchers reading from the same channel
+	for range numDispatchers {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for pb := range pool.Results() {
+				// Log any parsing errors
+				for _, group := range pb.Groups {
+					for _, e := range group.Errors {
+						log.Printf("Dispatcher: Parse error at line %d (%s): %s",
+							e.LineNumber, e.RecordType, e.Message)
+					}
+				}
+
+				// Route the batch to writers (no conversion here)
+				if err := writerMgr.WriteBatch(ctx, pb); err != nil {
+					log.Printf("Dispatcher: batch %d error: %v", pb.BatchID, err)
+					errChan <- err
+					return
+				}
 			}
-		}
-
-		// Write the batch to the database
-		if err := writerMgr.WriteBatch(ctx, pb); err != nil {
-			log.Printf("Failed to write batch %d: %v", pb.BatchID, err)
-		}
+		}()
 	}
 
-	// Flush remaining records and report stats
-	if err := writerMgr.FlushAll(ctx); err != nil {
-		return fmt.Errorf("final flush: %w", err)
+	// Wait for all dispatchers to finish
+	wg.Wait()
+	close(errChan)
+
+	// Collect any errors from dispatchers
+	var errs []error
+	for err := range errChan {
+		errs = append(errs, err)
 	}
 
-	records, errors := writerMgr.Stats()
+	// Stop writers (flushes remaining) and collect errors
+	if err := writerMgr.Stop(); err != nil {
+		errs = append(errs, err)
+	}
+
+	// Report stats
+	records, errorCount := writerMgr.Stats()
 	for table, count := range records {
 		log.Printf("Written to %s: %d records", table, count)
 	}
-	log.Printf("Total errors: %d", errors)
+	log.Printf("Total errors: %d", errorCount)
 
+	if len(errs) > 0 {
+		return errors.Join(errs...)
+	}
 	return nil
 }
