@@ -205,22 +205,23 @@ class TestReportFileViewAsDataAnalyst:
         from datetime import timedelta
         from tdpservice.reports.test.factories import ReportFileFactory
 
-        # Create multiple reports for the same year/quarter
+        # Create multiple reports for the same year/quarter with different versions
+        # (unique constraint on version, quarter, year, stt)
         older_q1_report = ReportFileFactory.create(
-            stt=data_analyst.stt, user=data_analyst, year=2025, quarter="Q1"
+            stt=data_analyst.stt, user=data_analyst, year=2025, quarter="Q1", version=1
         )
         older_q1_report.created_at = timezone.now() - timedelta(days=5)
         older_q1_report.save()
 
         newer_q1_report = ReportFileFactory.create(
-            stt=data_analyst.stt, user=data_analyst, year=2025, quarter="Q1"
+            stt=data_analyst.stt, user=data_analyst, year=2025, quarter="Q1", version=2
         )
         newer_q1_report.created_at = timezone.now()
         newer_q1_report.save()
 
         # Create a report for a different quarter (should not be returned)
         q2_report = ReportFileFactory.create(
-            stt=data_analyst.stt, user=data_analyst, year=2025, quarter="Q2"
+            stt=data_analyst.stt, user=data_analyst, year=2025, quarter="Q2", version=1
         )
         q2_report.created_at = timezone.now() + timedelta(days=1)
         q2_report.save()
