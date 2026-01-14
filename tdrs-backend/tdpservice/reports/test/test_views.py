@@ -168,3 +168,80 @@ class TestReportFileViewAsDataAnalyst:
         )
 
         assert resp.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_latest_param_returns_single_report(
+        self, api_client_logged_in, data_analyst, report_file_instance
+    ):
+        """Test that latest=true returns only the most recent report."""
+        from django.utils import timezone
+        from datetime import timedelta
+        from tdpservice.reports.test.factories import ReportFileFactory
+
+        # Create additional reports for the same STT with different dates
+        older_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst, year=2025, quarter="Q1"
+        )
+        older_report.created_at = timezone.now() - timedelta(days=10)
+        older_report.save()
+
+        newest_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst, year=2025, quarter="Q2"
+        )
+        newest_report.created_at = timezone.now() + timedelta(days=1)
+        newest_report.save()
+
+        # Request with latest=true
+        resp = api_client_logged_in.get(f"{self.root_url}?latest=true")
+
+        assert resp.status_code == status.HTTP_200_OK
+        assert len(resp.data["results"]) == 1
+        assert resp.data["results"][0]["id"] == newest_report.id
+
+    def test_latest_param_with_year_and_quarter_filter(
+        self, api_client_logged_in, data_analyst
+    ):
+        """Test that latest=true works with year and quarter filters."""
+        from django.utils import timezone
+        from datetime import timedelta
+        from tdpservice.reports.test.factories import ReportFileFactory
+
+        # Create multiple reports for the same year/quarter
+        older_q1_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst, year=2025, quarter="Q1"
+        )
+        older_q1_report.created_at = timezone.now() - timedelta(days=5)
+        older_q1_report.save()
+
+        newer_q1_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst, year=2025, quarter="Q1"
+        )
+        newer_q1_report.created_at = timezone.now()
+        newer_q1_report.save()
+
+        # Create a report for a different quarter (should not be returned)
+        q2_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst, year=2025, quarter="Q2"
+        )
+        q2_report.created_at = timezone.now() + timedelta(days=1)
+        q2_report.save()
+
+        # Request latest for specific year and quarter
+        resp = api_client_logged_in.get(
+            f"{self.root_url}?year=2025&quarter=Q1&latest=true"
+        )
+
+        assert resp.status_code == status.HTTP_200_OK
+        assert len(resp.data["results"]) == 1
+        assert resp.data["results"][0]["id"] == newer_q1_report.id
+
+    def test_latest_param_returns_empty_when_no_reports(
+        self, api_client_logged_in, data_analyst
+    ):
+        """Test that latest=true returns empty list when no reports exist."""
+        # Clear any existing reports for this STT
+        ReportFile.objects.filter(stt=data_analyst.stt).delete()
+
+        resp = api_client_logged_in.get(f"{self.root_url}?latest=true")
+
+        assert resp.status_code == status.HTTP_200_OK
+        assert len(resp.data["results"]) == 0

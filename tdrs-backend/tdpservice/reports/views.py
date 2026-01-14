@@ -27,14 +27,17 @@ class ReportFileViewSet(ModelViewSet):
         if self.request.user.is_data_analyst and hasattr(self.request.user, 'stt'):
             queryset = queryset.filter(stt=self.request.user.stt)
 
-        # Support filtering by year and quarter
+        # Query params for adding additional filters to queryset
         year = self.request.query_params.get('year')
         quarter = self.request.query_params.get('quarter')
+        latest = self.request.query_params.get('latest')
 
         if year:
             queryset = queryset.filter(year=year)
         if quarter:
             queryset = queryset.filter(quarter=quarter)
+        if latest and latest.lower() == 'true':
+            queryset = queryset.order_by('-created_at')[:1]
 
         return queryset
 
