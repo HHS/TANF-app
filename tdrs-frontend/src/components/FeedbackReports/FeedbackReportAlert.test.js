@@ -216,12 +216,6 @@ describe('FeedbackReportAlert', () => {
   })
 
   it('refetches when year changes', async () => {
-    const { rerender } = render(
-      <MemoryRouter>
-        <FeedbackReportAlert />
-      </MemoryRouter>
-    )
-
     mockUseReportsContext.mockReturnValue({
       yearInputValue: '2025',
       quarterInputValue: 'Q1',
@@ -231,6 +225,22 @@ describe('FeedbackReportAlert', () => {
       data: { results: [{ created_at: '2025-12-01T00:00:00Z' }] },
     })
 
+    const { rerender } = render(
+      <MemoryRouter>
+        <FeedbackReportAlert />
+      </MemoryRouter>
+    )
+
+    await waitFor(() => {
+      expect(axiosInstance.get).toHaveBeenCalledTimes(1)
+    })
+
+    // Change the year
+    mockUseReportsContext.mockReturnValue({
+      yearInputValue: '2024',
+      quarterInputValue: 'Q1',
+    })
+
     rerender(
       <MemoryRouter>
         <FeedbackReportAlert />
@@ -238,7 +248,7 @@ describe('FeedbackReportAlert', () => {
     )
 
     await waitFor(() => {
-      expect(axiosInstance.get).toHaveBeenCalled()
+      expect(axiosInstance.get).toHaveBeenCalledTimes(2)
     })
   })
 })

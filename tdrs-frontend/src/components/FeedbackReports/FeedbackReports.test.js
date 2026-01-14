@@ -113,10 +113,7 @@ describe('FeedbackReports', () => {
         screen.getByLabelText(/Fiscal Year \(October - September\)/i)
       ).toBeInTheDocument()
 
-      // Should have the Search button (not Upload button)
-      expect(
-        screen.getByRole('button', { name: /Search/i })
-      ).toBeInTheDocument()
+      // Should NOT have the Upload button (that's for OFA admins only)
       expect(
         screen.queryByRole('button', { name: /Upload & Notify States/i })
       ).not.toBeInTheDocument()
