@@ -6,7 +6,7 @@
 # The parser produces 1 or 2 rows depending on whether Child 2 data is present.
 
 record_type: T3
-program: Tribal_TANF
+program: TRIBAL
 section: 1
 document: "Tribal TANF Active Case Data"
 format: positional
@@ -65,6 +65,8 @@ segments:
         end: 37
         type: string
         required: true
+        transform:
+          name: ssn_decrypt
 
       - name: RACE_HISPANIC
         friendly_name: Hispanic or Latino
@@ -211,6 +213,8 @@ segments:
         end: 78
         type: string
         required: true
+        transform:
+          name: ssn_decrypt
 
       - name: RACE_HISPANIC
         friendly_name: Hispanic or Latino

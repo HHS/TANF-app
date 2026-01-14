@@ -11,7 +11,7 @@ import (
 type RowConverter func(record *schema.ParsedRecord, datafileID int32) [][]any
 
 // converterRegistry maps schema paths to their converter functions.
-// Schema paths (e.g., "tanf/t1", "tribal/t1") allow different programs
+// Schema paths (e.g., "tanf/t1", "tribal_tanf/t1") allow different programs
 // with the same record type prefix to use different converters/tables.
 var converterRegistry = map[string]RowConverter{
 	// TANF record types
@@ -33,13 +33,13 @@ var converterRegistry = map[string]RowConverter{
 	"ssp/m7": convertSspM7,
 
 	// Tribal TANF record types (same T1-T7 prefixes but different tables)
-	"tribal/t1": convertTribalT1,
-	"tribal/t2": convertTribalT2,
-	"tribal/t3": convertTribalT3,
-	"tribal/t4": convertTribalT4,
-	"tribal/t5": convertTribalT5,
-	"tribal/t6": convertTribalT6,
-	"tribal/t7": convertTribalT7,
+	"tribal_tanf/t1": convertTribalT1,
+	"tribal_tanf/t2": convertTribalT2,
+	"tribal_tanf/t3": convertTribalT3,
+	"tribal_tanf/t4": convertTribalT4,
+	"tribal_tanf/t5": convertTribalT5,
+	"tribal_tanf/t6": convertTribalT6,
+	"tribal_tanf/t7": convertTribalT7,
 
 	// FRA record types
 	"fra/te1": convertFraTE1,

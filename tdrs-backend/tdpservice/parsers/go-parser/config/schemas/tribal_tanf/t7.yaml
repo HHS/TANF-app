@@ -6,7 +6,7 @@
 # The parser produces 30 output rows from each T7 record line (10 strata x 3 months).
 
 record_type: T7
-program: Tribal_TANF
+program: TRIBAL
 section: 4
 document: "Tribal TANF Stratum Data"
 format: positional

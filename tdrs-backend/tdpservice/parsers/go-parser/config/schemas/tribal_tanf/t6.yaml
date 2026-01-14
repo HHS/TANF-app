@@ -7,7 +7,7 @@
 # Note: Tribal TANF T6 includes birth-related fields that regular TANF T6 does not.
 
 record_type: T6
-program: Tribal_TANF
+program: TRIBAL
 section: 3
 document: "Tribal TANF Aggregate Data"
 format: positional

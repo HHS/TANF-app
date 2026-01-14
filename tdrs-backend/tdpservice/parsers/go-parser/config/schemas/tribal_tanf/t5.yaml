@@ -5,7 +5,7 @@
 # in closed Tribal TANF cases. Includes tribal-specific time limit fields.
 
 record_type: T5
-program: Tribal_TANF
+program: TRIBAL
 section: 2
 document: "Tribal TANF Closed Case Data"
 format: positional
@@ -62,6 +62,8 @@ segments:
         end: 37
         type: string
         required: true
+        transform:
+          name: ssn_decrypt
 
       - name: RACE_HISPANIC
         friendly_name: Hispanic or Latino

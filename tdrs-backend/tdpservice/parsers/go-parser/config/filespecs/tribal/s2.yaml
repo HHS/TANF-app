@@ -10,7 +10,7 @@
 # BASIC IDENTIFICATION
 # =============================================================================
 
-program: Tribal_TANF
+program: TRIBAL
 section: 2
 description: "Tribal TANF Closed Case Data - Contains case and adult records for closed tribal TANF cases"
 

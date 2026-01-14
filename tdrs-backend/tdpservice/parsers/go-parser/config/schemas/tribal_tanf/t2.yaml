@@ -6,7 +6,7 @@
 # Note: Tribal TANF has simplified work participation fields and tribal-specific time limit fields.
 
 record_type: T2
-program: Tribal_TANF
+program: TRIBAL
 section: 1
 document: "Tribal TANF Active Case Data"
 format: positional
@@ -71,6 +71,8 @@ segments:
         end: 38
         type: string
         required: true
+        transform:
+          name: ssn_decrypt
 
       - name: RACE_HISPANIC
         friendly_name: Hispanic or Latino

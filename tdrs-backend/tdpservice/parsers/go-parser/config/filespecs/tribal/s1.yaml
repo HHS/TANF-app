@@ -10,7 +10,7 @@
 # BASIC IDENTIFICATION
 # =============================================================================
 
-program: Tribal_TANF
+program: TRIBAL
 section: 1
 description: "Tribal TANF Active Case Data - Contains case, adult, and child records for active tribal TANF cases"
 

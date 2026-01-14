@@ -78,6 +78,8 @@ segments:
         end: 38
         type: string
         required: true
+        transform:
+          name: ssn_decrypt
 
       - name: RACE_HISPANIC
         friendly_name: Hispanic or Latino

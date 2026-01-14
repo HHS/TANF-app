@@ -45,7 +45,7 @@ segments:
           params:
             month_index: 0
 
-      - name: SSP_MOE_FAMILIES
+      - name: SSPMOE_FAMILIES
         friendly_name: SSP-MOE Families
         item: "3A"
         start: 7
@@ -138,7 +138,7 @@ segments:
           params:
             month_index: 1
 
-      - name: SSP_MOE_FAMILIES
+      - name: SSPMOE_FAMILIES
         friendly_name: SSP-MOE Families
         item: "3B"
         start: 15
@@ -231,7 +231,7 @@ segments:
           params:
             month_index: 2
 
-      - name: SSP_MOE_FAMILIES
+      - name: SSPMOE_FAMILIES
         friendly_name: SSP-MOE Families
         item: "3C"
         start: 23

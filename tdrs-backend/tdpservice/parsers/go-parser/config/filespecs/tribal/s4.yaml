@@ -10,7 +10,7 @@
 # BASIC IDENTIFICATION
 # =============================================================================
 
-program: Tribal_TANF
+program: TRIBAL
 section: 4
 description: "Tribal TANF Stratum Data - Contains family counts by stratum for tribal TANF program"
 

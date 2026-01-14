@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"sync"
 
@@ -36,27 +38,41 @@ func main() {
 	}
 
 	// Get file parameters (in real code, these come from the job queue)
-	program := "TANF"
-	// program := "SSP"
+	// program := "TANF"
+	// program := "TRIBAL"
+	program := "SSP"
 	// program := "FRA"
-	section := 1
+	// section := 1
 	// section := 2
 	// section := 3
-	// section := 4
+	section := 4
 
 	// TANF test files
-	filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.FTP1.TS06"
+	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.FTP1.TS06"
 	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.FTP2.TS06"
 	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.FTP3.TS06"
 	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.FTP4.TS06"
 
-	// FRA test files
+	// Tribal TANF test files
+	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.FTP1.TS142"
+	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.FTP2.TS142.txt"
+	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.FTP3.TS142"
+	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/tribal_section_4_fake.txt"
+
+	// SSP test files
+	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/small_ssp_section1.txt"
+	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ssp_section2_rec_oadsi_file.txt"
+	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.NDM3.MS24"
+	filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.NDM4.MS24"
+
+
+	// FRA test files (Note: these files will fail on CopyFrom because they have malformed SSNs which rolls back the transaction. But they parse correctly.)
 	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/fra_ofa_test.csv"
 	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/fra_ofa_test.xlsx"
 
 	// Create a test datafile record to satisfy foreign key constraints
 	datafileParams := testutil.DefaultDatafileParams()
-	datafileParams.ProgramType = "TAN"
+	datafileParams.ProgramType = program
 	datafileParams.Section = "Active Case Data"
 	datafileID, err := testutil.CreateTestDatafile(ctx, pool, datafileParams)
 	if err != nil {
@@ -177,8 +193,29 @@ func createDecoder(file *os.File, spec *filespec.FileSpec) (decoder.Decoder, err
 	case filespec.FormatColumnar:
 		// Determine if CSV or XLSX based on file extension
 		// For now, assume CSV
-		recordType := spec.RecordTypeDetection.Schema // Fixed schema for FRA
-		return decoder.NewCSVDecoder(file, recordType), nil
+		buf := make([]byte, 512)
+		_, err := file.Read(buf)
+		if err != nil && err != io.EOF {
+			return nil, err
+		}
+
+		// Rewind the file pointer for later reading if necessary
+		file.Seek(0, io.SeekStart)
+
+		contentType := http.DetectContentType(buf)
+		switch contentType {
+		case "application/zip":
+			// XLSX files are detected as application/zip because they are Open XML formats wrapped in a zip container.
+			fmt.Printf("%s is likely an XLSX file (MIME type: %s)\n", file.Name(), contentType)
+			// Let the XLSX decoder handle opening the file in the format it needs
+			defer file.Close()
+			return decoder.NewXLSXDecoder(file.Name(), spec.RecordTypeDetection.Schema)
+		case "text/plain; charset=utf-8", "text/csv; charset=utf-8":
+			fmt.Printf("%s is likely a CSV file (MIME type: %s)\n", file.Name(), contentType)
+			return decoder.NewCSVDecoder(file, spec.RecordTypeDetection.Schema), nil
+		default:
+			return nil, fmt.Errorf("%s has an unknown or unexpected content type: %s\n", file.Name(), contentType)
+		}
 	default:
 		return nil, fmt.Errorf("unknown format: %s", spec.Format)
 	}

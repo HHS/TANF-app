@@ -10,7 +10,7 @@
 # BASIC IDENTIFICATION
 # =============================================================================
 
-program: Tribal_TANF
+program: TRIBAL
 section: 3
 description: "Tribal TANF Aggregate Data - Contains summary statistics for tribal TANF program"
 

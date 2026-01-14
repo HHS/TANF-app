@@ -21,7 +21,7 @@ description: "FRA Work Outcome TANF Exiters - Contains exit date and SSN for TAN
 # FRA files are CSV format (comma-separated values).
 # Each row has two columns: EXIT_DATE (YYYYMM) and SSN.
 # Unlike other programs, FRA files have NO header or trailer rows.
-format: csv
+format: columnar
 
 # =============================================================================
 # SCHEMAS
@@ -40,8 +40,8 @@ schemas:
 # FRA files don't have record type prefixes like TANF/SSP.
 # All rows are TE1 records by default.
 record_type_detection:
-  method: default
-  default_schema: fra/te1
+  method: fixed
+  schema: fra/te1
 
 # =============================================================================
 # ACCUMULATOR CONFIGURATION

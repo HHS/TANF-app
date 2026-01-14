@@ -6,7 +6,7 @@
 # Note: Tribal TANF has additional fields compared to regular TANF (e.g., FUNDING_STREAM, NEW_APPLICANT)
 
 record_type: T1
-program: Tribal_TANF
+program: TRIBAL
 section: 1
 document: "Tribal TANF Active Case Data"
 format: positional
