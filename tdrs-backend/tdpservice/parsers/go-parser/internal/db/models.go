@@ -339,6 +339,15 @@ type SearchIndexesSspM7 struct {
 	LineNumber      pgtype.Int4
 }
 
+type SearchIndexesTanfExiter1 struct {
+	ID         pgtype.UUID
+	RecordType pgtype.Text
+	EXITDATE   pgtype.Int4
+	SSN        pgtype.Text
+	DatafileID pgtype.Int4
+	LineNumber pgtype.Int4
+}
+
 type SearchIndexesTanfT1 struct {
 	RecordType               pgtype.Text
 	RPTMONTHYEAR             pgtype.Int4

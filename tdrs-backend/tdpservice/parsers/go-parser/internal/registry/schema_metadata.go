@@ -54,7 +54,16 @@ func buildSchemaMetadata(schemaPath string, compiled *schema.CompiledSchema) *Sc
 //	"tanf/t1"    -> "search_indexes_tanf_t1"
 //	"ssp/m2"     -> "search_indexes_ssp_m2"
 //	"tribal/t1"  -> "search_indexes_tribal_tanf_t1"
+//	"fra/te1"    -> "search_indexes_tanf_exiter1"
 func schemaPathToTableName(schemaPath string) string {
+	// Special case mappings for schemas that don't follow the standard pattern
+	specialCases := map[string]string{
+		"fra/te1": "search_indexes_tanf_exiter1",
+	}
+	if tableName, ok := specialCases[schemaPath]; ok {
+		return tableName
+	}
+
 	// Convert path separators and normalize
 	normalized := strings.ReplaceAll(schemaPath, "/", "_")
 	return "search_indexes_" + normalized

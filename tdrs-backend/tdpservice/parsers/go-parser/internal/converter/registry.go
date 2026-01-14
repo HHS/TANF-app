@@ -40,6 +40,9 @@ var converterRegistry = map[string]RowConverter{
 	"tribal/t5": convertTribalT5,
 	"tribal/t6": convertTribalT6,
 	"tribal/t7": convertTribalT7,
+
+	// FRA record types
+	"fra/te1": convertFraTE1,
 }
 
 // GetConverter returns the converter for a schema path.

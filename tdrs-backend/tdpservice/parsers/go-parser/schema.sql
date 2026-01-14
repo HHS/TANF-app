@@ -1029,6 +1029,23 @@ CREATE TABLE search_indexes_programaudit_t3 (
 
 
 --
+-- TOC entry 285 (class 1259 OID 17592)
+-- Name: search_indexes_tanf_exiter1; Type: TABLE; Schema: public; Owner: tdpuser
+--
+
+CREATE TABLE public.search_indexes_tanf_exiter1 (
+    id uuid NOT NULL,
+    "RecordType" character varying(25),
+    "EXIT_DATE" integer,
+    "SSN" character varying(9),
+    datafile_id integer,
+    line_number integer
+);
+
+
+
+
+--
 -- TOC entry 263 (class 1259 OID 17287)
 -- Name: search_indexes_reparsemeta; Type: TABLE; Schema: public; Owner: tdpuser
 --

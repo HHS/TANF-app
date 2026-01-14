@@ -12,6 +12,15 @@ section: 1
 document: "FRA Work Outcome TANF Exiters"
 format: csv
 
+# RecordType is a constant field (always "TE1") - not present in CSV data
+# but required in the database table
+shared:
+  - name: RecordType
+    friendly_name: Record Type
+    type: string
+    required: true
+    default: "TE1"
+
 # Fields in each row (CSV columns)
 # FRA uses column indices instead of byte positions
 segments:
