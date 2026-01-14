@@ -13,7 +13,6 @@ function STTFeedbackReports() {
   const [reports, setReports] = useState([])
   const [loading, setLoading] = useState(false)
   const [selectedYear, setSelectedYear] = useState(getCurrentFiscalYear())
-  const [appliedYear, setAppliedYear] = useState(getCurrentFiscalYear())
   const [alert, setAlert] = useState({
     active: false,
     type: null,
@@ -23,7 +22,7 @@ function STTFeedbackReports() {
   const yearOptions = constructYears()
 
   /**
-   * Fetches the feedback reports from the backend
+   * Fetches the feedback reports from the backend filtered by year
    */
   const fetchReports = useCallback(async () => {
     setLoading(true)
@@ -32,7 +31,10 @@ function STTFeedbackReports() {
     try {
       const response = await axiosInstance.get(
         `${process.env.REACT_APP_BACKEND_URL}/reports/`,
-        { withCredentials: true }
+        {
+          params: { year: selectedYear },
+          withCredentials: true,
+        }
       )
       setReports(response.data.results || response.data || [])
     } catch (error) {
@@ -45,32 +47,17 @@ function STTFeedbackReports() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [selectedYear])
 
   useEffect(() => {
     fetchReports()
   }, [fetchReports])
 
   /**
-   * Filter reports by applied fiscal year (only updates on Search click)
-   */
-  const filteredReports = reports.filter(
-    (report) => report.year === parseInt(appliedYear, 10)
-  )
-
-  /**
    * Handle year selection change
    */
   const handleYearChange = (e) => {
     setSelectedYear(e.target.value)
-  }
-
-  /**
-   * Handle search button click - applies the selected year filter
-   */
-  const handleSearch = () => {
-    setAppliedYear(selectedYear)
-    fetchReports()
   }
 
   return (
@@ -98,14 +85,6 @@ function STTFeedbackReports() {
                   </option>
                 ))}
               </select>
-              <button
-                type="button"
-                className="usa-button margin-top-2"
-                onClick={handleSearch}
-                disabled={loading}
-              >
-                Search
-              </button>
             </div>
           </div>
 
@@ -201,7 +180,7 @@ function STTFeedbackReports() {
 
         {/* Reports Table */}
         <div className="margin-top-4">
-          <h3>Fiscal Year {appliedYear} Feedback Reports</h3>
+          <h3>Fiscal Year {selectedYear} Feedback Reports</h3>
 
           <div className="submission-history-section usa-table-container">
             {loading ? (
@@ -212,7 +191,7 @@ function STTFeedbackReports() {
                 </span>
               </div>
             ) : (
-              <PaginatedComponent pageSize={5} data={filteredReports}>
+              <PaginatedComponent pageSize={5} data={reports}>
                 <STTFeedbackReportsTable setAlert={setAlert} />
               </PaginatedComponent>
             )}
