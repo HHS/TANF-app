@@ -1,0 +1,552 @@
+# SSP M2 Record Schema
+# Adult-level data for active SSP-MOE cases
+#
+# This record contains demographic, work participation, and income data
+# for adults in active SSP-MOE cases.
+
+record_type: M2
+program: SSP
+section: 1
+document: "SSP Active Case Data"
+format: positional
+
+# Fields shared across all segments (included in every output row)
+shared:
+  - name: RecordType
+    friendly_name: Record Type
+    item: "0"
+    start: 0
+    end: 2
+    type: string
+    required: true
+
+  - name: RPT_MONTH_YEAR
+    friendly_name: Reporting Month/Year
+    item: "3"
+    start: 2
+    end: 8
+    type: integer
+    required: true
+
+  - name: CASE_NUMBER
+    friendly_name: Case Number
+    item: "5"
+    start: 8
+    end: 19
+    type: string
+    required: true
+
+  - name: FIPS_CODE
+    friendly_name: State FIPS Code
+    item: "1"
+    start: 19
+    end: 21
+    type: string
+    required: true
+
+# Each segment produces one output row (combined with shared fields)
+segments:
+  - fields:
+      - name: FAMILY_AFFILIATION
+        friendly_name: Family Affiliation
+        item: "26"
+        start: 19
+        end: 20
+        type: integer
+        required: true
+
+      - name: NONCUSTODIAL_PARENT
+        friendly_name: Noncustodial Parent Indicator
+        item: "27"
+        start: 20
+        end: 21
+        type: integer
+        required: true
+
+      - name: DATE_OF_BIRTH
+        friendly_name: Date of Birth
+        item: "28"
+        start: 21
+        end: 29
+        type: string
+        required: true
+
+      - name: SSN
+        friendly_name: Social Security Number
+        item: "29"
+        start: 29
+        end: 38
+        type: string
+        required: true
+
+      - name: RACE_HISPANIC
+        friendly_name: Hispanic or Latino
+        item: "30A"
+        start: 38
+        end: 39
+        type: integer
+        required: false
+
+      - name: RACE_AMER_INDIAN
+        friendly_name: American Indian or Alaska Native
+        item: "30B"
+        start: 39
+        end: 40
+        type: integer
+        required: false
+
+      - name: RACE_ASIAN
+        friendly_name: Asian
+        item: "30C"
+        start: 40
+        end: 41
+        type: integer
+        required: false
+
+      - name: RACE_BLACK
+        friendly_name: Black or African American
+        item: "30D"
+        start: 41
+        end: 42
+        type: integer
+        required: false
+
+      - name: RACE_HAWAIIAN
+        friendly_name: Native Hawaiian or Pacific Islander
+        item: "30E"
+        start: 42
+        end: 43
+        type: integer
+        required: false
+
+      - name: RACE_WHITE
+        friendly_name: White
+        item: "30F"
+        start: 43
+        end: 44
+        type: integer
+        required: false
+
+      - name: SEX
+        friendly_name: Sex
+        item: "31"
+        start: 44
+        end: 45
+        type: integer
+        required: true
+
+      - name: FED_OASDI_PROGRAM
+        friendly_name: Receives Disability Benefits OASDI Program
+        item: "32A"
+        start: 45
+        end: 46
+        type: integer
+        required: true
+
+      - name: FED_DISABILITY_STATUS
+        friendly_name: Receives Disability Benefits Other Federal Disability Status
+        item: "32B"
+        start: 46
+        end: 47
+        type: integer
+        required: true
+
+      - name: DISABLED_TITLE_XIVAPDT
+        friendly_name: Receives Disability Benefits Permanently and Totally Disabled
+        item: "32C"
+        start: 47
+        end: 48
+        type: integer
+        required: true
+
+      - name: AID_AGED_BLIND
+        friendly_name: Receives Disability Benefit AABD
+        item: "32D"
+        start: 48
+        end: 49
+        type: integer
+        required: false
+
+      - name: RECEIVE_SSI
+        friendly_name: Receives Disability Benefits SSI
+        item: "32E"
+        start: 49
+        end: 50
+        type: integer
+        required: true
+
+      - name: MARITAL_STATUS
+        friendly_name: Marital Status
+        item: "33"
+        start: 50
+        end: 51
+        type: integer
+        required: false
+
+      - name: RELATIONSHIP_HOH
+        friendly_name: Relationship to Head-of-Household
+        item: "34"
+        start: 51
+        end: 53
+        type: integer
+        required: true
+
+      - name: PARENT_MINOR_CHILD
+        friendly_name: Parent with Minor Child in the Family
+        item: "35"
+        start: 53
+        end: 54
+        type: integer
+        required: false
+
+      - name: NEEDS_PREGNANT_WOMAN
+        friendly_name: Needs of a Pregnant Woman
+        item: "36"
+        start: 54
+        end: 55
+        type: integer
+        required: false
+
+      - name: EDUCATION_LEVEL
+        friendly_name: Educational Level
+        item: "37"
+        start: 55
+        end: 57
+        type: string
+        required: false
+
+      - name: CITIZENSHIP_STATUS
+        friendly_name: Citizenship/Immigration Status
+        item: "38"
+        start: 57
+        end: 58
+        type: integer
+        required: false
+
+      - name: COOPERATION_CHILD_SUPPORT
+        friendly_name: Cooperated with Child Support
+        item: "39"
+        start: 58
+        end: 59
+        type: integer
+        required: false
+
+      - name: EMPLOYMENT_STATUS
+        friendly_name: Employment Status
+        item: "40"
+        start: 59
+        end: 60
+        type: integer
+        required: false
+
+      - name: WORK_ELIGIBLE_INDICATOR
+        friendly_name: Work-Eligible Individual Indicator
+        item: "41"
+        start: 60
+        end: 62
+        type: integer
+        required: true
+
+      - name: WORK_PART_STATUS
+        friendly_name: Work Participation Status
+        item: "42"
+        start: 62
+        end: 64
+        type: integer
+        required: false
+
+      - name: UNSUB_EMPLOYMENT
+        friendly_name: Unsubsidized Employment
+        item: "43"
+        start: 64
+        end: 66
+        type: integer
+        required: false
+
+      - name: SUB_PRIVATE_EMPLOYMENT
+        friendly_name: Subsidized Private-Sector Employment
+        item: "44"
+        start: 66
+        end: 68
+        type: integer
+        required: false
+
+      - name: SUB_PUBLIC_EMPLOYMENT
+        friendly_name: Subsidized Public-Sector Employment
+        item: "45"
+        start: 68
+        end: 70
+        type: integer
+        required: false
+
+      - name: WORK_EXPERIENCE_HOP
+        friendly_name: Work Experience Hours of Participation
+        item: "46A"
+        start: 70
+        end: 72
+        type: integer
+        required: false
+
+      - name: WORK_EXPERIENCE_EA
+        friendly_name: Work Experience Hours of Excused Absences
+        item: "46B"
+        start: 72
+        end: 74
+        type: integer
+        required: false
+
+      - name: WORK_EXPERIENCE_HOL
+        friendly_name: Work Experience Hours of Holidays
+        item: "46C"
+        start: 74
+        end: 76
+        type: integer
+        required: false
+
+      - name: OJT
+        friendly_name: On-the-job Training
+        item: "47"
+        start: 76
+        end: 78
+        type: integer
+        required: false
+
+      - name: JOB_SEARCH_HOP
+        friendly_name: Job Search Hours of Participation
+        item: "48A"
+        start: 78
+        end: 80
+        type: integer
+        required: false
+
+      - name: JOB_SEARCH_EA
+        friendly_name: Job Search Hours of Excused Absences
+        item: "48B"
+        start: 80
+        end: 82
+        type: integer
+        required: false
+
+      - name: JOB_SEARCH_HOL
+        friendly_name: Job Search Hours of Holidays
+        item: "48C"
+        start: 82
+        end: 84
+        type: integer
+        required: false
+
+      - name: COMM_SERVICES_HOP
+        friendly_name: Community Service Hours of Participation
+        item: "49A"
+        start: 84
+        end: 86
+        type: integer
+        required: false
+
+      - name: COMM_SERVICES_EA
+        friendly_name: Community Service Hours of Excused Absences
+        item: "49B"
+        start: 86
+        end: 88
+        type: integer
+        required: false
+
+      - name: COMM_SERVICES_HOL
+        friendly_name: Community Service Hours of Holidays
+        item: "49C"
+        start: 88
+        end: 90
+        type: integer
+        required: false
+
+      - name: VOCATIONAL_ED_TRAINING_HOP
+        friendly_name: Vocational Ed Training Hours of Participation
+        item: "50A"
+        start: 90
+        end: 92
+        type: integer
+        required: false
+
+      - name: VOCATIONAL_ED_TRAINING_EA
+        friendly_name: Vocational Ed Training Hours of Excused Absences
+        item: "50B"
+        start: 92
+        end: 94
+        type: integer
+        required: false
+
+      - name: VOCATIONAL_ED_TRAINING_HOL
+        friendly_name: Vocational Ed Training Hours of Holidays
+        item: "50C"
+        start: 94
+        end: 96
+        type: integer
+        required: false
+
+      - name: JOB_SKILLS_TRAINING_HOP
+        friendly_name: Job Skills Training Hours of Participation
+        item: "51A"
+        start: 96
+        end: 98
+        type: integer
+        required: false
+
+      - name: JOB_SKILLS_TRAINING_EA
+        friendly_name: Job Skills Training Hours of Excused Absences
+        item: "51B"
+        start: 98
+        end: 100
+        type: integer
+        required: false
+
+      - name: JOB_SKILLS_TRAINING_HOL
+        friendly_name: Job Skills Training Hours of Holidays
+        item: "51C"
+        start: 100
+        end: 102
+        type: integer
+        required: false
+
+      - name: ED_NO_HIGH_SCHOOL_DIPL_HOP
+        friendly_name: Education Related to Employment Hours of Participation
+        item: "52A"
+        start: 102
+        end: 104
+        type: integer
+        required: false
+
+      - name: ED_NO_HIGH_SCHOOL_DIPL_EA
+        friendly_name: Education Related to Employment Hours of Excused Absences
+        item: "52B"
+        start: 104
+        end: 106
+        type: integer
+        required: false
+
+      - name: ED_NO_HIGH_SCHOOL_DIPL_HOL
+        friendly_name: Education Related to Employment Hours of Holidays
+        item: "52C"
+        start: 106
+        end: 108
+        type: integer
+        required: false
+
+      - name: SCHOOL_ATTENDENCE_HOP
+        friendly_name: School Attendance Hours of Participation
+        item: "53A"
+        start: 108
+        end: 110
+        type: integer
+        required: false
+
+      - name: SCHOOL_ATTENDENCE_EA
+        friendly_name: School Attendance Hours of Excused Absences
+        item: "53B"
+        start: 110
+        end: 112
+        type: integer
+        required: false
+
+      - name: SCHOOL_ATTENDENCE_HOL
+        friendly_name: School Attendance Hours of Holidays
+        item: "53C"
+        start: 112
+        end: 114
+        type: integer
+        required: false
+
+      - name: PROVIDE_CC_HOP
+        friendly_name: Providing Child Care Hours of Participation
+        item: "54A"
+        start: 114
+        end: 116
+        type: integer
+        required: false
+
+      - name: PROVIDE_CC_EA
+        friendly_name: Providing Child Care Hours of Excused Absences
+        item: "54B"
+        start: 116
+        end: 118
+        type: integer
+        required: false
+
+      - name: PROVIDE_CC_HOL
+        friendly_name: Providing Child Care Hours of Holidays
+        item: "54C"
+        start: 118
+        end: 120
+        type: integer
+        required: false
+
+      - name: OTHER_WORK_ACTIVITIES
+        friendly_name: Hours of Other Work Activities
+        item: "55"
+        start: 120
+        end: 122
+        type: integer
+        required: false
+
+      - name: DEEMED_HOURS_FOR_OVERALL
+        friendly_name: Deemed Core Hours for Overall Rate
+        item: "56"
+        start: 122
+        end: 124
+        type: integer
+        required: false
+
+      - name: DEEMED_HOURS_FOR_TWO_PARENT
+        friendly_name: Deemed Core Hours for Two-Parent Rate
+        item: "57"
+        start: 124
+        end: 126
+        type: integer
+        required: false
+
+      - name: EARNED_INCOME
+        friendly_name: Amount of Earned Income
+        item: "58"
+        start: 126
+        end: 130
+        type: integer
+        required: true
+
+      - name: UNEARNED_INCOME_TAX_CREDIT
+        friendly_name: Unearned Income Tax Credit
+        item: "59A"
+        start: 130
+        end: 134
+        type: integer
+        required: false
+
+      - name: UNEARNED_SOCIAL_SECURITY
+        friendly_name: Unearned Income Social Security
+        item: "59B"
+        start: 134
+        end: 138
+        type: integer
+        required: true
+
+      - name: UNEARNED_SSI
+        friendly_name: Unearned Income SSI
+        item: "59C"
+        start: 138
+        end: 142
+        type: integer
+        required: true
+
+      - name: UNEARNED_WORKERS_COMP
+        friendly_name: Unearned Income Workers Compensation
+        item: "59D"
+        start: 142
+        end: 146
+        type: integer
+        required: true
+
+      - name: OTHER_UNEARNED_INCOME
+        friendly_name: Unearned Income Other
+        item: "59E"
+        start: 146
+        end: 150
+        type: integer
+        required: true

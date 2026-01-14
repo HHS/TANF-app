@@ -1,0 +1,77 @@
+# File Specification for SSP Section 4 (Stratum Data)
+#
+# This file defines:
+# - What format SSP Section 4 files use
+# - What record types can appear in these files
+# - How to identify each record type
+# - How records should be grouped for processing
+
+# =============================================================================
+# BASIC IDENTIFICATION
+# =============================================================================
+
+program: SSP
+section: 4
+description: "SSP Stratum Data - Contains family counts by stratum for SSP-MOE program"
+
+# =============================================================================
+# FILE FORMAT
+# =============================================================================
+
+# SSP files are fixed-width positional text files (UTF-8 encoded).
+# Each field occupies specific byte positions within a line.
+format: positional
+
+# =============================================================================
+# SCHEMAS
+# =============================================================================
+
+# List of record type schemas that can appear in this file type.
+# These reference schema files in config/schemas/
+schemas:
+  - common/header
+  - common/trailer
+  - ssp/m7
+
+# =============================================================================
+# RECORD TYPE DETECTION
+# =============================================================================
+
+# How to determine which schema applies to each row.
+# For positional files, we use prefix matching on the first characters.
+record_type_detection:
+  method: prefix
+  prefixes:
+    - prefix: "HEADER"
+      schema: common/header
+    - prefix: "TRAILER"
+      schema: common/trailer
+    - prefix: "M7"
+      schema: ssp/m7
+
+# =============================================================================
+# ACCUMULATOR CONFIGURATION
+# =============================================================================
+
+# Configuration for how records are collected and grouped for processing.
+#
+# SSP Section 4 files contain stratum data (not case-level data).
+# M7 records are file-level summaries without case numbers,
+# so no key-based grouping is needed.
+#
+# Each record is processed independently.
+accumulator:
+
+  # No key_fields for stratum data - records don't belong to cases
+  # key_fields: (none)
+
+  # Number of records to batch together before dispatching to workers.
+  # Since M7 are complex multi-segment records that produce many output rows,
+  # we process them individually.
+  batch_size: 0
+
+  # All record types are processed individually (no grouping needed)
+  grouped_schemas: []
+
+  # Not applicable for stratum data, but included for consistency
+  sorted: false

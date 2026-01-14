@@ -1,0 +1,433 @@
+# Tribal TANF T6 Record Schema
+# Aggregate data for Tribal TANF (Section 3)
+#
+# This record contains aggregate counts and totals for a calendar quarter.
+# Each T6 record has data for 3 months (A, B, C) in separate column positions.
+# The parser should produce 3 output rows from each T6 record line.
+# Note: Tribal TANF T6 includes birth-related fields that regular TANF T6 does not.
+
+record_type: T6
+program: Tribal_TANF
+section: 3
+document: "Tribal TANF Aggregate Data"
+format: positional
+
+# Fields shared across all segments (included in every output row)
+shared:
+  - name: RecordType
+    friendly_name: Record Type
+    item: "0"
+    start: 0
+    end: 2
+    type: string
+    required: true
+
+  - name: CALENDAR_QUARTER
+    friendly_name: Calendar Quarter
+    item: "3"
+    start: 2
+    end: 7
+    type: integer
+    required: true
+
+# Each segment produces one output row (combined with shared fields)
+# T6 has 3 segments: Month A, Month B, Month C
+segments:
+  # Month A (first month of quarter)
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Year and Month
+        item: "4"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 0
+
+      - name: NUM_APPLICATIONS
+        friendly_name: Total Number of Applications
+        item: "4A"
+        start: 7
+        end: 15
+        type: integer
+        required: true
+
+      - name: NUM_APPROVED
+        friendly_name: Total Number of Approved Applications
+        item: "5A"
+        start: 31
+        end: 39
+        type: integer
+        required: true
+
+      - name: NUM_DENIED
+        friendly_name: Total Number of Denied Applications
+        item: "6A"
+        start: 55
+        end: 63
+        type: integer
+        required: true
+
+      - name: ASSISTANCE
+        friendly_name: Total Amount of Assistance
+        item: "7A"
+        start: 79
+        end: 91
+        type: integer
+        required: true
+
+      - name: NUM_FAMILIES
+        friendly_name: Total Number of Families
+        item: "8A"
+        start: 115
+        end: 123
+        type: integer
+        required: true
+
+      - name: NUM_2_PARENTS
+        friendly_name: Total Number of Two-parent Families
+        item: "9A"
+        start: 139
+        end: 147
+        type: integer
+        required: true
+
+      - name: NUM_1_PARENTS
+        friendly_name: Total Number of One-Parent Families
+        item: "10A"
+        start: 163
+        end: 171
+        type: integer
+        required: true
+
+      - name: NUM_NO_PARENTS
+        friendly_name: Total Number of No-Parent Families
+        item: "11A"
+        start: 187
+        end: 195
+        type: integer
+        required: true
+
+      - name: NUM_RECIPIENTS
+        friendly_name: Total Number of Recipients
+        item: "12A"
+        start: 211
+        end: 219
+        type: integer
+        required: true
+
+      - name: NUM_ADULT_RECIPIENTS
+        friendly_name: Total Number of Adult Recipients
+        item: "13A"
+        start: 235
+        end: 243
+        type: integer
+        required: true
+
+      - name: NUM_CHILD_RECIPIENTS
+        friendly_name: Total Number of Child Recipients
+        item: "14A"
+        start: 259
+        end: 267
+        type: integer
+        required: true
+
+      - name: NUM_NONCUSTODIALS
+        friendly_name: Total Number of Noncustodial Parents
+        item: "15A"
+        start: 283
+        end: 291
+        type: integer
+        required: true
+
+      - name: NUM_BIRTHS
+        friendly_name: Total Number of Births
+        item: "16A"
+        start: 307
+        end: 315
+        type: integer
+        required: true
+
+      - name: NUM_OUTWEDLOCK_BIRTHS
+        friendly_name: Total Number of Out-of-Wedlock Births
+        item: "17A"
+        start: 331
+        end: 339
+        type: integer
+        required: true
+
+      - name: NUM_CLOSED_CASES
+        friendly_name: Total Number of Closed Cases
+        item: "18A"
+        start: 355
+        end: 363
+        type: integer
+        required: true
+
+  # Month B (second month of quarter)
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Year and Month
+        item: "4"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 1
+
+      - name: NUM_APPLICATIONS
+        friendly_name: Total Number of Applications
+        item: "4B"
+        start: 15
+        end: 23
+        type: integer
+        required: true
+
+      - name: NUM_APPROVED
+        friendly_name: Total Number of Approved Applications
+        item: "5B"
+        start: 39
+        end: 47
+        type: integer
+        required: true
+
+      - name: NUM_DENIED
+        friendly_name: Total Number of Denied Applications
+        item: "6B"
+        start: 63
+        end: 71
+        type: integer
+        required: true
+
+      - name: ASSISTANCE
+        friendly_name: Total Amount of Assistance
+        item: "7B"
+        start: 91
+        end: 103
+        type: integer
+        required: true
+
+      - name: NUM_FAMILIES
+        friendly_name: Total Number of Families
+        item: "8B"
+        start: 123
+        end: 131
+        type: integer
+        required: true
+
+      - name: NUM_2_PARENTS
+        friendly_name: Total Number of Two-parent Families
+        item: "9B"
+        start: 147
+        end: 155
+        type: integer
+        required: true
+
+      - name: NUM_1_PARENTS
+        friendly_name: Total Number of One-Parent Families
+        item: "10B"
+        start: 171
+        end: 179
+        type: integer
+        required: true
+
+      - name: NUM_NO_PARENTS
+        friendly_name: Total Number of No-Parent Families
+        item: "11B"
+        start: 195
+        end: 203
+        type: integer
+        required: true
+
+      - name: NUM_RECIPIENTS
+        friendly_name: Total Number of Recipients
+        item: "12B"
+        start: 219
+        end: 227
+        type: integer
+        required: true
+
+      - name: NUM_ADULT_RECIPIENTS
+        friendly_name: Total Number of Adult Recipients
+        item: "13B"
+        start: 243
+        end: 251
+        type: integer
+        required: true
+
+      - name: NUM_CHILD_RECIPIENTS
+        friendly_name: Total Number of Child Recipients
+        item: "14B"
+        start: 267
+        end: 275
+        type: integer
+        required: true
+
+      - name: NUM_NONCUSTODIALS
+        friendly_name: Total Number of Noncustodial Parents
+        item: "15B"
+        start: 291
+        end: 299
+        type: integer
+        required: true
+
+      - name: NUM_BIRTHS
+        friendly_name: Total Number of Births
+        item: "16B"
+        start: 315
+        end: 323
+        type: integer
+        required: true
+
+      - name: NUM_OUTWEDLOCK_BIRTHS
+        friendly_name: Total Number of Out-of-Wedlock Births
+        item: "17B"
+        start: 339
+        end: 347
+        type: integer
+        required: true
+
+      - name: NUM_CLOSED_CASES
+        friendly_name: Total Number of Closed Cases
+        item: "18B"
+        start: 363
+        end: 371
+        type: integer
+        required: true
+
+  # Month C (third month of quarter)
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Year and Month
+        item: "4"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 2
+
+      - name: NUM_APPLICATIONS
+        friendly_name: Total Number of Applications
+        item: "4C"
+        start: 23
+        end: 31
+        type: integer
+        required: true
+
+      - name: NUM_APPROVED
+        friendly_name: Total Number of Approved Applications
+        item: "5C"
+        start: 47
+        end: 55
+        type: integer
+        required: true
+
+      - name: NUM_DENIED
+        friendly_name: Total Number of Denied Applications
+        item: "6C"
+        start: 71
+        end: 79
+        type: integer
+        required: true
+
+      - name: ASSISTANCE
+        friendly_name: Total Amount of Assistance
+        item: "7C"
+        start: 103
+        end: 115
+        type: integer
+        required: true
+
+      - name: NUM_FAMILIES
+        friendly_name: Total Number of Families
+        item: "8C"
+        start: 131
+        end: 139
+        type: integer
+        required: true
+
+      - name: NUM_2_PARENTS
+        friendly_name: Total Number of Two-parent Families
+        item: "9C"
+        start: 155
+        end: 163
+        type: integer
+        required: true
+
+      - name: NUM_1_PARENTS
+        friendly_name: Total Number of One-parent Families
+        item: "10C"
+        start: 179
+        end: 187
+        type: integer
+        required: true
+
+      - name: NUM_NO_PARENTS
+        friendly_name: Total Number of No-parent Families
+        item: "11C"
+        start: 203
+        end: 211
+        type: integer
+        required: true
+
+      - name: NUM_RECIPIENTS
+        friendly_name: Total Number of Recipients
+        item: "12C"
+        start: 227
+        end: 235
+        type: integer
+        required: true
+
+      - name: NUM_ADULT_RECIPIENTS
+        friendly_name: Total Number of Adult Recipients
+        item: "13C"
+        start: 251
+        end: 259
+        type: integer
+        required: true
+
+      - name: NUM_CHILD_RECIPIENTS
+        friendly_name: Total Number of Child Recipients
+        item: "14C"
+        start: 275
+        end: 283
+        type: integer
+        required: true
+
+      - name: NUM_NONCUSTODIALS
+        friendly_name: Total Number of Noncustodial Parents
+        item: "15C"
+        start: 299
+        end: 307
+        type: integer
+        required: true
+
+      - name: NUM_BIRTHS
+        friendly_name: Total Number of Births
+        item: "16C"
+        start: 323
+        end: 331
+        type: integer
+        required: true
+
+      - name: NUM_OUTWEDLOCK_BIRTHS
+        friendly_name: Total Number of Out-of-Wedlock Births
+        item: "17C"
+        start: 347
+        end: 355
+        type: integer
+        required: true
+
+      - name: NUM_CLOSED_CASES
+        friendly_name: Total Number of Closed Cases
+        item: "18C"
+        start: 371
+        end: 379
+        type: integer
+        required: true

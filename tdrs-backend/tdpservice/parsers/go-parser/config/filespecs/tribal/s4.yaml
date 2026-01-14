@@ -1,0 +1,72 @@
+# File Specification for Tribal TANF Section 4 (Stratum Data)
+#
+# This file defines:
+# - What format Tribal TANF Section 4 files use
+# - What record types can appear in these files
+# - How to identify each record type
+# - How records should be grouped for processing
+
+# =============================================================================
+# BASIC IDENTIFICATION
+# =============================================================================
+
+program: Tribal_TANF
+section: 4
+description: "Tribal TANF Stratum Data - Contains family counts by stratum for tribal TANF program"
+
+# =============================================================================
+# FILE FORMAT
+# =============================================================================
+
+# Tribal TANF files are fixed-width positional text files (UTF-8 encoded).
+# Each field occupies specific byte positions within a line.
+format: positional
+
+# =============================================================================
+# SCHEMAS
+# =============================================================================
+
+# List of record type schemas that can appear in this file type.
+# These reference schema files in config/schemas/
+schemas:
+  - common/header
+  - common/trailer
+  - tribal_tanf/t7
+
+# =============================================================================
+# RECORD TYPE DETECTION
+# =============================================================================
+
+# How to determine which schema applies to each row.
+# For positional files, we use prefix matching on the first characters.
+record_type_detection:
+  method: prefix
+  prefixes:
+    - prefix: "HEADER"
+      schema: common/header
+    - prefix: "TRAILER"
+      schema: common/trailer
+    - prefix: "T7"
+      schema: tribal_tanf/t7
+
+# =============================================================================
+# ACCUMULATOR CONFIGURATION
+# =============================================================================
+
+# Configuration for how records are collected and grouped for processing.
+#
+# Tribal TANF Section 4 files contain stratum data (not case-level data).
+# T7 records are file-level summaries without case numbers,
+# so no key-based grouping is needed.
+accumulator:
+
+  # No key_fields for stratum data - records don't belong to cases
+
+  # Number of records to batch together before dispatching to workers.
+  batch_size: 0
+
+  # All record types are processed individually (no grouping needed)
+  grouped_schemas: []
+
+  # Not applicable for stratum data, but included for consistency
+  sorted: false

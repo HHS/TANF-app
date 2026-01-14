@@ -1,0 +1,312 @@
+# SSP M6 Record Schema
+# Aggregate data for SSP-MOE (Section 3)
+#
+# This record contains aggregate counts and totals for a calendar quarter.
+# Each M6 record has data for 3 months (A, B, C) in separate column positions.
+# The parser should produce 3 output rows from each M6 record line.
+
+record_type: M6
+program: SSP
+section: 3
+document: "SSP Aggregate Data"
+format: positional
+
+# Fields shared across all segments (included in every output row)
+shared:
+  - name: RecordType
+    friendly_name: Record Type
+    item: "0"
+    start: 0
+    end: 2
+    type: string
+    required: true
+
+  - name: CALENDAR_QUARTER
+    friendly_name: Calendar Quarter
+    item: "2"
+    start: 2
+    end: 7
+    type: integer
+    required: true
+
+# Each segment produces one output row (combined with shared fields)
+# M6 has 3 segments: Month A, Month B, Month C
+segments:
+  # Month A (first month of quarter)
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "2B"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 0
+
+      - name: SSP_MOE_FAMILIES
+        friendly_name: SSP-MOE Families
+        item: "3A"
+        start: 7
+        end: 15
+        type: integer
+        required: true
+
+      - name: NUM_2_PARENTS
+        friendly_name: SSP-MOE Two-Parent Families
+        item: "4A"
+        start: 31
+        end: 39
+        type: integer
+        required: true
+
+      - name: NUM_1_PARENTS
+        friendly_name: SSP-MOE One-Parent Families
+        item: "5A"
+        start: 55
+        end: 63
+        type: integer
+        required: true
+
+      - name: NUM_NO_PARENTS
+        friendly_name: SSP-MOE No-Parent Families
+        item: "6A"
+        start: 79
+        end: 87
+        type: integer
+        required: true
+
+      - name: NUM_RECIPIENTS
+        friendly_name: SSP-MOE Recipients
+        item: "7A"
+        start: 103
+        end: 111
+        type: integer
+        required: true
+
+      - name: ADULT_RECIPIENTS
+        friendly_name: SSP-MOE Adult Recipients
+        item: "8A"
+        start: 127
+        end: 135
+        type: integer
+        required: true
+
+      - name: CHILD_RECIPIENTS
+        friendly_name: SSP-MOE Child Recipients
+        item: "9A"
+        start: 151
+        end: 159
+        type: integer
+        required: true
+
+      - name: NONCUSTODIALS
+        friendly_name: SSP-MOE Noncustodial Parents
+        item: "10A"
+        start: 175
+        end: 183
+        type: integer
+        required: true
+
+      - name: AMT_ASSISTANCE
+        friendly_name: SSP-MOE Amount of Assistance
+        item: "11A"
+        start: 199
+        end: 211
+        type: integer
+        required: true
+
+      - name: CLOSED_CASES
+        friendly_name: SSP-MOE Number of Closed Cases
+        item: "12A"
+        start: 235
+        end: 243
+        type: integer
+        required: true
+
+  # Month B (second month of quarter)
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "2B"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 1
+
+      - name: SSP_MOE_FAMILIES
+        friendly_name: SSP-MOE Families
+        item: "3B"
+        start: 15
+        end: 23
+        type: integer
+        required: true
+
+      - name: NUM_2_PARENTS
+        friendly_name: SSP-MOE Two-Parent Families
+        item: "4B"
+        start: 39
+        end: 47
+        type: integer
+        required: true
+
+      - name: NUM_1_PARENTS
+        friendly_name: SSP-MOE One-Parent Families
+        item: "5B"
+        start: 63
+        end: 71
+        type: integer
+        required: true
+
+      - name: NUM_NO_PARENTS
+        friendly_name: SSP-MOE No-Parent Families
+        item: "6B"
+        start: 87
+        end: 95
+        type: integer
+        required: true
+
+      - name: NUM_RECIPIENTS
+        friendly_name: SSP-MOE Recipients
+        item: "7B"
+        start: 111
+        end: 119
+        type: integer
+        required: true
+
+      - name: ADULT_RECIPIENTS
+        friendly_name: SSP-MOE Adult Recipients
+        item: "8B"
+        start: 135
+        end: 143
+        type: integer
+        required: true
+
+      - name: CHILD_RECIPIENTS
+        friendly_name: SSP-MOE Child Recipients
+        item: "9B"
+        start: 159
+        end: 167
+        type: integer
+        required: true
+
+      - name: NONCUSTODIALS
+        friendly_name: SSP-MOE Noncustodial Parents
+        item: "10B"
+        start: 183
+        end: 191
+        type: integer
+        required: true
+
+      - name: AMT_ASSISTANCE
+        friendly_name: SSP-MOE Amount of Assistance
+        item: "11B"
+        start: 211
+        end: 223
+        type: integer
+        required: true
+
+      - name: CLOSED_CASES
+        friendly_name: SSP-MOE Number of Closed Cases
+        item: "12B"
+        start: 243
+        end: 251
+        type: integer
+        required: true
+
+  # Month C (third month of quarter)
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "2B"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 2
+
+      - name: SSP_MOE_FAMILIES
+        friendly_name: SSP-MOE Families
+        item: "3C"
+        start: 23
+        end: 31
+        type: integer
+        required: true
+
+      - name: NUM_2_PARENTS
+        friendly_name: SSP-MOE Two-Parent Families
+        item: "4C"
+        start: 47
+        end: 55
+        type: integer
+        required: true
+
+      - name: NUM_1_PARENTS
+        friendly_name: SSP-MOE One-Parent Families
+        item: "5C"
+        start: 71
+        end: 79
+        type: integer
+        required: true
+
+      - name: NUM_NO_PARENTS
+        friendly_name: SSP-MOE No-Parent Families
+        item: "6C"
+        start: 95
+        end: 103
+        type: integer
+        required: true
+
+      - name: NUM_RECIPIENTS
+        friendly_name: SSP-MOE Recipients
+        item: "7C"
+        start: 119
+        end: 127
+        type: integer
+        required: true
+
+      - name: ADULT_RECIPIENTS
+        friendly_name: SSP-MOE Adult Recipients
+        item: "8C"
+        start: 143
+        end: 151
+        type: integer
+        required: true
+
+      - name: CHILD_RECIPIENTS
+        friendly_name: SSP-MOE Child Recipients
+        item: "9C"
+        start: 167
+        end: 175
+        type: integer
+        required: true
+
+      - name: NONCUSTODIALS
+        friendly_name: SSP-MOE Noncustodial Parents
+        item: "10C"
+        start: 191
+        end: 199
+        type: integer
+        required: true
+
+      - name: AMT_ASSISTANCE
+        friendly_name: SSP-MOE Amount of Assistance
+        item: "11C"
+        start: 223
+        end: 235
+        type: integer
+        required: true
+
+      - name: CLOSED_CASES
+        friendly_name: SSP-MOE Number of Closed Cases
+        item: "12C"
+        start: 251
+        end: 259
+        type: integer
+        required: true

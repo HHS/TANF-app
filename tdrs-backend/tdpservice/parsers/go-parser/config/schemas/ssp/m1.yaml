@@ -1,0 +1,364 @@
+# SSP M1 Record Schema
+# Case-level data for active SSP-MOE cases
+#
+# This record contains family composition, benefits, and sanction information.
+# One M1 record exists per case per reporting month.
+
+record_type: M1
+program: SSP
+section: 1
+document: "SSP Active Case Data"
+format: positional
+
+# Fields shared across all segments (included in every output row)
+shared:
+  - name: RecordType
+    friendly_name: Record Type
+    item: "0"
+    start: 0
+    end: 2
+    type: string
+    required: true
+
+  - name: RPT_MONTH_YEAR
+    friendly_name: Reporting Month/Year
+    item: "3"
+    start: 2
+    end: 8
+    type: integer
+    required: true
+
+  - name: CASE_NUMBER
+    friendly_name: Case Number
+    item: "5"
+    start: 8
+    end: 19
+    type: string
+    required: true
+
+# Each segment produces one output row (combined with shared fields)
+segments:
+  - fields:
+      - name: FIPS_CODE
+        friendly_name: State FIPS Code
+        item: "1"
+        start: 19
+        end: 21
+        type: string
+        required: true
+
+      - name: COUNTY_FIPS_CODE
+        friendly_name: County FIPS Code
+        item: "2"
+        start: 19
+        end: 22
+        type: string
+        required: true
+        transform:
+          name: zero_pad
+          params:
+            digits: 3
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "4"
+        start: 22
+        end: 24
+        type: string
+        required: false
+
+      - name: ZIP_CODE
+        friendly_name: ZIP Code
+        item: "6"
+        start: 24
+        end: 29
+        type: string
+        required: true
+
+      - name: DISPOSITION
+        friendly_name: Disposition
+        item: "7"
+        start: 29
+        end: 30
+        type: integer
+        required: true
+
+      - name: NBR_FAMILY_MEMBERS
+        friendly_name: Number of Family Members
+        item: "8"
+        start: 30
+        end: 32
+        type: integer
+        required: true
+
+      - name: FAMILY_TYPE
+        friendly_name: Type of Family for Work Participation
+        item: "9"
+        start: 32
+        end: 33
+        type: integer
+        required: true
+
+      - name: TANF_ASST_IN_6MONTHS
+        friendly_name: Received TANF Assistance in Past 6 Months
+        item: "10"
+        start: 33
+        end: 34
+        type: integer
+        required: true
+
+      - name: RECEIVES_SUB_HOUSING
+        friendly_name: Receives Subsidized Housing
+        item: "11"
+        start: 34
+        end: 35
+        type: integer
+        required: true
+
+      - name: RECEIVES_MED_ASSISTANCE
+        friendly_name: Receives Medical Assistance
+        item: "12"
+        start: 35
+        end: 36
+        type: integer
+        required: true
+
+      - name: RECEIVES_FOOD_STAMPS
+        friendly_name: Receives SNAP Assistance
+        item: "13"
+        start: 36
+        end: 37
+        type: integer
+        required: false
+
+      - name: AMT_FOOD_STAMP_ASSISTANCE
+        friendly_name: SNAP Benefits
+        item: "14"
+        start: 37
+        end: 41
+        type: integer
+        required: true
+
+      - name: RECEIVES_SUB_CC
+        friendly_name: Receives Subsidized Child Care
+        item: "15"
+        start: 41
+        end: 42
+        type: integer
+        required: false
+
+      - name: AMT_SUB_CC
+        friendly_name: Subsidized Child Care
+        item: "16"
+        start: 42
+        end: 46
+        type: integer
+        required: true
+
+      - name: CHILD_SUPPORT_AMT
+        friendly_name: Amount of Child Support
+        item: "17"
+        start: 46
+        end: 50
+        type: integer
+        required: true
+
+      - name: FAMILY_CASH_RESOURCES
+        friendly_name: Family Cash Resources
+        item: "18"
+        start: 50
+        end: 54
+        type: integer
+        required: true
+
+      - name: CASH_AMOUNT
+        friendly_name: Cash and Cash Equivalents
+        item: "19A"
+        start: 54
+        end: 58
+        type: integer
+        required: true
+
+      - name: NBR_MONTHS
+        friendly_name: Cash and Cash Equivalents Number of Months
+        item: "19B"
+        start: 58
+        end: 61
+        type: integer
+        required: true
+
+      - name: CC_AMOUNT
+        friendly_name: SSP-MOE Child Care
+        item: "20A"
+        start: 61
+        end: 65
+        type: integer
+        required: true
+
+      - name: CHILDREN_COVERED
+        friendly_name: SSP-MOE Child Care Number of Children Covered
+        item: "20B"
+        start: 65
+        end: 67
+        type: integer
+        required: true
+
+      - name: CC_NBR_MONTHS
+        friendly_name: SSP-MOE Child Care Number of Months
+        item: "20C"
+        start: 67
+        end: 70
+        type: integer
+        required: true
+
+      - name: TRANSP_AMOUNT
+        friendly_name: Transportation Amount
+        item: "21A"
+        start: 70
+        end: 74
+        type: integer
+        required: true
+
+      - name: TRANSP_NBR_MONTHS
+        friendly_name: Transportation Number of Months
+        item: "21B"
+        start: 74
+        end: 77
+        type: integer
+        required: true
+
+      - name: TRANSITION_SERVICES_AMOUNT
+        friendly_name: Transitional Services Amount
+        item: "22A"
+        start: 77
+        end: 81
+        type: integer
+        required: false
+
+      - name: TRANSITION_NBR_MONTHS
+        friendly_name: Transitional Services Number of Months
+        item: "22B"
+        start: 81
+        end: 84
+        type: integer
+        required: false
+
+      - name: OTHER_AMOUNT
+        friendly_name: Other Amount
+        item: "23A"
+        start: 84
+        end: 88
+        type: integer
+        required: false
+
+      - name: OTHER_NBR_MONTHS
+        friendly_name: Other Number of Months
+        item: "23B"
+        start: 88
+        end: 91
+        type: integer
+        required: false
+
+      - name: SANC_REDUCTION_AMT
+        friendly_name: Sanction Reduction Amount
+        item: "24AI"
+        start: 91
+        end: 95
+        type: integer
+        required: true
+
+      - name: WORK_REQ_SANCTION
+        friendly_name: Work Requirement Sanction
+        item: "24AII"
+        start: 95
+        end: 96
+        type: integer
+        required: true
+
+      - name: FAMILY_SANC_ADULT
+        friendly_name: Family Sanctions
+        item: "24AIII"
+        start: 96
+        end: 97
+        type: integer
+        required: false
+
+      - name: SANC_TEEN_PARENT
+        friendly_name: Sanction Teen Parent
+        item: "24AIV"
+        start: 97
+        end: 98
+        type: integer
+        required: true
+
+      - name: NON_COOPERATION_CSE
+        friendly_name: Non-Cooperation Child Support
+        item: "24AV"
+        start: 98
+        end: 99
+        type: integer
+        required: true
+
+      - name: FAILURE_TO_COMPLY
+        friendly_name: Failure to Comply
+        item: "24AVI"
+        start: 99
+        end: 100
+        type: integer
+        required: true
+
+      - name: OTHER_SANCTION
+        friendly_name: Other Sanction
+        item: "24AVII"
+        start: 100
+        end: 101
+        type: integer
+        required: true
+
+      - name: RECOUPMENT_PRIOR_OVRPMT
+        friendly_name: Recoupment Prior Overpayment
+        item: "24B"
+        start: 101
+        end: 105
+        type: integer
+        required: true
+
+      - name: OTHER_TOTAL_REDUCTIONS
+        friendly_name: Other Total Reductions
+        item: "24CI"
+        start: 105
+        end: 109
+        type: integer
+        required: true
+
+      - name: FAMILY_CAP
+        friendly_name: Family Cap
+        item: "24CII"
+        start: 109
+        end: 110
+        type: integer
+        required: true
+
+      - name: REDUCTIONS_ON_RECEIPTS
+        friendly_name: Reductions on Receipts
+        item: "24CIII"
+        start: 110
+        end: 111
+        type: integer
+        required: true
+
+      - name: OTHER_NON_SANCTION
+        friendly_name: Other Non-Sanction
+        item: "24CIV"
+        start: 111
+        end: 112
+        type: integer
+        required: true
+
+      - name: WAIVER_EVAL_CONTROL_GRPS
+        friendly_name: Waiver Evaluation Control Groups
+        item: "25"
+        start: 112
+        end: 113
+        type: integer
+        required: false

@@ -1,0 +1,381 @@
+# Tribal TANF T1 Record Schema
+# Case-level data for active Tribal TANF cases
+#
+# This record contains family composition, benefits, and sanction information.
+# One T1 record exists per case per reporting month.
+# Note: Tribal TANF has additional fields compared to regular TANF (e.g., FUNDING_STREAM, NEW_APPLICANT)
+
+record_type: T1
+program: Tribal_TANF
+section: 1
+document: "Tribal TANF Active Case Data"
+format: positional
+
+# Fields shared across all segments (included in every output row)
+shared:
+  - name: RecordType
+    friendly_name: Record Type
+    item: "0"
+    start: 0
+    end: 2
+    type: string
+    required: true
+
+  - name: RPT_MONTH_YEAR
+    friendly_name: Reporting Year and Month
+    item: "4"
+    start: 2
+    end: 8
+    type: integer
+    required: true
+
+  - name: CASE_NUMBER
+    friendly_name: Case Number--TANF
+    item: "6"
+    start: 8
+    end: 19
+    type: string
+    required: true
+
+# Each segment produces one output row (combined with shared fields)
+segments:
+  - fields:
+      - name: COUNTY_FIPS_CODE
+        friendly_name: County FIPS Code
+        item: "2"
+        start: 19
+        end: 22
+        type: string
+        required: false
+        transform:
+          name: zero_pad
+          params:
+            digits: 3
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 22
+        end: 24
+        type: string
+        required: false
+
+      - name: ZIP_CODE
+        friendly_name: ZIP Code
+        item: "7"
+        start: 24
+        end: 29
+        type: string
+        required: true
+
+      - name: FUNDING_STREAM
+        friendly_name: Funding Stream
+        item: "8"
+        start: 29
+        end: 30
+        type: integer
+        required: true
+
+      - name: DISPOSITION
+        friendly_name: Disposition
+        item: "9"
+        start: 30
+        end: 31
+        type: integer
+        required: true
+
+      - name: NEW_APPLICANT
+        friendly_name: New Applicant
+        item: "10"
+        start: 31
+        end: 32
+        type: integer
+        required: true
+
+      - name: NBR_FAMILY_MEMBERS
+        friendly_name: Number of Family Members
+        item: "11"
+        start: 32
+        end: 34
+        type: integer
+        required: true
+
+      - name: FAMILY_TYPE
+        friendly_name: Type of Family for Work Participation
+        item: "12"
+        start: 34
+        end: 35
+        type: integer
+        required: true
+
+      - name: RECEIVES_SUB_HOUSING
+        friendly_name: Receives Subsidized Housing
+        item: "13"
+        start: 35
+        end: 36
+        type: integer
+        required: true
+
+      - name: RECEIVES_MED_ASSISTANCE
+        friendly_name: Receives Medical Assistance
+        item: "14"
+        start: 36
+        end: 37
+        type: integer
+        required: true
+
+      - name: RECEIVES_FOOD_STAMPS
+        friendly_name: Receives Food Stamps
+        item: "15"
+        start: 37
+        end: 38
+        type: integer
+        required: false
+
+      - name: AMT_FOOD_STAMP_ASSISTANCE
+        friendly_name: Food Stamp Assistance
+        item: "16"
+        start: 38
+        end: 42
+        type: integer
+        required: true
+
+      - name: RECEIVES_SUB_CC
+        friendly_name: Receives Subsidized Child Care
+        item: "17"
+        start: 42
+        end: 43
+        type: integer
+        required: false
+
+      - name: AMT_SUB_CC
+        friendly_name: Subsidized Child Care
+        item: "18"
+        start: 43
+        end: 47
+        type: integer
+        required: true
+
+      - name: CHILD_SUPPORT_AMT
+        friendly_name: Amount of Child Support
+        item: "19"
+        start: 47
+        end: 51
+        type: integer
+        required: true
+
+      - name: FAMILY_CASH_RESOURCES
+        friendly_name: Amount of the Family's Cash Resources
+        item: "20"
+        start: 51
+        end: 55
+        type: integer
+        required: true
+
+      - name: CASH_AMOUNT
+        friendly_name: Cash
+        item: "21A"
+        start: 55
+        end: 59
+        type: integer
+        required: true
+
+      - name: NBR_MONTHS
+        friendly_name: Number of Months
+        item: "21B"
+        start: 59
+        end: 62
+        type: integer
+        required: true
+
+      - name: CC_AMOUNT
+        friendly_name: TANF Child Care
+        item: "22A"
+        start: 62
+        end: 66
+        type: integer
+        required: true
+
+      - name: CHILDREN_COVERED
+        friendly_name: TANF Child Care Number of Children Covered
+        item: "22B"
+        start: 66
+        end: 68
+        type: integer
+        required: true
+
+      - name: CC_NBR_MONTHS
+        friendly_name: TANF Child Care Number of Months
+        item: "22C"
+        start: 68
+        end: 71
+        type: integer
+        required: true
+
+      - name: TRANSP_AMOUNT
+        friendly_name: Transportation
+        item: "23A"
+        start: 71
+        end: 75
+        type: integer
+        required: true
+
+      - name: TRANSP_NBR_MONTHS
+        friendly_name: Transportation Number of Months
+        item: "23B"
+        start: 75
+        end: 78
+        type: integer
+        required: true
+
+      - name: TRANSITION_SERVICES_AMOUNT
+        friendly_name: Transitional Services
+        item: "24A"
+        start: 78
+        end: 82
+        type: integer
+        required: false
+
+      - name: TRANSITION_NBR_MONTHS
+        friendly_name: Transitional Services Number of Months
+        item: "24B"
+        start: 82
+        end: 85
+        type: integer
+        required: false
+
+      - name: OTHER_AMOUNT
+        friendly_name: Other
+        item: "25A"
+        start: 85
+        end: 89
+        type: integer
+        required: false
+
+      - name: OTHER_NBR_MONTHS
+        friendly_name: Other Number of Months
+        item: "25B"
+        start: 89
+        end: 92
+        type: integer
+        required: false
+
+      - name: SANC_REDUCTION_AMT
+        friendly_name: Total Dollar Amount of Reductions due to Sanctions
+        item: "26AI"
+        start: 92
+        end: 96
+        type: integer
+        required: true
+
+      - name: WORK_REQ_SANCTION
+        friendly_name: Work Requirements Sanction
+        item: "26AII"
+        start: 96
+        end: 97
+        type: integer
+        required: true
+
+      - name: FAMILY_SANC_ADULT
+        friendly_name: Family Sanction for Adult with No High School Diploma
+        item: "26AIII"
+        start: 97
+        end: 98
+        type: integer
+        required: false
+
+      - name: SANC_TEEN_PARENT
+        friendly_name: Sanction for Teen Parent not Attending School
+        item: "26AIV"
+        start: 98
+        end: 99
+        type: integer
+        required: true
+
+      - name: NON_COOPERATION_CSE
+        friendly_name: Non-Cooperation with Child Support
+        item: "26AV"
+        start: 99
+        end: 100
+        type: integer
+        required: true
+
+      - name: FAILURE_TO_COMPLY
+        friendly_name: Failure to comply with Individual Responsibility Plan
+        item: "26AVI"
+        start: 100
+        end: 101
+        type: integer
+        required: true
+
+      - name: OTHER_SANCTION
+        friendly_name: Other Sanction
+        item: "26AVII"
+        start: 101
+        end: 102
+        type: integer
+        required: true
+
+      - name: RECOUPMENT_PRIOR_OVRPMT
+        friendly_name: Recoupment of Prior Overpayment
+        item: "26B"
+        start: 102
+        end: 106
+        type: integer
+        required: true
+
+      - name: OTHER_TOTAL_REDUCTIONS
+        friendly_name: Total Dollar Amount of Reductions due to Other Reasons
+        item: "26CI"
+        start: 106
+        end: 110
+        type: integer
+        required: true
+
+      - name: FAMILY_CAP
+        friendly_name: Family Cap
+        item: "26CII"
+        start: 110
+        end: 111
+        type: integer
+        required: true
+
+      - name: REDUCTIONS_ON_RECEIPTS
+        friendly_name: Reduction Based on Length of Receipt of Assistance
+        item: "26CIII"
+        start: 111
+        end: 112
+        type: integer
+        required: true
+
+      - name: OTHER_NON_SANCTION
+        friendly_name: Other, Non-sanction
+        item: "26CIV"
+        start: 112
+        end: 113
+        type: integer
+        required: true
+
+      - name: WAIVER_EVAL_CONTROL_GRPS
+        friendly_name: Waiver Evaluation Control Groups
+        item: "27"
+        start: 113
+        end: 114
+        type: string
+        required: false
+
+      - name: FAMILY_EXEMPT_TIME_LIMITS
+        friendly_name: Exempt from Tribal Time-Limit Provisions
+        item: "28"
+        start: 114
+        end: 116
+        type: integer
+        required: true
+
+      - name: FAMILY_NEW_CHILD
+        friendly_name: A New Child-Only Family
+        item: "29"
+        start: 116
+        end: 117
+        type: integer
+        required: false

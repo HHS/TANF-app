@@ -1,0 +1,106 @@
+# File Specification for SSP Section 1 (Active Case Data)
+#
+# This file defines:
+# - What format SSP Section 1 files use
+# - What record types can appear in these files
+# - How to identify each record type
+# - How records should be grouped for processing
+
+# =============================================================================
+# BASIC IDENTIFICATION
+# =============================================================================
+
+program: SSP
+section: 1
+description: "SSP Active Case Data - Contains case, adult, and child records for active SSP-MOE cases"
+
+# =============================================================================
+# FILE FORMAT
+# =============================================================================
+
+# SSP files are fixed-width positional text files (UTF-8 encoded).
+# Each field occupies specific byte positions within a line.
+format: positional
+
+# =============================================================================
+# SCHEMAS
+# =============================================================================
+
+# List of record type schemas that can appear in this file type.
+# These reference schema files in config/schemas/
+schemas:
+  - common/header
+  - common/trailer
+  - ssp/m1
+  - ssp/m2
+  - ssp/m3
+
+# =============================================================================
+# RECORD TYPE DETECTION
+# =============================================================================
+
+# How to determine which schema applies to each row.
+# For positional files, we use prefix matching on the first characters.
+record_type_detection:
+  method: prefix
+  prefixes:
+    - prefix: "HEADER"
+      schema: common/header
+    - prefix: "TRAILER"
+      schema: common/trailer
+    - prefix: "M1"
+      schema: ssp/m1
+    - prefix: "M2"
+      schema: ssp/m2
+    - prefix: "M3"
+      schema: ssp/m3
+
+# =============================================================================
+# ACCUMULATOR CONFIGURATION
+# =============================================================================
+
+# Configuration for how records are collected and grouped for processing.
+#
+# SSP Section 1 files contain case-level data where records with the same
+# RPT_MONTH_YEAR and CASE_NUMBER belong to the same "case" and should be
+# processed together. This enables case-level validation in the future.
+#
+# The accumulator uses two independent settings:
+#   - key_fields: Groups records by composite key (creates RecordGroups)
+#   - batch_size: Batches N groups together (creates Batches)
+#
+# For SSP Section 1:
+#   - key_fields is set to group by RPT_MONTH_YEAR + CASE_NUMBER
+#   - batch_size is 0, meaning each case group is dispatched individually
+accumulator:
+
+  # Fields to extract the grouping key from raw row data.
+  # These byte positions are used BEFORE full parsing to quickly
+  # determine which case a record belongs to.
+  key_fields:
+    rpt_month_year:
+      start: 2
+      end: 8
+    case_number:
+      start: 8
+      end: 19
+
+  # Number of groups to batch together before dispatching to workers.
+  # 0 = each group is dispatched individually (one Batch per case)
+  # Set to a higher value (e.g., 10) for higher throughput at the cost of memory.
+  batch_size: 0
+
+  # Which schemas participate in key-based grouping.
+  # HEADER and TRAILER are excluded because they're file-level, not case-level.
+  # Only M1, M2, M3 records are grouped by case.
+  grouped_schemas:
+    - ssp/m1
+    - ssp/m2
+    - ssp/m3
+
+  # SSP files are sorted by case - all records for a case appear consecutively.
+  # When sorted=true, groups are flushed as soon as a new key is encountered,
+  # preventing memory buildup for large files. This is critical for files with
+  # millions of records to avoid out-of-memory errors. See PRESORT_ARCHITECUTRE.md
+  # for how we can generalize and remove this.
+  sorted: true

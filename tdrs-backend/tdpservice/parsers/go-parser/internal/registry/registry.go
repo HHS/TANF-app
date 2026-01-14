@@ -122,33 +122,33 @@ func (r *Registry) loadSchemas() error {
 func (r *Registry) loadFileSpecs() error {
 	filespecsDir := filepath.Join(r.configDir, "filespecs")
 
-	entries, err := os.ReadDir(filespecsDir)
-	if err != nil {
-		return fmt.Errorf("reading filespecs directory: %w", err)
-	}
-
-	for _, entry := range entries {
-		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".yaml") {
-			continue
+	return filepath.Walk(filespecsDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
 		}
 
-		path := filepath.Join(filespecsDir, entry.Name())
+		// Skip directories and non-YAML files
+		if info.IsDir() || !strings.HasSuffix(path, ".yaml") {
+			return nil
+		}
+
+		// Read and parse the file spec file
 		data, err := os.ReadFile(path)
 		if err != nil {
 			return fmt.Errorf("reading %s: %w", path, err)
 		}
 
-		var spec filespec.FileSpec
-		if err := yaml.Unmarshal(data, &spec); err != nil {
+		var specDef filespec.FileSpec
+		if err := yaml.Unmarshal(data, &specDef); err != nil {
 			return fmt.Errorf("parsing %s: %w", path, err)
 		}
 
 		// Index by "PROGRAM:SECTION"
-		key := fmt.Sprintf("%s:%d", spec.Program, spec.Section)
-		r.fileSpecs[key] = &spec
-	}
+		key := fmt.Sprintf("%s:%d", specDef.Program, specDef.Section)
+		r.fileSpecs[key] = &specDef
 
-	return nil
+		return nil
+	})
 }
 
 // validateReferences ensures all schema references in FileSpecs point to loaded schemas.
