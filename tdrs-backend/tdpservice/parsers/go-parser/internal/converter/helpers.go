@@ -92,26 +92,3 @@ func getInt(fields map[string]any, key string) int {
 func singleRow(row []any) [][]any {
 	return [][]any{row}
 }
-
-// hasChild2Data checks if a T3 record has valid Child 2 data.
-// Child 2 is considered present if FAMILY_AFFILIATION_2 has a non-empty value.
-func hasChild2Data(fields map[string]any) bool {
-	v, ok := fields["FAMILY_AFFILIATION_2"]
-	if !ok {
-		return false
-	}
-	// Check if it's a valid non-zero value
-	switch val := v.(type) {
-	case int:
-		return val != 0
-	case int32:
-		return val != 0
-	case int64:
-		return val != 0
-	case float64:
-		return val != 0
-	case string:
-		return val != "" && val != " "
-	}
-	return false
-}

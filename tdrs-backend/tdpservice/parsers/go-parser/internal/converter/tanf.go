@@ -281,7 +281,7 @@ func convertTanfT3(record *schema.ParsedRecord, datafileID int32) [][]any {
 	f := record.Fields
 
 	// Child 1 row (always present)
-	child1 := &db.SearchIndexesTanfT3{
+	rec := &db.SearchIndexesTanfT3{
 		RecordType:            toText(f["RecordType"]),
 		RPTMONTHYEAR:          toInt4(f["RPT_MONTH_YEAR"]),
 		CASENUMBER:            toText(f["CASE_NUMBER"]),
@@ -308,95 +308,32 @@ func convertTanfT3(record *schema.ParsedRecord, datafileID int32) [][]any {
 		LineNumber:            toLineNumber(record.LineNumber),
 	}
 
-	row1 := []any{
-		child1.RecordType,
-		child1.RPTMONTHYEAR,
-		child1.CASENUMBER,
-		child1.FAMILYAFFILIATION,
-		child1.DATEOFBIRTH,
-		child1.SSN,
-		child1.RACEHISPANIC,
-		child1.RACEAMERINDIAN,
-		child1.RACEASIAN,
-		child1.RACEBLACK,
-		child1.RACEHAWAIIAN,
-		child1.RACEWHITE,
-		child1.SEX,
-		child1.RECEIVENONSSABENEFITS,
-		child1.RECEIVESSI,
-		child1.RELATIONSHIPHOH,
-		child1.PARENTMINORCHILD,
-		child1.EDUCATIONLEVEL,
-		child1.CITIZENSHIPSTATUS,
-		child1.UNEARNEDSSI,
-		child1.OTHERUNEARNEDINCOME,
-		child1.ID,
-		child1.DatafileID,
-		child1.LineNumber,
-	}
-
-	// Check if Child 2 data is present
-	if !hasChild2Data(f) {
-		return [][]any{row1}
-	}
-
-	// Child 2 row - uses shared fields (RecordType, RPT_MONTH_YEAR, CASE_NUMBER)
-	// and Child 2 specific fields (with _2 suffix)
-	child2 := &db.SearchIndexesTanfT3{
-		RecordType:            toText(f["RecordType"]),
-		RPTMONTHYEAR:          toInt4(f["RPT_MONTH_YEAR"]),
-		CASENUMBER:            toText(f["CASE_NUMBER"]),
-		FAMILYAFFILIATION:     toInt4(f["FAMILY_AFFILIATION_2"]),
-		DATEOFBIRTH:           toText(f["DATE_OF_BIRTH_2"]),
-		SSN:                   toText(f["SSN_2"]),
-		RACEHISPANIC:          toInt4(f["RACE_HISPANIC_2"]),
-		RACEAMERINDIAN:        toInt4(f["RACE_AMER_INDIAN_2"]),
-		RACEASIAN:             toInt4(f["RACE_ASIAN_2"]),
-		RACEBLACK:             toInt4(f["RACE_BLACK_2"]),
-		RACEHAWAIIAN:          toInt4(f["RACE_HAWAIIAN_2"]),
-		RACEWHITE:             toInt4(f["RACE_WHITE_2"]),
-		SEX:                   toInt4(f["SEX_2"]),
-		RECEIVENONSSABENEFITS: toInt4(f["RECEIVE_NONSSA_BENEFITS_2"]),
-		RECEIVESSI:            toInt4(f["RECEIVE_SSI_2"]),
-		RELATIONSHIPHOH:       toText(f["RELATIONSHIP_HOH_2"]),
-		PARENTMINORCHILD:      toInt4(f["PARENT_MINOR_CHILD_2"]),
-		EDUCATIONLEVEL:        toText(f["EDUCATION_LEVEL_2"]),
-		CITIZENSHIPSTATUS:     toInt4(f["CITIZENSHIP_STATUS_2"]),
-		UNEARNEDSSI:           toText(f["UNEARNED_SSI_2"]),
-		OTHERUNEARNEDINCOME:   toText(f["OTHER_UNEARNED_INCOME_2"]),
-		ID:                    newUUID(),
-		DatafileID:            toDatafileID(datafileID),
-		LineNumber:            toLineNumber(record.LineNumber),
-	}
-
-	row2 := []any{
-		child2.RecordType,
-		child2.RPTMONTHYEAR,
-		child2.CASENUMBER,
-		child2.FAMILYAFFILIATION,
-		child2.DATEOFBIRTH,
-		child2.SSN,
-		child2.RACEHISPANIC,
-		child2.RACEAMERINDIAN,
-		child2.RACEASIAN,
-		child2.RACEBLACK,
-		child2.RACEHAWAIIAN,
-		child2.RACEWHITE,
-		child2.SEX,
-		child2.RECEIVENONSSABENEFITS,
-		child2.RECEIVESSI,
-		child2.RELATIONSHIPHOH,
-		child2.PARENTMINORCHILD,
-		child2.EDUCATIONLEVEL,
-		child2.CITIZENSHIPSTATUS,
-		child2.UNEARNEDSSI,
-		child2.OTHERUNEARNEDINCOME,
-		child2.ID,
-		child2.DatafileID,
-		child2.LineNumber,
-	}
-
-	return [][]any{row1, row2}
+	return singleRow([]any{
+		rec.RecordType,
+		rec.RPTMONTHYEAR,
+		rec.CASENUMBER,
+		rec.FAMILYAFFILIATION,
+		rec.DATEOFBIRTH,
+		rec.SSN,
+		rec.RACEHISPANIC,
+		rec.RACEAMERINDIAN,
+		rec.RACEASIAN,
+		rec.RACEBLACK,
+		rec.RACEHAWAIIAN,
+		rec.RACEWHITE,
+		rec.SEX,
+		rec.RECEIVENONSSABENEFITS,
+		rec.RECEIVESSI,
+		rec.RELATIONSHIPHOH,
+		rec.PARENTMINORCHILD,
+		rec.EDUCATIONLEVEL,
+		rec.CITIZENSHIPSTATUS,
+		rec.UNEARNEDSSI,
+		rec.OTHERUNEARNEDINCOME,
+		rec.ID,
+		rec.DatafileID,
+		rec.LineNumber,
+	})
 }
 
 // TANF T4 Converter - Case-level data for closed TANF cases
