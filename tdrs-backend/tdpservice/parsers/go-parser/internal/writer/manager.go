@@ -123,10 +123,12 @@ func (wm *WriterManager) Start(ctx context.Context) {
 
 // WriteRecord converts a record, releases it to pool, and sends rows to writer.
 // This is the release point for valid records in the normal flow.
+// Records without writers (e.g., HEADER, TRAILER) are silently skipped.
 func (wm *WriterManager) WriteRecord(ctx context.Context, record *schema.ParsedRecord) error {
 	tw, ok := wm.writers[record.Schema.Path]
 	if !ok {
-		return fmt.Errorf("no writer for schema: %s", record.Schema.Path)
+		// No writer for this schema (e.g., header/trailer) - skip silently
+		return nil
 	}
 
 	conv, ok := wm.converters[record.Schema.Path]
