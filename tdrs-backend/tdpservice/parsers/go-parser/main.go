@@ -182,6 +182,7 @@ func processFile(
 	detector := parser.NewRecordTypeDetector(spec, reg)
 
 	// Step 5: Create worker pool
+	// TODO: introduce toplevel config to specify pool config and other top level things (e.g. router config)
 	poolConfig := worker.DefaultPoolConfig()
 	workerPool := worker.NewPool(spec.Format, poolConfig)
 	workerPool.SetParseContext(parseCtx) // Set context before starting workers
@@ -189,6 +190,7 @@ func processFile(
 
 	// Step 6: Create database writer (dynamically from FileSpec)
 	// Pre-warm object pools with 2x worker count to handle records in flight
+	// TODO: should we introduce a router config?
 	poolPrewarmSize := 10000
 	router := writer.NewRouter(pool, datafileID, spec, reg, poolPrewarmSize)
 
@@ -201,6 +203,7 @@ func processFile(
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		// TODO: make numDispatchers configurable via config file
 		numDispatchers := 4 // Tune based on CPU cores / connection pool size
 		collectorErr = routeResults(ctx, workerPool, router, numDispatchers)
 	}()
