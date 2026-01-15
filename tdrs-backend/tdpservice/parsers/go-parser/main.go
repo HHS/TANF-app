@@ -190,10 +190,10 @@ func processFile(
 	// Step 6: Create database writer (dynamically from FileSpec)
 	// Pre-warm object pools with 2x worker count to handle records in flight
 	poolPrewarmSize := 10000
-	writerMgr := writer.NewWriterManager(pool, datafileID, spec, reg, poolPrewarmSize)
+	router := writer.NewRouter(pool, datafileID, spec, reg, poolPrewarmSize)
 
 	// Step 7: Start all writer goroutines before result collection
-	writerMgr.Start(ctx)
+	router.Start(ctx)
 
 	// Step 8: Start result collector with parallel dispatchers
 	var collectorErr error
@@ -202,7 +202,7 @@ func processFile(
 	go func() {
 		defer wg.Done()
 		numDispatchers := 4 // Tune based on CPU cores / connection pool size
-		collectorErr = collectResults(ctx, workerPool, writerMgr, numDispatchers)
+		collectorErr = routeResults(ctx, workerPool, router, numDispatchers)
 	}()
 
 	// Step 9: Process rows through the unified Accumulator
@@ -306,12 +306,12 @@ func processRows(
 	return nil
 }
 
-// collectResults receives parsed batches from the worker pool and writes to database.
+// routeResults receives parsed batches from the worker pool and routes them to the database writers.
 // Multiple dispatcher goroutines compete on the Results channel for parallel processing.
-func collectResults(
+func routeResults(
 	ctx context.Context,
 	pool *worker.Pool,
-	writerMgr *writer.WriterManager,
+	router *writer.Router,
 	numDispatchers int,
 ) error {
 	var wg sync.WaitGroup
@@ -332,7 +332,7 @@ func collectResults(
 				}
 
 				// Route the batch to writers (no conversion here)
-				if err := writerMgr.WriteBatch(ctx, pb); err != nil {
+				if err := router.RouteBatch(ctx, pb); err != nil {
 					log.Printf("Dispatcher: batch %d error: %v", pb.BatchID, err)
 					errChan <- err
 					return
@@ -360,12 +360,12 @@ func collectResults(
 	}
 
 	// Stop writers (flushes remaining) and collect errors
-	if err := writerMgr.Stop(); err != nil {
+	if err := router.Stop(); err != nil {
 		errs = append(errs, err)
 	}
 
 	// Report stats
-	records, errorCount := writerMgr.Stats()
+	records, errorCount := router.Stats()
 	for table, count := range records {
 		log.Printf("Written to %s: %d records", table, count)
 	}

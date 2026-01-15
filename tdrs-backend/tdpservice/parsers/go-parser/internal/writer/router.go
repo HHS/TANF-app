@@ -16,11 +16,11 @@ import (
 	"go-parser/internal/worker"
 )
 
-// WriterManager coordinates writes for any file type.
+// Router coordinates writes for any file type.
 // Writers are created dynamically based on the FileSpec.
-// WriterManager owns the converters and handles the full pipeline:
+// Router owns the converters and handles the full pipeline:
 // ParsedRecord -> convert -> release to pool -> send []any to writer
-type WriterManager struct {
+type Router struct {
 	pool       *pgxpool.Pool
 	datafileID int32
 
@@ -41,21 +41,17 @@ var parserErrorColumns = []string{
 	"object_id", "deprecated", "values_json",
 }
 
-// DefaultPoolPrewarmSize is the default number of records to pre-allocate per schema.
-// This should be at least 2x the number of worker goroutines.
-const DefaultPoolPrewarmSize = 16
-
-// NewWriterManager creates a manager based on the FileSpec.
+// NewRouter creates a manager based on the FileSpec.
 // Writers are created only for the record types in this specific file.
 // poolPrewarmSize specifies how many records to pre-allocate per schema (0 to skip).
-func NewWriterManager(
+func NewRouter(
 	pool *pgxpool.Pool,
 	datafileID int32,
 	spec *filespec.FileSpec,
 	reg *registry.Registry,
 	poolPrewarmSize int,
-) *WriterManager {
-	wm := &WriterManager{
+) *Router {
+	wm := &Router{
 		pool:       pool,
 		datafileID: datafileID,
 		writers:    make(map[string]*TableWriter),
@@ -90,7 +86,7 @@ func NewWriterManager(
 			continue
 		}
 
-		// Store converter in manager (conversion happens in WriteRecord)
+		// Store converter in manager (conversion happens in RouteRecord)
 		wm.converters[schemaPath] = conv
 
 		// Create simplified TableWriter that receives []any rows
@@ -111,8 +107,8 @@ func NewWriterManager(
 }
 
 // Start launches all writer goroutines.
-// Must be called before WriteBatch/WriteRecord.
-func (wm *WriterManager) Start(ctx context.Context) {
+// Must be called before RouteBatch/RouteRecord.
+func (wm *Router) Start(ctx context.Context) {
 	for _, tw := range wm.writers {
 		tw.Start(ctx, wm.pool)
 	}
@@ -121,10 +117,10 @@ func (wm *WriterManager) Start(ctx context.Context) {
 	}
 }
 
-// WriteRecord converts a record, releases it to pool, and sends rows to writer.
+// RouteRecord converts a record, releases it to pool, and sends rows to writer.
 // This is the release point for valid records in the normal flow.
 // Records without writers (e.g., HEADER, TRAILER) are silently skipped.
-func (wm *WriterManager) WriteRecord(ctx context.Context, record *schema.ParsedRecord) error {
+func (wm *Router) RouteRecord(ctx context.Context, record *schema.ParsedRecord) error {
 	tw, ok := wm.writers[record.Schema.Path]
 	if !ok {
 		// No writer for this schema (e.g., header/trailer) - skip silently
@@ -152,11 +148,11 @@ func (wm *WriterManager) WriteRecord(ctx context.Context, record *schema.ParsedR
 	return nil
 }
 
-// WriteBatch routes all records in a batch to appropriate writers.
-func (wm *WriterManager) WriteBatch(ctx context.Context, batch *worker.ParsedBatch) error {
+// RouteBatch routes all records in a batch to appropriate writers.
+func (wm *Router) RouteBatch(ctx context.Context, batch *worker.ParsedBatch) error {
 	for _, group := range batch.Groups {
 		for _, record := range group.Records {
-			if err := wm.WriteRecord(ctx, record); err != nil {
+			if err := wm.RouteRecord(ctx, record); err != nil {
 				return err
 			}
 		}
@@ -166,7 +162,7 @@ func (wm *WriterManager) WriteBatch(ctx context.Context, batch *worker.ParsedBat
 
 // Stop closes all channels and waits for goroutines to finish.
 // Returns combined errors from all writers.
-func (wm *WriterManager) Stop() error {
+func (wm *Router) Stop() error {
 	var errs []error
 	var wg sync.WaitGroup
 	var errMu sync.Mutex
@@ -198,7 +194,7 @@ func (wm *WriterManager) Stop() error {
 }
 
 // Stats returns totals from all writers.
-func (wm *WriterManager) Stats() (records map[string]int64, errorCount int64) {
+func (wm *Router) Stats() (records map[string]int64, errorCount int64) {
 	result := make(map[string]int64)
 	for path, tw := range wm.writers {
 		result[path] = tw.TotalWritten()

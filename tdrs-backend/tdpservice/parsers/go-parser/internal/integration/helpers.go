@@ -68,7 +68,7 @@ func ParseFile(t *testing.T, ctx context.Context, pool *pgxpool.Pool, reg *regis
 
 	// Create database writer
 	poolPrewarmSize := 100
-	writerMgr := writer.NewWriterManager(pool, datafileID, spec, reg, poolPrewarmSize)
+	writerMgr := writer.NewRouter(pool, datafileID, spec, reg, poolPrewarmSize)
 	writerMgr.Start(ctx)
 
 	// Start result collector
@@ -78,7 +78,7 @@ func ParseFile(t *testing.T, ctx context.Context, pool *pgxpool.Pool, reg *regis
 	go func() {
 		defer wg.Done()
 		for pb := range workerPool.Results() {
-			if err := writerMgr.WriteBatch(ctx, pb); err != nil {
+			if err := writerMgr.RouteBatch(ctx, pb); err != nil {
 				collectorErr = err
 				return
 			}
