@@ -248,7 +248,7 @@ func (p *Pool) parseRow(line processor.RawLine) ([]*schema.ParsedRecord, error) 
 				// Most multi record schemas don't have the 2 through N segment's field's marked as required.
 				// Therefore if the value is nil and the field is required or the segment index is greater than 0
 				// we skip creating the record since it is invalid.
-				log.Printf("Skipping record for segment %d, type %s, line %d, field %s is nil", segIdx, record.Schema.RecordType, record.LineNumber, field.Name)
+				// log.Printf("Skipping record for segment %d, type %s, line %d, field %s is nil", segIdx, record.Schema.RecordType, record.LineNumber, field.Name)
 				missingRequired = true
 				break
 			}

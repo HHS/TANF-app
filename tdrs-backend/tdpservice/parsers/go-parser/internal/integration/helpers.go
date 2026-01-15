@@ -5,21 +5,14 @@ package integration
 import (
 	"context"
 	"fmt"
-	"os"
 	"path/filepath"
-	"sync"
 	"testing"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"go-parser/internal/decoder"
-	"go-parser/internal/filespec"
-	"go-parser/internal/parser"
-	"go-parser/internal/processor"
+	"go-parser/internal/pipeline"
 	"go-parser/internal/registry"
-	"go-parser/internal/worker"
-	"go-parser/internal/writer"
 )
 
 // TestDataDir returns the absolute path to the test data directory.
@@ -31,108 +24,18 @@ func TestDataDir() string {
 func ParseFile(t *testing.T, ctx context.Context, pool *pgxpool.Pool, reg *registry.Registry, program string, section int, filePath string, datafileID int32) {
 	t.Helper()
 
-	spec := reg.GetFileSpec(program, section)
-	if spec == nil {
-		t.Fatalf("No file spec for %s section %d", program, section)
-	}
-
-	file, err := os.Open(filePath)
+	p := pipeline.New(pool, reg, pipeline.TestConfig())
+	result, err := p.ProcessFile(ctx, pipeline.ProcessParams{
+		Program:    program,
+		Section:    section,
+		FilePath:   filePath,
+		DatafileID: datafileID,
+	})
 	if err != nil {
-		t.Fatalf("Failed to open file %s: %v", filePath, err)
-	}
-	defer file.Close()
-
-	dec := createDecoder(t, file, spec)
-	defer dec.Close()
-
-	// Read header
-	headerRow, err := dec.ReadFirst()
-	if err != nil {
-		t.Fatalf("Failed to read header: %v", err)
+		t.Fatalf("Pipeline failed: %v", err)
 	}
 
-	headerSchema := reg.GetSchema(parser.HeaderSchemaPath)
-	parseCtx, err := parser.ParseHeader(headerRow, headerSchema)
-	if err != nil {
-		t.Fatalf("Failed to parse header: %v", err)
-	}
-
-	// Create detector and accumulator
-	detector := parser.NewRecordTypeDetector(spec, reg)
-
-	// Create worker pool
-	poolConfig := worker.DefaultPoolConfig()
-	workerPool := worker.NewPool(spec.Format, poolConfig)
-	workerPool.SetParseContext(parseCtx)
-	workerPool.Start(ctx)
-
-	// Create database writer
-	poolPrewarmSize := 100
-	writerMgr := writer.NewRouter(pool, datafileID, spec, reg, poolPrewarmSize)
-	writerMgr.Start(ctx)
-
-	// Start result collector
-	var collectorErr error
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for pb := range workerPool.Results() {
-			if err := writerMgr.RouteBatch(ctx, pb); err != nil {
-				collectorErr = err
-				return
-			}
-		}
-	}()
-
-	// Process rows through accumulator
-	acc := processor.NewAccumulator(spec, detector)
-	for row, err := range dec.Rows() {
-		if err != nil {
-			t.Logf("Row error: %v", err)
-			continue
-		}
-
-		batch, _, _, err := acc.Add(row)
-		if err != nil {
-			t.Logf("Accumulator error at line %d: %v", row.LineNum(), err)
-			continue
-		}
-
-		if batch != nil {
-			workerPool.Submit(batch)
-		}
-	}
-
-	// Drain remaining batches
-	for _, batch := range acc.Drain() {
-		workerPool.Submit(batch)
-	}
-
-	workerPool.CloseInputs()
-	workerPool.Wait()
-	wg.Wait()
-
-	if collectorErr != nil {
-		t.Fatalf("Collector error: %v", collectorErr)
-	}
-
-	if err := writerMgr.Stop(); err != nil {
-		t.Fatalf("Writer error: %v", err)
-	}
-}
-
-func createDecoder(t *testing.T, file *os.File, spec *filespec.FileSpec) decoder.Decoder {
-	t.Helper()
-	switch spec.Format {
-	case filespec.FormatPositional:
-		return decoder.NewPostitionalDecoder(file)
-	case filespec.FormatColumnar:
-		return decoder.NewCSVDecoder(file, spec.RecordTypeDetection.Schema)
-	default:
-		t.Fatalf("Unsupported format: %s", spec.Format)
-		return nil
-	}
+	t.Logf("Processed in %s, errors: %d", result.Duration, result.ErrorCount)
 }
 
 // AssertTableCount verifies the record count in a table for a given datafile.
