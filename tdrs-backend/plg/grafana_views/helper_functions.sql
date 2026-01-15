@@ -1,5 +1,5 @@
 -- Helper functions for Grafana view date validation
--- Run this script before creating the views
+-- Must be run before creating the views (handled by generate_views.py)
 --
 -- These functions safely validate date strings without throwing errors,
 -- which is necessary because TO_DATE() throws an error on invalid dates
