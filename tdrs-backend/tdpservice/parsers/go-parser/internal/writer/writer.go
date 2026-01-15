@@ -9,9 +9,6 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-
-	"go-parser/internal/converter"
-	"go-parser/internal/schema"
 )
 
 const (
@@ -23,19 +20,17 @@ const (
 	MaxFlushThreshold = 200000
 )
 
-// TableWriter runs in its own goroutine, owns the converter, and handles
-// the full pipeline from ParsedRecord to database.
+// TableWriter runs in its own goroutine and handles buffering and flushing
+// []any rows to the database. Conversion is done upstream by the WriterManager.
 type TableWriter struct {
-	tableName  string
-	columns    []string
-	threshold  int
-	datafileID int32
-	converter  converter.RowConverter // Converter lives here - writer owns full pipeline
+	tableName string
+	columns   []string
+	threshold int
 
-	// Async operation - channel carries ParsedRecords, not rows
-	recordChan chan *schema.ParsedRecord
-	pool       *pgxpool.Pool
-	wg         sync.WaitGroup
+	// Async operation - channel carries []any rows (already converted)
+	rowChan chan []any
+	pool    *pgxpool.Pool
+	wg      sync.WaitGroup
 
 	// Internal buffer (owned by the goroutine - no locks needed)
 	rows [][]any
@@ -49,13 +44,11 @@ type TableWriter struct {
 }
 
 // NewTableWriter creates a writer for the specified table.
-// The converter is owned by the writer - conversion happens in the writer goroutine.
+// The writer receives pre-converted []any rows from WriterManager.
 func NewTableWriter(
 	tableName string,
 	columns []string,
 	threshold int,
-	datafileID int32,
-	conv converter.RowConverter,
 ) *TableWriter {
 	if threshold <= 0 {
 		threshold = DefaultFlushThreshold
@@ -64,16 +57,12 @@ func NewTableWriter(
 		threshold = MaxFlushThreshold
 	}
 	return &TableWriter{
-		tableName:  tableName,
-		columns:    columns,
-		threshold:  threshold,
-		datafileID: datafileID,
-		converter:  conv,
-		// Channel buffer sized for records, not rows
-		// Records are smaller than converted rows, so this is more memory-efficient
-		// TODO: make channel buffer configurable
-		recordChan: make(chan *schema.ParsedRecord, 1000),
-		rows:       make([][]any, 0, threshold),
+		tableName: tableName,
+		columns:   columns,
+		threshold: threshold,
+		// Channel buffer sized for rows
+		rowChan: make(chan []any, threshold),
+		rows:    make([][]any, 0, threshold),
 	}
 }
 
@@ -84,29 +73,26 @@ func (tw *TableWriter) Start(ctx context.Context, pool *pgxpool.Pool) {
 	go tw.run(ctx)
 }
 
-// run is the main writer loop - owns conversion, buffering, and flushing
+// run is the main writer loop - handles buffering and flushing
 func (tw *TableWriter) run(ctx context.Context) {
 	defer tw.wg.Done()
 
 	for {
 		select {
-		case record, ok := <-tw.recordChan:
+		case row, ok := <-tw.rowChan:
 			if !ok {
 				// Channel closed - flush remaining and exit
 				tw.flush(ctx)
 				return
 			}
 
-			// Conversion happens here, in the writer goroutine (parallel per table)
-			rows := tw.converter(record, tw.datafileID)
-			for _, row := range rows {
-				tw.rows = append(tw.rows, row)
-				if len(tw.rows) >= tw.threshold {
-					if err := tw.flush(ctx); err != nil {
-						tw.setError(err)
-						tw.drain()
-						return
-					}
+			// Just buffer the pre-converted row
+			tw.rows = append(tw.rows, row)
+			if len(tw.rows) >= tw.threshold {
+				if err := tw.flush(ctx); err != nil {
+					tw.setError(err)
+					tw.drain()
+					return
 				}
 			}
 
@@ -118,15 +104,15 @@ func (tw *TableWriter) run(ctx context.Context) {
 	}
 }
 
-// Send queues a ParsedRecord for conversion and writing
-func (tw *TableWriter) Send(ctx context.Context, record *schema.ParsedRecord) error {
+// SendRow queues a pre-converted []any row for writing
+func (tw *TableWriter) SendRow(ctx context.Context, row []any) error {
 	// Check for prior errors
 	if err := tw.getError(); err != nil {
 		return err
 	}
 
 	select {
-	case tw.recordChan <- record:
+	case tw.rowChan <- row:
 		return nil
 	case <-ctx.Done():
 		return ctx.Err()
@@ -135,7 +121,7 @@ func (tw *TableWriter) Send(ctx context.Context, record *schema.ParsedRecord) er
 
 // Stop closes the channel and waits for the goroutine to finish
 func (tw *TableWriter) Stop() error {
-	close(tw.recordChan)
+	close(tw.rowChan)
 	tw.wg.Wait()
 	return tw.getError()
 }
@@ -164,8 +150,8 @@ func (tw *TableWriter) flush(ctx context.Context) error {
 }
 
 func (tw *TableWriter) drain() {
-	for range tw.recordChan {
-		// Discard remaining records to unblock senders
+	for range tw.rowChan {
+		// Discard remaining rows to unblock senders
 	}
 }
 

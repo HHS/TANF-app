@@ -18,13 +18,17 @@ import (
 
 // WriterManager coordinates writes for any file type.
 // Writers are created dynamically based on the FileSpec.
+// WriterManager owns the converters and handles the full pipeline:
+// ParsedRecord -> convert -> release to pool -> send []any to writer
 type WriterManager struct {
 	pool       *pgxpool.Pool
 	datafileID int32
 
 	// Writers keyed by schema path (e.g., "tanf/t1", "tribal/t1")
-	// Direct TableWriter reference - no wrapper needed
 	writers map[string]*TableWriter
+
+	// Converters keyed by schema path - manager owns conversion
+	converters map[string]converter.RowConverter
 
 	errorWriter *TableWriter
 }
@@ -37,18 +41,25 @@ var parserErrorColumns = []string{
 	"object_id", "deprecated", "values_json",
 }
 
+// DefaultPoolPrewarmSize is the default number of records to pre-allocate per schema.
+// This should be at least 2x the number of worker goroutines.
+const DefaultPoolPrewarmSize = 16
+
 // NewWriterManager creates a manager based on the FileSpec.
 // Writers are created only for the record types in this specific file.
+// poolPrewarmSize specifies how many records to pre-allocate per schema (0 to skip).
 func NewWriterManager(
 	pool *pgxpool.Pool,
 	datafileID int32,
 	spec *filespec.FileSpec,
 	reg *registry.Registry,
+	poolPrewarmSize int,
 ) *WriterManager {
 	wm := &WriterManager{
 		pool:       pool,
 		datafileID: datafileID,
 		writers:    make(map[string]*TableWriter),
+		converters: make(map[string]converter.RowConverter),
 	}
 
 	// Create a writer for each data record type in the FileSpec
@@ -58,6 +69,11 @@ func NewWriterManager(
 		// Skip header/trailer - they don't get written to database
 		if sch.RecordType == "HEADER" || sch.RecordType == "TRAILER" {
 			continue
+		}
+
+		// Pre-warm the object pool for this schema to avoid allocation during parsing
+		if poolPrewarmSize > 0 {
+			sch.PrewarmPool(poolPrewarmSize)
 		}
 
 		// Get metadata (table name, columns derived from schema)
@@ -74,13 +90,14 @@ func NewWriterManager(
 			continue
 		}
 
-		// TableWriter now owns the converter - conversion happens in writer goroutine
+		// Store converter in manager (conversion happens in WriteRecord)
+		wm.converters[schemaPath] = conv
+
+		// Create simplified TableWriter that receives []any rows
 		wm.writers[schemaPath] = NewTableWriter(
 			meta.TableName,
 			meta.Columns,
 			DefaultFlushThreshold,
-			datafileID,
-			conv,
 		)
 
 		log.Printf("Created writer for %s -> %s (%d columns)",
@@ -104,14 +121,33 @@ func (wm *WriterManager) Start(ctx context.Context) {
 	}
 }
 
-// WriteRecord routes a record to the appropriate writer's channel.
-// No conversion here - writer handles it.
+// WriteRecord converts a record, releases it to pool, and sends rows to writer.
+// This is the release point for valid records in the normal flow.
 func (wm *WriterManager) WriteRecord(ctx context.Context, record *schema.ParsedRecord) error {
 	tw, ok := wm.writers[record.Schema.Path]
 	if !ok {
 		return fmt.Errorf("no writer for schema: %s", record.Schema.Path)
 	}
-	return tw.Send(ctx, record) // Send ParsedRecord directly
+
+	conv, ok := wm.converters[record.Schema.Path]
+	if !ok {
+		return fmt.Errorf("no converter for schema: %s", record.Schema.Path)
+	}
+
+	// Convert ParsedRecord to []any rows
+	rows := conv(record, wm.datafileID)
+
+	// Release record back to pool - it's no longer needed after conversion
+	record.Schema.ReleaseRecord(record)
+
+	// Send converted rows to writer
+	for _, row := range rows {
+		if err := tw.SendRow(ctx, row); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // WriteBatch routes all records in a batch to appropriate writers.

@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"runtime/pprof"
 	"sync"
 	"time"
 
@@ -23,7 +25,20 @@ import (
 	"go-parser/internal/writer"
 )
 
+var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
+var memprofile = flag.String("memprofile", "", "write memory profile to this file")
+
 func main() {
+	flag.Parse()
+    if *cpuprofile != "" {
+        f, err := os.Create(*cpuprofile)
+        if err != nil {
+            log.Fatal(err)
+        }
+        pprof.StartCPUProfile(f)
+        defer pprof.StopCPUProfile()
+    }
+
 	ctx := context.Background()
 
 	// Connect to database
@@ -173,7 +188,9 @@ func processFile(
 	workerPool.Start(ctx)
 
 	// Step 6: Create database writer (dynamically from FileSpec)
-	writerMgr := writer.NewWriterManager(pool, datafileID, spec, reg)
+	// Pre-warm object pools with 2x worker count to handle records in flight
+	poolPrewarmSize := 10000
+	writerMgr := writer.NewWriterManager(pool, datafileID, spec, reg, poolPrewarmSize)
 
 	// Step 7: Start all writer goroutines before result collection
 	writerMgr.Start(ctx)
@@ -327,6 +344,14 @@ func collectResults(
 	// Wait for all dispatchers to finish
 	wg.Wait()
 	close(errChan)
+	if *memprofile != "" {
+		f, err := os.Create(*memprofile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		pprof.WriteHeapProfile(f)
+		f.Close()
+	}
 
 	// Collect any errors from dispatchers
 	var errs []error

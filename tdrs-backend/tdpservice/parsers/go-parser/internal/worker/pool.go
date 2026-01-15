@@ -3,7 +3,6 @@ package worker
 import (
 	"context"
 	"log"
-	"maps"
 	"sync"
 
 	"go-parser/internal/filespec"
@@ -196,6 +195,7 @@ func (p *Pool) processGroup(group *processor.RecordGroup) *ParsedGroup {
 
 // parseRow parses a single row into one or more ParsedRecords.
 // For multi-segment schemas, one input line produces multiple records (one per segment).
+// Records are acquired from the schema's object pool and must be released after use.
 func (p *Pool) parseRow(line processor.RawLine) ([]*schema.ParsedRecord, error) {
 	numSegments := len(line.Schema.Segments)
 	if numSegments == 0 {
@@ -203,45 +203,46 @@ func (p *Pool) parseRow(line processor.RawLine) ([]*schema.ParsedRecord, error) 
 		return nil, nil
 	}
 
-	// Parse shared fields once (they're the same for all segments)
-	sharedFields := make(map[string]any, len(line.Schema.Shared))
+	// Parse shared fields once into a cache (one small allocation per row).
+	// We use a map here temporarily to collect shared values, then copy them
+	// into each record's indexed slice.
+	sharedCache := make(parser.MapFieldGetter, len(line.Schema.Shared))
 	for i := range line.Schema.Shared {
 		field := &line.Schema.Shared[i]
-		value, err := p.extractor.Extract(line.Row, field, p.parseCtx, sharedFields)
+		value, err := p.extractor.Extract(line.Row, field, p.parseCtx, sharedCache)
 		if err != nil {
 			continue
 		}
 		if value != nil {
-			sharedFields[field.Name] = value
+			sharedCache[field.Name] = value
 		}
 	}
 
-	// Parse each segment into a separate record
+	// Parse each segment into a separate record acquired from the pool
 	records := make([]*schema.ParsedRecord, 0, numSegments)
 	for segIdx, segment := range line.Schema.Segments {
-		// Calculate field capacity: shared + segment fields
-		fieldCount := len(sharedFields) + len(segment.Fields)
+		// Acquire record from pool (reuses memory, reduces GC pressure)
+		record := line.Schema.AcquireRecord()
+		record.LineNumber = line.Row.LineNum()
+		record.SegmentIndex = segIdx
 
-		record := &schema.ParsedRecord{
-			Schema:       line.Schema,
-			LineNumber:   line.Row.LineNum(),
-			SegmentIndex: segIdx,
-			Fields:       make(map[string]any, fieldCount),
+		// Copy cached shared fields into record using Set()
+		for name, value := range sharedCache {
+			record.Set(name, value)
 		}
 
-		// Copy shared fields into this record
-		maps.Copy(record.Fields, sharedFields)
-
-		// Parse segment-specific fields and track required fields
+		// Parse segment-specific fields directly into record using Set()
 		missingRequired := false
 		for i := range segment.Fields {
 			field := &segment.Fields[i]
-			value, err := p.extractor.Extract(line.Row, field, p.parseCtx, record.Fields)
+			// Create a temporary map-like interface for the extractor
+			// The extractor expects a map for lookups (e.g., source_field resolution)
+			value, err := p.extractor.Extract(line.Row, field, p.parseCtx, record)
 			if err != nil {
 				continue
 			}
 			if value != nil {
-				record.Fields[field.Name] = value
+				record.Set(field.Name, value)
 			} else if field.Required || segIdx >= 1 {
 				// TODO: do we generate an error here?
 				// Most multi record schemas don't have the 2 through N segment's field's marked as required.
@@ -252,12 +253,13 @@ func (p *Pool) parseRow(line processor.RawLine) ([]*schema.ParsedRecord, error) 
 			}
 		}
 
-		// Only include records where all required segment-specific fields have data.
-		// This matches Python behavior where empty segments (e.g., missing second child
-		// in T3 records) are not parsed.
-		if !missingRequired {
-			records = append(records, record)
+		if missingRequired {
+			// Invalid segment - release record back to pool immediately
+			line.Schema.ReleaseRecord(record)
+			continue
 		}
+
+		records = append(records, record)
 	}
 
 	return records, nil

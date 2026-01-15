@@ -1,13 +1,65 @@
 package schema
 
+import (
+	"sync"
+)
+
 // ParsedRecord represents a successfully parsed record.
 // For multi-segment schemas (T3, T6, T7), one input line produces multiple ParsedRecords.
 // This type is used for all record types including HEADER.
+//
+// Fields is a slice indexed by the schema's FieldIndex map. Use Get/Set methods
+// for field access, or access Fields directly by index for performance-critical code.
 type ParsedRecord struct {
 	Schema       *CompiledSchema
 	LineNumber   int
-	SegmentIndex int            // Which segment this record came from (0-indexed)
-	Fields       map[string]any // Contains shared fields + segment-specific fields
+	SegmentIndex int   // Which segment this record came from (0-indexed)
+	Fields       []any // Indexed by schema's FieldIndex map
+}
+
+// Get retrieves a field value by name.
+// Returns nil if the field doesn't exist or has no value.
+func (pr *ParsedRecord) Get(fieldName string) any {
+	idx, ok := pr.Schema.FieldIndex[fieldName]
+	if !ok {
+		return nil
+	}
+	return pr.Fields[idx]
+}
+
+// GetField implements the FieldGetter interface for use with extractors.
+// This allows ParsedRecord to be passed directly to Extract() for source field lookups.
+func (pr *ParsedRecord) GetField(fieldName string) any {
+	return pr.Get(fieldName)
+}
+
+// Set stores a field value by name.
+// No-op if the field name is not in the schema.
+func (pr *ParsedRecord) Set(fieldName string, value any) {
+	idx, ok := pr.Schema.FieldIndex[fieldName]
+	if ok {
+		pr.Fields[idx] = value
+	}
+}
+
+// GetString retrieves a field as a string.
+// Returns empty string if field is nil or not a string.
+func (pr *ParsedRecord) GetString(fieldName string) string {
+	v := pr.Get(fieldName)
+	if s, ok := v.(string); ok {
+		return s
+	}
+	return ""
+}
+
+// GetInt retrieves a field as an int.
+// Returns 0 if field is nil or not an int.
+func (pr *ParsedRecord) GetInt(fieldName string) int {
+	v := pr.Get(fieldName)
+	if i, ok := v.(int); ok {
+		return i
+	}
+	return 0
 }
 
 // ParseContext carries runtime information extracted from header
@@ -129,20 +181,47 @@ type CompiledSchema struct {
 
 	// SharedFieldsByName provides O(1) lookup for shared fields by name
 	SharedFieldsByName map[string]*FieldDef
+
+	// FieldIndex maps field name to index in ParsedRecord.Fields slice.
+	// Built at schema compile time for O(1) field access.
+	FieldIndex map[string]int
+
+	// FieldCount is the total number of field slots needed in ParsedRecord.Fields.
+	FieldCount int
+
+	// recordPool provides reusable ParsedRecord objects to reduce GC pressure.
+	recordPool sync.Pool
 }
 
-// Compile creates a CompiledSchema with lookup maps.
+// Compile creates a CompiledSchema with lookup maps and field indexing.
 func (s *SchemaDef) Compile() *CompiledSchema {
 	cs := &CompiledSchema{
 		SchemaDef:          s,
 		SharedFieldsByName: make(map[string]*FieldDef, len(s.Shared)),
+		FieldIndex:         make(map[string]int),
 	}
 
+	idx := 0
+
+	// Index shared fields first (present in all segments)
 	for i := range s.Shared {
 		field := &s.Shared[i]
 		cs.SharedFieldsByName[field.Name] = field
+		cs.FieldIndex[field.Name] = idx
+		idx++
 	}
 
+	// Index segment fields from first segment.
+	// All segments have the same field names (e.g., T3's two child segments
+	// both have FAMILY_AFFILIATION, SSN, etc.)
+	if len(s.Segments) > 0 {
+		for _, field := range s.Segments[0].Fields {
+			cs.FieldIndex[field.Name] = idx
+			idx++
+		}
+	}
+
+	cs.FieldCount = idx
 	return cs
 }
 
@@ -167,4 +246,50 @@ func (cs *CompiledSchema) GetSegmentField(segmentIndex int, name string) *FieldD
 		}
 	}
 	return nil
+}
+
+// AcquireRecord gets a record from the pool or creates a new one.
+// The returned record has Fields slice allocated but all values nil.
+func (cs *CompiledSchema) AcquireRecord() *ParsedRecord {
+	if r := cs.recordPool.Get(); r != nil {
+		rec := r.(*ParsedRecord)
+		// Reset fields but keep the backing array
+		rec.LineNumber = 0
+		rec.SegmentIndex = 0
+		for i := range rec.Fields {
+			rec.Fields[i] = nil
+		}
+		return rec
+	}
+	// Pool empty - allocate new record with correct capacity
+	return &ParsedRecord{
+		Schema: cs,
+		Fields: make([]any, cs.FieldCount),
+	}
+}
+
+// ReleaseRecord returns a record to the pool for reuse.
+// The record must not be used after calling this method.
+func (cs *CompiledSchema) ReleaseRecord(rec *ParsedRecord) {
+	// Only pool records that belong to this schema
+	if rec.Schema == cs {
+		cs.recordPool.Put(rec)
+	}
+}
+
+// PrewarmPool pre-allocates n records to avoid allocation during parsing.
+// Call this after schema compilation but before parsing begins.
+// A good value for n is 2x the number of worker goroutines.
+func (cs *CompiledSchema) PrewarmPool(n int) {
+	records := make([]*ParsedRecord, n)
+	for i := 0; i < n; i++ {
+		records[i] = &ParsedRecord{
+			Schema: cs,
+			Fields: make([]any, cs.FieldCount),
+		}
+	}
+	// Release all to pool
+	for _, rec := range records {
+		cs.recordPool.Put(rec)
+	}
 }

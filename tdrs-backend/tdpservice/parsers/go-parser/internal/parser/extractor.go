@@ -11,6 +11,21 @@ import (
 	"go-parser/internal/transform"
 )
 
+// FieldGetter provides access to previously extracted field values.
+// This interface is satisfied by both map[string]any (wrapped) and *schema.ParsedRecord.
+type FieldGetter interface {
+	// GetField returns the value for a field name, or nil if not found.
+	GetField(name string) any
+}
+
+// MapFieldGetter wraps a map[string]any to implement FieldGetter.
+type MapFieldGetter map[string]any
+
+// GetField implements FieldGetter for maps.
+func (m MapFieldGetter) GetField(name string) any {
+	return m[name]
+}
+
 // FieldExtractor extracts field values from rows based on the file format.
 type FieldExtractor interface {
 	// Extract extracts a field value from a row.
@@ -21,7 +36,7 @@ type FieldExtractor interface {
 		row decoder.Row,
 		field *schema.FieldDef,
 		ctx *schema.ParseContext,
-		extractedFields map[string]any,
+		extractedFields FieldGetter,
 	) (any, error)
 }
 
@@ -44,14 +59,14 @@ func (e *PositionalExtractor) Extract(
 	row decoder.Row,
 	field *schema.FieldDef,
 	ctx *schema.ParseContext,
-	extractedFields map[string]any,
+	extractedFields FieldGetter,
 ) (any, error) {
 	var rawValue string
 
 	if field.SourceField != "" {
 		// Computed field - get raw value from already-extracted field
-		src, ok := extractedFields[field.SourceField]
-		if !ok {
+		src := extractedFields.GetField(field.SourceField)
+		if src == nil {
 			return nil, fmt.Errorf("source field %s not found for computed field %s",
 				field.SourceField, field.Name)
 		}
@@ -90,14 +105,14 @@ func (e *ColumnarExtractor) Extract(
 	row decoder.Row,
 	field *schema.FieldDef,
 	ctx *schema.ParseContext,
-	extractedFields map[string]any,
+	extractedFields FieldGetter,
 ) (any, error) {
 	var rawValue string
 
 	if field.SourceField != "" {
 		// Computed field - get raw value from already-extracted field
-		src, ok := extractedFields[field.SourceField]
-		if !ok {
+		src := extractedFields.GetField(field.SourceField)
+		if src == nil {
 			return nil, fmt.Errorf("source field %s not found for computed field %s",
 				field.SourceField, field.Name)
 		}

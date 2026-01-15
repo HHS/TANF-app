@@ -11,18 +11,16 @@ import (
 // RecordType is always "TE1" for FRA records (not present in CSV data)
 
 func convertFraTE1(record *schema.ParsedRecord, datafileID int32) [][]any {
-	f := record.Fields
-
 	// RecordType defaults to "TE1" if not present in fields
-	recordType := toText(f["RecordType"])
+	recordType := toText(record.Get("RecordType"))
 	if !recordType.Valid {
 		recordType = pgtype.Text{String: "TE1", Valid: true}
 	}
 
 	rec := &db.SearchIndexesTanfExiter1{
 		RecordType: recordType,
-		EXITDATE:   toInt4(f["EXIT_DATE"]),
-		SSN:        toText(f["SSN"]),
+		EXITDATE:   toInt4(record.Get("EXIT_DATE")),
+		SSN:        toText(record.Get("SSN")),
 		ID:         newUUID(),
 		DatafileID: toDatafileID(datafileID),
 		LineNumber: toLineNumber(record.LineNumber),

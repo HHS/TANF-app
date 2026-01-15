@@ -35,16 +35,16 @@ func ParseHeader(row decoder.Row, headerSchema *schema.CompiledSchema) (*schema.
 		Header: record,
 	}
 
-	// Extract convenience fields from parsed record
-	if year, ok := record.Fields["year"].(int); ok {
+	// Extract convenience fields from parsed record using accessor methods
+	if year := record.GetInt("year"); year != 0 {
 		ctx.Year = year
 	}
 
-	if quarter, ok := record.Fields["quarter"].(string); ok {
+	if quarter := record.GetString("quarter"); quarter != "" {
 		ctx.Quarter = quarter
 	}
 
-	if encryption, ok := record.Fields["encryption"].(string); ok {
+	if encryption := record.GetString("encryption"); encryption != "" {
 		ctx.IsEncrypted = encryption == "E"
 	}
 
@@ -53,59 +53,53 @@ func ParseHeader(row decoder.Row, headerSchema *schema.CompiledSchema) (*schema.
 
 // ParseRecord parses a single row into a ParsedRecord using the given schema.
 // This is the same logic used by the worker pool for parsing data records.
+// Note: The returned record is acquired from the schema's object pool.
+// For header records (which are kept for the session), DO NOT release them.
 func ParseRecord(row decoder.Row, sch *schema.CompiledSchema) (*schema.ParsedRecord, error) {
 	// Get the appropriate extractor based on format
 	// Headers are always positional, but this keeps the pattern consistent
 	extractor := GetExtractor(filespec.FormatPositional)
 
-	// Parse shared fields first
-	sharedFields := make(map[string]any, len(sch.Shared))
+	// Parse shared fields into a temporary cache
+	sharedCache := make(MapFieldGetter, len(sch.Shared))
 	for i := range sch.Shared {
 		field := &sch.Shared[i]
-		value, err := extractor.Extract(row, field, nil, sharedFields)
+		value, err := extractor.Extract(row, field, nil, sharedCache)
 		if err != nil {
 			continue
 		}
 		if value != nil {
-			sharedFields[field.Name] = value
+			sharedCache[field.Name] = value
 		}
+	}
+
+	// Acquire record from pool (header records are kept, not released)
+	record := sch.AcquireRecord()
+	record.LineNumber = row.LineNum()
+	record.SegmentIndex = 0
+
+	// Copy shared fields into record
+	for name, value := range sharedCache {
+		record.Set(name, value)
 	}
 
 	// Parse segment fields (header has only one segment with no shared fields)
 	if len(sch.Segments) == 0 {
-		return &schema.ParsedRecord{
-			Schema:       sch,
-			LineNumber:   row.LineNum(),
-			SegmentIndex: 0,
-			Fields:       sharedFields,
-		}, nil
+		return record, nil
 	}
 
-	// Parse the first segment
+	// Parse the first segment fields directly into record
 	segment := sch.Segments[0]
-	fields := make(map[string]any, len(sharedFields)+len(segment.Fields))
-
-	// Copy shared fields
-	for k, v := range sharedFields {
-		fields[k] = v
-	}
-
-	// Parse segment fields
 	for i := range segment.Fields {
 		field := &segment.Fields[i]
-		value, err := extractor.Extract(row, field, nil, fields)
+		value, err := extractor.Extract(row, field, nil, record)
 		if err != nil {
 			continue
 		}
 		if value != nil {
-			fields[field.Name] = value
+			record.Set(field.Name, value)
 		}
 	}
 
-	return &schema.ParsedRecord{
-		Schema:       sch,
-		LineNumber:   row.LineNum(),
-		SegmentIndex: 0,
-		Fields:       fields,
-	}, nil
+	return record, nil
 }
