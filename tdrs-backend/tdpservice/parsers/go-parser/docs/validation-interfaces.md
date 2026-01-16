@@ -378,10 +378,20 @@ type Orchestrator struct {
     errorEngine     *ErrorEngine
 }
 
-// OrchestratorConfig defines category ordering and short-circuit rules
+// OrchestratorConfig defines category ordering, short-circuit rules, and defaults
 type OrchestratorConfig struct {
+    Categories        []CategoryConfig
     ExecutionOrder    []CategoryExecution
     ShortCircuitRules []ShortCircuitRule
+}
+
+// CategoryConfig defines a validation category and its defaults
+type CategoryConfig struct {
+    ID               int       `yaml:"id"`
+    Name             string    `yaml:"name"`
+    Scope            Scope     `yaml:"scope"`
+    DefaultErrorType ErrorType `yaml:"default_error_type"`
+    Description      string    `yaml:"description,omitempty"`
 }
 
 type CategoryExecution struct {
@@ -435,8 +445,36 @@ func (r *ValidatorRegistry) CreateValidator(rule *RuleConfig) (ValidatorFunc, er
 type RuleConfig struct {
     Validator       string         `yaml:"validator"`
     Params          map[string]any `yaml:"params"`
-    MessageOverride string         `yaml:"message_override,omitempty"`
+
+    // Inline overrides - highest priority
+    Message         string         `yaml:"message,omitempty"`          // Single-line message template
+    MessageTemplate string         `yaml:"message_template,omitempty"` // Multi-line message template
+    ErrorType       ErrorType      `yaml:"error_type,omitempty"`       // Override category default
+
+    // Metadata
     Deprecated      bool           `yaml:"deprecated,omitempty"`
+
+    // Source tracking (populated by config loader)
+    SourceFile      string         `yaml:"-"`
+    SourceLine      int            `yaml:"-"`
+}
+
+// HasMessageOverride returns true if this rule has an inline message override
+func (r *RuleConfig) HasMessageOverride() bool {
+    return r.Message != "" || r.MessageTemplate != ""
+}
+
+// GetMessageTemplate returns the message template, preferring MessageTemplate over Message
+func (r *RuleConfig) GetMessageTemplate() string {
+    if r.MessageTemplate != "" {
+        return r.MessageTemplate
+    }
+    return r.Message
+}
+
+// HasErrorTypeOverride returns true if this rule overrides the category error type
+func (r *RuleConfig) HasErrorTypeOverride() bool {
+    return r.ErrorType != ""
 }
 ```
 
@@ -445,24 +483,129 @@ type RuleConfig struct {
 ```go
 // internal/validation/registry/messages.go
 
-// MessageRegistry manages error message templates
+// MessageRegistry manages error message templates with hierarchical lookup
 type MessageRegistry struct {
-    templates map[string]*template.Template  // key: "validatorID" or "validatorID:schemaPath:fieldName"
-    mu        sync.RWMutex
+    // Default templates by validator ID
+    defaults map[string]*template.Template
+
+    // Schema-level overrides: "schemaPath:validatorID" -> template
+    schemaOverrides map[string]*template.Template
+
+    // Field-level overrides: "schemaPath:fieldName:validatorID" -> template
+    fieldOverrides map[string]*template.Template
+
+    mu sync.RWMutex
 }
 
-// GetTemplate retrieves the most specific template for a validation failure
-func (r *MessageRegistry) GetTemplate(validatorID, schemaPath, fieldName string) *template.Template
+// GetTemplate retrieves the most specific template for a validation failure.
+// Lookup priority (highest to lowest):
+//   1. Field-level override: overrides[schema][field][validator]
+//   2. Schema-level override: overrides[schema][validator]
+//   3. Default validator template: validators[validatorID]
+func (r *MessageRegistry) GetTemplate(validatorID, schemaPath, fieldName string) *template.Template {
+    r.mu.RLock()
+    defer r.mu.RUnlock()
+
+    // Priority 1: Field-level override
+    fieldKey := fmt.Sprintf("%s:%s:%s", schemaPath, fieldName, validatorID)
+    if tmpl, ok := r.fieldOverrides[fieldKey]; ok {
+        return tmpl
+    }
+
+    // Priority 2: Schema-level override
+    schemaKey := fmt.Sprintf("%s:%s", schemaPath, validatorID)
+    if tmpl, ok := r.schemaOverrides[schemaKey]; ok {
+        return tmpl
+    }
+
+    // Priority 3: Default template
+    return r.defaults[validatorID]
+}
 
 // internal/validation/errors/engine.go
 
 // ErrorEngine generates ParserError objects from validation failures
 type ErrorEngine struct {
-    messageReg *MessageRegistry
+    messageReg      *MessageRegistry
+    categoryConfigs map[int]*CategoryConfig  // For default error types
 }
 
-// GenerateError creates a ParserError from a ValidationResult and context
-func (e *ErrorEngine) GenerateError(result *ValidationResult, ctx *ValidationContext) *ParserError
+// GenerateError creates a ParserError from a ValidationResult, context, and rule config.
+// Resolution order for message template:
+//   1. rule.Message or rule.MessageTemplate (inline override)
+//   2. MessageRegistry lookup (schema/field/validator hierarchy)
+// Resolution order for error type:
+//   1. rule.ErrorType (inline override)
+//   2. CategoryConfig.DefaultErrorType
+//   3. Built-in default for category
+func (e *ErrorEngine) GenerateError(
+    result *ValidationResult,
+    ctx *ValidationContext,
+    rule *RuleConfig,
+) *ParserError {
+    // Resolve message template
+    var tmpl *template.Template
+    if rule.HasMessageOverride() {
+        tmpl = template.Must(template.New("inline").Parse(rule.GetMessageTemplate()))
+    } else {
+        tmpl = e.messageReg.GetTemplate(
+            result.ValidatorID,
+            ctx.SchemaPath,
+            ctx.Field.Name,
+        )
+    }
+
+    // Resolve error type
+    errorType := e.resolveErrorType(result.Category, rule)
+
+    // Build template context and render message
+    message := e.renderTemplate(tmpl, result, ctx)
+
+    return &ParserError{
+        RowNumber:    ctx.LineNumber,
+        ColumnNumber: ctx.Field.ItemNumber,
+        ItemNumber:   ctx.Field.ItemNumber,
+        FieldName:    ctx.Field.Name,
+        RptMonthYear: ctx.Group.KeyFields["RPT_MONTH_YEAR"],
+        CaseNumber:   ctx.Group.KeyFields["CASE_NUMBER"],
+        ErrorMessage: message,
+        ErrorType:    errorType,
+        Category:     result.Category,
+        ValidatorID:  result.ValidatorID,
+        SchemaPath:   ctx.SchemaPath,
+        FieldsJSON:   e.buildFieldsJSON(ctx),
+        ValuesJSON:   e.buildValuesJSON(ctx),
+        Deprecated:   rule.Deprecated,
+        ConfigSource: fmt.Sprintf("%s:%d", rule.SourceFile, rule.SourceLine),
+    }
+}
+
+// resolveErrorType determines the error type using the override hierarchy
+func (e *ErrorEngine) resolveErrorType(category int, rule *RuleConfig) ErrorType {
+    // Priority 1: Rule-level override
+    if rule.HasErrorTypeOverride() {
+        return rule.ErrorType
+    }
+
+    // Priority 2: Category default
+    if cfg, ok := e.categoryConfigs[category]; ok && cfg.DefaultErrorType != "" {
+        return cfg.DefaultErrorType
+    }
+
+    // Priority 3: Built-in defaults
+    switch category {
+    case 1:
+        return ErrorTypePreCheck
+    case 2:
+        return ErrorTypeFieldValue
+    case 3:
+        return ErrorTypeValueConsistency
+    case 4:
+        return ErrorTypeCaseConsistency
+    default:
+        return ErrorType(fmt.Sprintf("CATEGORY_%d", category))
+    }
+}
 
 // ParserError represents a validation error to be persisted
 type ParserError struct {
@@ -473,7 +616,7 @@ type ParserError struct {
     RptMonthYear  string
     CaseNumber    string
     ErrorMessage  string
-    ErrorType     ErrorType  // FIELD_VALUE, VALUE_CONSISTENCY, etc.
+    ErrorType     ErrorType  // Resolved from rule -> category -> default
     Category      int
     ValidatorID   string
     SchemaPath    string
@@ -485,6 +628,7 @@ type ParserError struct {
     ConfigSource  string  // e.g., "config/validation/rules/tanf/t1.yaml:42"
 }
 
+// ErrorType represents the classification of a validation error
 type ErrorType string
 
 const (
@@ -492,6 +636,7 @@ const (
     ErrorTypeFieldValue       ErrorType = "FIELD_VALUE"
     ErrorTypeValueConsistency ErrorType = "VALUE_CONSISTENCY"
     ErrorTypeCaseConsistency  ErrorType = "CASE_CONSISTENCY"
+    // Custom error types can be defined in config
 )
 ```
 
@@ -878,5 +1023,24 @@ This architecture provides:
 | Separation of concerns | Registry (config) → Engine (execution) → Error Engine (output) |
 | Observability | Structured logging, config source tracking, validation traces |
 | Python pain points addressed | No decorator magic, explicit flow, debuggable config |
+| **Error type overrides** | Rule-level → Category-level → Built-in defaults |
+| **Message template overrides** | Inline rule → Field override → Schema override → Default |
+
+### Override Hierarchy Summary
+
+**Error Type Resolution:**
+```
+1. rule.error_type        (inline in rules YAML)
+2. category.default_error_type  (in orchestrator.yaml)
+3. Built-in default       (PRE_CHECK, FIELD_VALUE, etc.)
+```
+
+**Message Template Resolution:**
+```
+1. rule.message / rule.message_template  (inline in rules YAML)
+2. overrides[schema][field][validator]   (in messages YAML)
+3. overrides[schema][validator]          (in messages YAML)
+4. validators[validatorID].template      (in messages YAML)
+```
 
 The key insight is treating validation as a **configurable pipeline** rather than hard-coded logic, enabling most changes through YAML while providing clear extension points for new functionality.

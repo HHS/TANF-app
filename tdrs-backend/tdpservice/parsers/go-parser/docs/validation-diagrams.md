@@ -232,43 +232,75 @@ flowchart LR
     VREG -.->|validator IDs| MREG
 ```
 
-## 7. Error Generation Flow
+## 7. Error Generation Flow with Override Resolution
 
 ```mermaid
 flowchart TB
-    FAILURE["Validation Failure<br/>{ValidatorID, Params, FieldValue}"]
+    FAILURE["Validation Failure<br/>{ValidatorID, Category, RuleConfig}"]
 
-    subgraph LOOKUP["Template Lookup"]
-        CHECK1{"Schema-specific<br/>override?"}
-        CHECK2{"Field-specific<br/>override?"}
-        DEFAULT["Default template"]
+    subgraph MSG_RESOLVE["Message Template Resolution"]
+        MSG_P1{"rule.message or<br/>rule.message_template?"}
+        MSG_P2{"Field override in<br/>messages YAML?"}
+        MSG_P3{"Schema override in<br/>messages YAML?"}
+        MSG_DEFAULT["Default validator<br/>template"]
+    end
+
+    subgraph ERR_RESOLVE["Error Type Resolution"]
+        ERR_P1{"rule.error_type<br/>set?"}
+        ERR_P2{"category.default_error_type<br/>set?"}
+        ERR_DEFAULT["Built-in default<br/>(FIELD_VALUE, etc.)"]
     end
 
     subgraph BUILD["Context Building"]
-        RECORD_CTX["Record Context<br/>(type, line#)"]
-        FIELD_CTX["Field Context<br/>(name, item#, value)"]
-        GROUP_CTX["Group Context<br/>(case#, RPT_MONTH_YEAR)"]
-        PARAMS_CTX["Validator Params<br/>(min, max, etc.)"]
+        RECORD_CTX["Record Context"]
+        FIELD_CTX["Field Context"]
+        GROUP_CTX["Group Context"]
+        PARAMS_CTX["Validator Params"]
     end
 
-    subgraph RENDER["Message Rendering"]
-        TEMPLATE["Go Template<br/>text/template"]
-        MESSAGE["Error Message"]
-    end
+    RENDER["Render Template"]
+    PARSER_ERROR["ParserError<br/>{ErrorMessage, ErrorType, ...}"]
 
-    PARSER_ERROR["ParserError<br/>{all fields populated}"]
+    FAILURE --> MSG_P1
+    MSG_P1 -->|Yes| BUILD
+    MSG_P1 -->|No| MSG_P2
+    MSG_P2 -->|Yes| BUILD
+    MSG_P2 -->|No| MSG_P3
+    MSG_P3 -->|Yes| BUILD
+    MSG_P3 -->|No| MSG_DEFAULT --> BUILD
 
-    FAILURE --> CHECK1
-    CHECK1 -->|Yes| BUILD
-    CHECK1 -->|No| CHECK2
-    CHECK2 -->|Yes| BUILD
-    CHECK2 -->|No| DEFAULT --> BUILD
+    FAILURE --> ERR_P1
+    ERR_P1 -->|Yes| PARSER_ERROR
+    ERR_P1 -->|No| ERR_P2
+    ERR_P2 -->|Yes| PARSER_ERROR
+    ERR_P2 -->|No| ERR_DEFAULT --> PARSER_ERROR
 
-    RECORD_CTX & FIELD_CTX & GROUP_CTX & PARAMS_CTX --> TEMPLATE
-    TEMPLATE --> MESSAGE --> PARSER_ERROR
+    BUILD --> RENDER --> PARSER_ERROR
 ```
 
-## 8. Package Structure
+## 8. Override Hierarchy
+
+```mermaid
+flowchart LR
+    subgraph MESSAGE["Message Template Priority"]
+        direction TB
+        M1["1. rule.message<br/>(inline in rules.yaml)"]
+        M2["2. overrides[schema][field][validator]<br/>(in messages.yaml)"]
+        M3["3. overrides[schema][validator]<br/>(in messages.yaml)"]
+        M4["4. validators[id].template<br/>(default in messages.yaml)"]
+        M1 --> M2 --> M3 --> M4
+    end
+
+    subgraph ERRTYPE["Error Type Priority"]
+        direction TB
+        E1["1. rule.error_type<br/>(inline in rules.yaml)"]
+        E2["2. category.default_error_type<br/>(in orchestrator.yaml)"]
+        E3["3. Built-in default<br/>(PRE_CHECK, FIELD_VALUE, etc.)"]
+        E1 --> E2 --> E3
+    end
+```
+
+## 9. Package Structure
 
 ```mermaid
 flowchart TB
@@ -314,7 +346,7 @@ flowchart TB
     ERRORS --> EXISTING_WRITER
 ```
 
-## 9. Adding a New Category
+## 10. Adding a New Category
 
 ```mermaid
 flowchart TB
@@ -347,7 +379,7 @@ flowchart TB
     NOTE["Most new categories<br/>only need Steps 1, 3-5<br/>(reuse existing scopes)"]
 ```
 
-## 10. Validator Composition
+## 11. Validator Composition
 
 ```mermaid
 flowchart LR

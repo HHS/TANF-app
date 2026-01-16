@@ -374,6 +374,44 @@ short_circuit_rules:
     skip_categories: []
 ```
 
+### 4.4 Category Error Type Configuration
+
+Each category has a default error type, but this can be overridden at multiple levels:
+
+```yaml
+# config/validation/orchestrator.yaml
+categories:
+  - id: 1
+    name: "Pre-Parsing"
+    scope: record
+    default_error_type: PRE_CHECK
+
+  - id: 2
+    name: "Field-Level"
+    scope: field
+    default_error_type: FIELD_VALUE
+
+  - id: 3
+    name: "Cross-Field"
+    scope: record
+    default_error_type: VALUE_CONSISTENCY
+
+  - id: 4
+    name: "Group-Level"
+    scope: group
+    default_error_type: CASE_CONSISTENCY
+
+  - id: 5  # Future category example
+    name: "File-Level"
+    scope: file
+    default_error_type: FILE_LEVEL_ERROR  # Custom error type
+```
+
+**Override precedence** (highest to lowest):
+1. Rule-level `error_type` in validation rules file
+2. Category-level `default_error_type` in orchestrator config
+3. Built-in defaults
+
 ---
 
 ## 5. Error Generation Flow
@@ -394,26 +432,45 @@ short_circuit_rules:
 │  │      Category: 2,                                                            │    │
 │  │      FieldName: "FUNDING_STREAM",                                           │    │
 │  │      FieldValue: "5",                                                        │    │
-│  │      RuleConfig: {min: 1, max: 2},                                          │    │
+│  │      RuleConfig: {min: 1, max: 2, message: "...", error_type: "..."},       │    │
 │  │  }                                                                           │    │
 │  └─────────────────────────────────────────────────────────────────────────────┘    │
 │      │                                                                               │
 │      ▼                                                                               │
 │  ┌─────────────────────────────────────────────────────────────────────────────┐    │
-│  │  Error Engine                                                                │    │
+│  │  Error Engine - Template Resolution                                          │    │
 │  │                                                                              │    │
-│  │  1. Look up message template by (ValidatorID, Category)                     │    │
-│  │     Template: "{{.RecordType}} Item {{.ItemNum}} ({{.FriendlyName}}):       │    │
-│  │                {{.Value}} is not between {{.Min}} and {{.Max}}."            │    │
+│  │  1. Resolve message template (highest priority wins):                       │    │
+│  │     ┌─────────────────────────────────────────────────────────────────┐     │    │
+│  │     │  PRIORITY 1: Rule-level inline message                          │     │    │
+│  │     │    rule.message or rule.message_template (from rules YAML)      │     │    │
+│  │     ├─────────────────────────────────────────────────────────────────┤     │    │
+│  │     │  PRIORITY 2: Schema+Field override in messages YAML             │     │    │
+│  │     │    overrides[schema][field][validator].template                 │     │    │
+│  │     ├─────────────────────────────────────────────────────────────────┤     │    │
+│  │     │  PRIORITY 3: Schema override in messages YAML                   │     │    │
+│  │     │    overrides[schema][validator].template                        │     │    │
+│  │     ├─────────────────────────────────────────────────────────────────┤     │    │
+│  │     │  PRIORITY 4: Default validator template                         │     │    │
+│  │     │    validators[validatorID].template                             │     │    │
+│  │     └─────────────────────────────────────────────────────────────────┘     │    │
 │  │                                                                              │    │
-│  │  2. Build template context from:                                            │    │
-│  │     • ValidationResult                                                       │    │
-│  │     • FieldMetadata (from schema)                                           │    │
+│  │  2. Resolve error type (highest priority wins):                             │    │
+│  │     ┌─────────────────────────────────────────────────────────────────┐     │    │
+│  │     │  PRIORITY 1: Rule-level error_type (from rules YAML)            │     │    │
+│  │     ├─────────────────────────────────────────────────────────────────┤     │    │
+│  │     │  PRIORITY 2: Category default_error_type (from orchestrator)    │     │    │
+│  │     ├─────────────────────────────────────────────────────────────────┤     │    │
+│  │     │  PRIORITY 3: Built-in default for category                      │     │    │
+│  │     └─────────────────────────────────────────────────────────────────┘     │    │
+│  │                                                                              │    │
+│  │  3. Build template context from:                                            │    │
+│  │     • ValidationResult (params, values)                                     │    │
+│  │     • FieldMetadata (friendly name, item number)                           │    │
 │  │     • RecordMetadata (line number, record type)                             │    │
 │  │     • GroupMetadata (case number, RPT_MONTH_YEAR)                           │    │
 │  │                                                                              │    │
-│  │  3. Execute template                                                         │    │
-│  │     Output: "T1 Item 8 (Funding Stream): 5 is not between 1 and 2."        │    │
+│  │  4. Execute template → Error message string                                 │    │
 │  └─────────────────────────────────────────────────────────────────────────────┘    │
 │      │                                                                               │
 │      ▼                                                                               │
@@ -426,8 +483,8 @@ short_circuit_rules:
 │  │      FieldName: "FUNDING_STREAM",                                           │    │
 │  │      RptMonthYear: "202001",                                                │    │
 │  │      CaseNumber: "CASE12345",                                               │    │
-│  │      ErrorMessage: "T1 Item 8 (Funding Stream): 5 is not between 1 and 2.",│    │
-│  │      ErrorType: "FIELD_VALUE",                                              │    │
+│  │      ErrorMessage: "Funding Stream must be 1 or 2, but got 5.",            │    │
+│  │      ErrorType: "FIELD_VALUE",        ← resolved from rule or category      │    │
 │  │      Category: 2,                                                            │    │
 │  │      ValidatorID: "isInRange",                                              │    │
 │  │      SchemaPath: "tanf/t1",                                                 │    │
@@ -538,12 +595,14 @@ category1:  # Pre-parsing validators
     params:
       min: 117
       max: 156
-    message_override: null  # Use default message
+    # No message override - uses default template
 
   - validator: caseNumberNotEmpty
     params:
       start: 8
       end: 19
+    # Override error type for this specific rule
+    error_type: CRITICAL_PRE_CHECK
 
 category2:  # Field-level validators
   fields:
@@ -559,12 +618,24 @@ category2:  # Field-level validators
           min: 1
           max: 2
           inclusive: true
+        # Inline message override - highest priority
+        message: "Funding Stream must be 1 (Federal TANF) or 2 (Separate State Program), but got {{.Value}}."
 
     COUNTY_FIPS_CODE:
       - validator: hasLength
         params:
           length: 3
       - validator: isNumeric
+
+    STRATUM:
+      - validator: isOneOf
+        params:
+          values: [1, 2, 3, 4, 5, 6, 99]
+        # Multi-line message template for complex errors
+        message_template: |
+          {{.RecordType}} Item {{.ItemNum}} ({{.FriendlyName}}):
+          Value {{.Value}} is not a valid stratum.
+          Valid values are: 1-6 (state-defined) or 99 (not stratified).
 
 category3:  # Cross-field validators
   - validator: ifThenAlso
@@ -575,12 +646,30 @@ category3:  # Cross-field validators
       result_field: NBR_MONTHS
       result: isGreaterThan
       result_value: 0
+    # Override both message and error type
+    message: "When Cash Amount ({{.ConditionValue}}) is positive, Number of Months must also be positive (got {{.ResultValue}})."
+    error_type: BUSINESS_RULE_VIOLATION
 
   - validator: sumIsGreaterThan
     params:
       fields: [CASH_AMOUNT, CC_AMOUNT, TRANSP_AMOUNT]
       threshold: 0
 ```
+
+### Rule Configuration Options
+
+Each rule in the validation rules file supports these optional fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `validator` | string | **Required.** Validator ID (e.g., "isInRange", "hasLength") |
+| `params` | object | Parameters passed to the validator factory |
+| `message` | string | Inline message template (single line) |
+| `message_template` | string | Inline message template (multi-line, YAML literal block) |
+| `error_type` | string | Override the category's default error type |
+| `deprecated` | bool | Mark this rule as deprecated (errors still generated but flagged) |
+
+**Note:** `message` and `message_template` are mutually exclusive. Use `message` for simple one-liners and `message_template` for complex multi-line messages.
 
 ### Example: Error Message Templates
 
