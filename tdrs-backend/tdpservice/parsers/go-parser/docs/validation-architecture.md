@@ -1,4 +1,4 @@
-f# Go Validation Architecture Design
+# Go Validation Architecture Design
 
 ## Overview
 
@@ -414,90 +414,78 @@ categories:
 
 ---
 
-## 5. Error Generation Flow
+## 5. Lazy Error Generation
+
+Error messages are rendered **lazily** at write time to minimize memory usage during validation. ValidationResult stores pointers to existing structs rather than copying data.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
-│                              ERROR GENERATION SYSTEM                                 │
+│                           LAZY ERROR GENERATION SYSTEM                               │
 ├─────────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                      │
-│  Validation Failure                                                                  │
+│  Validation Failure (hot path - minimal allocations)                                │
 │      │                                                                               │
 │      ▼                                                                               │
 │  ┌─────────────────────────────────────────────────────────────────────────────┐    │
-│  │  ValidationResult                                                            │    │
+│  │  ValidationResult (from pool, ~80 bytes)                                    │    │
 │  │  {                                                                           │    │
 │  │      Valid: false,                                                           │    │
 │  │      ValidatorID: "isInRange",                                              │    │
 │  │      Category: 2,                                                            │    │
-│  │      FieldName: "FUNDING_STREAM",                                           │    │
-│  │      FieldValue: "5",                                                        │    │
-│  │      RuleConfig: {min: 1, max: 2, message: "...", error_type: "..."},       │    │
+│  │      FieldIndex: 5,                   // Index into record.Fields           │    │
+│  │      FailReason: "",                  // Optional: multi-mode validators    │    │
+│  │      Rule: *RuleConfig,               // Pointer to rule (has params)       │    │
+│  │      Record: *ParsedRecord,           // Pointer to existing record         │    │
+│  │      Schema: *CompiledSchema,         // Pointer to existing schema         │    │
+│  │      Group: *RecordGroup,             // Pointer to existing group          │    │
+│  │  }                                                                           │    │
+│  └─────────────────────────────────────────────────────────────────────────────┘    │
+│      │                                                                               │
+│      │  Accumulated during validation (thousands of results, minimal memory)        │
+│      │                                                                               │
+│      ▼                                                                               │
+│  ┌─────────────────────────────────────────────────────────────────────────────┐    │
+│  │  Error Writer Flush (cold path - message rendering happens here)            │    │
+│  │                                                                              │    │
+│  │  for each ValidationResult {                                                │    │
+│  │      1. Resolve message template:                                           │    │
+│  │         rule.message > overrides[schema][field] > overrides[schema] > default│    │
+│  │                                                                              │    │
+│  │      2. Resolve error type:                                                 │    │
+│  │         rule.error_type > category.default_error_type > built-in            │    │
+│  │                                                                              │    │
+│  │      3. Build template context from pointers:                               │    │
+│  │         • result.Record.LineNumber                                          │    │
+│  │         • result.Schema.Fields[result.FieldIndex] → name, item, friendly    │    │
+│  │         • result.Record.Fields[result.FieldIndex] → value                   │    │
+│  │         • result.Group.KeyFields → CASE_NUMBER, RPT_MONTH_YEAR             │    │
+│  │         • result.Rule.Params → min, max, etc.                              │    │
+│  │                                                                              │    │
+│  │      4. Execute template → Error message string                             │    │
+│  │                                                                              │    │
+│  │      5. Build ParserError and write to database                            │    │
+│  │                                                                              │    │
+│  │      6. Return ValidationResult to pool                                     │    │
 │  │  }                                                                           │    │
 │  └─────────────────────────────────────────────────────────────────────────────┘    │
 │      │                                                                               │
 │      ▼                                                                               │
-│  ┌─────────────────────────────────────────────────────────────────────────────┐    │
-│  │  Error Engine - Template Resolution                                          │    │
-│  │                                                                              │    │
-│  │  1. Resolve message template (highest priority wins):                       │    │
-│  │     ┌─────────────────────────────────────────────────────────────────┐     │    │
-│  │     │  PRIORITY 1: Rule-level inline message                          │     │    │
-│  │     │    rule.message or rule.message_template (from rules YAML)      │     │    │
-│  │     ├─────────────────────────────────────────────────────────────────┤     │    │
-│  │     │  PRIORITY 2: Schema+Field override in messages YAML             │     │    │
-│  │     │    overrides[schema][field][validator].template                 │     │    │
-│  │     ├─────────────────────────────────────────────────────────────────┤     │    │
-│  │     │  PRIORITY 3: Schema override in messages YAML                   │     │    │
-│  │     │    overrides[schema][validator].template                        │     │    │
-│  │     ├─────────────────────────────────────────────────────────────────┤     │    │
-│  │     │  PRIORITY 4: Default validator template                         │     │    │
-│  │     │    validators[validatorID].template                             │     │    │
-│  │     └─────────────────────────────────────────────────────────────────┘     │    │
-│  │                                                                              │    │
-│  │  2. Resolve error type (highest priority wins):                             │    │
-│  │     ┌─────────────────────────────────────────────────────────────────┐     │    │
-│  │     │  PRIORITY 1: Rule-level error_type (from rules YAML)            │     │    │
-│  │     ├─────────────────────────────────────────────────────────────────┤     │    │
-│  │     │  PRIORITY 2: Category default_error_type (from orchestrator)    │     │    │
-│  │     ├─────────────────────────────────────────────────────────────────┤     │    │
-│  │     │  PRIORITY 3: Built-in default for category                      │     │    │
-│  │     └─────────────────────────────────────────────────────────────────┘     │    │
-│  │                                                                              │    │
-│  │  3. Build template context from:                                            │    │
-│  │     • ValidationResult (params, values)                                     │    │
-│  │     • FieldMetadata (friendly name, item number)                           │    │
-│  │     • RecordMetadata (line number, record type)                             │    │
-│  │     • GroupMetadata (case number, RPT_MONTH_YEAR)                           │    │
-│  │                                                                              │    │
-│  │  4. Execute template → Error message string                                 │    │
-│  └─────────────────────────────────────────────────────────────────────────────┘    │
-│      │                                                                               │
-│      ▼                                                                               │
-│  ┌─────────────────────────────────────────────────────────────────────────────┐    │
-│  │  ParserError                                                                 │    │
-│  │  {                                                                           │    │
-│  │      RowNumber: 42,                                                          │    │
-│  │      ColumnNumber: "8",                                                      │    │
-│  │      ItemNumber: "8",                                                        │    │
-│  │      FieldName: "FUNDING_STREAM",                                           │    │
-│  │      RptMonthYear: "202001",                                                │    │
-│  │      CaseNumber: "CASE12345",                                               │    │
-│  │      ErrorMessage: "Funding Stream must be 1 or 2, but got 5.",            │    │
-│  │      ErrorType: "FIELD_VALUE",        ← resolved from rule or category      │    │
-│  │      Category: 2,                                                            │    │
-│  │      ValidatorID: "isInRange",                                              │    │
-│  │      SchemaPath: "tanf/t1",                                                 │    │
-│  │      FieldsJSON: {...},                                                      │    │
-│  │      ValuesJSON: {...},                                                      │    │
-│  │  }                                                                           │    │
-│  └─────────────────────────────────────────────────────────────────────────────┘    │
-│      │                                                                               │
-│      ▼                                                                               │
-│  Error Writer → PostgreSQL parser_errors table                                      │
+│  PostgreSQL parser_errors table                                                     │
 │                                                                                      │
 └──────────────────────────────────────────────────────────────────────────────────────┘
 ```
+
+### 5.1 Memory Efficiency
+
+| Stage | Memory per Error | Notes |
+|-------|------------------|-------|
+| ValidationResult | ~80 bytes | Pointers only, from pool |
+| ParserError | ~200+ bytes | Only created at write time |
+| Rendered message | Variable | Created, written, discarded |
+
+With lazy generation, validating 1 million records with 100,000 errors uses:
+- **During validation**: ~8 MB (100K × 80 bytes)
+- **Without lazy generation**: ~20+ MB (100K × 200+ bytes, plus string allocations)
 
 ---
 
@@ -510,9 +498,9 @@ internal/
 │   ├── orchestrator_test.go
 │   ├── engine.go                 # Per-category validation engine
 │   ├── engine_test.go
-│   ├── result.go                 # ValidationResult, GroupResult types
-│   ├── context.go                # ValidationContext passed to validators
-│   ├── pool.go                   # Validation worker pool
+│   ├── types.go                  # ValidatorFunc, ValidationResult, ValidationContext
+│   ├── pools.go                  # Object pools for context and results (prewarmable)
+│   ├── pools_test.go
 │   │
 │   ├── registry/                 # Validator and message registries
 │   │   ├── validators.go         # Validator registration and lookup
@@ -525,18 +513,18 @@ internal/
 │   │   ├── string.go             # isEmpty, startsWith, hasLength, etc.
 │   │   ├── numeric.go            # isNumber, isInRange, etc.
 │   │   ├── date.go               # dateYearIsLargerThan, dateMonthIsValid, etc.
-│   │   ├── category1.go          # Pre-parsing validators
+│   │   ├── category1.go          # Pre-parsing validators (row-level)
 │   │   ├── category3.go          # Cross-field validators (ifThenAlso, etc.)
 │   │   ├── category4.go          # Group-level validators
 │   │   └── validators_test.go
 │   │
-│   ├── errors/                   # Error generation
-│   │   ├── engine.go             # Error message rendering
+│   ├── errors/                   # Lazy error generation
+│   │   ├── engine.go             # Error rendering at write time
 │   │   ├── templates.go          # Template functions and helpers
 │   │   └── types.go              # ParserError type
 │   │
 │   └── config/                   # Validation config types
-│       ├── types.go              # ValidatorConfig, RuleConfig, etc.
+│       ├── types.go              # RuleConfig, CategoryConfig, etc.
 │       └── loader.go             # Load validation rules from YAML
 │
 ├── registry/                     # EXISTING: Schema registry (enhanced)
@@ -549,7 +537,7 @@ internal/
 │
 └── writer/                       # EXISTING: Enhanced with error writing
     ├── router.go
-    └── error_writer.go           # NEW: Write ParserError records
+    └── error_writer.go           # NEW: Write ParserError records, lazy rendering
 ```
 
 ---

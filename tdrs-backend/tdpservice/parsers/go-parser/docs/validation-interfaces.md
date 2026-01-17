@@ -39,13 +39,20 @@ func init() {
 func IsMultipleOf(params map[string]any) ValidatorFunc {
     divisor := params["divisor"].(int)
 
-    return func(ctx *ValidationContext, value any) *ValidationResult {
+    // Return unified ValidatorFunc signature
+    return func(ctx *ValidationContext) *ValidationResult {
+        // Get value from context (Cat 2 uses FieldValue())
+        value := ctx.FieldValue()
         num, ok := toInt(value)
         if !ok {
             return &ValidationResult{
                 Valid:       false,
                 ValidatorID: "isMultipleOf",
+                Category:    2,
+                FieldIndex:  ctx.FieldIndex,
                 FailReason:  "not_a_number",
+                Record:      ctx.Record,
+                Schema:      ctx.Schema,
             }
         }
 
@@ -53,7 +60,10 @@ func IsMultipleOf(params map[string]any) ValidatorFunc {
             return &ValidationResult{
                 Valid:       false,
                 ValidatorID: "isMultipleOf",
-                Params:      params,
+                Category:    2,
+                FieldIndex:  ctx.FieldIndex,
+                Record:      ctx.Record,
+                Schema:      ctx.Schema,
             }
         }
 
@@ -98,10 +108,10 @@ categories:
     description: "Validates relationships across entire file"
 
 execution_order:
-  - category: 4
-    scope: group
   - category: 5                    # New category
     scope: file
+  - category: 4
+    scope: group
   - category: 1
     scope: record
   - category: 2
@@ -171,232 +181,260 @@ category5:
 
 ## 9. Go Interface Definitions
 
-### 9.1 Core Validator Interface
+### 9.1 Unified Validator Interface
 
 ```go
 // internal/validation/types.go
 
-// ValidatorFunc is the core validator function signature.
-// It receives a context with all metadata and the value(s) to validate.
-// Returns a result indicating validity and any failure details.
-type ValidatorFunc func(ctx *ValidationContext, value any) *ValidationResult
+// ValidatorFunc is the unified signature for ALL category validators.
+// Validators access only what they need from the context.
+type ValidatorFunc func(ctx *ValidationContext) *ValidationResult
 
-// ValidatorFactory creates a ValidatorFunc from configuration parameters.
-// This allows validators to be configured at load time with specific params.
+// ValidatorFactory creates a configured ValidatorFunc from YAML parameters.
 type ValidatorFactory func(params map[string]any) ValidatorFunc
-
-// Validator is the interface for named, configurable validators.
-type Validator interface {
-    // ID returns the unique identifier for this validator (e.g., "isInRange")
-    ID() string
-
-    // Category returns which category this validator belongs to (1-4+)
-    Category() int
-
-    // Validate performs the validation
-    Validate(ctx *ValidationContext, value any) *ValidationResult
-}
 ```
 
-### 9.2 Validation Context
+### 9.2 Validation Context (Pooled)
+
+The context is minimal - no redundant structs. Validators access what they need directly.
+All pointers reference existing objects; no data is copied.
 
 ```go
-// internal/validation/context.go
+// internal/validation/types.go
 
-// ValidationContext provides all metadata needed by validators.
-// It is passed through the validation pipeline and enriched at each stage.
+// ValidationContext provides inputs for all validator categories.
+// Validators access only what's relevant to their category.
+// Pooled and reused to minimize GC pressure.
 type ValidationContext struct {
-    // Record-level context
-    Record       *schema.ParsedRecord
-    RawRow       decoder.Row
-    Schema       *schema.CompiledSchema
-    SchemaPath   string
-    LineNumber   int
-    SegmentIndex int
+    // Shared across all categories (set once per file)
+    DatafileID  int32
+    ParseCtx    *schema.ParseContext  // Existing struct: Year, Quarter, IsEncrypted
 
-    // Field-level context (populated for Cat 2)
-    Field        *FieldContext
+    // Row/Field/Record categories (Cat 1, 2, 3)
+    Row         decoder.Row              // Raw row data
+    Schema      *schema.CompiledSchema   // Record schema (has FieldDefs)
+    Record      *schema.ParsedRecord     // Parsed record (nil for Cat 1)
 
-    // Group-level context (populated for Cat 4)
-    Group        *GroupContext
+    // Field category only (Cat 2)
+    FieldIndex  int                      // Index into Record.Fields and Schema.Fields
+    FieldDef    *schema.FieldDef         // Pointer to field definition
 
-    // File-level context
-    File         *FileContext
-
-    // Parse context from header
-    ParseCtx     *schema.ParseContext
-
-    // For tracing/debugging
-    TraceID      string
+    // Group category only (Cat 4)
+    Group       *processor.RecordGroup   // Existing struct: Key, KeyFields, Lines
+    FileSpec    *filespec.FileSpec       // File specification
 }
 
-// FieldContext contains field-specific metadata
-type FieldContext struct {
-    Name         string
-    FriendlyName string
-    ItemNumber   string
-    Position     Position
-    FieldDef     *schema.FieldDef
-    Value        any
-    RawValue     string
+// Reset clears the context for reuse from pool.
+// DatafileID and ParseCtx are kept (same for entire file).
+func (c *ValidationContext) Reset() {
+    c.Row = nil
+    c.Schema = nil
+    c.Record = nil
+    c.FieldIndex = 0
+    c.FieldDef = nil
+    c.Group = nil
+    c.FileSpec = nil
 }
 
-// GroupContext contains case/group metadata
-type GroupContext struct {
-    Key          string            // e.g., "202001-CASE12345"
-    KeyFields    map[string]string // e.g., {"RPT_MONTH_YEAR": "202001", "CASE_NUMBER": "CASE12345"}
-    Records      []*schema.ParsedRecord
-    RecordTypes  map[string]int    // Count by record type
-}
-
-// FileContext contains file-level metadata
-type FileContext struct {
-    DatafileID   int32
-    Program      string
-    Section      int
-    TotalLines   int
-    Header       *schema.ParsedRecord
-    Trailer      *schema.ParsedRecord
-}
-
-// Position represents a field's location in the raw row
-type Position struct {
-    Start   int
-    End     int
-    Column  int  // For columnar formats
+// FieldValue returns the current field's value (Cat 2 convenience method)
+func (c *ValidationContext) FieldValue() any {
+    if c.Record == nil || c.FieldIndex < 0 {
+        return nil
+    }
+    return c.Record.Fields[c.FieldIndex]
 }
 ```
 
-### 9.3 Validation Result Types
+**What validators access by category:**
+
+| Category | Context Fields Used |
+|----------|---------------------|
+| Cat 1 (Row) | `Row`, `Schema` |
+| Cat 2 (Field) | `Record.Fields[FieldIndex]`, `FieldDef`, `Schema` |
+| Cat 3 (Record) | `Record`, `Schema` |
+| Cat 4 (Group) | `Group`, `FileSpec` |
+
+### 9.3 Validation Result (Pooled, Lazy Error Generation)
+
+ValidationResult captures failure info with pointers to existing data.
+Error messages are rendered lazily at write time, not during validation.
 
 ```go
-// internal/validation/result.go
+// internal/validation/types.go
 
-// ValidationResult represents the outcome of a single validator execution
+// ValidationResult represents a validator outcome.
+// For failures, stores pointers for lazy error rendering.
+// Pooled and reused to minimize allocations.
 type ValidationResult struct {
     Valid       bool
+
+    // Populated on failure (for lazy error generation)
     ValidatorID string
     Category    int
+    FieldIndex  int                      // Cat 2 only, -1 otherwise
+    FailReason  string                   // Optional: multi-mode validators
+    Rule        *RuleConfig              // Pointer to rule config (has params, message override)
 
-    // For error message generation
-    Params      map[string]any  // Original validator params
-    FailReason  string          // Optional reason code for complex validators
-
-    // For debugging
-    Deprecated  bool
+    // Pointers to context at time of failure (for lazy rendering)
+    Record      *schema.ParsedRecord     // For line number, field values
+    Schema      *schema.CompiledSchema   // For field metadata
+    Group       *processor.RecordGroup   // For CASE_NUMBER, RPT_MONTH_YEAR
 }
 
-// RecordResult aggregates validation results for a single record
-type RecordResult struct {
-    Record      *schema.ParsedRecord
-    LineNumber  int
-    SchemaPath  string
-
-    Valid       bool
-    Rejected    bool            // True if short-circuited (Cat 1 or Cat 4 failure)
-
-    Results     []*ValidationResult
-    Errors      []*ParserError  // Generated errors
+// Reset clears the result for reuse from pool.
+func (r *ValidationResult) Reset() {
+    r.Valid = false
+    r.ValidatorID = ""
+    r.Category = 0
+    r.FieldIndex = -1
+    r.FailReason = ""
+    r.Rule = nil
+    r.Record = nil
+    r.Schema = nil
+    r.Group = nil
 }
 
-// GroupResult aggregates validation results for a case/group
-type GroupResult struct {
-    Key         string
-    KeyFields   map[string]string
-
-    Valid       bool
-    Rejected    bool            // True if Cat 4 failed
-
-    GroupResults []*ValidationResult  // Cat 4 results
-    RecordResults []*RecordResult     // Per-record results
+// LineNumber derives line number from the record.
+func (r *ValidationResult) LineNumber() int {
+    if r.Record != nil {
+        return r.Record.LineNumber
+    }
+    return 0
 }
 
-// BatchResult aggregates results for a batch of groups
-type BatchResult struct {
-    Groups      []*GroupResult
-    Stats       *ValidationStats
-}
-
-// ValidationStats tracks validation metrics
-type ValidationStats struct {
-    TotalRecords    int64
-    ValidRecords    int64
-    InvalidRecords  int64
-    RejectedRecords int64  // Short-circuited
-
-    TotalGroups     int64
-    ValidGroups     int64
-    RejectedGroups  int64
-
-    ErrorsByCategory map[int]int64
-    ErrorsByValidator map[string]int64
+// FieldDef returns the field definition for Cat 2 errors.
+func (r *ValidationResult) FieldDef() *schema.FieldDef {
+    if r.Schema != nil && r.FieldIndex >= 0 {
+        return r.Schema.Fields[r.FieldIndex]
+    }
+    return nil
 }
 ```
 
-### 9.4 Category Engine Interface
+### 9.4 Object Pools (Prewarmable)
+
+Pools minimize GC pressure during high-throughput validation.
+Modeled after the existing ParsedRecord pool.
+
+```go
+// internal/validation/pools.go
+
+// ValidationContextPool manages reusable ValidationContext objects.
+type ValidationContextPool struct {
+    pool sync.Pool
+}
+
+func NewValidationContextPool() *ValidationContextPool {
+    return &ValidationContextPool{
+        pool: sync.Pool{
+            New: func() any {
+                return &ValidationContext{FieldIndex: -1}
+            },
+        },
+    }
+}
+
+func (p *ValidationContextPool) Get() *ValidationContext {
+    return p.pool.Get().(*ValidationContext)
+}
+
+func (p *ValidationContextPool) Put(ctx *ValidationContext) {
+    ctx.Reset()
+    p.pool.Put(ctx)
+}
+
+// Prewarm allocates n contexts upfront to avoid allocation during hot path.
+func (p *ValidationContextPool) Prewarm(n int) {
+    contexts := make([]*ValidationContext, n)
+    for i := 0; i < n; i++ {
+        contexts[i] = p.Get()
+    }
+    for i := 0; i < n; i++ {
+        p.Put(contexts[i])
+    }
+}
+
+// ValidationResultPool manages reusable ValidationResult objects.
+type ValidationResultPool struct {
+    pool sync.Pool
+}
+
+func NewValidationResultPool() *ValidationResultPool {
+    return &ValidationResultPool{
+        pool: sync.Pool{
+            New: func() any {
+                return &ValidationResult{FieldIndex: -1}
+            },
+        },
+    }
+}
+
+func (p *ValidationResultPool) Get() *ValidationResult {
+    return p.pool.Get().(*ValidationResult)
+}
+
+func (p *ValidationResultPool) Put(r *ValidationResult) {
+    r.Reset()
+    p.pool.Put(r)
+}
+
+func (p *ValidationResultPool) Prewarm(n int) {
+    results := make([]*ValidationResult, n)
+    for i := 0; i < n; i++ {
+        results[i] = p.Get()
+    }
+    for i := 0; i < n; i++ {
+        p.Put(results[i])
+    }
+}
+```
+
+### 9.5 Category Engine Interface
 
 ```go
 // internal/validation/engine.go
 
-// CategoryEngine executes validation for a specific category
+// CategoryEngine executes validation for a specific category.
 type CategoryEngine interface {
     // Category returns the category ID (1, 2, 3, 4, ...)
     Category() int
 
-    // Scope returns the validation scope (field, record, group, file)
-    Scope() Scope
-
-    // ValidateRecord validates a single record (for Cat 1, 2, 3)
-    ValidateRecord(ctx *ValidationContext) []*ValidationResult
-
-    // ValidateGroup validates a group of records (for Cat 4)
-    ValidateGroup(ctx *ValidationContext, records []*schema.ParsedRecord) []*ValidationResult
+    // Validate runs all validators for this category.
+    // Returns failed ValidationResults (valid results are not returned).
+    Validate(ctx *ValidationContext) []*ValidationResult
 }
-
-// Scope defines the validation scope
-type Scope int
-
-const (
-    ScopeField  Scope = iota
-    ScopeRecord
-    ScopeGroup
-    ScopeFile
-)
 ```
 
-### 9.5 Orchestrator Interface
+### 9.6 Orchestrator
 
 ```go
 // internal/validation/orchestrator.go
 
-// Orchestrator coordinates validation across categories
+// Orchestrator coordinates validation across categories.
 type Orchestrator struct {
-    config          *OrchestratorConfig
-    engines         map[int]CategoryEngine
-    validatorReg    *ValidatorRegistry
-    messageReg      *MessageRegistry
-    errorEngine     *ErrorEngine
+    config       *OrchestratorConfig
+    engines      map[int]CategoryEngine
+    validatorReg *ValidatorRegistry
+    messageReg   *MessageRegistry
+
+    // Pools for reuse
+    ctxPool      *ValidationContextPool
+    resultPool   *ValidationResultPool
 }
 
-// OrchestratorConfig defines category ordering, short-circuit rules, and defaults
+// OrchestratorConfig defines category ordering, short-circuit rules, and defaults.
 type OrchestratorConfig struct {
     Categories        []CategoryConfig
-    ExecutionOrder    []CategoryExecution
+    ExecutionOrder    []int              // e.g., [4, 1, 2, 3]
     ShortCircuitRules []ShortCircuitRule
 }
 
-// CategoryConfig defines a validation category and its defaults
+// CategoryConfig defines a validation category and its defaults.
 type CategoryConfig struct {
     ID               int       `yaml:"id"`
     Name             string    `yaml:"name"`
-    Scope            Scope     `yaml:"scope"`
     DefaultErrorType ErrorType `yaml:"default_error_type"`
     Description      string    `yaml:"description,omitempty"`
-}
-
-type CategoryExecution struct {
-    Category int
-    Scope    Scope
 }
 
 type ShortCircuitRule struct {
@@ -421,7 +459,7 @@ func (o *Orchestrator) ValidateGroup(ctx context.Context, group *processor.Recor
 func (o *Orchestrator) ValidateBatch(ctx context.Context, batch *processor.Batch) *BatchResult
 ```
 
-### 9.6 Validator Registry
+### 9.7 Validator Registry
 
 ```go
 // internal/validation/registry/validators.go
@@ -429,7 +467,6 @@ func (o *Orchestrator) ValidateBatch(ctx context.Context, batch *processor.Batch
 // ValidatorRegistry manages validator registration and lookup
 type ValidatorRegistry struct {
     factories map[string]ValidatorFactory
-    mu        sync.RWMutex
 }
 
 // Register adds a validator factory to the registry
@@ -453,10 +490,6 @@ type RuleConfig struct {
 
     // Metadata
     Deprecated      bool           `yaml:"deprecated,omitempty"`
-
-    // Source tracking (populated by config loader)
-    SourceFile      string         `yaml:"-"`
-    SourceLine      int            `yaml:"-"`
 }
 
 // HasMessageOverride returns true if this rule has an inline message override
@@ -478,7 +511,7 @@ func (r *RuleConfig) HasErrorTypeOverride() bool {
 }
 ```
 
-### 9.7 Message Registry and Error Engine
+### 9.8 Message Registry and Error Engine (Lazy Rendering)
 
 ```go
 // internal/validation/registry/messages.go
@@ -493,8 +526,6 @@ type MessageRegistry struct {
 
     // Field-level overrides: "schemaPath:fieldName:validatorID" -> template
     fieldOverrides map[string]*template.Template
-
-    mu sync.RWMutex
 }
 
 // GetTemplate retrieves the most specific template for a validation failure.
@@ -503,9 +534,6 @@ type MessageRegistry struct {
 //   2. Schema-level override: overrides[schema][validator]
 //   3. Default validator template: validators[validatorID]
 func (r *MessageRegistry) GetTemplate(validatorID, schemaPath, fieldName string) *template.Template {
-    r.mu.RLock()
-    defer r.mu.RUnlock()
-
     // Priority 1: Field-level override
     fieldKey := fmt.Sprintf("%s:%s:%s", schemaPath, fieldName, validatorID)
     if tmpl, ok := r.fieldOverrides[fieldKey]; ok {
@@ -524,60 +552,90 @@ func (r *MessageRegistry) GetTemplate(validatorID, schemaPath, fieldName string)
 
 // internal/validation/errors/engine.go
 
-// ErrorEngine generates ParserError objects from validation failures
+// ErrorEngine generates ParserError objects from ValidationResults.
+// All data is derived from the pointers stored in ValidationResult (lazy rendering).
 type ErrorEngine struct {
     messageReg      *MessageRegistry
     categoryConfigs map[int]*CategoryConfig  // For default error types
 }
 
-// GenerateError creates a ParserError from a ValidationResult, context, and rule config.
+// GenerateError creates a ParserError from a ValidationResult.
+// Called at write time, NOT during validation (lazy rendering).
+// All context is derived from pointers stored in the ValidationResult.
+//
 // Resolution order for message template:
-//   1. rule.Message or rule.MessageTemplate (inline override)
+//   1. result.Rule.Message or result.Rule.MessageTemplate (inline override)
 //   2. MessageRegistry lookup (schema/field/validator hierarchy)
 // Resolution order for error type:
-//   1. rule.ErrorType (inline override)
+//   1. result.Rule.ErrorType (inline override)
 //   2. CategoryConfig.DefaultErrorType
 //   3. Built-in default for category
-func (e *ErrorEngine) GenerateError(
-    result *ValidationResult,
-    ctx *ValidationContext,
-    rule *RuleConfig,
-) *ParserError {
+func (e *ErrorEngine) GenerateError(result *ValidationResult) *ParserError {
+    rule := result.Rule
+
+    // Derive field info from result pointers (lazy)
+    var fieldDef *schema.FieldDef
+    var fieldName, itemNumber string
+    if result.FieldIndex >= 0 && result.Schema != nil {
+        fieldDef = result.Schema.Fields[result.FieldIndex]
+        fieldName = fieldDef.Name
+        itemNumber = fieldDef.ItemNumber
+    }
+
+    // Derive schema path from result pointer
+    var schemaPath string
+    if result.Schema != nil {
+        schemaPath = result.Schema.Path
+    }
+
     // Resolve message template
     var tmpl *template.Template
-    if rule.HasMessageOverride() {
+    if rule != nil && rule.HasMessageOverride() {
         tmpl = template.Must(template.New("inline").Parse(rule.GetMessageTemplate()))
     } else {
-        tmpl = e.messageReg.GetTemplate(
-            result.ValidatorID,
-            ctx.SchemaPath,
-            ctx.Field.Name,
-        )
+        tmpl = e.messageReg.GetTemplate(result.ValidatorID, schemaPath, fieldName)
     }
 
     // Resolve error type
     errorType := e.resolveErrorType(result.Category, rule)
 
-    // Build template context and render message
-    message := e.renderTemplate(tmpl, result, ctx)
+    // Build template context from result pointers and render message
+    message := e.renderTemplate(tmpl, result, fieldDef)
 
-    return &ParserError{
-        RowNumber:    ctx.LineNumber,
-        ColumnNumber: ctx.Field.ItemNumber,
-        ItemNumber:   ctx.Field.ItemNumber,
-        FieldName:    ctx.Field.Name,
-        RptMonthYear: ctx.Group.KeyFields["RPT_MONTH_YEAR"],
-        CaseNumber:   ctx.Group.KeyFields["CASE_NUMBER"],
+    // Derive line number from record pointer
+    var rowNumber int
+    if result.Record != nil {
+        rowNumber = result.Record.LineNumber
+    }
+
+    // Derive group key fields from group pointer
+    var rptMonthYear, caseNumber string
+    if result.Group != nil {
+        rptMonthYear = result.Group.KeyFields["RPT_MONTH_YEAR"]
+        caseNumber = result.Group.KeyFields["CASE_NUMBER"]
+    }
+
+    pe := &ParserError{
+        RowNumber:    rowNumber,
+        ColumnNumber: itemNumber,
+        ItemNumber:   itemNumber,
+        FieldName:    fieldName,
+        RptMonthYear: rptMonthYear,
+        CaseNumber:   caseNumber,
         ErrorMessage: message,
         ErrorType:    errorType,
         Category:     result.Category,
         ValidatorID:  result.ValidatorID,
-        SchemaPath:   ctx.SchemaPath,
-        FieldsJSON:   e.buildFieldsJSON(ctx),
-        ValuesJSON:   e.buildValuesJSON(ctx),
-        Deprecated:   rule.Deprecated,
-        ConfigSource: fmt.Sprintf("%s:%d", rule.SourceFile, rule.SourceLine),
+        SchemaPath:   schemaPath,
+        FieldsJSON:   e.buildFieldsJSON(result),
+        ValuesJSON:   e.buildValuesJSON(result),
     }
+
+    if rule != nil {
+        pe.Deprecated = rule.Deprecated
+    }
+
+    return pe
 }
 
 // resolveErrorType determines the error type using the override hierarchy
@@ -618,14 +676,11 @@ type ParserError struct {
     ErrorMessage  string
     ErrorType     ErrorType  // Resolved from rule -> category -> default
     Category      int
-    ValidatorID   string
+    ValidatorID   string     // Use this for debugging (lookup rule config by validator ID)
     SchemaPath    string
     FieldsJSON    map[string]any
     ValuesJSON    map[string]any
     Deprecated    bool
-
-    // For tracing
-    ConfigSource  string  // e.g., "config/validation/rules/tanf/t1.yaml:42"
 }
 
 // ErrorType represents the classification of a validation error
@@ -839,6 +894,8 @@ func RecordCountInRange(params map[string]any) ValidatorFunc
 
 ### 11.1 Structured Logging
 
+Logging derives context from ValidationResult pointers (consistent with lazy rendering).
+
 ```go
 // internal/validation/logging.go
 
@@ -846,57 +903,44 @@ type ValidationLogger struct {
     logger *slog.Logger
 }
 
-// LogValidatorRun logs when a validator is executed
-func (l *ValidationLogger) LogValidatorRun(ctx *ValidationContext, validatorID string, result *ValidationResult) {
-    l.logger.Debug("validator executed",
-        "validator_id", validatorID,
-        "category", result.Category,
-        "valid", result.Valid,
-        "line_number", ctx.LineNumber,
-        "schema_path", ctx.SchemaPath,
-        "field_name", ctx.Field.Name,
-        "trace_id", ctx.TraceID,
-    )
-}
+// LogValidatorFailure logs validation failure with context derived from result pointers
+func (l *ValidationLogger) LogValidatorFailure(result *ValidationResult, err *ParserError) {
+    // Derive schema path
+    var schemaPath string
+    if result.Schema != nil {
+        schemaPath = result.Schema.Path
+    }
 
-// LogValidatorFailure logs validation failure with full context
-func (l *ValidationLogger) LogValidatorFailure(ctx *ValidationContext, result *ValidationResult, err *ParserError) {
+    // Derive field name for Cat 2
+    var fieldName string
+    if result.FieldIndex >= 0 && result.Schema != nil {
+        fieldName = result.Schema.Fields[result.FieldIndex].Name
+    }
+
     l.logger.Info("validation failed",
         "validator_id", result.ValidatorID,
         "category", result.Category,
-        "line_number", ctx.LineNumber,
-        "schema_path", ctx.SchemaPath,
-        "field_name", ctx.Field.Name,
-        "field_value", ctx.Field.Value,
+        "line_number", result.LineNumber(),  // Helper method on ValidationResult
+        "schema_path", schemaPath,
+        "field_name", fieldName,
         "error_message", err.ErrorMessage,
-        "config_source", err.ConfigSource,
-        "trace_id", ctx.TraceID,
     )
 }
 ```
 
-### 11.2 Config Source Tracking
+### 11.2 Debugging with ValidatorID
 
-Every validation rule carries its source location for debugging:
-
-```go
-type RuleConfig struct {
-    Validator    string
-    Params       map[string]any
-
-    // Populated by config loader
-    SourceFile   string  // e.g., "config/validation/rules/tanf/t1.yaml"
-    SourceLine   int     // e.g., 42
-}
-```
-
-When an error is generated, this source is included:
+When debugging validation failures, use the `ValidatorID` field to look up the rule configuration:
 
 ```go
-err := &ParserError{
-    // ...
-    ConfigSource: fmt.Sprintf("%s:%d", rule.SourceFile, rule.SourceLine),
-}
+// Given an error with ValidatorID = "isInRange"
+// Look up in: config/validation/rules/{program}/{schema}.yaml
+// Search for: "validator: isInRange"
+
+// The validator ID uniquely identifies:
+// - The validation logic (in validators/*.go)
+// - The default message template (in config/validation/messages/*.yaml)
+// - All usages in rule configs (searchable by validator ID)
 ```
 
 ### 11.3 Validation Trace
