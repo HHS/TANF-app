@@ -13,9 +13,7 @@ import (
 	"go-parser/internal/decoder"
 	"go-parser/internal/filespec"
 	"go-parser/internal/parser"
-	"go-parser/internal/processor"
 	"go-parser/internal/registry"
-	"go-parser/internal/worker"
 	"go-parser/internal/writer"
 )
 
@@ -101,7 +99,7 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params ProcessParams) (*Proc
 	detector := parser.NewRecordTypeDetector(spec, p.registry)
 
 	// Step 5: Create worker pool
-	workerPool := worker.NewPool(spec.Format, p.config.toWorkerConfig())
+	workerPool := parser.NewPool(spec.Format, p.config.toWorkerConfig())
 	workerPool.SetParseContext(parseCtx)
 	workerPool.Start(ctx)
 
@@ -156,9 +154,9 @@ func processRows(
 	dec decoder.Decoder,
 	spec *filespec.FileSpec,
 	detector *parser.RecordTypeDetector,
-	pool *worker.Pool,
+	pool *parser.Pool,
 ) error {
-	acc := processor.NewAccumulator(spec, detector)
+	acc := parser.NewAccumulator(spec, detector)
 
 	for row, err := range dec.Rows() {
 		if err != nil {

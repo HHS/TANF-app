@@ -1,4 +1,4 @@
-package processor
+package parser
 
 import (
 	"go-parser/internal/decoder"

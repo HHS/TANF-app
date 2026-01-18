@@ -6,15 +6,15 @@ import (
 	"log"
 	"sync"
 
-	"go-parser/internal/worker"
+	"go-parser/internal/parser"
 	"go-parser/internal/writer"
 )
 
-// routeResults receives parsed batches from the worker pool and routes them to database writers.
+// routeResults receives parsed batches from the parser.pool and routes them to database writers.
 // Multiple dispatcher goroutines compete on the Results channel for parallel processing.
 func routeResults(
 	ctx context.Context,
-	pool *worker.Pool,
+	pool *parser.Pool,
 	router *writer.Router,
 	numDispatchers int,
 ) error {

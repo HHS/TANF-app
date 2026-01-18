@@ -2,8 +2,8 @@ package validation
 
 import (
 	"go-parser/internal/decoder"
+	"go-parser/internal/parser"
 	"go-parser/internal/schema"
-	"go-parser/internal/worker"
 )
 
 // Orchestrator coordinates validation execution across all categories.
@@ -86,7 +86,7 @@ func (o *Orchestrator) ClearValidators() {
 
 // ValidateGroup validates an entire parsed group and returns the result.
 // This is the main entry point for validation.
-func (o *Orchestrator) ValidateGroup(group *worker.ParsedGroup) *GroupValidationResult {
+func (o *Orchestrator) ValidateGroup(group *parser.ParsedGroup) *GroupValidationResult {
 	result := &GroupValidationResult{
 		ValidRecords:    make([]*schema.ParsedRecord, 0, len(group.Records)),
 		RejectedRecords: make([]*schema.ParsedRecord, 0),

@@ -1,25 +1,26 @@
-package converter
+package convert
 
 import (
 	"go-parser/internal/db"
 	"go-parser/internal/schema"
 )
 
-// SSP M1 Converter - Case-level data for active SSP cases
+// TANF T1 Converter - Case-level data for active TANF cases
 
-func convertSspM1(record *schema.ParsedRecord, datafileID int32) [][]any {
-	rec := &db.SearchIndexesSspM1{
+func convertTanfT1(record *schema.ParsedRecord, datafileID int32) [][]any {
+	// Build SQLC type for type safety, using Get() accessor
+	rec := &db.SearchIndexesTanfT1{
 		RecordType:               toText(record.Get("RecordType")),
 		RPTMONTHYEAR:             toInt4(record.Get("RPT_MONTH_YEAR")),
 		CASENUMBER:               toText(record.Get("CASE_NUMBER")),
-		FIPSCODE:                 toText(record.Get("FIPS_CODE")),
 		COUNTYFIPSCODE:           toText(record.Get("COUNTY_FIPS_CODE")),
 		STRATUM:                  toText(record.Get("STRATUM")),
 		ZIPCODE:                  toText(record.Get("ZIP_CODE")),
+		FUNDINGSTREAM:            toInt4(record.Get("FUNDING_STREAM")),
 		DISPOSITION:              toInt4(record.Get("DISPOSITION")),
+		NEWAPPLICANT:             toInt4(record.Get("NEW_APPLICANT")),
 		NBRFAMILYMEMBERS:         toInt4(record.Get("NBR_FAMILY_MEMBERS")),
 		FAMILYTYPE:               toInt4(record.Get("FAMILY_TYPE")),
-		TANFASSTIN6MONTHS:        toInt4(record.Get("TANF_ASST_IN_6MONTHS")),
 		RECEIVESSUBHOUSING:       toInt4(record.Get("RECEIVES_SUB_HOUSING")),
 		RECEIVESMEDASSISTANCE:    toInt4(record.Get("RECEIVES_MED_ASSISTANCE")),
 		RECEIVESFOODSTAMPS:       toInt4(record.Get("RECEIVES_FOOD_STAMPS")),
@@ -52,23 +53,27 @@ func convertSspM1(record *schema.ParsedRecord, datafileID int32) [][]any {
 		REDUCTIONSONRECEIPTS:     toInt4(record.Get("REDUCTIONS_ON_RECEIPTS")),
 		OTHERNONSANCTION:         toInt4(record.Get("OTHER_NON_SANCTION")),
 		WAIVEREVALCONTROLGRPS:    toInt4(record.Get("WAIVER_EVAL_CONTROL_GRPS")),
+		FAMILYEXEMPTTIMELIMITS:   toInt4(record.Get("FAMILY_EXEMPT_TIME_LIMITS")),
+		FAMILYNEWCHILD:           toInt4(record.Get("FAMILY_NEW_CHILD")),
 		ID:                       newUUID(),
 		DatafileID:               toDatafileID(datafileID),
 		LineNumber:               toLineNumber(record.LineNumber),
 	}
 
+	// Return values in schema field order + id, datafile_id, line_number
+	// This order must match the columns array from SchemaMetadata
 	return singleRow([]any{
 		rec.RecordType,
 		rec.RPTMONTHYEAR,
 		rec.CASENUMBER,
-		rec.FIPSCODE,
 		rec.COUNTYFIPSCODE,
 		rec.STRATUM,
 		rec.ZIPCODE,
+		rec.FUNDINGSTREAM,
 		rec.DISPOSITION,
+		rec.NEWAPPLICANT,
 		rec.NBRFAMILYMEMBERS,
 		rec.FAMILYTYPE,
-		rec.TANFASSTIN6MONTHS,
 		rec.RECEIVESSUBHOUSING,
 		rec.RECEIVESMEDASSISTANCE,
 		rec.RECEIVESFOODSTAMPS,
@@ -101,20 +106,21 @@ func convertSspM1(record *schema.ParsedRecord, datafileID int32) [][]any {
 		rec.REDUCTIONSONRECEIPTS,
 		rec.OTHERNONSANCTION,
 		rec.WAIVEREVALCONTROLGRPS,
+		rec.FAMILYEXEMPTTIMELIMITS,
+		rec.FAMILYNEWCHILD,
 		rec.ID,
 		rec.DatafileID,
 		rec.LineNumber,
 	})
 }
 
-// SSP M2 Converter - Adult-level data for active SSP cases
+// TANF T2 Converter - Adult-level data for active TANF cases
 
-func convertSspM2(record *schema.ParsedRecord, datafileID int32) [][]any {
-	rec := &db.SearchIndexesSspM2{
+func convertTanfT2(record *schema.ParsedRecord, datafileID int32) [][]any {
+	rec := &db.SearchIndexesTanfT2{
 		RecordType:              toText(record.Get("RecordType")),
 		RPTMONTHYEAR:            toInt4(record.Get("RPT_MONTH_YEAR")),
 		CASENUMBER:              toText(record.Get("CASE_NUMBER")),
-		FIPSCODE:                toText(record.Get("FIPS_CODE")),
 		FAMILYAFFILIATION:       toInt4(record.Get("FAMILY_AFFILIATION")),
 		NONCUSTODIALPARENT:      toInt4(record.Get("NONCUSTODIAL_PARENT")),
 		DATEOFBIRTH:             toText(record.Get("DATE_OF_BIRTH")),
@@ -132,62 +138,65 @@ func convertSspM2(record *schema.ParsedRecord, datafileID int32) [][]any {
 		AIDAGEDBLIND:            toInt4(record.Get("AID_AGED_BLIND")),
 		RECEIVESSI:              toInt4(record.Get("RECEIVE_SSI")),
 		MARITALSTATUS:           toInt4(record.Get("MARITAL_STATUS")),
-		RELATIONSHIPHOH:         toInt4(record.Get("RELATIONSHIP_HOH")),
+		RELATIONSHIPHOH:         toText(record.Get("RELATIONSHIP_HOH")),
 		PARENTMINORCHILD:        toInt4(record.Get("PARENT_MINOR_CHILD")),
 		NEEDSPREGNANTWOMAN:      toInt4(record.Get("NEEDS_PREGNANT_WOMAN")),
 		EDUCATIONLEVEL:          toText(record.Get("EDUCATION_LEVEL")),
 		CITIZENSHIPSTATUS:       toInt4(record.Get("CITIZENSHIP_STATUS")),
 		COOPERATIONCHILDSUPPORT: toInt4(record.Get("COOPERATION_CHILD_SUPPORT")),
+		MONTHSFEDTIMELIMIT:      toText(record.Get("MONTHS_FED_TIME_LIMIT")),
+		MONTHSSTATETIMELIMIT:    toText(record.Get("MONTHS_STATE_TIME_LIMIT")),
+		CURRENTMONTHSTATEEXEMPT: toInt4(record.Get("CURRENT_MONTH_STATE_EXEMPT")),
 		EMPLOYMENTSTATUS:        toInt4(record.Get("EMPLOYMENT_STATUS")),
-		WORKELIGIBLEINDICATOR:   toInt4(record.Get("WORK_ELIGIBLE_INDICATOR")),
-		WORKPARTSTATUS:          toInt4(record.Get("WORK_PART_STATUS")),
-		UNSUBEMPLOYMENT:         toInt4(record.Get("UNSUB_EMPLOYMENT")),
-		SUBPRIVATEEMPLOYMENT:    toInt4(record.Get("SUB_PRIVATE_EMPLOYMENT")),
-		SUBPUBLICEMPLOYMENT:     toInt4(record.Get("SUB_PUBLIC_EMPLOYMENT")),
-		WORKEXPERIENCEHOP:       toInt4(record.Get("WORK_EXPERIENCE_HOP")),
-		WORKEXPERIENCEEA:        toInt4(record.Get("WORK_EXPERIENCE_EA")),
-		WORKEXPERIENCEHOL:       toInt4(record.Get("WORK_EXPERIENCE_HOL")),
-		OJT:                     toInt4(record.Get("OJT")),
-		JOBSEARCHHOP:            toInt4(record.Get("JOB_SEARCH_HOP")),
-		JOBSEARCHEA:             toInt4(record.Get("JOB_SEARCH_EA")),
-		JOBSEARCHHOL:            toInt4(record.Get("JOB_SEARCH_HOL")),
-		COMMSERVICESHOP:         toInt4(record.Get("COMM_SERVICES_HOP")),
-		COMMSERVICESEA:          toInt4(record.Get("COMM_SERVICES_EA")),
-		COMMSERVICESHOL:         toInt4(record.Get("COMM_SERVICES_HOL")),
-		VOCATIONALEDTRAININGHOP: toInt4(record.Get("VOCATIONAL_ED_TRAINING_HOP")),
-		VOCATIONALEDTRAININGEA:  toInt4(record.Get("VOCATIONAL_ED_TRAINING_EA")),
-		VOCATIONALEDTRAININGHOL: toInt4(record.Get("VOCATIONAL_ED_TRAINING_HOL")),
-		JOBSKILLSTRAININGHOP:    toInt4(record.Get("JOB_SKILLS_TRAINING_HOP")),
-		JOBSKILLSTRAININGEA:     toInt4(record.Get("JOB_SKILLS_TRAINING_EA")),
-		JOBSKILLSTRAININGHOL:    toInt4(record.Get("JOB_SKILLS_TRAINING_HOL")),
-		EDNOHIGHSCHOOLDIPLHOP:   toInt4(record.Get("ED_NO_HIGH_SCHOOL_DIPL_HOP")),
-		EDNOHIGHSCHOOLDIPLEA:    toInt4(record.Get("ED_NO_HIGH_SCHOOL_DIPL_EA")),
-		EDNOHIGHSCHOOLDIPLHOL:   toInt4(record.Get("ED_NO_HIGH_SCHOOL_DIPL_HOL")),
-		SCHOOLATTENDENCEHOP:     toInt4(record.Get("SCHOOL_ATTENDENCE_HOP")),
-		SCHOOLATTENDENCEEA:      toInt4(record.Get("SCHOOL_ATTENDENCE_EA")),
-		SCHOOLATTENDENCEHOL:     toInt4(record.Get("SCHOOL_ATTENDENCE_HOL")),
-		PROVIDECCHOP:            toInt4(record.Get("PROVIDE_CC_HOP")),
-		PROVIDECCEA:             toInt4(record.Get("PROVIDE_CC_EA")),
-		PROVIDECCHOL:            toInt4(record.Get("PROVIDE_CC_HOL")),
-		OTHERWORKACTIVITIES:     toInt4(record.Get("OTHER_WORK_ACTIVITIES")),
-		DEEMEDHOURSFOROVERALL:   toInt4(record.Get("DEEMED_HOURS_FOR_OVERALL")),
-		DEEMEDHOURSFORTWOPARENT: toInt4(record.Get("DEEMED_HOURS_FOR_TWO_PARENT")),
-		EARNEDINCOME:            toInt4(record.Get("EARNED_INCOME")),
-		UNEARNEDINCOMETAXCREDIT: toInt4(record.Get("UNEARNED_INCOME_TAX_CREDIT")),
-		UNEARNEDSOCIALSECURITY:  toInt4(record.Get("UNEARNED_SOCIAL_SECURITY")),
-		UNEARNEDSSI:             toInt4(record.Get("UNEARNED_SSI")),
-		UNEARNEDWORKERSCOMP:     toInt4(record.Get("UNEARNED_WORKERS_COMP")),
-		OTHERUNEARNEDINCOME:     toInt4(record.Get("OTHER_UNEARNED_INCOME")),
+		WORKELIGIBLEINDICATOR:   toText(record.Get("WORK_ELIGIBLE_INDICATOR")),
+		WORKPARTSTATUS:          toText(record.Get("WORK_PART_STATUS")),
+		UNSUBEMPLOYMENT:         toText(record.Get("UNSUB_EMPLOYMENT")),
+		SUBPRIVATEEMPLOYMENT:    toText(record.Get("SUB_PRIVATE_EMPLOYMENT")),
+		SUBPUBLICEMPLOYMENT:     toText(record.Get("SUB_PUBLIC_EMPLOYMENT")),
+		WORKEXPERIENCEHOP:       toText(record.Get("WORK_EXPERIENCE_HOP")),
+		WORKEXPERIENCEEA:        toText(record.Get("WORK_EXPERIENCE_EA")),
+		WORKEXPERIENCEHOL:       toText(record.Get("WORK_EXPERIENCE_HOL")),
+		OJT:                     toText(record.Get("OJT")),
+		JOBSEARCHHOP:            toText(record.Get("JOB_SEARCH_HOP")),
+		JOBSEARCHEA:             toText(record.Get("JOB_SEARCH_EA")),
+		JOBSEARCHHOL:            toText(record.Get("JOB_SEARCH_HOL")),
+		COMMSERVICESHOP:         toText(record.Get("COMM_SERVICES_HOP")),
+		COMMSERVICESEA:          toText(record.Get("COMM_SERVICES_EA")),
+		COMMSERVICESHOL:         toText(record.Get("COMM_SERVICES_HOL")),
+		VOCATIONALEDTRAININGHOP: toText(record.Get("VOCATIONAL_ED_TRAINING_HOP")),
+		VOCATIONALEDTRAININGEA:  toText(record.Get("VOCATIONAL_ED_TRAINING_EA")),
+		VOCATIONALEDTRAININGHOL: toText(record.Get("VOCATIONAL_ED_TRAINING_HOL")),
+		JOBSKILLSTRAININGHOP:    toText(record.Get("JOB_SKILLS_TRAINING_HOP")),
+		JOBSKILLSTRAININGEA:     toText(record.Get("JOB_SKILLS_TRAINING_EA")),
+		JOBSKILLSTRAININGHOL:    toText(record.Get("JOB_SKILLS_TRAINING_HOL")),
+		EDNOHIGHSCHOOLDIPLHOP:   toText(record.Get("ED_NO_HIGH_SCHOOL_DIPL_HOP")),
+		EDNOHIGHSCHOOLDIPLEA:    toText(record.Get("ED_NO_HIGH_SCHOOL_DIPL_EA")),
+		EDNOHIGHSCHOOLDIPLHOL:   toText(record.Get("ED_NO_HIGH_SCHOOL_DIPL_HOL")),
+		SCHOOLATTENDENCEHOP:     toText(record.Get("SCHOOL_ATTENDENCE_HOP")),
+		SCHOOLATTENDENCEEA:      toText(record.Get("SCHOOL_ATTENDENCE_EA")),
+		SCHOOLATTENDENCEHOL:     toText(record.Get("SCHOOL_ATTENDENCE_HOL")),
+		PROVIDECCHOP:            toText(record.Get("PROVIDE_CC_HOP")),
+		PROVIDECCEA:             toText(record.Get("PROVIDE_CC_EA")),
+		PROVIDECCHOL:            toText(record.Get("PROVIDE_CC_HOL")),
+		OTHERWORKACTIVITIES:     toText(record.Get("OTHER_WORK_ACTIVITIES")),
+		DEEMEDHOURSFOROVERALL:   toText(record.Get("DEEMED_HOURS_FOR_OVERALL")),
+		DEEMEDHOURSFORTWOPARENT: toText(record.Get("DEEMED_HOURS_FOR_TWO_PARENT")),
+		EARNEDINCOME:            toText(record.Get("EARNED_INCOME")),
+		UNEARNEDINCOMETAXCREDIT: toText(record.Get("UNEARNED_INCOME_TAX_CREDIT")),
+		UNEARNEDSOCIALSECURITY:  toText(record.Get("UNEARNED_SOCIAL_SECURITY")),
+		UNEARNEDSSI:             toText(record.Get("UNEARNED_SSI")),
+		UNEARNEDWORKERSCOMP:     toText(record.Get("UNEARNED_WORKERS_COMP")),
+		OTHERUNEARNEDINCOME:     toText(record.Get("OTHER_UNEARNED_INCOME")),
 		ID:                      newUUID(),
 		DatafileID:              toDatafileID(datafileID),
 		LineNumber:              toLineNumber(record.LineNumber),
 	}
 
+	// Return values in schema field order + id, datafile_id, line_number
 	return singleRow([]any{
 		rec.RecordType,
 		rec.RPTMONTHYEAR,
 		rec.CASENUMBER,
-		rec.FIPSCODE,
 		rec.FAMILYAFFILIATION,
 		rec.NONCUSTODIALPARENT,
 		rec.DATEOFBIRTH,
@@ -211,6 +220,9 @@ func convertSspM2(record *schema.ParsedRecord, datafileID int32) [][]any {
 		rec.EDUCATIONLEVEL,
 		rec.CITIZENSHIPSTATUS,
 		rec.COOPERATIONCHILDSUPPORT,
+		rec.MONTHSFEDTIMELIMIT,
+		rec.MONTHSSTATETIMELIMIT,
+		rec.CURRENTMONTHSTATEEXEMPT,
 		rec.EMPLOYMENTSTATUS,
 		rec.WORKELIGIBLEINDICATOR,
 		rec.WORKPARTSTATUS,
@@ -257,14 +269,16 @@ func convertSspM2(record *schema.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// SSP M3 Converter - Child-level data for active SSP cases
+// TANF T3 Converter - Child-level data for active TANF cases
+// T3 records contain data for TWO children per line. This converter
+// produces 1 or 2 rows depending on whether Child 2 data is present.
 
-func convertSspM3(record *schema.ParsedRecord, datafileID int32) [][]any {
-	rec := &db.SearchIndexesSspM3{
+func convertTanfT3(record *schema.ParsedRecord, datafileID int32) [][]any {
+	// Child 1 row (always present)
+	rec := &db.SearchIndexesTanfT3{
 		RecordType:            toText(record.Get("RecordType")),
 		RPTMONTHYEAR:          toInt4(record.Get("RPT_MONTH_YEAR")),
 		CASENUMBER:            toText(record.Get("CASE_NUMBER")),
-		FIPSCODE:              toText(record.Get("FIPS_CODE")),
 		FAMILYAFFILIATION:     toInt4(record.Get("FAMILY_AFFILIATION")),
 		DATEOFBIRTH:           toText(record.Get("DATE_OF_BIRTH")),
 		SSN:                   toText(record.Get("SSN")),
@@ -275,14 +289,14 @@ func convertSspM3(record *schema.ParsedRecord, datafileID int32) [][]any {
 		RACEHAWAIIAN:          toInt4(record.Get("RACE_HAWAIIAN")),
 		RACEWHITE:             toInt4(record.Get("RACE_WHITE")),
 		SEX:                   toInt4(record.Get("SEX")),
-		RECEIVENONSSIBENEFITS: toInt4(record.Get("RECEIVE_NONSSI_BENEFITS")),
+		RECEIVENONSSABENEFITS: toInt4(record.Get("RECEIVE_NONSSA_BENEFITS")),
 		RECEIVESSI:            toInt4(record.Get("RECEIVE_SSI")),
-		RELATIONSHIPHOH:       toInt4(record.Get("RELATIONSHIP_HOH")),
+		RELATIONSHIPHOH:       toText(record.Get("RELATIONSHIP_HOH")),
 		PARENTMINORCHILD:      toInt4(record.Get("PARENT_MINOR_CHILD")),
 		EDUCATIONLEVEL:        toText(record.Get("EDUCATION_LEVEL")),
 		CITIZENSHIPSTATUS:     toInt4(record.Get("CITIZENSHIP_STATUS")),
-		UNEARNEDSSI:           toInt4(record.Get("UNEARNED_SSI")),
-		OTHERUNEARNEDINCOME:   toInt4(record.Get("OTHER_UNEARNED_INCOME")),
+		UNEARNEDSSI:           toText(record.Get("UNEARNED_SSI")),
+		OTHERUNEARNEDINCOME:   toText(record.Get("OTHER_UNEARNED_INCOME")),
 		ID:                    newUUID(),
 		DatafileID:            toDatafileID(datafileID),
 		LineNumber:            toLineNumber(record.LineNumber),
@@ -292,7 +306,6 @@ func convertSspM3(record *schema.ParsedRecord, datafileID int32) [][]any {
 		rec.RecordType,
 		rec.RPTMONTHYEAR,
 		rec.CASENUMBER,
-		rec.FIPSCODE,
 		rec.FAMILYAFFILIATION,
 		rec.DATEOFBIRTH,
 		rec.SSN,
@@ -303,7 +316,7 @@ func convertSspM3(record *schema.ParsedRecord, datafileID int32) [][]any {
 		rec.RACEHAWAIIAN,
 		rec.RACEWHITE,
 		rec.SEX,
-		rec.RECEIVENONSSIBENEFITS,
+		rec.RECEIVENONSSABENEFITS,
 		rec.RECEIVESSI,
 		rec.RELATIONSHIPHOH,
 		rec.PARENTMINORCHILD,
@@ -317,10 +330,10 @@ func convertSspM3(record *schema.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// SSP M4 Converter - Case-level data for closed SSP cases
+// TANF T4 Converter - Case-level data for closed TANF cases
 
-func convertSspM4(record *schema.ParsedRecord, datafileID int32) [][]any {
-	rec := &db.SearchIndexesSspM4{
+func convertTanfT4(record *schema.ParsedRecord, datafileID int32) [][]any {
+	rec := &db.SearchIndexesTanfT4{
 		RecordType:     toText(record.Get("RecordType")),
 		RPTMONTHYEAR:   toInt4(record.Get("RPT_MONTH_YEAR")),
 		CASENUMBER:     toText(record.Get("CASE_NUMBER")),
@@ -357,40 +370,42 @@ func convertSspM4(record *schema.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// SSP M5 Converter - Adult-level data for closed SSP cases
+// TANF T5 Converter - Adult-level data for closed TANF cases
 
-func convertSspM5(record *schema.ParsedRecord, datafileID int32) [][]any {
-	rec := &db.SearchIndexesSspM5{
-		RecordType:            toText(record.Get("RecordType")),
-		RPTMONTHYEAR:          toInt4(record.Get("RPT_MONTH_YEAR")),
-		CASENUMBER:            toText(record.Get("CASE_NUMBER")),
-		FAMILYAFFILIATION:     toInt4(record.Get("FAMILY_AFFILIATION")),
-		DATEOFBIRTH:           toText(record.Get("DATE_OF_BIRTH")),
-		SSN:                   toText(record.Get("SSN")),
-		RACEHISPANIC:          toInt4(record.Get("RACE_HISPANIC")),
-		RACEAMERINDIAN:        toInt4(record.Get("RACE_AMER_INDIAN")),
-		RACEASIAN:             toInt4(record.Get("RACE_ASIAN")),
-		RACEBLACK:             toInt4(record.Get("RACE_BLACK")),
-		RACEHAWAIIAN:          toInt4(record.Get("RACE_HAWAIIAN")),
-		RACEWHITE:             toInt4(record.Get("RACE_WHITE")),
-		SEX:                   toInt4(record.Get("SEX")),
-		RECOASDIINSURANCE:     toInt4(record.Get("REC_OASDI_INSURANCE")),
-		RECFEDERALDISABILITY:  toInt4(record.Get("REC_FEDERAL_DISABILITY")),
-		RECAIDTOTALLYDISABLED: toInt4(record.Get("REC_AID_TOTALLY_DISABLED")),
-		RECAIDAGEDBLIND:       toInt4(record.Get("REC_AID_AGED_BLIND")),
-		RECSSI:                toInt4(record.Get("REC_SSI")),
-		MARITALSTATUS:         toInt4(record.Get("MARITAL_STATUS")),
-		RELATIONSHIPHOH:       toText(record.Get("RELATIONSHIP_HOH")),
-		PARENTMINORCHILD:      toInt4(record.Get("PARENT_MINOR_CHILD")),
-		NEEDSOFPREGNANTWOMAN:  toInt4(record.Get("NEEDS_OF_PREGNANT_WOMAN")),
-		EDUCATIONLEVEL:        toText(record.Get("EDUCATION_LEVEL")),
-		CITIZENSHIPSTATUS:     toInt4(record.Get("CITIZENSHIP_STATUS")),
-		EMPLOYMENTSTATUS:      toInt4(record.Get("EMPLOYMENT_STATUS")),
-		AMOUNTEARNEDINCOME:    toText(record.Get("AMOUNT_EARNED_INCOME")),
-		AMOUNTUNEARNEDINCOME:  toText(record.Get("AMOUNT_UNEARNED_INCOME")),
-		ID:                    newUUID(),
-		DatafileID:            toDatafileID(datafileID),
-		LineNumber:            toLineNumber(record.LineNumber),
+func convertTanfT5(record *schema.ParsedRecord, datafileID int32) [][]any {
+	rec := &db.SearchIndexesTanfT5{
+		RecordType:                toText(record.Get("RecordType")),
+		RPTMONTHYEAR:              toInt4(record.Get("RPT_MONTH_YEAR")),
+		CASENUMBER:                toText(record.Get("CASE_NUMBER")),
+		FAMILYAFFILIATION:         toInt4(record.Get("FAMILY_AFFILIATION")),
+		DATEOFBIRTH:               toText(record.Get("DATE_OF_BIRTH")),
+		SSN:                       toText(record.Get("SSN")),
+		RACEHISPANIC:              toInt4(record.Get("RACE_HISPANIC")),
+		RACEAMERINDIAN:            toInt4(record.Get("RACE_AMER_INDIAN")),
+		RACEASIAN:                 toInt4(record.Get("RACE_ASIAN")),
+		RACEBLACK:                 toInt4(record.Get("RACE_BLACK")),
+		RACEHAWAIIAN:              toInt4(record.Get("RACE_HAWAIIAN")),
+		RACEWHITE:                 toInt4(record.Get("RACE_WHITE")),
+		SEX:                       toInt4(record.Get("SEX")),
+		RECOASDIINSURANCE:         toInt4(record.Get("REC_OASDI_INSURANCE")),
+		RECFEDERALDISABILITY:      toInt4(record.Get("REC_FEDERAL_DISABILITY")),
+		RECAIDTOTALLYDISABLED:     toInt4(record.Get("REC_AID_TOTALLY_DISABLED")),
+		RECAIDAGEDBLIND:           toInt4(record.Get("REC_AID_AGED_BLIND")),
+		RECSSI:                    toInt4(record.Get("REC_SSI")),
+		MARITALSTATUS:             toInt4(record.Get("MARITAL_STATUS")),
+		RELATIONSHIPHOH:           toText(record.Get("RELATIONSHIP_HOH")),
+		PARENTMINORCHILD:          toInt4(record.Get("PARENT_MINOR_CHILD")),
+		NEEDSOFPREGNANTWOMAN:      toInt4(record.Get("NEEDS_OF_PREGNANT_WOMAN")),
+		EDUCATIONLEVEL:            toText(record.Get("EDUCATION_LEVEL")),
+		CITIZENSHIPSTATUS:         toInt4(record.Get("CITIZENSHIP_STATUS")),
+		COUNTABLEMONTHFEDTIME:     toText(record.Get("COUNTABLE_MONTH_FED_TIME")),
+		COUNTABLEMONTHSSTATETRIBE: toText(record.Get("COUNTABLE_MONTHS_STATE_TRIBE")),
+		EMPLOYMENTSTATUS:          toInt4(record.Get("EMPLOYMENT_STATUS")),
+		AMOUNTEARNEDINCOME:        toText(record.Get("AMOUNT_EARNED_INCOME")),
+		AMOUNTUNEARNEDINCOME:      toText(record.Get("AMOUNT_UNEARNED_INCOME")),
+		ID:                        newUUID(),
+		DatafileID:                toDatafileID(datafileID),
+		LineNumber:                toLineNumber(record.LineNumber),
 	}
 
 	return singleRow([]any{
@@ -418,6 +433,8 @@ func convertSspM5(record *schema.ParsedRecord, datafileID int32) [][]any {
 		rec.NEEDSOFPREGNANTWOMAN,
 		rec.EDUCATIONLEVEL,
 		rec.CITIZENSHIPSTATUS,
+		rec.COUNTABLEMONTHFEDTIME,
+		rec.COUNTABLEMONTHSSTATETRIBE,
 		rec.EMPLOYMENTSTATUS,
 		rec.AMOUNTEARNEDINCOME,
 		rec.AMOUNTUNEARNEDINCOME,
@@ -427,52 +444,62 @@ func convertSspM5(record *schema.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// SSP M6 Converter - Aggregate data
+// TANF T6 Converter - Aggregate data
 
-func convertSspM6(record *schema.ParsedRecord, datafileID int32) [][]any {
-	rec := &db.SearchIndexesSspM6{
-		RecordType:      toText(record.Get("RecordType")),
-		CALENDARQUARTER: toInt4(record.Get("CALENDAR_QUARTER")),
-		RPTMONTHYEAR:    toInt4(record.Get("RPT_MONTH_YEAR")),
-		SSPMOEFAMILIES:  toInt4(record.Get("SSP_MOE_FAMILIES")),
-		NUM2PARENTS:     toInt4(record.Get("NUM_2_PARENTS")),
-		NUM1PARENTS:     toInt4(record.Get("NUM_1_PARENTS")),
-		NUMNOPARENTS:    toInt4(record.Get("NUM_NO_PARENTS")),
-		NUMRECIPIENTS:   toInt4(record.Get("NUM_RECIPIENTS")),
-		ADULTRECIPIENTS: toInt4(record.Get("ADULT_RECIPIENTS")),
-		CHILDRECIPIENTS: toInt4(record.Get("CHILD_RECIPIENTS")),
-		NONCUSTODIALS:   toInt4(record.Get("NONCUSTODIALS")),
-		AMTASSISTANCE:   toInt4(record.Get("AMT_ASSISTANCE")),
-		CLOSEDCASES:     toInt4(record.Get("CLOSED_CASES")),
-		ID:              newUUID(),
-		DatafileID:      toDatafileID(datafileID),
-		LineNumber:      toLineNumber(record.LineNumber),
+func convertTanfT6(record *schema.ParsedRecord, datafileID int32) [][]any {
+	rec := &db.SearchIndexesTanfT6{
+		RecordType:          toText(record.Get("RecordType")),
+		CALENDARQUARTER:     toInt4(record.Get("CALENDAR_QUARTER")),
+		RPTMONTHYEAR:        toInt4(record.Get("RPT_MONTH_YEAR")),
+		NUMAPPLICATIONS:     toInt4(record.Get("NUM_APPLICATIONS")),
+		NUMAPPROVED:         toInt4(record.Get("NUM_APPROVED")),
+		NUMDENIED:           toInt4(record.Get("NUM_DENIED")),
+		ASSISTANCE:          toInt4(record.Get("ASSISTANCE")),
+		NUMFAMILIES:         toInt4(record.Get("NUM_FAMILIES")),
+		NUM2PARENTS:         toInt4(record.Get("NUM_2_PARENTS")),
+		NUM1PARENTS:         toInt4(record.Get("NUM_1_PARENTS")),
+		NUMNOPARENTS:        toInt4(record.Get("NUM_NO_PARENTS")),
+		NUMRECIPIENTS:       toInt4(record.Get("NUM_RECIPIENTS")),
+		NUMADULTRECIPIENTS:  toInt4(record.Get("NUM_ADULT_RECIPIENTS")),
+		NUMCHILDRECIPIENTS:  toInt4(record.Get("NUM_CHILD_RECIPIENTS")),
+		NUMNONCUSTODIALS:    toInt4(record.Get("NUM_NONCUSTODIALS")),
+		NUMBIRTHS:           toInt4(record.Get("NUM_BIRTHS")),
+		NUMOUTWEDLOCKBIRTHS: toInt4(record.Get("NUM_OUTWEDLOCK_BIRTHS")),
+		NUMCLOSEDCASES:      toInt4(record.Get("NUM_CLOSED_CASES")),
+		ID:                  newUUID(),
+		DatafileID:          toDatafileID(datafileID),
+		LineNumber:          toLineNumber(record.LineNumber),
 	}
 
 	return singleRow([]any{
 		rec.RecordType,
 		rec.CALENDARQUARTER,
 		rec.RPTMONTHYEAR,
-		rec.SSPMOEFAMILIES,
+		rec.NUMAPPLICATIONS,
+		rec.NUMAPPROVED,
+		rec.NUMDENIED,
+		rec.ASSISTANCE,
+		rec.NUMFAMILIES,
 		rec.NUM2PARENTS,
 		rec.NUM1PARENTS,
 		rec.NUMNOPARENTS,
 		rec.NUMRECIPIENTS,
-		rec.ADULTRECIPIENTS,
-		rec.CHILDRECIPIENTS,
-		rec.NONCUSTODIALS,
-		rec.AMTASSISTANCE,
-		rec.CLOSEDCASES,
+		rec.NUMADULTRECIPIENTS,
+		rec.NUMCHILDRECIPIENTS,
+		rec.NUMNONCUSTODIALS,
+		rec.NUMBIRTHS,
+		rec.NUMOUTWEDLOCKBIRTHS,
+		rec.NUMCLOSEDCASES,
 		rec.ID,
 		rec.DatafileID,
 		rec.LineNumber,
 	})
 }
 
-// SSP M7 Converter - Stratum data
+// TANF T7 Converter - Stratum data
 
-func convertSspM7(record *schema.ParsedRecord, datafileID int32) [][]any {
-	rec := &db.SearchIndexesSspM7{
+func convertTanfT7(record *schema.ParsedRecord, datafileID int32) [][]any {
+	rec := &db.SearchIndexesTanfT7{
 		RecordType:      toText(record.Get("RecordType")),
 		CALENDARQUARTER: toInt4(record.Get("CALENDAR_QUARTER")),
 		RPTMONTHYEAR:    toInt4(record.Get("RPT_MONTH_YEAR")),

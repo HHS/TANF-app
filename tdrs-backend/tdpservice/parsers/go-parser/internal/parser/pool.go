@@ -1,4 +1,4 @@
-package worker
+package parser
 
 import (
 	"context"
@@ -6,8 +6,6 @@ import (
 	"sync"
 
 	"go-parser/internal/filespec"
-	"go-parser/internal/parser"
-	"go-parser/internal/processor"
 	"go-parser/internal/schema"
 )
 
@@ -40,11 +38,11 @@ func (pb *ParsedBatch) TotalRecords() int {
 // Pool manages worker goroutines for parallel parsing.
 type Pool struct {
 	numWorkers int
-	extractor  parser.FieldExtractor
+	extractor  FieldExtractor
 	parseCtx   *schema.ParseContext // Runtime context from header
 
 	// Single work input channel for all Batches
-	work chan *processor.Batch
+	work chan *Batch
 
 	// Single result output channel
 	results chan *ParsedBatch
@@ -78,8 +76,8 @@ func DefaultPoolConfig() PoolConfig {
 func NewPool(format filespec.Format, config PoolConfig) *Pool {
 	return &Pool{
 		numWorkers: config.NumWorkers,
-		extractor:  parser.GetExtractor(format),
-		work:       make(chan *processor.Batch, config.WorkBufferSize),
+		extractor:  GetExtractor(format),
+		work:       make(chan *Batch, config.WorkBufferSize),
 		results:    make(chan *ParsedBatch, config.ResultBufferSize),
 	}
 }
@@ -94,7 +92,7 @@ func (p *Pool) Start(ctx context.Context) {
 
 // Submit submits a Batch for processing.
 // Blocks if the work channel is full (backpressure).
-func (p *Pool) Submit(batch *processor.Batch) {
+func (p *Pool) Submit(batch *Batch) {
 	p.work <- batch
 }
 
@@ -134,7 +132,7 @@ func (p *Pool) worker(ctx context.Context) {
 }
 
 // processBatch parses all records in all groups within a batch.
-func (p *Pool) processBatch(batch *processor.Batch) *ParsedBatch {
+func (p *Pool) processBatch(batch *Batch) *ParsedBatch {
 	result := &ParsedBatch{
 		BatchID: batch.BatchID,
 		Groups:  make([]*ParsedGroup, 0, len(batch.Groups)),
@@ -149,7 +147,7 @@ func (p *Pool) processBatch(batch *processor.Batch) *ParsedBatch {
 }
 
 // processGroup parses all records in a single group.
-func (p *Pool) processGroup(group *processor.RecordGroup) *ParsedGroup {
+func (p *Pool) processGroup(group *RecordGroup) *ParsedGroup {
 	result := &ParsedGroup{
 		Key:          group.Key,
 		RptMonthYear: group.RptMonthYear,
@@ -172,7 +170,7 @@ func (p *Pool) processGroup(group *processor.RecordGroup) *ParsedGroup {
 // parseRow parses a single row into one or more ParsedRecords.
 // For multi-segment schemas, one input line produces multiple records (one per segment).
 // Records are acquired from the schema's object pool and must be released after use.
-func (p *Pool) parseRow(line processor.RawLine) ([]*schema.ParsedRecord, error) {
+func (p *Pool) parseRow(line RawLine) ([]*schema.ParsedRecord, error) {
 	numSegments := len(line.Schema.Segments)
 	if numSegments == 0 {
 		// Schema has no segments - this shouldn't happen with the new structure
@@ -182,7 +180,7 @@ func (p *Pool) parseRow(line processor.RawLine) ([]*schema.ParsedRecord, error) 
 	// Parse shared fields once into a cache (one small allocation per row).
 	// We use a map here temporarily to collect shared values, then copy them
 	// into each record's indexed slice.
-	sharedCache := make(parser.MapFieldGetter, len(line.Schema.Shared))
+	sharedCache := make(MapFieldGetter, len(line.Schema.Shared))
 	for i := range line.Schema.Shared {
 		field := &line.Schema.Shared[i]
 		value, err := p.extractor.Extract(line.Row, field, p.parseCtx, sharedCache)

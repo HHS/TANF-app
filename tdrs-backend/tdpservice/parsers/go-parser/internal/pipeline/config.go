@@ -1,6 +1,6 @@
 package pipeline
 
-import "go-parser/internal/worker"
+import "go-parser/internal/parser"
 
 // PipelineConfig holds tunable parameters for the parsing pipeline.
 type PipelineConfig struct {
@@ -38,9 +38,9 @@ func TestConfig() PipelineConfig {
 	}
 }
 
-// toWorkerConfig converts PipelineConfig to worker.PoolConfig.
-func (c PipelineConfig) toWorkerConfig() worker.PoolConfig {
-	return worker.PoolConfig{
+// toWorkerConfig converts PipelineConfig to parser.PoolConfig.
+func (c PipelineConfig) toWorkerConfig() parser.PoolConfig {
+	return parser.PoolConfig{
 		NumWorkers:       c.NumWorkers,
 		WorkBufferSize:   c.WorkBufferSize,
 		ResultBufferSize: c.ResultBufferSize,

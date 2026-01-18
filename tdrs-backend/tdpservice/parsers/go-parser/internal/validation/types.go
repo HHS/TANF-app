@@ -6,7 +6,7 @@ package validation
 import (
 	"go-parser/internal/decoder"
 	"go-parser/internal/schema"
-	"go-parser/internal/worker"
+	"go-parser/internal/parser"
 )
 
 // Category represents a validation category (1-4).
@@ -60,7 +60,7 @@ type ValidationContext struct {
 	FieldIndex int // Index into Record.Fields and Schema.Fields
 
 	// Group-level context (Cat 4)
-	Group *worker.ParsedGroup
+	Group *parser.ParsedGroup
 
 	// Category being validated
 	Category Category
@@ -78,7 +78,7 @@ type ValidationResult struct {
 	FieldName  string // For Cat 2 and cross-field, which field(s) failed
 	Record     *schema.ParsedRecord
 	Schema     *schema.CompiledSchema
-	Group      *worker.ParsedGroup
+	Group      *parser.ParsedGroup
 	Row        decoder.Row
 
 	// Config that triggered this validation (for message/error_type overrides)

@@ -9,11 +9,11 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"go-parser/internal/converter"
 	"go-parser/internal/filespec"
+	"go-parser/internal/parser"
 	"go-parser/internal/registry"
 	"go-parser/internal/schema"
-	"go-parser/internal/worker"
+	"go-parser/internal/writer/convert"
 )
 
 // Router coordinates writes for any file type.
@@ -28,7 +28,7 @@ type Router struct {
 	writers map[string]*TableWriter
 
 	// Converters keyed by schema path - manager owns conversion
-	converters map[string]converter.RowConverter
+	converters map[string]convert.RowConverter
 
 	errorWriter *TableWriter
 }
@@ -55,7 +55,7 @@ func NewRouter(
 		pool:       pool,
 		datafileID: datafileID,
 		writers:    make(map[string]*TableWriter),
-		converters: make(map[string]converter.RowConverter),
+		converters: make(map[string]convert.RowConverter),
 	}
 
 	// Create a writer for each data record type in the FileSpec
@@ -80,7 +80,7 @@ func NewRouter(
 
 		// Get the converter for this schema path
 		// Schema path (e.g., "tanf/t1") distinguishes TANF vs Tribal T1
-		conv := converter.GetConverter(schemaPath)
+		conv := convert.GetConverter(schemaPath)
 		if conv == nil {
 			log.Printf("Warning: no converter for schema %s", schemaPath)
 			continue
@@ -149,7 +149,7 @@ func (wm *Router) RouteRecord(ctx context.Context, record *schema.ParsedRecord) 
 }
 
 // RouteBatch routes all records in a batch to appropriate writers.
-func (wm *Router) RouteBatch(ctx context.Context, batch *worker.ParsedBatch) error {
+func (wm *Router) RouteBatch(ctx context.Context, batch *parser.ParsedBatch) error {
 	for _, group := range batch.Groups {
 		for _, record := range group.Records {
 			if err := wm.RouteRecord(ctx, record); err != nil {

@@ -8,7 +8,6 @@ import (
 	"go-parser/internal/decoder"
 	"go-parser/internal/filespec"
 	"go-parser/internal/schema"
-	"go-parser/internal/transform"
 )
 
 // FieldGetter provides access to previously extracted field values.
@@ -82,7 +81,7 @@ func (e *PositionalExtractor) Extract(
 
 	// Apply transformation if specified
 	if field.Transform != nil {
-		transformed, err := transform.Apply(
+		transformed, err := ApplyTransform(
 			field.Transform.Name,
 			rawValue,
 			field.Transform.Params,
@@ -132,7 +131,7 @@ func (e *ColumnarExtractor) Extract(
 
 	// Apply transformation if specified
 	if field.Transform != nil {
-		transformed, err := transform.Apply(
+		transformed, err := ApplyTransform(
 			field.Transform.Name,
 			rawValue,
 			field.Transform.Params,

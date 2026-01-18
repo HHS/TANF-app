@@ -1,11 +1,10 @@
-package processor
+package parser
 
 import (
 	"fmt"
 
 	"go-parser/internal/decoder"
 	"go-parser/internal/filespec"
-	"go-parser/internal/parser"
 	"go-parser/internal/schema"
 )
 
@@ -21,7 +20,7 @@ import (
 // a new key is encountered, preventing memory buildup for large sorted files.
 type Accumulator struct {
 	spec     *filespec.FileSpec
-	detector *parser.RecordTypeDetector
+	detector *RecordTypeDetector
 
 	// Configuration derived from spec
 	hasKeyFields   bool
@@ -41,7 +40,7 @@ type Accumulator struct {
 }
 
 // NewAccumulator creates an accumulator for the given file specification.
-func NewAccumulator(spec *filespec.FileSpec, detector *parser.RecordTypeDetector) *Accumulator {
+func NewAccumulator(spec *filespec.FileSpec, detector *RecordTypeDetector) *Accumulator {
 	// Build set of grouped schemas for quick lookup
 	groupedSchemas := make(map[string]bool)
 	for _, name := range spec.Accumulator.GroupedSchemas {

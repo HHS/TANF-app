@@ -1,15 +1,14 @@
-package converter
+package convert
 
 import (
 	"go-parser/internal/db"
 	"go-parser/internal/schema"
 )
 
-// TANF T1 Converter - Case-level data for active TANF cases
+// Tribal TANF T1 Converter - Case-level data for active Tribal TANF cases
 
-func convertTanfT1(record *schema.ParsedRecord, datafileID int32) [][]any {
-	// Build SQLC type for type safety, using Get() accessor
-	rec := &db.SearchIndexesTanfT1{
+func convertTribalT1(record *schema.ParsedRecord, datafileID int32) [][]any {
+	rec := &db.SearchIndexesTribalTanfT1{
 		RecordType:               toText(record.Get("RecordType")),
 		RPTMONTHYEAR:             toInt4(record.Get("RPT_MONTH_YEAR")),
 		CASENUMBER:               toText(record.Get("CASE_NUMBER")),
@@ -60,8 +59,6 @@ func convertTanfT1(record *schema.ParsedRecord, datafileID int32) [][]any {
 		LineNumber:               toLineNumber(record.LineNumber),
 	}
 
-	// Return values in schema field order + id, datafile_id, line_number
-	// This order must match the columns array from SchemaMetadata
 	return singleRow([]any{
 		rec.RecordType,
 		rec.RPTMONTHYEAR,
@@ -114,10 +111,10 @@ func convertTanfT1(record *schema.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// TANF T2 Converter - Adult-level data for active TANF cases
+// Tribal TANF T2 Converter - Adult-level data for active Tribal TANF cases
 
-func convertTanfT2(record *schema.ParsedRecord, datafileID int32) [][]any {
-	rec := &db.SearchIndexesTanfT2{
+func convertTribalT2(record *schema.ParsedRecord, datafileID int32) [][]any {
+	rec := &db.SearchIndexesTribalTanfT2{
 		RecordType:              toText(record.Get("RecordType")),
 		RPTMONTHYEAR:            toInt4(record.Get("RPT_MONTH_YEAR")),
 		CASENUMBER:              toText(record.Get("CASE_NUMBER")),
@@ -148,39 +145,22 @@ func convertTanfT2(record *schema.ParsedRecord, datafileID int32) [][]any {
 		MONTHSSTATETIMELIMIT:    toText(record.Get("MONTHS_STATE_TIME_LIMIT")),
 		CURRENTMONTHSTATEEXEMPT: toInt4(record.Get("CURRENT_MONTH_STATE_EXEMPT")),
 		EMPLOYMENTSTATUS:        toInt4(record.Get("EMPLOYMENT_STATUS")),
-		WORKELIGIBLEINDICATOR:   toText(record.Get("WORK_ELIGIBLE_INDICATOR")),
 		WORKPARTSTATUS:          toText(record.Get("WORK_PART_STATUS")),
 		UNSUBEMPLOYMENT:         toText(record.Get("UNSUB_EMPLOYMENT")),
 		SUBPRIVATEEMPLOYMENT:    toText(record.Get("SUB_PRIVATE_EMPLOYMENT")),
 		SUBPUBLICEMPLOYMENT:     toText(record.Get("SUB_PUBLIC_EMPLOYMENT")),
-		WORKEXPERIENCEHOP:       toText(record.Get("WORK_EXPERIENCE_HOP")),
-		WORKEXPERIENCEEA:        toText(record.Get("WORK_EXPERIENCE_EA")),
-		WORKEXPERIENCEHOL:       toText(record.Get("WORK_EXPERIENCE_HOL")),
+		WORKEXPERIENCE:          toText(record.Get("WORK_EXPERIENCE")),
 		OJT:                     toText(record.Get("OJT")),
-		JOBSEARCHHOP:            toText(record.Get("JOB_SEARCH_HOP")),
-		JOBSEARCHEA:             toText(record.Get("JOB_SEARCH_EA")),
-		JOBSEARCHHOL:            toText(record.Get("JOB_SEARCH_HOL")),
-		COMMSERVICESHOP:         toText(record.Get("COMM_SERVICES_HOP")),
-		COMMSERVICESEA:          toText(record.Get("COMM_SERVICES_EA")),
-		COMMSERVICESHOL:         toText(record.Get("COMM_SERVICES_HOL")),
-		VOCATIONALEDTRAININGHOP: toText(record.Get("VOCATIONAL_ED_TRAINING_HOP")),
-		VOCATIONALEDTRAININGEA:  toText(record.Get("VOCATIONAL_ED_TRAINING_EA")),
-		VOCATIONALEDTRAININGHOL: toText(record.Get("VOCATIONAL_ED_TRAINING_HOL")),
-		JOBSKILLSTRAININGHOP:    toText(record.Get("JOB_SKILLS_TRAINING_HOP")),
-		JOBSKILLSTRAININGEA:     toText(record.Get("JOB_SKILLS_TRAINING_EA")),
-		JOBSKILLSTRAININGHOL:    toText(record.Get("JOB_SKILLS_TRAINING_HOL")),
-		EDNOHIGHSCHOOLDIPLHOP:   toText(record.Get("ED_NO_HIGH_SCHOOL_DIPL_HOP")),
-		EDNOHIGHSCHOOLDIPLEA:    toText(record.Get("ED_NO_HIGH_SCHOOL_DIPL_EA")),
-		EDNOHIGHSCHOOLDIPLHOL:   toText(record.Get("ED_NO_HIGH_SCHOOL_DIPL_HOL")),
-		SCHOOLATTENDENCEHOP:     toText(record.Get("SCHOOL_ATTENDENCE_HOP")),
-		SCHOOLATTENDENCEEA:      toText(record.Get("SCHOOL_ATTENDENCE_EA")),
-		SCHOOLATTENDENCEHOL:     toText(record.Get("SCHOOL_ATTENDENCE_HOL")),
-		PROVIDECCHOP:            toText(record.Get("PROVIDE_CC_HOP")),
-		PROVIDECCEA:             toText(record.Get("PROVIDE_CC_EA")),
-		PROVIDECCHOL:            toText(record.Get("PROVIDE_CC_HOL")),
+		JOBSEARCH:               toText(record.Get("JOB_SEARCH")),
+		COMMSERVICES:            toText(record.Get("COMM_SERVICES")),
+		VOCATIONALEDTRAINING:    toText(record.Get("VOCATIONAL_ED_TRAINING")),
+		JOBSKILLSTRAINING:       toText(record.Get("JOB_SKILLS_TRAINING")),
+		EDNOHIGHSCHOOLDIPLOMA:   toText(record.Get("ED_NO_HIGH_SCHOOL_DIPLOMA")),
+		SCHOOLATTENDENCE:        toText(record.Get("SCHOOL_ATTENDENCE")),
+		PROVIDECC:               toText(record.Get("PROVIDE_CC")),
+		ADDWORKACTIVITIES:       toText(record.Get("ADD_WORK_ACTIVITIES")),
 		OTHERWORKACTIVITIES:     toText(record.Get("OTHER_WORK_ACTIVITIES")),
-		DEEMEDHOURSFOROVERALL:   toText(record.Get("DEEMED_HOURS_FOR_OVERALL")),
-		DEEMEDHOURSFORTWOPARENT: toText(record.Get("DEEMED_HOURS_FOR_TWO_PARENT")),
+		REQHRSWAIVERDEMO:        toText(record.Get("REQ_HRS_WAIVER_DEMO")),
 		EARNEDINCOME:            toText(record.Get("EARNED_INCOME")),
 		UNEARNEDINCOMETAXCREDIT: toText(record.Get("UNEARNED_INCOME_TAX_CREDIT")),
 		UNEARNEDSOCIALSECURITY:  toText(record.Get("UNEARNED_SOCIAL_SECURITY")),
@@ -192,7 +172,6 @@ func convertTanfT2(record *schema.ParsedRecord, datafileID int32) [][]any {
 		LineNumber:              toLineNumber(record.LineNumber),
 	}
 
-	// Return values in schema field order + id, datafile_id, line_number
 	return singleRow([]any{
 		rec.RecordType,
 		rec.RPTMONTHYEAR,
@@ -224,39 +203,22 @@ func convertTanfT2(record *schema.ParsedRecord, datafileID int32) [][]any {
 		rec.MONTHSSTATETIMELIMIT,
 		rec.CURRENTMONTHSTATEEXEMPT,
 		rec.EMPLOYMENTSTATUS,
-		rec.WORKELIGIBLEINDICATOR,
 		rec.WORKPARTSTATUS,
 		rec.UNSUBEMPLOYMENT,
 		rec.SUBPRIVATEEMPLOYMENT,
 		rec.SUBPUBLICEMPLOYMENT,
-		rec.WORKEXPERIENCEHOP,
-		rec.WORKEXPERIENCEEA,
-		rec.WORKEXPERIENCEHOL,
+		rec.WORKEXPERIENCE,
 		rec.OJT,
-		rec.JOBSEARCHHOP,
-		rec.JOBSEARCHEA,
-		rec.JOBSEARCHHOL,
-		rec.COMMSERVICESHOP,
-		rec.COMMSERVICESEA,
-		rec.COMMSERVICESHOL,
-		rec.VOCATIONALEDTRAININGHOP,
-		rec.VOCATIONALEDTRAININGEA,
-		rec.VOCATIONALEDTRAININGHOL,
-		rec.JOBSKILLSTRAININGHOP,
-		rec.JOBSKILLSTRAININGEA,
-		rec.JOBSKILLSTRAININGHOL,
-		rec.EDNOHIGHSCHOOLDIPLHOP,
-		rec.EDNOHIGHSCHOOLDIPLEA,
-		rec.EDNOHIGHSCHOOLDIPLHOL,
-		rec.SCHOOLATTENDENCEHOP,
-		rec.SCHOOLATTENDENCEEA,
-		rec.SCHOOLATTENDENCEHOL,
-		rec.PROVIDECCHOP,
-		rec.PROVIDECCEA,
-		rec.PROVIDECCHOL,
+		rec.JOBSEARCH,
+		rec.COMMSERVICES,
+		rec.VOCATIONALEDTRAINING,
+		rec.JOBSKILLSTRAINING,
+		rec.EDNOHIGHSCHOOLDIPLOMA,
+		rec.SCHOOLATTENDENCE,
+		rec.PROVIDECC,
+		rec.ADDWORKACTIVITIES,
 		rec.OTHERWORKACTIVITIES,
-		rec.DEEMEDHOURSFOROVERALL,
-		rec.DEEMEDHOURSFORTWOPARENT,
+		rec.REQHRSWAIVERDEMO,
 		rec.EARNEDINCOME,
 		rec.UNEARNEDINCOMETAXCREDIT,
 		rec.UNEARNEDSOCIALSECURITY,
@@ -269,13 +231,13 @@ func convertTanfT2(record *schema.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// TANF T3 Converter - Child-level data for active TANF cases
-// T3 records contain data for TWO children per line. This converter
-// produces 1 or 2 rows depending on whether Child 2 data is present.
+// Tribal TANF T3 Converter - Child-level data for active Tribal TANF cases
+// Note: Like TANF T3, Tribal T3 may contain data for two children per line.
+// For now, this converter only handles single-row output. Multi-row support
+// can be added when Tribal T3 schema is confirmed to have _2 suffix fields.
 
-func convertTanfT3(record *schema.ParsedRecord, datafileID int32) [][]any {
-	// Child 1 row (always present)
-	rec := &db.SearchIndexesTanfT3{
+func convertTribalT3(record *schema.ParsedRecord, datafileID int32) [][]any {
+	rec := &db.SearchIndexesTribalTanfT3{
 		RecordType:            toText(record.Get("RecordType")),
 		RPTMONTHYEAR:          toInt4(record.Get("RPT_MONTH_YEAR")),
 		CASENUMBER:            toText(record.Get("CASE_NUMBER")),
@@ -330,10 +292,10 @@ func convertTanfT3(record *schema.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// TANF T4 Converter - Case-level data for closed TANF cases
+// Tribal TANF T4 Converter - Case-level data for closed Tribal TANF cases
 
-func convertTanfT4(record *schema.ParsedRecord, datafileID int32) [][]any {
-	rec := &db.SearchIndexesTanfT4{
+func convertTribalT4(record *schema.ParsedRecord, datafileID int32) [][]any {
+	rec := &db.SearchIndexesTribalTanfT4{
 		RecordType:     toText(record.Get("RecordType")),
 		RPTMONTHYEAR:   toInt4(record.Get("RPT_MONTH_YEAR")),
 		CASENUMBER:     toText(record.Get("CASE_NUMBER")),
@@ -370,10 +332,10 @@ func convertTanfT4(record *schema.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// TANF T5 Converter - Adult-level data for closed TANF cases
+// Tribal TANF T5 Converter - Adult-level data for closed Tribal TANF cases
 
-func convertTanfT5(record *schema.ParsedRecord, datafileID int32) [][]any {
-	rec := &db.SearchIndexesTanfT5{
+func convertTribalT5(record *schema.ParsedRecord, datafileID int32) [][]any {
+	rec := &db.SearchIndexesTribalTanfT5{
 		RecordType:                toText(record.Get("RecordType")),
 		RPTMONTHYEAR:              toInt4(record.Get("RPT_MONTH_YEAR")),
 		CASENUMBER:                toText(record.Get("CASE_NUMBER")),
@@ -444,10 +406,10 @@ func convertTanfT5(record *schema.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// TANF T6 Converter - Aggregate data
+// Tribal TANF T6 Converter - Aggregate data
 
-func convertTanfT6(record *schema.ParsedRecord, datafileID int32) [][]any {
-	rec := &db.SearchIndexesTanfT6{
+func convertTribalT6(record *schema.ParsedRecord, datafileID int32) [][]any {
+	rec := &db.SearchIndexesTribalTanfT6{
 		RecordType:          toText(record.Get("RecordType")),
 		CALENDARQUARTER:     toInt4(record.Get("CALENDAR_QUARTER")),
 		RPTMONTHYEAR:        toInt4(record.Get("RPT_MONTH_YEAR")),
@@ -496,10 +458,10 @@ func convertTanfT6(record *schema.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// TANF T7 Converter - Stratum data
+// Tribal TANF T7 Converter - Stratum data
 
-func convertTanfT7(record *schema.ParsedRecord, datafileID int32) [][]any {
-	rec := &db.SearchIndexesTanfT7{
+func convertTribalT7(record *schema.ParsedRecord, datafileID int32) [][]any {
+	rec := &db.SearchIndexesTribalTanfT7{
 		RecordType:      toText(record.Get("RecordType")),
 		CALENDARQUARTER: toInt4(record.Get("CALENDAR_QUARTER")),
 		RPTMONTHYEAR:    toInt4(record.Get("RPT_MONTH_YEAR")),

@@ -1,4 +1,4 @@
-package transform
+package parser
 
 import (
 	"fmt"
@@ -25,7 +25,7 @@ var Registry = map[string]TransformFunc{
 }
 
 // Apply looks up and executes a transform by name.
-func Apply(name, value string, params map[string]any, ctx *schema.ParseContext) (string, error) {
+func ApplyTransform(name, value string, params map[string]any, ctx *schema.ParseContext) (string, error) {
 	fn, ok := Registry[name]
 	if !ok {
 		return "", fmt.Errorf("unknown transform: %s", name)

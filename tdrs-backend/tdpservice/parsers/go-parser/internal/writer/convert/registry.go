@@ -1,4 +1,4 @@
-package converter
+package convert
 
 import (
 	"go-parser/internal/schema"

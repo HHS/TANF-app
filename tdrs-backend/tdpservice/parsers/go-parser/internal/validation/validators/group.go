@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"go-parser/internal/parser"
 	"go-parser/internal/validation"
 	"go-parser/internal/validation/registry"
-	"go-parser/internal/worker"
 )
 
 // RegisterGroup registers all group-level (Cat 4) validators with the registry.
@@ -386,7 +386,7 @@ func UniqueFieldAcrossRecordsFactory(params map[string]any) (validation.Validato
 }
 
 // countRecordType counts records of a specific type in a group.
-func countRecordType(group *worker.ParsedGroup, recordType string) int {
+func countRecordType(group *parser.ParsedGroup, recordType string) int {
 	if group == nil {
 		return 0
 	}
