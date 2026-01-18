@@ -35,8 +35,8 @@ func (pb *ParsedBatch) TotalRecords() int {
 	return total
 }
 
-// Pool manages worker goroutines for parallel parsing.
-type Pool struct {
+// ParserPool manages worker goroutines for parallel parsing.
+type ParserPool struct {
 	numWorkers int
 	extractor  FieldExtractor
 	parseCtx   *schema.ParseContext // Runtime context from header
@@ -48,12 +48,6 @@ type Pool struct {
 	results chan *ParsedBatch
 
 	wg sync.WaitGroup
-}
-
-// SetParseContext sets the runtime context after header parsing.
-// Must be called before processing data records.
-func (p *Pool) SetParseContext(ctx *schema.ParseContext) {
-	p.parseCtx = ctx
 }
 
 // PoolConfig configures the worker pool.
@@ -72,18 +66,19 @@ func DefaultPoolConfig() PoolConfig {
 	}
 }
 
-// NewPool creates a worker pool.
-func NewPool(format filespec.Format, config PoolConfig) *Pool {
-	return &Pool{
+// NewParserPool creates a worker pool.
+func NewParserPool(format filespec.Format, config PoolConfig, ctx *schema.ParseContext) *ParserPool {
+	return &ParserPool{
 		numWorkers: config.NumWorkers,
 		extractor:  GetExtractor(format),
+		parseCtx:   ctx,
 		work:       make(chan *Batch, config.WorkBufferSize),
 		results:    make(chan *ParsedBatch, config.ResultBufferSize),
 	}
 }
 
 // Start launches the worker goroutines.
-func (p *Pool) Start(ctx context.Context) {
+func (p *ParserPool) Start(ctx context.Context) {
 	for i := 0; i < p.numWorkers; i++ {
 		p.wg.Add(1)
 		go p.worker(ctx)
@@ -92,29 +87,29 @@ func (p *Pool) Start(ctx context.Context) {
 
 // Submit submits a Batch for processing.
 // Blocks if the work channel is full (backpressure).
-func (p *Pool) Submit(batch *Batch) {
+func (p *ParserPool) Submit(batch *Batch) {
 	p.work <- batch
 }
 
 // CloseInputs signals that no more work will be submitted.
-func (p *Pool) CloseInputs() {
+func (p *ParserPool) CloseInputs() {
 	close(p.work)
 }
 
 // Wait blocks until all workers finish, then closes result channels.
-func (p *Pool) Wait() {
+func (p *ParserPool) Wait() {
 	p.wg.Wait()
 	close(p.results)
 	log.Print("All lines in file have been parsed into records and queued for writing.")
 }
 
 // Results returns the channel for receiving parsed batch results.
-func (p *Pool) Results() <-chan *ParsedBatch {
+func (p *ParserPool) Results() <-chan *ParsedBatch {
 	return p.results
 }
 
 // worker is the main worker goroutine.
-func (p *Pool) worker(ctx context.Context) {
+func (p *ParserPool) worker(ctx context.Context) {
 	defer p.wg.Done()
 
 	for {
@@ -132,13 +127,13 @@ func (p *Pool) worker(ctx context.Context) {
 }
 
 // processBatch parses all records in all groups within a batch.
-func (p *Pool) processBatch(batch *Batch) *ParsedBatch {
+func (p *ParserPool) processBatch(batch *Batch) *ParsedBatch {
 	result := &ParsedBatch{
 		BatchID: batch.BatchID,
-		Groups:  make([]*ParsedGroup, 0, len(batch.Groups)),
+		Groups:  make([]*ParsedGroup, 0, len(batch.DecodedGroups)),
 	}
 
-	for _, group := range batch.Groups {
+	for _, group := range batch.DecodedGroups {
 		parsedGroup := p.processGroup(group)
 		result.Groups = append(result.Groups, parsedGroup)
 	}
@@ -147,15 +142,15 @@ func (p *Pool) processBatch(batch *Batch) *ParsedBatch {
 }
 
 // processGroup parses all records in a single group.
-func (p *Pool) processGroup(group *RecordGroup) *ParsedGroup {
+func (p *ParserPool) processGroup(decodedGroup *DecodedGroup) *ParsedGroup {
 	result := &ParsedGroup{
-		Key:          group.Key,
-		RptMonthYear: group.RptMonthYear,
-		CaseNumber:   group.CaseNumber,
-		Records:      make([]*schema.ParsedRecord, 0, len(group.Lines)),
+		Key:          decodedGroup.Key,
+		RptMonthYear: decodedGroup.RptMonthYear,
+		CaseNumber:   decodedGroup.CaseNumber,
+		Records:      make([]*schema.ParsedRecord, 0, len(decodedGroup.DecodedRecords)),
 	}
 
-	for _, line := range group.Lines {
+	for _, line := range decodedGroup.DecodedRecords {
 		records, err := p.parseRow(line)
 		if err != nil {
 			log.Printf("Failed to parse line %d: %v", line.Row.LineNum(), err)
@@ -167,11 +162,11 @@ func (p *Pool) processGroup(group *RecordGroup) *ParsedGroup {
 	return result
 }
 
-// parseRow parses a single row into one or more ParsedRecords.
+// parseRow parses a single DecodedRecord into one or more ParsedRecords.
 // For multi-segment schemas, one input line produces multiple records (one per segment).
 // Records are acquired from the schema's object pool and must be released after use.
-func (p *Pool) parseRow(line RawLine) ([]*schema.ParsedRecord, error) {
-	numSegments := len(line.Schema.Segments)
+func (p *ParserPool) parseRow(decodedRecord DecodedRecord) ([]*schema.ParsedRecord, error) {
+	numSegments := len(decodedRecord.Schema.Segments)
 	if numSegments == 0 {
 		// Schema has no segments - this shouldn't happen with the new structure
 		return nil, nil
@@ -180,10 +175,10 @@ func (p *Pool) parseRow(line RawLine) ([]*schema.ParsedRecord, error) {
 	// Parse shared fields once into a cache (one small allocation per row).
 	// We use a map here temporarily to collect shared values, then copy them
 	// into each record's indexed slice.
-	sharedCache := make(MapFieldGetter, len(line.Schema.Shared))
-	for i := range line.Schema.Shared {
-		field := &line.Schema.Shared[i]
-		value, err := p.extractor.Extract(line.Row, field, p.parseCtx, sharedCache)
+	sharedCache := make(MapFieldGetter, len(decodedRecord.Schema.Shared))
+	for i := range decodedRecord.Schema.Shared {
+		field := &decodedRecord.Schema.Shared[i]
+		value, err := p.extractor.Extract(decodedRecord.Row, field, p.parseCtx, sharedCache)
 		if err != nil {
 			log.Printf("Failed to extract shared field %s: %v", field.Name, err)
 			continue
@@ -195,10 +190,10 @@ func (p *Pool) parseRow(line RawLine) ([]*schema.ParsedRecord, error) {
 
 	// Parse each segment into a separate record acquired from the pool
 	records := make([]*schema.ParsedRecord, 0, numSegments)
-	for segIdx, segment := range line.Schema.Segments {
+	for segIdx, segment := range decodedRecord.Schema.Segments {
 		// Acquire record from pool (reuses memory, reduces GC pressure)
-		record := line.Schema.AcquireRecord()
-		record.LineNumber = line.Row.LineNum()
+		record := decodedRecord.Schema.AcquireRecord()
+		record.LineNumber = decodedRecord.Row.LineNum()
 		record.SegmentIndex = segIdx
 
 		// Copy cached shared fields into record using Set()
@@ -212,7 +207,7 @@ func (p *Pool) parseRow(line RawLine) ([]*schema.ParsedRecord, error) {
 			field := &segment.Fields[i]
 			// Create a temporary map-like interface for the extractor
 			// The extractor expects a map for lookups (e.g., source_field resolution)
-			value, err := p.extractor.Extract(line.Row, field, p.parseCtx, record)
+			value, err := p.extractor.Extract(decodedRecord.Row, field, p.parseCtx, record)
 			if err != nil {
 				log.Printf("Failed to extract field %s: %v", field.Name, err)
 				continue
@@ -232,7 +227,7 @@ func (p *Pool) parseRow(line RawLine) ([]*schema.ParsedRecord, error) {
 
 		if missingRequired {
 			// Invalid segment - release record back to pool immediately
-			line.Schema.ReleaseRecord(record)
+			decodedRecord.Schema.ReleaseRecord(record)
 			continue
 		}
 

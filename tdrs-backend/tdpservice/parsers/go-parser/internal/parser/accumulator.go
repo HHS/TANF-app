@@ -29,13 +29,13 @@ type Accumulator struct {
 	sorted         bool
 
 	// State for key-based grouping (unsorted mode)
-	groups map[string]*RecordGroup
+	groups map[string]*DecodedGroup
 
 	// State for sorted streaming mode
-	currentGroup *RecordGroup
+	currentGroup *DecodedGroup
 
 	// State for batching
-	pendingGroups []*RecordGroup
+	pendingGroups []*DecodedGroup
 	batchCounter  int
 }
 
@@ -54,9 +54,9 @@ func NewAccumulator(spec *filespec.FileSpec, detector *RecordTypeDetector) *Accu
 		batchSize:      spec.Accumulator.BatchSize,
 		groupedSchemas: groupedSchemas,
 		sorted:         spec.Accumulator.Sorted,
-		groups:         make(map[string]*RecordGroup),
+		groups:         make(map[string]*DecodedGroup),
 		currentGroup:   nil,
-		pendingGroups:  make([]*RecordGroup, 0),
+		pendingGroups:  make([]*DecodedGroup, 0),
 		batchCounter:   0,
 	}
 }
@@ -86,7 +86,7 @@ func (a *Accumulator) Add(row decoder.Row) (batch *Batch, sch *schema.CompiledSc
 		return nil, sch, false, nil
 	}
 
-	line := RawLine{Row: row, Schema: sch}
+	line := DecodedRecord{Row: row, Schema: sch}
 
 	if a.hasKeyFields {
 		// Key-based grouping mode
@@ -100,7 +100,7 @@ func (a *Accumulator) Add(row decoder.Row) (batch *Batch, sch *schema.CompiledSc
 // addWithKey handles rows when key_fields is configured.
 // In unsorted mode, groups are accumulated in memory and only returned via Drain().
 // In sorted mode, groups are flushed as soon as a new key is encountered.
-func (a *Accumulator) addWithKey(line RawLine, sch *schema.CompiledSchema) (*Batch, *schema.CompiledSchema, bool, error) {
+func (a *Accumulator) addWithKey(line DecodedRecord, sch *schema.CompiledSchema) (*Batch, *schema.CompiledSchema, bool, error) {
 	// Extract the grouping key
 	key, rptMonth, caseNum, err := a.extractKey(line.Row)
 	if err != nil {
@@ -114,33 +114,33 @@ func (a *Accumulator) addWithKey(line RawLine, sch *schema.CompiledSchema) (*Bat
 }
 
 // addWithKeySorted handles sorted mode where groups are flushed when a new key appears.
-func (a *Accumulator) addWithKeySorted(line RawLine, sch *schema.CompiledSchema, key, rptMonth, caseNum string) (*Batch, *schema.CompiledSchema, bool, error) {
+func (a *Accumulator) addWithKeySorted(line DecodedRecord, sch *schema.CompiledSchema, key, rptMonth, caseNum string) (*Batch, *schema.CompiledSchema, bool, error) {
 	var completedBatch *Batch
 
 	// Check if this is a new group
 	if a.currentGroup == nil {
 		// First record - start a new group
-		a.currentGroup = &RecordGroup{
+		a.currentGroup = &DecodedGroup{
 			Key:          key,
 			RptMonthYear: rptMonth,
 			CaseNumber:   caseNum,
-			Lines:        make([]RawLine, 0, 8),
+			DecodedRecords:        make([]DecodedRecord, 0, 8),
 		}
 	} else if a.currentGroup.Key != key {
 		// Key changed - current group is complete
 		completedBatch = a.flushCurrentGroup()
 
 		// Start new group
-		a.currentGroup = &RecordGroup{
+		a.currentGroup = &DecodedGroup{
 			Key:          key,
 			RptMonthYear: rptMonth,
 			CaseNumber:   caseNum,
-			Lines:        make([]RawLine, 0, 8),
+			DecodedRecords:        make([]DecodedRecord, 0, 8),
 		}
 	}
 
 	// Add line to current group
-	a.currentGroup.Lines = append(a.currentGroup.Lines, line)
+	a.currentGroup.DecodedRecords = append(a.currentGroup.DecodedRecords, line)
 
 	return completedBatch, sch, true, nil
 }
@@ -156,7 +156,7 @@ func (a *Accumulator) flushCurrentGroup() *Batch {
 		// Each group is its own batch
 		batch := &Batch{
 			BatchID: a.batchCounter,
-			Groups:  []*RecordGroup{a.currentGroup},
+			DecodedGroups:  []*DecodedGroup{a.currentGroup},
 		}
 		a.batchCounter++
 		return batch
@@ -168,10 +168,10 @@ func (a *Accumulator) flushCurrentGroup() *Batch {
 	if len(a.pendingGroups) >= a.batchSize {
 		batch := &Batch{
 			BatchID: a.batchCounter,
-			Groups:  a.pendingGroups,
+			DecodedGroups:  a.pendingGroups,
 		}
 		a.batchCounter++
-		a.pendingGroups = make([]*RecordGroup, 0, a.batchSize)
+		a.pendingGroups = make([]*DecodedGroup, 0, a.batchSize)
 		return batch
 	}
 
@@ -179,21 +179,21 @@ func (a *Accumulator) flushCurrentGroup() *Batch {
 }
 
 // addWithKeyUnsorted handles unsorted mode where all groups are held in memory.
-func (a *Accumulator) addWithKeyUnsorted(line RawLine, sch *schema.CompiledSchema, key, rptMonth, caseNum string) (*Batch, *schema.CompiledSchema, bool, error) {
+func (a *Accumulator) addWithKeyUnsorted(line DecodedRecord, sch *schema.CompiledSchema, key, rptMonth, caseNum string) (*Batch, *schema.CompiledSchema, bool, error) {
 	// Get or create the group
 	group, exists := a.groups[key]
 	if !exists {
-		group = &RecordGroup{
+		group = &DecodedGroup{
 			Key:          key,
 			RptMonthYear: rptMonth,
 			CaseNumber:   caseNum,
-			Lines:        make([]RawLine, 0, 8), // Pre-allocate for typical case size
+			DecodedRecords:        make([]DecodedRecord, 0, 8), // Pre-allocate for typical case size
 		}
 		a.groups[key] = group
 	}
 
 	// Add the row to the group
-	group.Lines = append(group.Lines, line)
+	group.DecodedRecords = append(group.DecodedRecords, line)
 
 	// For unsorted key-based grouping, batches are only returned from Drain()
 	return nil, sch, true, nil
@@ -201,18 +201,18 @@ func (a *Accumulator) addWithKeyUnsorted(line RawLine, sch *schema.CompiledSchem
 
 // addWithoutKey handles rows when key_fields is empty.
 // Each record is its own group. Batches may be returned immediately.
-func (a *Accumulator) addWithoutKey(line RawLine, sch *schema.CompiledSchema) (*Batch, *schema.CompiledSchema, bool, error) {
+func (a *Accumulator) addWithoutKey(line DecodedRecord, sch *schema.CompiledSchema) (*Batch, *schema.CompiledSchema, bool, error) {
 	// Create a single-record group
-	group := &RecordGroup{
+	group := &DecodedGroup{
 		Key:   "", // No key for non-grouped records
-		Lines: []RawLine{line},
+		DecodedRecords: []DecodedRecord{line},
 	}
 
 	// Per-record mode: batch_size = 0 means emit immediately
 	if a.batchSize == 0 {
 		batch := &Batch{
 			BatchID: a.batchCounter,
-			Groups:  []*RecordGroup{group},
+			DecodedGroups:  []*DecodedGroup{group},
 		}
 		a.batchCounter++
 		return batch, sch, true, nil
@@ -224,10 +224,10 @@ func (a *Accumulator) addWithoutKey(line RawLine, sch *schema.CompiledSchema) (*
 	if len(a.pendingGroups) >= a.batchSize {
 		batch := &Batch{
 			BatchID: a.batchCounter,
-			Groups:  a.pendingGroups,
+			DecodedGroups:  a.pendingGroups,
 		}
 		a.batchCounter++
-		a.pendingGroups = make([]*RecordGroup, 0, a.batchSize)
+		a.pendingGroups = make([]*DecodedGroup, 0, a.batchSize)
 		return batch, sch, true, nil
 	}
 
@@ -288,10 +288,10 @@ func (a *Accumulator) Drain() []*Batch {
 		if len(a.pendingGroups) > 0 {
 			batches = append(batches, &Batch{
 				BatchID: a.batchCounter,
-				Groups:  a.pendingGroups,
+				DecodedGroups:  a.pendingGroups,
 			})
 			a.batchCounter++
-			a.pendingGroups = make([]*RecordGroup, 0)
+			a.pendingGroups = make([]*DecodedGroup, 0)
 		}
 	}
 
@@ -308,7 +308,7 @@ func (a *Accumulator) drainSorted() []*Batch {
 			// Each group is its own batch
 			batches = append(batches, &Batch{
 				BatchID: a.batchCounter,
-				Groups:  []*RecordGroup{a.currentGroup},
+				DecodedGroups:  []*DecodedGroup{a.currentGroup},
 			})
 			a.batchCounter++
 		} else {
@@ -322,10 +322,10 @@ func (a *Accumulator) drainSorted() []*Batch {
 	if len(a.pendingGroups) > 0 {
 		batches = append(batches, &Batch{
 			BatchID: a.batchCounter,
-			Groups:  a.pendingGroups,
+			DecodedGroups:  a.pendingGroups,
 		})
 		a.batchCounter++
-		a.pendingGroups = make([]*RecordGroup, 0, a.batchSize)
+		a.pendingGroups = make([]*DecodedGroup, 0, a.batchSize)
 	}
 
 	return batches
@@ -336,7 +336,7 @@ func (a *Accumulator) drainUnsorted() []*Batch {
 	var batches []*Batch
 
 	// Collect all groups from the map
-	allGroups := make([]*RecordGroup, 0, len(a.groups))
+	allGroups := make([]*DecodedGroup, 0, len(a.groups))
 	for _, group := range a.groups {
 		allGroups = append(allGroups, group)
 	}
@@ -346,7 +346,7 @@ func (a *Accumulator) drainUnsorted() []*Batch {
 		for _, group := range allGroups {
 			batches = append(batches, &Batch{
 				BatchID: a.batchCounter,
-				Groups:  []*RecordGroup{group},
+				DecodedGroups:  []*DecodedGroup{group},
 			})
 			a.batchCounter++
 		}
@@ -359,14 +359,14 @@ func (a *Accumulator) drainUnsorted() []*Batch {
 			}
 			batches = append(batches, &Batch{
 				BatchID: a.batchCounter,
-				Groups:  allGroups[i:end],
+				DecodedGroups:  allGroups[i:end],
 			})
 			a.batchCounter++
 		}
 	}
 
 	// Clear accumulated groups
-	a.groups = make(map[string]*RecordGroup)
+	a.groups = make(map[string]*DecodedGroup)
 
 	return batches
 }
@@ -376,13 +376,13 @@ func (a *Accumulator) Stats() (numGroups, totalLines, pendingGroups int) {
 	// Count groups in map (unsorted mode)
 	for _, g := range a.groups {
 		numGroups++
-		totalLines += len(g.Lines)
+		totalLines += len(g.DecodedRecords)
 	}
 
 	// Count current group (sorted mode)
 	if a.currentGroup != nil {
 		numGroups++
-		totalLines += len(a.currentGroup.Lines)
+		totalLines += len(a.currentGroup.DecodedRecords)
 	}
 
 	pendingGroups = len(a.pendingGroups)

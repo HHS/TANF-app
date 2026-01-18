@@ -14,7 +14,7 @@ import (
 // Multiple dispatcher goroutines compete on the Results channel for parallel processing.
 func routeResults(
 	ctx context.Context,
-	pool *parser.Pool,
+	pool *parser.ParserPool,
 	router *writer.Router,
 	numDispatchers int,
 ) error {

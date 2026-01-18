@@ -98,10 +98,9 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params ProcessParams) (*Proc
 	// Step 4: Create record type detector
 	detector := parser.NewRecordTypeDetector(spec, p.registry)
 
-	// Step 5: Create worker pool
-	workerPool := parser.NewPool(spec.Format, p.config.toWorkerConfig())
-	workerPool.SetParseContext(parseCtx)
-	workerPool.Start(ctx)
+	// Step 5: Create parser worker pool
+	parsers := parser.NewParserPool(spec.Format, p.config.toWorkerConfig(), parseCtx)
+	parsers.Start(ctx)
 
 	// Step 6: Create database router
 	router := writer.NewRouter(p.pool, params.DatafileID, spec, p.registry, p.config.PoolPrewarmSize)
@@ -113,20 +112,20 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params ProcessParams) (*Proc
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		collectorErr = routeResults(ctx, workerPool, router, p.config.NumDispatchers)
+		collectorErr = routeResults(ctx, parsers, router, p.config.NumDispatchers)
 	}()
 
 	// Step 8: Process rows through the accumulator
-	err = processRows(dec, spec, detector, workerPool)
+	err = processRows(dec, spec, detector, parsers)
 	if err != nil {
-		workerPool.CloseInputs()
-		workerPool.Wait()
+		parsers.CloseInputs()
+		parsers.Wait()
 		return nil, err
 	}
 
 	// Step 9: Wait for everything to complete
-	workerPool.CloseInputs()
-	workerPool.Wait()
+	parsers.CloseInputs()
+	parsers.Wait()
 	wg.Wait()
 
 	if collectorErr != nil {
@@ -154,7 +153,7 @@ func processRows(
 	dec decoder.Decoder,
 	spec *filespec.FileSpec,
 	detector *parser.RecordTypeDetector,
-	pool *parser.Pool,
+	pool *parser.ParserPool,
 ) error {
 	acc := parser.NewAccumulator(spec, detector)
 
