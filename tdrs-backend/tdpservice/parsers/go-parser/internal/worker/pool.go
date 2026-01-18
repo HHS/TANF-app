@@ -11,13 +11,6 @@ import (
 	"go-parser/internal/schema"
 )
 
-// ParseError represents a parsing error for a single row.
-type ParseError struct {
-	LineNumber int
-	RecordType string
-	Message    string
-}
-
 // ParsedGroup contains parsing results for a single RecordGroup.
 type ParsedGroup struct {
 	// Key is the grouping key (empty for non-keyed records)
@@ -27,9 +20,6 @@ type ParsedGroup struct {
 
 	// Records contains all successfully parsed records in this group
 	Records []*schema.ParsedRecord
-
-	// Errors contains any parsing errors encountered
-	Errors []ParseError
 }
 
 // ParsedBatch contains parsing results for a Batch (one or more groups).
@@ -43,15 +33,6 @@ func (pb *ParsedBatch) TotalRecords() int {
 	total := 0
 	for _, g := range pb.Groups {
 		total += len(g.Records)
-	}
-	return total
-}
-
-// TotalErrors returns the total number of parsing errors.
-func (pb *ParsedBatch) TotalErrors() int {
-	total := 0
-	for _, g := range pb.Groups {
-		total += len(g.Errors)
 	}
 	return total
 }
@@ -174,17 +155,12 @@ func (p *Pool) processGroup(group *processor.RecordGroup) *ParsedGroup {
 		RptMonthYear: group.RptMonthYear,
 		CaseNumber:   group.CaseNumber,
 		Records:      make([]*schema.ParsedRecord, 0, len(group.Lines)),
-		Errors:       make([]ParseError, 0),
 	}
 
 	for _, line := range group.Lines {
 		records, err := p.parseRow(line)
 		if err != nil {
-			result.Errors = append(result.Errors, ParseError{
-				LineNumber: line.Row.LineNum(),
-				RecordType: line.Schema.RecordType,
-				Message:    err.Error(),
-			})
+			log.Printf("Failed to parse line %d: %v", line.Row.LineNum(), err)
 			continue
 		}
 		result.Records = append(result.Records, records...)
@@ -211,6 +187,7 @@ func (p *Pool) parseRow(line processor.RawLine) ([]*schema.ParsedRecord, error) 
 		field := &line.Schema.Shared[i]
 		value, err := p.extractor.Extract(line.Row, field, p.parseCtx, sharedCache)
 		if err != nil {
+			log.Printf("Failed to extract shared field %s: %v", field.Name, err)
 			continue
 		}
 		if value != nil {
@@ -239,6 +216,7 @@ func (p *Pool) parseRow(line processor.RawLine) ([]*schema.ParsedRecord, error) 
 			// The extractor expects a map for lookups (e.g., source_field resolution)
 			value, err := p.extractor.Extract(line.Row, field, p.parseCtx, record)
 			if err != nil {
+				log.Printf("Failed to extract field %s: %v", field.Name, err)
 				continue
 			}
 			if value != nil {

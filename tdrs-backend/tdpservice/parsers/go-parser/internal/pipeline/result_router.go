@@ -27,14 +27,6 @@ func routeResults(
 		go func() {
 			defer wg.Done()
 			for pb := range pool.Results() {
-				// Log any parsing errors
-				for _, group := range pb.Groups {
-					for _, e := range group.Errors {
-						log.Printf("Dispatcher: Parse error at line %d (%s): %s",
-							e.LineNumber, e.RecordType, e.Message)
-					}
-				}
-
 				// Route the batch to writers
 				if err := router.RouteBatch(ctx, pb); err != nil {
 					log.Printf("Dispatcher: batch %d error: %v", pb.BatchID, err)
