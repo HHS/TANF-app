@@ -11,25 +11,25 @@ import (
 )
 
 // routeResults receives parsed batches from the parser.pool and routes them to database writers.
-// Multiple dispatcher goroutines compete on the Results channel for parallel processing.
+// Multiple router goroutines compete on the Results channel for parallel processing.
 func routeResults(
 	ctx context.Context,
 	pool *parser.ParserPool,
 	router *writer.Router,
-	numDispatchers int,
+	numRouters int,
 ) error {
 	var wg sync.WaitGroup
-	errChan := make(chan error, numDispatchers)
+	errChan := make(chan error, numRouters)
 
-	// Spawn multiple dispatchers reading from the same channel
-	for range numDispatchers {
+	// Spawn multiple routers reading from the same channel
+	for range numRouters {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			for pb := range pool.Results() {
 				// Route the batch to writers
 				if err := router.RouteBatch(ctx, pb); err != nil {
-					log.Printf("Dispatcher: batch %d error: %v", pb.BatchID, err)
+					log.Printf("Router: batch %d error: %v", pb.BatchID, err)
 					errChan <- err
 					return
 				}
@@ -37,11 +37,11 @@ func routeResults(
 		}()
 	}
 
-	// Wait for all dispatchers to finish
+	// Wait for all routers to finish
 	wg.Wait()
 	close(errChan)
 
-	// Collect any errors from dispatchers
+	// Collect any errors from routers
 	var errs []error
 	for err := range errChan {
 		errs = append(errs, err)

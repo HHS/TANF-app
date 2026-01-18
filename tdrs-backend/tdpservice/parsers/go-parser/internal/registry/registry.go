@@ -25,7 +25,7 @@ type Registry struct {
 	// metadata holds database info derived from schemas (table names, columns)
 	// Built during Load() from YAML schema field definitions
 	// See SchemaMetadata type in schema_metadata.go (same package)
-	metadata map[string]*SchemaMetadata
+	metadata map[string]*DbSchemaMetadata
 
 	// configDir is the root configuration directory
 	configDir string
@@ -51,7 +51,7 @@ func Load(configDir string) (*Registry, error) {
 	r := &Registry{
 		fileSpecs: make(map[string]*filespec.FileSpec),
 		schemas:   make(map[string]*schema.CompiledSchema),
-		metadata:  make(map[string]*SchemaMetadata),
+		metadata:  make(map[string]*DbSchemaMetadata),
 		configDir: configDir,
 	}
 

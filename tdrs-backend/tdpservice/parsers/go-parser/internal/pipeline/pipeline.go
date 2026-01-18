@@ -40,7 +40,7 @@ type ProcessResult struct {
 }
 
 // New creates a Pipeline with the given configuration.
-func New(pool *pgxpool.Pool, reg *registry.Registry, config PipelineConfig) *Pipeline {
+func NewPipline(pool *pgxpool.Pool, reg *registry.Registry, config PipelineConfig) *Pipeline {
 	return &Pipeline{
 		pool:     pool,
 		registry: reg,
@@ -112,7 +112,7 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params ProcessParams) (*Proc
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		collectorErr = routeResults(ctx, parsers, router, p.config.NumDispatchers)
+		collectorErr = routeResults(ctx, parsers, router, p.config.NumRouters)
 	}()
 
 	// Step 8: Process rows through the accumulator
