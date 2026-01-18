@@ -31,20 +31,20 @@ func main() {
 	ctx := context.Background()
 
 	// Connect to database
-	databaseUrl := "postgres://tdpuser:something_secure@localhost:5432/tdrs_test?sslmode=disable"
-	config, err := pgxpool.ParseConfig(databaseUrl)
+	dbUrl := "postgres://tdpuser:something_secure@localhost:5432/tdrs_test?sslmode=disable"
+	dbPoolCfg, err := pgxpool.ParseConfig(dbUrl)
 	if err != nil {
 		log.Fatalf("Failed to parse database URL: %v", err)
 	}
-	config.MinConns = 4
-	config.MinIdleConns = 1
-	config.MaxConns = 4
+	dbPoolCfg.MinConns = 4
+	dbPoolCfg.MinIdleConns = 1
+	dbPoolCfg.MaxConns = 4
 
-	pool, err := pgxpool.NewWithConfig(ctx, config)
+	dbPool, err := pgxpool.NewWithConfig(ctx, dbPoolCfg)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
-	defer pool.Close()
+	defer dbPool.Close()
 
 	// Load configuration
 	reg, err := registry.Load("config")
@@ -63,8 +63,8 @@ func main() {
 	// section := 4
 
 	// TANF test files
-	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.FTP1.TS06"
-	filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.NDM1.TS53_fake.txt"
+	filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.FTP1.TS06"
+	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.NDM1.TS53_fake.txt"
 	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.FTP2.TS06"
 	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.FTP3.TS06"
 	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.FTP4.TS06"
@@ -89,18 +89,18 @@ func main() {
 	datafileParams := testutil.DefaultDatafileParams()
 	datafileParams.ProgramType = program
 	datafileParams.Section = "Active Case Data"
-	datafileID, err := testutil.CreateTestDatafile(ctx, pool, datafileParams)
+	datafileID, err := testutil.CreateTestDatafile(ctx, dbPool, datafileParams)
 	if err != nil {
 		log.Fatalf("Failed to create test datafile: %v", err)
 	}
 	log.Printf("Created test datafile with ID: %d", datafileID)
 	defer func() {
-		testutil.DeleteTestDatafile(ctx, pool, datafileID)
+		testutil.DeleteTestDatafile(ctx, dbPool, datafileID)
 	}()
 
 	// Create and run pipeline
-	p := pipeline.New(pool, reg, pipeline.DefaultConfig())
-	result, err := p.ProcessFile(ctx, pipeline.ProcessParams{
+	pipeln := pipeline.NewPipline(dbPool, reg, pipeline.DefaultConfig())
+	result, err := pipeln.ProcessFile(ctx, pipeline.ProcessParams{
 		Program:    program,
 		Section:    section,
 		FilePath:   filePath,
