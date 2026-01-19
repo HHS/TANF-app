@@ -82,6 +82,7 @@ type ValidationResult struct {
 	Row        decoder.Row
 
 	// Config that triggered this validation (for message/error_type overrides)
+	// TODO: This is a heavy object. Might need to extract only what we need from it
 	Config *ValidatorConfig
 }
 
