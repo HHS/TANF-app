@@ -61,6 +61,3 @@ accumulator:
 
   # No grouping needed for FRA records
   grouped_schemas: []
-
-  # Not applicable for FRA
-  sorted: false

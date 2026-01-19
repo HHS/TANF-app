@@ -67,6 +67,3 @@ accumulator:
 
   # All record types are processed individually (no grouping needed)
   grouped_schemas: []
-
-  # Not applicable for stratum data, but included for consistency
-  sorted: false

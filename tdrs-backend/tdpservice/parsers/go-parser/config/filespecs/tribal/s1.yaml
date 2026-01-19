@@ -87,6 +87,3 @@ accumulator:
     - tribal_tanf/t1
     - tribal_tanf/t2
     - tribal_tanf/t3
-
-  # Tribal TANF files are sorted by case - all records for a case appear consecutively.
-  sorted: true

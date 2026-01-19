@@ -79,6 +79,3 @@ accumulator:
   grouped_schemas:
     - tribal_tanf/t4
     - tribal_tanf/t5
-
-  # Tribal TANF files are sorted by case - all records for a case appear consecutively.
-  sorted: true
