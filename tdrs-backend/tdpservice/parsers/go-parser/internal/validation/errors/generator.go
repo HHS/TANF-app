@@ -76,29 +76,18 @@ func extractFieldMeta(result *validation.ValidationResult) (string, string, stri
 	columnNumber := ""
 	fieldName := result.FieldName
 	friendlyName := ""
-	fieldDef, ok := result.Record.Schema.SharedFieldsByName[result.FieldName]
-		if ok {
-			itemNumber = fieldDef.Item
-			columnNumber = strconv.Itoa(fieldDef.Column)
-			friendlyName = fieldDef.FriendlyName
-			if fieldName == "" {
-				fieldName = fieldDef.Name
-			}
-		} else {
-			// If not a shared field, check if it's a segment field
-			// TODO: it might be better to create indexes into the segment field defs
-			segmentDef := result.Record.Schema.Segments[result.Record.SegmentIndex]
-			for _, field := range segmentDef.Fields {
-				if field.Name == result.FieldName {
-					itemNumber = field.Item
-					columnNumber = strconv.Itoa(field.Column)
-					friendlyName = field.FriendlyName
-					if fieldName == "" {
-						fieldName = field.Name
-					}
-				}
-			}
+
+	// O(1) lookup - get the ParsedField which contains the FieldDef pointer
+	pf := result.Record.GetParsedField(result.FieldName)
+	if pf != nil && pf.Def != nil {
+		itemNumber = pf.Def.Item
+		columnNumber = strconv.Itoa(pf.Def.Column)
+		friendlyName = pf.Def.FriendlyName
+		if fieldName == "" {
+			fieldName = pf.Def.Name
 		}
+	}
+
 	return itemNumber, columnNumber, fieldName, friendlyName
 }
 

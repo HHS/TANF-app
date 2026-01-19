@@ -147,9 +147,9 @@ func (p *ParserPool) parseRow(decodedRecord DecodedRecord) ([]*ParsedRecord, err
 	}
 
 	// Parse shared fields once into a cache (one small allocation per row).
-	// We use a map here temporarily to collect shared values, then copy them
-	// into each record's indexed slice.
-	sharedCache := make(MapFieldGetter, len(schema.Shared))
+	// We use ParsedFieldCache to store both the FieldDef pointer and value,
+	// enabling O(1) field metadata access during validation.
+	sharedCache := make(ParsedFieldCache, len(schema.Shared))
 	for i := range schema.Shared {
 		field := &schema.Shared[i]
 		value, err := p.extractor.Extract(decodedRecord.Row, field, p.parseCtx, sharedCache)
@@ -158,7 +158,7 @@ func (p *ParserPool) parseRow(decodedRecord DecodedRecord) ([]*ParsedRecord, err
 			continue
 		}
 		if value != nil {
-			sharedCache[field.Name] = value
+			sharedCache[field.Name] = ParsedField{Def: field, Value: value}
 		}
 	}
 
@@ -170,24 +170,23 @@ func (p *ParserPool) parseRow(decodedRecord DecodedRecord) ([]*ParsedRecord, err
 		record.LineNumber = decodedRecord.Row.LineNum()
 		record.SegmentIndex = segIdx
 
-		// Copy cached shared fields into record using Set()
-		for name, value := range sharedCache {
-			record.Set(name, value)
+		// Copy cached shared fields into record using SetField() to preserve FieldDef
+		for _, pf := range sharedCache {
+			record.SetField(pf.Def, pf.Value)
 		}
 
-		// Parse segment-specific fields directly into record using Set()
+		// Parse segment-specific fields directly into record using SetField()
 		missingRequired := false
 		for i := range segment.Fields {
 			field := &segment.Fields[i]
-			// Create a temporary map-like interface for the extractor
-			// The extractor expects a map for lookups (e.g., source_field resolution)
+			// The extractor expects a FieldGetter for lookups (e.g., source_field resolution)
 			value, err := p.extractor.Extract(decodedRecord.Row, field, p.parseCtx, record)
 			if err != nil {
 				log.Printf("Failed to extract field %s: %v", field.Name, err)
 				continue
 			}
 			if value != nil {
-				record.Set(field.Name, value)
+				record.SetField(field, value)
 			} else if field.Required || segIdx >= 1 {
 				// TODO: do we generate an error here?
 				// Most multi record schemas don't have the 2 through N segment's field's marked as required.

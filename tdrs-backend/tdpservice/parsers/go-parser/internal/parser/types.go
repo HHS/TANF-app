@@ -5,6 +5,12 @@ import (
 	"go-parser/internal/schema"
 )
 
+// ParsedField combines a field definition pointer with its parsed value.
+type ParsedField struct {
+	Def   *schema.FieldDef // Pointer to schema FieldDef (nil if not set)
+	Value any              // Parsed value (nil if empty/missing)
+}
+
 // DecodedRecord holds a decoded row along with its detected schema.
 type DecodedRecord struct {
 	Row    decoder.Row
@@ -72,8 +78,8 @@ type ParsedRecord struct {
 	Schema       *schema.CompiledSchema
 	DecodedSize  int
 	LineNumber   int
-	SegmentIndex int   // Which segment this record came from (0-indexed)
-	Fields       []any // Indexed by schema's FieldIndex map
+	SegmentIndex int           // Which segment this record came from (0-indexed)
+	Fields       []ParsedField // Indexed by schema's FieldIndex map
 }
 
 // Reset implements the PooledRecord interface in the schema package for ParsedRecord
@@ -81,7 +87,8 @@ func (pr *ParsedRecord) Reset() {
 	pr.LineNumber = 0
 	pr.SegmentIndex = 0
 	for i := range pr.Fields {
-		pr.Fields[i] = nil
+		pr.Fields[i].Def = nil
+		pr.Fields[i].Value = nil
 	}
 }
 
@@ -92,7 +99,7 @@ func (pr *ParsedRecord) Get(fieldName string) any {
 	if !ok {
 		return nil
 	}
-	return pr.Fields[idx]
+	return pr.Fields[idx].Value
 }
 
 // GetField implements the FieldGetter interface for use with extractors.
@@ -103,11 +110,32 @@ func (pr *ParsedRecord) GetField(fieldName string) any {
 
 // Set stores a field value by name.
 // No-op if the field name is not in the schema.
+// Note: This only sets the Value, not the Def. Use SetField() to set both.
 func (pr *ParsedRecord) Set(fieldName string, value any) {
 	idx, ok := pr.Schema.FieldIndex[fieldName]
 	if ok {
-		pr.Fields[idx] = value
+		pr.Fields[idx].Value = value
 	}
+}
+
+// SetField stores both a field definition and value by field index.
+// This is the preferred method during parsing when the *FieldDef is already available.
+func (pr *ParsedRecord) SetField(def *schema.FieldDef, value any) {
+	idx, ok := pr.Schema.FieldIndex[def.Name]
+	if ok {
+		pr.Fields[idx].Def = def
+		pr.Fields[idx].Value = value
+	}
+}
+
+// GetParsedField returns the full ParsedField (Def + Value) by name.
+// Returns nil if the field doesn't exist.
+func (pr *ParsedRecord) GetParsedField(fieldName string) *ParsedField {
+	idx, ok := pr.Schema.FieldIndex[fieldName]
+	if !ok {
+		return nil
+	}
+	return &pr.Fields[idx]
 }
 
 // GetString retrieves a field as a string.

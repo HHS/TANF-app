@@ -65,7 +65,7 @@ func NewRouter(
 		newObjFunc := func() any {
 			return &parser.ParsedRecord{
 				Schema: sch,
-				Fields: make([]any, sch.FieldCount),
+				Fields: make([]parser.ParsedField, sch.FieldCount),
 			}
 		}
 		sch.InitPool(newObjFunc)

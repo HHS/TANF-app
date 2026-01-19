@@ -159,7 +159,7 @@ func CaseNumberNotEmptyFactory(params map[string]any) (validation.ValidatorFunc,
 			return result
 		}
 
-		caseNumber := ctx.Record.Fields[caseIdx].(string)
+		caseNumber := ctx.Record.Fields[caseIdx].Value.(string)
 		trimmed := strings.TrimSpace(caseNumber)
 		if trimmed != "" {
 			return validation.ValidResult()

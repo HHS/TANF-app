@@ -60,8 +60,8 @@ func parseRecord(row decoder.Row, sch *schema.CompiledSchema) (*ParsedRecord, er
 	// Headers are always positional, but this keeps the pattern consistent
 	extractor := GetExtractor(filespec.FormatPositional)
 
-	// Parse shared fields into a temporary cache
-	sharedCache := make(MapFieldGetter, len(sch.Shared))
+	// Parse shared fields into a temporary cache with FieldDef pointers
+	sharedCache := make(ParsedFieldCache, len(sch.Shared))
 	for i := range sch.Shared {
 		field := &sch.Shared[i]
 		value, err := extractor.Extract(row, field, nil, sharedCache)
@@ -69,7 +69,7 @@ func parseRecord(row decoder.Row, sch *schema.CompiledSchema) (*ParsedRecord, er
 			continue
 		}
 		if value != nil {
-			sharedCache[field.Name] = value
+			sharedCache[field.Name] = ParsedField{Def: field, Value: value}
 		}
 	}
 
@@ -78,9 +78,9 @@ func parseRecord(row decoder.Row, sch *schema.CompiledSchema) (*ParsedRecord, er
 	record.LineNumber = row.LineNum()
 	record.SegmentIndex = 0
 
-	// Copy shared fields into record
-	for name, value := range sharedCache {
-		record.Set(name, value)
+	// Copy shared fields into record using SetField to preserve FieldDef
+	for _, pf := range sharedCache {
+		record.SetField(pf.Def, pf.Value)
 	}
 
 	// Parse segment fields (header has only one segment with no shared fields)
@@ -88,7 +88,7 @@ func parseRecord(row decoder.Row, sch *schema.CompiledSchema) (*ParsedRecord, er
 		return record, nil
 	}
 
-	// Parse the first segment fields directly into record
+	// Parse the first segment fields directly into record using SetField
 	segment := sch.Segments[0]
 	for i := range segment.Fields {
 		field := &segment.Fields[i]
@@ -97,7 +97,7 @@ func parseRecord(row decoder.Row, sch *schema.CompiledSchema) (*ParsedRecord, er
 			continue
 		}
 		if value != nil {
-			record.Set(field.Name, value)
+			record.SetField(field, value)
 		}
 	}
 

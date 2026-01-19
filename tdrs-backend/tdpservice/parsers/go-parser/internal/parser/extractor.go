@@ -25,6 +25,18 @@ func (m MapFieldGetter) GetField(name string) any {
 	return m[name]
 }
 
+// ParsedFieldCache stores ParsedField entries while implementing FieldGetter.
+// This is used during parsing to cache shared fields with their FieldDef pointers.
+type ParsedFieldCache map[string]ParsedField
+
+// GetField implements FieldGetter by returning only the value.
+func (c ParsedFieldCache) GetField(name string) any {
+	if pf, ok := c[name]; ok {
+		return pf.Value
+	}
+	return nil
+}
+
 // FieldExtractor extracts field values from rows based on the file format.
 type FieldExtractor interface {
 	// Extract extracts a field value from a row.

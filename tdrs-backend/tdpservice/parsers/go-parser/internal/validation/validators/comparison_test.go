@@ -341,12 +341,13 @@ func createTestContext(value any) *validation.ValidationContext {
 	record := &parser.ParsedRecord{
 		Schema:     compiledSchema,
 		LineNumber: 1,
-		Fields:     make([]any, compiledSchema.FieldCount),
+		Fields:     make([]parser.ParsedField, compiledSchema.FieldCount),
 	}
-	record.Fields[0] = value
+	record.Fields[0].Value = value
 
 	return &validation.ValidationContext{
-		Record:     record,
-		Category:   validation.CategoryFieldValue,
+		Record:    record,
+		FieldName: "TEST_FIELD",
+		Category:  validation.CategoryFieldValue,
 	}
 }

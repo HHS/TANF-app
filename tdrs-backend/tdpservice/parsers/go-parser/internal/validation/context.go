@@ -11,33 +11,25 @@ func (ctx *ValidationContext) FieldValue() any {
 	if ctx.Record == nil || ctx.FieldName == "" {
 		return nil
 	}
-	return ctx.Record.Fields[ctx.GetFieldIndex(ctx.FieldName)]
+	idx := ctx.GetFieldIndex(ctx.FieldName)
+	if idx < 0 {
+		return nil
+	}
+	return ctx.Record.Fields[idx].Value
 }
 
 // FieldDef returns the field definition for the current field (Cat 2).
-// Returns nil if Schema is nil or FieldIndex is invalid.
-// TODO: revisit this. Im still not sure we need access to field def since field should have context.
+// Returns nil if Schema is nil or field doesn't exist.
+// O(1) lookup - the FieldDef pointer is stored directly in ParsedField during parsing.
 func (ctx *ValidationContext) FieldDef() *schema.FieldDef {
 	if ctx.Record == nil || ctx.FieldName == "" {
 		return nil
 	}
-
-	// Check if field is a shared field first
-	fieldDef, ok := ctx.Record.Schema.SharedFieldsByName[ctx.FieldName]
-	if ok {
-		return fieldDef
-	} else {
-		// If not a shared field, check if it's a segment field
-		// TODO: it might be better to create indexes into the segment field defs
-		segmentDef := ctx.Record.Schema.Segments[ctx.SegmentIndex]
-		for _, field := range segmentDef.Fields {
-			if field.Name == ctx.FieldName {
-				return &field
-			}
-		}
+	idx, ok := ctx.Record.Schema.FieldIndex[ctx.FieldName]
+	if !ok {
+		return nil
 	}
-
-	return nil
+	return ctx.Record.Fields[idx].Def
 }
 
 // GetField returns a field value by name from the current record.
