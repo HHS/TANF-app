@@ -77,7 +77,12 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params ProcessParams) (*Proc
 	// Start timing for performance measurement
 	startTime := time.Now()
 
-	// Step 3: Read and parse header (for positional files)
+	// Step 3: Create database router/initialize object pools
+	// TODO: I hate that we have to initialize the object pools on the schemas in NewRouter.
+	router := writer.NewRouter(p.pool, params.DatafileID, spec, p.registry, p.config.PoolPrewarmSize)
+	router.Start(ctx)
+
+	// Step 4: Read and parse header (for positional files)
 	headerRow, err := dec.ReadFirst()
 	if err != nil {
 		return nil, fmt.Errorf("failed to read header: %w", err)
@@ -95,16 +100,12 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params ProcessParams) (*Proc
 		log.Printf("Header fields: %v", parseCtx.Header.Fields)
 	}
 
-	// Step 4: Create record type detector
+	// Step 5: Create record type detector
 	detector := parser.NewRecordTypeDetector(spec, p.registry)
 
-	// Step 5: Create parser worker pool
+	// Step 6: Create parser worker pool
 	parsers := parser.NewParserPool(spec.Format, p.config.toWorkerConfig(), parseCtx)
 	parsers.Start(ctx)
-
-	// Step 6: Create database router
-	router := writer.NewRouter(p.pool, params.DatafileID, spec, p.registry, p.config.PoolPrewarmSize)
-	router.Start(ctx)
 
 	// Step 7: Start result collector with parallel dispatchers
 	var collectorErr error

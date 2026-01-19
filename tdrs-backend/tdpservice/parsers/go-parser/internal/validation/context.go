@@ -2,6 +2,7 @@ package validation
 
 import (
 	"go-parser/internal/decoder"
+	"go-parser/internal/parser"
 	"go-parser/internal/schema"
 )
 
@@ -141,7 +142,7 @@ func (ctx *ValidationContext) Reset() {
 }
 
 // SetRecord sets the record-level context for Cat 1, 2, 3 validation.
-func (ctx *ValidationContext) SetRecord(record *schema.ParsedRecord, compiledSchema *schema.CompiledSchema) {
+func (ctx *ValidationContext) SetRecord(record *parser.ParsedRecord, compiledSchema *schema.CompiledSchema) {
 	ctx.Record = record
 	ctx.Schema = compiledSchema
 	ctx.FieldIndex = -1

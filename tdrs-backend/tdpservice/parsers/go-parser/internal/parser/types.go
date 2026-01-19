@@ -61,3 +61,116 @@ func (b *Batch) TotalRecords() int {
 	}
 	return total
 }
+
+// ParsedRecord represents a successfully parsed record.
+// For multi-segment schemas (T3, T6, T7), one input line produces multiple ParsedRecords.
+// This type is used for all record types including HEADER.
+//
+// Fields is a slice indexed by the schema's FieldIndex map. Use Get/Set methods
+// for field access, or access Fields directly by index for performance-critical code.
+type ParsedRecord struct {
+	Schema       *schema.CompiledSchema
+	LineNumber   int
+	SegmentIndex int   // Which segment this record came from (0-indexed)
+	Fields       []any // Indexed by schema's FieldIndex map
+}
+
+// Reset implements the PooledRecord interface in the schema package for ParsedRecord
+func (pr *ParsedRecord) Reset() {
+	pr.LineNumber = 0
+	pr.SegmentIndex = 0
+	for i := range pr.Fields {
+		pr.Fields[i] = nil
+	}
+}
+
+// Get retrieves a field value by name.
+// Returns nil if the field doesn't exist or has no value.
+func (pr *ParsedRecord) Get(fieldName string) any {
+	idx, ok := pr.Schema.FieldIndex[fieldName]
+	if !ok {
+		return nil
+	}
+	return pr.Fields[idx]
+}
+
+// GetField implements the FieldGetter interface for use with extractors.
+// This allows ParsedRecord to be passed directly to Extract() for source field lookups.
+func (pr *ParsedRecord) GetField(fieldName string) any {
+	return pr.Get(fieldName)
+}
+
+// Set stores a field value by name.
+// No-op if the field name is not in the schema.
+func (pr *ParsedRecord) Set(fieldName string, value any) {
+	idx, ok := pr.Schema.FieldIndex[fieldName]
+	if ok {
+		pr.Fields[idx] = value
+	}
+}
+
+// GetString retrieves a field as a string.
+// Returns empty string if field is nil or not a string.
+func (pr *ParsedRecord) GetString(fieldName string) string {
+	v := pr.Get(fieldName)
+	if s, ok := v.(string); ok {
+		return s
+	}
+	return ""
+}
+
+// GetInt retrieves a field as an int.
+// Returns 0 if field is nil or not an int.
+func (pr *ParsedRecord) GetInt(fieldName string) int {
+	v := pr.Get(fieldName)
+	if i, ok := v.(int); ok {
+		return i
+	}
+	return 0
+}
+
+// ParseContext carries runtime information extracted from header
+// that affects how subsequent records are parsed.
+type ParseContext struct {
+	// Header contains the fully parsed header record.
+	// All header fields are available via Header.Fields.
+	Header *ParsedRecord
+
+	// Convenience fields extracted from Header for common use cases:
+
+	// IsEncrypted indicates whether SSN fields need decryption.
+	// Determined by header item 9 (encryption indicator = "E").
+	IsEncrypted bool
+
+	// Year is the calendar year from the header (item 2).
+	Year int
+
+	// Quarter is the calendar quarter from the header (item 3).
+	Quarter string
+}
+
+// ParsedGroup contains parsing results for a single RecordGroup.
+type ParsedGroup struct {
+	// Key is the grouping key (empty for non-keyed records)
+	Key          string
+	RptMonthYear string
+	CaseNumber   string
+
+	// Records contains all successfully parsed records in this group
+	Records []*ParsedRecord
+}
+
+// ParsedBatch contains parsing results for a Batch (one or more groups).
+type ParsedBatch struct {
+	BatchID int
+	Groups  []*ParsedGroup
+}
+
+// TotalRecords returns the total number of successfully parsed records.
+func (pb *ParsedBatch) TotalRecords() int {
+	total := 0
+	for _, g := range pb.Groups {
+		total += len(g.Records)
+	}
+	return total
+}

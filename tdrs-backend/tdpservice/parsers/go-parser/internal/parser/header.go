@@ -14,7 +14,7 @@ const HeaderSchemaPath = "common/header"
 // ParseHeader parses a header row and returns a ParseContext with the full parsed record.
 // Returns nil if the row is nil (e.g., for columnar files that don't have headers).
 // The header is parsed using the same logic as any other record type.
-func ParseHeader(row decoder.Row, headerSchema *schema.CompiledSchema) (*schema.ParseContext, error) {
+func ParseHeader(row decoder.Row, headerSchema *schema.CompiledSchema) (*ParseContext, error) {
 	if row == nil {
 		return nil, nil
 	}
@@ -25,13 +25,13 @@ func ParseHeader(row decoder.Row, headerSchema *schema.CompiledSchema) (*schema.
 	}
 
 	// Parse the header using the same approach as worker.parseRow
-	record, err := ParseRecord(row, headerSchema)
+	record, err := parseRecord(row, headerSchema)
 	if err != nil {
 		return nil, fmt.Errorf("parsing header: %w", err)
 	}
 
 	// Build the ParseContext with the full record and convenience fields
-	ctx := &schema.ParseContext{
+	ctx := &ParseContext{
 		Header: record,
 	}
 
@@ -51,11 +51,11 @@ func ParseHeader(row decoder.Row, headerSchema *schema.CompiledSchema) (*schema.
 	return ctx, nil
 }
 
-// ParseRecord parses a single row into a ParsedRecord using the given schema.
+// parseRecord parses a single row into a ParsedRecord using the given schema.
 // This is the same logic used by the worker pool for parsing data records.
 // Note: The returned record is acquired from the schema's object pool.
 // For header records (which are kept for the session), DO NOT release them.
-func ParseRecord(row decoder.Row, sch *schema.CompiledSchema) (*schema.ParsedRecord, error) {
+func parseRecord(row decoder.Row, sch *schema.CompiledSchema) (*ParsedRecord, error) {
 	// Get the appropriate extractor based on format
 	// Headers are always positional, but this keeps the pattern consistent
 	extractor := GetExtractor(filespec.FormatPositional)
@@ -74,7 +74,7 @@ func ParseRecord(row decoder.Row, sch *schema.CompiledSchema) (*schema.ParsedRec
 	}
 
 	// Acquire record from pool (header records are kept, not released)
-	record := sch.AcquireRecord()
+	record := sch.AcquireRecord().(*ParsedRecord)
 	record.LineNumber = row.LineNum()
 	record.SegmentIndex = 0
 

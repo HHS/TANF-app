@@ -34,7 +34,7 @@ type FieldExtractor interface {
 	Extract(
 		row decoder.Row,
 		field *schema.FieldDef,
-		ctx *schema.ParseContext,
+		ctx *ParseContext,
 		extractedFields FieldGetter,
 	) (any, error)
 }
@@ -57,7 +57,7 @@ type PositionalExtractor struct{}
 func (e *PositionalExtractor) Extract(
 	row decoder.Row,
 	field *schema.FieldDef,
-	ctx *schema.ParseContext,
+	ctx *ParseContext,
 	extractedFields FieldGetter,
 ) (any, error) {
 	var rawValue string
@@ -103,7 +103,7 @@ type ColumnarExtractor struct{}
 func (e *ColumnarExtractor) Extract(
 	row decoder.Row,
 	field *schema.FieldDef,
-	ctx *schema.ParseContext,
+	ctx *ParseContext,
 	extractedFields FieldGetter,
 ) (any, error) {
 	var rawValue string

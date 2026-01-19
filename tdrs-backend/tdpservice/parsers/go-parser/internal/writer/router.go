@@ -12,7 +12,6 @@ import (
 	"go-parser/internal/filespec"
 	"go-parser/internal/parser"
 	"go-parser/internal/registry"
-	"go-parser/internal/schema"
 	"go-parser/internal/writer/convert"
 )
 
@@ -61,6 +60,15 @@ func NewRouter(
 	// Create a writer for each data record type in the FileSpec
 	for _, schemaPath := range spec.Schemas {
 		sch := reg.GetSchema(schemaPath)
+
+		// Set schema object pool allocator
+		newObjFunc := func() any {
+			return &parser.ParsedRecord{
+				Schema: sch,
+				Fields: make([]any, sch.FieldCount),
+			}
+		}
+		sch.InitPool(newObjFunc)
 
 		// Skip header/trailer - they don't get written to database
 		if sch.RecordType == "HEADER" || sch.RecordType == "TRAILER" {
@@ -120,7 +128,7 @@ func (wm *Router) Start(ctx context.Context) {
 // RouteRecord converts a record, releases it to pool, and sends rows to writer.
 // This is the release point for valid records in the normal flow.
 // Records without writers (e.g., HEADER, TRAILER) are silently skipped.
-func (wm *Router) RouteRecord(ctx context.Context, record *schema.ParsedRecord) error {
+func (wm *Router) RouteRecord(ctx context.Context, record *parser.ParsedRecord) error {
 	tw, ok := wm.writers[record.Schema.Path]
 	if !ok {
 		// No writer for this schema (e.g., header/trailer) - skip silently

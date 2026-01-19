@@ -3,6 +3,7 @@ package validators
 import (
 	"testing"
 
+	"go-parser/internal/parser"
 	"go-parser/internal/schema"
 	"go-parser/internal/validation"
 	"go-parser/internal/validation/registry"
@@ -337,7 +338,7 @@ func createTestContext(value any) *validation.ValidationContext {
 	compiledSchema := schemaDef.Compile()
 
 	// Create a record with the test value
-	record := &schema.ParsedRecord{
+	record := &parser.ParsedRecord{
 		Schema:     compiledSchema,
 		LineNumber: 1,
 		Fields:     make([]any, compiledSchema.FieldCount),

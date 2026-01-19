@@ -47,6 +47,10 @@ func main() {
 	defer dbPool.Close()
 
 	// Load configuration
+	// TODO: Need to revisit storing the object pools on the schemas. Since the registry will exist for as long as the
+	// celery worker does, the object pools could grow to an enormous size since there isn't a way to clear them after a
+	// parsing run. We should consider implementing/importing a better solution that allows clearing. Or, we could reload
+	// the registry each time a new parsing request comes in (simpler).
 	reg, err := registry.Load("config")
 	if err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)

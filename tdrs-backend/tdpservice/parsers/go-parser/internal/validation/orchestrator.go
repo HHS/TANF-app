@@ -19,7 +19,7 @@ type Orchestrator struct {
 
 	// File context
 	datafileID int32
-	parseCtx   *schema.ParseContext
+	parseCtx   *parser.ParseContext
 }
 
 // NewOrchestrator creates a new validation orchestrator.
@@ -51,7 +51,7 @@ func DefaultOrchestratorConfig() *OrchestratorConfig {
 }
 
 // SetFileContext sets file-level context for validation.
-func (o *Orchestrator) SetFileContext(datafileID int32, parseCtx *schema.ParseContext) {
+func (o *Orchestrator) SetFileContext(datafileID int32, parseCtx *parser.ParseContext) {
 	o.datafileID = datafileID
 	o.parseCtx = parseCtx
 }
@@ -88,8 +88,8 @@ func (o *Orchestrator) ClearValidators() {
 // This is the main entry point for validation.
 func (o *Orchestrator) ValidateGroup(group *parser.ParsedGroup) *GroupValidationResult {
 	result := &GroupValidationResult{
-		ValidRecords:    make([]*schema.ParsedRecord, 0, len(group.Records)),
-		RejectedRecords: make([]*schema.ParsedRecord, 0),
+		ValidRecords:    make([]*parser.ParsedRecord, 0, len(group.Records)),
+		RejectedRecords: make([]*parser.ParsedRecord, 0),
 		Errors:          make([]*ValidationResult, 0),
 	}
 
@@ -149,7 +149,7 @@ func (o *Orchestrator) ValidateRow(row decoder.Row, compiledSchema *schema.Compi
 }
 
 // ValidateRecord validates a single parsed record (Cat 1, 2, 3).
-func (o *Orchestrator) ValidateRecord(record *schema.ParsedRecord) []*ValidationResult {
+func (o *Orchestrator) ValidateRecord(record *parser.ParsedRecord) []*ValidationResult {
 	ctx := AcquireContext()
 	defer ReleaseContext(ctx)
 

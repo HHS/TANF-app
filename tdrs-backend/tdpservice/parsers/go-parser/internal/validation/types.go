@@ -5,8 +5,8 @@ package validation
 
 import (
 	"go-parser/internal/decoder"
-	"go-parser/internal/schema"
 	"go-parser/internal/parser"
+	"go-parser/internal/schema"
 )
 
 // Category represents a validation category (1-4).
@@ -49,10 +49,10 @@ type ValidatorFactory func(params map[string]any) (ValidatorFunc, error)
 type ValidationContext struct {
 	// File-level context (set once per file)
 	DatafileID int32
-	ParseCtx   *schema.ParseContext
+	ParseCtx   *parser.ParseContext
 
 	// Record-level context (Cat 1, 2, 3)
-	Record *schema.ParsedRecord
+	Record *parser.ParsedRecord
 	Schema *schema.CompiledSchema
 	Row    decoder.Row // Raw row for Cat 1 validators
 
@@ -76,7 +76,7 @@ type ValidationResult struct {
 	// Context pointers for lazy error generation (not copied, just referenced)
 	FieldIndex int
 	FieldName  string // For Cat 2 and cross-field, which field(s) failed
-	Record     *schema.ParsedRecord
+	Record     *parser.ParsedRecord
 	Schema     *schema.CompiledSchema
 	Group      *parser.ParsedGroup
 	Row        decoder.Row
@@ -140,10 +140,10 @@ type GroupValidationResult struct {
 	Rejected bool
 
 	// ValidRecords are records that passed all validations.
-	ValidRecords []*schema.ParsedRecord
+	ValidRecords []*parser.ParsedRecord
 
 	// RejectedRecords are records that failed validation (for error logging).
-	RejectedRecords []*schema.ParsedRecord
+	RejectedRecords []*parser.ParsedRecord
 
 	// Errors are all validation failures, used for lazy error generation.
 	Errors []*ValidationResult

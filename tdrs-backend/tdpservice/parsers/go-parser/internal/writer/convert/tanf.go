@@ -2,12 +2,12 @@ package convert
 
 import (
 	"go-parser/internal/db"
-	"go-parser/internal/schema"
+	"go-parser/internal/parser"
 )
 
 // TANF T1 Converter - Case-level data for active TANF cases
 
-func convertTanfT1(record *schema.ParsedRecord, datafileID int32) [][]any {
+func convertTanfT1(record *parser.ParsedRecord, datafileID int32) [][]any {
 	// Build SQLC type for type safety, using Get() accessor
 	rec := &db.SearchIndexesTanfT1{
 		RecordType:               toText(record.Get("RecordType")),
@@ -116,7 +116,7 @@ func convertTanfT1(record *schema.ParsedRecord, datafileID int32) [][]any {
 
 // TANF T2 Converter - Adult-level data for active TANF cases
 
-func convertTanfT2(record *schema.ParsedRecord, datafileID int32) [][]any {
+func convertTanfT2(record *parser.ParsedRecord, datafileID int32) [][]any {
 	rec := &db.SearchIndexesTanfT2{
 		RecordType:              toText(record.Get("RecordType")),
 		RPTMONTHYEAR:            toInt4(record.Get("RPT_MONTH_YEAR")),
@@ -273,7 +273,7 @@ func convertTanfT2(record *schema.ParsedRecord, datafileID int32) [][]any {
 // T3 records contain data for TWO children per line. This converter
 // produces 1 or 2 rows depending on whether Child 2 data is present.
 
-func convertTanfT3(record *schema.ParsedRecord, datafileID int32) [][]any {
+func convertTanfT3(record *parser.ParsedRecord, datafileID int32) [][]any {
 	// Child 1 row (always present)
 	rec := &db.SearchIndexesTanfT3{
 		RecordType:            toText(record.Get("RecordType")),
@@ -332,7 +332,7 @@ func convertTanfT3(record *schema.ParsedRecord, datafileID int32) [][]any {
 
 // TANF T4 Converter - Case-level data for closed TANF cases
 
-func convertTanfT4(record *schema.ParsedRecord, datafileID int32) [][]any {
+func convertTanfT4(record *parser.ParsedRecord, datafileID int32) [][]any {
 	rec := &db.SearchIndexesTanfT4{
 		RecordType:     toText(record.Get("RecordType")),
 		RPTMONTHYEAR:   toInt4(record.Get("RPT_MONTH_YEAR")),
@@ -372,7 +372,7 @@ func convertTanfT4(record *schema.ParsedRecord, datafileID int32) [][]any {
 
 // TANF T5 Converter - Adult-level data for closed TANF cases
 
-func convertTanfT5(record *schema.ParsedRecord, datafileID int32) [][]any {
+func convertTanfT5(record *parser.ParsedRecord, datafileID int32) [][]any {
 	rec := &db.SearchIndexesTanfT5{
 		RecordType:                toText(record.Get("RecordType")),
 		RPTMONTHYEAR:              toInt4(record.Get("RPT_MONTH_YEAR")),
@@ -446,7 +446,7 @@ func convertTanfT5(record *schema.ParsedRecord, datafileID int32) [][]any {
 
 // TANF T6 Converter - Aggregate data
 
-func convertTanfT6(record *schema.ParsedRecord, datafileID int32) [][]any {
+func convertTanfT6(record *parser.ParsedRecord, datafileID int32) [][]any {
 	rec := &db.SearchIndexesTanfT6{
 		RecordType:          toText(record.Get("RecordType")),
 		CALENDARQUARTER:     toInt4(record.Get("CALENDAR_QUARTER")),
@@ -498,7 +498,7 @@ func convertTanfT6(record *schema.ParsedRecord, datafileID int32) [][]any {
 
 // TANF T7 Converter - Stratum data
 
-func convertTanfT7(record *schema.ParsedRecord, datafileID int32) [][]any {
+func convertTanfT7(record *parser.ParsedRecord, datafileID int32) [][]any {
 	rec := &db.SearchIndexesTanfT7{
 		RecordType:      toText(record.Get("RecordType")),
 		CALENDARQUARTER: toInt4(record.Get("CALENDAR_QUARTER")),

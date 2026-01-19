@@ -7,6 +7,7 @@ import (
 	"text/template"
 	"time"
 
+	"go-parser/internal/parser"
 	"go-parser/internal/schema"
 	"go-parser/internal/validation"
 	"go-parser/internal/validation/registry"
@@ -338,7 +339,7 @@ func (g *ErrorGenerator) buildValuesJSON(result *validation.ValidationResult, ct
 }
 
 // getFieldDef gets the field definition for a field index.
-func getFieldDef(cs *schema.CompiledSchema, fieldIndex int, record *schema.ParsedRecord) *schema.FieldDef {
+func getFieldDef(cs *schema.CompiledSchema, fieldIndex int, record *parser.ParsedRecord) *schema.FieldDef {
 	if cs == nil || fieldIndex < 0 {
 		return nil
 	}

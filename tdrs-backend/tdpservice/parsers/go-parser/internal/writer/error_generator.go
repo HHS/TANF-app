@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"go-parser/internal/parser"
 	"go-parser/internal/schema"
 	"go-parser/internal/validation"
 	valreg "go-parser/internal/validation/registry"
@@ -95,7 +96,7 @@ func (eg *ErrorGenerator) GenerateRow(result *validation.ValidationResult, caseN
 }
 
 // getFieldDef retrieves the field definition for a given field index.
-func (eg *ErrorGenerator) getFieldDef(sch *schema.CompiledSchema, fieldIndex int, record *schema.ParsedRecord) *schema.FieldDef {
+func (eg *ErrorGenerator) getFieldDef(sch *schema.CompiledSchema, fieldIndex int, record *parser.ParsedRecord) *schema.FieldDef {
 	if sch == nil || fieldIndex < 0 {
 		return nil
 	}
@@ -194,7 +195,7 @@ func (eg *ErrorGenerator) getErrorType(result *validation.ValidationResult) stri
 }
 
 // buildFieldsJSON creates a JSON representation of the record fields.
-func (eg *ErrorGenerator) buildFieldsJSON(record *schema.ParsedRecord) ([]byte, error) {
+func (eg *ErrorGenerator) buildFieldsJSON(record *parser.ParsedRecord) ([]byte, error) {
 	if record == nil || record.Schema == nil {
 		return nil, nil
 	}

@@ -1,86 +1,6 @@
 package schema
 
-import (
-	"sync"
-)
-
-// ParsedRecord represents a successfully parsed record.
-// For multi-segment schemas (T3, T6, T7), one input line produces multiple ParsedRecords.
-// This type is used for all record types including HEADER.
-//
-// Fields is a slice indexed by the schema's FieldIndex map. Use Get/Set methods
-// for field access, or access Fields directly by index for performance-critical code.
-type ParsedRecord struct {
-	Schema       *CompiledSchema
-	LineNumber   int
-	SegmentIndex int   // Which segment this record came from (0-indexed)
-	Fields       []any // Indexed by schema's FieldIndex map
-}
-
-// Get retrieves a field value by name.
-// Returns nil if the field doesn't exist or has no value.
-func (pr *ParsedRecord) Get(fieldName string) any {
-	idx, ok := pr.Schema.FieldIndex[fieldName]
-	if !ok {
-		return nil
-	}
-	return pr.Fields[idx]
-}
-
-// GetField implements the FieldGetter interface for use with extractors.
-// This allows ParsedRecord to be passed directly to Extract() for source field lookups.
-func (pr *ParsedRecord) GetField(fieldName string) any {
-	return pr.Get(fieldName)
-}
-
-// Set stores a field value by name.
-// No-op if the field name is not in the schema.
-func (pr *ParsedRecord) Set(fieldName string, value any) {
-	idx, ok := pr.Schema.FieldIndex[fieldName]
-	if ok {
-		pr.Fields[idx] = value
-	}
-}
-
-// GetString retrieves a field as a string.
-// Returns empty string if field is nil or not a string.
-func (pr *ParsedRecord) GetString(fieldName string) string {
-	v := pr.Get(fieldName)
-	if s, ok := v.(string); ok {
-		return s
-	}
-	return ""
-}
-
-// GetInt retrieves a field as an int.
-// Returns 0 if field is nil or not an int.
-func (pr *ParsedRecord) GetInt(fieldName string) int {
-	v := pr.Get(fieldName)
-	if i, ok := v.(int); ok {
-		return i
-	}
-	return 0
-}
-
-// ParseContext carries runtime information extracted from header
-// that affects how subsequent records are parsed.
-type ParseContext struct {
-	// Header contains the fully parsed header record.
-	// All header fields are available via Header.Fields.
-	Header *ParsedRecord
-
-	// Convenience fields extracted from Header for common use cases:
-
-	// IsEncrypted indicates whether SSN fields need decryption.
-	// Determined by header item 9 (encryption indicator = "E").
-	IsEncrypted bool
-
-	// Year is the calendar year from the header (item 2).
-	Year int
-
-	// Quarter is the calendar quarter from the header (item 3).
-	Quarter string
-}
+import "sync"
 
 // TransformDef defines a field transformation with optional parameters.
 type TransformDef struct {
@@ -171,6 +91,13 @@ type SchemaDef struct {
 	Segments []SegmentDef `yaml:"segments"`
 }
 
+// PoolableRecord is an interface for records that can be pooled and reset.
+// This allows for the object pools to be tied to the Schemas without importing
+// the parser package which is very convenient and prevents circular dependencies.
+type PoolableRecord interface {
+	Reset()
+}
+
 // CompiledSchema wraps a SchemaDef with precomputed lookup structures.
 type CompiledSchema struct {
 	*SchemaDef
@@ -248,45 +175,35 @@ func (cs *CompiledSchema) GetSegmentField(segmentIndex int, name string) *FieldD
 	return nil
 }
 
+// InitPool creates a new record pool for this schema with the given object allocator function.
+func (cs *CompiledSchema) InitPool(poolAllocator func() any) {
+	cs.recordPool = sync.Pool{New: poolAllocator}
+}
+
 // AcquireRecord gets a record from the pool or creates a new one.
 // The returned record has Fields slice allocated but all values nil.
-func (cs *CompiledSchema) AcquireRecord() *ParsedRecord {
+func (cs *CompiledSchema) AcquireRecord() PoolableRecord {
 	if r := cs.recordPool.Get(); r != nil {
-		rec := r.(*ParsedRecord)
-		// Reset fields but keep the backing array
-		rec.LineNumber = 0
-		rec.SegmentIndex = 0
-		for i := range rec.Fields {
-			rec.Fields[i] = nil
-		}
+		rec := r.(PoolableRecord)
 		return rec
 	}
-	// Pool empty - allocate new record with correct capacity
-	return &ParsedRecord{
-		Schema: cs,
-		Fields: make([]any, cs.FieldCount),
-	}
+	return nil
 }
 
 // ReleaseRecord returns a record to the pool for reuse.
 // The record must not be used after calling this method.
-func (cs *CompiledSchema) ReleaseRecord(rec *ParsedRecord) {
-	// Only pool records that belong to this schema
-	if rec.Schema == cs {
-		cs.recordPool.Put(rec)
-	}
+func (cs *CompiledSchema) ReleaseRecord(rec PoolableRecord) {
+	rec.Reset()
+	cs.recordPool.Put(rec)
 }
 
-// PrewarmPool pre-allocates n records to avoid allocation during parsing.
+// PrewarmPool pre-allocates n records with the newObjFunc to avoid allocation during parsing.
 // Call this after schema compilation but before parsing begins.
 // A good value for n is 2x the number of worker goroutines.
 func (cs *CompiledSchema) PrewarmPool(n int) {
-	records := make([]*ParsedRecord, n)
-	for i := 0; i < n; i++ {
-		records[i] = &ParsedRecord{
-			Schema: cs,
-			Fields: make([]any, cs.FieldCount),
-		}
+	records := make([]PoolableRecord, n)
+	for i := range n {
+		records[i] = cs.recordPool.Get().(PoolableRecord)
 	}
 	// Release all to pool
 	for _, rec := range records {

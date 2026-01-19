@@ -3,8 +3,6 @@ package parser
 import (
 	"fmt"
 	"strings"
-
-	"go-parser/internal/schema"
 )
 
 // TransformFunc defines the signature for all transform functions.
@@ -14,7 +12,7 @@ import (
 //   - ctx: runtime context from header parsing (e.g., IsEncrypted)
 //
 // Returns the transformed string value and any error.
-type TransformFunc func(value string, params map[string]any, ctx *schema.ParseContext) (string, error)
+type TransformFunc func(value string, params map[string]any, ctx *ParseContext) (string, error)
 
 // Registry maps transform names to their implementations.
 var Registry = map[string]TransformFunc{
@@ -25,7 +23,7 @@ var Registry = map[string]TransformFunc{
 }
 
 // Apply looks up and executes a transform by name.
-func ApplyTransform(name, value string, params map[string]any, ctx *schema.ParseContext) (string, error) {
+func ApplyTransform(name, value string, params map[string]any, ctx *ParseContext) (string, error) {
 	fn, ok := Registry[name]
 	if !ok {
 		return "", fmt.Errorf("unknown transform: %s", name)
@@ -34,14 +32,14 @@ func ApplyTransform(name, value string, params map[string]any, ctx *schema.Parse
 }
 
 // Trim removes leading and trailing whitespace.
-func Trim(value string, _ map[string]any, _ *schema.ParseContext) (string, error) {
+func Trim(value string, _ map[string]any, _ *ParseContext) (string, error) {
 	return strings.TrimSpace(value), nil
 }
 
 // ZeroPad pads a string with leading zeros to reach the specified length.
 // Params:
 //   - digits (int): target length after padding
-func ZeroPad(value string, params map[string]any, _ *schema.ParseContext) (string, error) {
+func ZeroPad(value string, params map[string]any, _ *ParseContext) (string, error) {
 	digits, ok := params["digits"].(int)
 	if !ok {
 		return "", fmt.Errorf("zero_pad requires 'digits' param (int)")
@@ -61,7 +59,7 @@ func ZeroPad(value string, params map[string]any, _ *schema.ParseContext) (strin
 //
 // Params (optional):
 //   - encrypted (bool): force encryption status, overrides runtime context
-func SSNDecrypt(value string, params map[string]any, ctx *schema.ParseContext) (string, error) {
+func SSNDecrypt(value string, params map[string]any, ctx *ParseContext) (string, error) {
 	if value == "" {
 		return "", nil
 	}
@@ -101,7 +99,7 @@ func SSNDecrypt(value string, params map[string]any, ctx *schema.ParseContext) (
 // CalendarQuarterToMonth converts a calendar quarter (YYYYQ) to year-month (YYYYMM).
 // Params:
 //   - month_index (int): which month in the quarter (0=first, 1=second, 2=third)
-func CalendarQuarterToMonth(value string, params map[string]any, _ *schema.ParseContext) (string, error) {
+func CalendarQuarterToMonth(value string, params map[string]any, _ *ParseContext) (string, error) {
 	monthIndex, ok := params["month_index"].(int)
 	if !ok {
 		return "", fmt.Errorf("calendar_quarter_to_month requires 'month_index' param (int)")

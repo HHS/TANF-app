@@ -2,7 +2,7 @@ package convert
 
 import (
 	"go-parser/internal/db"
-	"go-parser/internal/schema"
+	"go-parser/internal/parser"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -10,7 +10,7 @@ import (
 // FRA TE1 Converter - TANF Exiter work outcome data
 // RecordType is always "TE1" for FRA records (not present in CSV data)
 
-func convertFraTE1(record *schema.ParsedRecord, datafileID int32) [][]any {
+func convertFraTE1(record *parser.ParsedRecord, datafileID int32) [][]any {
 	// RecordType defaults to "TE1" if not present in fields
 	recordType := toText(record.Get("RecordType"))
 	if !recordType.Valid {

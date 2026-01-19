@@ -2,12 +2,12 @@ package convert
 
 import (
 	"go-parser/internal/db"
-	"go-parser/internal/schema"
+	"go-parser/internal/parser"
 )
 
 // SSP M1 Converter - Case-level data for active SSP cases
 
-func convertSspM1(record *schema.ParsedRecord, datafileID int32) [][]any {
+func convertSspM1(record *parser.ParsedRecord, datafileID int32) [][]any {
 	rec := &db.SearchIndexesSspM1{
 		RecordType:               toText(record.Get("RecordType")),
 		RPTMONTHYEAR:             toInt4(record.Get("RPT_MONTH_YEAR")),
@@ -109,7 +109,7 @@ func convertSspM1(record *schema.ParsedRecord, datafileID int32) [][]any {
 
 // SSP M2 Converter - Adult-level data for active SSP cases
 
-func convertSspM2(record *schema.ParsedRecord, datafileID int32) [][]any {
+func convertSspM2(record *parser.ParsedRecord, datafileID int32) [][]any {
 	rec := &db.SearchIndexesSspM2{
 		RecordType:              toText(record.Get("RecordType")),
 		RPTMONTHYEAR:            toInt4(record.Get("RPT_MONTH_YEAR")),
@@ -259,7 +259,7 @@ func convertSspM2(record *schema.ParsedRecord, datafileID int32) [][]any {
 
 // SSP M3 Converter - Child-level data for active SSP cases
 
-func convertSspM3(record *schema.ParsedRecord, datafileID int32) [][]any {
+func convertSspM3(record *parser.ParsedRecord, datafileID int32) [][]any {
 	rec := &db.SearchIndexesSspM3{
 		RecordType:            toText(record.Get("RecordType")),
 		RPTMONTHYEAR:          toInt4(record.Get("RPT_MONTH_YEAR")),
@@ -319,7 +319,7 @@ func convertSspM3(record *schema.ParsedRecord, datafileID int32) [][]any {
 
 // SSP M4 Converter - Case-level data for closed SSP cases
 
-func convertSspM4(record *schema.ParsedRecord, datafileID int32) [][]any {
+func convertSspM4(record *parser.ParsedRecord, datafileID int32) [][]any {
 	rec := &db.SearchIndexesSspM4{
 		RecordType:     toText(record.Get("RecordType")),
 		RPTMONTHYEAR:   toInt4(record.Get("RPT_MONTH_YEAR")),
@@ -359,7 +359,7 @@ func convertSspM4(record *schema.ParsedRecord, datafileID int32) [][]any {
 
 // SSP M5 Converter - Adult-level data for closed SSP cases
 
-func convertSspM5(record *schema.ParsedRecord, datafileID int32) [][]any {
+func convertSspM5(record *parser.ParsedRecord, datafileID int32) [][]any {
 	rec := &db.SearchIndexesSspM5{
 		RecordType:            toText(record.Get("RecordType")),
 		RPTMONTHYEAR:          toInt4(record.Get("RPT_MONTH_YEAR")),
@@ -429,7 +429,7 @@ func convertSspM5(record *schema.ParsedRecord, datafileID int32) [][]any {
 
 // SSP M6 Converter - Aggregate data
 
-func convertSspM6(record *schema.ParsedRecord, datafileID int32) [][]any {
+func convertSspM6(record *parser.ParsedRecord, datafileID int32) [][]any {
 	rec := &db.SearchIndexesSspM6{
 		RecordType:      toText(record.Get("RecordType")),
 		CALENDARQUARTER: toInt4(record.Get("CALENDAR_QUARTER")),
@@ -471,7 +471,7 @@ func convertSspM6(record *schema.ParsedRecord, datafileID int32) [][]any {
 
 // SSP M7 Converter - Stratum data
 
-func convertSspM7(record *schema.ParsedRecord, datafileID int32) [][]any {
+func convertSspM7(record *parser.ParsedRecord, datafileID int32) [][]any {
 	rec := &db.SearchIndexesSspM7{
 		RecordType:      toText(record.Get("RecordType")),
 		CALENDARQUARTER: toInt4(record.Get("CALENDAR_QUARTER")),
