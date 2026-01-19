@@ -67,7 +67,7 @@ func NewAccumulator(spec *filespec.FileSpec, detector *RecordTypeDetector) *Accu
 // Groups are flushed when a new key is encountered.
 // For key-based grouping, batches are returned when groups complete.
 // For non-keyed mode, each record has a unique key so batches are returned immediately.
-func (a *Accumulator) Add(row decoder.Row) (batch *Batch, sch *schema.CompiledSchema, isAccumulated bool, err error) {
+func (a *Accumulator) Add(row decoder.Row) (batch *DecodedBatch, sch *schema.CompiledSchema, isAccumulated bool, err error) {
 	// Detect which schema this row belongs to
 	sch, err = a.detector.Detect(row)
 	if err != nil {
@@ -105,8 +105,8 @@ func (a *Accumulator) generateKey(row decoder.Row) (key, rptMonth, caseNum strin
 
 // addRecord handles all records using key-change detection.
 // If the key changes from the current group, the current group is flushed.
-func (a *Accumulator) addRecord(line DecodedRecord, sch *schema.CompiledSchema, key, rptMonth, caseNum string) (*Batch, *schema.CompiledSchema, bool, error) {
-	var completedBatch *Batch
+func (a *Accumulator) addRecord(line DecodedRecord, sch *schema.CompiledSchema, key, rptMonth, caseNum string) (*DecodedBatch, *schema.CompiledSchema, bool, error) {
+	var completedBatch *DecodedBatch
 
 	// Check if this is a new group
 	if a.currentGroup == nil {
@@ -138,14 +138,14 @@ func (a *Accumulator) addRecord(line DecodedRecord, sch *schema.CompiledSchema, 
 
 // flushCurrentGroup handles the completed group based on batch_size configuration.
 // Returns a Batch if one is ready, nil otherwise.
-func (a *Accumulator) flushCurrentGroup() *Batch {
+func (a *Accumulator) flushCurrentGroup() *DecodedBatch {
 	if a.currentGroup == nil {
 		return nil
 	}
 
 	if a.batchSize == 0 {
 		// Each group is its own batch
-		batch := &Batch{
+		batch := &DecodedBatch{
 			BatchID:       a.batchCounter,
 			DecodedGroups: []*DecodedGroup{a.currentGroup},
 		}
@@ -157,7 +157,7 @@ func (a *Accumulator) flushCurrentGroup() *Batch {
 	a.pendingGroups = append(a.pendingGroups, a.currentGroup)
 
 	if len(a.pendingGroups) >= a.batchSize {
-		batch := &Batch{
+		batch := &DecodedBatch{
 			BatchID:       a.batchCounter,
 			DecodedGroups: a.pendingGroups,
 		}
@@ -204,14 +204,14 @@ func (a *Accumulator) extractKey(row decoder.Row) (key, rptMonth, caseNum string
 //
 // For non-keyed mode:
 //   - Returns any remaining partial batch
-func (a *Accumulator) Drain() []*Batch {
-	var batches []*Batch
+func (a *Accumulator) Drain() []*DecodedBatch {
+	var batches []*DecodedBatch
 
 	// Flush the current group being built
 	if a.currentGroup != nil {
 		if a.batchSize == 0 {
 			// Each group is its own batch
-			batches = append(batches, &Batch{
+			batches = append(batches, &DecodedBatch{
 				BatchID:       a.batchCounter,
 				DecodedGroups: []*DecodedGroup{a.currentGroup},
 			})
@@ -225,7 +225,7 @@ func (a *Accumulator) Drain() []*Batch {
 
 	// Flush any remaining pending groups
 	if len(a.pendingGroups) > 0 {
-		batches = append(batches, &Batch{
+		batches = append(batches, &DecodedBatch{
 			BatchID:       a.batchCounter,
 			DecodedGroups: a.pendingGroups,
 		})

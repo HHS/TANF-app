@@ -15,7 +15,7 @@ type ParserPool struct {
 	parseCtx   *ParseContext // Runtime context from header
 
 	// Single work input channel for all Batches
-	work chan *Batch
+	work chan *DecodedBatch
 
 	// Single result output channel
 	results chan *ParsedBatch
@@ -45,7 +45,7 @@ func NewParserPool(format filespec.Format, config PoolConfig, ctx *ParseContext)
 		numWorkers: config.NumWorkers,
 		extractor:  GetExtractor(format),
 		parseCtx:   ctx,
-		work:       make(chan *Batch, config.WorkBufferSize),
+		work:       make(chan *DecodedBatch, config.WorkBufferSize),
 		results:    make(chan *ParsedBatch, config.ResultBufferSize),
 	}
 }
@@ -60,7 +60,7 @@ func (p *ParserPool) Start(ctx context.Context) {
 
 // Submit submits a Batch for processing.
 // Blocks if the work channel is full (backpressure).
-func (p *ParserPool) Submit(batch *Batch) {
+func (p *ParserPool) Submit(batch *DecodedBatch) {
 	p.work <- batch
 }
 
@@ -100,7 +100,7 @@ func (p *ParserPool) worker(ctx context.Context) {
 }
 
 // processBatch parses all records in all groups within a batch.
-func (p *ParserPool) processBatch(batch *Batch) *ParsedBatch {
+func (p *ParserPool) processBatch(batch *DecodedBatch) *ParsedBatch {
 	result := &ParsedBatch{
 		BatchID: batch.BatchID,
 		Groups:  make([]*ParsedGroup, 0, len(batch.DecodedGroups)),

@@ -34,9 +34,9 @@ func (g *DecodedGroup) TotalRecords() int {
 	return len(g.DecodedRecords)
 }
 
-// Batch is the unit of work dispatched to workers.
+// DecodedBatch is the unit of work dispatched to workers.
 // Contains one or more RecordGroups depending on batch_size configuration.
-type Batch struct {
+type DecodedBatch struct {
 	// BatchID is a sequential identifier for this batch
 	BatchID int
 
@@ -49,12 +49,12 @@ type Batch struct {
 }
 
 // TotalGroups returns the number of groups in this batch.
-func (b *Batch) TotalGroups() int {
+func (b *DecodedBatch) TotalGroups() int {
 	return len(b.DecodedGroups)
 }
 
 // TotalRecords returns the total number of records across all groups.
-func (b *Batch) TotalRecords() int {
+func (b *DecodedBatch) TotalRecords() int {
 	total := 0
 	for _, g := range b.DecodedGroups {
 		total += len(g.DecodedRecords)
