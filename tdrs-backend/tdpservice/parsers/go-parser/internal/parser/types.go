@@ -5,13 +5,13 @@ import (
 	"go-parser/internal/schema"
 )
 
-// DecodedRecord holds a raw row along with its detected schema.
+// DecodedRecord holds a decoded row along with its detected schema.
 type DecodedRecord struct {
 	Row    decoder.Row
 	Schema *schema.CompiledSchema
 }
 
-// DecodedGroup holds all raw lines belonging to a logical group.
+// DecodedGroup holds all decoded records belonging to a logical group.
 // For key-based grouping: all records with the same (RPT_MONTH_YEAR, CASE_NUMBER).
 // For non-keyed: each record is its own group (Key is empty).
 type DecodedGroup struct {
