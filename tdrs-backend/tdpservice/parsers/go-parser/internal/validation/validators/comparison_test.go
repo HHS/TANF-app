@@ -347,8 +347,6 @@ func createTestContext(value any) *validation.ValidationContext {
 
 	return &validation.ValidationContext{
 		Record:     record,
-		Schema:     compiledSchema,
-		FieldIndex: 0,
 		Category:   validation.CategoryFieldValue,
 	}
 }

@@ -18,14 +18,16 @@ type Row interface {
 type PositionalRow struct {
 	lineNum    int
 	recordType string
+	decodedLength int
 	data       string
 }
 
 // NewPositionalRow creates a new PositionalRow.
-func NewPositionalRow(lineNum int, recordType, data string) *PositionalRow {
+func NewPositionalRow(lineNum int, recordType string, decodedLength int, data string) *PositionalRow {
 	return &PositionalRow{
 		lineNum:    lineNum,
 		recordType: recordType,
+		decodedLength: decodedLength,
 		data:       data,
 	}
 }
@@ -54,14 +56,16 @@ func (r *PositionalRow) Data() string {
 type ColumnarRow struct {
 	lineNum    int
 	recordType string
+	decodedLength int
 	columns    []any // Can be string, int, float64, etc. (especially from XLSX)
 }
 
 // NewColumnarRow creates a new ColumnarRow.
-func NewColumnarRow(lineNum int, recordType string, columns []any) *ColumnarRow {
+func NewColumnarRow(lineNum int, recordType string, decodedLength int, columns []any) *ColumnarRow {
 	return &ColumnarRow{
 		lineNum:    lineNum,
 		recordType: recordType,
+		decodedLength: decodedLength,
 		columns:    columns,
 	}
 }

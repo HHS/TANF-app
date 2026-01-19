@@ -1,9 +1,7 @@
 package validation
 
 import (
-	"go-parser/internal/decoder"
 	"go-parser/internal/parser"
-	"go-parser/internal/schema"
 )
 
 // Orchestrator coordinates validation execution across all categories.
@@ -13,23 +11,23 @@ type Orchestrator struct {
 
 	// Validators by category for the current schema
 	cat1Validators []CompiledValidator // Record pre-check
-	cat2Validators map[int][]CompiledValidator // Field index -> validators
+	cat2Validators map[string][]CompiledValidator // Field name -> validators
 	cat3Validators []CompiledValidator // Cross-field
 	cat4Validators []CompiledValidator // Group-level
 
 	// File context
-	datafileID int32
 	parseCtx   *parser.ParseContext
 }
 
 // NewOrchestrator creates a new validation orchestrator.
-func NewOrchestrator(config *OrchestratorConfig) *Orchestrator {
+func NewOrchestrator(config *OrchestratorConfig, parseCtx *parser.ParseContext) *Orchestrator {
 	if config == nil {
 		config = DefaultOrchestratorConfig()
 	}
 	return &Orchestrator{
 		config:         config,
-		cat2Validators: make(map[int][]CompiledValidator),
+		cat2Validators: make(map[string][]CompiledValidator),
+		parseCtx:       parseCtx,
 	}
 }
 
@@ -50,20 +48,14 @@ func DefaultOrchestratorConfig() *OrchestratorConfig {
 	}
 }
 
-// SetFileContext sets file-level context for validation.
-func (o *Orchestrator) SetFileContext(datafileID int32, parseCtx *parser.ParseContext) {
-	o.datafileID = datafileID
-	o.parseCtx = parseCtx
-}
-
 // SetCat1Validators sets category 1 validators for the current schema.
 func (o *Orchestrator) SetCat1Validators(validators []CompiledValidator) {
 	o.cat1Validators = validators
 }
 
 // SetCat2Validators sets category 2 validators for a specific field.
-func (o *Orchestrator) SetCat2Validators(fieldIndex int, validators []CompiledValidator) {
-	o.cat2Validators[fieldIndex] = validators
+func (o *Orchestrator) SetCat2Validators(fieldName string, validators []CompiledValidator) {
+	o.cat2Validators[fieldName] = validators
 }
 
 // SetCat3Validators sets category 3 validators for the current schema.
@@ -79,7 +71,7 @@ func (o *Orchestrator) SetCat4Validators(validators []CompiledValidator) {
 // ClearValidators clears all validators.
 func (o *Orchestrator) ClearValidators() {
 	o.cat1Validators = nil
-	o.cat2Validators = make(map[int][]CompiledValidator)
+	o.cat2Validators = make(map[string][]CompiledValidator)
 	o.cat3Validators = nil
 	o.cat4Validators = nil
 }
@@ -98,7 +90,6 @@ func (o *Orchestrator) ValidateGroup(group *parser.ParsedGroup) *GroupValidation
 	defer ReleaseContext(ctx)
 
 	// Set file-level context
-	ctx.DatafileID = o.datafileID
 	ctx.ParseCtx = o.parseCtx
 	ctx.Group = group
 
@@ -117,7 +108,7 @@ func (o *Orchestrator) ValidateGroup(group *parser.ParsedGroup) *GroupValidation
 	// Validate each record
 	for _, record := range group.Records {
 		ctx.Record = record
-		ctx.Schema = record.Schema
+		ctx.SegmentIndex = record.SegmentIndex
 
 		recordErrors := o.validateRecord(ctx)
 		result.Errors = append(result.Errors, recordErrors...)
@@ -133,30 +124,13 @@ func (o *Orchestrator) ValidateGroup(group *parser.ParsedGroup) *GroupValidation
 	return result
 }
 
-// ValidateRow validates a single row before parsing (Cat 1 only).
-// Used for pre-parsing validation.
-func (o *Orchestrator) ValidateRow(row decoder.Row, compiledSchema *schema.CompiledSchema) []*ValidationResult {
-	ctx := AcquireContext()
-	defer ReleaseContext(ctx)
-
-	ctx.DatafileID = o.datafileID
-	ctx.ParseCtx = o.parseCtx
-	ctx.Row = row
-	ctx.Schema = compiledSchema
-	ctx.Category = CategoryPreCheck
-
-	return o.validateCat1(ctx)
-}
-
 // ValidateRecord validates a single parsed record (Cat 1, 2, 3).
 func (o *Orchestrator) ValidateRecord(record *parser.ParsedRecord) []*ValidationResult {
 	ctx := AcquireContext()
 	defer ReleaseContext(ctx)
 
-	ctx.DatafileID = o.datafileID
 	ctx.ParseCtx = o.parseCtx
 	ctx.Record = record
-	ctx.Schema = record.Schema
 
 	return o.validateRecord(ctx)
 }
@@ -208,36 +182,23 @@ func (o *Orchestrator) validateCat1(ctx *ValidationContext) []*ValidationResult 
 func (o *Orchestrator) validateCat2(ctx *ValidationContext) []*ValidationResult {
 	errors := make([]*ValidationResult, 0)
 
-	if ctx.Record == nil || ctx.Schema == nil {
+	if ctx.Record == nil {
 		return errors
 	}
 
 	// Iterate through all fields that have validators
-	for fieldIndex, validators := range o.cat2Validators {
-		ctx.FieldIndex = fieldIndex
-
+	for fieldName, validators := range o.cat2Validators {
 		for _, validator := range validators {
 			result := validator.Func(ctx)
 			if !result.Valid {
 				result.Category = CategoryFieldValue
-				result.FieldIndex = fieldIndex
+				result.FieldName = fieldName
 				result.Config = validator.Config
 				result.Record = ctx.Record
-				result.Schema = ctx.Schema
-
-				// Set field name from schema if not already set
-				if result.FieldName == "" {
-					if fieldDef := ctx.FieldDef(); fieldDef != nil {
-						result.FieldName = fieldDef.Name
-					}
-				}
-
 				errors = append(errors, result)
 			}
 		}
 	}
-
-	ctx.FieldIndex = -1
 	return errors
 }
 
@@ -251,7 +212,6 @@ func (o *Orchestrator) validateCat3(ctx *ValidationContext) []*ValidationResult 
 			result.Category = CategoryCrossField
 			result.Config = validator.Config
 			result.Record = ctx.Record
-			result.Schema = ctx.Schema
 			errors = append(errors, result)
 		}
 	}
@@ -316,14 +276,14 @@ func (o *Orchestrator) shouldSkipCategories(failedCategory int, checkCategories 
 // SchemaValidators holds compiled validators for a schema.
 type SchemaValidators struct {
 	Cat1 []CompiledValidator
-	Cat2 map[int][]CompiledValidator // FieldIndex -> validators
+	Cat2 map[string][]CompiledValidator // FieldName -> validators
 	Cat3 []CompiledValidator
 }
 
 // NewSchemaValidators creates empty schema validators.
 func NewSchemaValidators() *SchemaValidators {
 	return &SchemaValidators{
-		Cat2: make(map[int][]CompiledValidator),
+		Cat2: make(map[string][]CompiledValidator),
 	}
 }
 

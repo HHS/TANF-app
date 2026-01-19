@@ -4,6 +4,7 @@ package errors
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"text/template"
 	"time"
 
@@ -70,6 +71,37 @@ type ParserError struct {
 	ValuesJSON    string
 }
 
+func extractFieldMeta(result *validation.ValidationResult) (string, string, string, string) {
+	itemNumber := ""
+	columnNumber := ""
+	fieldName := result.FieldName
+	friendlyName := ""
+	fieldDef, ok := result.Record.Schema.SharedFieldsByName[result.FieldName]
+		if ok {
+			itemNumber = fieldDef.Item
+			columnNumber = strconv.Itoa(fieldDef.Column)
+			friendlyName = fieldDef.FriendlyName
+			if fieldName == "" {
+				fieldName = fieldDef.Name
+			}
+		} else {
+			// If not a shared field, check if it's a segment field
+			// TODO: it might be better to create indexes into the segment field defs
+			segmentDef := result.Record.Schema.Segments[result.Record.SegmentIndex]
+			for _, field := range segmentDef.Fields {
+				if field.Name == result.FieldName {
+					itemNumber = field.Item
+					columnNumber = strconv.Itoa(field.Column)
+					friendlyName = field.FriendlyName
+					if fieldName == "" {
+						fieldName = field.Name
+					}
+				}
+			}
+		}
+	return itemNumber, columnNumber, fieldName, friendlyName
+}
+
 // Generate creates a ParserError from a ValidationResult.
 // This is called at WRITE time for lazy error generation.
 func (g *ErrorGenerator) Generate(result *validation.ValidationResult) *ParserError {
@@ -106,8 +138,6 @@ func (g *ErrorGenerator) Generate(result *validation.ValidationResult) *ParserEr
 		rowNumber = result.Record.LineNumber
 		caseNumber = result.Record.GetString("CASE_NUMBER")
 		rptMonthYear = result.Record.GetInt("RPT_MONTH_YEAR")
-	} else if result.Row != nil {
-		rowNumber = result.Row.LineNum()
 	} else if result.Group != nil {
 		caseNumber = result.Group.CaseNumber
 		if len(result.Group.Records) > 0 {
@@ -120,16 +150,8 @@ func (g *ErrorGenerator) Generate(result *validation.ValidationResult) *ParserEr
 	itemNumber := ""
 	columnNumber := ""
 	fieldName := result.FieldName
-
-	if result.Schema != nil && result.FieldIndex >= 0 {
-		fieldDef := getFieldDef(result.Schema, result.FieldIndex, result.Record)
-		if fieldDef != nil {
-			itemNumber = fieldDef.Item
-			columnNumber = fieldDef.Item
-			if fieldName == "" {
-				fieldName = fieldDef.Name
-			}
-		}
+	if result.Record != nil {
+		itemNumber, columnNumber, fieldName, _ = extractFieldMeta(result)
 	}
 
 	deprecated := false
@@ -202,33 +224,26 @@ func (g *ErrorGenerator) buildTemplateContext(result *validation.ValidationResul
 	}
 
 	// Record type
-	if result.Schema != nil {
-		ctx.RecordType = result.Schema.RecordType
+	if result.Record != nil {
+		ctx.RecordType = result.Record.Schema.RecordType
 	}
 
 	// Field info
-	if result.Schema != nil && result.FieldIndex >= 0 {
-		fieldDef := getFieldDef(result.Schema, result.FieldIndex, result.Record)
-		if fieldDef != nil {
-			ctx.ItemNum = fieldDef.Item
-			ctx.FriendlyName = fieldDef.FriendlyName
-			ctx.FieldName = fieldDef.Name
-		}
-	}
-	if result.FieldName != "" && ctx.FieldName == "" {
-		ctx.FieldName = result.FieldName
+	if result.Record != nil {
+		itemNumber, _, fieldName, friendlyName := extractFieldMeta(result)
+		ctx.ItemNum = itemNumber
+		ctx.FieldName = fieldName
+		ctx.FriendlyName = friendlyName
 	}
 
 	// Value
-	if result.Record != nil && result.FieldIndex >= 0 && result.FieldIndex < len(result.Record.Fields) {
-		ctx.Value = result.Record.Fields[result.FieldIndex]
+	if result.Record != nil {
+		ctx.Value = result.Record.Get(result.FieldName)
 	}
 
 	// Row number
 	if result.Record != nil {
 		ctx.Row = result.Record.LineNumber
-	} else if result.Row != nil {
-		ctx.Row = result.Row.LineNum()
 	}
 
 	// Params from config
@@ -249,8 +264,8 @@ func (g *ErrorGenerator) resolveTemplate(result *validation.ValidationResult) *t
 
 	// 2. Use registry to find best match
 	schemaPath := ""
-	if result.Schema != nil {
-		schemaPath = result.Schema.Path
+	if result.Record != nil {
+		schemaPath = result.Record.Schema.Path
 	}
 
 	return g.messages.GetTemplate(result.ValidatorID, schemaPath, result.FieldName)
@@ -294,12 +309,11 @@ func (g *ErrorGenerator) buildFieldsJSON(result *validation.ValidationResult) st
 		fields["name"] = result.FieldName
 	}
 
-	if result.Schema != nil && result.FieldIndex >= 0 {
-		fieldDef := getFieldDef(result.Schema, result.FieldIndex, result.Record)
-		if fieldDef != nil {
-			fields["item"] = fieldDef.Item
-			fields["friendly_name"] = fieldDef.FriendlyName
-		}
+	if result.Record != nil {
+		itemNumber, _, fieldName, friendlyName := extractFieldMeta(result)
+		fields["item"] = itemNumber
+		fields["friendly_name"] = friendlyName
+		fields["name"] = fieldName
 	}
 
 	if len(fields) == 0 {

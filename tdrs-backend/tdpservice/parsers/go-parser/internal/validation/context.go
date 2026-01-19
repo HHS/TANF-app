@@ -1,7 +1,6 @@
 package validation
 
 import (
-	"go-parser/internal/decoder"
 	"go-parser/internal/parser"
 	"go-parser/internal/schema"
 )
@@ -9,34 +8,31 @@ import (
 // FieldValue returns the value of the current field being validated (Cat 2).
 // Returns nil if FieldIndex is out of range or Record is nil.
 func (ctx *ValidationContext) FieldValue() any {
-	if ctx.Record == nil || ctx.FieldIndex < 0 || ctx.FieldIndex >= len(ctx.Record.Fields) {
+	if ctx.Record == nil || ctx.FieldName == "" {
 		return nil
 	}
-	return ctx.Record.Fields[ctx.FieldIndex]
+	return ctx.Record.Fields[ctx.GetFieldIndex(ctx.FieldName)]
 }
 
 // FieldDef returns the field definition for the current field (Cat 2).
 // Returns nil if Schema is nil or FieldIndex is invalid.
 // TODO: revisit this. Im still not sure we need access to field def since field should have context.
 func (ctx *ValidationContext) FieldDef() *schema.FieldDef {
-	if ctx.Schema == nil || ctx.FieldIndex < 0 {
+	if ctx.Record == nil || ctx.FieldName == "" {
 		return nil
 	}
 
-	// Walk through shared fields first
-	sharedFields := ctx.Schema.Shared
-	if ctx.FieldIndex < len(sharedFields) {
-		return &sharedFields[ctx.FieldIndex]
-	}
-
-	// Then check segment fields if record has a segment
-	if ctx.Record != nil && ctx.Schema.NumSegments() > 0 {
-		segIdx := ctx.Record.SegmentIndex
-		if segIdx >= 0 && segIdx < len(ctx.Schema.Segments) {
-			segFields := ctx.Schema.Segments[segIdx].Fields
-			adjustedIdx := ctx.FieldIndex - len(sharedFields)
-			if adjustedIdx >= 0 && adjustedIdx < len(segFields) {
-				return &segFields[adjustedIdx]
+	// Check if field is a shared field first
+	fieldDef, ok := ctx.Record.Schema.SharedFieldsByName[ctx.FieldName]
+	if ok {
+		return fieldDef
+	} else {
+		// If not a shared field, check if it's a segment field
+		// TODO: it might be better to create indexes into the segment field defs
+		segmentDef := ctx.Record.Schema.Segments[ctx.SegmentIndex]
+		for _, field := range segmentDef.Fields {
+			if field.Name == ctx.FieldName {
+				return &field
 			}
 		}
 	}
@@ -56,10 +52,10 @@ func (ctx *ValidationContext) GetField(name string) any {
 // GetFieldIndex returns the index for a field name in the current schema.
 // Returns -1 if the field doesn't exist or Schema is nil.
 func (ctx *ValidationContext) GetFieldIndex(name string) int {
-	if ctx.Schema == nil {
+	if ctx.Record == nil {
 		return -1
 	}
-	idx, ok := ctx.Schema.FieldIndex[name]
+	idx, ok := ctx.Record.Schema.FieldIndex[name]
 	if !ok {
 		return -1
 	}
@@ -84,39 +80,12 @@ func (ctx *ValidationContext) GetInt(name string) int {
 	return ctx.Record.GetInt(name)
 }
 
-// RawRowData returns the raw row data for Cat 1 validators.
-// Returns empty string if Row is nil or not a PositionalRow.
-func (ctx *ValidationContext) RawRowData() string {
-	if ctx.Row == nil {
-		return ""
-	}
-	if pr, ok := ctx.Row.(*decoder.PositionalRow); ok {
-		return pr.Data()
-	}
-	return ""
-}
-
-// RawRowSlice returns a slice of the raw row data (Cat 1).
-// Uses Python-style slice semantics (start inclusive, end exclusive).
-func (ctx *ValidationContext) RawRowSlice(start, end int) string {
-	if ctx.Row == nil {
-		return ""
-	}
-	if pr, ok := ctx.Row.(*decoder.PositionalRow); ok {
-		return pr.Slice(start, end)
-	}
-	return ""
-}
-
 // RecordType returns the record type from the schema or row.
 func (ctx *ValidationContext) RecordType() string {
-	if ctx.Schema != nil {
-		return ctx.Schema.RecordType
+	if ctx.Record != nil {
+		return ctx.Record.Schema.RecordType
 	}
-	if ctx.Row != nil {
-		return ctx.Row.RecordType()
-	}
-	return ""
+	return "Unknown"
 }
 
 // LineNumber returns the line number of the current record or row.
@@ -124,19 +93,15 @@ func (ctx *ValidationContext) LineNumber() int {
 	if ctx.Record != nil {
 		return ctx.Record.LineNumber
 	}
-	if ctx.Row != nil {
-		return ctx.Row.LineNum()
-	}
-	return 0
+	return -1
 }
 
 // Reset clears the context for pool reuse.
 // File-level fields (DatafileID, ParseCtx) are NOT cleared as they're set once per file.
 func (ctx *ValidationContext) Reset() {
 	ctx.Record = nil
-	ctx.Schema = nil
-	ctx.Row = nil
-	ctx.FieldIndex = -1
+	ctx.SegmentIndex = -1
+	ctx.FieldName = ""
 	ctx.Group = nil
 	ctx.Category = 0
 }
@@ -144,61 +109,33 @@ func (ctx *ValidationContext) Reset() {
 // SetRecord sets the record-level context for Cat 1, 2, 3 validation.
 func (ctx *ValidationContext) SetRecord(record *parser.ParsedRecord, compiledSchema *schema.CompiledSchema) {
 	ctx.Record = record
-	ctx.Schema = compiledSchema
-	ctx.FieldIndex = -1
 }
 
-// SetRow sets the raw row for Cat 1 validation.
-func (ctx *ValidationContext) SetRow(row decoder.Row, compiledSchema *schema.CompiledSchema) {
-	ctx.Row = row
-	ctx.Schema = compiledSchema
-}
+// TODO: I don't think these are needed.
+// // Clone creates a shallow copy of the context.
+// // Used when a validator needs to temporarily modify field context.
+// func (ctx *ValidationContext) Clone() *ValidationContext {
+// 	return &ValidationContext{
+// 		Record:     ctx.Record,
+// 		Group:      ctx.Group,
+// 		Category:   ctx.Category,
+// 	}
+// }
 
-// SetField sets the field index for Cat 2 validation.
-func (ctx *ValidationContext) SetField(fieldIndex int) {
-	ctx.FieldIndex = fieldIndex
-}
+// // WithField returns a copy of the context with a different field index.
+// // Useful for cross-field validators that need to check multiple fields.
+// func (ctx *ValidationContext) WithField(fieldIndex int) *ValidationContext {
+// 	clone := ctx.Clone()
+// 	clone.FieldIndex = fieldIndex
+// 	return clone
+// }
 
-// SetFieldByName sets the field index by name for Cat 2 validation.
-// Returns false if the field name doesn't exist.
-func (ctx *ValidationContext) SetFieldByName(name string) bool {
-	idx := ctx.GetFieldIndex(name)
-	if idx < 0 {
-		return false
-	}
-	ctx.FieldIndex = idx
-	return true
-}
-
-// Clone creates a shallow copy of the context.
-// Used when a validator needs to temporarily modify field context.
-func (ctx *ValidationContext) Clone() *ValidationContext {
-	return &ValidationContext{
-		DatafileID: ctx.DatafileID,
-		ParseCtx:   ctx.ParseCtx,
-		Record:     ctx.Record,
-		Schema:     ctx.Schema,
-		Row:        ctx.Row,
-		FieldIndex: ctx.FieldIndex,
-		Group:      ctx.Group,
-		Category:   ctx.Category,
-	}
-}
-
-// WithField returns a copy of the context with a different field index.
-// Useful for cross-field validators that need to check multiple fields.
-func (ctx *ValidationContext) WithField(fieldIndex int) *ValidationContext {
-	clone := ctx.Clone()
-	clone.FieldIndex = fieldIndex
-	return clone
-}
-
-// WithFieldName returns a copy of the context with a field by name.
-// Returns nil if the field name doesn't exist.
-func (ctx *ValidationContext) WithFieldName(name string) *ValidationContext {
-	idx := ctx.GetFieldIndex(name)
-	if idx < 0 {
-		return nil
-	}
-	return ctx.WithField(idx)
-}
+// // WithFieldName returns a copy of the context with a field by name.
+// // Returns nil if the field name doesn't exist.
+// func (ctx *ValidationContext) WithFieldName(name string) *ValidationContext {
+// 	idx := ctx.GetFieldIndex(name)
+// 	if idx < 0 {
+// 		return nil
+// 	}
+// 	return ctx.WithField(idx)
+// }

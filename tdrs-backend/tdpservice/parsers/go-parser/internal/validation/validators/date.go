@@ -44,9 +44,7 @@ func DateYearIsLargerThanFactory(params map[string]any) (validation.ValidatorFun
 		result.Valid = false
 		result.ValidatorID = "dateYearIsLargerThan"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -67,9 +65,7 @@ func DateYearIsLessThanFactory(params map[string]any) (validation.ValidatorFunc,
 		result.Valid = false
 		result.ValidatorID = "dateYearIsLessThan"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -94,9 +90,7 @@ func DateYearIsBetweenFactory(params map[string]any) (validation.ValidatorFunc, 
 		result.Valid = false
 		result.ValidatorID = "dateYearIsBetween"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -112,9 +106,7 @@ func DateMonthIsValidFactory(params map[string]any) (validation.ValidatorFunc, e
 		result.Valid = false
 		result.ValidatorID = "dateMonthIsValid"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -133,9 +125,7 @@ func DateDayIsValidFactory(params map[string]any) (validation.ValidatorFunc, err
 		result.Valid = false
 		result.ValidatorID = "dateDayIsValid"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -165,9 +155,7 @@ func DateIsValidFactory(params map[string]any) (validation.ValidatorFunc, error)
 		result.Valid = false
 		result.ValidatorID = "dateIsValid"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -192,9 +180,7 @@ func DateIsInPastFactory(params map[string]any) (validation.ValidatorFunc, error
 		result.Valid = false
 		result.ValidatorID = "dateIsInPast"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -219,9 +205,7 @@ func DateIsInFutureFactory(params map[string]any) (validation.ValidatorFunc, err
 		result.Valid = false
 		result.ValidatorID = "dateIsInFuture"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -237,9 +221,7 @@ func QuarterIsValidFactory(params map[string]any) (validation.ValidatorFunc, err
 		result.Valid = false
 		result.ValidatorID = "quarterIsValid"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }

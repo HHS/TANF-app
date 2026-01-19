@@ -4,9 +4,7 @@
 package validation
 
 import (
-	"go-parser/internal/decoder"
 	"go-parser/internal/parser"
-	"go-parser/internal/schema"
 )
 
 // Category represents a validation category (1-4).
@@ -48,16 +46,12 @@ type ValidatorFactory func(params map[string]any) (ValidatorFunc, error)
 // It is pooled and reused across validations for performance.
 type ValidationContext struct {
 	// File-level context (set once per file)
-	DatafileID int32
 	ParseCtx   *parser.ParseContext
 
 	// Record-level context (Cat 1, 2, 3)
 	Record *parser.ParsedRecord
-	Schema *schema.CompiledSchema
-	Row    decoder.Row // Raw row for Cat 1 validators
-
-	// Field-level context (Cat 2)
-	FieldIndex int // Index into Record.Fields and Schema.Fields
+	FieldName string
+	SegmentIndex int
 
 	// Group-level context (Cat 4)
 	Group *parser.ParsedGroup
@@ -72,14 +66,12 @@ type ValidationResult struct {
 	Valid       bool
 	ValidatorID string   // e.g., "isGreaterThan", "cash_requires_months"
 	Category    Category // Which category this result is from
+	// TODO: Should we store error type here for dynamically overloaded error types?
 
 	// Context pointers for lazy error generation (not copied, just referenced)
-	FieldIndex int
-	FieldName  string // For Cat 2 and cross-field, which field(s) failed
+	FieldName  string
 	Record     *parser.ParsedRecord
-	Schema     *schema.CompiledSchema
 	Group      *parser.ParsedGroup
-	Row        decoder.Row
 
 	// Config that triggered this validation (for message/error_type overrides)
 	// TODO: This is a heavy object. Might need to extract only what we need from it

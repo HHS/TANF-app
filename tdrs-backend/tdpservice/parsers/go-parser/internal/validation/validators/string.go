@@ -37,9 +37,7 @@ func IsEmptyFactory(params map[string]any) (validation.ValidatorFunc, error) {
 		result.Valid = false
 		result.ValidatorID = "isEmpty"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -55,9 +53,7 @@ func IsNotEmptyFactory(params map[string]any) (validation.ValidatorFunc, error) 
 		result.Valid = false
 		result.ValidatorID = "isNotEmpty"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -80,9 +76,7 @@ func HasLengthFactory(params map[string]any) (validation.ValidatorFunc, error) {
 		result.Valid = false
 		result.ValidatorID = "hasLength"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -103,9 +97,7 @@ func HasMinLengthFactory(params map[string]any) (validation.ValidatorFunc, error
 		result.Valid = false
 		result.ValidatorID = "hasMinLength"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -126,9 +118,7 @@ func HasMaxLengthFactory(params map[string]any) (validation.ValidatorFunc, error
 		result.Valid = false
 		result.ValidatorID = "hasMaxLength"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -154,9 +144,7 @@ func HasLengthBetweenFactory(params map[string]any) (validation.ValidatorFunc, e
 		result.Valid = false
 		result.ValidatorID = "hasLengthBetween"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -184,9 +172,7 @@ func MatchesPatternFactory(params map[string]any) (validation.ValidatorFunc, err
 		result.Valid = false
 		result.ValidatorID = "matchesPattern"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -207,9 +193,7 @@ func StartsWithFactory(params map[string]any) (validation.ValidatorFunc, error) 
 		result.Valid = false
 		result.ValidatorID = "startsWith"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -230,9 +214,7 @@ func EndsWithFactory(params map[string]any) (validation.ValidatorFunc, error) {
 		result.Valid = false
 		result.ValidatorID = "endsWith"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -253,9 +235,7 @@ func ContainsFactory(params map[string]any) (validation.ValidatorFunc, error) {
 		result.Valid = false
 		result.ValidatorID = "contains"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -270,9 +250,7 @@ func IsAlphanumericFactory(params map[string]any) (validation.ValidatorFunc, err
 				result.Valid = false
 				result.ValidatorID = "isAlphanumeric"
 				result.Category = ctx.Category
-				result.FieldIndex = ctx.FieldIndex
 				result.Record = ctx.Record
-				result.Schema = ctx.Schema
 				return result
 			}
 		}
@@ -290,9 +268,7 @@ func IsNumericFactory(params map[string]any) (validation.ValidatorFunc, error) {
 				result.Valid = false
 				result.ValidatorID = "isNumeric"
 				result.Category = ctx.Category
-				result.FieldIndex = ctx.FieldIndex
 				result.Record = ctx.Record
-				result.Schema = ctx.Schema
 				return result
 			}
 		}
@@ -310,9 +286,7 @@ func IsAlphabeticFactory(params map[string]any) (validation.ValidatorFunc, error
 				result.Valid = false
 				result.ValidatorID = "isAlphabetic"
 				result.Category = ctx.Category
-				result.FieldIndex = ctx.FieldIndex
 				result.Record = ctx.Record
-				result.Schema = ctx.Schema
 				return result
 			}
 		}

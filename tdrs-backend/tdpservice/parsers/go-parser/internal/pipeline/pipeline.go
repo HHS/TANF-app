@@ -90,6 +90,7 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params ProcessParams) (*Proc
 
 	headerSchema := p.registry.GetSchema(parser.HeaderSchemaPath)
 	parseCtx, err := parser.ParseHeader(headerRow, headerSchema)
+	parseCtx.DatafileID = params.DatafileID
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse header: %w", err)
 	}

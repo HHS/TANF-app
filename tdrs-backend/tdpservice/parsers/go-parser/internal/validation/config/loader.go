@@ -155,15 +155,12 @@ func (l *Loader) LoadSchemaValidators(path string, compiledSchema *schema.Compil
 		if len(fieldConfig.Category2) == 0 {
 			continue
 		}
-		fieldIndex, ok := compiledSchema.FieldIndex[fieldConfig.Name]
-		if !ok {
-			continue // Field not in schema
-		}
+
 		cat2, err := l.registry.BuildAll(fieldConfig.Category2)
 		if err != nil {
 			return nil, fmt.Errorf("building cat2 validators for %s: %w", fieldConfig.Name, err)
 		}
-		validators.Cat2[fieldIndex] = cat2
+		validators.Cat2[fieldConfig.Name] = cat2
 	}
 
 	// Build Cat 2 validators from segment fields (use first segment)
@@ -172,15 +169,12 @@ func (l *Loader) LoadSchemaValidators(path string, compiledSchema *schema.Compil
 			if len(fieldConfig.Category2) == 0 {
 				continue
 			}
-			fieldIndex, ok := compiledSchema.FieldIndex[fieldConfig.Name]
-			if !ok {
-				continue
-			}
+
 			cat2, err := l.registry.BuildAll(fieldConfig.Category2)
 			if err != nil {
 				return nil, fmt.Errorf("building cat2 validators for %s: %w", fieldConfig.Name, err)
 			}
-			validators.Cat2[fieldIndex] = cat2
+			validators.Cat2[fieldConfig.Name] = cat2
 		}
 	}
 
@@ -189,15 +183,12 @@ func (l *Loader) LoadSchemaValidators(path string, compiledSchema *schema.Compil
 		if len(fieldConfig.Category2) == 0 {
 			continue
 		}
-		fieldIndex, ok := compiledSchema.FieldIndex[fieldConfig.Name]
-		if !ok {
-			continue
-		}
+
 		cat2, err := l.registry.BuildAll(fieldConfig.Category2)
 		if err != nil {
 			return nil, fmt.Errorf("building cat2 validators for %s: %w", fieldConfig.Name, err)
 		}
-		validators.Cat2[fieldIndex] = cat2
+		validators.Cat2[fieldConfig.Name] = cat2
 	}
 
 	return validators, nil

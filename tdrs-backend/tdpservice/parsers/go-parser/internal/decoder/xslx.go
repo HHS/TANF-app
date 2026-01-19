@@ -92,7 +92,7 @@ func (d *XLSXDecoder) Rows() iter.Seq2[Row, error] {
 				columns[i] = v
 			}
 
-			row := NewColumnarRow(d.lineNum, d.recordType, columns)
+			row := NewColumnarRow(d.lineNum, d.recordType, len(columns), columns)
 
 			if !yield(row, nil) {
 				return

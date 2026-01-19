@@ -80,7 +80,7 @@ func (d *CSVDecoder) Rows() iter.Seq2[Row, error] {
 			}
 
 			// Create the row
-			row := NewColumnarRow(d.lineNum, d.recordType, columns)
+			row := NewColumnarRow(d.lineNum, d.recordType, len(columns), columns)
 
 			if !yield(row, nil) {
 				return

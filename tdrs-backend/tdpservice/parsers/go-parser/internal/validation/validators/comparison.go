@@ -38,9 +38,7 @@ func IsEqualFactory(params map[string]any) (validation.ValidatorFunc, error) {
 		result.Valid = false
 		result.ValidatorID = "isEqual"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -61,9 +59,7 @@ func IsNotEqualFactory(params map[string]any) (validation.ValidatorFunc, error) 
 		result.Valid = false
 		result.ValidatorID = "isNotEqual"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -84,9 +80,7 @@ func IsGreaterThanFactory(params map[string]any) (validation.ValidatorFunc, erro
 		result.Valid = false
 		result.ValidatorID = "isGreaterThan"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -107,9 +101,7 @@ func IsGreaterThanOrEqualFactory(params map[string]any) (validation.ValidatorFun
 		result.Valid = false
 		result.ValidatorID = "isGreaterThanOrEqual"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -130,9 +122,7 @@ func IsLessThanFactory(params map[string]any) (validation.ValidatorFunc, error) 
 		result.Valid = false
 		result.ValidatorID = "isLessThan"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -153,9 +143,7 @@ func IsLessThanOrEqualFactory(params map[string]any) (validation.ValidatorFunc, 
 		result.Valid = false
 		result.ValidatorID = "isLessThanOrEqual"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -200,9 +188,7 @@ func IsBetweenFactory(params map[string]any) (validation.ValidatorFunc, error) {
 		result.Valid = false
 		result.ValidatorID = "isBetween"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -245,9 +231,7 @@ func IsOneOfFactory(params map[string]any) (validation.ValidatorFunc, error) {
 		result.Valid = false
 		result.ValidatorID = "isOneOf"
 		result.Category = ctx.Category
-		result.FieldIndex = ctx.FieldIndex
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }

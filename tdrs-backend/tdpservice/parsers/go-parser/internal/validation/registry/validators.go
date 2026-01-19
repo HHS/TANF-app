@@ -129,30 +129,21 @@ func (r *ValidatorRegistry) buildSimple(config validation.ValidatorConfig) (vali
 // wrapWithFieldOverride wraps a validator to operate on a different field.
 func (r *ValidatorRegistry) wrapWithFieldOverride(fn validation.ValidatorFunc, fieldName string, config *validation.ValidatorConfig) validation.ValidatorFunc {
 	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
-		// Save original field index
-		origFieldIndex := ctx.FieldIndex
-
 		// Set field by name
 		fieldIdx := ctx.GetFieldIndex(fieldName)
 		if fieldIdx < 0 {
 			result := validation.NewInvalidResult(config.ID, ctx.Category, config)
 			result.Record = ctx.Record
-			result.Schema = ctx.Schema
 			result.FieldName = fieldName
 			return result
 		}
-		ctx.FieldIndex = fieldIdx
 
 		// Run validator
 		result := fn(ctx)
 
-		// Restore original field index
-		ctx.FieldIndex = origFieldIndex
-
 		// Update result with field info if invalid
 		if !result.Valid {
 			result.FieldName = fieldName
-			result.FieldIndex = fieldIdx
 		}
 
 		return result
@@ -205,12 +196,9 @@ func (r *ValidatorRegistry) buildAnd(config validation.ValidatorConfig) (validat
 					Valid:       false,
 					ValidatorID: configCopy.ID,
 					Category:    ctx.Category,
-					FieldIndex:  ctx.FieldIndex,
 					FieldName:   result.FieldName,
 					Record:      ctx.Record,
-					Schema:      ctx.Schema,
 					Group:       ctx.Group,
-					Row:         ctx.Row,
 					Config:      &configCopy,
 				}
 			}
@@ -248,11 +236,8 @@ func (r *ValidatorRegistry) buildOr(config validation.ValidatorConfig) (validati
 			Valid:       false,
 			ValidatorID: configCopy.ID,
 			Category:    ctx.Category,
-			FieldIndex:  ctx.FieldIndex,
 			Record:      ctx.Record,
-			Schema:      ctx.Schema,
 			Group:       ctx.Group,
-			Row:         ctx.Row,
 			Config:      &configCopy,
 		}
 	}, nil
@@ -279,11 +264,8 @@ func (r *ValidatorRegistry) buildNot(config validation.ValidatorConfig) (validat
 				Valid:       false,
 				ValidatorID: configCopy.ID,
 				Category:    ctx.Category,
-				FieldIndex:  ctx.FieldIndex,
 				Record:      ctx.Record,
-				Schema:      ctx.Schema,
 				Group:       ctx.Group,
-				Row:         ctx.Row,
 				Config:      &configCopy,
 			}
 		}
@@ -314,45 +296,23 @@ func (r *ValidatorRegistry) buildIfThen(config validation.ValidatorConfig) (vali
 	configCopy := config
 
 	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
-		// Save original field context
-		origFieldIndex := ctx.FieldIndex
-
-		// Apply condition's field override if specified
-		if configCopy.Condition.Field != "" {
-			if idx := ctx.GetFieldIndex(configCopy.Condition.Field); idx >= 0 {
-				ctx.FieldIndex = idx
-			}
-		}
 		condResult := condition(ctx)
 
 		if !condResult.Valid {
 			// Condition failed, ifThen passes (condition not met)
-			ctx.FieldIndex = origFieldIndex
 			return validation.ValidResult()
 		}
 
-		// Condition passed, check then
-		if configCopy.Then.Field != "" {
-			if idx := ctx.GetFieldIndex(configCopy.Then.Field); idx >= 0 {
-				ctx.FieldIndex = idx
-			}
-		}
 		thenResult := thenValidator(ctx)
-
-		// Restore original field index
-		ctx.FieldIndex = origFieldIndex
 
 		if !thenResult.Valid {
 			return &validation.ValidationResult{
 				Valid:       false,
 				ValidatorID: configCopy.ID,
 				Category:    ctx.Category,
-				FieldIndex:  thenResult.FieldIndex,
 				FieldName:   thenResult.FieldName,
 				Record:      ctx.Record,
-				Schema:      ctx.Schema,
 				Group:       ctx.Group,
-				Row:         ctx.Row,
 				Config:      &configCopy,
 			}
 		}
@@ -390,48 +350,26 @@ func (r *ValidatorRegistry) buildIfThenElse(config validation.ValidatorConfig) (
 	configCopy := config
 
 	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
-		origFieldIndex := ctx.FieldIndex
-
 		// Apply condition's field override
-		if configCopy.Condition.Field != "" {
-			if idx := ctx.GetFieldIndex(configCopy.Condition.Field); idx >= 0 {
-				ctx.FieldIndex = idx
-			}
-		}
 		condResult := condition(ctx)
 
 		var result *validation.ValidationResult
 		if condResult.Valid {
 			// Condition passed, run then
-			if configCopy.Then.Field != "" {
-				if idx := ctx.GetFieldIndex(configCopy.Then.Field); idx >= 0 {
-					ctx.FieldIndex = idx
-				}
-			}
 			result = thenValidator(ctx)
 		} else {
 			// Condition failed, run else
-			if configCopy.Else.Field != "" {
-				if idx := ctx.GetFieldIndex(configCopy.Else.Field); idx >= 0 {
-					ctx.FieldIndex = idx
-				}
-			}
 			result = elseValidator(ctx)
 		}
-
-		ctx.FieldIndex = origFieldIndex
 
 		if !result.Valid {
 			return &validation.ValidationResult{
 				Valid:       false,
 				ValidatorID: configCopy.ID,
 				Category:    ctx.Category,
-				FieldIndex:  result.FieldIndex,
 				FieldName:   result.FieldName,
 				Record:      ctx.Record,
-				Schema:      ctx.Schema,
 				Group:       ctx.Group,
-				Row:         ctx.Row,
 				Config:      &configCopy,
 			}
 		}

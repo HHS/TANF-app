@@ -46,7 +46,6 @@ func SumIsGreaterThanFactory(params map[string]any) (validation.ValidatorFunc, e
 		result.ValidatorID = "sumIsGreaterThan"
 		result.Category = ctx.Category
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		result.FieldName = strings.Join(fields, ", ")
 		return result
 	}, nil
@@ -73,7 +72,6 @@ func SumIsLessThanFactory(params map[string]any) (validation.ValidatorFunc, erro
 		result.ValidatorID = "sumIsLessThan"
 		result.Category = ctx.Category
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		result.FieldName = strings.Join(fields, ", ")
 		return result
 	}, nil
@@ -100,7 +98,6 @@ func SumEqualsFactory(params map[string]any) (validation.ValidatorFunc, error) {
 		result.ValidatorID = "sumEquals"
 		result.Category = ctx.Category
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		result.FieldName = strings.Join(fields, ", ")
 		return result
 	}, nil
@@ -127,7 +124,6 @@ func AtLeastOneOfFactory(params map[string]any) (validation.ValidatorFunc, error
 		result.ValidatorID = "atLeastOneOf"
 		result.Category = ctx.Category
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		result.FieldName = strings.Join(fields, ", ")
 		return result
 	}, nil
@@ -156,7 +152,6 @@ func ExactlyOneOfFactory(params map[string]any) (validation.ValidatorFunc, error
 		result.ValidatorID = "exactlyOneOf"
 		result.Category = ctx.Category
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		result.FieldName = strings.Join(fields, ", ")
 		return result
 	}, nil
@@ -189,7 +184,6 @@ func AllOrNoneFactory(params map[string]any) (validation.ValidatorFunc, error) {
 		result.ValidatorID = "allOrNone"
 		result.Category = ctx.Category
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		result.FieldName = strings.Join(fields, ", ")
 		return result
 	}, nil
@@ -220,7 +214,6 @@ func FieldsAreEqualFactory(params map[string]any) (validation.ValidatorFunc, err
 		result.ValidatorID = "fieldsAreEqual"
 		result.Category = ctx.Category
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		result.FieldName = field1 + ", " + field2
 		return result
 	}, nil
@@ -251,7 +244,6 @@ func FieldIsGreaterThanFieldFactory(params map[string]any) (validation.Validator
 		result.ValidatorID = "fieldIsGreaterThanField"
 		result.Category = ctx.Category
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		result.FieldName = field1
 		return result
 	}, nil
@@ -279,7 +271,6 @@ func FieldIsLessThanFieldFactory(params map[string]any) (validation.ValidatorFun
 		result.ValidatorID = "fieldIsLessThanField"
 		result.Category = ctx.Category
 		result.Record = ctx.Record
-		result.Schema = ctx.Schema
 		result.FieldName = field1
 		return result
 	}, nil

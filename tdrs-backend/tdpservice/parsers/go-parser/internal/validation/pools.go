@@ -7,9 +7,7 @@ import (
 // contextPool provides reusable ValidationContext objects.
 var contextPool = sync.Pool{
 	New: func() any {
-		return &ValidationContext{
-			FieldIndex: -1,
-		}
+		return &ValidationContext{}
 	},
 }
 
@@ -53,12 +51,9 @@ func AcquireResult() *ValidationResult {
 	result.Valid = false
 	result.ValidatorID = ""
 	result.Category = 0
-	result.FieldIndex = -1
 	result.FieldName = ""
 	result.Record = nil
-	result.Schema = nil
 	result.Group = nil
-	result.Row = nil
 	result.Config = nil
 	return result
 }
@@ -69,9 +64,7 @@ func ReleaseResult(result *ValidationResult) {
 	if result != nil {
 		// Clear references to allow GC
 		result.Record = nil
-		result.Schema = nil
 		result.Group = nil
-		result.Row = nil
 		result.Config = nil
 		resultPool.Put(result)
 	}
@@ -122,7 +115,7 @@ func PrewarmPools(numWorkers int) {
 	// Pre-allocate contexts (one per worker)
 	contexts := make([]*ValidationContext, numWorkers)
 	for i := 0; i < numWorkers; i++ {
-		contexts[i] = &ValidationContext{FieldIndex: -1}
+		contexts[i] = &ValidationContext{}
 	}
 	for _, ctx := range contexts {
 		contextPool.Put(ctx)

@@ -18,9 +18,6 @@ func RegisterRecord(r *registry.ValidatorRegistry) {
 	r.Register("recordStartsWith", RecordStartsWithFactory)
 	r.Register("recordEndsWith", RecordEndsWithFactory)
 	r.Register("caseNumberNotEmpty", CaseNumberNotEmptyFactory)
-	r.Register("fieldAtPositionIsNotEmpty", FieldAtPositionIsNotEmptyFactory)
-	r.Register("fieldAtPositionEquals", FieldAtPositionEqualsFactory)
-	r.Register("fieldAtPositionIsOneOf", FieldAtPositionIsOneOfFactory)
 }
 
 // RecordHasLengthFactory creates a validator that checks if a record has exact length.
@@ -33,16 +30,13 @@ func RecordHasLengthFactory(params map[string]any) (validation.ValidatorFunc, er
 	}
 
 	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
-		rowData := ctx.RawRowData()
-		if len(rowData) == length {
+		if ctx.Record.DecodedSize == length {
 			return validation.ValidResult()
 		}
 		result := validation.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "recordHasLength"
 		result.Category = ctx.Category
-		result.Row = ctx.Row
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -62,17 +56,13 @@ func RecordHasLengthBetweenFactory(params map[string]any) (validation.ValidatorF
 	}
 
 	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
-		rowData := ctx.RawRowData()
-		length := len(rowData)
-		if length >= min && length <= max {
+		if ctx.Record.DecodedSize >= min && ctx.Record.DecodedSize <= max {
 			return validation.ValidResult()
 		}
 		result := validation.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "recordHasLengthBetween"
 		result.Category = ctx.Category
-		result.Row = ctx.Row
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -85,16 +75,13 @@ func RecordHasMinLengthFactory(params map[string]any) (validation.ValidatorFunc,
 	}
 
 	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
-		rowData := ctx.RawRowData()
-		if len(rowData) >= min {
+		if ctx.Record.DecodedSize >= min {
 			return validation.ValidResult()
 		}
 		result := validation.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "recordHasMinLength"
 		result.Category = ctx.Category
-		result.Row = ctx.Row
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -107,16 +94,13 @@ func RecordHasMaxLengthFactory(params map[string]any) (validation.ValidatorFunc,
 	}
 
 	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
-		rowData := ctx.RawRowData()
-		if len(rowData) <= max {
+		if ctx.Record.DecodedSize <= max {
 			return validation.ValidResult()
 		}
 		result := validation.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "recordHasMaxLength"
 		result.Category = ctx.Category
-		result.Row = ctx.Row
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -131,16 +115,13 @@ func RecordStartsWithFactory(params map[string]any) (validation.ValidatorFunc, e
 	}
 
 	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
-		rowData := ctx.RawRowData()
-		if strings.HasPrefix(rowData, prefix) {
+		if strings.HasPrefix(ctx.Record.Schema.RecordType, prefix) {
 			return validation.ValidResult()
 		}
 		result := validation.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "recordStartsWith"
 		result.Category = ctx.Category
-		result.Row = ctx.Row
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
@@ -153,178 +134,37 @@ func RecordEndsWithFactory(params map[string]any) (validation.ValidatorFunc, err
 	}
 
 	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
-		rowData := ctx.RawRowData()
-		if strings.HasSuffix(rowData, suffix) {
+		if strings.HasSuffix(ctx.Record.Schema.RecordType, suffix) {
 			return validation.ValidResult()
 		}
 		result := validation.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "recordEndsWith"
 		result.Category = ctx.Category
-		result.Row = ctx.Row
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }
 
 // CaseNumberNotEmptyFactory creates a validator that checks if the case number field is not empty.
 // This is a common Cat 1 validation for records.
-// Params:
-//   - start: starting byte position (0-indexed, inclusive)
-//   - end: ending byte position (0-indexed, exclusive)
 func CaseNumberNotEmptyFactory(params map[string]any) (validation.ValidatorFunc, error) {
-	start, err := getIntParam(params, "start")
-	if err != nil {
-		return nil, fmt.Errorf("caseNumberNotEmpty: %w", err)
-	}
-	end, err := getIntParam(params, "end")
-	if err != nil {
-		return nil, fmt.Errorf("caseNumberNotEmpty: %w", err)
-	}
-
 	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
-		caseNumber := ctx.RawRowSlice(start, end)
-		trimmed := strings.TrimSpace(caseNumber)
-		if trimmed != "" {
-			return validation.ValidResult()
-		}
 		result := validation.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "caseNumberNotEmpty"
 		result.Category = ctx.Category
-		result.Row = ctx.Row
-		result.Schema = ctx.Schema
-		return result
-	}, nil
-}
 
-// FieldAtPositionIsNotEmptyFactory creates a validator that checks if a field at a position is not empty.
-// Params:
-//   - start: starting byte position (0-indexed, inclusive)
-//   - end: ending byte position (0-indexed, exclusive)
-func FieldAtPositionIsNotEmptyFactory(params map[string]any) (validation.ValidatorFunc, error) {
-	start, err := getIntParam(params, "start")
-	if err != nil {
-		return nil, fmt.Errorf("fieldAtPositionIsNotEmpty: %w", err)
-	}
-	end, err := getIntParam(params, "end")
-	if err != nil {
-		return nil, fmt.Errorf("fieldAtPositionIsNotEmpty: %w", err)
-	}
+		caseIdx, ok := ctx.Record.Schema.FieldIndex["CASE_NUMBER"]
+		if !ok {
+			return result
+		}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
-		value := ctx.RawRowSlice(start, end)
-		trimmed := strings.TrimSpace(value)
+		caseNumber := ctx.Record.Fields[caseIdx].(string)
+		trimmed := strings.TrimSpace(caseNumber)
 		if trimmed != "" {
 			return validation.ValidResult()
 		}
-		result := validation.AcquireResult()
-		result.Valid = false
-		result.ValidatorID = "fieldAtPositionIsNotEmpty"
-		result.Category = ctx.Category
-		result.Row = ctx.Row
-		result.Schema = ctx.Schema
-		return result
-	}, nil
-}
 
-// FieldAtPositionEqualsFactory creates a validator that checks if a field at a position equals a value.
-// Params:
-//   - start: starting byte position (0-indexed, inclusive)
-//   - end: ending byte position (0-indexed, exclusive)
-//   - value: expected value (will be trimmed before comparison)
-//   - trim: whether to trim the extracted value (default: true)
-func FieldAtPositionEqualsFactory(params map[string]any) (validation.ValidatorFunc, error) {
-	start, err := getIntParam(params, "start")
-	if err != nil {
-		return nil, fmt.Errorf("fieldAtPositionEquals: %w", err)
-	}
-	end, err := getIntParam(params, "end")
-	if err != nil {
-		return nil, fmt.Errorf("fieldAtPositionEquals: %w", err)
-	}
-	expected := fmt.Sprintf("%v", params["value"])
-
-	// Default trim to true
-	trim := true
-	if v, ok := params["trim"].(bool); ok {
-		trim = v
-	}
-
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
-		value := ctx.RawRowSlice(start, end)
-		if trim {
-			value = strings.TrimSpace(value)
-		}
-		if value == expected {
-			return validation.ValidResult()
-		}
-		result := validation.AcquireResult()
-		result.Valid = false
-		result.ValidatorID = "fieldAtPositionEquals"
-		result.Category = ctx.Category
-		result.Row = ctx.Row
-		result.Schema = ctx.Schema
-		return result
-	}, nil
-}
-
-// FieldAtPositionIsOneOfFactory creates a validator that checks if a field at a position is one of allowed values.
-// Params:
-//   - start: starting byte position (0-indexed, inclusive)
-//   - end: ending byte position (0-indexed, exclusive)
-//   - values: slice of allowed values
-//   - trim: whether to trim the extracted value (default: true)
-func FieldAtPositionIsOneOfFactory(params map[string]any) (validation.ValidatorFunc, error) {
-	start, err := getIntParam(params, "start")
-	if err != nil {
-		return nil, fmt.Errorf("fieldAtPositionIsOneOf: %w", err)
-	}
-	end, err := getIntParam(params, "end")
-	if err != nil {
-		return nil, fmt.Errorf("fieldAtPositionIsOneOf: %w", err)
-	}
-
-	rawValues, ok := params["values"]
-	if !ok {
-		return nil, fmt.Errorf("fieldAtPositionIsOneOf requires 'values' parameter")
-	}
-
-	// Build lookup set
-	allowedValues := make(map[string]bool)
-	switch v := rawValues.(type) {
-	case []any:
-		for _, val := range v {
-			allowedValues[fmt.Sprintf("%v", val)] = true
-		}
-	case []string:
-		for _, val := range v {
-			allowedValues[val] = true
-		}
-	default:
-		return nil, fmt.Errorf("fieldAtPositionIsOneOf 'values' must be a slice")
-	}
-
-	// Default trim to true
-	trim := true
-	if v, ok := params["trim"].(bool); ok {
-		trim = v
-	}
-
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
-		value := ctx.RawRowSlice(start, end)
-		if trim {
-			value = strings.TrimSpace(value)
-		}
-		if allowedValues[value] {
-			return validation.ValidResult()
-		}
-		result := validation.AcquireResult()
-		result.Valid = false
-		result.ValidatorID = "fieldAtPositionIsOneOf"
-		result.Category = ctx.Category
-		result.Row = ctx.Row
-		result.Schema = ctx.Schema
 		return result
 	}, nil
 }

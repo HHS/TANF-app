@@ -70,6 +70,7 @@ func (b *DecodedBatch) TotalRecords() int {
 // for field access, or access Fields directly by index for performance-critical code.
 type ParsedRecord struct {
 	Schema       *schema.CompiledSchema
+	DecodedSize  int
 	LineNumber   int
 	SegmentIndex int   // Which segment this record came from (0-indexed)
 	Fields       []any // Indexed by schema's FieldIndex map
@@ -132,6 +133,8 @@ func (pr *ParsedRecord) GetInt(fieldName string) int {
 // ParseContext carries runtime information extracted from header
 // that affects how subsequent records are parsed.
 type ParseContext struct {
+	DatafileID int32
+
 	// Header contains the fully parsed header record.
 	// All header fields are available via Header.Fields.
 	Header *ParsedRecord

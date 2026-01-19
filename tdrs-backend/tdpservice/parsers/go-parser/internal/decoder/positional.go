@@ -55,6 +55,7 @@ func (d *PostitionalDecoder) ReadFirst() (Row, error) {
 
 	d.lineNum++
 	d.firstRowRead = true
+	decodedLength := len(line)
 
 	// Remove trailing newline characters
 	line = strings.TrimRight(line, "\r\n")
@@ -63,7 +64,7 @@ func (d *PostitionalDecoder) ReadFirst() (Row, error) {
 	recordType := detectRecordTypeFromPrefix(line)
 
 	// Create and store the row
-	d.firstRow = NewPositionalRow(d.lineNum, recordType, line)
+	d.firstRow = NewPositionalRow(d.lineNum, recordType, decodedLength, line)
 
 	return d.firstRow, nil
 }
@@ -97,6 +98,8 @@ func (d *PostitionalDecoder) Rows() iter.Seq2[Row, error] {
 
 			d.lineNum++
 
+			decodedLength := len(line)
+
 			// Remove trailing newline characters
 			line = strings.TrimRight(line, "\r\n")
 
@@ -104,7 +107,7 @@ func (d *PostitionalDecoder) Rows() iter.Seq2[Row, error] {
 			recordType := detectRecordTypeFromPrefix(line)
 
 			// Create the row
-			row := NewPositionalRow(d.lineNum, recordType, line)
+			row := NewPositionalRow(d.lineNum, recordType, decodedLength, line)
 
 			// Yield the row to the caller
 			if !yield(row, nil) {
