@@ -10,7 +10,7 @@ import (
 
 	"go-parser/internal/config/schema"
 	"go-parser/internal/parser"
-	valconfig "go-parser/internal/validation/config"
+	"go-parser/internal/validation/config"
 	"go-parser/internal/validation/registry"
 )
 
@@ -18,17 +18,17 @@ import (
 // It uses lazy evaluation - errors are generated at write time, not during registry.
 type ErrorGenerator struct {
 	messages      *registry.MessageRegistry
-	categories    map[int]valconfig.CategoryConfig
+	categories    map[int]config.CategoryConfig
 	cachedInline  map[string]*template.Template // Cache for inline message templates
 	datafileID    int32
 	contentTypeID *int32 // Set by the caller if needed
 }
 
 // NewErrorGenerator creates a new error generator.
-func NewErrorGenerator(messages *registry.MessageRegistry, config *valconfig.OrchestratorConfig) *ErrorGenerator {
+func NewErrorGenerator(messages *registry.MessageRegistry, config *config.OrchestratorConfig) *ErrorGenerator {
 	g := &ErrorGenerator{
 		messages:     messages,
-		categories:   make(map[int]valconfig.CategoryConfig),
+		categories:   make(map[int]config.CategoryConfig),
 		cachedInline: make(map[string]*template.Template),
 	}
 
