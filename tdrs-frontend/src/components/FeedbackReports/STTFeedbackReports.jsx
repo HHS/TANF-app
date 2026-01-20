@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import axiosInstance from '../../axios-instance'
 import { Spinner } from '../Spinner'
 import { PaginatedComponent } from '../Paginator/Paginator'
@@ -10,16 +11,36 @@ import { getCurrentFiscalYear, constructYears } from '../Reports/utils'
  * their quarterly feedback reports.
  */
 function STTFeedbackReports() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const yearOptions = constructYears()
+
+  // Validate and get year from URL params
+  const getValidatedYear = () => {
+    const urlYear = searchParams.get('year')
+    const parsedYear = parseInt(urlYear, 10)
+    if (!isNaN(parsedYear) && yearOptions.includes(parsedYear)) {
+      return parsedYear
+    }
+    return getCurrentFiscalYear()
+  }
+
   const [reports, setReports] = useState([])
   const [loading, setLoading] = useState(false)
-  const [selectedYear, setSelectedYear] = useState(getCurrentFiscalYear())
+  const [selectedYear, setSelectedYear] = useState(getValidatedYear)
   const [alert, setAlert] = useState({
     active: false,
     type: null,
     message: null,
   })
 
-  const yearOptions = constructYears()
+  // Sync year selection to URL (bidirectional)
+  useEffect(() => {
+    const newParams = new URLSearchParams()
+    if (selectedYear) {
+      newParams.set('year', selectedYear)
+    }
+    setSearchParams(newParams, { replace: true })
+  }, [selectedYear, setSearchParams])
 
   /**
    * Fetches the feedback reports from the backend filtered by year

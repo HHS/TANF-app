@@ -152,7 +152,7 @@ describe('FeedbackReportAlert', () => {
     })
   })
 
-  it('contains link to feedback reports page', async () => {
+  it('contains link to feedback reports page with year param', async () => {
     mockUseReportsContext.mockReturnValue({
       yearInputValue: '2025',
       quarterInputValue: 'Q1',
@@ -168,7 +168,7 @@ describe('FeedbackReportAlert', () => {
 
     await waitFor(() => {
       const link = screen.getByRole('link', { name: /review the feedback/i })
-      expect(link).toHaveAttribute('href', '/feedback-reports')
+      expect(link).toHaveAttribute('href', '/feedback-reports?year=2025')
     })
   })
 

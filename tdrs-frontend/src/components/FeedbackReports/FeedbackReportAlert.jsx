@@ -59,8 +59,10 @@ const FeedbackReportAlert = () => {
       <div className="usa-alert__body">
         <p className="usa-alert__text">
           Feedback Reports Available as of {formattedDate}. Please{' '}
-          <a href="/feedback-reports">review the feedback</a> and if needed,
-          resubmit complete and accurate data.
+          <a href={`/feedback-reports?year=${yearInputValue}`}>
+            review the feedback
+          </a>{' '}
+          and if needed, resubmit complete and accurate data.
         </p>
       </div>
     </div>

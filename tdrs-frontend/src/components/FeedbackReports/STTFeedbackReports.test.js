@@ -378,4 +378,86 @@ describe('STTFeedbackReports', () => {
       })
     })
   })
+
+  describe('URL Parameter Handling', () => {
+    const renderWithUrl = (url) => {
+      return render(
+        <MemoryRouter initialEntries={[url]}>
+          <Provider store={store}>
+            <STTFeedbackReports />
+          </Provider>
+        </MemoryRouter>
+      )
+    }
+
+    it('initializes year from URL parameter', async () => {
+      axiosInstance.get.mockResolvedValue({ data: { results: [] } })
+
+      renderWithUrl('/feedback-reports?year=2024')
+
+      await waitFor(() => {
+        const yearSelect = screen.getByLabelText(/Fiscal Year/i)
+        expect(yearSelect.value).toBe('2024')
+      })
+    })
+
+    it('fetches reports with year from URL parameter', async () => {
+      axiosInstance.get.mockResolvedValue({ data: { results: [] } })
+
+      renderWithUrl('/feedback-reports?year=2024')
+
+      await waitFor(() => {
+        expect(axiosInstance.get).toHaveBeenCalledWith(
+          expect.stringContaining('/reports/'),
+          expect.objectContaining({
+            params: { year: 2024 },
+          })
+        )
+      })
+    })
+
+    it('falls back to current fiscal year for invalid year param', async () => {
+      const currentYear =
+        new Date().getMonth() > 8
+          ? new Date().getFullYear() + 1
+          : new Date().getFullYear()
+
+      axiosInstance.get.mockResolvedValue({ data: { results: [] } })
+
+      renderWithUrl('/feedback-reports?year=invalid')
+
+      await waitFor(() => {
+        const yearSelect = screen.getByLabelText(/Fiscal Year/i)
+        expect(yearSelect.value).toBe(String(currentYear))
+      })
+    })
+
+    it('falls back to current fiscal year for out-of-range year', async () => {
+      const currentYear =
+        new Date().getMonth() > 8
+          ? new Date().getFullYear() + 1
+          : new Date().getFullYear()
+
+      axiosInstance.get.mockResolvedValue({ data: { results: [] } })
+
+      renderWithUrl('/feedback-reports?year=1999')
+
+      await waitFor(() => {
+        const yearSelect = screen.getByLabelText(/Fiscal Year/i)
+        expect(yearSelect.value).toBe(String(currentYear))
+      })
+    })
+
+    it('displays heading with year from URL parameter', async () => {
+      axiosInstance.get.mockResolvedValue({ data: { results: [] } })
+
+      renderWithUrl('/feedback-reports?year=2024')
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('Fiscal Year 2024 Feedback Reports')
+        ).toBeInTheDocument()
+      })
+    })
+  })
 })
