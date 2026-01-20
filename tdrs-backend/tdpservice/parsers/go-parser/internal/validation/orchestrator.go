@@ -1,47 +1,49 @@
 package validation
 
 import (
+	valconfig "go-parser/internal/config/validation"
 	"go-parser/internal/parser"
+	"go-parser/internal/validation/registry"
 )
 
 // Orchestrator coordinates validation execution across all categories.
 // It manages the execution order, short-circuiting, and result collection.
 type Orchestrator struct {
-	config *OrchestratorConfig
+	config *valconfig.OrchestratorDef
 
 	// Validators by category for the current schema
-	cat1Validators []CompiledValidator // Record pre-check
-	cat2Validators map[string][]CompiledValidator // Field name -> validators
-	cat3Validators []CompiledValidator // Cross-field
-	cat4Validators []CompiledValidator // Group-level
+	cat1Validators []registry.CompiledValidator // Record pre-check
+	cat2Validators map[string][]registry.CompiledValidator // Field name -> validators
+	cat3Validators []registry.CompiledValidator // Cross-field
+	cat4Validators []registry.CompiledValidator // Group-level
 
 	// File context
 	parseCtx   *parser.ParseContext
 }
 
 // NewOrchestrator creates a new validation orchestrator.
-func NewOrchestrator(config *OrchestratorConfig, parseCtx *parser.ParseContext) *Orchestrator {
+func NewOrchestrator(config *valconfig.OrchestratorDef, parseCtx *parser.ParseContext) *Orchestrator {
 	if config == nil {
-		config = DefaultOrchestratorConfig()
+		config = DefaultOrchestratorDef()
 	}
 	return &Orchestrator{
 		config:         config,
-		cat2Validators: make(map[string][]CompiledValidator),
+		cat2Validators: make(map[string][]registry.CompiledValidator),
 		parseCtx:       parseCtx,
 	}
 }
 
-// DefaultOrchestratorConfig returns the default orchestrator configuration.
-func DefaultOrchestratorConfig() *OrchestratorConfig {
-	return &OrchestratorConfig{
-		Categories: []CategoryConfig{
+// DefaultOrchestratorDef returns the default orchestrator configuration.
+func DefaultOrchestratorDef() *valconfig.OrchestratorDef {
+	return &valconfig.OrchestratorDef{
+		Categories: []valconfig.CategoryDef{
 			{ID: 1, Name: "Record pre-check", DefaultErrorType: "RECORD_PRE_CHECK"},
 			{ID: 2, Name: "Field validation", DefaultErrorType: "FIELD_VALUE"},
 			{ID: 3, Name: "Cross-field", DefaultErrorType: "VALUE_CONSISTENCY"},
 			{ID: 4, Name: "Group validation", DefaultErrorType: "CASE_CONSISTENCY"},
 		},
 		ExecutionOrder: []int{4, 1, 2, 3},
-		ShortCircuit: []ShortCircuitRule{
+		ShortCircuit: []valconfig.ShortCircuitRule{
 			{OnFail: 4, Action: "reject_group", Skip: []int{1, 2, 3}},
 			{OnFail: 1, Action: "reject_record", Skip: []int{2, 3}},
 		},
@@ -49,29 +51,29 @@ func DefaultOrchestratorConfig() *OrchestratorConfig {
 }
 
 // SetCat1Validators sets category 1 validators for the current schema.
-func (o *Orchestrator) SetCat1Validators(validators []CompiledValidator) {
+func (o *Orchestrator) SetCat1Validators(validators []registry.CompiledValidator) {
 	o.cat1Validators = validators
 }
 
 // SetCat2Validators sets category 2 validators for a specific field.
-func (o *Orchestrator) SetCat2Validators(fieldName string, validators []CompiledValidator) {
+func (o *Orchestrator) SetCat2Validators(fieldName string, validators []registry.CompiledValidator) {
 	o.cat2Validators[fieldName] = validators
 }
 
 // SetCat3Validators sets category 3 validators for the current schema.
-func (o *Orchestrator) SetCat3Validators(validators []CompiledValidator) {
+func (o *Orchestrator) SetCat3Validators(validators []registry.CompiledValidator) {
 	o.cat3Validators = validators
 }
 
 // SetCat4Validators sets category 4 validators for the current file spec.
-func (o *Orchestrator) SetCat4Validators(validators []CompiledValidator) {
+func (o *Orchestrator) SetCat4Validators(validators []registry.CompiledValidator) {
 	o.cat4Validators = validators
 }
 
 // ClearValidators clears all validators.
 func (o *Orchestrator) ClearValidators() {
 	o.cat1Validators = nil
-	o.cat2Validators = make(map[string][]CompiledValidator)
+	o.cat2Validators = make(map[string][]registry.CompiledValidator)
 	o.cat3Validators = nil
 	o.cat4Validators = nil
 }
@@ -82,19 +84,19 @@ func (o *Orchestrator) ValidateGroup(group *parser.ParsedGroup) *GroupValidation
 	result := &GroupValidationResult{
 		ValidRecords:    make([]*parser.ParsedRecord, 0, len(group.Records)),
 		RejectedRecords: make([]*parser.ParsedRecord, 0),
-		Errors:          make([]*ValidationResult, 0),
+		Errors:          make([]*registry.ValidationResult, 0),
 	}
 
 	// Acquire context from pool
-	ctx := AcquireContext()
-	defer ReleaseContext(ctx)
+	ctx := registry.AcquireContext()
+	defer registry.ReleaseContext(ctx)
 
 	// Set file-level context
 	ctx.ParseCtx = o.parseCtx
 	ctx.Group = group
 
 	// Run Cat 4 (group-level) validation first
-	ctx.Category = CategoryGroup
+	ctx.Category = registry.CategoryGroup
 	cat4Errors := o.validateCat4(ctx)
 	result.Errors = append(result.Errors, cat4Errors...)
 
@@ -125,9 +127,9 @@ func (o *Orchestrator) ValidateGroup(group *parser.ParsedGroup) *GroupValidation
 }
 
 // ValidateRecord validates a single parsed record (Cat 1, 2, 3).
-func (o *Orchestrator) ValidateRecord(record *parser.ParsedRecord) []*ValidationResult {
-	ctx := AcquireContext()
-	defer ReleaseContext(ctx)
+func (o *Orchestrator) ValidateRecord(record *parser.ParsedRecord) []*registry.ValidationResult {
+	ctx := registry.AcquireContext()
+	defer registry.ReleaseContext(ctx)
 
 	ctx.ParseCtx = o.parseCtx
 	ctx.Record = record
@@ -136,11 +138,11 @@ func (o *Orchestrator) ValidateRecord(record *parser.ParsedRecord) []*Validation
 }
 
 // validateRecord runs Cat 1, 2, 3 validation on a record.
-func (o *Orchestrator) validateRecord(ctx *ValidationContext) []*ValidationResult {
-	errors := make([]*ValidationResult, 0)
+func (o *Orchestrator) validateRecord(ctx *registry.ValidationContext) []*registry.ValidationResult {
+	errors := make([]*registry.ValidationResult, 0)
 
 	// Cat 1: Record pre-check
-	ctx.Category = CategoryPreCheck
+	ctx.Category = registry.CategoryPreCheck
 	cat1Errors := o.validateCat1(ctx)
 	errors = append(errors, cat1Errors...)
 
@@ -150,12 +152,12 @@ func (o *Orchestrator) validateRecord(ctx *ValidationContext) []*ValidationResul
 	}
 
 	// Cat 2: Field validation
-	ctx.Category = CategoryFieldValue
+	ctx.Category = registry.CategoryFieldValue
 	cat2Errors := o.validateCat2(ctx)
 	errors = append(errors, cat2Errors...)
 
 	// Cat 3: Cross-field validation
-	ctx.Category = CategoryCrossField
+	ctx.Category = registry.CategoryCrossField
 	cat3Errors := o.validateCat3(ctx)
 	errors = append(errors, cat3Errors...)
 
@@ -163,13 +165,13 @@ func (o *Orchestrator) validateRecord(ctx *ValidationContext) []*ValidationResul
 }
 
 // validateCat1 runs category 1 (record pre-check) validators.
-func (o *Orchestrator) validateCat1(ctx *ValidationContext) []*ValidationResult {
-	errors := make([]*ValidationResult, 0)
+func (o *Orchestrator) validateCat1(ctx *registry.ValidationContext) []*registry.ValidationResult {
+	errors := make([]*registry.ValidationResult, 0)
 
 	for _, validator := range o.cat1Validators {
 		result := validator.Func(ctx)
 		if !result.Valid {
-			result.Category = CategoryPreCheck
+			result.Category = registry.CategoryPreCheck
 			result.Config = validator.Config
 			errors = append(errors, result)
 		}
@@ -179,8 +181,8 @@ func (o *Orchestrator) validateCat1(ctx *ValidationContext) []*ValidationResult 
 }
 
 // validateCat2 runs category 2 (field validation) validators.
-func (o *Orchestrator) validateCat2(ctx *ValidationContext) []*ValidationResult {
-	errors := make([]*ValidationResult, 0)
+func (o *Orchestrator) validateCat2(ctx *registry.ValidationContext) []*registry.ValidationResult {
+	errors := make([]*registry.ValidationResult, 0)
 
 	if ctx.Record == nil {
 		return errors
@@ -191,7 +193,7 @@ func (o *Orchestrator) validateCat2(ctx *ValidationContext) []*ValidationResult 
 		for _, validator := range validators {
 			result := validator.Func(ctx)
 			if !result.Valid {
-				result.Category = CategoryFieldValue
+				result.Category = registry.CategoryFieldValue
 				result.FieldName = fieldName
 				result.Config = validator.Config
 				result.Record = ctx.Record
@@ -203,13 +205,13 @@ func (o *Orchestrator) validateCat2(ctx *ValidationContext) []*ValidationResult 
 }
 
 // validateCat3 runs category 3 (cross-field) validators.
-func (o *Orchestrator) validateCat3(ctx *ValidationContext) []*ValidationResult {
-	errors := make([]*ValidationResult, 0)
+func (o *Orchestrator) validateCat3(ctx *registry.ValidationContext) []*registry.ValidationResult {
+	errors := make([]*registry.ValidationResult, 0)
 
 	for _, validator := range o.cat3Validators {
 		result := validator.Func(ctx)
 		if !result.Valid {
-			result.Category = CategoryCrossField
+			result.Category = registry.CategoryCrossField
 			result.Config = validator.Config
 			result.Record = ctx.Record
 			errors = append(errors, result)
@@ -220,13 +222,13 @@ func (o *Orchestrator) validateCat3(ctx *ValidationContext) []*ValidationResult 
 }
 
 // validateCat4 runs category 4 (group-level) validators.
-func (o *Orchestrator) validateCat4(ctx *ValidationContext) []*ValidationResult {
-	errors := make([]*ValidationResult, 0)
+func (o *Orchestrator) validateCat4(ctx *registry.ValidationContext) []*registry.ValidationResult {
+	errors := make([]*registry.ValidationResult, 0)
 
 	for _, validator := range o.cat4Validators {
 		result := validator.Func(ctx)
 		if !result.Valid {
-			result.Category = CategoryGroup
+			result.Category = registry.CategoryGroup
 			result.Config = validator.Config
 			result.Group = ctx.Group
 			errors = append(errors, result)
@@ -247,10 +249,10 @@ func (o *Orchestrator) shouldRejectGroup(category int) bool {
 }
 
 // shouldRejectRecord checks if a record should be rejected based on errors.
-func (o *Orchestrator) shouldRejectRecord(errors []*ValidationResult) bool {
+func (o *Orchestrator) shouldRejectRecord(errors []*registry.ValidationResult) bool {
 	// For now, reject if any Cat 1 error
 	for _, err := range errors {
-		if err.Category == CategoryPreCheck {
+		if err.Category == registry.CategoryPreCheck {
 			return true
 		}
 	}
@@ -275,15 +277,15 @@ func (o *Orchestrator) shouldSkipCategories(failedCategory int, checkCategories 
 
 // SchemaValidators holds compiled validators for a schema.
 type SchemaValidators struct {
-	Cat1 []CompiledValidator
-	Cat2 map[string][]CompiledValidator // FieldName -> validators
-	Cat3 []CompiledValidator
+	Cat1 []registry.CompiledValidator
+	Cat2 map[string][]registry.CompiledValidator // FieldName -> validators
+	Cat3 []registry.CompiledValidator
 }
 
 // NewSchemaValidators creates empty schema validators.
 func NewSchemaValidators() *SchemaValidators {
 	return &SchemaValidators{
-		Cat2: make(map[string][]CompiledValidator),
+		Cat2: make(map[string][]registry.CompiledValidator),
 	}
 }
 
@@ -296,7 +298,7 @@ func (o *Orchestrator) LoadValidatorsForSchema(validators *SchemaValidators) {
 
 // FileSpecValidators holds compiled validators for a file spec.
 type FileSpecValidators struct {
-	Cat4 []CompiledValidator
+	Cat4 []registry.CompiledValidator
 }
 
 // LoadValidatorsForFileSpec loads validators from a file spec into the orchestrator.

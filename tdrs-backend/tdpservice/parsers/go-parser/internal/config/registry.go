@@ -13,7 +13,7 @@ import (
 	"go-parser/internal/config/validation"
 )
 
-// Registry holds all loaded FileSpecs and Schemas.
+// Registry holds all loaded FileSpecs, Schemas, and DefaultMessages.
 // It is created once at startup and provides read-only access
 // to configuration throughout the application lifetime.
 type Registry struct {

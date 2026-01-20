@@ -4,7 +4,6 @@ package validators
 import (
 	"fmt"
 
-	"go-parser/internal/validation"
 	"go-parser/internal/validation/registry"
 )
 
@@ -23,18 +22,18 @@ func RegisterComparison(r *registry.ValidatorRegistry) {
 // IsEqualFactory creates a validator that checks if a value equals a target.
 // Params:
 //   - value: the target value to compare against
-func IsEqualFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func IsEqualFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	target, ok := params["value"]
 	if !ok {
 		return nil, fmt.Errorf("isEqual requires 'value' parameter")
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value := ctx.FieldValue()
 		if compareValues(value, target) == 0 {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "isEqual"
 		result.Category = ctx.Category
@@ -44,18 +43,18 @@ func IsEqualFactory(params map[string]any) (validation.ValidatorFunc, error) {
 }
 
 // IsNotEqualFactory creates a validator that checks if a value does not equal a target.
-func IsNotEqualFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func IsNotEqualFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	target, ok := params["value"]
 	if !ok {
 		return nil, fmt.Errorf("isNotEqual requires 'value' parameter")
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value := ctx.FieldValue()
 		if compareValues(value, target) != 0 {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "isNotEqual"
 		result.Category = ctx.Category
@@ -65,18 +64,18 @@ func IsNotEqualFactory(params map[string]any) (validation.ValidatorFunc, error) 
 }
 
 // IsGreaterThanFactory creates a validator that checks if a value is greater than a target.
-func IsGreaterThanFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func IsGreaterThanFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	target, ok := params["value"]
 	if !ok {
 		return nil, fmt.Errorf("isGreaterThan requires 'value' parameter")
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value := ctx.FieldValue()
 		if compareValues(value, target) > 0 {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "isGreaterThan"
 		result.Category = ctx.Category
@@ -86,18 +85,18 @@ func IsGreaterThanFactory(params map[string]any) (validation.ValidatorFunc, erro
 }
 
 // IsGreaterThanOrEqualFactory creates a validator that checks if a value is >= a target.
-func IsGreaterThanOrEqualFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func IsGreaterThanOrEqualFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	target, ok := params["value"]
 	if !ok {
 		return nil, fmt.Errorf("isGreaterThanOrEqual requires 'value' parameter")
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value := ctx.FieldValue()
 		if compareValues(value, target) >= 0 {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "isGreaterThanOrEqual"
 		result.Category = ctx.Category
@@ -107,18 +106,18 @@ func IsGreaterThanOrEqualFactory(params map[string]any) (validation.ValidatorFun
 }
 
 // IsLessThanFactory creates a validator that checks if a value is less than a target.
-func IsLessThanFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func IsLessThanFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	target, ok := params["value"]
 	if !ok {
 		return nil, fmt.Errorf("isLessThan requires 'value' parameter")
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value := ctx.FieldValue()
 		if compareValues(value, target) < 0 {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "isLessThan"
 		result.Category = ctx.Category
@@ -128,18 +127,18 @@ func IsLessThanFactory(params map[string]any) (validation.ValidatorFunc, error) 
 }
 
 // IsLessThanOrEqualFactory creates a validator that checks if a value is <= a target.
-func IsLessThanOrEqualFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func IsLessThanOrEqualFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	target, ok := params["value"]
 	if !ok {
 		return nil, fmt.Errorf("isLessThanOrEqual requires 'value' parameter")
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value := ctx.FieldValue()
 		if compareValues(value, target) <= 0 {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "isLessThanOrEqual"
 		result.Category = ctx.Category
@@ -153,7 +152,7 @@ func IsLessThanOrEqualFactory(params map[string]any) (validation.ValidatorFunc, 
 //   - min: minimum value (inclusive by default)
 //   - max: maximum value (inclusive by default)
 //   - inclusive: whether bounds are inclusive (default: true)
-func IsBetweenFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func IsBetweenFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	min, ok := params["min"]
 	if !ok {
 		return nil, fmt.Errorf("isBetween requires 'min' parameter")
@@ -169,7 +168,7 @@ func IsBetweenFactory(params map[string]any) (validation.ValidatorFunc, error) {
 		inclusive = v
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value := ctx.FieldValue()
 		cmpMin := compareValues(value, min)
 		cmpMax := compareValues(value, max)
@@ -182,9 +181,9 @@ func IsBetweenFactory(params map[string]any) (validation.ValidatorFunc, error) {
 		}
 
 		if valid {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "isBetween"
 		result.Category = ctx.Category
@@ -196,7 +195,7 @@ func IsBetweenFactory(params map[string]any) (validation.ValidatorFunc, error) {
 // IsOneOfFactory creates a validator that checks if a value is in a list of allowed values.
 // Params:
 //   - values: slice of allowed values
-func IsOneOfFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func IsOneOfFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	rawValues, ok := params["values"]
 	if !ok {
 		return nil, fmt.Errorf("isOneOf requires 'values' parameter")
@@ -222,12 +221,12 @@ func IsOneOfFactory(params map[string]any) (validation.ValidatorFunc, error) {
 		return nil, fmt.Errorf("isOneOf 'values' must be a slice, got %T", rawValues)
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value := normalizeValue(ctx.FieldValue())
 		if values[value] {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "isOneOf"
 		result.Category = ctx.Category

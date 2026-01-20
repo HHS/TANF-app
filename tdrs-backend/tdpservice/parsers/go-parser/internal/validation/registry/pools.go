@@ -1,4 +1,4 @@
-package validation
+package registry
 
 import (
 	"sync"
@@ -86,27 +86,6 @@ func ReleaseResultSlice(s *[]*ValidationResult) {
 		*s = (*s)[:0]
 		resultSlicePool.Put(s)
 	}
-}
-
-// ValidResult returns a valid ValidationResult without allocating.
-// This is a singleton used for successful validations.
-var validResultSingleton = &ValidationResult{Valid: true}
-
-// ValidResult returns a shared valid result to avoid allocation.
-// Do NOT modify or release this result.
-func ValidResult() *ValidationResult {
-	return validResultSingleton
-}
-
-// NewInvalidResult creates a new invalid result with the given parameters.
-// The result is acquired from the pool and should be released when done.
-func NewInvalidResult(validatorID string, category Category, config *ValidatorConfig) *ValidationResult {
-	result := AcquireResult()
-	result.Valid = false
-	result.ValidatorID = validatorID
-	result.Category = category
-	result.Config = config
-	return result
 }
 
 // PrewarmPools pre-allocates objects to reduce allocation during hot path.

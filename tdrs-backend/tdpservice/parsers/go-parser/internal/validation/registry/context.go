@@ -1,9 +1,27 @@
-package validation
+package registry
 
 import (
 	"go-parser/internal/config/schema"
 	"go-parser/internal/parser"
 )
+
+// ValidationContext provides unified context for all validators.
+// It is pooled and reused across validations for performance.
+type ValidationContext struct {
+	// File-level context (set once per file)
+	ParseCtx   *parser.ParseContext
+
+	// Record-level context (Cat 1, 2, 3)
+	Record *parser.ParsedRecord
+	FieldName string
+	SegmentIndex int
+
+	// Group-level context (Cat 4)
+	Group *parser.ParsedGroup
+
+	// Category being validated
+	Category Category
+}
 
 // FieldValue returns the value of the current field being validated (Cat 2).
 // Returns nil if FieldIndex is out of range or Record is nil.

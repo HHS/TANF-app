@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"time"
 
-	"go-parser/internal/validation"
 	"go-parser/internal/validation/registry"
 )
 
@@ -29,18 +28,18 @@ func RegisterDate(r *registry.ValidatorRegistry) {
 //
 // Params:
 //   - year: minimum year (exclusive)
-func DateYearIsLargerThanFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func DateYearIsLargerThanFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	year, err := getIntParam(params, "year")
 	if err != nil {
 		return nil, fmt.Errorf("dateYearIsLargerThan: %w", err)
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		dateYear := extractYear(ctx.FieldValue())
 		if dateYear > year {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "dateYearIsLargerThan"
 		result.Category = ctx.Category
@@ -50,18 +49,18 @@ func DateYearIsLargerThanFactory(params map[string]any) (validation.ValidatorFun
 }
 
 // DateYearIsLessThanFactory creates a validator that checks if a date's year is less than a threshold.
-func DateYearIsLessThanFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func DateYearIsLessThanFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	year, err := getIntParam(params, "year")
 	if err != nil {
 		return nil, fmt.Errorf("dateYearIsLessThan: %w", err)
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		dateYear := extractYear(ctx.FieldValue())
 		if dateYear < year {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "dateYearIsLessThan"
 		result.Category = ctx.Category
@@ -71,7 +70,7 @@ func DateYearIsLessThanFactory(params map[string]any) (validation.ValidatorFunc,
 }
 
 // DateYearIsBetweenFactory creates a validator that checks if a date's year is within a range.
-func DateYearIsBetweenFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func DateYearIsBetweenFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	minYear, err := getIntParam(params, "min")
 	if err != nil {
 		return nil, fmt.Errorf("dateYearIsBetween: %w", err)
@@ -81,12 +80,12 @@ func DateYearIsBetweenFactory(params map[string]any) (validation.ValidatorFunc, 
 		return nil, fmt.Errorf("dateYearIsBetween: %w", err)
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		dateYear := extractYear(ctx.FieldValue())
 		if dateYear >= minYear && dateYear <= maxYear {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "dateYearIsBetween"
 		result.Category = ctx.Category
@@ -96,13 +95,13 @@ func DateYearIsBetweenFactory(params map[string]any) (validation.ValidatorFunc, 
 }
 
 // DateMonthIsValidFactory creates a validator that checks if a date's month is valid (01-12).
-func DateMonthIsValidFactory(params map[string]any) (validation.ValidatorFunc, error) {
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+func DateMonthIsValidFactory(params map[string]any) (registry.ValidatorFunc, error) {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		month := extractMonth(ctx.FieldValue())
 		if month >= 1 && month <= 12 {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "dateMonthIsValid"
 		result.Category = ctx.Category
@@ -112,16 +111,16 @@ func DateMonthIsValidFactory(params map[string]any) (validation.ValidatorFunc, e
 }
 
 // DateDayIsValidFactory creates a validator that checks if a date's day is valid for its month.
-func DateDayIsValidFactory(params map[string]any) (validation.ValidatorFunc, error) {
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+func DateDayIsValidFactory(params map[string]any) (registry.ValidatorFunc, error) {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		year := extractYear(ctx.FieldValue())
 		month := extractMonth(ctx.FieldValue())
 		day := extractDay(ctx.FieldValue())
 
 		if isValidDay(year, month, day) {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "dateDayIsValid"
 		result.Category = ctx.Category
@@ -132,8 +131,8 @@ func DateDayIsValidFactory(params map[string]any) (validation.ValidatorFunc, err
 
 // DateIsValidFactory creates a validator that checks if the entire date is valid.
 // Validates year, month, and day components.
-func DateIsValidFactory(params map[string]any) (validation.ValidatorFunc, error) {
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+func DateIsValidFactory(params map[string]any) (registry.ValidatorFunc, error) {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value := ctx.FieldValue()
 		year := extractYear(value)
 		month := extractMonth(value)
@@ -142,16 +141,16 @@ func DateIsValidFactory(params map[string]any) (validation.ValidatorFunc, error)
 		// For YYYYMM format (no day), only validate year and month
 		if day == 0 {
 			if year > 0 && month >= 1 && month <= 12 {
-				return validation.ValidResult()
+				return registry.ValidResult()
 			}
 		} else {
 			// Full date validation
 			if year > 0 && isValidDay(year, month, day) {
-				return validation.ValidResult()
+				return registry.ValidResult()
 			}
 		}
 
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "dateIsValid"
 		result.Category = ctx.Category
@@ -161,8 +160,8 @@ func DateIsValidFactory(params map[string]any) (validation.ValidatorFunc, error)
 }
 
 // DateIsInPastFactory creates a validator that checks if a date is in the past.
-func DateIsInPastFactory(params map[string]any) (validation.ValidatorFunc, error) {
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+func DateIsInPastFactory(params map[string]any) (registry.ValidatorFunc, error) {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value := ctx.FieldValue()
 		year := extractYear(value)
 		month := extractMonth(value)
@@ -173,10 +172,10 @@ func DateIsInPastFactory(params map[string]any) (validation.ValidatorFunc, error
 
 		date := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
 		if date.Before(time.Now()) {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
 
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "dateIsInPast"
 		result.Category = ctx.Category
@@ -186,8 +185,8 @@ func DateIsInPastFactory(params map[string]any) (validation.ValidatorFunc, error
 }
 
 // DateIsInFutureFactory creates a validator that checks if a date is in the future.
-func DateIsInFutureFactory(params map[string]any) (validation.ValidatorFunc, error) {
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+func DateIsInFutureFactory(params map[string]any) (registry.ValidatorFunc, error) {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value := ctx.FieldValue()
 		year := extractYear(value)
 		month := extractMonth(value)
@@ -198,10 +197,10 @@ func DateIsInFutureFactory(params map[string]any) (validation.ValidatorFunc, err
 
 		date := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
 		if date.After(time.Now()) {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
 
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "dateIsInFuture"
 		result.Category = ctx.Category
@@ -211,13 +210,13 @@ func DateIsInFutureFactory(params map[string]any) (validation.ValidatorFunc, err
 }
 
 // QuarterIsValidFactory creates a validator that checks if a quarter value is valid (1-4).
-func QuarterIsValidFactory(params map[string]any) (validation.ValidatorFunc, error) {
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+func QuarterIsValidFactory(params map[string]any) (registry.ValidatorFunc, error) {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		quarter := extractQuarter(ctx.FieldValue())
 		if quarter >= 1 && quarter <= 4 {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "quarterIsValid"
 		result.Category = ctx.Category

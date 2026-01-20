@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"go-parser/internal/parser"
-	"go-parser/internal/validation"
 	"go-parser/internal/validation/registry"
 )
 
@@ -27,7 +26,7 @@ func RegisterGroup(r *registry.ValidatorRegistry) {
 // Params:
 //   - record_type: the record type that must be present (e.g., "T1", "T2")
 //   - required: whether the record type is required (default: true)
-func RecordTypePresentFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func RecordTypePresentFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	recordType, ok := params["record_type"].(string)
 	if !ok {
 		return nil, fmt.Errorf("recordTypePresent requires 'record_type' parameter as string")
@@ -38,31 +37,31 @@ func RecordTypePresentFactory(params map[string]any) (validation.ValidatorFunc, 
 		required = v
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		if ctx.Group == nil {
 			if required {
-				result := validation.AcquireResult()
+				result := registry.AcquireResult()
 				result.Valid = false
 				result.ValidatorID = "recordTypePresent"
 				result.Category = ctx.Category
 				result.Group = ctx.Group
 				return result
 			}
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
 
 		// Check if record type exists in group
 		for _, record := range ctx.Group.Records {
 			if record.Schema != nil && record.Schema.RecordType == recordType {
-				return validation.ValidResult()
+				return registry.ValidResult()
 			}
 		}
 
 		if !required {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
 
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "recordTypePresent"
 		result.Category = ctx.Category
@@ -75,7 +74,7 @@ func RecordTypePresentFactory(params map[string]any) (validation.ValidatorFunc, 
 // Params:
 //   - record_type: the record type to count
 //   - count: expected count
-func RecordCountEqualsFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func RecordCountEqualsFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	recordType, ok := params["record_type"].(string)
 	if !ok {
 		return nil, fmt.Errorf("recordCountEquals requires 'record_type' parameter as string")
@@ -85,12 +84,12 @@ func RecordCountEqualsFactory(params map[string]any) (validation.ValidatorFunc, 
 		return nil, fmt.Errorf("recordCountEquals: %w", err)
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		count := countRecordType(ctx.Group, recordType)
 		if count == expectedCount {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "recordCountEquals"
 		result.Category = ctx.Category
@@ -104,7 +103,7 @@ func RecordCountEqualsFactory(params map[string]any) (validation.ValidatorFunc, 
 //   - record_type: the record type to count
 //   - min: minimum count (inclusive)
 //   - max: maximum count (inclusive)
-func RecordCountInRangeFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func RecordCountInRangeFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	recordType, ok := params["record_type"].(string)
 	if !ok {
 		return nil, fmt.Errorf("recordCountInRange requires 'record_type' parameter as string")
@@ -118,12 +117,12 @@ func RecordCountInRangeFactory(params map[string]any) (validation.ValidatorFunc,
 		return nil, fmt.Errorf("recordCountInRange: %w", err)
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		count := countRecordType(ctx.Group, recordType)
 		if count >= min && count <= max {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "recordCountInRange"
 		result.Category = ctx.Category
@@ -133,7 +132,7 @@ func RecordCountInRangeFactory(params map[string]any) (validation.ValidatorFunc,
 }
 
 // RecordCountAtLeastFactory creates a validator that checks if the count of a record type is at least a value.
-func RecordCountAtLeastFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func RecordCountAtLeastFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	recordType, ok := params["record_type"].(string)
 	if !ok {
 		return nil, fmt.Errorf("recordCountAtLeast requires 'record_type' parameter as string")
@@ -143,12 +142,12 @@ func RecordCountAtLeastFactory(params map[string]any) (validation.ValidatorFunc,
 		return nil, fmt.Errorf("recordCountAtLeast: %w", err)
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		count := countRecordType(ctx.Group, recordType)
 		if count >= min {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "recordCountAtLeast"
 		result.Category = ctx.Category
@@ -158,7 +157,7 @@ func RecordCountAtLeastFactory(params map[string]any) (validation.ValidatorFunc,
 }
 
 // RecordCountAtMostFactory creates a validator that checks if the count of a record type is at most a value.
-func RecordCountAtMostFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func RecordCountAtMostFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	recordType, ok := params["record_type"].(string)
 	if !ok {
 		return nil, fmt.Errorf("recordCountAtMost requires 'record_type' parameter as string")
@@ -168,12 +167,12 @@ func RecordCountAtMostFactory(params map[string]any) (validation.ValidatorFunc, 
 		return nil, fmt.Errorf("recordCountAtMost: %w", err)
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		count := countRecordType(ctx.Group, recordType)
 		if count <= max {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "recordCountAtMost"
 		result.Category = ctx.Category
@@ -186,15 +185,15 @@ func RecordCountAtMostFactory(params map[string]any) (validation.ValidatorFunc, 
 // This is a TANF-specific validator for case consistency.
 // Params:
 //   - child_types: slice of child record types (e.g., ["T2", "T3"])
-func T1HasMatchingChildrenFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func T1HasMatchingChildrenFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	childTypes, err := getStringSliceParam(params, "child_types")
 	if err != nil {
 		return nil, fmt.Errorf("t1HasMatchingChildren: %w", err)
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		if ctx.Group == nil {
-			result := validation.AcquireResult()
+			result := registry.AcquireResult()
 			result.Valid = false
 			result.ValidatorID = "t1HasMatchingChildren"
 			result.Category = ctx.Category
@@ -220,10 +219,10 @@ func T1HasMatchingChildrenFactory(params map[string]any) (validation.ValidatorFu
 		}
 
 		if hasChild {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
 
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "t1HasMatchingChildren"
 		result.Category = ctx.Category
@@ -236,7 +235,7 @@ func T1HasMatchingChildrenFactory(params map[string]any) (validation.ValidatorFu
 // Params:
 //   - parent_type: the parent record type (e.g., "T1")
 //   - child_type: the child record type (e.g., "T2")
-func ParentRecordExistsFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func ParentRecordExistsFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	parentType, ok := params["parent_type"].(string)
 	if !ok {
 		return nil, fmt.Errorf("parentRecordExists requires 'parent_type' parameter as string")
@@ -246,9 +245,9 @@ func ParentRecordExistsFactory(params map[string]any) (validation.ValidatorFunc,
 		return nil, fmt.Errorf("parentRecordExists requires 'child_type' parameter as string")
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		if ctx.Group == nil {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
 
 		hasParent := false
@@ -268,7 +267,7 @@ func ParentRecordExistsFactory(params map[string]any) (validation.ValidatorFunc,
 
 		// If there are children, there must be a parent
 		if hasChild && !hasParent {
-			result := validation.AcquireResult()
+			result := registry.AcquireResult()
 			result.Valid = false
 			result.ValidatorID = "parentRecordExists"
 			result.Category = ctx.Category
@@ -276,7 +275,7 @@ func ParentRecordExistsFactory(params map[string]any) (validation.ValidatorFunc,
 			return result
 		}
 
-		return validation.ValidResult()
+		return registry.ValidResult()
 	}, nil
 }
 
@@ -285,7 +284,7 @@ func ParentRecordExistsFactory(params map[string]any) (validation.ValidatorFunc,
 //   - parent_type: the parent record type
 //   - child_types: slice of valid child record types
 //   - required: whether at least one child is required (default: true)
-func ChildRecordsExistFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func ChildRecordsExistFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	parentType, ok := params["parent_type"].(string)
 	if !ok {
 		return nil, fmt.Errorf("childRecordsExist requires 'parent_type' parameter as string")
@@ -305,9 +304,9 @@ func ChildRecordsExistFactory(params map[string]any) (validation.ValidatorFunc, 
 		childTypeSet[t] = true
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		if ctx.Group == nil {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
 
 		hasParent := false
@@ -327,7 +326,7 @@ func ChildRecordsExistFactory(params map[string]any) (validation.ValidatorFunc, 
 
 		// If there's a parent and it requires children
 		if hasParent && required && !hasChild {
-			result := validation.AcquireResult()
+			result := registry.AcquireResult()
 			result.Valid = false
 			result.ValidatorID = "childRecordsExist"
 			result.Category = ctx.Category
@@ -336,7 +335,7 @@ func ChildRecordsExistFactory(params map[string]any) (validation.ValidatorFunc, 
 			return result
 		}
 
-		return validation.ValidResult()
+		return registry.ValidResult()
 	}, nil
 }
 
@@ -344,7 +343,7 @@ func ChildRecordsExistFactory(params map[string]any) (validation.ValidatorFunc, 
 // Params:
 //   - record_type: the record type to check
 //   - field: the field name that must be unique
-func UniqueFieldAcrossRecordsFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func UniqueFieldAcrossRecordsFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	recordType, ok := params["record_type"].(string)
 	if !ok {
 		return nil, fmt.Errorf("uniqueFieldAcrossRecords requires 'record_type' parameter as string")
@@ -354,9 +353,9 @@ func UniqueFieldAcrossRecordsFactory(params map[string]any) (validation.Validato
 		return nil, fmt.Errorf("uniqueFieldAcrossRecords requires 'field' parameter as string")
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		if ctx.Group == nil {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
 
 		seen := make(map[any]bool)
@@ -369,7 +368,7 @@ func UniqueFieldAcrossRecordsFactory(params map[string]any) (validation.Validato
 				continue
 			}
 			if seen[value] {
-				result := validation.AcquireResult()
+				result := registry.AcquireResult()
 				result.Valid = false
 				result.ValidatorID = "uniqueFieldAcrossRecords"
 				result.Category = ctx.Category
@@ -381,7 +380,7 @@ func UniqueFieldAcrossRecordsFactory(params map[string]any) (validation.Validato
 			seen[value] = true
 		}
 
-		return validation.ValidResult()
+		return registry.ValidResult()
 	}, nil
 }
 

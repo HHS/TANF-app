@@ -6,26 +6,107 @@ import (
 	"sort"
 	"sync"
 
-	"go-parser/internal/validation"
+	valconfig "go-parser/internal/config/validation"
+	"go-parser/internal/parser"
 )
+
+// Category represents a validation category (1-4).
+type Category int
+
+const (
+	CategoryPreCheck   Category = 1 // Record-level pre-parsing validation
+	CategoryFieldValue Category = 2 // Field-level validation
+	CategoryCrossField Category = 3 // Cross-field validation within a record
+	CategoryGroup      Category = 4 // Group-level validation (case consistency)
+)
+
+// String returns the category name.
+func (c Category) String() string {
+	switch c {
+	case CategoryPreCheck:
+		return "RECORD_PRE_CHECK"
+	case CategoryFieldValue:
+		return "FIELD_VALUE"
+	case CategoryCrossField:
+		return "VALUE_CONSISTENCY"
+	case CategoryGroup:
+		return "CASE_CONSISTENCY"
+	default:
+		return "UNKNOWN"
+	}
+}
+
+// ValidationResult represents the outcome of a validator.
+// Results are pooled and reused for performance.
+type ValidationResult struct {
+	Valid       bool
+	ValidatorID string   // e.g., "isGreaterThan", "cash_requires_months"
+	Category    Category // Which category this result is from
+	// TODO: Should we store error type here for dynamically overloaded error types?
+
+	// Context pointers for lazy error generation (not copied, just referenced)
+	FieldName  string
+	Record     *parser.ParsedRecord
+	Group      *parser.ParsedGroup
+
+	// Config that triggered this validation (for message/error_type overrides)
+	// TODO: This is a heavy object. Might need to extract only what we need from it
+	Config *valconfig.ValidatorDef
+}
+
+// CompiledValidator holds a compiled validator function with its config.
+type CompiledValidator struct {
+	Func   ValidatorFunc
+	Config *valconfig.ValidatorDef
+}
+
+// ValidResult returns a valid ValidationResult without allocating.
+// This is a singleton used for successful validations.
+var validResultSingleton = &ValidationResult{Valid: true}
+
+// ValidResult returns a shared valid result to avoid allocation.
+// Do NOT modify or release this result.
+func ValidResult() *ValidationResult {
+	return validResultSingleton
+}
+
+// NewInvalidResult creates a new invalid result with the given parameters.
+// The result is acquired from the pool and should be released when done.
+func NewInvalidResult(validatorID string, category Category, config *valconfig.ValidatorDef) *ValidationResult {
+	result := AcquireResult()
+	result.Valid = false
+	result.ValidatorID = validatorID
+	result.Category = category
+	result.Config = config
+	return result
+}
+
+// ValidatorFunc is the unified signature for ALL validators.
+// It takes a ValidationContext and returns a ValidationResult.
+// Validators should be stateless and reusable.
+type ValidatorFunc func(ctx *ValidationContext) *ValidationResult
+
+// ValidatorFactory creates parameterized validators from config parameters.
+// It's called once at startup when building validators from YAML config.
+type ValidatorFactory func(params map[string]any) (ValidatorFunc, error)
 
 // ValidatorRegistry holds all available validators and builds composed validators.
 type ValidatorRegistry struct {
 	mu        sync.RWMutex
-	factories map[string]validation.ValidatorFactory
+	factories map[string]ValidatorFactory
 }
 
 // NewValidatorRegistry creates a new empty validator registry.
 func NewValidatorRegistry() *ValidatorRegistry {
 	return &ValidatorRegistry{
-		factories: make(map[string]validation.ValidatorFactory),
+		factories: make(map[string]ValidatorFactory),
 	}
 }
 
 // Register adds a validator factory to the registry.
 // The id should be the validator name (e.g., "isGreaterThan").
 // Panics if a validator with the same id is already registered.
-func (r *ValidatorRegistry) Register(id string, factory validation.ValidatorFactory) {
+func (r *ValidatorRegistry) Register(id string, factory ValidatorFactory) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if _, exists := r.factories[id]; exists {
@@ -36,15 +117,15 @@ func (r *ValidatorRegistry) Register(id string, factory validation.ValidatorFact
 
 // RegisterFunc is a convenience method for registering simple validators
 // that don't need parameters.
-func (r *ValidatorRegistry) RegisterFunc(id string, fn validation.ValidatorFunc) {
-	r.Register(id, func(params map[string]any) (validation.ValidatorFunc, error) {
+func (r *ValidatorRegistry) RegisterFunc(id string, fn ValidatorFunc) {
+	r.Register(id, func(params map[string]any) (ValidatorFunc, error) {
 		return fn, nil
 	})
 }
 
 // Get retrieves a validator factory by id.
 // Returns nil and false if the validator is not found.
-func (r *ValidatorRegistry) Get(id string) (validation.ValidatorFactory, bool) {
+func (r *ValidatorRegistry) Get(id string) (ValidatorFactory, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	factory, ok := r.factories[id]
@@ -53,7 +134,7 @@ func (r *ValidatorRegistry) Get(id string) (validation.ValidatorFactory, bool) {
 
 // MustGet retrieves a validator factory by id.
 // Panics if the validator is not found.
-func (r *ValidatorRegistry) MustGet(id string) validation.ValidatorFactory {
+func (r *ValidatorRegistry) MustGet(id string) ValidatorFactory {
 	factory, ok := r.Get(id)
 	if !ok {
 		panic(fmt.Sprintf("validator %q not found", id))
@@ -91,7 +172,7 @@ func (r *ValidatorRegistry) Count() int {
 // Build creates a ValidatorFunc from a ValidatorConfig.
 // For simple validators (no Compose), the ID is looked up in the registry.
 // For composed validators, the appropriate composition is built recursively.
-func (r *ValidatorRegistry) Build(config validation.ValidatorConfig) (validation.ValidatorFunc, error) {
+func (r *ValidatorRegistry) Build(config valconfig.ValidatorDef) (ValidatorFunc, error) {
 	if config.Compose != "" {
 		return r.buildComposition(config)
 	}
@@ -99,7 +180,7 @@ func (r *ValidatorRegistry) Build(config validation.ValidatorConfig) (validation
 }
 
 // MustBuild is like Build but panics on error.
-func (r *ValidatorRegistry) MustBuild(config validation.ValidatorConfig) validation.ValidatorFunc {
+func (r *ValidatorRegistry) MustBuild(config valconfig.ValidatorDef) ValidatorFunc {
 	fn, err := r.Build(config)
 	if err != nil {
 		panic(fmt.Sprintf("failed to build validator %q: %v", config.ID, err))
@@ -108,7 +189,7 @@ func (r *ValidatorRegistry) MustBuild(config validation.ValidatorConfig) validat
 }
 
 // buildSimple builds a simple (non-composed) validator.
-func (r *ValidatorRegistry) buildSimple(config validation.ValidatorConfig) (validation.ValidatorFunc, error) {
+func (r *ValidatorRegistry) buildSimple(config valconfig.ValidatorDef) (ValidatorFunc, error) {
 	factory, ok := r.Get(config.ID)
 	if !ok {
 		return nil, fmt.Errorf("validator %q not found in registry", config.ID)
@@ -127,12 +208,12 @@ func (r *ValidatorRegistry) buildSimple(config validation.ValidatorConfig) (vali
 }
 
 // wrapWithFieldOverride wraps a validator to operate on a different field.
-func (r *ValidatorRegistry) wrapWithFieldOverride(fn validation.ValidatorFunc, fieldName string, config *validation.ValidatorConfig) validation.ValidatorFunc {
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+func (r *ValidatorRegistry) wrapWithFieldOverride(fn ValidatorFunc, fieldName string, config *valconfig.ValidatorDef) ValidatorFunc {
+	return func(ctx *ValidationContext) *ValidationResult {
 		// Set field by name
 		fieldIdx := ctx.GetFieldIndex(fieldName)
 		if fieldIdx < 0 {
-			result := validation.NewInvalidResult(config.ID, ctx.Category, config)
+			result := NewInvalidResult(config.ID, ctx.Category, config)
 			result.Record = ctx.Record
 			result.FieldName = fieldName
 			return result
@@ -151,7 +232,7 @@ func (r *ValidatorRegistry) wrapWithFieldOverride(fn validation.ValidatorFunc, f
 }
 
 // buildComposition builds a composed validator based on the Compose type.
-func (r *ValidatorRegistry) buildComposition(config validation.ValidatorConfig) (validation.ValidatorFunc, error) {
+func (r *ValidatorRegistry) buildComposition(config valconfig.ValidatorDef) (ValidatorFunc, error) {
 	switch config.Compose {
 	case "and":
 		return r.buildAnd(config)
@@ -169,13 +250,13 @@ func (r *ValidatorRegistry) buildComposition(config validation.ValidatorConfig) 
 }
 
 // buildAnd creates an AND composition - all validators must pass.
-func (r *ValidatorRegistry) buildAnd(config validation.ValidatorConfig) (validation.ValidatorFunc, error) {
+func (r *ValidatorRegistry) buildAnd(config valconfig.ValidatorDef) (ValidatorFunc, error) {
 	if len(config.Validators) == 0 {
 		return nil, fmt.Errorf("and composition %q requires at least one validator", config.ID)
 	}
 
 	// Recursively build all child validators
-	children := make([]validation.ValidatorFunc, len(config.Validators))
+	children := make([]ValidatorFunc, len(config.Validators))
 	for i, childConfig := range config.Validators {
 		child, err := r.Build(childConfig)
 		if err != nil {
@@ -187,12 +268,12 @@ func (r *ValidatorRegistry) buildAnd(config validation.ValidatorConfig) (validat
 	// Create a copy of config for the closure
 	configCopy := config
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *ValidationContext) *ValidationResult {
 		for _, child := range children {
 			result := child(ctx)
 			if !result.Valid {
 				// Return first failure with this composition's id
-				return &validation.ValidationResult{
+				return &ValidationResult{
 					Valid:       false,
 					ValidatorID: configCopy.ID,
 					Category:    ctx.Category,
@@ -203,17 +284,17 @@ func (r *ValidatorRegistry) buildAnd(config validation.ValidatorConfig) (validat
 				}
 			}
 		}
-		return validation.ValidResult()
+		return ValidResult()
 	}, nil
 }
 
 // buildOr creates an OR composition - at least one validator must pass.
-func (r *ValidatorRegistry) buildOr(config validation.ValidatorConfig) (validation.ValidatorFunc, error) {
+func (r *ValidatorRegistry) buildOr(config valconfig.ValidatorDef) (ValidatorFunc, error) {
 	if len(config.Validators) == 0 {
 		return nil, fmt.Errorf("or composition %q requires at least one validator", config.ID)
 	}
 
-	children := make([]validation.ValidatorFunc, len(config.Validators))
+	children := make([]ValidatorFunc, len(config.Validators))
 	for i, childConfig := range config.Validators {
 		child, err := r.Build(childConfig)
 		if err != nil {
@@ -224,15 +305,15 @@ func (r *ValidatorRegistry) buildOr(config validation.ValidatorConfig) (validati
 
 	configCopy := config
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *ValidationContext) *ValidationResult {
 		for _, child := range children {
 			result := child(ctx)
 			if result.Valid {
-				return validation.ValidResult()
+				return ValidResult()
 			}
 		}
 		// All failed
-		return &validation.ValidationResult{
+		return &ValidationResult{
 			Valid:       false,
 			ValidatorID: configCopy.ID,
 			Category:    ctx.Category,
@@ -244,7 +325,7 @@ func (r *ValidatorRegistry) buildOr(config validation.ValidatorConfig) (validati
 }
 
 // buildNot creates a NOT composition - the child validator must fail.
-func (r *ValidatorRegistry) buildNot(config validation.ValidatorConfig) (validation.ValidatorFunc, error) {
+func (r *ValidatorRegistry) buildNot(config valconfig.ValidatorDef) (ValidatorFunc, error) {
 	if len(config.Validators) != 1 {
 		return nil, fmt.Errorf("not composition %q requires exactly 1 validator, got %d", config.ID, len(config.Validators))
 	}
@@ -256,11 +337,11 @@ func (r *ValidatorRegistry) buildNot(config validation.ValidatorConfig) (validat
 
 	configCopy := config
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *ValidationContext) *ValidationResult {
 		result := child(ctx)
 		if result.Valid {
 			// Child passed, so NOT fails
-			return &validation.ValidationResult{
+			return &ValidationResult{
 				Valid:       false,
 				ValidatorID: configCopy.ID,
 				Category:    ctx.Category,
@@ -269,14 +350,14 @@ func (r *ValidatorRegistry) buildNot(config validation.ValidatorConfig) (validat
 				Config:      &configCopy,
 			}
 		}
-		return validation.ValidResult()
+		return ValidResult()
 	}, nil
 }
 
 // buildIfThen creates an IF-THEN composition.
 // If the condition passes, the then validator must also pass.
 // If the condition fails, the whole composition passes (condition not met).
-func (r *ValidatorRegistry) buildIfThen(config validation.ValidatorConfig) (validation.ValidatorFunc, error) {
+func (r *ValidatorRegistry) buildIfThen(config valconfig.ValidatorDef) (ValidatorFunc, error) {
 	if config.Condition == nil {
 		return nil, fmt.Errorf("ifThen composition %q requires a condition", config.ID)
 	}
@@ -295,18 +376,18 @@ func (r *ValidatorRegistry) buildIfThen(config validation.ValidatorConfig) (vali
 
 	configCopy := config
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *ValidationContext) *ValidationResult {
 		condResult := condition(ctx)
 
 		if !condResult.Valid {
 			// Condition failed, ifThen passes (condition not met)
-			return validation.ValidResult()
+			return ValidResult()
 		}
 
 		thenResult := thenValidator(ctx)
 
 		if !thenResult.Valid {
-			return &validation.ValidationResult{
+			return &ValidationResult{
 				Valid:       false,
 				ValidatorID: configCopy.ID,
 				Category:    ctx.Category,
@@ -316,14 +397,14 @@ func (r *ValidatorRegistry) buildIfThen(config validation.ValidatorConfig) (vali
 				Config:      &configCopy,
 			}
 		}
-		return validation.ValidResult()
+		return ValidResult()
 	}, nil
 }
 
 // buildIfThenElse creates an IF-THEN-ELSE composition.
 // If the condition passes, run the then validator.
 // If the condition fails, run the else validator.
-func (r *ValidatorRegistry) buildIfThenElse(config validation.ValidatorConfig) (validation.ValidatorFunc, error) {
+func (r *ValidatorRegistry) buildIfThenElse(config valconfig.ValidatorDef) (ValidatorFunc, error) {
 	if config.Condition == nil {
 		return nil, fmt.Errorf("ifThenElse composition %q requires a condition", config.ID)
 	}
@@ -349,11 +430,11 @@ func (r *ValidatorRegistry) buildIfThenElse(config validation.ValidatorConfig) (
 
 	configCopy := config
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *ValidationContext) *ValidationResult {
 		// Apply condition's field override
 		condResult := condition(ctx)
 
-		var result *validation.ValidationResult
+		var result *ValidationResult
 		if condResult.Valid {
 			// Condition passed, run then
 			result = thenValidator(ctx)
@@ -363,7 +444,7 @@ func (r *ValidatorRegistry) buildIfThenElse(config validation.ValidatorConfig) (
 		}
 
 		if !result.Valid {
-			return &validation.ValidationResult{
+			return &ValidationResult{
 				Valid:       false,
 				ValidatorID: configCopy.ID,
 				Category:    ctx.Category,
@@ -373,20 +454,20 @@ func (r *ValidatorRegistry) buildIfThenElse(config validation.ValidatorConfig) (
 				Config:      &configCopy,
 			}
 		}
-		return validation.ValidResult()
+		return ValidResult()
 	}, nil
 }
 
 // BuildAll builds multiple validators from configs.
-func (r *ValidatorRegistry) BuildAll(configs []validation.ValidatorConfig) ([]validation.CompiledValidator, error) {
-	validators := make([]validation.CompiledValidator, len(configs))
+func (r *ValidatorRegistry) BuildAll(configs []valconfig.ValidatorDef) ([]CompiledValidator, error) {
+	validators := make([]CompiledValidator, len(configs))
 	for i, config := range configs {
 		fn, err := r.Build(config)
 		if err != nil {
 			return nil, fmt.Errorf("building validator %d (%s): %w", i, config.ID, err)
 		}
 		configCopy := config
-		validators[i] = validation.CompiledValidator{
+		validators[i] = CompiledValidator{
 			Func:   fn,
 			Config: &configCopy,
 		}

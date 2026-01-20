@@ -8,27 +8,27 @@ import (
 	"text/template"
 	"time"
 
-	"go-parser/internal/parser"
 	"go-parser/internal/config/schema"
-	"go-parser/internal/validation"
+	"go-parser/internal/parser"
+	valconfig "go-parser/internal/validation/config"
 	"go-parser/internal/validation/registry"
 )
 
 // ErrorGenerator creates ParserError rows from ValidationResults.
-// It uses lazy evaluation - errors are generated at write time, not during validation.
+// It uses lazy evaluation - errors are generated at write time, not during registry.
 type ErrorGenerator struct {
 	messages      *registry.MessageRegistry
-	categories    map[int]validation.CategoryConfig
+	categories    map[int]valconfig.CategoryConfig
 	cachedInline  map[string]*template.Template // Cache for inline message templates
 	datafileID    int32
 	contentTypeID *int32 // Set by the caller if needed
 }
 
 // NewErrorGenerator creates a new error generator.
-func NewErrorGenerator(messages *registry.MessageRegistry, config *validation.OrchestratorConfig) *ErrorGenerator {
+func NewErrorGenerator(messages *registry.MessageRegistry, config *valconfig.OrchestratorConfig) *ErrorGenerator {
 	g := &ErrorGenerator{
 		messages:     messages,
-		categories:   make(map[int]validation.CategoryConfig),
+		categories:   make(map[int]valconfig.CategoryConfig),
 		cachedInline: make(map[string]*template.Template),
 	}
 
@@ -71,7 +71,7 @@ type ParserError struct {
 	ValuesJSON    string
 }
 
-func extractFieldMeta(result *validation.ValidationResult) (string, string, string, string) {
+func extractFieldMeta(result *registry.ValidationResult) (string, string, string, string) {
 	itemNumber := ""
 	columnNumber := ""
 	fieldName := result.FieldName
@@ -93,7 +93,7 @@ func extractFieldMeta(result *validation.ValidationResult) (string, string, stri
 
 // Generate creates a ParserError from a ValidationResult.
 // This is called at WRITE time for lazy error generation.
-func (g *ErrorGenerator) Generate(result *validation.ValidationResult) *ParserError {
+func (g *ErrorGenerator) Generate(result *registry.ValidationResult) *ParserError {
 	if result == nil || result.Valid {
 		return nil
 	}
@@ -169,7 +169,7 @@ func (g *ErrorGenerator) Generate(result *validation.ValidationResult) *ParserEr
 
 // GenerateRow returns a slice of values ready for table writer insertion.
 // Column order matches the parser_error table.
-func (g *ErrorGenerator) GenerateRow(result *validation.ValidationResult) []any {
+func (g *ErrorGenerator) GenerateRow(result *registry.ValidationResult) []any {
 	err := g.Generate(result)
 	if err == nil {
 		return nil
@@ -195,7 +195,7 @@ func (g *ErrorGenerator) GenerateRow(result *validation.ValidationResult) []any 
 }
 
 // GenerateBatch generates errors for multiple results.
-func (g *ErrorGenerator) GenerateBatch(results []*validation.ValidationResult) []*ParserError {
+func (g *ErrorGenerator) GenerateBatch(results []*registry.ValidationResult) []*ParserError {
 	errors := make([]*ParserError, 0, len(results))
 	for _, result := range results {
 		if err := g.Generate(result); err != nil {
@@ -206,7 +206,7 @@ func (g *ErrorGenerator) GenerateBatch(results []*validation.ValidationResult) [
 }
 
 // buildTemplateContext creates a TemplateContext from a ValidationResult.
-func (g *ErrorGenerator) buildTemplateContext(result *validation.ValidationResult) *registry.TemplateContext {
+func (g *ErrorGenerator) buildTemplateContext(result *registry.ValidationResult) *registry.TemplateContext {
 	ctx := &registry.TemplateContext{
 		Row:    0,
 		Extra:  make(map[string]any),
@@ -245,7 +245,7 @@ func (g *ErrorGenerator) buildTemplateContext(result *validation.ValidationResul
 
 // resolveTemplate finds the appropriate message template for a result.
 // Priority: config.Message > field override > schema override > default
-func (g *ErrorGenerator) resolveTemplate(result *validation.ValidationResult) *template.Template {
+func (g *ErrorGenerator) resolveTemplate(result *registry.ValidationResult) *template.Template {
 	// 1. Check for inline message in config
 	if result.Config != nil && result.Config.Message != "" {
 		return g.getOrParseInline(result.Config.ID, result.Config.Message)
@@ -275,7 +275,7 @@ func (g *ErrorGenerator) getOrParseInline(id, message string) *template.Template
 }
 
 // resolveErrorType determines the error type for a result.
-func (g *ErrorGenerator) resolveErrorType(result *validation.ValidationResult) string {
+func (g *ErrorGenerator) resolveErrorType(result *registry.ValidationResult) string {
 	// 1. Check for override in config
 	if result.Config != nil && result.Config.ErrorType != "" {
 		return result.Config.ErrorType
@@ -291,7 +291,7 @@ func (g *ErrorGenerator) resolveErrorType(result *validation.ValidationResult) s
 }
 
 // buildFieldsJSON creates the fields_json value.
-func (g *ErrorGenerator) buildFieldsJSON(result *validation.ValidationResult) string {
+func (g *ErrorGenerator) buildFieldsJSON(result *registry.ValidationResult) string {
 	fields := make(map[string]any)
 
 	if result.FieldName != "" {
@@ -317,7 +317,7 @@ func (g *ErrorGenerator) buildFieldsJSON(result *validation.ValidationResult) st
 }
 
 // buildValuesJSON creates the values_json value.
-func (g *ErrorGenerator) buildValuesJSON(result *validation.ValidationResult, ctx *registry.TemplateContext) string {
+func (g *ErrorGenerator) buildValuesJSON(result *registry.ValidationResult, ctx *registry.TemplateContext) string {
 	values := make(map[string]any)
 
 	if ctx.Value != nil {

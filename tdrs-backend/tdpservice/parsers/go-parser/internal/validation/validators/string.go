@@ -5,7 +5,6 @@ import (
 	"regexp"
 	"strings"
 
-	"go-parser/internal/validation"
 	"go-parser/internal/validation/registry"
 )
 
@@ -27,13 +26,13 @@ func RegisterString(r *registry.ValidatorRegistry) {
 }
 
 // IsEmptyFactory creates a validator that checks if a value is empty.
-func IsEmptyFactory(params map[string]any) (validation.ValidatorFunc, error) {
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+func IsEmptyFactory(params map[string]any) (registry.ValidatorFunc, error) {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value := ctx.FieldValue()
 		if isEmptyValue(value) {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "isEmpty"
 		result.Category = ctx.Category
@@ -43,13 +42,13 @@ func IsEmptyFactory(params map[string]any) (validation.ValidatorFunc, error) {
 }
 
 // IsNotEmptyFactory creates a validator that checks if a value is not empty.
-func IsNotEmptyFactory(params map[string]any) (validation.ValidatorFunc, error) {
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+func IsNotEmptyFactory(params map[string]any) (registry.ValidatorFunc, error) {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value := ctx.FieldValue()
 		if !isEmptyValue(value) {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "isNotEmpty"
 		result.Category = ctx.Category
@@ -61,18 +60,18 @@ func IsNotEmptyFactory(params map[string]any) (validation.ValidatorFunc, error) 
 // HasLengthFactory creates a validator that checks if a string has exact length.
 // Params:
 //   - length: required exact length
-func HasLengthFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func HasLengthFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	length, err := getIntParam(params, "length")
 	if err != nil {
 		return nil, fmt.Errorf("hasLength: %w", err)
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value := toString(ctx.FieldValue())
 		if len(value) == length {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "hasLength"
 		result.Category = ctx.Category
@@ -82,18 +81,18 @@ func HasLengthFactory(params map[string]any) (validation.ValidatorFunc, error) {
 }
 
 // HasMinLengthFactory creates a validator that checks if a string has minimum length.
-func HasMinLengthFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func HasMinLengthFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	min, err := getIntParam(params, "min")
 	if err != nil {
 		return nil, fmt.Errorf("hasMinLength: %w", err)
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value := toString(ctx.FieldValue())
 		if len(value) >= min {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "hasMinLength"
 		result.Category = ctx.Category
@@ -103,18 +102,18 @@ func HasMinLengthFactory(params map[string]any) (validation.ValidatorFunc, error
 }
 
 // HasMaxLengthFactory creates a validator that checks if a string has maximum length.
-func HasMaxLengthFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func HasMaxLengthFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	max, err := getIntParam(params, "max")
 	if err != nil {
 		return nil, fmt.Errorf("hasMaxLength: %w", err)
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value := toString(ctx.FieldValue())
 		if len(value) <= max {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "hasMaxLength"
 		result.Category = ctx.Category
@@ -124,7 +123,7 @@ func HasMaxLengthFactory(params map[string]any) (validation.ValidatorFunc, error
 }
 
 // HasLengthBetweenFactory creates a validator that checks if string length is within range.
-func HasLengthBetweenFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func HasLengthBetweenFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	min, err := getIntParam(params, "min")
 	if err != nil {
 		return nil, fmt.Errorf("hasLengthBetween: %w", err)
@@ -134,13 +133,13 @@ func HasLengthBetweenFactory(params map[string]any) (validation.ValidatorFunc, e
 		return nil, fmt.Errorf("hasLengthBetween: %w", err)
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value := toString(ctx.FieldValue())
 		length := len(value)
 		if length >= min && length <= max {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "hasLengthBetween"
 		result.Category = ctx.Category
@@ -152,7 +151,7 @@ func HasLengthBetweenFactory(params map[string]any) (validation.ValidatorFunc, e
 // MatchesPatternFactory creates a validator that checks if a value matches a regex pattern.
 // Params:
 //   - pattern: regex pattern to match
-func MatchesPatternFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func MatchesPatternFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	patternStr, ok := params["pattern"].(string)
 	if !ok {
 		return nil, fmt.Errorf("matchesPattern requires 'pattern' parameter as string")
@@ -163,12 +162,12 @@ func MatchesPatternFactory(params map[string]any) (validation.ValidatorFunc, err
 		return nil, fmt.Errorf("matchesPattern: invalid pattern %q: %w", patternStr, err)
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value := toString(ctx.FieldValue())
 		if pattern.MatchString(value) {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "matchesPattern"
 		result.Category = ctx.Category
@@ -178,18 +177,18 @@ func MatchesPatternFactory(params map[string]any) (validation.ValidatorFunc, err
 }
 
 // StartsWithFactory creates a validator that checks if a value starts with a prefix.
-func StartsWithFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func StartsWithFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	prefix, ok := params["prefix"].(string)
 	if !ok {
 		return nil, fmt.Errorf("startsWith requires 'prefix' parameter as string")
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value := toString(ctx.FieldValue())
 		if strings.HasPrefix(value, prefix) {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "startsWith"
 		result.Category = ctx.Category
@@ -199,18 +198,18 @@ func StartsWithFactory(params map[string]any) (validation.ValidatorFunc, error) 
 }
 
 // EndsWithFactory creates a validator that checks if a value ends with a suffix.
-func EndsWithFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func EndsWithFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	suffix, ok := params["suffix"].(string)
 	if !ok {
 		return nil, fmt.Errorf("endsWith requires 'suffix' parameter as string")
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value := toString(ctx.FieldValue())
 		if strings.HasSuffix(value, suffix) {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "endsWith"
 		result.Category = ctx.Category
@@ -220,18 +219,18 @@ func EndsWithFactory(params map[string]any) (validation.ValidatorFunc, error) {
 }
 
 // ContainsFactory creates a validator that checks if a value contains a substring.
-func ContainsFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func ContainsFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	substr, ok := params["substring"].(string)
 	if !ok {
 		return nil, fmt.Errorf("contains requires 'substring' parameter as string")
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value := toString(ctx.FieldValue())
 		if strings.Contains(value, substr) {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "contains"
 		result.Category = ctx.Category
@@ -241,12 +240,12 @@ func ContainsFactory(params map[string]any) (validation.ValidatorFunc, error) {
 }
 
 // IsAlphanumericFactory creates a validator that checks if a value contains only letters and digits.
-func IsAlphanumericFactory(params map[string]any) (validation.ValidatorFunc, error) {
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+func IsAlphanumericFactory(params map[string]any) (registry.ValidatorFunc, error) {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value := toString(ctx.FieldValue())
 		for _, r := range value {
 			if !isAlphanumeric(r) {
-				result := validation.AcquireResult()
+				result := registry.AcquireResult()
 				result.Valid = false
 				result.ValidatorID = "isAlphanumeric"
 				result.Category = ctx.Category
@@ -254,17 +253,17 @@ func IsAlphanumericFactory(params map[string]any) (validation.ValidatorFunc, err
 				return result
 			}
 		}
-		return validation.ValidResult()
+		return registry.ValidResult()
 	}, nil
 }
 
 // IsNumericFactory creates a validator that checks if a value contains only digits.
-func IsNumericFactory(params map[string]any) (validation.ValidatorFunc, error) {
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+func IsNumericFactory(params map[string]any) (registry.ValidatorFunc, error) {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value := toString(ctx.FieldValue())
 		for _, r := range value {
 			if r < '0' || r > '9' {
-				result := validation.AcquireResult()
+				result := registry.AcquireResult()
 				result.Valid = false
 				result.ValidatorID = "isNumeric"
 				result.Category = ctx.Category
@@ -272,17 +271,17 @@ func IsNumericFactory(params map[string]any) (validation.ValidatorFunc, error) {
 				return result
 			}
 		}
-		return validation.ValidResult()
+		return registry.ValidResult()
 	}, nil
 }
 
 // IsAlphabeticFactory creates a validator that checks if a value contains only letters.
-func IsAlphabeticFactory(params map[string]any) (validation.ValidatorFunc, error) {
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+func IsAlphabeticFactory(params map[string]any) (registry.ValidatorFunc, error) {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value := toString(ctx.FieldValue())
 		for _, r := range value {
 			if !isLetter(r) {
-				result := validation.AcquireResult()
+				result := registry.AcquireResult()
 				result.Valid = false
 				result.ValidatorID = "isAlphabetic"
 				result.Category = ctx.Category
@@ -290,7 +289,7 @@ func IsAlphabeticFactory(params map[string]any) (validation.ValidatorFunc, error
 				return result
 			}
 		}
-		return validation.ValidResult()
+		return registry.ValidResult()
 	}, nil
 }
 

@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"go-parser/internal/config/schema"
+	valconfig "go-parser/internal/config/validation"
 	"go-parser/internal/parser"
-	"go-parser/internal/validation"
 	"go-parser/internal/validation/registry"
 )
 
@@ -228,16 +228,16 @@ func TestRegistryComposition(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		config    validation.ValidatorConfig
+		config    valconfig.ValidatorDef
 		value     any
 		wantValid bool
 	}{
 		{
 			name: "and composition - both pass",
-			config: validation.ValidatorConfig{
+			config: valconfig.ValidatorDef{
 				ID:      "positive_under_100",
 				Compose: "and",
-				Validators: []validation.ValidatorConfig{
+				Validators: []valconfig.ValidatorDef{
 					{ID: "isGreaterThan", Params: map[string]any{"value": 0}},
 					{ID: "isLessThan", Params: map[string]any{"value": 100}},
 				},
@@ -247,10 +247,10 @@ func TestRegistryComposition(t *testing.T) {
 		},
 		{
 			name: "and composition - first fails",
-			config: validation.ValidatorConfig{
+			config: valconfig.ValidatorDef{
 				ID:      "positive_under_100",
 				Compose: "and",
-				Validators: []validation.ValidatorConfig{
+				Validators: []valconfig.ValidatorDef{
 					{ID: "isGreaterThan", Params: map[string]any{"value": 0}},
 					{ID: "isLessThan", Params: map[string]any{"value": 100}},
 				},
@@ -260,10 +260,10 @@ func TestRegistryComposition(t *testing.T) {
 		},
 		{
 			name: "or composition - one passes",
-			config: validation.ValidatorConfig{
+			config: valconfig.ValidatorDef{
 				ID:      "one_or_two",
 				Compose: "or",
-				Validators: []validation.ValidatorConfig{
+				Validators: []valconfig.ValidatorDef{
 					{ID: "isEqual", Params: map[string]any{"value": 1}},
 					{ID: "isEqual", Params: map[string]any{"value": 2}},
 				},
@@ -273,10 +273,10 @@ func TestRegistryComposition(t *testing.T) {
 		},
 		{
 			name: "or composition - none pass",
-			config: validation.ValidatorConfig{
+			config: valconfig.ValidatorDef{
 				ID:      "one_or_two",
 				Compose: "or",
-				Validators: []validation.ValidatorConfig{
+				Validators: []valconfig.ValidatorDef{
 					{ID: "isEqual", Params: map[string]any{"value": 1}},
 					{ID: "isEqual", Params: map[string]any{"value": 2}},
 				},
@@ -286,10 +286,10 @@ func TestRegistryComposition(t *testing.T) {
 		},
 		{
 			name: "not composition - negates pass",
-			config: validation.ValidatorConfig{
+			config: valconfig.ValidatorDef{
 				ID:      "not_zero",
 				Compose: "not",
-				Validators: []validation.ValidatorConfig{
+				Validators: []valconfig.ValidatorDef{
 					{ID: "isEqual", Params: map[string]any{"value": 0}},
 				},
 			},
@@ -298,10 +298,10 @@ func TestRegistryComposition(t *testing.T) {
 		},
 		{
 			name: "not composition - negates fail",
-			config: validation.ValidatorConfig{
+			config: valconfig.ValidatorDef{
 				ID:      "not_zero",
 				Compose: "not",
-				Validators: []validation.ValidatorConfig{
+				Validators: []valconfig.ValidatorDef{
 					{ID: "isEqual", Params: map[string]any{"value": 0}},
 				},
 			},
@@ -327,7 +327,7 @@ func TestRegistryComposition(t *testing.T) {
 }
 
 // createTestContext creates a simple validation context for testing.
-func createTestContext(value any) *validation.ValidationContext {
+func createTestContext(value any) *registry.ValidationContext {
 	// Create a minimal compiled schema
 	schemaDef := &schema.SchemaDef{
 		RecordType: "TEST",
@@ -345,9 +345,9 @@ func createTestContext(value any) *validation.ValidationContext {
 	}
 	record.Fields[0].Value = value
 
-	return &validation.ValidationContext{
+	return &registry.ValidationContext{
 		Record:    record,
 		FieldName: "TEST_FIELD",
-		Category:  validation.CategoryFieldValue,
+		Category:  registry.CategoryFieldValue,
 	}
 }

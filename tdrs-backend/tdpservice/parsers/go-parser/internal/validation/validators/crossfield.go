@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"go-parser/internal/validation"
 	"go-parser/internal/validation/registry"
 )
 
@@ -26,7 +25,7 @@ func RegisterCrossField(r *registry.ValidatorRegistry) {
 // Params:
 //   - fields: slice of field names to sum
 //   - value: threshold value
-func SumIsGreaterThanFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func SumIsGreaterThanFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	fields, err := getStringSliceParam(params, "fields")
 	if err != nil {
 		return nil, fmt.Errorf("sumIsGreaterThan: %w", err)
@@ -36,12 +35,12 @@ func SumIsGreaterThanFactory(params map[string]any) (validation.ValidatorFunc, e
 		return nil, fmt.Errorf("sumIsGreaterThan: %w", err)
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		sum := sumFields(ctx, fields)
 		if sum > threshold {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "sumIsGreaterThan"
 		result.Category = ctx.Category
@@ -52,7 +51,7 @@ func SumIsGreaterThanFactory(params map[string]any) (validation.ValidatorFunc, e
 }
 
 // SumIsLessThanFactory creates a validator that checks if the sum of fields is less than a value.
-func SumIsLessThanFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func SumIsLessThanFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	fields, err := getStringSliceParam(params, "fields")
 	if err != nil {
 		return nil, fmt.Errorf("sumIsLessThan: %w", err)
@@ -62,12 +61,12 @@ func SumIsLessThanFactory(params map[string]any) (validation.ValidatorFunc, erro
 		return nil, fmt.Errorf("sumIsLessThan: %w", err)
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		sum := sumFields(ctx, fields)
 		if sum < threshold {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "sumIsLessThan"
 		result.Category = ctx.Category
@@ -78,7 +77,7 @@ func SumIsLessThanFactory(params map[string]any) (validation.ValidatorFunc, erro
 }
 
 // SumEqualsFactory creates a validator that checks if the sum of fields equals a value.
-func SumEqualsFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func SumEqualsFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	fields, err := getStringSliceParam(params, "fields")
 	if err != nil {
 		return nil, fmt.Errorf("sumEquals: %w", err)
@@ -88,12 +87,12 @@ func SumEqualsFactory(params map[string]any) (validation.ValidatorFunc, error) {
 		return nil, fmt.Errorf("sumEquals: %w", err)
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		sum := sumFields(ctx, fields)
 		if sum == expected {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "sumEquals"
 		result.Category = ctx.Category
@@ -106,20 +105,20 @@ func SumEqualsFactory(params map[string]any) (validation.ValidatorFunc, error) {
 // AtLeastOneOfFactory creates a validator that checks if at least one of the fields has a value.
 // Params:
 //   - fields: slice of field names
-func AtLeastOneOfFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func AtLeastOneOfFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	fields, err := getStringSliceParam(params, "fields")
 	if err != nil {
 		return nil, fmt.Errorf("atLeastOneOf: %w", err)
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		for _, fieldName := range fields {
 			value := ctx.GetField(fieldName)
 			if !isEmptyValue(value) {
-				return validation.ValidResult()
+				return registry.ValidResult()
 			}
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "atLeastOneOf"
 		result.Category = ctx.Category
@@ -130,13 +129,13 @@ func AtLeastOneOfFactory(params map[string]any) (validation.ValidatorFunc, error
 }
 
 // ExactlyOneOfFactory creates a validator that checks if exactly one of the fields has a value.
-func ExactlyOneOfFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func ExactlyOneOfFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	fields, err := getStringSliceParam(params, "fields")
 	if err != nil {
 		return nil, fmt.Errorf("exactlyOneOf: %w", err)
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		count := 0
 		for _, fieldName := range fields {
 			value := ctx.GetField(fieldName)
@@ -145,9 +144,9 @@ func ExactlyOneOfFactory(params map[string]any) (validation.ValidatorFunc, error
 			}
 		}
 		if count == 1 {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "exactlyOneOf"
 		result.Category = ctx.Category
@@ -158,13 +157,13 @@ func ExactlyOneOfFactory(params map[string]any) (validation.ValidatorFunc, error
 }
 
 // AllOrNoneFactory creates a validator that checks if all fields have values or none do.
-func AllOrNoneFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func AllOrNoneFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	fields, err := getStringSliceParam(params, "fields")
 	if err != nil {
 		return nil, fmt.Errorf("allOrNone: %w", err)
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		hasValue := 0
 		isEmpty := 0
 		for _, fieldName := range fields {
@@ -177,9 +176,9 @@ func AllOrNoneFactory(params map[string]any) (validation.ValidatorFunc, error) {
 		}
 		// Valid if all have values or all are empty
 		if hasValue == 0 || isEmpty == 0 {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "allOrNone"
 		result.Category = ctx.Category
@@ -193,7 +192,7 @@ func AllOrNoneFactory(params map[string]any) (validation.ValidatorFunc, error) {
 // Params:
 //   - field1: first field name
 //   - field2: second field name
-func FieldsAreEqualFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func FieldsAreEqualFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	field1, ok := params["field1"].(string)
 	if !ok {
 		return nil, fmt.Errorf("fieldsAreEqual requires 'field1' parameter as string")
@@ -203,13 +202,13 @@ func FieldsAreEqualFactory(params map[string]any) (validation.ValidatorFunc, err
 		return nil, fmt.Errorf("fieldsAreEqual requires 'field2' parameter as string")
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value1 := ctx.GetField(field1)
 		value2 := ctx.GetField(field2)
 		if compareValues(value1, value2) == 0 {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "fieldsAreEqual"
 		result.Category = ctx.Category
@@ -223,7 +222,7 @@ func FieldsAreEqualFactory(params map[string]any) (validation.ValidatorFunc, err
 // Params:
 //   - field1: field that should be greater
 //   - field2: field to compare against
-func FieldIsGreaterThanFieldFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func FieldIsGreaterThanFieldFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	field1, ok := params["field1"].(string)
 	if !ok {
 		return nil, fmt.Errorf("fieldIsGreaterThanField requires 'field1' parameter as string")
@@ -233,13 +232,13 @@ func FieldIsGreaterThanFieldFactory(params map[string]any) (validation.Validator
 		return nil, fmt.Errorf("fieldIsGreaterThanField requires 'field2' parameter as string")
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value1 := ctx.GetField(field1)
 		value2 := ctx.GetField(field2)
 		if compareValues(value1, value2) > 0 {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "fieldIsGreaterThanField"
 		result.Category = ctx.Category
@@ -250,7 +249,7 @@ func FieldIsGreaterThanFieldFactory(params map[string]any) (validation.Validator
 }
 
 // FieldIsLessThanFieldFactory creates a validator that checks if one field is less than another.
-func FieldIsLessThanFieldFactory(params map[string]any) (validation.ValidatorFunc, error) {
+func FieldIsLessThanFieldFactory(params map[string]any) (registry.ValidatorFunc, error) {
 	field1, ok := params["field1"].(string)
 	if !ok {
 		return nil, fmt.Errorf("fieldIsLessThanField requires 'field1' parameter as string")
@@ -260,13 +259,13 @@ func FieldIsLessThanFieldFactory(params map[string]any) (validation.ValidatorFun
 		return nil, fmt.Errorf("fieldIsLessThanField requires 'field2' parameter as string")
 	}
 
-	return func(ctx *validation.ValidationContext) *validation.ValidationResult {
+	return func(ctx *registry.ValidationContext) *registry.ValidationResult {
 		value1 := ctx.GetField(field1)
 		value2 := ctx.GetField(field2)
 		if compareValues(value1, value2) < 0 {
-			return validation.ValidResult()
+			return registry.ValidResult()
 		}
-		result := validation.AcquireResult()
+		result := registry.AcquireResult()
 		result.Valid = false
 		result.ValidatorID = "fieldIsLessThanField"
 		result.Category = ctx.Category
@@ -277,7 +276,7 @@ func FieldIsLessThanFieldFactory(params map[string]any) (validation.ValidatorFun
 }
 
 // sumFields sums the numeric values of the given fields.
-func sumFields(ctx *validation.ValidationContext, fields []string) float64 {
+func sumFields(ctx *registry.ValidationContext, fields []string) float64 {
 	var sum float64
 	for _, fieldName := range fields {
 		value := ctx.GetField(fieldName)
