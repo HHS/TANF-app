@@ -9,9 +9,9 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"go-parser/internal/filespec"
+	"go-parser/internal/config/filespec"
 	"go-parser/internal/parser"
-	"go-parser/internal/registry"
+	"go-parser/internal/config"
 	"go-parser/internal/writer/convert"
 )
 
@@ -47,7 +47,7 @@ func NewRouter(
 	pool *pgxpool.Pool,
 	datafileID int32,
 	spec *filespec.FileSpec,
-	reg *registry.Registry,
+	reg *config.Registry,
 	poolPrewarmSize int,
 ) *Router {
 	wm := &Router{

@@ -3,7 +3,7 @@ package decoder
 import (
 	"iter"
 
-	"go-parser/internal/filespec"
+	"go-parser/internal/config/filespec"
 )
 
 // Decoder reads a data file and produces rows.

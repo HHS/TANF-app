@@ -1,4 +1,4 @@
-package registry
+package config
 
 import (
 	"fmt"
@@ -8,8 +8,8 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"go-parser/internal/filespec"
-	"go-parser/internal/schema"
+	"go-parser/internal/config/filespec"
+	"go-parser/internal/config/schema"
 )
 
 // Registry holds all loaded FileSpecs and Schemas.

@@ -1,8 +1,8 @@
 package parser
 
 import (
+	"go-parser/internal/config/schema"
 	"go-parser/internal/decoder"
-	"go-parser/internal/schema"
 )
 
 // ParsedField combines a field definition pointer with its parsed value.

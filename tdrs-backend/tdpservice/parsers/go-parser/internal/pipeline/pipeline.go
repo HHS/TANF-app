@@ -10,17 +10,17 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"go-parser/internal/config"
+	"go-parser/internal/config/filespec"
 	"go-parser/internal/decoder"
-	"go-parser/internal/filespec"
 	"go-parser/internal/parser"
-	"go-parser/internal/registry"
 	"go-parser/internal/writer"
 )
 
 // Pipeline orchestrates the full file parsing process.
 type Pipeline struct {
 	pool     *pgxpool.Pool
-	registry *registry.Registry
+	registry *config.Registry
 	config   PipelineConfig
 }
 
@@ -40,7 +40,7 @@ type ProcessResult struct {
 }
 
 // New creates a Pipeline with the given configuration.
-func NewPipline(pool *pgxpool.Pool, reg *registry.Registry, config PipelineConfig) *Pipeline {
+func NewPipline(pool *pgxpool.Pool, reg *config.Registry, config PipelineConfig) *Pipeline {
 	return &Pipeline{
 		pool:     pool,
 		registry: reg,

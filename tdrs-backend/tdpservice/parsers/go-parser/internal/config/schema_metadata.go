@@ -1,9 +1,9 @@
-package registry
+package config
 
 import (
 	"strings"
 
-	"go-parser/internal/schema"
+	"go-parser/internal/config/schema"
 )
 
 // DbSchemaMetadata holds database information derived from a schema.

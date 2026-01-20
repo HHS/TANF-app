@@ -7,7 +7,7 @@ import (
 
 	"github.com/xuri/excelize/v2"
 
-	"go-parser/internal/filespec"
+	"go-parser/internal/config/filespec"
 )
 
 // XLSXDecoder reads XLSX (Excel) files.

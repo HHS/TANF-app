@@ -5,23 +5,23 @@ import (
 	"sort"
 	"strings"
 
+	"go-parser/internal/config"
+	"go-parser/internal/config/filespec"
+	"go-parser/internal/config/schema"
 	"go-parser/internal/decoder"
-	"go-parser/internal/filespec"
-	"go-parser/internal/registry"
-	"go-parser/internal/schema"
 )
 
 // RecordTypeDetector determines which schema applies to each row.
 type RecordTypeDetector struct {
 	spec     *filespec.FileSpec
-	registry *registry.Registry
+	registry *config.Registry
 
 	// Cached lookup for prefix detection (sorted by prefix length, longest first)
 	sortedPrefixes []filespec.PrefixMapping
 }
 
 // NewRecordTypeDetector creates a detector for the given file specification.
-func NewRecordTypeDetector(spec *filespec.FileSpec, registry *registry.Registry) *RecordTypeDetector {
+func NewRecordTypeDetector(spec *filespec.FileSpec, registry *config.Registry) *RecordTypeDetector {
 	d := &RecordTypeDetector{
 		spec:     spec,
 		registry: registry,

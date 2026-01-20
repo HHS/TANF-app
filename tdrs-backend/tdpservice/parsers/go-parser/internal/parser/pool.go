@@ -5,7 +5,7 @@ import (
 	"log"
 	"sync"
 
-	"go-parser/internal/filespec"
+	"go-parser/internal/config/filespec"
 )
 
 // ParserPool manages worker goroutines for parallel parsing.

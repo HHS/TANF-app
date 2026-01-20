@@ -8,7 +8,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"go-parser/internal/schema"
+	"go-parser/internal/config/schema"
 	"go-parser/internal/validation"
 	"go-parser/internal/validation/registry"
 )

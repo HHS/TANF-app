@@ -3,8 +3,8 @@ package validators
 import (
 	"testing"
 
+	"go-parser/internal/config/schema"
 	"go-parser/internal/parser"
-	"go-parser/internal/schema"
 	"go-parser/internal/validation"
 	"go-parser/internal/validation/registry"
 )

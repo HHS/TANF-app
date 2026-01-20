@@ -6,7 +6,7 @@ import (
 	"iter"
 	"strings"
 
-	"go-parser/internal/filespec"
+	"go-parser/internal/config/filespec"
 )
 
 // PostitionalDecoder reads positional (fixed-width) UTF-8 text files.

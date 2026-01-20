@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"go-parser/internal/decoder"
-	"go-parser/internal/filespec"
-	"go-parser/internal/schema"
+	"go-parser/internal/config/filespec"
+	"go-parser/internal/config/schema"
 )
 
 // HeaderSchemaPath is the registry path for the header schema.

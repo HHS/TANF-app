@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"os"
 
+	"go-parser/internal/config/filespec"
 	"go-parser/internal/decoder"
-	"go-parser/internal/filespec"
 )
 
 // CreateDecoder creates the appropriate decoder based on file format and content type.

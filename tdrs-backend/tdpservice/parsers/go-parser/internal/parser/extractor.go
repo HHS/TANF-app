@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"go-parser/internal/decoder"
-	"go-parser/internal/filespec"
-	"go-parser/internal/schema"
+	"go-parser/internal/config/filespec"
+	"go-parser/internal/config/schema"
 )
 
 // FieldGetter provides access to previously extracted field values.

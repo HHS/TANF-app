@@ -1,8 +1,8 @@
 package validation
 
 import (
+	"go-parser/internal/config/schema"
 	"go-parser/internal/parser"
-	"go-parser/internal/schema"
 )
 
 // FieldValue returns the value of the current field being validated (Cat 2).

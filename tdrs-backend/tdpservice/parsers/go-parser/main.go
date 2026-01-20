@@ -9,8 +9,8 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"go-parser/internal/config"
 	"go-parser/internal/pipeline"
-	"go-parser/internal/registry"
 	"go-parser/internal/testutil"
 )
 
@@ -51,7 +51,7 @@ func main() {
 	// celery worker does, the object pools could grow to an enormous size since there isn't a way to clear them after a
 	// parsing run. We should consider implementing/importing a better solution that allows clearing. Or, we could reload
 	// the registry each time a new parsing request comes in (simpler).
-	reg, err := registry.Load("config")
+	reg, err := config.Load("config")
 	if err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}

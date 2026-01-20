@@ -6,7 +6,7 @@ import (
 	"iter"
 	"strings"
 
-	"go-parser/internal/filespec"
+	"go-parser/internal/config/filespec"
 )
 
 // CSVDecoder reads CSV files.
