@@ -1,5 +1,7 @@
 package filespec
 
+import "go-parser/internal/config/validation"
+
 // Format represents the file format type.
 // This determines how fields are extracted from row data.
 type Format string
@@ -37,6 +39,12 @@ type FileSpec struct {
 
 	// Accumulator configures how records are collected and grouped for processing
 	Accumulator AccumulatorConfig `yaml:"accumulator"`
+
+	// Validation orchestrator configures the validation category types, execution order, and short-circuit rules
+	ValidationOrchestrator validation.OrchestratorDef `yaml:"validation_orchestrator"`
+
+	// Category4 configures the category 4 validators associated with this file type
+	Category4 []validation.ValidatorDef `yaml:"category4"`
 }
 
 // RecordTypeDetection configures how to determine which schema applies to a row.

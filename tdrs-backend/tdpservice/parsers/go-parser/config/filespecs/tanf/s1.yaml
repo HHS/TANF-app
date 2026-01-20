@@ -97,3 +97,35 @@ accumulator:
     - tanf/t1
     - tanf/t2
     - tanf/t3
+
+validation_orchestrator:
+  categories:
+  - id: 1
+    name: Record pre-check
+    default_error_type: RECORD_PRE_CHECK
+  - id: 2
+    name: Field validation
+    default_error_type: FIELD_VALUE
+  - id: 3
+    name: Cross-field
+    default_error_type: VALUE_CONSISTENCY
+  - id: 4
+    name: Group validation
+    default_error_type: CASE_CONSISTENCY
+
+  execution_order: [4, 1, 2, 3]
+
+  short_circuit:
+    - on_fail: 4
+      action: reject_group
+      skip: [1, 2, 3]
+    - on_fail: 1
+      action: reject_record
+      skip: [2, 3]
+
+category4:
+  - id: recordTypePresent
+    params: { record_type: T1, required: true }
+  - id: t1HasMatchingChildren
+    params: { child_types: [T2, T3] }
+    message: "T1 record must have at least one T2 or T3 child"

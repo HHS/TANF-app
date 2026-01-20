@@ -1,6 +1,9 @@
 package schema
 
-import "sync"
+import (
+	"go-parser/internal/config/validation"
+	"sync"
+)
 
 // TransformDef defines a field transformation with optional parameters.
 type TransformDef struct {
@@ -53,6 +56,9 @@ type FieldDef struct {
 
 	// ColumnHeader is the expected column header name (optional)
 	ColumnHeader string `yaml:"column_header,omitempty"`
+
+	// Category2 configures the category 2 validators associated with this field
+	Category2 []validation.ValidatorDef `yaml:"category2,omitempty"`
 }
 
 // SegmentDef defines a segment within a record.
@@ -89,6 +95,12 @@ type SchemaDef struct {
 	// Segments contains the segment definitions.
 	// Each segment produces one output row (combined with shared fields).
 	Segments []SegmentDef `yaml:"segments"`
+
+	// Category1 configures the category 1 validators associated with this schema
+	Category1 []validation.ValidatorDef `yaml:"category1,omitempty"`
+
+	// Category3 configures the category 3 validators associated with this schema
+	Category3 []validation.ValidatorDef `yaml:"category3,omitempty"`
 }
 
 // PoolableRecord is an interface for records that can be pooled and reset.
