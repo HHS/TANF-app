@@ -161,7 +161,7 @@ func (r *Registry) loadFileSpecs() error {
 	})
 }
 
-// loadDefaultMessages reads all .yaml files from the validation/messages.yaml file.
+// loadDefaultMessages reads the validation/messages.yaml file.
 func (r *Registry) loadDefaultMessages() error {
 	defaultMessagesPath := filepath.Join(r.configDir, "validation/messages.yaml")
 
@@ -255,7 +255,12 @@ func (r *Registry) ListSchemas() []string {
 	return keys
 }
 
+//
+func (r *Registry) GetDefaultMessageTempates() map[string]*validation.DefaultValidatorMessageTemplate {
+	return r.defaultMessages
+}
+
 // Stats returns statistics about loaded configuration.
-func (r *Registry) Stats() (numFileSpecs, numSchemas int) {
-	return len(r.fileSpecs), len(r.schemas)
+func (r *Registry) Stats() (numFileSpecs, numSchemas, numDefaultMessages int) {
+	return len(r.fileSpecs), len(r.schemas), len(r.defaultMessages)
 }
