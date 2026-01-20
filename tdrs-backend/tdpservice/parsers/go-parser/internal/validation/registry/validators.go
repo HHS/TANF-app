@@ -6,7 +6,7 @@ import (
 	"sort"
 	"sync"
 
-	valconfig "go-parser/internal/config/validation"
+	config "go-parser/internal/config/validation"
 	"go-parser/internal/parser"
 )
 
@@ -51,13 +51,13 @@ type ValidationResult struct {
 
 	// Config that triggered this validation (for message/error_type overrides)
 	// TODO: This is a heavy object. Might need to extract only what we need from it
-	Config *valconfig.ValidatorDef
+	Config *config.ValidatorDef
 }
 
 // CompiledValidator holds a compiled validator function with its config.
 type CompiledValidator struct {
 	Func   ValidatorFunc
-	Config *valconfig.ValidatorDef
+	Config *config.ValidatorDef
 }
 
 // ValidResult returns a valid ValidationResult without allocating.
@@ -72,7 +72,7 @@ func ValidResult() *ValidationResult {
 
 // NewInvalidResult creates a new invalid result with the given parameters.
 // The result is acquired from the pool and should be released when done.
-func NewInvalidResult(validatorID string, category Category, config *valconfig.ValidatorDef) *ValidationResult {
+func NewInvalidResult(validatorID string, category Category, config *config.ValidatorDef) *ValidationResult {
 	result := AcquireResult()
 	result.Valid = false
 	result.ValidatorID = validatorID
@@ -172,7 +172,7 @@ func (r *ValidatorRegistry) Count() int {
 // Build creates a ValidatorFunc from a ValidatorConfig.
 // For simple validators (no Compose), the ID is looked up in the registry.
 // For composed validators, the appropriate composition is built recursively.
-func (r *ValidatorRegistry) Build(config valconfig.ValidatorDef) (ValidatorFunc, error) {
+func (r *ValidatorRegistry) Build(config config.ValidatorDef) (ValidatorFunc, error) {
 	if config.Compose != "" {
 		return r.buildComposition(config)
 	}
@@ -180,7 +180,7 @@ func (r *ValidatorRegistry) Build(config valconfig.ValidatorDef) (ValidatorFunc,
 }
 
 // MustBuild is like Build but panics on error.
-func (r *ValidatorRegistry) MustBuild(config valconfig.ValidatorDef) ValidatorFunc {
+func (r *ValidatorRegistry) MustBuild(config config.ValidatorDef) ValidatorFunc {
 	fn, err := r.Build(config)
 	if err != nil {
 		panic(fmt.Sprintf("failed to build validator %q: %v", config.ID, err))
@@ -189,7 +189,7 @@ func (r *ValidatorRegistry) MustBuild(config valconfig.ValidatorDef) ValidatorFu
 }
 
 // buildSimple builds a simple (non-composed) validator.
-func (r *ValidatorRegistry) buildSimple(config valconfig.ValidatorDef) (ValidatorFunc, error) {
+func (r *ValidatorRegistry) buildSimple(config config.ValidatorDef) (ValidatorFunc, error) {
 	factory, ok := r.Get(config.ID)
 	if !ok {
 		return nil, fmt.Errorf("validator %q not found in registry", config.ID)
@@ -208,7 +208,7 @@ func (r *ValidatorRegistry) buildSimple(config valconfig.ValidatorDef) (Validato
 }
 
 // wrapWithFieldOverride wraps a validator to operate on a different field.
-func (r *ValidatorRegistry) wrapWithFieldOverride(fn ValidatorFunc, fieldName string, config *valconfig.ValidatorDef) ValidatorFunc {
+func (r *ValidatorRegistry) wrapWithFieldOverride(fn ValidatorFunc, fieldName string, config *config.ValidatorDef) ValidatorFunc {
 	return func(ctx *ValidationContext) *ValidationResult {
 		// Set field by name
 		fieldIdx := ctx.GetFieldIndex(fieldName)
@@ -232,7 +232,7 @@ func (r *ValidatorRegistry) wrapWithFieldOverride(fn ValidatorFunc, fieldName st
 }
 
 // buildComposition builds a composed validator based on the Compose type.
-func (r *ValidatorRegistry) buildComposition(config valconfig.ValidatorDef) (ValidatorFunc, error) {
+func (r *ValidatorRegistry) buildComposition(config config.ValidatorDef) (ValidatorFunc, error) {
 	switch config.Compose {
 	case "and":
 		return r.buildAnd(config)
@@ -250,7 +250,7 @@ func (r *ValidatorRegistry) buildComposition(config valconfig.ValidatorDef) (Val
 }
 
 // buildAnd creates an AND composition - all validators must pass.
-func (r *ValidatorRegistry) buildAnd(config valconfig.ValidatorDef) (ValidatorFunc, error) {
+func (r *ValidatorRegistry) buildAnd(config config.ValidatorDef) (ValidatorFunc, error) {
 	if len(config.Validators) == 0 {
 		return nil, fmt.Errorf("and composition %q requires at least one validator", config.ID)
 	}
@@ -289,7 +289,7 @@ func (r *ValidatorRegistry) buildAnd(config valconfig.ValidatorDef) (ValidatorFu
 }
 
 // buildOr creates an OR composition - at least one validator must pass.
-func (r *ValidatorRegistry) buildOr(config valconfig.ValidatorDef) (ValidatorFunc, error) {
+func (r *ValidatorRegistry) buildOr(config config.ValidatorDef) (ValidatorFunc, error) {
 	if len(config.Validators) == 0 {
 		return nil, fmt.Errorf("or composition %q requires at least one validator", config.ID)
 	}
@@ -325,7 +325,7 @@ func (r *ValidatorRegistry) buildOr(config valconfig.ValidatorDef) (ValidatorFun
 }
 
 // buildNot creates a NOT composition - the child validator must fail.
-func (r *ValidatorRegistry) buildNot(config valconfig.ValidatorDef) (ValidatorFunc, error) {
+func (r *ValidatorRegistry) buildNot(config config.ValidatorDef) (ValidatorFunc, error) {
 	if len(config.Validators) != 1 {
 		return nil, fmt.Errorf("not composition %q requires exactly 1 validator, got %d", config.ID, len(config.Validators))
 	}
@@ -357,7 +357,7 @@ func (r *ValidatorRegistry) buildNot(config valconfig.ValidatorDef) (ValidatorFu
 // buildIfThen creates an IF-THEN composition.
 // If the condition passes, the then validator must also pass.
 // If the condition fails, the whole composition passes (condition not met).
-func (r *ValidatorRegistry) buildIfThen(config valconfig.ValidatorDef) (ValidatorFunc, error) {
+func (r *ValidatorRegistry) buildIfThen(config config.ValidatorDef) (ValidatorFunc, error) {
 	if config.Condition == nil {
 		return nil, fmt.Errorf("ifThen composition %q requires a condition", config.ID)
 	}
@@ -404,7 +404,7 @@ func (r *ValidatorRegistry) buildIfThen(config valconfig.ValidatorDef) (Validato
 // buildIfThenElse creates an IF-THEN-ELSE composition.
 // If the condition passes, run the then validator.
 // If the condition fails, run the else validator.
-func (r *ValidatorRegistry) buildIfThenElse(config valconfig.ValidatorDef) (ValidatorFunc, error) {
+func (r *ValidatorRegistry) buildIfThenElse(config config.ValidatorDef) (ValidatorFunc, error) {
 	if config.Condition == nil {
 		return nil, fmt.Errorf("ifThenElse composition %q requires a condition", config.ID)
 	}
@@ -459,7 +459,7 @@ func (r *ValidatorRegistry) buildIfThenElse(config valconfig.ValidatorDef) (Vali
 }
 
 // BuildAll builds multiple validators from configs.
-func (r *ValidatorRegistry) BuildAll(configs []valconfig.ValidatorDef) ([]CompiledValidator, error) {
+func (r *ValidatorRegistry) BuildAll(configs []config.ValidatorDef) ([]CompiledValidator, error) {
 	validators := make([]CompiledValidator, len(configs))
 	for i, config := range configs {
 		fn, err := r.Build(config)

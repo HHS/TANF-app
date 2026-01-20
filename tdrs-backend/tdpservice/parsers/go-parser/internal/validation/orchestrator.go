@@ -1,7 +1,7 @@
 package validation
 
 import (
-	valconfig "go-parser/internal/config/validation"
+	config "go-parser/internal/config/validation"
 	"go-parser/internal/parser"
 	"go-parser/internal/validation/registry"
 )
@@ -9,7 +9,7 @@ import (
 // Orchestrator coordinates validation execution across all categories.
 // It manages the execution order, short-circuiting, and result collection.
 type Orchestrator struct {
-	config *valconfig.OrchestratorDef
+	config *config.OrchestratorDef
 
 	// Validators by category for the current schema
 	cat1Validators []registry.CompiledValidator // Record pre-check
@@ -22,7 +22,7 @@ type Orchestrator struct {
 }
 
 // NewOrchestrator creates a new validation orchestrator.
-func NewOrchestrator(config *valconfig.OrchestratorDef, parseCtx *parser.ParseContext) *Orchestrator {
+func NewOrchestrator(config *config.OrchestratorDef, parseCtx *parser.ParseContext) *Orchestrator {
 	if config == nil {
 		config = DefaultOrchestratorDef()
 	}
@@ -34,16 +34,16 @@ func NewOrchestrator(config *valconfig.OrchestratorDef, parseCtx *parser.ParseCo
 }
 
 // DefaultOrchestratorDef returns the default orchestrator configuration.
-func DefaultOrchestratorDef() *valconfig.OrchestratorDef {
-	return &valconfig.OrchestratorDef{
-		Categories: []valconfig.CategoryDef{
+func DefaultOrchestratorDef() *config.OrchestratorDef {
+	return &config.OrchestratorDef{
+		Categories: []config.CategoryDef{
 			{ID: 1, Name: "Record pre-check", DefaultErrorType: "RECORD_PRE_CHECK"},
 			{ID: 2, Name: "Field validation", DefaultErrorType: "FIELD_VALUE"},
 			{ID: 3, Name: "Cross-field", DefaultErrorType: "VALUE_CONSISTENCY"},
 			{ID: 4, Name: "Group validation", DefaultErrorType: "CASE_CONSISTENCY"},
 		},
 		ExecutionOrder: []int{4, 1, 2, 3},
-		ShortCircuit: []valconfig.ShortCircuitRule{
+		ShortCircuit: []config.ShortCircuitRule{
 			{OnFail: 4, Action: "reject_group", Skip: []int{1, 2, 3}},
 			{OnFail: 1, Action: "reject_record", Skip: []int{2, 3}},
 		},

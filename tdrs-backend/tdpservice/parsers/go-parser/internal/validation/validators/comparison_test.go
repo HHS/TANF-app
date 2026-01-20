@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"go-parser/internal/config/schema"
-	valconfig "go-parser/internal/config/validation"
+	config "go-parser/internal/config/validation"
 	"go-parser/internal/parser"
 	"go-parser/internal/validation/registry"
 )
@@ -228,16 +228,16 @@ func TestRegistryComposition(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		config    valconfig.ValidatorDef
+		config    config.ValidatorDef
 		value     any
 		wantValid bool
 	}{
 		{
 			name: "and composition - both pass",
-			config: valconfig.ValidatorDef{
+			config: config.ValidatorDef{
 				ID:      "positive_under_100",
 				Compose: "and",
-				Validators: []valconfig.ValidatorDef{
+				Validators: []config.ValidatorDef{
 					{ID: "isGreaterThan", Params: map[string]any{"value": 0}},
 					{ID: "isLessThan", Params: map[string]any{"value": 100}},
 				},
@@ -247,10 +247,10 @@ func TestRegistryComposition(t *testing.T) {
 		},
 		{
 			name: "and composition - first fails",
-			config: valconfig.ValidatorDef{
+			config: config.ValidatorDef{
 				ID:      "positive_under_100",
 				Compose: "and",
-				Validators: []valconfig.ValidatorDef{
+				Validators: []config.ValidatorDef{
 					{ID: "isGreaterThan", Params: map[string]any{"value": 0}},
 					{ID: "isLessThan", Params: map[string]any{"value": 100}},
 				},
@@ -260,10 +260,10 @@ func TestRegistryComposition(t *testing.T) {
 		},
 		{
 			name: "or composition - one passes",
-			config: valconfig.ValidatorDef{
+			config: config.ValidatorDef{
 				ID:      "one_or_two",
 				Compose: "or",
-				Validators: []valconfig.ValidatorDef{
+				Validators: []config.ValidatorDef{
 					{ID: "isEqual", Params: map[string]any{"value": 1}},
 					{ID: "isEqual", Params: map[string]any{"value": 2}},
 				},
@@ -273,10 +273,10 @@ func TestRegistryComposition(t *testing.T) {
 		},
 		{
 			name: "or composition - none pass",
-			config: valconfig.ValidatorDef{
+			config: config.ValidatorDef{
 				ID:      "one_or_two",
 				Compose: "or",
-				Validators: []valconfig.ValidatorDef{
+				Validators: []config.ValidatorDef{
 					{ID: "isEqual", Params: map[string]any{"value": 1}},
 					{ID: "isEqual", Params: map[string]any{"value": 2}},
 				},
@@ -286,10 +286,10 @@ func TestRegistryComposition(t *testing.T) {
 		},
 		{
 			name: "not composition - negates pass",
-			config: valconfig.ValidatorDef{
+			config: config.ValidatorDef{
 				ID:      "not_zero",
 				Compose: "not",
-				Validators: []valconfig.ValidatorDef{
+				Validators: []config.ValidatorDef{
 					{ID: "isEqual", Params: map[string]any{"value": 0}},
 				},
 			},
@@ -298,10 +298,10 @@ func TestRegistryComposition(t *testing.T) {
 		},
 		{
 			name: "not composition - negates fail",
-			config: valconfig.ValidatorDef{
+			config: config.ValidatorDef{
 				ID:      "not_zero",
 				Compose: "not",
-				Validators: []valconfig.ValidatorDef{
+				Validators: []config.ValidatorDef{
 					{ID: "isEqual", Params: map[string]any{"value": 0}},
 				},
 			},
