@@ -10,6 +10,7 @@ import (
 
 	"go-parser/internal/config/filespec"
 	"go-parser/internal/config/schema"
+	"go-parser/internal/config/validation"
 )
 
 // Registry holds all loaded FileSpecs and Schemas.
@@ -21,6 +22,9 @@ type Registry struct {
 
 	// schemas indexed by path (e.g., "tanf/t1", "common/header")
 	schemas map[string]*schema.CompiledSchema
+
+	// defaultMessages indexed by validator ID
+	defaultMessages map[string]*validation.DefaultValidatorMessageTemplate
 
 	// metadata holds database info derived from schemas (table names, columns)
 	// Built during Load() from YAML schema field definitions
@@ -51,6 +55,7 @@ func Load(configDir string) (*Registry, error) {
 	r := &Registry{
 		fileSpecs: make(map[string]*filespec.FileSpec),
 		schemas:   make(map[string]*schema.CompiledSchema),
+		defaultMessages: make(map[string]*validation.DefaultValidatorMessageTemplate),
 		metadata:  make(map[string]*DbSchemaMetadata),
 		configDir: configDir,
 	}
@@ -68,6 +73,11 @@ func Load(configDir string) (*Registry, error) {
 	// Validate that all FileSpec schema references are valid
 	if err := r.validateReferences(); err != nil {
 		return nil, fmt.Errorf("validating references: %w", err)
+	}
+
+	// Load default messages
+	if err := r.loadDefaultMessages(); err != nil {
+		return nil, fmt.Errorf("loading default messages: %w", err)
 	}
 
 	// Build database metadata from schema field definitions
@@ -149,6 +159,29 @@ func (r *Registry) loadFileSpecs() error {
 
 		return nil
 	})
+}
+
+// loadDefaultMessages reads all .yaml files from the validation/messages.yaml file.
+func (r *Registry) loadDefaultMessages() error {
+	defaultMessagesPath := filepath.Join(r.configDir, "validation/messages.yaml")
+
+	// Read and parse the default message templates
+	data, err := os.ReadFile(defaultMessagesPath)
+	if err != nil {
+		return fmt.Errorf("reading %s: %w", defaultMessagesPath, err)
+	}
+
+	var specDef validation.DefaultMessageTemplates
+	if err := yaml.Unmarshal(data, &specDef); err != nil {
+		return fmt.Errorf("parsing %s: %w", defaultMessagesPath, err)
+	}
+
+	// Index by validator ID
+	for _, validator := range specDef.Validators {
+		r.defaultMessages[validator.ID] = &validator
+	}
+
+	return nil
 }
 
 // validateReferences ensures all schema references in FileSpecs point to loaded schemas.

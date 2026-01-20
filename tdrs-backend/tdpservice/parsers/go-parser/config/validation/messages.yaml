@@ -1,0 +1,66 @@
+validators:
+  - id: isEqual
+    template: "{{.RecordType}} Item {{.ItemNum}} ({{.FriendlyName}}): {{.Value}} must equal {{.Params.value}}"
+  - id: isNotEqual
+    template: "{{.RecordType}} Item {{.ItemNum}} ({{.FriendlyName}}): {{.Value}} must not equal {{.Params.value}}"
+  - id: isGreaterThan
+    template: "{{.RecordType}} Item {{.ItemNum}} ({{.FriendlyName}}): {{.Value}} must be greater than {{.Params.value}}"
+  - id: isGreaterThanOrEqual
+    template: "{{.RecordType}} Item {{.ItemNum}} ({{.FriendlyName}}): {{.Value}} must be greater than or equal to {{.Params.value}}"
+  - id: isLessThan
+    template: "{{.RecordType}} Item {{.ItemNum}} ({{.FriendlyName}}): {{.Value}} must be less than {{.Params.value}}"
+  - id: isLessThanOrEqual
+    template: "{{.RecordType}} Item {{.ItemNum}} ({{.FriendlyName}}): {{.Value}} must be less than or equal to {{.Params.value}}"
+  - id: isBetween
+    template: "{{.RecordType}} Item {{.ItemNum}} ({{.FriendlyName}}): {{.Value}} must be between {{.Params.min}} and {{.Params.max}}"
+  - id: isOneOf
+    template: "{{.RecordType}} Item {{.ItemNum}} ({{.FriendlyName}}): {{.Value}} is not in allowed values {{.Params.values | join \", \"}}"
+
+  - id: isEmpty
+    template: "{{.RecordType}} Item {{.ItemNum}} ({{.FriendlyName}}): value must be empty"
+  - id: isNotEmpty
+    template: "{{.RecordType}} Item {{.ItemNum}} ({{.FriendlyName}}): value is required and cannot be empty"
+  - id: hasLength
+    template: "{{.RecordType}} Item {{.ItemNum}} ({{.FriendlyName}}): value must have length {{.Params.length}}"
+  - id: hasMinLength
+    template: "{{.RecordType}} Item {{.ItemNum}} ({{.FriendlyName}}): value must have at least {{.Params.min}} characters"
+  - id: hasMaxLength
+    template: "{{.RecordType}} Item {{.ItemNum}} ({{.FriendlyName}}): value must have at most {{.Params.max}} characters"
+  - id: matchesPattern
+    template: "{{.RecordType}} Item {{.ItemNum}} ({{.FriendlyName}}): {{.Value}} does not match pattern {{.Params.pattern}}"
+  - id: startsWith
+    template: "{{.RecordType}} Item {{.ItemNum}} ({{.FriendlyName}}): {{.Value}} must start with {{.Params.prefix}}"
+  - id: endsWith
+    template: "{{.RecordType}} Item {{.ItemNum}} ({{.FriendlyName}}): {{.Value}} must end with {{.Params.suffix}}"
+
+  - id: dateYearIsLargerThan
+    template: "{{.RecordType}} Item {{.ItemNum}} ({{.FriendlyName}}): year must be larger than {{.Params.year}}, got {{.Value}}"
+  - id: dateYearIsLessThan
+    template: "{{.RecordType}} Item {{.ItemNum}} ({{.FriendlyName}}): year must be less than {{.Params.year}}, got {{.Value}}"
+  - id: dateMonthIsValid
+    template: "{{.RecordType}} Item {{.ItemNum}} ({{.FriendlyName}}): month {{.Value}} is not valid (must be 01-12)"
+  - id: dateIsValid
+    template: "{{.RecordType}} Item {{.ItemNum}} ({{.FriendlyName}}): {{.Value}} is not a valid date"
+
+  - id: recordHasLength
+    template: "{{.RecordType}}: record must have exactly {{.Params.length}} characters"
+  - id: recordHasLengthBetween
+    template: "{{.RecordType}}: record must have between {{.Params.min}} and {{.Params.max}} characters"
+  - id: recordStartsWith
+    template: "{{.RecordType}}: record must start with {{.Params.prefix}}"
+  - id: caseNumberNotEmpty
+    template: "{{.RecordType}}: case number cannot be blank"
+
+  - id: ifThenAlso
+    template: "{{.RecordType}}: when {{.Params.conditionField}} is {{.Params.conditionValue}}, {{.Params.thenField}} must satisfy the constraint"
+  - id: sumIsGreaterThan
+    template: "{{.RecordType}}: sum of {{.Params.fields | join \", \"}} must be greater than {{.Params.value}}"
+  - id: atLeastOneOf
+    template: "{{.RecordType}}: at least one of {{.Params.fields | join \", \"}} must have a value"
+
+  - id: recordTypePresent
+    template: "{{.RecordType}}: record type {{.Params.record_type}} is required but not present in case"
+  - id: recordCountInRange
+    template: "{{.RecordType}}: expected {{.Params.min}} to {{.Params.max}} records of type {{.Params.record_type}}, found {{.Value}}"
+  - id: t1HasMatchingChildren
+    template: "{{.RecordType}}: T1 record must have at least one T2 or T3 child record"

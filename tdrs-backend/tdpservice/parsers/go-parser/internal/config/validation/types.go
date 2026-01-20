@@ -72,7 +72,10 @@ type OrchestratorDefFile struct {
 }
 
 // MessagesDefFile represents the messages config file format.
-type MessagesDefFile struct {
-	Validators map[string]string `yaml:"validators"`
-	Overrides  map[string]string `yaml:"overrides,omitempty"`
+type DefaultValidatorMessageTemplate struct {
+	ID string `yaml:"id"`
+	Template string `yaml:"template"`
+}
+type DefaultMessageTemplates struct {
+	Validators []DefaultValidatorMessageTemplate `yaml:"validators"`
 }
