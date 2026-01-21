@@ -5,12 +5,6 @@ import (
 	"go-parser/internal/decoder"
 )
 
-// ParsedField combines a field definition pointer with its parsed value.
-type ParsedField struct {
-	Def   *schema.FieldDef // Pointer to schema FieldDef (nil if not set)
-	Value any              // Parsed value (nil if empty/missing)
-}
-
 // DecodedRecord holds a decoded row along with its detected schema.
 type DecodedRecord struct {
 	Row    decoder.Row
@@ -66,6 +60,12 @@ func (b *DecodedBatch) TotalRecords() int {
 		total += len(g.DecodedRecords)
 	}
 	return total
+}
+
+// ParsedField combines a field definition pointer with its parsed value.
+type ParsedField struct {
+	Def   *schema.FieldDef // Pointer to schema FieldDef (nil if not set)
+	Value any              // Parsed value (nil if empty/missing)
 }
 
 // ParsedRecord represents a successfully parsed record.
