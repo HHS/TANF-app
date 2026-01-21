@@ -15,13 +15,16 @@ import (
 	"go-parser/internal/decoder"
 	"go-parser/internal/parser"
 	"go-parser/internal/writer"
+
+	"go-parser/internal/validation"
 )
 
 // Pipeline orchestrates the full file parsing process.
 type Pipeline struct {
-	pool     *pgxpool.Pool
-	registry *config.Registry
-	config   PipelineConfig
+	dbPool             *pgxpool.Pool
+	registry         *config.Registry
+	valOrchestrator  *validation.Orchestrator
+	config           PipelineConfig
 }
 
 // ProcessParams contains the inputs for processing a file.
@@ -40,9 +43,9 @@ type ProcessResult struct {
 }
 
 // New creates a Pipeline with the given configuration.
-func NewPipline(pool *pgxpool.Pool, reg *config.Registry, config PipelineConfig) *Pipeline {
+func NewPipline(dbPool *pgxpool.Pool, reg *config.Registry, config PipelineConfig) *Pipeline {
 	return &Pipeline{
-		pool:     pool,
+		dbPool:     dbPool,
 		registry: reg,
 		config:   config,
 	}
@@ -79,7 +82,7 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params ProcessParams) (*Proc
 
 	// Step 3: Create database router/initialize object pools
 	// TODO: I hate that we have to initialize the object pools on the schemas in NewRouter.
-	router := writer.NewRouter(p.pool, params.DatafileID, spec, p.registry, p.config.PoolPrewarmSize)
+	router := writer.NewRouter(p.dbPool, params.DatafileID, spec, p.registry, p.config.PoolPrewarmSize)
 	router.Start(ctx)
 
 	// Step 4: Read and parse header (for positional files)
@@ -153,11 +156,11 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params ProcessParams) (*Proc
 // based on the AccumulatorConfig in the FileSpec.
 func processRows(
 	dec decoder.Decoder,
-	spec *filespec.FileSpec,
-	detector *parser.RecordTypeDetector,
-	pool *parser.ParserPool,
+	fileSpec *filespec.FileSpec,
+	recordDetector *parser.RecordTypeDetector,
+	parserPool *parser.ParserPool,
 ) error {
-	acc := parser.NewAccumulator(spec, detector)
+	acc := parser.NewAccumulator(fileSpec, recordDetector)
 
 	for row, err := range dec.Rows() {
 		if err != nil {
@@ -177,13 +180,13 @@ func processRows(
 
 		// For non-keyed modes, batches may be returned during iteration
 		if batch != nil {
-			pool.Submit(batch)
+			parserPool.Submit(batch)
 		}
 	}
 
 	// Dispatch all remaining batches (for keyed modes, this is where groups are emitted)
 	for _, batch := range acc.Drain() {
-		pool.Submit(batch)
+		parserPool.Submit(batch)
 	}
 
 	return nil
