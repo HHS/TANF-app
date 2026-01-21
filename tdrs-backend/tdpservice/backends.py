@@ -43,20 +43,25 @@ class DataFilesS3Storage(OverriddenCredentialsS3Storage):
     # Use distinct region for the tdp-datafiles service
     region_name = settings.AWS_S3_DATAFILES_REGION_NAME
 
+    # Thread-safe cache for version IDs, keyed by file name
+    # This is strictly a percaution. Gunicorn isn't setup with multiple threads currently. But if that
+    # changes in the future, this will prevent any issues with thread safety.
+    _version_id_cache: dict[str, str] = {}
+
     def _save(self, name, content):
         """Save file and capture version ID from S3 response."""
         name = super()._save(name, content)
-        obj = self.bucket.Object(self._normalize_name(name))
+        normalized_name = self._normalize_name(name)
+        obj = self.bucket.Object(normalized_name)
         version_id = obj.version_id
         if version_id and version_id != "null":
-            self._last_version_id = version_id
-        else:
-            self._last_version_id = None
+            self._version_id_cache[normalized_name] = version_id
         return name
 
-    def get_version_id(self) -> str | None:
-        """Get the version ID captured from the most recent upload."""
-        return getattr(self, "_last_version_id", None)
+    def get_version_id(self, name: str) -> str | None:
+        """Get and remove the version ID for a specific file from cache."""
+        normalized_name = self._normalize_name(name)
+        return self._version_id_cache.pop(normalized_name, None)
 
 
 class StaticFilesS3Storage(OverriddenCredentialsS3Storage):

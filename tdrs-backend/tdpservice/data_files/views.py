@@ -95,7 +95,7 @@ class DataFileViewSet(ModelViewSet):
                 + f"quarter {data_file.quarter}, year {data_file.year}."
             )
 
-            version_id = data_file.file.storage.get_version_id()
+            version_id = data_file.file.storage.get_version_id(data_file.file.name)
             data_file.s3_versioning_id = version_id
             data_file.save(update_fields=["s3_versioning_id"])
 
