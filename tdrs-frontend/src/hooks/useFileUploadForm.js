@@ -129,10 +129,10 @@ export const useFileUploadForm = ({
         fileType: fileTypeInputValue,
       })
 
-      await executeSubmission(() =>
+      const submittedFiles = await executeSubmission(() =>
         dispatch(submit(payload, onFileUploadSuccess))
       )
-      handleOpenFeedbackWidget()
+      handleOpenFeedbackWidget(submittedFiles)
     } catch (error) {
       console.error('Error during form submission:', error)
       setLocalAlertState({
