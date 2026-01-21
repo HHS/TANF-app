@@ -18,7 +18,7 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from tdpservice.data_files.error_reports import ErrorReportFactory
-from tdpservice.data_files.models import DataFile, get_s3_upload_path
+from tdpservice.data_files.models import DataFile
 from tdpservice.data_files.s3_client import S3Client
 from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.log_handler import S3FileHandler
@@ -95,12 +95,7 @@ class DataFileViewSet(ModelViewSet):
                 + f"quarter {data_file.quarter}, year {data_file.year}."
             )
 
-            app_name = settings.APP_NAME + "/"
-            key = app_name + get_s3_upload_path(data_file, "")
-            version_id = self.get_s3_versioning_id(
-                response.data.get("original_filename"), key
-            )
-
+            version_id = data_file.file.storage.get_version_id()
             data_file.s3_versioning_id = version_id
             data_file.save(update_fields=["s3_versioning_id"])
 
@@ -109,18 +104,6 @@ class DataFileViewSet(ModelViewSet):
 
         logger.debug(f"{self.__class__.__name__}: return val: {response}")
         return response
-
-    def get_s3_versioning_id(self, file_name, prefix):
-        """Get the version id of the file uploaded to S3."""
-        s3 = S3Client()
-        bucket_name = settings.AWS_S3_DATAFILES_BUCKET_NAME
-        versions = s3.client.list_object_versions(Bucket=bucket_name, Prefix=prefix)
-        for version in versions["Versions"]:
-            file_path = version["Key"]
-            if file_name in file_path:
-                if version["IsLatest"] and version["VersionId"] != "null":
-                    return version["VersionId"]
-        return None
 
     def get_queryset(self):
         """Apply custom queryset filters."""
