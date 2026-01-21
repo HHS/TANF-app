@@ -15,15 +15,12 @@ import (
 	"go-parser/internal/decoder"
 	"go-parser/internal/parser"
 	"go-parser/internal/writer"
-
-	"go-parser/internal/validation"
 )
 
 // Pipeline orchestrates the full file parsing process.
 type Pipeline struct {
 	dbPool             *pgxpool.Pool
 	registry         *config.Registry
-	valOrchestrator  *validation.Orchestrator
 	config           PipelineConfig
 }
 
