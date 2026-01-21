@@ -1,15 +1,18 @@
-"""Utility functions for DataFile views."""
-from django.db import models
-from django.utils.translation import gettext_lazy as _
+"""Utility file for DataFiles."""
 
 
-class ParserErrorCategoryChoices(models.TextChoices):
-    """Enum of ParserError error_type."""
+def create_s3_log_file_path(datafile):
+    """Create backwards compatible parsing log file path."""
+    # Import inside function to avoid circular import during logging config.
+    # log_handler.py is loaded before Django apps are ready, so top-level
+    # model imports cause AppRegistryNotReady errors.
+    from tdpservice.data_files.models import DataFile
 
-    PRE_CHECK = "1", _("File pre-check")
-    FIELD_VALUE = "2", _("Record value invalid")
-    VALUE_CONSISTENCY = "3", _("Record value consistency")
-    CASE_CONSISTENCY = "4", _("Case consistency")
-    SECTION_CONSISTENCY = "5", _("Section consistency")
-    HISTORICAL_CONSISTENCY = "6", _("Historical consistency")
-    RECORD_PRE_CHECK = "7", _("Record pre-check")
+    key = f"{datafile.year}/{datafile.quarter}/{datafile.stt}/"
+    if datafile.program_type in [DataFile.ProgramType.FRA, DataFile.ProgramType.TANF]:
+        key += f"{datafile.section}"
+    elif datafile.program_type == DataFile.ProgramType.TRIBAL:
+        key += f"{datafile.program_type.title()} {datafile.section}"
+    else:
+        key += f"{datafile.program_type} {datafile.section}"
+    return key

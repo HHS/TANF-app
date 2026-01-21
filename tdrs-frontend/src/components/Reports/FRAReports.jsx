@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useFormSubmission } from '../../hooks/useFormSubmission'
 import { useDispatch, useSelector } from 'react-redux'
 import classNames from 'classnames'
@@ -7,11 +7,8 @@ import fileTypeChecker from 'file-type-checker'
 
 import Button from '../Button'
 import STTComboBox from '../STTComboBox'
-import { quarters, constructYears } from './utils'
-import {
-  accountCanSelectStt,
-  accountIsRegionalStaff,
-} from '../../selectors/auth'
+import { quarters } from './utils'
+import { accountIsRegionalStaff } from '../../selectors/auth'
 import {
   checkPreviewDependencies,
   removeOldPreviews,
@@ -32,13 +29,18 @@ import {
   getFraSubmissionHistory,
   uploadFraReport,
   downloadOriginalSubmission,
-  pollFraSubmissionStatus,
+  getFraSubmissionStatus,
+  SET_FRA_SUBMISSION_STATUS,
 } from '../../actions/fraReports'
 import { fetchSttList } from '../../actions/sttList'
-import { DropdownSelect, RadioSelect } from '../Form'
+import { RadioSelect } from '../Form'
 import { PaginatedComponent } from '../Paginator/Paginator'
 import { Spinner } from '../Spinner'
 import { openFeedbackWidget } from '../../reducers/feedbackWidget'
+import { ReportsProvider, useReportsContext } from './ReportsContext'
+import { accountCanSelectStt } from '../../selectors/auth'
+import FiscalYearSelect from './components/FiscalYearSelect'
+import FiscalQuarterSelect from './components/FisclaQuarterSelect'
 
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
@@ -46,69 +48,22 @@ const INVALID_FILE_ERROR =
 const INVALID_EXT_ERROR =
   'Invalid extension. Accepted file types are: .csv or .xlsx.'
 
-const SelectSTT = ({ valid, value, setValue }) => (
-  <div
-    className={classNames('usa-form-group maxw-mobile margin-top-4', {
-      'usa-form-group--error': !valid,
-    })}
-  >
-    <STTComboBox selectedStt={value} selectStt={setValue} error={!valid} />
+const SelectSTT = ({ value, setValue, error }) => (
+  <div className="usa-form-group maxw-mobile margin-top-4">
+    <STTComboBox selectedStt={value} selectStt={setValue} error={error} />
   </div>
 )
 
-const SelectReportType = ({ valid, value, setValue, options }) => (
+const SelectReportType = ({ options, setValue, selectedValue, error }) => (
   <RadioSelect
-    valid={valid}
-    value={value}
-    label="File Type"
+    label="File Type*"
     fieldName="reportType"
     classes="margin-top-4"
     options={options}
     setValue={setValue}
-  />
-)
-
-const SelectFiscalYear = ({ valid, value, setValue }) => (
-  <DropdownSelect
-    label="Fiscal Year (October - September)*"
-    fieldName="reportingYears"
-    classes="maxw-mobile margin-top-4"
-    value={value}
-    setValue={setValue}
-    valid={valid}
-    errorText="A fiscal year is required"
-    options={[
-      {
-        label: '- Select Fiscal Year -',
-        value: '',
-      },
-      ...constructYears().map((year) => ({
-        label: year,
-        value: year,
-      })),
-    ]}
-  />
-)
-
-const SelectQuarter = ({ valid, value, setValue }) => (
-  <DropdownSelect
-    label="Quarter*"
-    fieldName="quarter"
-    classes="maxw-mobile margin-top-4"
-    value={value}
-    setValue={setValue}
-    valid={valid}
-    errorText="A quarter is required"
-    options={[
-      {
-        label: '- Select Quarter -',
-        value: '',
-      },
-      ...Object.entries(quarters).map(([quarter, quarterDescription]) => ({
-        label: quarterDescription,
-        value: quarter,
-      })),
-    ]}
+    selectedValue={selectedValue}
+    error={error}
+    errorMessage="A file type selection is required"
   />
 )
 
@@ -147,41 +102,18 @@ const FiscalQuarterExplainer = () => (
   </table>
 )
 
-const SearchForm = ({
-  handleSearch,
+const Inputs = ({
   reportTypeOptions,
-  form,
-  setFormState,
+  sttValue,
+  selectStt,
+  selectReportType,
+  reportTypeValue,
   needsSttSelection,
   userProfileStt,
+  sttError,
+  fileTypeError,
 }) => {
   const missingStt = !needsSttSelection && !userProfileStt
-  const errorsRef = null
-
-  const setFormValue = (field, value) => {
-    const newFormState = { ...form }
-
-    if (!!value) {
-      newFormState[field].value = value
-      newFormState[field].valid = true
-    } else {
-      newFormState[field].valid = false
-    }
-    newFormState[field].touched = true
-
-    let errors = 0
-    Object.keys(newFormState).forEach((key) => {
-      if (
-        key !== 'errors' &&
-        newFormState[key].touched &&
-        !newFormState[key].valid
-      ) {
-        errors += 1
-      }
-    })
-
-    setFormState({ ...newFormState, errors })
-  }
 
   return (
     <>
@@ -190,57 +122,31 @@ const SearchForm = ({
           An STT is not set for this user.
         </div>
       )}
-      {Boolean(form.errors) && (
-        <div
-          className="margin-top-4 usa-error-message"
-          role="alert"
-          ref={errorsRef}
-          tabIndex="-1"
-        >
-          There {form.errors === 1 ? 'is' : 'are'} {form.errors} error(s) in
-          this form
+      <p className="margin-top-5 margin-bottom-0">
+        Fields marked with an asterisk (*) are required.
+      </p>
+      <div className="grid-row grid-gap">
+        <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
+          {needsSttSelection && (
+            <SelectSTT value={sttValue} setValue={selectStt} error={sttError} />
+          )}
+          <SelectReportType
+            options={reportTypeOptions}
+            setValue={selectReportType}
+            selectedValue={reportTypeValue}
+            error={fileTypeError}
+          />
         </div>
-      )}
-      <form onSubmit={handleSearch}>
-        <div className="grid-row grid-gap">
-          <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
-            {needsSttSelection && (
-              <SelectSTT
-                valid={form.stt.touched ? form.stt.valid : true}
-                value={form.stt.value}
-                setValue={(val) => setFormValue('stt', val)}
-              />
-            )}
-            <SelectReportType
-              value={form.reportType.value}
-              options={reportTypeOptions}
-              setValue={(val) => setFormValue('reportType', val)}
-            />
-          </div>
+      </div>
+      <div className="grid-row grid-gap">
+        <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-auto">
+          <FiscalYearSelect startYear={2021} />
+          <FiscalQuarterSelect />
         </div>
-        <div className="grid-row grid-gap">
-          <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-auto">
-            <SelectFiscalYear
-              valid={form.fiscalYear.touched ? form.fiscalYear.valid : true}
-              value={form.fiscalYear.value}
-              setValue={(val) => setFormValue('fiscalYear', val)}
-            />
-            <SelectQuarter
-              valid={
-                form.fiscalQuarter.touched ? form.fiscalQuarter.valid : true
-              }
-              value={form.fiscalQuarter.value}
-              setValue={(val) => setFormValue('fiscalQuarter', val)}
-            />
-            <Button className="margin-y-4" type="submit">
-              Search
-            </Button>
-          </div>
-          <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
-            <FiscalQuarterExplainer />
-          </div>
+        <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
+          <FiscalQuarterExplainer />
         </div>
-      </form>
+      </div>
     </>
   )
 }
@@ -255,6 +161,7 @@ const UploadForm = ({
   error,
   setError,
   isSubmitting,
+  fraHasUploadedFile,
 }) => {
   const inputRef = useRef(null)
 
@@ -267,13 +174,17 @@ const UploadForm = ({
   /* istanbul ignore next */
   useEffect(() => {
     const targetClassName = '.usa-file-input__target input#fra-file-upload'
+    const hasPreview = file?.name && !file?.id
+    const hasFile = file?.id
+
     const trySettingPreview = () => {
       const previewState = handlePreview(file?.name, targetClassName)
       if (!previewState) {
         setTimeout(trySettingPreview, 100)
       }
     }
-    if (file?.name) {
+
+    if (hasPreview || hasFile) {
       trySettingPreview()
     } else {
       // When the file upload modal is cancelled we need to remove our hiding logic
@@ -343,7 +254,10 @@ const UploadForm = ({
     }
 
     setSelectedFile(fileToLoad)
-    inputRef.current.value = null
+
+    if (inputRef.current) {
+      inputRef.current.value = null
+    }
   }
 
   const onSubmit = (e) => {
@@ -355,15 +269,6 @@ const UploadForm = ({
     }
 
     if (!!error) {
-      return
-    }
-
-    if (!file || (file && file.id)) {
-      setLocalAlertState({
-        active: true,
-        type: 'error',
-        message: 'No changes have been made to data files',
-      })
       return
     }
 
@@ -420,7 +325,7 @@ const UploadForm = ({
           <Button
             className="card:margin-y-1"
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || fraHasUploadedFile === false}
           >
             {isSubmitting ? 'Submitting...' : 'Submit Report'}
           </Button>
@@ -434,16 +339,12 @@ const UploadForm = ({
   )
 }
 
-const SubmissionHistoryRow = ({ file, handleDownload, isRegionalStaff }) => {
-  const isLoadingStatus = useSelector((state) => {
-    const submissionStatuses = state.fraReports.submissionStatuses
-    if (!submissionStatuses || !submissionStatuses[file.id]) {
-      return false
-    }
-
-    return !submissionStatuses[file.id].isDone
-  })
-
+const SubmissionHistoryRow = ({
+  file,
+  isLoadingStatus,
+  handleDownload,
+  isRegionalStaff,
+}) => {
   const hasStatus = file.summary && file.summary.status
   const status = hasStatus ? file.summary.status : 'Pending'
   const errors = file.summary?.case_aggregates?.total_errors
@@ -492,35 +393,47 @@ const SubmissionHistory = ({
   sectionName,
   handleDownload,
   isRegionalStaff,
-}) => (
-  <table className="usa-table usa-table--striped">
-    <caption>{sectionName} Submission History</caption>
-    {data && data.length > 0 ? (
-      <>
-        <thead>
-          <tr>
-            <th>Submitted</th>
-            <th>File Name</th>
-            <th>Total Errors</th>
-            <th>Status</th>
-            <th>Error Report</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((file) => (
-            <SubmissionHistoryRow
-              file={file}
-              handleDownload={handleDownload}
-              isRegionalStaff={isRegionalStaff}
-            />
-          ))}
-        </tbody>
-      </>
-    ) : (
-      <span>No data available.</span>
-    )}
-  </table>
-)
+}) => {
+  const { isPolling } = useReportsContext()
+
+  const isLoadingStatus = (fileId) => {
+    if (isPolling && fileId in isPolling) {
+      return isPolling[fileId]
+    }
+    return false
+  }
+
+  return (
+    <table className="usa-table usa-table--striped">
+      <caption>{sectionName} Submission History</caption>
+      {data && data.length > 0 ? (
+        <>
+          <thead>
+            <tr>
+              <th>Submitted</th>
+              <th>File Name</th>
+              <th>Total Errors</th>
+              <th>Status</th>
+              <th>Error Report</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((file) => (
+              <SubmissionHistoryRow
+                file={file}
+                handleDownload={handleDownload}
+                isRegionalStaff={isRegionalStaff}
+                isLoadingStatus={isLoadingStatus(file.id)}
+              />
+            ))}
+          </tbody>
+        </>
+      ) : (
+        <span>No data available.</span>
+      )}
+    </table>
+  )
+}
 
 const ReportTypeSubtext = ({ reportType, reportTypeLabel }) => {
   let description = ''
@@ -584,11 +497,36 @@ const ReportTypeSubtext = ({ reportType, reportTypeLabel }) => {
   )
 }
 
-const FRAReports = () => {
-  const [isUploadReportToggled, setUploadReportToggled] = useState(false)
-  const [errorModalVisible, setErrorModalVisible] = useState(false)
-  const [searchFormValues, setSearchFormValues] = useState(null)
-  const [uploadError, setUploadError] = useState(null)
+const FRAReportsContent = () => {
+  const {
+    sttInputValue,
+    fileTypeInputValue,
+    yearInputValue,
+    quarterInputValue,
+    errorModalVisible,
+    setErrorModalVisible,
+    modalTriggerSource,
+    setModalTriggerSource,
+    localAlert,
+    setLocalAlertState,
+    fraSelectedFile,
+    setFraSelectedFile,
+    fraUploadError,
+    setFraUploadError,
+    fraHasUploadedFile,
+    headerRef,
+    alertRef,
+    selectStt,
+    selectFileType,
+    selectYear,
+    selectQuarter,
+    handleClearAll,
+    handleClearFilesOnly,
+    cancelPendingChange,
+    startPolling,
+    getSttError,
+    getFileTypeError,
+  } = useReportsContext()
 
   // Use the form submission hook to prevent multiple submissions
   const { isSubmitting, executeSubmission, onSubmitStart, onSubmitComplete } =
@@ -600,46 +538,11 @@ const FRAReports = () => {
   const isRegionalStaff = useSelector(accountIsRegionalStaff)
   const userProfileStt = user?.stt?.name
 
-  const [temporaryFormState, setTemporaryFormState] = useState({
-    errors: 0,
-    stt: {
-      value: needsSttSelection ? null : userProfileStt,
-      valid: false,
-      touched: false,
-    },
-    reportType: {
-      value: 'workOutcomesOfTanfExiters',
-      valid: false,
-      touched: false,
-    },
-    fiscalYear: {
-      value: '',
-      valid: false,
-      touched: false,
-    },
-    fiscalQuarter: {
-      value: '',
-      valid: false,
-      touched: false,
-    },
-  })
-
   const fraSubmissionHistory = useSelector(
     (state) => state.fraReports.submissionHistory
   )
 
-  const [selectedFile, setSelectedFile] = useState(null)
-
   const dispatch = useDispatch()
-
-  const alertRef = useRef(null)
-  const [localAlert, setLocalAlertState] = useState({
-    active: false,
-    type: null,
-    message: null,
-  })
-
-  const submissionStatusTimer = useRef(null)
 
   const reportTypeOptions = [
     {
@@ -658,103 +561,57 @@ const FRAReports = () => {
     },
   ]
 
-  const resetPreviousValues = () => {
-    setTemporaryFormState({
-      errors: 0,
-      stt: {
-        ...temporaryFormState.stt,
-        value: searchFormValues.stt.name,
-      },
-      reportType: {
-        ...temporaryFormState.reportType,
-        value: searchFormValues.reportType,
-      },
-      fiscalYear: {
-        ...temporaryFormState.fiscalYear,
-        value: searchFormValues.fiscalYear,
-      },
-      fiscalQuarter: {
-        ...temporaryFormState.fiscalQuarter,
-        value: searchFormValues.fiscalQuarter,
-      },
-    })
-  }
+  // Determine the current STT value
+  const currentStt = needsSttSelection ? sttInputValue : userProfileStt
+  const stt = sttList?.find((s) => s?.name === currentStt)
 
-  const validateSearchForm = (selectedValues) => {
-    const validatedForm = { ...temporaryFormState }
-    let isValid = true
-    let errors = 0
+  // Check if all required fields are filled
+  const allFieldsFilled =
+    (needsSttSelection ? !!currentStt : !!userProfileStt) &&
+    !!fileTypeInputValue &&
+    !!yearInputValue &&
+    !!quarterInputValue &&
+    !!stt
 
-    Object.keys(selectedValues).forEach((key) => {
-      if (!!selectedValues[key]) {
-        validatedForm[key].valid = true
-      } else {
-        validatedForm[key].valid = false
-        isValid = false
-        errors += 1
+  // Automatically fetch submission history when all fields are filled
+  useEffect(() => {
+    if (allFieldsFilled && stt) {
+      const formValues = {
+        stt,
+        reportType: fileTypeInputValue,
+        fiscalYear: yearInputValue,
+        fiscalQuarter: quarterInputValue,
       }
-      validatedForm[key].touched = true
-    })
 
-    setTemporaryFormState({ ...validatedForm, errors })
+      setFraUploadError(null)
+      setLocalAlertState({
+        active: false,
+        type: null,
+        message: null,
+      })
 
-    return isValid
-  }
+      const onSearchError = (e) => console.error(e)
 
-  const handleSearch = (e, bypassSelectedFile = false) => {
-    e.preventDefault()
-
-    if (!bypassSelectedFile && selectedFile && !selectedFile.id) {
-      setErrorModalVisible(true)
-      return
-    }
-
-    const form = temporaryFormState
-
-    const formValues = {
-      stt: sttList?.find((stt) => stt?.name === form.stt.value),
-    }
-
-    Object.keys(form).forEach((key) => {
-      if (key !== 'errors' && key !== 'stt') {
-        formValues[key] = form[key].value
-      }
-    })
-
-    let isValid = validateSearchForm(formValues)
-
-    if (!isValid) {
-      return
-    }
-
-    setUploadReportToggled(false)
-    setSearchFormValues(null)
-    setUploadError(null)
-    setLocalAlertState({
-      active: false,
-      type: null,
-      message: null,
-    })
-
-    const onSearchSuccess = () => {
-      setUploadReportToggled(true)
-      setSearchFormValues(formValues)
-    }
-    const onSearchError = (e) => console.error(e)
-
-    dispatch(
-      getFraSubmissionHistory(
-        {
-          ...formValues,
-          reportType: reportTypeOptions.find(
-            (o) => o.value === formValues.reportType
-          ).label,
-        },
-        onSearchSuccess,
-        onSearchError
+      dispatch(
+        getFraSubmissionHistory(
+          {
+            ...formValues,
+            reportType: reportTypeOptions.find(
+              (o) => o.value === formValues.reportType
+            ).label,
+          },
+          onSearchError
+        )
       )
-    )
-  }
+    }
+  }, [
+    allFieldsFilled,
+    stt,
+    fileTypeInputValue,
+    yearInputValue,
+    quarterInputValue,
+    dispatch,
+  ])
 
   const handleUpload = ({ file: selectedFile }) => {
     // If already submitting, prevent multiple submissions
@@ -766,7 +623,11 @@ const FRAReports = () => {
     onSubmitStart()
 
     const onFileUploadSuccess = (datafile) => {
-      setSelectedFile(null)
+      setFraSelectedFile({
+        name: selectedFile.name,
+        fileName: selectedFile.name,
+        id: datafile.id,
+      })
       setLocalAlertState({
         active: true,
         type: 'success',
@@ -775,43 +636,65 @@ const FRAReports = () => {
 
       // Complete the submission process
       onSubmitComplete()
-      dispatch(openFeedbackWidget('fra'))
+      dispatch(
+        openFeedbackWidget({
+          dataType: 'fra',
+          dataFiles: { file: datafile },
+          widgetId: 'fra-report-submission-feedback',
+        })
+      )
 
-      const WAIT_TIME = 2000 // #
-      let statusTimeout = null
-
-      const pollSubmissionStatus = (tryNumber) => {
-        statusTimeout = setTimeout(
-          () =>
-            dispatch(
-              pollFraSubmissionStatus(
-                datafile.id,
-                tryNumber,
-                ({ summary }) =>
-                  summary && summary.status && summary.status !== 'Pending',
-                () => pollSubmissionStatus(tryNumber + 1),
-                () => {
-                  setLocalAlertState({
-                    active: true,
-                    type: 'success',
-                    message: 'Parsing complete.',
-                  })
-                },
-                (e) => {
-                  setLocalAlertState({
-                    active: true,
-                    type: 'error',
-                    message: e.message,
-                  })
-                }
-              )
-            ),
-          tryNumber === 1 ? 0 : WAIT_TIME
+      const pollFraSubmissionHistory = (datafile) => {
+        startPolling(
+          `${datafile.id}`,
+          () => getFraSubmissionStatus(datafile.id),
+          (response) => {
+            let summary = response?.data?.summary
+            return summary && summary.status && summary.status !== 'Pending'
+          },
+          (response) => {
+            dispatch({
+              type: SET_FRA_SUBMISSION_STATUS,
+              payload: {
+                datafile_id: datafile.id,
+                datafile: response?.data,
+              },
+            })
+            setLocalAlertState({
+              active: true,
+              type: 'success',
+              message: 'Parsing complete.',
+            })
+          },
+          (error) => {
+            setLocalAlertState({
+              active: true,
+              type: 'error',
+              message: error.message,
+            })
+          },
+          (onError) => {
+            onError({
+              message:
+                'Exceeded max number of tries to update submission status.',
+            })
+          }
         )
-        submissionStatusTimer.current = statusTimeout
       }
 
-      pollSubmissionStatus(1)
+      dispatch(
+        getFraSubmissionHistory(
+          {
+            stt,
+            reportType: reportTypeOptions.find(
+              (o) => o.value === fileTypeInputValue
+            ).label,
+            fiscalYear: yearInputValue,
+            fiscalQuarter: quarterInputValue,
+          },
+          () => pollFraSubmissionHistory(datafile)
+        )
+      )
     }
 
     const onFileUploadError = (error) => {
@@ -840,7 +723,11 @@ const FRAReports = () => {
       dispatch(
         uploadFraReport(
           {
-            ...searchFormValues,
+            ...{
+              stt,
+              fiscalYear: yearInputValue,
+              fiscalQuarter: quarterInputValue,
+            },
             reportType: getReportTypeLabel(),
             file: selectedFile,
             user,
@@ -857,32 +744,38 @@ const FRAReports = () => {
   }
 
   const getReportTypeLabel = () => {
-    if (isUploadReportToggled) {
-      const { reportType } = searchFormValues
-      return reportTypeOptions.find((o) => o.value === reportType).label
+    if (allFieldsFilled) {
+      return reportTypeOptions.find((o) => o.value === fileTypeInputValue).label
     }
 
     return null
   }
 
   const makeHeaderLabel = () => {
-    if (isUploadReportToggled) {
-      const { stt, fiscalQuarter, fiscalYear } = searchFormValues
+    if (allFieldsFilled) {
       const reportTypeLabel = getReportTypeLabel()
-      const quarterLabel = quarters[fiscalQuarter]
+      const quarterLabel = quarters[quarterInputValue]
 
-      return `${stt.name} - ${reportTypeLabel} - Fiscal Year ${fiscalYear} - ${quarterLabel}`
+      return `${stt.name} - ${reportTypeLabel} - Fiscal Year ${yearInputValue} - ${quarterLabel}`
     }
 
     return null
   }
 
-  const headerRef = useRef(null)
+  const handleCancel = () => {
+    if (fraHasUploadedFile) {
+      setModalTriggerSource('cancel')
+      setErrorModalVisible(true)
+    } else {
+      handleClearAll()
+    }
+  }
+
   useEffect(() => {
     if (headerRef && headerRef.current) {
       headerRef.current.focus()
     }
-  }, [])
+  }, [allFieldsFilled, headerRef])
 
   useEffect(() => {
     if (sttList && sttList.length === 0) {
@@ -896,27 +789,29 @@ const FRAReports = () => {
     }
   }, [localAlert, alertRef])
 
-  useEffect(() => {
-    return () =>
-      submissionStatusTimer.current
-        ? clearTimeout(submissionStatusTimer.current)
-        : null
-  }, [submissionStatusTimer])
-
   return (
     <div className="page-container" style={{ position: 'relative' }}>
-      <div className={classNames({ 'border-bottom': isUploadReportToggled })}>
-        <SearchForm
-          handleSearch={handleSearch}
-          user={user}
+      <div className={classNames({ 'border-bottom': allFieldsFilled })}>
+        <Inputs
           reportTypeOptions={reportTypeOptions}
-          form={temporaryFormState}
-          setFormState={setTemporaryFormState}
+          sttValue={sttInputValue}
+          reportTypeValue={fileTypeInputValue}
+          fiscalYearValue={yearInputValue}
+          fiscalQuarterValue={quarterInputValue}
+          selectStt={(value) => {
+            const selectedSttObject = sttList?.find((s) => s?.name === value)
+            selectStt(value, selectedSttObject)
+          }}
+          selectReportType={selectFileType}
+          selectFiscalYear={selectYear}
+          selectFiscalQuarter={selectQuarter}
           needsSttSelection={needsSttSelection}
           userProfileStt={userProfileStt}
+          sttError={getSttError()}
+          fileTypeError={getFileTypeError()}
         />
       </div>
-      {isUploadReportToggled && (
+      {allFieldsFilled && (
         <>
           <h2
             ref={headerRef}
@@ -927,7 +822,7 @@ const FRAReports = () => {
           </h2>
 
           <ReportTypeSubtext
-            reportType={searchFormValues.reportType}
+            reportType={fileTypeInputValue}
             reportTypeLabel={getReportTypeLabel()}
           />
 
@@ -948,18 +843,15 @@ const FRAReports = () => {
               )}
               <UploadForm
                 handleUpload={handleUpload}
-                handleCancel={() => {
-                  setSelectedFile(null)
-                  setUploadError(null)
-                  setUploadReportToggled(false)
-                }}
+                handleCancel={handleCancel}
                 setLocalAlertState={setLocalAlertState}
-                file={selectedFile}
-                setSelectedFile={setSelectedFile}
+                file={fraSelectedFile}
+                setSelectedFile={setFraSelectedFile}
                 section={getReportTypeLabel()}
-                error={uploadError}
-                setError={setUploadError}
+                error={fraUploadError}
+                setError={setFraUploadError}
                 isSubmitting={isSubmitting}
+                fraHasUploadedFile={fraHasUploadedFile}
               />
             </>
           )}
@@ -981,30 +873,40 @@ const FRAReports = () => {
       )}
       <Modal
         title="Files Not Submitted"
-        message="Your uploaded files have not been submitted. Searching without submitting will discard your changes and remove any uploaded files."
+        message="Your uploaded files have not been submitted. Clicking 'OK' will discard your changes and remove any uploaded files."
         isVisible={errorModalVisible}
         buttons={[
           {
             key: '1',
             text: 'Cancel',
             onClick: () => {
+              cancelPendingChange()
               setErrorModalVisible(false)
-              resetPreviousValues()
             },
           },
           {
             key: '2',
-            text: 'Discard and Search',
-            onClick: (e) => {
+            text: 'OK',
+            onClick: () => {
               setErrorModalVisible(false)
-              setSelectedFile(null)
-              setUploadError(null)
-              handleSearch(e, true)
+              if (modalTriggerSource === 'cancel') {
+                handleClearAll()
+              } else {
+                handleClearFilesOnly()
+              }
             },
           },
         ]}
       />
     </div>
+  )
+}
+
+function FRAReports() {
+  return (
+    <ReportsProvider isFra={true}>
+      <FRAReportsContent />
+    </ReportsProvider>
   )
 }
 

@@ -151,6 +151,13 @@ function Header() {
                   {userIsAdmin && (
                     <NavItem
                       pathname={pathname}
+                      tabTitle="Feedback Reports"
+                      href="/feedback-reports"
+                    />
+                  )}
+                  {userIsAdmin && (
+                    <NavItem
+                      pathname={pathname}
                       tabTitle="Admin"
                       href={`${process.env.REACT_APP_BACKEND_HOST}/admin/`}
                     />
@@ -169,18 +176,22 @@ function Header() {
                       href={`${process.env.REACT_APP_BACKEND_HOST}/alerts/`}
                     />
                   )}
+                  <NavItem
+                    pathname={pathname}
+                    tabTitle="Help"
+                    href={`${process.env.REACT_APP_KNOWLEDGE_CENTER_LINK}/`}
+                    target="_blank"
+                  />
                 </>
               )}
             </ul>
             <div className="usa-nav__secondary">
               <ul className="usa-nav__secondary-links">
                 <li
-                  className={`${
-                    user && user.email ? 'display-block' : 'display-none'
-                  } usa-nav__secondary-item`}
+                  className={`${user && user.email ? 'display-block' : 'display-none'} usa-nav__secondary-item`}
                 >
                   {user && user.email && (
-                    <a href="/">
+                    <a href="/" className="usa-link">
                       <FontAwesomeIcon
                         className="margin-right-1"
                         icon={faUserCircle}

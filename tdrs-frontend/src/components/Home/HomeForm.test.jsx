@@ -1,12 +1,12 @@
 import React from 'react'
-import { fireEvent, render } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 
 import { Provider } from 'react-redux'
 import { thunk } from 'redux-thunk'
-import { mount } from 'enzyme'
 import Home from '.'
 import configureStore from 'redux-mock-store'
 import * as authSelectors from '../../selectors/auth'
+import { MemoryRouter } from 'react-router-dom'
 
 // Mock the auth selectors
 jest.mock('../../selectors/auth', () => ({
@@ -60,14 +60,16 @@ describe('Pre-approval Home page', () => {
     authSelectors.accountIsRegionalStaff.mockReturnValue(false)
 
     const store = mockStore(initialState)
-    const wrapper = mount(
+    const { container } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+          <Home setInEditMode={jest.fn()} />
+        </MemoryRouter>
       </Provider>
     )
 
-    const nameInput = wrapper.find('#firstName')
-    expect(nameInput).toExist()
+    const nameInput = container.querySelector('#firstName')
+    expect(nameInput).toBeInTheDocument()
   })
 
   it('should have a last name input', () => {
@@ -76,15 +78,17 @@ describe('Pre-approval Home page', () => {
     authSelectors.accountIsRegionalStaff.mockReturnValue(false)
 
     const store = mockStore(initialState)
-    const wrapper = mount(
+    const { container } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+          <Home setInEditMode={jest.fn()} />
+        </MemoryRouter>
       </Provider>
     )
 
-    const nameInput = wrapper.find('#lastName')
+    const nameInput = container.querySelector('#lastName')
 
-    expect(nameInput).toExist()
+    expect(nameInput).toBeInTheDocument()
   })
 
   it('should set firstName state value to equal the input value', () => {
@@ -95,7 +99,9 @@ describe('Pre-approval Home page', () => {
     const store = mockStore(initialState)
     const { container } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+          <Home setInEditMode={jest.fn()} />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -116,7 +122,9 @@ describe('Pre-approval Home page', () => {
     const store = mockStore(initialState)
     const { container } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+          <Home setInEditMode={jest.fn()} />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -135,15 +143,17 @@ describe('Pre-approval Home page', () => {
     authSelectors.accountIsRegionalStaff.mockReturnValue(false)
 
     const store = mockStore(initialState)
-    const wrapper = mount(
+    const { container } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+          <Home setInEditMode={jest.fn()} />
+        </MemoryRouter>
       </Provider>
     )
 
-    const submitBtn = wrapper.find('button[type="submit"]')
+    const submitBtn = container.querySelector('button[type="submit"]')
 
-    expect(submitBtn).toExist()
+    expect(submitBtn).toBeInTheDocument()
   })
 
   it('should mount a list of stt options based on stts from the store', () => {
@@ -182,13 +192,15 @@ describe('Pre-approval Home page', () => {
         ],
       },
     })
-    const wrapper = mount(
+    const { container } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+          <Home setInEditMode={jest.fn()} />
+        </MemoryRouter>
       </Provider>
     )
 
-    const options = wrapper.find('option')
+    const options = container.querySelectorAll('option')
 
     expect(options.length).toEqual(3)
   })
@@ -229,18 +241,18 @@ describe('Pre-approval Home page', () => {
         ],
       },
     })
-    const wrapper = mount(
+    const { container } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+          <Home setInEditMode={jest.fn()} />
+        </MemoryRouter>
       </Provider>
     )
 
-    const radio = wrapper.find('#tribe')
-    radio.simulate('change', {
-      target: { name: 'jurisdictionType', value: 'tribe' },
-    })
+    const radio = container.querySelector('#tribe')
+    fireEvent.click(radio)
 
-    const options = wrapper.find('option')
+    const options = container.querySelectorAll('option')
     expect(options.length).toEqual(2)
   })
 
@@ -280,18 +292,18 @@ describe('Pre-approval Home page', () => {
         ],
       },
     })
-    const wrapper = mount(
+    const { container } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+          <Home setInEditMode={jest.fn()} />
+        </MemoryRouter>
       </Provider>
     )
 
-    const radio = wrapper.find('#territory')
-    radio.simulate('change', {
-      target: { name: 'jurisdictionType', value: 'territory' },
-    })
+    const radio = container.querySelector('#territory')
+    fireEvent.click(radio)
 
-    const options = wrapper.find('option')
+    const options = container.querySelectorAll('option')
     expect(options.length).toEqual(2)
   })
 
@@ -312,14 +324,16 @@ describe('Pre-approval Home page', () => {
       },
     })
 
-    const wrapper = mount(
+    const { container } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+          <Home setInEditMode={jest.fn()} />
+        </MemoryRouter>
       </Provider>
     )
 
-    const options = wrapper.find('option')
-    expect(options).toEqual({})
+    const options = container.querySelectorAll('option')
+    expect(options.length).toEqual(0)
   })
 
   it('should have errors when you try to submit and first name does not have at least 1 character', () => {
@@ -354,7 +368,9 @@ describe('Pre-approval Home page', () => {
     })
     const { getByText } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+          <Home setInEditMode={jest.fn()} />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -405,7 +421,9 @@ describe('Pre-approval Home page', () => {
     })
     const { getByText, queryByText } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+          <Home setInEditMode={jest.fn()} />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -456,7 +474,9 @@ describe('Pre-approval Home page', () => {
     })
     const { getByText } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+          <Home setInEditMode={jest.fn()} />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -507,7 +527,9 @@ describe('Pre-approval Home page', () => {
     })
     const { getByText, queryByText } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+          <Home setInEditMode={jest.fn()} />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -568,7 +590,9 @@ describe('Pre-approval Home page', () => {
     })
     const { getByText } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+          <Home setInEditMode={jest.fn()} />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -625,7 +649,9 @@ describe('Pre-approval Home page', () => {
     })
     const { getByText } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+          <Home setInEditMode={jest.fn()} />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -685,7 +711,9 @@ describe('Pre-approval Home page', () => {
     })
     const { getByText } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+          <Home setInEditMode={jest.fn()} />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -745,7 +773,9 @@ describe('Pre-approval Home page', () => {
     })
     const { getByText } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+          <Home setInEditMode={jest.fn()} />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -793,79 +823,77 @@ describe('Pre-approval Home page', () => {
         ],
       },
     })
-    const wrapper = mount(
+    const { container } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+          <Home setInEditMode={jest.fn()} />
+        </MemoryRouter>
       </Provider>
     )
 
-    const form = wrapper.find('.usa-form').hostNodes()
+    const form = container.querySelector('.usa-form')
 
-    form.simulate('submit', {
+    fireEvent.submit(form, {
       preventDefault: () => {},
     })
 
-    let errorMessages = wrapper.find('.usa-error-message')
+    let errorMessages = container.querySelectorAll('.usa-error-message')
 
     expect(errorMessages.length).toEqual(5)
 
-    const firstNameInput = wrapper.find('#firstName')
+    const firstNameInput = container.querySelector('#firstName')
 
-    firstNameInput.simulate('change', {
+    fireEvent.change(firstNameInput, {
       target: {
         value: 's',
         name: 'firstName',
       },
     })
 
-    firstNameInput.simulate('blur')
+    fireEvent.blur(firstNameInput)
 
-    errorMessages = wrapper.find('.usa-error-message')
+    errorMessages = container.querySelectorAll('.usa-error-message')
 
     expect(errorMessages.length).toEqual(4)
 
-    const lastNameInput = wrapper.find('#lastName')
+    const lastNameInput = container.querySelector('#lastName')
 
-    lastNameInput.simulate('change', {
+    fireEvent.change(lastNameInput, {
       target: {
         value: 's',
         name: 'lastName',
       },
     })
 
-    lastNameInput.simulate('blur')
+    fireEvent.blur(lastNameInput)
 
-    errorMessages = wrapper.find('.usa-error-message')
+    errorMessages = container.querySelectorAll('.usa-error-message')
 
     expect(errorMessages.length).toEqual(3)
 
-    const select = wrapper.find('.usa-select')
+    const select = container.querySelector('select[name="stt"]')
 
-    select.simulate('change', {
+    // Trigger change with proper name attribute for validation
+    fireEvent.change(select, {
       target: {
-        value: 'alaska',
+        value: 'Alaska',
         name: 'stt',
       },
     })
 
-    errorMessages = wrapper.find('.usa-error-message')
+    errorMessages = container.querySelectorAll('.usa-error-message')
 
     expect(errorMessages.length).toEqual(2)
-    expect(errorMessages.first().hasClass('display-none')).toEqual(false)
+    expect(errorMessages[0].classList.contains('display-none')).toEqual(false)
 
-    const fraRadioNoButton = wrapper.find('#fra-no')
+    const fraRadioNoButton = container.querySelector('#fra-no')
 
-    fraRadioNoButton.simulate('change', {
-      target: {
-        value: 'false',
-        name: 'hasFRAAccess',
-      },
-    })
+    fireEvent.click(fraRadioNoButton)
 
-    errorMessages = wrapper.find('.usa-error-message')
+    errorMessages = container.querySelectorAll('.usa-error-message')
 
     expect(errorMessages.length).toEqual(1)
-    expect(errorMessages.first().hasClass('display-none')).toEqual(true)
+    expect(errorMessages[0].classList.contains('display-none')).toEqual(true)
   })
 
   it('should display an error message when the input has been touched', () => {
@@ -898,47 +926,49 @@ describe('Pre-approval Home page', () => {
         ],
       },
     })
-    const wrapper = mount(
+    const { container } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+          <Home setInEditMode={jest.fn()} />
+        </MemoryRouter>
       </Provider>
     )
 
-    const form = wrapper.find('.usa-form').hostNodes()
+    const form = container.querySelector('.usa-form')
 
-    form.simulate('submit', {
+    fireEvent.submit(form, {
       preventDefault: () => {},
     })
 
-    let errorMessages = wrapper.find('.usa-error-message')
+    let errorMessages = container.querySelectorAll('.usa-error-message')
 
     expect(errorMessages.length).toEqual(5)
 
-    const firstNameInput = wrapper.find('#firstName')
+    const firstNameInput = container.querySelector('#firstName')
 
-    firstNameInput.simulate('change', {
+    fireEvent.change(firstNameInput, {
       target: {
         name: 'firstName',
         value: 's',
       },
     })
 
-    firstNameInput.simulate('blur')
+    fireEvent.blur(firstNameInput)
 
-    errorMessages = wrapper.find('.usa-error-message')
+    errorMessages = container.querySelectorAll('.usa-error-message')
 
     expect(errorMessages.length).toEqual(4)
 
-    firstNameInput.simulate('change', {
+    fireEvent.change(firstNameInput, {
       target: {
         name: 'firstName',
         value: '',
       },
     })
 
-    firstNameInput.simulate('blur')
+    fireEvent.blur(firstNameInput)
 
-    errorMessages = wrapper.find('.usa-error-message')
+    errorMessages = container.querySelectorAll('.usa-error-message')
 
     expect(errorMessages.length).toEqual(5)
   })
@@ -975,7 +1005,9 @@ describe('Pre-approval Home page', () => {
     })
     const { getByLabelText } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+          <Home setInEditMode={jest.fn()} />
+        </MemoryRouter>
       </Provider>
     )
 
@@ -1022,36 +1054,34 @@ describe('Pre-approval Home page', () => {
     })
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
-    const wrapper = mount(
+    const { container } = render(
       <Provider store={store}>
-        <Home setInEditMode={jest.fn()} />
+        <MemoryRouter>
+          <Home setInEditMode={jest.fn()} />
+        </MemoryRouter>
       </Provider>
     )
 
-    const firstNameInput = wrapper.find('#firstName')
-    firstNameInput.simulate('change', {
+    const firstNameInput = container.querySelector('#firstName')
+    fireEvent.change(firstNameInput, {
       target: { value: 'harry', name: 'firstName' },
     })
 
-    const lastNameInput = wrapper.find('#lastName')
-    lastNameInput.simulate('change', {
+    const lastNameInput = container.querySelector('#lastName')
+    fireEvent.change(lastNameInput, {
       target: { name: 'lastName', value: 'potter' },
     })
 
-    const select = wrapper.find('.usa-select')
-    select.simulate('change', {
+    const select = container.querySelector('.usa-select')
+    fireEvent.change(select, {
       target: { name: 'stt', value: 'Alaska' },
     })
 
-    const fraRadioYesButton = wrapper.find('#fra-yes')
-    fraRadioYesButton.simulate('change', {
-      target: { name: 'hasFRAAccess', value: 'true' },
-    })
+    const fraRadioYesButton = container.querySelector('#fra-yes')
+    fireEvent.click(fraRadioYesButton)
 
-    const form = wrapper.find('.usa-form').hostNodes()
-    form.simulate('submit', {
-      preventDefault: () => {},
-    })
+    const form = container.querySelector('.usa-form')
+    fireEvent.submit(form)
 
     expect(store.dispatch).toHaveBeenCalled()
   })

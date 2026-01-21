@@ -9,7 +9,10 @@ import {
   GOOD_FEEDBACK,
   GREAT_FEEDBACK,
   POOR_AND_BAD_FEEDBACK,
+  GENERAL_FEEDBACK_TYPE,
 } from './FeedbackConstants'
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
 
 const ratingMessageMap = {
   1: POOR_AND_BAD_FEEDBACK,
@@ -19,21 +22,25 @@ const ratingMessageMap = {
   5: GREAT_FEEDBACK,
 }
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
-
 const FeedbackForm = ({
   isGeneralFeedback,
   onFeedbackSubmit,
   onRequestSuccess,
   onRequestError,
+  dataType = null,
 }) => {
   const formRef = useRef(null)
   const authenticated = useSelector((state) => state.auth.authenticated)
+  const { widgetId, dataFiles } = useSelector((state) => state.feedbackWidget)
 
-  const [isAnonymous, setIsAnonymous] = useState(false)
+  const [isAnonymous, setIsAnonymous] = useState(authenticated ? false : true)
   const [selectedRatingsOption, setSelectedRatingsOption] = useState(undefined)
   const [feedbackMessage, setFeedbackMessage] = useState('')
   const [hasError, setHasError] = useState(false)
+  const [feedbackID, setFeedbackID] = useState(null)
+
+  // Determine values based on props and state
+  const isGeneral = isGeneralFeedback
 
   const resetStatesOnceSubmitted = () => {
     setSelectedRatingsOption(undefined)
@@ -42,6 +49,102 @@ const FeedbackForm = ({
     setIsAnonymous(false)
   }
 
+  const postFeedback = useCallback(async (payload) => {
+    return axiosInstance.post(`${BACKEND_URL}/feedback/`, payload, {
+      headers: { 'Content-Type': 'application/json' },
+      withCredentials: true,
+    })
+  }, [])
+
+  const updateFeedback = useCallback(
+    async (payload) => {
+      return axiosInstance.patch(
+        `${BACKEND_URL}/feedback/${feedbackID}/`,
+        payload,
+        {
+          headers: { 'Content-Type': 'application/json' },
+          withCredentials: true,
+        }
+      )
+    },
+    [feedbackID]
+  )
+
+  const handlePayloadAttachments = (payload, isGeneral) => {
+    let updatedPayload = { ...payload }
+    if (!isGeneral) {
+      // Only include widget_id and data files for non-general feedback
+      updatedPayload.widget_id = widgetId || 'unknown-submission-feedback'
+
+      // include data files
+      if (Array.isArray(dataFiles)) {
+        updatedPayload.attachments = dataFiles.map((file) => ({
+          content_type: 'datafile',
+          object_id: file.id,
+        }))
+      } else if (dataFiles) {
+        updatedPayload.attachments = [
+          { content_type: 'datafile', object_id: dataFiles.file.id },
+        ]
+      } else {
+        updatedPayload.attachments = []
+      }
+    }
+    return updatedPayload
+  }
+
+  const constructPayload = () => {
+    // Set feedback_type
+    const feedbackType = isGeneral ? GENERAL_FEEDBACK_TYPE : dataType
+
+    // TODO: still need to figure out how to get component info or some context for component value
+    // Set component -------------------------
+    const component = isGeneral ? 'general-website' : 'data-file-submission'
+    // ------------------------------------------------------
+
+    // Setup payload
+    let payload = {
+      rating: selectedRatingsOption,
+      feedback: feedbackMessage,
+      anonymous: isAnonymous,
+      page_url: window.location.href,
+      feedback_type: feedbackType,
+      component: component,
+    }
+
+    payload = handlePayloadAttachments(payload, isGeneral)
+    return payload
+  }
+
+  const submitFeedback = useCallback(
+    async (payload) => {
+      try {
+        const response = feedbackID
+          ? await updateFeedback(payload)
+          : await postFeedback(payload)
+
+        if (response.status === 200 || response.status === 201) {
+          setFeedbackID(response.data.id)
+        }
+        return response
+      } catch (error) {
+        console.error('Error submitting feedback:', error)
+        onRequestError?.()
+      }
+    },
+    [
+      feedbackID,
+      isGeneral,
+      isAnonymous,
+      widgetId,
+      dataFiles,
+      dataType,
+      handlePayloadAttachments,
+      updateFeedback,
+      postFeedback,
+    ]
+  )
+
   const handleSubmit = useCallback(async () => {
     if (!selectedRatingsOption) {
       setHasError(true)
@@ -49,11 +152,8 @@ const FeedbackForm = ({
     }
 
     try {
-      const response = await axiosInstance.post(`${BACKEND_URL}/feedback/`, {
-        rating: selectedRatingsOption,
-        feedback: feedbackMessage,
-        anonymous: isAnonymous,
-      })
+      const payload = constructPayload()
+      const response = await submitFeedback(payload)
 
       if (response.status === 200 || response.status === 201) {
         onFeedbackSubmit()
@@ -77,15 +177,21 @@ const FeedbackForm = ({
     }
   }, [
     selectedRatingsOption,
+    isGeneral,
     feedbackMessage,
     isAnonymous,
+    widgetId,
+    dataFiles,
     onFeedbackSubmit,
     onRequestSuccess,
     onRequestError,
+    submitFeedback,
   ])
 
-  const handleRatingSelected = (rating) => {
+  const handleRatingSelected = async (rating) => {
     setSelectedRatingsOption(rating)
+    const payload = { ...constructPayload(), rating: rating }
+    await submitFeedback(payload)
     setHasError(false)
   }
 
@@ -231,15 +337,18 @@ const FeedbackForm = ({
             <h3>Tell us more</h3>
           ) : (
             selectedRatingsOption && (
-              <p
+              <div
+                aria-live="polite"
+                aria-atomic="true"
                 className="margin-left-1 margin-bottom-1 margin-top-1"
                 style={{
                   fontSize: '0.90rem',
                   color: '#575c64',
+                  minHeight: '1.2em', // helps avoid layout shift
                 }}
               >
-                {ratingMessageMap[selectedRatingsOption]}
-              </p>
+                <p>{ratingMessageMap[selectedRatingsOption]}</p>
+              </div>
             )
           )}
           <textarea

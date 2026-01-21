@@ -6,6 +6,7 @@ import {
   accountCanViewGrafana,
   accountCanViewAlerts,
   selectUserPermissions,
+  accountCanViewFeedbackReports,
 } from '../../selectors/auth'
 
 const SiteMap = ({ user }) => {
@@ -16,6 +17,7 @@ const SiteMap = ({ user }) => {
 
   const permissions = useSelector(selectUserPermissions)
   const userHasFra = userIsApproved && permissions.includes('has_fra_access')
+  const userCanViewFeedbackReports = useSelector(accountCanViewFeedbackReports)
 
   return (
     <div className="margin-top-5">
@@ -35,6 +37,9 @@ const SiteMap = ({ user }) => {
       )}
       {userHasFra && (
         <SiteMap.Link text="FRA Data Files" link="/fra-data-files" />
+      )}
+      {userCanViewFeedbackReports && (
+        <SiteMap.Link text="Feedback Reports" link="/feedback-reports" />
       )}
       <SiteMap.Link text="Profile" link="/profile" />
 
@@ -58,6 +63,11 @@ const SiteMap = ({ user }) => {
           link={`${process.env.REACT_APP_BACKEND_HOST}/alerts/`}
         />
       )}
+      <SiteMap.Link
+        text="Knowledge Center"
+        link={`${process.env.REACT_APP_KNOWLEDGE_CENTER_LINK}/`}
+        target="_blank"
+      />
     </div>
   )
 }

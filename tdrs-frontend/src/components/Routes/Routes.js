@@ -6,6 +6,7 @@ import Profile from '../Profile'
 import PrivateRoute from '../PrivateRoute'
 import LoginCallback from '../LoginCallback'
 import Reports, { FRAReports } from '../Reports'
+import FeedbackReports from '../FeedbackReports/FeedbackReports'
 import { useSelector } from 'react-redux'
 import { accountIsInReview } from '../../selectors/auth'
 import { faro, FaroRoutes } from '@grafana/faro-react'
@@ -29,6 +30,7 @@ const RouteProvider = ({ children }) => {
  */
 const AppRoutes = () => {
   const user = useSelector((state) => state.auth.user)
+  const sttList = useSelector((state) => state?.stts?.sttList)
   const userAccountInReview = useSelector(accountIsInReview)
 
   const [isInEditMode, setIsInEditMode] = useState(false)
@@ -39,7 +41,12 @@ const AppRoutes = () => {
       ? 'Request Submitted'
       : 'Welcome to TDP'
 
-  const profileTitle = isInEditMode ? 'Edit Profile' : 'My Profile'
+  const profileTitle = isInEditMode
+    ? userAccountInReview
+      ? 'Edit Access Request'
+      : 'Edit Profile'
+    : 'My Profile'
+  const profileType = userAccountInReview ? 'access request' : 'profile'
 
   const setEditState = (isEditing) => {
     setIsInEditMode(isEditing)
@@ -60,7 +67,7 @@ const AppRoutes = () => {
       />
       <Route
         exact
-        path="/data-files"
+        path="/data-files/:fy?/:q?/:type?/:stt?/:tab?"
         element={
           <PrivateRoute
             title="TANF Data Files"
@@ -74,7 +81,7 @@ const AppRoutes = () => {
       />
       <Route
         exact
-        path="/fra-data-files"
+        path="/fra-data-files/:fy?/:q?/:type?/:stt?/:tab?"
         element={
           <PrivateRoute
             title="FRA Data Files"
@@ -87,6 +94,21 @@ const AppRoutes = () => {
             requiresApproval
           >
             <FRAReports />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        exact
+        path="/feedback-reports"
+        element={
+          <PrivateRoute
+            title="Upload Feedback Reports"
+            subtitle="TANF WPR, SSP WPR, TANF & SSP Combined, and Time Limit Reports"
+            requiredPermissions={['view_reportsource', 'add_reportsource']}
+            requiresApproval
+          >
+            <FeedbackReports />
           </PrivateRoute>
         }
       />
@@ -109,8 +131,9 @@ const AppRoutes = () => {
               isEditing={isInEditMode}
               onEdit={() => setEditState(true)}
               onCancel={() => setEditState(false)}
-              type="profile"
+              type={profileType}
               user={user}
+              sttList={sttList}
               setInEditMode={setEditState}
             />
           </PrivateRoute>

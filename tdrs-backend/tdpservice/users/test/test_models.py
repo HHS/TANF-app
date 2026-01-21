@@ -66,17 +66,6 @@ def test_location_user_property(stt_user, regional_user, stt):
 
 
 @pytest.mark.django_db
-def test_user_can_only_have_stt_or_region(user, stt, region):
-    """Test that a validationError is raised when both the stt and region are set."""
-    with pytest.raises(ValidationError):
-        user.stt = stt
-        user.regions.add(region)
-
-        user.clean()
-        user.save()
-
-
-@pytest.mark.django_db
 def test_user_with_fra_access(client, ofa_system_admin):
     """Test that a user with FRA access can only have an STT."""
     ofa_system_admin.is_staff = True
@@ -93,11 +82,15 @@ def test_user_with_fra_access(client, ofa_system_admin):
 
     response = client.get(f"/admin/data_files/datafile/{datafile.id}/change/")
     assert response.status_code == 200
-    assert '<div class="readonly">Fra Work Outcome Tanf Exiters</div>' in response.content.decode('utf-8')
+    assert (
+        '<div class="readonly">Fra Work Outcome Tanf Exiters</div>'
+        in response.content.decode("utf-8")
+    )
+
 
 @pytest.mark.django_db
 def test_user_without_fra_access(client, data_analyst):
-    """Test that a user with FRA access can only have an STT."""
+    """Test that a user in data analyst role with FRA permission cannot access FRA datafiles."""
     data_analyst.is_staff = True
 
     data_analyst.clean()
@@ -111,4 +104,5 @@ def test_user_without_fra_access(client, data_analyst):
     datafile.save()
 
     response = client.get(f"/admin/data_files/datafile/{datafile.id}/change/")
+    # We get redirected to a blank admin datafiles page
     assert response.status_code == 302

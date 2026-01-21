@@ -162,7 +162,6 @@ def digit_team(stt):
     user = UserFactory.create(
         groups=(Group.objects.get(name="DIGIT Team"),),
     )
-    user.stt = stt
     user.account_approval_status = AccountApprovalStatusChoices.APPROVED
     user.save()
     return user
@@ -273,6 +272,7 @@ def base_data_file_data(fake_file_name, data_analyst):
         "year": 2020,
         "stt": int(data_analyst.stt.id),
         "ssp": False,
+        "is_program_audit": False,
     }
 
 
@@ -289,6 +289,7 @@ def base_regional_data_file_data(fake_file_name, regional_user):
         "quarter": "Q1",
         "year": 2020,
         "stt": int(regional_user.regions.first().stts.first().id),
+        "is_program_audit": False,
     }
 
 
@@ -320,6 +321,7 @@ def other_base_regional_data_file_data(fake_file_name, regional_user, other_stt)
         "quarter": "Q1",
         "year": 2020,
         "stt": int(other_stt.id),
+        "is_program_audit": False,
     }
 
 
@@ -343,6 +345,7 @@ def csv_data_file(data_analyst, fake_file):
         "year": 2020,
         "stt": int(data_analyst.stt.id),
         "ssp": False,
+        "is_program_audit": False,
     }
 
 

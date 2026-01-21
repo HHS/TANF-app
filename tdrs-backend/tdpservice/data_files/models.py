@@ -7,13 +7,16 @@ from io import StringIO
 from typing import Union
 
 from django.conf import settings
-from django.contrib.admin.models import ADDITION, ContentType, LogEntry
+from django.contrib.admin.models import ADDITION, LogEntry
+from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import File
 from django.db import models
 from django.db.models import Max
 from django.utils.html import format_html
 
 from tdpservice.backends import DataFilesS3Storage
+from tdpservice.common.models import FileRecord
+from tdpservice.data_files.util import create_s3_log_file_path
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
 
@@ -54,32 +57,9 @@ def get_file_shasum(file: Union[File, StringIO]) -> str:
 def get_s3_upload_path(instance, filename):
     """Produce a unique upload path for S3 files for a given STT and Quarter."""
     return os.path.join(
-        f"data_files/{instance.year}/{instance.quarter}/{instance.stt.id}/{instance.section}/",
+        f"data_files/{instance.year}/{instance.quarter}/{instance.stt.id}/{instance.program_type}/{instance.section}/",
         filename,
     )
-
-
-# The Data File model was starting to explode, and I think that keeping this logic
-# in its own abstract class is better for documentation purposes.
-class FileRecord(models.Model):
-    """Abstract type representing a file stored in S3."""
-
-    class Meta:
-        """Metadata."""
-
-        abstract = True
-
-    # Keep the file name because it will be different in s3,
-    # but the interface will still want to present the file with its
-    # original name.
-    original_filename = models.CharField(max_length=256, blank=False, null=False)
-    # Slug is the name of the file in S3
-    # NOTE: Currently unused, may be removed with a later release
-    slug = models.CharField(max_length=256, blank=False, null=False)
-    # Not all files will have the correct extension,
-    # or even have one at all. The UI will provide this information
-    # separately
-    extension = models.CharField(max_length=8, default="txt")
 
 
 class ReparseFileMeta(models.Model):
@@ -159,7 +139,15 @@ class DataFile(FileRecord):
 
         constraints = [
             models.UniqueConstraint(
-                fields=("program_type", "section", "version", "quarter", "year", "stt"),
+                fields=(
+                    "program_type",
+                    "section",
+                    "version",
+                    "quarter",
+                    "year",
+                    "stt",
+                    "is_program_audit",
+                ),
                 name="constraint_name",
             )
         ]
@@ -176,6 +164,7 @@ class DataFile(FileRecord):
     section = models.CharField(
         max_length=32, blank=False, null=False, choices=Section.choices
     )
+    is_program_audit = models.BooleanField(default=False)
 
     version = models.IntegerField()
 
@@ -204,7 +193,16 @@ class DataFile(FileRecord):
     @property
     def filename(self):
         """Return the correct filename for this data file."""
-        return self.stt.filenames.get(self.section, None)
+        if self.program_type in [DataFile.ProgramType.FRA, DataFile.ProgramType.TANF]:
+            return self.stt.filenames.get(self.section, None)
+
+        program_type = (
+            self.program_type.title()
+            if self.program_type == DataFile.ProgramType.TRIBAL
+            else self.program_type
+        )
+        key = f"{program_type} {self.section}"
+        return self.stt.filenames.get(key, None)
 
     @property
     def s3_location(self):
@@ -245,10 +243,7 @@ class DataFile(FileRecord):
         LOG_PRE_FIX = "v1/data_files/logs"
         DOMAIN = settings.FRONTEND_BASE_URL
         if datafile:
-            link = (
-                f"{LOG_PRE_FIX}/{datafile.year}/{datafile.quarter}/"
-                f"{datafile.stt}/{datafile.section}"
-            )
+            link = f"{LOG_PRE_FIX}/{create_s3_log_file_path(datafile)}"
             url = f"{DOMAIN}/{link}"  # Replace with your actual S3 URL
             return format_html(
                 "<a href='{url}'>{field}</a>", field="Parser logs", url=url
@@ -273,6 +268,7 @@ class DataFile(FileRecord):
                 section=data["section"],
                 program_type=data["program_type"],
                 stt=data["stt"],
+                is_program_audit=data["is_program_audit"],
             )
             or 0
         ) + 1
@@ -283,7 +279,9 @@ class DataFile(FileRecord):
         )
 
     @classmethod
-    def find_latest_version_number(self, year, quarter, section, program_type, stt):
+    def find_latest_version_number(
+        self, year, quarter, section, program_type, stt, is_program_audit
+    ):
         """Locate the latest version number in a series of data files."""
         return self.objects.filter(
             stt=stt,
@@ -291,13 +289,16 @@ class DataFile(FileRecord):
             quarter=quarter,
             section=section,
             program_type=program_type,
+            is_program_audit=is_program_audit,
         ).aggregate(Max("version"))["version__max"]
 
     @classmethod
-    def find_latest_version(self, year, quarter, section, program_type, stt):
+    def find_latest_version(
+        self, year, quarter, section, program_type, stt, is_program_audit
+    ):
         """Locate the latest version of a data file."""
         version = self.find_latest_version_number(
-            year, quarter, section, program_type, stt
+            year, quarter, section, program_type, stt, is_program_audit
         )
 
         return self.objects.filter(
@@ -307,6 +308,7 @@ class DataFile(FileRecord):
             section=section,
             program_type=program_type,
             stt=stt,
+            is_program_audit=is_program_audit,
         ).first()
 
     def __repr__(self):

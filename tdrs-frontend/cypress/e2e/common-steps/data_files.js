@@ -10,20 +10,25 @@ export const restartAtHomePage = () => {
 }
 
 export const fillFYQ = (fiscal_year, quarter) => {
-  cy.get('#reportingYears').should('exist').select(fiscal_year)
+  cy.get('#reportingYears', { timeout: 1000 })
+    .should('exist')
+    .select(fiscal_year)
   cy.get('#quarter').should('exist').select(quarter)
-  cy.get('button').contains('Search').should('exist').click()
   cy.get('.usa-file-input__input', { timeout: 1000 }).should('exist')
 }
 
 export const uploadFile = (file_input, file_path, willError = false) => {
-  cy.get(file_input).selectFile(file_path, { action: 'drag-drop' })
-  cy.wait(100)
+  cy.get('.usa-file-input__input', { timeout: 5000 }).should('exist')
+  cy.get(file_input).selectFile(file_path, { action: 'drag-drop', force: true })
   if (!willError) {
     const file_parts = file_path.split('/')
-    cy.contains(file_parts[file_parts.length - 1], { timeout: 1000 }).should(
+    cy.contains(file_parts[file_parts.length - 1], { timeout: 3000 }).should(
       'exist'
     )
+    cy.get('.usa-alert__text').should('not.exist')
+    cy.get('button')
+      .contains('Submit')
+      .should('not.be.disabled', { timeout: 5000 })
   }
 }
 
@@ -34,30 +39,38 @@ export const table_first_row_contains = (value) => {
 export const validateSmallCorrectFile = () => {
   table_first_row_contains('small_correct_file.txt')
   table_first_row_contains('Rejected')
-  table_first_row_contains('2021-Q1-Active Case Data Error Report.xlsx')
+  table_first_row_contains('2021-Q1-TANF Active Case Data Error Report.xlsx')
 }
 
 export const validateSmallSSPFile = () => {
   table_first_row_contains('small_ssp_section1.txt')
-  table_first_row_contains('Partially Accepted with Errors')
-  table_first_row_contains('2024-Q1-Active Case Data Error Report.xlsx')
+  /*
+  When we run locally/in our Docker env, the GENERATE_TRAILER_ERRORS setting is set to True
+  which generates a RECORD_PRE_CHECK_ERROR for the TRAILER record for the SSP file we use to
+  test. However, when this runs against a deployed app, the GENERATE_TRAILER_ERRORS setting
+  is set to False, so the file will be ACCEPTED_WITH_ERRORS. Hence the change to check for
+  'Accepted with Errors' with errors now since it will cover both cases with the caveat that
+  we know why the status changes for different test environments.
+  */
+  table_first_row_contains('Accepted with Errors')
+  table_first_row_contains('2024-Q1-SSP Active Case Data Error Report.xlsx')
 }
 
 export const validateFraCsv = () => {
   table_first_row_contains('fra.csv')
   table_first_row_contains('Partially Accepted with Errors')
   table_first_row_contains(
-    '2024-Q2-Work Outcomes of TANF Exiters Error Report.xlsx'
+    '2024-Q2-FRA Work Outcomes of TANF Exiters Error Report.xlsx'
   )
 }
 
 export const downloadErrorReport = (error_report_name) => {
-  cy.get('button').contains(error_report_name).should('exist').click()
+  cy.get('button').contains(error_report_name).should('exist').click({ force: true })
   cy.readFile(`${Cypress.config('downloadsFolder')}/${error_report_name}`)
 }
 
 export const fillSttFyQ = (stt, fy, q, isTanf, isRegional) => {
-  cy.get('#stt')
+  cy.get('#stt', { timeout: 1000 })
     .type(stt + '{enter}')
     .then(() => {
       if (isTanf) {
@@ -67,7 +80,6 @@ export const fillSttFyQ = (stt, fy, q, isTanf, isRegional) => {
       }
       cy.get('#reportingYears').should('exist').select(fy)
       cy.get('#quarter').should('exist').select(q)
-      cy.get('button').contains('Search').should('exist').click()
       if (!isRegional) {
         cy.get('.usa-file-input__input', { timeout: 1000 }).should('exist')
       } else {
@@ -78,25 +90,30 @@ export const fillSttFyQ = (stt, fy, q, isTanf, isRegional) => {
 }
 
 export const fillSttFyQNoProgramSelector = (stt, fy, q) => {
-  cy.get('#stt')
+  cy.get('#stt', { timeout: 1000 })
     .type(stt + '{enter}')
     .then(() => {
       cy.get('#reportingYears').should('exist').select(fy)
       cy.get('#quarter').should('exist').select(q)
-      cy.get('button').contains('Search').should('exist').click()
       cy.get('.usa-file-input__input', { timeout: 1000 }).should('exist')
     })
 }
 
 export const fillFyQProgram = (fy, q, program) => {
+  cy.contains(program, { timeout: 1000 }).should('exist')
   if (program === 'TANF') {
-    cy.get(':nth-child(2) > .usa-radio__label').click()
+    cy.get(':nth-child(2) > .usa-radio__label', { timeout: 1000 })
+      .contains(program)
+      .should('exist')
+    cy.get(':nth-child(2) > .usa-radio__label', { timeout: 1000 }).click()
   } else {
-    cy.get(':nth-child(3) > .usa-radio__label').click()
+    cy.get(':nth-child(3) > .usa-radio__label')
+      .contains(program, { timeout: 1000 })
+      .should('exist')
+    cy.get(':nth-child(3) > .usa-radio__label', { timeout: 1000 }).click()
   }
   cy.get('#reportingYears').should('exist').select(fy)
   cy.get('#quarter').should('exist').select(q)
-  cy.get('button').contains('Search').should('exist').click()
   cy.get('.usa-file-input__input', { timeout: 1000 }).should('exist')
 }
 
@@ -160,7 +177,6 @@ export const openDataFilesAndSearch = (program, year, quarter, stt = '') => {
 
   cy.get('#reportingYears').should('exist').select(year)
   cy.get('#quarter').should('exist').select(quarter) // Q1, Q2, Q3, Q4
-  cy.get('button').contains('Search').should('exist').click()
 }
 
 export const uploadSectionFile = (
@@ -174,6 +190,7 @@ export const uploadSectionFile = (
   cy.get(inputSelector).selectFile(filePath, {
     action: 'drag-drop',
     timeout: 10000,
+    force: true,
   })
 
   // wait on the ui to update with the selected data file above
@@ -182,16 +199,15 @@ export const uploadSectionFile = (
       'not.have.class',
       'is-loading'
     )
-  }
-
-  cy.wait(100).then(() =>
-    cy.contains('button', 'Submit Data Files').should('be.enabled').click()
-  )
-
-  if (!shouldRejectInput) {
+    cy.get('.usa-alert__text').should('not.exist')
+    cy.get('button')
+      .contains('Submit')
+      .should('not.be.disabled', { timeout: 5000 })
+    cy.contains('button', 'Submit').should('be.enabled').click()
     cy.wait('@dataFileSubmit', { timeout: 60000 }).then(({ response }) => {
       const id = response?.body?.id
       if (!id) throw new Error('Missing data_file id in response')
+      cy.contains('Successfully submitted').should('exist')
       return cy.waitForDataFileSummary(id) // returns the poller
     })
   }
@@ -220,9 +236,10 @@ export const downloadErrorReportAndAssert = (
   section,
   year,
   quarter,
+  programType = '',
   deleteAfter = true
 ) => {
-  const ERROR_REPORT_LABEL = [
+  const ERROR_REPORT_LABELS = [
     'Active Case Data',
     'Closed Case Data',
     'Aggregate Data',
@@ -230,16 +247,19 @@ export const downloadErrorReportAndAssert = (
   ]
 
   // Download error report
+  const programPrefix = programType ? `${programType} ` : ''
+  const fileName = `${year}-${quarter}-${programPrefix}${ERROR_REPORT_LABELS[section - 1]} Error Report.xlsx`
+  const downloadedFilePath = `${Cypress.config('downloadsFolder')}/${fileName}`
+
   cy.intercept('GET', '/v1/data_files/*/download_error_report/').as(
     'downloadErrorReport'
   )
-  cy.contains('button', 'Error Report').click()
+  cy.contains('button', fileName)
+    .should('exist')
+    .click({ force: true })
   cy.wait('@downloadErrorReport').its('response.statusCode').should('eq', 200)
 
   // Assert Error Report successfully downloaded
-  const fileName = `${year}-${quarter}-${ERROR_REPORT_LABEL[section - 1]} Error Report.xlsx`
-  const downloadedFilePath = `${Cypress.config('downloadsFolder')}/${fileName}`
-
   cy.readFile(downloadedFilePath, { timeout: 30000 }).should('exist')
   if (deleteAfter) cy.task('deleteDownloadFile', fileName)
 }
@@ -259,8 +279,6 @@ Then(
   (username, year, quarter) => {
     cy.get('#reportingYears').should('exist').select(year)
     cy.get('#quarter').should('exist').select(quarter) // Q1, Q2, Q3, Q4
-    cy.get('button').contains('Search').should('exist')
-    cy.get('button').contains('Search').should('exist').click()
   }
 )
 

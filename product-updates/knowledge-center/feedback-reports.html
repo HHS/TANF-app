@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>TDP — Feedback Reports</title>
+    <link rel="stylesheet" href="../css/uswds3.css" />
+    <link rel="icon" type="image/x-icon" href="../img/favicons/gov-favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="../js/uswds.min.js"></script>
+    <link href="dist/lity.css" rel="stylesheet">
+    <script src="dist/lity.js"></script>
+    <script src="components/desktop-navigation.js" defer></script>
+    <script src="components/mobile-navigation.js" defer></script>
+    <script src="components/shutdown-banner.js" defer></script>
+   
+
+
+
+  </head>
+
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8V03JLZHK0"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-8V03JLZHK0');
+</script>
+
+  <body>
+    <a class="usa-skipnav" href="#main-content">Skip to main content</a>
+
+    <!-- Here begins banner -->
+
+  <section class="usa-banner" aria-label="Official government website">
+    <div class="usa-accordion">
+      <header class="usa-banner__header">
+        <div class="usa-banner__inner">
+          <div class="grid-col-auto">
+            <img class="usa-banner__header-flag" src="../img/us_flag_small.png" alt="U.S. flag"/>
+          </div>
+          <div class="grid-col-fill tablet:grid-col-auto">
+            <p class="usa-banner__header-text">
+              An official website of the United States government
+            </p>
+            <p class="usa-banner__header-action" aria-hidden="true">
+              Here’s how you know
+            </p>
+          </div>
+          <button
+            class="usa-accordion__button usa-banner__button"
+            aria-expanded="false"
+            aria-controls="gov-banner-default">
+            <span class="usa-banner__button-text">Here’s how you know</span>
+
+          </button>
+        </div>
+      </header>
+      <div
+        class="usa-banner__content usa-accordion__content"
+        id="gov-banner-default"
+      >
+        <div class="grid-row grid-gap-lg">
+          <div class="usa-banner__guidance tablet:grid-col-6">
+            <img
+              class="usa-banner__icon usa-media-block__img"
+              src="../img/icon-dot-gov.svg"
+              role="img"
+              alt=""
+              aria-hidden="true"
+            />
+            <div class="usa-media-block__body">
+              <p>
+                <strong>Official websites use .gov</strong><br>A
+                <strong>.gov</strong> website belongs to an official government
+                organization in the United States.
+              </p>
+            </div>
+          </div>
+          <div class="usa-banner__guidance tablet:grid-col-6">
+            <img
+              class="usa-banner__icon usa-media-block__img"
+              src="../img/icon-https.svg"
+              role="img"
+              alt=""
+              aria-hidden="true"
+            />
+            <div class="usa-media-block__body">
+              <p>
+                <strong>Secure .gov websites use HTTPS</strong><br>A
+                <strong>lock</strong> (
+                <span class="icon-lock"
+                  ><svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="52"
+                    height="64"
+                    viewBox="0 0 52 64"
+                    class="usa-banner__lock-image"
+                    role="img"
+                    aria-labelledby="banner-lock-title-default banner-lock-description-default"
+                    focusable="false"
+                  >
+                    <title id="banner-lock-title-default">Lock</title>
+                    <desc id="banner-lock-description-default">A locked padlock</desc>
+                    <path
+                      fill="#000000"
+                      fill-rule="evenodd"
+                      d="M26 0c10.493 0 19 8.507 19 19v9h3a4 4 0 0 1 4 4v28a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4V32a4 4 0 0 1 4-4h3v-9C7 8.507 15.507 0 26 0zm0 8c-5.979 0-10.843 4.77-10.996 10.712L15 19v9h22v-9c0-6.075-4.925-11-11-11z"
+                    />
+                  </svg> </span
+                >) or <strong>https://</strong> means you’ve safely connected to
+                the .gov website. Share sensitive information only on official,
+                secure websites.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Here ends banner -->
+
+
+
+<!-- Here begins mobile menu -->
+
+<div class="usa-overlay"></div>
+<header class="usa-header usa-header--basic">
+  <div class="usa-nav-container">
+    <div class="usa-navbar site-header__navbar" style="">
+      <div class="usa-logo site-logo" id="logo">
+        <em class="usa-logo__text site-logo__text">
+         
+          <a href="./index.html" title="TDP Project Updates" style="display: flex;">
+             <img src="../img/logo-img.png" width="48px" alt="" aria-hidden="true" style="float: left; "><div style="display: flex; flex-direction: horizontal; width: 300px; flex-wrap: wrap; padding-left: 8px; "><div style="display: flex-item; color: #264A63; font-weight: 800;">TANF Data Portal</div><div style="display: flex-item; width: fit-content; color: #336A90">Knowledge Center</div></div>
+          </a>
+        </em>
+      </div>
+      <button class="usa-menu-btn">Menu</button>
+    </div>
+    <nav aria-label="Primary navigation" class="usa-nav">
+      <button class="usa-nav__close">
+        <img src="../img/close.svg" role="img" alt="Close" />
+      </button>
+
+      <a href="search.html" class="usa-button usa-button--outline" style="position: relative; margin-bottom: 16px;">🔍 Search</a>
+
+      <a href="https://tanfdata.acf.hhs.gov/" class="usa-button usa-button--outline" style="position: relative; margin-bottom: 16px;">Go to TDP</a>
+<mobile-nav></mobile-nav>
+     
+      <!-- Here ends mobile menu -->
+
+
+    </nav>
+  </div>
+</header>
+
+<!-- Here begins desktop web menu -->
+
+   <div class="usa-section">
+  <div class="grid-container">
+    <div class="grid-row grid-gap">
+      <div class="usa-layout-docs__sidenav desktop:grid-col-3">
+        <nav aria-label="Secondary navigation">
+       
+              <site-nav></site-nav>
+          
+        </nav>
+      </div>
+
+      <!-- Here ends desktop web menu -->
+
+
+      <main
+        class="usa-layout-docs__main desktop:grid-col-9 usa-prose usa-layout-docs"
+        id="main-content">
+        <h1>Viewing Feedback Reports</h1>
+        <div style="min-height: 22px;"></div>
+
+      
+
+<p class="usa-intro">
+     OFA produces feedback reports cumulatively throughout each fiscal year. These include Work Participation Rate (WPR), Time Limit reports, and others which have traditionally been shared via email.
+        </p> <div style="min-height: 22px;"></div> 
+        <p>In the interest of improved data security and accessibility, all reporting will now be delivered via TDP. This guide provides instructions on how to access, understand and address feedback reports. If you believe you should have access to Feedback Reports but do not, please reach out to <a href="mailto:tanfdata@acf.hhs.gov">tanfdata@acf.hhs.gov</a>.</p>
+
+         <div style="min-height: 22px;"></div>
+
+ <p>Jump to:</p>
+ <ul>
+  <li><a href="#viewing">Finding Feedback Reports</a></li>
+    <li><a href="#understanding">Understanding Feedback Reports</a></li>
+ </ul>
+
+         <hr class="releaseHr" style="margin-bottom: 30px;">
+
+
+      <h2 id="viewing">Finding Feedback Reports</h2>
+
+       <ol class="usa-process-list">
+          <li class="usa-process-list__item">
+            <h2 class="usa-process-list__heading">Search for the reporting period to view</h2>
+            <p class="margin-top-05">
+              On the Feedback Reports page, complete the search fields for 'Fiscal Year (October – September)' to identify which data you’ll be viewing. The TANF/SSP Data Reporting Reference table is provided to help you map the calendar period content within the file to the reporting fiscal period and its respective reporting deadline.
+              <div style="min-height: 22px;"></div>
+                <a href="../img/feedback-reports/feedback-reports-tab.png" data-lity data-lity-desc="Feedback reports tab shown in the TDP nav bar">
+              <img src="../img/feedback-reports/feedback-reports-tab.png" alt="Feedback reports tab shown in the TDP nav bar">
+                </a>
+        
+            </p>
+          </li>
+         <li class="usa-process-list__item">
+            <h2 class="usa-process-list__heading">Download and view report files</h2>
+            <p class="margin-top-05">
+              To access the report files, Click on the zip file link in the 'Files' column to view the feedback files associated within that reporting fiscal quarter. Each file is titled in accordance with your FIPS code.
+              <div style="min-height: 22px;"></div>
+              <a href="../img/feedback-reports/download.png" data-lity data-lity-desc="Table showing feedback reports generated for the selected fiscal year with the final column with the report download link emphasized">
+              <img src="../img/feedback-reports/download.png" alt="Table showing feedback reports generated for the selected fiscal year with the final column with the report download link emphasized">
+                </a>
+            </p>
+          </li>
+     </ol>
+
+     <p>TDP will also alert and link you to feedback reports from the submission history section of a reporting period you're viewing in the Data Files tab.</p>
+      <a href="../img/feedback-reports/feedback-available.png" data-lity data-lity-desc="Informational banner above TANF Submission History reading: Feedback Reports Available as of 12/1/2021. Please review the feedback (link) and if needed, resubmit complete and accurate data">
+              <img src="../img/feedback-reports/feedback-available.png" alt="Informational banner above TANF Submission History reading: Feedback Reports Available as of 12/1/2021. Please review the feedback (link) and if needed, resubmit complete and accurate data">
+                </a>
+              <hr class="releaseHr" style="margin-bottom: 30px;">
+
+
+      <h2 id="understanding">Understanding Feedback Reports</h2>
+
+       <p style="margin-top: .50rem">Each ZIP file contains multiple feedback reports for the preliminary work participation rate and time limit calculations. Please refer to the most recently produced report for the most up-to-date feedback about your data. For examples of each type of feedback report and explanations of error flags please refer to the downloadable workbook below. <br><br>If you have any questions or require assistance, please contact <a href="mailto:Yun.Song@acf.hhs.gov?cc=TANFdata@acf.hhs.gov">Yun.Song@acf.hhs.gov</a> and copy TANFData@acf.hhs.gov.</p>
+
+         <a style="margin-top: .5rem" href="Reference TANF & SSP WPR & TL Feedback Reports.xlsx" class="usa-button">Download Workbook</a>
+
+      <h3 style="margin-top: 16px; margin-bottom: 16px;">Report types included in the workbook</h3>
+      <div style="display: flex; flex-direction: row; gap: 8px;">
+        <div style="display: flex-item; background-color: #c5d9f1; border-radius: 5px; border-color: #333; border-style: solid; padding: 16px; width: 50%;">
+          <h4 style="margin-top: 8px">TANF WPR Reports</h4>
+          <ol>
+            <li>TANF Monthly Cases Summary</li>
+            <li>Error Flags</li>
+            <li>TANF Cases Review
+            <ul>
+              <li>3.0 Zero Payment</li>
+              <li>3.1 Excuse Absense hours >4 hours</li>
+              <li>3.2 Holiday hours >4 or 6 hours</li>
+              <li>3.3 Work hours >80 hours</li>
+              <li>3.4 Disregarded but met work requirement cases</li>
+          </ul></li>
+          <li>Numerator / Denominator and rate</li>
+        </ol>
+        </div>
+              <div style="display: flex-item; background-color: #ebf1de; border-radius: 5px; border-color: #333; border-style: solid; padding: 16px; width: 50%;">
+          <h4 style="margin-top: 8px">SSP WPR Reports</h4>
+          <ol>
+            <li>SSP Monthly Cases Summary</li>
+            <li>Error Flags</li>
+            <li>SSP Cases Review
+            <ul>
+              <li>3.0 Zero Payment</li>
+              <li>3.1 Excuse Absense hours >4 hours</li>
+              <li>3.2 Holiday hours >4 or 6 hours</li>
+              <li>3.3 Work hours >80 hours</li>
+              <li>3.4 Disregarded but met work requirement cases</li>
+          </ul></li>
+          <li>Numerator / Denominator and rate</li>
+        </ol>
+        </div>
+     </div>
+           <div style="display: flex; flex-direction: row; gap: 8px; margin-top: 8px;">
+        <div style="display: flex-item; background-color: #e4dfec; border-radius: 5px; border-color: #333; border-style: solid; padding: 16px; width: 50%;">
+          <h4 style="margin-top: 8px">TANF & SSP Combined</h4>
+          <ol>
+            <li>TANF & SSP numerator / denominator and rate</li>
+            <li>TANF & SSP combined WPRs</li>
+        </ol>
+        </div>
+              <div style="display: flex-item; background-color: #fde9d9; border-radius: 5px; border-color: #333; border-style: solid; padding: 16px; width: 50%;">
+          <h4 style="margin-top: 8px">Time Limit Reports</h4>
+          <ol>
+            <li>Countable Months</li>
+            <li>Exemption Distribution</li>
+            <li>TimeLimit Errorflags</li>
+          <li>Number of cases with over 60 months</li>
+        </ol>
+        </div>
+     </div>
+
+
+
+
+      
+     
+
+ 
+
+ 
+
+      </main>
+    </div>
+  </div>
+  <footer class="usa-footer usa-footer--slim">
+  <div class="grid-container usa-footer__return-to-top">
+    <a href="#">Return to top</a>
+  </div>
+  <div class="usa-footer__primary-section">
+    <div class="usa-footer__primary-container grid-row">
+      <div class="mobile-lg:grid-col-8">
+        <nav class="usa-footer__nav" aria-label="Footer navigation,">
+          <ul class="grid-row grid-gap">
+            <li
+              class="
+                mobile-lg:grid-col-6
+                desktop:grid-col-auto
+                usa-footer__primary-content
+              "
+            >
+              <a class="usa-footer__primary-link" href="https://www.acf.hhs.gov/privacy-policy"
+                >Privacy Policy</a
+              >
+            </li>
+
+          </ul>
+        </nav>
+      </div>
+
+    </div>
+  </div>
+  <div class="usa-footer__secondary-section">
+    <div class="grid-container" style="padding-left: 0rem !important;">
+      <div class="usa-footer__logo grid-row grid-gap-2">
+        <div class="grid-col-auto">
+          <img class="mobile-lg:maxw-mobile mobile:width-mobile" src="../img/acfofa.svg" alt="Administration for Children and Families: OFfice of Family Assistance" />
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+</div>

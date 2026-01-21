@@ -2,6 +2,8 @@
 
 import pytest
 from rest_framework import status
+from tdpservice.users.models import STT
+from django.core.exceptions import ValidationError
 
 
 @pytest.mark.usefixtures("db")
@@ -122,7 +124,6 @@ class TestUserAPIAuthenticatedUserNoRole(UserAPITestsBase):
 
     def test_request_access(self, api_client, user, stt, profile_data):
         """Request access, expect 200 with profile updated appropriately."""
-        profile_data["stt"] = stt.id
         response = self.request_access(api_client, profile_data)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == user.id
@@ -171,7 +172,8 @@ class TestUserAPIDataAnalystUser(UserAPITestsBase):
 
     def test_request_access(self, api_client, user, profile_data):
         """Request access, expect 200 with profile updated appropriately."""
-        profile_data["stt"] = user.stt.id
+
+        profile_data["stt"] = STT.objects.first().id
         response = self.request_access(api_client, profile_data)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == user.id
@@ -191,8 +193,6 @@ class TestUserAPIAdminUser(UserAPITestsBase):
     @pytest.fixture
     def user(self, ofa_system_admin, stt):
         """Override the default user with ofa_system_admin for our tests."""
-        ofa_system_admin.stt = stt
-        ofa_system_admin.save()
         return ofa_system_admin
 
     @pytest.fixture
@@ -221,15 +221,13 @@ class TestUserAPIAdminUser(UserAPITestsBase):
         assert response.data["id"] == data_analyst.id
         assert response.data["id"] != user.id
 
-    def test_request_access(self, api_client, user, stt, profile_data):
+    def test_request_access(self, api_client, stt, profile_data):
         """Request access, expect 200 with profile updated appropriately."""
         profile_data["stt"] = stt.id
-        response = self.request_access(api_client, profile_data)
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert response.data[0] == (
-            "Users other than Regional Staff, Developers, "
-            "Data Analysts do not get assigned a location"
-        )
+        with pytest.raises(ValidationError):
+            response = self.request_access(api_client, profile_data)
+            assert response.status_code == status.HTTP_200_OK
+            assert response.data[0] == "Users other than Regional Staff, Developers, Data Analysts do not get assigned a location"
 
     def test_get_roles(self, api_client):
         """Get roles, expect 200."""

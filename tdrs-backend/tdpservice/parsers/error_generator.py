@@ -4,7 +4,7 @@ from enum import Enum
 
 from django.contrib.contenttypes.models import ContentType
 
-from tdpservice.parsers.models import ParserErrorCategoryChoices
+from tdpservice.data_files.parser_error_choices import ParserErrorCategoryChoices
 
 from .dataclasses import ErrorGeneratorArgs
 from .models import ParserError
@@ -299,8 +299,8 @@ class ErrorGeneratorFactory:
                 error_type=ParserErrorCategoryChoices.PRE_CHECK,
                 content_type=None,
                 object_id=None,
-                fields_json=None,
-                values_json=None,
+                fields_json={},
+                values_json={},
                 deprecated=generator_args.deprecated,
             )
 
@@ -325,8 +325,8 @@ class ErrorGeneratorFactory:
                 error_type=ParserErrorCategoryChoices.RECORD_PRE_CHECK,
                 content_type=None,
                 object_id=None,
-                fields_json=None,
-                values_json=None,
+                fields_json={},
+                values_json={},
                 deprecated=generator_args.deprecated,
             )
 

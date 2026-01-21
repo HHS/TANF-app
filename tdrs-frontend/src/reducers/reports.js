@@ -4,17 +4,21 @@ import {
   SET_FILE_ERROR,
   FILE_EXT_ERROR,
   CLEAR_ERROR,
-  SET_SELECTED_YEAR,
   SET_SELECTED_STT,
-  SET_SELECTED_QUARTER,
   SET_FILE_LIST,
   CLEAR_FILE_LIST,
   SET_FILE_SUBMITTED,
-  SET_FILE_TYPE,
+  REINITIALIZE_SUBMITTED_FILES,
+  FETCH_FILE_LIST,
+  FETCH_FILE_LIST_ERROR,
+  SET_TANF_SUBMISSION_STATUS,
 } from '../actions/reports'
+
+import { programIntegrityAuditLabels } from '../components/Reports/utils'
 
 const getFileIndex = (files, section) =>
   files.findIndex((currentFile) => currentFile.section.includes(section))
+
 const getFile = (files, section) =>
   files
     .sort((a, b) => b.id - a.id)
@@ -58,6 +62,7 @@ export const serializeApiDataFile = (dataFile) => ({
   fileType: dataFile.extension,
   quarter: dataFile.quarter,
   section: dataFile.section,
+  program_type: dataFile.program_type,
   uuid: dataFile.slug,
   year: dataFile.year,
   s3_version_id: dataFile.s3_version_id,
@@ -81,11 +86,36 @@ const initialState = {
   stt: '',
   quarter: '',
   fileType: '',
+  loading: false,
 }
 
 const reports = (state = initialState, action) => {
   const { type, payload = {} } = action
   switch (type) {
+    case FETCH_FILE_LIST: {
+      return {
+        ...state,
+        loading: true,
+      }
+    }
+    case REINITIALIZE_SUBMITTED_FILES: {
+      const { fileType } = payload
+      const sections =
+        fileType === 'program-integrity-audit'
+          ? programIntegrityAuditLabels
+          : fileUploadSections
+
+      return {
+        ...state,
+        submittedFiles: sections.map((section) => ({
+          section,
+          fileName: null,
+          error: null,
+          uuid: null,
+          fileType: null,
+        })),
+      }
+    }
     case SET_FILE: {
       const { file, fileName, section, uuid, fileType } = payload
       const updatedFiles = getUpdatedFiles({
@@ -103,6 +133,13 @@ const reports = (state = initialState, action) => {
       return {
         ...state,
         files: data.map((f) => serializeApiDataFile(f)),
+        loading: false,
+      }
+    }
+    case FETCH_FILE_LIST_ERROR: {
+      return {
+        ...state,
+        loading: false,
       }
     }
     case SET_FILE_SUBMITTED: {
@@ -110,6 +147,9 @@ const reports = (state = initialState, action) => {
       return {
         ...state,
         submittedFiles: state.submittedFiles.map((file) =>
+          // Match by uuid (slug) or section to handle transformed files because submitting PIA files changes
+          // their section from `Quarter X (Month Y to Month Z)` to `Program Audit` for the backend.
+          submittedFile?.slug === file.uuid ||
           submittedFile?.section.includes(file.section)
             ? serializeApiDataFile(submittedFile)
             : file
@@ -122,10 +162,20 @@ const reports = (state = initialState, action) => {
       return { ...state, submittedFiles: updatedFiles }
     }
     case CLEAR_FILE_LIST: {
+      const { fileType } = payload
       return {
         ...state,
         files: initialState.files,
-        submittedFiles: initialState.submittedFiles,
+        submittedFiles:
+          fileType !== 'program-integrity-audit'
+            ? initialState.submittedFiles
+            : programIntegrityAuditLabels.map((section) => ({
+                section,
+                fileName: null,
+                error: null,
+                uuid: null,
+                fileType: null,
+              })),
       }
     }
     case SET_FILE_ERROR: {
@@ -151,21 +201,17 @@ const reports = (state = initialState, action) => {
       })
       return { ...state, submittedFiles: updatedFiles }
     }
-    case SET_SELECTED_YEAR: {
-      const { year } = payload
-      return { ...state, year }
-    }
     case SET_SELECTED_STT: {
       const { stt } = payload
       return { ...state, stt }
     }
-    case SET_SELECTED_QUARTER: {
-      const { quarter } = payload
-      return { ...state, quarter }
-    }
-    case SET_FILE_TYPE: {
-      const { fileType } = payload
-      return { ...state, fileType }
+    case SET_TANF_SUBMISSION_STATUS: {
+      const { datafile_id, datafile } = payload
+      const files = state.files.map((f) =>
+        f.id === datafile_id ? serializeApiDataFile(datafile) : f
+      )
+
+      return { ...state, files }
     }
     default:
       return state

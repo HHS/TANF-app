@@ -63,6 +63,8 @@ class DataFileViewSet(ModelViewSet):
     permission_classes = [DataFilePermissions, IsApprovedPermission]
     serializer_class = DataFileSerializer
     pagination_class = None
+    SSP_FILE_TYPE = "ssp-moe"
+    PIA_FILE_TYPE = "program-integrity-audit"
 
     # TODO: Handle versioning in queryset
     # Ref: https://github.com/raft-tech/TANF-app/issues/1007
@@ -88,7 +90,8 @@ class DataFileViewSet(ModelViewSet):
 
             logger.info(
                 f"Preparing parse task: User META -> user: {request.user}, stt: {data_file.stt}. "
-                + f"Datafile META -> datafile: {data_file_id}, section: {data_file.section}, "
+                + f"Datafile META -> datafile: {data_file_id}, program type: {data_file.program_type}, "
+                + f"section: {data_file.section}, "
                 + f"quarter {data_file.quarter}, year {data_file.year}."
             )
 
@@ -122,21 +125,25 @@ class DataFileViewSet(ModelViewSet):
     def get_queryset(self):
         """Apply custom queryset filters."""
         queryset = super().get_queryset().order_by("-created_at")
-        FRA_SECTION_LIST = [
-            DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
-            DataFile.Section.FRA_SECONDRY_SCHOOL_ATTAINMENT,
-            DataFile.Section.FRA_SUPPLEMENT_WORK_OUTCOMES,
-        ]
 
         if self.action == "list":
             file_type = self.request.query_params.get("file_type", None)
 
-            if file_type == "ssp-moe":
+            if file_type == DataFileViewSet.SSP_FILE_TYPE:
                 queryset = queryset.filter(program_type=DataFile.ProgramType.SSP)
-            elif file_type in FRA_SECTION_LIST:
-                queryset = queryset.filter(section=file_type)
+            elif DataFile.Section.is_fra(file_type):
+                queryset = queryset.filter(
+                    program_type=DataFile.ProgramType.FRA, section=file_type
+                )
             else:
-                queryset = queryset.exclude(program_type=DataFile.ProgramType.SSP)
+                is_program_audit = file_type == DataFileViewSet.PIA_FILE_TYPE
+                queryset = queryset.filter(
+                    program_type__in=[
+                        DataFile.ProgramType.TANF,
+                        DataFile.ProgramType.TRIBAL,
+                    ],
+                    is_program_audit=is_program_audit,
+                )
 
         return queryset
 

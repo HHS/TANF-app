@@ -6,10 +6,8 @@ import {
   CLEAR_FILE,
   FILE_EXT_ERROR,
   SET_FILE_ERROR,
-  SET_SELECTED_YEAR,
   SET_SELECTED_STT,
   SET_FILE_LIST,
-  SET_SELECTED_QUARTER,
   SET_FILE_SUBMITTED,
 } from '../actions/reports'
 
@@ -49,6 +47,7 @@ const initialState = {
   stt: '',
   quarter: '',
   fileType: '',
+  loading: false,
 }
 
 describe('reducers/reports', () => {
@@ -72,6 +71,12 @@ describe('reducers/reports', () => {
               slug: uuid,
               year: 2021,
               submitted_by: 'test@test.com',
+              program_type: 'TAN',
+              s3_version_id: 'v123',
+              created_at: '2021-01-01T00:00:00Z',
+              has_error: false,
+              summary: null,
+              latest_reparse_file_meta: null,
             },
           ],
         },
@@ -85,15 +90,22 @@ describe('reducers/reports', () => {
           id: 1,
           section: 'Active Case Data',
           quarter: 'Q1',
+          program_type: 'TAN',
           year: 2021,
           submittedBy: 'test@test.com',
           uuid,
+          s3_version_id: 'v123',
+          createdAt: '2021-01-01T00:00:00Z',
+          hasError: false,
+          summary: null,
+          latest_reparse_file_meta: null,
         },
       ],
       quarter: '',
       stt: '',
       year: '',
       fileType: '',
+      loading: false,
     })
   })
 
@@ -148,6 +160,7 @@ describe('reducers/reports', () => {
       year: '',
       quarter: '',
       fileType: '',
+      loading: false,
     })
   })
 
@@ -165,6 +178,12 @@ describe('reducers/reports', () => {
             section: 'Stratum Data',
             slug: uuid,
             year: 2021,
+            s3_version_id: 'v456',
+            created_at: '2021-02-01T00:00:00Z',
+            submitted_by: 'user@test.com',
+            has_error: false,
+            summary: null,
+            latest_reparse_file_meta: null,
           },
         },
       })
@@ -200,12 +219,19 @@ describe('reducers/reports', () => {
           quarter: 'Q1',
           year: 2021,
           uuid,
+          s3_version_id: 'v456',
+          createdAt: '2021-02-01T00:00:00Z',
+          submittedBy: 'user@test.com',
+          hasError: false,
+          summary: null,
+          latest_reparse_file_meta: null,
         },
       ],
       stt: '',
       year: '',
       quarter: '',
       fileType: '',
+      loading: false,
     })
   })
 
@@ -255,6 +281,7 @@ describe('reducers/reports', () => {
       year: '',
       quarter: '',
       fileType: '',
+      loading: false,
     })
   })
 
@@ -352,6 +379,7 @@ describe('reducers/reports', () => {
       year: '',
       quarter: '',
       fileType: '',
+      loading: false,
     })
   })
 
@@ -393,6 +421,7 @@ describe('reducers/reports', () => {
           stt: '',
           quarter: '',
           year: '2020',
+          loading: false,
         },
         {
           type: CLEAR_ERROR,
@@ -437,6 +466,7 @@ describe('reducers/reports', () => {
       stt: '',
       quarter: '',
       year: '2020',
+      loading: false,
     })
   })
 
@@ -455,89 +485,7 @@ describe('reducers/reports', () => {
       stt: 'florida',
       quarter: '',
       fileType: '',
-    })
-  })
-
-  it('should handle "SET_SELECTED_QUARTER"', () => {
-    expect(
-      reducer(undefined, {
-        type: SET_SELECTED_QUARTER,
-        payload: {
-          quarter: 'Q1',
-        },
-      })
-    ).toEqual({
-      files: initialState.files,
-      submittedFiles: initialState.submittedFiles,
-      year: '',
-      stt: '',
-      quarter: 'Q1',
-      fileType: '',
-    })
-
-    expect(
-      reducer(undefined, {
-        type: SET_SELECTED_QUARTER,
-        payload: {
-          quarter: 'Q2',
-        },
-      })
-    ).toEqual({
-      files: initialState.files,
-      submittedFiles: initialState.submittedFiles,
-      year: '',
-      stt: '',
-      quarter: 'Q2',
-      fileType: '',
-    })
-
-    expect(
-      reducer(undefined, {
-        type: SET_SELECTED_QUARTER,
-        payload: {
-          quarter: 'Q3',
-        },
-      })
-    ).toEqual({
-      files: initialState.files,
-      submittedFiles: initialState.submittedFiles,
-      year: '',
-      stt: '',
-      quarter: 'Q3',
-      fileType: '',
-    })
-    expect(
-      reducer(undefined, {
-        type: SET_SELECTED_QUARTER,
-        payload: {
-          quarter: 'Q4',
-        },
-      })
-    ).toEqual({
-      files: initialState.files,
-      submittedFiles: initialState.submittedFiles,
-      year: '',
-      stt: '',
-      quarter: 'Q4',
-      fileType: '',
-    })
-  })
-
-  it('should handle "SET_SELECTED_YEAR"', () => {
-    expect(
-      reducer(undefined, {
-        type: SET_SELECTED_YEAR,
-        payload: {
-          year: '2021',
-        },
-      })
-    ).toEqual({
-      files: initialState.files,
-      submittedFiles: initialState.submittedFiles,
-      year: '2021',
-      stt: '',
-      quarter: '',
-      fileType: '',
+      loading: false,
     })
   })
 

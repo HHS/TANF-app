@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import
 
+import itertools
 import logging
 from datetime import datetime
 
@@ -31,8 +32,10 @@ def remove_all_old_versions():
     stts = STT.objects.all()
     min_year = 2019  # TDP didn't exist before this
     max_year = datetime.now().year
-    sections = DataFile.Section
+    years = [year for year in range(min_year, max_year + 1)]
     quarters = DataFile.Quarter
+    program_types = DataFile.ProgramType
+    sections = DataFile.Section
     num_exceptions = 0
 
     num_out_of_range = DataFile.objects.exclude(
@@ -46,30 +49,31 @@ def remove_all_old_versions():
             logger_context=log_context,
         )
 
-    for year in range(min_year, max_year + 1):
-        for stt in stts:
-            for section in sections:
-                for quarter in quarters:
-                    try:
-                        files = DataFile.objects.filter(
-                            year=year, quarter=quarter, section=section, stt=stt
-                        )
-                        if files.count() == 0:
-                            continue
-                        newest_file = files.latest("version")
-                        ids = files.exclude(id=newest_file.id).values_list(
-                            "id", flat=True
-                        )
-                        delete_records(ids, log_context)
-                    except Exception as e:
-                        log(
-                            f"Failed to delete old versions of file for: Year:{year}, Quarter:{quarter}, "
-                            f"Section:{section}, STT:{stt.name}",
-                            level="error",
-                            logger_context=log_context,
-                        )
-                        logger.exception(e)
-                        num_exceptions += 1
+    for year, quarter, program_type, section, stt in itertools.product(
+        years, quarters, program_types, sections, stts
+    ):
+        try:
+            files = DataFile.objects.filter(
+                year=year,
+                quarter=quarter,
+                program_type=program_type,
+                section=section,
+                stt=stt,
+            )
+            if files.count() == 0:
+                continue
+            newest_file = files.latest("version")
+            ids = files.exclude(id=newest_file.id).values_list("id", flat=True)
+            delete_records(ids, log_context)
+        except Exception as e:
+            log(
+                f"Failed to delete old versions of file for: Year:{year}, Quarter:{quarter}, "
+                f"Program Type:{program_type}, Section:{section}, STT:{stt.name}",
+                level="error",
+                logger_context=log_context,
+            )
+            logger.exception(e)
+            num_exceptions += 1
 
     if num_exceptions == 0:
         log(

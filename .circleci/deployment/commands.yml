@@ -96,6 +96,7 @@
             sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.42.1/yq_linux_amd64 && chmod +x /usr/local/bin/yq
       - run:
           name: Apply database config
+          no_output_timeout: 1h
           command: |
             bash ./scripts/apply-database-config.sh <<parameters.backend-appname>> <<parameters.cf-space>>
       - run:
@@ -140,6 +141,7 @@
       - disable-npm-audit
       - install-nodejs-packages:
           app-dir: tdrs-frontend
+          override-ci-command: npm ci --omit=dev --no-fund
       - get-app-deploy-strategy:
           appname: <<parameters.frontend-appname>>
       - run:
