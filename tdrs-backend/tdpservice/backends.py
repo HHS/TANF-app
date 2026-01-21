@@ -43,6 +43,21 @@ class DataFilesS3Storage(OverriddenCredentialsS3Storage):
     # Use distinct region for the tdp-datafiles service
     region_name = settings.AWS_S3_DATAFILES_REGION_NAME
 
+    def _save(self, name, content):
+        """Save file and capture version ID from S3 response."""
+        name = super()._save(name, content)
+        obj = self.bucket.Object(self._normalize_name(name))
+        version_id = obj.version_id
+        if version_id and version_id != "null":
+            self._last_version_id = version_id
+        else:
+            self._last_version_id = None
+        return name
+
+    def get_version_id(self) -> str | None:
+        """Get the version ID captured from the most recent upload."""
+        return getattr(self, "_last_version_id", None)
+
 
 class StaticFilesS3Storage(OverriddenCredentialsS3Storage):
     """An S3 backed storage provider for Django Admin staticfiles."""
