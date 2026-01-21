@@ -2,7 +2,13 @@
 
 ## Executive Summary
 
-This document proposes migrating the Go parser's validation system from Go-based validator factories to an expression language approach using [antonmedv/expr](https://github.com/antonmedv/expr). This change centralizes all validation logic and error messages into human-readable configuration files, enabling non-technical stakeholders to review and verify validation rules.
+This document proposes migrating the Go parser's validation system from Go-based validator factories to an expression language approach using [expr](https://github.com/expr-lang/expr). This change centralizes all validation logic and error messages into human-readable configuration files, enabling non-technical stakeholders to review and verify validation rules.
+
+**Key expr Documentation Links:**
+- [Language Definition](https://expr-lang.org/docs/language-definition) - Operators, literals, built-in functions
+- [Configuration](https://expr-lang.org/docs/configuration) - Compilation options (`expr.Env()`, `expr.AsBool()`, etc.)
+- [Functions](https://expr-lang.org/docs/functions) - Defining and registering custom functions
+- [Go Package Documentation](https://pkg.go.dev/github.com/expr-lang/expr) - API reference
 
 ---
 
@@ -142,9 +148,11 @@ Expressions make this natural:
 
 ## Part 3: Expression Syntax
 
+> **Reference**: See the [expr Language Definition](https://expr-lang.org/docs/language-definition) for complete syntax documentation.
+
 ### 3.1 Core Language Features
 
-The expr language provides:
+The [expr language](https://expr-lang.org/docs/language-definition) provides:
 
 | Feature | Example |
 |---------|---------|
@@ -160,20 +168,26 @@ The expr language provides:
 
 ### 3.2 Built-in Functions (from expr)
 
+> **Reference**: See [Built-in Functions](https://expr-lang.org/docs/language-definition#built-in-functions) in the expr documentation.
+
+The following built-in functions are particularly useful for validation. Note that [predicate functions](https://expr-lang.org/docs/language-definition#predicate) use `#` to reference the current element, or `.Field` to access struct/map fields directly.
+
 | Function | Description | Example |
 |----------|-------------|---------|
 | `len(x)` | Length of string/array | `len(value) >= 5` |
-| `all(array, predicate)` | All elements match | `all(amounts, {# > 0})` |
-| `any(array, predicate)` | Any element matches | `any(amounts, {# > 0})` |
-| `none(array, predicate)` | No elements match | `none(amounts, {# < 0})` |
-| `one(array, predicate)` | Exactly one matches | `one(flags, {# == 1})` |
-| `filter(array, predicate)` | Filter elements | `filter(records, {.Type == "T1"})` |
-| `map(array, transform)` | Transform elements | `map(records, {.Amount})` |
-| `count(array, predicate)` | Count matching | `count(records, {.Type == "T2"})` |
+| `all(array, predicate)` | All elements match ([ref](https://expr-lang.org/docs/language-definition#all)) | `all(amounts, {# > 0})` |
+| `any(array, predicate)` | Any element matches ([ref](https://expr-lang.org/docs/language-definition#any)) | `any(amounts, {# > 0})` |
+| `none(array, predicate)` | No elements match ([ref](https://expr-lang.org/docs/language-definition#none)) | `none(amounts, {# < 0})` |
+| `one(array, predicate)` | Exactly one matches ([ref](https://expr-lang.org/docs/language-definition#one)) | `one(flags, {# == 1})` |
+| `filter(array, predicate)` | Filter elements ([ref](https://expr-lang.org/docs/language-definition#filter)) | `filter(records, {.Type == "T1"})` |
+| `map(array, transform)` | Transform elements ([ref](https://expr-lang.org/docs/language-definition#map)) | `map(records, {.Amount})` |
+| `count(array, predicate)` | Count matching ([ref](https://expr-lang.org/docs/language-definition#count)) | `count(records, {.Type == "T2"})` |
 
 ### 3.3 Custom Functions (Registered at Startup)
 
-These Go functions will be exposed to expressions:
+> **Reference**: See [Functions](https://expr-lang.org/docs/functions) for how to define and register custom functions in expr.
+
+These Go functions will be exposed to expressions using the [`expr.Function()` option](https://expr-lang.org/docs/functions#function-option):
 
 #### Date/Time Functions
 
@@ -224,6 +238,10 @@ These Go functions will be exposed to expressions:
 ---
 
 ## Part 4: Environment Structure
+
+> **Reference**: The environment is passed to [`expr.Compile()`](https://expr-lang.org/docs/configuration) via the `expr.Env()` option. This provides type information for the expression compiler and defines what variables are available during evaluation. See [Configuration](https://expr-lang.org/docs/configuration) for details.
+
+The environment struct defines what variables and fields are accessible within an expression. When an expression references a variable like `value` or `Fields.CASH_AMOUNT`, expr resolves it against the environment struct passed to `expr.Run()`.
 
 ### 4.1 Category 2 Environment (Field Validation)
 
@@ -667,6 +685,8 @@ category4:
 
 ### 6.2 Core Types
 
+> **Reference**: The compiled expression is stored as a [`*vm.Program`](https://pkg.go.dev/github.com/expr-lang/expr/vm#Program) which is thread-safe for concurrent execution via [`expr.Run()`](https://pkg.go.dev/github.com/expr-lang/expr#Run).
+
 ```go
 // ValidatorDef represents a validator definition from YAML
 type ValidatorDef struct {
@@ -694,11 +714,14 @@ type ValidatorRegistry struct {
 }
 
 // Compile a validator definition
+// See: https://expr-lang.org/docs/configuration for compilation options
 func (r *ValidatorRegistry) Compile(def *ValidatorDef) (*CompiledValidator, error) {
     // Determine environment type based on category
     envType := r.envTypeForCategory(def.Category)
 
     // Compile expression
+    // - expr.Env(): provides type information for compilation
+    // - expr.AsBool(): enforces boolean return type (https://expr-lang.org/docs/configuration#asbool)
     program, err := expr.Compile(def.Expr,
         expr.Env(envType),
         expr.AsBool(),  // Expressions must return bool
@@ -824,7 +847,15 @@ func buildCat4Env(ctx *ValidationContext) *Cat4Env {
 
 ### 6.5 Custom Function Registration
 
+> **Reference**: See [Functions](https://expr-lang.org/docs/functions) for the `expr.Function()` API and type signature patterns.
+
 ```go
+// registerCustomFunctions returns expr.Option values for all custom functions.
+// Each function is registered with expr.Function() which takes:
+// - name: the function name as used in expressions
+// - implementation: the Go function to call
+// - type signature: used for compile-time type checking
+// See: https://expr-lang.org/docs/functions#function-option
 func registerCustomFunctions() []expr.Option {
     return []expr.Option{
         // Date functions
