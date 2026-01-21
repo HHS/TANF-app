@@ -3,7 +3,6 @@
 import logging
 from wsgiref.util import FileWrapper
 
-from django.conf import settings
 from django.http import FileResponse, Http404, HttpResponse
 
 from django_filters import rest_framework as filters
