@@ -1,14 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Link } from 'react-router-dom'
-
-function Anchor({ to, children, ...props }) {
-  return (
-    <a href={to} {...props}>
-      {children}
-    </a>
-  )
-}
+import LinkComponent from '../Link'
 
 /**
  *
@@ -20,7 +12,6 @@ function Anchor({ to, children, ...props }) {
  * @param {string} target - the target for which to open the link (default: "_self")
  */
 function NavItem({ pathname, tabTitle, href, target }) {
-  const LinkComponent = href.startsWith('http') ? Anchor : Link
   return (
     <li className="usa-nav__primary-item">
       <LinkComponent
