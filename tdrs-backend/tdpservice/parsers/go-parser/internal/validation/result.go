@@ -109,4 +109,5 @@ type CompiledValidator struct {
 	Expr     *CompiledExpr      // Pointer to shared compiled expr
 	Message  *template.Template // Pre-resolved (default or override)
 	Fields   []string           // Fields involved (for Cat3)
+	Params   map[string]any     // Runtime params for expressions (e.g., {n: 9})
 }

@@ -40,6 +40,7 @@ func (o *Orchestrator) ValidateGroup(group WrappedGroup, filespecKey string) *Gr
 	// Cat 4: Group validation (always runs)
 	env4 := NewGroupEnv(group)
 	for _, cv := range o.registry.GetCat4Validators(filespecKey) {
+		env4.Params = cv.Params // Set params for this validator
 		if vr := Execute(cv, env4); !vr.Valid {
 			vr.Category = Cat4
 			result.Cat4Errors = append(result.Cat4Errors, vr)
@@ -65,6 +66,7 @@ func (o *Orchestrator) validateRecord(rec Record, cat4Failed bool) *RecordValida
 	// Cat 1: Record pre-check (always runs)
 	env1 := NewRecordEnv(rec)
 	for _, cv := range o.registry.GetCat1Validators(recType) {
+		env1.Params = cv.Params // Set params for this validator
 		if vr := Execute(cv, env1); !vr.Valid {
 			vr.Category = Cat1
 			result.Cat1Errors = append(result.Cat1Errors, vr)
@@ -79,10 +81,12 @@ func (o *Orchestrator) validateRecord(rec Record, cat4Failed bool) *RecordValida
 	}
 
 	// Cat 2: Field validation
+	env2 := &FieldEnv{} // Reuse env for efficiency
 	for fieldName, validators := range o.registry.GetCat2FieldsForRecord(recType) {
 		value := rec.Get(fieldName)
-		env2 := NewFieldEnv(value)
+		env2.Value = value
 		for _, cv := range validators {
+			env2.Params = cv.Params // Set params for this validator
 			if vr := Execute(cv, env2); !vr.Valid {
 				vr.Category = Cat2
 				vr.FieldName = fieldName
@@ -94,6 +98,7 @@ func (o *Orchestrator) validateRecord(rec Record, cat4Failed bool) *RecordValida
 	// Cat 3: Cross-field validation
 	env3 := NewRecordEnv(rec)
 	for _, cv := range o.registry.GetCat3Validators(recType) {
+		env3.Params = cv.Params // Set params for this validator
 		if vr := Execute(cv, env3); !vr.Valid {
 			vr.Category = Cat3
 			result.Cat3Errors = append(result.Cat3Errors, vr)

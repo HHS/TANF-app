@@ -264,6 +264,8 @@ func (r *ValidatorRegistry) resolveValidator(category int, vdef *validation.Vali
 	id := vdef.ID
 	exprStr := vdef.Expr
 	message := vdef.Message
+	params := vdef.Params
+	fields := vdef.Fields
 
 	// If no expression, try to find predefined validator
 	if exprStr == "" && r.predefined[category] != nil {
@@ -271,6 +273,14 @@ func (r *ValidatorRegistry) resolveValidator(category int, vdef *validation.Vali
 			exprStr = predef.Expr
 			if message == "" {
 				message = predef.Message
+			}
+			// Merge params: use-site params take precedence over predefined
+			if len(predef.Params) > 0 || len(params) > 0 {
+				params = mergeParams(predef.Params, params)
+			}
+			// Use predefined fields if not specified at use-site
+			if len(fields) == 0 {
+				fields = predef.Fields
 			}
 		}
 	}
@@ -297,8 +307,29 @@ func (r *ValidatorRegistry) resolveValidator(category int, vdef *validation.Vali
 		Category: category,
 		Expr:     ce,
 		Message:  msgTmpl,
-		Fields:   vdef.Fields,
+		Fields:   fields,
+		Params:   params,
 	}, nil
+}
+
+// mergeParams merges predefined params with use-site params.
+// Use-site params take precedence over predefined params.
+func mergeParams(predefined, useSite map[string]any) map[string]any {
+	if len(predefined) == 0 {
+		return useSite
+	}
+	if len(useSite) == 0 {
+		return predefined
+	}
+	// Copy predefined first, then override with use-site
+	merged := make(map[string]any, len(predefined)+len(useSite))
+	for k, v := range predefined {
+		merged[k] = v
+	}
+	for k, v := range useSite {
+		merged[k] = v
+	}
+	return merged
 }
 
 // GetCat1Validators returns Cat1 validators for a record type.

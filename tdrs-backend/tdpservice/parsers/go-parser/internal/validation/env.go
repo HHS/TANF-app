@@ -65,12 +65,18 @@ type WrappedGroup interface {
 // FieldEnv is the environment for Category 2 (field) validation.
 // It contains only the field's value - no other metadata needed.
 type FieldEnv struct {
-	Value any
+	Value  any
+	Params map[string]any // Runtime params from validator definition
 }
 
 // NewFieldEnv creates a new field validation environment.
 func NewFieldEnv(value any) *FieldEnv {
 	return &FieldEnv{Value: value}
+}
+
+// NewFieldEnvWithParams creates a new field validation environment with params.
+func NewFieldEnvWithParams(value any, params map[string]any) *FieldEnv {
+	return &FieldEnv{Value: value, Params: params}
 }
 
 // RecordEnv is the environment for Category 1 and Category 3 validation.
@@ -82,6 +88,7 @@ type RecordEnv struct {
 	RecordType   string
 	LineNumber   int
 	RecordLength int
+	Params       map[string]any // Runtime params from validator definition
 }
 
 // NewRecordEnv creates a new record validation environment.
@@ -94,6 +101,17 @@ func NewRecordEnv(rec Record) *RecordEnv {
 	}
 }
 
+// NewRecordEnvWithParams creates a new record validation environment with params.
+func NewRecordEnvWithParams(rec Record, params map[string]any) *RecordEnv {
+	return &RecordEnv{
+		Record:       rec,
+		RecordType:   rec.GetRecordType(),
+		LineNumber:   rec.GetLineNumber(),
+		RecordLength: rec.GetDecodedSize(),
+		Params:       params,
+	}
+}
+
 // GroupEnv is the environment for Category 4 (group/case) validation.
 // It wraps a WrappedGroup and provides pre-computed aggregates for expressions.
 type GroupEnv struct {
@@ -103,6 +121,7 @@ type GroupEnv struct {
 	TotalRecords int
 	RecordCounts map[string]int  // "T1" -> count
 	HasType      map[string]bool // "T1" -> true
+	Params       map[string]any  // Runtime params from validator definition
 }
 
 // NewGroupEnv creates a new group validation environment with pre-computed aggregates.
@@ -119,5 +138,12 @@ func NewGroupEnv(group WrappedGroup) *GroupEnv {
 		env.RecordCounts[recType]++
 		env.HasType[recType] = true
 	}
+	return env
+}
+
+// NewGroupEnvWithParams creates a new group validation environment with params.
+func NewGroupEnvWithParams(group WrappedGroup, params map[string]any) *GroupEnv {
+	env := NewGroupEnv(group)
+	env.Params = params
 	return env
 }

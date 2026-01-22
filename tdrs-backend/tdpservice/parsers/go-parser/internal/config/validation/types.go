@@ -11,6 +11,10 @@ type ValidatorDef struct {
 	// Expr is the expression that defines the validation.
 	Expr string `yaml:"expr"`
 
+	// Params provides runtime parameters accessible in expressions via Params.key.
+	// Use this for parameterized validators (e.g., length: {n: 9}).
+	Params map[string]any `yaml:"params,omitempty"`
+
 	// Fields lists all fields involved in this validation.
 	// Used for dependency tracking, error attribution, and cross-field access.
 	// For single-field validators, use a single-element slice.

@@ -2,6 +2,8 @@ package validation
 
 import (
 	"testing"
+
+	"github.com/expr-lang/expr"
 )
 
 // mockRecord implements the Record interface for testing
@@ -511,4 +513,287 @@ func TestWrapGroup(t *testing.T) {
 	if len(wrapped.GetRecords()) != 2 {
 		t.Errorf("expected 2 records, got %d", len(wrapped.GetRecords()))
 	}
+}
+
+// TestFieldEnvWithParams tests FieldEnv with Params
+func TestFieldEnvWithParams(t *testing.T) {
+	params := map[string]any{"n": 9, "min": 0, "max": 99}
+	env := NewFieldEnvWithParams("hello", params)
+
+	if env.Value != "hello" {
+		t.Errorf("expected Value='hello', got %v", env.Value)
+	}
+	if env.Params["n"] != 9 {
+		t.Errorf("expected Params['n']=9, got %v", env.Params["n"])
+	}
+	if env.Params["min"] != 0 {
+		t.Errorf("expected Params['min']=0, got %v", env.Params["min"])
+	}
+	if env.Params["max"] != 99 {
+		t.Errorf("expected Params['max']=99, got %v", env.Params["max"])
+	}
+}
+
+// TestRecordEnvWithParams tests RecordEnv with Params
+func TestRecordEnvWithParams(t *testing.T) {
+	rec := &mockRecord{
+		recordType:  "T1",
+		lineNumber:  10,
+		decodedSize: 156,
+		fields:      map[string]any{"CASE_NUMBER": "12345"},
+	}
+	params := map[string]any{"min": 117, "max": 156}
+
+	env := NewRecordEnvWithParams(rec, params)
+
+	if env.RecordType != "T1" {
+		t.Errorf("expected RecordType=T1, got %s", env.RecordType)
+	}
+	if env.RecordLength != 156 {
+		t.Errorf("expected RecordLength=156, got %d", env.RecordLength)
+	}
+	if env.Params["min"] != 117 {
+		t.Errorf("expected Params['min']=117, got %v", env.Params["min"])
+	}
+	if env.Params["max"] != 156 {
+		t.Errorf("expected Params['max']=156, got %v", env.Params["max"])
+	}
+}
+
+// TestGroupEnvWithParams tests GroupEnv with Params
+func TestGroupEnvWithParams(t *testing.T) {
+	records := []Record{
+		&mockRecord{recordType: "T1"},
+		&mockRecord{recordType: "T2"},
+	}
+	group := newMockWrappedGroup(records)
+	params := map[string]any{"record_type": "T1", "min_count": 1}
+
+	env := NewGroupEnvWithParams(group, params)
+
+	if env.TotalRecords != 2 {
+		t.Errorf("expected TotalRecords=2, got %d", env.TotalRecords)
+	}
+	if env.Params["record_type"] != "T1" {
+		t.Errorf("expected Params['record_type']='T1', got %v", env.Params["record_type"])
+	}
+	if env.Params["min_count"] != 1 {
+		t.Errorf("expected Params['min_count']=1, got %v", env.Params["min_count"])
+	}
+}
+
+// TestMergeParams tests the mergeParams function
+func TestMergeParams(t *testing.T) {
+	t.Run("nil predefined", func(t *testing.T) {
+		useSite := map[string]any{"a": 1}
+		result := mergeParams(nil, useSite)
+		if result["a"] != 1 {
+			t.Error("expected useSite to be returned")
+		}
+	})
+
+	t.Run("nil useSite", func(t *testing.T) {
+		predef := map[string]any{"a": 1}
+		result := mergeParams(predef, nil)
+		if result["a"] != 1 {
+			t.Error("expected predef to be returned")
+		}
+	})
+
+	t.Run("both empty", func(t *testing.T) {
+		result := mergeParams(nil, nil)
+		if result != nil {
+			t.Error("expected nil")
+		}
+	})
+
+	t.Run("merge with override", func(t *testing.T) {
+		predef := map[string]any{"a": 1, "b": 2}
+		useSite := map[string]any{"b": 3, "c": 4}
+		result := mergeParams(predef, useSite)
+
+		if result["a"] != 1 {
+			t.Errorf("expected a=1, got %v", result["a"])
+		}
+		if result["b"] != 3 {
+			t.Errorf("expected b=3 (useSite overrides predef), got %v", result["b"])
+		}
+		if result["c"] != 4 {
+			t.Errorf("expected c=4, got %v", result["c"])
+		}
+	})
+}
+
+// TestParamsInEnv tests that Params field can be set/mutated on environments
+func TestParamsInEnv(t *testing.T) {
+	t.Run("FieldEnv params mutation", func(t *testing.T) {
+		env := &FieldEnv{Value: "test"}
+		env.Params = map[string]any{"n": 4}
+		if env.Params["n"] != 4 {
+			t.Errorf("expected n=4, got %v", env.Params["n"])
+		}
+		// Mutate for next validator
+		env.Params = map[string]any{"n": 9}
+		if env.Params["n"] != 9 {
+			t.Errorf("expected n=9 after mutation, got %v", env.Params["n"])
+		}
+	})
+
+	t.Run("RecordEnv params mutation", func(t *testing.T) {
+		rec := &mockRecord{recordType: "T1", lineNumber: 1, decodedSize: 100}
+		env := NewRecordEnv(rec)
+		env.Params = map[string]any{"min": 100}
+		if env.Params["min"] != 100 {
+			t.Errorf("expected min=100, got %v", env.Params["min"])
+		}
+	})
+
+	t.Run("GroupEnv params mutation", func(t *testing.T) {
+		group := newMockWrappedGroup([]Record{&mockRecord{recordType: "T1"}})
+		env := NewGroupEnv(group)
+		env.Params = map[string]any{"record_type": "T1"}
+		if env.Params["record_type"] != "T1" {
+			t.Errorf("expected record_type=T1, got %v", env.Params["record_type"])
+		}
+	})
+}
+
+// TestParameterizedExpressions tests that expr library can access Params
+func TestParameterizedExpressions(t *testing.T) {
+	t.Run("length validator with Params.n", func(t *testing.T) {
+		// Compile expression that uses Params.n
+		program, err := expr.Compile(
+			"len(Value) == Params.n",
+			expr.Env(&FieldEnv{}),
+			expr.AsBool(),
+			expr.AllowUndefinedVariables(),
+		)
+		if err != nil {
+			t.Fatalf("failed to compile: %v", err)
+		}
+
+		// Test with 5 character string and n=5 (should pass)
+		env := &FieldEnv{Value: "hello", Params: map[string]any{"n": 5}}
+		result, err := expr.Run(program, env)
+		if err != nil {
+			t.Fatalf("failed to run: %v", err)
+		}
+		if result != true {
+			t.Errorf("expected true for len('hello')==5, got %v", result)
+		}
+
+		// Test with same string but n=6 (should fail)
+		env.Params = map[string]any{"n": 6}
+		result, err = expr.Run(program, env)
+		if err != nil {
+			t.Fatalf("failed to run: %v", err)
+		}
+		if result != false {
+			t.Errorf("expected false for len('hello')==6, got %v", result)
+		}
+	})
+
+	t.Run("in_values validator with Params.values", func(t *testing.T) {
+		// Compile expression that uses Params.values array
+		program, err := expr.Compile(
+			"Value in Params.values",
+			expr.Env(&FieldEnv{}),
+			expr.AsBool(),
+			expr.AllowUndefinedVariables(),
+		)
+		if err != nil {
+			t.Fatalf("failed to compile: %v", err)
+		}
+
+		// Test with value in set
+		env := &FieldEnv{Value: 2, Params: map[string]any{"values": []any{1, 2, 3}}}
+		result, err := expr.Run(program, env)
+		if err != nil {
+			t.Fatalf("failed to run: %v", err)
+		}
+		if result != true {
+			t.Errorf("expected true for 2 in [1,2,3], got %v", result)
+		}
+
+		// Test with value not in set
+		env.Value = 5
+		result, err = expr.Run(program, env)
+		if err != nil {
+			t.Fatalf("failed to run: %v", err)
+		}
+		if result != false {
+			t.Errorf("expected false for 5 in [1,2,3], got %v", result)
+		}
+	})
+
+	t.Run("in_range_int validator with Params.min/max", func(t *testing.T) {
+		// Compile expression with min/max range
+		program, err := expr.Compile(
+			"Value >= Params.min and Value <= Params.max",
+			expr.Env(&FieldEnv{}),
+			expr.AsBool(),
+			expr.AllowUndefinedVariables(),
+		)
+		if err != nil {
+			t.Fatalf("failed to compile: %v", err)
+		}
+
+		// Test value in range
+		env := &FieldEnv{Value: 50, Params: map[string]any{"min": 0, "max": 99}}
+		result, err := expr.Run(program, env)
+		if err != nil {
+			t.Fatalf("failed to run: %v", err)
+		}
+		if result != true {
+			t.Errorf("expected true for 50 in [0,99], got %v", result)
+		}
+
+		// Test value out of range
+		env.Value = 100
+		result, err = expr.Run(program, env)
+		if err != nil {
+			t.Fatalf("failed to run: %v", err)
+		}
+		if result != false {
+			t.Errorf("expected false for 100 in [0,99], got %v", result)
+		}
+	})
+
+	t.Run("record_length_range with Params.min/max", func(t *testing.T) {
+		// Compile expression for record length range
+		program, err := expr.Compile(
+			"RecordLength >= Params.min and RecordLength <= Params.max",
+			expr.Env(&RecordEnv{}),
+			expr.AsBool(),
+			expr.AllowUndefinedVariables(),
+		)
+		if err != nil {
+			t.Fatalf("failed to compile: %v", err)
+		}
+
+		rec := &mockRecord{recordType: "T1", lineNumber: 1, decodedSize: 120}
+		env := NewRecordEnv(rec)
+		env.Params = map[string]any{"min": 117, "max": 156}
+
+		result, err := expr.Run(program, env)
+		if err != nil {
+			t.Fatalf("failed to run: %v", err)
+		}
+		if result != true {
+			t.Errorf("expected true for 120 in [117,156], got %v", result)
+		}
+
+		// Test record too short
+		rec2 := &mockRecord{recordType: "T1", lineNumber: 1, decodedSize: 100}
+		env2 := NewRecordEnv(rec2)
+		env2.Params = map[string]any{"min": 117, "max": 156}
+
+		result, err = expr.Run(program, env2)
+		if err != nil {
+			t.Fatalf("failed to run: %v", err)
+		}
+		if result != false {
+			t.Errorf("expected false for 100 in [117,156], got %v", result)
+		}
+	})
 }
