@@ -122,10 +122,3 @@ validation_orchestrator:
     - on_fail: 1
       action: reject_record
       skip: [2, 3]
-
-category4:
-  - id: recordTypePresent
-    params: { record_type: T1, required: true }
-  - id: t1HasMatchingChildren
-    params: { child_types: [T2, T3] }
-    message: "T1 record must have at least one T2 or T3 child"

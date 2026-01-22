@@ -12,6 +12,9 @@ type PipelineConfig struct {
 	// Router configuration
 	NumRouters int
 	PoolPrewarmSize int
+
+	// Validation configuration
+	NumValidators int
 }
 
 // DefaultConfig returns production defaults.
@@ -22,6 +25,7 @@ func DefaultConfig() PipelineConfig {
 		ResultBufferSize: 256,
 		PoolPrewarmSize:  10000,
 		NumRouters:       4,
+		NumValidators:    4,
 	}
 }
 
@@ -33,6 +37,7 @@ func TestConfig() PipelineConfig {
 		ResultBufferSize: 64,
 		PoolPrewarmSize:  1000,
 		NumRouters:       1,
+		NumValidators:    2,
 	}
 }
 

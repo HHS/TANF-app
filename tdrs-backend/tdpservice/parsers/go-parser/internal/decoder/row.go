@@ -11,6 +11,9 @@ type Row interface {
 
 	// RawData returns the underlying data for debugging/error messages
 	RawData() any
+
+	// DecodedLength returns the length of the decoded row
+	DecodedLength() int
 }
 
 // PositionalRow represents a row from a positional (fixed-width) file.
@@ -35,6 +38,7 @@ func NewPositionalRow(lineNum int, recordType string, decodedLength int, data st
 func (r *PositionalRow) LineNum() int       { return r.lineNum }
 func (r *PositionalRow) RecordType() string { return r.recordType }
 func (r *PositionalRow) RawData() any       { return r.data }
+func (r *PositionalRow) DecodedLength() int { return r.decodedLength }
 
 // Slice extracts a substring from the row data.
 // start is inclusive, end is exclusive (Python slice convention).
@@ -73,6 +77,7 @@ func NewColumnarRow(lineNum int, recordType string, decodedLength int, columns [
 func (r *ColumnarRow) LineNum() int       { return r.lineNum }
 func (r *ColumnarRow) RecordType() string { return r.recordType }
 func (r *ColumnarRow) RawData() any       { return r.columns }
+func (r *ColumnarRow) DecodedLength() int { return r.decodedLength }
 
 // Column returns the value at the specified column index.
 // Returns nil if the index is out of bounds.

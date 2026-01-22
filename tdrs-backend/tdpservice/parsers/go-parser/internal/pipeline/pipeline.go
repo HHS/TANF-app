@@ -14,6 +14,7 @@ import (
 	"go-parser/internal/config/filespec"
 	"go-parser/internal/decoder"
 	"go-parser/internal/parser"
+	"go-parser/internal/validation"
 	"go-parser/internal/writer"
 )
 
@@ -108,13 +109,17 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params ProcessParams) (*Proc
 	parsers := parser.NewParserPool(spec.Format, p.config.toWorkerConfig(), parseCtx)
 	parsers.Start(ctx)
 
-	// Step 7: Start result collector with parallel dispatchers
+	// Step 7: Create validation orchestrator
+	filespecKey := fmt.Sprintf("%s:%d", params.Program, params.Section)
+	orchestrator := validation.NewOrchestrator(p.registry.Validators(), p.config.NumValidators)
+
+	// Step 8: Start result collector with parallel dispatchers
 	var collectorErr error
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		collectorErr = routeResults(ctx, parsers, router, p.config.NumRouters)
+		collectorErr = routeResults(ctx, parsers, router, orchestrator, filespecKey, p.config.NumRouters)
 	}()
 
 	// Step 8: Process rows through the accumulator

@@ -169,6 +169,7 @@ func (p *ParserPool) parseRow(decodedRecord DecodedRecord) ([]*ParsedRecord, err
 		record := schema.AcquireRecord().(*ParsedRecord)
 		record.LineNumber = decodedRecord.Row.LineNum()
 		record.SegmentIndex = segIdx
+		record.DecodedSize = decodedRecord.Row.DecodedLength()
 
 		// Copy cached shared fields into record using SetField() to preserve FieldDef
 		for _, pf := range sharedCache {

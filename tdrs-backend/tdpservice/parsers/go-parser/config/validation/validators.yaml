@@ -4,6 +4,10 @@
 
 category1:
   # Record length validators
+  - id: record_length_at_least_117
+    expr: "RecordLength >= 117"
+    message: "{{.RecordType}}: record must be at least 117 characters, got {{.RecordLength}}"
+
   - id: record_length_117_156
     expr: "RecordLength >= 117 and RecordLength <= 156"
     message: "{{.RecordType}}: record must be 117-156 characters, got {{.RecordLength}}"
@@ -19,6 +23,10 @@ category1:
   - id: record_has_valid_type
     expr: "isNotBlank(Get('RecordType'))"
     message: "{{.RecordType}}: record type is missing or blank"
+
+  - id: case_number_not_empty
+    expr: "isNotBlank(GetString('CASE_NUMBER'))"
+    message: "{{.RecordType}}: case number is required and cannot be blank"
 
 category2:
   # Value presence validators
@@ -40,36 +48,40 @@ category2:
     message: "{{.RecordType}} Item {{.Item}}: cannot be negative"
 
   - id: is_zero_or_one
-    expr: "Value == 0 or Value == 1"
+    expr: "Value in [0, 1]"
     message: "{{.RecordType}} Item {{.Item}}: must be 0 or 1, got {{.Value}}"
 
   - id: in_1_to_2
-    expr: "Value >= 1 and Value <= 2"
+    expr: "Value in [1, 2]"
     message: "{{.RecordType}} Item {{.Item}}: must be 1 or 2, got {{.Value}}"
 
   - id: in_1_to_3
-    expr: "Value >= 1 and Value <= 3"
+    expr: "Value in [1, 2, 3]"
     message: "{{.RecordType}} Item {{.Item}}: must be 1-3, got {{.Value}}"
 
   - id: in_1_to_4
-    expr: "Value >= 1 and Value <= 4"
+    expr: "Value in [1, 2, 3, 4]"
     message: "{{.RecordType}} Item {{.Item}}: must be 1-4, got {{.Value}}"
 
   - id: in_1_to_5
-    expr: "Value >= 1 and Value <= 5"
+    expr: "Value in [1, 2, 3, 4, 5]"
     message: "{{.RecordType}} Item {{.Item}}: must be 1-5, got {{.Value}}"
 
-  - id: in_1_to_9
-    expr: "Value >= 1 and Value <= 9"
-    message: "{{.RecordType}} Item {{.Item}}: must be 1-9, got {{.Value}}"
-
   - id: in_0_to_2
-    expr: "Value >= 0 and Value <= 2"
+    expr: "Value in [0, 1, 2]"
     message: "{{.RecordType}} Item {{.Item}}: must be 0-2, got {{.Value}}"
+
+  - id: in_0_to_3
+    expr: "Value in [0, 1, 2, 3]"
+    message: "{{.RecordType}} Item {{.Item}}: must be 0-3, got {{.Value}}"
 
   - id: in_0_to_99
     expr: "Value >= 0 and Value <= 99"
     message: "{{.RecordType}} Item {{.Item}}: must be 0-99, got {{.Value}}"
+
+  - id: is_equal_1
+    expr: "Value == 1"
+    message: "{{.RecordType}} Item {{.Item}}: must be 1, got {{.Value}}"
 
   # Date validators
   - id: valid_year
@@ -157,6 +169,54 @@ category3:
     expr: "GetString('START_DATE') <= GetString('END_DATE') or isEmpty(GetString('END_DATE'))"
     message: "Start date must be before or equal to end date"
     fields: [START_DATE, END_DATE]
+
+  # Sanction reduction amount validators
+  - id: sanc_requires_work_req_sanction
+    expr: "GetInt('SANC_REDUCTION_AMT') <= 0 or GetInt('WORK_REQ_SANCTION') in [1, 2]"
+    message: "When sanction reduction amount is positive, work requirement sanction must be 1 or 2"
+    fields: [SANC_REDUCTION_AMT, WORK_REQ_SANCTION]
+
+  - id: sanc_requires_sanc_teen_parent
+    expr: "GetInt('SANC_REDUCTION_AMT') <= 0 or GetInt('SANC_TEEN_PARENT') in [1, 2]"
+    message: "When sanction reduction amount is positive, teen parent sanction must be 1 or 2"
+    fields: [SANC_REDUCTION_AMT, SANC_TEEN_PARENT]
+
+  - id: sanc_requires_non_cooperation_cse
+    expr: "GetInt('SANC_REDUCTION_AMT') <= 0 or GetInt('NON_COOPERATION_CSE') in [1, 2]"
+    message: "When sanction reduction amount is positive, non-cooperation CSE must be 1 or 2"
+    fields: [SANC_REDUCTION_AMT, NON_COOPERATION_CSE]
+
+  - id: sanc_requires_failure_to_comply
+    expr: "GetInt('SANC_REDUCTION_AMT') <= 0 or GetInt('FAILURE_TO_COMPLY') in [1, 2]"
+    message: "When sanction reduction amount is positive, failure to comply must be 1 or 2"
+    fields: [SANC_REDUCTION_AMT, FAILURE_TO_COMPLY]
+
+  - id: sanc_requires_other_sanction
+    expr: "GetInt('SANC_REDUCTION_AMT') <= 0 or GetInt('OTHER_SANCTION') in [1, 2]"
+    message: "When sanction reduction amount is positive, other sanction must be 1 or 2"
+    fields: [SANC_REDUCTION_AMT, OTHER_SANCTION]
+
+  # Other total reductions validators
+  - id: other_reductions_requires_family_cap
+    expr: "GetInt('OTHER_TOTAL_REDUCTIONS') <= 0 or GetInt('FAMILY_CAP') in [1, 2]"
+    message: "When other total reductions is positive, family cap must be 1 or 2"
+    fields: [OTHER_TOTAL_REDUCTIONS, FAMILY_CAP]
+
+  - id: other_reductions_requires_reductions_on_receipts
+    expr: "GetInt('OTHER_TOTAL_REDUCTIONS') <= 0 or GetInt('REDUCTIONS_ON_RECEIPTS') in [1, 2]"
+    message: "When other total reductions is positive, reductions on receipts must be 1 or 2"
+    fields: [OTHER_TOTAL_REDUCTIONS, REDUCTIONS_ON_RECEIPTS]
+
+  - id: other_reductions_requires_other_non_sanction
+    expr: "GetInt('OTHER_TOTAL_REDUCTIONS') <= 0 or GetInt('OTHER_NON_SANCTION') in [1, 2]"
+    message: "When other total reductions is positive, other non-sanction must be 1 or 2"
+    fields: [OTHER_TOTAL_REDUCTIONS, OTHER_NON_SANCTION]
+
+  # Sum validators
+  - id: t1_sum_assistance_positive
+    expr: "GetInt('AMT_FOOD_STAMP_ASSISTANCE') + GetInt('AMT_SUB_CC') + GetInt('CASH_AMOUNT') + GetInt('CC_AMOUNT') + GetInt('TRANSP_AMOUNT') > 0"
+    message: "Sum of AMT_FOOD_STAMP_ASSISTANCE, AMT_SUB_CC, CASH_AMOUNT, CC_AMOUNT, TRANSP_AMOUNT must be greater than 0"
+    fields: [AMT_FOOD_STAMP_ASSISTANCE, AMT_SUB_CC, CASH_AMOUNT, CC_AMOUNT, TRANSP_AMOUNT]
 
 category4:
   # Group/case level validators
