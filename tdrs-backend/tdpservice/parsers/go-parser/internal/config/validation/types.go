@@ -1,6 +1,6 @@
 package validation
 
-// ValidatorConfig is the unified config schema for all validators.
+// ValidatorDef is the unified config schema for all validators.
 // It supports both simple validators and compositions.
 type ValidatorDef struct {
 	// ID is the validator identifier.
@@ -8,28 +8,13 @@ type ValidatorDef struct {
 	// For compositions, this is a custom name for message lookup.
 	ID string `yaml:"id"`
 
-	// Compose specifies the composition type: "and", "or", "not", "ifThen", "ifThenElse".
-	// If empty, ID is looked up as a simple validator in the registry.
-	Compose string `yaml:"compose,omitempty"`
+	// Expr is the expression that defines the validation.
+	Expr string `yaml:"expr"`
 
-	// Params are parameters for simple validators (e.g., {"value": 0, "min": 1}).
-	Params map[string]any `yaml:"params,omitempty"`
-
-	// Validators are child validators for "and", "or", "not" compositions.
-	Validators []ValidatorDef `yaml:"validators,omitempty"`
-
-	// Condition is the condition validator for "ifThen" and "ifThenElse".
-	Condition *ValidatorDef `yaml:"condition,omitempty"`
-
-	// Then is the then-branch validator for "ifThen" and "ifThenElse".
-	Then *ValidatorDef `yaml:"then,omitempty"`
-
-	// Else is the else-branch validator for "ifThenElse".
-	Else *ValidatorDef `yaml:"else,omitempty"`
-
-	// Field specifies a target field for cross-field access in compositions.
-	// When set, the validator operates on this field instead of the current context field.
-	Field string `yaml:"field,omitempty"`
+	// Fields lists all fields involved in this validation.
+	// Used for dependency tracking, error attribution, and cross-field access.
+	// For single-field validators, use a single-element slice.
+	Fields []string `yaml:"fields,omitempty"`
 
 	// Message is an optional override error message (template or static string).
 	// If empty, the default message for the validator ID is used.

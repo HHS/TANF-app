@@ -1,0 +1,185 @@
+# Predefined Reusable Validators
+# These validators can be referenced by ID in schemas and filespecs.
+# Messages can be overridden at the use site.
+
+category1:
+  # Record length validators
+  - id: record_length_117_156
+    expr: "RecordLength >= 117 and RecordLength <= 156"
+    message: "{{.RecordType}}: record must be 117-156 characters, got {{.RecordLength}}"
+
+  - id: record_length_150_156
+    expr: "RecordLength >= 150 and RecordLength <= 156"
+    message: "{{.RecordType}}: record must be 150-156 characters, got {{.RecordLength}}"
+
+  - id: record_length_101_156
+    expr: "RecordLength >= 101 and RecordLength <= 156"
+    message: "{{.RecordType}}: record must be 101-156 characters, got {{.RecordLength}}"
+
+  - id: record_has_valid_type
+    expr: "isNotBlank(Get('RecordType'))"
+    message: "{{.RecordType}}: record type is missing or blank"
+
+category2:
+  # Value presence validators
+  - id: not_empty
+    expr: "isNotEmpty(Value)"
+    message: "{{.RecordType}} Item {{.Item}}: value is required"
+
+  - id: not_blank
+    expr: "isNotBlank(Value)"
+    message: "{{.RecordType}} Item {{.Item}}: value cannot be blank"
+
+  # Numeric range validators
+  - id: positive_value
+    expr: "Value > 0"
+    message: "{{.RecordType}} Item {{.Item}}: must be positive, got {{.Value}}"
+
+  - id: not_negative
+    expr: "Value >= 0"
+    message: "{{.RecordType}} Item {{.Item}}: cannot be negative"
+
+  - id: is_zero_or_one
+    expr: "Value == 0 or Value == 1"
+    message: "{{.RecordType}} Item {{.Item}}: must be 0 or 1, got {{.Value}}"
+
+  - id: in_1_to_2
+    expr: "Value >= 1 and Value <= 2"
+    message: "{{.RecordType}} Item {{.Item}}: must be 1 or 2, got {{.Value}}"
+
+  - id: in_1_to_3
+    expr: "Value >= 1 and Value <= 3"
+    message: "{{.RecordType}} Item {{.Item}}: must be 1-3, got {{.Value}}"
+
+  - id: in_1_to_4
+    expr: "Value >= 1 and Value <= 4"
+    message: "{{.RecordType}} Item {{.Item}}: must be 1-4, got {{.Value}}"
+
+  - id: in_1_to_5
+    expr: "Value >= 1 and Value <= 5"
+    message: "{{.RecordType}} Item {{.Item}}: must be 1-5, got {{.Value}}"
+
+  - id: in_1_to_9
+    expr: "Value >= 1 and Value <= 9"
+    message: "{{.RecordType}} Item {{.Item}}: must be 1-9, got {{.Value}}"
+
+  - id: in_0_to_2
+    expr: "Value >= 0 and Value <= 2"
+    message: "{{.RecordType}} Item {{.Item}}: must be 0-2, got {{.Value}}"
+
+  - id: in_0_to_99
+    expr: "Value >= 0 and Value <= 99"
+    message: "{{.RecordType}} Item {{.Item}}: must be 0-99, got {{.Value}}"
+
+  # Date validators
+  - id: valid_year
+    expr: "year(Value) >= 1900 and year(Value) <= 2100"
+    message: "{{.RecordType}} Item {{.Item}}: year must be 1900-2100"
+
+  - id: year_after_1998
+    expr: "year(Value) > 1998"
+    message: "{{.RecordType}} Item {{.Item}}: year must be after 1998"
+
+  - id: valid_month
+    expr: "month(Value) >= 1 and month(Value) <= 12"
+    message: "{{.RecordType}} Item {{.Item}}: month must be 1-12"
+
+  - id: valid_date
+    expr: "isValidDate(Value)"
+    message: "{{.RecordType}} Item {{.Item}}: invalid date format"
+
+  # String format validators
+  - id: is_numeric
+    expr: "isNumeric(str(Value))"
+    message: "{{.RecordType}} Item {{.Item}}: must be numeric"
+
+  - id: is_alphanumeric
+    expr: "isAlphaNumeric(str(Value))"
+    message: "{{.RecordType}} Item {{.Item}}: must be alphanumeric"
+
+  - id: length_2
+    expr: "len(Value) == 2"
+    message: "{{.RecordType}} Item {{.Item}}: must be 2 characters"
+
+  - id: length_3
+    expr: "len(Value) == 3"
+    message: "{{.RecordType}} Item {{.Item}}: must be 3 characters"
+
+  - id: length_5
+    expr: "len(Value) == 5"
+    message: "{{.RecordType}} Item {{.Item}}: must be 5 characters"
+
+  - id: length_6
+    expr: "len(Value) == 6"
+    message: "{{.RecordType}} Item {{.Item}}: must be 6 characters"
+
+  - id: length_9
+    expr: "len(Value) == 9"
+    message: "{{.RecordType}} Item {{.Item}}: must be 9 characters"
+
+  - id: length_11
+    expr: "len(Value) == 11"
+    message: "{{.RecordType}} Item {{.Item}}: must be 11 characters"
+
+category3:
+  # Cross-field validators
+  - id: cash_requires_months
+    expr: "GetInt('CASH_AMOUNT') <= 0 or GetInt('NBR_MONTHS') > 0"
+    message: "When cash amount is positive, months must be positive"
+    fields: [CASH_AMOUNT, NBR_MONTHS]
+
+  - id: cc_requires_children
+    expr: "GetInt('CC_AMOUNT') <= 0 or GetInt('CHILDREN_COVERED') > 0"
+    message: "When child care amount is positive, children covered must be positive"
+    fields: [CC_AMOUNT, CHILDREN_COVERED]
+
+  - id: cc_requires_months
+    expr: "GetInt('CC_AMOUNT') <= 0 or GetInt('CC_NBR_MONTHS') > 0"
+    message: "When child care amount is positive, months must be positive"
+    fields: [CC_AMOUNT, CC_NBR_MONTHS]
+
+  - id: transp_requires_months
+    expr: "GetInt('TRANSP_AMOUNT') <= 0 or GetInt('TRANSP_NBR_MONTHS') > 0"
+    message: "When transportation amount is positive, months must be positive"
+    fields: [TRANSP_AMOUNT, TRANSP_NBR_MONTHS]
+
+  - id: transition_requires_months
+    expr: "GetInt('TRANSITION_SERVICES_AMOUNT') <= 0 or GetInt('TRANSITION_NBR_MONTHS') > 0"
+    message: "When transition services amount is positive, months must be positive"
+    fields: [TRANSITION_SERVICES_AMOUNT, TRANSITION_NBR_MONTHS]
+
+  - id: other_requires_months
+    expr: "GetInt('OTHER_AMOUNT') <= 0 or GetInt('OTHER_NBR_MONTHS') > 0"
+    message: "When other amount is positive, months must be positive"
+    fields: [OTHER_AMOUNT, OTHER_NBR_MONTHS]
+
+  - id: start_before_end
+    expr: "GetString('START_DATE') <= GetString('END_DATE') or isEmpty(GetString('END_DATE'))"
+    message: "Start date must be before or equal to end date"
+    fields: [START_DATE, END_DATE]
+
+category4:
+  # Group/case level validators
+  - id: t1_required
+    expr: "RecordCounts['T1'] >= 1"
+    message: "Each case must have at least one T1 record"
+
+  - id: t1_has_children
+    expr: "validateT1HasChildren(Group)"
+    message: "T1 record must have at least one T2 or T3 child"
+
+  - id: no_duplicate_case_number
+    expr: "not hasDuplicateField(Group, 'T1', 'CASE_NUMBER')"
+    message: "Duplicate case numbers found in T1 records"
+
+  - id: t4_required
+    expr: "RecordCounts['T4'] >= 1"
+    message: "Each case must have at least one T4 record"
+
+  - id: t5_required
+    expr: "RecordCounts['T5'] >= 1"
+    message: "Each case must have at least one T5 record"
+
+  - id: max_3_t3_per_group
+    expr: "RecordCounts['T3'] <= 3"
+    message: "Maximum 3 T3 records allowed per case"

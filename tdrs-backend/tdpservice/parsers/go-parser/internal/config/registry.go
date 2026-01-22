@@ -11,6 +11,7 @@ import (
 	"go-parser/internal/config/filespec"
 	"go-parser/internal/config/schema"
 	"go-parser/internal/config/validation"
+	validationpkg "go-parser/internal/validation"
 )
 
 // Registry holds all loaded FileSpecs, Schemas, and DefaultMessages.
@@ -25,6 +26,9 @@ type Registry struct {
 
 	// defaultMessages indexed by validator ID
 	defaultMessages map[string]*validation.DefaultValidatorMessageTemplate
+
+	// validators holds all compiled validators for all categories
+	validators *validationpkg.ValidatorRegistry
 
 	// metadata holds database info derived from schemas (table names, columns)
 	// Built during Load() from YAML schema field definitions
@@ -53,11 +57,12 @@ type Registry struct {
 //	        └── t3.yaml
 func Load(configDir string) (*Registry, error) {
 	r := &Registry{
-		fileSpecs: make(map[string]*filespec.FileSpec),
-		schemas:   make(map[string]*schema.CompiledSchema),
+		fileSpecs:       make(map[string]*filespec.FileSpec),
+		schemas:         make(map[string]*schema.CompiledSchema),
 		defaultMessages: make(map[string]*validation.DefaultValidatorMessageTemplate),
-		metadata:  make(map[string]*DbSchemaMetadata),
-		configDir: configDir,
+		validators:      validationpkg.NewValidatorRegistry(),
+		metadata:        make(map[string]*DbSchemaMetadata),
+		configDir:       configDir,
 	}
 
 	// Load schemas first (FileSpecs reference them)
@@ -78,6 +83,11 @@ func Load(configDir string) (*Registry, error) {
 	// Load default messages
 	if err := r.loadDefaultMessages(); err != nil {
 		return nil, fmt.Errorf("loading default messages: %w", err)
+	}
+
+	// Load and compile validators from schemas and filespecs
+	if err := r.validators.Load(configDir, r.schemas, r.fileSpecs); err != nil {
+		return nil, fmt.Errorf("loading validators: %w", err)
 	}
 
 	// Build database metadata from schema field definitions
@@ -255,12 +265,22 @@ func (r *Registry) ListSchemas() []string {
 	return keys
 }
 
-//
-func (r *Registry) GetDefaultMessageTempates() map[string]*validation.DefaultValidatorMessageTemplate {
+// GetDefaultMessageTemplates returns the default message templates.
+func (r *Registry) GetDefaultMessageTemplates() map[string]*validation.DefaultValidatorMessageTemplate {
 	return r.defaultMessages
+}
+
+// Validators returns the compiled validator registry.
+func (r *Registry) Validators() *validationpkg.ValidatorRegistry {
+	return r.validators
 }
 
 // Stats returns statistics about loaded configuration.
 func (r *Registry) Stats() (numFileSpecs, numSchemas, numDefaultMessages int) {
 	return len(r.fileSpecs), len(r.schemas), len(r.defaultMessages)
+}
+
+// ValidatorStats returns statistics about compiled validators.
+func (r *Registry) ValidatorStats() validationpkg.RegistryStats {
+	return r.validators.Stats()
 }

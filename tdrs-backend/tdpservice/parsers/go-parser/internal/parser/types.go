@@ -158,6 +158,24 @@ func (pr *ParsedRecord) GetInt(fieldName string) int {
 	return 0
 }
 
+// GetRecordType returns the record type from the schema.
+// Implements validation.Record interface.
+func (pr *ParsedRecord) GetRecordType() string {
+	return pr.Schema.RecordType
+}
+
+// GetLineNumber returns the line number of this record.
+// Implements validation.Record interface.
+func (pr *ParsedRecord) GetLineNumber() int {
+	return pr.LineNumber
+}
+
+// GetDecodedSize returns the decoded size of this record.
+// Implements validation.Record interface.
+func (pr *ParsedRecord) GetDecodedSize() int {
+	return pr.DecodedSize
+}
+
 // ParseContext carries runtime information extracted from header
 // that affects how subsequent records are parsed.
 type ParseContext struct {
@@ -189,6 +207,24 @@ type ParsedGroup struct {
 
 	// Records contains all successfully parsed records in this group
 	Records []*ParsedRecord
+}
+
+// GetKey returns the grouping key.
+// Implements validation.Group interface.
+func (pg *ParsedGroup) GetKey() string {
+	return pg.Key
+}
+
+// GetRptMonthYear returns the reporting month/year.
+// Implements validation.Group interface.
+func (pg *ParsedGroup) GetRptMonthYear() string {
+	return pg.RptMonthYear
+}
+
+// GetCaseNumber returns the case number.
+// Implements validation.Group interface.
+func (pg *ParsedGroup) GetCaseNumber() string {
+	return pg.CaseNumber
 }
 
 // ParsedBatch contains parsing results for a Batch (one or more groups).
