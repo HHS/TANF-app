@@ -10,11 +10,10 @@ import (
 
 	"go-parser/internal/config/filespec"
 	"go-parser/internal/config/schema"
-	"go-parser/internal/config/validation"
 	validationpkg "go-parser/internal/validation"
 )
 
-// Registry holds all loaded FileSpecs, Schemas, and DefaultMessages.
+// Registry holds all loaded FileSpecs, and Schemas.
 // It is created once at startup and provides read-only access
 // to configuration throughout the application lifetime.
 type Registry struct {
@@ -23,9 +22,6 @@ type Registry struct {
 
 	// schemas indexed by path (e.g., "tanf/t1", "common/header")
 	schemas map[string]*schema.CompiledSchema
-
-	// defaultMessages indexed by validator ID
-	defaultMessages map[string]*validation.DefaultValidatorMessageTemplate
 
 	// validators holds all compiled validators for all categories
 	validators *validationpkg.ValidatorRegistry
@@ -59,7 +55,6 @@ func Load(configDir string) (*Registry, error) {
 	r := &Registry{
 		fileSpecs:       make(map[string]*filespec.FileSpec),
 		schemas:         make(map[string]*schema.CompiledSchema),
-		defaultMessages: make(map[string]*validation.DefaultValidatorMessageTemplate),
 		validators:      validationpkg.NewValidatorRegistry(),
 		metadata:        make(map[string]*DbSchemaMetadata),
 		configDir:       configDir,
@@ -78,11 +73,6 @@ func Load(configDir string) (*Registry, error) {
 	// Validate that all FileSpec schema references are valid
 	if err := r.validateReferences(); err != nil {
 		return nil, fmt.Errorf("validating references: %w", err)
-	}
-
-	// Load default messages
-	if err := r.loadDefaultMessages(); err != nil {
-		return nil, fmt.Errorf("loading default messages: %w", err)
 	}
 
 	// Load and compile validators from schemas and filespecs
@@ -171,29 +161,6 @@ func (r *Registry) loadFileSpecs() error {
 	})
 }
 
-// loadDefaultMessages reads the validation/messages.yaml file.
-func (r *Registry) loadDefaultMessages() error {
-	defaultMessagesPath := filepath.Join(r.configDir, "validation/messages.yaml")
-
-	// Read and parse the default message templates
-	data, err := os.ReadFile(defaultMessagesPath)
-	if err != nil {
-		return fmt.Errorf("reading %s: %w", defaultMessagesPath, err)
-	}
-
-	var specDef validation.DefaultMessageTemplates
-	if err := yaml.Unmarshal(data, &specDef); err != nil {
-		return fmt.Errorf("parsing %s: %w", defaultMessagesPath, err)
-	}
-
-	// Index by validator ID
-	for _, validator := range specDef.Validators {
-		r.defaultMessages[validator.ID] = &validator
-	}
-
-	return nil
-}
-
 // validateReferences ensures all schema references in FileSpecs point to loaded schemas.
 func (r *Registry) validateReferences() error {
 	for specKey, spec := range r.fileSpecs {
@@ -265,19 +232,14 @@ func (r *Registry) ListSchemas() []string {
 	return keys
 }
 
-// GetDefaultMessageTemplates returns the default message templates.
-func (r *Registry) GetDefaultMessageTemplates() map[string]*validation.DefaultValidatorMessageTemplate {
-	return r.defaultMessages
-}
-
 // Validators returns the compiled validator registry.
 func (r *Registry) Validators() *validationpkg.ValidatorRegistry {
 	return r.validators
 }
 
 // Stats returns statistics about loaded configuration.
-func (r *Registry) Stats() (numFileSpecs, numSchemas, numDefaultMessages int) {
-	return len(r.fileSpecs), len(r.schemas), len(r.defaultMessages)
+func (r *Registry) Stats() (numFileSpecs, numSchemas int) {
+	return len(r.fileSpecs), len(r.schemas)
 }
 
 // ValidatorStats returns statistics about compiled validators.
