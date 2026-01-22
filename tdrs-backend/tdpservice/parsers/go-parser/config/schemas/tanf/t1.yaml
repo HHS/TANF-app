@@ -12,25 +12,97 @@ format: positional
 
 # Category 1: Record-level pre-check validators (always run)
 category1:
-  - id: record_length_at_least_117
+  - id: record_length_min
+    params:
+      min: 117
   - id: case_number_not_empty
 
 # Category 3: Cross-field validators
 category3:
-  - id: cash_requires_months
-  - id: cc_requires_children
-  - id: cc_requires_months
-  - id: transp_requires_months
-  - id: transition_requires_months
-  - id: other_requires_months
-  - id: sanc_requires_work_req_sanction
-  - id: sanc_requires_sanc_teen_parent
-  - id: sanc_requires_non_cooperation_cse
-  - id: sanc_requires_failure_to_comply
-  - id: sanc_requires_other_sanction
-  - id: other_reductions_requires_family_cap
-  - id: other_reductions_requires_reductions_on_receipts
-  - id: other_reductions_requires_other_non_sanction
+  # Amount requires positive validators
+  - id: amount_requires_positive
+    params:
+      amount_field: "CASH_AMOUNT"
+      required_field: "NBR_MONTHS"
+    fields: [CASH_AMOUNT, NBR_MONTHS]
+  - id: amount_requires_positive
+    params:
+      amount_field: "CC_AMOUNT"
+      required_field: "CHILDREN_COVERED"
+    fields: [CC_AMOUNT, CHILDREN_COVERED]
+  - id: amount_requires_positive
+    params:
+      amount_field: "CC_AMOUNT"
+      required_field: "CC_NBR_MONTHS"
+    fields: [CC_AMOUNT, CC_NBR_MONTHS]
+  - id: amount_requires_positive
+    params:
+      amount_field: "TRANSP_AMOUNT"
+      required_field: "TRANSP_NBR_MONTHS"
+    fields: [TRANSP_AMOUNT, TRANSP_NBR_MONTHS]
+  - id: amount_requires_positive
+    params:
+      amount_field: "TRANSITION_SERVICES_AMOUNT"
+      required_field: "TRANSITION_NBR_MONTHS"
+    fields: [TRANSITION_SERVICES_AMOUNT, TRANSITION_NBR_MONTHS]
+  - id: amount_requires_positive
+    params:
+      amount_field: "OTHER_AMOUNT"
+      required_field: "OTHER_NBR_MONTHS"
+    fields: [OTHER_AMOUNT, OTHER_NBR_MONTHS]
+
+  # Sanction reduction amount validators
+  - id: amount_requires_value_in
+    params:
+      amount_field: "SANC_REDUCTION_AMT"
+      required_field: "WORK_REQ_SANCTION"
+      values: [1, 2]
+    fields: [SANC_REDUCTION_AMT, WORK_REQ_SANCTION]
+  - id: amount_requires_value_in
+    params:
+      amount_field: "SANC_REDUCTION_AMT"
+      required_field: "SANC_TEEN_PARENT"
+      values: [1, 2]
+    fields: [SANC_REDUCTION_AMT, SANC_TEEN_PARENT]
+  - id: amount_requires_value_in
+    params:
+      amount_field: "SANC_REDUCTION_AMT"
+      required_field: "NON_COOPERATION_CSE"
+      values: [1, 2]
+    fields: [SANC_REDUCTION_AMT, NON_COOPERATION_CSE]
+  - id: amount_requires_value_in
+    params:
+      amount_field: "SANC_REDUCTION_AMT"
+      required_field: "FAILURE_TO_COMPLY"
+      values: [1, 2]
+    fields: [SANC_REDUCTION_AMT, FAILURE_TO_COMPLY]
+  - id: amount_requires_value_in
+    params:
+      amount_field: "SANC_REDUCTION_AMT"
+      required_field: "OTHER_SANCTION"
+      values: [1, 2]
+    fields: [SANC_REDUCTION_AMT, OTHER_SANCTION]
+
+  # Other total reductions validators
+  - id: amount_requires_value_in
+    params:
+      amount_field: "OTHER_TOTAL_REDUCTIONS"
+      required_field: "FAMILY_CAP"
+      values: [1, 2]
+    fields: [OTHER_TOTAL_REDUCTIONS, FAMILY_CAP]
+  - id: amount_requires_value_in
+    params:
+      amount_field: "OTHER_TOTAL_REDUCTIONS"
+      required_field: "REDUCTIONS_ON_RECEIPTS"
+      values: [1, 2]
+    fields: [OTHER_TOTAL_REDUCTIONS, REDUCTIONS_ON_RECEIPTS]
+  - id: amount_requires_value_in
+    params:
+      amount_field: "OTHER_TOTAL_REDUCTIONS"
+      required_field: "OTHER_NON_SANCTION"
+      values: [1, 2]
+    fields: [OTHER_TOTAL_REDUCTIONS, OTHER_NON_SANCTION]
+
   - id: t1_sum_assistance_positive
 
 # Fields shared across all segments (included in every output row)
@@ -52,9 +124,7 @@ shared:
     required: true
     category2:
       - id: year_after_1998
-        expr: "year(Value) > 1998"
       - id: valid_month
-        expr: "month(Value) >= 1 and month(Value) <= 12"
 
   - name: CASE_NUMBER
     friendly_name: Case Number
@@ -65,7 +135,6 @@ shared:
     required: true
     category2:
       - id: not_empty
-        expr: "isNotEmpty(Value)"
 
 # Each segment produces one output row (combined with shared fields)
 segments:
@@ -79,7 +148,6 @@ segments:
         required: true
         category2:
           - id: is_numeric
-            expr: "isNumeric(str(Value))"
 
       - name: STRATUM
         friendly_name: Stratum
@@ -89,8 +157,10 @@ segments:
         type: string
         required: false
         category2:
-          - id: in_range
-            expr: "toInt(Value) >= 0 and toInt(Value) <= 99"
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
 
       - name: ZIP_CODE
         friendly_name: ZIP Code
@@ -101,7 +171,6 @@ segments:
         required: true
         category2:
           - id: is_numeric
-            expr: "isNumeric(str(Value))"
 
       - name: FUNDING_STREAM
         friendly_name: Funding Stream
@@ -111,8 +180,9 @@ segments:
         type: integer
         required: true
         category2:
-          - id: in_range
-            expr: "Value in [1, 2]"
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: DISPOSITION
         friendly_name: Disposition
@@ -122,8 +192,9 @@ segments:
         type: integer
         required: true
         category2:
-          - id: equals_1
-            expr: "Value == 1"
+          - id: equals
+            params:
+              value: 1
 
       - name: NEW_APPLICANT
         friendly_name: New Applicant
@@ -133,8 +204,9 @@ segments:
         type: integer
         required: true
         category2:
-          - id: in_range
-            expr: "Value in [1, 2]"
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: NBR_FAMILY_MEMBERS
         friendly_name: Number of Family Members
@@ -144,8 +216,7 @@ segments:
         type: integer
         required: true
         category2:
-          - id: positive
-            expr: "Value > 0"
+          - id: positive_value
 
       - name: FAMILY_TYPE
         friendly_name: Family Type
@@ -155,8 +226,9 @@ segments:
         type: integer
         required: true
         category2:
-          - id: in_range
-            expr: "Value in [1, 2, 3]"
+          - id: in_values
+            params:
+              values: [1, 2, 3]
 
       - name: RECEIVES_SUB_HOUSING
         friendly_name: Receives Subsidized Housing
@@ -166,8 +238,9 @@ segments:
         type: integer
         required: true
         category2:
-          - id: in_range
-            expr: "Value in [1, 2]"
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: RECEIVES_MED_ASSISTANCE
         friendly_name: Receives Medical Assistance
@@ -177,8 +250,9 @@ segments:
         type: integer
         required: true
         category2:
-          - id: in_range
-            expr: "Value in [1, 2]"
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: RECEIVES_FOOD_STAMPS
         friendly_name: Receives Food Stamps
@@ -188,8 +262,9 @@ segments:
         type: integer
         required: false
         category2:
-          - id: in_range
-            expr: "Value in [0, 1, 2]"
+          - id: in_values
+            params:
+              values: [0, 1, 2]
 
       - name: AMT_FOOD_STAMP_ASSISTANCE
         friendly_name: Amount of Food Stamp Assistance
@@ -209,8 +284,9 @@ segments:
         type: integer
         required: false
         category2:
-          - id: in_range
-            expr: "Value in [0, 1, 2, 3]"
+          - id: in_values
+            params:
+              values: [0, 1, 2, 3]
 
       - name: AMT_SUB_CC
         friendly_name: Amount of Subsidized Child Care
@@ -370,8 +446,9 @@ segments:
         type: integer
         required: true
         category2:
-          - id: in_range
-            expr: "Value in [1, 2]"
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: FAMILY_SANC_ADULT
         friendly_name: Family Sanction Adult
@@ -381,8 +458,9 @@ segments:
         type: integer
         required: false
         category2:
-          - id: in_range
-            expr: "Value in [0, 1, 2]"
+          - id: in_values
+            params:
+              values: [0, 1, 2]
 
       - name: SANC_TEEN_PARENT
         friendly_name: Sanction Teen Parent
@@ -392,8 +470,9 @@ segments:
         type: integer
         required: true
         category2:
-          - id: in_range
-            expr: "Value in [1, 2]"
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: NON_COOPERATION_CSE
         friendly_name: Non-Cooperation Child Support
@@ -403,8 +482,9 @@ segments:
         type: integer
         required: true
         category2:
-          - id: in_range
-            expr: "Value in [1, 2]"
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: FAILURE_TO_COMPLY
         friendly_name: Failure to Comply
@@ -414,8 +494,9 @@ segments:
         type: integer
         required: true
         category2:
-          - id: in_range
-            expr: "Value in [1, 2]"
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: OTHER_SANCTION
         friendly_name: Other Sanction
@@ -425,8 +506,9 @@ segments:
         type: integer
         required: true
         category2:
-          - id: in_range
-            expr: "Value in [1, 2]"
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: RECOUPMENT_PRIOR_OVRPMT
         friendly_name: Recoupment Prior Overpayment
@@ -456,8 +538,9 @@ segments:
         type: integer
         required: true
         category2:
-          - id: in_range
-            expr: "Value in [1, 2]"
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: REDUCTIONS_ON_RECEIPTS
         friendly_name: Reductions on Receipts
@@ -467,8 +550,9 @@ segments:
         type: integer
         required: true
         category2:
-          - id: in_range
-            expr: "Value in [1, 2]"
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: OTHER_NON_SANCTION
         friendly_name: Other Non-Sanction
@@ -478,8 +562,9 @@ segments:
         type: integer
         required: true
         category2:
-          - id: in_range
-            expr: "Value in [1, 2]"
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: WAIVER_EVAL_CONTROL_GRPS
         friendly_name: Waiver Evaluation Control Groups
@@ -489,9 +574,10 @@ segments:
         type: string
         required: false
         category2:
-          - id: valid_values
-            expr: "Value in ['9', '0', ' ']"
-          - id: is_alphanumeric
+          - id: in_values
+            params:
+              values: ['9', '0', ' ']
+          - id: is_alphanumeric_or_space
             expr: "isAlphaNumeric(str(Value)) or Value == ' '"
 
       - name: FAMILY_EXEMPT_TIME_LIMITS
@@ -502,8 +588,9 @@ segments:
         type: integer
         required: true
         category2:
-          - id: valid_values
-            expr: "Value in [1, 2, 3, 4, 6, 7, 8, 9]"
+          - id: in_values
+            params:
+              values: [1, 2, 3, 4, 6, 7, 8, 9]
 
       - name: FAMILY_NEW_CHILD
         friendly_name: Family New Child
@@ -513,5 +600,6 @@ segments:
         type: integer
         required: false
         category2:
-          - id: in_range
-            expr: "Value in [0, 1, 2]"
+          - id: in_values
+            params:
+              values: [0, 1, 2]

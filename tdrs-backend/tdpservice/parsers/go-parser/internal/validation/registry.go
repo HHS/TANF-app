@@ -267,26 +267,33 @@ func (r *ValidatorRegistry) resolveValidator(category int, vdef *validation.Vali
 	params := vdef.Params
 	fields := vdef.Fields
 
-	// If no expression, try to find predefined validator
-	if exprStr == "" && r.predefined[category] != nil {
-		if predef, ok := r.predefined[category][id]; ok {
-			exprStr = predef.Expr
-			if message == "" {
-				message = predef.Message
-			}
-			// Merge params: use-site params take precedence over predefined
-			if len(predef.Params) > 0 || len(params) > 0 {
-				params = mergeParams(predef.Params, params)
-			}
-			// Use predefined fields if not specified at use-site
-			if len(fields) == 0 {
-				fields = predef.Fields
-			}
+	// Check if this ID matches a predefined validator
+	var predef *validation.ValidatorDef
+	if r.predefined[category] != nil {
+		predef = r.predefined[category][id]
+	}
+
+	if predef != nil {
+		// Using a predefined validator - cannot override the expression
+		if exprStr != "" {
+			return nil, fmt.Errorf("validator %q is predefined; cannot override expression (remove 'expr' from schema)", id)
+		}
+		exprStr = predef.Expr
+		if message == "" {
+			message = predef.Message
+		}
+		// Merge params: use-site params take precedence over predefined
+		if len(predef.Params) > 0 || len(params) > 0 {
+			params = mergeParams(predef.Params, params)
+		}
+		// Use predefined fields if not specified at use-site
+		if len(fields) == 0 {
+			fields = predef.Fields
 		}
 	}
 
 	if exprStr == "" {
-		return nil, fmt.Errorf("no expression for validator %s", id)
+		return nil, fmt.Errorf("no expression for validator %s (not predefined and no inline expr)", id)
 	}
 
 	ce, err := r.getOrCompileExpr(category, exprStr)

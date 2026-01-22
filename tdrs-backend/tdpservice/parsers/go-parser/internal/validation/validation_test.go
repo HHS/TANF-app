@@ -1,9 +1,12 @@
 package validation
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/expr-lang/expr"
+
+	configValidation "go-parser/internal/config/validation"
 )
 
 // mockRecord implements the Record interface for testing
@@ -654,6 +657,67 @@ func TestParamsInEnv(t *testing.T) {
 		env.Params = map[string]any{"record_type": "T1"}
 		if env.Params["record_type"] != "T1" {
 			t.Errorf("expected record_type=T1, got %v", env.Params["record_type"])
+		}
+	})
+}
+
+// TestResolveValidatorPreventsExprOverride tests that predefined validators cannot have expr overridden
+func TestResolveValidatorPreventsExprOverride(t *testing.T) {
+	// Create a registry with a predefined validator
+	registry := NewValidatorRegistry()
+	registry.predefined[Cat2] = map[string]*configValidation.ValidatorDef{
+		"in_values": {
+			ID:      "in_values",
+			Expr:    "Value in Params.values",
+			Message: "must be one of {{.Params.values}}",
+		},
+	}
+	registry.exprOpts = RegisterFunctions()
+
+	t.Run("allows predefined without expr override", func(t *testing.T) {
+		vdef := &configValidation.ValidatorDef{
+			ID:     "in_values",
+			Params: map[string]any{"values": []any{1, 2, 3}},
+		}
+		_, err := registry.resolveValidator(Cat2, vdef)
+		if err != nil {
+			t.Errorf("expected no error for predefined validator without expr, got: %v", err)
+		}
+	})
+
+	t.Run("rejects predefined with expr override", func(t *testing.T) {
+		vdef := &configValidation.ValidatorDef{
+			ID:     "in_values",
+			Expr:   "Value in [1, 2, 3]", // Attempting to override
+			Params: map[string]any{"values": []any{1, 2, 3}},
+		}
+		_, err := registry.resolveValidator(Cat2, vdef)
+		if err == nil {
+			t.Error("expected error when trying to override predefined validator expr")
+		}
+		if err != nil && !strings.Contains(err.Error(), "predefined") {
+			t.Errorf("expected error message to mention 'predefined', got: %v", err)
+		}
+	})
+
+	t.Run("allows novel validator with expr", func(t *testing.T) {
+		vdef := &configValidation.ValidatorDef{
+			ID:   "custom_check",
+			Expr: "Value > 0",
+		}
+		_, err := registry.resolveValidator(Cat2, vdef)
+		if err != nil {
+			t.Errorf("expected no error for novel validator with expr, got: %v", err)
+		}
+	})
+
+	t.Run("rejects novel validator without expr", func(t *testing.T) {
+		vdef := &configValidation.ValidatorDef{
+			ID: "unknown_validator",
+		}
+		_, err := registry.resolveValidator(Cat2, vdef)
+		if err == nil {
+			t.Error("expected error for unknown validator without expr")
 		}
 	})
 }

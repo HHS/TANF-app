@@ -10,8 +10,6 @@
 #       max: 156
 
 category1:
-  # === Parameterized validators ===
-
   # Record length range validator
   # Params: min (int), max (int)
   - id: record_length_range
@@ -24,28 +22,6 @@ category1:
     expr: "RecordLength >= Params.min"
     message: "{{.RecordType}}: record must be at least {{.Params.min}} characters, got {{.RecordLength}}"
 
-  # === Legacy validators (kept for backward compatibility) ===
-
-  - id: record_length_at_least_117
-    expr: "RecordLength >= 117"
-    message: "{{.RecordType}}: record must be at least 117 characters, got {{.RecordLength}}"
-    deprecated: true
-
-  - id: record_length_117_156
-    expr: "RecordLength >= 117 and RecordLength <= 156"
-    message: "{{.RecordType}}: record must be 117-156 characters, got {{.RecordLength}}"
-    deprecated: true
-
-  - id: record_length_150_156
-    expr: "RecordLength >= 150 and RecordLength <= 156"
-    message: "{{.RecordType}}: record must be 150-156 characters, got {{.RecordLength}}"
-    deprecated: true
-
-  - id: record_length_101_156
-    expr: "RecordLength >= 101 and RecordLength <= 156"
-    message: "{{.RecordType}}: record must be 101-156 characters, got {{.RecordLength}}"
-    deprecated: true
-
   - id: record_has_valid_type
     expr: "isNotBlank(Get('RecordType'))"
     message: "{{.RecordType}}: record type is missing or blank"
@@ -55,8 +31,6 @@ category1:
     message: "{{.RecordType}}: case number is required and cannot be blank"
 
 category2:
-  # === Parameterized validators ===
-
   # Length validator - checks string length equals n
   # Params: n (int)
   - id: length
@@ -80,8 +54,6 @@ category2:
   - id: equals
     expr: "Value == Params.value"
     message: "{{.RecordType}} Item {{.Item}}: must be {{.Params.value}}, got {{.Value}}"
-
-  # === Non-parameterized validators ===
 
   # Value presence validators
   - id: not_empty
@@ -127,86 +99,7 @@ category2:
     expr: "isAlphaNumeric(str(Value))"
     message: "{{.RecordType}} Item {{.Item}}: must be alphanumeric"
 
-  # === Legacy validators (kept for backward compatibility) ===
-
-  - id: is_zero_or_one
-    expr: "Value in [0, 1]"
-    message: "{{.RecordType}} Item {{.Item}}: must be 0 or 1, got {{.Value}}"
-    deprecated: true
-
-  - id: in_1_to_2
-    expr: "Value in [1, 2]"
-    message: "{{.RecordType}} Item {{.Item}}: must be 1 or 2, got {{.Value}}"
-    deprecated: true
-
-  - id: in_1_to_3
-    expr: "Value in [1, 2, 3]"
-    message: "{{.RecordType}} Item {{.Item}}: must be 1-3, got {{.Value}}"
-    deprecated: true
-
-  - id: in_1_to_4
-    expr: "Value in [1, 2, 3, 4]"
-    message: "{{.RecordType}} Item {{.Item}}: must be 1-4, got {{.Value}}"
-    deprecated: true
-
-  - id: in_1_to_5
-    expr: "Value in [1, 2, 3, 4, 5]"
-    message: "{{.RecordType}} Item {{.Item}}: must be 1-5, got {{.Value}}"
-    deprecated: true
-
-  - id: in_0_to_2
-    expr: "Value in [0, 1, 2]"
-    message: "{{.RecordType}} Item {{.Item}}: must be 0-2, got {{.Value}}"
-    deprecated: true
-
-  - id: in_0_to_3
-    expr: "Value in [0, 1, 2, 3]"
-    message: "{{.RecordType}} Item {{.Item}}: must be 0-3, got {{.Value}}"
-    deprecated: true
-
-  - id: in_0_to_99
-    expr: "Value >= 0 and Value <= 99"
-    message: "{{.RecordType}} Item {{.Item}}: must be 0-99, got {{.Value}}"
-    deprecated: true
-
-  - id: is_equal_1
-    expr: "Value == 1"
-    message: "{{.RecordType}} Item {{.Item}}: must be 1, got {{.Value}}"
-    deprecated: true
-
-  - id: length_2
-    expr: "len(Value) == 2"
-    message: "{{.RecordType}} Item {{.Item}}: must be 2 characters"
-    deprecated: true
-
-  - id: length_3
-    expr: "len(Value) == 3"
-    message: "{{.RecordType}} Item {{.Item}}: must be 3 characters"
-    deprecated: true
-
-  - id: length_5
-    expr: "len(Value) == 5"
-    message: "{{.RecordType}} Item {{.Item}}: must be 5 characters"
-    deprecated: true
-
-  - id: length_6
-    expr: "len(Value) == 6"
-    message: "{{.RecordType}} Item {{.Item}}: must be 6 characters"
-    deprecated: true
-
-  - id: length_9
-    expr: "len(Value) == 9"
-    message: "{{.RecordType}} Item {{.Item}}: must be 9 characters"
-    deprecated: true
-
-  - id: length_11
-    expr: "len(Value) == 11"
-    message: "{{.RecordType}} Item {{.Item}}: must be 11 characters"
-    deprecated: true
-
 category3:
-  # === Parameterized validators ===
-
   # Amount requires positive field validator
   # When amount_field is positive, required_field must be positive
   # Params: amount_field (string), required_field (string)
@@ -223,8 +116,6 @@ category3:
     expr: "GetInt(Params.amount_field) <= 0 or GetInt(Params.required_field) in Params.values"
     message: "When {{.Params.amount_field}} is positive, {{.Params.required_field}} must be one of {{.Params.values}}"
 
-  # === Non-parameterized validators ===
-
   - id: start_before_end
     expr: "GetString('START_DATE') <= GetString('END_DATE') or isEmpty(GetString('END_DATE'))"
     message: "Start date must be before or equal to end date"
@@ -235,92 +126,6 @@ category3:
     expr: "GetInt('AMT_FOOD_STAMP_ASSISTANCE') + GetInt('AMT_SUB_CC') + GetInt('CASH_AMOUNT') + GetInt('CC_AMOUNT') + GetInt('TRANSP_AMOUNT') > 0"
     message: "Sum of AMT_FOOD_STAMP_ASSISTANCE, AMT_SUB_CC, CASH_AMOUNT, CC_AMOUNT, TRANSP_AMOUNT must be greater than 0"
     fields: [AMT_FOOD_STAMP_ASSISTANCE, AMT_SUB_CC, CASH_AMOUNT, CC_AMOUNT, TRANSP_AMOUNT]
-
-  # === Legacy validators (kept for backward compatibility) ===
-
-  - id: cash_requires_months
-    expr: "GetInt('CASH_AMOUNT') <= 0 or GetInt('NBR_MONTHS') > 0"
-    message: "When cash amount is positive, months must be positive"
-    fields: [CASH_AMOUNT, NBR_MONTHS]
-    deprecated: true
-
-  - id: cc_requires_children
-    expr: "GetInt('CC_AMOUNT') <= 0 or GetInt('CHILDREN_COVERED') > 0"
-    message: "When child care amount is positive, children covered must be positive"
-    fields: [CC_AMOUNT, CHILDREN_COVERED]
-    deprecated: true
-
-  - id: cc_requires_months
-    expr: "GetInt('CC_AMOUNT') <= 0 or GetInt('CC_NBR_MONTHS') > 0"
-    message: "When child care amount is positive, months must be positive"
-    fields: [CC_AMOUNT, CC_NBR_MONTHS]
-    deprecated: true
-
-  - id: transp_requires_months
-    expr: "GetInt('TRANSP_AMOUNT') <= 0 or GetInt('TRANSP_NBR_MONTHS') > 0"
-    message: "When transportation amount is positive, months must be positive"
-    fields: [TRANSP_AMOUNT, TRANSP_NBR_MONTHS]
-    deprecated: true
-
-  - id: transition_requires_months
-    expr: "GetInt('TRANSITION_SERVICES_AMOUNT') <= 0 or GetInt('TRANSITION_NBR_MONTHS') > 0"
-    message: "When transition services amount is positive, months must be positive"
-    fields: [TRANSITION_SERVICES_AMOUNT, TRANSITION_NBR_MONTHS]
-    deprecated: true
-
-  - id: other_requires_months
-    expr: "GetInt('OTHER_AMOUNT') <= 0 or GetInt('OTHER_NBR_MONTHS') > 0"
-    message: "When other amount is positive, months must be positive"
-    fields: [OTHER_AMOUNT, OTHER_NBR_MONTHS]
-    deprecated: true
-
-  - id: sanc_requires_work_req_sanction
-    expr: "GetInt('SANC_REDUCTION_AMT') <= 0 or GetInt('WORK_REQ_SANCTION') in [1, 2]"
-    message: "When sanction reduction amount is positive, work requirement sanction must be 1 or 2"
-    fields: [SANC_REDUCTION_AMT, WORK_REQ_SANCTION]
-    deprecated: true
-
-  - id: sanc_requires_sanc_teen_parent
-    expr: "GetInt('SANC_REDUCTION_AMT') <= 0 or GetInt('SANC_TEEN_PARENT') in [1, 2]"
-    message: "When sanction reduction amount is positive, teen parent sanction must be 1 or 2"
-    fields: [SANC_REDUCTION_AMT, SANC_TEEN_PARENT]
-    deprecated: true
-
-  - id: sanc_requires_non_cooperation_cse
-    expr: "GetInt('SANC_REDUCTION_AMT') <= 0 or GetInt('NON_COOPERATION_CSE') in [1, 2]"
-    message: "When sanction reduction amount is positive, non-cooperation CSE must be 1 or 2"
-    fields: [SANC_REDUCTION_AMT, NON_COOPERATION_CSE]
-    deprecated: true
-
-  - id: sanc_requires_failure_to_comply
-    expr: "GetInt('SANC_REDUCTION_AMT') <= 0 or GetInt('FAILURE_TO_COMPLY') in [1, 2]"
-    message: "When sanction reduction amount is positive, failure to comply must be 1 or 2"
-    fields: [SANC_REDUCTION_AMT, FAILURE_TO_COMPLY]
-    deprecated: true
-
-  - id: sanc_requires_other_sanction
-    expr: "GetInt('SANC_REDUCTION_AMT') <= 0 or GetInt('OTHER_SANCTION') in [1, 2]"
-    message: "When sanction reduction amount is positive, other sanction must be 1 or 2"
-    fields: [SANC_REDUCTION_AMT, OTHER_SANCTION]
-    deprecated: true
-
-  - id: other_reductions_requires_family_cap
-    expr: "GetInt('OTHER_TOTAL_REDUCTIONS') <= 0 or GetInt('FAMILY_CAP') in [1, 2]"
-    message: "When other total reductions is positive, family cap must be 1 or 2"
-    fields: [OTHER_TOTAL_REDUCTIONS, FAMILY_CAP]
-    deprecated: true
-
-  - id: other_reductions_requires_reductions_on_receipts
-    expr: "GetInt('OTHER_TOTAL_REDUCTIONS') <= 0 or GetInt('REDUCTIONS_ON_RECEIPTS') in [1, 2]"
-    message: "When other total reductions is positive, reductions on receipts must be 1 or 2"
-    fields: [OTHER_TOTAL_REDUCTIONS, REDUCTIONS_ON_RECEIPTS]
-    deprecated: true
-
-  - id: other_reductions_requires_other_non_sanction
-    expr: "GetInt('OTHER_TOTAL_REDUCTIONS') <= 0 or GetInt('OTHER_NON_SANCTION') in [1, 2]"
-    message: "When other total reductions is positive, other non-sanction must be 1 or 2"
-    fields: [OTHER_TOTAL_REDUCTIONS, OTHER_NON_SANCTION]
-    deprecated: true
 
 category4:
   # Group/case level validators
