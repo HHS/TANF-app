@@ -1,6 +1,9 @@
 package parser
 
 import (
+	"fmt"
+	"strconv"
+
 	"go-parser/internal/config/schema"
 	"go-parser/internal/decoder"
 )
@@ -139,23 +142,47 @@ func (pr *ParsedRecord) GetParsedField(fieldName string) *ParsedField {
 }
 
 // GetString retrieves a field as a string.
-// Returns empty string if field is nil or not a string.
+// Coerces int values to string if needed.
+// Returns empty string if field is nil.
 func (pr *ParsedRecord) GetString(fieldName string) string {
 	v := pr.Get(fieldName)
-	if s, ok := v.(string); ok {
-		return s
+	if v == nil {
+		return ""
 	}
-	return ""
+	switch val := v.(type) {
+	case string:
+		return val
+	case int:
+		return strconv.Itoa(val)
+	default:
+		return fmt.Sprintf("%v", val)
+	}
 }
 
 // GetInt retrieves a field as an int.
-// Returns 0 if field is nil or not an int.
+// Coerces string values to int if they contain numeric data.
+// Returns 0 if field is nil, not convertible, or empty.
 func (pr *ParsedRecord) GetInt(fieldName string) int {
 	v := pr.Get(fieldName)
-	if i, ok := v.(int); ok {
-		return i
+	if v == nil {
+		return 0
 	}
-	return 0
+	switch val := v.(type) {
+	case int:
+		return val
+	case string:
+		if val == "" {
+			return 0
+		}
+		// Parse string as int, return 0 on failure
+		i, err := strconv.Atoi(val)
+		if err != nil {
+			return 0
+		}
+		return i
+	default:
+		return 0
+	}
 }
 
 // GetRecordType returns the record type from the schema.

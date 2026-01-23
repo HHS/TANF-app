@@ -1,6 +1,8 @@
 package validation
 
 import (
+	"fmt"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -22,17 +24,40 @@ func (r *mockRecord) Get(fieldName string) any {
 }
 
 func (r *mockRecord) GetString(fieldName string) string {
-	if v, ok := r.fields[fieldName].(string); ok {
-		return v
+	v := r.fields[fieldName]
+	if v == nil {
+		return ""
 	}
-	return ""
+	switch val := v.(type) {
+	case string:
+		return val
+	case int:
+		return strconv.Itoa(val)
+	default:
+		return fmt.Sprintf("%v", val)
+	}
 }
 
 func (r *mockRecord) GetInt(fieldName string) int {
-	if v, ok := r.fields[fieldName].(int); ok {
-		return v
+	v := r.fields[fieldName]
+	if v == nil {
+		return 0
 	}
-	return 0
+	switch val := v.(type) {
+	case int:
+		return val
+	case string:
+		if val == "" {
+			return 0
+		}
+		i, err := strconv.Atoi(val)
+		if err != nil {
+			return 0
+		}
+		return i
+	default:
+		return 0
+	}
 }
 
 func (r *mockRecord) GetRecordType() string {
