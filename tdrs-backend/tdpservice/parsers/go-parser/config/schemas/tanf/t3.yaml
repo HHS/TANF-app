@@ -36,6 +36,8 @@ shared:
     end: 19
     type: string
     required: true
+    category2:
+      - id: not_empty
 
 # Each segment produces one output row (combined with shared fields)
 # T3 has 2 segments: Child 1 and Child 2
@@ -49,6 +51,10 @@ segments:
         end: 20
         type: integer
         required: true
+        category2:
+          - id: in_values
+            params:
+              values: [1, 2, 4]
 
       - name: DATE_OF_BIRTH
         friendly_name: Date of Birth
@@ -57,6 +63,11 @@ segments:
         end: 28
         type: string
         required: true
+        category2:
+          - id: length
+            params:
+              n: 8
+          - id: valid_date
 
       - name: SSN
         friendly_name: Social Security Number
@@ -67,6 +78,8 @@ segments:
         required: true
         transform:
           name: ssn_decrypt
+        category2:
+          - id: is_numeric
 
       - name: RACE_HISPANIC
         friendly_name: Race Hispanic
@@ -75,6 +88,8 @@ segments:
         end: 38
         type: integer
         required: false
+        category2:
+          - id: validate_race
 
       - name: RACE_AMER_INDIAN
         friendly_name: Race American Indian
@@ -83,6 +98,8 @@ segments:
         end: 39
         type: integer
         required: false
+        category2:
+          - id: validate_race
 
       - name: RACE_ASIAN
         friendly_name: Race Asian
@@ -91,6 +108,8 @@ segments:
         end: 40
         type: integer
         required: false
+        category2:
+          - id: validate_race
 
       - name: RACE_BLACK
         friendly_name: Race Black
@@ -99,6 +118,8 @@ segments:
         end: 41
         type: integer
         required: false
+        category2:
+          - id: validate_race
 
       - name: RACE_HAWAIIAN
         friendly_name: Race Hawaiian
@@ -107,6 +128,8 @@ segments:
         end: 42
         type: integer
         required: false
+        category2:
+          - id: validate_race
 
       - name: RACE_WHITE
         friendly_name: Race White
@@ -115,6 +138,8 @@ segments:
         end: 43
         type: integer
         required: false
+        category2:
+          - id: validate_race
 
       - name: SEX
         friendly_name: Sex
@@ -123,6 +148,11 @@ segments:
         end: 44
         type: integer
         required: true
+        category2:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9
 
       - name: RECEIVE_NONSSA_BENEFITS
         friendly_name: Receive Non-SSA Benefits
@@ -131,6 +161,10 @@ segments:
         end: 45
         type: integer
         required: true
+        category2:
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: RECEIVE_SSI
         friendly_name: Receive SSI
@@ -139,6 +173,10 @@ segments:
         end: 46
         type: integer
         required: true
+        category2:
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: RELATIONSHIP_HOH
         friendly_name: Relationship to Head of Household
@@ -147,6 +185,11 @@ segments:
         end: 48
         type: string
         required: false
+        category2:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 10
 
       - name: PARENT_MINOR_CHILD
         friendly_name: Parent with Minor Child
@@ -155,6 +198,10 @@ segments:
         end: 49
         type: integer
         required: false
+        category2:
+          - id: in_values
+            params:
+              values: [0, 2, 3]
 
       - name: EDUCATION_LEVEL
         friendly_name: Education Level
@@ -163,6 +210,8 @@ segments:
         end: 51
         type: string
         required: true
+        category2:
+          - id: education_level
 
       - name: CITIZENSHIP_STATUS
         friendly_name: Citizenship Status
@@ -171,6 +220,10 @@ segments:
         end: 52
         type: integer
         required: false
+        category2:
+          - id: in_values
+            params:
+              values: [1, 2, 3, 9]
 
       - name: UNEARNED_SSI
         friendly_name: Unearned SSI
@@ -179,6 +232,11 @@ segments:
         end: 56
         type: string
         required: false
+        category2:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: OTHER_UNEARNED_INCOME
         friendly_name: Other Unearned Income
@@ -187,6 +245,11 @@ segments:
         end: 60
         type: string
         required: false
+        category2:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
   # Child 2 (positions 60-101)
   - fields:
@@ -197,6 +260,10 @@ segments:
         end: 61
         type: integer
         required: false
+        category2:
+          - id: in_values
+            params:
+              values: [1, 2, 4]
 
       - name: DATE_OF_BIRTH
         friendly_name: Date of Birth
@@ -205,6 +272,11 @@ segments:
         end: 69
         type: string
         required: false
+        category2:
+          - id: length
+            params:
+              n: 8
+          - id: valid_date
 
       - name: SSN
         friendly_name: Social Security Number
@@ -215,6 +287,8 @@ segments:
         required: false
         transform:
           name: ssn_decrypt
+        category2:
+          - id: is_numeric
 
       - name: RACE_HISPANIC
         friendly_name: Race Hispanic
@@ -223,6 +297,8 @@ segments:
         end: 79
         type: integer
         required: false
+        category2:
+          - id: validate_race
 
       - name: RACE_AMER_INDIAN
         friendly_name: Race American Indian
@@ -231,6 +307,8 @@ segments:
         end: 80
         type: integer
         required: false
+        category2:
+          - id: validate_race
 
       - name: RACE_ASIAN
         friendly_name: Race Asian
@@ -239,6 +317,8 @@ segments:
         end: 81
         type: integer
         required: false
+        category2:
+          - id: validate_race
 
       - name: RACE_BLACK
         friendly_name: Race Black
@@ -247,6 +327,8 @@ segments:
         end: 82
         type: integer
         required: false
+        category2:
+          - id: validate_race
 
       - name: RACE_HAWAIIAN
         friendly_name: Race Hawaiian
@@ -255,6 +337,8 @@ segments:
         end: 83
         type: integer
         required: false
+        category2:
+          - id: validate_race
 
       - name: RACE_WHITE
         friendly_name: Race White
@@ -263,6 +347,8 @@ segments:
         end: 84
         type: integer
         required: false
+        category2:
+          - id: validate_race
 
       - name: SEX
         friendly_name: Sex
@@ -271,6 +357,11 @@ segments:
         end: 85
         type: integer
         required: false
+        category2:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9
 
       - name: RECEIVE_NONSSA_BENEFITS
         friendly_name: Receive Non-SSA Benefits
@@ -279,6 +370,10 @@ segments:
         end: 86
         type: integer
         required: false
+        category2:
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: RECEIVE_SSI
         friendly_name: Receive SSI
@@ -287,6 +382,10 @@ segments:
         end: 87
         type: integer
         required: false
+        category2:
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: RELATIONSHIP_HOH
         friendly_name: Relationship to Head of Household
@@ -295,6 +394,11 @@ segments:
         end: 89
         type: string
         required: false
+        category2:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 10
 
       - name: PARENT_MINOR_CHILD
         friendly_name: Parent with Minor Child
@@ -303,6 +407,10 @@ segments:
         end: 90
         type: integer
         required: false
+        category2:
+          - id: in_values
+            params:
+              values: [0, 2, 3]
 
       - name: EDUCATION_LEVEL
         friendly_name: Education Level
@@ -311,6 +419,8 @@ segments:
         end: 92
         type: string
         required: false
+        category2:
+          - id: education_level
 
       - name: CITIZENSHIP_STATUS
         friendly_name: Citizenship Status
@@ -319,6 +429,10 @@ segments:
         end: 93
         type: integer
         required: false
+        category2:
+          - id: in_values
+            params:
+              values: [1, 2, 3, 9]
 
       - name: UNEARNED_SSI
         friendly_name: Unearned SSI
@@ -327,6 +441,11 @@ segments:
         end: 97
         type: string
         required: false
+        category2:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: OTHER_UNEARNED_INCOME
         friendly_name: Other Unearned Income
@@ -335,3 +454,8 @@ segments:
         end: 101
         type: string
         required: false
+        category2:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
