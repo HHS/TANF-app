@@ -37,6 +37,7 @@ type ProcessParams struct {
 type ProcessResult struct {
 	RecordCounts map[string]int64
 	ErrorCount   int64
+	ErrorStats   *ErrorStats // Validation error counts by category
 	Duration     time.Duration
 }
 
@@ -115,11 +116,12 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params ProcessParams) (*Proc
 
 	// Step 8: Start result collector with parallel dispatchers
 	var collectorErr error
+	var errorStats *ErrorStats
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		collectorErr = routeResults(ctx, parsers, router, orchestrator, filespecKey, p.config.NumRouters)
+		errorStats, collectorErr = routeResults(ctx, parsers, router, orchestrator, filespecKey, p.config.NumRouters)
 	}()
 
 	// Step 8: Process rows through the accumulator
@@ -146,9 +148,16 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params ProcessParams) (*Proc
 	// Collect stats from router
 	recordCounts, errorCount := router.Stats()
 
+	// Log validation error summary
+	if errorStats != nil {
+		log.Printf("Validation errors: Cat1=%d, Cat2=%d, Cat3=%d, Cat4=%d, Total=%d",
+			errorStats.Cat1, errorStats.Cat2, errorStats.Cat3, errorStats.Cat4, errorStats.Total())
+	}
+
 	return &ProcessResult{
 		RecordCounts: recordCounts,
 		ErrorCount:   errorCount,
+		ErrorStats:   errorStats,
 		Duration:     duration,
 	}, nil
 }

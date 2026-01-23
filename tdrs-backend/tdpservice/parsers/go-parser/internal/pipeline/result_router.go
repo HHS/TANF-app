@@ -5,14 +5,29 @@ import (
 	"errors"
 	"log"
 	"sync"
+	"sync/atomic"
 
 	"go-parser/internal/parser"
 	"go-parser/internal/validation"
 	"go-parser/internal/writer"
 )
 
+// ErrorStats tracks validation error counts by category.
+type ErrorStats struct {
+	Cat1 int64
+	Cat2 int64
+	Cat3 int64
+	Cat4 int64
+}
+
+// Total returns the total number of errors across all categories.
+func (s *ErrorStats) Total() int64 {
+	return s.Cat1 + s.Cat2 + s.Cat3 + s.Cat4
+}
+
 // routeResults receives parsed batches from the parser.pool, validates them, and routes them to database writers.
 // Multiple router goroutines compete on the Results channel for parallel processing.
+// Returns error stats and any processing errors.
 func routeResults(
 	ctx context.Context,
 	pool *parser.ParserPool,
@@ -20,9 +35,12 @@ func routeResults(
 	orchestrator *validation.Orchestrator,
 	filespecKey string,
 	numRouters int,
-) error {
+) (*ErrorStats, error) {
 	var wg sync.WaitGroup
 	errChan := make(chan error, numRouters)
+
+	// Atomic counters for error stats (safe for concurrent access)
+	var cat1Count, cat2Count, cat3Count, cat4Count int64
 
 	// Spawn multiple routers reading from the same channel
 	for range numRouters {
@@ -30,8 +48,12 @@ func routeResults(
 		go func() {
 			defer wg.Done()
 			for pb := range pool.Results() {
-				// Validate the batch's groups
-				validateBatch(pb, orchestrator, filespecKey)
+				// Validate the batch's groups and collect error counts
+				c1, c2, c3, c4 := validateBatch(pb, orchestrator, filespecKey)
+				atomic.AddInt64(&cat1Count, c1)
+				atomic.AddInt64(&cat2Count, c2)
+				atomic.AddInt64(&cat3Count, c3)
+				atomic.AddInt64(&cat4Count, c4)
 
 				// Route the batch to writers
 				if err := router.RouteBatch(ctx, pb); err != nil {
@@ -58,15 +80,22 @@ func routeResults(
 		errs = append(errs, err)
 	}
 
-	if len(errs) > 0 {
-		return errors.Join(errs...)
-
+	stats := &ErrorStats{
+		Cat1: cat1Count,
+		Cat2: cat2Count,
+		Cat3: cat3Count,
+		Cat4: cat4Count,
 	}
-	return nil
+
+	if len(errs) > 0 {
+		return stats, errors.Join(errs...)
+	}
+	return stats, nil
 }
 
 // validateBatch validates all groups in a parsed batch and logs any validation errors.
-func validateBatch(pb *parser.ParsedBatch, orchestrator *validation.Orchestrator, filespecKey string) {
+// Returns the count of errors by category (cat1, cat2, cat3, cat4).
+func validateBatch(pb *parser.ParsedBatch, orchestrator *validation.Orchestrator, filespecKey string) (cat1, cat2, cat3, cat4 int64) {
 	for _, group := range pb.Groups {
 		// Wrap the ParsedGroup to satisfy the validation interfaces
 		wrappedRecords := make([]validation.Record, len(group.Records))
@@ -77,6 +106,16 @@ func validateBatch(pb *parser.ParsedBatch, orchestrator *validation.Orchestrator
 
 		// Run validation
 		result := orchestrator.ValidateGroup(wrappedGroup, filespecKey)
+
+		// Count Cat4 errors
+		cat4 += int64(len(result.Cat4Errors))
+
+		// Count record-level errors
+		for _, recResult := range result.RecordResults {
+			cat1 += int64(len(recResult.Cat1Errors))
+			cat2 += int64(len(recResult.Cat2Errors))
+			cat3 += int64(len(recResult.Cat3Errors))
+		}
 
 		// Log validation errors (for now - later these will be written to the database)
 		if result.HasErrors() {
@@ -106,4 +145,5 @@ func validateBatch(pb *parser.ParsedBatch, orchestrator *validation.Orchestrator
 			}
 		}
 	}
+	return
 }
