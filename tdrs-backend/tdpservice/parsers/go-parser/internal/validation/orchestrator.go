@@ -84,6 +84,22 @@ func (o *Orchestrator) validateRecord(rec Record, cat4Failed bool) *RecordValida
 	env2 := &FieldEnv{} // Reuse env for efficiency
 	for fieldName, validators := range o.registry.GetCat2FieldsForRecord(recType) {
 		value := rec.Get(fieldName)
+
+		// Handle nil values
+		if value == nil {
+			if rec.IsFieldRequired(fieldName) {
+				// Required field is nil - generate error
+				result.Cat2Errors = append(result.Cat2Errors, &ValidationResult{
+					Valid:       false,
+					ValidatorID: "field_required",
+					Category:    Cat2,
+					FieldName:   fieldName,
+				})
+			}
+			// Skip validators for nil fields (both required and optional)
+			continue
+		}
+
 		env2.Value = value
 		for _, cv := range validators {
 			env2.Params = cv.Params // Set params for this validator

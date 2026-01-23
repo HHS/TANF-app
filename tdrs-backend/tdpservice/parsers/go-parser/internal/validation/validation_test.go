@@ -13,10 +13,11 @@ import (
 
 // mockRecord implements the Record interface for testing
 type mockRecord struct {
-	recordType  string
-	lineNumber  int
-	decodedSize int
-	fields      map[string]any
+	recordType     string
+	lineNumber     int
+	decodedSize    int
+	fields         map[string]any
+	requiredFields map[string]bool
 }
 
 func (r *mockRecord) Get(fieldName string) any {
@@ -70,6 +71,13 @@ func (r *mockRecord) GetLineNumber() int {
 
 func (r *mockRecord) GetDecodedSize() int {
 	return r.decodedSize
+}
+
+func (r *mockRecord) IsFieldRequired(fieldName string) bool {
+	if r.requiredFields == nil {
+		return false
+	}
+	return r.requiredFields[fieldName]
 }
 
 // mockGroup implements the Group interface for testing

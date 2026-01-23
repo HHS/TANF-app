@@ -10,6 +10,7 @@ type Record interface {
 	GetRecordType() string
 	GetLineNumber() int
 	GetDecodedSize() int
+	IsFieldRequired(fieldName string) bool
 }
 
 // Group is the interface for parsed groups used in validation.

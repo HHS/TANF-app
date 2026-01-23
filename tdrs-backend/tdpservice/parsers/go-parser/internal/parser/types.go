@@ -203,6 +203,17 @@ func (pr *ParsedRecord) GetDecodedSize() int {
 	return pr.DecodedSize
 }
 
+// IsFieldRequired returns true if the field is marked as required in the schema.
+// Returns false if the field doesn't exist or has no definition.
+// Implements validation.Record interface.
+func (pr *ParsedRecord) IsFieldRequired(fieldName string) bool {
+	pf := pr.GetParsedField(fieldName)
+	if pf == nil || pf.Def == nil {
+		return false
+	}
+	return pf.Def.Required
+}
+
 // ParseContext carries runtime information extracted from header
 // that affects how subsequent records are parsed.
 type ParseContext struct {

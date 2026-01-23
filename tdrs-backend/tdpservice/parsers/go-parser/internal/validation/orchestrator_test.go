@@ -240,3 +240,78 @@ func TestOrchestratorCat2FieldValidation(t *testing.T) {
 		t.Errorf("expected FieldName=AMOUNT, got %s", result.RecordResults[0].Cat2Errors[0].FieldName)
 	}
 }
+
+// TestOrchestratorNilRequiredFieldSkipsValidators tests that nil required fields
+// generate a field_required error and skip all validators for that field
+func TestOrchestratorNilRequiredFieldSkipsValidators(t *testing.T) {
+	registry := NewValidatorRegistry()
+	registry.exprOpts = RegisterFunctions()
+
+	// Cat2 validator for AMOUNT field - would fail on nil (panic or error)
+	cat2Expr, _ := registry.getOrCompileExpr(Cat2, "Value > 0")
+	registry.cat2["T1"] = map[string][]*CompiledValidator{
+		"AMOUNT": {{ID: "positive_amount", Category: Cat2, Expr: cat2Expr}},
+	}
+
+	orchestrator := NewOrchestrator(registry, 0)
+
+	// Record with nil required field
+	records := []Record{
+		&mockRecord{
+			recordType:     "T1",
+			decodedSize:    100,
+			fields:         map[string]any{"AMOUNT": nil}, // nil value
+			requiredFields: map[string]bool{"AMOUNT": true},
+		},
+	}
+	group := newMockWrappedGroup(records)
+
+	result := orchestrator.ValidateGroup(group, "TEST:1")
+
+	// Should have exactly 1 Cat2 error (field_required)
+	if len(result.RecordResults[0].Cat2Errors) != 1 {
+		t.Errorf("expected 1 Cat2 error, got %d", len(result.RecordResults[0].Cat2Errors))
+	}
+
+	// Check it's a field_required error
+	err := result.RecordResults[0].Cat2Errors[0]
+	if err.ValidatorID != "field_required" {
+		t.Errorf("expected ValidatorID=field_required, got %s", err.ValidatorID)
+	}
+	if err.FieldName != "AMOUNT" {
+		t.Errorf("expected FieldName=AMOUNT, got %s", err.FieldName)
+	}
+}
+
+// TestOrchestratorNilOptionalFieldSkipsValidators tests that nil optional fields
+// skip validators entirely (no error, no validation)
+func TestOrchestratorNilOptionalFieldSkipsValidators(t *testing.T) {
+	registry := NewValidatorRegistry()
+	registry.exprOpts = RegisterFunctions()
+
+	// Cat2 validator that would fail on nil
+	cat2Expr, _ := registry.getOrCompileExpr(Cat2, "isNotEmpty(Value)")
+	registry.cat2["T1"] = map[string][]*CompiledValidator{
+		"AMOUNT": {{ID: "not_empty", Category: Cat2, Expr: cat2Expr}},
+	}
+
+	orchestrator := NewOrchestrator(registry, 0)
+
+	// Record with nil optional field
+	records := []Record{
+		&mockRecord{
+			recordType:     "T1",
+			decodedSize:    100,
+			fields:         map[string]any{"AMOUNT": nil}, // nil value
+			requiredFields: map[string]bool{"AMOUNT": false}, // not required
+		},
+	}
+	group := newMockWrappedGroup(records)
+
+	result := orchestrator.ValidateGroup(group, "TEST:1")
+
+	// Should have NO errors - optional nil field skips validation entirely
+	if len(result.RecordResults[0].Cat2Errors) != 0 {
+		t.Errorf("expected 0 Cat2 errors for nil optional field, got %d", len(result.RecordResults[0].Cat2Errors))
+	}
+}
