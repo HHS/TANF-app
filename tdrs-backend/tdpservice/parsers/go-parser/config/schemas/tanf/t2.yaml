@@ -10,6 +10,36 @@ section: 1
 document: "TANF Active Case Data"
 format: positional
 
+# Category 1: Preparsing validators (run before field parsing)
+category1:
+  - id: record_length_min
+    params:
+      min: 156
+  - id: case_number_not_empty
+
+# Category 3: Postparsing validators (run after field parsing, cross-field validation)
+category3:
+  # Race field validations when FAMILY_AFFILIATION is 1-3
+  - id: t2_family_affil_1_3_race_hispanic
+  - id: t2_family_affil_1_3_race_amer_indian
+  - id: t2_family_affil_1_3_race_asian
+  - id: t2_family_affil_1_3_race_black
+  - id: t2_family_affil_1_3_race_hawaiian
+  - id: t2_family_affil_1_3_race_white
+  # Other field validations based on FAMILY_AFFILIATION
+  - id: t2_family_affil_1_3_marital_status
+  - id: t2_family_affil_1_2_parent_minor_child
+  - id: t2_family_affil_2_3_education_level
+  - id: t2_family_affil_1_education_level_not_0_99
+  - id: t2_family_affil_1_citizenship_status
+  - id: t2_family_affil_1_3_coop_child_support
+  - id: t2_family_affil_1_3_employment_status
+  - id: t2_family_affil_1_2_work_eligible
+  - id: t2_family_affil_1_2_work_part_status
+  # Work eligible indicator validations
+  - id: t2_work_eligible_1_5_work_part_not_99
+  - id: t2_work_eligible_1_5_ssn_valid
+
 # Fields shared across all segments (included in every output row)
 shared:
   - name: RecordType
