@@ -296,6 +296,11 @@ func (r *ValidatorRegistry) resolveValidator(category int, vdef *validation.Vali
 		return nil, fmt.Errorf("no expression for validator %s (not predefined and no inline expr)", id)
 	}
 
+	// Auto-derive fields from params if not specified
+	if len(fields) == 0 && len(params) > 0 {
+		fields = deriveFieldsFromParams(params)
+	}
+
 	ce, err := r.getOrCompileExpr(category, exprStr)
 	if err != nil {
 		return nil, fmt.Errorf("compiling expression: %w", err)
@@ -317,6 +322,23 @@ func (r *ValidatorRegistry) resolveValidator(category int, vdef *validation.Vali
 		Fields:   fields,
 		Params:   params,
 	}, nil
+}
+
+// deriveFieldsFromParams extracts field names from common param keys.
+// This allows schemas to omit the `fields` array when using parametrized validators.
+// TODO: This feels a little clunky. Can we do better?
+func deriveFieldsFromParams(params map[string]any) []string {
+	var fields []string
+	// Look for common field param names
+	fieldParamNames := []string{"condition_field", "target_field", "amount_field", "required_field"}
+	for _, name := range fieldParamNames {
+		if v, ok := params[name]; ok {
+			if s, ok := v.(string); ok && s != "" {
+				fields = append(fields, s)
+			}
+		}
+	}
+	return fields
 }
 
 // mergeParams merges predefined params with use-site params.

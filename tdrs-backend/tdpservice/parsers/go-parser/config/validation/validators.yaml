@@ -124,7 +124,6 @@ category3:
   # Amount requires positive field validator
   # When amount_field is positive, required_field must be positive
   # Params: amount_field (string), required_field (string)
-  # Note: fields array must be specified at use-site for dependency tracking
   - id: amount_requires_positive
     expr: "GetInt(Params.amount_field) <= 0 or GetInt(Params.required_field) > 0"
     message: "When {{.Params.amount_field}} is positive, {{.Params.required_field}} must be positive"
@@ -132,7 +131,6 @@ category3:
   # Amount requires value in set validator
   # When amount_field is positive, required_field must be in values set
   # Params: amount_field (string), required_field (string), values (array)
-  # Note: fields array must be specified at use-site for dependency tracking
   - id: amount_requires_value_in
     expr: "GetInt(Params.amount_field) <= 0 or GetInt(Params.required_field) in Params.values"
     message: "When {{.Params.amount_field}} is positive, {{.Params.required_field}} must be one of {{.Params.values}}"
@@ -149,178 +147,66 @@ category3:
     fields: [AMT_FOOD_STAMP_ASSISTANCE, AMT_SUB_CC, CASH_AMOUNT, CC_AMOUNT, TRANSP_AMOUNT]
 
   # =============================================================================
-  # T2 ifThenAlso validators (postparsing)
+  # Reusable ifThenAlso validators (parametrized)
+  # Uses expr-lang if-else syntax for clarity
   # =============================================================================
 
-  # When FAMILY_AFFILIATION is 1-3, race fields must be 1-2
-  - id: t2_family_affil_1_3_race_hispanic
-    expr: "not (GetInt('FAMILY_AFFILIATION') >= 1 and GetInt('FAMILY_AFFILIATION') <= 3) or (GetInt('RACE_HISPANIC') >= 1 and GetInt('RACE_HISPANIC') <= 2)"
-    message: "If FAMILY_AFFILIATION is 1-3, RACE_HISPANIC must be 1-2"
-    fields: [FAMILY_AFFILIATION, RACE_HISPANIC]
+  # If condition_field is in [condition_min, condition_max], then target_field must be in [target_min, target_max]
+  # Params: condition_field, condition_min, condition_max, target_field, target_min, target_max
+  - id: ifthenalso_range_to_range
+    expr: "if GetInt(Params.condition_field) >= Params.condition_min and GetInt(Params.condition_field) <= Params.condition_max { GetInt(Params.target_field) >= Params.target_min and GetInt(Params.target_field) <= Params.target_max } else { true }"
+    message: "If {{.Params.condition_field}} is {{.Params.condition_min}}-{{.Params.condition_max}}, {{.Params.target_field}} must be {{.Params.target_min}}-{{.Params.target_max}}"
 
-  - id: t2_family_affil_1_3_race_amer_indian
-    expr: "not (GetInt('FAMILY_AFFILIATION') >= 1 and GetInt('FAMILY_AFFILIATION') <= 3) or (GetInt('RACE_AMER_INDIAN') >= 1 and GetInt('RACE_AMER_INDIAN') <= 2)"
-    message: "If FAMILY_AFFILIATION is 1-3, RACE_AMER_INDIAN must be 1-2"
-    fields: [FAMILY_AFFILIATION, RACE_AMER_INDIAN]
+  # If condition_field is in [condition_min, condition_max], then target_field must be in values
+  # Params: condition_field, condition_min, condition_max, target_field, values
+  - id: ifthenalso_range_to_values
+    expr: "if GetInt(Params.condition_field) >= Params.condition_min and GetInt(Params.condition_field) <= Params.condition_max { GetInt(Params.target_field) in Params.values } else { true }"
+    message: "If {{.Params.condition_field}} is {{.Params.condition_min}}-{{.Params.condition_max}}, {{.Params.target_field}} must be one of {{.Params.values}}"
 
-  - id: t2_family_affil_1_3_race_asian
-    expr: "not (GetInt('FAMILY_AFFILIATION') >= 1 and GetInt('FAMILY_AFFILIATION') <= 3) or (GetInt('RACE_ASIAN') >= 1 and GetInt('RACE_ASIAN') <= 2)"
-    message: "If FAMILY_AFFILIATION is 1-3, RACE_ASIAN must be 1-2"
-    fields: [FAMILY_AFFILIATION, RACE_ASIAN]
+  # If condition_field is in [condition_min, condition_max], then target_field must NOT be in excluded_values
+  # Params: condition_field, condition_min, condition_max, target_field, excluded_values
+  - id: ifthenalso_range_to_not_values
+    expr: "if GetInt(Params.condition_field) >= Params.condition_min and GetInt(Params.condition_field) <= Params.condition_max { not (GetInt(Params.target_field) in Params.excluded_values) } else { true }"
+    message: "If {{.Params.condition_field}} is {{.Params.condition_min}}-{{.Params.condition_max}}, {{.Params.target_field}} must not be one of {{.Params.excluded_values}}"
 
-  - id: t2_family_affil_1_3_race_black
-    expr: "not (GetInt('FAMILY_AFFILIATION') >= 1 and GetInt('FAMILY_AFFILIATION') <= 3) or (GetInt('RACE_BLACK') >= 1 and GetInt('RACE_BLACK') <= 2)"
-    message: "If FAMILY_AFFILIATION is 1-3, RACE_BLACK must be 1-2"
-    fields: [FAMILY_AFFILIATION, RACE_BLACK]
-
-  - id: t2_family_affil_1_3_race_hawaiian
-    expr: "not (GetInt('FAMILY_AFFILIATION') >= 1 and GetInt('FAMILY_AFFILIATION') <= 3) or (GetInt('RACE_HAWAIIAN') >= 1 and GetInt('RACE_HAWAIIAN') <= 2)"
-    message: "If FAMILY_AFFILIATION is 1-3, RACE_HAWAIIAN must be 1-2"
-    fields: [FAMILY_AFFILIATION, RACE_HAWAIIAN]
-
-  - id: t2_family_affil_1_3_race_white
-    expr: "not (GetInt('FAMILY_AFFILIATION') >= 1 and GetInt('FAMILY_AFFILIATION') <= 3) or (GetInt('RACE_WHITE') >= 1 and GetInt('RACE_WHITE') <= 2)"
-    message: "If FAMILY_AFFILIATION is 1-3, RACE_WHITE must be 1-2"
-    fields: [FAMILY_AFFILIATION, RACE_WHITE]
-
-  # When FAMILY_AFFILIATION is 1-3, MARITAL_STATUS must be 1-5
-  - id: t2_family_affil_1_3_marital_status
-    expr: "not (GetInt('FAMILY_AFFILIATION') >= 1 and GetInt('FAMILY_AFFILIATION') <= 3) or (GetInt('MARITAL_STATUS') >= 1 and GetInt('MARITAL_STATUS') <= 5)"
-    message: "If FAMILY_AFFILIATION is 1-3, MARITAL_STATUS must be 1-5"
-    fields: [FAMILY_AFFILIATION, MARITAL_STATUS]
-
-  # When FAMILY_AFFILIATION is 1-2, PARENT_MINOR_CHILD must be 1-3
-  - id: t2_family_affil_1_2_parent_minor_child
-    expr: "not (GetInt('FAMILY_AFFILIATION') == 1 or GetInt('FAMILY_AFFILIATION') == 2) or (GetInt('PARENT_MINOR_CHILD') >= 1 and GetInt('PARENT_MINOR_CHILD') <= 3)"
-    message: "If FAMILY_AFFILIATION is 1-2, PARENT_MINOR_CHILD must be 1-3"
-    fields: [FAMILY_AFFILIATION, PARENT_MINOR_CHILD]
+  # =============================================================================
+  # T2 special case validators (cannot be parametrized)
+  # =============================================================================
 
   # When FAMILY_AFFILIATION is 2-3, EDUCATION_LEVEL must be 0-16 or 98-99
-  # Note: EDUCATION_LEVEL is string type in schema, so use int(GetString(...))
+  # Note: Multi-range target requires special handling
   - id: t2_family_affil_2_3_education_level
     expr: "not (GetInt('FAMILY_AFFILIATION') == 2 or GetInt('FAMILY_AFFILIATION') == 3) or ((int(GetString('EDUCATION_LEVEL')) >= 0 and int(GetString('EDUCATION_LEVEL')) <= 16) or (int(GetString('EDUCATION_LEVEL')) >= 98 and int(GetString('EDUCATION_LEVEL')) <= 99))"
     message: "If FAMILY_AFFILIATION is 2-3, EDUCATION_LEVEL must be 0-16 or 98-99"
     fields: [FAMILY_AFFILIATION, EDUCATION_LEVEL]
 
-  # When FAMILY_AFFILIATION is 1, EDUCATION_LEVEL must not be 0 or 99
-  # Note: EDUCATION_LEVEL is string type in schema, so use int(GetString(...))
-  - id: t2_family_affil_1_education_level_not_0_99
-    expr: "GetInt('FAMILY_AFFILIATION') != 1 or (int(GetString('EDUCATION_LEVEL')) != 0 and int(GetString('EDUCATION_LEVEL')) != 99)"
-    message: "If FAMILY_AFFILIATION is 1, EDUCATION_LEVEL must not be 0 or 99"
-    fields: [FAMILY_AFFILIATION, EDUCATION_LEVEL]
-
-  # When FAMILY_AFFILIATION is 1, CITIZENSHIP_STATUS must be 1, 2, or 3
-  - id: t2_family_affil_1_citizenship_status
-    expr: "GetInt('FAMILY_AFFILIATION') != 1 or GetInt('CITIZENSHIP_STATUS') in [1, 2, 3]"
-    message: "If FAMILY_AFFILIATION is 1, CITIZENSHIP_STATUS must be 1, 2, or 3"
-    fields: [FAMILY_AFFILIATION, CITIZENSHIP_STATUS]
-
-  # When FAMILY_AFFILIATION is 1-3, COOPERATION_CHILD_SUPPORT must be 1, 2, or 9
-  - id: t2_family_affil_1_3_coop_child_support
-    expr: "not (GetInt('FAMILY_AFFILIATION') >= 1 and GetInt('FAMILY_AFFILIATION') <= 3) or GetInt('COOPERATION_CHILD_SUPPORT') in [1, 2, 9]"
-    message: "If FAMILY_AFFILIATION is 1-3, COOPERATION_CHILD_SUPPORT must be 1, 2, or 9"
-    fields: [FAMILY_AFFILIATION, COOPERATION_CHILD_SUPPORT]
-
-  # When FAMILY_AFFILIATION is 1-3, EMPLOYMENT_STATUS must be 1-3
-  - id: t2_family_affil_1_3_employment_status
-    expr: "not (GetInt('FAMILY_AFFILIATION') >= 1 and GetInt('FAMILY_AFFILIATION') <= 3) or (GetInt('EMPLOYMENT_STATUS') >= 1 and GetInt('EMPLOYMENT_STATUS') <= 3)"
-    message: "If FAMILY_AFFILIATION is 1-3, EMPLOYMENT_STATUS must be 1-3"
-    fields: [FAMILY_AFFILIATION, EMPLOYMENT_STATUS]
-
   # When FAMILY_AFFILIATION is 1-2, WORK_ELIGIBLE_INDICATOR must be 1-9 or 11, 12
-  # Note: WORK_ELIGIBLE_INDICATOR is string type in schema, so use int(GetString(...)) for numeric comparisons
+  # Note: Mixed string/int with special values requires special handling
   - id: t2_family_affil_1_2_work_eligible
     expr: "not (GetInt('FAMILY_AFFILIATION') == 1 or GetInt('FAMILY_AFFILIATION') == 2) or ((int(GetString('WORK_ELIGIBLE_INDICATOR')) >= 1 and int(GetString('WORK_ELIGIBLE_INDICATOR')) <= 9) or GetString('WORK_ELIGIBLE_INDICATOR') == '11' or GetString('WORK_ELIGIBLE_INDICATOR') == '12')"
     message: "If FAMILY_AFFILIATION is 1-2, WORK_ELIGIBLE_INDICATOR must be 1-9, 11, or 12"
     fields: [FAMILY_AFFILIATION, WORK_ELIGIBLE_INDICATOR]
 
   # When FAMILY_AFFILIATION is 1-2, WORK_PART_STATUS must be in valid set
+  # Note: String value list requires special handling
   - id: t2_family_affil_1_2_work_part_status
     expr: "not (GetInt('FAMILY_AFFILIATION') == 1 or GetInt('FAMILY_AFFILIATION') == 2) or GetString('WORK_PART_STATUS') in ['01', '02', '05', '07', '09', '15', '17', '18', '19', '99']"
     message: "If FAMILY_AFFILIATION is 1-2, WORK_PART_STATUS must be 01, 02, 05, 07, 09, 15, 17, 18, 19, or 99"
     fields: [FAMILY_AFFILIATION, WORK_PART_STATUS]
 
   # When WORK_ELIGIBLE_INDICATOR is 1-5, WORK_PART_STATUS must not be 99
-  # Note: WORK_ELIGIBLE_INDICATOR is string type in schema
+  # Note: String condition field requires special handling
   - id: t2_work_eligible_1_5_work_part_not_99
     expr: "not (int(GetString('WORK_ELIGIBLE_INDICATOR')) >= 1 and int(GetString('WORK_ELIGIBLE_INDICATOR')) <= 5) or GetString('WORK_PART_STATUS') != '99'"
     message: "If WORK_ELIGIBLE_INDICATOR is 1-5, WORK_PART_STATUS must not be 99"
     fields: [WORK_ELIGIBLE_INDICATOR, WORK_PART_STATUS]
 
   # When WORK_ELIGIBLE_INDICATOR is 1-5, SSN must not be a repeating digit pattern
-  # Note: WORK_ELIGIBLE_INDICATOR is string type in schema
-  # SSN validation: must not be all same digit (000000000, 111111111, etc.)
+  # Note: SSN pattern matching requires special handling
   - id: t2_work_eligible_1_5_ssn_valid
     expr: "not (int(GetString('WORK_ELIGIBLE_INDICATOR')) >= 1 and int(GetString('WORK_ELIGIBLE_INDICATOR')) <= 5) or (GetString('SSN') != '000000000' and GetString('SSN') != '111111111' and GetString('SSN') != '222222222' and GetString('SSN') != '333333333' and GetString('SSN') != '444444444' and GetString('SSN') != '555555555' and GetString('SSN') != '666666666' and GetString('SSN') != '777777777' and GetString('SSN') != '888888888' and GetString('SSN') != '999999999')"
     message: "If WORK_ELIGIBLE_INDICATOR is 1-5, SSN must not be a repeating digit"
     fields: [WORK_ELIGIBLE_INDICATOR, SSN]
-
-  # =============================================================================
-  # T3 ifThenAlso validators (postparsing)
-  # =============================================================================
-
-  # When FAMILY_AFFILIATION is 1-2, race fields must be 1-2
-  - id: t3_family_affil_1_2_race_hispanic
-    expr: "not (GetInt('FAMILY_AFFILIATION') == 1 or GetInt('FAMILY_AFFILIATION') == 2) or (GetInt('RACE_HISPANIC') >= 1 and GetInt('RACE_HISPANIC') <= 2)"
-    message: "If FAMILY_AFFILIATION is 1 or 2, RACE_HISPANIC must be 1-2"
-    fields: [FAMILY_AFFILIATION, RACE_HISPANIC]
-
-  - id: t3_family_affil_1_2_race_amer_indian
-    expr: "not (GetInt('FAMILY_AFFILIATION') == 1 or GetInt('FAMILY_AFFILIATION') == 2) or (GetInt('RACE_AMER_INDIAN') >= 1 and GetInt('RACE_AMER_INDIAN') <= 2)"
-    message: "If FAMILY_AFFILIATION is 1 or 2, RACE_AMER_INDIAN must be 1-2"
-    fields: [FAMILY_AFFILIATION, RACE_AMER_INDIAN]
-
-  - id: t3_family_affil_1_2_race_asian
-    expr: "not (GetInt('FAMILY_AFFILIATION') == 1 or GetInt('FAMILY_AFFILIATION') == 2) or (GetInt('RACE_ASIAN') >= 1 and GetInt('RACE_ASIAN') <= 2)"
-    message: "If FAMILY_AFFILIATION is 1 or 2, RACE_ASIAN must be 1-2"
-    fields: [FAMILY_AFFILIATION, RACE_ASIAN]
-
-  - id: t3_family_affil_1_2_race_black
-    expr: "not (GetInt('FAMILY_AFFILIATION') == 1 or GetInt('FAMILY_AFFILIATION') == 2) or (GetInt('RACE_BLACK') >= 1 and GetInt('RACE_BLACK') <= 2)"
-    message: "If FAMILY_AFFILIATION is 1 or 2, RACE_BLACK must be 1-2"
-    fields: [FAMILY_AFFILIATION, RACE_BLACK]
-
-  - id: t3_family_affil_1_2_race_hawaiian
-    expr: "not (GetInt('FAMILY_AFFILIATION') == 1 or GetInt('FAMILY_AFFILIATION') == 2) or (GetInt('RACE_HAWAIIAN') >= 1 and GetInt('RACE_HAWAIIAN') <= 2)"
-    message: "If FAMILY_AFFILIATION is 1 or 2, RACE_HAWAIIAN must be 1-2"
-    fields: [FAMILY_AFFILIATION, RACE_HAWAIIAN]
-
-  - id: t3_family_affil_1_2_race_white
-    expr: "not (GetInt('FAMILY_AFFILIATION') == 1 or GetInt('FAMILY_AFFILIATION') == 2) or (GetInt('RACE_WHITE') >= 1 and GetInt('RACE_WHITE') <= 2)"
-    message: "If FAMILY_AFFILIATION is 1 or 2, RACE_WHITE must be 1-2"
-    fields: [FAMILY_AFFILIATION, RACE_WHITE]
-
-  # When FAMILY_AFFILIATION is 1-2, RELATIONSHIP_HOH must be 4-9
-  # Note: RELATIONSHIP_HOH is string type in schema
-  - id: t3_family_affil_1_2_relationship_hoh
-    expr: "not (GetInt('FAMILY_AFFILIATION') == 1 or GetInt('FAMILY_AFFILIATION') == 2) or (int(GetString('RELATIONSHIP_HOH')) >= 4 and int(GetString('RELATIONSHIP_HOH')) <= 9)"
-    message: "If FAMILY_AFFILIATION is 1 or 2, RELATIONSHIP_HOH must be 4-9"
-    fields: [FAMILY_AFFILIATION, RELATIONSHIP_HOH]
-
-  # When FAMILY_AFFILIATION is 1-2, PARENT_MINOR_CHILD must be 2 or 3
-  - id: t3_family_affil_1_2_parent_minor_child
-    expr: "not (GetInt('FAMILY_AFFILIATION') == 1 or GetInt('FAMILY_AFFILIATION') == 2) or (GetInt('PARENT_MINOR_CHILD') == 2 or GetInt('PARENT_MINOR_CHILD') == 3)"
-    message: "If FAMILY_AFFILIATION is 1 or 2, PARENT_MINOR_CHILD must be 2 or 3"
-    fields: [FAMILY_AFFILIATION, PARENT_MINOR_CHILD]
-
-  # When FAMILY_AFFILIATION is 1, EDUCATION_LEVEL must not be 99
-  # Note: EDUCATION_LEVEL is string type in schema
-  - id: t3_family_affil_1_education_level_not_99
-    expr: "GetInt('FAMILY_AFFILIATION') != 1 or int(GetString('EDUCATION_LEVEL')) != 99"
-    message: "If FAMILY_AFFILIATION is 1, EDUCATION_LEVEL must not be 99"
-    fields: [FAMILY_AFFILIATION, EDUCATION_LEVEL]
-
-  # When FAMILY_AFFILIATION is 1, CITIZENSHIP_STATUS must be 1, 2, or 3
-  - id: t3_family_affil_1_citizenship_status
-    expr: "GetInt('FAMILY_AFFILIATION') != 1 or (GetInt('CITIZENSHIP_STATUS') == 1 or GetInt('CITIZENSHIP_STATUS') == 2 or GetInt('CITIZENSHIP_STATUS') == 3)"
-    message: "If FAMILY_AFFILIATION is 1, CITIZENSHIP_STATUS must be 1, 2, or 3"
-    fields: [FAMILY_AFFILIATION, CITIZENSHIP_STATUS]
-
-  # When FAMILY_AFFILIATION is 2, CITIZENSHIP_STATUS must be 1, 2, 3, or 9
-  - id: t3_family_affil_2_citizenship_status
-    expr: "GetInt('FAMILY_AFFILIATION') != 2 or (GetInt('CITIZENSHIP_STATUS') == 1 or GetInt('CITIZENSHIP_STATUS') == 2 or GetInt('CITIZENSHIP_STATUS') == 3 or GetInt('CITIZENSHIP_STATUS') == 9)"
-    message: "If FAMILY_AFFILIATION is 2, CITIZENSHIP_STATUS must be 1, 2, 3, or 9"
-    fields: [FAMILY_AFFILIATION, CITIZENSHIP_STATUS]
 
 category4:
   # Group/case level validators
