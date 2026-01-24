@@ -125,6 +125,7 @@ category3:
   - id: t2_family_affil_1_2_work_part_status
   - id: t2_work_eligible_1_5_work_part_not_99
   - id: t2_work_eligible_1_5_ssn_valid
+  - id: t2_work_eligible_11_age_relationship_hoh
 
 # Fields shared across all segments (included in every output row)
 shared:

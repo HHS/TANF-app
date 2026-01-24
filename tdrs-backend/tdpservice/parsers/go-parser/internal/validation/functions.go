@@ -25,6 +25,7 @@ func RegisterFunctions() []expr.Option {
 		expr.Function("day", wrapFunc1Int(extractDay), new(func(any) int)),
 		expr.Function("quarter", wrapFunc1Int(extractQuarter), new(func(any) int)),
 		expr.Function("isValidDate", wrapFunc1(isValidDate), new(func(any) bool)),
+		expr.Function("calculateAge", wrapFunc2StrInt(calculateAge), new(func(string, string) int)),
 
 		// String functions
 		expr.Function("matches", wrapFunc2Bool(regexMatch), new(func(string, string) bool)),
@@ -103,6 +104,20 @@ func wrapFunc1StrStr(fn func(string) string) func(...any) (any, error) {
 }
 
 func wrapFunc2Bool(fn func(string, string) bool) func(...any) (any, error) {
+	return func(params ...any) (any, error) {
+		if len(params) != 2 {
+			return nil, fmt.Errorf("expected 2 arguments, got %d", len(params))
+		}
+		s1, ok1 := params[0].(string)
+		s2, ok2 := params[1].(string)
+		if !ok1 || !ok2 {
+			return nil, fmt.Errorf("expected string arguments")
+		}
+		return fn(s1, s2), nil
+	}
+}
+
+func wrapFunc2StrInt(fn func(string, string) int) func(...any) (any, error) {
 	return func(params ...any) (any, error) {
 		if len(params) != 2 {
 			return nil, fmt.Errorf("expected 2 arguments, got %d", len(params))
@@ -253,6 +268,34 @@ func isValidDate(v any) bool {
 		return year >= 1900 && year <= 2100 && month >= 1 && month <= 12
 	}
 	return false
+}
+
+// calculateAge calculates age in years from a date of birth and a reference date.
+// dob should be in YYYYMMDD format.
+// rptMonthYear should be in YYYYMM format.
+// Returns age in whole years, or -1 if dates are invalid.
+// This matches the Python logic: (rptMonthYear - dob).days / 365.25
+func calculateAge(dob, rptMonthYear string) int {
+	if len(dob) != 8 || len(rptMonthYear) != 6 {
+		return -1
+	}
+
+	dobTime, err := time.Parse("20060102", dob)
+	if err != nil {
+		return -1
+	}
+
+	// RPT_MONTH_YEAR is YYYYMM, treat as first day of month
+	refTime, err := time.Parse("200601", rptMonthYear)
+	if err != nil {
+		return -1
+	}
+
+	// Calculate age using the same approach as Python: days / 365.25
+	days := refTime.Sub(dobTime).Hours() / 24
+	age := int(days / 365.25)
+
+	return age
 }
 
 // regexMatch checks if a string matches a regular expression pattern.

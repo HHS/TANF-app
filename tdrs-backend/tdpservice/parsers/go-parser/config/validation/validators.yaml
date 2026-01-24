@@ -206,6 +206,13 @@ category3:
     message: "If WORK_ELIGIBLE_INDICATOR is 1-5, SSN must not be a repeating digit"
     fields: [WORK_ELIGIBLE_INDICATOR, SSN]
 
+  # When WORK_ELIGIBLE_INDICATOR is 11 and AGE < 19, RELATIONSHIP_HOH must not be 1
+  # AGE is calculated from DATE_OF_BIRTH and RPT_MONTH_YEAR
+  - id: t2_work_eligible_11_age_relationship_hoh
+    expr: "if GetString('WORK_ELIGIBLE_INDICATOR') == '11' and calculateAge(GetString('DATE_OF_BIRTH'), GetString('RPT_MONTH_YEAR')) >= 0 and calculateAge(GetString('DATE_OF_BIRTH'), GetString('RPT_MONTH_YEAR')) < 19 { GetInt('RELATIONSHIP_HOH') != 1 } else { true }"
+    message: "If WORK_ELIGIBLE_INDICATOR is 11 and age is less than 19, RELATIONSHIP_HOH must not be 1"
+    fields: [WORK_ELIGIBLE_INDICATOR, DATE_OF_BIRTH, RELATIONSHIP_HOH]
+
 category4:
   # Group/case level validators
   - id: t1_required

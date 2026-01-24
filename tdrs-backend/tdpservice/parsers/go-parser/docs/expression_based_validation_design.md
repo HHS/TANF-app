@@ -241,96 +241,213 @@ These Go functions will be exposed to expressions using the [`expr.Function()` o
 
 > **Reference**: The environment is passed to [`expr.Compile()`](https://expr-lang.org/docs/configuration) via the `expr.Env()` option. This provides type information for the expression compiler and defines what variables are available during evaluation. See [Configuration](https://expr-lang.org/docs/configuration) for details.
 
-The environment struct defines what variables and fields are accessible within an expression. When an expression references a variable like `value` or `Fields.CASH_AMOUNT`, expr resolves it against the environment struct passed to `expr.Run()`.
+The environment structs wrap `*parser.ParsedRecord` and `*parser.ParsedGroup` to expose field values and metadata to expressions. This ensures expressions have access to the same rich metadata (field definitions, item numbers, friendly names) available in the parsing layer.
 
 ### 4.1 Category 2 Environment (Field Validation)
 
-Available variables when validating a single field:
+The Cat2 environment wraps a `ParsedRecord` and exposes the current field being validated along with access to all record fields and metadata.
 
 ```go
+// Cat2Env provides the expression environment for Category 2 (field-level) validation.
+// It wraps a ParsedRecord and the specific field being validated.
 type Cat2Env struct {
-    // The current field's value (primary validation target)
+    // Value is the current field's parsed value (primary validation target)
     Value any
 
-    // Access to all fields in the record by name
-    // Usage: Fields.CASH_AMOUNT, Fields.CASE_NUMBER
-    Fields map[string]any
+    // Field provides metadata about the current field being validated
+    Field FieldMeta
 
-    // Record metadata
-    RecordType   string  // "T1", "T2", etc.
-    LineNumber   int     // Source file line number
-    RecordLength int     // Length of raw record
+    // Record provides access to all fields and record-level metadata
+    Record RecordAccessor
+
+    // Convenience: direct access to common record properties
+    RecordType   string // e.g., "T1", "T2"
+    LineNumber   int
+    RecordLength int    // DecodedSize from ParsedRecord
+}
+
+// FieldMeta exposes field definition metadata from schema.FieldDef
+type FieldMeta struct {
+    Name         string // Internal field name (e.g., "CASH_AMOUNT")
+    Item         string // Federal spec item number (e.g., "21A")
+    FriendlyName string // Human-readable name for error messages
+    Type         string // "string" or "integer"
+    Required     bool
+}
+
+// RecordAccessor wraps ParsedRecord for field access in expressions.
+// Implements map-like access so expressions can use record.FIELD_NAME syntax.
+type RecordAccessor struct {
+    record *parser.ParsedRecord
+}
+
+// Get implements field access for expressions: record.CASH_AMOUNT
+func (r RecordAccessor) Get(fieldName string) any {
+    return r.record.Get(fieldName)
+}
+
+// GetField returns the full ParsedField with definition and value
+func (r RecordAccessor) GetField(fieldName string) *parser.ParsedField {
+    return r.record.GetParsedField(fieldName)
+}
+
+// NewCat2Env creates a Category 2 environment from a ParsedRecord and field name.
+func NewCat2Env(record *parser.ParsedRecord, fieldName string) *Cat2Env {
+    pf := record.GetParsedField(fieldName)
+
+    env := &Cat2Env{
+        Value:        pf.Value,
+        RecordType:   record.Schema.RecordType,
+        LineNumber:   record.LineNumber,
+        RecordLength: record.DecodedSize,
+        Record:       RecordAccessor{record: record},
+    }
+
+    // Populate field metadata from FieldDef
+    if pf.Def != nil {
+        env.Field = FieldMeta{
+            Name:         pf.Def.Name,
+            Item:         pf.Def.Item,
+            FriendlyName: pf.Def.FriendlyName,
+            Type:         pf.Def.Type,
+            Required:     pf.Def.Required,
+        }
+    }
+
+    return env
 }
 ```
 
 **Example expressions:**
 
 ```yaml
-# Simple field validation
-- expr: "value > 0"
-- expr: "value >= 1 and value <= 12"
-- expr: "len(str(value)) == 11"
-- expr: "value in [1, 2, 3, 4, 5]"
-- expr: "isNotEmpty(value)"
-- expr: "year(value) > 1998"
-- expr: "matches(str(value), '^[A-Z]{2}\\d{4}$')"
+# Simple field validation using Value
+- expr: "Value > 0"
+- expr: "Value >= 1 and Value <= 12"
+- expr: "len(str(Value)) == 11"
+- expr: "Value in [1, 2, 3, 4, 5]"
+- expr: "isNotEmpty(Value)"
+- expr: "year(Value) > 1998"
+- expr: "matches(str(Value), '^[A-Z]{2}\\d{4}$')"
+
+# Access field metadata
+- expr: "Field.Required and isNotEmpty(Value)"
+
+# Access other fields in the same record
+- expr: "Value > 0 or Record.Get('OTHER_FIELD') == 0"
 ```
 
 ### 4.2 Category 3 Environment (Cross-Field Validation)
 
-Available variables when validating across fields in a record:
+The Cat3 environment wraps a `ParsedRecord` and provides convenient access to all fields for cross-field comparisons.
 
 ```go
+// Cat3Env provides the expression environment for Category 3 (cross-field) validation.
+// Fields are promoted to top-level access for cleaner expression syntax.
 type Cat3Env struct {
-    // All fields accessible directly by name
-    // Usage: CASH_AMOUNT, NBR_MONTHS, CASE_NUMBER
-    // (Promoted to top level for readability)
+    // Record provides the underlying ParsedRecord
+    Record *parser.ParsedRecord
 
-    // Also available via Fields map
-    Fields map[string]any
+    // Fields provides map-like access to all field values
+    // Usage in expressions: Fields.CASH_AMOUNT, Fields.NBR_MONTHS
+    Fields FieldsAccessor
 
-    // Record metadata
+    // Convenience: direct access to record properties
     RecordType   string
     LineNumber   int
     RecordLength int
+}
+
+// FieldsAccessor provides map-like field access for expressions.
+// Allows syntax like: Fields.CASH_AMOUNT or Fields["CASH_AMOUNT"]
+type FieldsAccessor struct {
+    record *parser.ParsedRecord
+}
+
+// Implementation uses Go's map accessor pattern for expr compatibility
+func (f FieldsAccessor) Get(fieldName string) any {
+    return f.record.Get(fieldName)
+}
+
+// GetInt returns field as int (0 if not found or not int)
+func (f FieldsAccessor) GetInt(fieldName string) int {
+    return f.record.GetInt(fieldName)
+}
+
+// GetString returns field as string (empty if not found)
+func (f FieldsAccessor) GetString(fieldName string) string {
+    return f.record.GetString(fieldName)
+}
+
+// NewCat3Env creates a Category 3 environment from a ParsedRecord.
+func NewCat3Env(record *parser.ParsedRecord) *Cat3Env {
+    return &Cat3Env{
+        Record:       record,
+        Fields:       FieldsAccessor{record: record},
+        RecordType:   record.Schema.RecordType,
+        LineNumber:   record.LineNumber,
+        RecordLength: record.DecodedSize,
+    }
 }
 ```
 
 **Example expressions:**
 
 ```yaml
-# Cross-field comparisons
-- expr: "CASH_AMOUNT <= 0 or NBR_MONTHS > 0"
-- expr: "START_DATE <= END_DATE"
-- expr: "FIELD_A == FIELD_B"
-- expr: "CASH_AMOUNT + SNAP_AMOUNT + HOUSING_AMOUNT > 0"
+# Cross-field comparisons using Fields accessor
+- expr: "Fields.CASH_AMOUNT <= 0 or Fields.NBR_MONTHS > 0"
+- expr: "Fields.START_DATE <= Fields.END_DATE"
+- expr: "Fields.FIELD_A == Fields.FIELD_B"
+- expr: "Fields.CASH_AMOUNT + Fields.SNAP_AMOUNT + Fields.HOUSING_AMOUNT > 0"
 
 # At least one of multiple fields
-- expr: "isNotEmpty(FIELD_A) or isNotEmpty(FIELD_B) or isNotEmpty(FIELD_C)"
+- expr: "isNotEmpty(Fields.FIELD_A) or isNotEmpty(Fields.FIELD_B) or isNotEmpty(Fields.FIELD_C)"
 
 # All or none pattern
-- expr: "(isEmpty(A) and isEmpty(B)) or (isNotEmpty(A) and isNotEmpty(B))"
+- expr: "(isEmpty(Fields.A) and isEmpty(Fields.B)) or (isNotEmpty(Fields.A) and isNotEmpty(Fields.B))"
 
 # Conditional validation
-- expr: "STATUS != 1 or REASON_CODE > 0"  # If status is 1, reason required
+- expr: "Fields.STATUS != 1 or Fields.REASON_CODE > 0"  # If status is 1, reason required
 ```
 
 ### 4.3 Category 1 Environment (Record Pre-Check)
 
-Available variables for raw record validation:
+The Cat1 environment operates on a `ParsedRecord` before full field parsing, focusing on record-level validation.
 
 ```go
+// Cat1Env provides the expression environment for Category 1 (pre-check) validation.
+// Used for validating record structure before detailed field parsing.
 type Cat1Env struct {
-    // Raw record properties
-    RecordLength int     // Decoded length of record
-    RecordType   string  // Detected record type
-    RawRecord    string  // Raw record string (if needed)
+    // Record provides access to the ParsedRecord
+    Record *parser.ParsedRecord
 
-    // Quick access to key fields (extracted before full parse)
+    // RecordLength is the decoded size of the raw record
+    RecordLength int
+
+    // RecordType is the detected record type (e.g., "T1", "T2")
+    RecordType string
+
+    // LineNumber is the source file line number
+    LineNumber int
+
+    // CaseNumber provides quick access to the case number field
+    // (extracted early for grouping, available for pre-check validation)
     CaseNumber string
 
-    // Metadata
-    LineNumber int
+    // Fields provides access to fields that were parsed in pre-check phase
+    Fields FieldsAccessor
+}
+
+// NewCat1Env creates a Category 1 environment from a ParsedRecord.
+func NewCat1Env(record *parser.ParsedRecord) *Cat1Env {
+    return &Cat1Env{
+        Record:       record,
+        RecordLength: record.DecodedSize,
+        RecordType:   record.Schema.RecordType,
+        LineNumber:   record.LineNumber,
+        CaseNumber:   record.GetString("CASE_NUMBER"),
+        Fields:       FieldsAccessor{record: record},
+    }
 }
 ```
 
@@ -341,58 +458,150 @@ type Cat1Env struct {
 - expr: "RecordLength >= 117 and RecordLength <= 156"
 - expr: "RecordType startsWith 'T'"
 - expr: "isNotEmpty(trim(CaseNumber))"
+
+# Access pre-parsed fields if needed
+- expr: "Fields.GetString('RECORD_TYPE') == 'T1'"
 ```
 
 ### 4.4 Category 4 Environment (Group Validation)
 
-Available variables for case/group validation:
+The Cat4 environment wraps a `ParsedGroup` and provides access to all records for case-level validation.
 
 ```go
+// Cat4Env provides the expression environment for Category 4 (group/case) validation.
+// Wraps a ParsedGroup with pre-computed aggregates for performance.
 type Cat4Env struct {
-    // Group properties
-    CaseNumber   string
-    RecordCount  int              // Total records in group
+    // Group provides access to the underlying ParsedGroup
+    Group *parser.ParsedGroup
 
-    // Pre-computed aggregates for performance
-    RecordCounts map[string]int   // "T1" -> 2, "T2" -> 5
-    HasType      map[string]bool  // "T1" -> true
+    // CaseNumber is the case identifier for this group
+    CaseNumber string
 
-    // Access to all records (for complex validations)
+    // RptMonthYear is the reporting period
+    RptMonthYear string
+
+    // TotalRecords is the count of all records in the group
+    TotalRecords int
+
+    // RecordCounts maps record type to count: {"T1": 2, "T2": 5}
+    RecordCounts map[string]int
+
+    // HasType maps record type to presence: {"T1": true, "T2": true}
+    HasType map[string]bool
+
+    // Records provides access to all records wrapped for expression use
     Records []RecordEnv
 
-    // Helper: records filtered by type
-    // Usage: T1Records, T2Records, T3Records
+    // Type-filtered record slices for convenience
+    // Usage: all(T1Records, {.Fields.Get("STATUS") == 1})
     T1Records []RecordEnv
     T2Records []RecordEnv
     T3Records []RecordEnv
-    // ... etc
+    T4Records []RecordEnv
+    T5Records []RecordEnv
+    T6Records []RecordEnv
+    T7Records []RecordEnv
 }
 
+// RecordEnv wraps a ParsedRecord for use in group-level expressions.
 type RecordEnv struct {
-    Type       string
+    // Underlying ParsedRecord
+    Record *parser.ParsedRecord
+
+    // Type is the record type (e.g., "T1", "T2")
+    Type string
+
+    // LineNumber is the source line number
     LineNumber int
-    Fields     map[string]any
+
+    // SegmentIndex for multi-segment records (T3, T6, T7)
+    SegmentIndex int
+
+    // Fields provides map-like access to field values
+    Fields FieldsAccessor
+}
+
+// NewRecordEnv creates a RecordEnv wrapper for a ParsedRecord.
+func NewRecordEnv(record *parser.ParsedRecord) RecordEnv {
+    return RecordEnv{
+        Record:       record,
+        Type:         record.Schema.RecordType,
+        LineNumber:   record.LineNumber,
+        SegmentIndex: record.SegmentIndex,
+        Fields:       FieldsAccessor{record: record},
+    }
+}
+
+// NewCat4Env creates a Category 4 environment from a ParsedGroup.
+// Pre-computes aggregates for efficient expression evaluation.
+func NewCat4Env(group *parser.ParsedGroup) *Cat4Env {
+    env := &Cat4Env{
+        Group:        group,
+        CaseNumber:   group.CaseNumber,
+        RptMonthYear: group.RptMonthYear,
+        TotalRecords: len(group.Records),
+        RecordCounts: make(map[string]int),
+        HasType:      make(map[string]bool),
+        Records:      make([]RecordEnv, len(group.Records)),
+    }
+
+    // Build record wrappers and aggregates
+    for i, rec := range group.Records {
+        recType := rec.Schema.RecordType
+        env.RecordCounts[recType]++
+        env.HasType[recType] = true
+        env.Records[i] = NewRecordEnv(rec)
+    }
+
+    // Pre-filter by type for convenient access in expressions
+    env.T1Records = filterRecordsByType(env.Records, "T1")
+    env.T2Records = filterRecordsByType(env.Records, "T2")
+    env.T3Records = filterRecordsByType(env.Records, "T3")
+    env.T4Records = filterRecordsByType(env.Records, "T4")
+    env.T5Records = filterRecordsByType(env.Records, "T5")
+    env.T6Records = filterRecordsByType(env.Records, "T6")
+    env.T7Records = filterRecordsByType(env.Records, "T7")
+
+    return env
+}
+
+func filterRecordsByType(records []RecordEnv, recordType string) []RecordEnv {
+    var filtered []RecordEnv
+    for _, r := range records {
+        if r.Type == recordType {
+            filtered = append(filtered, r)
+        }
+    }
+    return filtered
 }
 ```
 
 **Example expressions:**
 
 ```yaml
-# Record type presence
-- expr: "hasRecordType('T1')"
-- expr: "recordCount('T1') >= 1"
+# Record type presence using pre-computed maps
+- expr: "HasType['T1']"
+- expr: "RecordCounts['T1'] >= 1"
 
 # Parent-child relationships
-- expr: "recordCount('T1') == 0 or recordCount('T2') + recordCount('T3') > 0"
+- expr: "RecordCounts['T1'] == 0 or RecordCounts['T2'] + RecordCounts['T3'] > 0"
 
 # Record count ranges
-- expr: "recordCount('T2') >= 1 and recordCount('T2') <= 99"
+- expr: "RecordCounts['T2'] >= 1 and RecordCounts['T2'] <= 99"
 
-# Complex: T1 must have matching children
-- expr: "all(T1Records, { any(T2Records, {.Fields.FAMILY_ID == #.Fields.FAMILY_ID}) })"
+# Iterate over typed record slices
+- expr: "all(T1Records, {.Fields.Get('STATUS') in [1, 2, 3]})"
+- expr: "any(T2Records, {.Fields.GetInt('AGE') >= 18})"
 
-# Uniqueness (using helper function)
+# Complex: T1 must have matching children by FAMILY_AFFILIATION
+- expr: "all(T1Records, { any(T2Records, {.Fields.Get('FAMILY_ID') == #.Fields.Get('FAMILY_ID')}) })"
+
+# Uniqueness (using helper function that accesses Records)
 - expr: "not hasDuplicates('T2', 'SSN')"
+
+# Access underlying group properties
+- expr: "TotalRecords >= 2"
+- expr: "CaseNumber != ''"
 ```
 
 ---
@@ -785,69 +994,139 @@ func (cv *CompiledValidator) Execute(env any) *ValidationResult {
 
 ### 6.4 Environment Construction
 
+Environments wrap `*parser.ParsedRecord` and `*parser.ParsedGroup` to provide expression access to field values and metadata. See Part 4 for the full environment type definitions.
+
 ```go
-// Build environment for Category 2 (field validation)
-func buildCat2Env(ctx *ValidationContext) *Cat2Env {
-    return &Cat2Env{
-        Value:        ctx.FieldValue(),
-        Fields:       ctx.Record.FieldMap(),  // Cached map[string]any
-        RecordType:   ctx.Record.Schema.RecordType,
-        LineNumber:   ctx.Record.LineNumber,
-        RecordLength: ctx.Record.DecodedSize,
-    }
+// buildCat1Env creates a Category 1 environment from a ParsedRecord.
+// Used for record pre-check validation before detailed field parsing.
+func buildCat1Env(record *parser.ParsedRecord) *Cat1Env {
+    return NewCat1Env(record)
 }
 
-// Build environment for Category 3 (cross-field)
-func buildCat3Env(ctx *ValidationContext) *Cat3Env {
-    env := &Cat3Env{
-        Fields:       ctx.Record.FieldMap(),
-        RecordType:   ctx.Record.Schema.RecordType,
-        LineNumber:   ctx.Record.LineNumber,
-        RecordLength: ctx.Record.DecodedSize,
-    }
-    // Promote fields to top level for cleaner expressions
-    // This allows "CASH_AMOUNT > 0" instead of "Fields.CASH_AMOUNT > 0"
-    for name, value := range env.Fields {
-        // expr will look up fields on the struct first, then fall back to map
-    }
-    return env
+// buildCat2Env creates a Category 2 environment for field-level validation.
+// Requires both the record and the specific field name being validated.
+func buildCat2Env(record *parser.ParsedRecord, fieldName string) *Cat2Env {
+    return NewCat2Env(record, fieldName)
 }
 
-// Build environment for Category 4 (group validation)
-func buildCat4Env(ctx *ValidationContext) *Cat4Env {
-    group := ctx.Group
-    env := &Cat4Env{
-        CaseNumber:   group.CaseNumber,
-        RecordCount:  len(group.Records),
-        RecordCounts: make(map[string]int),
-        HasType:      make(map[string]bool),
-        Records:      make([]RecordEnv, len(group.Records)),
-    }
+// buildCat3Env creates a Category 3 environment for cross-field validation.
+func buildCat3Env(record *parser.ParsedRecord) *Cat3Env {
+    return NewCat3Env(record)
+}
 
-    // Pre-compute aggregates
-    for i, rec := range group.Records {
-        recType := rec.Schema.RecordType
-        env.RecordCounts[recType]++
-        env.HasType[recType] = true
-        env.Records[i] = RecordEnv{
-            Type:       recType,
-            LineNumber: rec.LineNumber,
-            Fields:     rec.FieldMap(),
+// buildCat4Env creates a Category 4 environment for group/case validation.
+// Pre-computes aggregates (record counts, type presence) for efficient expressions.
+func buildCat4Env(group *parser.ParsedGroup) *Cat4Env {
+    return NewCat4Env(group)
+}
+```
+
+**Orchestrator Integration:**
+
+```go
+// In the orchestrator, environments are constructed per-validation:
+
+func (o *Orchestrator) validateCat2(record *parser.ParsedRecord) []*ValidationResult {
+    var results []*ValidationResult
+
+    // Iterate over fields with validators
+    for fieldName, validators := range o.cat2Validators[record.Schema.RecordType] {
+        // Build environment for this field
+        env := buildCat2Env(record, fieldName)
+
+        for _, cv := range validators {
+            result := cv.Execute(env)
+            if !result.Valid {
+                result.FieldName = fieldName
+                result.Record = record
+                results = append(results, result)
+            }
         }
     }
 
-    // Pre-filter by type for convenience
-    env.T1Records = filterByType(env.Records, "T1")
-    env.T2Records = filterByType(env.Records, "T2")
-    env.T3Records = filterByType(env.Records, "T3")
+    return results
+}
+
+func (o *Orchestrator) validateCat3(record *parser.ParsedRecord) []*ValidationResult {
+    var results []*ValidationResult
+
+    // Build environment once for all cross-field validators
+    env := buildCat3Env(record)
+
+    for _, cv := range o.cat3Validators[record.Schema.RecordType] {
+        result := cv.Execute(env)
+        if !result.Valid {
+            result.Record = record
+            results = append(results, result)
+        }
+    }
+
+    return results
+}
+
+func (o *Orchestrator) validateCat4(group *parser.ParsedGroup) []*ValidationResult {
+    var results []*ValidationResult
+
+    // Build environment once for all group validators
+    env := buildCat4Env(group)
+
+    for _, cv := range o.cat4Validators {
+        result := cv.Execute(env)
+        if !result.Valid {
+            result.Group = group
+            results = append(results, result)
+        }
+    }
+
+    return results
+}
+```
+
+**Environment Pooling (Optional Optimization):**
+
+For high-throughput scenarios, environment objects can be pooled to reduce allocations:
+
+```go
+var cat2EnvPool = sync.Pool{
+    New: func() any { return &Cat2Env{} },
+}
+
+func acquireCat2Env(record *parser.ParsedRecord, fieldName string) *Cat2Env {
+    env := cat2EnvPool.Get().(*Cat2Env)
+    pf := record.GetParsedField(fieldName)
+
+    env.Value = pf.Value
+    env.RecordType = record.Schema.RecordType
+    env.LineNumber = record.LineNumber
+    env.RecordLength = record.DecodedSize
+    env.Record = RecordAccessor{record: record}
+
+    if pf.Def != nil {
+        env.Field = FieldMeta{
+            Name:         pf.Def.Name,
+            Item:         pf.Def.Item,
+            FriendlyName: pf.Def.FriendlyName,
+            Type:         pf.Def.Type,
+            Required:     pf.Def.Required,
+        }
+    }
 
     return env
+}
+
+func releaseCat2Env(env *Cat2Env) {
+    env.Value = nil
+    env.Record = RecordAccessor{}
+    env.Field = FieldMeta{}
+    cat2EnvPool.Put(env)
 }
 ```
 
 ### 6.5 Custom Function Registration
 
 > **Reference**: See [Functions](https://expr-lang.org/docs/functions) for the `expr.Function()` API and type signature patterns.
+
+Custom functions are registered at compile time and have access to the environment passed to `expr.Run()`. For functions that need environment access (like `recordCount`), we use method-based registration on the environment struct.
 
 ```go
 // registerCustomFunctions returns expr.Option values for all custom functions.
@@ -858,7 +1137,9 @@ func buildCat4Env(ctx *ValidationContext) *Cat4Env {
 // See: https://expr-lang.org/docs/functions#function-option
 func registerCustomFunctions() []expr.Option {
     return []expr.Option{
-        // Date functions
+        // ─────────────────────────────────────────────────────────────
+        // Date Functions
+        // ─────────────────────────────────────────────────────────────
         expr.Function("year", func(params ...any) (any, error) {
             return extractYear(params[0]), nil
         }, new(func(any) int)),
@@ -867,13 +1148,31 @@ func registerCustomFunctions() []expr.Option {
             return extractMonth(params[0]), nil
         }, new(func(any) int)),
 
+        expr.Function("day", func(params ...any) (any, error) {
+            return extractDay(params[0]), nil
+        }, new(func(any) int)),
+
+        expr.Function("quarter", func(params ...any) (any, error) {
+            return extractQuarter(params[0]), nil
+        }, new(func(any) int)),
+
         expr.Function("isValidDate", func(params ...any) (any, error) {
             v := params[0]
             y, m, d := extractYear(v), extractMonth(v), extractDay(v)
             return isValidDate(y, m, d), nil
         }, new(func(any) bool)),
 
-        // String functions
+        expr.Function("dateInPast", func(params ...any) (any, error) {
+            return dateInPast(params[0]), nil
+        }, new(func(any) bool)),
+
+        expr.Function("dateInFuture", func(params ...any) (any, error) {
+            return dateInFuture(params[0]), nil
+        }, new(func(any) bool)),
+
+        // ─────────────────────────────────────────────────────────────
+        // String Functions
+        // ─────────────────────────────────────────────────────────────
         expr.Function("isEmpty", func(params ...any) (any, error) {
             return isEmptyValue(params[0]), nil
         }, new(func(any) bool)),
@@ -889,18 +1188,126 @@ func registerCustomFunctions() []expr.Option {
             return matched, err
         }, new(func(string, string) bool)),
 
-        // Group functions
-        expr.Function("recordCount", func(params ...any) (any, error) {
-            // This requires access to the environment
-            // Implementation depends on how env is structured
-            return 0, nil // Placeholder
-        }, new(func(string) int)),
+        expr.Function("isNumeric", func(params ...any) (any, error) {
+            s := fmt.Sprintf("%v", params[0])
+            return isNumericString(s), nil
+        }, new(func(any) bool)),
 
-        expr.Function("hasDuplicates", func(params ...any) (any, error) {
-            // recordType, fieldName
-            return false, nil // Placeholder
-        }, new(func(string, string) bool)),
+        expr.Function("isAlpha", func(params ...any) (any, error) {
+            s := fmt.Sprintf("%v", params[0])
+            return isAlphaString(s), nil
+        }, new(func(any) bool)),
+
+        // ─────────────────────────────────────────────────────────────
+        // Type Conversion Functions
+        // ─────────────────────────────────────────────────────────────
+        expr.Function("str", func(params ...any) (any, error) {
+            return fmt.Sprintf("%v", params[0]), nil
+        }, new(func(any) string)),
     }
+}
+```
+
+**Environment-Specific Functions (Cat4):**
+
+For Category 4 functions that need access to the group's records, we define methods on the `Cat4Env` struct. The expr library automatically makes struct methods available as functions.
+
+```go
+// Cat4Env methods are automatically available as functions in expressions.
+// Usage: recordCount('T1'), hasRecordType('T2'), hasDuplicates('T2', 'SSN')
+
+// recordCount returns the count of records for a given type.
+// Usage in expression: recordCount('T1') >= 1
+func (e *Cat4Env) recordCount(recordType string) int {
+    return e.RecordCounts[recordType]
+}
+
+// hasRecordType checks if at least one record of the given type exists.
+// Usage in expression: hasRecordType('T1')
+func (e *Cat4Env) hasRecordType(recordType string) bool {
+    return e.HasType[recordType]
+}
+
+// hasDuplicates checks if any duplicate values exist for a field across records of a type.
+// Usage in expression: hasDuplicates('T2', 'SSN')
+func (e *Cat4Env) hasDuplicates(recordType, fieldName string) bool {
+    seen := make(map[any]bool)
+    for _, rec := range e.Records {
+        if rec.Type != recordType {
+            continue
+        }
+        value := rec.Fields.Get(fieldName)
+        if value == nil {
+            continue
+        }
+        if seen[value] {
+            return true
+        }
+        seen[value] = true
+    }
+    return false
+}
+
+// sumField sums numeric values of a field across records of a type.
+// Usage in expression: sumField('T2', 'AMOUNT') > 0
+func (e *Cat4Env) sumField(recordType, fieldName string) float64 {
+    var sum float64
+    for _, rec := range e.Records {
+        if rec.Type != recordType {
+            continue
+        }
+        value := rec.Fields.Get(fieldName)
+        if f, ok := toFloat64(value); ok {
+            sum += f
+        }
+    }
+    return sum
+}
+
+// uniqueValues returns distinct values for a field across records of a type.
+// Usage in expression: len(uniqueValues('T2', 'COUNTY')) > 1
+func (e *Cat4Env) uniqueValues(recordType, fieldName string) []any {
+    seen := make(map[any]bool)
+    var values []any
+    for _, rec := range e.Records {
+        if rec.Type != recordType {
+            continue
+        }
+        value := rec.Fields.Get(fieldName)
+        if value == nil || seen[value] {
+            continue
+        }
+        seen[value] = true
+        values = append(values, value)
+    }
+    return values
+}
+```
+
+**Accessor Methods for Field Access:**
+
+The `FieldsAccessor` and `RecordAccessor` types provide methods that expr can call:
+
+```go
+// FieldsAccessor provides field access methods available in expressions.
+// These methods wrap ParsedRecord's field access for expr compatibility.
+
+// Get retrieves a field value by name. Returns nil if not found.
+// Usage in expression: Fields.Get('CASH_AMOUNT')
+func (f FieldsAccessor) Get(fieldName string) any {
+    return f.record.Get(fieldName)
+}
+
+// GetInt retrieves a field as an integer. Returns 0 if not found or not numeric.
+// Usage in expression: Fields.GetInt('AGE') >= 18
+func (f FieldsAccessor) GetInt(fieldName string) int {
+    return f.record.GetInt(fieldName)
+}
+
+// GetString retrieves a field as a string. Returns empty string if not found.
+// Usage in expression: Fields.GetString('CASE_NUMBER') != ''
+func (f FieldsAccessor) GetString(fieldName string) string {
+    return f.record.GetString(fieldName)
 }
 ```
 
