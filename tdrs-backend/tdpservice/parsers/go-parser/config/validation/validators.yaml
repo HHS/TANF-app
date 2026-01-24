@@ -176,33 +176,33 @@ category3:
   # When FAMILY_AFFILIATION is 2-3, EDUCATION_LEVEL must be 0-16 or 98-99
   # Note: Multi-range target requires special handling
   - id: t2_family_affil_2_3_education_level
-    expr: "if GetInt('FAMILY_AFFILIATION') >= 2 and GetInt('FAMILY_AFFILIATION') <= 3 { (GetInt('EDUCATION_LEVEL') >= 0 and GetInt('EDUCATION_LEVEL') <= 16) or (GetInt('EDUCATION_LEVEL') >= 98 and GetInt('EDUCATION_LEVEL') <= 99) } else { true }"
+    expr: "if GetInt('FAMILY_AFFILIATION') in [2, 3] { (GetInt('EDUCATION_LEVEL') in 0..16) or (GetInt('EDUCATION_LEVEL') in 98..99) } else { true }"
     message: "If FAMILY_AFFILIATION is 2-3, EDUCATION_LEVEL must be 0-16 or 98-99"
     fields: [FAMILY_AFFILIATION, EDUCATION_LEVEL]
 
   # When FAMILY_AFFILIATION is 1-2, WORK_ELIGIBLE_INDICATOR must be 1-9 or 11, 12
   # Note: Values 11 and 12 are two-digit codes that need string comparison
   - id: t2_family_affil_1_2_work_eligible
-    expr: "if GetInt('FAMILY_AFFILIATION') >= 1 and GetInt('FAMILY_AFFILIATION') <= 2 { (GetInt('WORK_ELIGIBLE_INDICATOR') >= 1 and GetInt('WORK_ELIGIBLE_INDICATOR') <= 9) or GetInt('WORK_ELIGIBLE_INDICATOR') == 11 or GetInt('WORK_ELIGIBLE_INDICATOR') == 12 } else { true }"
+    expr: "if GetInt('FAMILY_AFFILIATION') in [1, 2] { (GetInt('WORK_ELIGIBLE_INDICATOR') in 1..9) or (GetInt('WORK_ELIGIBLE_INDICATOR') in 11..12) } else { true }"
     message: "If FAMILY_AFFILIATION is 1-2, WORK_ELIGIBLE_INDICATOR must be 1-9, 11, or 12"
     fields: [FAMILY_AFFILIATION, WORK_ELIGIBLE_INDICATOR]
 
   # When FAMILY_AFFILIATION is 1-2, WORK_PART_STATUS must be in valid set
   # Note: WORK_PART_STATUS uses zero-padded string codes
   - id: t2_family_affil_1_2_work_part_status
-    expr: "if GetInt('FAMILY_AFFILIATION') >= 1 and GetInt('FAMILY_AFFILIATION') <= 2 { GetString('WORK_PART_STATUS') in ['01', '02', '05', '07', '09', '15', '17', '18', '19', '99'] } else { true }"
+    expr: "if GetInt('FAMILY_AFFILIATION') in [1, 2] { GetString('WORK_PART_STATUS') in ['01', '02', '05', '07', '09', '15', '17', '18', '19', '99'] } else { true }"
     message: "If FAMILY_AFFILIATION is 1-2, WORK_PART_STATUS must be 01, 02, 05, 07, 09, 15, 17, 18, 19, or 99"
     fields: [FAMILY_AFFILIATION, WORK_PART_STATUS]
 
   # When WORK_ELIGIBLE_INDICATOR is 1-5, WORK_PART_STATUS must not be 99
   - id: t2_work_eligible_1_5_work_part_not_99
-    expr: "if GetInt('WORK_ELIGIBLE_INDICATOR') >= 1 and GetInt('WORK_ELIGIBLE_INDICATOR') <= 5 { GetString('WORK_PART_STATUS') != '99' } else { true }"
+    expr: "if GetInt('WORK_ELIGIBLE_INDICATOR') in 1..5 { GetString('WORK_PART_STATUS') != '99' } else { true }"
     message: "If WORK_ELIGIBLE_INDICATOR is 1-5, WORK_PART_STATUS must not be 99"
     fields: [WORK_ELIGIBLE_INDICATOR, WORK_PART_STATUS]
 
   # When WORK_ELIGIBLE_INDICATOR is 1-5, SSN must not be a repeating digit pattern
   - id: t2_work_eligible_1_5_ssn_valid
-    expr: "if GetInt('WORK_ELIGIBLE_INDICATOR') >= 1 and GetInt('WORK_ELIGIBLE_INDICATOR') <= 5 { GetString('SSN') != '000000000' and GetString('SSN') != '111111111' and GetString('SSN') != '222222222' and GetString('SSN') != '333333333' and GetString('SSN') != '444444444' and GetString('SSN') != '555555555' and GetString('SSN') != '666666666' and GetString('SSN') != '777777777' and GetString('SSN') != '888888888' and GetString('SSN') != '999999999' } else { true }"
+    expr: "if GetInt('WORK_ELIGIBLE_INDICATOR') in 1..5 { GetString('SSN') not in ['000000000', '111111111', '222222222', '333333333', '444444444', '555555555', '666666666', '777777777', '888888888', '999999999'] } else { true }"
     message: "If WORK_ELIGIBLE_INDICATOR is 1-5, SSN must not be a repeating digit"
     fields: [WORK_ELIGIBLE_INDICATOR, SSN]
 

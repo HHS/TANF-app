@@ -86,6 +86,28 @@ category3:
       target_field: PARENT_MINOR_CHILD
       target_min: 1
       target_max: 3
+  - id: t2_family_affil_2_3_education_level
+  - id: ifthenalso_range_to_not_values
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 1
+      target_field: EDUCATION_LEVEL
+      excluded_values: [0, 99]
+  - id: ifthenalso_range_to_values
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 1
+      target_field: CITIZENSHIP_STATUS
+      values: [1, 2, 3]
+  - id: ifthenalso_range_to_values
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 3
+      target_field: COOPERATION_CHILD_SUPPORT
+      values: [1, 2, 9]
   # EMPLOYMENT_STATUS when FAMILY_AFFILIATION is 1-3
   - id: ifthenalso_range_to_range
     params:
@@ -95,32 +117,6 @@ category3:
       target_field: EMPLOYMENT_STATUS
       target_min: 1
       target_max: 3
-  # CITIZENSHIP_STATUS when FAMILY_AFFILIATION is 1
-  - id: ifthenalso_range_to_values
-    params:
-      condition_field: FAMILY_AFFILIATION
-      condition_min: 1
-      condition_max: 1
-      target_field: CITIZENSHIP_STATUS
-      values: [1, 2, 3]
-  # COOPERATION_CHILD_SUPPORT when FAMILY_AFFILIATION is 1-3
-  - id: ifthenalso_range_to_values
-    params:
-      condition_field: FAMILY_AFFILIATION
-      condition_min: 1
-      condition_max: 3
-      target_field: COOPERATION_CHILD_SUPPORT
-      values: [1, 2, 9]
-  # EDUCATION_LEVEL when FAMILY_AFFILIATION is 1 must not be 0 or 99
-  - id: ifthenalso_range_to_not_values
-    params:
-      condition_field: FAMILY_AFFILIATION
-      condition_min: 1
-      condition_max: 1
-      target_field: EDUCATION_LEVEL
-      excluded_values: [0, 99]
-  # Keep special validators as-is
-  - id: t2_family_affil_2_3_education_level
   - id: t2_family_affil_1_2_work_eligible
   - id: t2_family_affil_1_2_work_part_status
   - id: t2_work_eligible_1_5_work_part_not_99
