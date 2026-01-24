@@ -19,32 +19,94 @@ category1:
 category3:
   # Race fields when FAMILY_AFFILIATION is 1-2
   - id: ifthenalso_range_to_range
-    params: {condition_field: FAMILY_AFFILIATION, condition_min: 1, condition_max: 2, target_field: RACE_HISPANIC, target_min: 1, target_max: 2}
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 2
+      target_field: RACE_HISPANIC
+      target_min: 1
+      target_max: 2
   - id: ifthenalso_range_to_range
-    params: {condition_field: FAMILY_AFFILIATION, condition_min: 1, condition_max: 2, target_field: RACE_AMER_INDIAN, target_min: 1, target_max: 2}
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 2
+      target_field: RACE_AMER_INDIAN
+      target_min: 1
+      target_max: 2
   - id: ifthenalso_range_to_range
-    params: {condition_field: FAMILY_AFFILIATION, condition_min: 1, condition_max: 2, target_field: RACE_ASIAN, target_min: 1, target_max: 2}
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 2
+      target_field: RACE_ASIAN
+      target_min: 1
+      target_max: 2
   - id: ifthenalso_range_to_range
-    params: {condition_field: FAMILY_AFFILIATION, condition_min: 1, condition_max: 2, target_field: RACE_BLACK, target_min: 1, target_max: 2}
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 2
+      target_field: RACE_BLACK
+      target_min: 1
+      target_max: 2
   - id: ifthenalso_range_to_range
-    params: {condition_field: FAMILY_AFFILIATION, condition_min: 1, condition_max: 2, target_field: RACE_HAWAIIAN, target_min: 1, target_max: 2}
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 2
+      target_field: RACE_HAWAIIAN
+      target_min: 1
+      target_max: 2
   - id: ifthenalso_range_to_range
-    params: {condition_field: FAMILY_AFFILIATION, condition_min: 1, condition_max: 2, target_field: RACE_WHITE, target_min: 1, target_max: 2}
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 2
+      target_field: RACE_WHITE
+      target_min: 1
+      target_max: 2
   # RELATIONSHIP_HOH when FAMILY_AFFILIATION is 1-2
   - id: ifthenalso_range_to_range
-    params: {condition_field: FAMILY_AFFILIATION, condition_min: 1, condition_max: 2, target_field: RELATIONSHIP_HOH, target_min: 4, target_max: 9}
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 2
+      target_field: RELATIONSHIP_HOH
+      target_min: 4
+      target_max: 9
   # PARENT_MINOR_CHILD when FAMILY_AFFILIATION is 1-2
   - id: ifthenalso_range_to_values
-    params: {condition_field: FAMILY_AFFILIATION, condition_min: 1, condition_max: 2, target_field: PARENT_MINOR_CHILD, values: [2, 3]}
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 2
+      target_field: PARENT_MINOR_CHILD
+      values: [2, 3]
   # EDUCATION_LEVEL when FAMILY_AFFILIATION is 1 must not be 99
   - id: ifthenalso_range_to_not_values
-    params: {condition_field: FAMILY_AFFILIATION, condition_min: 1, condition_max: 1, target_field: EDUCATION_LEVEL, excluded_values: [99]}
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 1
+      target_field: EDUCATION_LEVEL
+      excluded_values: [99]
   # CITIZENSHIP_STATUS when FAMILY_AFFILIATION is 1
   - id: ifthenalso_range_to_values
-    params: {condition_field: FAMILY_AFFILIATION, condition_min: 1, condition_max: 1, target_field: CITIZENSHIP_STATUS, values: [1, 2, 3]}
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 1
+      target_field: CITIZENSHIP_STATUS
+      values: [1, 2, 3]
   # CITIZENSHIP_STATUS when FAMILY_AFFILIATION is 2
   - id: ifthenalso_range_to_values
-    params: {condition_field: FAMILY_AFFILIATION, condition_min: 2, condition_max: 2, target_field: CITIZENSHIP_STATUS, values: [1, 2, 3, 9]}
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 2
+      condition_max: 2
+      target_field: CITIZENSHIP_STATUS
+      values: [1, 2, 3, 9]
 
 # Fields shared across all segments (included in every output row)
 shared:

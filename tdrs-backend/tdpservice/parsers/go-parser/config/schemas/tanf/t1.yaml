@@ -22,87 +22,71 @@ category3:
   # Amount requires positive validators
   - id: amount_requires_positive
     params:
-      amount_field: "CASH_AMOUNT"
-      required_field: "NBR_MONTHS"
-    fields: [CASH_AMOUNT, NBR_MONTHS]
+      amount_field: CASH_AMOUNT
+      required_field: NBR_MONTHS
   - id: amount_requires_positive
     params:
-      amount_field: "CC_AMOUNT"
-      required_field: "CHILDREN_COVERED"
-    fields: [CC_AMOUNT, CHILDREN_COVERED]
+      amount_field: CC_AMOUNT
+      required_field: CHILDREN_COVERED
   - id: amount_requires_positive
     params:
-      amount_field: "CC_AMOUNT"
-      required_field: "CC_NBR_MONTHS"
-    fields: [CC_AMOUNT, CC_NBR_MONTHS]
+      amount_field: CC_AMOUNT
+      required_field: CC_NBR_MONTHS
   - id: amount_requires_positive
     params:
-      amount_field: "TRANSP_AMOUNT"
-      required_field: "TRANSP_NBR_MONTHS"
-    fields: [TRANSP_AMOUNT, TRANSP_NBR_MONTHS]
+      amount_field: TRANSP_AMOUNT
+      required_field: TRANSP_NBR_MONTHS
   - id: amount_requires_positive
     params:
-      amount_field: "TRANSITION_SERVICES_AMOUNT"
-      required_field: "TRANSITION_NBR_MONTHS"
-    fields: [TRANSITION_SERVICES_AMOUNT, TRANSITION_NBR_MONTHS]
+      amount_field: TRANSITION_SERVICES_AMOUNT
+      required_field: TRANSITION_NBR_MONTHS
   - id: amount_requires_positive
     params:
-      amount_field: "OTHER_AMOUNT"
-      required_field: "OTHER_NBR_MONTHS"
-    fields: [OTHER_AMOUNT, OTHER_NBR_MONTHS]
-
+      amount_field: OTHER_AMOUNT
+      required_field: OTHER_NBR_MONTHS
   # Sanction reduction amount validators
   - id: amount_requires_value_in
     params:
-      amount_field: "SANC_REDUCTION_AMT"
-      required_field: "WORK_REQ_SANCTION"
+      amount_field: SANC_REDUCTION_AMT
+      required_field: WORK_REQ_SANCTION
       values: [1, 2]
-    fields: [SANC_REDUCTION_AMT, WORK_REQ_SANCTION]
   - id: amount_requires_value_in
     params:
-      amount_field: "SANC_REDUCTION_AMT"
-      required_field: "SANC_TEEN_PARENT"
+      amount_field: SANC_REDUCTION_AMT
+      required_field: SANC_TEEN_PARENT
       values: [1, 2]
-    fields: [SANC_REDUCTION_AMT, SANC_TEEN_PARENT]
   - id: amount_requires_value_in
     params:
-      amount_field: "SANC_REDUCTION_AMT"
-      required_field: "NON_COOPERATION_CSE"
+      amount_field: SANC_REDUCTION_AMT
+      required_field: NON_COOPERATION_CSE
       values: [1, 2]
-    fields: [SANC_REDUCTION_AMT, NON_COOPERATION_CSE]
   - id: amount_requires_value_in
     params:
-      amount_field: "SANC_REDUCTION_AMT"
-      required_field: "FAILURE_TO_COMPLY"
+      amount_field: SANC_REDUCTION_AMT
+      required_field: FAILURE_TO_COMPLY
       values: [1, 2]
-    fields: [SANC_REDUCTION_AMT, FAILURE_TO_COMPLY]
   - id: amount_requires_value_in
     params:
-      amount_field: "SANC_REDUCTION_AMT"
-      required_field: "OTHER_SANCTION"
+      amount_field: SANC_REDUCTION_AMT
+      required_field: OTHER_SANCTION
       values: [1, 2]
-    fields: [SANC_REDUCTION_AMT, OTHER_SANCTION]
-
   # Other total reductions validators
   - id: amount_requires_value_in
     params:
-      amount_field: "OTHER_TOTAL_REDUCTIONS"
-      required_field: "FAMILY_CAP"
+      amount_field: OTHER_TOTAL_REDUCTIONS
+      required_field: FAMILY_CAP
       values: [1, 2]
-    fields: [OTHER_TOTAL_REDUCTIONS, FAMILY_CAP]
   - id: amount_requires_value_in
     params:
-      amount_field: "OTHER_TOTAL_REDUCTIONS"
-      required_field: "REDUCTIONS_ON_RECEIPTS"
+      amount_field: OTHER_TOTAL_REDUCTIONS
+      required_field: REDUCTIONS_ON_RECEIPTS
       values: [1, 2]
-    fields: [OTHER_TOTAL_REDUCTIONS, REDUCTIONS_ON_RECEIPTS]
   - id: amount_requires_value_in
     params:
-      amount_field: "OTHER_TOTAL_REDUCTIONS"
-      required_field: "OTHER_NON_SANCTION"
+      amount_field: OTHER_TOTAL_REDUCTIONS
+      required_field: OTHER_NON_SANCTION
       values: [1, 2]
-    fields: [OTHER_TOTAL_REDUCTIONS, OTHER_NON_SANCTION]
-
+  # Sum validator
   - id: t1_sum_assistance_positive
 
 # Fields shared across all segments (included in every output row)
