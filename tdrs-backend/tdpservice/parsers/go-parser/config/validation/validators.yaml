@@ -226,12 +226,18 @@ category4:
 
   # T2 records require at least one T1 record in the same case
   # Python: __validate_s1_records_are_related - "Every T2 record should have at least one corresponding T1..."
+  # Note: This validator behaves mostly correctly in comparison to the python parser. The python parser will generate
+  # this error for every T2 record that doesn't have a corresponding T1 record, while this validator only generates
+  # the error once per group.
   - id: t2_requires_t1
     expr: "RecordCounts['T2'] == 0 or RecordCounts['T1'] >= 1"
     message: "Every T2 record should have at least one corresponding T1 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
 
   # T3 records require at least one T1 record in the same case
   # Python: __validate_s1_records_are_related - "Every T3 record should have at least one corresponding T1..."
+  # Note: This validator behaves mostly correctly in comparison to the python parser. The python parser will generate
+  # this error for every T3 record that doesn't have a corresponding T1 record, while this validator only generates
+  # the error once per group.
   - id: t3_requires_t1
     expr: "RecordCounts['T3'] == 0 or RecordCounts['T1'] >= 1"
     message: "Every T3 record should have at least one corresponding T1 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
@@ -248,6 +254,9 @@ category4:
 
   # T5 records require at least one T4 record in the same case
   # Python: __validate_s2_records_are_related - "Every T5 record should have at least one corresponding T4..."
+  # Note: This validator behaves mostly correctly in comparison to the python parser. The python parser will generate
+  # this error for every T5 record that doesn't have a corresponding T4 record, while this validator only generates
+  # the error once per group.
   - id: t5_requires_t4
     expr: "RecordCounts['T5'] == 0 or RecordCounts['T4'] >= 1"
     message: "Every T5 record should have at least one corresponding T4 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
