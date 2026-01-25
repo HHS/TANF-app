@@ -49,14 +49,16 @@ func routeResults(
 			defer wg.Done()
 			for pb := range pool.Results() {
 				// Validate the batch's groups and collect error counts
-				c1, c2, c3, c4 := validateBatch(pb, orchestrator, filespecKey)
+				c1, c2, c3, c4, contexts := validateBatch(pb, orchestrator, filespecKey)
 				atomic.AddInt64(&cat1Count, c1)
 				atomic.AddInt64(&cat2Count, c2)
 				atomic.AddInt64(&cat3Count, c3)
 				atomic.AddInt64(&cat4Count, c4)
 
-				// Route the batch to writers
-				if err := router.RouteBatch(ctx, pb); err != nil {
+				// Route only valid records to writers (filter based on validation results)
+				// - Groups with Cat4 errors are completely rejected
+				// - Records with Cat1 errors are rejected
+				if err := routeValidatedBatch(ctx, router, contexts); err != nil {
 					log.Printf("Router: batch %d error: %v", pb.BatchID, err)
 					errChan <- err
 					return
@@ -93,9 +95,17 @@ func routeResults(
 	return stats, nil
 }
 
-// validateBatch validates all groups in a parsed batch and logs any validation errors.
-// Returns the count of errors by category (cat1, cat2, cat3, cat4).
-func validateBatch(pb *parser.ParsedBatch, orchestrator *validation.Orchestrator, filespecKey string) (cat1, cat2, cat3, cat4 int64) {
+// GroupValidationContext holds the validation result and parsed group together.
+type GroupValidationContext struct {
+	Group  *parser.ParsedGroup
+	Result *validation.GroupValidationResult
+}
+
+// validateBatch validates all groups in a parsed batch and returns validation contexts.
+// Returns the count of errors by category (cat1, cat2, cat3, cat4) and validation contexts.
+func validateBatch(pb *parser.ParsedBatch, orchestrator *validation.Orchestrator, filespecKey string) (cat1, cat2, cat3, cat4 int64, contexts []*GroupValidationContext) {
+	contexts = make([]*GroupValidationContext, 0, len(pb.Groups))
+
 	for _, group := range pb.Groups {
 		// Wrap the ParsedGroup to satisfy the validation interfaces
 		wrappedRecords := make([]validation.Record, len(group.Records))
@@ -106,6 +116,12 @@ func validateBatch(pb *parser.ParsedBatch, orchestrator *validation.Orchestrator
 
 		// Run validation
 		result := orchestrator.ValidateGroup(wrappedGroup, filespecKey)
+
+		// Store the context for filtering during routing
+		contexts = append(contexts, &GroupValidationContext{
+			Group:  group,
+			Result: result,
+		})
 
 		// Count Cat4 errors
 		cat4 += int64(len(result.Cat4Errors))
@@ -146,4 +162,40 @@ func validateBatch(pb *parser.ParsedBatch, orchestrator *validation.Orchestrator
 		}
 	}
 	return
+}
+
+// routeValidatedBatch routes only valid records to the database.
+// Groups with Cat4 errors are completely rejected (no records written).
+// Records with Cat1 errors are rejected (not written to database).
+func routeValidatedBatch(ctx context.Context, router *writer.Router, contexts []*GroupValidationContext) error {
+	for _, gctx := range contexts {
+		// Skip entire group if it has Cat4 errors
+		if gctx.Result.HasCat4Errors() {
+			log.Printf("Skipping group %s: Cat4 validation failed", gctx.Group.Key)
+			// Release all records back to pool since they won't be written
+			for _, record := range gctx.Group.Records {
+				record.Schema.ReleaseRecord(record)
+			}
+			continue
+		}
+
+		// Route only records that passed Cat1 validation
+		for i, recResult := range gctx.Result.RecordResults {
+			record := gctx.Group.Records[i]
+
+			if recResult.HasCat1Errors() {
+				log.Printf("Skipping record (line %d, type %s): Cat1 validation failed",
+					record.LineNumber, record.Schema.RecordType)
+				// Release record back to pool since it won't be written
+				record.Schema.ReleaseRecord(record)
+				continue
+			}
+
+			// Route valid record to database
+			if err := router.RouteRecord(ctx, record); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }

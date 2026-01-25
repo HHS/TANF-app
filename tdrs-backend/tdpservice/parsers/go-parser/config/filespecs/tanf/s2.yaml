@@ -93,3 +93,56 @@ accumulator:
   grouped_schemas:
     - tanf/t4
     - tanf/t5
+
+validation_orchestrator:
+  categories:
+  - id: 1
+    name: Record pre-check
+    default_error_type: RECORD_PRE_CHECK
+  - id: 2
+    name: Field validation
+    default_error_type: FIELD_VALUE
+  - id: 3
+    name: Cross-field
+    default_error_type: VALUE_CONSISTENCY
+  - id: 4
+    name: Group validation
+    default_error_type: CASE_CONSISTENCY
+
+  execution_order: [4, 1, 2, 3]
+
+  short_circuit:
+    - on_fail: 4
+      action: reject_group
+      skip: [1, 2, 3]
+    - on_fail: 1
+      action: reject_record
+      skip: [2, 3]
+
+# =============================================================================
+# CATEGORY 4 VALIDATORS (Case/Group Level)
+# =============================================================================
+#
+# These validators run at the case/group level and validate relationships
+# between records within the same case (RPT_MONTH_YEAR + CASE_NUMBER).
+#
+# Python equivalent: case_consistency_validator.py -> __validate_s2_records_are_related
+#
+# Validation rules for Section 2:
+# 1. Every T4 must have at least one corresponding T5 in the same case
+# 2. Every T5 must have at least one corresponding T4 in the same case
+#
+# Note: The Python code also has deprecated validators for:
+# - Case closure employment (CLOSURE_REASON == 01 requires EMPLOYMENT_STATUS == 1)
+# - Case closure FTL (CLOSURE_REASON == 03 requires COUNTABLE_MONTH_FED_TIME >= 60)
+# - T5 ATD and SSI validation (territory/state-specific rules)
+# These are marked as deprecated and don't increment num_errors in Python.
+
+category4:
+  # T4 records require at least one T5 record in the same case
+  # Error is reported on T4 records when no T5 exists
+  - id: t4_requires_t5
+
+  # T5 records require at least one T4 record in the same case
+  # Error is reported on T5 records when no T4 exists
+  - id: t5_requires_t4

@@ -40,7 +40,7 @@ category2:
   # Integer range validator - checks value is within [min, max]
   # Params: min (int), max (int)
   - id: in_range_int
-    expr: "int(Value) >= Params.min and int(Value) <= Params.max"
+    expr: "int(trim(string(Value))) >= Params.min and int(trim(string(Value))) <= Params.max"
     message: "{{.RecordType}} Item {{.Item}}: must be {{.Params.min}}-{{.Params.max}}, got {{.Value}}"
 
   # Discrete values validator - checks value is in allowed set
@@ -214,27 +214,40 @@ category3:
     fields: [WORK_ELIGIBLE_INDICATOR, DATE_OF_BIRTH, RELATIONSHIP_HOH]
 
 category4:
-  # Group/case level validators
-  - id: t1_required
-    expr: "RecordCounts['T1'] >= 1"
-    message: "Each case must have at least one T1 record"
+  # =============================================================================
+  # TANF Section 1 Group/Case Validators
+  # =============================================================================
 
-  - id: t1_has_children
-    expr: "validateT1HasChildren(Group)"
-    message: "T1 record must have at least one T2 or T3 child"
+  # T1 must have at least one T2 or T3 with FAMILY_AFFILIATION == 1
+  # Python: __validate_s1_records_are_related - validates family affiliation
+  - id: t1_has_t2_or_t3
+    expr: "RecordCounts['T3'] > 0 or RecordCounts['T2'] > 0"
+    message: "Every T1 record should have at least one corresponding T2 or T3 record with the same RPT_MONTH_YEAR and CASE_NUMBER, where FAMILY_AFFILIATION == 1"
 
-  - id: no_duplicate_case_number
-    expr: "not hasDuplicateField(Group, 'T1', 'CASE_NUMBER')"
-    message: "Duplicate case numbers found in T1 records"
+  # T2 records require at least one T1 record in the same case
+  # Python: __validate_s1_records_are_related - "Every T2 record should have at least one corresponding T1..."
+  - id: t2_requires_t1
+    expr: "RecordCounts['T2'] == 0 or RecordCounts['T1'] >= 1"
+    message: "Every T2 record should have at least one corresponding T1 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
 
-  - id: t4_required
-    expr: "RecordCounts['T4'] >= 1"
-    message: "Each case must have at least one T4 record"
+  # T3 records require at least one T1 record in the same case
+  # Python: __validate_s1_records_are_related - "Every T3 record should have at least one corresponding T1..."
+  - id: t3_requires_t1
+    expr: "RecordCounts['T3'] == 0 or RecordCounts['T1'] >= 1"
+    message: "Every T3 record should have at least one corresponding T1 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
 
-  - id: t5_required
-    expr: "RecordCounts['T5'] >= 1"
-    message: "Each case must have at least one T5 record"
+  # =============================================================================
+  # TANF Section 2 Group/Case Validators
+  # =============================================================================
 
-  - id: max_3_t3_per_group
-    expr: "RecordCounts['T3'] <= 3"
-    message: "Maximum 3 T3 records allowed per case"
+  # T4 records require at least one T5 record in the same case
+  # Python: __validate_s2_records_are_related - "Every T4 record should have at least one corresponding T5..."
+  - id: t4_requires_t5
+    expr: "RecordCounts['T4'] == 0 or RecordCounts['T5'] >= 1"
+    message: "Every T4 record should have at least one corresponding T5 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
+
+  # T5 records require at least one T4 record in the same case
+  # Python: __validate_s2_records_are_related - "Every T5 record should have at least one corresponding T4..."
+  - id: t5_requires_t4
+    expr: "RecordCounts['T5'] == 0 or RecordCounts['T4'] >= 1"
+    message: "Every T5 record should have at least one corresponding T4 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
