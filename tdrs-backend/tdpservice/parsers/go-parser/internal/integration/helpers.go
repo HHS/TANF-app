@@ -11,8 +11,8 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"go-parser/internal/config"
 	"go-parser/internal/pipeline"
-	"go-parser/internal/registry"
 )
 
 // TestDataDir returns the absolute path to the test data directory.
@@ -21,10 +21,10 @@ func TestDataDir() string {
 }
 
 // ParseFile parses a file through the full pipeline and writes to the database.
-func ParseFile(t *testing.T, ctx context.Context, pool *pgxpool.Pool, reg *registry.Registry, program string, section int, filePath string, datafileID int32) {
+func ParseFile(t *testing.T, ctx context.Context, pool *pgxpool.Pool, reg *config.Registry, program string, section int, filePath string, datafileID int32) {
 	t.Helper()
 
-	p := pipeline.New(pool, reg, pipeline.TestConfig())
+	p := pipeline.NewPipline(pool, reg, pipeline.TestConfig())
 	result, err := p.ProcessFile(ctx, pipeline.ProcessParams{
 		Program:    program,
 		Section:    section,

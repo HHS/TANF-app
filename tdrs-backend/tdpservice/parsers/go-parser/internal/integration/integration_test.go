@@ -10,14 +10,14 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"go-parser/internal/registry"
+	"go-parser/internal/config"
 	"go-parser/internal/testutil"
 )
 
 // Global test fixtures initialized in TestMain.
 var (
 	testPool     *pgxpool.Pool
-	testRegistry *registry.Registry
+	testRegistry *config.Registry
 )
 
 func TestMain(m *testing.M) {
@@ -50,7 +50,7 @@ func TestMain(m *testing.M) {
 	log.Println("Connected to database")
 
 	// Load configuration
-	testRegistry, err = registry.Load("../../config")
+	testRegistry, err = config.Load("../../config")
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
