@@ -8,9 +8,10 @@ import (
 
 // DbSchemaMetadata holds database information derived from a schema.
 type DbSchemaMetadata struct {
-	TableName  string   // PostgreSQL table name (e.g., "search_indexes_tanf_t1")
-	Columns    []string // Ordered column names for COPY (derived from schema fields)
-	RecordType string   // e.g., "T1", "M2"
+	TableName     string   // PostgreSQL table name (e.g., "search_indexes_tanf_t1")
+	Columns       []string // Ordered column names for COPY (derived from schema fields)
+	RecordType    string   // e.g., "T1", "M2"
+	ContentTypeID *int32   // Django content type ID for this model (nil if not loaded)
 }
 
 // buildDbSchemaMetadata derives database metadata from a compiled schema.
@@ -85,4 +86,29 @@ func (r *Registry) buildAllMetadata() {
 // GetSchemaMetadata returns database metadata for a schema path.
 func (r *Registry) GetSchemaMetadata(schemaPath string) *DbSchemaMetadata {
 	return r.metadata[schemaPath]
+}
+
+// schemaPathToModelName converts a schema path to its Django model name.
+// The model name is the table name without the "search_indexes_" prefix.
+// Examples:
+//
+//	"tanf/t1"    -> "tanf_t1"
+//	"ssp/m2"     -> "ssp_m2"
+//	"tribal/t1"  -> "tribal_tanf_t1"
+//	"fra/te1"    -> "tanf_exiter1"
+func schemaPathToModelName(schemaPath string) string {
+	tableName := recordSchemaToTable(schemaPath)
+	return strings.TrimPrefix(tableName, "search_indexes_")
+}
+
+// SetContentTypeIDs sets content type IDs for all metadata entries.
+// contentTypes is a map from model name (e.g., "tanf_t1") to content type ID.
+// This should be called after buildAllMetadata and after querying django_content_type.
+func (r *Registry) SetContentTypeIDs(contentTypes map[string]int32) {
+	for path, meta := range r.metadata {
+		modelName := schemaPathToModelName(path)
+		if id, ok := contentTypes[modelName]; ok {
+			meta.ContentTypeID = &id
+		}
+	}
 }

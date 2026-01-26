@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"go-parser/internal/config"
+	"go-parser/internal/db"
 	"go-parser/internal/pipeline"
 	"go-parser/internal/testutil"
 )
@@ -55,6 +56,15 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
+
+	// Load content types from database for error linking
+	// This is done once at startup and reused across parsing runs
+	contentTypes, err := db.LoadContentTypes(ctx, dbPool)
+	if err != nil {
+		log.Fatalf("Failed to load content types: %v", err)
+	}
+	reg.LoadContentTypes(contentTypes)
+	log.Printf("Loaded %d content types from database", len(contentTypes))
 
 	// Get file parameters (in real code, these come from the job queue)
 	program := "TANF"

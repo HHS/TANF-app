@@ -177,9 +177,10 @@ func routeValidatedBatch(ctx context.Context, router *writer.Router, contexts []
 		if gctx.Result.HasBlockingGroupErrors() {
 			log.Printf("Skipping group %s: blocking group validation failed", gctx.Group.Key)
 			// Convert all record/field errors while records available
+			// No contentTypeID since records are blocked (not written)
 			for i, recResult := range gctx.Result.RecordResults {
 				record := gctx.Group.Records[i]
-				if err := convertAndRouteRecordErrors(ctx, router, recResult, record, nil, datafileID); err != nil {
+				if err := convertAndRouteRecordErrors(ctx, router, recResult, record, nil, datafileID, nil); err != nil {
 					return err
 				}
 				record.Schema.ReleaseRecord(record)
@@ -194,8 +195,8 @@ func routeValidatedBatch(ctx context.Context, router *writer.Router, contexts []
 			if recResult.HasBlockingErrors() {
 				log.Printf("Skipping record (line %d, type %s): blocking record validation failed",
 					record.LineNumber, record.Schema.RecordType)
-				// Convert errors while record available (no ObjectID - record won't be written)
-				if err := convertAndRouteRecordErrors(ctx, router, recResult, record, nil, datafileID); err != nil {
+				// Convert errors while record available (no ObjectID/contentTypeID - record won't be written)
+				if err := convertAndRouteRecordErrors(ctx, router, recResult, record, nil, datafileID, nil); err != nil {
 					return err
 				}
 				record.Schema.ReleaseRecord(record)
@@ -216,8 +217,11 @@ func routeValidatedBatch(ctx context.Context, router *writer.Router, contexts []
 				return err
 			}
 
+			// Get content type ID for error linking (record will be written)
+			contentTypeID := router.GetContentTypeID(record.Schema.Path)
+
 			// Convert non-blocking errors with ObjectID linking (while record still available)
-			if err := convertAndRouteRecordErrors(ctx, router, recResult, record, recordUUID, datafileID); err != nil {
+			if err := convertAndRouteRecordErrors(ctx, router, recResult, record, recordUUID, datafileID, contentTypeID); err != nil {
 				record.Schema.ReleaseRecord(record)
 				return err
 			}
@@ -240,6 +244,7 @@ func routeValidatedBatch(ctx context.Context, router *writer.Router, contexts []
 // convertAndRouteRecordErrors converts all errors for a record to rows and routes them.
 // Must be called BEFORE record is released to pool.
 // recordUUID is set for records that will be written (for error linking), nil otherwise.
+// contentTypeID is set only when recordUUID is set (for FIELD_VALUE and VALUE_CONSISTENCY errors).
 func convertAndRouteRecordErrors(
 	ctx context.Context,
 	router *writer.Router,
@@ -247,6 +252,7 @@ func convertAndRouteRecordErrors(
 	record *parser.ParsedRecord,
 	recordUUID *pgtype.UUID,
 	datafileID int32,
+	contentTypeID *int32,
 ) error {
 	allErrors := recResult.AllErrors()
 	if len(allErrors) == 0 {
@@ -254,7 +260,14 @@ func convertAndRouteRecordErrors(
 	}
 
 	for _, vr := range allErrors {
-		row := convert.ConvertError(vr, record, recordUUID, datafileID, nil)
+		// Only set content type ID for non-blocking errors (when record is written)
+		// Per Python parser: FIELD_VALUE and VALUE_CONSISTENCY get content_type when record exists
+		var ctID *int32
+		if recordUUID != nil && (vr.ErrorType == validation.ErrorTypeFieldValue ||
+			vr.ErrorType == validation.ErrorTypeValueConsistency) {
+			ctID = contentTypeID
+		}
+		row := convert.ConvertError(vr, record, recordUUID, datafileID, ctID)
 		if err := router.RouteErrorRow(ctx, row); err != nil {
 			log.Printf("Error routing error row: %v", err)
 			return err

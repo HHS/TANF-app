@@ -30,6 +30,9 @@ type Router struct {
 	// Converters keyed by schema path - manager owns conversion
 	converters map[string]convert.RowConverter
 
+	// Content type IDs keyed by schema path - for error linking
+	contentTypeIDs map[string]*int32
+
 	errorWriter *TableWriter
 }
 
@@ -52,10 +55,11 @@ func NewRouter(
 	poolPrewarmSize int,
 ) *Router {
 	wm := &Router{
-		pool:       pool,
-		datafileID: datafileID,
-		writers:    make(map[string]*TableWriter),
-		converters: make(map[string]convert.RowConverter),
+		pool:           pool,
+		datafileID:     datafileID,
+		writers:        make(map[string]*TableWriter),
+		converters:     make(map[string]convert.RowConverter),
+		contentTypeIDs: make(map[string]*int32),
 	}
 
 	// Create a writer for each data record type in the FileSpec
@@ -97,6 +101,9 @@ func NewRouter(
 
 		// Store converter in manager (conversion happens in RouteRecord)
 		wm.converters[schemaPath] = conv
+
+		// Store content type ID for error linking
+		wm.contentTypeIDs[schemaPath] = meta.ContentTypeID
 
 		// Create simplified TableWriter that receives []any rows
 		wm.writers[schemaPath] = NewTableWriter(
@@ -232,6 +239,12 @@ func (wm *Router) SendRecordRowsByPath(ctx context.Context, schemaPath string, r
 func (wm *Router) HasWriter(schemaPath string) bool {
 	_, ok := wm.writers[schemaPath]
 	return ok
+}
+
+// GetContentTypeID returns the Django content type ID for a schema path.
+// Returns nil if the schema has no content type (e.g., not loaded from DB).
+func (wm *Router) GetContentTypeID(schemaPath string) *int32 {
+	return wm.contentTypeIDs[schemaPath]
 }
 
 // Stop closes all channels and waits for goroutines to finish.

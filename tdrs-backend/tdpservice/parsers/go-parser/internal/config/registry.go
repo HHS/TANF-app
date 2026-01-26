@@ -246,3 +246,11 @@ func (r *Registry) Stats() (numFileSpecs, numSchemas int) {
 func (r *Registry) ValidatorStats() validationpkg.RegistryStats {
 	return r.validators.Stats()
 }
+
+// LoadContentTypes loads Django content type IDs from the provided map and sets them on schema metadata.
+// The map should be keyed by model name (e.g., "tanf_t1") with content type ID as value.
+// This is typically called once after loading the registry, using data queried from django_content_type.
+// Content types are used to link parser errors to their corresponding record models.
+func (r *Registry) LoadContentTypes(contentTypes map[string]int32) {
+	r.SetContentTypeIDs(contentTypes)
+}
