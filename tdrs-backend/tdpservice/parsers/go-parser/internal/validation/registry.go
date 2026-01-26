@@ -83,9 +83,9 @@ func (r *ValidatorRegistry) Load(configPath string, schemas map[string]*schema.C
 
 // PredefinedValidatorsFile represents the validators.yaml file format.
 type PredefinedValidatorsFile struct {
-	Field  []validation.ValidatorDef `yaml:"field"`
-	Record []validation.ValidatorDef `yaml:"record"`
-	Group  []validation.ValidatorDef `yaml:"group"`
+	Field  []validation.ValidatorDef `yaml:"field_validators"`
+	Record []validation.ValidatorDef `yaml:"record_validators"`
+	Group  []validation.ValidatorDef `yaml:"group_validators"`
 }
 
 // loadPredefinedValidators loads predefined validators from validators.yaml.
@@ -145,7 +145,7 @@ func (r *ValidatorRegistry) loadSchemaValidators(path string, cs *schema.Compile
 	for _, vdef := range cs.Record {
 		cv, err := r.resolveValidatorByScope(ScopeRecord, &vdef, "")
 		if err != nil {
-			return fmt.Errorf("record validator %s: %w", vdef.ID, err)
+			return fmt.Errorf("schema %s record validator %s: %w", path, vdef.ID, err)
 		}
 		r.record[recordType] = append(r.record[recordType], cv)
 	}
@@ -155,7 +155,7 @@ func (r *ValidatorRegistry) loadSchemaValidators(path string, cs *schema.Compile
 		for _, vdef := range field.Field {
 			cv, err := r.resolveValidatorByScope(ScopeField, &vdef, "")
 			if err != nil {
-				return fmt.Errorf("field validator %s for field %s: %w", vdef.ID, field.Name, err)
+				return fmt.Errorf("schema %s field %s validator %s: %w", path, field.Name, vdef.ID, err)
 			}
 			r.field[recordType][field.Name] = append(r.field[recordType][field.Name], cv)
 		}
@@ -167,7 +167,7 @@ func (r *ValidatorRegistry) loadSchemaValidators(path string, cs *schema.Compile
 			for _, vdef := range field.Field {
 				cv, err := r.resolveValidatorByScope(ScopeField, &vdef, "")
 				if err != nil {
-					return fmt.Errorf("field validator %s for field %s: %w", vdef.ID, field.Name, err)
+					return fmt.Errorf("schema %s field %s validator %s: %w", path, field.Name, vdef.ID, err)
 				}
 				r.field[recordType][field.Name] = append(r.field[recordType][field.Name], cv)
 			}

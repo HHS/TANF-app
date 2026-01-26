@@ -12,7 +12,7 @@ document: "TANF Active Case Data"
 format: positional
 
 # Record validators with RECORD_PRE_CHECK error type (block record serialization)
-record:
+record_validators:
   - id: case_number_not_empty
 
   # Record validators with VALUE_CONSISTENCY error type (cross-field validation)
@@ -147,7 +147,7 @@ segments:
         end: 20
         type: integer
         required: true
-        field:
+        field_validators:
           - id: in_values
             params:
               values: [1, 2, 4]
@@ -159,7 +159,7 @@ segments:
         end: 28
         type: string
         required: true
-        field:
+        field_validators:
           - id: length
             params:
               n: 8
@@ -174,7 +174,7 @@ segments:
         required: true
         transform:
           name: ssn_decrypt
-        field:
+        field_validators:
           - id: is_numeric
 
       - name: RACE_HISPANIC
@@ -184,7 +184,7 @@ segments:
         end: 38
         type: integer
         required: false
-        field:
+        field_validators:
           - id: validate_race
 
       - name: RACE_AMER_INDIAN
@@ -194,7 +194,7 @@ segments:
         end: 39
         type: integer
         required: false
-        field:
+        field_validators:
           - id: validate_race
 
       - name: RACE_ASIAN
@@ -204,7 +204,7 @@ segments:
         end: 40
         type: integer
         required: false
-        field:
+        field_validators:
           - id: validate_race
 
       - name: RACE_BLACK
@@ -214,7 +214,7 @@ segments:
         end: 41
         type: integer
         required: false
-        field:
+        field_validators:
           - id: validate_race
 
       - name: RACE_HAWAIIAN
@@ -224,7 +224,7 @@ segments:
         end: 42
         type: integer
         required: false
-        field:
+        field_validators:
           - id: validate_race
 
       - name: RACE_WHITE
@@ -234,7 +234,7 @@ segments:
         end: 43
         type: integer
         required: false
-        field:
+        field_validators:
           - id: validate_race
 
       - name: SEX
@@ -244,7 +244,7 @@ segments:
         end: 44
         type: integer
         required: true
-        field:
+        field_validators:
           - id: in_range_int
             params:
               min: 0
@@ -257,7 +257,7 @@ segments:
         end: 45
         type: integer
         required: true
-        field:
+        field_validators:
           - id: in_values
             params:
               values: [1, 2]
@@ -269,7 +269,7 @@ segments:
         end: 46
         type: integer
         required: true
-        field:
+        field_validators:
           - id: in_values
             params:
               values: [1, 2]
@@ -281,7 +281,7 @@ segments:
         end: 48
         type: string
         required: false
-        field:
+        field_validators:
           - id: in_range_int
             params:
               min: 0
@@ -294,7 +294,7 @@ segments:
         end: 49
         type: integer
         required: false
-        field:
+        field_validators:
           - id: in_values
             params:
               values: [0, 2, 3]
@@ -306,7 +306,7 @@ segments:
         end: 51
         type: string
         required: true
-        field:
+        field_validators:
           - id: education_level
 
       - name: CITIZENSHIP_STATUS
@@ -316,7 +316,7 @@ segments:
         end: 52
         type: integer
         required: false
-        field:
+        field_validators:
           - id: in_values
             params:
               values: [1, 2, 3, 9]
@@ -328,7 +328,7 @@ segments:
         end: 56
         type: string
         required: false
-        field:
+        field_validators:
           - id: in_range_int
             params:
               min: 0
@@ -341,7 +341,7 @@ segments:
         end: 60
         type: string
         required: false
-        field:
+        field_validators:
           - id: in_range_int
             params:
               min: 0
@@ -356,7 +356,7 @@ segments:
         end: 61
         type: integer
         required: false
-        field:
+        field_validators:
           - id: in_values
             params:
               values: [1, 2, 4]
@@ -368,7 +368,7 @@ segments:
         end: 69
         type: string
         required: false
-        field:
+        field_validators:
           - id: length
             params:
               n: 8
@@ -383,7 +383,7 @@ segments:
         required: false
         transform:
           name: ssn_decrypt
-        field:
+        field_validators:
           - id: is_numeric
 
       - name: RACE_HISPANIC
@@ -393,7 +393,7 @@ segments:
         end: 79
         type: integer
         required: false
-        field:
+        field_validators:
           - id: validate_race
 
       - name: RACE_AMER_INDIAN
@@ -403,7 +403,7 @@ segments:
         end: 80
         type: integer
         required: false
-        field:
+        field_validators:
           - id: validate_race
 
       - name: RACE_ASIAN
@@ -413,7 +413,7 @@ segments:
         end: 81
         type: integer
         required: false
-        field:
+        field_validators:
           - id: validate_race
 
       - name: RACE_BLACK
@@ -423,7 +423,7 @@ segments:
         end: 82
         type: integer
         required: false
-        field:
+        field_validators:
           - id: validate_race
 
       - name: RACE_HAWAIIAN
@@ -433,7 +433,7 @@ segments:
         end: 83
         type: integer
         required: false
-        field:
+        field_validators:
           - id: validate_race
 
       - name: RACE_WHITE
@@ -443,7 +443,7 @@ segments:
         end: 84
         type: integer
         required: false
-        field:
+        field_validators:
           - id: validate_race
 
       - name: SEX
@@ -453,7 +453,7 @@ segments:
         end: 85
         type: integer
         required: false
-        field:
+        field_validators:
           - id: in_range_int
             params:
               min: 0
@@ -466,7 +466,7 @@ segments:
         end: 86
         type: integer
         required: false
-        field:
+        field_validators:
           - id: in_values
             params:
               values: [1, 2]
@@ -478,7 +478,7 @@ segments:
         end: 87
         type: integer
         required: false
-        field:
+        field_validators:
           - id: in_values
             params:
               values: [1, 2]
@@ -490,7 +490,7 @@ segments:
         end: 89
         type: string
         required: false
-        field:
+        field_validators:
           - id: in_range_int
             params:
               min: 0
@@ -503,7 +503,7 @@ segments:
         end: 90
         type: integer
         required: false
-        field:
+        field_validators:
           - id: in_values
             params:
               values: [0, 2, 3]
@@ -515,7 +515,7 @@ segments:
         end: 92
         type: string
         required: false
-        field:
+        field_validators:
           - id: education_level
 
       - name: CITIZENSHIP_STATUS
@@ -525,7 +525,7 @@ segments:
         end: 93
         type: integer
         required: false
-        field:
+        field_validators:
           - id: in_values
             params:
               values: [1, 2, 3, 9]
@@ -537,7 +537,7 @@ segments:
         end: 97
         type: string
         required: false
-        field:
+        field_validators:
           - id: in_range_int
             params:
               min: 0
@@ -550,7 +550,7 @@ segments:
         end: 101
         type: string
         required: false
-        field:
+        field_validators:
           - id: in_range_int
             params:
               min: 0

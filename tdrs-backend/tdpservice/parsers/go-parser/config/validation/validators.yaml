@@ -24,7 +24,7 @@
 # =============================================================================
 # Default error_type: FIELD_VALUE
 
-field:
+field_validators:
   # Length validator - checks string length equals n
   # Params: n (int)
   - id: length
@@ -120,7 +120,7 @@ field:
 # Default error_type: VALUE_CONSISTENCY
 # Use error_type: RECORD_PRE_CHECK for structural validators that block record serialization
 
-record:
+record_validators:
   # --- RECORD_PRE_CHECK validators (block record serialization) ---
 
   # Record length range validator
@@ -248,7 +248,7 @@ record:
 # Use error_type: VALUE_CONSISTENCY with result_mode: per_record for validators that
 # produce per-record errors without blocking group serialization
 
-group:
+group_validators:
   # =============================================================================
   # TANF Section 1 Group/Case Validators
   # =============================================================================

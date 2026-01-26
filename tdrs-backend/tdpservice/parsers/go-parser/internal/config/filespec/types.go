@@ -50,7 +50,7 @@ type FileSpec struct {
 	// Group validators can also specify result_mode:
 	// - "single": returns one error for the whole group (default)
 	// - "per_record": returns list of failing records, each gets its own error
-	Group []validation.ValidatorDef `yaml:"group"`
+	Group []validation.ValidatorDef `yaml:"group_validators"`
 }
 
 // RecordTypeDetection configures how to determine which schema applies to a row.

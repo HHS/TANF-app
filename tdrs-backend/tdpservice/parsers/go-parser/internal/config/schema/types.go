@@ -58,7 +58,7 @@ type FieldDef struct {
 	ColumnHeader string `yaml:"column_header,omitempty"`
 
 	// Field configures the field-scope validators associated with this field.
-	Field []validation.ValidatorDef `yaml:"field,omitempty"`
+	Field []validation.ValidatorDef `yaml:"field_validators,omitempty"`
 }
 
 // SegmentDef defines a segment within a record.
@@ -100,7 +100,7 @@ type SchemaDef struct {
 	// Validators can specify error_type:
 	// - RECORD_PRE_CHECK: blocks record serialization
 	// - VALUE_CONSISTENCY: allows serialization (default)
-	Record []validation.ValidatorDef `yaml:"record,omitempty"`
+	Record []validation.ValidatorDef `yaml:"record_validators,omitempty"`
 }
 
 // PoolableRecord is an interface for records that can be pooled and reset.

@@ -138,7 +138,7 @@ validation_orchestrator:
 # - T5 ATD and SSI validation (territory/state-specific rules)
 # These are marked as deprecated and don't increment num_errors in Python.
 
-group:
+group_validators:
   # T4 records require at least one T5 record in the same case
   # Error is reported on T4 records when no T5 exists
   - id: t4_requires_t5
