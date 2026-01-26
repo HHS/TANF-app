@@ -121,7 +121,7 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params ProcessParams) (*Proc
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		errorStats, collectorErr = routeResults(ctx, parsers, router, orchestrator, filespecKey, p.config.NumRouters)
+		errorStats, collectorErr = routeResults(ctx, parsers, router, orchestrator, filespecKey, p.config.NumRouters, params.DatafileID)
 	}()
 
 	// Step 8: Process rows through the accumulator
@@ -147,6 +147,9 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params ProcessParams) (*Proc
 
 	// Collect stats from router
 	recordCounts, errorCount := router.Stats()
+
+	// Include error count in the record counts map for consistent reporting
+	recordCounts["parser_error"] = errorCount
 
 	// Log validation error summary
 	if errorStats != nil {

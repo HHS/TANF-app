@@ -7,9 +7,12 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"github.com/jackc/pgx/v5/pgtype"
+
 	"go-parser/internal/parser"
 	"go-parser/internal/validation"
 	"go-parser/internal/writer"
+	"go-parser/internal/writer/convert"
 )
 
 // ErrorStats tracks validation error counts by scope and type.
@@ -35,6 +38,7 @@ func routeResults(
 	orchestrator *validation.Orchestrator,
 	filespecKey string,
 	numRouters int,
+	datafileID int32,
 ) (*ErrorStats, error) {
 	var wg sync.WaitGroup
 	errChan := make(chan error, numRouters)
@@ -55,10 +59,11 @@ func routeResults(
 				atomic.AddInt64(&valueConsistency, vc)
 				atomic.AddInt64(&caseConsistency, cc)
 
-				// Route only valid records to writers (filter based on validation results)
-				// - Groups with CASE_CONSISTENCY errors are completely rejected
-				// - Records with RECORD_PRE_CHECK errors are rejected
-				if err := routeValidatedBatch(ctx, router, contexts); err != nil {
+				// Route valid records and all errors to writers
+				// - Groups with CASE_CONSISTENCY errors: errors written, records rejected
+				// - Records with RECORD_PRE_CHECK errors: errors written, record rejected
+				// - Valid records: record and non-blocking errors written (linked via ObjectID)
+				if err := routeValidatedBatch(ctx, router, contexts, datafileID); err != nil {
 					log.Printf("Router: batch %d error: %v", pb.BatchID, err)
 					errChan <- err
 					return
@@ -151,37 +156,108 @@ func validateBatch(pb *parser.ParsedBatch, orchestrator *validation.Orchestrator
 	return
 }
 
-// routeValidatedBatch routes only valid records to the database.
-// Groups with blocking errors (CASE_CONSISTENCY) are completely rejected (no records written).
-// Records with blocking errors (RECORD_PRE_CHECK) are rejected (not written to database).
-func routeValidatedBatch(ctx context.Context, router *writer.Router, contexts []*GroupValidationContext) error {
+// routeValidatedBatch routes valid records and all errors to the database.
+// Groups with blocking errors (CASE_CONSISTENCY) have errors written but records rejected.
+// Records with blocking errors (RECORD_PRE_CHECK) have errors written but record rejected.
+// Valid records are written with their non-blocking errors linked via ObjectID.
+func routeValidatedBatch(ctx context.Context, router *writer.Router, contexts []*GroupValidationContext, datafileID int32) error {
 	for _, gctx := range contexts {
-		// Skip entire group if it has blocking group errors (CASE_CONSISTENCY)
+		// Route group-level errors (use first record for context)
+		if len(gctx.Result.GroupErrors) > 0 && len(gctx.Group.Records) > 0 {
+			firstRec := gctx.Group.Records[0]
+			for _, groupErr := range gctx.Result.GroupErrors {
+				row := convert.ConvertError(groupErr, firstRec, nil, datafileID, nil)
+				if err := router.RouteErrorRow(ctx, row); err != nil {
+					return err
+				}
+			}
+		}
+
+		// Handle blocked groups: convert all errors, release records, skip record writing
 		if gctx.Result.HasBlockingGroupErrors() {
 			log.Printf("Skipping group %s: blocking group validation failed", gctx.Group.Key)
-			// Release all records back to pool since they won't be written
-			for _, record := range gctx.Group.Records {
+			// Convert all record/field errors while records available
+			for i, recResult := range gctx.Result.RecordResults {
+				record := gctx.Group.Records[i]
+				if err := convertAndRouteRecordErrors(ctx, router, recResult, record, nil, datafileID); err != nil {
+					return err
+				}
 				record.Schema.ReleaseRecord(record)
 			}
 			continue
 		}
 
-		// Route only records that passed blocking validation (RECORD_PRE_CHECK)
+		// Process each record in the group
 		for i, recResult := range gctx.Result.RecordResults {
 			record := gctx.Group.Records[i]
 
 			if recResult.HasBlockingErrors() {
 				log.Printf("Skipping record (line %d, type %s): blocking record validation failed",
 					record.LineNumber, record.Schema.RecordType)
-				// Release record back to pool since it won't be written
+				// Convert errors while record available (no ObjectID - record won't be written)
+				if err := convertAndRouteRecordErrors(ctx, router, recResult, record, nil, datafileID); err != nil {
+					return err
+				}
 				record.Schema.ReleaseRecord(record)
 				continue
 			}
 
-			// Route valid record to database
-			if err := router.RouteRecord(ctx, record); err != nil {
+			// Record will be written - check if it has a writer
+			if !router.HasWriter(record.Schema.Path) {
+				// No writer for this schema (e.g., header/trailer) - skip silently
+				record.Schema.ReleaseRecord(record)
+				continue
+			}
+
+			// Convert record to get UUID, then convert errors with UUID linking
+			rows, recordUUID, err := router.ConvertRecord(record)
+			if err != nil {
+				record.Schema.ReleaseRecord(record)
 				return err
 			}
+
+			// Convert non-blocking errors with ObjectID linking (while record still available)
+			if err := convertAndRouteRecordErrors(ctx, router, recResult, record, recordUUID, datafileID); err != nil {
+				record.Schema.ReleaseRecord(record)
+				return err
+			}
+
+			// Capture schema path before releasing record
+			schemaPath := record.Schema.Path
+
+			// Release record back to pool - no longer needed after conversion
+			record.Schema.ReleaseRecord(record)
+
+			// Send converted record rows to writer
+			if err := router.SendRecordRowsByPath(ctx, schemaPath, rows); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// convertAndRouteRecordErrors converts all errors for a record to rows and routes them.
+// Must be called BEFORE record is released to pool.
+// recordUUID is set for records that will be written (for error linking), nil otherwise.
+func convertAndRouteRecordErrors(
+	ctx context.Context,
+	router *writer.Router,
+	recResult *validation.RecordValidationResult,
+	record *parser.ParsedRecord,
+	recordUUID *pgtype.UUID,
+	datafileID int32,
+) error {
+	allErrors := recResult.AllErrors()
+	if len(allErrors) == 0 {
+		return nil
+	}
+
+	for _, vr := range allErrors {
+		row := convert.ConvertError(vr, record, recordUUID, datafileID, nil)
+		if err := router.RouteErrorRow(ctx, row); err != nil {
+			log.Printf("Error routing error row: %v", err)
+			return err
 		}
 	}
 	return nil

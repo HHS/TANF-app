@@ -7,11 +7,12 @@ import (
 	"log"
 	"sync"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"go-parser/internal/config"
 	"go-parser/internal/config/filespec"
 	"go-parser/internal/parser"
-	"go-parser/internal/config"
 	"go-parser/internal/writer/convert"
 )
 
@@ -108,8 +109,13 @@ func NewRouter(
 			schemaPath, meta.TableName, len(meta.Columns))
 	}
 
-	// TODO: Create error writer when error handling is implemented
-	// wm.errorWriter = NewErrorWriter(...)
+	// Create error writer with higher threshold (100k) for 5-10x error volume
+	wm.errorWriter = NewTableWriter(
+		"parser_error",
+		parserErrorColumns,
+		100000, // Higher threshold for error volume
+	)
+	log.Printf("Created error writer for parser_error (%d columns)", len(parserErrorColumns))
 
 	return wm
 }
@@ -166,6 +172,66 @@ func (wm *Router) RouteBatch(ctx context.Context, batch *parser.ParsedBatch) err
 		}
 	}
 	return nil
+}
+
+// RouteErrorRow sends a pre-converted error row to the error writer.
+// Errors are converted at call site (in result_router) while record is available.
+func (wm *Router) RouteErrorRow(ctx context.Context, row []any) error {
+	if wm.errorWriter == nil {
+		return nil
+	}
+	return wm.errorWriter.SendRow(ctx, row)
+}
+
+// ConvertRecord converts a record to database rows and extracts the UUID.
+// Does NOT release the record or send rows - caller handles that.
+// Returns the converted rows, the record's UUID, and any error.
+// The UUID is extracted from the converted row at position len(row)-3 (third from end).
+func (wm *Router) ConvertRecord(record *parser.ParsedRecord) ([][]any, *pgtype.UUID, error) {
+	conv, ok := wm.converters[record.Schema.Path]
+	if !ok {
+		return nil, nil, fmt.Errorf("no converter for schema: %s", record.Schema.Path)
+	}
+
+	rows := conv(record, wm.datafileID)
+	if len(rows) == 0 {
+		return rows, nil, nil
+	}
+
+	// Extract UUID from first row at position len(row)-3
+	// All converters place ID, DatafileID, LineNumber at the end
+	firstRow := rows[0]
+	uuidIdx := len(firstRow) - 3
+	if uuidIdx >= 0 {
+		if uuid, ok := firstRow[uuidIdx].(pgtype.UUID); ok {
+			return rows, &uuid, nil
+		}
+	}
+
+	return rows, nil, nil
+}
+
+// SendRecordRowsByPath sends pre-converted record rows to the writer for the given schema path.
+// Used in conjunction with ConvertRecord for the error-linking flow.
+func (wm *Router) SendRecordRowsByPath(ctx context.Context, schemaPath string, rows [][]any) error {
+	tw, ok := wm.writers[schemaPath]
+	if !ok {
+		// No writer for this schema (e.g., header/trailer) - skip silently
+		return nil
+	}
+
+	for _, row := range rows {
+		if err := tw.SendRow(ctx, row); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// HasWriter returns true if there's a writer for this schema path.
+func (wm *Router) HasWriter(schemaPath string) bool {
+	_, ok := wm.writers[schemaPath]
+	return ok
 }
 
 // Stop closes all channels and waits for goroutines to finish.
