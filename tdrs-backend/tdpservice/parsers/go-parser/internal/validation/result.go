@@ -2,6 +2,7 @@ package validation
 
 import (
 	"bytes"
+	"sync"
 	"text/template"
 )
 
@@ -12,6 +13,14 @@ const (
 	ErrorTypeValueConsistency = "VALUE_CONSISTENCY"
 	ErrorTypeCaseConsistency  = "CASE_CONSISTENCY"
 )
+
+// bufPool provides reusable bytes.Buffer instances for message rendering.
+// This reduces allocations when generating error messages.
+var bufPool = sync.Pool{
+	New: func() any {
+		return new(bytes.Buffer)
+	},
+}
 
 // Scope constants
 const (
@@ -48,11 +57,20 @@ func (vr *ValidationResult) Message(ctx map[string]any) string {
 	if vr.Valid || vr.Validator == nil || vr.Validator.Message == nil {
 		return ""
 	}
-	var buf bytes.Buffer
-	if err := vr.Validator.Message.Execute(&buf, ctx); err != nil {
+
+	// Get buffer from pool
+	buf := bufPool.Get().(*bytes.Buffer)
+	buf.Reset()
+
+	if err := vr.Validator.Message.Execute(buf, ctx); err != nil {
+		bufPool.Put(buf)
 		return vr.ValidatorID + ": template error: " + err.Error()
 	}
-	return buf.String()
+
+	// Copy result and return buffer to pool
+	result := buf.String()
+	bufPool.Put(buf)
+	return result
 }
 
 // RecordValidationResult contains all validation results for a single record.

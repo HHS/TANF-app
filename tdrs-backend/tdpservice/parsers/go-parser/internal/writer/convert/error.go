@@ -52,22 +52,23 @@ func ConvertError(
 	errorType := mapErrorType(vr.ErrorType)
 
 	// Build row matching parserErrorColumns order
+	// Use raw types where possible, nil for NULL
 	row := []any{
-		toRowNumber(record),                          // row_number
-		pgtype.Text{Valid: false},                    // column_number (not used)
-		toItemNumber(vr, record),                     // item_number
-		toFieldName(vr),                              // field_name
-		toCaseNumber(record),                         // case_number
-		toRptMonthYear(record),                       // rpt_month_year
-		pgtype.Text{String: msg, Valid: msg != ""},   // error_message
-		errorType,                                    // error_type
-		pgtype.Timestamptz{Time: time.Now(), Valid: true}, // created_at
-		fieldsJSON,                       // fields_json
-		toContentTypeID(contentTypeID),   // content_type_id
-		pgtype.Int4{Int32: datafileID, Valid: true}, // file_id
-		toObjectID(recordUUID),           // object_id
-		false,                            // deprecated
-		valuesJSON,                       // values_json
+		toErrorRowNumber(record),   // row_number (int32 or nil)
+		nil,                        // column_number (not used)
+		toErrorItemNumber(vr, record), // item_number (string or nil)
+		toErrorFieldName(vr),       // field_name (string or nil)
+		toErrorCaseNumber(record),  // case_number (string or nil)
+		toErrorRptMonthYear(record), // rpt_month_year (int32 or nil)
+		toErrorMessage(msg),        // error_message (string or nil)
+		errorType,                  // error_type (string)
+		time.Now(),                 // created_at (time.Time)
+		fieldsJSON,                 // fields_json ([]byte)
+		toErrorContentTypeID(contentTypeID), // content_type_id (int32 or nil)
+		datafileID,                 // file_id (int32)
+		toErrorObjectID(recordUUID), // object_id (pgtype.UUID)
+		false,                      // deprecated (bool)
+		valuesJSON,                 // values_json ([]byte)
 	}
 
 	return row
@@ -81,10 +82,9 @@ func renderErrorMessage(vr *validation.ValidationResult, record *parser.ParsedRe
 	}
 
 	// Build template context from record
-	ctx := map[string]any{
-		"RecordType": record.Schema.RecordType,
-		"LineNumber": record.LineNumber,
-	}
+	ctx := make(map[string]any, 8) // Pre-size for typical usage
+	ctx["RecordType"] = record.Schema.RecordType
+	ctx["LineNumber"] = record.LineNumber
 
 	// Add field-specific context if this is a field error
 	if vr.FieldName != "" {
@@ -110,13 +110,14 @@ func renderErrorMessage(vr *validation.ValidationResult, record *parser.ParsedRe
 
 // buildFieldsJSON builds the fields_json structure from schema metadata
 func buildFieldsJSON(vr *validation.ValidationResult, record *parser.ParsedRecord) []byte {
-	fieldsJSON := FieldsJSON{
-		FriendlyName: make(map[string]string),
-		ItemNumbers:  make(map[string]string),
-	}
-
 	// Get fields involved in this validation
-	fieldNames := getInvolvedFieldNames(vr, record)
+	fieldNames := getInvolvedFieldNames(vr)
+
+	// Pre-size maps based on expected field count
+	fieldsJSON := FieldsJSON{
+		FriendlyName: make(map[string]string, len(fieldNames)),
+		ItemNumbers:  make(map[string]string, len(fieldNames)),
+	}
 
 	for _, fieldName := range fieldNames {
 		fd := getFieldDef(record, fieldName)
@@ -135,10 +136,11 @@ func buildFieldsJSON(vr *validation.ValidationResult, record *parser.ParsedRecor
 
 // buildValuesJSON builds the values_json structure from record field values
 func buildValuesJSON(vr *validation.ValidationResult, record *parser.ParsedRecord) []byte {
-	valuesMap := make(map[string]any)
-
 	// Get fields involved in this validation
-	fieldNames := getInvolvedFieldNames(vr, record)
+	fieldNames := getInvolvedFieldNames(vr)
+
+	// Pre-size map based on expected field count
+	valuesMap := make(map[string]any, len(fieldNames))
 
 	for _, fieldName := range fieldNames {
 		value := record.Get(fieldName)
@@ -155,8 +157,13 @@ func buildValuesJSON(vr *validation.ValidationResult, record *parser.ParsedRecor
 }
 
 // getInvolvedFieldNames returns the field names involved in this validation result
-func getInvolvedFieldNames(vr *validation.ValidationResult, record *parser.ParsedRecord) []string {
-	var fieldNames []string
+func getInvolvedFieldNames(vr *validation.ValidationResult) []string {
+	// Pre-allocate with estimated capacity
+	capacity := 1
+	if vr.Validator != nil && len(vr.Validator.Fields) > 0 {
+		capacity += len(vr.Validator.Fields)
+	}
+	fieldNames := make([]string, 0, capacity)
 
 	// For field-scope errors, include the field name
 	if vr.FieldName != "" {
@@ -195,62 +202,69 @@ func mapErrorType(errorType string) string {
 	return errorTypeDBValue[validation.ErrorTypeValueConsistency]
 }
 
-// Helper functions for building row values
+// Helper functions for building error row values using raw types
 
-func toRowNumber(record *parser.ParsedRecord) pgtype.Int4 {
+func toErrorRowNumber(record *parser.ParsedRecord) any {
 	if record == nil {
-		return pgtype.Int4{Valid: false}
+		return nil
 	}
-	return pgtype.Int4{Int32: int32(record.LineNumber), Valid: true}
+	return int32(record.LineNumber)
 }
 
-func toItemNumber(vr *validation.ValidationResult, record *parser.ParsedRecord) pgtype.Text {
+func toErrorItemNumber(vr *validation.ValidationResult, record *parser.ParsedRecord) any {
 	if vr.FieldName != "" {
 		fd := getFieldDef(record, vr.FieldName)
 		if fd != nil && fd.Item != "" {
-			return pgtype.Text{String: fd.Item, Valid: true}
+			return fd.Item
 		}
 	}
-	return pgtype.Text{Valid: false}
+	return nil
 }
 
-func toFieldName(vr *validation.ValidationResult) pgtype.Text {
+func toErrorFieldName(vr *validation.ValidationResult) any {
 	if vr.FieldName != "" {
-		return pgtype.Text{String: vr.FieldName, Valid: true}
+		return vr.FieldName
 	}
-	return pgtype.Text{Valid: false}
+	return nil
 }
 
-func toCaseNumber(record *parser.ParsedRecord) pgtype.Text {
+func toErrorCaseNumber(record *parser.ParsedRecord) any {
 	if record == nil {
-		return pgtype.Text{Valid: false}
+		return nil
 	}
 	caseNum := record.GetString("CASE_NUMBER")
 	if caseNum == "" {
-		return pgtype.Text{Valid: false}
+		return nil
 	}
-	return pgtype.Text{String: caseNum, Valid: true}
+	return caseNum
 }
 
-func toRptMonthYear(record *parser.ParsedRecord) pgtype.Int4 {
+func toErrorRptMonthYear(record *parser.ParsedRecord) any {
 	if record == nil {
-		return pgtype.Int4{Valid: false}
+		return nil
 	}
 	rmy := record.GetInt("RPT_MONTH_YEAR")
 	if rmy == 0 {
-		return pgtype.Int4{Valid: false}
+		return nil
 	}
-	return pgtype.Int4{Int32: int32(rmy), Valid: true}
+	return int32(rmy)
 }
 
-func toContentTypeID(contentTypeID *int32) pgtype.Int4 {
+func toErrorMessage(msg string) any {
+	if msg == "" {
+		return nil
+	}
+	return msg
+}
+
+func toErrorContentTypeID(contentTypeID *int32) any {
 	if contentTypeID == nil {
-		return pgtype.Int4{Valid: false}
+		return nil
 	}
-	return pgtype.Int4{Int32: *contentTypeID, Valid: true}
+	return *contentTypeID
 }
 
-func toObjectID(recordUUID *pgtype.UUID) pgtype.UUID {
+func toErrorObjectID(recordUUID *pgtype.UUID) pgtype.UUID {
 	if recordUUID == nil {
 		return pgtype.UUID{Valid: false}
 	}
