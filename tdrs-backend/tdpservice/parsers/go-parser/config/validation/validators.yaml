@@ -2,6 +2,16 @@
 # These validators can be referenced by ID in schemas and filespecs.
 # Messages can be overridden at the use site.
 #
+# Validators are organized by SCOPE:
+# - field: single field validation (environment: FieldEnv with Value, Params)
+# - record: cross-field validation within a record (environment: RecordEnv with Get(), GetInt(), GetString(), RecordLength, Params)
+# - group: cross-record validation within a case/group (environment: GroupEnv with Group, RecordCounts, HasType, getRecordsOfType(), Params)
+#
+# Default error types by scope (can be overridden with error_type):
+# - field: FIELD_VALUE
+# - record: VALUE_CONSISTENCY
+# - group: CASE_CONSISTENCY
+#
 # Parameterized validators use Params.key to access runtime parameters.
 # Example usage in schema:
 #   - id: record_length_range
@@ -9,28 +19,12 @@
 #       min: 117
 #       max: 156
 
-category1:
-  # Record length range validator
-  # Params: min (int), max (int)
-  - id: record_length_range
-    expr: "RecordLength >= Params.min and RecordLength <= Params.max"
-    message: "{{.RecordType}}: record must be {{.Params.min}}-{{.Params.max}} characters, got {{.RecordLength}}"
+# =============================================================================
+# FIELD VALIDATORS (field scope)
+# =============================================================================
+# Default error_type: FIELD_VALUE
 
-  # Record length minimum validator
-  # Params: min (int)
-  - id: record_length_min
-    expr: "RecordLength >= Params.min"
-    message: "{{.RecordType}}: record must be at least {{.Params.min}} characters, got {{.RecordLength}}"
-
-  - id: record_has_valid_type
-    expr: "isNotBlank(Get('RecordType'))"
-    message: "{{.RecordType}}: record type is missing or blank"
-
-  - id: case_number_not_empty
-    expr: "isNotBlank(GetString('CASE_NUMBER'))"
-    message: "{{.RecordType}}: case number is required and cannot be blank"
-
-category2:
+field:
   # Length validator - checks string length equals n
   # Params: n (int)
   - id: length
@@ -120,9 +114,40 @@ category2:
     expr: "isBlank(Value) or int(Value) >= 0 and int(Value) <= 2"
     message: "{{.RecordType}} Item {{.Item}}: must be 0, 1, 2, or blank, got {{.Value}}"
 
-category3:
+# =============================================================================
+# RECORD VALIDATORS (record scope)
+# =============================================================================
+# Default error_type: VALUE_CONSISTENCY
+# Use error_type: RECORD_PRE_CHECK for structural validators that block record serialization
 
-  # TODO: need to implement federally_funded_ssn validator
+record:
+  # --- RECORD_PRE_CHECK validators (block record serialization) ---
+
+  # Record length range validator
+  # Params: min (int), max (int)
+  - id: record_length_range
+    expr: "RecordLength >= Params.min and RecordLength <= Params.max"
+    error_type: RECORD_PRE_CHECK
+    message: "{{.RecordType}}: record must be {{.Params.min}}-{{.Params.max}} characters, got {{.RecordLength}}"
+
+  # Record length minimum validator
+  # Params: min (int)
+  - id: record_length_min
+    expr: "RecordLength >= Params.min"
+    error_type: RECORD_PRE_CHECK
+    message: "{{.RecordType}}: record must be at least {{.Params.min}} characters, got {{.RecordLength}}"
+
+  - id: record_has_valid_type
+    expr: "isNotBlank(Get('RecordType'))"
+    error_type: RECORD_PRE_CHECK
+    message: "{{.RecordType}}: record type is missing or blank"
+
+  - id: case_number_not_empty
+    expr: "isNotBlank(GetString('CASE_NUMBER'))"
+    error_type: RECORD_PRE_CHECK
+    message: "{{.RecordType}}: case number is required and cannot be blank"
+
+  # --- VALUE_CONSISTENCY validators (allow record serialization) ---
 
   # Amount requires positive field validator
   # When amount_field is positive, required_field must be positive
@@ -216,7 +241,14 @@ category3:
     message: "If WORK_ELIGIBLE_INDICATOR is 11 and age is less than 19, RELATIONSHIP_HOH must not be 1"
     fields: [WORK_ELIGIBLE_INDICATOR, DATE_OF_BIRTH, RELATIONSHIP_HOH]
 
-category4:
+# =============================================================================
+# GROUP VALIDATORS (group scope)
+# =============================================================================
+# Default error_type: CASE_CONSISTENCY (blocks group serialization)
+# Use error_type: VALUE_CONSISTENCY with result_mode: per_record for validators that
+# produce per-record errors without blocking group serialization
+
+group:
   # =============================================================================
   # TANF Section 1 Group/Case Validators
   # =============================================================================
@@ -277,3 +309,26 @@ category4:
   - id: t5_requires_t4
     expr: "RecordCounts['T5'] == 0 or RecordCounts['T4'] >= 1"
     message: "Every T5 record should have at least one corresponding T4 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
+
+  # =============================================================================
+  # Federally funded SSN validator (group scope, per-record errors)
+  # =============================================================================
+  # This validator produces VALUE_CONSISTENCY errors attributed to individual records.
+  # It doesn't block group serialization because these are data quality issues,
+  # not structural problems.
+  #
+  # Python equivalent: tdr_parser.py:436-464 - generate_funded_ssn_errors
+  #
+  # Placeholder for future implementation:
+  # - id: federally_funded_ssn
+  #   expr: |
+  #     filter(
+  #       getRecordsOfType(Group, 'T2'),
+  #       { .GetInt('FAMILY_AFFILIATION') == 1 and
+  #         any(getRecordsOfType(Group, 'T1'), { #.GetInt('FUNDING_STREAM') == 1 }) and
+  #         not isValidSSN(.GetString('SSN')) }
+  #     )
+  #   error_type: VALUE_CONSISTENCY
+  #   result_mode: per_record
+  #   message: "Federally funded recipients must have a valid Social Security number."
+  #   fields: [FUNDING_STREAM, FAMILY_AFFILIATION, SSN]

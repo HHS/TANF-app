@@ -103,6 +103,8 @@ type GroupValidationContext struct {
 
 // validateBatch validates all groups in a parsed batch and returns validation contexts.
 // Returns the count of errors by category (cat1, cat2, cat3, cat4) and validation contexts.
+// Note: Error counting uses legacy category fields for backward compatibility.
+// New code should use ErrorType-based classification.
 func validateBatch(pb *parser.ParsedBatch, orchestrator *validation.Orchestrator, filespecKey string) (cat1, cat2, cat3, cat4 int64, contexts []*GroupValidationContext) {
 	contexts = make([]*GroupValidationContext, 0, len(pb.Groups))
 
@@ -123,55 +125,42 @@ func validateBatch(pb *parser.ParsedBatch, orchestrator *validation.Orchestrator
 			Result: result,
 		})
 
-		// Count Cat4 errors
+		// Count Cat4/Group errors
 		cat4 += int64(len(result.Cat4Errors))
+		cat4 += int64(len(result.GroupErrors))
 
 		// Count record-level errors
 		for _, recResult := range result.RecordResults {
+			// Legacy category errors
 			cat1 += int64(len(recResult.Cat1Errors))
 			cat2 += int64(len(recResult.Cat2Errors))
 			cat3 += int64(len(recResult.Cat3Errors))
+
+			// New scope-based errors - classify by error type
+			for _, err := range recResult.RecordErrors {
+				switch err.ErrorType {
+				case validation.ErrorTypeRecordPreCheck:
+					cat1++
+				case validation.ErrorTypeValueConsistency:
+					cat3++
+				}
+			}
+			for range recResult.FieldErrors {
+				cat2++
+			}
 		}
-
-		// Log validation errors (for now - later these will be written to the database)
-		// if result.HasErrors() {
-		// 	log.Printf("Validation errors for group %s: %d errors", group.Key, result.TotalErrorCount())
-
-		// 	// Log Cat4 errors
-		// 	for _, err := range result.Cat4Errors {
-		// 		log.Printf("  Cat4: %s - %v", err.ValidatorID, err.Error)
-		// 	}
-
-		// 	// Log record-level errors
-		// 	for _, recResult := range result.RecordResults {
-		// 		if recResult.HasErrors() {
-		// 			rec := recResult.Record
-		// 			log.Printf("  Record (line %d, type %s):", rec.GetLineNumber(), rec.GetRecordType())
-
-		// 			for _, err := range recResult.Cat1Errors {
-		// 				log.Printf("    Cat1: %s - %v", err.ValidatorID, err.Error)
-		// 			}
-		// 			for _, err := range recResult.Cat2Errors {
-		// 				log.Printf("    Cat2 [%s]: %s - %v", err.FieldName, err.ValidatorID, err.Error)
-		// 			}
-		// 			for _, err := range recResult.Cat3Errors {
-		// 				log.Printf("    Cat3: %s - %v", err.ValidatorID, err.Error)
-		// 			}
-		// 		}
-		// 	}
-		// }
 	}
 	return
 }
 
 // routeValidatedBatch routes only valid records to the database.
-// Groups with Cat4 errors are completely rejected (no records written).
-// Records with Cat1 errors are rejected (not written to database).
+// Groups with blocking errors (CASE_CONSISTENCY) are completely rejected (no records written).
+// Records with blocking errors (RECORD_PRE_CHECK) are rejected (not written to database).
 func routeValidatedBatch(ctx context.Context, router *writer.Router, contexts []*GroupValidationContext) error {
 	for _, gctx := range contexts {
-		// Skip entire group if it has Cat4 errors
-		if gctx.Result.HasCat4Errors() {
-			log.Printf("Skipping group %s: Cat4 validation failed", gctx.Group.Key)
+		// Skip entire group if it has blocking group errors (CASE_CONSISTENCY)
+		if gctx.Result.HasBlockingGroupErrors() {
+			log.Printf("Skipping group %s: blocking group validation failed", gctx.Group.Key)
 			// Release all records back to pool since they won't be written
 			for _, record := range gctx.Group.Records {
 				record.Schema.ReleaseRecord(record)
@@ -179,12 +168,12 @@ func routeValidatedBatch(ctx context.Context, router *writer.Router, contexts []
 			continue
 		}
 
-		// Route only records that passed Cat1 validation
+		// Route only records that passed blocking validation (RECORD_PRE_CHECK)
 		for i, recResult := range gctx.Result.RecordResults {
 			record := gctx.Group.Records[i]
 
-			if recResult.HasCat1Errors() {
-				log.Printf("Skipping record (line %d, type %s): Cat1 validation failed",
+			if recResult.HasBlockingErrors() {
+				log.Printf("Skipping record (line %d, type %s): blocking record validation failed",
 					record.LineNumber, record.Schema.RecordType)
 				// Release record back to pool since it won't be written
 				record.Schema.ReleaseRecord(record)

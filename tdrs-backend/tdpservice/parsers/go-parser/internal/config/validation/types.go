@@ -24,9 +24,15 @@ type ValidatorDef struct {
 	// If empty, the default message for the validator ID is used.
 	Message string `yaml:"message,omitempty"`
 
-	// ErrorType is an optional override error type.
-	// If empty, the category's default error type is used.
+	// ErrorType declares the error category this validator produces.
+	// Valid values: RECORD_PRE_CHECK, FIELD_VALUE, VALUE_CONSISTENCY, CASE_CONSISTENCY
+	// If empty, defaults based on scope: group->CASE_CONSISTENCY, record->VALUE_CONSISTENCY, field->FIELD_VALUE
 	ErrorType string `yaml:"error_type,omitempty"`
+
+	// ResultMode specifies how group validators produce errors.
+	// "single" (default): One error for the whole group
+	// "per_record": Expression returns list of failing records, each gets its own error
+	ResultMode string `yaml:"result_mode,omitempty"`
 
 	// Deprecated marks this validation as deprecated (for compatibility).
 	Deprecated bool `yaml:"deprecated,omitempty"`

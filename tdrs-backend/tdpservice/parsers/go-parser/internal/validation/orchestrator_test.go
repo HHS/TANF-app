@@ -13,25 +13,25 @@ func TestOrchestratorExecutionOrder(t *testing.T) {
 	registry.exprOpts = RegisterFunctions()
 
 	// Compile Cat4 validator that always passes
-	cat4Expr, _ := registry.getOrCompileExpr(Cat4, "TotalRecords > 0")
+	cat4Expr, _ := registry.getOrCompileExpr(ScopeGroup, "TotalRecords > 0", "single")
 	registry.cat4["TEST:1"] = []*CompiledValidator{
 		{ID: "cat4_check", Category: Cat4, Expr: cat4Expr},
 	}
 
 	// Compile Cat1 validator that always passes
-	cat1Expr, _ := registry.getOrCompileExpr(Cat1, "RecordLength > 0")
+	cat1Expr, _ := registry.getOrCompileExpr(ScopeRecord, "RecordLength > 0", "single")
 	registry.cat1["T1"] = []*CompiledValidator{
 		{ID: "cat1_check", Category: Cat1, Expr: cat1Expr},
 	}
 
 	// Compile Cat2 validator
-	cat2Expr, _ := registry.getOrCompileExpr(Cat2, "Value > 0")
+	cat2Expr, _ := registry.getOrCompileExpr(ScopeField, "Value > 0", "single")
 	registry.cat2["T1"] = map[string][]*CompiledValidator{
 		"AMOUNT": {{ID: "cat2_check", Category: Cat2, Expr: cat2Expr}},
 	}
 
 	// Compile Cat3 validator
-	cat3Expr, _ := registry.getOrCompileExpr(Cat3, "GetInt('AMOUNT') > 0")
+	cat3Expr, _ := registry.getOrCompileExpr(ScopeRecord, "GetInt('AMOUNT') > 0", "single")
 	registry.cat3["T1"] = []*CompiledValidator{
 		{ID: "cat3_check", Category: Cat3, Expr: cat3Expr},
 	}
@@ -75,19 +75,19 @@ func TestOrchestratorShortCircuitOnCat4Failure(t *testing.T) {
 	registry.exprOpts = RegisterFunctions()
 
 	// Cat4 validator that always fails
-	cat4Expr, _ := registry.getOrCompileExpr(Cat4, "TotalRecords > 100")
+	cat4Expr, _ := registry.getOrCompileExpr(ScopeGroup, "TotalRecords > 100", "single")
 	registry.cat4["TEST:1"] = []*CompiledValidator{
 		{ID: "cat4_fail", Category: Cat4, Expr: cat4Expr},
 	}
 
 	// Cat1 validator that passes
-	cat1Expr, _ := registry.getOrCompileExpr(Cat1, "RecordLength > 0")
+	cat1Expr, _ := registry.getOrCompileExpr(ScopeRecord, "RecordLength > 0", "single")
 	registry.cat1["T1"] = []*CompiledValidator{
 		{ID: "cat1_pass", Category: Cat1, Expr: cat1Expr},
 	}
 
 	// Cat2 and Cat3 validators (should be skipped)
-	cat2Expr, _ := registry.getOrCompileExpr(Cat2, "Value > 0")
+	cat2Expr, _ := registry.getOrCompileExpr(ScopeField, "Value > 0", "single")
 	registry.cat2["T1"] = map[string][]*CompiledValidator{
 		"AMOUNT": {{ID: "cat2_check", Category: Cat2, Expr: cat2Expr}},
 	}
@@ -128,13 +128,13 @@ func TestOrchestratorShortCircuitOnCat1Failure(t *testing.T) {
 	registry.exprOpts = RegisterFunctions()
 
 	// Cat1 validator that fails
-	cat1Expr, _ := registry.getOrCompileExpr(Cat1, "RecordLength > 200")
+	cat1Expr, _ := registry.getOrCompileExpr(ScopeRecord, "RecordLength > 200", "single")
 	registry.cat1["T1"] = []*CompiledValidator{
 		{ID: "cat1_fail", Category: Cat1, Expr: cat1Expr},
 	}
 
 	// Cat2 validator (should be skipped)
-	cat2Expr, _ := registry.getOrCompileExpr(Cat2, "Value > 0")
+	cat2Expr, _ := registry.getOrCompileExpr(ScopeField, "Value > 0", "single")
 	registry.cat2["T1"] = map[string][]*CompiledValidator{
 		"AMOUNT": {{ID: "cat2_check", Category: Cat2, Expr: cat2Expr}},
 	}
@@ -175,7 +175,7 @@ func TestOrchestratorParallelValidation(t *testing.T) {
 	registry.exprOpts = RegisterFunctions()
 
 	// Simple passing Cat4 validator
-	cat4Expr, _ := registry.getOrCompileExpr(Cat4, "TotalRecords >= 0")
+	cat4Expr, _ := registry.getOrCompileExpr(ScopeGroup, "TotalRecords >= 0", "single")
 	registry.cat4["TEST:1"] = []*CompiledValidator{
 		{ID: "cat4_pass", Category: Cat4, Expr: cat4Expr},
 	}
@@ -212,7 +212,7 @@ func TestOrchestratorCat2FieldValidation(t *testing.T) {
 	registry.exprOpts = RegisterFunctions()
 
 	// Cat2 validator for AMOUNT field
-	cat2Expr, _ := registry.getOrCompileExpr(Cat2, "Value > 0")
+	cat2Expr, _ := registry.getOrCompileExpr(ScopeField, "Value > 0", "single")
 	registry.cat2["T1"] = map[string][]*CompiledValidator{
 		"AMOUNT": {{ID: "positive_amount", Category: Cat2, Expr: cat2Expr}},
 	}
@@ -248,7 +248,7 @@ func TestOrchestratorNilRequiredFieldSkipsValidators(t *testing.T) {
 	registry.exprOpts = RegisterFunctions()
 
 	// Cat2 validator for AMOUNT field - would fail on nil (panic or error)
-	cat2Expr, _ := registry.getOrCompileExpr(Cat2, "Value > 0")
+	cat2Expr, _ := registry.getOrCompileExpr(ScopeField, "Value > 0", "single")
 	registry.cat2["T1"] = map[string][]*CompiledValidator{
 		"AMOUNT": {{ID: "positive_amount", Category: Cat2, Expr: cat2Expr}},
 	}
@@ -290,7 +290,7 @@ func TestOrchestratorNilOptionalFieldSkipsValidators(t *testing.T) {
 	registry.exprOpts = RegisterFunctions()
 
 	// Cat2 validator that would fail on nil
-	cat2Expr, _ := registry.getOrCompileExpr(Cat2, "isNotEmpty(Value)")
+	cat2Expr, _ := registry.getOrCompileExpr(ScopeField, "isNotEmpty(Value)", "single")
 	registry.cat2["T1"] = map[string][]*CompiledValidator{
 		"AMOUNT": {{ID: "not_empty", Category: Cat2, Expr: cat2Expr}},
 	}

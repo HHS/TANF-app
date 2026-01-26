@@ -38,7 +38,10 @@ func RegisterFunctions() []expr.Option {
 		expr.Function("str", wrapFunc1Str(toString), new(func(any) string)),
 		expr.Function("toInt", wrapFunc1Int(toInt), new(func(any) int)),
 
-		// Cat4 complex validators (take group explicitly)
+		// SSN validation
+		expr.Function("isValidSSN", wrapFunc1StrBool(isValidSSN), new(func(string) bool)),
+
+		// Group validators (take group explicitly)
 		expr.Function("validateT1HasChildren", wrapGroupFunc(validateT1HasChildren),
 			new(func(WrappedGroup) bool)),
 		expr.Function("hasDuplicateField", wrapGroupFunc3(hasDuplicateField),
@@ -427,4 +430,59 @@ func getRecordsOfType(group WrappedGroup, recordType string) []Record {
 		}
 	}
 	return result
+}
+
+// isValidSSN validates a Social Security Number according to SSA rules.
+// A valid SSN must:
+// 1. Be exactly 9 digits
+// 2. Be all numeric
+// 3. Area number (positions 0-2) not be 000, 666, or 9xx
+// 4. Group number (positions 3-4) not be 00
+// 5. Serial number (positions 5-8) not be 0000
+// 6. Not be a repeating digit pattern (111111111, 222222222, etc.)
+func isValidSSN(ssn string) bool {
+	// Check length
+	if len(ssn) != 9 {
+		return false
+	}
+
+	// Check all numeric
+	if !isNumeric(ssn) {
+		return false
+	}
+
+	// Check for repeating patterns (000000000 through 999999999)
+	repeating := []string{
+		"000000000", "111111111", "222222222", "333333333", "444444444",
+		"555555555", "666666666", "777777777", "888888888", "999999999",
+	}
+	for _, pattern := range repeating {
+		if ssn == pattern {
+			return false
+		}
+	}
+
+	// Check area number (positions 0-2)
+	area := ssn[0:3]
+	if area == "000" || area == "666" {
+		return false
+	}
+	// Area numbers starting with 9 are not valid (reserved for ITIN and other purposes)
+	if ssn[0] == '9' {
+		return false
+	}
+
+	// Check group number (positions 3-4)
+	group := ssn[3:5]
+	if group == "00" {
+		return false
+	}
+
+	// Check serial number (positions 5-8)
+	serial := ssn[5:9]
+	if serial == "0000" {
+		return false
+	}
+
+	return true
 }

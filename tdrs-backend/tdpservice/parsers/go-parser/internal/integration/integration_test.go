@@ -30,14 +30,14 @@ func TestMain(m *testing.M) {
 	}
 
 	// Connect to database
-	config, err := pgxpool.ParseConfig(databaseURL)
+	poolConfig, err := pgxpool.ParseConfig(databaseURL)
 	if err != nil {
 		log.Fatalf("Failed to parse database URL: %v", err)
 	}
-	config.MinConns = 2
-	config.MaxConns = 4
+	poolConfig.MinConns = 2
+	poolConfig.MaxConns = 4
 
-	testPool, err = pgxpool.NewWithConfig(ctx, config)
+	testPool, err = pgxpool.NewWithConfig(ctx, poolConfig)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
