@@ -4,37 +4,36 @@ import (
 	"testing"
 )
 
-// TestOrchestratorExecutionOrder tests that validation runs in order 4 → 1 → 2 → 3
+// TestOrchestratorExecutionOrder tests that validation runs in order: group → record precheck → field → record consistency
 func TestOrchestratorExecutionOrder(t *testing.T) {
-	// Create a registry with validators for each category
+	// Create a registry with validators for each scope
 	registry := NewValidatorRegistry()
 
 	// Add validators programmatically since we're testing
 	registry.exprOpts = RegisterFunctions()
 
-	// Compile Cat4 validator that always passes
-	cat4Expr, _ := registry.getOrCompileExpr(ScopeGroup, "TotalRecords > 0", "single")
-	registry.cat4["TEST:1"] = []*CompiledValidator{
-		{ID: "cat4_check", Category: Cat4, Expr: cat4Expr},
+	// Compile group validator that always passes
+	groupExpr, _ := registry.getOrCompileExpr(ScopeGroup, "TotalRecords > 0", "single")
+	registry.group["TEST:1"] = []*CompiledValidator{
+		{ID: "group_check", Scope: ScopeGroup, ErrorType: ErrorTypeCaseConsistency, Expr: groupExpr},
 	}
 
-	// Compile Cat1 validator that always passes
-	cat1Expr, _ := registry.getOrCompileExpr(ScopeRecord, "RecordLength > 0", "single")
-	registry.cat1["T1"] = []*CompiledValidator{
-		{ID: "cat1_check", Category: Cat1, Expr: cat1Expr},
+	// Compile record validator (precheck) that always passes
+	recordPrecheckExpr, _ := registry.getOrCompileExpr(ScopeRecord, "RecordLength > 0", "single")
+	registry.record["T1"] = []*CompiledValidator{
+		{ID: "record_precheck", Scope: ScopeRecord, ErrorType: ErrorTypeRecordPreCheck, Expr: recordPrecheckExpr},
 	}
 
-	// Compile Cat2 validator
-	cat2Expr, _ := registry.getOrCompileExpr(ScopeField, "Value > 0", "single")
-	registry.cat2["T1"] = map[string][]*CompiledValidator{
-		"AMOUNT": {{ID: "cat2_check", Category: Cat2, Expr: cat2Expr}},
+	// Compile field validator
+	fieldExpr, _ := registry.getOrCompileExpr(ScopeField, "Value > 0", "single")
+	registry.field["T1"] = map[string][]*CompiledValidator{
+		"AMOUNT": {{ID: "field_check", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
 	}
 
-	// Compile Cat3 validator
-	cat3Expr, _ := registry.getOrCompileExpr(ScopeRecord, "GetInt('AMOUNT') > 0", "single")
-	registry.cat3["T1"] = []*CompiledValidator{
-		{ID: "cat3_check", Category: Cat3, Expr: cat3Expr},
-	}
+	// Add a record consistency validator
+	recordConsistencyExpr, _ := registry.getOrCompileExpr(ScopeRecord, "GetInt('AMOUNT') > 0", "single")
+	registry.record["T1"] = append(registry.record["T1"],
+		&CompiledValidator{ID: "record_consistency", Scope: ScopeRecord, ErrorType: ErrorTypeValueConsistency, Expr: recordConsistencyExpr})
 
 	// Create orchestrator
 	orchestrator := NewOrchestrator(registry, 0)
@@ -69,27 +68,27 @@ func TestOrchestratorExecutionOrder(t *testing.T) {
 	}
 }
 
-// TestOrchestratorShortCircuitOnCat4Failure tests that Cat2/Cat3 are skipped when Cat4 fails
-func TestOrchestratorShortCircuitOnCat4Failure(t *testing.T) {
+// TestOrchestratorShortCircuitOnGroupFailure tests that field and consistency validators are skipped when group fails
+func TestOrchestratorShortCircuitOnGroupFailure(t *testing.T) {
 	registry := NewValidatorRegistry()
 	registry.exprOpts = RegisterFunctions()
 
-	// Cat4 validator that always fails
-	cat4Expr, _ := registry.getOrCompileExpr(ScopeGroup, "TotalRecords > 100", "single")
-	registry.cat4["TEST:1"] = []*CompiledValidator{
-		{ID: "cat4_fail", Category: Cat4, Expr: cat4Expr},
+	// Group validator that always fails
+	groupExpr, _ := registry.getOrCompileExpr(ScopeGroup, "TotalRecords > 100", "single")
+	registry.group["TEST:1"] = []*CompiledValidator{
+		{ID: "group_fail", Scope: ScopeGroup, ErrorType: ErrorTypeCaseConsistency, Expr: groupExpr},
 	}
 
-	// Cat1 validator that passes
-	cat1Expr, _ := registry.getOrCompileExpr(ScopeRecord, "RecordLength > 0", "single")
-	registry.cat1["T1"] = []*CompiledValidator{
-		{ID: "cat1_pass", Category: Cat1, Expr: cat1Expr},
+	// Record precheck validator that passes
+	recordPrecheckExpr, _ := registry.getOrCompileExpr(ScopeRecord, "RecordLength > 0", "single")
+	registry.record["T1"] = []*CompiledValidator{
+		{ID: "record_precheck", Scope: ScopeRecord, ErrorType: ErrorTypeRecordPreCheck, Expr: recordPrecheckExpr},
 	}
 
-	// Cat2 and Cat3 validators (should be skipped)
-	cat2Expr, _ := registry.getOrCompileExpr(ScopeField, "Value > 0", "single")
-	registry.cat2["T1"] = map[string][]*CompiledValidator{
-		"AMOUNT": {{ID: "cat2_check", Category: Cat2, Expr: cat2Expr}},
+	// Field validator (should be skipped)
+	fieldExpr, _ := registry.getOrCompileExpr(ScopeField, "Value > 0", "single")
+	registry.field["T1"] = map[string][]*CompiledValidator{
+		"AMOUNT": {{ID: "field_check", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
 	}
 
 	orchestrator := NewOrchestrator(registry, 0)
@@ -99,44 +98,44 @@ func TestOrchestratorShortCircuitOnCat4Failure(t *testing.T) {
 			recordType:  "T1",
 			lineNumber:  1,
 			decodedSize: 100,
-			fields:      map[string]any{"AMOUNT": -50}, // Would fail Cat2 if not skipped
+			fields:      map[string]any{"AMOUNT": -50}, // Would fail field check if not skipped
 		},
 	}
 	group := newMockWrappedGroup(records)
 
 	result := orchestrator.ValidateGroup(group, "TEST:1")
 
-	// Should have Cat4 error
-	if len(result.Cat4Errors) != 1 {
-		t.Errorf("expected 1 Cat4 error, got %d", len(result.Cat4Errors))
+	// Should have group error
+	if len(result.GroupErrors) != 1 {
+		t.Errorf("expected 1 group error, got %d", len(result.GroupErrors))
 	}
 
 	// Record should be marked as skipped
 	if !result.RecordResults[0].Skipped {
-		t.Error("record should be skipped due to Cat4 failure")
+		t.Error("record should be skipped due to group failure")
 	}
 
-	// Should have no Cat2 errors (skipped)
-	if len(result.RecordResults[0].Cat2Errors) != 0 {
-		t.Error("Cat2 should be skipped")
+	// Should have no field errors (skipped)
+	if len(result.RecordResults[0].FieldErrors) != 0 {
+		t.Error("field validators should be skipped")
 	}
 }
 
-// TestOrchestratorShortCircuitOnCat1Failure tests that Cat2/Cat3 are skipped when Cat1 fails
-func TestOrchestratorShortCircuitOnCat1Failure(t *testing.T) {
+// TestOrchestratorShortCircuitOnRecordPrecheckFailure tests that field validators are skipped when record precheck fails
+func TestOrchestratorShortCircuitOnRecordPrecheckFailure(t *testing.T) {
 	registry := NewValidatorRegistry()
 	registry.exprOpts = RegisterFunctions()
 
-	// Cat1 validator that fails
-	cat1Expr, _ := registry.getOrCompileExpr(ScopeRecord, "RecordLength > 200", "single")
-	registry.cat1["T1"] = []*CompiledValidator{
-		{ID: "cat1_fail", Category: Cat1, Expr: cat1Expr},
+	// Record precheck validator that fails
+	recordPrecheckExpr, _ := registry.getOrCompileExpr(ScopeRecord, "RecordLength > 200", "single")
+	registry.record["T1"] = []*CompiledValidator{
+		{ID: "record_precheck_fail", Scope: ScopeRecord, ErrorType: ErrorTypeRecordPreCheck, Expr: recordPrecheckExpr},
 	}
 
-	// Cat2 validator (should be skipped)
-	cat2Expr, _ := registry.getOrCompileExpr(ScopeField, "Value > 0", "single")
-	registry.cat2["T1"] = map[string][]*CompiledValidator{
-		"AMOUNT": {{ID: "cat2_check", Category: Cat2, Expr: cat2Expr}},
+	// Field validator (should be skipped)
+	fieldExpr, _ := registry.getOrCompileExpr(ScopeField, "Value > 0", "single")
+	registry.field["T1"] = map[string][]*CompiledValidator{
+		"AMOUNT": {{ID: "field_check", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
 	}
 
 	orchestrator := NewOrchestrator(registry, 0)
@@ -145,27 +144,33 @@ func TestOrchestratorShortCircuitOnCat1Failure(t *testing.T) {
 		&mockRecord{
 			recordType:  "T1",
 			lineNumber:  1,
-			decodedSize: 100, // Will fail Cat1 (requires > 200)
-			fields:      map[string]any{"AMOUNT": -50}, // Would fail Cat2 if not skipped
+			decodedSize: 100, // Will fail precheck (requires > 200)
+			fields:      map[string]any{"AMOUNT": -50}, // Would fail field check if not skipped
 		},
 	}
 	group := newMockWrappedGroup(records)
 
 	result := orchestrator.ValidateGroup(group, "TEST:1")
 
-	// Should have Cat1 error
-	if len(result.RecordResults[0].Cat1Errors) != 1 {
-		t.Errorf("expected 1 Cat1 error, got %d", len(result.RecordResults[0].Cat1Errors))
+	// Should have record error (precheck)
+	precheckErrors := 0
+	for _, err := range result.RecordResults[0].RecordErrors {
+		if err.ErrorType == ErrorTypeRecordPreCheck {
+			precheckErrors++
+		}
+	}
+	if precheckErrors != 1 {
+		t.Errorf("expected 1 precheck error, got %d", precheckErrors)
 	}
 
 	// Record should be marked as skipped
 	if !result.RecordResults[0].Skipped {
-		t.Error("record should be skipped due to Cat1 failure")
+		t.Error("record should be skipped due to precheck failure")
 	}
 
-	// Should have no Cat2 errors (skipped)
-	if len(result.RecordResults[0].Cat2Errors) != 0 {
-		t.Error("Cat2 should be skipped")
+	// Should have no field errors (skipped)
+	if len(result.RecordResults[0].FieldErrors) != 0 {
+		t.Error("field validators should be skipped")
 	}
 }
 
@@ -174,10 +179,10 @@ func TestOrchestratorParallelValidation(t *testing.T) {
 	registry := NewValidatorRegistry()
 	registry.exprOpts = RegisterFunctions()
 
-	// Simple passing Cat4 validator
-	cat4Expr, _ := registry.getOrCompileExpr(ScopeGroup, "TotalRecords >= 0", "single")
-	registry.cat4["TEST:1"] = []*CompiledValidator{
-		{ID: "cat4_pass", Category: Cat4, Expr: cat4Expr},
+	// Simple passing group validator
+	groupExpr, _ := registry.getOrCompileExpr(ScopeGroup, "TotalRecords >= 0", "single")
+	registry.group["TEST:1"] = []*CompiledValidator{
+		{ID: "group_pass", Scope: ScopeGroup, ErrorType: ErrorTypeCaseConsistency, Expr: groupExpr},
 	}
 
 	// Create orchestrator with 4 workers
@@ -206,15 +211,15 @@ func TestOrchestratorParallelValidation(t *testing.T) {
 	}
 }
 
-// TestOrchestratorCat2FieldValidation tests that Cat2 validates specific fields
-func TestOrchestratorCat2FieldValidation(t *testing.T) {
+// TestOrchestratorFieldValidation tests that field validators validate specific fields
+func TestOrchestratorFieldValidation(t *testing.T) {
 	registry := NewValidatorRegistry()
 	registry.exprOpts = RegisterFunctions()
 
-	// Cat2 validator for AMOUNT field
-	cat2Expr, _ := registry.getOrCompileExpr(ScopeField, "Value > 0", "single")
-	registry.cat2["T1"] = map[string][]*CompiledValidator{
-		"AMOUNT": {{ID: "positive_amount", Category: Cat2, Expr: cat2Expr}},
+	// Field validator for AMOUNT field
+	fieldExpr, _ := registry.getOrCompileExpr(ScopeField, "Value > 0", "single")
+	registry.field["T1"] = map[string][]*CompiledValidator{
+		"AMOUNT": {{ID: "positive_amount", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
 	}
 
 	orchestrator := NewOrchestrator(registry, 0)
@@ -230,14 +235,14 @@ func TestOrchestratorCat2FieldValidation(t *testing.T) {
 
 	result := orchestrator.ValidateGroup(group, "TEST:1")
 
-	// Should have Cat2 error
-	if len(result.RecordResults[0].Cat2Errors) != 1 {
-		t.Errorf("expected 1 Cat2 error, got %d", len(result.RecordResults[0].Cat2Errors))
+	// Should have field error
+	if len(result.RecordResults[0].FieldErrors) != 1 {
+		t.Errorf("expected 1 field error, got %d", len(result.RecordResults[0].FieldErrors))
 	}
 
 	// Check field name is set
-	if result.RecordResults[0].Cat2Errors[0].FieldName != "AMOUNT" {
-		t.Errorf("expected FieldName=AMOUNT, got %s", result.RecordResults[0].Cat2Errors[0].FieldName)
+	if result.RecordResults[0].FieldErrors[0].FieldName != "AMOUNT" {
+		t.Errorf("expected FieldName=AMOUNT, got %s", result.RecordResults[0].FieldErrors[0].FieldName)
 	}
 }
 
@@ -247,10 +252,10 @@ func TestOrchestratorNilRequiredFieldSkipsValidators(t *testing.T) {
 	registry := NewValidatorRegistry()
 	registry.exprOpts = RegisterFunctions()
 
-	// Cat2 validator for AMOUNT field - would fail on nil (panic or error)
-	cat2Expr, _ := registry.getOrCompileExpr(ScopeField, "Value > 0", "single")
-	registry.cat2["T1"] = map[string][]*CompiledValidator{
-		"AMOUNT": {{ID: "positive_amount", Category: Cat2, Expr: cat2Expr}},
+	// Field validator for AMOUNT field - would fail on nil
+	fieldExpr, _ := registry.getOrCompileExpr(ScopeField, "Value > 0", "single")
+	registry.field["T1"] = map[string][]*CompiledValidator{
+		"AMOUNT": {{ID: "positive_amount", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
 	}
 
 	orchestrator := NewOrchestrator(registry, 0)
@@ -268,13 +273,13 @@ func TestOrchestratorNilRequiredFieldSkipsValidators(t *testing.T) {
 
 	result := orchestrator.ValidateGroup(group, "TEST:1")
 
-	// Should have exactly 1 Cat2 error (field_required)
-	if len(result.RecordResults[0].Cat2Errors) != 1 {
-		t.Errorf("expected 1 Cat2 error, got %d", len(result.RecordResults[0].Cat2Errors))
+	// Should have exactly 1 field error (field_required)
+	if len(result.RecordResults[0].FieldErrors) != 1 {
+		t.Errorf("expected 1 field error, got %d", len(result.RecordResults[0].FieldErrors))
 	}
 
 	// Check it's a field_required error
-	err := result.RecordResults[0].Cat2Errors[0]
+	err := result.RecordResults[0].FieldErrors[0]
 	if err.ValidatorID != "field_required" {
 		t.Errorf("expected ValidatorID=field_required, got %s", err.ValidatorID)
 	}
@@ -289,10 +294,10 @@ func TestOrchestratorNilOptionalFieldSkipsValidators(t *testing.T) {
 	registry := NewValidatorRegistry()
 	registry.exprOpts = RegisterFunctions()
 
-	// Cat2 validator that would fail on nil
-	cat2Expr, _ := registry.getOrCompileExpr(ScopeField, "isNotEmpty(Value)", "single")
-	registry.cat2["T1"] = map[string][]*CompiledValidator{
-		"AMOUNT": {{ID: "not_empty", Category: Cat2, Expr: cat2Expr}},
+	// Field validator that would fail on nil
+	fieldExpr, _ := registry.getOrCompileExpr(ScopeField, "isNotEmpty(Value)", "single")
+	registry.field["T1"] = map[string][]*CompiledValidator{
+		"AMOUNT": {{ID: "not_empty", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
 	}
 
 	orchestrator := NewOrchestrator(registry, 0)
@@ -311,7 +316,7 @@ func TestOrchestratorNilOptionalFieldSkipsValidators(t *testing.T) {
 	result := orchestrator.ValidateGroup(group, "TEST:1")
 
 	// Should have NO errors - optional nil field skips validation entirely
-	if len(result.RecordResults[0].Cat2Errors) != 0 {
-		t.Errorf("expected 0 Cat2 errors for nil optional field, got %d", len(result.RecordResults[0].Cat2Errors))
+	if len(result.RecordResults[0].FieldErrors) != 0 {
+		t.Errorf("expected 0 field errors for nil optional field, got %d", len(result.RecordResults[0].FieldErrors))
 	}
 }

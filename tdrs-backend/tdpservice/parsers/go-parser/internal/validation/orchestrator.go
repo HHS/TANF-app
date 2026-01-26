@@ -11,9 +11,9 @@ type OrchestratorConfig struct {
 	Workers int
 }
 
-// Orchestrator coordinates validation across all categories.
-// Execution order: 4 → 1 → 2 → 3
-// Always run 4 and 1; skip 2 and 3 if 4 or 1 failed.
+// Orchestrator coordinates validation across all scopes.
+// Execution order: group → record (precheck) → field → record (consistency)
+// Always run group and record precheck; skip field and record consistency if blocked.
 type Orchestrator struct {
 	registry *ValidatorRegistry
 	config   *OrchestratorConfig
@@ -44,22 +44,21 @@ func (o *Orchestrator) ValidateGroup(group WrappedGroup, filespecKey string) *Gr
 	}
 
 	// Phase 1: Group validation (always runs)
-	env4 := NewGroupEnv(group)
-	for _, cv := range o.registry.GetCat4Validators(filespecKey) {
-		env4.Params = cv.Params // Set params for this validator
+	groupEnv := NewGroupEnv(group)
+	for _, cv := range o.registry.GetGroupValidators(filespecKey) {
+		groupEnv.Params = cv.Params // Set params for this validator
 
 		if cv.ResultMode == "per_record" {
 			// Per-record mode: expression returns list of failing records
-			failedRecords := ExecuteReturningRecords(cv, env4)
+			failedRecords := ExecuteReturningRecords(cv, groupEnv)
 			for _, rec := range failedRecords {
 				result.AddRecordError(rec, cv, nil)
 			}
 		} else {
 			// Single mode: expression returns bool
-			if vr := Execute(cv, env4); !vr.Valid {
-				vr.Category = Cat4
+			if vr := Execute(cv, groupEnv); !vr.Valid {
 				vr.ErrorType = cv.ErrorType
-				result.Cat4Errors = append(result.Cat4Errors, vr)
+				result.GroupErrors = append(result.GroupErrors, vr)
 			}
 		}
 	}
@@ -79,40 +78,41 @@ func (o *Orchestrator) ValidateGroup(group WrappedGroup, filespecKey string) *Gr
 // Called internally by ValidateGroup.
 func (o *Orchestrator) validateRecordInPlace(result *RecordValidationResult, rec Record, groupBlocked bool) {
 	recType := rec.GetRecordType()
+	recordEnv := NewRecordEnv(rec)
 
-	// Cat 1 / Record precheck: Record pre-check (always runs)
-	env1 := NewRecordEnv(rec)
-	for _, cv := range o.registry.GetCat1Validators(recType) {
-		env1.Params = cv.Params // Set params for this validator
-		if vr := Execute(cv, env1); !vr.Valid {
-			vr.Category = Cat1
+	// Phase 1: Run RECORD_PRE_CHECK validators (always runs, can block)
+	for _, cv := range o.registry.GetRecordValidators(recType) {
+		if cv.ErrorType != ErrorTypeRecordPreCheck {
+			continue // Skip non-precheck validators in this phase
+		}
+		recordEnv.Params = cv.Params
+		if vr := Execute(cv, recordEnv); !vr.Valid {
 			vr.ErrorType = cv.ErrorType
-			result.Cat1Errors = append(result.Cat1Errors, vr)
+			result.RecordErrors = append(result.RecordErrors, vr)
 		}
 	}
 
 	// Check if blocked by record-level errors
 	recordBlocked := result.HasBlockingErrors()
 
-	// Short-circuit: skip Cat2 and Cat3 if group or record is blocked
+	// Short-circuit: skip field and non-precheck record validators if group or record is blocked
 	if groupBlocked || recordBlocked {
 		result.Skipped = true
 		return
 	}
 
-	// Cat 2 / Field: Field validation
-	env2 := &FieldEnv{} // Reuse env for efficiency
-	for fieldName, validators := range o.registry.GetCat2FieldsForRecord(recType) {
+	// Phase 2: Field validation
+	fieldEnv := &FieldEnv{} // Reuse env for efficiency
+	for fieldName, validators := range o.registry.GetFieldValidatorsForRecord(recType) {
 		value := rec.Get(fieldName)
 
 		// Handle nil values
 		if value == nil {
 			if rec.IsFieldRequired(fieldName) {
 				// Required field is nil - generate error
-				result.Cat2Errors = append(result.Cat2Errors, &ValidationResult{
+				result.FieldErrors = append(result.FieldErrors, &ValidationResult{
 					Valid:       false,
 					ValidatorID: "field_required",
-					Category:    Cat2,
 					ErrorType:   ErrorTypeFieldValue,
 					FieldName:   fieldName,
 				})
@@ -121,36 +121,28 @@ func (o *Orchestrator) validateRecordInPlace(result *RecordValidationResult, rec
 			continue
 		}
 
-		env2.Value = value
+		fieldEnv.Value = value
 		for _, cv := range validators {
-			env2.Params = cv.Params // Set params for this validator
-			if vr := Execute(cv, env2); !vr.Valid {
-				vr.Category = Cat2
+			fieldEnv.Params = cv.Params
+			if vr := Execute(cv, fieldEnv); !vr.Valid {
 				vr.ErrorType = cv.ErrorType
 				vr.FieldName = fieldName
-				result.Cat2Errors = append(result.Cat2Errors, vr)
+				result.FieldErrors = append(result.FieldErrors, vr)
 			}
 		}
 	}
 
-	// Cat 3 / Record consistency: Cross-field validation
-	env3 := NewRecordEnv(rec)
-	for _, cv := range o.registry.GetCat3Validators(recType) {
-		env3.Params = cv.Params // Set params for this validator
-		if vr := Execute(cv, env3); !vr.Valid {
-			vr.Category = Cat3
+	// Phase 3: Non-precheck record validators (consistency checks)
+	for _, cv := range o.registry.GetRecordValidators(recType) {
+		if cv.ErrorType == ErrorTypeRecordPreCheck {
+			continue // Already ran in phase 1
+		}
+		recordEnv.Params = cv.Params
+		if vr := Execute(cv, recordEnv); !vr.Valid {
 			vr.ErrorType = cv.ErrorType
-			result.Cat3Errors = append(result.Cat3Errors, vr)
+			result.RecordErrors = append(result.RecordErrors, vr)
 		}
 	}
-}
-
-// validateRecord validates a single record.
-// Deprecated: Use validateRecordInPlace instead.
-func (o *Orchestrator) validateRecord(rec Record, cat4Failed bool) *RecordValidationResult {
-	result := &RecordValidationResult{Record: rec}
-	o.validateRecordInPlace(result, rec, cat4Failed)
-	return result
 }
 
 // ValidateGroups validates multiple groups in parallel.

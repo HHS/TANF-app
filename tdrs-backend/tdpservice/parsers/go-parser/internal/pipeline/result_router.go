@@ -12,17 +12,17 @@ import (
 	"go-parser/internal/writer"
 )
 
-// ErrorStats tracks validation error counts by category.
+// ErrorStats tracks validation error counts by scope and type.
 type ErrorStats struct {
-	Cat1 int64
-	Cat2 int64
-	Cat3 int64
-	Cat4 int64
+	RecordPreCheck   int64 // Blocking record errors
+	FieldValue       int64 // Field validation errors
+	ValueConsistency int64 // Non-blocking record/group consistency errors
+	CaseConsistency  int64 // Blocking group errors
 }
 
-// Total returns the total number of errors across all categories.
+// Total returns the total number of errors across all scopes.
 func (s *ErrorStats) Total() int64 {
-	return s.Cat1 + s.Cat2 + s.Cat3 + s.Cat4
+	return s.RecordPreCheck + s.FieldValue + s.ValueConsistency + s.CaseConsistency
 }
 
 // routeResults receives parsed batches from the parser.pool, validates them, and routes them to database writers.
@@ -40,7 +40,7 @@ func routeResults(
 	errChan := make(chan error, numRouters)
 
 	// Atomic counters for error stats (safe for concurrent access)
-	var cat1Count, cat2Count, cat3Count, cat4Count int64
+	var recordPreCheck, fieldValue, valueConsistency, caseConsistency int64
 
 	// Spawn multiple routers reading from the same channel
 	for range numRouters {
@@ -49,15 +49,15 @@ func routeResults(
 			defer wg.Done()
 			for pb := range pool.Results() {
 				// Validate the batch's groups and collect error counts
-				c1, c2, c3, c4, contexts := validateBatch(pb, orchestrator, filespecKey)
-				atomic.AddInt64(&cat1Count, c1)
-				atomic.AddInt64(&cat2Count, c2)
-				atomic.AddInt64(&cat3Count, c3)
-				atomic.AddInt64(&cat4Count, c4)
+				rpc, fv, vc, cc, contexts := validateBatch(pb, orchestrator, filespecKey)
+				atomic.AddInt64(&recordPreCheck, rpc)
+				atomic.AddInt64(&fieldValue, fv)
+				atomic.AddInt64(&valueConsistency, vc)
+				atomic.AddInt64(&caseConsistency, cc)
 
 				// Route only valid records to writers (filter based on validation results)
-				// - Groups with Cat4 errors are completely rejected
-				// - Records with Cat1 errors are rejected
+				// - Groups with CASE_CONSISTENCY errors are completely rejected
+				// - Records with RECORD_PRE_CHECK errors are rejected
 				if err := routeValidatedBatch(ctx, router, contexts); err != nil {
 					log.Printf("Router: batch %d error: %v", pb.BatchID, err)
 					errChan <- err
@@ -83,10 +83,10 @@ func routeResults(
 	}
 
 	stats := &ErrorStats{
-		Cat1: cat1Count,
-		Cat2: cat2Count,
-		Cat3: cat3Count,
-		Cat4: cat4Count,
+		RecordPreCheck:   recordPreCheck,
+		FieldValue:       fieldValue,
+		ValueConsistency: valueConsistency,
+		CaseConsistency:  caseConsistency,
 	}
 
 	if len(errs) > 0 {
@@ -102,10 +102,8 @@ type GroupValidationContext struct {
 }
 
 // validateBatch validates all groups in a parsed batch and returns validation contexts.
-// Returns the count of errors by category (cat1, cat2, cat3, cat4) and validation contexts.
-// Note: Error counting uses legacy category fields for backward compatibility.
-// New code should use ErrorType-based classification.
-func validateBatch(pb *parser.ParsedBatch, orchestrator *validation.Orchestrator, filespecKey string) (cat1, cat2, cat3, cat4 int64, contexts []*GroupValidationContext) {
+// Returns the count of errors by error type (recordPreCheck, fieldValue, valueConsistency, caseConsistency).
+func validateBatch(pb *parser.ParsedBatch, orchestrator *validation.Orchestrator, filespecKey string) (recordPreCheck, fieldValue, valueConsistency, caseConsistency int64, contexts []*GroupValidationContext) {
 	contexts = make([]*GroupValidationContext, 0, len(pb.Groups))
 
 	for _, group := range pb.Groups {
@@ -125,28 +123,28 @@ func validateBatch(pb *parser.ParsedBatch, orchestrator *validation.Orchestrator
 			Result: result,
 		})
 
-		// Count Cat4/Group errors
-		cat4 += int64(len(result.Cat4Errors))
-		cat4 += int64(len(result.GroupErrors))
+		// Count group errors by error type
+		for _, err := range result.GroupErrors {
+			switch err.ErrorType {
+			case validation.ErrorTypeCaseConsistency:
+				caseConsistency++
+			case validation.ErrorTypeValueConsistency:
+				valueConsistency++
+			}
+		}
 
-		// Count record-level errors
+		// Count record-level errors by error type
 		for _, recResult := range result.RecordResults {
-			// Legacy category errors
-			cat1 += int64(len(recResult.Cat1Errors))
-			cat2 += int64(len(recResult.Cat2Errors))
-			cat3 += int64(len(recResult.Cat3Errors))
-
-			// New scope-based errors - classify by error type
 			for _, err := range recResult.RecordErrors {
 				switch err.ErrorType {
 				case validation.ErrorTypeRecordPreCheck:
-					cat1++
+					recordPreCheck++
 				case validation.ErrorTypeValueConsistency:
-					cat3++
+					valueConsistency++
 				}
 			}
 			for range recResult.FieldErrors {
-				cat2++
+				fieldValue++
 			}
 		}
 	}

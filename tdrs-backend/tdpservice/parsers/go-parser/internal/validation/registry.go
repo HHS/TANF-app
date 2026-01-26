@@ -15,14 +15,6 @@ import (
 	"go-parser/internal/config/validation"
 )
 
-// Category constants (legacy, kept for backward compatibility)
-const (
-	Cat1 = 1 // Record pre-check (record length, format)
-	Cat2 = 2 // Field validation (single field)
-	Cat3 = 3 // Cross-field validation (multiple fields in same record)
-	Cat4 = 4 // Group validation (cross-record, case-level)
-)
-
 // Default error types by scope
 var defaultErrorTypes = map[string]string{
 	ScopeField:  ErrorTypeFieldValue,
@@ -30,7 +22,7 @@ var defaultErrorTypes = map[string]string{
 	ScopeGroup:  ErrorTypeCaseConsistency,
 }
 
-// ValidatorRegistry manages compiled validators for all categories.
+// ValidatorRegistry manages compiled validators organized by scope.
 type ValidatorRegistry struct {
 	// Deduped expressions by (scope, exprString)
 	// Used during loading, can be cleared after startup if needed
@@ -40,14 +32,7 @@ type ValidatorRegistry struct {
 	// Used during loading, can be cleared after startup if needed
 	predefined map[string]map[string]*validation.ValidatorDef
 
-	// Legacy: Compiled validators per schema/filespec (populated during load)
-	// Kept for backward compatibility
-	cat1 map[string][]*CompiledValidator            // recordType -> validators
-	cat2 map[string]map[string][]*CompiledValidator // recordType -> fieldName -> validators
-	cat3 map[string][]*CompiledValidator            // recordType -> validators
-	cat4 map[string][]*CompiledValidator            // filespec key -> validators
-
-	// New scope-based storage
+	// Compiled validators by scope
 	field  map[string]map[string][]*CompiledValidator // recordType -> fieldName -> validators
 	record map[string][]*CompiledValidator            // recordType -> validators
 	group  map[string][]*CompiledValidator            // filespec key -> validators
@@ -60,15 +45,9 @@ func NewValidatorRegistry() *ValidatorRegistry {
 	return &ValidatorRegistry{
 		expressions: make(map[string]map[string]*CompiledExpr),
 		predefined:  make(map[string]map[string]*validation.ValidatorDef),
-		// Legacy maps
-		cat1: make(map[string][]*CompiledValidator),
-		cat2: make(map[string]map[string][]*CompiledValidator),
-		cat3: make(map[string][]*CompiledValidator),
-		cat4: make(map[string][]*CompiledValidator),
-		// New scope-based maps
-		field:  make(map[string]map[string][]*CompiledValidator),
-		record: make(map[string][]*CompiledValidator),
-		group:  make(map[string][]*CompiledValidator),
+		field:       make(map[string]map[string][]*CompiledValidator),
+		record:      make(map[string][]*CompiledValidator),
+		group:       make(map[string][]*CompiledValidator),
 	}
 }
 
@@ -198,10 +177,7 @@ func applyDefaultErrorType(vdef *validation.ValidatorDef, scope string) {
 func (r *ValidatorRegistry) loadSchemaValidators(path string, cs *schema.CompiledSchema) error {
 	recordType := cs.RecordType
 
-	// Initialize maps for this record type
-	if r.cat2[recordType] == nil {
-		r.cat2[recordType] = make(map[string][]*CompiledValidator)
-	}
+	// Initialize field map for this record type
 	if r.field[recordType] == nil {
 		r.field[recordType] = make(map[string][]*CompiledValidator)
 	}
@@ -210,10 +186,8 @@ func (r *ValidatorRegistry) loadSchemaValidators(path string, cs *schema.Compile
 	for _, vdef := range cs.Category1 {
 		cv, err := r.resolveValidatorByScope(ScopeRecord, &vdef, ErrorTypeRecordPreCheck)
 		if err != nil {
-			return fmt.Errorf("cat1 validator %s: %w", vdef.ID, err)
+			return fmt.Errorf("record validator %s: %w", vdef.ID, err)
 		}
-		cv.Category = Cat1 // Set legacy category for backward compatibility
-		r.cat1[recordType] = append(r.cat1[recordType], cv)
 		r.record[recordType] = append(r.record[recordType], cv)
 	}
 
@@ -222,10 +196,8 @@ func (r *ValidatorRegistry) loadSchemaValidators(path string, cs *schema.Compile
 		for _, vdef := range field.Category2 {
 			cv, err := r.resolveValidatorByScope(ScopeField, &vdef, "")
 			if err != nil {
-				return fmt.Errorf("cat2 validator %s for field %s: %w", vdef.ID, field.Name, err)
+				return fmt.Errorf("field validator %s for field %s: %w", vdef.ID, field.Name, err)
 			}
-			cv.Category = Cat2
-			r.cat2[recordType][field.Name] = append(r.cat2[recordType][field.Name], cv)
 			r.field[recordType][field.Name] = append(r.field[recordType][field.Name], cv)
 		}
 	}
@@ -236,10 +208,8 @@ func (r *ValidatorRegistry) loadSchemaValidators(path string, cs *schema.Compile
 			for _, vdef := range field.Category2 {
 				cv, err := r.resolveValidatorByScope(ScopeField, &vdef, "")
 				if err != nil {
-					return fmt.Errorf("cat2 validator %s for field %s: %w", vdef.ID, field.Name, err)
+					return fmt.Errorf("field validator %s for field %s: %w", vdef.ID, field.Name, err)
 				}
-				cv.Category = Cat2
-				r.cat2[recordType][field.Name] = append(r.cat2[recordType][field.Name], cv)
 				r.field[recordType][field.Name] = append(r.field[recordType][field.Name], cv)
 			}
 		}
@@ -249,26 +219,16 @@ func (r *ValidatorRegistry) loadSchemaValidators(path string, cs *schema.Compile
 	for _, vdef := range cs.Category3 {
 		cv, err := r.resolveValidatorByScope(ScopeRecord, &vdef, "")
 		if err != nil {
-			return fmt.Errorf("cat3 validator %s: %w", vdef.ID, err)
+			return fmt.Errorf("record validator %s: %w", vdef.ID, err)
 		}
-		cv.Category = Cat3
-		r.cat3[recordType] = append(r.cat3[recordType], cv)
 		r.record[recordType] = append(r.record[recordType], cv)
 	}
 
-	// Load new scope-based validators if present
+	// Load new scope-based record validators
 	for _, vdef := range cs.Record {
 		cv, err := r.resolveValidatorByScope(ScopeRecord, &vdef, "")
 		if err != nil {
 			return fmt.Errorf("record validator %s: %w", vdef.ID, err)
-		}
-		// Set legacy category based on error type
-		if cv.ErrorType == ErrorTypeRecordPreCheck {
-			cv.Category = Cat1
-			r.cat1[recordType] = append(r.cat1[recordType], cv)
-		} else {
-			cv.Category = Cat3
-			r.cat3[recordType] = append(r.cat3[recordType], cv)
 		}
 		r.record[recordType] = append(r.record[recordType], cv)
 	}
@@ -280,8 +240,6 @@ func (r *ValidatorRegistry) loadSchemaValidators(path string, cs *schema.Compile
 			if err != nil {
 				return fmt.Errorf("field validator %s for field %s: %w", vdef.ID, field.Name, err)
 			}
-			cv.Category = Cat2
-			r.cat2[recordType][field.Name] = append(r.cat2[recordType][field.Name], cv)
 			r.field[recordType][field.Name] = append(r.field[recordType][field.Name], cv)
 		}
 	}
@@ -294,8 +252,6 @@ func (r *ValidatorRegistry) loadSchemaValidators(path string, cs *schema.Compile
 				if err != nil {
 					return fmt.Errorf("field validator %s for field %s: %w", vdef.ID, field.Name, err)
 				}
-				cv.Category = Cat2
-				r.cat2[recordType][field.Name] = append(r.cat2[recordType][field.Name], cv)
 				r.field[recordType][field.Name] = append(r.field[recordType][field.Name], cv)
 			}
 		}
@@ -311,10 +267,8 @@ func (r *ValidatorRegistry) loadFileSpecValidators(key string, fs *filespec.File
 	for _, vdef := range fs.Category4 {
 		cv, err := r.resolveValidatorByScope(ScopeGroup, &vdef, "")
 		if err != nil {
-			return fmt.Errorf("cat4 validator %s: %w", vdef.ID, err)
+			return fmt.Errorf("group validator %s: %w", vdef.ID, err)
 		}
-		cv.Category = Cat4
-		r.cat4[key] = append(r.cat4[key], cv)
 		r.group[key] = append(r.group[key], cv)
 	}
 
@@ -324,8 +278,6 @@ func (r *ValidatorRegistry) loadFileSpecValidators(key string, fs *filespec.File
 		if err != nil {
 			return fmt.Errorf("group validator %s: %w", vdef.ID, err)
 		}
-		cv.Category = Cat4
-		r.cat4[key] = append(r.cat4[key], cv)
 		r.group[key] = append(r.group[key], cv)
 	}
 
@@ -380,21 +332,6 @@ func (r *ValidatorRegistry) envTypeForScope(scope string) any {
 	case ScopeField:
 		return &FieldEnv{}
 	case ScopeGroup:
-		return &GroupEnv{}
-	default:
-		return nil
-	}
-}
-
-// Legacy: envTypeForCategory returns the environment type for expression compilation.
-// Deprecated: Use envTypeForScope instead.
-func (r *ValidatorRegistry) envTypeForCategory(category int) any {
-	switch category {
-	case Cat1, Cat3:
-		return &RecordEnv{}
-	case Cat2:
-		return &FieldEnv{}
-	case Cat4:
 		return &GroupEnv{}
 	default:
 		return nil
@@ -530,34 +467,6 @@ func mergeParams(predefined, useSite map[string]any) map[string]any {
 	return merged
 }
 
-// GetCat1Validators returns Cat1 validators for a record type.
-func (r *ValidatorRegistry) GetCat1Validators(recordType string) []*CompiledValidator {
-	return r.cat1[recordType]
-}
-
-// GetCat2Validators returns Cat2 validators for a specific field.
-func (r *ValidatorRegistry) GetCat2Validators(recordType, fieldName string) []*CompiledValidator {
-	if fields, ok := r.cat2[recordType]; ok {
-		return fields[fieldName]
-	}
-	return nil
-}
-
-// GetCat2FieldsForRecord returns all fields with Cat2 validators for a record type.
-func (r *ValidatorRegistry) GetCat2FieldsForRecord(recordType string) map[string][]*CompiledValidator {
-	return r.cat2[recordType]
-}
-
-// GetCat3Validators returns Cat3 validators for a record type.
-func (r *ValidatorRegistry) GetCat3Validators(recordType string) []*CompiledValidator {
-	return r.cat3[recordType]
-}
-
-// GetCat4Validators returns Cat4 validators for a filespec.
-func (r *ValidatorRegistry) GetCat4Validators(filespecKey string) []*CompiledValidator {
-	return r.cat4[filespecKey]
-}
-
 // GetFieldValidators returns field-scope validators for a specific field.
 func (r *ValidatorRegistry) GetFieldValidators(recordType, fieldName string) []*CompiledValidator {
 	if fields, ok := r.field[recordType]; ok {
@@ -583,24 +492,21 @@ func (r *ValidatorRegistry) GetGroupValidators(filespecKey string) []*CompiledVa
 
 // Stats returns statistics about compiled validators.
 type RegistryStats struct {
-	TotalExpressions  int
-	Cat1Validators    int
-	Cat2Validators    int
-	Cat3Validators    int
-	Cat4Validators    int
-	RecordTypesWithCat1 int
-	RecordTypesWithCat2 int
-	RecordTypesWithCat3 int
-	FileSpecsWithCat4   int
+	TotalExpressions      int
+	FieldValidators       int
+	RecordValidators      int
+	GroupValidators       int
+	RecordTypesWithFields int
+	RecordTypesWithRecord int
+	FileSpecsWithGroup    int
 }
 
 // Stats returns statistics about the registry.
 func (r *ValidatorRegistry) Stats() RegistryStats {
 	stats := RegistryStats{
-		RecordTypesWithCat1: len(r.cat1),
-		RecordTypesWithCat2: len(r.cat2),
-		RecordTypesWithCat3: len(r.cat3),
-		FileSpecsWithCat4:   len(r.cat4),
+		RecordTypesWithFields: len(r.field),
+		RecordTypesWithRecord: len(r.record),
+		FileSpecsWithGroup:    len(r.group),
 	}
 
 	// Count total expressions
@@ -608,20 +514,17 @@ func (r *ValidatorRegistry) Stats() RegistryStats {
 		stats.TotalExpressions += len(m)
 	}
 
-	// Count validators
-	for _, validators := range r.cat1 {
-		stats.Cat1Validators += len(validators)
-	}
-	for _, fields := range r.cat2 {
+	// Count validators by scope
+	for _, fields := range r.field {
 		for _, validators := range fields {
-			stats.Cat2Validators += len(validators)
+			stats.FieldValidators += len(validators)
 		}
 	}
-	for _, validators := range r.cat3 {
-		stats.Cat3Validators += len(validators)
+	for _, validators := range r.record {
+		stats.RecordValidators += len(validators)
 	}
-	for _, validators := range r.cat4 {
-		stats.Cat4Validators += len(validators)
+	for _, validators := range r.group {
+		stats.GroupValidators += len(validators)
 	}
 
 	return stats

@@ -150,8 +150,8 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params ProcessParams) (*Proc
 
 	// Log validation error summary
 	if errorStats != nil {
-		log.Printf("Validation errors: Cat1=%d, Cat2=%d, Cat3=%d, Cat4=%d, Total=%d",
-			errorStats.Cat1, errorStats.Cat2, errorStats.Cat3, errorStats.Cat4, errorStats.Total())
+		log.Printf("Validation errors: RecordPreCheck=%d, FieldValue=%d, ValueConsistency=%d, CaseConsistency=%d, Total=%d",
+			errorStats.RecordPreCheck, errorStats.FieldValue, errorStats.ValueConsistency, errorStats.CaseConsistency, errorStats.Total())
 	}
 
 	return &ProcessResult{

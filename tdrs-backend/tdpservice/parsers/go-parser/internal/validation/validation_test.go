@@ -464,7 +464,7 @@ func TestValidationResult(t *testing.T) {
 			t.Error("expected no errors")
 		}
 
-		result.Cat1Errors = []*ValidationResult{{Valid: false}}
+		result.RecordErrors = []*ValidationResult{{Valid: false}}
 		if !result.HasErrors() {
 			t.Error("expected errors")
 		}
@@ -472,9 +472,8 @@ func TestValidationResult(t *testing.T) {
 
 	t.Run("AllErrors", func(t *testing.T) {
 		result := &RecordValidationResult{
-			Cat1Errors: []*ValidationResult{{ValidatorID: "v1"}},
-			Cat2Errors: []*ValidationResult{{ValidatorID: "v2"}, {ValidatorID: "v3"}},
-			Cat3Errors: []*ValidationResult{{ValidatorID: "v4"}},
+			RecordErrors: []*ValidationResult{{ValidatorID: "v1"}, {ValidatorID: "v4"}},
+			FieldErrors:  []*ValidationResult{{ValidatorID: "v2"}, {ValidatorID: "v3"}},
 		}
 
 		all := result.AllErrors()
@@ -486,9 +485,9 @@ func TestValidationResult(t *testing.T) {
 
 // TestGroupValidationResult tests group validation result methods
 func TestGroupValidationResult(t *testing.T) {
-	t.Run("HasErrors with Cat4", func(t *testing.T) {
+	t.Run("HasErrors with GroupErrors", func(t *testing.T) {
 		result := &GroupValidationResult{
-			Cat4Errors: []*ValidationResult{{Valid: false}},
+			GroupErrors: []*ValidationResult{{Valid: false}},
 		}
 		if !result.HasErrors() {
 			t.Error("expected errors")
@@ -498,7 +497,7 @@ func TestGroupValidationResult(t *testing.T) {
 	t.Run("HasErrors with record errors", func(t *testing.T) {
 		result := &GroupValidationResult{
 			RecordResults: []*RecordValidationResult{
-				{Cat2Errors: []*ValidationResult{{Valid: false}}},
+				{FieldErrors: []*ValidationResult{{Valid: false}}},
 			},
 		}
 		if !result.HasErrors() {
@@ -508,11 +507,11 @@ func TestGroupValidationResult(t *testing.T) {
 
 	t.Run("TotalErrorCount", func(t *testing.T) {
 		result := &GroupValidationResult{
-			Cat4Errors: []*ValidationResult{{}, {}},
+			GroupErrors: []*ValidationResult{{}, {}},
 			RecordResults: []*RecordValidationResult{
 				{
-					Cat1Errors: []*ValidationResult{{}},
-					Cat2Errors: []*ValidationResult{{}, {}},
+					RecordErrors: []*ValidationResult{{}},
+					FieldErrors:  []*ValidationResult{{}, {}},
 				},
 			},
 		}

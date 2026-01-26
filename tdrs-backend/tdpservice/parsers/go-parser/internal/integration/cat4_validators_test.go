@@ -93,13 +93,13 @@ func newMockGroup(records []validation.Record) validation.WrappedGroup {
 // Helper functions
 // =============================================================================
 
-// runCat4Validator runs a specific cat4 validator against a group
-func runCat4Validator(t *testing.T, filespecKey string, validatorID string, group validation.WrappedGroup) *validation.ValidationResult {
+// runGroupValidator runs a specific group validator against a group
+func runGroupValidator(t *testing.T, filespecKey string, validatorID string, group validation.WrappedGroup) *validation.ValidationResult {
 	t.Helper()
 
-	validators := testRegistry.Validators().GetCat4Validators(filespecKey)
+	validators := testRegistry.Validators().GetGroupValidators(filespecKey)
 	if len(validators) == 0 {
-		t.Fatalf("No cat4 validators found for filespec %s", filespecKey)
+		t.Fatalf("No group validators found for filespec %s", filespecKey)
 	}
 
 	// Find the specific validator
@@ -133,7 +133,7 @@ func TestCat4_T1HasT2OrT3(t *testing.T) {
 			&mockRecord{recordType: "T2", lineNumber: 1},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if !result.Valid {
 			t.Errorf("expected valid when no T1 records")
 		}
@@ -145,7 +145,7 @@ func TestCat4_T1HasT2OrT3(t *testing.T) {
 			&mockRecord{recordType: "T2", lineNumber: 2},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if !result.Valid {
 			t.Errorf("expected valid when T1 has T2")
 		}
@@ -157,7 +157,7 @@ func TestCat4_T1HasT2OrT3(t *testing.T) {
 			&mockRecord{recordType: "T3", lineNumber: 2},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if !result.Valid {
 			t.Errorf("expected valid when T1 has T3")
 		}
@@ -168,7 +168,7 @@ func TestCat4_T1HasT2OrT3(t *testing.T) {
 			&mockRecord{recordType: "T1", lineNumber: 1},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if result.Valid {
 			t.Errorf("expected invalid when T1 has no T2/T3")
 		}
@@ -184,7 +184,7 @@ func TestCat4_T1FamilyAffiliation(t *testing.T) {
 			&mockRecord{recordType: "T2", lineNumber: 1, fields: map[string]any{"FAMILY_AFFILIATION": 2}},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if !result.Valid {
 			t.Errorf("expected valid when no T1 records")
 		}
@@ -196,7 +196,7 @@ func TestCat4_T1FamilyAffiliation(t *testing.T) {
 			&mockRecord{recordType: "T2", lineNumber: 2, fields: map[string]any{"FAMILY_AFFILIATION": 1}},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if !result.Valid {
 			t.Errorf("expected valid when T2 has FAMILY_AFFILIATION=1")
 		}
@@ -208,7 +208,7 @@ func TestCat4_T1FamilyAffiliation(t *testing.T) {
 			&mockRecord{recordType: "T3", lineNumber: 2, fields: map[string]any{"FAMILY_AFFILIATION": 1}},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if !result.Valid {
 			t.Errorf("expected valid when T3 has FAMILY_AFFILIATION=1")
 		}
@@ -220,7 +220,7 @@ func TestCat4_T1FamilyAffiliation(t *testing.T) {
 			&mockRecord{recordType: "T2", lineNumber: 2, fields: map[string]any{"FAMILY_AFFILIATION": 2}},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if result.Valid {
 			t.Errorf("expected invalid when no T2/T3 has FAMILY_AFFILIATION=1")
 		}
@@ -231,7 +231,7 @@ func TestCat4_T1FamilyAffiliation(t *testing.T) {
 			&mockRecord{recordType: "T1", lineNumber: 1},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if result.Valid {
 			t.Errorf("expected invalid when T1 has no T2/T3")
 		}
@@ -245,7 +245,7 @@ func TestCat4_T1FamilyAffiliation(t *testing.T) {
 			&mockRecord{recordType: "T2", lineNumber: 4, fields: map[string]any{"FAMILY_AFFILIATION": 3}},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if !result.Valid {
 			t.Errorf("expected valid when at least one T2 has FAMILY_AFFILIATION=1")
 		}
@@ -258,7 +258,7 @@ func TestCat4_T1FamilyAffiliation(t *testing.T) {
 			&mockRecord{recordType: "T3", lineNumber: 3, fields: map[string]any{"FAMILY_AFFILIATION": 1}},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if !result.Valid {
 			t.Errorf("expected valid when T3 has FAMILY_AFFILIATION=1")
 		}
@@ -274,7 +274,7 @@ func TestCat4_T2RequiresT1(t *testing.T) {
 			&mockRecord{recordType: "T1", lineNumber: 1},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if !result.Valid {
 			t.Errorf("expected valid when no T2 records")
 		}
@@ -286,7 +286,7 @@ func TestCat4_T2RequiresT1(t *testing.T) {
 			&mockRecord{recordType: "T2", lineNumber: 2},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if !result.Valid {
 			t.Errorf("expected valid when T2 has corresponding T1")
 		}
@@ -297,7 +297,7 @@ func TestCat4_T2RequiresT1(t *testing.T) {
 			&mockRecord{recordType: "T2", lineNumber: 1},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if result.Valid {
 			t.Errorf("expected invalid when T2 has no corresponding T1")
 		}
@@ -310,7 +310,7 @@ func TestCat4_T2RequiresT1(t *testing.T) {
 			&mockRecord{recordType: "T3", lineNumber: 3},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if result.Valid {
 			t.Errorf("expected invalid when T2s have no corresponding T1")
 		}
@@ -326,7 +326,7 @@ func TestCat4_T3RequiresT1(t *testing.T) {
 			&mockRecord{recordType: "T1", lineNumber: 1},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if !result.Valid {
 			t.Errorf("expected valid when no T3 records")
 		}
@@ -338,7 +338,7 @@ func TestCat4_T3RequiresT1(t *testing.T) {
 			&mockRecord{recordType: "T3", lineNumber: 2},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if !result.Valid {
 			t.Errorf("expected valid when T3 has corresponding T1")
 		}
@@ -349,7 +349,7 @@ func TestCat4_T3RequiresT1(t *testing.T) {
 			&mockRecord{recordType: "T3", lineNumber: 1},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if result.Valid {
 			t.Errorf("expected invalid when T3 has no corresponding T1")
 		}
@@ -362,7 +362,7 @@ func TestCat4_T3RequiresT1(t *testing.T) {
 			&mockRecord{recordType: "T3", lineNumber: 3},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if result.Valid {
 			t.Errorf("expected invalid when T3s have no corresponding T1")
 		}
@@ -382,7 +382,7 @@ func TestCat4_T4RequiresT5(t *testing.T) {
 			&mockRecord{recordType: "T5", lineNumber: 1},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if !result.Valid {
 			t.Errorf("expected valid when no T4 records")
 		}
@@ -394,7 +394,7 @@ func TestCat4_T4RequiresT5(t *testing.T) {
 			&mockRecord{recordType: "T5", lineNumber: 2},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if !result.Valid {
 			t.Errorf("expected valid when T4 has corresponding T5")
 		}
@@ -405,7 +405,7 @@ func TestCat4_T4RequiresT5(t *testing.T) {
 			&mockRecord{recordType: "T4", lineNumber: 1},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if result.Valid {
 			t.Errorf("expected invalid when T4 has no corresponding T5")
 		}
@@ -418,7 +418,7 @@ func TestCat4_T4RequiresT5(t *testing.T) {
 			&mockRecord{recordType: "T5", lineNumber: 3},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if !result.Valid {
 			t.Errorf("expected valid when T4s have corresponding T5")
 		}
@@ -434,7 +434,7 @@ func TestCat4_T5RequiresT4(t *testing.T) {
 			&mockRecord{recordType: "T4", lineNumber: 1},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if !result.Valid {
 			t.Errorf("expected valid when no T5 records")
 		}
@@ -446,7 +446,7 @@ func TestCat4_T5RequiresT4(t *testing.T) {
 			&mockRecord{recordType: "T5", lineNumber: 2},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if !result.Valid {
 			t.Errorf("expected valid when T5 has corresponding T4")
 		}
@@ -457,7 +457,7 @@ func TestCat4_T5RequiresT4(t *testing.T) {
 			&mockRecord{recordType: "T5", lineNumber: 1},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if result.Valid {
 			t.Errorf("expected invalid when T5 has no corresponding T4")
 		}
@@ -469,7 +469,7 @@ func TestCat4_T5RequiresT4(t *testing.T) {
 			&mockRecord{recordType: "T5", lineNumber: 2},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if result.Valid {
 			t.Errorf("expected invalid when T5s have no corresponding T4")
 		}
@@ -483,7 +483,7 @@ func TestCat4_T5RequiresT4(t *testing.T) {
 			&mockRecord{recordType: "T5", lineNumber: 4},
 		}
 		group := newMockGroup(records)
-		result := runCat4Validator(t, filespecKey, validatorID, group)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
 		if !result.Valid {
 			t.Errorf("expected valid when T5s have corresponding T4")
 		}
