@@ -130,5 +130,4 @@ func main() {
 	for table, count := range result.RecordCounts {
 		log.Printf("Written to %s: %d records", table, count)
 	}
-	log.Printf("Total errors: %d", result.ErrorCount)
 }
