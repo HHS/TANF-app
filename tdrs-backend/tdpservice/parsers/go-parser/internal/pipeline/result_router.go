@@ -134,32 +134,32 @@ func validateBatch(pb *parser.ParsedBatch, orchestrator *validation.Orchestrator
 		}
 
 		// Log validation errors (for now - later these will be written to the database)
-		if result.HasErrors() {
-			log.Printf("Validation errors for group %s: %d errors", group.Key, result.TotalErrorCount())
+		// if result.HasErrors() {
+		// 	log.Printf("Validation errors for group %s: %d errors", group.Key, result.TotalErrorCount())
 
-			// Log Cat4 errors
-			for _, err := range result.Cat4Errors {
-				log.Printf("  Cat4: %s - %v", err.ValidatorID, err.Error)
-			}
+		// 	// Log Cat4 errors
+		// 	for _, err := range result.Cat4Errors {
+		// 		log.Printf("  Cat4: %s - %v", err.ValidatorID, err.Error)
+		// 	}
 
-			// Log record-level errors
-			for _, recResult := range result.RecordResults {
-				if recResult.HasErrors() {
-					rec := recResult.Record
-					log.Printf("  Record (line %d, type %s):", rec.GetLineNumber(), rec.GetRecordType())
+		// 	// Log record-level errors
+		// 	for _, recResult := range result.RecordResults {
+		// 		if recResult.HasErrors() {
+		// 			rec := recResult.Record
+		// 			log.Printf("  Record (line %d, type %s):", rec.GetLineNumber(), rec.GetRecordType())
 
-					for _, err := range recResult.Cat1Errors {
-						log.Printf("    Cat1: %s - %v", err.ValidatorID, err.Error)
-					}
-					for _, err := range recResult.Cat2Errors {
-						log.Printf("    Cat2 [%s]: %s - %v", err.FieldName, err.ValidatorID, err.Error)
-					}
-					for _, err := range recResult.Cat3Errors {
-						log.Printf("    Cat3: %s - %v", err.ValidatorID, err.Error)
-					}
-				}
-			}
-		}
+		// 			for _, err := range recResult.Cat1Errors {
+		// 				log.Printf("    Cat1: %s - %v", err.ValidatorID, err.Error)
+		// 			}
+		// 			for _, err := range recResult.Cat2Errors {
+		// 				log.Printf("    Cat2 [%s]: %s - %v", err.FieldName, err.ValidatorID, err.Error)
+		// 			}
+		// 			for _, err := range recResult.Cat3Errors {
+		// 				log.Printf("    Cat3: %s - %v", err.ValidatorID, err.Error)
+		// 			}
+		// 		}
+		// 	}
+		// }
 	}
 	return
 }

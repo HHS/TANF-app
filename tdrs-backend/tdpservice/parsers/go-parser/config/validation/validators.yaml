@@ -121,6 +121,9 @@ category2:
     message: "{{.RecordType}} Item {{.Item}}: must be 0, 1, 2, or blank, got {{.Value}}"
 
 category3:
+
+  # TODO: need to implement federally_funded_ssn validator
+
   # Amount requires positive field validator
   # When amount_field is positive, required_field must be positive
   # Params: amount_field (string), required_field (string)
@@ -217,6 +220,8 @@ category4:
   # =============================================================================
   # TANF Section 1 Group/Case Validators
   # =============================================================================
+
+  # TODO: Need to implement duplicate detection.
 
   # T1 must have at least one T2 or T3 with FAMILY_AFFILIATION == 1
   # Python: __validate_s1_records_are_related - validates family affiliation
