@@ -755,6 +755,128 @@ func TestResolveValidatorPreventsExprOverride(t *testing.T) {
 	})
 }
 
+// TestFamilyAffiliationExpression tests the any() with #.GetInt() syntax for Cat4
+func TestFamilyAffiliationExpression(t *testing.T) {
+	// Register custom functions for the expression
+	opts := RegisterFunctions()
+
+	// Compile the expression
+	exprStr := `RecordCounts['T1'] == 0 or any(getRecordsOfType(Group, 'T2'), .GetInt('FAMILY_AFFILIATION') == 1) or any(getRecordsOfType(Group, 'T3'), .GetInt('FAMILY_AFFILIATION') == 1)`
+
+	compileOpts := append([]expr.Option{
+		expr.Env(&GroupEnv{}),
+		expr.AsBool(),
+		expr.AllowUndefinedVariables(),
+	}, opts...)
+
+	program, err := expr.Compile(exprStr, compileOpts...)
+	if err != nil {
+		t.Fatalf("failed to compile expression: %v", err)
+	}
+
+	t.Run("no T1 records - should pass", func(t *testing.T) {
+		records := []Record{
+			&mockRecord{recordType: "T2", fields: map[string]any{"FAMILY_AFFILIATION": 2}},
+		}
+		group := newMockWrappedGroup(records)
+		env := NewGroupEnv(group)
+
+		result, err := expr.Run(program, env)
+		if err != nil {
+			t.Fatalf("failed to run: %v", err)
+		}
+		if result != true {
+			t.Errorf("expected true when no T1, got %v", result)
+		}
+	})
+
+	t.Run("T1 with T2 FAMILY_AFFILIATION=1 - should pass", func(t *testing.T) {
+		records := []Record{
+			&mockRecord{recordType: "T1"},
+			&mockRecord{recordType: "T2", fields: map[string]any{"FAMILY_AFFILIATION": 1}},
+		}
+		group := newMockWrappedGroup(records)
+		env := NewGroupEnv(group)
+
+		result, err := expr.Run(program, env)
+		if err != nil {
+			t.Fatalf("failed to run: %v", err)
+		}
+		if result != true {
+			t.Errorf("expected true when T2 has FA=1, got %v", result)
+		}
+	})
+
+	t.Run("T1 with T3 FAMILY_AFFILIATION=1 - should pass", func(t *testing.T) {
+		records := []Record{
+			&mockRecord{recordType: "T1"},
+			&mockRecord{recordType: "T3", fields: map[string]any{"FAMILY_AFFILIATION": 1}},
+		}
+		group := newMockWrappedGroup(records)
+		env := NewGroupEnv(group)
+
+		result, err := expr.Run(program, env)
+		if err != nil {
+			t.Fatalf("failed to run: %v", err)
+		}
+		if result != true {
+			t.Errorf("expected true when T3 has FA=1, got %v", result)
+		}
+	})
+
+	t.Run("T1 with T2 FAMILY_AFFILIATION=2 only - should fail", func(t *testing.T) {
+		records := []Record{
+			&mockRecord{recordType: "T1"},
+			&mockRecord{recordType: "T2", fields: map[string]any{"FAMILY_AFFILIATION": 2}},
+		}
+		group := newMockWrappedGroup(records)
+		env := NewGroupEnv(group)
+
+		result, err := expr.Run(program, env)
+		if err != nil {
+			t.Fatalf("failed to run: %v", err)
+		}
+		if result != false {
+			t.Errorf("expected false when no T2/T3 has FA=1, got %v", result)
+		}
+	})
+
+	t.Run("T1 with no T2/T3 - should fail", func(t *testing.T) {
+		records := []Record{
+			&mockRecord{recordType: "T1"},
+		}
+		group := newMockWrappedGroup(records)
+		env := NewGroupEnv(group)
+
+		result, err := expr.Run(program, env)
+		if err != nil {
+			t.Fatalf("failed to run: %v", err)
+		}
+		if result != false {
+			t.Errorf("expected false when T1 has no T2/T3, got %v", result)
+		}
+	})
+
+	t.Run("T1 with multiple T2s, one has FA=1 - should pass", func(t *testing.T) {
+		records := []Record{
+			&mockRecord{recordType: "T1"},
+			&mockRecord{recordType: "T2", fields: map[string]any{"FAMILY_AFFILIATION": 2}},
+			&mockRecord{recordType: "T2", fields: map[string]any{"FAMILY_AFFILIATION": 1}},
+			&mockRecord{recordType: "T2", fields: map[string]any{"FAMILY_AFFILIATION": 3}},
+		}
+		group := newMockWrappedGroup(records)
+		env := NewGroupEnv(group)
+
+		result, err := expr.Run(program, env)
+		if err != nil {
+			t.Fatalf("failed to run: %v", err)
+		}
+		if result != true {
+			t.Errorf("expected true when at least one T2 has FA=1, got %v", result)
+		}
+	})
+}
+
 // TestParameterizedExpressions tests that expr library can access Params
 func TestParameterizedExpressions(t *testing.T) {
 	t.Run("length validator with Params.n", func(t *testing.T) {

@@ -138,14 +138,14 @@ validation_orchestrator:
 # 3. Every T3 must have a corresponding T1 in the same case
 
 category4:
-  # T1 must have at least one T2 or T3 with FAMILY_AFFILIATION == 1
-  # Error is reported on T1 records when no family-affiliated member exists
+  # T1 must have at least one T2 or T3 record
   - id: t1_has_t2_or_t3
 
+  # T1 must have at least one T2 or T3 with FAMILY_AFFILIATION == 1
+  - id: t1_family_affiliation
+
   # T2 records require at least one T1 record in the same case
-  # Error is reported on T2 records when no T1 exists
   - id: t2_requires_t1
 
   # T3 records require at least one T1 record in the same case
-  # Error is reported on T3 records when no T1 exists
   - id: t3_requires_t1

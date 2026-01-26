@@ -223,11 +223,23 @@ category4:
 
   # TODO: Need to implement duplicate detection.
 
-  # T1 must have at least one T2 or T3 with FAMILY_AFFILIATION == 1
-  # Python: __validate_s1_records_are_related - validates family affiliation
+  # T1 must have at least one T2 or T3 record
+  # Python: __validate_s1_records_are_related - validates T2/T3 presence
+  # Note: This validator behaves mostly correctly in comparison to the python parser. The python parser will generate
+  # this error for every T2 record that doesn't have a corresponding T1 record, while this validator only generates
+  # the error once per group.
   - id: t1_has_t2_or_t3
     expr: "RecordCounts['T3'] > 0 or RecordCounts['T2'] > 0"
-    message: "Every T1 record should have at least one corresponding T2 or T3 record with the same RPT_MONTH_YEAR and CASE_NUMBER, where FAMILY_AFFILIATION == 1"
+    message: "Every T1 record should have at least one corresponding T2 or T3 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
+
+  # T1 must have at least one T2 or T3 with FAMILY_AFFILIATION == 1
+  # Python: __validate_family_affiliation - validates family affiliation requirement
+  # Note: This validator behaves mostly correctly in comparison to the python parser. The python parser will generate
+  # this error for every T2 record that doesn't have a corresponding T1 record, while this validator only generates
+  # the error once per group.
+  - id: t1_family_affiliation
+    expr: "RecordCounts['T1'] == 0 or any(getRecordsOfType(Group, 'T2'), .GetInt('FAMILY_AFFILIATION') == 1) or any(getRecordsOfType(Group, 'T3'), .GetInt('FAMILY_AFFILIATION') == 1)"
+    message: "Every T1 record should have at least one corresponding T2 or T3 record with FAMILY_AFFILIATION == 1"
 
   # T2 records require at least one T1 record in the same case
   # Python: __validate_s1_records_are_related - "Every T2 record should have at least one corresponding T1..."
