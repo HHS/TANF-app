@@ -1,9 +1,8 @@
 import React, { useEffect, useRef } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import classNames from 'classnames'
 
 import STTComboBox from '../STTComboBox'
-import { fetchSttList } from '../../actions/sttList'
 import Modal from '../Modal'
 import ReprocessedModal from '../SubmissionHistory/ReprocessedModal'
 import {
@@ -34,7 +33,6 @@ function ReportsContent() {
     getFileTypeError,
   } = useReportsContext()
 
-  const dispatch = useDispatch()
   const user = useSelector((state) => state.auth.user)
   const isDataAnalyst =
     useSelector(selectPrimaryUserRole)?.name === 'Data Analyst'
@@ -56,12 +54,6 @@ function ReportsContent() {
       headerRef.current.focus()
     }
   }, [])
-
-  useEffect(() => {
-    if (sttList.length === 0) {
-      dispatch(fetchSttList())
-    }
-  }, [dispatch, sttList])
 
   const redux_stt = useSelector((state) => state.reports.stt)
 
