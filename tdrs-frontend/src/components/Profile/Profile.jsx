@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { Navigate } from 'react-router-dom'
 
 import RequestAccessForm from '../RequestAccessForm/RequestAccessForm'
@@ -10,7 +10,6 @@ import {
   accountIsMissingAccessRequest,
 } from '../../selectors/auth'
 import { JURISDICTION_TYPES } from './JurisdictionLocationInfo'
-import { fetchSttList } from '../../actions/sttList'
 
 function Profile({
   isEditing = false,
@@ -21,7 +20,6 @@ function Profile({
   onCancel,
   setInEditMode,
 }) {
-  const dispatch = useDispatch()
   const isAMSUser = user?.email?.includes('@acf.hhs.gov')
   const userPermissions = user?.permissions?.map((p) => p.codename) || []
   const hasFRAAccess = userPermissions.includes('has_fra_access')
@@ -29,15 +27,6 @@ function Profile({
   const missingAccessRequest = useSelector(accountIsMissingAccessRequest)
   const isAccessRequestPending = useSelector(accountIsInReview)
   const isProfileChangePending = useSelector(accountHasPendingProfileChange)
-
-  // Fetch STT list if not already loaded (needed for profile editing)
-  // TODO: Remove this useEffect when the NavItem component no longer uses anchor tags and instead uses React Link
-  // components.
-  useEffect(() => {
-    if (sttList?.length === 0) {
-      dispatch(fetchSttList())
-    }
-  }, [dispatch, sttList])
 
   useEffect(() => {
     if (setInEditMode) {
