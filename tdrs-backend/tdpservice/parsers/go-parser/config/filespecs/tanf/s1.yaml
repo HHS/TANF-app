@@ -124,7 +124,7 @@ validation_orchestrator:
       skip: [2, 3]
 
 # =============================================================================
-# CATEGORY 4 VALIDATORS (Case/Group Level)
+# GROUP VALIDATORS (Group/Case Level)
 # =============================================================================
 #
 # These validators run at the case/group level and validate relationships
@@ -137,7 +137,7 @@ validation_orchestrator:
 # 2. Every T2 must have a corresponding T1 in the same case
 # 3. Every T3 must have a corresponding T1 in the same case
 
-category4:
+group:
   # T1 must have at least one T2 or T3 record
   - id: t1_has_t2_or_t3
 

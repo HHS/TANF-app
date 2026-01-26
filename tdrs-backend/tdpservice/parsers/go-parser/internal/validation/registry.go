@@ -82,22 +82,13 @@ func (r *ValidatorRegistry) Load(configPath string, schemas map[string]*schema.C
 }
 
 // PredefinedValidatorsFile represents the validators.yaml file format.
-// Supports both legacy category-based and new scope-based formats.
 type PredefinedValidatorsFile struct {
-	// Legacy category-based format
-	Category1 []validation.ValidatorDef `yaml:"category1"`
-	Category2 []validation.ValidatorDef `yaml:"category2"`
-	Category3 []validation.ValidatorDef `yaml:"category3"`
-	Category4 []validation.ValidatorDef `yaml:"category4"`
-
-	// New scope-based format
 	Field  []validation.ValidatorDef `yaml:"field"`
 	Record []validation.ValidatorDef `yaml:"record"`
 	Group  []validation.ValidatorDef `yaml:"group"`
 }
 
 // loadPredefinedValidators loads predefined validators from validators.yaml.
-// Supports both legacy category-based and new scope-based formats.
 func (r *ValidatorRegistry) loadPredefinedValidators(path string) error {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -114,7 +105,7 @@ func (r *ValidatorRegistry) loadPredefinedValidators(path string) error {
 	r.predefined[ScopeRecord] = make(map[string]*validation.ValidatorDef)
 	r.predefined[ScopeGroup] = make(map[string]*validation.ValidatorDef)
 
-	// Load new scope-based format
+	// Load validators by scope
 	for i := range file.Field {
 		vdef := &file.Field[i]
 		applyDefaultErrorType(vdef, ScopeField)
@@ -131,37 +122,6 @@ func (r *ValidatorRegistry) loadPredefinedValidators(path string) error {
 		r.predefined[ScopeGroup][vdef.ID] = vdef
 	}
 
-	// Also load legacy category-based format for backward compatibility
-	// Map: Cat1 -> record (RECORD_PRE_CHECK), Cat2 -> field, Cat3 -> record, Cat4 -> group
-	for i := range file.Category1 {
-		vdef := &file.Category1[i]
-		if vdef.ErrorType == "" {
-			vdef.ErrorType = ErrorTypeRecordPreCheck
-		}
-		r.predefined[ScopeRecord][vdef.ID] = vdef
-	}
-	for i := range file.Category2 {
-		vdef := &file.Category2[i]
-		if vdef.ErrorType == "" {
-			vdef.ErrorType = ErrorTypeFieldValue
-		}
-		r.predefined[ScopeField][vdef.ID] = vdef
-	}
-	for i := range file.Category3 {
-		vdef := &file.Category3[i]
-		if vdef.ErrorType == "" {
-			vdef.ErrorType = ErrorTypeValueConsistency
-		}
-		r.predefined[ScopeRecord][vdef.ID] = vdef
-	}
-	for i := range file.Category4 {
-		vdef := &file.Category4[i]
-		if vdef.ErrorType == "" {
-			vdef.ErrorType = ErrorTypeCaseConsistency
-		}
-		r.predefined[ScopeGroup][vdef.ID] = vdef
-	}
-
 	return nil
 }
 
@@ -173,7 +133,6 @@ func applyDefaultErrorType(vdef *validation.ValidatorDef, scope string) {
 }
 
 // loadSchemaValidators compiles field and record validators from a schema.
-// Supports both legacy category-based (category1/2/3) and new scope-based (field/record) formats.
 func (r *ValidatorRegistry) loadSchemaValidators(path string, cs *schema.CompiledSchema) error {
 	recordType := cs.RecordType
 
@@ -182,49 +141,7 @@ func (r *ValidatorRegistry) loadSchemaValidators(path string, cs *schema.Compile
 		r.field[recordType] = make(map[string][]*CompiledValidator)
 	}
 
-	// Load legacy Category1 validators (record scope, RECORD_PRE_CHECK)
-	for _, vdef := range cs.Category1 {
-		cv, err := r.resolveValidatorByScope(ScopeRecord, &vdef, ErrorTypeRecordPreCheck)
-		if err != nil {
-			return fmt.Errorf("record validator %s: %w", vdef.ID, err)
-		}
-		r.record[recordType] = append(r.record[recordType], cv)
-	}
-
-	// Load legacy Category2 validators from shared fields (field scope)
-	for _, field := range cs.Shared {
-		for _, vdef := range field.Category2 {
-			cv, err := r.resolveValidatorByScope(ScopeField, &vdef, "")
-			if err != nil {
-				return fmt.Errorf("field validator %s for field %s: %w", vdef.ID, field.Name, err)
-			}
-			r.field[recordType][field.Name] = append(r.field[recordType][field.Name], cv)
-		}
-	}
-
-	// Load legacy Category2 validators from segment fields (field scope)
-	for _, seg := range cs.Segments {
-		for _, field := range seg.Fields {
-			for _, vdef := range field.Category2 {
-				cv, err := r.resolveValidatorByScope(ScopeField, &vdef, "")
-				if err != nil {
-					return fmt.Errorf("field validator %s for field %s: %w", vdef.ID, field.Name, err)
-				}
-				r.field[recordType][field.Name] = append(r.field[recordType][field.Name], cv)
-			}
-		}
-	}
-
-	// Load legacy Category3 validators (record scope, VALUE_CONSISTENCY)
-	for _, vdef := range cs.Category3 {
-		cv, err := r.resolveValidatorByScope(ScopeRecord, &vdef, "")
-		if err != nil {
-			return fmt.Errorf("record validator %s: %w", vdef.ID, err)
-		}
-		r.record[recordType] = append(r.record[recordType], cv)
-	}
-
-	// Load new scope-based record validators
+	// Load record-scope validators
 	for _, vdef := range cs.Record {
 		cv, err := r.resolveValidatorByScope(ScopeRecord, &vdef, "")
 		if err != nil {
@@ -233,7 +150,7 @@ func (r *ValidatorRegistry) loadSchemaValidators(path string, cs *schema.Compile
 		r.record[recordType] = append(r.record[recordType], cv)
 	}
 
-	// Load new scope-based field validators from shared fields
+	// Load field-scope validators from shared fields
 	for _, field := range cs.Shared {
 		for _, vdef := range field.Field {
 			cv, err := r.resolveValidatorByScope(ScopeField, &vdef, "")
@@ -244,7 +161,7 @@ func (r *ValidatorRegistry) loadSchemaValidators(path string, cs *schema.Compile
 		}
 	}
 
-	// Load new scope-based field validators from segment fields
+	// Load field-scope validators from segment fields
 	for _, seg := range cs.Segments {
 		for _, field := range seg.Fields {
 			for _, vdef := range field.Field {
@@ -261,18 +178,7 @@ func (r *ValidatorRegistry) loadSchemaValidators(path string, cs *schema.Compile
 }
 
 // loadFileSpecValidators compiles group validators from a filespec.
-// Supports both legacy category-based (category4) and new scope-based (group) formats.
 func (r *ValidatorRegistry) loadFileSpecValidators(key string, fs *filespec.FileSpec) error {
-	// Load legacy Category4 validators (group scope)
-	for _, vdef := range fs.Category4 {
-		cv, err := r.resolveValidatorByScope(ScopeGroup, &vdef, "")
-		if err != nil {
-			return fmt.Errorf("group validator %s: %w", vdef.ID, err)
-		}
-		r.group[key] = append(r.group[key], cv)
-	}
-
-	// Load new scope-based group validators
 	for _, vdef := range fs.Group {
 		cv, err := r.resolveValidatorByScope(ScopeGroup, &vdef, "")
 		if err != nil {

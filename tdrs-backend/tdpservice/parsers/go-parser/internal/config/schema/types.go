@@ -57,12 +57,7 @@ type FieldDef struct {
 	// ColumnHeader is the expected column header name (optional)
 	ColumnHeader string `yaml:"column_header,omitempty"`
 
-	// Category2 configures the category 2 validators associated with this field
-	// Legacy: Use Field instead for new schemas.
-	Category2 []validation.ValidatorDef `yaml:"category2,omitempty"`
-
 	// Field configures the field-scope validators associated with this field.
-	// New scope-based format.
 	Field []validation.ValidatorDef `yaml:"field,omitempty"`
 }
 
@@ -101,18 +96,10 @@ type SchemaDef struct {
 	// Each segment produces one output row (combined with shared fields).
 	Segments []SegmentDef `yaml:"segments"`
 
-	// Category1 configures the category 1 validators associated with this schema
-	// Legacy: Use Record with error_type: RECORD_PRE_CHECK instead.
-	Category1 []validation.ValidatorDef `yaml:"category1,omitempty"`
-
-	// Category3 configures the category 3 validators associated with this schema
-	// Legacy: Use Record instead for new schemas.
-	Category3 []validation.ValidatorDef `yaml:"category3,omitempty"`
-
 	// Record configures the record-scope validators associated with this schema.
-	// New scope-based format. Validators can specify error_type:
-	// - RECORD_PRE_CHECK: blocks record serialization (like old category1)
-	// - VALUE_CONSISTENCY: allows serialization (like old category3)
+	// Validators can specify error_type:
+	// - RECORD_PRE_CHECK: blocks record serialization
+	// - VALUE_CONSISTENCY: allows serialization (default)
 	Record []validation.ValidatorDef `yaml:"record,omitempty"`
 }
 

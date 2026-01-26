@@ -10,15 +10,14 @@ section: 1
 document: "TANF Active Case Data"
 format: positional
 
-# Category 1: Record-level pre-check validators (always run)
-category1:
+# Record validators with RECORD_PRE_CHECK error type (block record serialization)
+record:
   - id: record_length_min
     params:
       min: 117
   - id: case_number_not_empty
 
-# Category 3: Cross-field validators
-category3:
+  # Record validators with VALUE_CONSISTENCY error type (cross-field validation)
   # Amount requires positive validators
   - id: amount_requires_positive
     params:
@@ -106,7 +105,7 @@ shared:
     end: 8
     type: string
     required: true
-    category2:
+    field:
       - id: year_after_1998
       - id: valid_month
 
@@ -117,7 +116,7 @@ shared:
     end: 19
     type: string
     required: true
-    category2:
+    field:
       - id: not_empty
 
 # Each segment produces one output row (combined with shared fields)
@@ -130,7 +129,7 @@ segments:
         end: 22
         type: string
         required: true
-        category2:
+        field:
           - id: is_numeric
 
       - name: STRATUM
@@ -140,7 +139,7 @@ segments:
         end: 24
         type: string
         required: false
-        category2:
+        field:
           - id: in_range_int
             params:
               min: 0
@@ -153,7 +152,7 @@ segments:
         end: 29
         type: string
         required: true
-        category2:
+        field:
           - id: is_numeric
 
       - name: FUNDING_STREAM
@@ -163,7 +162,7 @@ segments:
         end: 30
         type: integer
         required: true
-        category2:
+        field:
           - id: in_values
             params:
               values: [1, 2]
@@ -175,7 +174,7 @@ segments:
         end: 31
         type: integer
         required: true
-        category2:
+        field:
           - id: equals
             params:
               value: 1
@@ -187,7 +186,7 @@ segments:
         end: 32
         type: integer
         required: true
-        category2:
+        field:
           - id: in_values
             params:
               values: [1, 2]
@@ -199,7 +198,7 @@ segments:
         end: 34
         type: integer
         required: true
-        category2:
+        field:
           - id: positive_value
 
       - name: FAMILY_TYPE
@@ -209,7 +208,7 @@ segments:
         end: 35
         type: integer
         required: true
-        category2:
+        field:
           - id: in_values
             params:
               values: [1, 2, 3]
@@ -221,7 +220,7 @@ segments:
         end: 36
         type: integer
         required: true
-        category2:
+        field:
           - id: in_values
             params:
               values: [1, 2]
@@ -233,7 +232,7 @@ segments:
         end: 37
         type: integer
         required: true
-        category2:
+        field:
           - id: in_values
             params:
               values: [1, 2]
@@ -245,7 +244,7 @@ segments:
         end: 38
         type: integer
         required: false
-        category2:
+        field:
           - id: in_values
             params:
               values: [0, 1, 2]
@@ -257,7 +256,7 @@ segments:
         end: 42
         type: integer
         required: true
-        category2:
+        field:
           - id: not_negative
 
       - name: RECEIVES_SUB_CC
@@ -267,7 +266,7 @@ segments:
         end: 43
         type: integer
         required: false
-        category2:
+        field:
           - id: in_values
             params:
               values: [0, 1, 2, 3]
@@ -279,7 +278,7 @@ segments:
         end: 47
         type: integer
         required: true
-        category2:
+        field:
           - id: not_negative
 
       - name: CHILD_SUPPORT_AMT
@@ -289,7 +288,7 @@ segments:
         end: 51
         type: integer
         required: true
-        category2:
+        field:
           - id: not_negative
 
       - name: FAMILY_CASH_RESOURCES
@@ -299,7 +298,7 @@ segments:
         end: 55
         type: integer
         required: true
-        category2:
+        field:
           - id: not_negative
 
       - name: CASH_AMOUNT
@@ -309,7 +308,7 @@ segments:
         end: 59
         type: integer
         required: true
-        category2:
+        field:
           - id: not_negative
 
       - name: NBR_MONTHS
@@ -319,7 +318,7 @@ segments:
         end: 62
         type: integer
         required: true
-        category2:
+        field:
           - id: not_negative
 
       - name: CC_AMOUNT
@@ -329,7 +328,7 @@ segments:
         end: 66
         type: integer
         required: true
-        category2:
+        field:
           - id: not_negative
 
       - name: CHILDREN_COVERED
@@ -339,7 +338,7 @@ segments:
         end: 68
         type: integer
         required: true
-        category2:
+        field:
           - id: not_negative
 
       - name: CC_NBR_MONTHS
@@ -349,7 +348,7 @@ segments:
         end: 71
         type: integer
         required: true
-        category2:
+        field:
           - id: not_negative
 
       - name: TRANSP_AMOUNT
@@ -359,7 +358,7 @@ segments:
         end: 75
         type: integer
         required: true
-        category2:
+        field:
           - id: not_negative
 
       - name: TRANSP_NBR_MONTHS
@@ -369,7 +368,7 @@ segments:
         end: 78
         type: integer
         required: true
-        category2:
+        field:
           - id: not_negative
 
       - name: TRANSITION_SERVICES_AMOUNT
@@ -379,7 +378,7 @@ segments:
         end: 82
         type: integer
         required: false
-        category2:
+        field:
           - id: not_negative
 
       - name: TRANSITION_NBR_MONTHS
@@ -389,7 +388,7 @@ segments:
         end: 85
         type: integer
         required: false
-        category2:
+        field:
           - id: not_negative
 
       - name: OTHER_AMOUNT
@@ -399,7 +398,7 @@ segments:
         end: 89
         type: integer
         required: false
-        category2:
+        field:
           - id: not_negative
 
       - name: OTHER_NBR_MONTHS
@@ -409,7 +408,7 @@ segments:
         end: 92
         type: integer
         required: false
-        category2:
+        field:
           - id: not_negative
 
       - name: SANC_REDUCTION_AMT
@@ -419,7 +418,7 @@ segments:
         end: 96
         type: integer
         required: true
-        category2:
+        field:
           - id: not_negative
 
       - name: WORK_REQ_SANCTION
@@ -429,7 +428,7 @@ segments:
         end: 97
         type: integer
         required: true
-        category2:
+        field:
           - id: in_values
             params:
               values: [1, 2]
@@ -441,7 +440,7 @@ segments:
         end: 98
         type: integer
         required: false
-        category2:
+        field:
           - id: in_values
             params:
               values: [0, 1, 2]
@@ -453,7 +452,7 @@ segments:
         end: 99
         type: integer
         required: true
-        category2:
+        field:
           - id: in_values
             params:
               values: [1, 2]
@@ -465,7 +464,7 @@ segments:
         end: 100
         type: integer
         required: true
-        category2:
+        field:
           - id: in_values
             params:
               values: [1, 2]
@@ -477,7 +476,7 @@ segments:
         end: 101
         type: integer
         required: true
-        category2:
+        field:
           - id: in_values
             params:
               values: [1, 2]
@@ -489,7 +488,7 @@ segments:
         end: 102
         type: integer
         required: true
-        category2:
+        field:
           - id: in_values
             params:
               values: [1, 2]
@@ -501,7 +500,7 @@ segments:
         end: 106
         type: integer
         required: true
-        category2:
+        field:
           - id: not_negative
 
       - name: OTHER_TOTAL_REDUCTIONS
@@ -511,7 +510,7 @@ segments:
         end: 110
         type: integer
         required: true
-        category2:
+        field:
           - id: not_negative
 
       - name: FAMILY_CAP
@@ -521,7 +520,7 @@ segments:
         end: 111
         type: integer
         required: true
-        category2:
+        field:
           - id: in_values
             params:
               values: [1, 2]
@@ -533,7 +532,7 @@ segments:
         end: 112
         type: integer
         required: true
-        category2:
+        field:
           - id: in_values
             params:
               values: [1, 2]
@@ -545,7 +544,7 @@ segments:
         end: 113
         type: integer
         required: true
-        category2:
+        field:
           - id: in_values
             params:
               values: [1, 2]
@@ -557,7 +556,7 @@ segments:
         end: 114
         type: string
         required: false
-        category2:
+        field:
           - id: in_values
             params:
               values: ['9', '0', ' ']
@@ -571,7 +570,7 @@ segments:
         end: 116
         type: integer
         required: true
-        category2:
+        field:
           - id: in_values
             params:
               values: [1, 2, 3, 4, 6, 7, 8, 9]
@@ -583,7 +582,7 @@ segments:
         end: 117
         type: integer
         required: false
-        category2:
+        field:
           - id: in_values
             params:
               values: [0, 1, 2]

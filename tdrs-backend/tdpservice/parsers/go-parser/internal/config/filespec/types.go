@@ -43,12 +43,8 @@ type FileSpec struct {
 	// Validation orchestrator configures the validation category types, execution order, and short-circuit rules
 	ValidationOrchestrator validation.OrchestratorDef `yaml:"validation_orchestrator"`
 
-	// Category4 configures the category 4 validators associated with this file type
-	// Legacy: Use Group instead for new filespecs.
-	Category4 []validation.ValidatorDef `yaml:"category4"`
-
 	// Group configures the group-scope validators associated with this file type.
-	// New scope-based format. Validators can specify error_type:
+	// Validators can specify error_type:
 	// - CASE_CONSISTENCY: blocks group serialization (default for group scope)
 	// - VALUE_CONSISTENCY: allows serialization (for per-record errors from group context)
 	// Group validators can also specify result_mode:
