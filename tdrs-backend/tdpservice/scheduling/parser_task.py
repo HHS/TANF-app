@@ -106,20 +106,7 @@ def parse(data_file_id, reparse_id=None):
             f"{dfs.status}."
         )
 
-        if reparse_id is not None:
-            file_meta.num_records_created = dfs.total_number_of_records_created
-            file_meta.cat_4_errors_generated = ParserError.objects.filter(
-                file_id=data_file_id,
-                error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY,
-            ).count()
-            file_meta.finished = True
-            file_meta.success = True
-            file_meta.finished_at = timezone.now()
-            file_meta.save()
-            ReparseMeta.set_total_num_records_post(
-                ReparseMeta.objects.get(pk=reparse_id)
-            )
-        else:
+        if reparse_id is None:
             qs = User.objects.filter(
                 stt=data_file.stt,
                 account_approval_status=AccountApprovalStatusChoices.APPROVED,
@@ -179,3 +166,17 @@ def parse(data_file_id, reparse_id=None):
         set_error_report(dfs, error_report)
         logger.handlers[2].doRollover(data_file)
         update_dfs(dfs, data_file)
+
+        if reparse_id is not None:
+            file_meta.num_records_created = dfs.total_number_of_records_created
+            file_meta.cat_4_errors_generated = ParserError.objects.filter(
+                file_id=data_file_id,
+                error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY,
+            ).count()
+            file_meta.finished = True
+            file_meta.success = True
+            file_meta.finished_at = timezone.now()
+            file_meta.save()
+            ReparseMeta.set_total_num_records_post(
+                ReparseMeta.objects.get(pk=reparse_id)
+            )

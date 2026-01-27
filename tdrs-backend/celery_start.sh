@@ -20,7 +20,7 @@ if [[ $1 == "cloud" ]]; then
 fi
 
 # Celery worker config can be found here: https://docs.celeryq.dev/en/stable/userguide/workers.html#:~:text=The-,hostname,-argument%20can%20expand
-celery -A tdpservice.settings worker --loglevel=INFO --concurrency=1 --max-tasks-per-child=1 -n worker1@%h & # tune -c ?
+celery -A tdpservice.settings worker --loglevel=INFO --concurrency=1 --max-tasks-per-child=100 -n worker1@%h & # tune -c ?
 sleep 5
 
 # TODO: Uncomment the following line to add flower service when memory limitation is resolved
