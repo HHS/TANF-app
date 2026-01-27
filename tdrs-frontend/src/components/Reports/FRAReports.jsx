@@ -523,6 +523,7 @@ const FRAReportsContent = () => {
     handleClearFilesOnly,
     cancelPendingChange,
     startPolling,
+    isPolling,
     getSttError,
     getFileTypeError,
   } = useReportsContext()
@@ -610,6 +611,56 @@ const FRAReportsContent = () => {
     yearInputValue,
     quarterInputValue,
     dispatch,
+  ])
+
+  // Restart polling for FRA submissions that are still pending when history is viewed
+  useEffect(() => {
+    fraSubmissionHistory
+      ?.filter((file) => file?.summary?.status === 'Pending')
+      ?.forEach((file) => {
+        if (isPolling[file.id]) return
+
+        startPolling(
+          `${file.id}`,
+          () => getFraSubmissionStatus(file.id),
+          (response) => {
+            let summary = response?.data?.summary
+            return summary && summary.status && summary.status !== 'Pending'
+          },
+          (response) => {
+            dispatch({
+              type: SET_FRA_SUBMISSION_STATUS,
+              payload: {
+                datafile_id: file.id,
+                datafile: response?.data,
+              },
+            })
+            setLocalAlertState({
+              active: true,
+              type: 'success',
+              message: 'Parsing complete.',
+            })
+          },
+          (error) => {
+            setLocalAlertState({
+              active: true,
+              type: 'error',
+              message: error.message,
+            })
+          },
+          (onError) => {
+            onError({
+              message: 'Exceeded max number of tries to update submission status.',
+            })
+          }
+        )
+      })
+  }, [
+    dispatch,
+    fraSubmissionHistory,
+    isPolling,
+    setLocalAlertState,
+    startPolling,
   ])
 
   const handleUpload = ({ file: selectedFile }) => {

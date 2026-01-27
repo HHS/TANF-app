@@ -1,6 +1,10 @@
 import { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { getAvailableFileList } from '../actions/reports'
+import {
+  getAvailableFileList,
+  getTanfSubmissionStatus,
+  SET_TANF_SUBMISSION_STATUS,
+} from '../actions/reports'
 import { useReportsContext } from '../components/Reports/ReportsContext'
 
 /**
@@ -14,7 +18,7 @@ export const useSubmissionHistory = (filterValues) => {
   const dispatch = useDispatch()
   const { files, loading } = useSelector((state) => state.reports)
   const prevFilterValuesRef = useRef()
-  const { isPolling } = useReportsContext()
+  const { isPolling, startPolling } = useReportsContext()
 
   useEffect(() => {
     // Serialize filterValues for comparison
@@ -29,6 +33,39 @@ export const useSubmissionHistory = (filterValues) => {
       prevFilterValuesRef.current = currentFilters
     }
   }, [dispatch, filterValues, isPolling])
+
+  // Restart polling for any pending files when history is loaded (e.g., after navigation)
+  useEffect(() => {
+    files
+      ?.filter((file) => file?.summary?.status === 'Pending')
+      ?.forEach((file) => {
+        if (isPolling[file.id]) return
+
+        startPolling(
+          `${file.id}`,
+          () => getTanfSubmissionStatus(file.id),
+          (response) => {
+            const status = response?.data?.summary?.status
+            return status && status !== 'Pending'
+          },
+          (response) => {
+            dispatch({
+              type: SET_TANF_SUBMISSION_STATUS,
+              payload: {
+                datafile_id: file.id,
+                datafile: response?.data,
+              },
+            })
+          },
+          () => {
+            // Silent failure to avoid noisy alerts on navigation-driven polling
+          },
+          () => {
+            // Timed out; leave status as-is and let user refresh manually
+          }
+        )
+      })
+  }, [dispatch, files, isPolling, startPolling])
 
   return {
     files,
