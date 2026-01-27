@@ -24,7 +24,6 @@ class ErrorGeneratorType(Enum):
     MSG_ONLY_PRECHECK = "message_only_precheck"
     MSG_ONLY_RECORD_PRECHECK = "message_only_record_precheck"
     DYNAMIC_ROW_CASE_CONSISTENCY = "dynamic_row_case_consistency"
-    TEST = "test"
 
 
 class ErrorGeneratorFactory:
