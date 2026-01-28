@@ -739,6 +739,7 @@ class TestDataFileQuerysetFiltering:
     pia_files = {}
 
     def gen_key(self, program_type, year, quarter, init_array=False):
+        """Generate a key and optionally initialize the array for a given file."""
         k = f"{program_type}{year}{quarter}"
 
         if init_array:
@@ -749,14 +750,17 @@ class TestDataFileQuerysetFiltering:
         return k
 
     def test_pia(self, program_type):
+        """Return true if a file should be tested for program integrity audit."""
         return program_type is DataFile.ProgramType.TANF.value
 
     def get_section_options(self, program_type):
+        """Return the allowed sections for a given program type."""
         if program_type is DataFile.ProgramType.FRA.value:
             return self.fra_section_options
         return self.tanf_section_options
 
     def get_location(self, program_type, stt, tribe_stt):
+        """Return the submitting location for a given program type."""
         if program_type is DataFile.ProgramType.TRIBAL.value:
             return tribe_stt
         return stt
@@ -771,8 +775,8 @@ class TestDataFileQuerysetFiltering:
         user,
         pia=False,
     ):
+        """Create a DataFile object in the db for the test."""
         pia_part = "pia" if pia else "spl"
-
         return DataFile.create_new_version(
             {
                 "original_filename": f"{program_type}-{section}-{year}-{quarter}-{pia_part}.txt",
@@ -787,6 +791,7 @@ class TestDataFileQuerysetFiltering:
         )
 
     def setup_test_data(self, stt, tribe_stt, ofa_system_admin):
+        """Create a file for each program, section, year, quarter, pia combo."""
         for program_type in self.program_type_options:
             section_options = self.get_section_options(program_type)
             location = self.get_location(program_type, stt, tribe_stt)
@@ -819,37 +824,39 @@ class TestDataFileQuerysetFiltering:
                             )
 
     def get_file_types(self, program_type):
+        """Return the search api's `file_type`s for a given program."""
         if program_type is DataFile.ProgramType.FRA.value:
             return self.fra_section_options
         elif program_type is DataFile.ProgramType.SSP.value:
             return ["ssp-moe"]
         return ["tanf"]
 
-    def make_get_request(self, api_client, url_param_str):
+    def _make_get_request(self, api_client, url_param_str):
         response = api_client.get(f"{self.root_url}?{url_param_str}")
         assert response.status_code == status.HTTP_200_OK
 
         response_file_ids = [f["id"] for f in response.data]
         return response_file_ids
 
-    def assert_tanf(self, k, response_file_ids, section_options):
+    def _assert_tanf(self, k, response_file_ids, section_options):
         assert len(response_file_ids) == len(section_options)
         for f in self.non_pia_files[k]:
             assert f.id in response_file_ids
 
-    def assert_fra(self, k, response_file_ids):
+    def _assert_fra(self, k, response_file_ids):
         assert len(response_file_ids) == 1
         assert response_file_ids[0] in [f.id for f in self.non_pia_files[k]]
         for f in self.non_pia_files[k]:
             assert f.program_type is DataFile.ProgramType.FRA.value
 
-    def assert_pia(self, k, response_file_ids, section_options):
+    def _assert_pia(self, k, response_file_ids, section_options):
         assert len(response_file_ids) == len(section_options)
         for f in self.pia_files[k]:
             assert f.id in response_file_ids
 
     @pytest.mark.django_db
     def test_get_api_filtering(self, api_client, stt, tribe_stt, ofa_system_admin):
+        """Check that requests made to the filter endpoint contain every expected file and only files for the requested combination."""
         self.setup_test_data(stt, tribe_stt, ofa_system_admin)
 
         # check the endpoint filtering
@@ -865,19 +872,19 @@ class TestDataFileQuerysetFiltering:
                     for quarter in self.quarter_options:
                         k = self.gen_key(program_type, year, quarter)
 
-                        non_pia_file_ids = self.make_get_request(
+                        non_pia_file_ids = self._make_get_request(
                             api_client,
                             f"stt={location.id}&year={year}&quarter={quarter}&file_type={file_type}",
                         )
 
                         if program_type is DataFile.ProgramType.FRA.value:
-                            self.assert_fra(k, non_pia_file_ids)
+                            self._assert_fra(k, non_pia_file_ids)
                         else:
-                            self.assert_tanf(k, non_pia_file_ids, section_options)
+                            self._assert_tanf(k, non_pia_file_ids, section_options)
 
                         if self.test_pia(program_type):
-                            pia_file_ids = self.make_get_request(
+                            pia_file_ids = self._make_get_request(
                                 api_client,
                                 f"stt={location.id}&year={year}&quarter={quarter}&file_type=program-integrity-audit",
                             )
-                            self.assert_pia(k, pia_file_ids, section_options)
+                            self._assert_pia(k, pia_file_ids, section_options)
