@@ -749,7 +749,7 @@ class TestDataFileQuerysetFiltering:
                 self.pia_files[k] = []
         return k
 
-    def test_pia(self, program_type):
+    def should_test_pia(self, program_type):
         """Return true if a file should be tested for program integrity audit."""
         return program_type is DataFile.ProgramType.TANF.value
 
@@ -810,7 +810,7 @@ class TestDataFileQuerysetFiltering:
                                 ofa_system_admin,
                             )
                         )
-                        if self.test_pia(program_type):
+                        if self.should_test_pia(program_type):
                             self.pia_files[k].append(
                                 self.create_file(
                                     program_type,
@@ -882,7 +882,7 @@ class TestDataFileQuerysetFiltering:
                         else:
                             self._assert_tanf(k, non_pia_file_ids, section_options)
 
-                        if self.test_pia(program_type):
+                        if self.should_test_pia(program_type):
                             pia_file_ids = self._make_get_request(
                                 api_client,
                                 f"stt={location.id}&year={year}&quarter={quarter}&file_type=program-integrity-audit",
