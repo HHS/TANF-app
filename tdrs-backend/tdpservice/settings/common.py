@@ -12,12 +12,12 @@ import django
 from django.core.exceptions import ImproperlyConfigured
 
 import sentry_sdk
-from sentry_sdk.types import SamplingContext
 from celery.schedules import crontab
 from configurations import Configuration
 from corsheaders.defaults import default_headers
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
+from sentry_sdk.types import SamplingContext
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -35,7 +35,9 @@ def get_required_env_var_setting(
 
     return env_var
 
+
 SAMPLER_FILTER_URLS = ["/prometheus/metrics"]
+
 
 def traces_sampler(sampling_context: SamplingContext) -> float:
     # Examine provided sampling context along with anything in the
@@ -185,6 +187,8 @@ class Common(Configuration):
             "PORT": os.getenv("DB_PORT"),
         }
     }
+    # Allow DB connections to persist for 10 min
+    CONN_MAX_AGE = 600
 
     # General
     APPEND_SLASH = True
