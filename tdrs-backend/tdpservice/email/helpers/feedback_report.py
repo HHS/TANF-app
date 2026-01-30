@@ -19,27 +19,34 @@ def send_feedback_report_available_email(report_file: ReportFile, recipients):
     if not recipients:
         return
 
+    # Format date_extracted_on as MM/DD/YYYY
+    date_extracted_str = (
+        report_file.date_extracted_on.strftime("%m/%d/%Y")
+        if report_file.date_extracted_on
+        else "N/A"
+    )
+
     # Only create logger_context if we have a valid user (LogEntry requires user_id)
     logger_context = None
     if report_file.user:
         logger_context = {
             "user_id": report_file.user.id,
             "object_id": report_file.id,
-            "object_repr": f"ReportFile for {report_file.stt.name} {report_file.quarter} {report_file.year}",
+            "object_repr": f"ReportFile for {report_file.stt.name} FY {report_file.year} ({date_extracted_str})",
             "content_type": ReportFile,
         }
 
     template_path = FeedbackReportEmail.REPORT_AVAILABLE.value
-    subject = f"Feedback Report Available: {report_file.stt.name} - FY {report_file.year} {report_file.quarter}"
+    subject = f"Feedback Report Available: {report_file.stt.name} - FY {report_file.year}"
     text_message = (
         f"A new feedback report is available for {report_file.stt.name} "
-        f"for Fiscal Year {report_file.year}, {report_file.quarter}."
+        f"for Fiscal Year {report_file.year} (reflects data submitted through {date_extracted_str})."
     )
 
     context = {
         "stt_name": report_file.stt.name,
         "fiscal_year": report_file.year,
-        "quarter": report_file.quarter,
+        "date_extracted_on": date_extracted_str,
         "report_date": report_file.created_at.strftime("%m/%d/%Y"),
         "url": settings.FRONTEND_BASE_URL,
         "subject": subject,

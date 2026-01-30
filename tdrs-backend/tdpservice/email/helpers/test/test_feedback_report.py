@@ -1,5 +1,7 @@
 """Test cases for feedback report email helper."""
 
+from datetime import date
+
 import pytest
 from unittest.mock import patch, MagicMock
 from django.core import mail
@@ -15,7 +17,7 @@ def mock_report_file(stt, user):
     report_file.id = 1
     report_file.stt = stt
     report_file.year = 2025
-    report_file.quarter = "Q1"
+    report_file.date_extracted_on = date(2025, 1, 31)
     report_file.created_at = timezone.now()
     report_file.user = user
     return report_file
@@ -34,7 +36,6 @@ class TestSendFeedbackReportAvailableEmail:
         assert len(mail.outbox) == 1
         assert mock_report_file.stt.name in mail.outbox[0].subject
         assert "2025" in mail.outbox[0].subject
-        assert "Q1" in mail.outbox[0].subject
 
     def test_does_not_send_email_when_no_recipients(self, mock_report_file):
         """Test that no email is sent when recipients list is empty."""
@@ -57,7 +58,7 @@ class TestSendFeedbackReportAvailableEmail:
         assert len(mail.outbox) == 1
         assert mock_report_file.stt.name in mail.outbox[0].body
         assert "2025" in mail.outbox[0].body
-        assert "Q1" in mail.outbox[0].body
+        assert "01/31/2025" in mail.outbox[0].body
 
     def test_uses_correct_email_template(self, mock_report_file):
         """Test that the correct email template is referenced."""
@@ -82,14 +83,14 @@ class TestSendFeedbackReportAvailableEmail:
 
             assert "stt_name" in context
             assert "fiscal_year" in context
-            assert "quarter" in context
+            assert "date_extracted_on" in context
             assert "report_date" in context
             assert "url" in context
             assert "subject" in context
 
             assert context["stt_name"] == mock_report_file.stt.name
             assert context["fiscal_year"] == 2025
-            assert context["quarter"] == "Q1"
+            assert context["date_extracted_on"] == "01/31/2025"
 
     def test_handles_report_file_without_user(self, stt):
         """Test that email is sent even if report_file.user is None."""
@@ -97,7 +98,7 @@ class TestSendFeedbackReportAvailableEmail:
         report_file.id = 1
         report_file.stt = stt
         report_file.year = 2025
-        report_file.quarter = "Q1"
+        report_file.date_extracted_on = date(2025, 1, 31)
         report_file.created_at = timezone.now()
         report_file.user = None
 
@@ -106,3 +107,20 @@ class TestSendFeedbackReportAvailableEmail:
         send_feedback_report_available_email(report_file, recipients)
 
         assert len(mail.outbox) == 1
+
+    def test_handles_report_file_without_date_extracted_on(self, stt, user):
+        """Test that email is sent even if date_extracted_on is None."""
+        report_file = MagicMock()
+        report_file.id = 1
+        report_file.stt = stt
+        report_file.year = 2025
+        report_file.date_extracted_on = None
+        report_file.created_at = timezone.now()
+        report_file.user = user
+
+        recipients = ["user@example.com"]
+
+        send_feedback_report_available_email(report_file, recipients)
+
+        assert len(mail.outbox) == 1
+        assert "N/A" in mail.outbox[0].body
