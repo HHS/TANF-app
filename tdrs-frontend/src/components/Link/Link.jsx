@@ -8,7 +8,7 @@ function Anchor({ to, children, ...props }) {
   )
 }
 
-function LinkComponent({to, key, target, children, ...props}) {
+function LinkComponent({ to, key, target, children, ...props }) {
   const LinkComponent = !to.startsWith('/') ? Anchor : Link
   return (
     <LinkComponent to={to} key={key} target={target} {...props}>
