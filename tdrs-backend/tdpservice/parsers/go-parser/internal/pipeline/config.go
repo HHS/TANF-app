@@ -25,7 +25,7 @@ func DefaultConfig() PipelineConfig {
 		ResultBufferSize: 256,
 		PoolPrewarmSize:  10000,
 		NumRouters:       16,
-		NumValidators:    4,
+		NumValidators:    16,
 	}
 }
 
