@@ -222,7 +222,8 @@ export const submit =
         })
         removeFileInputErrorState()
 
-        const submittedFiles = responses.reduce((result, response) => {
+        const submittedFileObjects = []
+        const submittedFileNames = responses.reduce((result, response) => {
           const submittedFile = map_section(fileType, response?.data)
 
           dispatch({
@@ -230,6 +231,7 @@ export const submit =
             payload: { submittedFile },
           })
 
+          submittedFileObjects.push(submittedFile)
           result.push(
             `${submittedFile?.original_filename} (${submittedFile?.extension})`
           )
@@ -240,8 +242,8 @@ export const submit =
         const fileIds = responses.map((response) => response?.data?.id)
         logger.alert(
           `Submitted ${
-            submittedFiles.length
-          } data file(s): ${submittedFiles.join(', ')}`,
+            submittedFileNames.length
+          } data file(s): ${submittedFileNames.join(', ')}`,
           {
             files: fileIds,
             activity: 'upload',
@@ -249,6 +251,9 @@ export const submit =
         )
 
         onComplete(fileIds)
+
+        // Return the submitted file objects for feedback widget
+        return submittedFileObjects
       })
       .catch((error) => {
         const error_response = error.response?.data
