@@ -57,12 +57,13 @@ def bad_report_file(fake_file, fake_file_name):
 @pytest.fixture
 def report_file_data(report_file, data_analyst):
     """Return report file creation data."""
+    import datetime
     return {
         "file": report_file,
         "original_filename": "report.zip",
         "slug": "report.zip",
         "extension": "zip",
-        "quarter": "Q1",
+        "date_extracted_on": datetime.date(2024, 2, 28),
         "year": 2024,
         "version": 1,
         "user": str(data_analyst.id),
@@ -73,12 +74,13 @@ def report_file_data(report_file, data_analyst):
 @pytest.fixture
 def bad_report_file_data(bad_report_file, fake_file_name, data_analyst):
     """Return report file creation data."""
+    import datetime
     return {
         "file": bad_report_file,
         "original_filename": fake_file_name,
         "slug": "fake_file_name",
         "extension": "txt",
-        "quarter": "Q1",
+        "date_extracted_on": datetime.date(2024, 2, 28),
         "year": 2024,
         "version": 1,
         "user": str(data_analyst.id),

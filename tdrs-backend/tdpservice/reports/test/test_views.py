@@ -96,6 +96,7 @@ class TestReportFileViewAsDataAnalyst:
         self, api_client_logged_in, data_analyst, report_file_instance
     ):
         """Test that Data Analyst only sees reports for their assigned STT."""
+        import datetime
         from tdpservice.stts.models import STT, Region
         from tdpservice.reports.test.factories import ReportFileFactory
 
@@ -107,15 +108,15 @@ class TestReportFileViewAsDataAnalyst:
 
         # Create report files for the other STT (should NOT be visible)
         other_report_1 = ReportFileFactory.create(
-            stt=other_stt, user=data_analyst, year=2024, quarter="Q1"
+            stt=other_stt, user=data_analyst, year=2024, date_extracted_on=datetime.date(2024, 1, 31)
         )
         other_report_2 = ReportFileFactory.create(
-            stt=other_stt, user=data_analyst, year=2024, quarter="Q2"
+            stt=other_stt, user=data_analyst, year=2024, date_extracted_on=datetime.date(2024, 3, 31)
         )
 
         # Create an additional report for data analyst's own STT (should be visible)
         own_report = ReportFileFactory.create(
-            stt=data_analyst.stt, user=data_analyst, year=2024, quarter="Q3"
+            stt=data_analyst.stt, user=data_analyst, year=2024, date_extracted_on=datetime.date(2024, 6, 30)
         )
 
         # Make request to list endpoint
@@ -173,19 +174,20 @@ class TestReportFileViewAsDataAnalyst:
         self, api_client_logged_in, data_analyst, report_file_instance
     ):
         """Test that latest=true returns only the most recent report."""
+        import datetime
         from django.utils import timezone
         from datetime import timedelta
         from tdpservice.reports.test.factories import ReportFileFactory
 
         # Create additional reports for the same STT with different dates
         older_report = ReportFileFactory.create(
-            stt=data_analyst.stt, user=data_analyst, year=2025, quarter="Q1"
+            stt=data_analyst.stt, user=data_analyst, year=2025, date_extracted_on=datetime.date(2025, 1, 31)
         )
         older_report.created_at = timezone.now() - timedelta(days=10)
         older_report.save()
 
         newest_report = ReportFileFactory.create(
-            stt=data_analyst.stt, user=data_analyst, year=2025, quarter="Q2"
+            stt=data_analyst.stt, user=data_analyst, year=2025, date_extracted_on=datetime.date(2025, 3, 31)
         )
         newest_report.created_at = timezone.now() + timedelta(days=1)
         newest_report.save()
@@ -197,43 +199,44 @@ class TestReportFileViewAsDataAnalyst:
         assert len(resp.data["results"]) == 1
         assert resp.data["results"][0]["id"] == newest_report.id
 
-    def test_latest_param_with_year_and_quarter_filter(
+    def test_latest_param_with_year_filter(
         self, api_client_logged_in, data_analyst
     ):
-        """Test that latest=true works with year and quarter filters."""
+        """Test that latest=true works with year filter."""
+        import datetime
         from django.utils import timezone
         from datetime import timedelta
         from tdpservice.reports.test.factories import ReportFileFactory
 
-        # Create multiple reports for the same year/quarter with different versions
-        # (unique constraint on version, quarter, year, stt)
-        older_q1_report = ReportFileFactory.create(
-            stt=data_analyst.stt, user=data_analyst, year=2025, quarter="Q1", version=1
+        # Create multiple reports for the same year with different versions
+        # (unique constraint on version, date_extracted_on, year, stt)
+        older_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst, year=2025, date_extracted_on=datetime.date(2025, 1, 31), version=1
         )
-        older_q1_report.created_at = timezone.now() - timedelta(days=5)
-        older_q1_report.save()
+        older_report.created_at = timezone.now() - timedelta(days=5)
+        older_report.save()
 
-        newer_q1_report = ReportFileFactory.create(
-            stt=data_analyst.stt, user=data_analyst, year=2025, quarter="Q1", version=2
+        newer_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst, year=2025, date_extracted_on=datetime.date(2025, 1, 31), version=2
         )
-        newer_q1_report.created_at = timezone.now()
-        newer_q1_report.save()
+        newer_report.created_at = timezone.now()
+        newer_report.save()
 
-        # Create a report for a different quarter (should not be returned)
-        q2_report = ReportFileFactory.create(
-            stt=data_analyst.stt, user=data_analyst, year=2025, quarter="Q2", version=1
+        # Create a report for a different year (should not be returned)
+        other_year_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst, year=2024, date_extracted_on=datetime.date(2024, 3, 31), version=1
         )
-        q2_report.created_at = timezone.now() + timedelta(days=1)
-        q2_report.save()
+        other_year_report.created_at = timezone.now() + timedelta(days=1)
+        other_year_report.save()
 
-        # Request latest for specific year and quarter
+        # Request latest for specific year
         resp = api_client_logged_in.get(
-            f"{self.root_url}?year=2025&quarter=Q1&latest=true"
+            f"{self.root_url}?year=2025&latest=true"
         )
 
         assert resp.status_code == status.HTTP_200_OK
         assert len(resp.data["results"]) == 1
-        assert resp.data["results"][0]["id"] == newer_q1_report.id
+        assert resp.data["results"][0]["id"] == newer_report.id
 
     def test_latest_param_returns_empty_when_no_reports(
         self, api_client_logged_in, data_analyst
