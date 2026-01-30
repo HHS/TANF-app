@@ -847,7 +847,7 @@ class TestDataFileQuerysetFiltering:
         assert len(response_file_ids) == 1
         assert response_file_ids[0] in [f.id for f in self.non_pia_files[k]]
         for f in self.non_pia_files[k]:
-            assert f.program_type is DataFile.ProgramType.FRA.value
+            assert f.program_type == DataFile.ProgramType.FRA.value
 
     def _assert_pia(self, k, response_file_ids, section_options):
         assert len(response_file_ids) == len(section_options)
