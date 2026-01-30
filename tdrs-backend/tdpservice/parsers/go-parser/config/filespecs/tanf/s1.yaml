@@ -88,7 +88,7 @@ accumulator:
   # Number of groups to batch together before dispatching to workers.
   # 0 = each group is dispatched individually (one Batch per case)
   # Set to a higher value (e.g., 10) for higher throughput at the cost of memory.
-  batch_size: 10
+  batch_size: 1
 
   # Which schemas participate in key-based grouping.
   # HEADER and TRAILER are excluded because they're file-level, not case-level.
