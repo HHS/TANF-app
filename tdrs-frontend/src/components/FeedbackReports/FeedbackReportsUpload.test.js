@@ -2,6 +2,13 @@ import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 import FeedbackReportsUpload from './FeedbackReportsUpload'
 
+// Mock USWDS file input
+jest.mock('@uswds/uswds/src/js/components', () => ({
+  fileInput: {
+    init: jest.fn(),
+  },
+}))
+
 // Mock Button component
 jest.mock('../Button', () => ({
   __esModule: true,
@@ -23,6 +30,9 @@ describe('FeedbackReportsUpload', () => {
   const mockOnUpload = jest.fn()
   const mockInputRef = { current: null }
 
+  const mockOnDateChange = jest.fn()
+  const mockOnDateBlur = jest.fn()
+
   const defaultProps = {
     selectedFile: null,
     fileError: null,
@@ -30,6 +40,10 @@ describe('FeedbackReportsUpload', () => {
     onFileChange: mockOnFileChange,
     onUpload: mockOnUpload,
     inputRef: mockInputRef,
+    dateExtractedOn: '',
+    dateError: null,
+    onDateChange: mockOnDateChange,
+    onDateBlur: mockOnDateBlur,
   }
 
   beforeEach(() => {
@@ -60,7 +74,7 @@ describe('FeedbackReportsUpload', () => {
       )
       expect(fileInput).toHaveAttribute(
         'data-errormessage',
-        'File must be a .zip file'
+        'Invalid file. Make sure to select a zip file.'
       )
     })
 
@@ -131,11 +145,11 @@ describe('FeedbackReportsUpload', () => {
   })
 
   describe('Button States', () => {
-    it('button is disabled when selectedFile is null', () => {
+    it('button is enabled when not loading (validation happens on click)', () => {
       renderComponent({ selectedFile: null, loading: false })
 
       const button = screen.getByTestId('mock-button')
-      expect(button).toHaveAttribute('disabled')
+      expect(button).not.toHaveAttribute('disabled')
     })
 
     it('button is disabled when loading is true', () => {
@@ -146,16 +160,6 @@ describe('FeedbackReportsUpload', () => {
 
       const button = screen.getByTestId('mock-button')
       expect(button).toHaveAttribute('disabled')
-    })
-
-    it('button is enabled when file selected and not loading', () => {
-      const mockFile = new File(['content'], 'test.zip', {
-        type: 'application/zip',
-      })
-      renderComponent({ selectedFile: mockFile, loading: false })
-
-      const button = screen.getByTestId('mock-button')
-      expect(button).not.toHaveAttribute('disabled')
     })
 
     it('button text changes to "Uploading..." when loading', () => {
@@ -207,14 +211,15 @@ describe('FeedbackReportsUpload', () => {
       expect(mockOnUpload).toHaveBeenCalledTimes(1)
     })
 
-    it('does not call onUpload when button is disabled', () => {
+    it('calls onUpload when button is clicked (validation happens in parent)', () => {
+      // Button is no longer disabled without file - validation happens on click in parent component
       renderComponent({ selectedFile: null, loading: false })
 
       const button = screen.getByTestId('mock-button')
-      // Even if we try to click, the disabled state should prevent the call
       fireEvent.click(button)
 
-      expect(mockOnUpload).not.toHaveBeenCalled()
+      // The upload function is called, parent component handles validation
+      expect(mockOnUpload).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -225,6 +230,94 @@ describe('FeedbackReportsUpload', () => {
 
       const fileInput = screen.getByLabelText('Feedback Reports ZIP')
       expect(testRef.current).toBe(fileInput)
+    })
+  })
+
+  describe('Date Extracted Input', () => {
+    it('renders date input with correct label', () => {
+      renderComponent()
+
+      expect(
+        screen.getByText('Data extracted from database on')
+      ).toBeInTheDocument()
+    })
+
+    it('renders date input with hint text', () => {
+      renderComponent()
+
+      expect(screen.getByText('mm/dd/yyyy')).toBeInTheDocument()
+    })
+
+    it('renders date input field', () => {
+      renderComponent()
+
+      const dateInput = screen.getByLabelText('Data extracted from database on')
+      expect(dateInput).toHaveAttribute('type', 'date')
+      expect(dateInput).toHaveAttribute('name', 'date-extracted-on')
+      expect(dateInput).toHaveAttribute('id', 'date-extracted-on')
+    })
+
+    it('displays date value when provided', () => {
+      renderComponent({ dateExtractedOn: '2025-02-28' })
+
+      const dateInput = screen.getByLabelText('Data extracted from database on')
+      expect(dateInput).toHaveValue('2025-02-28')
+    })
+
+    it('calls onDateChange when date input changes', () => {
+      renderComponent()
+
+      const dateInput = screen.getByLabelText('Data extracted from database on')
+      fireEvent.change(dateInput, { target: { value: '2025-03-15' } })
+
+      expect(mockOnDateChange).toHaveBeenCalledTimes(1)
+    })
+
+    it('calls onDateBlur when date input loses focus', () => {
+      renderComponent()
+
+      const dateInput = screen.getByLabelText('Data extracted from database on')
+      fireEvent.blur(dateInput)
+
+      expect(mockOnDateBlur).toHaveBeenCalledTimes(1)
+    })
+
+    it('shows date error message when dateError prop is set', () => {
+      const errorMessage =
+        "Choose the date that the data you're uploading was extracted from the database."
+      renderComponent({ dateError: errorMessage })
+
+      const errorElement = screen.getByText(errorMessage)
+      expect(errorElement).toBeInTheDocument()
+      expect(errorElement).toHaveClass('usa-error-message')
+      expect(errorElement).toHaveAttribute('role', 'alert')
+    })
+
+    it('applies error class to date form group when dateError is set', () => {
+      const { container } = renderComponent({
+        dateError: 'Date is required',
+      })
+
+      const formGroups = container.querySelectorAll('.usa-form-group')
+      // Second form group is the date input
+      expect(formGroups[1]).toHaveClass('usa-form-group--error')
+    })
+
+    it('applies error class to date input when dateError is set', () => {
+      renderComponent({ dateError: 'Date is required' })
+
+      const dateInput = screen.getByLabelText('Data extracted from database on')
+      expect(dateInput).toHaveClass('usa-input--error')
+    })
+
+    it('does not show date error when dateError is null', () => {
+      renderComponent({ dateError: null })
+
+      expect(
+        screen.queryByText(
+          "Choose the date that the data you're uploading was extracted from the database."
+        )
+      ).not.toBeInTheDocument()
     })
   })
 })

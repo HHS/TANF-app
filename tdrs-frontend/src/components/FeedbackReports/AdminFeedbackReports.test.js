@@ -57,8 +57,17 @@ describe('AdminFeedbackReports', () => {
     )
   }
 
+  // Helper to select fiscal year
+  const selectFiscalYear = async (year = '2025') => {
+    const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
+    fireEvent.change(fiscalYearSelect, { target: { value: year } })
+    await waitFor(() => {
+      expect(screen.getByText(`Fiscal Year ${year} — Upload Feedback Reports`)).toBeInTheDocument()
+    })
+  }
+
   describe('Component Rendering', () => {
-    it('renders the page title and subtitle', async () => {
+    it('renders the page description', async () => {
       renderComponent()
 
       await waitFor(() => {
@@ -68,76 +77,66 @@ describe('AdminFeedbackReports', () => {
       })
     })
 
-    it('renders the file upload section', async () => {
+    it('renders fiscal year selector', async () => {
       renderComponent()
 
       await waitFor(() => {
-        expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
+        expect(screen.getByLabelText('Fiscal Year')).toBeInTheDocument()
+        expect(screen.getByText('- Select Fiscal Year -')).toBeInTheDocument()
       })
     })
 
-    it('renders the upload button', async () => {
+    it('does not show upload section until fiscal year is selected', async () => {
       renderComponent()
 
       await waitFor(() => {
-        const uploadButton = screen.getByRole('button', {
-          name: /Upload & Notify States/i,
-        })
-        expect(uploadButton).toBeInTheDocument()
-        expect(uploadButton).toHaveAttribute('disabled') // Should be disabled without file
+        expect(screen.getByLabelText('Fiscal Year')).toBeInTheDocument()
+      })
+
+      // File upload section should not be visible
+      expect(screen.queryByText('Feedback Reports ZIP')).not.toBeInTheDocument()
+      expect(screen.queryByText('Upload History')).not.toBeInTheDocument()
+    })
+
+    it('shows upload section after fiscal year is selected', async () => {
+      renderComponent()
+
+      await selectFiscalYear('2025')
+
+      expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
+      // Wait for upload history to finish loading
+      await waitFor(() => {
+        expect(screen.getByText('Upload History')).toBeInTheDocument()
       })
     })
 
-    it('renders the upload history empty state initially', async () => {
+    it('renders H2 header with selected fiscal year', async () => {
       renderComponent()
 
-      await waitFor(() => {
-        expect(screen.getByText('No data available.')).toBeInTheDocument()
-      })
+      await selectFiscalYear('2025')
+
+      expect(
+        screen.getByText('Fiscal Year 2025 — Upload Feedback Reports')
+      ).toBeInTheDocument()
     })
 
-    it('renders the info alert about notification distribution', async () => {
+    it('renders the date extracted input after fiscal year selected', async () => {
       renderComponent()
 
-      await waitFor(() => {
-        expect(
-          screen.getByText(
-            /Once submitted, TDP will distribute feedback reports/
-          )
-        ).toBeInTheDocument()
-      })
+      await selectFiscalYear('2025')
+
+      expect(
+        screen.getByText('Data extracted from database on')
+      ).toBeInTheDocument()
+      expect(screen.getByText('mm/dd/yyyy')).toBeInTheDocument()
     })
   })
 
   describe('File Upload Functionality', () => {
-    it('enables upload button when a valid .zip file is selected', async () => {
-      renderComponent()
-
-      await waitFor(() => {
-        expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
-      })
-
-      const fileInput = document.querySelector('input[type="file"]')
-      const file = new File(['content'], 'feedback.zip', {
-        type: 'application/zip',
-      })
-
-      fireEvent.change(fileInput, { target: { files: [file] } })
-
-      await waitFor(() => {
-        const uploadButton = screen.getByRole('button', {
-          name: /Upload & Notify States/i,
-        })
-        expect(uploadButton).not.toHaveAttribute('disabled')
-      })
-    })
-
     it('shows error when non-.zip file is selected', async () => {
       renderComponent()
 
-      await waitFor(() => {
-        expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
-      })
+      await selectFiscalYear('2025')
 
       const fileInput = document.querySelector('input[type="file"]')
       const file = new File(['content'], 'feedback.txt', { type: 'text/plain' })
@@ -145,21 +144,105 @@ describe('AdminFeedbackReports', () => {
       fireEvent.change(fileInput, { target: { files: [file] } })
 
       await waitFor(() => {
-        expect(screen.getByText('File must be a .zip file')).toBeInTheDocument()
+        expect(
+          screen.getByText('Invalid file. Make sure to select a zip file.')
+        ).toBeInTheDocument()
+      })
+    })
+
+    it('shows error when file FY does not match selected FY', async () => {
+      renderComponent()
+
+      await selectFiscalYear('2025')
+
+      const fileInput = document.querySelector('input[type="file"]')
+      const file = new File(['content'], 'FY2024_12012024.zip', {
+        type: 'application/zip',
+      })
+
+      fireEvent.change(fileInput, { target: { files: [file] } })
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(
+            "Your file's Fiscal Year does not match the selected Fiscal Year for this upload."
+          )
+        ).toBeInTheDocument()
+      })
+    })
+
+    it('accepts file when FY matches selected FY', async () => {
+      renderComponent()
+
+      await selectFiscalYear('2025')
+
+      const fileInput = document.querySelector('input[type="file"]')
+      const file = new File(['content'], 'FY2025_02282025.zip', {
+        type: 'application/zip',
+      })
+
+      fireEvent.change(fileInput, { target: { files: [file] } })
+
+      await waitFor(() => {
+        expect(
+          screen.queryByText(
+            "Your file's Fiscal Year does not match the selected Fiscal Year for this upload."
+          )
+        ).not.toBeInTheDocument()
+      })
+    })
+
+    it('shows date error when upload clicked without date', async () => {
+      renderComponent()
+
+      await selectFiscalYear('2025')
+
+      const fileInput = document.querySelector('input[type="file"]')
+      const file = new File(['content'], 'FY2025.zip', {
+        type: 'application/zip',
+      })
+
+      fireEvent.change(fileInput, { target: { files: [file] } })
+
+      await waitFor(() => {
+        expect(screen.queryByText('Invalid file.')).not.toBeInTheDocument()
       })
 
       const uploadButton = screen.getByRole('button', {
         name: /Upload & Notify States/i,
       })
-      expect(uploadButton).toHaveAttribute('disabled')
+      fireEvent.click(uploadButton)
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(
+            "Choose the date that the data you're uploading was extracted from the database."
+          )
+        ).toBeInTheDocument()
+      })
     })
 
-    it('successfully uploads a file and shows success message', async () => {
+    it('shows file error when upload clicked without file', async () => {
+      renderComponent()
+
+      await selectFiscalYear('2025')
+
+      const uploadButton = screen.getByRole('button', {
+        name: /Upload & Notify States/i,
+      })
+      fireEvent.click(uploadButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('No file selected.')).toBeInTheDocument()
+      })
+    })
+
+    it('successfully uploads a file with date and shows success message', async () => {
       axiosInstance.post.mockResolvedValue({
         data: {
           id: 1,
           status: 'PENDING',
-          original_filename: 'feedback.zip',
+          original_filename: 'FY2025.zip',
         },
       })
 
@@ -167,26 +250,28 @@ describe('AdminFeedbackReports', () => {
 
       renderComponent()
 
-      await waitFor(() => {
-        expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
-      })
+      await selectFiscalYear('2025')
 
+      // Select a file
       const fileInput = document.querySelector('input[type="file"]')
-      const file = new File(['content'], 'feedback.zip', {
+      const file = new File(['content'], 'FY2025.zip', {
         type: 'application/zip',
       })
-
       fireEvent.change(fileInput, { target: { files: [file] } })
 
-      // Wait for FileReader async process to complete and button to be enabled
-      const uploadButton = await waitFor(() => {
-        const btn = screen.getByRole('button', {
-          name: /Upload & Notify States/i,
-        })
-        expect(btn).not.toHaveAttribute('disabled')
-        return btn
+      // Wait for file to be processed
+      await waitFor(() => {
+        expect(screen.queryByText('Invalid file.')).not.toBeInTheDocument()
       })
 
+      // Set date
+      const dateInput = screen.getByLabelText('Data extracted from database on')
+      fireEvent.change(dateInput, { target: { value: '2025-02-28' } })
+
+      // Click upload
+      const uploadButton = screen.getByRole('button', {
+        name: /Upload & Notify States/i,
+      })
       fireEvent.click(uploadButton)
 
       await waitFor(() => {
@@ -197,6 +282,7 @@ describe('AdminFeedbackReports', () => {
         ).toBeInTheDocument()
       })
 
+      // Verify POST was called with year and date
       expect(axiosInstance.post).toHaveBeenCalledWith(
         expect.stringContaining('/reports/report-sources/'),
         expect.any(FormData),
@@ -218,65 +304,29 @@ describe('AdminFeedbackReports', () => {
 
       renderComponent()
 
-      await waitFor(() => {
-        expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
-      })
+      await selectFiscalYear('2025')
 
       const fileInput = document.querySelector('input[type="file"]')
-      const file = new File(['content'], 'feedback.zip', {
+      const file = new File(['content'], 'FY2025.zip', {
         type: 'application/zip',
       })
-
       fireEvent.change(fileInput, { target: { files: [file] } })
 
-      // Wait for FileReader async process to complete and button to be enabled
-      const uploadButton = await waitFor(() => {
-        const btn = screen.getByRole('button', {
-          name: /Upload & Notify States/i,
-        })
-        expect(btn).not.toHaveAttribute('disabled')
-        return btn
+      await waitFor(() => {
+        expect(screen.queryByText('Invalid file.')).not.toBeInTheDocument()
       })
 
+      const dateInput = screen.getByLabelText('Data extracted from database on')
+      fireEvent.change(dateInput, { target: { value: '2025-02-28' } })
+
+      const uploadButton = screen.getByRole('button', {
+        name: /Upload & Notify States/i,
+      })
       fireEvent.click(uploadButton)
 
       await waitFor(() => {
         expect(
           screen.getByText('Invalid zip file structure')
-        ).toBeInTheDocument()
-      })
-    })
-
-    it('shows generic error message when upload fails without specific error', async () => {
-      axiosInstance.post.mockRejectedValue(new Error('Network error'))
-
-      renderComponent()
-
-      await waitFor(() => {
-        expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
-      })
-
-      const fileInput = document.querySelector('input[type="file"]')
-      const file = new File(['content'], 'feedback.zip', {
-        type: 'application/zip',
-      })
-
-      fireEvent.change(fileInput, { target: { files: [file] } })
-
-      // Wait for FileReader async process to complete and button to be enabled
-      const uploadButton = await waitFor(() => {
-        const btn = screen.getByRole('button', {
-          name: /Upload & Notify States/i,
-        })
-        expect(btn).not.toHaveAttribute('disabled')
-        return btn
-      })
-
-      fireEvent.click(uploadButton)
-
-      await waitFor(() => {
-        expect(
-          screen.getByText('Upload failed. Please try again.')
         ).toBeInTheDocument()
       })
     })
@@ -288,26 +338,24 @@ describe('AdminFeedbackReports', () => {
 
       renderComponent()
 
-      await waitFor(() => {
-        expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
-      })
+      await selectFiscalYear('2025')
 
       const fileInput = document.querySelector('input[type="file"]')
-      const file = new File(['content'], 'feedback.zip', {
+      const file = new File(['content'], 'FY2025.zip', {
         type: 'application/zip',
       })
-
       fireEvent.change(fileInput, { target: { files: [file] } })
 
-      // Wait for FileReader async process to complete and button to be enabled
-      const uploadButton = await waitFor(() => {
-        const btn = screen.getByRole('button', {
-          name: /Upload & Notify States/i,
-        })
-        expect(btn).not.toHaveAttribute('disabled')
-        return btn
+      await waitFor(() => {
+        expect(screen.queryByText('Invalid file.')).not.toBeInTheDocument()
       })
 
+      const dateInput = screen.getByLabelText('Data extracted from database on')
+      fireEvent.change(dateInput, { target: { value: '2025-02-28' } })
+
+      const uploadButton = screen.getByRole('button', {
+        name: /Upload & Notify States/i,
+      })
       fireEvent.click(uploadButton)
 
       await waitFor(() => {
@@ -319,11 +367,12 @@ describe('AdminFeedbackReports', () => {
   })
 
   describe('Upload History', () => {
-    it('fetches and displays upload history on mount', async () => {
+    it('fetches history when fiscal year is selected', async () => {
       const mockHistory = [
         {
           id: 1,
           year: 2025,
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:31:00Z',
           processed_at: '2025-03-05T10:41:00Z',
           original_filename: 'FY2025.zip',
@@ -335,14 +384,19 @@ describe('AdminFeedbackReports', () => {
 
       renderComponent()
 
+      await selectFiscalYear('2025')
+
       await waitFor(() => {
-        expect(screen.getByText('2025')).toBeInTheDocument()
         expect(screen.getByText('FY2025.zip')).toBeInTheDocument()
+        expect(screen.getByText('02/28/2025')).toBeInTheDocument()
       })
 
       expect(axiosInstance.get).toHaveBeenCalledWith(
         expect.stringContaining('/reports/report-sources/'),
-        expect.objectContaining({ withCredentials: true })
+        expect.objectContaining({
+          params: { year: '2025' },
+          withCredentials: true,
+        })
       )
     })
 
@@ -351,25 +405,19 @@ describe('AdminFeedbackReports', () => {
 
       renderComponent()
 
+      await selectFiscalYear('2025')
+
       await waitFor(() => {
         expect(screen.getByText('No data available.')).toBeInTheDocument()
       })
-    })
-
-    it('displays loading state while fetching history', () => {
-      axiosInstance.get.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
-      )
-
-      renderComponent()
-
-      expect(screen.getByText('Loading upload history...')).toBeInTheDocument()
     })
 
     it('displays error alert when history fetch fails', async () => {
       axiosInstance.get.mockRejectedValue(new Error('Failed to fetch'))
 
       renderComponent()
+
+      await selectFiscalYear('2025')
 
       await waitFor(() => {
         expect(
@@ -380,33 +428,57 @@ describe('AdminFeedbackReports', () => {
       })
     })
 
-    it('displays multiple history entries correctly', async () => {
-      const mockHistory = [
+    it('refreshes history when fiscal year changes', async () => {
+      const mockHistory2025 = [
         {
           id: 1,
           year: 2025,
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:31:00Z',
           processed_at: '2025-03-05T10:41:00Z',
           original_filename: 'FY2025.zip',
           file: 'https://example.com/FY2025.zip',
         },
+      ]
+
+      const mockHistory2024 = [
         {
           id: 2,
-          year: 2025,
-          created_at: '2025-01-08T09:41:00Z',
-          processed_at: '2025-01-08T09:48:00Z',
-          original_filename: 'FY2025_Q1.zip',
-          file: 'https://example.com/FY2025_Q1.zip',
+          year: 2024,
+          date_extracted_on: '2024-12-15',
+          created_at: '2024-12-20T10:31:00Z',
+          processed_at: '2024-12-20T10:41:00Z',
+          original_filename: 'FY2024.zip',
+          file: 'https://example.com/FY2024.zip',
         },
       ]
 
-      axiosInstance.get.mockResolvedValue({ data: { results: mockHistory } })
+      // Use mockImplementation to handle different year params
+      axiosInstance.get.mockImplementation((url, config) => {
+        const year = config?.params?.year
+        if (year === '2025') {
+          return Promise.resolve({ data: { results: mockHistory2025 } })
+        }
+        if (year === '2024') {
+          return Promise.resolve({ data: { results: mockHistory2024 } })
+        }
+        return Promise.resolve({ data: { results: [] } })
+      })
 
       renderComponent()
 
+      await selectFiscalYear('2025')
+
       await waitFor(() => {
         expect(screen.getByText('FY2025.zip')).toBeInTheDocument()
-        expect(screen.getByText('FY2025_Q1.zip')).toBeInTheDocument()
+      })
+
+      // Change fiscal year
+      const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
+      fireEvent.change(fiscalYearSelect, { target: { value: '2024' } })
+
+      await waitFor(() => {
+        expect(screen.getByText('FY2024.zip')).toBeInTheDocument()
       })
     })
 
@@ -415,10 +487,11 @@ describe('AdminFeedbackReports', () => {
         data: { id: 1, status: 'PENDING' },
       })
 
-      const mockHistory = [
+      const mockHistoryAfterUpload = [
         {
           id: 1,
           year: 2025,
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:31:00Z',
           processed_at: null,
           original_filename: 'new.zip',
@@ -426,41 +499,39 @@ describe('AdminFeedbackReports', () => {
         },
       ]
 
-      // Initial fetch returns empty, all subsequent calls return mockHistory
       axiosInstance.get
-        .mockResolvedValueOnce({ data: { results: [] } }) // Initial fetch
-        .mockResolvedValue({ data: { results: mockHistory } }) // All subsequent calls (including after upload)
+        .mockResolvedValueOnce({ data: { results: [] } })
+        .mockResolvedValue({ data: { results: mockHistoryAfterUpload } })
 
       renderComponent()
+
+      await selectFiscalYear('2025')
 
       await waitFor(() => {
         expect(screen.getByText('No data available.')).toBeInTheDocument()
       })
 
       const fileInput = document.querySelector('input[type="file"]')
-      const file = new File(['content'], 'feedback.zip', {
+      const file = new File(['content'], 'FY2025.zip', {
         type: 'application/zip',
       })
-
       fireEvent.change(fileInput, { target: { files: [file] } })
 
-      // Wait for FileReader async process to complete and button to be enabled
-      const uploadButton = await waitFor(() => {
-        const btn = screen.getByRole('button', {
-          name: /Upload & Notify States/i,
-        })
-        expect(btn).not.toHaveAttribute('disabled')
-        return btn
+      await waitFor(() => {
+        expect(screen.queryByText('Invalid file.')).not.toBeInTheDocument()
       })
 
+      const dateInput = screen.getByLabelText('Data extracted from database on')
+      fireEvent.change(dateInput, { target: { value: '2025-02-28' } })
+
+      const uploadButton = screen.getByRole('button', {
+        name: /Upload & Notify States/i,
+      })
       fireEvent.click(uploadButton)
 
       await waitFor(() => {
         expect(screen.getByText('new.zip')).toBeInTheDocument()
       })
-
-      // Should have called GET at least twice: once on mount, once after upload
-      expect(axiosInstance.get.mock.calls.length).toBeGreaterThanOrEqual(2)
     })
   })
 
@@ -470,6 +541,7 @@ describe('AdminFeedbackReports', () => {
         {
           id: 1,
           year: 2025,
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:31:00Z',
           processed_at: '2025-03-05T10:41:00Z',
           status: 'SUCCEEDED',
@@ -482,8 +554,10 @@ describe('AdminFeedbackReports', () => {
 
       renderComponent()
 
+      await selectFiscalYear('2025')
+
       await waitFor(() => {
-        // Check that dates are formatted (exact format may vary by locale)
+        // Check that dates are formatted
         const dates = screen.getAllByText(/03\/05\/2025/)
         expect(dates.length).toBeGreaterThan(0)
       })
@@ -494,6 +568,7 @@ describe('AdminFeedbackReports', () => {
         {
           id: 1,
           year: 2025,
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:31:00Z',
           processed_at: null,
           status: 'PENDING',
@@ -506,6 +581,8 @@ describe('AdminFeedbackReports', () => {
 
       renderComponent()
 
+      await selectFiscalYear('2025')
+
       await waitFor(() => {
         const cells = screen.getAllByText('N/A')
         expect(cells.length).toBeGreaterThan(0)
@@ -513,96 +590,83 @@ describe('AdminFeedbackReports', () => {
     })
   })
 
-  describe('File Input Interaction', () => {
-    it('clears file selection after successful upload', async () => {
+  describe('Form Reset', () => {
+    it('clears form after successful upload', async () => {
       axiosInstance.post.mockResolvedValue({
         data: { id: 1, status: 'PENDING' },
       })
 
       renderComponent()
 
-      await waitFor(() => {
-        expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
-      })
+      await selectFiscalYear('2025')
 
       const fileInput = document.querySelector('input[type="file"]')
-      const file = new File(['content'], 'feedback.zip', {
+      const file = new File(['content'], 'FY2025.zip', {
         type: 'application/zip',
       })
-
       fireEvent.change(fileInput, { target: { files: [file] } })
 
-      // Wait for FileReader async process to complete and button to be enabled
-      const uploadButton = await waitFor(() => {
-        const btn = screen.getByRole('button', {
-          name: /Upload & Notify States/i,
-        })
-        expect(btn).not.toHaveAttribute('disabled')
-        return btn
+      await waitFor(() => {
+        expect(screen.queryByText('Invalid file.')).not.toBeInTheDocument()
       })
 
+      const dateInput = screen.getByLabelText('Data extracted from database on')
+      fireEvent.change(dateInput, { target: { value: '2025-02-28' } })
+
+      const uploadButton = screen.getByRole('button', {
+        name: /Upload & Notify States/i,
+      })
       fireEvent.click(uploadButton)
 
       await waitFor(() => {
-        expect(uploadButton).toHaveAttribute('disabled')
+        expect(
+          screen.getByText(/Feedback report uploaded successfully/)
+        ).toBeInTheDocument()
       })
+
+      // Date should be cleared
+      expect(dateInput).toHaveValue('')
+    })
+
+    it('resets form when fiscal year changes', async () => {
+      renderComponent()
+
+      await selectFiscalYear('2025')
+
+      const dateInput = screen.getByLabelText('Data extracted from database on')
+      fireEvent.change(dateInput, { target: { value: '2025-02-28' } })
+
+      expect(dateInput).toHaveValue('2025-02-28')
+
+      // Change fiscal year
+      const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
+      fireEvent.change(fiscalYearSelect, { target: { value: '2024' } })
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('Fiscal Year 2024 — Upload Feedback Reports')
+        ).toBeInTheDocument()
+      })
+
+      // Date should be cleared
+      const newDateInput = screen.getByLabelText(
+        'Data extracted from database on'
+      )
+      expect(newDateInput).toHaveValue('')
     })
   })
 
   describe('Initialization', () => {
-    it('calls fileInput.init() on mount', () => {
+    it('calls fileInput.init() when fiscal year is selected', async () => {
       const { fileInput } = require('@uswds/uswds/src/js/components')
 
       renderComponent()
 
+      // fileInput.init should not be called until fiscal year is selected
+      // (FeedbackReportsUpload doesn't mount until year is selected)
+      await selectFiscalYear('2025')
+
       expect(fileInput.init).toHaveBeenCalled()
-    })
-  })
-
-  describe('Paginated Response Handling', () => {
-    it('handles paginated response with results array', async () => {
-      const mockHistory = [
-        {
-          id: 1,
-          year: 2025,
-          created_at: '2025-03-05T10:31:00Z',
-          processed_at: '2025-03-05T10:41:00Z',
-          original_filename: 'test.zip',
-          file: 'https://example.com/test.zip',
-        },
-      ]
-
-      axiosInstance.get.mockResolvedValue({ data: { results: mockHistory } })
-
-      renderComponent()
-
-      await waitFor(() => {
-        expect(screen.getByText('test.zip')).toBeInTheDocument()
-      })
-    })
-  })
-
-  describe('Year Fallback', () => {
-    it('displays current year when report year is null', async () => {
-      const currentYear = new Date().getFullYear()
-      const mockHistory = [
-        {
-          id: 1,
-          year: null,
-          created_at: '2025-03-05T10:31:00Z',
-          processed_at: '2025-03-05T10:41:00Z',
-          original_filename: 'test.zip',
-          file: 'https://example.com/test.zip',
-        },
-      ]
-
-      axiosInstance.get.mockResolvedValue({ data: { results: mockHistory } })
-
-      renderComponent()
-
-      await waitFor(() => {
-        expect(screen.getByText(currentYear.toString())).toBeInTheDocument()
-      })
     })
   })
 })

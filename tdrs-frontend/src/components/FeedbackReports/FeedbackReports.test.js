@@ -1,6 +1,6 @@
 import React from 'react'
 import { Provider } from 'react-redux'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import configureStore from 'redux-mock-store'
 import { thunk } from 'redux-thunk'
@@ -65,15 +65,24 @@ describe('FeedbackReports', () => {
 
       renderComponent(store)
 
-      // AdminFeedbackReports has the upload section
+      // AdminFeedbackReports has the description and fiscal year selector
       await waitFor(() => {
         expect(
           screen.getByText(/Once submitted, TDP will distribute/)
         ).toBeInTheDocument()
       })
 
-      // Should have the file upload input
-      expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
+      // Should have the fiscal year selector (Admin page requires year selection)
+      expect(screen.getByLabelText('Fiscal Year')).toBeInTheDocument()
+
+      // Select a fiscal year to reveal the upload section
+      const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
+      fireEvent.change(fiscalYearSelect, { target: { value: '2025' } })
+
+      // Now the file upload input should be visible
+      await waitFor(() => {
+        expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
+      })
 
       // Should have the upload button
       expect(
@@ -200,7 +209,7 @@ describe('FeedbackReports', () => {
   })
 
   describe('Permission-based API calls', () => {
-    it('calls report-sources API for admin users', async () => {
+    it('calls report-sources API for admin users after fiscal year selected', async () => {
       const store = mockStore({
         auth: {
           user: {
@@ -223,10 +232,20 @@ describe('FeedbackReports', () => {
 
       renderComponent(store)
 
+      // Admin page requires fiscal year selection before API call
+      await waitFor(() => {
+        expect(screen.getByLabelText('Fiscal Year')).toBeInTheDocument()
+      })
+
+      const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
+      fireEvent.change(fiscalYearSelect, { target: { value: '2025' } })
+
       await waitFor(() => {
         expect(axiosInstance.get).toHaveBeenCalledWith(
           expect.stringContaining('/reports/report-sources/'),
-          expect.any(Object)
+          expect.objectContaining({
+            params: { year: '2025' },
+          })
         )
       })
     })

@@ -1,12 +1,13 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
+import { fileInput, datePicker } from '@uswds/uswds/src/js/components'
 import Button from '../Button'
 
-const INVALID_EXT_ERROR = 'File must be a .zip file'
+const INVALID_EXT_ERROR = 'Invalid file. Make sure to select a zip file.'
 
 /**
  * FeedbackReportsUpload component handles the file upload section
- * for quarterly feedback reports
+ * for feedback reports
  */
 function FeedbackReportsUpload({
   selectedFile,
@@ -15,11 +16,20 @@ function FeedbackReportsUpload({
   onFileChange,
   onUpload,
   inputRef,
+  dateExtractedOn,
+  dateError,
+  onDateChange,
+  onDateBlur,
 }) {
   const formattedSectionName = 'feedback_reports'
   const ariaDescription = selectedFile
     ? `Selected File ${selectedFile.name}. To change the selected file, click this button.`
     : 'Drag file here or choose from folder.'
+
+  useEffect(() => {
+    fileInput.init()
+    datePicker.init()
+  }, [])
 
   return (
     <div
@@ -58,11 +68,48 @@ function FeedbackReportsUpload({
         data-errormessage={INVALID_EXT_ERROR}
       />
 
+      {/* Date Extracted Input */}
+      <div
+        className={`usa-form-group margin-top-3 ${dateError ? 'usa-form-group--error' : ''}`}
+      >
+        <label
+          className="usa-label text-bold"
+          id="date-extracted-on-label"
+          htmlFor="date-extracted-on"
+        >
+          Data extracted from database on
+        </label>
+        <div className="usa-hint" id="date-extracted-hint">
+          mm/dd/yyyy
+        </div>
+        {dateError && (
+          <div
+            className="usa-error-message"
+            id="date-extracted-error"
+            role="alert"
+          >
+            {dateError}
+          </div>
+        )}
+        <div className="usa-date-picker">
+          <input
+            className={`usa-input ${dateError ? 'usa-input--error' : ''}`}
+            id="date-extracted-on"
+            name="date-extracted-on"
+            aria-labelledby="date-extracted-on-label"
+            aria-describedby="date-extracted-hint"
+            value={dateExtractedOn}
+            onChange={onDateChange}
+            onBlur={onDateBlur}
+          />
+        </div>
+      </div>
+
       <Button
         type="submit"
         onClick={onUpload}
-        disabled={!selectedFile || loading}
-        className="margin-top-2"
+        disabled={loading}
+        className="margin-top-3"
       >
         {loading ? 'Uploading...' : 'Upload & Notify States'}
       </Button>
@@ -77,6 +124,10 @@ FeedbackReportsUpload.propTypes = {
   onFileChange: PropTypes.func.isRequired,
   onUpload: PropTypes.func.isRequired,
   inputRef: PropTypes.object.isRequired,
+  dateExtractedOn: PropTypes.string,
+  dateError: PropTypes.string,
+  onDateChange: PropTypes.func,
+  onDateBlur: PropTypes.func,
 }
 
 export default FeedbackReportsUpload

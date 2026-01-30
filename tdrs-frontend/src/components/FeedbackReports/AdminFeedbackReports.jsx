@@ -1,20 +1,28 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import axiosInstance from '../../axios-instance'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
-import { fileInput } from '@uswds/uswds/src/js/components'
 import FeedbackReportsUpload from './FeedbackReportsUpload'
 import FeedbackReportsHistory from './FeedbackReportsHistory'
 import { PaginatedComponent } from '../Paginator/Paginator'
 import { Spinner } from '../Spinner'
+import { constructYears } from '../Reports/utils'
 
-const INVALID_EXT_ERROR = 'File must be a .zip file'
+const INVALID_EXT_ERROR = 'Invalid file. Make sure to select a zip file.'
+const NO_FILE_ERROR = 'No file selected.'
+const FY_MISMATCH_ERROR =
+  "Your file's Fiscal Year does not match the selected Fiscal Year for this upload."
+const NO_DATE_ERROR =
+  "Choose the date that the data you're uploading was extracted from the database."
 
 /**
  * AdminFeedbackReports component allows OFA Admins to upload quarterly feedback reports
  * as ZIP files that will be distributed to State/Tribal TANF Programs (STTs).
  */
 function AdminFeedbackReports() {
+  const yearOptions = constructYears()
+  const [selectedYear, setSelectedYear] = useState(null)
   const [selectedFile, setSelectedFile] = useState(null)
+  const [dateExtractedOn, setDateExtractedOn] = useState('')
   const [uploadHistory, setUploadHistory] = useState([])
   const [loading, setLoading] = useState(false)
   const [historyLoading, setHistoryLoading] = useState(false)
@@ -25,18 +33,29 @@ function AdminFeedbackReports() {
   })
 
   const [fileError, setFileError] = useState(null)
+  const [dateError, setDateError] = useState(null)
+  const [formSubmitAttempted, setFormSubmitAttempted] = useState(false)
+  const [dateTouched, setDateTouched] = useState(false)
 
   const inputRef = useRef(null)
 
   /**
-   * Fetches the upload history from the backend
+   * Fetches the upload history from the backend filtered by selected year
    */
   const fetchUploadHistory = useCallback(async () => {
+    if (!selectedYear) {
+      setUploadHistory([])
+      return
+    }
+
     setHistoryLoading(true)
     try {
       const response = await axiosInstance.get(
         `${process.env.REACT_APP_BACKEND_URL}/reports/report-sources/`,
-        { withCredentials: true }
+        {
+          params: { year: selectedYear },
+          withCredentials: true,
+        }
       )
       setUploadHistory(response.data.results)
     } catch (error) {
@@ -49,13 +68,21 @@ function AdminFeedbackReports() {
     } finally {
       setHistoryLoading(false)
     }
-  }, [])
+  }, [selectedYear])
 
-  // Initialize USWDS file input component and fetch upload history on mount
+  // Fetch upload history when year changes
   useEffect(() => {
-    fileInput.init()
     fetchUploadHistory()
   }, [fetchUploadHistory])
+
+  /**
+   * Extracts the fiscal year from a filename like "FY2025_12012025.zip"
+   * Returns null if the pattern doesn't match
+   */
+  const extractFYFromFilename = (filename) => {
+    const match = filename.match(/^FY(\d{4})/i)
+    return match ? parseInt(match[1], 10) : null
+  }
 
   /**
    * Handles file selection from the file input
@@ -95,6 +122,14 @@ function AdminFeedbackReports() {
       return
     }
 
+    // Validate fiscal year in filename matches selected fiscal year
+    const fileFY = extractFYFromFilename(fileInputValue.name)
+    if (fileFY && selectedYear && fileFY !== parseInt(selectedYear, 10)) {
+      createFileInputErrorState(input, dropTarget)
+      setFileError(FY_MISMATCH_ERROR)
+      return
+    }
+
     // Clean up any leftover error state from previous invalid file
     const instructions = dropTarget.querySelector(
       '.usa-file-input__instructions'
@@ -109,16 +144,39 @@ function AdminFeedbackReports() {
   }
 
   /**
+   * Validates the form before upload
+   * Returns true if valid, false otherwise
+   */
+  const validateForm = () => {
+    let isValid = true
+    setFormSubmitAttempted(true)
+
+    if (!selectedFile) {
+      setFileError(NO_FILE_ERROR)
+      isValid = false
+    }
+
+    if (!dateExtractedOn) {
+      setDateError(NO_DATE_ERROR)
+      isValid = false
+    }
+
+    return isValid
+  }
+
+  /**
    * Handles the file upload to the backend
    */
   const handleUpload = async () => {
-    if (!selectedFile) return
+    if (!validateForm()) return
 
     setLoading(true)
     setAlert({ active: false, type: null, message: null })
 
     const formData = new FormData()
     formData.append('file', selectedFile)
+    formData.append('year', selectedYear)
+    formData.append('date_extracted_on', dateExtractedOn)
 
     try {
       await axiosInstance.post(
@@ -137,9 +195,13 @@ function AdminFeedbackReports() {
           'Feedback report uploaded successfully! Processing has begun and states will be notified once complete.',
       })
 
-      // Clear the file input
+      // Clear the form
       setSelectedFile(null)
       setFileError(null)
+      setDateExtractedOn('')
+      setDateError(null)
+      setFormSubmitAttempted(false)
+      setDateTouched(false)
 
       // Refresh upload history
       fetchUploadHistory()
@@ -176,6 +238,46 @@ function AdminFeedbackReports() {
     })
   }
 
+  /**
+   * Handles fiscal year selection change
+   */
+  const handleYearChange = (e) => {
+    const newYear = e.target.value
+    setSelectedYear(newYear)
+    // Reset form state when year changes
+    setSelectedFile(null)
+    setFileError(null)
+    setDateExtractedOn('')
+    setDateError(null)
+    setFormSubmitAttempted(false)
+    setDateTouched(false)
+    setAlert({ active: false, type: null, message: null })
+  }
+
+  /**
+   * Handles date extracted input change
+   */
+  const handleDateChange = (e) => {
+    const newDate = e.target.value
+    setDateExtractedOn(newDate)
+    if (newDate) {
+      setDateError(null)
+    }
+  }
+
+  /**
+   * Handles date input blur
+   */
+  const handleDateBlur = () => {
+    setDateTouched(true)
+    if (!dateExtractedOn) {
+      setDateError(NO_DATE_ERROR)
+    }
+  }
+
+  // Determine if we should show date error
+  const showDateError = dateError && (dateTouched || formSubmitAttempted)
+
   return (
     <div className="feedback-reports">
       <div className="page-container" style={{ position: 'relative' }}>
@@ -188,43 +290,78 @@ function AdminFeedbackReports() {
           processes the reports.
         </p>
 
-        <hr className="margin-top-2 margin-bottom-2" />
-
-        {/* Alert Messages */}
-        {alert.active && (
-          <div
-            className={`usa-alert usa-alert--${alert.type} usa-alert--slim margin-bottom-3`}
-            role="alert"
+        {/* Fiscal Year Selector */}
+        <div className="usa-form-group maxw-mobile margin-top-4">
+          <label className="usa-label text-bold" htmlFor="fiscal-year-select">
+            Fiscal Year
+          </label>
+          <select
+            className="usa-select maxw-mobile"
+            id="fiscal-year-select"
+            value={selectedYear || ''}
+            onChange={handleYearChange}
           >
-            <div className="usa-alert__body">
-              <p className="usa-alert__text">{alert.message}</p>
-            </div>
-          </div>
-        )}
-
-        {/* File Upload Section */}
-        <FeedbackReportsUpload
-          selectedFile={selectedFile}
-          fileError={fileError}
-          loading={loading}
-          onFileChange={handleFileChange}
-          onUpload={handleUpload}
-          inputRef={inputRef}
-        />
-
-        {/* Upload History Section */}
-        <div className="submission-history-section usa-table-container">
-          {historyLoading ? (
-            <div className="submission-history-section-spinner margin-y-3">
-              <Spinner visible={true} />
-              <span className="margin-left-1">Loading upload history...</span>
-            </div>
-          ) : (
-            <PaginatedComponent pageSize={10} data={uploadHistory}>
-              <FeedbackReportsHistory formatDateTime={formatDateTime} />
-            </PaginatedComponent>
-          )}
+            <option value="">- Select Fiscal Year -</option>
+            {yearOptions.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
         </div>
+
+        {/* Conditional content - only show when fiscal year is selected */}
+        {selectedYear && (
+          <>
+            <hr className="margin-top-4 margin-bottom-4" />
+
+            <h2 className="margin-top-0 margin-bottom-4">
+              Fiscal Year {selectedYear} — Upload Feedback Reports
+            </h2>
+
+            {/* Alert Messages */}
+            {alert.active && (
+              <div
+                className={`usa-alert usa-alert--${alert.type} usa-alert--slim margin-bottom-3`}
+                role="alert"
+              >
+                <div className="usa-alert__body">
+                  <p className="usa-alert__text">{alert.message}</p>
+                </div>
+              </div>
+            )}
+
+            {/* File Upload Section */}
+            <FeedbackReportsUpload
+              selectedFile={selectedFile}
+              fileError={fileError}
+              loading={loading}
+              onFileChange={handleFileChange}
+              onUpload={handleUpload}
+              inputRef={inputRef}
+              dateExtractedOn={dateExtractedOn}
+              dateError={showDateError ? dateError : null}
+              onDateChange={handleDateChange}
+              onDateBlur={handleDateBlur}
+            />
+
+            {/* Upload History Section */}
+            <div className="submission-history-section usa-table-container">
+              {historyLoading ? (
+                <div className="submission-history-section-spinner margin-y-3">
+                  <Spinner visible={true} />
+                  <span className="margin-left-1">
+                    Loading upload history...
+                  </span>
+                </div>
+              ) : (
+                <PaginatedComponent pageSize={10} data={uploadHistory}>
+                  <FeedbackReportsHistory formatDateTime={formatDateTime} />
+                </PaginatedComponent>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   )
