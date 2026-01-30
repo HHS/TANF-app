@@ -11,7 +11,9 @@ export const availableStts = (path) => {
 
     if (accountIsRegionalStaff(state)) {
       const regionalStts =
-        selectUser(state).regions?.map((region) => region.stts).flat() || []
+        selectUser(state)
+          .regions?.map((region) => region.stts)
+          .flat() || []
       return filterTribes(regionalStts).sort((a, b) =>
         a.name.localeCompare(b.name)
       )
