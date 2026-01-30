@@ -56,8 +56,7 @@ accumulator:
 
   # No key_fields for FRA - records are not grouped by case
 
-  # Number of records to batch together before dispatching to workers.
-  batch_size: 0
+  batch_size: 1
 
   # No grouping needed for FRA records
   grouped_schemas: []

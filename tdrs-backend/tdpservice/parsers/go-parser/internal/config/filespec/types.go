@@ -92,12 +92,14 @@ type PrefixMapping struct {
 //
 // The four modes are:
 //
-//	| KeyFields | BatchSize | Behavior                                      |
-//	|-----------|-----------|-----------------------------------------------|
-//	| nil       | 0         | Per-record: each record emitted individually  |
-//	| nil       | 100       | Batches of 100 individual records             |
-//	| set       | 0         | Group by key, emit each group individually    |
-//	| set       | 10        | Group by key, then batch 10 groups together   |
+//	| KeyFields | BatchSize | Behavior                                        |
+//	|-----------|-----------|-------------------------------------------------|
+//	| nil       | 0         | All records accumulated into a single batch     |
+//	| nil       | 1         | Per-record: each record emitted individually    |
+//	| nil       | 100       | Batches of 100 individual records               |
+//	| set       | 0         | Group by key, all groups in a single batch      |
+//	| set       | 1         | Group by key, emit each group individually      |
+//	| set       | 10        | Group by key, then batch 10 groups together     |
 type AccumulatorConfig struct {
 	// KeyFields defines how to extract grouping keys from raw data.
 	// If nil or empty, each record is its own group (no case-based grouping).
@@ -105,13 +107,22 @@ type AccumulatorConfig struct {
 	KeyFields *KeyFieldsConfig `yaml:"key_fields,omitempty"`
 
 	// BatchSize is the number of groups to batch together before dispatch.
-	// If 0, each group is dispatched individually (one batch per group).
+	// If nil (not specified), defaults to 1 (each group dispatched individually).
+	// If 0, all groups are accumulated into a single batch.
 	// If > 0, groups are collected until batch_size is reached.
-	BatchSize int `yaml:"batch_size,omitempty"`
+	BatchSize *int `yaml:"batch_size,omitempty"`
 
 	// GroupedSchemas lists which schemas participate in key-based grouping.
 	// Schemas not in this list (e.g., HEADER, TRAILER) are processed individually.
 	GroupedSchemas []string `yaml:"grouped_schemas,omitempty"`
+}
+
+// EffectiveBatchSize returns the resolved batch size, defaulting to 1 if not specified.
+func (c *AccumulatorConfig) EffectiveBatchSize() int {
+	if c.BatchSize == nil {
+		return 1
+	}
+	return *c.BatchSize
 }
 
 // HasKeyFields returns true if key-based grouping is configured.

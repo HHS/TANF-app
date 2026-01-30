@@ -28,9 +28,16 @@ func (s *ErrorStats) Total() int64 {
 	return s.RecordPreCheck + s.FieldValue + s.ValueConsistency + s.CaseConsistency
 }
 
+// RouteStats holds batch/group counts collected during result routing.
+type RouteStats struct {
+	ErrorStats
+	BatchCount int64
+	GroupCount int64
+}
+
 // routeResults receives parsed batches from the parser.pool, validates them, and routes them to database writers.
 // Multiple router goroutines compete on the Results channel for parallel processing.
-// Returns error stats and any processing errors.
+// Returns route stats (including error counts) and any processing errors.
 func routeResults(
 	ctx context.Context,
 	pool *parser.ParserPool,
@@ -39,12 +46,15 @@ func routeResults(
 	filespecKey string,
 	numRouters int,
 	datafileID int32,
-) (*ErrorStats, error) {
+) (*RouteStats, error) {
 	var wg sync.WaitGroup
 	errChan := make(chan error, numRouters)
 
 	// Atomic counters for error stats (safe for concurrent access)
 	var recordPreCheck, fieldValue, valueConsistency, caseConsistency int64
+
+	// Atomic counters for batch/group stats
+	var batchCount, groupCount int64
 
 	// Spawn multiple routers reading from the same channel
 	for range numRouters {
@@ -52,6 +62,9 @@ func routeResults(
 		go func() {
 			defer wg.Done()
 			for pb := range pool.Results() {
+				atomic.AddInt64(&batchCount, 1)
+				atomic.AddInt64(&groupCount, int64(len(pb.Groups)))
+
 				// Validate the batch's groups and collect error counts
 				rpc, fv, vc, cc, contexts := validateBatch(pb, orchestrator, filespecKey)
 				atomic.AddInt64(&recordPreCheck, rpc)
@@ -87,11 +100,15 @@ func routeResults(
 		errs = append(errs, err)
 	}
 
-	stats := &ErrorStats{
-		RecordPreCheck:   recordPreCheck,
-		FieldValue:       fieldValue,
-		ValueConsistency: valueConsistency,
-		CaseConsistency:  caseConsistency,
+	stats := &RouteStats{
+		ErrorStats: ErrorStats{
+			RecordPreCheck:   recordPreCheck,
+			FieldValue:       fieldValue,
+			ValueConsistency: valueConsistency,
+			CaseConsistency:  caseConsistency,
+		},
+		BatchCount: batchCount,
+		GroupCount: groupCount,
 	}
 
 	if len(errs) > 0 {

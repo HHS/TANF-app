@@ -72,8 +72,7 @@ accumulator:
       start: 8
       end: 19
 
-  # Number of groups to batch together before dispatching to workers.
-  batch_size: 0
+  batch_size: 1
 
   # Which schemas participate in key-based grouping.
   grouped_schemas:

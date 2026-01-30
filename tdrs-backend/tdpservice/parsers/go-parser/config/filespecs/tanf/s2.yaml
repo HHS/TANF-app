@@ -62,13 +62,12 @@ record_type_detection:
 # RPT_MONTH_YEAR and CASE_NUMBER belong to the same "case" and should be
 # processed together. This enables case-level validation in the future.
 #
-# The accumulator uses two independent settings:
-#   - key_fields: Groups records by composite key (creates RecordGroups)
-#   - batch_size: Batches N groups together (creates Batches)
+# The accumulator uses key_fields to group records by composite key
+# (creates RecordGroups). batch_size defaults to 1 when not specified,
+# meaning each case group is dispatched individually.
 #
 # For TANF Section 2:
 #   - key_fields is set to group by RPT_MONTH_YEAR + CASE_NUMBER
-#   - batch_size is 0, meaning each case group is dispatched individually
 accumulator:
 
   # Fields to extract the grouping key from raw row data.
@@ -82,10 +81,7 @@ accumulator:
       start: 8
       end: 19
 
-  # Number of groups to batch together before dispatching to workers.
-  # 0 = each group is dispatched individually (one Batch per case)
-  # Set to a higher value (e.g., 10) for higher throughput at the cost of memory.
-  batch_size: 0
+  batch_size: 1
 
   # Which schemas participate in key-based grouping.
   # HEADER and TRAILER are excluded because they're file-level, not case-level.

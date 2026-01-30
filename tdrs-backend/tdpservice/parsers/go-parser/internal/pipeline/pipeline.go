@@ -38,6 +38,8 @@ type ProcessResult struct {
 	RecordCounts map[string]int64
 	ErrorCount   int64
 	ErrorStats   *ErrorStats // Validation error counts by category
+	BatchCount   int64       // Number of batches processed
+	GroupCount   int64       // Number of groups processed
 	Duration     time.Duration
 }
 
@@ -61,7 +63,7 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params ProcessParams) (*Proc
 
 	log.Printf("Processing %s Section %d file: %s", params.Program, params.Section, params.FilePath)
 	log.Printf("Format: %s, KeyFields: %v, BatchSize: %d",
-		spec.Format, spec.Accumulator.HasKeyFields(), spec.Accumulator.BatchSize)
+		spec.Format, spec.Accumulator.HasKeyFields(), spec.Accumulator.EffectiveBatchSize())
 
 	// Step 2: Open the file and create decoder
 	file, err := os.Open(params.FilePath)
@@ -116,12 +118,12 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params ProcessParams) (*Proc
 
 	// Step 8: Start result collector with parallel dispatchers
 	var collectorErr error
-	var errorStats *ErrorStats
+	var routeStats *RouteStats
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		errorStats, collectorErr = routeResults(ctx, parsers, router, orchestrator, filespecKey, p.config.NumRouters, params.DatafileID)
+		routeStats, collectorErr = routeResults(ctx, parsers, router, orchestrator, filespecKey, p.config.NumRouters, params.DatafileID)
 	}()
 
 	// Step 8: Process rows through the accumulator
@@ -152,15 +154,23 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params ProcessParams) (*Proc
 	recordCounts["parser_error"] = errorCount
 
 	// Log validation error summary
-	if errorStats != nil {
+	if routeStats != nil {
 		log.Printf("Validation errors: RecordPreCheck=%d, FieldValue=%d, ValueConsistency=%d, CaseConsistency=%d, Total=%d",
-			errorStats.RecordPreCheck, errorStats.FieldValue, errorStats.ValueConsistency, errorStats.CaseConsistency, errorStats.Total())
+			routeStats.RecordPreCheck, routeStats.FieldValue, routeStats.ValueConsistency, routeStats.CaseConsistency, routeStats.Total())
+		log.Printf("Batches: %d, Groups: %d", routeStats.BatchCount, routeStats.GroupCount)
+	}
+
+	var errorStats *ErrorStats
+	if routeStats != nil {
+		errorStats = &routeStats.ErrorStats
 	}
 
 	return &ProcessResult{
 		RecordCounts: recordCounts,
 		ErrorCount:   errorCount,
 		ErrorStats:   errorStats,
+		BatchCount:   routeStats.BatchCount,
+		GroupCount:   routeStats.GroupCount,
 		Duration:     duration,
 	}, nil
 }

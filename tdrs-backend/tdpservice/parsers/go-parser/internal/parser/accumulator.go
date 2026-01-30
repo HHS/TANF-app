@@ -10,11 +10,13 @@ import (
 
 // Accumulator collects records into Batches based on the AccumulatorConfig.
 //
-// The accumulator handles four modes based on key_fields and batch_size:
-//   - key_fields set, batch_size=0:  Group by key, emit each group as its own Batch
-//   - key_fields set, batch_size=N:  Group by key, batch N groups together
-//   - key_fields empty, batch_size=N: Each record is a group, batch N groups together
-//   - key_fields empty, batch_size=0: Each record is its own Batch (per-record mode)
+// The accumulator handles modes based on key_fields and batch_size:
+//   - batch_size=0:  All groups accumulated into a single batch (emitted on Drain)
+//   - batch_size=1:  Each group emitted as its own Batch
+//   - batch_size=N:  N groups batched together
+//
+// When key_fields are set, records are grouped by composite key.
+// When key_fields are empty, each record is its own group.
 //
 // All modes use key-change as the single mechanism for group completion.
 // Files are assumed sorted at the group level, so groups are flushed immediately
@@ -48,7 +50,7 @@ func NewAccumulator(spec *filespec.FileSpec, detector *RecordTypeDetector) *Accu
 		spec:           spec,
 		detector:       detector,
 		hasKeyFields:   spec.Accumulator.HasKeyFields(),
-		batchSize:      spec.Accumulator.BatchSize,
+		batchSize:      spec.Accumulator.EffectiveBatchSize(),
 		groupedSchemas: groupedSchemas,
 		currentGroup:   nil,
 		pendingGroups:  make([]*DecodedGroup, 0),
@@ -143,19 +145,15 @@ func (a *Accumulator) flushCurrentGroup() *DecodedBatch {
 		return nil
 	}
 
-	if a.batchSize == 0 {
-		// Each group is its own batch
-		batch := &DecodedBatch{
-			BatchID:       a.batchCounter,
-			DecodedGroups: []*DecodedGroup{a.currentGroup},
-		}
-		a.batchCounter++
-		return batch
-	}
-
-	// Batching mode: collect groups until batch is full
+	// Always add the completed group to pending
 	a.pendingGroups = append(a.pendingGroups, a.currentGroup)
 
+	if a.batchSize == 0 {
+		// Accumulate all groups into a single batch, emitted on Drain
+		return nil
+	}
+
+	// Batching mode: emit when batch is full
 	if len(a.pendingGroups) >= a.batchSize {
 		batch := &DecodedBatch{
 			BatchID:       a.batchCounter,
@@ -198,32 +196,18 @@ func (a *Accumulator) extractKey(row decoder.Row) (key, rptMonth, caseNum string
 // Drain returns all accumulated groups as Batches and resets the accumulator.
 // Call this after all rows have been processed.
 //
-// For key-based grouping:
-//   - If batch_size=0: Each group becomes its own Batch
-//   - If batch_size=N: Groups are batched together (N groups per Batch)
-//
-// For non-keyed mode:
-//   - Returns any remaining partial batch
+// Any in-progress group is added to pending, then all pending groups are
+// flushed as a single final batch.
 func (a *Accumulator) Drain() []*DecodedBatch {
 	var batches []*DecodedBatch
 
-	// Flush the current group being built
+	// Flush the current group being built into pending
 	if a.currentGroup != nil {
-		if a.batchSize == 0 {
-			// Each group is its own batch
-			batches = append(batches, &DecodedBatch{
-				BatchID:       a.batchCounter,
-				DecodedGroups: []*DecodedGroup{a.currentGroup},
-			})
-			a.batchCounter++
-		} else {
-			// Add to pending groups
-			a.pendingGroups = append(a.pendingGroups, a.currentGroup)
-		}
+		a.pendingGroups = append(a.pendingGroups, a.currentGroup)
 		a.currentGroup = nil
 	}
 
-	// Flush any remaining pending groups
+	// Flush any remaining pending groups as a final batch
 	if len(a.pendingGroups) > 0 {
 		batches = append(batches, &DecodedBatch{
 			BatchID:       a.batchCounter,
