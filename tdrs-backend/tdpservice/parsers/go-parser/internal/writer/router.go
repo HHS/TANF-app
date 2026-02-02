@@ -44,15 +44,21 @@ var parserErrorColumns = []string{
 	"object_id", "deprecated", "values_json",
 }
 
+// RouterConfig holds configuration for the writer router.
+type RouterConfig struct {
+	PoolPrewarmSize     int
+	FlushThreshold      int
+	ErrorFlushThreshold int
+}
+
 // NewRouter creates a manager based on the FileSpec.
 // Writers are created only for the record types in this specific file.
-// poolPrewarmSize specifies how many records to pre-allocate per schema (0 to skip).
 func NewRouter(
 	pool *pgxpool.Pool,
 	datafileID int32,
 	spec *filespec.FileSpec,
 	reg *config.Registry,
-	poolPrewarmSize int,
+	cfg RouterConfig,
 ) *Router {
 	wm := &Router{
 		pool:           pool,
@@ -81,8 +87,8 @@ func NewRouter(
 		}
 
 		// Pre-warm the object pool for this schema to avoid allocation during parsing
-		if poolPrewarmSize > 0 {
-			sch.PrewarmPool(poolPrewarmSize)
+		if cfg.PoolPrewarmSize > 0 {
+			sch.PrewarmPool(cfg.PoolPrewarmSize)
 		}
 
 		// Get metadata (table name, columns derived from schema)
@@ -109,18 +115,18 @@ func NewRouter(
 		wm.writers[schemaPath] = NewTableWriter(
 			meta.TableName,
 			meta.Columns,
-			DefaultFlushThreshold,
+			cfg.FlushThreshold,
 		)
 
 		log.Printf("Created writer for %s -> %s (%d columns)",
 			schemaPath, meta.TableName, len(meta.Columns))
 	}
 
-	// Create error writer with higher threshold (100k) for 5-10x error volume
+	// Create error writer with higher threshold for error volume
 	wm.errorWriter = NewTableWriter(
 		"parser_error",
 		parserErrorColumns,
-		100000, // Higher threshold for error volume
+		cfg.ErrorFlushThreshold,
 	)
 	log.Printf("Created error writer for parser_error (%d columns)", len(parserErrorColumns))
 

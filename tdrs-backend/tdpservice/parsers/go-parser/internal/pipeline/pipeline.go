@@ -83,7 +83,11 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params ProcessParams) (*Proc
 
 	// Step 3: Create database router/initialize object pools
 	// TODO: I hate that we have to initialize the object pools on the schemas in NewRouter.
-	router := writer.NewRouter(p.dbPool, params.DatafileID, spec, p.registry, p.config.PoolPrewarmSize)
+	router := writer.NewRouter(p.dbPool, params.DatafileID, spec, p.registry, writer.RouterConfig{
+		PoolPrewarmSize:     p.config.PoolPrewarmSize,
+		FlushThreshold:      p.config.FlushThreshold,
+		ErrorFlushThreshold: p.config.ErrorFlushThreshold,
+	})
 	router.Start(ctx)
 
 	// Step 4: Read and parse header (for positional files)

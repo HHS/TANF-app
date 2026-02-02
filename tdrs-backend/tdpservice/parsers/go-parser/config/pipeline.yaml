@@ -1,0 +1,24 @@
+# Master pipeline configuration
+# All values shown are production defaults.
+
+# Pipeline worker configuration
+pipeline:
+  num_workers: 16          # Parser worker goroutines
+  work_buffer_size: 256    # Channel buffer for parser input
+  result_buffer_size: 256  # Channel buffer for parser output
+  num_routers: 16          # Result router goroutines
+  num_validators: 16       # Validation worker count
+  pool_prewarm_size: 10000 # Object pool pre-allocation per schema
+
+# Writer configuration
+writer:
+  flush_threshold: 10000        # Records per table before auto-flush
+  error_flush_threshold: 50000 # Error records before auto-flush
+
+# Database connection pool
+database:
+  max_conns: 10
+  min_conns: 4
+  max_conn_lifetime: 30m
+  max_conn_idle_time: 5m
+  health_check_period: 30s

@@ -1,6 +1,9 @@
 package pipeline
 
-import "go-parser/internal/parser"
+import (
+	"go-parser/internal/config"
+	"go-parser/internal/parser"
+)
 
 // PipelineConfig holds tunable parameters for the parsing pipeline.
 type PipelineConfig struct {
@@ -15,29 +18,42 @@ type PipelineConfig struct {
 
 	// Validation configuration
 	NumValidators int
+
+	// Writer configuration
+	FlushThreshold      int
+	ErrorFlushThreshold int
 }
 
 // DefaultConfig returns production defaults.
 func DefaultConfig() PipelineConfig {
-	return PipelineConfig{
-		NumWorkers:       16,
-		WorkBufferSize:   256,
-		ResultBufferSize: 256,
-		PoolPrewarmSize:  10000,
-		NumRouters:       16,
-		NumValidators:    16,
-	}
+	return NewConfig(config.DefaultPipelineYAML())
 }
 
 // TestConfig returns conservative defaults for integration tests.
 func TestConfig() PipelineConfig {
 	return PipelineConfig{
-		NumWorkers:       2,
-		WorkBufferSize:   64,
-		ResultBufferSize: 64,
-		PoolPrewarmSize:  1000,
-		NumRouters:       1,
-		NumValidators:    2,
+		NumWorkers:          2,
+		WorkBufferSize:      64,
+		ResultBufferSize:    64,
+		PoolPrewarmSize:     1000,
+		NumRouters:          1,
+		NumValidators:       2,
+		FlushThreshold:      50000,
+		ErrorFlushThreshold: 100000,
+	}
+}
+
+// NewConfig creates a PipelineConfig from the loaded YAML configuration.
+func NewConfig(cfg *config.PipelineYAML) PipelineConfig {
+	return PipelineConfig{
+		NumWorkers:          cfg.Pipeline.NumWorkers,
+		WorkBufferSize:      cfg.Pipeline.WorkBufferSize,
+		ResultBufferSize:    cfg.Pipeline.ResultBufferSize,
+		NumRouters:          cfg.Pipeline.NumRouters,
+		NumValidators:       cfg.Pipeline.NumValidators,
+		PoolPrewarmSize:     cfg.Pipeline.PoolPrewarmSize,
+		FlushThreshold:      cfg.Writer.FlushThreshold,
+		ErrorFlushThreshold: cfg.Writer.ErrorFlushThreshold,
 	}
 }
 

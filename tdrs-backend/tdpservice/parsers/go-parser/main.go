@@ -7,8 +7,6 @@ import (
 	"os"
 	"runtime/pprof"
 
-	"github.com/jackc/pgx/v5/pgxpool"
-
 	"go-parser/internal/config"
 	"go-parser/internal/db"
 	"go-parser/internal/pipeline"
@@ -31,28 +29,28 @@ func main() {
 
 	ctx := context.Background()
 
-	// Connect to database
-	dbUrl := "postgres://tdpuser:something_secure@localhost:5432/tdrs_test?sslmode=disable"
-	dbPoolCfg, err := pgxpool.ParseConfig(dbUrl)
-	if err != nil {
-		log.Fatalf("Failed to parse database URL: %v", err)
-	}
-	dbPoolCfg.MinConns = 4
-	dbPoolCfg.MinIdleConns = 1
-	dbPoolCfg.MaxConns = 4
+	configDir := "config"
 
-	dbPool, err := pgxpool.NewWithConfig(ctx, dbPoolCfg)
+	// Load pipeline configuration (workers, buffers, DB pool, etc.)
+	pipelineCfg, err := config.LoadPipelineConfig(configDir)
+	if err != nil {
+		log.Fatalf("Failed to load pipeline config: %v", err)
+	}
+
+	// Connect to database using config
+	dbUrl := "postgres://tdpuser:something_secure@localhost:5432/tdrs_test?sslmode=disable"
+	dbPool, err := db.NewPool(ctx, dbUrl, pipelineCfg.Database)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 	defer dbPool.Close()
 
-	// Load configuration
+	// Load schemas, filespecs, and validators
 	// TODO: Need to revisit storing the object pools on the schemas. Since the registry will exist for as long as the
 	// celery worker does, the object pools could grow to an enormous size since there isn't a way to clear them after a
 	// parsing run. We should consider implementing/importing a better solution that allows clearing. Or, we could reload
 	// the registry each time a new parsing request comes in (simpler).
-	reg, err := config.Load("config")
+	reg, err := config.Load(configDir)
 	if err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
@@ -77,8 +75,8 @@ func main() {
 	// section := 4
 
 	// TANF test files
-	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.FTP1.TS06"
-	filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.NDM1.TS53_fake.txt"
+	filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.FTP1.TS06"
+	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.NDM1.TS53_fake.txt"
 	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/cat_4_edge_case.txt"
 	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.FTP2.TS06"
 	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.FTP3.TS06"
@@ -114,7 +112,7 @@ func main() {
 	}()
 
 	// Create and run pipeline
-	pipeln := pipeline.NewPipline(dbPool, reg, pipeline.DefaultConfig())
+	pipeln := pipeline.NewPipline(dbPool, reg, pipeline.NewConfig(pipelineCfg))
 	result, err := pipeln.ProcessFile(ctx, pipeline.ProcessParams{
 		Program:    program,
 		Section:    section,
