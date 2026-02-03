@@ -37,7 +37,6 @@ class ReportFileSerializer(serializers.ModelSerializer):
             "slug",
             "extension",
             "created_at",
-            "date_extracted_on",
         ]
 
     def create(self, validated_data):
