@@ -23,15 +23,12 @@ function TestComponent({ isActive }) {
   )
 }
 
-let activeElement = null
-
 beforeAll(() => {
   jest
     .spyOn(window, 'requestAnimationFrame')
     .mockImplementation((cb) => setTimeout(cb, 0))
 
   HTMLElement.prototype.focus = jest.fn(function () {
-    activeElement = this
     Object.defineProperty(document, 'activeElement', {
       configurable: true,
       get: () => this,
@@ -46,7 +43,6 @@ afterAll(() => {
 describe('useFocusTrap', () => {
   beforeEach(() => {
     jest.useFakeTimers()
-    activeElement = null
     jest.clearAllMocks()
   })
 
