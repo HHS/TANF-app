@@ -14,10 +14,10 @@ def create_nested_zip(structure):
     Parameters
     ----------
         structure: dict like {
-            "2025": {
-                "Region_1": {
-                    "1": ["report1.pdf", "report2.pdf"],
-                    "2": ["report3.pdf"]
+            "FY2025": {
+                "R01": {
+                    "F1": ["report1.pdf", "report2.pdf"],
+                    "F2": ["report3.pdf"]
                 }
             }
         }
@@ -33,7 +33,7 @@ def create_nested_zip(structure):
             for region, stts in regions.items():
                 for stt_code, files in stts.items():
                     for filename in files:
-                        # Create path: YYYY/Region/STT/filename
+                        # Create path: FY{YYYY}/R{XX}/F{X}/filename
                         path = f"{year}/{region}/{stt_code}/{filename}"
                         # Add fake content
                         zf.writestr(path, b"fake file content")
@@ -116,14 +116,14 @@ def fiscal_year_report_source_zip():
     """
     Generate a nested fiscal year report source zip file.
 
-    Structure: 2025/Region_1/1/report1.pdf, report2.pdf
+    Structure: FY2025/R01/F1/report1.pdf, report2.pdf
     """
     from django.core.files.uploadedfile import SimpleUploadedFile
 
     structure = {
-        "2025": {
-            "Region_1": {
-                "1": ["report1.pdf", "report2.pdf"],
+        "FY2025": {
+            "R01": {
+                "F1": ["report1.pdf", "report2.pdf"],
             }
         }
     }
@@ -137,10 +137,10 @@ def multi_stt_report_source_zip():
     from django.core.files.uploadedfile import SimpleUploadedFile
 
     structure = {
-        "2025": {
-            "Region_1": {
-                "1": ["report1.pdf", "report2.pdf"],
-                "2": ["report3.pdf"],
+        "FY2025": {
+            "R01": {
+                "F1": ["report1.pdf", "report2.pdf"],
+                "F2": ["report3.pdf"],
             }
         }
     }

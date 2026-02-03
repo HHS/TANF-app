@@ -21,7 +21,11 @@ def find_stt_folders(zip_file: zipfile.ZipFile) -> dict:
     """
     Traverse the nested folder structure to find STT folders and their files.
 
-    Expected structure: YYYY/Region/STT/files
+    Expected structure: FY{YYYY}/R{XX}/F{X}/files
+    - FY{YYYY}: Fiscal year folder with "FY" prefix (e.g., FY2025)
+    - R{XX}: Region folder with "R" prefix (e.g., R01, R1)
+    - F{X}: STT folder with "F" prefix (e.g., F1, F12)
+
     Returns: {stt_code: [file_info_objects]}
     """
     stt_files = {}
@@ -31,15 +35,19 @@ def find_stt_folders(zip_file: zipfile.ZipFile) -> dict:
         if info.is_dir():
             continue
 
-        # Parse the path: YYYY/Region/STT/filename
+        # Parse the path: FY{YYYY}/R{XX}/F{X}/filename
         parts = info.filename.split('/')
 
-        # Must have at least 4 parts: YYYY/Region/STT/filename
+        # Must have at least 4 parts: FY{YYYY}/R{XX}/F{X}/filename
         if len(parts) < 4:
             continue
 
-        # Extract STT code (3rd level folder)
-        stt_code = parts[2]
+        # Extract STT code from 3rd level folder (e.g., "F1" -> "1")
+        stt_folder = parts[2]
+        if stt_folder.startswith('F'):
+            stt_code = stt_folder[1:]  # Strip the "F" prefix
+        else:
+            stt_code = stt_folder
 
         # Add file to this STT's list
         if stt_code not in stt_files:
@@ -49,8 +57,8 @@ def find_stt_folders(zip_file: zipfile.ZipFile) -> dict:
 
     if not stt_files:
         raise ValueError(
-            "No STT folders found. Expected structure: YYYY/Region/STT/files. "
-            "Please verify the zip file structure."
+            "No STT folders found. Expected structure: FY{YYYY}/R{XX}/F{X}/files "
+            "(e.g., FY2025/R01/F1/report.pdf). Please verify the zip file structure."
         )
 
     return stt_files

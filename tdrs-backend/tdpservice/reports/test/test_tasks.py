@@ -23,9 +23,9 @@ class TestFindSttFolders:
     def test_single_stt(self):
         """Should find files for a single STT."""
         structure = {
-            "2025": {
-                "Region_1": {
-                    "1": ["report1.pdf", "report2.pdf"]
+            "FY2025": {
+                "R01": {
+                    "F1": ["report1.pdf", "report2.pdf"]
                 }
             }
         }
@@ -40,10 +40,10 @@ class TestFindSttFolders:
     def test_multiple_stts(self):
         """Should find files for multiple STTs."""
         structure = {
-            "2025": {
-                "Region_1": {
-                    "1": ["report1.pdf"],
-                    "2": ["report2.pdf", "report3.pdf"]
+            "FY2025": {
+                "R01": {
+                    "F1": ["report1.pdf"],
+                    "F2": ["report2.pdf", "report3.pdf"]
                 }
             }
         }
@@ -60,12 +60,12 @@ class TestFindSttFolders:
     def test_multiple_regions(self):
         """Should find files across multiple regions."""
         structure = {
-            "2025": {
-                "Region_1": {
-                    "1": ["report1.pdf"]
+            "FY2025": {
+                "R01": {
+                    "F1": ["report1.pdf"]
                 },
-                "Region_2": {
-                    "2": ["report2.pdf"]
+                "R02": {
+                    "F2": ["report2.pdf"]
                 }
             }
         }
@@ -81,7 +81,7 @@ class TestFindSttFolders:
         """Should raise ValueError if no STT folders found."""
         zip_buffer = io.BytesIO()
         with zipfile.ZipFile(zip_buffer, 'w') as zf:
-            zf.writestr("2025/report.pdf", b"content")
+            zf.writestr("FY2025/report.pdf", b"content")
         zip_buffer.seek(0)
         zip_file = zipfile.ZipFile(zip_buffer)
 
@@ -95,19 +95,19 @@ class TestBundleSttFiles:
     def test_bundle_multiple_files(self):
         """Should bundle multiple files into a single zip."""
         structure = {
-            "2025": {
-                "Region_1": {
-                    "1": ["report1.pdf", "report2.pdf"]
+            "FY2025": {
+                "R01": {
+                    "F1": ["report1.pdf", "report2.pdf"]
                 }
             }
         }
         zip_buffer = create_nested_zip(structure)
         report_source_zip = zipfile.ZipFile(zip_buffer)
 
-        # Get file infos for STT "1"
+        # Get file infos for STT "F1" (which maps to stt_code "1")
         file_infos = [
             info for info in report_source_zip.infolist()
-            if not info.is_dir() and "2025/Region_1/1/" in info.filename
+            if not info.is_dir() and "FY2025/R01/F1/" in info.filename
         ]
 
         # Bundle the files
@@ -127,9 +127,9 @@ class TestBundleSttFiles:
     def test_bundle_flattens_structure(self):
         """Should flatten folder structure when bundling."""
         structure = {
-            "2025": {
-                "Region_1": {
-                    "1": ["report1.pdf"]
+            "FY2025": {
+                "R01": {
+                    "F1": ["report1.pdf"]
                 }
             }
         }
@@ -138,7 +138,7 @@ class TestBundleSttFiles:
 
         file_infos = [
             info for info in report_source_zip.infolist()
-            if not info.is_dir() and "2025/Region_1/1/" in info.filename
+            if not info.is_dir() and "FY2025/R01/F1/" in info.filename
         ]
 
         bundled = bundle_stt_files(report_source_zip, file_infos, "1")
@@ -147,7 +147,7 @@ class TestBundleSttFiles:
         bundled_zip = zipfile.ZipFile(io.BytesIO(bundled.read()))
         names = bundled_zip.namelist()
 
-        assert names[0] == "report1.pdf"  # Not "2025/Region_1/1/report1.pdf"
+        assert names[0] == "report1.pdf"  # Not "FY2025/R01/F1/report1.pdf"
 
 
 @pytest.mark.django_db
@@ -174,9 +174,9 @@ class TestProcessReportSource:
 
         # Create source record with nested zip
         structure = {
-            "2025": {
-                "Region_1": {
-                    "1": ["report1.pdf", "report2.pdf"]
+            "FY2025": {
+                "R01": {
+                    "F1": ["report1.pdf", "report2.pdf"]
                 }
             }
         }
@@ -248,10 +248,10 @@ class TestProcessReportSource:
         mock_now.return_value = timezone.make_aware(datetime(2025, 5, 1))
 
         structure = {
-            "2025": {
-                "Region_1": {
-                    "1": ["report1.pdf"],
-                    "2": ["report2.pdf"]
+            "FY2025": {
+                "R01": {
+                    "F1": ["report1.pdf"],
+                    "F2": ["report2.pdf"]
                 }
             }
         }
@@ -317,9 +317,9 @@ class TestProcessReportSource:
     def test_process_invalid_stt_code(self, ofa_admin):
         """Should fail with non-existent STT code."""
         structure = {
-            "2025": {
-                "Region_1": {
-                    "999": ["report1.pdf"]  # Invalid STT code
+            "FY2025": {
+                "R01": {
+                    "F999": ["report1.pdf"]  # Invalid STT code
                 }
             }
         }
@@ -362,11 +362,11 @@ class TestProcessReportSource:
             type="STATE"
         )
 
-        # Zip has 2025 structure, but source.year=2024
+        # Zip has FY2025 structure, but source.year=2024
         structure = {
-            "2025": {
-                "9005": {
-                    "1": ["report1.pdf"]
+            "FY2025": {
+                "R9005": {
+                    "F1": ["report1.pdf"]
                 }
             }
         }
@@ -440,7 +440,7 @@ class TestProcessReportSourceEmailNotification:
         mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
 
         # Create source record
-        structure = {"2025": {"Region_1": {"1": ["report.pdf"]}}}
+        structure = {"FY2025": {"R01": {"F1": ["report.pdf"]}}}
         zip_buffer = create_nested_zip(structure)
 
         from django.core.files.uploadedfile import SimpleUploadedFile
@@ -490,7 +490,7 @@ class TestProcessReportSourceEmailNotification:
 
         mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
 
-        structure = {"2025": {"Region_1": {"1": ["report.pdf"]}}}
+        structure = {"FY2025": {"R01": {"F1": ["report.pdf"]}}}
         zip_buffer = create_nested_zip(structure)
 
         from django.core.files.uploadedfile import SimpleUploadedFile
@@ -550,7 +550,7 @@ class TestProcessReportSourceEmailNotification:
 
         mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
 
-        structure = {"2025": {"Region_1": {"1": ["report.pdf"]}}}
+        structure = {"FY2025": {"R01": {"F1": ["report.pdf"]}}}
         zip_buffer = create_nested_zip(structure)
 
         from django.core.files.uploadedfile import SimpleUploadedFile
@@ -622,7 +622,7 @@ class TestProcessReportSourceEmailNotification:
 
         mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
 
-        structure = {"2025": {"Region_1": {"1": ["report.pdf"]}}}
+        structure = {"FY2025": {"R01": {"F1": ["report.pdf"]}}}
         zip_buffer = create_nested_zip(structure)
 
         from django.core.files.uploadedfile import SimpleUploadedFile

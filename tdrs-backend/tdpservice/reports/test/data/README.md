@@ -4,50 +4,53 @@ This directory contains test zip files for manually testing the report source wo
 
 ## File Structure
 
-All valid files follow the structure: `{YYYY}/{Region_ID}/{STT_CODE}/files`
+All valid files follow the structure: `FY{YYYY}/R{XX}/F{X}/files`
+
+- **FY{YYYY}**: Fiscal year folder with "FY" prefix (e.g., `FY2025`)
+- **R{XX}**: Region folder with "R" prefix (e.g., `R01`, `R04`)
+- **F{X}**: STT folder with "F" prefix representing FIPS code (e.g., `F1`, `F12`)
 
 ## Valid Test Files (Should PASS)
 
-### 1. `valid_single_stt.zip`
+### 1. `FY2025_valid_single_stt.zip`
 **Structure:**
 ```
-2025/
-  └── 4/
-      └── 01/
+FY2025/
+  └── R04/
+      └── F1/
           ├── alabama_report.pdf
           └── alabama_summary.pdf
 ```
 **Expected Result:** Success
-- Creates 1 ReportFile for Alabama (STT_CODE: 01, Region 4)
-- Quarter determined by upload date
-- Files bundled into `stt_01_reports.zip`
+- Creates 1 ReportFile for Alabama (STT_CODE: 1, Region 4)
+- Files bundled into `stt_1_reports.zip`
 
-### 2. `valid_multiple_stts_same_region.zip`
+### 2. `FY2025_valid_multiple_stts_same_region.zip`
 **Structure:**
 ```
-2025/
-  └── 4/
-      ├── 01/
+FY2025/
+  └── R04/
+      ├── F1/
       │   └── alabama_report.pdf
-      └── 12/
+      └── F12/
           └── florida_report.pdf
 ```
 **Expected Result:** Success
 - Creates 2 ReportFiles (Alabama and Florida, both Region 4)
 - Each STT gets its own bundled zip
 
-### 3. `valid_multiple_regions.zip`
+### 3. `FY2025_valid_multiple_regions.zip`
 **Structure:**
 ```
-2025/
-  ├── 1/
-  │   └── 09/
+FY2025/
+  ├── R01/
+  │   └── F9/
   │       └── connecticut_report.pdf
-  ├── 2/
-  │   └── 34/
+  ├── R02/
+  │   └── F34/
   │       └── new_jersey_report.pdf
-  └── 3/
-      └── 42/
+  └── R03/
+      └── F42/
           └── pennsylvania_report.pdf
 ```
 **Expected Result:** Success
@@ -61,52 +64,52 @@ All valid files follow the structure: `{YYYY}/{Region_ID}/{STT_CODE}/files`
 ### 4. `invalid_fiscal_year_bad_format.zip`
 **Structure:**
 ```
-202a/
-  └── 4/
-      └── 01/
+FY202a/
+  └── R04/
+      └── F1/
           └── report.pdf
 ```
-**Expected Error:** `"Fiscal year folder '202a' is invalid. Expected 4-digit year (e.g., '2025')."`
+**Expected Error:** Invalid fiscal year format in folder name.
 
 ### 5. `invalid_flat_structure.zip`
 **Structure:**
 ```
 report.pdf  (no folders)
 ```
-**Expected Error:** `"No top-level folder found in zip file. Expected structure: {YYYY}/Region/STT/files"`
+**Expected Error:** `"No STT folders found. Expected structure: FY{YYYY}/R{XX}/F{X}/files"`
 
-### 6. `invalid_stt_code_999.zip`
+### 6. `FY2025_invalid_stt_code_999.zip`
 **Structure:**
 ```
-2025/
-  └── 4/
-      └── 999/
+FY2025/
+  └── R04/
+      └── F999/
           └── report.pdf
 ```
 **Expected Error:** `"STT code '999' not found in system."`
 
-### 7. `invalid_empty_stt_folder.zip`
+### 7. `FY2025_invalid_empty_stt_folder.zip`
 **Structure:**
 ```
-2025/
-  └── 4/
-      └── 01/  (empty folder)
+FY2025/
+  └── R04/
+      └── F1/  (empty folder)
 ```
-**Expected Error:** `"No STT folders found in structure 2025/Region/STT/."` or `"STT folder '01' is empty."`
+**Expected Error:** `"No STT folders found..."` (empty folders are skipped)
 
 ### 8. `invalid_multiple_fiscal_years.zip`
 **Structure:**
 ```
-2025/
-  └── 4/
-      └── 01/
+FY2025/
+  └── R04/
+      └── F1/
           └── report_2025.pdf
-2024/
-  └── 4/
-      └── 01/
+FY2024/
+  └── R04/
+      └── F1/
           └── report_2024.pdf
 ```
-**Expected Error:** `"Multiple top-level folders found: ['2024', '2025']. Expected single fiscal year folder (e.g., '2025')."`
+**Expected Error:** Files from multiple fiscal years will be processed together (all STT codes aggregated).
 
 ---
 
@@ -116,7 +119,9 @@ report.pdf  (no folders)
    ```bash
    curl -X POST http://localhost:8080/v1/reports/report_source/ \
      -H "Authorization: Token YOUR_TOKEN" \
-     -F "file=@valid_single_stt.zip"
+     -F "file=@FY2025_valid_single_stt.zip" \
+     -F "year=2025" \
+     -F "date_extracted_on=2025-01-31"
    ```
 
 2. **Check ReportSource status**:
@@ -127,17 +132,14 @@ report.pdf  (no folders)
 
 3. **Verify ReportFiles created**:
    - Visit: `http://localhost:8080/admin/reports/reportfile/`
-   - Verify correct STT, year, quarter, version
+   - Verify correct STT, year, date_extracted_on, version
    - Download bundled zip to verify contents
 
-## Quarter Calculation
+## Data Extraction Date
 
-Quarter is calculated from `created_at` date. Each quarter window starts the day after the previous quarter's deadline:
-
-- **Q1**: Oct 15 - Feb 14 (for previous year Oct-Dec)
-- **Q2**: Feb 15 - May 15 (for current year Jan-Mar)
-- **Q3**: May 16 - Aug 14 (for current year Apr-Jun)
-- **Q4**: Aug 15 - Oct 14 (for current year Jul-Sep)
-
-**All dates throughout the year are valid** - there are no gaps between quarters.
+The `date_extracted_on` field indicates when the data was extracted from the database. This date is:
+- Set by the admin during upload
+- Copied from ReportSource to each ReportFile created
+- Displayed to STT users in the feedback reports table
+- Used in email notifications to indicate the data cutoff date
 
