@@ -1,12 +1,5 @@
 import React from 'react'
-import {
-  render,
-  screen,
-  fireEvent,
-  waitFor,
-  act,
-  queryAllByText,
-} from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 
 import { Provider } from 'react-redux'
 import { MemoryRouter } from 'react-router-dom'
