@@ -22,7 +22,6 @@ function AdminFeedbackReports() {
   const yearOptions = constructYears()
   const [selectedYear, setSelectedYear] = useState(null)
   const [selectedFile, setSelectedFile] = useState(null)
-  const [dateExtractedOn, setDateExtractedOn] = useState('')
   const [uploadHistory, setUploadHistory] = useState([])
   const [loading, setLoading] = useState(false)
   const [historyLoading, setHistoryLoading] = useState(false)
@@ -38,6 +37,7 @@ function AdminFeedbackReports() {
   const [dateTouched, setDateTouched] = useState(false)
 
   const inputRef = useRef(null)
+  const uploadFormRef = useRef(null)
 
   /**
    * Fetches the upload history from the backend filtered by selected year
@@ -144,6 +144,20 @@ function AdminFeedbackReports() {
   }
 
   /**
+   * Gets the date value from the upload form's date picker
+   */
+  const getDatePickerValue = () => {
+    return uploadFormRef.current?.getDateValue() || ''
+  }
+
+  /**
+   * Clears the upload form's date picker
+   */
+  const clearDatePicker = () => {
+    uploadFormRef.current?.clearDate()
+  }
+
+  /**
    * Validates the form before upload
    * Returns true if valid, false otherwise
    */
@@ -156,7 +170,9 @@ function AdminFeedbackReports() {
       isValid = false
     }
 
-    if (!dateExtractedOn) {
+    // Read date directly from DOM since USWDS manages the input
+    const dateValue = getDatePickerValue()
+    if (!dateValue) {
       setDateError(NO_DATE_ERROR)
       isValid = false
     }
@@ -176,7 +192,7 @@ function AdminFeedbackReports() {
     const formData = new FormData()
     formData.append('file', selectedFile)
     formData.append('year', selectedYear)
-    formData.append('date_extracted_on', dateExtractedOn)
+    formData.append('date_extracted_on', getDatePickerValue())
 
     try {
       await axiosInstance.post(
@@ -198,7 +214,7 @@ function AdminFeedbackReports() {
       // Clear the form
       setSelectedFile(null)
       setFileError(null)
-      setDateExtractedOn('')
+      clearDatePicker()
       setDateError(null)
       setFormSubmitAttempted(false)
       setDateTouched(false)
@@ -247,7 +263,7 @@ function AdminFeedbackReports() {
     // Reset form state when year changes
     setSelectedFile(null)
     setFileError(null)
-    setDateExtractedOn('')
+    clearDatePicker()
     setDateError(null)
     setFormSubmitAttempted(false)
     setDateTouched(false)
@@ -255,23 +271,14 @@ function AdminFeedbackReports() {
   }
 
   /**
-   * Handles date extracted input change
-   */
-  const handleDateChange = (e) => {
-    const newDate = e.target.value
-    setDateExtractedOn(newDate)
-    if (newDate) {
-      setDateError(null)
-    }
-  }
-
-  /**
-   * Handles date input blur
+   * Handles date input blur - reads from DOM since USWDS manages the input
    */
   const handleDateBlur = () => {
     setDateTouched(true)
-    if (!dateExtractedOn) {
+    if (!getDatePickerValue()) {
       setDateError(NO_DATE_ERROR)
+    } else {
+      setDateError(null)
     }
   }
 
@@ -333,15 +340,14 @@ function AdminFeedbackReports() {
 
             {/* File Upload Section */}
             <FeedbackReportsUpload
+              ref={uploadFormRef}
               selectedFile={selectedFile}
               fileError={fileError}
               loading={loading}
               onFileChange={handleFileChange}
               onUpload={handleUpload}
               inputRef={inputRef}
-              dateExtractedOn={dateExtractedOn}
               dateError={showDateError ? dateError : null}
-              onDateChange={handleDateChange}
               onDateBlur={handleDateBlur}
             />
 
