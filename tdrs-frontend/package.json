@@ -124,10 +124,8 @@
   },
   "cypress-cucumber-preprocessor": {
     "stepDefinitions": [
-      "cypress/e2e/*/[filepath].js",
-      "cypress/e2e/*/*.js",
-      "cypress/e2e/common-steps/*.js",
-      "cypress/e2e/accounts/*.js"
+      "cypress/e2e/[filepart]/*.js",
+      "cypress/e2e/common-steps/*.js"
     ]
   },
   "overrides": {
