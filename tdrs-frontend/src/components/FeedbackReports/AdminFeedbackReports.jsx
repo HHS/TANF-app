@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import axiosInstance from '../../axios-instance'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
 import FeedbackReportsUpload from './FeedbackReportsUpload'
@@ -19,8 +20,21 @@ const NO_DATE_ERROR =
  * as ZIP files that will be distributed to State/Tribal TANF Programs (STTs).
  */
 function AdminFeedbackReports() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const yearOptions = constructYears()
-  const [selectedYear, setSelectedYear] = useState(null)
+
+  // Get validated year from URL params (returns null if not present/invalid)
+  const getValidatedYear = () => {
+    const urlYear = searchParams.get('year')
+    if (!urlYear) return null
+    const parsedYear = parseInt(urlYear, 10)
+    if (!isNaN(parsedYear) && yearOptions.includes(parsedYear)) {
+      return parsedYear
+    }
+    return null
+  }
+
+  const [selectedYear, setSelectedYear] = useState(getValidatedYear)
   const [selectedFile, setSelectedFile] = useState(null)
   const [uploadHistory, setUploadHistory] = useState([])
   const [loading, setLoading] = useState(false)
@@ -258,7 +272,7 @@ function AdminFeedbackReports() {
    * Handles fiscal year selection change
    */
   const handleYearChange = (e) => {
-    const newYear = e.target.value
+    const newYear = e.target.value || null
     setSelectedYear(newYear)
     // Reset form state when year changes
     setSelectedFile(null)
@@ -268,6 +282,12 @@ function AdminFeedbackReports() {
     setFormSubmitAttempted(false)
     setDateTouched(false)
     setAlert({ active: false, type: null, message: null })
+    // Update URL param
+    if (newYear) {
+      setSearchParams({ year: newYear }, { replace: true })
+    } else {
+      setSearchParams({}, { replace: true })
+    }
   }
 
   /**
