@@ -53,9 +53,7 @@ describe('STTFeedbackReports', () => {
         expect(
           screen.getByLabelText(/Fiscal Year \(October - September\)/i)
         ).toBeInTheDocument()
-        expect(
-          screen.getByText('- Select Fiscal Year -')
-        ).toBeInTheDocument()
+        expect(screen.getByText('- Select Fiscal Year -')).toBeInTheDocument()
       })
     })
 
@@ -80,7 +78,9 @@ describe('STTFeedbackReports', () => {
       expect(
         screen.queryByText(/Feedback reports are produced cumulatively/i)
       ).not.toBeInTheDocument()
-      expect(screen.queryByRole('heading', { level: 2 })).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('heading', { level: 2 })
+      ).not.toBeInTheDocument()
       expect(
         screen.queryByRole('heading', { name: 'Feedback Reports' })
       ).not.toBeInTheDocument()
@@ -514,7 +514,9 @@ describe('STTFeedbackReports', () => {
       })
 
       // Content below hr should not be visible
-      expect(screen.queryByRole('heading', { level: 2 })).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('heading', { level: 2 })
+      ).not.toBeInTheDocument()
     })
 
     it('shows placeholder for out-of-range year', async () => {
@@ -528,7 +530,9 @@ describe('STTFeedbackReports', () => {
       })
 
       // Content below hr should not be visible
-      expect(screen.queryByRole('heading', { level: 2 })).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('heading', { level: 2 })
+      ).not.toBeInTheDocument()
     })
 
     it('displays H2 heading with STT name and year from URL parameter', async () => {
@@ -555,7 +559,9 @@ describe('STTFeedbackReports', () => {
       })
 
       // Content below hr should not be visible
-      expect(screen.queryByRole('heading', { level: 2 })).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('heading', { level: 2 })
+      ).not.toBeInTheDocument()
     })
   })
 })

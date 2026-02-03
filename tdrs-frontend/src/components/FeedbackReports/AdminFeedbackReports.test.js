@@ -65,7 +65,9 @@ describe('AdminFeedbackReports', () => {
     const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
     fireEvent.change(fiscalYearSelect, { target: { value: year } })
     await waitFor(() => {
-      expect(screen.getByText(`Fiscal Year ${year} — Upload Feedback Reports`)).toBeInTheDocument()
+      expect(
+        screen.getByText(`Fiscal Year ${year} — Upload Feedback Reports`)
+      ).toBeInTheDocument()
     })
   }
 
@@ -83,7 +85,9 @@ describe('AdminFeedbackReports', () => {
     fireEvent.change(fileInput, { target: { files: [file] } })
     // Wait for file to be registered in component state (aria description updates)
     await waitFor(() => {
-      expect(screen.getByText(new RegExp(`Selected File ${filename}`))).toBeInTheDocument()
+      expect(
+        screen.getByText(new RegExp(`Selected File ${filename}`))
+      ).toBeInTheDocument()
     })
   }
 
