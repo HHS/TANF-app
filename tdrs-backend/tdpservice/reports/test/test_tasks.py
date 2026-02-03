@@ -159,11 +159,11 @@ class TestProcessReportSource:
         """Should successfully process a valid report source zip."""
         from tdpservice.stts.models import Region, STT
 
-        # Create region and STT with stt_code="1" directly
+        # Create region and STT with stt_code="01" directly
         region = Region.objects.create(id=9001, name="Test Region")
         STT.objects.create(
             id=8001,
-            stt_code="1",
+            stt_code="01",
             name="Test STT 1",
             region=region,
             postal_code="T1",
@@ -216,7 +216,7 @@ class TestProcessReportSource:
         report_file = report_files.first()
         assert report_file.year == 2025
         assert report_file.date_extracted_on == date(2025, 1, 31)
-        assert report_file.stt.stt_code == "1"
+        assert report_file.stt.stt_code == "01"
         assert report_file.version == 1
 
     @patch('tdpservice.reports.tasks.timezone.now')
@@ -227,10 +227,10 @@ class TestProcessReportSource:
         # Create a shared region for both STTs
         region = Region.objects.create(id=9002, name="Test Region 2")
 
-        # Create STTs with stt_code="1" and "2"
+        # Create STTs with stt_code="01" and "2"
         STT.objects.create(
             id=8002,
-            stt_code="1",
+            stt_code="01",
             name="Test STT 1",
             region=region,
             postal_code="T1",
@@ -238,7 +238,7 @@ class TestProcessReportSource:
         )
         STT.objects.create(
             id=8003,
-            stt_code="2",
+            stt_code="02",
             name="Test STT 2",
             region=region,
             postal_code="T2",
@@ -284,7 +284,7 @@ class TestProcessReportSource:
         assert report_files.count() == 2
 
         stt_codes = {rf.stt.stt_code for rf in report_files}
-        assert stt_codes == {"1", "2"}
+        assert stt_codes == {"01", "02"}
 
         # Verify date_extracted_on is copied to all ReportFiles
         for rf in report_files:
@@ -355,7 +355,7 @@ class TestProcessReportSource:
         region = Region.objects.create(id=9005, name="Test Region 5")
         STT.objects.create(
             id=8006,
-            stt_code="1",
+            stt_code="01",
             name="Test STT 1",
             region=region,
             postal_code="T1",
@@ -419,7 +419,7 @@ class TestProcessReportSourceEmailNotification:
         region = Region.objects.create(id=9010, name="Test Region 10")
         stt = STT.objects.create(
             id=8010,
-            stt_code="1",
+            stt_code="01",
             name="Test STT Email",
             region=region,
             postal_code="TE",
@@ -481,7 +481,7 @@ class TestProcessReportSourceEmailNotification:
         region = Region.objects.create(id=9011, name="Test Region 11")
         STT.objects.create(
             id=8011,
-            stt_code="1",
+            stt_code="01",
             name="Test STT No Analysts",
             region=region,
             postal_code="TN",
@@ -528,7 +528,7 @@ class TestProcessReportSourceEmailNotification:
         region = Region.objects.create(id=9012, name="Test Region 12")
         stt = STT.objects.create(
             id=8012,
-            stt_code="1",
+            stt_code="01",
             name="Test STT Multiple Analysts",
             region=region,
             postal_code="TM",
@@ -593,7 +593,7 @@ class TestProcessReportSourceEmailNotification:
         region = Region.objects.create(id=9013, name="Test Region 13")
         stt = STT.objects.create(
             id=8013,
-            stt_code="1",
+            stt_code="01",
             name="Test STT Approved Only",
             region=region,
             postal_code="TA",

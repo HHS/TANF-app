@@ -188,9 +188,18 @@ def _process_stt_folder(
         bool: True if successful, False if failed
     """
     # Validate STT exists
-    try:
-        stt = STT.objects.get(stt_code=stt_code)
-    except STT.DoesNotExist:
+    # STT codes are stored with zero-padding: 2 digits for states/territories, 3 for tribes
+    # Try 2-digit padding first (states/territories), then 3-digit (tribes)
+    stt = None
+    for pad_length in (2, 3):
+        padded_code = stt_code.zfill(pad_length)
+        try:
+            stt = STT.objects.get(stt_code=padded_code)
+            break
+        except STT.DoesNotExist:
+            continue
+
+    if stt is None:
         _mark_source_failed(source, f"STT code '{stt_code}' not found in system.")
         return False
 
