@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router-dom'
 import axiosInstance from '../../axios-instance'
 import { Spinner } from '../Spinner'
 import { PaginatedComponent } from '../Paginator/Paginator'
 import STTFeedbackReportsTable from './STTFeedbackReportsTable'
-import { getCurrentFiscalYear, constructYears } from '../Reports/utils'
+import { constructYears } from '../Reports/utils'
 
 /**
  * STTFeedbackReports component allows STT Data Analysts to view and download
@@ -14,14 +15,19 @@ function STTFeedbackReports() {
   const [searchParams, setSearchParams] = useSearchParams()
   const yearOptions = constructYears()
 
-  // Validate and get year from URL params
+  // Get user's STT name from Redux
+  const user = useSelector((state) => state.auth.user)
+  const sttName = user?.stt?.name
+
+  // Validate and get year from URL params (returns null if no valid param)
   const getValidatedYear = () => {
     const urlYear = searchParams.get('year')
+    if (!urlYear) return null
     const parsedYear = parseInt(urlYear, 10)
     if (!isNaN(parsedYear) && yearOptions.includes(parsedYear)) {
       return parsedYear
     }
-    return getCurrentFiscalYear()
+    return null
   }
 
   const [reports, setReports] = useState([])
@@ -33,19 +39,25 @@ function STTFeedbackReports() {
     message: null,
   })
 
-  // Sync year selection to URL (bidirectional)
+  // Sync year selection to URL (only when a year is selected)
   useEffect(() => {
-    const newParams = new URLSearchParams()
     if (selectedYear) {
+      const newParams = new URLSearchParams()
       newParams.set('year', selectedYear)
+      setSearchParams(newParams, { replace: true })
     }
-    setSearchParams(newParams, { replace: true })
   }, [selectedYear, setSearchParams])
 
   /**
    * Fetches the feedback reports from the backend filtered by year
    */
   const fetchReports = useCallback(async () => {
+    // Only fetch if a year is selected
+    if (!selectedYear) {
+      setReports([])
+      return
+    }
+
     setLoading(true)
     setAlert({ active: false, type: null, message: null })
 
@@ -78,7 +90,8 @@ function STTFeedbackReports() {
    * Handle year selection change
    */
   const handleYearChange = (e) => {
-    setSelectedYear(e.target.value)
+    const value = e.target.value
+    setSelectedYear(value ? parseInt(value, 10) : null)
   }
 
   return (
@@ -97,9 +110,10 @@ function STTFeedbackReports() {
               <select
                 className="usa-select maxw-mobile"
                 id="fiscal-year-select"
-                value={selectedYear}
+                value={selectedYear || ''}
                 onChange={handleYearChange}
               >
+                <option value="">- Select Fiscal Year -</option>
                 {yearOptions.map((year) => (
                   <option key={year} value={year}>
                     {year}
@@ -155,69 +169,81 @@ function STTFeedbackReports() {
           </div>
         </div>
 
-        <hr className="margin-top-4 margin-bottom-4" />
+        {selectedYear && (
+          <>
+            <hr className="margin-top-4 margin-bottom-4" />
 
-        {/* Description Text */}
-        <div className="margin-bottom-4">
-          <p>
-            Feedback reports are produced cumulatively throughout each fiscal
-            year. Each ZIP files contains multiple feedback reports for the work
-            participation rate and time limit. Please refer to the most recently
-            produced report for the most up-to-date feedback about your data.
-          </p>
-          <p>
-            Please review this feedback and, if needed, resubmit complete and
-            accurate data via TDP.
-          </p>
-          <p>
-            If you have questions or require assistance, feel free to contact{' '}
-            <a href="mailto:Yun.Song@acf.hhs.gov">Yun.Song@acf.hhs.gov</a> and
-            copy <a href="mailto:TANFData@acf.hhs.gov">TANFData@acf.hhs.gov</a>.
-          </p>
-          <p>
-            For more detail about each report, refer to the{' '}
-            <a
-              href={`${process.env.REACT_APP_KNOWLEDGE_CENTER_LINK}/`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Feedback Report Reference
-            </a>{' '}
-            in the TDP Knowledge Center.
-          </p>
-        </div>
+            {/* STT and Fiscal Year Header */}
+            <h2>
+              {sttName} — Fiscal Year {selectedYear} Feedback Reports
+            </h2>
 
-        {/* Alert Messages */}
-        {alert.active && (
-          <div
-            className={`usa-alert usa-alert--${alert.type} usa-alert--slim margin-bottom-3`}
-            role="alert"
-          >
-            <div className="usa-alert__body">
-              <p className="usa-alert__text">{alert.message}</p>
+            {/* Description Text */}
+            <div className="margin-bottom-4">
+              <p>
+                Feedback reports are produced cumulatively throughout each
+                fiscal year. Each ZIP files contains multiple feedback reports
+                for the work participation rate and time limit. Please refer to
+                the most recently produced report for the most up-to-date
+                feedback about your data.
+              </p>
+              <p>
+                Please review this feedback and, if needed, resubmit complete
+                and accurate data via TDP.
+              </p>
+              <p>
+                If you have questions or require assistance, feel free to
+                contact{' '}
+                <a href="mailto:Yun.Song@acf.hhs.gov">Yun.Song@acf.hhs.gov</a>{' '}
+                and copy{' '}
+                <a href="mailto:TANFData@acf.hhs.gov">TANFData@acf.hhs.gov</a>.
+              </p>
+              <p>
+                For more detail about each report, refer to the{' '}
+                <a
+                  href={`${process.env.REACT_APP_KNOWLEDGE_CENTER_LINK}/`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Feedback Report Reference
+                </a>{' '}
+                in the TDP Knowledge Center.
+              </p>
             </div>
-          </div>
-        )}
 
-        {/* Reports Table */}
-        <div className="margin-top-4">
-          <h3>Fiscal Year {selectedYear} Feedback Reports</h3>
-
-          <div className="submission-history-section usa-table-container">
-            {loading ? (
-              <div className="submission-history-section-spinner margin-y-3">
-                <Spinner visible={true} />
-                <span className="margin-left-1">
-                  Loading feedback reports...
-                </span>
+            {/* Alert Messages */}
+            {alert.active && (
+              <div
+                className={`usa-alert usa-alert--${alert.type} usa-alert--slim margin-bottom-3`}
+                role="alert"
+              >
+                <div className="usa-alert__body">
+                  <p className="usa-alert__text">{alert.message}</p>
+                </div>
               </div>
-            ) : (
-              <PaginatedComponent pageSize={5} data={reports}>
-                <STTFeedbackReportsTable setAlert={setAlert} />
-              </PaginatedComponent>
             )}
-          </div>
-        </div>
+
+            {/* Reports Table */}
+            <div className="margin-top-4">
+              <h3>Feedback Reports</h3>
+
+              <div className="submission-history-section usa-table-container">
+                {loading ? (
+                  <div className="submission-history-section-spinner margin-y-3">
+                    <Spinner visible={true} />
+                    <span className="margin-left-1">
+                      Loading feedback reports...
+                    </span>
+                  </div>
+                ) : (
+                  <PaginatedComponent pageSize={5} data={reports}>
+                    <STTFeedbackReportsTable setAlert={setAlert} />
+                  </PaginatedComponent>
+                )}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

@@ -49,7 +49,7 @@ describe('STTFeedbackReportsTable', () => {
       const mockData = [
         {
           id: 1,
-          quarter: 'Q1',
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:41:00Z',
           original_filename: 'test.zip',
         },
@@ -57,18 +57,18 @@ describe('STTFeedbackReportsTable', () => {
 
       renderComponent(mockData)
 
-      expect(screen.getByText('Feedback generated on')).toBeInTheDocument()
+      expect(screen.getByText('Generated on')).toBeInTheDocument()
       expect(
-        screen.getByText('Fiscal quarters included in feedback')
+        screen.getByText('Reflects data submitted through')
       ).toBeInTheDocument()
       expect(screen.getByText('Files')).toBeInTheDocument()
     })
 
-    it('renders report data correctly', () => {
+    it('renders report data correctly with formatted date_extracted_on', () => {
       const mockData = [
         {
           id: 1,
-          quarter: 'Q2',
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:41:00Z',
           original_filename: 'F33.zip',
         },
@@ -77,20 +77,20 @@ describe('STTFeedbackReportsTable', () => {
       renderComponent(mockData)
 
       expect(screen.getByText('F33.zip')).toBeInTheDocument()
-      expect(screen.getByText('Q2')).toBeInTheDocument()
+      expect(screen.getByText('02/28/2025')).toBeInTheDocument()
     })
 
     it('renders multiple reports', () => {
       const mockData = [
         {
           id: 1,
-          quarter: 'Q2',
+          date_extracted_on: '2025-03-31',
           created_at: '2025-03-05T10:41:00Z',
           original_filename: 'report1.zip',
         },
         {
           id: 2,
-          quarter: 'Q1',
+          date_extracted_on: '2025-01-31',
           created_at: '2025-01-08T09:48:00Z',
           original_filename: 'report2.zip',
         },
@@ -100,8 +100,8 @@ describe('STTFeedbackReportsTable', () => {
 
       expect(screen.getByText('report1.zip')).toBeInTheDocument()
       expect(screen.getByText('report2.zip')).toBeInTheDocument()
-      expect(screen.getByText('Q1')).toBeInTheDocument()
-      expect(screen.getByText('Q2')).toBeInTheDocument()
+      expect(screen.getByText('03/31/2025')).toBeInTheDocument()
+      expect(screen.getByText('01/31/2025')).toBeInTheDocument()
     })
   })
 
@@ -110,7 +110,7 @@ describe('STTFeedbackReportsTable', () => {
       const mockData = [
         {
           id: 1,
-          quarter: 'Q1',
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:41:00Z',
           original_filename: 'test.zip',
         },
@@ -127,7 +127,7 @@ describe('STTFeedbackReportsTable', () => {
       const mockData = [
         {
           id: 1,
-          quarter: 'Q1',
+          date_extracted_on: '2025-02-28',
           created_at: null,
           original_filename: 'test.zip',
         },
@@ -137,6 +137,37 @@ describe('STTFeedbackReportsTable', () => {
 
       expect(screen.getByText('N/A')).toBeInTheDocument()
     })
+
+    it('displays N/A for missing date_extracted_on', () => {
+      const mockData = [
+        {
+          id: 1,
+          date_extracted_on: null,
+          created_at: '2025-03-05T10:41:00Z',
+          original_filename: 'test.zip',
+        },
+      ]
+
+      renderComponent(mockData)
+
+      // Should have one N/A for the missing date_extracted_on
+      expect(screen.getByText('N/A')).toBeInTheDocument()
+    })
+
+    it('formats date_extracted_on from YYYY-MM-DD to MM/DD/YYYY', () => {
+      const mockData = [
+        {
+          id: 1,
+          date_extracted_on: '2025-12-25',
+          created_at: '2025-03-05T10:41:00Z',
+          original_filename: 'test.zip',
+        },
+      ]
+
+      renderComponent(mockData)
+
+      expect(screen.getByText('12/25/2025')).toBeInTheDocument()
+    })
   })
 
   describe('Download Functionality', () => {
@@ -144,7 +175,7 @@ describe('STTFeedbackReportsTable', () => {
       const mockData = [
         {
           id: 1,
-          quarter: 'Q1',
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:41:00Z',
           original_filename: 'F33.zip',
         },
@@ -162,7 +193,7 @@ describe('STTFeedbackReportsTable', () => {
       const mockData = [
         {
           id: 1,
-          quarter: 'Q1',
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:41:00Z',
           original_filename: null,
         },
@@ -181,7 +212,7 @@ describe('STTFeedbackReportsTable', () => {
       const mockData = [
         {
           id: 1,
-          quarter: 'Q1',
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:41:00Z',
           original_filename: 'F33.zip',
         },
@@ -217,7 +248,7 @@ describe('STTFeedbackReportsTable', () => {
       const mockData = [
         {
           id: 1,
-          quarter: 'Q1',
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:41:00Z',
           original_filename: 'F33.zip',
         },
@@ -241,7 +272,7 @@ describe('STTFeedbackReportsTable', () => {
       const mockData = [
         {
           id: 1,
-          quarter: 'Q1',
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:41:00Z',
           original_filename: 'F33.zip',
         },
@@ -271,7 +302,7 @@ describe('STTFeedbackReportsTable', () => {
       const mockData = [
         {
           id: 1,
-          quarter: 'Q1',
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:41:00Z',
           original_filename: 'F33.zip',
         },
@@ -299,7 +330,7 @@ describe('STTFeedbackReportsTable', () => {
       const mockData = [
         {
           id: 1,
-          quarter: 'Q1',
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:41:00Z',
           original_filename: 'F33.zip',
         },
@@ -330,13 +361,13 @@ describe('STTFeedbackReportsTable', () => {
       const mockData = [
         {
           id: 1,
-          quarter: 'Q1',
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:41:00Z',
           original_filename: 'report1.zip',
         },
         {
           id: 2,
-          quarter: 'Q2',
+          date_extracted_on: '2025-03-31',
           created_at: '2025-03-06T10:41:00Z',
           original_filename: 'report2.zip',
         },

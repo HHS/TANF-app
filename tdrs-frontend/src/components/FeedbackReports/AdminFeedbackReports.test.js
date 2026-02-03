@@ -13,6 +13,9 @@ jest.mock('@uswds/uswds/src/js/components', () => ({
   fileInput: {
     init: jest.fn(),
   },
+  datePicker: {
+    init: jest.fn(),
+  },
 }))
 
 const mockStore = configureStore([thunk])
@@ -63,6 +66,24 @@ describe('AdminFeedbackReports', () => {
     fireEvent.change(fiscalYearSelect, { target: { value: year } })
     await waitFor(() => {
       expect(screen.getByText(`Fiscal Year ${year} — Upload Feedback Reports`)).toBeInTheDocument()
+    })
+  }
+
+  // Helper to set date input value (uncontrolled input needs direct DOM manipulation)
+  const setDateInputValue = (value) => {
+    const dateInput = document.getElementById('date-extracted-on')
+    dateInput.value = value
+    fireEvent.change(dateInput, { target: { value } })
+  }
+
+  // Helper to select a file and wait for it to be processed
+  const selectFile = async (filename = 'FY2025.zip') => {
+    const fileInput = document.querySelector('input[type="file"]')
+    const file = new File(['content'], filename, { type: 'application/zip' })
+    fireEvent.change(fileInput, { target: { files: [file] } })
+    // Wait for file to be registered in component state (aria description updates)
+    await waitFor(() => {
+      expect(screen.getByText(new RegExp(`Selected File ${filename}`))).toBeInTheDocument()
     })
   }
 
@@ -252,21 +273,11 @@ describe('AdminFeedbackReports', () => {
 
       await selectFiscalYear('2025')
 
-      // Select a file
-      const fileInput = document.querySelector('input[type="file"]')
-      const file = new File(['content'], 'FY2025.zip', {
-        type: 'application/zip',
-      })
-      fireEvent.change(fileInput, { target: { files: [file] } })
+      // Select a file and wait for it to be processed
+      await selectFile('FY2025.zip')
 
-      // Wait for file to be processed
-      await waitFor(() => {
-        expect(screen.queryByText('Invalid file.')).not.toBeInTheDocument()
-      })
-
-      // Set date
-      const dateInput = screen.getByLabelText('Data extracted from database on')
-      fireEvent.change(dateInput, { target: { value: '2025-02-28' } })
+      // Set date (using helper for uncontrolled input)
+      setDateInputValue('2025-02-28')
 
       // Click upload
       const uploadButton = screen.getByRole('button', {
@@ -306,18 +317,9 @@ describe('AdminFeedbackReports', () => {
 
       await selectFiscalYear('2025')
 
-      const fileInput = document.querySelector('input[type="file"]')
-      const file = new File(['content'], 'FY2025.zip', {
-        type: 'application/zip',
-      })
-      fireEvent.change(fileInput, { target: { files: [file] } })
+      await selectFile('FY2025.zip')
 
-      await waitFor(() => {
-        expect(screen.queryByText('Invalid file.')).not.toBeInTheDocument()
-      })
-
-      const dateInput = screen.getByLabelText('Data extracted from database on')
-      fireEvent.change(dateInput, { target: { value: '2025-02-28' } })
+      setDateInputValue('2025-02-28')
 
       const uploadButton = screen.getByRole('button', {
         name: /Upload & Notify States/i,
@@ -340,18 +342,9 @@ describe('AdminFeedbackReports', () => {
 
       await selectFiscalYear('2025')
 
-      const fileInput = document.querySelector('input[type="file"]')
-      const file = new File(['content'], 'FY2025.zip', {
-        type: 'application/zip',
-      })
-      fireEvent.change(fileInput, { target: { files: [file] } })
+      await selectFile('FY2025.zip')
 
-      await waitFor(() => {
-        expect(screen.queryByText('Invalid file.')).not.toBeInTheDocument()
-      })
-
-      const dateInput = screen.getByLabelText('Data extracted from database on')
-      fireEvent.change(dateInput, { target: { value: '2025-02-28' } })
+      setDateInputValue('2025-02-28')
 
       const uploadButton = screen.getByRole('button', {
         name: /Upload & Notify States/i,
@@ -511,18 +504,9 @@ describe('AdminFeedbackReports', () => {
         expect(screen.getByText('No data available.')).toBeInTheDocument()
       })
 
-      const fileInput = document.querySelector('input[type="file"]')
-      const file = new File(['content'], 'FY2025.zip', {
-        type: 'application/zip',
-      })
-      fireEvent.change(fileInput, { target: { files: [file] } })
+      await selectFile('FY2025.zip')
 
-      await waitFor(() => {
-        expect(screen.queryByText('Invalid file.')).not.toBeInTheDocument()
-      })
-
-      const dateInput = screen.getByLabelText('Data extracted from database on')
-      fireEvent.change(dateInput, { target: { value: '2025-02-28' } })
+      setDateInputValue('2025-02-28')
 
       const uploadButton = screen.getByRole('button', {
         name: /Upload & Notify States/i,
@@ -600,18 +584,9 @@ describe('AdminFeedbackReports', () => {
 
       await selectFiscalYear('2025')
 
-      const fileInput = document.querySelector('input[type="file"]')
-      const file = new File(['content'], 'FY2025.zip', {
-        type: 'application/zip',
-      })
-      fireEvent.change(fileInput, { target: { files: [file] } })
+      await selectFile('FY2025.zip')
 
-      await waitFor(() => {
-        expect(screen.queryByText('Invalid file.')).not.toBeInTheDocument()
-      })
-
-      const dateInput = screen.getByLabelText('Data extracted from database on')
-      fireEvent.change(dateInput, { target: { value: '2025-02-28' } })
+      setDateInputValue('2025-02-28')
 
       const uploadButton = screen.getByRole('button', {
         name: /Upload & Notify States/i,
@@ -625,7 +600,8 @@ describe('AdminFeedbackReports', () => {
       })
 
       // Date should be cleared
-      expect(dateInput).toHaveValue('')
+      const dateInput = document.getElementById('date-extracted-on')
+      expect(dateInput.value).toBe('')
     })
 
     it('resets form when fiscal year changes', async () => {
@@ -633,10 +609,11 @@ describe('AdminFeedbackReports', () => {
 
       await selectFiscalYear('2025')
 
-      const dateInput = screen.getByLabelText('Data extracted from database on')
-      fireEvent.change(dateInput, { target: { value: '2025-02-28' } })
+      setDateInputValue('2025-02-28')
 
-      expect(dateInput).toHaveValue('2025-02-28')
+      // Verify date was set
+      const dateInput = document.getElementById('date-extracted-on')
+      expect(dateInput.value).toBe('2025-02-28')
 
       // Change fiscal year
       const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
@@ -648,11 +625,9 @@ describe('AdminFeedbackReports', () => {
         ).toBeInTheDocument()
       })
 
-      // Date should be cleared
-      const newDateInput = screen.getByLabelText(
-        'Data extracted from database on'
-      )
-      expect(newDateInput).toHaveValue('')
+      // Date should be cleared (component re-rendered, get fresh reference)
+      const newDateInput = document.getElementById('date-extracted-on')
+      expect(newDateInput.value).toBe('')
     })
   })
 

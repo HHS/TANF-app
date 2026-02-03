@@ -13,6 +13,9 @@ jest.mock('@uswds/uswds/src/js/components', () => ({
   fileInput: {
     init: jest.fn(),
   },
+  datePicker: {
+    init: jest.fn(),
+  },
 }))
 
 const mockStore = configureStore([thunk])
@@ -250,7 +253,7 @@ describe('FeedbackReports', () => {
       })
     })
 
-    it('calls reports API for STT users', async () => {
+    it('calls reports API for STT users after fiscal year selected', async () => {
       const store = mockStore({
         auth: {
           user: {
@@ -263,12 +266,17 @@ describe('FeedbackReports', () => {
               },
             ],
             account_approval_status: 'Approved',
+            stt: { id: 1, name: 'Alabama' },
           },
           authenticated: true,
         },
       })
 
       renderComponent(store)
+
+      // STT users must select a fiscal year before reports are fetched
+      const yearSelect = screen.getByLabelText(/Fiscal Year/i)
+      fireEvent.change(yearSelect, { target: { value: '2025' } })
 
       await waitFor(() => {
         expect(axiosInstance.get).toHaveBeenCalledWith(

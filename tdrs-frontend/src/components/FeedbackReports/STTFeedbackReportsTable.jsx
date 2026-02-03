@@ -3,7 +3,7 @@ import axiosInstance from '../../axios-instance'
 import { downloadBlob } from '../../utils/fileDownload'
 
 /**
- * Formats a timestamp to a readable date string
+ * Formats a timestamp to a readable date string with time
  */
 const formatDateTime = (timestamp) => {
   if (!timestamp) return 'N/A'
@@ -16,6 +16,15 @@ const formatDateTime = (timestamp) => {
     minute: '2-digit',
     hour12: true,
   })
+}
+
+/**
+ * Formats a date string (YYYY-MM-DD) to MM/DD/YYYY
+ */
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A'
+  const [year, month, day] = dateString.split('-')
+  return `${month}/${day}/${year}`
 }
 
 /**
@@ -60,8 +69,8 @@ function STTFeedbackReportsTable({ data, setAlert }) {
         <>
           <thead>
             <tr>
-              <th>Feedback generated on</th>
-              <th>Fiscal quarters included in feedback</th>
+              <th>Generated on</th>
+              <th>Reflects data submitted through</th>
               <th>Files</th>
             </tr>
           </thead>
@@ -69,7 +78,7 @@ function STTFeedbackReportsTable({ data, setAlert }) {
             {data.map((report) => (
               <tr key={report.id}>
                 <td>{formatDateTime(report.created_at)}</td>
-                <td>{report.quarter}</td>
+                <td>{formatDate(report.date_extracted_on)}</td>
                 <td>
                   <button
                     type="button"

@@ -290,9 +290,11 @@ describe('Header', () => {
       const store = mockStore(state)
 
       render(
-        <Provider store={store}>
-          <Header />
-        </Provider>
+        <MemoryRouter>
+          <Provider store={store}>
+            <Header />
+          </Provider>
+        </MemoryRouter>
       )
 
       expect(screen.getByText('Feedback Reports')).toBeInTheDocument()
@@ -320,9 +322,11 @@ describe('Header', () => {
       const store = mockStore(state)
 
       render(
-        <Provider store={store}>
-          <Header />
-        </Provider>
+        <MemoryRouter>
+          <Provider store={store}>
+            <Header />
+          </Provider>
+        </MemoryRouter>
       )
 
       expect(screen.queryByText('Feedback Reports')).not.toBeInTheDocument()
@@ -350,9 +354,11 @@ describe('Header', () => {
       const store = mockStore(state)
 
       render(
-        <Provider store={store}>
-          <Header />
-        </Provider>
+        <MemoryRouter>
+          <Provider store={store}>
+            <Header />
+          </Provider>
+        </MemoryRouter>
       )
 
       expect(screen.queryByText('Feedback Reports')).not.toBeInTheDocument()
@@ -384,9 +390,11 @@ describe('Header', () => {
       const store = mockStore(state)
 
       render(
-        <Provider store={store}>
-          <Header />
-        </Provider>
+        <MemoryRouter>
+          <Provider store={store}>
+            <Header />
+          </Provider>
+        </MemoryRouter>
       )
 
       expect(screen.getByText('Feedback Reports')).toBeInTheDocument()
