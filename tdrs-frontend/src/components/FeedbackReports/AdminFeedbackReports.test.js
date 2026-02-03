@@ -709,7 +709,6 @@ describe('AdminFeedbackReports', () => {
     })
   })
 
-
   describe('Date Input Blur Handling', () => {
     it('clears date error when valid date is entered on blur', async () => {
       renderComponent()
@@ -760,7 +759,9 @@ describe('AdminFeedbackReports', () => {
       dropTarget.classList.add('has-invalid-file')
 
       // Select a valid file
-      const file = new File(['content'], 'FY2025.zip', { type: 'application/zip' })
+      const file = new File(['content'], 'FY2025.zip', {
+        type: 'application/zip',
+      })
       fireEvent.change(fileInput, { target: { files: [file] } })
 
       await waitFor(() => {
