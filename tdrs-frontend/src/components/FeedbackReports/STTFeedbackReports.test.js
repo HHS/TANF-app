@@ -430,6 +430,24 @@ describe('STTFeedbackReports', () => {
         expect(screen.getByText('direct.zip')).toBeInTheDocument()
       })
     })
+
+    it('handles response with null/empty data', async () => {
+      axiosInstance.get.mockResolvedValue({ data: null })
+
+      renderComponent()
+
+      // Select a year to trigger fetch
+      const yearSelect = screen.getByLabelText(/Fiscal Year/i)
+      fireEvent.change(yearSelect, { target: { value: '2025' } })
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(
+            'No feedback reports available for this fiscal year.'
+          )
+        ).toBeInTheDocument()
+      })
+    })
   })
 
   describe('Multiple Reports Display', () => {

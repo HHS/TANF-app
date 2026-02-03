@@ -317,4 +317,103 @@ describe('FeedbackReportsUpload', () => {
       ).not.toBeInTheDocument()
     })
   })
+
+  describe('Ref Methods', () => {
+    it('getDateValue returns ISO date from hidden input', () => {
+      const ref = React.createRef()
+      render(<FeedbackReportsUpload {...defaultProps} ref={ref} />)
+
+      // Set value on the hidden input (YYYY-MM-DD format)
+      const dateInput = document.getElementById('date-extracted-on')
+      dateInput.value = '2025-02-28'
+
+      expect(ref.current.getDateValue()).toBe('2025-02-28')
+    })
+
+    it('getDateValue converts MM/DD/YYYY to ISO format', () => {
+      const ref = React.createRef()
+      render(<FeedbackReportsUpload {...defaultProps} ref={ref} />)
+
+      // Set value in MM/DD/YYYY format (USWDS format)
+      const dateInput = document.getElementById('date-extracted-on')
+      dateInput.value = '02/28/2025'
+
+      expect(ref.current.getDateValue()).toBe('2025-02-28')
+    })
+
+    it('getDateValue returns value as-is for unknown format', () => {
+      const ref = React.createRef()
+      render(<FeedbackReportsUpload {...defaultProps} ref={ref} />)
+
+      // Set an unknown format value
+      const dateInput = document.getElementById('date-extracted-on')
+      dateInput.value = '28-02-2025'
+
+      expect(ref.current.getDateValue()).toBe('28-02-2025')
+    })
+
+    it('getDateValue falls back to external input when hidden input is empty', () => {
+      const ref = React.createRef()
+      render(<FeedbackReportsUpload {...defaultProps} ref={ref} />)
+
+      // Create mock external input that USWDS would create
+      const externalInput = document.createElement('input')
+      externalInput.className = 'usa-date-picker__external-input'
+      externalInput.value = '01/15/2025'
+      document.body.appendChild(externalInput)
+
+      // Hidden input is empty
+      const dateInput = document.getElementById('date-extracted-on')
+      dateInput.value = ''
+
+      expect(ref.current.getDateValue()).toBe('2025-01-15')
+
+      // Cleanup
+      document.body.removeChild(externalInput)
+    })
+
+    it('getDateValue returns empty string when both inputs are empty', () => {
+      const ref = React.createRef()
+      render(<FeedbackReportsUpload {...defaultProps} ref={ref} />)
+
+      const dateInput = document.getElementById('date-extracted-on')
+      dateInput.value = ''
+
+      expect(ref.current.getDateValue()).toBe('')
+    })
+
+    it('clearDate clears the hidden input', () => {
+      const ref = React.createRef()
+      render(<FeedbackReportsUpload {...defaultProps} ref={ref} />)
+
+      const dateInput = document.getElementById('date-extracted-on')
+      dateInput.value = '2025-02-28'
+
+      ref.current.clearDate()
+
+      expect(dateInput.value).toBe('')
+    })
+
+    it('clearDate clears the external input when it exists', () => {
+      const ref = React.createRef()
+      render(<FeedbackReportsUpload {...defaultProps} ref={ref} />)
+
+      // Create mock external input that USWDS would create
+      const externalInput = document.createElement('input')
+      externalInput.className = 'usa-date-picker__external-input'
+      externalInput.value = '02/28/2025'
+      document.body.appendChild(externalInput)
+
+      const dateInput = document.getElementById('date-extracted-on')
+      dateInput.value = '2025-02-28'
+
+      ref.current.clearDate()
+
+      expect(dateInput.value).toBe('')
+      expect(externalInput.value).toBe('')
+
+      // Cleanup
+      document.body.removeChild(externalInput)
+    })
+  })
 })

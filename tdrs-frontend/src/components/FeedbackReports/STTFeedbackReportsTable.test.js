@@ -322,6 +322,29 @@ describe('STTFeedbackReportsTable', () => {
       })
     })
 
+    it('uses fallback filename "report.zip" when original_filename is missing', async () => {
+      const mockBlob = new Blob(['test content'], { type: 'application/zip' })
+      axiosInstance.get.mockResolvedValue({ data: mockBlob })
+
+      const mockData = [
+        {
+          id: 1,
+          date_extracted_on: '2025-02-28',
+          created_at: '2025-03-05T10:41:00Z',
+          original_filename: null,
+        },
+      ]
+
+      renderComponent(mockData)
+
+      const downloadButton = screen.getByRole('button', { name: /Download/i })
+      fireEvent.click(downloadButton)
+
+      await waitFor(() => {
+        expect(downloadBlob).toHaveBeenCalledWith(mockBlob, 'report.zip')
+      })
+    })
+
     it('disables button during download', async () => {
       axiosInstance.get.mockImplementation(
         () => new Promise((resolve) => setTimeout(resolve, 100))

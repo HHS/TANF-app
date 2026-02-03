@@ -648,4 +648,125 @@ describe('AdminFeedbackReports', () => {
       expect(fileInput.init).toHaveBeenCalled()
     })
   })
+
+  describe('URL Parameter Handling', () => {
+    it('handles invalid year in URL (NaN)', async () => {
+      render(
+        <MemoryRouter initialEntries={['?year=invalid']}>
+          <Provider store={store}>
+            <AdminFeedbackReports />
+          </Provider>
+        </MemoryRouter>
+      )
+
+      // Should default to no selection when year is invalid
+      await waitFor(() => {
+        expect(screen.getByLabelText('Fiscal Year')).toHaveValue('')
+      })
+
+      // Upload section should not be visible
+      expect(screen.queryByText('Feedback Reports ZIP')).not.toBeInTheDocument()
+    })
+
+    it('handles year not in valid options', async () => {
+      render(
+        <MemoryRouter initialEntries={['?year=1900']}>
+          <Provider store={store}>
+            <AdminFeedbackReports />
+          </Provider>
+        </MemoryRouter>
+      )
+
+      // Should default to no selection when year is not in options
+      await waitFor(() => {
+        expect(screen.getByLabelText('Fiscal Year')).toHaveValue('')
+      })
+    })
+
+    it('clears URL param when year selection is cleared', async () => {
+      render(
+        <MemoryRouter initialEntries={['?year=2025']}>
+          <Provider store={store}>
+            <AdminFeedbackReports />
+          </Provider>
+        </MemoryRouter>
+      )
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('Fiscal Year')).toHaveValue('2025')
+      })
+
+      // Clear the year selection
+      const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
+      fireEvent.change(fiscalYearSelect, { target: { value: '' } })
+
+      // Upload section should be hidden
+      await waitFor(() => {
+        expect(
+          screen.queryByText('Feedback Reports ZIP')
+        ).not.toBeInTheDocument()
+      })
+    })
+  })
+
+
+  describe('Date Input Blur Handling', () => {
+    it('clears date error when valid date is entered on blur', async () => {
+      renderComponent()
+
+      await selectFiscalYear('2025')
+
+      // First, trigger error by submitting without date
+      const uploadButton = screen.getByRole('button', {
+        name: /Upload & Notify States/i,
+      })
+      fireEvent.click(uploadButton)
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(
+            "Choose the date that the data you're uploading was extracted from the database."
+          )
+        ).toBeInTheDocument()
+      })
+
+      // Now set a date and blur - error should clear
+      const dateInput = document.getElementById('date-extracted-on')
+      dateInput.value = '2025-02-28'
+      fireEvent.blur(dateInput)
+
+      await waitFor(() => {
+        expect(
+          screen.queryByText(
+            "Choose the date that the data you're uploading was extracted from the database."
+          )
+        ).not.toBeInTheDocument()
+      })
+    })
+  })
+
+  describe('File Input Instructions Cleanup', () => {
+    it('removes display-block class from instructions element when valid file selected', async () => {
+      renderComponent()
+
+      await selectFiscalYear('2025')
+
+      // Create mock instructions element that USWDS would create
+      const fileInput = document.querySelector('input[type="file"]')
+      const dropTarget = fileInput.parentNode
+      const instructions = document.createElement('div')
+      instructions.className = 'usa-file-input__instructions display-block'
+      dropTarget.appendChild(instructions)
+      dropTarget.classList.add('has-invalid-file')
+
+      // Select a valid file
+      const file = new File(['content'], 'FY2025.zip', { type: 'application/zip' })
+      fireEvent.change(fileInput, { target: { files: [file] } })
+
+      await waitFor(() => {
+        expect(instructions.classList.contains('display-block')).toBe(false)
+        expect(dropTarget.classList.contains('has-invalid-file')).toBe(false)
+      })
+    })
+  })
 })
