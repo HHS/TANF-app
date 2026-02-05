@@ -16,8 +16,8 @@ const NO_DATE_ERROR =
   "Choose the date that the data you're uploading was extracted from the database."
 
 /**
- * AdminFeedbackReports component allows OFA Admins to upload quarterly feedback reports
- * as ZIP files that will be distributed to State/Tribal TANF Programs (STTs).
+ * AdminFeedbackReports component allows DIGIT Team and OFA System Admin users to upload
+ * feedback reports as ZIP files that will be distributed to State/Tribal TANF Programs (STTs).
  */
 function AdminFeedbackReports() {
   const [searchParams, setSearchParams] = useSearchParams()

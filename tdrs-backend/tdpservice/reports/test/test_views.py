@@ -7,16 +7,15 @@ from tdpservice.reports.models import ReportFile, ReportSource
 
 
 @pytest.mark.django_db
-class TestReportFileViewAsOFAAdmin:
-    """Tests for an OFA Admin user interacting with /v1/reports/ endpoints."""
+class TestReportFileViewAsOFASystemAdmin:
+    """Tests for an OFA System Admin user interacting with /v1/reports/ endpoints."""
 
     root_url = "/v1/reports/"
 
     @pytest.fixture
-    def api_client_logged_in(self, api_client, ofa_admin):
-        """Return an API client authenticated as an admin user."""
-
-        api_client.login(username=ofa_admin.username, password="test_password")
+    def api_client_logged_in(self, api_client, ofa_system_admin):
+        """Return an API client authenticated as an OFA System Admin user."""
+        api_client.login(username=ofa_system_admin.username, password="test_password")
         return api_client
 
     def test_create_report_file(
@@ -24,8 +23,7 @@ class TestReportFileViewAsOFAAdmin:
         api_client_logged_in,
         report_file_data,
     ):
-        """Admin can POST a single zip to create a ReportFile row."""
-
+        """OFA System Admin can POST a single zip to create a ReportFile row."""
         resp = api_client_logged_in.post(
             self.root_url, report_file_data, format="multipart"
         )
@@ -43,8 +41,7 @@ class TestReportFileViewAsOFAAdmin:
         api_client_logged_in,
         fiscal_year_report_source_zip,
     ):
-        """Admin can POST to /report_source with a nested fiscal year zip."""
-
+        """OFA System Admin can POST to /report_source with a nested fiscal year zip."""
         resp = api_client_logged_in.post(
             f"{self.root_url}report-sources/",
             data={"file": fiscal_year_report_source_zip},
@@ -67,6 +64,107 @@ class TestReportFileViewAsOFAAdmin:
 
         assert resp.status_code == status.HTTP_200_OK
         assert b"".join(resp.streaming_content) == report_file_instance.file.read()
+
+
+@pytest.mark.django_db
+class TestReportFileViewAsDigitTeam:
+    """Tests for a DIGIT Team user interacting with /v1/reports/ endpoints."""
+
+    root_url = "/v1/reports/"
+
+    @pytest.fixture
+    def api_client_logged_in(self, api_client, digit_team):
+        """Return an API client authenticated as a DIGIT Team user."""
+        api_client.login(username=digit_team.username, password="test_password")
+        return api_client
+
+    def test_create_report_file(
+        self,
+        api_client_logged_in,
+        report_file_data,
+    ):
+        """DIGIT Team can POST a single zip to create a ReportFile row."""
+        resp = api_client_logged_in.post(
+            self.root_url, report_file_data, format="multipart"
+        )
+        assert resp.status_code in [status.HTTP_201_CREATED, status.HTTP_200_OK]
+
+        # make sure we actually inserted a row
+        pk = resp.data["id"]
+        created = ReportFile.objects.get(id=pk)
+        assert created.original_filename == report_file_data["original_filename"]
+        assert created.extension == "zip"
+        assert created.file
+
+    def test_report_source_upload(
+        self,
+        api_client_logged_in,
+        fiscal_year_report_source_zip,
+    ):
+        """DIGIT Team can POST to /report_source with a nested fiscal year zip."""
+        resp = api_client_logged_in.post(
+            f"{self.root_url}report-sources/",
+            data={"file": fiscal_year_report_source_zip},
+            format="multipart",
+        )
+
+        assert resp.status_code == status.HTTP_201_CREATED
+
+        source_id = resp.data["id"]
+        source_obj = ReportSource.objects.get(id=source_id)
+
+        assert source_obj.original_filename == "report_source.zip"
+        assert source_obj.status == ReportSource.Status.PENDING
+
+    def test_download_report_file(self, api_client_logged_in, report_file_instance):
+        """Stream report file to caller."""
+        resp = api_client_logged_in.get(
+            f"{self.root_url}{report_file_instance.id}/download/"
+        )
+
+        assert resp.status_code == status.HTTP_200_OK
+        assert b"".join(resp.streaming_content) == report_file_instance.file.read()
+
+
+@pytest.mark.django_db
+class TestReportFileViewAsOFAAdmin:
+    """Tests for an OFA Admin user (no longer has report permissions)."""
+
+    root_url = "/v1/reports/"
+
+    @pytest.fixture
+    def api_client_logged_in(self, api_client, ofa_admin):
+        """Return an API client authenticated as an OFA Admin user."""
+        api_client.login(username=ofa_admin.username, password="test_password")
+        return api_client
+
+    def test_ofa_admin_create_report_file_disallowed(
+        self, api_client_logged_in, report_file_data
+    ):
+        """OFA Admin cannot create report files (permissions removed)."""
+        resp = api_client_logged_in.post(
+            self.root_url, report_file_data, format="multipart"
+        )
+
+        assert resp.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_ofa_admin_report_source_upload_disallowed(
+        self, api_client_logged_in, fiscal_year_report_source_zip
+    ):
+        """OFA Admin cannot create report source zip files (permissions removed)."""
+        resp = api_client_logged_in.post(
+            f"{self.root_url}report-sources/",
+            data={"file": fiscal_year_report_source_zip},
+            format="multipart",
+        )
+
+        assert resp.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_ofa_admin_list_reports_disallowed(self, api_client_logged_in):
+        """OFA Admin cannot list report files (permissions removed)."""
+        resp = api_client_logged_in.get(self.root_url)
+
+        assert resp.status_code == status.HTTP_403_FORBIDDEN
 
 
 @pytest.mark.django_db

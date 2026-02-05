@@ -29,7 +29,7 @@ describe('AdminFeedbackReports', () => {
         user: {
           id: 1,
           email: 'admin@example.com',
-          roles: [{ name: 'OFA Admin' }],
+          roles: [{ name: 'DIGIT Team' }],
         },
         authenticated: true,
       },

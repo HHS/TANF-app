@@ -53,7 +53,7 @@ describe('FeedbackReports', () => {
             email: 'admin@example.com',
             roles: [
               {
-                name: 'OFA Admin',
+                name: 'DIGIT Team',
                 permissions: [
                   { codename: 'view_reportsource' },
                   { codename: 'add_reportsource' },
@@ -220,7 +220,7 @@ describe('FeedbackReports', () => {
             email: 'admin@example.com',
             roles: [
               {
-                name: 'OFA Admin',
+                name: 'DIGIT Team',
                 permissions: [
                   { codename: 'view_reportsource' },
                   { codename: 'add_reportsource' },

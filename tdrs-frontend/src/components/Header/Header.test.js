@@ -364,16 +364,16 @@ describe('Header', () => {
       expect(screen.queryByText('Feedback Reports')).not.toBeInTheDocument()
     })
 
-    it('should show Feedback Reports nav item for admin users with view_reportfile permission', () => {
+    it('should show Feedback Reports nav item for DIGIT Team users with view_reportfile permission', () => {
       const state = {
         ...initialState,
         auth: {
           user: {
-            email: 'admin@test.com',
+            email: 'digit@test.com',
             roles: [
               {
                 id: 1,
-                name: 'OFA Admin',
+                name: 'DIGIT Team',
                 permissions: [
                   { codename: 'view_reportfile' },
                   { codename: 'view_reportsource' },
@@ -398,6 +398,74 @@ describe('Header', () => {
       )
 
       expect(screen.getByText('Feedback Reports')).toBeInTheDocument()
+    })
+
+    it('should show Feedback Reports nav item for OFA System Admin users with view_reportfile permission', () => {
+      const state = {
+        ...initialState,
+        auth: {
+          user: {
+            email: 'sysadmin@test.com',
+            roles: [
+              {
+                id: 1,
+                name: 'OFA System Admin',
+                permissions: [
+                  { codename: 'view_reportfile' },
+                  { codename: 'view_reportsource' },
+                  { codename: 'add_reportsource' },
+                ],
+              },
+            ],
+            account_approval_status: 'Approved',
+          },
+          authenticated: true,
+        },
+      }
+
+      const store = mockStore(state)
+
+      render(
+        <MemoryRouter>
+          <Provider store={store}>
+            <Header />
+          </Provider>
+        </MemoryRouter>
+      )
+
+      expect(screen.getByText('Feedback Reports')).toBeInTheDocument()
+    })
+
+    it('should NOT show Feedback Reports nav item for OFA Admin users (no report permissions)', () => {
+      const state = {
+        ...initialState,
+        auth: {
+          user: {
+            email: 'ofaadmin@test.com',
+            roles: [
+              {
+                id: 1,
+                name: 'OFA Admin',
+                permissions: [], // OFA Admin no longer has report permissions
+              },
+            ],
+            account_approval_status: 'Approved',
+          },
+          authenticated: true,
+        },
+      }
+
+      const store = mockStore(state)
+
+      render(
+        <MemoryRouter>
+          <Provider store={store}>
+            <Header />
+          </Provider>
+        </MemoryRouter>
+      )
+
+      expect(screen.queryByText('Feedback Reports')).not.toBeInTheDocument()
     })
   })
 })
