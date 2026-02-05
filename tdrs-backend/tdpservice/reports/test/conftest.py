@@ -7,7 +7,7 @@ from tdpservice.conftest import create_temporary_file
 from tdpservice.reports.test.factories import ReportFileFactory
 
 
-def create_nested_zip(structure):
+def create_nested_zip(structure, root_folder="FY2025_test"):
     """
     Create a nested zip file structure for testing.
 
@@ -15,16 +15,20 @@ def create_nested_zip(structure):
     ----------
         structure: dict like {
             "FY2025": {
-                "R01": {
+                "RO1": {
                     "F1": ["report1.pdf", "report2.pdf"],
                     "F2": ["report3.pdf"]
                 }
             }
         }
+        root_folder: str, the root folder name (mimics zip filename without .zip)
 
     Returns
     -------
         BytesIO containing the zip file
+
+    The actual structure is: {root_folder}/FY{YYYY}/RO{X}/F{X}/filename
+    Example: FY2025_test/FY2025/RO1/F1/report1.pdf
     """
     zip_buffer = io.BytesIO()
 
@@ -33,8 +37,8 @@ def create_nested_zip(structure):
             for region, stts in regions.items():
                 for stt_code, files in stts.items():
                     for filename in files:
-                        # Create path: FY{YYYY}/R{XX}/F{X}/filename
-                        path = f"{year}/{region}/{stt_code}/{filename}"
+                        # Create path: {root_folder}/FY{YYYY}/RO{X}/F{X}/filename
+                        path = f"{root_folder}/{year}/{region}/{stt_code}/{filename}"
                         # Add fake content
                         zf.writestr(path, b"fake file content")
 
@@ -116,18 +120,18 @@ def fiscal_year_report_source_zip():
     """
     Generate a nested fiscal year report source zip file.
 
-    Structure: FY2025/R01/F1/report1.pdf, report2.pdf
+    Structure: FY2025_test/FY2025/RO1/F1/report1.pdf, report2.pdf
     """
     from django.core.files.uploadedfile import SimpleUploadedFile
 
     structure = {
         "FY2025": {
-            "R01": {
+            "RO1": {
                 "F1": ["report1.pdf", "report2.pdf"],
             }
         }
     }
-    zip_buffer = create_nested_zip(structure)
+    zip_buffer = create_nested_zip(structure, "FY2025_test")
     return SimpleUploadedFile("report_source.zip", zip_buffer.read(), content_type="application/zip")
 
 
@@ -138,13 +142,13 @@ def multi_stt_report_source_zip():
 
     structure = {
         "FY2025": {
-            "R01": {
+            "RO1": {
                 "F1": ["report1.pdf", "report2.pdf"],
                 "F2": ["report3.pdf"],
             }
         }
     }
-    zip_buffer = create_nested_zip(structure)
+    zip_buffer = create_nested_zip(structure, "FY2025_test")
     return SimpleUploadedFile("report_source.zip", zip_buffer.read(), content_type="application/zip")
 
 

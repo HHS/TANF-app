@@ -4,10 +4,11 @@ This directory contains test zip files for manually testing the report source wo
 
 ## File Structure
 
-All valid files follow the structure: `FY{YYYY}/R{XX}/F{X}/files`
+All valid files follow the structure: `{ZipName}/FY{YYYY}/RO{X}/F{X}/files`
 
+- **{ZipName}**: Root folder matching the zip filename (e.g., `FY2025_07312025`)
 - **FY{YYYY}**: Fiscal year folder with "FY" prefix (e.g., `FY2025`)
-- **R{XX}**: Region folder with "R" prefix (e.g., `R01`, `R04`)
+- **RO{X}**: Regional Office folder with "RO" prefix (e.g., `RO1`, `RO4`)
 - **F{X}**: STT folder with "F" prefix representing FIPS code (e.g., `F1`, `F12`)
 
 ## Valid Test Files (Should PASS)
@@ -15,11 +16,12 @@ All valid files follow the structure: `FY{YYYY}/R{XX}/F{X}/files`
 ### 1. `FY2025_valid_single_stt.zip`
 **Structure:**
 ```
-FY2025/
-  └── R04/
-      └── F1/
-          ├── alabama_report.pdf
-          └── alabama_summary.pdf
+FY2025_valid_single_stt/
+  └── FY2025/
+      └── RO4/
+          └── F1/
+              ├── alabama_report.pdf
+              └── alabama_summary.pdf
 ```
 **Expected Result:** Success
 - Creates 1 ReportFile for Alabama (STT_CODE: 1, Region 4)
@@ -28,12 +30,13 @@ FY2025/
 ### 2. `FY2025_valid_multiple_stts_same_region.zip`
 **Structure:**
 ```
-FY2025/
-  └── R04/
-      ├── F1/
-      │   └── alabama_report.pdf
-      └── F12/
-          └── florida_report.pdf
+FY2025_valid_multiple_stts_same_region/
+  └── FY2025/
+      └── RO4/
+          ├── F1/
+          │   └── alabama_report.pdf
+          └── F12/
+              └── florida_report.pdf
 ```
 **Expected Result:** Success
 - Creates 2 ReportFiles (Alabama and Florida, both Region 4)
@@ -42,16 +45,17 @@ FY2025/
 ### 3. `FY2025_valid_multiple_regions.zip`
 **Structure:**
 ```
-FY2025/
-  ├── R01/
-  │   └── F9/
-  │       └── connecticut_report.pdf
-  ├── R02/
-  │   └── F34/
-  │       └── new_jersey_report.pdf
-  └── R03/
-      └── F42/
-          └── pennsylvania_report.pdf
+FY2025_valid_multiple_regions/
+  └── FY2025/
+      ├── RO1/
+      │   └── F9/
+      │       └── connecticut_report.pdf
+      ├── RO2/
+      │   └── F34/
+      │       └── new_jersey_report.pdf
+      └── RO3/
+          └── F42/
+              └── pennsylvania_report.pdf
 ```
 **Expected Result:** Success
 - Creates 3 ReportFiles across 3 different regions
@@ -64,10 +68,11 @@ FY2025/
 ### 4. `invalid_fiscal_year_bad_format.zip`
 **Structure:**
 ```
-FY202a/
-  └── R04/
-      └── F1/
-          └── report.pdf
+invalid_fiscal_year_bad_format/
+  └── FY202a/
+      └── RO4/
+          └── F1/
+              └── report.pdf
 ```
 **Expected Error:** Invalid fiscal year format in folder name.
 
@@ -76,38 +81,41 @@ FY202a/
 ```
 report.pdf  (no folders)
 ```
-**Expected Error:** `"No STT folders found. Expected structure: FY{YYYY}/R{XX}/F{X}/files"`
+**Expected Error:** `"No STT folders found. Expected structure: {ZipName}/FY{YYYY}/RO{X}/F{X}/files"`
 
 ### 6. `FY2025_invalid_stt_code_999.zip`
 **Structure:**
 ```
-FY2025/
-  └── R04/
-      └── F999/
-          └── report.pdf
+FY2025_invalid_stt_code_999/
+  └── FY2025/
+      └── RO4/
+          └── F999/
+              └── report.pdf
 ```
 **Expected Error:** `"STT code '999' not found in system."`
 
 ### 7. `FY2025_invalid_empty_stt_folder.zip`
 **Structure:**
 ```
-FY2025/
-  └── R04/
-      └── F1/  (empty folder)
+FY2025_invalid_empty_stt_folder/
+  └── FY2025/
+      └── RO4/
+          └── F1/  (empty folder)
 ```
 **Expected Error:** `"No STT folders found..."` (empty folders are skipped)
 
 ### 8. `invalid_multiple_fiscal_years.zip`
 **Structure:**
 ```
-FY2025/
-  └── R04/
-      └── F1/
-          └── report_2025.pdf
-FY2024/
-  └── R04/
-      └── F1/
-          └── report_2024.pdf
+invalid_multiple_fiscal_years/
+  ├── FY2025/
+  │   └── RO4/
+  │       └── F1/
+  │           └── report_2025.pdf
+  └── FY2024/
+      └── RO4/
+          └── F1/
+              └── report_2024.pdf
 ```
 **Expected Error:** Files from multiple fiscal years will be processed together (all STT codes aggregated).
 

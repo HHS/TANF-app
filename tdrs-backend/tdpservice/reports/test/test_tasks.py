@@ -24,12 +24,12 @@ class TestFindSttFolders:
         """Should find files for a single STT."""
         structure = {
             "FY2025": {
-                "R01": {
+                "RO1": {
                     "F1": ["report1.pdf", "report2.pdf"]
                 }
             }
         }
-        zip_buffer = create_nested_zip(structure)
+        zip_buffer = create_nested_zip(structure, "FY2025_test")
         zip_file = zipfile.ZipFile(zip_buffer)
 
         stt_files = find_stt_folders(zip_file)
@@ -41,13 +41,13 @@ class TestFindSttFolders:
         """Should find files for multiple STTs."""
         structure = {
             "FY2025": {
-                "R01": {
+                "RO1": {
                     "F1": ["report1.pdf"],
                     "F2": ["report2.pdf", "report3.pdf"]
                 }
             }
         }
-        zip_buffer = create_nested_zip(structure)
+        zip_buffer = create_nested_zip(structure, "FY2025_test")
         zip_file = zipfile.ZipFile(zip_buffer)
 
         stt_files = find_stt_folders(zip_file)
@@ -61,15 +61,15 @@ class TestFindSttFolders:
         """Should find files across multiple regions."""
         structure = {
             "FY2025": {
-                "R01": {
+                "RO1": {
                     "F1": ["report1.pdf"]
                 },
-                "R02": {
+                "RO2": {
                     "F2": ["report2.pdf"]
                 }
             }
         }
-        zip_buffer = create_nested_zip(structure)
+        zip_buffer = create_nested_zip(structure, "FY2025_test")
         zip_file = zipfile.ZipFile(zip_buffer)
 
         stt_files = find_stt_folders(zip_file)
@@ -81,7 +81,8 @@ class TestFindSttFolders:
         """Should raise ValueError if no STT folders found."""
         zip_buffer = io.BytesIO()
         with zipfile.ZipFile(zip_buffer, 'w') as zf:
-            zf.writestr("FY2025/report.pdf", b"content")
+            # Only 2 levels deep - not enough (need 5: root/FY/RO/F/file)
+            zf.writestr("FY2025_test/FY2025/report.pdf", b"content")
         zip_buffer.seek(0)
         zip_file = zipfile.ZipFile(zip_buffer)
 
@@ -96,18 +97,18 @@ class TestBundleSttFiles:
         """Should bundle multiple files into a single zip."""
         structure = {
             "FY2025": {
-                "R01": {
+                "RO1": {
                     "F1": ["report1.pdf", "report2.pdf"]
                 }
             }
         }
-        zip_buffer = create_nested_zip(structure)
+        zip_buffer = create_nested_zip(structure, "FY2025_test")
         report_source_zip = zipfile.ZipFile(zip_buffer)
 
         # Get file infos for STT "F1" (which maps to stt_code "1")
         file_infos = [
             info for info in report_source_zip.infolist()
-            if not info.is_dir() and "FY2025/R01/F1/" in info.filename
+            if not info.is_dir() and "FY2025_test/FY2025/RO1/F1/" in info.filename
         ]
 
         # Bundle the files
@@ -128,17 +129,17 @@ class TestBundleSttFiles:
         """Should flatten folder structure when bundling."""
         structure = {
             "FY2025": {
-                "R01": {
+                "RO1": {
                     "F1": ["report1.pdf"]
                 }
             }
         }
-        zip_buffer = create_nested_zip(structure)
+        zip_buffer = create_nested_zip(structure, "FY2025_test")
         report_source_zip = zipfile.ZipFile(zip_buffer)
 
         file_infos = [
             info for info in report_source_zip.infolist()
-            if not info.is_dir() and "FY2025/R01/F1/" in info.filename
+            if not info.is_dir() and "FY2025_test/FY2025/RO1/F1/" in info.filename
         ]
 
         bundled = bundle_stt_files(report_source_zip, file_infos, "1")
@@ -147,7 +148,7 @@ class TestBundleSttFiles:
         bundled_zip = zipfile.ZipFile(io.BytesIO(bundled.read()))
         names = bundled_zip.namelist()
 
-        assert names[0] == "report1.pdf"  # Not "FY2025/R01/F1/report1.pdf"
+        assert names[0] == "report1.pdf"  # Not "FY2025_test/FY2025/RO1/F1/report1.pdf"
 
 
 @pytest.mark.django_db
@@ -175,12 +176,12 @@ class TestProcessReportSource:
         # Create source record with nested zip
         structure = {
             "FY2025": {
-                "R01": {
+                "RO1": {
                     "F1": ["report1.pdf", "report2.pdf"]
                 }
             }
         }
-        zip_buffer = create_nested_zip(structure)
+        zip_buffer = create_nested_zip(structure, "FY2025_01312025")
 
         from django.core.files.uploadedfile import SimpleUploadedFile
         uploaded_file = SimpleUploadedFile(
@@ -249,13 +250,13 @@ class TestProcessReportSource:
 
         structure = {
             "FY2025": {
-                "R01": {
+                "RO1": {
                     "F1": ["report1.pdf"],
                     "F2": ["report2.pdf"]
                 }
             }
         }
-        zip_buffer = create_nested_zip(structure)
+        zip_buffer = create_nested_zip(structure, "FY2025_04302025")
 
         from django.core.files.uploadedfile import SimpleUploadedFile
         uploaded_file = SimpleUploadedFile(
@@ -318,12 +319,12 @@ class TestProcessReportSource:
         """Should fail with non-existent STT code."""
         structure = {
             "FY2025": {
-                "R01": {
+                "RO1": {
                     "F999": ["report1.pdf"]  # Invalid STT code
                 }
             }
         }
-        zip_buffer = create_nested_zip(structure)
+        zip_buffer = create_nested_zip(structure, "FY2025_test")
 
         from django.core.files.uploadedfile import SimpleUploadedFile
         uploaded_file = SimpleUploadedFile(
@@ -365,12 +366,12 @@ class TestProcessReportSource:
         # Zip has FY2025 structure, but source.year=2024
         structure = {
             "FY2025": {
-                "R9005": {
+                "RO9005": {
                     "F1": ["report1.pdf"]
                 }
             }
         }
-        zip_buffer = create_nested_zip(structure)
+        zip_buffer = create_nested_zip(structure, "FY2025_test")
 
         from django.core.files.uploadedfile import SimpleUploadedFile
         uploaded_file = SimpleUploadedFile(
@@ -440,8 +441,8 @@ class TestProcessReportSourceEmailNotification:
         mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
 
         # Create source record
-        structure = {"FY2025": {"R01": {"F1": ["report.pdf"]}}}
-        zip_buffer = create_nested_zip(structure)
+        structure = {"FY2025": {"RO1": {"F1": ["report.pdf"]}}}
+        zip_buffer = create_nested_zip(structure, "FY2025_test")
 
         from django.core.files.uploadedfile import SimpleUploadedFile
         uploaded_file = SimpleUploadedFile(
@@ -490,8 +491,8 @@ class TestProcessReportSourceEmailNotification:
 
         mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
 
-        structure = {"FY2025": {"R01": {"F1": ["report.pdf"]}}}
-        zip_buffer = create_nested_zip(structure)
+        structure = {"FY2025": {"RO1": {"F1": ["report.pdf"]}}}
+        zip_buffer = create_nested_zip(structure, "FY2025_test")
 
         from django.core.files.uploadedfile import SimpleUploadedFile
         uploaded_file = SimpleUploadedFile(
@@ -550,8 +551,8 @@ class TestProcessReportSourceEmailNotification:
 
         mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
 
-        structure = {"FY2025": {"R01": {"F1": ["report.pdf"]}}}
-        zip_buffer = create_nested_zip(structure)
+        structure = {"FY2025": {"RO1": {"F1": ["report.pdf"]}}}
+        zip_buffer = create_nested_zip(structure, "FY2025_test")
 
         from django.core.files.uploadedfile import SimpleUploadedFile
         uploaded_file = SimpleUploadedFile(
@@ -622,8 +623,8 @@ class TestProcessReportSourceEmailNotification:
 
         mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
 
-        structure = {"FY2025": {"R01": {"F1": ["report.pdf"]}}}
-        zip_buffer = create_nested_zip(structure)
+        structure = {"FY2025": {"RO1": {"F1": ["report.pdf"]}}}
+        zip_buffer = create_nested_zip(structure, "FY2025_test")
 
         from django.core.files.uploadedfile import SimpleUploadedFile
         uploaded_file = SimpleUploadedFile(
