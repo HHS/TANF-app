@@ -1,4 +1,5 @@
 import Button from '../Button'
+import LinkComponent from '../Link'
 
 function Card({ title, body, buttonId, link, linkText }) {
   return (
@@ -30,9 +31,12 @@ function ResourceCards() {
             <p>Questions about TANF data?</p>
             <p>
               Email:{' '}
-              <a className="usa-link" href="mailto: tanfdata@acf.hhs.gov">
+              <LinkComponent
+                className="usa-link"
+                to="mailto: tanfdata@acf.hhs.gov"
+              >
                 tanfdata@acf.hhs.gov
-              </a>
+              </LinkComponent>
             </p>
           </div>
         </div>

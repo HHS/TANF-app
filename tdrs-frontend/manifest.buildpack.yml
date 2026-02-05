@@ -6,5 +6,5 @@ applications:
     - https://github.com/cloudfoundry/nginx-buildpack.git#v1.2.6
   memory: 256M
   instances: 1
-  disk_quota: 256M
+  disk_quota: 2G
   timeout: 180

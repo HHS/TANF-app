@@ -1,15 +1,8 @@
-
-# Stage 0: Create the app directory, install dependencies, and copy in the source code
+# Base image for frontend builds
+# Note: Chromium/Puppeteer is NOT needed here - pa11y tests run on CI machine directly
 FROM node:16.13-alpine3.14 AS localdev
 
-# Due to M1 issues found here, adding solution:
-# https://stackoverflow.com/questions/69983063/
-RUN apk add chromium
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-
 USER node
-
 
 RUN mkdir /home/node/app/ && chown -R node:node /home/node/app
 WORKDIR /home/node/app
@@ -19,10 +12,11 @@ WORKDIR /home/node/app
 # when code changes occur
 COPY --chown=node:node package.json package-lock.json ./
 
-# Disable npm audit
-RUN npm set audit false
-# Install npm packages directly from package-lock.json <https://docs.npmjs.com/cli/v8/commands/npm-ci>
-RUN npm ci
+# Install all dependencies (devDependencies needed because @redux-devtools/extension is imported in src/configureStore.js)
+# TODO: Move @redux-devtools/extension to dependencies in package.json, then use --omit=dev to save ~500MB
+RUN npm set audit false && \
+    npm ci --omit=dev --no-fund && \
+    npm cache clean --force
 
 ENV PORT=80
 EXPOSE 80

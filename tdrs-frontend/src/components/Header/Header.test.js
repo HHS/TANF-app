@@ -2,6 +2,7 @@ import React from 'react'
 import { thunk } from 'redux-thunk'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
+import { MemoryRouter } from 'react-router'
 
 import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
@@ -27,9 +28,11 @@ describe('Header', () => {
   it('should have a title link', () => {
     const store = mockStore(initialState)
     render(
-      <Provider store={store}>
-        <Header />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <Header />
+        </Provider>
+      </MemoryRouter>
     )
 
     const title = screen.getByText('TANF Data Portal')
@@ -39,9 +42,11 @@ describe('Header', () => {
   it('should have a navigation link for Welcome', () => {
     const store = mockStore(initialState)
     render(
-      <Provider store={store}>
-        <Header />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <Header />
+        </Provider>
+      </MemoryRouter>
     )
     const welcomeLink = screen.getByText('Home')
     expect(welcomeLink).toBeInTheDocument()
@@ -66,9 +71,11 @@ describe('Header', () => {
     })
 
     render(
-      <Provider store={store}>
-        <Header />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <Header />
+        </Provider>
+      </MemoryRouter>
     )
     const adminLink = screen.queryByText('Admin')
     expect(adminLink).not.toBeInTheDocument()
@@ -81,9 +88,11 @@ describe('Header', () => {
     })
 
     render(
-      <Provider store={store}>
-        <Header />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <Header />
+        </Provider>
+      </MemoryRouter>
     )
 
     const welcomeTab = screen.getByText('Home')
@@ -97,9 +106,11 @@ describe('Header', () => {
     })
 
     render(
-      <Provider store={store}>
-        <Header />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <Header />
+        </Provider>
+      </MemoryRouter>
     )
 
     const dataFilesTab = screen.getByText('TANF Data Files')
@@ -110,9 +121,11 @@ describe('Header', () => {
   it("should add usa-current class to Profile tab when on '/profile'", () => {
     const store = mockStore(initialState)
     const { container } = render(
-      <Provider store={store}>
-        <Header />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <Header />
+        </Provider>
+      </MemoryRouter>
     )
 
     const profileTab = container.querySelector('#profile')
@@ -124,9 +137,11 @@ describe('Header', () => {
     const state = { ...initialState, router: { location: { pathname: '/' } } }
     const store = mockStore(state)
     render(
-      <Provider store={store}>
-        <Header />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <Header />
+        </Provider>
+      </MemoryRouter>
     )
 
     const welcomeTab = screen.getByText('Home')
@@ -136,9 +151,11 @@ describe('Header', () => {
   it('should have secondaryItems when user is logged in', () => {
     const store = mockStore(initialState)
     const { container } = render(
-      <Provider store={store}>
-        <Header />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <Header />
+        </Provider>
+      </MemoryRouter>
     )
 
     const secondaryLinks = container.querySelectorAll(
@@ -158,9 +175,11 @@ describe('Header', () => {
     const store = mockStore(state)
 
     const { queryByText } = render(
-      <Provider store={store}>
-        <Header />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <Header />
+        </Provider>
+      </MemoryRouter>
     )
 
     expect(queryByText('Welcome')).not.toBeInTheDocument()
@@ -186,9 +205,11 @@ describe('Header', () => {
     const store = mockStore(state)
 
     const { queryByText } = render(
-      <Provider store={store}>
-        <Header />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <Header />
+        </Provider>
+      </MemoryRouter>
     )
 
     expect(queryByText('TANF Data Files')).not.toBeInTheDocument()
@@ -218,9 +239,11 @@ describe('Header', () => {
     const store = mockStore(state)
 
     const { queryByText } = render(
-      <Provider store={store}>
-        <Header />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <Header />
+        </Provider>
+      </MemoryRouter>
     )
 
     expect(queryByText('TANF Data Files')).not.toBeInTheDocument()
@@ -232,9 +255,11 @@ describe('Header', () => {
     const store = mockStore(initialState)
 
     const { queryByText } = render(
-      <Provider store={store}>
-        <Header />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <Header />
+        </Provider>
+      </MemoryRouter>
     )
 
     expect(queryByText('TANF Data Files')).toBeInTheDocument()

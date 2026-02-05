@@ -3,6 +3,9 @@
 echo "Starting celery"
 
 if [[ $1 == "cloud" ]]; then
+    # Get the computed URI from django settings
+    REDIS_URI=$(python manage.py shell -c "from django.conf import settings; print(settings.CELERY_BROKER_URL)" 2>/dev/null)
+
     echo "Starting Alloy"
     mkdir /home/vcap/app/alloy-data
     wget https://github.com/grafana/alloy/releases/download/v1.9.1/alloy-boringcrypto-linux-amd64.zip

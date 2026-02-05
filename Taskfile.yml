@@ -91,9 +91,11 @@ tasks:
   backend-exec-seed-db:
     desc: Seed DB with initial data in the backend container
     dir: tdrs-backend
+    vars:
+      SEED_NUM: '{{.SEED_NUM | default "100"}}'
     cmds:
-      - docker compose -f docker-compose.yml up -d
-      - docker compose -f docker-compose.yml exec web sh -c "python manage.py populate_stts; python ./manage.py seed_db"
+      - task: backend-up
+      - docker compose -f docker-compose.yml exec web sh -c "python manage.py migrate && python manage.py populate_stts && python ./manage.py seed_records --clear --num {{.SEED_NUM}}"
       - docker compose -f docker-compose.yml down
 
   backend-makemigrations:
