@@ -484,7 +484,7 @@ describe('FeedbackReportAlert', () => {
         const alertBody = container.querySelector('.usa-alert__body')
         expect(alertBody).toHaveStyle({ display: 'flex' })
         expect(alertBody).toHaveStyle({ justifyContent: 'space-between' })
-        expect(alertBody).toHaveStyle({ alignItems: 'center' })
+        expect(alertBody).toHaveStyle({ alignItems: 'flex-start' })
       })
     })
   })

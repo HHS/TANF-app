@@ -102,7 +102,7 @@ const FeedbackReportAlert = () => {
         style={{
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'center',
+          alignItems: 'flex-start',
         }}
       >
         <p className="usa-alert__text">
