@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Rhode Island",
+    "ssp": true,
+    "filenames": {
+      "Active Case Data": "ADS.E2J.NDM1.TS44",
+      "Closed Case Data": "ADS.E2J.NDM2.TS44",
+      "Aggregate Data": "ADS.E2J.NDM3.TS44",
+      "SSP Active Case Data": "ADS.E2J.NDM1.MS44",
+      "SSP Closed Case Data": "ADS.E2J.NDM2.MS44",
+      "SSP Aggregate Data": "ADS.E2J.NDM3.MS44"
+    }
+  }
+]
