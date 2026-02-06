@@ -209,10 +209,9 @@ export const submit =
         // Check if any responses have errors
         const failedResponse = responses.find((r) => !r.ok)
         if (failedResponse) {
-          throw {
-            message: failedResponse.error?.message || 'Error',
-            response: { data: failedResponse.data },
-          }
+          const err = new Error(failedResponse.error?.message || 'Error')
+          err.response = { data: failedResponse.data }
+          throw err
         }
 
         setLocalAlertState({
