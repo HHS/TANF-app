@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import axiosInstance from '../../axios-instance'
+import { get, post } from '../../fetch-instance'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
 import { fileInput } from '@uswds/uswds/src/js/components'
 import FeedbackReportsUpload from './FeedbackReportsUpload'
@@ -33,22 +33,21 @@ function FeedbackReports() {
    */
   const fetchUploadHistory = useCallback(async () => {
     setHistoryLoading(true)
-    try {
-      const response = await axiosInstance.get(
-        `${process.env.REACT_APP_BACKEND_URL}/reports/report-sources/`,
-        { withCredentials: true }
-      )
-      setUploadHistory(response.data.results)
-    } catch (error) {
+    const { data, ok, error } = await get(
+      `${process.env.REACT_APP_BACKEND_URL}/reports/report-sources/`
+    )
+
+    if (ok) {
+      setUploadHistory(data.results)
+    } else {
       console.error('Failed to fetch upload history:', error)
       setAlert({
         active: true,
         type: 'error',
         message: 'Failed to load upload history. Please refresh the page.',
       })
-    } finally {
-      setHistoryLoading(false)
     }
+    setHistoryLoading(false)
   }, [])
 
   // Initialize USWDS file input component and fetch upload history on mount
@@ -120,16 +119,12 @@ function FeedbackReports() {
     const formData = new FormData()
     formData.append('file', selectedFile)
 
-    try {
-      await axiosInstance.post(
-        `${process.env.REACT_APP_BACKEND_URL}/reports/report-sources/`,
-        formData,
-        {
-          headers: { 'Content-Type': 'multipart/form-data' },
-          withCredentials: true,
-        }
-      )
+    const { data, ok, error } = await post(
+      `${process.env.REACT_APP_BACKEND_URL}/reports/report-sources/`,
+      formData
+    )
 
+    if (ok) {
       setAlert({
         active: true,
         type: 'success',
@@ -143,11 +138,11 @@ function FeedbackReports() {
 
       // Refresh upload history
       fetchUploadHistory()
-    } catch (error) {
+    } else {
       const errorMessage =
-        error.response?.data?.file?.[0] ||
-        error.response?.data?.detail ||
-        error.response?.data?.message ||
+        data?.file?.[0] ||
+        data?.detail ||
+        data?.message ||
         'Upload failed. Please try again.'
 
       setAlert({
@@ -155,9 +150,9 @@ function FeedbackReports() {
         type: 'error',
         message: errorMessage,
       })
-    } finally {
-      setLoading(false)
     }
+
+    setLoading(false)
   }
 
   /**

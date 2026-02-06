@@ -1,7 +1,6 @@
 import { v4 as uuidv4 } from 'uuid'
-import axios from 'axios'
 
-import axiosInstance from '../axios-instance'
+import { get, post } from '../fetch-instance'
 import { logErrorToServer } from '../utils/eventLogger'
 import removeFileInputErrorState from '../utils/removeFileInputErrorState'
 import { quarters } from '../components/Reports/utils'
@@ -58,22 +57,13 @@ export const getAvailableFileList =
     dispatch({
       type: FETCH_FILE_LIST,
     })
-    try {
-      let url = `${BACKEND_URL}/data_files/?year=${year}&stt=${stt.id}&file_type=${file_type}`
-      if (quarter) {
-        url += `&quarter=${quarter}`
-      }
-      const response = await axios.get(url, {
-        responseType: 'json',
-      })
-      dispatch({
-        type: SET_FILE_LIST,
-        payload: {
-          data: response?.data,
-        },
-      })
-      onSuccess()
-    } catch (error) {
+    let url = `${BACKEND_URL}/data_files/?year=${year}&stt=${stt.id}&file_type=${file_type}`
+    if (quarter) {
+      url += `&quarter=${quarter}`
+    }
+    const { data, ok, error } = await get(url)
+
+    if (!ok) {
       dispatch({
         type: FETCH_FILE_LIST_ERROR,
         payload: {
@@ -84,7 +74,16 @@ export const getAvailableFileList =
           section,
         },
       })
+      return
     }
+
+    dispatch({
+      type: SET_FILE_LIST,
+      payload: {
+        data,
+      },
+    })
+    onSuccess()
   }
 
 export const download =
@@ -93,13 +92,12 @@ export const download =
     try {
       if (!id) throw new Error('No id was provided to download action.')
       dispatch({ type: START_FILE_DOWNLOAD })
-      const response = await axios.get(
+      const { data, ok, error } = await get(
         `${BACKEND_URL}/data_files/${id}/download/`,
-        {
-          responseType: 'blob',
-        }
+        { responseType: 'blob' }
       )
-      const data = response.data
+
+      if (!ok) throw error
 
       // Create a link and associate it with the blob returned from the file
       // download - this allows us to trigger the file download dialog without
@@ -203,18 +201,20 @@ export const submit =
       for (const [key, value] of Object.entries(dataFile)) {
         formData.append(key, value)
       }
-      return axiosInstance.post(
-        `${process.env.REACT_APP_BACKEND_URL}/data_files/`,
-        formData,
-        {
-          headers: { 'Content-Type': 'multipart/form-data' },
-          withCredentials: true,
-        }
-      )
+      return post(`${process.env.REACT_APP_BACKEND_URL}/data_files/`, formData)
     })
 
     return Promise.all(submissionRequests)
       .then((responses) => {
+        // Check if any responses have errors
+        const failedResponse = responses.find((r) => !r.ok)
+        if (failedResponse) {
+          throw {
+            message: failedResponse.error?.message || 'Error',
+            response: { data: failedResponse.data },
+          }
+        }
+
         setLocalAlertState({
           active: true,
           type: 'success',
@@ -279,12 +279,11 @@ export const setStt = (stt) => (dispatch) => {
 }
 
 export const getTanfSubmissionStatus = async (datafile_id) => {
-  try {
-    const response = await axios.get(
-      `${BACKEND_URL}/data_files/${datafile_id}/`
-    )
-    return response
-  } catch (axiosError) {
-    throw axiosError
+  const { data, ok, error } = await get(
+    `${BACKEND_URL}/data_files/${datafile_id}/`
+  )
+  if (!ok) {
+    throw error
   }
+  return { data, ok: true }
 }

@@ -1,4 +1,4 @@
-import axios from 'axios'
+import { get, post } from '../fetch-instance'
 import { thunk } from 'redux-thunk'
 import configureStore from 'redux-mock-store'
 
@@ -11,22 +11,30 @@ import {
   downloadOriginalSubmission,
 } from './fraReports'
 
+jest.mock('../fetch-instance')
+
 describe('actions/fraReports', () => {
-  jest.mock('axios')
-  const mockAxios = axios
   const mockStore = configureStore([thunk])
+
+  beforeEach(() => {
+    get.mockClear()
+    post.mockClear()
+  })
 
   describe('getFraSubmissionHistory', () => {
     it('should handle success without callbacks', async () => {
       const store = mockStore()
 
-      mockAxios.get.mockResolvedValue({
+      get.mockResolvedValue({
         data: { yay: 'we did it' },
+        ok: true,
+        status: 200,
+        error: null,
       })
 
       await store.dispatch(
         getFraSubmissionHistory({
-          stt: 'stt',
+          stt: { id: 'stt' },
           reportType: 'something',
           fiscalQuarter: '1',
           fiscalYear: '2',
@@ -52,23 +60,22 @@ describe('actions/fraReports', () => {
         isLoadingSubmissionHistory: false,
       })
 
-      expect(axios.get).toHaveBeenCalledTimes(1)
+      expect(get).toHaveBeenCalledTimes(1)
     })
 
     it('should handle fail without callbacks', async () => {
       const store = mockStore()
 
-      mockAxios.get.mockRejectedValue({
-        message: 'Error',
-        response: {
-          status: 400,
-          data: { detail: 'Mock fail response' },
-        },
+      get.mockResolvedValue({
+        data: null,
+        ok: false,
+        status: 400,
+        error: new Error('Mock fail response'),
       })
 
       await store.dispatch(
         getFraSubmissionHistory({
-          stt: 'stt',
+          stt: { id: 'stt' },
           reportType: 'something',
           fiscalQuarter: '1',
           fiscalYear: '2',
@@ -89,14 +96,17 @@ describe('actions/fraReports', () => {
         isLoadingSubmissionHistory: false,
       })
 
-      expect(axios.get).toHaveBeenCalledTimes(1)
+      expect(get).toHaveBeenCalledTimes(1)
     })
 
     it('should call onSuccess', async () => {
       const store = mockStore()
 
-      mockAxios.get.mockResolvedValue({
+      get.mockResolvedValue({
         data: { yay: 'we did it' },
+        ok: true,
+        status: 200,
+        error: null,
       })
 
       const onSuccess = jest.fn()
@@ -105,7 +115,7 @@ describe('actions/fraReports', () => {
       await store.dispatch(
         getFraSubmissionHistory(
           {
-            stt: 'stt',
+            stt: { id: 'stt' },
             reportType: 'something',
             fiscalQuarter: '1',
             fiscalYear: '2',
@@ -134,7 +144,7 @@ describe('actions/fraReports', () => {
         isLoadingSubmissionHistory: false,
       })
 
-      expect(axios.get).toHaveBeenCalledTimes(1)
+      expect(get).toHaveBeenCalledTimes(1)
 
       expect(onSuccess).toHaveBeenCalledTimes(1)
       expect(onError).toHaveBeenCalledTimes(0)
@@ -143,12 +153,11 @@ describe('actions/fraReports', () => {
     it('should call onError', async () => {
       const store = mockStore()
 
-      mockAxios.get.mockRejectedValue({
-        message: 'Error',
-        response: {
-          status: 400,
-          data: { detail: 'Mock fail response' },
-        },
+      get.mockResolvedValue({
+        data: null,
+        ok: false,
+        status: 400,
+        error: new Error('Mock fail response'),
       })
 
       const onSuccess = jest.fn()
@@ -157,7 +166,7 @@ describe('actions/fraReports', () => {
       await store.dispatch(
         getFraSubmissionHistory(
           {
-            stt: 'stt',
+            stt: { id: 'stt' },
             reportType: 'something',
             fiscalQuarter: '1',
             fiscalYear: '2',
@@ -181,7 +190,7 @@ describe('actions/fraReports', () => {
         isLoadingSubmissionHistory: false,
       })
 
-      expect(axios.get).toHaveBeenCalledTimes(1)
+      expect(get).toHaveBeenCalledTimes(1)
 
       expect(onSuccess).toHaveBeenCalledTimes(0)
       expect(onError).toHaveBeenCalledTimes(1)
@@ -192,22 +201,21 @@ describe('actions/fraReports', () => {
     it('should handle success without callbacks', async () => {
       const store = mockStore()
 
-      mockAxios.post.mockResolvedValue({
+      post.mockResolvedValue({
         data: { yay: 'success' },
-      })
-
-      mockAxios.get.mockResolvedValue({
-        data: { yay: 'we did it' },
+        ok: true,
+        status: 200,
+        error: null,
       })
 
       await store.dispatch(
         uploadFraReport({
-          stt: 'stt',
+          stt: { id: 'stt' },
           reportType: 'something',
           fiscalQuarter: '1',
           fiscalYear: '2',
-          file: 'bytes',
-          user: 'me',
+          file: { name: 'bytes' },
+          user: { id: 'me' },
         })
       )
 
@@ -225,33 +233,28 @@ describe('actions/fraReports', () => {
         isUploadingFraReport: false,
       })
 
-      expect(axios.post).toHaveBeenCalledTimes(1)
-      expect(axios.get).toHaveBeenCalledTimes(0)
+      expect(post).toHaveBeenCalledTimes(1)
+      expect(get).toHaveBeenCalledTimes(0)
     })
 
     it('should handle fail without callbacks', async () => {
       const store = mockStore()
 
-      mockAxios.post.mockRejectedValue({
-        message: 'Error',
-        response: {
-          status: 400,
-          data: { detail: 'Mock fail response' },
-        },
-      })
-
-      mockAxios.get.mockResolvedValue({
-        data: { yay: 'we did it' },
+      post.mockResolvedValue({
+        data: null,
+        ok: false,
+        status: 400,
+        error: new Error('Mock fail response'),
       })
 
       await store.dispatch(
         uploadFraReport({
-          stt: 'stt',
+          stt: { id: 'stt' },
           reportType: 'something',
           fiscalQuarter: '1',
           fiscalYear: '2',
-          file: 'bytes',
-          user: 'me',
+          file: { name: 'bytes' },
+          user: { id: 'me' },
         })
       )
 
@@ -269,19 +272,18 @@ describe('actions/fraReports', () => {
         isUploadingFraReport: false,
       })
 
-      expect(axios.post).toHaveBeenCalledTimes(1)
-      expect(axios.get).toHaveBeenCalledTimes(0)
+      expect(post).toHaveBeenCalledTimes(1)
+      expect(get).toHaveBeenCalledTimes(0)
     })
 
     it('should call onSuccess', async () => {
       const store = mockStore()
 
-      mockAxios.post.mockResolvedValue({
+      post.mockResolvedValue({
         data: { yay: 'success' },
-      })
-
-      mockAxios.get.mockResolvedValue({
-        data: { yay: 'we did it' },
+        ok: true,
+        status: 200,
+        error: null,
       })
 
       const onSuccess = jest.fn()
@@ -290,12 +292,12 @@ describe('actions/fraReports', () => {
       await store.dispatch(
         uploadFraReport(
           {
-            stt: 'stt',
+            stt: { id: 'stt' },
             reportType: 'something',
             fiscalQuarter: '1',
             fiscalYear: '2',
-            file: 'bytes',
-            user: 'me',
+            file: { name: 'bytes' },
+            user: { id: 'me' },
           },
           onSuccess,
           onError
@@ -316,8 +318,8 @@ describe('actions/fraReports', () => {
         isUploadingFraReport: false,
       })
 
-      expect(axios.post).toHaveBeenCalledTimes(1)
-      expect(axios.get).toHaveBeenCalledTimes(0)
+      expect(post).toHaveBeenCalledTimes(1)
+      expect(get).toHaveBeenCalledTimes(0)
 
       expect(onSuccess).toHaveBeenCalledTimes(1)
       expect(onError).toHaveBeenCalledTimes(0)
@@ -326,16 +328,11 @@ describe('actions/fraReports', () => {
     it('should call onError', async () => {
       const store = mockStore()
 
-      mockAxios.post.mockRejectedValue({
-        message: 'Error',
-        response: {
-          status: 400,
-          data: { detail: 'Mock fail response' },
-        },
-      })
-
-      mockAxios.get.mockResolvedValue({
-        data: { yay: 'we did it' },
+      post.mockResolvedValue({
+        data: null,
+        ok: false,
+        status: 400,
+        error: new Error('Mock fail response'),
       })
 
       const onSuccess = jest.fn()
@@ -344,12 +341,12 @@ describe('actions/fraReports', () => {
       await store.dispatch(
         uploadFraReport(
           {
-            stt: 'stt',
+            stt: { id: 'stt' },
             reportType: 'something',
             fiscalQuarter: '1',
             fiscalYear: '2',
-            file: 'bytes',
-            user: 'me',
+            file: { name: 'bytes' },
+            user: { id: 'me' },
           },
           onSuccess,
           onError
@@ -370,8 +367,8 @@ describe('actions/fraReports', () => {
         isUploadingFraReport: false,
       })
 
-      expect(axios.post).toHaveBeenCalledTimes(1)
-      expect(axios.get).toHaveBeenCalledTimes(0)
+      expect(post).toHaveBeenCalledTimes(1)
+      expect(get).toHaveBeenCalledTimes(0)
 
       expect(onSuccess).toHaveBeenCalledTimes(0)
       expect(onError).toHaveBeenCalledTimes(1)

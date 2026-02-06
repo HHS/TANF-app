@@ -9,7 +9,9 @@ import {
   SET_REQUEST_USER_UPDATE_ERROR,
 } from '../../actions/updateUserRequest'
 import { SET_AUTH } from '../../actions/auth'
-import axios from 'axios'
+import { patch } from '../../fetch-instance'
+
+jest.mock('../../fetch-instance')
 
 jest.mock('../STTComboBox', () => (props) => {
   return (
@@ -124,6 +126,7 @@ describe('RequestAccessForm', () => {
   })
 
   it('dispatches requestAccess when form is valid', async () => {
+    patch.mockResolvedValue({ data: { first_name: 'Jane', last_name: 'Doe' }, ok: true, status: 200, error: null })
     const { store } = setup()
 
     // Spy on dispatch
@@ -282,6 +285,8 @@ describe('RequestAccessForm', () => {
   })
 
   it('dispatches updateUserRequest in editMode when data changes', async () => {
+    patch.mockResolvedValue({ data: { first_name: 'John', last_name: 'Smith' }, ok: true, status: 200, error: null })
+
     const initialValues = {
       firstName: 'John',
       lastName: 'Doe',
@@ -361,7 +366,7 @@ describe('RequestAccessForm', () => {
       has_fra_access: false,
       pending_requests: 1,
     }
-    axios.patch.mockResolvedValue({ data: apiUserResponse })
+    patch.mockResolvedValue({ data: apiUserResponse, ok: true, status: 200, error: null })
 
     const { store } = setup(props, storeOverrides)
     // Spy on store.dispatch to monitor calls

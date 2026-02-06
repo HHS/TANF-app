@@ -1,10 +1,10 @@
 import React from 'react'
 import * as reactRedux from 'react-redux'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import FeedbackForm from './FeedbackForm'
 import { useSelector } from 'react-redux'
-import axiosInstance from '../../axios-instance'
+import { post, patch } from '../../fetch-instance'
 
 // Mock the Redux selector
 jest.mock('react-redux', () => ({
@@ -12,7 +12,7 @@ jest.mock('react-redux', () => ({
   useSelector: jest.fn(),
 }))
 
-jest.mock('../../axios-instance')
+jest.mock('../../fetch-instance')
 
 jest.mock('../../assets/feedback/very-dissatisfied-feedback.svg', () => {
   const React = require('react')
@@ -78,8 +78,8 @@ describe('Feedback Form tests', () => {
   const mockOnFeedbackSubmit = jest.fn()
 
   beforeEach(() => {
-    axiosInstance.post.mockClear()
-    axiosInstance.patch.mockClear()
+    post.mockClear()
+    patch.mockClear()
     mockOnFeedbackSubmit.mockClear()
     // Default to authenticated for most tests
     reactRedux.useSelector.mockImplementation(() => true)
@@ -197,7 +197,7 @@ describe('Feedback Form tests', () => {
       ).toBeInTheDocument()
     })
 
-    expect(axiosInstance.post).not.toHaveBeenCalledWith(
+    expect(post).not.toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({ rating: expect.any(Number) })
     )
@@ -221,10 +221,12 @@ describe('Feedback Form tests', () => {
       ).toBeInTheDocument()
     })
 
-    expect(axiosInstance.post).not.toHaveBeenCalled()
+    expect(post).not.toHaveBeenCalled()
   })
 
   it('clears error message after rating is selected', async () => {
+    post.mockResolvedValue({ ok: true, status: 201, data: { id: 1 }, error: null })
+
     render(
       <FeedbackForm
         isGeneralFeedback={true}
@@ -248,8 +250,8 @@ describe('Feedback Form tests', () => {
   })
 
   it('submits feedback with rating, message, and anonymous flag', async () => {
-    axiosInstance.post.mockResolvedValue({ status: 201, data: { id: 1 } })
-    axiosInstance.patch.mockResolvedValue({ status: 200, data: { id: 1 } })
+    post.mockResolvedValue({ ok: true, status: 201, data: { id: 1 }, error: null })
+    patch.mockResolvedValue({ ok: true, status: 200, data: { id: 1 }, error: null })
 
     render(
       <FeedbackForm
@@ -261,6 +263,9 @@ describe('Feedback Form tests', () => {
     // Simulate selecting a rating
     const ratingInput = screen.getByTestId('feedback-radio-input-4')
     fireEvent.click(ratingInput)
+
+    // Wait for rating click's async post to complete and feedbackID to be set
+    await waitFor(() => expect(post).toHaveBeenCalled())
 
     // Simulate entering feedback message
     fireEvent.change(screen.getByTestId('feedback-message-input'), {
@@ -274,7 +279,7 @@ describe('Feedback Form tests', () => {
     fireEvent.click(screen.getByRole('button', { name: /send feedback/i }))
 
     await waitFor(() => {
-      expect(axiosInstance.post).toHaveBeenCalledWith(
+      expect(patch).toHaveBeenCalledWith(
         expect.stringContaining('/feedback/'),
         {
           rating: 4,
@@ -283,10 +288,6 @@ describe('Feedback Form tests', () => {
           feedback_type: 'general_feedback',
           page_url: 'http://localhost/',
           anonymous: true,
-        },
-        {
-          headers: { 'Content-Type': 'application/json' },
-          withCredentials: true,
         }
       )
     })
@@ -294,8 +295,8 @@ describe('Feedback Form tests', () => {
   })
 
   it('submits with rating and no feedback message', async () => {
-    axiosInstance.post.mockResolvedValue({ status: 201, data: { id: 1 } })
-    axiosInstance.patch.mockResolvedValue({ status: 200, data: { id: 1 } })
+    post.mockResolvedValue({ ok: true, status: 201, data: { id: 1 }, error: null })
+    patch.mockResolvedValue({ ok: true, status: 200, data: { id: 1 }, error: null })
 
     render(
       <FeedbackForm
@@ -304,11 +305,15 @@ describe('Feedback Form tests', () => {
       />
     )
 
-    fireEvent.click(screen.getByTestId('feedback-radio-input-3'))
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('feedback-radio-input-3'))
+    })
+    expect(post).toHaveBeenCalled()
+
     fireEvent.click(screen.getByRole('button', { name: /send feedback/i }))
 
     await waitFor(() =>
-      expect(axiosInstance.post).toHaveBeenCalledWith(
+      expect(patch).toHaveBeenCalledWith(
         expect.stringContaining('/feedback/'),
         {
           component: 'general-website',
@@ -317,18 +322,14 @@ describe('Feedback Form tests', () => {
           rating: 3,
           feedback: '',
           anonymous: false,
-        },
-        {
-          headers: { 'Content-Type': 'application/json' },
-          withCredentials: true,
         }
       )
     )
   })
 
   it('submits form using Enter key on submit button', async () => {
-    axiosInstance.post.mockResolvedValue({ status: 201, data: { id: 1 } })
-    axiosInstance.patch.mockResolvedValue({ status: 200, data: { id: 1 } })
+    post.mockResolvedValue({ ok: true, status: 201, data: { id: 1 }, error: null })
+    patch.mockResolvedValue({ ok: true, status: 200, data: { id: 1 }, error: null })
 
     render(
       <FeedbackForm
@@ -345,14 +346,14 @@ describe('Feedback Form tests', () => {
     fireEvent.keyDown(button, { key: 'Enter', code: 'Enter' })
 
     await waitFor(() => {
-      expect(axiosInstance.post).toHaveBeenCalled()
+      expect(post).toHaveBeenCalled()
       expect(mockOnFeedbackSubmit).toHaveBeenCalled()
     })
   })
 
   it('submits form with Cmd/Ctrl + Enter from inside textarea', async () => {
-    axiosInstance.post.mockResolvedValue({ status: 201, data: { id: 1 } })
-    axiosInstance.patch.mockResolvedValue({ status: 200, data: { id: 1 } })
+    post.mockResolvedValue({ ok: true, status: 201, data: { id: 1 }, error: null })
+    patch.mockResolvedValue({ ok: true, status: 200, data: { id: 1 }, error: null })
 
     render(
       <FeedbackForm
@@ -364,20 +365,23 @@ describe('Feedback Form tests', () => {
     const textarea = screen.getByTestId('feedback-message-input')
     textarea.focus()
     fireEvent.change(textarea, { target: { value: 'Quick feedback' } })
-    fireEvent.click(screen.getByTestId('feedback-radio-input-3'))
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('feedback-radio-input-3'))
+    })
+    expect(post).toHaveBeenCalled()
 
     fireEvent.keyDown(window, { key: 'Enter', metaKey: true }) // Mac
-    // OR use ctrlKey: true for Windows
 
     await waitFor(() => {
-      expect(axiosInstance.post).toHaveBeenCalled()
+      expect(patch).toHaveBeenCalled()
       expect(mockOnFeedbackSubmit).toHaveBeenCalled()
     })
   })
 
   it('resets form fields after successful submission', async () => {
-    axiosInstance.post.mockResolvedValue({ status: 201, data: { id: 1 } })
-    axiosInstance.patch.mockResolvedValue({ status: 200, data: { id: 1 } })
+    post.mockResolvedValue({ ok: true, status: 201, data: { id: 1 }, error: null })
+    patch.mockResolvedValue({ ok: true, status: 200, data: { id: 1 }, error: null })
 
     render(
       <FeedbackForm
@@ -403,7 +407,8 @@ describe('Feedback Form tests', () => {
   })
 
   it('does not reset form on failed feedback submission', async () => {
-    axiosInstance.post.mockResolvedValueOnce({ status: 500 })
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    post.mockResolvedValue({ ok: false, status: 500, data: null, error: new Error('Server error') })
 
     render(
       <FeedbackForm
@@ -413,6 +418,10 @@ describe('Feedback Form tests', () => {
     )
 
     fireEvent.click(screen.getByTestId('feedback-radio-input-2'))
+
+    // Wait for rating click's async post to complete
+    await waitFor(() => expect(post).toHaveBeenCalled())
+
     fireEvent.change(screen.getByTestId('feedback-message-input'), {
       target: { value: 'Should not reset' },
     })
@@ -424,12 +433,16 @@ describe('Feedback Form tests', () => {
         'Should not reset'
       )
     )
+    consoleSpy.mockRestore()
   })
 
-  it('logs error message when API returns 400', async () => {
+  it('logs error message when API returns error', async () => {
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
-    axiosInstance.post.mockRejectedValueOnce({
-      response: { status: 400 },
+    post.mockResolvedValue({
+      ok: false,
+      status: 400,
+      data: null,
+      error: new Error('Bad request'),
     })
 
     render(
@@ -448,9 +461,9 @@ describe('Feedback Form tests', () => {
     consoleSpy.mockRestore()
   })
 
-  it('logs an error if feedbackPost returns non-200 status', async () => {
+  it('logs an error if feedbackPost returns non-ok status', async () => {
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
-    axiosInstance.post.mockResolvedValueOnce({ status: 500 })
+    post.mockResolvedValue({ ok: false, status: 500, data: null, error: new Error('Server error') })
 
     render(
       <FeedbackForm isGeneralFeedback={true} onFeedbackSubmit={jest.fn()} />
@@ -468,9 +481,9 @@ describe('Feedback Form tests', () => {
     consoleSpy.mockRestore()
   })
 
-  it('logs fallback error if API throws unexpected error', async () => {
+  it('logs error if API returns error', async () => {
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
-    axiosInstance.post.mockRejectedValueOnce(new Error('Network down'))
+    post.mockResolvedValue({ ok: false, status: 500, data: null, error: new Error('Network down') })
 
     render(
       <FeedbackForm isGeneralFeedback={true} onFeedbackSubmit={jest.fn()} />
@@ -481,7 +494,7 @@ describe('Feedback Form tests', () => {
 
     await waitFor(() =>
       expect(consoleSpy).toHaveBeenCalledWith(
-        'An unexpected error occurred. Please try again later.',
+        'Error submitting feedback:',
         expect.any(Object)
       )
     )
@@ -511,8 +524,8 @@ describe('Feedback Form tests', () => {
   })
 
   it('submits minimal fields when isGeneralFeedback is false', async () => {
-    axiosInstance.post.mockResolvedValue({ status: 201, data: { id: 1 } })
-    axiosInstance.patch.mockResolvedValue({ status: 200, data: { id: 1 } })
+    post.mockResolvedValue({ ok: true, status: 201, data: { id: 1 }, error: null })
+    patch.mockResolvedValue({ ok: true, status: 200, data: { id: 1 }, error: null })
 
     render(
       <FeedbackForm
@@ -522,14 +535,17 @@ describe('Feedback Form tests', () => {
       />
     )
 
-    // Provide required rating
-    fireEvent.click(screen.getByTestId('feedback-radio-input-5'))
+    // Provide required rating and wait for async post to complete
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('feedback-radio-input-5'))
+    })
+    expect(post).toHaveBeenCalled()
 
     // Skip comment input (allowed)
     fireEvent.click(screen.getByRole('button', { name: /send feedback/i }))
 
     await waitFor(() => {
-      expect(axiosInstance.post).toHaveBeenCalledWith(
+      expect(patch).toHaveBeenCalledWith(
         expect.any(String),
         {
           attachments: [],
@@ -540,10 +556,6 @@ describe('Feedback Form tests', () => {
           rating: 5,
           feedback: '', // comment left blank
           anonymous: false, // anonymous checkbox hidden
-        },
-        {
-          headers: { 'Content-Type': 'application/json' },
-          withCredentials: true,
         }
       )
       expect(mockOnFeedbackSubmit).toHaveBeenCalled()

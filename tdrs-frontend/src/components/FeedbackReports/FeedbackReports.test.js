@@ -5,9 +5,9 @@ import { MemoryRouter } from 'react-router-dom'
 import configureStore from 'redux-mock-store'
 import { thunk } from 'redux-thunk'
 import FeedbackReports from './FeedbackReports'
-import axiosInstance from '../../axios-instance'
+import { get, post } from '../../fetch-instance'
 
-jest.mock('../../axios-instance')
+jest.mock('../../fetch-instance')
 jest.mock('../../utils/createFileInputErrorState')
 jest.mock('@uswds/uswds/src/js/components', () => ({
   fileInput: {
@@ -36,7 +36,7 @@ describe('FeedbackReports', () => {
     jest.clearAllMocks()
 
     // Mock successful history fetch by default
-    axiosInstance.get.mockResolvedValue({ data: { results: [] } })
+    get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
 
     // Mock FileReader for async file handling
     global.FileReader = jest.fn().mockImplementation(() => ({
@@ -155,15 +155,18 @@ describe('FeedbackReports', () => {
     })
 
     it('successfully uploads a file and shows success message', async () => {
-      axiosInstance.post.mockResolvedValue({
+      post.mockResolvedValue({
         data: {
           id: 1,
           status: 'PENDING',
           original_filename: 'feedback.zip',
         },
+        ok: true,
+        status: 200,
+        error: null,
       })
 
-      axiosInstance.get.mockResolvedValue({ data: { results: [] } })
+      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
 
       renderComponent()
 
@@ -197,23 +200,20 @@ describe('FeedbackReports', () => {
         ).toBeInTheDocument()
       })
 
-      expect(axiosInstance.post).toHaveBeenCalledWith(
+      expect(post).toHaveBeenCalledWith(
         expect.stringContaining('/reports/report-sources/'),
-        expect.any(FormData),
-        expect.objectContaining({
-          headers: { 'Content-Type': 'multipart/form-data' },
-          withCredentials: true,
-        })
+        expect.any(FormData)
       )
     })
 
     it('shows error message when upload fails', async () => {
-      axiosInstance.post.mockRejectedValue({
-        response: {
-          data: {
-            file: ['Invalid zip file structure'],
-          },
+      post.mockResolvedValue({
+        data: {
+          file: ['Invalid zip file structure'],
         },
+        ok: false,
+        status: 400,
+        error: new Error('HTTP 400'),
       })
 
       renderComponent()
@@ -248,7 +248,12 @@ describe('FeedbackReports', () => {
     })
 
     it('shows generic error message when upload fails without specific error', async () => {
-      axiosInstance.post.mockRejectedValue(new Error('Network error'))
+      post.mockResolvedValue({
+        data: null,
+        ok: false,
+        status: 0,
+        error: new Error('Network error'),
+      })
 
       renderComponent()
 
@@ -282,8 +287,8 @@ describe('FeedbackReports', () => {
     })
 
     it('shows loading state during upload', async () => {
-      axiosInstance.post.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
+      post.mockImplementation(
+        () => new Promise((resolve) => setTimeout(() => resolve({ data: {}, ok: true, status: 200, error: null }), 100))
       )
 
       renderComponent()
@@ -331,7 +336,7 @@ describe('FeedbackReports', () => {
         },
       ]
 
-      axiosInstance.get.mockResolvedValue({ data: { results: mockHistory } })
+      get.mockResolvedValue({ data: { results: mockHistory }, ok: true, status: 200, error: null })
 
       renderComponent()
 
@@ -340,14 +345,13 @@ describe('FeedbackReports', () => {
         expect(screen.getByText('FY2025.zip')).toBeInTheDocument()
       })
 
-      expect(axiosInstance.get).toHaveBeenCalledWith(
-        expect.stringContaining('/reports/report-sources/'),
-        expect.objectContaining({ withCredentials: true })
+      expect(get).toHaveBeenCalledWith(
+        expect.stringContaining('/reports/report-sources/')
       )
     })
 
     it('displays empty state when no history exists', async () => {
-      axiosInstance.get.mockResolvedValue({ data: { results: [] } })
+      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
 
       renderComponent()
 
@@ -357,8 +361,8 @@ describe('FeedbackReports', () => {
     })
 
     it('displays loading state while fetching history', () => {
-      axiosInstance.get.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
+      get.mockImplementation(
+        () => new Promise((resolve) => setTimeout(() => resolve({ data: { results: [] }, ok: true, status: 200, error: null }), 100))
       )
 
       renderComponent()
@@ -367,7 +371,7 @@ describe('FeedbackReports', () => {
     })
 
     it('displays error alert when history fetch fails', async () => {
-      axiosInstance.get.mockRejectedValue(new Error('Failed to fetch'))
+      get.mockResolvedValue({ data: null, ok: false, status: 500, error: new Error('Failed to fetch') })
 
       renderComponent()
 
@@ -400,7 +404,7 @@ describe('FeedbackReports', () => {
         },
       ]
 
-      axiosInstance.get.mockResolvedValue({ data: { results: mockHistory } })
+      get.mockResolvedValue({ data: { results: mockHistory }, ok: true, status: 200, error: null })
 
       renderComponent()
 
@@ -411,8 +415,11 @@ describe('FeedbackReports', () => {
     })
 
     it('refreshes history after successful upload', async () => {
-      axiosInstance.post.mockResolvedValue({
+      post.mockResolvedValue({
         data: { id: 1, status: 'PENDING' },
+        ok: true,
+        status: 200,
+        error: null,
       })
 
       const mockHistory = [
@@ -427,9 +434,9 @@ describe('FeedbackReports', () => {
       ]
 
       // Initial fetch returns empty, all subsequent calls return mockHistory
-      axiosInstance.get
-        .mockResolvedValueOnce({ data: { results: [] } }) // Initial fetch
-        .mockResolvedValue({ data: { results: mockHistory } }) // All subsequent calls (including after upload)
+      get
+        .mockResolvedValueOnce({ data: { results: [] }, ok: true, status: 200, error: null }) // Initial fetch
+        .mockResolvedValue({ data: { results: mockHistory }, ok: true, status: 200, error: null }) // All subsequent calls (including after upload)
 
       renderComponent()
 
@@ -460,7 +467,7 @@ describe('FeedbackReports', () => {
       })
 
       // Should have called GET at least twice: once on mount, once after upload
-      expect(axiosInstance.get.mock.calls.length).toBeGreaterThanOrEqual(2)
+      expect(get.mock.calls.length).toBeGreaterThanOrEqual(2)
     })
   })
 
@@ -478,7 +485,7 @@ describe('FeedbackReports', () => {
         },
       ]
 
-      axiosInstance.get.mockResolvedValue({ data: { results: mockHistory } })
+      get.mockResolvedValue({ data: { results: mockHistory }, ok: true, status: 200, error: null })
 
       renderComponent()
 
@@ -502,7 +509,7 @@ describe('FeedbackReports', () => {
         },
       ]
 
-      axiosInstance.get.mockResolvedValue({ data: { results: mockHistory } })
+      get.mockResolvedValue({ data: { results: mockHistory }, ok: true, status: 200, error: null })
 
       renderComponent()
 
@@ -515,8 +522,11 @@ describe('FeedbackReports', () => {
 
   describe('File Input Interaction', () => {
     it('clears file selection after successful upload', async () => {
-      axiosInstance.post.mockResolvedValue({
+      post.mockResolvedValue({
         data: { id: 1, status: 'PENDING' },
+        ok: true,
+        status: 200,
+        error: null,
       })
 
       renderComponent()
@@ -572,7 +582,7 @@ describe('FeedbackReports', () => {
         },
       ]
 
-      axiosInstance.get.mockResolvedValue({ data: { results: mockHistory } })
+      get.mockResolvedValue({ data: { results: mockHistory }, ok: true, status: 200, error: null })
 
       renderComponent()
 
@@ -596,7 +606,7 @@ describe('FeedbackReports', () => {
         },
       ]
 
-      axiosInstance.get.mockResolvedValue({ data: { results: mockHistory } })
+      get.mockResolvedValue({ data: { results: mockHistory }, ok: true, status: 200, error: null })
 
       renderComponent()
 
