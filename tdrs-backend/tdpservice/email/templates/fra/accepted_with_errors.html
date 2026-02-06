@@ -1,7 +1,7 @@
 {% extends '../datafile_base.html' %}
 
 {% block message %}
-Your <b>{{ file_type }}</b> data files submitted by <b>{{ stt_name }}</b> on <b>{{ submission_date }}</b> in Fiscal Year <b>{{ fiscal_year }}</b> have been processed, but <b>some cases within your data contain errors</b>. Review the error report(s) for more details, and <b>resubmit your data files</b> once the errors have been corrected.
+Your <b>{{ file_type }}</b> data files submitted for <b>{{ stt_name }}</b> on <b>{{ submission_date }}</b> in Fiscal Year <b>{{ fiscal_year }}</b> have been processed, but <b>some cases within your data contain errors</b>. Review the error report(s) for more details, and <b>resubmit your data files</b> once the errors have been corrected.
 {% endblock %}
 
 {% block table %}
@@ -39,5 +39,5 @@ Your <b>{{ file_type }}</b> data files submitted by <b>{{ stt_name }}</b> on <b>
 {% endblock %}
 
 {% block end_message %}
-The data file and the error report can now be accessed via the Submission History tab of the Data Files page.
+The data file and the error report can now be accessed on the FRA Data Files page.
 {% endblock %}
