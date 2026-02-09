@@ -145,3 +145,6 @@ group_validators:
 
   # T3 records require at least one T1 record in the same case
   - id: t3_requires_t1
+
+  # Federally funded recipients
+  - id: federally_funded_ssn

@@ -320,15 +320,15 @@ group_validators:
   # Python equivalent: tdr_parser.py:436-464 - generate_funded_ssn_errors
   #
   # Placeholder for future implementation:
-  # - id: federally_funded_ssn
-  #   expr: |
-  #     filter(
-  #       getRecordsOfType(Group, 'T2'),
-  #       { .GetInt('FAMILY_AFFILIATION') == 1 and
-  #         any(getRecordsOfType(Group, 'T1'), { #.GetInt('FUNDING_STREAM') == 1 }) and
-  #         not isValidSSN(.GetString('SSN')) }
-  #     )
-  #   error_type: VALUE_CONSISTENCY
-  #   result_mode: per_record
-  #   message: "Federally funded recipients must have a valid Social Security number."
-  #   fields: [FUNDING_STREAM, FAMILY_AFFILIATION, SSN]
+  - id: federally_funded_ssn
+    expr: |
+      filter(
+        getRecordsOfType(Group, 'T2'),
+        { .GetInt('FAMILY_AFFILIATION') == 1 and
+          any(getRecordsOfType(Group, 'T1'), { #.GetInt('FUNDING_STREAM') == 1 }) and
+          not isValidSSN(.GetString('SSN')) }
+      )
+    error_type: VALUE_CONSISTENCY
+    result_mode: per_record
+    message: "Federally funded recipients must have a valid Social Security number."
+    fields: [FUNDING_STREAM, FAMILY_AFFILIATION, SSN]
