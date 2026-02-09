@@ -1,6 +1,7 @@
 """Commands tests."""
 
 from django.core.management import call_command
+import json
 
 import pytest
 
@@ -27,3 +28,22 @@ def test_no_double_population(stts):
     original_stt_count = STT.objects.count()
     call_command("populate_stts")
     assert STT.objects.count() == original_stt_count
+
+
+@pytest.mark.django_db
+def test_apply_overrides(tmp_path, stts):
+    """Overrides should update existing STTs when requested."""
+    # Rhode Island starts without SSP
+    rhode_island = STT.objects.get(name="Rhode Island")
+    rhode_island.ssp = False
+    rhode_island.save()
+
+    overrides_file = tmp_path / "overrides.json"
+    overrides_file.write_text(
+      json.dumps([{"name": "Rhode Island", "ssp": True}])
+    )
+
+    call_command("populate_stts", apply_overrides=True, overrides=str(overrides_file))
+
+    rhode_island.refresh_from_db()
+    assert rhode_island.ssp is True
