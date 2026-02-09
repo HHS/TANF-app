@@ -24,7 +24,18 @@ describe('Reports', () => {
 
     // Set default mock return values for fetch-instance functions
     get.mockResolvedValue({ data: [], ok: true, status: 200, error: null })
-    post.mockResolvedValue({ data: { id: 1, original_filename: 'test.txt', extension: '.txt', section: 'Active Case Data', quarter: 'Q3' }, ok: true, status: 200, error: null })
+    post.mockResolvedValue({
+      data: {
+        id: 1,
+        original_filename: 'test.txt',
+        extension: '.txt',
+        section: 'Active Case Data',
+        quarter: 'Q3',
+      },
+      ok: true,
+      status: 200,
+      error: null,
+    })
   })
 
   afterEach(() => {

@@ -126,7 +126,12 @@ describe('RequestAccessForm', () => {
   })
 
   it('dispatches requestAccess when form is valid', async () => {
-    patch.mockResolvedValue({ data: { first_name: 'Jane', last_name: 'Doe' }, ok: true, status: 200, error: null })
+    patch.mockResolvedValue({
+      data: { first_name: 'Jane', last_name: 'Doe' },
+      ok: true,
+      status: 200,
+      error: null,
+    })
     const { store } = setup()
 
     // Spy on dispatch
@@ -285,7 +290,12 @@ describe('RequestAccessForm', () => {
   })
 
   it('dispatches updateUserRequest in editMode when data changes', async () => {
-    patch.mockResolvedValue({ data: { first_name: 'John', last_name: 'Smith' }, ok: true, status: 200, error: null })
+    patch.mockResolvedValue({
+      data: { first_name: 'John', last_name: 'Smith' },
+      ok: true,
+      status: 200,
+      error: null,
+    })
 
     const initialValues = {
       firstName: 'John',
@@ -366,7 +376,12 @@ describe('RequestAccessForm', () => {
       has_fra_access: false,
       pending_requests: 1,
     }
-    patch.mockResolvedValue({ data: apiUserResponse, ok: true, status: 200, error: null })
+    patch.mockResolvedValue({
+      data: apiUserResponse,
+      ok: true,
+      status: 200,
+      error: null,
+    })
 
     const { store } = setup(props, storeOverrides)
     // Spy on store.dispatch to monitor calls

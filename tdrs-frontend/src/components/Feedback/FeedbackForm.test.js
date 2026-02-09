@@ -225,7 +225,12 @@ describe('Feedback Form tests', () => {
   })
 
   it('clears error message after rating is selected', async () => {
-    post.mockResolvedValue({ ok: true, status: 201, data: { id: 1 }, error: null })
+    post.mockResolvedValue({
+      ok: true,
+      status: 201,
+      data: { id: 1 },
+      error: null,
+    })
 
     render(
       <FeedbackForm
@@ -250,8 +255,18 @@ describe('Feedback Form tests', () => {
   })
 
   it('submits feedback with rating, message, and anonymous flag', async () => {
-    post.mockResolvedValue({ ok: true, status: 201, data: { id: 1 }, error: null })
-    patch.mockResolvedValue({ ok: true, status: 200, data: { id: 1 }, error: null })
+    post.mockResolvedValue({
+      ok: true,
+      status: 201,
+      data: { id: 1 },
+      error: null,
+    })
+    patch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      data: { id: 1 },
+      error: null,
+    })
 
     render(
       <FeedbackForm
@@ -295,8 +310,18 @@ describe('Feedback Form tests', () => {
   })
 
   it('submits with rating and no feedback message', async () => {
-    post.mockResolvedValue({ ok: true, status: 201, data: { id: 1 }, error: null })
-    patch.mockResolvedValue({ ok: true, status: 200, data: { id: 1 }, error: null })
+    post.mockResolvedValue({
+      ok: true,
+      status: 201,
+      data: { id: 1 },
+      error: null,
+    })
+    patch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      data: { id: 1 },
+      error: null,
+    })
 
     render(
       <FeedbackForm
@@ -328,8 +353,18 @@ describe('Feedback Form tests', () => {
   })
 
   it('submits form using Enter key on submit button', async () => {
-    post.mockResolvedValue({ ok: true, status: 201, data: { id: 1 }, error: null })
-    patch.mockResolvedValue({ ok: true, status: 200, data: { id: 1 }, error: null })
+    post.mockResolvedValue({
+      ok: true,
+      status: 201,
+      data: { id: 1 },
+      error: null,
+    })
+    patch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      data: { id: 1 },
+      error: null,
+    })
 
     render(
       <FeedbackForm
@@ -352,8 +387,18 @@ describe('Feedback Form tests', () => {
   })
 
   it('submits form with Cmd/Ctrl + Enter from inside textarea', async () => {
-    post.mockResolvedValue({ ok: true, status: 201, data: { id: 1 }, error: null })
-    patch.mockResolvedValue({ ok: true, status: 200, data: { id: 1 }, error: null })
+    post.mockResolvedValue({
+      ok: true,
+      status: 201,
+      data: { id: 1 },
+      error: null,
+    })
+    patch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      data: { id: 1 },
+      error: null,
+    })
 
     render(
       <FeedbackForm
@@ -380,8 +425,18 @@ describe('Feedback Form tests', () => {
   })
 
   it('resets form fields after successful submission', async () => {
-    post.mockResolvedValue({ ok: true, status: 201, data: { id: 1 }, error: null })
-    patch.mockResolvedValue({ ok: true, status: 200, data: { id: 1 }, error: null })
+    post.mockResolvedValue({
+      ok: true,
+      status: 201,
+      data: { id: 1 },
+      error: null,
+    })
+    patch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      data: { id: 1 },
+      error: null,
+    })
 
     render(
       <FeedbackForm
@@ -408,7 +463,12 @@ describe('Feedback Form tests', () => {
 
   it('does not reset form on failed feedback submission', async () => {
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
-    post.mockResolvedValue({ ok: false, status: 500, data: null, error: new Error('Server error') })
+    post.mockResolvedValue({
+      ok: false,
+      status: 500,
+      data: null,
+      error: new Error('Server error'),
+    })
 
     render(
       <FeedbackForm
@@ -463,7 +523,12 @@ describe('Feedback Form tests', () => {
 
   it('logs an error if feedbackPost returns non-ok status', async () => {
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
-    post.mockResolvedValue({ ok: false, status: 500, data: null, error: new Error('Server error') })
+    post.mockResolvedValue({
+      ok: false,
+      status: 500,
+      data: null,
+      error: new Error('Server error'),
+    })
 
     render(
       <FeedbackForm isGeneralFeedback={true} onFeedbackSubmit={jest.fn()} />
@@ -483,7 +548,12 @@ describe('Feedback Form tests', () => {
 
   it('logs error if API returns error', async () => {
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
-    post.mockResolvedValue({ ok: false, status: 500, data: null, error: new Error('Network down') })
+    post.mockResolvedValue({
+      ok: false,
+      status: 500,
+      data: null,
+      error: new Error('Network down'),
+    })
 
     render(
       <FeedbackForm isGeneralFeedback={true} onFeedbackSubmit={jest.fn()} />
@@ -524,8 +594,18 @@ describe('Feedback Form tests', () => {
   })
 
   it('submits minimal fields when isGeneralFeedback is false', async () => {
-    post.mockResolvedValue({ ok: true, status: 201, data: { id: 1 }, error: null })
-    patch.mockResolvedValue({ ok: true, status: 200, data: { id: 1 }, error: null })
+    post.mockResolvedValue({
+      ok: true,
+      status: 201,
+      data: { id: 1 },
+      error: null,
+    })
+    patch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      data: { id: 1 },
+      error: null,
+    })
 
     render(
       <FeedbackForm
@@ -545,19 +625,16 @@ describe('Feedback Form tests', () => {
     fireEvent.click(screen.getByRole('button', { name: /send feedback/i }))
 
     await waitFor(() => {
-      expect(patch).toHaveBeenCalledWith(
-        expect.any(String),
-        {
-          attachments: [],
-          component: 'data-file-submission',
-          feedback_type: 'fra_submission_feedback',
-          page_url: 'http://localhost/',
-          widget_id: 'unknown-submission-feedback',
-          rating: 5,
-          feedback: '', // comment left blank
-          anonymous: false, // anonymous checkbox hidden
-        }
-      )
+      expect(patch).toHaveBeenCalledWith(expect.any(String), {
+        attachments: [],
+        component: 'data-file-submission',
+        feedback_type: 'fra_submission_feedback',
+        page_url: 'http://localhost/',
+        widget_id: 'unknown-submission-feedback',
+        rating: 5,
+        feedback: '', // comment left blank
+        anonymous: false, // anonymous checkbox hidden
+      })
       expect(mockOnFeedbackSubmit).toHaveBeenCalled()
     })
   })

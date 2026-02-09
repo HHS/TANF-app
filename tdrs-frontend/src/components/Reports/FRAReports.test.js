@@ -42,7 +42,18 @@ describe('FRA Reports Page', () => {
   beforeEach(() => {
     jest.useFakeTimers()
     get.mockResolvedValue({ data: [], ok: true, status: 200, error: null })
-    post.mockResolvedValue({ data: { id: 1, original_filename: 'test.txt', extension: '.txt', section: 'Active Case Data', quarter: 'Q1' }, ok: true, status: 200, error: null })
+    post.mockResolvedValue({
+      data: {
+        id: 1,
+        original_filename: 'test.txt',
+        extension: '.txt',
+        section: 'Active Case Data',
+        quarter: 'Q1',
+      },
+      ok: true,
+      status: 200,
+      error: null,
+    })
   })
   afterEach(() => {
     jest.runOnlyPendingTimers()

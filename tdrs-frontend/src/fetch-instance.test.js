@@ -10,7 +10,8 @@ const mockResponse = (body, options = {}) => ({
     get: (key) => options.contentType || 'application/json',
   },
   json: () => Promise.resolve(body),
-  text: () => Promise.resolve(typeof body === 'string' ? body : JSON.stringify(body)),
+  text: () =>
+    Promise.resolve(typeof body === 'string' ? body : JSON.stringify(body)),
   blob: () => Promise.resolve(new Blob([JSON.stringify(body)])),
 })
 
@@ -117,7 +118,12 @@ describe('fetch-instance', () => {
         }),
         body: JSON.stringify({ name: 'test' }),
       })
-      expect(result).toEqual({ data: responseData, error: null, status: 200, ok: true })
+      expect(result).toEqual({
+        data: responseData,
+        error: null,
+        status: 200,
+        ok: true,
+      })
     })
 
     it('makes a POST request with FormData', async () => {
@@ -138,11 +144,14 @@ describe('fetch-instance', () => {
 
       await post('/api/create', {})
 
-      expect(fetch).toHaveBeenCalledWith('/api/create', expect.objectContaining({
-        headers: expect.objectContaining({
-          'X-CSRFToken': 'my-csrf-token',
-        }),
-      }))
+      expect(fetch).toHaveBeenCalledWith(
+        '/api/create',
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            'X-CSRFToken': 'my-csrf-token',
+          }),
+        })
+      )
     })
 
     it('handles network errors', async () => {
@@ -176,7 +185,12 @@ describe('fetch-instance', () => {
         }),
         body: JSON.stringify({ name: 'updated' }),
       })
-      expect(result).toEqual({ data: responseData, error: null, status: 200, ok: true })
+      expect(result).toEqual({
+        data: responseData,
+        error: null,
+        status: 200,
+        ok: true,
+      })
     })
 
     it('includes CSRF token in PATCH headers', async () => {
@@ -185,11 +199,14 @@ describe('fetch-instance', () => {
 
       await patch('/api/update/1', {})
 
-      expect(fetch).toHaveBeenCalledWith('/api/update/1', expect.objectContaining({
-        headers: expect.objectContaining({
-          'X-CSRFToken': 'patch-csrf-token',
-        }),
-      }))
+      expect(fetch).toHaveBeenCalledWith(
+        '/api/update/1',
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            'X-CSRFToken': 'patch-csrf-token',
+          }),
+        })
+      )
     })
 
     it('handles network errors', async () => {
@@ -215,11 +232,14 @@ describe('fetch-instance', () => {
       await get('/api/test')
 
       expect(faro.api.getTraceContext).toHaveBeenCalled()
-      expect(fetch).toHaveBeenCalledWith('/api/test', expect.objectContaining({
-        headers: expect.objectContaining({
-          traceparent: 'test-trace-id',
-        }),
-      }))
+      expect(fetch).toHaveBeenCalledWith(
+        '/api/test',
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            traceparent: 'test-trace-id',
+          }),
+        })
+      )
     })
 
     it('handles faro getTraceContext throwing an error', async () => {

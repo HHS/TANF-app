@@ -36,7 +36,12 @@ describe('FeedbackReports', () => {
     jest.clearAllMocks()
 
     // Mock successful history fetch by default
-    get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
+    get.mockResolvedValue({
+      data: { results: [] },
+      ok: true,
+      status: 200,
+      error: null,
+    })
 
     // Mock FileReader for async file handling
     global.FileReader = jest.fn().mockImplementation(() => ({
@@ -166,7 +171,12 @@ describe('FeedbackReports', () => {
         error: null,
       })
 
-      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: [] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderComponent()
 
@@ -288,7 +298,13 @@ describe('FeedbackReports', () => {
 
     it('shows loading state during upload', async () => {
       post.mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve({ data: {}, ok: true, status: 200, error: null }), 100))
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () => resolve({ data: {}, ok: true, status: 200, error: null }),
+              100
+            )
+          )
       )
 
       renderComponent()
@@ -336,7 +352,12 @@ describe('FeedbackReports', () => {
         },
       ]
 
-      get.mockResolvedValue({ data: { results: mockHistory }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: mockHistory },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderComponent()
 
@@ -351,7 +372,12 @@ describe('FeedbackReports', () => {
     })
 
     it('displays empty state when no history exists', async () => {
-      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: [] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderComponent()
 
@@ -362,7 +388,19 @@ describe('FeedbackReports', () => {
 
     it('displays loading state while fetching history', () => {
       get.mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve({ data: { results: [] }, ok: true, status: 200, error: null }), 100))
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () =>
+                resolve({
+                  data: { results: [] },
+                  ok: true,
+                  status: 200,
+                  error: null,
+                }),
+              100
+            )
+          )
       )
 
       renderComponent()
@@ -371,7 +409,12 @@ describe('FeedbackReports', () => {
     })
 
     it('displays error alert when history fetch fails', async () => {
-      get.mockResolvedValue({ data: null, ok: false, status: 500, error: new Error('Failed to fetch') })
+      get.mockResolvedValue({
+        data: null,
+        ok: false,
+        status: 500,
+        error: new Error('Failed to fetch'),
+      })
 
       renderComponent()
 
@@ -404,7 +447,12 @@ describe('FeedbackReports', () => {
         },
       ]
 
-      get.mockResolvedValue({ data: { results: mockHistory }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: mockHistory },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderComponent()
 
@@ -435,8 +483,18 @@ describe('FeedbackReports', () => {
 
       // Initial fetch returns empty, all subsequent calls return mockHistory
       get
-        .mockResolvedValueOnce({ data: { results: [] }, ok: true, status: 200, error: null }) // Initial fetch
-        .mockResolvedValue({ data: { results: mockHistory }, ok: true, status: 200, error: null }) // All subsequent calls (including after upload)
+        .mockResolvedValueOnce({
+          data: { results: [] },
+          ok: true,
+          status: 200,
+          error: null,
+        }) // Initial fetch
+        .mockResolvedValue({
+          data: { results: mockHistory },
+          ok: true,
+          status: 200,
+          error: null,
+        }) // All subsequent calls (including after upload)
 
       renderComponent()
 
@@ -485,7 +543,12 @@ describe('FeedbackReports', () => {
         },
       ]
 
-      get.mockResolvedValue({ data: { results: mockHistory }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: mockHistory },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderComponent()
 
@@ -509,7 +572,12 @@ describe('FeedbackReports', () => {
         },
       ]
 
-      get.mockResolvedValue({ data: { results: mockHistory }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: mockHistory },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderComponent()
 
@@ -582,7 +650,12 @@ describe('FeedbackReports', () => {
         },
       ]
 
-      get.mockResolvedValue({ data: { results: mockHistory }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: mockHistory },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderComponent()
 
@@ -606,7 +679,12 @@ describe('FeedbackReports', () => {
         },
       ]
 
-      get.mockResolvedValue({ data: { results: mockHistory }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: mockHistory },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderComponent()
 
