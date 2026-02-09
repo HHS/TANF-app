@@ -155,7 +155,7 @@ const FeedbackReportsUpload = forwardRef(function FeedbackReportsUpload(
         )}
         <div className="usa-date-picker">
           <input
-            className={`usa-input ${dateError ? 'usa-input--error' : ''}`}
+            className="usa-input"
             id="date-extracted-on"
             name="date-extracted-on"
             aria-labelledby="date-extracted-on-label"

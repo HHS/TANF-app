@@ -300,13 +300,6 @@ describe('FeedbackReportsUpload', () => {
       expect(formGroups[1]).toHaveClass('usa-form-group--error')
     })
 
-    it('applies error class to date input when dateError is set', () => {
-      renderComponent({ dateError: 'Date is required' })
-
-      const dateInput = screen.getByLabelText('Data extracted from database on')
-      expect(dateInput).toHaveClass('usa-input--error')
-    })
-
     it('does not show date error when dateError is null', () => {
       renderComponent({ dateError: null })
 
