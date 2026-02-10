@@ -109,6 +109,7 @@ function FileUpload({
   fileType,
   label,
   setLocalAlertState,
+  setProcessingAlertState,
 }) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
   // The set of uploaded files in our Redux state
@@ -166,6 +167,13 @@ function FileUpload({
       type: null,
       message: null,
     })
+    if (setProcessingAlertState) {
+      setProcessingAlertState({
+        active: false,
+        type: null,
+        message: null,
+      })
+    }
 
     const { name: section } = event.target
     const file = event.target.files[0]

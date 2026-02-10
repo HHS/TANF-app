@@ -154,6 +154,7 @@ const UploadForm = ({
   handleCancel,
   handleUpload,
   setLocalAlertState,
+  setProcessingAlertState,
   file,
   setSelectedFile,
   section,
@@ -200,6 +201,13 @@ const UploadForm = ({
       type: null,
       message: null,
     })
+    if (setProcessingAlertState) {
+      setProcessingAlertState({
+        active: false,
+        type: null,
+        message: null,
+      })
+    }
 
     const fileInputValue = e.target.files[0]
     const input = inputRef.current
@@ -876,6 +884,7 @@ const FRAReportsContent = () => {
                 handleUpload={handleUpload}
                 handleCancel={handleCancel}
                 setLocalAlertState={setLocalAlertState}
+                setProcessingAlertState={setProcessingAlertState}
                 file={fraSelectedFile}
                 setSelectedFile={setFraSelectedFile}
                 section={getReportTypeLabel()}

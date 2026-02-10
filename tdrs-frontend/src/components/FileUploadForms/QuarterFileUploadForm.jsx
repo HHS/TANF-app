@@ -77,6 +77,7 @@ const QuarterFileUploadForm = ({ stt }) => {
     onSubmit,
     handleCancel,
     setLocalAlertState,
+    setProcessingAlertState,
   } = useFileUploadForm({
     stt,
     transformFiles,
@@ -134,6 +135,7 @@ const QuarterFileUploadForm = ({ stt }) => {
             fileType={fileTypeInputValue}
             label={quarterLabel}
             setLocalAlertState={setLocalAlertState}
+            setProcessingAlertState={setProcessingAlertState}
           />
         ))}
 

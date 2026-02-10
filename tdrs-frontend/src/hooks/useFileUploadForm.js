@@ -198,5 +198,6 @@ export const useFileUploadForm = ({
 
     // Context setters (for FileUpload components)
     setLocalAlertState,
+    setProcessingAlertState,
   }
 }

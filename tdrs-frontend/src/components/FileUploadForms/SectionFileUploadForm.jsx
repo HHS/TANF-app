@@ -64,6 +64,7 @@ const SectionFileUploadForm = ({ stt }) => {
     onSubmit,
     handleCancel,
     setLocalAlertState,
+    setProcessingAlertState,
   } = useFileUploadForm({
     stt,
     transformFiles,
@@ -121,6 +122,7 @@ const SectionFileUploadForm = ({ stt }) => {
             quarter={quarterInputValue}
             fileType={fileTypeInputValue}
             setLocalAlertState={setLocalAlertState}
+            setProcessingAlertState={setProcessingAlertState}
           />
         ))}
 
