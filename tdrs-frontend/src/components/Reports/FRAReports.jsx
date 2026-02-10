@@ -834,30 +834,44 @@ const FRAReportsContent = () => {
 
           {!isRegionalStaff && (
             <>
+              {/* Screen-reader announcer */}
+              <div className="usa-sr-only">
+                <div role="status" aria-live="polite" aria-atomic="true">
+                  {localAlert.active ? localAlert.message : ''}
+                </div>
+
+                <div role="status" aria-live="polite" aria-atomic="true">
+                  {processingAlert.active ? processingAlert.message : ''}
+                </div>
+              </div>
+
+              {/* Visible alerts (not in accessibility tree, prevents duplicate screen reads */}
               {localAlert.active && (
                 <div
-                  ref={alertRef}
                   className={classNames('usa-alert usa-alert--slim', {
                     [`usa-alert--${localAlert.type}`]: true,
                   })}
+                  aria-hidden="true"
                 >
-                  <div className="usa-alert__body" role="alert">
+                  <div className="usa-alert__body">
                     <p className="usa-alert__text">{localAlert.message}</p>
                   </div>
                 </div>
               )}
+
               {processingAlert.active && (
                 <div
-                  ref={processingAlertRef}
                   className={classNames('usa-alert usa-alert--slim', {
                     [`usa-alert--${processingAlert.type}`]: true,
                   })}
+                  aria-hidden="true"
                 >
-                  <div className="usa-alert__body" role="alert">
+                  <div className="usa-alert__body">
                     <p className="usa-alert__text">{processingAlert.message}</p>
                   </div>
                 </div>
               )}
+
               <UploadForm
                 handleUpload={handleUpload}
                 handleCancel={handleCancel}
