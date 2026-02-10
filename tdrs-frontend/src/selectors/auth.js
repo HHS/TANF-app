@@ -98,7 +98,13 @@ export const accountCanSelectStt = (state) =>
     'OFA Regional Staff',
   ].includes(selectPrimaryUserRole(state)?.name)
 
+// Any user who can view feedback reports (STT Data Analysts or Admins)
 export const accountCanViewFeedbackReports = (state) =>
+  accountStatusIsApproved(state) &&
+  selectUserPermissions(state).includes('view_reportfile')
+
+// Only admins who can upload feedback reports
+export const accountCanUploadFeedbackReports = (state) =>
   accountStatusIsApproved(state) &&
   selectUserPermissions(state).includes('view_reportsource') &&
   selectUserPermissions(state).includes('add_reportsource')
