@@ -2,7 +2,10 @@
 
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
+from django.core.cache import caches
 from django.db import models
+from django.db.models.signals import post_delete, post_migrate, post_save
+from django.dispatch import receiver
 
 
 class FeatureFlag(models.Model):
@@ -11,9 +14,9 @@ class FeatureFlag(models.Model):
     class Meta:
         """Metadata."""
 
-        ordering = ['feature_name']
-        verbose_name = 'Feature Flag'
-        verbose_name_plural = 'Feature Flags'
+        ordering = ["feature_name"]
+        verbose_name = "Feature Flag"
+        verbose_name_plural = "Feature Flags"
 
     feature_name = models.CharField(max_length=100, unique=True, db_index=True)
     enabled = models.BooleanField(default=False)
@@ -26,6 +29,19 @@ class FeatureFlag(models.Model):
         """Return string representation of the feature flag."""
         status = "enabled" if self.enabled else "disabled"
         return f"{self.feature_name} ({status})"
+
+
+@receiver([post_delete, post_migrate, post_save], sender=FeatureFlag)
+def clear_feature_flag_cache(sender, instance, **kwargs):
+    """
+    FeatureFlag post-save signal invalidates the cache after any changes to feature flags.
+
+    This depends on the cache being separated by feature, so the entire cache can be deleted.
+    There are too many options for headers/cookies to determine the key programatically,
+    so we segment the different featuers into separate caches to be able to invalidate efficiently
+    """
+    cache = caches["feature-flags"]
+    cache.clear()
 
 
 """Global permissions
