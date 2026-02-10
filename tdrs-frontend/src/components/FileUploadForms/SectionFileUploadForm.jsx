@@ -57,8 +57,10 @@ const SectionFileUploadForm = ({ stt }) => {
     fileTypeInputValue,
     uploadedFiles,
     localAlert,
+    processingAlert,
     isSubmitting,
     alertRef,
+    processingAlertRef,
     onSubmit,
     handleCancel,
     setLocalAlertState,
@@ -80,6 +82,18 @@ const SectionFileUploadForm = ({ stt }) => {
         >
           <div className="usa-alert__body" role="alert">
             <p className="usa-alert__text">{localAlert.message}</p>
+          </div>
+        </div>
+      )}
+      {processingAlert.active && (
+        <div
+          ref={processingAlertRef}
+          className={classNames('usa-alert usa-alert--slim', {
+            [`usa-alert--${processingAlert.type}`]: true,
+          })}
+        >
+          <div className="usa-alert__body" role="alert">
+            <p className="usa-alert__text">{processingAlert.message}</p>
           </div>
         </div>
       )}

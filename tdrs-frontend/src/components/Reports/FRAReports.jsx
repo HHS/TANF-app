@@ -508,6 +508,9 @@ const FRAReportsContent = () => {
     setModalTriggerSource,
     localAlert,
     setLocalAlertState,
+    processingAlert,
+    setProcessingAlertState,
+    processingAlertRef,
     fraSelectedFile,
     setFraSelectedFile,
     fraUploadError,
@@ -659,10 +662,10 @@ const FRAReportsContent = () => {
                 datafile: response?.data,
               },
             })
-            setLocalAlertState({
+            setProcessingAlertState({
               active: true,
               type: 'success',
-              message: 'Parsing complete.',
+              message: 'Processing complete.',
             })
           },
           (error) => {
@@ -782,6 +785,16 @@ const FRAReportsContent = () => {
     }
   }, [localAlert, alertRef])
 
+  useEffect(() => {
+    if (
+      processingAlert.active &&
+      processingAlertRef &&
+      processingAlertRef.current
+    ) {
+      processingAlertRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [processingAlert, processingAlertRef])
+
   return (
     <div className="page-container" style={{ position: 'relative' }}>
       <div className={classNames({ 'border-bottom': allFieldsFilled })}>
@@ -824,13 +837,24 @@ const FRAReportsContent = () => {
               {localAlert.active && (
                 <div
                   ref={alertRef}
-                  tabIndex={-1}
                   className={classNames('usa-alert usa-alert--slim', {
                     [`usa-alert--${localAlert.type}`]: true,
                   })}
                 >
                   <div className="usa-alert__body" role="alert">
                     <p className="usa-alert__text">{localAlert.message}</p>
+                  </div>
+                </div>
+              )}
+              {processingAlert.active && (
+                <div
+                  ref={processingAlertRef}
+                  className={classNames('usa-alert usa-alert--slim', {
+                    [`usa-alert--${processingAlert.type}`]: true,
+                  })}
+                >
+                  <div className="usa-alert__body" role="alert">
+                    <p className="usa-alert__text">{processingAlert.message}</p>
                   </div>
                 </div>
               )}
