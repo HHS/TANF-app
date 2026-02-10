@@ -407,9 +407,7 @@ describe('Reports', () => {
     await waitFor(() => expect(getByText('section2.txt')).toBeInTheDocument())
     await waitFor(() => expect(getByText('section3.txt')).toBeInTheDocument())
     await waitFor(() => expect(getByText('section4.txt')).toBeInTheDocument())
-    await waitFor(() =>
-      expect(store.dispatch).toHaveBeenCalledTimes(14)
-    )
+    await waitFor(() => expect(store.dispatch).toHaveBeenCalledTimes(14))
 
     fireEvent.click(getByText('Submit Data Files'))
     await waitFor(() => getByRole('alert'))
