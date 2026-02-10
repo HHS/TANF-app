@@ -24,6 +24,9 @@ export const uploadFile = (file_input, file_path, willError = false) => {
       'exist'
     )
     cy.get('.usa-alert__text').should('not.exist')
+    cy.get('button')
+      .contains('Submit')
+      .should('not.be.disabled', { timeout: 5000 })
   }
 }
 
@@ -198,7 +201,10 @@ export const uploadSectionFile = (
       'is-loading'
     )
     cy.get('.usa-alert__text').should('not.exist')
-    cy.contains('button', 'Submit').click()
+    cy.get('button')
+      .contains('Submit')
+      .should('not.be.disabled', { timeout: 5000 })
+    cy.contains('button', 'Submit').should('be.enabled').click()
     cy.wait('@dataFileSubmit', { timeout: 60000 }).then(({ response }) => {
       const id = response?.body?.id
       if (!id) throw new Error('Missing data_file id in response')

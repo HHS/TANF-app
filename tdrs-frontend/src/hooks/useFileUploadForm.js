@@ -110,15 +110,6 @@ export const useFileUploadForm = ({
   const onSubmit = async (event) => {
     event.preventDefault()
 
-    if (uploadedFiles.length === 0) {
-      setLocalAlertState({
-        active: true,
-        type: 'error',
-        message: 'No changes have been made to data files',
-      })
-      return
-    }
-
     try {
       // Transform files if needed (e.g., for Program Audit)
       const filesToSubmit = transformFiles
