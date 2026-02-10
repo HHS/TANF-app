@@ -504,7 +504,13 @@ describe('FRA Reports Page', () => {
       const { getByText } = await setup()
 
       const submitButton = getByText('Submit Report', { selector: 'button' })
-      expect(submitButton).not.toBeEnabled()
+      fireEvent.click(submitButton)
+
+      await waitFor(() =>
+        expect(
+          getByText('No changes have been made to data files')
+        ).toBeInTheDocument()
+      )
     })
 
     it('Shows an error if a non-allowed file type is selected', async () => {
