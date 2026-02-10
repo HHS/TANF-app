@@ -145,7 +145,7 @@ def test_q1_files_found_using_current_year():
 
 @pytest.mark.django_db
 def test_q1_files_with_previous_year_are_not_matched():
-    """DataFiles stored with the previous year should not satisfy the current period."""
+    """Data files stored with the previous year should not satisfy the current period."""
     stt, analyst = _create_stt_with_analyst(
         "TestState",
         {
