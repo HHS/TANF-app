@@ -22,7 +22,6 @@ from tdpservice.email.helpers.account_deactivation_warning import (
     send_deactivation_warning_email,
 )
 from tdpservice.email.helpers.admin_notifications import email_admin_deactivated_user
-from tdpservice.parsers.util import calendar_to_fiscal
 from tdpservice.stts.models import STT
 from tdpservice.users.models import (
     AccountApprovalStatusChoices,
