@@ -8,7 +8,10 @@ import LoginCallback from '../LoginCallback'
 import Reports, { FRAReports } from '../Reports'
 import FeedbackReports from '../FeedbackReports/FeedbackReports'
 import { useSelector } from 'react-redux'
-import { accountIsInReview } from '../../selectors/auth'
+import {
+  accountIsInReview,
+  accountCanUploadFeedbackReports,
+} from '../../selectors/auth'
 import { faro, FaroRoutes } from '@grafana/faro-react'
 
 import SiteMap from '../SiteMap'
@@ -32,6 +35,9 @@ const AppRoutes = () => {
   const user = useSelector((state) => state.auth.user)
   const sttList = useSelector((state) => state?.stts?.sttList)
   const userAccountInReview = useSelector(accountIsInReview)
+  const userCanUploadFeedbackReports = useSelector(
+    accountCanUploadFeedbackReports
+  )
 
   const [isInEditMode, setIsInEditMode] = useState(false)
 
@@ -47,6 +53,13 @@ const AppRoutes = () => {
       : 'Edit Profile'
     : 'My Profile'
   const profileType = userAccountInReview ? 'access request' : 'profile'
+
+  const feedbackReportsTitle = userCanUploadFeedbackReports
+    ? 'Upload Feedback Reports'
+    : 'Feedback Reports'
+  const feedbackReportsSubtitle = userCanUploadFeedbackReports
+    ? 'TANF WPR, SSP WPR, TANF & SSP Combined, and Time Limit Reports'
+    : 'Work Participation Rate and Time Limit Reports'
 
   const setEditState = (isEditing) => {
     setIsInEditMode(isEditing)
@@ -103,9 +116,9 @@ const AppRoutes = () => {
         path="/feedback-reports"
         element={
           <PrivateRoute
-            title="Upload Feedback Reports"
-            subtitle="TANF WPR, SSP WPR, TANF & SSP Combined, and Time Limit Reports"
-            requiredPermissions={['view_reportsource', 'add_reportsource']}
+            title={feedbackReportsTitle}
+            subtitle={feedbackReportsSubtitle}
+            requiredPermissions={['view_reportfile']}
             requiresApproval
           >
             <FeedbackReports />
