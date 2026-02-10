@@ -188,9 +188,9 @@ def send_data_submission_reminder(due_date, reporting_period, fiscal_quarter):
             .values_list("program_type", "section")
             .distinct()
         )
-        
+
         submitted_programs_sections = [f"{ps[0]} {ps[1]}".upper() for ps in submitted_programs_sections]
-        
+
         required_program_sections = loc.filenames.keys()
         required_program_sections = [ps.upper() for ps in required_program_sections]
 
