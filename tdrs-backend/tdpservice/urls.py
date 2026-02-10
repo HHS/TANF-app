@@ -12,7 +12,7 @@ from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework.permissions import AllowAny
 
-from .core.views import write_logs
+from .core.views import FeatureFlagView, write_logs
 from .users.api.authorization_check import AuthorizationCheck, PlgAuthorizationCheck
 from .users.api.login import (
     CypressLoginDotGovAuthenticationOverride,
@@ -43,6 +43,7 @@ urlpatterns = [
     path("data_files/", include("tdpservice.data_files.urls")),
     path("reports/", include("tdpservice.reports.urls")),
     path("logs/", write_logs),
+    path("feature-flags/", FeatureFlagView.as_view(), name="feature-flags"),
     path("security/", include("tdpservice.security.urls")),
 ]
 

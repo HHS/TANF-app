@@ -1,13 +1,20 @@
 """Define core, generic views of the app."""
+
 import logging
 
+from django.conf import settings
 from django.contrib.admin.models import ADDITION, LogEntry
 from django.contrib.contenttypes.models import ContentType
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 
+from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from tdpservice.core.models import FeatureFlag
+from tdpservice.core.serializers import FeatureFlagSerializer
 from tdpservice.data_files.models import DataFile
 
 logger = logging.getLogger()
@@ -56,3 +63,25 @@ def write_logs(request):
             )
 
     return Response("Success")
+
+
+class FeatureFlagView(generics.ListAPIView):
+    """Simple view to get all STTs alphabetized."""
+
+    pagination_class = None
+    permission_classes = []  # [IsAuthenticated]
+    queryset = FeatureFlag.objects.all()
+    serializer_class = FeatureFlagSerializer
+
+    @method_decorator(
+        [
+            cache_page(
+                settings.DEFAULT_CACHE_TIMEOUT,
+                cache="feature-flags",
+                key_prefix="list",
+            ),
+        ]
+    )
+    def list(self, request):
+        """Get the feature flag list from the cache if available, else fetch the queryset."""
+        return super().list(request)
