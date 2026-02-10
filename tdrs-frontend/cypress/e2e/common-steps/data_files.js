@@ -24,6 +24,11 @@ export const uploadFile = (file_input, file_path, willError = false) => {
       'exist'
     )
     cy.get('.usa-alert__text').should('not.exist')
+    cy.contains('button', 'Submit', { timeout: 5000 }).should(
+      'have.attr',
+      'data-has-uploaded-files',
+      'true'
+    )
   }
 }
 
@@ -198,6 +203,11 @@ export const uploadSectionFile = (
       'is-loading'
     )
     cy.get('.usa-alert__text').should('not.exist')
+    cy.contains('button', 'Submit', { timeout: 5000 }).should(
+      'have.attr',
+      'data-has-uploaded-files',
+      'true'
+    )
     cy.contains('button', 'Submit').click()
     cy.wait('@dataFileSubmit', { timeout: 60000 }).then(({ response }) => {
       const id = response?.body?.id

@@ -334,6 +334,7 @@ const UploadForm = ({
             className="card:margin-y-1"
             type="submit"
             disabled={isSubmitting}
+            data-has-uploaded-files={fraHasUploadedFile}
           >
             {isSubmitting ? 'Submitting...' : 'Submit Report'}
           </Button>

@@ -101,6 +101,7 @@ const SectionFileUploadForm = ({ stt }) => {
             className="card:margin-y-1"
             type="submit"
             disabled={isSubmitting}
+            data-has-uploaded-files={uploadedFiles.length > 0}
           >
             {isSubmitting ? 'Submitting...' : 'Submit Data Files'}
           </Button>
