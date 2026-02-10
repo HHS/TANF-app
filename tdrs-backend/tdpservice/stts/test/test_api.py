@@ -1,11 +1,19 @@
 """API STT Tests."""
+
+from unittest.mock import MagicMock, patch
+
 from django.contrib.auth import get_user_model
+from django.core.cache import caches
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 import pytest
 from rest_framework import status
+from rest_framework.test import APIClient
 
+from tdpservice.conftest import UserFactory
 from tdpservice.stts.models import STT, Region
+from tdpservice.stts.views import STTApiAlphaView
 
 User = get_user_model()
 
@@ -68,28 +76,6 @@ def test_can_get_stts(api_client, stt_user, stts):
 
 
 @pytest.mark.django_db
-def test_can_get_alpha_stts(api_client, stt_user, stts):
-    """Test endpoint returns the alphabetized listing of STTs."""
-    api_client.login(username=stt_user.username, password="test_password")
-    response = api_client.get(reverse("stts-alpha"))
-    assert response.status_code == status.HTTP_200_OK
-    assert len(response.data) == STT.objects.count()
-
-    state_name = response.data[0]["name"]
-    assert STT.objects.filter(name=state_name).exists()
-
-
-@pytest.mark.django_db
-def test_alpha_stts_is_sorted(api_client, stt_user, stts):
-    """Test alphabetized endpoint is alphabetized."""
-    api_client.login(username=stt_user.username, password="test_password")
-    response = api_client.get(reverse("stts-alpha"))
-    response_names = [datum["name"] for datum in response.data]
-    database_names = STT.objects.values_list("name", flat=True).order_by("name")
-    assert response_names == list(database_names)
-
-
-@pytest.mark.django_db
 def test_can_get_by_region_stts(api_client, stt_user, stts):
     """Test endpoint returns the alphabetized listing of STTs."""
     api_client.login(username=stt_user.username, password="test_password")
@@ -115,9 +101,110 @@ def test_can_get_by_region_stts(api_client, stt_user, stts):
 
 
 @pytest.mark.django_db
+@override_settings(
+    CACHES={
+        "stts": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "unique-test-cache-location",  # Unique location to avoid conflicts
+            "KEY_PREFIX": "test",
+        },
+    }
+)
 def test_stts_and_stts_alpha_are_dissimilar(api_client, stt_user, stts):
     """The default STTs endpoint is not sorted the same as the alpha."""
     api_client.login(username=stt_user.username, password="test_password")
     alpha_response = api_client.get(reverse("stts-alpha"))
     default_response = api_client.get(reverse("stts"))
     assert not alpha_response.data == default_response.data
+
+
+@pytest.mark.django_db
+@override_settings(
+    CACHES={
+        "stts": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "unique-test-cache-location",  # Unique location to avoid conflicts
+            "KEY_PREFIX": "test",
+        },
+    }
+)
+def test_can_get_alpha_stts(api_client, stt_user, stts):
+    """Test endpoint returns the alphabetized listing of STTs."""
+    api_client.login(username=stt_user.username, password="test_password")
+    response = api_client.get(reverse("stts-alpha"))
+    assert response.status_code == status.HTTP_200_OK
+    assert len(response.data) == STT.objects.count()
+
+    state_name = response.data[0]["name"]
+    assert STT.objects.filter(name=state_name).exists()
+
+
+@pytest.mark.django_db
+@override_settings(
+    CACHES={
+        "stts": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "unique-test-cache-location",  # Unique location to avoid conflicts
+            "KEY_PREFIX": "test",
+        },
+    }
+)
+def test_alpha_stts_is_sorted(api_client, stt_user, stts):
+    """Test alphabetized endpoint is alphabetized."""
+    api_client.login(username=stt_user.username, password="test_password")
+    response = api_client.get(reverse("stts-alpha"))
+    response_names = [datum["name"] for datum in response.data]
+    database_names = STT.objects.values_list("name", flat=True).order_by("name")
+    assert response_names == list(database_names)
+
+
+@override_settings(
+    CACHES={
+        "stts": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "unique-test-cache-location",  # Unique location to avoid conflicts
+            "KEY_PREFIX": "test",
+        },
+    }
+)
+class TestSTTApiAlphaViewCache(TestCase):
+    """Tests for the STTApiAlphaView class."""
+
+    api_client = APIClient()
+
+    def setUp(self):
+        super().setUp()
+        cache = caches["stts"]
+        cache.clear()
+
+        user = UserFactory.create()
+        self.api_client.login(username=user.username, password="test_password")
+
+    def test_existing_cache_avoids_lookup(self):
+        """Test that no lookup is performed if flags exist in the cache."""
+        mock_queryset = MagicMock()
+        with patch.object(
+            STTApiAlphaView, "get_queryset", return_value=mock_queryset
+        ) as mock_method:
+            # request and check the cache was cold
+            response = self.api_client.get(reverse("stts-alpha"))
+            assert response.status_code == status.HTTP_200_OK
+            assert mock_method.called
+
+            mock_method.reset_mock()
+
+            # the cache should be warm now, request again
+            response = self.api_client.get(reverse("stts-alpha"))
+            assert response.status_code == status.HTTP_200_OK
+            assert not mock_method.called
+
+    def test_no_cache_forces_lookup(self):
+        """Test that a lookup is performed if there are no flags in the cache."""
+        mock_queryset = MagicMock()
+        with patch.object(
+            STTApiAlphaView, "get_queryset", return_value=mock_queryset
+        ) as mock_method:
+            # request and check the cache was cold
+            response = self.api_client.get(reverse("stts-alpha"))
+            assert response.status_code == status.HTTP_200_OK
+            assert mock_method.called
