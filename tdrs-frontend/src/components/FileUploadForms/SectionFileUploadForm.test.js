@@ -176,7 +176,7 @@ describe('SectionFileUploadForm', () => {
   })
 
   describe('Form Submission', () => {
-    it('does not allow submission with no uploaded files', async () => {
+    it('shows error alert when submitting with no uploaded files', async () => {
       const storeState = {
         ...initialState,
         reports: {
@@ -184,10 +184,18 @@ describe('SectionFileUploadForm', () => {
         },
       }
 
-      const { getByText } = renderComponent(storeState)
+      const { getByText, getByRole } = renderComponent(storeState)
 
       const submitButton = getByText('Submit Data Files')
-      expect(submitButton).not.toBeEnabled()
+      fireEvent.click(submitButton)
+
+      await waitFor(() => {
+        const alert = getByRole('alert')
+        expect(alert).toBeInTheDocument()
+        expect(alert).toHaveTextContent(
+          'No changes have been made to data files'
+        )
+      })
 
       expect(mockExecuteSubmission).not.toHaveBeenCalled()
     })
