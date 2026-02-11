@@ -20,6 +20,14 @@ class Local(Common):
     # Overwrite CORS allowed origins to allow for local development
     CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "http://localhost:3001"]
 
+    CSRF_TRUSTED_ORIGINS = [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:8080",
+        "http://localhost:8000",
+        "http://localhost:8989",
+    ]
+
     if USE_LOCALSTACK:
         # To get s3 signed URLs to work with localstack we must pass in
         # dummy credentials of `test` per the docs

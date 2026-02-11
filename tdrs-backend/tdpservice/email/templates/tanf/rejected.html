@@ -1,7 +1,7 @@
 {% extends '../datafile_base.html' %}
 
 {% block message %}
-Your <b>{{ file_type }}</b> data files submitted by <b>{{ stt_name }}</b> on <b>{{ submission_date }}</b> in Fiscal Year <b>{{ fiscal_year }}</b> were <b>unable to be processed</b>. Review the error report(s) for more details, and <b>resubmit your data files</b> once the errors have been corrected.
+Your <b>{{ file_type }}</b> data files submitted for <b>{{ stt_name }}</b> on <b>{{ submission_date }}</b> in Fiscal Year <b>{{ fiscal_year }}</b> were <b>unable to be processed</b>. Review the error report(s) for more details, and <b>resubmit your data files</b> once the errors have been corrected.
 {% endblock %}
 
 {% block table %}
@@ -14,9 +14,11 @@ Your <b>{{ file_type }}</b> data files submitted by <b>{{ stt_name }}</b> on <b>
             <th>Section</th>
             <th>Submitted By</th>
             <th>Status</th>
+            {% if not is_aggregate %}
             <th>Cases Without Errors</th>
             <th>Cases With Errors</th>
             <th>Records Unable to Process</th>
+            {% endif %}
             <th>Error Report</th>
         </tr>
     </thead>
@@ -25,9 +27,11 @@ Your <b>{{ file_type }}</b> data files submitted by <b>{{ stt_name }}</b> on <b>
             <td>{{ section_name }}</td>
             <td>{{ submitted_by }}</td>
             <td>{{ status }}</td>
+            {% if not is_aggregate %}
             <td>{{ cases_without_errors }}</td>
             <td>{{ cases_with_errors }}</td>
             <td>{{ records_unable_to_process }}</td>
+            {% endif %}
             <td>
                 {% if has_errors %}
                     Error report available

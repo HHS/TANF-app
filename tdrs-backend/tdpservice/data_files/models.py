@@ -15,6 +15,7 @@ from django.db.models import Max
 from django.utils.html import format_html
 
 from tdpservice.backends import DataFilesS3Storage
+from tdpservice.common.fields import S3VersionedFileField
 from tdpservice.common.models import FileRecord
 from tdpservice.data_files.util import create_s3_log_file_path
 from tdpservice.stts.models import STT
@@ -177,8 +178,12 @@ class DataFile(FileRecord):
 
     # NOTE: `file` is only temporarily nullable until we complete the issue:
     # https://github.com/raft-tech/TANF-app/issues/755
-    file = models.FileField(
-        storage=DataFilesS3Storage, upload_to=get_s3_upload_path, null=True, blank=True
+    file = S3VersionedFileField(
+        storage=DataFilesS3Storage,
+        upload_to=get_s3_upload_path,
+        version_id_field="s3_versioning_id",
+        null=True,
+        blank=True,
     )
 
     s3_versioning_id = models.CharField(max_length=1024, blank=False, null=True)

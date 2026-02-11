@@ -32,14 +32,6 @@ class ReportSource(FileRecord):
         SUCCEEDED = "SUCCEEDED"
         FAILED = "FAILED"
 
-    class Quarter(models.TextChoices):
-        """Enum for report Quarter."""
-
-        Q1 = "Q1"
-        Q2 = "Q2"
-        Q3 = "Q3"
-        Q4 = "Q4"
-
     # Override FileRecord fields
     extension = models.CharField(max_length=8, default="zip")
 
@@ -56,9 +48,7 @@ class ReportSource(FileRecord):
     status = models.CharField(
         max_length=16, choices=Status.choices, default=Status.PENDING
     )
-    quarter = models.CharField(
-        max_length=16, blank=True, null=True, choices=Quarter.choices
-    )
+    date_extracted_on = models.DateField(null=True, blank=True)
     year = models.IntegerField(blank=True, null=True)
     num_reports_created = models.PositiveIntegerField(default=0)
     error_message = models.TextField(null=True, blank=True)
@@ -73,8 +63,9 @@ class ReportSource(FileRecord):
 
 def get_s3_upload_path(instance, filename):
     """Produce a unique upload path for ReportFile files to S3."""
+    date_str = instance.date_extracted_on.strftime("%Y-%m-%d") if instance.date_extracted_on else "no-date"
     return os.path.join(
-        f"reports/{instance.year}/{instance.quarter}/{instance.stt.id}/",
+        f"reports/{instance.year}/{date_str}/{instance.stt.id}/",
         filename,
     )
 
@@ -82,20 +73,12 @@ def get_s3_upload_path(instance, filename):
 class ReportFile(FileRecord):
     """Represents a version of a report file."""
 
-    class Quarter(models.TextChoices):
-        """Enum for report Quarter."""
-
-        Q1 = "Q1"
-        Q2 = "Q2"
-        Q3 = "Q3"
-        Q4 = "Q4"
-
     class Meta:
         """Metadata."""
 
         constraints = [
             models.UniqueConstraint(
-                fields=("version", "quarter", "year", "stt"),
+                fields=("version", "date_extracted_on", "year", "stt"),
                 name="unique_reports_reportfile_fields",
             )
         ]
@@ -105,9 +88,7 @@ class ReportFile(FileRecord):
 
     # Model Fields
     created_at = models.DateTimeField(auto_now_add=True)
-    quarter = models.CharField(
-        max_length=16, blank=False, null=False, choices=Quarter.choices
-    )
+    date_extracted_on = models.DateField(null=True, blank=True)
     year = models.IntegerField()
 
     version = models.IntegerField()
@@ -147,7 +128,7 @@ class ReportFile(FileRecord):
         version = (
             self.find_latest_version_number(
                 year=data["year"],
-                quarter=data["quarter"],
+                date_extracted_on=data["date_extracted_on"],
                 stt=data["stt"],
             )
             or 0
@@ -159,20 +140,20 @@ class ReportFile(FileRecord):
         )
 
     @classmethod
-    def find_latest_version_number(self, year, quarter, stt):
+    def find_latest_version_number(self, year, date_extracted_on, stt):
         """Locate the latest version number in a series of report files."""
-        return self.objects.filter(stt=stt, year=year, quarter=quarter).aggregate(
+        return self.objects.filter(stt=stt, year=year, date_extracted_on=date_extracted_on).aggregate(
             Max("version")
         )["version__max"]
 
     @classmethod
-    def find_latest_version(self, year, quarter, stt):
+    def find_latest_version(self, year, date_extracted_on, stt):
         """Locate the latest version of a report."""
-        version = self.find_latest_version_number(year, quarter, stt)
+        version = self.find_latest_version_number(year, date_extracted_on, stt)
 
         return self.objects.filter(
             version=version,
             year=year,
-            quarter=quarter,
+            date_extracted_on=date_extracted_on,
             stt=stt,
         ).first()

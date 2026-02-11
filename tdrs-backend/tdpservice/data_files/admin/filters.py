@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 from django.db.models import OuterRef, Subquery
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from tdpservice.core.filters import MostRecentVersionFilter
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
