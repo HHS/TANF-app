@@ -9,12 +9,64 @@
   margin:1.25rem 0;
   text-align:left;
 }
+.usa-in-page-nav-container{
+  align-items: flex-start;
+  display: flex;
+}
 .usa-table thead th, .usa-prose > table thead th{
   background-clip:padding-box;
   color:#1b1b1b;
   font-weight:700;
   line-height:1.3;
 }
+.search-pill {
+  background-color: white; border-radius: 100px; padding: 8px; position: relative; border-color: #005ea2; color: #005ea2; font-weight: bold; margin-top: 8px; margin-right: 8px; box-shadow: none; cursor: pointer;
+}
+.on-this-page {
+  position: fixed;
+  right: 0;
+  top: 8em;
+  width: 17%;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 2rem;
+}
+@media (max-width: 86em) {
+  .on-this-page {
+    display: none;
+  }
+}
+
+
+.on-this-page ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.on-this-page li {
+  margin: 0.5rem 0;
+}
+
+.on-this-page a {
+  text-decoration: none;
+  color: #333;
+  transition: color 0.2s ease;
+}
+
+.on-this-page a.active {
+  color: #0078d4; /* Microsoft blue */
+  font-weight: bold;
+  position: relative;
+}
+
+.on-this-page a.active::before {
+  content: "•";
+  position: absolute;
+  left: -1rem;
+  color: #0078d4;
+}
+
 .usa-table thead th, .usa-prose > table thead th,
 .usa-table thead td,
 .usa-prose > table thead td{
@@ -32,6 +84,13 @@
   font-weight:normal;
   padding:0.5rem 1rem;
 }
+.releaseHr {
+        border: none;
+        height: 1px;
+        background: #000;
+        margin-top: 32px;
+        background: repeating-linear-gradient(90deg,#000,#000 6px,transparent 6px,transparent 12px);
+      }
 .usa-table caption, .usa-prose > table caption{
   font-family:Source Sans Pro Web, Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
   font-size:1rem;
@@ -3907,10 +3966,11 @@ dfn{
 
 @media all and (max-width: 63.99em){
   .usa-logo{
-    flex:1 1 0%;
+    /*flex:1 1 0%;*/
     font-size:0.93rem;
     line-height:0.9;
     margin-left:1rem;
+    width: 100%;
   }
 }
 @media all and (min-width: 64em){

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SVG Icon with Shimmer Overlay</title>
+  <style>
+    .icon-container {
+      position: relative;
+      width: 48px;
+      height: 48px;
+      margin: 20px;
+    }
+
+    .icon-container svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      fill: #ccc;
+    }
+
+        .skeleton-text-block {
+      max-width: 400px;
+      margin: 20px auto;
+    }
+
+    .skeleton-line {
+      height: 12px;
+      margin: 8px 0;
+      border-radius: 4px;
+      background: linear-gradient(
+        -90deg,
+        #e0e0e0 25%,
+        #f0f0f0 50%,
+        #e0e0e0 75%
+      );
+      background-size: 200% 100%;
+      animation: shimmer 4.4s infinite;
+    }
+
+    .skeleton-line.sm {
+      width: 30%;
+    }
+
+    .skeleton-line.md {
+      width: 60%;
+    }
+
+    .skeleton-line.lg {
+      width: 90%;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -200% 0;
+      }
+      100% {
+        background-position: 200% 0;
+      }
+    }
+
+
+    .shimmer-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 8px;
+      background: linear-gradient(
+        90deg,
+        rgba(255,255,255,0) 0%,
+        rgba(255,255,255,0.6) 50%,
+        rgba(255,255,255,0) 100%
+      );
+      background-size: 200% 100%;
+      animation: shimmer 4.5s infinite;
+      pointer-events: none; /* allows clicks to pass through */
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -200% 0;
+      }
+      100% {
+        background-position: 200% 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <table border="1" cellpadding="6" cellspacing="0">
+  <thead>
+    <tr>
+      <th>Date & Time</th>
+      <th>Item</th>
+      <th>Month</th>
+      <th>Status</th>
+      <th>Status</th>
+      <th>Final Status</th>
+      <th>Error Report</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td rowspan="3">11/14/2021 at 12:00 AM<br>by Horace Slughorn</td>
+      <td rowspan="3"><a href="#">ADS.ET2JFP1.TS58</a></td>
+      <td><div class="skeleton-line md"></div></td>
+      <td>    <div class="skeleton-line md"></div>
+</td>
+      <td><div class="skeleton-line md"></div></td>
+      <td rowspan="3"><div class="skeleton-line md"></div></td>
+      <td rowspan="3"><a href="#"><div class="skeleton-line lg"></div></a></td>
+    </tr>
+    <tr>
+      <td><div class="skeleton-line md"></div></td>
+      <td><div class="skeleton-line md"></div></td>
+      <td><div class="skeleton-line md"></div></td>
+    </tr>
+    <tr>
+      <td><div class="skeleton-line md"></div></td>
+      <td><div class="skeleton-line md"></div></td>
+      <td><div class="skeleton-line md"></div></td>
+    </tr>
+  </tbody>
+</table>
+  <div class="icon-container">
+    <!-- Example download SVG icon -->
+    <svg viewBox="0 0 24 24">
+      <path d="M5 20h14v-2H5v2zm7-18l-5.5 5.5h4v6h3v-6h4L12 2z"/>
+    </svg>
+    <div class="shimmer-overlay"></div>
+  </div>
+</body>
+</html>

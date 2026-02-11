@@ -1,8 +1,8 @@
 import React from 'react'
 import { thunk } from 'redux-thunk'
-import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
+import { MemoryRouter } from 'react-router'
 
 import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
@@ -28,9 +28,11 @@ describe('Header', () => {
   it('should have a title link', () => {
     const store = mockStore(initialState)
     render(
-      <Provider store={store}>
-        <Header />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <Header />
+        </Provider>
+      </MemoryRouter>
     )
 
     const title = screen.getByText('TANF Data Portal')
@@ -40,9 +42,11 @@ describe('Header', () => {
   it('should have a navigation link for Welcome', () => {
     const store = mockStore(initialState)
     render(
-      <Provider store={store}>
-        <Header />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <Header />
+        </Provider>
+      </MemoryRouter>
     )
     const welcomeLink = screen.getByText('Home')
     expect(welcomeLink).toBeInTheDocument()
@@ -67,9 +71,11 @@ describe('Header', () => {
     })
 
     render(
-      <Provider store={store}>
-        <Header />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <Header />
+        </Provider>
+      </MemoryRouter>
     )
     const adminLink = screen.queryByText('Admin')
     expect(adminLink).not.toBeInTheDocument()
@@ -82,9 +88,11 @@ describe('Header', () => {
     })
 
     render(
-      <Provider store={store}>
-        <Header />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <Header />
+        </Provider>
+      </MemoryRouter>
     )
 
     const welcomeTab = screen.getByText('Home')
@@ -98,9 +106,11 @@ describe('Header', () => {
     })
 
     render(
-      <Provider store={store}>
-        <Header />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <Header />
+        </Provider>
+      </MemoryRouter>
     )
 
     const dataFilesTab = screen.getByText('TANF Data Files')
@@ -110,24 +120,28 @@ describe('Header', () => {
 
   it("should add usa-current class to Profile tab when on '/profile'", () => {
     const store = mockStore(initialState)
-    const wrapper = mount(
-      <Provider store={store}>
-        <Header />
-      </Provider>
+    const { container } = render(
+      <MemoryRouter>
+        <Provider store={store}>
+          <Header />
+        </Provider>
+      </MemoryRouter>
     )
 
-    const profileTab = wrapper.find('#profile')
+    const profileTab = container.querySelector('#profile')
 
-    expect(profileTab.hasClass('usa-current')).toEqual(true)
+    expect(profileTab).toHaveClass('usa-current')
   })
 
   it("should not add usa-current class to Welcome tab when not on '/'", () => {
     const state = { ...initialState, router: { location: { pathname: '/' } } }
     const store = mockStore(state)
     render(
-      <Provider store={store}>
-        <Header />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <Header />
+        </Provider>
+      </MemoryRouter>
     )
 
     const welcomeTab = screen.getByText('Home')
@@ -136,16 +150,20 @@ describe('Header', () => {
 
   it('should have secondaryItems when user is logged in', () => {
     const store = mockStore(initialState)
-    const wrapper = mount(
-      <Provider store={store}>
-        <Header />
-      </Provider>
+    const { container } = render(
+      <MemoryRouter>
+        <Provider store={store}>
+          <Header />
+        </Provider>
+      </MemoryRouter>
     )
 
-    const secondaryLinks = wrapper.find('.usa-nav__secondary-item')
+    const secondaryLinks = container.querySelectorAll(
+      '.usa-nav__secondary-item'
+    )
 
     expect(secondaryLinks.length).toEqual(2)
-    expect(secondaryLinks.first().text()).toEqual('test@test.com')
+    expect(secondaryLinks[0].textContent).toEqual('test@test.com')
   })
 
   it('should NOT show any nav items when the user is NOT logged in', () => {
@@ -157,9 +175,11 @@ describe('Header', () => {
     const store = mockStore(state)
 
     const { queryByText } = render(
-      <Provider store={store}>
-        <Header />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <Header />
+        </Provider>
+      </MemoryRouter>
     )
 
     expect(queryByText('Welcome')).not.toBeInTheDocument()
@@ -185,9 +205,11 @@ describe('Header', () => {
     const store = mockStore(state)
 
     const { queryByText } = render(
-      <Provider store={store}>
-        <Header />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <Header />
+        </Provider>
+      </MemoryRouter>
     )
 
     expect(queryByText('TANF Data Files')).not.toBeInTheDocument()
@@ -217,9 +239,11 @@ describe('Header', () => {
     const store = mockStore(state)
 
     const { queryByText } = render(
-      <Provider store={store}>
-        <Header />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <Header />
+        </Provider>
+      </MemoryRouter>
     )
 
     expect(queryByText('TANF Data Files')).not.toBeInTheDocument()
@@ -231,13 +255,217 @@ describe('Header', () => {
     const store = mockStore(initialState)
 
     const { queryByText } = render(
-      <Provider store={store}>
-        <Header />
-      </Provider>
+      <MemoryRouter>
+        <Provider store={store}>
+          <Header />
+        </Provider>
+      </MemoryRouter>
     )
 
     expect(queryByText('TANF Data Files')).toBeInTheDocument()
     expect(queryByText('Profile')).toBeInTheDocument()
     expect(queryByText('Admin')).toBeInTheDocument()
+  })
+
+  describe('Feedback Reports Navigation', () => {
+    it('should show Feedback Reports nav item when user has view_reportfile permission and is approved', () => {
+      const state = {
+        ...initialState,
+        auth: {
+          user: {
+            email: 'analyst@test.com',
+            roles: [
+              {
+                id: 1,
+                name: 'Data Analyst',
+                permissions: [{ codename: 'view_reportfile' }],
+              },
+            ],
+            account_approval_status: 'Approved',
+          },
+          authenticated: true,
+        },
+      }
+
+      const store = mockStore(state)
+
+      render(
+        <MemoryRouter>
+          <Provider store={store}>
+            <Header />
+          </Provider>
+        </MemoryRouter>
+      )
+
+      expect(screen.getByText('Feedback Reports')).toBeInTheDocument()
+    })
+
+    it('should NOT show Feedback Reports nav item when user lacks view_reportfile permission', () => {
+      const state = {
+        ...initialState,
+        auth: {
+          user: {
+            email: 'test@test.com',
+            roles: [
+              {
+                id: 1,
+                name: 'Data Analyst',
+                permissions: [{ codename: 'view_datafile' }],
+              },
+            ],
+            account_approval_status: 'Approved',
+          },
+          authenticated: true,
+        },
+      }
+
+      const store = mockStore(state)
+
+      render(
+        <MemoryRouter>
+          <Provider store={store}>
+            <Header />
+          </Provider>
+        </MemoryRouter>
+      )
+
+      expect(screen.queryByText('Feedback Reports')).not.toBeInTheDocument()
+    })
+
+    it('should NOT show Feedback Reports nav item when user is not approved', () => {
+      const state = {
+        ...initialState,
+        auth: {
+          user: {
+            email: 'test@test.com',
+            roles: [
+              {
+                id: 1,
+                name: 'Data Analyst',
+                permissions: [{ codename: 'view_reportfile' }],
+              },
+            ],
+            account_approval_status: 'Pending',
+          },
+          authenticated: true,
+        },
+      }
+
+      const store = mockStore(state)
+
+      render(
+        <MemoryRouter>
+          <Provider store={store}>
+            <Header />
+          </Provider>
+        </MemoryRouter>
+      )
+
+      expect(screen.queryByText('Feedback Reports')).not.toBeInTheDocument()
+    })
+
+    it('should show Feedback Reports nav item for DIGIT Team users with view_reportfile permission', () => {
+      const state = {
+        ...initialState,
+        auth: {
+          user: {
+            email: 'digit@test.com',
+            roles: [
+              {
+                id: 1,
+                name: 'DIGIT Team',
+                permissions: [
+                  { codename: 'view_reportfile' },
+                  { codename: 'view_reportsource' },
+                  { codename: 'add_reportsource' },
+                ],
+              },
+            ],
+            account_approval_status: 'Approved',
+          },
+          authenticated: true,
+        },
+      }
+
+      const store = mockStore(state)
+
+      render(
+        <MemoryRouter>
+          <Provider store={store}>
+            <Header />
+          </Provider>
+        </MemoryRouter>
+      )
+
+      expect(screen.getByText('Feedback Reports')).toBeInTheDocument()
+    })
+
+    it('should show Feedback Reports nav item for OFA System Admin users with view_reportfile permission', () => {
+      const state = {
+        ...initialState,
+        auth: {
+          user: {
+            email: 'sysadmin@test.com',
+            roles: [
+              {
+                id: 1,
+                name: 'OFA System Admin',
+                permissions: [
+                  { codename: 'view_reportfile' },
+                  { codename: 'view_reportsource' },
+                  { codename: 'add_reportsource' },
+                ],
+              },
+            ],
+            account_approval_status: 'Approved',
+          },
+          authenticated: true,
+        },
+      }
+
+      const store = mockStore(state)
+
+      render(
+        <MemoryRouter>
+          <Provider store={store}>
+            <Header />
+          </Provider>
+        </MemoryRouter>
+      )
+
+      expect(screen.getByText('Feedback Reports')).toBeInTheDocument()
+    })
+
+    it('should NOT show Feedback Reports nav item for OFA Admin users (no report permissions)', () => {
+      const state = {
+        ...initialState,
+        auth: {
+          user: {
+            email: 'ofaadmin@test.com',
+            roles: [
+              {
+                id: 1,
+                name: 'OFA Admin',
+                permissions: [], // OFA Admin no longer has report permissions
+              },
+            ],
+            account_approval_status: 'Approved',
+          },
+          authenticated: true,
+        },
+      }
+
+      const store = mockStore(state)
+
+      render(
+        <MemoryRouter>
+          <Provider store={store}>
+            <Header />
+          </Provider>
+        </MemoryRouter>
+      )
+
+      expect(screen.queryByText('Feedback Reports')).not.toBeInTheDocument()
+    })
   })
 })

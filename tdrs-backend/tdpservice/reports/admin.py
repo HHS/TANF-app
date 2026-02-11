@@ -23,7 +23,7 @@ class VersionFilter(MostRecentVersionFilter):
             versions = queryset.filter(
                 stt__stt_code=OuterRef("stt__stt_code"),
                 year=OuterRef("year"),
-                quarter=OuterRef("quarter"),
+                date_extracted_on=OuterRef("date_extracted_on"),
             ).order_by("-version")
 
             # Filter to only records with the latest version
@@ -39,7 +39,7 @@ class ReportFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     list_display = [
         "id",
         "year",
-        "quarter",
+        "date_extracted_on",
         "stt",
         "version",
         "user",
@@ -47,7 +47,7 @@ class ReportFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     list_filter = [
         "stt",
         "year",
-        "quarter",
+        "date_extracted_on",
         "user",
         VersionFilter
     ]

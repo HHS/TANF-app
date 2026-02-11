@@ -34,6 +34,16 @@ export const hasReparsed = (f) =>
 export const getReprocessedDate = (f) =>
   f?.latest_reparse_file_meta?.finished_at
 
+const PROGRAM_TYPE_LABELS = {
+  TAN: 'TANF',
+  SSP: 'SSP',
+  TRIBAL: 'Tribal',
+  FRA: 'FRA',
+}
+
+export const formatProgramType = (programType) =>
+  PROGRAM_TYPE_LABELS[programType] || ''
+
 export const getErrorReportStatus = (file) => {
   if (
     file.summary &&
@@ -41,7 +51,9 @@ export const getErrorReportStatus = (file) => {
     file.summary.status !== 'Pending' &&
     file.summary.status !== 'TimedOut'
   ) {
-    const errorFileName = `${file.year}-${file.quarter}-${file.section} Error Report`
+    const programTypeLabel = formatProgramType(file.program_type)
+    const programPrefix = programTypeLabel ? `${programTypeLabel} ` : ''
+    const errorFileName = `${file.year}-${file.quarter}-${programPrefix}${file.section} Error Report`
     if (file.hasError) {
       return (
         <button

@@ -1,12 +1,11 @@
 import React from 'react'
 import { thunk } from 'redux-thunk'
-import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 
 import SplashPage from './SplashPage'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import PrivateRoute from '../PrivateRoute'
 import Home from '../Home'
 
@@ -49,36 +48,38 @@ describe('SplashPage', () => {
 
   it('renders a sign in header', () => {
     const store = mockStore(initialState)
-    const wrapper = mount(
+    const { container } = render(
       <Provider store={store}>
         <SplashPage />
       </Provider>
     )
-    const hero = wrapper.find('.usa-hero__callout')
-    expect(hero.find('h1')).toIncludeText('Sign into TANF Data Portal')
+    const hero = container.querySelector('.usa-hero__callout')
+    expect(hero.querySelector('h1')).toHaveTextContent(
+      'Sign into TANF Data Portal'
+    )
   })
 
   it('does not render the page while auth is loading', () => {
     const store = mockStore({ auth: { loading: true } })
-    const wrapper = mount(
+    render(
       <Provider store={store}>
         <SplashPage />
       </Provider>
     )
-    expect(wrapper.find('h1')).not.toIncludeText('SplashPage to TDRS!')
+    expect(screen.queryByText('SplashPage to TDRS!')).not.toBeInTheDocument()
   })
 
   it('renders an Inactive Account alert if the user authenticates with an inactive account', () => {
     const store = mockStore({
       auth: { authenticated: false, inactive: true },
     })
-    const wrapper = mount(
+    const { container } = render(
       <Provider store={store}>
         <SplashPage />
       </Provider>
     )
-    const alert = wrapper.find('.usa-alert--error')
-    expect(alert.find('h3')).toIncludeText('Inactive Account')
+    const alert = container.querySelector('.usa-alert--error')
+    expect(alert.querySelector('h3')).toHaveTextContent('Inactive Account')
   })
 
   it('redirects to API login endpoint when login.gov sign-in button is clicked', () => {
@@ -92,14 +93,15 @@ describe('SplashPage', () => {
       },
     })
 
-    const wrapper = mount(
+    render(
       <Provider store={store}>
         <SplashPage />
       </Provider>
     )
-    wrapper.find('#loginDotGovSignIn').simulate('click', {
-      preventDefault: () => {},
+    const button = screen.getByRole('button', {
+      name: /Sign in with.*Login\.gov.*for grantees/i,
     })
+    fireEvent.click(button)
     expect(window.location.href).toEqual(url)
   })
 
@@ -114,14 +116,15 @@ describe('SplashPage', () => {
       },
     })
 
-    const wrapper = mount(
+    render(
       <Provider store={store}>
         <SplashPage />
       </Provider>
     )
-    wrapper.find('#acfAmsSignIn').simulate('click', {
-      preventDefault: () => {},
+    const button = screen.getByRole('button', {
+      name: /Sign in with ACF AMS for ACF staff/i,
     })
+    fireEvent.click(button)
     expect(window.location.href).toEqual(url)
   })
 

@@ -1,10 +1,6 @@
 import React from 'react'
-import { mount } from 'enzyme'
+import { render, screen, fireEvent } from '@testing-library/react'
 
-import GovBanner from './components/GovBanner'
-import Header from './components/Header'
-import { Alert } from './components/Alert'
-import Feedback from './components/Feedback/Feedback'
 import { thunk } from 'redux-thunk'
 import configureStore from 'redux-mock-store'
 import { Provider } from 'react-redux'
@@ -48,56 +44,59 @@ describe('App.js', () => {
 
   it('renders the Gov Banner', () => {
     const store = mockStore(initialState)
-    const wrapper = mount(
+    render(
       <Provider store={store}>
         <MemoryRouter>
           <App />
         </MemoryRouter>
       </Provider>
     )
-    expect(wrapper.find(GovBanner)).toExist()
+    expect(screen.getByText(/official website/i)).toBeInTheDocument()
   })
 
   it('renders the Header', () => {
     const store = mockStore(initialState)
-    const wrapper = mount(
+    render(
       <Provider store={store}>
         <MemoryRouter>
           <App />
         </MemoryRouter>
       </Provider>
     )
-    expect(wrapper.find(Header)).toExist()
+    expect(screen.getByText('TANF Data Portal')).toBeInTheDocument()
   })
 
   it('renders the Alert', () => {
     const store = mockStore(initialState)
-    const wrapper = mount(
+    const { container } = render(
       <Provider store={store}>
         <MemoryRouter>
           <App />
         </MemoryRouter>
       </Provider>
     )
-    expect(wrapper.find(Alert)).toExist()
+    // Alert component is rendered but hidden when show is false
+    const alertContainer = container.querySelector('.usa-alert')
+    // When show is false, no alert is rendered
+    expect(alertContainer).not.toBeInTheDocument()
   })
 
   it('renders sticky button at bottom right of Apps viewport', () => {
     const store = mockStore(initialState)
-    const wrapper = mount(
+    render(
       <Provider store={store}>
         <MemoryRouter>
           <App />
         </MemoryRouter>
       </Provider>
     )
-    expect(wrapper.find(Feedback)).toExist()
+    expect(screen.getByText('Give Feedback')).toBeInTheDocument()
   })
 
   it('renders skip link with correct href and text', () => {
     const store = mockStore(initialState)
 
-    const wrapper = mount(
+    render(
       <Provider store={store}>
         <MemoryRouter>
           <App />
@@ -105,9 +104,9 @@ describe('App.js', () => {
       </Provider>
     )
 
-    const skipLink = wrapper.find('a.usa-skipnav')
-    expect(skipLink.text()).toContain('Skip to main content')
-    expect(skipLink.prop('href')).toEqual('#main-content')
+    const skipLink = screen.getByText('Skip to main content')
+    expect(skipLink).toBeInTheDocument()
+    expect(skipLink).toHaveAttribute('href', '#main-content')
   })
 
   it('should redirect to #main-content when space bar is pressed on "skip links" element', () => {
@@ -121,7 +120,7 @@ describe('App.js', () => {
     })
 
     const store = mockStore(initialState)
-    const wrapper = mount(
+    render(
       <Provider store={store}>
         <MemoryRouter>
           <App />
@@ -129,8 +128,8 @@ describe('App.js', () => {
       </Provider>
     )
 
-    const skipLink = wrapper.find('.usa-skipnav')
-    skipLink.simulate('keyPress', {
+    const skipLink = screen.getByText('Skip to main content')
+    fireEvent.keyPress(skipLink, {
       charCode: 32,
     })
 
@@ -148,7 +147,7 @@ describe('App.js', () => {
     })
 
     const store = mockStore(initialState)
-    const wrapper = mount(
+    render(
       <Provider store={store}>
         <MemoryRouter>
           <App />
@@ -156,8 +155,8 @@ describe('App.js', () => {
       </Provider>
     )
 
-    const skipLink = wrapper.find('.usa-skipnav')
-    skipLink.simulate('keyPress', {
+    const skipLink = screen.getByText('Skip to main content')
+    fireEvent.keyPress(skipLink, {
       charCode: 25,
     })
 
@@ -166,14 +165,14 @@ describe('App.js', () => {
 
   it('should not show modal initially', () => {
     const store = mockStore(initialState)
-    const wrapper = mount(
+    render(
       <Provider store={store}>
         <MemoryRouter>
           <App />
         </MemoryRouter>
       </Provider>
     )
-    const feedbackModal = wrapper.find('#feedback-modal')
-    expect(feedbackModal.exists()).toBe(false)
+    const feedbackModal = screen.queryByRole('dialog', { name: /feedback/i })
+    expect(feedbackModal).not.toBeInTheDocument()
   })
 })

@@ -1,0 +1,58 @@
+# Git
+.git
+.gitignore
+
+# Python cache and bytecode
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Testing and coverage
+.coverage
+.pytest_cache
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+
+# IDE and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Docker files (not needed inside container)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Documentation (not needed at runtime)
+docs/
+*.md
+mkdocs.yml
+
+# Test data files
+*.TS06
+ADS.*
+
+# Local development
+vault/
+vault_agent/
+
+# Build artifacts
+*.egg-info/
+dist/
+build/

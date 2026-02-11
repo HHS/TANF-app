@@ -17,6 +17,7 @@ import {
 import { openFeedbackWidget } from '../../reducers/feedbackWidget'
 import { useSearchParams } from 'react-router-dom'
 import { accountCanSelectStt } from '../../selectors/auth'
+import { usePollingTimer } from '../../hooks/usePollingTimer'
 import { getCurrentFiscalYear, quarters } from './utils'
 
 const ReportsContext = createContext()
@@ -165,7 +166,13 @@ export const ReportsProvider = ({ isFra = false, children }) => {
       }
       setHasValidatedParams(true)
     }
-  }, [sttList])
+  }, [
+    sttList,
+    hasValidatedParams,
+    searchParams,
+    setSttInputValue,
+    setHasValidatedParams,
+  ])
 
   const [pendingChange, setPendingChange] = useState({
     type: null,
@@ -228,11 +235,19 @@ export const ReportsProvider = ({ isFra = false, children }) => {
 
   // Redux selectors
   const files = useSelector((state) => state.reports.submittedFiles)
-  const uploadedFiles = files?.filter((file) => file.fileName && !file.id)
-  const submittedFiles = files?.filter((file) => file.fileName && file.id) || []
+  const uploadedFiles = useMemo(
+    () => files?.filter((file) => file.fileName && !file.id),
+    [files]
+  )
+  const submittedFiles = useMemo(
+    () => files?.filter((file) => file.fileName && file.id) || [],
+    [files]
+  )
 
   // FRA-specific derived state
-  const fraHasUploadedFile = fraSelectedFile && !fraSelectedFile.id
+  const fraHasUploadedFile = !!fraSelectedFile && !fraSelectedFile.id
+
+  const { startPolling, isPolling, stopAllTimers } = usePollingTimer()
 
   // Actions
   const handleClearAll = () => {
@@ -288,6 +303,8 @@ export const ReportsProvider = ({ isFra = false, children }) => {
           dispatch(reinitializeSubmittedFiles('tanf'))
         }
         break
+      default:
+        break
     }
     setPendingChange({ type: null, value: null, sttObject: null })
   }
@@ -296,15 +313,18 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     setPendingChange({ type: null, value: null })
   }
 
-  const handleOpenFeedbackWidget = useCallback(() => {
-    dispatch(
-      openFeedbackWidget({
-        dataType: fileTypeInputValue,
-        dataFiles: submittedFiles,
-        widgetId: `${fileTypeInputValue}-report-submission-feedback`,
-      })
-    )
-  }, [dispatch, fileTypeInputValue, submittedFiles])
+  const handleOpenFeedbackWidget = useCallback(
+    (files = null) => {
+      dispatch(
+        openFeedbackWidget({
+          dataType: fileTypeInputValue,
+          dataFiles: files || submittedFiles,
+          widgetId: `${fileTypeInputValue}-report-submission-feedback`,
+        })
+      )
+    },
+    [dispatch, fileTypeInputValue, submittedFiles]
+  )
 
   const selectFileType = (value) => {
     setFileTypeTouched(true)
@@ -545,6 +565,11 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     selectStt,
     handleYearBlur,
     handleQuarterBlur,
+
+    // polling
+    startPolling,
+    isPolling,
+    stopAllTimers,
   }
 
   return (

@@ -11,6 +11,7 @@ import {
   REINITIALIZE_SUBMITTED_FILES,
   FETCH_FILE_LIST,
   FETCH_FILE_LIST_ERROR,
+  SET_TANF_SUBMISSION_STATUS,
 } from '../actions/reports'
 
 import { programIntegrityAuditLabels } from '../components/Reports/utils'
@@ -61,6 +62,7 @@ export const serializeApiDataFile = (dataFile) => ({
   fileType: dataFile.extension,
   quarter: dataFile.quarter,
   section: dataFile.section,
+  program_type: dataFile.program_type,
   uuid: dataFile.slug,
   year: dataFile.year,
   s3_version_id: dataFile.s3_version_id,
@@ -202,6 +204,14 @@ const reports = (state = initialState, action) => {
     case SET_SELECTED_STT: {
       const { stt } = payload
       return { ...state, stt }
+    }
+    case SET_TANF_SUBMISSION_STATUS: {
+      const { datafile_id, datafile } = payload
+      const files = state.files.map((f) =>
+        f.id === datafile_id ? serializeApiDataFile(datafile) : f
+      )
+
+      return { ...state, files }
     }
     default:
       return state

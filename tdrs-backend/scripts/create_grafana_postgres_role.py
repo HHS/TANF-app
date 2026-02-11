@@ -37,13 +37,6 @@ def run(*args):  # noqa: C901
         sql = sql_tmpl.format(role=role, db_name=db_name, select_stmt=select_stmt)
     else:
         tables_str = ",".join(tables)
-
-        # Remove stt_section_to_type_mapping from the list of tables if we are not in prod.
-        if (
-            "prod" not in settings.APP_NAME
-            and "stt_section_to_type_mapping," in tables_str
-        ):
-            tables_str = tables_str.replace("stt_section_to_type_mapping,", "")
         select_stmt = select_statement.format(tables=tables_str, role=role)
         sql = sql_tmpl.format(
             role=role, tables=tables_str, db_name=db_name, select_stmt=select_stmt

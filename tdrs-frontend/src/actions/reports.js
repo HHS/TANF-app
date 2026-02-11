@@ -26,6 +26,8 @@ export const DOWNLOAD_DIALOG_OPEN = 'DOWNLOAD_DIALOG_OPEN'
 
 export const REINITIALIZE_SUBMITTED_FILES = 'REINITIALIZE_SUBMITTED_FILES'
 
+export const SET_TANF_SUBMISSION_STATUS = 'SET_TANF_SUBMISSION_STATUS'
+
 export const reinitializeSubmittedFiles = (fileType) => (dispatch) => {
   dispatch({ type: REINITIALIZE_SUBMITTED_FILES, payload: { fileType } })
 }
@@ -51,7 +53,7 @@ export const clearError =
   }
 
 export const getAvailableFileList =
-  ({ quarter = 'Q1', stt, year, file_type, section }) =>
+  ({ quarter = 'Q1', stt, year, file_type, section }, onSuccess = () => null) =>
   async (dispatch) => {
     dispatch({
       type: FETCH_FILE_LIST,
@@ -70,6 +72,7 @@ export const getAvailableFileList =
           data: response?.data,
         },
       })
+      onSuccess()
     } catch (error) {
       dispatch({
         type: FETCH_FILE_LIST_ERROR,
@@ -167,19 +170,21 @@ const map_section = (fileType, submittedFile) => {
 }
 
 export const submit =
-  ({
-    formattedSections,
-    logger,
-    quarter,
-    setLocalAlertState,
-    stt,
-    uploadedFiles,
-    user,
-    year,
-    ssp,
-    fileType,
-    onComplete = () => null,
-  }) =>
+  (
+    {
+      formattedSections,
+      logger,
+      quarter,
+      setLocalAlertState,
+      stt,
+      uploadedFiles,
+      user,
+      year,
+      ssp,
+      fileType,
+    },
+    onComplete = () => null
+  ) =>
   async (dispatch) => {
     const submissionRequests = uploadedFiles.map((file) => {
       const formData = new FormData()
@@ -217,12 +222,16 @@ export const submit =
         })
         removeFileInputErrorState()
 
-        const submittedFiles = responses.reduce((result, response) => {
+        const submittedFileObjects = []
+        const submittedFileNames = responses.reduce((result, response) => {
           const submittedFile = map_section(fileType, response?.data)
+
           dispatch({
             type: SET_FILE_SUBMITTED,
             payload: { submittedFile },
           })
+
+          submittedFileObjects.push(submittedFile)
           result.push(
             `${submittedFile?.original_filename} (${submittedFile?.extension})`
           )
@@ -233,8 +242,8 @@ export const submit =
         const fileIds = responses.map((response) => response?.data?.id)
         logger.alert(
           `Submitted ${
-            submittedFiles.length
-          } data file(s): ${submittedFiles.join(', ')}`,
+            submittedFileNames.length
+          } data file(s): ${submittedFileNames.join(', ')}`,
           {
             files: fileIds,
             activity: 'upload',
@@ -242,6 +251,9 @@ export const submit =
         )
 
         onComplete(fileIds)
+
+        // Return the submitted file objects for feedback widget
+        return submittedFileObjects
       })
       .catch((error) => {
         const error_response = error.response?.data
@@ -264,4 +276,15 @@ export const SET_SELECTED_STT = 'SET_SELECTED_STT'
 
 export const setStt = (stt) => (dispatch) => {
   dispatch({ type: SET_SELECTED_STT, payload: { stt } })
+}
+
+export const getTanfSubmissionStatus = async (datafile_id) => {
+  try {
+    const response = await axios.get(
+      `${BACKEND_URL}/data_files/${datafile_id}/`
+    )
+    return response
+  } catch (axiosError) {
+    throw axiosError
+  }
 }

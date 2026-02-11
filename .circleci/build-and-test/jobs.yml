@@ -79,7 +79,7 @@
           name: Setup cypress test data
           command: |
             cd tdrs-backend
-            docker-compose exec web python manage.py loaddata cypress/users cypress/data_files cypress/regions
+            docker-compose exec web python manage.py loaddata cypress/users cypress/data_files cypress/regions cypress/profile_editing_regions cypress/profile_editing_users
       - run:
           name: Run Cypress e2e tests
           command: cd tdrs-frontend; npm run test:e2e-ci

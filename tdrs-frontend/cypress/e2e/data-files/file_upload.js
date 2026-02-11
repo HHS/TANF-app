@@ -6,7 +6,7 @@ Then(
   '{string} sees the upload in {string} Submission History',
   (actor, program) => {
     // Wait for the API response and extract the file ID
-    cy.wait('@dataFileSubmit').then((interception) => {
+    cy.wait('@dataFileSubmit', { timeout: 10000 }).then((interception) => {
       // Check if we have a valid response with an ID
       if (
         interception.response &&
@@ -14,7 +14,6 @@ Then(
         interception.response.body.id
       ) {
         const fileId = interception.response.body.id
-
         // Poll the API until the summary is populated
         df.waitForDataFileSummary(fileId)
         if (program === 'TANF') {
@@ -34,19 +33,19 @@ Then(
 
 Then('{string} can download the {string} error report', (actor, program) => {
   if (program === 'TANF') {
-    df.downloadErrorReport('2021-Q1-Active Case Data Error Report.xlsx')
+    df.downloadErrorReport('2021-Q1-TANF Active Case Data Error Report.xlsx')
   } else if (program === 'SSP') {
-    df.downloadErrorReport('2024-Q1-Active Case Data Error Report.xlsx')
+    df.downloadErrorReport('2024-Q1-SSP Active Case Data Error Report.xlsx')
   } else if (program === 'FRA') {
     df.downloadErrorReport(
-      '2024-Q2-Work Outcomes of TANF Exiters Error Report.xlsx'
+      '2024-Q2-FRA Work Outcomes of TANF Exiters Error Report.xlsx'
     )
   }
 })
 
 When('{string} submits the Work Outcomes Report', (actor) => {
   cy.visit('/fra-data-files')
-  cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
+  cy.get('h1').contains('FRA Data Files').should('exist')
   if (actor.includes('Admin')) {
     df.fillSttFyQ('New York', '2024', 'Q2', false, false)
   } else {
@@ -56,12 +55,16 @@ When('{string} submits the Work Outcomes Report', (actor) => {
     '#fra-file-upload',
     '../tdrs-backend/tdpservice/parsers/test/data/fra.csv'
   )
+  cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
   cy.get('button').contains('Submit Report').should('exist').click()
+  cy.get('div.usa-alert--success', { timeout: 10000 })
+    .should('exist')
+    .contains('Successfully')
 })
 
 When('{string} submits the TANF Report', (actor) => {
   cy.visit('/data-files')
-  cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
+  cy.get('h1').contains('TANF Data Files').should('exist')
   if (actor.includes('Admin')) {
     df.fillSttFyQ('New York', '2021', 'Q1', true, false)
   } else if (actor.includes('FRA')) {
@@ -74,12 +77,16 @@ When('{string} submits the TANF Report', (actor) => {
     '../tdrs-backend/tdpservice/parsers/test/data/small_correct_file.txt'
   )
 
+  cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
   cy.get('button').contains('Submit Data Files').should('exist').click()
+  cy.get('div.usa-alert--success', { timeout: 10000 })
+    .should('exist')
+    .contains('Successfully')
 })
 
 When('{string} submits the SSP Report', (actor) => {
   cy.visit('/data-files')
-  cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
+  cy.get('h1').contains('TANF Data Files').should('exist')
   if (actor.includes('Admin')) {
     df.fillSttFyQ('Iowa', '2024', 'Q1', false, false)
   } else if (actor.includes('FRA')) {
@@ -91,8 +98,11 @@ When('{string} submits the SSP Report', (actor) => {
     '#active_case_data',
     '../tdrs-backend/tdpservice/parsers/test/data/small_ssp_section1.txt'
   )
-
+  cy.intercept('POST', '/v1/data_files/').as('dataFileSubmit')
   cy.get('button').contains('Submit Data Files').should('exist').click()
+  cy.get('div.usa-alert--success', { timeout: 10000 })
+    .should('exist')
+    .contains('Successfully')
 })
 
 // Constants ----------
@@ -137,8 +147,6 @@ When(
 
     df.openDataFilesAndSearch(program, year, quarter, stt)
     df.uploadSectionFile(SECTION_INPUT_ID[section], fileName)
-
-    cy.contains('Successfully submitted').should('exist')
   }
 )
 
@@ -162,7 +170,17 @@ Then(
     const { year, quarter } = UPLOAD_FILE_INFO[program][section]
 
     df.getLatestSubmissionHistoryRow(section).within(() => {
-      df.downloadErrorReportAndAssert(section, year, quarter)
+      const programPrefix =
+        program === 'TANF'
+          ? 'TANF'
+          : program === 'FRA'
+            ? 'FRA'
+            : program === 'SSP'
+              ? 'SSP'
+              : program === 'Tribal' || program === 'TRIBAL'
+                ? 'Tribal'
+                : ''
+      df.downloadErrorReportAndAssert(section, year, quarter, programPrefix)
     })
   }
 )

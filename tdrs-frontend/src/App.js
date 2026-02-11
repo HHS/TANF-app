@@ -5,7 +5,8 @@ import { Alert } from './components/Alert'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import Feedback from './components/Feedback/Feedback'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { fetchSttList } from './actions/sttList'
 import { useRUM } from './hooks/useRUM'
 
 /**
@@ -23,13 +24,18 @@ import { useRUM } from './hooks/useRUM'
  */
 
 function App() {
+  const dispatch = useDispatch()
   const user = useSelector((state) => state.auth.user)
   const { setUserInfo } = useRUM()
+
+  /* istanbul ignore next */
   useEffect(() => {
     if (user) {
       setUserInfo(user)
+      dispatch(fetchSttList())
     }
-  }, [user, setUserInfo])
+  }, [user, setUserInfo, dispatch])
+
   return (
     <>
       <a

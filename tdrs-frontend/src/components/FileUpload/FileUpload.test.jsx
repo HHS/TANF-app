@@ -137,7 +137,11 @@ describe('FileUpload', () => {
               fileName: null,
               error: {
                 message: 'Invalid file',
-                link: <a href="/help">Need help?</a>,
+                link: (
+                  <a className="usa-link" href="/help">
+                    Need help?
+                  </a>
+                ),
               },
               uuid: null,
               name: null,

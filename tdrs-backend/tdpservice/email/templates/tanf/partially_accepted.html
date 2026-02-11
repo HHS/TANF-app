@@ -1,0 +1,45 @@
+{% extends '../datafile_base.html' %}
+
+{% block message %}
+Your <b>{{ file_type }}</b> data files submitted for <b>{{ stt_name }}</b> on <b>{{ submission_date }}</b> in Fiscal Year <b>{{ fiscal_year }}</b> were <b>unable to be fully processed</b>. Review the error report(s) for more details, and <b>resubmit your data files</b> once the errors have been corrected.
+{% endblock %}
+
+{% block table %}
+<table>
+    <caption>
+      Submitted files:
+    </caption>
+    <thead>
+        <tr>
+            <th>Section</th>
+            <th>Submitted By</th>
+            <th>Status</th>
+            <th>Cases Without Errors</th>
+            <th>Cases With Errors</th>
+            <th>Records Unable to Process</th>
+            <th>Error Report</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{ section_name }}</td>
+            <td>{{ submitted_by }}</td>
+            <td>{{ status }}</td>
+            <td>{{ cases_without_errors }}</td>
+            <td>{{ cases_with_errors }}</td>
+            <td>{{ records_unable_to_process }}</td>
+            <td>
+                {% if has_errors %}
+                    Error report available
+                {% else %}
+                    No errors
+                {% endif %}
+            </td>
+        </tr>
+    </tbody>
+</table>
+{% endblock %}
+
+{% block end_message %}
+The data file and the error report(s) can now be accessed via the Submission History tab of the Data Files page.
+{% endblock %}

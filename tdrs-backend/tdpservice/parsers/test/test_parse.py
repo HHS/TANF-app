@@ -2663,6 +2663,5 @@ def test_parse_tanf_s1_federally_funded_recipients(
     dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
     assert errors.last().error_message == (
-        "Social Security Number is not valid. Check that the SSN is 9 digits, "
-        "does not contain only zeroes in any one section, and does not contain dashes or other punctuation."
+        "Federally funded recipients must have a valid Social Security number."
     )

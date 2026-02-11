@@ -1,0 +1,43 @@
+{% extends '../datafile_base.html' %}
+
+{% block message %}
+Your <b>{{ file_type }}</b> data files submitted for <b>{{ stt_name }}</b> on <b>{{ submission_date }}</b> in Fiscal Year <b>{{ fiscal_year }}</b> have been processed, but <b>some cases within your data contain errors</b>. Review the error report(s) for more details, and <b>resubmit your data files</b> once the errors have been corrected.
+{% endblock %}
+
+{% block table %}
+<table>
+    <caption>
+      Submitted files:
+    </caption>
+    <thead>
+        <tr>
+            <th>Section</th>
+            <th>Submitted By</th>
+            <th>Status</th>
+            <th>Records Created</th>
+            <th>Total Errors</th>
+            <th>Error Report</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{ section_name }}</td>
+            <td>{{ submitted_by }}</td>
+            <td>{{ status }}</td>
+            <td>{{ records_created }}</td>
+            <td>{{ total_errors }}</td>
+            <td>
+                {% if has_errors %}
+                    Error report available
+                {% else %}
+                    No errors
+                {% endif %}
+            </td>
+        </tr>
+    </tbody>
+</table>
+{% endblock %}
+
+{% block end_message %}
+The data file and the error report can now be accessed on the FRA Data Files page.
+{% endblock %}

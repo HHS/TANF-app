@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block style %}
+<style type="text/css">
+  table {
+    width: 100%;
+    background-color: #ffffff;
+    border-width: 1px;
+    border-color: #000000;
+    border-style: solid;
+    color: #000000;
+    text-align: left;
+    margin-bottom: 8px;
+  }
+  table thead {
+    border-style: solid;
+    border-color: #000000;
+    border-width: 1px;
+    background-color: #e6e6e6;
+  }
+  table th, td {
+    padding: 8px;
+    border-style: solid;
+    border-color: #000000;
+    border-width: 1px;
+  }
+  table caption {
+    text-align: left;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<p style="color: #000000;">
+    <p>Hello,</p>
+
+    <p>
+      {% block message %}
+      {% endblock %}
+    </p>
+
+    <p>
+      {% block table %}
+      {% endblock %}
+    </p>
+
+    <p>
+      {% block end_message %}
+      {% endblock %}
+      {% if file_type == "FRA" %}
+      <a href="https://tdp-project-updates.app.cloud.gov/knowledge-center/submitting-fra-data.html#:~:text=your%20previous%20submission.-,Viewing,-FRA%20Submission%20History" target="_blank">
+          Read more about using Submission History
+      </a>
+      {% else %}
+      <a href="https://tdp-project-updates.app.cloud.gov/knowledge-center/view-submission-history.html" target="_blank">
+          Read more about using Submission History
+      </a>
+      {% endif %}
+    </p>
+
+    <p>
+        <a
+            class="button"
+            href="{{ url }}"
+            style="background-color:#336a90;border-radius:4px;color:#ffffff;display:inline-block;font-family:sans-serif;font-size:18px;font-weight:bold;line-height:60px;text-align:center;text-decoration:none;width: auto; padding-left: 24px; padding-right: 24px;-webkit-text-size-adjust:none;"
+        >
+            Sign in to TDP
+        </a>
+    </p>
+
+
+    <p>
+        Please contact TDP Admin team at <a href="mailto:TANFData@acf.hhs.gov" target="_blank">TANFData@acf.hhs.gov</a> if you need further assistance.
+    </p>
+
+    <p>Thank you,</p>
+    TDP Team
+</p>
+
+{% endblock %}

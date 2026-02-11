@@ -10,6 +10,7 @@ const loginGovRequestAccessFlow = (
 ) => {
   cy.intercept('/v1/stts/alpha').as('getSttSearchList')
   cy.visit('/')
+
   cy.get('#firstName').type(firstName)
   cy.get('#lastName').type(lastName)
 

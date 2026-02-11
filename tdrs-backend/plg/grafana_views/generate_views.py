@@ -75,11 +75,31 @@ def handle_field(field, formatted_fields, is_admin):
         else:
             formatted_fields.append(f'"{field}"')
 
+        regex_rules = [
+            "0{9}",
+            "1{9}",
+            "2{9}",
+            "3{9}",
+            "4{9}",
+            "5{9}",
+            "6{9}",
+            "7{9}",
+            "8{9}",
+            "9{9}",
+            ".{3}.{2}0{4}",
+            ".{3}0{2}.{4}",
+            "0{3}.{2}.{4}",
+            "6{3}.{2}.{4}",
+            "9{1}.{4}.{4}",
+        ]
+
+        regex_str = f"^({'|'.join(regex_rules)})"
+
         formatted_fields.append(
             f''' --
         -- Calculate if SSN is valid
         CASE
-            WHEN "{field}" !~ '^(0{{9}}|1{{9}}|2{{9}}|3{{9}}|4{{9}}|5{{9}}|6{{9}}|7{{9}}|8{{9}}|9{{9}})$' THEN 1
+            WHEN "{field}" IS NOT NULL AND "{field}" !~ '{regex_str}' AND "{field}" LIKE '%[^0-9]%' THEN 1
             ELSE 0
         END AS "SSN_VALID"'''.strip()
         )
@@ -91,33 +111,18 @@ def handle_field(field, formatted_fields, is_admin):
         formatted_fields.append(
             f''' --
         CASE -- Calculate AGE_FIRST: Age as of the first day of the reporting month
-            WHEN "{field}" ~ '^[0-9]{{8}}$' AND
-                    -- Validate year (reasonable range)
+            WHEN is_valid_date_yyyymmdd("{field}") AND
+                    is_valid_yyyymm("RPT_MONTH_YEAR"::TEXT) AND
+                    -- Validate year (reasonable range for birth year)
                     CAST(SUBSTRING("{field}" FROM 1 FOR 4) AS INTEGER) BETWEEN 1900 AND
-                    EXTRACT(YEAR FROM CURRENT_DATE) AND
-                    -- Validate month (01-12)
-                    CAST(SUBSTRING("{field}" FROM 5 FOR 2) AS INTEGER) BETWEEN 1 AND 12 AND
-                    -- Validate day (01-31)
-                    CAST(SUBSTRING("{field}" FROM 7 FOR 2) AS INTEGER) BETWEEN 1 AND 31 AND
-                    -- Validate RPT_MONTH_YEAR format (YYYYMM)
-                    "RPT_MONTH_YEAR"::TEXT ~ '^[0-9]{{6}}$'
+                    EXTRACT(YEAR FROM CURRENT_DATE)
             THEN
-                -- Simple calculation: (end_date - start_date) / 365.25
                 ROUND(
                     EXTRACT(EPOCH FROM (
-                        -- Calculate the difference in days between last day of reporting month and birth date
-                        (DATE_TRUNC('MONTH', TO_DATE(
-                            SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 1 FOR 4) || '-' ||
-                            SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 5 FOR 2) || '-01',
-                            'YYYY-MM-DD'
-                        ))) -
-                        TO_DATE(
-                            SUBSTRING("{field}" FROM 1 FOR 4) || '-' ||
-                            SUBSTRING("{field}" FROM 5 FOR 2) || '-' ||
-                            SUBSTRING("{field}" FROM 7 FOR 2),
-                            'YYYY-MM-DD'
-                        )
-                    )) / (365.25 * 86400), -- Convert seconds to years (86400 seconds per day)
+                        -- First day of reporting month minus birth date
+                        DATE_TRUNC('MONTH', TO_DATE("RPT_MONTH_YEAR"::TEXT || '01', 'YYYYMMDD')) -
+                        TO_DATE("{field}", 'YYYYMMDD')
+                    )) / (365.25 * 86400), -- Convert seconds to years
                     1  -- Round to 1 decimal place
                 )
             ELSE NULL
@@ -127,33 +132,18 @@ def handle_field(field, formatted_fields, is_admin):
         formatted_fields.append(
             f''' --
         CASE -- Calculate AGE_LAST: Age as of the last day of the reporting month
-            WHEN "{field}" ~ '^[0-9]{{8}}$' AND
-                    -- Validate year (reasonable range)
+            WHEN is_valid_date_yyyymmdd("{field}") AND
+                    is_valid_yyyymm("RPT_MONTH_YEAR"::TEXT) AND
+                    -- Validate year (reasonable range for birth year)
                     CAST(SUBSTRING("{field}" FROM 1 FOR 4) AS INTEGER) BETWEEN 1900 AND
-                    EXTRACT(YEAR FROM CURRENT_DATE) AND
-                    -- Validate month (01-12)
-                    CAST(SUBSTRING("{field}" FROM 5 FOR 2) AS INTEGER) BETWEEN 1 AND 12 AND
-                    -- Validate day (01-31)
-                    CAST(SUBSTRING("{field}" FROM 7 FOR 2) AS INTEGER) BETWEEN 1 AND 31 AND
-                    -- Validate RPT_MONTH_YEAR format (YYYYMM)
-                    "RPT_MONTH_YEAR"::TEXT ~ '^[0-9]{{6}}$'
+                    EXTRACT(YEAR FROM CURRENT_DATE)
             THEN
-                -- Simple calculation: (end_date - start_date) / 365.25
                 ROUND(
                     EXTRACT(EPOCH FROM (
-                        -- Calculate the difference in days between last day of reporting month and birth date
-                        (DATE_TRUNC('MONTH', TO_DATE(
-                            SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 1 FOR 4) || '-' ||
-                            SUBSTRING("RPT_MONTH_YEAR"::TEXT FROM 5 FOR 2) || '-01',
-                            'YYYY-MM-DD'
-                        )) + INTERVAL '1 MONTH - 1 day') -
-                        TO_DATE(
-                            SUBSTRING("{field}" FROM 1 FOR 4) || '-' ||
-                            SUBSTRING("{field}" FROM 5 FOR 2) || '-' ||
-                            SUBSTRING("{field}" FROM 7 FOR 2),
-                            'YYYY-MM-DD'
-                        )
-                    )) / (365.25 * 86400), -- Convert seconds to years (86400 seconds per day)
+                        -- Last day of reporting month minus birth date
+                        (DATE_TRUNC('MONTH', TO_DATE("RPT_MONTH_YEAR"::TEXT || '01', 'YYYYMMDD')) + INTERVAL '1 MONTH - 1 day') -
+                        TO_DATE("{field}", 'YYYYMMDD')
+                    )) / (365.25 * 86400), -- Convert seconds to years
                     1  -- Round to 1 decimal place
                 )
             ELSE NULL
@@ -162,20 +152,13 @@ def handle_field(field, formatted_fields, is_admin):
 
         formatted_fields.append(
             f''' --
-        -- Determine AGE_VALID
+        -- Determine AGE_VALID (1 if DATE_OF_BIRTH is a valid date with reasonable birth year, 0 otherwise)
         CASE
-            WHEN "{field}" !~ '^[0-9]{{8}}$' OR
-                    -- Perform null check
-                    "{field}" IS NULL OR "{field}" = '' OR
-                    -- Validate year (reasonable range)
-                    CAST(SUBSTRING("{field}" FROM 1 FOR 4) AS INTEGER) NOT BETWEEN 1900 AND
-                    EXTRACT(YEAR FROM CURRENT_DATE) OR
-                    -- Validate month (01-12)
-                    CAST(SUBSTRING("{field}" FROM 5 FOR 2) AS INTEGER) NOT BETWEEN 1 AND 12 OR
-                    -- Validate day (01-31)
-                    CAST(SUBSTRING("{field}" FROM 7 FOR 2) AS INTEGER) NOT BETWEEN 1 AND 31
-            THEN 0
-            ELSE 1
+            WHEN is_valid_date_yyyymmdd("{field}") AND
+                    CAST(SUBSTRING("{field}" FROM 1 FOR 4) AS INTEGER) BETWEEN 1900 AND
+                    EXTRACT(YEAR FROM CURRENT_DATE)
+            THEN 1
+            ELSE 0
         END AS "AGE_VALID"'''.strip()
         )
     else:
@@ -200,6 +183,20 @@ def handle_table_name(schema_type, schema_name):
         record_type = schema_name.upper()
 
     return table_name, record_type
+
+
+def write_helper_functions(output_dir: str) -> None:
+    """Copy helper functions SQL file to output directory."""
+    source_file = os.path.join(CWD, "helper_functions.sql")
+    output_file = os.path.join(output_dir, "00_helper_functions.sql")
+
+    with open(source_file, "r") as src:
+        helper_sql = src.read()
+
+    with open(output_file, "w") as dest:
+        dest.write(helper_sql)
+
+    logger.info(f"Copied helper functions SQL to {output_dir}")
 
 
 def handle_where_clause(record_type):
@@ -231,6 +228,9 @@ def main(is_admin):
     output_dir_name = "admin_views" if is_admin else "user_views"
     output_dir = os.path.join(CWD, output_dir_name)
     os.makedirs(output_dir, exist_ok=True)
+
+    # Write helper functions SQL (required for date validation in views)
+    write_helper_functions(output_dir)
 
     # Process each schema type and its schemas
     for schema_type, schemas in schema_data.items():

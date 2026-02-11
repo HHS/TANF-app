@@ -5,6 +5,8 @@ import appConfigureStore from '../../configureStore'
 import SectionSubmissionHistory from './SectionSubmissionHistory'
 import * as reportsActions from '../../actions/reports'
 import { fileUploadSections } from '../../reducers/reports'
+import { ReportsProvider } from '../Reports/ReportsContext'
+import { MemoryRouter } from 'react-router-dom'
 
 // Mock only external actions
 jest.mock('../../actions/reports')
@@ -61,10 +63,14 @@ describe('SectionSubmissionHistory', () => {
     return {
       ...render(
         <Provider store={store}>
-          <SectionSubmissionHistory
-            filterValues={filterValues}
-            reprocessedState={reprocessedState}
-          />
+          <MemoryRouter pathname="">
+            <ReportsProvider>
+              <SectionSubmissionHistory
+                filterValues={filterValues}
+                reprocessedState={reprocessedState}
+              />
+            </ReportsProvider>
+          </MemoryRouter>
         </Provider>
       ),
       store,
@@ -165,13 +171,17 @@ describe('SectionSubmissionHistory', () => {
       // Rerender with same props
       rerender(
         <Provider store={store}>
-          <SectionSubmissionHistory
-            filterValues={filterValues}
-            reprocessedState={{
-              setDate: jest.fn(),
-              setModalVisible: jest.fn(),
-            }}
-          />
+          <MemoryRouter>
+            <ReportsProvider>
+              <SectionSubmissionHistory
+                filterValues={filterValues}
+                reprocessedState={{
+                  setDate: jest.fn(),
+                  setModalVisible: jest.fn(),
+                }}
+              />
+            </ReportsProvider>
+          </MemoryRouter>
         </Provider>
       )
 
@@ -866,17 +876,21 @@ describe('SectionSubmissionHistory', () => {
 
       rerender(
         <Provider store={updatedStore}>
-          <SectionSubmissionHistory
-            filterValues={{
-              year: '2024',
-              quarter: 'Q1',
-              stt: { id: 1, num_sections: 4 },
-            }}
-            reprocessedState={{
-              setDate: jest.fn(),
-              setModalVisible: jest.fn(),
-            }}
-          />
+          <MemoryRouter>
+            <ReportsProvider>
+              <SectionSubmissionHistory
+                filterValues={{
+                  year: '2024',
+                  quarter: 'Q1',
+                  stt: { id: 1, num_sections: 4 },
+                }}
+                reprocessedState={{
+                  setDate: jest.fn(),
+                  setModalVisible: jest.fn(),
+                }}
+              />
+            </ReportsProvider>
+          </MemoryRouter>
         </Provider>
       )
 

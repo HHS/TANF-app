@@ -11,7 +11,7 @@ class EmailTest(TestCase):
 
     def test_automated_email(self):
         """Test automated_email."""
-        email_path = "access-request-submitted.html"
+        email_path = "user_account/access-request-submitted.html"
         recipient_email = "test@email.com"
         subject = "Test email"
         email_context = {}
@@ -45,7 +45,7 @@ class EmailTest(TestCase):
 
     def test_automated_email_fails_with_invalid_email(self):
         """Test email failure. Expect a failure because the recipient email is invalid."""
-        email_path = "access-request-submitted.html"
+        email_path = "user_account/access-request-submitted.html"
         recipient_email = "fak-e"
         subject = "Test email"
         email_context = {}

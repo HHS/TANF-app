@@ -711,3 +711,125 @@ def test_list_ofa_admin_data_file_years_no_self_stt(
     assert response.status_code == status.HTTP_200_OK
 
     assert response.data == [2020, 2021, 2022]
+
+
+class TestDataFileQuerysetFiltering:
+    """Tests for the get_queryset filtering logic with program_type and is_program_audit combinations.
+
+    Note: Program integrity audit (is_program_audit=True) only applies to TANF files.
+    Tribal, SSP, and FRA files do not have audit variants.
+    """
+
+    root_url = "/v1/data_files/"
+
+    @pytest.fixture
+    def tanf_non_audit_file(self, data_analyst, stt):
+        """Create a TANF file with is_program_audit=False."""
+        return DataFile.create_new_version(
+            {
+                "original_filename": "tanf_non_audit.txt",
+                "user": data_analyst,
+                "stt": stt,
+                "year": 2024,
+                "quarter": "Q1",
+                "section": "Active Case Data",
+                "program_type": DataFile.ProgramType.TANF,
+                "is_program_audit": False,
+            }
+        )
+
+    @pytest.fixture
+    def tanf_audit_file(self, data_analyst, stt):
+        """Create a TANF file with is_program_audit=True."""
+        return DataFile.create_new_version(
+            {
+                "original_filename": "tanf_audit.txt",
+                "user": data_analyst,
+                "stt": stt,
+                "year": 2024,
+                "quarter": "Q1",
+                "section": "Active Case Data",
+                "program_type": DataFile.ProgramType.TANF,
+                "is_program_audit": True,
+            }
+        )
+
+    @pytest.fixture
+    def tribal_file(self, data_analyst, stt):
+        """Create a TRIBAL file (is_program_audit is always False for Tribal)."""
+        return DataFile.create_new_version(
+            {
+                "original_filename": "tribal.txt",
+                "user": data_analyst,
+                "stt": stt,
+                "year": 2024,
+                "quarter": "Q1",
+                "section": "Active Case Data",
+                "program_type": DataFile.ProgramType.TRIBAL,
+                "is_program_audit": False,
+            }
+        )
+
+    @pytest.mark.django_db
+    def test_tanf_non_audit_appears_in_regular_list(
+        self, api_client, data_analyst, stt, tanf_non_audit_file, tanf_audit_file
+    ):
+        """Test TANF file with is_program_audit=False appears in regular file list."""
+        api_client.login(username=data_analyst.username, password="test_password")
+
+        response = api_client.get(f"{self.root_url}?stt={stt.id}&year=2024&quarter=Q1")
+
+        assert response.status_code == status.HTTP_200_OK
+        file_ids = [f["id"] for f in response.data]
+        assert len(file_ids) == 1
+        assert tanf_non_audit_file.id in file_ids
+        assert tanf_audit_file.id not in file_ids
+
+    @pytest.mark.django_db
+    def test_tanf_audit_appears_in_program_integrity_audit_list(
+        self, api_client, data_analyst, stt, tanf_non_audit_file, tanf_audit_file
+    ):
+        """Test TANF file with is_program_audit=True appears in program-integrity-audit list."""
+        api_client.login(username=data_analyst.username, password="test_password")
+
+        response = api_client.get(
+            f"{self.root_url}?stt={stt.id}&year=2024&quarter=Q1&file_type=program-integrity-audit"
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        file_ids = [f["id"] for f in response.data]
+        assert len(file_ids) == 1
+        assert tanf_audit_file.id in file_ids
+        assert tanf_non_audit_file.id not in file_ids
+
+    @pytest.mark.django_db
+    def test_tribal_appears_in_regular_list(
+        self, api_client, data_analyst, stt, tribal_file, tanf_audit_file
+    ):
+        """Test TRIBAL file appears in regular file list alongside TANF non-audit files."""
+        api_client.login(username=data_analyst.username, password="test_password")
+
+        response = api_client.get(f"{self.root_url}?stt={stt.id}&year=2024&quarter=Q1")
+
+        assert response.status_code == status.HTTP_200_OK
+        file_ids = [f["id"] for f in response.data]
+        assert len(file_ids) == 1
+        assert tribal_file.id in file_ids
+        assert tanf_audit_file.id not in file_ids
+
+    @pytest.mark.django_db
+    def test_tribal_excluded_from_program_integrity_audit_list(
+        self, api_client, data_analyst, stt, tribal_file, tanf_audit_file
+    ):
+        """Test TRIBAL files are excluded from program-integrity-audit list (only TANF audit files appear)."""
+        api_client.login(username=data_analyst.username, password="test_password")
+
+        response = api_client.get(
+            f"{self.root_url}?stt={stt.id}&year=2024&quarter=Q1&file_type=program-integrity-audit"
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        file_ids = [f["id"] for f in response.data]
+        assert len(file_ids) == 1
+        assert tanf_audit_file.id in file_ids
+        assert tribal_file.id not in file_ids

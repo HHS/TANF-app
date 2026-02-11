@@ -20,12 +20,21 @@ class ReportFileViewSet(ModelViewSet):
     permission_classes = [ReportFilePermissions, IsApprovedPermission]
 
     def get_queryset(self):
-        """Filter reports by STT for Data Analysts."""
+        """Filter reports by STT for Data Analysts and optionally by year."""
         queryset = super().get_queryset()
 
         # Data Analysts should only see reports for their assigned STT
         if self.request.user.is_data_analyst and hasattr(self.request.user, 'stt'):
             queryset = queryset.filter(stt=self.request.user.stt)
+
+        # Query params for adding additional filters to queryset
+        year = self.request.query_params.get('year')
+        latest = self.request.query_params.get('latest')
+
+        if year:
+            queryset = queryset.filter(year=year)
+        if latest and latest.lower() == 'true':
+            queryset = queryset.order_by('-created_at')[:1]
 
         return queryset
 
@@ -49,6 +58,18 @@ class ReportSourceViewSet(ModelViewSet):
     queryset = ReportSource.objects.all().order_by("-created_at")
     serializer_class = ReportSourceSerializer
     permission_classes = [ReportSourcePermissions, IsApprovedPermission]
+
+    def get_queryset(self):
+        """Filter report sources by year if provided."""
+        queryset = super().get_queryset()
+
+        # Query params for filtering
+        year = self.request.query_params.get('year')
+
+        if year:
+            queryset = queryset.filter(year=year)
+
+        return queryset
 
     def get_serializer_context(self):
         """Retrieve additional context required by serializer."""

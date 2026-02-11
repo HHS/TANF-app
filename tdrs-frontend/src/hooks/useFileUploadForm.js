@@ -1,7 +1,12 @@
 import { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { fileInput } from '@uswds/uswds/src/js/components'
-import { submit } from '../actions/reports'
+import {
+  submit,
+  SET_TANF_SUBMISSION_STATUS,
+  getTanfSubmissionStatus,
+  getAvailableFileList,
+} from '../actions/reports'
 import { useEventLogger } from '../utils/eventLogger'
 import { useFormSubmission } from './useFormSubmission'
 import { useReportsContext } from '../components/Reports/ReportsContext'
@@ -38,6 +43,7 @@ export const useFileUploadForm = ({
     setModalTriggerSource,
     handleClearAll,
     handleOpenFeedbackWidget,
+    startPolling,
   } = useReportsContext()
 
   const user = useSelector((state) => state.auth.user)
@@ -46,18 +52,63 @@ export const useFileUploadForm = ({
   // Format sections for display in success message
   const formattedSections = formatSections(uploadedFiles)
 
+  const onFileUploadSuccess = (fileIds) => {
+    const pollSubmissionStatus = () =>
+      fileIds.forEach((fileId) => {
+        startPolling(
+          `${fileId}`,
+          () => getTanfSubmissionStatus(fileId),
+          (response) => {
+            let summary = response?.data?.summary
+            return summary && summary.status && summary.status !== 'Pending'
+          },
+          (response) => {
+            dispatch({
+              type: SET_TANF_SUBMISSION_STATUS,
+              payload: {
+                datafile_id: fileId,
+                datafile: response?.data,
+              },
+            })
+            setLocalAlertState({
+              active: true,
+              type: 'success',
+              message: 'Parsing complete.',
+            })
+          },
+          (error) => {
+            setLocalAlertState({
+              active: true,
+              type: error.type ? error.type : 'error',
+              message: error.message,
+            })
+          },
+          (onError) => {
+            onError({
+              message:
+                'Exceeded max number of tries to update submission status.',
+              type: 'warning',
+            })
+          }
+        )
+      })
+
+    dispatch(
+      getAvailableFileList(
+        {
+          quarter: quarterInputValue,
+          year: yearInputValue,
+          stt: stt,
+          file_type: fileTypeInputValue,
+        },
+        () => pollSubmissionStatus()
+      )
+    )
+  }
+
   // Handle form submission
   const onSubmit = async (event) => {
     event.preventDefault()
-
-    if (uploadedFiles.length === 0) {
-      setLocalAlertState({
-        active: true,
-        type: 'error',
-        message: 'No changes have been made to data files',
-      })
-      return
-    }
 
     try {
       // Transform files if needed (e.g., for Program Audit)
@@ -78,8 +129,10 @@ export const useFileUploadForm = ({
         fileType: fileTypeInputValue,
       })
 
-      await executeSubmission(() => dispatch(submit(payload)))
-      handleOpenFeedbackWidget()
+      const submittedFiles = await executeSubmission(() =>
+        dispatch(submit(payload, onFileUploadSuccess))
+      )
+      handleOpenFeedbackWidget(submittedFiles)
     } catch (error) {
       console.error('Error during form submission:', error)
       setLocalAlertState({
