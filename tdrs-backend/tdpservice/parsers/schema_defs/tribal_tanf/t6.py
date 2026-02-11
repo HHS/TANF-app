@@ -266,7 +266,10 @@ s2 = TanfDataReportSchema(
             startIndex=2,
             endIndex=7,
             required=True,
-            validators=[],
+            validators=[
+                category2.dateYearIsLargerThan(1998),
+                category2.dateMonthIsValid(),
+            ],
         ),
         Field(
             item="4B",
@@ -472,7 +475,10 @@ s3 = TanfDataReportSchema(
             startIndex=2,
             endIndex=7,
             required=True,
-            validators=[],
+            validators=[
+                category2.dateYearIsLargerThan(1998),
+                category2.dateMonthIsValid(),
+            ],
         ),
         Field(
             item="4C",

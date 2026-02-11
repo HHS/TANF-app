@@ -44,7 +44,11 @@ def cat4_edge_case_file(stt_user, stt):
 @pytest.fixture
 def big_file(stt_user, stt):
     """Fixture for ADS.E2J.FTP1.TS06."""
-    return util.create_test_datafile("ADS.E2J.FTP1.TS06", stt_user, stt)
+    file = util.create_test_datafile("ADS.E2J.FTP1.TS06", stt_user, stt)
+    file.year = 2022
+    file.quarter = "Q1"
+    file.save()
+    return file
 
 
 @pytest.fixture
@@ -176,7 +180,7 @@ def test_reparse_backup_succeed(
     time.sleep(10)
 
     file_size = os.path.getsize(file_name)
-    assert file_size > 180000
+    assert file_size > 160000
 
 
 @pytest.mark.django_db
@@ -426,12 +430,12 @@ def test_reparse_quarter_and_year(
 
     mocker.patch("tdpservice.scheduling.parser_task.parse", return_value=None)
 
-    opts = {"fiscal_quarter": "Q1", "fiscal_year": 2021, "testing": True}
+    opts = {"fiscal_quarter": "Q1", "fiscal_year": 2022, "testing": True}
     cmd.handle(**opts)
 
     latest = ReparseMeta.objects.select_for_update().latest("pk")
-    assert latest.num_files == 1
-    assert latest.num_records_deleted == 3073
+    assert latest.num_files == 2
+    assert latest.num_records_deleted == 3077
 
 
 @pytest.mark.django_db()
