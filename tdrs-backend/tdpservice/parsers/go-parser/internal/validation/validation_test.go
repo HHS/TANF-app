@@ -354,51 +354,6 @@ func TestCustomFunctions(t *testing.T) {
 	})
 }
 
-// TestValidateT1HasChildren tests the Cat4 function
-func TestValidateT1HasChildren(t *testing.T) {
-	t.Run("no T1 records", func(t *testing.T) {
-		records := []Record{
-			&mockRecord{recordType: "T2"},
-		}
-		group := newMockWrappedGroup(records)
-		if !validateT1HasChildren(group) {
-			t.Error("expected true when no T1 records")
-		}
-	})
-
-	t.Run("T1 with T2 child", func(t *testing.T) {
-		records := []Record{
-			&mockRecord{recordType: "T1"},
-			&mockRecord{recordType: "T2"},
-		}
-		group := newMockWrappedGroup(records)
-		if !validateT1HasChildren(group) {
-			t.Error("expected true when T1 has T2 child")
-		}
-	})
-
-	t.Run("T1 with T3 child", func(t *testing.T) {
-		records := []Record{
-			&mockRecord{recordType: "T1"},
-			&mockRecord{recordType: "T3"},
-		}
-		group := newMockWrappedGroup(records)
-		if !validateT1HasChildren(group) {
-			t.Error("expected true when T1 has T3 child")
-		}
-	})
-
-	t.Run("T1 without children", func(t *testing.T) {
-		records := []Record{
-			&mockRecord{recordType: "T1"},
-		}
-		group := newMockWrappedGroup(records)
-		if validateT1HasChildren(group) {
-			t.Error("expected false when T1 has no children")
-		}
-	})
-}
-
 // TestHasDuplicateField tests the duplicate detection function
 func TestHasDuplicateField(t *testing.T) {
 	t.Run("no duplicates", func(t *testing.T) {

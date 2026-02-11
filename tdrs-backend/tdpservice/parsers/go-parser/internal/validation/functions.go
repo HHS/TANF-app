@@ -42,8 +42,6 @@ func RegisterFunctions() []expr.Option {
 		expr.Function("isValidSSN", wrapFunc1StrBool(isValidSSN), new(func(string) bool)),
 
 		// Group validators (take group explicitly)
-		expr.Function("validateT1HasChildren", wrapGroupFunc(validateT1HasChildren),
-			new(func(WrappedGroup) bool)),
 		expr.Function("hasDuplicateField", wrapGroupFunc3(hasDuplicateField),
 			new(func(WrappedGroup, string, string) bool)),
 		expr.Function("getRecordsOfType", wrapGroupFunc2(getRecordsOfType),
@@ -378,27 +376,6 @@ func toInt(v any) int {
 	default:
 		return 0
 	}
-}
-
-// validateT1HasChildren validates that if T1 exists, it has at least one T2 or T3 child.
-// Returns true if validation passes (either no T1, or T1 with children).
-func validateT1HasChildren(group WrappedGroup) bool {
-	t1Count := 0
-	t2Count := 0
-	t3Count := 0
-	for _, rec := range group.GetRecords() {
-		switch rec.GetRecordType() {
-		case "T1":
-			t1Count++
-		case "T2":
-			t2Count++
-		case "T3":
-			t3Count++
-		}
-	}
-	// If no T1 records, validation passes (nothing to validate)
-	// If T1 exists, must have at least one T2 or T3
-	return t1Count == 0 || (t2Count+t3Count) > 0
 }
 
 // hasDuplicateField checks if any records of the given type have duplicate values
