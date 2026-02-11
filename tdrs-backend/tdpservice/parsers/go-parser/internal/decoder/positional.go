@@ -86,6 +86,8 @@ func (d *PostitionalDecoder) Rows() iter.Seq2[Row, error] {
 				return
 			}
 
+			d.lineNum++
+
 			// Handle blank lines, comments, etc...
 			if (len(line) == 0 && err != io.EOF) || strings.HasPrefix(line, "#") {
 				continue
@@ -95,8 +97,6 @@ func (d *PostitionalDecoder) Rows() iter.Seq2[Row, error] {
 			if err == io.EOF {
 				return
 			}
-
-			d.lineNum++
 
 			decodedLength := len(line)
 

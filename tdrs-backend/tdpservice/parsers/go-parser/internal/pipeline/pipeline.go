@@ -182,6 +182,11 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params ProcessParams) (*Proc
 // processRows uses the Accumulator to process all rows.
 // The Accumulator handles all four modes (keyed, batched, both, neither)
 // based on the AccumulatorConfig in the FileSpec.
+//
+// When presort is enabled, all data rows are read into memory and stable-sorted
+// by key fields before feeding to the accumulator. This guarantees records for
+// the same case are adjacent, enabling streaming accumulation and in-memory
+// duplicate detection regardless of input order.
 func processRows(
 	dec decoder.Decoder,
 	fileSpec *filespec.FileSpec,
@@ -190,6 +195,72 @@ func processRows(
 ) error {
 	acc := parser.NewAccumulator(fileSpec, recordDetector)
 
+	if fileSpec.Accumulator.Presort && fileSpec.Accumulator.HasKeyFields() {
+		return processRowsPresorted(dec, fileSpec, recordDetector, acc, parserPool)
+	}
+
+	return processRowsStreaming(dec, acc, parserPool)
+}
+
+// processRowsPresorted reads all rows, sorts by key, then feeds to accumulator.
+func processRowsPresorted(
+	dec decoder.Decoder,
+	fileSpec *filespec.FileSpec,
+	recordDetector *parser.RecordTypeDetector,
+	acc *parser.Accumulator,
+	parserPool *parser.ParserPool,
+) error {
+	sorter := parser.NewSorter(fileSpec, recordDetector)
+	sortResult, err := sorter.Sort(dec)
+	if err != nil {
+		return fmt.Errorf("presort failed: %w", err)
+	}
+
+	log.Printf("Presort complete: %d data rows sorted, %d unkeyed rows",
+		len(sortResult.SortedRows), len(sortResult.UnkeyedRows))
+
+	if sortResult.Trailer != nil {
+		log.Printf("Line %d: TRAILER (not accumulated)", sortResult.Trailer.LineNum())
+	}
+
+	// Feed sorted data rows to accumulator
+	for _, row := range sortResult.SortedRows {
+		batch, _, _, err := acc.Add(row)
+		if err != nil {
+			log.Printf("Line %d: %v", row.LineNum(), err)
+			continue
+		}
+		if batch != nil {
+			parserPool.Submit(batch)
+		}
+	}
+
+	// Process unkeyed rows (malformed, unrecognized) for error reporting
+	for _, row := range sortResult.UnkeyedRows {
+		batch, _, _, err := acc.Add(row)
+		if err != nil {
+			log.Printf("Line %d: %v", row.LineNum(), err)
+			continue
+		}
+		if batch != nil {
+			parserPool.Submit(batch)
+		}
+	}
+
+	// Drain remaining groups
+	for _, batch := range acc.Drain() {
+		parserPool.Submit(batch)
+	}
+
+	return nil
+}
+
+// processRowsStreaming processes rows in file order without sorting.
+func processRowsStreaming(
+	dec decoder.Decoder,
+	acc *parser.Accumulator,
+	parserPool *parser.ParserPool,
+) error {
 	for row, err := range dec.Rows() {
 		if err != nil {
 			return err

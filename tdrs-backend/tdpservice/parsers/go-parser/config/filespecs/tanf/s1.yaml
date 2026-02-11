@@ -86,6 +86,10 @@ accumulator:
 
   batch_size: 1
 
+  # Sort by key_fields before accumulation so that all records for a case
+  # are adjacent regardless of input order.
+  presort: true
+
   # Which schemas participate in key-based grouping.
   # HEADER and TRAILER are excluded because they're file-level, not case-level.
   # Only T1, T2, T3 records are grouped by case.
@@ -134,6 +138,9 @@ validation_orchestrator:
 # 3. Every T3 must have a corresponding T1 in the same case
 
 group_validators:
+  # Cannot have more than one T1
+  - id: multiple_t1
+
   # T1 must have at least one T2 or T3 record
   - id: t1_has_t2_or_t3
 

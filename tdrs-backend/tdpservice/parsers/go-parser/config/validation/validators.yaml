@@ -255,6 +255,11 @@ group_validators:
 
   # TODO: Need to implement duplicate detection.
 
+  # Any group cannot have more than a single T1 record
+  - id: multiple_t1
+    expr: "RecordCounts['T1'] < 2"
+    message: "No case should contain more than one T1 record for a RPT_MONTH_YEAR and CASE_NUMBER"
+
   # T1 must have at least one T2 or T3 record
   # Python: __validate_s1_records_are_related - validates T2/T3 presence
   # Note: This validator behaves mostly correctly in comparison to the python parser. The python parser will generate

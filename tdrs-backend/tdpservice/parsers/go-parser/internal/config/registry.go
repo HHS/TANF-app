@@ -247,6 +247,17 @@ func (r *Registry) ValidatorStats() validationpkg.RegistryStats {
 	return r.validators.Stats()
 }
 
+// NewTestRegistry creates a minimal Registry for unit testing.
+// Only schemas are populated; fileSpecs and validators are empty.
+func NewTestRegistry(schemas map[string]*schema.CompiledSchema) *Registry {
+	return &Registry{
+		fileSpecs:  make(map[string]*filespec.FileSpec),
+		schemas:    schemas,
+		validators: validationpkg.NewValidatorRegistry(),
+		metadata:   make(map[string]*DbSchemaMetadata),
+	}
+}
+
 // LoadContentTypes loads Django content type IDs from the provided map and sets them on schema metadata.
 // The map should be keyed by model name (e.g., "tanf_t1") with content type ID as value.
 // This is typically called once after loading the registry, using data queried from django_content_type.

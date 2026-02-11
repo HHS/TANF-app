@@ -86,6 +86,10 @@ accumulator:
 
   batch_size: 1
 
+  # Sort by key_fields before accumulation so that all records for a case
+  # are adjacent regardless of input order.
+  presort: true
+
   # Which schemas participate in key-based grouping.
   # HEADER and TRAILER are excluded because they're file-level, not case-level.
   # Only M1, M2, M3 records are grouped by case.

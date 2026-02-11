@@ -1,323 +1,262 @@
 # Presort Architecture
 
-This document describes the architecture for optionally sorting input files before parsing. Sorting ensures records are grouped by key fields, enabling memory-efficient streaming accumulation.
+This document describes the architecture for sorting input files before parsing. Sorting ensures records are grouped by key fields, enabling streaming accumulation and purely in-memory duplicate detection and case/grouping validation.
 
 ## Motivation
 
-The accumulator groups records by composite key (e.g., `RPT_MONTH_YEAR|CASE_NUMBER`). When files are sorted by this key, the accumulator can flush completed groups immediately upon detecting a key change, rather than holding all groups in memory until EOF.
+The accumulator groups records by composite key (e.g., `RPT_MONTH_YEAR|CASE_NUMBER`) and relies on key-change detection to flush completed groups. Today, files are **assumed** to be sorted by the user. This assumption is fragile: if a file arrives with interleaved case records, the accumulator creates multiple incomplete groups for the same logical case, causing spurious group validation errors and missed duplicate detection.
 
-**Without presort (unsorted file):**
-- All groups held in memory until file is fully read
-- Memory usage grows with number of unique groups
-- Risk of OOM for large files with many cases
+Presort eliminates this assumption and unlocks three benefits:
 
-**With presort:**
-- Groups flushed as soon as key changes
-- Only one active group in memory at a time
-- Bounded memory usage regardless of file size
+1. **Purely in-memory duplicate detection.** With all records for a case guaranteed to be adjacent, duplicate records can be detected within the group during accumulation, without database queries against previously written data.
+
+2. **Purely in-memory case/grouping validation.** Group validators (e.g., `t1_has_t2_or_t3`, `t2_requires_t1`) operate on complete groups. Without presort, records for the same case scattered across the file produce incomplete groups, and the validator either misses errors or must reconcile across groups via the database.
+
+3. **No reliance on user-sorted data.** Users submit data as-is. The parser handles ordering internally, producing correct results regardless of input order.
+
+4. **Bounded memory for the accumulator.** When the file is sorted, the accumulator holds only one active group at a time and flushes completed groups immediately on key change.
+
+## Core Requirement: Original Line Number Preservation
+
+When the parser sorts records before processing, the position of a record in the sorted order differs from its position in the original file. **Error messages must reference the original line number** so users can locate issues in their submitted file to make corrections for resubmission.
+
+This is a hard requirement, not an optimization. The `row_number` column in `parser_error` and the `LineNumber` field in error message templates must always reflect the record's position in the original file.
+
+### Solution: In-Memory Sort with Natural Line Number Preservation
+
+Sorting inherently requires reading all rows into memory (you cannot sort without seeing all data). Since the rows are already in memory, iterate them directly in sorted order rather than writing to a temp file.
+
+Each `decoder.Row` carries its `LineNum()` from the original decode pass. Sorting reorders the slice of Row objects but does not mutate their `lineNum` field. When the accumulator, parser, and error converter subsequently read `Row.LineNum()` and `ParsedRecord.LineNumber`, they get the original file position automatically.
+
+```
+Original file:           In-memory after sort:
+  Line 1: HEADER           rows[0] = Row{lineNum: 1, data: "HEADER..."}
+  Line 2: T1 CASE002       rows[1] = Row{lineNum: 4, data: "T1 CASE001..."}  <- was line 4
+  Line 3: T2 CASE002       rows[2] = Row{lineNum: 5, data: "T2 CASE001..."}  <- was line 5
+  Line 4: T1 CASE001       rows[3] = Row{lineNum: 2, data: "T1 CASE002..."}  <- was line 2
+  Line 5: T2 CASE001       rows[4] = Row{lineNum: 3, data: "T2 CASE002..."}  <- was line 3
+  Line 6: TRAILER          rows[5] = Row{lineNum: 6, data: "TRAILER..."}
+```
+
+If a validation error fires on `rows[3]` (T1 CASE002), `record.LineNumber` is `2` — the user looks at line 2 of their original file. No mapping table needed.
+
+**Why not a temp file?** Writing sorted rows to a temp file and re-decoding would assign new sequential line numbers from the decoder, destroying the original positions. Carrying metadata (prefixed line numbers, sidecar mapping file) adds complexity for no benefit since the rows are already in memory.
 
 ## Processing Flow
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│  Raw File   │ ──► │   Sorter    │ ──► │  Temp File  │ ──► │  Decoder    │
-│             │     │             │     │  (sorted)   │     │             │
+│  Raw File   │ ──► │   Decoder   │ ──► │  All Rows   │ ──► │   Sorter    │
+│             │     │ (streaming) │     │ (in memory) │     │ (stable)    │
 └─────────────┘     └─────────────┘     └─────────────┘     └──────┬──────┘
                                                                    │
+                         Sorted rows iterated directly             │
+                         (no temp file, lineNum preserved)         │
                                                                    ▼
-                                                            ┌─────────────┐
-                                                            │ Accumulator │
-                                                            │ (streaming) │
-                                                            └──────┬──────┘
-                                                                   │
-                                                                   ▼
-                                                            ┌─────────────┐
-                                                            │   Batches   │
-                                                            └─────────────┘
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  Database   │ ◄── │   Router    │ ◄── │ ParserPool  │ ◄── │ Accumulator │
+│  (COPY)     │     │ (validate   │     │ (N workers) │     │ (streaming) │
+│             │     │  + write)   │     │             │     │             │
+└─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
 ```
 
-1. **Sorter** reads the raw file, sorts records by key fields, writes to temp file
-2. **Decoder** streams through the sorted temp file
-3. **Accumulator** detects key changes and flushes completed groups immediately
-4. **Temp file** is deleted after processing
-
-## Configuration
-
-### FileSpec Configuration
-
-```yaml
-accumulator:
-  key_fields:
-    # Positional format (TANF, SSP, Tribal)
-    - field: rpt_month_year
-      position: { start: 2, end: 8 }
-    - field: case_number
-      position: { start: 8, end: 19 }
-
-    # Columnar format (CSV, XLSX) - alternative syntax
-    # - field: reporting_month
-    #   column: 0
-    # - field: case_id
-    #   column_header: "CASE_ID"
-
-  batch_size: 0
-
-  grouped_schemas:
-    - tanf/t1
-    - tanf/t2
-    - tanf/t3
-
-  # Presort configuration
-  presort: true              # Enable sorting before accumulation
-  new_group_on: key_change   # Flush previous group when key differs
-```
-
-### Configuration Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `presort` | bool | When `true`, sort the file by `key_fields` before accumulation |
-| `new_group_on` | string | Flush strategy. `key_change` flushes when key differs from previous row |
+1. **Decoder** reads the raw file, producing `decoder.Row` objects with original `lineNum` set
+2. **Sorter** collects all data rows in memory, stable-sorts by key fields, separates HEADER/TRAILER
+3. **Accumulator** iterates sorted rows, detects key changes, flushes completed groups as `DecodedBatch`
+4. **ParserPool** workers parse batches into `ParsedBatch` (field extraction, type conversion)
+5. **ResultRouter** dispatchers validate groups via `ValidationOrchestrator` and route to database writers
+6. **Writer** bulk-loads records and errors via `COPY FROM`
 
 ## Components
 
-### KeyExtractor Interface
-
-Abstracts key extraction across file formats:
-
-```go
-type KeyExtractor interface {
-    // ExtractKey returns the composite grouping key from a row
-    ExtractKey(row decoder.Row) (string, error)
-}
-
-// Format-specific implementations
-type PositionalKeyExtractor struct {
-    KeyFields []PositionalKeyField
-}
-
-type ColumnarKeyExtractor struct {
-    KeyFields []ColumnarKeyField
-}
-```
-
 ### Sorter
 
-Responsible for reading, sorting, and writing the sorted output:
+Responsible for reading all rows, separating non-grouped records, and stable-sorting data records by key:
 
 ```go
 type Sorter struct {
     spec         *filespec.FileSpec
+    detector     *RecordTypeDetector
     keyExtractor KeyExtractor
-    writer       SortedWriter
 }
 
-func (s *Sorter) SortFile(inputPath string) (tempPath string, err error)
+// SortResult contains the sorted rows and separated non-grouped records.
+type SortResult struct {
+    Header       decoder.Row   // HEADER row (nil if absent)
+    Trailer      decoder.Row   // TRAILER row (nil if absent)
+    SortedRows   []decoder.Row // Data rows sorted by key, lineNum preserved
+}
+
+func (s *Sorter) Sort(dec decoder.Decoder) (*SortResult, error)
 ```
 
-**Sorting Algorithm:**
-1. Read all rows using format-appropriate Decoder
-2. Separate non-grouped records (HEADER, TRAILER) from data records
-3. Extract sort key from each data record
-4. Stable sort data records by key
-5. Write to temp file: HEADER, sorted data records, TRAILER
+**Sorting algorithm:**
+1. Read all rows from decoder into a slice
+2. Separate HEADER, TRAILER, and data records using `grouped_schemas` config
+3. Extract sort key from each data record via `KeyExtractor`
+4. Stable sort data records by key (preserves relative order within same key)
+5. Return `SortResult` with sorted rows — each row's `LineNum()` is unchanged
 
-### SortedWriter Interface
+**Stable sort is required.** Records within the same case must retain their original relative order (T1 before T2 before T3 for the same case). Go's `slices.SortStableFunc` provides this guarantee.
 
-Abstracts writing sorted output across formats:
+### KeyExtractor
+
+Abstracts key extraction across file formats. Reuses the same key field definitions already in the accumulator config:
 
 ```go
-type SortedWriter interface {
-    // WriteRow writes a single row to the output
-    WriteRow(row decoder.Row) error
-
-    // Close finalizes the output and returns the temp file path
-    Close() (tempPath string, err error)
+type KeyExtractor interface {
+    ExtractKey(row decoder.Row) (string, error)
 }
 
-// Format-specific implementations
-type PositionalWriter struct { /* writes raw line bytes */ }
-type CSVWriter struct { /* writes CSV-formatted lines */ }
-```
-
-### Generalized KeyFieldsConfig
-
-Support both positional and columnar key extraction:
-
-```go
-type KeyFieldConfig struct {
-    Field        string       `yaml:"field"`
-
-    // Positional format
-    Position     *PositionDef `yaml:"position,omitempty"`
-
-    // Columnar format (one of these)
-    Column       *int         `yaml:"column,omitempty"`
-    ColumnHeader *string      `yaml:"column_header,omitempty"`
+// PositionalKeyExtractor extracts keys from fixed-width positional rows.
+// Uses the same byte positions as accumulator.key_fields.
+type PositionalKeyExtractor struct {
+    RptMonthYear PositionDef // e.g., {Start: 2, End: 8}
+    CaseNumber   PositionDef // e.g., {Start: 8, End: 19}
 }
 
-type KeyFieldsConfig struct {
-    Fields []KeyFieldConfig `yaml:"fields"`
+// ColumnarKeyExtractor extracts keys from CSV/XLSX rows by column index or header name.
+type ColumnarKeyExtractor struct {
+    KeyColumns []ColumnarKeyField
 }
 ```
 
-## Updated Main Flow
+### Integration with Pipeline
+
+The presort step inserts between file open and accumulator processing in `processRows`:
 
 ```go
 func processFile(ctx context.Context, spec *filespec.FileSpec, filePath string) error {
-    inputPath := filePath
-
-    // Step 1: Presort if configured
-    if spec.Accumulator.Presort {
-        sorter := processor.NewSorter(spec)
-        tempPath, err := sorter.SortFile(filePath)
-        if err != nil {
-            return fmt.Errorf("presort failed: %w", err)
-        }
-        defer os.Remove(tempPath)
-        inputPath = tempPath
-    }
-
-    // Step 2: Open file (original or sorted temp)
-    file, err := os.Open(inputPath)
+    // Step 1: Open file and create decoder
+    file, err := os.Open(filePath)
     if err != nil {
         return err
     }
     defer file.Close()
 
-    // Step 3: Create decoder and process
-    dec := createDecoder(file, spec)
+    dec, err := CreateDecoder(file, spec)
+    if err != nil {
+        return err
+    }
     defer dec.Close()
 
-    // Step 4: Accumulate with streaming (new_group_on: key_change)
-    acc := processor.NewAccumulator(spec, detector)
-    for row, err := range dec.Rows() {
-        if err != nil {
-            return err
-        }
+    // Step 2: Read header
+    headerRow, err := dec.ReadFirst()
+    if err != nil {
+        return err
+    }
+
+    // Step 3: Create detector
+    detector := parser.NewRecordTypeDetector(spec, registry)
+
+    // Step 4: Presort
+    sorter := parser.NewSorter(spec, detector)
+    sortResult, err := sorter.Sort(dec)
+    if err != nil {
+        return fmt.Errorf("presort failed: %w", err)
+    }
+
+    // Step 5: Feed sorted rows to accumulator
+    acc := parser.NewAccumulator(spec, detector)
+    for _, row := range sortResult.SortedRows {
         batch, _, _, err := acc.Add(row)
         if err != nil {
             continue
         }
         if batch != nil {
-            pool.Submit(batch)
+            parserPool.Submit(batch)
         }
     }
 
-    // Step 5: Drain remaining
+    // Step 6: Drain remaining
     for _, batch := range acc.Drain() {
-        pool.Submit(batch)
+        parserPool.Submit(batch)
     }
 
     return nil
 }
 ```
 
-## File Format Support
+The accumulator, parser pool, validation orchestrator, and writer are unchanged. They already consume `decoder.Row` objects and read `LineNum()` — which is the original file line number regardless of sort order.
 
-| Format | Key Extraction | Write Strategy | Notes |
-|--------|----------------|----------------|-------|
-| Positional | Byte positions | Raw line bytes | TANF, SSP, Tribal |
-| CSV | Column index or header | CSV serialization | Standard library |
-| XLSX | Column index or header | Convert to CSV | Binary format requires conversion |
+## Configuration
 
-### XLSX Handling
+### FileSpec Configuration
 
-XLSX files are binary and not line-based. Options:
-1. **Convert to CSV** during sort (recommended for simplicity)
-2. **Keep in memory** after sorting (skip temp file for XLSX)
+Presort uses the existing `accumulator.key_fields` to determine sort order. A `presort` flag enables the sort step:
 
-## Accumulator Simplification
+```yaml
+accumulator:
+  key_fields:
+    rpt_month_year:
+      start: 2
+      end: 8
+    case_number:
+      start: 8
+      end: 19
 
-With presort guaranteeing sorted input, the accumulator simplifies:
+  batch_size: 1
 
-**Before (dual-mode):**
-```go
-type Accumulator struct {
-    sorted       bool
-    groups       map[string]*RecordGroup  // unsorted mode
-    currentGroup *RecordGroup             // sorted mode
-}
+  grouped_schemas:
+    - tanf/t1
+    - tanf/t2
+    - tanf/t3
+
+  presort: true   # Sort by key_fields before accumulation
 ```
 
-**After (single-mode):**
-```go
-type Accumulator struct {
-    newGroupOn   string        // "key_change"
-    currentGroup *RecordGroup  // always streaming
-}
-```
+| Field | Type | Description |
+|-------|------|-------------|
+| `presort` | bool | When `true`, sort the file by `key_fields` before feeding rows to the accumulator. Requires `key_fields` to be set. |
 
-The `groups` map is no longer needed when presort is enabled and `new_group_on: key_change` is configured.
+When `presort` is `false` or absent, behavior is unchanged: rows are fed to the accumulator in file order, and the file is assumed to be sorted.
 
-## Considerations
+## Duplicate Detection
 
-### Line Number Preservation
+With presort, all records sharing a key are adjacent. This enables in-memory duplicate detection during accumulation or group validation:
 
-When files are sorted, the position of a record in the sorted temp file differs from its position in the original file. Error messages must reference the original line number so users can locate issues in their submitted file.
+**Within-group duplicates:** When building a `DecodedGroup`, the accumulator (or a dedicated step) can detect records with identical content or record type within the same case. For example, two T1 records in the same case with identical field values.
 
-**Option 1: Embed Line Number in Temp File**
+**Cross-group duplicates:** Since groups are processed in sorted key order, a simple "last seen key" check in the accumulator already prevents splitting the same case into multiple groups. Without presort, the same case appearing at lines 10 and 500 would create two separate groups — presort guarantees they merge into one.
 
-Prefix each line in the temp file with the original line number:
+This replaces any need to query the database for previously written records when checking for duplicates within a single file submission.
 
-```
-Temp file format:
-0000001|HEADER...
-0000004|T1202401CASE001...    <- originally line 4
-0000005|T2202401CASE001...    <- originally line 5
-0000002|T1202401CASE002...    <- originally line 2
-```
-
-The decoder for the temp file parses the prefix to restore the original line number.
-
-*Pros:* Memory-efficient during parsing (streaming)
-*Cons:* Custom temp file format, encoding/decoding overhead
-
-**Option 2: Sort In-Memory Without Write-Back**
-
-Keep sorted rows in memory and iterate directly without writing to temp file:
-
-```go
-sortedRows := sorter.Sort(allRows)  // []decoder.Row with LineNum() preserved
-for _, row := range sortedRows {
-    acc.Add(row)  // LineNum() naturally preserved
-}
-```
-
-*Pros:* Simple, no temp file, line numbers naturally preserved
-*Cons:* All rows remain in memory during accumulation
-
-**Option 3: Hybrid Approach**
-
-1. Load all rows into memory (required for sorting)
-2. Sort in memory
-3. Write to temp file with line number metadata
-4. Free in-memory rows
-5. Stream through temp file during accumulation
-
-*Pros:* Memory freed before heavy parsing/validation phase
-*Cons:* More complex implementation
+## Edge Cases
 
 ### HEADER/TRAILER Positioning
 
-Non-grouped records (HEADER, TRAILER) need special handling:
-- HEADER should remain at the start of the sorted output
-- TRAILER should remain at the end
-- These records are identified via `grouped_schemas` config
+Non-grouped records (HEADER, TRAILER) are identified via `grouped_schemas` — any record whose schema path is not in `grouped_schemas` is excluded from sorting. The sorter separates these during the initial pass and returns them in `SortResult.Header` and `SortResult.Trailer`.
+
+HEADER is already consumed before the sort step (via `dec.ReadFirst()`). TRAILER is detected during sorting and excluded from the sorted data rows.
 
 ### Malformed Records
 
-Records that fail key extraction (too short, invalid format):
-- **Option A:** Sort to end of file, process last
-- **Option B:** Fail fast with error
-- **Option C:** Log warning, exclude from sorted output
+Records that fail key extraction (too short, invalid format, unrecognized record type):
+- Accumulate into a separate "unkeyed" collection in the `SortResult`
+- Process after all sorted groups, generating appropriate pre-check errors
+- Each malformed record still carries its original `LineNum()` for error reporting
+
+### Empty Files / Header-Only Files
+
+- Files with only HEADER/TRAILER: `SortResult.SortedRows` is empty, no data to sort
+- Completely empty files: handled before the sort step (decoder produces no rows)
+
+### Memory
+
+Sorting requires holding all data rows in memory simultaneously. This is the same memory used by `batch_size: 0` mode today (accumulate all groups). For typical TANF submissions (tens of thousands of records), this is well within container memory limits.
+
+For extremely large files, memory usage during the sort phase is bounded by `O(N)` where N is the number of data rows. After sorting, the accumulator processes rows one at a time and releases completed groups to the parser pool, so peak memory during the parsing/validation phase is unchanged.
 
 ### Disk Space
 
-The temp file can be as large as the input file. Ensure adequate disk space is available, especially in containerized environments.
+No temp files are written. The in-memory approach eliminates the disk space concern from the original design.
 
-### Empty Files
+## File Format Support
 
-Sorter should handle gracefully:
-- Files with only HEADER/TRAILER (no data to sort)
-- Completely empty files
+| Format | Key Extraction | Sort Support | Notes |
+|--------|----------------|--------------|-------|
+| Positional | Byte positions | In-memory stable sort | TANF, SSP, Tribal — primary use case |
+| CSV | Column index or header | In-memory stable sort | Standard library |
+| XLSX | Column index or header | In-memory stable sort | Rows already loaded to memory by decoder |
+
+XLSX files are binary and loaded fully into memory by the decoder. Presort adds no additional memory overhead for XLSX since all rows are already materialized.

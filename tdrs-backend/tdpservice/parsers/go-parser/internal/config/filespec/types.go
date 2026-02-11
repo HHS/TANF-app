@@ -115,6 +115,13 @@ type AccumulatorConfig struct {
 	// GroupedSchemas lists which schemas participate in key-based grouping.
 	// Schemas not in this list (e.g., HEADER, TRAILER) are processed individually.
 	GroupedSchemas []string `yaml:"grouped_schemas,omitempty"`
+
+	// Presort enables sorting by key_fields before accumulation.
+	// When true, the file is read into memory and stable-sorted by composite key
+	// so that all records for a case are adjacent. This enables streaming
+	// accumulation and in-memory duplicate detection regardless of input order.
+	// Requires key_fields to be set.
+	Presort bool `yaml:"presort,omitempty"`
 }
 
 // EffectiveBatchSize returns the resolved batch size, defaulting to 1 if not specified.
