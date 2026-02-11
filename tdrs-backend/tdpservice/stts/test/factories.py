@@ -16,7 +16,7 @@ class RegionFactory(factory.django.DjangoModelFactory):
 
         model = "stts.Region"
 
-    id = random.randint(1, 1e9)
+    id = factory.LazyFunction(lambda: random.randint(1, int(1e9)))
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
@@ -31,7 +31,7 @@ class STTFactory(factory.django.DjangoModelFactory):
 
         model = "stts.STT"
 
-    id = random.randint(1, 1e9)
+    id = factory.LazyFunction(lambda: random.randint(1, int(1e9)))
     name = factory.Sequence(lambda n: "teststt%d" % n)
     postal_code = "TT"
     type = "STATE"

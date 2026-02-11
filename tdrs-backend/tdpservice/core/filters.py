@@ -3,7 +3,7 @@
 from abc import abstractmethod
 
 from django.contrib import admin
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 
 class MostRecentVersionFilter(admin.SimpleListFilter):
