@@ -1,9 +1,7 @@
 /* eslint-disable no-undef */
 import { When, Then } from '@badeball/cypress-cucumber-preprocessor'
-import { clearCookies } from './common-steps'
 
 export const restartAtHomePage = () => {
-  clearCookies()
   cy.intercept('/v1/stts/alpha').as('getSttSearchList')
   cy.visit('/')
   cy.contains('Sign into TANF Data Portal', { timeout: 30000 })
@@ -65,7 +63,10 @@ export const validateFraCsv = () => {
 }
 
 export const downloadErrorReport = (error_report_name) => {
-  cy.get('button').contains(error_report_name).should('exist').click({ force: true })
+  cy.get('button')
+    .contains(error_report_name)
+    .should('exist')
+    .click({ force: true })
   cy.readFile(`${Cypress.config('downloadsFolder')}/${error_report_name}`)
 }
 
@@ -254,9 +255,7 @@ export const downloadErrorReportAndAssert = (
   cy.intercept('GET', '/v1/data_files/*/download_error_report/').as(
     'downloadErrorReport'
   )
-  cy.contains('button', fileName)
-    .should('exist')
-    .click({ force: true })
+  cy.contains('button', fileName).should('exist').click({ force: true })
   cy.wait('@downloadErrorReport').its('response.statusCode').should('eq', 200)
 
   // Assert Error Report successfully downloaded
