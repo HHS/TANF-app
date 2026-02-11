@@ -414,7 +414,9 @@ describe('Reports', () => {
     await waitFor(() => {
       const statusElements = getAllByRole('status')
       expect(
-        statusElements.some((el) => el.textContent.includes('Successfully submitted'))
+        statusElements.some((el) =>
+          el.textContent.includes('Successfully submitted')
+        )
       ).toBe(true)
     })
     expect(store.dispatch).toHaveBeenCalledTimes(17)
