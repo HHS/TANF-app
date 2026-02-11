@@ -78,6 +78,8 @@ class Common(Configuration):
     """Define configuration class."""
 
     INSTALLED_APPS = (
+        "admin_interface",
+        "colorfield",
         "django.contrib.admin",
         "django.contrib.auth",
         "django.contrib.contenttypes",
@@ -159,6 +161,9 @@ class Common(Configuration):
     ROOT_URLCONF = "tdpservice.urls"
     SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
     WSGI_APPLICATION = "tdpservice.wsgi.application"
+
+    # Required by django-admin-interface for related-modal popups
+    X_FRAME_OPTIONS = "SAMEORIGIN"
 
     # Application URLs
     BASE_URL = os.getenv("BASE_URL", "http://localhost:8080/v1")

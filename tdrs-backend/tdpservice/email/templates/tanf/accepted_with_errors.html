@@ -1,7 +1,11 @@
 {% extends '../datafile_base.html' %}
 
 {% block message %}
-Your <b>{{ file_type }}</b> data files submitted by <b>{{ stt_name }}</b> on <b>{{ submission_date }}</b> in Fiscal Year <b>{{ fiscal_year }}</b> have been processed, but <b>some cases within your data contain errors</b>. Review the error report(s) for more details, and <b>resubmit your data files</b> once the errors have been corrected.
+{% if is_aggregate %}
+Your <b>{{ file_type }}</b> data files submitted for <b>{{ stt_name }}</b> on <b>{{ submission_date }}</b> in Fiscal Year <b>{{ fiscal_year }}</b> have been processed, but <b>your data contain errors</b>. Review the error report(s) for more details, and <b>resubmit your data files</b> once the errors have been corrected.
+{% else %}
+Your <b>{{ file_type }}</b> data files submitted for <b>{{ stt_name }}</b> on <b>{{ submission_date }}</b> in Fiscal Year <b>{{ fiscal_year }}</b> have been processed, but <b>some cases within your data contain errors</b>. Review the error report(s) for more details, and <b>resubmit your data files</b> once the errors have been corrected.
+{% endif %}
 {% endblock %}
 
 {% block table %}
@@ -14,8 +18,12 @@ Your <b>{{ file_type }}</b> data files submitted by <b>{{ stt_name }}</b> on <b>
             <th>Section</th>
             <th>Submitted By</th>
             <th>Status</th>
+            {% if is_aggregate %}
+            <th>Total Errors</th>
+            {% else %}
             <th>Cases Without Errors</th>
             <th>Cases With Errors</th>
+            {% endif %}
             <th>Error Report</th>
         </tr>
     </thead>
@@ -24,8 +32,12 @@ Your <b>{{ file_type }}</b> data files submitted by <b>{{ stt_name }}</b> on <b>
             <td>{{ section_name }}</td>
             <td>{{ submitted_by }}</td>
             <td>{{ status }}</td>
+            {% if is_aggregate %}
+            <td>{{ total_errors }}</td>
+            {% else %}
             <td>{{ cases_without_errors }}</td>
             <td>{{ cases_with_errors }}</td>
+            {% endif %}
             <td>
                 {% if has_errors %}
                     Error report available

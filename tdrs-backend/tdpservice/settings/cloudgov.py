@@ -124,7 +124,7 @@ class CloudGov(Common):
             "BACKEND": "tdpservice.backends.DataFilesS3Storage",
         },
         "staticfiles": {
-            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+            "BACKEND": "tdpservice.backends.StaticFilesS3Storage",
         },
     }
     AWS_S3_DATAFILES_ACCESS_KEY = s3_datafiles_creds["access_key_id"]
