@@ -36,11 +36,11 @@ from tdpservice.users.models import AccountApprovalStatusChoices, User
 logger = settings.PARSER_LOGGER
 
 
-def set_reparse_file_meta_model_failed_state(reparse_id, file_meta):
+def set_reparse_file_meta_model_state(reparse_id, file_meta, is_success):
     """Set ReparseFileMeta fields to indicate a parse failure."""
     if reparse_id:
         file_meta.finished = True
-        file_meta.success = False
+        file_meta.success = is_success
         file_meta.finished_at = timezone.now()
         file_meta.save()
 
@@ -81,6 +81,7 @@ def parse(data_file_id, reparse_id=None):
         )
 
         file_meta = None
+        reparse_success = True
         if reparse_id:
             file_meta = ReparseFileMeta.objects.get(
                 data_file_id=data_file_id, reparse_meta_id=reparse_id
@@ -122,14 +123,14 @@ def parse(data_file_id, reparse_id=None):
     except DecoderUnknownException:
         dfs.set_status(DataFileSummary.Status.REJECTED)
         dfs.save()
-        set_reparse_file_meta_model_failed_state(reparse_id, file_meta)
+        reparse_success = False
     except DatabaseError as e:
         log_parser_exception(
             data_file,
             f"Encountered Database exception in parser_task.py: \n{e}",
             "error",
         )
-        set_reparse_file_meta_model_failed_state(reparse_id, file_meta)
+        reparse_success = False
     except Exception:
         generate_error = ErrorGeneratorFactory(data_file).get_generator(
             ErrorGeneratorType.MSG_ONLY_PRECHECK,
@@ -156,7 +157,7 @@ def parse(data_file_id, reparse_id=None):
             ),
             "exception",
         )
-        set_reparse_file_meta_model_failed_state(reparse_id, file_meta)
+        reparse_success = False
     finally:
         logger.info(f"DataFile parsing finished for file -> {repr(data_file)}.")
         error_report_generator = ErrorReportFactory.get_error_report_generator(
@@ -173,10 +174,7 @@ def parse(data_file_id, reparse_id=None):
                 file_id=data_file_id,
                 error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY,
             ).count()
-            file_meta.finished = True
-            file_meta.success = True
-            file_meta.finished_at = timezone.now()
-            file_meta.save()
             ReparseMeta.set_total_num_records_post(
                 ReparseMeta.objects.get(pk=reparse_id)
             )
+            set_reparse_file_meta_model_state(reparse_id, file_meta, reparse_success)
