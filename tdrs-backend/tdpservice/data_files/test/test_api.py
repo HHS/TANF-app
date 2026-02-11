@@ -3,20 +3,16 @@
 import io
 import os
 
-from django.test import TestCase
-
 import openpyxl
 import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from tdpservice.conftest import AdminUserFactory
 from tdpservice.data_files.models import DataFile
 from tdpservice.parsers import util
 from tdpservice.parsers.factory import ParserFactory
 from tdpservice.parsers.models import ParserError
 from tdpservice.parsers.test.factories import DataFileSummaryFactory
-from tdpservice.stts.models import STT, Region
 
 
 @pytest.mark.usefixtures("db")
