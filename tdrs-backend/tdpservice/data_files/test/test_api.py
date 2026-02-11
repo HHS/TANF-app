@@ -829,16 +829,6 @@ def _assert_pia(k, pia_files, response_file_ids, section_options):
 @pytest.fixture
 def filter_test_data(stt, tribe_stt, ofa_system_admin):
     """Create a file for each program, section, year, quarter, pia combo."""
-    # region, _ = Region.objects.get_or_create(id=5)
-    # stt, _ = STT.objects.get_or_create(name="Wisconsin", region=region, stt_code="55")
-    # tribe_stt, _ = STT.objects.get_or_create(
-    #     name="Blackfeet Nation",
-    #     region=region,
-    #     stt_code="020",
-    #     type=STT.EntityType.TRIBE,
-    # )
-    # ofa_system_admin = AdminUserFactory.create()
-
     non_pia_files = {}
     pia_files = {}
 
