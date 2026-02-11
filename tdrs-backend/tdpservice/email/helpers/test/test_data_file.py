@@ -6,6 +6,8 @@ import pytest
 
 from tdpservice.data_files.models import DataFile
 from tdpservice.email.helpers.data_file import (
+    get_tanf_aggregates_context_count,
+    get_tanf_total_errors_context_count,
     send_data_submitted_email,
     send_stuck_file_email,
 )
@@ -198,6 +200,120 @@ def test_send_data_submitted_email(
     assert len(mail.outbox) == 1
     assert mail.outbox[0].subject == subject
     assert mail.outbox[0].body == msg
+
+
+class TestGetTanfAggregatesContextCount:
+    """Tests for get_tanf_aggregates_context_count."""
+
+    def test_with_case_data(self):
+        """Test aggregation with typical case data months."""
+        dfs = DataFileSummary()
+        dfs.case_aggregates = {
+            "months": [
+                {
+                    "month": "Jan",
+                    "accepted_without_errors": 10,
+                    "accepted_with_errors": 2,
+                },
+                {
+                    "month": "Feb",
+                    "accepted_without_errors": 8,
+                    "accepted_with_errors": 3,
+                },
+                {
+                    "month": "Mar",
+                    "accepted_without_errors": 12,
+                    "accepted_with_errors": 1,
+                },
+            ],
+            "rejected": 5,
+        }
+        result = get_tanf_aggregates_context_count(dfs)
+        assert result == {
+            "cases_without_errors": 30,
+            "cases_with_errors": 6,
+            "records_unable_to_process": 5,
+        }
+
+    def test_with_na_values(self):
+        """Test aggregation handles N/A values from rejected status."""
+        dfs = DataFileSummary()
+        dfs.case_aggregates = {
+            "months": [
+                {
+                    "month": "Jan",
+                    "accepted_without_errors": "N/A",
+                    "accepted_with_errors": "N/A",
+                },
+            ],
+            "rejected": 0,
+        }
+        result = get_tanf_aggregates_context_count(dfs)
+        assert result == {
+            "cases_without_errors": 0,
+            "cases_with_errors": 0,
+            "records_unable_to_process": 0,
+        }
+
+    def test_with_empty_aggregates(self):
+        """Test aggregation handles empty/None case_aggregates."""
+        dfs = DataFileSummary()
+        dfs.case_aggregates = None
+        result = get_tanf_aggregates_context_count(dfs)
+        assert result == {
+            "cases_without_errors": 0,
+            "cases_with_errors": 0,
+            "records_unable_to_process": 0,
+        }
+
+
+class TestGetTanfTotalErrorsContextCount:
+    """Tests for get_tanf_total_errors_context_count."""
+
+    def test_with_total_errors_data(self):
+        """Test aggregation sums total_errors across months."""
+        dfs = DataFileSummary()
+        dfs.case_aggregates = {
+            "months": [
+                {"month": "Jan", "total_errors": 5},
+                {"month": "Feb", "total_errors": 3},
+                {"month": "Mar", "total_errors": 7},
+            ],
+        }
+        result = get_tanf_total_errors_context_count(dfs)
+        assert result == {"total_errors": 15}
+
+    def test_with_na_values(self):
+        """Test aggregation handles N/A values from rejected status."""
+        dfs = DataFileSummary()
+        dfs.case_aggregates = {
+            "months": [
+                {"month": "Jan", "total_errors": "N/A"},
+                {"month": "Feb", "total_errors": "N/A"},
+            ],
+        }
+        result = get_tanf_total_errors_context_count(dfs)
+        assert result == {"total_errors": 0}
+
+    def test_with_empty_aggregates(self):
+        """Test aggregation handles empty/None case_aggregates."""
+        dfs = DataFileSummary()
+        dfs.case_aggregates = None
+        result = get_tanf_total_errors_context_count(dfs)
+        assert result == {"total_errors": 0}
+
+    def test_with_mixed_values(self):
+        """Test aggregation handles mix of numeric and N/A values."""
+        dfs = DataFileSummary()
+        dfs.case_aggregates = {
+            "months": [
+                {"month": "Jan", "total_errors": 5},
+                {"month": "Feb", "total_errors": "N/A"},
+                {"month": "Mar", "total_errors": 10},
+            ],
+        }
+        result = get_tanf_total_errors_context_count(dfs)
+        assert result == {"total_errors": 15}
 
 
 @pytest.mark.django_db

@@ -1,7 +1,7 @@
 {% extends '../datafile_base.html' %}
 
 {% block message %}
-Your <b>{{ file_type }}</b> data files submitted by <b>{{ stt_name }}</b> on <b>{{ submission_date }}</b> in Fiscal Year <b>{{ fiscal_year }}</b> have been processed and accepted.
+Your <b>{{ file_type }}</b> data files submitted for <b>{{ stt_name }}</b> on <b>{{ submission_date }}</b> in Fiscal Year <b>{{ fiscal_year }}</b> have been processed and accepted.
 {% endblock %}
 
 {% block table %}
@@ -14,7 +14,11 @@ Your <b>{{ file_type }}</b> data files submitted by <b>{{ stt_name }}</b> on <b>
             <th>Section</th>
             <th>Submitted By</th>
             <th>Status</th>
+            {% if is_aggregate %}
+            <th>Total Errors</th>
+            {% else %}
             <th>Cases Without Errors</th>
+            {% endif %}
         </tr>
     </thead>
     <tbody>
@@ -22,7 +26,11 @@ Your <b>{{ file_type }}</b> data files submitted by <b>{{ stt_name }}</b> on <b>
             <td>{{ section_name }}</td>
             <td>{{ submitted_by }}</td>
             <td>{{ status }}</td>
+            {% if is_aggregate %}
+            <td>{{ total_errors }}</td>
+            {% else %}
             <td>{{ cases_without_errors }}</td>
+            {% endif %}
         </tr>
     </tbody>
 </table>
