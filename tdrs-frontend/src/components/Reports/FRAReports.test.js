@@ -298,7 +298,7 @@ describe('FRA Reports Page', () => {
     }
 
     it('Allows csv files to be selected and submitted', async () => {
-      const { getByText, dispatch, container } = await setup()
+      const { getByText, getAllByText, dispatch, container } = await setup()
 
       const uploadForm = container.querySelector('#fra-file-upload')
       fireEvent.change(uploadForm, {
@@ -317,16 +317,16 @@ describe('FRA Reports Page', () => {
 
       await waitFor(() =>
         expect(
-          getByText(
+          getAllByText(
             `Successfully submitted section: Work Outcomes of TANF Exiters on ${new Date().toDateString()}`
-          )
-        ).toBeInTheDocument()
+          ).length
+        ).toBeGreaterThanOrEqual(1)
       )
       await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(6))
     })
 
     it('Allows xlsx files to be selected and submitted', async () => {
-      const { getByText, dispatch, container } = await setup()
+      const { getByText, getAllByText, dispatch, container } = await setup()
 
       const uploadForm = container.querySelector('#fra-file-upload')
       fireEvent.change(uploadForm, {
@@ -349,10 +349,10 @@ describe('FRA Reports Page', () => {
 
       await waitFor(() =>
         expect(
-          getByText(
+          getAllByText(
             `Successfully submitted section: Work Outcomes of TANF Exiters on ${new Date().toDateString()}`
-          )
-        ).toBeInTheDocument()
+          ).length
+        ).toBeGreaterThanOrEqual(1)
       )
       await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(6))
     })
@@ -361,6 +361,7 @@ describe('FRA Reports Page', () => {
       // jest.spyOn(global, 'setTimeout')
       const {
         getByText,
+        getAllByText,
         queryAllByTestId,
         queryAllByText,
         dispatch,
@@ -442,10 +443,10 @@ describe('FRA Reports Page', () => {
 
       await waitFor(() =>
         expect(
-          getByText(
+          getAllByText(
             `Successfully submitted section: Work Outcomes of TANF Exiters on ${new Date().toDateString()}`
-          )
-        ).toBeInTheDocument()
+          ).length
+        ).toBeGreaterThanOrEqual(1)
       )
       await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(6))
 
@@ -469,7 +470,7 @@ describe('FRA Reports Page', () => {
     it('Shows an error if file submission failed', async () => {
       jest.mock('axios')
       const mockAxios = axios
-      const { getByText, dispatch, container } = await setup()
+      const { getByText, getAllByText, dispatch, container } = await setup()
 
       mockAxios.post.mockRejectedValue({
         message: 'Error',
@@ -495,7 +496,9 @@ describe('FRA Reports Page', () => {
       fireEvent.click(submitButton)
 
       await waitFor(() =>
-        expect(getByText('Error: Mock fail response')).toBeInTheDocument()
+        expect(
+          getAllByText('Error: Mock fail response').length
+        ).toBeGreaterThanOrEqual(1)
       )
       await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(4))
     })
@@ -603,7 +606,7 @@ describe('FRA Reports Page', () => {
     it('Does not show a message if input is changed after uploading a file', async () => {
       const {
         getByText,
-        getByRole,
+        getAllByText,
         container,
         getByLabelText,
         queryByText,
@@ -625,7 +628,13 @@ describe('FRA Reports Page', () => {
       fireEvent.click(getByText(/Submit Report/, { selector: 'button' }))
       await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(4))
 
-      await waitFor(() => getByRole('alert'))
+      await waitFor(() =>
+        expect(
+          getAllByText(
+            `Successfully submitted section: Work Outcomes of TANF Exiters on ${new Date().toDateString()}`
+          ).length
+        ).toBeGreaterThanOrEqual(1)
+      )
 
       const yearsDropdown = getByLabelText('Fiscal Year (October - September)*')
       fireEvent.change(yearsDropdown, { target: { value: '2024' } })

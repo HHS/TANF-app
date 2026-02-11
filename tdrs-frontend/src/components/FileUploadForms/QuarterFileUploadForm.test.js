@@ -202,17 +202,19 @@ describe('QuarterFileUploadForm', () => {
       const error = new Error('Submission failed')
       mockExecuteSubmission.mockRejectedValue(error)
 
-      const { getByText, getByRole } = renderComponent(storeState)
+      const { getByText, getAllByRole } = renderComponent(storeState)
 
       const submitButton = getByText('Submit Data Files')
       fireEvent.click(submitButton)
 
       await waitFor(() => {
-        const alert = getByRole('alert')
-        expect(alert).toBeInTheDocument()
-        expect(alert).toHaveTextContent(
-          'An error occurred during submission. Please try again.'
+        const statusElements = getAllByRole('status')
+        const alert = statusElements.find((el) =>
+          el.textContent.includes(
+            'An error occurred during submission. Please try again.'
+          )
         )
+        expect(alert).toBeTruthy()
       })
     })
 

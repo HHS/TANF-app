@@ -368,7 +368,7 @@ describe('Reports', () => {
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
-    const { getByText, getByLabelText, getByRole } = render(
+    const { getByText, getAllByRole, getByLabelText } = render(
       <Provider store={store}>
         <MemoryRouter>
           <Reports />
@@ -411,7 +411,12 @@ describe('Reports', () => {
     expect(store.dispatch).toHaveBeenCalledTimes(14)
 
     fireEvent.click(getByText('Submit Data Files'))
-    await waitFor(() => getByRole('alert'))
+    await waitFor(() => {
+      const statusElements = getAllByRole('status')
+      expect(
+        statusElements.some((el) => el.textContent.includes('Successfully submitted'))
+      ).toBe(true)
+    })
     expect(store.dispatch).toHaveBeenCalledTimes(17)
   })
 
@@ -1130,6 +1135,7 @@ describe('Reports', () => {
 
     const {
       getByText,
+      getAllByText,
       queryByText,
       getByLabelText,
       queryAllByTestId,
@@ -1184,10 +1190,10 @@ describe('Reports', () => {
 
     await waitFor(() =>
       expect(
-        getByText(
+        getAllByText(
           `Successfully submitted section(s): 1 on ${new Date().toDateString()}`
-        )
-      ).toBeInTheDocument()
+        ).length
+      ).toBeGreaterThanOrEqual(1)
     )
     await waitFor(() => expect(store.dispatch).toHaveBeenCalledTimes(8))
 
@@ -1379,6 +1385,7 @@ describe('Reports', () => {
 
     const {
       getByText,
+      getAllByText,
       queryByText,
       getByLabelText,
       queryAllByText,
@@ -1439,10 +1446,10 @@ describe('Reports', () => {
 
     await waitFor(() =>
       expect(
-        getByText(
+        getAllByText(
           `Successfully submitted section(s): 1, and 3 on ${new Date().toDateString()}`
-        )
-      ).toBeInTheDocument()
+        ).length
+      ).toBeGreaterThanOrEqual(1)
     )
     await waitFor(() => expect(store.dispatch).toHaveBeenCalledTimes(11))
 
