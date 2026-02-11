@@ -63,6 +63,22 @@ def get_tanf_aggregates_context_count(datafile_summary):
     }
 
 
+def get_tanf_total_errors_context_count(datafile_summary):
+    """Return the sum of total errors across all months for aggregate/stratum TANF files."""
+    case_aggregates = datafile_summary.case_aggregates or {}
+    total_errors = 0
+
+    if "months" in case_aggregates:
+        for month in case_aggregates["months"]:
+            total_errors += (
+                month["total_errors"]
+                if "total_errors" in month and month["total_errors"] != "N/A"
+                else 0
+            )
+
+    return {"total_errors": total_errors}
+
+
 def get_fra_aggregates_context_count(datafile_summary):
     """Return the relevant context data from case aggregates for FRA files."""
     case_aggregates = datafile_summary.case_aggregates or {}
@@ -104,6 +120,11 @@ def send_data_submitted_email(
     fiscal_year = datafile.fiscal_year
     submitted_by = datafile.submitted_by
 
+    is_aggregate = datafile.section in (
+        DataFile.Section.AGGREGATE_DATA,
+        DataFile.Section.STRATUM_DATA,
+    )
+
     context = {
         "stt_name": stt_name,
         "submission_date": submission_date,
@@ -113,6 +134,7 @@ def send_data_submitted_email(
         "file_type": file_type,
         "status": datafile_summary.status,
         "has_errors": datafile_summary.status != DataFileSummary.Status.ACCEPTED,
+        "is_aggregate": is_aggregate,
         "url": settings.FRONTEND_BASE_URL,
     }
 
@@ -133,7 +155,10 @@ def send_data_submitted_email(
             | DataFile.ProgramType.SSP
             | DataFile.ProgramType.TRIBAL
         ):
-            context.update(get_tanf_aggregates_context_count(datafile_summary))
+            if is_aggregate:
+                context.update(get_tanf_total_errors_context_count(datafile_summary))
+            else:
+                context.update(get_tanf_aggregates_context_count(datafile_summary))
 
             template_options = {
                 DataFileSummary.Status.ACCEPTED: TanfDataFileEmail.ACCEPTED.value,

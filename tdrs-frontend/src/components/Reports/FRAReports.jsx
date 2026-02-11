@@ -32,7 +32,6 @@ import {
   getFraSubmissionStatus,
   SET_FRA_SUBMISSION_STATUS,
 } from '../../actions/fraReports'
-import { fetchSttList } from '../../actions/sttList'
 import { RadioSelect } from '../Form'
 import { PaginatedComponent } from '../Paginator/Paginator'
 import { Spinner } from '../Spinner'
@@ -776,12 +775,6 @@ const FRAReportsContent = () => {
       headerRef.current.focus()
     }
   }, [allFieldsFilled, headerRef])
-
-  useEffect(() => {
-    if (sttList && sttList.length === 0) {
-      dispatch(fetchSttList())
-    }
-  }, [dispatch, sttList])
 
   useEffect(() => {
     if (localAlert.active && alertRef && alertRef.current) {
