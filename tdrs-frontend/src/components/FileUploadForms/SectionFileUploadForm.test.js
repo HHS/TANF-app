@@ -27,6 +27,7 @@ jest.mock('../FileUpload', () => ({
     fileType,
     label,
     setLocalAlertState,
+    setProcessingAlertState,
   }) => (
     <div data-testid={`file-upload-${section}`}>
       <label>{label}</label>
@@ -37,6 +38,18 @@ jest.mock('../FileUpload', () => ({
         data-quarter={quarter}
         data-filetype={fileType}
       />
+      {setProcessingAlertState && (
+        <button
+          data-testid={`trigger-processing-alert`}
+          onClick={() =>
+            setProcessingAlertState({
+              active: true,
+              type: 'success',
+              message: 'Processing complete.',
+            })
+          }
+        />
+      )}
     </div>
   ),
 }))
@@ -152,6 +165,26 @@ describe('SectionFileUploadForm', () => {
       const { queryByRole } = renderComponent()
 
       expect(queryByRole('alert')).not.toBeInTheDocument()
+    })
+
+    it('renders processing alert when processingAlert is active', async () => {
+      const { getAllByTestId, getAllByText, getAllByRole } = renderComponent()
+
+      const triggerButton = getAllByTestId('trigger-processing-alert')[0]
+      fireEvent.click(triggerButton)
+
+      await waitFor(() => {
+        expect(
+          getAllByText('Processing complete.').length
+        ).toBeGreaterThanOrEqual(1)
+      })
+
+      // Verify the sr-only live region contains the message
+      const statusElements = getAllByRole('status')
+      const processingStatus = statusElements.find((el) =>
+        el.textContent.includes('Processing complete.')
+      )
+      expect(processingStatus).toBeTruthy()
     })
 
     it('initializes USWDS file input on mount', () => {

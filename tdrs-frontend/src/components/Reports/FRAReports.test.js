@@ -465,6 +465,11 @@ describe('FRA Reports Page', () => {
       expect(queryAllByTestId('spinner')).toHaveLength(0)
       expect(queryAllByText('Pending')).toHaveLength(0)
       expect(getByText('Approved')).toBeInTheDocument()
+
+      // Verify processing alert is displayed after polling completes
+      expect(
+        getAllByText('Processing complete.').length
+      ).toBeGreaterThanOrEqual(1)
     })
 
     it('Shows an error if file submission failed', async () => {
