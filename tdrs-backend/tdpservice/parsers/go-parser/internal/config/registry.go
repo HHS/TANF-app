@@ -10,7 +10,6 @@ import (
 
 	"go-parser/internal/config/filespec"
 	"go-parser/internal/config/schema"
-	validationpkg "go-parser/internal/validation"
 )
 
 // Registry holds all loaded FileSpecs, and Schemas.
@@ -22,9 +21,6 @@ type Registry struct {
 
 	// schemas indexed by path (e.g., "tanf/t1", "common/header")
 	schemas map[string]*schema.CompiledSchema
-
-	// validators holds all compiled validators for all categories
-	validators *validationpkg.ValidatorRegistry
 
 	// metadata holds database info derived from schemas (table names, columns)
 	// Built during Load() from YAML schema field definitions
@@ -53,11 +49,10 @@ type Registry struct {
 //	        └── t3.yaml
 func Load(configDir string) (*Registry, error) {
 	r := &Registry{
-		fileSpecs:       make(map[string]*filespec.FileSpec),
-		schemas:         make(map[string]*schema.CompiledSchema),
-		validators:      validationpkg.NewValidatorRegistry(),
-		metadata:        make(map[string]*DbSchemaMetadata),
-		configDir:       configDir,
+		fileSpecs: make(map[string]*filespec.FileSpec),
+		schemas:   make(map[string]*schema.CompiledSchema),
+		metadata:  make(map[string]*DbSchemaMetadata),
+		configDir: configDir,
 	}
 
 	// Load schemas first (FileSpecs reference them)
@@ -73,11 +68,6 @@ func Load(configDir string) (*Registry, error) {
 	// Validate that all FileSpec schema references are valid
 	if err := r.validateReferences(); err != nil {
 		return nil, fmt.Errorf("validating references: %w", err)
-	}
-
-	// Load and compile validators from schemas and filespecs
-	if err := r.validators.Load(configDir, r.schemas, r.fileSpecs); err != nil {
-		return nil, fmt.Errorf("loading validators: %w", err)
 	}
 
 	// Build database metadata from schema field definitions
@@ -232,9 +222,19 @@ func (r *Registry) ListSchemas() []string {
 	return keys
 }
 
-// Validators returns the compiled validator registry.
-func (r *Registry) Validators() *validationpkg.ValidatorRegistry {
-	return r.validators
+// Schemas returns the loaded schemas map.
+func (r *Registry) Schemas() map[string]*schema.CompiledSchema {
+	return r.schemas
+}
+
+// FileSpecs returns the loaded filespecs map.
+func (r *Registry) FileSpecs() map[string]*filespec.FileSpec {
+	return r.fileSpecs
+}
+
+// ConfigDir returns the root configuration directory.
+func (r *Registry) ConfigDir() string {
+	return r.configDir
 }
 
 // Stats returns statistics about loaded configuration.
@@ -242,19 +242,13 @@ func (r *Registry) Stats() (numFileSpecs, numSchemas int) {
 	return len(r.fileSpecs), len(r.schemas)
 }
 
-// ValidatorStats returns statistics about compiled validators.
-func (r *Registry) ValidatorStats() validationpkg.RegistryStats {
-	return r.validators.Stats()
-}
-
 // NewTestRegistry creates a minimal Registry for unit testing.
-// Only schemas are populated; fileSpecs and validators are empty.
+// Only schemas are populated; fileSpecs are empty.
 func NewTestRegistry(schemas map[string]*schema.CompiledSchema) *Registry {
 	return &Registry{
-		fileSpecs:  make(map[string]*filespec.FileSpec),
-		schemas:    schemas,
-		validators: validationpkg.NewValidatorRegistry(),
-		metadata:   make(map[string]*DbSchemaMetadata),
+		fileSpecs: make(map[string]*filespec.FileSpec),
+		schemas:   schemas,
+		metadata:  make(map[string]*DbSchemaMetadata),
 	}
 }
 

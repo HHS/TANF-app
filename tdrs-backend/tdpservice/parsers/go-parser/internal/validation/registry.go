@@ -476,44 +476,6 @@ func Execute(cv *CompiledValidator, env any) *ValidationResult {
 	}
 }
 
-// ExecuteReturningRecords runs a compiled validator that returns a list of failing records.
-// This is used for group validators with result_mode: per_record.
-// The expression should return a slice of Record (or types that satisfy the Record interface).
-func ExecuteReturningRecords(cv *CompiledValidator, env any) []Record {
-	program, ok := cv.Expr.Program.(*vm.Program)
-	if !ok {
-		return nil
-	}
-
-	output, err := vm.Run(program, env)
-	if err != nil {
-		return nil
-	}
-
-	// Handle nil result (no failures)
-	if output == nil {
-		return nil
-	}
-
-	// Try to convert to []Record
-	if records, ok := output.([]Record); ok {
-		return records
-	}
-
-	// Try to convert from []any
-	if anySlice, ok := output.([]any); ok {
-		var records []Record
-		for _, item := range anySlice {
-			if rec, ok := item.(Record); ok {
-				records = append(records, rec)
-			}
-		}
-		return records
-	}
-
-	return nil
-}
-
 // ClearCompileTimeData clears data that's only needed during loading.
 // Call this after startup to free memory.
 func (r *ValidatorRegistry) ClearCompileTimeData() {

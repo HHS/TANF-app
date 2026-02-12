@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/expr-lang/expr"
+
+	"go-parser/internal/parser"
 )
 
 // RegisterFunctions returns expr options for all custom validation functions.
@@ -43,17 +45,17 @@ func RegisterFunctions() []expr.Option {
 
 		// Group validators (take group explicitly)
 		expr.Function("hasDuplicateField", wrap3(hasDuplicateField),
-			new(func(WrappedGroup, string, string) bool)),
+			new(func(*parser.ParsedGroup, string, string) bool)),
 		expr.Function("getRecordsOfType", wrap2(getRecordsOfType),
-			new(func(WrappedGroup, string) []Record)),
+			new(func(*parser.ParsedGroup, string) []*parser.ParsedRecord)),
 
-		// Duplicate detection (group scope, return []Record for per_record mode)
+		// Duplicate detection (group scope, return []*ParsedRecord for per_record mode)
 		expr.Function("getExactDuplicates", wrap2(getExactDuplicates),
-			new(func(WrappedGroup, string) []Record)),
+			new(func(*parser.ParsedGroup, string) []*parser.ParsedRecord)),
 		expr.Function("getPartialDuplicates", wrap3(getPartialDuplicates),
-			new(func(WrappedGroup, string, []any) []Record)),
+			new(func(*parser.ParsedGroup, string, []any) []*parser.ParsedRecord)),
 		expr.Function("getPartialDuplicatesExcluding", wrap5(getPartialDuplicatesExcluding),
-			new(func(WrappedGroup, string, []any, string, []any) []Record)),
+			new(func(*parser.ParsedGroup, string, []any, string, []any) []*parser.ParsedRecord)),
 	}
 }
 
@@ -328,9 +330,9 @@ func toInt(v any) int {
 
 // hasDuplicateField checks if any records of the given type have duplicate values
 // for the specified field.
-func hasDuplicateField(group WrappedGroup, recordType, fieldName string) bool {
+func hasDuplicateField(group *parser.ParsedGroup, recordType, fieldName string) bool {
 	seen := make(map[any]bool)
-	for _, rec := range group.GetRecords() {
+	for _, rec := range group.Records {
 		if rec.GetRecordType() != recordType {
 			continue
 		}
@@ -347,9 +349,9 @@ func hasDuplicateField(group WrappedGroup, recordType, fieldName string) bool {
 }
 
 // getRecordsOfType returns all records of the given type from a group.
-func getRecordsOfType(group WrappedGroup, recordType string) []Record {
-	var result []Record
-	for _, rec := range group.GetRecords() {
+func getRecordsOfType(group *parser.ParsedGroup, recordType string) []*parser.ParsedRecord {
+	var result []*parser.ParsedRecord
+	for _, rec := range group.Records {
 		if rec.GetRecordType() == recordType {
 			result = append(result, rec)
 		}
@@ -360,9 +362,9 @@ func getRecordsOfType(group WrappedGroup, recordType string) []Record {
 // getExactDuplicates returns records that are exact duplicates of earlier records
 // of the same type within the group. Uses EqualFields for pairwise comparison.
 // The first occurrence is kept; subsequent matches are returned as duplicates.
-func getExactDuplicates(group WrappedGroup, recordType string) []Record {
+func getExactDuplicates(group *parser.ParsedGroup, recordType string) []*parser.ParsedRecord {
 	records := getRecordsOfType(group, recordType)
-	var duplicates []Record
+	var duplicates []*parser.ParsedRecord
 	for i := 1; i < len(records); i++ {
 		for j := 0; j < i; j++ {
 			if records[i].EqualFields(records[j]) {
@@ -377,11 +379,11 @@ func getExactDuplicates(group WrappedGroup, recordType string) []Record {
 // getPartialDuplicates returns records that are partial duplicates (matching on
 // the specified key fields) but NOT exact duplicates. Exact duplicates are skipped
 // because they are handled by the exact_duplicates validator.
-func getPartialDuplicates(group WrappedGroup, recordType string, fields []any) []Record {
+func getPartialDuplicates(group *parser.ParsedGroup, recordType string, fields []any) []*parser.ParsedRecord {
 	records := getRecordsOfType(group, recordType)
 	fieldNames := toStringSlice(fields)
-	seen := make(map[string]Record)
-	var duplicates []Record
+	seen := make(map[string]*parser.ParsedRecord)
+	var duplicates []*parser.ParsedRecord
 	for _, rec := range records {
 		key := buildCompositeKey(rec, fieldNames)
 		if first, exists := seen[key]; exists {
@@ -397,7 +399,7 @@ func getPartialDuplicates(group WrappedGroup, recordType string, fields []any) [
 
 // getPartialDuplicatesExcluding is like getPartialDuplicates but excludes records
 // where excludeField's value is in excludeValues before checking for duplicates.
-func getPartialDuplicatesExcluding(group WrappedGroup, recordType string, fields []any, excludeField string, excludeValues []any) []Record {
+func getPartialDuplicatesExcluding(group *parser.ParsedGroup, recordType string, fields []any, excludeField string, excludeValues []any) []*parser.ParsedRecord {
 	records := getRecordsOfType(group, recordType)
 	fieldNames := toStringSlice(fields)
 
@@ -407,8 +409,8 @@ func getPartialDuplicatesExcluding(group WrappedGroup, recordType string, fields
 		excludeSet[v] = true
 	}
 
-	seen := make(map[string]Record)
-	var duplicates []Record
+	seen := make(map[string]*parser.ParsedRecord)
+	var duplicates []*parser.ParsedRecord
 	for _, rec := range records {
 		// Skip excluded records
 		if excludeSet[rec.Get(excludeField)] {
@@ -427,7 +429,7 @@ func getPartialDuplicatesExcluding(group WrappedGroup, recordType string, fields
 }
 
 // buildCompositeKey builds a string key from the specified field values of a record.
-func buildCompositeKey(rec Record, fieldNames []string) string {
+func buildCompositeKey(rec *parser.ParsedRecord, fieldNames []string) string {
 	var b strings.Builder
 	for i, name := range fieldNames {
 		if i > 0 {

@@ -2,6 +2,9 @@ package validation
 
 import (
 	"testing"
+
+	"go-parser/internal/parser"
+	"go-parser/internal/testutil"
 )
 
 // TestOrchestratorExecutionOrder tests that validation runs in order: group → record precheck → field → record consistency
@@ -38,16 +41,9 @@ func TestOrchestratorExecutionOrder(t *testing.T) {
 	// Create orchestrator
 	orchestrator := NewOrchestrator(registry, 0)
 
-	// Create test data
-	records := []Record{
-		&mockRecord{
-			recordType:  "T1",
-			lineNumber:  1,
-			decodedSize: 100,
-			fields:      map[string]any{"AMOUNT": 50},
-		},
-	}
-	group := newMockWrappedGroup(records)
+	// Create test data — t1Schema defined in validation_test.go (has CASE_NUMBER, AMOUNT)
+	rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": 50})
+	group := testutil.NewTestGroup(rec)
 
 	// Run validation
 	result := orchestrator.ValidateGroup(group, "TEST:1")
@@ -93,15 +89,8 @@ func TestOrchestratorShortCircuitOnGroupFailure(t *testing.T) {
 
 	orchestrator := NewOrchestrator(registry, 0)
 
-	records := []Record{
-		&mockRecord{
-			recordType:  "T1",
-			lineNumber:  1,
-			decodedSize: 100,
-			fields:      map[string]any{"AMOUNT": -50}, // Would fail field check if not skipped
-		},
-	}
-	group := newMockWrappedGroup(records)
+	rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": -50}) // Would fail field check if not skipped
+	group := testutil.NewTestGroup(rec)
 
 	result := orchestrator.ValidateGroup(group, "TEST:1")
 
@@ -126,7 +115,7 @@ func TestOrchestratorShortCircuitOnRecordPrecheckFailure(t *testing.T) {
 	registry := NewValidatorRegistry()
 	registry.exprOpts = RegisterFunctions()
 
-	// Record precheck validator that fails
+	// Record precheck validator that fails (default DecodedSize=156 < 200)
 	recordPrecheckExpr, _ := registry.getOrCompileExpr(ScopeRecord, "RecordLength > 200", "single")
 	registry.record["T1"] = []*CompiledValidator{
 		{ID: "record_precheck_fail", Scope: ScopeRecord, ErrorType: ErrorTypeRecordPreCheck, Expr: recordPrecheckExpr},
@@ -140,15 +129,8 @@ func TestOrchestratorShortCircuitOnRecordPrecheckFailure(t *testing.T) {
 
 	orchestrator := NewOrchestrator(registry, 0)
 
-	records := []Record{
-		&mockRecord{
-			recordType:  "T1",
-			lineNumber:  1,
-			decodedSize: 100, // Will fail precheck (requires > 200)
-			fields:      map[string]any{"AMOUNT": -50}, // Would fail field check if not skipped
-		},
-	}
-	group := newMockWrappedGroup(records)
+	rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": -50}) // Would fail field check if not skipped
+	group := testutil.NewTestGroup(rec)
 
 	result := orchestrator.ValidateGroup(group, "TEST:1")
 
@@ -189,12 +171,10 @@ func TestOrchestratorParallelValidation(t *testing.T) {
 	orchestrator := NewOrchestrator(registry, 4)
 
 	// Create multiple groups
-	var groups []WrappedGroup
+	var groups []*parser.ParsedGroup
 	for i := 0; i < 10; i++ {
-		records := []Record{
-			&mockRecord{recordType: "T1", decodedSize: 100},
-		}
-		groups = append(groups, newMockWrappedGroup(records))
+		rec := testutil.NewTestRecord(t1Schema, 1, nil)
+		groups = append(groups, testutil.NewTestGroup(rec))
 	}
 
 	results := orchestrator.ValidateGroups(groups, "TEST:1")
@@ -224,14 +204,8 @@ func TestOrchestratorFieldValidation(t *testing.T) {
 
 	orchestrator := NewOrchestrator(registry, 0)
 
-	records := []Record{
-		&mockRecord{
-			recordType:  "T1",
-			decodedSize: 100,
-			fields:      map[string]any{"AMOUNT": -10}, // Negative - should fail
-		},
-	}
-	group := newMockWrappedGroup(records)
+	rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": -10}) // Negative - should fail
+	group := testutil.NewTestGroup(rec)
 
 	result := orchestrator.ValidateGroup(group, "TEST:1")
 
@@ -260,16 +234,11 @@ func TestOrchestratorNilRequiredFieldSkipsValidators(t *testing.T) {
 
 	orchestrator := NewOrchestrator(registry, 0)
 
-	// Record with nil required field
-	records := []Record{
-		&mockRecord{
-			recordType:     "T1",
-			decodedSize:    100,
-			fields:         map[string]any{"AMOUNT": nil}, // nil value
-			requiredFields: map[string]bool{"AMOUNT": true},
-		},
-	}
-	group := newMockWrappedGroup(records)
+	// Record with nil required field — use a separate schema so Required=true
+	reqSchema := testutil.NewTestSchema("T1", "AMOUNT")
+	reqSchema.Shared[0].Required = true
+	rec := testutil.NewTestRecord(reqSchema, 1, map[string]any{"AMOUNT": nil})
+	group := testutil.NewTestGroup(rec)
 
 	result := orchestrator.ValidateGroup(group, "TEST:1")
 
@@ -302,16 +271,9 @@ func TestOrchestratorNilOptionalFieldSkipsValidators(t *testing.T) {
 
 	orchestrator := NewOrchestrator(registry, 0)
 
-	// Record with nil optional field
-	records := []Record{
-		&mockRecord{
-			recordType:     "T1",
-			decodedSize:    100,
-			fields:         map[string]any{"AMOUNT": nil}, // nil value
-			requiredFields: map[string]bool{"AMOUNT": false}, // not required
-		},
-	}
-	group := newMockWrappedGroup(records)
+	// Record with nil optional field (Required defaults to false)
+	rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": nil})
+	group := testutil.NewTestGroup(rec)
 
 	result := orchestrator.ValidateGroup(group, "TEST:1")
 

@@ -2,6 +2,10 @@ package validation
 
 import (
 	"sync"
+
+	"github.com/expr-lang/expr/vm"
+
+	"go-parser/internal/parser"
 )
 
 // OrchestratorConfig configures the validation orchestrator.
@@ -32,14 +36,14 @@ func NewOrchestrator(registry *ValidatorRegistry, workers int) *Orchestrator {
 // ValidateGroup validates a single group.
 // Execution order: group → record (precheck) → field → record (consistency)
 // Always run group and record precheck; skip field and record consistency if blocked.
-func (o *Orchestrator) ValidateGroup(group WrappedGroup, filespecKey string) *GroupValidationResult {
+func (o *Orchestrator) ValidateGroup(group *parser.ParsedGroup, filespecKey string) *GroupValidationResult {
 	result := &GroupValidationResult{
 		Group: group,
 	}
 
 	// Initialize record results for all records in the group
 	// This is needed for per-record error attribution from group validators
-	for _, rec := range group.GetRecords() {
+	for _, rec := range group.Records {
 		result.RecordResults = append(result.RecordResults, &RecordValidationResult{Record: rec})
 	}
 
@@ -67,7 +71,7 @@ func (o *Orchestrator) ValidateGroup(group WrappedGroup, filespecKey string) *Gr
 	groupBlocked := result.HasBlockingGroupErrors()
 
 	// Phase 2: Validate each record
-	for i, rec := range group.GetRecords() {
+	for i, rec := range group.Records {
 		o.validateRecordInPlace(result.RecordResults[i], rec, groupBlocked)
 	}
 
@@ -76,7 +80,7 @@ func (o *Orchestrator) ValidateGroup(group WrappedGroup, filespecKey string) *Gr
 
 // validateRecordInPlace validates a single record, updating the provided result.
 // Called internally by ValidateGroup.
-func (o *Orchestrator) validateRecordInPlace(result *RecordValidationResult, rec Record, groupBlocked bool) {
+func (o *Orchestrator) validateRecordInPlace(result *RecordValidationResult, rec *parser.ParsedRecord, groupBlocked bool) {
 	recType := rec.GetRecordType()
 	recordEnv := NewRecordEnv(rec)
 
@@ -146,7 +150,7 @@ func (o *Orchestrator) validateRecordInPlace(result *RecordValidationResult, rec
 }
 
 // ValidateGroups validates multiple groups in parallel.
-func (o *Orchestrator) ValidateGroups(groups []WrappedGroup, filespecKey string) []*GroupValidationResult {
+func (o *Orchestrator) ValidateGroups(groups []*parser.ParsedGroup, filespecKey string) []*GroupValidationResult {
 	if len(groups) == 0 {
 		return nil
 	}
@@ -169,7 +173,7 @@ func (o *Orchestrator) ValidateGroups(groups []WrappedGroup, filespecKey string)
 		wg.Add(1)
 		sem <- struct{}{} // Acquire
 
-		go func(idx int, g WrappedGroup) {
+		go func(idx int, g *parser.ParsedGroup) {
 			defer wg.Done()
 			defer func() { <-sem }() // Release
 
@@ -179,4 +183,42 @@ func (o *Orchestrator) ValidateGroups(groups []WrappedGroup, filespecKey string)
 
 	wg.Wait()
 	return results
+}
+
+// ExecuteReturningRecords runs a compiled validator that returns a list of failing records.
+// This is used for group validators with result_mode: per_record.
+// The expression should return a slice of *parser.ParsedRecord.
+func ExecuteReturningRecords(cv *CompiledValidator, env any) []*parser.ParsedRecord {
+	program, ok := cv.Expr.Program.(*vm.Program)
+	if !ok {
+		return nil
+	}
+
+	output, err := vm.Run(program, env)
+	if err != nil {
+		return nil
+	}
+
+	// Handle nil result (no failures)
+	if output == nil {
+		return nil
+	}
+
+	// Try direct type assertion
+	if records, ok := output.([]*parser.ParsedRecord); ok {
+		return records
+	}
+
+	// Try to convert from []any (expr engine may wrap results)
+	if anySlice, ok := output.([]any); ok {
+		var records []*parser.ParsedRecord
+		for _, item := range anySlice {
+			if rec, ok := item.(*parser.ParsedRecord); ok {
+				records = append(records, rec)
+			}
+		}
+		return records
+	}
+
+	return nil
 }

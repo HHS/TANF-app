@@ -129,15 +129,8 @@ func validateBatch(pb *parser.ParsedBatch, orchestrator *validation.Orchestrator
 	contexts = make([]*GroupValidationContext, 0, len(pb.Groups))
 
 	for _, group := range pb.Groups {
-		// Wrap the ParsedGroup to satisfy the validation interfaces
-		wrappedRecords := make([]validation.Record, len(group.Records))
-		for i, rec := range group.Records {
-			wrappedRecords[i] = rec
-		}
-		wrappedGroup := validation.WrapGroup(group, wrappedRecords)
-
 		// Run validation
-		result := orchestrator.ValidateGroup(wrappedGroup, filespecKey)
+		result := orchestrator.ValidateGroup(group, filespecKey)
 
 		// Store the context for filtering during routing
 		contexts = append(contexts, &GroupValidationContext{

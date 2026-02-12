@@ -1,68 +1,6 @@
 package validation
 
-// Record is the interface for parsed records used in validation.
-// This interface allows the validation package to work with parser types
-// without creating an import cycle.
-type Record interface {
-	Get(fieldName string) any
-	GetString(fieldName string) string
-	GetInt(fieldName string) int
-	GetRecordType() string
-	GetLineNumber() int
-	GetDecodedSize() int
-	IsFieldRequired(fieldName string) bool
-	EqualFields(other Record) bool
-}
-
-// Group is the interface for parsed groups used in validation.
-type Group interface {
-	GetKey() string
-	GetRptMonthYear() string
-	GetCaseNumber() string
-}
-
-// GroupWrapper wraps a Group and its records for validation.
-// This avoids the slice conversion issue ([]T doesn't satisfy []I).
-type GroupWrapper struct {
-	group   Group
-	records []Record
-}
-
-// WrapGroup creates a GroupWrapper from a Group and records.
-// Use this when you have a ParsedGroup and need to pass it to validation.
-func WrapGroup(group Group, records []Record) *GroupWrapper {
-	return &GroupWrapper{
-		group:   group,
-		records: records,
-	}
-}
-
-// GetKey returns the grouping key.
-func (gw *GroupWrapper) GetKey() string {
-	return gw.group.GetKey()
-}
-
-// GetRptMonthYear returns the reporting month/year.
-func (gw *GroupWrapper) GetRptMonthYear() string {
-	return gw.group.GetRptMonthYear()
-}
-
-// GetCaseNumber returns the case number.
-func (gw *GroupWrapper) GetCaseNumber() string {
-	return gw.group.GetCaseNumber()
-}
-
-// GetRecords returns the records in this group.
-func (gw *GroupWrapper) GetRecords() []Record {
-	return gw.records
-}
-
-// WrappedGroup is the interface used internally by validation.
-// It extends Group with GetRecords().
-type WrappedGroup interface {
-	Group
-	GetRecords() []Record
-}
+import "go-parser/internal/parser"
 
 // FieldEnv is the environment for Category 2 (field) validation.
 // It contains only the field's value - no other metadata needed.
@@ -82,9 +20,10 @@ func NewFieldEnvWithParams(value any, params map[string]any) *FieldEnv {
 }
 
 // RecordEnv is the environment for Category 1 and Category 3 validation.
-// It wraps a Record and provides convenience fields for expressions.
+// It embeds a *ParsedRecord to promote Get/GetString/GetInt for expressions,
+// and adds convenience fields for direct access in expressions.
 type RecordEnv struct {
-	Record
+	*parser.ParsedRecord
 
 	// Convenience fields for expressions
 	RecordType   string
@@ -94,9 +33,9 @@ type RecordEnv struct {
 }
 
 // NewRecordEnv creates a new record validation environment.
-func NewRecordEnv(rec Record) *RecordEnv {
+func NewRecordEnv(rec *parser.ParsedRecord) *RecordEnv {
 	return &RecordEnv{
-		Record:       rec,
+		ParsedRecord: rec,
 		RecordType:   rec.GetRecordType(),
 		LineNumber:   rec.GetLineNumber(),
 		RecordLength: rec.GetDecodedSize(),
@@ -104,9 +43,9 @@ func NewRecordEnv(rec Record) *RecordEnv {
 }
 
 // NewRecordEnvWithParams creates a new record validation environment with params.
-func NewRecordEnvWithParams(rec Record, params map[string]any) *RecordEnv {
+func NewRecordEnvWithParams(rec *parser.ParsedRecord, params map[string]any) *RecordEnv {
 	return &RecordEnv{
-		Record:       rec,
+		ParsedRecord: rec,
 		RecordType:   rec.GetRecordType(),
 		LineNumber:   rec.GetLineNumber(),
 		RecordLength: rec.GetDecodedSize(),
@@ -115,9 +54,9 @@ func NewRecordEnvWithParams(rec Record, params map[string]any) *RecordEnv {
 }
 
 // GroupEnv is the environment for Category 4 (group/case) validation.
-// It wraps a WrappedGroup and provides pre-computed aggregates for expressions.
+// It wraps a *ParsedGroup and provides pre-computed aggregates for expressions.
 type GroupEnv struct {
-	Group WrappedGroup
+	Group *parser.ParsedGroup
 
 	// Pre-computed aggregates for fast expression evaluation
 	TotalRecords int
@@ -127,8 +66,8 @@ type GroupEnv struct {
 }
 
 // NewGroupEnv creates a new group validation environment with pre-computed aggregates.
-func NewGroupEnv(group WrappedGroup) *GroupEnv {
-	records := group.GetRecords()
+func NewGroupEnv(group *parser.ParsedGroup) *GroupEnv {
+	records := group.Records
 	env := &GroupEnv{
 		Group:        group,
 		TotalRecords: len(records),
@@ -144,7 +83,7 @@ func NewGroupEnv(group WrappedGroup) *GroupEnv {
 }
 
 // NewGroupEnvWithParams creates a new group validation environment with params.
-func NewGroupEnvWithParams(group WrappedGroup, params map[string]any) *GroupEnv {
+func NewGroupEnvWithParams(group *parser.ParsedGroup, params map[string]any) *GroupEnv {
 	env := NewGroupEnv(group)
 	env.Params = params
 	return env

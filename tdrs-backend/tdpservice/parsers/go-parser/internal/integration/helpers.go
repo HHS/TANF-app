@@ -13,6 +13,7 @@ import (
 
 	"go-parser/internal/config"
 	"go-parser/internal/pipeline"
+	"go-parser/internal/validation"
 )
 
 // TestDataDir returns the absolute path to the test data directory.
@@ -21,10 +22,10 @@ func TestDataDir() string {
 }
 
 // ParseFile parses a file through the full pipeline and writes to the database.
-func ParseFile(t *testing.T, ctx context.Context, pool *pgxpool.Pool, reg *config.Registry, program string, section int, filePath string, datafileID int32) {
+func ParseFile(t *testing.T, ctx context.Context, pool *pgxpool.Pool, reg *config.Registry, validators *validation.ValidatorRegistry, program string, section int, filePath string, datafileID int32) {
 	t.Helper()
 
-	p := pipeline.NewPipline(pool, reg, pipeline.TestConfig())
+	p := pipeline.NewPipline(pool, reg, validators, pipeline.TestConfig())
 	result, err := p.ProcessFile(ctx, pipeline.ProcessParams{
 		Program:    program,
 		Section:    section,

@@ -7,7 +7,6 @@ import (
 
 	"go-parser/internal/config/schema"
 	"go-parser/internal/decoder"
-	"go-parser/internal/validation"
 )
 
 // DecodedRecord holds a decoded row along with its detected schema.
@@ -188,26 +187,22 @@ func (pr *ParsedRecord) GetInt(fieldName string) int {
 }
 
 // GetRecordType returns the record type from the schema.
-// Implements validation.Record interface.
 func (pr *ParsedRecord) GetRecordType() string {
 	return pr.Schema.RecordType
 }
 
 // GetLineNumber returns the line number of this record.
-// Implements validation.Record interface.
 func (pr *ParsedRecord) GetLineNumber() int {
 	return pr.LineNumber
 }
 
 // GetDecodedSize returns the decoded size of this record.
-// Implements validation.Record interface.
 func (pr *ParsedRecord) GetDecodedSize() int {
 	return pr.DecodedSize
 }
 
 // IsFieldRequired returns true if the field is marked as required in the schema.
 // Returns false if the field doesn't exist or has no definition.
-// Implements validation.Record interface.
 func (pr *ParsedRecord) IsFieldRequired(fieldName string) bool {
 	pf := pr.GetParsedField(fieldName)
 	if pf == nil || pf.Def == nil {
@@ -221,13 +216,8 @@ func (pr *ParsedRecord) IsFieldRequired(fieldName string) bool {
 // (pointer Def and interface Value are both comparable types).
 // Two records of the same schema type have Fields in the same order with the same
 // Def pointers, so this gives correct exact-match comparison.
-// Implements validation.Record interface.
-func (pr *ParsedRecord) EqualFields(other validation.Record) bool {
-	otherPR, ok := other.(*ParsedRecord)
-	if !ok {
-		return false
-	}
-	return slices.Equal(pr.Fields, otherPR.Fields)
+func (pr *ParsedRecord) EqualFields(other *ParsedRecord) bool {
+	return slices.Equal(pr.Fields, other.Fields)
 }
 
 // ParseContext carries runtime information extracted from header
@@ -264,19 +254,16 @@ type ParsedGroup struct {
 }
 
 // GetKey returns the grouping key.
-// Implements validation.Group interface.
 func (pg *ParsedGroup) GetKey() string {
 	return pg.Key
 }
 
 // GetRptMonthYear returns the reporting month/year.
-// Implements validation.Group interface.
 func (pg *ParsedGroup) GetRptMonthYear() string {
 	return pg.RptMonthYear
 }
 
 // GetCaseNumber returns the case number.
-// Implements validation.Group interface.
 func (pg *ParsedGroup) GetCaseNumber() string {
 	return pg.CaseNumber
 }

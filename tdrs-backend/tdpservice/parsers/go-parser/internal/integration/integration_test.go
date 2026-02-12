@@ -12,12 +12,14 @@ import (
 
 	"go-parser/internal/config"
 	"go-parser/internal/testutil"
+	"go-parser/internal/validation"
 )
 
 // Global test fixtures initialized in TestMain.
 var (
-	testPool     *pgxpool.Pool
-	testRegistry *config.Registry
+	testPool       *pgxpool.Pool
+	testRegistry   *config.Registry
+	testValidators *validation.ValidatorRegistry
 )
 
 func TestMain(m *testing.M) {
@@ -53,6 +55,12 @@ func TestMain(m *testing.M) {
 	testRegistry, err = config.Load("../../config")
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
+	}
+
+	// Load validators
+	testValidators = validation.NewValidatorRegistry()
+	if err := testValidators.Load(testRegistry.ConfigDir(), testRegistry.Schemas(), testRegistry.FileSpecs()); err != nil {
+		log.Fatalf("Failed to load validators: %v", err)
 	}
 	log.Println("Loaded configuration")
 

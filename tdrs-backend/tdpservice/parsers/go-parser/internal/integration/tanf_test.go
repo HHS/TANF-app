@@ -21,7 +21,7 @@ func TestParseSmallTANFSection1(t *testing.T) {
 
 	// Parse
 	filePath := filepath.Join(TestDataDir(), "small_tanf_section1.txt")
-	ParseFile(t, ctx, testPool, testRegistry, "TANF", 1, filePath, datafileID)
+	ParseFile(t, ctx, testPool, testRegistry, testValidators, "TANF", 1, filePath, datafileID)
 
 	// Verify record counts
 	AssertTableCount(t, ctx, testPool, "search_indexes_tanf_t1", datafileID, 5)
@@ -64,7 +64,7 @@ func TestParseBigTANFSection1(t *testing.T) {
 
 	// Parse
 	filePath := filepath.Join(TestDataDir(), "ADS.E2J.FTP1.TS06")
-	ParseFile(t, ctx, testPool, testRegistry, "TANF", 1, filePath, datafileID)
+	ParseFile(t, ctx, testPool, testRegistry, testValidators, "TANF", 1, filePath, datafileID)
 
 	// Verify record counts (from Python test assertions)
 	AssertTableCount(t, ctx, testPool, "search_indexes_tanf_t1", datafileID, 815)
@@ -85,7 +85,7 @@ func TestParseSmallTANFSection2(t *testing.T) {
 
 	// Parse
 	filePath := filepath.Join(TestDataDir(), "small_tanf_section2.txt")
-	ParseFile(t, ctx, testPool, testRegistry, "TANF", 2, filePath, datafileID)
+	ParseFile(t, ctx, testPool, testRegistry, testValidators, "TANF", 2, filePath, datafileID)
 
 	// Verify record counts
 	AssertTableCount(t, ctx, testPool, "search_indexes_tanf_t4", datafileID, 1)
@@ -115,7 +115,7 @@ func TestParseBigTANFSection2(t *testing.T) {
 
 	// Parse
 	filePath := filepath.Join(TestDataDir(), "ADS.E2J.FTP2.TS06")
-	ParseFile(t, ctx, testPool, testRegistry, "TANF", 2, filePath, datafileID)
+	ParseFile(t, ctx, testPool, testRegistry, testValidators, "TANF", 2, filePath, datafileID)
 
 	// Verify record counts
 	AssertTableCount(t, ctx, testPool, "search_indexes_tanf_t4", datafileID, 223)
@@ -139,7 +139,7 @@ func TestParseTANFSection3(t *testing.T) {
 
 	// Parse
 	filePath := filepath.Join(TestDataDir(), "ADS.E2J.FTP3.TS06")
-	ParseFile(t, ctx, testPool, testRegistry, "TANF", 3, filePath, datafileID)
+	ParseFile(t, ctx, testPool, testRegistry, testValidators, "TANF", 3, filePath, datafileID)
 
 	// Verify record counts
 	AssertTableCount(t, ctx, testPool, "search_indexes_tanf_t6", datafileID, 3)
@@ -177,7 +177,7 @@ func TestParseTANFSection4(t *testing.T) {
 
 	// Parse
 	filePath := filepath.Join(TestDataDir(), "ADS.E2J.FTP4.TS06")
-	ParseFile(t, ctx, testPool, testRegistry, "TANF", 4, filePath, datafileID)
+	ParseFile(t, ctx, testPool, testRegistry, testValidators, "TANF", 4, filePath, datafileID)
 
 	// Verify record counts - 6 strata populated × 3 months = 18 records
 	AssertTableCount(t, ctx, testPool, "search_indexes_tanf_t7", datafileID, 18)

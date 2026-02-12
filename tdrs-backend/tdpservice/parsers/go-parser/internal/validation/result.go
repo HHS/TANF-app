@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"sync"
 	"text/template"
+
+	"go-parser/internal/parser"
 )
 
 // Error type constants
@@ -75,7 +77,7 @@ func (vr *ValidationResult) Message(ctx map[string]any) string {
 
 // RecordValidationResult contains all validation results for a single record.
 type RecordValidationResult struct {
-	Record       Record
+	Record       *parser.ParsedRecord
 	RecordErrors []*ValidationResult // All record-scope errors
 	FieldErrors  []*ValidationResult // All field-scope errors
 	Skipped      bool                // True if field/record validators were skipped due to blocking errors
@@ -117,7 +119,7 @@ func (rvr *RecordValidationResult) AllErrors() []*ValidationResult {
 
 // GroupValidationResult contains all validation results for a group (case).
 type GroupValidationResult struct {
-	Group         WrappedGroup
+	Group         *parser.ParsedGroup
 	GroupErrors   []*ValidationResult // All group-scope errors
 	RecordResults []*RecordValidationResult
 }
@@ -204,7 +206,7 @@ func (gvr *GroupValidationResult) TotalErrorCount() int {
 
 // AddRecordError adds an error attributed to a specific record from a group-scope validator.
 // This is used for per_record result mode group validators.
-func (gvr *GroupValidationResult) AddRecordError(rec Record, cv *CompiledValidator, err error) {
+func (gvr *GroupValidationResult) AddRecordError(rec *parser.ParsedRecord, cv *CompiledValidator, err error) {
 	// Find the matching RecordValidationResult
 	for _, rr := range gvr.RecordResults {
 		if rr.Record.GetLineNumber() == rec.GetLineNumber() {

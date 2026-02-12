@@ -1,128 +1,21 @@
 package validation
 
 import (
-	"fmt"
-	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/expr-lang/expr"
 
 	configValidation "go-parser/internal/config/validation"
+	"go-parser/internal/testutil"
 )
 
-// mockRecord implements the Record interface for testing
-type mockRecord struct {
-	recordType     string
-	lineNumber     int
-	decodedSize    int
-	fields         map[string]any
-	requiredFields map[string]bool
-}
-
-func (r *mockRecord) Get(fieldName string) any {
-	return r.fields[fieldName]
-}
-
-func (r *mockRecord) GetString(fieldName string) string {
-	v := r.fields[fieldName]
-	if v == nil {
-		return ""
-	}
-	switch val := v.(type) {
-	case string:
-		return val
-	case int:
-		return strconv.Itoa(val)
-	default:
-		return fmt.Sprintf("%v", val)
-	}
-}
-
-func (r *mockRecord) GetInt(fieldName string) int {
-	v := r.fields[fieldName]
-	if v == nil {
-		return 0
-	}
-	switch val := v.(type) {
-	case int:
-		return val
-	case string:
-		if val == "" {
-			return 0
-		}
-		i, err := strconv.Atoi(val)
-		if err != nil {
-			return 0
-		}
-		return i
-	default:
-		return 0
-	}
-}
-
-func (r *mockRecord) GetRecordType() string {
-	return r.recordType
-}
-
-func (r *mockRecord) GetLineNumber() int {
-	return r.lineNumber
-}
-
-func (r *mockRecord) GetDecodedSize() int {
-	return r.decodedSize
-}
-
-func (r *mockRecord) IsFieldRequired(fieldName string) bool {
-	if r.requiredFields == nil {
-		return false
-	}
-	return r.requiredFields[fieldName]
-}
-
-func (r *mockRecord) EqualFields(other Record) bool {
-	otherMock, ok := other.(*mockRecord)
-	if !ok {
-		return false
-	}
-	if len(r.fields) != len(otherMock.fields) {
-		return false
-	}
-	for k, v := range r.fields {
-		if otherMock.fields[k] != v {
-			return false
-		}
-	}
-	return true
-}
-
-// mockGroup implements the Group interface for testing
-type mockGroup struct {
-	key          string
-	rptMonthYear string
-	caseNumber   string
-}
-
-func (g *mockGroup) GetKey() string {
-	return g.key
-}
-
-func (g *mockGroup) GetRptMonthYear() string {
-	return g.rptMonthYear
-}
-
-func (g *mockGroup) GetCaseNumber() string {
-	return g.caseNumber
-}
-
-// newMockWrappedGroup creates a WrappedGroup for testing
-func newMockWrappedGroup(records []Record) *GroupWrapper {
-	return WrapGroup(&mockGroup{
-		key:          "202401|12345",
-		rptMonthYear: "202401",
-		caseNumber:   "12345",
-	}, records)
-}
+// Package-level test schemas shared across tests.
+var (
+	t1Schema = testutil.NewTestSchema("T1", "CASE_NUMBER", "AMOUNT")
+	t2Schema = testutil.NewTestSchema("T2", "SSN", "FAMILY_AFFILIATION")
+	t3Schema = testutil.NewTestSchema("T3", "FAMILY_AFFILIATION")
+)
 
 // TestFieldEnv tests the FieldEnv creation
 func TestFieldEnv(t *testing.T) {
@@ -147,14 +40,9 @@ func TestFieldEnv(t *testing.T) {
 
 // TestRecordEnv tests the RecordEnv creation
 func TestRecordEnv(t *testing.T) {
-	rec := &mockRecord{
-		recordType:  "T1",
-		lineNumber:  10,
-		decodedSize: 156,
-		fields: map[string]any{
-			"CASE_NUMBER": "12345",
-		},
-	}
+	rec := testutil.NewTestRecord(t1Schema, 10, map[string]any{
+		"CASE_NUMBER": "12345",
+	})
 
 	env := NewRecordEnv(rec)
 
@@ -171,14 +59,12 @@ func TestRecordEnv(t *testing.T) {
 
 // TestGroupEnv tests the GroupEnv creation with aggregates
 func TestGroupEnv(t *testing.T) {
-	records := []Record{
-		&mockRecord{recordType: "T1"},
-		&mockRecord{recordType: "T2"},
-		&mockRecord{recordType: "T2"},
-		&mockRecord{recordType: "T3"},
-	}
-
-	group := newMockWrappedGroup(records)
+	group := testutil.NewTestGroup(
+		testutil.NewTestRecord(t1Schema, 1, nil),
+		testutil.NewTestRecord(t2Schema, 2, nil),
+		testutil.NewTestRecord(t2Schema, 3, nil),
+		testutil.NewTestRecord(t3Schema, 4, nil),
+	)
 	env := NewGroupEnv(group)
 
 	if env.TotalRecords != 4 {
@@ -373,33 +259,30 @@ func TestCustomFunctions(t *testing.T) {
 // TestHasDuplicateField tests the duplicate detection function
 func TestHasDuplicateField(t *testing.T) {
 	t.Run("no duplicates", func(t *testing.T) {
-		records := []Record{
-			&mockRecord{recordType: "T2", fields: map[string]any{"SSN": "111111111"}},
-			&mockRecord{recordType: "T2", fields: map[string]any{"SSN": "222222222"}},
-		}
-		group := newMockWrappedGroup(records)
+		group := testutil.NewTestGroup(
+			testutil.NewTestRecord(t2Schema, 1, map[string]any{"SSN": "111111111"}),
+			testutil.NewTestRecord(t2Schema, 2, map[string]any{"SSN": "222222222"}),
+		)
 		if hasDuplicateField(group, "T2", "SSN") {
 			t.Error("expected no duplicates")
 		}
 	})
 
 	t.Run("with duplicates", func(t *testing.T) {
-		records := []Record{
-			&mockRecord{recordType: "T2", fields: map[string]any{"SSN": "111111111"}},
-			&mockRecord{recordType: "T2", fields: map[string]any{"SSN": "111111111"}},
-		}
-		group := newMockWrappedGroup(records)
+		group := testutil.NewTestGroup(
+			testutil.NewTestRecord(t2Schema, 1, map[string]any{"SSN": "111111111"}),
+			testutil.NewTestRecord(t2Schema, 2, map[string]any{"SSN": "111111111"}),
+		)
 		if !hasDuplicateField(group, "T2", "SSN") {
 			t.Error("expected duplicates")
 		}
 	})
 
 	t.Run("different record types", func(t *testing.T) {
-		records := []Record{
-			&mockRecord{recordType: "T2", fields: map[string]any{"SSN": "111111111"}},
-			&mockRecord{recordType: "T3", fields: map[string]any{"SSN": "111111111"}},
-		}
-		group := newMockWrappedGroup(records)
+		group := testutil.NewTestGroup(
+			testutil.NewTestRecord(t2Schema, 1, map[string]any{"SSN": "111111111"}),
+			testutil.NewTestRecord(t3Schema, 2, nil),
+		)
 		if hasDuplicateField(group, "T2", "SSN") {
 			t.Error("expected no duplicates (different record types)")
 		}
@@ -408,13 +291,12 @@ func TestHasDuplicateField(t *testing.T) {
 
 // TestGetRecordsOfType tests record type filtering
 func TestGetRecordsOfType(t *testing.T) {
-	records := []Record{
-		&mockRecord{recordType: "T1"},
-		&mockRecord{recordType: "T2"},
-		&mockRecord{recordType: "T2"},
-		&mockRecord{recordType: "T3"},
-	}
-	group := newMockWrappedGroup(records)
+	group := testutil.NewTestGroup(
+		testutil.NewTestRecord(t1Schema, 1, nil),
+		testutil.NewTestRecord(t2Schema, 2, nil),
+		testutil.NewTestRecord(t2Schema, 3, nil),
+		testutil.NewTestRecord(t3Schema, 4, nil),
+	)
 
 	t2Records := getRecordsOfType(group, "T2")
 	if len(t2Records) != 2 {
@@ -492,35 +374,6 @@ func TestGroupValidationResult(t *testing.T) {
 	})
 }
 
-// TestWrapGroup tests the GroupWrapper
-func TestWrapGroup(t *testing.T) {
-	records := []Record{
-		&mockRecord{recordType: "T1"},
-		&mockRecord{recordType: "T2"},
-	}
-
-	group := &mockGroup{
-		key:          "key1",
-		rptMonthYear: "202401",
-		caseNumber:   "12345",
-	}
-
-	wrapped := WrapGroup(group, records)
-
-	if wrapped.GetKey() != "key1" {
-		t.Errorf("expected key=key1, got %s", wrapped.GetKey())
-	}
-	if wrapped.GetRptMonthYear() != "202401" {
-		t.Errorf("expected rptMonthYear=202401, got %s", wrapped.GetRptMonthYear())
-	}
-	if wrapped.GetCaseNumber() != "12345" {
-		t.Errorf("expected caseNumber=12345, got %s", wrapped.GetCaseNumber())
-	}
-	if len(wrapped.GetRecords()) != 2 {
-		t.Errorf("expected 2 records, got %d", len(wrapped.GetRecords()))
-	}
-}
-
 // TestFieldEnvWithParams tests FieldEnv with Params
 func TestFieldEnvWithParams(t *testing.T) {
 	params := map[string]any{"n": 9, "min": 0, "max": 99}
@@ -542,12 +395,7 @@ func TestFieldEnvWithParams(t *testing.T) {
 
 // TestRecordEnvWithParams tests RecordEnv with Params
 func TestRecordEnvWithParams(t *testing.T) {
-	rec := &mockRecord{
-		recordType:  "T1",
-		lineNumber:  10,
-		decodedSize: 156,
-		fields:      map[string]any{"CASE_NUMBER": "12345"},
-	}
+	rec := testutil.NewTestRecord(t1Schema, 10, map[string]any{"CASE_NUMBER": "12345"})
 	params := map[string]any{"min": 117, "max": 156}
 
 	env := NewRecordEnvWithParams(rec, params)
@@ -568,11 +416,10 @@ func TestRecordEnvWithParams(t *testing.T) {
 
 // TestGroupEnvWithParams tests GroupEnv with Params
 func TestGroupEnvWithParams(t *testing.T) {
-	records := []Record{
-		&mockRecord{recordType: "T1"},
-		&mockRecord{recordType: "T2"},
-	}
-	group := newMockWrappedGroup(records)
+	group := testutil.NewTestGroup(
+		testutil.NewTestRecord(t1Schema, 1, nil),
+		testutil.NewTestRecord(t2Schema, 2, nil),
+	)
 	params := map[string]any{"record_type": "T1", "min_count": 1}
 
 	env := NewGroupEnvWithParams(group, params)
@@ -646,7 +493,8 @@ func TestParamsInEnv(t *testing.T) {
 	})
 
 	t.Run("RecordEnv params mutation", func(t *testing.T) {
-		rec := &mockRecord{recordType: "T1", lineNumber: 1, decodedSize: 100}
+		rec := testutil.NewTestRecord(t1Schema, 1, nil)
+		rec.DecodedSize = 100
 		env := NewRecordEnv(rec)
 		env.Params = map[string]any{"min": 100}
 		if env.Params["min"] != 100 {
@@ -655,7 +503,7 @@ func TestParamsInEnv(t *testing.T) {
 	})
 
 	t.Run("GroupEnv params mutation", func(t *testing.T) {
-		group := newMockWrappedGroup([]Record{&mockRecord{recordType: "T1"}})
+		group := testutil.NewTestGroup(testutil.NewTestRecord(t1Schema, 1, nil))
 		env := NewGroupEnv(group)
 		env.Params = map[string]any{"record_type": "T1"}
 		if env.Params["record_type"] != "T1" {
@@ -666,7 +514,6 @@ func TestParamsInEnv(t *testing.T) {
 
 // TestResolveValidatorPreventsExprOverride tests that predefined validators cannot have expr overridden
 func TestResolveValidatorPreventsExprOverride(t *testing.T) {
-	// Create a registry with a predefined validator
 	registry := NewValidatorRegistry()
 	registry.predefined[ScopeField] = map[string]*configValidation.ValidatorDef{
 		"in_values": {
@@ -691,7 +538,7 @@ func TestResolveValidatorPreventsExprOverride(t *testing.T) {
 	t.Run("rejects predefined with expr override", func(t *testing.T) {
 		vdef := &configValidation.ValidatorDef{
 			ID:     "in_values",
-			Expr:   "Value in [1, 2, 3]", // Attempting to override
+			Expr:   "Value in [1, 2, 3]",
 			Params: map[string]any{"values": []any{1, 2, 3}},
 		}
 		_, err := registry.resolveValidatorByScope(ScopeField, vdef, "")
@@ -727,10 +574,8 @@ func TestResolveValidatorPreventsExprOverride(t *testing.T) {
 
 // TestFamilyAffiliationExpression tests the any() with #.GetInt() syntax for Cat4
 func TestFamilyAffiliationExpression(t *testing.T) {
-	// Register custom functions for the expression
 	opts := RegisterFunctions()
 
-	// Compile the expression
 	exprStr := `RecordCounts['T1'] == 0 or any(getRecordsOfType(Group, 'T2'), .GetInt('FAMILY_AFFILIATION') == 1) or any(getRecordsOfType(Group, 'T3'), .GetInt('FAMILY_AFFILIATION') == 1)`
 
 	compileOpts := append([]expr.Option{
@@ -745,10 +590,9 @@ func TestFamilyAffiliationExpression(t *testing.T) {
 	}
 
 	t.Run("no T1 records - should pass", func(t *testing.T) {
-		records := []Record{
-			&mockRecord{recordType: "T2", fields: map[string]any{"FAMILY_AFFILIATION": 2}},
-		}
-		group := newMockWrappedGroup(records)
+		group := testutil.NewTestGroup(
+			testutil.NewTestRecord(t2Schema, 1, map[string]any{"FAMILY_AFFILIATION": 2}),
+		)
 		env := NewGroupEnv(group)
 
 		result, err := expr.Run(program, env)
@@ -761,11 +605,10 @@ func TestFamilyAffiliationExpression(t *testing.T) {
 	})
 
 	t.Run("T1 with T2 FAMILY_AFFILIATION=1 - should pass", func(t *testing.T) {
-		records := []Record{
-			&mockRecord{recordType: "T1"},
-			&mockRecord{recordType: "T2", fields: map[string]any{"FAMILY_AFFILIATION": 1}},
-		}
-		group := newMockWrappedGroup(records)
+		group := testutil.NewTestGroup(
+			testutil.NewTestRecord(t1Schema, 1, nil),
+			testutil.NewTestRecord(t2Schema, 2, map[string]any{"FAMILY_AFFILIATION": 1}),
+		)
 		env := NewGroupEnv(group)
 
 		result, err := expr.Run(program, env)
@@ -778,11 +621,10 @@ func TestFamilyAffiliationExpression(t *testing.T) {
 	})
 
 	t.Run("T1 with T3 FAMILY_AFFILIATION=1 - should pass", func(t *testing.T) {
-		records := []Record{
-			&mockRecord{recordType: "T1"},
-			&mockRecord{recordType: "T3", fields: map[string]any{"FAMILY_AFFILIATION": 1}},
-		}
-		group := newMockWrappedGroup(records)
+		group := testutil.NewTestGroup(
+			testutil.NewTestRecord(t1Schema, 1, nil),
+			testutil.NewTestRecord(t3Schema, 2, map[string]any{"FAMILY_AFFILIATION": 1}),
+		)
 		env := NewGroupEnv(group)
 
 		result, err := expr.Run(program, env)
@@ -795,11 +637,10 @@ func TestFamilyAffiliationExpression(t *testing.T) {
 	})
 
 	t.Run("T1 with T2 FAMILY_AFFILIATION=2 only - should fail", func(t *testing.T) {
-		records := []Record{
-			&mockRecord{recordType: "T1"},
-			&mockRecord{recordType: "T2", fields: map[string]any{"FAMILY_AFFILIATION": 2}},
-		}
-		group := newMockWrappedGroup(records)
+		group := testutil.NewTestGroup(
+			testutil.NewTestRecord(t1Schema, 1, nil),
+			testutil.NewTestRecord(t2Schema, 2, map[string]any{"FAMILY_AFFILIATION": 2}),
+		)
 		env := NewGroupEnv(group)
 
 		result, err := expr.Run(program, env)
@@ -812,10 +653,9 @@ func TestFamilyAffiliationExpression(t *testing.T) {
 	})
 
 	t.Run("T1 with no T2/T3 - should fail", func(t *testing.T) {
-		records := []Record{
-			&mockRecord{recordType: "T1"},
-		}
-		group := newMockWrappedGroup(records)
+		group := testutil.NewTestGroup(
+			testutil.NewTestRecord(t1Schema, 1, nil),
+		)
 		env := NewGroupEnv(group)
 
 		result, err := expr.Run(program, env)
@@ -828,13 +668,12 @@ func TestFamilyAffiliationExpression(t *testing.T) {
 	})
 
 	t.Run("T1 with multiple T2s, one has FA=1 - should pass", func(t *testing.T) {
-		records := []Record{
-			&mockRecord{recordType: "T1"},
-			&mockRecord{recordType: "T2", fields: map[string]any{"FAMILY_AFFILIATION": 2}},
-			&mockRecord{recordType: "T2", fields: map[string]any{"FAMILY_AFFILIATION": 1}},
-			&mockRecord{recordType: "T2", fields: map[string]any{"FAMILY_AFFILIATION": 3}},
-		}
-		group := newMockWrappedGroup(records)
+		group := testutil.NewTestGroup(
+			testutil.NewTestRecord(t1Schema, 1, nil),
+			testutil.NewTestRecord(t2Schema, 2, map[string]any{"FAMILY_AFFILIATION": 2}),
+			testutil.NewTestRecord(t2Schema, 3, map[string]any{"FAMILY_AFFILIATION": 1}),
+			testutil.NewTestRecord(t2Schema, 4, map[string]any{"FAMILY_AFFILIATION": 3}),
+		)
 		env := NewGroupEnv(group)
 
 		result, err := expr.Run(program, env)
@@ -850,7 +689,6 @@ func TestFamilyAffiliationExpression(t *testing.T) {
 // TestParameterizedExpressions tests that expr library can access Params
 func TestParameterizedExpressions(t *testing.T) {
 	t.Run("length validator with Params.n", func(t *testing.T) {
-		// Compile expression that uses Params.n
 		program, err := expr.Compile(
 			"len(Value) == Params.n",
 			expr.Env(&FieldEnv{}),
@@ -861,7 +699,6 @@ func TestParameterizedExpressions(t *testing.T) {
 			t.Fatalf("failed to compile: %v", err)
 		}
 
-		// Test with 5 character string and n=5 (should pass)
 		env := &FieldEnv{Value: "hello", Params: map[string]any{"n": 5}}
 		result, err := expr.Run(program, env)
 		if err != nil {
@@ -871,7 +708,6 @@ func TestParameterizedExpressions(t *testing.T) {
 			t.Errorf("expected true for len('hello')==5, got %v", result)
 		}
 
-		// Test with same string but n=6 (should fail)
 		env.Params = map[string]any{"n": 6}
 		result, err = expr.Run(program, env)
 		if err != nil {
@@ -883,7 +719,6 @@ func TestParameterizedExpressions(t *testing.T) {
 	})
 
 	t.Run("in_values validator with Params.values", func(t *testing.T) {
-		// Compile expression that uses Params.values array
 		program, err := expr.Compile(
 			"Value in Params.values",
 			expr.Env(&FieldEnv{}),
@@ -894,7 +729,6 @@ func TestParameterizedExpressions(t *testing.T) {
 			t.Fatalf("failed to compile: %v", err)
 		}
 
-		// Test with value in set
 		env := &FieldEnv{Value: 2, Params: map[string]any{"values": []any{1, 2, 3}}}
 		result, err := expr.Run(program, env)
 		if err != nil {
@@ -904,7 +738,6 @@ func TestParameterizedExpressions(t *testing.T) {
 			t.Errorf("expected true for 2 in [1,2,3], got %v", result)
 		}
 
-		// Test with value not in set
 		env.Value = 5
 		result, err = expr.Run(program, env)
 		if err != nil {
@@ -916,7 +749,6 @@ func TestParameterizedExpressions(t *testing.T) {
 	})
 
 	t.Run("in_range_int validator with Params.min/max", func(t *testing.T) {
-		// Compile expression with min/max range
 		program, err := expr.Compile(
 			"Value >= Params.min and Value <= Params.max",
 			expr.Env(&FieldEnv{}),
@@ -927,7 +759,6 @@ func TestParameterizedExpressions(t *testing.T) {
 			t.Fatalf("failed to compile: %v", err)
 		}
 
-		// Test value in range
 		env := &FieldEnv{Value: 50, Params: map[string]any{"min": 0, "max": 99}}
 		result, err := expr.Run(program, env)
 		if err != nil {
@@ -937,7 +768,6 @@ func TestParameterizedExpressions(t *testing.T) {
 			t.Errorf("expected true for 50 in [0,99], got %v", result)
 		}
 
-		// Test value out of range
 		env.Value = 100
 		result, err = expr.Run(program, env)
 		if err != nil {
@@ -949,7 +779,6 @@ func TestParameterizedExpressions(t *testing.T) {
 	})
 
 	t.Run("record_length_range with Params.min/max", func(t *testing.T) {
-		// Compile expression for record length range
 		program, err := expr.Compile(
 			"RecordLength >= Params.min and RecordLength <= Params.max",
 			expr.Env(&RecordEnv{}),
@@ -960,7 +789,8 @@ func TestParameterizedExpressions(t *testing.T) {
 			t.Fatalf("failed to compile: %v", err)
 		}
 
-		rec := &mockRecord{recordType: "T1", lineNumber: 1, decodedSize: 120}
+		rec := testutil.NewTestRecord(t1Schema, 1, nil)
+		rec.DecodedSize = 120
 		env := NewRecordEnv(rec)
 		env.Params = map[string]any{"min": 117, "max": 156}
 
@@ -972,8 +802,8 @@ func TestParameterizedExpressions(t *testing.T) {
 			t.Errorf("expected true for 120 in [117,156], got %v", result)
 		}
 
-		// Test record too short
-		rec2 := &mockRecord{recordType: "T1", lineNumber: 1, decodedSize: 100}
+		rec2 := testutil.NewTestRecord(t1Schema, 1, nil)
+		rec2.DecodedSize = 100
 		env2 := NewRecordEnv(rec2)
 		env2.Params = map[string]any{"min": 117, "max": 156}
 

@@ -11,6 +11,7 @@ import (
 	"go-parser/internal/db"
 	"go-parser/internal/pipeline"
 	"go-parser/internal/testutil"
+	"go-parser/internal/validation"
 )
 
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
@@ -45,7 +46,7 @@ func main() {
 	}
 	defer dbPool.Close()
 
-	// Load schemas, filespecs, and validators
+	// Load schemas and filespecs
 	// TODO: Need to revisit storing the object pools on the schemas. Since the registry will exist for as long as the
 	// celery worker does, the object pools could grow to an enormous size since there isn't a way to clear them after a
 	// parsing run. We should consider implementing/importing a better solution that allows clearing. Or, we could reload
@@ -53,6 +54,12 @@ func main() {
 	reg, err := config.Load(configDir)
 	if err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
+	}
+
+	// Load and compile validators from schemas and filespecs
+	validators := validation.NewValidatorRegistry()
+	if err := validators.Load(reg.ConfigDir(), reg.Schemas(), reg.FileSpecs()); err != nil {
+		log.Fatalf("Failed to load validators: %v", err)
 	}
 
 	// Load content types from database for error linking
@@ -112,7 +119,7 @@ func main() {
 	}()
 
 	// Create and run pipeline
-	pipeln := pipeline.NewPipline(dbPool, reg, pipeline.NewConfig(pipelineCfg))
+	pipeln := pipeline.NewPipline(dbPool, reg, validators, pipeline.NewConfig(pipelineCfg))
 	result, err := pipeln.ProcessFile(ctx, pipeline.ProcessParams{
 		Program:    program,
 		Section:    section,

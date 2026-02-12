@@ -20,9 +20,10 @@ import (
 
 // Pipeline orchestrates the full file parsing process.
 type Pipeline struct {
-	dbPool             *pgxpool.Pool
-	registry         *config.Registry
-	config           PipelineConfig
+	dbPool     *pgxpool.Pool
+	registry   *config.Registry
+	validators *validation.ValidatorRegistry
+	config     PipelineConfig
 }
 
 // ProcessParams contains the inputs for processing a file.
@@ -43,12 +44,13 @@ type ProcessResult struct {
 	Duration     time.Duration
 }
 
-// New creates a Pipeline with the given configuration.
-func NewPipline(dbPool *pgxpool.Pool, reg *config.Registry, config PipelineConfig) *Pipeline {
+// NewPipline creates a Pipeline with the given configuration.
+func NewPipline(dbPool *pgxpool.Pool, reg *config.Registry, validators *validation.ValidatorRegistry, config PipelineConfig) *Pipeline {
 	return &Pipeline{
 		dbPool:     dbPool,
-		registry: reg,
-		config:   config,
+		registry:   reg,
+		validators: validators,
+		config:     config,
 	}
 }
 
@@ -118,7 +120,7 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params ProcessParams) (*Proc
 
 	// Step 7: Create validation orchestrator
 	filespecKey := fmt.Sprintf("%s:%d", params.Program, params.Section)
-	orchestrator := validation.NewOrchestrator(p.registry.Validators(), p.config.NumValidators)
+	orchestrator := validation.NewOrchestrator(p.validators, p.config.NumValidators)
 
 	// Step 8: Start result collector with parallel dispatchers
 	var collectorErr error
