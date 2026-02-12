@@ -163,6 +163,8 @@ func validateBatch(pb *parser.ParsedBatch, orchestrator *validation.Orchestrator
 					recordPreCheck++
 				case validation.ErrorTypeValueConsistency:
 					valueConsistency++
+				case validation.ErrorTypeCaseConsistency:
+					caseConsistency++
 				}
 			}
 			for range recResult.FieldErrors {
