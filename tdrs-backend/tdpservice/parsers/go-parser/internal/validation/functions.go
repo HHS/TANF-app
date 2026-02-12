@@ -14,229 +14,111 @@ import (
 func RegisterFunctions() []expr.Option {
 	return []expr.Option{
 		// Value checking
-		expr.Function("isEmpty", wrapFunc1(isEmpty), new(func(any) bool)),
-		expr.Function("isNotEmpty", wrapFunc1(isNotEmpty), new(func(any) bool)),
-		expr.Function("isBlank", wrapFunc1(isBlank), new(func(any) bool)),
-		expr.Function("isNotBlank", wrapFunc1(isNotBlank), new(func(any) bool)),
+		expr.Function("isEmpty", wrap1(isEmpty), new(func(any) bool)),
+		expr.Function("isNotEmpty", wrap1(isNotEmpty), new(func(any) bool)),
+		expr.Function("isBlank", wrap1(isBlank), new(func(any) bool)),
+		expr.Function("isNotBlank", wrap1(isNotBlank), new(func(any) bool)),
 
 		// Date functions
-		expr.Function("year", wrapFunc1Int(extractYear), new(func(any) int)),
-		expr.Function("month", wrapFunc1Int(extractMonth), new(func(any) int)),
-		expr.Function("day", wrapFunc1Int(extractDay), new(func(any) int)),
-		expr.Function("quarter", wrapFunc1Int(extractQuarter), new(func(any) int)),
-		expr.Function("isValidDate", wrapFunc1(isValidDate), new(func(any) bool)),
-		expr.Function("calculateAge", wrapFunc2StrInt(calculateAge), new(func(string, string) int)),
+		expr.Function("year", wrap1(extractYear), new(func(any) int)),
+		expr.Function("month", wrap1(extractMonth), new(func(any) int)),
+		expr.Function("day", wrap1(extractDay), new(func(any) int)),
+		expr.Function("quarter", wrap1(extractQuarter), new(func(any) int)),
+		expr.Function("isValidDate", wrap1(isValidDate), new(func(any) bool)),
+		expr.Function("calculateAge", wrap2(calculateAge), new(func(string, string) int)),
 
 		// String functions
-		expr.Function("matches", wrapFunc2Bool(regexMatch), new(func(string, string) bool)),
-		expr.Function("isNumeric", wrapFunc1StrBool(isNumeric), new(func(string) bool)),
-		expr.Function("isAlphaNumeric", wrapFunc1StrBool(isAlphaNumeric), new(func(string) bool)),
-		expr.Function("trim", wrapFunc1StrStr(strings.TrimSpace), new(func(string) string)),
-		expr.Function("len", wrapFunc1Int(strLen), new(func(any) int)),
+		expr.Function("matches", wrap2(regexMatch), new(func(string, string) bool)),
+		expr.Function("isNumeric", wrap1(isNumeric), new(func(string) bool)),
+		expr.Function("isAlphaNumeric", wrap1(isAlphaNumeric), new(func(string) bool)),
+		expr.Function("trim", wrap1(strings.TrimSpace), new(func(string) string)),
+		expr.Function("len", wrap1(strLen), new(func(any) int)),
 
 		// Type conversion
-		expr.Function("str", wrapFunc1Str(toString), new(func(any) string)),
-		expr.Function("toInt", wrapFunc1Int(toInt), new(func(any) int)),
+		expr.Function("str", wrap1(toString), new(func(any) string)),
+		expr.Function("toInt", wrap1(toInt), new(func(any) int)),
 
 		// SSN validation
-		expr.Function("isValidSSN", wrapFunc1StrBool(isValidSSN), new(func(string) bool)),
+		expr.Function("isValidSSN", wrap1(isValidSSN), new(func(string) bool)),
 
 		// Group validators (take group explicitly)
-		expr.Function("hasDuplicateField", wrapGroupFunc3(hasDuplicateField),
+		expr.Function("hasDuplicateField", wrap3(hasDuplicateField),
 			new(func(WrappedGroup, string, string) bool)),
-		expr.Function("getRecordsOfType", wrapGroupFunc2(getRecordsOfType),
+		expr.Function("getRecordsOfType", wrap2(getRecordsOfType),
 			new(func(WrappedGroup, string) []Record)),
 
 		// Duplicate detection (group scope, return []Record for per_record mode)
-		expr.Function("getExactDuplicates", wrapGroupFunc2Records(getExactDuplicates),
+		expr.Function("getExactDuplicates", wrap2(getExactDuplicates),
 			new(func(WrappedGroup, string) []Record)),
-		expr.Function("getPartialDuplicates", wrapGroupFuncPartialDups(getPartialDuplicates),
+		expr.Function("getPartialDuplicates", wrap3(getPartialDuplicates),
 			new(func(WrappedGroup, string, []any) []Record)),
-		expr.Function("getPartialDuplicatesExcluding", wrapGroupFuncPartialDupsExcluding(getPartialDuplicatesExcluding),
+		expr.Function("getPartialDuplicatesExcluding", wrap5(getPartialDuplicatesExcluding),
 			new(func(WrappedGroup, string, []any, string, []any) []Record)),
 	}
 }
 
-// Wrapper functions to convert typed functions to variadic expr functions
+// Generic wrappers bridge typed Go functions to the expr-lang library's required
+// variadic signature: func(...any) (any, error). The expr.Function API does not
+// accept typed functions directly — all custom functions must use this signature.
+// These generic wrappers validate parameter count, type-assert each argument,
+// and delegate to the real typed function.
 
-func wrapFunc1(fn func(any) bool) func(...any) (any, error) {
+func wrap1[A, R any](fn func(A) R) func(...any) (any, error) {
 	return func(params ...any) (any, error) {
 		if len(params) != 1 {
 			return nil, fmt.Errorf("expected 1 argument, got %d", len(params))
 		}
-		return fn(params[0]), nil
-	}
-}
-
-func wrapFunc1Int(fn func(any) int) func(...any) (any, error) {
-	return func(params ...any) (any, error) {
-		if len(params) != 1 {
-			return nil, fmt.Errorf("expected 1 argument, got %d", len(params))
-		}
-		return fn(params[0]), nil
-	}
-}
-
-func wrapFunc1Str(fn func(any) string) func(...any) (any, error) {
-	return func(params ...any) (any, error) {
-		if len(params) != 1 {
-			return nil, fmt.Errorf("expected 1 argument, got %d", len(params))
-		}
-		return fn(params[0]), nil
-	}
-}
-
-func wrapFunc1StrBool(fn func(string) bool) func(...any) (any, error) {
-	return func(params ...any) (any, error) {
-		if len(params) != 1 {
-			return nil, fmt.Errorf("expected 1 argument, got %d", len(params))
-		}
-		s, ok := params[0].(string)
+		a, ok := params[0].(A)
 		if !ok {
-			return nil, fmt.Errorf("expected string argument")
+			return nil, fmt.Errorf("argument type mismatch at position 0: got %T", params[0])
 		}
-		return fn(s), nil
+		return fn(a), nil
 	}
 }
 
-func wrapFunc1StrStr(fn func(string) string) func(...any) (any, error) {
-	return func(params ...any) (any, error) {
-		if len(params) != 1 {
-			return nil, fmt.Errorf("expected 1 argument, got %d", len(params))
-		}
-		s, ok := params[0].(string)
-		if !ok {
-			return nil, fmt.Errorf("expected string argument")
-		}
-		return fn(s), nil
-	}
-}
-
-func wrapFunc2Bool(fn func(string, string) bool) func(...any) (any, error) {
+func wrap2[A, B, R any](fn func(A, B) R) func(...any) (any, error) {
 	return func(params ...any) (any, error) {
 		if len(params) != 2 {
 			return nil, fmt.Errorf("expected 2 arguments, got %d", len(params))
 		}
-		s1, ok1 := params[0].(string)
-		s2, ok2 := params[1].(string)
+		a, ok1 := params[0].(A)
+		b, ok2 := params[1].(B)
 		if !ok1 || !ok2 {
-			return nil, fmt.Errorf("expected string arguments")
+			return nil, fmt.Errorf("argument type mismatch: got (%T, %T)", params[0], params[1])
 		}
-		return fn(s1, s2), nil
+		return fn(a, b), nil
 	}
 }
 
-func wrapFunc2StrInt(fn func(string, string) int) func(...any) (any, error) {
-	return func(params ...any) (any, error) {
-		if len(params) != 2 {
-			return nil, fmt.Errorf("expected 2 arguments, got %d", len(params))
-		}
-		s1, ok1 := params[0].(string)
-		s2, ok2 := params[1].(string)
-		if !ok1 || !ok2 {
-			return nil, fmt.Errorf("expected string arguments")
-		}
-		return fn(s1, s2), nil
-	}
-}
-
-func wrapGroupFunc(fn func(WrappedGroup) bool) func(...any) (any, error) {
-	return func(params ...any) (any, error) {
-		if len(params) != 1 {
-			return nil, fmt.Errorf("expected 1 argument, got %d", len(params))
-		}
-		g, ok := params[0].(WrappedGroup)
-		if !ok {
-			return nil, fmt.Errorf("expected WrappedGroup argument")
-		}
-		return fn(g), nil
-	}
-}
-
-func wrapGroupFunc2(fn func(WrappedGroup, string) []Record) func(...any) (any, error) {
-	return func(params ...any) (any, error) {
-		if len(params) != 2 {
-			return nil, fmt.Errorf("expected 2 arguments, got %d", len(params))
-		}
-		g, ok1 := params[0].(WrappedGroup)
-		s, ok2 := params[1].(string)
-		if !ok1 || !ok2 {
-			return nil, fmt.Errorf("expected WrappedGroup and string arguments")
-		}
-		return fn(g, s), nil
-	}
-}
-
-func wrapGroupFunc3(fn func(WrappedGroup, string, string) bool) func(...any) (any, error) {
+func wrap3[A, B, C, R any](fn func(A, B, C) R) func(...any) (any, error) {
 	return func(params ...any) (any, error) {
 		if len(params) != 3 {
 			return nil, fmt.Errorf("expected 3 arguments, got %d", len(params))
 		}
-		g, ok1 := params[0].(WrappedGroup)
-		s1, ok2 := params[1].(string)
-		s2, ok3 := params[2].(string)
+		a, ok1 := params[0].(A)
+		b, ok2 := params[1].(B)
+		c, ok3 := params[2].(C)
 		if !ok1 || !ok2 || !ok3 {
-			return nil, fmt.Errorf("expected WrappedGroup and two string arguments")
+			return nil, fmt.Errorf("argument type mismatch: got (%T, %T, %T)", params[0], params[1], params[2])
 		}
-		return fn(g, s1, s2), nil
+		return fn(a, b, c), nil
 	}
 }
 
-func wrapGroupFunc2Records(fn func(WrappedGroup, string) []Record) func(...any) (any, error) {
-	return func(params ...any) (any, error) {
-		if len(params) != 2 {
-			return nil, fmt.Errorf("expected 2 arguments, got %d", len(params))
-		}
-		g, ok1 := params[0].(WrappedGroup)
-		s, ok2 := params[1].(string)
-		if !ok1 || !ok2 {
-			return nil, fmt.Errorf("expected WrappedGroup and string arguments")
-		}
-		return fn(g, s), nil
-	}
-}
-
-func wrapGroupFuncPartialDups(fn func(WrappedGroup, string, []any) []Record) func(...any) (any, error) {
-	return func(params ...any) (any, error) {
-		if len(params) != 3 {
-			return nil, fmt.Errorf("expected 3 arguments, got %d", len(params))
-		}
-		g, ok1 := params[0].(WrappedGroup)
-		s, ok2 := params[1].(string)
-		if !ok1 || !ok2 {
-			return nil, fmt.Errorf("expected WrappedGroup and string arguments")
-		}
-		fields, ok3 := params[2].([]any)
-		if !ok3 {
-			return nil, fmt.Errorf("expected array argument for fields")
-		}
-		return fn(g, s, fields), nil
-	}
-}
-
-func wrapGroupFuncPartialDupsExcluding(fn func(WrappedGroup, string, []any, string, []any) []Record) func(...any) (any, error) {
+func wrap5[A, B, C, D, E, R any](fn func(A, B, C, D, E) R) func(...any) (any, error) {
 	return func(params ...any) (any, error) {
 		if len(params) != 5 {
 			return nil, fmt.Errorf("expected 5 arguments, got %d", len(params))
 		}
-		g, ok1 := params[0].(WrappedGroup)
-		recordType, ok2 := params[1].(string)
-		if !ok1 || !ok2 {
-			return nil, fmt.Errorf("expected WrappedGroup and string arguments")
+		a, ok1 := params[0].(A)
+		b, ok2 := params[1].(B)
+		c, ok3 := params[2].(C)
+		d, ok4 := params[3].(D)
+		e, ok5 := params[4].(E)
+		if !ok1 || !ok2 || !ok3 || !ok4 || !ok5 {
+			return nil, fmt.Errorf("argument type mismatch: got (%T, %T, %T, %T, %T)", params[0], params[1], params[2], params[3], params[4])
 		}
-		fields, ok3 := params[2].([]any)
-		if !ok3 {
-			return nil, fmt.Errorf("expected array argument for fields")
-		}
-		excludeField, ok4 := params[3].(string)
-		if !ok4 {
-			return nil, fmt.Errorf("expected string argument for exclude_field")
-		}
-		excludeValues, ok5 := params[4].([]any)
-		if !ok5 {
-			return nil, fmt.Errorf("expected array argument for exclude_values")
-		}
-		return fn(g, recordType, fields, excludeField, excludeValues), nil
+		return fn(a, b, c, d, e), nil
 	}
 }
 
