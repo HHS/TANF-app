@@ -33,8 +33,7 @@ class FeatureFlag(models.Model):
 
 @receiver([post_delete, post_migrate, post_save], sender=FeatureFlag)
 def clear_feature_flag_cache(sender, instance, **kwargs):
-    """
-    FeatureFlag post-save signal invalidates the cache after any changes to feature flags.
+    """Invalidate the cache after any changes to feature flags.
 
     This depends on the cache being separated by feature, so the entire cache can be deleted.
     There are too many options for headers/cookies to determine the key programatically,

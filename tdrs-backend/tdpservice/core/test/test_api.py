@@ -104,6 +104,7 @@ class TestFeatureFlagView(TestCase):
     api_client = APIClient()
 
     def setUp(self):
+        """Run before all tests in TestCase."""
         super().setUp()
         cache = caches["feature-flags"]
         cache.clear()

@@ -173,6 +173,7 @@ class TestSTTApiAlphaViewCache(TestCase):
     api_client = APIClient()
 
     def setUp(self):
+        """Run before all tests in TestCase."""
         super().setUp()
         cache = caches["stts"]
         cache.clear()
