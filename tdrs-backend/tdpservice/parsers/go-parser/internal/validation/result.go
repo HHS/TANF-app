@@ -136,11 +136,20 @@ func (gvr *GroupValidationResult) HasErrors() bool {
 }
 
 // HasBlockingGroupErrors returns true if this group has errors that block serialization.
-// This checks for CASE_CONSISTENCY errors.
+// This checks for CASE_CONSISTENCY errors at the group level and per-record level.
+// A CASE_CONSISTENCY error means "this case/group has a consistency problem" and should
+// block serialization regardless of whether the error is on the group or an individual record.
 func (gvr *GroupValidationResult) HasBlockingGroupErrors() bool {
 	for _, err := range gvr.GroupErrors {
 		if err.BlocksGroup() {
 			return true
+		}
+	}
+	for _, rr := range gvr.RecordResults {
+		for _, err := range rr.RecordErrors {
+			if err.BlocksGroup() {
+				return true
+			}
 		}
 	}
 	return false

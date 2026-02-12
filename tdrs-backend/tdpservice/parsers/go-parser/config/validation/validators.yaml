@@ -253,12 +253,44 @@ group_validators:
   # TANF Section 1 Group/Case Validators
   # =============================================================================
 
-  # TODO: Need to implement duplicate detection.
+  # =============================================================================
+  # Duplicate Detection Validators (per-record CASE_CONSISTENCY)
+  # =============================================================================
+  # These validators use per_record result mode with CASE_CONSISTENCY error type.
+  # Per-record CASE_CONSISTENCY errors block the entire group from serialization.
+  #
+  # Exact duplicates: all field values match (uses EqualFields / slices.Equal)
+  # Partial duplicates: only specified key fields match (but NOT exact duplicates)
+  #
+  # Python equivalent: base_parser.py:356-414 (_delete_exact_dups, _delete_partial_dups)
 
-  # Any group cannot have more than a single T1 record
-  - id: multiple_t1
-    expr: "RecordCounts['T1'] < 2"
-    message: "No case should contain more than one T1 record for a RPT_MONTH_YEAR and CASE_NUMBER"
+  # Exact duplicate detection - all non-BLANK fields match
+  # Params: record_type (string) - which record type to check
+  - id: exact_duplicates
+    expr: "getExactDuplicates(Group, Params.record_type)"
+    error_type: CASE_CONSISTENCY
+    result_mode: per_record
+    message: "Duplicate record detected with record type {{.RecordType}} at line {{.LineNumber}}."
+
+  # Partial duplicate detection - specific key fields match (excludes exact dups)
+  # Params: record_type (string), fields ([]string) - key fields to compare
+  - id: partial_duplicates
+    expr: "getPartialDuplicates(Group, Params.record_type, Params.fields)"
+    error_type: CASE_CONSISTENCY
+    result_mode: per_record
+    message: "Partial duplicate record detected with record type {{.RecordType}} at line {{.LineNumber}}."
+
+  # Partial duplicate detection with field exclusion (excludes exact dups)
+  # Params: record_type, fields, exclude_field, exclude_values
+  - id: partial_duplicates_excluding
+    expr: "getPartialDuplicatesExcluding(Group, Params.record_type, Params.fields, Params.exclude_field, Params.exclude_values)"
+    error_type: CASE_CONSISTENCY
+    result_mode: per_record
+    message: "Partial duplicate record detected with record type {{.RecordType}} at line {{.LineNumber}}."
+
+  # =============================================================================
+  # TANF Section 1 Group/Case Validators
+  # =============================================================================
 
   # T1 must have at least one T2 or T3 record
   # Python: __validate_s1_records_are_related - validates T2/T3 presence

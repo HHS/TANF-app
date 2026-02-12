@@ -80,6 +80,22 @@ func (r *mockRecord) IsFieldRequired(fieldName string) bool {
 	return r.requiredFields[fieldName]
 }
 
+func (r *mockRecord) EqualFields(other Record) bool {
+	otherMock, ok := other.(*mockRecord)
+	if !ok {
+		return false
+	}
+	if len(r.fields) != len(otherMock.fields) {
+		return false
+	}
+	for k, v := range r.fields {
+		if otherMock.fields[k] != v {
+			return false
+		}
+	}
+	return true
+}
+
 // mockGroup implements the Group interface for testing
 type mockGroup struct {
 	key          string

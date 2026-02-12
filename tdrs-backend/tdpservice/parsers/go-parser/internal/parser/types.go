@@ -2,10 +2,12 @@ package parser
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 
 	"go-parser/internal/config/schema"
 	"go-parser/internal/decoder"
+	"go-parser/internal/validation"
 )
 
 // DecodedRecord holds a decoded row along with its detected schema.
@@ -212,6 +214,20 @@ func (pr *ParsedRecord) IsFieldRequired(fieldName string) bool {
 		return false
 	}
 	return pf.Def.Required
+}
+
+// EqualFields returns true if this record has identical field values to another record.
+// Uses slices.Equal on the Fields slices — works because ParsedField is comparable
+// (pointer Def and interface Value are both comparable types).
+// Two records of the same schema type have Fields in the same order with the same
+// Def pointers, so this gives correct exact-match comparison.
+// Implements validation.Record interface.
+func (pr *ParsedRecord) EqualFields(other validation.Record) bool {
+	otherPR, ok := other.(*ParsedRecord)
+	if !ok {
+		return false
+	}
+	return slices.Equal(pr.Fields, otherPR.Fields)
 }
 
 // ParseContext carries runtime information extracted from header

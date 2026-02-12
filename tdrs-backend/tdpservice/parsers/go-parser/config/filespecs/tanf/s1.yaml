@@ -138,9 +138,6 @@ validation_orchestrator:
 # 3. Every T3 must have a corresponding T1 in the same case
 
 group_validators:
-  # Cannot have more than one T1
-  - id: multiple_t1
-
   # T1 must have at least one T2 or T3 record
   - id: t1_has_t2_or_t3
 
@@ -155,3 +152,30 @@ group_validators:
 
   # Federally funded recipients
   - id: federally_funded_ssn
+
+  # --- Exact duplicate detection ---
+  - id: exact_duplicates
+    params:
+      record_type: T1
+  - id: exact_duplicates
+    params:
+      record_type: T2
+  - id: exact_duplicates
+    params:
+      record_type: T3
+
+  # --- Partial duplicate detection ---
+  - id: partial_duplicates
+    params:
+      record_type: T1
+      fields: [RecordType, RPT_MONTH_YEAR, CASE_NUMBER]
+  - id: partial_duplicates_excluding
+    params:
+      record_type: T2
+      fields: [RecordType, RPT_MONTH_YEAR, CASE_NUMBER, FAMILY_AFFILIATION, DATE_OF_BIRTH, SSN]
+      exclude_field: FAMILY_AFFILIATION
+      exclude_values: [3, 5]
+  - id: partial_duplicates
+    params:
+      record_type: T3
+      fields: [RecordType, RPT_MONTH_YEAR, CASE_NUMBER, FAMILY_AFFILIATION, DATE_OF_BIRTH, SSN]

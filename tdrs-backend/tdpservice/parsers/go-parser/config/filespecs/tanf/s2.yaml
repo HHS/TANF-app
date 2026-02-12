@@ -146,3 +146,21 @@ group_validators:
   # T5 records require at least one T4 record in the same case
   # Error is reported on T5 records when no T4 exists
   - id: t5_requires_t4
+
+  # --- Exact duplicate detection ---
+  - id: exact_duplicates
+    params:
+      record_type: T4
+  - id: exact_duplicates
+    params:
+      record_type: T5
+
+  # --- Partial duplicate detection ---
+  - id: partial_duplicates
+    params:
+      record_type: T4
+      fields: [RecordType, RPT_MONTH_YEAR, CASE_NUMBER]
+  - id: partial_duplicates
+    params:
+      record_type: T5
+      fields: [RecordType, RPT_MONTH_YEAR, CASE_NUMBER, FAMILY_AFFILIATION, DATE_OF_BIRTH, SSN]

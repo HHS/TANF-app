@@ -46,6 +46,14 @@ func RegisterFunctions() []expr.Option {
 			new(func(WrappedGroup, string, string) bool)),
 		expr.Function("getRecordsOfType", wrapGroupFunc2(getRecordsOfType),
 			new(func(WrappedGroup, string) []Record)),
+
+		// Duplicate detection (group scope, return []Record for per_record mode)
+		expr.Function("getExactDuplicates", wrapGroupFunc2Records(getExactDuplicates),
+			new(func(WrappedGroup, string) []Record)),
+		expr.Function("getPartialDuplicates", wrapGroupFuncPartialDups(getPartialDuplicates),
+			new(func(WrappedGroup, string, []any) []Record)),
+		expr.Function("getPartialDuplicatesExcluding", wrapGroupFuncPartialDupsExcluding(getPartialDuplicatesExcluding),
+			new(func(WrappedGroup, string, []any, string, []any) []Record)),
 	}
 }
 
@@ -171,6 +179,64 @@ func wrapGroupFunc3(fn func(WrappedGroup, string, string) bool) func(...any) (an
 			return nil, fmt.Errorf("expected WrappedGroup and two string arguments")
 		}
 		return fn(g, s1, s2), nil
+	}
+}
+
+func wrapGroupFunc2Records(fn func(WrappedGroup, string) []Record) func(...any) (any, error) {
+	return func(params ...any) (any, error) {
+		if len(params) != 2 {
+			return nil, fmt.Errorf("expected 2 arguments, got %d", len(params))
+		}
+		g, ok1 := params[0].(WrappedGroup)
+		s, ok2 := params[1].(string)
+		if !ok1 || !ok2 {
+			return nil, fmt.Errorf("expected WrappedGroup and string arguments")
+		}
+		return fn(g, s), nil
+	}
+}
+
+func wrapGroupFuncPartialDups(fn func(WrappedGroup, string, []any) []Record) func(...any) (any, error) {
+	return func(params ...any) (any, error) {
+		if len(params) != 3 {
+			return nil, fmt.Errorf("expected 3 arguments, got %d", len(params))
+		}
+		g, ok1 := params[0].(WrappedGroup)
+		s, ok2 := params[1].(string)
+		if !ok1 || !ok2 {
+			return nil, fmt.Errorf("expected WrappedGroup and string arguments")
+		}
+		fields, ok3 := params[2].([]any)
+		if !ok3 {
+			return nil, fmt.Errorf("expected array argument for fields")
+		}
+		return fn(g, s, fields), nil
+	}
+}
+
+func wrapGroupFuncPartialDupsExcluding(fn func(WrappedGroup, string, []any, string, []any) []Record) func(...any) (any, error) {
+	return func(params ...any) (any, error) {
+		if len(params) != 5 {
+			return nil, fmt.Errorf("expected 5 arguments, got %d", len(params))
+		}
+		g, ok1 := params[0].(WrappedGroup)
+		recordType, ok2 := params[1].(string)
+		if !ok1 || !ok2 {
+			return nil, fmt.Errorf("expected WrappedGroup and string arguments")
+		}
+		fields, ok3 := params[2].([]any)
+		if !ok3 {
+			return nil, fmt.Errorf("expected array argument for fields")
+		}
+		excludeField, ok4 := params[3].(string)
+		if !ok4 {
+			return nil, fmt.Errorf("expected string argument for exclude_field")
+		}
+		excludeValues, ok5 := params[4].([]any)
+		if !ok5 {
+			return nil, fmt.Errorf("expected array argument for exclude_values")
+		}
+		return fn(g, recordType, fields, excludeField, excludeValues), nil
 	}
 }
 
@@ -407,6 +473,101 @@ func getRecordsOfType(group WrappedGroup, recordType string) []Record {
 		}
 	}
 	return result
+}
+
+// getExactDuplicates returns records that are exact duplicates of earlier records
+// of the same type within the group. Uses EqualFields for pairwise comparison.
+// The first occurrence is kept; subsequent matches are returned as duplicates.
+func getExactDuplicates(group WrappedGroup, recordType string) []Record {
+	records := getRecordsOfType(group, recordType)
+	var duplicates []Record
+	for i := 1; i < len(records); i++ {
+		for j := 0; j < i; j++ {
+			if records[i].EqualFields(records[j]) {
+				duplicates = append(duplicates, records[i])
+				break
+			}
+		}
+	}
+	return duplicates
+}
+
+// getPartialDuplicates returns records that are partial duplicates (matching on
+// the specified key fields) but NOT exact duplicates. Exact duplicates are skipped
+// because they are handled by the exact_duplicates validator.
+func getPartialDuplicates(group WrappedGroup, recordType string, fields []any) []Record {
+	records := getRecordsOfType(group, recordType)
+	fieldNames := toStringSlice(fields)
+	seen := make(map[string]Record)
+	var duplicates []Record
+	for _, rec := range records {
+		key := buildCompositeKey(rec, fieldNames)
+		if first, exists := seen[key]; exists {
+			if !rec.EqualFields(first) {
+				duplicates = append(duplicates, rec)
+			}
+		} else {
+			seen[key] = rec
+		}
+	}
+	return duplicates
+}
+
+// getPartialDuplicatesExcluding is like getPartialDuplicates but excludes records
+// where excludeField's value is in excludeValues before checking for duplicates.
+func getPartialDuplicatesExcluding(group WrappedGroup, recordType string, fields []any, excludeField string, excludeValues []any) []Record {
+	records := getRecordsOfType(group, recordType)
+	fieldNames := toStringSlice(fields)
+
+	// Build exclusion set for fast lookup
+	excludeSet := make(map[any]bool, len(excludeValues))
+	for _, v := range excludeValues {
+		excludeSet[v] = true
+	}
+
+	seen := make(map[string]Record)
+	var duplicates []Record
+	for _, rec := range records {
+		// Skip excluded records
+		if excludeSet[rec.Get(excludeField)] {
+			continue
+		}
+		key := buildCompositeKey(rec, fieldNames)
+		if first, exists := seen[key]; exists {
+			if !rec.EqualFields(first) {
+				duplicates = append(duplicates, rec)
+			}
+		} else {
+			seen[key] = rec
+		}
+	}
+	return duplicates
+}
+
+// buildCompositeKey builds a string key from the specified field values of a record.
+func buildCompositeKey(rec Record, fieldNames []string) string {
+	var b strings.Builder
+	for i, name := range fieldNames {
+		if i > 0 {
+			b.WriteByte('|')
+		}
+		fmt.Fprintf(&b, "%v", rec.Get(name))
+	}
+	return b.String()
+}
+
+// toStringSlice converts a []any to []string.
+// The expr engine passes YAML arrays as []any.
+func toStringSlice(in []any) []string {
+	out := make([]string, len(in))
+	for i, v := range in {
+		if s, ok := v.(string); ok {
+			out[i] = s
+		} else {
+			out[i] = fmt.Sprintf("%v", v)
+		}
+	}
+	return out
 }
 
 // isValidSSN validates a Social Security Number according to SSA rules.
