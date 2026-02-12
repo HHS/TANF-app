@@ -41,6 +41,7 @@ export const useFileUploadForm = ({
     uploadedFiles,
     setErrorModalVisible,
     setModalTriggerSource,
+    handleClearFilesOnly,
     handleClearAll,
     handleOpenFeedbackWidget,
     startPolling,
@@ -104,6 +105,10 @@ export const useFileUploadForm = ({
         () => pollSubmissionStatus()
       )
     )
+
+    // Clear the local upload panel after a successful submission; history and
+    // polling continue via Redux state updates.
+    handleClearFilesOnly()
   }
 
   // Handle form submission

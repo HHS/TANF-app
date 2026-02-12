@@ -161,6 +161,8 @@ const UploadForm = ({
   setError,
   isSubmitting,
   fraHasUploadedFile,
+  year,
+  quarter,
 }) => {
   const inputRef = useRef(null)
 
@@ -191,6 +193,18 @@ const UploadForm = ({
       if (deps.rendered) removeOldPreviews(deps.dropTarget, deps.instructions)
     }
   }, [file])
+
+  useEffect(() => {
+    // Clear the input and any previews when fiscal params change
+    if (inputRef.current) {
+      inputRef.current.value = null
+    }
+    const targetClassName = '.usa-file-input__target input#fra-file-upload'
+    const deps = checkPreviewDependencies(targetClassName)
+    if (deps.rendered) removeOldPreviews(deps.dropTarget, deps.instructions)
+    setSelectedFile(null)
+    setError(null)
+  }, [year, quarter, setError, setSelectedFile])
 
   const onFileChanged = async (e) => {
     setSelectedFile(null)
@@ -228,14 +242,16 @@ const UploadForm = ({
     const isXlsx = xlsxExtension.exec(fileInputValue.name)
 
     if (!isCsv && !isXlsx) {
-      createFileInputErrorState(input, dropTarget)
+      createFileInputErrorState(input, dropTarget, { preservePreview: true })
+      setSelectedFile(fileInputValue)
       setError(INVALID_EXT_ERROR)
       return
     }
 
     const isImg = fileTypeChecker.validateFileType(result, imgFileTypes)
     if (isImg) {
-      createFileInputErrorState(input, dropTarget)
+      createFileInputErrorState(input, dropTarget, { preservePreview: true })
+      setSelectedFile(fileInputValue)
       setError(INVALID_FILE_ERROR)
       return
     }
@@ -622,11 +638,10 @@ const FRAReportsContent = () => {
     onSubmitStart()
 
     const onFileUploadSuccess = (datafile) => {
-      setFraSelectedFile({
-        name: selectedFile.name,
-        fileName: selectedFile.name,
-        id: datafile.id,
-      })
+      // Clear the upload panel after a successful submission; the record will be
+      // visible/trackable in Submission History.
+      setFraSelectedFile(null)
+      setFraUploadError(null)
       setLocalAlertState({
         active: true,
         type: 'success',
@@ -845,6 +860,8 @@ const FRAReportsContent = () => {
                 setError={setFraUploadError}
                 isSubmitting={isSubmitting}
                 fraHasUploadedFile={fraHasUploadedFile}
+                year={yearInputValue}
+                quarter={quarterInputValue}
               />
             </>
           )}
