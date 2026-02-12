@@ -109,16 +109,6 @@ validation_orchestrator:
     name: Group validation
     default_error_type: CASE_CONSISTENCY
 
-  execution_order: [4, 1, 2, 3]
-
-  short_circuit:
-    - on_fail: 4
-      action: reject_group
-      skip: [1, 2, 3]
-    - on_fail: 1
-      action: reject_record
-      skip: [2, 3]
-
 # =============================================================================
 # GROUP VALIDATORS (Group/Case Level)
 # =============================================================================

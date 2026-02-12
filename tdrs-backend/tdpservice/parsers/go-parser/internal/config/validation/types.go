@@ -45,25 +45,14 @@ type CategoryDef struct {
 	DefaultErrorType string `yaml:"default_error_type"`
 }
 
-// ShortCircuitRule defines when to skip later categories.
-type ShortCircuitRule struct {
-	OnFail int    `yaml:"on_fail"` // Category that failed
-	Action string `yaml:"action"`  // "reject_record", "reject_group"
-	Skip   []int  `yaml:"skip"`    // Categories to skip
-}
-
 // OrchestratorDef defines the validation execution order and behavior.
 type OrchestratorDef struct {
 	Categories     []CategoryDef   `yaml:"categories"`
-	ExecutionOrder []int              `yaml:"execution_order"`
-	ShortCircuit   []ShortCircuitRule `yaml:"short_circuit"`
 }
 
 // OrchestratorDefFile represents the orchestrator config file format.
 type OrchestratorDefFile struct {
 	Categories     []CategoryDef   `yaml:"categories"`
-	ExecutionOrder []int                         `yaml:"execution_order"`
-	ShortCircuit   []ShortCircuitRule `yaml:"short_circuit"`
 }
 
 // MessagesDefFile represents the messages config file format.
