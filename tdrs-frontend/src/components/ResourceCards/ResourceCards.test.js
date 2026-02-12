@@ -63,7 +63,8 @@ describe('ResourceCards', () => {
   it('redirects to ACF Form Instructions when View ACF Form Instructions clicked', () => {
     const store = mockStore(initialState)
 
-    const url = 'https://acf.gov/sites/default/files/documents/ofa/acf-199209-TANFSSP-data-report-instructions-valid-thru-2026-10.pdf'
+    const url = 
+      'https://acf.gov/sites/default/files/documents/ofa/acf-199209-TANFSSP-data-report-instructions-valid-thru-2026-10.pdf'
 
     render(
       <Provider store={store}>
