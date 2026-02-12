@@ -4,6 +4,30 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
+
+class FeatureFlag(models.Model):
+    """Model for storing feature flags that can be toggled on/off via Django admin."""
+
+    class Meta:
+        """Metadata."""
+
+        ordering = ['feature_name']
+        verbose_name = 'Feature Flag'
+        verbose_name_plural = 'Feature Flags'
+
+    feature_name = models.CharField(max_length=100, unique=True, db_index=True)
+    enabled = models.BooleanField(default=False)
+    config = models.JSONField(null=False, blank=True, default=dict)
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        """Return string representation of the feature flag."""
+        status = "enabled" if self.enabled else "disabled"
+        return f"{self.feature_name} ({status})"
+
+
 """Global permissions
 
 Allows for the creation of permissions that are
