@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0002_auto_20201013_0630'),
+        ('core', '0003_load_uswds_admin_theme'),
     ]
 
     operations = [

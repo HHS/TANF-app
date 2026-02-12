@@ -44,7 +44,7 @@ describe('FeedbackReportsHistory', () => {
     it('does not show table headers when empty', () => {
       renderComponent({ data: [] })
 
-      expect(screen.queryByText('Fiscal year')).not.toBeInTheDocument()
+      expect(screen.queryByText('Feedback Uploaded On')).not.toBeInTheDocument()
     })
   })
 
@@ -53,6 +53,7 @@ describe('FeedbackReportsHistory', () => {
       {
         id: 1,
         year: 2025,
+        date_extracted_on: '2025-02-28',
         created_at: '2025-03-05T10:31:00Z',
         processed_at: '2025-03-05T10:41:00Z',
         status: 'SUCCEEDED',
@@ -76,9 +77,9 @@ describe('FeedbackReportsHistory', () => {
     it('renders all table headers', () => {
       renderComponent({ data: mockData })
 
-      expect(screen.getByText('Fiscal year')).toBeInTheDocument()
-      expect(screen.getByText('Feedback uploaded on')).toBeInTheDocument()
-      expect(screen.getByText('Notifications sent on')).toBeInTheDocument()
+      expect(screen.getByText('Feedback Uploaded On')).toBeInTheDocument()
+      expect(screen.getByText('Data Extracted On')).toBeInTheDocument()
+      expect(screen.getByText('Notifications Sent On')).toBeInTheDocument()
       expect(screen.getByText('Status')).toBeInTheDocument()
       expect(screen.getByText('Error')).toBeInTheDocument()
       expect(screen.getByText('File')).toBeInTheDocument()
@@ -101,6 +102,7 @@ describe('FeedbackReportsHistory', () => {
         {
           id: 1,
           year: 2025,
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:31:00Z',
           processed_at: '2025-03-05T10:41:00Z',
           original_filename: 'FY2025.zip',
@@ -110,7 +112,7 @@ describe('FeedbackReportsHistory', () => {
 
       renderComponent({ data: mockData })
 
-      expect(screen.getByText('2025')).toBeInTheDocument()
+      expect(screen.getByText('02/28/2025')).toBeInTheDocument()
       expect(screen.getByText('FY2025.zip')).toBeInTheDocument()
     })
 
@@ -119,6 +121,7 @@ describe('FeedbackReportsHistory', () => {
         {
           id: 1,
           year: 2025,
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:31:00Z',
           processed_at: '2025-03-05T10:41:00Z',
           original_filename: 'test.zip',
@@ -136,6 +139,7 @@ describe('FeedbackReportsHistory', () => {
         {
           id: 1,
           year: 2025,
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:31:00Z',
           processed_at: '2025-03-05T10:41:00Z',
           original_filename: 'test.zip',
@@ -148,12 +152,12 @@ describe('FeedbackReportsHistory', () => {
       expect(mockFormatDateTime).toHaveBeenCalledWith('2025-03-05T10:41:00Z')
     })
 
-    it('shows current year when report.year is null', () => {
-      const currentYear = new Date().getFullYear()
+    it('shows N/A when date_extracted_on is null', () => {
       const mockData = [
         {
           id: 1,
-          year: null,
+          year: 2025,
+          date_extracted_on: null,
           created_at: '2025-03-05T10:31:00Z',
           processed_at: '2025-03-05T10:41:00Z',
           original_filename: 'test.zip',
@@ -163,14 +167,17 @@ describe('FeedbackReportsHistory', () => {
 
       renderComponent({ data: mockData })
 
-      expect(screen.getByText(currentYear.toString())).toBeInTheDocument()
+      // Data Extracted On column should show N/A for null date
+      const naCells = screen.getAllByText('N/A')
+      expect(naCells.length).toBeGreaterThan(0)
     })
 
-    it('shows report.year when it exists', () => {
+    it('formats date_extracted_on correctly', () => {
       const mockData = [
         {
           id: 1,
           year: 2024,
+          date_extracted_on: '2024-12-15',
           created_at: '2025-03-05T10:31:00Z',
           processed_at: '2025-03-05T10:41:00Z',
           original_filename: 'test.zip',
@@ -180,7 +187,7 @@ describe('FeedbackReportsHistory', () => {
 
       renderComponent({ data: mockData })
 
-      expect(screen.getByText('2024')).toBeInTheDocument()
+      expect(screen.getByText('12/15/2024')).toBeInTheDocument()
     })
   })
 
@@ -190,6 +197,7 @@ describe('FeedbackReportsHistory', () => {
         {
           id: 1,
           year: 2025,
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:31:00Z',
           processed_at: '2025-03-05T10:41:00Z',
           original_filename: 'FY2025.zip',
@@ -212,6 +220,7 @@ describe('FeedbackReportsHistory', () => {
         {
           id: 1,
           year: 2025,
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:31:00Z',
           processed_at: '2025-03-05T10:41:00Z',
           original_filename: null,
@@ -222,7 +231,8 @@ describe('FeedbackReportsHistory', () => {
       renderComponent({ data: mockData })
 
       // File column should show N/A for null filename
-      expect(screen.getByText('N/A')).toBeInTheDocument()
+      const naCells = screen.getAllByText('N/A')
+      expect(naCells.length).toBeGreaterThan(0)
     })
 
     it('shows N/A when original_filename is empty string', () => {
@@ -230,6 +240,7 @@ describe('FeedbackReportsHistory', () => {
         {
           id: 1,
           year: 2025,
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:31:00Z',
           processed_at: '2025-03-05T10:41:00Z',
           original_filename: '',
@@ -240,7 +251,8 @@ describe('FeedbackReportsHistory', () => {
       renderComponent({ data: mockData })
 
       // File column should show N/A for empty filename
-      expect(screen.getByText('N/A')).toBeInTheDocument()
+      const naCells = screen.getAllByText('N/A')
+      expect(naCells.length).toBeGreaterThan(0)
     })
   })
 
@@ -250,6 +262,7 @@ describe('FeedbackReportsHistory', () => {
         {
           id: 1,
           year: 2025,
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:31:00Z',
           processed_at: '2025-03-05T10:41:00Z',
           original_filename: 'FY2025_Q1.zip',
@@ -258,6 +271,7 @@ describe('FeedbackReportsHistory', () => {
         {
           id: 2,
           year: 2025,
+          date_extracted_on: '2025-01-15',
           created_at: '2025-01-08T09:41:00Z',
           processed_at: '2025-01-08T09:48:00Z',
           original_filename: 'FY2025_Q2.zip',
@@ -266,6 +280,7 @@ describe('FeedbackReportsHistory', () => {
         {
           id: 3,
           year: 2024,
+          date_extracted_on: '2024-12-10',
           created_at: '2024-12-15T14:20:00Z',
           processed_at: '2024-12-15T14:30:00Z',
           original_filename: 'FY2024_Q4.zip',
@@ -285,6 +300,7 @@ describe('FeedbackReportsHistory', () => {
         {
           id: 1,
           year: 2025,
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:31:00Z',
           processed_at: '2025-03-05T10:41:00Z',
           original_filename: 'test1.zip',
@@ -293,6 +309,7 @@ describe('FeedbackReportsHistory', () => {
         {
           id: 2,
           year: 2025,
+          date_extracted_on: '2025-01-15',
           created_at: '2025-01-08T09:41:00Z',
           processed_at: '2025-01-08T09:48:00Z',
           original_filename: 'test2.zip',
@@ -315,6 +332,7 @@ describe('FeedbackReportsHistory', () => {
         {
           id: 1,
           year: 2025,
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:31:00Z',
           processed_at: null,
           original_filename: 'test.zip',
@@ -335,6 +353,7 @@ describe('FeedbackReportsHistory', () => {
         {
           id: 1,
           year: 2025,
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:31:00Z',
           processed_at: '2025-03-05T10:41:00Z',
           original_filename: 'test.zip',
@@ -356,6 +375,7 @@ describe('FeedbackReportsHistory', () => {
         {
           id: 1,
           year: 2025,
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:31:00Z',
           processed_at: '2025-03-05T10:41:00Z',
           status: 'SUCCEEDED',
@@ -374,6 +394,7 @@ describe('FeedbackReportsHistory', () => {
         {
           id: 1,
           year: 2025,
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:31:00Z',
           processed_at: null,
           status: 'PENDING',
@@ -392,6 +413,7 @@ describe('FeedbackReportsHistory', () => {
         {
           id: 1,
           year: 2025,
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:31:00Z',
           processed_at: null,
           status: 'PENDING',
@@ -413,6 +435,7 @@ describe('FeedbackReportsHistory', () => {
         {
           id: 1,
           year: 2025,
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:31:00Z',
           processed_at: null,
           status: 'PROCESSING',
@@ -434,6 +457,7 @@ describe('FeedbackReportsHistory', () => {
         {
           id: 1,
           year: 2025,
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:31:00Z',
           processed_at: '2025-03-05T10:41:00Z',
           status: 'SUCCEEDED',
@@ -455,6 +479,7 @@ describe('FeedbackReportsHistory', () => {
         {
           id: 1,
           year: 2025,
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:31:00Z',
           processed_at: null,
           status: 'FAILED',
@@ -477,6 +502,7 @@ describe('FeedbackReportsHistory', () => {
         {
           id: 1,
           year: 2025,
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:31:00Z',
           processed_at: null,
           status: 'UNKNOWN_STATUS',
@@ -496,6 +522,7 @@ describe('FeedbackReportsHistory', () => {
         {
           id: 1,
           year: 2025,
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:31:00Z',
           processed_at: '2025-03-05T10:41:00Z',
           status: 'SUCCEEDED',
@@ -515,6 +542,7 @@ describe('FeedbackReportsHistory', () => {
         {
           id: 1,
           year: 2025,
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:31:00Z',
           processed_at: null,
           status: 'FAILED',
@@ -535,6 +563,7 @@ describe('FeedbackReportsHistory', () => {
         {
           id: 1,
           year: 2025,
+          date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:31:00Z',
           processed_at: '2025-03-05T10:41:00Z',
           status: 'SUCCEEDED',

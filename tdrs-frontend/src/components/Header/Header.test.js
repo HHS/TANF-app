@@ -266,4 +266,206 @@ describe('Header', () => {
     expect(queryByText('Profile')).toBeInTheDocument()
     expect(queryByText('Admin')).toBeInTheDocument()
   })
+
+  describe('Feedback Reports Navigation', () => {
+    it('should show Feedback Reports nav item when user has view_reportfile permission and is approved', () => {
+      const state = {
+        ...initialState,
+        auth: {
+          user: {
+            email: 'analyst@test.com',
+            roles: [
+              {
+                id: 1,
+                name: 'Data Analyst',
+                permissions: [{ codename: 'view_reportfile' }],
+              },
+            ],
+            account_approval_status: 'Approved',
+          },
+          authenticated: true,
+        },
+      }
+
+      const store = mockStore(state)
+
+      render(
+        <MemoryRouter>
+          <Provider store={store}>
+            <Header />
+          </Provider>
+        </MemoryRouter>
+      )
+
+      expect(screen.getByText('Feedback Reports')).toBeInTheDocument()
+    })
+
+    it('should NOT show Feedback Reports nav item when user lacks view_reportfile permission', () => {
+      const state = {
+        ...initialState,
+        auth: {
+          user: {
+            email: 'test@test.com',
+            roles: [
+              {
+                id: 1,
+                name: 'Data Analyst',
+                permissions: [{ codename: 'view_datafile' }],
+              },
+            ],
+            account_approval_status: 'Approved',
+          },
+          authenticated: true,
+        },
+      }
+
+      const store = mockStore(state)
+
+      render(
+        <MemoryRouter>
+          <Provider store={store}>
+            <Header />
+          </Provider>
+        </MemoryRouter>
+      )
+
+      expect(screen.queryByText('Feedback Reports')).not.toBeInTheDocument()
+    })
+
+    it('should NOT show Feedback Reports nav item when user is not approved', () => {
+      const state = {
+        ...initialState,
+        auth: {
+          user: {
+            email: 'test@test.com',
+            roles: [
+              {
+                id: 1,
+                name: 'Data Analyst',
+                permissions: [{ codename: 'view_reportfile' }],
+              },
+            ],
+            account_approval_status: 'Pending',
+          },
+          authenticated: true,
+        },
+      }
+
+      const store = mockStore(state)
+
+      render(
+        <MemoryRouter>
+          <Provider store={store}>
+            <Header />
+          </Provider>
+        </MemoryRouter>
+      )
+
+      expect(screen.queryByText('Feedback Reports')).not.toBeInTheDocument()
+    })
+
+    it('should show Feedback Reports nav item for DIGIT Team users with view_reportfile permission', () => {
+      const state = {
+        ...initialState,
+        auth: {
+          user: {
+            email: 'digit@test.com',
+            roles: [
+              {
+                id: 1,
+                name: 'DIGIT Team',
+                permissions: [
+                  { codename: 'view_reportfile' },
+                  { codename: 'view_reportsource' },
+                  { codename: 'add_reportsource' },
+                ],
+              },
+            ],
+            account_approval_status: 'Approved',
+          },
+          authenticated: true,
+        },
+      }
+
+      const store = mockStore(state)
+
+      render(
+        <MemoryRouter>
+          <Provider store={store}>
+            <Header />
+          </Provider>
+        </MemoryRouter>
+      )
+
+      expect(screen.getByText('Feedback Reports')).toBeInTheDocument()
+    })
+
+    it('should show Feedback Reports nav item for OFA System Admin users with view_reportfile permission', () => {
+      const state = {
+        ...initialState,
+        auth: {
+          user: {
+            email: 'sysadmin@test.com',
+            roles: [
+              {
+                id: 1,
+                name: 'OFA System Admin',
+                permissions: [
+                  { codename: 'view_reportfile' },
+                  { codename: 'view_reportsource' },
+                  { codename: 'add_reportsource' },
+                ],
+              },
+            ],
+            account_approval_status: 'Approved',
+          },
+          authenticated: true,
+        },
+      }
+
+      const store = mockStore(state)
+
+      render(
+        <MemoryRouter>
+          <Provider store={store}>
+            <Header />
+          </Provider>
+        </MemoryRouter>
+      )
+
+      expect(screen.getByText('Feedback Reports')).toBeInTheDocument()
+    })
+
+    it('should NOT show Feedback Reports nav item for OFA Admin users (no report permissions)', () => {
+      const state = {
+        ...initialState,
+        auth: {
+          user: {
+            email: 'ofaadmin@test.com',
+            roles: [
+              {
+                id: 1,
+                name: 'OFA Admin',
+                permissions: [], // OFA Admin no longer has report permissions
+              },
+            ],
+            account_approval_status: 'Approved',
+          },
+          authenticated: true,
+        },
+      }
+
+      const store = mockStore(state)
+
+      render(
+        <MemoryRouter>
+          <Provider store={store}>
+            <Header />
+          </Provider>
+        </MemoryRouter>
+      )
+
+      expect(screen.queryByText('Feedback Reports')).not.toBeInTheDocument()
+    })
+  })
 })
