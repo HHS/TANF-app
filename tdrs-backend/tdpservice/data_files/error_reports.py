@@ -281,7 +281,7 @@ class TanfDataErrorReportBase(ErrorReportBase):
         worksheet.write_url(
             row,
             col,
-            "https://www.acf.hhs.gov/ofa/policy-guidance/tribal-tanf-data-coding-instructions",
+            "https://acf.gov/sites/default/files/documents/ofa/tribal-tanf-data-report-instructions-valid-thru-2028-09.pdf",
             string="For Tribal TANF data reports: Tribal TANF Instructions",
         )
 
@@ -289,7 +289,7 @@ class TanfDataErrorReportBase(ErrorReportBase):
         worksheet.write_url(
             row,
             col,
-            "https://www.acf.hhs.gov/ofa/policy-guidance/acf-ofa-pi-23-04",
+            "https://acf.gov/sites/default/files/documents/ofa/acf-199209-TANFSSP-data-report-instructions-valid-thru-2026-10.pdf",
             string="For TANF and SSP-MOE data reports: TANF / SSP-MOE (ACF-199 / ACF-209) Instructions",
         )
 
