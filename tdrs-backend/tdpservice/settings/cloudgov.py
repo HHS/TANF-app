@@ -177,7 +177,7 @@ class CloudGov(Common):
         CELERY_RESULT_BACKEND = REDIS_URI + "/" + brokers["celery"]  # ??
         CACHES = {}
 
-        for c, n in brokers["caches"]:
+        for c, n in brokers["caches"].items():
             CACHES[c] = {
                 "BACKEND": "django.core.cache.backends.redis.RedisCache",
                 "LOCATION": f"{REDIS_URI}/{n}",
