@@ -48,7 +48,7 @@ def get_cloudgov_broker_db_numbers(cloudgov_name):
             incr += 1
             caches[c] = str(incr)
 
-        broker_nums[env] = (celery, caches)
+        broker_nums[env] = {"celery": celery, "caches": caches}
         incr += 1
 
     return broker_nums[cloudgov_name]
@@ -171,15 +171,13 @@ class CloudGov(Common):
         redis_settings = cloudgov_services["aws-elasticache-redis"][0]["credentials"]
         REDIS_URI = f"rediss://:{redis_settings['password']}@{redis_settings['host']}:{redis_settings['port']}"
 
-        (celery_broker_db_number, cache_db_numbers) = get_cloudgov_broker_db_numbers(
-            cloudgov_name
-        )
+        brokers = get_cloudgov_broker_db_numbers(cloudgov_name)
 
-        CELERY_BROKER_URL = REDIS_URI + "/" + celery_broker_db_number
-        CELERY_RESULT_BACKEND = REDIS_URI + "/" + celery_broker_db_number  # ??
+        CELERY_BROKER_URL = REDIS_URI + "/" + brokers["celery"]
+        CELERY_RESULT_BACKEND = REDIS_URI + "/" + brokers["celery"]  # ??
         CACHES = {}
 
-        for c, n in cache_db_numbers:
+        for c, n in brokers["caches"]:
             CACHES[c] = {
                 "BACKEND": "django.core.cache.backends.redis.RedisCache",
                 "LOCATION": f"{REDIS_URI}/{n}",
