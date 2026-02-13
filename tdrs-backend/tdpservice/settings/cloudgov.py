@@ -42,11 +42,11 @@ def get_cloudgov_broker_db_numbers(cloudgov_name):
     broker_nums = {}
 
     for env in envs:
-        celery = incr
+        celery = str(incr)
         caches = {}
         for c in cache_options:
             incr += 1
-            caches[c] = incr
+            caches[c] = str(incr)
 
         broker_nums[env] = (celery, caches)
         incr += 1
