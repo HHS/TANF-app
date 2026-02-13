@@ -1,7 +1,6 @@
-version: '3'
+version: "3"
 
 tasks:
-
   gitcfg:
     desc: Configure git
     cmds:
@@ -61,7 +60,6 @@ tasks:
       # 3) Apply all migrations to initialize the new database
       - docker compose -f docker-compose.yml exec web sh -c "python manage.py migrate"
 
-
   backend-restart:
     desc: Restart backend web server
     dir: tdrs-backend
@@ -84,7 +82,7 @@ tasks:
     desc: Execute a manage.py command in the backend container."
     dir: tdrs-backend
     vars:
-      CMD: '{{.CMD}}'
+      CMD: "{{.CMD}}"
     cmds:
       - docker compose -f docker-compose.yml exec web sh -c "python manage.py {{.CMD}}"
 
@@ -263,7 +261,7 @@ tasks:
     cmds:
       - export CYPRESS_TOKEN=local-cypress-token
       - docker-compose exec web python manage.py delete_cypress_users -usernames new-cypress@teamraft.com cypress-admin@teamraft.com
-      - docker-compose exec web python manage.py loaddata cypress/users cypress/data_files cypress/regions
+      - docker-compose exec web python manage.py loaddata cypress/users cypress/data_files cypress/regions cypress/profile_editing_regions cypress/profile_editing_users
 
   frontend-e2e-local:
     desc: Run Cypress E2E tests locally (Cypress on host, app in docker)
@@ -276,10 +274,10 @@ tasks:
     desc: Run k6 performance tests
     dir: performance-tests
     vars:
-      SCRIPT: '{{.SCRIPT}}'
+      SCRIPT: "{{.SCRIPT}}"
       CYPRESS_TOKEN: '{{.CYPRESS_TOKEN | default "local-cypress-token"}}'
       BASE_URL: '{{.BASE_URL | default "http://localhost:3000"}}'
-      SCENARIO: '{{.SCENARIO}}'
+      SCENARIO: "{{.SCENARIO}}"
     cmds:
       - k6 run -e BASE_URL={{.BASE_URL}} -e CYPRESS_TOKEN={{.CYPRESS_TOKEN}} -e SCENARIO={{.SCENARIO}} {{.SCRIPT}}
 
