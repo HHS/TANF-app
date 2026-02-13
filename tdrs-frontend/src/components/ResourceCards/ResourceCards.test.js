@@ -16,7 +16,7 @@ describe('ResourceCards', () => {
     const store = mockStore(initialState)
 
     const url =
-      'https://www.acf.hhs.gov/ofa/policy-guidance/final-tanf-ssp-moe-data-reporting-system-transmission-files-layouts-and-edits'
+      'https://acf.gov/sites/default/files/documents/ofa/tribal-tanf-data-report-instructions-valid-thru-2028-09.pdf'
 
     render(
       <Provider store={store}>
