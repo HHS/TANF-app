@@ -27,9 +27,6 @@ def get_cloudgov_service_creds_by_instance_name(services, instance_name):
     )
 
 
-cache_options = ["default", "stts", "feature-flags"]
-
-
 def get_cloudgov_broker_db_numbers(cloudgov_name):
     """
     Get the appropriate redis broker db numbers for an environment.
@@ -38,6 +35,7 @@ def get_cloudgov_broker_db_numbers(cloudgov_name):
     """
     incr = 0
     envs = ["raft", "qasp", "a11y", "develop", "staging", "prod"]
+    cache_options = ["stts", "feature-flags"]
 
     broker_nums = {}
 
