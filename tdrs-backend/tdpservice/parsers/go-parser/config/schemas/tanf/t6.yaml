@@ -11,6 +11,25 @@ section: 3
 document: "TANF Aggregate Data"
 format: positional
 
+# Record validators
+record_validators:
+  - id: record_length_min
+    params:
+      min: 379
+  # Sum validators
+  - id: sum_equals
+    params:
+      total_field: NUM_APPLICATIONS
+      component_fields: [NUM_APPROVED, NUM_DENIED]
+  - id: sum_equals
+    params:
+      total_field: NUM_FAMILIES
+      component_fields: [NUM_2_PARENTS, NUM_1_PARENTS, NUM_NO_PARENTS]
+  - id: sum_equals
+    params:
+      total_field: NUM_RECIPIENTS
+      component_fields: [NUM_ADULT_RECIPIENTS, NUM_CHILD_RECIPIENTS]
+
 # Fields shared across all segments (included in every output row)
 shared:
   - name: RecordType
@@ -28,6 +47,9 @@ shared:
     end: 7
     type: integer
     required: true
+    field:
+      - id: year_after_2019
+      - id: quarter_is_valid
 
 # Each segment produces one output row (combined with shared fields)
 # T6 has 3 segments: Month A, Month B, Month C
@@ -52,6 +74,11 @@ segments:
         end: 15
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_APPROVED
         friendly_name: Total Number of Approved Applications
@@ -60,6 +87,11 @@ segments:
         end: 39
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_DENIED
         friendly_name: Total Number of Denied Applications
@@ -68,6 +100,11 @@ segments:
         end: 63
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: ASSISTANCE
         friendly_name: Total Amount of Cash Assistance
@@ -76,6 +113,11 @@ segments:
         end: 91
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 999999999999
 
       - name: NUM_FAMILIES
         friendly_name: Total Number of Families
@@ -84,6 +126,11 @@ segments:
         end: 123
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99999999
 
       - name: NUM_2_PARENTS
         friendly_name: Total Number of Two-parent Families
@@ -92,6 +139,11 @@ segments:
         end: 147
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_1_PARENTS
         friendly_name: Total Number of One-Parent Families
@@ -100,6 +152,11 @@ segments:
         end: 171
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_NO_PARENTS
         friendly_name: Total Number of No-Parent Families
@@ -108,6 +165,11 @@ segments:
         end: 195
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_RECIPIENTS
         friendly_name: Total Number of Recipients
@@ -116,6 +178,11 @@ segments:
         end: 219
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_ADULT_RECIPIENTS
         friendly_name: Total Number of Adult Recipients
@@ -124,6 +191,11 @@ segments:
         end: 243
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_CHILD_RECIPIENTS
         friendly_name: Total Number of Child Recipients
@@ -132,6 +204,11 @@ segments:
         end: 267
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_NONCUSTODIALS
         friendly_name: Total Number of Noncustodial Parents
@@ -140,6 +217,11 @@ segments:
         end: 291
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_BIRTHS
         friendly_name: Total Number of Births
@@ -148,6 +230,11 @@ segments:
         end: 315
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_OUTWEDLOCK_BIRTHS
         friendly_name: Total Number of Non-Marital Births
@@ -156,6 +243,11 @@ segments:
         end: 339
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_CLOSED_CASES
         friendly_name: Total Number of Closed Cases
@@ -164,6 +256,11 @@ segments:
         end: 363
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
   # Month B (second month of quarter)
   - fields:
@@ -185,6 +282,11 @@ segments:
         end: 23
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_APPROVED
         friendly_name: Total Number of Approved Applications
@@ -193,6 +295,11 @@ segments:
         end: 47
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_DENIED
         friendly_name: Total Number of Denied Applications
@@ -201,6 +308,11 @@ segments:
         end: 71
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: ASSISTANCE
         friendly_name: Total Amount of Cash Assistance
@@ -209,6 +321,11 @@ segments:
         end: 103
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 999999999999
 
       - name: NUM_FAMILIES
         friendly_name: Total Number of Families
@@ -217,6 +334,11 @@ segments:
         end: 131
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99999999
 
       - name: NUM_2_PARENTS
         friendly_name: Total Number of Two-parent Families
@@ -225,6 +347,11 @@ segments:
         end: 155
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_1_PARENTS
         friendly_name: Total Number of One-Parent Families
@@ -233,6 +360,11 @@ segments:
         end: 179
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_NO_PARENTS
         friendly_name: Total Number of No-Parent Families
@@ -241,6 +373,11 @@ segments:
         end: 203
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_RECIPIENTS
         friendly_name: Total Number of Recipients
@@ -249,6 +386,11 @@ segments:
         end: 227
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_ADULT_RECIPIENTS
         friendly_name: Total Number of Adult Recipients
@@ -257,6 +399,11 @@ segments:
         end: 251
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_CHILD_RECIPIENTS
         friendly_name: Total Number of Child Recipients
@@ -265,6 +412,11 @@ segments:
         end: 275
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_NONCUSTODIALS
         friendly_name: Total Number of Noncustodial Parents
@@ -273,6 +425,11 @@ segments:
         end: 299
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_BIRTHS
         friendly_name: Total Number of Births
@@ -281,6 +438,11 @@ segments:
         end: 323
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_OUTWEDLOCK_BIRTHS
         friendly_name: Total Number of Non-Marital Births
@@ -289,6 +451,11 @@ segments:
         end: 347
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_CLOSED_CASES
         friendly_name: Total Number of Closed Cases
@@ -297,6 +464,11 @@ segments:
         end: 371
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
   # Month C (third month of quarter)
   - fields:
@@ -318,6 +490,11 @@ segments:
         end: 31
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_APPROVED
         friendly_name: Total Number of Approved Applications
@@ -326,6 +503,11 @@ segments:
         end: 55
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_DENIED
         friendly_name: Total Number of Denied Applications
@@ -334,6 +516,11 @@ segments:
         end: 79
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: ASSISTANCE
         friendly_name: Total Amount of Cash Assistance
@@ -342,6 +529,11 @@ segments:
         end: 115
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 999999999999
 
       - name: NUM_FAMILIES
         friendly_name: Total Number of Families
@@ -350,6 +542,11 @@ segments:
         end: 139
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99999999
 
       - name: NUM_2_PARENTS
         friendly_name: Total Number of Two-parent Families
@@ -358,6 +555,11 @@ segments:
         end: 163
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_1_PARENTS
         friendly_name: Total Number of One-Parent Families
@@ -366,6 +568,11 @@ segments:
         end: 187
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_NO_PARENTS
         friendly_name: Total Number of No-Parent Families
@@ -374,6 +581,11 @@ segments:
         end: 211
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_RECIPIENTS
         friendly_name: Total Number of Recipients
@@ -382,6 +594,11 @@ segments:
         end: 235
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_ADULT_RECIPIENTS
         friendly_name: Total Number of Adult Recipients
@@ -390,6 +607,11 @@ segments:
         end: 259
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_CHILD_RECIPIENTS
         friendly_name: Total Number of Child Recipients
@@ -398,6 +620,11 @@ segments:
         end: 283
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_NONCUSTODIALS
         friendly_name: Total Number of Noncustodial Parents
@@ -406,6 +633,11 @@ segments:
         end: 307
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_BIRTHS
         friendly_name: Total Number of Births
@@ -414,6 +646,11 @@ segments:
         end: 331
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_OUTWEDLOCK_BIRTHS
         friendly_name: Total Number of Non-Marital Births
@@ -422,6 +659,11 @@ segments:
         end: 355
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_CLOSED_CASES
         friendly_name: Total Number of Closed Cases
@@ -430,3 +672,8 @@ segments:
         end: 379
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999

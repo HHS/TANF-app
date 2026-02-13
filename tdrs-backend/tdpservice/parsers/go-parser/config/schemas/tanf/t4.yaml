@@ -10,6 +10,13 @@ section: 2
 document: "TANF Closed Case Data"
 format: positional
 
+# Record validators with RECORD_PRE_CHECK error type (block record serialization)
+record_validators:
+  - id: record_length_min
+    params:
+      min: 36
+  - id: case_number_not_empty
+
 # Fields shared across all segments (included in every output row)
 shared:
   - name: RecordType
@@ -27,6 +34,9 @@ shared:
     end: 8
     type: string
     required: true
+    field:
+      - id: year_after_1998
+      - id: valid_month
 
   - name: CASE_NUMBER
     friendly_name: Case Number
@@ -35,6 +45,8 @@ shared:
     end: 19
     type: string
     required: true
+    field:
+      - id: not_empty
 
 # Each segment produces one output row (combined with shared fields)
 segments:
@@ -50,6 +62,8 @@ segments:
           name: zero_pad
           params:
             digits: 3
+        field_validators:
+          - id: is_numeric
 
       - name: STRATUM
         friendly_name: Stratum
@@ -58,6 +72,11 @@ segments:
         end: 24
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
 
       - name: ZIP_CODE
         friendly_name: ZIP Code
@@ -66,6 +85,8 @@ segments:
         end: 29
         type: string
         required: true
+        field_validators:
+          - id: is_numeric
 
       - name: DISPOSITION
         friendly_name: Disposition
@@ -74,6 +95,10 @@ segments:
         end: 30
         type: integer
         required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: CLOSURE_REASON
         friendly_name: Reason for Closure
@@ -82,6 +107,8 @@ segments:
         end: 32
         type: string
         required: true
+        field_validators:
+          - id: closure_reason
 
       - name: REC_SUB_HOUSING
         friendly_name: Received Subsidized Housing
@@ -90,6 +117,10 @@ segments:
         end: 33
         type: integer
         required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: REC_MED_ASSIST
         friendly_name: Received Medical Assistance
@@ -98,6 +129,10 @@ segments:
         end: 34
         type: integer
         required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: REC_FOOD_STAMPS
         friendly_name: Received SNAP Assistance
@@ -106,6 +141,10 @@ segments:
         end: 35
         type: integer
         required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: REC_SUB_CC
         friendly_name: Received Subsidized Child Care
@@ -114,3 +153,7 @@ segments:
         end: 36
         type: integer
         required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2, 3]

@@ -114,6 +114,21 @@ field_validators:
     expr: "isBlank(Value) or int(Value) >= 0 and int(Value) <= 2"
     message: "{{.RecordType}} Item {{.Item}}: must be 0, 1, 2, or blank, got {{.Value}}"
 
+  # Year after 2019 validator - for calendar quarter fields (T6/T7)
+  - id: year_after_2019
+    expr: "year(Value) > 2019"
+    message: "{{.RecordType}} Item {{.Item}}: year must be after 2019"
+
+  # Quarter validator - checks quarter portion is 1-4
+  - id: quarter_is_valid
+    expr: "quarter(Value) >= 1 and quarter(Value) <= 4"
+    message: "{{.RecordType}} Item {{.Item}}: quarter must be 1-4"
+
+  # Closure reason validator - 01-19 or 99
+  - id: closure_reason
+    expr: "(int(Value) >= 1 and int(Value) <= 19) or int(Value) == 99"
+    message: "{{.RecordType}} Item {{.Item}}: must be 01-19 or 99, got {{.Value}}"
+
 # =============================================================================
 # RECORD VALIDATORS (record scope)
 # =============================================================================
@@ -240,6 +255,26 @@ record_validators:
     expr: "if GetString('WORK_ELIGIBLE_INDICATOR') == '11' and calculateAge(GetString('DATE_OF_BIRTH'), GetString('RPT_MONTH_YEAR')) >= 0 and calculateAge(GetString('DATE_OF_BIRTH'), GetString('RPT_MONTH_YEAR')) < 19 { GetInt('RELATIONSHIP_HOH') != 1 } else { true }"
     message: "If WORK_ELIGIBLE_INDICATOR is 11 and age is less than 19, RELATIONSHIP_HOH must not be 1"
     fields: [WORK_ELIGIBLE_INDICATOR, DATE_OF_BIRTH, RELATIONSHIP_HOH]
+
+  # =============================================================================
+  # T5 special case validators
+  # =============================================================================
+
+  # When person is 18+ years old, REC_OASDI_INSURANCE must be 1-2
+  # AGE is calculated from DATE_OF_BIRTH and RPT_MONTH_YEAR
+  - id: t5_age_oasdi
+    expr: "if calculateAge(GetString('DATE_OF_BIRTH'), GetString('RPT_MONTH_YEAR')) >= 18 { GetInt('REC_OASDI_INSURANCE') in [1, 2] } else { true }"
+    message: "If age is 18 or older, REC_OASDI_INSURANCE must be 1 or 2"
+    fields: [DATE_OF_BIRTH, REC_OASDI_INSURANCE]
+
+  # =============================================================================
+  # Sum-equals validator (parameterized)
+  # =============================================================================
+  # Validates that a total field equals the sum of component fields
+  # Params: total_field (string), component_fields (array of strings)
+  - id: sum_equals
+    expr: "GetInt(Params.total_field) == sumFields(Params.component_fields)"
+    message: "{{.Params.total_field}} must equal the sum of {{.Params.component_fields}}"
 
 # =============================================================================
 # GROUP VALIDATORS (group scope)
