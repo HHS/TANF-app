@@ -1,6 +1,7 @@
 """Helper functions for sending approval status update emails."""
+
 from tdpservice.email.email import automated_email, log
-from tdpservice.email.email_enums import EmailType
+from tdpservice.email.email_enums import UserAccountEmail
 from tdpservice.stts.models import Region
 
 
@@ -43,7 +44,7 @@ def send_approval_status_update_email(
             return
 
         case AccountApprovalStatusChoices.ACCESS_REQUEST:
-            template_path = EmailType.ACCESS_REQUEST_SUBMITTED.value
+            template_path = UserAccountEmail.ACCESS_REQUEST_SUBMITTED.value
             subject = "Access Request Submitted"
             text_message = "Your account has been requested."
             regions = user.regions.all().order_by("pk")
@@ -55,7 +56,7 @@ def send_approval_status_update_email(
             return
 
         case AccountApprovalStatusChoices.APPROVED:
-            template_path = EmailType.REQUEST_APPROVED.value
+            template_path = UserAccountEmail.ACCESS_REQUEST_APPROVED.value
             subject = "Access Request Approved"
             text_message = "Your account request has been approved."
             regions = user.regions.all().order_by("pk")
@@ -63,12 +64,12 @@ def send_approval_status_update_email(
                 context.update(getRegionalContext(regions))
 
         case AccountApprovalStatusChoices.DENIED:
-            template_path = EmailType.REQUEST_DENIED.value
+            template_path = UserAccountEmail.ACCESS_REQUEST_DENIED.value
             subject = "Access Request Denied"
             text_message = "Your account request has been denied."
 
         case AccountApprovalStatusChoices.DEACTIVATED:
-            template_path = EmailType.ACCOUNT_DEACTIVATED.value
+            template_path = UserAccountEmail.ACCOUNT_DEACTIVATED.value
             subject = "Account is Deactivated"
             text_message = "Your account has been deactivated."
 

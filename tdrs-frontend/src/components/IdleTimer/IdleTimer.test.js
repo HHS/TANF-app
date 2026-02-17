@@ -1,7 +1,6 @@
 import React from 'react'
 import { thunk } from 'redux-thunk'
 import { Provider } from 'react-redux'
-import { mount } from 'enzyme'
 import { fireEvent, render } from '@testing-library/react'
 import configureStore from 'redux-mock-store'
 import IdleTimer from './IdleTimer'
@@ -14,30 +13,30 @@ describe('IdleTimer', () => {
     const store = mockStore({
       auth: { authenticated: true, user: { email: 'hi@bye.com' } },
     })
-    const wrapper = mount(
+    const { container } = render(
       <Provider store={store}>
         <IdleTimer />
       </Provider>
     )
 
-    const modal = wrapper.find('#timeoutModal')
+    const modal = container.querySelector('#timeoutModal')
 
-    expect(modal).toExist()
+    expect(modal).toBeInTheDocument()
   })
 
   it('should start with a className of display-none', () => {
     const store = mockStore({
       auth: { authenticated: true, user: { email: 'hi@bye.com' } },
     })
-    const wrapper = mount(
+    const { container } = render(
       <Provider store={store}>
         <IdleTimer />
       </Provider>
     )
 
-    const modal = wrapper.find('#timeoutModal')
+    const modal = container.querySelector('#timeoutModal')
 
-    expect(modal.hasClass('display-none')).toBeTruthy()
+    expect(modal).toHaveClass('display-none')
   })
 
   it('should change to a className of display-block after 2 seconds', () => {
@@ -82,17 +81,17 @@ describe('IdleTimer', () => {
     const store = mockStore({
       auth: { authenticated: true, user: { email: 'hi@bye.com' } },
     })
-    const wrapper = mount(
+    const { container } = render(
       <Provider store={store}>
         <IdleTimer />
       </Provider>
     )
 
-    const signOutButton = wrapper.find('.sign-out').hostNodes()
+    const signOutButton = container.querySelector('.sign-out')
 
-    expect(signOutButton).toExist()
+    expect(signOutButton).toBeInTheDocument()
 
-    signOutButton.simulate('click')
+    fireEvent.click(signOutButton)
 
     expect(window.location.href).toEqual(url)
   })
@@ -104,15 +103,15 @@ describe('IdleTimer', () => {
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
-    const wrapper = mount(
+    const { container } = render(
       <Provider store={store}>
         <IdleTimer />
       </Provider>
     )
 
-    const staySignedInButton = wrapper.find('.renew-session').hostNodes()
+    const staySignedInButton = container.querySelector('.renew-session')
 
-    staySignedInButton.simulate('click')
+    fireEvent.click(staySignedInButton)
 
     expect(store.dispatch).toHaveBeenCalledTimes(1)
     expect(store.getActions()[0].type).toEqual(FETCH_AUTH)
@@ -199,13 +198,13 @@ describe('IdleTimer', () => {
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
-    const wrapper = mount(
+    const { container } = render(
       <Provider store={store}>
         <IdleTimer />
       </Provider>
     )
 
-    wrapper.simulate('mousemove')
+    fireEvent.mouseMove(container)
 
     expect(store.dispatch).toHaveBeenCalledTimes(0)
   })

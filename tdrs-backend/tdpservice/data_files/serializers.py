@@ -44,6 +44,7 @@ class DataFileSerializer(serializers.ModelSerializer):
     has_error = serializers.SerializerMethodField()
     summary = DataFileSummarySerializer(many=False, read_only=True)
     latest_reparse_file_meta = serializers.SerializerMethodField()
+    program_type = serializers.CharField(read_only=True)
 
     class Meta:
         """Metadata."""
@@ -70,9 +71,10 @@ class DataFileSerializer(serializers.ModelSerializer):
             "summary",
             "latest_reparse_file_meta",
             "is_program_audit",
+            "program_type",
         ]
 
-        read_only_fields = ("version",)
+        read_only_fields = ("version", "program_type")
 
     def get_has_error(self, obj):
         """Return whether the file has an error."""

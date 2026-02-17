@@ -15,6 +15,7 @@
     "axios": "^1.7.7",
     "classnames": "^2.5.1",
     "detect-file-encoding-and-language": "^2.4.0",
+    "@faker-js/faker": "^9.2.0",
     "file-type-checker": "^1.1.2",
     "history": "^5.3.0",
     "include-media": "^2.0.0",
@@ -29,6 +30,7 @@
     "react-router-dom": "^6.28.0",
     "react-scripts": "^5.0.1",
     "redux": "^5.0.1",
+    "@redux-devtools/extension": "^3.3.0",
     "redux-thunk": "^3.1.0",
     "seamless-immutable": "^7.1.4",
     "uuid": "^11.0.3"
@@ -36,7 +38,7 @@
   "scripts": {
     "start": "SASS_PATH=\"`cd \"./src\";pwd`:./node_modules/@uswds:./node_modules/@uswds/uswds/packages\" react-scripts start",
     "start:ci": "CI=true HOST=localhost BROWSER=none npm run start",
-    "build": "sh -ac '. ./.env.${REACT_APP_ENV}; SASS_PATH=\"`cd \"./src\";pwd`:./node_modules/@uswds:./node_modules/@uswds/uswds/packages\" react-scripts build'",
+    "build": "sh -ac '. ./.env.${REACT_APP_ENV}; DISABLE_ESLINT_PLUGIN=true SASS_PATH=\"`cd \"./src\";pwd`:./node_modules/@uswds:./node_modules/@uswds/uswds/packages\" react-scripts build'",
     "build:development": "REACT_APP_ENV=development npm run build",
     "build:production": "REACT_APP_ENV=production npm run build",
     "test": "NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" react-scripts test",
@@ -66,11 +68,8 @@
   },
   "devDependencies": {
     "@badeball/cypress-cucumber-preprocessor": "^21.0.3",
-    "@cfaester/enzyme-adapter-react-18": "^0.8.0",
     "@cucumber/pretty-formatter": "^2.2.0",
     "@cypress/webpack-preprocessor": "^6.0.2",
-    "@faker-js/faker": "^9.2.0",
-    "@redux-devtools/extension": "^3.3.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.0.1",
@@ -79,13 +78,11 @@
     "cypress": "^13.17.0",
     "cypress-axe": "^1.7.0",
     "cypress-mochawesome-reporter": "^4.0.2",
-    "enzyme": "^3.11.0",
     "eslint": "^8.16.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-config-react-app": "^7.0.1",
     "eslint-plugin-flowtype": "^8.0.3",
     "eslint-plugin-prettier": "^5.2.1",
-    "jest-enzyme": "^7.1.2",
     "mocha-junit-reporter": "^2.2.1",
     "mocha-multi-reporters": "^1.5.1",
     "pa11y-ci": "^3.1.0",
@@ -127,10 +124,8 @@
   },
   "cypress-cucumber-preprocessor": {
     "stepDefinitions": [
-      "cypress/e2e/*/[filepath].js",
-      "cypress/e2e/*/*.js",
-      "cypress/e2e/common-steps/*.js",
-      "cypress/e2e/accounts/*.js"
+      "cypress/e2e/[filepart]/*.js",
+      "cypress/e2e/common-steps/*.js"
     ]
   },
   "overrides": {

@@ -37,10 +37,11 @@ export default function createFileInputErrorState(input, dropTarget) {
   if (filePreviews !== null) {
     instructions.classList.add('display-block')
     filePreviews.parentNode.removeChild(filePreviews)
+
+    Array.prototype.forEach.call(filePreviews, function removeImages(node) {
+      node.parentNode.removeChild(node)
+    })
   }
-  Array.prototype.forEach.call(filePreviews, function removeImages(node) {
-    node.parentNode.removeChild(node)
-  })
 
   input.value = '' // eslint-disable-line no-param-reassign
   dropTarget.classList.add(`has-invalid-file`)

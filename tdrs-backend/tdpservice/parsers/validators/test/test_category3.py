@@ -505,6 +505,27 @@ def test_orValidators(val, exp_result, exp_message):
     assert result.error_message == exp_message
 
 
+def test_work_eligible_indicator_allows_five():
+    """Ensure WORK_ELIGIBLE_INDICATOR validator accepts value 5 (SSP M2 change)."""
+    _validator = category3.orValidators(
+        [
+            category3.isBetween(1, 9, inclusive=True),
+            category3.isBetween(11, 12, inclusive=True),
+        ]
+    )
+
+    eargs = ValidationErrorArgs(
+        value=5,
+        row_schema=TanfDataReportSchema(),
+        friendly_name="WORK_ELIGIBLE_INDICATOR",
+        item_num="41",
+    )
+
+    result = _validator(5, eargs)
+    assert result.valid is True
+    assert result.error_message is None
+
+
 def test_sumIsEqual():
     """Test sumIsEqual postparsing validator."""
     schema = TanfDataReportSchema(
