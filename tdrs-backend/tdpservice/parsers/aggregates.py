@@ -39,7 +39,9 @@ def case_aggregates_by_month(df, dfs_status):
                 }
             )
     else:
-        # One query per schema for all months instead of one per schema per month
+        # Collect all unique case numbers per month across all record types (e.g. T1, T2, T3).
+        # A case can span multiple record types, so we union them into a single set per month.
+        # Only cases that were successfully parsed and saved to the model are included here.
         case_numbers_by_month = {rmy: set() for rmy in rpt_month_years}
         for schema in schemas.values():
             schema = schema[0]
@@ -51,7 +53,11 @@ def case_aggregates_by_month(df, dfs_status):
             for case_number, rmy in records:
                 case_numbers_by_month[rmy].add(case_number)
 
-        # One error query for all months
+        # Find which of those case numbers have errors, grouped by month.
+        # We query errors once using the full set of case numbers across all months, then
+        # bucket the results by rpt_month_year so each error is attributed to the correct month.
+        # Note: this does bring all distinct case numbers for each month into memory. If we ever get files with a huge
+        # number of cases, we could get OOM. If that happens we can move to a raw SQL query to union all the tables.
         all_case_numbers = set().union(*case_numbers_by_month.values())
         error_cases_by_month = {rmy: set() for rmy in rpt_month_years}
         error_records = (
@@ -62,6 +68,7 @@ def case_aggregates_by_month(df, dfs_status):
         for case_number, rmy in error_records:
             error_cases_by_month[rmy].add(case_number)
 
+        # Compute per-month aggregates.
         for month, rmy in zip(month_list, rpt_month_years):
             total = len(case_numbers_by_month[rmy])
             # Intersect to exclude rejected records that generated cat1/cat4 errors since they aren't serialized
