@@ -65,8 +65,8 @@ def write_logs(request):
     return Response("Success")
 
 
-class FeatureFlagView(generics.ListAPIView):
-    """Simple view to get all STTs alphabetized."""
+class FeatureFlagView(generics.ListAPIView, generics.RetrieveAPIView):
+    """List and Get endpoints for FeatureFlag."""
 
     pagination_class = None
     permission_classes = []  # [IsAuthenticated]
