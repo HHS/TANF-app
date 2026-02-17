@@ -57,6 +57,5 @@ class Local(Common):
 
     SENTRY_DSN = None
 
-    Common.CACHES["default"]["KEY_PREFIX"] = "local"
     Common.CACHES["stts"]["KEY_PREFIX"] = "local"
     Common.CACHES["feature-flags"]["KEY_PREFIX"] = "local"
