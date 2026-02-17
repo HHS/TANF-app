@@ -183,7 +183,7 @@ class CloudGov(Common):
             CACHES[c] = {
                 "BACKEND": "django.core.cache.backends.redis.RedisCache",
                 "LOCATION": f"{REDIS_URI}/{n}",
-                "KEY_PREFIX": cloudgov_name,  # does include "prod" for prod, can specify per env in classes below
+                "KEY_PREFIX": f"{cloudgov_name}-{c}",  # does include "prod" for prod, can specify per env in classes below
             }
 
     OTEL_EXPORTER_OTLP_ENDPOINT = os.getenv(
