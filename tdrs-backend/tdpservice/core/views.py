@@ -69,7 +69,7 @@ class FeatureFlagView(generics.ListAPIView, generics.RetrieveAPIView):
     """List and Get endpoints for FeatureFlag."""
 
     pagination_class = None
-    permission_classes = []  # [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     queryset = FeatureFlag.objects.all()
     serializer_class = FeatureFlagSerializer
 
