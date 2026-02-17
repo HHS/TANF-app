@@ -519,7 +519,7 @@ class Common(Configuration):
     logger.debug("REDIS_URI: " + REDIS_URI)
 
     CELERY_BROKER_URL = REDIS_URI + "/0"
-    CELERY_RESULT_BACKEND = REDIS_URI + "/0"  ## should they be the same?
+    CELERY_RESULT_BACKEND = REDIS_URI + "/0"
     CELERY_ACCEPT_CONTENT = ["application/json"]
     CELERY_TASK_SERIALIZER = "json"
     CELERY_RESULT_SERIALIZER = "json"

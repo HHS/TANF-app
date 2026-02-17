@@ -172,7 +172,7 @@ class CloudGov(Common):
         brokers = get_cloudgov_broker_db_numbers(cloudgov_name)
 
         CELERY_BROKER_URL = REDIS_URI + "/" + brokers["celery"]
-        CELERY_RESULT_BACKEND = REDIS_URI + "/" + brokers["celery"]  # ??
+        CELERY_RESULT_BACKEND = REDIS_URI + "/" + brokers["celery"]
         CACHES = {
             "default": {
                 "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
