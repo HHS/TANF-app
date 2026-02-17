@@ -17,6 +17,4 @@ class FeatureFlagSerializer(serializers.ModelSerializer):
             "enabled",
             "config",
             "description",
-            "created_at",
-            "updated_at",
         ]
