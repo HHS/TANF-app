@@ -21,7 +21,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <!-- <script src="components/desktop-navigation.js" defer></script>
     <script src="components/mobile-navigation.js" defer></script>
     <script src="components/shutdown-banner.js" defer></script> -->
-    
+        <script>
+  const v = Date.now();
+  document.write(`
+    <script src="components/desktop-navigation.js?v=${v}" defer><\/script>
+    <script src="components/mobile-navigation.js?v=${v}" defer><\/script>
+    <script src="components/shutdown-banner.js?v=${v}" defer><\/script>
+  `);
+</script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.1.0"></script>
     <script>
   let fuse;
