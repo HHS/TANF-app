@@ -280,7 +280,7 @@ def test_parse_case_aggregates_edge_case(case_aggregates_edge_case, dfs):
         ],
         "rejected": 2,  # Rejected is 2 locally because of the trailer errors. We only generate trailer erros locally.
     }
-    
+
     assert TANF_T1.objects.count() == 3
     assert TANF_T2.objects.count() == 3
     assert TANF_T3.objects.count() == 6
