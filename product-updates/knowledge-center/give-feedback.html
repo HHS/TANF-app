@@ -13,9 +13,17 @@
     <script src="dist/lity.js"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link href="https://unpkg.com/survey-jquery/defaultV2.min.css" type="text/css" rel="stylesheet">
-    <script src="components/desktop-navigation.js" defer></script>
+    <!-- <script src="components/desktop-navigation.js" defer></script>
     <script src="components/mobile-navigation.js" defer></script>
-    <script src="components/shutdown-banner.js" defer></script>
+    <script src="components/shutdown-banner.js" defer></script> -->
+            <script>
+  const v = Date.now();
+  document.write(`
+    <script src="components/desktop-navigation.js?v=${v}" defer><\/script>
+    <script src="components/mobile-navigation.js?v=${v}" defer><\/script>
+    <script src="components/shutdown-banner.js?v=${v}" defer><\/script>
+  `);
+</script>
     <script type="text/javascript" src="https://unpkg.com/survey-jquery/survey.jquery.min.js"></script>
     <style>
         .sd-root-modern {background-color: #fff !important;}
