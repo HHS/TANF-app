@@ -231,18 +231,22 @@ tasks:
       - npm install
 
   frontend-test:
-    desc: Run frontend unit tests in docker (watch-less)
+    desc: 'Run frontend unit tests in docker (watch-less). E.g: task frontend-test JEST_ARGS="--testPathPattern=FeedbackReports"'
     dir: tdrs-frontend
+    vars:
+      JEST_ARGS: '{{.JEST_ARGS | default ""}}'
     cmds:
       - docker compose -f docker-compose.local.yml up -d --build tdp-frontend-test
-      - docker compose -f docker-compose.local.yml exec tdp-frontend-test sh -c "npm run test"
+      - docker compose -f docker-compose.local.yml exec tdp-frontend-test sh -c "npm run test -- {{.JEST_ARGS}}"
 
   frontend-test-cov:
-    desc: Run frontend unit tests with coverage in docker
+    desc: 'Run frontend unit tests with coverage in docker. E.g: task frontend-test-cov JEST_ARGS="--testPathPattern=FeedbackReports"'
     dir: tdrs-frontend
+    vars:
+      JEST_ARGS: '{{.JEST_ARGS | default ""}}'
     cmds:
       - docker compose -f docker-compose.local.yml up -d --build tdp-frontend-test
-      - docker compose -f docker-compose.local.yml exec tdp-frontend-test sh -c "npm run test:cov"
+      - docker compose -f docker-compose.local.yml exec tdp-frontend-test sh -c "npm run test:cov -- {{.JEST_ARGS}}"
 
   frontend-lint:
     desc: Run eslint in the frontend test container

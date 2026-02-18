@@ -41,6 +41,7 @@ export const useFileUploadForm = ({
     uploadedFiles,
     setErrorModalVisible,
     setModalTriggerSource,
+    handleClearFilesOnly,
     handleClearAll,
     handleOpenFeedbackWidget,
     startPolling,
@@ -104,6 +105,10 @@ export const useFileUploadForm = ({
         () => pollSubmissionStatus()
       )
     )
+
+    // Clear the local upload panel after a successful submission; history and
+    // polling continue via Redux state updates.
+    handleClearFilesOnly()
   }
 
   // Handle form submission
@@ -129,10 +134,10 @@ export const useFileUploadForm = ({
         fileType: fileTypeInputValue,
       })
 
-      await executeSubmission(() =>
+      const submittedFiles = await executeSubmission(() =>
         dispatch(submit(payload, onFileUploadSuccess))
       )
-      handleOpenFeedbackWidget()
+      handleOpenFeedbackWidget(submittedFiles)
     } catch (error) {
       console.error('Error during form submission:', error)
       setLocalAlertState({

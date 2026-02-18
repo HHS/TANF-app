@@ -7,24 +7,28 @@ from tdpservice.conftest import create_temporary_file
 from tdpservice.reports.test.factories import ReportFileFactory
 
 
-def create_nested_zip(structure):
+def create_nested_zip(structure, root_folder="FY2025_test"):
     """
     Create a nested zip file structure for testing.
 
     Parameters
     ----------
         structure: dict like {
-            "2025": {
-                "Region_1": {
-                    "1": ["report1.pdf", "report2.pdf"],
-                    "2": ["report3.pdf"]
+            "FY2025": {
+                "RO1": {
+                    "F1": ["report1.pdf", "report2.pdf"],
+                    "F2": ["report3.pdf"]
                 }
             }
         }
+        root_folder: str, the root folder name (mimics zip filename without .zip)
 
     Returns
     -------
         BytesIO containing the zip file
+
+    The actual structure is: {root_folder}/FY{YYYY}/RO{X}/F{X}/filename
+    Example: FY2025_test/FY2025/RO1/F1/report1.pdf
     """
     zip_buffer = io.BytesIO()
 
@@ -33,8 +37,8 @@ def create_nested_zip(structure):
             for region, stts in regions.items():
                 for stt_code, files in stts.items():
                     for filename in files:
-                        # Create path: YYYY/Region/STT/filename
-                        path = f"{year}/{region}/{stt_code}/{filename}"
+                        # Create path: {root_folder}/FY{YYYY}/RO{X}/F{X}/filename
+                        path = f"{root_folder}/{year}/{region}/{stt_code}/{filename}"
                         # Add fake content
                         zf.writestr(path, b"fake file content")
 
@@ -57,12 +61,13 @@ def bad_report_file(fake_file, fake_file_name):
 @pytest.fixture
 def report_file_data(report_file, data_analyst):
     """Return report file creation data."""
+    import datetime
     return {
         "file": report_file,
         "original_filename": "report.zip",
         "slug": "report.zip",
         "extension": "zip",
-        "quarter": "Q1",
+        "date_extracted_on": datetime.date(2024, 2, 28),
         "year": 2024,
         "version": 1,
         "user": str(data_analyst.id),
@@ -73,12 +78,13 @@ def report_file_data(report_file, data_analyst):
 @pytest.fixture
 def bad_report_file_data(bad_report_file, fake_file_name, data_analyst):
     """Return report file creation data."""
+    import datetime
     return {
         "file": bad_report_file,
         "original_filename": fake_file_name,
         "slug": "fake_file_name",
         "extension": "txt",
-        "quarter": "Q1",
+        "date_extracted_on": datetime.date(2024, 2, 28),
         "year": 2024,
         "version": 1,
         "user": str(data_analyst.id),
@@ -114,18 +120,18 @@ def fiscal_year_report_source_zip():
     """
     Generate a nested fiscal year report source zip file.
 
-    Structure: 2025/Region_1/1/report1.pdf, report2.pdf
+    Structure: FY2025_test/FY2025/RO1/F1/report1.pdf, report2.pdf
     """
     from django.core.files.uploadedfile import SimpleUploadedFile
 
     structure = {
-        "2025": {
-            "Region_1": {
-                "1": ["report1.pdf", "report2.pdf"],
+        "FY2025": {
+            "RO1": {
+                "F1": ["report1.pdf", "report2.pdf"],
             }
         }
     }
-    zip_buffer = create_nested_zip(structure)
+    zip_buffer = create_nested_zip(structure, "FY2025_test")
     return SimpleUploadedFile("report_source.zip", zip_buffer.read(), content_type="application/zip")
 
 
@@ -135,14 +141,14 @@ def multi_stt_report_source_zip():
     from django.core.files.uploadedfile import SimpleUploadedFile
 
     structure = {
-        "2025": {
-            "Region_1": {
-                "1": ["report1.pdf", "report2.pdf"],
-                "2": ["report3.pdf"],
+        "FY2025": {
+            "RO1": {
+                "F1": ["report1.pdf", "report2.pdf"],
+                "F2": ["report3.pdf"],
             }
         }
     }
-    zip_buffer = create_nested_zip(structure)
+    zip_buffer = create_nested_zip(structure, "FY2025_test")
     return SimpleUploadedFile("report_source.zip", zip_buffer.read(), content_type="application/zip")
 
 

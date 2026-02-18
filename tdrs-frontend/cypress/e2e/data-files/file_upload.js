@@ -45,6 +45,7 @@ Then('{string} can download the {string} error report', (actor, program) => {
 
 When('{string} submits the Work Outcomes Report', (actor) => {
   cy.visit('/fra-data-files')
+  cy.get('h1').contains('FRA Data Files').should('exist')
   if (actor.includes('Admin')) {
     df.fillSttFyQ('New York', '2024', 'Q2', false, false)
   } else {
@@ -63,6 +64,7 @@ When('{string} submits the Work Outcomes Report', (actor) => {
 
 When('{string} submits the TANF Report', (actor) => {
   cy.visit('/data-files')
+  cy.get('h1').contains('TANF Data Files').should('exist')
   if (actor.includes('Admin')) {
     df.fillSttFyQ('New York', '2021', 'Q1', true, false)
   } else if (actor.includes('FRA')) {
@@ -84,6 +86,7 @@ When('{string} submits the TANF Report', (actor) => {
 
 When('{string} submits the SSP Report', (actor) => {
   cy.visit('/data-files')
+  cy.get('h1').contains('TANF Data Files').should('exist')
   if (actor.includes('Admin')) {
     df.fillSttFyQ('Iowa', '2024', 'Q1', false, false)
   } else if (actor.includes('FRA')) {
@@ -171,12 +174,12 @@ Then(
         program === 'TANF'
           ? 'TANF'
           : program === 'FRA'
-          ? 'FRA'
-          : program === 'SSP'
-          ? 'SSP'
-          : program === 'Tribal' || program === 'TRIBAL'
-          ? 'Tribal'
-          : ''
+            ? 'FRA'
+            : program === 'SSP'
+              ? 'SSP'
+              : program === 'Tribal' || program === 'TRIBAL'
+                ? 'Tribal'
+                : ''
       df.downloadErrorReportAndAssert(section, year, quarter, programPrefix)
     })
   }

@@ -171,10 +171,11 @@ class ReportFilePermissions(DjangoModelCRUDPermissions):
         # Check for existenc of `reports.view_reportfile` Permission
         has_permission = super().has_permission(request, view)
 
-        # Only Admin are allowed to submit feedback reports
+        # Only DIGIT Team and OFA System Admin are allowed to submit feedback reports
         if has_permission and hasattr(view, "action"):
             if (
-                view.action in ["create"] and not request.user.is_an_admin
+                view.action in ["create"]
+                and not (request.user.is_ofa_sys_admin or request.user.is_digit_team)
             ):
                 return False
 
@@ -207,9 +208,11 @@ class ReportSourcePermissions(DjangoModelCRUDPermissions):
         # Check for existence of `reports.view_reportsource` Permission
         has_permission = super().has_permission(request, view)
 
-        # Only Admin are allowed to submit report sources
+        # Only DIGIT Team and OFA System Admin are allowed to submit report sources
         if has_permission and hasattr(view, "action"):
-            if view.action in ["create"] and not request.user.is_an_admin:
+            if view.action in ["create"] and not (
+                request.user.is_ofa_sys_admin or request.user.is_digit_team
+            ):
                 return False
 
         return has_permission

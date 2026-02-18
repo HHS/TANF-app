@@ -1,4 +1,5 @@
 import Button from '../Button'
+import LinkComponent from '../Link'
 
 function Card({ title, body, buttonId, link, linkText }) {
   return (
@@ -30,9 +31,12 @@ function ResourceCards() {
             <p>Questions about TANF data?</p>
             <p>
               Email:{' '}
-              <a className="usa-link" href="mailto: tanfdata@acf.hhs.gov">
+              <LinkComponent
+                className="usa-link"
+                to="mailto: tanfdata@acf.hhs.gov"
+              >
                 tanfdata@acf.hhs.gov
-              </a>
+              </LinkComponent>
             </p>
           </div>
         </div>
@@ -61,7 +65,7 @@ function ResourceCards() {
                 buttonId="viewTribalCodingInstructions"
                 title="Tribal TANF Data Coding Instructions"
                 body="File coding instructions addressing each data point that Tribal TANF grantees are required to report upon."
-                link="https://www.acf.hhs.gov/ofa/policy-guidance/tribal-tanf-data-coding-instructions"
+                link="https://acf.gov/sites/default/files/documents/ofa/tribal-tanf-data-report-instructions-valid-thru-2028-09.pdf"
                 linkText="View Tribal TANF Coding Instructions"
               />
             </li>
@@ -70,7 +74,7 @@ function ResourceCards() {
                 buttonId="viewACFFormInstructions"
                 title="ACF-199 and ACF-209 Instructions"
                 body="Instructions and definitions for completion of forms ACF-199 (TANF Data Report) and ACF-209 (SSP-MOE Data Report)."
-                link="https://www.acf.hhs.gov/ofa/policy-guidance/acf-ofa-pi-23-04"
+                link="https://acf.gov/sites/default/files/documents/ofa/acf-199209-TANFSSP-data-report-instructions-valid-thru-2026-10.pdf"
                 linkText="View ACF Form Instructions"
               />
             </li>

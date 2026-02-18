@@ -555,7 +555,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "100 * avg_over_time(up{job=~\"celery-$app_env|celery-exporter-$app_env\"}[$__range])",
+          "expr": "100 * avg_over_time(up{job=~\"tdp-celery-$app_env|tdp-celery-exporter-$app_env\"}[$__range])",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -629,7 +629,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(ALERTS{job=~\"celery-$app_env|celery-exporter-$app_env\", alertstate=\"firing\"})",
+          "expr": "sum(ALERTS{job=~\"tdp-celery-$app_env|tdp-celery-exporter-$app_env\", alertstate=\"firing\"})",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -719,7 +719,7 @@
             "uid": "$datasource"
           },
           "editorMode": "code",
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_succeeded_total{\n        job=\"celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name)\n/(sum (\n  round(\n    increase(\n      celery_task_succeeded_total{\n        job=\"celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name)\n+sum (\n  round(\n    increase(\n      celery_task_failed_total{\n        job=\"celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name)\n) > -1\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_succeeded_total{\n        job=\"tdp-celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name)\n/(sum (\n  round(\n    increase(\n      celery_task_succeeded_total{\n        job=\"tdp-celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name)\n+sum (\n  round(\n    increase(\n      celery_task_failed_total{\n        job=\"tdp-celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name)\n) > -1\n",
           "format": "table",
           "instant": true,
           "refId": "A"
@@ -730,7 +730,7 @@
             "uid": "$datasource"
           },
           "editorMode": "code",
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_succeeded_total{\n        job=\"celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_succeeded_total{\n        job=\"tdp-celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
           "format": "table",
           "instant": true,
           "refId": "B"
@@ -741,7 +741,7 @@
             "uid": "$datasource"
           },
           "editorMode": "code",
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_failed_total{\n        job=\"celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_failed_total{\n        job=\"tdp-celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
           "format": "table",
           "instant": true,
           "refId": "C"
@@ -752,7 +752,7 @@
             "uid": "$datasource"
           },
           "editorMode": "code",
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_sent_total{\n        job=\"celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_sent_total{\n        job=\"tdp-celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
           "format": "table",
           "instant": true,
           "refId": "D"
@@ -763,7 +763,7 @@
             "uid": "$datasource"
           },
           "editorMode": "code",
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_received_total{\n        job=\"celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_received_total{\n        job=\"tdp-celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
           "format": "table",
           "instant": true,
           "refId": "E"
@@ -774,7 +774,7 @@
             "uid": "$datasource"
           },
           "editorMode": "code",
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_rejected_total{\n        job=\"celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_rejected_total{\n        job=\"tdp-celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
           "format": "table",
           "instant": true,
           "refId": "F"
@@ -785,7 +785,7 @@
             "uid": "$datasource"
           },
           "editorMode": "code",
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_retried_total{\n        job=\"celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_retried_total{\n        job=\"tdp-celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
           "format": "table",
           "instant": true,
           "refId": "G"
@@ -796,7 +796,7 @@
             "uid": "$datasource"
           },
           "editorMode": "code",
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_revoked_total{\n        job=\"celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_revoked_total{\n        job=\"tdp-celery-$app_env\",\n        queue_name=~\"$queue_name\"\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
           "format": "table",
           "instant": true,
           "refId": "H"
@@ -907,7 +907,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(\n  celery_task_runtime_sum{\n    job=\"celery-$app_env\",\n    queue_name=~\"$queue_name\"\n  }\n) by (name) / sum(\n  celery_task_runtime_count{\n    job=\"celery-$app_env\",\n    queue_name=~\"$queue_name\"\n  }\n) by (name)\n\n",
+          "expr": "sum(\n  celery_task_runtime_sum{\n    job=\"tdp-celery-$app_env\",\n    queue_name=~\"$queue_name\"\n  }\n) by (name) / sum(\n  celery_task_runtime_count{\n    job=\"tdp-celery-$app_env\",\n    queue_name=~\"$queue_name\"\n  }\n) by (name)\n\n",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -1023,7 +1023,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(celery_active_worker_count{job=\"celery-$app_env\", queue_name=\"$queue_name\"}) by (queue_name)",
+          "expr": "sum(celery_active_worker_count{job=\"tdp-celery-$app_env\", queue_name=\"$queue_name\"}) by (queue_name)",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -1588,7 +1588,7 @@
         "label": "Queue Name",
         "name": "queue_name",
         "options": [],
-        "query": "label_values(celery_task_received_total{namespace=\"$namespace\", job=\"celery-$app_env\", name!~\"None\"}, queue_name)",
+        "query": "label_values(celery_task_received_total{namespace=\"$namespace\", job=\"tdp-celery-$app_env\", name!~\"None\"}, queue_name)",
         "refresh": 2,
         "regex": "",
         "sort": 1,

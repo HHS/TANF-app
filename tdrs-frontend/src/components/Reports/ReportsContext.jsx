@@ -313,15 +313,18 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     setPendingChange({ type: null, value: null })
   }
 
-  const handleOpenFeedbackWidget = useCallback(() => {
-    dispatch(
-      openFeedbackWidget({
-        dataType: fileTypeInputValue,
-        dataFiles: submittedFiles,
-        widgetId: `${fileTypeInputValue}-report-submission-feedback`,
-      })
-    )
-  }, [dispatch, fileTypeInputValue, submittedFiles])
+  const handleOpenFeedbackWidget = useCallback(
+    (files = null) => {
+      dispatch(
+        openFeedbackWidget({
+          dataType: fileTypeInputValue,
+          dataFiles: files || submittedFiles,
+          widgetId: `${fileTypeInputValue}-report-submission-feedback`,
+        })
+      )
+    },
+    [dispatch, fileTypeInputValue, submittedFiles]
+  )
 
   const selectFileType = (value) => {
     setFileTypeTouched(true)

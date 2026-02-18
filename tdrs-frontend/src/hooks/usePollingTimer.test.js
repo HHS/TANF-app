@@ -113,7 +113,7 @@ describe('usePollingTimer', () => {
       data: { id: 1, hasErrors: false, summary: { status: 'Pending' } },
     })
 
-    const { queryByText, getByTitle, getByText } = setupSingleTimerComponent(
+    const { queryByText, getByTitle } = setupSingleTimerComponent(
       mocks,
       1000,
       10
@@ -139,7 +139,7 @@ describe('usePollingTimer', () => {
       data: { id: 1, hasErrors: false, summary: { status: 'Pending' } },
     })
 
-    const { queryByText, getByTitle, getByText } = setupSingleTimerComponent(
+    const { queryByText, getByTitle } = setupSingleTimerComponent(
       mocks,
       1000,
       10
@@ -206,7 +206,7 @@ describe('usePollingTimer', () => {
         },
       })
 
-      const { queryByText, getByTitle, getByText } = setupSingleTimerComponent(
+      const { queryByText, getByTitle } = setupSingleTimerComponent(
         mocks,
         1000,
         10
@@ -258,7 +258,7 @@ describe('usePollingTimer', () => {
         },
       })
 
-      const { queryByText, getByTitle, getByText } = setupSingleTimerComponent(
+      const { queryByText, getByTitle } = setupSingleTimerComponent(
         mocks,
         1000,
         10
@@ -290,7 +290,7 @@ describe('usePollingTimer', () => {
       data: { id: 1, hasErrors: false, summary: { status: 'Pending' } },
     })
 
-    const { queryByText, getByTitle, getByText } = setupSingleTimerComponent(
+    const { queryByText, getByTitle } = setupSingleTimerComponent(
       mocks,
       1000,
       2 // time out after 2 tries
@@ -338,7 +338,7 @@ describe('usePollingTimer', () => {
       data: { id: 1, hasErrors: false, summary: { status: 'Pending' } },
     })
 
-    const { queryByText, getByTitle, getByText } = setupMultiTimerComponent(
+    const { queryByText, getByTitle } = setupMultiTimerComponent(
       mocks,
       1000,
       10

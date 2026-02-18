@@ -7,6 +7,7 @@ import { setMockLoginState } from '../../actions/auth'
 import loginLogo from '../../assets/login-gov-logo.svg'
 import Button from '../Button'
 import ResourceCards from '../ResourceCards'
+import LinkComponent from '../Link'
 
 /**
  * SplashPage renders the Welcome page for the TANF Data Portal
@@ -82,9 +83,12 @@ function SplashPage() {
                 </h3>
                 <p className="usa-alert__text" id="errorLabel">
                   Please email{' '}
-                  <a className="usa-link" href="mailto: tanfdata@acf.hhs.gov">
+                  <LinkComponent
+                    className="usa-link"
+                    to="mailto: tanfdata@acf.hhs.gov"
+                  >
                     tanfdata@acf.hhs.gov
-                  </a>{' '}
+                  </LinkComponent>{' '}
                   to reactivate your account.
                 </p>
               </div>

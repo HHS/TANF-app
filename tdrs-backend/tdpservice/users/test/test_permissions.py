@@ -19,10 +19,7 @@ def test_ofa_admin_permissions(ofa_admin):
         "users.change_user",
         "users.view_user",
         "users.has_fra_access",
-        "reports.add_reportfile",
-        "reports.add_reportsource",
-        "reports.view_reportfile",
-        "reports.view_reportsource"
+        # Note: OFA Admin does NOT have reports permissions (removed in migration 0054)
     }
     group_permissions = ofa_admin.get_group_permissions()
     assert group_permissions == expected_permissions
@@ -56,6 +53,9 @@ def test_ofa_system_admin_permissions(ofa_system_admin):
         "core.add_globalpermission",
         "core.change_globalpermission",
         "core.view_globalpermission",
+        "core.add_featureflag",
+        "core.view_featureflag",
+        "core.change_featureflag",
         "data_files.add_datafile",
         "data_files.change_datafile",
         "data_files.view_datafile",
@@ -184,12 +184,12 @@ def test_ofa_system_admin_permissions(ofa_system_admin):
         "search_indexes.add_programaudit_t3",
         "search_indexes.view_programaudit_t3",
         "search_indexes.change_programaudit_t3",
-        'reports.view_reportfile',
-        'reports.change_reportsource',
-        'reports.change_reportfile',
-        'reports.add_reportsource',
-        'reports.add_reportfile',
-        'reports.view_reportsource'
+        "reports.view_reportfile",
+        "reports.change_reportsource",
+        "reports.change_reportfile",
+        "reports.add_reportsource",
+        "reports.add_reportfile",
+        "reports.view_reportsource",
     }
     group_permissions = ofa_system_admin.get_group_permissions()
     assert group_permissions == expected_permissions
@@ -201,7 +201,7 @@ def test_data_analyst_permissions(data_analyst):
     expected_permissions = {
         "data_files.add_datafile",
         "data_files.view_datafile",
-        "reports.view_reportfile"
+        "reports.view_reportfile",
     }
     group_permissions = data_analyst.get_group_permissions()
     assert group_permissions == expected_permissions
@@ -237,6 +237,11 @@ def test_digit_team_permissions(digit_team):
         "search_indexes.view_ssp_m6",
         "search_indexes.view_tribal_tanf_t2",
         "search_indexes.view_tanf_t6",
+        # Reports permissions added in migration 0054
+        "reports.add_reportfile",
+        "reports.add_reportsource",
+        "reports.view_reportfile",
+        "reports.view_reportsource",
     }
     group_permissions = digit_team.get_group_permissions()
     assert group_permissions == expected_permissions

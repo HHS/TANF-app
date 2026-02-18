@@ -90,6 +90,15 @@ export const ACTORS = {
   },
 }
 
+export const loginAsActor = (actor) => {
+  cy.login(ACTORS[actor].username)
+  cy.visit('/')
+
+  cy.contains(new RegExp('Welcome to TDP|Request Submitted'), {
+    timeout: 30000,
+  })
+}
+
 const setAccountStatus = (actor, status) => {
   let endpoint = null
   switch (status) {
@@ -106,34 +115,24 @@ const setAccountStatus = (actor, status) => {
       break
   }
 
-  cy.get('@cypressUsers').then((cypressUsers) => {
-    cy.log(cypressUsers)
-    const username = ACTORS[actor].username
-    cy.log(username)
-    const user = Cypress._.find(cypressUsers, (u) => u.username === username)
+  cy.adminLogin('cypress-admin-alex@teamraft.com')
+  cy.visit('/')
 
-    cy.log(user)
+  cy.window().then((win) => {
+    let cypressUsers = JSON.parse(win.localStorage.getItem('cypressUsers'))
+    const username = ACTORS[actor].username
+    const user = Cypress._.find(cypressUsers, (u) => u.username === username)
     cy.adminApiRequest('PATCH', `/cypress-users/${user.id}/${endpoint}/`)
   })
 }
 
-export const clearCookies = () => {
-  cy.clearCookie('sessionid')
-  cy.clearCookie('csrftoken')
-}
-
 Given('{string} logs in', (actor) => {
-  clearCookies()
-  cy.visit('/')
-  cy.adminLogin('cypress-admin-alex@teamraft.com')
   // if unapproved, reset
   if (Cypress._.startsWith(actor, 'Unapproved')) {
     setAccountStatus(actor, 'Initial')
   }
 
-  cy.contains('Sign into TANF Data Portal', { timeout: 30000 })
-
-  cy.login(ACTORS[actor].username)
+  loginAsActor(actor)
 })
 
 When('Admin Alex approves {string}', (actor) => {

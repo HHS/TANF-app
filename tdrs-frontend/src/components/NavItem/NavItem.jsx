@@ -1,5 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import LinkComponent from '../Link'
 
 /**
  *
@@ -13,8 +14,8 @@ import PropTypes from 'prop-types'
 function NavItem({ pathname, tabTitle, href, target }) {
   return (
     <li className="usa-nav__primary-item">
-      <a
-        href={href}
+      <LinkComponent
+        to={href}
         key={tabTitle}
         // dash-case the tabTitle string (e.g. Data Files => data-files)
         id={tabTitle.replace(/ /g, '-').toLowerCase()}
@@ -23,7 +24,7 @@ function NavItem({ pathname, tabTitle, href, target }) {
         target={target ? target : '_self'}
       >
         <span>{tabTitle}</span>
-      </a>
+      </LinkComponent>
     </li>
   )
 }

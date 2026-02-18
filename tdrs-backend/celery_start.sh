@@ -3,6 +3,9 @@
 echo "Starting celery"
 
 if [[ $1 == "cloud" ]]; then
+    # Get the computed URI from VCAP_SERVICES
+    REDIS_URI=$(echo $VCAP_SERVICES | jq -r '."aws-elasticache-redis"[0].credentials.uri')
+
     echo "Starting Alloy"
     mkdir /home/vcap/app/alloy-data
     wget https://github.com/grafana/alloy/releases/download/v1.9.1/alloy-boringcrypto-linux-amd64.zip
@@ -13,7 +16,7 @@ if [[ $1 == "cloud" ]]; then
     echo "Starting the Celery Exporter"
     curl -L https://github.com/danihodovic/celery-exporter/releases/download/latest/celery-exporter -o ./celery-exporter
     chmod +x ./celery-exporter
-    ./celery-exporter --broker-url=$REDIS_URI --port 9808 &
+    ./celery-exporter --broker-url="$REDIS_URI" --port 9808 &
 fi
 
 # Celery worker config can be found here: https://docs.celeryq.dev/en/stable/userguide/workers.html#:~:text=The-,hostname,-argument%20can%20expand
@@ -21,5 +24,5 @@ celery -A tdpservice.settings worker --loglevel=INFO --concurrency=1 --max-tasks
 sleep 5
 
 # TODO: Uncomment the following line to add flower service when memory limitation is resolved
-celery -A tdpservice.settings --broker=$REDIS_URI flower --port=8080 &
+celery -A tdpservice.settings --broker="$REDIS_URI" flower --port=8080 &
 celery -A tdpservice.settings beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler

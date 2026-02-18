@@ -33,7 +33,7 @@ scrape_configs:
           service: "tdp-backend"
           env: "local"
 
-  - job_name: "celery-local"
+  - job_name: "tdp-celery-local"
     static_configs:
       - targets: ["celery-exporter:9808"]
         labels:

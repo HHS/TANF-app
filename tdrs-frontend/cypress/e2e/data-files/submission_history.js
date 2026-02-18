@@ -7,6 +7,7 @@ import * as df from '../common-steps/data_files.js'
 // TANF steps
 Then('Admin Alex can view the Illinois TANF Submission History', () => {
   cy.visit('/data-files')
+  cy.get('h1').contains('TANF Data Files').should('exist')
   df.fillSttFyQNoProgramSelector('Illinois', '2023', 'Q1')
   cy.get('button').contains('Submission History').click()
 })
@@ -19,6 +20,7 @@ Then('Admin Alex can verify the Illinois TANF submission', () => {
 // SSP steps
 Then('Admin Alex can view the Missouri SSP Submission History', () => {
   cy.visit('/data-files')
+  cy.get('h1').contains('TANF Data Files').should('exist')
   df.fillSttFyQ('Missouri', '2024', 'Q1', false, false)
   cy.get('button').contains('Submission History').click()
 })
@@ -31,6 +33,7 @@ Then('Admin Alex can verify the Missouri SSP submission', () => {
 // FRA steps
 Then('Admin Alex can view the Arizona FRA Submission History', () => {
   cy.visit('/fra-data-files')
+  cy.get('h1').contains('FRA Data Files').should('exist')
   df.fillSttFyQNoProgramSelector('Arizona', '2024', 'Q2')
 })
 
@@ -44,6 +47,7 @@ Then('Admin Alex can verify the Arizona FRA submission', () => {
 
 When('Regional Randy searches TANF Data Files', () => {
   cy.visit('/data-files')
+  cy.get('h1').contains('TANF Data Files').should('exist')
   df.fillSttFyQ('California', '2021', 'Q1', true, true)
 })
 
