@@ -8,7 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 
-from rest_framework import generics
+from rest_framework import viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -65,13 +65,14 @@ def write_logs(request):
     return Response("Success")
 
 
-class FeatureFlagView(generics.ListAPIView, generics.RetrieveAPIView):
+class FeatureFlagViewset(viewsets.ReadOnlyModelViewSet):
     """List and Get endpoints for FeatureFlag."""
 
     pagination_class = None
     permission_classes = [IsAuthenticated]
     queryset = FeatureFlag.objects.all()
     serializer_class = FeatureFlagSerializer
+    lookup_field = "feature_name"
 
     @method_decorator(
         [
@@ -85,3 +86,16 @@ class FeatureFlagView(generics.ListAPIView, generics.RetrieveAPIView):
     def list(self, request):
         """Get the feature flag list from the cache if available, else fetch the queryset."""
         return super().list(request)
+
+    @method_decorator(
+        [
+            cache_page(
+                settings.DEFAULT_CACHE_TIMEOUT,
+                cache="feature-flags",
+                key_prefix="value",
+            ),
+        ]
+    )  # should these be individually cached? would be cached anyway with above impl
+    def retrieve(self, request, *args, **kwargs):
+        """Get the feature flag from cache if available, fallback to db."""
+        return super().retrieve(request, *args, **kwargs)

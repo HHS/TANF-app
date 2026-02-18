@@ -15,7 +15,7 @@ from rest_framework.test import APIClient
 
 from tdpservice.conftest import UserFactory
 from tdpservice.core.models import FeatureFlag
-from tdpservice.core.views import FeatureFlagView
+from tdpservice.core.views import FeatureFlagViewset
 from tdpservice.data_files.models import DataFile
 
 
@@ -98,8 +98,8 @@ def test_log_entry_creation(api_client, data_file_instance):
         },
     }
 )
-class TestFeatureFlagView(TestCase):
-    """Tests for the FeatureFlagView class."""
+class TestFeatureFlagViewset(TestCase):
+    """Tests for the FeatureFlagViewset class."""
 
     api_client = APIClient()
 
@@ -112,32 +112,32 @@ class TestFeatureFlagView(TestCase):
         user = UserFactory.create()
         self.api_client.login(username=user.username, password="test_password")
 
-    def test_existing_cache_avoids_lookup(self):
+    def test_existing_list_cache_avoids_lookup(self):
         """Test that no lookup is performed if flags exist in the cache."""
         mock_queryset = MagicMock()
         with patch.object(
-            FeatureFlagView, "get_queryset", return_value=mock_queryset
+            FeatureFlagViewset, "get_queryset", return_value=mock_queryset
         ) as mock_method:
             # request and check the cache was cold
-            response = self.api_client.get(reverse("feature-flags"))
+            response = self.api_client.get(reverse("feature-flag-list"))
             assert response.status_code == status.HTTP_200_OK
             assert mock_method.called
 
             mock_method.reset_mock()
 
             # the cache should be warm now, request again
-            response = self.api_client.get(reverse("feature-flags"))
+            response = self.api_client.get(reverse("feature-flag-list"))
             assert response.status_code == status.HTTP_200_OK
             assert not mock_method.called
 
-    def test_no_cache_forces_lookup(self):
+    def test_no_list_cache_forces_lookup(self):
         """Test that a lookup is performed if there are no flags in the cache."""
         mock_queryset = MagicMock()
         with patch.object(
-            FeatureFlagView, "get_queryset", return_value=mock_queryset
+            FeatureFlagViewset, "get_queryset", return_value=mock_queryset
         ) as mock_method:
             # request and check the cache was cold
-            response = self.api_client.get(reverse("feature-flags"))
+            response = self.api_client.get(reverse("feature-flag-list"))
             assert response.status_code == status.HTTP_200_OK
             assert mock_method.called
 
@@ -145,17 +145,17 @@ class TestFeatureFlagView(TestCase):
         """Test saving a feature flag invalidates existing cache."""
         mock_queryset = MagicMock()
         with patch.object(
-            FeatureFlagView, "get_queryset", return_value=mock_queryset
+            FeatureFlagViewset, "get_queryset", return_value=mock_queryset
         ) as mock_method:
             # request and check the cache was cold
-            response = self.api_client.get(reverse("feature-flags"))
+            response = self.api_client.get(reverse("feature-flag-list"))
             assert response.status_code == status.HTTP_200_OK
             assert mock_method.called
 
             mock_method.reset_mock()
 
             # the cache should be warm now, request again
-            response = self.api_client.get(reverse("feature-flags"))
+            response = self.api_client.get(reverse("feature-flag-list"))
             assert response.status_code == status.HTTP_200_OK
             assert not mock_method.called
 
@@ -165,6 +165,43 @@ class TestFeatureFlagView(TestCase):
             FeatureFlag.objects.create(feature_name="unit-test")
 
             # check that the cache was invalidated
-            response = self.api_client.get(reverse("feature-flags"))
+            response = self.api_client.get(reverse("feature-flag-list"))
+            assert response.status_code == status.HTTP_200_OK
+            assert mock_method.called
+
+    def test_existing_single_cache_avoids_lookup(self):
+        """Test that no lookup is performed if flags exist in the cache."""
+        FeatureFlag.objects.create(feature_name="test1")
+        # mock_queryset = MagicMock()
+        with patch.object(
+            FeatureFlagViewset, "get_queryset", return_value=FeatureFlag.objects.all()
+        ) as mock_method:
+            # request and check the cache was cold
+            response = self.api_client.get(
+                reverse("feature-flag-detail", args=("test1",))
+            )
+            assert response.status_code == status.HTTP_200_OK
+            assert mock_method.called
+
+            mock_method.reset_mock()
+
+            # the cache should be warm now, request again
+            response = self.api_client.get(
+                reverse("feature-flag-detail", args=("test1",))
+            )
+            assert response.status_code == status.HTTP_200_OK
+            assert not mock_method.called
+
+    def test_no_single_cache_forces_lookup(self):
+        """Test that a lookup is performed if there are no flags in the cache."""
+        FeatureFlag.objects.create(feature_name="test2")
+        # mock_queryset = MagicMock()
+        with patch.object(
+            FeatureFlagViewset, "get_queryset", return_value=FeatureFlag.objects.all()
+        ) as mock_method:
+            # request and check the cache was cold
+            response = self.api_client.get(
+                reverse("feature-flag-detail", args=("test2",))
+            )
             assert response.status_code == status.HTTP_200_OK
             assert mock_method.called
