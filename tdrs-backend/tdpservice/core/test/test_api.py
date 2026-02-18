@@ -172,7 +172,6 @@ class TestFeatureFlagViewset(TestCase):
     def test_existing_single_cache_avoids_lookup(self):
         """Test that no lookup is performed if flags exist in the cache."""
         FeatureFlag.objects.create(feature_name="test1")
-        # mock_queryset = MagicMock()
         with patch.object(
             FeatureFlagViewset, "get_queryset", return_value=FeatureFlag.objects.all()
         ) as mock_method:
@@ -195,7 +194,6 @@ class TestFeatureFlagViewset(TestCase):
     def test_no_single_cache_forces_lookup(self):
         """Test that a lookup is performed if there are no flags in the cache."""
         FeatureFlag.objects.create(feature_name="test2")
-        # mock_queryset = MagicMock()
         with patch.object(
             FeatureFlagViewset, "get_queryset", return_value=FeatureFlag.objects.all()
         ) as mock_method:
