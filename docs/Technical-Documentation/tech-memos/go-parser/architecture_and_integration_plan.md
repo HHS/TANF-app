@@ -4,7 +4,7 @@ High-level architecture plan for integrating the Go parser into the TDP producti
 
 ## Table of Contents
 
-1. [Summary](#executive-summary)
+1. [Summary](#summary)
 2. [Benefits](#benefits)
 3. [System Architecture](#system-architecture)
 4. [Data Flow](#data-flow)
