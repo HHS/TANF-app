@@ -1,7 +1,7 @@
 // /components/navigation.js
 class SiteNav extends HTMLElement {
   connectedCallback() {
-    fetch('components/desktop-navigation.html')
+    fetch(`components/desktop-navigation.html?v=${Date.now()}`)
       .then(res => res.text())
       .then(html => {
         this.innerHTML = html;

@@ -1,8 +1,6 @@
 """Test functions for deactivated account warnings."""
 import logging
-from datetime import datetime, timedelta
-
-from django.utils import timezone
+from datetime import datetime, timedelta, timezone
 
 import pytest
 

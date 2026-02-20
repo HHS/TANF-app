@@ -16,7 +16,7 @@ describe('ResourceCards', () => {
     const store = mockStore(initialState)
 
     const url =
-      'https://www.acf.hhs.gov/ofa/policy-guidance/tribal-tanf-data-coding-instructions'
+      'https://acf.gov/sites/default/files/documents/ofa/tribal-tanf-data-report-instructions-valid-thru-2028-09.pdf'
 
     render(
       <Provider store={store}>
@@ -63,7 +63,8 @@ describe('ResourceCards', () => {
   it('redirects to ACF Form Instructions when View ACF Form Instructions clicked', () => {
     const store = mockStore(initialState)
 
-    const url = 'https://www.acf.hhs.gov/ofa/policy-guidance/acf-ofa-pi-23-04'
+    const url =
+      'https://acf.gov/sites/default/files/documents/ofa/acf-199209-TANFSSP-data-report-instructions-valid-thru-2026-10.pdf'
 
     render(
       <Provider store={store}>

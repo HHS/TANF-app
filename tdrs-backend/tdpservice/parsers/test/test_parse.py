@@ -196,6 +196,9 @@ def test_parse_big_file(big_file, dfs):
     expected_t2_record_count = 882
     expected_t3_record_count = 1376
 
+    big_file.year = 2022
+    big_file.quarter = "Q1"
+
     dfs.datafile = big_file
 
     parser = ParserFactory.get_instance(
@@ -986,7 +989,7 @@ def test_parse_small_tanf_section2_file(small_tanf_section2_file, dfs):
 @pytest.mark.django_db()
 def test_parse_tanf_section2_file(tanf_section2_file, dfs):
     """Test parsing TANF Section 2 submission."""
-    tanf_section2_file.year = 2021
+    tanf_section2_file.year = 2022
     tanf_section2_file.quarter = "Q1"
 
     dfs.datafile = tanf_section2_file
@@ -999,6 +1002,9 @@ def test_parse_tanf_section2_file(tanf_section2_file, dfs):
         program_type=tanf_section2_file.program_type,
     )
     parser.parse_and_validate()
+    parser_errors = ParserError.objects.filter(file=tanf_section2_file)
+    err = parser_errors.first()
+    print("\n\n", err.error_message, "\n\n")
 
     assert TANF_T4.objects.all().count() == 223
     assert TANF_T5.objects.all().count() == 605

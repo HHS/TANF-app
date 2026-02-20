@@ -3,12 +3,11 @@
 from __future__ import absolute_import
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.urls import reverse
-from django.utils import timezone
 
 from celery import shared_task
 

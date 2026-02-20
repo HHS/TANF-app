@@ -74,5 +74,8 @@ class SchemaManager:
         for schemas in self.schema_map.values():
             for schema in schemas:
                 for field in schema.fields:
-                    if type(field) == TransformField and "is_encrypted" in field.kwargs:
+                    if (
+                        isinstance(field, TransformField)
+                        and "is_encrypted" in field.kwargs
+                    ):
                         field.kwargs["is_encrypted"] = is_encrypted

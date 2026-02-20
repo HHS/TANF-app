@@ -22,7 +22,7 @@ def header_datafile(stt_user, stt):
 @pytest.fixture
 def dfs():
     """Fixture for DataFileSummary."""
-    return DataFileSummaryFactory.build()
+    return DataFileSummaryFactory.create()
 
 
 @pytest.fixture
