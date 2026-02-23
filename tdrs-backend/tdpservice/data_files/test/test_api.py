@@ -727,9 +727,9 @@ tanf_section_options = [
 
 def get_file_types(program_type):
     """Return the search api's `file_type`s for a given program."""
-    if program_type is DataFile.ProgramType.FRA.value:
+    if program_type == DataFile.ProgramType.FRA.value:
         return fra_section_options
-    elif program_type is DataFile.ProgramType.SSP.value:
+    elif program_type == DataFile.ProgramType.SSP.value:
         return ["ssp-moe"]
     return ["tanf"]
 
@@ -762,17 +762,17 @@ class TestDataFileQuerysetFiltering:
 
     def should_test_pia(self, program_type):
         """Return true if a file should be tested for program integrity audit."""
-        return program_type is DataFile.ProgramType.TANF.value
+        return program_type == DataFile.ProgramType.TANF.value
 
     def get_section_options(self, program_type):
         """Return the allowed sections for a given program type."""
-        if program_type is DataFile.ProgramType.FRA.value:
+        if program_type == DataFile.ProgramType.FRA.value:
             return fra_section_options
         return tanf_section_options
 
     def get_location(self, program_type, stt, tribe_stt):
         """Return the submitting location for a given program type."""
-        if program_type is DataFile.ProgramType.TRIBAL.value:
+        if program_type == DataFile.ProgramType.TRIBAL.value:
             return tribe_stt
         return stt
 
@@ -903,7 +903,7 @@ class TestDataFileQuerysetFiltering:
             f"stt={location.id}&year={year}&quarter={quarter}&file_type={file_type}",
         )
 
-        if program_type is DataFile.ProgramType.FRA.value:
+        if program_type == DataFile.ProgramType.FRA.value:
             self._assert_fra(k, non_pia_files, non_pia_file_ids)
         else:
             self._assert_tanf(k, non_pia_files, non_pia_file_ids, section_options)
