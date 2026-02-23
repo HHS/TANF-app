@@ -67,14 +67,20 @@ const load = (file, section, input, dropTarget, dispatch) => {
 
     filereader.onload = () => {
       let error = false
+      const basePayload = {
+        file,
+        fileName: file.name,
+        fileType: file.type,
+      }
       const re = /(\.txt|\.ms\d{2}|\.ts\d{2,3})$/i
       if (!re.exec(file.name)) {
-        createFileInputErrorState(input, dropTarget)
+        createFileInputErrorState(input, dropTarget, { preservePreview: true })
 
         dispatch({
           type: FILE_EXT_ERROR,
           payload: {
             error: { message: INVALID_EXT_ERROR },
+            ...basePayload,
             section,
           },
         })
@@ -84,12 +90,13 @@ const load = (file, section, input, dropTarget, dispatch) => {
       const isImg = fileTypeChecker.validateFileType(filereader.result, types)
 
       if (!error && isImg) {
-        createFileInputErrorState(input, dropTarget)
+        createFileInputErrorState(input, dropTarget, { preservePreview: true })
 
         dispatch({
           type: SET_FILE_ERROR,
           payload: {
             error: { message: INVALID_FILE_ERROR },
+            ...basePayload,
             section,
           },
         })
@@ -142,6 +149,15 @@ function FileUpload({
     ? `Selected File ${selectedFile?.fileName}. To change the selected file, click this button.`
     : `Drag file here or choose from folder.`
 
+  // Reset the underlying input and preview when fiscal params change
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.value = null
+    }
+    const deps = checkPreviewDependencies(targetClassName)
+    if (deps.rendered) removeOldPreviews(deps.dropTarget, deps.instructions)
+  }, [year, quarter, targetClassName])
+
   useEffect(() => {
     const trySettingPreview = () => {
       const previewState = handlePreview(fileName, targetClassName)
@@ -170,12 +186,18 @@ function FileUpload({
     const { name: section } = event.target
     const file = event.target.files[0]
 
+    if (!file) return
+
+    const basePayload = {
+      file,
+      fileName: file.name,
+      fileType: file.type,
+    }
+
     // Clear existing errors and the current
     // file in the state if the user is re-uploading
     dispatch(clearError({ section }))
     dispatch(clearFile({ section }))
-
-    if (!file) return
 
     const input = inputRef.current
     const dropTarget = inputRef.current.parentNode
@@ -187,13 +209,15 @@ function FileUpload({
       dropTarget,
       dispatch
     )
+    let hasValidationError = error
 
     const dispatchProgramTypeError = (
       programTypeResult,
       selectedProgramType,
       input,
       dropTarget,
-      section
+      section,
+      basePayload
     ) => {
       let formattedFileProgramType = programTypeResult.progType
       let formattedSelectedProgramType = selectedProgramType
@@ -209,7 +233,8 @@ function FileUpload({
 
       const programTypeError = `File may correspond to ${formattedFileProgramType} instead of ${formattedSelectedProgramType}. Please verify the file type.`
       // Handle specific program type cases
-      createFileInputErrorState(input, dropTarget)
+      createFileInputErrorState(input, dropTarget, { preservePreview: true })
+      hasValidationError = true
       dispatch({
         type: SET_FILE_ERROR,
         payload: {
@@ -218,6 +243,7 @@ function FileUpload({
               ? programTypeError
               : NULL_PROGRAM_TYPE_ERROR,
           },
+          ...basePayload,
           section,
         },
       })
@@ -227,7 +253,8 @@ function FileUpload({
       calendarFiscalResult,
       input,
       dropTarget,
-      section
+      section,
+      basePayload
     ) => {
       // Handle fiscal year and quarter mismatch
       let error_period
@@ -257,7 +284,8 @@ function FileUpload({
         default:
           error_period = ''
       }
-      createFileInputErrorState(input, dropTarget)
+      createFileInputErrorState(input, dropTarget, { preservePreview: true })
+      hasValidationError = true
       dispatch({
         type: SET_FILE_ERROR,
         payload: {
@@ -272,6 +300,7 @@ function FileUpload({
               `. Adjust your search parameters or upload a different file.`,
             link: link,
           },
+          ...basePayload,
           section,
         },
       })
@@ -291,18 +320,28 @@ function FileUpload({
           selectedProgramType,
           input,
           dropTarget,
-          section
+          section,
+          {
+            file: encodedFile,
+            fileName: encodedFile.name,
+            fileType: encodedFile.type,
+          }
         )
       } else if (!calendarFiscalResult.isValid) {
         dispatchCalendarFiscalError(
           calendarFiscalResult,
           input,
           dropTarget,
-          section
+          section,
+          {
+            file: encodedFile,
+            fileName: encodedFile.name,
+            fileType: encodedFile.type,
+          }
         )
       }
     }
-    if (inputRef.current) {
+    if (inputRef.current && !hasValidationError) {
       inputRef.current.value = null
     }
   }
