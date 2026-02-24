@@ -12,7 +12,7 @@ def test_create_new_version_increments(report_file_instance):
     new_row = ReportFile.create_new_version(
         {
             "year": base.year,
-            "quarter": base.quarter,
+            "date_extracted_on": base.date_extracted_on,
             "stt": base.stt,
             "original_filename": base.original_filename,
             "slug": base.slug,
@@ -39,7 +39,7 @@ def test_find_latest_version_number(report_file_instance):
     newer = ReportFile.create_new_version(
         {
             "year": base.year,
-            "quarter": base.quarter,
+            "date_extracted_on": base.date_extracted_on,
             "stt": base.stt,
             "original_filename": base.original_filename,
             "slug": base.slug,
@@ -51,7 +51,7 @@ def test_find_latest_version_number(report_file_instance):
 
     latest_version_number = ReportFile.find_latest_version_number(
         year=base.year,
-        quarter=base.quarter,
+        date_extracted_on=base.date_extracted_on,
         stt=base.stt,
     )
 
@@ -66,7 +66,7 @@ def test_find_latest_version(report_file_instance):
     newer = ReportFile.create_new_version(
         {
             "year": base.year,
-            "quarter": base.quarter,
+            "date_extracted_on": base.date_extracted_on,
             "stt": base.stt,
             "original_filename": base.original_filename,
             "slug": base.slug,
@@ -78,7 +78,7 @@ def test_find_latest_version(report_file_instance):
 
     latest_obj = ReportFile.find_latest_version(
         year=base.year,
-        quarter=base.quarter,
+        date_extracted_on=base.date_extracted_on,
         stt=base.stt,
     )
 

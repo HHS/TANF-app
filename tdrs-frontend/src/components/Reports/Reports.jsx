@@ -34,6 +34,8 @@ function ReportsContent() {
   } = useReportsContext()
 
   const user = useSelector((state) => state.auth.user)
+  const isDataAnalyst =
+    useSelector(selectPrimaryUserRole)?.name === 'Data Analyst'
   const isOFAAdmin = useSelector(selectPrimaryUserRole)?.name === 'OFA Admin'
   const isDIGITTeam = useSelector(selectPrimaryUserRole)?.name === 'DIGIT Team'
   const isSystemAdmin =
@@ -136,6 +138,7 @@ function ReportsContent() {
           <TanfSspReports
             stt={stt ? stt : fileTypeStt}
             isRegionalStaff={isRegionalStaff}
+            isDataAnalyst={isDataAnalyst}
           />
         )}
       </div>

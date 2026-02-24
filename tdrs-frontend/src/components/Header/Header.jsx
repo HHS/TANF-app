@@ -10,6 +10,7 @@ import {
   accountCanViewAdmin,
   accountCanViewGrafana,
   accountCanViewAlerts,
+  accountCanViewFeedbackReports,
 } from '../../selectors/auth'
 
 import NavItem from '../NavItem/NavItem'
@@ -34,6 +35,7 @@ function Header() {
   const userIsAdmin = useSelector(accountCanViewAdmin)
   const userViewGrafana = useSelector(accountCanViewGrafana)
   const userViewAlerts = useSelector(accountCanViewAlerts)
+  const userCanViewFeedbackReports = useSelector(accountCanViewFeedbackReports)
 
   const menuRef = useRef()
 
@@ -149,7 +151,7 @@ function Header() {
                       href="/profile"
                     />
                   )}
-                  {userIsAdmin && (
+                  {userCanViewFeedbackReports && (
                     <NavItem
                       pathname={pathname}
                       tabTitle="Feedback Reports"
