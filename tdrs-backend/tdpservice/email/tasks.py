@@ -193,11 +193,9 @@ def send_data_submission_reminder(due_date, reporting_period, fiscal_quarter):
         required_program_sections = loc.filenames.keys()
         required_program_sections = [ps.upper() for ps in required_program_sections]
 
-        submitted_all_programs_sections = True
-        for ps in required_program_sections:
-            if ps not in submitted_programs_sections:
-                submitted_all_programs_sections = False
-                break
+        submitted_all_programs_sections = all(
+            ps in submitted_programs_sections for ps in required_program_sections
+        )
 
         if not submitted_all_programs_sections:
             reminder_locations.append(loc)
