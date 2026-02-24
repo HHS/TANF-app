@@ -7,6 +7,7 @@ import SegmentedControl from '../../SegmentedControl'
 import FiscalYearSelect from '../components/FiscalYearSelect'
 import FiscalQuarterSelect from '../components/FisclaQuarterSelect'
 import FeedbackReportAlert from '../../FeedbackReports/FeedbackReportAlert'
+import { POLLING_TIMEOUT_MESSAGE } from '../constants'
 import { useReportsContext } from '../ReportsContext'
 
 const TanfSspReports = ({ stt, isRegionalStaff, isDataAnalyst }) => {
@@ -19,6 +20,7 @@ const TanfSspReports = ({ stt, isRegionalStaff, isDataAnalyst }) => {
     setReprocessedModalVisible,
     setReprocessedDate,
     headerRef,
+    localAlert,
   } = useReportsContext()
 
   return (
@@ -45,6 +47,19 @@ const TanfSspReports = ({ stt, isRegionalStaff, isDataAnalyst }) => {
           </h2>
 
           {isDataAnalyst && <FeedbackReportAlert />}
+
+          {localAlert.active &&
+            localAlert.message === POLLING_TIMEOUT_MESSAGE &&
+            (isRegionalStaff || selectedSubmissionTab === 2) && (
+              <div
+                className="usa-alert usa-alert--slim usa-alert--warning margin-top-2"
+                role="alert"
+              >
+                <div className="usa-alert__body">
+                  <p className="usa-alert__text">{localAlert.message}</p>
+                </div>
+              </div>
+            )}
 
           {isRegionalStaff ? (
             <h3 className="font-sans-lg margin-top-5 margin-bottom-2 text-bold">
