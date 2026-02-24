@@ -1,16 +1,19 @@
 import React from 'react'
 import { Provider } from 'react-redux'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import configureStore from 'redux-mock-store'
 import { thunk } from 'redux-thunk'
 import FeedbackReports from './FeedbackReports'
-import { get, post } from '../../fetch-instance'
+import axiosInstance from '../../axios-instance'
 
-jest.mock('../../fetch-instance')
+jest.mock('../../axios-instance')
 jest.mock('../../utils/createFileInputErrorState')
 jest.mock('@uswds/uswds/src/js/components', () => ({
   fileInput: {
+    init: jest.fn(),
+  },
+  datePicker: {
     init: jest.fn(),
   },
 }))
@@ -18,32 +21,11 @@ jest.mock('@uswds/uswds/src/js/components', () => ({
 const mockStore = configureStore([thunk])
 
 describe('FeedbackReports', () => {
-  let store
-
   beforeEach(() => {
-    store = mockStore({
-      auth: {
-        user: {
-          id: 1,
-          email: 'admin@example.com',
-          roles: [{ name: 'OFA Admin' }],
-        },
-        authenticated: true,
-      },
-    })
-
-    // Reset all mocks before each test
     jest.clearAllMocks()
+    axiosInstance.get.mockResolvedValue({ data: { results: [] } })
 
-    // Mock successful history fetch by default
-    get.mockResolvedValue({
-      data: { results: [] },
-      ok: true,
-      status: 200,
-      error: null,
-    })
-
-    // Mock FileReader for async file handling
+    // Mock FileReader for AdminFeedbackReports
     global.FileReader = jest.fn().mockImplementation(() => ({
       readAsArrayBuffer: jest.fn(function () {
         setTimeout(() => this.onload && this.onload(), 0)
@@ -52,7 +34,7 @@ describe('FeedbackReports', () => {
     }))
   })
 
-  const renderComponent = () => {
+  const renderComponent = (store) => {
     return render(
       <MemoryRouter>
         <Provider store={store}>
@@ -62,635 +44,253 @@ describe('FeedbackReports', () => {
     )
   }
 
-  describe('Component Rendering', () => {
-    it('renders the page title and subtitle', async () => {
-      renderComponent()
+  describe('Conditional Rendering', () => {
+    it('renders AdminFeedbackReports for users with upload permissions', async () => {
+      const store = mockStore({
+        auth: {
+          user: {
+            id: 1,
+            email: 'admin@example.com',
+            roles: [
+              {
+                name: 'DIGIT Team',
+                permissions: [
+                  { codename: 'view_reportsource' },
+                  { codename: 'add_reportsource' },
+                ],
+              },
+            ],
+            account_approval_status: 'Approved',
+          },
+          authenticated: true,
+        },
+      })
 
+      renderComponent(store)
+
+      // AdminFeedbackReports has the description and fiscal year selector
       await waitFor(() => {
         expect(
           screen.getByText(/Once submitted, TDP will distribute/)
         ).toBeInTheDocument()
       })
-    })
 
-    it('renders the file upload section', async () => {
-      renderComponent()
+      // Should have the fiscal year selector (Admin page requires year selection)
+      expect(screen.getByLabelText('Fiscal Year')).toBeInTheDocument()
 
+      // Select a fiscal year to reveal the upload section
+      const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
+      fireEvent.change(fiscalYearSelect, { target: { value: '2025' } })
+
+      // Now the file upload input should be visible
       await waitFor(() => {
         expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
       })
+
+      // Should have the upload button
+      expect(
+        screen.getByRole('button', { name: /Upload & Notify States/i })
+      ).toBeInTheDocument()
     })
 
-    it('renders the upload button', async () => {
-      renderComponent()
-
-      await waitFor(() => {
-        const uploadButton = screen.getByRole('button', {
-          name: /Upload & Notify States/i,
-        })
-        expect(uploadButton).toBeInTheDocument()
-        expect(uploadButton).toHaveAttribute('disabled') // Should be disabled without file
+    it('renders STTFeedbackReports for users without upload permissions', async () => {
+      const store = mockStore({
+        auth: {
+          user: {
+            id: 1,
+            email: 'analyst@example.com',
+            roles: [
+              {
+                name: 'Data Analyst',
+                permissions: [{ codename: 'view_reportfile' }],
+              },
+            ],
+            account_approval_status: 'Approved',
+          },
+          authenticated: true,
+        },
       })
-    })
 
-    it('renders the upload history empty state initially', async () => {
-      renderComponent()
+      renderComponent(store)
 
-      await waitFor(() => {
-        expect(screen.getByText('No data available.')).toBeInTheDocument()
-      })
-    })
-
-    it('renders the info alert about notification distribution', async () => {
-      renderComponent()
-
+      // STTFeedbackReports has the fiscal year selector and reference table
       await waitFor(() => {
         expect(
-          screen.getByText(
-            /Once submitted, TDP will distribute feedback reports/
-          )
+          screen.getByText('TANF/SSP Data Reporting Reference')
+        ).toBeInTheDocument()
+      })
+
+      // Should have the fiscal year selector
+      expect(
+        screen.getByLabelText(/Fiscal Year \(October - September\)/i)
+      ).toBeInTheDocument()
+
+      // Should NOT have the Upload button (that's for OFA admins only)
+      expect(
+        screen.queryByRole('button', { name: /Upload & Notify States/i })
+      ).not.toBeInTheDocument()
+    })
+
+    it('renders STTFeedbackReports for users with only view_reportsource (no add)', async () => {
+      const store = mockStore({
+        auth: {
+          user: {
+            id: 1,
+            email: 'viewer@example.com',
+            roles: [
+              {
+                name: 'Viewer',
+                permissions: [{ codename: 'view_reportsource' }],
+              },
+            ],
+            account_approval_status: 'Approved',
+          },
+          authenticated: true,
+        },
+      })
+
+      renderComponent(store)
+
+      // Should render STT view since they don't have add_reportsource
+      await waitFor(() => {
+        expect(
+          screen.getByText('TANF/SSP Data Reporting Reference')
+        ).toBeInTheDocument()
+      })
+    })
+
+    it('renders STTFeedbackReports for users with only add_reportsource (no view)', async () => {
+      const store = mockStore({
+        auth: {
+          user: {
+            id: 1,
+            email: 'adder@example.com',
+            roles: [
+              {
+                name: 'Adder',
+                permissions: [{ codename: 'add_reportsource' }],
+              },
+            ],
+            account_approval_status: 'Approved',
+          },
+          authenticated: true,
+        },
+      })
+
+      renderComponent(store)
+
+      // Should render STT view since they don't have view_reportsource
+      await waitFor(() => {
+        expect(
+          screen.getByText('TANF/SSP Data Reporting Reference')
+        ).toBeInTheDocument()
+      })
+    })
+
+    it('renders STTFeedbackReports for users with no permissions', async () => {
+      const store = mockStore({
+        auth: {
+          user: {
+            id: 1,
+            email: 'noperm@example.com',
+            roles: [{ name: 'User', permissions: [] }],
+            account_approval_status: 'Approved',
+          },
+          authenticated: true,
+        },
+      })
+
+      renderComponent(store)
+
+      // Should render STT view since they have no upload permissions
+      await waitFor(() => {
+        expect(
+          screen.getByText('TANF/SSP Data Reporting Reference')
         ).toBeInTheDocument()
       })
     })
   })
 
-  describe('File Upload Functionality', () => {
-    it('enables upload button when a valid .zip file is selected', async () => {
-      renderComponent()
-
-      await waitFor(() => {
-        expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
-      })
-
-      const fileInput = document.querySelector('input[type="file"]')
-      const file = new File(['content'], 'feedback.zip', {
-        type: 'application/zip',
-      })
-
-      fireEvent.change(fileInput, { target: { files: [file] } })
-
-      await waitFor(() => {
-        const uploadButton = screen.getByRole('button', {
-          name: /Upload & Notify States/i,
-        })
-        expect(uploadButton).not.toHaveAttribute('disabled')
-      })
-    })
-
-    it('shows error when non-.zip file is selected', async () => {
-      renderComponent()
-
-      await waitFor(() => {
-        expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
-      })
-
-      const fileInput = document.querySelector('input[type="file"]')
-      const file = new File(['content'], 'feedback.txt', { type: 'text/plain' })
-
-      fireEvent.change(fileInput, { target: { files: [file] } })
-
-      await waitFor(() => {
-        expect(screen.getByText('File must be a .zip file')).toBeInTheDocument()
-      })
-
-      const uploadButton = screen.getByRole('button', {
-        name: /Upload & Notify States/i,
-      })
-      expect(uploadButton).toHaveAttribute('disabled')
-    })
-
-    it('successfully uploads a file and shows success message', async () => {
-      post.mockResolvedValue({
-        data: {
-          id: 1,
-          status: 'PENDING',
-          original_filename: 'feedback.zip',
+  describe('Permission-based API calls', () => {
+    it('calls report-sources API for admin users after fiscal year selected', async () => {
+      const store = mockStore({
+        auth: {
+          user: {
+            id: 1,
+            email: 'admin@example.com',
+            roles: [
+              {
+                name: 'DIGIT Team',
+                permissions: [
+                  { codename: 'view_reportsource' },
+                  { codename: 'add_reportsource' },
+                ],
+              },
+            ],
+            account_approval_status: 'Approved',
+          },
+          authenticated: true,
         },
-        ok: true,
-        status: 200,
-        error: null,
       })
 
-      get.mockResolvedValue({
-        data: { results: [] },
-        ok: true,
-        status: 200,
-        error: null,
+      renderComponent(store)
+
+      // Admin page requires fiscal year selection before API call
+      await waitFor(() => {
+        expect(screen.getByLabelText('Fiscal Year')).toBeInTheDocument()
       })
 
-      renderComponent()
+      const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
+      fireEvent.change(fiscalYearSelect, { target: { value: '2025' } })
 
       await waitFor(() => {
-        expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
+        expect(axiosInstance.get).toHaveBeenCalledWith(
+          expect.stringContaining('/reports/report-sources/'),
+          expect.objectContaining({
+            params: { year: '2025' },
+          })
+        )
+      })
+    })
+
+    it('calls reports API for STT users after fiscal year selected', async () => {
+      const store = mockStore({
+        auth: {
+          user: {
+            id: 1,
+            email: 'analyst@example.com',
+            roles: [
+              {
+                name: 'Data Analyst',
+                permissions: [{ codename: 'view_reportfile' }],
+              },
+            ],
+            account_approval_status: 'Approved',
+            stt: { id: 1, name: 'Alabama' },
+          },
+          authenticated: true,
+        },
       })
 
-      const fileInput = document.querySelector('input[type="file"]')
-      const file = new File(['content'], 'feedback.zip', {
-        type: 'application/zip',
-      })
+      renderComponent(store)
 
-      fireEvent.change(fileInput, { target: { files: [file] } })
-
-      // Wait for FileReader async process to complete and button to be enabled
-      const uploadButton = await waitFor(() => {
-        const btn = screen.getByRole('button', {
-          name: /Upload & Notify States/i,
-        })
-        expect(btn).not.toHaveAttribute('disabled')
-        return btn
-      })
-
-      fireEvent.click(uploadButton)
+      // STT users must select a fiscal year before reports are fetched
+      const yearSelect = screen.getByLabelText(/Fiscal Year/i)
+      fireEvent.change(yearSelect, { target: { value: '2025' } })
 
       await waitFor(() => {
-        expect(
-          screen.getByText(
-            /Feedback report uploaded successfully! Processing has begun/
-          )
-        ).toBeInTheDocument()
+        expect(axiosInstance.get).toHaveBeenCalledWith(
+          expect.stringContaining('/reports/'),
+          expect.any(Object)
+        )
       })
 
-      expect(post).toHaveBeenCalledWith(
-        expect.stringContaining('/reports/report-sources/'),
-        expect.any(FormData)
+      // Make sure it's not calling the report-sources endpoint
+      const calls = axiosInstance.get.mock.calls
+      const reportSourcesCall = calls.find((call) =>
+        call[0].includes('report-sources')
       )
-    })
-
-    it('shows error message when upload fails', async () => {
-      post.mockResolvedValue({
-        data: {
-          file: ['Invalid zip file structure'],
-        },
-        ok: false,
-        status: 400,
-        error: new Error('HTTP 400'),
-      })
-
-      renderComponent()
-
-      await waitFor(() => {
-        expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
-      })
-
-      const fileInput = document.querySelector('input[type="file"]')
-      const file = new File(['content'], 'feedback.zip', {
-        type: 'application/zip',
-      })
-
-      fireEvent.change(fileInput, { target: { files: [file] } })
-
-      // Wait for FileReader async process to complete and button to be enabled
-      const uploadButton = await waitFor(() => {
-        const btn = screen.getByRole('button', {
-          name: /Upload & Notify States/i,
-        })
-        expect(btn).not.toHaveAttribute('disabled')
-        return btn
-      })
-
-      fireEvent.click(uploadButton)
-
-      await waitFor(() => {
-        expect(
-          screen.getByText('Invalid zip file structure')
-        ).toBeInTheDocument()
-      })
-    })
-
-    it('shows generic error message when upload fails without specific error', async () => {
-      post.mockResolvedValue({
-        data: null,
-        ok: false,
-        status: 0,
-        error: new Error('Network error'),
-      })
-
-      renderComponent()
-
-      await waitFor(() => {
-        expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
-      })
-
-      const fileInput = document.querySelector('input[type="file"]')
-      const file = new File(['content'], 'feedback.zip', {
-        type: 'application/zip',
-      })
-
-      fireEvent.change(fileInput, { target: { files: [file] } })
-
-      // Wait for FileReader async process to complete and button to be enabled
-      const uploadButton = await waitFor(() => {
-        const btn = screen.getByRole('button', {
-          name: /Upload & Notify States/i,
-        })
-        expect(btn).not.toHaveAttribute('disabled')
-        return btn
-      })
-
-      fireEvent.click(uploadButton)
-
-      await waitFor(() => {
-        expect(
-          screen.getByText('Upload failed. Please try again.')
-        ).toBeInTheDocument()
-      })
-    })
-
-    it('shows loading state during upload', async () => {
-      post.mockImplementation(
-        () =>
-          new Promise((resolve) =>
-            setTimeout(
-              () => resolve({ data: {}, ok: true, status: 200, error: null }),
-              100
-            )
-          )
-      )
-
-      renderComponent()
-
-      await waitFor(() => {
-        expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
-      })
-
-      const fileInput = document.querySelector('input[type="file"]')
-      const file = new File(['content'], 'feedback.zip', {
-        type: 'application/zip',
-      })
-
-      fireEvent.change(fileInput, { target: { files: [file] } })
-
-      // Wait for FileReader async process to complete and button to be enabled
-      const uploadButton = await waitFor(() => {
-        const btn = screen.getByRole('button', {
-          name: /Upload & Notify States/i,
-        })
-        expect(btn).not.toHaveAttribute('disabled')
-        return btn
-      })
-
-      fireEvent.click(uploadButton)
-
-      await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: /Uploading.../i })
-        ).toBeInTheDocument()
-      })
-    })
-  })
-
-  describe('Upload History', () => {
-    it('fetches and displays upload history on mount', async () => {
-      const mockHistory = [
-        {
-          id: 1,
-          year: 2025,
-          created_at: '2025-03-05T10:31:00Z',
-          processed_at: '2025-03-05T10:41:00Z',
-          original_filename: 'FY2025.zip',
-          file: 'https://example.com/FY2025.zip',
-        },
-      ]
-
-      get.mockResolvedValue({
-        data: { results: mockHistory },
-        ok: true,
-        status: 200,
-        error: null,
-      })
-
-      renderComponent()
-
-      await waitFor(() => {
-        expect(screen.getByText('2025')).toBeInTheDocument()
-        expect(screen.getByText('FY2025.zip')).toBeInTheDocument()
-      })
-
-      expect(get).toHaveBeenCalledWith(
-        expect.stringContaining('/reports/report-sources/')
-      )
-    })
-
-    it('displays empty state when no history exists', async () => {
-      get.mockResolvedValue({
-        data: { results: [] },
-        ok: true,
-        status: 200,
-        error: null,
-      })
-
-      renderComponent()
-
-      await waitFor(() => {
-        expect(screen.getByText('No data available.')).toBeInTheDocument()
-      })
-    })
-
-    it('displays loading state while fetching history', () => {
-      get.mockImplementation(
-        () =>
-          new Promise((resolve) =>
-            setTimeout(
-              () =>
-                resolve({
-                  data: { results: [] },
-                  ok: true,
-                  status: 200,
-                  error: null,
-                }),
-              100
-            )
-          )
-      )
-
-      renderComponent()
-
-      expect(screen.getByText('Loading upload history...')).toBeInTheDocument()
-    })
-
-    it('displays error alert when history fetch fails', async () => {
-      get.mockResolvedValue({
-        data: null,
-        ok: false,
-        status: 500,
-        error: new Error('Failed to fetch'),
-      })
-
-      renderComponent()
-
-      await waitFor(() => {
-        expect(
-          screen.getByText(
-            'Failed to load upload history. Please refresh the page.'
-          )
-        ).toBeInTheDocument()
-      })
-    })
-
-    it('displays multiple history entries correctly', async () => {
-      const mockHistory = [
-        {
-          id: 1,
-          year: 2025,
-          created_at: '2025-03-05T10:31:00Z',
-          processed_at: '2025-03-05T10:41:00Z',
-          original_filename: 'FY2025.zip',
-          file: 'https://example.com/FY2025.zip',
-        },
-        {
-          id: 2,
-          year: 2025,
-          created_at: '2025-01-08T09:41:00Z',
-          processed_at: '2025-01-08T09:48:00Z',
-          original_filename: 'FY2025_Q1.zip',
-          file: 'https://example.com/FY2025_Q1.zip',
-        },
-      ]
-
-      get.mockResolvedValue({
-        data: { results: mockHistory },
-        ok: true,
-        status: 200,
-        error: null,
-      })
-
-      renderComponent()
-
-      await waitFor(() => {
-        expect(screen.getByText('FY2025.zip')).toBeInTheDocument()
-        expect(screen.getByText('FY2025_Q1.zip')).toBeInTheDocument()
-      })
-    })
-
-    it('refreshes history after successful upload', async () => {
-      post.mockResolvedValue({
-        data: { id: 1, status: 'PENDING' },
-        ok: true,
-        status: 200,
-        error: null,
-      })
-
-      const mockHistory = [
-        {
-          id: 1,
-          year: 2025,
-          created_at: '2025-03-05T10:31:00Z',
-          processed_at: null,
-          original_filename: 'new.zip',
-          file: 'https://example.com/new.zip',
-        },
-      ]
-
-      // Initial fetch returns empty, all subsequent calls return mockHistory
-      get
-        .mockResolvedValueOnce({
-          data: { results: [] },
-          ok: true,
-          status: 200,
-          error: null,
-        }) // Initial fetch
-        .mockResolvedValue({
-          data: { results: mockHistory },
-          ok: true,
-          status: 200,
-          error: null,
-        }) // All subsequent calls (including after upload)
-
-      renderComponent()
-
-      await waitFor(() => {
-        expect(screen.getByText('No data available.')).toBeInTheDocument()
-      })
-
-      const fileInput = document.querySelector('input[type="file"]')
-      const file = new File(['content'], 'feedback.zip', {
-        type: 'application/zip',
-      })
-
-      fireEvent.change(fileInput, { target: { files: [file] } })
-
-      // Wait for FileReader async process to complete and button to be enabled
-      const uploadButton = await waitFor(() => {
-        const btn = screen.getByRole('button', {
-          name: /Upload & Notify States/i,
-        })
-        expect(btn).not.toHaveAttribute('disabled')
-        return btn
-      })
-
-      fireEvent.click(uploadButton)
-
-      await waitFor(() => {
-        expect(screen.getByText('new.zip')).toBeInTheDocument()
-      })
-
-      // Should have called GET at least twice: once on mount, once after upload
-      expect(get.mock.calls.length).toBeGreaterThanOrEqual(2)
-    })
-  })
-
-  describe('Date Formatting', () => {
-    it('formats timestamps correctly', async () => {
-      const mockHistory = [
-        {
-          id: 1,
-          year: 2025,
-          created_at: '2025-03-05T10:31:00Z',
-          processed_at: '2025-03-05T10:41:00Z',
-          status: 'SUCCEEDED',
-          original_filename: 'test.zip',
-          file: 'https://example.com/test.zip',
-        },
-      ]
-
-      get.mockResolvedValue({
-        data: { results: mockHistory },
-        ok: true,
-        status: 200,
-        error: null,
-      })
-
-      renderComponent()
-
-      await waitFor(() => {
-        // Check that dates are formatted (exact format may vary by locale)
-        const dates = screen.getAllByText(/03\/05\/2025/)
-        expect(dates.length).toBeGreaterThan(0)
-      })
-    })
-
-    it('displays N/A for missing timestamps', async () => {
-      const mockHistory = [
-        {
-          id: 1,
-          year: 2025,
-          created_at: '2025-03-05T10:31:00Z',
-          processed_at: null,
-          status: 'PENDING',
-          original_filename: 'test.zip',
-          file: 'https://example.com/test.zip',
-        },
-      ]
-
-      get.mockResolvedValue({
-        data: { results: mockHistory },
-        ok: true,
-        status: 200,
-        error: null,
-      })
-
-      renderComponent()
-
-      await waitFor(() => {
-        const cells = screen.getAllByText('N/A')
-        expect(cells.length).toBeGreaterThan(0)
-      })
-    })
-  })
-
-  describe('File Input Interaction', () => {
-    it('clears file selection after successful upload', async () => {
-      post.mockResolvedValue({
-        data: { id: 1, status: 'PENDING' },
-        ok: true,
-        status: 200,
-        error: null,
-      })
-
-      renderComponent()
-
-      await waitFor(() => {
-        expect(screen.getByText('Feedback Reports ZIP')).toBeInTheDocument()
-      })
-
-      const fileInput = document.querySelector('input[type="file"]')
-      const file = new File(['content'], 'feedback.zip', {
-        type: 'application/zip',
-      })
-
-      fireEvent.change(fileInput, { target: { files: [file] } })
-
-      // Wait for FileReader async process to complete and button to be enabled
-      const uploadButton = await waitFor(() => {
-        const btn = screen.getByRole('button', {
-          name: /Upload & Notify States/i,
-        })
-        expect(btn).not.toHaveAttribute('disabled')
-        return btn
-      })
-
-      fireEvent.click(uploadButton)
-
-      await waitFor(() => {
-        expect(uploadButton).toHaveAttribute('disabled')
-      })
-    })
-  })
-
-  describe('Initialization', () => {
-    it('calls fileInput.init() on mount', () => {
-      const { fileInput } = require('@uswds/uswds/src/js/components')
-
-      renderComponent()
-
-      expect(fileInput.init).toHaveBeenCalled()
-    })
-  })
-
-  describe('Paginated Response Handling', () => {
-    it('handles paginated response with results array', async () => {
-      const mockHistory = [
-        {
-          id: 1,
-          year: 2025,
-          created_at: '2025-03-05T10:31:00Z',
-          processed_at: '2025-03-05T10:41:00Z',
-          original_filename: 'test.zip',
-          file: 'https://example.com/test.zip',
-        },
-      ]
-
-      get.mockResolvedValue({
-        data: { results: mockHistory },
-        ok: true,
-        status: 200,
-        error: null,
-      })
-
-      renderComponent()
-
-      await waitFor(() => {
-        expect(screen.getByText('test.zip')).toBeInTheDocument()
-      })
-    })
-  })
-
-  describe('Year Fallback', () => {
-    it('displays current year when report year is null', async () => {
-      const currentYear = new Date().getFullYear()
-      const mockHistory = [
-        {
-          id: 1,
-          year: null,
-          created_at: '2025-03-05T10:31:00Z',
-          processed_at: '2025-03-05T10:41:00Z',
-          original_filename: 'test.zip',
-          file: 'https://example.com/test.zip',
-        },
-      ]
-
-      get.mockResolvedValue({
-        data: { results: mockHistory },
-        ok: true,
-        status: 200,
-        error: null,
-      })
-
-      renderComponent()
-
-      await waitFor(() => {
-        expect(screen.getByText(currentYear.toString())).toBeInTheDocument()
-      })
+      expect(reportSourcesCall).toBeUndefined()
     })
   })
 })

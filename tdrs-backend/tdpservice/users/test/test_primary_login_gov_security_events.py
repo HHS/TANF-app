@@ -1,6 +1,7 @@
 """Test the Login.gov UUID change handling in TokenAuthorizationOIDC._handle_user."""
 import uuid
 from datetime import datetime
+from datetime import timezone as dt_timezone
 from unittest.mock import MagicMock, patch
 
 from django.urls import reverse
@@ -80,7 +81,7 @@ def test_login_gov_uuid_change_without_account_purged(user):
     )
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 @patch("tdpservice.security.views.requests.get")
 @patch("tdpservice.security.views.jwt.get_unverified_header")
 @patch("tdpservice.security.views.jwt.decode")
@@ -140,7 +141,7 @@ def test_user_changed_login_gov_email(
     }
     assert token.jwt_id == "test_jti_email_change_e2e"
     assert token.issuer == "https://login.gov"
-    assert token.issued_at == datetime.fromtimestamp(iat, tz=timezone.utc)
+    assert token.issued_at == datetime.fromtimestamp(iat, tz=dt_timezone.utc)
     assert token.processed is True
 
 
