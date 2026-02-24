@@ -1771,10 +1771,11 @@ class TestParse:
         )
 
     @pytest.mark.django_db
-    def test_parse_case_aggregates_edge_case(case_aggregates_edge_case, dfs):
+    def test_parse_case_aggregates_edge_case(self, case_aggregates_edge_case, dfs):
         """Test parsing of cases_across_months_with_error.txt."""
         case_aggregates_edge_case.year = 2026
         case_aggregates_edge_case.quarter = "Q1"
+        case_aggregates_edge_case.save()
 
         dfs.datafile = case_aggregates_edge_case
 
