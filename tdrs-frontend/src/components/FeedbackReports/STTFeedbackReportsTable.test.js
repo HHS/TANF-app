@@ -1,10 +1,10 @@
 import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import STTFeedbackReportsTable from './STTFeedbackReportsTable'
-import axiosInstance from '../../axios-instance'
+import { get } from '../../fetch-instance'
 import { downloadBlob } from '../../utils/fileDownload'
 
-jest.mock('../../axios-instance')
+jest.mock('../../fetch-instance')
 jest.mock('../../utils/fileDownload')
 
 describe('STTFeedbackReportsTable', () => {
@@ -207,7 +207,7 @@ describe('STTFeedbackReportsTable', () => {
 
     it('triggers download on click', async () => {
       const mockBlob = new Blob(['test content'], { type: 'application/zip' })
-      axiosInstance.get.mockResolvedValue({ data: mockBlob })
+      get.mockResolvedValue({ data: mockBlob, ok: true, status: 200, error: null })
 
       const mockData = [
         {
@@ -226,11 +226,10 @@ describe('STTFeedbackReportsTable', () => {
       fireEvent.click(downloadButton)
 
       await waitFor(() => {
-        expect(axiosInstance.get).toHaveBeenCalledWith(
+        expect(get).toHaveBeenCalledWith(
           expect.stringContaining('/reports/1/download/'),
           expect.objectContaining({
             responseType: 'blob',
-            withCredentials: true,
           })
         )
       })
@@ -241,8 +240,14 @@ describe('STTFeedbackReportsTable', () => {
     })
 
     it('shows downloading state during download', async () => {
-      axiosInstance.get.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
+      get.mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () => resolve({ data: null, ok: true, status: 200, error: null }),
+              100
+            )
+          )
       )
 
       const mockData = [
@@ -267,7 +272,7 @@ describe('STTFeedbackReportsTable', () => {
     })
 
     it('shows error alert when download fails', async () => {
-      axiosInstance.get.mockRejectedValue(new Error('Download failed'))
+      get.mockResolvedValue({ data: null, ok: false, status: 500, error: new Error('Download failed') })
 
       const mockData = [
         {
@@ -295,8 +300,14 @@ describe('STTFeedbackReportsTable', () => {
     })
 
     it('clears alert before starting download', async () => {
-      axiosInstance.get.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
+      get.mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () => resolve({ data: null, ok: true, status: 200, error: null }),
+              100
+            )
+          )
       )
 
       const mockData = [
@@ -324,7 +335,7 @@ describe('STTFeedbackReportsTable', () => {
 
     it('uses fallback filename "report.zip" when original_filename is missing', async () => {
       const mockBlob = new Blob(['test content'], { type: 'application/zip' })
-      axiosInstance.get.mockResolvedValue({ data: mockBlob })
+      get.mockResolvedValue({ data: mockBlob, ok: true, status: 200, error: null })
 
       const mockData = [
         {
@@ -346,8 +357,14 @@ describe('STTFeedbackReportsTable', () => {
     })
 
     it('disables button during download', async () => {
-      axiosInstance.get.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
+      get.mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () => resolve({ data: null, ok: true, status: 200, error: null }),
+              100
+            )
+          )
       )
 
       const mockData = [
@@ -377,8 +394,20 @@ describe('STTFeedbackReportsTable', () => {
 
   describe('Multiple Downloads', () => {
     it('only disables the downloading button, not others', async () => {
-      axiosInstance.get.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
+      get.mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () =>
+                resolve({
+                  data: null,
+                  ok: true,
+                  status: 200,
+                  error: null,
+                }),
+              100
+            )
+          )
       )
 
       const mockData = [

@@ -5,9 +5,9 @@ import { MemoryRouter } from 'react-router-dom'
 import configureStore from 'redux-mock-store'
 import { thunk } from 'redux-thunk'
 import FeedbackReports from './FeedbackReports'
-import axiosInstance from '../../axios-instance'
+import { get } from '../../fetch-instance'
 
-jest.mock('../../axios-instance')
+jest.mock('../../fetch-instance')
 jest.mock('../../utils/createFileInputErrorState')
 jest.mock('@uswds/uswds/src/js/components', () => ({
   fileInput: {
@@ -23,7 +23,12 @@ const mockStore = configureStore([thunk])
 describe('FeedbackReports', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    axiosInstance.get.mockResolvedValue({ data: { results: [] } })
+    get.mockResolvedValue({
+      data: { results: [] },
+      ok: true,
+      status: 200,
+      error: null,
+    })
 
     // Mock FileReader for AdminFeedbackReports
     global.FileReader = jest.fn().mockImplementation(() => ({
@@ -244,7 +249,7 @@ describe('FeedbackReports', () => {
       fireEvent.change(fiscalYearSelect, { target: { value: '2025' } })
 
       await waitFor(() => {
-        expect(axiosInstance.get).toHaveBeenCalledWith(
+        expect(get).toHaveBeenCalledWith(
           expect.stringContaining('/reports/report-sources/'),
           expect.objectContaining({
             params: { year: '2025' },
@@ -279,14 +284,14 @@ describe('FeedbackReports', () => {
       fireEvent.change(yearSelect, { target: { value: '2025' } })
 
       await waitFor(() => {
-        expect(axiosInstance.get).toHaveBeenCalledWith(
+        expect(get).toHaveBeenCalledWith(
           expect.stringContaining('/reports/'),
           expect.any(Object)
         )
       })
 
       // Make sure it's not calling the report-sources endpoint
-      const calls = axiosInstance.get.mock.calls
+      const calls = get.mock.calls
       const reportSourcesCall = calls.find((call) =>
         call[0].includes('report-sources')
       )

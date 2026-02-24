@@ -1,4 +1,4 @@
-import { get, setCSRFToken } from '../fetch-instance'
+import { get } from '../fetch-instance'
 import { logErrorToServer } from '../utils/eventLogger'
 
 export const FETCH_AUTH = 'FETCH_AUTH'
@@ -53,10 +53,7 @@ export const fetchAuth = () => async (dispatch) => {
   if (data?.inactive) {
     dispatch({ type: SET_DEACTIVATED })
   } else if (data?.user) {
-    const { user, csrf } = data
-
-    // Work around for csrf cookie issue we encountered in production.
-    setCSRFToken(csrf)
+    const { user } = data
 
     dispatch({ type: SET_AUTH, payload: { user } })
   } else {

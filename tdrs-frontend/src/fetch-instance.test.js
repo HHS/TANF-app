@@ -1,4 +1,4 @@
-import { get, post, patch, setCSRFToken, getCSRFToken } from './fetch-instance'
+import { get, post, patch } from './fetch-instance'
 import { faro } from '@grafana/faro-react'
 
 jest.mock('@grafana/faro-react')
@@ -19,14 +19,9 @@ describe('fetch-instance', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     global.fetch = jest.fn()
-    setCSRFToken(null)
-  })
-
-  describe('setCSRFToken / getCSRFToken', () => {
-    it('stores and retrieves the CSRF token', () => {
-      expect(getCSRFToken()).toBeNull()
-      setCSRFToken('test-token')
-      expect(getCSRFToken()).toBe('test-token')
+    Object.defineProperty(document, 'cookie', {
+      writable: true,
+      value: '',
     })
   })
 
@@ -138,8 +133,8 @@ describe('fetch-instance', () => {
       expect(callArgs.headers['Content-Type']).toBeUndefined()
     })
 
-    it('includes CSRF token in POST headers', async () => {
-      setCSRFToken('my-csrf-token')
+    it('includes CSRF token from cookie in POST headers', async () => {
+      document.cookie = 'csrftoken=my-csrf-token'
       global.fetch.mockResolvedValue(mockResponse({}))
 
       await post('/api/create', {})
@@ -152,6 +147,16 @@ describe('fetch-instance', () => {
           }),
         })
       )
+    })
+
+    it('omits CSRF header when no cookie is set', async () => {
+      document.cookie = ''
+      global.fetch.mockResolvedValue(mockResponse({}))
+
+      await post('/api/create', {})
+
+      const callArgs = fetch.mock.calls[0][1]
+      expect(callArgs.headers['X-CSRFToken']).toBeUndefined()
     })
 
     it('handles network errors', async () => {
@@ -193,8 +198,8 @@ describe('fetch-instance', () => {
       })
     })
 
-    it('includes CSRF token in PATCH headers', async () => {
-      setCSRFToken('patch-csrf-token')
+    it('includes CSRF token from cookie in PATCH headers', async () => {
+      document.cookie = 'csrftoken=patch-csrf-token'
       global.fetch.mockResolvedValue(mockResponse({}))
 
       await patch('/api/update/1', {})

@@ -5,9 +5,9 @@ import { MemoryRouter } from 'react-router-dom'
 import configureStore from 'redux-mock-store'
 import { thunk } from 'redux-thunk'
 import AdminFeedbackReports from './AdminFeedbackReports'
-import axiosInstance from '../../axios-instance'
+import { get, post } from '../../fetch-instance'
 
-jest.mock('../../axios-instance')
+jest.mock('../../fetch-instance')
 jest.mock('../../utils/createFileInputErrorState')
 jest.mock('@uswds/uswds/src/js/components', () => ({
   fileInput: {
@@ -39,7 +39,7 @@ describe('AdminFeedbackReports', () => {
     jest.clearAllMocks()
 
     // Mock successful history fetch by default
-    axiosInstance.get.mockResolvedValue({ data: { results: [] } })
+    get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
 
     // Mock FileReader for async file handling
     global.FileReader = jest.fn().mockImplementation(() => ({
@@ -263,15 +263,18 @@ describe('AdminFeedbackReports', () => {
     })
 
     it('successfully uploads a file with date and shows success message', async () => {
-      axiosInstance.post.mockResolvedValue({
+      post.mockResolvedValue({
         data: {
           id: 1,
           status: 'PENDING',
           original_filename: 'FY2025.zip',
         },
+        ok: true,
+        status: 200,
+        error: null,
       })
 
-      axiosInstance.get.mockResolvedValue({ data: { results: [] } })
+      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
 
       renderComponent()
 
@@ -298,23 +301,20 @@ describe('AdminFeedbackReports', () => {
       })
 
       // Verify POST was called with year and date
-      expect(axiosInstance.post).toHaveBeenCalledWith(
+      expect(post).toHaveBeenCalledWith(
         expect.stringContaining('/reports/report-sources/'),
-        expect.any(FormData),
-        expect.objectContaining({
-          headers: { 'Content-Type': 'multipart/form-data' },
-          withCredentials: true,
-        })
+        expect.any(FormData)
       )
     })
 
     it('shows error message when upload fails', async () => {
-      axiosInstance.post.mockRejectedValue({
-        response: {
-          data: {
-            file: ['Invalid zip file structure'],
-          },
+      post.mockResolvedValue({
+        data: {
+          file: ['Invalid zip file structure'],
         },
+        ok: false,
+        status: 400,
+        error: new Error('HTTP 400'),
       })
 
       renderComponent()
@@ -338,8 +338,8 @@ describe('AdminFeedbackReports', () => {
     })
 
     it('shows loading state during upload', async () => {
-      axiosInstance.post.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
+      post.mockImplementation(
+        () => new Promise((resolve) => setTimeout(() => resolve({ data: null, ok: true, status: 200, error: null }), 100))
       )
 
       renderComponent()
@@ -377,7 +377,7 @@ describe('AdminFeedbackReports', () => {
         },
       ]
 
-      axiosInstance.get.mockResolvedValue({ data: { results: mockHistory } })
+      get.mockResolvedValue({ data: { results: mockHistory }, ok: true, status: 200, error: null })
 
       renderComponent()
 
@@ -388,17 +388,16 @@ describe('AdminFeedbackReports', () => {
         expect(screen.getByText('02/28/2025')).toBeInTheDocument()
       })
 
-      expect(axiosInstance.get).toHaveBeenCalledWith(
+      expect(get).toHaveBeenCalledWith(
         expect.stringContaining('/reports/report-sources/'),
         expect.objectContaining({
           params: { year: '2025' },
-          withCredentials: true,
         })
       )
     })
 
     it('displays empty state when no history exists', async () => {
-      axiosInstance.get.mockResolvedValue({ data: { results: [] } })
+      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
 
       renderComponent()
 
@@ -410,7 +409,7 @@ describe('AdminFeedbackReports', () => {
     })
 
     it('displays error alert when history fetch fails', async () => {
-      axiosInstance.get.mockRejectedValue(new Error('Failed to fetch'))
+      get.mockResolvedValue({ data: null, ok: false, status: 500, error: new Error('Failed to fetch') })
 
       renderComponent()
 
@@ -451,15 +450,15 @@ describe('AdminFeedbackReports', () => {
       ]
 
       // Use mockImplementation to handle different year params
-      axiosInstance.get.mockImplementation((url, config) => {
+      get.mockImplementation((url, config) => {
         const year = config?.params?.year
         if (year === '2025') {
-          return Promise.resolve({ data: { results: mockHistory2025 } })
+          return Promise.resolve({ data: { results: mockHistory2025 }, ok: true, status: 200, error: null })
         }
         if (year === '2024') {
-          return Promise.resolve({ data: { results: mockHistory2024 } })
+          return Promise.resolve({ data: { results: mockHistory2024 }, ok: true, status: 200, error: null })
         }
-        return Promise.resolve({ data: { results: [] } })
+        return Promise.resolve({ data: { results: [] }, ok: true, status: 200, error: null })
       })
 
       renderComponent()
@@ -480,8 +479,11 @@ describe('AdminFeedbackReports', () => {
     })
 
     it('refreshes history after successful upload', async () => {
-      axiosInstance.post.mockResolvedValue({
+      post.mockResolvedValue({
         data: { id: 1, status: 'PENDING' },
+        ok: true,
+        status: 200,
+        error: null,
       })
 
       const mockHistoryAfterUpload = [
@@ -496,9 +498,9 @@ describe('AdminFeedbackReports', () => {
         },
       ]
 
-      axiosInstance.get
-        .mockResolvedValueOnce({ data: { results: [] } })
-        .mockResolvedValue({ data: { results: mockHistoryAfterUpload } })
+      get
+        .mockResolvedValueOnce({ data: { results: [] }, ok: true, status: 200, error: null })
+        .mockResolvedValue({ data: { results: mockHistoryAfterUpload }, ok: true, status: 200, error: null })
 
       renderComponent()
 
@@ -538,7 +540,7 @@ describe('AdminFeedbackReports', () => {
         },
       ]
 
-      axiosInstance.get.mockResolvedValue({ data: { results: mockHistory } })
+      get.mockResolvedValue({ data: { results: mockHistory }, ok: true, status: 200, error: null })
 
       renderComponent()
 
@@ -565,7 +567,7 @@ describe('AdminFeedbackReports', () => {
         },
       ]
 
-      axiosInstance.get.mockResolvedValue({ data: { results: mockHistory } })
+      get.mockResolvedValue({ data: { results: mockHistory }, ok: true, status: 200, error: null })
 
       renderComponent()
 
@@ -580,8 +582,11 @@ describe('AdminFeedbackReports', () => {
 
   describe('Form Reset', () => {
     it('clears form after successful upload', async () => {
-      axiosInstance.post.mockResolvedValue({
+      post.mockResolvedValue({
         data: { id: 1, status: 'PENDING' },
+        ok: true,
+        status: 200,
+        error: null,
       })
 
       renderComponent()

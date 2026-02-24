@@ -1,20 +1,20 @@
 import { faro } from '@grafana/faro-react'
 
-let csrfToken = null
-
-export function setCSRFToken(token) {
-  csrfToken = token
-}
-
-export function getCSRFToken() {
-  return csrfToken
+function getCSRFToken() {
+  const value = `; ${document.cookie}`
+  const parts = value.split('; csrftoken=')
+  if (parts.length === 2) return parts.pop().split(';').shift()
+  return null
 }
 
 function buildHeaders(customHeaders = {}, includeCSRF = true) {
   const headers = { 'x-service-name': 'tdp-frontend', ...customHeaders }
 
-  if (includeCSRF && csrfToken) {
-    headers['X-CSRFToken'] = csrfToken
+  if (includeCSRF) {
+    const csrfToken = getCSRFToken()
+    if (csrfToken) {
+      headers['X-CSRFToken'] = csrfToken
+    }
   }
 
   if (faro?.api) {
@@ -57,10 +57,16 @@ async function handleResponse(response, responseType) {
 }
 
 export async function get(url, options = {}) {
-  const { headers: customHeaders, responseType, ...rest } = options
+  const { headers: customHeaders, responseType, params, ...rest } = options
+
+  let finalUrl = url
+  if (params) {
+    const searchParams = new URLSearchParams(params)
+    finalUrl = `${url}?${searchParams.toString()}`
+  }
 
   try {
-    const response = await fetch(url, {
+    const response = await fetch(finalUrl, {
       method: 'GET',
       credentials: 'include',
       headers: buildHeaders(customHeaders, false),
@@ -120,4 +126,4 @@ export async function patch(url, body, options = {}) {
   }
 }
 
-export default { get, post, patch, setCSRFToken, getCSRFToken }
+export default { get, post, patch }

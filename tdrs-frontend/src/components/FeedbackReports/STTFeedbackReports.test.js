@@ -5,9 +5,9 @@ import { MemoryRouter } from 'react-router-dom'
 import configureStore from 'redux-mock-store'
 import { thunk } from 'redux-thunk'
 import STTFeedbackReports from './STTFeedbackReports'
-import axiosInstance from '../../axios-instance'
+import { get } from '../../fetch-instance'
 
-jest.mock('../../axios-instance')
+jest.mock('../../fetch-instance')
 
 const mockStore = configureStore([thunk])
 
@@ -32,7 +32,7 @@ describe('STTFeedbackReports', () => {
     jest.clearAllMocks()
 
     // Mock successful reports fetch by default
-    axiosInstance.get.mockResolvedValue({ data: { results: [] } })
+    get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
   })
 
   const renderComponent = () => {
@@ -98,7 +98,7 @@ describe('STTFeedbackReports', () => {
     })
 
     it('renders the description text with email links when year is selected', async () => {
-      axiosInstance.get.mockResolvedValue({ data: { results: [] } })
+      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
 
       renderComponent()
 
@@ -116,7 +116,7 @@ describe('STTFeedbackReports', () => {
     })
 
     it('renders the Knowledge Center link when year is selected', async () => {
-      axiosInstance.get.mockResolvedValue({ data: { results: [] } })
+      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
 
       renderComponent()
 
@@ -132,7 +132,7 @@ describe('STTFeedbackReports', () => {
     })
 
     it('renders the H2 header with STT name and fiscal year when year is selected', async () => {
-      axiosInstance.get.mockResolvedValue({ data: { results: [] } })
+      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
 
       renderComponent()
 
@@ -151,7 +151,7 @@ describe('STTFeedbackReports', () => {
     })
 
     it('renders the H3 heading as just "Feedback Reports" when year is selected', async () => {
-      axiosInstance.get.mockResolvedValue({ data: { results: [] } })
+      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
 
       renderComponent()
 
@@ -173,12 +173,12 @@ describe('STTFeedbackReports', () => {
 
       // Wait a bit to ensure no fetch happens
       await waitFor(() => {
-        expect(axiosInstance.get).not.toHaveBeenCalled()
+        expect(get).not.toHaveBeenCalled()
       })
     })
 
     it('fetches reports when year is selected', async () => {
-      axiosInstance.get.mockResolvedValue({ data: { results: [] } })
+      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
 
       renderComponent()
 
@@ -187,19 +187,30 @@ describe('STTFeedbackReports', () => {
       fireEvent.change(yearSelect, { target: { value: '2025' } })
 
       await waitFor(() => {
-        expect(axiosInstance.get).toHaveBeenCalledWith(
+        expect(get).toHaveBeenCalledWith(
           expect.stringContaining('/reports/'),
           expect.objectContaining({
             params: { year: 2025 },
-            withCredentials: true,
           })
         )
       })
     })
 
     it('displays loading state while fetching', async () => {
-      axiosInstance.get.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
+      get.mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () =>
+                resolve({
+                  data: { results: [] },
+                  ok: true,
+                  status: 200,
+                  error: null,
+                }),
+              100
+            )
+          )
       )
 
       renderComponent()
@@ -216,7 +227,7 @@ describe('STTFeedbackReports', () => {
     })
 
     it('displays error alert when fetch fails', async () => {
-      axiosInstance.get.mockRejectedValue(new Error('Failed to fetch'))
+      get.mockResolvedValue({ data: null, ok: false, status: 500, error: new Error('Failed to fetch') })
 
       renderComponent()
 
@@ -234,7 +245,7 @@ describe('STTFeedbackReports', () => {
     })
 
     it('displays empty state when no reports exist', async () => {
-      axiosInstance.get.mockResolvedValue({ data: { results: [] } })
+      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
 
       renderComponent()
 
@@ -262,7 +273,7 @@ describe('STTFeedbackReports', () => {
         },
       ]
 
-      axiosInstance.get.mockResolvedValue({ data: { results: mockReports } })
+      get.mockResolvedValue({ data: { results: mockReports }, ok: true, status: 200, error: null })
 
       renderComponent()
 
@@ -300,8 +311,11 @@ describe('STTFeedbackReports', () => {
       ]
 
       // Mock first fetch for 2025
-      axiosInstance.get.mockResolvedValueOnce({
+      get.mockResolvedValueOnce({
         data: { results: mock2025Reports },
+        ok: true,
+        status: 200,
+        error: null,
       })
 
       renderComponent()
@@ -316,7 +330,7 @@ describe('STTFeedbackReports', () => {
       })
 
       // Verify initial call was made with 2025
-      expect(axiosInstance.get).toHaveBeenCalledWith(
+      expect(get).toHaveBeenCalledWith(
         expect.stringContaining('/reports/'),
         expect.objectContaining({
           params: { year: 2025 },
@@ -324,8 +338,11 @@ describe('STTFeedbackReports', () => {
       )
 
       // Mock the next fetch for 2024
-      axiosInstance.get.mockResolvedValueOnce({
+      get.mockResolvedValueOnce({
         data: { results: mock2024Reports },
+        ok: true,
+        status: 200,
+        error: null,
       })
 
       // Change to 2024 - should automatically fetch new reports
@@ -333,7 +350,7 @@ describe('STTFeedbackReports', () => {
 
       // Should fetch with new year param
       await waitFor(() => {
-        expect(axiosInstance.get).toHaveBeenCalledWith(
+        expect(get).toHaveBeenCalledWith(
           expect.stringContaining('/reports/'),
           expect.objectContaining({
             params: { year: 2024 },
@@ -349,7 +366,7 @@ describe('STTFeedbackReports', () => {
     })
 
     it('updates the H2 heading when year is changed', async () => {
-      axiosInstance.get.mockResolvedValue({ data: { results: [] } })
+      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
 
       renderComponent()
 
@@ -394,7 +411,7 @@ describe('STTFeedbackReports', () => {
         },
       ]
 
-      axiosInstance.get.mockResolvedValue({ data: { results: mockReports } })
+      get.mockResolvedValue({ data: { results: mockReports }, ok: true, status: 200, error: null })
 
       renderComponent()
 
@@ -418,7 +435,7 @@ describe('STTFeedbackReports', () => {
         },
       ]
 
-      axiosInstance.get.mockResolvedValue({ data: mockReports })
+      get.mockResolvedValue({ data: mockReports, ok: true, status: 200, error: null })
 
       renderComponent()
 
@@ -432,7 +449,7 @@ describe('STTFeedbackReports', () => {
     })
 
     it('handles response with null/empty data', async () => {
-      axiosInstance.get.mockResolvedValue({ data: null })
+      get.mockResolvedValue({ data: null, ok: true, status: 200, error: null })
 
       renderComponent()
 
@@ -469,7 +486,7 @@ describe('STTFeedbackReports', () => {
         },
       ]
 
-      axiosInstance.get.mockResolvedValue({ data: { results: mockReports } })
+      get.mockResolvedValue({ data: { results: mockReports }, ok: true, status: 200, error: null })
 
       renderComponent()
 
@@ -496,7 +513,7 @@ describe('STTFeedbackReports', () => {
     }
 
     it('initializes year from URL parameter', async () => {
-      axiosInstance.get.mockResolvedValue({ data: { results: [] } })
+      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
 
       renderWithUrl('/feedback-reports?year=2024')
 
@@ -507,12 +524,12 @@ describe('STTFeedbackReports', () => {
     })
 
     it('fetches reports with year from URL parameter', async () => {
-      axiosInstance.get.mockResolvedValue({ data: { results: [] } })
+      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
 
       renderWithUrl('/feedback-reports?year=2024')
 
       await waitFor(() => {
-        expect(axiosInstance.get).toHaveBeenCalledWith(
+        expect(get).toHaveBeenCalledWith(
           expect.stringContaining('/reports/'),
           expect.objectContaining({
             params: { year: 2024 },
@@ -522,7 +539,7 @@ describe('STTFeedbackReports', () => {
     })
 
     it('shows placeholder for invalid year param', async () => {
-      axiosInstance.get.mockResolvedValue({ data: { results: [] } })
+      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
 
       renderWithUrl('/feedback-reports?year=invalid')
 
@@ -538,7 +555,7 @@ describe('STTFeedbackReports', () => {
     })
 
     it('shows placeholder for out-of-range year', async () => {
-      axiosInstance.get.mockResolvedValue({ data: { results: [] } })
+      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
 
       renderWithUrl('/feedback-reports?year=1999')
 
@@ -554,7 +571,7 @@ describe('STTFeedbackReports', () => {
     })
 
     it('displays H2 heading with STT name and year from URL parameter', async () => {
-      axiosInstance.get.mockResolvedValue({ data: { results: [] } })
+      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
 
       renderWithUrl('/feedback-reports?year=2024')
 
