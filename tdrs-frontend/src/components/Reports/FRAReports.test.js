@@ -458,6 +458,9 @@ describe('FRA Reports Page', () => {
               latest_reparse_file_meta: '',
             },
           ],
+          ok: true,
+          status: 200,
+          error: null,
         })
       })
 
