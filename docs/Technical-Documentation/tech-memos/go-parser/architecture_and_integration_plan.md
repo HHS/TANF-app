@@ -45,7 +45,7 @@ The Go parser's core pipeline has no opinion about how work arrives. The ingesti
 - **Celery worker** — the current integration path, consuming tasks from Redis alongside the Django application
 - **HTTP service** — accepting file uploads directly, running as a standalone microservice behind a load balancer
 - **gRPC service** — for high-throughput internal communication between services
-- **Lambda function** — triggered by S3 upload events for serverless, on-demand processing
+- **Lambda function** — triggered by S3 upload events/HTTP for serverless, on-demand processing
 
 Adding a new communication mode is a matter of writing a new entrypoint that calls `Pipeline.ProcessFile()`. The compiled binary, configuration loading, and all pipeline internals remain identical across deployment modes.
 
@@ -453,41 +453,51 @@ ENTRYPOINT ["/go-parser"]
 
 ## Migration Strategy
 
-### Phase 1: Shadow Mode (Parallel Running)
+### Phase 1: Canary Routing (Controlled Cutover)
 
-Run both parsers on every submission and compare outputs without affecting users.
+Route a small, controlled subset of real submissions to the Go parser writing to production tables. Gradually widen the canary until all traffic is handled by Go.
 
-1. Django dispatches `parse(data_file_id)` to **both** the Python and Go queues
-2. Python parser writes to production tables (existing behavior)
-3. Go parser writes to shadow tables (`shadow_search_indexes_*`, `shadow_parser_error`)
-4. A comparison job (manual or automated) diffs the outputs and reports discrepancies
-5. No user-facing changes — the Python parser remains the source of truth
+Because the Cloud.gov environment does not support network-level traffic splitting, the routing decision is made **programmatically in Django** at task dispatch time. A configuration table or environment-backed setting defines which submissions are routed to the Go parser based on attributes such as program type, STT, or section:
 
-**Exit criteria**: Zero record discrepancies across a full quarter of submissions for all program types.
+```python
+# Example: routing logic in Django task dispatch
+GO_PARSER_CANARY = {
+    "enabled": True,
+    "mode": "allowlist",          # "allowlist", "percentage", or "all"
+    "allowlist_stts": ["ST01"],   # specific STTs routed to Go
+    "allowlist_programs": [],     # specific program types routed to Go
+    "percentage": 0,              # percentage of remaining traffic routed to Go
+}
 
-### Phase 2: Go Parser Primary with Python Fallback
+def dispatch_parse(data_file_id):
+    data_file = DataFile.objects.get(id=data_file_id)
+    if should_use_go_parser(data_file, GO_PARSER_CANARY):
+        parse.apply_async(args=[data_file_id], queue="go_parser")
+    else:
+        parse.apply_async(args=[data_file_id], queue="python_parser")
+```
 
-Switch the Go parser to write to production tables, with automatic fallback.
+Canary progression:
 
-1. Django routes `parse` tasks to the Go parser queue by default
-2. If the Go parser fails (crashes, times out, returns error), Django re-enqueues the task to the Python parser queue
-3. Monitoring alerts on any fallback events
-4. Python parser remains deployed and ready
+1. Start with a single STT or program type on the allowlist (smallest blast radius)
+2. Monitor record counts, error counts, and DataFileSummary outcomes against historical baselines
+3. If the Go parser fails (crashes, times out, returns error), the file can easily be reparsed via the Python parser
+4. Widen the allowlist to additional STTs and program types as confidence grows
+5. Switch mode to `percentage` and ramp from 10% → 25% → 50% → 100%
 
-**Exit criteria**: Zero fallback events over a sustained period (e.g., 30 days).
+**Exit criteria**: 100% of traffic routed to Go parser with zero fallback events over a sustained period (e.g., 30 days).
 
-### Phase 3: Python Parser Decommission
+### Phase 2: Python Parser Decommission
 
 Remove the Python parser from the parsing path entirely.
 
-1. Remove Celery task routing — Go parser is the only consumer of `parse` tasks
-2. Keep Python Celery worker for non-parse tasks (email, reparse scheduling, admin)
+1. Remove canary routing logic — Go parser is the only consumer of `parse` tasks
+2. Keep Python Celery worker for non-parse tasks (email, reparse scheduling, admin). Consider moving the Python Celery worker back into the backend VM
 3. Remove Python parser code, schema definitions, and validators from the codebase
-4. Archive shadow comparison infrastructure
 
 ### Feature Parity Checklist
 
-Before exiting Phase 1, the Go parser must handle:
+Before widening the canary beyond the initial allowlist, the Go parser must handle:
 
 - [ ] All TANF sections (1-4) with all record types (T1-T7)
 - [ ] All SSP sections (1-4) with all record types (M1-M7)
@@ -500,7 +510,7 @@ Before exiting Phase 1, the Go parser must handle:
 - [ ] Duplicate detection 
 - [ ] DataFileSummary status updates
 - [ ] Parser error records with correct line numbers, field names, and error messages
-- [ ] Reparse handling (clearing previous records before re-parsing)
+- [ ] Reparse handling (The Reparse Service should handle the queing, deleting, etc.)
 
 ---
 
@@ -511,7 +521,7 @@ Before exiting Phase 1, the Go parser must handle:
 | Risk | Impact | Likelihood | Mitigation |
 |------|--------|------------|------------|
 | **Schema drift** — Django model migrations diverge from SQLC schema | Go parser writes fail or corrupt data | Medium | CI step runs `sqlc diff`; integration tests run against migrated DB |
-| **Validation parity gaps** — Go parser misses edge cases in Python validators | Incorrect acceptance or rejection of records | Medium | Shadow mode comparison across full quarter; comprehensive integration test suite |
+| **Validation parity gaps** — Go parser misses edge cases in Python validators | Incorrect acceptance or rejection of records | Medium | Canary routing with narrow allowlist; automatic Python fallback; comprehensive integration test suite |
 | **Memory pressure** — Large files during presort exhaust container memory | OOM kill, failed parse | Low | Monitor container memory; set memory limits; most files are well under 100MB |
 | **gocelery compatibility** — `gocelery` library may not support all Celery protocol features | Task consumption failures | Low | Validate against actual Redis task payloads; the library is used only for basic task/result protocol |
 | **Expression engine bugs** — `expr` library edge cases in validation | Incorrect validation results | Low | Pinned dependency version; comprehensive validator unit tests |
@@ -525,7 +535,7 @@ Before exiting Phase 1, the Go parser must handle:
 | S3 bucket access | DevOps | Existing — same IAM role or credentials |
 | Go runtime in Docker | DevOps | **New** — Dockerfile and CI pipeline needed |
 | Celery task routing | Backend team | **New** — Django settings change to route parse tasks |
-| Shadow tables | Backend team | **New** — Migration to create shadow comparison tables (Phase 1 only) |
+| Canary routing config | Backend team | **New** — Django routing logic and canary configuration |
 
 ### Open Questions
 
@@ -534,4 +544,4 @@ Before exiting Phase 1, the Go parser must handle:
 | What is the rollback strategy if issues arise during transition? | Production safety | Phase 2 includes automatic fallback to Python parser. Rollback is a routing config change — no deployment needed. |
 | Are there compliance or security review requirements for introducing Go? | FedRAMP / ATO considerations | Go is a compiled, memory-safe language with no additional runtime dependencies. Security review should focus on: dependency audit (`go.mod`), container scanning, and network access patterns (same as Python worker). |
 | How will monitoring and observability differ? | Operational visibility | The Go parser should emit structured logs (JSON) and expose Prometheus metrics for: files processed, records parsed, errors generated, pipeline stage latencies, and worker pool utilization. These integrate with the existing Grafana/Prometheus stack already in docker-compose. |
-| What is the desired timeline for production readiness? | Planning | Depends on team capacity. Suggested: Phase 1 (shadow mode) can begin as soon as the Dockerfile, CI pipeline, and shadow table migration are in place. |
+| What is the desired timeline for production readiness? | Planning | Depends on team capacity. Suggested: Phase 1 (canary routing) can begin as soon as the Dockerfile, CI pipeline, and canary routing logic are in place. |
