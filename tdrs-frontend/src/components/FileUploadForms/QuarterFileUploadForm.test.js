@@ -6,6 +6,7 @@ import { ReportsProvider } from '../Reports/ReportsContext'
 import { useFormSubmission } from '../../hooks/useFormSubmission'
 import { useEventLogger } from '../../utils/eventLogger'
 import { MemoryRouter } from 'react-router-dom'
+import * as reportsActions from '../../actions/reports'
 
 // Mock dependencies
 jest.mock('../../hooks/useFormSubmission')
@@ -76,12 +77,38 @@ describe('QuarterFileUploadForm', () => {
 
     // Mock scrollIntoView
     window.HTMLElement.prototype.scrollIntoView = jest.fn()
+
+    jest
+      .spyOn(reportsActions, 'clearFileList')
+      .mockImplementation(({ fileType }) => ({
+        type: 'CLEAR_FILE_LIST',
+        payload: { fileType },
+      }))
+
+    jest
+      .spyOn(reportsActions, 'getAvailableFileList')
+      .mockImplementation(({ file_type }, onSuccess = () => null) => () => {
+        onSuccess()
+        return Promise.resolve({
+          type: 'SET_FILE_LIST',
+          payload: { data: [] },
+          file_type,
+        })
+      })
+
+    jest
+      .spyOn(reportsActions, 'submit')
+      .mockImplementation((payload, onComplete = () => null) => () => {
+        onComplete(['file-id-1'])
+        return Promise.resolve()
+      })
   })
 
   afterEach(() => {
     jest.runOnlyPendingTimers()
     jest.useRealTimers()
     jest.clearAllMocks()
+    jest.restoreAllMocks()
   })
 
   const renderComponent = (storeState = initialState, stt = { id: 1 }) => {
@@ -182,6 +209,9 @@ describe('QuarterFileUploadForm', () => {
       await waitFor(() => {
         expect(mockExecuteSubmission).toHaveBeenCalled()
       })
+
+      // After successful submission the upload panel should be cleared via handleClearFilesOnly
+      expect(reportsActions.clearFileList).toHaveBeenCalled()
     })
 
     it('handles submission errors gracefully', async () => {
