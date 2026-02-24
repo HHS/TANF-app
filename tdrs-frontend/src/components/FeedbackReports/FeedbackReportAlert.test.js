@@ -150,7 +150,12 @@ describe('FeedbackReportAlert', () => {
       quarterInputValue: 'Q1',
     })
 
-    get.mockResolvedValue({ data: null, ok: false, status: 500, error: new Error('API error') })
+    get.mockResolvedValue({
+      data: null,
+      ok: false,
+      status: 500,
+      error: new Error('API error'),
+    })
 
     const { container } = renderComponent()
 

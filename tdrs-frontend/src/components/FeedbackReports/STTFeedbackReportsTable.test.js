@@ -207,7 +207,12 @@ describe('STTFeedbackReportsTable', () => {
 
     it('triggers download on click', async () => {
       const mockBlob = new Blob(['test content'], { type: 'application/zip' })
-      get.mockResolvedValue({ data: mockBlob, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: mockBlob,
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       const mockData = [
         {
@@ -272,7 +277,12 @@ describe('STTFeedbackReportsTable', () => {
     })
 
     it('shows error alert when download fails', async () => {
-      get.mockResolvedValue({ data: null, ok: false, status: 500, error: new Error('Download failed') })
+      get.mockResolvedValue({
+        data: null,
+        ok: false,
+        status: 500,
+        error: new Error('Download failed'),
+      })
 
       const mockData = [
         {
@@ -335,7 +345,12 @@ describe('STTFeedbackReportsTable', () => {
 
     it('uses fallback filename "report.zip" when original_filename is missing', async () => {
       const mockBlob = new Blob(['test content'], { type: 'application/zip' })
-      get.mockResolvedValue({ data: mockBlob, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: mockBlob,
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       const mockData = [
         {

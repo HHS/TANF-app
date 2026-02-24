@@ -32,7 +32,12 @@ describe('STTFeedbackReports', () => {
     jest.clearAllMocks()
 
     // Mock successful reports fetch by default
-    get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
+    get.mockResolvedValue({
+      data: { results: [] },
+      ok: true,
+      status: 200,
+      error: null,
+    })
   })
 
   const renderComponent = () => {
@@ -98,7 +103,12 @@ describe('STTFeedbackReports', () => {
     })
 
     it('renders the description text with email links when year is selected', async () => {
-      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: [] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderComponent()
 
@@ -116,7 +126,12 @@ describe('STTFeedbackReports', () => {
     })
 
     it('renders the Knowledge Center link when year is selected', async () => {
-      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: [] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderComponent()
 
@@ -132,7 +147,12 @@ describe('STTFeedbackReports', () => {
     })
 
     it('renders the H2 header with STT name and fiscal year when year is selected', async () => {
-      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: [] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderComponent()
 
@@ -151,7 +171,12 @@ describe('STTFeedbackReports', () => {
     })
 
     it('renders the H3 heading as just "Feedback Reports" when year is selected', async () => {
-      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: [] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderComponent()
 
@@ -178,7 +203,12 @@ describe('STTFeedbackReports', () => {
     })
 
     it('fetches reports when year is selected', async () => {
-      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: [] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderComponent()
 
@@ -227,7 +257,12 @@ describe('STTFeedbackReports', () => {
     })
 
     it('displays error alert when fetch fails', async () => {
-      get.mockResolvedValue({ data: null, ok: false, status: 500, error: new Error('Failed to fetch') })
+      get.mockResolvedValue({
+        data: null,
+        ok: false,
+        status: 500,
+        error: new Error('Failed to fetch'),
+      })
 
       renderComponent()
 
@@ -245,7 +280,12 @@ describe('STTFeedbackReports', () => {
     })
 
     it('displays empty state when no reports exist', async () => {
-      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: [] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderComponent()
 
@@ -273,7 +313,12 @@ describe('STTFeedbackReports', () => {
         },
       ]
 
-      get.mockResolvedValue({ data: { results: mockReports }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: mockReports },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderComponent()
 
@@ -366,7 +411,12 @@ describe('STTFeedbackReports', () => {
     })
 
     it('updates the H2 heading when year is changed', async () => {
-      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: [] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderComponent()
 
@@ -411,7 +461,12 @@ describe('STTFeedbackReports', () => {
         },
       ]
 
-      get.mockResolvedValue({ data: { results: mockReports }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: mockReports },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderComponent()
 
@@ -435,7 +490,12 @@ describe('STTFeedbackReports', () => {
         },
       ]
 
-      get.mockResolvedValue({ data: mockReports, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: mockReports,
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderComponent()
 
@@ -486,7 +546,12 @@ describe('STTFeedbackReports', () => {
         },
       ]
 
-      get.mockResolvedValue({ data: { results: mockReports }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: mockReports },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderComponent()
 
@@ -513,7 +578,12 @@ describe('STTFeedbackReports', () => {
     }
 
     it('initializes year from URL parameter', async () => {
-      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: [] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderWithUrl('/feedback-reports?year=2024')
 
@@ -524,7 +594,12 @@ describe('STTFeedbackReports', () => {
     })
 
     it('fetches reports with year from URL parameter', async () => {
-      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: [] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderWithUrl('/feedback-reports?year=2024')
 
@@ -539,7 +614,12 @@ describe('STTFeedbackReports', () => {
     })
 
     it('shows placeholder for invalid year param', async () => {
-      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: [] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderWithUrl('/feedback-reports?year=invalid')
 
@@ -555,7 +635,12 @@ describe('STTFeedbackReports', () => {
     })
 
     it('shows placeholder for out-of-range year', async () => {
-      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: [] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderWithUrl('/feedback-reports?year=1999')
 
@@ -571,7 +656,12 @@ describe('STTFeedbackReports', () => {
     })
 
     it('displays H2 heading with STT name and year from URL parameter', async () => {
-      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: [] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderWithUrl('/feedback-reports?year=2024')
 

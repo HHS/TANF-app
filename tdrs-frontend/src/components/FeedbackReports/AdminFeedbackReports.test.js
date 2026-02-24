@@ -39,7 +39,12 @@ describe('AdminFeedbackReports', () => {
     jest.clearAllMocks()
 
     // Mock successful history fetch by default
-    get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
+    get.mockResolvedValue({
+      data: { results: [] },
+      ok: true,
+      status: 200,
+      error: null,
+    })
 
     // Mock FileReader for async file handling
     global.FileReader = jest.fn().mockImplementation(() => ({
@@ -274,7 +279,12 @@ describe('AdminFeedbackReports', () => {
         error: null,
       })
 
-      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: [] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderComponent()
 
@@ -339,7 +349,13 @@ describe('AdminFeedbackReports', () => {
 
     it('shows loading state during upload', async () => {
       post.mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve({ data: null, ok: true, status: 200, error: null }), 100))
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () => resolve({ data: null, ok: true, status: 200, error: null }),
+              100
+            )
+          )
       )
 
       renderComponent()
@@ -377,7 +393,12 @@ describe('AdminFeedbackReports', () => {
         },
       ]
 
-      get.mockResolvedValue({ data: { results: mockHistory }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: mockHistory },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderComponent()
 
@@ -397,7 +418,12 @@ describe('AdminFeedbackReports', () => {
     })
 
     it('displays empty state when no history exists', async () => {
-      get.mockResolvedValue({ data: { results: [] }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: [] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderComponent()
 
@@ -409,7 +435,12 @@ describe('AdminFeedbackReports', () => {
     })
 
     it('displays error alert when history fetch fails', async () => {
-      get.mockResolvedValue({ data: null, ok: false, status: 500, error: new Error('Failed to fetch') })
+      get.mockResolvedValue({
+        data: null,
+        ok: false,
+        status: 500,
+        error: new Error('Failed to fetch'),
+      })
 
       renderComponent()
 
@@ -453,12 +484,27 @@ describe('AdminFeedbackReports', () => {
       get.mockImplementation((url, config) => {
         const year = config?.params?.year
         if (year === '2025') {
-          return Promise.resolve({ data: { results: mockHistory2025 }, ok: true, status: 200, error: null })
+          return Promise.resolve({
+            data: { results: mockHistory2025 },
+            ok: true,
+            status: 200,
+            error: null,
+          })
         }
         if (year === '2024') {
-          return Promise.resolve({ data: { results: mockHistory2024 }, ok: true, status: 200, error: null })
+          return Promise.resolve({
+            data: { results: mockHistory2024 },
+            ok: true,
+            status: 200,
+            error: null,
+          })
         }
-        return Promise.resolve({ data: { results: [] }, ok: true, status: 200, error: null })
+        return Promise.resolve({
+          data: { results: [] },
+          ok: true,
+          status: 200,
+          error: null,
+        })
       })
 
       renderComponent()
@@ -499,8 +545,18 @@ describe('AdminFeedbackReports', () => {
       ]
 
       get
-        .mockResolvedValueOnce({ data: { results: [] }, ok: true, status: 200, error: null })
-        .mockResolvedValue({ data: { results: mockHistoryAfterUpload }, ok: true, status: 200, error: null })
+        .mockResolvedValueOnce({
+          data: { results: [] },
+          ok: true,
+          status: 200,
+          error: null,
+        })
+        .mockResolvedValue({
+          data: { results: mockHistoryAfterUpload },
+          ok: true,
+          status: 200,
+          error: null,
+        })
 
       renderComponent()
 
@@ -540,7 +596,12 @@ describe('AdminFeedbackReports', () => {
         },
       ]
 
-      get.mockResolvedValue({ data: { results: mockHistory }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: mockHistory },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderComponent()
 
@@ -567,7 +628,12 @@ describe('AdminFeedbackReports', () => {
         },
       ]
 
-      get.mockResolvedValue({ data: { results: mockHistory }, ok: true, status: 200, error: null })
+      get.mockResolvedValue({
+        data: { results: mockHistory },
+        ok: true,
+        status: 200,
+        error: null,
+      })
 
       renderComponent()
 
