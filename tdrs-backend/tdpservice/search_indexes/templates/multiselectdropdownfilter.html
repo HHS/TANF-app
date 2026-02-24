@@ -1,7 +1,6 @@
 {% load i18n admin_urls %}
 <div class="list-filter-dropdown">
-    <h3>{% blocktrans with filter_title=title %} By {{ filter_title }} {% endblocktrans %}</h3>
-
+    <h3 style="font-weight: 500;">{% blocktrans with filter_title=title %} By {{ filter_title }} {% endblocktrans %}</h3>
     <div>
         {% for choice in choices|slice:":1" %}
             <a href="{{ choice.query_string|iriencode }}" title="Show {{ choice.display }}">Show {{ choice.display }}</a>
@@ -20,6 +19,7 @@
         </select>
         <a id="{{ title|slugify }}_submit" href="" title="Filter by {{ title }}">Filter by {{ title }}</a>
     </div>
+    <br/>
 </div>
 
 <script>

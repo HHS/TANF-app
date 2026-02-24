@@ -6,9 +6,10 @@ import SectionSubmissionHistory from '../../SubmissionHistory/SectionSubmissionH
 import SegmentedControl from '../../SegmentedControl'
 import FiscalYearSelect from '../components/FiscalYearSelect'
 import FiscalQuarterSelect from '../components/FisclaQuarterSelect'
+import FeedbackReportAlert from '../../FeedbackReports/FeedbackReportAlert'
 import { useReportsContext } from '../ReportsContext'
 
-const TanfSspReports = ({ stt, isRegionalStaff }) => {
+const TanfSspReports = ({ stt, isRegionalStaff, isDataAnalyst }) => {
   const {
     yearInputValue,
     quarterInputValue,
@@ -42,6 +43,8 @@ const TanfSspReports = ({ stt, isRegionalStaff }) => {
           >
             {`${stt.name} - ${fileTypeInputValue.toUpperCase()} - Fiscal Year ${yearInputValue} - ${quarters[quarterInputValue]}`}
           </h2>
+
+          {isDataAnalyst && <FeedbackReportAlert />}
 
           {isRegionalStaff ? (
             <h3 className="font-sans-lg margin-top-5 margin-bottom-2 text-bold">

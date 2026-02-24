@@ -25,6 +25,12 @@ class DataFileEmail(Enum):
     UPCOMING_SUBMISSION_DEADLINE = "upcoming-submission-deadline.html"
 
 
+class FeedbackReportEmail(Enum):
+    """Email templates related to feedback report reminders."""
+
+    REPORT_AVAILABLE = "feedback/report-available.html"
+
+
 class TanfDataFileEmail(Enum):
     """Email templates related to TANF data file submissions."""
 
