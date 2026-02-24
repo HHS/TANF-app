@@ -419,7 +419,7 @@ describe('Reports', () => {
         )
       ).toBe(true)
     })
-    expect(store.dispatch).toHaveBeenCalledTimes(17)
+    expect(store.dispatch).toHaveBeenCalledTimes(18)
   })
 
   it('should add files to the redux state when dispatching uploads', async () => {
@@ -1197,7 +1197,7 @@ describe('Reports', () => {
         ).length
       ).toBeGreaterThanOrEqual(1)
     )
-    await waitFor(() => expect(store.dispatch).toHaveBeenCalledTimes(8))
+    await waitFor(() => expect(store.dispatch).toHaveBeenCalledTimes(9))
 
     // act(() => jest.advanceTimersByTime(2000))
 
@@ -1453,7 +1453,7 @@ describe('Reports', () => {
         ).length
       ).toBeGreaterThanOrEqual(1)
     )
-    await waitFor(() => expect(store.dispatch).toHaveBeenCalledTimes(11))
+    await waitFor(() => expect(store.dispatch).toHaveBeenCalledTimes(12))
 
     // act(() => jest.advanceTimersByTime(2000))
 
