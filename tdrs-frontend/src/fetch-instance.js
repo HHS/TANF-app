@@ -1,10 +1,8 @@
 import { faro } from '@grafana/faro-react'
 
 function getCSRFToken() {
-  const value = `; ${document.cookie}`
-  const parts = value.split('; csrftoken=')
-  if (parts.length === 2) return parts.pop().split(';').shift()
-  return null
+  const match = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]*)/)
+  return match ? decodeURIComponent(match[1]) : null
 }
 
 function buildHeaders(customHeaders = {}, includeCSRF = true) {
