@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from django_json_widget.widgets import JSONEditorWidget
+from simple_history.admin import SimpleHistoryAdmin
 
 from tdpservice.core.models import FeatureFlag
 from tdpservice.core.utils import ReadOnlyAdminMixin
@@ -66,9 +67,8 @@ class FeatureFlagAdminForm(ModelForm):
             })
         }
 
-
 @admin.register(FeatureFlag)
-class FeatureFlagAdmin(admin.ModelAdmin):
+class FeatureFlagAdmin(SimpleHistoryAdmin):
     """Admin interface for FeatureFlag model."""
 
     form = FeatureFlagAdminForm

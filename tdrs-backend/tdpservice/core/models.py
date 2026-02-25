@@ -3,6 +3,7 @@
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from simple_history.models import HistoricalRecords
 
 
 class FeatureFlag(models.Model):
@@ -21,6 +22,9 @@ class FeatureFlag(models.Model):
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    # Model versioning/change tracking
+    history = HistoricalRecords()
 
     def __str__(self) -> str:
         """Return string representation of the feature flag."""
