@@ -3,11 +3,13 @@
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+
 from simple_history import register
 from simple_history.models import HistoricalRecords
 
 # Register Django Group models for change tracking
 register(Group, app=__package__, m2m_fields=["permissions"])
+
 
 class FeatureFlag(models.Model):
     """Model for storing feature flags that can be toggled on/off via Django admin."""
@@ -15,9 +17,9 @@ class FeatureFlag(models.Model):
     class Meta:
         """Metadata."""
 
-        ordering = ['feature_name']
-        verbose_name = 'Feature Flag'
-        verbose_name_plural = 'Feature Flags'
+        ordering = ["feature_name"]
+        verbose_name = "Feature Flag"
+        verbose_name_plural = "Feature Flags"
 
     feature_name = models.CharField(max_length=100, unique=True, db_index=True)
     enabled = models.BooleanField(default=False)
@@ -25,7 +27,7 @@ class FeatureFlag(models.Model):
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     # Model versioning/change tracking
     history = HistoricalRecords()
 

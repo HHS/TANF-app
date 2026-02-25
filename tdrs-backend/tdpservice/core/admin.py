@@ -60,6 +60,8 @@ admin.site.unregister(Group)
 
 @admin.register(Group)
 class HistoricalGroupAdmin(SimpleHistoryAdmin, GroupAdmin):
+    """SimpleHistory GroupAdmin."""
+
     pass
 
 

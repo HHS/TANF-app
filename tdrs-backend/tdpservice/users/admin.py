@@ -7,10 +7,10 @@ from django.http import HttpResponseRedirect
 from django.urls import path, reverse
 from django.utils import timezone
 from django.utils.html import format_html
-from django.utils.safestring import mark_safe   
-from simple_history.admin import SimpleHistoryAdmin
+from django.utils.safestring import mark_safe
 
 from rest_framework.authtoken.models import TokenProxy
+from simple_history.admin import SimpleHistoryAdmin
 
 from tdpservice.core.utils import ReadOnlyAdminMixin
 from tdpservice.users.filters import ActiveStatusListFilter
@@ -24,6 +24,7 @@ from tdpservice.users.models import (
 )
 
 logger = logging.getLogger()
+
 
 class UserAdmin(SimpleHistoryAdmin):
     """Customize the user admin functions."""
@@ -46,7 +47,7 @@ class UserAdmin(SimpleHistoryAdmin):
     ]
     autocomplete_fields = ["stt"]
 
-    actions = ['soft_delete_users']
+    actions = ["soft_delete_users"]
 
     def get_object(self, request, object_id, from_field=None):
         """Get the user object, allowing for None if not found."""
@@ -56,11 +57,11 @@ class UserAdmin(SimpleHistoryAdmin):
     def get_actions(self, request):
         """Override get_action to remove delete action."""
         actions = super().get_actions(request)
-        if 'delete_selected' in actions:
-            del actions['delete_selected']
+        if "delete_selected" in actions:
+            del actions["delete_selected"]
         return actions
 
-    @admin.action(description='Soft delete selected users (keep related data)')
+    @admin.action(description="Soft delete selected users (keep related data)")
     def soft_delete_users(self, request, queryset):
         """Soft delete selected users using deactivated flag."""
         updated = 0
@@ -80,12 +81,15 @@ class UserAdmin(SimpleHistoryAdmin):
         qs = super().get_queryset(request)
         # Hide inactive by default unless filter is applied
         if "active_status" not in request.GET:
-            qs = qs.exclude(account_approval_status=AccountApprovalStatusChoices.DEACTIVATED)
+            qs = qs.exclude(
+                account_approval_status=AccountApprovalStatusChoices.DEACTIVATED
+            )
         return qs
 
     def save_form(self, request, form, change):
         """Override save_form to prevent saving the form when not changing."""
         return form.save(commit=False)
+
 
 class HasAttachmentFilter(admin.SimpleListFilter):
     """Filter feedback based if it has datafiles associated or not."""

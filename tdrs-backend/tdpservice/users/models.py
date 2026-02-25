@@ -13,6 +13,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+
 from simple_history.models import HistoricalRecords
 
 from tdpservice.email.helpers.account_status import send_approval_status_update_email
@@ -452,7 +453,7 @@ class User(AbstractUser, UserChangeRequestMixin):
         + 'E.g: {"some_feature": true}',
         blank=True,
     )
-    
+
     # Model versioning/change tracking
     history = HistoricalRecords(m2m_fields=["groups", "regions", "user_permissions"])
 
