@@ -1,3 +1,6 @@
+"""Utilities for the application."""
+
+
 def get_cloudgov_broker_db_numbers(cloudgov_name):
     """
     Get the appropriate redis broker db numbers for an environment.
