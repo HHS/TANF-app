@@ -1,10 +1,13 @@
 """Core models."""
 
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from simple_history import register
 from simple_history.models import HistoricalRecords
 
+# Register Django Group models for change tracking
+register(Group, app=__package__)
 
 class FeatureFlag(models.Model):
     """Model for storing feature flags that can be toggled on/off via Django admin."""

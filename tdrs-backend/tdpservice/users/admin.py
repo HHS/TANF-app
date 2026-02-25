@@ -7,7 +7,8 @@ from django.http import HttpResponseRedirect
 from django.urls import path, reverse
 from django.utils import timezone
 from django.utils.html import format_html
-from django.utils.safestring import mark_safe
+from django.utils.safestring import mark_safe   
+from simple_history.admin import SimpleHistoryAdmin
 
 from rest_framework.authtoken.models import TokenProxy
 
@@ -24,7 +25,7 @@ from tdpservice.users.models import (
 
 logger = logging.getLogger()
 
-class UserAdmin(admin.ModelAdmin):
+class UserAdmin(SimpleHistoryAdmin):
     """Customize the user admin functions."""
 
     exclude = ["password", "is_active"]
