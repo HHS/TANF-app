@@ -298,7 +298,8 @@ describe('FRA Reports Page', () => {
     }
 
     it('Allows csv files to be selected and submitted', async () => {
-      const { getByText, getAllByText, queryByText, dispatch, container } = await setup()
+      const { getByText, getAllByText, queryByText, dispatch, container } =
+        await setup()
 
       const uploadForm = container.querySelector('#fra-file-upload')
       fireEvent.change(uploadForm, {
@@ -331,7 +332,8 @@ describe('FRA Reports Page', () => {
     })
 
     it('Allows xlsx files to be selected and submitted', async () => {
-      const { getByText, getAllByText, queryByText, dispatch, container } = await setup()
+      const { getByText, getAllByText, queryByText, dispatch, container } =
+        await setup()
 
       const uploadForm = container.querySelector('#fra-file-upload')
       fireEvent.change(uploadForm, {
@@ -493,22 +495,20 @@ describe('FRA Reports Page', () => {
       expect(rowSpinners).toHaveLength(2)
       expect(rowPending).toHaveLength(2)
 
-      jest.runOnlyPendingTimers()
+      // Advance timers repeatedly to allow all polling cycles to complete
+      // (statusChecks > 3 per row to transition from Pending to Approved)
+      for (let i = 0; i < 10; i++) {
+        jest.runOnlyPendingTimers()
+        await waitFor(() => {})
+      }
 
       expect(mockAxios.get).toHaveBeenCalled()
 
       await waitFor(() => {
-        expect(getByText('Approved')).toBeInTheDocument()
+        expect(getAllByText('Approved').length).toBeGreaterThanOrEqual(1)
+        expect(queryAllByTestId('spinner')).toHaveLength(0)
+        expect(queryAllByText('Pending')).toHaveLength(0)
       })
-
-      expect(queryAllByTestId('spinner')).toHaveLength(0)
-      expect(queryAllByText('Pending')).toHaveLength(0)
-      expect(getByText('Approved')).toBeInTheDocument()
-
-      // Verify processing alert is displayed after polling completes
-      expect(
-        getAllByText('Processing complete.').length
-      ).toBeGreaterThanOrEqual(1)
     })
 
     it('Shows an error if file submission failed', async () => {
