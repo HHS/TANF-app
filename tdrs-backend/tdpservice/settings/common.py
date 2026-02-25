@@ -625,16 +625,15 @@ class Common(Configuration):
     DEFAULT_CACHE_TIMEOUT = 300
     CACHES = {
         "default": {
-            "BACKEND": "django.core.cache.backends.redis.RedisCache",
-            "LOCATION": f"{REDIS_URI}/1",
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         },
         "stts": {
             "BACKEND": "django.core.cache.backends.redis.RedisCache",
-            "LOCATION": f"{REDIS_URI}/2",
+            "LOCATION": f"{REDIS_URI}/1",
         },
         "feature-flags": {
             "BACKEND": "django.core.cache.backends.redis.RedisCache",
-            "LOCATION": f"{REDIS_URI}/3",
+            "LOCATION": f"{REDIS_URI}/2",
         },
     }
 
