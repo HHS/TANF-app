@@ -5,6 +5,7 @@ import logging
 import os
 from distutils.util import strtobool
 
+from tdpservice.common.util import get_cloudgov_broker_db_numbers
 from tdpservice.settings.common import Common
 
 logger = logging.getLogger(__name__)
@@ -25,31 +26,6 @@ def get_cloudgov_service_creds_by_instance_name(services, instance_name):
         ),
         {},
     )
-
-
-def get_cloudgov_broker_db_numbers(cloudgov_name):
-    """
-    Get the appropriate redis broker db numbers for an environment.
-
-    Returns a tuple of (celery_broker_db_number: int, cache_db_numbers: Iterable[int])
-    """
-    incr = 0
-    envs = ["raft", "qasp", "a11y", "develop", "staging", "prod"]
-    cache_options = ["stts", "feature-flags"]
-
-    broker_nums = {}
-
-    for env in envs:
-        celery = str(incr)
-        caches = {}
-        for c in cache_options:
-            incr += 1
-            caches[c] = str(incr)
-
-        broker_nums[env] = {"celery": celery, "caches": caches}
-        incr += 1
-
-    return broker_nums[cloudgov_name]
 
 
 class CloudGov(Common):
