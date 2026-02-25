@@ -7,7 +7,7 @@ from simple_history import register
 from simple_history.models import HistoricalRecords
 
 # Register Django Group models for change tracking
-register(Group, app=__package__)
+register(Group, app=__package__, m2m_fields=["permissions"])
 
 class FeatureFlag(models.Model):
     """Model for storing feature flags that can be toggled on/off via Django admin."""
