@@ -1769,3 +1769,44 @@ class TestParse:
         assert errors.last().error_message == (
             "Federally funded recipients must have a valid Social Security number."
         )
+
+    @pytest.mark.django_db
+    def test_parse_case_aggregates_edge_case(self, case_aggregates_edge_case, dfs):
+        """Test parsing of cases_across_months_with_error.txt."""
+        case_aggregates_edge_case.year = 2026
+        case_aggregates_edge_case.quarter = "Q1"
+        case_aggregates_edge_case.save()
+
+        dfs.datafile = case_aggregates_edge_case
+
+        parse_datafile(dfs, case_aggregates_edge_case)
+
+        dfs.status = dfs.get_status()
+        assert dfs.status == DataFileSummary.Status.PARTIALLY_ACCEPTED
+
+        dfs.case_aggregates = aggregates.case_aggregates_by_month(dfs.datafile, dfs.status)
+        print(dfs.case_aggregates)
+        assert dfs.case_aggregates == {
+            "months": [
+                {
+                    "month": "Oct",
+                    "accepted_without_errors": 1,
+                    "accepted_with_errors": 0,
+                },
+                {
+                    "month": "Nov",
+                    "accepted_without_errors": 1,
+                    "accepted_with_errors": 0,
+                },
+                {
+                    "month": "Dec",
+                    "accepted_without_errors": 0,
+                    "accepted_with_errors": 1,
+                },
+            ],
+            "rejected": 2,  # Rejected is 2 locally because of the trailer errors. We only generate trailer erros locally.
+        }
+
+        assert TANF_T1.objects.count() == 3
+        assert TANF_T2.objects.count() == 3
+        assert TANF_T3.objects.count() == 6

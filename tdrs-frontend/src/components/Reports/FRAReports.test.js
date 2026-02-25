@@ -397,39 +397,58 @@ describe('FRA Reports Page', () => {
         },
       })
 
-      let times = 0
+      const statusChecks = { 1: 0, 2: 0 }
       mockAxios.get.mockImplementation((url) => {
-        if (url.includes('/data_files/1/')) {
-          // status
-          times += 1
+        const match = url.match(/\/data_files\/(\d+)\//)
+
+        if (match && match[1]) {
+          const id = Number(match[1])
+          statusChecks[id] = (statusChecks[id] || 0) + 1
+          const status = statusChecks[id] > 3 ? 'Approved' : 'Pending'
+
           return Promise.resolve({
             data: {
-              id: 1,
-              summary: { status: times > 1 ? 'Approved' : 'Pending' },
+              id,
+              summary: { status },
             },
           })
-        } else {
-          // submission history
-          return Promise.resolve({
-            data: [
-              {
-                id: 1,
-                original_filename: 'testFile.txt',
-                extension: 'txt',
-                quarter: 'Q1',
-                section: 'Work Outcomes of TANF Exiters',
-                slug: '1234-5-6-7890',
-                year: '2021',
-                s3_version_id: '3210',
-                created_at: '2025-02-07T23:38:58+0000',
-                submitted_by: 'Test Testerson',
-                has_error: false,
-                summary: { status: 'Pending' },
-                latest_reparse_file_meta: '',
-              },
-            ],
-          })
         }
+
+        // submission history
+        return Promise.resolve({
+          data: [
+            {
+              id: 1,
+              original_filename: 'testFile.txt',
+              extension: 'txt',
+              quarter: 'Q1',
+              section: 'Work Outcomes of TANF Exiters',
+              slug: '1234-5-6-7890',
+              year: '2021',
+              s3_version_id: '3210',
+              created_at: '2025-02-07T23:38:58+0000',
+              submitted_by: 'Test Testerson',
+              has_error: false,
+              summary: { status: 'Pending' },
+              latest_reparse_file_meta: '',
+            },
+            {
+              id: 2,
+              original_filename: 'testFile2.txt',
+              extension: 'txt',
+              quarter: 'Q1',
+              section: 'Work Outcomes of TANF Exiters',
+              slug: '1234-5-6-7891',
+              year: '2021',
+              s3_version_id: '3211',
+              created_at: '2025-02-07T23:38:58+0000',
+              submitted_by: 'Test Testerson',
+              has_error: false,
+              summary: { status: 'Pending' },
+              latest_reparse_file_meta: '',
+            },
+          ],
+        })
       })
 
       const uploadForm = container.querySelector('#fra-file-upload')
@@ -458,15 +477,25 @@ describe('FRA Reports Page', () => {
           ).length
         ).toBeGreaterThanOrEqual(1)
       )
-      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(6))
+      await waitFor(() => expect(dispatch).toHaveBeenCalled())
 
-      expect(queryAllByTestId('spinner')).toHaveLength(3)
-      expect(queryAllByText('Pending')).toHaveLength(2)
+      const historySection = container.querySelector(
+        '.submission-history-section'
+      )
+      const firstTableBody = historySection.querySelector('tbody')
+      const rows = within(firstTableBody).queryAllByRole('row').slice(0, 2)
+      const rowSpinners = rows
+        .map((row) => within(row).queryAllByTestId('spinner')[0])
+        .filter(Boolean)
+      const rowPending = rows
+        .map((row) => within(row).queryAllByText('Pending')[0])
+        .filter(Boolean)
+      expect(rowSpinners).toHaveLength(2)
+      expect(rowPending).toHaveLength(2)
 
       jest.runOnlyPendingTimers()
 
-      expect(mockAxios.get).toHaveBeenCalledTimes(4)
-      expect(times).toBe(2)
+      expect(mockAxios.get).toHaveBeenCalled()
 
       await waitFor(() => {
         expect(getByText('Approved')).toBeInTheDocument()

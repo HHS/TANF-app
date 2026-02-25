@@ -165,10 +165,19 @@ describe('FeedbackReportAlert', () => {
       },
     })
 
+    const expectedDate = new Date('2025-12-01T00:00:00Z').toLocaleDateString(
+      'en-US',
+      {
+        month: 'numeric',
+        day: 'numeric',
+        year: 'numeric',
+      }
+    )
+
     renderComponent()
 
     await waitFor(() => {
-      expect(screen.getByText(/12\/1\/2025/)).toBeInTheDocument()
+      expect(screen.getByText(new RegExp(expectedDate))).toBeInTheDocument()
     })
   })
 

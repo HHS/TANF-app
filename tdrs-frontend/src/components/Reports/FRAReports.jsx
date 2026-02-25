@@ -38,6 +38,7 @@ import { Spinner } from '../Spinner'
 import { openFeedbackWidget } from '../../reducers/feedbackWidget'
 import { ReportsProvider, useReportsContext } from './ReportsContext'
 import { accountCanSelectStt } from '../../selectors/auth'
+import { POLLING_TIMEOUT_MESSAGE } from './constants'
 import FiscalYearSelect from './components/FiscalYearSelect'
 import FiscalQuarterSelect from './components/FisclaQuarterSelect'
 
@@ -550,9 +551,12 @@ const FRAReportsContent = () => {
     handleClearFilesOnly,
     cancelPendingChange,
     startPolling,
+    isPolling,
     getSttError,
     getFileTypeError,
   } = useReportsContext()
+  const isPollingRef = useRef(isPolling)
+  const startPollingRef = useRef(startPolling)
 
   // Use the form submission hook to prevent multiple submissions
   const { isSubmitting, executeSubmission, onSubmitStart, onSubmitComplete } =
@@ -569,6 +573,14 @@ const FRAReportsContent = () => {
   )
 
   const dispatch = useDispatch()
+
+  useEffect(() => {
+    isPollingRef.current = isPolling
+  }, [isPolling])
+
+  useEffect(() => {
+    startPollingRef.current = startPolling
+  }, [startPolling])
 
   const reportTypeOptions = [
     {
@@ -639,6 +651,50 @@ const FRAReportsContent = () => {
     dispatch,
   ])
 
+  // Restart polling for FRA submissions that are still pending when history is viewed
+  useEffect(() => {
+    fraSubmissionHistory
+      ?.filter((file) => file?.summary?.status === 'Pending')
+      ?.forEach((file) => {
+        if (isPollingRef.current?.[file.id]) return
+
+        startPollingRef.current(
+          `${file.id}`,
+          () => getFraSubmissionStatus(file.id),
+          (response) => {
+            let summary = response?.data?.summary
+            return summary && summary.status && summary.status !== 'Pending'
+          },
+          (response) => {
+            dispatch({
+              type: SET_FRA_SUBMISSION_STATUS,
+              payload: {
+                datafile_id: file.id,
+                datafile: response?.data,
+              },
+            })
+            setLocalAlertState({
+              active: true,
+              type: 'success',
+              message: 'Parsing complete.',
+            })
+          },
+          (error) => {
+            setLocalAlertState({
+              active: true,
+              type: 'error',
+              message: error.message,
+            })
+          },
+          (onError) => {
+            onError({
+              message: POLLING_TIMEOUT_MESSAGE,
+            })
+          }
+        )
+      })
+  }, [dispatch, fraSubmissionHistory, setLocalAlertState])
+
   const handleUpload = ({ file: selectedFile }) => {
     // If already submitting, prevent multiple submissions
     if (isSubmitting) {
@@ -700,8 +756,7 @@ const FRAReportsContent = () => {
           },
           (onError) => {
             onError({
-              message:
-                'Exceeded max number of tries to update submission status.',
+              message: POLLING_TIMEOUT_MESSAGE,
             })
           }
         )
