@@ -7,6 +7,8 @@ from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from django_json_widget.widgets import JSONEditorWidget
 from simple_history.admin import SimpleHistoryAdmin
+from django.contrib.auth.models import Group
+from django.contrib.auth.admin import GroupAdmin
 
 from tdpservice.core.models import FeatureFlag
 from tdpservice.core.utils import ReadOnlyAdminMixin
@@ -50,6 +52,13 @@ class LogEntryAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     object_link.admin_order_field = "object_repr"
     object_link.short_description = "object"
 
+
+# Update GroupAdmin to use SimpleHistory
+admin.site.unregister(Group)
+
+@admin.register(Group)
+class HistoricalGroupAdmin(SimpleHistoryAdmin, GroupAdmin):
+    pass
 
 class FeatureFlagAdminForm(ModelForm):
     """Custom form for FeatureFlag admin with JSON editor widget."""
