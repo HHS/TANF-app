@@ -1,0 +1,295 @@
+{
+  "realm": "tdp",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "registrationEmailAsUsername": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": false,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 10,
+  "accessTokenLifespan": 300,
+  "accessTokenLifespanForImplicitFlow": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 43200,
+  "offlineSessionIdleTimeout": 2592000,
+  "offlineSessionMaxLifespan": 5184000,
+  "accessCodeLifespan": 60,
+  "accessCodeLifespanUserAction": 300,
+  "accessCodeLifespanLogin": 1800,
+  "actionTokenGeneratedByAdminLifespan": 43200,
+  "actionTokenGeneratedByUserLifespan": 300,
+  "roles": {
+    "realm": [
+      {
+        "name": "default-roles-tdp",
+        "description": "Default roles for TDRS realm",
+        "composite": true,
+        "composites": {
+          "realm": [],
+          "client": {}
+        }
+      }
+    ]
+  },
+  "groups": [
+    {
+      "name": "ofa-admin",
+      "path": "/ofa-admin"
+    },
+    {
+      "name": "ofa-system-admin",
+      "path": "/ofa-system-admin"
+    },
+    {
+      "name": "data-analyst",
+      "path": "/data-analyst"
+    },
+    {
+      "name": "ofa-regional-staff",
+      "path": "/ofa-regional-staff"
+    },
+    {
+      "name": "developer",
+      "path": "/developer"
+    },
+    {
+      "name": "acf-ocio",
+      "path": "/acf-ocio"
+    },
+    {
+      "name": "digit-team",
+      "path": "/digit-team"
+    }
+  ],
+  "clientScopes": [
+    {
+      "name": "tdp-user-attributes",
+      "description": "Custom user attributes for TDRS",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "name": "login_gov_uuid",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "login_gov_uuid",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "login_gov_uuid",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "hhs_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "hhs_id",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "hhs_id",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "stt_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "stt_id",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "stt_id",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "account_approval_status",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "account_approval_status",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "account_approval_status",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "region_ids",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "region_ids",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "region_ids",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "consentRequired": false,
+          "config": {
+            "full.path": "false",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "groups"
+          }
+        },
+        {
+          "name": "identity_provider",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usersessionmodel-note-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.session.note": "identity_provider",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "identity_provider",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "tdp-django",
+      "name": "TDP Django Backend",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${KC_TDP_DJANGO_CLIENT_SECRET}",
+      "redirectUris": [
+        "${KC_REDIRECT_URI_1:http://localhost:3000/*}",
+        "${KC_REDIRECT_URI_2:http://localhost:8080/*}",
+        "${KC_REDIRECT_URI_3:http://localhost:8989/*}"
+      ],
+      "webOrigins": [
+        "${KC_WEB_ORIGIN_1:http://localhost:3000}",
+        "${KC_WEB_ORIGIN_2:http://localhost:8080}",
+        "${KC_WEB_ORIGIN_3:http://localhost:8989}"
+      ],
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": false,
+      "fullScopeAllowed": true,
+      "defaultClientScopes": [
+        "openid",
+        "email",
+        "profile",
+        "tdp-user-attributes"
+      ],
+      "optionalClientScopes": []
+    },
+    {
+      "clientId": "tdp-grafana",
+      "name": "TDP Grafana",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${KC_TDP_GRAFANA_CLIENT_SECRET}",
+      "redirectUris": [
+        "http://localhost:3000/grafana/login/generic_oauth",
+        "${KC_GRAFANA_REDIRECT_URI:http://localhost:9400/login/generic_oauth}"
+      ],
+      "webOrigins": [
+        "http://localhost:3000",
+        "${KC_GRAFANA_WEB_ORIGIN:http://localhost:9400}"
+      ],
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": false,
+      "fullScopeAllowed": true,
+      "defaultClientScopes": [
+        "openid",
+        "email",
+        "profile",
+        "tdp-user-attributes"
+      ],
+      "optionalClientScopes": []
+    }
+  ],
+  "users": [
+    {
+      "username": "service-account-tdp-django",
+      "enabled": true,
+      "serviceAccountClientId": "tdp-django",
+      "realmRoles": ["default-roles-tdp"]
+    }
+  ],
+  "scopeMappings": [],
+  "clientScopeMappings": {},
+  "internationalizationEnabled": false,
+  "supportedLocales": [],
+  "defaultLocale": "en",
+  "eventsEnabled": true,
+  "eventsListeners": ["jboss-logging"],
+  "enabledEventTypes": [
+    "LOGIN",
+    "LOGIN_ERROR",
+    "LOGOUT",
+    "LOGOUT_ERROR",
+    "CODE_TO_TOKEN",
+    "CODE_TO_TOKEN_ERROR",
+    "CLIENT_LOGIN",
+    "CLIENT_LOGIN_ERROR",
+    "FEDERATED_IDENTITY_LINK",
+    "FEDERATED_IDENTITY_LINK_ERROR",
+    "REGISTER",
+    "REGISTER_ERROR",
+    "UPDATE_EMAIL",
+    "UPDATE_PROFILE"
+  ],
+  "adminEventsEnabled": true,
+  "adminEventsDetailsEnabled": true,
+  "attributes": {
+    "userProfileEnabled": "true"
+  },
+  "components": {
+    "org.keycloak.userprofile.UserProfileProvider": [
+      {
+        "providerId": "declarative-user-profile",
+        "config": {
+          "kc.user.profile.config": [
+            "{\"attributes\":[{\"name\":\"username\",\"displayName\":\"${username}\",\"validations\":{\"length\":{\"min\":3,\"max\":255},\"up-username-not-idn-homograph\":{}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\"]}},{\"name\":\"email\",\"displayName\":\"${email}\",\"validations\":{\"email\":{},\"length\":{\"max\":255}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\"]}},{\"name\":\"firstName\",\"displayName\":\"${firstName}\",\"validations\":{\"length\":{\"max\":255}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\"]}},{\"name\":\"lastName\",\"displayName\":\"${lastName}\",\"validations\":{\"length\":{\"max\":255}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\"]}},{\"name\":\"login_gov_uuid\",\"displayName\":\"Login.gov UUID\",\"permissions\":{\"view\":[\"admin\"],\"edit\":[\"admin\"]}},{\"name\":\"hhs_id\",\"displayName\":\"HHS ID\",\"permissions\":{\"view\":[\"admin\"],\"edit\":[\"admin\"]}},{\"name\":\"stt_id\",\"displayName\":\"STT ID\",\"permissions\":{\"view\":[\"admin\"],\"edit\":[\"admin\"]}},{\"name\":\"account_approval_status\",\"displayName\":\"Account Approval Status\",\"permissions\":{\"view\":[\"admin\"],\"edit\":[\"admin\"]}},{\"name\":\"region_ids\",\"displayName\":\"Region IDs\",\"permissions\":{\"view\":[\"admin\"],\"edit\":[\"admin\"]}}]}"
+          ]
+        }
+      }
+    ]
+  }
+}

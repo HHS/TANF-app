@@ -36,6 +36,41 @@ services:
     volumes:
       - grafana_pg_data:/var/lib/postgresql/data/:rw
 
+  keycloak-pg:
+    image: postgres:15.7
+    environment:
+      - PGDATA=/var/lib/postgresql/data/
+      - POSTGRES_DB=keycloak
+      - POSTGRES_PASSWORD=something_secure
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=keycloak
+    ports:
+      - "5434:5432"
+    volumes:
+      - keycloak_pg_data:/var/lib/postgresql/data/:rw
+
+  keycloak:
+    build:
+      context: ./keycloak
+    environment:
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://keycloak-pg:5432/keycloak
+      - KC_DB_USERNAME=keycloak
+      - KC_DB_PASSWORD=something_secure
+      - KC_HOSTNAME_STRICT=false
+      - KC_HTTP_ENABLED=true
+      - KC_PROXY_HEADERS=xforwarded
+      - KC_HEALTH_ENABLED=true
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_TDP_DJANGO_CLIENT_SECRET=tdp-django-local-secret
+      - KC_TDP_GRAFANA_CLIENT_SECRET=tdp-grafana-local-secret
+    ports:
+      - "8443:8080"
+    command: start-dev --import-realm
+    depends_on:
+      - keycloak-pg
+
   clamav-rest:
     image: rafttech/clamav-rest:0.103.2
     environment:
@@ -303,6 +338,7 @@ volumes:
   localstack_data:
   postgres_data:
   grafana_pg_data:
+  keycloak_pg_data:
   prometheus_data:
   grafana_data:
   loki_data:
