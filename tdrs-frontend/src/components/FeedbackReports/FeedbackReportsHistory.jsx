@@ -56,6 +56,19 @@ function formatStatusDisplay(status) {
 }
 
 /**
+ * formatDate formats a date string (YYYY-MM-DD) to MM/DD/YYYY
+ */
+function formatDate(dateString) {
+  if (!dateString) return 'N/A'
+  const date = new Date(dateString + 'T00:00:00')
+  return date.toLocaleDateString('en-US', {
+    month: '2-digit',
+    day: '2-digit',
+    year: 'numeric',
+  })
+}
+
+/**
  * FeedbackReportsHistory component displays the upload history table
  * with loading and empty states
  */
@@ -67,9 +80,9 @@ function FeedbackReportsHistory({ data, formatDateTime }) {
         <>
           <thead>
             <tr>
-              <th>Fiscal year</th>
-              <th>Feedback uploaded on</th>
-              <th>Notifications sent on</th>
+              <th>Feedback Uploaded On</th>
+              <th>Data Extracted On</th>
+              <th>Notifications Sent On</th>
               <th>Status</th>
               <th style={{ minWidth: '200px' }}>Error</th>
               <th>File</th>
@@ -78,10 +91,10 @@ function FeedbackReportsHistory({ data, formatDateTime }) {
           <tbody>
             {data.map((report) => (
               <tr key={report.id}>
-                <td>{report.year || new Date().getFullYear()}</td>
                 <td>{formatDateTime(report.created_at)}</td>
+                <td>{formatDate(report.date_extracted_on)}</td>
                 <td>{formatDateTime(report.processed_at)}</td>
-                <td>
+                <td style={{ textWrap: 'nowrap' }}>
                   <ReportSourceStatusIcon status={report.status} />
                   {formatStatusDisplay(report.status)}
                 </td>

@@ -2,6 +2,7 @@
 
 import logging
 from datetime import datetime
+from datetime import timezone as dt_timezone
 
 from django.utils import timezone
 
@@ -150,7 +151,9 @@ class SecurityEventHandler:
             issued_at = None
             if iat_timestamp:
                 try:
-                    issued_at = datetime.fromtimestamp(iat_timestamp, tz=timezone.utc)
+                    issued_at = datetime.fromtimestamp(
+                        iat_timestamp, tz=dt_timezone.utc
+                    )
                 except (ValueError, TypeError) as e:
                     logger.warning(f"Error converting timestamp {iat_timestamp}: {e}")
 

@@ -14,10 +14,18 @@ router.register("roles", views.GroupViewSet)
 router.register("feedback", views.FeedbackViewSet)
 
 # User change request endpoints
-router.register("change-requests", views.UserChangeRequestViewSet, basename="change-request")
-router.register("change-request-logs", views.ChangeRequestAuditLogViewSet, basename="change-request-log")
+router.register(
+    "change-requests", views.UserChangeRequestViewSet, basename="change-request"
+)
+router.register(
+    "change-request-logs",
+    views.ChangeRequestAuditLogViewSet,
+    basename="change-request-log",
+)
 if settings.DEBUG:
-    router.register("cypress-users", views.CypressAdminUserViewSet)
+    router.register(
+        "cypress-users", views.CypressAdminUserViewSet, basename="cypress-user"
+    )
 
 urlpatterns = []
 

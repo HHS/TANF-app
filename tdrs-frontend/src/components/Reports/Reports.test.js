@@ -411,7 +411,7 @@ describe('Reports', () => {
 
     fireEvent.click(getByText('Submit Data Files'))
     await waitFor(() => getByRole('alert'))
-    expect(store.dispatch).toHaveBeenCalledTimes(17)
+    expect(store.dispatch).toHaveBeenCalledTimes(18)
   })
 
   it('should add files to the redux state when dispatching uploads', async () => {
@@ -1188,7 +1188,7 @@ describe('Reports', () => {
         )
       ).toBeInTheDocument()
     )
-    await waitFor(() => expect(store.dispatch).toHaveBeenCalledTimes(8))
+    await waitFor(() => expect(store.dispatch).toHaveBeenCalledTimes(9))
 
     // act(() => jest.advanceTimersByTime(2000))
 
@@ -1443,7 +1443,7 @@ describe('Reports', () => {
         )
       ).toBeInTheDocument()
     )
-    await waitFor(() => expect(store.dispatch).toHaveBeenCalledTimes(11))
+    await waitFor(() => expect(store.dispatch).toHaveBeenCalledTimes(12))
 
     // act(() => jest.advanceTimersByTime(2000))
 

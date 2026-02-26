@@ -43,8 +43,8 @@ http {
         # your site’s assets from other domains to avoid resource abuse.
         add_header X-Permitted-Cross-Domain-Policies: none;
 
-        # Referrer-Policy: no-referrer
-        add_header Referrer-Policy no-referrer;
+        # Referrer-Policy: same-origin allows Origin header for same-origin requests (needed for CSRF)
+        add_header Referrer-Policy same-origin;
 
         # Cross-Origin-Embedder-Policy:This response header (also named COEP) prevents a document from loading
         # any cross-origin resources that don’t explicitly grant the document permission

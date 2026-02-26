@@ -112,6 +112,14 @@ tasks:
       - task: backend-up
       - docker compose -f docker-compose.yml exec web sh -c "python manage.py migrate"
 
+  backend-update:
+    desc: Rebuild backend image and apply migrations (no data wipe)
+    dir: tdrs-backend
+    cmds:
+      - task: create-network
+      - docker compose -f docker-compose.yml up -d --build
+      - docker compose -f docker-compose.yml exec web sh -c "python manage.py migrate"
+
   backend-pytest:
     desc: 'Run pytest in the backend container. E.g: task backend-pytest PYTEST_ARGS="tdpservice/test/ -s -vv"'
     dir: tdrs-backend
@@ -230,19 +238,48 @@ tasks:
     cmds:
       - npm install
 
-  frontend-test:
-    desc: Run frontend unit tests in docker (watch-less)
+  frontend-update:
+    desc: Rebuild frontend localdev image and install dependencies (no data wipe)
     dir: tdrs-frontend
     cmds:
+      - docker compose -f docker-compose.local.yml up -d --build tdp-frontend
+      - docker compose -f docker-compose.local.yml exec tdp-frontend sh -c "npm install"
+
+  frontend-test-local:
+    desc: Run frontend unit tests on host (watch-less)
+    dir: tdrs-frontend
+    cmds:
+      - CI=true npm run test
+
+  frontend-test-watch:
+    desc: Run frontend unit tests on host (watch)
+    dir: tdrs-frontend
+    cmds:
+      - npm run test
+
+  frontend-test-cov-local:
+    desc: Run frontend unit tests with coverage on host
+    dir: tdrs-frontend
+    cmds:
+      - npm run test:cov
+
+  frontend-test:
+    desc: 'Run frontend unit tests in docker (watch-less). E.g: task frontend-test JEST_ARGS="--testPathPattern=FeedbackReports"'
+    dir: tdrs-frontend
+    vars:
+      JEST_ARGS: '{{.JEST_ARGS | default ""}}'
+    cmds:
       - docker compose -f docker-compose.local.yml up -d --build tdp-frontend-test
-      - docker compose -f docker-compose.local.yml exec tdp-frontend-test sh -c "npm run test"
+      - docker compose -f docker-compose.local.yml exec tdp-frontend-test sh -c "npm run test -- {{.JEST_ARGS}}"
 
   frontend-test-cov:
-    desc: Run frontend unit tests with coverage in docker
+    desc: 'Run frontend unit tests with coverage in docker. E.g: task frontend-test-cov JEST_ARGS="--testPathPattern=FeedbackReports"'
     dir: tdrs-frontend
+    vars:
+      JEST_ARGS: '{{.JEST_ARGS | default ""}}'
     cmds:
       - docker compose -f docker-compose.local.yml up -d --build tdp-frontend-test
-      - docker compose -f docker-compose.local.yml exec tdp-frontend-test sh -c "npm run test:cov"
+      - docker compose -f docker-compose.local.yml exec tdp-frontend-test sh -c "npm run test:cov -- {{.JEST_ARGS}}"
 
   frontend-lint:
     desc: Run eslint in the frontend test container
@@ -284,6 +321,12 @@ tasks:
     cmds:
       - task: backend-up
       - task: frontend-up
+
+  update-deps:
+    desc: Rebuild backend/frontend and apply dependency updates (no data wipe)
+    cmds:
+      - task: backend-update
+      - task: frontend-update
 
   down:
     desc: Stop both frontend and backend web servers

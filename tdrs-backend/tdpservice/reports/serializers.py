@@ -20,7 +20,7 @@ class ReportFileSerializer(serializers.ModelSerializer):
             "id",
             "stt",
             "user",
-            "quarter",
+            "date_extracted_on",
             "year",
             "version",
             "original_filename",
@@ -80,7 +80,7 @@ class ReportSourceSerializer(serializers.ModelSerializer):
             "processed_at",
             "num_reports_created",
             "error_message",
-            "quarter",
+            "date_extracted_on",
             "year",
             "file",
         ]
@@ -98,7 +98,7 @@ class ReportSourceSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         """Create a ReportSource record for a report source zip file upload."""
         file = validated_data.get("file")
-        quarter = validated_data.get("quarter")  # optional
+        date_extracted_on = validated_data.get("date_extracted_on")  # optional
         year = validated_data.get("year")  # optional
         user = self.context["user"]
 
@@ -107,7 +107,7 @@ class ReportSourceSerializer(serializers.ModelSerializer):
             slug=file.name,
             extension="zip",
             uploaded_by=user,
-            quarter=quarter,
+            date_extracted_on=date_extracted_on,
             year=year,
             file=file,
         )

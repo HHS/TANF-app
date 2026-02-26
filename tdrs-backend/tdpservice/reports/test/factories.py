@@ -1,5 +1,6 @@
 """Generate test data for Report files."""
 
+import datetime
 import uuid
 import factory
 
@@ -19,7 +20,7 @@ class ReportFileFactory(factory.django.DjangoModelFactory):
     original_filename = "report.zip"
     slug = "report.zip"
     extension = "zip"
-    quarter = "Q1"
+    date_extracted_on = datetime.date(2024, 2, 28)
     year = 2024
     version = 1
 
@@ -43,5 +44,7 @@ class ReportSourceFactory(factory.django.DjangoModelFactory):
     original_filename = "report_source.zip"
     s3_key = factory.LazyAttribute(lambda _: f"reports/source/{uuid.uuid4()}.zip")
     status = ReportSource.Status.PENDING
+    date_extracted_on = datetime.date(2024, 2, 28)
+    year = 2024
     num_reports_created = 0
     error_message = ""
