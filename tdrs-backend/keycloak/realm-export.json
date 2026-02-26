@@ -291,5 +291,152 @@
         }
       }
     ]
-  }
+  },
+  "identityProviders": [
+    {
+      "alias": "login-gov",
+      "displayName": "Login.gov",
+      "providerId": "oidc",
+      "enabled": true,
+      "trustEmail": true,
+      "storeToken": false,
+      "addReadTokenRoleOnCreate": false,
+      "authenticateByDefault": false,
+      "linkOnly": false,
+      "firstBrokerLoginFlowAlias": "tdp-first-broker-login",
+      "config": {
+        "clientId": "${LOGIN_GOV_CLIENT_ID:urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-dev}",
+        "clientSecret": "unused-private-key-jwt-auth",
+        "clientAuthMethod": "private_key_jwt",
+        "authorizationUrl": "${LOGIN_GOV_AUTH_URL:https://idp.int.identitysandbox.gov/openid_connect/authorize}",
+        "tokenUrl": "${LOGIN_GOV_TOKEN_URL:https://idp.int.identitysandbox.gov/api/openid_connect/token}",
+        "jwksUrl": "${LOGIN_GOV_JWKS_URL:https://idp.int.identitysandbox.gov/api/openid_connect/certs}",
+        "logoutUrl": "${LOGIN_GOV_LOGOUT_URL:https://idp.int.identitysandbox.gov/openid_connect/logout}",
+        "issuer": "${LOGIN_GOV_ISSUER:https://idp.int.identitysandbox.gov/}",
+        "userInfoUrl": "",
+        "validateSignature": "true",
+        "useJwksUrl": "true",
+        "clientAssertionSigningAlg": "RS256",
+        "defaultScope": "openid email",
+        "syncMode": "FORCE",
+        "pkceEnabled": "false"
+      }
+    },
+    {
+      "alias": "ams",
+      "displayName": "ACF AMS",
+      "providerId": "oidc",
+      "enabled": true,
+      "trustEmail": true,
+      "storeToken": false,
+      "addReadTokenRoleOnCreate": false,
+      "authenticateByDefault": false,
+      "linkOnly": false,
+      "firstBrokerLoginFlowAlias": "tdp-first-broker-login",
+      "config": {
+        "clientId": "${AMS_CLIENT_ID}",
+        "clientSecret": "${AMS_CLIENT_SECRET}",
+        "clientAuthMethod": "client_secret_post",
+        "authorizationUrl": "${AMS_AUTH_URL:https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/auth}",
+        "tokenUrl": "${AMS_TOKEN_URL:https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/token}",
+        "jwksUrl": "${AMS_JWKS_URL:https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/certs}",
+        "logoutUrl": "${AMS_LOGOUT_URL:https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/logout}",
+        "userInfoUrl": "${AMS_USERINFO_URL:https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/userinfo}",
+        "issuer": "${AMS_ISSUER:https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO}",
+        "validateSignature": "true",
+        "useJwksUrl": "true",
+        "defaultScope": "openid email profile",
+        "syncMode": "FORCE"
+      }
+    }
+  ],
+  "identityProviderMappers": [
+    {
+      "name": "login-gov-uuid-mapper",
+      "identityProviderAlias": "login-gov",
+      "identityProviderMapper": "oidc-user-attribute-idp-mapper",
+      "config": {
+        "syncMode": "FORCE",
+        "claim": "sub",
+        "user.attribute": "login_gov_uuid"
+      }
+    },
+    {
+      "name": "login-gov-email-mapper",
+      "identityProviderAlias": "login-gov",
+      "identityProviderMapper": "oidc-user-attribute-idp-mapper",
+      "config": {
+        "syncMode": "FORCE",
+        "claim": "email",
+        "user.attribute": "email"
+      }
+    },
+    {
+      "name": "ams-hhs-id-mapper",
+      "identityProviderAlias": "ams",
+      "identityProviderMapper": "oidc-user-attribute-idp-mapper",
+      "config": {
+        "syncMode": "FORCE",
+        "claim": "hhsid",
+        "user.attribute": "hhs_id"
+      }
+    },
+    {
+      "name": "ams-email-mapper",
+      "identityProviderAlias": "ams",
+      "identityProviderMapper": "oidc-user-attribute-idp-mapper",
+      "config": {
+        "syncMode": "FORCE",
+        "claim": "email",
+        "user.attribute": "email"
+      }
+    }
+  ],
+  "authenticationFlows": [
+    {
+      "alias": "tdp-first-broker-login",
+      "description": "Auto-create or auto-link users by email on first broker login",
+      "providerId": "basic-flow",
+      "topLevel": true,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "idp-create-user-if-unique",
+          "authenticatorFlow": false,
+          "requirement": "ALTERNATIVE",
+          "priority": 10,
+          "userSetupAllowed": false
+        },
+        {
+          "flowAlias": "tdp-auto-link-existing",
+          "authenticatorFlow": true,
+          "requirement": "ALTERNATIVE",
+          "priority": 20
+        }
+      ]
+    },
+    {
+      "alias": "tdp-auto-link-existing",
+      "description": "Detect existing user and auto-link IdP identity without confirmation",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "idp-detect-existing-broker-user",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "idp-auto-link",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 20,
+          "userSetupAllowed": false
+        }
+      ]
+    }
+  ]
 }
