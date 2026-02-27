@@ -109,7 +109,12 @@ class KeycloakSyncClient:
         try:
             self.admin.update_user(
                 user_id=kc_user_id,
-                payload={"attributes": attributes},
+                payload={
+                    "email": user.email,
+                    "firstName": user.first_name or "",
+                    "lastName": user.last_name or "",
+                    "attributes": attributes,
+                },
             )
             logger.info("Synced user attributes to Keycloak for email=%s", user.email)
             return True

@@ -575,10 +575,10 @@ class Common(Configuration):
 
     # SessionRefresh middleware: exempt API endpoints from silent re-auth redirects
     OIDC_EXEMPT_URLS = [
-        "v1/",
-        "admin/",
-        "prometheus/",
-        "plg_auth_check/",
+        "/v1/",
+        "/admin/",
+        "/prometheus/",
+        "/plg_auth_check/",
     ]
 
     # -------- CELERY CONFIG
