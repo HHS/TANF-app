@@ -10,6 +10,7 @@ import {
   SET_AUTH_ERROR,
   SET_DEACTIVATED,
 } from './auth'
+import { CLEAR_FEATURE_FLAGS, FETCH_FEATURE_FLAGS } from './featureFlags'
 
 describe('actions/auth.js', () => {
   const mockStore = configureStore([thunk])
@@ -31,6 +32,8 @@ describe('actions/auth.js', () => {
     expect(actions[0].type).toBe(FETCH_AUTH)
     expect(actions[1].type).toBe(SET_AUTH)
     expect(actions[1].payload.user).toStrictEqual(mockUser)
+    expect(actions[2].type).toBe(CLEAR_FEATURE_FLAGS)
+    expect(actions[3].type).toBe(FETCH_FEATURE_FLAGS)
   })
 
   it('clears the auth state, if user is not authenticated', async () => {
@@ -48,6 +51,7 @@ describe('actions/auth.js', () => {
     const actions = store.getActions()
     expect(actions[0].type).toBe(FETCH_AUTH)
     expect(actions[1].type).toBe(CLEAR_AUTH)
+    expect(actions[2].type).toBe(CLEAR_FEATURE_FLAGS)
   })
 
   it('dispatches an error to the store if the API errors', async () => {
@@ -61,6 +65,7 @@ describe('actions/auth.js', () => {
     const actions = store.getActions()
     expect(actions[0].type).toBe(FETCH_AUTH)
     expect(actions[1].type).toBe(SET_AUTH_ERROR)
+    expect(actions[2].type).toBe(CLEAR_FEATURE_FLAGS)
   })
 
   it('clears the auth state and triggers dispatches if the API returns `inactive`', async () => {
@@ -79,5 +84,6 @@ describe('actions/auth.js', () => {
     const actions = store.getActions()
     expect(actions[0].type).toBe(FETCH_AUTH)
     expect(actions[1].type).toBe(SET_DEACTIVATED)
+    expect(actions[2].type).toBe(CLEAR_FEATURE_FLAGS)
   })
 })
