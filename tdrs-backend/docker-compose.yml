@@ -61,6 +61,7 @@ services:
       - KC_HTTP_ENABLED=true
       - KC_PROXY_HEADERS=xforwarded
       - KC_HEALTH_ENABLED=true
+      - KC_LEGACY_OBSERVABILITY_INTERFACE=true
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
       - KC_TDP_DJANGO_CLIENT_SECRET=tdp-django-local-secret
@@ -92,7 +93,7 @@ services:
     build:
       context: ./keycloak
     environment:
-      - KEYCLOAK_MANAGEMENT_URL=http://keycloak:9000
+      - KEYCLOAK_MANAGEMENT_URL=http://keycloak:8080
       - KEYCLOAK_URL=http://keycloak:8080
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin

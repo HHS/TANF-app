@@ -7,4 +7,11 @@ ADD --chmod=755 https://github.com/moparisthebest/static-curl/releases/download/
 COPY realm-export.json /opt/keycloak/data/import/realm-export.json
 COPY configure-idps.sh /opt/keycloak/configure-idps.sh
 
+# Build with health/metrics on the main HTTP port (not the separate management port).
+# This is required for cloud.gov where CF only routes to the app's main port.
+ENV KC_DB=postgres
+ENV KC_HEALTH_ENABLED=true
+ENV KC_LEGACY_OBSERVABILITY_INTERFACE=true
+RUN /opt/keycloak/bin/kc.sh build
+
 ENTRYPOINT ["/opt/keycloak/bin/kc.sh"]

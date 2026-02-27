@@ -15,6 +15,8 @@
 #   KEYCLOAK_ADMIN_PASSWORD - Admin password (default: admin)
 #   LOGIN_GOV_JWT_KEY       - PEM or base64-encoded Login.gov private key
 #   LOGIN_GOV_ACR_VALUES    - ACR values for Login.gov (default: IAL1)
+#   SKIP_KEYCLOAK_WAIT      - Set to "true" to skip the health check wait
+#                             (useful when running as a CF task after deploy)
 
 set -euo pipefail
 
@@ -184,7 +186,11 @@ configure_login_gov_acr_values() {
 
 # --- Main ---
 echo "=== Keycloak IdP Configuration ==="
-wait_for_keycloak
+if [ "${SKIP_KEYCLOAK_WAIT:-false}" == "true" ]; then
+    echo "Skipping health check wait (SKIP_KEYCLOAK_WAIT=true)."
+else
+    wait_for_keycloak
+fi
 get_admin_token
 configure_login_gov_signing_key
 configure_login_gov_acr_values

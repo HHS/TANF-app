@@ -207,15 +207,26 @@ Sync only works if the Keycloak user already exists (i.e., user has logged in vi
 
 ```bash
 cd keycloak
-./deploy.sh -d <rds_service_name>
-# Example: ./deploy.sh -d tdp-keycloak-db-dev
+./deploy.sh -d <rds_service_name> -p <public_hostname> -i <docker_image>
+# Example: ./deploy.sh -d tdp-keycloak-db-dev -p tdp-keycloak-dev -i ghcr.io/hhs/tdp-keycloak:latest
 ```
 
 This will:
 1. Push the Keycloak Docker image to Cloud Foundry
 2. Bind the RDS service for the database
-3. Map the internal route `keycloak.apps.internal:8080`
-4. Set up network policies so backend and celery can reach Keycloak
+3. Map the internal route `keycloak.apps.internal:8080` (for server-to-server backend/celery calls)
+4. Map the public route `<public_hostname>.app.cloud.gov` (for browser redirects and admin console)
+5. Set `KC_HOSTNAME` so Keycloak generates correct redirect URIs matching the public route
+6. Set up network policies so backend and celery can reach Keycloak
+
+### Routing Architecture
+
+Keycloak is deployed with two routes:
+
+- **Internal** (`keycloak.apps.internal:8080`) — used by the Django backend and Celery for server-to-server API calls (token exchange, user sync, JWKS). Configured via `KEYCLOAK_SERVER_URL`.
+- **Public** (`<hostname>.app.cloud.gov`) — used by the browser for OIDC redirects and the admin console. Configured via `KEYCLOAK_BROWSER_URL`.
+
+Set `KEYCLOAK_BROWSER_URL` in the backend's environment to match the public route (e.g., `https://tdp-keycloak-dev.app.cloud.gov`).
 
 ### Required cloud.gov Environment Variables
 

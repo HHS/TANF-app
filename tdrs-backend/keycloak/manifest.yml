@@ -1,7 +1,7 @@
 version: 1
 applications:
   - name: keycloak
-    memory: 1G
+    memory: 768M
     disk_quota: 2G
     instances: 1
     env:
