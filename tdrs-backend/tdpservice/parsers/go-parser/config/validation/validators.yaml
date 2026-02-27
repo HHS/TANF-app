@@ -129,6 +129,12 @@ field_validators:
     expr: "(int(Value) >= 1 and int(Value) <= 19) or int(Value) == 99"
     message: "{{.RecordType}} Item {{.Item}}: must be 01-19 or 99, got {{.Value}}"
 
+  # Education level validator (no zero) - 1-16 or 98-99
+  # Used by M2, M3 where 0 is not a valid education level
+  - id: education_level_no_zero
+    expr: "(int(Value) >= 1 and int(Value) <= 16) or (int(Value) >= 98 and int(Value) <= 99)"
+    message: "{{.RecordType}} Item {{.Item}}: must be 1-16 or 98-99, got {{.Value}}"
+
 # =============================================================================
 # RECORD VALIDATORS (record scope)
 # =============================================================================
@@ -255,6 +261,45 @@ record_validators:
     expr: "if GetString('WORK_ELIGIBLE_INDICATOR') == '11' and calculateAge(GetString('DATE_OF_BIRTH'), GetString('RPT_MONTH_YEAR')) >= 0 and calculateAge(GetString('DATE_OF_BIRTH'), GetString('RPT_MONTH_YEAR')) < 19 { GetInt('RELATIONSHIP_HOH') != 1 } else { true }"
     message: "If WORK_ELIGIBLE_INDICATOR is 11 and age is less than 19, RELATIONSHIP_HOH must not be 1"
     fields: [WORK_ELIGIBLE_INDICATOR, DATE_OF_BIRTH, RELATIONSHIP_HOH]
+
+  # =============================================================================
+  # M1 special case validators (SSP)
+  # =============================================================================
+
+  # M1 sum assistance positive - SSP version uses CC_NBR_MONTHS instead of TRANSP_AMOUNT
+  - id: m1_sum_assistance_positive
+    expr: "GetInt('AMT_FOOD_STAMP_ASSISTANCE') + GetInt('AMT_SUB_CC') + GetInt('CASH_AMOUNT') + GetInt('CC_AMOUNT') + GetInt('CC_NBR_MONTHS') > 0"
+    message: "Sum of AMT_FOOD_STAMP_ASSISTANCE, AMT_SUB_CC, CASH_AMOUNT, CC_AMOUNT, CC_NBR_MONTHS must be greater than 0"
+    fields: [AMT_FOOD_STAMP_ASSISTANCE, AMT_SUB_CC, CASH_AMOUNT, CC_AMOUNT, CC_NBR_MONTHS]
+
+  # =============================================================================
+  # M2 special case validators (SSP)
+  # =============================================================================
+
+  # When FAMILY_AFFILIATION is 1-2, WORK_PART_STATUS must be in SSP valid set
+  # Note: SSP includes value 16 (not in TANF T2's set) and excludes 19
+  - id: m2_family_affil_1_2_work_part_status
+    expr: "if GetInt('FAMILY_AFFILIATION') in [1, 2] { GetString('WORK_PART_STATUS') in ['01', '02', '05', '07', '09', '15', '16', '17', '18', '99'] } else { true }"
+    message: "If FAMILY_AFFILIATION is 1-2, WORK_PART_STATUS must be 01, 02, 05, 07, 09, 15, 16, 17, 18, or 99"
+    fields: [FAMILY_AFFILIATION, WORK_PART_STATUS]
+
+  # When FAMILY_AFFILIATION is 2-3, EDUCATION_LEVEL must be 1-16 or 98-99
+  # Note: SSP M2 uses range 1-16 (not 0-16 like TANF T2)
+  - id: m2_family_affil_2_3_education_level
+    expr: "if GetInt('FAMILY_AFFILIATION') in [2, 3] { (GetInt('EDUCATION_LEVEL') in 1..16) or (GetInt('EDUCATION_LEVEL') in 98..99) } else { true }"
+    message: "If FAMILY_AFFILIATION is 2-3, EDUCATION_LEVEL must be 1-16 or 98-99"
+    fields: [FAMILY_AFFILIATION, EDUCATION_LEVEL]
+
+  # =============================================================================
+  # M5 special case validators (SSP)
+  # =============================================================================
+
+  # When FAMILY_AFFILIATION is 1-3, EDUCATION_LEVEL must be 1-16 or 98-99
+  # Note: M5 applies to FA 1-3 (broader than T5 which splits FA 1 and FA 2-3)
+  - id: m5_family_affil_1_3_education_level
+    expr: "if GetInt('FAMILY_AFFILIATION') in 1..3 { (GetInt('EDUCATION_LEVEL') in 1..16) or (GetInt('EDUCATION_LEVEL') in 98..99) } else { true }"
+    message: "If FAMILY_AFFILIATION is 1-3, EDUCATION_LEVEL must be 1-16 or 98-99"
+    fields: [FAMILY_AFFILIATION, EDUCATION_LEVEL]
 
   # =============================================================================
   # T5 special case validators

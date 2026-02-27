@@ -11,6 +11,22 @@ section: 3
 document: "SSP Aggregate Data"
 format: positional
 
+# Record validators
+record_validators:
+  - id: record_length_min
+    params:
+      min: 259
+  # SSPMOE_FAMILIES must equal sum of 2-parent + 1-parent + no-parent families
+  - id: sum_equals
+    params:
+      total_field: SSPMOE_FAMILIES
+      component_fields: [NUM_2_PARENTS, NUM_1_PARENTS, NUM_NO_PARENTS]
+  # NUM_RECIPIENTS must equal sum of adult + child recipients
+  - id: sum_equals
+    params:
+      total_field: NUM_RECIPIENTS
+      component_fields: [ADULT_RECIPIENTS, CHILD_RECIPIENTS]
+
 # Fields shared across all segments (included in every output row)
 shared:
   - name: RecordType
@@ -28,6 +44,9 @@ shared:
     end: 7
     type: integer
     required: true
+    field:
+      - id: year_after_2019
+      - id: quarter_is_valid
 
 # Each segment produces one output row (combined with shared fields)
 # M6 has 3 segments: Month A, Month B, Month C
@@ -52,6 +71,11 @@ segments:
         end: 15
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_2_PARENTS
         friendly_name: SSP-MOE Two-Parent Families
@@ -60,6 +84,11 @@ segments:
         end: 39
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_1_PARENTS
         friendly_name: SSP-MOE One-Parent Families
@@ -68,6 +97,11 @@ segments:
         end: 63
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_NO_PARENTS
         friendly_name: SSP-MOE No-Parent Families
@@ -76,6 +110,11 @@ segments:
         end: 87
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_RECIPIENTS
         friendly_name: SSP-MOE Recipients
@@ -84,6 +123,11 @@ segments:
         end: 111
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: ADULT_RECIPIENTS
         friendly_name: SSP-MOE Adult Recipients
@@ -92,6 +136,11 @@ segments:
         end: 135
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: CHILD_RECIPIENTS
         friendly_name: SSP-MOE Child Recipients
@@ -100,6 +149,11 @@ segments:
         end: 159
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NONCUSTODIALS
         friendly_name: SSP-MOE Noncustodial Parents
@@ -108,6 +162,11 @@ segments:
         end: 183
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: AMT_ASSISTANCE
         friendly_name: SSP-MOE Amount of Assistance
@@ -116,6 +175,11 @@ segments:
         end: 211
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 999999999999
 
       - name: CLOSED_CASES
         friendly_name: SSP-MOE Number of Closed Cases
@@ -124,6 +188,11 @@ segments:
         end: 243
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
   # Month B (second month of quarter)
   - fields:
@@ -145,6 +214,11 @@ segments:
         end: 23
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_2_PARENTS
         friendly_name: SSP-MOE Two-Parent Families
@@ -153,6 +227,11 @@ segments:
         end: 47
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_1_PARENTS
         friendly_name: SSP-MOE One-Parent Families
@@ -161,6 +240,11 @@ segments:
         end: 71
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_NO_PARENTS
         friendly_name: SSP-MOE No-Parent Families
@@ -169,6 +253,11 @@ segments:
         end: 95
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_RECIPIENTS
         friendly_name: SSP-MOE Recipients
@@ -177,6 +266,11 @@ segments:
         end: 119
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: ADULT_RECIPIENTS
         friendly_name: SSP-MOE Adult Recipients
@@ -185,6 +279,11 @@ segments:
         end: 143
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: CHILD_RECIPIENTS
         friendly_name: SSP-MOE Child Recipients
@@ -193,6 +292,11 @@ segments:
         end: 167
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NONCUSTODIALS
         friendly_name: SSP-MOE Noncustodial Parents
@@ -201,6 +305,11 @@ segments:
         end: 191
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: AMT_ASSISTANCE
         friendly_name: SSP-MOE Amount of Assistance
@@ -209,6 +318,11 @@ segments:
         end: 223
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 999999999999
 
       - name: CLOSED_CASES
         friendly_name: SSP-MOE Number of Closed Cases
@@ -217,6 +331,11 @@ segments:
         end: 251
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
   # Month C (third month of quarter)
   - fields:
@@ -238,6 +357,11 @@ segments:
         end: 31
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_2_PARENTS
         friendly_name: SSP-MOE Two-Parent Families
@@ -246,6 +370,11 @@ segments:
         end: 55
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_1_PARENTS
         friendly_name: SSP-MOE One-Parent Families
@@ -254,6 +383,11 @@ segments:
         end: 79
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_NO_PARENTS
         friendly_name: SSP-MOE No-Parent Families
@@ -262,6 +396,11 @@ segments:
         end: 103
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NUM_RECIPIENTS
         friendly_name: SSP-MOE Recipients
@@ -270,6 +409,11 @@ segments:
         end: 127
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: ADULT_RECIPIENTS
         friendly_name: SSP-MOE Adult Recipients
@@ -278,6 +422,11 @@ segments:
         end: 151
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: CHILD_RECIPIENTS
         friendly_name: SSP-MOE Child Recipients
@@ -286,6 +435,11 @@ segments:
         end: 175
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: NONCUSTODIALS
         friendly_name: SSP-MOE Noncustodial Parents
@@ -294,6 +448,11 @@ segments:
         end: 199
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
 
       - name: AMT_ASSISTANCE
         friendly_name: SSP-MOE Amount of Assistance
@@ -302,6 +461,11 @@ segments:
         end: 235
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 999999999999
 
       - name: CLOSED_CASES
         friendly_name: SSP-MOE Number of Closed Cases
@@ -310,3 +474,8 @@ segments:
         end: 259
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999999
