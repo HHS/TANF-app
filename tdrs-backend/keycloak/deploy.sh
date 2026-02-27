@@ -10,6 +10,19 @@ PROD_CELERY="tdp-celery-prod"
 
 PUBLIC_DOMAIN="app.cloud.gov"
 
+# Environment variables that must be set in the deployer's shell.
+# These are injected into the CF app's environment via the manifest.
+REQUIRED_ENV_VARS=(
+    "KEYCLOAK_ADMIN"              # Admin console username
+    "KEYCLOAK_ADMIN_PASSWORD"     # Admin console password
+    "KC_TDP_DJANGO_CLIENT_SECRET" # tdp-django client secret (realm config)
+    "LOGIN_GOV_JWT_KEY"           # Login.gov RSA private key (PEM or base64)
+)
+OPTIONAL_ENV_VARS=(
+    "KC_TDP_GRAFANA_CLIENT_SECRET" # tdp-grafana client secret (realm config)
+    "LOGIN_GOV_ACR_VALUES"         # Login.gov identity assurance level
+)
+
 help() {
     echo "Deploy Keycloak to the Cloud Foundry space you're currently authenticated in."
     echo ""
@@ -23,9 +36,50 @@ help() {
     echo "        and set KC_HOSTNAME so Keycloak generates correct redirect URIs."
     echo "  i     The Docker image URI for Keycloak (e.g. ghcr.io/hhs/tdp-keycloak:latest)."
     echo ""
+    echo "Required environment variables (must be set in your shell):"
+    for var in "${REQUIRED_ENV_VARS[@]}"; do
+        echo "  $var"
+    done
+    echo ""
+    echo "Optional environment variables:"
+    for var in "${OPTIONAL_ENV_VARS[@]}"; do
+        echo "  $var"
+    done
+    echo ""
     echo "Example:"
     echo "  ./deploy.sh -d tdp-keycloak-db-dev -p tdp-keycloak-dev -i ghcr.io/hhs/tdp-keycloak:latest"
     echo ""
+}
+
+check_required_env_vars() {
+    local missing=()
+    for var in "${REQUIRED_ENV_VARS[@]}"; do
+        if [ -z "${!var:-}" ]; then
+            missing+=("$var")
+        fi
+    done
+    if [ ${#missing[@]} -gt 0 ]; then
+        echo "Error: the following required environment variables are not set:"
+        for var in "${missing[@]}"; do
+            echo "  $var"
+        done
+        echo ""
+        echo "Set them in your shell before running this script."
+        popd
+        exit 1
+    fi
+}
+
+inject_env_vars() {
+    local manifest="$1"
+
+    for var in "${REQUIRED_ENV_VARS[@]}" "${OPTIONAL_ENV_VARS[@]}"; do
+        if [ -n "${!var:-}" ]; then
+            # Use yq strenv() to safely handle values with special characters
+            export "$var"
+            yq eval -i ".applications[0].env.$var = strenv($var)" "$manifest"
+        fi
+    done
 }
 
 deploy_keycloak() {
@@ -40,6 +94,7 @@ deploy_keycloak() {
     yq eval -i ".applications[0].services[0] = \"${db_service}\"" $MANIFEST
     yq eval -i ".applications[0].env.KC_HOSTNAME = \"${public_url}\"" $MANIFEST
     yq eval -i ".applications[0].docker.image = \"${docker_image}\"" $MANIFEST
+    inject_env_vars $MANIFEST
 
     cf push --no-route -f $MANIFEST -t 180 --strategy rolling
 
@@ -127,6 +182,8 @@ if [ "$DOCKER_IMAGE" == "" ]; then
     popd
     exit 1
 fi
+
+check_required_env_vars
 
 echo "Deploying Keycloak..."
 echo "  Docker image:   $DOCKER_IMAGE"
