@@ -18,6 +18,7 @@
 
 set -euo pipefail
 
+KEYCLOAK_MANAGEMENT_URL="${KEYCLOAK_MANAGEMENT_URL:-http://localhost:9001}"
 KEYCLOAK_URL="${KEYCLOAK_URL:-http://localhost:8443}"
 KEYCLOAK_ADMIN="${KEYCLOAK_ADMIN:-admin}"
 KEYCLOAK_ADMIN_PASSWORD="${KEYCLOAK_ADMIN_PASSWORD:-admin}"
@@ -25,11 +26,12 @@ REALM="tdp"
 LOGIN_GOV_ACR_VALUES="${LOGIN_GOV_ACR_VALUES:-http://idmanagement.gov/ns/assurance/ial/1}"
 
 wait_for_keycloak() {
-    echo "Waiting for Keycloak at ${KEYCLOAK_URL}..."
+    echo "Waiting for Keycloak at ${KEYCLOAK_MANAGEMENT_URL}..."
     local max_attempts=60
     local attempt=0
-    until curl -sf "${KEYCLOAK_URL}/health/ready" > /dev/null 2>&1; do
+    until curl -sf "${KEYCLOAK_MANAGEMENT_URL}/health/ready" > /dev/null 2>&1; do
         attempt=$((attempt + 1))
+        echo "  Attempt ${attempt}/${max_attempts} - Keycloak not ready yet..."
         if [ "$attempt" -ge "$max_attempts" ]; then
             echo "ERROR: Keycloak did not become ready after ${max_attempts} attempts"
             exit 1
@@ -108,9 +110,9 @@ configure_login_gov_signing_key() {
         -H "Authorization: Bearer ${TOKEN}")
 
     local count
-    count=$(echo "$existing" | jq 'length')
+    count=$(echo "$existing" | jq 'length' 2>/dev/null || echo "0")
 
-    if [ "$count" -gt "0" ]; then
+    if [ "${count:-0}" -gt "0" ]; then
         local component_id
         component_id=$(echo "$existing" | jq -r '.[0].id')
         key_json=$(echo "$key_json" | jq --arg id "$component_id" '.id = $id')
@@ -133,8 +135,18 @@ configure_login_gov_acr_values() {
     echo "Configuring Login.gov acr_values..."
 
     local idp_config
-    idp_config=$(curl -sf "${KEYCLOAK_URL}/admin/realms/${REALM}/identity-provider/instances/login-gov" \
-        -H "Authorization: Bearer ${TOKEN}" 2>/dev/null || echo '{"alias":null}')
+    local http_code
+    http_code=$(curl -s -o /tmp/idp_response.json -w "%{http_code}" \
+        "${KEYCLOAK_URL}/admin/realms/${REALM}/identity-provider/instances/login-gov" \
+        -H "Authorization: Bearer ${TOKEN}")
+    idp_config=$(cat /tmp/idp_response.json 2>/dev/null || echo '{"alias":null}')
+
+    if [ "$http_code" != "200" ]; then
+        echo "WARNING: Login.gov IdP request returned HTTP ${http_code}"
+        echo "  Response: $(cat /tmp/idp_response.json 2>/dev/null || echo 'empty')"
+        echo "  Skipping acr_values configuration."
+        return
+    fi
 
     if [ "$(echo "$idp_config" | jq -r '.alias')" == "null" ]; then
         echo "WARNING: Login.gov IdP not found in realm, skipping acr_values configuration."

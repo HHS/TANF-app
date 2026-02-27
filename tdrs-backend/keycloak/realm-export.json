@@ -72,6 +72,65 @@
   ],
   "clientScopes": [
     {
+      "name": "openid",
+      "description": "OpenID Connect scope",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "false",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": []
+    },
+    {
+      "name": "email",
+      "description": "OpenID Connect email scope",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "name": "email",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "email",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "email",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "email verified",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "emailVerified",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "email_verified",
+            "jsonType.label": "boolean"
+          }
+        }
+      ]
+    },
+    {
+      "name": "profile",
+      "description": "OpenID Connect profile scope",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": []
+    },
+    {
       "name": "tdp-user-attributes",
       "description": "Custom user attributes for TDRS",
       "protocol": "openid-connect",
@@ -190,12 +249,18 @@
       "redirectUris": [
         "${KC_REDIRECT_URI_1:http://localhost:3000/*}",
         "${KC_REDIRECT_URI_2:http://localhost:8080/*}",
-        "${KC_REDIRECT_URI_3:http://localhost:8989/*}"
+        "${KC_REDIRECT_URI_3:http://localhost:8989/*}",
+        "http://127.0.0.1:3000/*",
+        "http://127.0.0.1:8080/*",
+        "http://127.0.0.1:8989/*"
       ],
       "webOrigins": [
         "${KC_WEB_ORIGIN_1:http://localhost:3000}",
         "${KC_WEB_ORIGIN_2:http://localhost:8080}",
-        "${KC_WEB_ORIGIN_3:http://localhost:8989}"
+        "${KC_WEB_ORIGIN_3:http://localhost:8989}",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:8080",
+        "http://127.0.0.1:8989"
       ],
       "protocol": "openid-connect",
       "publicClient": false,

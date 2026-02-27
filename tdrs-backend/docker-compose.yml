@@ -83,9 +83,23 @@ services:
       - AMS_ISSUER=https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO
     ports:
       - "8443:8080"
+      - "9001:9000"
     command: start-dev --import-realm
     depends_on:
       - keycloak-pg
+
+  keycloak-configure:
+    build:
+      context: ./keycloak
+    environment:
+      - KEYCLOAK_MANAGEMENT_URL=http://keycloak:9000
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - LOGIN_GOV_JWT_KEY=${JWT_KEY}
+    entrypoint: ["/bin/bash", "/opt/keycloak/configure-idps.sh"]
+    depends_on:
+      - keycloak
 
   clamav-rest:
     image: rafttech/clamav-rest:0.103.2

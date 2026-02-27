@@ -201,6 +201,27 @@ class CloudGov(Common):
         "django_client_secret", os.getenv("KEYCLOAK_DJANGO_CLIENT_SECRET", "")
     )
 
+    # mozilla-django-oidc: derive OIDC settings from Keycloak URLs
+    OIDC_RP_CLIENT_ID = KEYCLOAK_DJANGO_CLIENT_ID
+    OIDC_RP_CLIENT_SECRET = KEYCLOAK_DJANGO_CLIENT_SECRET
+
+    # In Cloud.gov, the browser-facing URL is the public Keycloak route
+    KEYCLOAK_BROWSER_URL = os.getenv("KEYCLOAK_BROWSER_URL", KEYCLOAK_SERVER_URL)
+
+    _KC_REALM_URL = f"{KEYCLOAK_SERVER_URL}/realms/{KEYCLOAK_REALM}"
+    _KC_BROWSER_REALM_URL = f"{KEYCLOAK_BROWSER_URL}/realms/{KEYCLOAK_REALM}"
+
+    # Browser-facing endpoints (user's browser is redirected here)
+    OIDC_OP_AUTHORIZATION_ENDPOINT = (
+        f"{_KC_BROWSER_REALM_URL}/protocol/openid-connect/auth"
+    )
+    OIDC_OP_LOGOUT_ENDPOINT = f"{_KC_BROWSER_REALM_URL}/protocol/openid-connect/logout"
+
+    # Server-to-server endpoints (Django backend talks to Keycloak within Docker)
+    OIDC_OP_TOKEN_ENDPOINT = f"{_KC_REALM_URL}/protocol/openid-connect/token"
+    OIDC_OP_USER_ENDPOINT = f"{_KC_REALM_URL}/protocol/openid-connect/userinfo"
+    OIDC_OP_JWKS_ENDPOINT = f"{_KC_REALM_URL}/protocol/openid-connect/certs"
+
 
 class Development(CloudGov):
     """Settings for applications deployed in the Cloud.gov dev space."""

@@ -98,6 +98,7 @@ class Common(Configuration):
         "storages",
         "django_prometheus",
         "django_json_widget",
+        "mozilla_django_oidc",
         # Local apps
         "tdpservice.core.apps.CoreConfig",
         "tdpservice.users",
@@ -119,6 +120,7 @@ class Common(Configuration):
         "django.middleware.common.CommonMiddleware",
         "django.middleware.csrf.CsrfViewMiddleware",
         "django.contrib.auth.middleware.AuthenticationMiddleware",
+        "mozilla_django_oidc.middleware.SessionRefresh",
         "django.contrib.messages.middleware.MessageMiddleware",
         "django.middleware.clickjacking.XFrameOptionsMiddleware",
         "corsheaders.middleware.CorsMiddleware",
@@ -408,11 +410,6 @@ class Common(Configuration):
         "TEST_REQUEST_RENDERER_CLASSES": TEST_REQUEST_RENDERER_CLASSES,
     }
 
-    AUTHENTICATION_BACKENDS = (
-        "tdpservice.users.authentication.CustomAuthentication",
-        "django.contrib.auth.backends.ModelBackend",
-    )
-
     TOKEN_EXPIRATION_HOURS = int(os.getenv("TOKEN_EXPIRATION_HOURS", 24))
 
     # CORS
@@ -531,6 +528,58 @@ class Common(Configuration):
     KEYCLOAK_DJANGO_CLIENT_SECRET = os.getenv(
         "KEYCLOAK_DJANGO_CLIENT_SECRET", "tdp-django-local-secret"
     )
+
+    ####################################
+    # mozilla-django-oidc Settings     #
+    ####################################
+
+    OIDC_RP_CLIENT_ID = KEYCLOAK_DJANGO_CLIENT_ID
+    OIDC_RP_CLIENT_SECRET = KEYCLOAK_DJANGO_CLIENT_SECRET
+    OIDC_RP_SIGN_ALGO = "RS256"
+    OIDC_RP_SCOPES = "openid email"
+
+    # Keycloak realm OIDC endpoints
+    # KEYCLOAK_SERVER_URL is the Docker-internal URL (server-to-server: token, userinfo, JWKS)
+    # KEYCLOAK_BROWSER_URL is the browser-facing URL (authorization redirect, logout redirect)
+    # In Cloud.gov these are the same (internal route), but locally they differ.
+    KEYCLOAK_BROWSER_URL = os.getenv("KEYCLOAK_BROWSER_URL", "http://localhost:8443")
+
+    _KC_REALM_URL = f"{KEYCLOAK_SERVER_URL}/realms/{KEYCLOAK_REALM}"
+    _KC_BROWSER_REALM_URL = f"{KEYCLOAK_BROWSER_URL}/realms/{KEYCLOAK_REALM}"
+
+    # Browser-facing endpoints (user's browser is redirected here)
+    OIDC_OP_AUTHORIZATION_ENDPOINT = (
+        f"{_KC_BROWSER_REALM_URL}/protocol/openid-connect/auth"
+    )
+    OIDC_OP_LOGOUT_ENDPOINT = f"{_KC_BROWSER_REALM_URL}/protocol/openid-connect/logout"
+
+    # Server-to-server endpoints (Django backend talks to Keycloak within Docker)
+    OIDC_OP_TOKEN_ENDPOINT = f"{_KC_REALM_URL}/protocol/openid-connect/token"
+    OIDC_OP_USER_ENDPOINT = f"{_KC_REALM_URL}/protocol/openid-connect/userinfo"
+    OIDC_OP_JWKS_ENDPOINT = f"{_KC_REALM_URL}/protocol/openid-connect/certs"
+
+    # Custom authentication backend
+    OIDC_AUTHENTICATION_CALLBACK_URL = "oidc_authentication_callback"
+    AUTHENTICATION_BACKENDS = (
+        "tdpservice.users.oidc.KeycloakOIDCBackend",
+        "tdpservice.users.authentication.CustomAuthentication",
+        "django.contrib.auth.backends.ModelBackend",
+    )
+
+    # Redirect to frontend after login
+    LOGIN_REDIRECT_URL = FRONTEND_BASE_URL
+
+    # Allow OIDC login to work alongside existing session auth
+    OIDC_STORE_ACCESS_TOKEN = True
+    OIDC_STORE_ID_TOKEN = True
+
+    # SessionRefresh middleware: exempt API endpoints from silent re-auth redirects
+    OIDC_EXEMPT_URLS = [
+        "v1/",
+        "admin/",
+        "prometheus/",
+        "plg_auth_check/",
+    ]
 
     # -------- CELERY CONFIG
     REDIS_URI = os.getenv("REDIS_URI", "redis://redis-server:6379")
