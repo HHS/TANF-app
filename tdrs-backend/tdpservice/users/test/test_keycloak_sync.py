@@ -9,6 +9,7 @@ from django.test import override_settings
 import pytest
 
 from tdpservice.users.keycloak_client import DJANGO_TO_KC_GROUP, KeycloakSyncClient
+from tdpservice.users.models import User
 from tdpservice.users.test.factories import UserFactory
 
 logger = logging.getLogger(__name__)
@@ -39,6 +40,7 @@ def mock_keycloak_admin():
 # --- KeycloakSyncClient unit tests ---
 
 
+@override_settings(KEYCLOAK_SYNC_ENABLED=False)
 @pytest.mark.django_db
 def test_sync_user_updates_attributes(mock_keycloak_admin):
     """Test sync_user sends correct attributes to Keycloak."""
@@ -66,6 +68,7 @@ def test_sync_user_updates_attributes(mock_keycloak_admin):
     assert attrs["account_approval_status"] == "Approved"
 
 
+@override_settings(KEYCLOAK_SYNC_ENABLED=False)
 @pytest.mark.django_db
 def test_sync_user_returns_false_when_not_found(mock_keycloak_admin):
     """Test sync_user returns False when user not found in Keycloak."""
@@ -79,6 +82,7 @@ def test_sync_user_returns_false_when_not_found(mock_keycloak_admin):
     mock_keycloak_admin.update_user.assert_not_called()
 
 
+@override_settings(KEYCLOAK_SYNC_ENABLED=False)
 @pytest.mark.django_db
 def test_sync_user_groups_sets_correct_groups(mock_keycloak_admin):
     """Test sync_user_groups removes old groups and adds correct ones."""
@@ -112,6 +116,7 @@ def test_sync_user_groups_sets_correct_groups(mock_keycloak_admin):
     )
 
 
+@override_settings(KEYCLOAK_SYNC_ENABLED=False)
 @pytest.mark.django_db
 def test_sync_user_groups_returns_false_when_not_found(mock_keycloak_admin):
     """Test sync_user_groups returns False when user not found in Keycloak."""
@@ -124,9 +129,13 @@ def test_sync_user_groups_returns_false_when_not_found(mock_keycloak_admin):
     assert result is False
 
 
+@override_settings(KEYCLOAK_SYNC_ENABLED=False)
 @pytest.mark.django_db
 def test_bulk_sync_all_users(mock_keycloak_admin):
     """Test bulk_sync_all_users iterates active users and returns stats."""
+    # Deactivate any pre-existing users so only our test users are picked up
+    User.objects.filter(is_active=True).update(is_active=False)
+
     user1 = UserFactory.create(is_active=True, account_approval_status="Approved")
     user2 = UserFactory.create(is_active=True, account_approval_status="Approved")
 
@@ -239,7 +248,7 @@ def test_signal_handles_client_exception_gracefully(mock_get_client):
 # --- Celery task test ---
 
 
-@patch("tdpservice.users.tasks.KeycloakSyncClient")
+@patch("tdpservice.users.keycloak_client.KeycloakSyncClient")
 def test_reconcile_keycloak_users_task(mock_client_cls):
     """Test that the Celery task calls bulk_sync_all_users."""
     from tdpservice.users.tasks import reconcile_keycloak_users

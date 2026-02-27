@@ -35,21 +35,21 @@ class TestFilterUsersByClaims:
         claims = {"hhs_id": "ABC123456789", "email": "other@test.com"}
         result = backend.filter_users_by_claims(claims)
         assert len(result) == 1
-        assert result[0].id == user.id
+        assert str(result[0].id) == str(user.id)
 
     def test_filter_by_login_gov_uuid(self, backend):
         user = UserFactory(hhs_id=None)
         claims = {"login_gov_uuid": str(user.login_gov_uuid), "email": "other@test.com"}
         result = backend.filter_users_by_claims(claims)
         assert len(result) == 1
-        assert result[0].id == user.id
+        assert str(result[0].id) == str(user.id)
 
     def test_filter_by_email_fallback(self, backend):
         user = UserFactory(login_gov_uuid=None, hhs_id=None)
         claims = {"email": user.email}
         result = backend.filter_users_by_claims(claims)
         assert len(result) == 1
-        assert result[0].id == user.id
+        assert str(result[0].id) == str(user.id)
 
     def test_filter_returns_empty_for_unknown_user(self, backend):
         claims = {"email": "nonexistent@test.com"}
@@ -68,7 +68,7 @@ class TestFilterUsersByClaims:
         }
         result = backend.filter_users_by_claims(claims)
         assert len(result) == 1
-        assert result[0].id == user_ams.id
+        assert str(result[0].id) == str(user_ams.id)
 
     def test_hhs_id_falls_back_to_email_when_no_match(self, backend):
         """When hhs_id doesn't match, falls back to email lookup."""
@@ -76,7 +76,7 @@ class TestFilterUsersByClaims:
         claims = {"hhs_id": "NOMATCH999999", "email": user.email}
         result = backend.filter_users_by_claims(claims)
         assert len(result) == 1
-        assert result[0].id == user.id
+        assert str(result[0].id) == str(user.id)
 
 
 @pytest.mark.django_db
