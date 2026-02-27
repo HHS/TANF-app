@@ -82,6 +82,11 @@ class CloudGov(Common):
         cloudgov_services["s3"], f"tdp-staticfiles-{services_basename}"
     )
 
+    keycloak_creds = get_cloudgov_service_creds_by_instance_name(
+        cloudgov_services.get("user-provided", []),
+        f"tdp-keycloak-{services_basename}",
+    )
+
     ############################################################################
 
     INSTALLED_APPS = (*Common.INSTALLED_APPS, "gunicorn")
@@ -175,6 +180,25 @@ class CloudGov(Common):
 
     OTEL_EXPORTER_OTLP_ENDPOINT = os.getenv(
         "OTEL_EXPORTER_OTLP_ENDPOINT", "http://tempo.apps.internal:4317"
+    )
+
+    # Keycloak Sync
+    KEYCLOAK_SYNC_ENABLED = bool(os.getenv("KEYCLOAK_SYNC_ENABLED", ""))
+    KEYCLOAK_SERVER_URL = os.getenv(
+        "KEYCLOAK_SERVER_URL", "http://keycloak.apps.internal:8080"
+    )
+    KEYCLOAK_REALM = os.getenv("KEYCLOAK_REALM", "tdp")
+    KEYCLOAK_ADMIN_CLIENT_ID = keycloak_creds.get(
+        "admin_client_id", os.getenv("KEYCLOAK_ADMIN_CLIENT_ID", "tdp-django")
+    )
+    KEYCLOAK_ADMIN_CLIENT_SECRET = keycloak_creds.get(
+        "admin_client_secret", os.getenv("KEYCLOAK_ADMIN_CLIENT_SECRET", "")
+    )
+    KEYCLOAK_DJANGO_CLIENT_ID = keycloak_creds.get(
+        "django_client_id", os.getenv("KEYCLOAK_DJANGO_CLIENT_ID", "tdp-django")
+    )
+    KEYCLOAK_DJANGO_CLIENT_SECRET = keycloak_creds.get(
+        "django_client_secret", os.getenv("KEYCLOAK_DJANGO_CLIENT_SECRET", "")
     )
 
 

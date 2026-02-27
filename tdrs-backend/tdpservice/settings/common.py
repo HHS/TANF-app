@@ -516,6 +516,22 @@ class Common(Configuration):
 
     AMS_CLIENT_SECRET = os.getenv("AMS_CLIENT_SECRET", "")
 
+    ############################
+    # Keycloak Sync Settings   #
+    ############################
+
+    KEYCLOAK_SYNC_ENABLED = bool(strtobool(os.getenv("KEYCLOAK_SYNC_ENABLED", "no")))
+    KEYCLOAK_SERVER_URL = os.getenv("KEYCLOAK_SERVER_URL", "http://keycloak:8080")
+    KEYCLOAK_REALM = os.getenv("KEYCLOAK_REALM", "tdp")
+    KEYCLOAK_ADMIN_CLIENT_ID = os.getenv("KEYCLOAK_ADMIN_CLIENT_ID", "tdp-django")
+    KEYCLOAK_ADMIN_CLIENT_SECRET = os.getenv(
+        "KEYCLOAK_ADMIN_CLIENT_SECRET", "tdp-django-local-secret"
+    )
+    KEYCLOAK_DJANGO_CLIENT_ID = os.getenv("KEYCLOAK_DJANGO_CLIENT_ID", "tdp-django")
+    KEYCLOAK_DJANGO_CLIENT_SECRET = os.getenv(
+        "KEYCLOAK_DJANGO_CLIENT_SECRET", "tdp-django-local-secret"
+    )
+
     # -------- CELERY CONFIG
     REDIS_URI = os.getenv("REDIS_URI", "redis://redis-server:6379")
     logger.debug("REDIS_URI: " + REDIS_URI)
@@ -621,6 +637,10 @@ class Common(Configuration):
                 "reporting_period": "Jul - Sep",
                 "fiscal_quarter": "Q4",
             },
+        },
+        "Reconcile Keycloak Users": {
+            "task": "tdpservice.users.tasks.reconcile_keycloak_users",
+            "schedule": crontab(minute="0", hour="*/6"),  # Every 6 hours
         },
     }
 

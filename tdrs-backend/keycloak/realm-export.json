@@ -249,7 +249,16 @@
       "username": "service-account-tdp-django",
       "enabled": true,
       "serviceAccountClientId": "tdp-django",
-      "realmRoles": ["default-roles-tdp"]
+      "realmRoles": ["default-roles-tdp"],
+      "clientRoles": {
+        "realm-management": [
+          "view-users",
+          "manage-users",
+          "query-users",
+          "view-realm",
+          "query-groups"
+        ]
+      }
     }
   ],
   "scopeMappings": [],

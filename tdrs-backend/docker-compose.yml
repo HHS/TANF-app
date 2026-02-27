@@ -267,6 +267,14 @@ services:
       - OTEL_PYTHON_DJANGO_EXCLUDED_URLS
       - CGAPPNAME_BACKEND
       - SENTRY_DSN
+      # Keycloak sync
+      - KEYCLOAK_SYNC_ENABLED=true
+      - KEYCLOAK_SERVER_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=tdp
+      - KEYCLOAK_ADMIN_CLIENT_ID=tdp-django
+      - KEYCLOAK_ADMIN_CLIENT_SECRET=tdp-django-local-secret
+      - KEYCLOAK_DJANGO_CLIENT_ID=tdp-django
+      - KEYCLOAK_DJANGO_CLIENT_SECRET=tdp-django-local-secret
     volumes:
       - .:/tdpapp
       - logs:/tmp
@@ -336,6 +344,14 @@ services:
       - AWS_SECRET_ACCESS_KEY
       - AWS_S3_BUCKET_NAME
       - AWS_S3_LOGS_PREFIX
+      # Keycloak sync
+      - KEYCLOAK_SYNC_ENABLED=true
+      - KEYCLOAK_SERVER_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=tdp
+      - KEYCLOAK_ADMIN_CLIENT_ID=tdp-django
+      - KEYCLOAK_ADMIN_CLIENT_SECRET=tdp-django-local-secret
+      - KEYCLOAK_DJANGO_CLIENT_ID=tdp-django
+      - KEYCLOAK_DJANGO_CLIENT_SECRET=tdp-django-local-secret
     volumes:
       - .:/tdpapp
       - logs:/tmp
