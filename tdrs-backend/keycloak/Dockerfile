@@ -1,3 +1,5 @@
+# Use the following to build: docker buildx build -t ghcr.io/raft-tech/keycloak_26:latest -f Dockerfile . --platform linux/amd64,linux/arm64 --push
+
 FROM quay.io/keycloak/keycloak:26.0
 
 # Install jq and curl for configure-idps.sh (static binaries, no package manager needed)
