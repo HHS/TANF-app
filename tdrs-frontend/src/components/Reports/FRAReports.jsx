@@ -673,10 +673,10 @@ const FRAReportsContent = () => {
                 datafile: response?.data,
               },
             })
-            setLocalAlertState({
+            setProcessingAlertState({
               active: true,
               type: 'success',
-              message: 'Parsing complete.',
+              message: 'Processing complete.',
             })
           },
           (error) => {

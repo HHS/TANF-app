@@ -175,10 +175,10 @@ describe('FRAReports polling restart', () => {
 
     await waitFor(() => {
       expect(mockContext.startPolling).toHaveBeenCalledTimes(1)
-      expect(mockContext.setLocalAlertState).toHaveBeenCalledWith({
+      expect(mockContext.setProcessingAlertState).toHaveBeenCalledWith({
         active: true,
         type: 'success',
-        message: 'Parsing complete.',
+        message: 'Processing complete.',
       })
     })
   })
