@@ -11,11 +11,18 @@
     <script src="../js/uswds.min.js"></script>
     <link href="dist/lity.css" rel="stylesheet">
     <script src="dist/lity.js"></script>
-    <script src="components/desktop-navigation.js" defer></script>
+    <!-- <script src="components/desktop-navigation.js" defer></script>
     <script src="components/mobile-navigation.js" defer></script>
     <script src="components/shutdown-banner.js" defer></script>
-   
-
+    -->
+        <script>
+  const v = Date.now();
+  document.write(`
+    <script src="components/desktop-navigation.js?v=${v}" defer><\/script>
+    <script src="components/mobile-navigation.js?v=${v}" defer><\/script>
+    <script src="components/shutdown-banner.js?v=${v}" defer><\/script>
+  `);
+</script>
 
 
   </head>

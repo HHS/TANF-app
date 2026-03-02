@@ -191,6 +191,8 @@ class Common(Configuration):
             "PORT": os.getenv("DB_PORT"),
         }
     }
+    # Allow DB connections to persist for 10 min
+    CONN_MAX_AGE = 600
 
     # General
     APPEND_SLASH = True
