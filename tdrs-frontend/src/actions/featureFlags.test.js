@@ -9,6 +9,8 @@ import {
   CLEAR_FEATURE_FLAGS,
 } from './featureFlags'
 
+jest.mock('../fetch-instance')
+
 describe('actions/featureFlags.js', () => {
   const mockStore = configureStore([thunk])
 
