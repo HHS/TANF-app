@@ -1,4 +1,4 @@
-import axiosInstance from '../axios-instance'
+import { get } from '../fetch-instance'
 
 export const FETCH_FEATURE_FLAGS = 'FETCH_FEATURE_FLAGS'
 export const SET_FEATURE_FLAGS = 'SET_FEATURE_FLAGS'
@@ -13,7 +13,7 @@ export const fetchFeatureFlags = () => async (dispatch) => {
 
   try {
     const URL = `${process.env.REACT_APP_BACKEND_URL}/feature-flags/`
-    const response = await axiosInstance.get(URL, { withCredentials: true })
+    const response = await get(URL)
 
     if (response.data) {
       const featureFlags = response.data

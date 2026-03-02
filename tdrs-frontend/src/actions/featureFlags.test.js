@@ -1,7 +1,6 @@
-import axios from 'axios'
+import { get } from '../fetch-instance'
 import { thunk } from 'redux-thunk'
 import configureStore from 'redux-mock-store'
-import { v4 as uuidv4 } from 'uuid'
 import {
   fetchFeatureFlags,
   FETCH_FEATURE_FLAGS,
@@ -15,7 +14,7 @@ describe('actions/featureFlags.js', () => {
 
   it('fetches and sets feature flags from api', async () => {
     const mockFlag = { name: 'test-flag', enabled: true, config: {} }
-    axios.get.mockImplementationOnce(() =>
+    get.mockImplementationOnce(() =>
       Promise.resolve({
         data: [mockFlag],
       })
@@ -32,7 +31,7 @@ describe('actions/featureFlags.js', () => {
   })
 
   it('dispatches an error to the store if the API errors', async () => {
-    axios.get.mockImplementationOnce(() =>
+    get.mockImplementationOnce(() =>
       Promise.reject(Error({ message: 'something went wrong' }))
     )
     const store = mockStore()
