@@ -13,10 +13,10 @@ export const fetchFeatureFlags = () => async (dispatch) => {
 
   try {
     const URL = `${process.env.REACT_APP_BACKEND_URL}/feature-flags/`
-    const { data } = await axiosInstance.get(URL, { withCredentials: true })
+    const response = await axiosInstance.get(URL, { withCredentials: true })
 
-    if (data?.featureFlags) {
-      const { featureFlags } = data
+    if (response.data) {
+      const featureFlags = response.data
       dispatch({
         type: SET_FEATURE_FLAGS,
         payload: { featureFlags, lastFetched },
