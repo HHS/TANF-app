@@ -31,7 +31,6 @@ describe('actions/featureFlags.js', () => {
     expect(actions[1].type).toBe(FETCH_FEATURE_FLAGS)
     expect(actions[2].type).toBe(SET_FEATURE_FLAGS)
     expect(actions[2].payload.flags).toStrictEqual([mockFlag])
-    console.log('last fetched', actions[2].payload.lastFetched)
     expect(actions[2].payload.lastFetched).toEqual(testDate)
   })
 
