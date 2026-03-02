@@ -17,9 +17,7 @@ describe('actions/featureFlags.js', () => {
     const mockFlag = { name: 'test-flag', enabled: true, config: {} }
     axios.get.mockImplementationOnce(() =>
       Promise.resolve({
-        data: {
-          featureFlags: [mockFlag],
-        },
+        data: [mockFlag],
       })
     )
     const store = mockStore()
