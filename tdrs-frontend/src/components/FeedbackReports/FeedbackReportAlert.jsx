@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import axiosInstance from '../../axios-instance'
+import { get } from '../../fetch-instance'
 import { useReportsContext } from '../Reports/ReportsContext'
 import closeIcon from '@uswds/uswds/img/usa-icons/close.svg'
 import '../../assets/feedback/Feedback.scss'
@@ -40,36 +40,33 @@ const FeedbackReportAlert = () => {
         return
       }
 
-      try {
-        const response = await axiosInstance.get(
-          `${process.env.REACT_APP_BACKEND_URL}/reports/`,
-          {
-            params: {
-              year: yearInputValue,
-              quarter: quarterInputValue,
-              latest: 'true',
-            },
-            withCredentials: true,
-          }
-        )
+      const { data, ok, error } = await get(
+        `${process.env.REACT_APP_BACKEND_URL}/reports/`,
+        {
+          params: {
+            year: yearInputValue,
+            quarter: quarterInputValue,
+            latest: 'true',
+          },
+        }
+      )
 
-        if (response.data?.results?.length > 0) {
-          const report = response.data.results[0]
-          const dismissedTimestamp = getDismissedTimestamp(yearInputValue)
+      if (ok && data?.results?.length > 0) {
+        const report = data.results[0]
+        const dismissedTimestamp = getDismissedTimestamp(yearInputValue)
 
-          // Show banner if not dismissed OR if a new report is available
-          if (dismissedTimestamp && dismissedTimestamp === report.created_at) {
-            setLatestReportDate(report.created_at)
-            setIsDismissed(true)
-          } else {
-            setLatestReportDate(report.created_at)
-            setIsDismissed(false)
-          }
+        // Show banner if not dismissed OR if a new report is available
+        if (dismissedTimestamp && dismissedTimestamp === report.created_at) {
+          setLatestReportDate(report.created_at)
+          setIsDismissed(true)
         } else {
-          setLatestReportDate(null)
+          setLatestReportDate(report.created_at)
           setIsDismissed(false)
         }
-      } catch (error) {
+      } else if (ok) {
+        setLatestReportDate(null)
+        setIsDismissed(false)
+      } else {
         console.error('Error fetching feedback reports:', error)
         setLatestReportDate(null)
         setIsDismissed(false)
