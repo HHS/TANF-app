@@ -8,7 +8,7 @@ import {
 const initialState = {
   loading: false,
   error: null,
-  featureFlags: null,
+  flags: null,
   lastFetched: null,
 }
 
@@ -24,11 +24,11 @@ const featureFlags = (state = initialState, action) => {
         lastFetched: null,
       }
     case SET_FEATURE_FLAGS: {
-      const { featureFlags, lastFetched } = payload
+      const { flags, lastFetched } = payload
       return {
         ...state,
         loading: false,
-        featureFlags,
+        flags,
         lastFetched,
       }
     }

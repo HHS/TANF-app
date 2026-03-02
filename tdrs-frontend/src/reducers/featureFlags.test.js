@@ -11,7 +11,7 @@ describe('reducers/featureFlags', () => {
     expect(reducer(undefined, {})).toEqual({
       loading: false,
       error: null,
-      featureFlags: null,
+      flags: null,
       lastFetched: null,
     })
   })
@@ -24,7 +24,7 @@ describe('reducers/featureFlags', () => {
     ).toEqual({
       loading: true,
       error: null,
-      featureFlags: null,
+      flags: null,
       lastFetched: null,
     })
   })
@@ -36,13 +36,13 @@ describe('reducers/featureFlags', () => {
         {
           loading: true,
           error: null,
-          featureFlags: null,
+          flags: null,
           lastFetched: null,
         },
         {
           type: SET_FEATURE_FLAGS,
           payload: {
-            featureFlags: [mockFlag],
+            flags: [mockFlag],
             lastFetched: '2020-01-01 5:17am',
           },
         }
@@ -50,7 +50,7 @@ describe('reducers/featureFlags', () => {
     ).toEqual({
       loading: false,
       error: null,
-      featureFlags: [mockFlag],
+      flags: [mockFlag],
       lastFetched: '2020-01-01 5:17am',
     })
   })
@@ -62,7 +62,7 @@ describe('reducers/featureFlags', () => {
         {
           loading: false,
           error: 'test msg',
-          featureFlags: [mockFlag],
+          flags: [mockFlag],
           lastFetched: '2020-01-01 5:17am',
         },
         {
@@ -72,7 +72,7 @@ describe('reducers/featureFlags', () => {
     ).toEqual({
       loading: false,
       error: null,
-      featureFlags: null,
+      flags: null,
       lastFetched: null,
     })
   })
@@ -89,7 +89,7 @@ describe('reducers/featureFlags', () => {
     ).toEqual({
       loading: false,
       error: 'something went wrong',
-      featureFlags: null,
+      flags: null,
       lastFetched: '2020-01-01 5:17am',
     })
   })

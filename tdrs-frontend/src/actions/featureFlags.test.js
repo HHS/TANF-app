@@ -16,6 +16,7 @@ describe('actions/featureFlags.js', () => {
 
   it('fetches and sets feature flags from api', async () => {
     const mockFlag = { name: 'test-flag', enabled: true, config: {} }
+    const testDate = Date.now()
     get.mockImplementationOnce(() =>
       Promise.resolve({
         data: [mockFlag],
@@ -29,7 +30,9 @@ describe('actions/featureFlags.js', () => {
     expect(actions[0].type).toBe(CLEAR_FEATURE_FLAGS)
     expect(actions[1].type).toBe(FETCH_FEATURE_FLAGS)
     expect(actions[2].type).toBe(SET_FEATURE_FLAGS)
-    expect(actions[2].payload.featureFlags).toStrictEqual([mockFlag])
+    expect(actions[2].payload.flags).toStrictEqual([mockFlag])
+    console.log('last fetched', actions[2].payload.lastFetched)
+    expect(actions[2].payload.lastFetched).toEqual(testDate)
   })
 
   it('dispatches an error to the store if the API errors', async () => {

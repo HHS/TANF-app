@@ -16,10 +16,10 @@ export const fetchFeatureFlags = () => async (dispatch) => {
     const response = await get(URL)
 
     if (response.data) {
-      const featureFlags = response.data
+      const flags = response.data
       dispatch({
         type: SET_FEATURE_FLAGS,
-        payload: { featureFlags, lastFetched },
+        payload: { flags, lastFetched },
       })
     }
   } catch (error) {
