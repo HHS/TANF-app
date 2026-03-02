@@ -859,6 +859,7 @@ const FRAReportsContent = () => {
   useEffect(() => {
     if (localAlert.active && alertRef && alertRef.current) {
       alertRef.current.scrollIntoView({ behavior: 'smooth' })
+      alertRef.current.focus({ preventScroll: true })
     }
   }, [localAlert, alertRef])
 
@@ -905,11 +906,12 @@ const FRAReportsContent = () => {
                 <div
                   ref={alertRef}
                   tabIndex={-1}
+                  style={{ outline: 'none' }}
                   className={classNames('usa-alert usa-alert--slim', {
                     [`usa-alert--${localAlert.type}`]: true,
                   })}
                 >
-                  <div className="usa-alert__body" role="alert">
+                  <div className="usa-alert__body" role="status">
                     <p className="usa-alert__text">{localAlert.message}</p>
                   </div>
                 </div>

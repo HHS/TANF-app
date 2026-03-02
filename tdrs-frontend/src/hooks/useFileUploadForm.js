@@ -172,10 +172,11 @@ export const useFileUploadForm = ({
     fileInput.init()
   }, [])
 
-  // Scroll to alert when it becomes active
+  // Scroll to and focus alert when it becomes active
   useEffect(() => {
     if (localAlert.active && alertRef && alertRef.current) {
       alertRef.current.scrollIntoView({ behavior: 'smooth' })
+      alertRef.current.focus({ preventScroll: true })
     }
   }, [localAlert, alertRef])
 
