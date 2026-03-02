@@ -27,6 +27,22 @@ KEYCLOAK_ADMIN_PASSWORD="${KEYCLOAK_ADMIN_PASSWORD:-admin}"
 REALM="tdp"
 LOGIN_GOV_ACR_VALUES="${LOGIN_GOV_ACR_VALUES:-http://idmanagement.gov/ns/assurance/ial/1}"
 
+# Wrapper around curl that shows the actual HTTP error response on failure
+# instead of silently dying with exit code 22 (curl -f behavior).
+# Usage: kc_api [curl_args...] — returns the response body on stdout.
+kc_api() {
+    local http_code
+    http_code=$(curl -s -o /tmp/kc_response.json -w "%{http_code}" "$@")
+    if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+        cat /tmp/kc_response.json
+    else
+        echo "ERROR: API call failed with HTTP ${http_code}" >&2
+        echo "  Request: curl $*" >&2
+        echo "  Response: $(cat /tmp/kc_response.json 2>/dev/null)" >&2
+        return 1
+    fi
+}
+
 wait_for_keycloak() {
     echo "Waiting for Keycloak at ${KEYCLOAK_MANAGEMENT_URL}..."
     local max_attempts=60
@@ -80,7 +96,7 @@ configure_login_gov_signing_key() {
 
     # Get the realm's internal ID (needed as parentId for the component)
     local realm_id
-    realm_id=$(curl -sf "${KEYCLOAK_URL}/admin/realms/${REALM}" \
+    realm_id=$(kc_api "${KEYCLOAK_URL}/admin/realms/${REALM}" \
         -H "Authorization: Bearer ${TOKEN}" | jq -r '.id')
 
     # Build the RSA key provider component JSON.
@@ -107,7 +123,7 @@ configure_login_gov_signing_key() {
 
     # Check if the component already exists (idempotent)
     local existing
-    existing=$(curl -sf \
+    existing=$(kc_api \
         "${KEYCLOAK_URL}/admin/realms/${REALM}/components?name=login-gov-signing-key&type=org.keycloak.keys.KeyProvider" \
         -H "Authorization: Bearer ${TOKEN}")
 
@@ -119,16 +135,16 @@ configure_login_gov_signing_key() {
         component_id=$(echo "$existing" | jq -r '.[0].id')
         key_json=$(echo "$key_json" | jq --arg id "$component_id" '.id = $id')
 
-        curl -sf -X PUT "${KEYCLOAK_URL}/admin/realms/${REALM}/components/${component_id}" \
+        kc_api -X PUT "${KEYCLOAK_URL}/admin/realms/${REALM}/components/${component_id}" \
             -H "Authorization: Bearer ${TOKEN}" \
             -H "Content-Type: application/json" \
-            -d "$key_json"
+            -d "$key_json" > /dev/null
         echo "Login.gov signing key updated (component: ${component_id})."
     else
-        curl -sf -X POST "${KEYCLOAK_URL}/admin/realms/${REALM}/components" \
+        kc_api -X POST "${KEYCLOAK_URL}/admin/realms/${REALM}/components" \
             -H "Authorization: Bearer ${TOKEN}" \
             -H "Content-Type: application/json" \
-            -d "$key_json"
+            -d "$key_json" > /dev/null
         echo "Login.gov signing key created."
     fi
 }
@@ -176,12 +192,35 @@ configure_login_gov_acr_values() {
     local new_url="${auth_url}${separator}acr_values=${encoded_acr}"
     idp_config=$(echo "$idp_config" | jq --arg url "$new_url" '.config.authorizationUrl = $url')
 
-    curl -sf -X PUT "${KEYCLOAK_URL}/admin/realms/${REALM}/identity-provider/instances/login-gov" \
+    kc_api -X PUT "${KEYCLOAK_URL}/admin/realms/${REALM}/identity-provider/instances/login-gov" \
         -H "Authorization: Bearer ${TOKEN}" \
         -H "Content-Type: application/json" \
-        -d "$idp_config"
+        -d "$idp_config" > /dev/null
 
     echo "Login.gov authorization URL updated with acr_values."
+}
+
+configure_master_realm_security_headers() {
+    echo "Configuring master realm security headers..."
+
+    local master_realm
+    master_realm=$(kc_api "${KEYCLOAK_URL}/admin/realms/master" \
+        -H "Authorization: Bearer ${TOKEN}")
+
+    if [ -z "$master_realm" ] || [ "$master_realm" == "null" ]; then
+        echo "WARNING: Could not fetch master realm, skipping security headers configuration."
+        return
+    fi
+
+    # Set X-Frame-Options to SAMEORIGIN so the admin console's auth iframe works
+    master_realm=$(echo "$master_realm" | jq '.browserSecurityHeaders.xFrameOptions = "SAMEORIGIN"')
+
+    kc_api -X PUT "${KEYCLOAK_URL}/admin/realms/master" \
+        -H "Authorization: Bearer ${TOKEN}" \
+        -H "Content-Type: application/json" \
+        -d "$master_realm" > /dev/null
+
+    echo "Master realm X-Frame-Options set to SAMEORIGIN."
 }
 
 # --- Main ---
@@ -192,6 +231,7 @@ else
     wait_for_keycloak
 fi
 get_admin_token
+configure_master_realm_security_headers
 configure_login_gov_signing_key
 configure_login_gov_acr_values
 echo "=== IdP configuration complete ==="

@@ -17,6 +17,7 @@ REQUIRED_ENV_VARS=(
     "KEYCLOAK_ADMIN_PASSWORD"     # Admin console password
     "KC_TDP_DJANGO_CLIENT_SECRET" # tdp-django client secret (realm config)
     "LOGIN_GOV_JWT_KEY"           # Login.gov RSA private key (PEM or base64)
+    "CF_DOCKER_PASSWORD"          # Docker registry password/token (used by cf push)
 )
 OPTIONAL_ENV_VARS=(
     "KC_TDP_GRAFANA_CLIENT_SECRET" # tdp-grafana client secret (realm config)
@@ -26,7 +27,7 @@ OPTIONAL_ENV_VARS=(
 help() {
     echo "Deploy Keycloak to the Cloud Foundry space you're currently authenticated in."
     echo ""
-    echo "Syntax: deploy.sh [-h] -d <rds_service_name> -p <public_hostname> -i <docker_image>"
+    echo "Syntax: deploy.sh [-h] -d <rds_service_name> -p <public_hostname> -i <docker_image> -u <docker_username>"
     echo ""
     echo "Options:"
     echo "  h     Print this help message."
@@ -35,6 +36,7 @@ help() {
     echo "        This will create a public route at <hostname>.${PUBLIC_DOMAIN}"
     echo "        and set KC_HOSTNAME so Keycloak generates correct redirect URIs."
     echo "  i     The Docker image URI for Keycloak (e.g. ghcr.io/hhs/tdp-keycloak:latest)."
+    echo "  u     Docker registry username. Password must be set via CF_DOCKER_PASSWORD env var."
     echo ""
     echo "Required environment variables (must be set in your shell):"
     for var in "${REQUIRED_ENV_VARS[@]}"; do
@@ -47,7 +49,7 @@ help() {
     done
     echo ""
     echo "Example:"
-    echo "  ./deploy.sh -d tdp-keycloak-db-dev -p tdp-keycloak-dev -i ghcr.io/hhs/tdp-keycloak:latest"
+    echo "  ./deploy.sh -d tdp-keycloak-db-dev -p tdp-keycloak-dev -i ghcr.io/hhs/tdp-keycloak:latest -u myuser"
     echo ""
 }
 
@@ -72,8 +74,13 @@ check_required_env_vars() {
 
 inject_env_vars() {
     local manifest="$1"
+    # Env vars used by cf push itself, not by the Keycloak app
+    local skip_vars=("CF_DOCKER_PASSWORD")
 
     for var in "${REQUIRED_ENV_VARS[@]}" "${OPTIONAL_ENV_VARS[@]}"; do
+        if [[ " ${skip_vars[*]} " =~ " ${var} " ]]; then
+            continue
+        fi
         if [ -n "${!var:-}" ]; then
             # Use yq strenv() to safely handle values with special characters
             export "$var"
@@ -86,6 +93,7 @@ deploy_keycloak() {
     local db_service="$1"
     local public_hostname="$2"
     local docker_image="$3"
+    local docker_username="$4"
     local public_url="https://${public_hostname}.${PUBLIC_DOMAIN}"
 
     MANIFEST=manifest.tmp.yml
@@ -96,7 +104,7 @@ deploy_keycloak() {
     yq eval -i ".applications[0].docker.image = \"${docker_image}\"" $MANIFEST
     inject_env_vars $MANIFEST
 
-    cf push --no-route -f $MANIFEST -t 180 --strategy rolling
+    CF_DOCKER_PASSWORD="$CF_DOCKER_PASSWORD" cf push --no-route -f $MANIFEST -t 180 --strategy rolling --docker-image "$docker_image" --docker-username "$docker_username"
 
     # Internal route for server-to-server communication (backend/celery -> keycloak)
     cf map-route keycloak apps.internal --hostname keycloak
@@ -110,12 +118,14 @@ deploy_keycloak() {
 configure_keycloak_idps() {
     echo "Running IdP configuration task..."
     cf run-task keycloak \
-        --command "export KEYCLOAK_URL=http://keycloak.apps.internal:8080 KEYCLOAK_MANAGEMENT_URL=http://keycloak.apps.internal:8080 && /opt/keycloak/configure-idps.sh" \
-        --name "configure-idps" \
-        --wait
+        --command "export SKIP_KEYCLOAK_WAIT=true KEYCLOAK_URL=http://keycloak.apps.internal:8080 KEYCLOAK_MANAGEMENT_URL=http://keycloak.apps.internal:8080 && /opt/keycloak/configure-idps.sh" \
+        --name "configure-idps"
 }
 
 setup_keycloak_net_pols() {
+    # Allow keycloak tasks to reach the running keycloak app via internal route
+    cf add-network-policy keycloak keycloak --protocol tcp --port 8080
+
     CURRENT_SPACE=$(cf target | grep -Eo "tanf-[a-z]+")
 
     if [ "$CURRENT_SPACE" == "tanf-dev" ]; then
@@ -134,7 +144,7 @@ setup_keycloak_net_pols() {
 
 pushd "$(dirname "$0")"
 
-while getopts ":hd:p:i:" option; do
+while getopts ":hd:p:i:u:" option; do
    case $option in
       h) # display Help
          help
@@ -145,6 +155,8 @@ while getopts ":hd:p:i:" option; do
          PUBLIC_HOSTNAME=$OPTARG;;
       i) # Docker image
          DOCKER_IMAGE=$OPTARG;;
+      u) # Docker username
+         DOCKER_USERNAME=$OPTARG;;
      \?) # Invalid option
          echo "Error: Invalid option"
          echo
@@ -183,6 +195,14 @@ if [ "$DOCKER_IMAGE" == "" ]; then
     exit 1
 fi
 
+if [ "$DOCKER_USERNAME" == "" ]; then
+    echo "Error: you must include a Docker username with -u."
+    echo
+    help
+    popd
+    exit 1
+fi
+
 check_required_env_vars
 
 echo "Deploying Keycloak..."
@@ -192,7 +212,7 @@ echo "  Internal route: keycloak.apps.internal"
 echo "  Public route:   ${PUBLIC_HOSTNAME}.${PUBLIC_DOMAIN}"
 echo ""
 
-deploy_keycloak "$DB_SERVICE_NAME" "$PUBLIC_HOSTNAME" "$DOCKER_IMAGE"
+deploy_keycloak "$DB_SERVICE_NAME" "$PUBLIC_HOSTNAME" "$DOCKER_IMAGE" "$DOCKER_USERNAME"
 setup_keycloak_net_pols
 configure_keycloak_idps
 
