@@ -20,7 +20,7 @@ applications:
       export KC_DB_URL="jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}"
       export KC_DB_USERNAME="${DB_USER}"
       export KC_DB_PASSWORD="${DB_PASS}"
-      /opt/keycloak/bin/kc.sh start --import-realm --optimized --http-port=$PORT
+      /opt/keycloak/entrypoint.sh start --import-realm --optimized
     docker:
       image: {{ keycloak_image }}
     services:
