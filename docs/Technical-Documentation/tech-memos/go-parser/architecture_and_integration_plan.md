@@ -102,11 +102,11 @@ Because Go compiles to a single static binary with no runtime dependencies, the 
   ┌───────────────────┐      ┌─────────────────────────┐            │
   │  Python Celery    │      │     Go Parser Worker    │            │
   │  Worker           │      │                         │────────────┘
-  │                   │──────│  - gocelery/Redis       │          
-  │  post-parse tasks │      │  - Parallel pipeline    │          
-  │  (email, summary  │      │  - YAML-driven config   │          
-  │   aggregation)    │      │  - pgx COPY writes      │          
-  └───────────────────┘      └─────────────────────────┘          
+  │                   │──────│  - gocelery/Redis       │
+  │  post-parse tasks │      │  - Parallel pipeline    │
+  │  (email, summary  │      │  - YAML-driven config   │
+  │   aggregation)    │      │  - pgx COPY writes      │
+  └───────────────────┘      └─────────────────────────┘
 ```
 
 Key architectural decisions:
@@ -507,7 +507,7 @@ Before widening the canary beyond the initial allowlist, the Go parser must hand
 - [ ] All field-level validators
 - [ ] All record-level validators
 - [ ] All group-level validators
-- [ ] Duplicate detection 
+- [ ] Duplicate detection
 - [ ] DataFileSummary status updates
 - [ ] Parser error records with correct line numbers, field names, and error messages
 - [ ] Reparse handling (The Reparse Service should handle the queing, deleting, etc.)
@@ -541,7 +541,7 @@ Before widening the canary beyond the initial allowlist, the Go parser must hand
 
 | Question | Context | Proposed Answer |
 |----------|---------|-----------------|
-| What is the rollback strategy if issues arise during transition? | Production safety | Phase 2 includes automatic fallback to Python parser. Rollback is a routing config change — no deployment needed. |
+| What is the rollback strategy if issues arise during transition? | Production safety | Phase 1 is canary based, and configurable. If issues arise revert config to route 100% of traffic to Python parser — no deployment needed. |
 | Are there compliance or security review requirements for introducing Go? | FedRAMP / ATO considerations | Go is a compiled, memory-safe language with no additional runtime dependencies. Security review should focus on: dependency audit (`go.mod`), container scanning, and network access patterns (same as Python worker). |
 | How will monitoring and observability differ? | Operational visibility | The Go parser should emit structured logs (JSON) and expose Prometheus metrics for: files processed, records parsed, errors generated, pipeline stage latencies, and worker pool utilization. These integrate with the existing Grafana/Prometheus stack already in docker-compose. |
 | What is the desired timeline for production readiness? | Planning | Depends on team capacity. Suggested: Phase 1 (canary routing) can begin as soon as the Dockerfile, CI pipeline, and canary routing logic are in place. |
