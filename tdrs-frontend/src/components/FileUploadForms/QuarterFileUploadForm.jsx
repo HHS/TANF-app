@@ -93,7 +93,7 @@ const QuarterFileUploadForm = ({ stt }) => {
             [`usa-alert--${localAlert.type}`]: true,
           })}
         >
-          <div className="usa-alert__body" role="status">
+          <div className="usa-alert__body" role="alert">
             <p className="usa-alert__text">{localAlert.message}</p>
           </div>
         </div>
