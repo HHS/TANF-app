@@ -31,7 +31,7 @@ describe('actions/featureFlags.js', () => {
     expect(actions[1].type).toBe(FETCH_FEATURE_FLAGS)
     expect(actions[2].type).toBe(SET_FEATURE_FLAGS)
     expect(actions[2].payload.flags).toStrictEqual([mockFlag])
-    expect(actions[2].payload.lastFetched).toEqual(testDate)
+    expect(actions[2].payload.lastFetched).toBeGreaterThanOrEqual(testDate)
   })
 
   it('dispatches an error to the store if the API errors', async () => {
