@@ -2,9 +2,9 @@ import { useSelector } from 'react-redux'
 import {
   accountStatusIsApproved,
   selectUserPermissions,
-  selectFeatureFlags,
   selectPrimaryUserRole,
 } from '../../selectors/auth'
+import { selectFeatureFlags } from '../../selectors/featureFlags'
 
 const isAllowed = (
   { permissions, isApproved, featureFlags, role },
@@ -33,8 +33,14 @@ const isAllowed = (
   const isSystemAdmin = role?.name === 'OFA System Admin'
   if (isSystemAdmin) return true
 
+  console.log('feature flags', featureFlags, requiredFeatureFlags)
+
   for (var f = 0; f < requiredFeatureFlags.length; f++) {
-    if (featureFlags[requiredFeatureFlags[f]] !== true) {
+    const featureFlag = featureFlags.find(
+      (flag) => flag.name === requiredFeatureFlags[f]
+    )
+    console.log('find', featureFlag)
+    if (!featureFlag || featureFlag.enabled !== true) {
       return false
     }
   }
