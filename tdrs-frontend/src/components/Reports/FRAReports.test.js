@@ -1,10 +1,12 @@
 import React from 'react'
 import { fireEvent, waitFor, render, within } from '@testing-library/react'
-import axios from 'axios'
+import { get, post } from '../../fetch-instance'
 import { Provider } from 'react-redux'
 import { MemoryRouter } from 'react-router-dom'
 import { FRAReports } from '.'
 import configureStore from '../../configureStore'
+
+jest.mock('../../fetch-instance')
 
 const initialState = {
   auth: {
@@ -39,6 +41,19 @@ const makeTestFile = (name, contents = ['test'], type = 'text/plain') =>
 describe('FRA Reports Page', () => {
   beforeEach(() => {
     jest.useFakeTimers()
+    get.mockResolvedValue({ data: [], ok: true, status: 200, error: null })
+    post.mockResolvedValue({
+      data: {
+        id: 1,
+        original_filename: 'test.txt',
+        extension: '.txt',
+        section: 'Active Case Data',
+        quarter: 'Q1',
+      },
+      ok: true,
+      status: 200,
+      error: null,
+    })
   })
   afterEach(() => {
     jest.runOnlyPendingTimers()
@@ -159,15 +174,12 @@ describe('FRA Reports Page', () => {
     })
 
     it('Shows upload form once search has been clicked', async () => {
-      jest.mock('axios')
-      const mockAxios = axios
-
       let searchUrl = null
-      mockAxios.get.mockImplementation((url) => {
+      get.mockImplementation((url) => {
         if (url.includes('/data_files/')) {
           searchUrl = url
         }
-        return Promise.resolve({ data: [] })
+        return Promise.resolve({ data: [], ok: true, status: 200, error: null })
       })
 
       const state = {
@@ -233,9 +245,6 @@ describe('FRA Reports Page', () => {
 
   describe('Upload form', () => {
     const setup = async () => {
-      jest.mock('axios')
-      const mockAxios = axios
-
       window.HTMLElement.prototype.scrollIntoView = () => {}
       const state = {
         ...initialState,
@@ -259,8 +268,11 @@ describe('FRA Reports Page', () => {
       const origDispatch = store.dispatch
       store.dispatch = jest.fn(origDispatch)
 
-      mockAxios.post.mockResolvedValue({
+      post.mockResolvedValue({
         data: { id: 1 },
+        ok: true,
+        status: 200,
+        error: null,
       })
 
       const component = render(
@@ -294,7 +306,7 @@ describe('FRA Reports Page', () => {
         expect(getByText('Submit Report')).toBeInTheDocument()
       })
 
-      return { ...component, ...store, mockAxios }
+      return { ...component, ...store }
     }
 
     it('Allows csv files to be selected and submitted', async () => {
@@ -369,9 +381,9 @@ describe('FRA Reports Page', () => {
 
     it('Shows a spinner until submission history updates', async () => {
       // jest.spyOn(global, 'setTimeout')
-      const { getByText, dispatch, mockAxios, container } = await setup()
+      const { getByText, dispatch, container } = await setup()
 
-      mockAxios.post.mockResolvedValue({
+      post.mockResolvedValue({
         data: {
           id: 1,
           original_filename: 'testFile.txt',
@@ -387,10 +399,13 @@ describe('FRA Reports Page', () => {
           summary: null,
           latest_reparse_file_meta: '',
         },
+        ok: true,
+        status: 200,
+        error: null,
       })
 
       const statusChecks = { 1: 0, 2: 0 }
-      mockAxios.get.mockImplementation((url) => {
+      get.mockImplementation((url) => {
         const match = url.match(/\/data_files\/(\d+)\//)
 
         if (match && match[1]) {
@@ -403,6 +418,9 @@ describe('FRA Reports Page', () => {
               id,
               summary: { status },
             },
+            ok: true,
+            status: 200,
+            error: null,
           })
         }
 
@@ -440,6 +458,9 @@ describe('FRA Reports Page', () => {
               latest_reparse_file_meta: '',
             },
           ],
+          ok: true,
+          status: 200,
+          error: null,
         })
       })
 
@@ -487,7 +508,7 @@ describe('FRA Reports Page', () => {
 
       jest.runOnlyPendingTimers()
 
-      expect(mockAxios.get).toHaveBeenCalled()
+      expect(get).toHaveBeenCalled()
 
       await waitFor(() => {
         expect(getByText('Approved')).toBeInTheDocument()
@@ -497,16 +518,13 @@ describe('FRA Reports Page', () => {
     })
 
     it('Shows an error if file submission failed', async () => {
-      jest.mock('axios')
-      const mockAxios = axios
       const { getByText, dispatch, container } = await setup()
 
-      mockAxios.post.mockRejectedValue({
-        message: 'Error',
-        response: {
-          status: 400,
-          data: { detail: 'Mock fail response' },
-        },
+      post.mockResolvedValue({
+        data: { detail: 'Mock fail response' },
+        ok: false,
+        status: 400,
+        error: new Error('HTTP 400'),
       })
 
       const uploadForm = container.querySelector('#fra-file-upload')
@@ -525,7 +543,7 @@ describe('FRA Reports Page', () => {
       fireEvent.click(submitButton)
 
       await waitFor(() =>
-        expect(getByText('Error: Mock fail response')).toBeInTheDocument()
+        expect(getByText('HTTP 400: Mock fail response')).toBeInTheDocument()
       )
       await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(4))
     })
@@ -785,9 +803,6 @@ describe('FRA Reports Page', () => {
 
   describe('Submission History', () => {
     const setup = async (submissionHistoryApiResponse = []) => {
-      jest.mock('axios')
-      const mockAxios = axios
-
       window.HTMLElement.prototype.scrollIntoView = () => {}
       const state = {
         ...initialState,
@@ -826,8 +841,11 @@ describe('FRA Reports Page', () => {
 
       const { getByLabelText, getByText } = component
 
-      mockAxios.get.mockResolvedValue({
+      get.mockResolvedValue({
         data: submissionHistoryApiResponse,
+        ok: true,
+        status: 200,
+        error: null,
       })
 
       // fill out the form values before clicking search

@@ -1,4 +1,4 @@
-import axios from 'axios'
+import { get, post } from '../fetch-instance'
 import { thunk } from 'redux-thunk'
 import configureStore from 'redux-mock-store'
 import { v4 as uuidv4 } from 'uuid'
@@ -18,6 +18,8 @@ import {
   submit,
   SET_FILE_SUBMITTED,
 } from './reports'
+
+jest.mock('../fetch-instance')
 
 describe('actions/reports', () => {
   const mockStore = configureStore([thunk])
@@ -61,9 +63,12 @@ describe('actions/reports', () => {
 
   it('should dispatch OPEN_FILE_DIALOG when a file has been successfully downloaded', async () => {
     window.URL.createObjectURL = jest.fn(() => null)
-    axios.get.mockImplementationOnce(() =>
+    get.mockImplementationOnce(() =>
       Promise.resolve({
         data: 'Some text',
+        ok: true,
+        status: 200,
+        error: null,
       })
     )
     const store = mockStore()
@@ -86,7 +91,7 @@ describe('actions/reports', () => {
   })
 
   it('should dispatch SET_FILE_LIST', async () => {
-    axios.get.mockImplementationOnce(() =>
+    get.mockImplementationOnce(() =>
       Promise.resolve({
         data: [
           {
@@ -100,6 +105,9 @@ describe('actions/reports', () => {
             uuid: uuidv4(),
           },
         ],
+        ok: true,
+        status: 200,
+        error: null,
       })
     )
     const store = mockStore()
@@ -120,7 +128,7 @@ describe('actions/reports', () => {
 
   it('should dispatch SET_FILE_SUBMITTED', async () => {
     const uuid = uuidv4()
-    axios.post.mockImplementationOnce(() =>
+    post.mockImplementationOnce(() =>
       Promise.resolve({
         data: {
           extension: 'txt',
@@ -131,6 +139,9 @@ describe('actions/reports', () => {
           slug: uuid,
           year: 2021,
         },
+        ok: true,
+        status: 200,
+        error: null,
       })
     )
     const store = mockStore()
@@ -157,7 +168,7 @@ describe('actions/reports', () => {
     const actions = store.getActions()
 
     try {
-      expect(axios.post).toHaveBeenCalledTimes(1)
+      expect(post).toHaveBeenCalledTimes(1)
       expect(actions[0].type).toBe(SET_FILE_SUBMITTED)
     } catch (err) {
       throw actions[0].payload.error
@@ -183,13 +194,12 @@ describe('actions/reports', () => {
     'should set local alert state on submission failure',
     async (data, msg) => {
       const uuid = uuidv4()
-      axios.post.mockImplementationOnce(() =>
-        Promise.reject({
+      post.mockImplementationOnce(() =>
+        Promise.resolve({
+          data,
+          ok: false,
           status: 400,
-          message: 'Error',
-          response: {
-            data,
-          },
+          error: new Error('Error'),
         })
       )
       const store = mockStore()
@@ -216,7 +226,7 @@ describe('actions/reports', () => {
         })
       )
 
-      expect(axios.post).toHaveBeenCalledTimes(1)
+      expect(post).toHaveBeenCalledTimes(1)
       expect(setLocalAlertState).toHaveBeenCalledWith({
         active: true,
         message: msg || 'Error: Something went wrong',
