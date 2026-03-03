@@ -223,6 +223,53 @@ configure_master_realm_security_headers() {
     echo "Master realm X-Frame-Options set to SAMEORIGIN."
 }
 
+configure_grafana_client_idps() {
+    echo "Configuring Grafana client identity provider restriction..."
+
+    # Get the tdp-grafana client UUID
+    local clients
+    clients=$(kc_api "${KEYCLOAK_URL}/admin/realms/${REALM}/clients?clientId=tdp-grafana" \
+        -H "Authorization: Bearer ${TOKEN}")
+
+    local client_uuid
+    client_uuid=$(echo "$clients" | jq -r '.[0].id')
+
+    if [ -z "$client_uuid" ] || [ "$client_uuid" == "null" ]; then
+        echo "WARNING: tdp-grafana client not found, skipping IdP restriction."
+        return
+    fi
+
+    # Check if AMS is already configured as an allowed IdP for this client
+    local configured_idps
+    local http_code
+    http_code=$(curl -s -o /tmp/kc_response.json -w "%{http_code}" \
+        "${KEYCLOAK_URL}/admin/realms/${REALM}/clients/${client_uuid}/identity-provider" \
+        -H "Authorization: Bearer ${TOKEN}")
+
+    if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+        configured_idps=$(cat /tmp/kc_response.json)
+        local has_ams
+        has_ams=$(echo "$configured_idps" | jq '[.[] | select(.alias == "ams")] | length')
+
+        if [ "${has_ams:-0}" -gt "0" ]; then
+            echo "AMS already configured as allowed IdP for tdp-grafana client."
+            return
+        fi
+
+        # Add AMS as the only allowed IdP (Keycloak local login form always shown alongside)
+        kc_api -X POST "${KEYCLOAK_URL}/admin/realms/${REALM}/clients/${client_uuid}/identity-provider" \
+            -H "Authorization: Bearer ${TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d '{"alias": "ams"}' > /dev/null
+
+        echo "Grafana client restricted to AMS identity provider only."
+    else
+        echo "WARNING: Client IdP endpoint returned HTTP ${http_code}."
+        echo "  Per-client IdP filtering may not be available in this Keycloak version."
+        echo "  The Grafana login page will show all identity providers."
+    fi
+}
+
 # --- Main ---
 echo "=== Keycloak IdP Configuration ==="
 if [ "${SKIP_KEYCLOAK_WAIT:-false}" == "true" ]; then
@@ -234,4 +281,5 @@ get_admin_token
 configure_master_realm_security_headers
 configure_login_gov_signing_key
 configure_login_gov_acr_values
+configure_grafana_client_idps
 echo "=== IdP configuration complete ==="

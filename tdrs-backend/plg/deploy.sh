@@ -12,15 +12,18 @@ DEV_FRONTEND_APPS=("tdp-frontend-raft" "tdp-frontend-qasp" "tdp-frontend-a11y")
 STAGING_FRONTEND_APPS=("tdp-frontend-develop" "tdp-frontend-staging")
 PROD_FRONTEND="tdp-frontend-prod"
 
+PUBLIC_DOMAIN="app.cloud.gov"
+
 help() {
     echo "Deploy the PLG stack or a Postgres exporter to the Cloud Foundry space you're currently authenticated in."
-    echo "Syntax: deploy.sh [-h|a|p|u|d]"
+    echo "Syntax: deploy.sh [-h|a|p|u|d|g]"
     echo "Options:"
     echo "h     Print this help message."
-    echo "a     Deploy the entire PLG stack."
+    echo "a     Deploy the entire PLG stack. Requires -d and -g."
     echo "p     Deploy a postgres exporter, expects the environment name (dev, staging, production) to be passed with switch. Requires -u and -d"
     echo "u     Requires -p. The database URI the exporter should connect with."
     echo "d     The Cloud Foundry service name of the RDS instance. Should be included with all deployments."
+    echo "g     The public hostname for Grafana (e.g. tdp-grafana). Creates a public route at <hostname>.${PUBLIC_DOMAIN}"
     echo
 }
 
@@ -48,6 +51,10 @@ deploy_pg_exporter() {
 }
 
 deploy_grafana() {
+    local db_service="$1"
+    local public_hostname="$2"
+    local public_url="https://${public_hostname}.${PUBLIC_DOMAIN}"
+
     pushd grafana
     DATASOURCES="datasources.yml"
     cp datasources.template.yml $DATASOURCES
@@ -58,10 +65,12 @@ deploy_grafana() {
     yq eval -i ".datasources[1].url = \"http://prometheus.apps.internal:8080\""  $DATASOURCES
     yq eval -i ".datasources[2].url = \"http://loki.apps.internal:8080\""  $DATASOURCES
     yq eval -i ".datasources[3].url = \"http://tempo.apps.internal:8080\""  $DATASOURCES
-    yq eval -i ".applications[0].services[0] = \"$1\""  $MANIFEST
+    yq eval -i ".applications[0].services[0] = \"${db_service}\""  $MANIFEST
+    yq eval -i ".applications[0].env.GF_SERVER_ROOT_URL = \"${public_url}\""  $MANIFEST
 
     cf push --no-route -f $MANIFEST -t 180  --strategy rolling
     cf map-route grafana apps.internal --hostname grafana
+    cf map-route grafana "$PUBLIC_DOMAIN" --hostname "$public_hostname"
 
     rm $DATASOURCES
     rm $MANIFEST
@@ -115,11 +124,12 @@ setup_prod_net_pols() {
     # Target prod environment just in case
     cf target -o hhs-acf-ofa -s tanf-prod
 
-    # Let grafana talk to prometheus, loki, mimir, and tempo
+    # Let grafana talk to prometheus, loki, mimir, tempo, and keycloak
     cf add-network-policy grafana prometheus --protocol tcp --port 8080
     cf add-network-policy grafana loki --protocol tcp --port 8080
     cf add-network-policy grafana mimir --protocol tcp --port 8080
     cf add-network-policy grafana tempo --protocol tcp --port 8080
+    cf add-network-policy grafana keycloak --protocol tcp --port 8080
 
     # Let prometheus talk to alertmanager, grafana, loki, prod backend, and mimir
     cf add-network-policy prometheus alertmanager --protocol tcp --port 8080
@@ -129,11 +139,9 @@ setup_prod_net_pols() {
     cf add-network-policy prometheus loki --protocol tcp --port 8080
     cf add-network-policy prometheus mimir --protocol tcp --port 8080
 
-    # Let alertmanager/grafana talk to the prod frontend and vice versa
+    # Let alertmanager talk to the prod frontend and vice versa
     cf add-network-policy alertmanager $PROD_FRONTEND --protocol tcp --port 80
-    cf add-network-policy grafana $PROD_FRONTEND --protocol tcp --port 80
     cf add-network-policy $PROD_FRONTEND alertmanager -s tanf-prod --protocol tcp --port 8080
-    cf add-network-policy $PROD_FRONTEND grafana -s tanf-prod --protocol tcp --port 8080
 
     # Let prod backend send logs to loki
     cf add-network-policy $PROD_BACKEND  loki -s tanf-prod --protocol tcp --port 8080
@@ -148,14 +156,12 @@ setup_prod_net_pols() {
     # Let frontend talk to alloy faro receiver
     cf add-network-policy $PROD_FRONTEND $PROD_BACKEND --protocol tcp --port 12346
 
-    # Add network policies to allow alertmanager/grafana to talk to all frontend apps
+    # Add network policies to allow alertmanager to talk to all frontend apps
     for app in ${DEV_FRONTEND_APPS[@]}; do
         cf add-network-policy alertmanager $app -s "tanf-dev" --protocol tcp --port 80
-        cf add-network-policy grafana $app -s tanf-dev --protocol tcp --port 80
     done
     for app in ${STAGING_FRONTEND_APPS[@]}; do
         cf add-network-policy alertmanager $app -s "tanf-staging" --protocol tcp --port 80
-        cf add-network-policy grafana $app -s tanf-staging --protocol tcp --port 80
     done
 
     # Add network policies to allow prometheus to talk to all backend apps in all environments
@@ -178,7 +184,6 @@ setup_dev_staging_net_pols() {
     cf target -o hhs-acf-ofa -s tanf-dev
 
     for i in ${!DEV_BACKEND_APPS[@]}; do
-        cf add-network-policy ${DEV_FRONTEND_APPS[$i]} grafana -s tanf-prod --protocol tcp --port 8080
         cf add-network-policy ${DEV_BACKEND_APPS[$i]} loki -s tanf-prod --protocol tcp --port 8080
         cf add-network-policy ${DEV_FRONTEND_APPS[$i]} alertmanager -s tanf-prod --protocol tcp --port 8080
     done
@@ -190,7 +195,6 @@ setup_dev_staging_net_pols() {
     cf target -o hhs-acf-ofa -s tanf-staging
 
     for i in ${!STAGING_BACKEND_APPS[@]}; do
-        cf add-network-policy ${STAGING_FRONTEND_APPS[$i]} grafana -s tanf-prod --protocol tcp --port 8080
         cf add-network-policy ${STAGING_BACKEND_APPS[$i]} loki -s tanf-prod --protocol tcp --port 8080
         cf add-network-policy ${STAGING_FRONTEND_APPS[$i]} alertmanager -s tanf-prod --protocol tcp --port 8080
     done
@@ -222,7 +226,7 @@ err_help_exit() {
 
 pushd "$(dirname "$0")"
 
-while getopts ":hap:u:d:" option; do
+while getopts ":hap:u:d:g:" option; do
    case $option in
       h) # display Help
          help
@@ -236,6 +240,8 @@ while getopts ":hap:u:d:" option; do
          DB_URI=$OPTARG;;
       d) # Bind a Postgres exporter or Grafana to $DB_SERVICE_NAME
          DB_SERVICE_NAME=$OPTARG;;
+      g) # Public hostname for Grafana
+         GRAFANA_HOSTNAME=$OPTARG;;
      \?) # Invalid option
          err_help_exit "Error: Invalid option";;
    esac
@@ -252,11 +258,14 @@ if [ "$DB_SERVICE_NAME" == "" ]; then
     err_help_exit "Error: you must include a database service name."
 fi
 if [ "$DEPLOY" == "plg" ]; then
+    if [ "$GRAFANA_HOSTNAME" == "" ]; then
+        err_help_exit "Error: you must include a Grafana public hostname with -g when deploying the PLG stack."
+    fi
     deploy_mimir
     deploy_prometheus
     deploy_loki
     deploy_tempo
-    deploy_grafana $DB_SERVICE_NAME
+    deploy_grafana "$DB_SERVICE_NAME" "$GRAFANA_HOSTNAME"
     deploy_alertmanager
     setup_prod_net_pols
     setup_dev_staging_net_pols

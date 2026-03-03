@@ -21,6 +21,9 @@ REQUIRED_ENV_VARS=(
 )
 OPTIONAL_ENV_VARS=(
     "KC_TDP_GRAFANA_CLIENT_SECRET" # tdp-grafana client secret (realm config)
+    "KC_GRAFANA_REDIRECT_URI"      # Grafana OAuth redirect URI (e.g. https://tdp-grafana.app.cloud.gov/login/generic_oauth)
+    "KC_GRAFANA_WEB_ORIGIN"        # Grafana web origin (e.g. https://tdp-grafana.app.cloud.gov)
+    "KC_GRAFANA_POST_LOGOUT_URI"   # Grafana post-logout redirect URI (e.g. https://tdp-grafana.app.cloud.gov/*)
     "LOGIN_GOV_ACR_VALUES"         # Login.gov identity assurance level
 )
 

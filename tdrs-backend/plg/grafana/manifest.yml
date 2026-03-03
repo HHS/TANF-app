@@ -14,6 +14,7 @@ applications:
       GF_SERVER_HTTP_PORT: 8080
       GF_DATABASE_TYPE: postgres
       GF_DATABASE_SSL_MODE: require
+      GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: "{{ grafana_oauth_client_secret }}"
     command: |
       HOST=$(echo $VCAP_SERVICES | jq -r '."aws-rds"[0].credentials.host')
       PORT=$(echo $VCAP_SERVICES | jq -r '."aws-rds"[0].credentials.port')

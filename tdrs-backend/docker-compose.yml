@@ -140,6 +140,7 @@ services:
     command: --config /usr/share/grafana/conf/custom.ini
     depends_on:
       - grafana-pg
+      - keycloak
 
   alertmanager:
     restart: always

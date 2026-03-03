@@ -285,11 +285,11 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "${KC_TDP_GRAFANA_CLIENT_SECRET}",
       "redirectUris": [
-        "http://localhost:3000/grafana/login/generic_oauth",
+        "http://localhost:9400/login/generic_oauth",
         "${KC_GRAFANA_REDIRECT_URI:http://localhost:9400/login/generic_oauth}"
       ],
       "webOrigins": [
-        "http://localhost:3000",
+        "http://localhost:9400",
         "${KC_GRAFANA_WEB_ORIGIN:http://localhost:9400}"
       ],
       "protocol": "openid-connect",
@@ -306,7 +306,10 @@
         "profile",
         "tdp-user-attributes"
       ],
-      "optionalClientScopes": []
+      "optionalClientScopes": [],
+      "attributes": {
+        "post.logout.redirect.uris": "http://localhost:9400/*##${KC_GRAFANA_POST_LOGOUT_URI:http://localhost:9400/*}"
+      }
     }
   ],
   "users": [
