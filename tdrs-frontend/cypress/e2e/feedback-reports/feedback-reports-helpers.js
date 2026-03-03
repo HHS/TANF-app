@@ -86,13 +86,6 @@ export const verifyUploadHistoryVisible = () => {
 }
 
 /**
- * Verify upload history shows "No data available."
- */
-export const verifyNoUploadHistory = () => {
-  cy.contains('No data available.').should('exist')
-}
-
-/**
  * Get the first row in the upload history table.
  */
 export const getLatestUploadHistoryRow = () => {

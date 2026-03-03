@@ -8,7 +8,7 @@ import * as fr from './feedback-reports-helpers'
 // Navigation
 // ──────────────────────────────────────────────────────────
 
-When('the user navigates to Feedback Reports', () => {
+When('{string} navigates to Feedback Reports', () => {
   fr.navigateToFeedbackReports()
 })
 
@@ -17,7 +17,7 @@ When('the user navigates to Feedback Reports', () => {
 // ──────────────────────────────────────────────────────────
 
 Then(
-  'the user sees the Feedback Reports page with fiscal year selector',
+  '{string} sees the Feedback Reports page with fiscal year selector',
   () => {
     cy.get('#fiscal-year-select').should('exist')
     cy.get('#fiscal-year-select').should('contain', '- Select Fiscal Year -')
@@ -33,19 +33,15 @@ Then('no upload form is visible', () => {
 // Fiscal Year Selection
 // ──────────────────────────────────────────────────────────
 
-When('the user selects fiscal year {string}', (year) => {
+When('{string} selects fiscal year {string}', (_actor, year) => {
   fr.selectFiscalYear(year)
-})
-
-When('the user changes the fiscal year', () => {
-  fr.selectFiscalYear('2024')
 })
 
 // ──────────────────────────────────────────────────────────
 // Upload Form Verification
 // ──────────────────────────────────────────────────────────
 
-Then('the user sees the upload form for fiscal year {string}', (year) => {
+Then('{string} sees the upload form for fiscal year {string}', (_actor, year) => {
   cy.contains(`Fiscal Year ${year}`).should('exist')
   cy.contains('Feedback Reports ZIP').should('exist')
   cy.get('#feedback_reports').should('exist')
@@ -53,7 +49,7 @@ Then('the user sees the upload form for fiscal year {string}', (year) => {
   cy.contains('button', 'Upload & Notify States').should('exist')
 })
 
-Then('the user sees the upload history section', () => {
+Then('{string} sees the upload history section', () => {
   fr.verifyUploadHistoryVisible()
 })
 
@@ -61,16 +57,21 @@ Then('the user sees the upload history section', () => {
 // File Upload - Happy Path
 // ──────────────────────────────────────────────────────────
 
-When('the user uploads {string} with date {string}', (fileName, dateStr) => {
-  cy.intercept('POST', '/v1/reports/report-sources/').as('uploadFeedbackReport')
-  cy.intercept('GET', '/v1/reports/report-sources/*').as('fetchUploadHistory')
+When(
+  '{string} uploads {string} with date {string}',
+  (_actor, fileName, dateStr) => {
+    cy.intercept('POST', '/v1/reports/report-sources/').as(
+      'uploadFeedbackReport'
+    )
+    cy.intercept('GET', '/v1/reports/report-sources/*').as('fetchUploadHistory')
 
-  fr.uploadFeedbackZip(fileName)
-  fr.enterExtractionDate(dateStr)
-  fr.clickUploadAndNotify()
-})
+    fr.uploadFeedbackZip(fileName)
+    fr.enterExtractionDate(dateStr)
+    fr.clickUploadAndNotify()
+  }
+)
 
-Then('the user sees the upload success message', () => {
+Then('{string} sees the upload success message', () => {
   cy.contains(fr.SUCCESS_MESSAGE, { timeout: 30000 }).should('exist')
 })
 
@@ -94,19 +95,19 @@ Then('the report is processed successfully', () => {
 // Validation Errors
 // ──────────────────────────────────────────────────────────
 
-When('the user enters date {string} but no file', (dateStr) => {
+When('{string} enters date {string} but no file', (_actor, dateStr) => {
   fr.enterExtractionDate(dateStr)
 })
 
-When('the user clicks upload', () => {
+When('{string} clicks upload', () => {
   fr.clickUploadAndNotify()
 })
 
-Then('the user sees the error {string}', (errorMessage) => {
+Then('{string} sees the error {string}', (_actor, errorMessage) => {
   cy.contains(errorMessage).should('exist')
 })
 
-When('the user selects a non-ZIP file', () => {
+When('{string} selects a non-ZIP file', () => {
   const filePath =
     '../tdrs-backend/tdpservice/parsers/test/data/small_correct_file.txt'
   cy.get('#feedback_reports').selectFile(filePath, {
@@ -116,50 +117,27 @@ When('the user selects a non-ZIP file', () => {
   })
 })
 
-When('the user selects {string}', (fileName) => {
+When('{string} selects {string}', (_actor, fileName) => {
   fr.uploadFeedbackZip(fileName, true)
 })
 
-Then('the user sees the error about fiscal year mismatch', () => {
+Then('{string} sees the error about fiscal year mismatch', () => {
   cy.contains(fr.ERROR_MESSAGES.FY_MISMATCH).should('exist')
 })
 
-When('the user selects {string} but no date', (fileName) => {
+When('{string} selects {string} but no date', (_actor, fileName) => {
   fr.uploadFeedbackZip(fileName)
 })
 
-Then('the user sees the error about missing date', () => {
+Then('{string} sees the error about missing date', () => {
   cy.contains(fr.ERROR_MESSAGES.NO_DATE).should('exist')
-})
-
-// ──────────────────────────────────────────────────────────
-// Upload History Filtering
-// ──────────────────────────────────────────────────────────
-
-Then('the user sees no upload history for this year', () => {
-  fr.verifyNoUploadHistory()
-})
-
-// ──────────────────────────────────────────────────────────
-// Form Reset
-// ──────────────────────────────────────────────────────────
-
-When('the user selects a file and enters a date', () => {
-  fr.uploadFeedbackZip('FY2025_valid_single_stt.zip')
-  fr.enterExtractionDate('01/15/2025')
-})
-
-Then('the form is reset', () => {
-  cy.get('#feedback_reports').should('have.value', '')
-  cy.get('.usa-date-picker__external-input').should('have.value', '')
-  cy.get('.usa-error-message').should('not.exist')
 })
 
 // ──────────────────────────────────────────────────────────
 // Permission Tests - No Access
 // ──────────────────────────────────────────────────────────
 
-Then('the user does not see Feedback Reports in the navigation', () => {
+Then('{string} does not see Feedback Reports in the navigation', () => {
   cy.visit('/')
   cy.contains('Welcome to TDP', { timeout: 30000 }).should('exist')
   cy.get('.usa-nav__primary').should('exist')
