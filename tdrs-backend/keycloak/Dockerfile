@@ -1,23 +1,29 @@
 # Use the following to build: docker buildx build -t ghcr.io/raft-tech/keycloak_26:latest -f Dockerfile . --platform linux/amd64,linux/arm64 --push
 
-# Stage 1: Install nginx from UBI 9 minimal (has microdnf package manager).
-# Keycloak's ubi-micro base has no package manager, so we copy the binary out.
-FROM registry.access.redhat.com/ubi9/ubi-minimal AS nginx-builder
-RUN microdnf install -y nginx && microdnf clean all
-# Collect nginx-specific shared libs (exclude glibc/ld-linux which are already
-# in the Keycloak ubi-micro base and must not be overwritten).
+# Stage 1: nginx binary and non-system shared libraries.
+FROM nginx:1.27 AS nginx-source
+# Collect libs that aren't part of glibc (those are already in ubi-micro).
+# Also exclude libcrypt — Debian's version requires glibc 2.36, but ubi-micro
+# only has glibc 2.34. We grab a compatible libcrypt from UBI 9 instead.
 RUN mkdir /nginx-libs && \
     ldd /usr/sbin/nginx | awk '/=>/{print $3}' | \
-    grep -v -E '(libc\.so|libm\.so|libdl\.so|libpthread|librt\.so|ld-linux)' | \
+    grep -v -E '(libc\.so|libm\.so|libdl\.so|libpthread|librt\.so|libcrypt\.so|ld-linux)' | \
     while read lib; do cp -L "$lib" /nginx-libs/; done
+
+# Stage 2: libcrypt.so.1 compatible with UBI 9's glibc 2.34.
+# Debian nginx links against libcrypt.so.1, but UBI 9 only ships libcrypt.so.2.
+# The libxcrypt-compat package provides a backwards-compatible libcrypt.so.1.
+FROM registry.access.redhat.com/ubi9/ubi-minimal AS ubi-libs
+RUN microdnf install -y libxcrypt-compat && \
+    mkdir /ubi-libs && cp -L /usr/lib64/libcrypt.so.1* /ubi-libs/
 
 FROM quay.io/keycloak/keycloak:26.0
 
 USER root
-# Copy nginx binary, modules, and non-system shared library dependencies.
-COPY --from=nginx-builder /usr/sbin/nginx /usr/sbin/nginx
-COPY --from=nginx-builder /usr/lib64/nginx/ /usr/lib64/nginx/
-COPY --from=nginx-builder /nginx-libs/ /usr/lib64/
+# Copy nginx binary, Debian-compatible libs, and UBI-compatible libcrypt.
+COPY --from=nginx-source /usr/sbin/nginx /usr/sbin/nginx
+COPY --from=nginx-source /nginx-libs/ /usr/lib64/
+COPY --from=ubi-libs /ubi-libs/ /usr/lib64/
 RUN mkdir -p /var/log/nginx /tmp/nginx_client_body /tmp/nginx_proxy /tmp/nginx_fastcgi /tmp/nginx_uwsgi /tmp/nginx_scgi && \
     chown -R 1000:0 /var/log/nginx /tmp/nginx_*
 USER 1000
