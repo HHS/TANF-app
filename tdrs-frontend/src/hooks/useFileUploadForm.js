@@ -9,6 +9,7 @@ import {
 } from '../actions/reports'
 import { useEventLogger } from '../utils/eventLogger'
 import { useFormSubmission } from './useFormSubmission'
+import { POLLING_TIMEOUT_MESSAGE } from '../components/Reports/constants'
 import { useReportsContext } from '../components/Reports/ReportsContext'
 
 /**
@@ -86,8 +87,7 @@ export const useFileUploadForm = ({
           },
           (onError) => {
             onError({
-              message:
-                'Exceeded max number of tries to update submission status.',
+              message: POLLING_TIMEOUT_MESSAGE,
               type: 'warning',
             })
           }
@@ -114,6 +114,15 @@ export const useFileUploadForm = ({
   // Handle form submission
   const onSubmit = async (event) => {
     event.preventDefault()
+
+    if (uploadedFiles.length === 0) {
+      setLocalAlertState({
+        active: true,
+        type: 'error',
+        message: 'No changes have been made to data files',
+      })
+      return
+    }
 
     try {
       // Transform files if needed (e.g., for Program Audit)
@@ -163,10 +172,11 @@ export const useFileUploadForm = ({
     fileInput.init()
   }, [])
 
-  // Scroll to alert when it becomes active
+  // Scroll to and focus alert when it becomes active
   useEffect(() => {
     if (localAlert.active && alertRef && alertRef.current) {
       alertRef.current.scrollIntoView({ behavior: 'smooth' })
+      alertRef.current.focus({ preventScroll: true })
     }
   }, [localAlert, alertRef])
 

@@ -74,6 +74,8 @@ const SectionFileUploadForm = ({ stt }) => {
       {localAlert.active && (
         <div
           ref={alertRef}
+          tabIndex={-1}
+          style={{ outline: 'none' }}
           className={classNames('usa-alert usa-alert--slim', {
             [`usa-alert--${localAlert.type}`]: true,
           })}
@@ -100,7 +102,8 @@ const SectionFileUploadForm = ({ stt }) => {
           <Button
             className="card:margin-y-1"
             type="submit"
-            disabled={isSubmitting || uploadedFiles.length === 0}
+            disabled={isSubmitting}
+            data-has-uploaded-files={uploadedFiles.length > 0}
           >
             {isSubmitting ? 'Submitting...' : 'Submit Data Files'}
           </Button>

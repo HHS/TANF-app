@@ -199,6 +199,18 @@ def stt(region):
 
 
 @pytest.fixture
+def tribe_stt(region):
+    """Return a Tribal STT."""
+    stt, _ = STT.objects.get_or_create(
+        name="Blackfeet Nation",
+        region=region,
+        stt_code="020",
+        type=STT.EntityType.TRIBE,
+    )
+    return stt
+
+
+@pytest.fixture
 def region():
     """Return a region."""
     region, _ = Region.objects.get_or_create(id=5)

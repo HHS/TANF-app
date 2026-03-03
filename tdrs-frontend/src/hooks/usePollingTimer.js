@@ -105,8 +105,13 @@ export const usePollingTimer = () => {
 
       try {
         response = await request()
-      } catch (axiosError) {
-        const statusCode = axiosError?.response?.status
+      } catch (networkError) {
+        retry(requestId, tryNumber)
+        return
+      }
+
+      if (!response.ok) {
+        const statusCode = response.status
         const shouldStopPolling =
           statusCode === 400 || statusCode === 401 || statusCode === 403
 
@@ -114,7 +119,9 @@ export const usePollingTimer = () => {
           retry(requestId, tryNumber)
           return
         } else {
-          finish(requestId, () => onError(axiosError))
+          finish(requestId, () =>
+            onError(response.error || new Error(`HTTP ${statusCode}`))
+          )
           return
         }
       }
