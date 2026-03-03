@@ -39,6 +39,9 @@ export const useFileUploadForm = ({
     fileTypeInputValue,
     localAlert,
     setLocalAlertState,
+    processingAlert,
+    setProcessingAlertState,
+    processingAlertRef,
     uploadedFiles,
     setErrorModalVisible,
     setModalTriggerSource,
@@ -72,10 +75,10 @@ export const useFileUploadForm = ({
                 datafile: response?.data,
               },
             })
-            setLocalAlertState({
+            setProcessingAlertState({
               active: true,
               type: 'success',
-              message: 'Parsing complete.',
+              message: 'Processing complete.',
             })
           },
           (error) => {
@@ -180,15 +183,28 @@ export const useFileUploadForm = ({
     }
   }, [localAlert, alertRef])
 
+  // Scroll to processing alert when it becomes active (uses aria-live="polite" for sequential reading)
+  useEffect(() => {
+    if (
+      processingAlert.active &&
+      processingAlertRef &&
+      processingAlertRef.current
+    ) {
+      processingAlertRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [processingAlert, processingAlertRef])
+
   return {
     // Form state
     yearInputValue,
     quarterInputValue,
     fileTypeInputValue,
     localAlert,
+    processingAlert,
     uploadedFiles,
     isSubmitting,
     alertRef,
+    processingAlertRef,
     formattedSections,
 
     // Form handlers
@@ -197,5 +213,6 @@ export const useFileUploadForm = ({
 
     // Context setters (for FileUpload components)
     setLocalAlertState,
+    setProcessingAlertState,
   }
 }
