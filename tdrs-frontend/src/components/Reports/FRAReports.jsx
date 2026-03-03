@@ -155,6 +155,7 @@ const UploadForm = ({
   handleCancel,
   handleUpload,
   setLocalAlertState,
+  setProcessingAlertState,
   file,
   setSelectedFile,
   section,
@@ -215,6 +216,13 @@ const UploadForm = ({
       type: null,
       message: null,
     })
+    if (setProcessingAlertState) {
+      setProcessingAlertState({
+        active: false,
+        type: null,
+        message: null,
+      })
+    }
 
     const fileInputValue = e.target.files[0]
     const input = inputRef.current
@@ -535,6 +543,9 @@ const FRAReportsContent = () => {
     setModalTriggerSource,
     localAlert,
     setLocalAlertState,
+    processingAlert,
+    setProcessingAlertState,
+    processingAlertRef,
     fraSelectedFile,
     setFraSelectedFile,
     fraUploadError,
@@ -672,10 +683,10 @@ const FRAReportsContent = () => {
                 datafile: response?.data,
               },
             })
-            setLocalAlertState({
+            setProcessingAlertState({
               active: true,
               type: 'success',
-              message: 'Parsing complete.',
+              message: 'Processing complete.',
             })
           },
           (error) => {
@@ -740,10 +751,10 @@ const FRAReportsContent = () => {
                 datafile: response?.data,
               },
             })
-            setLocalAlertState({
+            setProcessingAlertState({
               active: true,
               type: 'success',
-              message: 'Parsing complete.',
+              message: 'Processing complete.',
             })
           },
           (error) => {
@@ -863,6 +874,16 @@ const FRAReportsContent = () => {
     }
   }, [localAlert, alertRef])
 
+  useEffect(() => {
+    if (
+      processingAlert.active &&
+      processingAlertRef &&
+      processingAlertRef.current
+    ) {
+      processingAlertRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [processingAlert, processingAlertRef])
+
   return (
     <div className="page-container" style={{ position: 'relative' }}>
       <div className={classNames({ 'border-bottom': allFieldsFilled })}>
@@ -902,24 +923,49 @@ const FRAReportsContent = () => {
 
           {!isRegionalStaff && (
             <>
+              {/* Screen-reader announcer */}
+              <div className="usa-sr-only">
+                <div role="status" aria-live="polite" aria-atomic="true">
+                  {localAlert.active ? localAlert.message : ''}
+                </div>
+
+                <div role="status" aria-live="polite" aria-atomic="true">
+                  {processingAlert.active ? processingAlert.message : ''}
+                </div>
+              </div>
+
+              {/* Visible alerts (not in accessibility tree, prevents duplicate screen reads */}
               {localAlert.active && (
                 <div
-                  ref={alertRef}
-                  tabIndex={-1}
-                  style={{ outline: 'none' }}
                   className={classNames('usa-alert usa-alert--slim', {
                     [`usa-alert--${localAlert.type}`]: true,
                   })}
+                  aria-hidden="true"
                 >
-                  <div className="usa-alert__body" role="alert">
+                  <div className="usa-alert__body">
                     <p className="usa-alert__text">{localAlert.message}</p>
                   </div>
                 </div>
               )}
+
+              {processingAlert.active && (
+                <div
+                  className={classNames('usa-alert usa-alert--slim', {
+                    [`usa-alert--${processingAlert.type}`]: true,
+                  })}
+                  aria-hidden="true"
+                >
+                  <div className="usa-alert__body">
+                    <p className="usa-alert__text">{processingAlert.message}</p>
+                  </div>
+                </div>
+              )}
+
               <UploadForm
                 handleUpload={handleUpload}
                 handleCancel={handleCancel}
                 setLocalAlertState={setLocalAlertState}
+                setProcessingAlertState={setProcessingAlertState}
                 file={fraSelectedFile}
                 setSelectedFile={setFraSelectedFile}
                 section={getReportTypeLabel()}
