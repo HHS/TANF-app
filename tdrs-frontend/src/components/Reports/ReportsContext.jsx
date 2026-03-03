@@ -222,12 +222,16 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   const [reprocessedModalVisible, setReprocessedModalVisible] = useState(false)
   const [reprocessedDate, setReprocessedDate] = useState('')
 
-  // Alert state
-  const [localAlert, setLocalAlertState] = useState({
+  // Alert state — the `timestamp` field ensures React always sees a new object
+  // even when the same message is set consecutively, so the useEffect that
+  // focuses the alert re-fires and the screen reader announces it again.
+  const [localAlert, setLocalAlert] = useState({
     active: false,
     type: null,
     message: null,
   })
+  const setLocalAlertState = (alert) =>
+    setLocalAlert({ ...alert, timestamp: Date.now() })
 
   // Processing alert state (separate from localAlert for accessibility)
   const [processingAlert, setProcessingAlertState] = useState({

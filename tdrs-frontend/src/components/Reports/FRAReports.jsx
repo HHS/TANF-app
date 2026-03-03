@@ -296,6 +296,15 @@ const UploadForm = ({
       return
     }
 
+    if (!file || (file && file.id)) {
+      setLocalAlertState({
+        active: true,
+        type: 'error',
+        message: 'No changes have been made to data files',
+      })
+      return
+    }
+
     handleUpload({ file })
   }
 
@@ -349,7 +358,8 @@ const UploadForm = ({
           <Button
             className="card:margin-y-1"
             type="submit"
-            disabled={isSubmitting || fraHasUploadedFile === false}
+            disabled={isSubmitting}
+            data-has-uploaded-files={fraHasUploadedFile}
           >
             {isSubmitting ? 'Submitting...' : 'Submit Report'}
           </Button>
@@ -860,6 +870,7 @@ const FRAReportsContent = () => {
   useEffect(() => {
     if (localAlert.active && alertRef && alertRef.current) {
       alertRef.current.scrollIntoView({ behavior: 'smooth' })
+      alertRef.current.focus({ preventScroll: true })
     }
   }, [localAlert, alertRef])
 
