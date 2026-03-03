@@ -115,6 +115,15 @@ export const useFileUploadForm = ({
   const onSubmit = async (event) => {
     event.preventDefault()
 
+    if (uploadedFiles.length === 0) {
+      setLocalAlertState({
+        active: true,
+        type: 'error',
+        message: 'No changes have been made to data files',
+      })
+      return
+    }
+
     try {
       // Transform files if needed (e.g., for Program Audit)
       const filesToSubmit = transformFiles
@@ -163,10 +172,11 @@ export const useFileUploadForm = ({
     fileInput.init()
   }, [])
 
-  // Scroll to alert when it becomes active
+  // Scroll to and focus alert when it becomes active
   useEffect(() => {
     if (localAlert.active && alertRef && alertRef.current) {
       alertRef.current.scrollIntoView({ behavior: 'smooth' })
+      alertRef.current.focus({ preventScroll: true })
     }
   }, [localAlert, alertRef])
 
