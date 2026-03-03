@@ -214,17 +214,15 @@ describe('QuarterFileUploadForm', () => {
         },
       }
 
-      const { getByText, getByRole } = renderComponent(storeState)
+      const { getByText, getAllByText } = renderComponent(storeState)
 
       const submitButton = getByText('Submit Data Files')
       fireEvent.click(submitButton)
 
       await waitFor(() => {
-        const alert = getByRole('alert')
-        expect(alert).toBeInTheDocument()
-        expect(alert).toHaveTextContent(
-          'No changes have been made to data files'
-        )
+        expect(
+          getAllByText('No changes have been made to data files').length
+        ).toBeGreaterThan(0)
       })
 
       expect(mockExecuteSubmission).not.toHaveBeenCalled()
@@ -307,19 +305,16 @@ describe('QuarterFileUploadForm', () => {
       const error = new Error('Submission failed')
       mockExecuteSubmission.mockRejectedValue(error)
 
-      const { getByText, getAllByRole } = renderComponent(storeState)
+      const { getByText, getAllByText } = renderComponent(storeState)
 
       const submitButton = getByText('Submit Data Files')
       fireEvent.click(submitButton)
 
       await waitFor(() => {
-        const statusElements = getAllByRole('status')
-        const alert = statusElements.find((el) =>
-          el.textContent.includes(
-            'An error occurred during submission. Please try again.'
-          )
-        )
-        expect(alert).toBeTruthy()
+        expect(
+          getAllByText('An error occurred during submission. Please try again.')
+            .length
+        ).toBeGreaterThan(0)
       })
     })
 

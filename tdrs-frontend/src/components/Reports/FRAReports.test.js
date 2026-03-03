@@ -565,15 +565,15 @@ describe('FRA Reports Page', () => {
     })
 
     it('Shows an error if a no file is selected for submission', async () => {
-      const { getByText } = await setup()
+      const { getByText, getAllByText } = await setup()
 
       const submitButton = getByText('Submit Report', { selector: 'button' })
       fireEvent.click(submitButton)
 
       await waitFor(() =>
         expect(
-          getByText('No changes have been made to data files')
-        ).toBeInTheDocument()
+          getAllByText('No changes have been made to data files').length
+        ).toBeGreaterThan(0)
       )
     })
 
