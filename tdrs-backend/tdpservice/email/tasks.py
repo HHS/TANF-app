@@ -21,7 +21,6 @@ from tdpservice.email.helpers.account_deactivation_warning import (
     send_deactivation_warning_email,
 )
 from tdpservice.email.helpers.admin_notifications import email_admin_deactivated_user
-from tdpservice.parsers.util import calendar_to_fiscal
 from tdpservice.stts.models import STT
 from tdpservice.users.models import (
     AccountApprovalStatusChoices,
@@ -172,8 +171,7 @@ def email_admin_num_access_requests():
 @shared_task
 def send_data_submission_reminder(due_date, reporting_period, fiscal_quarter):
     """Send all Data Analysts a reminder to submit if they have not already."""
-    now = datetime.now()
-    fiscal_year = calendar_to_fiscal(now.year, fiscal_quarter)
+    fiscal_year = datetime.now().year
 
     all_locations = STT.objects.all()
 
@@ -184,19 +182,22 @@ def send_data_submission_reminder(due_date, reporting_period, fiscal_quarter):
     )
 
     for loc in all_locations:
-        submitted_sections = (
+        submitted_programs_sections = (
             year_quarter_files.filter(stt=loc)
-            .values_list("section", flat=True)
+            .values_list("program_type", "section")
             .distinct()
         )
-        required_sections = loc.filenames.keys()
 
-        submitted_all_sections = True
-        for s in required_sections:
-            if s not in submitted_sections:
-                submitted_all_sections = False
+        submitted_programs_sections = [f"{ps[0]} {ps[1]}".upper() for ps in submitted_programs_sections]
 
-        if not submitted_all_sections:
+        required_program_sections = loc.filenames.keys()
+        required_program_sections = [ps.upper() for ps in required_program_sections]
+
+        submitted_all_programs_sections = all(
+            ps in submitted_programs_sections for ps in required_program_sections
+        )
+
+        if not submitted_all_programs_sections:
             reminder_locations.append(loc)
 
     template_path = DataFileEmail.UPCOMING_SUBMISSION_DEADLINE.value
