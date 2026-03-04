@@ -33,13 +33,10 @@ const isAllowed = (
   const isSystemAdmin = role?.name === 'OFA System Admin'
   if (isSystemAdmin) return true
 
-  console.log('feature flags', featureFlags, requiredFeatureFlags)
-
   for (var f = 0; f < requiredFeatureFlags.length; f++) {
     const featureFlag = featureFlags.find(
       (flag) => flag.name === requiredFeatureFlags[f]
     )
-    console.log('find', featureFlag)
     if (!featureFlag || featureFlag.enabled !== true) {
       return false
     }
