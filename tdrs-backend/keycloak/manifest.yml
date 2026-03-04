@@ -2,7 +2,7 @@ version: 1
 applications:
   - name: keycloak
     memory: 768M
-    disk_quota: 2G
+    disk_quota: 5G
     instances: 1
     health-check-type: process
     env:
