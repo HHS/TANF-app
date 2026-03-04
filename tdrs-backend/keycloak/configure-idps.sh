@@ -190,7 +190,9 @@ configure_login_gov_acr_values() {
     fi
 
     local new_url="${auth_url}${separator}acr_values=${encoded_acr}"
-    idp_config=$(echo "$idp_config" | jq --arg url "$new_url" '.config.authorizationUrl = $url')
+    # Remove the masked clientSecret before PUT to avoid overwriting the real value.
+    idp_config=$(echo "$idp_config" | jq --arg url "$new_url" \
+        '.config.authorizationUrl = $url | del(.config.clientSecret)')
 
     kc_api -X PUT "${KEYCLOAK_URL}/admin/realms/${REALM}/identity-provider/instances/login-gov" \
         -H "Authorization: Bearer ${TOKEN}" \
@@ -223,51 +225,41 @@ configure_master_realm_security_headers() {
     echo "Master realm X-Frame-Options set to SAMEORIGIN."
 }
 
-configure_grafana_client_idps() {
-    echo "Configuring Grafana client identity provider restriction..."
+hide_login_gov_from_login_page() {
+    echo "Hiding Login.gov from Keycloak login page..."
 
-    # Get the tdp-grafana client UUID
-    local clients
-    clients=$(kc_api "${KEYCLOAK_URL}/admin/realms/${REALM}/clients?clientId=tdp-grafana" \
+    # TDP frontend uses kc_idp_hint=login-gov to bypass the login page entirely,
+    # so hiding Login.gov from the login page does not affect TDP auth.
+    # This ensures only AMS (and the local password form) appear on the login page,
+    # which is the correct behavior for Grafana and any other direct Keycloak login.
+    local idp_config
+    idp_config=$(kc_api "${KEYCLOAK_URL}/admin/realms/${REALM}/identity-provider/instances/login-gov" \
         -H "Authorization: Bearer ${TOKEN}")
 
-    local client_uuid
-    client_uuid=$(echo "$clients" | jq -r '.[0].id')
-
-    if [ -z "$client_uuid" ] || [ "$client_uuid" == "null" ]; then
-        echo "WARNING: tdp-grafana client not found, skipping IdP restriction."
+    if [ -z "$idp_config" ] || [ "$(echo "$idp_config" | jq -r '.alias')" == "null" ]; then
+        echo "WARNING: Login.gov IdP not found, skipping."
         return
     fi
 
-    # Check if AMS is already configured as an allowed IdP for this client
-    local configured_idps
-    local http_code
-    http_code=$(curl -s -o /tmp/kc_response.json -w "%{http_code}" \
-        "${KEYCLOAK_URL}/admin/realms/${REALM}/clients/${client_uuid}/identity-provider" \
-        -H "Authorization: Bearer ${TOKEN}")
+    local already_hidden
+    already_hidden=$(echo "$idp_config" | jq -r '.hideOnLogin // false')
 
-    if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
-        configured_idps=$(cat /tmp/kc_response.json)
-        local has_ams
-        has_ams=$(echo "$configured_idps" | jq '[.[] | select(.alias == "ams")] | length')
-
-        if [ "${has_ams:-0}" -gt "0" ]; then
-            echo "AMS already configured as allowed IdP for tdp-grafana client."
-            return
-        fi
-
-        # Add AMS as the only allowed IdP (Keycloak local login form always shown alongside)
-        kc_api -X POST "${KEYCLOAK_URL}/admin/realms/${REALM}/clients/${client_uuid}/identity-provider" \
-            -H "Authorization: Bearer ${TOKEN}" \
-            -H "Content-Type: application/json" \
-            -d '{"alias": "ams"}' > /dev/null
-
-        echo "Grafana client restricted to AMS identity provider only."
-    else
-        echo "WARNING: Client IdP endpoint returned HTTP ${http_code}."
-        echo "  Per-client IdP filtering may not be available in this Keycloak version."
-        echo "  The Grafana login page will show all identity providers."
+    if [ "$already_hidden" == "true" ]; then
+        echo "Login.gov already hidden on login page."
+        return
     fi
+
+    # Remove the masked clientSecret before PUT to avoid overwriting the real value.
+    # Keycloak's GET API returns secrets as "**********" and PUTting that back would
+    # replace the actual secret with the literal masked string.
+    idp_config=$(echo "$idp_config" | jq '.hideOnLogin = true | del(.config.clientSecret)')
+
+    kc_api -X PUT "${KEYCLOAK_URL}/admin/realms/${REALM}/identity-provider/instances/login-gov" \
+        -H "Authorization: Bearer ${TOKEN}" \
+        -H "Content-Type: application/json" \
+        -d "$idp_config" > /dev/null
+
+    echo "Login.gov hidden from login page (TDP frontend uses kc_idp_hint, unaffected)."
 }
 
 # --- Main ---
@@ -281,5 +273,5 @@ get_admin_token
 configure_master_realm_security_headers
 configure_login_gov_signing_key
 configure_login_gov_acr_values
-configure_grafana_client_idps
+hide_login_gov_from_login_page
 echo "=== IdP configuration complete ==="

@@ -142,6 +142,14 @@ services:
       - grafana-pg
       - keycloak
 
+  grafana-init:
+    image: curlimages/curl:8.5.0
+    volumes:
+      - ./plg/grafana/init-grafana-orgs.sh:/init-grafana-orgs.sh:ro
+    entrypoint: ["/bin/sh", "/init-grafana-orgs.sh"]
+    depends_on:
+      - grafana
+
   alertmanager:
     restart: always
     image: prom/alertmanager:v0.27.0
