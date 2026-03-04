@@ -9,21 +9,16 @@ This replaces the previous architecture where Django hand-rolled two separate OI
 ## Authentication Flow
 
 ```
-                                         ┌─────────────┐
-                                         │  Login.gov  │
-                                         │  (grantees) │
-                                         └──────▲──────┘
+┌──────────┐   ┌──────────┐   ┌─────────┐   ┌────────┐   ┌───────────┐
+│  Browser ├──►│  Nginx   ├──►│  Django ├──►│Keycloak├──►│ Login.gov │
+│          │◄──┤ (frontend│◄──┤  /v2/   │◄──┤  OIDC  │   ├───────────┤
+└──────────┘   │  proxy)  │   │  routes │   │ Broker ├──►│  ACF AMS  │
+               └──────────┘   └─────────┘   └───┬────┘   └───────────┘
                                                 │
-┌──────────┐   ┌──────────┐   ┌─────────┐   ┌───┴────┐
-│  Browser ├──►│  Nginx   ├──►│  Django ├──►│Keycloak|
-│          │◄──┤ (frontend│◄──┤  /v2/   │◄──┤  OIDC  │
-└──────────┘   │  proxy)  │   │  routes │   │ Broker │
-               └──────────┘   └─────────┘   └───┬────┘
-                                                │
-                                         ┌──────▼───────┐
-                                         │   ACF AMS    │
-                                         │  (ACF staff) │
-                                         └──────────────┘
+                                          ┌─────┴──────┐
+                                          │  Grafana   │
+                                          │  (PLG SSO) │
+                                          └────────────┘
 ```
 
 ### Login.gov Flow (Grantees)
@@ -214,30 +209,37 @@ The `tdp-user-attributes` client scope maps these attributes into JWT tokens:
 
 Grafana authenticates via Keycloak OIDC using the `tdp-grafana` client, which is configured to only show the AMS identity provider (Login.gov is excluded).
 
-### Authentication Paths
+### Access Control
 
-**AMS users (admins, DIGIT team):**
-```
-/grafana/ → Grafana OAuth → Keycloak login page → "Login with ACF AMS" → PIV auth
-  → Keycloak token with group claims → Grafana role mapping
-```
+Users **must** belong to one of three Keycloak groups to access Grafana. Users not in any of these groups are denied login entirely (`role_attribute_strict = true` with no fallback role).
 
-**Developers (password auth):**
-```
-/grafana/ → Grafana OAuth → Keycloak login page → username/password form
-  → Local Keycloak account in developer group → Grafana Admin role
-```
+| Keycloak Group | Grafana Org | Grafana Role | Auth Path |
+|----------------|-------------|--------------|-----------|
+| `ofa-system-admin` | Admin (ID 1) | Admin | PIV auth via AMS through Keycloak |
+| `developer` | Admin (ID 1) | Admin | Local Keycloak username/password |
+| `digit-team` | DIGIT (ID 3) | Editor | PIV auth via AMS through Keycloak |
+| *(any other / none)* | — | **Login denied** | — |
 
 **Login.gov users**: Cannot access Grafana (Login.gov IdP is not shown on the `tdp-grafana` client login page).
 
-### Role Mapping (JMESPath)
+### Organization and Role Mapping
 
+Grafana uses two complementary mechanisms from the `[auth.generic_oauth]` config:
+
+**Role mapping** (JMESPath on `groups` claim — determines the role):
 ```
 contains(groups[*], 'ofa-system-admin') && 'Admin'
   || contains(groups[*], 'developer') && 'Admin'
   || contains(groups[*], 'digit-team') && 'Editor'
-  || 'Viewer'
 ```
+
+**Org mapping** (maps Keycloak groups to Grafana orgs):
+```ini
+org_attribute_path = groups
+org_mapping = ofa-system-admin:1:Admin developer:1:Admin digit-team:3:Editor
+```
+
+`auto_assign_org` is disabled — org assignment is handled entirely by `org_mapping`. If a user doesn't match any mapping rule and `role_attribute_strict = true`, login is denied.
 
 Developer accounts for Grafana are local Keycloak accounts in the prod instance, manually created in the admin console and assigned to the `developer` group.
 
