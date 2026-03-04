@@ -5,6 +5,7 @@ import logging
 import os
 from distutils.util import strtobool
 
+from tdpservice.common.util import get_cloudgov_broker_db_numbers
 from tdpservice.settings.common import Common
 
 logger = logging.getLogger(__name__)
@@ -25,28 +26,6 @@ def get_cloudgov_service_creds_by_instance_name(services, instance_name):
         ),
         {},
     )
-
-
-def get_cloudgov_broker_db_numbers(cloudgov_name):
-    """
-    Get the appropriate redis broker db numbers for an environment.
-
-    Returns a tuple of (broker_db_number, results_db_number)
-    """
-    match cloudgov_name:
-        case "raft":
-            return ("0", "1")
-        case "qasp":
-            return ("2", "3")
-        case "a11y":
-            return ("4", "5")
-        case "develop":
-            return ("0", "1")
-        case "staging":
-            return ("2", "3")
-        case "prod":
-            return ("0", "1")
-    return ("0", "1")
 
 
 class CloudGov(Common):
@@ -166,12 +145,22 @@ class CloudGov(Common):
         redis_settings = cloudgov_services["aws-elasticache-redis"][0]["credentials"]
         REDIS_URI = f"rediss://:{redis_settings['password']}@{redis_settings['host']}:{redis_settings['port']}"
 
-        (broker_db_number, results_db_number) = get_cloudgov_broker_db_numbers(
-            cloudgov_name
-        )
+        brokers = get_cloudgov_broker_db_numbers(cloudgov_name)
 
-        CELERY_BROKER_URL = REDIS_URI + "/" + broker_db_number
-        CELERY_RESULT_BACKEND = REDIS_URI + "/" + broker_db_number
+        CELERY_BROKER_URL = REDIS_URI + "/" + brokers["celery"]
+        CELERY_RESULT_BACKEND = REDIS_URI + "/" + brokers["celery"]
+        CACHES = {
+            "default": {
+                "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            }
+        }
+
+        for c, n in brokers["caches"].items():
+            CACHES[c] = {
+                "BACKEND": "django.core.cache.backends.redis.RedisCache",
+                "LOCATION": f"{REDIS_URI}/{n}",
+                "KEY_PREFIX": f"{cloudgov_name}-{c}",  # does include "prod" for prod, can specify per env in classes below
+            }
 
     OTEL_EXPORTER_OTLP_ENDPOINT = os.getenv(
         "OTEL_EXPORTER_OTLP_ENDPOINT", "http://tempo.apps.internal:4317"
