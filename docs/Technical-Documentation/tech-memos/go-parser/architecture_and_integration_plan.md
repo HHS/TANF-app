@@ -102,10 +102,10 @@ Because Go compiles to a single static binary with no runtime dependencies, the 
   ┌───────────────────┐      ┌─────────────────────────┐            │
   │  Python Celery    │      │     Go Parser Worker    │            │
   │  Worker           │      │                         │────────────┘
-  │                   │──────│  - gocelery/Redis       │
-  │  post-parse tasks │      │  - Parallel pipeline    │
-  │  (email, summary  │      │  - YAML-driven config   │
-  │   aggregation)    │      │  - pgx COPY writes      │
+  │                   │──────│  - Reads files from S3  │
+  │  post-parse tasks │      │  - Parses records (parallel) │
+  │  (email, summary  │      │  - Validate fields/records │
+  │   aggregation)    │      │  - writes to Postgres SQL │
   └───────────────────┘      └─────────────────────────┘
 ```
 
