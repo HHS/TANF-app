@@ -99,14 +99,14 @@ Because Go compiles to a single static binary with no runtime dependencies, the 
                        │       │                  │                 │
             ┌──────────┘       └──────────┐       │                 │
             ▼                             ▼       ▼                 │
-  ┌───────────────────┐      ┌─────────────────────────┐            │
-  │  Python Celery    │      │     Go Parser Worker    │            │
-  │  Worker           │      │                         │────────────┘
-  │                   │──────│  - Reads files from S3  │
-  │  post-parse tasks │      │  - Parses records (parallel) │
-  │  (email, summary  │      │  - Validate fields/records │
-  │   aggregation)    │      │  - writes to Postgres SQL │
-  └───────────────────┘      └─────────────────────────┘
+  ┌───────────────────┐      ┌─────────────────────────────┐        │
+  │  Python Celery    │      │     Go Parser Worker        │        │
+  │  Worker           │      │                             │────────┘
+  │                   │──────│  - Reads files from S3      │
+  │  post-parse tasks │      │  - Parallel record parsing  │
+  │  (email, summary  │      │  - Parallel validation      │
+  │   aggregation)    │      │  - Parallel Postgres writes │
+  └───────────────────┘      └─────────────────────────────┘
 ```
 
 Key architectural decisions:
