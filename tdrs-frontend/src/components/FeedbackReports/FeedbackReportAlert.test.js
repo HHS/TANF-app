@@ -2,10 +2,10 @@ import React from 'react'
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import FeedbackReportAlert from './FeedbackReportAlert'
-import axiosInstance from '../../axios-instance'
+import { get } from '../../fetch-instance'
 
-// Mock the axios instance
-jest.mock('../../axios-instance')
+// Mock the fetch instance
+jest.mock('../../fetch-instance')
 
 // Mock the ReportsContext
 const mockUseReportsContext = jest.fn()
@@ -53,7 +53,7 @@ describe('FeedbackReportAlert', () => {
 
     const { container } = renderComponent()
     expect(container.firstChild).toBeNull()
-    expect(axiosInstance.get).not.toHaveBeenCalled()
+    expect(get).not.toHaveBeenCalled()
   })
 
   it('renders null when quarterInputValue is not set', async () => {
@@ -64,7 +64,7 @@ describe('FeedbackReportAlert', () => {
 
     const { container } = renderComponent()
     expect(container.firstChild).toBeNull()
-    expect(axiosInstance.get).not.toHaveBeenCalled()
+    expect(get).not.toHaveBeenCalled()
   })
 
   it('fetches latest report when year and quarter are set', async () => {
@@ -73,16 +73,19 @@ describe('FeedbackReportAlert', () => {
       quarterInputValue: 'Q1',
     })
 
-    axiosInstance.get.mockResolvedValue({
+    get.mockResolvedValue({
       data: {
         results: [{ created_at: '2025-12-01T00:00:00Z' }],
       },
+      ok: true,
+      status: 200,
+      error: null,
     })
 
     renderComponent()
 
     await waitFor(() => {
-      expect(axiosInstance.get).toHaveBeenCalledWith(
+      expect(get).toHaveBeenCalledWith(
         expect.stringContaining('/reports/'),
         expect.objectContaining({
           params: {
@@ -90,7 +93,6 @@ describe('FeedbackReportAlert', () => {
             quarter: 'Q1',
             latest: 'true',
           },
-          withCredentials: true,
         })
       )
     })
@@ -102,10 +104,13 @@ describe('FeedbackReportAlert', () => {
       quarterInputValue: 'Q1',
     })
 
-    axiosInstance.get.mockResolvedValue({
+    get.mockResolvedValue({
       data: {
         results: [{ created_at: '2025-12-01T00:00:00Z' }],
       },
+      ok: true,
+      status: 200,
+      error: null,
     })
 
     renderComponent()
@@ -121,16 +126,19 @@ describe('FeedbackReportAlert', () => {
       quarterInputValue: 'Q1',
     })
 
-    axiosInstance.get.mockResolvedValue({
+    get.mockResolvedValue({
       data: {
         results: [],
       },
+      ok: true,
+      status: 200,
+      error: null,
     })
 
     const { container } = renderComponent()
 
     await waitFor(() => {
-      expect(axiosInstance.get).toHaveBeenCalled()
+      expect(get).toHaveBeenCalled()
     })
 
     expect(container.querySelector('.usa-alert')).toBeNull()
@@ -142,12 +150,17 @@ describe('FeedbackReportAlert', () => {
       quarterInputValue: 'Q1',
     })
 
-    axiosInstance.get.mockRejectedValue(new Error('API error'))
+    get.mockResolvedValue({
+      data: null,
+      ok: false,
+      status: 500,
+      error: new Error('API error'),
+    })
 
     const { container } = renderComponent()
 
     await waitFor(() => {
-      expect(axiosInstance.get).toHaveBeenCalled()
+      expect(get).toHaveBeenCalled()
     })
 
     expect(container.querySelector('.usa-alert')).toBeNull()
@@ -159,16 +172,28 @@ describe('FeedbackReportAlert', () => {
       quarterInputValue: 'Q1',
     })
 
-    axiosInstance.get.mockResolvedValue({
+    get.mockResolvedValue({
       data: {
         results: [{ created_at: '2025-12-01T00:00:00Z' }],
       },
+      ok: true,
+      status: 200,
+      error: null,
     })
+
+    const expectedDate = new Date('2025-12-01T00:00:00Z').toLocaleDateString(
+      'en-US',
+      {
+        month: 'numeric',
+        day: 'numeric',
+        year: 'numeric',
+      }
+    )
 
     renderComponent()
 
     await waitFor(() => {
-      expect(screen.getByText(/12\/1\/2025/)).toBeInTheDocument()
+      expect(screen.getByText(new RegExp(expectedDate))).toBeInTheDocument()
     })
   })
 
@@ -178,10 +203,13 @@ describe('FeedbackReportAlert', () => {
       quarterInputValue: 'Q1',
     })
 
-    axiosInstance.get.mockResolvedValue({
+    get.mockResolvedValue({
       data: {
         results: [{ created_at: '2025-12-01T00:00:00Z' }],
       },
+      ok: true,
+      status: 200,
+      error: null,
     })
 
     renderComponent()
@@ -198,10 +226,13 @@ describe('FeedbackReportAlert', () => {
       quarterInputValue: 'Q1',
     })
 
-    axiosInstance.get.mockResolvedValue({
+    get.mockResolvedValue({
       data: {
         results: [{ created_at: '2025-12-01T00:00:00Z' }],
       },
+      ok: true,
+      status: 200,
+      error: null,
     })
 
     const { container } = renderComponent()
@@ -220,10 +251,13 @@ describe('FeedbackReportAlert', () => {
       quarterInputValue: 'Q1',
     })
 
-    axiosInstance.get.mockResolvedValue({
+    get.mockResolvedValue({
       data: {
         results: [{ created_at: '2025-12-01T00:00:00Z' }],
       },
+      ok: true,
+      status: 200,
+      error: null,
     })
 
     renderComponent()
@@ -241,8 +275,11 @@ describe('FeedbackReportAlert', () => {
       quarterInputValue: 'Q1',
     })
 
-    axiosInstance.get.mockResolvedValue({
+    get.mockResolvedValue({
       data: { results: [{ created_at: '2025-12-01T00:00:00Z' }] },
+      ok: true,
+      status: 200,
+      error: null,
     })
 
     const { rerender } = render(
@@ -252,7 +289,7 @@ describe('FeedbackReportAlert', () => {
     )
 
     await waitFor(() => {
-      expect(axiosInstance.get).toHaveBeenCalledTimes(1)
+      expect(get).toHaveBeenCalledTimes(1)
     })
 
     // Change the year
@@ -268,7 +305,7 @@ describe('FeedbackReportAlert', () => {
     )
 
     await waitFor(() => {
-      expect(axiosInstance.get).toHaveBeenCalledTimes(2)
+      expect(get).toHaveBeenCalledTimes(2)
     })
   })
 
@@ -279,10 +316,13 @@ describe('FeedbackReportAlert', () => {
         quarterInputValue: 'Q1',
       })
 
-      axiosInstance.get.mockResolvedValue({
+      get.mockResolvedValue({
         data: {
           results: [{ created_at: '2025-12-01T00:00:00Z' }],
         },
+        ok: true,
+        status: 200,
+        error: null,
       })
 
       renderComponent()
@@ -301,10 +341,13 @@ describe('FeedbackReportAlert', () => {
         quarterInputValue: 'Q1',
       })
 
-      axiosInstance.get.mockResolvedValue({
+      get.mockResolvedValue({
         data: {
           results: [{ created_at: '2025-12-01T00:00:00Z' }],
         },
+        ok: true,
+        status: 200,
+        error: null,
       })
 
       const { container } = renderComponent()
@@ -332,10 +375,13 @@ describe('FeedbackReportAlert', () => {
       })
 
       const createdAt = '2025-12-01T00:00:00Z'
-      axiosInstance.get.mockResolvedValue({
+      get.mockResolvedValue({
         data: {
           results: [{ created_at: createdAt }],
         },
+        ok: true,
+        status: 200,
+        error: null,
       })
 
       renderComponent()
@@ -368,16 +414,19 @@ describe('FeedbackReportAlert', () => {
         quarterInputValue: 'Q1',
       })
 
-      axiosInstance.get.mockResolvedValue({
+      get.mockResolvedValue({
         data: {
           results: [{ created_at: createdAt }],
         },
+        ok: true,
+        status: 200,
+        error: null,
       })
 
       const { container } = renderComponent()
 
       await waitFor(() => {
-        expect(axiosInstance.get).toHaveBeenCalled()
+        expect(get).toHaveBeenCalled()
       })
 
       // Alert should not be visible because it was dismissed
@@ -397,10 +446,13 @@ describe('FeedbackReportAlert', () => {
       })
 
       // API returns a new report with different created_at
-      axiosInstance.get.mockResolvedValue({
+      get.mockResolvedValue({
         data: {
           results: [{ created_at: newCreatedAt }],
         },
+        ok: true,
+        status: 200,
+        error: null,
       })
 
       renderComponent()
@@ -427,10 +479,13 @@ describe('FeedbackReportAlert', () => {
         quarterInputValue: 'Q1',
       })
 
-      axiosInstance.get.mockResolvedValue({
+      get.mockResolvedValue({
         data: {
           results: [{ created_at: '2025-12-01T00:00:00Z' }],
         },
+        ok: true,
+        status: 200,
+        error: null,
       })
 
       renderComponent()
@@ -449,10 +504,13 @@ describe('FeedbackReportAlert', () => {
         quarterInputValue: 'Q1',
       })
 
-      axiosInstance.get.mockResolvedValue({
+      get.mockResolvedValue({
         data: {
           results: [{ created_at: '2025-12-01T00:00:00Z' }],
         },
+        ok: true,
+        status: 200,
+        error: null,
       })
 
       renderComponent()
@@ -472,10 +530,13 @@ describe('FeedbackReportAlert', () => {
         quarterInputValue: 'Q1',
       })
 
-      axiosInstance.get.mockResolvedValue({
+      get.mockResolvedValue({
         data: {
           results: [{ created_at: '2025-12-01T00:00:00Z' }],
         },
+        ok: true,
+        status: 200,
+        error: null,
       })
 
       const { container } = renderComponent()

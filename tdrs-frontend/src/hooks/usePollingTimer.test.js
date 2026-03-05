@@ -1,14 +1,15 @@
 import { render, fireEvent, waitFor, act } from '@testing-library/react'
-import axios from 'axios'
+import { get } from '../fetch-instance'
 import { usePollingTimer } from './usePollingTimer'
+
+jest.mock('../fetch-instance')
 
 describe('usePollingTimer', () => {
   const setupMockFuncs = () => {
     jest.useFakeTimers()
     return {
-      mockAxios: axios,
       requestFunc: jest.fn(() => {
-        return axios.get('/fake_status_endpoint/')
+        return get('/fake_status_endpoint/')
       }),
       testFunc: jest.fn((response) => {
         return response?.data?.summary?.status !== 'Pending'
@@ -108,9 +109,11 @@ describe('usePollingTimer', () => {
 
   it('should start polling when startPolling called', async () => {
     const mocks = setupMockFuncs()
-    const { mockAxios } = mocks
-    mockAxios.get.mockResolvedValue({
+    get.mockResolvedValue({
       data: { id: 1, hasErrors: false, summary: { status: 'Pending' } },
+      ok: true,
+      status: 200,
+      error: null,
     })
 
     const { queryByText, getByTitle } = setupSingleTimerComponent(
@@ -134,9 +137,11 @@ describe('usePollingTimer', () => {
 
   it('should call retry until the test completes then call onSuccess', async () => {
     const mocks = setupMockFuncs()
-    const { mockAxios } = mocks
-    mockAxios.get.mockResolvedValue({
+    get.mockResolvedValue({
       data: { id: 1, hasErrors: false, summary: { status: 'Pending' } },
+      ok: true,
+      status: 200,
+      error: null,
     })
 
     const { queryByText, getByTitle } = setupSingleTimerComponent(
@@ -176,8 +181,11 @@ describe('usePollingTimer', () => {
     expect(mocks.onTimeoutFunc).toHaveBeenCalledTimes(0)
 
     // now update the mock and run a third time
-    mockAxios.get.mockResolvedValue({
+    get.mockResolvedValue({
       data: { id: 1, hasErrors: false, summary: { status: 'Approved' } },
+      ok: true,
+      status: 200,
+      error: null,
     })
 
     act(() => jest.advanceTimersByTime(1000))
@@ -195,15 +203,13 @@ describe('usePollingTimer', () => {
 
   it.each([404, 500])(
     'should call retry when the backend is down',
-    async (status) => {
+    async (statusCode) => {
       const mocks = setupMockFuncs()
-      const { mockAxios } = mocks
-      mockAxios.get.mockRejectedValue({
-        message: 'Error',
-        response: {
-          status,
-          data: { detail: 'Mock fail response' },
-        },
+      get.mockResolvedValue({
+        data: { detail: 'Mock fail response' },
+        ok: false,
+        status: statusCode,
+        error: new Error(`HTTP ${statusCode}`),
       })
 
       const { queryByText, getByTitle } = setupSingleTimerComponent(
@@ -246,16 +252,14 @@ describe('usePollingTimer', () => {
 
   it.each([400, 401, 403])(
     'should stop polling and call onError if the request fails with a %s error',
-    async (status) => {
+    async (statusCode) => {
       const mocks = setupMockFuncs()
-      const { mockAxios } = mocks
 
-      mockAxios.get.mockRejectedValue({
-        message: 'Error',
-        response: {
-          status,
-          data: { detail: 'Mock fail response' },
-        },
+      get.mockResolvedValue({
+        data: { detail: 'Mock fail response' },
+        ok: false,
+        status: statusCode,
+        error: new Error(`HTTP ${statusCode}`),
       })
 
       const { queryByText, getByTitle } = setupSingleTimerComponent(
@@ -285,9 +289,11 @@ describe('usePollingTimer', () => {
 
   it('should stop polling and call onTimeout when max tries reached', async () => {
     const mocks = setupMockFuncs()
-    const { mockAxios } = mocks
-    mockAxios.get.mockResolvedValue({
+    get.mockResolvedValue({
       data: { id: 1, hasErrors: false, summary: { status: 'Pending' } },
+      ok: true,
+      status: 200,
+      error: null,
     })
 
     const { queryByText, getByTitle } = setupSingleTimerComponent(
@@ -333,9 +339,11 @@ describe('usePollingTimer', () => {
 
   it('should allow multiple parallel timers with different requestIds', async () => {
     const mocks = setupMockFuncs()
-    const { mockAxios } = mocks
-    mockAxios.get.mockResolvedValue({
+    get.mockResolvedValue({
       data: { id: 1, hasErrors: false, summary: { status: 'Pending' } },
+      ok: true,
+      status: 200,
+      error: null,
     })
 
     const { queryByText, getByTitle } = setupMultiTimerComponent(
@@ -407,9 +415,11 @@ describe('usePollingTimer', () => {
     jest.spyOn(global, 'setTimeout')
     jest.spyOn(global, 'clearTimeout')
     const mocks = setupMockFuncs()
-    const { mockAxios } = mocks
-    mockAxios.get.mockResolvedValue({
+    get.mockResolvedValue({
       data: { id: 1, hasErrors: false, summary: { status: 'Pending' } },
+      ok: true,
+      status: 200,
+      error: null,
     })
 
     const { queryByText, getByTitle, unmount } = setupMultiTimerComponent(
