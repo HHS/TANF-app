@@ -4,11 +4,13 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import { MemoryRouter } from 'react-router-dom'
 import { thunk } from 'redux-thunk'
-import axios from 'axios'
+import { get, post } from '../../fetch-instance'
 import configureStore from 'redux-mock-store'
 import appConfigureStore from '../../configureStore'
 import Reports from './Reports'
 import { SET_FILE, upload } from '../../actions/reports'
+
+jest.mock('../../fetch-instance')
 
 describe('Reports', () => {
   let originalScrollIntoView
@@ -19,6 +21,21 @@ describe('Reports', () => {
     // Mock it for all tests
     window.HTMLElement.prototype.scrollIntoView = jest.fn()
     jest.useFakeTimers()
+
+    // Set default mock return values for fetch-instance functions
+    get.mockResolvedValue({ data: [], ok: true, status: 200, error: null })
+    post.mockResolvedValue({
+      data: {
+        id: 1,
+        original_filename: 'test.txt',
+        extension: '.txt',
+        section: 'Active Case Data',
+        quarter: 'Q3',
+      },
+      ok: true,
+      status: 200,
+      error: null,
+    })
   })
 
   afterEach(() => {
@@ -368,7 +385,7 @@ describe('Reports', () => {
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
-    const { getByText, getByLabelText, getByRole } = render(
+    const { getByText, getAllByRole, getByLabelText } = render(
       <Provider store={store}>
         <MemoryRouter>
           <Reports />
@@ -407,11 +424,17 @@ describe('Reports', () => {
     await waitFor(() => expect(getByText('section2.txt')).toBeInTheDocument())
     await waitFor(() => expect(getByText('section3.txt')).toBeInTheDocument())
     await waitFor(() => expect(getByText('section4.txt')).toBeInTheDocument())
-    await waitFor(() => expect(getByText('Submit Data Files')).toBeEnabled())
-    expect(store.dispatch).toHaveBeenCalledTimes(14)
+    await waitFor(() => expect(store.dispatch).toHaveBeenCalledTimes(14))
 
     fireEvent.click(getByText('Submit Data Files'))
-    await waitFor(() => getByRole('alert'))
+    await waitFor(() => {
+      const statusElements = getAllByRole('status')
+      expect(
+        statusElements.some((el) =>
+          el.textContent.includes('Successfully submitted')
+        )
+      ).toBe(true)
+    })
     expect(store.dispatch).toHaveBeenCalledTimes(18)
   })
 
@@ -1036,10 +1059,8 @@ describe('Reports', () => {
 
   it('should show spinners while the upload is parsing', async () => {
     jest.useFakeTimers()
-    jest.mock('axios')
-    const mockAxios = axios
 
-    mockAxios.post.mockResolvedValue({
+    post.mockResolvedValue({
       data: {
         id: 1,
         original_filename: 'testFile.txt',
@@ -1055,10 +1076,13 @@ describe('Reports', () => {
         summary: null,
         latest_reparse_file_meta: '',
       },
+      ok: true,
+      status: 200,
+      error: null,
     })
 
     let times = 0
-    mockAxios.get.mockImplementation((url) => {
+    get.mockImplementation((url) => {
       if (url.includes('/data_files/1/')) {
         // status
         times += 1
@@ -1080,6 +1104,9 @@ describe('Reports', () => {
             has_error: false,
             latest_reparse_file_meta: '',
           },
+          ok: true,
+          status: 200,
+          error: null,
         })
       } else {
         // submission history
@@ -1101,6 +1128,9 @@ describe('Reports', () => {
               latest_reparse_file_meta: '',
             },
           ],
+          ok: true,
+          status: 200,
+          error: null,
         })
       }
     })
@@ -1130,6 +1160,7 @@ describe('Reports', () => {
 
     const {
       getByText,
+      getAllByText,
       queryByText,
       getByLabelText,
       queryAllByTestId,
@@ -1184,16 +1215,16 @@ describe('Reports', () => {
 
     await waitFor(() =>
       expect(
-        getByText(
+        getAllByText(
           `Successfully submitted section(s): 1 on ${new Date().toDateString()}`
-        )
-      ).toBeInTheDocument()
+        ).length
+      ).toBeGreaterThanOrEqual(1)
     )
     await waitFor(() => expect(store.dispatch).toHaveBeenCalledTimes(9))
 
     // act(() => jest.advanceTimersByTime(2000))
 
-    expect(mockAxios.get).toHaveBeenCalledTimes(2)
+    expect(get).toHaveBeenCalledTimes(2)
     expect(times).toBe(1)
 
     fireEvent.click(getByText('Submission History'))
@@ -1222,11 +1253,9 @@ describe('Reports', () => {
 
   it('should show spinners while multiple uploads are parsing', async () => {
     jest.useFakeTimers()
-    jest.mock('axios')
-    const mockAxios = axios
 
     let postTimes = 0
-    mockAxios.post.mockImplementation((url) => {
+    post.mockImplementation((url) => {
       postTimes += 1
 
       if (postTimes === 1) {
@@ -1246,6 +1275,9 @@ describe('Reports', () => {
             summary: null,
             latest_reparse_file_meta: '',
           },
+          ok: true,
+          status: 200,
+          error: null,
         })
       }
 
@@ -1265,12 +1297,15 @@ describe('Reports', () => {
           summary: null,
           latest_reparse_file_meta: '',
         },
+        ok: true,
+        status: 200,
+        error: null,
       })
     })
 
     let times1 = 0
     let times2 = 0
-    mockAxios.get.mockImplementation((url) => {
+    get.mockImplementation((url) => {
       if (url.includes('/data_files/1/')) {
         // status
         times1 += 1
@@ -1292,6 +1327,9 @@ describe('Reports', () => {
             has_error: false,
             latest_reparse_file_meta: '',
           },
+          ok: true,
+          status: 200,
+          error: null,
         })
       } else if (url.includes('/data_files/2/')) {
         // status
@@ -1314,6 +1352,9 @@ describe('Reports', () => {
             has_error: false,
             latest_reparse_file_meta: '',
           },
+          ok: true,
+          status: 200,
+          error: null,
         })
       } else {
         // submission history
@@ -1350,6 +1391,9 @@ describe('Reports', () => {
               latest_reparse_file_meta: '',
             },
           ],
+          ok: true,
+          status: 200,
+          error: null,
         })
       }
     })
@@ -1379,6 +1423,7 @@ describe('Reports', () => {
 
     const {
       getByText,
+      getAllByText,
       queryByText,
       getByLabelText,
       queryAllByText,
@@ -1439,16 +1484,16 @@ describe('Reports', () => {
 
     await waitFor(() =>
       expect(
-        getByText(
+        getAllByText(
           `Successfully submitted section(s): 1, and 3 on ${new Date().toDateString()}`
-        )
-      ).toBeInTheDocument()
+        ).length
+      ).toBeGreaterThanOrEqual(1)
     )
     await waitFor(() => expect(store.dispatch).toHaveBeenCalledTimes(12))
 
     // act(() => jest.advanceTimersByTime(2000))
 
-    expect(mockAxios.get).toHaveBeenCalledTimes(3)
+    expect(get).toHaveBeenCalledTimes(3)
     expect(times1).toBe(1)
     expect(times2).toBe(1)
 

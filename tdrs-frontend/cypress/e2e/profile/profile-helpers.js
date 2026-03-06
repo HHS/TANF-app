@@ -12,13 +12,17 @@ export const navigateToProfile = () => {
 }
 
 export const clickEditProfile = () => {
-  cy.get('button').contains('Edit Profile').should('be.visible').click()
+  cy.get('button').contains('Edit Profile').as('editProfile')
+  cy.get('@editProfile').should('be.visible')
+  cy.get('@editProfile').click()
   // Wait for the form to appear
   cy.get('#firstName').should('be.visible')
 }
 
 export const clickEditAccessRequest = () => {
-  cy.get('button').contains('Edit Access Request').should('be.visible').click()
+  cy.get('button').contains('Edit Access Request').as('editAccess')
+  cy.get('@editAccess').should('be.visible')
+  cy.get('@editAccess').click()
   // Wait for the form to appear
   cy.get('#firstName').should('be.visible')
 }
@@ -114,7 +118,9 @@ export const verifyProfileField = (fieldLabel, expectedValue) => {
         }
       } else {
         // Fallback: still assert text exists somewhere to surface a real failure
-        cy.wrap($body).contains(expectedValue, { timeout: 15000 }).should('exist')
+        cy.wrap($body)
+          .contains(expectedValue, { timeout: 15000 })
+          .should('exist')
       }
     }
   })
