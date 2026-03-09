@@ -16,7 +16,30 @@ jest.mock('@uswds/uswds/src/js/components', () => ({
   datePicker: {
     init: jest.fn(),
   },
+  comboBox: {
+    init: jest.fn(),
+  },
 }))
+
+// Mock STTComboBox to avoid fetchSttList side effects
+jest.mock('../STTComboBox', () => {
+  const MockSTTComboBox = ({ selectStt, selectedStt }) => (
+    <div data-testid="stt-combobox">
+      <label htmlFor="mock-stt-select">State, Tribe, or Territory*</label>
+      <select
+        id="mock-stt-select"
+        value={selectedStt || ''}
+        onChange={(e) => selectStt(e.target.value)}
+        aria-label="State, Tribe, or Territory"
+      >
+        <option value="">- Select or Search -</option>
+        <option value="Wisconsin">Wisconsin</option>
+      </select>
+    </div>
+  )
+  MockSTTComboBox.displayName = 'MockSTTComboBox'
+  return MockSTTComboBox
+})
 
 const mockStore = configureStore([thunk])
 
@@ -69,6 +92,7 @@ describe('FeedbackReports', () => {
           },
           authenticated: true,
         },
+        stts: { sttList: [], loading: false },
       })
 
       renderComponent(store)
@@ -282,6 +306,7 @@ describe('FeedbackReports', () => {
           },
           authenticated: true,
         },
+        stts: { sttList: [], loading: false },
       })
 
       renderComponent(store)

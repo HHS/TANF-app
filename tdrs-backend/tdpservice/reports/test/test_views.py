@@ -409,7 +409,8 @@ class TestReportFileViewAsRegionalStaff:
         resp = api_client_logged_in.get(
             f"{self.root_url}{other_region_report_file_instance.id}/download/"
         )
-        assert resp.status_code == status.HTTP_403_FORBIDDEN
+        # Returns 404 because get_queryset filters out reports outside the region
+        assert resp.status_code == status.HTTP_404_NOT_FOUND
 
     def test_stt_query_param_filters_results(
         self,
