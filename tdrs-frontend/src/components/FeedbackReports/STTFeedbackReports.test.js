@@ -9,24 +9,72 @@ import { get } from '../../fetch-instance'
 
 jest.mock('../../fetch-instance')
 
+// Mock STTComboBox to avoid fetchSttList side effects
+jest.mock('../STTComboBox', () => {
+  const MockSTTComboBox = ({ selectStt, selectedStt }) => (
+    <div data-testid="stt-combobox">
+      <label htmlFor="mock-stt-select">State, Tribe, or Territory*</label>
+      <select
+        id="mock-stt-select"
+        value={selectedStt || ''}
+        onChange={(e) => selectStt(e.target.value)}
+        aria-label="State, Tribe, or Territory"
+      >
+        <option value="">- Select or Search -</option>
+        <option value="Wisconsin">Wisconsin</option>
+        <option value="Illinois">Illinois</option>
+      </select>
+    </div>
+  )
+  MockSTTComboBox.displayName = 'MockSTTComboBox'
+  return MockSTTComboBox
+})
+
 const mockStore = configureStore([thunk])
+
+const dataAnalystStore = () =>
+  mockStore({
+    auth: {
+      user: {
+        id: 1,
+        email: 'analyst@example.com',
+        roles: [{ name: 'Data Analyst', permissions: [] }],
+        account_approval_status: 'Approved',
+        stt: { id: 1, name: 'Alabama' },
+      },
+      authenticated: true,
+    },
+    stts: { sttList: [], loading: false },
+  })
+
+const regionalStaffStore = () =>
+  mockStore({
+    auth: {
+      user: {
+        id: 2,
+        email: 'regional@example.com',
+        roles: [{ name: 'OFA Regional Staff', permissions: [] }],
+        account_approval_status: 'Approved',
+        regions: [
+          {
+            id: 5,
+            stts: [
+              { id: 10, name: 'Wisconsin', type: 'state' },
+              { id: 11, name: 'Illinois', type: 'state' },
+            ],
+          },
+        ],
+      },
+      authenticated: true,
+    },
+    stts: { sttList: [], loading: false },
+  })
 
 describe('STTFeedbackReports', () => {
   let store
 
   beforeEach(() => {
-    store = mockStore({
-      auth: {
-        user: {
-          id: 1,
-          email: 'analyst@example.com',
-          roles: [{ name: 'Data Analyst', permissions: [] }],
-          account_approval_status: 'Approved',
-          stt: { id: 1, name: 'Alabama' },
-        },
-        authenticated: true,
-      },
-    })
+    store = dataAnalystStore()
 
     // Reset all mocks before each test
     jest.clearAllMocks()
@@ -40,10 +88,10 @@ describe('STTFeedbackReports', () => {
     })
   })
 
-  const renderComponent = () => {
+  const renderComponent = (overrideStore) => {
     return render(
       <MemoryRouter>
-        <Provider store={store}>
+        <Provider store={overrideStore || store}>
           <STTFeedbackReports />
         </Provider>
       </MemoryRouter>
@@ -189,6 +237,20 @@ describe('STTFeedbackReports', () => {
           screen.getByRole('heading', { level: 3, name: 'Feedback Reports' })
         ).toBeInTheDocument()
       })
+    })
+
+    it('does not render STT ComboBox for Data Analyst', () => {
+      renderComponent()
+      expect(
+        screen.queryByLabelText(/State, Tribe, or Territory/i)
+      ).not.toBeInTheDocument()
+    })
+
+    it('does not render Search button for Data Analyst', () => {
+      renderComponent()
+      expect(
+        screen.queryByRole('button', { name: /Search/i })
+      ).not.toBeInTheDocument()
     })
   })
 
@@ -687,6 +749,152 @@ describe('STTFeedbackReports', () => {
       expect(
         screen.queryByRole('heading', { level: 2 })
       ).not.toBeInTheDocument()
+    })
+  })
+
+  describe('Regional Staff', () => {
+    let regionalStore
+
+    beforeEach(() => {
+      regionalStore = regionalStaffStore()
+    })
+
+    it('renders STT ComboBox for regional staff', () => {
+      renderComponent(regionalStore)
+      expect(
+        screen.getByLabelText(/State, Tribe, or Territory/i)
+      ).toBeInTheDocument()
+    })
+
+    it('renders Search button for regional staff', () => {
+      renderComponent(regionalStore)
+      expect(
+        screen.getByRole('button', { name: /Search/i })
+      ).toBeInTheDocument()
+    })
+
+    it('Search button is disabled when no STT or year is selected', () => {
+      renderComponent(regionalStore)
+      const searchBtn = screen.getByRole('button', { name: /Search/i })
+      expect(searchBtn).toBeDisabled()
+    })
+
+    it('does not show content section until both STT and year are selected', () => {
+      renderComponent(regionalStore)
+
+      // Select year only - content should not show
+      const yearSelect = screen.getByLabelText(/Fiscal Year/i)
+      fireEvent.change(yearSelect, { target: { value: '2025' } })
+
+      expect(
+        screen.queryByRole('heading', { level: 2 })
+      ).not.toBeInTheDocument()
+    })
+
+    it('does not auto-fetch reports when year changes', async () => {
+      renderComponent(regionalStore)
+
+      const yearSelect = screen.getByLabelText(/Fiscal Year/i)
+      fireEvent.change(yearSelect, { target: { value: '2025' } })
+
+      // Wait to ensure no fetch happens
+      await waitFor(() => {
+        expect(get).not.toHaveBeenCalled()
+      })
+    })
+
+    it('fetches reports with stt param when Search is clicked', async () => {
+      get.mockResolvedValue({
+        data: { results: [] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
+
+      renderComponent(regionalStore)
+
+      // Select STT via mocked ComboBox
+      const sttSelect = screen.getByLabelText(/State, Tribe, or Territory/i)
+      fireEvent.change(sttSelect, { target: { value: 'Wisconsin' } })
+
+      // Select a year
+      const yearSelect = screen.getByLabelText(/Fiscal Year/i)
+      fireEvent.change(yearSelect, { target: { value: '2025' } })
+
+      // Search button should now be enabled
+      const searchBtn = screen.getByRole('button', { name: /Search/i })
+      expect(searchBtn).not.toBeDisabled()
+
+      // Click search
+      fireEvent.click(searchBtn)
+
+      await waitFor(() => {
+        expect(get).toHaveBeenCalledWith(
+          expect.stringContaining('/reports/'),
+          expect.objectContaining({
+            params: { year: 2025, stt: 10 },
+          })
+        )
+      })
+    })
+
+    it('shows H2 heading with selected STT name after search', async () => {
+      get.mockResolvedValue({
+        data: { results: [] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
+
+      renderComponent(regionalStore)
+
+      // Select STT and year
+      const sttSelect = screen.getByLabelText(/State, Tribe, or Territory/i)
+      fireEvent.change(sttSelect, { target: { value: 'Wisconsin' } })
+
+      const yearSelect = screen.getByLabelText(/Fiscal Year/i)
+      fireEvent.change(yearSelect, { target: { value: '2025' } })
+
+      // Content should show since both STT and year are selected
+      await waitFor(() => {
+        expect(
+          screen.getByRole('heading', {
+            level: 2,
+            name: 'Wisconsin — Fiscal Year 2025 Feedback Reports',
+          })
+        ).toBeInTheDocument()
+      })
+    })
+
+    it('clears reports when STT selection changes', async () => {
+      get.mockResolvedValue({
+        data: { results: [{ id: 1, year: 2025, date_extracted_on: '2025-02-28', created_at: '2025-03-05T10:41:00Z', original_filename: 'test.zip' }] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
+
+      renderComponent(regionalStore)
+
+      // Select STT and year, then search
+      const sttSelect = screen.getByLabelText(/State, Tribe, or Territory/i)
+      fireEvent.change(sttSelect, { target: { value: 'Wisconsin' } })
+
+      const yearSelect = screen.getByLabelText(/Fiscal Year/i)
+      fireEvent.change(yearSelect, { target: { value: '2025' } })
+
+      fireEvent.click(screen.getByRole('button', { name: /Search/i }))
+
+      await waitFor(() => {
+        expect(screen.getByText('test.zip')).toBeInTheDocument()
+      })
+
+      // Change STT - reports should clear
+      fireEvent.change(sttSelect, { target: { value: 'Illinois' } })
+
+      await waitFor(() => {
+        expect(screen.queryByText('test.zip')).not.toBeInTheDocument()
+      })
     })
   })
 })

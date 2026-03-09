@@ -6,10 +6,16 @@ import { Spinner } from '../Spinner'
 import { PaginatedComponent } from '../Paginator/Paginator'
 import STTFeedbackReportsTable from './STTFeedbackReportsTable'
 import { constructYears } from '../Reports/utils'
+import { accountIsRegionalStaff } from '../../selectors/auth'
+import { availableStts } from '../../selectors/stts'
+import STTComboBox from '../STTComboBox'
 
 /**
- * STTFeedbackReports component allows STT Data Analysts to view and download
- * their quarterly feedback reports.
+ * STTFeedbackReports component allows STT Data Analysts and Regional Staff
+ * to view and download their quarterly feedback reports.
+ *
+ * - Data Analysts see reports for their assigned STT (auto-fetched on year change)
+ * - Regional Staff select an STT from their region and click Search
  */
 function STTFeedbackReports() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -17,7 +23,15 @@ function STTFeedbackReports() {
 
   // Get user's STT name from Redux
   const user = useSelector((state) => state.auth.user)
-  const sttName = user?.stt?.name
+  const isRegionalStaff = useSelector(accountIsRegionalStaff)
+  const filteredStts = useSelector(availableStts('/feedback-reports'))
+
+  // State for regional staff STT selection
+  const [selectedStt, setSelectedStt] = useState(null)
+  const [selectedSttName, setSelectedSttName] = useState('')
+
+  // Derive display name
+  const sttName = isRegionalStaff ? selectedStt?.name : user?.stt?.name
 
   // Validate and get year from URL params (returns null if no valid param)
   const getValidatedYear = () => {
@@ -49,7 +63,7 @@ function STTFeedbackReports() {
   }, [selectedYear, setSearchParams])
 
   /**
-   * Fetches the feedback reports from the backend filtered by year
+   * Fetches the feedback reports from the backend filtered by year (and STT for regional staff)
    */
   const fetchReports = useCallback(async () => {
     // Only fetch if a year is selected
@@ -58,12 +72,23 @@ function STTFeedbackReports() {
       return
     }
 
+    // Regional staff must also have an STT selected
+    if (isRegionalStaff && !selectedStt) {
+      setReports([])
+      return
+    }
+
     setLoading(true)
     setAlert({ active: false, type: null, message: null })
 
+    const params = { year: selectedYear }
+    if (isRegionalStaff && selectedStt) {
+      params.stt = selectedStt.id
+    }
+
     const { data, ok, error } = await get(
       `${process.env.REACT_APP_BACKEND_URL}/reports/`,
-      { params: { year: selectedYear } }
+      { params }
     )
 
     if (ok) {
@@ -77,11 +102,15 @@ function STTFeedbackReports() {
       })
     }
     setLoading(false)
-  }, [selectedYear])
+  }, [selectedYear, isRegionalStaff, selectedStt])
 
+  // For Data Analysts, auto-fetch when year changes
+  // For Regional Staff, don't auto-fetch (requires Search button)
   useEffect(() => {
-    fetchReports()
-  }, [fetchReports])
+    if (!isRegionalStaff) {
+      fetchReports()
+    }
+  }, [fetchReports, isRegionalStaff])
 
   /**
    * Handle year selection change
@@ -91,12 +120,48 @@ function STTFeedbackReports() {
     setSelectedYear(value ? parseInt(value, 10) : null)
   }
 
+  /**
+   * Handle STT selection from ComboBox (regional staff)
+   */
+  const handleSttSelect = (sttName) => {
+    setSelectedSttName(sttName)
+    if (sttName) {
+      const sttObj = filteredStts.find((s) => s.name === sttName)
+      setSelectedStt(sttObj || null)
+    } else {
+      setSelectedStt(null)
+    }
+    // Clear reports when STT changes
+    setReports([])
+  }
+
+  /**
+   * Handle Search button click (regional staff)
+   */
+  const handleSearch = () => {
+    fetchReports()
+  }
+
+  // Determine if content section should show
+  const showContent = isRegionalStaff
+    ? selectedYear && selectedStt
+    : selectedYear
+
   return (
     <div className="feedback-reports">
       <div className="page-container" style={{ position: 'relative' }}>
-        {/* Fiscal Year Selector and Reference Table */}
+        {/* STT Selector, Fiscal Year Selector, and Reference Table */}
         <div className="grid-row grid-gap margin-top-5">
           <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-auto">
+            {isRegionalStaff && (
+              <div className="usa-form-group maxw-mobile margin-top-4">
+                <STTComboBox
+                  selectStt={handleSttSelect}
+                  selectedStt={selectedSttName}
+                />
+              </div>
+            )}
+
             <div className="usa-form-group maxw-mobile margin-top-4">
               <label
                 className="usa-label text-bold"
@@ -118,6 +183,17 @@ function STTFeedbackReports() {
                 ))}
               </select>
             </div>
+
+            {isRegionalStaff && (
+              <button
+                className="usa-button margin-top-2"
+                type="button"
+                disabled={!selectedStt || !selectedYear}
+                onClick={handleSearch}
+              >
+                Search
+              </button>
+            )}
           </div>
 
           <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
@@ -166,7 +242,7 @@ function STTFeedbackReports() {
           </div>
         </div>
 
-        {selectedYear && (
+        {showContent && (
           <>
             <hr className="margin-top-4 margin-bottom-4" />
 

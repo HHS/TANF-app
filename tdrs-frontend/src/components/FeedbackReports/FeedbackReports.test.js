@@ -114,6 +114,7 @@ describe('FeedbackReports', () => {
           },
           authenticated: true,
         },
+        stts: { sttList: [], loading: false },
       })
 
       renderComponent(store)
@@ -152,6 +153,7 @@ describe('FeedbackReports', () => {
           },
           authenticated: true,
         },
+        stts: { sttList: [], loading: false },
       })
 
       renderComponent(store)
@@ -180,6 +182,7 @@ describe('FeedbackReports', () => {
           },
           authenticated: true,
         },
+        stts: { sttList: [], loading: false },
       })
 
       renderComponent(store)
@@ -203,6 +206,7 @@ describe('FeedbackReports', () => {
           },
           authenticated: true,
         },
+        stts: { sttList: [], loading: false },
       })
 
       renderComponent(store)
@@ -213,6 +217,53 @@ describe('FeedbackReports', () => {
           screen.getByText('TANF/SSP Data Reporting Reference')
         ).toBeInTheDocument()
       })
+    })
+
+    it('renders STTFeedbackReports for OFA Regional Staff (not Admin view)', async () => {
+      const store = mockStore({
+        auth: {
+          user: {
+            id: 1,
+            email: 'regional@example.com',
+            roles: [
+              {
+                name: 'OFA Regional Staff',
+                permissions: [{ codename: 'view_reportfile' }],
+              },
+            ],
+            account_approval_status: 'Approved',
+            regions: [
+              {
+                id: 5,
+                stts: [
+                  { id: 10, name: 'Wisconsin', type: 'state' },
+                ],
+              },
+            ],
+          },
+          authenticated: true,
+        },
+        stts: { sttList: [], loading: false },
+      })
+
+      renderComponent(store)
+
+      // Should render STT view (not admin) since regional staff don't have add_reportsource
+      await waitFor(() => {
+        expect(
+          screen.getByText('TANF/SSP Data Reporting Reference')
+        ).toBeInTheDocument()
+      })
+
+      // Should NOT have the Upload button
+      expect(
+        screen.queryByRole('button', { name: /Upload & Notify States/i })
+      ).not.toBeInTheDocument()
+
+      // Should have the Search button (regional staff feature)
+      expect(
+        screen.getByRole('button', { name: /Search/i })
+      ).toBeInTheDocument()
     })
   })
 
@@ -275,6 +326,7 @@ describe('FeedbackReports', () => {
           },
           authenticated: true,
         },
+        stts: { sttList: [], loading: false },
       })
 
       renderComponent(store)

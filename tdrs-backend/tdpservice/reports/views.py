@@ -27,10 +27,18 @@ class ReportFileViewSet(ModelViewSet):
         if self.request.user.is_data_analyst and hasattr(self.request.user, 'stt'):
             queryset = queryset.filter(stt=self.request.user.stt)
 
+        # Regional Staff should only see reports for STTs in their region
+        if self.request.user.is_regional_staff and hasattr(self.request.user, 'regions'):
+            user_regions = self.request.user.regions.all()
+            queryset = queryset.filter(stt__region__in=user_regions)
+
         # Query params for adding additional filters to queryset
         year = self.request.query_params.get('year')
         latest = self.request.query_params.get('latest')
+        stt = self.request.query_params.get('stt')
 
+        if stt:
+            queryset = queryset.filter(stt_id=stt)
         if year:
             queryset = queryset.filter(year=year)
         if latest and latest.lower() == 'true':

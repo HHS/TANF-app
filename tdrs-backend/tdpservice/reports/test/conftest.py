@@ -174,3 +174,27 @@ def bad_report_source_data(bad_report_source_zip_file, fake_file_name):
         "file": bad_report_source_zip_file,
         "original_filename": fake_file_name,
     }
+
+
+@pytest.fixture
+def regional_report_file_instance(regional_user, stt):
+    """Return a persisted ReportFile tied to an STT in the regional user's region."""
+    return ReportFileFactory.create(
+        stt=stt,
+        user=regional_user,
+    )
+
+
+@pytest.fixture
+def other_region_report_file_instance(regional_user):
+    """Return a persisted ReportFile tied to an STT outside the regional user's region."""
+    from tdpservice.stts.models import STT, Region
+
+    other_region, _ = Region.objects.get_or_create(id=99)
+    other_stt, _ = STT.objects.get_or_create(
+        name="Other Region STT", region=other_region, stt_code="99"
+    )
+    return ReportFileFactory.create(
+        stt=other_stt,
+        user=regional_user,
+    )
