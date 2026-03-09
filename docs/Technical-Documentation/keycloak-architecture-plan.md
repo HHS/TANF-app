@@ -15,7 +15,7 @@ Keycloak acts as an **OIDC broker** — it sits between the TDP application and 
 ```
 ┌──────────┐   ┌──────────┐   ┌─────────┐   ┌────────┐   ┌───────────┐
 │  Browser ├──►│  Nginx   ├──►│  Django ├──►│Keycloak├──►│ Login.gov │
-│          │◄──┤ (frontend│◄──┤  /v2/   │◄──┤  OIDC  │   ├───────────┤
+│          │◄──┤ (frontend│◄──┤   auth  │◄──┤  OIDC  │   ├───────────┤
 └──────────┘   │  proxy)  │   │  routes │   │ Broker ├──►│  ACF AMS  │
                └──────────┘   └─────────┘   └───┬────┘   └───────────┘
                                                 │
@@ -109,7 +109,7 @@ These are provisioned via Terraform and bound to the Keycloak app via the Cloud 
 
 Two identity provider paths, both brokered through Keycloak:
 
-**Login.gov (grantees):** Browser → `/v2/login/dotgov` → Django redirects to Keycloak with `kc_idp_hint=login-gov` → Keycloak redirects to Login.gov → user authenticates → Login.gov returns code to Keycloak → Keycloak exchanges code using `private_key_jwt` (RS256-signed JWT assertion) → Keycloak issues its own token with TDP claims → Django `mozilla-django-oidc` callback validates token → `KeycloakOIDCBackend` looks up user by `login_gov_uuid` → Django session created
+**Login.gov (grantees):** Browser → `/login/dotgov` → Django checks canary flag → if Keycloak: redirects to Keycloak with `kc_idp_hint=login-gov` → Keycloak redirects to Login.gov → user authenticates → Login.gov returns code to Keycloak → Keycloak exchanges code using `private_key_jwt` (RS256-signed JWT assertion) → Keycloak issues its own token with TDP claims → Django `mozilla-django-oidc` callback validates token → `KeycloakOIDCBackend` looks up user by `login_gov_uuid` → Django session created. If legacy: the existing direct Login.gov OIDC flow is used.
 
 **AMS (ACF staff):** Same flow, except `kc_idp_hint=ams`, AMS uses `client_secret_post` authentication, and user lookup is by `hhs_id`.
 
@@ -173,32 +173,32 @@ Controlled by `KEYCLOAK_SYNC_ENABLED`. Sync is idempotent and only operates on u
 
 In spaces with multiple backend pairs (dev has 3), all backends fire sync signals to the same Keycloak — this is safe because syncs set current state, not deltas.
 
-### v2 API Endpoints
+### Auth Endpoints
 
-Auth endpoints live under `/v2/`, coexisting with legacy `/v1/` routes during transition:
+The existing auth endpoints are extended to support both the legacy and Keycloak flows. The canary feature flag (`KEYCLOAK_AUTH_PERCENTAGE`) determines which flow handles each request — no separate URL paths are needed:
 
 | Endpoint | Purpose |
 |----------|---------|
-| `GET /v2/login/dotgov` | Redirect to Keycloak → Login.gov |
-| `GET /v2/login/ams` | Redirect to Keycloak → AMS |
-| `GET /v2/oidc/callback/` | OIDC authorization code callback |
-| `GET /v2/auth_check` | Current user authentication status |
-| `GET /v2/logout/oidc` | Session termination + Keycloak logout |
+| `GET /login/dotgov` | Redirect to Login.gov (legacy or via Keycloak, based on canary flag) |
+| `GET /login/ams` | Redirect to AMS (legacy or via Keycloak, based on canary flag) |
+| `GET /oidc/callback/` | OIDC authorization code callback (delegates to correct flow based on session marker) |
+| `GET /auth_check` | Current user authentication status |
+| `GET /logout/oidc` | Session termination (+ Keycloak logout if session was Keycloak-originated) |
 
 ---
 
 ## 6. Frontend Integration
 
-The React frontend uses a dedicated `REACT_APP_AUTH_URL` environment variable for the 4 auth touchpoints. All other API calls continue using `REACT_APP_BACKEND_URL`:
+The React frontend continues to use `REACT_APP_BACKEND_URL` for all API calls, including the 4 auth touchpoints. No frontend changes or separate auth URL configuration are required — the canary routing is handled entirely server-side:
 
 | File | Endpoint |
 |------|----------|
-| `SplashPage.jsx` | `{REACT_APP_AUTH_URL}/login/dotgov`, `/login/ams` |
-| `signOut.js` | `{REACT_APP_AUTH_URL}/logout/oidc` |
-| `IdleTimer.jsx` | `{REACT_APP_AUTH_URL}/logout/oidc` |
-| `auth.js` | `{REACT_APP_AUTH_URL}/auth_check` |
+| `SplashPage.jsx` | `{REACT_APP_BACKEND_URL}/login/dotgov`, `/login/ams` |
+| `signOut.js` | `{REACT_APP_BACKEND_URL}/logout/oidc` |
+| `IdleTimer.jsx` | `{REACT_APP_BACKEND_URL}/logout/oidc` |
+| `auth.js` | `{REACT_APP_BACKEND_URL}/auth_check` |
 
-`REACT_APP_AUTH_URL` defaults to `REACT_APP_BACKEND_URL` if not set, making the transition zero-risk: deploy the backend with `/v2/` routes, then flip `REACT_APP_AUTH_URL` per environment to activate the Keycloak flow.
+The frontend is unaware of which auth flow (legacy or Keycloak) is handling a given request. This eliminates the need for frontend redeployment during the migration — the rollout is controlled entirely via the backend `KEYCLOAK_AUTH_PERCENTAGE` environment variable.
 
 ---
 
@@ -230,38 +230,58 @@ The `tdp-user-attributes` client scope includes protocol mappers for: `login_gov
 
 ---
 
-## 8. Migration Strategy: v1 → v2
+## 8. Migration Strategy: Canary Cutover
 
-### Parallel Running
+### Approach
 
-The `/v1/` (direct Login.gov/AMS) and `/v2/` (Keycloak-brokered) auth routes coexist. The frontend controls which path is active via `REACT_APP_AUTH_URL`:
+Both the legacy auth flow (direct Login.gov/AMS) and the Keycloak-brokered flow are deployed simultaneously behind the same endpoints. A server-side feature flag (`KEYCLOAK_AUTH_PERCENTAGE`) controls what percentage of new login requests are routed through Keycloak. This avoids versioned URL paths entirely — the frontend always hits the same auth endpoints, and the backend decides which flow to use.
 
-| Phase | `REACT_APP_AUTH_URL` | Auth Path |
-|-------|---------------------|-----------|
-| Pre-cutover | `{domain}/v1` (default) | Direct Login.gov/AMS (legacy) |
-| Cutover | `{domain}/v2` | Keycloak-brokered |
-| Rollback | `{domain}/v1` | Direct Login.gov/AMS (legacy) |
+### How It Works
 
-### Cutover Process (Per Environment)
+The Django auth views (`/login/dotgov`, `/login/ams`) inspect the canary flag on each new login request:
 
-1. Deploy backend with `/v2/` routes active (no user impact — `/v1/` still works)
-2. Set `REACT_APP_AUTH_URL` to the `/v2` URL in `deploy-frontend.sh`
-3. Redeploy frontend — auth now flows through Keycloak
-4. Monitor for issues
-5. **Rollback:** Set `REACT_APP_AUTH_URL` back to `/v1`, redeploy frontend
+1. Generate a random value per request
+2. If the value falls within the canary percentage → route through Keycloak (via `mozilla-django-oidc`)
+3. Otherwise → route through the legacy direct OIDC flow
+4. A cookie or session attribute records which flow was used, so the callback handler knows how to process the response
 
-### v1 Deprecation
+Both flows return to the same callback URL. The callback inspects the session marker to delegate to the correct token exchange logic.
 
-After the Keycloak-brokered flow (v2) is stable in production for at least 2 weeks, the legacy v1 auth code will be removed:
+```
+KEYCLOAK_AUTH_PERCENTAGE=0    → 100% legacy (default, no behavior change)
+KEYCLOAK_AUTH_PERCENTAGE=10   → 10% Keycloak, 90% legacy
+KEYCLOAK_AUTH_PERCENTAGE=50   → 50/50 split
+KEYCLOAK_AUTH_PERCENTAGE=100  → 100% Keycloak (full cutover)
+```
 
+### Canary Rollout (Per Environment)
+
+| Phase | `KEYCLOAK_AUTH_PERCENTAGE` | Action |
+|-------|---------------------------|--------|
+| 1. Deploy | `0` | Deploy backend with both flows wired up. No user impact — all traffic uses legacy. |
+| 2. Smoke test | `0` (manual override) | Team members test Keycloak flow explicitly via an internal query parameter or admin toggle. |
+| 3. Canary | `10` | 10% of new logins route through Keycloak. Monitor error rates, login latency, user reports. |
+| 4. Expand | `50` | Increase to 50% after canary period shows no issues (minimum 48 hours per phase). |
+| 5. Full cutover | `100` | All logins through Keycloak. Legacy flow still deployed but unused. |
+| 6. Bake period | `100` | Run at 100% for at least 2 weeks before removing legacy code. |
+
+**Rollback at any phase:** Set `KEYCLOAK_AUTH_PERCENTAGE=0` via `cf set-env` + `cf restage`. Takes effect on next login attempt. No frontend redeployment required. Existing sessions (both legacy and Keycloak-originated) are unaffected.
+
+### Implementation Notes
+
+- The percentage check happens only at login initiation — once a user is in a flow, they complete it regardless of flag changes
+- The canary flag is a Django setting backed by an environment variable, changeable via `cf set-env` without a code deploy (Could also be managed by our FeatureFlag model)
+- Logging should tag each login event with `auth_flow=legacy` or `auth_flow=keycloak` for monitoring the split. These are structured log fields (via Python's `logger.info("Login initiated", extra={"auth_flow": "keycloak"})`) that flow into Loki via Cloud Foundry's log stream. Grafana dashboards can then query by `auth_flow` label to compare error rates, latency, and success rates between the two flows during the canary period.
+- The canary is per-request, not per-user — the same user may hit different flows on different logins (this is acceptable since both flows produce identical Django sessions)
+
+### Legacy Code Removal
+
+After running at `KEYCLOAK_AUTH_PERCENTAGE=100` in production for at least 2 weeks with no issues:
+
+- Remove the canary routing logic and the `KEYCLOAK_AUTH_PERCENTAGE` flag
 - Delete `users/api/login.py`, `login_redirect_oidc.py`, custom OIDC utility functions
-- Remove `/v1/` auth URL patterns (non-auth `/v1/` API routes remain)
 - Remove `LOGIN_GOV_*` and `AMS_*` direct-integration settings from Django
-- Remove `jwcrypto` dependency (if no longer needed)
-- Consolidate `REACT_APP_AUTH_URL` back into `REACT_APP_BACKEND_URL`
 - Remove `PlgAuthorizationCheck` and the nginx `auth_request` pattern for Grafana (replaced by Keycloak SSO)
-
-This is a point of no return — a tagged release of the pre-cleanup codebase should be created before executing.
 
 ---
 
@@ -275,7 +295,7 @@ Build Docker image → Push to registry → deploy.sh → cf push (rolling)
   → Run configure-idps.sh as CF task
 ```
 
-The deploy script (`tdrs-backend/keycloak/deploy.sh`) handles the full lifecycle: manifest templating via `yq`, Docker image push, route mapping, network policy creation, and post-startup IdP configuration.
+A deploy script (`tdrs-backend/keycloak/deploy.sh`) handles the full lifecycle: manifest templating via `yq`, Docker image push, route mapping, network policy creation, and post-startup IdP configuration.
 
 ### Environment Variables
 
@@ -361,7 +381,7 @@ Keycloak runs on Cloud.gov infrastructure and falls within the existing Cloud.go
 
 ### Recovery Procedure
 
-See the [Keycloak Operations Runbook — Backup and Restore](../../tdrs-backend/keycloak/keycloak-operations.md#backup-and-restore) for step-by-step procedures.
+Cloud.gov administratrors are available during normal business hours to restore daily backups.
 
 Key point: Django sessions are independent of Keycloak. A Keycloak outage blocks new logins but does not terminate existing user sessions.
 
@@ -377,19 +397,47 @@ Key point: Django sessions are independent of Keycloak. A Keycloak outage blocks
 | Liveness | `/health/live` | CF health check (continuous) |
 | OIDC discovery | `/realms/tdp/.well-known/openid-configuration` | On-demand verification |
 
-### Observability
+### Prometheus Metrics
+
+Keycloak exposes a `/metrics` endpoint when `KC_METRICS_ENABLED=true` is set. Prometheus scrapes this endpoint to collect native Keycloak metrics, which are then available in Grafana for dashboards and alerting.
+
+**Setup requirements:**
+- Set `KC_METRICS_ENABLED=true` in the Keycloak container environment
+- Add a Prometheus scrape target for `keycloak.apps.internal:8080/metrics` (internal route — no public exposure needed)
+- Create a Cloud Foundry network policy allowing Prometheus → Keycloak on the internal route
+
+**Key metrics for auth flow monitoring:**
+
+| Metric | What It Tells You |
+|--------|-------------------|
+| `keycloak_login_attempts_total` | Total login attempts by IdP, client, and outcome (success/failure) |
+| `keycloak_failed_login_attempts_total` | Failed logins — spike indicates IdP issues or brute force |
+| `keycloak_code_to_token_requests_total` | Token exchange attempts — failures indicate callback/token issues |
+| `keycloak_refresh_tokens_total` | Token refresh activity |
+| `keycloak_registrations_total` | New user registrations (first broker logins) |
+| `keycloak_request_duration_seconds` | Request latency histograms — track login flow performance |
+| `jvm_memory_used_bytes` | JVM heap usage — early warning for memory pressure |
+| `jvm_gc_pause_seconds` | GC pauses — correlates with latency spikes |
+
+**Canary monitoring:** During the canary rollout, the Keycloak metrics cover the Keycloak-brokered flow natively. For comparing against the legacy flow, the Django-side structured logging (`auth_flow=legacy` or `auth_flow=keycloak` tags in Loki) provides the other half of the picture. Once at `KEYCLOAK_AUTH_PERCENTAGE=100`, the Prometheus metrics become the single source of truth for auth observability.
+
+### Additional Observability
 
 - **Keycloak logs**: `cf logs keycloak` — includes authentication events, errors, startup diagnostics
 - **Login events**: Keycloak admin console → Events tab (LOGIN, LOGOUT, LOGIN_ERROR, etc.)
 - **Sync health**: Django/Celery logs for `KeycloakSyncClient` errors; Celery beat runs `reconcile_keycloak_users` every 6 hours
 - **Resource usage**: `cf app keycloak` for memory/disk/CPU
 
-### Alerting Considerations
+### Alerting
 
-- Monitor Keycloak container restarts (CF event stream)
-- Alert on sustained authentication failures (Keycloak events or Django error logs)
-- Monitor Keycloak memory usage — default 768M allocation may need tuning under load
-- Monitor sync failure rates in Celery worker logs
+| Alert | Condition | Severity |
+|-------|-----------|----------|
+| Auth failure spike | `rate(keycloak_failed_login_attempts_total[5m])` exceeds baseline by 3x | Warning |
+| Token exchange failures | `rate(keycloak_code_to_token_requests_total{error!=""}[5m]) > 0` sustained for 5 min | Critical |
+| Login latency degradation | `keycloak_request_duration_seconds` p95 > 5s for 10 min | Warning |
+| High memory usage | `jvm_memory_used_bytes / jvm_memory_max_bytes > 0.85` for 10 min | Warning |
+| Container restarts | CF event stream restart count > 2 in 30 min | Critical |
+| Sync failures | Celery `KeycloakSyncClient` error rate > 0 sustained for 1 hour | Warning |
 
 ---
 
@@ -434,9 +482,8 @@ Keycloak stores its schema version in the database and runs automatic migrations
 
 | Question | Status | Owner |
 |----------|--------|-------|
-| Should Keycloak admin console access be IP-restricted in production? | Open | Ops/Security |
+| Should Keycloak admin console access be IP-restricted in production? | Open | ACF Tech |
 | What is the Login.gov IAL2 (identity proofing) strategy if required in the future? | Open — Keycloak supports configurable ACR values per IdP, so IAL2 can be enabled by changing `LOGIN_GOV_ACR_VALUES` | Product |
-| Should Keycloak metrics be scraped by Prometheus for PLG dashboards? | Open — Keycloak exposes metrics at `/metrics` when `KC_METRICS_ENABLED=true` | Ops |
 | What is the Grafana public URL domain and timeline for the move from the current subpath? | Planned — Grafana will be moved to `grafana.app.cloud.gov`. Requires updating `tdp-grafana` client redirect URIs, web origins, and post-logout URI in realm config + Grafana `custom.ini` auth URLs. | Ops |
 
 ---
@@ -456,9 +503,11 @@ Keycloak stores its schema version in the database and runs automatic migrations
 - [ ] Brute force protection enabled and tested
 - [ ] ACF email domain enforcement tested (@acf.hhs.gov blocked from Login.gov)
 - [ ] Backup/restore procedure tested (RDS backup → restore → configure-idps → bulk sync)
-- [ ] Operations runbook reviewed by ops team
+- [ ] `KC_METRICS_ENABLED=true` set and Prometheus scraping Keycloak `/metrics` endpoint
+- [ ] Grafana dashboards configured for Keycloak auth metrics and JVM health
+- [ ] Alerting rules deployed for auth failure spikes, token exchange errors, and memory pressure
 - [ ] Monitoring in place (health checks, log review, sync health)
-- [ ] v1 → v2 cutover tested per environment with rollback verification
+- [ ] Canary cutover tested per environment (0% → 10% → 50% → 100%) with rollback verification
 - [ ] CSP headers updated to allow Keycloak domain
 - [ ] Keycloak admin console accessible and functional
 - [ ] `deploy.sh` tested with fresh deploy and redeployment
