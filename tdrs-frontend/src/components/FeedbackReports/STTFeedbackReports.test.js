@@ -151,16 +151,8 @@ describe('STTFeedbackReports', () => {
     })
 
     it('renders the description text with email links when year is selected', async () => {
-      get.mockResolvedValue({
-        data: { results: [] },
-        ok: true,
-        status: 200,
-        error: null,
-      })
-
       renderComponent()
 
-      // Select a year first
       const yearSelect = screen.getByLabelText(/Fiscal Year/i)
       fireEvent.change(yearSelect, { target: { value: '2025' } })
 
@@ -174,16 +166,8 @@ describe('STTFeedbackReports', () => {
     })
 
     it('renders the Knowledge Center link when year is selected', async () => {
-      get.mockResolvedValue({
-        data: { results: [] },
-        ok: true,
-        status: 200,
-        error: null,
-      })
-
       renderComponent()
 
-      // Select a year first
       const yearSelect = screen.getByLabelText(/Fiscal Year/i)
       fireEvent.change(yearSelect, { target: { value: '2025' } })
 
@@ -195,16 +179,8 @@ describe('STTFeedbackReports', () => {
     })
 
     it('renders the H2 header with STT name and fiscal year when year is selected', async () => {
-      get.mockResolvedValue({
-        data: { results: [] },
-        ok: true,
-        status: 200,
-        error: null,
-      })
-
       renderComponent()
 
-      // Select a year
       const yearSelect = screen.getByLabelText(/Fiscal Year/i)
       fireEvent.change(yearSelect, { target: { value: '2025' } })
 
@@ -219,16 +195,8 @@ describe('STTFeedbackReports', () => {
     })
 
     it('renders the H3 heading as just "Feedback Reports" when year is selected', async () => {
-      get.mockResolvedValue({
-        data: { results: [] },
-        ok: true,
-        status: 200,
-        error: null,
-      })
-
       renderComponent()
 
-      // Select a year
       const yearSelect = screen.getByLabelText(/Fiscal Year/i)
       fireEvent.change(yearSelect, { target: { value: '2025' } })
 
@@ -245,36 +213,20 @@ describe('STTFeedbackReports', () => {
         screen.queryByLabelText(/State, Tribe, or Territory/i)
       ).not.toBeInTheDocument()
     })
-
-    it('does not render Search button for Data Analyst', () => {
-      renderComponent()
-      expect(
-        screen.queryByRole('button', { name: /Search/i })
-      ).not.toBeInTheDocument()
-    })
   })
 
   describe('Data Fetching', () => {
     it('does not fetch reports on mount when no year is selected', async () => {
       renderComponent()
 
-      // Wait a bit to ensure no fetch happens
       await waitFor(() => {
         expect(get).not.toHaveBeenCalled()
       })
     })
 
     it('fetches reports when year is selected', async () => {
-      get.mockResolvedValue({
-        data: { results: [] },
-        ok: true,
-        status: 200,
-        error: null,
-      })
-
       renderComponent()
 
-      // Select a year
       const yearSelect = screen.getByLabelText(/Fiscal Year/i)
       fireEvent.change(yearSelect, { target: { value: '2025' } })
 
@@ -307,7 +259,6 @@ describe('STTFeedbackReports', () => {
 
       renderComponent()
 
-      // Select a year to trigger fetch
       const yearSelect = screen.getByLabelText(/Fiscal Year/i)
       fireEvent.change(yearSelect, { target: { value: '2025' } })
 
@@ -328,7 +279,6 @@ describe('STTFeedbackReports', () => {
 
       renderComponent()
 
-      // Select a year to trigger fetch
       const yearSelect = screen.getByLabelText(/Fiscal Year/i)
       fireEvent.change(yearSelect, { target: { value: '2025' } })
 
@@ -342,16 +292,8 @@ describe('STTFeedbackReports', () => {
     })
 
     it('displays empty state when no reports exist', async () => {
-      get.mockResolvedValue({
-        data: { results: [] },
-        ok: true,
-        status: 200,
-        error: null,
-      })
-
       renderComponent()
 
-      // Select a year to trigger fetch
       const yearSelect = screen.getByLabelText(/Fiscal Year/i)
       fireEvent.change(yearSelect, { target: { value: '2025' } })
 
@@ -384,7 +326,6 @@ describe('STTFeedbackReports', () => {
 
       renderComponent()
 
-      // Select a year to trigger fetch
       const yearSelect = screen.getByLabelText(/Fiscal Year/i)
       fireEvent.change(yearSelect, { target: { value: '2025' } })
 
@@ -417,7 +358,6 @@ describe('STTFeedbackReports', () => {
         },
       ]
 
-      // Mock first fetch for 2025
       get.mockResolvedValueOnce({
         data: { results: mock2025Reports },
         ok: true,
@@ -427,16 +367,13 @@ describe('STTFeedbackReports', () => {
 
       renderComponent()
 
-      // Select 2025 first
       const yearSelect = screen.getByLabelText(/Fiscal Year/i)
       fireEvent.change(yearSelect, { target: { value: '2025' } })
 
-      // Wait for initial load - should show 2025 reports
       await waitFor(() => {
         expect(screen.getByText('FY2025.zip')).toBeInTheDocument()
       })
 
-      // Verify initial call was made with 2025
       expect(get).toHaveBeenCalledWith(
         expect.stringContaining('/reports/'),
         expect.objectContaining({
@@ -444,7 +381,6 @@ describe('STTFeedbackReports', () => {
         })
       )
 
-      // Mock the next fetch for 2024
       get.mockResolvedValueOnce({
         data: { results: mock2024Reports },
         ok: true,
@@ -452,10 +388,8 @@ describe('STTFeedbackReports', () => {
         error: null,
       })
 
-      // Change to 2024 - should automatically fetch new reports
       fireEvent.change(yearSelect, { target: { value: '2024' } })
 
-      // Should fetch with new year param
       await waitFor(() => {
         expect(get).toHaveBeenCalledWith(
           expect.stringContaining('/reports/'),
@@ -465,7 +399,6 @@ describe('STTFeedbackReports', () => {
         )
       })
 
-      // Reports should now show 2024 data
       await waitFor(() => {
         expect(screen.getByText('FY2024.zip')).toBeInTheDocument()
         expect(screen.queryByText('FY2025.zip')).not.toBeInTheDocument()
@@ -473,20 +406,11 @@ describe('STTFeedbackReports', () => {
     })
 
     it('updates the H2 heading when year is changed', async () => {
-      get.mockResolvedValue({
-        data: { results: [] },
-        ok: true,
-        status: 200,
-        error: null,
-      })
-
       renderComponent()
 
-      // Select 2025 first
       const yearSelect = screen.getByLabelText(/Fiscal Year/i)
       fireEvent.change(yearSelect, { target: { value: '2025' } })
 
-      // Verify initial heading
       await waitFor(() => {
         expect(
           screen.getByRole('heading', {
@@ -496,10 +420,8 @@ describe('STTFeedbackReports', () => {
         ).toBeInTheDocument()
       })
 
-      // Change to 2024
       fireEvent.change(yearSelect, { target: { value: '2024' } })
 
-      // Heading should update immediately
       await waitFor(() => {
         expect(
           screen.getByRole('heading', {
@@ -532,7 +454,6 @@ describe('STTFeedbackReports', () => {
 
       renderComponent()
 
-      // Select a year to trigger fetch
       const yearSelect = screen.getByLabelText(/Fiscal Year/i)
       fireEvent.change(yearSelect, { target: { value: '2025' } })
 
@@ -561,7 +482,6 @@ describe('STTFeedbackReports', () => {
 
       renderComponent()
 
-      // Select a year to trigger fetch
       const yearSelect = screen.getByLabelText(/Fiscal Year/i)
       fireEvent.change(yearSelect, { target: { value: '2025' } })
 
@@ -575,7 +495,6 @@ describe('STTFeedbackReports', () => {
 
       renderComponent()
 
-      // Select a year to trigger fetch
       const yearSelect = screen.getByLabelText(/Fiscal Year/i)
       fireEvent.change(yearSelect, { target: { value: '2025' } })
 
@@ -617,7 +536,6 @@ describe('STTFeedbackReports', () => {
 
       renderComponent()
 
-      // Select a year to trigger fetch
       const yearSelect = screen.getByLabelText(/Fiscal Year/i)
       fireEvent.change(yearSelect, { target: { value: '2025' } })
 
@@ -640,13 +558,6 @@ describe('STTFeedbackReports', () => {
     }
 
     it('initializes year from URL parameter', async () => {
-      get.mockResolvedValue({
-        data: { results: [] },
-        ok: true,
-        status: 200,
-        error: null,
-      })
-
       renderWithUrl('/feedback-reports?year=2024')
 
       await waitFor(() => {
@@ -656,13 +567,6 @@ describe('STTFeedbackReports', () => {
     })
 
     it('fetches reports with year from URL parameter', async () => {
-      get.mockResolvedValue({
-        data: { results: [] },
-        ok: true,
-        status: 200,
-        error: null,
-      })
-
       renderWithUrl('/feedback-reports?year=2024')
 
       await waitFor(() => {
@@ -676,13 +580,6 @@ describe('STTFeedbackReports', () => {
     })
 
     it('shows placeholder for invalid year param', async () => {
-      get.mockResolvedValue({
-        data: { results: [] },
-        ok: true,
-        status: 200,
-        error: null,
-      })
-
       renderWithUrl('/feedback-reports?year=invalid')
 
       await waitFor(() => {
@@ -690,20 +587,12 @@ describe('STTFeedbackReports', () => {
         expect(yearSelect.value).toBe('')
       })
 
-      // Content below hr should not be visible
       expect(
         screen.queryByRole('heading', { level: 2 })
       ).not.toBeInTheDocument()
     })
 
     it('shows placeholder for out-of-range year', async () => {
-      get.mockResolvedValue({
-        data: { results: [] },
-        ok: true,
-        status: 200,
-        error: null,
-      })
-
       renderWithUrl('/feedback-reports?year=1999')
 
       await waitFor(() => {
@@ -711,20 +600,12 @@ describe('STTFeedbackReports', () => {
         expect(yearSelect.value).toBe('')
       })
 
-      // Content below hr should not be visible
       expect(
         screen.queryByRole('heading', { level: 2 })
       ).not.toBeInTheDocument()
     })
 
     it('displays H2 heading with STT name and year from URL parameter', async () => {
-      get.mockResolvedValue({
-        data: { results: [] },
-        ok: true,
-        status: 200,
-        error: null,
-      })
-
       renderWithUrl('/feedback-reports?year=2024')
 
       await waitFor(() => {
@@ -745,7 +626,6 @@ describe('STTFeedbackReports', () => {
         expect(yearSelect.value).toBe('')
       })
 
-      // Content below hr should not be visible
       expect(
         screen.queryByRole('heading', { level: 2 })
       ).not.toBeInTheDocument()
@@ -766,19 +646,6 @@ describe('STTFeedbackReports', () => {
       ).toBeInTheDocument()
     })
 
-    it('renders Search button for regional staff', () => {
-      renderComponent(regionalStore)
-      expect(
-        screen.getByRole('button', { name: /Search/i })
-      ).toBeInTheDocument()
-    })
-
-    it('Search button is disabled when no STT or year is selected', () => {
-      renderComponent(regionalStore)
-      const searchBtn = screen.getByRole('button', { name: /Search/i })
-      expect(searchBtn).toBeDisabled()
-    })
-
     it('does not show content section until both STT and year are selected', () => {
       renderComponent(regionalStore)
 
@@ -791,26 +658,19 @@ describe('STTFeedbackReports', () => {
       ).not.toBeInTheDocument()
     })
 
-    it('does not auto-fetch reports when year changes', async () => {
+    it('does not fetch reports when only year is selected', async () => {
       renderComponent(regionalStore)
 
       const yearSelect = screen.getByLabelText(/Fiscal Year/i)
       fireEvent.change(yearSelect, { target: { value: '2025' } })
 
-      // Wait to ensure no fetch happens
+      // Wait to ensure no fetch happens (no STT selected)
       await waitFor(() => {
         expect(get).not.toHaveBeenCalled()
       })
     })
 
-    it('fetches reports with stt param when Search is clicked', async () => {
-      get.mockResolvedValue({
-        data: { results: [] },
-        ok: true,
-        status: 200,
-        error: null,
-      })
-
+    it('auto-fetches reports with stt param when both STT and year are selected', async () => {
       renderComponent(regionalStore)
 
       // Select STT via mocked ComboBox
@@ -820,13 +680,6 @@ describe('STTFeedbackReports', () => {
       // Select a year
       const yearSelect = screen.getByLabelText(/Fiscal Year/i)
       fireEvent.change(yearSelect, { target: { value: '2025' } })
-
-      // Search button should now be enabled
-      const searchBtn = screen.getByRole('button', { name: /Search/i })
-      expect(searchBtn).not.toBeDisabled()
-
-      // Click search
-      fireEvent.click(searchBtn)
 
       await waitFor(() => {
         expect(get).toHaveBeenCalledWith(
@@ -838,9 +691,38 @@ describe('STTFeedbackReports', () => {
       })
     })
 
-    it('shows H2 heading with selected STT name after search', async () => {
+    it('shows H2 heading with selected STT name', async () => {
+      renderComponent(regionalStore)
+
+      const sttSelect = screen.getByLabelText(/State, Tribe, or Territory/i)
+      fireEvent.change(sttSelect, { target: { value: 'Wisconsin' } })
+
+      const yearSelect = screen.getByLabelText(/Fiscal Year/i)
+      fireEvent.change(yearSelect, { target: { value: '2025' } })
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('heading', {
+            level: 2,
+            name: 'Wisconsin — Fiscal Year 2025 Feedback Reports',
+          })
+        ).toBeInTheDocument()
+      })
+    })
+
+    it('clears reports when STT selection changes', async () => {
       get.mockResolvedValue({
-        data: { results: [] },
+        data: {
+          results: [
+            {
+              id: 1,
+              year: 2025,
+              date_extracted_on: '2025-02-28',
+              created_at: '2025-03-05T10:41:00Z',
+              original_filename: 'test.zip',
+            },
+          ],
+        },
         ok: true,
         status: 200,
         error: null,
@@ -855,36 +737,6 @@ describe('STTFeedbackReports', () => {
       const yearSelect = screen.getByLabelText(/Fiscal Year/i)
       fireEvent.change(yearSelect, { target: { value: '2025' } })
 
-      // Content should show since both STT and year are selected
-      await waitFor(() => {
-        expect(
-          screen.getByRole('heading', {
-            level: 2,
-            name: 'Wisconsin — Fiscal Year 2025 Feedback Reports',
-          })
-        ).toBeInTheDocument()
-      })
-    })
-
-    it('clears reports when STT selection changes', async () => {
-      get.mockResolvedValue({
-        data: { results: [{ id: 1, year: 2025, date_extracted_on: '2025-02-28', created_at: '2025-03-05T10:41:00Z', original_filename: 'test.zip' }] },
-        ok: true,
-        status: 200,
-        error: null,
-      })
-
-      renderComponent(regionalStore)
-
-      // Select STT and year, then search
-      const sttSelect = screen.getByLabelText(/State, Tribe, or Territory/i)
-      fireEvent.change(sttSelect, { target: { value: 'Wisconsin' } })
-
-      const yearSelect = screen.getByLabelText(/Fiscal Year/i)
-      fireEvent.change(yearSelect, { target: { value: '2025' } })
-
-      fireEvent.click(screen.getByRole('button', { name: /Search/i }))
-
       await waitFor(() => {
         expect(screen.getByText('test.zip')).toBeInTheDocument()
       })
@@ -895,6 +747,20 @@ describe('STTFeedbackReports', () => {
       await waitFor(() => {
         expect(screen.queryByText('test.zip')).not.toBeInTheDocument()
       })
+    })
+
+    it('initializes STT from URL stt query param', () => {
+      render(
+        <MemoryRouter initialEntries={['/feedback-reports?year=2025&stt=10']}>
+          <Provider store={regionalStore}>
+            <STTFeedbackReports />
+          </Provider>
+        </MemoryRouter>
+      )
+
+      // The STT combobox should show Wisconsin (id=10)
+      const sttSelect = screen.getByLabelText(/State, Tribe, or Territory/i)
+      expect(sttSelect.value).toBe('Wisconsin')
     })
   })
 })

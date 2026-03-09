@@ -259,11 +259,6 @@ describe('FeedbackReports', () => {
       expect(
         screen.queryByRole('button', { name: /Upload & Notify States/i })
       ).not.toBeInTheDocument()
-
-      // Should have the Search button (regional staff feature)
-      expect(
-        screen.getByRole('button', { name: /Search/i })
-      ).toBeInTheDocument()
     })
   })
 

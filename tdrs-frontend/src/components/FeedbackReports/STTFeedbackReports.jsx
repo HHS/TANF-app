@@ -15,23 +15,26 @@ import STTComboBox from '../STTComboBox'
  * to view and download their quarterly feedback reports.
  *
  * - Data Analysts see reports for their assigned STT (auto-fetched on year change)
- * - Regional Staff select an STT from their region and click Search
+ * - Regional Staff select an STT from their region, auto-fetches when both STT and year are selected
  */
 function STTFeedbackReports() {
   const [searchParams, setSearchParams] = useSearchParams()
   const yearOptions = constructYears()
 
-  // Get user's STT name from Redux
   const user = useSelector((state) => state.auth.user)
   const isRegionalStaff = useSelector(accountIsRegionalStaff)
   const filteredStts = useSelector(availableStts('/feedback-reports'))
 
-  // State for regional staff STT selection
-  const [selectedStt, setSelectedStt] = useState(null)
-  const [selectedSttName, setSelectedSttName] = useState('')
-
-  // Derive display name
-  const sttName = isRegionalStaff ? selectedStt?.name : user?.stt?.name
+  // Initialize STT from URL query param (regional staff only)
+  const getValidatedStt = () => {
+    if (!isRegionalStaff) return null
+    const urlStt = searchParams.get('stt')
+    if (!urlStt) return null
+    const sttId = parseInt(urlStt, 10)
+    if (isNaN(sttId)) return null
+    const sttObj = filteredStts.find((s) => s.id === sttId)
+    return sttObj || null
+  }
 
   // Validate and get year from URL params (returns null if no valid param)
   const getValidatedYear = () => {
@@ -44,6 +47,15 @@ function STTFeedbackReports() {
     return null
   }
 
+  // State for regional staff STT selection
+  const [selectedStt, setSelectedStt] = useState(getValidatedStt)
+  const [selectedSttName, setSelectedSttName] = useState(
+    () => getValidatedStt()?.name || ''
+  )
+
+  // Derive display name
+  const sttName = isRegionalStaff ? selectedStt?.name : user?.stt?.name
+
   const [reports, setReports] = useState([])
   const [loading, setLoading] = useState(false)
   const [selectedYear, setSelectedYear] = useState(getValidatedYear)
@@ -53,14 +65,19 @@ function STTFeedbackReports() {
     message: null,
   })
 
-  // Sync year selection to URL (only when a year is selected)
+  // Sync selections to URL query params
   useEffect(() => {
+    const newParams = new URLSearchParams()
     if (selectedYear) {
-      const newParams = new URLSearchParams()
       newParams.set('year', selectedYear)
+    }
+    if (isRegionalStaff && selectedStt) {
+      newParams.set('stt', selectedStt.id)
+    }
+    if (newParams.toString()) {
       setSearchParams(newParams, { replace: true })
     }
-  }, [selectedYear, setSearchParams])
+  }, [selectedYear, selectedStt, isRegionalStaff, setSearchParams])
 
   /**
    * Fetches the feedback reports from the backend filtered by year (and STT for regional staff)
@@ -104,13 +121,10 @@ function STTFeedbackReports() {
     setLoading(false)
   }, [selectedYear, isRegionalStaff, selectedStt])
 
-  // For Data Analysts, auto-fetch when year changes
-  // For Regional Staff, don't auto-fetch (requires Search button)
+  // Auto-fetch when dependencies change (both user types)
   useEffect(() => {
-    if (!isRegionalStaff) {
-      fetchReports()
-    }
-  }, [fetchReports, isRegionalStaff])
+    fetchReports()
+  }, [fetchReports])
 
   /**
    * Handle year selection change
@@ -123,23 +137,16 @@ function STTFeedbackReports() {
   /**
    * Handle STT selection from ComboBox (regional staff)
    */
-  const handleSttSelect = (sttName) => {
-    setSelectedSttName(sttName)
-    if (sttName) {
-      const sttObj = filteredStts.find((s) => s.name === sttName)
+  const handleSttSelect = (name) => {
+    setSelectedSttName(name)
+    if (name) {
+      const sttObj = filteredStts.find((s) => s.name === name)
       setSelectedStt(sttObj || null)
     } else {
       setSelectedStt(null)
     }
     // Clear reports when STT changes
     setReports([])
-  }
-
-  /**
-   * Handle Search button click (regional staff)
-   */
-  const handleSearch = () => {
-    fetchReports()
   }
 
   // Determine if content section should show
@@ -183,17 +190,6 @@ function STTFeedbackReports() {
                 ))}
               </select>
             </div>
-
-            {isRegionalStaff && (
-              <button
-                className="usa-button margin-top-2"
-                type="button"
-                disabled={!selectedStt || !selectedYear}
-                onClick={handleSearch}
-              >
-                Search
-              </button>
-            )}
           </div>
 
           <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
