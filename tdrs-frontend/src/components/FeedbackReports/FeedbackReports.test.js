@@ -259,9 +259,7 @@ describe('FeedbackReports', () => {
             regions: [
               {
                 id: 5,
-                stts: [
-                  { id: 10, name: 'Wisconsin', type: 'state' },
-                ],
+                stts: [{ id: 10, name: 'Wisconsin', type: 'state' }],
               },
             ],
           },
