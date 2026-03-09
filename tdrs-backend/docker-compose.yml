@@ -61,7 +61,11 @@ services:
       - KC_HTTP_ENABLED=true
       - KC_PROXY_HEADERS=xforwarded
       - KC_HEALTH_ENABLED=true
-      - KC_LEGACY_OBSERVABILITY_INTERFACE=true
+      - KC_METRICS_ENABLED=true
+      - KC_HTTP_METRICS_HISTOGRAMS_ENABLED=true
+      - KC_EVENT_METRICS_USER_ENABLED=true
+      - KC_EVENT_METRICS_USER_EVENTS=client_login,code_to_token,login,logout,refresh_token,token_exchange
+      - KC_EVENT_METRICS_USER_TAGS=realm,idp,clientId
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
       - KC_TDP_DJANGO_CLIENT_SECRET=tdp-django-local-secret
@@ -93,7 +97,7 @@ services:
     build:
       context: ./keycloak
     environment:
-      - KEYCLOAK_MANAGEMENT_URL=http://keycloak:8080
+      - KEYCLOAK_MANAGEMENT_URL=http://keycloak:9000
       - KEYCLOAK_URL=http://keycloak:8080
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
@@ -299,6 +303,7 @@ services:
       - KEYCLOAK_ADMIN_CLIENT_SECRET=tdp-django-local-secret
       - KEYCLOAK_DJANGO_CLIENT_ID=tdp-django
       - KEYCLOAK_DJANGO_CLIENT_SECRET=tdp-django-local-secret
+      - KEYCLOAK_AUTH_PERCENTAGE
     volumes:
       - .:/tdpapp
       - logs:/tmp

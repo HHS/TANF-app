@@ -1,4 +1,4 @@
-# Use the following to build: docker buildx build -t ghcr.io/raft-tech/keycloak_26:latest -f Dockerfile . --platform linux/amd64,linux/arm64 --push
+# Use the following to build: docker buildx build -t ghcr.io/raft-tech/keycloak_26.5:latest -f Dockerfile . --platform linux/amd64,linux/arm64 --push
 
 # Stage 1: nginx binary and non-system shared libraries.
 FROM nginx:1.27 AS nginx-source
@@ -17,7 +17,7 @@ FROM registry.access.redhat.com/ubi9/ubi-minimal AS ubi-libs
 RUN microdnf install -y libxcrypt-compat && \
     mkdir /ubi-libs && cp -L /usr/lib64/libcrypt.so.1* /ubi-libs/
 
-FROM quay.io/keycloak/keycloak:26.0
+FROM quay.io/keycloak/keycloak:26.5.5
 
 USER root
 # Copy nginx binary, Debian-compatible libs, and UBI-compatible libcrypt.
@@ -37,11 +37,15 @@ COPY configure-idps.sh /opt/keycloak/configure-idps.sh
 COPY nginx.conf /opt/keycloak/nginx.conf.template
 COPY --chmod=755 entrypoint.sh /opt/keycloak/entrypoint.sh
 
-# Build with health/metrics on the main HTTP port (not the separate management port).
-# This is required for the entrypoint health check and cloud.gov routing.
+# Health and metrics are served on the management port (9000) by default.
 ENV KC_DB=postgres
 ENV KC_HEALTH_ENABLED=true
-ENV KC_LEGACY_OBSERVABILITY_INTERFACE=true
+ENV KC_METRICS_ENABLED=true
+ENV KC_FEATURES=user-event-metrics
+ENV KC_HTTP_METRICS_HISTOGRAMS_ENABLED=true
+ENV KC_EVENT_METRICS_USER_ENABLED=true
+ENV KC_EVENT_METRICS_USER_EVENTS=client_login,code_to_token,login,logout,refresh_token,token_exchange
+ENV KC_EVENT_METRICS_USER_TAGS=realm,idp,clientId
 RUN /opt/keycloak/bin/kc.sh build
 
 ENTRYPOINT ["/opt/keycloak/entrypoint.sh"]

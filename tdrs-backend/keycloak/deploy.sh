@@ -121,7 +121,7 @@ deploy_keycloak() {
 configure_keycloak_idps() {
     echo "Running IdP configuration task..."
     cf run-task keycloak \
-        --command "export SKIP_KEYCLOAK_WAIT=true KEYCLOAK_URL=http://keycloak.apps.internal:8080 KEYCLOAK_MANAGEMENT_URL=http://keycloak.apps.internal:8080 && /opt/keycloak/configure-idps.sh" \
+        --command "export SKIP_KEYCLOAK_WAIT=true KEYCLOAK_URL=http://keycloak.apps.internal:8080 KEYCLOAK_MANAGEMENT_URL=http://keycloak.apps.internal:9000 && /opt/keycloak/configure-idps.sh" \
         --name "configure-idps"
 }
 

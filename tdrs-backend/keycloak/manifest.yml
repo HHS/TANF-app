@@ -11,6 +11,11 @@ applications:
       KC_HTTP_ENABLED: "true"
       KC_HOSTNAME_STRICT: "false"
       KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
+      KC_HTTP_METRICS_HISTOGRAMS_ENABLED: "true"
+      KC_EVENT_METRICS_USER_ENABLED: "true"
+      KC_EVENT_METRICS_USER_EVENTS: client_login,code_to_token,login,logout,refresh_token,token_exchange
+      KC_EVENT_METRICS_USER_TAGS: realm,idp,clientId
     command: |
       DB_HOST=$(echo $VCAP_SERVICES | jq -r '."aws-rds"[0].credentials.host')
       DB_PORT=$(echo $VCAP_SERVICES | jq -r '."aws-rds"[0].credentials.port')

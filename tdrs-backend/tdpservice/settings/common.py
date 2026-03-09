@@ -450,15 +450,17 @@ class Common(Configuration):
 
     s3_src = "s3-fips.us-gov-west-1.amazonaws.com"
 
+    keycloak_browser_src = os.getenv("KEYCLOAK_BROWSER_URL", "http://localhost:8443")
+
     CSP_DEFAULT_SRC = "'none'"
     CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", s3_src)
     CSP_IMG_SRC = ("'self'", "data:", s3_src)
     CSP_FONT_SRC = ("'self'", s3_src)
-    CSP_CONNECT_SRC = ("'self'", "*.cloud.gov")
+    CSP_CONNECT_SRC = ("'self'", "*.cloud.gov", keycloak_browser_src)
     CSP_MANIFEST_SRC = "'self'"
     CSP_OBJECT_SRC = "'none'"
     CSP_FRAME_ANCESTORS = "'none'"
-    CSP_FORM_ACTION = "'self'"
+    CSP_FORM_ACTION = ("'self'", keycloak_browser_src)
     CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", s3_src)
 
     ####################################
@@ -514,8 +516,12 @@ class Common(Configuration):
     AMS_CLIENT_SECRET = os.getenv("AMS_CLIENT_SECRET", "")
 
     ############################
-    # Keycloak Sync Settings   #
+    # Keycloak Settings        #
     ############################
+
+    # Canary cutover: percentage of new login requests routed through Keycloak (0-100).
+    # 0 = 100% legacy (default), 100 = 100% Keycloak. Changeable via cf set-env.
+    KEYCLOAK_AUTH_PERCENTAGE = int(os.getenv("KEYCLOAK_AUTH_PERCENTAGE", "0"))
 
     KEYCLOAK_SYNC_ENABLED = bool(strtobool(os.getenv("KEYCLOAK_SYNC_ENABLED", "no")))
     KEYCLOAK_SERVER_URL = os.getenv("KEYCLOAK_SERVER_URL", "http://keycloak:8080")
@@ -579,6 +585,9 @@ class Common(Configuration):
         "/admin/",
         "/prometheus/",
         "/plg_auth_check/",
+        "/login/",
+        "/auth_check",
+        "/logout/",
     ]
 
     # -------- CELERY CONFIG

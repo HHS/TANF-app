@@ -9,11 +9,13 @@ set -euo pipefail
 #   Cloud.gov: entrypoint.sh start --import-realm --optimized
 
 KEYCLOAK_INTERNAL_PORT=8081
+KEYCLOAK_MANAGEMENT_PORT=9000
 NGINX_PORT="${PORT:-8080}"
 
 echo "=== Container entrypoint ==="
-echo "  Nginx port:    ${NGINX_PORT}"
-echo "  Keycloak port: ${KEYCLOAK_INTERNAL_PORT}"
+echo "  Nginx port:       ${NGINX_PORT}"
+echo "  Keycloak port:    ${KEYCLOAK_INTERNAL_PORT}"
+echo "  Management port:  ${KEYCLOAK_MANAGEMENT_PORT}"
 
 # Generate nginx config from template
 sed "s/LISTEN_PORT/${NGINX_PORT}/" /opt/keycloak/nginx.conf.template > /tmp/nginx.conf
@@ -24,10 +26,11 @@ echo "Starting Keycloak: kc.sh $* --http-port=${KEYCLOAK_INTERNAL_PORT}"
 KC_PID=$!
 
 # Wait for Keycloak to be ready before starting nginx
-echo "Waiting for Keycloak at http://127.0.0.1:${KEYCLOAK_INTERNAL_PORT}/health/ready ..."
+# Health endpoint is on the management port (9000), not the main HTTP port.
+echo "Waiting for Keycloak at http://127.0.0.1:${KEYCLOAK_MANAGEMENT_PORT}/health/ready ..."
 MAX_ATTEMPTS=90
 ATTEMPT=0
-until curl -sf "http://127.0.0.1:${KEYCLOAK_INTERNAL_PORT}/health/ready" > /dev/null 2>&1; do
+until curl -sf "http://127.0.0.1:${KEYCLOAK_MANAGEMENT_PORT}/health/ready" > /dev/null 2>&1; do
     ATTEMPT=$((ATTEMPT + 1))
     if [ "$ATTEMPT" -ge "$MAX_ATTEMPTS" ]; then
         echo "ERROR: Keycloak did not become ready after ${MAX_ATTEMPTS} attempts"

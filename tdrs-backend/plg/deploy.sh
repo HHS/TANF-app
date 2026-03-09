@@ -131,13 +131,14 @@ setup_prod_net_pols() {
     cf add-network-policy grafana tempo --protocol tcp --port 8080
     cf add-network-policy grafana keycloak --protocol tcp --port 8080
 
-    # Let prometheus talk to alertmanager, grafana, loki, prod backend, and mimir
+    # Let prometheus talk to alertmanager, grafana, loki, keycloak, prod backend, and mimir
     cf add-network-policy prometheus alertmanager --protocol tcp --port 8080
     cf add-network-policy prometheus $PROD_BACKEND --protocol tcp --port 8080
     cf add-network-policy prometheus $PROD_CELERY --protocol tcp --port 8080
     cf add-network-policy prometheus grafana --protocol tcp --port 8080
     cf add-network-policy prometheus loki --protocol tcp --port 8080
     cf add-network-policy prometheus mimir --protocol tcp --port 8080
+    cf add-network-policy prometheus keycloak --protocol tcp --port 9000
 
     # Let alertmanager talk to the prod frontend and vice versa
     cf add-network-policy alertmanager $PROD_FRONTEND --protocol tcp --port 80

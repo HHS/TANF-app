@@ -234,7 +234,7 @@ The Login.gov private key (`LOGIN_GOV_JWT_KEY`) is used for `private_key_jwt` au
 4. Re-run the IdP configuration task to update the signing key component:
    ```bash
    cf run-task keycloak \
-       --command "export SKIP_KEYCLOAK_WAIT=true KEYCLOAK_URL=http://keycloak.apps.internal:8080 KEYCLOAK_MANAGEMENT_URL=http://keycloak.apps.internal:8080 && /opt/keycloak/configure-idps.sh" \
+       --command "export SKIP_KEYCLOAK_WAIT=true KEYCLOAK_URL=http://keycloak.apps.internal:8080 KEYCLOAK_MANAGEMENT_URL=http://keycloak.apps.internal:9000 && /opt/keycloak/configure-idps.sh" \
        --name "configure-idps"
    ```
 
@@ -299,7 +299,7 @@ The `configure-idps.sh` script handles post-startup configuration that can't be 
 
 ```bash
 cf run-task keycloak \
-    --command "export SKIP_KEYCLOAK_WAIT=true KEYCLOAK_URL=http://keycloak.apps.internal:8080 KEYCLOAK_MANAGEMENT_URL=http://keycloak.apps.internal:8080 && /opt/keycloak/configure-idps.sh" \
+    --command "export SKIP_KEYCLOAK_WAIT=true KEYCLOAK_URL=http://keycloak.apps.internal:8080 KEYCLOAK_MANAGEMENT_URL=http://keycloak.apps.internal:9000 && /opt/keycloak/configure-idps.sh" \
     --name "configure-idps"
 ```
 
@@ -495,7 +495,7 @@ Note: This exports realm configuration but **not** user credentials or sessions.
 3. Run the IdP configuration task (signing keys are stored in the database, not the Docker image):
    ```bash
    cf run-task keycloak \
-       --command "export SKIP_KEYCLOAK_WAIT=true KEYCLOAK_URL=http://keycloak.apps.internal:8080 KEYCLOAK_MANAGEMENT_URL=http://keycloak.apps.internal:8080 && /opt/keycloak/configure-idps.sh" \
+       --command "export SKIP_KEYCLOAK_WAIT=true KEYCLOAK_URL=http://keycloak.apps.internal:8080 KEYCLOAK_MANAGEMENT_URL=http://keycloak.apps.internal:9000 && /opt/keycloak/configure-idps.sh" \
        --name "configure-idps"
    ```
 4. Run a bulk user sync to reconcile Django and Keycloak state:

@@ -301,12 +301,24 @@ class FeedbackViewSet(viewsets.ModelViewSet):
 class KeycloakLoginDotGovView(OIDCAuthenticationRequestView):
     """Redirect to Keycloak with kc_idp_hint=login-gov to skip the Keycloak login page."""
 
+    def get(self, request, *args, **kwargs):
+        logger.info(
+            "Login initiated", extra={"auth_flow": "keycloak", "auth_idp": "dotgov"}
+        )
+        return super().get(request, *args, **kwargs)
+
     def get_extra_params(self, request):
         return {"kc_idp_hint": "login-gov"}
 
 
 class KeycloakLoginAMSView(OIDCAuthenticationRequestView):
     """Redirect to Keycloak with kc_idp_hint=ams to skip the Keycloak login page."""
+
+    def get(self, request, *args, **kwargs):
+        logger.info(
+            "Login initiated", extra={"auth_flow": "keycloak", "auth_idp": "ams"}
+        )
+        return super().get(request, *args, **kwargs)
 
     def get_extra_params(self, request):
         return {"kc_idp_hint": "ams"}
