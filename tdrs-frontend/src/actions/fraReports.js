@@ -1,6 +1,5 @@
 import { v4 as uuidv4 } from 'uuid'
-import axios from 'axios'
-import axiosInstance from '../axios-instance'
+import { get, post } from '../fetch-instance'
 import { objectToUrlParams } from '../utils/stringUtils'
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
@@ -23,35 +22,31 @@ export const getFraSubmissionHistory =
       payload: { isLoadingSubmissionHistory: true },
     })
 
-    try {
-      const requestParams = {
-        stt: stt.id,
-        file_type: reportType,
-        year: fiscalYear,
-        quarter: fiscalQuarter,
-      }
+    const requestParams = {
+      stt: stt.id,
+      file_type: reportType,
+      year: fiscalYear,
+      quarter: fiscalQuarter,
+    }
 
-      const response = await axios.get(
-        `${BACKEND_URL}/data_files/?${objectToUrlParams(requestParams)}`,
-        {
-          responseType: 'json',
-        }
-      )
+    const { data, ok, error } = await get(
+      `${BACKEND_URL}/data_files/?${objectToUrlParams(requestParams)}`
+    )
 
+    if (ok) {
       dispatch({
         type: SET_FRA_SUBMISSION_HISTORY,
-        payload: { submissionHistory: response?.data },
+        payload: { submissionHistory: data },
       })
-
       onSuccess()
-    } catch (error) {
+    } else {
       onError(error)
-    } finally {
-      dispatch({
-        type: SET_IS_LOADING_SUBMISSION_HISTORY,
-        payload: { isLoadingSubmissionHistory: false },
-      })
     }
+
+    dispatch({
+      type: SET_IS_LOADING_SUBMISSION_HISTORY,
+      payload: { isLoadingSubmissionHistory: false },
+    })
   }
 
 export const uploadFraReport =
@@ -82,25 +77,24 @@ export const uploadFraReport =
       formData.append(key, value)
     }
 
-    try {
-      const response = await axiosInstance.post(
-        `${process.env.REACT_APP_BACKEND_URL}/data_files/`,
-        formData,
-        {
-          headers: { 'Content-Type': 'multipart/form-data' },
-          withCredentials: true,
-        }
-      )
+    const { data, ok, error } = await post(
+      `${process.env.REACT_APP_BACKEND_URL}/data_files/`,
+      formData
+    )
 
-      onSuccess(response?.data)
-    } catch (error) {
-      onError(error)
-    } finally {
-      dispatch({
-        type: SET_IS_UPLOADING_FRA_REPORT,
-        payload: { isUploadingFraReport: false },
+    if (ok) {
+      onSuccess(data)
+    } else {
+      onError({
+        message: error?.message || 'Error',
+        response: { data },
       })
     }
+
+    dispatch({
+      type: SET_IS_UPLOADING_FRA_REPORT,
+      payload: { isUploadingFraReport: false },
+    })
   }
 
 export const downloadOriginalSubmission =
@@ -109,12 +103,13 @@ export const downloadOriginalSubmission =
     try {
       if (!id) throw new Error('No id provided to download action')
 
-      const response = await axios.get(
+      const { data, ok, error } = await get(
         `${BACKEND_URL}/data_files/${id}/download/`,
         { responseType: 'blob' }
       )
 
-      const data = response.data
+      if (!ok) throw error
+
       const url = window.URL.createObjectURL(new Blob([data]))
       const link = document.createElement('a')
 
@@ -137,12 +132,11 @@ export const downloadOriginalSubmission =
   }
 
 export const getFraSubmissionStatus = async (datafile_id) => {
-  try {
-    const response = await axios.get(
-      `${BACKEND_URL}/data_files/${datafile_id}/`
-    )
-    return response
-  } catch (axiosError) {
-    throw axiosError
+  const { data, ok, error } = await get(
+    `${BACKEND_URL}/data_files/${datafile_id}/`
+  )
+  if (!ok) {
+    throw error
   }
+  return { data, ok: true }
 }

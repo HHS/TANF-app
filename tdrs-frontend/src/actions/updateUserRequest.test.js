@@ -1,4 +1,4 @@
-import axios from 'axios'
+import { patch } from '../fetch-instance'
 import configureStore from 'redux-mock-store'
 import { thunk } from 'redux-thunk'
 import { SET_AUTH } from './auth'
@@ -9,6 +9,8 @@ import {
   SET_REQUEST_USER_UPDATE_ERROR,
   updateUserRequest,
 } from './updateUserRequest'
+
+jest.mock('../fetch-instance')
 
 const middlewares = [thunk]
 const mockStore = configureStore(middlewares)
@@ -32,7 +34,12 @@ describe('updateUserRequest', () => {
       has_fra_access: true,
       pending_requests: 1,
     }
-    axios.patch.mockResolvedValue({ data: apiUserResponse })
+    patch.mockResolvedValue({
+      data: apiUserResponse,
+      ok: true,
+      status: 200,
+      error: null,
+    })
 
     await store.dispatch(updateUserRequest(mockInput))
 
@@ -61,7 +68,12 @@ describe('updateUserRequest', () => {
       has_fra_access: false,
       pending_requests: 0,
     }
-    axios.patch.mockResolvedValue({ data: apiUserResponse })
+    patch.mockResolvedValue({
+      data: apiUserResponse,
+      ok: true,
+      status: 200,
+      error: null,
+    })
 
     await store.dispatch(updateUserRequest(mockInput))
 
@@ -83,7 +95,12 @@ describe('updateUserRequest', () => {
       hasFRAAccess: false,
     }
 
-    axios.patch.mockRejectedValue(new Error('threw and error'))
+    patch.mockResolvedValue({
+      data: null,
+      ok: false,
+      status: 500,
+      error: new Error('threw an error'),
+    })
 
     await store.dispatch(updateUserRequest(mockInput))
 
@@ -92,7 +109,7 @@ describe('updateUserRequest', () => {
     expect(actions[1].type).toBe(SET_REQUEST_USER_UPDATE_ERROR)
   })
 
-  it('dispatches an error to the store if the API errors', async () => {
+  it('clears the state if the API returns no data', async () => {
     const store = mockStore()
 
     const mockInput = {
@@ -102,7 +119,12 @@ describe('updateUserRequest', () => {
       hasFRAAccess: false,
     }
 
-    axios.patch.mockResolvedValue({})
+    patch.mockResolvedValue({
+      data: null,
+      ok: true,
+      status: 200,
+      error: null,
+    })
 
     await store.dispatch(updateUserRequest(mockInput))
 

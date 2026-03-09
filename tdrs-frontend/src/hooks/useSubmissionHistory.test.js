@@ -5,6 +5,9 @@ import { Provider } from 'react-redux'
 import { thunk } from 'redux-thunk'
 
 import { useSubmissionHistory } from './useSubmissionHistory'
+import { get } from '../fetch-instance'
+
+jest.mock('../fetch-instance')
 
 const mockContext = {
   isPolling: {},
@@ -36,6 +39,7 @@ describe('useSubmissionHistory', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockContext.isPolling = {}
+    get.mockResolvedValue({ data: [], ok: true, status: 200, error: null })
   })
 
   it('restarts polling for pending files when history loads', async () => {
@@ -48,7 +52,12 @@ describe('useSubmissionHistory', () => {
       },
     })
 
-    renderWithStore(store, { quarter: 'Q1' })
+    renderWithStore(store, {
+      quarter: 'Q1',
+      stt: { id: 1 },
+      year: '2021',
+      file_type: 'test',
+    })
 
     await waitFor(() => {
       expect(mockContext.startPolling).toHaveBeenCalledWith(
@@ -72,7 +81,12 @@ describe('useSubmissionHistory', () => {
       },
     })
 
-    renderWithStore(store, { quarter: 'Q1' })
+    renderWithStore(store, {
+      quarter: 'Q1',
+      stt: { id: 1 },
+      year: '2021',
+      file_type: 'test',
+    })
 
     await waitFor(() => {
       expect(mockContext.startPolling).not.toHaveBeenCalled()
@@ -88,7 +102,12 @@ describe('useSubmissionHistory', () => {
       },
     })
 
-    const renderResult = renderWithStore(store, { quarter: 'Q1' })
+    const renderResult = renderWithStore(store, {
+      quarter: 'Q1',
+      stt: { id: 1 },
+      year: '2021',
+      file_type: 'test',
+    })
 
     await waitFor(() => {
       expect(mockContext.startPolling).toHaveBeenCalledTimes(1)

@@ -39,6 +39,9 @@ export const useFileUploadForm = ({
     fileTypeInputValue,
     localAlert,
     setLocalAlertState,
+    processingAlert,
+    setProcessingAlertState,
+    processingAlertRef,
     uploadedFiles,
     setErrorModalVisible,
     setModalTriggerSource,
@@ -72,10 +75,10 @@ export const useFileUploadForm = ({
                 datafile: response?.data,
               },
             })
-            setLocalAlertState({
+            setProcessingAlertState({
               active: true,
               type: 'success',
-              message: 'Parsing complete.',
+              message: 'Processing complete.',
             })
           },
           (error) => {
@@ -114,6 +117,15 @@ export const useFileUploadForm = ({
   // Handle form submission
   const onSubmit = async (event) => {
     event.preventDefault()
+
+    if (uploadedFiles.length === 0) {
+      setLocalAlertState({
+        active: true,
+        type: 'error',
+        message: 'No changes have been made to data files',
+      })
+      return
+    }
 
     try {
       // Transform files if needed (e.g., for Program Audit)
@@ -163,12 +175,24 @@ export const useFileUploadForm = ({
     fileInput.init()
   }, [])
 
-  // Scroll to alert when it becomes active
+  // Scroll to and focus alert when it becomes active
   useEffect(() => {
     if (localAlert.active && alertRef && alertRef.current) {
       alertRef.current.scrollIntoView({ behavior: 'smooth' })
+      alertRef.current.focus({ preventScroll: true })
     }
   }, [localAlert, alertRef])
+
+  // Scroll to processing alert when it becomes active (uses aria-live="polite" for sequential reading)
+  useEffect(() => {
+    if (
+      processingAlert.active &&
+      processingAlertRef &&
+      processingAlertRef.current
+    ) {
+      processingAlertRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [processingAlert, processingAlertRef])
 
   return {
     // Form state
@@ -176,9 +200,11 @@ export const useFileUploadForm = ({
     quarterInputValue,
     fileTypeInputValue,
     localAlert,
+    processingAlert,
     uploadedFiles,
     isSubmitting,
     alertRef,
+    processingAlertRef,
     formattedSections,
 
     // Form handlers
@@ -187,5 +213,6 @@ export const useFileUploadForm = ({
 
     // Context setters (for FileUpload components)
     setLocalAlertState,
+    setProcessingAlertState,
   }
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import axiosInstance from '../../axios-instance'
+import { get } from '../../fetch-instance'
 import { downloadBlob } from '../../utils/fileDownload'
 
 /**
@@ -41,26 +41,22 @@ function STTFeedbackReportsTable({ data, setAlert }) {
     setDownloadingId(report.id)
     setAlert({ active: false, type: null, message: null })
 
-    try {
-      const response = await axiosInstance.get(
-        `${process.env.REACT_APP_BACKEND_URL}/reports/${report.id}/download/`,
-        {
-          responseType: 'blob',
-          withCredentials: true,
-        }
-      )
+    const { data, ok, error } = await get(
+      `${process.env.REACT_APP_BACKEND_URL}/reports/${report.id}/download/`,
+      { responseType: 'blob' }
+    )
 
-      downloadBlob(response.data, report.original_filename || 'report.zip')
-    } catch (error) {
+    if (ok) {
+      downloadBlob(data, report.original_filename || 'report.zip')
+    } else {
       console.error('Failed to download report:', error)
       setAlert({
         active: true,
         type: 'error',
         message: 'Failed to download the report. Please try again.',
       })
-    } finally {
-      setDownloadingId(null)
     }
+    setDownloadingId(null)
   }
 
   return (

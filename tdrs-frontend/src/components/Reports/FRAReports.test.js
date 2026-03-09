@@ -1,10 +1,12 @@
 import React from 'react'
 import { fireEvent, waitFor, render, within } from '@testing-library/react'
-import axios from 'axios'
+import { get, post } from '../../fetch-instance'
 import { Provider } from 'react-redux'
 import { MemoryRouter } from 'react-router-dom'
 import { FRAReports } from '.'
 import configureStore from '../../configureStore'
+
+jest.mock('../../fetch-instance')
 
 const initialState = {
   auth: {
@@ -39,6 +41,19 @@ const makeTestFile = (name, contents = ['test'], type = 'text/plain') =>
 describe('FRA Reports Page', () => {
   beforeEach(() => {
     jest.useFakeTimers()
+    get.mockResolvedValue({ data: [], ok: true, status: 200, error: null })
+    post.mockResolvedValue({
+      data: {
+        id: 1,
+        original_filename: 'test.txt',
+        extension: '.txt',
+        section: 'Active Case Data',
+        quarter: 'Q1',
+      },
+      ok: true,
+      status: 200,
+      error: null,
+    })
   })
   afterEach(() => {
     jest.runOnlyPendingTimers()
@@ -159,15 +174,12 @@ describe('FRA Reports Page', () => {
     })
 
     it('Shows upload form once search has been clicked', async () => {
-      jest.mock('axios')
-      const mockAxios = axios
-
       let searchUrl = null
-      mockAxios.get.mockImplementation((url) => {
+      get.mockImplementation((url) => {
         if (url.includes('/data_files/')) {
           searchUrl = url
         }
-        return Promise.resolve({ data: [] })
+        return Promise.resolve({ data: [], ok: true, status: 200, error: null })
       })
 
       const state = {
@@ -233,9 +245,6 @@ describe('FRA Reports Page', () => {
 
   describe('Upload form', () => {
     const setup = async () => {
-      jest.mock('axios')
-      const mockAxios = axios
-
       window.HTMLElement.prototype.scrollIntoView = () => {}
       const state = {
         ...initialState,
@@ -259,8 +268,11 @@ describe('FRA Reports Page', () => {
       const origDispatch = store.dispatch
       store.dispatch = jest.fn(origDispatch)
 
-      mockAxios.post.mockResolvedValue({
+      post.mockResolvedValue({
         data: { id: 1 },
+        ok: true,
+        status: 200,
+        error: null,
       })
 
       const component = render(
@@ -294,11 +306,12 @@ describe('FRA Reports Page', () => {
         expect(getByText('Submit Report')).toBeInTheDocument()
       })
 
-      return { ...component, ...store, mockAxios }
+      return { ...component, ...store }
     }
 
     it('Allows csv files to be selected and submitted', async () => {
-      const { getByText, queryByText, dispatch, container } = await setup()
+      const { getByText, getAllByText, queryByText, dispatch, container } =
+        await setup()
 
       const uploadForm = container.querySelector('#fra-file-upload')
       fireEvent.change(uploadForm, {
@@ -317,10 +330,10 @@ describe('FRA Reports Page', () => {
 
       await waitFor(() =>
         expect(
-          getByText(
+          getAllByText(
             `Successfully submitted section: Work Outcomes of TANF Exiters on ${new Date().toDateString()}`
-          )
-        ).toBeInTheDocument()
+          ).length
+        ).toBeGreaterThanOrEqual(1)
       )
       expect(
         queryByText(
@@ -331,7 +344,8 @@ describe('FRA Reports Page', () => {
     })
 
     it('Allows xlsx files to be selected and submitted', async () => {
-      const { getByText, queryByText, dispatch, container } = await setup()
+      const { getByText, getAllByText, queryByText, dispatch, container } =
+        await setup()
 
       const uploadForm = container.querySelector('#fra-file-upload')
       fireEvent.change(uploadForm, {
@@ -354,10 +368,10 @@ describe('FRA Reports Page', () => {
 
       await waitFor(() =>
         expect(
-          getByText(
+          getAllByText(
             `Successfully submitted section: Work Outcomes of TANF Exiters on ${new Date().toDateString()}`
-          )
-        ).toBeInTheDocument()
+          ).length
+        ).toBeGreaterThanOrEqual(1)
       )
       expect(
         queryByText(
@@ -369,9 +383,16 @@ describe('FRA Reports Page', () => {
 
     it('Shows a spinner until submission history updates', async () => {
       // jest.spyOn(global, 'setTimeout')
-      const { getByText, dispatch, mockAxios, container } = await setup()
+      const {
+        getByText,
+        getAllByText,
+        queryAllByTestId,
+        queryAllByText,
+        dispatch,
+        container,
+      } = await setup()
 
-      mockAxios.post.mockResolvedValue({
+      post.mockResolvedValue({
         data: {
           id: 1,
           original_filename: 'testFile.txt',
@@ -387,10 +408,13 @@ describe('FRA Reports Page', () => {
           summary: null,
           latest_reparse_file_meta: '',
         },
+        ok: true,
+        status: 200,
+        error: null,
       })
 
       const statusChecks = { 1: 0, 2: 0 }
-      mockAxios.get.mockImplementation((url) => {
+      get.mockImplementation((url) => {
         const match = url.match(/\/data_files\/(\d+)\//)
 
         if (match && match[1]) {
@@ -403,6 +427,9 @@ describe('FRA Reports Page', () => {
               id,
               summary: { status },
             },
+            ok: true,
+            status: 200,
+            error: null,
           })
         }
 
@@ -440,6 +467,9 @@ describe('FRA Reports Page', () => {
               latest_reparse_file_meta: '',
             },
           ],
+          ok: true,
+          status: 200,
+          error: null,
         })
       })
 
@@ -464,10 +494,10 @@ describe('FRA Reports Page', () => {
 
       await waitFor(() =>
         expect(
-          getByText(
+          getAllByText(
             `Successfully submitted section: Work Outcomes of TANF Exiters on ${new Date().toDateString()}`
-          )
-        ).toBeInTheDocument()
+          ).length
+        ).toBeGreaterThanOrEqual(1)
       )
       await waitFor(() => expect(dispatch).toHaveBeenCalled())
 
@@ -485,28 +515,30 @@ describe('FRA Reports Page', () => {
       expect(rowSpinners).toHaveLength(2)
       expect(rowPending).toHaveLength(2)
 
-      jest.runOnlyPendingTimers()
+      // Advance timers repeatedly to allow all polling cycles to complete
+      // (statusChecks > 3 per row to transition from Pending to Approved)
+      for (let i = 0; i < 10; i++) {
+        jest.runOnlyPendingTimers()
+        await waitFor(() => {})
+      }
 
-      expect(mockAxios.get).toHaveBeenCalled()
+      expect(get).toHaveBeenCalled()
 
       await waitFor(() => {
-        expect(getByText('Approved')).toBeInTheDocument()
+        expect(getAllByText('Approved').length).toBeGreaterThanOrEqual(1)
+        expect(queryAllByTestId('spinner')).toHaveLength(0)
+        expect(queryAllByText('Pending')).toHaveLength(0)
       })
-
-      await waitFor(() => expect(getByText('Approved')).toBeInTheDocument())
     })
 
     it('Shows an error if file submission failed', async () => {
-      jest.mock('axios')
-      const mockAxios = axios
-      const { getByText, dispatch, container } = await setup()
+      const { getByText, getAllByText, dispatch, container } = await setup()
 
-      mockAxios.post.mockRejectedValue({
-        message: 'Error',
-        response: {
-          status: 400,
-          data: { detail: 'Mock fail response' },
-        },
+      post.mockResolvedValue({
+        data: { detail: 'Mock fail response' },
+        ok: false,
+        status: 400,
+        error: new Error('HTTP 400'),
       })
 
       const uploadForm = container.querySelector('#fra-file-upload')
@@ -525,16 +557,24 @@ describe('FRA Reports Page', () => {
       fireEvent.click(submitButton)
 
       await waitFor(() =>
-        expect(getByText('Error: Mock fail response')).toBeInTheDocument()
+        expect(
+          getAllByText('HTTP 400: Mock fail response').length
+        ).toBeGreaterThanOrEqual(1)
       )
       await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(4))
     })
 
     it('Shows an error if a no file is selected for submission', async () => {
-      const { getByText } = await setup()
+      const { getByText, getAllByText } = await setup()
 
       const submitButton = getByText('Submit Report', { selector: 'button' })
-      expect(submitButton).not.toBeEnabled()
+      fireEvent.click(submitButton)
+
+      await waitFor(() =>
+        expect(
+          getAllByText('No changes have been made to data files').length
+        ).toBeGreaterThan(0)
+      )
     })
 
     it('Shows an error if a non-allowed file type is selected', async () => {
@@ -633,7 +673,7 @@ describe('FRA Reports Page', () => {
     it('Does not show a message if input is changed after uploading a file', async () => {
       const {
         getByText,
-        getByRole,
+        getAllByText,
         container,
         getByLabelText,
         queryByText,
@@ -655,7 +695,13 @@ describe('FRA Reports Page', () => {
       fireEvent.click(getByText(/Submit Report/, { selector: 'button' }))
       await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(4))
 
-      await waitFor(() => getByRole('alert'))
+      await waitFor(() =>
+        expect(
+          getAllByText(
+            `Successfully submitted section: Work Outcomes of TANF Exiters on ${new Date().toDateString()}`
+          ).length
+        ).toBeGreaterThanOrEqual(1)
+      )
 
       const yearsDropdown = getByLabelText('Fiscal Year (October - September)*')
       fireEvent.change(yearsDropdown, { target: { value: '2024' } })
@@ -785,9 +831,6 @@ describe('FRA Reports Page', () => {
 
   describe('Submission History', () => {
     const setup = async (submissionHistoryApiResponse = []) => {
-      jest.mock('axios')
-      const mockAxios = axios
-
       window.HTMLElement.prototype.scrollIntoView = () => {}
       const state = {
         ...initialState,
@@ -826,8 +869,11 @@ describe('FRA Reports Page', () => {
 
       const { getByLabelText, getByText } = component
 
-      mockAxios.get.mockResolvedValue({
+      get.mockResolvedValue({
         data: submissionHistoryApiResponse,
+        ok: true,
+        status: 200,
+        error: null,
       })
 
       // fill out the form values before clicking search

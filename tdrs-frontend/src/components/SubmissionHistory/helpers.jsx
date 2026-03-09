@@ -1,5 +1,5 @@
 import React from 'react'
-import axios from 'axios'
+import { get } from '../../fetch-instance'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faCheckCircle,
@@ -14,14 +14,12 @@ export const formatDate = (dateStr) => new Date(dateStr).toLocaleString()
 export const downloadFile = (dispatch, file) => dispatch(download(file))
 export const downloadErrorReport = async (file, reportName) => {
   try {
-    const promise = axios.get(
+    const { data, ok, error } = await get(
       `${process.env.REACT_APP_BACKEND_URL}/data_files/${file.id}/download_error_report/`,
-      {
-        responseType: 'blob',
-      }
+      { responseType: 'blob' }
     )
-    const dataPromise = await promise.then((response) => response.data)
-    getParseErrors(dataPromise, reportName)
+    if (!ok) throw error
+    getParseErrors(data, reportName)
   } catch (error) {
     console.log(error)
   }

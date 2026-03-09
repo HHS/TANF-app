@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import axiosInstance from '../../axios-instance'
+import { post, patch } from '../../fetch-instance'
 import classNames from 'classnames'
 import FeedbackRadioSelectGroup from './FeedbackRadioSelectGroup'
 import { useSelector } from 'react-redux'
@@ -50,22 +50,12 @@ const FeedbackForm = ({
   }
 
   const postFeedback = useCallback(async (payload) => {
-    return axiosInstance.post(`${BACKEND_URL}/feedback/`, payload, {
-      headers: { 'Content-Type': 'application/json' },
-      withCredentials: true,
-    })
+    return post(`${BACKEND_URL}/feedback/`, payload)
   }, [])
 
   const updateFeedback = useCallback(
     async (payload) => {
-      return axiosInstance.patch(
-        `${BACKEND_URL}/feedback/${feedbackID}/`,
-        payload,
-        {
-          headers: { 'Content-Type': 'application/json' },
-          withCredentials: true,
-        }
-      )
+      return patch(`${BACKEND_URL}/feedback/${feedbackID}/`, payload)
     },
     [feedbackID]
   )
@@ -118,19 +108,17 @@ const FeedbackForm = ({
 
   const submitFeedback = useCallback(
     async (payload) => {
-      try {
-        const response = feedbackID
-          ? await updateFeedback(payload)
-          : await postFeedback(payload)
+      const response = feedbackID
+        ? await updateFeedback(payload)
+        : await postFeedback(payload)
 
-        if (response.status === 200 || response.status === 201) {
-          setFeedbackID(response.data.id)
-        }
-        return response
-      } catch (error) {
-        console.error('Error submitting feedback:', error)
+      if (response.ok) {
+        setFeedbackID(response.data.id)
+      } else {
+        console.error('Error submitting feedback:', response.error)
         onRequestError?.()
       }
+      return response
     },
     [
       feedbackID,
@@ -151,28 +139,15 @@ const FeedbackForm = ({
       return
     }
 
-    try {
-      const payload = constructPayload()
-      const response = await submitFeedback(payload)
+    const payload = constructPayload()
+    const response = await submitFeedback(payload)
 
-      if (response.status === 200 || response.status === 201) {
-        onFeedbackSubmit()
-        onRequestSuccess?.()
-        resetStatesOnceSubmitted()
-      } else {
-        console.error('Unexpected response: ', response)
-        onRequestError?.()
-      }
-    } catch (error) {
-      const status = error?.response?.status
-      if (status === 400) {
-        console.error('Error submitting feedback: ', error.response)
-      } else {
-        console.error(
-          'An unexpected error occurred. Please try again later.',
-          error
-        )
-      }
+    if (response.ok) {
+      onFeedbackSubmit()
+      onRequestSuccess?.()
+      resetStatesOnceSubmitted()
+    } else {
+      console.error('Unexpected response: ', response)
       onRequestError?.()
     }
   }, [

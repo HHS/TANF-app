@@ -11,8 +11,9 @@ from django.urls import include, path, re_path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework.permissions import AllowAny
+from rest_framework.routers import DefaultRouter
 
-from .core.views import write_logs
+from .core.views import FeatureFlagViewset, write_logs
 from .users.api.authorization_check import AuthorizationCheck, PlgAuthorizationCheck
 from .users.api.login import (
     CypressLoginDotGovAuthenticationOverride,
@@ -27,6 +28,8 @@ from .users.views import (
     KeycloakLoginDotGovView,
     KeycloakLogoutView,
 )
+
+router = DefaultRouter()
 
 admin.autodiscover()
 admin.site.login = login_required(admin.site.login)
@@ -50,6 +53,10 @@ urlpatterns = [
     path("logs/", write_logs),
     path("security/", include("tdpservice.security.urls")),
 ]
+
+router.register("feature-flags", FeatureFlagViewset, basename="feature-flag")
+
+urlpatterns += router.urls
 
 if settings.DEBUG:
     urlpatterns.append(
