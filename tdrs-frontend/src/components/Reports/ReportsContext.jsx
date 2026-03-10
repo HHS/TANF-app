@@ -142,13 +142,10 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   const canSelectStt = useSelector(accountCanSelectStt)
   const sttList = useSelector((state) => state?.stts?.sttList)
   const featureFlags = useSelector(selectFeatureFlags)
-  console.log('feature flags all', featureFlags)
   const piaFeatureFlag = getFlagOrDefault(
     'program-integrity-audit',
     featureFlags
   )
-
-  console.log('pia feature flag', piaFeatureFlag)
 
   // Search params
   const [searchParams, setSearchParams] = useSearchParams()
