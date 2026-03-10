@@ -751,14 +751,13 @@ describe('STTFeedbackReports', () => {
 
     it('initializes STT from URL stt query param', () => {
       render(
-        <MemoryRouter initialEntries={['/feedback-reports?year=2025&stt=10']}>
+        <MemoryRouter initialEntries={['/feedback-reports?year=2025&stt=Wisconsin']}>
           <Provider store={regionalStore}>
             <STTFeedbackReports />
           </Provider>
         </MemoryRouter>
       )
 
-      // The STT combobox should show Wisconsin (id=10)
       const sttSelect = screen.getByLabelText(/State, Tribe, or Territory/i)
       expect(sttSelect.value).toBe('Wisconsin')
     })

@@ -108,7 +108,7 @@ const FeedbackReportAlert = ({ stt = null }) => {
         <p className="usa-alert__text">
           Feedback Reports Available as of {formattedDate}. Please{' '}
           <a
-            href={`/feedback-reports?year=${yearInputValue}${stt ? `&stt=${stt.id}` : ''}`}
+            href={`/feedback-reports?year=${yearInputValue}${stt ? `&stt=${stt.name}` : ''}`}
           >
             review the feedback
           </a>{' '}

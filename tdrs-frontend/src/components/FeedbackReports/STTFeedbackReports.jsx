@@ -30,9 +30,7 @@ function STTFeedbackReports() {
     if (!isRegionalStaff) return null
     const urlStt = searchParams.get('stt')
     if (!urlStt) return null
-    const sttId = parseInt(urlStt, 10)
-    if (isNaN(sttId)) return null
-    const sttObj = filteredStts.find((s) => s.id === sttId)
+    const sttObj = filteredStts.find((s) => s.name === urlStt)
     return sttObj || null
   }
 
@@ -72,7 +70,7 @@ function STTFeedbackReports() {
       newParams.set('year', selectedYear)
     }
     if (isRegionalStaff && selectedStt) {
-      newParams.set('stt', selectedStt.id)
+      newParams.set('stt', selectedStt.name)
     }
     if (newParams.toString()) {
       setSearchParams(newParams, { replace: true })

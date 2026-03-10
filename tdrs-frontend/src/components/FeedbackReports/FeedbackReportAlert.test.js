@@ -602,7 +602,7 @@ describe('FeedbackReportAlert', () => {
         const link = screen.getByRole('link', { name: /review the feedback/i })
         expect(link).toHaveAttribute(
           'href',
-          '/feedback-reports?year=2025&stt=10'
+          '/feedback-reports?year=2025&stt=Wisconsin'
         )
       })
     })
