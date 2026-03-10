@@ -751,7 +751,9 @@ describe('STTFeedbackReports', () => {
 
     it('initializes STT from URL stt query param', () => {
       render(
-        <MemoryRouter initialEntries={['/feedback-reports?year=2025&stt=Wisconsin']}>
+        <MemoryRouter
+          initialEntries={['/feedback-reports?year=2025&stt=Wisconsin']}
+        >
           <Provider store={regionalStore}>
             <STTFeedbackReports />
           </Provider>
