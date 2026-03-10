@@ -200,17 +200,32 @@ describe('PermissionGuard.js', () => {
 
   describe('feature flags', () => {
     it.each([
-      ['Data Analyst', [{ name: 'feat', enabled: false }], null, true], // not required, not set
-      ['Data Analyst', [{ name: 'feat', enabled: true }], null, true], // not required, set
-      ['Data Analyst', [{ name: 'feat', enabled: false }], ['feat'], false], // required, not set
-      ['Data Analyst', [{ name: 'feat', enabled: true }], ['feat'], true], // required, set
-      ['OFA System Admin', [{ name: 'feat', enabled: false }], ['feat'], true], // admin bypass
+      ['Data Analyst', [{ feature_name: 'feat', enabled: false }], null, true], // not required, not set
+      ['Data Analyst', [{ feature_name: 'feat', enabled: true }], null, true], // not required, set
+      [
+        'Data Analyst',
+        [{ feature_name: 'feat', enabled: false }],
+        ['feat'],
+        false,
+      ], // required, not set
+      [
+        'Data Analyst',
+        [{ feature_name: 'feat', enabled: true }],
+        ['feat'],
+        true,
+      ], // required, set
+      [
+        'OFA System Admin',
+        [{ feature_name: 'feat', enabled: false }],
+        ['feat'],
+        true,
+      ], // admin bypass
       [
         'Data Analyst',
         [
-          { name: 'feat1', enabled: true },
-          { name: 'feat2', enabled: false },
-          { name: 'feat3', enabled: false },
+          { feature_name: 'feat1', enabled: true },
+          { feature_name: 'feat2', enabled: false },
+          { feature_name: 'feat3', enabled: false },
         ],
         ['feat1'],
         true,
@@ -218,9 +233,9 @@ describe('PermissionGuard.js', () => {
       [
         'Data Analyst',
         [
-          { name: 'feat1', enabled: true },
-          { name: 'feat2', enabled: false },
-          { name: 'feat3', enabled: false },
+          { feature_name: 'feat1', enabled: true },
+          { feature_name: 'feat2', enabled: false },
+          { feature_name: 'feat3', enabled: false },
         ],
         ['feat1', 'feat2'],
         false,
@@ -228,9 +243,9 @@ describe('PermissionGuard.js', () => {
       [
         'Data Analyst',
         [
-          { name: 'feat1', enabled: true },
-          { name: 'feat2', enabled: true },
-          { name: 'feat3', enabled: false },
+          { feature_name: 'feat1', enabled: true },
+          { feature_name: 'feat2', enabled: true },
+          { feature_name: 'feat3', enabled: false },
         ],
         ['feat1', 'feat2'],
         true,
@@ -238,8 +253,8 @@ describe('PermissionGuard.js', () => {
       [
         'Data Analyst',
         [
-          { name: 'feat1', enabled: true },
-          { name: 'feat3', enabled: false },
+          { feature_name: 'feat1', enabled: true },
+          { feature_name: 'feat3', enabled: false },
         ],
         ['feat1', 'feat2'],
         false,
