@@ -1531,7 +1531,22 @@ describe('Reports', () => {
   })
 
   it('should show Fiscal Year only when selecting program audit', async () => {
-    const store = appConfigureStore(initialState)
+    const store = appConfigureStore({
+      initialState,
+      featureFlags: {
+        loading: false,
+        error: null,
+        lastFetched: '2025-03-01 10:00am',
+        flags: [
+          {
+            feature_name: 'program-integrity-audit',
+            enabled: true,
+            config: {},
+            description: 'pia',
+          },
+        ],
+      },
+    })
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
@@ -1556,7 +1571,22 @@ describe('Reports', () => {
   })
 
   it('should render 4 file inputs for each quarter', async () => {
-    const store = mockStore(initialState)
+    const store = mockStore({
+      ...initialState,
+      featureFlags: {
+        loading: false,
+        error: null,
+        lastFetched: '2025-03-01 10:00am',
+        flags: [
+          {
+            feature_name: 'program-integrity-audit',
+            enabled: true,
+            config: {},
+            description: 'pia',
+          },
+        ],
+      },
+    })
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
@@ -1752,6 +1782,19 @@ describe('Reports', () => {
       reports: {
         ...initialState.reports,
         stt: 'California',
+      },
+      featureFlags: {
+        loading: false,
+        error: null,
+        lastFetched: '2025-03-01 10:00am',
+        flags: [
+          {
+            feature_name: 'program-integrity-audit',
+            enabled: true,
+            config: {},
+            description: 'pia',
+          },
+        ],
       },
     })
 
