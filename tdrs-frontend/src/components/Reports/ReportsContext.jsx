@@ -356,9 +356,17 @@ export const ReportsProvider = ({ isFra = false, children }) => {
 
       // Reset year if it's invalid for the new file type
       // Program Integrity Audit starts at 2024, TANF/SSP/FRA start at 2021
+      const currentFiscalYear = getCurrentFiscalYear()
       const minYear = value === 'program-integrity-audit' ? 2024 : 2021
+      const maxYear =
+        value === 'program-integrity-audit' ? 2024 : currentFiscalYear
       if (yearInputValue && parseInt(yearInputValue) < minYear) {
         setYearInputValue('')
+      } else if (
+        value === 'program-integrity-audit' &&
+        parseInt(yearInputValue) > maxYear
+      ) {
+        setYearInputValue(`${maxYear}`)
       }
     }
   }
