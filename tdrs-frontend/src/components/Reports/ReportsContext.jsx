@@ -65,7 +65,7 @@ const validateUrlParams = (
   searchParams,
   isFra,
   sttList,
-  piaEnabled = false
+  piaFeatureFlag = null
 ) => {
   const fiscalYear = searchParams.get('fy')
   const quarter = searchParams.get('q')
@@ -85,8 +85,14 @@ const validateUrlParams = (
   // For program-integrity-audit, only 2024 is allowed
   const year = parseInt(fiscalYear, 10)
   const currentFiscalYear = getCurrentFiscalYear()
-  const minYear = type === 'program-integrity-audit' ? 2024 : 2021
-  const maxYear = type === 'program-integrity-audit' ? 2024 : currentFiscalYear
+  const minYear =
+    type === 'program-integrity-audit'
+      ? piaFeatureFlag?.config?.minYear || 2024
+      : 2021
+  const maxYear =
+    type === 'program-integrity-audit'
+      ? piaFeatureFlag?.config?.maxYear || 2024
+      : currentFiscalYear
   if (!isNaN(year) && year >= minYear && year <= maxYear) {
     validatedFy = fiscalYear
   } else {
@@ -101,7 +107,7 @@ const validateUrlParams = (
   }
 
   // Validate file type
-  const validTypes = getValidFileTypes(isFra, piaEnabled)
+  const validTypes = getValidFileTypes(isFra, piaFeatureFlag?.enabled || false)
   if (validTypes.includes(type)) {
     validatedType = type
   } else {
@@ -154,7 +160,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   // Get validated params (without STT validation since it will never be loaded since we have to wait for fetchSTTs to
   // run.
   const validatedParams = useMemo(
-    () => validateUrlParams(searchParams, isFra, [], piaFeatureFlag.enabled),
+    () => validateUrlParams(searchParams, isFra, [], piaFeatureFlag),
     [searchParams, isFra]
   )
 
@@ -348,13 +354,19 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     [dispatch, fileTypeInputValue, submittedFiles]
   )
 
-  const resetPiaYear = (value) => {
+  const resetPiaYear = (type) => {
     // Reset year if it's invalid for the new file type
     // Program Integrity Audit starts at 2024, TANF/SSP/FRA start at 2021
     const currentFiscalYear = getCurrentFiscalYear()
-    const minYear = value === 'program-integrity-audit' ? 2024 : 2021
+    const minYear =
+      type === 'program-integrity-audit'
+        ? piaFeatureFlag?.config?.minYear || 2024
+        : 2021
     const maxYear =
-      value === 'program-integrity-audit' ? 2024 : currentFiscalYear
+      type === 'program-integrity-audit'
+        ? piaFeatureFlag?.config?.maxYear || 2024
+        : currentFiscalYear
+
     if (yearInputValue && parseInt(yearInputValue) < minYear) {
       setYearInputValue('')
     } else if (

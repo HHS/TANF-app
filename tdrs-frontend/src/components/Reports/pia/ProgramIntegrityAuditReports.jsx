@@ -15,13 +15,17 @@ const ProgramIntegrityAuditReports = ({ stt, isRegionalStaff }) => {
     setReprocessedModalVisible,
     setReprocessedDate,
     headerRef,
+    piaFeatureFlag,
   } = useReportsContext()
 
   return (
     <>
       <div className="grid-row grid-gap">
         <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-auto">
-          <FiscalYearSelect startYear={2024} endYear={2024} />
+          <FiscalYearSelect
+            startYear={piaFeatureFlag?.config?.minYear || 2024}
+            endYear={piaFeatureFlag?.config?.maxYear || 2024}
+          />
         </div>
         <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
           <ProgramIntegrityAuditExplainer />
