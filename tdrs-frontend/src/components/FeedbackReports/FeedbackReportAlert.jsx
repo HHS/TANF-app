@@ -27,7 +27,7 @@ const saveDismissedState = (year, reportCreatedAt) => {
  * Fetches the latest report internally using the `latest=true` query param.
  * Can be dismissed by the user, with state persisted in localStorage per fiscal year.
  */
-const FeedbackReportAlert = () => {
+const FeedbackReportAlert = ({ stt = null }) => {
   const { yearInputValue, quarterInputValue } = useReportsContext()
   const [latestReportDate, setLatestReportDate] = useState(null)
   const [isDismissed, setIsDismissed] = useState(false)
@@ -40,15 +40,18 @@ const FeedbackReportAlert = () => {
         return
       }
 
+      const params = {
+        year: yearInputValue,
+        quarter: quarterInputValue,
+        latest: 'true',
+      }
+      if (stt) {
+        params.stt = stt.id
+      }
+
       const { data, ok, error } = await get(
         `${process.env.REACT_APP_BACKEND_URL}/reports/`,
-        {
-          params: {
-            year: yearInputValue,
-            quarter: quarterInputValue,
-            latest: 'true',
-          },
-        }
+        { params }
       )
 
       if (ok && data?.results?.length > 0) {
@@ -74,7 +77,7 @@ const FeedbackReportAlert = () => {
     }
 
     fetchLatestFeedbackReport()
-  }, [yearInputValue, quarterInputValue])
+  }, [yearInputValue, quarterInputValue, stt])
 
   const handleDismiss = useCallback(() => {
     if (yearInputValue && latestReportDate) {
@@ -104,7 +107,9 @@ const FeedbackReportAlert = () => {
       >
         <p className="usa-alert__text">
           Feedback Reports Available as of {formattedDate}. Please{' '}
-          <a href={`/feedback-reports?year=${yearInputValue}`}>
+          <a
+            href={`/feedback-reports?year=${yearInputValue}${stt ? `&stt=${stt.id}` : ''}`}
+          >
             review the feedback
           </a>{' '}
           and if needed, resubmit complete and accurate data.
