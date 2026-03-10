@@ -270,7 +270,7 @@ function STTFeedbackReports() {
               <p>
                 For more detail about each report, refer to the{' '}
                 <a
-                  href={`${process.env.REACT_APP_KNOWLEDGE_CENTER_LINK}/`}
+                  href={`${process.env.REACT_APP_KNOWLEDGE_CENTER_LINK}/feedback-reports.html`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
