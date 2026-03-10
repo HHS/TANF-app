@@ -19,6 +19,10 @@ import { useSearchParams } from 'react-router-dom'
 import { accountCanSelectStt } from '../../selectors/auth'
 import { usePollingTimer } from '../../hooks/usePollingTimer'
 import { getCurrentFiscalYear, quarters } from './utils'
+import {
+  getFlagOrDefault,
+  selectFeatureFlags,
+} from '../../selectors/featureFlags'
 
 const ReportsContext = createContext()
 
@@ -30,21 +34,21 @@ export const useReportsContext = () => {
   return context
 }
 
-// Valid file types for each report mode
-const VALID_FILE_TYPES = {
-  reports: [
-    'tanf',
-    'ssp-moe',
-    ...(process.env.REACT_APP_SHOW_PIA === 'true'
-      ? ['program-integrity-audit']
-      : []),
-  ],
-  fra: [
-    'workOutcomesOfTanfExiters',
-    // TODO: uncomment when we collect this data
-    // 'secondarySchoolAttainment',
-    // 'supplementalWorkOutcomes',
-  ],
+const getValidFileTypes = (isFra, piaEnabled = false) => {
+  if (isFra) {
+    return [
+      'workOutcomesOfTanfExiters',
+      // TODO: uncomment when we collect this data
+      // 'secondarySchoolAttainment',
+      // 'supplementalWorkOutcomes',
+    ]
+  }
+
+  if (piaEnabled) {
+    return ['tanf', 'ssp-moe', 'program-integrity-audit']
+  }
+
+  return ['tanf', 'ssp-moe']
 }
 
 // Valid quarters
@@ -57,7 +61,12 @@ const VALID_QUARTERS = Object.keys(quarters) // ['Q1', 'Q2', 'Q3', 'Q4']
  * @param {boolean} isFra - Whether this is for FRA reports
  * @param {Array} sttList - List of valid STTs
  */
-const validateUrlParams = (searchParams, isFra, sttList) => {
+const validateUrlParams = (
+  searchParams,
+  isFra,
+  sttList,
+  piaEnabled = false
+) => {
   const fiscalYear = searchParams.get('fy')
   const quarter = searchParams.get('q')
   const type = searchParams.get('type')
@@ -92,7 +101,7 @@ const validateUrlParams = (searchParams, isFra, sttList) => {
   }
 
   // Validate file type
-  const validTypes = isFra ? VALID_FILE_TYPES.fra : VALID_FILE_TYPES.reports
+  const validTypes = getValidFileTypes(isFra, piaEnabled)
   if (validTypes.includes(type)) {
     validatedType = type
   } else {
@@ -132,6 +141,14 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   const dispatch = useDispatch()
   const canSelectStt = useSelector(accountCanSelectStt)
   const sttList = useSelector((state) => state?.stts?.sttList)
+  const featureFlags = useSelector(selectFeatureFlags)
+  console.log('feature flags all', featureFlags)
+  const piaFeatureFlag = getFlagOrDefault(
+    'program-integrity-audit',
+    featureFlags
+  )
+
+  console.log('pia feature flag', piaFeatureFlag)
 
   // Search params
   const [searchParams, setSearchParams] = useSearchParams()
@@ -140,7 +157,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   // Get validated params (without STT validation since it will never be loaded since we have to wait for fetchSTTs to
   // run.
   const validatedParams = useMemo(
-    () => validateUrlParams(searchParams, isFra, []),
+    () => validateUrlParams(searchParams, isFra, [], piaFeatureFlag.enabled),
     [searchParams, isFra]
   )
 
@@ -601,6 +618,9 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     startPolling,
     isPolling,
     stopAllTimers,
+
+    // Program audit
+    piaFeatureFlag,
   }
 
   return (
