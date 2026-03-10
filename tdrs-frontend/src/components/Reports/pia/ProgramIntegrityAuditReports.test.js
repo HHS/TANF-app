@@ -1,5 +1,5 @@
 import React from 'react'
-import { render } from '@testing-library/react'
+import { render, fireEvent, waitFor } from '@testing-library/react'
 import ProgramIntegrityAuditReports from './ProgramIntegrityAuditReports'
 
 // Mock children so we can assert conditional rendering without pulling in context wiring
@@ -68,5 +68,35 @@ describe('ProgramIntegrityAuditReports', () => {
     expect(getByText(/Submission History/i)).toBeInTheDocument()
     expect(getByTestId('quarter-submission-history')).toBeInTheDocument()
     expect(queryByTestId('quarter-upload-form')).not.toBeInTheDocument()
+  })
+
+  it('shows the default date range when feature flag is not set', async () => {
+    mockUseReportsContext.mockReturnValue(baseContext)
+
+    const { getByLabelText, getAllByRole } = render(
+      <ProgramIntegrityAuditReports stt={stt} isRegionalStaff />
+    )
+
+    const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+
+    // default selected is 2024
+    expect(yearSelect.value).toBe('2024')
+    expect(getAllByRole('option').length).toBe(1)
+  })
+
+  it('shows the configured date range when feature flag is set', async () => {
+    mockUseReportsContext.mockReturnValue({
+      ...baseContext,
+      piaFeatureFlag: {
+        enabled: true,
+        config: { minYear: 2023, maxYear: 2025 },
+      },
+    })
+
+    const { getByLabelText, getAllByRole } = render(
+      <ProgramIntegrityAuditReports stt={stt} isRegionalStaff />
+    )
+
+    expect(getAllByRole('option').length).toBe(3)
   })
 })
