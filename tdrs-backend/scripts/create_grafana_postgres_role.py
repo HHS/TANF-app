@@ -34,9 +34,9 @@ def run(*args):  # noqa: C901
         ./manage.py runscript create_grafana_postgres_role --script-args <role> [switches|tables...]
 
     Switches:
-        all              - Grant SELECT on ALL tables in the public schema
-        user_views       - Include all user-facing views (ssp_m1..m7, tanf_t1..t7, tribal_tanf_t1..t7)
-        admin_views      - Include all admin views (admin_ssp_m1..m7, admin_tanf_t1..t7, admin_tribal_tanf_t1..t7)
+        all          - Grant SELECT on ALL tables in the public schema (CANNOT be combined with any switches or tables)
+        user_views   - Include all user-facing views (ssp_m1..m7, tanf_t1..t7, tribal_tanf_t1..t7)
+        admin_views  - Include all admin views (admin_ssp_m1..m7, admin_tanf_t1..t7, admin_tribal_tanf_t1..t7)
 
     Any other arguments are treated as explicit table/view names.
     Switches and explicit tables can be combined.
@@ -53,6 +53,10 @@ def run(*args):  # noqa: C901
         return
 
     db_name = settings.DATABASES["default"]["NAME"]
+
+    if "all" in remaining and len(remaining) > 1:
+        print('The "all" switch must not be used with any other switch or tables.')
+        return
 
     if remaining == ("all",):
         select_stmt = admin_select_statement.format(role=role)
