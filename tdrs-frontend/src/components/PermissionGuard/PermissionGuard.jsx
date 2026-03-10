@@ -35,7 +35,7 @@ const isAllowed = (
 
   for (var f = 0; f < requiredFeatureFlags.length; f++) {
     const featureFlag = featureFlags.find(
-      (flag) => flag.name === requiredFeatureFlags[f]
+      (flag) => flag.feature_name === requiredFeatureFlags[f]
     )
     if (!featureFlag || featureFlag.enabled !== true) {
       return false
