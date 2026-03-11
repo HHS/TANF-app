@@ -163,3 +163,43 @@ Cypress.Commands.add(
     return pollForProcessing()
   }
 )
+
+Cypress.Commands.add(
+  'waitForReportSourceProcessing',
+  (sourceId, maxAttempts = 60, interval = 2000) => {
+    const isProcessed = (response) => {
+      return (
+        response &&
+        response.body &&
+        response.body.status !== 'PENDING' &&
+        response.body.status !== 'PROCESSING'
+      )
+    }
+
+    const pollForProcessing = (attempt = 0) => {
+      if (attempt >= maxAttempts) {
+        cy.log(
+          `Warning: Report source ${sourceId} processing timeout after ${maxAttempts} attempts`
+        )
+        return cy.wrap({ id: sourceId })
+      }
+
+      return cy
+        .request({
+          method: 'GET',
+          url: `${Cypress.env('apiUrl')}/reports/report-sources/${sourceId}/`,
+          failOnStatusCode: false,
+        })
+        .then((response) => {
+          if (isProcessed(response)) {
+            return response
+          }
+
+          cy.wait(interval)
+          return pollForProcessing(attempt + 1)
+        })
+    }
+
+    return pollForProcessing()
+  }
+)
