@@ -3,8 +3,8 @@
 echo "Starting celery"
 
 if [[ $1 == "cloud" ]]; then
-    # Get the computed URI from VCAP_SERVICES
-    REDIS_URI=$(echo $VCAP_SERVICES | jq -r '."aws-elasticache-redis"[0].credentials.uri')
+    # Get the computed broker URL from Django settings (includes TLS scheme and correct DB number)
+    REDIS_URI=$(python manage.py shell -c "from django.conf import settings; print(settings.CELERY_BROKER_URL)" 2>/dev/null)
 
     echo "Starting Alloy"
     mkdir /home/vcap/app/alloy-data
