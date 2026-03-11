@@ -39,16 +39,45 @@
             sudo apt-get update
             sudo apt-get install -y libgbm-dev
             source /opt/circleci/.nvm/nvm.sh
-            nvm install v16.13
-            nvm alias default v16.13
+            nvm install v22.13.0
+            nvm alias default v22.13.0
             echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
             echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
+            echo "nvm use v22.13.0" >> $BASH_ENV
+            nvm use v22.13.0
+            if command -v corepack >/dev/null 2>&1; then
+              corepack enable
+              corepack prepare yarn@4.6.0 --activate
+            else
+              npm install -g yarn@4.6.0
+            fi
+            node -v
+            yarn -v
 
-  disable-npm-audit:
+  install-yarn-packages:
+    description: Install frontend dependencies using Yarn.
+    parameters:
+      app-dir:
+        type: string
+        default: tdrs-frontend
     steps:
       - run:
-          name: Disable npm audit warnings in CI
-          command: npm set audit false
-
-  # This allows us to use the node orb to install packages within other commands
-  install-nodejs-packages: node/install-packages
+          name: Install Yarn packages
+          command: |
+            cd <<parameters.app-dir>>
+            if [ -z "$NVM_DIR" ]; then
+              export NVM_DIR="/opt/circleci/.nvm"
+            fi
+            if [ -s "$NVM_DIR/nvm.sh" ]; then
+              . "$NVM_DIR/nvm.sh"
+              nvm use v22.13.0
+            fi
+            if command -v corepack >/dev/null 2>&1; then
+              corepack enable
+              corepack prepare yarn@4.6.0 --activate
+            elif ! command -v yarn >/dev/null 2>&1; then
+              npm install -g yarn@4.6.0
+            fi
+            node -v
+            yarn -v
+            yarn install --immutable
