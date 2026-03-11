@@ -34,7 +34,7 @@ def change_log_filename(logger, datafile):
     handlers = getattr(logger, "handlers", [])
     new_filename = (
         f"/tmp/{datafile.year}_{datafile.quarter}_"
-        f"{datafile.stt}_{datafile.program_type}_{datafile.section}.log"
+        f"{datafile.stt}_{datafile.program_type}_{datafile.section}_{datafile.id}.log"
     )
     for handler in handlers:
         if isinstance(handler, S3FileHandler):
