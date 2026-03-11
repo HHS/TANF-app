@@ -2,10 +2,12 @@
 
 
 def create_s3_log_file_path(datafile):
-    """Create backwards compatible parsing log file path."""
-    # Import inside function to avoid circular import during logging config.
-    # log_handler.py is loaded before Django apps are ready, so top-level
-    # model imports cause AppRegistryNotReady errors.
+    """Create a unique S3 log file path per parse using the DataFile ID."""
+    return f"{datafile.year}/{datafile.quarter}/{datafile.stt}/{datafile.program_type}/{datafile.section}/{datafile.id}"
+
+
+def create_legacy_s3_log_file_path(datafile):
+    """Create the old-format S3 log path for backwards compatibility with pre-existing logs."""
     from tdpservice.data_files.models import DataFile
 
     key = f"{datafile.year}/{datafile.quarter}/{datafile.stt}/"

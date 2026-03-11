@@ -19,6 +19,8 @@ import createFileInputErrorState from '../../utils/createFileInputErrorState'
 import Modal from '../Modal'
 import {
   formatDate,
+  hasReparsed,
+  getReprocessedDate,
   SubmissionSummaryStatusIcon,
   getErrorReportStatus,
   fileStatusOrDefault,
@@ -41,6 +43,9 @@ import { accountCanSelectStt } from '../../selectors/auth'
 import { POLLING_TIMEOUT_MESSAGE } from './constants'
 import FiscalYearSelect from './components/FiscalYearSelect'
 import FiscalQuarterSelect from './components/FisclaQuarterSelect'
+import ReprocessedModal, {
+  ReprocessedButton,
+} from '../SubmissionHistory/ReprocessedModal'
 
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
@@ -378,14 +383,24 @@ const SubmissionHistoryRow = ({
   isLoadingStatus,
   handleDownload,
   isRegionalStaff,
+  reprocessedState,
 }) => {
   const hasStatus = file.summary && file.summary.status
   const status = hasStatus ? file.summary.status : 'Pending'
   const errors = file.summary?.case_aggregates?.total_errors
+  const reprocessedDate = formatDate(getReprocessedDate(file))
 
   return (
     <tr>
-      <td>{formatDate(file.createdAt) + ' by ' + file.submittedBy}</td>
+      <td>
+        {formatDate(file.createdAt) + ' by ' + file.submittedBy}
+        {hasReparsed(file) && (
+          <ReprocessedButton
+            date={reprocessedDate}
+            reprocessedState={reprocessedState}
+          />
+        )}
+      </td>
       <td>
         {isRegionalStaff ? (
           file.fileName
@@ -427,6 +442,7 @@ const SubmissionHistory = ({
   sectionName,
   handleDownload,
   isRegionalStaff,
+  reprocessedState,
 }) => {
   const { isPolling } = useReportsContext()
 
@@ -458,6 +474,7 @@ const SubmissionHistory = ({
                 handleDownload={handleDownload}
                 isRegionalStaff={isRegionalStaff}
                 isLoadingStatus={isLoadingStatus(file.id)}
+                reprocessedState={reprocessedState}
               />
             ))}
           </tbody>
@@ -541,6 +558,10 @@ const FRAReportsContent = () => {
     setErrorModalVisible,
     modalTriggerSource,
     setModalTriggerSource,
+    reprocessedModalVisible,
+    setReprocessedModalVisible,
+    reprocessedDate,
+    setReprocessedDate,
     localAlert,
     setLocalAlertState,
     processingAlert,
@@ -989,6 +1010,10 @@ const FRAReportsContent = () => {
                 sectionName={getReportTypeLabel()}
                 handleDownload={handleDownload}
                 isRegionalStaff={isRegionalStaff}
+                reprocessedState={{
+                  setModalVisible: setReprocessedModalVisible,
+                  setDate: setReprocessedDate,
+                }}
               />
             </PaginatedComponent>
           </div>
@@ -1020,6 +1045,12 @@ const FRAReportsContent = () => {
             },
           },
         ]}
+      />
+
+      <ReprocessedModal
+        date={reprocessedDate}
+        isVisible={reprocessedModalVisible}
+        setModalVisible={setReprocessedModalVisible}
       />
     </div>
   )
