@@ -1,4 +1,4 @@
-import axios from 'axios'
+import { get } from '../fetch-instance'
 import { logErrorToServer } from '../utils/eventLogger'
 
 export const FETCH_STTS = 'FETCH_STTS'
@@ -32,26 +32,25 @@ export const CLEAR_STTS = 'CLEAR_STTS'
  */
 export const fetchSttList = () => async (dispatch) => {
   dispatch({ type: FETCH_STTS })
-  try {
-    const URL = `${process.env.REACT_APP_BACKEND_URL}/stts/alpha`
-    const { data } = await axios.get(URL, {
-      withCredentials: true,
-    })
+  const URL = `${process.env.REACT_APP_BACKEND_URL}/stts/alpha`
+  const { data, ok, error } = await get(URL)
 
-    if (data) {
-      // shouldn't this logic be done by the backend serializer?
-      data.forEach((item, i) => {
-        if (item.name === 'Federal Government') {
-          data.splice(i, 1)
-          data.unshift(item)
-        }
-      })
-      dispatch({ type: SET_STTS, payload: { data } })
-    } else {
-      dispatch({ type: CLEAR_STTS })
-    }
-  } catch (error) {
+  if (!ok) {
     logErrorToServer(SET_STTS_ERROR)
     dispatch({ type: SET_STTS_ERROR, payload: { error } })
+    return
+  }
+
+  if (data) {
+    // shouldn't this logic be done by the backend serializer?
+    data.forEach((item, i) => {
+      if (item.name === 'Federal Government') {
+        data.splice(i, 1)
+        data.unshift(item)
+      }
+    })
+    dispatch({ type: SET_STTS, payload: { data } })
+  } else {
+    dispatch({ type: CLEAR_STTS })
   }
 }

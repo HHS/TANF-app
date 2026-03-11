@@ -222,8 +222,19 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   const [reprocessedModalVisible, setReprocessedModalVisible] = useState(false)
   const [reprocessedDate, setReprocessedDate] = useState('')
 
-  // Alert state
-  const [localAlert, setLocalAlertState] = useState({
+  // Alert state — the `timestamp` field ensures React always sees a new object
+  // even when the same message is set consecutively, so the useEffect that
+  // focuses the alert re-fires and the screen reader announces it again.
+  const [localAlert, setLocalAlert] = useState({
+    active: false,
+    type: null,
+    message: null,
+  })
+  const setLocalAlertState = (alert) =>
+    setLocalAlert({ ...alert, timestamp: Date.now() })
+
+  // Processing alert state (separate from localAlert for accessibility)
+  const [processingAlert, setProcessingAlertState] = useState({
     active: false,
     type: null,
     message: null,
@@ -232,6 +243,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   // Refs
   const headerRef = useRef(null)
   const alertRef = useRef(null)
+  const processingAlertRef = useRef(null)
 
   // Redux selectors
   const files = useSelector((state) => state.reports.submittedFiles)
@@ -337,6 +349,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     } else {
       setFileTypeInputValue(value)
       setLocalAlertState({ active: false, type: null, message: null })
+      setProcessingAlertState({ active: false, type: null, message: null })
       dispatch(clearFileList({ fileType: value }))
       dispatch(reinitializeSubmittedFiles(value))
       setFraSelectedFile(null)
@@ -361,6 +374,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     } else {
       setYearInputValue(value)
       setLocalAlertState({ active: false, type: null, message: null })
+      setProcessingAlertState({ active: false, type: null, message: null })
       dispatch(clearFileList({ fileType: fileTypeInputValue }))
       setFraSelectedFile(null)
     }
@@ -377,6 +391,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     } else {
       setQuarterInputValue(value)
       setLocalAlertState({ active: false, type: null, message: null })
+      setProcessingAlertState({ active: false, type: null, message: null })
       dispatch(clearFileList({ fileType: fileTypeInputValue }))
       setFraSelectedFile(null)
     }
@@ -394,6 +409,11 @@ export const ReportsProvider = ({ isFra = false, children }) => {
       setSttInputValue(value)
       dispatch(setStt(value))
       setLocalAlertState({
+        active: false,
+        type: null,
+        message: null,
+      })
+      setProcessingAlertState({
         active: false,
         type: null,
         message: null,
@@ -529,6 +549,9 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     setReprocessedDate,
     localAlert,
     setLocalAlertState,
+    processingAlert,
+    setProcessingAlertState,
+    processingAlertRef,
     selectedSubmissionTab,
     setSelectedSubmissionTab,
     headerRef,

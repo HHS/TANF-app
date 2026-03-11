@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router-dom'
-import axiosInstance from '../../axios-instance'
+import { get } from '../../fetch-instance'
 import { Spinner } from '../Spinner'
 import { PaginatedComponent } from '../Paginator/Paginator'
 import STTFeedbackReportsTable from './STTFeedbackReportsTable'
@@ -61,25 +61,22 @@ function STTFeedbackReports() {
     setLoading(true)
     setAlert({ active: false, type: null, message: null })
 
-    try {
-      const response = await axiosInstance.get(
-        `${process.env.REACT_APP_BACKEND_URL}/reports/`,
-        {
-          params: { year: selectedYear },
-          withCredentials: true,
-        }
-      )
-      setReports(response.data.results || response.data || [])
-    } catch (error) {
+    const { data, ok, error } = await get(
+      `${process.env.REACT_APP_BACKEND_URL}/reports/`,
+      { params: { year: selectedYear } }
+    )
+
+    if (ok) {
+      setReports(data?.results || data || [])
+    } else {
       console.error('Failed to fetch feedback reports:', error)
       setAlert({
         active: true,
         type: 'error',
         message: 'Failed to load feedback reports. Please refresh the page.',
       })
-    } finally {
-      setLoading(false)
     }
+    setLoading(false)
   }, [selectedYear])
 
   useEffect(() => {

@@ -193,6 +193,8 @@ class Common(Configuration):
             "PORT": os.getenv("DB_PORT"),
         }
     }
+    # Allow DB connections to persist for 10 min
+    CONN_MAX_AGE = 600
 
     # General
     APPEND_SLASH = True
@@ -520,8 +522,8 @@ class Common(Configuration):
     REDIS_URI = os.getenv("REDIS_URI", "redis://redis-server:6379")
     logger.debug("REDIS_URI: " + REDIS_URI)
 
-    CELERY_BROKER_URL = REDIS_URI
-    CELERY_RESULT_BACKEND = REDIS_URI
+    CELERY_BROKER_URL = REDIS_URI + "/0"
+    CELERY_RESULT_BACKEND = REDIS_URI + "/0"
     CELERY_ACCEPT_CONTENT = ["application/json"]
     CELERY_TASK_SERIALIZER = "json"
     CELERY_RESULT_SERIALIZER = "json"
@@ -621,6 +623,21 @@ class Common(Configuration):
                 "reporting_period": "Jul - Sep",
                 "fiscal_quarter": "Q4",
             },
+        },
+    }
+
+    DEFAULT_CACHE_TIMEOUT = 300
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        },
+        "stts": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": f"{REDIS_URI}/1",
+        },
+        "feature-flags": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": f"{REDIS_URI}/2",
         },
     }
 
