@@ -30,28 +30,29 @@ This section outlines the process by which frontend dependencies were upgraded, 
 
 
 ```bash
-npx npm-check-updates -u
-npm install
+yarn global add npm-check-updates
+ncu -u
+yarn install
 ```
 
 This will bump every package version to the latest available. However, since certain dependencies require specific versions of other packages, this step is not complete until dependency conflicts are resolved. You may receive errors such as this when compiling the application:
 
 ```bash
-npm ERR! code ERESOLVE
-npm ERR! ERESOLVE unable to resolve dependency tree
-npm ERR!
-npm ERR! While resolving: my-website@0.1.0
-npm ERR! Found: react@16.14.0
-npm ERR! node_modules/react
-npm ERR!   react@"^16.8.0" from the root project
-npm ERR!   peer react@"^16.8.0" from @material-ui/core@4.11.0
-npm ERR!   node_modules/@material-ui/core
-npm ERR!     @material-ui/core@"^4.11.0" from the root project
-npm ERR!
-npm ERR! Could not resolve dependency:
-npm ERR! peer react@"17.0.1" from react-dom@17.0.1
-npm ERR! node_modules/react-dom
-npm ERR!   react-dom@"^17.0.1" from the root project
+error code ERESOLVE
+error ERESOLVE unable to resolve dependency tree
+error
+error While resolving: my-website@0.1.0
+error Found: react@16.14.0
+error node_modules/react
+error   react@"^16.8.0" from the root project
+error   peer react@"^16.8.0" from @material-ui/core@4.11.0
+error   node_modules/@material-ui/core
+error     @material-ui/core@"^4.11.0" from the root project
+error
+error Could not resolve dependency:
+error peer react@"17.0.1" from react-dom@17.0.1
+error node_modules/react-dom
+error   react-dom@"^17.0.1" from the root project
 ```
 
 Downgrade/pin any dependency versions that are in conflict, then recompile.
@@ -205,10 +206,10 @@ We will replace `file-type` with the browser-compatible `file-type-checker` ([fi
 1. Remove the `file-type` line from `package.json`'s `dependencies` section.
 2. Run
     ```bash
-    npm i file-type-checker --save
+    yarn add file-type-checker
     ```
 
-* It may be required to delete the `node_modules` folder, then run `npm i` again (if you have cache issues)
+* It may be required to delete the `node_modules` folder, then run `yarn install` again (if you have cache issues)
 * Implementation for this library was slightly different than `file-type`. Consult documentation
 
 ### 10. Fix tests
@@ -241,7 +242,7 @@ ReactDOMTestUtils.act is deprecated in favor of React.act. Import act from react
 The following issues (mostly deprecations) were identified and not resolved. Follow-up tickets should be created for this work.
 
 1. Security vulnerabilities
-    * Running `npm audit` results in the following
+    * Running `yarn audit` results in the following
         ```bash
         37 vulnerabilities (19 moderate, 17 high, 1 critical)
         ```

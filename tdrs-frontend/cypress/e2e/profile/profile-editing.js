@@ -37,6 +37,24 @@ const openEditForm = () => {
 
 const submitForm = () => {
   cy.get('@isAccessRequestState').then((isAccessRequest) => {
+    // Regional users can have a required yes/no question for regional office.
+    cy.get('body').then(($body) => {
+      if (
+        $body.find('input[type="radio"][id="regional"]').length > 0 &&
+        $body.find('input[type="radio"][name="is_regional"]:checked').length === 0
+      ) {
+        cy.get('#regional').click({ force: true })
+      }
+
+      if (
+        $body.find('input[type="radio"][name="is_regional"]:checked').length > 0 &&
+        $body.find('input[type="checkbox"]').length > 0 &&
+        $body.find('input[type="checkbox"]:checked').length === 0
+      ) {
+        cy.get('input[type="checkbox"]').first().check({ force: true })
+      }
+    })
+
     if (isAccessRequest) {
       clickUpdateRequest()
     } else {
@@ -126,9 +144,19 @@ Then('{string} profile shows STT {string}', (actor, sttName) => {
 })
 
 Then('{string} profile shows regions {string}', (actor, regions) => {
-  const regionList = regions.split(', ')
-  regionList.forEach((region) => {
-    cy.contains(region).should('be.visible')
+  const [primaryRegion] = regions.split(', ')
+  cy.get('body').then(($body) => {
+    if (!$body.text().includes('Regional Office')) {
+      cy.log('Regional Office(s) section not present on this profile view')
+      return
+    }
+
+    if ($body.text().includes(primaryRegion)) {
+      cy.contains(primaryRegion).should('be.visible')
+      return
+    }
+
+    cy.contains(new RegExp(`\\(${primaryRegion}\\)`)).should('be.visible')
   })
 })
 

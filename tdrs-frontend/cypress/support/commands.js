@@ -107,14 +107,28 @@ Cypress.Commands.add(
       },
     }
 
-    return cy
-      .getCookie('csrftoken')
-      .its('value')
-      .then((csrfToken) => {
-        options.headers['X-CSRFToken'] = csrfToken
+    const getCsrfToken = () =>
+      cy.getCookie('csrftoken').then((cookie) => {
+        if (cookie && cookie.value) return cookie.value
 
-        return cy.request(options)
+        // Seed CSRF cookie if it isn't present yet in this session.
+        return cy
+          .request({
+            method: 'GET',
+            url: `${Cypress.env('adminUrl')}/login/`,
+            failOnStatusCode: false,
+          })
+          .then(() => cy.getCookie('csrftoken'))
+          .then((seededCookie) => seededCookie?.value || null)
       })
+
+    return getCsrfToken().then((csrfToken) => {
+      if (csrfToken) {
+        options.headers['X-CSRFToken'] = csrfToken
+      }
+
+      return cy.request(options)
+    })
   }
 )
 
