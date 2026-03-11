@@ -21,8 +21,8 @@ echo "  Management port:  ${KEYCLOAK_MANAGEMENT_PORT}"
 sed "s/LISTEN_PORT/${NGINX_PORT}/" /opt/keycloak/nginx.conf.template > /tmp/nginx.conf
 
 # Start Keycloak in background
-echo "Starting Keycloak: kc.sh $* --http-port=${KEYCLOAK_INTERNAL_PORT}"
-/opt/keycloak/bin/kc.sh "$@" --http-port=${KEYCLOAK_INTERNAL_PORT} &
+echo "Starting Keycloak: kc.sh $* --http-port=${KEYCLOAK_INTERNAL_PORT} --cache=local"
+/opt/keycloak/bin/kc.sh "$@" --http-port=${KEYCLOAK_INTERNAL_PORT} --cache=local &
 KC_PID=$!
 
 # Wait for Keycloak to be ready before starting nginx
