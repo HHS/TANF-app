@@ -29,4 +29,6 @@ export const patch = jest.fn(() =>
   })
 )
 
-export default { get, post, patch }
+const fetchInstanceMock = { get, post, patch }
+
+export default fetchInstanceMock

@@ -30,12 +30,10 @@ Feature: Data file submission
         Then 'FRA Data Analyst Fred' sees the upload in 'TANF' Submission History
         And 'FRA Data Analyst Fred' can download the 'TANF' error report
         # And Regional Randy gets an email (determine exact)
-    Scenario: A FRA data analyst can submit a SSP data file
+    Scenario: A FRA data analyst cannot submit a SSP data file
         Given 'FRA Data Analyst Fred' logs in
-        When 'FRA Data Analyst Fred' submits the SSP Report
-        Then 'FRA Data Analyst Fred' sees the upload in 'SSP' Submission History
-        And 'FRA Data Analyst Fred' can download the 'SSP' error report
-        # And Regional Randy gets an email (determine exact)
+        When FRA Data Analyst Fred attempts to submit the SSP Report
+        Then FRA Data Analyst Fred cannot upload an SSP data file
 
     Scenario Outline: <actor> can submit a <program> Section <section> data file
         Given '<actor>' logs in
