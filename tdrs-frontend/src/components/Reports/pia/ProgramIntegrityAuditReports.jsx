@@ -18,13 +18,26 @@ const ProgramIntegrityAuditReports = ({ stt, isRegionalStaff }) => {
     piaFeatureFlag,
   } = useReportsContext()
 
+  const getDateRange = () => {
+    let minYear = piaFeatureFlag?.config?.minYear || 2024
+    let maxYear = piaFeatureFlag?.config?.maxYear || 2024
+
+    if (minYear > maxYear) {
+      maxYear = minYear
+    }
+
+    return { maxYear, minYear }
+  }
+
+  const dateRange = getDateRange()
+
   return (
     <>
       <div className="grid-row grid-gap">
         <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-auto">
           <FiscalYearSelect
-            startYear={piaFeatureFlag?.config?.minYear || 2024}
-            endYear={piaFeatureFlag?.config?.maxYear || 2024}
+            startYear={dateRange.minYear}
+            endYear={dateRange.maxYear}
           />
         </div>
         <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">

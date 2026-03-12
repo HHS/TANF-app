@@ -78,10 +78,11 @@ describe('ProgramIntegrityAuditReports', () => {
     )
 
     const yearSelect = getByLabelText('Fiscal Year (October - September)*')
-
-    // default selected is 2024
     expect(yearSelect.value).toBe('2024')
-    expect(getAllByRole('option').length).toBe(1)
+
+    const options = getAllByRole('option')
+    expect(options.length).toBe(1)
+    expect(options[0].value).toBe('2024')
   })
 
   it('shows the configured date range when feature flag is set', async () => {
@@ -93,10 +94,32 @@ describe('ProgramIntegrityAuditReports', () => {
       },
     })
 
-    const { getByLabelText, getAllByRole } = render(
+    const { getAllByRole } = render(
       <ProgramIntegrityAuditReports stt={stt} isRegionalStaff />
     )
 
-    expect(getAllByRole('option').length).toBe(3)
+    const options = getAllByRole('option')
+    expect(options.length).toBe(3)
+    expect(options[0].value).toBe('2025')
+    expect(options[1].value).toBe('2024')
+    expect(options[2].value).toBe('2023')
+  })
+
+  it('handles maxYear < minYear by falling back to minYear', async () => {
+    mockUseReportsContext.mockReturnValue({
+      ...baseContext,
+      piaFeatureFlag: {
+        enabled: true,
+        config: { minYear: 2025, maxYear: 2023 },
+      },
+    })
+
+    const { getAllByRole } = render(
+      <ProgramIntegrityAuditReports stt={stt} isRegionalStaff />
+    )
+
+    const options = getAllByRole('option')
+    expect(options.length).toBe(1)
+    expect(options[0].value).toBe('2025')
   })
 })
