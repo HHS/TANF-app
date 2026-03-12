@@ -26,7 +26,7 @@ All tests added into the `tdrs-frontend/cypress/e2e/` folder will be run against
 1. In a new terminal, run the following commands to launch the Cypress runner
    ```bash
    cd tdrs-frontend
-   npm run test:e2e
+   yarn test:e2e
    ```
 1. Select "E2E Testing" from the testing type menu
    ![Select e2e testing](./images/testing/01-e2e-selection.png)

@@ -52,7 +52,7 @@ update_frontend()
 
     cf set-env "$CGHOSTNAME_FRONTEND" BACKEND_HOST "$CGHOSTNAME_BACKEND"
 
-    npm run build:$ENVIRONMENT
+    yarn build:$ENVIRONMENT
     unlink .env.production
     mkdir deployment
 
