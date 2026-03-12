@@ -40,6 +40,7 @@ route:
         - alertname=~"UpTime"
       receiver: dev-team-emails
       repeat_interval: 48h
+      continue: true
     # Send all severity CRITICAL/ERROR alerts to OFA admin emails
     - matchers:
         - severity=~"ERROR|CRITICAL"
@@ -108,6 +109,7 @@ receivers:
       - channel: 'tdp-dev-alerts'
         username: 'alertmanager'
         send_resolved: true
+        api_url: 'https://fake.mattermost.com'
         text: |-
           {{ range .Alerts -}}
           *Alert:* {{ .Labels.alertname }}{{ if .Labels.severity }} - `{{ .Labels.severity }}`{{ end }}

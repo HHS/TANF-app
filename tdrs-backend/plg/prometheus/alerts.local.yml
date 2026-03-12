@@ -13,7 +13,7 @@ groups:
     rules:
     - alert: LocalBackendDown
       expr: last_over_time(up{job=~"tdp-backend-local"}[1m]) == 0
-      for: 10m
+      for: 2m
       labels:
         severity: WARNING
       annotations:
@@ -30,7 +30,7 @@ groups:
           description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 1 minute."
   - name: app.alerts
     rules:
-    - alert: UpTime
+    - alert: LocalUpTime
       expr: avg_over_time(up[1m]) < 0.95
       for: 30m
       labels:
@@ -41,8 +41,8 @@ groups:
   - name: celery.alerts
     rules:
     - alert: LocalCeleryWorkerDown
-      expr: last_over_time(up{job=~"celery-.*|celery-exporter.*"}[1m]) == 0
-      for: 10m
+      expr: last_over_time(up{job="tdp-celery-local"}[1m]) == 0 or last_over_time(celery_active_worker_count{job="tdp-celery-local"}[1m]) < 1
+      for: 2m
       labels:
         severity: WARNING
       annotations:
