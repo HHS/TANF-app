@@ -137,11 +137,12 @@
         type: string
     steps:
       - install-nodejs:
-          node-version: "16.13"
-      - disable-npm-audit
-      - install-nodejs-packages:
+          node-version: "22.13.0"
+      - run:
+          name: Log Node version
+          command: node -v
+      - install-yarn-packages:
           app-dir: tdrs-frontend
-          override-ci-command: npm ci --omit=dev --no-fund
       - get-app-deploy-strategy:
           appname: <<parameters.frontend-appname>>
       - run:

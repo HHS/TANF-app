@@ -78,6 +78,10 @@ python manage.py runscript create_grafana_postgres_role --script-args admin_read
 python manage.py runscript create_grafana_readonly_postgres_users --script-args ofa_read_only $OFA_READ_ONLY_PASSWORD read_only ofa_admin_read_only $OFA_ADMIN_READ_ONLY_PASSWORD admin_read_only
 echo "Done."
 
+echo "Populating history tables"
+python manage.py populate_history --auto
+echo "Done."
+
 
 if [[ $app == "tdp-backend-develop" || $space == "tanf-dev" ]]; then
     echo "Applying e2e test data"
