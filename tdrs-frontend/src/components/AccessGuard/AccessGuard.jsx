@@ -45,7 +45,7 @@ const isAllowed = (
   return true
 }
 
-const PermissionGuard = ({
+const AccessGuard = ({
   children,
   requiresApproval = false,
   requiredPermissions = [],
@@ -67,4 +67,4 @@ const PermissionGuard = ({
     : notAllowedComponent
 }
 
-export default PermissionGuard
+export default AccessGuard
