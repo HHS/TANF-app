@@ -98,6 +98,7 @@ class Common(Configuration):
         "storages",
         "django_prometheus",
         "django_json_widget",
+        "simple_history",
         # Local apps
         "tdpservice.core.apps.CoreConfig",
         "tdpservice.users",
@@ -125,6 +126,7 @@ class Common(Configuration):
         "tdpservice.users.api.middleware.AuthUpdateMiddleware",
         "csp.middleware.CSPMiddleware",
         "tdpservice.middleware.NoCacheMiddleware",
+        "simple_history.middleware.HistoryRequestMiddleware",
         "django_prometheus.middleware.PrometheusAfterMiddleware",
     )
 
