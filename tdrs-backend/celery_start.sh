@@ -3,8 +3,12 @@
 echo "Starting celery"
 
 if [[ $1 == "cloud" ]]; then
-    # Get the computed broker URL from Django settings (includes TLS scheme and correct DB number)
-    REDIS_URI=$(python manage.py shell -c "from django.conf import settings; print(settings.CELERY_BROKER_URL)" 2>/dev/null)
+    # Build the broker URL with TLS scheme and correct DB number (matching cloudgov.py logic)
+    REDIS_BASE=$(echo $VCAP_SERVICES | jq -r '."aws-elasticache-redis"[0].credentials | "rediss://:\(.password)@\(.host):\(.port)"')
+    ENV_NAME=$(echo $VCAP_APPLICATION | jq -r '.application_name | split("-") | last')
+    # Running python method, to not duplicate logic for determining the DB number
+    BROKER_DB=$(python -c "from tdpservice.common.util import get_cloudgov_broker_db_numbers; print(get_cloudgov_broker_db_numbers('${ENV_NAME}')['celery'])")
+    REDIS_URI="${REDIS_BASE}/${BROKER_DB}"
 
     echo "Starting Alloy"
     mkdir /home/vcap/app/alloy-data
