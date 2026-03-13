@@ -303,9 +303,9 @@ tasks:
       - docker compose -f docker-compose.local.yml up -d --build tdp-frontend
       - |
         if command -v corepack >/dev/null 2>&1; then
-          corepack prepare yarn@4.6.0 --activate && CYPRESS_API_URL=http://localhost:8989/v1 CYPRESS_ADMIN_URL=http://localhost:8989/admin env -u ELECTRON_RUN_AS_NODE yarn test:e2e
+          corepack prepare yarn@4.6.0 --activate && env -u ELECTRON_RUN_AS_NODE yarn test:e2e
         else
-          CYPRESS_API_URL=http://localhost:8989/v1 CYPRESS_ADMIN_URL=http://localhost:8989/admin env -u ELECTRON_RUN_AS_NODE npx --yes @yarnpkg/cli-dist@4.6.0 test:e2e
+          env -u ELECTRON_RUN_AS_NODE npx --yes @yarnpkg/cli-dist@4.6.0 test:e2e
         fi
 
   frontend-e2e-ci-local:
@@ -320,9 +320,9 @@ tasks:
       - env -u ELECTRON_RUN_AS_NODE npx cypress verify || env -u ELECTRON_RUN_AS_NODE npx cypress install --force
       - |
         if command -v corepack >/dev/null 2>&1; then
-          corepack prepare yarn@4.6.0 --activate && CYPRESS_API_URL=http://localhost:8989/v1 CYPRESS_ADMIN_URL=http://localhost:8989/admin CYPRESS_TOKEN={{.CYPRESS_TOKEN}} env -u ELECTRON_RUN_AS_NODE yarn test:e2e-ci
+          env -u ELECTRON_RUN_AS_NODE yarn test:e2e-ci
         else
-          CYPRESS_API_URL=http://localhost:8989/v1 CYPRESS_ADMIN_URL=http://localhost:8989/admin CYPRESS_TOKEN={{.CYPRESS_TOKEN}} env -u ELECTRON_RUN_AS_NODE npx --yes @yarnpkg/cli-dist@4.6.0 test:e2e-ci
+          env -u ELECTRON_RUN_AS_NODE npx --yes @yarnpkg/cli-dist@4.6.0 test:e2e-ci
         fi
 
   k6:

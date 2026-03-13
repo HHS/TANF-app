@@ -5,8 +5,6 @@ const fs = require('fs')
 
 module.exports = defineConfig({
   video: true,
-  experimentalMemoryManagement: true,
-  numTestsKeptInMemory: 0,
   reporter: 'mocha-multi-reporters',
   reporterOptions: {
     configFile: 'cypress/reporters/multi-reporters-config.json',
@@ -23,8 +21,8 @@ module.exports = defineConfig({
     baseUrl: 'http://localhost:3000',
     specPattern: ['**/*.feature', 'a11y/**/*.{js,ts}'],
     env: {
-      apiUrl: process.env.CYPRESS_API_URL || 'http://localhost:3000/v1',
-      adminUrl: process.env.CYPRESS_ADMIN_URL || 'http://localhost:3000/admin',
+      apiUrl: 'http://localhost:3000/v1',
+      adminUrl: 'http://localhost:3000/admin',
       cypressToken: 'local-cypress-token',
     },
 
