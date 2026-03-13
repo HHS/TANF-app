@@ -2,9 +2,9 @@
 
 {% block message %}
 {% if is_aggregate %}
-Your <b>{{ file_type }}</b> data files submitted for <b>{{ stt_name }}</b> on <b>{{ submission_date }}</b> in Fiscal Year <b>{{ fiscal_year }}</b> have been processed, but <b>your data contain errors</b>. Review the error report(s) for more details, and <b>resubmit your data files</b> once the errors have been corrected.
+Your <b>{{ file_type }}</b> data file submitted for <b>{{ stt_name }}</b> on <b>{{ submission_date }}</b> in Fiscal Year <b>{{ fiscal_year }}</b> have been processed, but <b>your data contain errors</b>. Review the error report(s) for more details, and <b>resubmit your data file</b> once the errors have been corrected.
 {% else %}
-Your <b>{{ file_type }}</b> data files submitted for <b>{{ stt_name }}</b> on <b>{{ submission_date }}</b> in Fiscal Year <b>{{ fiscal_year }}</b> have been processed, but <b>some cases within your data contain errors</b>. Review the error report(s) for more details, and <b>resubmit your data files</b> once the errors have been corrected.
+Your <b>{{ file_type }}</b> data file submitted for <b>{{ stt_name }}</b> on <b>{{ submission_date }}</b> in Fiscal Year <b>{{ fiscal_year }}</b> have been processed, but <b>some cases within your data contain errors</b>. Review the error report(s) for more details, and <b>resubmit your data file</b> once the errors have been corrected.
 {% endif %}
 {% endblock %}
 
@@ -15,7 +15,7 @@ Your <b>{{ file_type }}</b> data files submitted for <b>{{ stt_name }}</b> on <b
     </caption>
     <thead>
         <tr>
-            <th>Section</th>
+            {% if is_program_audit %}<th>Fiscal Quarter</th>{% else %}<th>Section</th>{% endif %}
             <th>Submitted By</th>
             <th>Status</th>
             {% if is_aggregate %}
@@ -29,7 +29,7 @@ Your <b>{{ file_type }}</b> data files submitted for <b>{{ stt_name }}</b> on <b
     </thead>
     <tbody>
         <tr>
-            <td>{{ section_name }}</td>
+            {% if is_program_audit %}<td>{{ quarter_label }}</td>{% else %}<td>{{ section_name }}</td>{% endif %}
             <td>{{ submitted_by }}</td>
             <td>{{ status }}</td>
             {% if is_aggregate %}
