@@ -100,12 +100,8 @@ def parse(data_file_id, reparse_id=None):
             is_program_audit=data_file.is_program_audit,
         )
         parser.parse_and_validate()
-        update_dfs(dfs, data_file)
 
-        logger.info(
-            f"Parsing finished for file -> {repr(data_file)} with status "
-            f"{dfs.status}."
-        )
+        logger.info(f"Parsing finished for file -> {repr(data_file)}.")
 
         if reparse_id is None:
             qs = User.objects.filter(
