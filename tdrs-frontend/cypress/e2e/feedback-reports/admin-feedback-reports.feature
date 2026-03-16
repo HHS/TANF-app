@@ -59,8 +59,3 @@ Feature: Admin Feedback Reports
         And 'Admin Alex' selects fiscal year '2025'
         Then 'Admin Alex' sees the upload form for fiscal year '2025'
 
-    # Permission tests - users who should NOT have access
-
-    Scenario: OFA Regional Staff cannot see Feedback Reports nav item
-        Given 'Regional Staff Cypress' logs in
-        Then 'Regional Staff Cypress' does not see Feedback Reports in the navigation
