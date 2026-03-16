@@ -103,6 +103,7 @@ export const fillSttFyQNoProgramSelector = (stt, fy, q) => {
 }
 
 export const fillFyQProgram = (fy, q, program) => {
+  cy.wait(500)
   cy.get('body').then(($body) => {
     if (program === 'SSP') {
       const hasSspMoe =
@@ -114,14 +115,17 @@ export const fillFyQProgram = (fy, q, program) => {
       }
     }
 
-    const hasProgramLabel = $body.find(`label:contains("${program}")`).length > 0
+    const hasProgramLabel =
+      $body.find(`label:contains("${program}")`).length > 0
     if (hasProgramLabel) {
       cy.contains('label', program).click({ force: true })
       return
     }
 
     if (program === 'SSP') {
-      const hasPia = $body.find('label:contains("Program Integrity Audit")').length
+      const hasPia = $body.find(
+        'label:contains("Program Integrity Audit")'
+      ).length
       if (hasPia > 0) {
         cy.contains('label', 'Program Integrity Audit').click({ force: true })
         return
