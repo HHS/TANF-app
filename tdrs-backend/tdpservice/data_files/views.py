@@ -16,6 +16,7 @@ from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
+from tdpservice.core.utils import get_feature_flag
 from tdpservice.data_files.error_reports import ErrorReportFactory
 from tdpservice.data_files.models import DataFile
 from tdpservice.data_files.s3_client import S3Client
@@ -73,6 +74,32 @@ class DataFileViewSet(ModelViewSet):
         """Override create to upload in case of successful scan."""
         logger.debug(f"{self.__class__.__name__}: {request}")
 
+        # test the PIA feature flag before creation
+        # reject if it is off or doesn't exist
+        file_type = request.data.get("file_type")
+        is_program_audit = file_type == DataFileViewSet.PIA_FILE_TYPE
+        pia_feature_flag_enabled, pia_feature_flag_config = get_feature_flag(
+            "program-integrity-audit"
+        )
+
+        if is_program_audit and pia_feature_flag_enabled:
+            pia_minYear = pia_feature_flag_config.get("minYear") or 2024
+            pia_maxYear = pia_feature_flag_config.get("maxYear") or 2024
+            year = int(request.data.get("year"))
+
+            if year < pia_minYear or year > pia_maxYear:
+                return Response(
+                    {
+                        "message": "This file was submitted for a reporting year not supported by this file type."
+                    },
+                    status=HTTP_400_BAD_REQUEST,
+                )
+        else:
+            return Response(
+                {"message": "This file type is not supported."},
+                status=HTTP_400_BAD_REQUEST,
+            )
+
         response = super().create(request, *args, **kwargs)
 
         # only if file is passed the virus scan and created successfully will we perform side-effects:
@@ -114,7 +141,14 @@ class DataFileViewSet(ModelViewSet):
                     program_type=DataFile.ProgramType.FRA, section=file_type
                 )
             else:
-                is_program_audit = file_type == DataFileViewSet.PIA_FILE_TYPE
+                pia_feature_flag_enabled, _ = get_feature_flag(
+                    "program-integrity-audit"
+                )
+                is_program_audit = (
+                    file_type == DataFileViewSet.PIA_FILE_TYPE
+                    and pia_feature_flag_enabled
+                )
+
                 queryset = queryset.filter(
                     program_type__in=[
                         DataFile.ProgramType.TANF,

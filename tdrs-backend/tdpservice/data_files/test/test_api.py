@@ -8,6 +8,7 @@ import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
 
+from tdpservice.core.models import FeatureFlag
 from tdpservice.data_files.models import DataFile
 from tdpservice.parsers import util
 from tdpservice.parsers.factory import ParserFactory
@@ -519,6 +520,53 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         response = self.post_data_file(api_client, data_file_data)
         assert response.data["section"] == "Active Case Data"
 
+    @pytest.mark.django_db
+    def test_no_pia_feat_flag_blocks_uploads(self, api_client, data_file_data):
+        """Test a nonexistant pia feature flag creates an error response from upload."""
+        data_file_data["file_type"] = "program-integrity-audit"
+
+        response = self.post_data_file(api_client, data_file_data)
+        assert response.data == {"message": "This file type is not supported."}
+        assert response.status_code == 400
+
+    @pytest.mark.django_db
+    @pytest.mark.parametrize(
+        "minYear,maxYear,dfYear,allowed",
+        [
+            (2023, 2025, 2024, True),
+            (2023, 2025, 2023, True),
+            (2023, 2025, 2025, True),
+            (2023, 2025, 2026, False),
+            (2023, 2025, 2022, False),
+            (None, None, 2024, True),
+            (None, None, 2023, False),
+        ],
+    )
+    def test_enabled_pia_feat_flag_allows_uploads(
+        self, api_client, data_file_data, minYear, maxYear, dfYear, allowed
+    ):
+        """Test an enabled pia feature flag allows file upload if the year is in range."""
+        FeatureFlag.objects.create(
+            feature_name="program-integrity-audit",
+            enabled=True,
+            config={"minYear": minYear, "maxYear": maxYear},
+        )
+        data_file_data["file_type"] = "program-integrity-audit"
+        data_file_data["is_program_audit"] = True
+        data_file_data["year"] = dfYear
+
+        response = self.post_data_file(api_client, data_file_data)
+
+        if allowed:
+            assert response.data["section"] == "Active Case Data"
+            assert response.data["is_program_audit"] == True
+            assert response.status_code == 201
+        else:
+            assert response.data == {
+                "message": "This file was submitted for a reporting year not supported by this file type."
+            }
+            assert response.status_code == 400
+
 
 class TestDataFileAPIAsInactiveUser(DataFileAPITestBase):
     """Test DataFileViewSet as an inactive user."""
@@ -914,3 +962,80 @@ class TestDataFileQuerysetFiltering:
                 f"stt={location.id}&year={year}&quarter={quarter}&file_type=program-integrity-audit",
             )
             self._assert_pia(k, pia_files, pia_file_ids, section_options)
+
+    def test_no_pia_feat_flag_disallows_list(self, api_client, stt, ofa_system_admin):
+        """Test a nonexistent pia feature flag results in an empty list when requested."""
+        file = self.create_file(
+            "TAN",
+            "Active Case Data",
+            2024,
+            "Q1",
+            stt,
+            ofa_system_admin,
+            pia=True,
+        )
+
+        api_client.login(username=ofa_system_admin.username, password="test_password")
+
+        response_file_ids = self._make_get_request(
+            api_client,
+            f"stt={stt.id}&year=2024&quarter=Q1&file_type=program-integrity-audit",
+        )
+
+        assert response_file_ids == []
+
+    def test_disabled_pia_feat_flag_disallows_list(
+        self, api_client, stt, ofa_system_admin
+    ):
+        """Test a disabled pia feature flag results in an empty list when requested."""
+        FeatureFlag.objects.create(
+            feature_name="program-integrity-audit",
+            enabled=False,
+            config={"minYear": 2023, "maxYear": 2025},
+        )
+
+        file = self.create_file(
+            "TAN",
+            "Active Case Data",
+            2024,
+            "Q1",
+            stt,
+            ofa_system_admin,
+            pia=True,
+        )
+
+        api_client.login(username=ofa_system_admin.username, password="test_password")
+
+        response_file_ids = self._make_get_request(
+            api_client,
+            f"stt={stt.id}&year=2024&quarter=Q1&file_type=program-integrity-audit",
+        )
+
+        assert response_file_ids == []
+
+    def test_enabled_pia_feat_flag_allows_list(self, api_client, stt, ofa_system_admin):
+        """Test an enabled pia feature flag results in a populated list when requested."""
+        FeatureFlag.objects.create(
+            feature_name="program-integrity-audit",
+            enabled=True,
+            config={"minYear": 2023, "maxYear": 2025},
+        )
+
+        file = self.create_file(
+            "TAN",
+            "Active Case Data",
+            2024,
+            "Q1",
+            stt,
+            ofa_system_admin,
+            pia=True,
+        )
+
+        api_client.login(username=ofa_system_admin.username, password="test_password")
+
+        response_file_ids = self._make_get_request(
+            api_client,
+            f"stt={stt.id}&year=2024&quarter=Q1&file_type=program-integrity-audit",
+        )
+
+        assert response_file_ids[0] == file.id
