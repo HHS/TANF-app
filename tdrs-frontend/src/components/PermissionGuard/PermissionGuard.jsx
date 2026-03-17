@@ -4,7 +4,10 @@ import {
   selectUserPermissions,
   selectPrimaryUserRole,
 } from '../../selectors/auth'
-import { selectFeatureFlags } from '../../selectors/featureFlags'
+import {
+  getFlagOrDefault,
+  selectFeatureFlags,
+} from '../../selectors/featureFlags'
 
 const isAllowed = (
   { permissions, isApproved, featureFlags, role },
@@ -34,9 +37,7 @@ const isAllowed = (
   if (isSystemAdmin) return true
 
   for (var f = 0; f < requiredFeatureFlags.length; f++) {
-    const featureFlag = featureFlags.find(
-      (flag) => flag.feature_name === requiredFeatureFlags[f]
-    )
+    const featureFlag = getFlagOrDefault(requiredFeatureFlags[f], featureFlags)
     if (!featureFlag || featureFlag.enabled !== true) {
       return false
     }
