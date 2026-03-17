@@ -7,6 +7,7 @@ import os
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.db.models import Case, Count, IntegerField, When
 
 from tdpservice.backends import DataFilesS3Storage
 from tdpservice.data_files.models import DataFile
@@ -42,6 +43,17 @@ class ParserError(models.Model):
         """Meta for ParserError."""
 
         db_table = "parser_error"
+        indexes = [
+            models.Index(fields=["file", "deprecated"], name="pe_file_deprecated_idx"),
+            models.Index(
+                fields=["file", "error_type", "deprecated"],
+                name="pe_file_etype_deprecated_idx",
+            ),
+            models.Index(
+                fields=["file", "deprecated", "rpt_month_year"],
+                name="pe_file_deprecated_rpt_idx",
+            ),
+        ]
 
     id = models.AutoField(primary_key=True)
     file = models.ForeignKey(
@@ -159,26 +171,39 @@ class DataFileSummary(models.Model):
         if self.status != DataFileSummary.Status.PENDING:
             return self.status
 
-        errors = ParserError.objects.filter(file=self.datafile, deprecated=False)
-
-        # excluding row-level pre-checks and trailer pre-checks.
-        precheck_errors = errors.filter(error_type=ParserErrorCategoryChoices.PRE_CHECK)
-
-        record_precheck_errors = errors.filter(
-            error_type=ParserErrorCategoryChoices.RECORD_PRE_CHECK
+        counts = ParserError.objects.filter(
+            file=self.datafile, deprecated=False
+        ).aggregate(
+            total=Count("id"),
+            precheck=Count(
+                Case(
+                    When(error_type=ParserErrorCategoryChoices.PRE_CHECK, then=1),
+                    output_field=IntegerField(),
+                )
+            ),
+            record_precheck=Count(
+                Case(
+                    When(
+                        error_type=ParserErrorCategoryChoices.RECORD_PRE_CHECK, then=1
+                    ),
+                    output_field=IntegerField(),
+                )
+            ),
+            case_consistency=Count(
+                Case(
+                    When(
+                        error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY, then=1
+                    ),
+                    output_field=IntegerField(),
+                )
+            ),
         )
 
-        case_consistency_errors = errors.filter(
-            error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY
-        )
-
-        if errors is None:
-            return DataFileSummary.Status.PENDING
-        elif precheck_errors.count() > 0:
+        if counts["precheck"] > 0:
             return DataFileSummary.Status.REJECTED
-        elif errors.count() == 0:
+        elif counts["total"] == 0:
             return DataFileSummary.Status.ACCEPTED
-        elif case_consistency_errors.count() > 0 or record_precheck_errors.count() > 0:
+        elif counts["case_consistency"] > 0 or counts["record_precheck"] > 0:
             return DataFileSummary.Status.PARTIALLY_ACCEPTED
         else:
             return DataFileSummary.Status.ACCEPTED_WITH_ERRORS
