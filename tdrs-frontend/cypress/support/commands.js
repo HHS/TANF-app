@@ -107,14 +107,28 @@ Cypress.Commands.add(
       },
     }
 
-    return cy
-      .getCookie('csrftoken')
-      .its('value')
-      .then((csrfToken) => {
-        options.headers['X-CSRFToken'] = csrfToken
+    const getCsrfToken = () =>
+      cy.getCookie('csrftoken').then((cookie) => {
+        if (cookie && cookie.value) return cookie.value
 
-        return cy.request(options)
+        // Seed CSRF cookie if it isn't present yet in this session.
+        return cy
+          .request({
+            method: 'GET',
+            url: `${Cypress.env('adminUrl')}/login/`,
+            failOnStatusCode: false,
+          })
+          .then(() => cy.getCookie('csrftoken'))
+          .then((seededCookie) => seededCookie?.value || null)
       })
+
+    return getCsrfToken().then((csrfToken) => {
+      if (csrfToken) {
+        options.headers['X-CSRFToken'] = csrfToken
+      }
+
+      return cy.request(options)
+    })
   }
 )
 
@@ -160,6 +174,46 @@ Cypress.Commands.add(
     }
 
     // Start polling
+    return pollForProcessing()
+  }
+)
+
+Cypress.Commands.add(
+  'waitForReportSourceProcessing',
+  (sourceId, maxAttempts = 60, interval = 2000) => {
+    const isProcessed = (response) => {
+      return (
+        response &&
+        response.body &&
+        response.body.status !== 'PENDING' &&
+        response.body.status !== 'PROCESSING'
+      )
+    }
+
+    const pollForProcessing = (attempt = 0) => {
+      if (attempt >= maxAttempts) {
+        cy.log(
+          `Warning: Report source ${sourceId} processing timeout after ${maxAttempts} attempts`
+        )
+        return cy.wrap({ id: sourceId })
+      }
+
+      return cy
+        .request({
+          method: 'GET',
+          url: `${Cypress.env('apiUrl')}/reports/report-sources/${sourceId}/`,
+          failOnStatusCode: false,
+        })
+        .then((response) => {
+          if (isProcessed(response)) {
+            return response
+          }
+
+          cy.wait(interval)
+          return pollForProcessing(attempt + 1)
+        })
+    }
+
     return pollForProcessing()
   }
 )
