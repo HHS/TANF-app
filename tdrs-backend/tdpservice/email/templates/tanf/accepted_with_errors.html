@@ -2,7 +2,7 @@
 
 {% block message %}
 {% if is_aggregate %}
-Your <b>{{ file_type }}</b> data file submitted for <b>{{ stt_name }}</b> on <b>{{ submission_date }}</b> in Fiscal Year <b>{{ fiscal_year }}</b> have been processed, but <b>your data contain errors</b>. Review the error report(s) for more details, and <b>resubmit your data file</b> once the errors have been corrected.
+Your <b>{{ file_type }}</b> data file submitted for <b>{{ stt_name }}</b> on <b>{{ submission_date }}</b> in Fiscal Year <b>{{ fiscal_year }}</b> has been processed, but <b>your data contains errors</b>. Review the error report for more details, and <b>resubmit your data file</b> once the errors have been corrected.
 {% else %}
 Your <b>{{ file_type }}</b> data file submitted for <b>{{ stt_name }}</b> on <b>{{ submission_date }}</b> in Fiscal Year <b>{{ fiscal_year }}</b> have been processed, but <b>some cases within your data contain errors</b>. Review the error report(s) for more details, and <b>resubmit your data file</b> once the errors have been corrected.
 {% endif %}
