@@ -11,12 +11,19 @@
     * Executors: build environments used for jobs
     * Jobs: a collection of steps run on an executor
     * Orbs: reusable code that can be imported in to circle config - similar to pip packages, etc
-* We currently have 5 workflows:
+* Automated workflows:
     * `build-and-test`: Runs jobs `secrets-check`, `test-frontend` and `test-backend` on every commit
     * `dev-deployment`: Deploys a PR to the dev space. Triggered by a GitHub action whenever one of the relevant deployment labels is assigned via an API call to Circle CI with the pipeline parameter `run_dev_deployment`.
     * `nightly`: Runs every night at UTC midnight and performs an OWASP scan against the staging site for both backend and frontend then stores the results in Django using a Cloud Foundry task.
     * `owasp-scan`: Runs an OWASP scan against the backend and frontend for a given PR. Triggered by a GitHub action whenever the `QASP Review` label is assigned via an API call to Circle CI with the pipeline parameter `run_owasp_scan`.
-    * `staging-deployment`: Deploys the main branch to the staging space in Cloud.gov. Triggered via merges to the branch `develop`.
+    * `staging-deployment`: Deploys the main branch to the staging space in Cloud.gov. Triggered via merges to the branch `main`.
+* Manual deployment
+    * Select the desired branch from the branch dropdown on the CircleCI project page
+    * Click the "Trigger Pipeline" button
+    * Enter the `target_env`: e.g. `qasp`, `raft`, `a11y`
+    * Set `triggered` to true
+    * Set `run_dev_deployment` to true
+    * Click the `Run Pipeline` button
 
 ## How are environment variables supplied in CI?
 We manually set some environment variables in the project settings for Circle CI. From there, they are used in several places:
@@ -57,7 +64,7 @@ These all have defaults set in their respective settings modules, but may be ove
 ## Frontend CI build process
 
 ### test-frontend
-* Runs most steps directly on the machine executor, utilizing `npm` commands defined in package.json
+* Runs most steps directly on the machine executor, utilizing Yarn commands defined in package.json
 * The exception to the above is the zap scanner step - which runs the frontend via docker-compose, using the nginx target instead of the local dev target
 * Major steps:
     * Run ESLint - ensures styling standards are followed
@@ -69,13 +76,13 @@ These all have defaults set in their respective settings modules, but may be ove
 ### deploy-frontend
 * Called as a step in the `deploy-cloud-dot-gov` command
 * Runs directly on the machine executor
-* Installs Node.JS v12.18 and all project dependencies
+* Installs Node.JS v22.13.0 and all project dependencies
 * Calls script `/scripts/deploy-frontend.sh`, which does the following:
     * Using cloud.gov application name as an input (`CGHOSTNAME_BACKEND`) it sets the environment variables needed to communicate with the Django backend:
         * `REACT_APP_BACKEND_HOST`
         * `REACT_APP_BACKEND_URL`
         * Only difference in values is whether `/v1` is at the end
-    * Runs `npm run build` which generates the HTML needed to serve to end users
+    * Runs `yarn build` which generates the HTML needed to serve to end users
     * Copies in the nginx configuration for build packs
     * Uploads the build output to Cloud.gov using `cf push`
     * Creates and maps the frontend route

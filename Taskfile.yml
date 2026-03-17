@@ -1,7 +1,6 @@
-version: '3'
+version: "3"
 
 tasks:
-
   gitcfg:
     desc: Configure git
     cmds:
@@ -61,7 +60,6 @@ tasks:
       # 3) Apply all migrations to initialize the new database
       - docker compose -f docker-compose.yml exec web sh -c "python manage.py migrate"
 
-
   backend-restart:
     desc: Restart backend web server
     dir: tdrs-backend
@@ -84,7 +82,7 @@ tasks:
     desc: Execute a manage.py command in the backend container."
     dir: tdrs-backend
     vars:
-      CMD: '{{.CMD}}'
+      CMD: "{{.CMD}}"
     cmds:
       - docker compose -f docker-compose.yml exec web sh -c "python manage.py {{.CMD}}"
 
@@ -110,6 +108,14 @@ tasks:
     dir: tdrs-backend
     cmds:
       - task: backend-up
+      - docker compose -f docker-compose.yml exec web sh -c "python manage.py migrate"
+
+  backend-update:
+    desc: Rebuild backend image and apply migrations (no data wipe)
+    dir: tdrs-backend
+    cmds:
+      - task: create-network
+      - docker compose -f docker-compose.yml up -d --build
       - docker compose -f docker-compose.yml exec web sh -c "python manage.py migrate"
 
   backend-pytest:
@@ -221,14 +227,39 @@ tasks:
     dir: tdrs-frontend
     cmds:
       - docker compose -f docker-compose.local.yml up -d --build tdp-frontend
-      - docker compose -f docker-compose.local.yml exec tdp-frontend sh -c "npm install"
+      - docker compose -f docker-compose.local.yml exec tdp-frontend sh -c "corepack prepare yarn@4.6.0 && corepack yarn install"
       - docker compose -f docker-compose.local.yml down
 
   frontend-install:
     desc: Install frontend dependencies on host (uses local Node)
     dir: tdrs-frontend
     cmds:
-      - npm install
+      - corepack prepare yarn@4.6.0 --activate && yarn install
+
+  frontend-update:
+    desc: Rebuild frontend localdev image and install dependencies (no data wipe)
+    dir: tdrs-frontend
+    cmds:
+      - docker compose -f docker-compose.local.yml up -d --build tdp-frontend
+      - docker compose -f docker-compose.local.yml exec tdp-frontend sh -c "corepack prepare yarn@4.6.0 && corepack yarn install"
+
+  frontend-test-local:
+    desc: Run frontend unit tests on host (watch-less)
+    dir: tdrs-frontend
+    cmds:
+      - CI=true npm run test
+
+  frontend-test-watch:
+    desc: Run frontend unit tests on host (watch)
+    dir: tdrs-frontend
+    cmds:
+      - npm run test
+
+  frontend-test-cov-local:
+    desc: Run frontend unit tests with coverage on host
+    dir: tdrs-frontend
+    cmds:
+      - npm run test:cov
 
   frontend-test:
     desc: 'Run frontend unit tests in docker (watch-less). E.g: task frontend-test JEST_ARGS="--testPathPattern=FeedbackReports"'
@@ -237,7 +268,7 @@ tasks:
       JEST_ARGS: '{{.JEST_ARGS | default ""}}'
     cmds:
       - docker compose -f docker-compose.local.yml up -d --build tdp-frontend-test
-      - docker compose -f docker-compose.local.yml exec tdp-frontend-test sh -c "npm run test -- {{.JEST_ARGS}}"
+      - docker compose -f docker-compose.local.yml exec tdp-frontend-test sh -c "corepack prepare yarn@4.6.0 && corepack yarn install --mode=skip-build && CI=1 corepack yarn test --watchAll=false {{.JEST_ARGS}}"
 
   frontend-test-cov:
     desc: 'Run frontend unit tests with coverage in docker. E.g: task frontend-test-cov JEST_ARGS="--testPathPattern=FeedbackReports"'
@@ -246,14 +277,14 @@ tasks:
       JEST_ARGS: '{{.JEST_ARGS | default ""}}'
     cmds:
       - docker compose -f docker-compose.local.yml up -d --build tdp-frontend-test
-      - docker compose -f docker-compose.local.yml exec tdp-frontend-test sh -c "npm run test:cov -- {{.JEST_ARGS}}"
+      - docker compose -f docker-compose.local.yml exec tdp-frontend-test sh -c "corepack prepare yarn@4.6.0 && corepack yarn install --mode=skip-build && corepack yarn test:cov {{.JEST_ARGS}}"
 
   frontend-lint:
     desc: Run eslint in the frontend test container
     dir: tdrs-frontend
     cmds:
       - docker compose -f docker-compose.local.yml up -d --build tdp-frontend-test --quiet-pull
-      - docker compose -f docker-compose.local.yml exec -T tdp-frontend-test sh -c "npm run lint"
+      - docker compose -f docker-compose.local.yml exec -T tdp-frontend-test sh -c "corepack prepare yarn@4.6.0 && corepack yarn install --mode=skip-build && corepack yarn lint"
 
   # E2E / Cypress helpers
 
@@ -263,23 +294,45 @@ tasks:
     cmds:
       - export CYPRESS_TOKEN=local-cypress-token
       - docker-compose exec web python manage.py delete_cypress_users -usernames new-cypress@teamraft.com cypress-admin@teamraft.com
-      - docker-compose exec web python manage.py loaddata cypress/users cypress/data_files cypress/regions
+      - docker-compose exec web python manage.py loaddata cypress/users cypress/data_files cypress/regions cypress/profile_editing_regions cypress/profile_editing_users
 
   frontend-e2e-local:
     desc: Run Cypress E2E tests locally (Cypress on host, app in docker)
     dir: tdrs-frontend
     cmds:
       - docker compose -f docker-compose.local.yml up -d --build tdp-frontend
-      - npm run test:e2e
+      - |
+        if command -v corepack >/dev/null 2>&1; then
+          corepack prepare yarn@4.6.0 --activate && CYPRESS_API_URL=http://localhost:8989/v1 CYPRESS_ADMIN_URL=http://localhost:8989/admin env -u ELECTRON_RUN_AS_NODE yarn test:e2e
+        else
+          CYPRESS_API_URL=http://localhost:8989/v1 CYPRESS_ADMIN_URL=http://localhost:8989/admin env -u ELECTRON_RUN_AS_NODE npx --yes @yarnpkg/cli-dist@4.6.0 test:e2e
+        fi
+
+  frontend-e2e-ci-local:
+    desc: Run Cypress E2E tests in command-line mode (headless, app in docker)
+    dir: tdrs-frontend
+    vars:
+      CYPRESS_TOKEN: '{{.CYPRESS_TOKEN | default "local-cypress-token"}}'
+    cmds:
+      - task: backend-up
+      - task: e2e-env-var-setup
+      - docker compose -f docker-compose.local.yml up -d --build tdp-frontend
+      - env -u ELECTRON_RUN_AS_NODE npx cypress verify || env -u ELECTRON_RUN_AS_NODE npx cypress install --force
+      - |
+        if command -v corepack >/dev/null 2>&1; then
+          corepack prepare yarn@4.6.0 --activate && CYPRESS_API_URL=http://localhost:8989/v1 CYPRESS_ADMIN_URL=http://localhost:8989/admin CYPRESS_TOKEN={{.CYPRESS_TOKEN}} env -u ELECTRON_RUN_AS_NODE yarn test:e2e-ci
+        else
+          CYPRESS_API_URL=http://localhost:8989/v1 CYPRESS_ADMIN_URL=http://localhost:8989/admin CYPRESS_TOKEN={{.CYPRESS_TOKEN}} env -u ELECTRON_RUN_AS_NODE npx --yes @yarnpkg/cli-dist@4.6.0 test:e2e-ci
+        fi
 
   k6:
     desc: Run k6 performance tests
     dir: performance-tests
     vars:
-      SCRIPT: '{{.SCRIPT}}'
+      SCRIPT: "{{.SCRIPT}}"
       CYPRESS_TOKEN: '{{.CYPRESS_TOKEN | default "local-cypress-token"}}'
       BASE_URL: '{{.BASE_URL | default "http://localhost:3000"}}'
-      SCENARIO: '{{.SCENARIO}}'
+      SCENARIO: "{{.SCENARIO}}"
     cmds:
       - k6 run -e BASE_URL={{.BASE_URL}} -e CYPRESS_TOKEN={{.CYPRESS_TOKEN}} -e SCENARIO={{.SCENARIO}} {{.SCRIPT}}
 
@@ -288,6 +341,12 @@ tasks:
     cmds:
       - task: backend-up
       - task: frontend-up
+
+  update-deps:
+    desc: Rebuild backend/frontend and apply dependency updates (no data wipe)
+    cmds:
+      - task: backend-update
+      - task: frontend-update
 
   down:
     desc: Stop both frontend and backend web servers

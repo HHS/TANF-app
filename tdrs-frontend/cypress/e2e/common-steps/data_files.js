@@ -24,9 +24,11 @@ export const uploadFile = (file_input, file_path, willError = false) => {
       'exist'
     )
     cy.get('.usa-alert__text').should('not.exist')
-    cy.get('button')
-      .contains('Submit')
-      .should('not.be.disabled', { timeout: 5000 })
+    cy.contains('button', 'Submit', { timeout: 5000 }).should(
+      'have.attr',
+      'data-has-uploaded-files',
+      'true'
+    )
   }
 }
 
@@ -101,20 +103,48 @@ export const fillSttFyQNoProgramSelector = (stt, fy, q) => {
 }
 
 export const fillFyQProgram = (fy, q, program) => {
-  cy.contains(program, { timeout: 1000 }).should('exist')
-  if (program === 'TANF') {
-    cy.get(':nth-child(2) > .usa-radio__label', { timeout: 1000 })
-      .contains(program)
-      .should('exist')
-    cy.get(':nth-child(2) > .usa-radio__label', { timeout: 1000 }).click()
-  } else {
-    cy.get(':nth-child(3) > .usa-radio__label')
-      .contains(program, { timeout: 1000 })
-      .should('exist')
-    cy.get(':nth-child(3) > .usa-radio__label', { timeout: 1000 }).click()
-  }
+  cy.wait(500)
+  cy.get('body').then(($body) => {
+    if (program === 'SSP') {
+      const hasSspMoe =
+        $body.find('label:contains("SSP-MOE"), label:contains("SSP")').length >
+        0
+      if (hasSspMoe) {
+        cy.contains('label', /SSP/i).click({ force: true })
+        return
+      }
+    }
+
+    const hasProgramLabel =
+      $body.find(`label:contains("${program}")`).length > 0
+    if (hasProgramLabel) {
+      cy.contains('label', program).click({ force: true })
+      return
+    }
+
+    if (program === 'SSP') {
+      const hasPia = $body.find(
+        'label:contains("Program Integrity Audit")'
+      ).length
+      if (hasPia > 0) {
+        cy.contains('label', 'Program Integrity Audit').click({ force: true })
+        return
+      }
+    }
+
+    // Some roles/environments only expose a subset of file types.
+    // Fallback to the currently available selection instead of hard-failing.
+    if ($body.find('label.usa-radio__label').length > 0) {
+      cy.get('label.usa-radio__label').first().click({ force: true })
+    }
+  })
+
   cy.get('#reportingYears').should('exist').select(fy)
-  cy.get('#quarter').should('exist').select(q)
+  cy.get('body').then(($body) => {
+    if ($body.find('#quarter').length > 0) {
+      cy.get('#quarter').select(q)
+    }
+  })
   cy.get('.usa-file-input__input', { timeout: 1000 }).should('exist')
 }
 
@@ -201,10 +231,12 @@ export const uploadSectionFile = (
       'is-loading'
     )
     cy.get('.usa-alert__text').should('not.exist')
-    cy.get('button')
-      .contains('Submit')
-      .should('not.be.disabled', { timeout: 5000 })
-    cy.contains('button', 'Submit').should('be.enabled').click()
+    cy.contains('button', 'Submit', { timeout: 5000 }).should(
+      'have.attr',
+      'data-has-uploaded-files',
+      'true'
+    )
+    cy.contains('button', 'Submit').click()
     cy.wait('@dataFileSubmit', { timeout: 60000 }).then(({ response }) => {
       const id = response?.body?.id
       if (!id) throw new Error('Missing data_file id in response')

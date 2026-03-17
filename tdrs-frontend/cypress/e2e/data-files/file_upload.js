@@ -245,4 +245,17 @@ Then('FRA Data Analyst Fred sees the incorrect file type error', () => {
   ).should('exist')
 })
 
+When('FRA Data Analyst Fred attempts to submit the SSP Report', () => {
+  cy.visit('/data-files')
+  cy.get('h1').contains('TANF Data Files').should('exist')
+  df.fillFyQProgram('2024', 'Q1', 'SSP')
+})
+
+Then('FRA Data Analyst Fred cannot upload an SSP data file', () => {
+  cy.get('#active_case_data').should('not.exist')
+  cy.contains(/Program Integrity Audit|Audit Reporting Guidelines/).should(
+    'exist'
+  )
+})
+
 ///////////////////////////////////////////////////////////////
