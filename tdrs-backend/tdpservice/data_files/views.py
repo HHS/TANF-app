@@ -76,10 +76,20 @@ class DataFileViewSet(ModelViewSet):
 
         # test the PIA feature flag before creation
         # reject if it is off or doesn't exist
-        is_program_audit = request.data.get("is_program_audit", False)
+        bool_dict = {"true": True, "false": False, "True": True, "False": False}
+        is_program_audit = bool_dict.get(
+            request.POST.get("is_program_audit", "false"), False
+        )
+
         pia_feature_flag_enabled, pia_feature_flag_config = get_feature_flag(
             "program-integrity-audit"
         )
+
+        if is_program_audit and not pia_feature_flag_enabled:
+            return Response(
+                {"detail": "This file type is not supported."},
+                status=HTTP_400_BAD_REQUEST,
+            )
 
         if is_program_audit and pia_feature_flag_enabled:
             pia_minYear = pia_feature_flag_config.get("minYear") or 2024
@@ -93,11 +103,6 @@ class DataFileViewSet(ModelViewSet):
                     },
                     status=HTTP_400_BAD_REQUEST,
                 )
-        else:
-            return Response(
-                {"detail": "This file type is not supported."},
-                status=HTTP_400_BAD_REQUEST,
-            )
 
         response = super().create(request, *args, **kwargs)
 

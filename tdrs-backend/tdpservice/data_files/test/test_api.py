@@ -936,6 +936,12 @@ class TestDataFileQuerysetFiltering:
         quarter,
     ):
         """Check that requests made to the filter endpoint contain every expected file and only files for the requested combination."""
+        FeatureFlag.objects.create(
+            feature_name="program-integrity-audit",
+            enabled=True,
+            config={"minYear": 2023, "maxYear": 2025},
+        )
+
         stt, tribe_stt, ofa_system_admin, non_pia_files, pia_files = filter_test_data
 
         # check the endpoint filtering
