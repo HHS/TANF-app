@@ -293,8 +293,8 @@ tasks:
     dir: tdrs-backend
     cmds:
       - export CYPRESS_TOKEN=local-cypress-token
-      - docker-compose exec web python manage.py delete_cypress_users -usernames new-cypress@teamraft.com cypress-admin@teamraft.com
-      - docker-compose exec web python manage.py loaddata cypress/users cypress/data_files cypress/regions cypress/profile_editing_regions cypress/profile_editing_users
+      - docker compose -f docker-compose.yml exec web python manage.py delete_cypress_users -usernames new-cypress@teamraft.com cypress-admin@teamraft.com cypress-data-analyst-dana@teamraft.com cypress-fra-data-analyst-derek@teamraft.com cypress-data-analyst-donna@teamraft.com cypress-fra-data-analyst-david@teamraft.com cypress-fra-ofa-regional-staff-rachel@acf.hhs.gov cypress-fra-ofa-regional-staff-robert@acf.hhs.gov cypress-fra-ofa-regional-staff-rita@acf.hhs.gov cypress-fra-ofa-regional-staff-ryan@acf.hhs.gov
+      - docker compose -f docker-compose.yml exec web python manage.py loaddata cypress/users cypress/data_files cypress/regions cypress/profile_editing_regions cypress/profile_editing_users
 
   frontend-e2e-local:
     desc: Run Cypress E2E tests locally (Cypress on host, app in docker)
@@ -324,6 +324,13 @@ tasks:
         else
           env -u ELECTRON_RUN_AS_NODE npx --yes @yarnpkg/cli-dist@4.6.0 test:e2e-ci
         fi
+
+  frontend-e2e-cmd:
+    desc: Run Cypress E2E tests headlessly from the command line (app in docker)
+    dir: tdrs-frontend
+    cmds:
+      - docker compose -f docker-compose.yml up -d --build tdp-frontend
+      - CYPRESS_TOKEN=${CYPRESS_TOKEN:-local-cypress-token} npm run test:e2e-ci
 
   k6:
     desc: Run k6 performance tests

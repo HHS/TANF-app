@@ -13,6 +13,7 @@ from tdpservice.users.models import (
     Feedback,
     User,
     UserChangeRequest,
+    UserChangeRequestStatus,
 )
 from tdpservice.users.test.factories import FeedbackFactory
 from tdpservice.users.views import (
@@ -140,6 +141,46 @@ def test_update_profile_direct_update_non_admin_denied(api_client, data_analyst)
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert "Only administrators can update user profiles directly." in str(response.data)
+
+
+@pytest.mark.django_db
+def test_update_profile_removes_pending_request_when_value_matches_current(
+    api_client, data_analyst
+):
+    """Cancel a pending request when user changes it back to current value."""
+    data_analyst.first_name = "Bob"
+    data_analyst.save(update_fields=["first_name"])
+
+    pending_request = UserChangeRequest.objects.create(
+        user=data_analyst,
+        requested_by=data_analyst,
+        field_name="first_name",
+        current_value="Bob",
+        requested_value="Alice",
+    )
+
+    api_client.login(username=data_analyst.username, password="test_password")
+    response = api_client.patch(
+        "/v1/users/update_profile/",
+        {
+            "first_name": "Bob",
+            "last_name": data_analyst.last_name or "User",
+            "stt": data_analyst.stt.id,
+            "create_change_requests": True,
+        },
+        format="json",
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    pending_request.refresh_from_db()
+    assert pending_request.status == UserChangeRequestStatus.CANCELLED
+    assert not data_analyst.get_pending_change_requests().filter(
+        field_name="first_name"
+    ).exists()
+    assert ChangeRequestAuditLog.objects.filter(
+        change_request=pending_request,
+        action="cancelled",
+    ).exists()
 
 
 @pytest.mark.django_db
