@@ -81,8 +81,7 @@ class DataFileViewSet(ModelViewSet):
             "program-integrity-audit"
         )
 
-        # if is_program_audit and pia_feature_flag_enabled:
-        if False:
+        if is_program_audit and pia_feature_flag_enabled:
             pia_minYear = pia_feature_flag_config.get("minYear") or 2024
             pia_maxYear = pia_feature_flag_config.get("maxYear") or 2024
             year = int(request.data.get("year"))
