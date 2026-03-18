@@ -6,18 +6,33 @@ import { Spinner } from '../Spinner'
 import { PaginatedComponent } from '../Paginator/Paginator'
 import STTFeedbackReportsTable from './STTFeedbackReportsTable'
 import { constructYears } from '../Reports/utils'
+import { accountIsRegionalStaff } from '../../selectors/auth'
+import { availableStts } from '../../selectors/stts'
+import STTComboBox from '../STTComboBox'
 
 /**
- * STTFeedbackReports component allows STT Data Analysts to view and download
- * their quarterly feedback reports.
+ * STTFeedbackReports component allows STT Data Analysts and Regional Staff
+ * to view and download their quarterly feedback reports.
+ *
+ * - Data Analysts see reports for their assigned STT (auto-fetched on year change)
+ * - Regional Staff select an STT from their region, auto-fetches when both STT and year are selected
  */
 function STTFeedbackReports() {
   const [searchParams, setSearchParams] = useSearchParams()
   const yearOptions = constructYears()
 
-  // Get user's STT name from Redux
   const user = useSelector((state) => state.auth.user)
-  const sttName = user?.stt?.name
+  const isRegionalStaff = useSelector(accountIsRegionalStaff)
+  const filteredStts = useSelector(availableStts('/feedback-reports'))
+
+  // Initialize STT from URL query param (regional staff only)
+  const getValidatedStt = () => {
+    if (!isRegionalStaff) return null
+    const urlStt = searchParams.get('stt')
+    if (!urlStt) return null
+    const sttObj = filteredStts.find((s) => s.name === urlStt)
+    return sttObj || null
+  }
 
   // Validate and get year from URL params (returns null if no valid param)
   const getValidatedYear = () => {
@@ -30,6 +45,15 @@ function STTFeedbackReports() {
     return null
   }
 
+  // State for regional staff STT selection
+  const [selectedStt, setSelectedStt] = useState(getValidatedStt)
+  const [selectedSttName, setSelectedSttName] = useState(
+    () => getValidatedStt()?.name || ''
+  )
+
+  // Derive display name
+  const sttName = isRegionalStaff ? selectedStt?.name : user?.stt?.name
+
   const [reports, setReports] = useState([])
   const [loading, setLoading] = useState(false)
   const [selectedYear, setSelectedYear] = useState(getValidatedYear)
@@ -39,17 +63,22 @@ function STTFeedbackReports() {
     message: null,
   })
 
-  // Sync year selection to URL (only when a year is selected)
+  // Sync selections to URL query params
   useEffect(() => {
+    const newParams = new URLSearchParams()
     if (selectedYear) {
-      const newParams = new URLSearchParams()
       newParams.set('year', selectedYear)
+    }
+    if (isRegionalStaff && selectedStt) {
+      newParams.set('stt', selectedStt.name)
+    }
+    if (newParams.toString()) {
       setSearchParams(newParams, { replace: true })
     }
-  }, [selectedYear, setSearchParams])
+  }, [selectedYear, selectedStt, isRegionalStaff, setSearchParams])
 
   /**
-   * Fetches the feedback reports from the backend filtered by year
+   * Fetches the feedback reports from the backend filtered by year (and STT for regional staff)
    */
   const fetchReports = useCallback(async () => {
     // Only fetch if a year is selected
@@ -58,12 +87,23 @@ function STTFeedbackReports() {
       return
     }
 
+    // Regional staff must also have an STT selected
+    if (isRegionalStaff && !selectedStt) {
+      setReports([])
+      return
+    }
+
     setLoading(true)
     setAlert({ active: false, type: null, message: null })
 
+    const params = { year: selectedYear }
+    if (isRegionalStaff && selectedStt) {
+      params.stt = selectedStt.id
+    }
+
     const { data, ok, error } = await get(
       `${process.env.REACT_APP_BACKEND_URL}/reports/`,
-      { params: { year: selectedYear } }
+      { params }
     )
 
     if (ok) {
@@ -77,8 +117,9 @@ function STTFeedbackReports() {
       })
     }
     setLoading(false)
-  }, [selectedYear])
+  }, [selectedYear, isRegionalStaff, selectedStt])
 
+  // Auto-fetch when dependencies change (both user types)
   useEffect(() => {
     fetchReports()
   }, [fetchReports])
@@ -91,12 +132,41 @@ function STTFeedbackReports() {
     setSelectedYear(value ? parseInt(value, 10) : null)
   }
 
+  /**
+   * Handle STT selection from ComboBox (regional staff)
+   */
+  const handleSttSelect = (name) => {
+    setSelectedSttName(name)
+    if (name) {
+      const sttObj = filteredStts.find((s) => s.name === name)
+      setSelectedStt(sttObj || null)
+    } else {
+      setSelectedStt(null)
+    }
+    // Clear reports when STT changes
+    setReports([])
+  }
+
+  // Determine if content section should show
+  const showContent = isRegionalStaff
+    ? selectedYear && selectedStt
+    : selectedYear
+
   return (
     <div className="feedback-reports">
       <div className="page-container" style={{ position: 'relative' }}>
-        {/* Fiscal Year Selector and Reference Table */}
+        {/* STT Selector, Fiscal Year Selector, and Reference Table */}
         <div className="grid-row grid-gap margin-top-5">
           <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-auto">
+            {isRegionalStaff && (
+              <div className="usa-form-group maxw-mobile margin-top-4">
+                <STTComboBox
+                  selectStt={handleSttSelect}
+                  selectedStt={selectedSttName}
+                />
+              </div>
+            )}
+
             <div className="usa-form-group maxw-mobile margin-top-4">
               <label
                 className="usa-label text-bold"
@@ -166,7 +236,7 @@ function STTFeedbackReports() {
           </div>
         </div>
 
-        {selectedYear && (
+        {showContent && (
           <>
             <hr className="margin-top-4 margin-bottom-4" />
 
@@ -198,7 +268,7 @@ function STTFeedbackReports() {
               <p>
                 For more detail about each report, refer to the{' '}
                 <a
-                  href={`${process.env.REACT_APP_KNOWLEDGE_CENTER_LINK}/`}
+                  href={`${process.env.REACT_APP_KNOWLEDGE_CENTER_LINK}/feedback-reports.html`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

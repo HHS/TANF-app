@@ -133,13 +133,3 @@ Then('{string} sees the error about missing date', () => {
   cy.contains(fr.ERROR_MESSAGES.NO_DATE).should('exist')
 })
 
-// ──────────────────────────────────────────────────────────
-// Permission Tests - No Access
-// ──────────────────────────────────────────────────────────
-
-Then('{string} does not see Feedback Reports in the navigation', () => {
-  cy.visit('/')
-  cy.contains('Welcome to TDP', { timeout: 30000 }).should('exist')
-  cy.get('.usa-nav__primary').should('exist')
-  cy.get('.usa-nav__primary').contains('Feedback Reports').should('not.exist')
-})

@@ -347,3 +347,81 @@ class TestReportFileViewAsDataAnalyst:
 
         assert resp.status_code == status.HTTP_200_OK
         assert len(resp.data["results"]) == 0
+
+
+@pytest.mark.django_db
+class TestReportFileViewAsRegionalStaff:
+    """Tests for an OFA Regional Staff user interacting with /v1/reports/ endpoints."""
+
+    root_url = "/v1/reports/"
+
+    @pytest.fixture
+    def api_client_logged_in(self, api_client, regional_user):
+        """Return an API client authenticated as a regional staff user."""
+        api_client.login(username=regional_user.username, password="test_password")
+        return api_client
+
+    def test_can_list_reports(
+        self, api_client_logged_in, regional_report_file_instance
+    ):
+        """Regional staff can list report files (200 OK)."""
+        resp = api_client_logged_in.get(self.root_url)
+        assert resp.status_code == status.HTTP_200_OK
+
+    def test_only_sees_reports_in_own_region(
+        self,
+        api_client_logged_in,
+        regional_user,
+        regional_report_file_instance,
+        other_region_report_file_instance,
+    ):
+        """Regional staff only sees reports for STTs in their region."""
+        resp = api_client_logged_in.get(self.root_url)
+
+        assert resp.status_code == status.HTTP_200_OK
+
+        returned_ids = [row["id"] for row in resp.data["results"]]
+        assert regional_report_file_instance.id in returned_ids
+        assert other_region_report_file_instance.id not in returned_ids
+
+    def test_cannot_create_report_files(
+        self, api_client_logged_in, report_file_data
+    ):
+        """Regional staff cannot create report files (403)."""
+        resp = api_client_logged_in.post(
+            self.root_url, report_file_data, format="multipart"
+        )
+        assert resp.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_can_download_report_in_own_region(
+        self, api_client_logged_in, regional_report_file_instance
+    ):
+        """Regional staff can download report files for STTs in their region."""
+        resp = api_client_logged_in.get(
+            f"{self.root_url}{regional_report_file_instance.id}/download/"
+        )
+        assert resp.status_code == status.HTTP_200_OK
+
+    def test_cannot_download_report_outside_region(
+        self, api_client_logged_in, other_region_report_file_instance
+    ):
+        """Regional staff cannot download report files outside their region."""
+        resp = api_client_logged_in.get(
+            f"{self.root_url}{other_region_report_file_instance.id}/download/"
+        )
+        # Returns 404 because get_queryset filters out reports outside the region
+        assert resp.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_stt_query_param_filters_results(
+        self,
+        api_client_logged_in,
+        regional_user,
+        regional_report_file_instance,
+        stt,
+    ):
+        """Regional staff can filter reports by STT query param."""
+        resp = api_client_logged_in.get(f"{self.root_url}?stt={stt.id}")
+
+        assert resp.status_code == status.HTTP_200_OK
+        returned_ids = [row["id"] for row in resp.data["results"]]
+        assert regional_report_file_instance.id in returned_ids

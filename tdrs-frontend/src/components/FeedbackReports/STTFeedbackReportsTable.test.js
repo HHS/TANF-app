@@ -57,7 +57,7 @@ describe('STTFeedbackReportsTable', () => {
 
       renderComponent(mockData)
 
-      expect(screen.getByText('Generated on')).toBeInTheDocument()
+      expect(screen.getByText('Uploaded on')).toBeInTheDocument()
       expect(
         screen.getByText('Reflects data submitted through')
       ).toBeInTheDocument()

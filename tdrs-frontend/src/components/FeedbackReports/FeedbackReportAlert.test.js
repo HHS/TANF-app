@@ -33,10 +33,10 @@ const mockLocalStorage = (() => {
 Object.defineProperty(window, 'localStorage', { value: mockLocalStorage })
 
 describe('FeedbackReportAlert', () => {
-  const renderComponent = () =>
+  const renderComponent = (props = {}) =>
     render(
       <MemoryRouter>
-        <FeedbackReportAlert />
+        <FeedbackReportAlert {...props} />
       </MemoryRouter>
     )
 
@@ -217,6 +217,8 @@ describe('FeedbackReportAlert', () => {
     await waitFor(() => {
       const link = screen.getByRole('link', { name: /review the feedback/i })
       expect(link).toHaveAttribute('href', '/feedback-reports?year=2025')
+      expect(link).toHaveAttribute('target', '_blank')
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer')
     })
   })
 
@@ -242,6 +244,10 @@ describe('FeedbackReportAlert', () => {
       expect(alert).toHaveClass('usa-alert--info')
       expect(alert).toHaveClass('margin-top-4')
       expect(alert).toHaveClass('margin-bottom-4')
+      expect(alert).toHaveAttribute('role', 'region')
+      expect(alert).toHaveAttribute('aria-labelledby', 'feedback-alert-text')
+      const alertText = alert.querySelector('#feedback-alert-text')
+      expect(alertText).toBeInTheDocument()
     })
   })
 
@@ -546,6 +552,85 @@ describe('FeedbackReportAlert', () => {
         expect(alertBody).toHaveStyle({ display: 'flex' })
         expect(alertBody).toHaveStyle({ justifyContent: 'space-between' })
         expect(alertBody).toHaveStyle({ alignItems: 'flex-start' })
+      })
+    })
+  })
+
+  describe('Regional Staff stt prop', () => {
+    const mockStt = { id: 10, name: 'Wisconsin' }
+
+    it('includes stt param in API call when stt prop is provided', async () => {
+      mockUseReportsContext.mockReturnValue({
+        yearInputValue: '2025',
+        quarterInputValue: 'Q1',
+      })
+
+      get.mockResolvedValue({
+        data: { results: [{ created_at: '2025-12-01T00:00:00Z' }] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
+
+      renderComponent({ stt: mockStt })
+
+      await waitFor(() => {
+        expect(get).toHaveBeenCalledWith(
+          expect.stringContaining('/reports/'),
+          expect.objectContaining({
+            params: {
+              year: '2025',
+              quarter: 'Q1',
+              latest: 'true',
+              stt: 10,
+            },
+          })
+        )
+      })
+    })
+
+    it('includes stt query param in feedback reports link when stt prop is provided', async () => {
+      mockUseReportsContext.mockReturnValue({
+        yearInputValue: '2025',
+        quarterInputValue: 'Q1',
+      })
+
+      get.mockResolvedValue({
+        data: { results: [{ created_at: '2025-12-01T00:00:00Z' }] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
+
+      renderComponent({ stt: mockStt })
+
+      await waitFor(() => {
+        const link = screen.getByRole('link', { name: /review the feedback/i })
+        expect(link).toHaveAttribute(
+          'href',
+          '/feedback-reports?year=2025&stt=Wisconsin'
+        )
+      })
+    })
+
+    it('does not include stt query param in link when stt prop is null', async () => {
+      mockUseReportsContext.mockReturnValue({
+        yearInputValue: '2025',
+        quarterInputValue: 'Q1',
+      })
+
+      get.mockResolvedValue({
+        data: { results: [{ created_at: '2025-12-01T00:00:00Z' }] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
+
+      renderComponent()
+
+      await waitFor(() => {
+        const link = screen.getByRole('link', { name: /review the feedback/i })
+        expect(link).toHaveAttribute('href', '/feedback-reports?year=2025')
       })
     })
   })
