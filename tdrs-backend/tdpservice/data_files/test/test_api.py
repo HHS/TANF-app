@@ -526,7 +526,7 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         data_file_data["is_program_audit"] = True
 
         response = self.post_data_file(api_client, data_file_data)
-        assert response.data == {"message": "This file type is not supported."}
+        assert response.data == {"detail": "This file type is not supported."}
         assert response.status_code == 400
 
     @pytest.mark.django_db
@@ -562,7 +562,7 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
             assert response.status_code == 201
         else:
             assert response.data == {
-                "message": "This file was submitted for a reporting year not supported by this file type."
+                "detail": "This file was submitted for a reporting year not supported by this file type."
             }
             assert response.status_code == 400
 

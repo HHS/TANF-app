@@ -81,7 +81,8 @@ class DataFileViewSet(ModelViewSet):
             "program-integrity-audit"
         )
 
-        if is_program_audit and pia_feature_flag_enabled:
+        # if is_program_audit and pia_feature_flag_enabled:
+        if False:
             pia_minYear = pia_feature_flag_config.get("minYear") or 2024
             pia_maxYear = pia_feature_flag_config.get("maxYear") or 2024
             year = int(request.data.get("year"))
@@ -89,13 +90,13 @@ class DataFileViewSet(ModelViewSet):
             if year < pia_minYear or year > pia_maxYear:
                 return Response(
                     {
-                        "message": "This file was submitted for a reporting year not supported by this file type."
+                        "detail": "This file was submitted for a reporting year not supported by this file type."
                     },
                     status=HTTP_400_BAD_REQUEST,
                 )
         else:
             return Response(
-                {"message": "This file type is not supported."},
+                {"detail": "This file type is not supported."},
                 status=HTTP_400_BAD_REQUEST,
             )
 
