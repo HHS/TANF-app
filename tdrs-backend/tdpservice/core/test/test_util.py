@@ -1,3 +1,5 @@
+"""Test the core util module."""
+
 import pytest
 
 from tdpservice.core.models import FeatureFlag

@@ -558,7 +558,7 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
 
         if allowed:
             assert response.data["section"] == "Active Case Data"
-            assert response.data["is_program_audit"] == True
+            assert response.data["is_program_audit"] is True
             assert response.status_code == 201
         else:
             assert response.data == {
@@ -970,7 +970,7 @@ class TestDataFileQuerysetFiltering:
 
     def test_no_pia_feat_flag_disallows_list(self, api_client, stt, ofa_system_admin):
         """Test a nonexistent pia feature flag results in an empty list when requested."""
-        file = self.create_file(
+        self.create_file(
             "TAN",
             "Active Case Data",
             2024,
@@ -999,7 +999,7 @@ class TestDataFileQuerysetFiltering:
             config={"minYear": 2023, "maxYear": 2025},
         )
 
-        file = self.create_file(
+        self.create_file(
             "TAN",
             "Active Case Data",
             2024,
