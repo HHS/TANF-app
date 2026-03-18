@@ -45,6 +45,17 @@ Feature: User Profile Editing
         Then 'FRA OFA Regional Staff Robert' sees a pending change request
         And 'FRA OFA Regional Staff Robert' profile shows regions 'Chicago, Philadelphia'
 
+    Scenario: FRA OFA Regional Staff Ryan keeps pending region changes after submitting a name change
+        Given 'FRA OFA Regional Staff Ryan' logs in
+        When 'FRA OFA Regional Staff Ryan' updates their regions to add 'Seattle' and remove 'Chicago'
+        Then 'FRA OFA Regional Staff Ryan' sees a pending change request
+        When 'FRA OFA Regional Staff Ryan' opens profile editing
+        Then 'FRA OFA Regional Staff Ryan' edit form shows regions 'Seattle' selected and 'Chicago' unselected
+        When 'FRA OFA Regional Staff Ryan' updates their name to 'FRA Regional Pending' 'Ryan Pending'
+        Then 'FRA OFA Regional Staff Ryan' sees a pending change request
+        When 'FRA OFA Regional Staff Ryan' opens profile editing
+        Then 'FRA OFA Regional Staff Ryan' edit form shows regions 'Seattle' selected and 'Chicago' unselected
+
     # ============================================================================
     # Validation and Error Handling
     # ============================================================================
@@ -101,10 +112,10 @@ Feature: User Profile Editing
         Then 'FRA Data Analyst David' sees a pending change request
         And 'FRA Data Analyst David' profile shows name 'FRA Data Analyst David'
 
-    Scenario: FRA OFA Regional Staff Robert edits profile in Approved state
-        Given 'FRA OFA Regional Staff Robert' logs in
-        When 'FRA OFA Regional Staff Robert' updates their name to 'FRA Regional Changed' 'Robert Changed'
-        Then 'FRA OFA Regional Staff Robert' sees a pending change request
-        And 'FRA OFA Regional Staff Robert' profile shows name 'FRA OFA Regional Staff Robert'
+    Scenario: FRA OFA Regional Staff Rita edits profile in Approved state
+        Given 'FRA OFA Regional Staff Rita' logs in
+        When 'FRA OFA Regional Staff Rita' updates their name to 'FRA Regional Changed' 'Rita Changed'
+        Then 'FRA OFA Regional Staff Rita' sees a pending change request
+        And 'FRA OFA Regional Staff Rita' profile shows name 'FRA OFA Regional Staff Rita'
 
     # TODO: verify change requests exist in DB?

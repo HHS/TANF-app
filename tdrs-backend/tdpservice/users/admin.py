@@ -223,9 +223,11 @@ class UserChangeRequestAdmin(admin.ModelAdmin):
             "pending": "orange",
             "approved": "green",
             "rejected": "red",
+            "cancelled": "gray",
         }
+        color = colors.get(obj.status, "black")
         return mark_safe(
-            f'<span style="color: {colors[obj.status]};">{obj.get_status_display()}</span>'
+            f'<span style="color: {color};">{obj.get_status_display()}</span>'
         )
 
     status_with_indicator.short_description = "Status"
