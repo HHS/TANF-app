@@ -74,7 +74,10 @@ class S3FileHandler(logging.FileHandler):
             logger.info(f"Log file {self.filename} uploaded to S3.")
         except ClientError as e:
             logger.info(f"Error sending log to S3: {e}")
-        self.close()
+        finally:
+            self.close()
+            if os.path.exists(self.filename):
+                os.remove(self.filename)
 
     @staticmethod
     def download_file(key):

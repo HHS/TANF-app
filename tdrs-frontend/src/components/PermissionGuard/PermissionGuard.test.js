@@ -200,11 +200,65 @@ describe('PermissionGuard.js', () => {
 
   describe('feature flags', () => {
     it.each([
-      ['Data Analyst', { feat: false }, null, true], // not required, not set
-      ['Data Analyst', { feat: true }, null, true], // not required, set
-      ['Data Analyst', { feat: false }, ['feat'], false], // required, not set
-      ['Data Analyst', { feat: true }, ['feat'], true], // required, set
-      ['OFA System Admin', { feat: false }, ['feat'], true], // admin bypass
+      ['Data Analyst', [{ feature_name: 'feat', enabled: false }], null, true], // not required, not set
+      ['Data Analyst', [{ feature_name: 'feat', enabled: true }], null, true], // not required, set
+      [
+        'Data Analyst',
+        [{ feature_name: 'feat', enabled: false }],
+        ['feat'],
+        false,
+      ], // required, not set
+      [
+        'Data Analyst',
+        [{ feature_name: 'feat', enabled: true }],
+        ['feat'],
+        true,
+      ], // required, set
+      [
+        'OFA System Admin',
+        [{ feature_name: 'feat', enabled: false }],
+        ['feat'],
+        true,
+      ], // admin bypass
+      [
+        'Data Analyst',
+        [
+          { feature_name: 'feat1', enabled: true },
+          { feature_name: 'feat2', enabled: false },
+          { feature_name: 'feat3', enabled: false },
+        ],
+        ['feat1'],
+        true,
+      ], // multiple options, one required
+      [
+        'Data Analyst',
+        [
+          { feature_name: 'feat1', enabled: true },
+          { feature_name: 'feat2', enabled: false },
+          { feature_name: 'feat3', enabled: false },
+        ],
+        ['feat1', 'feat2'],
+        false,
+      ], // multiple required fail
+      [
+        'Data Analyst',
+        [
+          { feature_name: 'feat1', enabled: true },
+          { feature_name: 'feat2', enabled: true },
+          { feature_name: 'feat3', enabled: false },
+        ],
+        ['feat1', 'feat2'],
+        true,
+      ], // multiple required pass
+      [
+        'Data Analyst',
+        [
+          { feature_name: 'feat1', enabled: true },
+          { feature_name: 'feat3', enabled: false },
+        ],
+        ['feat1', 'feat2'],
+        false,
+      ], // multiple required but one missing
     ])(
       'correctly renders',
       (name, feature_flags, required_feature_flags, expectedVisible) => {
@@ -214,9 +268,14 @@ describe('PermissionGuard.js', () => {
               authenticated: true,
               user: {
                 roles: [{ name, permissions: ['anything'] }],
-                feature_flags,
                 account_approval_status: 'Approved',
               },
+            },
+            featureFlags: {
+              loading: false,
+              error: null,
+              lastFetched: '2025-01-01 10:00am',
+              flags: feature_flags,
             },
           },
           [],
