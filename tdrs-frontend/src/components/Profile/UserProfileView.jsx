@@ -13,6 +13,7 @@ const UserProfileView = ({
   isAMSUser,
   isAccessRequestPending,
   isProfileChangePending,
+  pendingChangeRequests = [],
   onEdit,
   type = 'profile',
   hasFRAAccess = false,
@@ -100,10 +101,17 @@ const UserProfileView = ({
   const showRequestBanner =
     type === 'profile' ? isProfileChangePending : isAccessRequestPending
 
-  const bannerText = {
-    'access request': 'Your request for access',
-    profile: 'Your profile change request',
-  }
+  const requestedChangeCount = Array.isArray(pendingChangeRequests)
+    ? pendingChangeRequests.length
+    : 0
+  const bannerSubject =
+    type === 'profile'
+      ? requestedChangeCount > 1
+        ? 'Your requested changes'
+        : 'Your requested change'
+      : 'Your request for access'
+  const bannerVerb =
+    type === 'profile' ? (requestedChangeCount > 1 ? 'are' : 'is') : 'is'
 
   return (
     <div className="usa-prose">
@@ -112,9 +120,8 @@ const UserProfileView = ({
           <div className="usa-alert usa-alert--info margin-top-3 margin-right-8">
             <div className="usa-alert__body" role="alert">
               <p className="usa-alert__text" id="page-alert">
-                {bannerText[type] ?? 'Your request'} is currently being reviewed
-                by an OFA Admin. We’ll send you an email when it’s been
-                approved.
+                {bannerSubject} {bannerVerb} currently being reviewed by an OFA
+                Admin. We’ll send you an email when it’s been approved.
               </p>
             </div>
           </div>
@@ -128,6 +135,7 @@ const UserProfileView = ({
               user={user}
               isAMSUser={isAMSUser}
               hasFRAAccess={hasFRAAccess}
+              pendingChangeRequests={pendingChangeRequests}
             />
           </div>
         </div>

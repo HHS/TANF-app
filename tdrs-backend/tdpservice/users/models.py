@@ -56,6 +56,7 @@ class UserChangeRequestStatus(models.TextChoices):
     PENDING = "pending", _("Pending")
     APPROVED = "approved", _("Approved")
     REJECTED = "rejected", _("Rejected")
+    CANCELLED = "cancelled", _("Cancelled")
 
 
 class UserChangeRequest(Reviewable):
@@ -166,6 +167,17 @@ class UserChangeRequest(Reviewable):
             self.notes = notes
         self.save()
 
+        ChangeRequestAuditLog.objects.create(
+            change_request=self,
+            action="approved",
+            performed_by=admin_user,
+            details={
+                "field": self.field_name,
+                "requested_value": str(self.requested_value),
+                "notes": notes or "",
+            },
+        )
+
         # Send email
         try:
             send_change_request_status_email(
@@ -193,6 +205,17 @@ class UserChangeRequest(Reviewable):
         if notes:
             self.notes = notes
         self.save()
+
+        ChangeRequestAuditLog.objects.create(
+            change_request=self,
+            action="rejected",
+            performed_by=admin_user,
+            details={
+                "field": self.field_name,
+                "requested_value": str(self.requested_value),
+                "notes": notes or "",
+            },
+        )
 
         # Send email
         try:
