@@ -1,6 +1,7 @@
 """Check if user is authorized."""
 
 import logging
+from distutils.util import strtobool
 from wsgiref.util import FileWrapper
 
 from django.http import FileResponse, Http404, HttpResponse
@@ -76,10 +77,7 @@ class DataFileViewSet(ModelViewSet):
 
         # test the PIA feature flag before creation
         # reject if it is off or doesn't exist
-        bool_dict = {"true": True, "false": False, "True": True, "False": False}
-        is_program_audit = bool_dict.get(
-            request.POST.get("is_program_audit", "false"), False
-        )
+        is_program_audit = strtobool(request.POST.get("is_program_audit", "false"))
 
         pia_feature_flag_enabled, pia_feature_flag_config = get_feature_flag(
             "program-integrity-audit"
