@@ -1,11 +1,15 @@
 """Admin classes for core app models."""
 from django.contrib import admin
 from django.contrib.admin.models import LogEntry
+from django.contrib.auth.admin import GroupAdmin
+from django.contrib.auth.models import Group
 from django.forms import ModelForm
 from django.urls import reverse
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
+
 from django_json_widget.widgets import JSONEditorWidget
+from simple_history.admin import SimpleHistoryAdmin
 
 from tdpservice.core.models import FeatureFlag
 from tdpservice.core.utils import ReadOnlyAdminMixin
@@ -50,6 +54,17 @@ class LogEntryAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     object_link.short_description = "object"
 
 
+# Update GroupAdmin to use SimpleHistory
+admin.site.unregister(Group)
+
+
+@admin.register(Group)
+class HistoricalGroupAdmin(SimpleHistoryAdmin, GroupAdmin):
+    """SimpleHistory GroupAdmin."""
+
+    pass
+
+
 class FeatureFlagAdminForm(ModelForm):
     """Custom form for FeatureFlag admin with JSON editor widget."""
 
@@ -57,39 +72,38 @@ class FeatureFlagAdminForm(ModelForm):
         """Metadata."""
 
         model = FeatureFlag
-        fields = '__all__'
+        fields = "__all__"
         widgets = {
-            'config': JSONEditorWidget(options={
-                'mode': 'code',
-                'modes': ['code', 'tree'],
-                'search': True
-            })
+            "config": JSONEditorWidget(
+                options={"mode": "code", "modes": ["code", "tree"], "search": True}
+            )
         }
 
 
 @admin.register(FeatureFlag)
-class FeatureFlagAdmin(admin.ModelAdmin):
+class FeatureFlagAdmin(SimpleHistoryAdmin):
     """Admin interface for FeatureFlag model."""
 
     form = FeatureFlagAdminForm
 
-    list_display = ['feature_name', 'enabled', 'updated_at']
-    list_filter = ['enabled', 'created_at', 'updated_at']
-    search_fields = ['feature_name', 'description']
-    readonly_fields = ['created_at', 'updated_at']
+    list_display = ["feature_name", "enabled", "updated_at"]
+    list_filter = ["enabled", "created_at", "updated_at"]
+    search_fields = ["feature_name", "description"]
+    readonly_fields = ["created_at", "updated_at"]
 
     fieldsets = (
-        ('Feature Identity', {
-            'fields': ('feature_name', 'description')
-        }),
-        ('Configuration', {
-            'fields': ('enabled', 'config'),
-            'description': 'Toggle the feature on/off and configure feature-specific settings'
-        }),
-        ('Metadata', {
-            'fields': ('created_at', 'updated_at'),
-            'classes': ('collapse',)
-        }),
+        ("Feature Identity", {"fields": ("feature_name", "description")}),
+        (
+            "Configuration",
+            {
+                "fields": ("enabled", "config"),
+                "description": "Toggle the feature on/off and configure feature-specific settings",
+            },
+        ),
+        (
+            "Metadata",
+            {"fields": ("created_at", "updated_at"), "classes": ("collapse",)},
+        ),
     )
 
     def has_delete_permission(self, request, obj=None):
