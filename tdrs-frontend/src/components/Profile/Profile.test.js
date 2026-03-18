@@ -1,11 +1,14 @@
 import React from 'react'
 import { thunk } from 'redux-thunk'
 import { Provider } from 'react-redux'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 
 import Profile from './Profile'
 import configureStore from 'redux-mock-store'
+import { get } from '../../fetch-instance'
+
+jest.mock('../../fetch-instance')
 
 const baseUser = {
   email: 'test@example.com',
@@ -37,6 +40,15 @@ describe('Profile', () => {
     // location.reload = jest.fn();
     delete window.location
     window.location = mockLocation
+    get.mockReset()
+    get.mockImplementation((url) =>
+      Promise.resolve({
+        data: url?.includes('/stts/alpha') ? [] : [],
+        ok: true,
+        status: 200,
+        error: null,
+      })
+    )
   })
 
   afterEach(() => {
@@ -80,7 +92,7 @@ describe('Profile', () => {
     render(
       <Provider store={store}>
         <MemoryRouter>
-          <Profile />
+          <Profile type="profile" />
         </MemoryRouter>
       </Provider>
     )
@@ -116,7 +128,7 @@ describe('Profile', () => {
     render(
       <Provider store={store}>
         <MemoryRouter>
-          <Profile />
+          <Profile type="profile" />
         </MemoryRouter>
       </Provider>
     )
@@ -228,7 +240,7 @@ describe('Profile', () => {
     expect(screen.getByText('No one really knows')).toBeInTheDocument()
   })
 
-  it('redirects to /home if access request is missing', () => {
+  it('renders access request form if access request is missing', () => {
     const store = mockStore({
       auth: {
         authenticated: true,
@@ -247,6 +259,9 @@ describe('Profile', () => {
         </MemoryRouter>
       </Provider>
     )
+
+    expect(screen.getByLabelText(/first name/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/last name/i)).toBeInTheDocument()
   })
 
   it('calls setInEditMode with correct arguments', () => {
@@ -523,5 +538,434 @@ describe('Profile', () => {
     )
 
     expect(screen.getByLabelText(/first name/i)).toBeInTheDocument()
+  })
+
+  it('loads pending change requests when profile changes are pending', async () => {
+    const userWithPending = {
+      ...baseUser,
+      id: 123,
+      pending_requests: 1,
+      account_approval_status: 'Approved',
+      roles: [{ id: 1, name: 'OFA System Admin', permissions: [] }],
+    }
+
+    get.mockImplementation((url) => {
+      if (url?.includes('/change-requests/')) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          error: null,
+          data: {
+            results: [
+              {
+                user: 123,
+                status: 'pending',
+                field_name: 'first_name',
+                requested_value: 'Alicia',
+              },
+            ],
+          },
+        })
+      }
+      return Promise.resolve({ data: [], ok: true, status: 200, error: null })
+    })
+
+    const store = mockStore({
+      auth: {
+        authenticated: true,
+        user: userWithPending,
+      },
+      stts: {
+        sttList: [],
+      },
+    })
+
+    render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Profile type="profile" />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText(/^Requested Change$/i)).toBeInTheDocument()
+    })
+    expect(get).toHaveBeenCalled()
+  })
+
+  it('loads pending change requests while editing and reuses them when exiting edit mode', async () => {
+    const userWithPending = {
+      ...baseUser,
+      id: 123,
+      pending_requests: 1,
+      account_approval_status: 'Approved',
+      roles: [{ id: 1, name: 'OFA System Admin', permissions: [] }],
+    }
+
+    get.mockImplementation((url) => {
+      if (url?.includes('/change-requests/')) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          error: null,
+          data: {
+            results: [
+              {
+                user: 123,
+                status: 'pending',
+                field_name: 'has_fra_access',
+                requested_value: 'true',
+              },
+            ],
+          },
+        })
+      }
+      return Promise.resolve({ data: [], ok: true, status: 200, error: null })
+    })
+
+    const store = mockStore({
+      auth: {
+        authenticated: true,
+        user: userWithPending,
+      },
+      stts: {
+        sttList: [],
+      },
+    })
+
+    const { rerender } = render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Profile
+            type="profile"
+            isEditing={true}
+            user={userWithPending}
+            sttList={[]}
+            onCancel={jest.fn()}
+          />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    await waitFor(() => {
+      expect(get).toHaveBeenCalledTimes(1)
+    })
+
+    rerender(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Profile
+            type="profile"
+            isEditing={false}
+            user={userWithPending}
+            sttList={[]}
+            onCancel={jest.fn()}
+          />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    await waitFor(() => {
+      expect(get).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  it('prefills edit form with pending requested name values', async () => {
+    const userWithPending = {
+      ...baseUser,
+      id: 123,
+      pending_requests: 1,
+      account_approval_status: 'Approved',
+      roles: [{ id: 1, name: 'OFA System Admin', permissions: [] }],
+    }
+
+    get.mockImplementation((url) => {
+      if (url?.includes('/change-requests/')) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          error: null,
+          data: {
+            results: [
+              {
+                user: 123,
+                status: 'pending',
+                field_name: 'first_name',
+                requested_value: 'Alicia',
+              },
+            ],
+          },
+        })
+      }
+      return Promise.resolve({ data: [], ok: true, status: 200, error: null })
+    })
+
+    const store = mockStore({
+      auth: {
+        authenticated: true,
+        user: userWithPending,
+      },
+      stts: {
+        sttList: [],
+      },
+    })
+
+    const { rerender } = render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Profile type="profile" isEditing={false} user={userWithPending} />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    await waitFor(() => {
+      expect(get).toHaveBeenCalledTimes(1)
+    })
+
+    rerender(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Profile
+            type="profile"
+            isEditing={true}
+            user={userWithPending}
+            sttList={[]}
+            onCancel={jest.fn()}
+          />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    expect(screen.getByLabelText(/first name/i)).toHaveValue('Alicia')
+    expect(screen.getByLabelText(/last name/i)).toHaveValue('Belcher')
+  })
+
+  it('prefills edit form with pending requested region values', async () => {
+    const userWithPending = {
+      ...baseUser,
+      id: 123,
+      pending_requests: 1,
+      account_approval_status: 'Approved',
+      roles: [{ id: 1, name: 'OFA System Admin', permissions: [] }],
+      email: 'regional-user@acf.hhs.gov',
+      regions: [{ id: 5, name: 'Chicago' }],
+    }
+
+    get.mockImplementation((url) => {
+      if (url?.includes('/change-requests/')) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          error: null,
+          data: {
+            results: [
+              {
+                user: 123,
+                status: 'pending',
+                field_name: 'regions',
+                requested_value: '[3,10]',
+              },
+            ],
+          },
+        })
+      }
+      return Promise.resolve({ data: [], ok: true, status: 200, error: null })
+    })
+
+    const store = mockStore({
+      auth: {
+        authenticated: true,
+        user: userWithPending,
+      },
+      stts: {
+        sttList: [],
+      },
+    })
+
+    const { rerender } = render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Profile type="profile" isEditing={false} user={userWithPending} />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    await waitFor(() => {
+      expect(get).toHaveBeenCalledTimes(1)
+    })
+
+    rerender(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Profile
+            type="profile"
+            isEditing={true}
+            user={userWithPending}
+            sttList={[]}
+            onCancel={jest.fn()}
+          />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    expect(screen.getByLabelText(/Region 3 \(Philadelphia\)/i)).toBeChecked()
+    expect(screen.getByLabelText(/Region 10 \(Seattle\)/i)).toBeChecked()
+    expect(screen.getByLabelText(/Region 5 \(Chicago\)/i)).not.toBeChecked()
+  })
+
+  it('waits for pending change requests before rendering edit form', async () => {
+    const userWithPending = {
+      ...baseUser,
+      id: 123,
+      pending_requests: 1,
+      account_approval_status: 'Approved',
+      roles: [{ id: 1, name: 'OFA System Admin', permissions: [] }],
+      email: 'regional-user@acf.hhs.gov',
+      regions: [{ id: 5, name: 'Chicago' }],
+    }
+
+    let resolvePendingRequests
+    get.mockImplementation((url) => {
+      if (url?.includes('/change-requests/')) {
+        return new Promise((resolve) => {
+          resolvePendingRequests = () =>
+            resolve({
+              ok: true,
+              status: 200,
+              error: null,
+              data: {
+                results: [
+                  {
+                    user: 123,
+                    status: 'pending',
+                    field_name: 'regions',
+                    requested_value: '[3,10]',
+                  },
+                ],
+              },
+            })
+        })
+      }
+      return Promise.resolve({ data: [], ok: true, status: 200, error: null })
+    })
+
+    const store = mockStore({
+      auth: {
+        authenticated: true,
+        user: userWithPending,
+      },
+      stts: {
+        sttList: [],
+      },
+    })
+
+    const { rerender } = render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Profile type="profile" isEditing={false} user={userWithPending} />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    rerender(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Profile
+            type="profile"
+            isEditing={true}
+            user={userWithPending}
+            sttList={[]}
+            onCancel={jest.fn()}
+          />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    expect(
+      screen.queryByLabelText(/Region 10 \(Seattle\)/i)
+    ).not.toBeInTheDocument()
+
+    resolvePendingRequests()
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/Region 10 \(Seattle\)/i)).toBeChecked()
+    })
+    expect(screen.getByLabelText(/Region 5 \(Chicago\)/i)).not.toBeChecked()
+  })
+
+  it('skips pending change request lookup when type is not profile', () => {
+    const userWithPending = {
+      ...baseUser,
+      id: 123,
+      pending_requests: 1,
+      account_approval_status: 'Approved',
+      roles: [{ id: 1, name: 'OFA System Admin', permissions: [] }],
+    }
+
+    const store = mockStore({
+      auth: {
+        authenticated: true,
+        user: userWithPending,
+      },
+      stts: {
+        sttList: [],
+      },
+    })
+
+    render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Profile type="access request" />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    expect(get).not.toHaveBeenCalled()
+  })
+
+  it('clears pending change requests when API fails', async () => {
+    const userWithPending = {
+      ...baseUser,
+      id: 123,
+      pending_requests: 1,
+      account_approval_status: 'Approved',
+      roles: [{ id: 1, name: 'OFA System Admin', permissions: [] }],
+    }
+
+    get.mockImplementation((url) => {
+      if (url?.includes('/change-requests/')) {
+        return Promise.resolve({
+          data: null,
+          ok: false,
+          status: 500,
+          error: new Error('API error'),
+        })
+      }
+      return Promise.resolve({ data: [], ok: true, status: 200, error: null })
+    })
+
+    const store = mockStore({
+      auth: {
+        authenticated: true,
+        user: userWithPending,
+      },
+      stts: {
+        sttList: [],
+      },
+    })
+
+    render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Profile type="profile" />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    await waitFor(() => {
+      expect(get).toHaveBeenCalled()
+    })
+    expect(screen.queryByText(/^Requested Change$/i)).not.toBeInTheDocument()
   })
 })

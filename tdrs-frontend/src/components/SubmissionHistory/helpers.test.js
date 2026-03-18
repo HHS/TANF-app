@@ -1,12 +1,22 @@
-import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
+import {
+  faCheckCircle,
+  faClock,
+  faExclamationCircle,
+  faXmarkCircle,
+} from '@fortawesome/free-solid-svg-icons'
+
 import { get } from '../../fetch-instance'
 import { getParseErrors } from '../../actions/createXLSReport'
 import {
-  formatProgramType,
-  downloadErrorReport,
-  getErrorReportStatus,
   SubmissionSummaryStatusIcon,
+  downloadErrorReport,
+  fileStatusOrDefault,
+  formatProgramType,
+  getErrorReportStatus,
+  getReprocessedDate,
+  getSummaryStatusLabel,
+  hasReparsed,
 } from './helpers'
 
 jest.mock('../../fetch-instance')
@@ -50,7 +60,7 @@ describe('downloadErrorReport', () => {
   })
 
   it('logs error when API returns non-ok response', async () => {
-    const consoleSpy = jest.spyOn(console, 'log').mockImplementation()
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {})
     get.mockResolvedValue({
       data: null,
       ok: false,
@@ -125,23 +135,57 @@ describe('getErrorReportStatus', () => {
 })
 
 describe('SubmissionSummaryStatusIcon', () => {
-  it.each([
-    ['Pending'],
-    ['Accepted'],
-    ['Partially Accepted with Errors'],
-    ['Accepted with Errors'],
-    ['Rejected'],
-  ])('renders icon for status "%s"', (status) => {
-    const { container } = render(
-      <SubmissionSummaryStatusIcon status={status} />
-    )
-    expect(container.querySelector('svg')).toBeInTheDocument()
+  it('maps Pending to clock icon', () => {
+    const element = SubmissionSummaryStatusIcon({ status: 'Pending' })
+    expect(element.props.icon).toBe(faClock)
+    expect(element.props.color).toBe('#005EA2')
   })
 
-  it('renders without icon for unknown status', () => {
-    const { container } = render(
-      <SubmissionSummaryStatusIcon status="Unknown" />
+  it('maps Accepted to check icon', () => {
+    const element = SubmissionSummaryStatusIcon({ status: 'Accepted' })
+    expect(element.props.icon).toBe(faCheckCircle)
+    expect(element.props.color).toBe('#40bb45')
+  })
+
+  it('maps Accepted with Errors to exclamation icon', () => {
+    const element = SubmissionSummaryStatusIcon({
+      status: 'Accepted with Errors',
+    })
+    expect(element.props.icon).toBe(faExclamationCircle)
+    expect(element.props.color).toBe('#ec4e11')
+  })
+
+  it('maps Rejected to x icon', () => {
+    const element = SubmissionSummaryStatusIcon({ status: 'Rejected' })
+    expect(element.props.icon).toBe(faXmarkCircle)
+    expect(element.props.color).toBe('#bb0000')
+  })
+})
+
+describe('summary helpers', () => {
+  it('detects reparsed files', () => {
+    expect(
+      hasReparsed({ latest_reparse_file_meta: { finished_at: '2024-01-01' } })
+    ).toBe(true)
+    expect(hasReparsed({ latest_reparse_file_meta: {} })).toBeFalsy()
+  })
+
+  it('returns reprocessed date', () => {
+    expect(
+      getReprocessedDate({
+        latest_reparse_file_meta: { finished_at: '2024-02-02' },
+      })
+    ).toEqual('2024-02-02')
+  })
+
+  it('returns Pending for missing status', () => {
+    expect(fileStatusOrDefault(null)).toEqual('Pending')
+  })
+
+  it('returns status label for TimedOut', () => {
+    const file = { summary: { status: 'TimedOut' } }
+    expect(getSummaryStatusLabel(file)).toEqual(
+      'Still processing. Check back soon.'
     )
-    expect(container.querySelector('svg')).toBeNull()
   })
 })

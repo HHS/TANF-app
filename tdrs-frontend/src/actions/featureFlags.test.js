@@ -47,4 +47,21 @@ describe('actions/featureFlags.js', () => {
     expect(actions[1].type).toBe(FETCH_FEATURE_FLAGS)
     expect(actions[2].type).toBe(SET_FEATURE_FLAGS_ERROR)
   })
+
+  it('does not dispatch SET_FEATURE_FLAGS when response has no data', async () => {
+    get.mockImplementationOnce(() =>
+      Promise.resolve({
+        data: null,
+      })
+    )
+    const store = mockStore()
+
+    await store.dispatch(fetchFeatureFlags())
+
+    const actions = store.getActions()
+    expect(actions.map((action) => action.type)).toEqual([
+      CLEAR_FEATURE_FLAGS,
+      FETCH_FEATURE_FLAGS,
+    ])
+  })
 })
