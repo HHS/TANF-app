@@ -217,6 +217,8 @@ describe('FeedbackReportAlert', () => {
     await waitFor(() => {
       const link = screen.getByRole('link', { name: /review the feedback/i })
       expect(link).toHaveAttribute('href', '/feedback-reports?year=2025')
+      expect(link).toHaveAttribute('target', '_blank')
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer')
     })
   })
 
@@ -242,6 +244,10 @@ describe('FeedbackReportAlert', () => {
       expect(alert).toHaveClass('usa-alert--info')
       expect(alert).toHaveClass('margin-top-4')
       expect(alert).toHaveClass('margin-bottom-4')
+      expect(alert).toHaveAttribute('role', 'region')
+      expect(alert).toHaveAttribute('aria-labelledby', 'feedback-alert-text')
+      const alertText = alert.querySelector('#feedback-alert-text')
+      expect(alertText).toBeInTheDocument()
     })
   })
 

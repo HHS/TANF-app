@@ -96,7 +96,11 @@ const FeedbackReportAlert = ({ stt = null }) => {
   })
 
   return (
-    <div className="usa-alert usa-alert--info margin-top-4 margin-bottom-4">
+    <div
+      className="usa-alert usa-alert--info margin-top-4 margin-bottom-4"
+      role="region"
+      aria-labelledby="feedback-alert-text"
+    >
       <div
         className="usa-alert__body"
         style={{
@@ -105,10 +109,12 @@ const FeedbackReportAlert = ({ stt = null }) => {
           alignItems: 'flex-start',
         }}
       >
-        <p className="usa-alert__text">
+        <p className="usa-alert__text" id="feedback-alert-text">
           Feedback Reports Available as of {formattedDate}. Please{' '}
           <a
             href={`/feedback-reports?year=${yearInputValue}${stt ? `&stt=${stt.name}` : ''}`}
+            target="_blank"
+            rel="noopener noreferrer"
           >
             review the feedback
           </a>{' '}
