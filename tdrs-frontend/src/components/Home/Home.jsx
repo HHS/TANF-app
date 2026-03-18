@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import ResourceCards from '../ResourceCards'
-import RequestAccessForm from '../RequestAccessForm/RequestAccessForm'
 import {
   accountStatusIsApproved,
   accountIsInReview,
@@ -26,7 +25,7 @@ function Home({ setInEditMode }) {
     setInEditMode(isEditing, 'access request')
   }, [isEditing, setInEditMode])
 
-  if (userAccessInReview) {
+  if (userAccessInReview || !userAccessRequestApproved) {
     return (
       <Profile
         isEditing={isEditing}
@@ -37,8 +36,6 @@ function Home({ setInEditMode }) {
         onCancel={() => setIsEditing(false)}
       />
     )
-  } else if (!userAccessRequestApproved) {
-    return <RequestAccessForm user={user} sttList={sttList} />
   }
 
   return (
