@@ -1,5 +1,5 @@
 import React from 'react'
-import { render } from '@testing-library/react'
+import { render, fireEvent, waitFor } from '@testing-library/react'
 import ProgramIntegrityAuditReports from './ProgramIntegrityAuditReports'
 
 // Mock children so we can assert conditional rendering without pulling in context wiring
@@ -68,5 +68,58 @@ describe('ProgramIntegrityAuditReports', () => {
     expect(getByText(/Submission History/i)).toBeInTheDocument()
     expect(getByTestId('quarter-submission-history')).toBeInTheDocument()
     expect(queryByTestId('quarter-upload-form')).not.toBeInTheDocument()
+  })
+
+  it('shows the default date range when feature flag is not set', async () => {
+    mockUseReportsContext.mockReturnValue(baseContext)
+
+    const { getByLabelText, getAllByRole } = render(
+      <ProgramIntegrityAuditReports stt={stt} isRegionalStaff />
+    )
+
+    const yearSelect = getByLabelText('Fiscal Year (October - September)*')
+    expect(yearSelect.value).toBe('2024')
+
+    const options = getAllByRole('option')
+    expect(options.length).toBe(1)
+    expect(options[0].value).toBe('2024')
+  })
+
+  it('shows the configured date range when feature flag is set', async () => {
+    mockUseReportsContext.mockReturnValue({
+      ...baseContext,
+      piaFeatureFlag: {
+        enabled: true,
+        config: { minYear: 2023, maxYear: 2025 },
+      },
+    })
+
+    const { getAllByRole } = render(
+      <ProgramIntegrityAuditReports stt={stt} isRegionalStaff />
+    )
+
+    const options = getAllByRole('option')
+    expect(options.length).toBe(3)
+    expect(options[0].value).toBe('2025')
+    expect(options[1].value).toBe('2024')
+    expect(options[2].value).toBe('2023')
+  })
+
+  it('handles maxYear < minYear by falling back to minYear', async () => {
+    mockUseReportsContext.mockReturnValue({
+      ...baseContext,
+      piaFeatureFlag: {
+        enabled: true,
+        config: { minYear: 2025, maxYear: 2023 },
+      },
+    })
+
+    const { getAllByRole } = render(
+      <ProgramIntegrityAuditReports stt={stt} isRegionalStaff />
+    )
+
+    const options = getAllByRole('option')
+    expect(options.length).toBe(1)
+    expect(options[0].value).toBe('2025')
   })
 })
