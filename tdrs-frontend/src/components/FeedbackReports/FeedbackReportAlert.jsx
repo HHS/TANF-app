@@ -100,6 +100,7 @@ const FeedbackReportAlert = ({ stt = null }) => {
       className="usa-alert usa-alert--info margin-top-4 margin-bottom-4"
       role="region"
       aria-labelledby="feedback-alert-text"
+      tabIndex={-1}
     >
       <div
         className="usa-alert__body"
