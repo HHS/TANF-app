@@ -76,8 +76,7 @@ class DataFileViewSet(ModelViewSet):
 
         # test the PIA feature flag before creation
         # reject if it is off or doesn't exist
-        file_type = request.data.get("file_type")
-        is_program_audit = file_type == DataFileViewSet.PIA_FILE_TYPE
+        is_program_audit = request.data.get("is_program_audit", False)
         pia_feature_flag_enabled, pia_feature_flag_config = get_feature_flag(
             "program-integrity-audit"
         )

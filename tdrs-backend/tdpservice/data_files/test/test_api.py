@@ -523,7 +523,7 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
     @pytest.mark.django_db
     def test_no_pia_feat_flag_blocks_uploads(self, api_client, data_file_data):
         """Test a nonexistant pia feature flag creates an error response from upload."""
-        data_file_data["file_type"] = "program-integrity-audit"
+        data_file_data["is_program_audit"] = True
 
         response = self.post_data_file(api_client, data_file_data)
         assert response.data == {"message": "This file type is not supported."}
@@ -551,7 +551,6 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
             enabled=True,
             config={"minYear": minYear, "maxYear": maxYear},
         )
-        data_file_data["file_type"] = "program-integrity-audit"
         data_file_data["is_program_audit"] = True
         data_file_data["year"] = dfYear
 
