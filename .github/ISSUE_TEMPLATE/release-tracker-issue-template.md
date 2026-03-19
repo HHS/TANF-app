@@ -39,6 +39,15 @@ https://github.com/raft-tech/TANF-app/releases/tag/vX.X.X
 ### 🧪 2. Staging Validation & QASP (ACF / Alex)
 *Tracking the status once ACF takes over deployment and testing.*
 
+### Before you Deploy
+- [ ] **Requires base image updates**: 
+  - [ ] Re-tag `ghcr.io/raft-tech/tdp-frontend-base:vX.X.X` for the HHS GHCR instance
+  - [ ] Re-tag `ghcr.io/raft-tech/tdp-backend-base:vX.X.X` for the HHS GHCR instance
+- [ ] **Requires HHS CircleCI config updates**: 
+  - [ ] 
+- [ ] **Requires PLG deployment**
+
+### Staging Deployment
 - [ ] **Staging Cleared:** Team notified that Staging is about to be updated/restarted.
 - [ ] **Deployed to Staging:** PR merged and deployed to the Staging environment.
 - [ ] **Feature Validation:** Testing instructions from the linked PRs have been executed and passed.
