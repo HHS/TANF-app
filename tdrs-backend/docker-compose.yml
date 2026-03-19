@@ -229,6 +229,7 @@ services:
       ./manage.py makemigrations &&
       ./manage.py migrate &&
       ./manage.py populate_stts &&
+      ./manage.py populate_history --auto &&
       python ./plg/grafana_views/generate_views.py --all &&
       ./manage.py runscript apply_grafana_views &&
       ./gunicorn_start.sh"

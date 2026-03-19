@@ -350,7 +350,7 @@ function RequestAccessForm({
 
         {((editMode &&
           !isAMSUser &&
-          user.account_approval_status === 'Access request') ||
+          user.account_approval_status !== 'Approved') ||
           (user.account_approval_status === 'Initial' && !isAMSUser)) && (
           <>
             <JurisdictionSelector

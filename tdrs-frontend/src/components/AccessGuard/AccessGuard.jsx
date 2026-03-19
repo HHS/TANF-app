@@ -2,9 +2,12 @@ import { useSelector } from 'react-redux'
 import {
   accountStatusIsApproved,
   selectUserPermissions,
-  selectFeatureFlags,
   selectPrimaryUserRole,
 } from '../../selectors/auth'
+import {
+  getFlagOrDefault,
+  selectFeatureFlags,
+} from '../../selectors/featureFlags'
 
 const isAllowed = (
   { permissions, isApproved, featureFlags, role },
@@ -34,7 +37,8 @@ const isAllowed = (
   if (isSystemAdmin) return true
 
   for (var f = 0; f < requiredFeatureFlags.length; f++) {
-    if (featureFlags[requiredFeatureFlags[f]] !== true) {
+    const featureFlag = getFlagOrDefault(requiredFeatureFlags[f], featureFlags)
+    if (!featureFlag || featureFlag.enabled !== true) {
       return false
     }
   }
@@ -42,7 +46,7 @@ const isAllowed = (
   return true
 }
 
-const PermissionGuard = ({
+const AccessGuard = ({
   children,
   requiresApproval = false,
   requiredPermissions = [],
@@ -64,4 +68,4 @@ const PermissionGuard = ({
     : notAllowedComponent
 }
 
-export default PermissionGuard
+export default AccessGuard
