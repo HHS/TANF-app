@@ -36,6 +36,7 @@ Feature: Data file submission
         Then 'FRA Data Analyst Fred' sees the upload in 'SSP' Submission History
         And 'FRA Data Analyst Fred' can download the 'SSP' error report
 
+    @focus
     Scenario Outline: <actor> can submit a <program> Section <section> data file
         Given '<actor>' logs in
         When '<actor>' uploads a '<program>' Section '<section>' data file for '<stt>'
@@ -60,6 +61,8 @@ Feature: Data file submission
             # No need to test all programs and sections since they were tested above
             | DIGIT Diana          | TANF    | 1       | Alabama  |
             | DIGIT Diana          | TANF    | 1       | Arkansas |
+            | Data Analyst Tim     | PIA     | 1       |          |
+            | Data Analyst Tim     | PIA     | 2       |          |
 
     # Edge / failure cases for TANF Data Analyst Tim
 
