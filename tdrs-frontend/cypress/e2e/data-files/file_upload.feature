@@ -36,7 +36,6 @@ Feature: Data file submission
         Then 'FRA Data Analyst Fred' sees the upload in 'SSP' Submission History
         And 'FRA Data Analyst Fred' can download the 'SSP' error report
 
-    @focus
     Scenario Outline: <actor> can submit a <program> Section <section> data file
         Given '<actor>' logs in
         When '<actor>' uploads a '<program>' Section '<section>' data file for '<stt>'
