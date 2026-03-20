@@ -3,6 +3,7 @@
 import pytest
 
 from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.util import create_s3_log_file_path
 from tdpservice.stts.models import STT
 
 
@@ -167,3 +168,58 @@ def test_fiscal_year(data_file_instance):
     assert df.fiscal_year == "2020 - Q3 (Apr - Jun)"
     df.quarter = "Q4"
     assert df.fiscal_year == "2020 - Q4 (Jul - Sep)"
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "section, program_type",
+    [
+        ("Active Case Data", "TAN"),
+        ("Closed Case Data", "SSP"),
+        ("Aggregate Data", "TRIBAL"),
+        ("Work Outcomes of TANF Exiters", "FRA"),
+    ],
+)
+def test_create_s3_log_file_path_includes_program_type_and_id(
+    data_file_instance, section, program_type
+):
+    """Log file path includes program type and datafile ID for uniqueness."""
+    df = DataFile.create_new_version(
+        {
+            "year": data_file_instance.year,
+            "quarter": data_file_instance.quarter,
+            "section": section,
+            "program_type": program_type,
+            "stt": data_file_instance.stt,
+            "original_filename": data_file_instance.original_filename,
+            "slug": data_file_instance.slug,
+            "extension": data_file_instance.extension,
+            "user": data_file_instance.user,
+            "is_program_audit": False,
+        }
+    )
+
+    path = create_s3_log_file_path(df)
+    expected = f"{df.year}/{df.quarter}/{df.stt}/{program_type}/{section}/{df.id}"
+    assert path == expected
+
+
+@pytest.mark.django_db
+def test_create_s3_log_file_path_unique_per_datafile(data_file_instance):
+    """Two DataFiles for the same STT/year/quarter/section produce different paths."""
+    common = {
+        "year": data_file_instance.year,
+        "quarter": data_file_instance.quarter,
+        "section": data_file_instance.section,
+        "program_type": data_file_instance.program_type,
+        "stt": data_file_instance.stt,
+        "original_filename": data_file_instance.original_filename,
+        "slug": data_file_instance.slug,
+        "extension": data_file_instance.extension,
+        "user": data_file_instance.user,
+        "is_program_audit": False,
+    }
+    df1 = DataFile.create_new_version(common)
+    df2 = DataFile.create_new_version(common)
+
+    assert create_s3_log_file_path(df1) != create_s3_log_file_path(df2)

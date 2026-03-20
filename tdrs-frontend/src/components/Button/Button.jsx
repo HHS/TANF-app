@@ -18,6 +18,7 @@ function Button({
   target = '_blank',
   href,
   buttonKey = null,
+  ...rest
 }) {
   const isBig = size ? size === 'big' : false
   const isSmall = size ? size === 'small' : false
@@ -61,6 +62,7 @@ function Button({
         disabled={disabled}
         aria-disabled={disabled}
         buttonkey={buttonKey}
+        {...rest}
       >
         {children}
       </button>
@@ -78,6 +80,7 @@ function Button({
       aria-disabled={disabled || undefined}
       onClick={handleClick}
       buttonkey={buttonKey}
+      {...rest}
     >
       {children}
     </a>

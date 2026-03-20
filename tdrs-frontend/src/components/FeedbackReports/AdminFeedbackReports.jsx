@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import axiosInstance from '../../axios-instance'
+import { get, post } from '../../fetch-instance'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
 import FeedbackReportsUpload from './FeedbackReportsUpload'
 import FeedbackReportsHistory from './FeedbackReportsHistory'
@@ -63,25 +63,22 @@ function AdminFeedbackReports() {
     }
 
     setHistoryLoading(true)
-    try {
-      const response = await axiosInstance.get(
-        `${process.env.REACT_APP_BACKEND_URL}/reports/report-sources/`,
-        {
-          params: { year: selectedYear },
-          withCredentials: true,
-        }
-      )
-      setUploadHistory(response.data.results)
-    } catch (error) {
+    const { data, ok, error } = await get(
+      `${process.env.REACT_APP_BACKEND_URL}/reports/report-sources/`,
+      { params: { year: selectedYear } }
+    )
+
+    if (ok) {
+      setUploadHistory(data.results)
+    } else {
       console.error('Failed to fetch upload history:', error)
       setAlert({
         active: true,
         type: 'error',
         message: 'Failed to load upload history. Please refresh the page.',
       })
-    } finally {
-      setHistoryLoading(false)
     }
+    setHistoryLoading(false)
   }, [selectedYear])
 
   // Fetch upload history when year changes
@@ -208,16 +205,12 @@ function AdminFeedbackReports() {
     formData.append('year', selectedYear)
     formData.append('date_extracted_on', getDatePickerValue())
 
-    try {
-      await axiosInstance.post(
-        `${process.env.REACT_APP_BACKEND_URL}/reports/report-sources/`,
-        formData,
-        {
-          headers: { 'Content-Type': 'multipart/form-data' },
-          withCredentials: true,
-        }
-      )
+    const { data, ok } = await post(
+      `${process.env.REACT_APP_BACKEND_URL}/reports/report-sources/`,
+      formData
+    )
 
+    if (ok) {
       setAlert({
         active: true,
         type: 'success',
@@ -235,11 +228,11 @@ function AdminFeedbackReports() {
 
       // Refresh upload history
       fetchUploadHistory()
-    } catch (error) {
+    } else {
       const errorMessage =
-        error.response?.data?.file?.[0] ||
-        error.response?.data?.detail ||
-        error.response?.data?.message ||
+        data?.file?.[0] ||
+        data?.detail ||
+        data?.message ||
         'Upload failed. Please try again.'
 
       setAlert({
@@ -247,9 +240,9 @@ function AdminFeedbackReports() {
         type: 'error',
         message: errorMessage,
       })
-    } finally {
-      setLoading(false)
     }
+
+    setLoading(false)
   }
 
   /**

@@ -5,15 +5,16 @@ import zipfile
 from datetime import date, datetime
 from unittest.mock import patch
 
-import pytest
 from django.utils import timezone
 
+import pytest
+
+from tdpservice.reports.models import ReportFile, ReportSource
 from tdpservice.reports.tasks import (
-    find_stt_folders,
     bundle_stt_files,
+    find_stt_folders,
     process_report_source,
 )
-from tdpservice.reports.models import ReportFile, ReportSource
 from tdpservice.reports.test.conftest import create_nested_zip
 
 
@@ -22,13 +23,7 @@ class TestFindSttFolders:
 
     def test_single_stt(self):
         """Should find files for a single STT."""
-        structure = {
-            "FY2025": {
-                "RO1": {
-                    "F1": ["report1.pdf", "report2.pdf"]
-                }
-            }
-        }
+        structure = {"FY2025": {"RO1": {"F1": ["report1.pdf", "report2.pdf"]}}}
         zip_buffer = create_nested_zip(structure, "FY2025_test")
         zip_file = zipfile.ZipFile(zip_buffer)
 
@@ -41,10 +36,7 @@ class TestFindSttFolders:
         """Should find files for multiple STTs."""
         structure = {
             "FY2025": {
-                "RO1": {
-                    "F1": ["report1.pdf"],
-                    "F2": ["report2.pdf", "report3.pdf"]
-                }
+                "RO1": {"F1": ["report1.pdf"], "F2": ["report2.pdf", "report3.pdf"]}
             }
         }
         zip_buffer = create_nested_zip(structure, "FY2025_test")
@@ -60,14 +52,7 @@ class TestFindSttFolders:
     def test_multiple_regions(self):
         """Should find files across multiple regions."""
         structure = {
-            "FY2025": {
-                "RO1": {
-                    "F1": ["report1.pdf"]
-                },
-                "RO2": {
-                    "F2": ["report2.pdf"]
-                }
-            }
+            "FY2025": {"RO1": {"F1": ["report1.pdf"]}, "RO2": {"F2": ["report2.pdf"]}}
         }
         zip_buffer = create_nested_zip(structure, "FY2025_test")
         zip_file = zipfile.ZipFile(zip_buffer)
@@ -80,7 +65,7 @@ class TestFindSttFolders:
     def test_no_stt_folders(self):
         """Should raise ValueError if no STT folders found."""
         zip_buffer = io.BytesIO()
-        with zipfile.ZipFile(zip_buffer, 'w') as zf:
+        with zipfile.ZipFile(zip_buffer, "w") as zf:
             # Only 2 levels deep - not enough (need 5: root/FY/RO/F/file)
             zf.writestr("FY2025_test/FY2025/report.pdf", b"content")
         zip_buffer.seek(0)
@@ -95,19 +80,14 @@ class TestBundleSttFiles:
 
     def test_bundle_multiple_files(self):
         """Should bundle multiple files into a single zip."""
-        structure = {
-            "FY2025": {
-                "RO1": {
-                    "F1": ["report1.pdf", "report2.pdf"]
-                }
-            }
-        }
+        structure = {"FY2025": {"RO1": {"F1": ["report1.pdf", "report2.pdf"]}}}
         zip_buffer = create_nested_zip(structure, "FY2025_test")
         report_source_zip = zipfile.ZipFile(zip_buffer)
 
         # Get file infos for STT "F1" (which maps to stt_code "1")
         file_infos = [
-            info for info in report_source_zip.infolist()
+            info
+            for info in report_source_zip.infolist()
             if not info.is_dir() and "FY2025_test/FY2025/RO1/F1/" in info.filename
         ]
 
@@ -127,18 +107,13 @@ class TestBundleSttFiles:
 
     def test_bundle_flattens_structure(self):
         """Should flatten folder structure when bundling."""
-        structure = {
-            "FY2025": {
-                "RO1": {
-                    "F1": ["report1.pdf"]
-                }
-            }
-        }
+        structure = {"FY2025": {"RO1": {"F1": ["report1.pdf"]}}}
         zip_buffer = create_nested_zip(structure, "FY2025_test")
         report_source_zip = zipfile.ZipFile(zip_buffer)
 
         file_infos = [
-            info for info in report_source_zip.infolist()
+            info
+            for info in report_source_zip.infolist()
             if not info.is_dir() and "FY2025_test/FY2025/RO1/F1/" in info.filename
         ]
 
@@ -155,10 +130,10 @@ class TestBundleSttFiles:
 class TestProcessReportSource:
     """Tests for process_report_source task."""
 
-    @patch('tdpservice.reports.tasks.timezone.now')
+    @patch("tdpservice.reports.tasks.timezone.now")
     def test_process_valid_report_source_zip(self, mock_now, ofa_admin):
         """Should successfully process a valid report source zip."""
-        from tdpservice.stts.models import Region, STT
+        from tdpservice.stts.models import STT, Region
 
         # Create region and STT with stt_code="01" directly
         region = Region.objects.create(id=9001, name="Test Region")
@@ -168,26 +143,19 @@ class TestProcessReportSource:
             name="Test STT 1",
             region=region,
             postal_code="T1",
-            type="STATE"
+            type="STATE",
         )
 
         mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
 
         # Create source record with nested zip
-        structure = {
-            "FY2025": {
-                "RO1": {
-                    "F1": ["report1.pdf", "report2.pdf"]
-                }
-            }
-        }
+        structure = {"FY2025": {"RO1": {"F1": ["report1.pdf", "report2.pdf"]}}}
         zip_buffer = create_nested_zip(structure, "FY2025_01312025")
 
         from django.core.files.uploadedfile import SimpleUploadedFile
+
         uploaded_file = SimpleUploadedFile(
-            "report_source.zip",
-            zip_buffer.read(),
-            content_type="application/zip"
+            "report_source.zip", zip_buffer.read(), content_type="application/zip"
         )
 
         source = ReportSource.objects.create(
@@ -220,10 +188,10 @@ class TestProcessReportSource:
         assert report_file.stt.stt_code == "01"
         assert report_file.version == 1
 
-    @patch('tdpservice.reports.tasks.timezone.now')
+    @patch("tdpservice.reports.tasks.timezone.now")
     def test_process_multiple_stts(self, mock_now, ofa_admin):
         """Should create multiple ReportFiles for multiple STTs."""
-        from tdpservice.stts.models import Region, STT
+        from tdpservice.stts.models import STT, Region
 
         # Create a shared region for both STTs
         region = Region.objects.create(id=9002, name="Test Region 2")
@@ -235,7 +203,7 @@ class TestProcessReportSource:
             name="Test STT 1",
             region=region,
             postal_code="T1",
-            type="STATE"
+            type="STATE",
         )
         STT.objects.create(
             id=8003,
@@ -243,26 +211,18 @@ class TestProcessReportSource:
             name="Test STT 2",
             region=region,
             postal_code="T2",
-            type="STATE"
+            type="STATE",
         )
 
         mock_now.return_value = timezone.make_aware(datetime(2025, 5, 1))
 
-        structure = {
-            "FY2025": {
-                "RO1": {
-                    "F1": ["report1.pdf"],
-                    "F2": ["report2.pdf"]
-                }
-            }
-        }
+        structure = {"FY2025": {"RO1": {"F1": ["report1.pdf"], "F2": ["report2.pdf"]}}}
         zip_buffer = create_nested_zip(structure, "FY2025_04302025")
 
         from django.core.files.uploadedfile import SimpleUploadedFile
+
         uploaded_file = SimpleUploadedFile(
-            "report_source.zip",
-            zip_buffer.read(),
-            content_type="application/zip"
+            "report_source.zip", zip_buffer.read(), content_type="application/zip"
         )
 
         source = ReportSource.objects.create(
@@ -294,10 +254,9 @@ class TestProcessReportSource:
     def test_process_invalid_zip(self, ofa_admin):
         """Should fail gracefully with invalid zip file."""
         from django.core.files.uploadedfile import SimpleUploadedFile
+
         uploaded_file = SimpleUploadedFile(
-            "report_source.zip",
-            b"not a zip file",
-            content_type="application/zip"
+            "report_source.zip", b"not a zip file", content_type="application/zip"
         )
 
         source = ReportSource.objects.create(
@@ -317,20 +276,13 @@ class TestProcessReportSource:
 
     def test_process_invalid_stt_code(self, ofa_admin):
         """Should fail with non-existent STT code."""
-        structure = {
-            "FY2025": {
-                "RO1": {
-                    "F999": ["report1.pdf"]  # Invalid STT code
-                }
-            }
-        }
+        structure = {"FY2025": {"RO1": {"F999": ["report1.pdf"]}}}  # Invalid STT code
         zip_buffer = create_nested_zip(structure, "FY2025_test")
 
         from django.core.files.uploadedfile import SimpleUploadedFile
+
         uploaded_file = SimpleUploadedFile(
-            "report_source.zip",
-            zip_buffer.read(),
-            content_type="application/zip"
+            "report_source.zip", zip_buffer.read(), content_type="application/zip"
         )
 
         source = ReportSource.objects.create(
@@ -350,7 +302,7 @@ class TestProcessReportSource:
 
     def test_process_uses_source_year(self, ofa_admin):
         """Should use year from source model for ReportFile records."""
-        from tdpservice.stts.models import Region, STT
+        from tdpservice.stts.models import STT, Region
 
         # Create region and STT
         region = Region.objects.create(id=9005, name="Test Region 5")
@@ -360,24 +312,17 @@ class TestProcessReportSource:
             name="Test STT 1",
             region=region,
             postal_code="T1",
-            type="STATE"
+            type="STATE",
         )
 
         # Zip has FY2025 structure, but source.year=2024
-        structure = {
-            "FY2025": {
-                "RO9005": {
-                    "F1": ["report1.pdf"]
-                }
-            }
-        }
+        structure = {"FY2025": {"RO9005": {"F1": ["report1.pdf"]}}}
         zip_buffer = create_nested_zip(structure, "FY2025_test")
 
         from django.core.files.uploadedfile import SimpleUploadedFile
+
         uploaded_file = SimpleUploadedFile(
-            "report_source.zip",
-            zip_buffer.read(),
-            content_type="application/zip"
+            "report_source.zip", zip_buffer.read(), content_type="application/zip"
         )
 
         # Create with year=2024 (different from zip structure which has 2025)
@@ -406,15 +351,18 @@ class TestProcessReportSource:
 class TestProcessReportSourceEmailNotification:
     """Tests for email notification when ReportFile is created."""
 
-    @patch('tdpservice.reports.tasks.send_feedback_report_available_email')
-    @patch('tdpservice.reports.tasks.timezone.now')
+    @patch("tdpservice.reports.tasks.send_feedback_report_available_email")
+    @patch("tdpservice.reports.tasks.timezone.now")
     def test_sends_email_when_report_file_created(
         self, mock_now, mock_send_email, ofa_admin
     ):
         """Test that email is sent when a ReportFile is created."""
+        mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
+
         from django.contrib.auth.models import Group
-        from tdpservice.stts.models import Region, STT
-        from tdpservice.users.models import User, AccountApprovalStatusChoices
+
+        from tdpservice.stts.models import STT, Region
+        from tdpservice.users.models import AccountApprovalStatusChoices, User
 
         # Create region and STT
         region = Region.objects.create(id=9010, name="Test Region 10")
@@ -424,7 +372,7 @@ class TestProcessReportSourceEmailNotification:
             name="Test STT Email",
             region=region,
             postal_code="TE",
-            type="STATE"
+            type="STATE",
         )
 
         # Create a Data Analyst for this STT
@@ -437,18 +385,14 @@ class TestProcessReportSourceEmailNotification:
         )
         data_analyst.groups.add(data_analyst_group)
 
-        # Mock timezone
-        mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
-
         # Create source record
         structure = {"FY2025": {"RO1": {"F1": ["report.pdf"]}}}
         zip_buffer = create_nested_zip(structure, "FY2025_test")
 
         from django.core.files.uploadedfile import SimpleUploadedFile
+
         uploaded_file = SimpleUploadedFile(
-            "report_source.zip",
-            zip_buffer.read(),
-            content_type="application/zip"
+            "report_source.zip", zip_buffer.read(), content_type="application/zip"
         )
 
         source = ReportSource.objects.create(
@@ -470,13 +414,13 @@ class TestProcessReportSourceEmailNotification:
         assert isinstance(call_args[0], ReportFile)
         assert "test_analyst@example.com" in call_args[1]
 
-    @patch('tdpservice.reports.tasks.send_feedback_report_available_email')
-    @patch('tdpservice.reports.tasks.timezone.now')
+    @patch("tdpservice.reports.tasks.send_feedback_report_available_email")
+    @patch("tdpservice.reports.tasks.timezone.now")
     def test_does_not_send_email_when_no_data_analysts(
         self, mock_now, mock_send_email, ofa_admin
     ):
         """Test that no email is sent when no Data Analysts exist for STT."""
-        from tdpservice.stts.models import Region, STT
+        from tdpservice.stts.models import STT, Region
 
         # Create region and STT with no Data Analysts
         region = Region.objects.create(id=9011, name="Test Region 11")
@@ -486,7 +430,7 @@ class TestProcessReportSourceEmailNotification:
             name="Test STT No Analysts",
             region=region,
             postal_code="TN",
-            type="STATE"
+            type="STATE",
         )
 
         mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
@@ -495,10 +439,9 @@ class TestProcessReportSourceEmailNotification:
         zip_buffer = create_nested_zip(structure, "FY2025_test")
 
         from django.core.files.uploadedfile import SimpleUploadedFile
+
         uploaded_file = SimpleUploadedFile(
-            "report_source.zip",
-            zip_buffer.read(),
-            content_type="application/zip"
+            "report_source.zip", zip_buffer.read(), content_type="application/zip"
         )
 
         source = ReportSource.objects.create(
@@ -515,15 +458,18 @@ class TestProcessReportSourceEmailNotification:
         # Verify email was not called (empty list of recipients)
         mock_send_email.assert_not_called()
 
-    @patch('tdpservice.reports.tasks.send_feedback_report_available_email')
-    @patch('tdpservice.reports.tasks.timezone.now')
+    @patch("tdpservice.reports.tasks.send_feedback_report_available_email")
+    @patch("tdpservice.reports.tasks.timezone.now")
     def test_sends_email_to_multiple_data_analysts(
         self, mock_now, mock_send_email, ofa_admin
     ):
         """Test that email is sent to all Data Analysts for the STT."""
+        mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
+
         from django.contrib.auth.models import Group
-        from tdpservice.stts.models import Region, STT
-        from tdpservice.users.models import User, AccountApprovalStatusChoices
+
+        from tdpservice.stts.models import STT, Region
+        from tdpservice.users.models import AccountApprovalStatusChoices, User
 
         # Create region and STT
         region = Region.objects.create(id=9012, name="Test Region 12")
@@ -533,7 +479,7 @@ class TestProcessReportSourceEmailNotification:
             name="Test STT Multiple Analysts",
             region=region,
             postal_code="TM",
-            type="STATE"
+            type="STATE",
         )
 
         # Create multiple Data Analysts for this STT
@@ -549,16 +495,13 @@ class TestProcessReportSourceEmailNotification:
             analyst.groups.add(data_analyst_group)
             analysts.append(analyst)
 
-        mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
-
         structure = {"FY2025": {"RO1": {"F1": ["report.pdf"]}}}
         zip_buffer = create_nested_zip(structure, "FY2025_test")
 
         from django.core.files.uploadedfile import SimpleUploadedFile
+
         uploaded_file = SimpleUploadedFile(
-            "report_source.zip",
-            zip_buffer.read(),
-            content_type="application/zip"
+            "report_source.zip", zip_buffer.read(), content_type="application/zip"
         )
 
         source = ReportSource.objects.create(
@@ -580,15 +523,18 @@ class TestProcessReportSourceEmailNotification:
         for analyst in analysts:
             assert analyst.email in recipients
 
-    @patch('tdpservice.reports.tasks.send_feedback_report_available_email')
-    @patch('tdpservice.reports.tasks.timezone.now')
+    @patch("tdpservice.reports.tasks.send_feedback_report_available_email")
+    @patch("tdpservice.reports.tasks.timezone.now")
     def test_only_sends_to_approved_data_analysts(
         self, mock_now, mock_send_email, ofa_admin
     ):
         """Test that email is only sent to approved Data Analysts."""
+        mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
+
         from django.contrib.auth.models import Group
-        from tdpservice.stts.models import Region, STT
-        from tdpservice.users.models import User, AccountApprovalStatusChoices
+
+        from tdpservice.stts.models import STT, Region
+        from tdpservice.users.models import AccountApprovalStatusChoices, User
 
         # Create region and STT
         region = Region.objects.create(id=9013, name="Test Region 13")
@@ -598,7 +544,7 @@ class TestProcessReportSourceEmailNotification:
             name="Test STT Approved Only",
             region=region,
             postal_code="TA",
-            type="STATE"
+            type="STATE",
         )
 
         data_analyst_group, _ = Group.objects.get_or_create(name="Data Analyst")
@@ -621,16 +567,13 @@ class TestProcessReportSourceEmailNotification:
         )
         pending_analyst.groups.add(data_analyst_group)
 
-        mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
-
         structure = {"FY2025": {"RO1": {"F1": ["report.pdf"]}}}
         zip_buffer = create_nested_zip(structure, "FY2025_test")
 
         from django.core.files.uploadedfile import SimpleUploadedFile
+
         uploaded_file = SimpleUploadedFile(
-            "report_source.zip",
-            zip_buffer.read(),
-            content_type="application/zip"
+            "report_source.zip", zip_buffer.read(), content_type="application/zip"
         )
 
         source = ReportSource.objects.create(

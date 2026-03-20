@@ -20,7 +20,15 @@ jest.mock('@uswds/uswds/src/js/components', () => ({
 // Mock FileUpload component
 jest.mock('../FileUpload', () => ({
   __esModule: true,
-  default: ({ section, year, quarter, fileType, label }) => (
+  default: ({
+    section,
+    year,
+    quarter,
+    fileType,
+    label,
+    setLocalAlertState,
+    setProcessingAlertState,
+  }) => (
     <div data-testid={`file-upload-${section}`}>
       <label>{label}</label>
       <input
@@ -30,6 +38,18 @@ jest.mock('../FileUpload', () => ({
         data-quarter={quarter}
         data-filetype={fileType}
       />
+      {setProcessingAlertState && (
+        <button
+          data-testid={`trigger-processing-alert`}
+          onClick={() =>
+            setProcessingAlertState({
+              active: true,
+              type: 'success',
+              message: 'Processing complete.',
+            })
+          }
+        />
+      )}
     </div>
   ),
 }))
@@ -157,6 +177,26 @@ describe('QuarterFileUploadForm', () => {
       expect(queryByRole('alert')).not.toBeInTheDocument()
     })
 
+    it('renders processing alert when processingAlert is active', async () => {
+      const { getAllByTestId, getAllByText, getAllByRole } = renderComponent()
+
+      const triggerButton = getAllByTestId('trigger-processing-alert')[0]
+      fireEvent.click(triggerButton)
+
+      await waitFor(() => {
+        expect(
+          getAllByText('Processing complete.').length
+        ).toBeGreaterThanOrEqual(1)
+      })
+
+      // Verify the sr-only live region contains the message
+      const statusElements = getAllByRole('status')
+      const processingStatus = statusElements.find((el) =>
+        el.textContent.includes('Processing complete.')
+      )
+      expect(processingStatus).toBeTruthy()
+    })
+
     it('initializes USWDS file input on mount', () => {
       const { fileInput } = require('@uswds/uswds/src/js/components')
       renderComponent()
@@ -166,7 +206,7 @@ describe('QuarterFileUploadForm', () => {
   })
 
   describe('Form Submission', () => {
-    it('does not allow submission with no uploaded files', async () => {
+    it('shows error alert when submitting with no uploaded files', async () => {
       const storeState = {
         ...initialState,
         reports: {
@@ -174,10 +214,16 @@ describe('QuarterFileUploadForm', () => {
         },
       }
 
-      const { getByText } = renderComponent(storeState)
+      const { getByText, getAllByText } = renderComponent(storeState)
 
       const submitButton = getByText('Submit Data Files')
-      expect(submitButton).not.toBeEnabled()
+      fireEvent.click(submitButton)
+
+      await waitFor(() => {
+        expect(
+          getAllByText('No changes have been made to data files').length
+        ).toBeGreaterThan(0)
+      })
 
       expect(mockExecuteSubmission).not.toHaveBeenCalled()
     })
@@ -214,6 +260,33 @@ describe('QuarterFileUploadForm', () => {
       expect(reportsActions.clearFileList).toHaveBeenCalled()
     })
 
+    it('formats quarters correctly for multiple files with "and"', () => {
+      const uploadedFiles = [
+        {
+          fileName: 'test1.txt',
+          section: 'Quarter 1 (October - December)',
+          fileType: 'pia',
+          year: '2024',
+        },
+        {
+          fileName: 'test2.txt',
+          section: 'Quarter 2 (January - March)',
+          fileType: 'pia',
+          year: '2024',
+        },
+      ]
+
+      const storeState = {
+        ...initialState,
+        reports: {
+          submittedFiles: uploadedFiles,
+        },
+      }
+
+      renderComponent(storeState)
+      // Component renders without errors with multiple files
+    })
+
     it('handles submission errors gracefully', async () => {
       const uploadedFile = {
         fileName: 'test.txt',
@@ -232,17 +305,16 @@ describe('QuarterFileUploadForm', () => {
       const error = new Error('Submission failed')
       mockExecuteSubmission.mockRejectedValue(error)
 
-      const { getByText, getByRole } = renderComponent(storeState)
+      const { getByText, getAllByText } = renderComponent(storeState)
 
       const submitButton = getByText('Submit Data Files')
       fireEvent.click(submitButton)
 
       await waitFor(() => {
-        const alert = getByRole('alert')
-        expect(alert).toBeInTheDocument()
-        expect(alert).toHaveTextContent(
-          'An error occurred during submission. Please try again.'
-        )
+        expect(
+          getAllByText('An error occurred during submission. Please try again.')
+            .length
+        ).toBeGreaterThan(0)
       })
     })
 

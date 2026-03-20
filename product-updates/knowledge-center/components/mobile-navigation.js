@@ -1,7 +1,7 @@
 // /components/mobile-navigation.js
 class MobileNav extends HTMLElement {
   connectedCallback() {
-    fetch('components/mobile-navigation.html')
+    fetch(`components/mobile-navigation.html?v=${Date.now()}`)
       .then(res => res.text())
       .then(html => {
         this.innerHTML = html;

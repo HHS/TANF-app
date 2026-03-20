@@ -6,12 +6,18 @@ services:
     tty: true        # docker run -t
     build:
       context: .
+      args:
+        REGISTRY_OWNER: ${REGISTRY_OWNER:-hhs}
       target: localdev
-    command: npm run start
+    command: sh -c "corepack prepare yarn@4.6.0 && HOST=0.0.0.0 corepack yarn start"
     ports:
       - 3000:80
+    environment:
+      - REACT_APP_BACKEND_HOST=http://localhost:8989
+      - REACT_APP_BACKEND_URL=http://localhost:8989/v1
     volumes:
       - ./:/home/node/app
+      - /home/node/app/node_modules
     networks:
       - local
 
@@ -20,10 +26,13 @@ services:
     tty: true        # docker run -t
     build:
       context: .
+      args:
+        REGISTRY_OWNER: ${REGISTRY_OWNER:-hhs}
       target: localdev
     command: sleep infinity
     volumes:
       - ./:/home/node/app
+      - /home/node/app/node_modules
     networks:
       - local
 networks:

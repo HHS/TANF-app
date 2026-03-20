@@ -190,5 +190,73 @@
                 ]
             ]
         }
+    },
+    {
+        "model": "users.user",
+        "pk": "0a1b2c3d-4e5f-4a6b-8c9d-1e2f3a4b5c6d",
+        "fields": {
+            "password": "",
+            "last_login": null,
+            "is_superuser": false,
+            "username": "cypress-fra-ofa-regional-staff-rita@acf.hhs.gov",
+            "first_name": "FRA OFA Regional Staff",
+            "last_name": "Rita",
+            "email": "cypress-fra-ofa-regional-staff-rita@acf.hhs.gov",
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2025-11-26T00:00:00Z",
+            "stt": null,
+            "login_gov_uuid": null,
+            "hhs_id": null,
+            "account_approval_status": "Approved",
+            "access_requested_date": "2025-11-26T00:00:00Z",
+            "feature_flags": {},
+            "groups": [
+                [
+                    "OFA Regional Staff"
+                ]
+            ],
+            "user_permissions": [
+                [
+                    "has_fra_access",
+                    "users",
+                    "user"
+                ]
+            ]
+        }
+    },
+    {
+        "model": "users.user",
+        "pk": "1b2c3d4e-5f6a-4b7c-8d9e-2f3a4b5c6d7e",
+        "fields": {
+            "password": "",
+            "last_login": null,
+            "is_superuser": false,
+            "username": "cypress-fra-ofa-regional-staff-ryan@acf.hhs.gov",
+            "first_name": "FRA OFA Regional Staff",
+            "last_name": "Ryan",
+            "email": "cypress-fra-ofa-regional-staff-ryan@acf.hhs.gov",
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2025-11-26T00:00:00Z",
+            "stt": null,
+            "login_gov_uuid": null,
+            "hhs_id": null,
+            "account_approval_status": "Approved",
+            "access_requested_date": "2025-11-26T00:00:00Z",
+            "feature_flags": {},
+            "groups": [
+                [
+                    "OFA Regional Staff"
+                ]
+            ],
+            "user_permissions": [
+                [
+                    "has_fra_access",
+                    "users",
+                    "user"
+                ]
+            ]
+        }
     }
 ]
