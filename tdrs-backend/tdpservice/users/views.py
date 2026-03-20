@@ -222,13 +222,6 @@ class UserChangeRequestViewSet(viewsets.ReadOnlyModelViewSet):
 
         return UserChangeRequest.objects.filter(user=user)
 
-    def perform_create(self, serializer):
-        """Set user to current user if not specified."""
-        data = serializer.validated_data
-        if "user" not in data:
-            data["user"] = self.request.user
-        serializer.save()
-
 
 class ChangeRequestAuditLogViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for change request audit logs."""

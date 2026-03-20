@@ -5,9 +5,9 @@ import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 import { render, screen } from '@testing-library/react'
 
-import PermissionGuard from '.'
+import AccessGuard from '.'
 
-describe('PermissionGuard.js', () => {
+describe('AccessGuard.js', () => {
   const mockStore = configureStore([thunk])
 
   const setup = (
@@ -18,14 +18,14 @@ describe('PermissionGuard.js', () => {
   ) =>
     render(
       <Provider store={mockStore(initialState)}>
-        <PermissionGuard
+        <AccessGuard
           requiresApproval={requiresApproval}
           requiredPermissions={requiredPermissions}
           requiredFeatureFlags={requiredFeatureFlags}
           notAllowedComponent={<p>not allowed</p>}
         >
           <p>hello, world</p>
-        </PermissionGuard>
+        </AccessGuard>
       </Provider>
     )
 

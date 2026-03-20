@@ -12,19 +12,19 @@ export const navigateToProfile = () => {
 }
 
 export const clickEditProfile = () => {
-  cy.get('button').contains('Edit Profile').as('editProfile')
-  cy.get('@editProfile').should('be.visible')
-  cy.get('@editProfile').click()
+  cy.contains('button', 'Edit Profile', { timeout: 10000 }).should('be.visible')
+  cy.contains('button', 'Edit Profile', { timeout: 10000 }).click()
   // Wait for the form to appear
-  cy.get('#firstName').should('be.visible')
+  cy.get('#firstName', { timeout: 10000 }).should('be.visible')
 }
 
 export const clickEditAccessRequest = () => {
-  cy.get('button').contains('Edit Access Request').as('editAccess')
-  cy.get('@editAccess').should('be.visible')
-  cy.get('@editAccess').click()
+  cy.contains('button', 'Edit Access Request', { timeout: 10000 }).should(
+    'be.visible'
+  )
+  cy.contains('button', 'Edit Access Request', { timeout: 10000 }).click()
   // Wait for the form to appear
-  cy.get('#firstName').should('be.visible')
+  cy.get('#firstName', { timeout: 10000 }).should('be.visible')
 }
 
 export const updateFirstName = (firstName) => {
@@ -161,12 +161,6 @@ export const verifyNoFRAAccessBadge = () => {
 export const verifyPendingChangeRequestBanner = () => {
   cy.get('body').then(($body) => {
     const bodyText = $body.text()
-    if (/profile change request.*reviewed by an OFA Admin/i.test(bodyText)) {
-      cy.contains(/profile change request.*reviewed by an OFA Admin/i).should(
-        'be.visible'
-      )
-      return
-    }
 
     // Some regional approved flows remain on edit with region validation.
     if (
@@ -177,9 +171,14 @@ export const verifyPendingChangeRequestBanner = () => {
       return
     }
 
-    cy.contains(/profile change request.*reviewed by an OFA Admin/i).should(
-      'be.visible'
-    )
+    cy.get('#page-alert', { timeout: 10000 })
+      .should('be.visible')
+      .invoke('text')
+      .then((text) => {
+        expect(text).to.match(
+          /(requested change(s)?|request for access).*\s+currently\s+being\s+reviewed\s+by\s+an\s+OFA\s+Admin/i
+        )
+      })
   })
 }
 

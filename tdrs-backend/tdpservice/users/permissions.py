@@ -180,20 +180,31 @@ class ReportFilePermissions(DjangoModelCRUDPermissions):
                 return False
 
         # Data Analysts are limited to only report files for their designated STT
-        # NOTE: Will Regional Staff use report files?
         if has_permission and request.user.is_data_analyst:
             return is_own_stt(request.user, get_requested_stt(request, view))
+
+        # Regional Staff are not allowed to create report files
+        # but can list and download reports for STTs in their region
+        if has_permission and request.user.is_regional_staff:
+            if hasattr(view, "action") and view.action in ["create"]:
+                return False
+            return is_own_region(request.user, get_requested_stt(request, view))
 
         return has_permission
 
     def has_object_permission(self, request, view, obj):
-        """Check if a user cn interact with a specific report file, based on STT."""
+        """Check if a user can interact with a specific report file, based on STT."""
         # Data Analysts can only see report files uploaded for their designated STT
         if request.user.is_data_analyst:
             user_stt = request.user.stt.id if hasattr(request.user, "stt") else None
             return user_stt == obj.stt_id
 
-        # NOTE: Will Regional Staff user report files?
+        # Regional Staff can only see report files for STTs in their region
+        if request.user.is_regional_staff:
+            user_regions = (
+                request.user.regions.all() if hasattr(request.user, "regions") else None
+            )
+            return obj.stt.region in user_regions
 
         return super().has_object_permission(request, view, obj)
 
