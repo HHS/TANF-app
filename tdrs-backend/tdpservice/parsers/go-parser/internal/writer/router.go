@@ -196,6 +196,16 @@ func (wm *Router) RouteErrorRow(ctx context.Context, row []any) error {
 	return wm.errorWriter.SendRow(ctx, row)
 }
 
+// RouteErrorRows sends multiple pre-converted error rows to the error writer.
+// More efficient than calling RouteErrorRow in a loop — single error check
+// and batched channel sends.
+func (wm *Router) RouteErrorRows(ctx context.Context, rows [][]any) error {
+	if wm.errorWriter == nil || len(rows) == 0 {
+		return nil
+	}
+	return wm.errorWriter.SendRows(ctx, rows)
+}
+
 // ConvertRecord converts a record to database rows and extracts the UUID.
 // Does NOT release the record or send rows - caller handles that.
 // Returns the converted rows, the record's UUID, and any error.

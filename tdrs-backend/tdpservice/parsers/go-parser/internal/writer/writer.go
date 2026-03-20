@@ -119,6 +119,23 @@ func (tw *TableWriter) SendRow(ctx context.Context, row []any) error {
 	}
 }
 
+// SendRows queues multiple pre-converted []any rows for writing.
+// More efficient than calling SendRow in a loop — reduces per-row error checks
+// and context switch overhead when sending many rows (e.g., error batches).
+func (tw *TableWriter) SendRows(ctx context.Context, rows [][]any) error {
+	if err := tw.getError(); err != nil {
+		return err
+	}
+	for _, row := range rows {
+		select {
+		case tw.rowChan <- row:
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}
+	return nil
+}
+
 // Stop closes the channel and waits for the goroutine to finish
 func (tw *TableWriter) Stop() error {
 	close(tw.rowChan)
