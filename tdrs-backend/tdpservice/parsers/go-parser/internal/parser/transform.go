@@ -52,6 +52,28 @@ func ZeroPad(value string, params map[string]any, _ *ParseContext) (string, erro
 	return fmt.Sprintf("%0*s", digits, trimmed), nil
 }
 
+// ssnDecryptTable is a pre-computed lookup table for SSN decryption.
+// Using a byte array avoids allocating a map on every call and gives O(1) lookup.
+var ssnDecryptTable [256]byte
+
+func init() {
+	// Identity mapping by default
+	for i := range ssnDecryptTable {
+		ssnDecryptTable[i] = byte(i)
+	}
+	// Decryption overrides
+	ssnDecryptTable['@'] = '1'
+	ssnDecryptTable['9'] = '2'
+	ssnDecryptTable['Z'] = '3'
+	ssnDecryptTable['P'] = '4'
+	ssnDecryptTable['0'] = '5'
+	ssnDecryptTable['#'] = '6'
+	ssnDecryptTable['Y'] = '7'
+	ssnDecryptTable['B'] = '8'
+	ssnDecryptTable['W'] = '9'
+	ssnDecryptTable['T'] = '0'
+}
+
 // SSNDecrypt decrypts TANF/SSP SSN values using character substitution.
 // The encryption status is determined by:
 //  1. Runtime context (ctx.IsEncrypted) - from header parsing
@@ -78,22 +100,11 @@ func SSNDecrypt(value string, params map[string]any, ctx *ParseContext) (string,
 		return value, nil
 	}
 
-	// SSN decryption mapping
-	decryptMap := map[rune]rune{
-		'@': '1', '9': '2', 'Z': '3', 'P': '4', '0': '5',
-		'#': '6', 'Y': '7', 'B': '8', 'W': '9', 'T': '0',
+	buf := make([]byte, len(value))
+	for i := 0; i < len(value); i++ {
+		buf[i] = ssnDecryptTable[value[i]]
 	}
-
-	var result strings.Builder
-	result.Grow(len(value))
-	for _, c := range value {
-		if decrypted, ok := decryptMap[c]; ok {
-			result.WriteRune(decrypted)
-		} else {
-			result.WriteRune(c)
-		}
-	}
-	return result.String(), nil
+	return string(buf), nil
 }
 
 // CalendarQuarterToMonth converts a calendar quarter (YYYYQ) to year-month (YYYYMM).

@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"strconv"
 
 	"go-parser/internal/config/filespec"
 	"go-parser/internal/config/schema"
@@ -100,7 +101,7 @@ func (a *Accumulator) Add(row decoder.Row) (batch *DecodedBatch, sch *schema.Com
 func (a *Accumulator) generateKey(row decoder.Row) (key, rptMonth, caseNum string, err error) {
 	if !a.hasKeyFields {
 		// Each record is its own group - unique key guarantees immediate flush
-		return fmt.Sprintf("line:%d", row.LineNum()), "", "", nil
+		return "line:" + strconv.Itoa(row.LineNum()), "", "", nil
 	}
 	return a.extractKey(row)
 }

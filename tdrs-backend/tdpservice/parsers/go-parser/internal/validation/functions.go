@@ -5,12 +5,17 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/expr-lang/expr"
 
 	"go-parser/internal/parser"
 )
+
+// regexCache caches compiled regexes by pattern string.
+// Patterns are static (from validator YAML), so the cache is small and long-lived.
+var regexCache sync.Map
 
 // RegisterFunctions returns expr options for all custom validation functions.
 func RegisterFunctions() []expr.Option {
@@ -250,12 +255,17 @@ func calculateAge(dob, rptMonthYear string) int {
 }
 
 // regexMatch checks if a string matches a regular expression pattern.
+// Compiled regexes are cached since patterns come from static validator definitions.
 func regexMatch(s, pattern string) bool {
-	matched, err := regexp.MatchString(pattern, s)
+	if cached, ok := regexCache.Load(pattern); ok {
+		return cached.(*regexp.Regexp).MatchString(s)
+	}
+	compiled, err := regexp.Compile(pattern)
 	if err != nil {
 		return false
 	}
-	return matched
+	regexCache.Store(pattern, compiled)
+	return compiled.MatchString(s)
 }
 
 // isNumeric checks if a string contains only numeric characters.
@@ -435,7 +445,7 @@ func buildCompositeKey(rec *parser.ParsedRecord, fieldNames []string) string {
 		if i > 0 {
 			b.WriteByte('|')
 		}
-		fmt.Fprintf(&b, "%v", rec.Get(name))
+		b.WriteString(anyToString(rec.Get(name)))
 	}
 	return b.String()
 }
@@ -445,13 +455,24 @@ func buildCompositeKey(rec *parser.ParsedRecord, fieldNames []string) string {
 func toStringSlice(in []any) []string {
 	out := make([]string, len(in))
 	for i, v := range in {
-		if s, ok := v.(string); ok {
-			out[i] = s
-		} else {
-			out[i] = fmt.Sprintf("%v", v)
-		}
+		out[i] = anyToString(v)
 	}
 	return out
+}
+
+// anyToString converts any value to a string without using fmt.Sprintf.
+// Handles the types actually stored in ParsedRecord fields (string, int).
+func anyToString(v any) string {
+	switch val := v.(type) {
+	case string:
+		return val
+	case int:
+		return strconv.Itoa(val)
+	case nil:
+		return "<nil>"
+	default:
+		return fmt.Sprintf("%v", val)
+	}
 }
 
 // isValidSSN validates a Social Security Number according to SSA rules.

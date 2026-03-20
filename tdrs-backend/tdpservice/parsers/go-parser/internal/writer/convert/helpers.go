@@ -1,9 +1,10 @@
 package convert
 
 import (
+	"encoding/binary"
+	"math/rand/v2"
 	"strconv"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -51,10 +52,17 @@ func toInt4(v any) any {
 	return nil
 }
 
-// newUUID generates a new UUID for the record ID.
-// Returns pgtype.UUID as required for UUID columns.
+// newUUID generates a new v4 UUID for the record ID using math/rand.
+// These are database primary keys and do not require cryptographic randomness,
+// just uniqueness.
 func newUUID() pgtype.UUID {
-	id := uuid.New()
+	var id [16]byte
+	binary.LittleEndian.PutUint64(id[:8], rand.Uint64())
+	binary.LittleEndian.PutUint64(id[8:], rand.Uint64())
+	// Set version 4 (random) bits
+	id[6] = (id[6] & 0x0f) | 0x40
+	// Set variant bits (RFC 9562)
+	id[8] = (id[8] & 0x3f) | 0x80
 	return pgtype.UUID{Bytes: id, Valid: true}
 }
 
