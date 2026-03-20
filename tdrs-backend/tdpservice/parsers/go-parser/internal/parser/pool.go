@@ -99,6 +99,12 @@ func (p *ParserPool) worker(ctx context.Context) {
 	}
 }
 
+// ParseBatch parses all records in a DecodedBatch without goroutine management.
+// Used by pipeline.WorkerPool which owns the goroutines and adds validation.
+func (p *ParserPool) ParseBatch(batch *DecodedBatch) *ParsedBatch {
+	return p.processBatch(batch)
+}
+
 // processBatch parses all records in all groups within a batch.
 func (p *ParserPool) processBatch(batch *DecodedBatch) *ParsedBatch {
 	result := &ParsedBatch{

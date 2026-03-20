@@ -35,15 +35,13 @@ type RouteStats struct {
 	GroupCount int64
 }
 
-// routeResults receives parsed batches from the parser.pool, validates them, and routes them to database writers.
+// routeResults receives validated batches from the worker pool and routes them to database writers.
 // Multiple router goroutines compete on the Results channel for parallel processing.
-// Returns route stats (including error counts) and any processing errors.
+// Routers are purely I/O — validation has already been performed by the worker pool.
 func routeResults(
 	ctx context.Context,
-	pool *parser.ParserPool,
+	workers *WorkerPool,
 	router *writer.Router,
-	orchestrator *validation.Orchestrator,
-	filespecKey string,
 	numRouters int,
 	datafileID int32,
 ) (*RouteStats, error) {
@@ -61,23 +59,20 @@ func routeResults(
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			for pb := range pool.Results() {
+			for vb := range workers.Results() {
 				atomic.AddInt64(&batchCount, 1)
-				atomic.AddInt64(&groupCount, int64(len(pb.Groups)))
+				atomic.AddInt64(&groupCount, int64(len(vb.Groups)))
 
-				// Validate the batch's groups and collect error counts
-				rpc, fv, vc, cc, contexts := validateBatch(pb, orchestrator, filespecKey)
+				// Count errors from pre-computed validation results
+				rpc, fv, vc, cc := countErrors(vb)
 				atomic.AddInt64(&recordPreCheck, rpc)
 				atomic.AddInt64(&fieldValue, fv)
 				atomic.AddInt64(&valueConsistency, vc)
 				atomic.AddInt64(&caseConsistency, cc)
 
 				// Route valid records and all errors to writers
-				// - Groups with CASE_CONSISTENCY errors: errors written, records rejected
-				// - Records with RECORD_PRE_CHECK errors: errors written, record rejected
-				// - Valid records: record and non-blocking errors written (linked via ObjectID)
-				if err := routeValidatedBatch(ctx, router, contexts, datafileID); err != nil {
-					log.Printf("Router: batch %d error: %v", pb.BatchID, err)
+				if err := routeValidatedBatch(ctx, router, vb.Groups, datafileID); err != nil {
+					log.Printf("Router: batch %d error: %v", vb.BatchID, err)
 					errChan <- err
 					return
 				}
@@ -117,29 +112,10 @@ func routeResults(
 	return stats, nil
 }
 
-// GroupValidationContext holds the validation result and parsed group together.
-type GroupValidationContext struct {
-	Group  *parser.ParsedGroup
-	Result *validation.GroupValidationResult
-}
-
-// validateBatch validates all groups in a parsed batch and returns validation contexts.
-// Returns the count of errors by error type (recordPreCheck, fieldValue, valueConsistency, caseConsistency).
-func validateBatch(pb *parser.ParsedBatch, orchestrator *validation.Orchestrator, filespecKey string) (recordPreCheck, fieldValue, valueConsistency, caseConsistency int64, contexts []*GroupValidationContext) {
-	contexts = make([]*GroupValidationContext, 0, len(pb.Groups))
-
-	for _, group := range pb.Groups {
-		// Run validation
-		result := orchestrator.ValidateGroup(group, filespecKey)
-
-		// Store the context for filtering during routing
-		contexts = append(contexts, &GroupValidationContext{
-			Group:  group,
-			Result: result,
-		})
-
-		// Count group errors by error type
-		for _, err := range result.GroupErrors {
+// countErrors tallies validation errors from a pre-validated batch.
+func countErrors(vb *ValidatedBatch) (recordPreCheck, fieldValue, valueConsistency, caseConsistency int64) {
+	for _, vg := range vb.Groups {
+		for _, err := range vg.Result.GroupErrors {
 			switch err.ErrorType {
 			case validation.ErrorTypeCaseConsistency:
 				caseConsistency++
@@ -148,8 +124,7 @@ func validateBatch(pb *parser.ParsedBatch, orchestrator *validation.Orchestrator
 			}
 		}
 
-		// Count record-level errors by error type
-		for _, recResult := range result.RecordResults {
+		for _, recResult := range vg.Result.RecordResults {
 			for _, err := range recResult.RecordErrors {
 				switch err.ErrorType {
 				case validation.ErrorTypeRecordPreCheck:
@@ -175,28 +150,28 @@ func validateBatch(pb *parser.ParsedBatch, orchestrator *validation.Orchestrator
 //
 // Error rows are batched per group and sent in a single RouteErrorRows call to reduce
 // channel send overhead (250K errors = 250K channel sends without batching).
-func routeValidatedBatch(ctx context.Context, router *writer.Router, contexts []*GroupValidationContext, datafileID int32) error {
+func routeValidatedBatch(ctx context.Context, router *writer.Router, groups []*ValidatedGroup, datafileID int32) error {
 	// Reusable error row buffer across groups within this batch.
 	// Avoids repeated allocation — slice is reset (not reallocated) per group.
 	var errorRows [][]any
 
-	for _, gctx := range contexts {
+	for _, vg := range groups {
 		// Reset buffer for this group (reuse backing array)
 		errorRows = errorRows[:0]
 
 		// Collect group-level error rows (use first record for context)
-		if len(gctx.Result.GroupErrors) > 0 && len(gctx.Group.Records) > 0 {
-			firstRec := gctx.Group.Records[0]
-			for _, groupErr := range gctx.Result.GroupErrors {
+		if len(vg.Result.GroupErrors) > 0 && len(vg.Group.Records) > 0 {
+			firstRec := vg.Group.Records[0]
+			for _, groupErr := range vg.Result.GroupErrors {
 				errorRows = append(errorRows, convert.ConvertError(groupErr, firstRec, nil, datafileID, nil))
 			}
 		}
 
 		// Handle blocked groups: convert all errors, release records, skip record writing
-		if gctx.Result.HasBlockingGroupErrors() {
-			log.Printf("Skipping group %s: blocking group validation failed", gctx.Group.Key)
-			for i, recResult := range gctx.Result.RecordResults {
-				record := gctx.Group.Records[i]
+		if vg.Result.HasBlockingGroupErrors() {
+			log.Printf("Skipping group %s: blocking group validation failed", vg.Group.Key)
+			for i, recResult := range vg.Result.RecordResults {
+				record := vg.Group.Records[i]
 				appendRecordErrors(&errorRows, recResult, record, nil, datafileID, nil)
 				record.Schema.ReleaseRecord(record)
 			}
@@ -207,8 +182,8 @@ func routeValidatedBatch(ctx context.Context, router *writer.Router, contexts []
 		}
 
 		// Process each record in the group
-		for i, recResult := range gctx.Result.RecordResults {
-			record := gctx.Group.Records[i]
+		for i, recResult := range vg.Result.RecordResults {
+			record := vg.Group.Records[i]
 
 			if recResult.HasBlockingErrors() {
 				log.Printf("Skipping record (line %d, type %s): blocking record validation failed",

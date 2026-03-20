@@ -22,7 +22,6 @@ type PipelineWorkerConfig struct {
 	WorkBufferSize   int `yaml:"work_buffer_size"`
 	ResultBufferSize int `yaml:"result_buffer_size"`
 	NumRouters       int `yaml:"num_routers"`
-	NumValidators    int `yaml:"num_validators"`
 	PoolPrewarmSize  int `yaml:"pool_prewarm_size"`
 }
 
@@ -48,8 +47,7 @@ func DefaultPipelineYAML() *PipelineYAML {
 			NumWorkers:       16,
 			WorkBufferSize:   256,
 			ResultBufferSize: 256,
-			NumRouters:       16,
-			NumValidators:    16,
+			NumRouters:       4,
 			PoolPrewarmSize:  10000,
 		},
 		Writer: WriterConfig{

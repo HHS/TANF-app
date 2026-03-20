@@ -114,13 +114,18 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params ProcessParams) (*Proc
 	// Step 5: Create record type detector
 	detector := parser.NewRecordTypeDetector(spec, p.registry)
 
-	// Step 6: Create parser worker pool
-	parsers := parser.NewParserPool(spec.Format, p.config.toWorkerConfig(), parseCtx)
-	parsers.Start(ctx)
+	// Step 6: Create parser pool (parsing logic only, no goroutines)
+	parserPool := parser.NewParserPool(spec.Format, p.config.toWorkerConfig(), parseCtx)
 
-	// Step 7: Create validation orchestrator
+	// Step 7: Create worker pool (owns goroutines, does parse + validate)
 	filespecKey := fmt.Sprintf("%s:%d", params.Program, params.Section)
-	orchestrator := validation.NewOrchestrator(p.validators, p.config.NumValidators)
+	orchestrator := validation.NewOrchestrator(p.validators, 0)
+	workers := NewWorkerPool(parserPool, orchestrator, filespecKey, WorkerPoolConfig{
+		NumWorkers:       p.config.NumWorkers,
+		WorkBufferSize:   p.config.WorkBufferSize,
+		ResultBufferSize: p.config.ResultBufferSize,
+	})
+	workers.Start(ctx)
 
 	// Step 8: Start result collector with parallel dispatchers
 	var collectorErr error
@@ -129,20 +134,20 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params ProcessParams) (*Proc
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		routeStats, collectorErr = routeResults(ctx, parsers, router, orchestrator, filespecKey, p.config.NumRouters, params.DatafileID)
+		routeStats, collectorErr = routeResults(ctx, workers, router, p.config.NumRouters, params.DatafileID)
 	}()
 
-	// Step 8: Process rows through the accumulator
-	err = processRows(dec, spec, detector, parsers)
+	// Step 9: Process rows through the accumulator
+	err = processRows(dec, spec, detector, workers)
 	if err != nil {
-		parsers.CloseInputs()
-		parsers.Wait()
+		workers.CloseInputs()
+		workers.Wait()
 		return nil, err
 	}
 
-	// Step 9: Wait for everything to complete
-	parsers.CloseInputs()
-	parsers.Wait()
+	// Step 10: Wait for everything to complete
+	workers.CloseInputs()
+	workers.Wait()
 	wg.Wait()
 
 	if collectorErr != nil {
@@ -193,15 +198,15 @@ func processRows(
 	dec decoder.Decoder,
 	fileSpec *filespec.FileSpec,
 	recordDetector *parser.RecordTypeDetector,
-	parserPool *parser.ParserPool,
+	workers *WorkerPool,
 ) error {
 	acc := parser.NewAccumulator(fileSpec, recordDetector)
 
 	if fileSpec.Accumulator.Presort && fileSpec.Accumulator.HasKeyFields() {
-		return processRowsPresorted(dec, fileSpec, recordDetector, acc, parserPool)
+		return processRowsPresorted(dec, fileSpec, recordDetector, acc, workers)
 	}
 
-	return processRowsStreaming(dec, acc, parserPool)
+	return processRowsStreaming(dec, acc, workers)
 }
 
 // processRowsPresorted reads all rows, sorts by key, then feeds to accumulator.
@@ -210,7 +215,7 @@ func processRowsPresorted(
 	fileSpec *filespec.FileSpec,
 	recordDetector *parser.RecordTypeDetector,
 	acc *parser.Accumulator,
-	parserPool *parser.ParserPool,
+	workers *WorkerPool,
 ) error {
 	sorter := parser.NewSorter(fileSpec, recordDetector)
 	sortResult, err := sorter.Sort(dec)
@@ -233,7 +238,7 @@ func processRowsPresorted(
 			continue
 		}
 		if batch != nil {
-			parserPool.Submit(batch)
+			workers.Submit(batch)
 		}
 	}
 
@@ -245,13 +250,13 @@ func processRowsPresorted(
 			continue
 		}
 		if batch != nil {
-			parserPool.Submit(batch)
+			workers.Submit(batch)
 		}
 	}
 
 	// Drain remaining groups
 	for _, batch := range acc.Drain() {
-		parserPool.Submit(batch)
+		workers.Submit(batch)
 	}
 
 	return nil
@@ -261,7 +266,7 @@ func processRowsPresorted(
 func processRowsStreaming(
 	dec decoder.Decoder,
 	acc *parser.Accumulator,
-	parserPool *parser.ParserPool,
+	workers *WorkerPool,
 ) error {
 	for row, err := range dec.Rows() {
 		if err != nil {
@@ -281,13 +286,13 @@ func processRowsStreaming(
 
 		// For non-keyed modes, batches may be returned during iteration
 		if batch != nil {
-			parserPool.Submit(batch)
+			workers.Submit(batch)
 		}
 	}
 
 	// Dispatch all remaining batches (for keyed modes, this is where groups are emitted)
 	for _, batch := range acc.Drain() {
-		parserPool.Submit(batch)
+		workers.Submit(batch)
 	}
 
 	return nil

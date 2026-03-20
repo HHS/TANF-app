@@ -16,9 +16,6 @@ type PipelineConfig struct {
 	NumRouters      int
 	PoolPrewarmSize int
 
-	// Validation configuration
-	NumValidators int
-
 	// Writer configuration
 	FlushThreshold      int
 	ErrorFlushThreshold int
@@ -37,7 +34,6 @@ func TestConfig() PipelineConfig {
 		ResultBufferSize:    64,
 		PoolPrewarmSize:     1000,
 		NumRouters:          1,
-		NumValidators:       2,
 		FlushThreshold:      50000,
 		ErrorFlushThreshold: 100000,
 	}
@@ -50,7 +46,6 @@ func NewConfig(cfg *config.PipelineYAML) PipelineConfig {
 		WorkBufferSize:      cfg.Pipeline.WorkBufferSize,
 		ResultBufferSize:    cfg.Pipeline.ResultBufferSize,
 		NumRouters:          cfg.Pipeline.NumRouters,
-		NumValidators:       cfg.Pipeline.NumValidators,
 		PoolPrewarmSize:     cfg.Pipeline.PoolPrewarmSize,
 		FlushThreshold:      cfg.Writer.FlushThreshold,
 		ErrorFlushThreshold: cfg.Writer.ErrorFlushThreshold,
