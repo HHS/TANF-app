@@ -102,6 +102,9 @@ export const fillSttFyQNoProgramSelector = (stt, fy, q) => {
     })
 }
 
+export const fillStt = (stt) =>
+  cy.get('#stt', { timeout: 1000 }).type(stt + '{enter}')
+
 export const fillFyQProgram = (fy, q, program) => {
   cy.wait(500)
   cy.get('body').then(($body) => {
@@ -122,7 +125,7 @@ export const fillFyQProgram = (fy, q, program) => {
       return
     }
 
-    if (program === 'SSP') {
+    if (program === 'PIA') {
       const hasPia = $body.find(
         'label:contains("Program Integrity Audit")'
       ).length
