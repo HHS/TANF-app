@@ -60,7 +60,7 @@ func NewRouter(
 	reg *config.Registry,
 	cfg RouterConfig,
 ) *Router {
-	wm := &Router{
+	router := &Router{
 		pool:           pool,
 		datafileID:     datafileID,
 		writers:        make(map[string]*TableWriter),
@@ -106,13 +106,13 @@ func NewRouter(
 		}
 
 		// Store converter in manager (conversion happens in RouteRecord)
-		wm.converters[schemaPath] = conv
+		router.converters[schemaPath] = conv
 
 		// Store content type ID for error linking
-		wm.contentTypeIDs[schemaPath] = meta.ContentTypeID
+		router.contentTypeIDs[schemaPath] = meta.ContentTypeID
 
 		// Create simplified TableWriter that receives []any rows
-		wm.writers[schemaPath] = NewTableWriter(
+		router.writers[schemaPath] = NewTableWriter(
 			meta.TableName,
 			meta.Columns,
 			cfg.FlushThreshold,
@@ -123,14 +123,14 @@ func NewRouter(
 	}
 
 	// Create error writer with higher threshold for error volume
-	wm.errorWriter = NewTableWriter(
+	router.errorWriter = NewTableWriter(
 		"parser_error",
 		parserErrorColumns,
 		cfg.ErrorFlushThreshold,
 	)
 	log.Printf("Created error writer for parser_error (%d columns)", len(parserErrorColumns))
 
-	return wm
+	return router
 }
 
 // Start launches all writer goroutines.

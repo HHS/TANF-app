@@ -68,6 +68,7 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params DataFileParams) (*Par
 		spec.Format, spec.Accumulator.HasKeyFields(), spec.Accumulator.EffectiveBatchSize())
 
 	// Step 2: Open the file and create decoder
+	// TODO: This needs to be abstracted/generalized for local, s3, and http
 	file, err := os.Open(params.FilePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open file: %w", err)
