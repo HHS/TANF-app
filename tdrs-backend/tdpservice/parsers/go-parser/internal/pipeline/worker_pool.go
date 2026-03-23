@@ -33,9 +33,9 @@ type WorkerPool struct {
 	filespecKey  string
 	numWorkers   int
 
-	work    chan *parser.DecodedBatch
-	results chan *ValidatedBatch
-	wg      sync.WaitGroup
+	decodedBatches   chan *parser.DecodedBatch
+	validatedBatches chan *ValidatedBatch
+	wg               sync.WaitGroup
 }
 
 // WorkerPoolConfig configures the worker pool.
@@ -53,12 +53,12 @@ func NewWorkerPool(
 	config WorkerPoolConfig,
 ) *WorkerPool {
 	return &WorkerPool{
-		parserPool:   parserPool,
-		orchestrator: orchestrator,
-		filespecKey:   filespecKey,
-		numWorkers:   config.NumWorkers,
-		work:         make(chan *parser.DecodedBatch, config.WorkBufferSize),
-		results:      make(chan *ValidatedBatch, config.ResultBufferSize),
+		parserPool:       parserPool,
+		orchestrator:     orchestrator,
+		filespecKey:      filespecKey,
+		numWorkers:       config.NumWorkers,
+		decodedBatches:   make(chan *parser.DecodedBatch, config.WorkBufferSize),
+		validatedBatches: make(chan *ValidatedBatch, config.ResultBufferSize),
 	}
 }
 
@@ -73,24 +73,24 @@ func (wp *WorkerPool) Start(ctx context.Context) {
 // Submit submits a batch for processing.
 // Blocks if the work channel is full (backpressure).
 func (wp *WorkerPool) Submit(batch *parser.DecodedBatch) {
-	wp.work <- batch
+	wp.decodedBatches <- batch
 }
 
 // CloseInputs signals that no more work will be submitted.
 func (wp *WorkerPool) CloseInputs() {
-	close(wp.work)
+	close(wp.decodedBatches)
 }
 
 // Wait blocks until all workers finish, then closes the results channel.
 func (wp *WorkerPool) Wait() {
 	wp.wg.Wait()
-	close(wp.results)
+	close(wp.validatedBatches)
 	log.Print("All lines in file have been parsed, validated, and queued for writing.")
 }
 
 // Results returns the channel for receiving validated batch results.
 func (wp *WorkerPool) Results() <-chan *ValidatedBatch {
-	return wp.results
+	return wp.validatedBatches
 }
 
 func (wp *WorkerPool) worker(ctx context.Context) {
@@ -101,11 +101,11 @@ func (wp *WorkerPool) worker(ctx context.Context) {
 		case <-ctx.Done():
 			return
 
-		case batch, ok := <-wp.work:
+		case batch, ok := <-wp.decodedBatches:
 			if !ok {
 				return
 			}
-			wp.results <- wp.processBatch(batch)
+			wp.validatedBatches <- wp.processBatch(batch)
 		}
 	}
 }

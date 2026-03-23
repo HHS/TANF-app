@@ -14,11 +14,11 @@ type ParserPool struct {
 	extractor  FieldExtractor
 	parseCtx   *ParseContext // Runtime context from header
 
-	// Single work input channel for all Batches
-	work chan *DecodedBatch
+	// Single decodedBatches input channel for all Batches
+	decodedBatches chan *DecodedBatch
 
 	// Single result output channel
-	results chan *ParsedBatch
+	parsedBatches chan *ParsedBatch
 
 	wg sync.WaitGroup
 }
@@ -42,11 +42,11 @@ func DefaultPoolConfig() PoolConfig {
 // NewParserPool creates a worker pool.
 func NewParserPool(format filespec.Format, config PoolConfig, ctx *ParseContext) *ParserPool {
 	return &ParserPool{
-		numWorkers: config.NumWorkers,
-		extractor:  GetExtractor(format),
-		parseCtx:   ctx,
-		work:       make(chan *DecodedBatch, config.WorkBufferSize),
-		results:    make(chan *ParsedBatch, config.ResultBufferSize),
+		numWorkers:     config.NumWorkers,
+		extractor:      GetExtractor(format),
+		parseCtx:       ctx,
+		decodedBatches: make(chan *DecodedBatch, config.WorkBufferSize),
+		parsedBatches:  make(chan *ParsedBatch, config.ResultBufferSize),
 	}
 }
 
@@ -61,24 +61,24 @@ func (p *ParserPool) Start(ctx context.Context) {
 // Submit submits a Batch for processing.
 // Blocks if the work channel is full (backpressure).
 func (p *ParserPool) Submit(batch *DecodedBatch) {
-	p.work <- batch
+	p.decodedBatches <- batch
 }
 
 // CloseInputs signals that no more work will be submitted.
 func (p *ParserPool) CloseInputs() {
-	close(p.work)
+	close(p.decodedBatches)
 }
 
 // Wait blocks until all workers finish, then closes result channels.
 func (p *ParserPool) Wait() {
 	p.wg.Wait()
-	close(p.results)
+	close(p.parsedBatches)
 	log.Print("All lines in file have been parsed into records and queued for writing.")
 }
 
 // Results returns the channel for receiving parsed batch results.
 func (p *ParserPool) Results() <-chan *ParsedBatch {
-	return p.results
+	return p.parsedBatches
 }
 
 // worker is the main worker goroutine.
@@ -90,11 +90,11 @@ func (p *ParserPool) worker(ctx context.Context) {
 		case <-ctx.Done():
 			return
 
-		case batch, ok := <-p.work:
+		case batch, ok := <-p.decodedBatches:
 			if !ok {
 				return // Channel closed, exit
 			}
-			p.results <- p.processBatch(batch)
+			p.parsedBatches <- p.processBatch(batch)
 		}
 	}
 }

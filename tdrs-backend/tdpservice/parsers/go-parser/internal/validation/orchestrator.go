@@ -27,6 +27,7 @@ type Orchestrator struct {
 func NewOrchestrator(registry *ValidatorRegistry, workers int) *Orchestrator {
 	return &Orchestrator{
 		registry: registry,
+		// TODO: We can remove the OrchestratorConfig since it no longer manages parallelism
 		config: &OrchestratorConfig{
 			Workers: workers,
 		},
@@ -150,6 +151,7 @@ func (o *Orchestrator) validateRecordInPlace(result *RecordValidationResult, rec
 }
 
 // ValidateGroups validates multiple groups in parallel.
+// Deprecated: ValidateGroup is now called by the ParserWorker pool to give us the same parallelism without creating new go routines.
 func (o *Orchestrator) ValidateGroups(groups []*parser.ParsedGroup, filespecKey string) []*GroupValidationResult {
 	if len(groups) == 0 {
 		return nil
@@ -158,6 +160,7 @@ func (o *Orchestrator) ValidateGroups(groups []*parser.ParsedGroup, filespecKey 
 	results := make([]*GroupValidationResult, len(groups))
 
 	// Sequential validation if no workers configured
+	// TODO: workers being less than or equal to zero should be a special case of parallel. Use the same parallel logic but with a single worker.
 	if o.config.Workers <= 0 {
 		for i, group := range groups {
 			results[i] = o.ValidateGroup(group, filespecKey)
@@ -188,6 +191,7 @@ func (o *Orchestrator) ValidateGroups(groups []*parser.ParsedGroup, filespecKey 
 // ExecuteReturningRecords runs a compiled validator that returns a list of failing records.
 // This is used for group validators with result_mode: per_record.
 // The expression should return a slice of *parser.ParsedRecord.
+// TODO: work on this. Seems weird.
 func ExecuteReturningRecords(cv *CompiledValidator, env any) []*parser.ParsedRecord {
 	program, ok := cv.Expr.Program.(*vm.Program)
 	if !ok {

@@ -94,6 +94,7 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params DataFileParams) (*Par
 	router.Start(ctx)
 
 	// Step 4: Read and parse header (for positional files)
+	// TODO: we will need to do header validation here
 	headerRow, err := dec.ReadFirst()
 	if err != nil {
 		return nil, fmt.Errorf("failed to read header: %w", err)
@@ -115,7 +116,7 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params DataFileParams) (*Par
 	// Step 5: Create record type detector
 	detector := parser.NewRecordTypeDetector(spec, p.registry)
 
-	// Step 6: Create parser pool (parsing logic only, no goroutines)
+	// Step 6: Create parser pool
 	parserPool := parser.NewParserPool(spec.Format, p.config.toWorkerConfig(), parseCtx)
 
 	// Step 7: Create worker pool (owns goroutines, does parse + validate)
@@ -129,6 +130,7 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params DataFileParams) (*Par
 	workers.Start(ctx)
 
 	// Step 8: Start result collector with parallel dispatchers
+	// TODO: I hate this. I feel like it can be better.
 	var collectorErr error
 	var routeStats *RouteStats
 	var wg sync.WaitGroup
@@ -139,6 +141,7 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params DataFileParams) (*Par
 	}()
 
 	// Step 9: Process rows through the accumulator
+	// TODO: I feel like step 8 and this step should be apart of the worker pool
 	err = processRows(dec, spec, detector, workers)
 	if err != nil {
 		workers.CloseInputs()
@@ -194,7 +197,10 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params DataFileParams) (*Par
 // When presort is enabled, all data rows are read into memory and stable-sorted
 // by key fields before feeding to the accumulator. This guarantees records for
 // the same case are adjacent, enabling streaming accumulation and in-memory
-// duplicate detection regardless of input order.
+// duplicate detection regardless of input order
+// TODO: I hate having different code paths. Sorted vs non sorted files should not generally change the
+// functionality/code path. The sorting of the file should occur in the "reader" abstraction we create that handles
+// acquiring the raw file from disk, http, s3, etc...
 func processRows(
 	dec decoder.Decoder,
 	fileSpec *filespec.FileSpec,
