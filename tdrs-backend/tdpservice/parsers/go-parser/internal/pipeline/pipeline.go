@@ -26,16 +26,16 @@ type Pipeline struct {
 	config     PipelineConfig
 }
 
-// ProcessParams contains the inputs for processing a file.
-type ProcessParams struct {
+// DataFileParams contains the inputs for processing a file.
+type DataFileParams struct {
 	Program    string
 	Section    int
 	FilePath   string
 	DatafileID int32
 }
 
-// ProcessResult contains statistics from the processing run.
-type ProcessResult struct {
+// ParsingResult contains statistics from the processing run.
+type ParsingResult struct {
 	RecordCounts map[string]int64
 	ErrorCount   int64
 	ErrorStats   *ErrorStats // Validation error counts by category
@@ -56,7 +56,7 @@ func NewPipline(dbPool *pgxpool.Pool, reg *config.Registry, validators *validati
 
 // ProcessFile parses a file and writes records to the database.
 // This is the main entry point for file processing.
-func (p *Pipeline) ProcessFile(ctx context.Context, params ProcessParams) (*ProcessResult, error) {
+func (p *Pipeline) ProcessFile(ctx context.Context, params DataFileParams) (*ParsingResult, error) {
 	// Step 1: Get the file specification
 	spec := p.registry.GetFileSpec(params.Program, params.Section)
 	if spec == nil {
@@ -176,7 +176,7 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params ProcessParams) (*Proc
 		errorStats = &routeStats.ErrorStats
 	}
 
-	return &ProcessResult{
+	return &ParsingResult{
 		RecordCounts: recordCounts,
 		ErrorCount:   errorCount,
 		ErrorStats:   errorStats,

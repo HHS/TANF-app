@@ -120,7 +120,7 @@ func main() {
 
 	// Create and run pipeline
 	pipeln := pipeline.NewPipline(dbPool, reg, validators, pipeline.NewConfig(pipelineCfg))
-	result, err := pipeln.ProcessFile(ctx, pipeline.ProcessParams{
+	result, err := pipeln.ProcessFile(ctx, pipeline.DataFileParams{
 		Program:    program,
 		Section:    section,
 		FilePath:   filePath,
