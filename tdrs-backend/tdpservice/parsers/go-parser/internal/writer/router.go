@@ -135,39 +135,39 @@ func NewRouter(
 
 // Start launches all writer goroutines.
 // Must be called before RouteBatch/RouteRecord.
-func (wm *Router) Start(ctx context.Context) {
-	for _, tw := range wm.writers {
-		tw.Start(ctx, wm.pool)
+func (router *Router) Start(ctx context.Context) {
+	for _, writer := range router.writers {
+		writer.Start(ctx, router.pool)
 	}
-	if wm.errorWriter != nil {
-		wm.errorWriter.Start(ctx, wm.pool)
+	if router.errorWriter != nil {
+		router.errorWriter.Start(ctx, router.pool)
 	}
 }
 
 // RouteRecord converts a record, releases it to pool, and sends rows to writer.
 // This is the release point for valid records in the normal flow.
 // Records without writers (e.g., HEADER, TRAILER) are silently skipped.
-func (wm *Router) RouteRecord(ctx context.Context, record *parser.ParsedRecord) error {
-	tw, ok := wm.writers[record.Schema.Path]
+func (router *Router) RouteRecord(ctx context.Context, record *parser.ParsedRecord) error {
+	writer, ok := router.writers[record.Schema.Path]
 	if !ok {
 		// No writer for this schema (e.g., header/trailer) - skip silently
 		return nil
 	}
 
-	conv, ok := wm.converters[record.Schema.Path]
+	conv, ok := router.converters[record.Schema.Path]
 	if !ok {
 		return fmt.Errorf("no converter for schema: %s", record.Schema.Path)
 	}
 
 	// Convert ParsedRecord to []any rows
-	rows := conv(record, wm.datafileID)
+	rows := conv(record, router.datafileID)
 
 	// Release record back to pool - it's no longer needed after conversion
 	record.Schema.ReleaseRecord(record)
 
 	// Send converted rows to writer
 	for _, row := range rows {
-		if err := tw.SendRow(ctx, row); err != nil {
+		if err := writer.SendRow(ctx, row); err != nil {
 			return err
 		}
 	}
@@ -176,10 +176,10 @@ func (wm *Router) RouteRecord(ctx context.Context, record *parser.ParsedRecord) 
 }
 
 // RouteBatch routes all records in a batch to appropriate writers.
-func (wm *Router) RouteBatch(ctx context.Context, batch *parser.ParsedBatch) error {
+func (router *Router) RouteBatch(ctx context.Context, batch *parser.ParsedBatch) error {
 	for _, group := range batch.Groups {
 		for _, record := range group.Records {
-			if err := wm.RouteRecord(ctx, record); err != nil {
+			if err := router.RouteRecord(ctx, record); err != nil {
 				return err
 			}
 		}
@@ -189,34 +189,34 @@ func (wm *Router) RouteBatch(ctx context.Context, batch *parser.ParsedBatch) err
 
 // RouteErrorRow sends a pre-converted error row to the error writer.
 // Errors are converted at call site (in result_router) while record is available.
-func (wm *Router) RouteErrorRow(ctx context.Context, row []any) error {
-	if wm.errorWriter == nil {
+func (router *Router) RouteErrorRow(ctx context.Context, row []any) error {
+	if router.errorWriter == nil {
 		return nil
 	}
-	return wm.errorWriter.SendRow(ctx, row)
+	return router.errorWriter.SendRow(ctx, row)
 }
 
 // RouteErrorRows sends multiple pre-converted error rows to the error writer.
 // More efficient than calling RouteErrorRow in a loop — single error check
 // and batched channel sends.
-func (wm *Router) RouteErrorRows(ctx context.Context, rows [][]any) error {
-	if wm.errorWriter == nil || len(rows) == 0 {
+func (router *Router) RouteErrorRows(ctx context.Context, rows [][]any) error {
+	if router.errorWriter == nil || len(rows) == 0 {
 		return nil
 	}
-	return wm.errorWriter.SendRows(ctx, rows)
+	return router.errorWriter.SendRows(ctx, rows)
 }
 
 // ConvertRecord converts a record to database rows and extracts the UUID.
 // Does NOT release the record or send rows - caller handles that.
 // Returns the converted rows, the record's UUID, and any error.
 // The UUID is extracted from the converted row at position len(row)-3 (third from end).
-func (wm *Router) ConvertRecord(record *parser.ParsedRecord) ([][]any, *pgtype.UUID, error) {
-	conv, ok := wm.converters[record.Schema.Path]
+func (router *Router) ConvertRecord(record *parser.ParsedRecord) ([][]any, *pgtype.UUID, error) {
+	conv, ok := router.converters[record.Schema.Path]
 	if !ok {
 		return nil, nil, fmt.Errorf("no converter for schema: %s", record.Schema.Path)
 	}
 
-	rows := conv(record, wm.datafileID)
+	rows := conv(record, router.datafileID)
 	if len(rows) == 0 {
 		return rows, nil, nil
 	}
@@ -236,15 +236,15 @@ func (wm *Router) ConvertRecord(record *parser.ParsedRecord) ([][]any, *pgtype.U
 
 // SendRecordRowsByPath sends pre-converted record rows to the writer for the given schema path.
 // Used in conjunction with ConvertRecord for the error-linking flow.
-func (wm *Router) SendRecordRowsByPath(ctx context.Context, schemaPath string, rows [][]any) error {
-	tw, ok := wm.writers[schemaPath]
+func (router *Router) SendRecordRowsByPath(ctx context.Context, schemaPath string, rows [][]any) error {
+	writer, ok := router.writers[schemaPath]
 	if !ok {
 		// No writer for this schema (e.g., header/trailer) - skip silently
 		return nil
 	}
 
 	for _, row := range rows {
-		if err := tw.SendRow(ctx, row); err != nil {
+		if err := writer.SendRow(ctx, row); err != nil {
 			return err
 		}
 	}
@@ -252,40 +252,40 @@ func (wm *Router) SendRecordRowsByPath(ctx context.Context, schemaPath string, r
 }
 
 // HasWriter returns true if there's a writer for this schema path.
-func (wm *Router) HasWriter(schemaPath string) bool {
-	_, ok := wm.writers[schemaPath]
+func (router *Router) HasWriter(schemaPath string) bool {
+	_, ok := router.writers[schemaPath]
 	return ok
 }
 
 // GetContentTypeID returns the Django content type ID for a schema path.
 // Returns nil if the schema has no content type (e.g., not loaded from DB).
-func (wm *Router) GetContentTypeID(schemaPath string) *int32 {
-	return wm.contentTypeIDs[schemaPath]
+func (router *Router) GetContentTypeID(schemaPath string) *int32 {
+	return router.contentTypeIDs[schemaPath]
 }
 
 // Stop closes all channels and waits for goroutines to finish.
 // Returns combined errors from all writers.
-func (wm *Router) Stop() error {
+func (router *Router) Stop() error {
 	var errs []error
 	var wg sync.WaitGroup
 	var errMu sync.Mutex
 
 	// Stop all writers in parallel
-	for name, tw := range wm.writers {
+	for name, writer := range router.writers {
 		wg.Add(1)
-		go func(name string, tw *TableWriter) {
+		go func(name string, writer *TableWriter) {
 			defer wg.Done()
-			if err := tw.Stop(); err != nil {
+			if err := writer.Stop(); err != nil {
 				errMu.Lock()
 				errs = append(errs, fmt.Errorf("%s: %w", name, err))
 				errMu.Unlock()
 			}
-		}(name, tw)
+		}(name, writer)
 	}
 	wg.Wait()
 
-	if wm.errorWriter != nil {
-		if err := wm.errorWriter.Stop(); err != nil {
+	if router.errorWriter != nil {
+		if err := router.errorWriter.Stop(); err != nil {
 			errs = append(errs, fmt.Errorf("error_writer: %w", err))
 		}
 	}
@@ -297,13 +297,13 @@ func (wm *Router) Stop() error {
 }
 
 // Stats returns totals from all writers.
-func (wm *Router) Stats() (records map[string]int64, errorCount int64) {
+func (router *Router) Stats() (records map[string]int64, errorCount int64) {
 	result := make(map[string]int64)
-	for path, tw := range wm.writers {
-		result[path] = tw.TotalWritten()
+	for path, writer := range router.writers {
+		result[path] = writer.TotalWritten()
 	}
-	if wm.errorWriter != nil {
-		errorCount = wm.errorWriter.TotalWritten()
+	if router.errorWriter != nil {
+		errorCount = router.errorWriter.TotalWritten()
 	}
 	return result, errorCount
 }
