@@ -12,10 +12,10 @@ import (
 	"go-parser/internal/config"
 	"go-parser/internal/decoder"
 	"go-parser/internal/parser"
-	"go-parser/internal/reader"
 	"go-parser/internal/storage"
+	"go-parser/internal/storage/reader"
+	"go-parser/internal/storage/writer"
 	"go-parser/internal/validation"
-	"go-parser/internal/writer"
 )
 
 // Pipeline orchestrates the full file parsing process.

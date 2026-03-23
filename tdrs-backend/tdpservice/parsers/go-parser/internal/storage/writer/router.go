@@ -13,7 +13,6 @@ import (
 	"go-parser/internal/config"
 	"go-parser/internal/config/filespec"
 	"go-parser/internal/parser"
-	"go-parser/internal/writer/convert"
 )
 
 // Router coordinates writes for any file type.
@@ -28,7 +27,7 @@ type Router struct {
 	writers map[string]*TableWriter
 
 	// Converters keyed by schema path - manager owns conversion
-	converters map[string]convert.RowConverter
+	converters map[string]RowConverter
 
 	// Content type IDs keyed by schema path - for error linking
 	contentTypeIDs map[string]*int32
@@ -64,7 +63,7 @@ func NewRouter(
 		pool:           pool,
 		datafileID:     datafileID,
 		writers:        make(map[string]*TableWriter),
-		converters:     make(map[string]convert.RowConverter),
+		converters:     make(map[string]RowConverter),
 		contentTypeIDs: make(map[string]*int32),
 	}
 
@@ -99,7 +98,7 @@ func NewRouter(
 
 		// Get the converter for this schema path
 		// Schema path (e.g., "tanf/t1") distinguishes TANF vs Tribal T1
-		conv := convert.GetConverter(schemaPath)
+		conv := GetConverter(schemaPath)
 		if conv == nil {
 			log.Printf("Warning: no converter for schema %s", schemaPath)
 			continue

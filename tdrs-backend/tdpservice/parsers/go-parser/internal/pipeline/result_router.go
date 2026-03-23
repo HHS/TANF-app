@@ -10,9 +10,8 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"go-parser/internal/parser"
+	"go-parser/internal/storage/writer"
 	"go-parser/internal/validation"
-	"go-parser/internal/writer"
-	"go-parser/internal/writer/convert"
 )
 
 // ErrorStats tracks validation error counts by scope and type.
@@ -163,7 +162,7 @@ func routeValidatedBatch(ctx context.Context, router *writer.Router, groups []*V
 		if len(vg.Result.GroupErrors) > 0 && len(vg.Group.Records) > 0 {
 			firstRec := vg.Group.Records[0]
 			for _, groupErr := range vg.Result.GroupErrors {
-				errorRows = append(errorRows, convert.ConvertError(groupErr, firstRec, nil, datafileID, nil))
+				errorRows = append(errorRows, writer.ConvertError(groupErr, firstRec, nil, datafileID, nil))
 			}
 		}
 
@@ -257,6 +256,6 @@ func appendRecordErrors(
 			vr.ErrorType == validation.ErrorTypeValueConsistency) {
 			ctID = contentTypeID
 		}
-		*buf = append(*buf, convert.ConvertError(vr, record, recordUUID, datafileID, ctID))
+		*buf = append(*buf, writer.ConvertError(vr, record, recordUUID, datafileID, ctID))
 	}
 }

@@ -1,4 +1,4 @@
-package convert
+package writer
 
 import (
 	"encoding/json"
