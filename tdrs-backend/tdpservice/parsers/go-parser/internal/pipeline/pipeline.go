@@ -116,20 +116,22 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params DataFileParams) (*Par
 	// Step 5: Create record type detector
 	detector := parser.NewRecordTypeDetector(spec, p.registry)
 
-	// Step 6: Create parser pool
-	parserPool := parser.NewParserPool(spec.Format, p.config.toWorkerConfig(), parseCtx)
+	// Step 6: Create parsing orchestrator
+	parsingOrchestrator := parser.NewParsingOrchestrator(spec.Format, parseCtx)
 
-	// Step 7: Create worker pool (owns goroutines, does parse + validate)
+	// Step 7: Create validation orchestrator
 	filespecKey := fmt.Sprintf("%s:%d", params.Program, params.Section)
-	orchestrator := validation.NewOrchestrator(p.validators, 0)
-	workers := NewWorkerPool(parserPool, orchestrator, filespecKey, WorkerPoolConfig{
+	validationOrchestrator := validation.NewValidationOrchestrator(p.validators)
+
+	// Step 8: Create pipeline worker pool
+	workers := NewWorkerPool(parsingOrchestrator, validationOrchestrator, filespecKey, WorkerPoolConfig{
 		NumWorkers:       p.config.NumWorkers,
 		WorkBufferSize:   p.config.WorkBufferSize,
 		ResultBufferSize: p.config.ResultBufferSize,
 	})
 	workers.Start(ctx)
 
-	// Step 8: Start result collector with parallel dispatchers
+	// Step 9: Start result collector with parallel dispatchers
 	// TODO: I hate this. I feel like it can be better.
 	var collectorErr error
 	var routeStats *RouteStats
@@ -140,7 +142,7 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params DataFileParams) (*Par
 		routeStats, collectorErr = routeResults(ctx, workers, router, p.config.NumRouters, params.DatafileID)
 	}()
 
-	// Step 9: Process rows through the accumulator
+	// Step 10: Process rows through the accumulator
 	// TODO: I feel like step 8 and this step should be apart of the worker pool
 	err = processRows(dec, spec, detector, workers)
 	if err != nil {
@@ -149,7 +151,7 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params DataFileParams) (*Par
 		return nil, err
 	}
 
-	// Step 10: Wait for everything to complete
+	// Step 11: Wait for everything to complete
 	workers.CloseInputs()
 	workers.Wait()
 	wg.Wait()

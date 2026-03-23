@@ -24,14 +24,14 @@ type ValidatedBatch struct {
 }
 
 // WorkerPool manages goroutines that parse and validate batches.
-// It composes parser.ParserPool (for field extraction) with the validation
-// Orchestrator (for rule evaluation), keeping both stages in one goroutine
+// It composes parser.ParsingOrchestrator (for record extraction) with the validation
+// ValidationOrchestrator (for rule evaluation), keeping both stages in one goroutine
 // to maximize utilization — parsing is ~2% of runtime while validation is ~51%.
 type WorkerPool struct {
-	parserPool   *parser.ParserPool
-	orchestrator *validation.Orchestrator
-	filespecKey  string
-	numWorkers   int
+	parsingOrchestrator *parser.ParsingOrchestrator
+	orchestrator        *validation.ValidationOrchestrator
+	filespecKey         string
+	numWorkers          int
 
 	decodedBatches   chan *parser.DecodedBatch
 	validatedBatches chan *ValidatedBatch
@@ -47,18 +47,18 @@ type WorkerPoolConfig struct {
 
 // NewWorkerPool creates a pool that parses and validates batches.
 func NewWorkerPool(
-	parserPool *parser.ParserPool,
-	orchestrator *validation.Orchestrator,
+	parsingOrchestrator *parser.ParsingOrchestrator,
+	orchestrator *validation.ValidationOrchestrator,
 	filespecKey string,
 	config WorkerPoolConfig,
 ) *WorkerPool {
 	return &WorkerPool{
-		parserPool:       parserPool,
-		orchestrator:     orchestrator,
-		filespecKey:      filespecKey,
-		numWorkers:       config.NumWorkers,
-		decodedBatches:   make(chan *parser.DecodedBatch, config.WorkBufferSize),
-		validatedBatches: make(chan *ValidatedBatch, config.ResultBufferSize),
+		parsingOrchestrator: parsingOrchestrator,
+		orchestrator:        orchestrator,
+		filespecKey:         filespecKey,
+		numWorkers:          config.NumWorkers,
+		decodedBatches:      make(chan *parser.DecodedBatch, config.WorkBufferSize),
+		validatedBatches:    make(chan *ValidatedBatch, config.ResultBufferSize),
 	}
 }
 
@@ -111,7 +111,7 @@ func (wp *WorkerPool) worker(ctx context.Context) {
 }
 
 func (wp *WorkerPool) processBatch(batch *parser.DecodedBatch) *ValidatedBatch {
-	parsed := wp.parserPool.ParseBatch(batch)
+	parsed := wp.parsingOrchestrator.ParseBatch(batch)
 
 	groups := make([]*ValidatedGroup, 0, len(parsed.Groups))
 	for _, group := range parsed.Groups {

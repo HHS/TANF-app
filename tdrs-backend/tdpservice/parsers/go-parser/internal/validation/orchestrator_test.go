@@ -3,12 +3,11 @@ package validation
 import (
 	"testing"
 
-	"go-parser/internal/parser"
 	"go-parser/internal/testutil"
 )
 
-// TestOrchestratorParallelValidation tests parallel group validation
-func TestOrchestratorParallelValidation(t *testing.T) {
+// TestOrchestratorMultiGroupValidation tests validating multiple groups
+func TestOrchestratorMultiGroupValidation(t *testing.T) {
 	registry := NewValidatorRegistry()
 	registry.exprOpts = RegisterFunctions()
 
@@ -18,17 +17,15 @@ func TestOrchestratorParallelValidation(t *testing.T) {
 		{ID: "group_pass", Scope: ScopeGroup, ErrorType: ErrorTypeCaseConsistency, Expr: groupExpr},
 	}
 
-	// Create orchestrator with 4 workers
-	orchestrator := NewOrchestrator(registry, 4)
+	orchestrator := NewValidationOrchestrator(registry)
 
-	// Create multiple groups
-	var groups []*parser.ParsedGroup
+	// Create and validate multiple groups
+	var results []*GroupValidationResult
 	for i := 0; i < 10; i++ {
 		rec := testutil.NewTestRecord(t1Schema, 1, nil)
-		groups = append(groups, testutil.NewTestGroup(rec))
+		group := testutil.NewTestGroup(rec)
+		results = append(results, orchestrator.ValidateGroup(group, "TEST:1"))
 	}
-
-	results := orchestrator.ValidateGroups(groups, "TEST:1")
 
 	if len(results) != 10 {
 		t.Errorf("expected 10 results, got %d", len(results))
@@ -53,7 +50,7 @@ func TestOrchestratorFieldValidation(t *testing.T) {
 		"AMOUNT": {{ID: "positive_amount", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
 	}
 
-	orchestrator := NewOrchestrator(registry, 0)
+	orchestrator := NewValidationOrchestrator(registry)
 
 	rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": -10}) // Negative - should fail
 	group := testutil.NewTestGroup(rec)
@@ -83,7 +80,7 @@ func TestOrchestratorNilRequiredFieldSkipsValidators(t *testing.T) {
 		"AMOUNT": {{ID: "positive_amount", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
 	}
 
-	orchestrator := NewOrchestrator(registry, 0)
+	orchestrator := NewValidationOrchestrator(registry)
 
 	// Record with nil required field — use a separate schema so Required=true
 	reqSchema := testutil.NewTestSchema("T1", "AMOUNT")
@@ -120,7 +117,7 @@ func TestOrchestratorNilOptionalFieldSkipsValidators(t *testing.T) {
 		"AMOUNT": {{ID: "not_empty", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
 	}
 
-	orchestrator := NewOrchestrator(registry, 0)
+	orchestrator := NewValidationOrchestrator(registry)
 
 	// Record with nil optional field (Required defaults to false)
 	rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": nil})

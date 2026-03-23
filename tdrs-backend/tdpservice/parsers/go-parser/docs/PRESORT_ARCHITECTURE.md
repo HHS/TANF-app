@@ -54,7 +54,7 @@ If a validation error fires on `rows[3]` (T1 CASE002), `record.LineNumber` is `2
                          (no temp file, lineNum preserved)         │
                                                                    ▼
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│  Database   │ ◄── │   Router    │ ◄── │ ParserPool  │ ◄── │ Accumulator │
+│  Database   │ ◄── │   Router    │ ◄── │ WorkerPool  │ ◄── │ Accumulator │
 │  (COPY)     │     │ (validate   │     │ (N workers) │     │ (streaming) │
 │             │     │  + write)   │     │             │     │             │
 └─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
@@ -63,7 +63,7 @@ If a validation error fires on `rows[3]` (T1 CASE002), `record.LineNumber` is `2
 1. **Decoder** reads the raw file, producing `decoder.Row` objects with original `lineNum` set
 2. **Sorter** collects all data rows in memory, stable-sorts by key fields, separates HEADER/TRAILER
 3. **Accumulator** iterates sorted rows, detects key changes, flushes completed groups as `DecodedBatch`
-4. **ParserPool** workers parse batches into `ParsedBatch` (field extraction, type conversion)
+4. **WorkerPool** workers parse batches via `ParsingOrchestrator` into `ParsedBatch` (field extraction, type conversion)
 5. **ResultRouter** dispatchers validate groups via `ValidationOrchestrator` and route to database writers
 6. **Writer** bulk-loads records and errors via `COPY FROM`
 
