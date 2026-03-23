@@ -19,6 +19,9 @@ type mockDecoder struct {
 func (d *mockDecoder) Format() filespec.Format         { return filespec.FormatPositional }
 func (d *mockDecoder) ReadFirst() (decoder.Row, error)  { return d.header, nil }
 func (d *mockDecoder) Close() error                     { return nil }
+func (d *mockDecoder) Sort(_ *decoder.RecordTypeDetector, _ decoder.KeyExtractor, _ []string) error {
+	return nil
+}
 
 func (d *mockDecoder) Rows() iter.Seq2[decoder.Row, error] {
 	return func(yield func(decoder.Row, error) bool) {
@@ -109,7 +112,7 @@ func TestSorter_SortsByKey(t *testing.T) {
 	spec := buildTANFS1Spec()
 	schemas := buildTestSchemas()
 	registry := buildTestRegistry(schemas)
-	detector := NewRecordTypeDetector(spec, registry)
+	detector := decoder.NewRecordTypeDetector(spec, registry)
 
 	// Rows with interleaved cases: CASE002 before CASE001
 	// Key positions: rpt_month_year=2:8, case_number=8:19
@@ -153,7 +156,7 @@ func TestSorter_PreservesLineNumbers(t *testing.T) {
 	spec := buildTANFS1Spec()
 	schemas := buildTestSchemas()
 	registry := buildTestRegistry(schemas)
-	detector := NewRecordTypeDetector(spec, registry)
+	detector := decoder.NewRecordTypeDetector(spec, registry)
 
 	dec := &mockDecoder{
 		rows: []decoder.Row{
@@ -182,7 +185,7 @@ func TestSorter_StableSortPreservesRelativeOrder(t *testing.T) {
 	spec := buildTANFS1Spec()
 	schemas := buildTestSchemas()
 	registry := buildTestRegistry(schemas)
-	detector := NewRecordTypeDetector(spec, registry)
+	detector := decoder.NewRecordTypeDetector(spec, registry)
 
 	// Multiple records for same case — must preserve T1, T2, T3 order
 	dec := &mockDecoder{
@@ -212,7 +215,7 @@ func TestSorter_SeparatesTrailer(t *testing.T) {
 	spec := buildTANFS1Spec()
 	schemas := buildTestSchemas()
 	registry := buildTestRegistry(schemas)
-	detector := NewRecordTypeDetector(spec, registry)
+	detector := decoder.NewRecordTypeDetector(spec, registry)
 
 	dec := &mockDecoder{
 		rows: []decoder.Row{
@@ -242,7 +245,7 @@ func TestSorter_EmptyFile(t *testing.T) {
 	spec := buildTANFS1Spec()
 	schemas := buildTestSchemas()
 	registry := buildTestRegistry(schemas)
-	detector := NewRecordTypeDetector(spec, registry)
+	detector := decoder.NewRecordTypeDetector(spec, registry)
 
 	dec := &mockDecoder{rows: []decoder.Row{}}
 
@@ -267,7 +270,7 @@ func TestSorter_MalformedRowsGoToUnkeyed(t *testing.T) {
 	spec := buildTANFS1Spec()
 	schemas := buildTestSchemas()
 	registry := buildTestRegistry(schemas)
-	detector := NewRecordTypeDetector(spec, registry)
+	detector := decoder.NewRecordTypeDetector(spec, registry)
 
 	dec := &mockDecoder{
 		rows: []decoder.Row{
@@ -298,7 +301,7 @@ func TestSorter_MultipleRptMonths(t *testing.T) {
 	spec := buildTANFS1Spec()
 	schemas := buildTestSchemas()
 	registry := buildTestRegistry(schemas)
-	detector := NewRecordTypeDetector(spec, registry)
+	detector := decoder.NewRecordTypeDetector(spec, registry)
 
 	// Different rpt_month_year values — should sort by month first, then case
 	dec := &mockDecoder{
@@ -328,7 +331,7 @@ func TestSorter_UnrecognizedRecordType(t *testing.T) {
 	spec := buildTANFS1Spec()
 	schemas := buildTestSchemas()
 	registry := buildTestRegistry(schemas)
-	detector := NewRecordTypeDetector(spec, registry)
+	detector := decoder.NewRecordTypeDetector(spec, registry)
 
 	dec := &mockDecoder{
 		rows: []decoder.Row{
@@ -353,7 +356,7 @@ func TestSorter_UnrecognizedRecordType(t *testing.T) {
 }
 
 func TestPositionalKeyExtractor_ExtractKey(t *testing.T) {
-	extractor := &PositionalKeyExtractor{
+	extractor := &decoder.PositionalKeyExtractor{
 		RptMonthYear: filespec.PositionDef{Start: 2, End: 8},
 		CaseNumber:   filespec.PositionDef{Start: 8, End: 19},
 	}
@@ -369,7 +372,7 @@ func TestPositionalKeyExtractor_ExtractKey(t *testing.T) {
 }
 
 func TestPositionalKeyExtractor_TooShort(t *testing.T) {
-	extractor := &PositionalKeyExtractor{
+	extractor := &decoder.PositionalKeyExtractor{
 		RptMonthYear: filespec.PositionDef{Start: 2, End: 8},
 		CaseNumber:   filespec.PositionDef{Start: 8, End: 19},
 	}

@@ -1,4 +1,4 @@
-package parser
+package decoder
 
 import (
 	"fmt"
@@ -8,7 +8,6 @@ import (
 	"go-parser/internal/config"
 	"go-parser/internal/config/filespec"
 	"go-parser/internal/config/schema"
-	"go-parser/internal/decoder"
 )
 
 // RecordTypeDetector determines which schema applies to each row.
@@ -38,7 +37,7 @@ func NewRecordTypeDetector(spec *filespec.FileSpec, registry *config.Registry) *
 
 // Detect determines the schema for a given row.
 // Returns the compiled schema or an error if no matching schema is found.
-func (d *RecordTypeDetector) Detect(row decoder.Row) (*schema.CompiledSchema, error) {
+func (d *RecordTypeDetector) Detect(row Row) (*schema.CompiledSchema, error) {
 	switch d.spec.RecordTypeDetection.Method {
 	case "prefix":
 		return d.detectByPrefix(row)
@@ -52,8 +51,8 @@ func (d *RecordTypeDetector) Detect(row decoder.Row) (*schema.CompiledSchema, er
 }
 
 // detectByPrefix determines schema by looking at line prefix (for positional files).
-func (d *RecordTypeDetector) detectByPrefix(row decoder.Row) (*schema.CompiledSchema, error) {
-	pr, ok := row.(*decoder.PositionalRow)
+func (d *RecordTypeDetector) detectByPrefix(row Row) (*schema.CompiledSchema, error) {
+	pr, ok := row.(*PositionalRow)
 	if !ok {
 		return nil, fmt.Errorf("prefix detection requires PositionalRow, got %T", row)
 	}
@@ -80,8 +79,8 @@ func (d *RecordTypeDetector) detectByPrefix(row decoder.Row) (*schema.CompiledSc
 }
 
 // detectByColumn determines schema by looking at a column value (for columnar files).
-func (d *RecordTypeDetector) detectByColumn(row decoder.Row) (*schema.CompiledSchema, error) {
-	cr, ok := row.(*decoder.ColumnarRow)
+func (d *RecordTypeDetector) detectByColumn(row Row) (*schema.CompiledSchema, error) {
+	cr, ok := row.(*ColumnarRow)
 	if !ok {
 		return nil, fmt.Errorf("column detection requires ColumnarRow, got %T", row)
 	}

@@ -24,70 +24,6 @@ type SortResult struct {
 	UnkeyedRows []decoder.Row
 }
 
-// KeyExtractor abstracts key extraction across file formats.
-type KeyExtractor interface {
-	// ExtractKey returns the composite sort key for the given row.
-	// Returns an error if the row is too short or otherwise cannot produce a key.
-	ExtractKey(row decoder.Row) (string, error)
-}
-
-// PositionalKeyExtractor extracts keys from fixed-width positional rows
-// using the same byte positions as accumulator key_fields.
-type PositionalKeyExtractor struct {
-	RptMonthYear filespec.PositionDef
-	CaseNumber   filespec.PositionDef
-}
-
-// ExtractKey extracts the composite key from a positional row.
-func (e *PositionalKeyExtractor) ExtractKey(row decoder.Row) (string, error) {
-	pr, ok := row.(*decoder.PositionalRow)
-	if !ok {
-		return "", fmt.Errorf("positional key extraction requires PositionalRow, got %T", row)
-	}
-
-	data := pr.Data()
-
-	minLen := e.CaseNumber.End
-	if e.RptMonthYear.End > minLen {
-		minLen = e.RptMonthYear.End
-	}
-	if len(data) < minLen {
-		return "", fmt.Errorf("line too short for key extraction: need %d bytes, got %d", minLen, len(data))
-	}
-
-	rptMonth := data[e.RptMonthYear.Start:e.RptMonthYear.End]
-	caseNum := data[e.CaseNumber.Start:e.CaseNumber.End]
-
-	return rptMonth + "|" + caseNum, nil
-}
-
-// ColumnarKeyExtractor extracts keys from CSV/XLSX rows by column index.
-type ColumnarKeyExtractor struct {
-	KeyColumns []int
-}
-
-// ExtractKey extracts the composite key from a columnar row.
-func (e *ColumnarKeyExtractor) ExtractKey(row decoder.Row) (string, error) {
-	cr, ok := row.(*decoder.ColumnarRow)
-	if !ok {
-		return "", fmt.Errorf("columnar key extraction requires ColumnarRow, got %T", row)
-	}
-
-	key := ""
-	for i, colIdx := range e.KeyColumns {
-		val := cr.Column(colIdx)
-		if val == nil {
-			return "", fmt.Errorf("column %d is empty or missing", colIdx)
-		}
-		if i > 0 {
-			key += "|"
-		}
-		key += fmt.Sprintf("%v", val)
-	}
-
-	return key, nil
-}
-
 // sortableRow pairs a row with its extracted sort key for sorting.
 type sortableRow struct {
 	row decoder.Row
@@ -98,14 +34,14 @@ type sortableRow struct {
 // and stable-sorts data records by key fields.
 type Sorter struct {
 	spec           *filespec.FileSpec
-	detector       *RecordTypeDetector
-	keyExtractor   KeyExtractor
+	detector       *decoder.RecordTypeDetector
+	keyExtractor   decoder.KeyExtractor
 	groupedSchemas map[string]bool
 }
 
 // NewSorter creates a Sorter for the given file specification.
 // The detector is used to identify which records are grouped vs. non-grouped.
-func NewSorter(spec *filespec.FileSpec, detector *RecordTypeDetector) *Sorter {
+func NewSorter(spec *filespec.FileSpec, detector *decoder.RecordTypeDetector) *Sorter {
 	groupedSchemas := make(map[string]bool)
 	for _, name := range spec.Accumulator.GroupedSchemas {
 		groupedSchemas[name] = true
@@ -114,21 +50,8 @@ func NewSorter(spec *filespec.FileSpec, detector *RecordTypeDetector) *Sorter {
 	return &Sorter{
 		spec:           spec,
 		detector:       detector,
-		keyExtractor:   newKeyExtractor(spec),
+		keyExtractor:   decoder.NewKeyExtractor(spec),
 		groupedSchemas: groupedSchemas,
-	}
-}
-
-// newKeyExtractor creates the appropriate KeyExtractor based on file format.
-func newKeyExtractor(spec *filespec.FileSpec) KeyExtractor {
-	if !spec.Accumulator.HasKeyFields() {
-		return nil
-	}
-
-	kf := spec.Accumulator.KeyFields
-	return &PositionalKeyExtractor{
-		RptMonthYear: kf.RptMonthYear,
-		CaseNumber:   kf.CaseNumber,
 	}
 }
 

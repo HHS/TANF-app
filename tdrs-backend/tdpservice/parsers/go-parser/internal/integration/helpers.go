@@ -25,8 +25,8 @@ func TestDataDir() string {
 func ParseFile(t *testing.T, ctx context.Context, pool *pgxpool.Pool, reg *config.Registry, validators *validation.ValidatorRegistry, program string, section int, filePath string, datafileID int32) {
 	t.Helper()
 
-	p := pipeline.NewPipline(pool, reg, validators, pipeline.TestConfig())
-	result, err := p.ProcessFile(ctx, pipeline.ProcessParams{
+	p := pipeline.NewPipline(pool, reg, validators, pipeline.TestConfig(), nil)
+	result, err := p.ProcessFile(ctx, pipeline.DataFileParams{
 		Program:    program,
 		Section:    section,
 		FilePath:   filePath,

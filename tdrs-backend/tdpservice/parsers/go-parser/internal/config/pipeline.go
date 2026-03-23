@@ -14,6 +14,20 @@ type PipelineYAML struct {
 	Pipeline PipelineWorkerConfig `yaml:"pipeline"`
 	Writer   WriterConfig         `yaml:"writer"`
 	Database DatabaseConfig       `yaml:"database"`
+	Reader   ReaderConfig         `yaml:"reader"`
+}
+
+// ReaderConfig controls how the parser acquires input files.
+type ReaderConfig struct {
+	Source string   `yaml:"source"` // "local" (default), "s3"
+	S3     S3Config `yaml:"s3"`
+}
+
+// S3Config holds S3-specific reader settings.
+type S3Config struct {
+	Bucket   string `yaml:"bucket"`
+	Endpoint string `yaml:"endpoint"` // Custom endpoint (empty = real AWS, set for LocalStack)
+	Region   string `yaml:"region"`
 }
 
 // PipelineWorkerConfig holds worker pool and routing settings.

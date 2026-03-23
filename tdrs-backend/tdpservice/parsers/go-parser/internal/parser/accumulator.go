@@ -24,7 +24,7 @@ import (
 // when a new key is encountered.
 type Accumulator struct {
 	spec     *filespec.FileSpec
-	detector *RecordTypeDetector
+	detector *decoder.RecordTypeDetector
 
 	// Configuration derived from spec
 	hasKeyFields   bool
@@ -40,7 +40,7 @@ type Accumulator struct {
 }
 
 // NewAccumulator creates an accumulator for the given file specification.
-func NewAccumulator(spec *filespec.FileSpec, detector *RecordTypeDetector) *Accumulator {
+func NewAccumulator(spec *filespec.FileSpec, detector *decoder.RecordTypeDetector) *Accumulator {
 	// Build set of grouped schemas for quick lookup
 	groupedSchemas := make(map[string]bool)
 	for _, name := range spec.Accumulator.GroupedSchemas {

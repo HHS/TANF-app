@@ -118,8 +118,8 @@ func main() {
 		testutil.DeleteTestDatafile(ctx, dbPool, datafileID)
 	}()
 
-	// Create and run pipeline
-	pipeln := pipeline.NewPipline(dbPool, reg, validators, pipeline.NewConfig(pipelineCfg))
+	// Create and run pipeline (S3 storage is nil for local mode; initialized on demand for S3 mode)
+	pipeln := pipeline.NewPipline(dbPool, reg, validators, pipeline.NewConfig(pipelineCfg), nil)
 	result, err := pipeln.ProcessFile(ctx, pipeline.DataFileParams{
 		Program:    program,
 		Section:    section,

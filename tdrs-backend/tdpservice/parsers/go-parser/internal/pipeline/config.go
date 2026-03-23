@@ -18,6 +18,10 @@ type PipelineConfig struct {
 	// Writer configuration
 	FlushThreshold      int
 	ErrorFlushThreshold int
+
+	// Reader configuration
+	ReaderSource string        // "local" (default), "s3"
+	S3           config.S3Config
 }
 
 // DefaultConfig returns production defaults.
@@ -40,6 +44,11 @@ func TestConfig() PipelineConfig {
 
 // NewConfig creates a PipelineConfig from the loaded YAML configuration.
 func NewConfig(cfg *config.PipelineYAML) PipelineConfig {
+	readerSource := cfg.Reader.Source
+	if readerSource == "" {
+		readerSource = "local"
+	}
+
 	return PipelineConfig{
 		NumWorkers:          cfg.Pipeline.NumWorkers,
 		WorkBufferSize:      cfg.Pipeline.WorkBufferSize,
@@ -48,5 +57,7 @@ func NewConfig(cfg *config.PipelineYAML) PipelineConfig {
 		PoolPrewarmSize:     cfg.Pipeline.PoolPrewarmSize,
 		FlushThreshold:      cfg.Writer.FlushThreshold,
 		ErrorFlushThreshold: cfg.Writer.ErrorFlushThreshold,
+		ReaderSource:        readerSource,
+		S3:                  cfg.Reader.S3,
 	}
 }

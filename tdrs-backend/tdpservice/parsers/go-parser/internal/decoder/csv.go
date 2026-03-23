@@ -12,6 +12,7 @@ import (
 // CSVDecoder reads CSV files.
 // Each row becomes a ColumnarRow with string values.
 type CSVDecoder struct {
+	Sortable
 	reader  *csv.Reader
 	closer  io.Closer
 	lineNum int
@@ -53,7 +54,19 @@ func (d *CSVDecoder) Close() error {
 	return nil
 }
 
+// Sort reads all rows, sorts them by key, and makes subsequent Rows() calls return sorted output.
+func (d *CSVDecoder) Sort(detector *RecordTypeDetector, keyExtractor KeyExtractor, groupedSchemas []string) error {
+	return d.Sortable.DoSort(d.unsortedRows(), detector, keyExtractor, groupedSchemas)
+}
+
 func (d *CSVDecoder) Rows() iter.Seq2[Row, error] {
+	if d.IsSorted() {
+		return d.SortedRows()
+	}
+	return d.unsortedRows()
+}
+
+func (d *CSVDecoder) unsortedRows() iter.Seq2[Row, error] {
 	return func(yield func(Row, error) bool) {
 		for {
 			// Read a row from the CSV

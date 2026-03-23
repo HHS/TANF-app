@@ -12,43 +12,48 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
 )
 
-// S3Storage encapsulates the Amazon Simple Storage Service (Amazon S3Storage) actions
-// used in the examples.
-// It contains S3Client, an Amazon S3Storage service client that is used to perform bucket
-// and object actions.
+// S3Storage encapsulates Amazon S3 actions for file storage operations.
 type S3Storage struct {
 	Client *s3.Client
 }
 
-func NewS3Storage() S3Storage {
-	accessKeyID := "test"
-	secretAccessKey := "test"
-	awsRegion := "us-gov-west-1"
-	creds := credentials.NewStaticCredentialsProvider(accessKeyID, secretAccessKey, "")
-	config, err := config.LoadDefaultConfig(context.TODO(),
-		config.WithCredentialsProvider(creds),
-		config.WithRegion(awsRegion),
-	)
+// S3StorageConfig holds configuration for connecting to S3.
+type S3StorageConfig struct {
+	Region   string // AWS region (e.g., "us-gov-west-1")
+	Endpoint string // Custom endpoint URL (empty = real AWS, set for LocalStack/testing)
+}
 
+// NewS3Storage creates an S3Storage client using the provided configuration.
+// Credentials are resolved via the standard AWS SDK credential chain
+// (environment variables, IAM role, ECS task role, etc.).
+func NewS3Storage(cfg S3StorageConfig) (*S3Storage, error) {
+	opts := []func(*config.LoadOptions) error{
+		config.WithRegion(cfg.Region),
+	}
+
+	awsCfg, err := config.LoadDefaultConfig(context.TODO(), opts...)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("failed to load AWS config: %w", err)
 	}
 
-	client := s3.NewFromConfig(config, func(o *s3.Options) {
-		o.BaseEndpoint = aws.String("http://localhost:4566/")
-		o.UsePathStyle = true
-	})
+	clientOpts := func(o *s3.Options) {
+		if cfg.Endpoint != "" {
+			o.BaseEndpoint = aws.String(cfg.Endpoint)
+			o.UsePathStyle = true
+		}
+	}
 
-	return S3Storage{
+	client := s3.NewFromConfig(awsCfg, clientOpts)
+
+	return &S3Storage{
 		Client: client,
-	}
+	}, nil
 }
 
 // ListBuckets lists the buckets in the current account.

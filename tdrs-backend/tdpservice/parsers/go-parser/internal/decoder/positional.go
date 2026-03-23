@@ -12,6 +12,7 @@ import (
 // PostitionalDecoder reads positional (fixed-width) UTF-8 text files.
 // Each line becomes a PositionalRow.
 type PostitionalDecoder struct {
+	Sortable
 	reader       *bufio.Reader
 	closer       io.Closer
 	lineNum      int
@@ -76,7 +77,19 @@ func (d *PostitionalDecoder) Close() error {
 	return nil
 }
 
+// Sort reads all rows, sorts them by key, and makes subsequent Rows() calls return sorted output.
+func (d *PostitionalDecoder) Sort(detector *RecordTypeDetector, keyExtractor KeyExtractor, groupedSchemas []string) error {
+	return d.Sortable.DoSort(d.unsortedRows(), detector, keyExtractor, groupedSchemas)
+}
+
 func (d *PostitionalDecoder) Rows() iter.Seq2[Row, error] {
+	if d.IsSorted() {
+		return d.SortedRows()
+	}
+	return d.unsortedRows()
+}
+
+func (d *PostitionalDecoder) unsortedRows() iter.Seq2[Row, error] {
 	return func(yield func(Row, error) bool) {
 		for {
 			// Read a line from the file

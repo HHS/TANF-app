@@ -13,6 +13,7 @@ import (
 // XLSXDecoder reads XLSX (Excel) files.
 // Each row becomes a ColumnarRow with typed values (string, int, float64).
 type XLSXDecoder struct {
+	Sortable
 	file    *excelize.File
 	sheet   string
 	rows    *excelize.Rows
@@ -69,7 +70,19 @@ func (d *XLSXDecoder) ReadFirst() (Row, error) {
 	return nil, nil
 }
 
+// Sort reads all rows, sorts them by key, and makes subsequent Rows() calls return sorted output.
+func (d *XLSXDecoder) Sort(detector *RecordTypeDetector, keyExtractor KeyExtractor, groupedSchemas []string) error {
+	return d.Sortable.DoSort(d.unsortedRows(), detector, keyExtractor, groupedSchemas)
+}
+
 func (d *XLSXDecoder) Rows() iter.Seq2[Row, error] {
+	if d.IsSorted() {
+		return d.SortedRows()
+	}
+	return d.unsortedRows()
+}
+
+func (d *XLSXDecoder) unsortedRows() iter.Seq2[Row, error] {
 	return func(yield func(Row, error) bool) {
 		for d.rows.Next() {
 			d.lineNum++

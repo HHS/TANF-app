@@ -4,16 +4,16 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"sync"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"go-parser/internal/config"
-	"go-parser/internal/config/filespec"
 	"go-parser/internal/decoder"
 	"go-parser/internal/parser"
+	"go-parser/internal/reader"
+	"go-parser/internal/storage"
 	"go-parser/internal/validation"
 	"go-parser/internal/writer"
 )
@@ -24,13 +24,15 @@ type Pipeline struct {
 	registry   *config.Registry
 	validators *validation.ValidatorRegistry
 	config     PipelineConfig
+	s3Storage  *storage.S3Storage // nil when reader source is "local"
 }
 
 // DataFileParams contains the inputs for processing a file.
 type DataFileParams struct {
 	Program    string
 	Section    int
-	FilePath   string
+	FilePath   string // Used when source is "local"
+	ObjectKey  string // Used when source is "s3"
 	DatafileID int32
 }
 
@@ -45,12 +47,13 @@ type ParsingResult struct {
 }
 
 // NewPipline creates a Pipeline with the given configuration.
-func NewPipline(dbPool *pgxpool.Pool, reg *config.Registry, validators *validation.ValidatorRegistry, config PipelineConfig) *Pipeline {
+func NewPipline(dbPool *pgxpool.Pool, reg *config.Registry, validators *validation.ValidatorRegistry, config PipelineConfig, s3Storage *storage.S3Storage) *Pipeline {
 	return &Pipeline{
 		dbPool:     dbPool,
 		registry:   reg,
 		validators: validators,
 		config:     config,
+		s3Storage:  s3Storage,
 	}
 }
 
@@ -67,13 +70,20 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params DataFileParams) (*Par
 	log.Printf("Format: %s, KeyFields: %v, BatchSize: %d",
 		spec.Format, spec.Accumulator.HasKeyFields(), spec.Accumulator.EffectiveBatchSize())
 
-	// Step 2: Open the file and create decoder
-	// TODO: This needs to be abstracted/generalized for local, s3, and http
-	file, err := os.Open(params.FilePath)
+	// Step 2: Acquire file via configured source
+	var source reader.FileSource
+	switch p.config.ReaderSource {
+	case "s3":
+		source = reader.NewS3Source(p.s3Storage, p.config.S3.Bucket, params.ObjectKey)
+	default:
+		source = reader.NewLocalSource(params.FilePath)
+	}
+	file, err := source.Open(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open file: %w", err)
+		return nil, fmt.Errorf("failed to acquire file: %w", err)
 	}
 	defer file.Close()
+	defer source.Cleanup()
 
 	dec, err := CreateDecoder(file, spec)
 	if err != nil {
@@ -114,7 +124,14 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params DataFileParams) (*Par
 	}
 
 	// Step 5: Create record type detector
-	detector := parser.NewRecordTypeDetector(spec, p.registry)
+	detector := decoder.NewRecordTypeDetector(spec, p.registry)
+
+	// Step 5b: Sort the file if presort is enabled
+	if spec.Accumulator.Presort && spec.Accumulator.HasKeyFields() {
+		if err := dec.Sort(detector, decoder.NewKeyExtractor(spec), spec.Accumulator.GroupedSchemas); err != nil {
+			return nil, fmt.Errorf("presort failed: %w", err)
+		}
+	}
 
 	// Step 6: Create parsing orchestrator
 	parsingOrchestrator := parser.NewParsingOrchestrator(spec.Format, parseCtx)
@@ -144,7 +161,8 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params DataFileParams) (*Par
 
 	// Step 10: Process rows through the accumulator
 	// TODO: I feel like step 8 and this step should be apart of the worker pool
-	err = processRows(dec, spec, detector, workers)
+	acc := parser.NewAccumulator(spec, detector)
+	err = processRowsStreaming(dec, acc, workers)
 	if err != nil {
 		workers.CloseInputs()
 		workers.Wait()
@@ -192,86 +210,7 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params DataFileParams) (*Par
 	}, nil
 }
 
-// processRows uses the Accumulator to process all rows.
-// The Accumulator handles all four modes (keyed, batched, both, neither)
-// based on the AccumulatorConfig in the FileSpec.
-//
-// When presort is enabled, all data rows are read into memory and stable-sorted
-// by key fields before feeding to the accumulator. This guarantees records for
-// the same case are adjacent, enabling streaming accumulation and in-memory
-// duplicate detection regardless of input order
-// TODO: I hate having different code paths. Sorted vs non sorted files should not generally change the
-// functionality/code path. The sorting of the file should occur in the "reader" abstraction we create that handles
-// acquiring the raw file from disk, http, s3, etc...
-func processRows(
-	dec decoder.Decoder,
-	fileSpec *filespec.FileSpec,
-	recordDetector *parser.RecordTypeDetector,
-	workers *WorkerPool,
-) error {
-	acc := parser.NewAccumulator(fileSpec, recordDetector)
-
-	if fileSpec.Accumulator.Presort && fileSpec.Accumulator.HasKeyFields() {
-		return processRowsPresorted(dec, fileSpec, recordDetector, acc, workers)
-	}
-
-	return processRowsStreaming(dec, acc, workers)
-}
-
-// processRowsPresorted reads all rows, sorts by key, then feeds to accumulator.
-func processRowsPresorted(
-	dec decoder.Decoder,
-	fileSpec *filespec.FileSpec,
-	recordDetector *parser.RecordTypeDetector,
-	acc *parser.Accumulator,
-	workers *WorkerPool,
-) error {
-	sorter := parser.NewSorter(fileSpec, recordDetector)
-	sortResult, err := sorter.Sort(dec)
-	if err != nil {
-		return fmt.Errorf("presort failed: %w", err)
-	}
-
-	log.Printf("Presort complete: %d data rows sorted, %d unkeyed rows",
-		len(sortResult.SortedRows), len(sortResult.UnkeyedRows))
-
-	if sortResult.Trailer != nil {
-		log.Printf("Line %d: TRAILER (not accumulated)", sortResult.Trailer.LineNum())
-	}
-
-	// Feed sorted data rows to accumulator
-	for _, row := range sortResult.SortedRows {
-		batch, _, _, err := acc.Add(row)
-		if err != nil {
-			log.Printf("Line %d: %v", row.LineNum(), err)
-			continue
-		}
-		if batch != nil {
-			workers.Submit(batch)
-		}
-	}
-
-	// Process unkeyed rows (malformed, unrecognized) for error reporting
-	for _, row := range sortResult.UnkeyedRows {
-		batch, _, _, err := acc.Add(row)
-		if err != nil {
-			log.Printf("Line %d: %v", row.LineNum(), err)
-			continue
-		}
-		if batch != nil {
-			workers.Submit(batch)
-		}
-	}
-
-	// Drain remaining groups
-	for _, batch := range acc.Drain() {
-		workers.Submit(batch)
-	}
-
-	return nil
-}
-
-// processRowsStreaming processes rows in file order without sorting.
+// processRowsStreaming processes rows in file order.
 func processRowsStreaming(
 	dec decoder.Decoder,
 	acc *parser.Accumulator,
