@@ -40,6 +40,8 @@ Then('{string} can download the {string} error report', (actor, program) => {
     df.downloadErrorReport(
       '2024-Q2-FRA Work Outcomes of TANF Exiters Error Report.xlsx'
     )
+  } else if (program === 'PIA') {
+    df.downloadErrorReport('2024-Q1-TANF Active Case Data Error Report.xlsx')
   }
 })
 
