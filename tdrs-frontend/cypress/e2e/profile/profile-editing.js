@@ -160,6 +160,19 @@ Then('{string} profile shows regions {string}', (actor, regions) => {
   })
 })
 
+Then(
+  '{string} edit form shows regions {string} selected and {string} unselected',
+  (actor, selectedRegion, unselectedRegion) => {
+    cy.get('#regional').should('be.checked')
+    cy.get(`input[type="checkbox"][value="${selectedRegion}"]`).should(
+      'be.checked'
+    )
+    cy.get(`input[type="checkbox"][value="${unselectedRegion}"]`).should(
+      'not.be.checked'
+    )
+  }
+)
+
 Then('{string} profile does not show FRA access', () => {
   verifyNoFRAAccessBadge()
 })

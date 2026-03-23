@@ -9,7 +9,7 @@ export const CLEAR_REQUEST_USER_UPDATE = 'CLEAR_REQUEST_USER_UPDATE'
 
 export const updateUserRequest =
   ({ firstName, lastName, stt, regions, hasFRAAccess }) =>
-  async (dispatch) => {
+  async (dispatch, getState) => {
     dispatch({ type: PATCH_REQUEST_USER_UPDATE })
     const URL = `${process.env.REACT_APP_BACKEND_URL}/users/update_profile/`
     const user = {
@@ -31,10 +31,22 @@ export const updateUserRequest =
     }
 
     if (data) {
+      const currentUser = getState()?.auth?.user || {}
+      const userForAuth =
+        (data?.pending_requests ?? 0) > 0
+          ? {
+              ...data,
+              first_name: currentUser.first_name,
+              last_name: currentUser.last_name,
+              stt: currentUser.stt,
+              regions: currentUser.regions,
+            }
+          : data
+
       dispatch({ type: SET_REQUEST_USER_UPDATE })
       dispatch({
         type: SET_AUTH,
-        payload: { user: data },
+        payload: { user: userForAuth },
       })
     } else {
       dispatch({ type: CLEAR_REQUEST_USER_UPDATE })
