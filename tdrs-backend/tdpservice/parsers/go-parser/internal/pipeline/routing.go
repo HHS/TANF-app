@@ -31,7 +31,7 @@ type RouteStats struct {
 	GroupCount int64
 }
 
-// countErrors tallies validation errors from a pre-validated batch.
+// countErrors tallies validation errors from a validated batch.
 func countErrors(vb *validatedBatch) (recordPreCheck, fieldValue, valueConsistency, caseConsistency int64) {
 	for _, vg := range vb.Groups {
 		for _, err := range vg.Result.GroupErrors {
