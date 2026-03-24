@@ -47,7 +47,7 @@
       },
       "id": 1,
       "options": {
-        "alertInstanceLabelFilter": "",
+        "alertInstanceLabelFilter": "{job=~\"tdp-backend-$app_env\"}",
         "alertName": "backend",
         "dashboardAlerts": false,
         "datasource": "Prometheus",
@@ -464,7 +464,7 @@
       },
       "id": 34,
       "options": {
-        "alertInstanceLabelFilter": "",
+        "alertInstanceLabelFilter": "{job=~\"tdp-celery-$app_env|tdp-celery-exporter-$app_env\"}",
         "alertName": "celery",
         "dashboardAlerts": false,
         "datasource": "Prometheus",
@@ -1059,7 +1059,7 @@
       },
       "id": 6,
       "options": {
-        "alertInstanceLabelFilter": "",
+        "alertInstanceLabelFilter": "{job=~\"postgres-$pg_env\"}",
         "alertName": "database",
         "dashboardAlerts": false,
         "datasource": "Prometheus",
@@ -1454,7 +1454,7 @@
     }
   ],
   "preload": false,
-  "refresh": "5s",
+  "refresh": "30s",
   "schemaVersion": 41,
   "tags": [
     "Backend",
