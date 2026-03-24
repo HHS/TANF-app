@@ -17,6 +17,9 @@ type PipelineConfig struct {
 	FlushThreshold      int
 	ErrorFlushThreshold int
 
+	// Validation configuration
+	ShortCircuit bool // Skip field/consistency validators when precheck or group validators fail
+
 	// Reader configuration
 	ReaderSource string        // "local" (default), "s3"
 	S3           config.S3Config
@@ -35,6 +38,7 @@ func TestConfig() PipelineConfig {
 		PoolPrewarmSize: 1000,
 		FlushThreshold:      50000,
 		ErrorFlushThreshold: 100000,
+		ShortCircuit:        true,
 	}
 }
 
@@ -51,6 +55,7 @@ func NewConfig(cfg *config.PipelineYAML) PipelineConfig {
 		PoolPrewarmSize:     cfg.Pipeline.PoolPrewarmSize,
 		FlushThreshold:      cfg.Writer.FlushThreshold,
 		ErrorFlushThreshold: cfg.Writer.ErrorFlushThreshold,
+		ShortCircuit:        cfg.Validation.ShortCircuit,
 		ReaderSource:        readerSource,
 		S3:                  cfg.Reader.S3,
 	}

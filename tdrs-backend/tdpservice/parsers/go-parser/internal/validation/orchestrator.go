@@ -10,13 +10,17 @@ import (
 // Execution order: group → record (precheck) → field → record (consistency)
 // Always run group and record precheck; skip field and record consistency if blocked.
 type ValidationOrchestrator struct {
-	registry *ValidatorRegistry
+	registry     *ValidatorRegistry
+	shortCircuit bool
 }
 
 // NewValidationOrchestrator creates a new validation orchestrator.
-func NewValidationOrchestrator(registry *ValidatorRegistry) *ValidationOrchestrator {
+// When shortCircuit is true, field and record consistency validators are skipped
+// if precheck or group validators fail (default production behavior).
+func NewValidationOrchestrator(registry *ValidatorRegistry, shortCircuit bool) *ValidationOrchestrator {
 	return &ValidationOrchestrator{
-		registry: registry,
+		registry:     registry,
+		shortCircuit: shortCircuit,
 	}
 }
 
@@ -87,7 +91,7 @@ func (o *ValidationOrchestrator) validateRecordInPlace(result *RecordValidationR
 	recordBlocked := result.HasBlockingErrors()
 
 	// Short-circuit: skip field and non-precheck record validators if group or record is blocked
-	if groupBlocked || recordBlocked {
+	if o.shortCircuit && (groupBlocked || recordBlocked) {
 		result.Skipped = true
 		return
 	}

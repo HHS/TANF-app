@@ -137,7 +137,7 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params DataFileParams) (*Par
 
 	// Step 7: Create validation orchestrator
 	filespecKey := fmt.Sprintf("%s:%d", params.Program, params.Section)
-	validationOrchestrator := validation.NewValidationOrchestrator(p.validators)
+	validationOrchestrator := validation.NewValidationOrchestrator(p.validators, p.config.ShortCircuit)
 
 	// Step 8: Create pipeline worker pool (workers parse, validate, and route)
 	workers := NewWorkerPool(parsingOrchestrator, validationOrchestrator, filespecKey, router, params.DatafileID, WorkerPoolConfig{

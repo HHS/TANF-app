@@ -11,10 +11,11 @@ import (
 
 // PipelineYAML is the top-level structure of config/pipeline.yaml.
 type PipelineYAML struct {
-	Pipeline PipelineWorkerConfig `yaml:"pipeline"`
-	Writer   WriterConfig         `yaml:"writer"`
-	Database DatabaseConfig       `yaml:"database"`
-	Reader   ReaderConfig         `yaml:"reader"`
+	Pipeline   PipelineWorkerConfig `yaml:"pipeline"`
+	Writer     WriterConfig         `yaml:"writer"`
+	Database   DatabaseConfig       `yaml:"database"`
+	Reader     ReaderConfig         `yaml:"reader"`
+	Validation ValidationConfig     `yaml:"validation"`
 }
 
 // ReaderConfig controls how the parser acquires input files.
@@ -43,6 +44,11 @@ type WriterConfig struct {
 	ErrorFlushThreshold int `yaml:"error_flush_threshold"`
 }
 
+// ValidationConfig controls validation behavior.
+type ValidationConfig struct {
+	ShortCircuit bool `yaml:"short_circuit"` // Skip field/consistency validators when precheck or group validators fail
+}
+
 // DatabaseConfig holds connection pool settings.
 type DatabaseConfig struct {
 	MaxConns          int           `yaml:"max_conns"`
@@ -63,6 +69,9 @@ func DefaultPipelineYAML() *PipelineYAML {
 		Writer: WriterConfig{
 			FlushThreshold:      50000,
 			ErrorFlushThreshold: 100000,
+		},
+		Validation: ValidationConfig{
+			ShortCircuit: true,
 		},
 		Database: DatabaseConfig{
 			MaxConns:          10,

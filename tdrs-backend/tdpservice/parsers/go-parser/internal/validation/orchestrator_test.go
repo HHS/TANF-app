@@ -17,7 +17,7 @@ func TestOrchestratorMultiGroupValidation(t *testing.T) {
 		{ID: "group_pass", Scope: ScopeGroup, ErrorType: ErrorTypeCaseConsistency, Expr: groupExpr},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry)
+	orchestrator := NewValidationOrchestrator(registry, true)
 
 	// Create and validate multiple groups
 	var results []*GroupValidationResult
@@ -50,7 +50,7 @@ func TestOrchestratorFieldValidation(t *testing.T) {
 		"AMOUNT": {{ID: "positive_amount", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry)
+	orchestrator := NewValidationOrchestrator(registry, true)
 
 	rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": -10}) // Negative - should fail
 	group := testutil.NewTestGroup(rec)
@@ -80,7 +80,7 @@ func TestOrchestratorNilRequiredFieldSkipsValidators(t *testing.T) {
 		"AMOUNT": {{ID: "positive_amount", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry)
+	orchestrator := NewValidationOrchestrator(registry, true)
 
 	// Record with nil required field — use a separate schema so Required=true
 	reqSchema := testutil.NewTestSchema("T1", "AMOUNT")
@@ -117,7 +117,7 @@ func TestOrchestratorNilOptionalFieldSkipsValidators(t *testing.T) {
 		"AMOUNT": {{ID: "not_empty", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry)
+	orchestrator := NewValidationOrchestrator(registry, true)
 
 	// Record with nil optional field (Required defaults to false)
 	rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": nil})
@@ -128,5 +128,122 @@ func TestOrchestratorNilOptionalFieldSkipsValidators(t *testing.T) {
 	// Should have NO errors - optional nil field skips validation entirely
 	if len(result.RecordResults[0].FieldErrors) != 0 {
 		t.Errorf("expected 0 field errors for nil optional field, got %d", len(result.RecordResults[0].FieldErrors))
+	}
+}
+
+// TestOrchestratorShortCircuitSkipsFieldValidation tests that with shortCircuit=true,
+// field validators are skipped when a precheck validator fails.
+func TestOrchestratorShortCircuitSkipsFieldValidation(t *testing.T) {
+	registry := NewValidatorRegistry()
+	registry.exprOpts = RegisterFunctions()
+
+	// Record precheck that always fails
+	precheckExpr, _ := registry.getOrCompileExpr(ScopeRecord, "false", "single")
+	registry.record["T1"] = []*CompiledValidator{
+		{ID: "always_fail", Scope: ScopeRecord, ErrorType: ErrorTypeRecordPreCheck, Expr: precheckExpr},
+	}
+
+	// Field validator that would produce an error
+	fieldExpr, _ := registry.getOrCompileExpr(ScopeField, "Value > 0", "single")
+	registry.field["T1"] = map[string][]*CompiledValidator{
+		"AMOUNT": {{ID: "positive_amount", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
+	}
+
+	orchestrator := NewValidationOrchestrator(registry, true)
+
+	rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": -10})
+	group := testutil.NewTestGroup(rec)
+	result := orchestrator.ValidateGroup(group, "TEST:1")
+
+	// Precheck error should exist
+	if len(result.RecordResults[0].RecordErrors) != 1 {
+		t.Fatalf("expected 1 record error, got %d", len(result.RecordResults[0].RecordErrors))
+	}
+
+	// Field validators should be skipped
+	if len(result.RecordResults[0].FieldErrors) != 0 {
+		t.Errorf("expected 0 field errors (short-circuited), got %d", len(result.RecordResults[0].FieldErrors))
+	}
+
+	if !result.RecordResults[0].Skipped {
+		t.Error("expected Skipped=true when short-circuiting")
+	}
+}
+
+// TestOrchestratorNoShortCircuitRunsAllValidation tests that with shortCircuit=false,
+// field validators run even when a precheck validator fails.
+func TestOrchestratorNoShortCircuitRunsAllValidation(t *testing.T) {
+	registry := NewValidatorRegistry()
+	registry.exprOpts = RegisterFunctions()
+
+	// Record precheck that always fails
+	precheckExpr, _ := registry.getOrCompileExpr(ScopeRecord, "false", "single")
+	registry.record["T1"] = []*CompiledValidator{
+		{ID: "always_fail", Scope: ScopeRecord, ErrorType: ErrorTypeRecordPreCheck, Expr: precheckExpr},
+	}
+
+	// Field validator that would produce an error
+	fieldExpr, _ := registry.getOrCompileExpr(ScopeField, "Value > 0", "single")
+	registry.field["T1"] = map[string][]*CompiledValidator{
+		"AMOUNT": {{ID: "positive_amount", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
+	}
+
+	orchestrator := NewValidationOrchestrator(registry, false)
+
+	rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": -10})
+	group := testutil.NewTestGroup(rec)
+	result := orchestrator.ValidateGroup(group, "TEST:1")
+
+	// Precheck error should exist
+	if len(result.RecordResults[0].RecordErrors) != 1 {
+		t.Fatalf("expected 1 record error, got %d", len(result.RecordResults[0].RecordErrors))
+	}
+
+	// Field validators should still run
+	if len(result.RecordResults[0].FieldErrors) != 1 {
+		t.Errorf("expected 1 field error (no short-circuit), got %d", len(result.RecordResults[0].FieldErrors))
+	}
+
+	if result.RecordResults[0].Skipped {
+		t.Error("expected Skipped=false when short-circuit is disabled")
+	}
+}
+
+// TestOrchestratorNoShortCircuitWithGroupBlock tests that with shortCircuit=false,
+// field validators run even when a group validator blocks.
+func TestOrchestratorNoShortCircuitWithGroupBlock(t *testing.T) {
+	registry := NewValidatorRegistry()
+	registry.exprOpts = RegisterFunctions()
+
+	// Group validator that always fails
+	groupExpr, _ := registry.getOrCompileExpr(ScopeGroup, "false", "single")
+	registry.group["TEST:1"] = []*CompiledValidator{
+		{ID: "group_fail", Scope: ScopeGroup, ErrorType: ErrorTypeCaseConsistency, Expr: groupExpr},
+	}
+
+	// Field validator that would produce an error
+	fieldExpr, _ := registry.getOrCompileExpr(ScopeField, "Value > 0", "single")
+	registry.field["T1"] = map[string][]*CompiledValidator{
+		"AMOUNT": {{ID: "positive_amount", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
+	}
+
+	orchestrator := NewValidationOrchestrator(registry, false)
+
+	rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": -10})
+	group := testutil.NewTestGroup(rec)
+	result := orchestrator.ValidateGroup(group, "TEST:1")
+
+	// Group error should exist
+	if len(result.GroupErrors) != 1 {
+		t.Fatalf("expected 1 group error, got %d", len(result.GroupErrors))
+	}
+
+	// Field validators should still run despite group block
+	if len(result.RecordResults[0].FieldErrors) != 1 {
+		t.Errorf("expected 1 field error (no short-circuit), got %d", len(result.RecordResults[0].FieldErrors))
+	}
+
+	if result.RecordResults[0].Skipped {
+		t.Error("expected Skipped=false when short-circuit is disabled")
 	}
 }

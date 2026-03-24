@@ -12,6 +12,10 @@ writer:
   flush_threshold: 10000        # Records per table before auto-flush
   error_flush_threshold: 10000 # Error records before auto-flush
 
+# Validation behavior
+validation:
+  short_circuit: true   # Skip field/consistency validators when precheck or group validators fail
+
 # Database connection pool
 database:
   max_conns: 10
