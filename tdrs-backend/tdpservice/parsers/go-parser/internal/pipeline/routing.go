@@ -2,10 +2,7 @@ package pipeline
 
 import (
 	"context"
-	"errors"
 	"log"
-	"sync"
-	"sync/atomic"
 
 	"github.com/jackc/pgx/v5/pgtype"
 
@@ -34,85 +31,8 @@ type RouteStats struct {
 	GroupCount int64
 }
 
-// routeResults receives validated batches from the worker pool and routes them to database writers.
-// Multiple router goroutines compete on the Results channel for parallel processing.
-// Routers are purely I/O — validation has already been performed by the worker pool.
-func routeResults(
-	ctx context.Context,
-	workers *WorkerPool,
-	router *writer.Router,
-	numRouters int,
-	datafileID int32,
-) (*RouteStats, error) {
-	var wg sync.WaitGroup
-	errChan := make(chan error, numRouters)
-
-	// Atomic counters for error stats (safe for concurrent access)
-	var recordPreCheck, fieldValue, valueConsistency, caseConsistency int64
-
-	// Atomic counters for batch/group stats
-	var batchCount, groupCount int64
-
-	// Spawn multiple routers reading from the same channel
-	for range numRouters {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for vb := range workers.Results() {
-				atomic.AddInt64(&batchCount, 1)
-				atomic.AddInt64(&groupCount, int64(len(vb.Groups)))
-
-				// Count errors from pre-computed validation results
-				rpc, fv, vc, cc := countErrors(vb)
-				atomic.AddInt64(&recordPreCheck, rpc)
-				atomic.AddInt64(&fieldValue, fv)
-				atomic.AddInt64(&valueConsistency, vc)
-				atomic.AddInt64(&caseConsistency, cc)
-
-				// Route valid records and all errors to writers
-				if err := routeValidatedBatch(ctx, router, vb.Groups, datafileID); err != nil {
-					log.Printf("Router: batch %d error: %v", vb.BatchID, err)
-					errChan <- err
-					return
-				}
-			}
-		}()
-	}
-
-	// Wait for all routers to finish
-	wg.Wait()
-	close(errChan)
-
-	// Collect any errors from routers
-	var errs []error
-	for err := range errChan {
-		errs = append(errs, err)
-	}
-
-	// Stop writers (flushes remaining) and collect errors
-	if err := router.Stop(); err != nil {
-		errs = append(errs, err)
-	}
-
-	stats := &RouteStats{
-		ErrorStats: ErrorStats{
-			RecordPreCheck:   recordPreCheck,
-			FieldValue:       fieldValue,
-			ValueConsistency: valueConsistency,
-			CaseConsistency:  caseConsistency,
-		},
-		BatchCount: batchCount,
-		GroupCount: groupCount,
-	}
-
-	if len(errs) > 0 {
-		return stats, errors.Join(errs...)
-	}
-	return stats, nil
-}
-
 // countErrors tallies validation errors from a pre-validated batch.
-func countErrors(vb *ValidatedBatch) (recordPreCheck, fieldValue, valueConsistency, caseConsistency int64) {
+func countErrors(vb *validatedBatch) (recordPreCheck, fieldValue, valueConsistency, caseConsistency int64) {
 	for _, vg := range vb.Groups {
 		for _, err := range vg.Result.GroupErrors {
 			switch err.ErrorType {
@@ -149,20 +69,18 @@ func countErrors(vb *ValidatedBatch) (recordPreCheck, fieldValue, valueConsisten
 //
 // Error rows are batched per group and sent in a single RouteErrorRows call to reduce
 // channel send overhead (250K errors = 250K channel sends without batching).
-func routeValidatedBatch(ctx context.Context, router *writer.Router, groups []*ValidatedGroup, datafileID int32) error {
-	// Reusable error row buffer across groups within this batch.
-	// Avoids repeated allocation — slice is reset (not reallocated) per group.
-	var errorRows [][]any
-
+//
+// The errorRows buffer is owned by the caller and reused across calls to avoid allocation.
+func routeValidatedBatch(ctx context.Context, router *writer.Router, groups []*validatedGroup, datafileID int32, errorRows *[][]any) error {
 	for _, vg := range groups {
 		// Reset buffer for this group (reuse backing array)
-		errorRows = errorRows[:0]
+		*errorRows = (*errorRows)[:0]
 
 		// Collect group-level error rows (use first record for context)
 		if len(vg.Result.GroupErrors) > 0 && len(vg.Group.Records) > 0 {
 			firstRec := vg.Group.Records[0]
 			for _, groupErr := range vg.Result.GroupErrors {
-				errorRows = append(errorRows, writer.ConvertError(groupErr, firstRec, nil, datafileID, nil))
+				*errorRows = append(*errorRows, writer.ConvertError(groupErr, firstRec, nil, datafileID, nil))
 			}
 		}
 
@@ -171,10 +89,10 @@ func routeValidatedBatch(ctx context.Context, router *writer.Router, groups []*V
 			log.Printf("Skipping group %s: blocking group validation failed", vg.Group.Key)
 			for i, recResult := range vg.Result.RecordResults {
 				record := vg.Group.Records[i]
-				appendRecordErrors(&errorRows, recResult, record, nil, datafileID, nil)
+				appendRecordErrors(errorRows, recResult, record, nil, datafileID, nil)
 				record.Schema.ReleaseRecord(record)
 			}
-			if err := router.RouteErrorRows(ctx, errorRows); err != nil {
+			if err := router.RouteErrorRows(ctx, *errorRows); err != nil {
 				return err
 			}
 			continue
@@ -187,7 +105,7 @@ func routeValidatedBatch(ctx context.Context, router *writer.Router, groups []*V
 			if recResult.HasBlockingErrors() {
 				log.Printf("Skipping record (line %d, type %s): blocking record validation failed",
 					record.LineNumber, record.Schema.RecordType)
-				appendRecordErrors(&errorRows, recResult, record, nil, datafileID, nil)
+				appendRecordErrors(errorRows, recResult, record, nil, datafileID, nil)
 				record.Schema.ReleaseRecord(record)
 				continue
 			}
@@ -209,7 +127,7 @@ func routeValidatedBatch(ctx context.Context, router *writer.Router, groups []*V
 			contentTypeID := router.GetContentTypeID(record.Schema.Path)
 
 			// Convert non-blocking errors with ObjectID linking (while record still available)
-			appendRecordErrors(&errorRows, recResult, record, recordUUID, datafileID, contentTypeID)
+			appendRecordErrors(errorRows, recResult, record, recordUUID, datafileID, contentTypeID)
 
 			// Capture schema path before releasing record
 			schemaPath := record.Schema.Path
@@ -224,7 +142,7 @@ func routeValidatedBatch(ctx context.Context, router *writer.Router, groups []*V
 		}
 
 		// Flush all error rows for this group in one batched send
-		if err := router.RouteErrorRows(ctx, errorRows); err != nil {
+		if err := router.RouteErrorRows(ctx, *errorRows); err != nil {
 			return err
 		}
 	}

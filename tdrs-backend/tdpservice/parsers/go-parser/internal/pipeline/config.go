@@ -7,12 +7,10 @@ import (
 // PipelineConfig holds tunable parameters for the parsing pipeline.
 type PipelineConfig struct {
 	// WorkerPool configuration
-	NumWorkers       int
-	WorkBufferSize   int
-	ResultBufferSize int
+	NumWorkers     int
+	WorkBufferSize int
 
-	// Router configuration
-	NumRouters      int
+	// Writer configuration (object pool)
 	PoolPrewarmSize int
 
 	// Writer configuration
@@ -32,11 +30,9 @@ func DefaultConfig() PipelineConfig {
 // TestConfig returns conservative defaults for integration tests.
 func TestConfig() PipelineConfig {
 	return PipelineConfig{
-		NumWorkers:          2,
-		WorkBufferSize:      64,
-		ResultBufferSize:    64,
-		PoolPrewarmSize:     1000,
-		NumRouters:          1,
+		NumWorkers:     2,
+		WorkBufferSize: 64,
+		PoolPrewarmSize: 1000,
 		FlushThreshold:      50000,
 		ErrorFlushThreshold: 100000,
 	}
@@ -52,8 +48,6 @@ func NewConfig(cfg *config.PipelineYAML) PipelineConfig {
 	return PipelineConfig{
 		NumWorkers:          cfg.Pipeline.NumWorkers,
 		WorkBufferSize:      cfg.Pipeline.WorkBufferSize,
-		ResultBufferSize:    cfg.Pipeline.ResultBufferSize,
-		NumRouters:          cfg.Pipeline.NumRouters,
 		PoolPrewarmSize:     cfg.Pipeline.PoolPrewarmSize,
 		FlushThreshold:      cfg.Writer.FlushThreshold,
 		ErrorFlushThreshold: cfg.Writer.ErrorFlushThreshold,

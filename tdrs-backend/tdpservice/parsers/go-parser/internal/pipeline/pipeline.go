@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"sync"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -140,24 +139,12 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params DataFileParams) (*Par
 	filespecKey := fmt.Sprintf("%s:%d", params.Program, params.Section)
 	validationOrchestrator := validation.NewValidationOrchestrator(p.validators)
 
-	// Step 8: Create pipeline worker pool
-	workers := NewWorkerPool(parsingOrchestrator, validationOrchestrator, filespecKey, WorkerPoolConfig{
-		NumWorkers:       p.config.NumWorkers,
-		WorkBufferSize:   p.config.WorkBufferSize,
-		ResultBufferSize: p.config.ResultBufferSize,
+	// Step 8: Create pipeline worker pool (workers parse, validate, and route)
+	workers := NewWorkerPool(parsingOrchestrator, validationOrchestrator, filespecKey, router, params.DatafileID, WorkerPoolConfig{
+		NumWorkers:     p.config.NumWorkers,
+		WorkBufferSize: p.config.WorkBufferSize,
 	})
 	workers.Start(ctx)
-
-	// Step 9: Start result collector with parallel dispatchers
-	// TODO: I hate this. I feel like it can be better.
-	var collectorErr error
-	var routeStats *RouteStats
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		routeStats, collectorErr = routeResults(ctx, workers, router, p.config.NumRouters, params.DatafileID)
-	}()
 
 	// Step 10: Process rows through the accumulator
 	// TODO: I feel like step 8 and this step should be apart of the worker pool
@@ -169,41 +156,36 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params DataFileParams) (*Par
 		return nil, err
 	}
 
-	// Step 11: Wait for everything to complete
+	// Step 9: Wait for everything to complete
 	workers.CloseInputs()
 	workers.Wait()
-	wg.Wait()
 
-	if collectorErr != nil {
-		return nil, collectorErr
+	if err := workers.Err(); err != nil {
+		return nil, err
+	}
+
+	// Flush remaining rows in all writers
+	if err := router.Stop(); err != nil {
+		return nil, err
 	}
 
 	// Calculate duration
 	duration := time.Since(startTime)
 	log.Printf("Time to parse: %s", duration)
 
-	// Collect stats from router
+	// Collect stats
+	routeStats := workers.AggregateStats()
 	recordCounts, errorCount := router.Stats()
-
-	// Include error count in the record counts map for consistent reporting
 	recordCounts["parser_error"] = errorCount
 
-	// Log validation error summary
-	if routeStats != nil {
-		log.Printf("Validation errors: RecordPreCheck=%d, FieldValue=%d, ValueConsistency=%d, CaseConsistency=%d, Total=%d",
-			routeStats.RecordPreCheck, routeStats.FieldValue, routeStats.ValueConsistency, routeStats.CaseConsistency, routeStats.Total())
-		log.Printf("Batches: %d, Groups: %d", routeStats.BatchCount, routeStats.GroupCount)
-	}
-
-	var errorStats *ErrorStats
-	if routeStats != nil {
-		errorStats = &routeStats.ErrorStats
-	}
+	log.Printf("Validation errors: RecordPreCheck=%d, FieldValue=%d, ValueConsistency=%d, CaseConsistency=%d, Total=%d",
+		routeStats.RecordPreCheck, routeStats.FieldValue, routeStats.ValueConsistency, routeStats.CaseConsistency, routeStats.Total())
+	log.Printf("Batches: %d, Groups: %d", routeStats.BatchCount, routeStats.GroupCount)
 
 	return &ParsingResult{
 		RecordCounts: recordCounts,
 		ErrorCount:   errorCount,
-		ErrorStats:   errorStats,
+		ErrorStats:   &routeStats.ErrorStats,
 		BatchCount:   routeStats.BatchCount,
 		GroupCount:   routeStats.GroupCount,
 		Duration:     duration,

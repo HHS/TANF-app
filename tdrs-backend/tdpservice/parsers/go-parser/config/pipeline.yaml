@@ -5,8 +5,6 @@
 pipeline:
   num_workers: 32          # Parser worker goroutines
   work_buffer_size: 256    # Channel buffer for parser input
-  result_buffer_size: 256  # Channel buffer for parser output
-  num_routers: 8          # Result router goroutines
   pool_prewarm_size: 10000 # Object pool pre-allocation per schema
 
 # Writer configuration

@@ -6,50 +6,57 @@ import (
 	"sync"
 
 	"go-parser/internal/parser"
+	"go-parser/internal/storage/writer"
 	"go-parser/internal/validation"
 )
 
-// ValidatedGroup pairs a parsed group with its validation result.
-// Produced by WorkerPool, consumed by the result router.
-type ValidatedGroup struct {
+// validatedGroup pairs a parsed group with its validation result.
+type validatedGroup struct {
 	Group  *parser.ParsedGroup
 	Result *validation.GroupValidationResult
 }
 
-// ValidatedBatch is the output of the WorkerPool: parsed and validated records
+// validatedBatch is the output of processBatch: parsed and validated records
 // ready for routing to database writers.
-type ValidatedBatch struct {
+type validatedBatch struct {
 	BatchID int
-	Groups  []*ValidatedGroup
+	Groups  []*validatedGroup
 }
 
-// WorkerPool manages goroutines that parse and validate batches.
-// It composes parser.ParsingOrchestrator (for record extraction) with the validation
-// ValidationOrchestrator (for rule evaluation), keeping both stages in one goroutine
-// to maximize utilization — parsing is ~2% of runtime while validation is ~51%.
+// WorkerPool manages goroutines that parse, validate, and route batches.
+// Each worker composes parsing, validation, and database routing in a single
+// goroutine. TableWriter instances (owned by writer.Router) handle the actual
+// database I/O in their own goroutines.
 type WorkerPool struct {
 	parsingOrchestrator *parser.ParsingOrchestrator
 	orchestrator        *validation.ValidationOrchestrator
 	filespecKey         string
 	numWorkers          int
 
-	decodedBatches   chan *parser.DecodedBatch
-	validatedBatches chan *ValidatedBatch
-	wg               sync.WaitGroup
+	router     *writer.Router
+	datafileID int32
+
+	decodedBatches chan *parser.DecodedBatch
+	wg             sync.WaitGroup
+
+	workerStats []RouteStats
+	workerErr   error
+	errOnce     sync.Once
 }
 
 // WorkerPoolConfig configures the worker pool.
 type WorkerPoolConfig struct {
-	NumWorkers       int
-	WorkBufferSize   int
-	ResultBufferSize int
+	NumWorkers     int
+	WorkBufferSize int
 }
 
-// NewWorkerPool creates a pool that parses and validates batches.
+// NewWorkerPool creates a pool that parses, validates, and routes batches.
 func NewWorkerPool(
 	parsingOrchestrator *parser.ParsingOrchestrator,
 	orchestrator *validation.ValidationOrchestrator,
 	filespecKey string,
+	router *writer.Router,
+	datafileID int32,
 	config WorkerPoolConfig,
 ) *WorkerPool {
 	return &WorkerPool{
@@ -57,8 +64,10 @@ func NewWorkerPool(
 		orchestrator:        orchestrator,
 		filespecKey:         filespecKey,
 		numWorkers:          config.NumWorkers,
+		router:              router,
+		datafileID:          datafileID,
 		decodedBatches:      make(chan *parser.DecodedBatch, config.WorkBufferSize),
-		validatedBatches:    make(chan *ValidatedBatch, config.ResultBufferSize),
+		workerStats:         make([]RouteStats, config.NumWorkers),
 	}
 }
 
@@ -66,7 +75,7 @@ func NewWorkerPool(
 func (wp *WorkerPool) Start(ctx context.Context) {
 	for i := 0; i < wp.numWorkers; i++ {
 		wp.wg.Add(1)
-		go wp.worker(ctx)
+		go wp.worker(ctx, i)
 	}
 }
 
@@ -81,20 +90,37 @@ func (wp *WorkerPool) CloseInputs() {
 	close(wp.decodedBatches)
 }
 
-// Wait blocks until all workers finish, then closes the results channel.
+// Wait blocks until all workers finish.
 func (wp *WorkerPool) Wait() {
 	wp.wg.Wait()
-	close(wp.validatedBatches)
-	log.Print("All lines in file have been parsed, validated, and queued for writing.")
+	log.Print("All lines in file have been parsed, validated, and routed to writers.")
 }
 
-// Results returns the channel for receiving validated batch results.
-func (wp *WorkerPool) Results() <-chan *ValidatedBatch {
-	return wp.validatedBatches
+// Err returns the first routing error encountered by any worker, or nil.
+func (wp *WorkerPool) Err() error {
+	return wp.workerErr
 }
 
-func (wp *WorkerPool) worker(ctx context.Context) {
+// AggregateStats returns combined stats from all workers.
+// Must be called after Wait().
+func (wp *WorkerPool) AggregateStats() *RouteStats {
+	var total RouteStats
+	for i := range wp.workerStats {
+		s := &wp.workerStats[i]
+		total.RecordPreCheck += s.RecordPreCheck
+		total.FieldValue += s.FieldValue
+		total.ValueConsistency += s.ValueConsistency
+		total.CaseConsistency += s.CaseConsistency
+		total.BatchCount += s.BatchCount
+		total.GroupCount += s.GroupCount
+	}
+	return &total
+}
+
+func (wp *WorkerPool) worker(ctx context.Context, workerID int) {
 	defer wp.wg.Done()
+	stats := &wp.workerStats[workerID]
+	var errorRows [][]any // reusable buffer across batches
 
 	for {
 		select {
@@ -105,24 +131,40 @@ func (wp *WorkerPool) worker(ctx context.Context) {
 			if !ok {
 				return
 			}
-			wp.validatedBatches <- wp.processBatch(batch)
+			vb := wp.processBatch(batch)
+
+			// Tally errors (direct addition, no atomics needed per single goroutine)
+			rpc, fv, vc, cc := countErrors(vb)
+			stats.RecordPreCheck += rpc
+			stats.FieldValue += fv
+			stats.ValueConsistency += vc
+			stats.CaseConsistency += cc
+			stats.BatchCount++
+			stats.GroupCount += int64(len(vb.Groups))
+
+			// Route to writers
+			if err := routeValidatedBatch(ctx, wp.router, vb.Groups, wp.datafileID, &errorRows); err != nil {
+				log.Printf("Worker %d: batch %d error: %v", workerID, vb.BatchID, err)
+				wp.errOnce.Do(func() { wp.workerErr = err })
+				return
+			}
 		}
 	}
 }
 
-func (wp *WorkerPool) processBatch(batch *parser.DecodedBatch) *ValidatedBatch {
+func (wp *WorkerPool) processBatch(batch *parser.DecodedBatch) *validatedBatch {
 	parsed := wp.parsingOrchestrator.ParseBatch(batch)
 
-	groups := make([]*ValidatedGroup, 0, len(parsed.Groups))
+	groups := make([]*validatedGroup, 0, len(parsed.Groups))
 	for _, group := range parsed.Groups {
 		vr := wp.orchestrator.ValidateGroup(group, wp.filespecKey)
-		groups = append(groups, &ValidatedGroup{
+		groups = append(groups, &validatedGroup{
 			Group:  group,
 			Result: vr,
 		})
 	}
 
-	return &ValidatedBatch{
+	return &validatedBatch{
 		BatchID: parsed.BatchID,
 		Groups:  groups,
 	}

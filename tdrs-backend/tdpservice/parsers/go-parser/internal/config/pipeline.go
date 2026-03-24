@@ -34,8 +34,6 @@ type S3Config struct {
 type PipelineWorkerConfig struct {
 	NumWorkers       int `yaml:"num_workers"`
 	WorkBufferSize   int `yaml:"work_buffer_size"`
-	ResultBufferSize int `yaml:"result_buffer_size"`
-	NumRouters       int `yaml:"num_routers"`
 	PoolPrewarmSize  int `yaml:"pool_prewarm_size"`
 }
 
@@ -60,8 +58,6 @@ func DefaultPipelineYAML() *PipelineYAML {
 		Pipeline: PipelineWorkerConfig{
 			NumWorkers:       16,
 			WorkBufferSize:   256,
-			ResultBufferSize: 256,
-			NumRouters:       4,
 			PoolPrewarmSize:  10000,
 		},
 		Writer: WriterConfig{
