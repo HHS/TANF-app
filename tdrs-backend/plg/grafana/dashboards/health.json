@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 7,
+  "id": 5,
   "links": [],
   "panels": [
     {
@@ -66,7 +66,7 @@
         },
         "viewMode": "list"
       },
-      "pluginVersion": "12.0.1",
+      "pluginVersion": "12.0.2",
       "title": "Backend - Active Alerts",
       "type": "alertlist"
     },
@@ -131,7 +131,7 @@
         "textMode": "value",
         "wideLayout": true
       },
-      "pluginVersion": "12.0.1",
+      "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
@@ -205,7 +205,7 @@
         "textMode": "value",
         "wideLayout": true
       },
-      "pluginVersion": "12.0.1",
+      "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
@@ -285,7 +285,7 @@
         "showThresholdMarkers": true,
         "sizing": "auto"
       },
-      "pluginVersion": "12.0.1",
+      "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
@@ -366,7 +366,7 @@
         "sizing": "auto",
         "valueMode": "color"
       },
-      "pluginVersion": "12.0.1",
+      "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
@@ -389,62 +389,12 @@
       "type": "bargauge"
     },
     {
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 10
-      },
-      "id": 29,
-      "options": {
-        "code": {
-          "language": "plaintext",
-          "showLineNumbers": false,
-          "showMiniMap": false
-        },
-        "content": "# Add backend CPU here",
-        "mode": "markdown"
-      },
-      "pluginVersion": "12.0.1",
-      "title": "Average CPU Usage (Backend)",
-      "type": "text"
-    },
-    {
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 10
-      },
-      "id": 30,
-      "options": {
-        "code": {
-          "language": "plaintext",
-          "showLineNumbers": false,
-          "showMiniMap": false
-        },
-        "content": "# Add backend Memory here",
-        "mode": "markdown"
-      },
-      "pluginVersion": "12.0.1",
-      "title": "Average Memory Usage (Backend)",
-      "type": "text"
-    },
-    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 18
+        "y": 10
       },
       "id": 31,
       "panels": [],
@@ -460,7 +410,7 @@
         "h": 4,
         "w": 24,
         "x": 0,
-        "y": 19
+        "y": 11
       },
       "id": 34,
       "options": {
@@ -483,7 +433,7 @@
         },
         "viewMode": "list"
       },
-      "pluginVersion": "12.0.1",
+      "pluginVersion": "12.0.2",
       "title": "Celery - Active Alerts",
       "type": "alertlist"
     },
@@ -527,7 +477,7 @@
         "h": 5,
         "w": 12,
         "x": 0,
-        "y": 23
+        "y": 15
       },
       "id": 35,
       "options": {
@@ -547,7 +497,7 @@
         "textMode": "value",
         "wideLayout": true
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
@@ -601,7 +551,7 @@
         "h": 5,
         "w": 12,
         "x": 12,
-        "y": 23
+        "y": 15
       },
       "id": 24,
       "options": {
@@ -621,7 +571,7 @@
         "textMode": "value",
         "wideLayout": true
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
@@ -689,7 +639,7 @@
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 28
+        "y": 20
       },
       "id": 25,
       "options": {
@@ -711,7 +661,7 @@
           }
         ]
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
@@ -882,7 +832,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 35
+        "y": 27
       },
       "id": 26,
       "options": {
@@ -898,7 +848,7 @@
         },
         "showHeader": true
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
@@ -1000,7 +950,7 @@
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 41
+        "y": 33
       },
       "id": 28,
       "options": {
@@ -1011,11 +961,12 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "multi",
           "sort": "desc"
         }
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
@@ -1039,7 +990,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 48
+        "y": 40
       },
       "id": 33,
       "panels": [],
@@ -1055,7 +1006,7 @@
         "h": 4,
         "w": 24,
         "x": 0,
-        "y": 49
+        "y": 41
       },
       "id": 6,
       "options": {
@@ -1066,16 +1017,19 @@
         "groupBy": [],
         "groupMode": "default",
         "maxItems": 20,
+        "showInactiveAlerts": false,
         "sortOrder": 3,
         "stateFilter": {
           "error": true,
           "firing": true,
           "noData": true,
           "normal": true,
-          "pending": true
+          "pending": true,
+          "recovering": true
         },
         "viewMode": "list"
       },
+      "pluginVersion": "12.0.2",
       "title": "Database - Active Alerts",
       "type": "alertlist"
     },
@@ -1119,7 +1073,7 @@
         "h": 5,
         "w": 12,
         "x": 0,
-        "y": 53
+        "y": 45
       },
       "id": 18,
       "options": {
@@ -1139,7 +1093,7 @@
         "textMode": "value",
         "wideLayout": true
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
@@ -1193,7 +1147,7 @@
         "h": 5,
         "w": 12,
         "x": 12,
-        "y": 53
+        "y": 45
       },
       "id": 36,
       "options": {
@@ -1213,7 +1167,7 @@
         "textMode": "value",
         "wideLayout": true
       },
-      "pluginVersion": "11.2.0",
+      "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
@@ -1297,7 +1251,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 58
+        "y": 50
       },
       "id": 20,
       "options": {
@@ -1313,10 +1267,12 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "multi",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
@@ -1401,7 +1357,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 58
+        "y": 50
       },
       "id": 22,
       "options": {
@@ -1417,10 +1373,12 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "multi",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
@@ -1564,27 +1522,6 @@
         },
         "definition": "",
         "includeAll": false,
-        "label": "Namespace",
-        "name": "namespace",
-        "options": [],
-        "query": "label_values(celery_worker_up{}, namespace)",
-        "refresh": 2,
-        "regex": "",
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {
-          "isNone": true,
-          "text": "None",
-          "value": ""
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "${datasource}"
-        },
-        "definition": "",
-        "includeAll": false,
         "label": "Queue Name",
         "name": "queue_name",
         "options": [],
@@ -1604,5 +1541,5 @@
   "timezone": "browser",
   "title": "Uptime/Health",
   "uid": "aeh7ymwdwpvk0e",
-  "version": 1
+  "version": 4
 }
