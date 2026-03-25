@@ -9,6 +9,7 @@ import configureStore from 'redux-mock-store'
 import appConfigureStore from '../../configureStore'
 import Reports from './Reports'
 import { SET_FILE, upload } from '../../actions/reports'
+import featureFlags from '../../reducers/featureFlags'
 
 jest.mock('../../fetch-instance')
 
@@ -141,6 +142,12 @@ describe('Reports', () => {
         roles: [{ id: 1, name: 'OFA Admin', permission: [] }],
         account_approval_status: 'Approved',
       },
+    },
+    featureFlags: {
+      loading: false,
+      error: null,
+      lastFetched: null,
+      flags: [],
     },
   }
   const mockStore = configureStore([thunk])
@@ -1524,7 +1531,22 @@ describe('Reports', () => {
   })
 
   it('should show Fiscal Year only when selecting program audit', async () => {
-    const store = appConfigureStore(initialState)
+    const store = appConfigureStore({
+      initialState,
+      featureFlags: {
+        loading: false,
+        error: null,
+        lastFetched: '2025-03-01 10:00am',
+        flags: [
+          {
+            feature_name: 'program-integrity-audit',
+            enabled: true,
+            config: {},
+            description: 'pia',
+          },
+        ],
+      },
+    })
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
@@ -1549,7 +1571,22 @@ describe('Reports', () => {
   })
 
   it('should render 4 file inputs for each quarter', async () => {
-    const store = mockStore(initialState)
+    const store = mockStore({
+      ...initialState,
+      featureFlags: {
+        loading: false,
+        error: null,
+        lastFetched: '2025-03-01 10:00am',
+        flags: [
+          {
+            feature_name: 'program-integrity-audit',
+            enabled: true,
+            config: {},
+            description: 'pia',
+          },
+        ],
+      },
+    })
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
@@ -1746,6 +1783,19 @@ describe('Reports', () => {
         ...initialState.reports,
         stt: 'California',
       },
+      featureFlags: {
+        loading: false,
+        error: null,
+        lastFetched: '2025-03-01 10:00am',
+        flags: [
+          {
+            feature_name: 'program-integrity-audit',
+            enabled: true,
+            config: {},
+            description: 'pia',
+          },
+        ],
+      },
     })
 
     const { getByLabelText, getByTestId, queryByText } = render(
@@ -1793,6 +1843,19 @@ describe('Reports', () => {
       reports: {
         ...initialState.reports,
         stt: 'California',
+      },
+      featureFlags: {
+        loading: false,
+        error: null,
+        lastFetched: '2025-03-01 10:00am',
+        flags: [
+          {
+            feature_name: 'program-integrity-audit',
+            enabled: true,
+            config: {},
+            description: 'pia',
+          },
+        ],
       },
     })
 

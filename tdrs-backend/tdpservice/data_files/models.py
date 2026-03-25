@@ -17,7 +17,10 @@ from django.utils.html import format_html
 from tdpservice.backends import DataFilesS3Storage
 from tdpservice.common.fields import S3VersionedFileField
 from tdpservice.common.models import FileRecord
-from tdpservice.data_files.util import create_s3_log_file_path
+from tdpservice.data_files.util import (
+    create_legacy_s3_log_file_path,
+    create_s3_log_file_path,
+)
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
 
@@ -242,19 +245,22 @@ class DataFile(FileRecord):
     @property
     def log_file(self):
         """Generate S3 path for the log file."""
+        from tdpservice.log_handler import S3FileHandler
+
         datafile = self
         if not datafile:
             return None
         LOG_PRE_FIX = "v1/data_files/logs"
         DOMAIN = settings.FRONTEND_BASE_URL
-        if datafile:
-            link = f"{LOG_PRE_FIX}/{create_s3_log_file_path(datafile)}"
-            url = f"{DOMAIN}/{link}"  # Replace with your actual S3 URL
-            return format_html(
-                "<a href='{url}'>{field}</a>", field="Parser logs", url=url
-            )
-        else:
-            return None
+
+        # Try the new per-parse path first, fall back to the legacy shared path
+        s3_path = create_s3_log_file_path(datafile)
+        if S3FileHandler.download_file(key=s3_path) is None:
+            s3_path = create_legacy_s3_log_file_path(datafile)
+
+        link = f"{LOG_PRE_FIX}/{s3_path}"
+        url = f"{DOMAIN}/{link}"
+        return format_html("<a href='{url}'>{field}</a>", field="Parser logs", url=url)
 
     def admin_link(self):
         """Return a link to the admin console for this file."""

@@ -1,12 +1,23 @@
 import React from 'react'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 
 import { thunk } from 'redux-thunk'
 import configureStore from 'redux-mock-store'
 import { Provider } from 'react-redux'
+import * as reactRedux from 'react-redux'
 import { MemoryRouter } from 'react-router'
 
 import App from './App'
+import { fetchSttList } from './actions/sttList'
+
+jest.mock('react-redux', () => {
+  const actual = jest.requireActual('react-redux')
+  return { ...actual, useDispatch: jest.fn() }
+})
+
+jest.mock('./actions/sttList', () => ({
+  fetchSttList: jest.fn(() => ({ type: 'FETCH_STTS' })),
+}))
 
 describe('App.js', () => {
   const initialState = {
@@ -36,6 +47,8 @@ describe('App.js', () => {
       writable: true,
       value: { pathname: '/' },
     })
+    reactRedux.useDispatch.mockReturnValue(jest.fn())
+    fetchSttList.mockClear()
   })
 
   afterEach(() => {
@@ -111,11 +124,12 @@ describe('App.js', () => {
 
   it('should redirect to #main-content when space bar is pressed on "skip links" element', () => {
     const url = '#main-content'
+    const initialUrl = '#before'
 
     global.window = Object.create(window)
     Object.defineProperty(window, 'location', {
       value: {
-        href: url,
+        href: initialUrl,
       },
     })
 
@@ -174,5 +188,26 @@ describe('App.js', () => {
     )
     const feedbackModal = screen.queryByRole('dialog', { name: /feedback/i })
     expect(feedbackModal).not.toBeInTheDocument()
+  })
+
+  it('dispatches fetchSttList when user is present', async () => {
+    const store = mockStore({
+      ...initialState,
+      auth: {
+        user: { id: 1, email: 'user@example.com', roles: [] },
+      },
+    })
+
+    render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <App />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    await waitFor(() => {
+      expect(fetchSttList).toHaveBeenCalled()
+    })
   })
 })

@@ -22,6 +22,7 @@ from tdpservice.users.models import (
     FeedbackAttachment,
     User,
     UserChangeRequest,
+    UserChangeRequestStatus,
 )
 
 logger = logging.getLogger(__name__)
@@ -306,10 +307,13 @@ class UserProfileChangeRequestSerializer(UserProfileSerializer):
         new_region_ids = set(region.id for region in new_regions)
 
         if pending_request:
-            if current_regions != new_region_ids:
-                # Update the existing pending request
-                pending_request.requested_value = list(new_region_ids)
-                pending_request.save()
+            if current_regions == new_region_ids:
+                self._cancel_pending_request(pending_request, field_name="regions")
+                return change_requests
+
+            # Update the existing pending request
+            pending_request.requested_value = list(new_region_ids)
+            pending_request.save()
             change_requests.append(pending_request)
 
         # New request
@@ -341,8 +345,11 @@ class UserProfileChangeRequestSerializer(UserProfileSerializer):
             existing_permission = None
 
         if pending_request:
+            if changing_permission == existing_permission:
+                self._cancel_pending_request(pending_request, field_name=permission)
+                return None
+
             if pending_request.requested_value != str(changing_permission):
-                # Update the existing pending request
                 pending_request.requested_value = str(changing_permission)
                 pending_request.save()
             return pending_request
@@ -356,83 +363,148 @@ class UserProfileChangeRequestSerializer(UserProfileSerializer):
             )
             return change_request
 
+    def _cancel_pending_request(self, pending_request, field_name):
+        """Cancel a pending request when the desired value matches current data."""
+        pending_request.status = UserChangeRequestStatus.CANCELLED
+        pending_request.save(update_fields=["status"])
+        ChangeRequestAuditLog.objects.create(
+            change_request=pending_request,
+            action="cancelled",
+            performed_by=self.context["request"].user,
+            details={
+                "field": field_name,
+                "reason": "requested value matches current value",
+            },
+        )
+
     def _handle_pending_request(self, validated_data, instance, pending_requests):
         """Handle existing pending requests by updating them with new data."""
         for pending_request in pending_requests:
-            # handle existing pending requests
             if pending_request.field_name in validated_data:
-                # Update the requested value
+                actually_updated = False
+
                 if pending_request.field_name == "regions":
-                    self._handle_regions(
+                    updated = self._handle_regions(
                         validated_data, instance, pending_request=pending_request
                     )
+                    actually_updated = bool(updated)
                 elif pending_request.field_name == "has_fra_access":
-                    self._handle_change_permissions(
+                    result = self._handle_change_permissions(
                         validated_data,
                         instance,
                         "has_fra_access",
                         pending_request=pending_request,
                     )
+                    actually_updated = result is not None
                 else:
-                    # For other fields, just update the requested value
-                    # if field is not string, get the field value from instance
+                    new_requested_value = validated_data[pending_request.field_name]
                     if isinstance(validated_data[pending_request.field_name], STT):
-                        pending_request.requested_value = validated_data[
+                        new_requested_value = validated_data[
                             pending_request.field_name
                         ].id
-                    else:
-                        pending_request.requested_value = validated_data[
-                            pending_request.field_name
-                        ]
-                    pending_request.save()
 
-                # Log the update in the audit log
-                ChangeRequestAuditLog.objects.create(
-                    change_request=pending_request,
-                    action="updated",
-                    performed_by=self.context["request"].user,
-                    details={
-                        "field": pending_request.field_name,
-                        "requested_value": str(pending_request.requested_value),
-                    },
-                )
+                    current_value = getattr(instance, pending_request.field_name, None)
+                    if isinstance(current_value, STT):
+                        current_value = current_value.id
+
+                    if str(new_requested_value) == str(current_value):
+                        self._cancel_pending_request(
+                            pending_request, field_name=pending_request.field_name
+                        )
+                    else:
+                        old_value = str(pending_request.requested_value)
+                        pending_request.requested_value = new_requested_value
+                        pending_request.save()
+                        actually_updated = old_value != str(new_requested_value)
+
+                # Only log "updated" if the pending request was actually modified
+                if pending_request.pk and actually_updated:
+                    ChangeRequestAuditLog.objects.create(
+                        change_request=pending_request,
+                        action="updated",
+                        performed_by=self.context["request"].user,
+                        details={
+                            "field": pending_request.field_name,
+                            "requested_value": str(pending_request.requested_value),
+                        },
+                    )
                 validated_data.pop(pending_request.field_name, None)
+
+    def _log_created_change_request(self, change_request, field_name, requested_value):
+        """Write a created audit log entry for a change request."""
+        ChangeRequestAuditLog.objects.create(
+            change_request=change_request,
+            action="created",
+            performed_by=self.context["request"].user,
+            details={
+                "field": field_name,
+                "requested_value": str(requested_value),
+            },
+        )
+
+    def _create_scalar_change_request(self, field_name, validated_data, instance, user):
+        """Create a change request for scalar profile fields when needed."""
+        if field_name not in validated_data:
+            return None
+
+        new_value = validated_data[field_name]
+        current_value = getattr(instance, field_name)
+        if isinstance(new_value, STT):
+            new_value = new_value.id
+        if isinstance(current_value, STT):
+            current_value = current_value.id
+
+        if (
+            field_name == "stt"
+            and instance.account_approval_status
+            == AccountApprovalStatusChoices.APPROVED
+        ):
+            return None
+
+        if new_value == current_value:
+            return None
+
+        return instance.request_change(
+            field_name=field_name,
+            requested_value=new_value,
+            current_value=current_value,
+            requested_by=user,
+        )
 
     def _handle_new_request(self, validated_data, instance):
         """Handle creating a new change request for the user."""
         user = self.context["request"].user
-        change_requests = []
 
         for field_name in ["first_name", "last_name", "stt"]:
-            if field_name in validated_data:
-                new_value = validated_data[field_name]
-                current_value = getattr(instance, field_name)
-                if isinstance(new_value, STT):
-                    new_value = new_value.id
-                if isinstance(current_value, STT):
-                    current_value = current_value.id
-
-                if (
-                    field_name == "stt"
-                    and user.account_approval_status
-                    == AccountApprovalStatusChoices.APPROVED
-                ):
-                    continue
-                elif new_value != current_value:
-                    # Create a change request
-                    change_request = instance.request_change(
-                        field_name=field_name,
-                        requested_value=new_value,
-                        current_value=current_value,
-                        requested_by=user,
-                    )
-                    change_requests.append(change_request)
+            change_request = self._create_scalar_change_request(
+                field_name, validated_data, instance, user
+            )
+            if change_request:
+                self._log_created_change_request(
+                    change_request,
+                    field_name,
+                    change_request.requested_value,
+                )
 
         if "regions" in validated_data:
-            self._handle_regions(validated_data, instance)
+            region_requests = self._handle_regions(validated_data, instance)
+            for change_request in region_requests or []:
+                self._log_created_change_request(
+                    change_request,
+                    "regions",
+                    change_request.requested_value,
+                )
 
         if "has_fra_access" in validated_data:
-            self._handle_change_permissions(validated_data, instance, "has_fra_access")
+            fra_change_request = self._handle_change_permissions(
+                validated_data, instance, "has_fra_access"
+            )
+            if fra_change_request:
+                self._log_created_change_request(
+                    fra_change_request,
+                    "has_fra_access",
+                    fra_change_request.requested_value,
+                )
 
     def update(self, instance, validated_data):
         """Handle updates by either creating change requests or updating directly."""
@@ -440,7 +512,7 @@ class UserProfileChangeRequestSerializer(UserProfileSerializer):
         create_change_requests = validated_data.pop("create_change_requests", False)
 
         user = self.context["request"].user
-        pending_requests = user.get_pending_change_requests()
+        pending_requests = instance.get_pending_change_requests()
         # If not creating change requests, use the parent update method
         # This is for direct updates, bypassing change requests
         if not create_change_requests:

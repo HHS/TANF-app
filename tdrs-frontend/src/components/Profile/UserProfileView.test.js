@@ -73,9 +73,7 @@ describe('UserProfileView', () => {
       />
     )
     expect(
-      screen.getByText(
-        /your profile change request is currently being reviewed/i
-      )
+      screen.getByText(/your requested change is currently being reviewed/i)
     ).toBeInTheDocument()
   })
 
@@ -91,9 +89,7 @@ describe('UserProfileView', () => {
       />
     )
     expect(
-      screen.getByText(
-        /your profile change request is currently being reviewed/i
-      )
+      screen.getByText(/your requested change is currently being reviewed/i)
     ).toBeInTheDocument()
   })
 

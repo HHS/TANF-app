@@ -890,6 +890,7 @@ describe('FRA Reports Page', () => {
           )
         ).toBeInTheDocument()
         expect(getByText('Submit Report')).toBeInTheDocument()
+        expect(get).toHaveBeenCalledTimes(1)
       })
 
       return { ...component, ...store }
@@ -929,7 +930,9 @@ describe('FRA Reports Page', () => {
         },
       ]
 
-      const { getByText } = await setup(submissionHistoryApiResponse)
+      const { getByText, queryByText } = await setup(
+        submissionHistoryApiResponse
+      )
 
       await waitFor(() => {
         expect(getByText(/by Test Testerson/)).toBeInTheDocument()
@@ -944,6 +947,7 @@ describe('FRA Reports Page', () => {
         ).toBeInTheDocument()
         expect(getByText('Accepted')).toBeInTheDocument()
         expect(getByText('No Errors')).toBeInTheDocument()
+        expect(queryByText('Reprocessed ⓘ')).not.toBeInTheDocument()
       })
     })
 
@@ -1058,6 +1062,104 @@ describe('FRA Reports Page', () => {
           getByText('Still processing. Check back soon.')
         ).toBeInTheDocument()
         expect(getByText('Pending')).toBeInTheDocument()
+      })
+    })
+
+    it('Shows a reprocessed button if a reparse has happened', async () => {
+      const submissionHistoryApiResponse = [
+        {
+          id: 1,
+          original_filename: 'testFile.txt',
+          extension: 'txt',
+          quarter: 'Q1',
+          section: 'Work Outcomes of TANF Exiters',
+          slug: '1234-5-6-7890',
+          year: '2021',
+          s3_version_id: '3210',
+          created_at: '2025-02-07T23:38:58+0000',
+          submitted_by: 'Test Testerson',
+          has_error: false,
+          summary: {
+            status: 'Accepted',
+            case_aggregates: {
+              total_errors: 0,
+            },
+          },
+          latest_reparse_file_meta: {
+            finished: true,
+            success: true,
+            started_at: '2026-03-05T19:14:54+0000',
+            finished_at: '2026-03-05T19:14:57+0000',
+          },
+        },
+      ]
+
+      const { getByText, queryByText } = await setup(
+        submissionHistoryApiResponse
+      )
+
+      await waitFor(() => {
+        expect(getByText(/by Test Testerson/)).toBeInTheDocument()
+        expect(
+          getByText('testFile.txt', { selector: 'td button' })
+        ).toBeInTheDocument()
+        expect(
+          within(
+            getByText('Work Outcomes of TANF Exiters Submission History')
+              .parentElement
+          ).getByText('0')
+        ).toBeInTheDocument()
+        expect(getByText('Accepted')).toBeInTheDocument()
+        expect(getByText('No Errors')).toBeInTheDocument()
+        expect(queryByText('Reprocessed ⓘ')).toBeInTheDocument()
+      })
+    })
+
+    it('Shows reprocessed modal when reprocessed button pressed', async () => {
+      const submissionHistoryApiResponse = [
+        {
+          id: 1,
+          original_filename: 'testFile.txt',
+          extension: 'txt',
+          quarter: 'Q1',
+          section: 'Work Outcomes of TANF Exiters',
+          slug: '1234-5-6-7890',
+          year: '2021',
+          s3_version_id: '3210',
+          created_at: '2025-02-07T23:38:58+0000',
+          submitted_by: 'Test Testerson',
+          has_error: false,
+          summary: {
+            status: 'Accepted',
+            case_aggregates: {
+              total_errors: 0,
+            },
+          },
+          latest_reparse_file_meta: {
+            finished: true,
+            success: true,
+            started_at: '2026-03-05T19:14:54+0000',
+            finished_at: '2026-03-05T19:14:57+0000',
+          },
+        },
+      ]
+
+      const { getByText, queryByText } = await setup(
+        submissionHistoryApiResponse
+      )
+
+      await waitFor(() => {
+        expect(queryByText('Reprocessed ⓘ')).toBeInTheDocument()
+        expect(
+          queryByText('Most Recent Reprocessed Date')
+        ).not.toBeInTheDocument()
+      })
+
+      const reprocessedButton = queryByText('Reprocessed ⓘ')
+      fireEvent.click(reprocessedButton)
+
+      await waitFor(() => {
+        expect(queryByText('Most Recent Reprocessed Date')).toBeInTheDocument()
       })
     })
   })
