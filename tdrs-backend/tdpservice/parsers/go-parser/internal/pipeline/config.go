@@ -53,23 +53,3 @@ func NewConfigFromUnified(cfg *config.Config) PipelineConfig {
 		S3:                  cfg.Storage.S3,
 	}
 }
-
-// Deprecated: NewConfig creates a PipelineConfig from the legacy PipelineYAML.
-// Use NewConfigFromUnified instead.
-func NewConfig(cfg *config.PipelineYAML) PipelineConfig {
-	readerSource := cfg.Reader.Source
-	if readerSource == "" {
-		readerSource = "local"
-	}
-
-	return PipelineConfig{
-		NumWorkers:          cfg.Pipeline.NumWorkers,
-		WorkBufferSize:      cfg.Pipeline.WorkBufferSize,
-		PoolPrewarmSize:     cfg.Pipeline.PoolPrewarmSize,
-		FlushThreshold:      cfg.Writer.FlushThreshold,
-		ErrorFlushThreshold: cfg.Writer.ErrorFlushThreshold,
-		ShortCircuit:        cfg.Validation.ShortCircuit,
-		ReaderSource:        readerSource,
-		S3:                  cfg.Reader.S3,
-	}
-}

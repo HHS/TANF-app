@@ -112,43 +112,6 @@ database:
 	}
 }
 
-func TestLoadConfig_FallbackToPipelineYAML(t *testing.T) {
-	dir := t.TempDir()
-	// No parser.yaml, but pipeline.yaml exists
-	content := `
-pipeline:
-  num_workers: 99
-writer:
-  flush_threshold: 5000
-reader:
-  source: s3
-  s3:
-    bucket: test-bucket
-`
-	if err := os.WriteFile(filepath.Join(dir, "pipeline.yaml"), []byte(content), 0644); err != nil {
-		t.Fatal(err)
-	}
-
-	// Point at non-existent parser.yaml in the same directory
-	cfg, err := LoadConfig(filepath.Join(dir, "parser.yaml"))
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	if cfg.Pipeline.NumWorkers != 99 {
-		t.Errorf("NumWorkers = %d, want 99 (from pipeline.yaml fallback)", cfg.Pipeline.NumWorkers)
-	}
-	if cfg.Writer.FlushThreshold != 5000 {
-		t.Errorf("FlushThreshold = %d, want 5000", cfg.Writer.FlushThreshold)
-	}
-	if cfg.Storage.Source != "s3" {
-		t.Errorf("Storage.Source = %q, want s3 (migrated from reader.source)", cfg.Storage.Source)
-	}
-	if cfg.Storage.S3.Bucket != "test-bucket" {
-		t.Errorf("Storage.S3.Bucket = %q, want test-bucket", cfg.Storage.S3.Bucket)
-	}
-}
-
 func TestLoadConfig_InvalidYAML(t *testing.T) {
 	dir := t.TempDir()
 	content := `

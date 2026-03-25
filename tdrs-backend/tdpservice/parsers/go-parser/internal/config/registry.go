@@ -65,57 +65,6 @@ func LoadFromFiles(schemaFiles, filespecFiles []string, schemasBaseDir, configDi
 	return r, nil
 }
 
-// Load reads all configuration files from the given directory and builds the Registry.
-// This is a backward-compatible wrapper around LoadFromFiles that walks the default
-// schemas/ and filespecs/ directories.
-//
-// Directory structure expected:
-//
-//	configDir/
-//	├── filespecs/
-//	│   ├── tanf_section1.yaml
-//	│   ├── tanf_section2.yaml
-//	│   └── ...
-//	└── schemas/
-//	    ├── common/
-//	    │   ├── header.yaml
-//	    │   └── trailer.yaml
-//	    └── tanf/
-//	        ├── t1.yaml
-//	        ├── t2.yaml
-//	        └── t3.yaml
-func Load(configDir string) (*Registry, error) {
-	schemasDir := filepath.Join(configDir, "schemas")
-	filespecsDir := filepath.Join(configDir, "filespecs")
-
-	schemaFiles, err := collectYAMLFiles(schemasDir)
-	if err != nil {
-		return nil, fmt.Errorf("collecting schema files: %w", err)
-	}
-
-	filespecFiles, err := collectYAMLFiles(filespecsDir)
-	if err != nil {
-		return nil, fmt.Errorf("collecting filespec files: %w", err)
-	}
-
-	return LoadFromFiles(schemaFiles, filespecFiles, schemasDir, configDir)
-}
-
-// collectYAMLFiles walks a directory and returns all .yaml file paths.
-func collectYAMLFiles(dir string) ([]string, error) {
-	var files []string
-	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if !info.IsDir() && strings.HasSuffix(path, ".yaml") {
-			files = append(files, path)
-		}
-		return nil
-	})
-	return files, err
-}
-
 // loadSchemaFile reads, parses, and compiles a single schema YAML file.
 // The key is derived from the file's path relative to schemasBaseDir.
 func (r *Registry) loadSchemaFile(path, schemasBaseDir string) error {

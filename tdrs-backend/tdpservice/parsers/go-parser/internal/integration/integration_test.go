@@ -6,6 +6,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -51,8 +52,18 @@ func TestMain(m *testing.M) {
 	}
 	log.Println("Connected to database")
 
-	// Load configuration
-	testRegistry, err = config.Load("../../config")
+	// Load configuration via resolved globs (same path as main.go)
+	configDir := "../../config"
+	schemasBaseDir := filepath.Join(configDir, "schemas")
+	schemaFiles, err := config.ResolveFileGlobs(configDir, []string{"schemas/**/*.yaml"})
+	if err != nil {
+		log.Fatalf("Failed to resolve schema files: %v", err)
+	}
+	filespecFiles, err := config.ResolveFileGlobs(configDir, []string{"filespecs/**/*.yaml"})
+	if err != nil {
+		log.Fatalf("Failed to resolve filespec files: %v", err)
+	}
+	testRegistry, err = config.LoadFromFiles(schemaFiles, filespecFiles, schemasBaseDir, configDir)
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}

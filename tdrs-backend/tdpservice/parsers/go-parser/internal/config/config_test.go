@@ -59,7 +59,7 @@ func TestTestConfig_ConservativeValues(t *testing.T) {
 func TestDefaultConfig_PreservesExistingDefaults(t *testing.T) {
 	cfg := DefaultConfig()
 
-	// Verify defaults match the values from the original DefaultPipelineYAML
+	// Verify defaults match expected production values
 	if cfg.Pipeline.NumWorkers != 16 {
 		t.Errorf("NumWorkers = %d, want 16", cfg.Pipeline.NumWorkers)
 	}

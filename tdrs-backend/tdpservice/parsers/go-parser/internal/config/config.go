@@ -1,6 +1,44 @@
 package config
 
-import "time"
+import (
+	"time"
+)
+
+// PipelineWorkerConfig holds worker pool settings.
+type PipelineWorkerConfig struct {
+	NumWorkers      int `yaml:"num_workers"`
+	WorkBufferSize  int `yaml:"work_buffer_size"`
+	PoolPrewarmSize int `yaml:"pool_prewarm_size"`
+}
+
+// WriterConfig holds table writer flush thresholds.
+type WriterConfig struct {
+	FlushThreshold      int `yaml:"flush_threshold"`
+	ErrorFlushThreshold int `yaml:"error_flush_threshold"`
+}
+
+// ValidationConfig controls validation behavior.
+type ValidationConfig struct {
+	ShortCircuit   bool     `yaml:"short_circuit"`   // Skip field/consistency validators when precheck or group validators fail
+	ValidatorFiles []string `yaml:"validator_files"` // Glob patterns for validator definition files (resolved relative to config_dir)
+}
+
+// DatabaseConfig holds connection pool settings.
+type DatabaseConfig struct {
+	URL               string        `yaml:"url"` // Database connection URL (supports ${DATABASE_URL} interpolation)
+	MaxConns          int           `yaml:"max_conns"`
+	MinConns          int           `yaml:"min_conns"`
+	MaxConnLifetime   time.Duration `yaml:"max_conn_lifetime"`
+	MaxConnIdleTime   time.Duration `yaml:"max_conn_idle_time"`
+	HealthCheckPeriod time.Duration `yaml:"health_check_period"`
+}
+
+// S3Config holds S3-specific storage settings.
+type S3Config struct {
+	Bucket   string `yaml:"bucket"`
+	Endpoint string `yaml:"endpoint"` // Custom endpoint (empty = real AWS, set for LocalStack)
+	Region   string `yaml:"region"`
+}
 
 // Config is the top-level configuration structure matching config/parser.yaml.
 // It replaces PipelineYAML as the canonical configuration type, supporting
