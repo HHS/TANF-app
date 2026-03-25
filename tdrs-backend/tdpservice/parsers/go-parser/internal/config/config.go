@@ -11,10 +11,16 @@ type PipelineWorkerConfig struct {
 	PoolPrewarmSize int `yaml:"pool_prewarm_size"`
 }
 
-// WriterConfig holds table writer flush thresholds.
+// WriterConfig holds table writer flush thresholds and output mode.
 type WriterConfig struct {
-	FlushThreshold      int `yaml:"flush_threshold"`
-	ErrorFlushThreshold int `yaml:"error_flush_threshold"`
+	Mode                string   `yaml:"mode"`                  // "database" (default), "file"
+	Format              string   `yaml:"format"`                // "json" or "csv" (only used when mode is "file")
+	OutputDir           string   `yaml:"output_dir"`            // output directory (only used when mode is "file")
+	FlushThreshold      int      `yaml:"flush_threshold"`
+	ErrorFlushThreshold int      `yaml:"error_flush_threshold"`
+	IncludeSchemas      []string `yaml:"include_schemas"`       // filter which record types get written (empty = all)
+	IncludeRecords      bool     `yaml:"include_records"`       // whether to write records (default true)
+	IncludeErrors       bool     `yaml:"include_errors"`        // whether to write errors (default true)
 }
 
 // ValidationConfig controls validation behavior.
@@ -129,8 +135,13 @@ func DefaultConfig() *Config {
 			PoolPrewarmSize: 10000,
 		},
 		Writer: WriterConfig{
+			Mode:                "database",
+			Format:              "json",
+			OutputDir:           "./output",
 			FlushThreshold:      50000,
 			ErrorFlushThreshold: 100000,
+			IncludeRecords:      true,
+			IncludeErrors:       true,
 		},
 		Validation: ValidationConfig{
 			ShortCircuit:   true,

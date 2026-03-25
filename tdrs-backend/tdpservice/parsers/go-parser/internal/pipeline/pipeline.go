@@ -18,8 +18,9 @@ import (
 )
 
 // Pipeline orchestrates the full file parsing process.
+// The pipeline is agnostic to where output goes — the Sink handles that.
 type Pipeline struct {
-	dbPool     *pgxpool.Pool
+	sink       writer.Sink
 	registry   *config.Registry
 	validators *validation.ValidatorRegistry
 	config     PipelineConfig
@@ -45,14 +46,32 @@ type ParsingResult struct {
 	Duration     time.Duration
 }
 
-// NewPipline creates a Pipeline with the given configuration.
-func NewPipline(dbPool *pgxpool.Pool, reg *config.Registry, validators *validation.ValidatorRegistry, config PipelineConfig, s3Storage *storage.S3Storage) *Pipeline {
+// NewPipeline creates a Pipeline with the given configuration.
+// The sink determines where records/errors are written (database, files, etc).
+func NewPipeline(sink writer.Sink, reg *config.Registry, validators *validation.ValidatorRegistry, config PipelineConfig, s3Storage *storage.S3Storage) *Pipeline {
 	return &Pipeline{
-		dbPool:     dbPool,
+		sink:       sink,
 		registry:   reg,
 		validators: validators,
 		config:     config,
 		s3Storage:  s3Storage,
+	}
+}
+
+// SinkFactory creates the appropriate Sink based on pipeline configuration.
+func SinkFactory(cfg PipelineConfig, dbPool *pgxpool.Pool) (writer.Sink, error) {
+	switch cfg.WriterMode {
+	case "file":
+		outputDir := cfg.WriterOutputDir
+		if outputDir == "" {
+			outputDir = "./output"
+		}
+		return writer.NewFileSink(outputDir, cfg.WriterFormat)
+	default:
+		if dbPool == nil {
+			return nil, fmt.Errorf("database pool is required for writer mode %q", cfg.WriterMode)
+		}
+		return writer.NewDatabaseSink(dbPool), nil
 	}
 }
 
@@ -93,12 +112,15 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params DataFileParams) (*Par
 	// Start timing for performance measurement
 	startTime := time.Now()
 
-	// Step 3: Create database router/initialize object pools
+	// Step 3: Create router/initialize object pools
 	// TODO: I hate that we have to initialize the object pools on the schemas in NewRouter.
-	router := writer.NewRouter(p.dbPool, params.DatafileID, spec, p.registry, writer.RouterConfig{
+	router := writer.NewRouter(p.sink, params.DatafileID, spec, p.registry, writer.RouterConfig{
 		PoolPrewarmSize:     p.config.PoolPrewarmSize,
 		FlushThreshold:      p.config.FlushThreshold,
 		ErrorFlushThreshold: p.config.ErrorFlushThreshold,
+		IncludeSchemas:      p.config.IncludeSchemas,
+		IncludeRecords:      p.config.IncludeRecords,
+		IncludeErrors:       p.config.IncludeErrors,
 	})
 	router.Start(ctx)
 

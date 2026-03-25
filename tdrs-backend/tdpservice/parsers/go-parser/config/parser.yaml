@@ -43,10 +43,16 @@ pipeline:
   work_buffer_size: 256
   pool_prewarm_size: 10000
 
-# Writer: database flush thresholds
+# Writer: output mode and flush thresholds
 writer:
+  mode: database               # database | file
+  format: json                 # json | csv (only used when mode=file)
+  output_dir: ./output         # output directory (only used when mode=file)
   flush_threshold: 10000
   error_flush_threshold: 10000
+  include_schemas: []          # filter record types (empty = all, e.g. ["tanf/t1"])
+  include_records: true        # whether to write parsed records
+  include_errors: true         # whether to write error records
 
 # Validation: behavior and validator file pointers
 validation:

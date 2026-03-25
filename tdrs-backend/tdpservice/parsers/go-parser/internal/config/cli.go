@@ -44,8 +44,17 @@ type CLI struct {
 	PipelinePoolPrewarmSize int `kong:"name='pipeline.pool-prewarm-size',help='Object pool pre-allocation size'"`
 
 	// Writer
-	WriterFlushThreshold      int `kong:"name='writer.flush-threshold',help='Records per table before flush'"`
-	WriterErrorFlushThreshold int `kong:"name='writer.error-flush-threshold',help='Error records before flush'"`
+	WriterMode                string   `kong:"name='writer.mode',help='Output mode: database or file'"`
+	WriterFormat              string   `kong:"name='writer.format',help='File output format: json or csv (used with mode=file)'"`
+	WriterOutputDir           string   `kong:"name='writer.output-dir',help='Output directory for file mode'"`
+	WriterFlushThreshold      int      `kong:"name='writer.flush-threshold',help='Records per table before flush'"`
+	WriterErrorFlushThreshold int      `kong:"name='writer.error-flush-threshold',help='Error records before flush'"`
+	WriterIncludeSchemas      []string `kong:"name='writer.include-schemas',help='Schema paths to include (e.g. tanf/t1). Empty=all'"`
+	WriterIncludeRecords      bool     `kong:"name='writer.include-records',help='Whether to write records (default true)'"`
+	WriterIncludeErrors       bool     `kong:"name='writer.include-errors',help='Whether to write errors (default true)'"`
+
+	// Convenience flag: --dry-run sets writer.mode=file with a temp-style output dir
+	DryRun bool `kong:"name='dry-run',help='Run without database: output records/errors to local files'"`
 
 	// Validation
 	ValidationShortCircuit bool `kong:"name='validation.short-circuit',help='Skip field/consistency validators on precheck failure'"`
@@ -144,11 +153,34 @@ func (c *CLI) ApplyTo(cfg *Config, ctx *kong.Context) {
 		cfg.Pipeline.PoolPrewarmSize = c.PipelinePoolPrewarmSize
 	}
 
+	if set["writer.mode"] {
+		cfg.Writer.Mode = c.WriterMode
+	}
+	if set["writer.format"] {
+		cfg.Writer.Format = c.WriterFormat
+	}
+	if set["writer.output-dir"] {
+		cfg.Writer.OutputDir = c.WriterOutputDir
+	}
 	if set["writer.flush-threshold"] {
 		cfg.Writer.FlushThreshold = c.WriterFlushThreshold
 	}
 	if set["writer.error-flush-threshold"] {
 		cfg.Writer.ErrorFlushThreshold = c.WriterErrorFlushThreshold
+	}
+	if set["writer.include-schemas"] {
+		cfg.Writer.IncludeSchemas = c.WriterIncludeSchemas
+	}
+	if set["writer.include-records"] {
+		cfg.Writer.IncludeRecords = c.WriterIncludeRecords
+	}
+	if set["writer.include-errors"] {
+		cfg.Writer.IncludeErrors = c.WriterIncludeErrors
+	}
+
+	// --dry-run is a convenience flag that forces file mode
+	if set["dry-run"] && c.DryRun {
+		cfg.Writer.Mode = "file"
 	}
 
 	if set["validation.short-circuit"] {

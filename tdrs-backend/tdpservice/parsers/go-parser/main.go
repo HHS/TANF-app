@@ -11,9 +11,30 @@ import (
 	"go-parser/internal/config"
 	"go-parser/internal/db"
 	"go-parser/internal/pipeline"
+	"go-parser/internal/storage/writer"
 	"go-parser/internal/testutil"
 	"go-parser/internal/validation"
 )
+
+// needsDatabase determines whether a database connection is required based on
+// the combination of input source (server mode) and output sink (writer mode).
+//
+// The two axes are orthogonal:
+//
+//	                    | Output: database | Output: file                    |
+//	--------------------|------------------|--------------------------------|
+//	Input: local file   | DB needed        | No DB needed (fully offline)   |
+//	Input: server req   | DB needed        | DB needed (read datafile/meta) |
+//
+// Server modes (celery, grpc, http) always need DB to look up the datafile
+// record and resolve the S3 object key. Local mode only needs DB when the
+// output sink is the database.
+func needsDatabase(cfg *config.Config) bool {
+	if cfg.Writer.Mode == "file" && cfg.Server.Mode == "local" {
+		return false
+	}
+	return true
+}
 
 func main() {
 	// Parse CLI flags (Kong)
@@ -59,28 +80,45 @@ func main() {
 		log.Fatalf("Failed to load validators: %v", err)
 	}
 
-	// Connect to database
-	if cfg.Database.URL == "" {
-		log.Fatal("database.url is required (set in config file, DATABASE_URL env var, or --database.url flag)")
-	}
-	dbPool, err := db.NewPool(bgCtx, cfg.Database.URL, cfg.Database)
-	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
-	}
-	defer dbPool.Close()
+	// ---- Database connection (conditional) ----
+	// See needsDatabase() for the decision matrix.
+	var dbPool *pgxpool.Pool
+	if needsDatabase(cfg) {
+		if cfg.Database.URL == "" {
+			log.Fatal("database.url is required (set in config file, DATABASE_URL env var, or --database.url flag)")
+		}
+		pool, err := db.NewPool(bgCtx, cfg.Database.URL, cfg.Database)
+		if err != nil {
+			log.Fatalf("Failed to connect to database: %v", err)
+		}
+		defer pool.Close()
+		dbPool = pool
 
-	// Load content types from database for error linking
-	contentTypes, err := db.LoadContentTypes(bgCtx, dbPool)
-	if err != nil {
-		log.Fatalf("Failed to load content types: %v", err)
+		// Content types are needed for error→record linking in the database.
+		// When writing to files, content_type_id columns are nil — which is fine.
+		contentTypes, err := db.LoadContentTypes(bgCtx, dbPool)
+		if err != nil {
+			log.Fatalf("Failed to load content types: %v", err)
+		}
+		reg.LoadContentTypes(contentTypes)
+		log.Printf("Loaded %d content types from database", len(contentTypes))
+	} else {
+		log.Printf("No database connection required (server.mode=%s, writer.mode=%s)",
+			cfg.Server.Mode, cfg.Writer.Mode)
 	}
-	reg.LoadContentTypes(contentTypes)
-	log.Printf("Loaded %d content types from database", len(contentTypes))
 
-	// Route to server mode
+	// ---- Output sink ----
+	pipelineCfg := pipeline.NewConfig(cfg)
+	sink, err := pipeline.SinkFactory(pipelineCfg, dbPool)
+	if err != nil {
+		log.Fatalf("Failed to create writer sink: %v", err)
+	}
+	defer sink.Close()
+
+	// ---- Server mode dispatch ----
 	switch cfg.Server.Mode {
 	case "local":
-		runLocal(bgCtx, cfg, dbPool, reg, validators)
+		runLocal(bgCtx, cfg, sink, dbPool, reg, validators)
 	case "celery":
 		log.Fatal("celery server mode not yet implemented")
 	case "grpc":
@@ -103,7 +141,10 @@ func main() {
 }
 
 // runLocal processes a single file in local mode (for development and testing).
-func runLocal(ctx context.Context, cfg *config.Config, dbPool *pgxpool.Pool, reg *config.Registry, validators *validation.ValidatorRegistry) {
+// When dbPool is non-nil, a test datafile record is created to satisfy FK constraints.
+// When dbPool is nil (file output mode), datafileID is 0 — the pipeline and sink
+// still function, but records won't have a real FK reference.
+func runLocal(ctx context.Context, cfg *config.Config, sink writer.Sink, dbPool *pgxpool.Pool, reg *config.Registry, validators *validation.ValidatorRegistry) {
 	local := cfg.Server.Local
 	if local.FilePath == "" {
 		log.Fatal("server.local.file-path is required in local mode")
@@ -115,21 +156,25 @@ func runLocal(ctx context.Context, cfg *config.Config, dbPool *pgxpool.Pool, reg
 		log.Fatal("server.local.section is required in local mode")
 	}
 
-	// Create a test datafile record to satisfy foreign key constraints
-	datafileParams := testutil.DefaultDatafileParams()
-	datafileParams.ProgramType = local.Program
-	datafileParams.Section = "Active Case Data"
-	datafileID, err := testutil.CreateTestDatafile(ctx, dbPool, datafileParams)
-	if err != nil {
-		log.Fatalf("Failed to create test datafile: %v", err)
+	// Create a test datafile record to satisfy FK constraints (only when writing to database)
+	var datafileID int32
+	if dbPool != nil {
+		datafileParams := testutil.DefaultDatafileParams()
+		datafileParams.ProgramType = local.Program
+		datafileParams.Section = "Active Case Data"
+		var err error
+		datafileID, err = testutil.CreateTestDatafile(ctx, dbPool, datafileParams)
+		if err != nil {
+			log.Fatalf("Failed to create test datafile: %v", err)
+		}
+		log.Printf("Created test datafile with ID: %d", datafileID)
+		defer func() {
+			testutil.DeleteTestDatafile(ctx, dbPool, datafileID)
+		}()
 	}
-	log.Printf("Created test datafile with ID: %d", datafileID)
-	defer func() {
-		testutil.DeleteTestDatafile(ctx, dbPool, datafileID)
-	}()
 
 	// Create and run pipeline
-	pipeln := pipeline.NewPipline(dbPool, reg, validators, pipeline.NewConfigFromUnified(cfg), nil)
+	pipeln := pipeline.NewPipeline(sink, reg, validators, pipeline.NewConfig(cfg), nil)
 	result, err := pipeln.ProcessFile(ctx, pipeline.DataFileParams{
 		Program:    local.Program,
 		Section:    local.Section,

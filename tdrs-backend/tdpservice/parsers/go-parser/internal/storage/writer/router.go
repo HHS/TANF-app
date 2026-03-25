@@ -8,7 +8,6 @@ import (
 	"sync"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/jackc/pgx/v5/pgxpool"
 
 	"go-parser/internal/config"
 	"go-parser/internal/config/filespec"
@@ -20,7 +19,7 @@ import (
 // Router owns the converters and handles the full pipeline:
 // ParsedRecord -> convert -> release to pool -> send []any to writer
 type Router struct {
-	pool       *pgxpool.Pool
+	sink       Sink
 	datafileID int32
 
 	// Writers keyed by schema path (e.g., "tanf/t1", "tribal/t1")
@@ -48,19 +47,37 @@ type RouterConfig struct {
 	PoolPrewarmSize     int
 	FlushThreshold      int
 	ErrorFlushThreshold int
+
+	// IncludeSchemas filters which record types get written.
+	// Empty means write all. Example: ["tanf/t1"] writes only T1 records.
+	// Only applied when IncludeRecords is true.
+	IncludeSchemas []string
+
+	// IncludeRecords controls whether record data is written. Default true.
+	// When false, no record writers are created regardless of IncludeSchemas.
+	IncludeRecords bool
+
+	// IncludeErrors controls whether errors are written. Default true.
+	IncludeErrors bool
 }
 
 // NewRouter creates a manager based on the FileSpec.
 // Writers are created only for the record types in this specific file.
 func NewRouter(
-	pool *pgxpool.Pool,
+	sink Sink,
 	datafileID int32,
 	spec *filespec.FileSpec,
 	reg *config.Registry,
 	cfg RouterConfig,
 ) *Router {
+	// Build include set for fast lookup
+	includeSet := make(map[string]bool, len(cfg.IncludeSchemas))
+	for _, s := range cfg.IncludeSchemas {
+		includeSet[s] = true
+	}
+
 	router := &Router{
-		pool:           pool,
+		sink:           sink,
 		datafileID:     datafileID,
 		writers:        make(map[string]*TableWriter),
 		converters:     make(map[string]RowConverter),
@@ -80,14 +97,26 @@ func NewRouter(
 		}
 		sch.InitPool(newObjFunc)
 
-		// Skip header/trailer - they don't get written to database
+		// Skip header/trailer - they don't get written
 		if sch.RecordType == "HEADER" || sch.RecordType == "TRAILER" {
 			continue
 		}
 
 		// Pre-warm the object pool for this schema to avoid allocation during parsing
+		// (needed even when records aren't written — parsing still uses the pool)
 		if cfg.PoolPrewarmSize > 0 {
 			sch.PrewarmPool(cfg.PoolPrewarmSize)
+		}
+
+		// Skip record writer creation when records are disabled
+		if !cfg.IncludeRecords {
+			continue
+		}
+
+		// Apply schema filter if configured
+		if len(includeSet) > 0 && !includeSet[schemaPath] {
+			log.Printf("Skipping writer for %s (not in include_schemas)", schemaPath)
+			continue
 		}
 
 		// Get metadata (table name, columns derived from schema)
@@ -122,12 +151,16 @@ func NewRouter(
 	}
 
 	// Create error writer with higher threshold for error volume
-	router.errorWriter = NewTableWriter(
-		"parser_error",
-		parserErrorColumns,
-		cfg.ErrorFlushThreshold,
-	)
-	log.Printf("Created error writer for parser_error (%d columns)", len(parserErrorColumns))
+	if cfg.IncludeErrors {
+		router.errorWriter = NewTableWriter(
+			"parser_error",
+			parserErrorColumns,
+			cfg.ErrorFlushThreshold,
+		)
+		log.Printf("Created error writer for parser_error (%d columns)", len(parserErrorColumns))
+	} else {
+		log.Printf("Error writing disabled (include_errors=false)")
+	}
 
 	return router
 }
@@ -136,10 +169,10 @@ func NewRouter(
 // Must be called before RouteBatch/RouteRecord.
 func (router *Router) Start(ctx context.Context) {
 	for _, writer := range router.writers {
-		writer.Start(ctx, router.pool)
+		writer.Start(ctx, router.sink)
 	}
 	if router.errorWriter != nil {
-		router.errorWriter.Start(ctx, router.pool)
+		router.errorWriter.Start(ctx, router.sink)
 	}
 }
 

@@ -13,6 +13,7 @@ import (
 
 	"go-parser/internal/config"
 	"go-parser/internal/pipeline"
+	"go-parser/internal/storage/writer"
 	"go-parser/internal/validation"
 )
 
@@ -25,7 +26,8 @@ func TestDataDir() string {
 func ParseFile(t *testing.T, ctx context.Context, pool *pgxpool.Pool, reg *config.Registry, validators *validation.ValidatorRegistry, program string, section int, filePath string, datafileID int32) {
 	t.Helper()
 
-	p := pipeline.NewPipline(pool, reg, validators, pipeline.TestConfig(), nil)
+	sink := writer.NewDatabaseSink(pool)
+	p := pipeline.NewPipeline(sink, reg, validators, pipeline.TestConfig(), nil)
 	result, err := p.ProcessFile(ctx, pipeline.DataFileParams{
 		Program:    program,
 		Section:    section,

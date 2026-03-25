@@ -6,9 +6,6 @@ import (
 	"log"
 	"sync"
 	"sync/atomic"
-
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 const (
@@ -29,7 +26,7 @@ type TableWriter struct {
 
 	// Async operation - channel carries []any rows (already converted)
 	rowChan chan []any
-	pool    *pgxpool.Pool
+	sink    Sink
 	wg      sync.WaitGroup
 
 	// Internal buffer (owned by the goroutine - no locks needed)
@@ -66,9 +63,9 @@ func NewTableWriter(
 	}
 }
 
-// Start launches the writer goroutine
-func (tw *TableWriter) Start(ctx context.Context, pool *pgxpool.Pool) {
-	tw.pool = pool
+// Start launches the writer goroutine with the given sink.
+func (tw *TableWriter) Start(ctx context.Context, sink Sink) {
+	tw.sink = sink
 	tw.wg.Add(1)
 	go tw.run(ctx)
 }
@@ -151,14 +148,9 @@ func (tw *TableWriter) flush(ctx context.Context) error {
 	rows := tw.rows
 	tw.rows = make([][]any, 0, tw.threshold)
 
-	count, err := tw.pool.CopyFrom(
-		ctx,
-		pgx.Identifier{tw.tableName},
-		tw.columns,
-		pgx.CopyFromRows(rows),
-	)
+	count, err := tw.sink.Flush(ctx, tw.tableName, tw.columns, rows)
 	if err != nil {
-		return fmt.Errorf("COPY to %s: %w", tw.tableName, err)
+		return fmt.Errorf("flush to %s: %w", tw.tableName, err)
 	}
 
 	tw.totalWritten.Add(count)
