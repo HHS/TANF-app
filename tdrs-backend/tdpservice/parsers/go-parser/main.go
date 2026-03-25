@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"os"
-	"path/filepath"
 	"runtime/pprof"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -44,39 +43,21 @@ func main() {
 
 	bgCtx := context.Background()
 
-	// Resolve file globs for schemas and filespecs
-	configDir := cfg.Global.ConfigDir
-	schemasBaseDir := filepath.Join(configDir, "schemas")
-
-	schemaFiles, err := config.ResolveFileGlobs(configDir, cfg.SchemaFiles)
-	if err != nil {
-		log.Fatalf("Failed to resolve schema files: %v", err)
-	}
-	filespecFiles, err := config.ResolveFileGlobs(configDir, cfg.FilespecFiles)
-	if err != nil {
-		log.Fatalf("Failed to resolve filespec files: %v", err)
-	}
-
-	// Load schemas and filespecs from resolved file lists
+	// Load schemas and filespecs via glob patterns from config
 	// TODO: Need to revisit storing the object pools on the schemas. Since the registry will exist for as long as the
 	// celery worker does, the object pools could grow to an enormous size since there isn't a way to clear them after a
 	// parsing run. We should consider implementing/importing a better solution that allows clearing. Or, we could reload
 	// the registry each time a new parsing request comes in (simpler).
-	reg, err := config.LoadFromFiles(schemaFiles, filespecFiles, schemasBaseDir, configDir)
+	reg, err := config.NewRegistry(cfg)
 	if err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
 
 	// Load and compile validators
-	validatorFiles, err := config.ResolveFileGlobs(configDir, cfg.Validation.ValidatorFiles)
+	validators, err := validation.NewValidatorRegistry(cfg, reg)
 	if err != nil {
-		log.Fatalf("Failed to resolve validator files: %v", err)
-	}
-	validators := validation.NewValidatorRegistry()
-	if err := validators.Load(reg.ConfigDir(), reg.Schemas(), reg.FileSpecs()); err != nil {
 		log.Fatalf("Failed to load validators: %v", err)
 	}
-	_ = validatorFiles // TODO: pass to validators.LoadFromFiles() when implemented
 
 	// Connect to database
 	if cfg.Database.URL == "" {

@@ -514,7 +514,7 @@ func TestParamsInEnv(t *testing.T) {
 
 // TestResolveValidatorPreventsExprOverride tests that predefined validators cannot have expr overridden
 func TestResolveValidatorPreventsExprOverride(t *testing.T) {
-	registry := NewValidatorRegistry()
+	registry := newValidatorRegistry()
 	registry.predefined[ScopeField] = map[string]*configValidation.ValidatorDef{
 		"in_values": {
 			ID:      "in_values",

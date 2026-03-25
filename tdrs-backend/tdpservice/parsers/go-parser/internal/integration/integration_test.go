@@ -6,7 +6,6 @@ import (
 	"context"
 	"log"
 	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -52,25 +51,17 @@ func TestMain(m *testing.M) {
 	}
 	log.Println("Connected to database")
 
-	// Load configuration via resolved globs (same path as main.go)
-	configDir := "../../config"
-	schemasBaseDir := filepath.Join(configDir, "schemas")
-	schemaFiles, err := config.ResolveFileGlobs(configDir, []string{"schemas/**/*.yaml"})
-	if err != nil {
-		log.Fatalf("Failed to resolve schema files: %v", err)
-	}
-	filespecFiles, err := config.ResolveFileGlobs(configDir, []string{"filespecs/**/*.yaml"})
-	if err != nil {
-		log.Fatalf("Failed to resolve filespec files: %v", err)
-	}
-	testRegistry, err = config.LoadFromFiles(schemaFiles, filespecFiles, schemasBaseDir, configDir)
+	// Load configuration using test defaults pointing at the config directory
+	cfg := config.TestConfig()
+	cfg.Global.ConfigDir = "../../config"
+	testRegistry, err = config.NewRegistry(cfg)
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
 	// Load validators
-	testValidators = validation.NewValidatorRegistry()
-	if err := testValidators.Load(testRegistry.ConfigDir(), testRegistry.Schemas(), testRegistry.FileSpecs()); err != nil {
+	testValidators, err = validation.NewValidatorRegistry(cfg, testRegistry)
+	if err != nil {
 		log.Fatalf("Failed to load validators: %v", err)
 	}
 	log.Println("Loaded configuration")

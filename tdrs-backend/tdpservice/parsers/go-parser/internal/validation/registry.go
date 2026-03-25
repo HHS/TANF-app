@@ -3,13 +3,13 @@ package validation
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"text/template"
 
 	"github.com/expr-lang/expr"
 	"github.com/expr-lang/expr/vm"
 	"gopkg.in/yaml.v3"
 
+	"go-parser/internal/config"
 	"go-parser/internal/config/filespec"
 	"go-parser/internal/config/schema"
 	"go-parser/internal/config/validation"
@@ -40,8 +40,46 @@ type ValidatorRegistry struct {
 	exprOpts []expr.Option
 }
 
-// NewValidatorRegistry creates a new empty validator registry.
-func NewValidatorRegistry() *ValidatorRegistry {
+// NewValidatorRegistry resolves validator file globs from the Config, loads
+// predefined validators, then compiles validators from all schemas and
+// filespecs in the Registry.
+func NewValidatorRegistry(cfg *config.Config, reg *config.Registry) (*ValidatorRegistry, error) {
+	r := newValidatorRegistry()
+
+	// 1. Register custom functions
+	r.exprOpts = RegisterFunctions()
+
+	// 2. Resolve and load predefined validator files
+	validatorFiles, err := config.ResolveFileGlobs(cfg.Global.ConfigDir, cfg.Validation.ValidatorFiles)
+	if err != nil {
+		return nil, fmt.Errorf("resolving validator file globs: %w", err)
+	}
+	for _, path := range validatorFiles {
+		if err := r.loadPredefinedValidators(path); err != nil {
+			return nil, fmt.Errorf("loading predefined validators from %s: %w", path, err)
+		}
+	}
+
+	// 3. Load validators from all schemas
+	for path, cs := range reg.Schemas() {
+		if err := r.loadSchemaValidators(path, cs); err != nil {
+			return nil, fmt.Errorf("loading validators from schema %s: %w", path, err)
+		}
+	}
+
+	// 4. Load validators from all filespecs
+	for key, fs := range reg.FileSpecs() {
+		if err := r.loadFileSpecValidators(key, fs); err != nil {
+			return nil, fmt.Errorf("loading validators from filespec %s: %w", key, err)
+		}
+	}
+
+	return r, nil
+}
+
+// newValidatorRegistry creates a new empty validator registry.
+// Used internally and by tests that build registries by hand.
+func newValidatorRegistry() *ValidatorRegistry {
 	return &ValidatorRegistry{
 		expressions: make(map[string]map[string]*CompiledExpr),
 		predefined:  make(map[string]map[string]*validation.ValidatorDef),
@@ -49,36 +87,6 @@ func NewValidatorRegistry() *ValidatorRegistry {
 		record:      make(map[string][]*CompiledValidator),
 		group:       make(map[string][]*CompiledValidator),
 	}
-}
-
-// Load loads all validators from configuration files.
-func (r *ValidatorRegistry) Load(configPath string, schemas map[string]*schema.CompiledSchema, filespecs map[string]*filespec.FileSpec) error {
-	// 1. Register custom functions
-	r.exprOpts = RegisterFunctions()
-
-	// 2. Load predefined validators from validators.yaml (if exists)
-	validatorsPath := filepath.Join(configPath, "validation", "validators.yaml")
-	if _, err := os.Stat(validatorsPath); err == nil {
-		if err := r.loadPredefinedValidators(validatorsPath); err != nil {
-			return fmt.Errorf("loading predefined validators: %w", err)
-		}
-	}
-
-	// 3. Load validators from all schemas
-	for path, cs := range schemas {
-		if err := r.loadSchemaValidators(path, cs); err != nil {
-			return fmt.Errorf("loading validators from schema %s: %w", path, err)
-		}
-	}
-
-	// 4. Load validators from all filespecs
-	for key, fs := range filespecs {
-		if err := r.loadFileSpecValidators(key, fs); err != nil {
-			return fmt.Errorf("loading validators from filespec %s: %w", key, err)
-		}
-	}
-
-	return nil
 }
 
 // PredefinedValidatorsFile represents the validators.yaml file format.

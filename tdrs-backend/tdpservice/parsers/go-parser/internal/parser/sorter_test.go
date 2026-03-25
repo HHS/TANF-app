@@ -17,8 +17,8 @@ type mockDecoder struct {
 }
 
 func (d *mockDecoder) Format() filespec.Format         { return filespec.FormatPositional }
-func (d *mockDecoder) ReadFirst() (decoder.Row, error)  { return d.header, nil }
-func (d *mockDecoder) Close() error                     { return nil }
+func (d *mockDecoder) ReadFirst() (decoder.Row, error) { return d.header, nil }
+func (d *mockDecoder) Close() error                    { return nil }
 func (d *mockDecoder) Sort(_ *decoder.RecordTypeDetector, _ decoder.KeyExtractor, _ []string) error {
 	return nil
 }
@@ -118,10 +118,10 @@ func TestSorter_SortsByKey(t *testing.T) {
 	// Key positions: rpt_month_year=2:8, case_number=8:19
 	dec := &mockDecoder{
 		rows: []decoder.Row{
-			makeRow(1, "T1202401CASE002    rest-of-data"),  // line 1, case 002
-			makeRow(2, "T2202401CASE002    rest-of-data"),  // line 2, case 002
-			makeRow(3, "T1202401CASE001    rest-of-data"),  // line 3, case 001
-			makeRow(4, "T2202401CASE001    rest-of-data"),  // line 4, case 001
+			makeRow(1, "T1202401CASE002    rest-of-data"), // line 1, case 002
+			makeRow(2, "T2202401CASE002    rest-of-data"), // line 2, case 002
+			makeRow(3, "T1202401CASE001    rest-of-data"), // line 3, case 001
+			makeRow(4, "T2202401CASE001    rest-of-data"), // line 4, case 001
 		},
 	}
 
@@ -275,7 +275,7 @@ func TestSorter_MalformedRowsGoToUnkeyed(t *testing.T) {
 	dec := &mockDecoder{
 		rows: []decoder.Row{
 			makeRow(1, "T1202401CASE001    rest-of-data"),
-			makeRow(2, "T1short"),  // too short for key extraction
+			makeRow(2, "T1short"), // too short for key extraction
 			makeRow(3, "T1202401CASE002    rest-of-data"),
 		},
 	}
@@ -306,9 +306,9 @@ func TestSorter_MultipleRptMonths(t *testing.T) {
 	// Different rpt_month_year values — should sort by month first, then case
 	dec := &mockDecoder{
 		rows: []decoder.Row{
-			makeRow(1, "T1202402CASE001    rest-of-data"),  // Feb 2024
-			makeRow(2, "T1202401CASE002    rest-of-data"),  // Jan 2024
-			makeRow(3, "T1202401CASE001    rest-of-data"),  // Jan 2024
+			makeRow(1, "T1202402CASE001    rest-of-data"), // Feb 2024
+			makeRow(2, "T1202401CASE002    rest-of-data"), // Jan 2024
+			makeRow(3, "T1202401CASE001    rest-of-data"), // Jan 2024
 		},
 	}
 
@@ -336,7 +336,7 @@ func TestSorter_UnrecognizedRecordType(t *testing.T) {
 	dec := &mockDecoder{
 		rows: []decoder.Row{
 			makeRow(1, "T1202401CASE001    rest-of-data"),
-			makeRow(2, "XX202401CASE001    bogus-data"),  // unrecognized prefix
+			makeRow(2, "XX202401CASE001    bogus-data"), // unrecognized prefix
 			makeRow(3, "T2202401CASE001    rest-of-data"),
 		},
 	}

@@ -8,7 +8,7 @@ import (
 
 // TestOrchestratorMultiGroupValidation tests validating multiple groups
 func TestOrchestratorMultiGroupValidation(t *testing.T) {
-	registry := NewValidatorRegistry()
+	registry := newValidatorRegistry()
 	registry.exprOpts = RegisterFunctions()
 
 	// Simple passing group validator
@@ -41,7 +41,7 @@ func TestOrchestratorMultiGroupValidation(t *testing.T) {
 
 // TestOrchestratorFieldValidation tests that field validators validate specific fields
 func TestOrchestratorFieldValidation(t *testing.T) {
-	registry := NewValidatorRegistry()
+	registry := newValidatorRegistry()
 	registry.exprOpts = RegisterFunctions()
 
 	// Field validator for AMOUNT field
@@ -71,7 +71,7 @@ func TestOrchestratorFieldValidation(t *testing.T) {
 // TestOrchestratorNilRequiredFieldSkipsValidators tests that nil required fields
 // generate a field_required error and skip all validators for that field
 func TestOrchestratorNilRequiredFieldSkipsValidators(t *testing.T) {
-	registry := NewValidatorRegistry()
+	registry := newValidatorRegistry()
 	registry.exprOpts = RegisterFunctions()
 
 	// Field validator for AMOUNT field - would fail on nil
@@ -108,7 +108,7 @@ func TestOrchestratorNilRequiredFieldSkipsValidators(t *testing.T) {
 // TestOrchestratorNilOptionalFieldSkipsValidators tests that nil optional fields
 // skip validators entirely (no error, no validation)
 func TestOrchestratorNilOptionalFieldSkipsValidators(t *testing.T) {
-	registry := NewValidatorRegistry()
+	registry := newValidatorRegistry()
 	registry.exprOpts = RegisterFunctions()
 
 	// Field validator that would fail on nil
@@ -134,7 +134,7 @@ func TestOrchestratorNilOptionalFieldSkipsValidators(t *testing.T) {
 // TestOrchestratorShortCircuitSkipsFieldValidation tests that with shortCircuit=true,
 // field validators are skipped when a precheck validator fails.
 func TestOrchestratorShortCircuitSkipsFieldValidation(t *testing.T) {
-	registry := NewValidatorRegistry()
+	registry := newValidatorRegistry()
 	registry.exprOpts = RegisterFunctions()
 
 	// Record precheck that always fails
@@ -173,7 +173,7 @@ func TestOrchestratorShortCircuitSkipsFieldValidation(t *testing.T) {
 // TestOrchestratorNoShortCircuitRunsAllValidation tests that with shortCircuit=false,
 // field validators run even when a precheck validator fails.
 func TestOrchestratorNoShortCircuitRunsAllValidation(t *testing.T) {
-	registry := NewValidatorRegistry()
+	registry := newValidatorRegistry()
 	registry.exprOpts = RegisterFunctions()
 
 	// Record precheck that always fails
@@ -212,7 +212,7 @@ func TestOrchestratorNoShortCircuitRunsAllValidation(t *testing.T) {
 // TestOrchestratorNoShortCircuitWithGroupBlock tests that with shortCircuit=false,
 // field validators run even when a group validator blocks.
 func TestOrchestratorNoShortCircuitWithGroupBlock(t *testing.T) {
-	registry := NewValidatorRegistry()
+	registry := newValidatorRegistry()
 	registry.exprOpts = RegisterFunctions()
 
 	// Group validator that always fails

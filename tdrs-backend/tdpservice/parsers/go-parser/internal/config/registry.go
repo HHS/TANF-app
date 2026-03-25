@@ -31,13 +31,22 @@ type Registry struct {
 	configDir string
 }
 
-// LoadFromFiles builds a Registry from explicit file lists. The schemaFiles and
-// filespecFiles should be absolute paths (already resolved from glob patterns).
-// The schemasBaseDir is used to compute schema keys as relative paths.
-//
-// This is the primary loading method used by the new config system. It accepts
-// pre-resolved file paths instead of walking hardcoded directories.
-func LoadFromFiles(schemaFiles, filespecFiles []string, schemasBaseDir, configDir string) (*Registry, error) {
+// NewRegistry resolves schema and filespec glob patterns from the Config,
+// loads all matched files, validates cross-references, and builds metadata.
+func NewRegistry(cfg *Config) (*Registry, error) {
+	configDir := cfg.Global.ConfigDir
+	schemasBaseDir := filepath.Join(configDir, "schemas")
+
+	schemaFiles, err := ResolveFileGlobs(configDir, cfg.SchemaFiles)
+	if err != nil {
+		return nil, fmt.Errorf("resolving schema globs: %w", err)
+	}
+
+	filespecFiles, err := ResolveFileGlobs(configDir, cfg.FilespecFiles)
+	if err != nil {
+		return nil, fmt.Errorf("resolving filespec globs: %w", err)
+	}
+
 	r := &Registry{
 		fileSpecs: make(map[string]*filespec.FileSpec),
 		schemas:   make(map[string]*schema.CompiledSchema),
