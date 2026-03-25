@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
-	"flag"
 	"log"
 	"os"
+	"path/filepath"
 	"runtime/pprof"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"go-parser/internal/config"
 	"go-parser/internal/db"
@@ -14,13 +16,25 @@ import (
 	"go-parser/internal/validation"
 )
 
-var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
-var memprofile = flag.String("memprofile", "", "write memory profile to this file")
-
 func main() {
-	flag.Parse()
-	if *cpuprofile != "" {
-		f, err := os.Create(*cpuprofile)
+	// Parse CLI flags (Kong)
+	cli, ctx, err := config.ParseCLI(os.Args[1:])
+	if err != nil {
+		log.Fatalf("Failed to parse CLI: %v", err)
+	}
+
+	// Load config file with env var interpolation
+	cfg, err := config.LoadConfig(cli.ConfigFile)
+	if err != nil {
+		log.Fatalf("Failed to load config: %v", err)
+	}
+
+	// Apply CLI flag overrides (highest precedence)
+	cli.ApplyTo(cfg, ctx)
+
+	// CPU profiling
+	if cli.CPUProfile != "" {
+		f, err := os.Create(cli.CPUProfile)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -28,86 +42,101 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	ctx := context.Background()
+	bgCtx := context.Background()
 
-	configDir := "config"
+	// Resolve file globs for schemas and filespecs
+	configDir := cfg.Global.ConfigDir
+	schemasBaseDir := filepath.Join(configDir, "schemas")
 
-	// Load pipeline configuration (workers, buffers, DB pool, etc.)
-	pipelineCfg, err := config.LoadPipelineConfig(configDir)
+	schemaFiles, err := config.ResolveFileGlobs(configDir, cfg.SchemaFiles)
 	if err != nil {
-		log.Fatalf("Failed to load pipeline config: %v", err)
+		log.Fatalf("Failed to resolve schema files: %v", err)
+	}
+	filespecFiles, err := config.ResolveFileGlobs(configDir, cfg.FilespecFiles)
+	if err != nil {
+		log.Fatalf("Failed to resolve filespec files: %v", err)
 	}
 
-	// Connect to database using config
-	dbUrl := "postgres://tdpuser:something_secure@localhost:5432/tdrs_test?sslmode=disable"
-	dbPool, err := db.NewPool(ctx, dbUrl, pipelineCfg.Database)
+	// Load schemas and filespecs from resolved file lists
+	// TODO: Need to revisit storing the object pools on the schemas. Since the registry will exist for as long as the
+	// celery worker does, the object pools could grow to an enormous size since there isn't a way to clear them after a
+	// parsing run. We should consider implementing/importing a better solution that allows clearing. Or, we could reload
+	// the registry each time a new parsing request comes in (simpler).
+	reg, err := config.LoadFromFiles(schemaFiles, filespecFiles, schemasBaseDir, configDir)
+	if err != nil {
+		log.Fatalf("Failed to load configuration: %v", err)
+	}
+
+	// Load and compile validators
+	validatorFiles, err := config.ResolveFileGlobs(configDir, cfg.Validation.ValidatorFiles)
+	if err != nil {
+		log.Fatalf("Failed to resolve validator files: %v", err)
+	}
+	validators := validation.NewValidatorRegistry()
+	if err := validators.Load(reg.ConfigDir(), reg.Schemas(), reg.FileSpecs()); err != nil {
+		log.Fatalf("Failed to load validators: %v", err)
+	}
+	_ = validatorFiles // TODO: pass to validators.LoadFromFiles() when implemented
+
+	// Connect to database
+	if cfg.Database.URL == "" {
+		log.Fatal("database.url is required (set in config file, DATABASE_URL env var, or --database.url flag)")
+	}
+	dbPool, err := db.NewPool(bgCtx, cfg.Database.URL, cfg.Database)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 	defer dbPool.Close()
 
-	// Load schemas and filespecs
-	// TODO: Need to revisit storing the object pools on the schemas. Since the registry will exist for as long as the
-	// celery worker does, the object pools could grow to an enormous size since there isn't a way to clear them after a
-	// parsing run. We should consider implementing/importing a better solution that allows clearing. Or, we could reload
-	// the registry each time a new parsing request comes in (simpler).
-	reg, err := config.Load(configDir)
-	if err != nil {
-		log.Fatalf("Failed to load configuration: %v", err)
-	}
-
-	// Load and compile validators from schemas and filespecs
-	validators := validation.NewValidatorRegistry()
-	if err := validators.Load(reg.ConfigDir(), reg.Schemas(), reg.FileSpecs()); err != nil {
-		log.Fatalf("Failed to load validators: %v", err)
-	}
-
 	// Load content types from database for error linking
-	// This is done once at startup and reused across parsing runs
-	contentTypes, err := db.LoadContentTypes(ctx, dbPool)
+	contentTypes, err := db.LoadContentTypes(bgCtx, dbPool)
 	if err != nil {
 		log.Fatalf("Failed to load content types: %v", err)
 	}
 	reg.LoadContentTypes(contentTypes)
 	log.Printf("Loaded %d content types from database", len(contentTypes))
 
-	// Get file parameters (in real code, these come from the job queue)
-	program := "TANF"
-	// program := "TRIBAL"
-	// program := "SSP"
-	// program := "FRA"
-	section := 1
-	// section := 2
-	// section := 3
-	// section := 4
+	// Route to server mode
+	switch cfg.Server.Mode {
+	case "local":
+		runLocal(bgCtx, cfg, dbPool, reg, validators)
+	case "celery":
+		log.Fatal("celery server mode not yet implemented")
+	case "grpc":
+		log.Fatal("gRPC server mode not yet implemented")
+	case "http":
+		log.Fatal("HTTP server mode not yet implemented")
+	default:
+		log.Fatalf("unknown server mode: %s", cfg.Server.Mode)
+	}
 
-	// TANF test files
-	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.FTP1.TS06"
-	filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.NDM1.TS53_fake.txt"
-	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/cat_4_edge_case.txt"
-	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.FTP2.TS06"
-	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.FTP3.TS06"
-	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.FTP4.TS06"
+	// Memory profiling (after work completes)
+	if cli.MemProfile != "" {
+		f, err := os.Create(cli.MemProfile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		pprof.WriteHeapProfile(f)
+		f.Close()
+	}
+}
 
-	// Tribal TANF test files
-	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.FTP1.TS142"
-	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.FTP2.TS142.txt"
-	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.FTP3.TS142"
-	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/tribal_section_4_fake.txt"
-
-	// SSP test files
-	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/small_ssp_section1.txt"
-	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ssp_section2_rec_oadsi_file.txt"
-	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.NDM3.MS24"
-	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.NDM4.MS24"
-
-	// FRA test files (Note: these files will fail on CopyFrom because they have malformed SSNs which rolls back the transaction. But they parse correctly.)
-	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/fra_ofa_test.csv"
-	// filePath := "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/fra_ofa_test.xlsx"
+// runLocal processes a single file in local mode (for development and testing).
+func runLocal(ctx context.Context, cfg *config.Config, dbPool *pgxpool.Pool, reg *config.Registry, validators *validation.ValidatorRegistry) {
+	local := cfg.Server.Local
+	if local.FilePath == "" {
+		log.Fatal("server.local.file-path is required in local mode")
+	}
+	if local.Program == "" {
+		log.Fatal("server.local.program is required in local mode")
+	}
+	if local.Section == 0 {
+		log.Fatal("server.local.section is required in local mode")
+	}
 
 	// Create a test datafile record to satisfy foreign key constraints
 	datafileParams := testutil.DefaultDatafileParams()
-	datafileParams.ProgramType = program
+	datafileParams.ProgramType = local.Program
 	datafileParams.Section = "Active Case Data"
 	datafileID, err := testutil.CreateTestDatafile(ctx, dbPool, datafileParams)
 	if err != nil {
@@ -118,29 +147,18 @@ func main() {
 		testutil.DeleteTestDatafile(ctx, dbPool, datafileID)
 	}()
 
-	// Create and run pipeline (S3 storage is nil for local mode; initialized on demand for S3 mode)
-	pipeln := pipeline.NewPipline(dbPool, reg, validators, pipeline.NewConfig(pipelineCfg), nil)
+	// Create and run pipeline
+	pipeln := pipeline.NewPipline(dbPool, reg, validators, pipeline.NewConfigFromUnified(cfg), nil)
 	result, err := pipeln.ProcessFile(ctx, pipeline.DataFileParams{
-		Program:    program,
-		Section:    section,
-		FilePath:   filePath,
+		Program:    local.Program,
+		Section:    local.Section,
+		FilePath:   local.FilePath,
 		DatafileID: datafileID,
 	})
 	if err != nil {
 		log.Fatalf("Failed to process file: %v", err)
 	}
 
-	// Memory profiling (after pipeline completes)
-	if *memprofile != "" {
-		f, err := os.Create(*memprofile)
-		if err != nil {
-			log.Fatal(err)
-		}
-		pprof.WriteHeapProfile(f)
-		f.Close()
-	}
-
-	// Report results
 	log.Printf("File processed successfully in %s", result.Duration)
 	for table, count := range result.RecordCounts {
 		log.Printf("Written to %s: %d records", table, count)

@@ -1,0 +1,72 @@
+# parser.yaml — Primary configuration for the Go parser.
+#
+# This file follows a Prometheus-inspired pattern: top-level blocks define
+# infrastructure and behavior, while file pointers (schema_files, filespec_files,
+# validator_files) reference secondary config that lives in its own directory.
+#
+# Override precedence (lowest → highest):
+#   1. Compiled defaults
+#   2. This file
+#   3. Environment variable interpolation (${VAR} syntax)
+#   4. CLI flags (--section.key=value)
+
+global:
+  log_level: info
+  config_dir: config
+
+# File pointers — globs resolved relative to config_dir
+schema_files:
+  - "schemas/**/*.yaml"
+filespec_files:
+  - "filespecs/**/*.yaml"
+
+# Server: how the parser receives work
+server:
+  mode: local              # celery | grpc | http | local
+  celery:
+    redis_url: "${REDIS_URL}"
+  grpc:
+    listen_address: ":50051"
+  http:
+    listen_address: ":8080"
+  local:
+    file_path: ""
+    program: ""
+    section: 0
+    fiscal_year: 0
+    quarter: 0
+    program_audit: false
+
+# Pipeline: worker pool tuning
+pipeline:
+  num_workers: 32
+  work_buffer_size: 256
+  pool_prewarm_size: 10000
+
+# Writer: database flush thresholds
+writer:
+  flush_threshold: 10000
+  error_flush_threshold: 10000
+
+# Validation: behavior and validator file pointers
+validation:
+  short_circuit: true
+  validator_files:
+    - "validation/validators.yaml"
+
+# Database: connection pool
+database:
+  url: "${DATABASE_URL}"
+  max_conns: 10
+  min_conns: 4
+  max_conn_lifetime: 30m
+  max_conn_idle_time: 5m
+  health_check_period: 30s
+
+# Storage: how the parser acquires files (used by all server modes except local)
+storage:
+  source: local            # local | s3
+  s3:
+    bucket: "${S3_BUCKET}"
+    endpoint: "${S3_ENDPOINT}"
+    region: "${AWS_DEFAULT_REGION}"

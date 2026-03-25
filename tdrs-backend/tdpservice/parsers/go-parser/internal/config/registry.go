@@ -31,7 +31,44 @@ type Registry struct {
 	configDir string
 }
 
+// LoadFromFiles builds a Registry from explicit file lists. The schemaFiles and
+// filespecFiles should be absolute paths (already resolved from glob patterns).
+// The schemasBaseDir is used to compute schema keys as relative paths.
+//
+// This is the primary loading method used by the new config system. It accepts
+// pre-resolved file paths instead of walking hardcoded directories.
+func LoadFromFiles(schemaFiles, filespecFiles []string, schemasBaseDir, configDir string) (*Registry, error) {
+	r := &Registry{
+		fileSpecs: make(map[string]*filespec.FileSpec),
+		schemas:   make(map[string]*schema.CompiledSchema),
+		metadata:  make(map[string]*DbSchemaMetadata),
+		configDir: configDir,
+	}
+
+	for _, path := range schemaFiles {
+		if err := r.loadSchemaFile(path, schemasBaseDir); err != nil {
+			return nil, fmt.Errorf("loading schema %s: %w", path, err)
+		}
+	}
+
+	for _, path := range filespecFiles {
+		if err := r.loadFileSpecFile(path); err != nil {
+			return nil, fmt.Errorf("loading filespec %s: %w", path, err)
+		}
+	}
+
+	if err := r.validateReferences(); err != nil {
+		return nil, fmt.Errorf("validating references: %w", err)
+	}
+
+	r.buildAllMetadata()
+	return r, nil
+}
+
 // Load reads all configuration files from the given directory and builds the Registry.
+// This is a backward-compatible wrapper around LoadFromFiles that walks the default
+// schemas/ and filespecs/ directories.
+//
 // Directory structure expected:
 //
 //	configDir/
@@ -48,107 +85,79 @@ type Registry struct {
 //	        ├── t2.yaml
 //	        └── t3.yaml
 func Load(configDir string) (*Registry, error) {
-	r := &Registry{
-		fileSpecs: make(map[string]*filespec.FileSpec),
-		schemas:   make(map[string]*schema.CompiledSchema),
-		metadata:  make(map[string]*DbSchemaMetadata),
-		configDir: configDir,
+	schemasDir := filepath.Join(configDir, "schemas")
+	filespecsDir := filepath.Join(configDir, "filespecs")
+
+	schemaFiles, err := collectYAMLFiles(schemasDir)
+	if err != nil {
+		return nil, fmt.Errorf("collecting schema files: %w", err)
 	}
 
-	// Load schemas first (FileSpecs reference them)
-	if err := r.loadSchemas(); err != nil {
-		return nil, fmt.Errorf("loading schemas: %w", err)
+	filespecFiles, err := collectYAMLFiles(filespecsDir)
+	if err != nil {
+		return nil, fmt.Errorf("collecting filespec files: %w", err)
 	}
 
-	// Load FileSpecs
-	if err := r.loadFileSpecs(); err != nil {
-		return nil, fmt.Errorf("loading filespecs: %w", err)
-	}
-
-	// Validate that all FileSpec schema references are valid
-	if err := r.validateReferences(); err != nil {
-		return nil, fmt.Errorf("validating references: %w", err)
-	}
-
-	// Build database metadata from schema field definitions
-	r.buildAllMetadata()
-
-	return r, nil
+	return LoadFromFiles(schemaFiles, filespecFiles, schemasDir, configDir)
 }
 
-// loadSchemas walks the schemas directory and loads all .yaml files.
-func (r *Registry) loadSchemas() error {
-	schemasDir := filepath.Join(r.configDir, "schemas")
-
-	return filepath.Walk(schemasDir, func(path string, info os.FileInfo, err error) error {
+// collectYAMLFiles walks a directory and returns all .yaml file paths.
+func collectYAMLFiles(dir string) ([]string, error) {
+	var files []string
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-
-		// Skip directories and non-YAML files
-		if info.IsDir() || !strings.HasSuffix(path, ".yaml") {
-			return nil
+		if !info.IsDir() && strings.HasSuffix(path, ".yaml") {
+			files = append(files, path)
 		}
-
-		// Read and parse the schema file
-		data, err := os.ReadFile(path)
-		if err != nil {
-			return fmt.Errorf("reading %s: %w", path, err)
-		}
-
-		var schemaDef schema.SchemaDef
-		if err := yaml.Unmarshal(data, &schemaDef); err != nil {
-			return fmt.Errorf("parsing %s: %w", path, err)
-		}
-
-		// Compute the schema key (relative path without .yaml extension)
-		// e.g., "config/schemas/tanf/t1.yaml" -> "tanf/t1"
-		relPath, err := filepath.Rel(schemasDir, path)
-		if err != nil {
-			return fmt.Errorf("computing relative path for %s: %w", path, err)
-		}
-		key := strings.TrimSuffix(relPath, ".yaml")
-
-		// Compile the schema and set its path
-		compiled := schemaDef.Compile()
-		compiled.Path = key
-
-		r.schemas[key] = compiled
 		return nil
 	})
+	return files, err
 }
 
-// loadFileSpecs reads all .yaml files from the filespecs directory.
-func (r *Registry) loadFileSpecs() error {
-	filespecsDir := filepath.Join(r.configDir, "filespecs")
+// loadSchemaFile reads, parses, and compiles a single schema YAML file.
+// The key is derived from the file's path relative to schemasBaseDir.
+func (r *Registry) loadSchemaFile(path, schemasBaseDir string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("reading %s: %w", path, err)
+	}
 
-	return filepath.Walk(filespecsDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
+	var schemaDef schema.SchemaDef
+	if err := yaml.Unmarshal(data, &schemaDef); err != nil {
+		return fmt.Errorf("parsing %s: %w", path, err)
+	}
 
-		// Skip directories and non-YAML files
-		if info.IsDir() || !strings.HasSuffix(path, ".yaml") {
-			return nil
-		}
+	// Compute the schema key (relative path without .yaml extension)
+	// e.g., "config/schemas/tanf/t1.yaml" -> "tanf/t1"
+	relPath, err := filepath.Rel(schemasBaseDir, path)
+	if err != nil {
+		return fmt.Errorf("computing relative path for %s: %w", path, err)
+	}
+	key := strings.TrimSuffix(relPath, ".yaml")
 
-		// Read and parse the file spec file
-		data, err := os.ReadFile(path)
-		if err != nil {
-			return fmt.Errorf("reading %s: %w", path, err)
-		}
+	compiled := schemaDef.Compile()
+	compiled.Path = key
+	r.schemas[key] = compiled
+	return nil
+}
 
-		var specDef filespec.FileSpec
-		if err := yaml.Unmarshal(data, &specDef); err != nil {
-			return fmt.Errorf("parsing %s: %w", path, err)
-		}
+// loadFileSpecFile reads and parses a single filespec YAML file.
+func (r *Registry) loadFileSpecFile(path string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("reading %s: %w", path, err)
+	}
 
-		// Index by "PROGRAM:SECTION"
-		key := fmt.Sprintf("%s:%d", specDef.Program, specDef.Section)
-		r.fileSpecs[key] = &specDef
+	var specDef filespec.FileSpec
+	if err := yaml.Unmarshal(data, &specDef); err != nil {
+		return fmt.Errorf("parsing %s: %w", path, err)
+	}
 
-		return nil
-	})
+	key := fmt.Sprintf("%s:%d", specDef.Program, specDef.Section)
+	r.fileSpecs[key] = &specDef
+	return nil
 }
 
 // validateReferences ensures all schema references in FileSpecs point to loaded schemas.

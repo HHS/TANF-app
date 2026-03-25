@@ -20,29 +20,42 @@ type PipelineConfig struct {
 	// Validation configuration
 	ShortCircuit bool // Skip field/consistency validators when precheck or group validators fail
 
-	// Reader configuration
-	ReaderSource string        // "local" (default), "s3"
+	// Storage configuration
+	ReaderSource string // "local" (default), "s3"
 	S3           config.S3Config
 }
 
 // DefaultConfig returns production defaults.
 func DefaultConfig() PipelineConfig {
-	return NewConfig(config.DefaultPipelineYAML())
+	return NewConfigFromUnified(config.DefaultConfig())
 }
 
 // TestConfig returns conservative defaults for integration tests.
 func TestConfig() PipelineConfig {
+	return NewConfigFromUnified(config.TestConfig())
+}
+
+// NewConfigFromUnified creates a PipelineConfig from the unified Config.
+func NewConfigFromUnified(cfg *config.Config) PipelineConfig {
+	readerSource := cfg.Storage.Source
+	if readerSource == "" {
+		readerSource = "local"
+	}
+
 	return PipelineConfig{
-		NumWorkers:     2,
-		WorkBufferSize: 64,
-		PoolPrewarmSize: 1000,
-		FlushThreshold:      50000,
-		ErrorFlushThreshold: 100000,
-		ShortCircuit:        true,
+		NumWorkers:          cfg.Pipeline.NumWorkers,
+		WorkBufferSize:      cfg.Pipeline.WorkBufferSize,
+		PoolPrewarmSize:     cfg.Pipeline.PoolPrewarmSize,
+		FlushThreshold:      cfg.Writer.FlushThreshold,
+		ErrorFlushThreshold: cfg.Writer.ErrorFlushThreshold,
+		ShortCircuit:        cfg.Validation.ShortCircuit,
+		ReaderSource:        readerSource,
+		S3:                  cfg.Storage.S3,
 	}
 }
 
-// NewConfig creates a PipelineConfig from the loaded YAML configuration.
+// Deprecated: NewConfig creates a PipelineConfig from the legacy PipelineYAML.
+// Use NewConfigFromUnified instead.
 func NewConfig(cfg *config.PipelineYAML) PipelineConfig {
 	readerSource := cfg.Reader.Source
 	if readerSource == "" {

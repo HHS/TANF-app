@@ -9,7 +9,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// PipelineYAML is the top-level structure of config/pipeline.yaml.
+// Deprecated: PipelineYAML is the legacy top-level structure of config/pipeline.yaml.
+// Use Config (from config.go) instead, which supports the new parser.yaml format.
 type PipelineYAML struct {
 	Pipeline   PipelineWorkerConfig `yaml:"pipeline"`
 	Writer     WriterConfig         `yaml:"writer"`
@@ -46,11 +47,13 @@ type WriterConfig struct {
 
 // ValidationConfig controls validation behavior.
 type ValidationConfig struct {
-	ShortCircuit bool `yaml:"short_circuit"` // Skip field/consistency validators when precheck or group validators fail
+	ShortCircuit   bool     `yaml:"short_circuit"`   // Skip field/consistency validators when precheck or group validators fail
+	ValidatorFiles []string `yaml:"validator_files"`  // Glob patterns for validator definition files (resolved relative to config_dir)
 }
 
 // DatabaseConfig holds connection pool settings.
 type DatabaseConfig struct {
+	URL               string        `yaml:"url"`                // Database connection URL (supports ${DATABASE_URL} interpolation)
 	MaxConns          int           `yaml:"max_conns"`
 	MinConns          int           `yaml:"min_conns"`
 	MaxConnLifetime   time.Duration `yaml:"max_conn_lifetime"`
@@ -58,7 +61,8 @@ type DatabaseConfig struct {
 	HealthCheckPeriod time.Duration `yaml:"health_check_period"`
 }
 
-// DefaultPipelineYAML returns production defaults matching the previously hardcoded values.
+// Deprecated: DefaultPipelineYAML returns legacy production defaults.
+// Use DefaultConfig() from config.go instead.
 func DefaultPipelineYAML() *PipelineYAML {
 	return &PipelineYAML{
 		Pipeline: PipelineWorkerConfig{
@@ -83,8 +87,9 @@ func DefaultPipelineYAML() *PipelineYAML {
 	}
 }
 
-// LoadPipelineConfig reads config/pipeline.yaml from the given config directory.
-// If the file does not exist, production defaults are returned.
+// Deprecated: LoadPipelineConfig reads the legacy config/pipeline.yaml format.
+// Use LoadConfig() from loader.go instead, which supports parser.yaml with
+// environment interpolation and falls back to pipeline.yaml automatically.
 func LoadPipelineConfig(configDir string) (*PipelineYAML, error) {
 	path := filepath.Join(configDir, "pipeline.yaml")
 
