@@ -1,1 +1,4 @@
 *.png
+build/
+coverage.out
+test-results.xml

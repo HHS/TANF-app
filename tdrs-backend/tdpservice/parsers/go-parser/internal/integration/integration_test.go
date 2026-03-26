@@ -60,7 +60,7 @@ func TestMain(m *testing.M) {
 	}
 
 	// Load validators
-	testValidators, err = validation.NewValidatorRegistry(cfg, testRegistry)
+	testValidators, err = validation.NewRegistry(cfg, testRegistry)
 	if err != nil {
 		log.Fatalf("Failed to load validators: %v", err)
 	}
