@@ -41,6 +41,21 @@ Then('Admin Alex can verify the Arizona FRA submission', () => {
   df.table_first_row_contains('fra.csv')
   df.table_first_row_contains('Partially Accepted with Errors')
 })
+
+// PIA steps
+When('Admin Alex views the California PIA Submission History', () => {
+  cy.visit('/data-files')
+  cy.get('h1').contains('TANF Data Files').should('exist')
+  df.fillStt('California')
+  df.fillFyQProgram('2024', '', 'PIA')
+  cy.get('button').contains('Submission History').click()
+})
+
+Then('Admin Alex can verify the California PIA submission', () => {
+  df.table_first_row_contains('PI_Audit_space-fill.txt')
+  df.table_first_row_contains('Accepted with Errors')
+})
+
 ///////////////////////////////////////////////////////////////
 
 /////////////////////// Regional Steps ////////////////////////
@@ -94,28 +109,4 @@ Given('FRA Data Analyst Fred submits a file', () => {
       df.validateSmallCorrectFile()
     }
   })
-})
-
-///////////////////////////////////////////////////////////////
-
-Given('The admin logs in', () => {
-  cy.visit('/')
-  cy.adminLogin('cypress-admin@teamraft.com')
-})
-
-Then('{string} can see submission history', (username) => {
-  cy.get('h3').contains('Submission History').should('exist', { timeout: 5000 })
-  cy.get('caption')
-    .contains('Section 1 - Active Case Data')
-    .should('exist', { timeout: 5000 })
-})
-
-Then('{string} cannot see the upload form', (username) => {
-  cy.get('button').contains('Current Submission').should('not.exist')
-  cy.get('#active_case_data').should('not.exist')
-})
-
-Then('{string} sees the file in submission history', (username) => {
-  cy.get('th').contains('small_tanf_section1.txt').should('exist')
-  cy.get('th').contains('Accepted with Errors').should('exist')
 })
