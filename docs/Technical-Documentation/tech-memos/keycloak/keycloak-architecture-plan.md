@@ -68,8 +68,6 @@ Cloud.gov:   gorouter → nginx ($PORT) → Keycloak (localhost:8081)
 Local:       browser (localhost:8443) → nginx (:8080) → Keycloak (:8081)
 ```
 
-The `entrypoint.sh` process manager starts Keycloak, waits for health, starts nginx, then monitors both — if either dies, the container exits.
-
 ### Routing
 
 Each Keycloak instance is deployed with two Cloud Foundry routes:
@@ -83,7 +81,7 @@ Django settings split these: `KEYCLOAK_SERVER_URL` (internal, server-to-server) 
 
 ### Network Policies
 
-Cloud Foundry network policies are required for every app that needs to reach Keycloak over the internal route. The `deploy.sh` script creates these automatically per space:
+Cloud Foundry network policies are required for every app that needs to reach Keycloak over the internal route.
 
 - **Dev**: 6 policies (3 backends + 3 celery workers)
 - **Staging**: 4 policies (2 backends + 2 celery workers)
@@ -113,11 +111,12 @@ Two identity provider paths, both brokered through Keycloak:
 
 **AMS (ACF staff):** Same flow, except `kc_idp_hint=ams`, AMS uses `client_secret_post` authentication, and user lookup is by `hhs_id`.
 
-**Key enforcement:** Users with `@acf.hhs.gov` emails **must** use AMS. This is enforced in `KeycloakOIDCBackend.verify_claims()`.
+**Key enforcement:** Users with `@acf.hhs.gov` emails **must** use AMS. This is enforceable via claims.
 
 ### PLG / Grafana Authentication
 
-The **production Keycloak instance** manages authentication for the PLG observability stack. Grafana uses the `tdp-grafana` Keycloak client. Login.gov is hidden from the Keycloak login page via `hideOnLogin: true` on the Login.gov IdP — this is safe because the TDP frontend bypasses the login page entirely using `kc_idp_hint=login-gov`. Grafana's `auth_url` includes `?prompt=login` to force re-authentication, ensuring that an existing Keycloak SSO session (e.g., from a prior Login.gov login) does not automatically grant Grafana access. The result is that Grafana's login page shows only the AMS identity provider button and the Keycloak local password form.
+The **production Keycloak instance** manages authentication for the PLG observability stack. Grafana uses the `tdp-grafana` Keycloak client. Login.gov is hidden from the Keycloak login page
+this is safe because the TDP frontend bypasses the login page entirely using `kc_idp_hint=login-gov`. Grafana's `auth_url` will include `?prompt=login` to force re-authentication, ensuring that an existing Keycloak SSO session (e.g., from a prior Login.gov login) does not automatically grant Grafana access. The result is that Grafana's login page shows only the AMS identity provider button and the Keycloak local password form.
 
 Users **must** belong to one of three Keycloak groups to access Grafana. Users not in any recognized group are denied login entirely (`role_attribute_strict = true` with no fallback role).
 
@@ -129,11 +128,11 @@ Users **must** belong to one of three Keycloak groups to access Grafana. Users n
 | *(any other / none)* | — | — | **Login denied** |
 | Login.gov users | Cannot access (Login.gov hidden via `hideOnLogin`, SSO blocked by `prompt=login`) | — | N/A |
 
-Grafana has two orgs: **Admin** (ID 1) for system administrators and developers, and **DIGIT** (ID 3) for the DIGIT operations team. Org assignment is controlled by `org_mapping` in Grafana's `[auth.generic_oauth]` config, which maps Keycloak group names to specific Grafana org IDs and roles. `auto_assign_org` is disabled so that org placement is handled entirely by the mapping — users not matching any rule are denied.
+Grafana has two orgs: **Admin** (ID 1) for system administrators and developers, and **DIGIT** (ID 3) for the DIGIT data team. Org assignment is controlled by `org_mapping` in Grafana's `[auth.generic_oauth]` config, which maps Keycloak group names to specific Grafana org IDs and roles. `auto_assign_org` is disabled so that org placement is handled entirely by the mapping — users not matching any rule are denied.
 
 Developer accounts for Grafana are **local Keycloak accounts** in the prod instance — manually created in the admin console and assigned to the `developer` group. This is a practical exception to the "Django is source of truth" rule: these accounts avoid requiring developers to exist in the prod Django database.
 
-Grafana currently runs behind the frontend nginx proxy at a subpath. Grafana **will be** moved to a public URL at `grafana.app.cloud.gov`, which will require updating the `tdp-grafana` client's redirect URIs, web origins, and post-logout redirect URI in the Keycloak realm configuration, as well as Grafana's `auth_url` and `signout_redirect_url` in `custom.ini`.
+Grafana currently runs behind the frontend nginx proxy at a subpath. Grafana **will be** moved to a public URL at `grafana.app.cloud.gov`.
 
 Role mapping uses a JMESPath expression on the `groups` token claim (no fallback — unrecognized users denied):
 ```
@@ -158,7 +157,7 @@ The Django backend uses `mozilla-django-oidc` as a standard OIDC relying party l
 
 **What the library handles:** Authorization redirect with state/nonce, code → token exchange, JWT signature verification via JWKS, session creation/renewal via `SessionRefresh` middleware, CSRF protection.
 
-**What `KeycloakOIDCBackend` customizes:** User lookup by `login_gov_uuid`/`hhs_id` (not just email), ACF email domain enforcement, account deactivation/approval checks, `kc_idp_hint` passthrough to skip the Keycloak login page.
+**What a `KeycloakOIDCBackend` customizes:** User lookup by `login_gov_uuid`/`hhs_id` (not just email), ACF email domain enforcement, account deactivation/approval checks, `kc_idp_hint` passthrough to skip the Keycloak login page.
 
 ### User Sync Architecture
 
@@ -202,7 +201,49 @@ The frontend is unaware of which auth flow (legacy or Keycloak) is handling a gi
 
 ---
 
-## 7. Realm Configuration
+## 7. External Tool and API Client Authentication
+
+### The Problem with Hand-Rolled Auth
+
+The legacy authentication flow is tightly coupled to the browser: Login.gov and AMS both require interactive redirects, CSRF-protected callbacks, and browser-managed session cookies. This makes it difficult — sometimes impossible — for external tools to authenticate against the Django API. Testing API endpoints with Postman requires manually extracting session cookies from a browser. Building a CLI tool to submit files, download reports, or automate workflows means reverse-engineering the custom OIDC flow and managing session state outside a browser context.
+
+### What Keycloak Enables
+
+Because Keycloak is a standards-compliant OIDC provider, it supports multiple OAuth2 grant types beyond the browser-based Authorization Code flow. Critically, the user-facing grant types (Authorization Code and Device Authorization) still route through the configured identity providers — Login.gov and AMS. The user always authenticates with their real IdP credentials; Keycloak brokers the flow identically regardless of whether the request originated from a browser, Postman, or a CLI tool. **No custom auth flows are introduced** — these are standard OAuth2 grants that Keycloak supports natively, all backed by the same IdP configuration.
+
+User-facing tools (Postman, CLI) are registered as **public clients** — they have a client ID but **no client secret**. This is the same model used by SPAs and native/mobile apps in OAuth2. Security is provided by [PKCE (Proof Key for Code Exchange)](https://oauth.net/2/pkce/), which binds the authorization request to the specific client session without requiring a shared secret. This means there is no sensitive credential to distribute to users or embed in CLI binaries. Only server-side clients (`tdp-django`, `tdp-grafana`) remain confidential with secrets that never leave the server.
+
+| Grant Type | Use Case | Client Type | IdP Authentication | How It Works |
+|------------|----------|-------------|--------------------|--------------|
+| **Authorization Code + PKCE** | Postman, Insomnia, Bruno | **Public** (no secret) | **Yes** — user authenticates via Login.gov or AMS through Keycloak | Tool opens a browser for Keycloak login, which redirects to the configured IdP. User authenticates normally, tool receives a token via redirect. PKCE secures the flow without a client secret. Postman and similar tools have built-in support for this — point them at Keycloak's well-known endpoint and they handle the rest. |
+| **Device Authorization Grant** | CLI tools (e.g., a Go command-line tool for STT file submission) | **Public** (no secret) | **Yes** — user authenticates via Login.gov or AMS through Keycloak | The CLI displays a URL and code, the user opens a browser and authenticates through Keycloak → Login.gov/AMS as usual, and the CLI polls for the resulting token. No secret is needed — the device flow's out-of-band verification provides security. This is the same flow used by `gh auth login`, `aws sso login`, and `gcloud auth login` — familiar to developers and secure on headless systems. |
+| **Client Credentials** | Internal machine-to-machine only (CI/CD, internal batch jobs) | **Confidential** (server-side secret) | **No** — service account, no user context | A dedicated Keycloak client authenticates with its own credentials. **Not for user-facing data submission** — limited to internal operational tasks where no user identity is needed. |
+| **Direct Access Grant** (Resource Owner Password) | Local development and testing only | **Public or Confidential** | **No** — Keycloak local accounts only | Username/password exchange directly for a token. Useful for rapid local testing. **Must be disabled in production.** |
+
+### Practical Examples
+
+**Postman / API testing:** Configure Postman's OAuth2 authorization with the Keycloak discovery URL (`/realms/tdp/.well-known/openid-configuration`), the public client ID (e.g., `tdp-cli` — no secret needed), PKCE enabled (S256), and the appropriate scopes. Click "Get New Access Token" from Postman, authenticate via Login.gov or AMS in the popup browser (exactly as you would in the TDP application), and Postman automatically attaches the bearer token to requests. No more copying session cookies, no secrets to manage.
+
+**Go CLI tool for STT file submission:** Register a dedicated Keycloak client (e.g., `tdp-cli`) with the Device Authorization Grant enabled. The CLI initiates the device flow, the user opens a browser and authenticates through Keycloak → Login.gov (or AMS) with their normal credentials, and the CLI receives tokens it can use to call Django API endpoints — upload TANF data files, download error reports, check submission status. The user's identity, STT assignment, and permissions are all carried in the token claims, so Django enforces the same authorization rules as the web application. Token refresh is handled automatically by standard OAuth2 libraries.
+
+**Internal CI/CD automation:** Register a service-account client with the Client Credentials grant for internal operational tasks only (e.g., health checks, integration test setup). This flow has no user identity and should **not** be used for data submission or any action that requires user-level authorization.
+
+### Implementation Considerations
+
+- **Public clients for user-facing tools, confidential clients for server-side only.** Register tools like Postman and CLI apps as public Keycloak clients with PKCE — no client secret to distribute or leak. Only server-side services (Django, Grafana) should be confidential clients. Create purpose-specific clients (e.g., `tdp-cli`, `tdp-ci`) with only the grant types and scopes they need, rather than reusing `tdp-django`. This follows the principle of least privilege and makes it easy to revoke access independently.
+- **Django must accept bearer tokens.** Django sessions would be created from a OIDC callback via browser based authentication. For API-only clients, Django needs a middleware or authentication backend that validates Keycloak-issued bearer tokens (JWT verification against the JWKS endpoint) without requiring a session. `mozilla-django-oidc` supports this via `OIDCAuthentication` for Django REST Framework, or a lightweight custom middleware can validate the token and resolve the user from token claims.
+- **Token claims carry user context.** The custom `tdp-user-attributes` client scope (section 8) already maps user attributes and group memberships into tokens. External tools receive the same claims as browser-based sessions, so Django's authorization logic (permission checks, STT scoping, approval status) works identically regardless of how the client authenticated.
+- **Rate limiting and audit.** API clients can generate significantly more traffic than browser users. Consider per-client rate limits and ensure that token-authenticated requests are logged with the client ID for audit purposes.
+
+### Why This Matters
+
+The ability to authenticate external tools against the Django API without direct browser interaction is not just a developer convenience — it opens up operational capabilities that the legacy auth architecture cannot support: CLI-based data submission for STTs, scripted report generation, integration testing in CI, and admin tooling that doesn't require a browser. Keycloak provides all of this through standard OAuth2 grants, with no custom protocol work required. Users still authenticate through the same Login.gov and AMS identity providers — the only difference is how the token is delivered to the requesting tool.
+
+This also simplifies providing authenticated access to ACF Tech, security teams, and other auditors who need to interact with staging environments for security assessments, penetration testing, or compliance reviews. With the legacy auth flow, granting API-level access to external teams meant authenticating via the browser and pulling the cookies into their tools, or building one-off workarounds. With Keycloak, auditors can authenticate using standard tools (Postman, Burp Suite, custom scripts) via the public client and PKCE — no secrets to provision, no custom onboarding, and a clear audit trail of who accessed what. Access can be scoped and revoked at the Keycloak client level without affecting the rest of the system.
+
+---
+
+## 8. Realm Configuration
 
 ### Approach
 
@@ -230,7 +271,7 @@ The `tdp-user-attributes` client scope includes protocol mappers for: `login_gov
 
 ---
 
-## 8. Migration Strategy: Canary Cutover
+## 9. Migration Strategy: Canary Cutover
 
 ### Approach
 
@@ -285,7 +326,7 @@ After running at `KEYCLOAK_AUTH_PERCENTAGE=100` in production for at least 2 wee
 
 ---
 
-## 9. Deployment and Configuration Management
+## 10. Deployment and Configuration Management
 
 ### Deployment Flow
 
@@ -318,7 +359,7 @@ All secrets are stored in Cloud Foundry environment variables or user-provided s
 
 ---
 
-## 10. Security Considerations
+## 11. Security Considerations
 
 ### Credential Isolation
 
@@ -362,7 +403,7 @@ Keycloak runs on Cloud.gov infrastructure and falls within the existing Cloud.go
 
 ---
 
-## 11. Disaster Recovery
+## 12. Disaster Recovery
 
 ### Failure Modes
 
@@ -387,7 +428,7 @@ Key point: Django sessions are independent of Keycloak. A Keycloak outage blocks
 
 ---
 
-## 12. Monitoring
+## 13. Monitoring
 
 ### Health Checks
 
@@ -441,7 +482,7 @@ Keycloak exposes a `/metrics` endpoint when `KC_METRICS_ENABLED=true` is set. Pr
 
 ---
 
-## 13. Keycloak Upgrade Strategy
+## 14. Keycloak Upgrade Strategy
 
 Keycloak is pinned at version 26.0 in the Dockerfile (`quay.io/keycloak/keycloak:26.0`). Upgrades should follow this process:
 
@@ -456,7 +497,7 @@ Keycloak stores its schema version in the database and runs automatic migrations
 
 ---
 
-## 14. Risks and Dependencies
+## 15. Risks and Dependencies
 
 ### External Dependencies
 
@@ -488,7 +529,7 @@ Keycloak stores its schema version in the database and runs automatic migrations
 
 ---
 
-## 15. Production Readiness Checklist
+## 16. Production Readiness Checklist
 
 - [ ] Keycloak deployed to all three spaces (dev, staging, prod)
 - [ ] Login.gov sandbox flow validated end-to-end (dev + staging)
