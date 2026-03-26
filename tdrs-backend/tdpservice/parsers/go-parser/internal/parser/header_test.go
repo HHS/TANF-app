@@ -43,22 +43,6 @@ func buildHeaderSchema() *schema.CompiledSchema {
 	return cs
 }
 
-// Real header line layout (23 bytes):
-//
-//	Position: 0         1         2
-//	          0123456789012345678901 23
-//	          HEADER20241A06   TAN1ED
-//	          ^^^^^^                    title       (0-6)
-//	                ^^^^                year        (6-10)
-//	                    ^               quarter     (10-11)
-//	                     ^              type        (11-12)
-//	                      ^^            state_fips  (12-14)
-//	                        ^^^         tribe_code  (14-17)
-//	                           ^^^      program_type(17-20)
-//	                              ^     edit        (20-21)
-//	                               ^    encryption  (21-22)
-//	                                ^   update      (22-23)
-
 func TestParseHeader_NilRow(t *testing.T) {
 	sch := buildHeaderSchema()
 
