@@ -32,4 +32,22 @@ describe('NoMatch', () => {
     const header = getByText('Page not found')
     expect(header).toBeInTheDocument()
   })
+
+  it('does not attempt to focus when header ref is null', () => {
+    const useRefSpy = jest
+      .spyOn(React, 'useRef')
+      .mockReturnValueOnce({ current: null })
+    const store = mockStore(initialState)
+
+    render(
+      <MemoryRouter>
+        <Provider store={store}>
+          <NoMatch />
+        </Provider>
+      </MemoryRouter>
+    )
+
+    expect(document.title).toEqual('Page not found - TANF Data Portal')
+    useRefSpy.mockRestore()
+  })
 })
