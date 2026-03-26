@@ -1,5 +1,5 @@
 ARG REGISTRY_OWNER=hhs
-ARG BASE_TAG=keycloak
+ARG BASE_TAG=keycloak-integration
 
 FROM ghcr.io/${REGISTRY_OWNER}/tdp-backend-base:${BASE_TAG}
 
