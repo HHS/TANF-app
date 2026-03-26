@@ -7,8 +7,8 @@ import (
 	"runtime/pprof"
 
 	"go-parser/internal/config"
-	"go-parser/internal/mode/celery"
-	"go-parser/internal/mode/local"
+	"go-parser/internal/server/celery"
+	"go-parser/internal/server/local"
 	"go-parser/internal/validation"
 )
 
