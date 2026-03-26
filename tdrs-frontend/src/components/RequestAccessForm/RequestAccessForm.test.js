@@ -171,7 +171,12 @@ describe('RequestAccessForm', () => {
 
     // Mock dispatch to test what dispatchedThunk dispatches internally
     const mockDispatch = jest.fn()
-    await dispatchedThunk(mockDispatch)
+    const mockGetState = () => ({
+      auth: {
+        user: defaultUser,
+      },
+    })
+    await dispatchedThunk(mockDispatch, mockGetState)
 
     // test what mockDispatch was called with (if requestAccess dispatches success action)
     expect(mockDispatch).toHaveBeenCalledWith(
@@ -310,8 +315,15 @@ describe('RequestAccessForm', () => {
       initialValues,
     }
 
+    const currentProfileUser = {
+      ...defaultUser,
+      first_name: 'John',
+      last_name: 'Doe',
+      regions: [],
+    }
+
     const storeOverrides = {
-      auth: { authenticated: true, user: defaultUser },
+      auth: { authenticated: true, user: currentProfileUser },
       stts: { loading: false, sttList: defaultSTTList },
     }
 
@@ -338,7 +350,12 @@ describe('RequestAccessForm', () => {
     )[0]
 
     const mockDispatch = jest.fn()
-    await dispatchedThunk(mockDispatch)
+    const mockGetState = () => ({
+      auth: {
+        user: currentProfileUser,
+      },
+    })
+    await dispatchedThunk(mockDispatch, mockGetState)
 
     expect(mockDispatch).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -362,8 +379,15 @@ describe('RequestAccessForm', () => {
       initialValues,
     }
 
+    const currentProfileUser = {
+      ...defaultUser,
+      first_name: 'John',
+      last_name: 'Doe',
+      regions: [],
+    }
+
     const storeOverrides = {
-      auth: { authenticated: true, user: defaultUser },
+      auth: { authenticated: true, user: currentProfileUser },
       stts: { loading: false, sttList: defaultSTTList },
     }
 
@@ -406,7 +430,12 @@ describe('RequestAccessForm', () => {
     )[0]
 
     const mockDispatch = jest.fn()
-    await dispatchedThunk(mockDispatch)
+    const mockGetState = () => ({
+      auth: {
+        user: currentProfileUser,
+      },
+    })
+    await dispatchedThunk(mockDispatch, mockGetState)
 
     expect(mockDispatch).toHaveBeenNthCalledWith(1, {
       type: PATCH_REQUEST_USER_UPDATE,
@@ -416,7 +445,15 @@ describe('RequestAccessForm', () => {
     })
     expect(mockDispatch).toHaveBeenNthCalledWith(3, {
       type: SET_AUTH,
-      payload: { user: apiUserResponse },
+      payload: {
+        user: {
+          ...apiUserResponse,
+          first_name: currentProfileUser.first_name,
+          last_name: currentProfileUser.last_name,
+          stt: currentProfileUser.stt,
+          regions: currentProfileUser.regions,
+        },
+      },
     })
 
     expect(mockDispatch).not.toHaveBeenCalledWith(

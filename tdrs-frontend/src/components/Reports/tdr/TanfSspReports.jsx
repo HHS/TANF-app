@@ -46,7 +46,9 @@ const TanfSspReports = ({ stt, isRegionalStaff, isDataAnalyst }) => {
             {`${stt.name} - ${fileTypeInputValue.toUpperCase()} - Fiscal Year ${yearInputValue} - ${quarters[quarterInputValue]}`}
           </h2>
 
-          {isDataAnalyst && <FeedbackReportAlert />}
+          {(isDataAnalyst || isRegionalStaff) && (
+            <FeedbackReportAlert stt={isRegionalStaff ? stt : null} />
+          )}
 
           {localAlert.active &&
             localAlert.message === POLLING_TIMEOUT_MESSAGE &&

@@ -1,8 +1,6 @@
 from __future__ import absolute_import
 
 import logging
-import os
-
 from django.conf import settings
 
 # This will make sure the app is always imported when

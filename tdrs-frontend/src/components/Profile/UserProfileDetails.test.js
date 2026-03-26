@@ -169,4 +169,92 @@ describe('UserProfileDetails component', () => {
     expect(screen.queryByText('Reporting FRA')).toBeInTheDocument()
     expect(screen.getByText('No')).toBeInTheDocument()
   })
+
+  it('renders pending name changes when requested', () => {
+    const pendingChangeRequests = [
+      {
+        field_name: 'first_name',
+        requested_value: 'Alicia',
+        status: 'pending',
+      },
+    ]
+
+    renderWithStore(
+      <UserProfileDetails
+        user={defaultUser}
+        isAMSUser={false}
+        pendingChangeRequests={pendingChangeRequests}
+      />
+    )
+
+    const nameRow = screen.getByText('Name').closest('.grid-row')
+    expect(nameRow).toBeInTheDocument()
+    expect(within(nameRow).getByText(/requested change/i)).toBeInTheDocument()
+    expect(within(nameRow).getByText('Alicia')).toBeInTheDocument()
+  })
+
+  it('renders pending regional office changes for AMS users', () => {
+    const amsUser = {
+      ...defaultUser,
+      stt: null,
+      roles: [{ name: 'AMS Reviewer' }],
+      regions: [{ id: 4, name: 'Atlanta' }],
+      account_approval_status: 'Approved',
+    }
+    const pendingChangeRequests = [
+      {
+        field_name: 'regions',
+        requested_value: '[1, 2]',
+        status: 'pending',
+      },
+    ]
+
+    renderWithStore(
+      <UserProfileDetails
+        user={amsUser}
+        isAMSUser={true}
+        pendingChangeRequests={pendingChangeRequests}
+      />,
+      {
+        auth: {
+          authenticated: true,
+          user: amsUser,
+        },
+      }
+    )
+
+    const regionRow = screen
+      .getByText('Regional Office(s)')
+      .closest('.grid-row')
+    expect(regionRow).toBeInTheDocument()
+    expect(within(regionRow).getByText(/requested change/i)).toBeInTheDocument()
+    expect(within(regionRow).getByText('Region 1 (Boston)')).toBeInTheDocument()
+    expect(
+      within(regionRow).getByText('Region 2 (New York)')
+    ).toBeInTheDocument()
+  })
+
+  it('renders pending FRA access changes for state users', () => {
+    const pendingChangeRequests = [
+      {
+        field_name: 'has_fra_access',
+        requested_value: 'True',
+        status: 'pending',
+      },
+    ]
+
+    renderWithStore(
+      <UserProfileDetails
+        user={defaultUser}
+        isAMSUser={false}
+        hasFRAAccess={false}
+        pendingChangeRequests={pendingChangeRequests}
+      />
+    )
+
+    const fraRow = screen.getByText('Reporting FRA').closest('.grid-row')
+    expect(fraRow).toBeInTheDocument()
+    expect(within(fraRow).getByText(/requested change/i)).toBeInTheDocument()
+    expect(within(fraRow).getByText('Yes')).toBeInTheDocument()
+  })
 })

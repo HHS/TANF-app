@@ -19,6 +19,10 @@ import { useSearchParams } from 'react-router-dom'
 import { accountCanSelectStt } from '../../selectors/auth'
 import { usePollingTimer } from '../../hooks/usePollingTimer'
 import { getCurrentFiscalYear, quarters } from './utils'
+import {
+  getFlagOrDefault,
+  selectFeatureFlags,
+} from '../../selectors/featureFlags'
 
 const ReportsContext = createContext()
 
@@ -30,21 +34,21 @@ export const useReportsContext = () => {
   return context
 }
 
-// Valid file types for each report mode
-const VALID_FILE_TYPES = {
-  reports: [
-    'tanf',
-    'ssp-moe',
-    ...(process.env.REACT_APP_SHOW_PIA === 'true'
-      ? ['program-integrity-audit']
-      : []),
-  ],
-  fra: [
-    'workOutcomesOfTanfExiters',
-    // TODO: uncomment when we collect this data
-    // 'secondarySchoolAttainment',
-    // 'supplementalWorkOutcomes',
-  ],
+const getValidFileTypes = (isFra, piaEnabled = false) => {
+  if (isFra) {
+    return [
+      'workOutcomesOfTanfExiters',
+      // TODO: uncomment when we collect this data
+      // 'secondarySchoolAttainment',
+      // 'supplementalWorkOutcomes',
+    ]
+  }
+
+  if (piaEnabled) {
+    return ['tanf', 'ssp-moe', 'program-integrity-audit']
+  }
+
+  return ['tanf', 'ssp-moe']
 }
 
 // Valid quarters
@@ -57,7 +61,12 @@ const VALID_QUARTERS = Object.keys(quarters) // ['Q1', 'Q2', 'Q3', 'Q4']
  * @param {boolean} isFra - Whether this is for FRA reports
  * @param {Array} sttList - List of valid STTs
  */
-const validateUrlParams = (searchParams, isFra, sttList) => {
+const validateUrlParams = (
+  searchParams,
+  isFra,
+  sttList,
+  piaFeatureFlag = null
+) => {
   const fiscalYear = searchParams.get('fy')
   const quarter = searchParams.get('q')
   const type = searchParams.get('type')
@@ -76,8 +85,14 @@ const validateUrlParams = (searchParams, isFra, sttList) => {
   // For program-integrity-audit, only 2024 is allowed
   const year = parseInt(fiscalYear, 10)
   const currentFiscalYear = getCurrentFiscalYear()
-  const minYear = type === 'program-integrity-audit' ? 2024 : 2021
-  const maxYear = type === 'program-integrity-audit' ? 2024 : currentFiscalYear
+  const minYear =
+    type === 'program-integrity-audit'
+      ? piaFeatureFlag?.config?.minYear || 2024
+      : 2021
+  const maxYear =
+    type === 'program-integrity-audit'
+      ? piaFeatureFlag?.config?.maxYear || 2024
+      : currentFiscalYear
   if (!isNaN(year) && year >= minYear && year <= maxYear) {
     validatedFy = fiscalYear
   } else {
@@ -92,7 +107,7 @@ const validateUrlParams = (searchParams, isFra, sttList) => {
   }
 
   // Validate file type
-  const validTypes = isFra ? VALID_FILE_TYPES.fra : VALID_FILE_TYPES.reports
+  const validTypes = getValidFileTypes(isFra, piaFeatureFlag?.enabled || false)
   if (validTypes.includes(type)) {
     validatedType = type
   } else {
@@ -132,6 +147,11 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   const dispatch = useDispatch()
   const canSelectStt = useSelector(accountCanSelectStt)
   const sttList = useSelector((state) => state?.stts?.sttList)
+  const featureFlags = useSelector(selectFeatureFlags)
+  const piaFeatureFlag = getFlagOrDefault(
+    'program-integrity-audit',
+    featureFlags
+  )
 
   // Search params
   const [searchParams, setSearchParams] = useSearchParams()
@@ -140,7 +160,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   // Get validated params (without STT validation since it will never be loaded since we have to wait for fetchSTTs to
   // run.
   const validatedParams = useMemo(
-    () => validateUrlParams(searchParams, isFra, []),
+    () => validateUrlParams(searchParams, isFra, [], piaFeatureFlag),
     [searchParams, isFra]
   )
 
@@ -289,11 +309,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
       case 'fileType':
         setFileTypeInputValue(pendingChange.value)
         // Reset year if it's invalid for the new file type
-        const minYear =
-          pendingChange.value === 'program-integrity-audit' ? 2024 : 2021
-        if (yearInputValue && parseInt(yearInputValue) < minYear) {
-          setYearInputValue('')
-        }
+        resetPiaYear(pendingChange.value)
         break
       case 'year':
         setYearInputValue(pendingChange.value)
@@ -338,6 +354,29 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     [dispatch, fileTypeInputValue, submittedFiles]
   )
 
+  const resetPiaYear = (type) => {
+    // Reset year if it's invalid for the new file type
+    // Program Integrity Audit starts at 2024, TANF/SSP/FRA start at 2021
+    const currentFiscalYear = getCurrentFiscalYear()
+    const minYear =
+      type === 'program-integrity-audit'
+        ? piaFeatureFlag?.config?.minYear || 2024
+        : 2021
+    const maxYear =
+      type === 'program-integrity-audit'
+        ? piaFeatureFlag?.config?.maxYear || 2024
+        : currentFiscalYear
+
+    if (yearInputValue && parseInt(yearInputValue) < minYear) {
+      setYearInputValue('')
+    } else if (
+      value === 'program-integrity-audit' &&
+      parseInt(yearInputValue) > maxYear
+    ) {
+      setYearInputValue(`${maxYear}`)
+    }
+  }
+
   const selectFileType = (value) => {
     setFileTypeTouched(true)
     handleFieldSelection('fileType')
@@ -354,12 +393,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
       dispatch(reinitializeSubmittedFiles(value))
       setFraSelectedFile(null)
 
-      // Reset year if it's invalid for the new file type
-      // Program Integrity Audit starts at 2024, TANF/SSP/FRA start at 2021
-      const minYear = value === 'program-integrity-audit' ? 2024 : 2021
-      if (yearInputValue && parseInt(yearInputValue) < minYear) {
-        setYearInputValue('')
-      }
+      resetPiaYear(value)
     }
   }
 
@@ -593,6 +627,9 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     startPolling,
     isPolling,
     stopAllTimers,
+
+    // Program audit
+    piaFeatureFlag,
   }
 
   return (

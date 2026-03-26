@@ -8,7 +8,7 @@ import {
 const initialState = {
   loading: false,
   error: null,
-  flags: null,
+  flags: [],
   lastFetched: null,
 }
 
