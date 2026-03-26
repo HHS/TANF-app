@@ -12,7 +12,9 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"go-parser/internal/config"
+	"go-parser/internal/decoder"
 	"go-parser/internal/pipeline"
+	"go-parser/internal/storage/reader"
 	"go-parser/internal/storage/writer"
 	"go-parser/internal/validation"
 )
@@ -26,12 +28,31 @@ func TestDataDir() string {
 func ParseFile(t *testing.T, ctx context.Context, pool *pgxpool.Pool, reg *config.Registry, validators *validation.ValidatorRegistry, program string, section int, filePath string, datafileID int32) {
 	t.Helper()
 
+	// Open file and create decoder
+	source := reader.NewLocalSource(filePath)
+	file, err := source.Open(ctx)
+	if err != nil {
+		t.Fatalf("Failed to open file: %v", err)
+	}
+	defer file.Close()
+	defer source.Cleanup()
+
+	spec := reg.GetFileSpec(program, section)
+	if spec == nil {
+		t.Fatalf("No file spec for %s section %d", program, section)
+	}
+
+	dec, err := decoder.CreateDecoder(file, spec)
+	if err != nil {
+		t.Fatalf("Failed to create decoder: %v", err)
+	}
+	defer dec.Close()
+
 	sink := writer.NewDatabaseSink(pool)
-	p := pipeline.NewPipeline(sink, reg, validators, pipeline.TestConfig(), nil)
-	result, err := p.ProcessFile(ctx, pipeline.DataFileParams{
+	p := pipeline.NewPipeline(sink, reg, validators, pipeline.TestConfig())
+	result, err := p.Process(ctx, dec, pipeline.ProcessParams{
 		Program:    program,
 		Section:    section,
-		FilePath:   filePath,
 		DatafileID: datafileID,
 	})
 	if err != nil {

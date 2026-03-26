@@ -40,10 +40,10 @@ type ValidatorRegistry struct {
 	exprOpts []expr.Option
 }
 
-// NewValidatorRegistry resolves validator file globs from the Config, loads
+// NewRegistry resolves validator file globs from the Config, loads
 // predefined validators, then compiles validators from all schemas and
 // filespecs in the Registry.
-func NewValidatorRegistry(cfg *config.Config, reg *config.Registry) (*ValidatorRegistry, error) {
+func NewRegistry(cfg *config.Config, reg *config.Registry) (*ValidatorRegistry, error) {
 	r := newValidatorRegistry()
 
 	// 1. Register custom functions

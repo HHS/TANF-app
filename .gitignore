@@ -126,3 +126,5 @@ cypress.env.json
 tdrs-backend/*.pg
 tdrs-backend/django.log
 
+# Go parser dry run
+output/

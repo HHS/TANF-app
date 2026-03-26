@@ -6,33 +6,27 @@ import (
 	"log"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
-
 	"go-parser/internal/config"
 	"go-parser/internal/decoder"
 	"go-parser/internal/parser"
-	"go-parser/internal/storage"
-	"go-parser/internal/storage/reader"
 	"go-parser/internal/storage/writer"
 	"go-parser/internal/validation"
 )
 
 // Pipeline orchestrates the full file parsing process.
-// The pipeline is agnostic to where output goes — the Sink handles that.
+// The pipeline is agnostic to where input comes from and where output goes —
+// the caller provides a Decoder and a Sink.
 type Pipeline struct {
 	sink       writer.Sink
 	registry   *config.Registry
 	validators *validation.ValidatorRegistry
 	config     PipelineConfig
-	s3Storage  *storage.S3Storage // nil when reader source is "local"
 }
 
-// DataFileParams contains the inputs for processing a file.
-type DataFileParams struct {
+// ProcessParams contains the metadata for a processing run.
+type ProcessParams struct {
 	Program    string
 	Section    int
-	FilePath   string // Used when source is "local"
-	ObjectKey  string // Used when source is "s3"
 	DatafileID int32
 }
 
@@ -48,71 +42,32 @@ type ParsingResult struct {
 
 // NewPipeline creates a Pipeline with the given configuration.
 // The sink determines where records/errors are written (database, files, etc).
-func NewPipeline(sink writer.Sink, reg *config.Registry, validators *validation.ValidatorRegistry, config PipelineConfig, s3Storage *storage.S3Storage) *Pipeline {
+func NewPipeline(sink writer.Sink, reg *config.Registry, validators *validation.ValidatorRegistry, config PipelineConfig) *Pipeline {
 	return &Pipeline{
 		sink:       sink,
 		registry:   reg,
 		validators: validators,
 		config:     config,
-		s3Storage:  s3Storage,
 	}
 }
 
-// SinkFactory creates the appropriate Sink based on pipeline configuration.
-func SinkFactory(cfg PipelineConfig, dbPool *pgxpool.Pool) (writer.Sink, error) {
-	switch cfg.WriterMode {
-	case "file":
-		outputDir := cfg.WriterOutputDir
-		if outputDir == "" {
-			outputDir = "./output"
-		}
-		return writer.NewFileSink(outputDir, cfg.WriterFormat)
-	default:
-		if dbPool == nil {
-			return nil, fmt.Errorf("database pool is required for writer mode %q", cfg.WriterMode)
-		}
-		return writer.NewDatabaseSink(dbPool), nil
-	}
-}
-
-// ProcessFile parses a file and writes records to the database.
-// This is the main entry point for file processing.
-func (p *Pipeline) ProcessFile(ctx context.Context, params DataFileParams) (*ParsingResult, error) {
+// Process parses data from the decoder and writes records via the sink.
+// The caller is responsible for creating and closing the decoder.
+func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, params ProcessParams) (*ParsingResult, error) {
 	// Step 1: Get the file specification
 	spec := p.registry.GetFileSpec(params.Program, params.Section)
 	if spec == nil {
 		return nil, fmt.Errorf("no file spec for %s section %d", params.Program, params.Section)
 	}
 
-	log.Printf("Processing %s Section %d file: %s", params.Program, params.Section, params.FilePath)
+	log.Printf("Processing %s Section %d", params.Program, params.Section)
 	log.Printf("Format: %s, KeyFields: %v, BatchSize: %d",
 		spec.Format, spec.Accumulator.HasKeyFields(), spec.Accumulator.EffectiveBatchSize())
-
-	// Step 2: Acquire file via configured source
-	var source reader.FileSource
-	switch p.config.ReaderSource {
-	case "s3":
-		source = reader.NewS3Source(p.s3Storage, p.config.S3.Bucket, params.ObjectKey)
-	default:
-		source = reader.NewLocalSource(params.FilePath)
-	}
-	file, err := source.Open(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to acquire file: %w", err)
-	}
-	defer file.Close()
-	defer source.Cleanup()
-
-	dec, err := CreateDecoder(file, spec)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create decoder: %w", err)
-	}
-	defer dec.Close()
 
 	// Start timing for performance measurement
 	startTime := time.Now()
 
-	// Step 3: Create router/initialize object pools
+	// Step 2: Create router/initialize object pools
 	// TODO: I hate that we have to initialize the object pools on the schemas in NewRouter.
 	router := writer.NewRouter(p.sink, params.DatafileID, spec, p.registry, writer.RouterConfig{
 		PoolPrewarmSize:     p.config.PoolPrewarmSize,
@@ -124,7 +79,7 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params DataFileParams) (*Par
 	})
 	router.Start(ctx)
 
-	// Step 4: Read and parse header (for positional files)
+	// Step 3: Read and parse header (for positional files)
 	// TODO: we will need to do header validation here
 	headerRow, err := dec.ReadFirst()
 	if err != nil {
@@ -144,32 +99,32 @@ func (p *Pipeline) ProcessFile(ctx context.Context, params DataFileParams) (*Par
 		log.Printf("Header fields: %v", parseCtx.Header.Fields)
 	}
 
-	// Step 5: Create record type detector
+	// Step 4: Create record type detector
 	detector := decoder.NewRecordTypeDetector(spec, p.registry)
 
-	// Step 5b: Sort the file if presort is enabled
+	// Step 4b: Sort the file if presort is enabled
 	if spec.Accumulator.Presort && spec.Accumulator.HasKeyFields() {
 		if err := dec.Sort(detector, decoder.NewKeyExtractor(spec), spec.Accumulator.GroupedSchemas); err != nil {
 			return nil, fmt.Errorf("presort failed: %w", err)
 		}
 	}
 
-	// Step 6: Create parsing orchestrator
+	// Step 5: Create parsing orchestrator
 	parsingOrchestrator := parser.NewParsingOrchestrator(spec.Format, parseCtx)
 
-	// Step 7: Create validation orchestrator
+	// Step 6: Create validation orchestrator
 	filespecKey := fmt.Sprintf("%s:%d", params.Program, params.Section)
 	validationOrchestrator := validation.NewValidationOrchestrator(p.validators, p.config.ShortCircuit)
 
-	// Step 8: Create pipeline worker pool (workers parse, validate, and route)
+	// Step 7: Create pipeline worker pool (workers parse, validate, and route)
 	workers := NewWorkerPool(parsingOrchestrator, validationOrchestrator, filespecKey, router, params.DatafileID, WorkerPoolConfig{
 		NumWorkers:     p.config.NumWorkers,
 		WorkBufferSize: p.config.WorkBufferSize,
 	})
 	workers.Start(ctx)
 
-	// Step 10: Process rows through the accumulator
-	// TODO: I feel like step 8 and this step should be apart of the worker pool
+	// Step 8: Process rows through the accumulator
+	// TODO: I feel like step 7 and this step should be apart of the worker pool
 	acc := parser.NewAccumulator(spec, detector)
 	err = processRowsStreaming(dec, acc, workers)
 	if err != nil {
