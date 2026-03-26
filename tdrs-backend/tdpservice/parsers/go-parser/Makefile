@@ -20,6 +20,11 @@ test-integration:
 	$(GOTESTSUM) $(GOTEST_FLAGS) -- -tags integration $(PACKAGES)
 
 # Run all tests including integration
+test-all-coverage:
+	$(GOTESTSUM) $(GOTEST_FLAGS) -- -coverprofile=coverage.out -tags integration $(PACKAGES)
+	go tool cover -func=coverage.out
+
+# Run all tests with coverage including integration
 test-all:
 	$(GOTESTSUM) $(GOTEST_FLAGS) -- -tags integration $(PACKAGES)
 
