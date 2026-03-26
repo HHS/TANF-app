@@ -40,6 +40,8 @@ Then('{string} can download the {string} error report', (actor, program) => {
     df.downloadErrorReport(
       '2024-Q2-FRA Work Outcomes of TANF Exiters Error Report.xlsx'
     )
+  } else if (program === 'PIA') {
+    df.downloadErrorReport('2024-Q1-TANF Active Case Data Error Report.xlsx')
   }
 })
 
@@ -112,6 +114,8 @@ const SECTION_INPUT_ID = {
   2: '#closed_case_data',
   3: '#aggregate_data',
   4: '#stratum_data',
+  PIA_1: '#quarter_1_october_-_december',
+  PIA_2: '#quarter_2_january_-_march',
 }
 
 const UPLOAD_FILE_INFO = {
@@ -136,6 +140,10 @@ const UPLOAD_FILE_INFO = {
     2: { fileName: 'small_correct_file.txt', year: '2021', quarter: 'Q1' },
     3: { fileName: 'small_correct_file.txt', year: '2021', quarter: 'Q1' },
   },
+  PIA: {
+    1: { fileName: 'PI_Audit_space-fill.txt', year: '2024', quarter: 'Q1' },
+    2: { fileName: 'PI_Audit_FTANF.txt', year: '2024', quarter: 'Q2' },
+  },
 }
 
 // STEPS ----------
@@ -146,7 +154,12 @@ When(
     const { year, quarter, fileName } = UPLOAD_FILE_INFO[program][section]
 
     df.openDataFilesAndSearch(program, year, quarter, stt)
-    df.uploadSectionFile(SECTION_INPUT_ID[section], fileName)
+
+    let sectionLabel = SECTION_INPUT_ID[section]
+    if (program === 'PIA') {
+      sectionLabel = SECTION_INPUT_ID[`PIA_${section}`]
+    }
+    df.uploadSectionFile(sectionLabel, fileName, false, program)
   }
 )
 
@@ -154,7 +167,7 @@ Then(
   '{string} sees the {string} Section {string} submission in Submission History',
   (actor, program, section) => {
     df.openSubmissionHistory()
-    df.getLatestSubmissionHistoryRow(section)
+    df.getLatestSubmissionHistoryRow(section, program)
       .should('exist')
       .within(() => {
         cy.contains(UPLOAD_FILE_INFO[program][section]['fileName']).should(
@@ -169,7 +182,7 @@ Then(
   (actor, program, section) => {
     const { year, quarter } = UPLOAD_FILE_INFO[program][section]
 
-    df.getLatestSubmissionHistoryRow(section).within(() => {
+    df.getLatestSubmissionHistoryRow(section, program).within(() => {
       const programPrefix =
         program === 'TANF'
           ? 'TANF'
@@ -179,7 +192,9 @@ Then(
               ? 'SSP'
               : program === 'Tribal' || program === 'TRIBAL'
                 ? 'Tribal'
-                : ''
+                : program === 'PIA'
+                  ? 'PIA'
+                  : ''
       df.downloadErrorReportAndAssert(section, year, quarter, programPrefix)
     })
   }

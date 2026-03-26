@@ -102,6 +102,9 @@ export const fillSttFyQNoProgramSelector = (stt, fy, q) => {
     })
 }
 
+export const fillStt = (stt) =>
+  cy.get('#stt', { timeout: 1000 }).type(stt + '{enter}')
+
 export const fillFyQProgram = (fy, q, program) => {
   cy.wait(500)
   cy.get('body').then(($body) => {
@@ -122,7 +125,7 @@ export const fillFyQProgram = (fy, q, program) => {
       return
     }
 
-    if (program === 'SSP') {
+    if (program === 'PIA') {
       const hasPia = $body.find(
         'label:contains("Program Integrity Audit")'
       ).length
@@ -205,15 +208,19 @@ export const openDataFilesAndSearch = (program, year, quarter, stt = '') => {
     cy.get('#stt').should('exist').type(`${stt}{enter}`)
   }
   if (program === 'SSP') cy.get('label[for="ssp-moe"]').click()
+  else if (program === 'PIA')
+    cy.get('label[for="program-integrity-audit"]').click()
 
   cy.get('#reportingYears').should('exist').select(year)
-  cy.get('#quarter').should('exist').select(quarter) // Q1, Q2, Q3, Q4
+
+  if (program !== 'PIA') cy.get('#quarter').should('exist').select(quarter) // Q1, Q2, Q3, Q4
 }
 
 export const uploadSectionFile = (
   inputSelector,
   fileName,
-  shouldRejectInput = false
+  shouldRejectInput = false,
+  program = 'TANF'
 ) => {
   const filePath = `${TEST_DATA_DIR}/${fileName}`
 
@@ -230,7 +237,16 @@ export const uploadSectionFile = (
       'not.have.class',
       'is-loading'
     )
-    cy.get('.usa-alert__text').should('not.exist')
+
+    if (program === 'PIA') {
+      cy.get('.usa-alert__text')
+        .contains(
+          'For Additional guidance please refer to the Program Instruction for this new reporting requirement.'
+        )
+        .should('exist')
+    } else {
+      cy.get('.usa-alert__text').should('not.exist')
+    }
     cy.contains('button', 'Submit', { timeout: 5000 }).should(
       'have.attr',
       'data-has-uploaded-files',
@@ -250,16 +266,24 @@ export const openSubmissionHistory = () => {
   cy.contains('button', 'Submission History').click()
 }
 
-export const getLatestSubmissionHistoryRow = (section) => {
+export const getLatestSubmissionHistoryRow = (section, program = 'TANF') => {
   const table_captions = {
     1: 'Section 1 - Active Case Data',
     2: 'Section 2 - Closed Case Data',
     3: 'Section 3 - Aggregate Data',
     4: 'Section 4 - Stratum Data',
+    PIA_1: 'Quarter 1 (October - December)',
+    PIA_2: 'Quarter 2 (January - March)',
+  }
+
+  let sectionLabel = table_captions[section]
+
+  if (program === 'PIA') {
+    sectionLabel = table_captions[`PIA_${section}`]
   }
 
   return cy
-    .contains('caption', table_captions[section])
+    .contains('caption', sectionLabel)
     .parents('table')
     .find('tbody > tr')
     .first()
@@ -279,9 +303,16 @@ export const downloadErrorReportAndAssert = (
     'Stratum Data',
   ]
 
+  let sectionLabel = ERROR_REPORT_LABELS[section - 1]
+
+  if (programType === 'PIA') {
+    sectionLabel = ERROR_REPORT_LABELS[0]
+  }
+
   // Download error report
-  const programPrefix = programType ? `${programType} ` : ''
-  const fileName = `${year}-${quarter}-${programPrefix}${ERROR_REPORT_LABELS[section - 1]} Error Report.xlsx`
+  const programPrefix =
+    programType && programType !== 'PIA' ? `${programType} ` : 'TANF '
+  const fileName = `${year}-${quarter}-${programPrefix}${sectionLabel} Error Report.xlsx`
   const downloadedFilePath = `${Cypress.config('downloadsFolder')}/${fileName}`
 
   cy.intercept('GET', '/v1/data_files/*/download_error_report/').as(
