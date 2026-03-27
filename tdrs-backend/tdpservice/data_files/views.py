@@ -129,36 +129,57 @@ class DataFileViewSet(ModelViewSet):
         logger.debug(f"{self.__class__.__name__}: return val: {response}")
         return response
 
+    def list(self, request, *args, **kwargs):
+        """Override to handle the list request with url param validation."""
+        queryset = self.get_queryset()
+
+        file_type = self.request.query_params.get("file_type", None)
+
+        if file_type == DataFileViewSet.SSP_FILE_TYPE:
+            queryset = queryset.filter(program_type=DataFile.ProgramType.SSP)
+        elif DataFile.Section.is_fra(file_type):
+            queryset = queryset.filter(
+                program_type=DataFile.ProgramType.FRA, section=file_type
+            )
+        else:
+            pia_feature_flag_enabled, pia_feature_flag_config = get_feature_flag(
+                "program-integrity-audit"
+            )
+            is_program_audit = file_type == DataFileViewSet.PIA_FILE_TYPE
+
+            if is_program_audit and not pia_feature_flag_enabled:
+                return Response(
+                    {"detail": "This file type is not supported."},
+                    status=HTTP_400_BAD_REQUEST,
+                )
+            elif is_program_audit:
+                pia_minYear = pia_feature_flag_config.get("minYear") or 2024
+                pia_maxYear = pia_feature_flag_config.get("maxYear") or 2024
+                year = int(request.query_params.get("year"))
+
+                if year < pia_minYear or year > pia_maxYear:
+                    return Response(
+                        {
+                            "detail": "This request was submitted for a reporting year not supported by this file type."
+                        },
+                        status=HTTP_400_BAD_REQUEST,
+                    )
+
+            queryset = queryset.filter(
+                program_type__in=[
+                    DataFile.ProgramType.TANF,
+                    DataFile.ProgramType.TRIBAL,
+                ],
+                is_program_audit=is_program_audit,
+            )
+
+        self.queryset = queryset
+        response = super().list(request, *args, **kwargs)
+        return response
+
     def get_queryset(self):
         """Apply custom queryset filters."""
         queryset = super().get_queryset().order_by("-created_at")
-
-        if self.action == "list":
-            file_type = self.request.query_params.get("file_type", None)
-
-            if file_type == DataFileViewSet.SSP_FILE_TYPE:
-                queryset = queryset.filter(program_type=DataFile.ProgramType.SSP)
-            elif DataFile.Section.is_fra(file_type):
-                queryset = queryset.filter(
-                    program_type=DataFile.ProgramType.FRA, section=file_type
-                )
-            else:
-                pia_feature_flag_enabled, _ = get_feature_flag(
-                    "program-integrity-audit"
-                )
-                is_program_audit = (
-                    file_type == DataFileViewSet.PIA_FILE_TYPE
-                    and pia_feature_flag_enabled
-                )
-
-                queryset = queryset.filter(
-                    program_type__in=[
-                        DataFile.ProgramType.TANF,
-                        DataFile.ProgramType.TRIBAL,
-                    ],
-                    is_program_audit=is_program_audit,
-                )
-
         return queryset
 
     def filter_queryset(self, queryset):
