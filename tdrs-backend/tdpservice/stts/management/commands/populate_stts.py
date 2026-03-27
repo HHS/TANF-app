@@ -105,6 +105,7 @@ def _apply_overrides(overrides_path=None):
             continue
 
         # Only override fields explicitly provided
+        bool_fields = {"ssp", "sample"}
         for field in [
             "ssp",
             "sample",
@@ -116,7 +117,8 @@ def _apply_overrides(overrides_path=None):
             "timezone",
         ]:
             if field in override:
-                setattr(stt, field, _maybe_bool(override[field]))
+                value = _maybe_bool(override[field]) if field in bool_fields else override[field]
+                setattr(stt, field, value)
 
         stt.save()
         logger.info("Applied override for STT %s", stt.name)
