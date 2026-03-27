@@ -12,6 +12,21 @@
         "iconColor": "rgba(0, 211, 255, 1)",
         "name": "Annotations & Alerts",
         "type": "dashboard"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "enable": true,
+        "hide": true,
+        "expr": "pg_up{job=~\"postgres-$pg_env\"} == 0 or absent(pg_up{job=~\"postgres-$pg_env\"})",
+        "iconColor": "red",
+        "name": "Database Unreachable",
+        "step": "60s",
+        "tagKeys": "job",
+        "titleFormat": "Database Unreachable",
+        "textFormat": "The postgres exporter cannot reach the database (pg_up=0 or absent)"
       }
     ]
   },

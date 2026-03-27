@@ -13,7 +13,7 @@ END
 $$;
 GRANT CONNECT ON DATABASE {db_name} TO {role};
 GRANT USAGE ON SCHEMA public TO {role};
-{select_stmt}
+{revoke_create}{select_stmt}
 """
 
 SELECT_STATEMENT = "GRANT SELECT ON {tables} TO {role};"
@@ -64,7 +64,9 @@ def run(*args):  # noqa: C901
 
     if remaining == ("all",):
         select_stmt = ADMIN_SELECT_STATEMENT.format(role=role)
-        sql = sql_tmpl.format(role=role, db_name=db_name, select_stmt=select_stmt)
+        sql = sql_tmpl.format(
+            role=role, db_name=db_name, revoke_create="", select_stmt=select_stmt
+        )
     else:
         tables: list[str] = []
         for arg in remaining:
@@ -83,8 +85,15 @@ def run(*args):  # noqa: C901
 
         tables_str = ",".join(tables)
         select_stmt = SELECT_STATEMENT.format(tables=tables_str, role=role)
+        revoke_create = "REVOKE CREATE ON SCHEMA public FROM {role};\n".format(
+            role=role
+        )
         sql = sql_tmpl.format(
-            role=role, tables=tables_str, db_name=db_name, select_stmt=select_stmt
+            role=role,
+            tables=tables_str,
+            db_name=db_name,
+            revoke_create=revoke_create,
+            select_stmt=select_stmt,
         )
 
     with connection.cursor() as cursor:
