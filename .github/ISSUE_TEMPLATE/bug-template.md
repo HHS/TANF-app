@@ -3,7 +3,7 @@ name: Bug Report template
 about: Template for bug reporting
 title: ''
 labels: bug, dev
-assignees: ''
+assignees: kennymcnett, reitermb, victoriaatraft, elipe17
 
 ---
 
