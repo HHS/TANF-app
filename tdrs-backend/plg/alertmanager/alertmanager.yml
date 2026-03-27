@@ -39,7 +39,8 @@ route:
     - matchers:
         - alertname=~"UpTime"
       receiver: dev-team-emails
-      repeat_interval: 24h
+      repeat_interval: 48h
+      continue: true
     # Send all severity CRITICAL/ERROR alerts to OFA admin emails
     - matchers:
         - severity=~"ERROR|CRITICAL"
@@ -47,11 +48,15 @@ route:
       continue: true
     # Send all severity CRITICAL/ERROR/WARNING alerts to mattermost and dev team emails
     - matchers:
-        - severity=~"ERROR|CRITICAL|WARNING"
+        - severity=~"ERROR|CRITICAL"
       receiver: mattermost
       continue: true
     - matchers:
-        - severity=~"ERROR|CRITICAL|WARNING"
+        - severity=~"WARNING"
+      receiver: dev-mattermost
+      continue: true
+    - matchers:
+        - severity=~"ERROR|CRITICAL"
       receiver: dev-team-emails
       continue: true
 # Inhibition rules allow to mute a set of alerts given that another alert is
@@ -90,11 +95,29 @@ receivers:
           {{ if or (eq .Labels.severity "CRITICAL") (eq .Labels.severity "ERROR") }}
           @here
           {{ end }}
-          *Alert:* {{ .Annotations.title }}{{ if .Labels.severity }} - `{{ .Labels.severity }}`{{ end }}
+          *Alert:* {{ .Labels.alertname }}{{ if .Labels.severity }} - `{{ .Labels.severity }}`{{ end }}
 
           *Description:* {{ .Annotations.description }}
 
           *Details:*
-            {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
-            {{ end }}
+            • *Job:* `{{ .Labels.job }}`
+            • *Instance:* `{{ .Labels.instance }}`
+            • *Env:* `{{ .Labels.env }}`
+          {{ end }}
+  - name: 'dev-mattermost'
+    slack_configs:
+      - channel: 'tdp-dev-alerts'
+        username: 'alertmanager'
+        send_resolved: true
+        api_url: 'https://fake.mattermost.com'
+        text: |-
+          {{ range .Alerts -}}
+          *Alert:* {{ .Labels.alertname }}{{ if .Labels.severity }} - `{{ .Labels.severity }}`{{ end }}
+
+          *Description:* {{ .Annotations.description }}
+
+          *Details:*
+            • *Job:* `{{ .Labels.job }}`
+            • *Instance:* `{{ .Labels.instance }}`
+            • *Env:* `{{ .Labels.env }}`
           {{ end }}
