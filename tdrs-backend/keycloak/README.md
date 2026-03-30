@@ -207,8 +207,8 @@ Sync only works if the Keycloak user already exists (i.e., user has logged in vi
 
 ```bash
 cd keycloak
-./deploy.sh -d <rds_service_name> -p <public_hostname> -i <docker_image>
-# Example: ./deploy.sh -d tdp-keycloak-db-dev -p tdp-keycloak-dev -i ghcr.io/hhs/tdp-keycloak:latest
+./deploy.sh -e <environment> -d <rds_service_name> -p <public_hostname> -i <docker_image>
+# Example: ./deploy.sh -e dev -d tdp-keycloak-db-dev -p tdp-keycloak-dev -i ghcr.io/hhs/tdp-keycloak:latest
 ```
 
 This will:
