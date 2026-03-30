@@ -236,12 +236,13 @@ type CompiledExpr struct {
 
 // CompiledValidator is per-use-site (resolved message at compile time).
 type CompiledValidator struct {
-	ID         string
-	Scope      string             // "field", "record", or "group"
-	ErrorType  string             // The declared error type (or default based on scope)
-	ResultMode string             // "single" (default) or "per_record" (for group validators)
-	Expr       *CompiledExpr      // Pointer to shared compiled expr
-	Message    *template.Template // Pre-resolved (default or override)
-	Fields     []string           // Fields involved (for record/group validators)
-	Params     map[string]any     // Runtime params for expressions (e.g., {n: 9})
+	ID          string
+	Scope       string             // "field", "record", or "group"
+	ErrorType   string             // The declared error type (or default based on scope)
+	ResultMode  string             // "single" (default) or "per_record" (for group validators)
+	Expr        *CompiledExpr      // Pointer to shared compiled expr
+	Message     *template.Template // Pre-resolved (default or override)
+	Fields      []string           // Fields involved (for record/group validators)
+	Params      map[string]any     // Runtime params for expressions (e.g., {n: 9})
+	Description string             // Human-readable description for documentation generation
 }

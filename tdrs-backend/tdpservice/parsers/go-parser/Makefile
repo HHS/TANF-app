@@ -53,6 +53,10 @@ test-watch:
 build:
 	go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY) ./cmd/parser
 
+# Build the docgen tool
+build-docgen:
+	go build $(LDFLAGS) -o $(BUILD_DIR)/docgen ./cmd/docgen
+
 # Build for all platforms
 build-all: build-linux build-darwin build-windows
 

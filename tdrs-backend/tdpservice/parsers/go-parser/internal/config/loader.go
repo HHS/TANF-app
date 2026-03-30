@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"gopkg.in/yaml.v3"
 )
@@ -31,6 +32,19 @@ func LoadConfig(configFile string) (*Config, error) {
 	cfg := DefaultConfig()
 	if err := yaml.Unmarshal(data, cfg); err != nil {
 		return nil, fmt.Errorf("parsing %s: %w", configFile, err)
+	}
+
+	// If config_dir is relative, resolve it to an absolute path based on the
+	// config file's parent directory. The config file (parser.yaml) lives inside
+	// config_dir, so its parent directory IS config_dir. This allows the parser
+	// and other commands to work regardless of the working directory when an
+	// absolute config file path is provided.
+	if !filepath.IsAbs(cfg.Global.ConfigDir) {
+		absConfigFile, err := filepath.Abs(configFile)
+		if err != nil {
+			return nil, fmt.Errorf("resolving config file path: %w", err)
+		}
+		cfg.Global.ConfigDir = filepath.Dir(absConfigFile)
 	}
 
 	return cfg, nil

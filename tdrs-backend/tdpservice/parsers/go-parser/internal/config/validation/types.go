@@ -34,6 +34,12 @@ type ValidatorDef struct {
 	// "per_record": Expression returns list of failing records, each gets its own error
 	ResultMode string `yaml:"result_mode,omitempty"`
 
+	// Description is a human-readable explanation of what this validator checks and why.
+	// Used for documentation generation (cmd/docgen). Not used at runtime.
+	// Can be set on predefined validators and overridden at the use site (schema/filespec)
+	// to provide context-specific descriptions, following the same override pattern as Message.
+	Description string `yaml:"description,omitempty"`
+
 	// Deprecated marks this validation as deprecated (for compatibility).
 	Deprecated bool `yaml:"deprecated,omitempty"`
 }

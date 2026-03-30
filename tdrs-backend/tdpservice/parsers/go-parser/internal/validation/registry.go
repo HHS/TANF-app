@@ -258,6 +258,7 @@ func (r *ValidatorRegistry) resolveValidatorByScope(scope string, vdef *validati
 	id := vdef.ID
 	exprStr := vdef.Expr
 	message := vdef.Message
+	description := vdef.Description
 	params := vdef.Params
 	fields := vdef.Fields
 	errorType := vdef.ErrorType
@@ -277,6 +278,9 @@ func (r *ValidatorRegistry) resolveValidatorByScope(scope string, vdef *validati
 		exprStr = predef.Expr
 		if message == "" {
 			message = predef.Message
+		}
+		if description == "" {
+			description = predef.Description
 		}
 		// Merge params: use-site params take precedence over predefined
 		if len(predef.Params) > 0 || len(params) > 0 {
@@ -333,14 +337,15 @@ func (r *ValidatorRegistry) resolveValidatorByScope(scope string, vdef *validati
 	}
 
 	return &CompiledValidator{
-		ID:         id,
-		Scope:      scope,
-		ErrorType:  errorType,
-		ResultMode: resultMode,
-		Expr:       ce,
-		Message:    msgTmpl,
-		Fields:     fields,
-		Params:     params,
+		ID:          id,
+		Scope:       scope,
+		ErrorType:   errorType,
+		ResultMode:  resultMode,
+		Expr:        ce,
+		Message:     msgTmpl,
+		Fields:      fields,
+		Params:      params,
+		Description: description,
 	}, nil
 }
 
@@ -402,6 +407,18 @@ func (r *ValidatorRegistry) GetRecordValidators(recordType string) []*CompiledVa
 // GetGroupValidators returns group-scope validators for a filespec.
 func (r *ValidatorRegistry) GetGroupValidators(filespecKey string) []*CompiledValidator {
 	return r.group[filespecKey]
+}
+
+// GetPredefinedValidator returns the predefined validator definition for the given scope and ID.
+// Returns nil if not found. Must be called before ClearCompileTimeData().
+func (r *ValidatorRegistry) GetPredefinedValidator(scope, id string) *validation.ValidatorDef {
+	if r.predefined == nil {
+		return nil
+	}
+	if m, ok := r.predefined[scope]; ok {
+		return m[id]
+	}
+	return nil
 }
 
 // Stats returns statistics about compiled validators.
