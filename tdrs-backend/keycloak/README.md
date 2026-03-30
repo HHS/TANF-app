@@ -105,7 +105,7 @@ Note: `OIDC_OP_AUTHORIZATION_ENDPOINT` and `OIDC_OP_LOGOUT_ENDPOINT` use `KEYCLO
 
 | Variable | Value | Description |
 |---|---|---|
-| `REACT_APP_AUTH_URL` | `http://localhost:3000/v2` | Points to Django v2 routes (Keycloak OIDC) |
+| `REACT_APP_AUTH_URL` | `http://localhost:3000/` | Points to Django versionless auth routes (Keycloak OIDC) |
 | `REACT_APP_BACKEND_URL` | `http://localhost:3000/v1` | Fallback; used for non-auth API calls |
 
 ### Keycloak Container

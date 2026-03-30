@@ -139,12 +139,7 @@ If Keycloak exits unexpectedly (either the Keycloak or nginx process within the 
 ```bash
 # Increase memory (if experiencing OOM)
 cf scale keycloak -m 1G
-
-# Add instances (horizontal scale)
-cf scale keycloak -i 2
 ```
-
-Note: Keycloak instances sharing the same database will coordinate sessions automatically via the database.
 
 ---
 
@@ -441,22 +436,6 @@ The developer can now log into Grafana at the Keycloak login page using username
 
 In the admin console: **Groups** → click `developer` → view members.
 
-Or via API:
-```bash
-# Get admin token
-TOKEN=$(curl -sf -X POST "https://<hostname>/realms/master/protocol/openid-connect/token" \
-    -d "username=$KEYCLOAK_ADMIN" -d "password=$KEYCLOAK_ADMIN_PASSWORD" \
-    -d "grant_type=password" -d "client_id=admin-cli" | jq -r '.access_token')
-
-# Get developer group ID
-GROUP_ID=$(curl -sf "https://<hostname>/admin/realms/tdp/groups?search=developer" \
-    -H "Authorization: Bearer $TOKEN" | jq -r '.[0].id')
-
-# List members
-curl -sf "https://<hostname>/admin/realms/tdp/groups/$GROUP_ID/members" \
-    -H "Authorization: Bearer $TOKEN" | jq '.[].username'
-```
-
 ---
 
 ## Backup and Restore
@@ -465,12 +444,7 @@ curl -sf "https://<hostname>/admin/realms/tdp/groups/$GROUP_ID/members" \
 
 Keycloak's state (users, sessions, realm config applied at runtime) lives in the bound RDS instance. Cloud.gov RDS instances have automatic daily backups with a retention period.
 
-To create an on-demand backup:
-```bash
-cf create-service-key <rds-service> backup-key
-cf service-key <rds-service> backup-key
-# Use the credentials to connect and run pg_dump
-```
+To create an on-demand backup, review the process in `tdrs-backend/db-upgrade/cloud-foundry-db-upgrade.md`.
 
 ### Realm Export (Configuration Only)
 
@@ -487,7 +461,7 @@ Note: This exports realm configuration but **not** user credentials or sessions.
 
 ### Restore from Backup
 
-1. Restore the RDS instance from a Cloud.gov backup (contact Cloud.gov support or use `cf update-service` with restore parameters)
+1. Restore the RDS instance from a Cloud.gov backup (contact Cloud.gov support)
 2. Restart Keycloak:
    ```bash
    cf restart keycloak
