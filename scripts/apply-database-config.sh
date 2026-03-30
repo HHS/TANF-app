@@ -20,7 +20,7 @@ sudo apt install -y libpq-dev python3-dev
 
 python -m venv ./env
 source ./env/bin/activate
-pip install --upgrade pip pipenv
+pip install --upgrade pip pipenv==2026.0.3
 pipenv install --dev --system --deploy
 echo "Done."
 
