@@ -1,5 +1,7 @@
 """Test functions for data_file email helper."""
 
+from datetime import datetime, timezone
+
 from django.core import mail
 
 import pytest
@@ -419,3 +421,101 @@ def test_send_stuck_file_email(user, stt):
         == "List of submitted files with pending status after 1 hour"
     )
     assert mail.outbox[0].body == "The system has detected stuck files."
+
+
+@pytest.mark.django_db
+def test_submission_date_formatted_in_stt_timezone(user, stt):
+    """Test that the email submission_date is formatted in the STT's timezone."""
+    stt.timezone = "America/Chicago"
+    stt.save()
+
+    df = DataFile.objects.create(
+        user=user,
+        section=DataFile.Section.ACTIVE_CASE_DATA,
+        program_type=DataFile.ProgramType.TANF,
+        quarter="Q1",
+        year=2021,
+        version=1,
+        stt=stt,
+    )
+    # Override created_at to a known UTC time (2024-01-15 18:00 UTC = 12:00 PM CST)
+    DataFile.objects.filter(pk=df.pk).update(
+        created_at=datetime(2024, 1, 15, 18, 0, 0, tzinfo=timezone.utc)
+    )
+    df.refresh_from_db()
+
+    dfs = DataFileSummary.objects.create(
+        datafile=df,
+        status=DataFileSummary.Status.ACCEPTED,
+    )
+
+    send_data_submitted_email(dfs, ["test@not-real.com"])
+
+    assert len(mail.outbox) == 1
+    body = mail.outbox[0].alternatives[0][0]  # HTML body
+    assert "01/15/2024 12:00 PM CST" in body
+
+
+@pytest.mark.django_db
+def test_submission_date_formatted_in_eastern_timezone(user, stt):
+    """Test that Eastern timezone formatting includes EST/EDT label."""
+    stt.timezone = "America/New_York"
+    stt.save()
+
+    df = DataFile.objects.create(
+        user=user,
+        section=DataFile.Section.ACTIVE_CASE_DATA,
+        program_type=DataFile.ProgramType.TANF,
+        quarter="Q1",
+        year=2021,
+        version=1,
+        stt=stt,
+    )
+    # 2024-01-15 18:00 UTC = 1:00 PM EST (January, so EST not EDT)
+    DataFile.objects.filter(pk=df.pk).update(
+        created_at=datetime(2024, 1, 15, 18, 0, 0, tzinfo=timezone.utc)
+    )
+    df.refresh_from_db()
+
+    dfs = DataFileSummary.objects.create(
+        datafile=df,
+        status=DataFileSummary.Status.ACCEPTED,
+    )
+
+    send_data_submitted_email(dfs, ["test@not-real.com"])
+
+    assert len(mail.outbox) == 1
+    body = mail.outbox[0].alternatives[0][0]
+    assert "01/15/2024 01:00 PM EST" in body
+
+
+@pytest.mark.django_db
+def test_submission_date_utc_fallback_when_no_timezone(user, stt):
+    """Test that submission_date falls back to UTC when STT has no timezone."""
+    stt.timezone = ""
+    stt.save()
+
+    df = DataFile.objects.create(
+        user=user,
+        section=DataFile.Section.ACTIVE_CASE_DATA,
+        program_type=DataFile.ProgramType.TANF,
+        quarter="Q1",
+        year=2021,
+        version=1,
+        stt=stt,
+    )
+    DataFile.objects.filter(pk=df.pk).update(
+        created_at=datetime(2024, 1, 15, 18, 0, 0, tzinfo=timezone.utc)
+    )
+    df.refresh_from_db()
+
+    dfs = DataFileSummary.objects.create(
+        datafile=df,
+        status=DataFileSummary.Status.ACCEPTED,
+    )
+
+    send_data_submitted_email(dfs, ["test@not-real.com"])
+
+    assert len(mail.outbox) == 1
+    body = mail.outbox[0].alternatives[0][0]
+    assert "01/15/2024 06:00 PM UTC" in body
