@@ -114,6 +114,7 @@ deploy_alertmanager() {
     yq eval -i ".global.slack_api_url = \"$MATTERMOST_WEBHOOK_URL\"" $CONFIG
     yq eval -i ".receivers[0].email_configs[0].to = \"${ADMIN_EMAILS}\"" $CONFIG
     yq eval -i ".receivers[1].email_configs[0].to = \"${DEV_EMAILS}\"" $CONFIG
+    yq eval -i ".receivers[3].slack_configs[0].api_url = \"${DEV_MATTERMOST_WEBHOOK_URL}\"" $CONFIG
     cf push --no-route -f manifest.yml -t 180  --strategy rolling
     cf map-route alertmanager apps.internal --hostname alertmanager
     rm $CONFIG
