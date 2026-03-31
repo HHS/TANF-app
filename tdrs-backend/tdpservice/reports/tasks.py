@@ -157,7 +157,10 @@ def _extract_and_validate_structure(source: ReportSource, zip_file: zipfile.ZipF
 
 def _send_report_file_notification(report_file: ReportFile):
     """
-    Send email notification to all Data Analysts for the ReportFile's STT.
+    Send email notification to Data Analysts and Regional Staff for the ReportFile's STT.
+
+    Data Analysts are notified if their assigned STT matches the report's STT.
+    Regional Staff are notified if their region includes the report's STT.
 
     Parameters
     ----------
@@ -170,8 +173,17 @@ def _send_report_file_notification(report_file: ReportFile):
         groups__name="Data Analyst",
     ).values_list("email", flat=True).distinct()
 
-    if data_analysts:
-        send_feedback_report_available_email(report_file, list(data_analysts))
+    # Query all approved Regional Staff whose region includes this STT
+    regional_staff = User.objects.filter(
+        regions=report_file.stt.region,
+        account_approval_status=AccountApprovalStatusChoices.APPROVED,
+        groups__name="OFA Regional Staff",
+    ).values_list("email", flat=True).distinct()
+
+    recipients = list(set(data_analysts) | set(regional_staff))
+
+    if recipients:
+        send_feedback_report_available_email(report_file, recipients)
 
 
 def _process_stt_folder(
