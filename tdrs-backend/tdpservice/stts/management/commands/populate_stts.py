@@ -45,6 +45,8 @@ def _load_csv(filename, entity):
             stt.filenames = json.loads(row["filenames"].replace("'", '"'))
             stt.ssp = row["SSP"]
             stt.sample = row["Sample"]
+            if "Timezone" in row and row["Timezone"]:
+                stt.timezone = row["Timezone"]
             # TODO: Was seeing lots of references to STT.objects.filter(pk=...
             #       We could probably one-line this but we'd miss .save() signals
             #       https://stackoverflow.com/questions/41744096/
@@ -103,6 +105,7 @@ def _apply_overrides(overrides_path=None):
             continue
 
         # Only override fields explicitly provided
+        bool_fields = {"ssp", "sample"}
         for field in [
             "ssp",
             "sample",
@@ -111,9 +114,11 @@ def _apply_overrides(overrides_path=None):
             "stt_code",
             "type",
             "postal_code",
+            "timezone",
         ]:
             if field in override:
-                setattr(stt, field, _maybe_bool(override[field]))
+                value = _maybe_bool(override[field]) if field in bool_fields else override[field]
+                setattr(stt, field, value)
 
         stt.save()
         logger.info("Applied override for STT %s", stt.name)
