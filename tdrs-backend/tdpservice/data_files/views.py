@@ -67,7 +67,7 @@ class DataFileViewSet(ModelViewSet):
 
     # TODO: Handle versioning in queryset
     # Ref: https://github.com/raft-tech/TANF-app/issues/1007
-    queryset = DataFile.objects.all()
+    queryset = DataFile.objects.all().select_related("stt", "user")
 
     def create(self, request, *args, **kwargs):
         """Override create to upload in case of successful scan."""
