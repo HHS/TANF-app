@@ -2,7 +2,6 @@
 
 from __future__ import absolute_import
 
-import itertools
 import logging
 from datetime import datetime
 
@@ -11,7 +10,6 @@ from celery import shared_task
 from tdpservice.core.utils import log
 from tdpservice.data_files.models import DataFile
 from tdpservice.search_indexes.utils import delete_records, get_log_context
-from tdpservice.stts.models import STT
 from tdpservice.users.models import User
 
 logger = logging.getLogger(__name__)
@@ -29,13 +27,8 @@ def remove_all_old_versions():
         level="info",
         logger_context=log_context,
     )
-    stts = STT.objects.all()
     min_year = 2019  # TDP didn't exist before this
     max_year = datetime.now().year
-    years = [year for year in range(min_year, max_year + 1)]
-    quarters = DataFile.Quarter
-    program_types = DataFile.ProgramType
-    sections = DataFile.Section
     num_exceptions = 0
 
     num_out_of_range = DataFile.objects.exclude(
@@ -49,26 +42,36 @@ def remove_all_old_versions():
             logger_context=log_context,
         )
 
-    for year, quarter, program_type, section, stt in itertools.product(
-        years, quarters, program_types, sections, stts
-    ):
+    # Query only the distinct file groupings that actually exist in the database,
+    # instead of iterating over the full Cartesian product of all possible combinations.
+    existing_groupings = (
+        DataFile.objects.filter(year__range=(min_year, max_year))
+        .values_list("year", "quarter", "program_type", "section", "stt")
+        .distinct()
+    )
+
+    # Collect all old-version file IDs across all groupings, then delete in one batch.
+    all_old_file_ids = []
+    for year, quarter, program_type, section, stt_id in existing_groupings:
+        files = DataFile.objects.filter(
+            year=year,
+            quarter=quarter,
+            program_type=program_type,
+            section=section,
+            stt_id=stt_id,
+        )
+        if files.count() <= 1:
+            continue
+        newest_file = files.latest("version")
+        old_ids = list(files.exclude(id=newest_file.id).values_list("id", flat=True))
+        all_old_file_ids.extend(old_ids)
+
+    if all_old_file_ids:
         try:
-            files = DataFile.objects.filter(
-                year=year,
-                quarter=quarter,
-                program_type=program_type,
-                section=section,
-                stt=stt,
-            )
-            if files.count() == 0:
-                continue
-            newest_file = files.latest("version")
-            ids = files.exclude(id=newest_file.id).values_list("id", flat=True)
-            delete_records(ids, log_context)
+            delete_records(all_old_file_ids, log_context)
         except Exception as e:
             log(
-                f"Failed to delete old versions of file for: Year:{year}, Quarter:{quarter}, "
-                f"Program Type:{program_type}, Section:{section}, STT:{stt.name}",
+                f"Failed to delete old versions of {len(all_old_file_ids)} files.",
                 level="error",
                 logger_context=log_context,
             )
