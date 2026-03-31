@@ -3,6 +3,7 @@
 import pytest
 from rest_framework.exceptions import ValidationError
 
+from tdpservice.reports.models import ReportType
 from tdpservice.reports.serializers import (
     ReportFileSerializer,
     ReportSourceSerializer,
@@ -48,3 +49,50 @@ def test_report_source_serializer_invalid_file_type(bad_report_source_data, data
     ser = ReportSourceSerializer(context={"user": data_analyst}, data=bad_report_source_data)
     with pytest.raises(ValidationError):
         ser.is_valid(raise_exception=True)
+
+
+@pytest.mark.django_db
+def test_report_file_serializer_includes_report_type(report_file_data, data_analyst):
+    """report_type should appear in serialized output and default to TANF_SSP."""
+    ser = ReportFileSerializer(context={"user": data_analyst}, data=report_file_data)
+    assert ser.is_valid(), ser.errors
+    obj = ser.save()
+
+    assert obj.report_type == ReportType.TANF_SSP
+
+    # Verify it's in the serialized representation
+    output = ReportFileSerializer(obj).data
+    assert "report_type" in output
+    assert output["report_type"] == "TANF_SSP"
+
+
+@pytest.mark.django_db
+def test_report_file_serializer_with_fra_report_type(report_file_data, data_analyst):
+    """ReportFileSerializer should accept FRA report_type."""
+    report_file_data["report_type"] = "FRA"
+    ser = ReportFileSerializer(context={"user": data_analyst}, data=report_file_data)
+    assert ser.is_valid(), ser.errors
+    obj = ser.save()
+
+    assert obj.report_type == ReportType.FRA
+
+
+@pytest.mark.django_db
+def test_report_source_serializer_includes_report_type(report_source_data, data_analyst):
+    """report_type should appear in serialized output and default to TANF_SSP."""
+    ser = ReportSourceSerializer(context={"user": data_analyst}, data=report_source_data)
+    assert ser.is_valid(), ser.errors
+    obj = ser.save()
+
+    assert obj.report_type == ReportType.TANF_SSP
+
+
+@pytest.mark.django_db
+def test_report_source_serializer_with_fra_report_type(report_source_data, data_analyst):
+    """ReportSourceSerializer should accept FRA report_type."""
+    report_source_data["report_type"] = "FRA"
+    ser = ReportSourceSerializer(context={"user": data_analyst}, data=report_source_data)
+    assert ser.is_valid(), ser.errors
+    obj = ser.save()
+
+    assert obj.report_type == ReportType.FRA

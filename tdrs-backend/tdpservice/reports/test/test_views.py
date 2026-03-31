@@ -3,7 +3,7 @@
 import pytest
 from rest_framework import status
 
-from tdpservice.reports.models import ReportFile, ReportSource
+from tdpservice.reports.models import ReportFile, ReportSource, ReportType
 
 
 @pytest.mark.django_db
@@ -425,3 +425,87 @@ class TestReportFileViewAsRegionalStaff:
         assert resp.status_code == status.HTTP_200_OK
         returned_ids = [row["id"] for row in resp.data["results"]]
         assert regional_report_file_instance.id in returned_ids
+
+
+@pytest.mark.django_db
+class TestReportFileReportTypeFiltering:
+    """Tests for report_type query parameter filtering on /v1/reports/."""
+
+    root_url = "/v1/reports/"
+
+    @pytest.fixture
+    def api_client_logged_in(self, api_client, data_analyst):
+        """Return an API client authenticated as a Data Analyst."""
+        api_client.login(username=data_analyst.username, password="test_password")
+        return api_client
+
+    def test_filter_by_tanf_ssp(self, api_client_logged_in, data_analyst):
+        """report_type=TANF_SSP should return only TANF/SSP reports."""
+        import datetime
+        from tdpservice.reports.test.factories import ReportFileFactory
+
+        tanf_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst, report_type=ReportType.TANF_SSP,
+            date_extracted_on=datetime.date(2024, 1, 31),
+        )
+        fra_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst, report_type=ReportType.FRA,
+            date_extracted_on=datetime.date(2024, 3, 31),
+        )
+
+        resp = api_client_logged_in.get(f"{self.root_url}?report_type=TANF_SSP")
+
+        assert resp.status_code == status.HTTP_200_OK
+        returned_ids = [row["id"] for row in resp.data["results"]]
+        assert tanf_report.id in returned_ids
+        assert fra_report.id not in returned_ids
+
+    def test_filter_by_fra(self, api_client_logged_in, data_analyst):
+        """report_type=FRA should return only FRA reports."""
+        import datetime
+        from tdpservice.reports.test.factories import ReportFileFactory
+
+        tanf_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst, report_type=ReportType.TANF_SSP,
+            date_extracted_on=datetime.date(2024, 1, 31),
+        )
+        fra_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst, report_type=ReportType.FRA,
+            date_extracted_on=datetime.date(2024, 3, 31),
+        )
+
+        resp = api_client_logged_in.get(f"{self.root_url}?report_type=FRA")
+
+        assert resp.status_code == status.HTTP_200_OK
+        returned_ids = [row["id"] for row in resp.data["results"]]
+        assert fra_report.id in returned_ids
+        assert tanf_report.id not in returned_ids
+
+    def test_no_filter_returns_all_types(self, api_client_logged_in, data_analyst):
+        """Without report_type param, both TANF/SSP and FRA reports should be returned."""
+        import datetime
+        from tdpservice.reports.test.factories import ReportFileFactory
+
+        tanf_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst, report_type=ReportType.TANF_SSP,
+            date_extracted_on=datetime.date(2024, 1, 31),
+        )
+        fra_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst, report_type=ReportType.FRA,
+            date_extracted_on=datetime.date(2024, 3, 31),
+        )
+
+        resp = api_client_logged_in.get(self.root_url)
+
+        assert resp.status_code == status.HTTP_200_OK
+        returned_ids = [row["id"] for row in resp.data["results"]]
+        assert tanf_report.id in returned_ids
+        assert fra_report.id in returned_ids
+
+    def test_report_type_in_response(self, api_client_logged_in, report_file_instance):
+        """report_type field should be included in the API response."""
+        resp = api_client_logged_in.get(self.root_url)
+
+        assert resp.status_code == status.HTTP_200_OK
+        assert resp.data["count"] >= 1
+        assert "report_type" in resp.data["results"][0]

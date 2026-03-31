@@ -9,7 +9,7 @@ from django.utils import timezone
 
 import pytest
 
-from tdpservice.reports.models import ReportFile, ReportSource
+from tdpservice.reports.models import ReportFile, ReportSource, ReportType
 from tdpservice.reports.tasks import (
     bundle_stt_files,
     find_stt_folders,
@@ -594,3 +594,56 @@ class TestProcessReportSourceEmailNotification:
 
         assert "approved@example.com" in recipients
         assert "pending@example.com" not in recipients
+
+
+@pytest.mark.django_db
+class TestFeedbackReportEmailContent:
+    """Tests for email content being contextual to report_type."""
+
+    def test_tanf_ssp_email_subject(self):
+        """TANF_SSP report should produce subject with 'TANF/SSP'."""
+        from unittest.mock import patch as mock_patch
+        from tdpservice.reports.test.factories import ReportFileFactory
+        from tdpservice.email.helpers.feedback_report import send_feedback_report_available_email
+
+        report = ReportFileFactory.create(report_type=ReportType.TANF_SSP)
+
+        with mock_patch("tdpservice.email.helpers.feedback_report.automated_email") as mock_email:
+            send_feedback_report_available_email(report, ["test@example.com"])
+
+            mock_email.assert_called_once()
+            call_kwargs = mock_email.call_args[1]
+            assert "TANF/SSP Feedback Report Available" in call_kwargs["subject"]
+            assert call_kwargs["email_context"]["report_type_label"] == "TANF/SSP"
+            assert call_kwargs["email_context"]["report_type"] == "TANF_SSP"
+
+    def test_fra_email_subject(self):
+        """FRA report should produce subject with 'FRA'."""
+        from unittest.mock import patch as mock_patch
+        from tdpservice.reports.test.factories import ReportFileFactory
+        from tdpservice.email.helpers.feedback_report import send_feedback_report_available_email
+
+        report = ReportFileFactory.create(report_type=ReportType.FRA)
+
+        with mock_patch("tdpservice.email.helpers.feedback_report.automated_email") as mock_email:
+            send_feedback_report_available_email(report, ["test@example.com"])
+
+            mock_email.assert_called_once()
+            call_kwargs = mock_email.call_args[1]
+            assert "FRA Feedback Report Available" in call_kwargs["subject"]
+            assert call_kwargs["email_context"]["report_type_label"] == "FRA"
+            assert call_kwargs["email_context"]["report_type"] == "FRA"
+
+    def test_email_text_message_includes_report_type(self):
+        """Plain text fallback should include report_type_label."""
+        from unittest.mock import patch as mock_patch
+        from tdpservice.reports.test.factories import ReportFileFactory
+        from tdpservice.email.helpers.feedback_report import send_feedback_report_available_email
+
+        report = ReportFileFactory.create(report_type=ReportType.FRA)
+
+        with mock_patch("tdpservice.email.helpers.feedback_report.automated_email") as mock_email:
+            send_feedback_report_available_email(report, ["test@example.com"])
+
+            call_kwargs = mock_email.call_args[1]
+            assert "FRA feedback report" in call_kwargs["text_message"]
