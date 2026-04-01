@@ -594,3 +594,87 @@ class TestProcessReportSourceEmailNotification:
 
         assert "approved@example.com" in recipients
         assert "pending@example.com" not in recipients
+
+    @patch("tdpservice.reports.tasks.send_feedback_report_available_email")
+    @patch("tdpservice.reports.tasks.timezone.now")
+    def test_sends_to_regional_staff_in_stt_region(
+        self, mock_now, mock_send_email, ofa_admin
+    ):
+        """Test that email is sent to Regional Staff whose region includes the STT."""
+        mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
+
+        from django.contrib.auth.models import Group
+
+        from tdpservice.stts.models import STT, Region
+        from tdpservice.users.models import AccountApprovalStatusChoices, User
+
+        # Create region and STT
+        region = Region.objects.create(id=9014, name="Test Region 14")
+        stt = STT.objects.create(
+            id=8014,
+            stt_code="01",
+            name="Test STT Regional Email",
+            region=region,
+            postal_code="TR",
+            type="STATE",
+        )
+
+        data_analyst_group, _ = Group.objects.get_or_create(name="Data Analyst")
+        regional_group, _ = Group.objects.get_or_create(name="OFA Regional Staff")
+
+        # Create approved Data Analyst for this STT
+        analyst = User.objects.create(
+            username="analyst_regional_test",
+            email="analyst_regional@example.com",
+            stt=stt,
+            account_approval_status=AccountApprovalStatusChoices.APPROVED,
+        )
+        analyst.groups.add(data_analyst_group)
+
+        # Create approved Regional Staff in the same region
+        regional_user = User.objects.create(
+            username="regional_staff_test",
+            email="regional@example.com",
+            account_approval_status=AccountApprovalStatusChoices.APPROVED,
+        )
+        regional_user.groups.add(regional_group)
+        regional_user.regions.add(region)
+
+        # Create Regional Staff in a different region (should NOT receive email)
+        other_region = Region.objects.create(id=9015, name="Test Region 15")
+        other_regional = User.objects.create(
+            username="other_regional_test",
+            email="other_regional@example.com",
+            account_approval_status=AccountApprovalStatusChoices.APPROVED,
+        )
+        other_regional.groups.add(regional_group)
+        other_regional.regions.add(other_region)
+
+        structure = {"FY2025": {"RO1": {"F1": ["report.pdf"]}}}
+        zip_buffer = create_nested_zip(structure, "FY2025_test")
+
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        uploaded_file = SimpleUploadedFile(
+            "report_source.zip", zip_buffer.read(), content_type="application/zip"
+        )
+
+        source = ReportSource.objects.create(
+            uploaded_by=ofa_admin,
+            original_filename="report_source.zip",
+            slug="report_source.zip",
+            file=uploaded_file,
+            year=2025,
+            date_extracted_on=date(2025, 1, 31),
+        )
+
+        process_report_source(source.id)
+
+        # Verify both analyst and regional staff received email
+        mock_send_email.assert_called_once()
+        call_args = mock_send_email.call_args[0]
+        recipients = call_args[1]
+
+        assert "analyst_regional@example.com" in recipients
+        assert "regional@example.com" in recipients
+        assert "other_regional@example.com" not in recipients
