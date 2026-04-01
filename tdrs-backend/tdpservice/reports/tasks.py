@@ -5,6 +5,7 @@ import logging
 import zipfile
 
 from django.core.files.base import ContentFile
+from django.db.models import Q
 from django.utils import timezone
 
 from celery import shared_task
@@ -157,21 +158,29 @@ def _extract_and_validate_structure(source: ReportSource, zip_file: zipfile.ZipF
 
 def _send_report_file_notification(report_file: ReportFile):
     """
-    Send email notification to all Data Analysts for the ReportFile's STT.
+    Send email notification to Data Analysts and Regional Staff for the ReportFile's STT.
+
+    Data Analysts are notified if their assigned STT matches the report's STT.
+    Regional Staff are notified if their region includes the report's STT.
 
     Parameters
     ----------
         report_file: The ReportFile that was just created
     """
-    # Query all approved Data Analysts for this STT
-    data_analysts = User.objects.filter(
-        stt=report_file.stt,
-        account_approval_status=AccountApprovalStatusChoices.APPROVED,
-        groups__name="Data Analyst",
-    ).values_list("email", flat=True).distinct()
+    # Data Analysts assigned to this STT
+    data_analyst_q = Q(stt=report_file.stt, groups__name="Data Analyst")
+    # Regional Staff whose region includes this STT
+    regional_staff_q = Q(regions=report_file.stt.region, groups__name="OFA Regional Staff")
 
-    if data_analysts:
-        send_feedback_report_available_email(report_file, list(data_analysts))
+    recipients = list(
+        User.objects.filter(
+            data_analyst_q | regional_staff_q,
+            account_approval_status=AccountApprovalStatusChoices.APPROVED,
+        ).values_list("email", flat=True).distinct()
+    )
+
+    if recipients:
+        send_feedback_report_available_email(report_file, recipients)
 
 
 def _process_stt_folder(
