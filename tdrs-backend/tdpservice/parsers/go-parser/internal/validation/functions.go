@@ -2,20 +2,14 @@ package validation
 
 import (
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/expr-lang/expr"
 
 	"go-parser/internal/parser"
 )
-
-// regexCache caches compiled regexes by pattern string.
-// Patterns are static (from validator YAML), so the cache is small and long-lived.
-var regexCache sync.Map
 
 // RegisterFunctions returns expr options for all custom validation functions.
 func RegisterFunctions() []expr.Option {
@@ -29,28 +23,18 @@ func RegisterFunctions() []expr.Option {
 		// Date functions
 		expr.Function("year", wrap1(extractYear), new(func(any) int)),
 		expr.Function("month", wrap1(extractMonth), new(func(any) int)),
-		expr.Function("day", wrap1(extractDay), new(func(any) int)),
 		expr.Function("quarter", wrap1(extractQuarter), new(func(any) int)),
 		expr.Function("isValidDate", wrap1(isValidDate), new(func(any) bool)),
 		expr.Function("calculateAge", wrap2(calculateAge), new(func(string, string) int)),
 
 		// String functions
-		expr.Function("matches", wrap2(regexMatch), new(func(string, string) bool)),
 		expr.Function("isNumeric", wrap1(isNumeric), new(func(string) bool)),
 		expr.Function("isAlphaNumeric", wrap1(isAlphaNumeric), new(func(string) bool)),
-		expr.Function("trim", wrap1(strings.TrimSpace), new(func(string) string)),
-		expr.Function("len", wrap1(strLen), new(func(any) int)),
-
-		// Type conversion
-		expr.Function("str", wrap1(toString), new(func(any) string)),
-		expr.Function("toInt", wrap1(toInt), new(func(any) int)),
 
 		// SSN validation
 		expr.Function("isValidSSN", wrap1(isValidSSN), new(func(string) bool)),
 
 		// Group validators (take group explicitly)
-		expr.Function("hasDuplicateField", wrap3(hasDuplicateField),
-			new(func(*parser.ParsedGroup, string, string) bool)),
 		expr.Function("getRecordsOfType", wrap2(getRecordsOfType),
 			new(func(*parser.ParsedGroup, string) []*parser.ParsedRecord)),
 
@@ -189,16 +173,6 @@ func extractMonth(v any) int {
 	return month
 }
 
-// extractDay extracts the day from a date string (YYYYMMDD format).
-func extractDay(v any) int {
-	s := toString(v)
-	if len(s) < 8 {
-		return 0
-	}
-	day, _ := strconv.Atoi(s[6:8])
-	return day
-}
-
 // extractQuarter returns the quarter (1-4) from a date string.
 func extractQuarter(v any) int {
 	month := extractMonth(v)
@@ -254,20 +228,6 @@ func calculateAge(dob, rptMonthYear string) int {
 	return age
 }
 
-// regexMatch checks if a string matches a regular expression pattern.
-// Compiled regexes are cached since patterns come from static validator definitions.
-func regexMatch(s, pattern string) bool {
-	if cached, ok := regexCache.Load(pattern); ok {
-		return cached.(*regexp.Regexp).MatchString(s)
-	}
-	compiled, err := regexp.Compile(pattern)
-	if err != nil {
-		return false
-	}
-	regexCache.Store(pattern, compiled)
-	return compiled.MatchString(s)
-}
-
 // isNumeric checks if a string contains only numeric characters.
 func isNumeric(s string) bool {
 	if s == "" {
@@ -294,11 +254,6 @@ func isAlphaNumeric(s string) bool {
 	return true
 }
 
-// strLen returns the length of any value converted to string.
-func strLen(v any) int {
-	return len(toString(v))
-}
-
 // toString converts any value to a string.
 func toString(v any) string {
 	if v == nil {
@@ -316,46 +271,6 @@ func toString(v any) string {
 	default:
 		return ""
 	}
-}
-
-// toInt converts any value to an integer.
-func toInt(v any) int {
-	if v == nil {
-		return 0
-	}
-	switch val := v.(type) {
-	case int:
-		return val
-	case int64:
-		return int(val)
-	case float64:
-		return int(val)
-	case string:
-		i, _ := strconv.Atoi(strings.TrimSpace(val))
-		return i
-	default:
-		return 0
-	}
-}
-
-// hasDuplicateField checks if any records of the given type have duplicate values
-// for the specified field.
-func hasDuplicateField(group *parser.ParsedGroup, recordType, fieldName string) bool {
-	seen := make(map[any]bool)
-	for _, rec := range group.Records {
-		if rec.GetRecordType() != recordType {
-			continue
-		}
-		value := rec.Get(fieldName)
-		if value == nil {
-			continue
-		}
-		if seen[value] {
-			return true
-		}
-		seen[value] = true
-	}
-	return false
 }
 
 // getRecordsOfType returns all records of the given type from a group.

@@ -561,7 +561,7 @@ segments:
             params:
               values: ['9', '0', ' ']
           - id: is_alphanumeric_or_space
-            expr: "isAlphaNumeric(str(Value)) or Value == ' '"
+            expr: "isAlphaNumeric(string(Value)) or Value == ' '"
 
       - name: FAMILY_EXEMPT_TIME_LIMITS
         friendly_name: Family Exempt Time Limits

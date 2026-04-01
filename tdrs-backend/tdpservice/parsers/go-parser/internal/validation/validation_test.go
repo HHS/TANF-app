@@ -155,12 +155,6 @@ func TestCustomFunctions(t *testing.T) {
 		}
 	})
 
-	t.Run("extractDay", func(t *testing.T) {
-		if extractDay("20240115") != 15 {
-			t.Error("expected day=15")
-		}
-	})
-
 	t.Run("extractQuarter", func(t *testing.T) {
 		tests := []struct {
 			date     string
@@ -223,69 +217,6 @@ func TestCustomFunctions(t *testing.T) {
 		}
 		if toString("hello") != "hello" {
 			t.Error("expected toString('hello')='hello'")
-		}
-	})
-
-	t.Run("toInt", func(t *testing.T) {
-		if toInt(nil) != 0 {
-			t.Error("expected toInt(nil)=0")
-		}
-		if toInt("42") != 42 {
-			t.Error("expected toInt('42')=42")
-		}
-		if toInt(42) != 42 {
-			t.Error("expected toInt(42)=42")
-		}
-	})
-
-	t.Run("strLen", func(t *testing.T) {
-		if strLen("hello") != 5 {
-			t.Error("expected strLen('hello')=5")
-		}
-		if strLen(12345) != 5 {
-			t.Error("expected strLen(12345)=5")
-		}
-	})
-
-	t.Run("regexMatch", func(t *testing.T) {
-		if !regexMatch("hello123", "^[a-z]+[0-9]+$") {
-			t.Error("expected match")
-		}
-		if regexMatch("hello", "^[0-9]+$") {
-			t.Error("expected no match")
-		}
-	})
-}
-
-// TestHasDuplicateField tests the duplicate detection function
-func TestHasDuplicateField(t *testing.T) {
-	t.Run("no duplicates", func(t *testing.T) {
-		group := testutil.NewTestGroup(
-			testutil.NewTestRecord(t2Schema, 1, map[string]any{"SSN": "111111111"}),
-			testutil.NewTestRecord(t2Schema, 2, map[string]any{"SSN": "222222222"}),
-		)
-		if hasDuplicateField(group, "T2", "SSN") {
-			t.Error("expected no duplicates")
-		}
-	})
-
-	t.Run("with duplicates", func(t *testing.T) {
-		group := testutil.NewTestGroup(
-			testutil.NewTestRecord(t2Schema, 1, map[string]any{"SSN": "111111111"}),
-			testutil.NewTestRecord(t2Schema, 2, map[string]any{"SSN": "111111111"}),
-		)
-		if !hasDuplicateField(group, "T2", "SSN") {
-			t.Error("expected duplicates")
-		}
-	})
-
-	t.Run("different record types", func(t *testing.T) {
-		group := testutil.NewTestGroup(
-			testutil.NewTestRecord(t2Schema, 1, map[string]any{"SSN": "111111111"}),
-			testutil.NewTestRecord(t3Schema, 2, nil),
-		)
-		if hasDuplicateField(group, "T2", "SSN") {
-			t.Error("expected no duplicates (different record types)")
 		}
 	})
 }
@@ -902,28 +833,6 @@ func TestToStringEdgeCases(t *testing.T) {
 	}
 }
 
-func TestToIntEdgeCases(t *testing.T) {
-	tests := []struct {
-		name     string
-		value    any
-		expected int
-	}{
-		{"int64", int64(100), 100},
-		{"float64", float64(42.9), 42},
-		{"string with spaces", " 42 ", 42},
-		{"non-numeric string", "abc", 0},
-		{"empty string", "", 0},
-		{"unsupported type", []int{1}, 0},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := toInt(tt.value); got != tt.expected {
-				t.Errorf("toInt(%v) = %d, want %d", tt.value, got, tt.expected)
-			}
-		})
-	}
-}
-
 func TestCalculateAge(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -996,12 +905,6 @@ func TestExtractDateEdgeCases(t *testing.T) {
 		}
 	})
 
-	t.Run("extractDay with short string", func(t *testing.T) {
-		if extractDay("202401") != 0 {
-			t.Error("expected 0 for string shorter than 8")
-		}
-	})
-
 	t.Run("extractQuarter with invalid month", func(t *testing.T) {
 		if extractQuarter("abc") != 0 {
 			t.Error("expected 0 for invalid date")
@@ -1039,21 +942,6 @@ func TestExtractDateEdgeCases(t *testing.T) {
 	})
 }
 
-func TestRegexMatchCaching(t *testing.T) {
-	// First call compiles and caches
-	if !regexMatch("hello123", "^[a-z]+[0-9]+$") {
-		t.Error("expected match on first call")
-	}
-	// Second call should use cache
-	if !regexMatch("world456", "^[a-z]+[0-9]+$") {
-		t.Error("expected match on cached call")
-	}
-	// Invalid regex should return false, not panic
-	if regexMatch("hello", "[invalid") {
-		t.Error("expected false for invalid regex")
-	}
-}
-
 func TestIsAlphaNumericEdgeCases(t *testing.T) {
 	if isAlphaNumeric("") {
 		t.Error("expected false for empty string")
@@ -1063,15 +951,6 @@ func TestIsAlphaNumericEdgeCases(t *testing.T) {
 	}
 	if isAlphaNumeric("hello world") {
 		t.Error("expected false for string with space")
-	}
-}
-
-func TestStrLenEdgeCases(t *testing.T) {
-	if strLen(nil) != 0 {
-		t.Error("expected 0 for nil")
-	}
-	if strLen("") != 0 {
-		t.Error("expected 0 for empty string")
 	}
 }
 

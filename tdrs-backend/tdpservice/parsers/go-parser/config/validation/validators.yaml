@@ -28,7 +28,7 @@ field_validators:
   # Length validator - checks string length equals n
   # Params: n (int)
   - id: length
-    expr: "len(Value) == Params.n"
+    expr: "len(string(Value)) == Params.n"
     message: "{{.RecordType}} Item {{.Item}}: must be {{.Params.n}} characters"
 
   # Integer range validator - checks value is within [min, max]
@@ -86,11 +86,11 @@ field_validators:
 
   # String format validators
   - id: is_numeric
-    expr: "isNumeric(str(Value))"
+    expr: "isNumeric(string(Value))"
     message: "{{.RecordType}} Item {{.Item}}: must be numeric"
 
   - id: is_alphanumeric
-    expr: "isAlphaNumeric(str(Value))"
+    expr: "isAlphaNumeric(string(Value))"
     message: "{{.RecordType}} Item {{.Item}}: must be alphanumeric"
 
   # Values or blank validator - value must be in set or blank
