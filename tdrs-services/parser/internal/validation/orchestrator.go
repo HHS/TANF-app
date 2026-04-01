@@ -1,8 +1,6 @@
 package validation
 
 import (
-	"github.com/expr-lang/expr/vm"
-
 	"go-parser/internal/parser"
 )
 
@@ -40,20 +38,28 @@ func (o *ValidationOrchestrator) ValidateGroup(group *parser.ParsedGroup, filesp
 
 	// Phase 1: Group validation (always runs)
 	groupEnv := NewGroupEnv(group)
-	for _, cv := range o.registry.GetGroupValidators(filespecKey) {
-		groupEnv.Params = cv.Params // Set params for this validator
+	for _, validator := range o.registry.GetGroupValidators(filespecKey) {
+		groupEnv.Params = validator.Params // Set params for this validator
 
-		if cv.ResultMode == "per_record" {
+		if validator.ResultMode == "per_record" {
 			// Per-record mode: expression returns list of failing records
-			failedRecords := ExecuteReturningRecords(cv, groupEnv)
+			failedRecords, err := ExecuteReturningRecords(validator, groupEnv)
+			if err != nil {
+				result.GroupErrors = append(result.GroupErrors, &ValidationResult{
+					Valid:       false,
+					ValidatorID: validator.ID,
+					ErrorType:   validator.ErrorType,
+					Error:       err,
+				})
+			}
 			for _, rec := range failedRecords {
-				result.AddRecordError(rec, cv, nil)
+				result.AddRecordError(rec, validator, nil)
 			}
 		} else {
 			// Single mode: expression returns bool
-			if vr := Execute(cv, groupEnv); !vr.Valid {
-				vr.ErrorType = cv.ErrorType
-				result.GroupErrors = append(result.GroupErrors, vr)
+			if validationResult := Execute(validator, groupEnv); !validationResult.Valid {
+				validationResult.ErrorType = validator.ErrorType
+				result.GroupErrors = append(result.GroupErrors, validationResult)
 			}
 		}
 	}
@@ -138,43 +144,4 @@ func (o *ValidationOrchestrator) validateRecordInPlace(result *RecordValidationR
 			result.RecordErrors = append(result.RecordErrors, vr)
 		}
 	}
-}
-
-// ExecuteReturningRecords runs a compiled validator that returns a list of failing records.
-// This is used for group validators with result_mode: per_record.
-// The expression should return a slice of *parser.ParsedRecord.
-// TODO: work on this. Seems weird.
-func ExecuteReturningRecords(cv *CompiledValidator, env any) []*parser.ParsedRecord {
-	program, ok := cv.Expr.Program.(*vm.Program)
-	if !ok {
-		return nil
-	}
-
-	output, err := vm.Run(program, env)
-	if err != nil {
-		return nil
-	}
-
-	// Handle nil result (no failures)
-	if output == nil {
-		return nil
-	}
-
-	// Try direct type assertion
-	if records, ok := output.([]*parser.ParsedRecord); ok {
-		return records
-	}
-
-	// Try to convert from []any (expr engine may wrap results)
-	if anySlice, ok := output.([]any); ok {
-		var records []*parser.ParsedRecord
-		for _, item := range anySlice {
-			if rec, ok := item.(*parser.ParsedRecord); ok {
-				records = append(records, rec)
-			}
-		}
-		return records
-	}
-
-	return nil
 }

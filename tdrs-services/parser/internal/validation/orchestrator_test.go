@@ -575,9 +575,12 @@ func TestExecuteReturningRecordsEdgeCases(t *testing.T) {
 			ID:   "bad",
 			Expr: &CompiledExpr{Expr: "test", Program: "not a program"},
 		}
-		records := ExecuteReturningRecords(cv, nil)
+		records, err := ExecuteReturningRecords(cv, nil)
 		if records != nil {
 			t.Error("expected nil for bad program type")
+		}
+		if err == nil {
+			t.Error("expected error for bad program type")
 		}
 	})
 
@@ -590,7 +593,10 @@ func TestExecuteReturningRecordsEdgeCases(t *testing.T) {
 			testutil.NewTestRecord(t2Schema, 1, map[string]any{"SSN": "111111111", "FAMILY_AFFILIATION": 1}),
 		)
 		env := NewGroupEnv(group)
-		records := ExecuteReturningRecords(cv, env)
+		records, err := ExecuteReturningRecords(cv, env)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
 		if len(records) != 0 {
 			t.Errorf("expected 0 records, got %d", len(records))
 		}
@@ -605,7 +611,10 @@ func TestExecuteReturningRecordsEdgeCases(t *testing.T) {
 			testutil.NewTestRecord(t2Schema, 2, map[string]any{"SSN": "111111111", "FAMILY_AFFILIATION": 1}),
 		)
 		env := NewGroupEnv(group)
-		records := ExecuteReturningRecords(cv, env)
+		records, err := ExecuteReturningRecords(cv, env)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
 		if len(records) != 1 {
 			t.Errorf("expected 1 duplicate record, got %d", len(records))
 		}

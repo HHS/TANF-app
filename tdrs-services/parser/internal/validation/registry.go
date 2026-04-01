@@ -6,7 +6,6 @@ import (
 	"text/template"
 
 	"github.com/expr-lang/expr"
-	"github.com/expr-lang/expr/vm"
 	"gopkg.in/yaml.v3"
 
 	"go-parser/internal/config"
@@ -459,46 +458,6 @@ func (r *ValidatorRegistry) Stats() RegistryStats {
 	}
 
 	return stats
-}
-
-// Execute runs a compiled validator against an environment.
-func Execute(cv *CompiledValidator, env any) *ValidationResult {
-	program, ok := cv.Expr.Program.(*vm.Program)
-	if !ok {
-		return &ValidationResult{
-			Valid:       false,
-			ValidatorID: cv.ID,
-			Error:       fmt.Errorf("invalid program type"),
-		}
-	}
-
-	output, err := vm.Run(program, env)
-	if err != nil {
-		return &ValidationResult{
-			Valid:       false,
-			ValidatorID: cv.ID,
-			Error:       err,
-		}
-	}
-
-	valid, ok := output.(bool)
-	if !ok {
-		return &ValidationResult{
-			Valid:       false,
-			ValidatorID: cv.ID,
-			Error:       fmt.Errorf("expression did not return bool"),
-		}
-	}
-
-	if valid {
-		return validResultSingleton
-	}
-
-	return &ValidationResult{
-		Valid:       false,
-		ValidatorID: cv.ID,
-		Validator:   cv,
-	}
 }
 
 // ClearCompileTimeData clears data that's only needed during loading.

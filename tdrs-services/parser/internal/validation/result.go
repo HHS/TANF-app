@@ -206,18 +206,18 @@ func (gvr *GroupValidationResult) TotalErrorCount() int {
 
 // AddRecordError adds an error attributed to a specific record from a group-scope validator.
 // This is used for per_record result mode group validators.
-func (gvr *GroupValidationResult) AddRecordError(rec *parser.ParsedRecord, cv *CompiledValidator, err error) {
+func (gvr *GroupValidationResult) AddRecordError(rec *parser.ParsedRecord, validator *CompiledValidator, err error) {
 	// Find the matching RecordValidationResult
 	for _, rr := range gvr.RecordResults {
 		if rr.Record.GetLineNumber() == rec.GetLineNumber() {
 			vr := &ValidationResult{
 				Valid:       false,
-				ErrorType:   cv.ErrorType,
-				ValidatorID: cv.ID,
+				ErrorType:   validator.ErrorType,
+				ValidatorID: validator.ID,
 				LineNumber:  rec.GetLineNumber(),
 				RecordType:  rec.GetRecordType(),
 				Error:       err,
-				Validator:   cv,
+				Validator:   validator,
 			}
 			rr.RecordErrors = append(rr.RecordErrors, vr)
 			return
