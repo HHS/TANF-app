@@ -106,7 +106,6 @@ func (d *PostitionalDecoder) unsortedRows() iter.Seq2[Row, error] {
 				continue
 			}
 
-			// TODO: We might need to update lineNum before this
 			if err == io.EOF {
 				return
 			}

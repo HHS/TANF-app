@@ -68,7 +68,7 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, params Proc
 	startTime := time.Now()
 
 	// Step 2: Create router/initialize object pools
-	// TODO: I hate that we have to initialize the object pools on the schemas in NewRouter.
+	// TODO: It feels wrong that we have to initialize the object pools on the schemas in NewRouter.
 	router := writer.NewRouter(p.sink, params.DatafileID, spec, p.registry, writer.RouterConfig{
 		PoolPrewarmSize:     p.config.PoolPrewarmSize,
 		FlushThreshold:      p.config.FlushThreshold,
@@ -126,7 +126,7 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, params Proc
 	// Step 8: Process rows through the accumulator
 	// TODO: I feel like step 7 and this step should be apart of the worker pool
 	acc := parser.NewAccumulator(spec, detector)
-	err = processRowsStreaming(dec, acc, workers)
+	err = accumulateBatches(dec, acc, workers)
 	if err != nil {
 		workers.CloseInputs()
 		workers.Wait()
@@ -169,8 +169,8 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, params Proc
 	}, nil
 }
 
-// processRowsStreaming processes rows in file order.
-func processRowsStreaming(
+// accumulateBatches processes rows in file order.
+func accumulateBatches(
 	dec decoder.Decoder,
 	acc *parser.Accumulator,
 	workers *WorkerPool,
