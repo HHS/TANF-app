@@ -21,7 +21,7 @@ import (
 
 // TestDataDir returns the absolute path to the test data directory.
 func TestDataDir() string {
-	return filepath.Join("..", "..", "..", "test", "data")
+	return filepath.Join("..", "..", "..", "..", "tdrs-backend", "tdpservice", "parsers", "test", "data")
 }
 
 // ParseFile parses a file through the full pipeline and writes to the database.
