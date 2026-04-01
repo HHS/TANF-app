@@ -10,44 +10,44 @@ LDFLAGS ?=
 
 # Run all unit tests with gotestsum
 test:
-	$(GOTESTSUM) $(GOTEST_FLAGS) -- $(PACKAGES)
+	$(GOTESTSUM) $(GOTEST_FLAGS) -- -count=1 $(PACKAGES)
 
 # Alias for test
 test-unit: test
 
 # Run integration tests (requires database)
 test-integration:
-	$(GOTESTSUM) $(GOTEST_FLAGS) -- -tags integration $(PACKAGES)
+	$(GOTESTSUM) $(GOTEST_FLAGS) -- -count=1 -tags integration $(PACKAGES)
 
 # Run all tests including integration
 test-all-coverage:
-	$(GOTESTSUM) $(GOTEST_FLAGS) -- -coverprofile=coverage.out -tags integration $(PACKAGES)
+	$(GOTESTSUM) $(GOTEST_FLAGS) -- -count=1 -coverprofile=coverage.out -tags integration $(PACKAGES)
 	go tool cover -func=coverage.out
 
 # Run all tests with coverage including integration
 test-all:
-	$(GOTESTSUM) $(GOTEST_FLAGS) -- -tags integration $(PACKAGES)
+	$(GOTESTSUM) $(GOTEST_FLAGS) -- -count=1 -tags integration $(PACKAGES)
 
 # Run tests with verbose per-test output
 test-verbose:
-	$(GOTESTSUM) --format testdox $(GOTEST_FLAGS) -- $(PACKAGES)
+	$(GOTESTSUM) --format testdox $(GOTEST_FLAGS) -- -count=1 $(PACKAGES)
 
 # Run only short tests (skip long-running ones)
 test-short:
-	$(GOTESTSUM) $(GOTEST_FLAGS) -- -short $(PACKAGES)
+	$(GOTESTSUM) $(GOTEST_FLAGS) -- -count=1 -short $(PACKAGES)
 
 # Run tests with coverage report
 test-coverage:
-	$(GOTESTSUM) $(GOTEST_FLAGS) -- -coverprofile=coverage.out $(PACKAGES)
+	$(GOTESTSUM) $(GOTEST_FLAGS) -- -count=1 -coverprofile=coverage.out $(PACKAGES)
 	go tool cover -func=coverage.out
 
 # Run tests and output JUnit XML (useful for CI)
 test-ci:
-	$(GOTESTSUM) --junitfile test-results.xml $(GOTEST_FLAGS) -- $(PACKAGES)
+	$(GOTESTSUM) --junitfile test-results.xml $(GOTEST_FLAGS) -- -count=1 $(PACKAGES)
 
 # Watch for changes and re-run tests
 test-watch:
-	$(GOTESTSUM) --watch $(GOTEST_FLAGS) -- $(PACKAGES)
+	$(GOTESTSUM) --watch $(GOTEST_FLAGS) -- -count=1 $(PACKAGES)
 
 # Build for the current platform
 build:
