@@ -42,7 +42,7 @@ func (o *ValidationOrchestrator) ValidateGroup(group *parser.ParsedGroup, filesp
 		groupEnv.Params = validator.Params // Set params for this validator
 
 		if validator.ResultMode == "per_record" {
-			// Per-record mode: expression returns list of failing records
+			// Per-record mode: expression returns list of failing records instead of a boolean pass fail.
 			failedRecords, err := ExecuteReturningRecords(validator, groupEnv)
 			if err != nil {
 				result.GroupErrors = append(result.GroupErrors, &ValidationResult{
@@ -69,15 +69,15 @@ func (o *ValidationOrchestrator) ValidateGroup(group *parser.ParsedGroup, filesp
 
 	// Phase 2: Validate each record
 	for i, rec := range group.Records {
-		o.validateRecordInPlace(result.RecordResults[i], rec, groupBlocked)
+		o.validateRecord(result.RecordResults[i], rec, groupBlocked)
 	}
 
 	return result
 }
 
-// validateRecordInPlace validates a single record, updating the provided result.
+// validateRecord validates a single record, updating the provided result.
 // Called internally by ValidateGroup.
-func (o *ValidationOrchestrator) validateRecordInPlace(result *RecordValidationResult, rec *parser.ParsedRecord, groupBlocked bool) {
+func (o *ValidationOrchestrator) validateRecord(result *RecordValidationResult, rec *parser.ParsedRecord, groupBlocked bool) {
 	recType := rec.GetRecordType()
 	recordEnv := NewRecordEnv(rec)
 
