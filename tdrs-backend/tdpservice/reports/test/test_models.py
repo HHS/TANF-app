@@ -2,7 +2,10 @@
 
 import pytest
 from tdpservice.reports.models import ReportFile, ReportType
-from tdpservice.reports.test.factories import FRAReportFileFactory, FRAReportSourceFactory
+from tdpservice.reports.test.factories import (
+    FRAReportFileFactory,
+    FRAReportSourceFactory,
+)
 
 
 @pytest.mark.django_db
@@ -180,7 +183,7 @@ def test_find_latest_version_number_filters_by_report_type(report_file_instance)
 
 @pytest.mark.django_db
 def test_fra_report_file_factory():
-    """FRAReportFileFactory should create a ReportFile with report_type=FRA."""
+    """Test FRAReportFileFactory creates a ReportFile with report_type=FRA."""
     fra_report = FRAReportFileFactory.create()
 
     assert fra_report.pk is not None
@@ -189,7 +192,7 @@ def test_fra_report_file_factory():
 
 @pytest.mark.django_db
 def test_fra_report_source_factory():
-    """FRAReportSourceFactory should create a ReportSource with report_type=FRA."""
+    """Test FRAReportSourceFactory creates a ReportSource with report_type=FRA."""
     fra_source = FRAReportSourceFactory.create()
 
     assert fra_source.pk is not None
