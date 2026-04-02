@@ -1,4 +1,5 @@
 """Test data file serializers."""
+
 from django.core.exceptions import ValidationError
 
 import pytest
