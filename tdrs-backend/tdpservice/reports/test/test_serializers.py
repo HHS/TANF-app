@@ -26,27 +26,38 @@ def test_report_file_serializer_valid(report_file_data, data_analyst):
     assert obj.extension == "zip"
     assert obj.file.name is not None
 
+
 @pytest.mark.django_db
 def test_report_file_serializer_invalid_file_type(bad_report_file_data, data_analyst):
     """Test report file serializer rejects non zip file types."""
-    ser = ReportFileSerializer(context={"user": data_analyst}, data=bad_report_file_data)
+    ser = ReportFileSerializer(
+        context={"user": data_analyst}, data=bad_report_file_data
+    )
     with pytest.raises(ValidationError):
         ser.is_valid(raise_exception=True)
+
 
 @pytest.mark.django_db
 def test_report_source_serializer_valid(report_source_data, data_analyst):
     """Basic smoke test: ReportSourceSerializer should validate incoming data."""
-    ser = ReportSourceSerializer(context={"user": data_analyst}, data=report_source_data)
+    ser = ReportSourceSerializer(
+        context={"user": data_analyst}, data=report_source_data
+    )
     assert ser.is_valid(), ser.errors
     obj = ser.save()
 
     assert obj.pk is not None
     assert obj.original_filename == report_source_data["original_filename"]
 
+
 @pytest.mark.django_db
-def test_report_source_serializer_invalid_file_type(bad_report_source_data, data_analyst):
+def test_report_source_serializer_invalid_file_type(
+    bad_report_source_data, data_analyst
+):
     """Test report source serializer rejects non zip file types."""
-    ser = ReportSourceSerializer(context={"user": data_analyst}, data=bad_report_source_data)
+    ser = ReportSourceSerializer(
+        context={"user": data_analyst}, data=bad_report_source_data
+    )
     with pytest.raises(ValidationError):
         ser.is_valid(raise_exception=True)
 
@@ -68,7 +79,7 @@ def test_report_file_serializer_includes_report_type(report_file_data, data_anal
 
 @pytest.mark.django_db
 def test_report_file_serializer_with_fra_report_type(report_file_data, data_analyst):
-    """ReportFileSerializer should accept FRA report_type."""
+    """Test ReportFileSerializer accepts FRA report_type."""
     report_file_data["report_type"] = "FRA"
     ser = ReportFileSerializer(context={"user": data_analyst}, data=report_file_data)
     assert ser.is_valid(), ser.errors
@@ -78,9 +89,13 @@ def test_report_file_serializer_with_fra_report_type(report_file_data, data_anal
 
 
 @pytest.mark.django_db
-def test_report_source_serializer_includes_report_type(report_source_data, data_analyst):
+def test_report_source_serializer_includes_report_type(
+    report_source_data, data_analyst
+):
     """report_type should appear in serialized output and default to TANF_SSP."""
-    ser = ReportSourceSerializer(context={"user": data_analyst}, data=report_source_data)
+    ser = ReportSourceSerializer(
+        context={"user": data_analyst}, data=report_source_data
+    )
     assert ser.is_valid(), ser.errors
     obj = ser.save()
 
@@ -88,10 +103,14 @@ def test_report_source_serializer_includes_report_type(report_source_data, data_
 
 
 @pytest.mark.django_db
-def test_report_source_serializer_with_fra_report_type(report_source_data, data_analyst):
-    """ReportSourceSerializer should accept FRA report_type."""
+def test_report_source_serializer_with_fra_report_type(
+    report_source_data, data_analyst
+):
+    """Test ReportSourceSerializer accepts FRA report_type."""
     report_source_data["report_type"] = "FRA"
-    ser = ReportSourceSerializer(context={"user": data_analyst}, data=report_source_data)
+    ser = ReportSourceSerializer(
+        context={"user": data_analyst}, data=report_source_data
+    )
     assert ser.is_valid(), ser.errors
     obj = ser.save()
 
