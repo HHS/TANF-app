@@ -124,7 +124,7 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, params Proc
 	workers.Start(ctx)
 
 	// Step 8: Process rows through the accumulator
-	// TODO: I feel like step 7 and this step should be apart of the worker pool
+	// TODO: I feel like accumulateBatches can live as a receiver on the accumulator instead a standalone function.
 	acc := parser.NewAccumulator(spec, detector)
 	err = accumulateBatches(dec, acc, workers)
 	if err != nil {
