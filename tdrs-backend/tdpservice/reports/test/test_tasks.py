@@ -348,6 +348,153 @@ class TestProcessReportSource:
 
 
 @pytest.mark.django_db
+class TestProcessReportSourceReportType:
+    """Tests for report_type propagation from ReportSource to ReportFile."""
+
+    @patch("tdpservice.reports.tasks.timezone.now")
+    def test_fra_source_creates_fra_report_files(self, mock_now, ofa_admin):
+        """ReportSource with report_type=FRA should produce ReportFiles with report_type=FRA."""
+        from tdpservice.stts.models import STT, Region
+
+        region = Region.objects.create(id=9020, name="Test Region RT1")
+        STT.objects.create(
+            id=8020,
+            stt_code="01",
+            name="Test STT RT1",
+            region=region,
+            postal_code="R1",
+            type="STATE",
+        )
+
+        mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
+
+        structure = {"FY2025": {"RO1": {"F1": ["report1.pdf"]}}}
+        zip_buffer = create_nested_zip(structure, "FY2025_test")
+
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        uploaded_file = SimpleUploadedFile(
+            "report_source.zip", zip_buffer.read(), content_type="application/zip"
+        )
+
+        source = ReportSource.objects.create(
+            uploaded_by=ofa_admin,
+            original_filename="report_source.zip",
+            slug="report_source.zip",
+            file=uploaded_file,
+            year=2025,
+            date_extracted_on=date(2025, 1, 31),
+            report_type=ReportType.FRA,
+        )
+
+        process_report_source(source.id)
+
+        source.refresh_from_db()
+        assert source.status == ReportSource.Status.SUCCEEDED
+
+        report_file = ReportFile.objects.filter(source=source).first()
+        assert report_file.report_type == ReportType.FRA
+
+    @patch("tdpservice.reports.tasks.timezone.now")
+    def test_tanf_ssp_source_creates_tanf_ssp_report_files(self, mock_now, ofa_admin):
+        """ReportSource with report_type=TANF_SSP should produce ReportFiles with report_type=TANF_SSP."""
+        from tdpservice.stts.models import STT, Region
+
+        region = Region.objects.create(id=9021, name="Test Region RT2")
+        STT.objects.create(
+            id=8021,
+            stt_code="01",
+            name="Test STT RT2",
+            region=region,
+            postal_code="R2",
+            type="STATE",
+        )
+
+        mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
+
+        structure = {"FY2025": {"RO1": {"F1": ["report1.pdf"]}}}
+        zip_buffer = create_nested_zip(structure, "FY2025_test")
+
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        uploaded_file = SimpleUploadedFile(
+            "report_source.zip", zip_buffer.read(), content_type="application/zip"
+        )
+
+        source = ReportSource.objects.create(
+            uploaded_by=ofa_admin,
+            original_filename="report_source.zip",
+            slug="report_source.zip",
+            file=uploaded_file,
+            year=2025,
+            date_extracted_on=date(2025, 1, 31),
+            report_type=ReportType.TANF_SSP,
+        )
+
+        process_report_source(source.id)
+
+        source.refresh_from_db()
+        assert source.status == ReportSource.Status.SUCCEEDED
+
+        report_file = ReportFile.objects.filter(source=source).first()
+        assert report_file.report_type == ReportType.TANF_SSP
+
+    @patch("tdpservice.reports.tasks.timezone.now")
+    def test_fra_source_multiple_stts_all_inherit_report_type(self, mock_now, ofa_admin):
+        """All ReportFiles from an FRA source should have report_type=FRA."""
+        from tdpservice.stts.models import STT, Region
+
+        region = Region.objects.create(id=9022, name="Test Region RT3")
+        STT.objects.create(
+            id=8022,
+            stt_code="01",
+            name="Test STT RT3a",
+            region=region,
+            postal_code="R3",
+            type="STATE",
+        )
+        STT.objects.create(
+            id=8023,
+            stt_code="02",
+            name="Test STT RT3b",
+            region=region,
+            postal_code="R4",
+            type="STATE",
+        )
+
+        mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
+
+        structure = {"FY2025": {"RO1": {"F1": ["report1.pdf"], "F2": ["report2.pdf"]}}}
+        zip_buffer = create_nested_zip(structure, "FY2025_test")
+
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        uploaded_file = SimpleUploadedFile(
+            "report_source.zip", zip_buffer.read(), content_type="application/zip"
+        )
+
+        source = ReportSource.objects.create(
+            uploaded_by=ofa_admin,
+            original_filename="report_source.zip",
+            slug="report_source.zip",
+            file=uploaded_file,
+            year=2025,
+            date_extracted_on=date(2025, 1, 31),
+            report_type=ReportType.FRA,
+        )
+
+        process_report_source(source.id)
+
+        source.refresh_from_db()
+        assert source.status == ReportSource.Status.SUCCEEDED
+        assert source.num_reports_created == 2
+
+        report_files = ReportFile.objects.filter(source=source)
+        for rf in report_files:
+            assert rf.report_type == ReportType.FRA
+
+
+@pytest.mark.django_db
 class TestProcessReportSourceEmailNotification:
     """Tests for email notification when ReportFile is created."""
 
