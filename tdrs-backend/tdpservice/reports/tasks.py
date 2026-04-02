@@ -233,6 +233,7 @@ def _process_stt_folder(
             "stt": stt,
             "user": source.uploaded_by,
             "source": source,
+            "report_type": source.report_type,
             "original_filename": bundled_zip.name,
             "slug": bundled_zip.name,
             "extension": "zip",
