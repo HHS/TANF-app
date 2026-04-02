@@ -17,7 +17,7 @@ func TestNew_Construction(t *testing.T) {
 	if m == nil {
 		t.Fatal("New returned nil")
 	}
-	if m.cfg != cfg {
+	if m.Config != cfg {
 		t.Error("cfg not set correctly")
 	}
 }

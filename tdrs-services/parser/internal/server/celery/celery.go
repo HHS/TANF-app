@@ -3,48 +3,34 @@ package celery
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"go-parser/internal/config"
-	"go-parser/internal/db"
+	"go-parser/internal/server"
 	"go-parser/internal/storage"
 	"go-parser/internal/validation"
 )
 
-// Mode owns the full lifecycle for celery worker mode.
+// Server owns the full lifecycle for celery worker mode.
 // It maintains long-lived connections (DB pool, S3 client) and processes
 // tasks as they arrive from the celery broker.
-type Mode struct {
-	cfg        *config.Config
-	registry   *config.Registry
-	validators *validation.ValidatorRegistry
-	dbPool     *pgxpool.Pool
-	s3Storage  *storage.S3Storage
+type Server struct {
+	server.Base
+	dbPool    *pgxpool.Pool
+	s3Storage *storage.S3Storage
 }
 
 // New creates a celery mode runner. It connects to the database,
 // loads content types, and initializes the S3 client.
-func New(cfg *config.Config, reg *config.Registry, validators *validation.ValidatorRegistry) (*Mode, error) {
+func New(cfg *config.Config, reg *config.Registry, validators *validation.ValidatorRegistry) (*Server, error) {
 	ctx := context.Background()
+	base := server.NewBase(cfg, reg, validators)
 
-	// Initialize DB pool
-	if cfg.Database.URL == "" {
-		return nil, fmt.Errorf("database.url is required for celery mode")
-	}
-	dbPool, err := db.NewPool(ctx, cfg.Database.URL, cfg.Database)
+	dbPool, err := base.ConnectDB(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to database: %w", err)
+		return nil, err
 	}
-
-	contentTypes, err := db.LoadContentTypes(ctx, dbPool)
-	if err != nil {
-		dbPool.Close()
-		return nil, fmt.Errorf("failed to load content types: %w", err)
-	}
-	reg.LoadContentTypes(contentTypes)
-	log.Printf("Loaded %d content types from database", len(contentTypes))
 
 	// Initialize S3 client
 	s3Storage, err := storage.NewS3Storage(storage.S3StorageConfig{
@@ -56,19 +42,17 @@ func New(cfg *config.Config, reg *config.Registry, validators *validation.Valida
 		return nil, fmt.Errorf("failed to initialize S3 storage: %w", err)
 	}
 
-	return &Mode{
-		cfg:        cfg,
-		registry:   reg,
-		validators: validators,
-		dbPool:     dbPool,
-		s3Storage:  s3Storage,
+	return &Server{
+		Base:      base,
+		dbPool:    dbPool,
+		s3Storage: s3Storage,
 	}, nil
 }
 
 // Run starts the celery worker loop. It blocks until the context is cancelled
 // or the worker is stopped.
-func (m *Mode) Run(ctx context.Context) error {
-	defer m.dbPool.Close()
+func (celery *Server) Run(ctx context.Context) error {
+	defer celery.dbPool.Close()
 
 	// TODO: Implement celery worker loop.
 	// Each task should:

@@ -8,35 +8,31 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"go-parser/internal/config"
-	"go-parser/internal/db"
 	"go-parser/internal/decoder"
 	"go-parser/internal/pipeline"
+	"go-parser/internal/server"
 	"go-parser/internal/storage/reader"
 	"go-parser/internal/storage/writer"
 	"go-parser/internal/testutil"
 	"go-parser/internal/validation"
 )
 
-// Mode owns the full lifecycle for local file processing.
-type Mode struct {
-	cfg        *config.Config
-	registry   *config.Registry
-	validators *validation.ValidatorRegistry
+// Server owns the full lifecycle for local file processing.
+type Server struct {
+	server.Base
 }
 
 // New creates a local mode runner.
-func New(cfg *config.Config, reg *config.Registry, validators *validation.ValidatorRegistry) *Mode {
-	return &Mode{
-		cfg:        cfg,
-		registry:   reg,
-		validators: validators,
+func New(cfg *config.Config, reg *config.Registry, validators *validation.ValidatorRegistry) *Server {
+	return &Server{
+		Base: server.NewBase(cfg, reg, validators),
 	}
 }
 
 // needsDatabase determines whether a database connection is required.
 // Local mode only needs DB when the output sink is the database.
-func (m *Mode) needsDatabase() bool {
-	return m.cfg.Writer.Mode != "file"
+func (local *Server) needsDatabase() bool {
+	return local.Config.Writer.Mode != "file"
 }
 
 // dbResources holds the database-related resources created for a local run.
@@ -48,29 +44,17 @@ type dbResources struct {
 // setupDatabase conditionally connects to the database, loads content types,
 // and creates a test datafile record for FK constraints.
 // Returns nil resources (no cleanup needed) when the writer mode is "file".
-func (m *Mode) setupDatabase(ctx context.Context, program string) (*dbResources, func(), error) {
+func (local *Server) setupDatabase(ctx context.Context, program string) (*dbResources, func(), error) {
 	noop := func() {}
 
-	if !m.needsDatabase() {
+	if !local.needsDatabase() {
 		return nil, noop, nil
 	}
 
-	if m.cfg.Database.URL == "" {
-		return nil, noop, fmt.Errorf("database.url is required (set in config file, DATABASE_URL env var, or --database.url flag)")
-	}
-
-	pool, err := db.NewPool(ctx, m.cfg.Database.URL, m.cfg.Database)
+	pool, err := local.ConnectDB(ctx)
 	if err != nil {
-		return nil, noop, fmt.Errorf("failed to connect to database: %w", err)
+		return nil, noop, err
 	}
-
-	contentTypes, err := db.LoadContentTypes(ctx, pool)
-	if err != nil {
-		pool.Close()
-		return nil, noop, fmt.Errorf("failed to load content types: %w", err)
-	}
-	m.registry.LoadContentTypes(contentTypes)
-	log.Printf("Loaded %d content types from database", len(contentTypes))
 
 	datafileParams := testutil.DefaultDatafileParams()
 	datafileParams.ProgramType = program
@@ -91,8 +75,8 @@ func (m *Mode) setupDatabase(ctx context.Context, program string) (*dbResources,
 }
 
 // Run processes a single file in local mode.
-func (m *Mode) Run(ctx context.Context) error {
-	local := m.cfg.Server.Local
+func (server *Server) Run(ctx context.Context) error {
+	local := server.Config.Server.Local
 	if local.FilePath == "" {
 		return errRequired("server.local.file-path")
 	}
@@ -104,7 +88,7 @@ func (m *Mode) Run(ctx context.Context) error {
 	}
 
 	// ---- Database + test datafile setup ----
-	dbRes, cleanup, err := m.setupDatabase(ctx, local.Program)
+	dbRes, cleanup, err := server.setupDatabase(ctx, local.Program)
 	if err != nil {
 		return err
 	}
@@ -118,7 +102,7 @@ func (m *Mode) Run(ctx context.Context) error {
 	}
 
 	// ---- Output sink ----
-	sink, err := writer.CreateSink(m.cfg.Writer.Mode, m.cfg.Writer.OutputDir, m.cfg.Writer.Format, dbPool)
+	sink, err := writer.CreateSink(server.Config.Writer.Mode, server.Config.Writer.OutputDir, server.Config.Writer.Format, dbPool)
 	if err != nil {
 		return fmt.Errorf("failed to create writer sink: %w", err)
 	}
@@ -133,7 +117,7 @@ func (m *Mode) Run(ctx context.Context) error {
 	defer file.Close()
 	defer source.Cleanup()
 
-	spec := m.registry.GetFileSpec(local.Program, local.Section)
+	spec := server.Registry.GetFileSpec(local.Program, local.Section)
 	if spec == nil {
 		return fmt.Errorf("no file spec for %s section %d", local.Program, local.Section)
 	}
@@ -145,7 +129,7 @@ func (m *Mode) Run(ctx context.Context) error {
 	defer dec.Close()
 
 	// ---- Run pipeline ----
-	pipeln := pipeline.NewPipeline(sink, m.registry, m.validators, pipeline.NewConfig(m.cfg))
+	pipeln := pipeline.NewPipeline(sink, server.Registry, server.Validators, pipeline.NewConfig(server.Config))
 	result, err := pipeln.Process(ctx, dec, pipeline.ProcessParams{
 		Program:    local.Program,
 		Section:    local.Section,
