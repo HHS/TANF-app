@@ -16,6 +16,7 @@ import {
   download,
   getAvailableFileList,
   submit,
+  getTanfSubmissionStatus,
   SET_FILE_SUBMITTED,
 } from './reports'
 
@@ -269,5 +270,33 @@ describe('actions/reports', () => {
     expect(actions[0].payload).toStrictEqual({
       stt: '',
     })
+  })
+
+  it('returns submission status when fetch succeeds', async () => {
+    const responseData = { id: 123, status: 'accepted' }
+    get.mockImplementationOnce(() =>
+      Promise.resolve({
+        data: responseData,
+        ok: true,
+        error: null,
+      })
+    )
+
+    const result = await getTanfSubmissionStatus(123)
+
+    expect(result).toEqual({ data: responseData, ok: true })
+  })
+
+  it('throws when submission status fetch fails', async () => {
+    const error = new Error('Request failed')
+    get.mockImplementationOnce(() =>
+      Promise.resolve({
+        data: null,
+        ok: false,
+        error,
+      })
+    )
+
+    await expect(getTanfSubmissionStatus(123)).rejects.toThrow('Request failed')
   })
 })

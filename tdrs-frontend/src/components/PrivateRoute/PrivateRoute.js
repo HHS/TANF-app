@@ -5,7 +5,7 @@ import { setAlert, clearAlert } from '../../actions/alert'
 import { ALERT_INFO } from '../Alert'
 import PrivateTemplate from '../PrivateTemplate'
 import IdleTimer from '../IdleTimer/IdleTimer'
-import PermissionGuard from '../PermissionGuard'
+import AccessGuard from '../AccessGuard'
 
 /**
  * @param {React.ReactNode} children - One or more React components to be
@@ -44,7 +44,7 @@ function PrivateRoute({
 
   if (authenticated) {
     return (
-      <PermissionGuard
+      <AccessGuard
         requiresApproval={requiresApproval}
         requiredPermissions={requiredPermissions}
         requiredFeatureFlags={requiredFeatureFlags}
@@ -54,7 +54,7 @@ function PrivateRoute({
           {children}
           <IdleTimer />
         </PrivateTemplate>
-      </PermissionGuard>
+      </AccessGuard>
     )
   }
 

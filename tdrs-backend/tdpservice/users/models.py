@@ -14,6 +14,8 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from simple_history.models import HistoricalRecords
+
 from tdpservice.email.helpers.account_status import send_approval_status_update_email
 from tdpservice.email.helpers.profile_change_request import (
     send_change_request_status_email,
@@ -54,6 +56,7 @@ class UserChangeRequestStatus(models.TextChoices):
     PENDING = "pending", _("Pending")
     APPROVED = "approved", _("Approved")
     REJECTED = "rejected", _("Rejected")
+    CANCELLED = "cancelled", _("Cancelled")
 
 
 class UserChangeRequest(Reviewable):
@@ -164,6 +167,17 @@ class UserChangeRequest(Reviewable):
             self.notes = notes
         self.save()
 
+        ChangeRequestAuditLog.objects.create(
+            change_request=self,
+            action="approved",
+            performed_by=admin_user,
+            details={
+                "field": self.field_name,
+                "requested_value": str(self.requested_value),
+                "notes": notes or "",
+            },
+        )
+
         # Send email
         try:
             send_change_request_status_email(
@@ -191,6 +205,17 @@ class UserChangeRequest(Reviewable):
         if notes:
             self.notes = notes
         self.save()
+
+        ChangeRequestAuditLog.objects.create(
+            change_request=self,
+            action="rejected",
+            performed_by=admin_user,
+            details={
+                "field": self.field_name,
+                "requested_value": str(self.requested_value),
+                "notes": notes or "",
+            },
+        )
 
         # Send email
         try:
@@ -451,6 +476,9 @@ class User(AbstractUser, UserChangeRequestMixin):
         + 'E.g: {"some_feature": true}',
         blank=True,
     )
+
+    # Model versioning/change tracking
+    history = HistoricalRecords(m2m_fields=["groups", "regions", "user_permissions"])
 
     def __str__(self):
         """Return the username as the string representation of the object."""

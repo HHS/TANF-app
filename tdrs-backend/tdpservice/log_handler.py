@@ -34,7 +34,7 @@ def change_log_filename(logger, datafile):
     handlers = getattr(logger, "handlers", [])
     new_filename = (
         f"/tmp/{datafile.year}_{datafile.quarter}_"
-        f"{datafile.stt}_{datafile.program_type}_{datafile.section}.log"
+        f"{datafile.stt}_{datafile.program_type}_{datafile.section}_{datafile.id}.log"
     )
     for handler in handlers:
         if isinstance(handler, S3FileHandler):
@@ -74,7 +74,10 @@ class S3FileHandler(logging.FileHandler):
             logger.info(f"Log file {self.filename} uploaded to S3.")
         except ClientError as e:
             logger.info(f"Error sending log to S3: {e}")
-        self.close()
+        finally:
+            self.close()
+            if os.path.exists(self.filename):
+                os.remove(self.filename)
 
     @staticmethod
     def download_file(key):
