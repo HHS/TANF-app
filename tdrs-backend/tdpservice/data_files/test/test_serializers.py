@@ -10,6 +10,7 @@ from tdpservice.data_files.validators import (
     validate_file_infection,
 )
 from tdpservice.security.clients import ClamAVClient
+from tdpservice.security.models import ClamAVFileScan
 
 
 @pytest.mark.django_db
@@ -55,6 +56,14 @@ def test_immutability_of_data_file(data_file_instance):
 @pytest.mark.django_db
 def test_created_at(data_file_data, data_analyst):
     """If a serializer has valid data it will return a valid object."""
+    ClamAVFileScan.objects.record_scan(
+        data_file_data["file"],
+        data_file_data["file"].name,
+        f"File scan marked as CLEAN for file: {data_file_data['file'].name}",
+        ClamAVFileScan.Result.CLEAN,
+        data_analyst,
+    )
+
     create_serializer = DataFileSerializer(
         context={"user": data_analyst}, data=data_file_data
     )
@@ -63,6 +72,14 @@ def test_created_at(data_file_data, data_analyst):
 
     assert data_file.created_at
     assert data_file.av_scans.exists()
+
+
+@pytest.mark.django_db
+def test_state_not_exposed_by_serializer(data_file_instance):
+    """Test submission state remains schema-only for serializer output."""
+    serialized = DataFileSerializer(data_file_instance).data
+
+    assert "state" not in serialized
 
 
 @pytest.mark.django_db
@@ -131,17 +148,19 @@ def test_rejects_invalid_file_extensions(file_name):
 
 
 @pytest.mark.django_db
-def test_rejects_infected_file(infected_file, fake_file_name, user):
+def test_rejects_infected_file(infected_file, fake_file_name, user, settings):
     """Test infected files are rejected by serializer validation."""
+    settings.CLAMAV_NEEDED = True
     with pytest.raises(ValidationError):
         validate_file_infection(infected_file, fake_file_name, user)
 
 
 @pytest.mark.django_db
 def test_rejects_uploads_on_clamav_connection_error(
-    fake_file, fake_file_name, mocker, user
+    fake_file, fake_file_name, mocker, user, settings
 ):
     """Test that DataFiles cannot pass validation if ClamAV is down."""
+    settings.CLAMAV_NEEDED = True
     mocker.patch(
         "tdpservice.security.clients.ClamAVClient.scan_file",
         side_effect=ClamAVClient.ServiceUnavailable(),
