@@ -56,25 +56,57 @@ func Execute(cv *CompiledValidator, env any) *ValidationResult {
 	}
 }
 
-// ExecuteReturningRecords runs a compiled validator that returns a list of failing records.
-// This is used for group validators with result_mode: per_record.
-// The expression should return a slice of *parser.ParsedRecord.
-func ExecuteReturningRecords(cv *CompiledValidator, env any) ([]*parser.ParsedRecord, error) {
+// ExecuteGroup runs a group-scope validator and returns all resulting errors.
+// For single mode (bool expressions), it delegates to Execute and returns 0 or 1 results.
+// For per_record mode, it runs the expression and converts each failing record
+// into a ValidationResult with LineNumber and RecordType populated.
+func ExecuteGroup(cv *CompiledValidator, env any) []*ValidationResult {
+	if cv.ResultMode != "per_record" {
+		if vr := Execute(cv, env); !vr.Valid {
+			return []*ValidationResult{vr}
+		}
+		return nil
+	}
+
+	// Per-record mode: expression returns a list of failing records
 	output, err := runProgram(cv, env)
 	if err != nil {
-		return nil, err
+		return []*ValidationResult{{
+			Valid:       false,
+			ValidatorID: cv.ID,
+			Error:       err,
+		}}
 	}
 
+	records := toRecordSlice(output)
+	if len(records) == 0 {
+		return nil
+	}
+
+	results := make([]*ValidationResult, 0, len(records))
+	for _, rec := range records {
+		results = append(results, &ValidationResult{
+			Valid:       false,
+			ValidatorID: cv.ID,
+			LineNumber:  rec.GetLineNumber(),
+			RecordType:  rec.GetRecordType(),
+			Validator:   cv,
+		})
+	}
+	return results
+}
+
+// toRecordSlice converts the raw output of a per_record expression to a record slice.
+func toRecordSlice(output any) []*parser.ParsedRecord {
 	if output == nil {
-		return nil, nil
+		return nil
 	}
 
-	// Try direct type assertion
 	if records, ok := output.([]*parser.ParsedRecord); ok {
-		return records, nil
+		return records
 	}
 
-	// Try to convert from []any (expr engine may wrap results)
+	// The expr engine may wrap results as []any
 	if anySlice, ok := output.([]any); ok {
 		var records []*parser.ParsedRecord
 		for _, item := range anySlice {
@@ -82,8 +114,8 @@ func ExecuteReturningRecords(cv *CompiledValidator, env any) ([]*parser.ParsedRe
 				records = append(records, rec)
 			}
 		}
-		return records, nil
+		return records
 	}
 
-	return nil, fmt.Errorf("validator %s: unexpected return type %T", cv.ID, output)
+	return nil
 }

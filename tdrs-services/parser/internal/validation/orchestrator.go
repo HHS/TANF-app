@@ -41,25 +41,12 @@ func (o *ValidationOrchestrator) ValidateGroup(group *parser.ParsedGroup, filesp
 	for _, validator := range o.registry.GetGroupValidators(filespecKey) {
 		groupEnv.Params = validator.Params // Set params for this validator
 
-		if validator.ResultMode == "per_record" {
-			// Per-record mode: expression returns list of failing records instead of a boolean pass fail.
-			failedRecords, err := ExecuteReturningRecords(validator, groupEnv)
-			if err != nil {
-				result.GroupErrors = append(result.GroupErrors, &ValidationResult{
-					Valid:       false,
-					ValidatorID: validator.ID,
-					ErrorType:   validator.ErrorType,
-					Error:       err,
-				})
-			}
-			for _, rec := range failedRecords {
-				result.AddRecordError(rec, validator, nil)
-			}
-		} else {
-			// Single mode: expression returns bool
-			if validationResult := Execute(validator, groupEnv); !validationResult.Valid {
-				validationResult.ErrorType = validator.ErrorType
-				result.GroupErrors = append(result.GroupErrors, validationResult)
+		for _, vr := range ExecuteGroup(validator, groupEnv) {
+			vr.ErrorType = validator.ErrorType
+			if validator.ResultMode == "per_record" {
+				result.AppendResultToRecordErrors(vr)
+			} else {
+				result.GroupErrors = append(result.GroupErrors, vr)
 			}
 		}
 	}

@@ -565,26 +565,27 @@ func TestOrchestratorEmptyGroup(t *testing.T) {
 	}
 }
 
-// TestExecuteReturningRecordsEdgeCases tests edge cases in ExecuteReturningRecords.
-func TestExecuteReturningRecordsEdgeCases(t *testing.T) {
+// TestExecuteGroupEdgeCases tests edge cases in ExecuteGroup.
+func TestExecuteGroupEdgeCases(t *testing.T) {
 	registry := newValidatorRegistry()
 	registry.exprOpts = RegisterFunctions()
 
 	t.Run("invalid program type", func(t *testing.T) {
 		cv := &CompiledValidator{
-			ID:   "bad",
-			Expr: &CompiledExpr{Expr: "test", Program: "not a program"},
+			ID:         "bad",
+			ResultMode: "per_record",
+			Expr:       &CompiledExpr{Expr: "test", Program: "not a program"},
 		}
-		records, err := ExecuteReturningRecords(cv, nil)
-		if records != nil {
-			t.Error("expected nil for bad program type")
+		results := ExecuteGroup(cv, nil)
+		if len(results) != 1 {
+			t.Fatalf("expected 1 error result, got %d", len(results))
 		}
-		if err == nil {
+		if results[0].Error == nil {
 			t.Error("expected error for bad program type")
 		}
 	})
 
-	t.Run("expression returning nil", func(t *testing.T) {
+	t.Run("per_record expression returning nil", func(t *testing.T) {
 		// Compile an expression that returns an empty list (no duplicates)
 		ce, _ := registry.getOrCompileExpr(ScopeGroup, "getExactDuplicates(Group, 'T2')", "per_record")
 		cv := &CompiledValidator{ID: "dups", Expr: ce, ResultMode: "per_record"}
@@ -593,16 +594,13 @@ func TestExecuteReturningRecordsEdgeCases(t *testing.T) {
 			testutil.NewTestRecord(t2Schema, 1, map[string]any{"SSN": "111111111", "FAMILY_AFFILIATION": 1}),
 		)
 		env := NewGroupEnv(group)
-		records, err := ExecuteReturningRecords(cv, env)
-		if err != nil {
-			t.Errorf("unexpected error: %v", err)
-		}
-		if len(records) != 0 {
-			t.Errorf("expected 0 records, got %d", len(records))
+		results := ExecuteGroup(cv, env)
+		if len(results) != 0 {
+			t.Errorf("expected 0 results, got %d", len(results))
 		}
 	})
 
-	t.Run("expression returning records", func(t *testing.T) {
+	t.Run("per_record expression returning records", func(t *testing.T) {
 		ce, _ := registry.getOrCompileExpr(ScopeGroup, "getExactDuplicates(Group, 'T2')", "per_record")
 		cv := &CompiledValidator{ID: "dups", Expr: ce, ResultMode: "per_record"}
 
@@ -611,12 +609,29 @@ func TestExecuteReturningRecordsEdgeCases(t *testing.T) {
 			testutil.NewTestRecord(t2Schema, 2, map[string]any{"SSN": "111111111", "FAMILY_AFFILIATION": 1}),
 		)
 		env := NewGroupEnv(group)
-		records, err := ExecuteReturningRecords(cv, env)
-		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+		results := ExecuteGroup(cv, env)
+		if len(results) != 1 {
+			t.Errorf("expected 1 result, got %d", len(results))
 		}
-		if len(records) != 1 {
-			t.Errorf("expected 1 duplicate record, got %d", len(records))
+		if len(results) > 0 && results[0].LineNumber == 0 {
+			t.Error("expected LineNumber to be populated on per_record result")
+		}
+	})
+
+	t.Run("single mode delegates to Execute", func(t *testing.T) {
+		ce, _ := registry.getOrCompileExpr(ScopeGroup, "RecordCounts['T2'] > 0", "single")
+		cv := &CompiledValidator{ID: "has_t2", Expr: ce, ResultMode: "single"}
+
+		group := testutil.NewTestGroup(
+			testutil.NewTestRecord(t1Schema, 1, nil),
+		)
+		env := NewGroupEnv(group)
+		results := ExecuteGroup(cv, env)
+		if len(results) != 1 {
+			t.Fatalf("expected 1 failure result, got %d", len(results))
+		}
+		if results[0].LineNumber != 0 {
+			t.Error("expected LineNumber to be 0 for group-level error")
 		}
 	})
 }

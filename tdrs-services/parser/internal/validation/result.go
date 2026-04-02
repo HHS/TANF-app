@@ -225,6 +225,17 @@ func (gvr *GroupValidationResult) AddRecordError(rec *parser.ParsedRecord, valid
 	}
 }
 
+// AppendResultToRecordErrors routes a ValidationResult to the correct record
+// by matching on LineNumber. Used by ExecuteGroup for per_record results.
+func (gvr *GroupValidationResult) AppendResultToRecordErrors(vr *ValidationResult) {
+	for _, rr := range gvr.RecordResults {
+		if rr.Record.GetLineNumber() == vr.LineNumber {
+			rr.RecordErrors = append(rr.RecordErrors, vr)
+			return
+		}
+	}
+}
+
 // validResultSingleton is reused for successful validations to reduce allocations.
 var validResultSingleton = &ValidationResult{Valid: true}
 
