@@ -353,7 +353,7 @@ class TestProcessReportSourceReportType:
 
     @patch("tdpservice.reports.tasks.timezone.now")
     def test_fra_source_creates_fra_report_files(self, mock_now, ofa_admin):
-        """ReportSource with report_type=FRA should produce ReportFiles with report_type=FRA."""
+        """Verify ReportSource with report_type=FRA produces ReportFiles with report_type=FRA."""
         from tdpservice.stts.models import STT, Region
 
         region = Region.objects.create(id=9020, name="Test Region RT1")
@@ -397,7 +397,7 @@ class TestProcessReportSourceReportType:
 
     @patch("tdpservice.reports.tasks.timezone.now")
     def test_tanf_ssp_source_creates_tanf_ssp_report_files(self, mock_now, ofa_admin):
-        """ReportSource with report_type=TANF_SSP should produce ReportFiles with report_type=TANF_SSP."""
+        """Verify ReportSource with report_type=TANF_SSP produces ReportFiles with report_type=TANF_SSP."""
         from tdpservice.stts.models import STT, Region
 
         region = Region.objects.create(id=9021, name="Test Region RT2")
