@@ -42,6 +42,11 @@ var parserErrorColumns = []string{
 	"object_id", "deprecated", "values_json",
 }
 
+// ParserErrorColumns returns the column names for the parser_error table.
+func ParserErrorColumns() []string {
+	return parserErrorColumns
+}
+
 // RouterConfig holds configuration for the writer router.
 type RouterConfig struct {
 	PoolPrewarmSize     int
@@ -326,6 +331,16 @@ func (router *Router) Stop() error {
 		return errors.Join(errs...)
 	}
 	return nil
+}
+
+// TableNames returns the database table names for all record writers.
+// Used to scope rollback operations to only the tables relevant to this file.
+func (router *Router) TableNames() []string {
+	names := make([]string, 0, len(router.writers))
+	for _, w := range router.writers {
+		names = append(names, w.tableName)
+	}
+	return names
 }
 
 // Stats returns totals from all writers.

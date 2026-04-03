@@ -54,12 +54,17 @@ func (d *PostitionalDecoder) ReadFirst() (Row, error) {
 		return nil, nil
 	}
 
+	replacer := strings.NewReplacer("\n", "", "\r", "")
+
+	// Remove trailing newline and carriage return characters
+	line = replacer.Replace(line)
+
+	// Only trim trailing spaces on HEADERs
+	line = strings.TrimRight(line, " ")
+
 	d.lineNum++
 	d.firstRowRead = true
 	decodedLength := len(line)
-
-	// Remove trailing newline characters
-	line = strings.TrimRight(line, "\r\n")
 
 	// Detect record type from line prefix
 	recordType := detectRecordTypeFromPrefix(line)
@@ -91,6 +96,7 @@ func (d *PostitionalDecoder) Rows() iter.Seq2[Row, error] {
 
 func (d *PostitionalDecoder) unsortedRows() iter.Seq2[Row, error] {
 	return func(yield func(Row, error) bool) {
+		replacer := strings.NewReplacer("\n", "", "\r", "")
 		for {
 			// Read a line from the file
 			line, err := d.reader.ReadString('\n')
@@ -98,6 +104,9 @@ func (d *PostitionalDecoder) unsortedRows() iter.Seq2[Row, error] {
 				yield(nil, err)
 				return
 			}
+
+			// Remove trailing newline and carriage return characters
+			line = replacer.Replace(line)
 
 			d.lineNum++
 
@@ -111,9 +120,6 @@ func (d *PostitionalDecoder) unsortedRows() iter.Seq2[Row, error] {
 			}
 
 			decodedLength := len(line)
-
-			// Remove trailing newline characters
-			line = strings.TrimRight(line, "\r\n")
 
 			// Detect record type from line prefix
 			recordType := detectRecordTypeFromPrefix(line)

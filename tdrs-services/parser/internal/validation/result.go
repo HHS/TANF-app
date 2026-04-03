@@ -10,6 +10,7 @@ import (
 
 // Error type constants
 const (
+	ErrorTypePreCheck         = "PRE_CHECK"
 	ErrorTypeRecordPreCheck   = "RECORD_PRE_CHECK"
 	ErrorTypeFieldValue       = "FIELD_VALUE"
 	ErrorTypeValueConsistency = "VALUE_CONSISTENCY"

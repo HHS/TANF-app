@@ -34,6 +34,12 @@ func RegisterFunctions() []expr.Option {
 		// SSN validation
 		expr.Function("isValidSSN", wrap1(isValidSSN), new(func(string) bool)),
 
+		// Header validation
+		expr.Function("isValidFIPS", wrap1(isValidFIPS), new(func(string) bool)),
+		expr.Function("isTribeCodeEmpty", wrap1(isTribeCodeEmpty), new(func(string) bool)),
+		expr.Function("fiscalToCalendarYear", wrap2(fiscalToCalendarYear), new(func(int, string) int)),
+		expr.Function("fiscalToCalendarQuarter", wrap2(fiscalToCalendarQuarter), new(func(int, string) string)),
+
 		// Group validators (take group explicitly)
 		expr.Function("getRecordsOfType", wrap2(getRecordsOfType),
 			new(func(*parser.ParsedGroup, string) []*parser.ParsedRecord)),
@@ -388,6 +394,76 @@ func anyToString(v any) string {
 	default:
 		return fmt.Sprintf("%v", val)
 	}
+}
+
+// validFIPSCodes is the set of valid US state/territory FIPS codes.
+var validFIPSCodes = map[string]bool{
+	"01": true, "02": true, "04": true, "05": true, "06": true,
+	"08": true, "09": true, "10": true, "11": true, "12": true,
+	"13": true, "15": true, "16": true, "17": true, "18": true,
+	"19": true, "20": true, "21": true, "22": true, "23": true,
+	"24": true, "25": true, "26": true, "27": true, "28": true,
+	"29": true, "30": true, "31": true, "32": true, "33": true,
+	"34": true, "35": true, "36": true, "37": true, "38": true,
+	"39": true, "40": true, "41": true, "42": true, "44": true,
+	"45": true, "46": true, "47": true, "48": true, "49": true,
+	"50": true, "51": true, "53": true, "54": true, "55": true,
+	"56": true, "66": true, "72": true, "78": true,
+}
+
+// isValidFIPS returns true if the value is a valid US state/territory FIPS code.
+func isValidFIPS(value string) bool {
+	return validFIPSCodes[value]
+}
+
+// isTribeCodeEmpty returns true if a tribe code is effectively empty.
+// Tribe code is empty if it's blank, all spaces, or "000".
+func isTribeCodeEmpty(value string) bool {
+	if isBlank(value) {
+		return true
+	}
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "000" {
+		return true
+	}
+	// Check for padding characters
+	for _, c := range trimmed {
+		if c != '#' && c != '_' {
+			return false
+		}
+	}
+	return true
+}
+
+// fiscalToCalendarYear converts a fiscal year and quarter to the calendar year.
+// Fiscal Q1 (Oct-Dec) maps to the previous calendar year.
+// Fiscal Q2-Q4 map to the same calendar year.
+func fiscalToCalendarYear(fiscalYear int, fiscalQuarter string) int {
+	fq := parseFiscalQuarter(fiscalQuarter)
+	if fq == 1 {
+		return fiscalYear - 1
+	}
+	return fiscalYear
+}
+
+// fiscalToCalendarQuarter converts a fiscal year and quarter to the calendar quarter.
+// Fiscal Q1 -> Calendar "4", Q2 -> "1", Q3 -> "2", Q4 -> "3"
+func fiscalToCalendarQuarter(fiscalYear int, fiscalQuarter string) string {
+	fq := parseFiscalQuarter(fiscalQuarter)
+	quarters := [4]string{"4", "1", "2", "3"} // FQ1->CQ4, FQ2->CQ1, FQ3->CQ2, FQ4->CQ3
+	if fq < 1 || fq > 4 {
+		return ""
+	}
+	return quarters[fq-1]
+}
+
+// parseFiscalQuarter extracts the quarter number from "Q1", "Q2", etc.
+func parseFiscalQuarter(fq string) int {
+	if len(fq) == 2 && fq[0] == 'Q' {
+		n, _ := strconv.Atoi(string(fq[1]))
+		return n
+	}
+	return 0
 }
 
 // isValidSSN validates a Social Security Number according to SSA rules.

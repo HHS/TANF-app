@@ -214,9 +214,9 @@ func TestPositionalDecoder_Rows_DecodedLength(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Rows() error: %v", err)
 		}
-		// DecodedLength should include the newline character
-		if row.DecodedLength() != len(line)+1 {
-			t.Errorf("DecodedLength() = %d, want %d", row.DecodedLength(), len(line)+1)
+		// DecodedLength should be the trimmed line length (newlines/CR stripped)
+		if row.DecodedLength() != len(line) {
+			t.Errorf("DecodedLength() = %d, want %d", row.DecodedLength(), len(line))
 		}
 	}
 }

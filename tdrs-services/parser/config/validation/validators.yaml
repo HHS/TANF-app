@@ -135,6 +135,46 @@ field_validators:
     expr: "(int(Value) >= 1 and int(Value) <= 16) or (int(Value) >= 98 and int(Value) <= 99)"
     message: "{{.RecordType}} Item {{.Item}}: must be 1-16 or 98-99, got {{.Value}}"
 
+  # =============================================================================
+  # Header field validators
+  # =============================================================================
+
+  - id: header_year_range
+    expr: "int(trim(string(Value))) >= 2000 and int(trim(string(Value))) <= 2099"
+    message: "HEADER Item {{.Item}} ({{.FriendlyName}}): {{.Value}} is not in range [2000, 2099]."
+
+  - id: header_quarter
+    expr: "string(Value) in ['1', '2', '3', '4']"
+    message: "HEADER Item {{.Item}} ({{.FriendlyName}}): {{.Value}} is not in [1, 2, 3, 4]."
+
+  - id: header_section_type
+    expr: "string(Value) in ['A', 'C', 'G', 'S']"
+    message: "HEADER Item {{.Item}} ({{.FriendlyName}}): {{.Value}} is not in [A, C, G, S]."
+
+  - id: header_fips_code
+    expr: "isEmpty(Value) or isValidFIPS(string(Value))"
+    message: "HEADER Item {{.Item}} ({{.FriendlyName}}): {{.Value}} is not a valid FIPS code."
+
+  - id: header_tribe_code_range
+    expr: "isTribeCodeEmpty(string(Value)) or (int(trim(string(Value))) >= 0 and int(trim(string(Value))) <= 999)"
+    message: "HEADER Item {{.Item}} ({{.FriendlyName}}): {{.Value}} is not in range [0, 999]."
+
+  - id: header_program_type
+    expr: "string(Value) in ['TAN', 'SSP']"
+    message: "HEADER Item {{.Item}} ({{.FriendlyName}}): {{.Value}} is not in [TAN, SSP]."
+
+  - id: header_edit_indicator
+    expr: "string(Value) in ['1', '2']"
+    message: "HEADER Item {{.Item}} ({{.FriendlyName}}): {{.Value}} is not in [1, 2]."
+
+  - id: header_encryption_indicator
+    expr: "string(Value) in [' ', 'E', '']"
+    message: "HEADER Item {{.Item}} ({{.FriendlyName}}): {{.Value}} is not in [ , E]."
+
+  - id: header_update_indicator
+    expr: "string(Value) == 'D'"
+    message: "HEADER Update Indicator must be set to D instead of {{.Value}}. Please review Exporting Complete Data Using FTANF in the Knowledge Center."
+
 # =============================================================================
 # RECORD VALIDATORS (record scope)
 # =============================================================================
@@ -320,6 +360,41 @@ record_validators:
   - id: sum_equals
     expr: "GetInt(Params.total_field) == sumFields(Params.component_fields)"
     message: "{{.Params.total_field}} must equal the sum of {{.Params.component_fields}}"
+
+  # =============================================================================
+  # Header record validators (cross-field, PRE_CHECK)
+  # =============================================================================
+
+  - id: header_record_length
+    expr: "RecordLength == 23"
+    error_type: PRE_CHECK
+    message: "HEADER: record length is {{.RecordLength}} characters but must be 23."
+    description: "RecordLength includes trailing newline (23 or 24 are both valid for a 23-char header)"
+
+  - id: header_tribe_fips_program_agree
+    expr: >
+      ((GetString('program_type') == 'TAN' and (isEmpty(GetString('state_fips')) or GetString('state_fips') == '00'))
+        == (not isTribeCodeEmpty(GetString('tribe_code'))))
+    error_type: PRE_CHECK
+    message: "Tribe Code ({{.Values.tribe_code}}) inconsistency with Program Type ({{.Values.program_type}}) and FIPS Code ({{.Values.state_fips}})."
+    fields: [tribe_code, program_type, state_fips]
+
+  - id: header_section_match
+    expr: >
+      (GetString('type') == 'A' and DataFileContext.SectionName == 'Active Case Data')
+      or (GetString('type') == 'C' and DataFileContext.SectionName == 'Closed Case Data')
+      or (GetString('type') == 'G' and DataFileContext.SectionName == 'Aggregate Data')
+      or (GetString('type') == 'S' and DataFileContext.SectionName == 'Stratum Data')
+    error_type: PRE_CHECK
+    message: "Data does not match the expected layout for {{.DataFileContext.SectionName}}."
+
+  - id: header_fiscal_period_match
+    expr: >
+      GetInt('year') == fiscalToCalendarYear(DataFileContext.FiscalYear, DataFileContext.FiscalQuarter)
+      and GetString('quarter') == fiscalToCalendarQuarter(DataFileContext.FiscalYear, DataFileContext.FiscalQuarter)
+    error_type: PRE_CHECK
+    message: "Submitted reporting year:{{.Values.year}}, quarter:Q{{.Values.quarter}} doesn't match file reporting year:{{.DataFileContext.FiscalYear}}, quarter:{{.DataFileContext.FiscalQuarter}}."
+    fields: [year, quarter]
 
 # =============================================================================
 # GROUP VALIDATORS (group scope)

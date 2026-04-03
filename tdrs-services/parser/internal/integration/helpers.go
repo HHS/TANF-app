@@ -3,9 +3,12 @@
 package integration
 
 import (
+	"bufio"
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	"github.com/jackc/pgx/v5"
@@ -24,7 +27,7 @@ func TestDataDir() string {
 	return filepath.Join("..", "..", "..", "..", "tdrs-backend", "tdpservice", "parsers", "test", "data")
 }
 
-// ParseFile parses a file through the full pipeline and writes to the database.
+// ParseFile parses a file through the full pipeline and writes to the database for tests.
 func ParseFile(t *testing.T, ctx context.Context, pool *pgxpool.Pool, reg *config.Registry, validators *validation.ValidatorRegistry, program string, section int, filePath string, datafileID int32) {
 	t.Helper()
 
@@ -48,13 +51,13 @@ func ParseFile(t *testing.T, ctx context.Context, pool *pgxpool.Pool, reg *confi
 	}
 	defer dec.Close()
 
+	// Derive DataFileContext metadata from the file's header line
+	// TODO: do we need this
+	dfCtx := deriveDataFileContext(t, filePath, program, section, datafileID)
+
 	sink := writer.NewDatabaseSink(pool)
 	p := pipeline.NewPipeline(sink, reg, validators, pipeline.TestConfig())
-	result, err := p.Process(ctx, dec, pipeline.ProcessParams{
-		Program:    program,
-		Section:    section,
-		DatafileID: datafileID,
-	})
+	result, err := p.Process(ctx, dec, dfCtx)
 	if err != nil {
 		t.Fatalf("Pipeline failed: %v", err)
 	}
@@ -156,6 +159,81 @@ func valuesEqual(actual, expected any) bool {
 	return false
 }
 
+// sectionCodeToName maps header section type codes to DataFile section names.
+var sectionCodeToName = map[byte]string{
+	'A': "Active Case Data",
+	'C': "Closed Case Data",
+	'G': "Aggregate Data",
+	'S': "Stratum Data",
+}
+
+// deriveDataFileContext reads the first line of a test file to extract header
+// fields (year, quarter, section type, program type) and builds a matching
+// DataFileContext with the correct fiscal period metadata.
+func deriveDataFileContext(t *testing.T, filePath string, program string, section int, datafileID int32) pipeline.DataFileContext {
+	t.Helper()
+
+	f, err := os.Open(filePath)
+	if err != nil {
+		t.Fatalf("Failed to open file for header extraction: %v", err)
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	if !scanner.Scan() {
+		t.Fatalf("File is empty: %s", filePath)
+	}
+	line := scanner.Text()
+
+	if len(line) < 23 || line[:6] != "HEADER" {
+		// Not a positional file with header — return minimal context
+		return pipeline.DataFileContext{
+			Program:    program,
+			Section:    section,
+			DatafileID: datafileID,
+		}
+	}
+
+	// Parse header fields: year (6-10), quarter (10-11), type (11-12), program_type (17-20)
+	calYear, _ := strconv.Atoi(line[6:10])
+	calQuarter := line[10:11]
+	sectionType := line[11]
+	programType := line[17:20]
+
+	// Convert calendar year/quarter to fiscal year/quarter
+	fiscalYear, fiscalQuarter := calendarToFiscal(calYear, calQuarter)
+
+	return pipeline.DataFileContext{
+		Program:       program,
+		Section:       section,
+		DatafileID:    datafileID,
+		FiscalYear:    fiscalYear,
+		FiscalQuarter: fiscalQuarter,
+		SectionName:   sectionCodeToName[sectionType],
+		ProgramType:   programType,
+	}
+}
+
+// calendarToFiscal converts calendar year/quarter to fiscal year/quarter.
+// Calendar Q4 (Oct-Dec) = Fiscal Q1 of next year
+// Calendar Q1 (Jan-Mar) = Fiscal Q2 of same year
+// Calendar Q2 (Apr-Jun) = Fiscal Q3 of same year
+// Calendar Q3 (Jul-Sep) = Fiscal Q4 of same year
+func calendarToFiscal(calYear int, calQuarter string) (int, string) {
+	switch calQuarter {
+	case "4":
+		return calYear + 1, "Q1"
+	case "1":
+		return calYear, "Q2"
+	case "2":
+		return calYear, "Q3"
+	case "3":
+		return calYear, "Q4"
+	default:
+		return calYear, ""
+	}
+}
+
 // CleanupDatafile deletes all records associated with a datafile.
 // This includes cascade deletes of parsed records.
 func CleanupDatafile(t *testing.T, ctx context.Context, pool *pgxpool.Pool, datafileID int32) {
@@ -186,10 +264,13 @@ func CleanupDatafile(t *testing.T, ctx context.Context, pool *pgxpool.Pool, data
 		"search_indexes_tribal_tanf_t7",
 	}
 
-	// Delete from all record tables first
+	// Delete parser errors first (uses file_id FK)
+	_, _ = pool.Exec(ctx, "DELETE FROM parser_error WHERE file_id = $1", datafileID)
+
+	// Delete from all record tables (uses datafile_id FK)
 	for _, table := range tables {
 		query := fmt.Sprintf("DELETE FROM %s WHERE datafile_id = $1", table)
-		_, _ = pool.Exec(ctx, query, datafileID) // Ignore errors for non-existent tables
+		_, _ = pool.Exec(ctx, query, datafileID)
 	}
 
 	// Delete the datafile itself

@@ -19,19 +19,19 @@ type Row interface {
 // PositionalRow represents a row from a positional (fixed-width) file.
 // The data is a string, and fields are accessed by byte positions.
 type PositionalRow struct {
-	lineNum    int
-	recordType string
+	lineNum       int
+	recordType    string
 	decodedLength int
-	data       string
+	data          string
 }
 
 // NewPositionalRow creates a new PositionalRow.
 func NewPositionalRow(lineNum int, recordType string, decodedLength int, data string) *PositionalRow {
 	return &PositionalRow{
-		lineNum:    lineNum,
-		recordType: recordType,
+		lineNum:       lineNum,
+		recordType:    recordType,
 		decodedLength: decodedLength,
-		data:       data,
+		data:          data,
 	}
 }
 
@@ -58,19 +58,19 @@ func (r *PositionalRow) Data() string {
 // ColumnarRow represents a row from a columnar (CSV/XLSX) file.
 // The data is a slice of values, and fields are accessed by column index.
 type ColumnarRow struct {
-	lineNum    int
-	recordType string
+	lineNum       int
+	recordType    string
 	decodedLength int
-	columns    []any // Can be string, int, float64, etc. (especially from XLSX)
+	columns       []any // Can be string, int, float64, etc. (especially from XLSX)
 }
 
 // NewColumnarRow creates a new ColumnarRow.
 func NewColumnarRow(lineNum int, recordType string, decodedLength int, columns []any) *ColumnarRow {
 	return &ColumnarRow{
-		lineNum:    lineNum,
-		recordType: recordType,
+		lineNum:       lineNum,
+		recordType:    recordType,
 		decodedLength: decodedLength,
-		columns:    columns,
+		columns:       columns,
 	}
 }
 

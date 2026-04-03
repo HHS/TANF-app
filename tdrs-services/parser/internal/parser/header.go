@@ -3,9 +3,9 @@ package parser
 import (
 	"fmt"
 
-	"go-parser/internal/decoder"
 	"go-parser/internal/config/filespec"
 	"go-parser/internal/config/schema"
+	"go-parser/internal/decoder"
 )
 
 // HeaderSchemaPath is the registry path for the header schema.
@@ -76,6 +76,7 @@ func parseRecord(row decoder.Row, sch *schema.CompiledSchema) (*ParsedRecord, er
 	// Acquire record from pool (header records are kept, not released)
 	record := sch.AcquireRecord().(*ParsedRecord)
 	record.LineNumber = row.LineNum()
+	record.DecodedSize = row.DecodedLength()
 	record.SegmentIndex = 0
 
 	// Copy shared fields into record using SetField to preserve FieldDef

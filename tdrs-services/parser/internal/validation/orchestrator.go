@@ -62,6 +62,87 @@ func (o *ValidationOrchestrator) ValidateGroup(group *parser.ParsedGroup, filesp
 	return result
 }
 
+// ValidateHeader validates a single header record with DataFileContext injected
+// into the validation environments. This runs the same phases as validateRecord
+// (record precheck → field → record consistency) but with DataFileContext available
+// to expressions for cross-validation against submission metadata.
+func (o *ValidationOrchestrator) ValidateHeader(headerRec *parser.ParsedRecord, dfCtx *DataFileContext) *RecordValidationResult {
+	result := &RecordValidationResult{Record: headerRec}
+	recType := headerRec.GetRecordType()
+	recordEnv := NewRecordEnv(headerRec)
+	recordEnv.DataFileContext = dfCtx
+
+	// Phase 1: Run PRE_CHECK and RECORD_PRE_CHECK validators
+	for _, validator := range o.registry.GetRecordValidators(recType) {
+		if validator.ErrorType != ErrorTypeRecordPreCheck && validator.ErrorType != ErrorTypePreCheck {
+			continue
+		}
+		recordEnv.Params = validator.Params
+		if vr := Execute(validator, recordEnv); !vr.Valid {
+			vr.ErrorType = validator.ErrorType
+			result.RecordErrors = append(result.RecordErrors, vr)
+		}
+	}
+
+	// Check if blocked by record-level errors
+	// TODO: HasBlockingErrors should be updated for PRE_CHECK too
+	recordBlocked := result.HasBlockingErrors()
+	// Also check for PRE_CHECK errors blocking
+	for _, err := range result.RecordErrors {
+		if err.ErrorType == ErrorTypePreCheck {
+			recordBlocked = true
+			break
+		}
+	}
+
+	if o.shortCircuit && recordBlocked {
+		result.Skipped = true
+		return result
+	}
+
+	// Phase 2: Field validation
+	fieldEnv := &FieldEnv{DataFileContext: dfCtx}
+	for fieldName, validators := range o.registry.GetFieldValidatorsForRecord(recType) {
+		value := headerRec.Get(fieldName)
+
+		if value == nil {
+			if headerRec.IsFieldRequired(fieldName) {
+				result.FieldErrors = append(result.FieldErrors, &ValidationResult{
+					Valid:       false,
+					ValidatorID: "field_required",
+					ErrorType:   ErrorTypeFieldValue,
+					FieldName:   fieldName,
+				})
+			}
+			continue
+		}
+
+		fieldEnv.Value = value
+		for _, cv := range validators {
+			fieldEnv.Params = cv.Params
+			if vr := Execute(cv, fieldEnv); !vr.Valid {
+				vr.ErrorType = cv.ErrorType
+				vr.FieldName = fieldName
+				result.FieldErrors = append(result.FieldErrors, vr)
+			}
+		}
+	}
+
+	// Phase 3: Non-precheck record validators (consistency checks)
+	for _, cv := range o.registry.GetRecordValidators(recType) {
+		if cv.ErrorType == ErrorTypeRecordPreCheck || cv.ErrorType == ErrorTypePreCheck {
+			continue
+		}
+		recordEnv.Params = cv.Params
+		if vr := Execute(cv, recordEnv); !vr.Valid {
+			vr.ErrorType = cv.ErrorType
+			result.RecordErrors = append(result.RecordErrors, vr)
+		}
+	}
+
+	return result
+}
+
 // validateRecord validates a single record, updating the provided result.
 // Called internally by ValidateGroup.
 func (o *ValidationOrchestrator) validateRecord(result *RecordValidationResult, rec *parser.ParsedRecord, groupBlocked bool) {

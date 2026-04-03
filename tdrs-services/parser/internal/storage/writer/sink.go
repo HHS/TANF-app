@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"sync"
@@ -18,6 +19,12 @@ import (
 type Sink interface {
 	// Flush writes a batch of rows to the destination.
 	Flush(ctx context.Context, tableName string, columns []string, rows [][]any) (int64, error)
+
+	// RollbackDatafile deletes all records and errors previously written for the
+	// given datafile ID. The tables slice specifies which record tables to clean
+	// up (only tables relevant to the current file spec). Parser errors are
+	// always cleaned up.
+	RollbackDatafile(ctx context.Context, datafileID int32, tables []string) error
 
 	// Close performs any final cleanup (close file handles, etc).
 	Close() error
@@ -35,6 +42,22 @@ func NewDatabaseSink(pool *pgxpool.Pool) *DatabaseSink {
 
 func (s *DatabaseSink) Flush(ctx context.Context, tableName string, columns []string, rows [][]any) (int64, error) {
 	return s.pool.CopyFrom(ctx, pgx.Identifier{tableName}, columns, pgx.CopyFromRows(rows))
+}
+
+func (s *DatabaseSink) RollbackDatafile(ctx context.Context, datafileID int32, tables []string) error {
+	// Always clean up parser errors
+	if _, err := s.pool.Exec(ctx, "DELETE FROM parser_error WHERE file_id = $1", datafileID); err != nil {
+		log.Printf("rollback: failed to delete from parser_error for datafile %d: %v", datafileID, err)
+	}
+
+	// Only delete from tables relevant to the current file spec
+	for _, table := range tables {
+		query := fmt.Sprintf("DELETE FROM %s WHERE datafile_id = $1", table)
+		if _, err := s.pool.Exec(ctx, query, datafileID); err != nil {
+			log.Printf("rollback: failed to delete from %s for datafile %d: %v", table, datafileID, err)
+		}
+	}
+	return nil
 }
 
 func (s *DatabaseSink) Close() error {
@@ -90,6 +113,12 @@ func (s *FileSink) Flush(ctx context.Context, tableName string, columns []string
 		written++
 	}
 	return written, nil
+}
+
+// RollbackDatafile is a best-effort no-op for file sinks since file output
+// does not support selective deletion by datafile ID.
+func (s *FileSink) RollbackDatafile(_ context.Context, _ int32, _ []string) error {
+	return nil
 }
 
 func (s *FileSink) Close() error {
