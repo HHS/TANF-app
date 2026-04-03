@@ -44,7 +44,7 @@ type dbResources struct {
 // setupDatabase conditionally connects to the database, loads content types,
 // and creates a test datafile record for FK constraints.
 // Returns nil resources (no cleanup needed) when the writer mode is "file".
-func (local *Server) setupDatabase(ctx context.Context, program string) (*dbResources, func(), error) {
+func (local *Server) setupDatabase(ctx context.Context, dfCtx pipeline.DataFileContext) (*dbResources, func(), error) {
 	noop := func() {}
 
 	if !local.needsDatabase() {
@@ -56,10 +56,7 @@ func (local *Server) setupDatabase(ctx context.Context, program string) (*dbReso
 		return nil, noop, err
 	}
 
-	datafileParams := testutil.DefaultDatafileParams()
-	datafileParams.ProgramType = program
-	datafileParams.Section = "Active Case Data"
-	datafileID, err := testutil.CreateTestDatafile(ctx, pool, datafileParams)
+	datafileID, err := testutil.CreateTestDatafile(ctx, pool, dfCtx.FiscalQuarter, dfCtx.FiscalYear, dfCtx.SectionName, dfCtx.ProgramType)
 	if err != nil {
 		pool.Close()
 		return nil, noop, fmt.Errorf("failed to create test datafile: %w", err)
@@ -87,18 +84,27 @@ func (server *Server) Run(ctx context.Context) error {
 		return errRequired("server.local.section")
 	}
 
+	// ---- Build DataFileContext from CLI args ----
+	dfCtx := pipeline.DataFileContext{
+		Program:       local.Program,
+		Section:       local.Section,
+		FiscalYear:    local.FiscalYear,
+		FiscalQuarter: fmt.Sprintf("Q%d", local.Quarter),
+		SectionName:   sectionName(local.Section),
+		ProgramType:   local.Program,
+	}
+
 	// ---- Database + test datafile setup ----
-	dbRes, cleanup, err := server.setupDatabase(ctx, local.Program)
+	dbRes, cleanup, err := server.setupDatabase(ctx, dfCtx)
 	if err != nil {
 		return err
 	}
 	defer cleanup()
 
 	var dbPool *pgxpool.Pool
-	var datafileID int32
 	if dbRes != nil {
 		dbPool = dbRes.pool
-		datafileID = dbRes.datafileID
+		dfCtx.DatafileID = dbRes.datafileID
 	}
 
 	// ---- Output sink ----
@@ -117,9 +123,9 @@ func (server *Server) Run(ctx context.Context) error {
 	defer file.Close()
 	defer source.Cleanup()
 
-	spec := server.Registry.GetFileSpec(local.Program, local.Section)
+	spec := server.Registry.GetFileSpec(dfCtx.Program, dfCtx.Section)
 	if spec == nil {
-		return fmt.Errorf("no file spec for %s section %d", local.Program, local.Section)
+		return fmt.Errorf("no file spec for %s section %d", dfCtx.Program, dfCtx.Section)
 	}
 
 	dec, err := decoder.CreateDecoder(file, spec)
@@ -130,15 +136,7 @@ func (server *Server) Run(ctx context.Context) error {
 
 	// ---- Run pipeline ----
 	pipeln := pipeline.NewPipeline(sink, server.Registry, server.Validators, pipeline.NewConfig(server.Config))
-	result, err := pipeln.Process(ctx, dec, pipeline.DataFileContext{
-		Program:       local.Program,
-		Section:       local.Section,
-		DatafileID:    datafileID,
-		FiscalYear:    local.FiscalYear,
-		FiscalQuarter: fmt.Sprintf("Q%d", local.Quarter),
-		SectionName:   sectionName(local.Section),
-		ProgramType:   local.Program,
-	})
+	result, err := pipeln.Process(ctx, dec, dfCtx)
 	if err != nil {
 		return fmt.Errorf("failed to process file: %w", err)
 	}
