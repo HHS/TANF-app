@@ -98,24 +98,7 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 	headerSchema := p.registry.GetSchema(parser.HeaderSchemaPath)
 	parseCtx, err := parser.ParseHeader(headerRow, headerSchema)
 	if err != nil {
-		// First line is not a HEADER record or other error — generate a PRE_CHECK error and stop
-		log.Printf("Header validation failed: %s.", err.Error())
-		headerErr := writer.SerializeHeaderError(
-			err.Error(),
-			validation.ErrorTypePreCheck,
-			dfCtx.DatafileID,
-		)
-		if routeErr := router.RouteErrorRow(ctx, headerErr); routeErr != nil {
-			log.Printf("failed to write header error: %v", routeErr)
-		}
-		if stopErr := router.Stop(); stopErr != nil {
-			log.Printf("failed to stop router: %v", stopErr)
-		}
-		return &ParsingResult{
-			RecordCounts: map[string]int64{"parser_error": 1},
-			ErrorCount:   1,
-			Duration:     time.Since(startTime),
-		}, nil
+		return handleHeaderParseInvalid(err, ctx, dfCtx, router, startTime)
 	}
 
 	// steap 3a: Create new validation orchestrator
@@ -136,24 +119,7 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 		}
 		headerResult := validationOrchestrator.ValidateHeader(parseCtx.Header, valDfCtx)
 		if headerResult.HasErrors() {
-			allErrors := headerResult.AllErrors()
-			log.Printf("Header validation failed with %d error(s):", len(allErrors))
-			for _, vr := range allErrors {
-				msg := renderHeaderErrorMessage(vr, parseCtx.Header, valDfCtx)
-				log.Printf("  [%s] %s", vr.ErrorType, msg)
-				row := writer.SerializeHeaderError(msg, vr.ErrorType, dfCtx.DatafileID)
-				if routeErr := router.RouteErrorRow(ctx, row); routeErr != nil {
-					log.Printf("failed to write header error: %v", routeErr)
-				}
-			}
-			if stopErr := router.Stop(); stopErr != nil {
-				log.Printf("failed to stop router: %v", stopErr)
-			}
-			return &ParsingResult{
-				RecordCounts: map[string]int64{"parser_error": int64(len(allErrors))},
-				ErrorCount:   int64(len(allErrors)),
-				Duration:     time.Since(startTime),
-			}, nil
+			return handleHeaderValidationFail(headerResult, ctx, dfCtx, parseCtx, valDfCtx, router, startTime)
 		}
 	}
 
@@ -189,29 +155,7 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 
 	if err != nil {
 		if errors.Is(err, errMultipleHeaders) {
-			// Multiple headers detected: stop writers, rollback all records/errors
-			// already written, then write a single PRE_CHECK error directly via sink.
-			if stopErr := router.Stop(); stopErr != nil {
-				log.Printf("failed to stop router: %v", stopErr)
-			}
-			if rollbackErr := p.sink.RollbackDatafile(ctx, dfCtx.DatafileID, router.TableNames()); rollbackErr != nil {
-				log.Printf("failed to rollback datafile records: %v", rollbackErr)
-			}
-
-			log.Printf("Header validation failed: Multiple headers found.")
-			headerErr := writer.SerializeHeaderError(
-				"Multiple headers found.",
-				validation.ErrorTypePreCheck,
-				dfCtx.DatafileID,
-			)
-			if _, flushErr := p.sink.Flush(ctx, "parser_error", writer.ParserErrorColumns(), [][]any{headerErr}); flushErr != nil {
-				log.Printf("failed to write multiple headers error: %v", flushErr)
-			}
-			return &ParsingResult{
-				RecordCounts: map[string]int64{"parser_error": 1},
-				ErrorCount:   1,
-				Duration:     time.Since(startTime),
-			}, nil
+			return p.handleMultipleHeaders(ctx, dfCtx, router, startTime)
 		}
 		return nil, err
 	}
@@ -290,6 +234,77 @@ func renderHeaderErrorMessage(vr *validation.ValidationResult, header *parser.Pa
 	}
 
 	return vr.Message(ctx)
+}
+
+// Handle creating multiple headers error and rolling back serialized data
+func (p *Pipeline) handleMultipleHeaders(ctx context.Context, dfCtx DataFileContext, router *writer.Router, startTime time.Time) (*ParsingResult, error) {
+	// Multiple headers detected: stop writers, rollback all records/errors
+	// already written, then write a single PRE_CHECK error directly via sink.
+	if stopErr := router.Stop(); stopErr != nil {
+		log.Printf("failed to stop router: %v", stopErr)
+	}
+	if rollbackErr := p.sink.RollbackDatafile(ctx, dfCtx.DatafileID, router.TableNames()); rollbackErr != nil {
+		log.Printf("failed to rollback datafile records: %v", rollbackErr)
+	}
+
+	log.Printf("Header validation failed: Multiple headers found.")
+	headerErr := writer.SerializeHeaderError(
+		"Multiple headers found.",
+		validation.ErrorTypePreCheck,
+		dfCtx.DatafileID,
+	)
+	if _, flushErr := p.sink.Flush(ctx, "parser_error", writer.ParserErrorColumns(), [][]any{headerErr}); flushErr != nil {
+		log.Printf("failed to write multiple headers error: %v", flushErr)
+	}
+	return &ParsingResult{
+		RecordCounts: map[string]int64{"parser_error": 1},
+		ErrorCount:   1,
+		Duration:     time.Since(startTime),
+	}, nil
+}
+
+// Handle creating HEADER errors and failing pipeline
+func handleHeaderValidationFail(headerResult *validation.RecordValidationResult, ctx context.Context, dfCtx DataFileContext, parseCtx *parser.ParseContext, valDfCtx *validation.DataFileContext, router *writer.Router, startTime time.Time) (*ParsingResult, error) {
+	allErrors := headerResult.AllErrors()
+	log.Printf("Header validation failed with %d error(s):", len(allErrors))
+	for _, vr := range allErrors {
+		msg := renderHeaderErrorMessage(vr, parseCtx.Header, valDfCtx)
+		log.Printf("  [%s] %s", vr.ErrorType, msg)
+		row := writer.SerializeHeaderError(msg, vr.ErrorType, dfCtx.DatafileID)
+		if routeErr := router.RouteErrorRow(ctx, row); routeErr != nil {
+			log.Printf("failed to write header error: %v", routeErr)
+		}
+	}
+	if stopErr := router.Stop(); stopErr != nil {
+		log.Printf("failed to stop router: %v", stopErr)
+	}
+	return &ParsingResult{
+		RecordCounts: map[string]int64{"parser_error": int64(len(allErrors))},
+		ErrorCount:   int64(len(allErrors)),
+		Duration:     time.Since(startTime),
+	}, nil
+}
+
+// When HEADER parsing fails, generate Error and fail pipeline
+func handleHeaderParseInvalid(err error, ctx context.Context, dfCtx DataFileContext, router *writer.Router, startTime time.Time) (*ParsingResult, error) {
+	// First line is not a HEADER record or other error — generate a PRE_CHECK error and stop
+	log.Printf("Header validation failed: %s.", err.Error())
+	headerErr := writer.SerializeHeaderError(
+		err.Error(),
+		validation.ErrorTypePreCheck,
+		dfCtx.DatafileID,
+	)
+	if routeErr := router.RouteErrorRow(ctx, headerErr); routeErr != nil {
+		log.Printf("failed to write header error: %v", routeErr)
+	}
+	if stopErr := router.Stop(); stopErr != nil {
+		log.Printf("failed to stop router: %v", stopErr)
+	}
+	return &ParsingResult{
+		RecordCounts: map[string]int64{"parser_error": 1},
+		ErrorCount:   1,
+		Duration:     time.Since(startTime),
+	}, nil
 }
 
 // accumulateBatches processes rows in file order.
