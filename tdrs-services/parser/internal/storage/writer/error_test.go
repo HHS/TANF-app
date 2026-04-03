@@ -73,7 +73,7 @@ func TestConvertError_BasicRow(t *testing.T) {
 	uuid := newUUID()
 	contentTypeID := int32(42)
 
-	row := ConvertError(vr, rec, &uuid, 100, &contentTypeID)
+	row := SerializeError(vr, rec, &uuid, 100, &contentTypeID)
 
 	// Verify row has correct number of columns
 	if len(row) != len(parserErrorColumns) {
@@ -138,7 +138,7 @@ func TestConvertError_NilContentTypeID(t *testing.T) {
 		ValidatorID: "pre_check",
 	}
 
-	row := ConvertError(vr, rec, nil, 1, nil)
+	row := SerializeError(vr, rec, nil, 1, nil)
 
 	// content_type_id should be nil
 	if row[10] != nil {
@@ -168,7 +168,7 @@ func TestConvertError_NilValidatorMessage(t *testing.T) {
 		Validator:   nil,
 	}
 
-	row := ConvertError(vr, rec, nil, 1, nil)
+	row := SerializeError(vr, rec, nil, 1, nil)
 
 	// Should fall back to default message
 	msg, ok := row[6].(string)

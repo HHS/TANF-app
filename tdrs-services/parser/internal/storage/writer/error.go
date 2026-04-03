@@ -26,13 +26,13 @@ type FieldsJSON struct {
 	ItemNumbers  map[string]string `json:"item_numbers"`
 }
 
-// ConvertError converts a ValidationResult to a database row immediately.
+// SerializeError converts a ValidationResult to a database row immediately.
 // Must be called BEFORE the record is released to pool.
 // Returns []any row matching parserErrorColumns order:
 // row_number, column_number, item_number, field_name, case_number, rpt_month_year,
 // error_message, error_type, created_at, fields_json, content_type_id, file_id,
 // object_id, deprecated, values_json
-func ConvertError(
+func SerializeError(
 	vr *validation.ValidationResult,
 	record *parser.ParsedRecord,
 	recordUUID *pgtype.UUID,
@@ -54,21 +54,21 @@ func ConvertError(
 	// Build row matching parserErrorColumns order
 	// Use raw types where possible, nil for NULL
 	row := []any{
-		toErrorRowNumber(record),   // row_number (int32 or nil)
-		nil,                        // column_number (not used)
-		toErrorItemNumber(vr, record), // item_number (string or nil)
-		toErrorFieldName(vr),       // field_name (string or nil)
-		toErrorCaseNumber(record),  // case_number (string or nil)
-		toErrorRptMonthYear(record), // rpt_month_year (int32 or nil)
-		toErrorMessage(msg),        // error_message (string or nil)
-		errorType,                  // error_type (string)
-		time.Now(),                 // created_at (time.Time)
-		fieldsJSON,                 // fields_json ([]byte)
+		toErrorRowNumber(record),            // row_number (int32 or nil)
+		nil,                                 // column_number (not used)
+		toErrorItemNumber(vr, record),       // item_number (string or nil)
+		toErrorFieldName(vr),                // field_name (string or nil)
+		toErrorCaseNumber(record),           // case_number (string or nil)
+		toErrorRptMonthYear(record),         // rpt_month_year (int32 or nil)
+		toErrorMessage(msg),                 // error_message (string or nil)
+		errorType,                           // error_type (string)
+		time.Now(),                          // created_at (time.Time)
+		fieldsJSON,                          // fields_json ([]byte)
 		toErrorContentTypeID(contentTypeID), // content_type_id (int32 or nil)
-		datafileID,                 // file_id (int32)
-		toErrorObjectID(recordUUID), // object_id (pgtype.UUID)
-		false,                      // deprecated (bool)
-		valuesJSON,                 // values_json ([]byte)
+		datafileID,                          // file_id (int32)
+		toErrorObjectID(recordUUID),         // object_id (pgtype.UUID)
+		false,                               // deprecated (bool)
+		valuesJSON,                          // values_json ([]byte)
 	}
 
 	return row

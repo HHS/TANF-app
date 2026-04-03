@@ -4,10 +4,10 @@ import (
 	"go-parser/internal/parser"
 )
 
-// FRA TE1 Converter - TANF Exiter work outcome data
+// FRA TE1 Serializer - TANF Exiter work outcome data
 // RecordType is always "TE1" for FRA records (not present in CSV data)
 
-func convertFraTE1(record *parser.ParsedRecord, datafileID int32) [][]any {
+func serializeFraTE1(record *parser.ParsedRecord, datafileID int32) [][]any {
 	// RecordType defaults to "TE1" if not present in fields
 	recordType := record.Get("RecordType")
 	if recordType == nil {

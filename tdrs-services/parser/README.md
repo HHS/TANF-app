@@ -354,7 +354,7 @@ Generated code lives in `internal/db/` and should not be edited by hand.
 1. Create a schema YAML in `config/schemas/<program>/<type>.yaml`
 2. Add the schema path to the relevant filespec in `config/filespecs/`
 3. Add validators for the new fields in `config/validation/validators.yaml`
-4. Add a row converter in `internal/storage/writer/`
+4. Add a row serializer in `internal/storage/writer/`
 5. Add the table to `schema.sql` and run `sqlc generate`
 
 ### Modifying a Validator
