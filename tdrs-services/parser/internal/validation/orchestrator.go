@@ -85,15 +85,7 @@ func (o *ValidationOrchestrator) ValidateHeader(headerRec *parser.ParsedRecord, 
 	}
 
 	// Check if blocked by record-level errors
-	// TODO: HasBlockingErrors should be updated for PRE_CHECK too
 	recordBlocked := result.HasBlockingErrors()
-	// Also check for PRE_CHECK errors blocking
-	for _, err := range result.RecordErrors {
-		if err.ErrorType == ErrorTypePreCheck {
-			recordBlocked = true
-			break
-		}
-	}
 
 	if o.shortCircuit && recordBlocked {
 		result.Skipped = true

@@ -46,7 +46,7 @@ type ValidationResult struct {
 
 // BlocksRecord returns true if this error type blocks record serialization.
 func (vr *ValidationResult) BlocksRecord() bool {
-	return vr.ErrorType == ErrorTypeRecordPreCheck
+	return vr.ErrorType == ErrorTypeRecordPreCheck || vr.ErrorType == ErrorTypePreCheck
 }
 
 // BlocksGroup returns true if this error type blocks group serialization.
