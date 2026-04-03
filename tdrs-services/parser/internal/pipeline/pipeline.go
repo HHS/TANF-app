@@ -98,10 +98,10 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 	headerSchema := p.registry.GetSchema(parser.HeaderSchemaPath)
 	parseCtx, err := parser.ParseHeader(headerRow, headerSchema)
 	if err != nil {
-		// First line is not a HEADER record — generate a PRE_CHECK error and stop
-		log.Printf("Header validation failed: Your file does not begin with a HEADER record.")
+		// First line is not a HEADER record or other error — generate a PRE_CHECK error and stop
+		log.Printf("Header validation failed: %s.", err.Error())
 		headerErr := writer.SerializeHeaderError(
-			"Your file does not begin with a HEADER record.",
+			err.Error(),
 			validation.ErrorTypePreCheck,
 			dfCtx.DatafileID,
 		)

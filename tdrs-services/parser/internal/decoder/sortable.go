@@ -57,7 +57,8 @@ func (s *Sortable) DoSort(
 			// Non-grouped record: HEADER or TRAILER
 			switch sch.RecordType {
 			case "HEADER":
-				// Header should already be consumed by ReadFirst; skip if found
+				// Add the extra HEADER record(s) to the unkeyedRows which are processed after keyedRows
+				s.unkeyedRows = append(s.unkeyedRows, row)
 			case "TRAILER":
 				s.trailer = row
 			default:

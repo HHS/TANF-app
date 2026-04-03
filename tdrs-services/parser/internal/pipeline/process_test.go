@@ -95,7 +95,7 @@ func (s *capturingSink) Flush(_ context.Context, tableName string, _ []string, r
 }
 
 func (s *capturingSink) RollbackDatafile(_ context.Context, _ int32, _ []string) error { return nil }
-func (s *capturingSink) Close() error                                      { return nil }
+func (s *capturingSink) Close() error                                                  { return nil }
 
 func (s *capturingSink) rowCount(tableName string) int {
 	return len(s.tables[tableName])
@@ -283,8 +283,8 @@ func TestProcess_EmptyFile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Process returned unexpected error: %v", err)
 	}
-	if result.ErrorCount != 0 {
-		t.Errorf("ErrorCount = %d, want 0", result.ErrorCount)
+	if result.ErrorCount != 1 {
+		t.Errorf("ErrorCount = %d, want 1", result.ErrorCount)
 	}
 }
 
