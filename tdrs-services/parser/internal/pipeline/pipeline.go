@@ -100,7 +100,7 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 	if err != nil {
 		// First line is not a HEADER record — generate a PRE_CHECK error and stop
 		log.Printf("Header validation failed: Your file does not begin with a HEADER record.")
-		headerErr := writer.ConvertHeaderError(
+		headerErr := writer.SerializeHeaderError(
 			"Your file does not begin with a HEADER record.",
 			validation.ErrorTypePreCheck,
 			dfCtx.DatafileID,
@@ -141,7 +141,7 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 			for _, vr := range allErrors {
 				msg := renderHeaderErrorMessage(vr, parseCtx.Header, valDfCtx)
 				log.Printf("  [%s] %s", vr.ErrorType, msg)
-				row := writer.ConvertHeaderError(msg, vr.ErrorType, dfCtx.DatafileID)
+				row := writer.SerializeHeaderError(msg, vr.ErrorType, dfCtx.DatafileID)
 				if routeErr := router.RouteErrorRow(ctx, row); routeErr != nil {
 					log.Printf("failed to write header error: %v", routeErr)
 				}
@@ -199,7 +199,7 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 			}
 
 			log.Printf("Header validation failed: Multiple headers found.")
-			headerErr := writer.ConvertHeaderError(
+			headerErr := writer.SerializeHeaderError(
 				"Multiple headers found.",
 				validation.ErrorTypePreCheck,
 				dfCtx.DatafileID,
