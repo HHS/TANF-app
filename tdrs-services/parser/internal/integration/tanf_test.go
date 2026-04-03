@@ -16,7 +16,7 @@ func TestParseSmallTANFSection1(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	dfCtx, cleanup := createTestDatafile(t, ctx, "TANF", 1, 2021, 1)
+	dfCtx, cleanup := createTestDatafile(t, ctx, "TAN", 1, 2021, 1)
 	defer cleanup()
 
 	// Parse
@@ -59,7 +59,7 @@ func TestParseBigTANFSection1(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	dfCtx, cleanup := createTestDatafile(t, ctx, "TANF", 1, 2022, 1)
+	dfCtx, cleanup := createTestDatafile(t, ctx, "TAN", 1, 2022, 1)
 	defer cleanup()
 
 	// Parse
@@ -80,7 +80,7 @@ func TestParseSmallTANFSection2(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	dfCtx, cleanup := createTestDatafile(t, ctx, "TANF", 2, 2021, 1)
+	dfCtx, cleanup := createTestDatafile(t, ctx, "TAN", 2, 2021, 1)
 	defer cleanup()
 
 	// Parse
@@ -110,7 +110,7 @@ func TestParseBigTANFSection2(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	dfCtx, cleanup := createTestDatafile(t, ctx, "TANF", 2, 2022, 1)
+	dfCtx, cleanup := createTestDatafile(t, ctx, "TAN", 2, 2022, 1)
 	defer cleanup()
 
 	// Parse
@@ -134,7 +134,7 @@ func TestParseTANFSection3(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	dfCtx, cleanup := createTestDatafile(t, ctx, "TANF", 3, 2022, 1)
+	dfCtx, cleanup := createTestDatafile(t, ctx, "TAN", 3, 2022, 1)
 	defer cleanup()
 
 	// Parse
@@ -172,7 +172,7 @@ func TestParseTANFSection4(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup
-	dfCtx, cleanup := createTestDatafile(t, ctx, "TANF", 4, 2022, 1)
+	dfCtx, cleanup := createTestDatafile(t, ctx, "TAN", 4, 2022, 1)
 	defer cleanup()
 
 	// Parse

@@ -55,7 +55,7 @@ func runGroupValidator(t *testing.T, filespecKey string, validatorID string, gro
 // =============================================================================
 
 func TestCat4_T1HasT2OrT3(t *testing.T) {
-	const filespecKey = "TANF:1"
+	const filespecKey = "TAN:1"
 	const validatorID = "t1_has_t2_or_t3"
 
 	t.Run("no T1 records - should pass", func(t *testing.T) {
@@ -98,7 +98,7 @@ func TestCat4_T1HasT2OrT3(t *testing.T) {
 }
 
 func TestCat4_T1FamilyAffiliation(t *testing.T) {
-	const filespecKey = "TANF:1"
+	const filespecKey = "TAN:1"
 	const validatorID = "t1_family_affiliation"
 
 	t.Run("no T1 records - should pass", func(t *testing.T) {
@@ -174,7 +174,7 @@ func TestCat4_T1FamilyAffiliation(t *testing.T) {
 }
 
 func TestCat4_T2RequiresT1(t *testing.T) {
-	const filespecKey = "TANF:1"
+	const filespecKey = "TAN:1"
 	const validatorID = "t2_requires_t1"
 
 	t.Run("no T2 records - should pass", func(t *testing.T) {
@@ -218,7 +218,7 @@ func TestCat4_T2RequiresT1(t *testing.T) {
 }
 
 func TestCat4_T3RequiresT1(t *testing.T) {
-	const filespecKey = "TANF:1"
+	const filespecKey = "TAN:1"
 	const validatorID = "t3_requires_t1"
 
 	t.Run("no T3 records - should pass", func(t *testing.T) {
@@ -266,7 +266,7 @@ func TestCat4_T3RequiresT1(t *testing.T) {
 // =============================================================================
 
 func TestCat4_T4RequiresT5(t *testing.T) {
-	const filespecKey = "TANF:2"
+	const filespecKey = "TAN:2"
 	const validatorID = "t4_requires_t5"
 
 	t.Run("no T4 records - should pass", func(t *testing.T) {
@@ -310,7 +310,7 @@ func TestCat4_T4RequiresT5(t *testing.T) {
 }
 
 func TestCat4_T5RequiresT4(t *testing.T) {
-	const filespecKey = "TANF:2"
+	const filespecKey = "TAN:2"
 	const validatorID = "t5_requires_t4"
 
 	t.Run("no T5 records - should pass", func(t *testing.T) {

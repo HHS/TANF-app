@@ -9,7 +9,7 @@ type DataFileContext struct {
 	FiscalYear    int
 	FiscalQuarter string
 	SectionName   string
-	ProgramType   string
+	Program       string
 }
 
 // FieldEnv is the environment for Category 2 (field) validation.

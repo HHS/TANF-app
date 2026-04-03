@@ -56,7 +56,7 @@ func (local *Server) setupDatabase(ctx context.Context, dfCtx pipeline.DataFileC
 		return nil, noop, err
 	}
 
-	datafileID, err := testutil.CreateTestDatafile(ctx, pool, dfCtx.FiscalQuarter, dfCtx.FiscalYear, dfCtx.SectionName, dfCtx.ProgramType)
+	datafileID, err := testutil.CreateTestDatafile(ctx, pool, dfCtx.FiscalQuarter, dfCtx.FiscalYear, dfCtx.SectionName, dfCtx.Program)
 	if err != nil {
 		pool.Close()
 		return nil, noop, fmt.Errorf("failed to create test datafile: %w", err)
@@ -83,6 +83,12 @@ func (server *Server) Run(ctx context.Context) error {
 	if local.Section == 0 {
 		return errRequired("server.local.section")
 	}
+	if local.FiscalYear == 0 {
+		return errRequired("server.local.fiscal-year")
+	}
+	if local.Quarter == 0 {
+		return errRequired("server.local.quarter")
+	}
 
 	// ---- Build DataFileContext from CLI args ----
 	dfCtx := pipeline.DataFileContext{
@@ -91,7 +97,6 @@ func (server *Server) Run(ctx context.Context) error {
 		FiscalYear:    local.FiscalYear,
 		FiscalQuarter: fmt.Sprintf("Q%d", local.Quarter),
 		SectionName:   sectionName(local.Section),
-		ProgramType:   local.Program,
 	}
 
 	// ---- Database + test datafile setup ----

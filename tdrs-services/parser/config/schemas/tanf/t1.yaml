@@ -5,7 +5,7 @@
 # One T1 record exists per case per reporting month.
 
 record_type: T1
-program: TANF
+program: TAN
 section: 1
 document: "TANF Active Case Data"
 format: positional

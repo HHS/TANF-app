@@ -56,13 +56,12 @@ func loadValidators(t *testing.T, reg *config.Registry) *validation.ValidatorReg
 // "HEADER20241A06000TAN1ED" (calendar year=2024, quarter=1 -> fiscal Q2 2024).
 func testTANFContext() DataFileContext {
 	return DataFileContext{
-		Program:       "TANF",
+		Program:       "TAN",
 		Section:       1,
 		DatafileID:    1,
 		FiscalYear:    2024,
 		FiscalQuarter: "Q2",
 		SectionName:   "Active Case Data",
-		ProgramType:   "TAN",
 	}
 }
 
@@ -76,7 +75,6 @@ func testSSPContext() DataFileContext {
 		FiscalYear:    2024,
 		FiscalQuarter: "Q2",
 		SectionName:   "Active Case Data",
-		ProgramType:   "SSP",
 	}
 }
 
@@ -168,7 +166,7 @@ func TestProcess_TANF_S1_ValidData(t *testing.T) {
 	}
 	defer f.Close()
 
-	spec := reg.GetFileSpec("TANF", 1)
+	spec := reg.GetFileSpec("TAN", 1)
 	if spec == nil {
 		t.Fatal("GetFileSpec(TANF, 1) returned nil")
 	}
@@ -224,7 +222,7 @@ func TestProcess_TANF_S1_MissingHeader(t *testing.T) {
 	}
 	defer f.Close()
 
-	spec := reg.GetFileSpec("TANF", 1)
+	spec := reg.GetFileSpec("TAN", 1)
 	dec, err := decoder.CreateDecoder(f, spec)
 	if err != nil {
 		t.Fatalf("CreateDecoder failed: %v", err)
@@ -265,7 +263,7 @@ func TestProcess_EmptyFile(t *testing.T) {
 	}
 	defer f.Close()
 
-	spec := reg.GetFileSpec("TANF", 1)
+	spec := reg.GetFileSpec("TAN", 1)
 	dec, err := decoder.CreateDecoder(f, spec)
 	if err != nil {
 		t.Fatalf("CreateDecoder failed: %v", err)
@@ -304,7 +302,7 @@ func TestProcess_HeaderOnly(t *testing.T) {
 	}
 	defer f.Close()
 
-	spec := reg.GetFileSpec("TANF", 1)
+	spec := reg.GetFileSpec("TAN", 1)
 	dec, err := decoder.CreateDecoder(f, spec)
 	if err != nil {
 		t.Fatalf("CreateDecoder failed: %v", err)
@@ -348,7 +346,7 @@ func TestProcess_TANF_S1_WithRecordWriting(t *testing.T) {
 	}
 	defer f.Close()
 
-	spec := reg.GetFileSpec("TANF", 1)
+	spec := reg.GetFileSpec("TAN", 1)
 	dec, err := decoder.CreateDecoder(f, spec)
 	if err != nil {
 		t.Fatalf("CreateDecoder failed: %v", err)
@@ -402,7 +400,7 @@ func TestProcess_TANF_MultipleRecordTypes(t *testing.T) {
 	}
 	defer f.Close()
 
-	spec := reg.GetFileSpec("TANF", 1)
+	spec := reg.GetFileSpec("TAN", 1)
 	dec, err := decoder.CreateDecoder(f, spec)
 	if err != nil {
 		t.Fatalf("CreateDecoder failed: %v", err)
@@ -488,7 +486,7 @@ func TestProcess_ErrorsDisabled(t *testing.T) {
 	}
 	defer f.Close()
 
-	spec := reg.GetFileSpec("TANF", 1)
+	spec := reg.GetFileSpec("TAN", 1)
 	dec, err := decoder.CreateDecoder(f, spec)
 	if err != nil {
 		t.Fatalf("CreateDecoder failed: %v", err)
@@ -534,7 +532,7 @@ func TestProcess_ParsingResult_HasExpectedFields(t *testing.T) {
 	}
 	defer f.Close()
 
-	spec := reg.GetFileSpec("TANF", 1)
+	spec := reg.GetFileSpec("TAN", 1)
 	dec, err := decoder.CreateDecoder(f, spec)
 	if err != nil {
 		t.Fatalf("CreateDecoder failed: %v", err)
@@ -587,7 +585,7 @@ func TestProcess_FileSink_Integration(t *testing.T) {
 	}
 	defer f.Close()
 
-	spec := reg.GetFileSpec("TANF", 1)
+	spec := reg.GetFileSpec("TAN", 1)
 	dec, err := decoder.CreateDecoder(f, spec)
 	if err != nil {
 		t.Fatalf("CreateDecoder failed: %v", err)

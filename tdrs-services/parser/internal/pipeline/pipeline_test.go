@@ -124,13 +124,13 @@ func TestProcess_MissingFileSpec(t *testing.T) {
 
 func TestDataFileContext_Fields(t *testing.T) {
 	params := DataFileContext{
-		Program:    "TANF",
+		Program:    "TAN",
 		Section:    1,
 		DatafileID: 42,
 	}
 
-	if params.Program != "TANF" {
-		t.Errorf("Program = %q, want TANF", params.Program)
+	if params.Program != "TAN" {
+		t.Errorf("Program = %q, want TAN", params.Program)
 	}
 	if params.Section != 1 {
 		t.Errorf("Section = %d, want 1", params.Section)

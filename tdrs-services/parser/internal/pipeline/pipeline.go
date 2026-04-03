@@ -32,13 +32,12 @@ type Pipeline struct {
 // pipeline routing info with DataFile submission metadata used for header
 // cross-validation.
 type DataFileContext struct {
-	Program       string
+	Program       string // Program type matching DB values ("TAN", "SSP", "TRIBAL", "FRA")
 	Section       int
 	DatafileID    int32
 	FiscalYear    int    // Fiscal year from the DataFile (e.g., 2021)
 	FiscalQuarter string // Fiscal quarter from the DataFile ("Q1", "Q2", "Q3", "Q4")
 	SectionName   string // Submission section ("Active Case Data", "Closed Case Data", etc.)
-	ProgramType   string // Submission program type ("TAN", "SSP", "Tribal TAN")
 }
 
 // ParsingResult contains statistics from the processing run.
@@ -133,7 +132,7 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 			FiscalYear:    dfCtx.FiscalYear,
 			FiscalQuarter: dfCtx.FiscalQuarter,
 			SectionName:   dfCtx.SectionName,
-			ProgramType:   dfCtx.ProgramType,
+			Program:       dfCtx.Program,
 		}
 		headerResult := validationOrchestrator.ValidateHeader(parseCtx.Header, valDfCtx)
 		if headerResult.HasErrors() {

@@ -5,7 +5,7 @@
 # and benefits received at closure. One T4 record exists per closed case.
 
 record_type: T4
-program: TANF
+program: TAN
 section: 2
 document: "TANF Closed Case Data"
 format: positional

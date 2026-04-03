@@ -122,7 +122,7 @@ func TestCLI_LocalFlags(t *testing.T) {
 	cli, _, err := ParseCLI([]string{
 		"--server.mode=local",
 		"--server.local.file-path=/path/to/file.txt",
-		"--server.local.program=TANF",
+		"--server.local.program=TAN",
 		"--server.local.section=1",
 		"--server.local.fiscal-year=2024",
 		"--server.local.quarter=3",
@@ -135,8 +135,8 @@ func TestCLI_LocalFlags(t *testing.T) {
 	if cli.ServerLocalFilePath != "/path/to/file.txt" {
 		t.Errorf("FilePath = %q, want /path/to/file.txt", cli.ServerLocalFilePath)
 	}
-	if cli.ServerLocalProgram != "TANF" {
-		t.Errorf("Program = %q, want TANF", cli.ServerLocalProgram)
+	if cli.ServerLocalProgram != "TAN" {
+		t.Errorf("Program = %q, want TAN", cli.ServerLocalProgram)
 	}
 	if cli.ServerLocalSection != 1 {
 		t.Errorf("Section = %d, want 1", cli.ServerLocalSection)

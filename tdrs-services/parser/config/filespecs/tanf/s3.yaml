@@ -10,7 +10,7 @@
 # BASIC IDENTIFICATION
 # =============================================================================
 
-program: TANF
+program: TAN
 section: 3
 description: "TANF Aggregate Data - Contains summary statistics and stratum data"
 

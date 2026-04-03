@@ -6,7 +6,7 @@
 # The parser should produce 3 output rows from each T6 record line.
 
 record_type: T6
-program: TANF
+program: TAN
 section: 3
 document: "TANF Aggregate Data"
 format: positional

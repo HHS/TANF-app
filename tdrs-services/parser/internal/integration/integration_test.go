@@ -101,10 +101,9 @@ func createTestDatafile(t *testing.T, ctx context.Context, program string, secti
 		FiscalYear:    year,
 		FiscalQuarter: fmt.Sprintf("Q%d", quarter),
 		SectionName:   sectionName(section),
-		ProgramType:   program,
 	}
 
-	datafileID, err := testutil.CreateTestDatafile(ctx, testPool, dfCtx.FiscalQuarter, dfCtx.FiscalYear, dfCtx.SectionName, dfCtx.ProgramType)
+	datafileID, err := testutil.CreateTestDatafile(ctx, testPool, dfCtx.FiscalQuarter, dfCtx.FiscalYear, dfCtx.SectionName, dfCtx.Program)
 	if err != nil {
 		t.Fatalf("Failed to create test datafile: %v", err)
 	}

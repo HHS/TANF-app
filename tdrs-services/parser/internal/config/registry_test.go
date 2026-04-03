@@ -85,7 +85,7 @@ func TestConfig_AllExpectedFileSpecsExist(t *testing.T) {
 		program string
 		section int
 	}{
-		{"TANF", 1}, {"TANF", 2}, {"TANF", 3}, {"TANF", 4},
+		{"TAN", 1}, {"TAN", 2}, {"TAN", 3}, {"TAN", 4},
 		{"SSP", 1}, {"SSP", 2}, {"SSP", 3}, {"SSP", 4},
 		{"TRIBAL", 1}, {"TRIBAL", 2}, {"TRIBAL", 3}, {"TRIBAL", 4},
 		{"FRA", 1},
@@ -207,7 +207,7 @@ func TestConfig_SchemaPrograms(t *testing.T) {
 	expectedPrograms := map[string]string{
 		"common/header":  "ALL",
 		"common/trailer": "ALL",
-		"tanf/t1":        "TANF",
+		"tanf/t1":        "TAN",
 		"ssp/m1":         "SSP",
 		"tribal_tanf/t1": "TRIBAL",
 		"fra/te1":        "FRA",
@@ -381,10 +381,10 @@ func TestConfig_FileSpecSchemaReferences(t *testing.T) {
 	reg := loadRegistry(t)
 
 	expectedSchemas := map[string][]string{
-		"TANF:1":   {"common/header", "common/trailer", "tanf/t1", "tanf/t2", "tanf/t3"},
-		"TANF:2":   {"common/header", "common/trailer", "tanf/t4", "tanf/t5"},
-		"TANF:3":   {"common/header", "common/trailer", "tanf/t6"},
-		"TANF:4":   {"common/header", "common/trailer", "tanf/t7"},
+		"TAN:1":   {"common/header", "common/trailer", "tanf/t1", "tanf/t2", "tanf/t3"},
+		"TAN:2":   {"common/header", "common/trailer", "tanf/t4", "tanf/t5"},
+		"TAN:3":   {"common/header", "common/trailer", "tanf/t6"},
+		"TAN:4":   {"common/header", "common/trailer", "tanf/t7"},
 		"SSP:1":    {"common/header", "common/trailer", "ssp/m1", "ssp/m2", "ssp/m3"},
 		"SSP:2":    {"common/header", "common/trailer", "ssp/m4", "ssp/m5"},
 		"SSP:3":    {"common/header", "common/trailer", "ssp/m6"},
@@ -479,7 +479,7 @@ func TestConfig_FileSpecAccumulatorKeyFields(t *testing.T) {
 
 	// Sections 1 and 2 have key_fields for case grouping; sections 3, 4, and FRA do not
 	expectKeyFields := map[string]bool{
-		"TANF:1": true, "TANF:2": true, "TANF:3": false, "TANF:4": false,
+		"TAN:1": true, "TAN:2": true, "TAN:3": false, "TAN:4": false,
 		"SSP:1": true, "SSP:2": true, "SSP:3": false, "SSP:4": false,
 		"TRIBAL:1": true, "TRIBAL:2": true, "TRIBAL:3": false, "TRIBAL:4": false,
 		"FRA:1": false,
@@ -504,8 +504,8 @@ func TestConfig_FileSpecGroupedSchemas(t *testing.T) {
 	// Only section 1 and 2 filespecs should have grouped schemas
 	// These must exclude header/trailer and include only the record schemas
 	expectedGrouped := map[string][]string{
-		"TANF:1":   {"tanf/t1", "tanf/t2", "tanf/t3"},
-		"TANF:2":   {"tanf/t4", "tanf/t5"},
+		"TAN:1":   {"tanf/t1", "tanf/t2", "tanf/t3"},
+		"TAN:2":   {"tanf/t4", "tanf/t5"},
 		"SSP:1":    {"ssp/m1", "ssp/m2", "ssp/m3"},
 		"SSP:2":    {"ssp/m4", "ssp/m5"},
 		"TRIBAL:1": {"tribal_tanf/t1", "tribal_tanf/t2", "tribal_tanf/t3"},
@@ -535,7 +535,7 @@ func TestConfig_FileSpecGroupedSchemas(t *testing.T) {
 	}
 
 	// Sections 3, 4, FRA should have no grouped schemas
-	noGrouped := []string{"TANF:3", "TANF:4", "SSP:3", "SSP:4", "TRIBAL:3", "TRIBAL:4", "FRA:1"}
+	noGrouped := []string{"TAN:3", "TAN:4", "SSP:3", "SSP:4", "TRIBAL:3", "TRIBAL:4", "FRA:1"}
 	for _, key := range noGrouped {
 		spec := reg.FileSpecs()[key]
 		if spec == nil {
@@ -554,7 +554,7 @@ func TestConfig_FileSpecGroupedSchemas(t *testing.T) {
 func TestConfig_GetFileSpecReturnsNilForMissing(t *testing.T) {
 	reg := loadRegistry(t)
 
-	if reg.GetFileSpec("TANF", 99) != nil {
+	if reg.GetFileSpec("TAN", 99) != nil {
 		t.Error("expected nil for non-existent section")
 	}
 	if reg.GetFileSpec("UNKNOWN", 1) != nil {
@@ -638,9 +638,9 @@ func TestNewRegistry_UnresolvableSchemaReference(t *testing.T) {
 	os.MkdirAll(filepath.Join(dir, "filespecs"), 0755)
 
 	os.WriteFile(filepath.Join(dir, "schemas", "tanf", "t1.yaml"),
-		[]byte("record_type: T1\nprogram: TANF\nshared: []\nsegments:\n  - fields:\n    - name: x\n"), 0644)
+		[]byte("record_type: T1\nprogram: TAN\nshared: []\nsegments:\n  - fields:\n    - name: x\n"), 0644)
 
-	badSpec := `program: TANF
+	badSpec := `program: TAN
 				section: 1
 				format: positional
 				schemas:
@@ -673,9 +673,9 @@ func TestNewRegistry_UnresolvablePrefixReference(t *testing.T) {
 	os.MkdirAll(filepath.Join(dir, "filespecs"), 0755)
 
 	os.WriteFile(filepath.Join(dir, "schemas", "tanf", "t1.yaml"),
-		[]byte("record_type: T1\nprogram: TANF\nshared: []\nsegments:\n  - fields:\n    - name: x\n"), 0644)
+		[]byte("record_type: T1\nprogram: TAN\nshared: []\nsegments:\n  - fields:\n    - name: x\n"), 0644)
 
-	badSpec := `program: TANF
+	badSpec := `program: TAN
 				section: 1
 				format: positional
 				schemas:
@@ -709,9 +709,9 @@ func TestNewRegistry_UnresolvableGroupedSchemasReference(t *testing.T) {
 	os.MkdirAll(filepath.Join(dir, "filespecs"), 0755)
 
 	os.WriteFile(filepath.Join(dir, "schemas", "tanf", "t1.yaml"),
-		[]byte("record_type: T1\nprogram: TANF\nshared: []\nsegments:\n  - fields:\n    - name: x\n"), 0644)
+		[]byte("record_type: T1\nprogram: TAN\nshared: []\nsegments:\n  - fields:\n    - name: x\n"), 0644)
 
-	badSpec := `program: TANF
+	badSpec := `program: TAN
 				section: 1
 				format: positional
 				schemas:
@@ -807,7 +807,7 @@ func TestNewTestRegistry(t *testing.T) {
 	schemas := map[string]*schema.CompiledSchema{
 		"tanf/t1": (&schema.SchemaDef{
 			RecordType: "T1",
-			Program:    "TANF",
+			Program:    "TAN",
 			Section:    1,
 			Shared:     []schema.FieldDef{{Name: "RecordType", Start: 0, End: 2, Type: "string"}},
 			Segments: []schema.SegmentDef{

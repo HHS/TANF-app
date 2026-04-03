@@ -10,7 +10,7 @@
 # BASIC IDENTIFICATION
 # =============================================================================
 
-program: TANF
+program: TAN
 section: 4
 description: "TANF Stratum Data - Contains family counts by stratum"
 

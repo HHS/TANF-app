@@ -42,7 +42,7 @@ func buildNonKeyedSchemas() map[string]*schema.CompiledSchema {
 func buildBatchSize0Spec() *filespec.FileSpec {
 	batchSize := 0
 	return &filespec.FileSpec{
-		Program: "TANF",
+		Program: "TAN",
 		Section: 1,
 		Format:  filespec.FormatPositional,
 		Schemas: []string{"common/header", "common/trailer", "tanf/t1", "tanf/t2", "tanf/t3"},

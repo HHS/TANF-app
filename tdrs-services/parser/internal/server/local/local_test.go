@@ -56,7 +56,7 @@ func TestRun_MissingFilePath(t *testing.T) {
 	cfg := config.DefaultConfig()
 	cfg.Writer.Mode = "file"
 	cfg.Server.Local.FilePath = ""
-	cfg.Server.Local.Program = "TANF"
+	cfg.Server.Local.Program = "TAN"
 	cfg.Server.Local.Section = 1
 
 	m := New(cfg, nil, nil)
@@ -92,7 +92,7 @@ func TestRun_MissingSection(t *testing.T) {
 	cfg := config.DefaultConfig()
 	cfg.Writer.Mode = "file"
 	cfg.Server.Local.FilePath = "/some/path"
-	cfg.Server.Local.Program = "TANF"
+	cfg.Server.Local.Program = "TAN"
 	cfg.Server.Local.Section = 0
 
 	m := New(cfg, nil, nil)
@@ -110,8 +110,10 @@ func TestRun_NonExistentFile(t *testing.T) {
 	cfg := config.DefaultConfig()
 	cfg.Writer.Mode = "file"
 	cfg.Server.Local.FilePath = "/nonexistent/path/file.txt"
-	cfg.Server.Local.Program = "TANF"
+	cfg.Server.Local.Program = "TAN"
 	cfg.Server.Local.Section = 1
+	cfg.Server.Local.FiscalYear = 2024
+	cfg.Server.Local.Quarter = 1
 
 	cfg.SchemaFiles = nil
 	cfg.FilespecFiles = nil
@@ -146,6 +148,8 @@ func TestRun_MissingFileSpec(t *testing.T) {
 	cfg.Server.Local.FilePath = tmpFile
 	cfg.Server.Local.Program = "NONEXISTENT"
 	cfg.Server.Local.Section = 99
+	cfg.Server.Local.FiscalYear = 2024
+	cfg.Server.Local.Quarter = 1
 	cfg.SchemaFiles = nil
 	cfg.FilespecFiles = nil
 	cfg.Global.ConfigDir = t.TempDir()

@@ -10,7 +10,7 @@
 # BASIC IDENTIFICATION
 # =============================================================================
 
-program: TANF
+program: TAN
 section: 1
 description: "TANF Active Case Data - Contains case, adult, and child records for active TANF cases"
 
