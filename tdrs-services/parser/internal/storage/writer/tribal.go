@@ -4,9 +4,9 @@ import (
 	"go-parser/internal/parser"
 )
 
-// Tribal TANF T1 Converter - Case-level data for active Tribal TANF cases
+// Tribal TANF T1 Serializer - Case-level data for active Tribal TANF cases
 
-func convertTribalT1(record *parser.ParsedRecord, datafileID int32) [][]any {
+func serializeTribalT1(record *parser.ParsedRecord, datafileID int32) [][]any {
 	return singleRow([]any{
 		record.Get("RecordType"),
 		record.Get("RPT_MONTH_YEAR"),
@@ -59,9 +59,9 @@ func convertTribalT1(record *parser.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// Tribal TANF T2 Converter - Adult-level data for active Tribal TANF cases
+// Tribal TANF T2 Serializer - Adult-level data for active Tribal TANF cases
 
-func convertTribalT2(record *parser.ParsedRecord, datafileID int32) [][]any {
+func serializeTribalT2(record *parser.ParsedRecord, datafileID int32) [][]any {
 	return singleRow([]any{
 		record.Get("RecordType"),
 		record.Get("RPT_MONTH_YEAR"),
@@ -121,9 +121,9 @@ func convertTribalT2(record *parser.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// Tribal TANF T3 Converter - Child-level data for active Tribal TANF cases
+// Tribal TANF T3 Serializer - Child-level data for active Tribal TANF cases
 
-func convertTribalT3(record *parser.ParsedRecord, datafileID int32) [][]any {
+func serializeTribalT3(record *parser.ParsedRecord, datafileID int32) [][]any {
 	return singleRow([]any{
 		record.Get("RecordType"),
 		record.Get("RPT_MONTH_YEAR"),
@@ -152,9 +152,9 @@ func convertTribalT3(record *parser.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// Tribal TANF T4 Converter - Case-level data for closed Tribal TANF cases
+// Tribal TANF T4 Serializer - Case-level data for closed Tribal TANF cases
 
-func convertTribalT4(record *parser.ParsedRecord, datafileID int32) [][]any {
+func serializeTribalT4(record *parser.ParsedRecord, datafileID int32) [][]any {
 	return singleRow([]any{
 		record.Get("RecordType"),
 		record.Get("RPT_MONTH_YEAR"),
@@ -174,9 +174,9 @@ func convertTribalT4(record *parser.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// Tribal TANF T5 Converter - Adult-level data for closed Tribal TANF cases
+// Tribal TANF T5 Serializer - Adult-level data for closed Tribal TANF cases
 
-func convertTribalT5(record *parser.ParsedRecord, datafileID int32) [][]any {
+func serializeTribalT5(record *parser.ParsedRecord, datafileID int32) [][]any {
 	return singleRow([]any{
 		record.Get("RecordType"),
 		record.Get("RPT_MONTH_YEAR"),
@@ -213,9 +213,9 @@ func convertTribalT5(record *parser.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// Tribal TANF T6 Converter - Aggregate data
+// Tribal TANF T6 Serializer - Aggregate data
 
-func convertTribalT6(record *parser.ParsedRecord, datafileID int32) [][]any {
+func serializeTribalT6(record *parser.ParsedRecord, datafileID int32) [][]any {
 	return singleRow([]any{
 		record.Get("RecordType"),
 		record.Get("CALENDAR_QUARTER"),
@@ -241,9 +241,9 @@ func convertTribalT6(record *parser.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// Tribal TANF T7 Converter - Stratum data
+// Tribal TANF T7 Serializer - Stratum data
 
-func convertTribalT7(record *parser.ParsedRecord, datafileID int32) [][]any {
+func serializeTribalT7(record *parser.ParsedRecord, datafileID int32) [][]any {
 	return singleRow([]any{
 		record.Get("RecordType"),
 		record.Get("CALENDAR_QUARTER"),

@@ -15,7 +15,7 @@ func TestGetConverter_AllRegistered(t *testing.T) {
 	}
 
 	for _, path := range expected {
-		conv := GetConverter(path)
+		conv := GetSerializer(path)
 		if conv == nil {
 			t.Errorf("expected converter for %q, got nil", path)
 		}
@@ -23,14 +23,14 @@ func TestGetConverter_AllRegistered(t *testing.T) {
 }
 
 func TestGetConverter_Unknown(t *testing.T) {
-	conv := GetConverter("unknown/x1")
+	conv := GetSerializer("unknown/x1")
 	if conv != nil {
 		t.Errorf("expected nil for unknown schema path, got %v", conv)
 	}
 }
 
 func TestGetConverter_EmptyPath(t *testing.T) {
-	conv := GetConverter("")
+	conv := GetSerializer("")
 	if conv != nil {
 		t.Errorf("expected nil for empty path, got %v", conv)
 	}
@@ -38,7 +38,7 @@ func TestGetConverter_EmptyPath(t *testing.T) {
 
 func TestConverterRegistryCount(t *testing.T) {
 	// 7 TANF + 7 SSP + 7 Tribal + 1 FRA = 22
-	if len(converterRegistry) != 22 {
-		t.Errorf("expected 22 converters in registry, got %d", len(converterRegistry))
+	if len(serializerRegistry) != 22 {
+		t.Errorf("expected 22 converters in registry, got %d", len(serializerRegistry))
 	}
 }

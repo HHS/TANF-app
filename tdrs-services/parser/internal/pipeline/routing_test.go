@@ -466,7 +466,7 @@ func TestAppendRecordErrors_BufferReuse(t *testing.T) {
 
 // buildTestRouter creates a real Router backed by a recording sink for testing.
 // The router is set up with an error writer but no record writers (since we don't
-// have real converters for test schemas).
+// have real serializers for test schemas).
 func buildTestRouter(t *testing.T, ctx context.Context) (*writer.Router, *recordingSink) {
 	t.Helper()
 	sink := newRecordingSink()

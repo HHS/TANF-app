@@ -4,10 +4,10 @@ import (
 	"go-parser/internal/parser"
 )
 
-// TANF T1 Converter - Case-level data for active TANF cases
+// TANF T1 Serializer - Case-level data for active TANF cases
 // Builds row directly with raw Go types for minimal allocations.
 
-func convertTanfT1(record *parser.ParsedRecord, datafileID int32) [][]any {
+func serializeTanfT1(record *parser.ParsedRecord, datafileID int32) [][]any {
 	return singleRow([]any{
 		record.Get("RecordType"),
 		record.Get("RPT_MONTH_YEAR"),
@@ -60,10 +60,10 @@ func convertTanfT1(record *parser.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// TANF T2 Converter - Adult-level data for active TANF cases
+// TANF T2 Serializer - Adult-level data for active TANF cases
 // This is the largest record type with ~69 fields.
 
-func convertTanfT2(record *parser.ParsedRecord, datafileID int32) [][]any {
+func serializeTanfT2(record *parser.ParsedRecord, datafileID int32) [][]any {
 	return singleRow([]any{
 		record.Get("RecordType"),
 		record.Get("RPT_MONTH_YEAR"),
@@ -140,9 +140,9 @@ func convertTanfT2(record *parser.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// TANF T3 Converter - Child-level data for active TANF cases
+// TANF T3 Serializer - Child-level data for active TANF cases
 
-func convertTanfT3(record *parser.ParsedRecord, datafileID int32) [][]any {
+func serializeTanfT3(record *parser.ParsedRecord, datafileID int32) [][]any {
 	return singleRow([]any{
 		record.Get("RecordType"),
 		record.Get("RPT_MONTH_YEAR"),
@@ -171,9 +171,9 @@ func convertTanfT3(record *parser.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// TANF T4 Converter - Case-level data for closed TANF cases
+// TANF T4 Serializer - Case-level data for closed TANF cases
 
-func convertTanfT4(record *parser.ParsedRecord, datafileID int32) [][]any {
+func serializeTanfT4(record *parser.ParsedRecord, datafileID int32) [][]any {
 	return singleRow([]any{
 		record.Get("RecordType"),
 		record.Get("RPT_MONTH_YEAR"),
@@ -193,9 +193,9 @@ func convertTanfT4(record *parser.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// TANF T5 Converter - Adult-level data for closed TANF cases
+// TANF T5 Serializer - Adult-level data for closed TANF cases
 
-func convertTanfT5(record *parser.ParsedRecord, datafileID int32) [][]any {
+func serializeTanfT5(record *parser.ParsedRecord, datafileID int32) [][]any {
 	return singleRow([]any{
 		record.Get("RecordType"),
 		record.Get("RPT_MONTH_YEAR"),
@@ -232,9 +232,9 @@ func convertTanfT5(record *parser.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// TANF T6 Converter - Aggregate data
+// TANF T6 Serializer - Aggregate data
 
-func convertTanfT6(record *parser.ParsedRecord, datafileID int32) [][]any {
+func serializeTanfT6(record *parser.ParsedRecord, datafileID int32) [][]any {
 	return singleRow([]any{
 		record.Get("RecordType"),
 		record.Get("CALENDAR_QUARTER"),
@@ -260,9 +260,9 @@ func convertTanfT6(record *parser.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// TANF T7 Converter - Stratum data
+// TANF T7 Serializer - Stratum data
 
-func convertTanfT7(record *parser.ParsedRecord, datafileID int32) [][]any {
+func serializeTanfT7(record *parser.ParsedRecord, datafileID int32) [][]any {
 	return singleRow([]any{
 		record.Get("RecordType"),
 		record.Get("CALENDAR_QUARTER"),

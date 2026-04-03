@@ -4,9 +4,9 @@ import (
 	"go-parser/internal/parser"
 )
 
-// SSP M1 Converter - Case-level data for active SSP cases
+// SSP M1 Serializer - Case-level data for active SSP cases
 
-func convertSspM1(record *parser.ParsedRecord, datafileID int32) [][]any {
+func serializeSspM1(record *parser.ParsedRecord, datafileID int32) [][]any {
 	return singleRow([]any{
 		record.Get("RecordType"),
 		record.Get("RPT_MONTH_YEAR"),
@@ -57,9 +57,9 @@ func convertSspM1(record *parser.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// SSP M2 Converter - Adult-level data for active SSP cases
+// SSP M2 Serializer - Adult-level data for active SSP cases
 
-func convertSspM2(record *parser.ParsedRecord, datafileID int32) [][]any {
+func serializeSspM2(record *parser.ParsedRecord, datafileID int32) [][]any {
 	return singleRow([]any{
 		record.Get("RecordType"),
 		record.Get("RPT_MONTH_YEAR"),
@@ -134,9 +134,9 @@ func convertSspM2(record *parser.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// SSP M3 Converter - Child-level data for active SSP cases
+// SSP M3 Serializer - Child-level data for active SSP cases
 
-func convertSspM3(record *parser.ParsedRecord, datafileID int32) [][]any {
+func serializeSspM3(record *parser.ParsedRecord, datafileID int32) [][]any {
 	return singleRow([]any{
 		record.Get("RecordType"),
 		record.Get("RPT_MONTH_YEAR"),
@@ -166,9 +166,9 @@ func convertSspM3(record *parser.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// SSP M4 Converter - Case-level data for closed SSP cases
+// SSP M4 Serializer - Case-level data for closed SSP cases
 
-func convertSspM4(record *parser.ParsedRecord, datafileID int32) [][]any {
+func serializeSspM4(record *parser.ParsedRecord, datafileID int32) [][]any {
 	return singleRow([]any{
 		record.Get("RecordType"),
 		record.Get("RPT_MONTH_YEAR"),
@@ -188,9 +188,9 @@ func convertSspM4(record *parser.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// SSP M5 Converter - Adult-level data for closed SSP cases
+// SSP M5 Serializer - Adult-level data for closed SSP cases
 
-func convertSspM5(record *parser.ParsedRecord, datafileID int32) [][]any {
+func serializeSspM5(record *parser.ParsedRecord, datafileID int32) [][]any {
 	return singleRow([]any{
 		record.Get("RecordType"),
 		record.Get("RPT_MONTH_YEAR"),
@@ -225,9 +225,9 @@ func convertSspM5(record *parser.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// SSP M6 Converter - Aggregate data
+// SSP M6 Serializer - Aggregate data
 
-func convertSspM6(record *parser.ParsedRecord, datafileID int32) [][]any {
+func serializeSspM6(record *parser.ParsedRecord, datafileID int32) [][]any {
 	return singleRow([]any{
 		record.Get("RecordType"),
 		record.Get("CALENDAR_QUARTER"),
@@ -248,9 +248,9 @@ func convertSspM6(record *parser.ParsedRecord, datafileID int32) [][]any {
 	})
 }
 
-// SSP M7 Converter - Stratum data
+// SSP M7 Serializer - Stratum data
 
-func convertSspM7(record *parser.ParsedRecord, datafileID int32) [][]any {
+func serializeSspM7(record *parser.ParsedRecord, datafileID int32) [][]any {
 	return singleRow([]any{
 		record.Get("RecordType"),
 		record.Get("CALENDAR_QUARTER"),

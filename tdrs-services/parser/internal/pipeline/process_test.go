@@ -180,7 +180,7 @@ func TestProcess_TANF_S1_ValidData(t *testing.T) {
 	// Create pipeline with real registry and validators, capturing sink
 	sink := newCapturingSink()
 	pipelineCfg := TestConfig()
-	pipelineCfg.IncludeRecords = false // Skip record writing (no real converters needed)
+	pipelineCfg.IncludeRecords = false // Skip record writing (no real serializers needed)
 	pipelineCfg.IncludeErrors = true
 	p := NewPipeline(sink, reg, validators, pipelineCfg)
 

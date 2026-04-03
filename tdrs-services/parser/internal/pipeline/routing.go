@@ -80,11 +80,11 @@ func routeValidatedBatch(ctx context.Context, router *writer.Router, groups []*v
 		if len(vg.Result.GroupErrors) > 0 && len(vg.Group.Records) > 0 {
 			firstRec := vg.Group.Records[0]
 			for _, groupErr := range vg.Result.GroupErrors {
-				*errorRows = append(*errorRows, writer.ConvertError(groupErr, firstRec, nil, datafileID, nil))
+				*errorRows = append(*errorRows, writer.SerializeError(groupErr, firstRec, nil, datafileID, nil))
 			}
 		}
 
-		// Handle blocked groups: convert all errors, release records, skip record writing
+		// Handle blocked groups: serialize all errors, release records, skip record writing
 		if vg.Result.HasBlockingGroupErrors() {
 			log.Printf("Skipping group %s: blocking group validation failed", vg.Group.Key)
 			for i, recResult := range vg.Result.RecordResults {
@@ -116,8 +116,8 @@ func routeValidatedBatch(ctx context.Context, router *writer.Router, groups []*v
 				continue
 			}
 
-			// Convert record to get UUID, then convert errors with UUID linking
-			rows, recordUUID, err := router.ConvertRecord(record)
+			// Serialize record to get UUID, then serialize errors with UUID linking
+			rows, recordUUID, err := router.SerializeRecord(record)
 			if err != nil {
 				record.Schema.ReleaseRecord(record)
 				return err
@@ -126,7 +126,7 @@ func routeValidatedBatch(ctx context.Context, router *writer.Router, groups []*v
 			// Get content type ID for error linking (record will be written)
 			contentTypeID := router.GetContentTypeID(record.Schema.Path)
 
-			// Convert non-blocking errors with ObjectID linking (while record still available)
+			// Serialize non-blocking errors with ObjectID linking (while record still available)
 			appendRecordErrors(errorRows, recResult, record, recordUUID, datafileID, contentTypeID)
 
 			// Capture schema path before releasing record
@@ -135,7 +135,7 @@ func routeValidatedBatch(ctx context.Context, router *writer.Router, groups []*v
 			// Release record back to pool - no longer needed after conversion
 			record.Schema.ReleaseRecord(record)
 
-			// Send converted record rows to writer
+			// Send serialized record rows to writer
 			if err := router.SendRecordRowsByPath(ctx, schemaPath, rows); err != nil {
 				return err
 			}
@@ -149,7 +149,7 @@ func routeValidatedBatch(ctx context.Context, router *writer.Router, groups []*v
 	return nil
 }
 
-// appendRecordErrors converts all errors for a record to rows and appends them to the buffer.
+// appendRecordErrors serializess all errors for a record to rows and appends them to the buffer.
 // Must be called BEFORE record is released to pool.
 // recordUUID is set for records that will be written (for error linking), nil otherwise.
 // contentTypeID is set only when recordUUID is set (for FIELD_VALUE and VALUE_CONSISTENCY errors).
@@ -174,6 +174,6 @@ func appendRecordErrors(
 			vr.ErrorType == validation.ErrorTypeValueConsistency) {
 			ctID = contentTypeID
 		}
-		*buf = append(*buf, writer.ConvertError(vr, record, recordUUID, datafileID, ctID))
+		*buf = append(*buf, writer.SerializeError(vr, record, recordUUID, datafileID, ctID))
 	}
 }

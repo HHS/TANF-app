@@ -16,8 +16,8 @@ import (
 
 // Router coordinates writes for any file type.
 // Writers are created dynamically based on the FileSpec.
-// Router owns the converters and handles the full pipeline:
-// ParsedRecord -> convert -> release to pool -> send []any to writer
+// Router owns the serializers and handles the full pipeline:
+// ParsedRecord -> serialize -> release to pool -> send []any to writer
 type Router struct {
 	sink       Sink
 	datafileID int32
@@ -25,8 +25,8 @@ type Router struct {
 	// Writers keyed by schema path (e.g., "tanf/t1", "tribal/t1")
 	writers map[string]*TableWriter
 
-	// Converters keyed by schema path - manager owns conversion
-	converters map[string]RowConverter
+	// Serializers keyed by schema path - manager owns serialization
+	serializers map[string]RowSerializer
 
 	// Content type IDs keyed by schema path - for error linking
 	contentTypeIDs map[string]*int32
@@ -85,7 +85,7 @@ func NewRouter(
 		sink:           sink,
 		datafileID:     datafileID,
 		writers:        make(map[string]*TableWriter),
-		converters:     make(map[string]RowConverter),
+		serializers:    make(map[string]RowSerializer),
 		contentTypeIDs: make(map[string]*int32),
 	}
 
@@ -130,16 +130,16 @@ func NewRouter(
 			continue
 		}
 
-		// Get the converter for this schema path
+		// Get the serializer for this schema path
 		// Schema path (e.g., "tanf/t1") distinguishes TANF vs Tribal T1
-		conv := GetConverter(schemaPath)
+		conv := GetSerializer(schemaPath)
 		if conv == nil {
-			log.Printf("Warning: no converter for schema %s", schemaPath)
+			log.Printf("Warning: no serializer for schema %s", schemaPath)
 			continue
 		}
 
-		// Store converter in manager (conversion happens in RouteRecord)
-		router.converters[schemaPath] = conv
+		// Store serializer in manager (serialization happens in RouteRecord)
+		router.serializers[schemaPath] = conv
 
 		// Store content type ID for error linking
 		router.contentTypeIDs[schemaPath] = meta.ContentTypeID
@@ -181,7 +181,7 @@ func (router *Router) Start(ctx context.Context) {
 	}
 }
 
-// RouteRecord converts a record, releases it to pool, and sends rows to writer.
+// RouteRecord serializes a record, releases it to pool, and sends rows to writer.
 // This is the release point for valid records in the normal flow.
 // Records without writers (e.g., HEADER, TRAILER) are silently skipped.
 func (router *Router) RouteRecord(ctx context.Context, record *parser.ParsedRecord) error {
@@ -191,18 +191,18 @@ func (router *Router) RouteRecord(ctx context.Context, record *parser.ParsedReco
 		return nil
 	}
 
-	conv, ok := router.converters[record.Schema.Path]
+	conv, ok := router.serializers[record.Schema.Path]
 	if !ok {
-		return fmt.Errorf("no converter for schema: %s", record.Schema.Path)
+		return fmt.Errorf("no serializer for schema: %s", record.Schema.Path)
 	}
 
-	// Convert ParsedRecord to []any rows
+	// Serialize ParsedRecord to []any rows
 	rows := conv(record, router.datafileID)
 
-	// Release record back to pool - it's no longer needed after conversion
+	// Release record back to pool - it's no longer needed after serialization
 	record.Schema.ReleaseRecord(record)
 
-	// Send converted rows to writer
+	// Send serialized rows to writer
 	for _, row := range rows {
 		if err := writer.SendRow(ctx, row); err != nil {
 			return err
@@ -224,8 +224,8 @@ func (router *Router) RouteBatch(ctx context.Context, batch *parser.ParsedBatch)
 	return nil
 }
 
-// RouteErrorRow sends a pre-converted error row to the error writer.
-// Errors are converted at call site (in result_router) while record is available.
+// RouteErrorRow sends a pre-serialized error row to the error writer.
+// Errors are serialized at call site (in result_router) while record is available.
 func (router *Router) RouteErrorRow(ctx context.Context, row []any) error {
 	if router.errorWriter == nil {
 		return nil
@@ -233,7 +233,7 @@ func (router *Router) RouteErrorRow(ctx context.Context, row []any) error {
 	return router.errorWriter.SendRow(ctx, row)
 }
 
-// RouteErrorRows sends multiple pre-converted error rows to the error writer.
+// RouteErrorRows sends multiple pre-serialized error rows to the error writer.
 // More efficient than calling RouteErrorRow in a loop — single error check
 // and batched channel sends.
 func (router *Router) RouteErrorRows(ctx context.Context, rows [][]any) error {
@@ -243,14 +243,14 @@ func (router *Router) RouteErrorRows(ctx context.Context, rows [][]any) error {
 	return router.errorWriter.SendRows(ctx, rows)
 }
 
-// ConvertRecord converts a record to database rows and extracts the UUID.
+// SerializeRecord serializes a record to database rows and extracts the UUID.
 // Does NOT release the record or send rows - caller handles that.
-// Returns the converted rows, the record's UUID, and any error.
-// The UUID is extracted from the converted row at position len(row)-3 (third from end).
-func (router *Router) ConvertRecord(record *parser.ParsedRecord) ([][]any, *pgtype.UUID, error) {
-	conv, ok := router.converters[record.Schema.Path]
+// Returns the serialized rows, the record's UUID, and any error.
+// The UUID is extracted from the serialized row at position len(row)-3 (third from end).
+func (router *Router) SerializeRecord(record *parser.ParsedRecord) ([][]any, *pgtype.UUID, error) {
+	conv, ok := router.serializers[record.Schema.Path]
 	if !ok {
-		return nil, nil, fmt.Errorf("no converter for schema: %s", record.Schema.Path)
+		return nil, nil, fmt.Errorf("no serializer for schema: %s", record.Schema.Path)
 	}
 
 	rows := conv(record, router.datafileID)
@@ -259,7 +259,7 @@ func (router *Router) ConvertRecord(record *parser.ParsedRecord) ([][]any, *pgty
 	}
 
 	// Extract UUID from first row at position len(row)-3
-	// All converters place ID, DatafileID, LineNumber at the end
+	// All serializers place ID, DatafileID, LineNumber at the end
 	firstRow := rows[0]
 	uuidIdx := len(firstRow) - 3
 	if uuidIdx >= 0 {
@@ -271,8 +271,8 @@ func (router *Router) ConvertRecord(record *parser.ParsedRecord) ([][]any, *pgty
 	return rows, nil, nil
 }
 
-// SendRecordRowsByPath sends pre-converted record rows to the writer for the given schema path.
-// Used in conjunction with ConvertRecord for the error-linking flow.
+// SendRecordRowsByPath sends pre-serialized record rows to the writer for the given schema path.
+// Used in conjunction with SerializeRecord for the error-linking flow.
 func (router *Router) SendRecordRowsByPath(ctx context.Context, schemaPath string, rows [][]any) error {
 	writer, ok := router.writers[schemaPath]
 	if !ok {
