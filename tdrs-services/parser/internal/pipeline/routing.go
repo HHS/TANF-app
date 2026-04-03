@@ -149,7 +149,7 @@ func routeValidatedBatch(ctx context.Context, router *writer.Router, groups []*v
 	return nil
 }
 
-// appendRecordErrors serializess all errors for a record to rows and appends them to the buffer.
+// appendRecordErrors serializes all errors for a record to rows and appends them to the buffer.
 // Must be called BEFORE record is released to pool.
 // recordUUID is set for records that will be written (for error linking), nil otherwise.
 // contentTypeID is set only when recordUUID is set (for FIELD_VALUE and VALUE_CONSISTENCY errors).
