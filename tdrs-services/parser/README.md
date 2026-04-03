@@ -309,14 +309,14 @@ Generated code lives in `internal/db/` and should not be edited by hand.
     "request": "launch",
     "mode": "auto",
     "program": "${workspaceFolder}/tdrs-services/parser/cmd/parser",
-    "cwd": "${workspaceFolder}/tdrs-services/parser/cmd/parser",
+    "cwd": "${workspaceFolder}/tdrs-services/parser",
     "env": {},
     "args": ["--database.url", "postgres://tdpuser:something_secure@localhost:5432/tdrs_test?sslmode=disable",
-              "--server.local.file-path", "<PATH_TO_YOUR_FILE>",
-              "--server.local.program", "TANF",
+              "--server.local.file-path", "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.NDM1.TS53_fake.txt",
+              "--server.local.program", "TAN",
               "--server.local.section", "1",
-              "--server.local.fiscal-year", "1",
-              "--server.local.quarter", "1"]
+              "--server.local.fiscal-year", "2023",
+              "--server.local.quarter", "2"]
 },
 {
     "name": "Go DryRun",
@@ -324,14 +324,14 @@ Generated code lives in `internal/db/` and should not be edited by hand.
     "request": "launch",
     "mode": "auto",
     "program": "${workspaceFolder}/tdrs-services/parser/cmd/parser",
-    "cwd": "${workspaceFolder}/tdrs-services/parser/cmd/parser",
+    "cwd": "${workspaceFolder}/tdrs-services/parser",
     "env": {},
     "args": ["--dry-run", "--writer.format=csv",
-              "--server.local.file-path", "<PATH_TO_YOUR_FILE>",
-              "--server.local.program", "TANF",
+              "--server.local.file-path", "/Users/ericlipe/work/repos/tdrs/TANF-app/tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.NDM1.TS53_fake.txt",
+              "--server.local.program", "TAN",
               "--server.local.section", "1",
-              "--server.local.fiscal-year", "1",
-              "--server.local.quarter", "1"]
+              "--server.local.fiscal-year", "2023",
+              "--server.local.quarter", "2"]
 }
 ```
 
