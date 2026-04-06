@@ -28,6 +28,19 @@ def test_DataFileAdmin_status():
     )
 
 
+def test_DataFileAdmin_exposes_state_in_admin():
+    """Test DataFileAdmin surfaces state in changelist and detail view."""
+    data_file_admin = DataFileAdmin(DataFile, AdminSite())
+    properties_fieldset = next(
+        fieldset
+        for fieldset in data_file_admin.fieldsets
+        if fieldset[0] == "Properties"
+    )
+
+    assert "parsing_state" in data_file_admin.list_display
+    assert "parsing_state" in properties_fieldset[1]["fields"]
+
+
 @pytest.mark.django_db
 def test_SubmissionDateFilter(client):
     """Test SubmissionDateFilter method."""

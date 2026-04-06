@@ -17,11 +17,13 @@ from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
+from tdpservice.data_files.enums import SubmissionState
 from tdpservice.core.utils import get_feature_flag
 from tdpservice.data_files.error_reports import ErrorReportFactory
 from tdpservice.data_files.models import DataFile
 from tdpservice.data_files.s3_client import S3Client
 from tdpservice.data_files.serializers import DataFileSerializer
+from tdpservice.data_files.submission_lifecycle import transition_datafile
 from tdpservice.log_handler import S3FileHandler
 from tdpservice.scheduling import parser_task
 from tdpservice.scheduling.parser_task import set_error_report
@@ -122,6 +124,16 @@ class DataFileViewSet(ModelViewSet):
         ):
             data_file_id = response.data.get("id")
             data_file = DataFile.objects.get(id=data_file_id)
+            transition_datafile(
+                data_file,
+                SubmissionState.VIRUS_SCAN_STARTED,
+                note="file accepted for upload",
+            )
+            transition_datafile(
+                data_file,
+                SubmissionState.VIRUS_SCAN_COMPLETED,
+                note="file passed AV validation",
+            )
 
             logger.info(
                 f"Preparing parse task: User META -> user: {request.user}, stt: {data_file.stt}. "
