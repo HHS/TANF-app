@@ -65,7 +65,9 @@ func New(cfg *config.Config, reg *config.Registry, validators *validation.Valida
 // Run starts the celery worker loop. It blocks until the context is cancelled
 // or the process receives SIGINT/SIGTERM.
 func (s *Server) Run(ctx context.Context) error {
-	defer s.dbPool.Close()
+	if s.dbPool != nil {
+		defer s.dbPool.Close()
+	}
 
 	if s.Config.Server.Celery.RedisURL == "" {
 		return fmt.Errorf("server.celery.redis_url is required in celery mode")
@@ -107,7 +109,7 @@ func (s *Server) Run(ctx context.Context) error {
 				log.Printf("PANIC in task for data_file_id=%d: %v", id, r)
 				result = fmt.Sprintf("panic: %v", r)
 				if err := db.UpdateDataFileSummaryStatus(ctx, s.dbPool, id, "Rejected"); err != nil {
-					log.Printf("Failed to update DataFileSummary status for data_file_id=%d during worker panic: %v", dataFileID, err)
+					log.Printf("Failed to update DataFileSummary status for data_file_id=%d during worker panic: %v", id, err)
 				}
 			}
 		}()
