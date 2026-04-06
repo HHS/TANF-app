@@ -220,19 +220,10 @@ func (s *Server) processTask(ctx context.Context, dataFileID int32) error {
 		return fmt.Errorf("pipeline processing failed: %w", err)
 	}
 
-	// 7. Log results and update status.
+	// 7. Log results.
 	log.Printf("data_file_id=%d processed in %s", dataFileID, result.Duration)
 	for table, count := range result.RecordCounts {
 		log.Printf("  %s: %d records", table, count)
-	}
-
-	status := "Accepted"
-	if result.ErrorCount > 0 {
-		status = "Accepted with Errors"
-	}
-
-	if err := db.UpdateDataFileSummaryStatus(ctx, s.dbPool, dataFileID, status); err != nil {
-		log.Printf("Failed to update DataFileSummary status for data_file_id=%d: %v", dataFileID, err)
 	}
 
 	return nil
