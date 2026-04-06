@@ -252,6 +252,21 @@ services:
     volumes:
       - .:/tdpapp
 
+  go-parser:
+    build:
+      context: ../tdrs-services/parser
+      dockerfile: Dockerfile
+    environment:
+      - REDIS_URL=redis://redis-server:6379
+      - DATABASE_URL=postgres://tdpuser:something_secure@postgres:5432/tdrs_test?sslmode=disable
+      - S3_BUCKET=tdp-datafiles-localstack
+      - S3_ENDPOINT=http://localstack:4566
+      - AWS_DEFAULT_REGION=us-gov-west-1
+    depends_on:
+      - redis-server
+      - postgres
+      - localstack
+
   celery:
     restart: always
     environment:
