@@ -111,6 +111,9 @@ func (s *Server) Run(ctx context.Context) error {
 			if r := recover(); r != nil {
 				log.Printf("PANIC in task for data_file_id=%d: %v", id, r)
 				result = fmt.Sprintf("panic: %v", r)
+				if err := db.UpdateDataFileSummaryStatus(ctx, s.dbPool, id, "Rejected"); err != nil {
+					log.Printf("Failed to update DataFileSummary status for data_file_id=%d during worker panic: %v", dataFileID, err)
+				}
 			}
 		}()
 
