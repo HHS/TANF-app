@@ -14,7 +14,6 @@ import (
 
 	"go-parser/internal/config"
 	"go-parser/internal/db"
-	"go-parser/internal/decoder"
 	"go-parser/internal/pipeline"
 	"go-parser/internal/server"
 	"go-parser/internal/storage"
@@ -170,7 +169,7 @@ func (s *Server) processTask(ctx context.Context, dataFileID int32) error {
 		SectionName:   df.Section,
 	}
 
-	// 3. Download the file from S3.
+	// 3. Build the S3 file key.
 	// Django's storage backend prepends APP_NAME (e.g. "dev") to the DB file path,
 	// so we must do the same via the configured key_prefix.
 	if !df.File.Valid || df.File.String == "" {
@@ -182,36 +181,16 @@ func (s *Server) processTask(ctx context.Context, dataFileID int32) error {
 		s3Key = prefix + "/" + s3Key
 	}
 
-	source := reader.NewS3Source(s.s3Storage, s.Config.Storage.S3.Bucket, s3Key)
-	file, err := source.Open(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to download file from S3: %w", err)
-	}
-	defer file.Close()
-	defer source.Cleanup()
-
-	// 4. Resolve the file spec and create a decoder.
-	spec := s.Registry.GetFileSpec(dfCtx.Program, dfCtx.Section)
-	if spec == nil {
-		return fmt.Errorf("no file spec for %s section %d", dfCtx.Program, dfCtx.Section)
-	}
-
-	dec, err := decoder.CreateDecoder(file, spec)
-	if err != nil {
-		return fmt.Errorf("failed to create decoder: %w", err)
-	}
-	defer dec.Close()
-
-	// 5. Create the database sink using the shared connection pool.
+	// 4. Create the database sink using the shared connection pool.
 	sink, err := writer.CreateSink("database", "", "", s.dbPool)
 	if err != nil {
 		return fmt.Errorf("failed to create database sink: %w", err)
 	}
 	defer sink.Close()
 
-	// 6. Run the parsing pipeline.
-	pipeln := pipeline.NewPipeline(sink, s.Registry, s.Validators, pipeline.NewConfig(s.Config))
-	result, err := pipeln.Process(ctx, dec, dfCtx)
+	// 5. Open file, decode, and run the parsing pipeline.
+	source := reader.NewS3Source(s.s3Storage, s.Config.Storage.S3.Bucket, s3Key)
+	result, err := s.RunPipeline(ctx, source, sink, dfCtx)
 	if err != nil {
 		// Update status to indicate failure before returning.
 		if updateErr := db.UpdateDataFileSummaryStatus(ctx, s.dbPool, dataFileID, "Rejected"); updateErr != nil {
@@ -220,7 +199,7 @@ func (s *Server) processTask(ctx context.Context, dataFileID int32) error {
 		return fmt.Errorf("pipeline processing failed: %w", err)
 	}
 
-	// 7. Log results.
+	// 6. Log results.
 	log.Printf("data_file_id=%d processed in %s", dataFileID, result.Duration)
 	for table, count := range result.RecordCounts {
 		log.Printf("  %s: %d records", table, count)
