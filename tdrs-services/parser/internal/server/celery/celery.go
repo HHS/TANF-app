@@ -23,8 +23,8 @@ import (
 )
 
 // taskName is the fully-qualified Celery task name that Django dispatches.
-// Django sends: parse.delay(data_file_id) → args: [data_file_id], kwargs: {}
-const taskName = "tdpservice.scheduling.parser_task.parse"
+// We use a different task name to not collide with the python parser while developing.
+const taskName = "tdpservice.scheduling.parser_task.go_parse"
 
 // Server owns the full lifecycle for celery worker mode.
 // It maintains long-lived connections (DB pool, S3 client) and processes
@@ -77,10 +77,6 @@ func (s *Server) Run(ctx context.Context) error {
 		IdleTimeout: 240 * time.Second,
 		Dial: func() (redis.Conn, error) {
 			return redis.DialURL(s.Config.Server.Celery.RedisURL)
-		},
-		TestOnBorrow: func(c redis.Conn, t time.Time) error {
-			_, err := c.Do("PING")
-			return err
 		},
 	}
 	defer redisPool.Close()
