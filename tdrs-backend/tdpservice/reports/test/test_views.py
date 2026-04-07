@@ -509,3 +509,30 @@ class TestReportFileReportTypeFiltering:
         assert resp.status_code == status.HTTP_200_OK
         assert resp.data["count"] >= 1
         assert "report_type" in resp.data["results"][0]
+
+
+@pytest.mark.django_db
+class TestReportSourceReportTypeFiltering:
+    """Tests for report_type query parameter filtering on /v1/reports/report-sources/."""
+
+    root_url = "/v1/reports/report-sources/"
+
+    @pytest.fixture
+    def api_client_logged_in(self, api_client, ofa_system_admin):
+        """Return an API client authenticated as an OFA System Admin."""
+        api_client.login(username=ofa_system_admin.username, password="test_password")
+        return api_client
+
+    def test_filter_report_sources_by_report_type(self, api_client_logged_in):
+        """report_type param filters report sources to only that type."""
+        from tdpservice.reports.test.factories import ReportSourceFactory, FRAReportSourceFactory
+
+        tanf_source = ReportSourceFactory.create()
+        fra_source = FRAReportSourceFactory.create()
+
+        resp = api_client_logged_in.get(f"{self.root_url}?report_type=FRA")
+
+        assert resp.status_code == status.HTTP_200_OK
+        returned_ids = [row["id"] for row in resp.data["results"]]
+        assert fra_source.id in returned_ids
+        assert tanf_source.id not in returned_ids
