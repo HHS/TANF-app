@@ -12,6 +12,13 @@ from tdpservice.stts.models import STT
 from tdpservice.users.models import User
 
 
+class ReportType(models.TextChoices):
+    """Report program type for feedback reports."""
+
+    TANF_SSP = "TANF_SSP", "TANF/SSP"
+    FRA = "FRA", "FRA"
+
+
 def get_report_source_upload_path(instance, filename):
     """Produce a unique upload path for ReportSource files to S3."""
     return os.path.join(
@@ -50,6 +57,11 @@ class ReportSource(FileRecord):
     )
     date_extracted_on = models.DateField(null=True, blank=True)
     year = models.IntegerField(blank=True, null=True)
+    report_type = models.CharField(
+        max_length=16,
+        choices=ReportType.choices,
+        default=ReportType.TANF_SSP,
+    )
     num_reports_created = models.PositiveIntegerField(default=0)
     error_message = models.TextField(null=True, blank=True)
 
@@ -65,7 +77,7 @@ def get_s3_upload_path(instance, filename):
     """Produce a unique upload path for ReportFile files to S3."""
     date_str = instance.date_extracted_on.strftime("%Y-%m-%d") if instance.date_extracted_on else "no-date"
     return os.path.join(
-        f"reports/{instance.year}/{date_str}/{instance.stt.id}/",
+        f"reports/{instance.year}/{date_str}/{instance.stt.id}/{instance.report_type}/",
         filename,
     )
 
@@ -78,8 +90,8 @@ class ReportFile(FileRecord):
 
         constraints = [
             models.UniqueConstraint(
-                fields=("version", "date_extracted_on", "year", "stt"),
-                name="unique_reports_reportfile_fields",
+                fields=("version", "date_extracted_on", "year", "stt", "report_type"),
+                name="unique_reports_reportfile_fields_v2",
             )
         ]
 
@@ -90,6 +102,11 @@ class ReportFile(FileRecord):
     created_at = models.DateTimeField(auto_now_add=True)
     date_extracted_on = models.DateField(null=True, blank=True)
     year = models.IntegerField()
+    report_type = models.CharField(
+        max_length=16,
+        choices=ReportType.choices,
+        default=ReportType.TANF_SSP,
+    )
 
     version = models.IntegerField()
 
@@ -130,6 +147,7 @@ class ReportFile(FileRecord):
                 year=data["year"],
                 date_extracted_on=data["date_extracted_on"],
                 stt=data["stt"],
+                report_type=data.get("report_type", ReportType.TANF_SSP),
             )
             or 0
         ) + 1
@@ -140,20 +158,21 @@ class ReportFile(FileRecord):
         )
 
     @classmethod
-    def find_latest_version_number(self, year, date_extracted_on, stt):
+    def find_latest_version_number(self, year, date_extracted_on, stt, report_type=ReportType.TANF_SSP):
         """Locate the latest version number in a series of report files."""
-        return self.objects.filter(stt=stt, year=year, date_extracted_on=date_extracted_on).aggregate(
-            Max("version")
-        )["version__max"]
+        return self.objects.filter(
+            stt=stt, year=year, date_extracted_on=date_extracted_on, report_type=report_type
+        ).aggregate(Max("version"))["version__max"]
 
     @classmethod
-    def find_latest_version(self, year, date_extracted_on, stt):
+    def find_latest_version(self, year, date_extracted_on, stt, report_type=ReportType.TANF_SSP):
         """Locate the latest version of a report."""
-        version = self.find_latest_version_number(year, date_extracted_on, stt)
+        version = self.find_latest_version_number(year, date_extracted_on, stt, report_type)
 
         return self.objects.filter(
             version=version,
             year=year,
             date_extracted_on=date_extracted_on,
             stt=stt,
+            report_type=report_type,
         ).first()

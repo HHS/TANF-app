@@ -3,20 +3,13 @@ name: Release Tracker
 about: Track the release handoff to OFA, staging validation, and production deployment.
 title: Release Tracker vX.X.X
 labels: ''
-assignees: ''
+assignees: 'reitermb,victoriaatraft,elipe17,kennymcnett'
 
 ---
-
-# Release Tracker Issue Template
-
-**TITLE:** Release vX.X.X
-
-**CONTENT:**
-
 ### 🔗 Included Pull Requests (Dev Team)
 *List the PRs included in this release. **Testing instructions for each feature must be located within these linked PRs.***
-* #XXX - [Feature/Bugfix Title]
-* #XXX - [Feature/Bugfix Title]
+- [ ] #XXX - Title
+- [ ] #XXX - Title
 
 ### ➡️ URL of GitHub Release Tag:
 https://github.com/raft-tech/TANF-app/releases/tag/vX.X.X
@@ -30,9 +23,14 @@ https://github.com/raft-tech/TANF-app/releases/tag/vX.X.X
 - [ ] **Release Branch Created:** Branch cut from `develop`.
 - [ ] **PR Opened to Staging:** PR opened from the release branch to `HHS:main`.
 - [ ] **Testing Instructions Verified:** All linked PRs contain clear testing instructions for ACF validation.
-- [ ] **UX/Documentation Check:** UX team has reviewed the PRs, confirmed user-facing changes, and started drafting Release Notes and Knowledge Center guidance.
-- [ ] **Migration Flag:** Does this release include a database migration? **[Yes / No]** *(If Yes, rollback from production will be highly complex).*
-- [ ] **Handoff Complete:** Issue assigned to @[Alex_username] for Staging validation.
+- [ ] **UX/Documentation Check:** UX team has reviewed the PRs, confirmed user-facing changes, and started drafting Release Notes and Knowledge Center guidance
+
+**Database Migration Needed?**
+ - [ ] No database migration.
+ - [ ] Yes, this release includes a database migration. Rollback from production will be highly complex.
+
+**Handoff Complete:**
+- [ ] Issue assigned to ACF for Staging validation.
 
 ---
 
@@ -40,12 +38,15 @@ https://github.com/raft-tech/TANF-app/releases/tag/vX.X.X
 *Tracking the status once ACF takes over deployment and testing.*
 
 ### Before you Deploy
-- [ ] **Requires base image updates**: 
+- [x] Does NOT require base image updates
+- [ ] Requires base image updates
   - [ ] Re-tag `ghcr.io/raft-tech/tdp-frontend-base:vX.X.X` for the HHS GHCR instance
   - [ ] Re-tag `ghcr.io/raft-tech/tdp-backend-base:vX.X.X` for the HHS GHCR instance
-- [ ] **Requires HHS CircleCI config updates**: 
-  - [ ] 
-- [ ] **Requires PLG deployment**
+- [ ] Does NOT Require HHS CircleCI config updates
+- [ ] Requires HHS CircleCI config updates
+  - [ ] (add checklist of updates here)
+- [ ] Does NOT require PLG deployment
+- [ ] Requires PLG deployment
 
 ### Staging Deployment
 - [ ] **Staging Cleared:** Team notified that Staging is about to be updated/restarted.

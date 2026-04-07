@@ -1,6 +1,7 @@
 """Check if user is authorized."""
 
 import logging
+from distutils.util import strtobool
 from wsgiref.util import FileWrapper
 
 from django.http import FileResponse, Http404, HttpResponse
@@ -16,10 +17,13 @@ from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
+from tdpservice.data_files.enums import SubmissionState
+from tdpservice.core.utils import get_feature_flag
 from tdpservice.data_files.error_reports import ErrorReportFactory
 from tdpservice.data_files.models import DataFile
 from tdpservice.data_files.s3_client import S3Client
 from tdpservice.data_files.serializers import DataFileSerializer
+from tdpservice.data_files.submission_lifecycle import transition_datafile
 from tdpservice.log_handler import S3FileHandler
 from tdpservice.scheduling import parser_task
 from tdpservice.scheduling.parser_task import set_error_report
@@ -73,6 +77,40 @@ class DataFileViewSet(ModelViewSet):
         """Override create to upload in case of successful scan."""
         logger.debug(f"{self.__class__.__name__}: {request}")
 
+        # test the PIA feature flag before creation
+        # reject if it is off or doesn't exist
+        is_program_audit = False
+        try:
+            is_program_audit = strtobool(request.POST.get("is_program_audit", "false"))
+        except ValueError:
+            return Response(
+                {"detail": "This file type is not supported."},
+                status=HTTP_400_BAD_REQUEST,
+            )
+
+        pia_feature_flag_enabled, pia_feature_flag_config = get_feature_flag(
+            "program-integrity-audit"
+        )
+
+        if is_program_audit and not pia_feature_flag_enabled:
+            return Response(
+                {"detail": "This file type is not supported."},
+                status=HTTP_400_BAD_REQUEST,
+            )
+
+        if is_program_audit and pia_feature_flag_enabled:
+            pia_minYear = pia_feature_flag_config.get("minYear") or 2024
+            pia_maxYear = pia_feature_flag_config.get("maxYear") or 2024
+            year = int(request.data.get("year"))
+
+            if year < pia_minYear or year > pia_maxYear:
+                return Response(
+                    {
+                        "detail": "This file was submitted for a reporting year not supported by this file type."
+                    },
+                    status=HTTP_400_BAD_REQUEST,
+                )
+
         response = super().create(request, *args, **kwargs)
 
         # only if file is passed the virus scan and created successfully will we perform side-effects:
@@ -86,6 +124,16 @@ class DataFileViewSet(ModelViewSet):
         ):
             data_file_id = response.data.get("id")
             data_file = DataFile.objects.get(id=data_file_id)
+            transition_datafile(
+                data_file,
+                SubmissionState.VIRUS_SCAN_STARTED,
+                note="file accepted for upload",
+            )
+            transition_datafile(
+                data_file,
+                SubmissionState.VIRUS_SCAN_COMPLETED,
+                note="file passed AV validation",
+            )
 
             logger.info(
                 f"Preparing parse task: User META -> user: {request.user}, stt: {data_file.stt}. "
@@ -100,29 +148,57 @@ class DataFileViewSet(ModelViewSet):
         logger.debug(f"{self.__class__.__name__}: return val: {response}")
         return response
 
+    def list(self, request, *args, **kwargs):
+        """Override to handle the list request with url param validation."""
+        queryset = self.get_queryset()
+
+        file_type = self.request.query_params.get("file_type", None)
+
+        if file_type == DataFileViewSet.SSP_FILE_TYPE:
+            queryset = queryset.filter(program_type=DataFile.ProgramType.SSP)
+        elif DataFile.Section.is_fra(file_type):
+            queryset = queryset.filter(
+                program_type=DataFile.ProgramType.FRA, section=file_type
+            )
+        else:
+            pia_feature_flag_enabled, pia_feature_flag_config = get_feature_flag(
+                "program-integrity-audit"
+            )
+            is_program_audit = file_type == DataFileViewSet.PIA_FILE_TYPE
+
+            if is_program_audit and not pia_feature_flag_enabled:
+                return Response(
+                    {"detail": "This file type is not supported."},
+                    status=HTTP_400_BAD_REQUEST,
+                )
+            elif is_program_audit:
+                pia_minYear = pia_feature_flag_config.get("minYear") or 2024
+                pia_maxYear = pia_feature_flag_config.get("maxYear") or 2024
+                year = int(request.query_params.get("year"))
+
+                if year < pia_minYear or year > pia_maxYear:
+                    return Response(
+                        {
+                            "detail": "This request was submitted for a reporting year not supported by this file type."
+                        },
+                        status=HTTP_400_BAD_REQUEST,
+                    )
+
+            queryset = queryset.filter(
+                program_type__in=[
+                    DataFile.ProgramType.TANF,
+                    DataFile.ProgramType.TRIBAL,
+                ],
+                is_program_audit=is_program_audit,
+            )
+
+        self.queryset = queryset
+        response = super().list(request, *args, **kwargs)
+        return response
+
     def get_queryset(self):
         """Apply custom queryset filters."""
         queryset = super().get_queryset().order_by("-created_at")
-
-        if self.action == "list":
-            file_type = self.request.query_params.get("file_type", None)
-
-            if file_type == DataFileViewSet.SSP_FILE_TYPE:
-                queryset = queryset.filter(program_type=DataFile.ProgramType.SSP)
-            elif DataFile.Section.is_fra(file_type):
-                queryset = queryset.filter(
-                    program_type=DataFile.ProgramType.FRA, section=file_type
-                )
-            else:
-                is_program_audit = file_type == DataFileViewSet.PIA_FILE_TYPE
-                queryset = queryset.filter(
-                    program_type__in=[
-                        DataFile.ProgramType.TANF,
-                        DataFile.ProgramType.TRIBAL,
-                    ],
-                    is_program_audit=is_program_audit,
-                )
-
         return queryset
 
     def filter_queryset(self, queryset):

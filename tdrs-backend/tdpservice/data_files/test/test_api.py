@@ -8,7 +8,10 @@ import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
 
+from tdpservice.data_files.enums import SubmissionState
+from tdpservice.core.models import FeatureFlag
 from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.submission_lifecycle import InvalidTransition
 from tdpservice.parsers import util
 from tdpservice.parsers.factory import ParserFactory
 from tdpservice.parsers.models import ParserError
@@ -310,6 +313,9 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
         self.assert_data_file_created(response)
         self.assert_data_file_exists(data_file_data, 1, user)
 
+        data_file = DataFile.objects.get(id=response.data["id"])
+        assert data_file.state == SubmissionState.VIRUS_SCAN_COMPLETED
+
     def test_data_file_file_version_increment(
         self, api_client, data_file_data, other_data_file_data, user
     ):
@@ -518,6 +524,87 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
 
         response = self.post_data_file(api_client, data_file_data)
         assert response.data["section"] == "Active Case Data"
+
+    def test_failed_upload_does_not_create_record(
+        self, api_client, data_file_data, user
+    ):
+        """Test failed uploads do not create a DataFile record."""
+        data_file_data["file"].name = "bad.exe"
+
+        response = self.post_data_file(api_client, data_file_data)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert not DataFile.objects.filter(
+            slug=data_file_data["slug"],
+            user=user,
+        ).exists()
+
+    def test_upload_flow_blocks_illegal_transition(
+        self, api_client, data_file_data, mocker
+    ):
+        """Test upload flow raises if the helper is forced into an illegal transition."""
+        actual_data_file_get = DataFile.objects.get
+
+        def fake_get(*args, **kwargs):
+            data_file = actual_data_file_get(*args, **kwargs)
+            data_file.state = SubmissionState.PARSE_STARTED
+            return data_file
+
+        mocker.patch(
+            "tdpservice.data_files.views.DataFile.objects.get",
+            side_effect=fake_get,
+        )
+
+        with pytest.raises(
+            InvalidTransition, match="parse_started to virus_scan_started"
+        ):
+            self.post_data_file(api_client, data_file_data)
+
+    @pytest.mark.django_db
+    def test_no_pia_feat_flag_blocks_uploads(self, api_client, data_file_data):
+        """Test a nonexistant pia feature flag creates an error response from upload."""
+        data_file_data["is_program_audit"] = True
+
+        response = self.post_data_file(api_client, data_file_data)
+        assert response.data == {"detail": "This file type is not supported."}
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    @pytest.mark.django_db
+    @pytest.mark.parametrize(
+        "minYear,maxYear,dfYear,allowed",
+        [
+            (2023, 2025, 2024, True),
+            (2023, 2025, 2023, True),
+            (2023, 2025, 2025, True),
+            (2023, 2025, 2026, False),
+            (2023, 2025, 2022, False),
+            (None, None, 2024, True),
+            (None, None, 2023, False),
+        ],
+    )
+    def test_enabled_pia_feat_flag_allows_uploads(
+        self, api_client, data_file_data, minYear, maxYear, dfYear, allowed
+    ):
+        """Test an enabled pia feature flag allows file upload if the year is in range."""
+        FeatureFlag.objects.create(
+            feature_name="program-integrity-audit",
+            enabled=True,
+            config={"minYear": minYear, "maxYear": maxYear},
+        )
+        data_file_data["is_program_audit"] = True
+        data_file_data["year"] = dfYear
+
+        response = self.post_data_file(api_client, data_file_data)
+
+        if allowed:
+            assert response.data["section"] == "Active Case Data"
+            assert response.data["is_program_audit"] is True
+            assert response.status_code == status.HTTP_201_CREATED
+        else:
+            assert response.data == {
+                "detail": "This file was submitted for a reporting year not supported by this file type."
+            }
+            assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
 class TestDataFileAPIAsInactiveUser(DataFileAPITestBase):
@@ -889,6 +976,12 @@ class TestDataFileQuerysetFiltering:
         quarter,
     ):
         """Check that requests made to the filter endpoint contain every expected file and only files for the requested combination."""
+        FeatureFlag.objects.create(
+            feature_name="program-integrity-audit",
+            enabled=True,
+            config={"minYear": 2021, "maxYear": 2022},
+        )
+
         stt, tribe_stt, ofa_system_admin, non_pia_files, pia_files = filter_test_data
 
         # check the endpoint filtering
@@ -914,3 +1007,131 @@ class TestDataFileQuerysetFiltering:
                 f"stt={location.id}&year={year}&quarter={quarter}&file_type=program-integrity-audit",
             )
             self._assert_pia(k, pia_files, pia_file_ids, section_options)
+
+    def test_no_pia_feat_flag_disallows_list(self, api_client, stt, ofa_system_admin):
+        """Test a nonexistent pia feature flag results in an empty list when requested."""
+        self.create_file(
+            "TAN",
+            "Active Case Data",
+            2024,
+            "Q1",
+            stt,
+            ofa_system_admin,
+            pia=True,
+        )
+
+        api_client.login(username=ofa_system_admin.username, password="test_password")
+
+        root_url = "/v1/data_files/"
+        url_param_str = (
+            f"stt={stt.id}&year=2024&quarter=Q1&file_type=program-integrity-audit"
+        )
+        response = api_client.get(f"{root_url}?{url_param_str}")
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data == {"detail": "This file type is not supported."}
+
+    def test_disabled_pia_feat_flag_disallows_list(
+        self, api_client, stt, ofa_system_admin
+    ):
+        """Test a disabled pia feature flag results in an empty list when requested."""
+        FeatureFlag.objects.create(
+            feature_name="program-integrity-audit",
+            enabled=False,
+            config={"minYear": 2023, "maxYear": 2025},
+        )
+
+        self.create_file(
+            "TAN",
+            "Active Case Data",
+            2024,
+            "Q1",
+            stt,
+            ofa_system_admin,
+            pia=True,
+        )
+
+        api_client.login(username=ofa_system_admin.username, password="test_password")
+
+        root_url = "/v1/data_files/"
+        url_param_str = (
+            f"stt={stt.id}&year=2024&quarter=Q1&file_type=program-integrity-audit"
+        )
+        response = api_client.get(f"{root_url}?{url_param_str}")
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data == {"detail": "This file type is not supported."}
+
+    @pytest.mark.parametrize(
+        "year,expected_success",
+        [
+            [2022, False],
+            [2023, True],
+            [2024, True],
+            [2025, True],
+            [2026, False],
+        ],
+    )
+    def test_request_pia_outside_allowed_year_disallows_list(
+        self, api_client, stt, ofa_system_admin, year, expected_success
+    ):
+        """Test that requesting PIA for a year outside the allowed range results in an error."""
+        FeatureFlag.objects.create(
+            feature_name="program-integrity-audit",
+            enabled=True,
+            config={"minYear": 2023, "maxYear": 2025},
+        )
+
+        file = self.create_file(
+            "TAN",
+            "Active Case Data",
+            year,
+            "Q1",
+            stt,
+            ofa_system_admin,
+            pia=True,
+        )
+
+        api_client.login(username=ofa_system_admin.username, password="test_password")
+
+        root_url = "/v1/data_files/"
+        url_param_str = (
+            f"stt={stt.id}&year={year}&quarter=Q1&file_type=program-integrity-audit"
+        )
+        response = api_client.get(f"{root_url}?{url_param_str}")
+
+        if expected_success:
+            assert response.status_code == status.HTTP_200_OK
+            response_file_ids = [f["id"] for f in response.data]
+            assert len(response_file_ids) == 1
+            assert response_file_ids[0] == file.id
+        else:
+            assert response.status_code == status.HTTP_400_BAD_REQUEST
+            assert response.data == {
+                "detail": "This request was submitted for a reporting year not supported by this file type."
+            }
+
+    def test_enabled_pia_feat_flag_allows_list(self, api_client, stt, ofa_system_admin):
+        """Test an enabled pia feature flag results in a populated list when requested."""
+        FeatureFlag.objects.create(
+            feature_name="program-integrity-audit",
+            enabled=True,
+            config={"minYear": 2023, "maxYear": 2025},
+        )
+
+        file = self.create_file(
+            "TAN",
+            "Active Case Data",
+            2024,
+            "Q1",
+            stt,
+            ofa_system_admin,
+            pia=True,
+        )
+
+        api_client.login(username=ofa_system_admin.username, password="test_password")
+
+        response_file_ids = self._make_get_request(
+            api_client,
+            f"stt={stt.id}&year=2024&quarter=Q1&file_type=program-integrity-audit",
+        )
+
+        assert response_file_ids[0] == file.id
