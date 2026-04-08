@@ -397,7 +397,9 @@
         "clientAssertionSigningAlg": "RS256",
         "defaultScope": "openid email",
         "syncMode": "FORCE",
-        "pkceEnabled": "false"
+        "pkceEnabled": "false",
+        "sendIdTokenOnLogout": "false",
+        "sendClientIdOnLogout": "true"
       }
     },
     {

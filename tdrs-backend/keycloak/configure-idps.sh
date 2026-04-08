@@ -210,6 +210,43 @@ configure_login_gov_acr_values() {
     echo "Login.gov authorization URL updated with acr_values."
 }
 
+configure_login_gov_logout_params() {
+    echo "Configuring Login.gov logout to send client_id instead of id_token_hint..."
+
+    local idp_config
+    idp_config=$(kc_api "${KEYCLOAK_URL}/admin/realms/${REALM}/identity-provider/instances/login-gov" \
+        -H "Authorization: Bearer ${TOKEN}")
+
+    if [ -z "$idp_config" ] || [ "$(echo "$idp_config" | jq -r '.alias')" == "null" ]; then
+        echo "WARNING: Login.gov IdP not found, skipping logout param configuration."
+        return
+    fi
+
+    local current_send_id_token
+    current_send_id_token=$(echo "$idp_config" | jq -r '.config.sendIdTokenOnLogout // "true"')
+    local current_send_client_id
+    current_send_client_id=$(echo "$idp_config" | jq -r '.config.sendClientIdOnLogout // "false"')
+
+    if [ "$current_send_id_token" == "false" ] && [ "$current_send_client_id" == "true" ]; then
+        echo "Login.gov logout params already configured correctly."
+        return
+    fi
+
+    # Login.gov requires client_id and does not accept id_token_hint on logout.
+    # Remove the masked clientSecret before PUT to avoid overwriting the real value.
+    idp_config=$(echo "$idp_config" | jq '
+        .config.sendIdTokenOnLogout = "false" |
+        .config.sendClientIdOnLogout = "true" |
+        del(.config.clientSecret)')
+
+    kc_api -X PUT "${KEYCLOAK_URL}/admin/realms/${REALM}/identity-provider/instances/login-gov" \
+        -H "Authorization: Bearer ${TOKEN}" \
+        -H "Content-Type: application/json" \
+        -d "$idp_config" > /dev/null
+
+    echo "Login.gov logout configured: sendClientIdOnLogout=true, sendIdTokenOnLogout=false."
+}
+
 configure_master_realm_security_headers() {
     echo "Configuring master realm security headers..."
 
@@ -418,6 +455,7 @@ get_admin_token
 configure_master_realm_security_headers
 configure_login_gov_signing_key
 configure_login_gov_acr_values
+configure_login_gov_logout_params
 hide_login_gov_from_login_page
 configure_tdp_client_urls
 configure_grafana_client_urls
