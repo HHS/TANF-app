@@ -76,7 +76,7 @@ if [[ $app == "tdp-backend-prod" ]]; then
 fi
 python manage.py runscript create_grafana_postgres_role --script-args read_only data_files_datafile django_admin_log parsers_datafilesummary parser_error stts_stt stts_region users_user users_user_groups user_views
 python manage.py runscript create_grafana_postgres_role --script-args admin_read_only all
-python manage.py runscript create_grafana_postgres_role --script-args digit_sensitive data_files_datafile django_admin_log parsers_datafilesummary parser_error stts_stt stts_region users_user users_user_groups user_views admin_views
+python manage.py runscript create_grafana_postgres_role --script-args digit_sensitive data_files_datafile django_admin_log parsers_datafilesummary parser_error stts_stt stts_region users_user users_user_groups mr_record_counts_by_tableview stt_section_to_type_mapping user_views admin_views
 python manage.py runscript create_grafana_readonly_postgres_users --script-args ofa_read_only $OFA_READ_ONLY_PASSWORD read_only ofa_admin_read_only $OFA_ADMIN_READ_ONLY_PASSWORD admin_read_only ofa_digit_sensitive $OFA_DIGIT_SENSITIVE_PASSWORD digit_sensitive
 echo "Done."
 
