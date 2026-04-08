@@ -177,8 +177,19 @@ To address the additional responsibilities that come with Docker deployment, we 
 ## 8. ATO Impact Assessment
 
 ### What Changes
-- **SSP control narratives** for CM-2, CM-6, CM-7, RA-5, SI-2, and SI-7 will need updates to reflect the Docker deployment model and DHI security features.
-- **Shared control documentation** will need to reflect the shifted responsibility for base image maintenance.
+
+#### New Content Required
+- **Container image scanning** must be added to the vulnerability management scanning tools table (currently lists OWASP ZAP, Dependabot, and Webinspect — needs a container scanner like Trivy/Grype with defined frequency)
+- **Dockerfiles and container image digests** must be added as configuration management artifacts in the CM tools and CM library sections
+- **CI/CD pipeline description** must be rewritten to include Docker image build, container scanning, image registry, and `cf push --docker-image` deployment flow
+- **Shared responsibility boundary** must be updated to document TDP team ownership of container runtime environment (base image OS packages, system libraries) vs. cloud.gov ownership of host OS and platform
+- **Container image baselines** (Dockerfiles, pinned base image versions) must be added as a distinct baseline type in the configuration baselining section
+- **Risk summary** may need new entries for container image supply chain risks and their mitigations (DHI, image signing, SLSA provenance)
+
+#### New Control Narratives Required
+- **CM-7 (Least Functionality)** — no standalone section exists in the SSP; needs language about minimizing attack surface via slim/distroless base images
+- **SI-7 (Software & Information Integrity)** — no standalone section exists in the SSP; needs language about Docker image signing, digest verification, and SLSA Level 3 provenance
+- **SC-28 (Protection of Information at Rest)** — only briefly mentioned; may need a note about container images at rest in a registry
 
 ### What Does Not Change
 - **Cloud.gov's FedRAMP package** (F1607067912) and all inherited controls remain unchanged.
