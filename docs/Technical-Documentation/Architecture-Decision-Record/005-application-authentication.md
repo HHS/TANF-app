@@ -69,4 +69,4 @@ The full architecture plan is documented in [Keycloak Architecture Plan](../tech
 
 ## Notes
 
-- The full Keycloak architecture plan, including infrastructure topology, deployment procedures, security considerations, and production readiness checklist, is maintained in [keycloak-architecture-plan.md](../tech-memos/keycloak/keycloak-architecture-plan.md).
+- The full Keycloak architecture plan, including infrastructure topology, deployment procedures, security considerations, production readiness checklist, and [disaster recovery procedures](../tech-memos/keycloak/keycloak-architecture-plan.md#12-disaster-recovery), is maintained in [keycloak-architecture-plan.md](../tech-memos/keycloak/keycloak-architecture-plan.md).
