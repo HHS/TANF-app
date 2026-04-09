@@ -104,18 +104,19 @@ def parse(data_file_id, reparse_id=None):
 
         logger.info(f"Parsing finished for file -> {repr(data_file)}.")
 
-        if reparse_id is None:
-            qs = User.objects.filter(
-                stt=data_file.stt,
-                account_approval_status=AccountApprovalStatusChoices.APPROVED,
-                groups__name="Data Analyst",
-            )
+        qs = User.objects.filter(
+            stt=data_file.stt,
+            account_approval_status=AccountApprovalStatusChoices.APPROVED,
+            groups__name="Data Analyst",
+        )
 
-            if data_file.program_type == DataFile.ProgramType.FRA:
-                qs = qs.filter(user_permissions__codename="has_fra_access")
+        if data_file.program_type == DataFile.ProgramType.FRA:
+            qs = qs.filter(user_permissions__codename="has_fra_access")
 
-            recipients = qs.values_list("username", flat=True).distinct()
-            send_data_submitted_email(dfs, recipients)
+        recipients = qs.values_list("username", flat=True).distinct()
+        send_data_submitted_email(
+            dfs, recipients, is_reprocessed=(reparse_id is not None)
+        )
 
     except DecoderUnknownException:
         dfs.set_status(DataFileSummary.Status.REJECTED)
