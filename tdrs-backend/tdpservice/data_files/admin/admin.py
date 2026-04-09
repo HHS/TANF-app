@@ -89,6 +89,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
             {
                 "fields": (
                     "created_at",
+                    "parsing_state",
                     "quarter",
                     "year",
                     "section",
@@ -117,7 +118,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
             },
         ),
     )
-    readonly_fields = ("year",)
+    readonly_fields = ("year", "parsing_state", "versioned_file_download_link")
 
     def get_fieldsets(self, request, obj):
         """Return the fieldsets."""
@@ -186,6 +187,12 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
                     "Reparse selected data files)",
                 )
         return actions
+
+    def parsing_state(self, obj):
+        """Return the submission state of the data file."""
+        return obj.state
+
+    parsing_state.short_description = "Parsing State"
 
     def status(self, obj):
         """Return the status of the data file summary."""
@@ -304,6 +311,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     list_display = [
         "id",
         "stt",
+        "parsing_state",
         "year",
         "quarter",
         "program_type",

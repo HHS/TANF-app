@@ -3,20 +3,13 @@ name: Release Tracker
 about: Track the release handoff to OFA, staging validation, and production deployment.
 title: Release Tracker vX.X.X
 labels: ''
-assignees: ''
+assignees: 'reitermb,victoriaatraft,elipe17,kennymcnett'
 
 ---
-
-# Release Tracker Issue Template
-
-**TITLE:** Release vX.X.X
-
-**CONTENT:**
-
 ### 🔗 Included Pull Requests (Dev Team)
 *List the PRs included in this release. **Testing instructions for each feature must be located within these linked PRs.***
-* #XXX - [Feature/Bugfix Title]
-* #XXX - [Feature/Bugfix Title]
+- [ ] #XXX - Title
+- [ ] #XXX - Title
 
 ### ➡️ URL of GitHub Release Tag:
 https://github.com/raft-tech/TANF-app/releases/tag/vX.X.X
@@ -30,24 +23,38 @@ https://github.com/raft-tech/TANF-app/releases/tag/vX.X.X
 - [ ] **Release Branch Created:** Branch cut from `develop`.
 - [ ] **PR Opened to Staging:** PR opened from the release branch to `HHS:main`.
 - [ ] **Testing Instructions Verified:** All linked PRs contain clear testing instructions for ACF validation.
-- [ ] **UX/Documentation Check:** UX team has reviewed the PRs, confirmed user-facing changes, and started drafting Release Notes and Knowledge Center guidance.
-- [ ] **Migration Flag:** Does this release include a database migration? **[Yes / No]** *(If Yes, rollback from production will be highly complex).*
-- [ ] **Handoff Complete:** Issue assigned to @[Alex_username] for Staging validation.
+
+**Database Migration Needed?**
+ - [ ] No database migration.
+ - [ ] Yes, this release includes a database migration. Rollback from production will be highly complex.
+
+**UX/Documentation Check:**
+- [ ] UX team has reviewed the PRs, confirmed user-facing changes, and started drafting Release Notes and Knowledge Center guidance
+- [ ] Yes, there will be release notes. See sub-issue of below describing the notes.
+- [ ] No release notes needed
+- [ ] Yes, there will be Knowledge Center updates. See sub-issue below describing the updates.
+- [ ] No Knowledge Center updates needed
+
+**Handoff Complete:**
+- [ ] Issue assigned to ACF for Staging validation.
 
 ---
 
 ### 🧪 2. Staging Validation & QASP (ACF / Alex)
 *Tracking the status once ACF takes over deployment and testing.*
 
-### Before you Deploy
-- [ ] **Requires base image updates**: 
+#### Before you Deploy
+- [ ] Does NOT require base image updates
+- [ ] Requires base image updates
   - [ ] Re-tag `ghcr.io/raft-tech/tdp-frontend-base:vX.X.X` for the HHS GHCR instance
   - [ ] Re-tag `ghcr.io/raft-tech/tdp-backend-base:vX.X.X` for the HHS GHCR instance
-- [ ] **Requires HHS CircleCI config updates**: 
-  - [ ] 
-- [ ] **Requires PLG deployment**
+- [ ] Does NOT Require HHS CircleCI config updates
+- [ ] Requires HHS CircleCI config updates
+  - [ ] (add checklist of updates here)
+- [ ] Does NOT require PLG deployment
+- [ ] Requires PLG deployment
 
-### Staging Deployment
+#### Staging Deployment
 - [ ] **Staging Cleared:** Team notified that Staging is about to be updated/restarted.
 - [ ] **Deployed to Staging:** PR merged and deployed to the Staging environment.
 - [ ] **Feature Validation:** Testing instructions from the linked PRs have been executed and passed.
@@ -60,12 +67,16 @@ https://github.com/raft-tech/TANF-app/releases/tag/vX.X.X
     * *Revert:* If isolated to a new feature, revert the PR out of the release candidate.
     * *Hotfix:* Warranted **only if** the bug blocks the release entirely AND the production release is needed ASAP. (Dev cuts hotfix PR against the release branch -> merged to `HHS:main` for re-testing).
 
-- [ ] **Documentation Finalized:** UX team confirms all Release Notes and Knowledge Center updates are finalized and ready for launch.
-
 ---
 
-### 🚦 3. Production-Ready Sign-Off
-- [ ] ACF/Alex confirms all PRs are validated, no blocking bugs exist, documentation is finalized, and the release is approved for production deployment.
+### 🚦 3. Production-Ready Sign-Off (ACF / UX)
+
+#### Public Documentation (UX)
+- [ ] Any Release Notes are finalized and ready for launch
+- [ ] Any Knowledge Center updates are finalized and ready for launch
+
+#### Final Approval: Ready for Launch
+- [ ] **ACF/Alex confirms all PRs are validated, no blocking bugs exist, documentation is finalized, and the release is approved for production deployment.**
 
 ---
 
@@ -94,6 +105,6 @@ https://github.com/raft-tech/TANF-app/releases/tag/vX.X.X
 ### 📢 6. Post-Release Communication (PM / UX / ACF)
 *Closing the loop with users and stakeholders.*
 
-- [ ] **Release Notes Published:** (UX team) Plain-language, user-facing release notes and Knowledge Center guidance have been published.
+- [ ] **Public Documentation Published:** (UX) User-facing release notes and Knowledge Center guidance have been published. Related sub-issues are closed.
 - [ ] **Stakeholders Notified:** (ACF) Any required external communication regarding the new version has been sent.
 - [ ] **Close this Issue:** (ACF / PM) The release is fully deployed and stable.
