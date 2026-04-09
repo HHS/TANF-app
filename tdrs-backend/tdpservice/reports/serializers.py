@@ -1,7 +1,7 @@
 """Serialize report data."""
 from rest_framework import serializers
 
-from tdpservice.reports.models import ReportFile, ReportSource
+from tdpservice.reports.models import ReportFile, ReportSource, ReportType
 from tdpservice.stts.models import STT
 
 
@@ -22,6 +22,7 @@ class ReportFileSerializer(serializers.ModelSerializer):
             "user",
             "date_extracted_on",
             "year",
+            "report_type",
             "version",
             "original_filename",
             "extension",
@@ -82,6 +83,7 @@ class ReportSourceSerializer(serializers.ModelSerializer):
             "error_message",
             "date_extracted_on",
             "year",
+            "report_type",
             "file",
         ]
         read_only_fields = [
@@ -109,6 +111,7 @@ class ReportSourceSerializer(serializers.ModelSerializer):
             uploaded_by=user,
             date_extracted_on=date_extracted_on,
             year=year,
+            report_type=validated_data.get("report_type", ReportType.TANF_SSP),
             file=file,
         )
 

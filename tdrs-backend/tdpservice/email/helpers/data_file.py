@@ -1,5 +1,7 @@
 """Helper functions for sending data file submission emails."""
 
+from zoneinfo import ZoneInfo
+
 from django.conf import settings
 
 from tdpservice.data_files.models import DataFile
@@ -134,7 +136,12 @@ def send_data_submitted_email(
         else get_friendly_program_type(prog_type)
     )
     stt_name = datafile.stt.name
-    submission_date = datafile.created_at
+    if datafile.created_at is not None:
+        stt_tz = ZoneInfo(datafile.stt.timezone or "UTC")
+        local_time = datafile.created_at.astimezone(stt_tz)
+        submission_date = local_time.strftime("%m/%d/%Y %I:%M %p %Z")
+    else:
+        submission_date = datafile.created_at
     fiscal_year = datafile.fiscal_year
     submitted_by = datafile.submitted_by
 
