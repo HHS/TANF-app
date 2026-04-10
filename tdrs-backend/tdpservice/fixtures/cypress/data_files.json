@@ -9,8 +9,9 @@
             "created_at": "2025-02-24T13:48:55.022Z",
             "quarter": "Q1",
             "year": 2023,
-            "section": "Active Case Data",
             "program_type": "TAN",
+            "section": "Active Case Data",
+            "is_program_audit": false,
             "version": 4,
             "user": "bfcdc9bc-0b54-4b53-8f04-8aed0b0a9459",
             "stt": 14,
@@ -19,11 +20,72 @@
         }
     },
     {
+        "model": "data_files.datafile",
+        "pk": 10,
+        "fields": {
+            "original_filename": "fra.csv",
+            "slug": "3aac1f7e-4987-49af-b1d8-f091410feecd",
+            "extension": "txt",
+            "created_at": "2025-08-07T17:30:49.766Z",
+            "quarter": "Q2",
+            "year": 2024,
+            "program_type": "FRA",
+            "section": "Work Outcomes of TANF Exiters",
+            "is_program_audit": false,
+            "version": 1,
+            "user": "7b7c4778-17e4-49a1-83b8-0e6a962972f7",
+            "stt": 3,
+            "file": "data_files/2024/Q2/3/Work Outcomes of TANF Exiters/fra.csv",
+            "s3_versioning_id": "a9a751cb-a986-4e44-911f-40c42f8d4fab"
+        }
+    },
+    {
+        "model": "data_files.datafile",
+        "pk": 11,
+        "fields": {
+            "original_filename": "small_ssp_section1.txt",
+            "slug": "d3273855-8d48-4d74-99d6-78451bff4c35",
+            "extension": "txt",
+            "created_at": "2025-08-07T20:27:56.073Z",
+            "quarter": "Q1",
+            "year": 2024,
+            "program_type": "SSP",
+            "section": "Active Case Data",
+            "is_program_audit": false,
+            "version": 1,
+            "user": "7b7c4778-17e4-49a1-83b8-0e6a96297888",
+            "stt": 26,
+            "file": "data_files/2024/Q1/26/SSP Active Case Data/small_ssp_section1.txt",
+            "s3_versioning_id": "c1cba040-5f25-4568-a831-80a5a34ee450"
+        }
+    },
+    {
+        "model": "data_files.datafile",
+        "pk": 12,
+        "fields": {
+            "original_filename": "PI_Audit_space-fill.txt",
+            "slug": "cdd1bb40-ec99-4fa2-ab87-a5f8394145c4",
+            "extension": "txt",
+            "created_at": "2026-03-23T15:34:23.390Z",
+            "quarter": "Q1",
+            "year": 2024,
+            "program_type": "TAN",
+            "section": "Active Case Data",
+            "is_program_audit": true,
+            "version": 1,
+            "user": "bfcdc9bc-0b54-4b53-8f04-8aed0b0a9459",
+            "stt": 5,
+            "file": "data_files/2024/Q1/5/TAN/Active Case Data/PI_Audit_space-fill.txt",
+            "s3_versioning_id": "093fd4c0-3d67-418f-a4be-c4ec0574e263"
+        }
+    },
+    {
         "model": "parsers.datafilesummary",
         "pk": 1,
         "fields": {
             "status": "Accepted with Errors",
             "datafile": 9,
+            "error_report": "",
             "case_aggregates": {
                 "months": [
                     {
@@ -48,87 +110,78 @@
             "total_number_of_records_created": 16
         }
     },
-
     {
-        "model": "data_files.datafile",
-        "pk": 10,
-        "fields": {
-          "original_filename": "fra.csv",
-          "slug": "3aac1f7e-4987-49af-b1d8-f091410feecd",
-          "extension": "txt",
-          "created_at": "2025-08-07T17:30:49.766Z",
-          "quarter": "Q2",
-          "year": 2024,
-          "section": "Work Outcomes of TANF Exiters",
-          "program_type": "FRA",
-          "version": 1,
-          "user": "7b7c4778-17e4-49a1-83b8-0e6a962972f7",
-          "stt": 3,
-          "file": "data_files/2024/Q2/3/Work Outcomes of TANF Exiters/fra.csv",
-          "s3_versioning_id": "a9a751cb-a986-4e44-911f-40c42f8d4fab"
-        }
-      },
-      {
         "model": "parsers.datafilesummary",
         "pk": 2,
         "fields": {
             "status": "Partially Accepted with Errors",
             "datafile": 10,
-            "case_aggregates": {
-                "total_errors": 8
-            },
+            "error_report": "",
+            "case_aggregates": { "total_errors": 8 },
             "total_number_of_records_in_file": 11,
             "total_number_of_records_created": 5
         }
     },
     {
-        "model": "data_files.datafile",
-        "pk": 11,
-        "fields": {
-          "original_filename": "small_ssp_section1.txt",
-          "slug": "d3273855-8d48-4d74-99d6-78451bff4c35",
-          "extension": "txt",
-          "created_at": "2025-08-07T20:27:56.073Z",
-          "quarter": "Q1",
-          "year": 2024,
-          "section": "Active Case Data",
-          "program_type": "SSP",
-          "version": 1,
-          "user": "7b7c4778-17e4-49a1-83b8-0e6a96297888",
-          "stt": 26,
-          "file": "data_files/2024/Q1/26/SSP Active Case Data/small_ssp_section1.txt",
-          "s3_versioning_id": "c1cba040-5f25-4568-a831-80a5a34ee450"
-        }
-      },
-      {
         "model": "parsers.datafilesummary",
         "pk": 3,
         "fields": {
-          "status": "Partially Accepted with Errors",
-          "datafile": 11,
-          "error_report": "data_files/2024/Q1/26/SSP Active Case Data/small_ssp_section1.txt_error_report_c1cba040-5f25-4568-a831-80a5a34ee450.xlsx",
-          "case_aggregates": {
-            "months": [
-              {
-                "month": "Oct",
-                "accepted_with_errors": 5,
-                "accepted_without_errors": 0
-              },
-              {
-                "month": "Nov",
-                "accepted_with_errors": 0,
-                "accepted_without_errors": 0
-              },
-              {
-                "month": "Dec",
-                "accepted_with_errors": 0,
-                "accepted_without_errors": 0
-              }
-            ],
-            "rejected": 1
-          },
-          "total_number_of_records_in_file": 19,
-          "total_number_of_records_created": 19
+            "status": "Partially Accepted with Errors",
+            "datafile": 11,
+            "error_report": "data_files/2024/Q1/26/SSP Active Case Data/small_ssp_section1.txt_error_report_c1cba040-5f25-4568-a831-80a5a34ee450.xlsx",
+            "case_aggregates": {
+                "months": [
+                    {
+                        "month": "Oct",
+                        "accepted_with_errors": 5,
+                        "accepted_without_errors": 0
+                    },
+                    {
+                        "month": "Nov",
+                        "accepted_with_errors": 0,
+                        "accepted_without_errors": 0
+                    },
+                    {
+                        "month": "Dec",
+                        "accepted_with_errors": 0,
+                        "accepted_without_errors": 0
+                    }
+                ],
+                "rejected": 1
+            },
+            "total_number_of_records_in_file": 19,
+            "total_number_of_records_created": 19
         }
-      }
+    },
+    {
+        "model": "parsers.datafilesummary",
+        "pk": 4,
+        "fields": {
+            "status": "Accepted with Errors",
+            "datafile": 12,
+            "error_report": "data_files/2024/Q1/5/TAN/Active Case Data/PI_Audit_space-fill.txt_error_report_093fd4c0-3d67-418f-a4be-c4ec0574e263.xlsx",
+            "case_aggregates": {
+                "months": [
+                    {
+                        "month": "Oct",
+                        "accepted_with_errors": 1,
+                        "accepted_without_errors": 0
+                    },
+                    {
+                        "month": "Nov",
+                        "accepted_with_errors": 0,
+                        "accepted_without_errors": 0
+                    },
+                    {
+                        "month": "Dec",
+                        "accepted_with_errors": 0,
+                        "accepted_without_errors": 0
+                    }
+                ],
+                "rejected": 0
+            },
+            "total_number_of_records_in_file": 5,
+            "total_number_of_records_created": 5
+        }
+    }
 ]

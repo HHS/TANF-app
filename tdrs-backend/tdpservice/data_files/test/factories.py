@@ -2,6 +2,7 @@
 
 import factory
 
+from tdpservice.data_files.enums import SubmissionState
 from tdpservice.stts.test.factories import STTFactory
 from tdpservice.users.test.factories import UserFactory
 
@@ -22,6 +23,7 @@ class DataFileFactory(factory.django.DjangoModelFactory):
     quarter = "Q1"
     year = 2020
     version = 1
+    state = SubmissionState.UPLOADED
     user = factory.SubFactory(UserFactory)
     stt = factory.SubFactory(STTFactory)
     file = factory.django.FileField(data=b"test", filename="my_data_file.txt")

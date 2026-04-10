@@ -43,6 +43,7 @@ class STT(models.Model):
     state = models.ForeignKey("self", on_delete=models.CASCADE, blank=True, null=True)
     ssp = models.BooleanField(default=False, null=True)
     sample = models.BooleanField(default=False, null=True)
+    timezone = models.CharField(max_length=63, default="America/New_York", blank=True)
 
     @property
     def num_sections(self):

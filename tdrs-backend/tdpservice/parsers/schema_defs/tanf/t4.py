@@ -144,7 +144,7 @@ t4 = [
                 startIndex=34,
                 endIndex=35,
                 required=True,
-                validators=[category2.isBetween(1, 2, inclusive=True)],
+                validators=[category2.isBetween(0, 2, inclusive=True)],
             ),
             Field(
                 item="13",
@@ -154,7 +154,7 @@ t4 = [
                 startIndex=35,
                 endIndex=36,
                 required=True,
-                validators=[category2.isBetween(1, 3, inclusive=True)],
+                validators=[category2.isBetween(0, 3, inclusive=True)],
             ),
             Field(
                 item="-1",

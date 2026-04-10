@@ -9,7 +9,7 @@ from tdpservice.reports.models import ReportFile
 
 def send_feedback_report_available_email(report_file: ReportFile, recipients):
     """
-    Send an email to Data Analysts when a feedback report is available.
+    Send an email when a feedback report is available.
 
     Parameters
     ----------
@@ -53,7 +53,7 @@ def send_feedback_report_available_email(report_file: ReportFile, recipients):
     }
 
     log(
-        f"Feedback report available; emailing Data Analysts {list(recipients)}",
+        f"Feedback report available; emailing recipients {list(recipients)}",
         logger_context=logger_context,
     )
 
