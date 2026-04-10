@@ -130,6 +130,39 @@ describe('SplashPage', () => {
     expect(window.location.href).toEqual(url)
   })
 
+  it('falls back to backend auth endpoints when auth url is not configured', () => {
+    const store = mockStore(initialState)
+    const originalAuthUrl = process.env.REACT_APP_AUTH_URL
+    const originalBackendUrl = process.env.REACT_APP_BACKEND_URL
+    const backendUrl = 'http://localhost:8080/v1'
+
+    process.env.REACT_APP_AUTH_URL = ''
+    process.env.REACT_APP_BACKEND_URL = backendUrl
+
+    try {
+      render(
+        <Provider store={store}>
+          <SplashPage />
+        </Provider>
+      )
+
+      const loginGovButton = screen.getByRole('button', {
+        name: /Sign in with.*Login\.gov.*for grantees/i,
+      })
+      fireEvent.click(loginGovButton)
+      expect(window.location.href).toEqual(`${backendUrl}/login/dotgov`)
+
+      const acfAmsButton = screen.getByRole('button', {
+        name: /Sign in with ACF AMS for ACF staff/i,
+      })
+      fireEvent.click(acfAmsButton)
+      expect(window.location.href).toEqual(`${backendUrl}/login/ams`)
+    } finally {
+      process.env.REACT_APP_AUTH_URL = originalAuthUrl
+      process.env.REACT_APP_BACKEND_URL = originalBackendUrl
+    }
+  })
+
   it('redirects to /home when user is already authenticated', () => {
     const store = mockStore({
       auth: {
