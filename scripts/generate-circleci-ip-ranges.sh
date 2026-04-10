@@ -1,15 +1,20 @@
-#!/bin/sh
+#!/bin/bash
 # Downloads AWS and GCP IP ranges for CircleCI runner regions
 # and generates nginx allow directives.
 #
-# Usage: ./scripts/generate-circleci-ip-ranges.sh
-# Output: tdrs-frontend/nginx/cloud.gov/ip_circleci_runners.conf
+# Usage: ./scripts/generate-circleci-ip-ranges.sh [output_file]
+# Output: tdrs-frontend/nginx/cloud.gov/ip_circleci_runners.conf (default)
 #
 # Requires: curl, jq
 
 set -e
 
-OUTPUT_FILE="tdrs-frontend/nginx/cloud.gov/ip_circleci_runners.conf"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+pushd "$REPO_ROOT" > /dev/null
+
+OUTPUT_FILE="${1:-tdrs-frontend/nginx/cloud.gov/ip_circleci_runners.conf}"
 
 {
     echo "# CircleCI runner IP ranges"
@@ -31,3 +36,5 @@ OUTPUT_FILE="tdrs-frontend/nginx/cloud.gov/ip_circleci_runners.conf"
 } > "$OUTPUT_FILE"
 
 echo "Generated $OUTPUT_FILE with $(grep -c '^allow' "$OUTPUT_FILE") entries"
+
+popd > /dev/null
