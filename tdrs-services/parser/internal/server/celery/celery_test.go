@@ -2,11 +2,10 @@ package celery
 
 import (
 	"context"
-	"strings"
-	"testing"
-
 	"go-parser/internal/config"
 	"go-parser/internal/server"
+	"strings"
+	"testing"
 )
 
 func TestSectionNumber(t *testing.T) {

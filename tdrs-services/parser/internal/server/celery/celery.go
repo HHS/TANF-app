@@ -26,6 +26,8 @@ import (
 // We use a different task name to not collide with the python parser while developing.
 const taskName = "tdpservice.scheduling.parser_task.go_parse"
 
+const statusUpdateTimeout = 5 * time.Second
+
 // Server owns the full lifecycle for celery worker mode.
 // It maintains long-lived connections (DB pool, S3 client) and processes
 // tasks as they arrive from the celery broker.
@@ -64,7 +66,7 @@ func New(cfg *config.Config, reg *config.Registry, validators *validation.Valida
 
 // Run starts the celery worker loop. It blocks until the context is cancelled
 // or the process receives SIGINT/SIGTERM.
-func (s *Server) Run(ctx context.Context) error {
+func (s *Server) Run(parentCtx context.Context) error {
 	if s.dbPool != nil {
 		defer s.dbPool.Close()
 	}
@@ -101,6 +103,7 @@ func (s *Server) Run(ctx context.Context) error {
 	// positional arg which arrives as float64 after JSON deserialization.
 	// The closure includes panic recovery so a single bad task cannot kill
 	// the worker goroutine.
+	taskCtx := context.WithoutCancel(parentCtx)
 	celeryClient.Register(taskName, func(dataFileID float64) (result string) {
 		id := int32(dataFileID)
 
@@ -108,7 +111,7 @@ func (s *Server) Run(ctx context.Context) error {
 			if r := recover(); r != nil {
 				log.Printf("PANIC in task for data_file_id=%d: %v", id, r)
 				result = fmt.Sprintf("panic: %v", r)
-				if err := db.UpdateDataFileSummaryStatus(ctx, s.dbPool, id, "Rejected"); err != nil {
+				if err := s.updateDataFileSummaryStatus(taskCtx, id, "Rejected"); err != nil {
 					log.Printf("Failed to update DataFileSummary status for data_file_id=%d during worker panic: %v", id, err)
 				}
 			}
@@ -116,7 +119,7 @@ func (s *Server) Run(ctx context.Context) error {
 
 		log.Printf("Received parse task for data_file_id=%d", id)
 
-		if err := s.processTask(ctx, id); err != nil {
+		if err := s.processTask(taskCtx, id); err != nil {
 			log.Printf("Task failed for data_file_id=%d: %v", id, err)
 			return fmt.Sprintf("error: %v", err)
 		}
@@ -126,14 +129,14 @@ func (s *Server) Run(ctx context.Context) error {
 	})
 
 	// Derive a context that cancels on OS signals for graceful shutdown.
-	ctx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
+	workerCtx, stop := signal.NotifyContext(parentCtx, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
 	log.Printf("Starting celery worker (%d goroutines), listening for '%s' tasks on %s", numWorkers, taskName, s.Config.Server.Celery.RedisURL)
-	celeryClient.StartWorkerWithContext(ctx)
+	celeryClient.StartWorkerWithContext(workerCtx)
 
 	// Block until the context is cancelled (signal received).
-	<-ctx.Done()
+	<-workerCtx.Done()
 	log.Println("Shutting down celery worker...")
 
 	// Wait for any in-flight task to complete.
@@ -143,11 +146,18 @@ func (s *Server) Run(ctx context.Context) error {
 	return nil
 }
 
+func (s *Server) updateDataFileSummaryStatus(parentCtx context.Context, dataFileID int32, status string) error {
+	statusCtx, cancel := context.WithTimeout(context.WithoutCancel(parentCtx), statusUpdateTimeout)
+	defer cancel()
+
+	return db.UpdateDataFileSummaryStatus(statusCtx, s.dbPool, dataFileID, status)
+}
+
 // processTask handles a single parse task end-to-end:
 // DB lookup → S3 download → decode → pipeline → status update.
-func (s *Server) processTask(ctx context.Context, dataFileID int32) error {
+func (s *Server) processTask(taskCtx context.Context, dataFileID int32) error {
 	// 1. Look up datafile metadata from the database.
-	df, err := db.GetDataFile(ctx, s.dbPool, dataFileID)
+	df, err := db.GetDataFile(taskCtx, s.dbPool, dataFileID)
 	if err != nil {
 		return fmt.Errorf("failed to get datafile: %w", err)
 	}
@@ -188,10 +198,10 @@ func (s *Server) processTask(ctx context.Context, dataFileID int32) error {
 
 	// 5. Open file, decode, and run the parsing pipeline.
 	source := reader.NewS3Source(s.s3Storage, s.Config.Storage.S3.Bucket, s3Key)
-	result, err := s.RunPipeline(ctx, source, sink, dfCtx)
+	result, err := s.RunPipeline(taskCtx, source, sink, dfCtx)
 	if err != nil {
 		// Update status to indicate failure before returning.
-		if updateErr := db.UpdateDataFileSummaryStatus(ctx, s.dbPool, dataFileID, "Rejected"); updateErr != nil {
+		if updateErr := s.updateDataFileSummaryStatus(taskCtx, dataFileID, "Rejected"); updateErr != nil {
 			log.Printf("Failed to update DataFileSummary status for data_file_id=%d: %v", dataFileID, updateErr)
 		}
 		return fmt.Errorf("pipeline processing failed: %w", err)
