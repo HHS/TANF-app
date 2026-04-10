@@ -64,7 +64,7 @@ update_frontend()
     cp nginx/cloud.gov/ip_whitelist_ipv6.conf deployment/ip_whitelist_ipv6.conf
     if [ "$CGHOSTNAME_FRONTEND" = "tdp-frontend-develop" ]; then
         cp nginx/cloud.gov/ip_whitelist_develop.conf deployment/ip_whitelist.conf
-        cp nginx/cloud.gov/ip_circleci_runners.conf deployment/ip_circleci_runners.conf
+        bash ../scripts/generate-circleci-ip-ranges.sh deployment/ip_circleci_runners.conf
     else
         cp nginx/cloud.gov/ip_whitelist.conf deployment/ip_whitelist.conf
     fi
