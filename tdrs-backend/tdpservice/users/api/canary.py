@@ -26,7 +26,8 @@ def should_use_keycloak() -> bool:
 def set_auth_flow(request, flow: str, idp: str) -> None:
     """Record which auth flow and IdP this login request uses in the session.
 
-    Args:
+    Args
+    ----
         request: The Django request object.
         flow: "legacy" or "keycloak".
         idp: "dotgov" or "ams".

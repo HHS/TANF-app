@@ -19,16 +19,19 @@ class TestShouldUseKeycloak:
 
     @override_settings(KEYCLOAK_AUTH_PERCENTAGE=0)
     def test_zero_percent_always_legacy(self):
+        """At 0%, should_use_keycloak should always return False."""
         for _ in range(50):
             assert should_use_keycloak() is False
 
     @override_settings(KEYCLOAK_AUTH_PERCENTAGE=100)
     def test_hundred_percent_always_keycloak(self):
+        """At 100%, should_use_keycloak should always return True."""
         for _ in range(50):
             assert should_use_keycloak() is True
 
     @override_settings(KEYCLOAK_AUTH_PERCENTAGE=50)
     def test_fifty_percent_routes_both(self):
+        """At 50%, should_use_keycloak should yield both True and False over many calls."""
         results = [should_use_keycloak() for _ in range(200)]
         # With 200 trials at 50%, both True and False should appear
         assert True in results
@@ -36,10 +39,12 @@ class TestShouldUseKeycloak:
 
     @override_settings(KEYCLOAK_AUTH_PERCENTAGE=-5)
     def test_negative_percent_always_legacy(self):
+        """A negative percentage should be clamped so the legacy flow is used."""
         assert should_use_keycloak() is False
 
     @override_settings(KEYCLOAK_AUTH_PERCENTAGE=150)
     def test_over_hundred_always_keycloak(self):
+        """A percentage above 100 should be clamped so the Keycloak flow is used."""
         assert should_use_keycloak() is True
 
     def test_default_is_legacy(self):
@@ -64,6 +69,7 @@ class TestSetAuthFlow:
     """Test session marker utilities."""
 
     def test_set_and_get_auth_flow(self):
+        """set_auth_flow should persist the flow and IdP on the session for later retrieval."""
         factory = RequestFactory()
         request = factory.get("/login/dotgov")
         # Simulate Django session
@@ -74,6 +80,7 @@ class TestSetAuthFlow:
         assert request.session["auth_idp"] == "dotgov"
 
     def test_set_legacy_flow(self):
+        """set_auth_flow should record the legacy flow and AMS IdP on the session."""
         factory = RequestFactory()
         request = factory.get("/login/ams")
         request.session = {}
@@ -83,6 +90,7 @@ class TestSetAuthFlow:
         assert request.session["auth_idp"] == "ams"
 
     def test_get_auth_flow_empty_session(self):
+        """get_auth_flow should return None when no flow marker is present on the session."""
         factory = RequestFactory()
         request = factory.get("/")
         request.session = {}
@@ -102,7 +110,7 @@ class TestCanaryLoginViews:
             "tdpservice.users.api.canary_views.LoginRedirectLoginDotGov"
         ) as mock_legacy:
             mock_legacy.as_view.return_value = lambda req, *a, **kw: _mock_response(302)
-            response = client.get("/login/dotgov")
+            client.get("/login/dotgov")
             mock_legacy.as_view.assert_called_once()
 
     @override_settings(KEYCLOAK_AUTH_PERCENTAGE=100)
@@ -113,7 +121,7 @@ class TestCanaryLoginViews:
             "tdpservice.users.api.canary_views.KeycloakLoginDotGovView"
         ) as mock_kc:
             mock_kc.as_view.return_value = lambda req, *a, **kw: _mock_response(302)
-            response = client.get("/login/dotgov")
+            client.get("/login/dotgov")
             mock_kc.as_view.assert_called_once()
 
     @override_settings(KEYCLOAK_AUTH_PERCENTAGE=0)
@@ -122,7 +130,7 @@ class TestCanaryLoginViews:
         client = Client()
         with patch("tdpservice.users.api.canary_views.LoginRedirectAMS") as mock_legacy:
             mock_legacy.as_view.return_value = lambda req, *a, **kw: _mock_response(302)
-            response = client.get("/login/ams")
+            client.get("/login/ams")
             mock_legacy.as_view.assert_called_once()
 
     @override_settings(KEYCLOAK_AUTH_PERCENTAGE=100)
@@ -131,7 +139,7 @@ class TestCanaryLoginViews:
         client = Client()
         with patch("tdpservice.users.api.canary_views.KeycloakLoginAMSView") as mock_kc:
             mock_kc.as_view.return_value = lambda req, *a, **kw: _mock_response(302)
-            response = client.get("/login/ams")
+            client.get("/login/ams")
             mock_kc.as_view.assert_called_once()
 
     @override_settings(KEYCLOAK_AUTH_PERCENTAGE=0)

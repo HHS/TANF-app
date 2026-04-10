@@ -1,7 +1,7 @@
 """Tests for Keycloak sync client and signal handlers."""
 
 import logging
-from unittest.mock import MagicMock, Mock, call, patch
+from unittest.mock import MagicMock, patch
 
 from django.contrib.auth.models import Group
 from django.test import override_settings
@@ -137,7 +137,7 @@ def test_bulk_sync_all_users(mock_keycloak_admin):
     User.objects.filter(is_active=True).update(is_active=False)
 
     user1 = UserFactory.create(is_active=True, account_approval_status="Approved")
-    user2 = UserFactory.create(is_active=True, account_approval_status="Approved")
+    UserFactory.create(is_active=True, account_approval_status="Approved")
 
     # user1 found in KC, user2 not found
     def get_users_side_effect(query):

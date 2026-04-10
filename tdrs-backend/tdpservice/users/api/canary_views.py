@@ -34,6 +34,7 @@ class CanaryLoginDotGovView(View):
     """Route Login.gov requests to legacy or Keycloak based on canary percentage."""
 
     def get(self, request, *args, **kwargs):
+        """Get Keycloak or legacy auth view."""
         if should_use_keycloak():
             set_auth_flow(request, "keycloak", "dotgov")
             return KeycloakLoginDotGovView.as_view()(request, *args, **kwargs)
@@ -46,6 +47,7 @@ class CanaryLoginAMSView(View):
     """Route AMS requests to legacy or Keycloak based on canary percentage."""
 
     def get(self, request, *args, **kwargs):
+        """Get Keycloak or legacy auth view."""
         if should_use_keycloak():
             set_auth_flow(request, "keycloak", "ams")
             return KeycloakLoginAMSView.as_view()(request, *args, **kwargs)
@@ -58,6 +60,7 @@ class CanaryLogoutView(View):
     """Logout via the correct flow based on the session's auth_flow marker."""
 
     def get(self, request, *args, **kwargs):
+        """Get Keycloak or legacy logout view."""
         flow = get_auth_flow(request)
 
         if flow == "keycloak":

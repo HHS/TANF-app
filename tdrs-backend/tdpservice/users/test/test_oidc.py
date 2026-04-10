@@ -1,9 +1,8 @@
 """Tests for KeycloakOIDCBackend authentication backend."""
 
 import logging
-from unittest.mock import MagicMock, patch
 
-from django.test import RequestFactory, TestCase, override_settings
+from django.test import RequestFactory
 
 import pytest
 
@@ -31,6 +30,7 @@ class TestFilterUsersByClaims:
     """Tests for KeycloakOIDCBackend.filter_users_by_claims."""
 
     def test_filter_by_hhs_id(self, backend):
+        """Returns the user that matches the provided HHS ID."""
         user = UserFactory(hhs_id="ABC123456789")
         claims = {"hhs_id": "ABC123456789", "email": "other@test.com"}
         result = backend.filter_users_by_claims(claims)
@@ -38,6 +38,7 @@ class TestFilterUsersByClaims:
         assert str(result[0].id) == str(user.id)
 
     def test_filter_by_login_gov_uuid(self, backend):
+        """Returns the user that matches the provided Login.gov UUID."""
         user = UserFactory(hhs_id=None)
         claims = {"login_gov_uuid": str(user.login_gov_uuid), "email": "other@test.com"}
         result = backend.filter_users_by_claims(claims)
@@ -45,6 +46,7 @@ class TestFilterUsersByClaims:
         assert str(result[0].id) == str(user.id)
 
     def test_filter_by_email_fallback(self, backend):
+        """Falls back to an email lookup when stronger identifiers are missing."""
         user = UserFactory(login_gov_uuid=None, hhs_id=None)
         claims = {"email": user.email}
         result = backend.filter_users_by_claims(claims)
@@ -52,6 +54,7 @@ class TestFilterUsersByClaims:
         assert str(result[0].id) == str(user.id)
 
     def test_filter_returns_empty_for_unknown_user(self, backend):
+        """Returns an empty list when no user matches the claims."""
         claims = {"email": "nonexistent@test.com"}
         result = backend.filter_users_by_claims(claims)
         assert result == []
@@ -84,6 +87,7 @@ class TestCreateUser:
     """Tests for KeycloakOIDCBackend.create_user."""
 
     def test_create_user_with_login_gov_uuid(self, backend):
+        """Creates a user and stores the Login.gov UUID from claims."""
         claims = {
             "email": "newuser@test.com",
             "login_gov_uuid": "550e8400-e29b-41d4-a716-446655440000",
@@ -96,12 +100,14 @@ class TestCreateUser:
         assert not user.has_usable_password()
 
     def test_create_user_with_hhs_id(self, backend):
+        """Creates a user and stores the HHS ID from claims."""
         claims = {"email": "acfuser@acf.hhs.gov", "hhs_id": "HHS123456789"}
         user = backend.create_user(claims)
         assert user is not None
         assert user.hhs_id == "HHS123456789"
 
     def test_create_user_without_email_returns_none(self, backend):
+        """Returns no user when the claims do not include an email address."""
         claims = {"login_gov_uuid": "some-uuid"}
         user = backend.create_user(claims)
         assert user is None
@@ -112,12 +118,14 @@ class TestUpdateUser:
     """Tests for KeycloakOIDCBackend.update_user."""
 
     def test_update_user_sets_hhs_id(self, backend):
+        """Updates the user with a new HHS ID from claims."""
         user = UserFactory(hhs_id=None)
         claims = {"hhs_id": "NEWHHS123456"}
         updated = backend.update_user(user, claims)
         assert updated.hhs_id == "NEWHHS123456"
 
     def test_update_user_no_change_when_same(self, backend):
+        """Leaves the HHS ID unchanged when the claim matches the current value."""
         user = UserFactory(hhs_id="EXISTING1234")
         claims = {"hhs_id": "EXISTING1234"}
         updated = backend.update_user(user, claims)
@@ -129,6 +137,7 @@ class TestVerifyClaims:
     """Tests for KeycloakOIDCBackend.verify_claims."""
 
     def test_rejects_missing_email(self, backend):
+        """Rejects claims that do not include an email address."""
         claims = {"login_gov_uuid": "some-uuid"}
         assert backend.verify_claims(claims) is False
 
@@ -167,6 +176,7 @@ class TestVerifyClaims:
         assert backend.verify_claims(claims) is True
 
     def test_rejects_deactivated_user(self, backend):
+        """Rejects users whose approval status is deactivated."""
         user = UserFactory(
             account_approval_status=AccountApprovalStatusChoices.DEACTIVATED,
         )
@@ -177,6 +187,7 @@ class TestVerifyClaims:
         assert backend.verify_claims(claims) is False
 
     def test_rejects_inactive_user(self, backend):
+        """Rejects users marked inactive in Django."""
         user = UserFactory(is_active=False)
         claims = {
             "email": user.email,
@@ -185,6 +196,7 @@ class TestVerifyClaims:
         assert backend.verify_claims(claims) is False
 
     def test_allows_approved_active_user(self, backend):
+        """Allows users who are both approved and active."""
         user = UserFactory(
             account_approval_status=AccountApprovalStatusChoices.APPROVED,
             is_active=True,

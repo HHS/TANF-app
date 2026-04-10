@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.views import View
 
-from mozilla_django_oidc.views import OIDCAuthenticationRequestView, OIDCLogoutView
+from mozilla_django_oidc.views import OIDCAuthenticationRequestView
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import MethodNotAllowed
@@ -295,12 +295,14 @@ class KeycloakLoginDotGovView(OIDCAuthenticationRequestView):
     """Redirect to Keycloak with kc_idp_hint=login-gov to skip the Keycloak login page."""
 
     def get(self, request, *args, **kwargs):
+        """Log the Login.gov auth flow before redirecting to Keycloak."""
         logger.info(
             "Login initiated", extra={"auth_flow": "keycloak", "auth_idp": "dotgov"}
         )
         return super().get(request, *args, **kwargs)
 
     def get_extra_params(self, request):
+        """Add the Login.gov identity provider hint to the auth request."""
         return {"kc_idp_hint": "login-gov"}
 
 
@@ -308,12 +310,14 @@ class KeycloakLoginAMSView(OIDCAuthenticationRequestView):
     """Redirect to Keycloak with kc_idp_hint=ams to skip the Keycloak login page."""
 
     def get(self, request, *args, **kwargs):
+        """Log the AMS auth flow before redirecting to Keycloak."""
         logger.info(
             "Login initiated", extra={"auth_flow": "keycloak", "auth_idp": "ams"}
         )
         return super().get(request, *args, **kwargs)
 
     def get_extra_params(self, request):
+        """Add the AMS identity provider hint to the auth request."""
         return {"kc_idp_hint": "ams"}
 
 
@@ -321,6 +325,7 @@ class KeycloakLogoutView(View):
     """Logout from Django session and redirect to Keycloak end_session endpoint."""
 
     def get(self, request):
+        """Clear the Django session and redirect to Keycloak logout."""
         id_token = request.session.get("oidc_id_token")
 
         # Clear Django session
