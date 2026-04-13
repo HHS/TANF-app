@@ -4,6 +4,7 @@ import logging
 from distutils.util import strtobool
 from wsgiref.util import FileWrapper
 
+from django.db.models import Prefetch
 from django.http import FileResponse, Http404, HttpResponse
 
 from django_filters import rest_framework as filters
@@ -19,7 +20,7 @@ from rest_framework.viewsets import ModelViewSet
 
 from tdpservice.core.utils import get_feature_flag
 from tdpservice.data_files.error_reports import ErrorReportFactory
-from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.models import DataFile, ReparseFileMeta
 from tdpservice.data_files.s3_client import S3Client
 from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.log_handler import S3FileHandler
@@ -72,7 +73,15 @@ class DataFileViewSet(ModelViewSet):
     queryset = (
         DataFile.objects.all()
         .select_related("stt", "user", "summary")
-        .prefetch_related("reparse_file_metas")
+        .prefetch_related(
+            Prefetch(
+                "reparse_file_metas",
+                queryset=ReparseFileMeta.objects.exclude(finished_at=None).order_by(
+                    "-finished_at"
+                ),
+                to_attr="rfms",
+            )
+        )
     )
 
     def create(self, request, *args, **kwargs):
