@@ -2,8 +2,6 @@
 
 import logging
 
-from django.db import connection
-
 from rest_framework import serializers
 
 from tdpservice.data_files.errors import ImmutabilityError
