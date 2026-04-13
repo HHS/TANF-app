@@ -215,7 +215,7 @@ Transitioning from buildpacks to Docker containers built on CIS-validated Harden
 - Reduced attack surface through distroless image variants
 - Immutable, reproducible deployments that eliminate environment drift
 
-The additional responsibility for base image maintenance is fully mitigated by DHI's automated patching, continuous scanning, and (if needed) enterprise SLA-backed remediation.
+The additional responsibility for base image maintenance is mitigated by DHI's automated patching, continuous scanning, and (if needed) enterprise SLA-backed remediation. Meaning the TDP team is only responsible for monitoring new patches, verifying the patches, and applying them instead of managing the full supply chain and remediations surrounding the base images.
 
 ---
 
