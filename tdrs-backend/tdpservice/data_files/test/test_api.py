@@ -8,8 +8,10 @@ import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
 
+from tdpservice.data_files.enums import SubmissionState
 from tdpservice.core.models import FeatureFlag
 from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.submission_lifecycle import InvalidTransition
 from tdpservice.parsers import util
 from tdpservice.parsers.factory import ParserFactory
 from tdpservice.parsers.models import ParserError
@@ -311,6 +313,9 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
         self.assert_data_file_created(response)
         self.assert_data_file_exists(data_file_data, 1, user)
 
+        data_file = DataFile.objects.get(id=response.data["id"])
+        assert data_file.state == SubmissionState.VIRUS_SCAN_COMPLETED
+
     def test_data_file_file_version_increment(
         self, api_client, data_file_data, other_data_file_data, user
     ):
@@ -519,6 +524,41 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
 
         response = self.post_data_file(api_client, data_file_data)
         assert response.data["section"] == "Active Case Data"
+
+    def test_failed_upload_does_not_create_record(
+        self, api_client, data_file_data, user
+    ):
+        """Test failed uploads do not create a DataFile record."""
+        data_file_data["file"].name = "bad.exe"
+
+        response = self.post_data_file(api_client, data_file_data)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert not DataFile.objects.filter(
+            slug=data_file_data["slug"],
+            user=user,
+        ).exists()
+
+    def test_upload_flow_blocks_illegal_transition(
+        self, api_client, data_file_data, mocker
+    ):
+        """Test upload flow raises if the helper is forced into an illegal transition."""
+        actual_data_file_get = DataFile.objects.get
+
+        def fake_get(*args, **kwargs):
+            data_file = actual_data_file_get(*args, **kwargs)
+            data_file.state = SubmissionState.PARSE_STARTED
+            return data_file
+
+        mocker.patch(
+            "tdpservice.data_files.views.DataFile.objects.get",
+            side_effect=fake_get,
+        )
+
+        with pytest.raises(
+            InvalidTransition, match="parse_started to virus_scan_started"
+        ):
+            self.post_data_file(api_client, data_file_data)
 
     @pytest.mark.django_db
     def test_no_pia_feat_flag_blocks_uploads(self, api_client, data_file_data):

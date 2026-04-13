@@ -24,6 +24,7 @@ class VersionFilter(MostRecentVersionFilter):
                 stt__stt_code=OuterRef("stt__stt_code"),
                 year=OuterRef("year"),
                 date_extracted_on=OuterRef("date_extracted_on"),
+                report_type=OuterRef("report_type"),
             ).order_by("-version")
 
             # Filter to only records with the latest version
@@ -40,6 +41,7 @@ class ReportFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "id",
         "year",
         "date_extracted_on",
+        "report_type",
         "stt",
         "version",
         "user",
@@ -48,6 +50,7 @@ class ReportFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "stt",
         "year",
         "date_extracted_on",
+        "report_type",
         "user",
         VersionFilter
     ]
@@ -65,6 +68,7 @@ class ReportSourceAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "id",
         "original_filename",
         "uploaded_by",
+        "report_type",
         "status",
         "created_at",
         "num_reports_created",
@@ -72,6 +76,7 @@ class ReportSourceAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     list_filter = [
         "original_filename",
         "uploaded_by__email",
+        "report_type",
         "status",
         "created_at",
     ]

@@ -124,3 +124,48 @@ class TestSendFeedbackReportAvailableEmail:
 
         assert len(mail.outbox) == 1
         assert "N/A" in mail.outbox[0].body
+
+    def test_fra_report_type_uses_fra_label_in_subject(self, mock_report_file):
+        """Test that FRA report type produces 'FRA' label in subject and body."""
+        mock_report_file.report_type = "FRA"
+        recipients = ["user@example.com"]
+
+        send_feedback_report_available_email(mock_report_file, recipients)
+
+        assert len(mail.outbox) == 1
+        assert "FRA Feedback Report Available" in mail.outbox[0].subject
+        assert "FRA feedback report" in mail.outbox[0].body
+
+    def test_non_fra_report_type_uses_tanf_ssp_label_in_subject(self, mock_report_file):
+        """Test that non-FRA report type produces 'TANF/SSP' label in subject and body."""
+        mock_report_file.report_type = "TANF"
+        recipients = ["user@example.com"]
+
+        send_feedback_report_available_email(mock_report_file, recipients)
+
+        assert len(mail.outbox) == 1
+        assert "TANF/SSP Feedback Report Available" in mail.outbox[0].subject
+        assert "TANF/SSP feedback report" in mail.outbox[0].body
+
+    def test_report_type_none_uses_tanf_ssp_label(self, mock_report_file):
+        """Test that report_type=None defaults to 'TANF/SSP' label."""
+        mock_report_file.report_type = None
+        recipients = ["user@example.com"]
+
+        send_feedback_report_available_email(mock_report_file, recipients)
+
+        assert len(mail.outbox) == 1
+        assert "TANF/SSP Feedback Report Available" in mail.outbox[0].subject
+
+    def test_fra_email_context_includes_report_type(self, mock_report_file):
+        """Test that FRA report type is correctly passed in email context."""
+        mock_report_file.report_type = "FRA"
+        recipients = ["user@example.com"]
+
+        with patch("tdpservice.email.helpers.feedback_report.automated_email") as mock_email:
+            send_feedback_report_available_email(mock_report_file, recipients)
+
+            call_kwargs = mock_email.call_args[1]
+            context = call_kwargs["email_context"]
+            assert context["report_type"] == "FRA"
+            assert context["report_type_label"] == "FRA"
