@@ -4,50 +4,50 @@ groups:
       - alert: DevDatabaseDown
         expr: last_over_time(pg_up{job="postgres-dev"}[1m]) == 0 or last_over_time(up{job="postgres-dev"}[1m]) == 0
         labels:
-          severity: CRITICAL
+          severity: WARNING
         annotations:
-          summary: "The {{ $labels.service }} service is down."
-          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 1 minute."
+          summary: "The {{ $labels.job }} service is down."
+          description: "The {{ $labels.job }} service in the {{ $labels.env }} environment has been down for more than 1 minute."
       - alert: StagingDatabaseDown
         expr: last_over_time(pg_up{job="postgres-staging"}[1m]) == 0 or last_over_time(up{job="postgres-staging"}[1m]) == 0
         labels:
-          severity: ERROR
+          severity: WARNING
         annotations:
-          summary: "The {{ $labels.service }} service is down."
-          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 1 minute."
+          summary: "The {{ $labels.job }} service is down."
+          description: "The {{ $labels.job }} service in the {{ $labels.env }} environment has been down for more than 1 minute."
       - alert: ProductionDatabaseDown
         expr: last_over_time(pg_up{job="postgres-production"}[1m]) == 0 or last_over_time(up{job="postgres-production"}[1m]) == 0
         labels:
           severity: CRITICAL
         annotations:
-          summary: "The {{ $labels.service }} service is down."
-          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 1 minute."
+          summary: "The {{ $labels.job }} service is down."
+          description: "The {{ $labels.job }} service in the {{ $labels.env }} environment has been down for more than 1 minute."
   - name: backend.alerts
     rules:
     - alert: DevEnvironmentBackendDown
       expr: last_over_time(up{job=~"tdp-backend.*", job!~".*prod", job!~".*staging"}[1m]) == 0
       for: 10m
       labels:
-        severity: ERROR
+        severity: WARNING
       annotations:
-          summary: "The {{ $labels.service }} service is down."
-          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 10 minutes."
+          summary: "The {{ $labels.job }} service is down."
+          description: "The {{ $labels.job }} service in the {{ $labels.env }} environment has been down for more than 10 minutes."
     - alert: StagingBackendDown
       expr: last_over_time(up{job=~"tdp-backend-staging"}[1m]) == 0
       for: 10m
       labels:
-        severity: ERROR
+        severity: WARNING
       annotations:
-          summary: "The {{ $labels.service }} service is down."
-          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 10 minutes."
+          summary: "The {{ $labels.job }} service is down."
+          description: "The {{ $labels.job }} service in the {{ $labels.env }} environment has been down for more than 10 minutes."
     - alert: ProductionBackendDown
       expr: last_over_time(up{job=~"tdp-backend-prod"}[1m]) == 0
       for: 10m
       labels:
         severity: CRITICAL
       annotations:
-          summary: "The {{ $labels.service }} service is down."
-          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 10 minutes."
+          summary: "The {{ $labels.job }} service is down."
+          description: "The {{ $labels.job }} service in the {{ $labels.env }} environment has been down for more than 10 minutes."
   - name: plg.alerts
     rules:
     - alert: LokiDown
@@ -72,8 +72,8 @@ groups:
       labels:
         severity: WARNING
       annotations:
-          summary: "The {{ $labels.service }} service has a uptime warning."
-          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment is not maintaining 95% uptime."
+          summary: "The {{ $labels.job }} service has a uptime warning."
+          description: "The {{ $labels.job }} service in the {{ $labels.env }} environment is not maintaining 95% uptime."
   - name: celery.alerts
     rules:
       - alert: CeleryTaskHighFailRate
@@ -131,12 +131,51 @@ groups:
         for: 20m
         labels:
           severity: WARNING
-      - alert: CeleryWorkerDown
-        expr: last_over_time(up{job=~"celery-.*|celery-exporter.*"}[1m]) == 0
+      - alert: A11yCeleryWorkerDown
+        expr:  last_over_time(up{job="tdp-celery-a11y"}[1m]) == 0 or last_over_time(celery_active_worker_count{job="tdp-celery-a11y"}[1m]) < 1
+        for: 10m
+        labels:
+          severity: WARNING
+        annotations:
+          summary: "The {{ $labels.service }} service is down."
+          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 10 minutes."
+      - alert: RaftCeleryWorkerDown
+        expr:  last_over_time(up{job="tdp-celery-raft"}[1m]) == 0 or last_over_time(celery_active_worker_count{job="tdp-celery-raft"}[1m]) < 1
+        for: 10m
+        labels:
+          severity: WARNING
+        annotations:
+          summary: "The {{ $labels.service }} service is down."
+          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 10 minutes."
+      - alert: QaspCeleryWorkerDown
+        expr:  last_over_time(up{job="tdp-celery-qasp"}[1m]) == 0 or last_over_time(celery_active_worker_count{job="tdp-celery-qasp"}[1m]) < 1
+        for: 10m
+        labels:
+          severity: WARNING
+        annotations:
+          summary: "The {{ $labels.service }} service is down."
+          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 10 minutes."
+      - alert: DevCeleryWorkerDown
+        expr:  last_over_time(up{job="tdp-celery-develop"}[1m]) == 0 or last_over_time(celery_active_worker_count{job="tdp-celery-develop"}[1m]) < 1
+        for: 10m
+        labels:
+          severity: WARNING
+        annotations:
+          summary: "The {{ $labels.service }} service is down."
+          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 10 minutes."
+      - alert: StagingCeleryWorkerDown
+        expr:  last_over_time(up{job="tdp-celery-staging"}[1m]) == 0 or last_over_time(celery_active_worker_count{job="tdp-celery-staging"}[1m]) < 1
+        for: 10m
+        labels:
+          severity: WARNING
+        annotations:
+          summary: "The {{ $labels.service }} service is down."
+          description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 10 minutes."
+      - alert: ProdCeleryWorkerDown
+        expr:  last_over_time(up{job="tdp-celery-prod"}[1m]) == 0 or last_over_time(celery_active_worker_count{job="tdp-celery-prod"}[1m]) < 1
         for: 10m
         labels:
           severity: ERROR
         annotations:
           summary: "The {{ $labels.service }} service is down."
           description: "The {{ $labels.service }} service in the {{ $labels.env }} environment has been down for more than 10 minutes."
-

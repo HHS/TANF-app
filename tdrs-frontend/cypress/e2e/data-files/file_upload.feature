@@ -44,22 +44,25 @@ Feature: Data file submission
         # TODO: And Regional Randy gets an email (determine exact)
 
         Examples:
-            | actor                | program | section | stt      |
-            | Data Analyst Tim     | TANF    | 1       |          |
-            | Data Analyst Tim     | TANF    | 2       |          |
-            | Data Analyst Tim     | TANF    | 3       |          |
-            | Data Analyst Tim     | TANF    | 4       |          |
-            | Data Analyst Stefani | SSP     | 1       |          |
-            | Data Analyst Stefani | SSP     | 2       |          |
-            | Data Analyst Stefani | SSP     | 3       |          |
-            | Data Analyst Stefani | SSP     | 4       |          |
-            | Data Analyst Tara    | TRIBAL  | 1       |          |
-            | Data Analyst Tara    | TRIBAL  | 2       |          |
-            | Data Analyst Tara    | TRIBAL  | 3       |          |
+            | actor                | program | section | stt        |
+            | Data Analyst Tim     | TANF    | 1       |            |
+            | Data Analyst Tim     | TANF    | 2       |            |
+            | Data Analyst Tim     | TANF    | 3       |            |
+            | Data Analyst Tim     | TANF    | 4       |            |
+            | Data Analyst Stefani | SSP     | 1       |            |
+            | Data Analyst Stefani | SSP     | 2       |            |
+            | Data Analyst Stefani | SSP     | 3       |            |
+            | Data Analyst Stefani | SSP     | 4       |            |
+            | Data Analyst Tara    | TRIBAL  | 1       |            |
+            | Data Analyst Tara    | TRIBAL  | 2       |            |
+            | Data Analyst Tara    | TRIBAL  | 3       |            |
             # We're only checking that non Data Analysts can submit a file
             # No need to test all programs and sections since they were tested above
-            | DIGIT Diana          | TANF    | 1       | Alabama  |
-            | DIGIT Diana          | TANF    | 1       | Arkansas |
+            | DIGIT Diana          | TANF    | 1       | Alabama    |
+            | DIGIT Diana          | TANF    | 1       | Arkansas   |
+            | Data Analyst Tim     | PIA     | 1       |            |
+            | Data Analyst Tim     | PIA     | 2       |            |
+            | Admin Alex           | PIA     | 1       | California |
 
     # Edge / failure cases for TANF Data Analyst Tim
 
