@@ -3,9 +3,9 @@ package parser
 import (
 	"fmt"
 
-	"go-parser/internal/decoder"
 	"go-parser/internal/config/filespec"
 	"go-parser/internal/config/schema"
+	"go-parser/internal/decoder"
 )
 
 // HeaderSchemaPath is the registry path for the header schema.
@@ -15,19 +15,15 @@ const HeaderSchemaPath = "common/header"
 // Returns nil if the row is nil (e.g., for columnar files that don't have headers).
 // The header is parsed using the same logic as any other record type.
 func ParseHeader(row decoder.Row, headerSchema *schema.CompiledSchema) (*ParseContext, error) {
-	if row == nil {
-		return nil, nil
-	}
-
 	// Verify this is actually a HEADER record
-	if row.RecordType() != "HEADER" {
-		return nil, fmt.Errorf("expected HEADER record, got %s", row.RecordType())
+	if row == nil || row.RecordType() != "HEADER" {
+		return nil, fmt.Errorf("Your file does not start with a HEADER.")
 	}
 
 	// Parse the header using the same approach as worker.parseRow
 	record, err := parseRecord(row, headerSchema)
 	if err != nil {
-		return nil, fmt.Errorf("parsing header: %w", err)
+		return nil, fmt.Errorf("Failed to parse header: %w", err)
 	}
 
 	// Build the ParseContext with the full record and convenience fields
@@ -60,35 +56,13 @@ func parseRecord(row decoder.Row, sch *schema.CompiledSchema) (*ParsedRecord, er
 	// Headers are always positional, but this keeps the pattern consistent
 	extractor := GetExtractor(filespec.FormatPositional)
 
-	// Parse shared fields into a temporary cache with FieldDef pointers
-	sharedCache := make(ParsedFieldCache, len(sch.Shared))
-	for i := range sch.Shared {
-		field := &sch.Shared[i]
-		value, err := extractor.Extract(row, field, nil, sharedCache)
-		if err != nil {
-			continue
-		}
-		if value != nil {
-			sharedCache[field.Name] = ParsedField{Def: field, Value: value}
-		}
-	}
-
 	// Acquire record from pool (header records are kept, not released)
 	record := sch.AcquireRecord().(*ParsedRecord)
 	record.LineNumber = row.LineNum()
+	record.DecodedSize = row.DecodedLength()
 	record.SegmentIndex = 0
 
-	// Copy shared fields into record using SetField to preserve FieldDef
-	for _, pf := range sharedCache {
-		record.SetField(pf.Def, pf.Value)
-	}
-
 	// Parse segment fields (header has only one segment with no shared fields)
-	if len(sch.Segments) == 0 {
-		return record, nil
-	}
-
-	// Parse the first segment fields directly into record using SetField
 	segment := sch.Segments[0]
 	for i := range segment.Fields {
 		field := &segment.Fields[i]

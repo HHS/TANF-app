@@ -295,7 +295,7 @@ func TestBuildDbSchemaMetadata_ColumnOrder(t *testing.T) {
 func TestBuildDbSchemaMetadata_NoSegments(t *testing.T) {
 	cs := (&schema.SchemaDef{
 		RecordType: "T1",
-		Program:    "TANF",
+		Program:    "TAN",
 		Shared:     []schema.FieldDef{{Name: "RecordType"}},
 		Segments:   nil,
 	}).Compile()
@@ -317,7 +317,7 @@ func TestBuildDbSchemaMetadata_NoSegments(t *testing.T) {
 func TestBuildDbSchemaMetadata_MultipleSegmentsUsesFirst(t *testing.T) {
 	cs := (&schema.SchemaDef{
 		RecordType: "T3",
-		Program:    "TANF",
+		Program:    "TAN",
 		Shared:     []schema.FieldDef{{Name: "RecordType"}, {Name: "RPT_MONTH_YEAR"}},
 		Segments: []schema.SegmentDef{
 			{Fields: []schema.FieldDef{{Name: "FAMILY_AFFILIATION"}, {Name: "SSN"}}},
@@ -347,7 +347,7 @@ func TestBuildDbSchemaMetadata_MultipleSegmentsUsesFirst(t *testing.T) {
 func TestBuildDbSchemaMetadata_EmptySchema(t *testing.T) {
 	cs := (&schema.SchemaDef{
 		RecordType: "T1",
-		Program:    "TANF",
+		Program:    "TAN",
 		Shared:     nil,
 		Segments:   nil,
 	}).Compile()

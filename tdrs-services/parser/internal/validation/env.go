@@ -2,11 +2,22 @@ package validation
 
 import "go-parser/internal/parser"
 
+// DataFileContext contains DataFile submission metadata used by header
+// validation expressions. Defined here (rather than in the pipeline package)
+// to avoid circular imports.
+type DataFileContext struct {
+	FiscalYear    int
+	FiscalQuarter string
+	SectionName   string
+	Program       string
+}
+
 // FieldEnv is the environment for Category 2 (field) validation.
 // It contains only the field's value - no other metadata needed.
 type FieldEnv struct {
-	Value  any
-	Params map[string]any // Runtime params from validator definition
+	Value           any
+	Params          map[string]any   // Runtime params from validator definition
+	DataFileContext *DataFileContext  // Set for header validation only; nil otherwise
 }
 
 // NewFieldEnv creates a new field validation environment.
@@ -26,10 +37,11 @@ type RecordEnv struct {
 	*parser.ParsedRecord
 
 	// Convenience fields for expressions
-	RecordType   string
-	LineNumber   int
-	RecordLength int
-	Params       map[string]any // Runtime params from validator definition
+	RecordType      string
+	LineNumber      int
+	RecordLength    int
+	Params          map[string]any   // Runtime params from validator definition
+	DataFileContext *DataFileContext  // Set for header validation only; nil otherwise
 }
 
 // NewRecordEnv creates a new record validation environment.

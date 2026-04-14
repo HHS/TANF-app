@@ -56,11 +56,11 @@ func (celery *Server) Run(ctx context.Context) error {
 
 	// TODO: Implement celery worker loop.
 	// Each task should:
-	// 1. Query DB for datafile metadata (program, section, S3 key)
+	// 1. Query DB for datafile metadata (program, section, S3 key, year, quarter)
 	// 2. Download file from S3 via reader.NewS3Source
 	// 3. Create decoder via decoder.CreateDecoder
 	// 4. Create DatabaseSink using shared pool
-	// 5. Create Pipeline, call Process
+	// 5. Create Pipeline, call Process with DataFileContext populated from DB
 	// 6. Update datafile status in DB
 	return fmt.Errorf("celery mode not yet implemented")
 }

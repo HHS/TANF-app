@@ -24,8 +24,8 @@ func TestDataDir() string {
 	return filepath.Join("..", "..", "..", "..", "tdrs-backend", "tdpservice", "parsers", "test", "data")
 }
 
-// ParseFile parses a file through the full pipeline and writes to the database.
-func ParseFile(t *testing.T, ctx context.Context, pool *pgxpool.Pool, reg *config.Registry, validators *validation.ValidatorRegistry, program string, section int, filePath string, datafileID int32) {
+// ParseFile parses a file through the full pipeline and writes to the database for tests.
+func ParseFile(t *testing.T, ctx context.Context, pool *pgxpool.Pool, reg *config.Registry, validators *validation.ValidatorRegistry, filePath string, dfCtx pipeline.DataFileContext) {
 	t.Helper()
 
 	// Open file and create decoder
@@ -37,9 +37,9 @@ func ParseFile(t *testing.T, ctx context.Context, pool *pgxpool.Pool, reg *confi
 	defer file.Close()
 	defer source.Cleanup()
 
-	spec := reg.GetFileSpec(program, section)
+	spec := reg.GetFileSpec(dfCtx.Program, dfCtx.Section)
 	if spec == nil {
-		t.Fatalf("No file spec for %s section %d", program, section)
+		t.Fatalf("No file spec for %s section %d", dfCtx.Program, dfCtx.Section)
 	}
 
 	dec, err := decoder.CreateDecoder(file, spec)
@@ -50,11 +50,7 @@ func ParseFile(t *testing.T, ctx context.Context, pool *pgxpool.Pool, reg *confi
 
 	sink := writer.NewDatabaseSink(pool)
 	p := pipeline.NewPipeline(sink, reg, validators, pipeline.TestConfig())
-	result, err := p.Process(ctx, dec, pipeline.ProcessParams{
-		Program:    program,
-		Section:    section,
-		DatafileID: datafileID,
-	})
+	result, err := p.Process(ctx, dec, dfCtx)
 	if err != nil {
 		t.Fatalf("Pipeline failed: %v", err)
 	}
@@ -186,10 +182,13 @@ func CleanupDatafile(t *testing.T, ctx context.Context, pool *pgxpool.Pool, data
 		"search_indexes_tribal_tanf_t7",
 	}
 
-	// Delete from all record tables first
+	// Delete parser errors first (uses file_id FK)
+	_, _ = pool.Exec(ctx, "DELETE FROM parser_error WHERE file_id = $1", datafileID)
+
+	// Delete from all record tables (uses datafile_id FK)
 	for _, table := range tables {
 		query := fmt.Sprintf("DELETE FROM %s WHERE datafile_id = $1", table)
-		_, _ = pool.Exec(ctx, query, datafileID) // Ignore errors for non-existent tables
+		_, _ = pool.Exec(ctx, query, datafileID)
 	}
 
 	// Delete the datafile itself

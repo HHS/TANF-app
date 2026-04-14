@@ -60,7 +60,7 @@ func buildTestDetector() *RecordTypeDetector {
 	registry := config.NewTestRegistry(schemas)
 
 	spec := &filespec.FileSpec{
-		Program: "TANF",
+		Program: "TAN",
 		Section: 1,
 		Format:  filespec.FormatPositional,
 		RecordTypeDetection: filespec.RecordTypeDetection{

@@ -9,30 +9,10 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// DatafileParams contains parameters for creating a test datafile.
-type DatafileParams struct {
-	OriginalFilename string
-	Quarter          string
-	Year             int
-	Section          string
-	ProgramType      string // "TAN", "SSP", "Tribal TAN"
-}
-
-// DefaultDatafileParams returns sensible defaults for testing.
-func DefaultDatafileParams() DatafileParams {
-	return DatafileParams{
-		OriginalFilename: "test_file.txt",
-		Quarter:          "Q1",
-		Year:             2024,
-		Section:          "Active Case Data",
-		ProgramType:      "TAN",
-	}
-}
-
 // CreateTestDatafile creates a datafile record for testing purposes.
 // It queries for an existing STT and user to satisfy foreign key constraints.
 // Returns the created datafile ID.
-func CreateTestDatafile(ctx context.Context, pool *pgxpool.Pool, params DatafileParams) (int32, error) {
+func CreateTestDatafile(ctx context.Context, pool *pgxpool.Pool, quarter string, year int, sectionName string, programType string) (int32, error) {
 	// Get an existing STT ID
 	var sttID int
 	err := pool.QueryRow(ctx, "SELECT id FROM stts_stt LIMIT 1").Scan(&sttID)
@@ -41,6 +21,7 @@ func CreateTestDatafile(ctx context.Context, pool *pgxpool.Pool, params Datafile
 	}
 
 	// Get an existing user ID
+	// TODO: this might fail on fresh DB
 	var userID string
 	err = pool.QueryRow(ctx, "SELECT id FROM users_user LIMIT 1").Scan(&userID)
 	if err != nil {
@@ -66,18 +47,18 @@ func CreateTestDatafile(ctx context.Context, pool *pgxpool.Pool, params Datafile
 		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 		RETURNING id
 	`,
-		params.OriginalFilename,
-		fmt.Sprintf("test-%d", time.Now().UnixNano()), // unique slug
+		"test_file.txt",
+		fmt.Sprintf("test-%d", time.Now().UnixNano()),
 		"txt",
-		params.Quarter,
-		params.Year,
-		params.Section,
-		rand.Intn(10000000), // version
+		quarter,
+		year,
+		sectionName,
+		rand.Intn(10000000),
 		sttID,
 		userID,
 		time.Now(),
-		params.ProgramType,
-		false, // is_program_audit
+		programType,
+		false,
 	).Scan(&datafileID)
 
 	if err != nil {

@@ -7,7 +7,7 @@ import (
 func TestCompile_SingleSegment(t *testing.T) {
 	s := &SchemaDef{
 		RecordType: "T1",
-		Program:    "TANF",
+		Program:    "TAN",
 		Section:    1,
 		Format:     "positional",
 		Shared: []FieldDef{
@@ -52,7 +52,7 @@ func TestCompile_MultiSegment(t *testing.T) {
 	// T3-like schema with 2 segments (Child 1 and Child 2)
 	s := &SchemaDef{
 		RecordType: "T3",
-		Program:    "TANF",
+		Program:    "TAN",
 		Section:    1,
 		Format:     "positional",
 		Shared: []FieldDef{
@@ -113,7 +113,7 @@ func TestCompile_MultiSegment(t *testing.T) {
 func TestGetSegmentField_OutOfBounds(t *testing.T) {
 	s := &SchemaDef{
 		RecordType: "T1",
-		Program:    "TANF",
+		Program:    "TAN",
 		Shared:     []FieldDef{},
 		Segments: []SegmentDef{
 			{Fields: []FieldDef{{Name: "FIELD1", Type: "string"}}},
@@ -141,7 +141,7 @@ func TestGetSegmentField_OutOfBounds(t *testing.T) {
 func TestFieldIndex(t *testing.T) {
 	s := &SchemaDef{
 		RecordType: "T1",
-		Program:    "TANF",
+		Program:    "TAN",
 		Shared: []FieldDef{
 			{Name: "RecordType", Type: "string"},
 			{Name: "RPT_MONTH_YEAR", Type: "string"},

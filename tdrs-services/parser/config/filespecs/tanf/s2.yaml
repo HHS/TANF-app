@@ -10,7 +10,7 @@
 # BASIC IDENTIFICATION
 # =============================================================================
 
-program: TANF
+program: TAN
 section: 2
 description: "TANF Closed Case Data - Contains case and adult records for closed TANF cases"
 

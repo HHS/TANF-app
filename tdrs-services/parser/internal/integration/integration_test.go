@@ -4,6 +4,7 @@ package integration
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"testing"
@@ -11,6 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"go-parser/internal/config"
+	"go-parser/internal/pipeline"
 	"go-parser/internal/testutil"
 	"go-parser/internal/validation"
 )
@@ -72,34 +74,44 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-// createTestDatafile creates a datafile record for testing.
-// Returns the datafile ID and a cleanup function.
-func createTestDatafile(t *testing.T, ctx context.Context, program string, section int) (int32, func()) {
-	t.Helper()
-
-	params := testutil.DefaultDatafileParams()
-	params.ProgramType = program
-
-	// Map section number to section name
+// sectionName maps a section number to the DataFile section name.
+func sectionName(section int) string {
 	switch section {
 	case 1:
-		params.Section = "Active Case Data"
+		return "Active Case Data"
 	case 2:
-		params.Section = "Closed Case Data"
+		return "Closed Case Data"
 	case 3:
-		params.Section = "Aggregate Data"
+		return "Aggregate Data"
 	case 4:
-		params.Section = "Stratum Data"
+		return "Stratum Data"
+	default:
+		return ""
+	}
+}
+
+// createTestDatafile creates a datafile record for testing.
+// Returns the DataFileContext (with DatafileID set) and a cleanup function.
+func createTestDatafile(t *testing.T, ctx context.Context, program string, section, year, quarter int) (pipeline.DataFileContext, func()) {
+	t.Helper()
+
+	dfCtx := pipeline.DataFileContext{
+		Program:       program,
+		Section:       section,
+		FiscalYear:    year,
+		FiscalQuarter: fmt.Sprintf("Q%d", quarter),
+		SectionName:   sectionName(section),
 	}
 
-	datafileID, err := testutil.CreateTestDatafile(ctx, testPool, params)
+	datafileID, err := testutil.CreateTestDatafile(ctx, testPool, dfCtx.FiscalQuarter, dfCtx.FiscalYear, dfCtx.SectionName, dfCtx.Program)
 	if err != nil {
 		t.Fatalf("Failed to create test datafile: %v", err)
 	}
+	dfCtx.DatafileID = datafileID
 
 	cleanup := func() {
-		CleanupDatafile(t, ctx, testPool, datafileID)
+		CleanupDatafile(t, ctx, testPool, dfCtx.DatafileID)
 	}
 
-	return datafileID, cleanup
+	return dfCtx, cleanup
 }

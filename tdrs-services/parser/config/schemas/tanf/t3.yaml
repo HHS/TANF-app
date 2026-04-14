@@ -6,7 +6,7 @@
 # Child 1 occupies positions 19-60, Child 2 occupies positions 60-101.
 
 record_type: T3
-program: TANF
+program: TAN
 section: 1
 document: "TANF Active Case Data"
 format: positional

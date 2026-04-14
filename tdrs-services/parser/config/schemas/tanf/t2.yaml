@@ -5,7 +5,7 @@
 # work participation, and income. One T2 record exists per adult per case.
 
 record_type: T2
-program: TANF
+program: TAN
 section: 1
 document: "TANF Active Case Data"
 format: positional

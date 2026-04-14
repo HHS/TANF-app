@@ -6,7 +6,7 @@
 # per closed case.
 
 record_type: T5
-program: TANF
+program: TAN
 section: 2
 document: "TANF Closed Case Data"
 format: positional

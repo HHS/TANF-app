@@ -10,6 +10,7 @@ import (
 
 // Error type constants
 const (
+	ErrorTypePreCheck         = "PRE_CHECK"
 	ErrorTypeRecordPreCheck   = "RECORD_PRE_CHECK"
 	ErrorTypeFieldValue       = "FIELD_VALUE"
 	ErrorTypeValueConsistency = "VALUE_CONSISTENCY"
@@ -45,7 +46,7 @@ type ValidationResult struct {
 
 // BlocksRecord returns true if this error type blocks record serialization.
 func (vr *ValidationResult) BlocksRecord() bool {
-	return vr.ErrorType == ErrorTypeRecordPreCheck
+	return vr.ErrorType == ErrorTypeRecordPreCheck || vr.ErrorType == ErrorTypePreCheck
 }
 
 // BlocksGroup returns true if this error type blocks group serialization.

@@ -52,6 +52,32 @@ func loadValidators(t *testing.T, reg *config.Registry) *validation.ValidatorReg
 	return validators
 }
 
+// testTANFContext returns a DataFileContext matching the standard test header
+// "HEADER20241A06000TAN1ED" (calendar year=2024, quarter=1 -> fiscal Q2 2024).
+func testTANFContext() DataFileContext {
+	return DataFileContext{
+		Program:       "TAN",
+		Section:       1,
+		DatafileID:    1,
+		FiscalYear:    2024,
+		FiscalQuarter: "Q2",
+		SectionName:   "Active Case Data",
+	}
+}
+
+// testSSPContext returns a DataFileContext matching the SSP test header
+// "HEADER20241A06000SSP1ED".
+func testSSPContext() DataFileContext {
+	return DataFileContext{
+		Program:       "SSP",
+		Section:       1,
+		DatafileID:    1,
+		FiscalYear:    2024,
+		FiscalQuarter: "Q2",
+		SectionName:   "Active Case Data",
+	}
+}
+
 // capturingSink captures all flushed data for assertions.
 type capturingSink struct {
 	tables map[string][][]any // tableName -> rows
@@ -68,7 +94,8 @@ func (s *capturingSink) Flush(_ context.Context, tableName string, _ []string, r
 	return int64(len(rows)), nil
 }
 
-func (s *capturingSink) Close() error { return nil }
+func (s *capturingSink) RollbackDatafile(_ context.Context, _ int32, _ []string) error { return nil }
+func (s *capturingSink) Close() error                                                  { return nil }
 
 func (s *capturingSink) rowCount(tableName string) int {
 	return len(s.tables[tableName])
@@ -139,7 +166,7 @@ func TestProcess_TANF_S1_ValidData(t *testing.T) {
 	}
 	defer f.Close()
 
-	spec := reg.GetFileSpec("TANF", 1)
+	spec := reg.GetFileSpec("TAN", 1)
 	if spec == nil {
 		t.Fatal("GetFileSpec(TANF, 1) returned nil")
 	}
@@ -158,11 +185,7 @@ func TestProcess_TANF_S1_ValidData(t *testing.T) {
 	p := NewPipeline(sink, reg, validators, pipelineCfg)
 
 	ctx := context.Background()
-	result, err := p.Process(ctx, dec, ProcessParams{
-		Program:    "TANF",
-		Section:    1,
-		DatafileID: 1,
-	})
+	result, err := p.Process(ctx, dec, testTANFContext())
 	if err != nil {
 		t.Fatalf("Process failed: %v", err)
 	}
@@ -190,9 +213,6 @@ func TestProcess_TANF_S1_MissingHeader(t *testing.T) {
 	validators := loadValidators(t, reg)
 
 	// File with no HEADER record - first line is T1
-	// Note: The pipeline currently panics when ParseHeader returns (nil, err) because
-	// it dereferences parseCtx before checking err. This test verifies the panic occurs
-	// (known issue in pipeline.go:91).
 	content := "T1" + "202401" + "12345678901" + strings.Repeat(" ", 100) + "\n"
 	filePath := writeTempFile(t, content)
 
@@ -202,7 +222,7 @@ func TestProcess_TANF_S1_MissingHeader(t *testing.T) {
 	}
 	defer f.Close()
 
-	spec := reg.GetFileSpec("TANF", 1)
+	spec := reg.GetFileSpec("TAN", 1)
 	dec, err := decoder.CreateDecoder(f, spec)
 	if err != nil {
 		t.Fatalf("CreateDecoder failed: %v", err)
@@ -217,27 +237,24 @@ func TestProcess_TANF_S1_MissingHeader(t *testing.T) {
 
 	ctx := context.Background()
 
-	// Expect panic due to nil parseCtx dereference before error check
-	defer func() {
-		if r := recover(); r == nil {
-			t.Fatal("expected panic for non-HEADER first line, got none")
-		}
-	}()
-	_, _ = p.Process(ctx, dec, ProcessParams{
-		Program:    "TANF",
-		Section:    1,
-		DatafileID: 1,
-	})
+	// Pipeline should return a result with a PRE_CHECK error, not panic
+	result, err := p.Process(ctx, dec, testTANFContext())
+	if err != nil {
+		t.Fatalf("Process returned unexpected error: %v", err)
+	}
+	if result.ErrorCount != 1 {
+		t.Errorf("ErrorCount = %d, want 1", result.ErrorCount)
+	}
+	if sink.errorCount() != 1 {
+		t.Errorf("sink error count = %d, want 1", sink.errorCount())
+	}
 }
 
 func TestProcess_EmptyFile(t *testing.T) {
 	reg := loadRegistry(t)
 	validators := loadValidators(t, reg)
 
-	// Create empty file
-	// Note: The pipeline panics on empty files because ParseHeader returns (nil, nil)
-	// and pipeline.go:91 dereferences the nil parseCtx before checking err.
-	// This test verifies the current (broken) behavior.
+	// Empty file — no header, no data
 	filePath := writeTempFile(t, "")
 
 	f, err := os.Open(filePath)
@@ -246,7 +263,7 @@ func TestProcess_EmptyFile(t *testing.T) {
 	}
 	defer f.Close()
 
-	spec := reg.GetFileSpec("TANF", 1)
+	spec := reg.GetFileSpec("TAN", 1)
 	dec, err := decoder.CreateDecoder(f, spec)
 	if err != nil {
 		t.Fatalf("CreateDecoder failed: %v", err)
@@ -261,17 +278,14 @@ func TestProcess_EmptyFile(t *testing.T) {
 
 	ctx := context.Background()
 
-	// Expect panic due to nil parseCtx dereference
-	defer func() {
-		if r := recover(); r == nil {
-			t.Fatal("expected panic for empty file, got none")
-		}
-	}()
-	_, _ = p.Process(ctx, dec, ProcessParams{
-		Program:    "TANF",
-		Section:    1,
-		DatafileID: 1,
-	})
+	// Empty file: parseCtx is nil (no header), pipeline processes zero rows
+	result, err := p.Process(ctx, dec, testTANFContext())
+	if err != nil {
+		t.Fatalf("Process returned unexpected error: %v", err)
+	}
+	if result.ErrorCount != 1 {
+		t.Errorf("ErrorCount = %d, want 1", result.ErrorCount)
+	}
 }
 
 func TestProcess_HeaderOnly(t *testing.T) {
@@ -288,7 +302,7 @@ func TestProcess_HeaderOnly(t *testing.T) {
 	}
 	defer f.Close()
 
-	spec := reg.GetFileSpec("TANF", 1)
+	spec := reg.GetFileSpec("TAN", 1)
 	dec, err := decoder.CreateDecoder(f, spec)
 	if err != nil {
 		t.Fatalf("CreateDecoder failed: %v", err)
@@ -302,11 +316,7 @@ func TestProcess_HeaderOnly(t *testing.T) {
 	p := NewPipeline(sink, reg, validators, pipelineCfg)
 
 	ctx := context.Background()
-	result, err := p.Process(ctx, dec, ProcessParams{
-		Program:    "TANF",
-		Section:    1,
-		DatafileID: 1,
-	})
+	result, err := p.Process(ctx, dec, testTANFContext())
 	if err != nil {
 		t.Fatalf("Process failed for header-only file: %v", err)
 	}
@@ -336,7 +346,7 @@ func TestProcess_TANF_S1_WithRecordWriting(t *testing.T) {
 	}
 	defer f.Close()
 
-	spec := reg.GetFileSpec("TANF", 1)
+	spec := reg.GetFileSpec("TAN", 1)
 	dec, err := decoder.CreateDecoder(f, spec)
 	if err != nil {
 		t.Fatalf("CreateDecoder failed: %v", err)
@@ -350,11 +360,7 @@ func TestProcess_TANF_S1_WithRecordWriting(t *testing.T) {
 	p := NewPipeline(sink, reg, validators, pipelineCfg)
 
 	ctx := context.Background()
-	result, err := p.Process(ctx, dec, ProcessParams{
-		Program:    "TANF",
-		Section:    1,
-		DatafileID: 1,
-	})
+	result, err := p.Process(ctx, dec, testTANFContext())
 	if err != nil {
 		t.Fatalf("Process failed: %v", err)
 	}
@@ -394,7 +400,7 @@ func TestProcess_TANF_MultipleRecordTypes(t *testing.T) {
 	}
 	defer f.Close()
 
-	spec := reg.GetFileSpec("TANF", 1)
+	spec := reg.GetFileSpec("TAN", 1)
 	dec, err := decoder.CreateDecoder(f, spec)
 	if err != nil {
 		t.Fatalf("CreateDecoder failed: %v", err)
@@ -408,11 +414,7 @@ func TestProcess_TANF_MultipleRecordTypes(t *testing.T) {
 	p := NewPipeline(sink, reg, validators, pipelineCfg)
 
 	ctx := context.Background()
-	result, err := p.Process(ctx, dec, ProcessParams{
-		Program:    "TANF",
-		Section:    1,
-		DatafileID: 1,
-	})
+	result, err := p.Process(ctx, dec, testTANFContext())
 	if err != nil {
 		t.Fatalf("Process failed: %v", err)
 	}
@@ -458,11 +460,7 @@ func TestProcess_SSP_S1(t *testing.T) {
 	p := NewPipeline(sink, reg, validators, pipelineCfg)
 
 	ctx := context.Background()
-	result, err := p.Process(ctx, dec, ProcessParams{
-		Program:    "SSP",
-		Section:    1,
-		DatafileID: 1,
-	})
+	result, err := p.Process(ctx, dec, testSSPContext())
 	if err != nil {
 		t.Fatalf("Process failed: %v", err)
 	}
@@ -488,7 +486,7 @@ func TestProcess_ErrorsDisabled(t *testing.T) {
 	}
 	defer f.Close()
 
-	spec := reg.GetFileSpec("TANF", 1)
+	spec := reg.GetFileSpec("TAN", 1)
 	dec, err := decoder.CreateDecoder(f, spec)
 	if err != nil {
 		t.Fatalf("CreateDecoder failed: %v", err)
@@ -502,11 +500,7 @@ func TestProcess_ErrorsDisabled(t *testing.T) {
 	p := NewPipeline(sink, reg, validators, pipelineCfg)
 
 	ctx := context.Background()
-	result, err := p.Process(ctx, dec, ProcessParams{
-		Program:    "TANF",
-		Section:    1,
-		DatafileID: 1,
-	})
+	result, err := p.Process(ctx, dec, testTANFContext())
 	if err != nil {
 		t.Fatalf("Process failed: %v", err)
 	}
@@ -538,7 +532,7 @@ func TestProcess_ParsingResult_HasExpectedFields(t *testing.T) {
 	}
 	defer f.Close()
 
-	spec := reg.GetFileSpec("TANF", 1)
+	spec := reg.GetFileSpec("TAN", 1)
 	dec, err := decoder.CreateDecoder(f, spec)
 	if err != nil {
 		t.Fatalf("CreateDecoder failed: %v", err)
@@ -552,11 +546,7 @@ func TestProcess_ParsingResult_HasExpectedFields(t *testing.T) {
 	p := NewPipeline(sink, reg, validators, pipelineCfg)
 
 	ctx := context.Background()
-	result, err := p.Process(ctx, dec, ProcessParams{
-		Program:    "TANF",
-		Section:    1,
-		DatafileID: 1,
-	})
+	result, err := p.Process(ctx, dec, testTANFContext())
 	if err != nil {
 		t.Fatalf("Process failed: %v", err)
 	}
@@ -595,7 +585,7 @@ func TestProcess_FileSink_Integration(t *testing.T) {
 	}
 	defer f.Close()
 
-	spec := reg.GetFileSpec("TANF", 1)
+	spec := reg.GetFileSpec("TAN", 1)
 	dec, err := decoder.CreateDecoder(f, spec)
 	if err != nil {
 		t.Fatalf("CreateDecoder failed: %v", err)
@@ -614,11 +604,7 @@ func TestProcess_FileSink_Integration(t *testing.T) {
 	p := NewPipeline(fileSink, reg, validators, pipelineCfg)
 
 	ctx := context.Background()
-	result, err := p.Process(ctx, dec, ProcessParams{
-		Program:    "TANF",
-		Section:    1,
-		DatafileID: 1,
-	})
+	result, err := p.Process(ctx, dec, testTANFContext())
 	if err != nil {
 		t.Fatalf("Process failed: %v", err)
 	}

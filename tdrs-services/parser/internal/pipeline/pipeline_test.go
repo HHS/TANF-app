@@ -18,7 +18,8 @@ type stubSink struct{}
 func (s *stubSink) Flush(_ context.Context, _ string, _ []string, _ [][]any) (int64, error) {
 	return 0, nil
 }
-func (s *stubSink) Close() error { return nil }
+func (s *stubSink) RollbackDatafile(_ context.Context, _ int32, _ []string) error { return nil }
+func (s *stubSink) Close() error                                      { return nil }
 
 // Verify writer.Sink interface is satisfied by stubSink at compile time.
 var _ writer.Sink = (*stubSink)(nil)
@@ -107,7 +108,7 @@ func TestProcess_MissingFileSpec(t *testing.T) {
 	p := NewPipeline(sink, reg, validators, TestConfig())
 
 	stubDec := &stubDecoder{}
-	_, err = p.Process(context.Background(), stubDec, ProcessParams{
+	_, err = p.Process(context.Background(), stubDec, DataFileContext{
 		Program: "NONEXISTENT",
 		Section: 99,
 	})
@@ -121,15 +122,15 @@ func TestProcess_MissingFileSpec(t *testing.T) {
 	}
 }
 
-func TestProcessParams_Fields(t *testing.T) {
-	params := ProcessParams{
-		Program:    "TANF",
+func TestDataFileContext_Fields(t *testing.T) {
+	params := DataFileContext{
+		Program:    "TAN",
 		Section:    1,
 		DatafileID: 42,
 	}
 
-	if params.Program != "TANF" {
-		t.Errorf("Program = %q, want TANF", params.Program)
+	if params.Program != "TAN" {
+		t.Errorf("Program = %q, want TAN", params.Program)
 	}
 	if params.Section != 1 {
 		t.Errorf("Section = %d, want 1", params.Section)

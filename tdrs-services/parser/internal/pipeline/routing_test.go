@@ -508,7 +508,8 @@ func (s *recordingSink) Flush(_ context.Context, tableName string, _ []string, r
 	return int64(len(rows)), nil
 }
 
-func (s *recordingSink) Close() error { return nil }
+func (s *recordingSink) RollbackDatafile(_ context.Context, _ int32, _ []string) error { return nil }
+func (s *recordingSink) Close() error                                      { return nil }
 
 func (s *recordingSink) errorRows() [][]any {
 	return s.flushed["parser_error"]

@@ -42,7 +42,7 @@ func buildTestRegistry(schemas map[string]*schema.CompiledSchema) *config.Regist
 func buildTANFS1Spec() *filespec.FileSpec {
 	batchSize := 1
 	return &filespec.FileSpec{
-		Program: "TANF",
+		Program: "TAN",
 		Section: 1,
 		Format:  filespec.FormatPositional,
 		Schemas: []string{"common/header", "common/trailer", "tanf/t1", "tanf/t2", "tanf/t3"},

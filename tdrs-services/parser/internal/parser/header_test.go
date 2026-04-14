@@ -47,8 +47,11 @@ func TestParseHeader_NilRow(t *testing.T) {
 	sch := buildHeaderSchema()
 
 	ctx, err := ParseHeader(nil, sch)
-	if err != nil {
-		t.Fatalf("expected no error, got %v", err)
+	if err == nil {
+		t.Fatal("expected error: Your file does not start with a HEADER.")
+	}
+	if err.Error() != "Your file does not start with a HEADER." {
+		t.Fatal("expected error: Your file does not start with a HEADER.")
 	}
 	if ctx != nil {
 		t.Fatalf("expected nil context, got %+v", ctx)
