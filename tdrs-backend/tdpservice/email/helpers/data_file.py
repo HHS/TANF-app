@@ -195,6 +195,14 @@ def send_data_submitted_email(datafile_summary, recipients, is_reprocessed=False
             DataFileSummary.Status.REJECTED: TanfDataFileEmail.REJECTED.value,
         }
 
+        if is_reprocessed:
+            template_options = {
+                DataFileSummary.Status.ACCEPTED: TanfDataFileEmail.REPARSE_ERRORS_RESOLVED.value,
+                DataFileSummary.Status.ACCEPTED_WITH_ERRORS: TanfDataFileEmail.REPARSE_ACTION_REQUIRED.value,
+                DataFileSummary.Status.PARTIALLY_ACCEPTED: TanfDataFileEmail.REPARSE_ACTION_REQUIRED.value,
+                DataFileSummary.Status.REJECTED: TanfDataFileEmail.REPARSE_ACTION_REQUIRED.value,
+            }
+
         template_path = template_options[datafile_summary.status]
     else:
         if datafile_summary.status == DataFileSummary.Status.ACCEPTED:
