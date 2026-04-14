@@ -137,8 +137,6 @@ Cloud.gov's Docker deployment documentation notes that Docker is "not a recommen
 
 3. **Cloud.gov fully supports Docker deployments.** The `cf push --docker-image` workflow is a first-class deployment method. The same `garden-runc` container runtime, the same network isolation, and the same platform security controls apply.
 
-4. **Other federal systems on Cloud.gov use Docker.** This is not unprecedented in the ACF or broader federal ecosystem.
-
 ---
 
 ## 6. Operational Security Improvements
