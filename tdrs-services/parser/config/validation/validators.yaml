@@ -1,0 +1,448 @@
+# Predefined Reusable Validators
+# These validators can be referenced by ID in schemas and filespecs.
+# Messages can be overridden at the use site.
+#
+# Validators are organized by SCOPE:
+# - field: single field validation (environment: FieldEnv with Value, Params)
+# - record: cross-field validation within a record (environment: RecordEnv with Get(), GetInt(), GetString(), RecordLength, Params)
+# - group: cross-record validation within a case/group (environment: GroupEnv with Group, RecordCounts, HasType, getRecordsOfType(), Params)
+#
+# Default error types by scope (can be overridden with error_type):
+# - field: FIELD_VALUE
+# - record: VALUE_CONSISTENCY
+# - group: CASE_CONSISTENCY
+#
+# Parameterized validators use Params.key to access runtime parameters.
+# Example usage in schema:
+#   - id: record_length_range
+#     params:
+#       min: 117
+#       max: 156
+
+# =============================================================================
+# FIELD VALIDATORS (field scope)
+# =============================================================================
+# Default error_type: FIELD_VALUE
+
+field_validators:
+  # Length validator - checks string length equals n
+  # Params: n (int)
+  - id: length
+    expr: "len(string(Value)) == Params.n"
+    message: "{{.RecordType}} Item {{.Item}}: must be {{.Params.n}} characters"
+
+  # Integer range validator - checks value is within [min, max]
+  # Params: min (int), max (int)
+  - id: in_range_int
+    expr: "int(trim(string(Value))) >= Params.min and int(trim(string(Value))) <= Params.max"
+    message: "{{.RecordType}} Item {{.Item}}: must be {{.Params.min}}-{{.Params.max}}, got {{.Value}}"
+
+  # Discrete values validator - checks value is in allowed set
+  # Params: values (array of allowed values)
+  - id: in_values
+    expr: "Value in Params.values"
+    message: "{{.RecordType}} Item {{.Item}}: must be one of {{.Params.values}}, got {{.Value}}"
+
+  # Equals validator - checks value equals expected
+  # Params: value (any)
+  - id: equals
+    expr: "Value == Params.value"
+    message: "{{.RecordType}} Item {{.Item}}: must be {{.Params.value}}, got {{.Value}}"
+
+  # Value presence validators
+  - id: not_empty
+    expr: "isNotEmpty(Value)"
+    message: "{{.RecordType}} Item {{.Item}}: value is required"
+
+  - id: not_blank
+    expr: "isNotBlank(Value)"
+    message: "{{.RecordType}} Item {{.Item}}: value cannot be blank"
+
+  # Numeric range validators
+  - id: positive_value
+    expr: "int(Value) > 0"
+    message: "{{.RecordType}} Item {{.Item}}: must be positive, got {{.Value}}"
+
+  - id: not_negative
+    expr: "int(Value) >= 0"
+    message: "{{.RecordType}} Item {{.Item}}: cannot be negative"
+
+  # Date validators
+  - id: valid_year
+    expr: "year(Value) >= 1900 and year(Value) <= 2100"
+    message: "{{.RecordType}} Item {{.Item}}: year must be 1900-2100"
+
+  - id: year_after_1998
+    expr: "year(Value) > 1998"
+    message: "{{.RecordType}} Item {{.Item}}: year must be after 1998"
+
+  - id: valid_month
+    expr: "month(Value) >= 1 and month(Value) <= 12"
+    message: "{{.RecordType}} Item {{.Item}}: month must be 1-12"
+
+  - id: valid_date
+    expr: "isValidDate(Value)"
+    message: "{{.RecordType}} Item {{.Item}}: invalid date format"
+
+  # String format validators
+  - id: is_numeric
+    expr: "isNumeric(string(Value))"
+    message: "{{.RecordType}} Item {{.Item}}: must be numeric"
+
+  - id: is_alphanumeric
+    expr: "isAlphaNumeric(string(Value))"
+    message: "{{.RecordType}} Item {{.Item}}: must be alphanumeric"
+
+  # Values or blank validator - value must be in set or blank
+  # Params: values (array of allowed values)
+  - id: in_values_or_blank
+    expr: "isBlank(Value) or Value in Params.values"
+    message: "{{.RecordType}} Item {{.Item}}: must be one of {{.Params.values}} or blank, got {{.Value}}"
+
+  # Education level validator - 0-16 or 98-99
+  - id: education_level
+    expr: "(int(Value) >= 0 and int(Value) <= 16) or (int(Value) >= 98 and int(Value) <= 99)"
+    message: "{{.RecordType}} Item {{.Item}}: must be 0-16 or 98-99, got {{.Value}}"
+
+  # Work eligible indicator validator - 0-9 or 11, 12
+  - id: work_eligible_indicator
+    expr: "(int(Value) >= 0 and int(Value) <= 9) or Value == '11' or Value == '12'"
+    message: "{{.RecordType}} Item {{.Item}}: must be 0-9, 11, or 12, got {{.Value}}"
+
+  # Race validator - validates race fields (0, 1, 2 or blank)
+  - id: validate_race
+    expr: "isBlank(Value) or int(Value) >= 0 and int(Value) <= 2"
+    message: "{{.RecordType}} Item {{.Item}}: must be 0, 1, 2, or blank, got {{.Value}}"
+
+  # Year after 2019 validator - for calendar quarter fields (T6/T7)
+  - id: year_after_2019
+    expr: "year(Value) > 2019"
+    message: "{{.RecordType}} Item {{.Item}}: year must be after 2019"
+
+  # Quarter validator - checks quarter portion is 1-4
+  - id: quarter_is_valid
+    expr: "quarter(Value) >= 1 and quarter(Value) <= 4"
+    message: "{{.RecordType}} Item {{.Item}}: quarter must be 1-4"
+
+  # Closure reason validator - 01-19 or 99
+  - id: closure_reason
+    expr: "(int(Value) >= 1 and int(Value) <= 19) or int(Value) == 99"
+    message: "{{.RecordType}} Item {{.Item}}: must be 01-19 or 99, got {{.Value}}"
+
+  # Education level validator (no zero) - 1-16 or 98-99
+  # Used by M2, M3 where 0 is not a valid education level
+  - id: education_level_no_zero
+    expr: "(int(Value) >= 1 and int(Value) <= 16) or (int(Value) >= 98 and int(Value) <= 99)"
+    message: "{{.RecordType}} Item {{.Item}}: must be 1-16 or 98-99, got {{.Value}}"
+
+# =============================================================================
+# RECORD VALIDATORS (record scope)
+# =============================================================================
+# Default error_type: VALUE_CONSISTENCY
+# Use error_type: RECORD_PRE_CHECK for structural validators that block record serialization
+
+record_validators:
+  # --- RECORD_PRE_CHECK validators (block record serialization) ---
+
+  # Record length range validator
+  # Params: min (int), max (int)
+  - id: record_length_range
+    expr: "RecordLength >= Params.min and RecordLength <= Params.max"
+    error_type: RECORD_PRE_CHECK
+    message: "{{.RecordType}}: record must be {{.Params.min}}-{{.Params.max}} characters, got {{.RecordLength}}"
+
+  # Record length minimum validator
+  # Params: min (int)
+  - id: record_length_min
+    expr: "RecordLength >= Params.min"
+    error_type: RECORD_PRE_CHECK
+    message: "{{.RecordType}}: record must be at least {{.Params.min}} characters, got {{.RecordLength}}"
+
+  - id: record_has_valid_type
+    expr: "isNotBlank(Get('RecordType'))"
+    error_type: RECORD_PRE_CHECK
+    message: "{{.RecordType}}: record type is missing or blank"
+
+  - id: case_number_not_empty
+    expr: "isNotBlank(GetString('CASE_NUMBER'))"
+    error_type: RECORD_PRE_CHECK
+    message: "{{.RecordType}}: case number is required and cannot be blank"
+
+  # --- VALUE_CONSISTENCY validators (allow record serialization) ---
+
+  # Amount requires positive field validator
+  # When amount_field is positive, required_field must be positive
+  # Params: amount_field (string), required_field (string)
+  - id: amount_requires_positive
+    expr: "GetInt(Params.amount_field) <= 0 or GetInt(Params.required_field) > 0"
+    message: "When {{.Params.amount_field}} is positive, {{.Params.required_field}} must be positive"
+
+  # Amount requires value in set validator
+  # When amount_field is positive, required_field must be in values set
+  # Params: amount_field (string), required_field (string), values (array)
+  - id: amount_requires_value_in
+    expr: "GetInt(Params.amount_field) <= 0 or GetInt(Params.required_field) in Params.values"
+    message: "When {{.Params.amount_field}} is positive, {{.Params.required_field}} must be one of {{.Params.values}}"
+
+  - id: start_before_end
+    expr: "GetString('START_DATE') <= GetString('END_DATE') or isEmpty(GetString('END_DATE'))"
+    message: "Start date must be before or equal to end date"
+    fields: [START_DATE, END_DATE]
+
+  # Sum validators
+  - id: t1_sum_assistance_positive
+    expr: "GetInt('AMT_FOOD_STAMP_ASSISTANCE') + GetInt('AMT_SUB_CC') + GetInt('CASH_AMOUNT') + GetInt('CC_AMOUNT') + GetInt('TRANSP_AMOUNT') > 0"
+    message: "Sum of AMT_FOOD_STAMP_ASSISTANCE, AMT_SUB_CC, CASH_AMOUNT, CC_AMOUNT, TRANSP_AMOUNT must be greater than 0"
+    fields: [AMT_FOOD_STAMP_ASSISTANCE, AMT_SUB_CC, CASH_AMOUNT, CC_AMOUNT, TRANSP_AMOUNT]
+
+  # =============================================================================
+  # Reusable ifThenAlso validators (parametrized)
+  # Uses expr-lang if-else syntax for clarity
+  # =============================================================================
+
+  # If condition_field is in [condition_min, condition_max], then target_field must be in [target_min, target_max]
+  # Params: condition_field, condition_min, condition_max, target_field, target_min, target_max
+  - id: ifthenalso_range_to_range
+    expr: "if GetInt(Params.condition_field) >= Params.condition_min and GetInt(Params.condition_field) <= Params.condition_max { GetInt(Params.target_field) >= Params.target_min and GetInt(Params.target_field) <= Params.target_max } else { true }"
+    message: "If {{.Params.condition_field}} is {{.Params.condition_min}}-{{.Params.condition_max}}, {{.Params.target_field}} must be {{.Params.target_min}}-{{.Params.target_max}}"
+
+  # If condition_field is in [condition_min, condition_max], then target_field must be in values
+  # Params: condition_field, condition_min, condition_max, target_field, values
+  - id: ifthenalso_range_to_values
+    expr: "if GetInt(Params.condition_field) >= Params.condition_min and GetInt(Params.condition_field) <= Params.condition_max { GetInt(Params.target_field) in Params.values } else { true }"
+    message: "If {{.Params.condition_field}} is {{.Params.condition_min}}-{{.Params.condition_max}}, {{.Params.target_field}} must be one of {{.Params.values}}"
+
+  # If condition_field is in [condition_min, condition_max], then target_field must NOT be in excluded_values
+  # Params: condition_field, condition_min, condition_max, target_field, excluded_values
+  - id: ifthenalso_range_to_not_values
+    expr: "if GetInt(Params.condition_field) >= Params.condition_min and GetInt(Params.condition_field) <= Params.condition_max { not (GetInt(Params.target_field) in Params.excluded_values) } else { true }"
+    message: "If {{.Params.condition_field}} is {{.Params.condition_min}}-{{.Params.condition_max}}, {{.Params.target_field}} must not be one of {{.Params.excluded_values}}"
+
+  # =============================================================================
+  # T2 special case validators (cannot be parametrized)
+  # =============================================================================
+
+  # When FAMILY_AFFILIATION is 2-3, EDUCATION_LEVEL must be 0-16 or 98-99
+  # Note: Multi-range target requires special handling
+  - id: t2_family_affil_2_3_education_level
+    expr: "if GetInt('FAMILY_AFFILIATION') in [2, 3] { (GetInt('EDUCATION_LEVEL') in 0..16) or (GetInt('EDUCATION_LEVEL') in 98..99) } else { true }"
+    message: "If FAMILY_AFFILIATION is 2-3, EDUCATION_LEVEL must be 0-16 or 98-99"
+    fields: [FAMILY_AFFILIATION, EDUCATION_LEVEL]
+
+  # When FAMILY_AFFILIATION is 1-2, WORK_ELIGIBLE_INDICATOR must be 1-9 or 11, 12
+  # Note: Values 11 and 12 are two-digit codes that need string comparison
+  - id: t2_family_affil_1_2_work_eligible
+    expr: "if GetInt('FAMILY_AFFILIATION') in [1, 2] { (GetInt('WORK_ELIGIBLE_INDICATOR') in 1..9) or (GetInt('WORK_ELIGIBLE_INDICATOR') in 11..12) } else { true }"
+    message: "If FAMILY_AFFILIATION is 1-2, WORK_ELIGIBLE_INDICATOR must be 1-9, 11, or 12"
+    fields: [FAMILY_AFFILIATION, WORK_ELIGIBLE_INDICATOR]
+
+  # When FAMILY_AFFILIATION is 1-2, WORK_PART_STATUS must be in valid set
+  # Note: WORK_PART_STATUS uses zero-padded string codes
+  - id: t2_family_affil_1_2_work_part_status
+    expr: "if GetInt('FAMILY_AFFILIATION') in [1, 2] { GetString('WORK_PART_STATUS') in ['01', '02', '05', '07', '09', '15', '17', '18', '19', '99'] } else { true }"
+    message: "If FAMILY_AFFILIATION is 1-2, WORK_PART_STATUS must be 01, 02, 05, 07, 09, 15, 17, 18, 19, or 99"
+    fields: [FAMILY_AFFILIATION, WORK_PART_STATUS]
+
+  # When WORK_ELIGIBLE_INDICATOR is 1-5, WORK_PART_STATUS must not be 99
+  - id: t2_work_eligible_1_5_work_part_not_99
+    expr: "if GetInt('WORK_ELIGIBLE_INDICATOR') in 1..5 { GetString('WORK_PART_STATUS') != '99' } else { true }"
+    message: "If WORK_ELIGIBLE_INDICATOR is 1-5, WORK_PART_STATUS must not be 99"
+    fields: [WORK_ELIGIBLE_INDICATOR, WORK_PART_STATUS]
+
+  # When WORK_ELIGIBLE_INDICATOR is 1-5, SSN must not be a repeating digit pattern
+  - id: t2_work_eligible_1_5_ssn_valid
+    expr: "if GetInt('WORK_ELIGIBLE_INDICATOR') in 1..5 { GetString('SSN') not in ['000000000', '111111111', '222222222', '333333333', '444444444', '555555555', '666666666', '777777777', '888888888', '999999999'] } else { true }"
+    message: "If WORK_ELIGIBLE_INDICATOR is 1-5, SSN must not be a repeating digit"
+    fields: [WORK_ELIGIBLE_INDICATOR, SSN]
+
+  # When WORK_ELIGIBLE_INDICATOR is 11 and AGE < 19, RELATIONSHIP_HOH must not be 1
+  # AGE is calculated from DATE_OF_BIRTH and RPT_MONTH_YEAR
+  - id: t2_work_eligible_11_age_relationship_hoh
+    expr: "if GetString('WORK_ELIGIBLE_INDICATOR') == '11' and calculateAge(GetString('DATE_OF_BIRTH'), GetString('RPT_MONTH_YEAR')) >= 0 and calculateAge(GetString('DATE_OF_BIRTH'), GetString('RPT_MONTH_YEAR')) < 19 { GetInt('RELATIONSHIP_HOH') != 1 } else { true }"
+    message: "If WORK_ELIGIBLE_INDICATOR is 11 and age is less than 19, RELATIONSHIP_HOH must not be 1"
+    fields: [WORK_ELIGIBLE_INDICATOR, DATE_OF_BIRTH, RELATIONSHIP_HOH]
+
+  # =============================================================================
+  # M1 special case validators (SSP)
+  # =============================================================================
+
+  # M1 sum assistance positive - SSP version uses CC_NBR_MONTHS instead of TRANSP_AMOUNT
+  - id: m1_sum_assistance_positive
+    expr: "GetInt('AMT_FOOD_STAMP_ASSISTANCE') + GetInt('AMT_SUB_CC') + GetInt('CASH_AMOUNT') + GetInt('CC_AMOUNT') + GetInt('CC_NBR_MONTHS') > 0"
+    message: "Sum of AMT_FOOD_STAMP_ASSISTANCE, AMT_SUB_CC, CASH_AMOUNT, CC_AMOUNT, CC_NBR_MONTHS must be greater than 0"
+    fields: [AMT_FOOD_STAMP_ASSISTANCE, AMT_SUB_CC, CASH_AMOUNT, CC_AMOUNT, CC_NBR_MONTHS]
+
+  # =============================================================================
+  # M2 special case validators (SSP)
+  # =============================================================================
+
+  # When FAMILY_AFFILIATION is 1-2, WORK_PART_STATUS must be in SSP valid set
+  # Note: SSP includes value 16 (not in TANF T2's set) and excludes 19
+  - id: m2_family_affil_1_2_work_part_status
+    expr: "if GetInt('FAMILY_AFFILIATION') in [1, 2] { GetString('WORK_PART_STATUS') in ['01', '02', '05', '07', '09', '15', '16', '17', '18', '99'] } else { true }"
+    message: "If FAMILY_AFFILIATION is 1-2, WORK_PART_STATUS must be 01, 02, 05, 07, 09, 15, 16, 17, 18, or 99"
+    fields: [FAMILY_AFFILIATION, WORK_PART_STATUS]
+
+  # When FAMILY_AFFILIATION is 2-3, EDUCATION_LEVEL must be 1-16 or 98-99
+  # Note: SSP M2 uses range 1-16 (not 0-16 like TANF T2)
+  - id: m2_family_affil_2_3_education_level
+    expr: "if GetInt('FAMILY_AFFILIATION') in [2, 3] { (GetInt('EDUCATION_LEVEL') in 1..16) or (GetInt('EDUCATION_LEVEL') in 98..99) } else { true }"
+    message: "If FAMILY_AFFILIATION is 2-3, EDUCATION_LEVEL must be 1-16 or 98-99"
+    fields: [FAMILY_AFFILIATION, EDUCATION_LEVEL]
+
+  # =============================================================================
+  # M5 special case validators (SSP)
+  # =============================================================================
+
+  # When FAMILY_AFFILIATION is 1-3, EDUCATION_LEVEL must be 1-16 or 98-99
+  # Note: M5 applies to FA 1-3 (broader than T5 which splits FA 1 and FA 2-3)
+  - id: m5_family_affil_1_3_education_level
+    expr: "if GetInt('FAMILY_AFFILIATION') in 1..3 { (GetInt('EDUCATION_LEVEL') in 1..16) or (GetInt('EDUCATION_LEVEL') in 98..99) } else { true }"
+    message: "If FAMILY_AFFILIATION is 1-3, EDUCATION_LEVEL must be 1-16 or 98-99"
+    fields: [FAMILY_AFFILIATION, EDUCATION_LEVEL]
+
+  # =============================================================================
+  # T5 special case validators
+  # =============================================================================
+
+  # When person is 18+ years old, REC_OASDI_INSURANCE must be 1-2
+  # AGE is calculated from DATE_OF_BIRTH and RPT_MONTH_YEAR
+  - id: t5_age_oasdi
+    expr: "if calculateAge(GetString('DATE_OF_BIRTH'), GetString('RPT_MONTH_YEAR')) >= 18 { GetInt('REC_OASDI_INSURANCE') in [1, 2] } else { true }"
+    message: "If age is 18 or older, REC_OASDI_INSURANCE must be 1 or 2"
+    fields: [DATE_OF_BIRTH, REC_OASDI_INSURANCE]
+
+  # =============================================================================
+  # Sum-equals validator (parameterized)
+  # =============================================================================
+  # Validates that a total field equals the sum of component fields
+  # Params: total_field (string), component_fields (array of strings)
+  - id: sum_equals
+    expr: "GetInt(Params.total_field) == sumFields(Params.component_fields)"
+    message: "{{.Params.total_field}} must equal the sum of {{.Params.component_fields}}"
+
+# =============================================================================
+# GROUP VALIDATORS (group scope)
+# =============================================================================
+# Default error_type: CASE_CONSISTENCY (blocks group serialization)
+# Use error_type: VALUE_CONSISTENCY with result_mode: per_record for validators that
+# produce per-record errors without blocking group serialization
+
+group_validators:
+  # =============================================================================
+  # TANF Section 1 Group/Case Validators
+  # =============================================================================
+
+  # =============================================================================
+  # Duplicate Detection Validators (per-record CASE_CONSISTENCY)
+  # =============================================================================
+  # These validators use per_record result mode with CASE_CONSISTENCY error type.
+  # Per-record CASE_CONSISTENCY errors block the entire group from serialization.
+  #
+  # Exact duplicates: all field values match (uses EqualFields / slices.Equal)
+  # Partial duplicates: only specified key fields match (but NOT exact duplicates)
+  #
+  # Python equivalent: base_parser.py:356-414 (_delete_exact_dups, _delete_partial_dups)
+
+  # Exact duplicate detection - all non-BLANK fields match
+  # Params: record_type (string) - which record type to check
+  - id: exact_duplicates
+    expr: "getExactDuplicates(Group, Params.record_type)"
+    error_type: CASE_CONSISTENCY
+    result_mode: per_record
+    message: "Duplicate record detected with record type {{.RecordType}} at line {{.LineNumber}}."
+
+  # Partial duplicate detection - specific key fields match (excludes exact dups)
+  # Params: record_type (string), fields ([]string) - key fields to compare
+  - id: partial_duplicates
+    expr: "getPartialDuplicates(Group, Params.record_type, Params.fields)"
+    error_type: CASE_CONSISTENCY
+    result_mode: per_record
+    message: "Partial duplicate record detected with record type {{.RecordType}} at line {{.LineNumber}}."
+
+  # Partial duplicate detection with field exclusion (excludes exact dups)
+  # Params: record_type, fields, exclude_field, exclude_values
+  - id: partial_duplicates_excluding
+    expr: "getPartialDuplicatesExcluding(Group, Params.record_type, Params.fields, Params.exclude_field, Params.exclude_values)"
+    error_type: CASE_CONSISTENCY
+    result_mode: per_record
+    message: "Partial duplicate record detected with record type {{.RecordType}} at line {{.LineNumber}}."
+
+  # =============================================================================
+  # Federally funded SSN validator (group scope, per-record errors)
+  # =============================================================================
+  # This validator produces VALUE_CONSISTENCY errors attributed to individual records.
+  # It doesn't block group serialization because these are data quality issues,
+  # not structural problems.
+  - id: federally_funded_ssn
+    expr: |
+      filter(
+        getRecordsOfType(Group, 'T2'),
+        { .GetInt('FAMILY_AFFILIATION') == 1 and
+          any(getRecordsOfType(Group, 'T1'), { #.GetInt('FUNDING_STREAM') == 1 }) and
+          not isValidSSN(.GetString('SSN')) }
+      )
+    error_type: VALUE_CONSISTENCY
+    result_mode: per_record
+    message: "Federally funded recipients must have a valid Social Security number."
+    fields: [FUNDING_STREAM, FAMILY_AFFILIATION, SSN]
+
+
+  # =============================================================================
+  # TANF Section 1 Group/Case Validators
+  # =============================================================================
+
+  # T1 must have at least one T2 or T3 record
+  # Python: __validate_s1_records_are_related - validates T2/T3 presence
+  # Note: This validator behaves mostly correctly in comparison to the python parser. The python parser will generate
+  # this error for every T2 record that doesn't have a corresponding T1 record, while this validator only generates
+  # the error once per group.
+  - id: t1_has_t2_or_t3
+    expr: "RecordCounts['T3'] > 0 or RecordCounts['T2'] > 0"
+    message: "Every T1 record should have at least one corresponding T2 or T3 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
+
+  # T1 must have at least one T2 or T3 with FAMILY_AFFILIATION == 1
+  # Python: __validate_family_affiliation - validates family affiliation requirement
+  # Note: This validator behaves mostly correctly in comparison to the python parser. The python parser will generate
+  # this error for every T2 record that doesn't have a corresponding T1 record, while this validator only generates
+  # the error once per group.
+  - id: t1_family_affiliation
+    expr: "RecordCounts['T1'] == 0 or any(getRecordsOfType(Group, 'T2'), .GetInt('FAMILY_AFFILIATION') == 1) or any(getRecordsOfType(Group, 'T3'), .GetInt('FAMILY_AFFILIATION') == 1)"
+    message: "Every T1 record should have at least one corresponding T2 or T3 record with FAMILY_AFFILIATION == 1"
+
+  # T2 records require at least one T1 record in the same case
+  # Python: __validate_s1_records_are_related - "Every T2 record should have at least one corresponding T1..."
+  # Note: This validator behaves mostly correctly in comparison to the python parser. The python parser will generate
+  # this error for every T2 record that doesn't have a corresponding T1 record, while this validator only generates
+  # the error once per group.
+  - id: t2_requires_t1
+    expr: "RecordCounts['T2'] == 0 or RecordCounts['T1'] >= 1"
+    message: "Every T2 record should have at least one corresponding T1 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
+
+  # T3 records require at least one T1 record in the same case
+  # Python: __validate_s1_records_are_related - "Every T3 record should have at least one corresponding T1..."
+  # Note: This validator behaves mostly correctly in comparison to the python parser. The python parser will generate
+  # this error for every T3 record that doesn't have a corresponding T1 record, while this validator only generates
+  # the error once per group.
+  - id: t3_requires_t1
+    expr: "RecordCounts['T3'] == 0 or RecordCounts['T1'] >= 1"
+    message: "Every T3 record should have at least one corresponding T1 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
+
+  # =============================================================================
+  # TANF Section 2 Group/Case Validators
+  # =============================================================================
+
+  # T4 records require at least one T5 record in the same case
+  # Python: __validate_s2_records_are_related - "Every T4 record should have at least one corresponding T5..."
+  - id: t4_requires_t5
+    expr: "RecordCounts['T4'] == 0 or RecordCounts['T5'] >= 1"
+    message: "Every T4 record should have at least one corresponding T5 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
+
+  # T5 records require at least one T4 record in the same case
+  # Python: __validate_s2_records_are_related - "Every T5 record should have at least one corresponding T4..."
+  # Note: This validator behaves mostly correctly in comparison to the python parser. The python parser will generate
+  # this error for every T5 record that doesn't have a corresponding T4 record, while this validator only generates
+  # the error once per group.
+  - id: t5_requires_t4
+    expr: "RecordCounts['T5'] == 0 or RecordCounts['T4'] >= 1"
+    message: "Every T5 record should have at least one corresponding T4 record with the same RPT_MONTH_YEAR and CASE_NUMBER"

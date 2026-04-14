@@ -1,0 +1,171 @@
+# File Specification for TANF Section 1 (Active Case Data)
+#
+# This file defines:
+# - What format TANF Section 1 files use
+# - What record types can appear in these files
+# - How to identify each record type
+# - How records should be grouped for processing
+
+# =============================================================================
+# BASIC IDENTIFICATION
+# =============================================================================
+
+program: TANF
+section: 1
+description: "TANF Active Case Data - Contains case, adult, and child records for active TANF cases"
+
+# =============================================================================
+# FILE FORMAT
+# =============================================================================
+
+# TANF files are fixed-width positional text files (UTF-8 encoded).
+# Each field occupies specific byte positions within a line.
+format: positional
+
+# =============================================================================
+# SCHEMAS
+# =============================================================================
+
+# List of record type schemas that can appear in this file type.
+# These reference schema files in config/schemas/
+schemas:
+  - common/header
+  - common/trailer
+  - tanf/t1
+  - tanf/t2
+  - tanf/t3
+
+# =============================================================================
+# RECORD TYPE DETECTION
+# =============================================================================
+
+# How to determine which schema applies to each row.
+# For positional files, we use prefix matching on the first characters.
+record_type_detection:
+  method: prefix
+  prefixes:
+    - prefix: "HEADER"
+      schema: common/header
+    - prefix: "TRAILER"
+      schema: common/trailer
+    - prefix: "T1"
+      schema: tanf/t1
+    - prefix: "T2"
+      schema: tanf/t2
+    - prefix: "T3"
+      schema: tanf/t3
+
+# =============================================================================
+# ACCUMULATOR CONFIGURATION
+# =============================================================================
+
+# Configuration for how records are collected and grouped for processing.
+#
+# TANF Section 1 files contain case-level data where records with the same
+# RPT_MONTH_YEAR and CASE_NUMBER belong to the same "case" and should be
+# processed together. This enables case-level validation in the future.
+#
+# The accumulator uses key_fields to group records by composite key
+# (creates RecordGroups). batch_size defaults to 1 when not specified,
+# meaning each case group is dispatched individually.
+#
+# For TANF Section 1:
+#   - key_fields is set to group by RPT_MONTH_YEAR + CASE_NUMBER
+accumulator:
+
+  # Fields to extract the grouping key from raw row data.
+  # These byte positions are used BEFORE full parsing to quickly
+  # determine which case a record belongs to.
+  key_fields:
+    rpt_month_year:
+      start: 2
+      end: 8
+    case_number:
+      start: 8
+      end: 19
+
+  batch_size: 1
+
+  # Sort by key_fields before accumulation so that all records for a case
+  # are adjacent regardless of input order.
+  presort: true
+
+  # Which schemas participate in key-based grouping.
+  # HEADER and TRAILER are excluded because they're file-level, not case-level.
+  # Only T1, T2, T3 records are grouped by case.
+  grouped_schemas:
+    - tanf/t1
+    - tanf/t2
+    - tanf/t3
+
+validation_orchestrator:
+  categories:
+  - id: 1
+    name: Record pre-check
+    default_error_type: RECORD_PRE_CHECK
+  - id: 2
+    name: Field validation
+    default_error_type: FIELD_VALUE
+  - id: 3
+    name: Cross-field
+    default_error_type: VALUE_CONSISTENCY
+  - id: 4
+    name: Group validation
+    default_error_type: CASE_CONSISTENCY
+
+# =============================================================================
+# GROUP VALIDATORS (Group/Case Level)
+# =============================================================================
+#
+# These validators run at the case/group level and validate relationships
+# between records within the same case (RPT_MONTH_YEAR + CASE_NUMBER).
+#
+# Python equivalent: case_consistency_validator.py -> __validate_s1_records_are_related
+#
+# Validation rules for Section 1:
+# 1. Every T1 must have at least one T2 or T3 with FAMILY_AFFILIATION == 1
+# 2. Every T2 must have a corresponding T1 in the same case
+# 3. Every T3 must have a corresponding T1 in the same case
+
+group_validators:
+  # T1 must have at least one T2 or T3 record
+  - id: t1_has_t2_or_t3
+
+  # T1 must have at least one T2 or T3 with FAMILY_AFFILIATION == 1
+  - id: t1_family_affiliation
+
+  # T2 records require at least one T1 record in the same case
+  - id: t2_requires_t1
+
+  # T3 records require at least one T1 record in the same case
+  - id: t3_requires_t1
+
+  # Federally funded recipients
+  - id: federally_funded_ssn
+
+  # --- Exact duplicate detection ---
+  - id: exact_duplicates
+    params:
+      record_type: T1
+  - id: exact_duplicates
+    params:
+      record_type: T2
+  - id: exact_duplicates
+    params:
+      record_type: T3
+
+  # --- Partial duplicate detection ---
+  - id: partial_duplicates
+    params:
+      record_type: T1
+      fields: [RecordType, RPT_MONTH_YEAR, CASE_NUMBER]
+  - id: partial_duplicates_excluding
+    params:
+      record_type: T2
+      fields: [RecordType, RPT_MONTH_YEAR, CASE_NUMBER, FAMILY_AFFILIATION, DATE_OF_BIRTH, SSN]
+      exclude_field: FAMILY_AFFILIATION
+      exclude_values: [3, 5]
+  - id: partial_duplicates
+    params:
+      record_type: T3
+      fields: [RecordType, RPT_MONTH_YEAR, CASE_NUMBER, FAMILY_AFFILIATION, DATE_OF_BIRTH, SSN]
