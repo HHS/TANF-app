@@ -118,7 +118,7 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 			Program:       dfCtx.Program,
 		}
 		headerResult := validationOrchestrator.ValidateHeader(parseCtx.Header, valDfCtx)
-		if headerResult.HasErrors() {
+		if headerResult.HasBlockingErrors() {
 			return handleHeaderValidationFail(headerResult, ctx, dfCtx, parseCtx, valDfCtx, router, startTime)
 		}
 	}

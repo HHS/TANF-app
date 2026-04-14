@@ -398,17 +398,17 @@ func anyToString(v any) string {
 
 // validFIPSCodes is the set of valid US state/territory FIPS codes.
 var validFIPSCodes = map[string]bool{
-	"01": true, "02": true, "04": true, "05": true, "06": true,
-	"08": true, "09": true, "10": true, "11": true, "12": true,
-	"13": true, "15": true, "16": true, "17": true, "18": true,
-	"19": true, "20": true, "21": true, "22": true, "23": true,
-	"24": true, "25": true, "26": true, "27": true, "28": true,
-	"29": true, "30": true, "31": true, "32": true, "33": true,
-	"34": true, "35": true, "36": true, "37": true, "38": true,
-	"39": true, "40": true, "41": true, "42": true, "44": true,
-	"45": true, "46": true, "47": true, "48": true, "49": true,
-	"50": true, "51": true, "53": true, "54": true, "55": true,
-	"56": true, "66": true, "72": true, "78": true,
+	"00": true, "01": true, "02": true, "04": true, "05": true,
+	"06": true, "08": true, "09": true, "10": true, "11": true,
+	"12": true, "13": true, "15": true, "16": true, "17": true,
+	"18": true, "19": true, "20": true, "21": true, "22": true,
+	"23": true, "24": true, "25": true, "26": true, "27": true,
+	"28": true, "29": true, "30": true, "31": true, "32": true,
+	"33": true, "34": true, "35": true, "36": true, "37": true,
+	"38": true, "39": true, "40": true, "41": true, "42": true,
+	"44": true, "45": true, "46": true, "47": true, "48": true,
+	"49": true, "50": true, "51": true, "53": true, "54": true,
+	"55": true, "56": true, "66": true, "72": true, "78": true,
 }
 
 // isValidFIPS returns true if the value is a valid US state/territory FIPS code.

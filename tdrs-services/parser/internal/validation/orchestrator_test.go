@@ -320,6 +320,39 @@ func TestOrchestratorShortCircuitSkipsConsistencyValidation(t *testing.T) {
 	}
 }
 
+func TestValidateHeaderDoesNotShortCircuitOnFieldOrConsistencyErrors(t *testing.T) {
+	registry := newValidatorRegistry()
+	registry.exprOpts = RegisterFunctions()
+
+	fieldExpr, _ := registry.getOrCompileExpr(ScopeField, "Value > 0", "single")
+	registry.field["T1"] = map[string][]*CompiledValidator{
+		"AMOUNT": {{ID: "positive_amount", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
+	}
+
+	consistencyExpr, _ := registry.getOrCompileExpr(ScopeRecord, "GetString('CASE_NUMBER') != ''", "single")
+	registry.record["T1"] = []*CompiledValidator{
+		{ID: "consistency_fail", Scope: ScopeRecord, ErrorType: ErrorTypeValueConsistency, Expr: consistencyExpr},
+	}
+
+	orchestrator := NewValidationOrchestrator(registry, true)
+
+	headerRec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": -10, "CASE_NUMBER": ""})
+	result := orchestrator.ValidateHeader(headerRec, &DataFileContext{})
+
+	if result.Skipped {
+		t.Fatal("expected Skipped=false for field and consistency errors")
+	}
+	if len(result.FieldErrors) != 1 {
+		t.Fatalf("expected 1 field error, got %d", len(result.FieldErrors))
+	}
+	if len(result.RecordErrors) != 1 {
+		t.Fatalf("expected 1 record error, got %d", len(result.RecordErrors))
+	}
+	if result.RecordErrors[0].ErrorType != ErrorTypeValueConsistency {
+		t.Fatalf("expected VALUE_CONSISTENCY, got %s", result.RecordErrors[0].ErrorType)
+	}
+}
+
 // TestOrchestratorGroupBlockingWithShortCircuit tests that group-level blocking errors
 // cause field and consistency validators to be skipped when short-circuit is enabled.
 func TestOrchestratorGroupBlockingWithShortCircuit(t *testing.T) {
