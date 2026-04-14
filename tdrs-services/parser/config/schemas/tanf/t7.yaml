@@ -1,0 +1,1572 @@
+# TANF T7 Record Schema
+# Stratum data for TANF (Section 4)
+#
+# This record contains family counts by stratum for a calendar quarter.
+# Each T7 record has data for 10 strata, with each stratum having 3 months (A, B, C).
+# The parser produces 30 output rows from each T7 record line (10 strata × 3 months).
+
+record_type: T7
+program: TANF
+section: 4
+document: "TANF Stratum Data"
+format: positional
+
+# Record validators
+record_validators:
+  - id: record_length_min
+    params:
+      min: 247
+
+# Fields shared across all segments (included in every output row)
+shared:
+  - name: RecordType
+    friendly_name: Record Type
+    item: "0"
+    start: 0
+    end: 2
+    type: string
+    required: true
+
+  - name: CALENDAR_QUARTER
+    friendly_name: Calendar Quarter
+    item: "3"
+    start: 2
+    end: 7
+    type: integer
+    required: true
+    field:
+      - id: year_after_2019
+      - id: quarter_is_valid
+
+# Each segment produces one output row (combined with shared fields)
+# T7 has 30 segments: 10 strata × 3 months (A, B, C)
+segments:
+  # Stratum 1, Month A
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3A"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 0
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 7
+        end: 8
+        type: string
+        required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 8
+        end: 10
+        type: string
+        required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6A"
+        start: 10
+        end: 17
+        type: integer
+        required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
+
+  # Stratum 1, Month B
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3B"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 1
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 7
+        end: 8
+        type: string
+        required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 8
+        end: 10
+        type: string
+        required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6B"
+        start: 17
+        end: 24
+        type: integer
+        required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
+
+  # Stratum 1, Month C
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3C"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 2
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 7
+        end: 8
+        type: string
+        required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 8
+        end: 10
+        type: string
+        required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6C"
+        start: 24
+        end: 31
+        type: integer
+        required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
+
+  # Stratum 2, Month A
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3A"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 0
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 31
+        end: 32
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 32
+        end: 34
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6A"
+        start: 34
+        end: 41
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
+
+  # Stratum 2, Month B
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3B"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 1
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 31
+        end: 32
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 32
+        end: 34
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6B"
+        start: 41
+        end: 48
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
+
+  # Stratum 2, Month C
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3C"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 2
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 31
+        end: 32
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 32
+        end: 34
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6C"
+        start: 48
+        end: 55
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
+
+  # Stratum 3, Month A
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3A"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 0
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 55
+        end: 56
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 56
+        end: 58
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6A"
+        start: 58
+        end: 65
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
+
+  # Stratum 3, Month B
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3B"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 1
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 55
+        end: 56
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 56
+        end: 58
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6B"
+        start: 65
+        end: 72
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
+
+  # Stratum 3, Month C
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3C"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 2
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 55
+        end: 56
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 56
+        end: 58
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6C"
+        start: 72
+        end: 79
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
+
+  # Stratum 4, Month A
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3A"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 0
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 79
+        end: 80
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 80
+        end: 82
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6A"
+        start: 82
+        end: 89
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
+
+  # Stratum 4, Month B
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3B"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 1
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 79
+        end: 80
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 80
+        end: 82
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6B"
+        start: 89
+        end: 96
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
+
+  # Stratum 4, Month C
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3C"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 2
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 79
+        end: 80
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 80
+        end: 82
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6C"
+        start: 96
+        end: 103
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
+
+  # Stratum 5, Month A
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3A"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 0
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 103
+        end: 104
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 104
+        end: 106
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6A"
+        start: 106
+        end: 113
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
+
+  # Stratum 5, Month B
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3B"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 1
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 103
+        end: 104
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 104
+        end: 106
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6B"
+        start: 113
+        end: 120
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
+
+  # Stratum 5, Month C
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3C"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 2
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 103
+        end: 104
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 104
+        end: 106
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6C"
+        start: 120
+        end: 127
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
+
+  # Stratum 6, Month A
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3A"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 0
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 127
+        end: 128
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 128
+        end: 130
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6A"
+        start: 130
+        end: 137
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
+
+  # Stratum 6, Month B
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3B"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 1
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 127
+        end: 128
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 128
+        end: 130
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6B"
+        start: 137
+        end: 144
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
+
+  # Stratum 6, Month C
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3C"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 2
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 127
+        end: 128
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 128
+        end: 130
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6C"
+        start: 144
+        end: 151
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
+
+  # Stratum 7, Month A
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3A"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 0
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 151
+        end: 152
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 152
+        end: 154
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6A"
+        start: 154
+        end: 161
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
+
+  # Stratum 7, Month B
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3B"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 1
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 151
+        end: 152
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 152
+        end: 154
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6B"
+        start: 161
+        end: 168
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
+
+  # Stratum 7, Month C
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3C"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 2
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 151
+        end: 152
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 152
+        end: 154
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6C"
+        start: 168
+        end: 175
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
+
+  # Stratum 8, Month A
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3A"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 0
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 175
+        end: 176
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 176
+        end: 178
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6A"
+        start: 178
+        end: 185
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
+
+  # Stratum 8, Month B
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3B"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 1
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 175
+        end: 176
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 176
+        end: 178
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6B"
+        start: 185
+        end: 192
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
+
+  # Stratum 8, Month C
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3C"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 2
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 175
+        end: 176
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 176
+        end: 178
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6C"
+        start: 192
+        end: 199
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
+
+  # Stratum 9, Month A
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3A"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 0
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 199
+        end: 200
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 200
+        end: 202
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6A"
+        start: 202
+        end: 209
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
+
+  # Stratum 9, Month B
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3B"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 1
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 199
+        end: 200
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 200
+        end: 202
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6B"
+        start: 209
+        end: 216
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
+
+  # Stratum 9, Month C
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3C"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 2
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 199
+        end: 200
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 200
+        end: 202
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6C"
+        start: 216
+        end: 223
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
+
+  # Stratum 10, Month A
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3A"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 0
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 223
+        end: 224
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 224
+        end: 226
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6A"
+        start: 226
+        end: 233
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
+
+  # Stratum 10, Month B
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3B"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 1
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 223
+        end: 224
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 224
+        end: 226
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6B"
+        start: 233
+        end: 240
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
+
+  # Stratum 10, Month C
+  - fields:
+      - name: RPT_MONTH_YEAR
+        friendly_name: Reporting Month/Year
+        item: "3C"
+        type: integer
+        required: true
+        source_field: CALENDAR_QUARTER
+        transform:
+          name: calendar_quarter_to_month
+          params:
+            month_index: 2
+
+      - name: TDRS_SECTION_IND
+        friendly_name: TDR Section Indicator
+        item: "4"
+        start: 223
+        end: 224
+        type: string
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 224
+        end: 226
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: FAMILIES_MONTH
+        friendly_name: Number of Families
+        item: "6C"
+        start: 240
+        end: 247
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999999
