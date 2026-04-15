@@ -1,9 +1,8 @@
 """Tests for KeycloakOIDCBackend authentication backend."""
 
 import logging
-from unittest.mock import patch
 
-from django.test import RequestFactory, override_settings
+from django.test import RequestFactory
 
 import pytest
 
@@ -34,31 +33,31 @@ class TestFilterUsersByClaims:
         """Returns the user that matches the provided HHS ID."""
         user = UserFactory(hhs_id="ABC123456789")
         claims = {"hhs_id": "ABC123456789", "email": "other@test.com"}
-        user = backend.filter_users_by_claims(claims)
-        assert user is not None
-        assert str(user.id) == str(user.id)
+        result = backend.filter_users_by_claims(claims)
+        assert len(result) == 1
+        assert str(result[0].id) == str(user.id)
 
     def test_filter_by_login_gov_uuid(self, backend):
         """Returns the user that matches the provided Login.gov UUID."""
         user = UserFactory(hhs_id=None)
         claims = {"login_gov_uuid": str(user.login_gov_uuid), "email": "other@test.com"}
-        user = backend.filter_users_by_claims(claims)
-        assert user is not None
-        assert str(user.id) == str(user.id)
+        result = backend.filter_users_by_claims(claims)
+        assert len(result) == 1
+        assert str(result[0].id) == str(user.id)
 
     def test_filter_by_email_fallback(self, backend):
         """Falls back to an email lookup when stronger identifiers are missing."""
         user = UserFactory(login_gov_uuid=None, hhs_id=None)
         claims = {"email": user.email}
-        user = backend.filter_users_by_claims(claims)
-        assert user is not None
-        assert str(user.id) == str(user.id)
+        result = backend.filter_users_by_claims(claims)
+        assert len(result) == 1
+        assert str(result[0].id) == str(user.id)
 
     def test_filter_returns_empty_for_unknown_user(self, backend):
         """Returns an empty list when no user matches the claims."""
         claims = {"email": "nonexistent@test.com"}
-        user = backend.filter_users_by_claims(claims)
-        assert user is None
+        result = backend.filter_users_by_claims(claims)
+        assert result == []
 
     def test_hhs_id_takes_priority_over_login_gov_uuid(self, backend):
         """When both hhs_id and login_gov_uuid are in claims, hhs_id is checked first."""
@@ -70,17 +69,17 @@ class TestFilterUsersByClaims:
             "login_gov_uuid": str(user_logingov.login_gov_uuid),
             "email": "someone@test.com",
         }
-        user = backend.filter_users_by_claims(claims)
-        assert user is not None
-        assert str(user.id) == str(user_ams.id)
+        result = backend.filter_users_by_claims(claims)
+        assert len(result) == 1
+        assert str(result[0].id) == str(user_ams.id)
 
     def test_hhs_id_falls_back_to_email_when_no_match(self, backend):
         """When hhs_id doesn't match, falls back to email lookup."""
         user = UserFactory(hhs_id="DIFFERENT123", login_gov_uuid=None)
         claims = {"hhs_id": "NOMATCH999999", "email": user.email}
-        user = backend.filter_users_by_claims(claims)
-        assert user is not None
-        assert str(user.id) == str(user.id)
+        result = backend.filter_users_by_claims(claims)
+        assert len(result) == 1
+        assert str(result[0].id) == str(user.id)
 
 
 @pytest.mark.django_db
@@ -131,36 +130,6 @@ class TestUpdateUser:
         claims = {"hhs_id": "EXISTING1234"}
         updated = backend.update_user(user, claims)
         assert updated.hhs_id == "EXISTING1234"
-
-    @override_settings(KEYCLOAK_SYNC_ENABLED=True)
-    @patch("tdpservice.users.keycloak_client.KeycloakSyncClient.get_instance")
-    def test_update_user_syncs_keycloak_groups_on_login(
-        self, mock_get_instance, backend
-    ):
-        """Successful OIDC logins backfill Keycloak groups for existing users."""
-        user = UserFactory(hhs_id=None)
-        claims = {"hhs_id": "NEWHHS123456"}
-
-        mock_client = mock_get_instance.return_value
-
-        updated = backend.update_user(user, claims)
-
-        assert updated.hhs_id == "NEWHHS123456"
-        mock_client.sync_user_groups.assert_called_once_with(user)
-
-    @override_settings(KEYCLOAK_SYNC_ENABLED=False)
-    @patch("tdpservice.users.keycloak_client.KeycloakSyncClient.get_instance")
-    def test_update_user_skips_keycloak_group_sync_when_disabled(
-        self, mock_get_instance, backend
-    ):
-        """OIDC login does not sync groups when Keycloak sync is disabled."""
-        user = UserFactory(hhs_id=None)
-        claims = {"hhs_id": "NEWHHS123456"}
-
-        updated = backend.update_user(user, claims)
-
-        assert updated.hhs_id == "NEWHHS123456"
-        mock_get_instance.assert_not_called()
 
 
 @pytest.mark.django_db

@@ -27,7 +27,7 @@ class KeycloakOIDCBackend(OIDCAuthenticationBackend):
     enforces ACF email domain restrictions, and checks account approval status.
     """
 
-    def filter_users_by_claims(self, claims: dict) -> User | None:
+    def filter_users_by_claims(self, claims: dict) -> list:
         """Look up existing users by identity provider-specific claims.
 
         Keycloak passes through the upstream IdP identity via custom attributes:
@@ -41,25 +41,27 @@ class KeycloakOIDCBackend(OIDCAuthenticationBackend):
         email = claims.get("email", "").lower()
 
         if hhs_id:
-            user = User.objects.filter(hhs_id=hhs_id).first()
-            if user is not None:
-                return user
+            users = User.objects.filter(hhs_id=hhs_id)
+            if users.exists():
+                return list(users)
             # Fall back to email lookup for AMS users who may not have hhs_id set yet
             if email:
-                user = User.objects.filter(username=email).first()
-                return user
+                users = User.objects.filter(username=email)
+                if users.exists():
+                    return list(users)
 
         if login_gov_uuid:
-            user = User.objects.filter(login_gov_uuid=login_gov_uuid).first()
-            if user is not None:
-                return user
+            users = User.objects.filter(login_gov_uuid=login_gov_uuid)
+            if users.exists():
+                return list(users)
 
         # Final fallback: lookup by email
         if email:
-            user = User.objects.filter(username=email).first()
-            return user
+            users = User.objects.filter(username=email)
+            if users.exists():
+                return list(users)
 
-        return None
+        return []
 
     def create_user(self, claims: dict) -> Optional[User]:
         """Create a new Django user and apply app-specific OIDC fields."""
@@ -130,8 +132,9 @@ class KeycloakOIDCBackend(OIDCAuthenticationBackend):
             return False
 
         # Check if the user already exists and is deactivated/inactive
-        user = self.filter_users_by_claims(claims)
-        if user:
+        users = self.filter_users_by_claims(claims)
+        if users:
+            user = users[0]
             if not user.is_active:
                 logger.warning("Login rejected for inactive user: %s", user.username)
                 return False
