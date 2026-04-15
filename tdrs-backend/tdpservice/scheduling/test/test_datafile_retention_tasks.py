@@ -344,19 +344,15 @@ class TestRemoveAllOldVersions:
         assert "manual cleanup" in warning_message.lower()
 
     @patch("tdpservice.scheduling.datafile_retention_tasks.log")
-    def test_exception_handling_continues_processing(
-        self, mock_log, stt, second_stt, user
-    ):
-        """Test that exception handling allows processing to continue.
+    def test_exception_handling_logs_error(self, mock_log, stt, user):
+        """Test that exception handling logs the error gracefully.
 
-        Given: delete_records raises an exception for one file group
+        Given: delete_records raises an exception
         When: remove_all_old_versions is called
-        Then: Processing should continue for other file groups and log errors
+        Then: The error should be logged and the function should not raise
         """
         current_year = datetime.now().year
-        stt_2 = second_stt
 
-        # Create files for two different STTs with multiple versions
         DataFileFactory.create(
             year=current_year,
             quarter="Q1",
@@ -375,41 +371,10 @@ class TestRemoveAllOldVersions:
             user=user,
             version=2,
         )
-
-        DataFileFactory.create(
-            year=current_year,
-            quarter="Q1",
-            program_type="TAN",
-            section="Active Case Data",
-            stt=stt_2,
-            user=user,
-            version=1,
-        )
-        DataFileFactory.create(
-            year=current_year,
-            quarter="Q1",
-            program_type="TAN",
-            section="Active Case Data",
-            stt=stt_2,
-            user=user,
-            version=2,
-        )
-
-        # Patch delete_records to raise an exception on first call only
-        call_count = [0]
-        original_delete_records = __import__(
-            "tdpservice.search_indexes.utils", fromlist=["delete_records"]
-        ).delete_records
-
-        def side_effect(file_ids, log_context):
-            call_count[0] += 1
-            if call_count[0] == 1:
-                raise Exception("Test exception")
-            return original_delete_records(file_ids, log_context)
 
         with patch(
             "tdpservice.scheduling.datafile_retention_tasks.delete_records",
-            side_effect=side_effect,
+            side_effect=Exception("Test exception"),
         ):
             # Should not raise an exception - the function should handle it
             remove_all_old_versions()

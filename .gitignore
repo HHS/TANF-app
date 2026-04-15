@@ -1,4 +1,5 @@
 # UI
+tdrs-frontend/.yarn/
 tdrs-frontend/node_modules/
 tdrs-frontend/build/
 tdrs-frontend/coverage/
@@ -126,3 +127,5 @@ cypress.env.json
 tdrs-backend/*.pg
 tdrs-backend/django.log
 
+# Go parser dry run
+output/

@@ -1,0 +1,156 @@
+# File Specification for TANF Section 2 (Closed Case Data)
+#
+# This file defines:
+# - What format TANF Section 2 files use
+# - What record types can appear in these files
+# - How to identify each record type
+# - How records should be grouped for processing
+
+# =============================================================================
+# BASIC IDENTIFICATION
+# =============================================================================
+
+program: TAN
+section: 2
+description: "TANF Closed Case Data - Contains case and adult records for closed TANF cases"
+
+# =============================================================================
+# FILE FORMAT
+# =============================================================================
+
+# TANF files are fixed-width positional text files (UTF-8 encoded).
+# Each field occupies specific byte positions within a line.
+format: positional
+
+# =============================================================================
+# SCHEMAS
+# =============================================================================
+
+# List of record type schemas that can appear in this file type.
+# These reference schema files in config/schemas/
+schemas:
+  - common/header
+  - common/trailer
+  - tanf/t4
+  - tanf/t5
+
+# =============================================================================
+# RECORD TYPE DETECTION
+# =============================================================================
+
+# How to determine which schema applies to each row.
+# For positional files, we use prefix matching on the first characters.
+record_type_detection:
+  method: prefix
+  prefixes:
+    - prefix: "HEADER"
+      schema: common/header
+    - prefix: "TRAILER"
+      schema: common/trailer
+    - prefix: "T4"
+      schema: tanf/t4
+    - prefix: "T5"
+      schema: tanf/t5
+
+# =============================================================================
+# ACCUMULATOR CONFIGURATION
+# =============================================================================
+
+# Configuration for how records are collected and grouped for processing.
+#
+# TANF Section 2 files contain closed case data where records with the same
+# RPT_MONTH_YEAR and CASE_NUMBER belong to the same "case" and should be
+# processed together. This enables case-level validation in the future.
+#
+# The accumulator uses key_fields to group records by composite key
+# (creates RecordGroups). batch_size defaults to 1 when not specified,
+# meaning each case group is dispatched individually.
+#
+# For TANF Section 2:
+#   - key_fields is set to group by RPT_MONTH_YEAR + CASE_NUMBER
+accumulator:
+
+  # Fields to extract the grouping key from raw row data.
+  # These byte positions are used BEFORE full parsing to quickly
+  # determine which case a record belongs to.
+  key_fields:
+    rpt_month_year:
+      start: 2
+      end: 8
+    case_number:
+      start: 8
+      end: 19
+
+  batch_size: 1
+
+  # Sort by key_fields before accumulation so that all records for a case
+  # are adjacent regardless of input order.
+  presort: true
+
+  # Which schemas participate in key-based grouping.
+  # HEADER and TRAILER are excluded because they're file-level, not case-level.
+  # Only T4, T5 records are grouped by case.
+  grouped_schemas:
+    - tanf/t4
+    - tanf/t5
+
+validation_orchestrator:
+  categories:
+  - id: 1
+    name: Record pre-check
+    default_error_type: RECORD_PRE_CHECK
+  - id: 2
+    name: Field validation
+    default_error_type: FIELD_VALUE
+  - id: 3
+    name: Cross-field
+    default_error_type: VALUE_CONSISTENCY
+  - id: 4
+    name: Group validation
+    default_error_type: CASE_CONSISTENCY
+
+# =============================================================================
+# GROUP VALIDATORS (Group/Case Level)
+# =============================================================================
+#
+# These validators run at the case/group level and validate relationships
+# between records within the same case (RPT_MONTH_YEAR + CASE_NUMBER).
+#
+# Python equivalent: case_consistency_validator.py -> __validate_s2_records_are_related
+#
+# Validation rules for Section 2:
+# 1. Every T4 must have at least one corresponding T5 in the same case
+# 2. Every T5 must have at least one corresponding T4 in the same case
+#
+# Note: The Python code also has deprecated validators for:
+# - Case closure employment (CLOSURE_REASON == 01 requires EMPLOYMENT_STATUS == 1)
+# - Case closure FTL (CLOSURE_REASON == 03 requires COUNTABLE_MONTH_FED_TIME >= 60)
+# - T5 ATD and SSI validation (territory/state-specific rules)
+# These are marked as deprecated and don't increment num_errors in Python.
+
+group_validators:
+  # T4 records require at least one T5 record in the same case
+  # Error is reported on T4 records when no T5 exists
+  - id: t4_requires_t5
+
+  # T5 records require at least one T4 record in the same case
+  # Error is reported on T5 records when no T4 exists
+  - id: t5_requires_t4
+
+  # --- Exact duplicate detection ---
+  - id: exact_duplicates
+    params:
+      record_type: T4
+  - id: exact_duplicates
+    params:
+      record_type: T5
+
+  # --- Partial duplicate detection ---
+  - id: partial_duplicates
+    params:
+      record_type: T4
+      fields: [RecordType, RPT_MONTH_YEAR, CASE_NUMBER]
+  - id: partial_duplicates
+    params:
+      record_type: T5
+      fields: [RecordType, RPT_MONTH_YEAR, CASE_NUMBER, FAMILY_AFFILIATION, DATE_OF_BIRTH, SSN]

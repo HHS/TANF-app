@@ -80,7 +80,7 @@ function ReportsContent() {
   const radio_options = [
     { label: 'TANF', value: 'tanf' },
     ...(fileTypeStt?.ssp ? [{ label: 'SSP-MOE', value: 'ssp-moe' }] : []),
-    ...(piaFeatureFlag.enabled
+    ...(piaFeatureFlag.enabled && fileTypeStt?.type !== 'tribe'
       ? [{ label: 'Program Integrity Audit', value: 'program-integrity-audit' }]
       : []),
   ]
