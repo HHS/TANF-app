@@ -19,6 +19,8 @@ import createFileInputErrorState from '../../utils/createFileInputErrorState'
 import Modal from '../Modal'
 import {
   formatDate,
+  hasReparsed,
+  getReprocessedDate,
   SubmissionSummaryStatusIcon,
   getErrorReportStatus,
   fileStatusOrDefault,
@@ -38,8 +40,12 @@ import { Spinner } from '../Spinner'
 import { openFeedbackWidget } from '../../reducers/feedbackWidget'
 import { ReportsProvider, useReportsContext } from './ReportsContext'
 import { accountCanSelectStt } from '../../selectors/auth'
+import { POLLING_TIMEOUT_MESSAGE } from './constants'
 import FiscalYearSelect from './components/FiscalYearSelect'
 import FiscalQuarterSelect from './components/FisclaQuarterSelect'
+import ReprocessedModal, {
+  ReprocessedButton,
+} from '../SubmissionHistory/ReprocessedModal'
 
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
@@ -154,6 +160,7 @@ const UploadForm = ({
   handleCancel,
   handleUpload,
   setLocalAlertState,
+  setProcessingAlertState,
   file,
   setSelectedFile,
   section,
@@ -214,6 +221,13 @@ const UploadForm = ({
       type: null,
       message: null,
     })
+    if (setProcessingAlertState) {
+      setProcessingAlertState({
+        active: false,
+        type: null,
+        message: null,
+      })
+    }
 
     const fileInputValue = e.target.files[0]
     const input = inputRef.current
@@ -287,6 +301,15 @@ const UploadForm = ({
       return
     }
 
+    if (!file || (file && file.id)) {
+      setLocalAlertState({
+        active: true,
+        type: 'error',
+        message: 'No changes have been made to data files',
+      })
+      return
+    }
+
     handleUpload({ file })
   }
 
@@ -340,7 +363,8 @@ const UploadForm = ({
           <Button
             className="card:margin-y-1"
             type="submit"
-            disabled={isSubmitting || fraHasUploadedFile === false}
+            disabled={isSubmitting}
+            data-has-uploaded-files={fraHasUploadedFile}
           >
             {isSubmitting ? 'Submitting...' : 'Submit Report'}
           </Button>
@@ -359,14 +383,24 @@ const SubmissionHistoryRow = ({
   isLoadingStatus,
   handleDownload,
   isRegionalStaff,
+  reprocessedState,
 }) => {
   const hasStatus = file.summary && file.summary.status
   const status = hasStatus ? file.summary.status : 'Pending'
   const errors = file.summary?.case_aggregates?.total_errors
+  const reprocessedDate = formatDate(getReprocessedDate(file))
 
   return (
     <tr>
-      <td>{formatDate(file.createdAt) + ' by ' + file.submittedBy}</td>
+      <td>
+        {formatDate(file.createdAt) + ' by ' + file.submittedBy}
+        {hasReparsed(file) && (
+          <ReprocessedButton
+            date={reprocessedDate}
+            reprocessedState={reprocessedState}
+          />
+        )}
+      </td>
       <td>
         {isRegionalStaff ? (
           file.fileName
@@ -408,6 +442,7 @@ const SubmissionHistory = ({
   sectionName,
   handleDownload,
   isRegionalStaff,
+  reprocessedState,
 }) => {
   const { isPolling } = useReportsContext()
 
@@ -439,6 +474,7 @@ const SubmissionHistory = ({
                 handleDownload={handleDownload}
                 isRegionalStaff={isRegionalStaff}
                 isLoadingStatus={isLoadingStatus(file.id)}
+                reprocessedState={reprocessedState}
               />
             ))}
           </tbody>
@@ -522,8 +558,15 @@ const FRAReportsContent = () => {
     setErrorModalVisible,
     modalTriggerSource,
     setModalTriggerSource,
+    reprocessedModalVisible,
+    setReprocessedModalVisible,
+    reprocessedDate,
+    setReprocessedDate,
     localAlert,
     setLocalAlertState,
+    processingAlert,
+    setProcessingAlertState,
+    processingAlertRef,
     fraSelectedFile,
     setFraSelectedFile,
     fraUploadError,
@@ -539,9 +582,12 @@ const FRAReportsContent = () => {
     handleClearFilesOnly,
     cancelPendingChange,
     startPolling,
+    isPolling,
     getSttError,
     getFileTypeError,
   } = useReportsContext()
+  const isPollingRef = useRef(isPolling)
+  const startPollingRef = useRef(startPolling)
 
   // Use the form submission hook to prevent multiple submissions
   const { isSubmitting, executeSubmission, onSubmitStart, onSubmitComplete } =
@@ -558,6 +604,14 @@ const FRAReportsContent = () => {
   )
 
   const dispatch = useDispatch()
+
+  useEffect(() => {
+    isPollingRef.current = isPolling
+  }, [isPolling])
+
+  useEffect(() => {
+    startPollingRef.current = startPolling
+  }, [startPolling])
 
   const reportTypeOptions = [
     {
@@ -628,6 +682,50 @@ const FRAReportsContent = () => {
     dispatch,
   ])
 
+  // Restart polling for FRA submissions that are still pending when history is viewed
+  useEffect(() => {
+    fraSubmissionHistory
+      ?.filter((file) => file?.summary?.status === 'Pending')
+      ?.forEach((file) => {
+        if (isPollingRef.current?.[file.id]) return
+
+        startPollingRef.current(
+          `${file.id}`,
+          () => getFraSubmissionStatus(file.id),
+          (response) => {
+            let summary = response?.data?.summary
+            return summary && summary.status && summary.status !== 'Pending'
+          },
+          (response) => {
+            dispatch({
+              type: SET_FRA_SUBMISSION_STATUS,
+              payload: {
+                datafile_id: file.id,
+                datafile: response?.data,
+              },
+            })
+            setProcessingAlertState({
+              active: true,
+              type: 'success',
+              message: 'Processing complete.',
+            })
+          },
+          (error) => {
+            setLocalAlertState({
+              active: true,
+              type: 'error',
+              message: error.message,
+            })
+          },
+          (onError) => {
+            onError({
+              message: POLLING_TIMEOUT_MESSAGE,
+            })
+          }
+        )
+      })
+  }, [dispatch, fraSubmissionHistory, setLocalAlertState])
+
   const handleUpload = ({ file: selectedFile }) => {
     // If already submitting, prevent multiple submissions
     if (isSubmitting) {
@@ -674,10 +772,10 @@ const FRAReportsContent = () => {
                 datafile: response?.data,
               },
             })
-            setLocalAlertState({
+            setProcessingAlertState({
               active: true,
               type: 'success',
-              message: 'Parsing complete.',
+              message: 'Processing complete.',
             })
           },
           (error) => {
@@ -689,8 +787,7 @@ const FRAReportsContent = () => {
           },
           (onError) => {
             onError({
-              message:
-                'Exceeded max number of tries to update submission status.',
+              message: POLLING_TIMEOUT_MESSAGE,
             })
           }
         )
@@ -794,8 +891,19 @@ const FRAReportsContent = () => {
   useEffect(() => {
     if (localAlert.active && alertRef && alertRef.current) {
       alertRef.current.scrollIntoView({ behavior: 'smooth' })
+      alertRef.current.focus({ preventScroll: true })
     }
   }, [localAlert, alertRef])
+
+  useEffect(() => {
+    if (
+      processingAlert.active &&
+      processingAlertRef &&
+      processingAlertRef.current
+    ) {
+      processingAlertRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [processingAlert, processingAlertRef])
 
   return (
     <div className="page-container" style={{ position: 'relative' }}>
@@ -836,23 +944,49 @@ const FRAReportsContent = () => {
 
           {!isRegionalStaff && (
             <>
+              {/* Screen-reader announcer */}
+              <div className="usa-sr-only">
+                <div role="status" aria-live="polite" aria-atomic="true">
+                  {localAlert.active ? localAlert.message : ''}
+                </div>
+
+                <div role="status" aria-live="polite" aria-atomic="true">
+                  {processingAlert.active ? processingAlert.message : ''}
+                </div>
+              </div>
+
+              {/* Visible alerts (not in accessibility tree, prevents duplicate screen reads */}
               {localAlert.active && (
                 <div
-                  ref={alertRef}
-                  tabIndex={-1}
                   className={classNames('usa-alert usa-alert--slim', {
                     [`usa-alert--${localAlert.type}`]: true,
                   })}
+                  aria-hidden="true"
                 >
-                  <div className="usa-alert__body" role="alert">
+                  <div className="usa-alert__body">
                     <p className="usa-alert__text">{localAlert.message}</p>
                   </div>
                 </div>
               )}
+
+              {processingAlert.active && (
+                <div
+                  className={classNames('usa-alert usa-alert--slim', {
+                    [`usa-alert--${processingAlert.type}`]: true,
+                  })}
+                  aria-hidden="true"
+                >
+                  <div className="usa-alert__body">
+                    <p className="usa-alert__text">{processingAlert.message}</p>
+                  </div>
+                </div>
+              )}
+
               <UploadForm
                 handleUpload={handleUpload}
                 handleCancel={handleCancel}
                 setLocalAlertState={setLocalAlertState}
+                setProcessingAlertState={setProcessingAlertState}
                 file={fraSelectedFile}
                 setSelectedFile={setFraSelectedFile}
                 section={getReportTypeLabel()}
@@ -876,6 +1010,10 @@ const FRAReportsContent = () => {
                 sectionName={getReportTypeLabel()}
                 handleDownload={handleDownload}
                 isRegionalStaff={isRegionalStaff}
+                reprocessedState={{
+                  setModalVisible: setReprocessedModalVisible,
+                  setDate: setReprocessedDate,
+                }}
               />
             </PaginatedComponent>
           </div>
@@ -907,6 +1045,12 @@ const FRAReportsContent = () => {
             },
           },
         ]}
+      />
+
+      <ReprocessedModal
+        date={reprocessedDate}
+        isVisible={reprocessedModalVisible}
+        setModalVisible={setReprocessedModalVisible}
       />
     </div>
   )

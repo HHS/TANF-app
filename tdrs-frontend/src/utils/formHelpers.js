@@ -22,15 +22,24 @@ export const getInitialProfileInfo = (
     hasFRAAccess = initialValues.hasFRAAccess
   }
 
+  const normalizeRegions = (regions) => {
+    if (regions instanceof Set) {
+      return new Set(regions)
+    }
+
+    if (Array.isArray(regions)) {
+      return new Set(regions)
+    }
+
+    return new Set()
+  }
+
   return {
     firstName: initialValues.firstName || '',
     lastName: initialValues.lastName || '',
     stt: initialValues.stt || '',
     hasFRAAccess,
-    regions:
-      isAMSUser && initialValues.regions
-        ? new Set(initialValues.regions)
-        : new Set(),
+    regions: normalizeRegions(initialValues.regions),
   }
 }
 

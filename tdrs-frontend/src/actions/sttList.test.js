@@ -1,4 +1,4 @@
-import axios from 'axios'
+import { get } from '../fetch-instance'
 import { thunk } from 'redux-thunk'
 import configureStore from 'redux-mock-store'
 
@@ -10,13 +10,18 @@ import {
   CLEAR_STTS,
 } from './sttList'
 
+jest.mock('../fetch-instance')
+
 describe('actions/stts.js', () => {
   const mockStore = configureStore([thunk])
 
   it('fetches a list of stts, when the user is authenticated', async () => {
-    axios.get.mockImplementationOnce(() =>
+    get.mockImplementationOnce(() =>
       Promise.resolve({
         data: [{ id: 1, type: 'state', code: 'AL', name: 'Alabama' }],
+        ok: true,
+        status: 200,
+        error: null,
       })
     )
     const store = mockStore()
@@ -32,7 +37,7 @@ describe('actions/stts.js', () => {
   })
 
   it('fetches a list of stts and puts "Federal Government" as the first option if it exists, when the user is authenticated', async () => {
-    axios.get.mockImplementationOnce(() =>
+    get.mockImplementationOnce(() =>
       Promise.resolve({
         data: [
           { id: 1, type: 'state', code: 'AL', name: 'Alabama' },
@@ -43,6 +48,9 @@ describe('actions/stts.js', () => {
             name: 'Federal Government',
           },
         ],
+        ok: true,
+        status: 200,
+        error: null,
       })
     )
     const store = mockStore()
@@ -64,7 +72,14 @@ describe('actions/stts.js', () => {
   })
 
   it('clears the stt state, if user is not authenticated', async () => {
-    axios.get.mockImplementationOnce(() => Promise.resolve({ test: {} }))
+    get.mockImplementationOnce(() =>
+      Promise.resolve({
+        data: null,
+        ok: true,
+        status: 200,
+        error: null,
+      })
+    )
     const store = mockStore()
 
     await store.dispatch(fetchSttList())
@@ -75,8 +90,14 @@ describe('actions/stts.js', () => {
   })
 
   it('dispatches an error to the store if the API errors', async () => {
-    axios.get.mockImplementationOnce(() =>
-      Promise.reject(Error({ message: 'something went wrong' }))
+    const mockError = new Error('something went wrong')
+    get.mockImplementationOnce(() =>
+      Promise.resolve({
+        data: null,
+        ok: false,
+        status: 500,
+        error: mockError,
+      })
     )
     const store = mockStore()
 
@@ -86,7 +107,7 @@ describe('actions/stts.js', () => {
     expect(actions[0].type).toBe(FETCH_STTS)
     expect(actions[1].type).toBe(SET_STTS_ERROR)
     expect(actions[1].payload).toStrictEqual({
-      error: Error({ message: 'something went wrong' }),
+      error: mockError,
     })
   })
 })

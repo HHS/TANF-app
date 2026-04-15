@@ -20,7 +20,7 @@ RUN apt-get update && \
         python3-dev \
         curl \
         ca-certificates && \
-    pip install --no-cache-dir --upgrade pip pipenv && \
+    pip install --no-cache-dir --upgrade pip pipenv==2026.0.3 && \
     # If we can remove the '--dev' we will save 200MB. However, so much depends on it that it is easier to keep it for now.
     pipenv install --dev --system --deploy && \
     rm -rf /var/lib/apt/lists/*

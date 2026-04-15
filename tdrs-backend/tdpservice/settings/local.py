@@ -1,4 +1,5 @@
 """Define configuration settings for local environment."""
+
 import os
 from distutils.util import strtobool
 
@@ -55,3 +56,6 @@ class Local(Common):
     )
 
     SENTRY_DSN = None
+
+    Common.CACHES["stts"]["KEY_PREFIX"] = "local"
+    Common.CACHES["feature-flags"]["KEY_PREFIX"] = "local"

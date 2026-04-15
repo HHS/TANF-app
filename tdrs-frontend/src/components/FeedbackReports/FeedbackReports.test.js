@@ -5,9 +5,9 @@ import { MemoryRouter } from 'react-router-dom'
 import configureStore from 'redux-mock-store'
 import { thunk } from 'redux-thunk'
 import FeedbackReports from './FeedbackReports'
-import axiosInstance from '../../axios-instance'
+import { get } from '../../fetch-instance'
 
-jest.mock('../../axios-instance')
+jest.mock('../../fetch-instance')
 jest.mock('../../utils/createFileInputErrorState')
 jest.mock('@uswds/uswds/src/js/components', () => ({
   fileInput: {
@@ -16,14 +16,42 @@ jest.mock('@uswds/uswds/src/js/components', () => ({
   datePicker: {
     init: jest.fn(),
   },
+  comboBox: {
+    init: jest.fn(),
+  },
 }))
+
+// Mock STTComboBox to avoid fetchSttList side effects
+jest.mock('../STTComboBox', () => {
+  const MockSTTComboBox = ({ selectStt, selectedStt }) => (
+    <div data-testid="stt-combobox">
+      <label htmlFor="mock-stt-select">State, Tribe, or Territory*</label>
+      <select
+        id="mock-stt-select"
+        value={selectedStt || ''}
+        onChange={(e) => selectStt(e.target.value)}
+        aria-label="State, Tribe, or Territory"
+      >
+        <option value="">- Select or Search -</option>
+        <option value="Wisconsin">Wisconsin</option>
+      </select>
+    </div>
+  )
+  MockSTTComboBox.displayName = 'MockSTTComboBox'
+  return MockSTTComboBox
+})
 
 const mockStore = configureStore([thunk])
 
 describe('FeedbackReports', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    axiosInstance.get.mockResolvedValue({ data: { results: [] } })
+    get.mockResolvedValue({
+      data: { results: [] },
+      ok: true,
+      status: 200,
+      error: null,
+    })
 
     // Mock FileReader for AdminFeedbackReports
     global.FileReader = jest.fn().mockImplementation(() => ({
@@ -64,6 +92,7 @@ describe('FeedbackReports', () => {
           },
           authenticated: true,
         },
+        stts: { sttList: [], loading: false },
       })
 
       renderComponent(store)
@@ -109,6 +138,7 @@ describe('FeedbackReports', () => {
           },
           authenticated: true,
         },
+        stts: { sttList: [], loading: false },
       })
 
       renderComponent(store)
@@ -147,6 +177,7 @@ describe('FeedbackReports', () => {
           },
           authenticated: true,
         },
+        stts: { sttList: [], loading: false },
       })
 
       renderComponent(store)
@@ -175,6 +206,7 @@ describe('FeedbackReports', () => {
           },
           authenticated: true,
         },
+        stts: { sttList: [], loading: false },
       })
 
       renderComponent(store)
@@ -198,6 +230,7 @@ describe('FeedbackReports', () => {
           },
           authenticated: true,
         },
+        stts: { sttList: [], loading: false },
       })
 
       renderComponent(store)
@@ -208,6 +241,46 @@ describe('FeedbackReports', () => {
           screen.getByText('TANF/SSP Data Reporting Reference')
         ).toBeInTheDocument()
       })
+    })
+
+    it('renders STTFeedbackReports for OFA Regional Staff (not Admin view)', async () => {
+      const store = mockStore({
+        auth: {
+          user: {
+            id: 1,
+            email: 'regional@example.com',
+            roles: [
+              {
+                name: 'OFA Regional Staff',
+                permissions: [{ codename: 'view_reportfile' }],
+              },
+            ],
+            account_approval_status: 'Approved',
+            regions: [
+              {
+                id: 5,
+                stts: [{ id: 10, name: 'Wisconsin', type: 'state' }],
+              },
+            ],
+          },
+          authenticated: true,
+        },
+        stts: { sttList: [], loading: false },
+      })
+
+      renderComponent(store)
+
+      // Should render STT view (not admin) since regional staff don't have add_reportsource
+      await waitFor(() => {
+        expect(
+          screen.getByText('TANF/SSP Data Reporting Reference')
+        ).toBeInTheDocument()
+      })
+
+      // Should NOT have the Upload button
+      expect(
+        screen.queryByRole('button', { name: /Upload & Notify States/i })
+      ).not.toBeInTheDocument()
     })
   })
 
@@ -231,6 +304,7 @@ describe('FeedbackReports', () => {
           },
           authenticated: true,
         },
+        stts: { sttList: [], loading: false },
       })
 
       renderComponent(store)
@@ -244,7 +318,7 @@ describe('FeedbackReports', () => {
       fireEvent.change(fiscalYearSelect, { target: { value: '2025' } })
 
       await waitFor(() => {
-        expect(axiosInstance.get).toHaveBeenCalledWith(
+        expect(get).toHaveBeenCalledWith(
           expect.stringContaining('/reports/report-sources/'),
           expect.objectContaining({
             params: { year: '2025' },
@@ -270,6 +344,7 @@ describe('FeedbackReports', () => {
           },
           authenticated: true,
         },
+        stts: { sttList: [], loading: false },
       })
 
       renderComponent(store)
@@ -279,14 +354,14 @@ describe('FeedbackReports', () => {
       fireEvent.change(yearSelect, { target: { value: '2025' } })
 
       await waitFor(() => {
-        expect(axiosInstance.get).toHaveBeenCalledWith(
+        expect(get).toHaveBeenCalledWith(
           expect.stringContaining('/reports/'),
           expect.any(Object)
         )
       })
 
       // Make sure it's not calling the report-sources endpoint
-      const calls = axiosInstance.get.mock.calls
+      const calls = get.mock.calls
       const reportSourcesCall = calls.find((call) =>
         call[0].includes('report-sources')
       )

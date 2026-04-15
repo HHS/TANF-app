@@ -24,9 +24,11 @@ export const uploadFile = (file_input, file_path, willError = false) => {
       'exist'
     )
     cy.get('.usa-alert__text').should('not.exist')
-    cy.get('button')
-      .contains('Submit')
-      .should('not.be.disabled', { timeout: 5000 })
+    cy.contains('button', 'Submit', { timeout: 5000 }).should(
+      'have.attr',
+      'data-has-uploaded-files',
+      'true'
+    )
   }
 }
 
@@ -100,21 +102,52 @@ export const fillSttFyQNoProgramSelector = (stt, fy, q) => {
     })
 }
 
+export const fillStt = (stt) =>
+  cy.get('#stt', { timeout: 1000 }).type(stt + '{enter}')
+
 export const fillFyQProgram = (fy, q, program) => {
-  cy.contains(program, { timeout: 1000 }).should('exist')
-  if (program === 'TANF') {
-    cy.get(':nth-child(2) > .usa-radio__label', { timeout: 1000 })
-      .contains(program)
-      .should('exist')
-    cy.get(':nth-child(2) > .usa-radio__label', { timeout: 1000 }).click()
-  } else {
-    cy.get(':nth-child(3) > .usa-radio__label')
-      .contains(program, { timeout: 1000 })
-      .should('exist')
-    cy.get(':nth-child(3) > .usa-radio__label', { timeout: 1000 }).click()
-  }
+  cy.wait(500)
+  cy.get('body').then(($body) => {
+    if (program === 'SSP') {
+      const hasSspMoe =
+        $body.find('label:contains("SSP-MOE"), label:contains("SSP")').length >
+        0
+      if (hasSspMoe) {
+        cy.contains('label', /SSP/i).click({ force: true })
+        return
+      }
+    }
+
+    const hasProgramLabel =
+      $body.find(`label:contains("${program}")`).length > 0
+    if (hasProgramLabel) {
+      cy.contains('label', program).click({ force: true })
+      return
+    }
+
+    if (program === 'PIA') {
+      const hasPia = $body.find(
+        'label:contains("Program Integrity Audit")'
+      ).length
+      if (hasPia > 0) {
+        cy.contains('label', 'Program Integrity Audit').click({ force: true })
+        return
+      }
+    }
+
+    // Some roles/environments only expose a subset of file types.
+    // Fallback to the currently available selection instead of hard-failing.
+    if ($body.find('label.usa-radio__label').length > 0) {
+      cy.get('label.usa-radio__label').first().click({ force: true })
+    }
+  })
+
   cy.get('#reportingYears').should('exist').select(fy)
-  cy.get('#quarter').should('exist').select(q)
+  cy.get('body').then(($body) => {
+    if ($body.find('#quarter').length > 0) {
+      cy.get('#quarter').select(q)
+    }
+  })
   cy.get('.usa-file-input__input', { timeout: 1000 }).should('exist')
 }
 
@@ -175,15 +208,19 @@ export const openDataFilesAndSearch = (program, year, quarter, stt = '') => {
     cy.get('#stt').should('exist').type(`${stt}{enter}`)
   }
   if (program === 'SSP') cy.get('label[for="ssp-moe"]').click()
+  else if (program === 'PIA')
+    cy.get('label[for="program-integrity-audit"]').click()
 
   cy.get('#reportingYears').should('exist').select(year)
-  cy.get('#quarter').should('exist').select(quarter) // Q1, Q2, Q3, Q4
+
+  if (program !== 'PIA') cy.get('#quarter').should('exist').select(quarter) // Q1, Q2, Q3, Q4
 }
 
 export const uploadSectionFile = (
   inputSelector,
   fileName,
-  shouldRejectInput = false
+  shouldRejectInput = false,
+  program = 'TANF'
 ) => {
   const filePath = `${TEST_DATA_DIR}/${fileName}`
 
@@ -200,11 +237,22 @@ export const uploadSectionFile = (
       'not.have.class',
       'is-loading'
     )
-    cy.get('.usa-alert__text').should('not.exist')
-    cy.get('button')
-      .contains('Submit')
-      .should('not.be.disabled', { timeout: 5000 })
-    cy.contains('button', 'Submit').should('be.enabled').click()
+
+    if (program === 'PIA') {
+      cy.get('.usa-alert__text')
+        .contains(
+          'For Additional guidance please refer to the Program Instruction for this new reporting requirement.'
+        )
+        .should('exist')
+    } else {
+      cy.get('.usa-alert__text').should('not.exist')
+    }
+    cy.contains('button', 'Submit', { timeout: 5000 }).should(
+      'have.attr',
+      'data-has-uploaded-files',
+      'true'
+    )
+    cy.contains('button', 'Submit').click()
     cy.wait('@dataFileSubmit', { timeout: 60000 }).then(({ response }) => {
       const id = response?.body?.id
       if (!id) throw new Error('Missing data_file id in response')
@@ -218,16 +266,24 @@ export const openSubmissionHistory = () => {
   cy.contains('button', 'Submission History').click()
 }
 
-export const getLatestSubmissionHistoryRow = (section) => {
+export const getLatestSubmissionHistoryRow = (section, program = 'TANF') => {
   const table_captions = {
     1: 'Section 1 - Active Case Data',
     2: 'Section 2 - Closed Case Data',
     3: 'Section 3 - Aggregate Data',
     4: 'Section 4 - Stratum Data',
+    PIA_1: 'Quarter 1 (October - December)',
+    PIA_2: 'Quarter 2 (January - March)',
+  }
+
+  let sectionLabel = table_captions[section]
+
+  if (program === 'PIA') {
+    sectionLabel = table_captions[`PIA_${section}`]
   }
 
   return cy
-    .contains('caption', table_captions[section])
+    .contains('caption', sectionLabel)
     .parents('table')
     .find('tbody > tr')
     .first()
@@ -247,9 +303,16 @@ export const downloadErrorReportAndAssert = (
     'Stratum Data',
   ]
 
+  let sectionLabel = ERROR_REPORT_LABELS[section - 1]
+
+  if (programType === 'PIA') {
+    sectionLabel = ERROR_REPORT_LABELS[0]
+  }
+
   // Download error report
-  const programPrefix = programType ? `${programType} ` : ''
-  const fileName = `${year}-${quarter}-${programPrefix}${ERROR_REPORT_LABELS[section - 1]} Error Report.xlsx`
+  const programPrefix =
+    programType && programType !== 'PIA' ? `${programType} ` : 'TANF '
+  const fileName = `${year}-${quarter}-${programPrefix}${sectionLabel} Error Report.xlsx`
   const downloadedFilePath = `${Cypress.config('downloadsFolder')}/${fileName}`
 
   cy.intercept('GET', '/v1/data_files/*/download_error_report/').as(

@@ -1,10 +1,8 @@
 import { useSelector } from 'react-redux'
-import axiosInstance from '../axios-instance'
+import { post } from '../fetch-instance'
 
 function sendDataToServer(data) {
-  axiosInstance.post(`${process.env.REACT_APP_BACKEND_URL}/logs/`, data, {
-    withCredentials: true,
-  })
+  post(`${process.env.REACT_APP_BACKEND_URL}/logs/`, data)
 }
 
 function logEvents(initialContext) {

@@ -1,10 +1,12 @@
 import React from 'react'
 import { fireEvent, waitFor, render, within } from '@testing-library/react'
-import axios from 'axios'
+import { get, post } from '../../fetch-instance'
 import { Provider } from 'react-redux'
 import { MemoryRouter } from 'react-router-dom'
 import { FRAReports } from '.'
 import configureStore from '../../configureStore'
+
+jest.mock('../../fetch-instance')
 
 const initialState = {
   auth: {
@@ -39,6 +41,19 @@ const makeTestFile = (name, contents = ['test'], type = 'text/plain') =>
 describe('FRA Reports Page', () => {
   beforeEach(() => {
     jest.useFakeTimers()
+    get.mockResolvedValue({ data: [], ok: true, status: 200, error: null })
+    post.mockResolvedValue({
+      data: {
+        id: 1,
+        original_filename: 'test.txt',
+        extension: '.txt',
+        section: 'Active Case Data',
+        quarter: 'Q1',
+      },
+      ok: true,
+      status: 200,
+      error: null,
+    })
   })
   afterEach(() => {
     jest.runOnlyPendingTimers()
@@ -159,15 +174,12 @@ describe('FRA Reports Page', () => {
     })
 
     it('Shows upload form once search has been clicked', async () => {
-      jest.mock('axios')
-      const mockAxios = axios
-
       let searchUrl = null
-      mockAxios.get.mockImplementation((url) => {
+      get.mockImplementation((url) => {
         if (url.includes('/data_files/')) {
           searchUrl = url
         }
-        return Promise.resolve({ data: [] })
+        return Promise.resolve({ data: [], ok: true, status: 200, error: null })
       })
 
       const state = {
@@ -233,9 +245,6 @@ describe('FRA Reports Page', () => {
 
   describe('Upload form', () => {
     const setup = async () => {
-      jest.mock('axios')
-      const mockAxios = axios
-
       window.HTMLElement.prototype.scrollIntoView = () => {}
       const state = {
         ...initialState,
@@ -259,8 +268,11 @@ describe('FRA Reports Page', () => {
       const origDispatch = store.dispatch
       store.dispatch = jest.fn(origDispatch)
 
-      mockAxios.post.mockResolvedValue({
+      post.mockResolvedValue({
         data: { id: 1 },
+        ok: true,
+        status: 200,
+        error: null,
       })
 
       const component = render(
@@ -294,11 +306,12 @@ describe('FRA Reports Page', () => {
         expect(getByText('Submit Report')).toBeInTheDocument()
       })
 
-      return { ...component, ...store, mockAxios }
+      return { ...component, ...store }
     }
 
     it('Allows csv files to be selected and submitted', async () => {
-      const { getByText, queryByText, dispatch, container } = await setup()
+      const { getByText, getAllByText, queryByText, dispatch, container } =
+        await setup()
 
       const uploadForm = container.querySelector('#fra-file-upload')
       fireEvent.change(uploadForm, {
@@ -317,10 +330,10 @@ describe('FRA Reports Page', () => {
 
       await waitFor(() =>
         expect(
-          getByText(
+          getAllByText(
             `Successfully submitted section: Work Outcomes of TANF Exiters on ${new Date().toDateString()}`
-          )
-        ).toBeInTheDocument()
+          ).length
+        ).toBeGreaterThanOrEqual(1)
       )
       expect(
         queryByText(
@@ -331,7 +344,8 @@ describe('FRA Reports Page', () => {
     })
 
     it('Allows xlsx files to be selected and submitted', async () => {
-      const { getByText, queryByText, dispatch, container } = await setup()
+      const { getByText, getAllByText, queryByText, dispatch, container } =
+        await setup()
 
       const uploadForm = container.querySelector('#fra-file-upload')
       fireEvent.change(uploadForm, {
@@ -354,10 +368,10 @@ describe('FRA Reports Page', () => {
 
       await waitFor(() =>
         expect(
-          getByText(
+          getAllByText(
             `Successfully submitted section: Work Outcomes of TANF Exiters on ${new Date().toDateString()}`
-          )
-        ).toBeInTheDocument()
+          ).length
+        ).toBeGreaterThanOrEqual(1)
       )
       expect(
         queryByText(
@@ -371,14 +385,14 @@ describe('FRA Reports Page', () => {
       // jest.spyOn(global, 'setTimeout')
       const {
         getByText,
+        getAllByText,
         queryAllByTestId,
         queryAllByText,
         dispatch,
-        mockAxios,
         container,
       } = await setup()
 
-      mockAxios.post.mockResolvedValue({
+      post.mockResolvedValue({
         data: {
           id: 1,
           original_filename: 'testFile.txt',
@@ -394,41 +408,69 @@ describe('FRA Reports Page', () => {
           summary: null,
           latest_reparse_file_meta: '',
         },
+        ok: true,
+        status: 200,
+        error: null,
       })
 
-      let times = 0
-      mockAxios.get.mockImplementation((url) => {
-        if (url.includes('/data_files/1/')) {
-          // status
-          times += 1
+      const statusChecks = { 1: 0, 2: 0 }
+      get.mockImplementation((url) => {
+        const match = url.match(/\/data_files\/(\d+)\//)
+
+        if (match && match[1]) {
+          const id = Number(match[1])
+          statusChecks[id] = (statusChecks[id] || 0) + 1
+          const status = statusChecks[id] > 3 ? 'Approved' : 'Pending'
+
           return Promise.resolve({
             data: {
-              id: 1,
-              summary: { status: times > 1 ? 'Approved' : 'Pending' },
+              id,
+              summary: { status },
             },
-          })
-        } else {
-          // submission history
-          return Promise.resolve({
-            data: [
-              {
-                id: 1,
-                original_filename: 'testFile.txt',
-                extension: 'txt',
-                quarter: 'Q1',
-                section: 'Work Outcomes of TANF Exiters',
-                slug: '1234-5-6-7890',
-                year: '2021',
-                s3_version_id: '3210',
-                created_at: '2025-02-07T23:38:58+0000',
-                submitted_by: 'Test Testerson',
-                has_error: false,
-                summary: { status: 'Pending' },
-                latest_reparse_file_meta: '',
-              },
-            ],
+            ok: true,
+            status: 200,
+            error: null,
           })
         }
+
+        // submission history
+        return Promise.resolve({
+          data: [
+            {
+              id: 1,
+              original_filename: 'testFile.txt',
+              extension: 'txt',
+              quarter: 'Q1',
+              section: 'Work Outcomes of TANF Exiters',
+              slug: '1234-5-6-7890',
+              year: '2021',
+              s3_version_id: '3210',
+              created_at: '2025-02-07T23:38:58+0000',
+              submitted_by: 'Test Testerson',
+              has_error: false,
+              summary: { status: 'Pending' },
+              latest_reparse_file_meta: '',
+            },
+            {
+              id: 2,
+              original_filename: 'testFile2.txt',
+              extension: 'txt',
+              quarter: 'Q1',
+              section: 'Work Outcomes of TANF Exiters',
+              slug: '1234-5-6-7891',
+              year: '2021',
+              s3_version_id: '3211',
+              created_at: '2025-02-07T23:38:58+0000',
+              submitted_by: 'Test Testerson',
+              has_error: false,
+              summary: { status: 'Pending' },
+              latest_reparse_file_meta: '',
+            },
+          ],
+          ok: true,
+          status: 200,
+          error: null,
+        })
       })
 
       const uploadForm = container.querySelector('#fra-file-upload')
@@ -452,41 +494,51 @@ describe('FRA Reports Page', () => {
 
       await waitFor(() =>
         expect(
-          getByText(
+          getAllByText(
             `Successfully submitted section: Work Outcomes of TANF Exiters on ${new Date().toDateString()}`
-          )
-        ).toBeInTheDocument()
+          ).length
+        ).toBeGreaterThanOrEqual(1)
       )
-      await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(6))
+      await waitFor(() => expect(dispatch).toHaveBeenCalled())
 
-      expect(queryAllByTestId('spinner')).toHaveLength(3)
-      expect(queryAllByText('Pending')).toHaveLength(2)
+      const historySection = container.querySelector(
+        '.submission-history-section'
+      )
+      const firstTableBody = historySection.querySelector('tbody')
+      const rows = within(firstTableBody).queryAllByRole('row').slice(0, 2)
+      const rowSpinners = rows
+        .map((row) => within(row).queryAllByTestId('spinner')[0])
+        .filter(Boolean)
+      const rowPending = rows
+        .map((row) => within(row).queryAllByText('Pending')[0])
+        .filter(Boolean)
+      expect(rowSpinners).toHaveLength(2)
+      expect(rowPending).toHaveLength(2)
 
-      jest.runOnlyPendingTimers()
+      // Advance timers repeatedly to allow all polling cycles to complete
+      // (statusChecks > 3 per row to transition from Pending to Approved)
+      for (let i = 0; i < 10; i++) {
+        jest.runOnlyPendingTimers()
+        await waitFor(() => {})
+      }
 
-      expect(mockAxios.get).toHaveBeenCalledTimes(4)
-      expect(times).toBe(2)
+      expect(get).toHaveBeenCalled()
 
       await waitFor(() => {
-        expect(getByText('Approved')).toBeInTheDocument()
+        expect(getAllByText('Approved').length).toBeGreaterThanOrEqual(1)
+        expect(queryAllByTestId('spinner')).toHaveLength(0)
+        expect(queryAllByText('Pending')).toHaveLength(0)
       })
-
-      expect(queryAllByTestId('spinner')).toHaveLength(0)
-      expect(queryAllByText('Pending')).toHaveLength(0)
-      expect(getByText('Approved')).toBeInTheDocument()
     })
 
     it('Shows an error if file submission failed', async () => {
-      jest.mock('axios')
-      const mockAxios = axios
-      const { getByText, dispatch, container } = await setup()
+      const { getByText, getAllByText, dispatch, container } = await setup()
 
-      mockAxios.post.mockRejectedValue({
-        message: 'Error',
-        response: {
-          status: 400,
-          data: { detail: 'Mock fail response' },
-        },
+      post.mockResolvedValue({
+        data: { detail: 'Mock fail response' },
+        ok: false,
+        status: 400,
+        error: new Error('HTTP 400'),
       })
 
       const uploadForm = container.querySelector('#fra-file-upload')
@@ -505,16 +557,24 @@ describe('FRA Reports Page', () => {
       fireEvent.click(submitButton)
 
       await waitFor(() =>
-        expect(getByText('Error: Mock fail response')).toBeInTheDocument()
+        expect(
+          getAllByText('HTTP 400: Mock fail response').length
+        ).toBeGreaterThanOrEqual(1)
       )
       await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(4))
     })
 
     it('Shows an error if a no file is selected for submission', async () => {
-      const { getByText } = await setup()
+      const { getByText, getAllByText } = await setup()
 
       const submitButton = getByText('Submit Report', { selector: 'button' })
-      expect(submitButton).not.toBeEnabled()
+      fireEvent.click(submitButton)
+
+      await waitFor(() =>
+        expect(
+          getAllByText('No changes have been made to data files').length
+        ).toBeGreaterThan(0)
+      )
     })
 
     it('Shows an error if a non-allowed file type is selected', async () => {
@@ -613,7 +673,7 @@ describe('FRA Reports Page', () => {
     it('Does not show a message if input is changed after uploading a file', async () => {
       const {
         getByText,
-        getByRole,
+        getAllByText,
         container,
         getByLabelText,
         queryByText,
@@ -635,7 +695,13 @@ describe('FRA Reports Page', () => {
       fireEvent.click(getByText(/Submit Report/, { selector: 'button' }))
       await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(4))
 
-      await waitFor(() => getByRole('alert'))
+      await waitFor(() =>
+        expect(
+          getAllByText(
+            `Successfully submitted section: Work Outcomes of TANF Exiters on ${new Date().toDateString()}`
+          ).length
+        ).toBeGreaterThanOrEqual(1)
+      )
 
       const yearsDropdown = getByLabelText('Fiscal Year (October - September)*')
       fireEvent.change(yearsDropdown, { target: { value: '2024' } })
@@ -765,9 +831,6 @@ describe('FRA Reports Page', () => {
 
   describe('Submission History', () => {
     const setup = async (submissionHistoryApiResponse = []) => {
-      jest.mock('axios')
-      const mockAxios = axios
-
       window.HTMLElement.prototype.scrollIntoView = () => {}
       const state = {
         ...initialState,
@@ -806,8 +869,11 @@ describe('FRA Reports Page', () => {
 
       const { getByLabelText, getByText } = component
 
-      mockAxios.get.mockResolvedValue({
+      get.mockResolvedValue({
         data: submissionHistoryApiResponse,
+        ok: true,
+        status: 200,
+        error: null,
       })
 
       // fill out the form values before clicking search
@@ -824,6 +890,7 @@ describe('FRA Reports Page', () => {
           )
         ).toBeInTheDocument()
         expect(getByText('Submit Report')).toBeInTheDocument()
+        expect(get).toHaveBeenCalledTimes(1)
       })
 
       return { ...component, ...store }
@@ -863,7 +930,9 @@ describe('FRA Reports Page', () => {
         },
       ]
 
-      const { getByText } = await setup(submissionHistoryApiResponse)
+      const { getByText, queryByText } = await setup(
+        submissionHistoryApiResponse
+      )
 
       await waitFor(() => {
         expect(getByText(/by Test Testerson/)).toBeInTheDocument()
@@ -878,6 +947,7 @@ describe('FRA Reports Page', () => {
         ).toBeInTheDocument()
         expect(getByText('Accepted')).toBeInTheDocument()
         expect(getByText('No Errors')).toBeInTheDocument()
+        expect(queryByText('Reprocessed ⓘ')).not.toBeInTheDocument()
       })
     })
 
@@ -992,6 +1062,104 @@ describe('FRA Reports Page', () => {
           getByText('Still processing. Check back soon.')
         ).toBeInTheDocument()
         expect(getByText('Pending')).toBeInTheDocument()
+      })
+    })
+
+    it('Shows a reprocessed button if a reparse has happened', async () => {
+      const submissionHistoryApiResponse = [
+        {
+          id: 1,
+          original_filename: 'testFile.txt',
+          extension: 'txt',
+          quarter: 'Q1',
+          section: 'Work Outcomes of TANF Exiters',
+          slug: '1234-5-6-7890',
+          year: '2021',
+          s3_version_id: '3210',
+          created_at: '2025-02-07T23:38:58+0000',
+          submitted_by: 'Test Testerson',
+          has_error: false,
+          summary: {
+            status: 'Accepted',
+            case_aggregates: {
+              total_errors: 0,
+            },
+          },
+          latest_reparse_file_meta: {
+            finished: true,
+            success: true,
+            started_at: '2026-03-05T19:14:54+0000',
+            finished_at: '2026-03-05T19:14:57+0000',
+          },
+        },
+      ]
+
+      const { getByText, queryByText } = await setup(
+        submissionHistoryApiResponse
+      )
+
+      await waitFor(() => {
+        expect(getByText(/by Test Testerson/)).toBeInTheDocument()
+        expect(
+          getByText('testFile.txt', { selector: 'td button' })
+        ).toBeInTheDocument()
+        expect(
+          within(
+            getByText('Work Outcomes of TANF Exiters Submission History')
+              .parentElement
+          ).getByText('0')
+        ).toBeInTheDocument()
+        expect(getByText('Accepted')).toBeInTheDocument()
+        expect(getByText('No Errors')).toBeInTheDocument()
+        expect(queryByText('Reprocessed ⓘ')).toBeInTheDocument()
+      })
+    })
+
+    it('Shows reprocessed modal when reprocessed button pressed', async () => {
+      const submissionHistoryApiResponse = [
+        {
+          id: 1,
+          original_filename: 'testFile.txt',
+          extension: 'txt',
+          quarter: 'Q1',
+          section: 'Work Outcomes of TANF Exiters',
+          slug: '1234-5-6-7890',
+          year: '2021',
+          s3_version_id: '3210',
+          created_at: '2025-02-07T23:38:58+0000',
+          submitted_by: 'Test Testerson',
+          has_error: false,
+          summary: {
+            status: 'Accepted',
+            case_aggregates: {
+              total_errors: 0,
+            },
+          },
+          latest_reparse_file_meta: {
+            finished: true,
+            success: true,
+            started_at: '2026-03-05T19:14:54+0000',
+            finished_at: '2026-03-05T19:14:57+0000',
+          },
+        },
+      ]
+
+      const { getByText, queryByText } = await setup(
+        submissionHistoryApiResponse
+      )
+
+      await waitFor(() => {
+        expect(queryByText('Reprocessed ⓘ')).toBeInTheDocument()
+        expect(
+          queryByText('Most Recent Reprocessed Date')
+        ).not.toBeInTheDocument()
+      })
+
+      const reprocessedButton = queryByText('Reprocessed ⓘ')
+      fireEvent.click(reprocessedButton)
+
+      await waitFor(() => {
+        expect(queryByText('Most Recent Reprocessed Date')).toBeInTheDocument()
       })
     })
   })

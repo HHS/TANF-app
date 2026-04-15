@@ -1,0 +1,122 @@
+# Header Record Schema
+# Common to all TANF/SSP/Tribal submission types
+#
+# The header record is always the first line of a data file and contains
+# metadata about the submission.
+
+record_type: HEADER
+program: ALL
+section: 0
+document: "Header Record"
+format: positional
+
+# Record-level validators (cross-field checks)
+record_validators:
+  - id: header_record_length
+  - id: header_tribe_fips_program_agree
+  - id: header_section_match
+  - id: header_fiscal_period_match
+
+# Header has no shared fields (single record per line)
+shared: []
+
+# Single segment containing all header fields
+segments:
+  - fields:
+      - name: title
+        friendly_name: Title
+        item: "1"
+        start: 0
+        end: 6
+        type: string
+        required: true
+
+      - name: year
+        friendly_name: Calendar Year
+        item: "2"
+        start: 6
+        end: 10
+        type: integer
+        required: true
+        field_validators:
+          - id: header_year_range
+
+      - name: quarter
+        friendly_name: Calendar Quarter
+        item: "3"
+        start: 10
+        end: 11
+        type: string
+        required: true
+        field_validators:
+          - id: header_quarter
+
+      - name: type
+        friendly_name: Type
+        item: "4"
+        start: 11
+        end: 12
+        type: string
+        required: true
+        field_validators:
+          - id: header_section_type
+
+      - name: state_fips
+        friendly_name: State FIPS Code
+        item: "5"
+        start: 12
+        end: 14
+        type: string
+        required: false
+        field_validators:
+          - id: header_fips_code
+
+      - name: tribe_code
+        friendly_name: Tribe Code
+        item: "6"
+        start: 14
+        end: 17
+        type: string
+        required: false
+        field_validators:
+          - id: header_tribe_code_range
+
+      - name: program_type
+        friendly_name: Program Type
+        item: "7"
+        start: 17
+        end: 20
+        type: string
+        required: true
+        field_validators:
+          - id: header_program_type
+
+      - name: edit
+        friendly_name: Edit Indicator
+        item: "8"
+        start: 20
+        end: 21
+        type: string
+        required: true
+        field_validators:
+          - id: header_edit_indicator
+
+      - name: encryption
+        friendly_name: Encryption Indicator
+        item: "9"
+        start: 21
+        end: 22
+        type: string
+        required: false
+        field_validators:
+          - id: header_encryption_indicator
+
+      - name: update
+        friendly_name: Update Indicator
+        item: "10"
+        start: 22
+        end: 23
+        type: string
+        required: true
+        field_validators:
+          - id: header_update_indicator

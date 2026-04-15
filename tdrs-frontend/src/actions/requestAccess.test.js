@@ -1,4 +1,4 @@
-import axios from 'axios'
+import { patch } from '../fetch-instance'
 import { thunk } from 'redux-thunk'
 import configureStore from 'redux-mock-store'
 
@@ -10,22 +10,29 @@ import {
   CLEAR_REQUEST_ACCESS,
 } from './requestAccess'
 
+jest.mock('../fetch-instance')
+
 describe('actions/requestAccess.js', () => {
   const mockStore = configureStore([thunk])
 
   it('sends a PATCH request when requestAccess is called', async () => {
-    axios.patch = jest.fn().mockResolvedValue({
-      data: {
-        first_name: 'harry',
-        last_name: 'potter',
-        stt: {
-          code: 'AK',
-          id: 2,
-          name: 'Alaska',
-          type: 'state',
+    patch.mockImplementationOnce(() =>
+      Promise.resolve({
+        data: {
+          first_name: 'harry',
+          last_name: 'potter',
+          stt: {
+            code: 'AK',
+            id: 2,
+            name: 'Alaska',
+            type: 'state',
+          },
         },
-      },
-    })
+        ok: true,
+        status: 200,
+        error: null,
+      })
+    )
     const profileInfo = {
       firstName: 'harry',
       lastName: 'potter',
@@ -42,7 +49,14 @@ describe('actions/requestAccess.js', () => {
   })
 
   it('clears the request access state if there is no data returned from the API', async () => {
-    axios.patch = jest.fn().mockResolvedValue({})
+    patch.mockImplementationOnce(() =>
+      Promise.resolve({
+        data: null,
+        ok: true,
+        status: 200,
+        error: null,
+      })
+    )
     const profileInfo = {
       firstName: 'harry',
       lastName: 'potter',
@@ -59,7 +73,14 @@ describe('actions/requestAccess.js', () => {
   })
 
   it('dispatches an error to the store if the API errors', async () => {
-    axios.patch = jest.fn().mockRejectedValue(new Error('threw an error'))
+    patch.mockImplementationOnce(() =>
+      Promise.resolve({
+        data: null,
+        ok: false,
+        status: 500,
+        error: new Error('threw an error'),
+      })
+    )
     const profileInfo = {
       firstName: 'harry',
       lastName: 'potter',

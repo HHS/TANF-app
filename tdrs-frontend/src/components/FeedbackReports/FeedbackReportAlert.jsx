@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import axiosInstance from '../../axios-instance'
+import { get } from '../../fetch-instance'
 import { useReportsContext } from '../Reports/ReportsContext'
 import closeIcon from '@uswds/uswds/img/usa-icons/close.svg'
 import '../../assets/feedback/Feedback.scss'
@@ -27,7 +27,7 @@ const saveDismissedState = (year, reportCreatedAt) => {
  * Fetches the latest report internally using the `latest=true` query param.
  * Can be dismissed by the user, with state persisted in localStorage per fiscal year.
  */
-const FeedbackReportAlert = () => {
+const FeedbackReportAlert = ({ stt = null }) => {
   const { yearInputValue, quarterInputValue } = useReportsContext()
   const [latestReportDate, setLatestReportDate] = useState(null)
   const [isDismissed, setIsDismissed] = useState(false)
@@ -40,36 +40,36 @@ const FeedbackReportAlert = () => {
         return
       }
 
-      try {
-        const response = await axiosInstance.get(
-          `${process.env.REACT_APP_BACKEND_URL}/reports/`,
-          {
-            params: {
-              year: yearInputValue,
-              quarter: quarterInputValue,
-              latest: 'true',
-            },
-            withCredentials: true,
-          }
-        )
+      const params = {
+        year: yearInputValue,
+        quarter: quarterInputValue,
+        latest: 'true',
+      }
+      if (stt) {
+        params.stt = stt.id
+      }
 
-        if (response.data?.results?.length > 0) {
-          const report = response.data.results[0]
-          const dismissedTimestamp = getDismissedTimestamp(yearInputValue)
+      const { data, ok, error } = await get(
+        `${process.env.REACT_APP_BACKEND_URL}/reports/`,
+        { params }
+      )
 
-          // Show banner if not dismissed OR if a new report is available
-          if (dismissedTimestamp && dismissedTimestamp === report.created_at) {
-            setLatestReportDate(report.created_at)
-            setIsDismissed(true)
-          } else {
-            setLatestReportDate(report.created_at)
-            setIsDismissed(false)
-          }
+      if (ok && data?.results?.length > 0) {
+        const report = data.results[0]
+        const dismissedTimestamp = getDismissedTimestamp(yearInputValue)
+
+        // Show banner if not dismissed OR if a new report is available
+        if (dismissedTimestamp && dismissedTimestamp === report.created_at) {
+          setLatestReportDate(report.created_at)
+          setIsDismissed(true)
         } else {
-          setLatestReportDate(null)
+          setLatestReportDate(report.created_at)
           setIsDismissed(false)
         }
-      } catch (error) {
+      } else if (ok) {
+        setLatestReportDate(null)
+        setIsDismissed(false)
+      } else {
         console.error('Error fetching feedback reports:', error)
         setLatestReportDate(null)
         setIsDismissed(false)
@@ -77,7 +77,7 @@ const FeedbackReportAlert = () => {
     }
 
     fetchLatestFeedbackReport()
-  }, [yearInputValue, quarterInputValue])
+  }, [yearInputValue, quarterInputValue, stt])
 
   const handleDismiss = useCallback(() => {
     if (yearInputValue && latestReportDate) {
@@ -96,7 +96,12 @@ const FeedbackReportAlert = () => {
   })
 
   return (
-    <div className="usa-alert usa-alert--info margin-top-4 margin-bottom-4">
+    <div
+      className="usa-alert usa-alert--info margin-top-4 margin-bottom-4"
+      role="region"
+      aria-labelledby="feedback-alert-text"
+      tabIndex={-1}
+    >
       <div
         className="usa-alert__body"
         style={{
@@ -105,9 +110,13 @@ const FeedbackReportAlert = () => {
           alignItems: 'flex-start',
         }}
       >
-        <p className="usa-alert__text">
+        <p className="usa-alert__text" id="feedback-alert-text">
           Feedback Reports Available as of {formattedDate}. Please{' '}
-          <a href={`/feedback-reports?year=${yearInputValue}`}>
+          <a
+            href={`/feedback-reports?year=${yearInputValue}${stt ? `&stt=${stt.name}` : ''}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             review the feedback
           </a>{' '}
           and if needed, resubmit complete and accurate data.
