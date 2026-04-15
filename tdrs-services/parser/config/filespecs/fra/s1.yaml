@@ -1,0 +1,62 @@
+# File Specification for FRA Section 1 (Work Outcome TANF Exiters)
+#
+# This file defines:
+# - What format FRA Section 1 files use
+# - What record types can appear in these files
+# - How to identify each record type
+# - How records should be grouped for processing
+
+# =============================================================================
+# BASIC IDENTIFICATION
+# =============================================================================
+
+program: FRA
+section: 1
+description: "FRA Work Outcome TANF Exiters - Contains exit date and SSN for TANF exiters"
+
+# =============================================================================
+# FILE FORMAT
+# =============================================================================
+
+# FRA files are CSV format (comma-separated values).
+# Each row has two columns: EXIT_DATE (YYYYMM) and SSN.
+# Unlike other programs, FRA files have NO header or trailer rows.
+format: columnar
+
+# =============================================================================
+# SCHEMAS
+# =============================================================================
+
+# List of record type schemas that can appear in this file type.
+# These reference schema files in config/schemas/
+# Note: FRA has no header/trailer - all rows are TE1 data records
+schemas:
+  - fra/te1
+
+# =============================================================================
+# RECORD TYPE DETECTION
+# =============================================================================
+
+# FRA files don't have record type prefixes like TANF/SSP.
+# All rows are TE1 records by default.
+record_type_detection:
+  method: fixed
+  schema: fra/te1
+
+# =============================================================================
+# ACCUMULATOR CONFIGURATION
+# =============================================================================
+
+# Configuration for how records are collected and grouped for processing.
+#
+# FRA files don't have case-based grouping like TANF/SSP.
+# Each record is independent (one exiter per row).
+# Duplicates are detected by EXIT_DATE + SSN combination.
+accumulator:
+
+  # No key_fields for FRA - records are not grouped by case
+
+  batch_size: 1
+
+  # No grouping needed for FRA records
+  grouped_schemas: []

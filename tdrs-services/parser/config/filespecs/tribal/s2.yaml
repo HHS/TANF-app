@@ -1,0 +1,84 @@
+# File Specification for Tribal TANF Section 2 (Closed Case Data)
+#
+# This file defines:
+# - What format Tribal TANF Section 2 files use
+# - What record types can appear in these files
+# - How to identify each record type
+# - How records should be grouped for processing
+
+# =============================================================================
+# BASIC IDENTIFICATION
+# =============================================================================
+
+program: TRIBAL
+section: 2
+description: "Tribal TANF Closed Case Data - Contains case and adult records for closed tribal TANF cases"
+
+# =============================================================================
+# FILE FORMAT
+# =============================================================================
+
+# Tribal TANF files are fixed-width positional text files (UTF-8 encoded).
+# Each field occupies specific byte positions within a line.
+format: positional
+
+# =============================================================================
+# SCHEMAS
+# =============================================================================
+
+# List of record type schemas that can appear in this file type.
+# These reference schema files in config/schemas/
+schemas:
+  - common/header
+  - common/trailer
+  - tribal_tanf/t4
+  - tribal_tanf/t5
+
+# =============================================================================
+# RECORD TYPE DETECTION
+# =============================================================================
+
+# How to determine which schema applies to each row.
+# For positional files, we use prefix matching on the first characters.
+record_type_detection:
+  method: prefix
+  prefixes:
+    - prefix: "HEADER"
+      schema: common/header
+    - prefix: "TRAILER"
+      schema: common/trailer
+    - prefix: "T4"
+      schema: tribal_tanf/t4
+    - prefix: "T5"
+      schema: tribal_tanf/t5
+
+# =============================================================================
+# ACCUMULATOR CONFIGURATION
+# =============================================================================
+
+# Configuration for how records are collected and grouped for processing.
+#
+# Tribal TANF Section 2 files contain closed case data where records with the same
+# RPT_MONTH_YEAR and CASE_NUMBER belong to the same "case" and should be
+# processed together.
+accumulator:
+
+  # Fields to extract the grouping key from raw row data.
+  key_fields:
+    rpt_month_year:
+      start: 2
+      end: 8
+    case_number:
+      start: 8
+      end: 19
+
+  batch_size: 1
+
+  # Sort by key_fields before accumulation so that all records for a case
+  # are adjacent regardless of input order.
+  presort: true
+
+  # Which schemas participate in key-based grouping.
+  grouped_schemas:
+    - tribal_tanf/t4
+    - tribal_tanf/t5

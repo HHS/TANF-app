@@ -63,9 +63,14 @@ update_frontend()
     cp -r build deployment/public
     cp nginx/cloud.gov/buildpack.nginx.conf deployment/nginx.conf
     cp nginx/cloud.gov/locations.conf deployment/locations.conf
-    cp nginx/cloud.gov/ip_whitelist.conf deployment/ip_whitelist.conf
     cp nginx/cloud.gov/ip_whitelist_ipv4.conf deployment/ip_whitelist_ipv4.conf
     cp nginx/cloud.gov/ip_whitelist_ipv6.conf deployment/ip_whitelist_ipv6.conf
+    if [ "$CGHOSTNAME_FRONTEND" = "tdp-frontend-develop" ]; then
+        cp nginx/cloud.gov/ip_whitelist_develop.conf deployment/ip_whitelist.conf
+        bash ../scripts/generate-circleci-ip-ranges.sh deployment/ip_circleci_runners.conf
+    else
+        cp nginx/cloud.gov/ip_whitelist.conf deployment/ip_whitelist.conf
+    fi
     cp nginx/mime.types deployment/mime.types
     cp nginx/src/503.html deployment/public/503_.html
     cp -r nginx/src/static/ deployment/public/
