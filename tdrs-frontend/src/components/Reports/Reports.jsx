@@ -31,9 +31,12 @@ function ReportsContent() {
     selectStt,
     getSttError,
     getFileTypeError,
+    piaFeatureFlag,
   } = useReportsContext()
 
   const user = useSelector((state) => state.auth.user)
+  const isDataAnalyst =
+    useSelector(selectPrimaryUserRole)?.name === 'Data Analyst'
   const isOFAAdmin = useSelector(selectPrimaryUserRole)?.name === 'OFA Admin'
   const isDIGITTeam = useSelector(selectPrimaryUserRole)?.name === 'DIGIT Team'
   const isSystemAdmin =
@@ -77,7 +80,7 @@ function ReportsContent() {
   const radio_options = [
     { label: 'TANF', value: 'tanf' },
     ...(fileTypeStt?.ssp ? [{ label: 'SSP-MOE', value: 'ssp-moe' }] : []),
-    ...(process.env.REACT_APP_SHOW_PIA === 'true'
+    ...(piaFeatureFlag.enabled && fileTypeStt?.type !== 'tribe'
       ? [{ label: 'Program Integrity Audit', value: 'program-integrity-audit' }]
       : []),
   ]
@@ -127,7 +130,7 @@ function ReportsContent() {
         </div>
 
         {fileTypeInputValue === 'program-integrity-audit' &&
-        process.env.REACT_APP_SHOW_PIA === 'true' ? (
+        piaFeatureFlag.enabled === true ? (
           <ProgramIntegrityAuditReports
             stt={stt ? stt : fileTypeStt}
             isRegionalStaff={isRegionalStaff}
@@ -136,6 +139,7 @@ function ReportsContent() {
           <TanfSspReports
             stt={stt ? stt : fileTypeStt}
             isRegionalStaff={isRegionalStaff}
+            isDataAnalyst={isDataAnalyst}
           />
         )}
       </div>

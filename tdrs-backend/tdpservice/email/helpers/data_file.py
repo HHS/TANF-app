@@ -1,5 +1,7 @@
 """Helper functions for sending data file submission emails."""
 
+from zoneinfo import ZoneInfo
+
 from django.conf import settings
 
 from tdpservice.data_files.models import DataFile
@@ -63,6 +65,35 @@ def get_tanf_aggregates_context_count(datafile_summary):
     }
 
 
+def get_tanf_total_errors_context_count(datafile_summary):
+    """Return the sum of total errors across all months for aggregate/stratum TANF files."""
+    case_aggregates = datafile_summary.case_aggregates or {}
+    total_errors = 0
+
+    if "months" in case_aggregates:
+        for month in case_aggregates["months"]:
+            total_errors += (
+                month["total_errors"]
+                if "total_errors" in month and month["total_errors"] != "N/A"
+                else 0
+            )
+
+    return {"total_errors": total_errors}
+
+
+def get_pia_quarter_label(quarter):
+    """Return the human-readable quarter label for PIA submissions."""
+    match quarter:
+        case DataFile.Quarter.Q1:
+            return "Quarter 1 (October - December)"
+        case DataFile.Quarter.Q2:
+            return "Quarter 2 (January - March)"
+        case DataFile.Quarter.Q3:
+            return "Quarter 3 (April - June)"
+        case DataFile.Quarter.Q4:
+            return "Quarter 4 (July - September)"
+
+
 def get_fra_aggregates_context_count(datafile_summary):
     """Return the relevant context data from case aggregates for FRA files."""
     case_aggregates = datafile_summary.case_aggregates or {}
@@ -97,12 +128,27 @@ def send_data_submitted_email(
 
     prog_type = datafile.program_type
     section_name = get_program_section_str(prog_type, datafile.section)
+    is_program_audit = datafile.is_program_audit
 
-    file_type = get_friendly_program_type(prog_type)
+    file_type = (
+        "TANF Program Integrity Audit"
+        if is_program_audit
+        else get_friendly_program_type(prog_type)
+    )
     stt_name = datafile.stt.name
-    submission_date = datafile.created_at
+    if datafile.created_at is not None:
+        stt_tz = ZoneInfo(datafile.stt.timezone or "UTC")
+        local_time = datafile.created_at.astimezone(stt_tz)
+        submission_date = local_time.strftime("%m/%d/%Y %I:%M %p %Z")
+    else:
+        submission_date = datafile.created_at
     fiscal_year = datafile.fiscal_year
     submitted_by = datafile.submitted_by
+
+    is_aggregate = datafile.section in (
+        DataFile.Section.AGGREGATE_DATA,
+        DataFile.Section.STRATUM_DATA,
+    )
 
     context = {
         "stt_name": stt_name,
@@ -113,48 +159,81 @@ def send_data_submitted_email(
         "file_type": file_type,
         "status": datafile_summary.status,
         "has_errors": datafile_summary.status != DataFileSummary.Status.ACCEPTED,
+        "is_aggregate": is_aggregate,
+        "is_program_audit": is_program_audit,
         "url": settings.FRONTEND_BASE_URL,
     }
 
     if datafile_summary.status == DataFileSummary.Status.PENDING:
         return
-    elif datafile_summary.status == DataFileSummary.Status.ACCEPTED:
-        subject = f"{section_name} Successfully Submitted Without Errors"
-        text_message = f"{file_type} has been submitted and processed without errors."
+
+    text_message = (
+        f"{file_type} has been submitted and processed without errors."
+        if datafile_summary.status == DataFileSummary.Status.ACCEPTED
+        else f"{file_type} has been submitted and processed with errors."
+    )
+
+    if is_program_audit:
+        quarter_label = get_pia_quarter_label(datafile.quarter)
+        context.update({"quarter_label": quarter_label})
+        context.update(get_tanf_aggregates_context_count(datafile_summary))
+
+        if datafile_summary.status == DataFileSummary.Status.ACCEPTED:
+            subject = (
+                f"{file_type}: {quarter_label} Successfully Submitted Without Errors"
+            )
+        else:
+            subject = f"Action Required: {file_type}: {quarter_label} Contains Errors"
+
+        template_options = {
+            DataFileSummary.Status.ACCEPTED: TanfDataFileEmail.ACCEPTED.value,
+            DataFileSummary.Status.ACCEPTED_WITH_ERRORS: TanfDataFileEmail.ACCEPTED_WITH_ERRORS.value,
+            DataFileSummary.Status.PARTIALLY_ACCEPTED: TanfDataFileEmail.PARTIALLY_ACCEPTED.value,
+            DataFileSummary.Status.REJECTED: TanfDataFileEmail.REJECTED.value,
+        }
+
+        template_path = template_options[datafile_summary.status]
     else:
-        subject = f"Action Required: {section_name} Contains Errors"
-        text_message = f"{file_type} has been submitted and processed with errors."
+        if datafile_summary.status == DataFileSummary.Status.ACCEPTED:
+            subject = f"{section_name} Successfully Submitted Without Errors"
+        else:
+            subject = f"Action Required: {section_name} Contains Errors"
+
+        match prog_type:
+            case (
+                DataFile.ProgramType.TANF
+                | DataFile.ProgramType.SSP
+                | DataFile.ProgramType.TRIBAL
+            ):
+                if is_aggregate:
+                    context.update(
+                        get_tanf_total_errors_context_count(datafile_summary)
+                    )
+                else:
+                    context.update(get_tanf_aggregates_context_count(datafile_summary))
+
+                template_options = {
+                    DataFileSummary.Status.ACCEPTED: TanfDataFileEmail.ACCEPTED.value,
+                    DataFileSummary.Status.ACCEPTED_WITH_ERRORS: TanfDataFileEmail.ACCEPTED_WITH_ERRORS.value,
+                    DataFileSummary.Status.PARTIALLY_ACCEPTED: TanfDataFileEmail.PARTIALLY_ACCEPTED.value,
+                    DataFileSummary.Status.REJECTED: TanfDataFileEmail.REJECTED.value,
+                }
+
+                template_path = template_options[datafile_summary.status]
+
+            case DataFile.ProgramType.FRA:
+                context.update(get_fra_aggregates_context_count(datafile_summary))
+
+                template_options = {
+                    DataFileSummary.Status.ACCEPTED: FraDataFileEmail.ACCEPTED.value,
+                    DataFileSummary.Status.ACCEPTED_WITH_ERRORS: FraDataFileEmail.ACCEPTED_WITH_ERRORS.value,
+                    DataFileSummary.Status.PARTIALLY_ACCEPTED: FraDataFileEmail.PARTIALLY_ACCEPTED.value,
+                    DataFileSummary.Status.REJECTED: FraDataFileEmail.REJECTED.value,
+                }
+
+                template_path = template_options[datafile_summary.status]
 
     context.update({"subject": subject})
-
-    match prog_type:
-        case (
-            DataFile.ProgramType.TANF
-            | DataFile.ProgramType.SSP
-            | DataFile.ProgramType.TRIBAL
-        ):
-            context.update(get_tanf_aggregates_context_count(datafile_summary))
-
-            template_options = {
-                DataFileSummary.Status.ACCEPTED: TanfDataFileEmail.ACCEPTED.value,
-                DataFileSummary.Status.ACCEPTED_WITH_ERRORS: TanfDataFileEmail.ACCEPTED_WITH_ERRORS.value,
-                DataFileSummary.Status.PARTIALLY_ACCEPTED: TanfDataFileEmail.PARTIALLY_ACCEPTED.value,
-                DataFileSummary.Status.REJECTED: TanfDataFileEmail.REJECTED.value,
-            }
-
-            template_path = template_options[datafile_summary.status]
-
-        case DataFile.ProgramType.FRA:
-            context.update(get_fra_aggregates_context_count(datafile_summary))
-
-            template_options = {
-                DataFileSummary.Status.ACCEPTED: FraDataFileEmail.ACCEPTED.value,
-                DataFileSummary.Status.ACCEPTED_WITH_ERRORS: FraDataFileEmail.ACCEPTED_WITH_ERRORS.value,
-                DataFileSummary.Status.PARTIALLY_ACCEPTED: FraDataFileEmail.PARTIALLY_ACCEPTED.value,
-                DataFileSummary.Status.REJECTED: FraDataFileEmail.REJECTED.value,
-            }
-
-            template_path = template_options[datafile_summary.status]
 
     log(
         f"Data file submitted; emailing Data Analysts {list(recipients)}",

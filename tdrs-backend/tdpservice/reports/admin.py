@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 from django.db.models import OuterRef, Subquery
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from tdpservice.core.filters import MostRecentVersionFilter
 from tdpservice.core.utils import ReadOnlyAdminMixin
@@ -23,7 +23,8 @@ class VersionFilter(MostRecentVersionFilter):
             versions = queryset.filter(
                 stt__stt_code=OuterRef("stt__stt_code"),
                 year=OuterRef("year"),
-                quarter=OuterRef("quarter"),
+                date_extracted_on=OuterRef("date_extracted_on"),
+                report_type=OuterRef("report_type"),
             ).order_by("-version")
 
             # Filter to only records with the latest version
@@ -39,7 +40,8 @@ class ReportFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     list_display = [
         "id",
         "year",
-        "quarter",
+        "date_extracted_on",
+        "report_type",
         "stt",
         "version",
         "user",
@@ -47,7 +49,8 @@ class ReportFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     list_filter = [
         "stt",
         "year",
-        "quarter",
+        "date_extracted_on",
+        "report_type",
         "user",
         VersionFilter
     ]
@@ -55,6 +58,7 @@ class ReportFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "original_filename",
         "slug",
     ]
+
 
 @admin.register(ReportSource)
 class ReportSourceAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
@@ -64,6 +68,7 @@ class ReportSourceAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "id",
         "original_filename",
         "uploaded_by",
+        "report_type",
         "status",
         "created_at",
         "num_reports_created",
@@ -71,6 +76,7 @@ class ReportSourceAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     list_filter = [
         "original_filename",
         "uploaded_by__email",
+        "report_type",
         "status",
         "created_at",
     ]

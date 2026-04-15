@@ -1,7 +1,11 @@
 """Define API views for user class."""
+
 import logging
 
+from django.conf import settings
 from django.db.models import Prefetch
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
@@ -31,6 +35,13 @@ class STTApiAlphaView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     queryset = STT.objects.order_by("name")
     serializer_class = STTSerializer
+
+    @method_decorator(
+        cache_page(settings.DEFAULT_CACHE_TIMEOUT, cache="stts", key_prefix="alpha")
+    )
+    def list(self, request):
+        """Get the stt list from the cache if available, else fetch the queryset."""
+        return super().list(request)
 
 
 class STTApiView(generics.ListAPIView):

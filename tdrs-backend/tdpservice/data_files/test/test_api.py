@@ -8,7 +8,10 @@ import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
 
+from tdpservice.data_files.enums import SubmissionState
+from tdpservice.core.models import FeatureFlag
 from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.submission_lifecycle import InvalidTransition
 from tdpservice.parsers import util
 from tdpservice.parsers.factory import ParserFactory
 from tdpservice.parsers.models import ParserError
@@ -310,6 +313,9 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
         self.assert_data_file_created(response)
         self.assert_data_file_exists(data_file_data, 1, user)
 
+        data_file = DataFile.objects.get(id=response.data["id"])
+        assert data_file.state == SubmissionState.VIRUS_SCAN_COMPLETED
+
     def test_data_file_file_version_increment(
         self, api_client, data_file_data, other_data_file_data, user
     ):
@@ -519,6 +525,87 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         response = self.post_data_file(api_client, data_file_data)
         assert response.data["section"] == "Active Case Data"
 
+    def test_failed_upload_does_not_create_record(
+        self, api_client, data_file_data, user
+    ):
+        """Test failed uploads do not create a DataFile record."""
+        data_file_data["file"].name = "bad.exe"
+
+        response = self.post_data_file(api_client, data_file_data)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert not DataFile.objects.filter(
+            slug=data_file_data["slug"],
+            user=user,
+        ).exists()
+
+    def test_upload_flow_blocks_illegal_transition(
+        self, api_client, data_file_data, mocker
+    ):
+        """Test upload flow raises if the helper is forced into an illegal transition."""
+        actual_data_file_get = DataFile.objects.get
+
+        def fake_get(*args, **kwargs):
+            data_file = actual_data_file_get(*args, **kwargs)
+            data_file.state = SubmissionState.PARSE_STARTED
+            return data_file
+
+        mocker.patch(
+            "tdpservice.data_files.views.DataFile.objects.get",
+            side_effect=fake_get,
+        )
+
+        with pytest.raises(
+            InvalidTransition, match="parse_started to virus_scan_started"
+        ):
+            self.post_data_file(api_client, data_file_data)
+
+    @pytest.mark.django_db
+    def test_no_pia_feat_flag_blocks_uploads(self, api_client, data_file_data):
+        """Test a nonexistant pia feature flag creates an error response from upload."""
+        data_file_data["is_program_audit"] = True
+
+        response = self.post_data_file(api_client, data_file_data)
+        assert response.data == {"detail": "This file type is not supported."}
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    @pytest.mark.django_db
+    @pytest.mark.parametrize(
+        "minYear,maxYear,dfYear,allowed",
+        [
+            (2023, 2025, 2024, True),
+            (2023, 2025, 2023, True),
+            (2023, 2025, 2025, True),
+            (2023, 2025, 2026, False),
+            (2023, 2025, 2022, False),
+            (None, None, 2024, True),
+            (None, None, 2023, False),
+        ],
+    )
+    def test_enabled_pia_feat_flag_allows_uploads(
+        self, api_client, data_file_data, minYear, maxYear, dfYear, allowed
+    ):
+        """Test an enabled pia feature flag allows file upload if the year is in range."""
+        FeatureFlag.objects.create(
+            feature_name="program-integrity-audit",
+            enabled=True,
+            config={"minYear": minYear, "maxYear": maxYear},
+        )
+        data_file_data["is_program_audit"] = True
+        data_file_data["year"] = dfYear
+
+        response = self.post_data_file(api_client, data_file_data)
+
+        if allowed:
+            assert response.data["section"] == "Active Case Data"
+            assert response.data["is_program_audit"] is True
+            assert response.status_code == status.HTTP_201_CREATED
+        else:
+            assert response.data == {
+                "detail": "This file was submitted for a reporting year not supported by this file type."
+            }
+            assert response.status_code == status.HTTP_400_BAD_REQUEST
+
 
 class TestDataFileAPIAsInactiveUser(DataFileAPITestBase):
     """Test DataFileViewSet as an inactive user."""
@@ -713,123 +800,338 @@ def test_list_ofa_admin_data_file_years_no_self_stt(
     assert response.data == [2020, 2021, 2022]
 
 
+program_type_options = [i[0] for i in DataFile.ProgramType.choices]
+year_options = [2021, 2022]
+quarter_options = [i[0] for i in DataFile.Quarter.choices]
+
+fra_section_options = DataFile.get_fra_section_list()
+tanf_section_options = [
+    i[0]
+    for i in DataFile.Section.choices
+    if not i[0] in DataFile.get_fra_section_list()
+]
+
+
+def get_file_types(program_type):
+    """Return the search api's `file_type`s for a given program."""
+    if program_type == DataFile.ProgramType.FRA.value:
+        return fra_section_options
+    elif program_type == DataFile.ProgramType.SSP.value:
+        return ["ssp-moe"]
+    return ["tanf"]
+
+
+def make_parametrize_set():
+    """Return a set of programs/file types/sections to use in `parametrize`."""
+    options = []
+    for program_type in program_type_options:
+        file_types = get_file_types(program_type)
+
+        for file_type in file_types:
+            for year in year_options:
+                for quarter in quarter_options:
+                    options.append((program_type, file_type, year, quarter))
+
+    return options
+
+
+@pytest.mark.django_db
 class TestDataFileQuerysetFiltering:
-    """Tests for the get_queryset filtering logic with program_type and is_program_audit combinations.
+    """Tests for the get_queryset filtering logic with program_type, stt, section, year, quarter, and is_program_audit combinations.
 
     Note: Program integrity audit (is_program_audit=True) only applies to TANF files.
     Tribal, SSP, and FRA files do not have audit variants.
+
+    FRA files also query differently than TANF files, the `file_type` url param corresponds to the section for FRA files, but to the program type for TANF/SSP files. Tribal TANF files use `file_type=tanf` but from a tribal STT.
     """
 
     root_url = "/v1/data_files/"
 
-    @pytest.fixture
-    def tanf_non_audit_file(self, data_analyst, stt):
-        """Create a TANF file with is_program_audit=False."""
+    def should_test_pia(self, program_type):
+        """Return true if a file should be tested for program integrity audit."""
+        return program_type == DataFile.ProgramType.TANF.value
+
+    def get_section_options(self, program_type):
+        """Return the allowed sections for a given program type."""
+        if program_type == DataFile.ProgramType.FRA.value:
+            return fra_section_options
+        return tanf_section_options
+
+    def get_location(self, program_type, stt, tribe_stt):
+        """Return the submitting location for a given program type."""
+        if program_type == DataFile.ProgramType.TRIBAL.value:
+            return tribe_stt
+        return stt
+
+    def create_file(
+        self,
+        program_type,
+        section,
+        year,
+        quarter,
+        location,
+        user,
+        pia=False,
+    ):
+        """Create a DataFile object in the db for the test."""
+        pia_part = "pia" if pia else "spl"
         return DataFile.create_new_version(
             {
-                "original_filename": "tanf_non_audit.txt",
-                "user": data_analyst,
-                "stt": stt,
-                "year": 2024,
-                "quarter": "Q1",
-                "section": "Active Case Data",
-                "program_type": DataFile.ProgramType.TANF,
-                "is_program_audit": False,
+                "original_filename": f"{program_type}-{section}-{year}-{quarter}-{pia_part}.txt",
+                "user": user,
+                "stt": location,
+                "year": year,
+                "quarter": quarter,
+                "section": section,
+                "program_type": program_type,
+                "is_program_audit": pia,
             }
         )
 
+    def gen_key(self, program_type, year, quarter):
+        """Generate a key for a given file."""
+        k = f"{program_type}{year}{quarter}"
+        return k
+
+    def _make_get_request(self, api_client, url_param_str):
+        root_url = "/v1/data_files/"
+        response = api_client.get(f"{root_url}?{url_param_str}")
+        assert response.status_code == status.HTTP_200_OK
+
+        response_file_ids = [f["id"] for f in response.data]
+        return response_file_ids
+
+    def _assert_tanf(self, k, non_pia_files, response_file_ids, section_options):
+        assert len(response_file_ids) == len(section_options)
+        for f in non_pia_files[k]:
+            assert f.id in response_file_ids
+
+    def _assert_fra(self, k, non_pia_files, response_file_ids):
+        assert len(response_file_ids) == 1
+        assert response_file_ids[0] in [f.id for f in non_pia_files[k]]
+        for f in non_pia_files[k]:
+            assert f.program_type == DataFile.ProgramType.FRA.value
+
+    def _assert_pia(self, k, pia_files, response_file_ids, section_options):
+        assert len(response_file_ids) == len(section_options)
+        for f in pia_files[k]:
+            assert f.id in response_file_ids
+
     @pytest.fixture
-    def tanf_audit_file(self, data_analyst, stt):
-        """Create a TANF file with is_program_audit=True."""
-        return DataFile.create_new_version(
-            {
-                "original_filename": "tanf_audit.txt",
-                "user": data_analyst,
-                "stt": stt,
-                "year": 2024,
-                "quarter": "Q1",
-                "section": "Active Case Data",
-                "program_type": DataFile.ProgramType.TANF,
-                "is_program_audit": True,
+    def filter_test_data(self, stt, tribe_stt, ofa_system_admin):
+        """Create a file for each program, section, year, quarter, pia combo."""
+        non_pia_files = {}
+        pia_files = {}
+
+        for program_type in program_type_options:
+            section_options = self.get_section_options(program_type)
+            location = self.get_location(program_type, stt, tribe_stt)
+
+            for section in section_options:
+                for year in year_options:
+                    for quarter in quarter_options:
+                        k = self.gen_key(program_type, year, quarter)
+
+                        if k not in non_pia_files:
+                            non_pia_files[k] = []
+
+                        non_pia_files[k].append(
+                            self.create_file(
+                                program_type,
+                                section,
+                                year,
+                                quarter,
+                                location,
+                                ofa_system_admin,
+                            )
+                        )
+                        if self.should_test_pia(program_type):
+                            if k not in pia_files:
+                                pia_files[k] = []
+
+                            pia_files[k].append(
+                                self.create_file(
+                                    program_type,
+                                    section,
+                                    year,
+                                    quarter,
+                                    location,
+                                    ofa_system_admin,
+                                    pia=True,
+                                )
+                            )
+
+        return (stt, tribe_stt, ofa_system_admin, non_pia_files, pia_files)
+
+    @pytest.mark.parametrize(
+        "program_type,file_type,year,quarter", make_parametrize_set()
+    )
+    def test_get_api_filtering(
+        self,
+        api_client,
+        filter_test_data,
+        program_type,
+        file_type,
+        year,
+        quarter,
+    ):
+        """Check that requests made to the filter endpoint contain every expected file and only files for the requested combination."""
+        FeatureFlag.objects.create(
+            feature_name="program-integrity-audit",
+            enabled=True,
+            config={"minYear": 2021, "maxYear": 2022},
+        )
+
+        stt, tribe_stt, ofa_system_admin, non_pia_files, pia_files = filter_test_data
+
+        # check the endpoint filtering
+        api_client.login(username=ofa_system_admin.username, password="test_password")
+        location = self.get_location(program_type, stt, tribe_stt)
+        section_options = self.get_section_options(program_type)
+
+        k = self.gen_key(program_type, year, quarter)
+
+        non_pia_file_ids = self._make_get_request(
+            api_client,
+            f"stt={location.id}&year={year}&quarter={quarter}&file_type={file_type}",
+        )
+
+        if program_type == DataFile.ProgramType.FRA.value:
+            self._assert_fra(k, non_pia_files, non_pia_file_ids)
+        else:
+            self._assert_tanf(k, non_pia_files, non_pia_file_ids, section_options)
+
+        if self.should_test_pia(program_type):
+            pia_file_ids = self._make_get_request(
+                api_client,
+                f"stt={location.id}&year={year}&quarter={quarter}&file_type=program-integrity-audit",
+            )
+            self._assert_pia(k, pia_files, pia_file_ids, section_options)
+
+    def test_no_pia_feat_flag_disallows_list(self, api_client, stt, ofa_system_admin):
+        """Test a nonexistent pia feature flag results in an empty list when requested."""
+        self.create_file(
+            "TAN",
+            "Active Case Data",
+            2024,
+            "Q1",
+            stt,
+            ofa_system_admin,
+            pia=True,
+        )
+
+        api_client.login(username=ofa_system_admin.username, password="test_password")
+
+        root_url = "/v1/data_files/"
+        url_param_str = (
+            f"stt={stt.id}&year=2024&quarter=Q1&file_type=program-integrity-audit"
+        )
+        response = api_client.get(f"{root_url}?{url_param_str}")
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data == {"detail": "This file type is not supported."}
+
+    def test_disabled_pia_feat_flag_disallows_list(
+        self, api_client, stt, ofa_system_admin
+    ):
+        """Test a disabled pia feature flag results in an empty list when requested."""
+        FeatureFlag.objects.create(
+            feature_name="program-integrity-audit",
+            enabled=False,
+            config={"minYear": 2023, "maxYear": 2025},
+        )
+
+        self.create_file(
+            "TAN",
+            "Active Case Data",
+            2024,
+            "Q1",
+            stt,
+            ofa_system_admin,
+            pia=True,
+        )
+
+        api_client.login(username=ofa_system_admin.username, password="test_password")
+
+        root_url = "/v1/data_files/"
+        url_param_str = (
+            f"stt={stt.id}&year=2024&quarter=Q1&file_type=program-integrity-audit"
+        )
+        response = api_client.get(f"{root_url}?{url_param_str}")
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data == {"detail": "This file type is not supported."}
+
+    @pytest.mark.parametrize(
+        "year,expected_success",
+        [
+            [2022, False],
+            [2023, True],
+            [2024, True],
+            [2025, True],
+            [2026, False],
+        ],
+    )
+    def test_request_pia_outside_allowed_year_disallows_list(
+        self, api_client, stt, ofa_system_admin, year, expected_success
+    ):
+        """Test that requesting PIA for a year outside the allowed range results in an error."""
+        FeatureFlag.objects.create(
+            feature_name="program-integrity-audit",
+            enabled=True,
+            config={"minYear": 2023, "maxYear": 2025},
+        )
+
+        file = self.create_file(
+            "TAN",
+            "Active Case Data",
+            year,
+            "Q1",
+            stt,
+            ofa_system_admin,
+            pia=True,
+        )
+
+        api_client.login(username=ofa_system_admin.username, password="test_password")
+
+        root_url = "/v1/data_files/"
+        url_param_str = (
+            f"stt={stt.id}&year={year}&quarter=Q1&file_type=program-integrity-audit"
+        )
+        response = api_client.get(f"{root_url}?{url_param_str}")
+
+        if expected_success:
+            assert response.status_code == status.HTTP_200_OK
+            response_file_ids = [f["id"] for f in response.data]
+            assert len(response_file_ids) == 1
+            assert response_file_ids[0] == file.id
+        else:
+            assert response.status_code == status.HTTP_400_BAD_REQUEST
+            assert response.data == {
+                "detail": "This request was submitted for a reporting year not supported by this file type."
             }
+
+    def test_enabled_pia_feat_flag_allows_list(self, api_client, stt, ofa_system_admin):
+        """Test an enabled pia feature flag results in a populated list when requested."""
+        FeatureFlag.objects.create(
+            feature_name="program-integrity-audit",
+            enabled=True,
+            config={"minYear": 2023, "maxYear": 2025},
         )
 
-    @pytest.fixture
-    def tribal_file(self, data_analyst, stt):
-        """Create a TRIBAL file (is_program_audit is always False for Tribal)."""
-        return DataFile.create_new_version(
-            {
-                "original_filename": "tribal.txt",
-                "user": data_analyst,
-                "stt": stt,
-                "year": 2024,
-                "quarter": "Q1",
-                "section": "Active Case Data",
-                "program_type": DataFile.ProgramType.TRIBAL,
-                "is_program_audit": False,
-            }
+        file = self.create_file(
+            "TAN",
+            "Active Case Data",
+            2024,
+            "Q1",
+            stt,
+            ofa_system_admin,
+            pia=True,
         )
 
-    @pytest.mark.django_db
-    def test_tanf_non_audit_appears_in_regular_list(
-        self, api_client, data_analyst, stt, tanf_non_audit_file, tanf_audit_file
-    ):
-        """Test TANF file with is_program_audit=False appears in regular file list."""
-        api_client.login(username=data_analyst.username, password="test_password")
+        api_client.login(username=ofa_system_admin.username, password="test_password")
 
-        response = api_client.get(f"{self.root_url}?stt={stt.id}&year=2024&quarter=Q1")
-
-        assert response.status_code == status.HTTP_200_OK
-        file_ids = [f["id"] for f in response.data]
-        assert len(file_ids) == 1
-        assert tanf_non_audit_file.id in file_ids
-        assert tanf_audit_file.id not in file_ids
-
-    @pytest.mark.django_db
-    def test_tanf_audit_appears_in_program_integrity_audit_list(
-        self, api_client, data_analyst, stt, tanf_non_audit_file, tanf_audit_file
-    ):
-        """Test TANF file with is_program_audit=True appears in program-integrity-audit list."""
-        api_client.login(username=data_analyst.username, password="test_password")
-
-        response = api_client.get(
-            f"{self.root_url}?stt={stt.id}&year=2024&quarter=Q1&file_type=program-integrity-audit"
+        response_file_ids = self._make_get_request(
+            api_client,
+            f"stt={stt.id}&year=2024&quarter=Q1&file_type=program-integrity-audit",
         )
 
-        assert response.status_code == status.HTTP_200_OK
-        file_ids = [f["id"] for f in response.data]
-        assert len(file_ids) == 1
-        assert tanf_audit_file.id in file_ids
-        assert tanf_non_audit_file.id not in file_ids
-
-    @pytest.mark.django_db
-    def test_tribal_appears_in_regular_list(
-        self, api_client, data_analyst, stt, tribal_file, tanf_audit_file
-    ):
-        """Test TRIBAL file appears in regular file list alongside TANF non-audit files."""
-        api_client.login(username=data_analyst.username, password="test_password")
-
-        response = api_client.get(f"{self.root_url}?stt={stt.id}&year=2024&quarter=Q1")
-
-        assert response.status_code == status.HTTP_200_OK
-        file_ids = [f["id"] for f in response.data]
-        assert len(file_ids) == 1
-        assert tribal_file.id in file_ids
-        assert tanf_audit_file.id not in file_ids
-
-    @pytest.mark.django_db
-    def test_tribal_excluded_from_program_integrity_audit_list(
-        self, api_client, data_analyst, stt, tribal_file, tanf_audit_file
-    ):
-        """Test TRIBAL files are excluded from program-integrity-audit list (only TANF audit files appear)."""
-        api_client.login(username=data_analyst.username, password="test_password")
-
-        response = api_client.get(
-            f"{self.root_url}?stt={stt.id}&year=2024&quarter=Q1&file_type=program-integrity-audit"
-        )
-
-        assert response.status_code == status.HTTP_200_OK
-        file_ids = [f["id"] for f in response.data]
-        assert len(file_ids) == 1
-        assert tanf_audit_file.id in file_ids
-        assert tribal_file.id not in file_ids
+        assert response_file_ids[0] == file.id

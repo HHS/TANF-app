@@ -2,10 +2,8 @@
 
 import logging
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import MagicMock
-
-from django.utils import timezone
 
 import pytest
 

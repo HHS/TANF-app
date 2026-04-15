@@ -2,6 +2,16 @@ import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 import FeedbackReportsUpload from './FeedbackReportsUpload'
 
+// Mock USWDS file input
+jest.mock('@uswds/uswds/src/js/components', () => ({
+  fileInput: {
+    init: jest.fn(),
+  },
+  datePicker: {
+    init: jest.fn(),
+  },
+}))
+
 // Mock Button component
 jest.mock('../Button', () => ({
   __esModule: true,
@@ -23,6 +33,9 @@ describe('FeedbackReportsUpload', () => {
   const mockOnUpload = jest.fn()
   const mockInputRef = { current: null }
 
+  const mockOnDateChange = jest.fn()
+  const mockOnDateBlur = jest.fn()
+
   const defaultProps = {
     selectedFile: null,
     fileError: null,
@@ -30,6 +43,10 @@ describe('FeedbackReportsUpload', () => {
     onFileChange: mockOnFileChange,
     onUpload: mockOnUpload,
     inputRef: mockInputRef,
+    dateExtractedOn: '',
+    dateError: null,
+    onDateChange: mockOnDateChange,
+    onDateBlur: mockOnDateBlur,
   }
 
   beforeEach(() => {
@@ -60,7 +77,7 @@ describe('FeedbackReportsUpload', () => {
       )
       expect(fileInput).toHaveAttribute(
         'data-errormessage',
-        'File must be a .zip file'
+        'Invalid file. Make sure to select a zip file.'
       )
     })
 
@@ -131,11 +148,11 @@ describe('FeedbackReportsUpload', () => {
   })
 
   describe('Button States', () => {
-    it('button is disabled when selectedFile is null', () => {
+    it('button is enabled when not loading (validation happens on click)', () => {
       renderComponent({ selectedFile: null, loading: false })
 
       const button = screen.getByTestId('mock-button')
-      expect(button).toHaveAttribute('disabled')
+      expect(button).not.toHaveAttribute('disabled')
     })
 
     it('button is disabled when loading is true', () => {
@@ -146,16 +163,6 @@ describe('FeedbackReportsUpload', () => {
 
       const button = screen.getByTestId('mock-button')
       expect(button).toHaveAttribute('disabled')
-    })
-
-    it('button is enabled when file selected and not loading', () => {
-      const mockFile = new File(['content'], 'test.zip', {
-        type: 'application/zip',
-      })
-      renderComponent({ selectedFile: mockFile, loading: false })
-
-      const button = screen.getByTestId('mock-button')
-      expect(button).not.toHaveAttribute('disabled')
     })
 
     it('button text changes to "Uploading..." when loading', () => {
@@ -207,14 +214,15 @@ describe('FeedbackReportsUpload', () => {
       expect(mockOnUpload).toHaveBeenCalledTimes(1)
     })
 
-    it('does not call onUpload when button is disabled', () => {
+    it('calls onUpload when button is clicked (validation happens in parent)', () => {
+      // Button is no longer disabled without file - validation happens on click in parent component
       renderComponent({ selectedFile: null, loading: false })
 
       const button = screen.getByTestId('mock-button')
-      // Even if we try to click, the disabled state should prevent the call
       fireEvent.click(button)
 
-      expect(mockOnUpload).not.toHaveBeenCalled()
+      // The upload function is called, parent component handles validation
+      expect(mockOnUpload).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -225,6 +233,180 @@ describe('FeedbackReportsUpload', () => {
 
       const fileInput = screen.getByLabelText('Feedback Reports ZIP')
       expect(testRef.current).toBe(fileInput)
+    })
+  })
+
+  describe('Date Extracted Input', () => {
+    it('renders date input with correct label', () => {
+      renderComponent()
+
+      expect(
+        screen.getByText('Data extracted from database on')
+      ).toBeInTheDocument()
+    })
+
+    it('renders date input with hint text', () => {
+      renderComponent()
+
+      expect(screen.getByText('mm/dd/yyyy')).toBeInTheDocument()
+    })
+
+    it('renders date input field', () => {
+      renderComponent()
+
+      const dateInput = screen.getByLabelText('Data extracted from database on')
+      expect(dateInput).toHaveAttribute('name', 'date-extracted-on')
+      expect(dateInput).toHaveAttribute('id', 'date-extracted-on')
+      // USWDS date picker wraps the input - check for wrapper
+      expect(dateInput.closest('.usa-date-picker')).toBeInTheDocument()
+    })
+
+    it('allows setting date value via DOM', () => {
+      renderComponent()
+
+      // USWDS date picker is uncontrolled - set value directly on DOM
+      const dateInput = document.getElementById('date-extracted-on')
+      dateInput.value = '2025-02-28'
+      expect(dateInput.value).toBe('2025-02-28')
+    })
+
+    it('calls onDateBlur when date input loses focus', () => {
+      renderComponent()
+
+      const dateInput = screen.getByLabelText('Data extracted from database on')
+      fireEvent.blur(dateInput)
+
+      expect(mockOnDateBlur).toHaveBeenCalledTimes(1)
+    })
+
+    it('shows date error message when dateError prop is set', () => {
+      const errorMessage =
+        "Choose the date that the data you're uploading was extracted from the database."
+      renderComponent({ dateError: errorMessage })
+
+      const errorElement = screen.getByText(errorMessage)
+      expect(errorElement).toBeInTheDocument()
+      expect(errorElement).toHaveClass('usa-error-message')
+      expect(errorElement).toHaveAttribute('role', 'alert')
+    })
+
+    it('applies error class to date form group when dateError is set', () => {
+      const { container } = renderComponent({
+        dateError: 'Date is required',
+      })
+
+      const formGroups = container.querySelectorAll('.usa-form-group')
+      // Second form group is the date input
+      expect(formGroups[1]).toHaveClass('usa-form-group--error')
+    })
+
+    it('does not show date error when dateError is null', () => {
+      renderComponent({ dateError: null })
+
+      expect(
+        screen.queryByText(
+          "Choose the date that the data you're uploading was extracted from the database."
+        )
+      ).not.toBeInTheDocument()
+    })
+  })
+
+  describe('Ref Methods', () => {
+    it('getDateValue returns ISO date from hidden input', () => {
+      const ref = React.createRef()
+      render(<FeedbackReportsUpload {...defaultProps} ref={ref} />)
+
+      // Set value on the hidden input (YYYY-MM-DD format)
+      const dateInput = document.getElementById('date-extracted-on')
+      dateInput.value = '2025-02-28'
+
+      expect(ref.current.getDateValue()).toBe('2025-02-28')
+    })
+
+    it('getDateValue converts MM/DD/YYYY to ISO format', () => {
+      const ref = React.createRef()
+      render(<FeedbackReportsUpload {...defaultProps} ref={ref} />)
+
+      // Set value in MM/DD/YYYY format (USWDS format)
+      const dateInput = document.getElementById('date-extracted-on')
+      dateInput.value = '02/28/2025'
+
+      expect(ref.current.getDateValue()).toBe('2025-02-28')
+    })
+
+    it('getDateValue returns value as-is for unknown format', () => {
+      const ref = React.createRef()
+      render(<FeedbackReportsUpload {...defaultProps} ref={ref} />)
+
+      // Set an unknown format value
+      const dateInput = document.getElementById('date-extracted-on')
+      dateInput.value = '28-02-2025'
+
+      expect(ref.current.getDateValue()).toBe('28-02-2025')
+    })
+
+    it('getDateValue falls back to external input when hidden input is empty', () => {
+      const ref = React.createRef()
+      render(<FeedbackReportsUpload {...defaultProps} ref={ref} />)
+
+      // Create mock external input that USWDS would create
+      const externalInput = document.createElement('input')
+      externalInput.className = 'usa-date-picker__external-input'
+      externalInput.value = '01/15/2025'
+      document.body.appendChild(externalInput)
+
+      // Hidden input is empty
+      const dateInput = document.getElementById('date-extracted-on')
+      dateInput.value = ''
+
+      expect(ref.current.getDateValue()).toBe('2025-01-15')
+
+      // Cleanup
+      document.body.removeChild(externalInput)
+    })
+
+    it('getDateValue returns empty string when both inputs are empty', () => {
+      const ref = React.createRef()
+      render(<FeedbackReportsUpload {...defaultProps} ref={ref} />)
+
+      const dateInput = document.getElementById('date-extracted-on')
+      dateInput.value = ''
+
+      expect(ref.current.getDateValue()).toBe('')
+    })
+
+    it('clearDate clears the hidden input', () => {
+      const ref = React.createRef()
+      render(<FeedbackReportsUpload {...defaultProps} ref={ref} />)
+
+      const dateInput = document.getElementById('date-extracted-on')
+      dateInput.value = '2025-02-28'
+
+      ref.current.clearDate()
+
+      expect(dateInput.value).toBe('')
+    })
+
+    it('clearDate clears the external input when it exists', () => {
+      const ref = React.createRef()
+      render(<FeedbackReportsUpload {...defaultProps} ref={ref} />)
+
+      // Create mock external input that USWDS would create
+      const externalInput = document.createElement('input')
+      externalInput.className = 'usa-date-picker__external-input'
+      externalInput.value = '02/28/2025'
+      document.body.appendChild(externalInput)
+
+      const dateInput = document.getElementById('date-extracted-on')
+      dateInput.value = '2025-02-28'
+
+      ref.current.clearDate()
+
+      expect(dateInput.value).toBe('')
+      expect(externalInput.value).toBe('')
+
+      // Cleanup
+      document.body.removeChild(externalInput)
     })
   })
 })

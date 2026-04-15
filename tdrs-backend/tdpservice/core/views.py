@@ -1,13 +1,20 @@
 """Define core, generic views of the app."""
+
 import logging
 
+from django.conf import settings
 from django.contrib.admin.models import ADDITION, LogEntry
 from django.contrib.contenttypes.models import ContentType
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 
+from rest_framework import viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from tdpservice.core.models import FeatureFlag
+from tdpservice.core.serializers import FeatureFlagSerializer
 from tdpservice.data_files.models import DataFile
 
 logger = logging.getLogger()
@@ -56,3 +63,39 @@ def write_logs(request):
             )
 
     return Response("Success")
+
+
+class FeatureFlagViewset(viewsets.ReadOnlyModelViewSet):
+    """List and Get endpoints for FeatureFlag."""
+
+    pagination_class = None
+    permission_classes = [IsAuthenticated]
+    queryset = FeatureFlag.objects.all()
+    serializer_class = FeatureFlagSerializer
+    lookup_field = "feature_name"
+
+    @method_decorator(
+        [
+            cache_page(
+                settings.DEFAULT_CACHE_TIMEOUT,
+                cache="feature-flags",
+                key_prefix="list",
+            ),
+        ]
+    )
+    def list(self, request):
+        """Get the feature flag list from the cache if available, else fetch the queryset."""
+        return super().list(request)
+
+    @method_decorator(
+        [
+            cache_page(
+                settings.DEFAULT_CACHE_TIMEOUT,
+                cache="feature-flags",
+                key_prefix="value",
+            ),
+        ]
+    )  # should these be individually cached? would be cached anyway with above impl
+    def retrieve(self, request, *args, **kwargs):
+        """Get the feature flag from cache if available, fallback to db."""
+        return super().retrieve(request, *args, **kwargs)

@@ -1,4 +1,5 @@
 """Define configuration settings for local environment."""
+
 import os
 from distutils.util import strtobool
 
@@ -19,6 +20,14 @@ class Local(Common):
 
     # Overwrite CORS allowed origins to allow for local development
     CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "http://localhost:3001"]
+
+    CSRF_TRUSTED_ORIGINS = [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:8080",
+        "http://localhost:8000",
+        "http://localhost:8989",
+    ]
 
     if USE_LOCALSTACK:
         # To get s3 signed URLs to work with localstack we must pass in
@@ -47,3 +56,6 @@ class Local(Common):
     )
 
     SENTRY_DSN = None
+
+    Common.CACHES["stts"]["KEY_PREFIX"] = "local"
+    Common.CACHES["feature-flags"]["KEY_PREFIX"] = "local"

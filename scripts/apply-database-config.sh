@@ -20,7 +20,7 @@ sudo apt install -y libpq-dev python3-dev
 
 python -m venv ./env
 source ./env/bin/activate
-pip install --upgrade pip pipenv
+pip install --upgrade pip pipenv==2026.0.3
 pipenv install --dev --system --deploy
 echo "Done."
 
@@ -47,6 +47,7 @@ fixed_vcap_services=$(echo $vcap_services | jq -rc '."aws-rds"[0].credentials.ho
 
 echo "VCAP_SERVICES='$fixed_vcap_services'" >> .env.ci
 echo "VCAP_APPLICATION='$vcap_application'" >> .env.ci
+echo "CGAPPNAME_BACKEND='$app'" >> .env.ci
 
 set -a
 source .env.ci
@@ -73,15 +74,21 @@ if [[ $app == "tdp-backend-prod" ]]; then
     echo "Creating prod roles and users"
     python manage.py runscript create_grafana_postgres_role --script-args read_only mr_record_counts_by_tableview stt_section_to_type_mapping
 fi
-python manage.py runscript create_grafana_postgres_role --script-args read_only data_files_datafile django_admin_log parsers_datafilesummary parser_error stts_stt stts_region users_user users_user_groups ssp_m1 ssp_m2 ssp_m3 ssp_m4 ssp_m5 ssp_m6 ssp_m7 tanf_t1 tanf_t2 tanf_t3 tanf_t4 tanf_t5 tanf_t6 tanf_t7 tribal_tanf_t1 tribal_tanf_t2 tribal_tanf_t3 tribal_tanf_t4 tribal_tanf_t5 tribal_tanf_t6 tribal_tanf_t7
+python manage.py runscript create_grafana_postgres_role --script-args read_only data_files_datafile django_admin_log parsers_datafilesummary parser_error stts_stt stts_region users_user users_user_groups user_views
 python manage.py runscript create_grafana_postgres_role --script-args admin_read_only all
-python manage.py runscript create_grafana_readonly_postgres_users --script-args ofa_read_only $OFA_READ_ONLY_PASSWORD read_only ofa_admin_read_only $OFA_ADMIN_READ_ONLY_PASSWORD admin_read_only
+python manage.py runscript create_grafana_postgres_role --script-args digit_sensitive data_files_datafile django_admin_log parsers_datafilesummary parser_error stts_stt stts_region users_user users_user_groups mr_record_counts_by_tableview stt_section_to_type_mapping user_views admin_views
+python manage.py runscript create_grafana_readonly_postgres_users --script-args ofa_read_only $OFA_READ_ONLY_PASSWORD read_only ofa_admin_read_only $OFA_ADMIN_READ_ONLY_PASSWORD admin_read_only ofa_digit_sensitive $OFA_DIGIT_SENSITIVE_PASSWORD digit_sensitive
+echo "Done."
+
+echo "Populating history tables"
+python manage.py populate_history --auto
 echo "Done."
 
 
 if [[ $app == "tdp-backend-develop" || $space == "tanf-dev" ]]; then
     echo "Applying e2e test data"
-    python manage.py loaddata cypress/users cypress/data_files cypress/regions cypress/profile_editing_regions cypress/profile_editing_users
+    python manage.py populate_stts
+    python manage.py loaddata cypress/users cypress/data_files cypress/regions cypress/profile_editing_regions cypress/profile_editing_users cypress/feature_flags
     echo "Done."
 fi
 

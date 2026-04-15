@@ -7,6 +7,7 @@ import requestAccess from './requestAccess'
 import reports from './reports'
 import fraReports from './fraReports'
 import feedbackWidget from './feedbackWidget'
+import featureFlags from './featureFlags'
 
 /**
  * Combines all store reducers
@@ -22,6 +23,7 @@ const createRootReducer = (history) =>
     reports,
     fraReports,
     feedbackWidget,
+    featureFlags,
   })
 
 export default createRootReducer

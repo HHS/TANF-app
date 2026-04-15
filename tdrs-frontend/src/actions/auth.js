@@ -1,5 +1,7 @@
-import axiosInstance from '../axios-instance'
+import { get } from '../fetch-instance'
 import { logErrorToServer } from '../utils/eventLogger'
+
+import { CLEAR_FEATURE_FLAGS, fetchFeatureFlags } from './featureFlags'
 
 export const FETCH_AUTH = 'FETCH_AUTH'
 export const SET_AUTH = 'SET_AUTH'
@@ -41,27 +43,27 @@ export const SET_MOCK_LOGIN_STATE = 'SET_MOCK_LOGIN_STATE'
 
 export const fetchAuth = () => async (dispatch) => {
   dispatch({ type: FETCH_AUTH })
-  try {
-    const URL = `${process.env.REACT_APP_BACKEND_URL}/auth_check`
-    const { data } = await axiosInstance.get(URL, {
-      withCredentials: true,
-    })
+  const URL = `${process.env.REACT_APP_BACKEND_URL}/auth_check`
+  const { data, ok, error } = await get(URL)
 
-    if (data?.inactive) {
-      dispatch({ type: SET_DEACTIVATED })
-    } else if (data?.user) {
-      const { user, csrf } = data
-
-      // Work around for csrf cookie issue we encountered in production.
-      axiosInstance.defaults.headers.common['X-CSRFToken'] = csrf
-
-      dispatch({ type: SET_AUTH, payload: { user } })
-    } else {
-      dispatch({ type: CLEAR_AUTH })
-    }
-  } catch (error) {
+  if (!ok) {
     logErrorToServer(SET_AUTH_ERROR)
     dispatch({ type: SET_AUTH_ERROR, payload: { error } })
+    dispatch({ type: CLEAR_FEATURE_FLAGS })
+    return
+  }
+
+  if (data?.inactive) {
+    dispatch({ type: SET_DEACTIVATED })
+    dispatch({ type: CLEAR_FEATURE_FLAGS })
+  } else if (data?.user) {
+    const { user } = data
+
+    dispatch({ type: SET_AUTH, payload: { user } })
+    dispatch(fetchFeatureFlags())
+  } else {
+    dispatch({ type: CLEAR_AUTH })
+    dispatch({ type: CLEAR_FEATURE_FLAGS })
   }
 }
 

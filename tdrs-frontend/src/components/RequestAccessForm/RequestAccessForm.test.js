@@ -9,7 +9,9 @@ import {
   SET_REQUEST_USER_UPDATE_ERROR,
 } from '../../actions/updateUserRequest'
 import { SET_AUTH } from '../../actions/auth'
-import axios from 'axios'
+import { patch } from '../../fetch-instance'
+
+jest.mock('../../fetch-instance')
 
 jest.mock('../STTComboBox', () => (props) => {
   return (
@@ -124,6 +126,12 @@ describe('RequestAccessForm', () => {
   })
 
   it('dispatches requestAccess when form is valid', async () => {
+    patch.mockResolvedValue({
+      data: { first_name: 'Jane', last_name: 'Doe' },
+      ok: true,
+      status: 200,
+      error: null,
+    })
     const { store } = setup()
 
     // Spy on dispatch
@@ -163,7 +171,12 @@ describe('RequestAccessForm', () => {
 
     // Mock dispatch to test what dispatchedThunk dispatches internally
     const mockDispatch = jest.fn()
-    await dispatchedThunk(mockDispatch)
+    const mockGetState = () => ({
+      auth: {
+        user: defaultUser,
+      },
+    })
+    await dispatchedThunk(mockDispatch, mockGetState)
 
     // test what mockDispatch was called with (if requestAccess dispatches success action)
     expect(mockDispatch).toHaveBeenCalledWith(
@@ -282,6 +295,13 @@ describe('RequestAccessForm', () => {
   })
 
   it('dispatches updateUserRequest in editMode when data changes', async () => {
+    patch.mockResolvedValue({
+      data: { first_name: 'John', last_name: 'Smith' },
+      ok: true,
+      status: 200,
+      error: null,
+    })
+
     const initialValues = {
       firstName: 'John',
       lastName: 'Doe',
@@ -295,8 +315,15 @@ describe('RequestAccessForm', () => {
       initialValues,
     }
 
+    const currentProfileUser = {
+      ...defaultUser,
+      first_name: 'John',
+      last_name: 'Doe',
+      regions: [],
+    }
+
     const storeOverrides = {
-      auth: { authenticated: true, user: defaultUser },
+      auth: { authenticated: true, user: currentProfileUser },
       stts: { loading: false, sttList: defaultSTTList },
     }
 
@@ -323,7 +350,12 @@ describe('RequestAccessForm', () => {
     )[0]
 
     const mockDispatch = jest.fn()
-    await dispatchedThunk(mockDispatch)
+    const mockGetState = () => ({
+      auth: {
+        user: currentProfileUser,
+      },
+    })
+    await dispatchedThunk(mockDispatch, mockGetState)
 
     expect(mockDispatch).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -347,8 +379,15 @@ describe('RequestAccessForm', () => {
       initialValues,
     }
 
+    const currentProfileUser = {
+      ...defaultUser,
+      first_name: 'John',
+      last_name: 'Doe',
+      regions: [],
+    }
+
     const storeOverrides = {
-      auth: { authenticated: true, user: defaultUser },
+      auth: { authenticated: true, user: currentProfileUser },
       stts: { loading: false, sttList: defaultSTTList },
     }
 
@@ -361,7 +400,12 @@ describe('RequestAccessForm', () => {
       has_fra_access: false,
       pending_requests: 1,
     }
-    axios.patch.mockResolvedValue({ data: apiUserResponse })
+    patch.mockResolvedValue({
+      data: apiUserResponse,
+      ok: true,
+      status: 200,
+      error: null,
+    })
 
     const { store } = setup(props, storeOverrides)
     // Spy on store.dispatch to monitor calls
@@ -386,7 +430,12 @@ describe('RequestAccessForm', () => {
     )[0]
 
     const mockDispatch = jest.fn()
-    await dispatchedThunk(mockDispatch)
+    const mockGetState = () => ({
+      auth: {
+        user: currentProfileUser,
+      },
+    })
+    await dispatchedThunk(mockDispatch, mockGetState)
 
     expect(mockDispatch).toHaveBeenNthCalledWith(1, {
       type: PATCH_REQUEST_USER_UPDATE,
@@ -396,7 +445,15 @@ describe('RequestAccessForm', () => {
     })
     expect(mockDispatch).toHaveBeenNthCalledWith(3, {
       type: SET_AUTH,
-      payload: { user: apiUserResponse },
+      payload: {
+        user: {
+          ...apiUserResponse,
+          first_name: currentProfileUser.first_name,
+          last_name: currentProfileUser.last_name,
+          stt: currentProfileUser.stt,
+          regions: currentProfileUser.regions,
+        },
+      },
     })
 
     expect(mockDispatch).not.toHaveBeenCalledWith(

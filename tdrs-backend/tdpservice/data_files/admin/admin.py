@@ -16,7 +16,10 @@ from tdpservice.data_files.admin.filters import LatestReparseEvent, VersionFilte
 from tdpservice.data_files.models import DataFile, LegacyFileTransfer
 from tdpservice.data_files.s3_client import S3Client
 from tdpservice.data_files.tasks import reparse_files
-from tdpservice.data_files.util import create_s3_log_file_path
+from tdpservice.data_files.util import (
+    create_legacy_s3_log_file_path,
+    create_s3_log_file_path,
+)
 from tdpservice.log_handler import S3FileHandler
 from tdpservice.parsers.models import DataFileSummary, ParserError
 
@@ -86,6 +89,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
             {
                 "fields": (
                     "created_at",
+                    "parsing_state",
                     "quarter",
                     "year",
                     "section",
@@ -114,7 +118,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
             },
         ),
     )
-    readonly_fields = ("year",)
+    readonly_fields = ("year", "parsing_state", "versioned_file_download_link")
 
     def get_fieldsets(self, request, obj):
         """Return the fieldsets."""
@@ -123,14 +127,17 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         # Remove the 'Logs' fieldset if the file doesn't exist
         datafile = obj
         if datafile:
+            # Try the new per-parse path first, then fall back to the legacy shared path
             link = create_s3_log_file_path(datafile)
             response = S3FileHandler.download_file(key=link)
+            if response is None:
+                link = create_legacy_s3_log_file_path(datafile)
+                response = S3FileHandler.download_file(key=link)
             if response is not None:
                 return field_sets
             else:
-                # If the log file is not available, remove the field from the fieldsets
                 for field_set in field_sets:
-                    if field_set[0] == "Logs" and response is None:
+                    if field_set[0] == "Logs":
                         field_sets_list = list(field_sets)
                         field_sets_list.remove(field_set)
                         return tuple(field_sets_list)
@@ -180,6 +187,12 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
                     "Reparse selected data files)",
                 )
         return actions
+
+    def parsing_state(self, obj):
+        """Return the submission state of the data file."""
+        return obj.state
+
+    parsing_state.short_description = "Parsing State"
 
     def status(self, obj):
         """Return the status of the data file summary."""
@@ -298,6 +311,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     list_display = [
         "id",
         "stt",
+        "parsing_state",
         "year",
         "quarter",
         "program_type",

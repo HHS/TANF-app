@@ -10,10 +10,11 @@ import {
   accountCanViewAdmin,
   accountCanViewGrafana,
   accountCanViewAlerts,
+  accountCanViewFeedbackReports,
 } from '../../selectors/auth'
 
 import NavItem from '../NavItem/NavItem'
-import PermissionGuard from '../PermissionGuard'
+import AccessGuard from '../AccessGuard'
 
 /**
  * This component is rendered on every page and contains the navigation bar.
@@ -34,6 +35,7 @@ function Header() {
   const userIsAdmin = useSelector(accountCanViewAdmin)
   const userViewGrafana = useSelector(accountCanViewGrafana)
   const userViewAlerts = useSelector(accountCanViewAlerts)
+  const userCanViewFeedbackReports = useSelector(accountCanViewFeedbackReports)
 
   const menuRef = useRef()
 
@@ -118,7 +120,7 @@ function Header() {
               {authenticated && (
                 <>
                   <NavItem pathname={pathname} tabTitle="Home" href="/home" />
-                  <PermissionGuard
+                  <AccessGuard
                     requiresApproval
                     requiredPermissions={['view_datafile', 'add_datafile']}
                   >
@@ -127,8 +129,8 @@ function Header() {
                       tabTitle="TANF Data Files"
                       href="/data-files"
                     />
-                  </PermissionGuard>
-                  <PermissionGuard
+                  </AccessGuard>
+                  <AccessGuard
                     requiresApproval
                     requiredPermissions={[
                       'view_datafile',
@@ -141,7 +143,7 @@ function Header() {
                       tabTitle="FRA Data Files"
                       href="/fra-data-files"
                     />
-                  </PermissionGuard>
+                  </AccessGuard>
                   {(userAccessRequestPending || userAccessRequestApproved) && (
                     <NavItem
                       pathname={pathname}
@@ -149,7 +151,7 @@ function Header() {
                       href="/profile"
                     />
                   )}
-                  {userIsAdmin && (
+                  {userCanViewFeedbackReports && (
                     <NavItem
                       pathname={pathname}
                       tabTitle="Feedback Reports"

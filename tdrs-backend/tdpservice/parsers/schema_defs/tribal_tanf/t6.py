@@ -57,10 +57,7 @@ s1 = TanfDataReportSchema(
             startIndex=2,
             endIndex=7,
             required=True,
-            validators=[
-                category2.dateYearIsLargerThan(1998),
-                category2.dateMonthIsValid(),
-            ],
+            validators=[],
         ),
         Field(
             item="4A",

@@ -2,9 +2,6 @@ const valueIsEmpty = (val) => val === null || val === undefined || val === ''
 
 export const selectUser = (state) => state.auth.user || null
 
-export const selectFeatureFlags = (state) =>
-  selectUser(state)?.feature_flags || {}
-
 // could memoize these with `createSelector` from `reselect`
 export const selectUserAccountApprovalStatus = (state) =>
   selectUser(state)?.['account_approval_status']
@@ -98,7 +95,13 @@ export const accountCanSelectStt = (state) =>
     'OFA Regional Staff',
   ].includes(selectPrimaryUserRole(state)?.name)
 
+// Any user who can view feedback reports (STT Data Analysts or Admins)
 export const accountCanViewFeedbackReports = (state) =>
+  accountStatusIsApproved(state) &&
+  selectUserPermissions(state).includes('view_reportfile')
+
+// Only admins who can upload feedback reports
+export const accountCanUploadFeedbackReports = (state) =>
   accountStatusIsApproved(state) &&
   selectUserPermissions(state).includes('view_reportsource') &&
   selectUserPermissions(state).includes('add_reportsource')
