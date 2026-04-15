@@ -1,0 +1,993 @@
+# TANF T2 Record Schema
+# Adult-level data for active TANF cases
+#
+# This record contains individual adult information including demographics,
+# work participation, and income. One T2 record exists per adult per case.
+
+record_type: T2
+program: TAN
+section: 1
+document: "TANF Active Case Data"
+format: positional
+
+# Record validators with RECORD_PRE_CHECK error type (block record serialization)
+record_validators:
+  - id: record_length_min
+    params:
+      min: 156
+  - id: case_number_not_empty
+
+  # Record validators with VALUE_CONSISTENCY error type (cross-field validation)
+  # Race fields when FAMILY_AFFILIATION is 1-3
+  - id: ifthenalso_range_to_range
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 3
+      target_field: RACE_HISPANIC
+      target_min: 1
+      target_max: 2
+  - id: ifthenalso_range_to_range
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 3
+      target_field: RACE_AMER_INDIAN
+      target_min: 1
+      target_max: 2
+  - id: ifthenalso_range_to_range
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 3
+      target_field: RACE_ASIAN
+      target_min: 1
+      target_max: 2
+  - id: ifthenalso_range_to_range
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 3
+      target_field: RACE_BLACK
+      target_min: 1
+      target_max: 2
+  - id: ifthenalso_range_to_range
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 3
+      target_field: RACE_HAWAIIAN
+      target_min: 1
+      target_max: 2
+  - id: ifthenalso_range_to_range
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 3
+      target_field: RACE_WHITE
+      target_min: 1
+      target_max: 2
+  # MARITAL_STATUS when FAMILY_AFFILIATION is 1-3
+  - id: ifthenalso_range_to_range
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 3
+      target_field: MARITAL_STATUS
+      target_min: 1
+      target_max: 5
+  # PARENT_MINOR_CHILD when FAMILY_AFFILIATION is 1-2
+  - id: ifthenalso_range_to_range
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 2
+      target_field: PARENT_MINOR_CHILD
+      target_min: 1
+      target_max: 3
+  - id: t2_family_affil_2_3_education_level
+  - id: ifthenalso_range_to_not_values
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 1
+      target_field: EDUCATION_LEVEL
+      excluded_values: [0, 99]
+  - id: ifthenalso_range_to_values
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 1
+      target_field: CITIZENSHIP_STATUS
+      values: [1, 2, 3]
+  - id: ifthenalso_range_to_values
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 3
+      target_field: COOPERATION_CHILD_SUPPORT
+      values: [1, 2, 9]
+  # EMPLOYMENT_STATUS when FAMILY_AFFILIATION is 1-3
+  - id: ifthenalso_range_to_range
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 3
+      target_field: EMPLOYMENT_STATUS
+      target_min: 1
+      target_max: 3
+  - id: t2_family_affil_1_2_work_eligible
+  - id: t2_family_affil_1_2_work_part_status
+  - id: t2_work_eligible_1_5_work_part_not_99
+  - id: t2_work_eligible_1_5_ssn_valid
+  - id: t2_work_eligible_11_age_relationship_hoh
+
+# Fields shared across all segments (included in every output row)
+shared:
+  - name: RecordType
+    friendly_name: Record Type
+    item: "0"
+    start: 0
+    end: 2
+    type: string
+    required: true
+
+  - name: RPT_MONTH_YEAR
+    friendly_name: Reporting Month/Year
+    item: "4"
+    start: 2
+    end: 8
+    type: string
+    required: true
+    field:
+      - id: year_after_1998
+      - id: valid_month
+
+  - name: CASE_NUMBER
+    friendly_name: Case Number
+    item: "6"
+    start: 8
+    end: 19
+    type: string
+    required: true
+    field:
+      - id: not_empty
+
+# Each segment produces one output row (combined with shared fields)
+segments:
+  - fields:
+      - name: FAMILY_AFFILIATION
+        friendly_name: Family Affiliation
+        item: "30"
+        start: 19
+        end: 20
+        type: integer
+        required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2, 3, 5]
+
+      - name: NONCUSTODIAL_PARENT
+        friendly_name: Noncustodial Parent
+        item: "31"
+        start: 20
+        end: 21
+        type: integer
+        required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
+
+      - name: DATE_OF_BIRTH
+        friendly_name: Date of Birth
+        item: "32"
+        start: 21
+        end: 29
+        type: string
+        required: true
+        field_validators:
+          - id: length
+            params:
+              n: 8
+          - id: valid_date
+
+      - name: SSN
+        friendly_name: Social Security Number
+        item: "33"
+        start: 29
+        end: 38
+        type: string
+        required: true
+        transform:
+          name: ssn_decrypt
+        field_validators:
+          - id: is_numeric
+
+      - name: RACE_HISPANIC
+        friendly_name: Race Hispanic
+        item: "34A"
+        start: 38
+        end: 39
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 2
+
+      - name: RACE_AMER_INDIAN
+        friendly_name: Race American Indian
+        item: "34B"
+        start: 39
+        end: 40
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 2
+
+      - name: RACE_ASIAN
+        friendly_name: Race Asian
+        item: "34C"
+        start: 40
+        end: 41
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 2
+
+      - name: RACE_BLACK
+        friendly_name: Race Black
+        item: "34D"
+        start: 41
+        end: 42
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 2
+
+      - name: RACE_HAWAIIAN
+        friendly_name: Race Hawaiian
+        item: "34E"
+        start: 42
+        end: 43
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 2
+
+      - name: RACE_WHITE
+        friendly_name: Race White
+        item: "34F"
+        start: 43
+        end: 44
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 2
+
+      - name: SEX
+        friendly_name: Sex
+        item: "35"
+        start: 44
+        end: 45
+        type: integer
+        required: true
+        field_validators:
+          - id: not_negative
+
+      - name: FED_OASDI_PROGRAM
+        friendly_name: Federal OASDI Program
+        item: "36A"
+        start: 45
+        end: 46
+        type: integer
+        required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
+
+      - name: FED_DISABILITY_STATUS
+        friendly_name: Federal Disability Status
+        item: "36B"
+        start: 46
+        end: 47
+        type: integer
+        required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
+
+      - name: DISABLED_TITLE_XIVAPDT
+        friendly_name: Disabled Title XIV APDT
+        item: "36C"
+        start: 47
+        end: 48
+        type: string
+        required: true
+        field_validators:
+          - id: in_values_or_blank
+            params:
+              values: ["1", "2"]
+
+      - name: AID_AGED_BLIND
+        friendly_name: Aid Aged Blind
+        item: "36D"
+        start: 48
+        end: 49
+        type: integer
+        required: false
+        field_validators:
+          - id: not_negative
+
+      - name: RECEIVE_SSI
+        friendly_name: Receive SSI
+        item: "36E"
+        start: 49
+        end: 50
+        type: integer
+        required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
+
+      - name: MARITAL_STATUS
+        friendly_name: Marital Status
+        item: "37"
+        start: 50
+        end: 51
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 5
+
+      - name: RELATIONSHIP_HOH
+        friendly_name: Relationship to Head of Household
+        item: "38"
+        start: 51
+        end: 53
+        type: string
+        required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 10
+
+      - name: PARENT_MINOR_CHILD
+        friendly_name: Parent with Minor Child
+        item: "39"
+        start: 53
+        end: 54
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 3
+
+      - name: NEEDS_PREGNANT_WOMAN
+        friendly_name: Needs of Pregnant Woman
+        item: "40"
+        start: 54
+        end: 55
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9
+
+      - name: EDUCATION_LEVEL
+        friendly_name: Education Level
+        item: "41"
+        start: 55
+        end: 57
+        type: string
+        required: false
+        field_validators:
+          - id: education_level
+
+      - name: CITIZENSHIP_STATUS
+        friendly_name: Citizenship Status
+        item: "42"
+        start: 57
+        end: 58
+        type: integer
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2, 3, 9]
+
+      - name: COOPERATION_CHILD_SUPPORT
+        friendly_name: Cooperation with Child Support
+        item: "43"
+        start: 58
+        end: 59
+        type: integer
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: [0, 1, 2, 9]
+
+      - name: MONTHS_FED_TIME_LIMIT
+        friendly_name: Months on Federal Time Limit
+        item: "44"
+        start: 59
+        end: 62
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 999
+
+      - name: MONTHS_STATE_TIME_LIMIT
+        friendly_name: Months on State Time Limit
+        item: "45"
+        start: 62
+        end: 64
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: CURRENT_MONTH_STATE_EXEMPT
+        friendly_name: Current Month State Exempt
+        item: "46"
+        start: 64
+        end: 65
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9
+
+      - name: EMPLOYMENT_STATUS
+        friendly_name: Employment Status
+        item: "47"
+        start: 65
+        end: 66
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 3
+
+      - name: WORK_ELIGIBLE_INDICATOR
+        friendly_name: Work Eligible Indicator
+        item: "48"
+        start: 66
+        end: 68
+        type: string
+        required: true
+        field_validators:
+          - id: work_eligible_indicator
+
+      - name: WORK_PART_STATUS
+        friendly_name: Work Participation Status
+        item: "49"
+        start: 68
+        end: 70
+        type: string
+        required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: ["01", "02", "05", "07", "09", "15", "16", "17", "18", "99"]
+
+      - name: UNSUB_EMPLOYMENT
+        friendly_name: Unsubsidized Employment
+        item: "50"
+        start: 70
+        end: 72
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: SUB_PRIVATE_EMPLOYMENT
+        friendly_name: Subsidized Private Employment
+        item: "51"
+        start: 72
+        end: 74
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: SUB_PUBLIC_EMPLOYMENT
+        friendly_name: Subsidized Public Employment
+        item: "52"
+        start: 74
+        end: 76
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: WORK_EXPERIENCE_HOP
+        friendly_name: Work Experience Hours of Participation
+        item: "53A"
+        start: 76
+        end: 78
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: WORK_EXPERIENCE_EA
+        friendly_name: Work Experience Excused Absences
+        item: "53B"
+        start: 78
+        end: 80
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: WORK_EXPERIENCE_HOL
+        friendly_name: Work Experience Holidays
+        item: "53C"
+        start: 80
+        end: 82
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: OJT
+        friendly_name: On-the-Job Training
+        item: "54"
+        start: 82
+        end: 84
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: JOB_SEARCH_HOP
+        friendly_name: Job Search Hours of Participation
+        item: "55A"
+        start: 84
+        end: 86
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: JOB_SEARCH_EA
+        friendly_name: Job Search Excused Absences
+        item: "55B"
+        start: 86
+        end: 88
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: JOB_SEARCH_HOL
+        friendly_name: Job Search Holidays
+        item: "55C"
+        start: 88
+        end: 90
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: COMM_SERVICES_HOP
+        friendly_name: Community Services Hours of Participation
+        item: "56A"
+        start: 90
+        end: 92
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: COMM_SERVICES_EA
+        friendly_name: Community Services Excused Absences
+        item: "56B"
+        start: 92
+        end: 94
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: COMM_SERVICES_HOL
+        friendly_name: Community Services Holidays
+        item: "56C"
+        start: 94
+        end: 96
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: VOCATIONAL_ED_TRAINING_HOP
+        friendly_name: Vocational Education Training Hours of Participation
+        item: "57A"
+        start: 96
+        end: 98
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: VOCATIONAL_ED_TRAINING_EA
+        friendly_name: Vocational Education Training Excused Absences
+        item: "57B"
+        start: 98
+        end: 100
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: VOCATIONAL_ED_TRAINING_HOL
+        friendly_name: Vocational Education Training Holidays
+        item: "57C"
+        start: 100
+        end: 102
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: JOB_SKILLS_TRAINING_HOP
+        friendly_name: Job Skills Training Hours of Participation
+        item: "58A"
+        start: 102
+        end: 104
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: JOB_SKILLS_TRAINING_EA
+        friendly_name: Job Skills Training Excused Absences
+        item: "58B"
+        start: 104
+        end: 106
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: JOB_SKILLS_TRAINING_HOL
+        friendly_name: Job Skills Training Holidays
+        item: "58C"
+        start: 106
+        end: 108
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: ED_NO_HIGH_SCHOOL_DIPL_HOP
+        friendly_name: Education No High School Diploma Hours of Participation
+        item: "59A"
+        start: 108
+        end: 110
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: ED_NO_HIGH_SCHOOL_DIPL_EA
+        friendly_name: Education No High School Diploma Excused Absences
+        item: "59B"
+        start: 110
+        end: 112
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: ED_NO_HIGH_SCHOOL_DIPL_HOL
+        friendly_name: Education No High School Diploma Holidays
+        item: "59C"
+        start: 112
+        end: 114
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: SCHOOL_ATTENDENCE_HOP
+        friendly_name: School Attendance Hours of Participation
+        item: "60A"
+        start: 114
+        end: 116
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: SCHOOL_ATTENDENCE_EA
+        friendly_name: School Attendance Excused Absences
+        item: "60B"
+        start: 116
+        end: 118
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: SCHOOL_ATTENDENCE_HOL
+        friendly_name: School Attendance Holidays
+        item: "60C"
+        start: 118
+        end: 120
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: PROVIDE_CC_HOP
+        friendly_name: Provide Child Care Hours of Participation
+        item: "61A"
+        start: 120
+        end: 122
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: PROVIDE_CC_EA
+        friendly_name: Provide Child Care Excused Absences
+        item: "61B"
+        start: 122
+        end: 124
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: PROVIDE_CC_HOL
+        friendly_name: Provide Child Care Holidays
+        item: "61C"
+        start: 124
+        end: 126
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: OTHER_WORK_ACTIVITIES
+        friendly_name: Other Work Activities
+        item: "62"
+        start: 126
+        end: 128
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: DEEMED_HOURS_FOR_OVERALL
+        friendly_name: Deemed Hours for Overall
+        item: "63"
+        start: 128
+        end: 130
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: DEEMED_HOURS_FOR_TWO_PARENT
+        friendly_name: Deemed Hours for Two Parent
+        item: "64"
+        start: 130
+        end: 132
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
+
+      - name: EARNED_INCOME
+        friendly_name: Earned Income
+        item: "65"
+        start: 132
+        end: 136
+        type: string
+        required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
+
+      - name: UNEARNED_INCOME_TAX_CREDIT
+        friendly_name: Unearned Income Tax Credit
+        item: "66A"
+        start: 136
+        end: 140
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
+
+      - name: UNEARNED_SOCIAL_SECURITY
+        friendly_name: Unearned Social Security
+        item: "66B"
+        start: 140
+        end: 144
+        type: string
+        required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
+
+      - name: UNEARNED_SSI
+        friendly_name: Unearned SSI
+        item: "66C"
+        start: 144
+        end: 148
+        type: string
+        required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
+
+      - name: UNEARNED_WORKERS_COMP
+        friendly_name: Unearned Workers Comp
+        item: "66D"
+        start: 148
+        end: 152
+        type: string
+        required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
+
+      - name: OTHER_UNEARNED_INCOME
+        friendly_name: Other Unearned Income
+        item: "66E"
+        start: 152
+        end: 156
+        type: string
+        required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999

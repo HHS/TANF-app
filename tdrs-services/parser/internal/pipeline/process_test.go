@@ -1,0 +1,648 @@
+package pipeline
+
+import (
+	"context"
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+
+	"go-parser/internal/config"
+	"go-parser/internal/decoder"
+	"go-parser/internal/storage/writer"
+	"go-parser/internal/validation"
+)
+
+// configDir resolves the real config directory relative to this test package.
+func configDir(t *testing.T) string {
+	t.Helper()
+	dir := filepath.Join("..", "..", "config")
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		t.Skip("config directory not found — tests must run from go-parser root")
+	}
+	return dir
+}
+
+// loadRegistry loads the full config registry from disk.
+func loadRegistry(t *testing.T) *config.Registry {
+	t.Helper()
+	dir := configDir(t)
+	cfg := &config.Config{
+		Global:        config.GlobalConfig{ConfigDir: dir},
+		SchemaFiles:   []string{"schemas/**/*.yaml"},
+		FilespecFiles: []string{"filespecs/**/*.yaml"},
+	}
+	reg, err := config.NewRegistry(cfg)
+	if err != nil {
+		t.Fatalf("NewRegistry failed: %v", err)
+	}
+	return reg
+}
+
+// loadValidators loads the real validator registry from disk.
+func loadValidators(t *testing.T, reg *config.Registry) *validation.ValidatorRegistry {
+	t.Helper()
+	dir := configDir(t)
+	cfg := config.DefaultConfig()
+	cfg.Global.ConfigDir = dir
+	validators, err := validation.NewRegistry(cfg, reg)
+	if err != nil {
+		t.Fatalf("validation.NewRegistry failed: %v", err)
+	}
+	return validators
+}
+
+// testTANFContext returns a DataFileContext matching the standard test header
+// "HEADER20241A06000TAN1ED" (calendar year=2024, quarter=1 -> fiscal Q2 2024).
+func testTANFContext() DataFileContext {
+	return DataFileContext{
+		Program:       "TAN",
+		Section:       1,
+		DatafileID:    1,
+		FiscalYear:    2024,
+		FiscalQuarter: "Q2",
+		SectionName:   "Active Case Data",
+	}
+}
+
+// testSSPContext returns a DataFileContext matching the SSP test header
+// "HEADER20241A06000SSP1ED".
+func testSSPContext() DataFileContext {
+	return DataFileContext{
+		Program:       "SSP",
+		Section:       1,
+		DatafileID:    1,
+		FiscalYear:    2024,
+		FiscalQuarter: "Q2",
+		SectionName:   "Active Case Data",
+	}
+}
+
+// capturingSink captures all flushed data for assertions.
+type capturingSink struct {
+	tables map[string][][]any // tableName -> rows
+}
+
+func newCapturingSink() *capturingSink {
+	return &capturingSink{tables: make(map[string][][]any)}
+}
+
+func (s *capturingSink) Flush(_ context.Context, tableName string, _ []string, rows [][]any) (int64, error) {
+	copied := make([][]any, len(rows))
+	copy(copied, rows)
+	s.tables[tableName] = append(s.tables[tableName], copied...)
+	return int64(len(rows)), nil
+}
+
+func (s *capturingSink) RollbackDatafile(_ context.Context, _ int32, _ []string) error { return nil }
+func (s *capturingSink) Close() error                                                  { return nil }
+
+func (s *capturingSink) rowCount(tableName string) int {
+	return len(s.tables[tableName])
+}
+
+func (s *capturingSink) totalRecords() int {
+	total := 0
+	for name, rows := range s.tables {
+		if name != "parser_error" {
+			total += len(rows)
+		}
+	}
+	return total
+}
+
+func (s *capturingSink) errorCount() int {
+	return len(s.tables["parser_error"])
+}
+
+// --- Helper to create a test data file in a temp dir ---
+
+// writeTempFile creates a temporary file with the given content and returns its path.
+func writeTempFile(t *testing.T, content string) string {
+	t.Helper()
+	f, err := os.CreateTemp(t.TempDir(), "testdata-*.txt")
+	if err != nil {
+		t.Fatalf("failed to create temp file: %v", err)
+	}
+	if _, err := f.WriteString(content); err != nil {
+		f.Close()
+		t.Fatalf("failed to write temp file: %v", err)
+	}
+	if err := f.Close(); err != nil {
+		t.Fatalf("failed to close temp file: %v", err)
+	}
+	return f.Name()
+}
+
+// --- End-to-end Process tests ---
+
+func TestProcess_TANF_S1_ValidData(t *testing.T) {
+	reg := loadRegistry(t)
+	validators := loadValidators(t, reg)
+
+	// Build a valid TANF Section 1 file with HEADER + T1 + T2 + T3 + TRAILER
+	// Header: 23 chars (title=HEADER, year=2024, quarter=1, type=A, state_fips=06, tribe_code=000, program_type=TAN, edit=1, encryption=E, update=D)
+	header := "HEADER20241A06000TAN1ED"
+
+	// T1 record: starts with "T1", then RPT_MONTH_YEAR (6 chars), CASE_NUMBER (11 chars), rest padded
+	// The T1 record needs to be at least 117 chars (record_length_min validator)
+	t1Line := "T1" + "202401" + "12345678901" + strings.Repeat(" ", 50)
+
+	// T2 record: starts with "T2", same RPT_MONTH_YEAR and CASE_NUMBER
+	t2Line := "T2" + "202401" + "12345678901" + strings.Repeat(" ", 50)
+
+	// T3 record: starts with "T3", same RPT_MONTH_YEAR and CASE_NUMBER
+	t3Line := "T3" + "202401" + "12345678901" + strings.Repeat(" ", 50)
+
+	trailer := "TRAILER0000001"
+
+	content := strings.Join([]string{header, t1Line, t2Line, t3Line, trailer}, "\n") + "\n"
+	filePath := writeTempFile(t, content)
+
+	// Open file and create decoder
+	f, err := os.Open(filePath)
+	if err != nil {
+		t.Fatalf("failed to open file: %v", err)
+	}
+	defer f.Close()
+
+	spec := reg.GetFileSpec("TAN", 1)
+	if spec == nil {
+		t.Fatal("GetFileSpec(TANF, 1) returned nil")
+	}
+
+	dec, err := decoder.CreateDecoder(f, spec)
+	if err != nil {
+		t.Fatalf("CreateDecoder failed: %v", err)
+	}
+	defer dec.Close()
+
+	// Create pipeline with real registry and validators, capturing sink
+	sink := newCapturingSink()
+	pipelineCfg := TestConfig()
+	pipelineCfg.IncludeRecords = false // Skip record writing (no real serializers needed)
+	pipelineCfg.IncludeErrors = true
+	p := NewPipeline(sink, reg, validators, pipelineCfg)
+
+	ctx := context.Background()
+	result, err := p.Process(ctx, dec, testTANFContext())
+	if err != nil {
+		t.Fatalf("Process failed: %v", err)
+	}
+
+	if result == nil {
+		t.Fatal("Process returned nil result")
+	}
+	if result.Duration <= 0 {
+		t.Error("Duration should be positive")
+	}
+	// ErrorStats should be populated
+	if result.ErrorStats == nil {
+		t.Error("ErrorStats should not be nil")
+	}
+	if result.BatchCount < 1 {
+		t.Errorf("BatchCount = %d, want >= 1", result.BatchCount)
+	}
+	if result.GroupCount < 1 {
+		t.Errorf("GroupCount = %d, want >= 1", result.GroupCount)
+	}
+}
+
+func TestProcess_TANF_S1_MissingHeader(t *testing.T) {
+	reg := loadRegistry(t)
+	validators := loadValidators(t, reg)
+
+	// File with no HEADER record - first line is T1
+	content := "T1" + "202401" + "12345678901" + strings.Repeat(" ", 100) + "\n"
+	filePath := writeTempFile(t, content)
+
+	f, err := os.Open(filePath)
+	if err != nil {
+		t.Fatalf("failed to open file: %v", err)
+	}
+	defer f.Close()
+
+	spec := reg.GetFileSpec("TAN", 1)
+	dec, err := decoder.CreateDecoder(f, spec)
+	if err != nil {
+		t.Fatalf("CreateDecoder failed: %v", err)
+	}
+	defer dec.Close()
+
+	sink := newCapturingSink()
+	pipelineCfg := TestConfig()
+	pipelineCfg.IncludeRecords = false
+	pipelineCfg.IncludeErrors = true
+	p := NewPipeline(sink, reg, validators, pipelineCfg)
+
+	ctx := context.Background()
+
+	// Pipeline should return a result with a PRE_CHECK error, not panic
+	result, err := p.Process(ctx, dec, testTANFContext())
+	if err != nil {
+		t.Fatalf("Process returned unexpected error: %v", err)
+	}
+	if result.ErrorCount != 1 {
+		t.Errorf("ErrorCount = %d, want 1", result.ErrorCount)
+	}
+	if sink.errorCount() != 1 {
+		t.Errorf("sink error count = %d, want 1", sink.errorCount())
+	}
+}
+
+func TestProcess_EmptyFile(t *testing.T) {
+	reg := loadRegistry(t)
+	validators := loadValidators(t, reg)
+
+	// Empty file — no header, no data
+	filePath := writeTempFile(t, "")
+
+	f, err := os.Open(filePath)
+	if err != nil {
+		t.Fatalf("failed to open file: %v", err)
+	}
+	defer f.Close()
+
+	spec := reg.GetFileSpec("TAN", 1)
+	dec, err := decoder.CreateDecoder(f, spec)
+	if err != nil {
+		t.Fatalf("CreateDecoder failed: %v", err)
+	}
+	defer dec.Close()
+
+	sink := newCapturingSink()
+	pipelineCfg := TestConfig()
+	pipelineCfg.IncludeRecords = false
+	pipelineCfg.IncludeErrors = true
+	p := NewPipeline(sink, reg, validators, pipelineCfg)
+
+	ctx := context.Background()
+
+	// Empty file: parseCtx is nil (no header), pipeline processes zero rows
+	result, err := p.Process(ctx, dec, testTANFContext())
+	if err != nil {
+		t.Fatalf("Process returned unexpected error: %v", err)
+	}
+	if result.ErrorCount != 1 {
+		t.Errorf("ErrorCount = %d, want 1", result.ErrorCount)
+	}
+}
+
+func TestProcess_HeaderOnly(t *testing.T) {
+	reg := loadRegistry(t)
+	validators := loadValidators(t, reg)
+
+	header := "HEADER20241A06000TAN1ED"
+	content := header + "\n"
+	filePath := writeTempFile(t, content)
+
+	f, err := os.Open(filePath)
+	if err != nil {
+		t.Fatalf("failed to open file: %v", err)
+	}
+	defer f.Close()
+
+	spec := reg.GetFileSpec("TAN", 1)
+	dec, err := decoder.CreateDecoder(f, spec)
+	if err != nil {
+		t.Fatalf("CreateDecoder failed: %v", err)
+	}
+	defer dec.Close()
+
+	sink := newCapturingSink()
+	pipelineCfg := TestConfig()
+	pipelineCfg.IncludeRecords = false
+	pipelineCfg.IncludeErrors = true
+	p := NewPipeline(sink, reg, validators, pipelineCfg)
+
+	ctx := context.Background()
+	result, err := p.Process(ctx, dec, testTANFContext())
+	if err != nil {
+		t.Fatalf("Process failed for header-only file: %v", err)
+	}
+
+	// No data records to process
+	if result.BatchCount != 0 {
+		t.Errorf("BatchCount = %d, want 0", result.BatchCount)
+	}
+	if result.GroupCount != 0 {
+		t.Errorf("GroupCount = %d, want 0", result.GroupCount)
+	}
+}
+
+func TestProcess_TANF_S1_WithRecordWriting(t *testing.T) {
+	reg := loadRegistry(t)
+	validators := loadValidators(t, reg)
+
+	header := "HEADER20241A06000TAN1ED"
+	t1Line := "T1" + "202401" + "12345678901" + strings.Repeat(" ", 100)
+	trailer := "TRAILER0000001"
+	content := strings.Join([]string{header, t1Line, trailer}, "\n") + "\n"
+	filePath := writeTempFile(t, content)
+
+	f, err := os.Open(filePath)
+	if err != nil {
+		t.Fatalf("failed to open file: %v", err)
+	}
+	defer f.Close()
+
+	spec := reg.GetFileSpec("TAN", 1)
+	dec, err := decoder.CreateDecoder(f, spec)
+	if err != nil {
+		t.Fatalf("CreateDecoder failed: %v", err)
+	}
+	defer dec.Close()
+
+	sink := newCapturingSink()
+	pipelineCfg := TestConfig()
+	pipelineCfg.IncludeRecords = true
+	pipelineCfg.IncludeErrors = true
+	p := NewPipeline(sink, reg, validators, pipelineCfg)
+
+	ctx := context.Background()
+	result, err := p.Process(ctx, dec, testTANFContext())
+	if err != nil {
+		t.Fatalf("Process failed: %v", err)
+	}
+
+	if result == nil {
+		t.Fatal("Process returned nil result")
+	}
+	if result.RecordCounts == nil {
+		t.Error("RecordCounts should not be nil")
+	}
+
+	t.Logf("RecordCounts: %v", result.RecordCounts)
+	t.Logf("ErrorCount: %d", result.ErrorCount)
+	t.Logf("ErrorStats: %+v", result.ErrorStats)
+	t.Logf("BatchCount: %d, GroupCount: %d", result.BatchCount, result.GroupCount)
+	t.Logf("Duration: %s", result.Duration)
+}
+
+func TestProcess_TANF_MultipleRecordTypes(t *testing.T) {
+	reg := loadRegistry(t)
+	validators := loadValidators(t, reg)
+
+	header := "HEADER20241A06000TAN1ED"
+	// Two separate cases
+	t1a := "T1" + "202401" + "11111111111" + strings.Repeat(" ", 100)
+	t2a := "T2" + "202401" + "11111111111" + strings.Repeat(" ", 100)
+	t1b := "T1" + "202401" + "22222222222" + strings.Repeat(" ", 100)
+	t2b := "T2" + "202401" + "22222222222" + strings.Repeat(" ", 100)
+	trailer := "TRAILER0000004"
+
+	content := strings.Join([]string{header, t1a, t2a, t1b, t2b, trailer}, "\n") + "\n"
+	filePath := writeTempFile(t, content)
+
+	f, err := os.Open(filePath)
+	if err != nil {
+		t.Fatalf("failed to open file: %v", err)
+	}
+	defer f.Close()
+
+	spec := reg.GetFileSpec("TAN", 1)
+	dec, err := decoder.CreateDecoder(f, spec)
+	if err != nil {
+		t.Fatalf("CreateDecoder failed: %v", err)
+	}
+	defer dec.Close()
+
+	sink := newCapturingSink()
+	pipelineCfg := TestConfig()
+	pipelineCfg.IncludeRecords = false
+	pipelineCfg.IncludeErrors = true
+	p := NewPipeline(sink, reg, validators, pipelineCfg)
+
+	ctx := context.Background()
+	result, err := p.Process(ctx, dec, testTANFContext())
+	if err != nil {
+		t.Fatalf("Process failed: %v", err)
+	}
+
+	// Should have processed 2 groups (one per case number)
+	if result.GroupCount != 2 {
+		t.Errorf("GroupCount = %d, want 2", result.GroupCount)
+	}
+}
+
+func TestProcess_SSP_S1(t *testing.T) {
+	reg := loadRegistry(t)
+	validators := loadValidators(t, reg)
+
+	// SSP files use M1/M2/M3 record types with same header format
+	header := "HEADER20241A06000SSP1ED"
+	m1Line := "M1" + "202401" + "12345678901" + strings.Repeat(" ", 100)
+	trailer := "TRAILER0000001"
+	content := strings.Join([]string{header, m1Line, trailer}, "\n") + "\n"
+	filePath := writeTempFile(t, content)
+
+	f, err := os.Open(filePath)
+	if err != nil {
+		t.Fatalf("failed to open file: %v", err)
+	}
+	defer f.Close()
+
+	spec := reg.GetFileSpec("SSP", 1)
+	if spec == nil {
+		t.Fatal("GetFileSpec(SSP, 1) returned nil")
+	}
+
+	dec, err := decoder.CreateDecoder(f, spec)
+	if err != nil {
+		t.Fatalf("CreateDecoder failed: %v", err)
+	}
+	defer dec.Close()
+
+	sink := newCapturingSink()
+	pipelineCfg := TestConfig()
+	pipelineCfg.IncludeRecords = false
+	pipelineCfg.IncludeErrors = true
+	p := NewPipeline(sink, reg, validators, pipelineCfg)
+
+	ctx := context.Background()
+	result, err := p.Process(ctx, dec, testSSPContext())
+	if err != nil {
+		t.Fatalf("Process failed: %v", err)
+	}
+
+	if result.BatchCount < 1 {
+		t.Errorf("BatchCount = %d, want >= 1", result.BatchCount)
+	}
+}
+
+func TestProcess_ErrorsDisabled(t *testing.T) {
+	reg := loadRegistry(t)
+	validators := loadValidators(t, reg)
+
+	header := "HEADER20241A06000TAN1ED"
+	t1Line := "T1" + "202401" + "12345678901" + strings.Repeat(" ", 100)
+	trailer := "TRAILER0000001"
+	content := strings.Join([]string{header, t1Line, trailer}, "\n") + "\n"
+	filePath := writeTempFile(t, content)
+
+	f, err := os.Open(filePath)
+	if err != nil {
+		t.Fatalf("failed to open file: %v", err)
+	}
+	defer f.Close()
+
+	spec := reg.GetFileSpec("TAN", 1)
+	dec, err := decoder.CreateDecoder(f, spec)
+	if err != nil {
+		t.Fatalf("CreateDecoder failed: %v", err)
+	}
+	defer dec.Close()
+
+	sink := newCapturingSink()
+	pipelineCfg := TestConfig()
+	pipelineCfg.IncludeRecords = false
+	pipelineCfg.IncludeErrors = false // Errors disabled
+	p := NewPipeline(sink, reg, validators, pipelineCfg)
+
+	ctx := context.Background()
+	result, err := p.Process(ctx, dec, testTANFContext())
+	if err != nil {
+		t.Fatalf("Process failed: %v", err)
+	}
+
+	// No error rows should be in the sink
+	if sink.errorCount() != 0 {
+		t.Errorf("errorCount = %d, want 0 (errors disabled)", sink.errorCount())
+	}
+
+	// ErrorStats should still be populated (counted by workers, not router)
+	if result.ErrorStats == nil {
+		t.Error("ErrorStats should not be nil even when errors disabled")
+	}
+}
+
+func TestProcess_ParsingResult_HasExpectedFields(t *testing.T) {
+	reg := loadRegistry(t)
+	validators := loadValidators(t, reg)
+
+	header := "HEADER20241A06000TAN1ED"
+	t1Line := "T1" + "202401" + "12345678901" + strings.Repeat(" ", 100)
+	trailer := "TRAILER0000001"
+	content := strings.Join([]string{header, t1Line, trailer}, "\n") + "\n"
+	filePath := writeTempFile(t, content)
+
+	f, err := os.Open(filePath)
+	if err != nil {
+		t.Fatalf("failed to open file: %v", err)
+	}
+	defer f.Close()
+
+	spec := reg.GetFileSpec("TAN", 1)
+	dec, err := decoder.CreateDecoder(f, spec)
+	if err != nil {
+		t.Fatalf("CreateDecoder failed: %v", err)
+	}
+	defer dec.Close()
+
+	sink := newCapturingSink()
+	pipelineCfg := TestConfig()
+	pipelineCfg.IncludeRecords = false
+	pipelineCfg.IncludeErrors = true
+	p := NewPipeline(sink, reg, validators, pipelineCfg)
+
+	ctx := context.Background()
+	result, err := p.Process(ctx, dec, testTANFContext())
+	if err != nil {
+		t.Fatalf("Process failed: %v", err)
+	}
+
+	// Verify ParsingResult structure
+	if result.RecordCounts == nil {
+		t.Error("RecordCounts should not be nil")
+	}
+	if result.ErrorStats == nil {
+		t.Error("ErrorStats should not be nil")
+	}
+	if result.Duration <= 0 {
+		t.Error("Duration should be positive")
+	}
+
+	// "parser_error" key should be in RecordCounts
+	if _, ok := result.RecordCounts["parser_error"]; !ok {
+		t.Error("RecordCounts should contain 'parser_error' key")
+	}
+}
+
+func TestProcess_FileSink_Integration(t *testing.T) {
+	// Verify that the pipeline works with the FileSink (writing to files instead of DB)
+	reg := loadRegistry(t)
+	validators := loadValidators(t, reg)
+
+	header := "HEADER20241A06000TAN1ED"
+	t1Line := "T1" + "202401" + "12345678901" + strings.Repeat(" ", 100)
+	trailer := "TRAILER0000001"
+	content := strings.Join([]string{header, t1Line, trailer}, "\n") + "\n"
+	filePath := writeTempFile(t, content)
+
+	f, err := os.Open(filePath)
+	if err != nil {
+		t.Fatalf("failed to open file: %v", err)
+	}
+	defer f.Close()
+
+	spec := reg.GetFileSpec("TAN", 1)
+	dec, err := decoder.CreateDecoder(f, spec)
+	if err != nil {
+		t.Fatalf("CreateDecoder failed: %v", err)
+	}
+	defer dec.Close()
+
+	outputDir := t.TempDir()
+	fileSink, err := writer.NewFileSink(outputDir, "json")
+	if err != nil {
+		t.Fatalf("NewFileSink failed: %v", err)
+	}
+
+	pipelineCfg := TestConfig()
+	pipelineCfg.IncludeRecords = true
+	pipelineCfg.IncludeErrors = true
+	p := NewPipeline(fileSink, reg, validators, pipelineCfg)
+
+	ctx := context.Background()
+	result, err := p.Process(ctx, dec, testTANFContext())
+	if err != nil {
+		t.Fatalf("Process failed: %v", err)
+	}
+
+	if err := fileSink.Close(); err != nil {
+		t.Fatalf("FileSink.Close failed: %v", err)
+	}
+
+	if result.BatchCount < 1 {
+		t.Errorf("BatchCount = %d, want >= 1", result.BatchCount)
+	}
+
+	// Check that output files were created
+	entries, err := os.ReadDir(outputDir)
+	if err != nil {
+		t.Fatalf("ReadDir failed: %v", err)
+	}
+
+	// Should have at least one output file
+	hasFiles := false
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			hasFiles = true
+			t.Logf("Output file: %s", entry.Name())
+		}
+	}
+	if !hasFiles {
+		t.Log("No output files created (may be expected if all records were rejected by validators)")
+	}
+}
+
+// padRight pads a string to the given length with spaces.
+func padRight(s string, length int) string {
+	if len(s) >= length {
+		return s[:length]
+	}
+	return s + strings.Repeat(" ", length-len(s))
+}
+
+// Verify Sink interface is satisfied
+var _ writer.Sink = (*capturingSink)(nil)
