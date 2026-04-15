@@ -88,12 +88,19 @@ export const ACTORS = {
     role: 'OFA Regional Staff',
     username: 'cypress-fra-ofa-regional-staff-robert@acf.hhs.gov',
   },
+  'FRA OFA Regional Staff Rita': {
+    role: 'OFA Regional Staff',
+    username: 'cypress-fra-ofa-regional-staff-rita@acf.hhs.gov',
+  },
+  'FRA OFA Regional Staff Ryan': {
+    role: 'OFA Regional Staff',
+    username: 'cypress-fra-ofa-regional-staff-ryan@acf.hhs.gov',
+  },
 }
 
 export const loginAsActor = (actor) => {
   cy.login(ACTORS[actor].username)
   cy.visit('/')
-
   cy.contains(new RegExp('Welcome to TDP|Request Submitted'), {
     timeout: 30000,
   })
@@ -118,10 +125,19 @@ const setAccountStatus = (actor, status) => {
   cy.adminLogin('cypress-admin-alex@teamraft.com')
   cy.visit('/')
 
-  cy.window().then((win) => {
-    let cypressUsers = JSON.parse(win.localStorage.getItem('cypressUsers'))
+  cy.request({
+    method: 'GET',
+    url: `${Cypress.env('apiUrl')}/login/cypress`,
+    qs: { username: 'cypress-admin-alex@teamraft.com' },
+    headers: {
+      'X-Cypress-Token': Cypress.env('cypressToken'),
+    },
+  }).then((response) => {
+    const cypressUsers = response?.body?.users
     const username = ACTORS[actor].username
+    expect(cypressUsers, 'Expected cypress users in auth response').to.exist
     const user = Cypress._.find(cypressUsers, (u) => u.username === username)
+    expect(user, `Expected Cypress user ${username} to exist`).to.exist
     cy.adminApiRequest('PATCH', `/cypress-users/${user.id}/${endpoint}/`)
   })
 }

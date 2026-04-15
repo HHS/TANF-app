@@ -65,7 +65,7 @@ function STTFeedbackReportsTable({ data, setAlert }) {
         <>
           <thead>
             <tr>
-              <th>Generated on</th>
+              <th>Uploaded on</th>
               <th>Reflects data submitted through</th>
               <th>Files</th>
             </tr>

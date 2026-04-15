@@ -1,0 +1,557 @@
+# TANF T3 Record Schema
+# Child-level data for active TANF cases
+#
+# This record contains individual child information including demographics
+# and income. Each T3 record can contain data for up to TWO children.
+# Child 1 occupies positions 19-60, Child 2 occupies positions 60-101.
+
+record_type: T3
+program: TAN
+section: 1
+document: "TANF Active Case Data"
+format: positional
+
+# Record validators with RECORD_PRE_CHECK error type (block record serialization)
+record_validators:
+  - id: case_number_not_empty
+
+  # Record validators with VALUE_CONSISTENCY error type (cross-field validation)
+  # Race fields when FAMILY_AFFILIATION is 1-2
+  - id: ifthenalso_range_to_range
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 2
+      target_field: RACE_HISPANIC
+      target_min: 1
+      target_max: 2
+  - id: ifthenalso_range_to_range
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 2
+      target_field: RACE_AMER_INDIAN
+      target_min: 1
+      target_max: 2
+  - id: ifthenalso_range_to_range
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 2
+      target_field: RACE_ASIAN
+      target_min: 1
+      target_max: 2
+  - id: ifthenalso_range_to_range
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 2
+      target_field: RACE_BLACK
+      target_min: 1
+      target_max: 2
+  - id: ifthenalso_range_to_range
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 2
+      target_field: RACE_HAWAIIAN
+      target_min: 1
+      target_max: 2
+  - id: ifthenalso_range_to_range
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 2
+      target_field: RACE_WHITE
+      target_min: 1
+      target_max: 2
+  # RELATIONSHIP_HOH when FAMILY_AFFILIATION is 1-2
+  - id: ifthenalso_range_to_range
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 2
+      target_field: RELATIONSHIP_HOH
+      target_min: 4
+      target_max: 9
+  # PARENT_MINOR_CHILD when FAMILY_AFFILIATION is 1-2
+  - id: ifthenalso_range_to_values
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 2
+      target_field: PARENT_MINOR_CHILD
+      values: [2, 3]
+  # EDUCATION_LEVEL when FAMILY_AFFILIATION is 1 must not be 99
+  - id: ifthenalso_range_to_not_values
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 1
+      target_field: EDUCATION_LEVEL
+      excluded_values: [99]
+  # CITIZENSHIP_STATUS when FAMILY_AFFILIATION is 1
+  - id: ifthenalso_range_to_values
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 1
+      target_field: CITIZENSHIP_STATUS
+      values: [1, 2, 3]
+  # CITIZENSHIP_STATUS when FAMILY_AFFILIATION is 2
+  - id: ifthenalso_range_to_values
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 2
+      condition_max: 2
+      target_field: CITIZENSHIP_STATUS
+      values: [1, 2, 3, 9]
+
+# Fields shared across all segments (included in every output row)
+shared:
+  - name: RecordType
+    friendly_name: Record Type
+    item: "0"
+    start: 0
+    end: 2
+    type: string
+    required: true
+
+  - name: RPT_MONTH_YEAR
+    friendly_name: Reporting Month/Year
+    item: "4"
+    start: 2
+    end: 8
+    type: string
+    required: true
+
+  - name: CASE_NUMBER
+    friendly_name: Case Number
+    item: "6"
+    start: 8
+    end: 19
+    type: string
+    required: true
+    field:
+      - id: not_empty
+
+# Each segment produces one output row (combined with shared fields)
+# T3 has 2 segments: Child 1 and Child 2
+segments:
+  # Child 1 (positions 19-60)
+  - fields:
+      - name: FAMILY_AFFILIATION
+        friendly_name: Family Affiliation
+        item: "67"
+        start: 19
+        end: 20
+        type: integer
+        required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2, 4]
+
+      - name: DATE_OF_BIRTH
+        friendly_name: Date of Birth
+        item: "68"
+        start: 20
+        end: 28
+        type: string
+        required: true
+        field_validators:
+          - id: length
+            params:
+              n: 8
+          - id: valid_date
+
+      - name: SSN
+        friendly_name: Social Security Number
+        item: "69"
+        start: 28
+        end: 37
+        type: string
+        required: true
+        transform:
+          name: ssn_decrypt
+        field_validators:
+          - id: is_numeric
+
+      - name: RACE_HISPANIC
+        friendly_name: Race Hispanic
+        item: "70A"
+        start: 37
+        end: 38
+        type: integer
+        required: false
+        field_validators:
+          - id: validate_race
+
+      - name: RACE_AMER_INDIAN
+        friendly_name: Race American Indian
+        item: "70B"
+        start: 38
+        end: 39
+        type: integer
+        required: false
+        field_validators:
+          - id: validate_race
+
+      - name: RACE_ASIAN
+        friendly_name: Race Asian
+        item: "70C"
+        start: 39
+        end: 40
+        type: integer
+        required: false
+        field_validators:
+          - id: validate_race
+
+      - name: RACE_BLACK
+        friendly_name: Race Black
+        item: "70D"
+        start: 40
+        end: 41
+        type: integer
+        required: false
+        field_validators:
+          - id: validate_race
+
+      - name: RACE_HAWAIIAN
+        friendly_name: Race Hawaiian
+        item: "70E"
+        start: 41
+        end: 42
+        type: integer
+        required: false
+        field_validators:
+          - id: validate_race
+
+      - name: RACE_WHITE
+        friendly_name: Race White
+        item: "70F"
+        start: 42
+        end: 43
+        type: integer
+        required: false
+        field_validators:
+          - id: validate_race
+
+      - name: SEX
+        friendly_name: Sex
+        item: "71"
+        start: 43
+        end: 44
+        type: integer
+        required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9
+
+      - name: RECEIVE_NONSSA_BENEFITS
+        friendly_name: Receive Non-SSA Benefits
+        item: "72A"
+        start: 44
+        end: 45
+        type: integer
+        required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
+
+      - name: RECEIVE_SSI
+        friendly_name: Receive SSI
+        item: "72B"
+        start: 45
+        end: 46
+        type: integer
+        required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
+
+      - name: RELATIONSHIP_HOH
+        friendly_name: Relationship to Head of Household
+        item: "73"
+        start: 46
+        end: 48
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 10
+
+      - name: PARENT_MINOR_CHILD
+        friendly_name: Parent with Minor Child
+        item: "74"
+        start: 48
+        end: 49
+        type: integer
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: [0, 2, 3]
+
+      - name: EDUCATION_LEVEL
+        friendly_name: Education Level
+        item: "75"
+        start: 49
+        end: 51
+        type: string
+        required: true
+        field_validators:
+          - id: education_level
+
+      - name: CITIZENSHIP_STATUS
+        friendly_name: Citizenship Status
+        item: "76"
+        start: 51
+        end: 52
+        type: integer
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2, 3, 9]
+
+      - name: UNEARNED_SSI
+        friendly_name: Unearned SSI
+        item: "77A"
+        start: 52
+        end: 56
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
+
+      - name: OTHER_UNEARNED_INCOME
+        friendly_name: Other Unearned Income
+        item: "77B"
+        start: 56
+        end: 60
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
+
+  # Child 2 (positions 60-101)
+  - fields:
+      - name: FAMILY_AFFILIATION
+        friendly_name: Family Affiliation
+        item: "67"
+        start: 60
+        end: 61
+        type: integer
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2, 4]
+
+      - name: DATE_OF_BIRTH
+        friendly_name: Date of Birth
+        item: "68"
+        start: 61
+        end: 69
+        type: string
+        required: false
+        field_validators:
+          - id: length
+            params:
+              n: 8
+          - id: valid_date
+
+      - name: SSN
+        friendly_name: Social Security Number
+        item: "69"
+        start: 69
+        end: 78
+        type: string
+        required: false
+        transform:
+          name: ssn_decrypt
+        field_validators:
+          - id: is_numeric
+
+      - name: RACE_HISPANIC
+        friendly_name: Race Hispanic
+        item: "70A"
+        start: 78
+        end: 79
+        type: integer
+        required: false
+        field_validators:
+          - id: validate_race
+
+      - name: RACE_AMER_INDIAN
+        friendly_name: Race American Indian
+        item: "70B"
+        start: 79
+        end: 80
+        type: integer
+        required: false
+        field_validators:
+          - id: validate_race
+
+      - name: RACE_ASIAN
+        friendly_name: Race Asian
+        item: "70C"
+        start: 80
+        end: 81
+        type: integer
+        required: false
+        field_validators:
+          - id: validate_race
+
+      - name: RACE_BLACK
+        friendly_name: Race Black
+        item: "70D"
+        start: 81
+        end: 82
+        type: integer
+        required: false
+        field_validators:
+          - id: validate_race
+
+      - name: RACE_HAWAIIAN
+        friendly_name: Race Hawaiian
+        item: "70E"
+        start: 82
+        end: 83
+        type: integer
+        required: false
+        field_validators:
+          - id: validate_race
+
+      - name: RACE_WHITE
+        friendly_name: Race White
+        item: "70F"
+        start: 83
+        end: 84
+        type: integer
+        required: false
+        field_validators:
+          - id: validate_race
+
+      - name: SEX
+        friendly_name: Sex
+        item: "71"
+        start: 84
+        end: 85
+        type: integer
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9
+
+      - name: RECEIVE_NONSSA_BENEFITS
+        friendly_name: Receive Non-SSA Benefits
+        item: "72A"
+        start: 85
+        end: 86
+        type: integer
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
+
+      - name: RECEIVE_SSI
+        friendly_name: Receive SSI
+        item: "72B"
+        start: 86
+        end: 87
+        type: integer
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
+
+      - name: RELATIONSHIP_HOH
+        friendly_name: Relationship to Head of Household
+        item: "73"
+        start: 87
+        end: 89
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 10
+
+      - name: PARENT_MINOR_CHILD
+        friendly_name: Parent with Minor Child
+        item: "74"
+        start: 89
+        end: 90
+        type: integer
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: [0, 2, 3]
+
+      - name: EDUCATION_LEVEL
+        friendly_name: Education Level
+        item: "75"
+        start: 90
+        end: 92
+        type: string
+        required: false
+        field_validators:
+          - id: education_level
+
+      - name: CITIZENSHIP_STATUS
+        friendly_name: Citizenship Status
+        item: "76"
+        start: 92
+        end: 93
+        type: integer
+        required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2, 3, 9]
+
+      - name: UNEARNED_SSI
+        friendly_name: Unearned SSI
+        item: "77A"
+        start: 93
+        end: 97
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
+
+      - name: OTHER_UNEARNED_INCOME
+        friendly_name: Other Unearned Income
+        item: "77B"
+        start: 97
+        end: 101
+        type: string
+        required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999

@@ -9,6 +9,7 @@ import configureStore from 'redux-mock-store'
 import appConfigureStore from '../../configureStore'
 import Reports from './Reports'
 import { SET_FILE, upload } from '../../actions/reports'
+import featureFlags from '../../reducers/featureFlags'
 
 jest.mock('../../fetch-instance')
 
@@ -141,6 +142,12 @@ describe('Reports', () => {
         roles: [{ id: 1, name: 'OFA Admin', permission: [] }],
         account_approval_status: 'Approved',
       },
+    },
+    featureFlags: {
+      loading: false,
+      error: null,
+      lastFetched: null,
+      flags: [],
     },
   }
   const mockStore = configureStore([thunk])
@@ -1524,7 +1531,22 @@ describe('Reports', () => {
   })
 
   it('should show Fiscal Year only when selecting program audit', async () => {
-    const store = appConfigureStore(initialState)
+    const store = appConfigureStore({
+      initialState,
+      featureFlags: {
+        loading: false,
+        error: null,
+        lastFetched: '2025-03-01 10:00am',
+        flags: [
+          {
+            feature_name: 'program-integrity-audit',
+            enabled: true,
+            config: {},
+            description: 'pia',
+          },
+        ],
+      },
+    })
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
@@ -1548,8 +1570,248 @@ describe('Reports', () => {
     })
   })
 
+  it('shows Program Integrity Audit for states', () => {
+    const store = appConfigureStore({
+      ...initialState,
+      featureFlags: {
+        loading: false,
+        error: null,
+        lastFetched: '2025-03-01 10:00am',
+        flags: [
+          {
+            feature_name: 'program-integrity-audit',
+            enabled: true,
+            config: {},
+            description: 'pia',
+          },
+        ],
+      },
+      stts: {
+        loading: false,
+        sttList: [
+          {
+            id: 2,
+            type: 'state',
+            code: 'AK',
+            name: 'Alaska',
+            ssp: false,
+            num_sections: 3,
+          },
+          {
+            id: 11,
+            type: 'tribe',
+            code: 'MT',
+            name: 'Blackfeet Nation',
+            ssp: false,
+            num_sections: 3,
+          },
+          {
+            id: 12,
+            type: 'territory',
+            code: 'GU',
+            name: 'Guam',
+            ssp: false,
+            num_sections: 3,
+          },
+        ],
+      },
+      auth: {
+        authenticated: true,
+        user: {
+          email: 'hi@bye.com',
+          stt: {
+            id: 2,
+            type: 'state',
+            code: 'AK',
+            name: 'Alaska',
+          },
+          roles: [{ id: 1, name: 'Data Analyst', permission: [] }],
+          account_approval_status: 'Approved',
+        },
+      },
+    })
+
+    const origDispatch = store.dispatch
+    store.dispatch = jest.fn(origDispatch)
+
+    const { getByLabelText, getByText, queryByText } = render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    expect(getByLabelText('Program Integrity Audit')).toBeInTheDocument()
+  })
+
+  it('shows Program Integrity Audit for territories', () => {
+    const store = appConfigureStore({
+      ...initialState,
+      featureFlags: {
+        loading: false,
+        error: null,
+        lastFetched: '2025-03-01 10:00am',
+        flags: [
+          {
+            feature_name: 'program-integrity-audit',
+            enabled: true,
+            config: {},
+            description: 'pia',
+          },
+        ],
+      },
+      stts: {
+        loading: false,
+        sttList: [
+          {
+            id: 2,
+            type: 'state',
+            code: 'AK',
+            name: 'Alaska',
+            ssp: false,
+            num_sections: 3,
+          },
+          {
+            id: 11,
+            type: 'tribe',
+            code: 'MT',
+            name: 'Blackfeet Nation',
+            ssp: false,
+            num_sections: 3,
+          },
+          {
+            id: 12,
+            type: 'territory',
+            code: 'GU',
+            name: 'Guam',
+            ssp: false,
+            num_sections: 3,
+          },
+        ],
+      },
+      auth: {
+        authenticated: true,
+        user: {
+          email: 'hi@bye.com',
+          stt: {
+            id: 12,
+            type: 'territory',
+            code: 'GU',
+            name: 'Guam',
+          },
+          roles: [{ id: 1, name: 'Data Analyst', permission: [] }],
+          account_approval_status: 'Approved',
+        },
+      },
+    })
+
+    const origDispatch = store.dispatch
+    store.dispatch = jest.fn(origDispatch)
+
+    const { getByLabelText, getByText, queryByText } = render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    expect(getByLabelText('Program Integrity Audit')).toBeInTheDocument()
+  })
+
+  it('does not show Program Integrity Audit for tribes', () => {
+    const store = appConfigureStore({
+      ...initialState,
+      featureFlags: {
+        loading: false,
+        error: null,
+        lastFetched: '2025-03-01 10:00am',
+        flags: [
+          {
+            feature_name: 'program-integrity-audit',
+            enabled: true,
+            config: {},
+            description: 'pia',
+          },
+        ],
+      },
+      stts: {
+        loading: false,
+        sttList: [
+          {
+            id: 2,
+            type: 'state',
+            code: 'AK',
+            name: 'Alaska',
+            ssp: false,
+            num_sections: 3,
+          },
+          {
+            id: 11,
+            type: 'tribe',
+            code: 'MT',
+            name: 'Blackfeet Nation',
+            ssp: false,
+            num_sections: 3,
+          },
+          {
+            id: 12,
+            type: 'territory',
+            code: 'GU',
+            name: 'Guam',
+            ssp: false,
+            num_sections: 3,
+          },
+        ],
+      },
+      auth: {
+        authenticated: true,
+        user: {
+          email: 'hi@bye.com',
+          stt: {
+            id: 11,
+            type: 'tribe',
+            code: 'MT',
+            name: 'Blackfeet Nation',
+          },
+          roles: [{ id: 1, name: 'Data Analyst', permission: [] }],
+          account_approval_status: 'Approved',
+        },
+      },
+    })
+
+    const origDispatch = store.dispatch
+    store.dispatch = jest.fn(origDispatch)
+
+    const { queryByLabelText } = render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    expect(queryByLabelText('Program Integrity Audit')).not.toBeInTheDocument()
+  })
+
   it('should render 4 file inputs for each quarter', async () => {
-    const store = mockStore(initialState)
+    const store = mockStore({
+      ...initialState,
+      featureFlags: {
+        loading: false,
+        error: null,
+        lastFetched: '2025-03-01 10:00am',
+        flags: [
+          {
+            feature_name: 'program-integrity-audit',
+            enabled: true,
+            config: {},
+            description: 'pia',
+          },
+        ],
+      },
+    })
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
@@ -1746,6 +2008,19 @@ describe('Reports', () => {
         ...initialState.reports,
         stt: 'California',
       },
+      featureFlags: {
+        loading: false,
+        error: null,
+        lastFetched: '2025-03-01 10:00am',
+        flags: [
+          {
+            feature_name: 'program-integrity-audit',
+            enabled: true,
+            config: {},
+            description: 'pia',
+          },
+        ],
+      },
     })
 
     const { getByLabelText, getByTestId, queryByText } = render(
@@ -1793,6 +2068,19 @@ describe('Reports', () => {
       reports: {
         ...initialState.reports,
         stt: 'California',
+      },
+      featureFlags: {
+        loading: false,
+        error: null,
+        lastFetched: '2025-03-01 10:00am',
+        flags: [
+          {
+            feature_name: 'program-integrity-audit',
+            enabled: true,
+            config: {},
+            description: 'pia',
+          },
+        ],
       },
     })
 

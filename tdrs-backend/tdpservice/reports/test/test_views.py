@@ -3,7 +3,7 @@
 import pytest
 from rest_framework import status
 
-from tdpservice.reports.models import ReportFile, ReportSource
+from tdpservice.reports.models import ReportFile, ReportSource, ReportType
 
 
 @pytest.mark.django_db
@@ -347,3 +347,192 @@ class TestReportFileViewAsDataAnalyst:
 
         assert resp.status_code == status.HTTP_200_OK
         assert len(resp.data["results"]) == 0
+
+
+@pytest.mark.django_db
+class TestReportFileViewAsRegionalStaff:
+    """Tests for an OFA Regional Staff user interacting with /v1/reports/ endpoints."""
+
+    root_url = "/v1/reports/"
+
+    @pytest.fixture
+    def api_client_logged_in(self, api_client, regional_user):
+        """Return an API client authenticated as a regional staff user."""
+        api_client.login(username=regional_user.username, password="test_password")
+        return api_client
+
+    def test_can_list_reports(
+        self, api_client_logged_in, regional_report_file_instance
+    ):
+        """Regional staff can list report files (200 OK)."""
+        resp = api_client_logged_in.get(self.root_url)
+        assert resp.status_code == status.HTTP_200_OK
+
+    def test_only_sees_reports_in_own_region(
+        self,
+        api_client_logged_in,
+        regional_user,
+        regional_report_file_instance,
+        other_region_report_file_instance,
+    ):
+        """Regional staff only sees reports for STTs in their region."""
+        resp = api_client_logged_in.get(self.root_url)
+
+        assert resp.status_code == status.HTTP_200_OK
+
+        returned_ids = [row["id"] for row in resp.data["results"]]
+        assert regional_report_file_instance.id in returned_ids
+        assert other_region_report_file_instance.id not in returned_ids
+
+    def test_cannot_create_report_files(
+        self, api_client_logged_in, report_file_data
+    ):
+        """Regional staff cannot create report files (403)."""
+        resp = api_client_logged_in.post(
+            self.root_url, report_file_data, format="multipart"
+        )
+        assert resp.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_can_download_report_in_own_region(
+        self, api_client_logged_in, regional_report_file_instance
+    ):
+        """Regional staff can download report files for STTs in their region."""
+        resp = api_client_logged_in.get(
+            f"{self.root_url}{regional_report_file_instance.id}/download/"
+        )
+        assert resp.status_code == status.HTTP_200_OK
+
+    def test_cannot_download_report_outside_region(
+        self, api_client_logged_in, other_region_report_file_instance
+    ):
+        """Regional staff cannot download report files outside their region."""
+        resp = api_client_logged_in.get(
+            f"{self.root_url}{other_region_report_file_instance.id}/download/"
+        )
+        # Returns 404 because get_queryset filters out reports outside the region
+        assert resp.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_stt_query_param_filters_results(
+        self,
+        api_client_logged_in,
+        regional_user,
+        regional_report_file_instance,
+        stt,
+    ):
+        """Regional staff can filter reports by STT query param."""
+        resp = api_client_logged_in.get(f"{self.root_url}?stt={stt.id}")
+
+        assert resp.status_code == status.HTTP_200_OK
+        returned_ids = [row["id"] for row in resp.data["results"]]
+        assert regional_report_file_instance.id in returned_ids
+
+
+@pytest.mark.django_db
+class TestReportFileReportTypeFiltering:
+    """Tests for report_type query parameter filtering on /v1/reports/."""
+
+    root_url = "/v1/reports/"
+
+    @pytest.fixture
+    def api_client_logged_in(self, api_client, data_analyst):
+        """Return an API client authenticated as a Data Analyst."""
+        api_client.login(username=data_analyst.username, password="test_password")
+        return api_client
+
+    def test_filter_by_tanf_ssp(self, api_client_logged_in, data_analyst):
+        """report_type=TANF_SSP should return only TANF/SSP reports."""
+        import datetime
+        from tdpservice.reports.test.factories import ReportFileFactory
+
+        tanf_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst, report_type=ReportType.TANF_SSP,
+            date_extracted_on=datetime.date(2024, 1, 31),
+        )
+        fra_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst, report_type=ReportType.FRA,
+            date_extracted_on=datetime.date(2024, 3, 31),
+        )
+
+        resp = api_client_logged_in.get(f"{self.root_url}?report_type=TANF_SSP")
+
+        assert resp.status_code == status.HTTP_200_OK
+        returned_ids = [row["id"] for row in resp.data["results"]]
+        assert tanf_report.id in returned_ids
+        assert fra_report.id not in returned_ids
+
+    def test_filter_by_fra(self, api_client_logged_in, data_analyst):
+        """report_type=FRA should return only FRA reports."""
+        import datetime
+        from tdpservice.reports.test.factories import ReportFileFactory
+
+        tanf_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst, report_type=ReportType.TANF_SSP,
+            date_extracted_on=datetime.date(2024, 1, 31),
+        )
+        fra_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst, report_type=ReportType.FRA,
+            date_extracted_on=datetime.date(2024, 3, 31),
+        )
+
+        resp = api_client_logged_in.get(f"{self.root_url}?report_type=FRA")
+
+        assert resp.status_code == status.HTTP_200_OK
+        returned_ids = [row["id"] for row in resp.data["results"]]
+        assert fra_report.id in returned_ids
+        assert tanf_report.id not in returned_ids
+
+    def test_no_filter_returns_all_types(self, api_client_logged_in, data_analyst):
+        """Without report_type param, both TANF/SSP and FRA reports should be returned."""
+        import datetime
+        from tdpservice.reports.test.factories import ReportFileFactory
+
+        tanf_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst, report_type=ReportType.TANF_SSP,
+            date_extracted_on=datetime.date(2024, 1, 31),
+        )
+        fra_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst, report_type=ReportType.FRA,
+            date_extracted_on=datetime.date(2024, 3, 31),
+        )
+
+        resp = api_client_logged_in.get(self.root_url)
+
+        assert resp.status_code == status.HTTP_200_OK
+        returned_ids = [row["id"] for row in resp.data["results"]]
+        assert tanf_report.id in returned_ids
+        assert fra_report.id in returned_ids
+
+    def test_report_type_in_response(self, api_client_logged_in, report_file_instance):
+        """report_type field should be included in the API response."""
+        resp = api_client_logged_in.get(self.root_url)
+
+        assert resp.status_code == status.HTTP_200_OK
+        assert resp.data["count"] >= 1
+        assert "report_type" in resp.data["results"][0]
+
+
+@pytest.mark.django_db
+class TestReportSourceReportTypeFiltering:
+    """Tests for report_type query parameter filtering on /v1/reports/report-sources/."""
+
+    root_url = "/v1/reports/report-sources/"
+
+    @pytest.fixture
+    def api_client_logged_in(self, api_client, ofa_system_admin):
+        """Return an API client authenticated as an OFA System Admin."""
+        api_client.login(username=ofa_system_admin.username, password="test_password")
+        return api_client
+
+    def test_filter_report_sources_by_report_type(self, api_client_logged_in):
+        """report_type param filters report sources to only that type."""
+        from tdpservice.reports.test.factories import ReportSourceFactory, FRAReportSourceFactory
+
+        tanf_source = ReportSourceFactory.create()
+        fra_source = FRAReportSourceFactory.create()
+
+        resp = api_client_logged_in.get(f"{self.root_url}?report_type=FRA")
+
+        assert resp.status_code == status.HTTP_200_OK
+        returned_ids = [row["id"] for row in resp.data["results"]]
+        assert fra_source.id in returned_ids
+        assert tanf_source.id not in returned_ids

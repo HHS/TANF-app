@@ -8,6 +8,7 @@ Frontend Service for TDP. Deployed to Cloud.gov at https://tdp-frontend.app.clou
 - [Login.gov Sandbox Account](https://idp.int.identitysandbox.gov/sign_up/enter_email)
 - [Cloud.gov Account](https://cloud.gov/)
 - [Cloud Foundry CLI](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html)
+- [Yarn 4.6.0](https://yarnpkg.com/getting-started/install) via Corepack (`corepack enable && corepack prepare yarn@4.6.0 --activate`; verify with `yarn -v`)
 
 # Contents
 
@@ -55,7 +56,7 @@ When running this app with Docker on localhost React will assign `NODE_ENV=devel
 * .env.development
 * .env
 
-#### `npm start`
+#### `yarn start`
 When running this app directly on localhost React will assign `NODE_ENV=development` and use this inheritance order:
 * Any variables set directly on host machine (ie. export MY_VAR=...)
 * .env.development.local
@@ -63,14 +64,14 @@ When running this app directly on localhost React will assign `NODE_ENV=developm
 * .env.development
 * .env
 
-#### `npm test`
+#### `yarn test`
 During tests, the env files are loaded in this order:
 * .env.test.local
 * .env.test
 * .env
 
 #### CircleCI
-The current CircleCI config utilizes npm to build and test the frontend application. As such it follows this order of inheritance for environment variables:
+The current CircleCI config utilizes Yarn to build and test the frontend application. As such it follows this order of inheritance for environment variables:
 * Any variables set directly in CircleCI Project Settings
 * .env.test.local
 * .env.test
@@ -85,7 +86,7 @@ The app is set up with [ESLint](https://eslint.org/) and [Prettier](https://pret
 
 To run eslint locally:
 ```bash
-$ npm run lint
+$ yarn lint
 ```
 
 If you use [VSCode](https://code.visualstudio.com/) as an [IDE](https://en.wikipedia.org/wiki/Integrated_development_environment), it will be helpful to add the extensions, [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) and [Prettier - Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode). These make it possible to catch lint errors as they occur, and even auto-fix style errors (with Prettier).
@@ -103,15 +104,15 @@ Jest provides an interactive test console that's helpful for development. After 
 
 1.) To run unit tests locally:
   ```bash
-  $ npm run test
+  $ yarn test
   ```
 2.) To run unit tests with code coverage report:
   ```bash
-  $ npm run test:cov
+  $ yarn test:cov
   ```
 3.) To run unit tests as a continuous integration environment would, which runs the tests once (without the interactive console):
   ```bash
-  $ npm run test:ci
+  $ yarn test:ci
   ```
 
 After running either `test:cov` or `test:ci`, coverage details can be seen as HTML in the browser by running:

@@ -1,6 +1,8 @@
 import { get } from '../fetch-instance'
 import { logErrorToServer } from '../utils/eventLogger'
 
+import { CLEAR_FEATURE_FLAGS, fetchFeatureFlags } from './featureFlags'
+
 export const FETCH_AUTH = 'FETCH_AUTH'
 export const SET_AUTH = 'SET_AUTH'
 export const SET_AUTH_ERROR = 'SET_AUTH_ERROR'
@@ -47,17 +49,21 @@ export const fetchAuth = () => async (dispatch) => {
   if (!ok) {
     logErrorToServer(SET_AUTH_ERROR)
     dispatch({ type: SET_AUTH_ERROR, payload: { error } })
+    dispatch({ type: CLEAR_FEATURE_FLAGS })
     return
   }
 
   if (data?.inactive) {
     dispatch({ type: SET_DEACTIVATED })
+    dispatch({ type: CLEAR_FEATURE_FLAGS })
   } else if (data?.user) {
     const { user } = data
 
     dispatch({ type: SET_AUTH, payload: { user } })
+    dispatch(fetchFeatureFlags())
   } else {
     dispatch({ type: CLEAR_AUTH })
+    dispatch({ type: CLEAR_FEATURE_FLAGS })
   }
 }
 

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>TDP — Validation Error Reference</title>
+    <link rel="stylesheet" href="../css/uswds3.css" />
+    <link rel="icon" type="image/x-icon" href="../img/favicons/gov-favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="../js/uswds.min.js"></script>
+    <link href="dist/lity.css" rel="stylesheet">
+    <script src="dist/lity.js"></script>
+    <script>
+      const v = Date.now();
+      document.write(`
+        <script src="components/desktop-navigation.js?v=${v}" defer><\/script>
+        <script src="components/mobile-navigation.js?v=${v}" defer><\/script>
+        <script src="components/shutdown-banner.js?v=${v}" defer><\/script>
+      `);
+    </script>
+    <style>
+      .section-description { color: #555; margin-bottom: 1.5rem; }
+      .record-section { margin-bottom: 2rem; }
+      details summary { cursor: pointer; font-weight: 600; padding: 0.5rem 0; }
+      details summary:hover { color: #005ea2; }
+      .toc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+      .toc-card { border: 1px solid #dfe1e2; border-radius: 4px; padding: 1rem; }
+      .toc-card:hover { border-color: #005ea2; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
+      .toc-card h3 { margin: 0 0 0.5rem 0; font-size: 1rem; }
+      .toc-card h3 a { text-decoration: none; }
+      .toc-card h3 a:hover { text-decoration: underline; }
+      .toc-card p { margin: 0 0 0.5rem 0; font-size: 0.85rem; color: #555; }
+      .toc-card ul { margin: 0; padding-left: 1.25rem; font-size: 0.85rem; }
+      .toc-card li { margin-bottom: 0.15rem; }
+      .field-card { border-left: 3px solid #005ea2; padding: 0.5rem 0 0.5rem 1rem; margin-bottom: 1rem; }
+      .field-card h4 { margin: 0 0 0.25rem 0; font-size: 1rem; }
+      .field-meta { color: #555; font-size: 0.9rem; margin-bottom: 0.25rem; }
+      .check-list { list-style: none; padding-left: 0; margin: 0.25rem 0 0 0; }
+      .check-list li { padding: 0.2rem 0; font-size: 0.9rem; }
+      .check-list li::before { content: "⚠ "; }
+      .check-msg { font-family: monospace; font-size: 0.85rem; background: #f5f5f5; padding: 2px 6px; border-radius: 3px; }
+      .error-label { font-size: 0.8rem; color: #71767a; font-style: italic; }
+    </style>
+  </head>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-8V03JLZHK0"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-8V03JLZHK0');
+  </script>
+
+  <body>
+    <a class="usa-skipnav" href="#main-content">Skip to main content</a>
+
+    <section class="usa-banner" aria-label="Official government website">
+      <div class="usa-accordion">
+        <header class="usa-banner__header">
+          <div class="usa-banner__inner">
+            <div class="grid-col-auto">
+              <img class="usa-banner__header-flag" src="../img/us_flag_small.png" alt="U.S. flag"/>
+            </div>
+            <div class="grid-col-fill tablet:grid-col-auto">
+              <p class="usa-banner__header-text">An official website of the United States government</p>
+              <p class="usa-banner__header-action" aria-hidden="true">Here's how you know</p>
+            </div>
+            <button class="usa-accordion__button usa-banner__button" aria-expanded="false" aria-controls="gov-banner-default">
+              <span class="usa-banner__button-text">Here's how you know</span>
+            </button>
+          </div>
+        </header>
+        <div class="usa-banner__content usa-accordion__content" id="gov-banner-default">
+          <div class="grid-row grid-gap-lg">
+            <div class="usa-banner__guidance tablet:grid-col-6">
+              <img class="usa-banner__icon usa-media-block__img" src="../img/icon-dot-gov.svg" role="img" alt="" aria-hidden="true" />
+              <div class="usa-media-block__body">
+                <p><strong>Official websites use .gov</strong><br>A <strong>.gov</strong> website belongs to an official government organization in the United States.</p>
+              </div>
+            </div>
+            <div class="usa-banner__guidance tablet:grid-col-6">
+              <img class="usa-banner__icon usa-media-block__img" src="../img/icon-https.svg" role="img" alt="" aria-hidden="true" />
+              <div class="usa-media-block__body">
+                <p><strong>Secure .gov websites use HTTPS</strong><br>A <strong>lock</strong> or <strong>https://</strong> means you've safely connected to the .gov website.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="usa-overlay"></div>
+    <header class="usa-header usa-header--basic">
+      <div class="usa-nav-container">
+        <div class="usa-navbar site-header__navbar">
+          <div class="usa-logo site-logo" id="logo">
+            <em class="usa-logo__text site-logo__text">
+              <a href="./index.html" title="TDP Project Updates" style="display: flex;">
+                <img src="../img/logo-img.png" width="48px" alt="" aria-hidden="true" style="float: left;">
+                <div style="display: flex; flex-direction: horizontal; width: 300px; flex-wrap: wrap; padding-left: 8px;">
+                  <div style="display: flex-item; color: #264A63; font-weight: 800;">TANF Data Portal</div>
+                  <div style="display: flex-item; width: fit-content; color: #336A90">Knowledge Center</div>
+                </div>
+              </a>
+            </em>
+          </div>
+          <button class="usa-menu-btn">Menu</button>
+        </div>
+        <nav aria-label="Primary navigation" class="usa-nav">
+          <button class="usa-nav__close"><img src="../img/close.svg" role="img" alt="Close" /></button>
+          <a href="search.html" class="usa-button usa-button--outline" style="position: relative; margin-bottom: 16px;">🔍 Search</a>
+          <a href="https://tanfdata.acf.hhs.gov/" class="usa-button usa-button--outline" style="position: relative; margin-bottom: 16px;">Go to TDP</a>
+          <mobile-nav></mobile-nav>
+        </nav>
+      </div>
+    </header>
+
+    <div class="usa-section">
+      <div class="grid-container">
+        <div class="grid-row grid-gap">
+          <div class="usa-layout-docs__sidenav desktop:grid-col-3">
+            <nav aria-label="Secondary navigation">
+              <site-nav></site-nav>
+            </nav>
+          </div>
+
+          <main class="usa-layout-docs__main desktop:grid-col-9 usa-prose usa-layout-docs" id="main-content">
+            <h1>Validation Error Reference</h1>
+            <div style="min-height: 22px;"></div>
+
+            <p class="usa-intro">
+              This reference documents all validation checks performed on submitted data files.
+              It is organized by file type (program and section), then by record type. Each section
+              lists the fields, the checks that run on them, and example error messages.
+            </p>
+            <div style="min-height: 22px;"></div>
+            <p><em>Generated: <time id="generated-time" datetime="{{.Model.GeneratedAt}}">{{.Model.GeneratedAt}}</time></em></p>
+            <script>
+              (function() {
+                var el = document.getElementById('generated-time');
+                if (el) {
+                  var d = new Date(el.getAttribute('datetime'));
+                  if (!isNaN(d)) {
+                    el.textContent = d.toLocaleString(undefined, {
+                      year: 'numeric', month: 'long', day: 'numeric',
+                      hour: 'numeric', minute: '2-digit', timeZoneName: 'short'
+                    });
+                  }
+                }
+              })();
+            </script>
+            <div style="min-height: 22px;"></div>
+
+            <h2>Table of Contents</h2>
+            <div class="toc-grid">
+            {{- if .Model.Header}}
+              <div class="toc-card">
+                <h3><a href="#common-header">Header Record</a></h3>
+                <p>Shared header record included at the beginning of all files except FRA.</p>
+              </div>
+            {{- end}}
+            {{- range .Model.FileSpecs}}
+              <div class="toc-card">
+                <h3><a href="#{{anchorID .Key}}">{{.Program}} Section {{.Section}}</a></h3>
+                {{if .Description}}<p>{{.Description}}</p>{{end}}
+                <ul>
+                {{- range .Records}}
+                  <li><a href="#{{anchorID .SchemaPath}}">{{.RecordType}}</a></li>
+                {{- end}}
+                </ul>
+              </div>
+            {{- end}}
+            </div>
+
+            <hr>
+
+            {{if .Model.Header}}
+            <div class="record-section">
+              <h2 id="common-header">Header Record</h2>
+              <p class="section-description">All programs except FRA include a HEADER record at the beginning of each file. The header identifies the file's program, reporting period, and format.</p>
+
+              <details>
+                <summary>Field Definitions &amp; Checks ({{len .Model.Header.Fields}})</summary>
+                {{range .Model.Header.Fields}}
+                <div class="field-card">
+                  <h4>{{.Name}} <small>(Item {{.Item}})</small></h4>
+                  <div class="field-meta">{{.FriendlyName}} — {{.Type}}{{if .Required}}, required{{end}}</div>
+                  {{if hasValidators .}}
+                  <ul class="check-list">
+                    {{range .Validators}}
+                    <li><span class="check-msg">{{.Message}}</span></li>
+                    {{end}}
+                  </ul>
+                  {{end}}
+                </div>
+                {{end}}
+              </details>
+            </div>
+            <hr>
+            {{end}}
+
+            {{range .Model.FileSpecs}}
+            <div class="record-section">
+              <h2 id="{{anchorID .Key}}">{{.Program}} Section {{.Section}}</h2>
+              {{if .Description}}<p class="section-description">{{.Description}}</p>{{end}}
+
+              {{if .Group}}
+              <details open>
+                <summary>Case-Level Checks ({{len .Group}})</summary>
+                <p>These checks validate relationships between records within the same case. If a case-level check fails, none of the records in that case will be processed.</p>
+                <ul class="check-list">
+                  {{range .Group}}
+                  <li>
+                    <span class="check-msg">{{.Message}}</span>
+                    {{if hasFields .}}<br><small>Fields: {{joinFields .Fields}}</small>{{end}}
+                    <br><span class="error-label">{{friendlyError .ErrorType}}</span>
+                  </li>
+                  {{end}}
+                </ul>
+              </details>
+              {{end}}
+
+              {{range .Records}}
+              <div class="record-section">
+                <h3 id="{{anchorID .SchemaPath}}">Record Type: {{.RecordType}} <small>({{.SchemaPath}})</small></h3>
+                {{if .Description}}<p class="section-description">{{.Description}}</p>{{end}}
+
+                {{if .PreCheck}}
+                <details open>
+                  <summary>Record Pre-Checks ({{len .PreCheck}})</summary>
+                  <p>These checks must pass before the record can be processed.</p>
+                  <ul class="check-list">
+                    {{range .PreCheck}}
+                    <li><span class="check-msg">{{.Message}}</span></li>
+                    {{end}}
+                  </ul>
+                </details>
+                {{end}}
+
+                {{if .Fields}}
+                <details open>
+                  <summary>Field Definitions &amp; Checks ({{len .Fields}})</summary>
+                  <p>Each field is validated individually. These checks verify that field values are present when required and conform to the expected format, type, and allowed values.</p>
+                  {{range .Fields}}
+                  <div class="field-card">
+                    <h4>{{.Name}} <small>(Item {{.Item}})</small></h4>
+                    <div class="field-meta">{{.FriendlyName}} — {{.Type}}{{if .Required}}, required{{end}}</div>
+                    {{if hasValidators .}}
+                    <ul class="check-list">
+                      {{range .Validators}}
+                      <li><span class="check-msg">{{.Message}}</span></li>
+                      {{end}}
+                    </ul>
+                    {{end}}
+                  </div>
+                  {{end}}
+                </details>
+                {{end}}
+
+                {{if .CrossField}}
+                <details open>
+                  <summary>Cross-Field Checks ({{len .CrossField}})</summary>
+                  <p>These checks validate relationships between multiple fields within the same record.</p>
+                  <ul class="check-list">
+                    {{range .CrossField}}
+                    <li>
+                      <span class="check-msg">{{.Message}}</span>
+                      {{if hasFields .}}<br><small>Fields: {{joinFields .Fields}}</small>{{end}}
+                    </li>
+                    {{end}}
+                  </ul>
+                </details>
+                {{end}}
+              </div>
+              {{end}}
+            </div>
+            <hr>
+            {{end}}
+
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <footer class="usa-footer usa-footer--slim">
+      <div class="grid-container usa-footer__return-to-top">
+        <a href="#">Return to top</a>
+      </div>
+      <div class="usa-footer__primary-section">
+        <div class="usa-footer__primary-container grid-row">
+          <div class="mobile-lg:grid-col-8">
+            <nav class="usa-footer__nav" aria-label="Footer navigation,">
+              <ul class="grid-row grid-gap">
+                <li class="mobile-lg:grid-col-6 desktop:grid-col-auto usa-footer__primary-content">
+                  <a class="usa-footer__primary-link" href="https://www.acf.hhs.gov/privacy-policy">Privacy Policy</a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+      <div class="usa-footer__secondary-section">
+        <div class="grid-container" style="padding-left: 0rem !important;">
+          <div class="usa-footer__logo grid-row grid-gap-2">
+            <div class="grid-col-auto">
+              <img class="mobile-lg:maxw-mobile mobile:width-mobile" src="../img/acfofa.svg" alt="Administration for Children and Families: Office of Family Assistance" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

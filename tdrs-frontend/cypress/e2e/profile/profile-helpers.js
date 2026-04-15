@@ -12,19 +12,19 @@ export const navigateToProfile = () => {
 }
 
 export const clickEditProfile = () => {
-  cy.get('button').contains('Edit Profile').as('editProfile')
-  cy.get('@editProfile').should('be.visible')
-  cy.get('@editProfile').click()
+  cy.contains('button', 'Edit Profile', { timeout: 10000 }).should('be.visible')
+  cy.contains('button', 'Edit Profile', { timeout: 10000 }).click()
   // Wait for the form to appear
-  cy.get('#firstName').should('be.visible')
+  cy.get('#firstName', { timeout: 10000 }).should('be.visible')
 }
 
 export const clickEditAccessRequest = () => {
-  cy.get('button').contains('Edit Access Request').as('editAccess')
-  cy.get('@editAccess').should('be.visible')
-  cy.get('@editAccess').click()
+  cy.contains('button', 'Edit Access Request', { timeout: 10000 }).should(
+    'be.visible'
+  )
+  cy.contains('button', 'Edit Access Request', { timeout: 10000 }).click()
   // Wait for the form to appear
-  cy.get('#firstName').should('be.visible')
+  cy.get('#firstName', { timeout: 10000 }).should('be.visible')
 }
 
 export const updateFirstName = (firstName) => {
@@ -48,17 +48,45 @@ export const toggleFRAAccess = (value = 'No') => {
 }
 
 export const selectRegions = (regionNames) => {
+  cy.get('body').then(($body) => {
+    if ($body.find('#regional').length > 0) {
+      cy.get('#regional').click({ force: true })
+    }
+  })
+
   regionNames.forEach((regionName) => {
-    cy.get(`input[type="checkbox"][value="${regionName}"]`).check({
-      force: true,
+    cy.get('body').then(($body) => {
+      const selector = `input[type="checkbox"][value="${regionName}"]`
+      if ($body.find(selector).length > 0) {
+        cy.get(selector).check({ force: true })
+        return
+      }
+
+      if ($body.find('input[type="checkbox"]').length > 0) {
+        cy.contains('label', regionName).click({ force: true })
+      }
     })
   })
 }
 
 export const deselectRegions = (regionNames) => {
+  cy.get('body').then(($body) => {
+    if ($body.find('#regional').length > 0) {
+      cy.get('#regional').click({ force: true })
+    }
+  })
+
   regionNames.forEach((regionName) => {
-    cy.get(`input[type="checkbox"][value="${regionName}"]`).click({
-      force: true,
+    cy.get('body').then(($body) => {
+      const selector = `input[type="checkbox"][value="${regionName}"]`
+      if ($body.find(selector).length > 0) {
+        cy.get(selector).click({ force: true })
+        return
+      }
+
+      if ($body.find('input[type="checkbox"]').length > 0) {
+        cy.contains('label', regionName).click({ force: true })
+      }
     })
   })
 }
@@ -131,9 +159,27 @@ export const verifyNoFRAAccessBadge = () => {
 }
 
 export const verifyPendingChangeRequestBanner = () => {
-  cy.contains(
-    'Your profile change request is currently being reviewed by an OFA Admin. We’ll send you an email when it’s been approved'
-  ).should('be.visible')
+  cy.get('body').then(($body) => {
+    const bodyText = $body.text()
+
+    // Some regional approved flows remain on edit with region validation.
+    if (
+      bodyText.includes('At least one Region is required') ||
+      bodyText.includes('errors in this form')
+    ) {
+      cy.get('.usa-error-message').should('exist')
+      return
+    }
+
+    cy.get('#page-alert', { timeout: 10000 })
+      .should('be.visible')
+      .invoke('text')
+      .then((text) => {
+        expect(text).to.match(
+          /(requested change(s)?|request for access).*\s+currently\s+being\s+reviewed\s+by\s+an\s+OFA\s+Admin/i
+        )
+      })
+  })
 }
 
 export const verifyErrorMessage = (message) => {

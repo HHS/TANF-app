@@ -84,6 +84,15 @@ module.exports = defineConfig({
 
       on('file:preprocessor', webpack({ webpackOptions }))
 
+      on('before:browser:launch', (browser, launchOptions) => {
+        if (browser.name === 'chrome' && browser.isHeadless) {
+          launchOptions.args.push('--disable-dev-shm-usage')
+          launchOptions.args.push('--no-sandbox')
+        }
+
+        return launchOptions
+      })
+
       return config
     },
   },
