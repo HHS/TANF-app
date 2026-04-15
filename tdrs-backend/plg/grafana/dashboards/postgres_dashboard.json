@@ -49,6 +49,23 @@
         "iconColor": "rgba(0, 211, 255, 1)",
         "name": "Annotations & Alerts",
         "type": "dashboard"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "enable": true,
+        "expr": "pg_up{instance=~\"$instance\"} == 0 or absent(pg_up{instance=~\"$instance\"})",
+        "hide": false,
+        "iconColor": "red",
+        "name": "Database Unreachable",
+        "step": "60s",
+        "tagKeys": "instance",
+        "titleFormat": "Database Unreachable",
+        "textFormat": "The postgres exporter cannot reach the database (pg_up=0 or absent)",
+        "type": "tags",
+        "useValueForTime": false
       }
     ]
   },
@@ -235,12 +252,13 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "pg_static{release=\"$release\", instance=\"$instance\"}",
+          "expr": "pg_static{instance=\"$instance\"}",
           "format": "time_series",
-          "instant": true,
+          "instant": false,
           "intervalFactor": 1,
           "legendFormat": "{{short_version}}",
-          "refId": "A"
+          "refId": "A",
+          "range": true
         }
       ],
       "title": "Version",
@@ -314,11 +332,12 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "pg_postmaster_start_time_seconds{release=\"$release\", instance=\"$instance\"} * 1000",
+          "expr": "pg_postmaster_start_time_seconds{instance=\"$instance\"} * 1000",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "",
-          "refId": "A"
+          "refId": "A",
+          "range": true
         }
       ],
       "title": "Start Time",
@@ -391,11 +410,12 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "SUM(pg_stat_database_tup_inserted{release=\"$release\", datname=~\"$datname\", instance=~\"$instance\"})",
+          "expr": "SUM(pg_stat_database_tup_inserted{datname=~\"$datname\", instance=~\"$instance\"})",
           "format": "time_series",
           "intervalFactor": 2,
           "refId": "A",
-          "step": 4
+          "step": 4,
+          "range": true
         }
       ],
       "title": "Current insert data",
@@ -472,7 +492,8 @@
           "format": "time_series",
           "intervalFactor": 2,
           "refId": "A",
-          "step": 4
+          "step": 4,
+          "range": true
         }
       ],
       "title": "Current fetch data",
@@ -549,7 +570,8 @@
           "format": "time_series",
           "intervalFactor": 2,
           "refId": "A",
-          "step": 4
+          "step": 4,
+          "range": true
         }
       ],
       "title": "Current update data",
@@ -622,10 +644,11 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "pg_settings_max_connections{release=\"$release\", instance=\"$instance\"}",
+          "expr": "pg_settings_max_connections{instance=\"$instance\"}",
           "format": "time_series",
           "intervalFactor": 1,
-          "refId": "A"
+          "refId": "A",
+          "range": true
         }
       ],
       "title": "Max Connections",
@@ -723,7 +746,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "avg(rate(process_cpu_seconds_total{release=\"$release\", instance=\"$instance\"}[5m]) * 1000)",
+          "expr": "avg(rate(process_cpu_seconds_total{instance=\"$instance\"}[5m]) * 1000)",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "CPU Time",
@@ -825,7 +848,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "avg(rate(process_resident_memory_bytes{release=\"$release\", instance=\"$instance\"}[5m]))",
+          "expr": "avg(rate(process_resident_memory_bytes{instance=\"$instance\"}[5m]))",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "Resident Mem",
@@ -836,7 +859,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "avg(rate(process_virtual_memory_bytes{release=\"$release\", instance=\"$instance\"}[5m]))",
+          "expr": "avg(rate(process_virtual_memory_bytes{instance=\"$instance\"}[5m]))",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "Virtual Mem",
@@ -938,7 +961,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "process_open_fds{release=\"$release\", instance=\"$instance\"}",
+          "expr": "process_open_fds{instance=\"$instance\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "Open FD",
@@ -1044,7 +1067,8 @@
           "expr": "pg_settings_shared_buffers_bytes{instance=\"$instance\"}",
           "format": "time_series",
           "intervalFactor": 1,
-          "refId": "A"
+          "refId": "A",
+          "range": true
         }
       ],
       "title": "Shared Buffers",
@@ -1120,7 +1144,8 @@
           "expr": "pg_settings_effective_cache_size_bytes{instance=\"$instance\"}",
           "format": "time_series",
           "intervalFactor": 1,
-          "refId": "A"
+          "refId": "A",
+          "range": true
         }
       ],
       "title": "Effective Cache",
@@ -1196,7 +1221,8 @@
           "expr": "pg_settings_maintenance_work_mem_bytes{instance=\"$instance\"}",
           "format": "time_series",
           "intervalFactor": 1,
-          "refId": "A"
+          "refId": "A",
+          "range": true
         }
       ],
       "title": "Maintenance Work Mem",
@@ -1273,7 +1299,8 @@
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "",
-          "refId": "A"
+          "refId": "A",
+          "range": true
         }
       ],
       "title": "Work Mem",
@@ -1350,7 +1377,8 @@
           "expr": "pg_settings_max_wal_size_bytes{instance=\"$instance\"}",
           "format": "time_series",
           "intervalFactor": 1,
-          "refId": "A"
+          "refId": "A",
+          "range": true
         }
       ],
       "title": "Max WAL Size",
@@ -1426,7 +1454,8 @@
           "expr": "pg_settings_random_page_cost{instance=\"$instance\"}",
           "format": "time_series",
           "intervalFactor": 1,
-          "refId": "A"
+          "refId": "A",
+          "range": true
         }
       ],
       "title": "Random Page Cost",
@@ -1502,7 +1531,8 @@
           "expr": "pg_settings_seq_page_cost",
           "format": "time_series",
           "intervalFactor": 1,
-          "refId": "A"
+          "refId": "A",
+          "range": true
         }
       ],
       "title": "Seq Page Cost",
@@ -1578,7 +1608,8 @@
           "expr": "pg_settings_max_worker_processes{instance=\"$instance\"}",
           "format": "time_series",
           "intervalFactor": 1,
-          "refId": "A"
+          "refId": "A",
+          "range": true
         }
       ],
       "title": "Max Worker Processes",
@@ -1654,7 +1685,8 @@
           "expr": "pg_settings_max_parallel_workers{instance=\"$instance\"}",
           "format": "time_series",
           "intervalFactor": 1,
-          "refId": "A"
+          "refId": "A",
+          "range": true
         }
       ],
       "title": "Max Parallel Workers",
@@ -3261,84 +3293,15 @@
           "type": "prometheus",
           "uid": "${DS_PROMETHEUS}"
         },
-        "definition": "",
-        "hide": 0,
-        "includeAll": false,
-        "label": "Namespace",
-        "multi": false,
-        "name": "namespace",
-        "options": [],
-        "query": "query_result(pg_exporter_last_scrape_duration_seconds)",
-        "refresh": 2,
-        "regex": "/.*kubernetes_namespace=\"([^\"]+).*/",
-        "skipUrlSync": false,
-        "sort": 1,
-        "tagValuesQuery": "",
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
-      },
-      {
-        "current": {},
-        "datasource": {
-          "type": "prometheus",
-          "uid": "${DS_PROMETHEUS}"
-        },
-        "definition": "",
-        "hide": 0,
-        "includeAll": false,
-        "label": "Release",
-        "multi": false,
-        "name": "release",
-        "options": [],
-        "query": "query_result(pg_exporter_last_scrape_duration_seconds{kubernetes_namespace=\"$namespace\"})",
-        "refresh": 2,
-        "regex": "/.*release=\"([^\"]+)/",
-        "skipUrlSync": false,
-        "sort": 1,
-        "tagValuesQuery": "",
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
-      },
-      {
-        "current": {},
-        "datasource": {
-          "type": "prometheus",
-          "uid": "${DS_PROMETHEUS}"
-        },
-        "definition": "",
+        "definition": "label_values(pg_exporter_last_scrape_duration_seconds, instance)",
         "hide": 0,
         "includeAll": false,
         "label": "Instance",
         "multi": false,
         "name": "instance",
         "options": [],
-        "query": "query_result(pg_up{release=\"$release\"})",
-        "refresh": 1,
-        "regex": "/.*instance=\"([^\"]+).*/",
-        "skipUrlSync": false,
-        "sort": 1,
-        "tagValuesQuery": "",
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
-      },
-      {
-        "current": {},
-        "datasource": {
-          "type": "prometheus",
-          "uid": "${DS_PROMETHEUS}"
-        },
-        "definition": "",
-        "hide": 0,
-        "includeAll": true,
-        "label": "Database",
-        "multi": true,
-        "name": "datname",
-        "options": [],
-        "query": "label_values(datname)",
-        "refresh": 1,
+        "query": "label_values(pg_exporter_last_scrape_duration_seconds, instance)",
+        "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
         "sort": 1,
@@ -3353,7 +3316,30 @@
           "type": "prometheus",
           "uid": "${DS_PROMETHEUS}"
         },
-        "definition": "",
+        "definition": "label_values(pg_stat_database_tup_fetched{instance=~\"$instance\"}, datname)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Database",
+        "multi": true,
+        "name": "datname",
+        "options": [],
+        "query": "label_values(pg_stat_database_tup_fetched{instance=~\"$instance\"}, datname)",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values({mode=~\"accessexclusivelock|accesssharelock|exclusivelock|rowexclusivelock|rowsharelock|sharelock|sharerowexclusivelock|shareupdateexclusivelock\"}, mode)",
         "hide": 0,
         "includeAll": true,
         "label": "Lock table",
@@ -3361,7 +3347,7 @@
         "name": "mode",
         "options": [],
         "query": "label_values({mode=~\"accessexclusivelock|accesssharelock|exclusivelock|rowexclusivelock|rowsharelock|sharelock|sharerowexclusivelock|shareupdateexclusivelock\"}, mode)",
-        "refresh": 1,
+        "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
