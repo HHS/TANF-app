@@ -3,6 +3,7 @@
 import logging
 from typing import Optional
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
@@ -104,7 +105,31 @@ class KeycloakOIDCBackend(OIDCAuthenticationBackend):
                 "Updated user attributes from Keycloak claims: %s", user.username
             )
 
+        self._sync_keycloak_groups_on_login(user)
         return user
+
+    def _sync_keycloak_groups_on_login(self, user: User) -> None:
+        """Backfill Keycloak group memberships during successful OIDC logins.
+
+        Existing Django users can authenticate through Keycloak before any
+        Django group m2m change occurs, which means the signal-based group sync
+        path has not fired yet. In that case, Keycloak ends up with fresh user
+        attributes but stale or empty group memberships. Syncing groups here
+        ensures existing users pick up their Django-backed authorization state
+        on first successful Keycloak login.
+        """
+        if not getattr(settings, "KEYCLOAK_SYNC_ENABLED", False):
+            return
+
+        try:
+            from tdpservice.users.keycloak_client import KeycloakSyncClient
+
+            KeycloakSyncClient.get_instance().sync_user_groups(user)
+        except Exception:
+            logger.exception(
+                "Failed to sync Keycloak groups during OIDC login for user: %s",
+                user.username,
+            )
 
     def verify_claims(self, claims: dict) -> bool:
         """Verify that the claims allow authentication.

@@ -1,8 +1,9 @@
 """Tests for KeycloakOIDCBackend authentication backend."""
 
 import logging
+from unittest.mock import patch
 
-from django.test import RequestFactory
+from django.test import RequestFactory, override_settings
 
 import pytest
 
@@ -130,6 +131,36 @@ class TestUpdateUser:
         claims = {"hhs_id": "EXISTING1234"}
         updated = backend.update_user(user, claims)
         assert updated.hhs_id == "EXISTING1234"
+
+    @override_settings(KEYCLOAK_SYNC_ENABLED=True)
+    @patch("tdpservice.users.keycloak_client.KeycloakSyncClient.get_instance")
+    def test_update_user_syncs_keycloak_groups_on_login(
+        self, mock_get_instance, backend
+    ):
+        """Successful OIDC logins backfill Keycloak groups for existing users."""
+        user = UserFactory(hhs_id=None)
+        claims = {"hhs_id": "NEWHHS123456"}
+
+        mock_client = mock_get_instance.return_value
+
+        updated = backend.update_user(user, claims)
+
+        assert updated.hhs_id == "NEWHHS123456"
+        mock_client.sync_user_groups.assert_called_once_with(user)
+
+    @override_settings(KEYCLOAK_SYNC_ENABLED=False)
+    @patch("tdpservice.users.keycloak_client.KeycloakSyncClient.get_instance")
+    def test_update_user_skips_keycloak_group_sync_when_disabled(
+        self, mock_get_instance, backend
+    ):
+        """OIDC login does not sync groups when Keycloak sync is disabled."""
+        user = UserFactory(hhs_id=None)
+        claims = {"hhs_id": "NEWHHS123456"}
+
+        updated = backend.update_user(user, claims)
+
+        assert updated.hhs_id == "NEWHHS123456"
+        mock_get_instance.assert_not_called()
 
 
 @pytest.mark.django_db

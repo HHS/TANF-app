@@ -61,23 +61,6 @@ resource "cloudfoundry_service_instance" "database" {
 }
 
 ###
-# Provision Keycloak RDS instance
-###
-
-resource "cloudfoundry_service_instance" "keycloak_database" {
-  name             = "tdp-keycloak-db-staging"
-  space            = data.cloudfoundry_space.space.id
-  service_plan     = data.cloudfoundry_service.rds.service_plans["micro-psql"]
-  json_params      = "{\"version\": \"15\", \"storage_type\": \"gp3\", \"storage\": 10}"
-  recursive_delete = true
-  timeouts {
-    create = "60m"
-    update = "60m"
-    delete = "2h"
-  }
-}
-
-###
 # Provision S3 buckets
 ###
 

@@ -135,27 +135,3 @@ scrape_configs:
         labels:
           service: "grafana"
           env: "production"
-
-  - job_name: keycloak-dev
-    metrics_path: /metrics
-    static_configs:
-      - targets: ["keycloak-dev.apps.internal:9000"]
-        labels:
-          service: "keycloak"
-          env: "dev"
-
-  - job_name: keycloak-staging
-    metrics_path: /metrics
-    static_configs:
-      - targets: ["keycloak-staging.apps.internal:9000"]
-        labels:
-          service: "keycloak"
-          env: "staging"
-
-  - job_name: keycloak-prod
-    metrics_path: /metrics
-    static_configs:
-      - targets: ["keycloak-prod.apps.internal:9000"]
-        labels:
-          service: "keycloak"
-          env: "production"
