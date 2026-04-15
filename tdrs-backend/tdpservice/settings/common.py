@@ -545,6 +545,7 @@ class Common(Configuration):
     OIDC_RP_CLIENT_SECRET = KEYCLOAK_DJANGO_CLIENT_SECRET
     OIDC_RP_SIGN_ALGO = "RS256"
     OIDC_RP_SCOPES = "openid email"
+    OIDC_USERNAME_ALGO = "tdpservice.users.oidc.keycloak_username_algo"
 
     # Keycloak realm OIDC endpoints
     # KEYCLOAK_SERVER_URL is the Docker-internal URL (server-to-server: token, userinfo, JWKS)

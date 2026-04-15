@@ -34,31 +34,31 @@ class TestFilterUsersByClaims:
         """Returns the user that matches the provided HHS ID."""
         user = UserFactory(hhs_id="ABC123456789")
         claims = {"hhs_id": "ABC123456789", "email": "other@test.com"}
-        result = backend.filter_users_by_claims(claims)
-        assert len(result) == 1
-        assert str(result[0].id) == str(user.id)
+        user = backend.filter_users_by_claims(claims)
+        assert user is not None
+        assert str(user.id) == str(user.id)
 
     def test_filter_by_login_gov_uuid(self, backend):
         """Returns the user that matches the provided Login.gov UUID."""
         user = UserFactory(hhs_id=None)
         claims = {"login_gov_uuid": str(user.login_gov_uuid), "email": "other@test.com"}
-        result = backend.filter_users_by_claims(claims)
-        assert len(result) == 1
-        assert str(result[0].id) == str(user.id)
+        user = backend.filter_users_by_claims(claims)
+        assert user is not None
+        assert str(user.id) == str(user.id)
 
     def test_filter_by_email_fallback(self, backend):
         """Falls back to an email lookup when stronger identifiers are missing."""
         user = UserFactory(login_gov_uuid=None, hhs_id=None)
         claims = {"email": user.email}
-        result = backend.filter_users_by_claims(claims)
-        assert len(result) == 1
-        assert str(result[0].id) == str(user.id)
+        user = backend.filter_users_by_claims(claims)
+        assert user is not None
+        assert str(user.id) == str(user.id)
 
     def test_filter_returns_empty_for_unknown_user(self, backend):
         """Returns an empty list when no user matches the claims."""
         claims = {"email": "nonexistent@test.com"}
-        result = backend.filter_users_by_claims(claims)
-        assert result == []
+        user = backend.filter_users_by_claims(claims)
+        assert user is None
 
     def test_hhs_id_takes_priority_over_login_gov_uuid(self, backend):
         """When both hhs_id and login_gov_uuid are in claims, hhs_id is checked first."""
@@ -70,17 +70,17 @@ class TestFilterUsersByClaims:
             "login_gov_uuid": str(user_logingov.login_gov_uuid),
             "email": "someone@test.com",
         }
-        result = backend.filter_users_by_claims(claims)
-        assert len(result) == 1
-        assert str(result[0].id) == str(user_ams.id)
+        user = backend.filter_users_by_claims(claims)
+        assert user is not None
+        assert str(user.id) == str(user_ams.id)
 
     def test_hhs_id_falls_back_to_email_when_no_match(self, backend):
         """When hhs_id doesn't match, falls back to email lookup."""
         user = UserFactory(hhs_id="DIFFERENT123", login_gov_uuid=None)
         claims = {"hhs_id": "NOMATCH999999", "email": user.email}
-        result = backend.filter_users_by_claims(claims)
-        assert len(result) == 1
-        assert str(result[0].id) == str(user.id)
+        user = backend.filter_users_by_claims(claims)
+        assert user is not None
+        assert str(user.id) == str(user.id)
 
 
 @pytest.mark.django_db

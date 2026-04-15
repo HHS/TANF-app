@@ -15,6 +15,11 @@ logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
+def keycloak_username_algo(email: Optional[str], claims: Optional[dict] = None) -> str:
+    """Use normalized email addresses as Django usernames."""
+    return (email or "").lower()
+
+
 class KeycloakOIDCBackend(OIDCAuthenticationBackend):
     """Custom OIDC authentication backend for Keycloak-brokered login.
 
@@ -22,7 +27,7 @@ class KeycloakOIDCBackend(OIDCAuthenticationBackend):
     enforces ACF email domain restrictions, and checks account approval status.
     """
 
-    def filter_users_by_claims(self, claims: dict) -> list:
+    def filter_users_by_claims(self, claims: dict) -> User | None:
         """Look up existing users by identity provider-specific claims.
 
         Keycloak passes through the upstream IdP identity via custom attributes:
@@ -36,51 +41,35 @@ class KeycloakOIDCBackend(OIDCAuthenticationBackend):
         email = claims.get("email", "").lower()
 
         if hhs_id:
-            users = User.objects.filter(hhs_id=hhs_id)
-            if users.exists():
-                return list(users)
+            user = User.objects.filter(hhs_id=hhs_id).first()
+            if user is not None:
+                return user
             # Fall back to email lookup for AMS users who may not have hhs_id set yet
             if email:
-                users = User.objects.filter(username=email)
-                if users.exists():
-                    return list(users)
+                user = User.objects.filter(username=email).first()
+                return user
 
         if login_gov_uuid:
-            users = User.objects.filter(login_gov_uuid=login_gov_uuid)
-            if users.exists():
-                return list(users)
+            user = User.objects.filter(login_gov_uuid=login_gov_uuid).first()
+            if user is not None:
+                return user
 
         # Final fallback: lookup by email
         if email:
-            users = User.objects.filter(username=email)
-            if users.exists():
-                return list(users)
+            user = User.objects.filter(username=email).first()
+            return user
 
-        return []
+        return None
 
     def create_user(self, claims: dict) -> Optional[User]:
-        """Create a new Django user from Keycloak token claims."""
+        """Create a new Django user and apply app-specific OIDC fields."""
         email = claims.get("email", "").lower()
         if not email:
             logger.error("Cannot create user: no email in claims")
             return None
 
-        login_gov_uuid = claims.get("login_gov_uuid")
-        hhs_id = claims.get("hhs_id")
-
-        create_kwargs = {}
-        if login_gov_uuid:
-            create_kwargs["login_gov_uuid"] = login_gov_uuid
-        if hhs_id:
-            create_kwargs["hhs_id"] = hhs_id
-
-        user = User.objects.create_user(
-            username=email,
-            email=email,
-            **create_kwargs,
-        )
-        user.set_unusable_password()
-        user.save()
+        user = super().create_user({**claims, "email": email})
+        self.update_user(user, claims)
 
         logger.info("Created new user via Keycloak OIDC: %s", email)
         return user
@@ -109,15 +98,7 @@ class KeycloakOIDCBackend(OIDCAuthenticationBackend):
         return user
 
     def _sync_keycloak_groups_on_login(self, user: User) -> None:
-        """Backfill Keycloak group memberships during successful OIDC logins.
-
-        Existing Django users can authenticate through Keycloak before any
-        Django group m2m change occurs, which means the signal-based group sync
-        path has not fired yet. In that case, Keycloak ends up with fresh user
-        attributes but stale or empty group memberships. Syncing groups here
-        ensures existing users pick up their Django-backed authorization state
-        on first successful Keycloak login.
-        """
+        """Backfill Keycloak group memberships during successful OIDC logins."""
         if not getattr(settings, "KEYCLOAK_SYNC_ENABLED", False):
             return
 
@@ -132,13 +113,7 @@ class KeycloakOIDCBackend(OIDCAuthenticationBackend):
             )
 
     def verify_claims(self, claims: dict) -> bool:
-        """Verify that the claims allow authentication.
-
-        Checks:
-        1. Email is present
-        2. ACF email domain check: @acf.hhs.gov users must not authenticate via Login.gov
-        3. Account is not deactivated or inactive
-        """
+        """Verify that the claims allow authentication."""
         email = claims.get("email", "").lower()
         if not email:
             logger.warning("OIDC claims missing email, rejecting authentication")
@@ -155,9 +130,8 @@ class KeycloakOIDCBackend(OIDCAuthenticationBackend):
             return False
 
         # Check if the user already exists and is deactivated/inactive
-        users = self.filter_users_by_claims(claims)
-        if users:
-            user = users[0]
+        user = self.filter_users_by_claims(claims)
+        if user:
             if not user.is_active:
                 logger.warning("Login rejected for inactive user: %s", user.username)
                 return False
