@@ -83,14 +83,9 @@ class DataFileSerializer(serializers.ModelSerializer):
 
     def get_latest_reparse_file_meta(self, instance):
         """Return related reparse_file_metas, ordered by finished_at decending."""
-        reparse_file_metas = (
-            instance.reparse_file_metas.all()
-            .exclude(finished_at=None)
-            .order_by("-finished_at")
-        )
-        if reparse_file_metas.count() > 0:
+        if hasattr(instance, "rfms") and len(instance.rfms) > 0:
             return ReparseFileMetaSerializer(
-                reparse_file_metas.first(), many=False, read_only=True
+                instance.rfms[0], many=False, read_only=True
             ).data
         return None
 
