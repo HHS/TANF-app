@@ -1,0 +1,71 @@
+# File Specification for TANF Section 3 (Aggregate Data)
+#
+# This file defines:
+# - What format TANF Section 3 files use
+# - What record types can appear in these files
+# - How to identify each record type
+# - How records should be grouped for processing
+
+# =============================================================================
+# BASIC IDENTIFICATION
+# =============================================================================
+
+program: TAN
+section: 3
+description: "TANF Aggregate Data - Contains summary statistics and stratum data"
+
+# =============================================================================
+# FILE FORMAT
+# =============================================================================
+
+# TANF files are fixed-width positional text files (UTF-8 encoded).
+# Each field occupies specific byte positions within a line.
+format: positional
+
+# =============================================================================
+# SCHEMAS
+# =============================================================================
+
+# List of record type schemas that can appear in this file type.
+# These reference schema files in config/schemas/
+schemas:
+  - common/header
+  - common/trailer
+  - tanf/t6
+
+# =============================================================================
+# RECORD TYPE DETECTION
+# =============================================================================
+
+# How to determine which schema applies to each row.
+# For positional files, we use prefix matching on the first characters.
+record_type_detection:
+  method: prefix
+  prefixes:
+    - prefix: "HEADER"
+      schema: common/header
+    - prefix: "TRAILER"
+      schema: common/trailer
+    - prefix: "T6"
+      schema: tanf/t6
+
+# =============================================================================
+# ACCUMULATOR CONFIGURATION
+# =============================================================================
+
+# Configuration for how records are collected and grouped for processing.
+#
+# TANF Section 3 files contain aggregate data (not case-level data).
+# T6 records are file-level summaries without case numbers,
+# so no key-based grouping is needed.
+#
+# Each record is processed independently.
+accumulator:
+
+  # No key_fields for aggregate data - records don't belong to cases
+  # key_fields: (none)
+
+  batch_size: 1
+
+  # All record types are processed individually (no grouping needed)
+  grouped_schemas: []

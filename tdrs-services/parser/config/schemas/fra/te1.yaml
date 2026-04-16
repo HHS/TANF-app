@@ -1,0 +1,40 @@
+# FRA TE1 Record Schema
+# TANF Exiter Work Outcomes data
+#
+# This record contains work outcome data for TANF exiters.
+# FRA files are CSV format (not fixed-width positional).
+# Each row has two columns: EXIT_DATE and SSN.
+# There is no header or trailer - just data rows.
+
+record_type: TE1
+program: FRA
+section: 1
+document: "FRA Work Outcome TANF Exiters"
+format: csv
+
+# RecordType is a constant field (always "TE1") - not present in CSV data
+# but required in the database table
+shared:
+  - name: RecordType
+    friendly_name: Record Type
+    type: string
+    required: true
+    default: "TE1"
+
+# Fields in each row (CSV columns)
+# FRA uses column indices instead of byte positions
+segments:
+  - fields:
+      - name: EXIT_DATE
+        friendly_name: Exit Date
+        item: "A"
+        column: 0
+        type: integer
+        required: true
+
+      - name: SSN
+        friendly_name: Social Security Number
+        item: "B"
+        column: 1
+        type: string
+        required: true
