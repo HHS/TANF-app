@@ -67,6 +67,20 @@ def set_error_report(dfs, error_report):
     dfs.save()
 
 
+def should_send_reparse_notification(dfs, file_meta, reparse_id):
+    """Return whether a reparse completion email should be sent."""
+    if not reparse_id:
+        return True
+
+    if file_meta is None:
+        return True
+
+    return not (
+        file_meta.previous_summary_status == DataFileSummary.Status.ACCEPTED
+        and dfs.status == DataFileSummary.Status.ACCEPTED
+    )
+
+
 @shared_task
 def parse(data_file_id, reparse_id=None):
     """Send data file for processing."""
@@ -114,9 +128,10 @@ def parse(data_file_id, reparse_id=None):
             qs = qs.filter(user_permissions__codename="has_fra_access")
 
         recipients = qs.values_list("username", flat=True).distinct()
-        send_data_submitted_email(
-            dfs, recipients, is_reprocessed=(reparse_id is not None)
-        )
+        if should_send_reparse_notification(dfs, file_meta, reparse_id):
+            send_data_submitted_email(
+                dfs, recipients, is_reprocessed=(reparse_id is not None)
+            )
 
     except DecoderUnknownException:
         dfs.set_status(DataFileSummary.Status.REJECTED)
