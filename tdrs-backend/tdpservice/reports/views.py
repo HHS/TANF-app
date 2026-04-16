@@ -1,21 +1,31 @@
 """Define API views for reports app."""
 
 from wsgiref.util import FileWrapper
+
 from django.http import FileResponse
+
 from rest_framework.decorators import action
 from rest_framework.viewsets import ModelViewSet
 
 from tdpservice.reports.models import ReportFile, ReportSource
 from tdpservice.reports.serializers import ReportFileSerializer, ReportSourceSerializer
 from tdpservice.reports.tasks import process_report_source
-from tdpservice.users.permissions import IsApprovedPermission, ReportFilePermissions, ReportSourcePermissions
+from tdpservice.users.permissions import (
+    IsApprovedPermission,
+    ReportFilePermissions,
+    ReportSourcePermissions,
+)
 
 
 class ReportFileViewSet(ModelViewSet):
     """Report file views."""
 
     http_method_names = ["get", "post", "head"]
-    queryset = ReportFile.objects.all().order_by("-created_at")
+    queryset = (
+        ReportFile.objects.all()
+        .order_by("-created_at")
+        .select_related("stt", "user", "source")
+    )
     serializer_class = ReportFileSerializer
     permission_classes = [ReportFilePermissions, IsApprovedPermission]
 
@@ -24,11 +34,13 @@ class ReportFileViewSet(ModelViewSet):
         queryset = super().get_queryset()
 
         # Data Analysts should only see reports for their assigned STT
-        if self.request.user.is_data_analyst and hasattr(self.request.user, 'stt'):
+        if self.request.user.is_data_analyst and hasattr(self.request.user, "stt"):
             queryset = queryset.filter(stt=self.request.user.stt)
 
         # Regional Staff should only see reports for STTs in their region
-        if self.request.user.is_regional_staff and hasattr(self.request.user, 'regions'):
+        if self.request.user.is_regional_staff and hasattr(
+            self.request.user, "regions"
+        ):
             user_regions = self.request.user.regions.all()
             queryset = queryset.filter(stt__region__in=user_regions)
 

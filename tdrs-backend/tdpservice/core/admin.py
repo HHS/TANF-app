@@ -1,4 +1,5 @@
 """Admin classes for core app models."""
+
 from django.contrib import admin
 from django.contrib.admin.models import LogEntry
 from django.contrib.auth.admin import GroupAdmin
@@ -38,6 +39,8 @@ class LogEntryAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     ]
 
     exclude = ["object_id"]
+
+    list_select_related = ("content_type", "user")
 
     def object_link(self, obj):
         """Create a link to to corresponding objects for a given LogEntry."""
