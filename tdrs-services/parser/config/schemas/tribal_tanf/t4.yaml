@@ -1,0 +1,116 @@
+# Tribal TANF T4 Record Schema
+# Case-level data for closed Tribal TANF cases
+#
+# This record contains case closure information including reason for closure
+# and benefits received at closure. One T4 record exists per closed case.
+
+record_type: T4
+program: TRIBAL
+section: 2
+document: "Tribal TANF Closed Case Data"
+format: positional
+
+# Fields shared across all segments (included in every output row)
+shared:
+  - name: RecordType
+    friendly_name: Record Type
+    item: "0"
+    start: 0
+    end: 2
+    type: string
+    required: true
+
+  - name: RPT_MONTH_YEAR
+    friendly_name: Reporting Year and Month
+    item: "4"
+    start: 2
+    end: 8
+    type: integer
+    required: true
+
+  - name: CASE_NUMBER
+    friendly_name: Case Number--TANF
+    item: "6"
+    start: 8
+    end: 19
+    type: string
+    required: true
+
+# Each segment produces one output row (combined with shared fields)
+segments:
+  - fields:
+      - name: COUNTY_FIPS_CODE
+        friendly_name: County FIPS Code
+        item: "2"
+        start: 19
+        end: 22
+        type: string
+        required: false
+        transform:
+          name: zero_pad
+          params:
+            digits: 3
+
+      - name: STRATUM
+        friendly_name: Stratum
+        item: "5"
+        start: 22
+        end: 24
+        type: string
+        required: false
+
+      - name: ZIP_CODE
+        friendly_name: ZIP Code
+        item: "7"
+        start: 24
+        end: 29
+        type: string
+        required: true
+
+      - name: DISPOSITION
+        friendly_name: Disposition
+        item: "8"
+        start: 29
+        end: 30
+        type: integer
+        required: true
+
+      - name: CLOSURE_REASON
+        friendly_name: Reason for Closure
+        item: "9"
+        start: 30
+        end: 32
+        type: string
+        required: true
+
+      - name: REC_SUB_HOUSING
+        friendly_name: Received Subsidized Housing
+        item: "10"
+        start: 32
+        end: 33
+        type: integer
+        required: true
+
+      - name: REC_MED_ASSIST
+        friendly_name: Received Medical Assistance
+        item: "11"
+        start: 33
+        end: 34
+        type: integer
+        required: true
+
+      - name: REC_FOOD_STAMPS
+        friendly_name: Received SNAP Assistance
+        item: "12"
+        start: 34
+        end: 35
+        type: integer
+        required: true
+
+      - name: REC_SUB_CC
+        friendly_name: Received Subsidized Child Care
+        item: "13"
+        start: 35
+        end: 36
+        type: integer
+        required: true
