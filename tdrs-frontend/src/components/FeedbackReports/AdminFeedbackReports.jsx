@@ -7,6 +7,12 @@ import FeedbackReportsHistory from './FeedbackReportsHistory'
 import { PaginatedComponent } from '../Paginator/Paginator'
 import { Spinner } from '../Spinner'
 import { constructYears } from '../Reports/utils'
+import { RadioSelect } from '../Form'
+import {
+  REPORT_TYPES,
+  REPORT_TYPE_LABELS,
+  REPORT_TYPE_OPTIONS,
+} from './FeedbackReportsConstants'
 
 const INVALID_EXT_ERROR = 'Invalid file. Make sure to select a zip file.'
 const NO_FILE_ERROR = 'No file selected.'
@@ -23,6 +29,15 @@ function AdminFeedbackReports() {
   const [searchParams, setSearchParams] = useSearchParams()
   const yearOptions = constructYears()
 
+  // Get validated report type from URL params (defaults to TANF_SSP)
+  const getValidatedReportType = () => {
+    const urlType = searchParams.get('type')
+    if (urlType && Object.values(REPORT_TYPES).includes(urlType)) {
+      return urlType
+    }
+    return REPORT_TYPES.TANF_SSP
+  }
+
   // Get validated year from URL params (returns null if not present/invalid)
   const getValidatedYear = () => {
     const urlYear = searchParams.get('year')
@@ -34,6 +49,9 @@ function AdminFeedbackReports() {
     return null
   }
 
+  const [selectedReportType, setSelectedReportType] = useState(
+    getValidatedReportType
+  )
   const [selectedYear, setSelectedYear] = useState(getValidatedYear)
   const [selectedFile, setSelectedFile] = useState(null)
   const [uploadHistory, setUploadHistory] = useState([])
@@ -65,7 +83,7 @@ function AdminFeedbackReports() {
     setHistoryLoading(true)
     const { data, ok, error } = await get(
       `${process.env.REACT_APP_BACKEND_URL}/reports/report-sources/`,
-      { params: { year: selectedYear } }
+      { params: { year: selectedYear, report_type: selectedReportType } }
     )
 
     if (ok) {
@@ -79,7 +97,7 @@ function AdminFeedbackReports() {
       })
     }
     setHistoryLoading(false)
-  }, [selectedYear])
+  }, [selectedYear, selectedReportType])
 
   // Fetch upload history when year changes
   useEffect(() => {
@@ -204,6 +222,7 @@ function AdminFeedbackReports() {
     formData.append('file', selectedFile)
     formData.append('year', selectedYear)
     formData.append('date_extracted_on', getDatePickerValue())
+    formData.append('report_type', selectedReportType)
 
     const { data, ok } = await post(
       `${process.env.REACT_APP_BACKEND_URL}/reports/report-sources/`,
@@ -262,12 +281,25 @@ function AdminFeedbackReports() {
   }
 
   /**
-   * Handles fiscal year selection change
+   * Syncs current selections to URL query params
    */
-  const handleYearChange = (e) => {
-    const newYear = e.target.value || null
-    setSelectedYear(newYear)
-    // Reset form state when year changes
+  const updateSearchParams = (overrides = {}) => {
+    const params = {
+      type: selectedReportType,
+      ...(selectedYear ? { year: selectedYear } : {}),
+      ...overrides,
+    }
+    // Remove null/undefined values
+    Object.keys(params).forEach((key) => {
+      if (params[key] == null) delete params[key]
+    })
+    setSearchParams(params, { replace: true })
+  }
+
+  /**
+   * Resets form state (shared between year and report type changes)
+   */
+  const resetFormState = () => {
     setSelectedFile(null)
     setFileError(null)
     clearDatePicker()
@@ -275,12 +307,25 @@ function AdminFeedbackReports() {
     setFormSubmitAttempted(false)
     setDateTouched(false)
     setAlert({ active: false, type: null, message: null })
-    // Update URL param
-    if (newYear) {
-      setSearchParams({ year: newYear }, { replace: true })
-    } else {
-      setSearchParams({}, { replace: true })
-    }
+  }
+
+  /**
+   * Handles report type selection change
+   */
+  const handleReportTypeChange = (value) => {
+    setSelectedReportType(value)
+    resetFormState()
+    updateSearchParams({ type: value })
+  }
+
+  /**
+   * Handles fiscal year selection change
+   */
+  const handleYearChange = (e) => {
+    const newYear = e.target.value || null
+    setSelectedYear(newYear)
+    resetFormState()
+    updateSearchParams(newYear ? { year: newYear } : { year: undefined })
   }
 
   /**
@@ -303,15 +348,25 @@ function AdminFeedbackReports() {
       <div className="page-container" style={{ position: 'relative' }}>
         {/* Description */}
         <p className="margin-top-5 margin-bottom-0">
-          Once submitted, TDP will distribute feedback reports to TANF/SSP
-          submission history pages of each state and notify users that feedback
-          reports are available. There may be several minutes between when the
-          ZIP is uploaded and when all notifications have been sent as TDP
-          processes the reports.
+          Once submitted, TDP will distribute feedback reports to{' '}
+          {REPORT_TYPE_LABELS[selectedReportType]} submission history pages of
+          each state and notify users that feedback reports are available. There
+          may be several minutes between when the ZIP is uploaded and when all
+          notifications have been sent as TDP processes the reports.
         </p>
 
+        {/* Report Type Selector */}
+        <RadioSelect
+          label="Feedback Report Type*"
+          fieldName="reportType"
+          classes="margin-top-4"
+          options={REPORT_TYPE_OPTIONS}
+          setValue={handleReportTypeChange}
+          selectedValue={selectedReportType}
+        />
+
         {/* Fiscal Year Selector */}
-        <div className="usa-form-group maxw-mobile margin-top-4">
+        <div className="usa-form-group maxw-mobile margin-top-4 margin-bottom-5">
           <label className="usa-label text-bold" htmlFor="fiscal-year-select">
             Fiscal Year
           </label>
@@ -336,7 +391,8 @@ function AdminFeedbackReports() {
             <hr className="margin-top-4 margin-bottom-4" />
 
             <h2 className="margin-top-0 margin-bottom-4">
-              Fiscal Year {selectedYear} — Upload Feedback Reports
+              Fiscal Year {selectedYear} — Upload{' '}
+              {REPORT_TYPE_LABELS[selectedReportType]} Feedback Reports
             </h2>
 
             {/* Alert Messages */}
