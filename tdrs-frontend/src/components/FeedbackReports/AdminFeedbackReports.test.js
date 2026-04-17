@@ -55,9 +55,9 @@ describe('AdminFeedbackReports', () => {
     }))
   })
 
-  const renderComponent = () => {
+  const renderComponent = (initialEntries = ['/feedback-reports']) => {
     return render(
-      <MemoryRouter>
+      <MemoryRouter initialEntries={initialEntries}>
         <Provider store={store}>
           <AdminFeedbackReports />
         </Provider>
@@ -71,7 +71,9 @@ describe('AdminFeedbackReports', () => {
     fireEvent.change(fiscalYearSelect, { target: { value: year } })
     await waitFor(() => {
       expect(
-        screen.getByText(`Fiscal Year ${year} — Upload Feedback Reports`)
+        screen.getByText(
+          `Fiscal Year ${year} — Upload TANF/SSP Feedback Reports`
+        )
       ).toBeInTheDocument()
     })
   }
@@ -140,13 +142,13 @@ describe('AdminFeedbackReports', () => {
       })
     })
 
-    it('renders H2 header with selected fiscal year', async () => {
+    it('renders H2 header with selected fiscal year and report type', async () => {
       renderComponent()
 
       await selectFiscalYear('2025')
 
       expect(
-        screen.getByText('Fiscal Year 2025 — Upload Feedback Reports')
+        screen.getByText('Fiscal Year 2025 — Upload TANF/SSP Feedback Reports')
       ).toBeInTheDocument()
     })
 
@@ -159,6 +161,151 @@ describe('AdminFeedbackReports', () => {
         screen.getByText('Data extracted from database on')
       ).toBeInTheDocument()
       expect(screen.getByText('mm/dd/yyyy')).toBeInTheDocument()
+    })
+  })
+
+  describe('Report Type Selection', () => {
+    it('renders report type radio selector with TANF/SSP and FRA options', () => {
+      renderComponent()
+
+      expect(
+        screen.getByText('Feedback Report Type*')
+      ).toBeInTheDocument()
+      expect(screen.getByLabelText('TANF/SSP')).toBeInTheDocument()
+      expect(screen.getByLabelText('FRA')).toBeInTheDocument()
+    })
+
+    it('defaults to TANF/SSP report type', () => {
+      renderComponent()
+
+      const tanfRadio = screen.getByLabelText('TANF/SSP')
+      expect(tanfRadio).toBeChecked()
+    })
+
+    it('updates header when FRA is selected', async () => {
+      renderComponent()
+
+      // Select FRA
+      const fraRadio = screen.getByLabelText('FRA')
+      fireEvent.click(fraRadio)
+
+      // Select a year to see the header
+      const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
+      fireEvent.change(fiscalYearSelect, { target: { value: '2025' } })
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('Fiscal Year 2025 — Upload FRA Feedback Reports')
+        ).toBeInTheDocument()
+      })
+    })
+
+    it('updates description text based on selected report type', () => {
+      renderComponent()
+
+      // Default TANF/SSP
+      expect(
+        screen.getByText(/TANF\/SSP submission history pages/)
+      ).toBeInTheDocument()
+
+      // Switch to FRA
+      const fraRadio = screen.getByLabelText('FRA')
+      fireEvent.click(fraRadio)
+
+      expect(
+        screen.getByText(/FRA submission history pages/)
+      ).toBeInTheDocument()
+    })
+
+    it('resets form state when report type changes', async () => {
+      renderComponent()
+
+      await selectFiscalYear('2025')
+
+      setDateInputValue('2025-02-28')
+
+      // Change report type
+      const fraRadio = screen.getByLabelText('FRA')
+      fireEvent.click(fraRadio)
+
+      // Date should be cleared
+      const dateInput = document.getElementById('date-extracted-on')
+      expect(dateInput.value).toBe('')
+    })
+
+    it('fetches history with report_type when type changes', async () => {
+      renderComponent()
+
+      await selectFiscalYear('2025')
+
+      // Clear mock calls from initial fetch
+      get.mockClear()
+
+      // Switch to FRA
+      const fraRadio = screen.getByLabelText('FRA')
+      fireEvent.click(fraRadio)
+
+      await waitFor(() => {
+        expect(get).toHaveBeenCalledWith(
+          expect.stringContaining('/reports/report-sources/'),
+          expect.objectContaining({
+            params: { year: '2025', report_type: 'FRA' },
+          })
+        )
+      })
+    })
+
+    it('includes report_type in upload POST', async () => {
+      post.mockResolvedValue({
+        data: { id: 1, status: 'PENDING' },
+        ok: true,
+        status: 200,
+        error: null,
+      })
+
+      renderComponent()
+
+      // Select FRA
+      const fraRadio = screen.getByLabelText('FRA')
+      fireEvent.click(fraRadio)
+
+      // Select year
+      const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
+      fireEvent.change(fiscalYearSelect, { target: { value: '2025' } })
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('Fiscal Year 2025 — Upload FRA Feedback Reports')
+        ).toBeInTheDocument()
+      })
+
+      await selectFile('FY2025.zip')
+      setDateInputValue('2025-02-28')
+
+      const uploadButton = screen.getByRole('button', {
+        name: /Upload & Notify States/i,
+      })
+      fireEvent.click(uploadButton)
+
+      await waitFor(() => {
+        expect(post).toHaveBeenCalled()
+        const formData = post.mock.calls[0][1]
+        expect(formData.get('report_type')).toBe('FRA')
+      })
+    })
+
+    it('initializes report type from URL param', () => {
+      renderComponent(['/feedback-reports?type=FRA'])
+
+      const fraRadio = screen.getByLabelText('FRA')
+      expect(fraRadio).toBeChecked()
+    })
+
+    it('defaults to TANF_SSP for invalid URL type param', () => {
+      renderComponent(['/feedback-reports?type=INVALID'])
+
+      const tanfRadio = screen.getByLabelText('TANF/SSP')
+      expect(tanfRadio).toBeChecked()
     })
   })
 
@@ -310,11 +457,13 @@ describe('AdminFeedbackReports', () => {
         ).toBeInTheDocument()
       })
 
-      // Verify POST was called with year and date
+      // Verify POST was called with year, date, and report_type
       expect(post).toHaveBeenCalledWith(
         expect.stringContaining('/reports/report-sources/'),
         expect.any(FormData)
       )
+      const formData = post.mock.calls[0][1]
+      expect(formData.get('report_type')).toBe('TANF_SSP')
     })
 
     it('shows error message when upload fails', async () => {
@@ -380,7 +529,7 @@ describe('AdminFeedbackReports', () => {
   })
 
   describe('Upload History', () => {
-    it('fetches history when fiscal year is selected', async () => {
+    it('fetches history with report_type when fiscal year is selected', async () => {
       const mockHistory = [
         {
           id: 1,
@@ -412,7 +561,7 @@ describe('AdminFeedbackReports', () => {
       expect(get).toHaveBeenCalledWith(
         expect.stringContaining('/reports/report-sources/'),
         expect.objectContaining({
-          params: { year: '2025' },
+          params: { year: '2025', report_type: 'TANF_SSP' },
         })
       )
     })
@@ -696,7 +845,9 @@ describe('AdminFeedbackReports', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText('Fiscal Year 2024 — Upload Feedback Reports')
+          screen.getByText(
+            'Fiscal Year 2024 — Upload TANF/SSP Feedback Reports'
+          )
         ).toBeInTheDocument()
       })
 
@@ -722,13 +873,7 @@ describe('AdminFeedbackReports', () => {
 
   describe('URL Parameter Handling', () => {
     it('handles invalid year in URL (NaN)', async () => {
-      render(
-        <MemoryRouter initialEntries={['?year=invalid']}>
-          <Provider store={store}>
-            <AdminFeedbackReports />
-          </Provider>
-        </MemoryRouter>
-      )
+      renderComponent(['?year=invalid'])
 
       // Should default to no selection when year is invalid
       await waitFor(() => {
@@ -740,13 +885,7 @@ describe('AdminFeedbackReports', () => {
     })
 
     it('handles year not in valid options', async () => {
-      render(
-        <MemoryRouter initialEntries={['?year=1900']}>
-          <Provider store={store}>
-            <AdminFeedbackReports />
-          </Provider>
-        </MemoryRouter>
-      )
+      renderComponent(['?year=1900'])
 
       // Should default to no selection when year is not in options
       await waitFor(() => {
@@ -755,13 +894,7 @@ describe('AdminFeedbackReports', () => {
     })
 
     it('clears URL param when year selection is cleared', async () => {
-      render(
-        <MemoryRouter initialEntries={['?year=2025']}>
-          <Provider store={store}>
-            <AdminFeedbackReports />
-          </Provider>
-        </MemoryRouter>
-      )
+      renderComponent(['?year=2025&type=TANF_SSP'])
 
       await waitFor(() => {
         expect(screen.getByLabelText('Fiscal Year')).toHaveValue('2025')
@@ -776,6 +909,18 @@ describe('AdminFeedbackReports', () => {
         expect(
           screen.queryByText('Feedback Reports ZIP')
         ).not.toBeInTheDocument()
+      })
+    })
+
+    it('initializes both type and year from URL params', async () => {
+      renderComponent(['?type=FRA&year=2025'])
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('FRA')).toBeChecked()
+        expect(screen.getByLabelText('Fiscal Year')).toHaveValue('2025')
+        expect(
+          screen.getByText('Fiscal Year 2025 — Upload FRA Feedback Reports')
+        ).toBeInTheDocument()
       })
     })
   })
