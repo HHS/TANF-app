@@ -6,9 +6,42 @@ import { Spinner } from '../Spinner'
 import { PaginatedComponent } from '../Paginator/Paginator'
 import STTFeedbackReportsTable from './STTFeedbackReportsTable'
 import { constructYears } from '../Reports/utils'
-import { accountIsRegionalStaff } from '../../selectors/auth'
+import {
+  accountIsRegionalStaff,
+  accountHasFraAccess,
+} from '../../selectors/auth'
 import { availableStts } from '../../selectors/stts'
 import STTComboBox from '../STTComboBox'
+import { RadioSelect } from '../Form'
+import {
+  REPORT_TYPES,
+  REPORT_TYPE_LABELS,
+  REPORT_TYPE_OPTIONS,
+} from './FeedbackReportsConstants'
+
+/**
+ * Reference table data for each report type
+ */
+const REFERENCE_TABLES = {
+  TANF_SSP: {
+    caption: 'TANF/SSP Data Reporting Reference',
+    quarters: [
+      { label: 'FY Q1', period: 'Oct 1 - Dec 31', deadline: 'February 14' },
+      { label: 'FY Q2', period: 'Jan 1 - Mar 31', deadline: 'May 15' },
+      { label: 'FY Q3', period: 'Apr 1 - Jun 30', deadline: 'August 14' },
+      { label: 'FY Q4', period: 'Jul 1 - Sep 30', deadline: 'November 14' },
+    ],
+  },
+  FRA: {
+    caption: 'FRA Data Reporting Reference',
+    quarters: [
+      { label: 'FY Q1', period: 'Oct 1 - Dec 31', deadline: 'May 15' },
+      { label: 'FY Q2', period: 'Jan 1 - Mar 31', deadline: 'August 14' },
+      { label: 'FY Q3', period: 'Apr 1 - Jun 30', deadline: 'November 14' },
+      { label: 'FY Q4', period: 'Jul 1 - Sep 30', deadline: 'February 14' },
+    ],
+  },
+}
 
 /**
  * STTFeedbackReports component allows STT Data Analysts and Regional Staff
@@ -16,6 +49,7 @@ import STTComboBox from '../STTComboBox'
  *
  * - Data Analysts see reports for their assigned STT (auto-fetched on year change)
  * - Regional Staff select an STT from their region, auto-fetches when both STT and year are selected
+ * - Users with FRA access see a report type selector; others default to TANF/SSP
  */
 function STTFeedbackReports() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -23,7 +57,27 @@ function STTFeedbackReports() {
 
   const user = useSelector((state) => state.auth.user)
   const isRegionalStaff = useSelector(accountIsRegionalStaff)
-  const filteredStts = useSelector(availableStts('/feedback-reports'))
+  const hasFraAccess = useSelector(accountHasFraAccess)
+
+  // Get validated report type from URL params
+  // If user doesn't have FRA access, always force TANF_SSP
+  const getValidatedReportType = () => {
+    if (!hasFraAccess) return REPORT_TYPES.TANF_SSP
+    const urlType = searchParams.get('type')
+    if (urlType && Object.values(REPORT_TYPES).includes(urlType)) {
+      return urlType
+    }
+    return REPORT_TYPES.TANF_SSP
+  }
+
+  const [selectedReportType, setSelectedReportType] = useState(
+    getValidatedReportType
+  )
+
+  // Filter STTs based on selected report type (tribes excluded for FRA)
+  const sttPath =
+    selectedReportType === REPORT_TYPES.FRA ? '/fra' : '/feedback-reports'
+  const filteredStts = useSelector(availableStts(sttPath))
 
   // Initialize STT from URL query param (regional staff only)
   const getValidatedStt = () => {
@@ -66,19 +120,25 @@ function STTFeedbackReports() {
   // Sync selections to URL query params
   useEffect(() => {
     const newParams = new URLSearchParams()
+    newParams.set('type', selectedReportType)
     if (selectedYear) {
       newParams.set('year', selectedYear)
     }
     if (isRegionalStaff && selectedStt) {
       newParams.set('stt', selectedStt.name)
     }
-    if (newParams.toString()) {
-      setSearchParams(newParams, { replace: true })
-    }
-  }, [selectedYear, selectedStt, isRegionalStaff, setSearchParams])
+    setSearchParams(newParams, { replace: true })
+  }, [
+    selectedYear,
+    selectedStt,
+    selectedReportType,
+    isRegionalStaff,
+    setSearchParams,
+  ])
 
   /**
-   * Fetches the feedback reports from the backend filtered by year (and STT for regional staff)
+   * Fetches the feedback reports from the backend filtered by year, report_type,
+   * and STT (for regional staff)
    */
   const fetchReports = useCallback(async () => {
     // Only fetch if a year is selected
@@ -96,7 +156,7 @@ function STTFeedbackReports() {
     setLoading(true)
     setAlert({ active: false, type: null, message: null })
 
-    const params = { year: selectedYear }
+    const params = { year: selectedYear, report_type: selectedReportType }
     if (isRegionalStaff && selectedStt) {
       params.stt = selectedStt.id
     }
@@ -117,12 +177,28 @@ function STTFeedbackReports() {
       })
     }
     setLoading(false)
-  }, [selectedYear, isRegionalStaff, selectedStt])
+  }, [selectedYear, selectedReportType, isRegionalStaff, selectedStt])
 
   // Auto-fetch when dependencies change (both user types)
   useEffect(() => {
     fetchReports()
   }, [fetchReports])
+
+  /**
+   * Handle report type selection change
+   */
+  const handleReportTypeChange = (value) => {
+    setSelectedReportType(value)
+    setReports([])
+    // Clear STT selection when switching to FRA (tribes not valid for FRA)
+    if (isRegionalStaff && value === REPORT_TYPES.FRA && selectedStt) {
+      const isTribe = selectedStt.type === 'tribe'
+      if (isTribe) {
+        setSelectedStt(null)
+        setSelectedSttName('')
+      }
+    }
+  }
 
   /**
    * Handle year selection change
@@ -152,10 +228,14 @@ function STTFeedbackReports() {
     ? selectedYear && selectedStt
     : selectedYear
 
+  // Get reference table data for selected report type
+  const referenceTable = REFERENCE_TABLES[selectedReportType]
+  const reportTypeLabel = REPORT_TYPE_LABELS[selectedReportType]
+
   return (
     <div className="feedback-reports">
       <div className="page-container" style={{ position: 'relative' }}>
-        {/* STT Selector, Fiscal Year Selector, and Reference Table */}
+        {/* STT Selector, Report Type, Fiscal Year Selector, and Reference Table */}
         <div className="grid-row grid-gap margin-top-5">
           <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-auto">
             {isRegionalStaff && (
@@ -165,6 +245,17 @@ function STTFeedbackReports() {
                   selectedStt={selectedSttName}
                 />
               </div>
+            )}
+
+            {hasFraAccess && (
+              <RadioSelect
+                label="Feedback Report Type*"
+                fieldName="reportType"
+                classes="margin-top-4"
+                options={REPORT_TYPE_OPTIONS}
+                setValue={handleReportTypeChange}
+                selectedValue={selectedReportType}
+              />
             )}
 
             <div className="usa-form-group maxw-mobile margin-top-4">
@@ -192,9 +283,7 @@ function STTFeedbackReports() {
 
           <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
             <table className="usa-table usa-table--striped margin-top-4 desktop:width-tablet mobile:width-full">
-              <caption className="text-bold">
-                TANF/SSP Data Reporting Reference
-              </caption>
+              <caption className="text-bold">{referenceTable.caption}</caption>
               <thead>
                 <tr>
                   <th>Fiscal Year (FY) &amp; Quarter (Q)</th>
@@ -203,34 +292,15 @@ function STTFeedbackReports() {
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>
-                    <strong>FY Q1</strong>
-                  </td>
-                  <td>Oct 1 - Dec 31</td>
-                  <td>February 14</td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>FY Q2</strong>
-                  </td>
-                  <td>Jan 1 - Mar 31</td>
-                  <td>May 15</td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>FY Q3</strong>
-                  </td>
-                  <td>Apr 1 - Jun 30</td>
-                  <td>August 14</td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>FY Q4</strong>
-                  </td>
-                  <td>Jul 1 - Sep 30</td>
-                  <td>November 14</td>
-                </tr>
+                {referenceTable.quarters.map((q) => (
+                  <tr key={q.label}>
+                    <td>
+                      <strong>{q.label}</strong>
+                    </td>
+                    <td>{q.period}</td>
+                    <td>{q.deadline}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -242,7 +312,8 @@ function STTFeedbackReports() {
 
             {/* STT and Fiscal Year Header */}
             <h2>
-              {sttName} — Fiscal Year {selectedYear} Feedback Reports
+              {sttName} — {reportTypeLabel} Fiscal Year {selectedYear} Feedback
+              Reports
             </h2>
 
             {/* Description Text */}
