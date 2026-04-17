@@ -168,9 +168,7 @@ describe('AdminFeedbackReports', () => {
     it('renders report type radio selector with TANF/SSP and FRA options', () => {
       renderComponent()
 
-      expect(
-        screen.getByText('Feedback Report Type*')
-      ).toBeInTheDocument()
+      expect(screen.getByText('Feedback Report Type*')).toBeInTheDocument()
       expect(screen.getByLabelText('TANF/SSP')).toBeInTheDocument()
       expect(screen.getByLabelText('FRA')).toBeInTheDocument()
     })
