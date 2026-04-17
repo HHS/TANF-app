@@ -117,9 +117,7 @@ describe('FeedbackReportAlert', () => {
     renderComponent()
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/Feedback Reports Available/)
-      ).toBeInTheDocument()
+      expect(screen.getByText(/Feedback Reports Available/)).toBeInTheDocument()
     })
   })
 
@@ -534,9 +532,7 @@ describe('FeedbackReportAlert', () => {
         ).toBeInTheDocument()
       })
 
-      fireEvent.click(
-        screen.getByRole('button', { name: /dismiss alert/i })
-      )
+      fireEvent.click(screen.getByRole('button', { name: /dismiss alert/i }))
 
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
         'feedbackAlertDismissed_FRA_2025',
