@@ -51,6 +51,23 @@ Feature: Admin Feedback Reports
         And 'DIGIT Diana' clicks upload
         Then 'DIGIT Diana' sees the error about missing date
 
+    # Report Type Selection tests
+
+    Scenario: Report type radio selector is visible with TANF/SSP and FRA options
+        When 'DIGIT Diana' navigates to Feedback Reports
+        Then 'DIGIT Diana' sees the report type selector with 'TANF/SSP' and 'FRA'
+
+    Scenario: Selecting FRA updates the upload header
+        When 'DIGIT Diana' navigates to Feedback Reports
+        And 'DIGIT Diana' selects report type 'FRA'
+        And 'DIGIT Diana' selects fiscal year '2025'
+        Then 'DIGIT Diana' sees the upload header 'Fiscal Year 2025 — Upload FRA Feedback Reports'
+
+    Scenario: Default report type is TANF/SSP
+        When 'DIGIT Diana' navigates to Feedback Reports
+        And 'DIGIT Diana' selects fiscal year '2025'
+        Then 'DIGIT Diana' sees the upload header 'Fiscal Year 2025 — Upload TANF/SSP Feedback Reports'
+
     # Permission tests - users who SHOULD have access
 
     Scenario: OFA System Admin can access admin feedback reports
