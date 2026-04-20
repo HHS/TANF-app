@@ -70,6 +70,7 @@ function AdminFeedbackReports() {
 
   const inputRef = useRef(null)
   const uploadFormRef = useRef(null)
+  const headerRef = useRef(null)
 
   /**
    * Fetches the upload history from the backend filtered by selected year
@@ -343,6 +344,13 @@ function AdminFeedbackReports() {
   // Determine if we should show date error
   const showDateError = dateError && (dateTouched || formSubmitAttempted)
 
+  // Focus the H2 header for screen readers when content section appears
+  useEffect(() => {
+    if (selectedYear && headerRef.current) {
+      headerRef.current.focus()
+    }
+  }, [selectedYear])
+
   return (
     <div className="feedback-reports">
       <div className="page-container" style={{ position: 'relative' }}>
@@ -390,9 +398,12 @@ function AdminFeedbackReports() {
           <>
             <hr className="margin-top-4 margin-bottom-4" />
 
-            <h2 className="margin-top-0 margin-bottom-4">
-              Fiscal Year {selectedYear} — Upload{' '}
-              {REPORT_TYPE_LABELS[selectedReportType]} Feedback Reports
+            <h2
+              ref={headerRef}
+              className="margin-top-0 margin-bottom-4"
+              tabIndex="-1"
+            >
+              {`Fiscal Year ${selectedYear} — Upload ${REPORT_TYPE_LABELS[selectedReportType]} Feedback Reports`}
             </h2>
 
             {/* Alert Messages */}

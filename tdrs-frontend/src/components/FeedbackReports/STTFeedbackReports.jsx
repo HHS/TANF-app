@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router-dom'
 import { get } from '../../fetch-instance'
@@ -108,6 +108,7 @@ function STTFeedbackReports() {
   // Derive display name
   const sttName = isRegionalStaff ? selectedStt?.name : user?.stt?.name
 
+  const headerRef = useRef(null)
   const [reports, setReports] = useState([])
   const [loading, setLoading] = useState(false)
   const [selectedYear, setSelectedYear] = useState(getValidatedYear)
@@ -228,6 +229,13 @@ function STTFeedbackReports() {
     ? selectedYear && selectedStt
     : selectedYear
 
+  // Focus the H2 header for screen readers when content section appears
+  useEffect(() => {
+    if (showContent && headerRef.current) {
+      headerRef.current.focus()
+    }
+  }, [showContent])
+
   // Get reference table data for selected report type
   const referenceTable = REFERENCE_TABLES[selectedReportType]
   const reportTypeLabel = REPORT_TYPE_LABELS[selectedReportType]
@@ -311,9 +319,8 @@ function STTFeedbackReports() {
             <hr className="margin-top-4 margin-bottom-4" />
 
             {/* STT and Fiscal Year Header */}
-            <h2>
-              {sttName} — {reportTypeLabel} Fiscal Year {selectedYear} Feedback
-              Reports
+            <h2 ref={headerRef} tabIndex="-1">
+              {`${sttName} — ${reportTypeLabel} Fiscal Year ${selectedYear} Feedback Reports`}
             </h2>
 
             {/* Description Text */}
