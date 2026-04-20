@@ -337,14 +337,9 @@ function STTFeedbackReports() {
                 feedback about your data.
               </p>
               <p>
-                Please review this feedback and, if needed, resubmit complete
-                and accurate data via TDP.
-              </p>
-              <p>
-                If you have questions or require assistance, feel free to
-                contact{' '}
-                <a href="mailto:Yun.Song@acf.hhs.gov">Yun.Song@acf.hhs.gov</a>{' '}
-                and copy{' '}
+                Please review the feedback and, if needed, resubmit complete and
+                accurate data via TDP. Questions about these reports can be sent
+                to{' '}
                 <a href="mailto:TANFData@acf.hhs.gov">TANFData@acf.hhs.gov</a>.
               </p>
               <p>
