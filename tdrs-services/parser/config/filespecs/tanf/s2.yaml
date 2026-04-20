@@ -129,6 +129,8 @@ validation_orchestrator:
 
 group_validators:
   # Total records per case must be less than the max
+  # Per Lauren and Yun, 1 family (case) is expected to have a maximum of 6 adults and a maximum of 10 children plus
+  # one T1 record. Thus, if a case has more than 17 records, it has an error and will not be serialized.
   - id: max_records_per_case
     params:
       max: 17
