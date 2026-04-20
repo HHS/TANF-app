@@ -400,7 +400,7 @@ function AdminFeedbackReports() {
 
             <h2
               ref={headerRef}
-              className="margin-top-0 margin-bottom-4"
+              className="font-serif-xl margin-top-5 margin-bottom-0 text-normal"
               tabIndex="-1"
             >
               {`Fiscal Year ${selectedYear} — Upload ${REPORT_TYPE_LABELS[selectedReportType]} Feedback Reports`}

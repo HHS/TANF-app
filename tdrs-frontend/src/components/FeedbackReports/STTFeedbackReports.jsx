@@ -319,7 +319,11 @@ function STTFeedbackReports() {
             <hr className="margin-top-4 margin-bottom-4" />
 
             {/* STT and Fiscal Year Header */}
-            <h2 ref={headerRef} tabIndex="-1">
+            <h2
+              ref={headerRef}
+              className="font-serif-xl margin-top-5 margin-bottom-0 text-normal"
+              tabIndex="-1"
+            >
               {`${sttName} — ${reportTypeLabel} Fiscal Year ${selectedYear} Feedback Reports`}
             </h2>
 
