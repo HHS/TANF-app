@@ -130,7 +130,7 @@ group_validators:
   # Total records per case must be less than the max
   - id: max_records_per_case
     params:
-      max: 10
+      max: 17
 
   # T1 must have at least one T2 or T3 record
   - id: t1_has_t2_or_t3

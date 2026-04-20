@@ -131,7 +131,7 @@ group_validators:
   # Total records per case must be less than the max
   - id: max_records_per_case
     params:
-      max: 10
+      max: 17
 
   # T4 records require at least one T5 record in the same case
   # Error is reported on T4 records when no T5 exists
