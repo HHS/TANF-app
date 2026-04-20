@@ -184,7 +184,6 @@ describe('STTFeedbackReports', () => {
         expect(
           screen.getByText(/Feedback reports are produced cumulatively/i)
         ).toBeInTheDocument()
-        expect(screen.getByText(/Yun.Song@acf.hhs.gov/i)).toBeInTheDocument()
         expect(screen.getByText(/TANFData@acf.hhs.gov/i)).toBeInTheDocument()
       })
     })
