@@ -54,12 +54,13 @@ function STTFeedbackReports() {
 
   const user = useSelector((state) => state.auth.user)
   const isRegionalStaff = useSelector(accountIsRegionalStaff)
-  const isTribe = user?.stt?.type === 'tribe'
 
   // Get validated report type from URL params
-  // Tribes cannot access FRA, always force TANF_SSP for them
   const getValidatedReportType = () => {
-    if (isTribe) return REPORT_TYPES.TANF_SSP
+    // For Data Analysts, check their assigned STT type
+    if (!isRegionalStaff && user?.stt?.type === 'tribe') {
+      return REPORT_TYPES.TANF_SSP
+    }
     const urlType = searchParams.get('type')
     if (urlType && Object.values(REPORT_TYPES).includes(urlType)) {
       return urlType
@@ -102,8 +103,11 @@ function STTFeedbackReports() {
     () => getValidatedStt()?.name || ''
   )
 
-  // Derive display name
+  // Derive display name and tribe status
   const sttName = isRegionalStaff ? selectedStt?.name : user?.stt?.name
+  const isTribe = isRegionalStaff
+    ? selectedStt?.type === 'tribe'
+    : user?.stt?.type === 'tribe'
 
   const headerRef = useRef(null)
   const [reports, setReports] = useState([])
@@ -188,14 +192,6 @@ function STTFeedbackReports() {
   const handleReportTypeChange = (value) => {
     setSelectedReportType(value)
     setReports([])
-    // Clear STT selection when switching to FRA (tribes not valid for FRA)
-    if (isRegionalStaff && value === REPORT_TYPES.FRA && selectedStt) {
-      const isTribe = selectedStt.type === 'tribe'
-      if (isTribe) {
-        setSelectedStt(null)
-        setSelectedSttName('')
-      }
-    }
   }
 
   /**
@@ -214,6 +210,10 @@ function STTFeedbackReports() {
     if (name) {
       const sttObj = filteredStts.find((s) => s.name === name)
       setSelectedStt(sttObj || null)
+      // Reset to TANF_SSP when a tribe is selected
+      if (sttObj?.type === 'tribe') {
+        setSelectedReportType(REPORT_TYPES.TANF_SSP)
+      }
     } else {
       setSelectedStt(null)
     }

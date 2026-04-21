@@ -23,6 +23,7 @@ jest.mock('../STTComboBox', () => {
         <option value="">- Select or Search -</option>
         <option value="Wisconsin">Wisconsin</option>
         <option value="Illinois">Illinois</option>
+        <option value="Ho-Chunk Nation">Ho-Chunk Nation</option>
       </select>
     </div>
   )
@@ -932,6 +933,44 @@ describe('STTFeedbackReports', () => {
 
       const sttSelect = screen.getByLabelText(/State, Tribe, or Territory/i)
       expect(sttSelect.value).toBe('Wisconsin')
+    })
+
+    it('hides report type selector when a tribe is selected', () => {
+      renderComponent(regionalStore)
+
+      // Initially radio should be visible (no STT selected yet)
+      expect(screen.getByText('Feedback Report Type*')).toBeInTheDocument()
+
+      // Select a tribe
+      const sttSelect = screen.getByLabelText(/State, Tribe, or Territory/i)
+      fireEvent.change(sttSelect, { target: { value: 'Ho-Chunk Nation' } })
+
+      // Radio should be hidden
+      expect(
+        screen.queryByText('Feedback Report Type*')
+      ).not.toBeInTheDocument()
+    })
+
+    it('shows radio again when switching from tribe to state STT', async () => {
+      renderComponent(regionalStore)
+
+      // Select a tribe — radio should hide
+      const sttSelect = screen.getByLabelText(/State, Tribe, or Territory/i)
+      fireEvent.change(sttSelect, { target: { value: 'Ho-Chunk Nation' } })
+
+      await waitFor(() => {
+        expect(
+          screen.queryByText('Feedback Report Type*')
+        ).not.toBeInTheDocument()
+      })
+
+      // Select a state — radio should reappear with TANF_SSP selected
+      fireEvent.change(sttSelect, { target: { value: 'Wisconsin' } })
+
+      await waitFor(() => {
+        expect(screen.getByText('Feedback Report Type*')).toBeInTheDocument()
+        expect(screen.getByLabelText('TANF/SSP')).toBeChecked()
+      })
     })
   })
 })
