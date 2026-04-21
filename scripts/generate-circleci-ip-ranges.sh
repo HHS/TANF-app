@@ -2,19 +2,12 @@
 # Downloads AWS and GCP IP ranges for CircleCI runner regions
 # and generates nginx allow directives.
 #
-# Usage: ./scripts/generate-circleci-ip-ranges.sh [output_file]
-# Output: tdrs-frontend/nginx/cloud.gov/ip_circleci_runners.conf (default)
+# Usage: bash ../scripts/generate-circleci-ip-ranges.sh
+# Output: deployment/ip_circleci_runners.conf
 #
 # Requires: curl, jq
 
 set -e
-
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-
-pushd "$REPO_ROOT" > /dev/null
-
-OUTPUT_FILE="${1:-tdrs-frontend/nginx/cloud.gov/ip_circleci_runners.conf}"
 
 {
     echo "# CircleCI runner IP ranges"
@@ -33,8 +26,6 @@ OUTPUT_FILE="${1:-tdrs-frontend/nginx/cloud.gov/ip_circleci_runners.conf}"
     echo "# GCP us-east1 and us-central1 (IPv6)"
     curl -s https://www.gstatic.com/ipranges/cloud.json | \
         jq -r '.prefixes[] | select(.scope=="us-east1" or .scope=="us-central1") | .ipv6Prefix // empty | "allow \(.);"'
-} > "$OUTPUT_FILE"
+} > deployment/ip_circleci_runners.conf
 
-echo "Generated $OUTPUT_FILE with $(grep -c '^allow' "$OUTPUT_FILE") entries"
-
-popd > /dev/null
+echo "Generated deployment/ip_circleci_runners.conf with $(grep -c '^allow' deployment/ip_circleci_runners.conf) entries"
