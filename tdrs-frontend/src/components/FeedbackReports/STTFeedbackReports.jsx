@@ -331,10 +331,10 @@ function STTFeedbackReports() {
             <div className="margin-bottom-4">
               <p>
                 Feedback reports are produced cumulatively throughout each
-                fiscal year. Each ZIP files contains multiple feedback reports
-                for the work participation rate and time limit. Please refer to
-                the most recently produced report for the most up-to-date
-                feedback about your data.
+                fiscal year and may include multiple reports related to
+                submitted data for your jurisdiction's program. Each ZIP file
+                may contain one or more feedback reports; please refer to the
+                most recently produced reports for the most up-to-date feedback.
               </p>
               <p>
                 Please review the feedback and, if needed, resubmit complete and
