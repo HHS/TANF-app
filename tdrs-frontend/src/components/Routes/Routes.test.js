@@ -330,8 +330,9 @@ describe('Routes.js', () => {
     expect(
       screen.getByRole('heading', { name: 'Feedback Reports' })
     ).toBeInTheDocument()
+    // STT view should not have a subtitle
     expect(
-      screen.getByText('Work Participation Rate and Time Limit Reports')
-    ).toBeInTheDocument()
+      screen.queryByText('Work Participation Rate and Time Limit Reports')
+    ).not.toBeInTheDocument()
   })
 })
