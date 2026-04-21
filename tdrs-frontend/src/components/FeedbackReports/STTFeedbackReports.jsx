@@ -6,10 +6,7 @@ import { Spinner } from '../Spinner'
 import { PaginatedComponent } from '../Paginator/Paginator'
 import STTFeedbackReportsTable from './STTFeedbackReportsTable'
 import { constructYears } from '../Reports/utils'
-import {
-  accountIsRegionalStaff,
-  accountHasFraAccess,
-} from '../../selectors/auth'
+import { accountIsRegionalStaff } from '../../selectors/auth'
 import { availableStts } from '../../selectors/stts'
 import STTComboBox from '../STTComboBox'
 import { RadioSelect } from '../Form'
@@ -57,12 +54,12 @@ function STTFeedbackReports() {
 
   const user = useSelector((state) => state.auth.user)
   const isRegionalStaff = useSelector(accountIsRegionalStaff)
-  const hasFraAccess = useSelector(accountHasFraAccess)
+  const isTribe = user?.stt?.type === 'tribe'
 
   // Get validated report type from URL params
-  // If user doesn't have FRA access, always force TANF_SSP
+  // Tribes cannot access FRA, always force TANF_SSP for them
   const getValidatedReportType = () => {
-    if (!hasFraAccess) return REPORT_TYPES.TANF_SSP
+    if (isTribe) return REPORT_TYPES.TANF_SSP
     const urlType = searchParams.get('type')
     if (urlType && Object.values(REPORT_TYPES).includes(urlType)) {
       return urlType
@@ -255,7 +252,7 @@ function STTFeedbackReports() {
               </div>
             )}
 
-            {hasFraAccess && (
+            {!isTribe && (
               <RadioSelect
                 label="Feedback Report Type*"
                 fieldName="reportType"

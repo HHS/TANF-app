@@ -48,16 +48,16 @@ const dataAnalystStore = () =>
     stts: { sttList: [], loading: false },
   })
 
-const dataAnalystWithFraStore = () =>
+const tribeDataAnalystStore = () =>
   mockStore({
     auth: {
       user: {
         id: 1,
         email: 'analyst@example.com',
         roles: [{ name: 'Data Analyst', permissions: [] }],
-        permissions: [{ codename: 'has_fra_access' }],
+        permissions: [],
         account_approval_status: 'Approved',
-        stt: { id: 1, name: 'Alabama' },
+        stt: { id: 100, name: 'Ho-Chunk Nation', type: 'tribe' },
       },
       authenticated: true,
     },
@@ -239,30 +239,30 @@ describe('STTFeedbackReports', () => {
   })
 
   describe('Report Type Selection', () => {
-    it('does not show radio selector when user lacks FRA access', () => {
-      renderComponent() // dataAnalystStore has no FRA access
-
-      expect(
-        screen.queryByText('Feedback Report Type*')
-      ).not.toBeInTheDocument()
-    })
-
-    it('shows radio selector when user has FRA access', () => {
-      renderComponent(dataAnalystWithFraStore())
+    it('shows radio selector for non-tribe Data Analysts', () => {
+      renderComponent() // dataAnalystStore has state STT
 
       expect(screen.getByText('Feedback Report Type*')).toBeInTheDocument()
       expect(screen.getByLabelText('TANF/SSP')).toBeInTheDocument()
       expect(screen.getByLabelText('FRA')).toBeInTheDocument()
     })
 
+    it('does not show radio selector for tribe Data Analysts', () => {
+      renderComponent(tribeDataAnalystStore())
+
+      expect(
+        screen.queryByText('Feedback Report Type*')
+      ).not.toBeInTheDocument()
+    })
+
     it('defaults to TANF/SSP', () => {
-      renderComponent(dataAnalystWithFraStore())
+      renderComponent()
 
       expect(screen.getByLabelText('TANF/SSP')).toBeChecked()
     })
 
     it('updates reference table when FRA is selected', async () => {
-      renderComponent(dataAnalystWithFraStore())
+      renderComponent()
 
       // Default shows TANF/SSP reference
       expect(
@@ -281,7 +281,7 @@ describe('STTFeedbackReports', () => {
     })
 
     it('updates header when FRA is selected', async () => {
-      renderComponent(dataAnalystWithFraStore())
+      renderComponent()
 
       // Select year
       const yearSelect = screen.getByLabelText(/Fiscal Year/i)
@@ -310,7 +310,7 @@ describe('STTFeedbackReports', () => {
     })
 
     it('fetches reports with report_type when type changes', async () => {
-      renderComponent(dataAnalystWithFraStore())
+      renderComponent()
 
       const yearSelect = screen.getByLabelText(/Fiscal Year/i)
       fireEvent.change(yearSelect, { target: { value: '2025' } })
@@ -339,10 +339,10 @@ describe('STTFeedbackReports', () => {
       })
     })
 
-    it('ignores FRA URL param when user lacks FRA access', async () => {
+    it('ignores FRA URL param for tribe users', async () => {
       render(
         <MemoryRouter initialEntries={['/feedback-reports?type=FRA&year=2025']}>
-          <Provider store={dataAnalystStore()}>
+          <Provider store={tribeDataAnalystStore()}>
             <STTFeedbackReports />
           </Provider>
         </MemoryRouter>
@@ -364,10 +364,10 @@ describe('STTFeedbackReports', () => {
       })
     })
 
-    it('initializes report type from URL param when user has FRA access', () => {
+    it('initializes report type from URL param for non-tribe users', () => {
       render(
         <MemoryRouter initialEntries={['/feedback-reports?type=FRA']}>
-          <Provider store={dataAnalystWithFraStore()}>
+          <Provider store={dataAnalystStore()}>
             <STTFeedbackReports />
           </Provider>
         </MemoryRouter>
@@ -376,7 +376,7 @@ describe('STTFeedbackReports', () => {
       expect(screen.getByLabelText('FRA')).toBeChecked()
     })
 
-    it('regional staff always sees radio selector (has FRA via group)', () => {
+    it('regional staff sees radio selector', () => {
       renderComponent(regionalStaffStore())
 
       expect(screen.getByText('Feedback Report Type*')).toBeInTheDocument()
