@@ -72,10 +72,10 @@ function STTFeedbackReports() {
     getValidatedReportType
   )
 
-  // Filter STTs based on selected report type (tribes excluded for FRA)
-  const sttPath =
-    selectedReportType === REPORT_TYPES.FRA ? '/fra' : '/feedback-reports'
-  const filteredStts = useSelector(availableStts(sttPath))
+  // Always show all STTs (including tribes) in the ComboBox.
+  // Tribe-based restrictions are handled by hiding the report type radio
+  // and defaulting to TANF_SSP when a tribe is selected.
+  const filteredStts = useSelector(availableStts('/feedback-reports'))
 
   // Initialize STT from URL query param (regional staff only)
   const getValidatedStt = () => {
