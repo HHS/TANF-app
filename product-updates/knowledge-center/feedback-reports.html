@@ -15,7 +15,12 @@
     <script src="components/mobile-navigation.js" defer></script>
     <script src="components/shutdown-banner.js" defer></script>
    
+<style>
 
+html {
+  scroll-behavior: smooth;
+}
+</style>
 
 
   </head>
@@ -189,10 +194,13 @@
 
          <div style="min-height: 22px;"></div>
 
- <p>Jump to:</p>
+ <p><strong>Jump to:</strong></p>
  <ul>
   <li><a href="#viewing">Finding Feedback Reports</a></li>
-    <li><a href="#understanding">Understanding Feedback Reports</a></li>
+    <li><a href="#understanding">TANF/SSP Feedback Reports</a> </li>
+      <li><a href="#fra">FRA Feedback Reports</a></li>
+   
+
  </ul>
 
          <hr class="releaseHr" style="margin-bottom: 30px;">
@@ -202,9 +210,9 @@
 
        <ol class="usa-process-list">
           <li class="usa-process-list__item">
-            <h2 class="usa-process-list__heading">Search for the reporting period to view</h2>
+            <h2 class="usa-process-list__heading">Search for a report type and reporting period</h2>
             <p class="margin-top-05">
-              On the Feedback Reports page, complete the search fields for 'Fiscal Year (October – September)' to identify which data you’ll be viewing. The TANF/SSP Data Reporting Reference table is provided to help you map the calendar period content within the file to the reporting fiscal period and its respective reporting deadline.
+              On the Feedback Reports page, complete the search fields for 'Feedback Report Type' (available if your program submits FRA data to TDP) and 'Fiscal Year (October – September)' to identify which data you’ll be viewing. The Reporting Deadline Reference tables are provided to help you map the calendar period content within the file to the reporting fiscal period and its respective reporting deadline.
               <div style="min-height: 22px;"></div>
                 <a href="../img/feedback-reports/feedback-reports-tab.png" data-lity data-lity-desc="Feedback reports tab shown in the TDP nav bar">
               <img src="../img/feedback-reports/feedback-reports-tab.png" alt="Feedback reports tab shown in the TDP nav bar">
@@ -224,7 +232,7 @@
           </li>
      </ol>
 
-     <p>TDP will send you a <a href="about-email-notifications.html#feedbackemail">notification email</a> when Feedback Reports are uploaded and link you to the reports from the submission history section of a reporting period you're viewing in the Data Files tab.</p>
+     <p>TDP will send you a <a href="about-email-notifications.html#feedback">notification email</a> when Feedback Reports are uploaded and link you to the reports from the submission history section of a reporting period you're viewing in the Data Files tab.</p>
       <a href="../img/feedback-reports/feedback-available.png" data-lity data-lity-desc="Informational banner above TANF Submission History reading: Feedback Reports Available as of 12/1/2021. Please review the feedback (link) and if needed, resubmit complete and accurate data">
               <img src="../img/feedback-reports/feedback-available.png" alt="Informational banner above TANF Submission History reading: Feedback Reports Available as of 12/1/2021. Please review the feedback (link) and if needed, resubmit complete and accurate data">
                 </a>
@@ -232,13 +240,13 @@
               <hr class="releaseHr" style="margin-bottom: 30px;">
 
 
-      <h2 id="understanding">Understanding Feedback Reports</h2>
+      <h2 id="understanding">TANF/SSP Feedback Reports</h2>
 
        <p style="margin-top: .50rem">Each ZIP file contains multiple feedback reports for the preliminary work participation rate and time limit calculations. Please refer to the most recently produced report for the most up-to-date feedback about your data. For examples of each type of feedback report and explanations of error flags please refer to the downloadable workbook below. <br><br>If you have any questions or require assistance, please contact <a href="mailto:Yun.Song@acf.hhs.gov?cc=TANFdata@acf.hhs.gov">Yun.Song@acf.hhs.gov</a> and copy TANFData@acf.hhs.gov.</p>
 
-         <a style="margin-top: .5rem" href="Reference TANF&SSP WPR&TL Feedback_Reports_2026-2-11.xlsx" class="usa-button">Download Workbook</a>
+         <a style="margin-top: .5rem" href="Reference TANF & SSP WPR & TL Feedback Reports 2026-02 Experimental.xls" class="usa-button">Download Workbook</a>
 
-      <h3 style="margin-top: 16px; margin-bottom: 16px;">Report types included in the workbook</h3>
+      <h3 style="margin-top: 16px; margin-bottom: 16px;">Reports included in the workbook</h3>
       <div style="display: flex; flex-direction: row; gap: 8px;">
         <div style="display: flex-item; background-color: #c5d9f1; border-radius: 5px; border-color: #333; border-style: solid; padding: 16px; width: 50%;">
           <h4 style="margin-top: 8px">TANF WPR Reports</h4>
@@ -292,8 +300,14 @@
         </div>
      </div>
 
+              <hr class="releaseHr" style="margin-bottom: 30px;">
 
+                    <h2 id="fra">FRA Feedback Reports</h2>
 
+<ol>
+  <li style="min-width: 100%;"><strong>FRA TANF Exiters Submissions</strong> <em>(e.g., FRA_TE_Submissions_FYYYY_XX.xlsx)</em> summarizes the quality of SSNs reported in the FRA TANF Exiter submissions for a given fiscal year, including counts of total SSNs received, placeholder SSNs, invalid SSNs, and potential duplicate exiters by exit month. These counts help identify data issues that may affect the accuracy of federal reporting and subsequent matching processes.</li>
+    <li style="min-width: 100%; margin-top: 24px;"><strong>FRA TANF Exiter Measures</strong> This feedback report provides your program’s most recent results on the three national Fiscal Responsibility Act (FRA) Work Outcome Measures—Employment Rate (2nd Quarter after Exit), Median Earnings (2nd Quarter after Exit), and Employment Retention Rate (4th Quarter after Exit). The report is based on quarterly TANF exiter data from TDP matched to wage records from the National Directory of New Hires (NDNH). <br><br> It includes summary results, supporting tables and charts, and additional measures showing employment outcomes over time. The report also highlights data completeness by quarter to help interpret recent results. <br><br> A notes section explains data sources, matching methods, measure definitions, and key limitations—such as incomplete wage data for recent quarters, how unmatched individuals are treated, and how duplicate or closely timed exit records are handled. <br><br> The data and measures in this report are provisional and will be updated over time as more complete wage data become available. The composition of the report is subject to change based on feedback from TANF partners. </li>
+</ol>
 
       
      
