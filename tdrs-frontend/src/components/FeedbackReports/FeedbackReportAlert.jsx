@@ -3,31 +3,40 @@ import { get } from '../../fetch-instance'
 import { useReportsContext } from '../Reports/ReportsContext'
 import closeIcon from '@uswds/uswds/img/usa-icons/close.svg'
 import '../../assets/feedback/Feedback.scss'
+import { REPORT_TYPES, REPORT_TYPE_LABELS } from './FeedbackReportsConstants'
 
 // Local storage key prefix for dismissed alerts
 const DISMISSED_KEY_PREFIX = 'feedbackAlertDismissed_'
 
 /**
- * Get the dismissed timestamp for a given year from localStorage
+ * Get the dismissed timestamp for a given report type and year from localStorage
  */
-const getDismissedTimestamp = (year) => {
-  return window.localStorage.getItem(`${DISMISSED_KEY_PREFIX}${year}`)
+const getDismissedTimestamp = (reportType, year) => {
+  return window.localStorage.getItem(
+    `${DISMISSED_KEY_PREFIX}${reportType}_${year}`
+  )
 }
 
 /**
  * Save the dismissed state to localStorage
  */
-const saveDismissedState = (year, reportCreatedAt) => {
-  window.localStorage.setItem(`${DISMISSED_KEY_PREFIX}${year}`, reportCreatedAt)
+const saveDismissedState = (reportType, year, reportCreatedAt) => {
+  window.localStorage.setItem(
+    `${DISMISSED_KEY_PREFIX}${reportType}_${year}`,
+    reportCreatedAt
+  )
 }
 
 /**
- * Alert banner displayed on TANF Data Files page when feedback reports are available.
- * Only shown to Data Analysts when reports exist for their STT and selected quarter/year.
+ * Alert banner displayed on Data Files pages when feedback reports are available.
+ * Only shown to Data Analysts and Regional Staff when reports exist for their STT.
  * Fetches the latest report internally using the `latest=true` query param.
- * Can be dismissed by the user, with state persisted in localStorage per fiscal year.
+ * Can be dismissed by the user, with state persisted in localStorage per report type and fiscal year.
  */
-const FeedbackReportAlert = ({ stt = null }) => {
+const FeedbackReportAlert = ({
+  stt = null,
+  reportType = REPORT_TYPES.TANF_SSP,
+}) => {
   const { yearInputValue, quarterInputValue } = useReportsContext()
   const [latestReportDate, setLatestReportDate] = useState(null)
   const [isDismissed, setIsDismissed] = useState(false)
@@ -44,6 +53,7 @@ const FeedbackReportAlert = ({ stt = null }) => {
         year: yearInputValue,
         quarter: quarterInputValue,
         latest: 'true',
+        report_type: reportType,
       }
       if (stt) {
         params.stt = stt.id
@@ -56,7 +66,10 @@ const FeedbackReportAlert = ({ stt = null }) => {
 
       if (ok && data?.results?.length > 0) {
         const report = data.results[0]
-        const dismissedTimestamp = getDismissedTimestamp(yearInputValue)
+        const dismissedTimestamp = getDismissedTimestamp(
+          reportType,
+          yearInputValue
+        )
 
         // Show banner if not dismissed OR if a new report is available
         if (dismissedTimestamp && dismissedTimestamp === report.created_at) {
@@ -77,14 +90,14 @@ const FeedbackReportAlert = ({ stt = null }) => {
     }
 
     fetchLatestFeedbackReport()
-  }, [yearInputValue, quarterInputValue, stt])
+  }, [yearInputValue, quarterInputValue, stt, reportType])
 
   const handleDismiss = useCallback(() => {
     if (yearInputValue && latestReportDate) {
-      saveDismissedState(yearInputValue, latestReportDate)
+      saveDismissedState(reportType, yearInputValue, latestReportDate)
       setIsDismissed(true)
     }
-  }, [yearInputValue, latestReportDate])
+  }, [yearInputValue, latestReportDate, reportType])
 
   if (!latestReportDate || isDismissed) return null
 
@@ -94,6 +107,8 @@ const FeedbackReportAlert = ({ stt = null }) => {
     day: 'numeric',
     year: 'numeric',
   })
+
+  const reportTypeLabel = REPORT_TYPE_LABELS[reportType]
 
   return (
     <div
@@ -111,9 +126,10 @@ const FeedbackReportAlert = ({ stt = null }) => {
         }}
       >
         <p className="usa-alert__text" id="feedback-alert-text">
-          Feedback Reports Available as of {formattedDate}. Please{' '}
+          {reportTypeLabel} Feedback Reports Available as of {formattedDate}.
+          Please{' '}
           <a
-            href={`/feedback-reports?year=${yearInputValue}${stt ? `&stt=${stt.name}` : ''}`}
+            href={`/feedback-reports?type=${reportType}&year=${yearInputValue}${stt ? `&stt=${stt.name}` : ''}`}
             target="_blank"
             rel="noopener noreferrer"
           >
