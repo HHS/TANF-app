@@ -56,7 +56,7 @@ help() {
     done
     echo ""
     echo "Example:"
-    echo "  ./deploy.sh -e dev -d tdp-keycloak-db-dev -p tdp-keycloak-dev -i ghcr.io/raft-tech/keycloak_26:latest -u myuser"
+    echo "  ./deploy.sh -e dev -d tdp-db-dev -p tdp-keycloak-dev -i ghcr.io/raft-tech/keycloak_26:latest -u myuser"
     echo ""
 }
 
