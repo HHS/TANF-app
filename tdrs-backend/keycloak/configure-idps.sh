@@ -60,22 +60,41 @@ wait_for_keycloak() {
 }
 
 get_admin_token() {
-    local response
-    response=$(curl -sf -X POST "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
-        -H "Content-Type: application/x-www-form-urlencoded" \
-        -d "username=${KEYCLOAK_ADMIN}" \
-        -d "password=${KEYCLOAK_ADMIN_PASSWORD}" \
-        -d "grant_type=password" \
-        -d "client_id=admin-cli")
+    local max_attempts=30
+    local attempt=0
+    local response=""
 
-    TOKEN=$(echo "$response" | jq -r '.access_token')
+    echo "Obtaining admin token from ${KEYCLOAK_URL}..."
 
-    if [ -z "$TOKEN" ] || [ "$TOKEN" == "null" ]; then
-        echo "ERROR: Failed to obtain admin access token"
-        echo "Response: $response"
-        exit 1
+    until [ "$attempt" -ge "$max_attempts" ]; do
+        attempt=$((attempt + 1))
+
+        response=$(curl -s -X POST "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "username=${KEYCLOAK_ADMIN}" \
+            -d "password=${KEYCLOAK_ADMIN_PASSWORD}" \
+            -d "grant_type=password" \
+            -d "client_id=admin-cli") || true
+
+        TOKEN=$(echo "$response" | jq -r '.access_token // empty' 2>/dev/null || true)
+
+        if [ -n "$TOKEN" ]; then
+            echo "Admin token obtained."
+            return
+        fi
+
+        echo "  Attempt ${attempt}/${max_attempts} - admin token endpoint not ready yet..."
+        if [ -n "$response" ]; then
+            echo "  Response: $response"
+        fi
+        sleep 2
+    done
+
+    echo "ERROR: Failed to obtain admin access token after ${max_attempts} attempts"
+    if [ -n "$response" ]; then
+        echo "Final response: $response"
     fi
-    echo "Admin token obtained."
+    exit 1
 }
 
 configure_login_gov_signing_key() {
