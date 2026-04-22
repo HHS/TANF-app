@@ -67,7 +67,7 @@ describe('FeedbackReportAlert', () => {
     expect(get).not.toHaveBeenCalled()
   })
 
-  it('fetches latest report when year and quarter are set', async () => {
+  it('fetches latest report with report_type when year and quarter are set', async () => {
     mockUseReportsContext.mockReturnValue({
       yearInputValue: '2025',
       quarterInputValue: 'Q1',
@@ -92,6 +92,7 @@ describe('FeedbackReportAlert', () => {
             year: '2025',
             quarter: 'Q1',
             latest: 'true',
+            report_type: 'TANF_SSP',
           },
         })
       )
@@ -197,7 +198,7 @@ describe('FeedbackReportAlert', () => {
     })
   })
 
-  it('contains link to feedback reports page with year param', async () => {
+  it('contains link to feedback reports page with type and year params', async () => {
     mockUseReportsContext.mockReturnValue({
       yearInputValue: '2025',
       quarterInputValue: 'Q1',
@@ -216,7 +217,10 @@ describe('FeedbackReportAlert', () => {
 
     await waitFor(() => {
       const link = screen.getByRole('link', { name: /review the feedback/i })
-      expect(link).toHaveAttribute('href', '/feedback-reports?year=2025')
+      expect(link).toHaveAttribute(
+        'href',
+        '/feedback-reports?type=TANF_SSP&year=2025'
+      )
       expect(link).toHaveAttribute('target', '_blank')
       expect(link).toHaveAttribute('rel', 'noopener noreferrer')
     })
@@ -315,6 +319,103 @@ describe('FeedbackReportAlert', () => {
     })
   })
 
+  describe('Report type in alert text', () => {
+    it('shows TANF/SSP in alert text by default', async () => {
+      mockUseReportsContext.mockReturnValue({
+        yearInputValue: '2025',
+        quarterInputValue: 'Q1',
+      })
+
+      get.mockResolvedValue({
+        data: { results: [{ created_at: '2025-12-01T00:00:00Z' }] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
+
+      renderComponent()
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/TANF\/SSP Feedback Reports Available/)
+        ).toBeInTheDocument()
+      })
+    })
+
+    it('shows FRA in alert text when reportType is FRA', async () => {
+      mockUseReportsContext.mockReturnValue({
+        yearInputValue: '2025',
+        quarterInputValue: 'Q1',
+      })
+
+      get.mockResolvedValue({
+        data: { results: [{ created_at: '2025-12-01T00:00:00Z' }] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
+
+      renderComponent({ reportType: 'FRA' })
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/FRA Feedback Reports Available/)
+        ).toBeInTheDocument()
+      })
+    })
+
+    it('fetches with FRA report_type when reportType prop is FRA', async () => {
+      mockUseReportsContext.mockReturnValue({
+        yearInputValue: '2025',
+        quarterInputValue: 'Q1',
+      })
+
+      get.mockResolvedValue({
+        data: { results: [{ created_at: '2025-12-01T00:00:00Z' }] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
+
+      renderComponent({ reportType: 'FRA' })
+
+      await waitFor(() => {
+        expect(get).toHaveBeenCalledWith(
+          expect.stringContaining('/reports/'),
+          expect.objectContaining({
+            params: expect.objectContaining({
+              report_type: 'FRA',
+            }),
+          })
+        )
+      })
+    })
+
+    it('includes FRA type in link URL', async () => {
+      mockUseReportsContext.mockReturnValue({
+        yearInputValue: '2025',
+        quarterInputValue: 'Q1',
+      })
+
+      get.mockResolvedValue({
+        data: { results: [{ created_at: '2025-12-01T00:00:00Z' }] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
+
+      renderComponent({ reportType: 'FRA' })
+
+      await waitFor(() => {
+        const link = screen.getByRole('link', { name: /review the feedback/i })
+        expect(link).toHaveAttribute(
+          'href',
+          '/feedback-reports?type=FRA&year=2025'
+        )
+      })
+    })
+  })
+
   describe('Dismissable alert functionality', () => {
     it('renders dismiss button with correct aria-label', async () => {
       mockUseReportsContext.mockReturnValue({
@@ -374,7 +475,7 @@ describe('FeedbackReportAlert', () => {
       })
     })
 
-    it('saves dismissed state to localStorage on dismiss', async () => {
+    it('saves dismissed state to localStorage with report type in key', async () => {
       mockUseReportsContext.mockReturnValue({
         yearInputValue: '2025',
         quarterInputValue: 'Q1',
@@ -404,7 +505,37 @@ describe('FeedbackReportAlert', () => {
       fireEvent.click(dismissButton)
 
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        'feedbackAlertDismissed_2025',
+        'feedbackAlertDismissed_TANF_SSP_2025',
+        createdAt
+      )
+    })
+
+    it('uses FRA in localStorage key when reportType is FRA', async () => {
+      mockUseReportsContext.mockReturnValue({
+        yearInputValue: '2025',
+        quarterInputValue: 'Q1',
+      })
+
+      const createdAt = '2025-12-01T00:00:00Z'
+      get.mockResolvedValue({
+        data: { results: [{ created_at: createdAt }] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
+
+      renderComponent({ reportType: 'FRA' })
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/Feedback Reports Available/)
+        ).toBeInTheDocument()
+      })
+
+      fireEvent.click(screen.getByRole('button', { name: /dismiss alert/i }))
+
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+        'feedbackAlertDismissed_FRA_2025',
         createdAt
       )
     })
@@ -474,7 +605,7 @@ describe('FeedbackReportAlert', () => {
     it('renders alert when fiscal year changes even if previous year was dismissed', async () => {
       // Set up localStorage with dismissed state for 2024
       mockLocalStorage.getItem.mockImplementation((key) => {
-        if (key === 'feedbackAlertDismissed_2024') {
+        if (key === 'feedbackAlertDismissed_TANF_SSP_2024') {
           return '2024-12-01T00:00:00Z'
         }
         return null
@@ -559,7 +690,7 @@ describe('FeedbackReportAlert', () => {
   describe('Regional Staff stt prop', () => {
     const mockStt = { id: 10, name: 'Wisconsin' }
 
-    it('includes stt param in API call when stt prop is provided', async () => {
+    it('includes stt and report_type params in API call when stt prop is provided', async () => {
       mockUseReportsContext.mockReturnValue({
         yearInputValue: '2025',
         quarterInputValue: 'Q1',
@@ -582,6 +713,7 @@ describe('FeedbackReportAlert', () => {
               year: '2025',
               quarter: 'Q1',
               latest: 'true',
+              report_type: 'TANF_SSP',
               stt: 10,
             },
           })
@@ -589,7 +721,7 @@ describe('FeedbackReportAlert', () => {
       })
     })
 
-    it('includes stt query param in feedback reports link when stt prop is provided', async () => {
+    it('includes stt and type in feedback reports link when stt prop is provided', async () => {
       mockUseReportsContext.mockReturnValue({
         yearInputValue: '2025',
         quarterInputValue: 'Q1',
@@ -608,7 +740,7 @@ describe('FeedbackReportAlert', () => {
         const link = screen.getByRole('link', { name: /review the feedback/i })
         expect(link).toHaveAttribute(
           'href',
-          '/feedback-reports?year=2025&stt=Wisconsin'
+          '/feedback-reports?type=TANF_SSP&year=2025&stt=Wisconsin'
         )
       })
     })
@@ -630,7 +762,10 @@ describe('FeedbackReportAlert', () => {
 
       await waitFor(() => {
         const link = screen.getByRole('link', { name: /review the feedback/i })
-        expect(link).toHaveAttribute('href', '/feedback-reports?year=2025')
+        expect(link).toHaveAttribute(
+          'href',
+          '/feedback-reports?type=TANF_SSP&year=2025'
+        )
       })
     })
   })

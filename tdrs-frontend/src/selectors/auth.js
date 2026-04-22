@@ -105,3 +105,8 @@ export const accountCanUploadFeedbackReports = (state) =>
   accountStatusIsApproved(state) &&
   selectUserPermissions(state).includes('view_reportsource') &&
   selectUserPermissions(state).includes('add_reportsource')
+
+// Whether the user has FRA access (via group or individual permission)
+export const accountHasFraAccess = (state) =>
+  accountStatusIsApproved(state) &&
+  selectUserPermissions(state).includes('has_fra_access')
