@@ -92,6 +92,27 @@ Then('the report is processed successfully', () => {
 })
 
 // ──────────────────────────────────────────────────────────
+// Report Type Selection
+// ──────────────────────────────────────────────────────────
+
+Then(
+  '{string} sees the report type selector with {string} and {string}',
+  (_actor, option1, option2) => {
+    cy.contains('Feedback Report Type').should('exist')
+    cy.contains('label', option1).should('exist')
+    cy.contains('label', option2).should('exist')
+  }
+)
+
+When('{string} selects report type {string}', (_actor, reportType) => {
+  cy.contains('label', reportType).click()
+})
+
+Then('{string} sees the upload header {string}', (_actor, headerText) => {
+  cy.contains('h2', headerText).should('exist')
+})
+
+// ──────────────────────────────────────────────────────────
 // Validation Errors
 // ──────────────────────────────────────────────────────────
 

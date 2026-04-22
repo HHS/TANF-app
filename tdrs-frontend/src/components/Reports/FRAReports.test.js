@@ -890,7 +890,7 @@ describe('FRA Reports Page', () => {
           )
         ).toBeInTheDocument()
         expect(getByText('Submit Report')).toBeInTheDocument()
-        expect(get).toHaveBeenCalledTimes(1)
+        expect(get).toHaveBeenCalledTimes(2)
       })
 
       return { ...component, ...store }
