@@ -428,7 +428,7 @@ group_validators:
     expr: "TotalRecords <= Params.max"
     error_type: CASE_CONSISTENCY
     result_mode: single
-    message: "Cases must contain fewer than {{.Params.max}} person (Child + Adult) records within a given reporting month and year. All records associated with this case have been rejected."
+    message: "Cases must contain up to {{.Params.max}} person (Child + Adult) records within a given reporting month and year. All records associated with this case have been rejected."
 
   # =============================================================================
   # TANF Section 1 Group/Case Validators
