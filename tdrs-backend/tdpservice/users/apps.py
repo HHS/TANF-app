@@ -11,4 +11,5 @@ class UsersConfig(AppConfig):
 
     def ready(self):
         """Import signals."""
+        import tdpservice.users.keycloak_sync  # noqa
         import tdpservice.users.signals  # noqa
