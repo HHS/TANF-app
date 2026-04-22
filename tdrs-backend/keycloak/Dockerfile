@@ -32,7 +32,8 @@ USER 1000
 ADD --chmod=755 https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64 /usr/local/bin/jq
 ADD --chmod=755 https://github.com/moparisthebest/static-curl/releases/download/v8.7.1/curl-amd64 /usr/local/bin/curl
 
-COPY realm-export.json /opt/keycloak/data/import/realm-export.json
+COPY realm-configs/ /opt/keycloak/realm-configs/
+COPY --chmod=755 select-realm-config.sh /opt/keycloak/select-realm-config.sh
 COPY configure-idps.sh /opt/keycloak/configure-idps.sh
 COPY nginx.conf /opt/keycloak/nginx.conf.template
 COPY --chmod=755 entrypoint.sh /opt/keycloak/entrypoint.sh

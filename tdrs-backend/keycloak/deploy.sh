@@ -21,12 +21,7 @@ REQUIRED_ENV_VARS=(
 )
 OPTIONAL_ENV_VARS=(
     "KC_TDP_GRAFANA_CLIENT_SECRET" # tdp-grafana client secret (realm config)
-    "KC_GRAFANA_REDIRECT_URI"      # Grafana OAuth redirect URI (default: https://grafana.app.cloud.gov/login/generic_oauth)
-    "KC_GRAFANA_WEB_ORIGIN"        # Grafana web origin (default: https://grafana.app.cloud.gov)
-    "KC_GRAFANA_POST_LOGOUT_URI"   # Grafana post-logout redirect URI (default: https://grafana.app.cloud.gov/*)
     "LOGIN_GOV_ACR_VALUES"         # Login.gov identity assurance level
-    "KC_TDP_REDIRECT_URIS"         # Comma-separated redirect URIs for tdp-django client (default set per environment)
-    "KC_TDP_WEB_ORIGINS"           # Comma-separated web origins for tdp-django client (default set per environment)
 )
 
 help() {
@@ -116,6 +111,7 @@ deploy_keycloak() {
     yq eval -i ".applications[0].name = \"${app_name}\"" $MANIFEST
     yq eval -i ".applications[0].services[0] = \"${db_service}\"" $MANIFEST
     yq eval -i ".applications[0].env.KC_HOSTNAME = \"${public_url}\"" $MANIFEST
+    yq eval -i ".applications[0].env.DEPLOY_ENV = \"${DEPLOY_ENV}\"" $MANIFEST
     yq eval -i ".applications[0].docker.image = \"${docker_image}\"" $MANIFEST
     inject_env_vars $MANIFEST
 
@@ -141,9 +137,8 @@ configure_keycloak_idps() {
     echo "Running IdP configuration task..."
     # /health/ready is proxied through nginx on port 8080, so the management URL
     # uses port 8080 (not 9000, which is only accessible within the container).
-    # DEPLOY_ENV is passed explicitly so configure-idps.sh knows whether to include localhost URIs.
     cf run-task "$app_name" \
-        --command "export DEPLOY_ENV=${DEPLOY_ENV} KEYCLOAK_URL=${internal_base}:8080 KEYCLOAK_MANAGEMENT_URL=${internal_base}:8080 && /opt/keycloak/configure-idps.sh" \
+        --command "export KEYCLOAK_URL=${internal_base}:8080 KEYCLOAK_MANAGEMENT_URL=${internal_base}:8080 && /opt/keycloak/configure-idps.sh" \
         --name "configure-idps"
 }
 
@@ -214,19 +209,12 @@ fi
 case "$DEPLOY_ENV" in
     dev)
         APP_NAME="keycloak-dev"
-        # All dev frontend instances on app.cloud.gov; localhost added automatically by configure-idps.sh.
-        KC_TDP_REDIRECT_URIS="${KC_TDP_REDIRECT_URIS:-https://tdp-frontend-raft.app.cloud.gov/*,https://tdp-frontend-qasp.app.cloud.gov/*,https://tdp-frontend-a11y.app.cloud.gov/*}"
-        KC_TDP_WEB_ORIGINS="${KC_TDP_WEB_ORIGINS:-https://tdp-frontend-raft.app.cloud.gov,https://tdp-frontend-qasp.app.cloud.gov,https://tdp-frontend-a11y.app.cloud.gov}"
         ;;
     staging)
         APP_NAME="keycloak-staging"
-        KC_TDP_REDIRECT_URIS="${KC_TDP_REDIRECT_URIS:-https://tdp-frontend-staging.acf.hhs.gov/*,https://tdp-frontend-develop.acf.hhs.gov/*}"
-        KC_TDP_WEB_ORIGINS="${KC_TDP_WEB_ORIGINS:-https://tdp-frontend-staging.acf.hhs.gov,https://tdp-frontend-develop.acf.hhs.gov}"
         ;;
     prod)
         APP_NAME="keycloak"
-        KC_TDP_REDIRECT_URIS="${KC_TDP_REDIRECT_URIS:-https://tanfdata.acf.hhs.gov/*}"
-        KC_TDP_WEB_ORIGINS="${KC_TDP_WEB_ORIGINS:-https://tanfdata.acf.hhs.gov}"
         ;;
     *)
         echo "Error: invalid environment '${DEPLOY_ENV}'. Must be dev, staging, or prod."
@@ -236,13 +224,6 @@ case "$DEPLOY_ENV" in
         exit 1
         ;;
 esac
-export KC_TDP_REDIRECT_URIS KC_TDP_WEB_ORIGINS
-
-# Grafana is a single shared instance across environments.
-KC_GRAFANA_REDIRECT_URI="${KC_GRAFANA_REDIRECT_URI:-https://grafana.app.cloud.gov/login/generic_oauth}"
-KC_GRAFANA_WEB_ORIGIN="${KC_GRAFANA_WEB_ORIGIN:-https://grafana.app.cloud.gov}"
-KC_GRAFANA_POST_LOGOUT_URI="${KC_GRAFANA_POST_LOGOUT_URI:-https://grafana.app.cloud.gov/*}"
-export KC_GRAFANA_REDIRECT_URI KC_GRAFANA_WEB_ORIGIN KC_GRAFANA_POST_LOGOUT_URI
 
 if [ "$DB_SERVICE_NAME" == "" ]; then
     echo "Error: you must include a database service name with -d."
@@ -286,8 +267,6 @@ echo "  RDS service:    $DB_SERVICE_NAME"
 echo "  Internal route: ${APP_NAME}.apps.internal"
 echo "  Public route:   ${PUBLIC_HOSTNAME}.${PUBLIC_DOMAIN}"
 echo "  Rolling deploy: $ROLLING"
-echo "  Redirect URIs:  $KC_TDP_REDIRECT_URIS"
-echo "  Web origins:    $KC_TDP_WEB_ORIGINS"
 echo ""
 
 deploy_keycloak "$APP_NAME" "$DB_SERVICE_NAME" "$PUBLIC_HOSTNAME" "$DOCKER_IMAGE" "$DOCKER_USERNAME" "$ROLLING"
