@@ -47,7 +47,10 @@ const TanfSspReports = ({ stt, isRegionalStaff, isDataAnalyst }) => {
           </h2>
 
           {(isDataAnalyst || isRegionalStaff) && (
-            <FeedbackReportAlert stt={isRegionalStaff ? stt : null} />
+            <FeedbackReportAlert
+              stt={isRegionalStaff ? stt : null}
+              reportType="TANF_SSP"
+            />
           )}
 
           {localAlert.active &&

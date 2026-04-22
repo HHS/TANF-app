@@ -8,7 +8,10 @@ import fileTypeChecker from 'file-type-checker'
 import Button from '../Button'
 import STTComboBox from '../STTComboBox'
 import { quarters } from './utils'
-import { accountIsRegionalStaff } from '../../selectors/auth'
+import {
+  accountIsRegionalStaff,
+  selectPrimaryUserRole,
+} from '../../selectors/auth'
 import {
   checkPreviewDependencies,
   removeOldPreviews,
@@ -39,6 +42,7 @@ import { PaginatedComponent } from '../Paginator/Paginator'
 import { Spinner } from '../Spinner'
 import { openFeedbackWidget } from '../../reducers/feedbackWidget'
 import { ReportsProvider, useReportsContext } from './ReportsContext'
+import FeedbackReportAlert from '../FeedbackReports/FeedbackReportAlert'
 import { accountCanSelectStt } from '../../selectors/auth'
 import { POLLING_TIMEOUT_MESSAGE } from './constants'
 import FiscalYearSelect from './components/FiscalYearSelect'
@@ -597,6 +601,8 @@ const FRAReportsContent = () => {
   const sttList = useSelector((state) => state?.stts?.sttList)
   const needsSttSelection = useSelector(accountCanSelectStt)
   const isRegionalStaff = useSelector(accountIsRegionalStaff)
+  const isDataAnalyst =
+    useSelector(selectPrimaryUserRole)?.name === 'Data Analyst'
   const userProfileStt = user?.stt?.name
 
   const fraSubmissionHistory = useSelector(
@@ -941,6 +947,13 @@ const FRAReportsContent = () => {
             reportType={fileTypeInputValue}
             reportTypeLabel={getReportTypeLabel()}
           />
+
+          {(isDataAnalyst || isRegionalStaff) && (
+            <FeedbackReportAlert
+              stt={isRegionalStaff ? stt : null}
+              reportType="FRA"
+            />
+          )}
 
           {!isRegionalStaff && (
             <>
