@@ -23,6 +23,7 @@ jest.mock('../STTComboBox', () => {
         <option value="">- Select or Search -</option>
         <option value="Wisconsin">Wisconsin</option>
         <option value="Illinois">Illinois</option>
+        <option value="Ho-Chunk Nation">Ho-Chunk Nation</option>
       </select>
     </div>
   )
@@ -39,8 +40,25 @@ const dataAnalystStore = () =>
         id: 1,
         email: 'analyst@example.com',
         roles: [{ name: 'Data Analyst', permissions: [] }],
+        permissions: [],
         account_approval_status: 'Approved',
         stt: { id: 1, name: 'Alabama' },
+      },
+      authenticated: true,
+    },
+    stts: { sttList: [], loading: false },
+  })
+
+const tribeDataAnalystStore = () =>
+  mockStore({
+    auth: {
+      user: {
+        id: 1,
+        email: 'analyst@example.com',
+        roles: [{ name: 'Data Analyst', permissions: [] }],
+        permissions: [],
+        account_approval_status: 'Approved',
+        stt: { id: 100, name: 'Ho-Chunk Nation', type: 'tribe' },
       },
       authenticated: true,
     },
@@ -53,7 +71,13 @@ const regionalStaffStore = () =>
       user: {
         id: 2,
         email: 'regional@example.com',
-        roles: [{ name: 'OFA Regional Staff', permissions: [] }],
+        roles: [
+          {
+            name: 'OFA Regional Staff',
+            permissions: [{ codename: 'has_fra_access' }],
+          },
+        ],
+        permissions: [],
         account_approval_status: 'Approved',
         regions: [
           {
@@ -61,6 +85,7 @@ const regionalStaffStore = () =>
             stts: [
               { id: 10, name: 'Wisconsin', type: 'state' },
               { id: 11, name: 'Illinois', type: 'state' },
+              { id: 12, name: 'Ho-Chunk Nation', type: 'tribe' },
             ],
           },
         ],
@@ -160,7 +185,6 @@ describe('STTFeedbackReports', () => {
         expect(
           screen.getByText(/Feedback reports are produced cumulatively/i)
         ).toBeInTheDocument()
-        expect(screen.getByText(/Yun.Song@acf.hhs.gov/i)).toBeInTheDocument()
         expect(screen.getByText(/TANFData@acf.hhs.gov/i)).toBeInTheDocument()
       })
     })
@@ -178,7 +202,7 @@ describe('STTFeedbackReports', () => {
       })
     })
 
-    it('renders the H2 header with STT name and fiscal year when year is selected', async () => {
+    it('renders the H2 header with STT name, report type, and fiscal year', async () => {
       renderComponent()
 
       const yearSelect = screen.getByLabelText(/Fiscal Year/i)
@@ -188,7 +212,7 @@ describe('STTFeedbackReports', () => {
         expect(
           screen.getByRole('heading', {
             level: 2,
-            name: 'Alabama — Fiscal Year 2025 Feedback Reports',
+            name: 'Alabama — TANF/SSP Fiscal Year 2025 Feedback Reports',
           })
         ).toBeInTheDocument()
       })
@@ -215,16 +239,78 @@ describe('STTFeedbackReports', () => {
     })
   })
 
-  describe('Data Fetching', () => {
-    it('does not fetch reports on mount when no year is selected', async () => {
+  describe('Report Type Selection', () => {
+    it('shows radio selector for non-tribe Data Analysts', () => {
+      renderComponent() // dataAnalystStore has state STT
+
+      expect(screen.getByText('Feedback Report Type*')).toBeInTheDocument()
+      expect(screen.getByLabelText('TANF/SSP')).toBeInTheDocument()
+      expect(screen.getByLabelText('FRA')).toBeInTheDocument()
+    })
+
+    it('does not show radio selector for tribe Data Analysts', () => {
+      renderComponent(tribeDataAnalystStore())
+
+      expect(
+        screen.queryByText('Feedback Report Type*')
+      ).not.toBeInTheDocument()
+    })
+
+    it('defaults to TANF/SSP', () => {
       renderComponent()
 
+      expect(screen.getByLabelText('TANF/SSP')).toBeChecked()
+    })
+
+    it('updates reference table when FRA is selected', async () => {
+      renderComponent()
+
+      // Default shows TANF/SSP reference
+      expect(
+        screen.getByText('TANF/SSP Data Reporting Reference')
+      ).toBeInTheDocument()
+
+      // Switch to FRA
+      fireEvent.click(screen.getByLabelText('FRA'))
+
+      expect(
+        screen.getByText('FRA Data Reporting Reference')
+      ).toBeInTheDocument()
+      expect(
+        screen.queryByText('TANF/SSP Data Reporting Reference')
+      ).not.toBeInTheDocument()
+    })
+
+    it('updates header when FRA is selected', async () => {
+      renderComponent()
+
+      // Select year
+      const yearSelect = screen.getByLabelText(/Fiscal Year/i)
+      fireEvent.change(yearSelect, { target: { value: '2025' } })
+
       await waitFor(() => {
-        expect(get).not.toHaveBeenCalled()
+        expect(
+          screen.getByRole('heading', {
+            level: 2,
+            name: 'Alabama — TANF/SSP Fiscal Year 2025 Feedback Reports',
+          })
+        ).toBeInTheDocument()
+      })
+
+      // Switch to FRA
+      fireEvent.click(screen.getByLabelText('FRA'))
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('heading', {
+            level: 2,
+            name: 'Alabama — FRA Fiscal Year 2025 Feedback Reports',
+          })
+        ).toBeInTheDocument()
       })
     })
 
-    it('fetches reports when year is selected', async () => {
+    it('fetches reports with report_type when type changes', async () => {
       renderComponent()
 
       const yearSelect = screen.getByLabelText(/Fiscal Year/i)
@@ -234,7 +320,92 @@ describe('STTFeedbackReports', () => {
         expect(get).toHaveBeenCalledWith(
           expect.stringContaining('/reports/'),
           expect.objectContaining({
-            params: { year: 2025 },
+            params: { year: 2025, report_type: 'TANF_SSP' },
+          })
+        )
+      })
+
+      get.mockClear()
+
+      // Switch to FRA
+      fireEvent.click(screen.getByLabelText('FRA'))
+
+      await waitFor(() => {
+        expect(get).toHaveBeenCalledWith(
+          expect.stringContaining('/reports/'),
+          expect.objectContaining({
+            params: { year: 2025, report_type: 'FRA' },
+          })
+        )
+      })
+    })
+
+    it('ignores FRA URL param for tribe users', async () => {
+      render(
+        <MemoryRouter initialEntries={['/feedback-reports?type=FRA&year=2025']}>
+          <Provider store={tribeDataAnalystStore()}>
+            <STTFeedbackReports />
+          </Provider>
+        </MemoryRouter>
+      )
+
+      // Should not show radio selector
+      expect(
+        screen.queryByText('Feedback Report Type*')
+      ).not.toBeInTheDocument()
+
+      // Should fetch as TANF_SSP despite URL param
+      await waitFor(() => {
+        expect(get).toHaveBeenCalledWith(
+          expect.stringContaining('/reports/'),
+          expect.objectContaining({
+            params: { year: 2025, report_type: 'TANF_SSP' },
+          })
+        )
+      })
+    })
+
+    it('initializes report type from URL param for non-tribe users', () => {
+      render(
+        <MemoryRouter initialEntries={['/feedback-reports?type=FRA']}>
+          <Provider store={dataAnalystStore()}>
+            <STTFeedbackReports />
+          </Provider>
+        </MemoryRouter>
+      )
+
+      expect(screen.getByLabelText('FRA')).toBeChecked()
+    })
+
+    it('regional staff sees radio selector', () => {
+      renderComponent(regionalStaffStore())
+
+      expect(screen.getByText('Feedback Report Type*')).toBeInTheDocument()
+      expect(screen.getByLabelText('TANF/SSP')).toBeInTheDocument()
+      expect(screen.getByLabelText('FRA')).toBeInTheDocument()
+    })
+  })
+
+  describe('Data Fetching', () => {
+    it('does not fetch reports on mount when no year is selected', async () => {
+      renderComponent()
+
+      await waitFor(() => {
+        expect(get).not.toHaveBeenCalled()
+      })
+    })
+
+    it('fetches reports with report_type when year is selected', async () => {
+      renderComponent()
+
+      const yearSelect = screen.getByLabelText(/Fiscal Year/i)
+      fireEvent.change(yearSelect, { target: { value: '2025' } })
+
+      await waitFor(() => {
+        expect(get).toHaveBeenCalledWith(
+          expect.stringContaining('/reports/'),
+          expect.objectContaining({
+            params: { year: 2025, report_type: 'TANF_SSP' },
           })
         )
       })
@@ -377,7 +548,7 @@ describe('STTFeedbackReports', () => {
       expect(get).toHaveBeenCalledWith(
         expect.stringContaining('/reports/'),
         expect.objectContaining({
-          params: { year: 2025 },
+          params: { year: 2025, report_type: 'TANF_SSP' },
         })
       )
 
@@ -394,7 +565,7 @@ describe('STTFeedbackReports', () => {
         expect(get).toHaveBeenCalledWith(
           expect.stringContaining('/reports/'),
           expect.objectContaining({
-            params: { year: 2024 },
+            params: { year: 2024, report_type: 'TANF_SSP' },
           })
         )
       })
@@ -415,7 +586,7 @@ describe('STTFeedbackReports', () => {
         expect(
           screen.getByRole('heading', {
             level: 2,
-            name: 'Alabama — Fiscal Year 2025 Feedback Reports',
+            name: 'Alabama — TANF/SSP Fiscal Year 2025 Feedback Reports',
           })
         ).toBeInTheDocument()
       })
@@ -426,7 +597,7 @@ describe('STTFeedbackReports', () => {
         expect(
           screen.getByRole('heading', {
             level: 2,
-            name: 'Alabama — Fiscal Year 2024 Feedback Reports',
+            name: 'Alabama — TANF/SSP Fiscal Year 2024 Feedback Reports',
           })
         ).toBeInTheDocument()
       })
@@ -547,10 +718,10 @@ describe('STTFeedbackReports', () => {
   })
 
   describe('URL Parameter Handling', () => {
-    const renderWithUrl = (url) => {
+    const renderWithUrl = (url, overrideStore) => {
       return render(
         <MemoryRouter initialEntries={[url]}>
-          <Provider store={store}>
+          <Provider store={overrideStore || store}>
             <STTFeedbackReports />
           </Provider>
         </MemoryRouter>
@@ -566,14 +737,14 @@ describe('STTFeedbackReports', () => {
       })
     })
 
-    it('fetches reports with year from URL parameter', async () => {
+    it('fetches reports with year and report_type from URL parameter', async () => {
       renderWithUrl('/feedback-reports?year=2024')
 
       await waitFor(() => {
         expect(get).toHaveBeenCalledWith(
           expect.stringContaining('/reports/'),
           expect.objectContaining({
-            params: { year: 2024 },
+            params: { year: 2024, report_type: 'TANF_SSP' },
           })
         )
       })
@@ -605,14 +776,14 @@ describe('STTFeedbackReports', () => {
       ).not.toBeInTheDocument()
     })
 
-    it('displays H2 heading with STT name and year from URL parameter', async () => {
+    it('displays H2 heading with STT name, report type, and year from URL', async () => {
       renderWithUrl('/feedback-reports?year=2024')
 
       await waitFor(() => {
         expect(
           screen.getByRole('heading', {
             level: 2,
-            name: 'Alabama — Fiscal Year 2024 Feedback Reports',
+            name: 'Alabama — TANF/SSP Fiscal Year 2024 Feedback Reports',
           })
         ).toBeInTheDocument()
       })
@@ -670,7 +841,7 @@ describe('STTFeedbackReports', () => {
       })
     })
 
-    it('auto-fetches reports with stt param when both STT and year are selected', async () => {
+    it('auto-fetches reports with stt and report_type when both STT and year are selected', async () => {
       renderComponent(regionalStore)
 
       // Select STT via mocked ComboBox
@@ -685,13 +856,13 @@ describe('STTFeedbackReports', () => {
         expect(get).toHaveBeenCalledWith(
           expect.stringContaining('/reports/'),
           expect.objectContaining({
-            params: { year: 2025, stt: 10 },
+            params: { year: 2025, stt: 10, report_type: 'TANF_SSP' },
           })
         )
       })
     })
 
-    it('shows H2 heading with selected STT name', async () => {
+    it('shows H2 heading with selected STT name and report type', async () => {
       renderComponent(regionalStore)
 
       const sttSelect = screen.getByLabelText(/State, Tribe, or Territory/i)
@@ -704,7 +875,7 @@ describe('STTFeedbackReports', () => {
         expect(
           screen.getByRole('heading', {
             level: 2,
-            name: 'Wisconsin — Fiscal Year 2025 Feedback Reports',
+            name: 'Wisconsin — TANF/SSP Fiscal Year 2025 Feedback Reports',
           })
         ).toBeInTheDocument()
       })
@@ -762,6 +933,44 @@ describe('STTFeedbackReports', () => {
 
       const sttSelect = screen.getByLabelText(/State, Tribe, or Territory/i)
       expect(sttSelect.value).toBe('Wisconsin')
+    })
+
+    it('hides report type selector when a tribe is selected', () => {
+      renderComponent(regionalStore)
+
+      // Initially radio should be visible (no STT selected yet)
+      expect(screen.getByText('Feedback Report Type*')).toBeInTheDocument()
+
+      // Select a tribe
+      const sttSelect = screen.getByLabelText(/State, Tribe, or Territory/i)
+      fireEvent.change(sttSelect, { target: { value: 'Ho-Chunk Nation' } })
+
+      // Radio should be hidden
+      expect(
+        screen.queryByText('Feedback Report Type*')
+      ).not.toBeInTheDocument()
+    })
+
+    it('shows radio again when switching from tribe to state STT', async () => {
+      renderComponent(regionalStore)
+
+      // Select a tribe — radio should hide
+      const sttSelect = screen.getByLabelText(/State, Tribe, or Territory/i)
+      fireEvent.change(sttSelect, { target: { value: 'Ho-Chunk Nation' } })
+
+      await waitFor(() => {
+        expect(
+          screen.queryByText('Feedback Report Type*')
+        ).not.toBeInTheDocument()
+      })
+
+      // Select a state — radio should reappear with TANF_SSP selected
+      fireEvent.change(sttSelect, { target: { value: 'Wisconsin' } })
+
+      await waitFor(() => {
+        expect(screen.getByText('Feedback Report Type*')).toBeInTheDocument()
+        expect(screen.getByLabelText('TANF/SSP')).toBeChecked()
+      })
     })
   })
 })

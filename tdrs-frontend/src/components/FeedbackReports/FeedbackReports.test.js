@@ -321,7 +321,7 @@ describe('FeedbackReports', () => {
         expect(get).toHaveBeenCalledWith(
           expect.stringContaining('/reports/report-sources/'),
           expect.objectContaining({
-            params: { year: '2025' },
+            params: { year: '2025', report_type: 'TANF_SSP' },
           })
         )
       })
