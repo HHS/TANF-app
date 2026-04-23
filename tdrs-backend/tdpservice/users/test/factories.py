@@ -18,7 +18,7 @@ class BaseUserFactory(factory.django.DjangoModelFactory):
         django_get_or_create = ("username",)
 
     id = factory.Faker("uuid4")
-    username = factory.Sequence(lambda n: "testuser%d@test.com" % n)
+    username = factory.Faker("safe_email")
     password = "test_password"  # Static password so we can login.
     email = factory.LazyAttribute(lambda obj: obj.username)
     first_name = factory.Faker("first_name")

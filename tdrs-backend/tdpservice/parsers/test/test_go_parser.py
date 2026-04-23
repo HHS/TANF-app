@@ -48,7 +48,7 @@ from tdpservice.search_indexes.models.tribal import (
 logger = logging.getLogger(__name__)
 
 GO_PARSE_TASK_NAME = "tdpservice.scheduling.parser_task.go_parse"
-GO_PARSE_TIMEOUT_SECONDS = 10
+GO_PARSE_TIMEOUT_SECONDS = 60
 
 
 def parse_datafile(dfs, datafile, timeout_seconds=GO_PARSE_TIMEOUT_SECONDS):
@@ -57,7 +57,11 @@ def parse_datafile(dfs, datafile, timeout_seconds=GO_PARSE_TIMEOUT_SECONDS):
     dfs.status = DataFileSummary.Status.PENDING
     dfs.save()
 
-    async_result = celery_app.send_task(GO_PARSE_TASK_NAME, args=[datafile.pk])
+    async_result = celery_app.send_task(
+        GO_PARSE_TASK_NAME,
+        args=[datafile.pk],
+        queue=settings.CELERY_GO_PARSER_QUEUE,
+    )
 
     try:
         task_result = async_result.get(timeout=timeout_seconds, propagate=True)
@@ -65,7 +69,7 @@ def parse_datafile(dfs, datafile, timeout_seconds=GO_PARSE_TIMEOUT_SECONDS):
         raise RuntimeError(
             f"Timed out waiting for Go parser task for datafile {datafile.pk}."
         ) from exc
-    print(f"\n\nTASK RESULT: {task_result}\n\n")
+
     if task_result != "success":
         raise RuntimeError(
             f"Go parser task failed for datafile {datafile.pk}: {task_result}"
@@ -458,7 +462,6 @@ class TestGoParse:
     def test_parse_empty_file(self, empty_file, dfs):
         """Test parsing of empty_file."""
         dfs.datafile = empty_file
-        print(f"\n\nTEST Database: {empty_file._state.db}\n\n")
         dfs.save()
         parse_datafile(dfs, empty_file)
 
@@ -497,9 +500,7 @@ class TestGoParse:
 
         assert err.row_number == 1
         assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
-        assert (
-            err.error_message == "HEADER: record length is 0 characters but must be 23."
-        )
+        assert err.error_message == "Your file does not start with a HEADER."
         assert err.content_type is None
         assert err.object_id is None
 

@@ -1,7 +1,13 @@
 package validation
 
 import (
+	"text/template"
+
 	"go-parser/internal/parser"
+)
+
+var noRecordsCreatedMessage = template.Must(
+	template.New("no_records_created").Parse("No records created."),
 )
 
 // ValidationOrchestrator coordinates validation across all scopes.
@@ -60,6 +66,23 @@ func (o *ValidationOrchestrator) ValidateGroup(group *parser.ParsedGroup, filesp
 	}
 
 	return result
+}
+
+// CreateNoRecordsCreatedError builds a synthetic validation result for the
+// pipeline case where processing completes without writing any records.
+func (o *ValidationOrchestrator) CreateNoRecordsCreatedError() *ValidationResult {
+	return &ValidationResult{
+		Valid:       false,
+		ErrorType:   ErrorTypeCaseConsistency,
+		ValidatorID: "no_records_created",
+		Validator: &CompiledValidator{
+			ID:         "no_records_created",
+			Scope:      ScopeGroup,
+			ErrorType:  ErrorTypeCaseConsistency,
+			ResultMode: "single",
+			Message:    noRecordsCreatedMessage,
+		},
+	}
 }
 
 // ValidateHeader validates a single header record with DataFileContext injected

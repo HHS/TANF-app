@@ -81,6 +81,7 @@ type ServerConfig struct {
 // CeleryConfig holds Celery worker settings.
 type CeleryConfig struct {
 	RedisURL   string `yaml:"redis_url"`
+	Queue      string `yaml:"queue"`
 	NumWorkers int    `yaml:"num_workers"` // Number of concurrent celery task workers (default 1)
 }
 
@@ -124,6 +125,9 @@ func DefaultConfig() *Config {
 		FilespecFiles: []string{"filespecs/**/*.yaml"},
 		Server: ServerConfig{
 			Mode: "local",
+			Celery: CeleryConfig{
+				Queue: "go-parser",
+			},
 			GRPC: GRPCConfig{
 				ListenAddress: ":50051",
 			},

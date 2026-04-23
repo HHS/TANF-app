@@ -598,6 +598,27 @@ func TestOrchestratorEmptyGroup(t *testing.T) {
 	}
 }
 
+func TestOrchestratorCreateNoRecordsCreatedError(t *testing.T) {
+	orchestrator := NewValidationOrchestrator(newValidatorRegistry(), true)
+
+	result := orchestrator.CreateNoRecordsCreatedError()
+	if result == nil {
+		t.Fatal("CreateNoRecordsCreatedError returned nil")
+	}
+	if result.Valid {
+		t.Error("expected invalid result")
+	}
+	if result.ErrorType != ErrorTypeCaseConsistency {
+		t.Errorf("ErrorType = %q, want %q", result.ErrorType, ErrorTypeCaseConsistency)
+	}
+	if result.ValidatorID != "no_records_created" {
+		t.Errorf("ValidatorID = %q, want %q", result.ValidatorID, "no_records_created")
+	}
+	if got := result.Message(nil); got != "No records created." {
+		t.Errorf("Message() = %q, want %q", got, "No records created.")
+	}
+}
+
 // TestExecuteGroupEdgeCases tests edge cases in ExecuteGroup.
 func TestExecuteGroupEdgeCases(t *testing.T) {
 	registry := newValidatorRegistry()

@@ -67,10 +67,13 @@ def set_error_report(dfs, error_report):
     dfs.save()
 
 
-@shared_task
+@shared_task(name="tdpservice.scheduling.parser_task.go_parse")
 def go_parse(data_file_id):
-    """Stub task to register Go parser."""
-    pass
+    """Register the Go parser task name without executing it in Python."""
+    raise RuntimeError(
+        f"go_parse for data_file_id={data_file_id} is routed to the Go parser worker "
+        "and should not execute in the Python worker"
+    )
 
 
 @shared_task

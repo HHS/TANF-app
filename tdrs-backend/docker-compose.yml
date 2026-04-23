@@ -354,6 +354,7 @@ services:
     command: [ "--server.mode=celery", "--storage.source=s3" ]
     environment:
       - REDIS_URL=redis://redis-server:6379/0
+      - GO_PARSER_QUEUE=go-parser
       - DATABASE_URL=postgres://tdpuser:something_secure@postgres:5432/tdrs_test?sslmode=disable
       - S3_BUCKET=tdp-datafiles-localstack
       - S3_ENDPOINT=http://localstack:4566
@@ -395,6 +396,8 @@ services:
       - AMS_CLIENT_SECRET
       - AMS_CONFIGURATION_ENDPOINT
       - REDIS_URI=redis://redis-server:6379
+      - CELERY_WORKER_QUEUES=celery
+      - CELERY_GO_PARSER_QUEUE=go-parser
       - REDIS_SERVER_LOCAL=TRUE
       - CYPRESS_TOKEN
       - DJANGO_DEBUG
