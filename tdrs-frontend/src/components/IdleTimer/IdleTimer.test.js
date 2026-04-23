@@ -8,6 +8,8 @@ import { FETCH_AUTH } from '../../actions/auth'
 
 describe('IdleTimer', () => {
   const mockStore = configureStore([thunk])
+  const authBaseUrl =
+    process.env.REACT_APP_AUTH_URL || process.env.REACT_APP_BACKEND_URL
 
   it('should have a modal with an id of "timeoutModal"', () => {
     const store = mockStore({
@@ -40,7 +42,7 @@ describe('IdleTimer', () => {
   })
 
   it('should change to a className of display-block after 2 seconds', () => {
-    const url = 'http://localhost:8080/v1/logout/oidc'
+    const url = `${authBaseUrl}/logout/oidc`
     global.window = Object.create(window)
     Object.defineProperty(window, 'location', {
       value: {
@@ -70,7 +72,7 @@ describe('IdleTimer', () => {
   })
 
   it('should change window location to sign out url when sign out button is clicked on session timeout modal', () => {
-    const url = 'http://localhost:8080/v1/logout/oidc'
+    const url = `${authBaseUrl}/logout/oidc`
     global.window = Object.create(window)
     Object.defineProperty(window, 'location', {
       value: {
