@@ -361,6 +361,42 @@ tasks:
       - task: backend-down
       - task: frontend-down
 
+  parser:compile-check:
+    desc: Compile all Go parser packages and tests, including integration-tagged packages
+    dir: tdrs-services/parser
+    cmds:
+      - make compile-check
+
+  parser:lint:
+    desc: Run static analysis for the Go parser
+    dir: tdrs-services/parser
+    cmds:
+      - make lint
+
+  parser:sqlc-diff:
+    desc: Verify sqlc generated code matches the parser schema and queries
+    dir: tdrs-services/parser
+    cmds:
+      - make sqlc-diff
+
+  parser:validate-config:
+    desc: Load parser config and compile validator expressions
+    dir: tdrs-services/parser
+    cmds:
+      - make validate-config
+
+  parser:test-all-coverage:
+    desc: Run all Go parser unit and integration tests with coverage
+    dir: tdrs-services/parser
+    cmds:
+      - make test-all-coverage
+
+  parser:ci-checks:
+    desc: Run the non-test CI checks for the Go parser
+    dir: tdrs-services/parser
+    cmds:
+      - make ci-checks
+
   help:
     desc: Show this help message
     cmds:
