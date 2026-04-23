@@ -67,10 +67,14 @@ def big_file(stt_user, stt):
     """Fixture for ADS.E2J.FTP1.TS06."""
     return util.create_test_datafile("ADS.E2J.FTP1.TS06", stt_user, stt)
 
+
 @pytest.fixture
 def case_aggregates_edge_case(stt_user, stt):
     """Fixture for cases_across_months_with_error.txt which ensures the case aggregates algorithm doesn't double count errors across cases."""
-    return util.create_test_datafile("cases_across_months_with_error.txt", stt_user, stt)
+    return util.create_test_datafile(
+        "cases_across_months_with_error.txt", stt_user, stt
+    )
+
 
 @pytest.fixture
 def bad_test_file(stt_user, stt):
@@ -123,6 +127,8 @@ def small_ssp_section1_datafile(stt_user, stt):
         stt,
         "Active Case Data",
         DataFile.ProgramType.SSP,
+        2024,
+        "Q1",
     )
 
 

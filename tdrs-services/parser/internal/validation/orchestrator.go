@@ -118,9 +118,10 @@ func (o *ValidationOrchestrator) ValidateHeader(headerRec *parser.ParsedRecord, 
 	fieldEnv := &FieldEnv{DataFileContext: dfCtx}
 	for fieldName, validators := range o.registry.GetFieldValidatorsForRecord(recType) {
 		value := headerRec.Get(fieldName)
+		required := headerRec.IsFieldRequired(fieldName)
 
 		if value == nil {
-			if headerRec.IsFieldRequired(fieldName) {
+			if required {
 				result.FieldErrors = append(result.FieldErrors, &ValidationResult{
 					Valid:       false,
 					ValidatorID: "field_required",
@@ -128,6 +129,11 @@ func (o *ValidationOrchestrator) ValidateHeader(headerRec *parser.ParsedRecord, 
 					FieldName:   fieldName,
 				})
 			}
+			continue
+		}
+
+		// Preserve Python parser parity: field validators only run for required fields.
+		if !required {
 			continue
 		}
 
@@ -188,10 +194,11 @@ func (o *ValidationOrchestrator) validateRecord(result *RecordValidationResult, 
 	fieldEnv := &FieldEnv{} // Reuse env for efficiency
 	for fieldName, validators := range o.registry.GetFieldValidatorsForRecord(recType) {
 		value := rec.Get(fieldName)
+		required := rec.IsFieldRequired(fieldName)
 
 		// Handle nil values
 		if value == nil {
-			if rec.IsFieldRequired(fieldName) {
+			if required {
 				// Required field is nil - generate error
 				result.FieldErrors = append(result.FieldErrors, &ValidationResult{
 					Valid:       false,
@@ -201,6 +208,11 @@ func (o *ValidationOrchestrator) validateRecord(result *RecordValidationResult, 
 				})
 			}
 			// Skip validators for nil fields (both required and optional)
+			continue
+		}
+
+		// Preserve Python parser parity: field validators only run for required fields.
+		if !required {
 			continue
 		}
 

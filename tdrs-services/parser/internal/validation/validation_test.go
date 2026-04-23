@@ -7,14 +7,24 @@ import (
 
 	"github.com/expr-lang/expr"
 
+	"go-parser/internal/config/schema"
 	configValidation "go-parser/internal/config/validation"
 	"go-parser/internal/testutil"
 )
 
 // Package-level test schemas shared across tests.
 var (
-	t1Schema = testutil.NewTestSchema("T1", "CASE_NUMBER", "AMOUNT")
-	t2Schema = testutil.NewTestSchema("T2", "SSN", "FAMILY_AFFILIATION")
+	t1Schema = func() *schema.CompiledSchema {
+		cs := testutil.NewTestSchema("T1", "CASE_NUMBER", "AMOUNT")
+		cs.Shared[0].Required = true
+		cs.Shared[1].Required = true
+		return cs
+	}()
+	t2Schema = func() *schema.CompiledSchema {
+		cs := testutil.NewTestSchema("T2", "SSN", "FAMILY_AFFILIATION")
+		cs.Shared[0].Required = true
+		return cs
+	}()
 	t3Schema = testutil.NewTestSchema("T3", "FAMILY_AFFILIATION")
 )
 

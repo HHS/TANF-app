@@ -119,8 +119,8 @@ func TestOrchestratorNilOptionalFieldSkipsValidators(t *testing.T) {
 
 	orchestrator := NewValidationOrchestrator(registry, true)
 
-	// Record with nil optional field (Required defaults to false)
-	rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": nil})
+	optionalSchema := testutil.NewTestSchema("T1", "AMOUNT")
+	rec := testutil.NewTestRecord(optionalSchema, 1, map[string]any{"AMOUNT": nil})
 	group := testutil.NewTestGroup(rec)
 
 	result := orchestrator.ValidateGroup(group, "TEST:1")
@@ -128,6 +128,28 @@ func TestOrchestratorNilOptionalFieldSkipsValidators(t *testing.T) {
 	// Should have NO errors - optional nil field skips validation entirely
 	if len(result.RecordResults[0].FieldErrors) != 0 {
 		t.Errorf("expected 0 field errors for nil optional field, got %d", len(result.RecordResults[0].FieldErrors))
+	}
+}
+
+func TestOrchestratorOptionalFieldWithValueSkipsValidators(t *testing.T) {
+	registry := newValidatorRegistry()
+	registry.exprOpts = RegisterFunctions()
+
+	fieldExpr, _ := registry.getOrCompileExpr(ScopeField, "Value > 0", "single")
+	registry.field["T1"] = map[string][]*CompiledValidator{
+		"AMOUNT": {{ID: "positive_amount", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
+	}
+
+	orchestrator := NewValidationOrchestrator(registry, true)
+
+	optionalSchema := testutil.NewTestSchema("T1", "AMOUNT")
+	rec := testutil.NewTestRecord(optionalSchema, 1, map[string]any{"AMOUNT": -10})
+	group := testutil.NewTestGroup(rec)
+
+	result := orchestrator.ValidateGroup(group, "TEST:1")
+
+	if len(result.RecordResults[0].FieldErrors) != 0 {
+		t.Errorf("expected 0 field errors for populated optional field, got %d", len(result.RecordResults[0].FieldErrors))
 	}
 }
 
@@ -350,6 +372,26 @@ func TestValidateHeaderDoesNotShortCircuitOnFieldOrConsistencyErrors(t *testing.
 	}
 	if result.RecordErrors[0].ErrorType != ErrorTypeValueConsistency {
 		t.Fatalf("expected VALUE_CONSISTENCY, got %s", result.RecordErrors[0].ErrorType)
+	}
+}
+
+func TestValidateHeaderOptionalFieldWithValueSkipsValidators(t *testing.T) {
+	registry := newValidatorRegistry()
+	registry.exprOpts = RegisterFunctions()
+
+	fieldExpr, _ := registry.getOrCompileExpr(ScopeField, "Value > 0", "single")
+	registry.field["T1"] = map[string][]*CompiledValidator{
+		"AMOUNT": {{ID: "positive_amount", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
+	}
+
+	orchestrator := NewValidationOrchestrator(registry, true)
+
+	optionalSchema := testutil.NewTestSchema("T1", "AMOUNT")
+	headerRec := testutil.NewTestRecord(optionalSchema, 1, map[string]any{"AMOUNT": -10})
+	result := orchestrator.ValidateHeader(headerRec, &DataFileContext{})
+
+	if len(result.FieldErrors) != 0 {
+		t.Fatalf("expected 0 field errors for populated optional header field, got %d", len(result.FieldErrors))
 	}
 }
 
@@ -608,8 +650,8 @@ func TestOrchestratorCreateNoRecordsCreatedError(t *testing.T) {
 	if result.Valid {
 		t.Error("expected invalid result")
 	}
-	if result.ErrorType != ErrorTypeCaseConsistency {
-		t.Errorf("ErrorType = %q, want %q", result.ErrorType, ErrorTypeCaseConsistency)
+	if result.ErrorType != ErrorTypePreCheck {
+		t.Errorf("ErrorType = %q, want %q", result.ErrorType, ErrorTypePreCheck)
 	}
 	if result.ValidatorID != "no_records_created" {
 		t.Errorf("ValidatorID = %q, want %q", result.ValidatorID, "no_records_created")
