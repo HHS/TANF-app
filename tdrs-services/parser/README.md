@@ -70,26 +70,26 @@ The parser uses a layered configuration system. Override precedence (lowest to h
 
 The primary config file is `config/parser.yaml`. Key sections:
 
-| Section | Controls |
-|---------|----------|
-| `server` | How the parser receives work (`local`, `celery`, `grpc`, `http`) |
-| `pipeline` | Worker pool sizes and buffer depths |
-| `writer` | Output mode (`database` or `file`), flush thresholds |
-| `validation` | Short-circuit behavior, validator file paths |
-| `database` | PostgreSQL connection pool settings |
-| `storage` | File acquisition (`local` or `s3`) |
+| Section      | Controls                                                         |
+| ------------ | ---------------------------------------------------------------- |
+| `server`     | How the parser receives work (`local`, `celery`, `grpc`, `http`) |
+| `pipeline`   | Worker pool sizes and buffer depths                              |
+| `writer`     | Output mode (`database` or `file`), flush thresholds             |
+| `validation` | Short-circuit behavior, validator file paths                     |
+| `database`   | PostgreSQL connection pool settings                              |
+| `storage`    | File acquisition (`local` or `s3`)                               |
 
 ### Environment Variables
 
 The config file supports `${VAR}` interpolation. Common variables:
 
-| Variable | Used In | Purpose |
-|----------|---------|---------|
-| `DATABASE_URL` | `database.url` | PostgreSQL connection string |
-| `REDIS_URL` | `server.celery.redis_url` | Redis broker for Celery mode |
-| `S3_BUCKET` | `storage.s3.bucket` | S3 bucket for file storage |
-| `S3_ENDPOINT` | `storage.s3.endpoint` | Custom S3 endpoint (LocalStack) |
-| `AWS_DEFAULT_REGION` | `storage.s3.region` | AWS region |
+| Variable             | Used In                   | Purpose                         |
+| -------------------- | ------------------------- | ------------------------------- |
+| `DATABASE_URL`       | `database.url`            | PostgreSQL connection string    |
+| `REDIS_URL`          | `server.celery.redis_url` | Redis broker for Celery mode    |
+| `S3_BUCKET`          | `storage.s3.bucket`       | S3 bucket for file storage      |
+| `S3_ENDPOINT`        | `storage.s3.endpoint`     | Custom S3 endpoint (LocalStack) |
+| `AWS_DEFAULT_REGION` | `storage.s3.region`       | AWS region                      |
 
 ---
 
@@ -306,9 +306,6 @@ sqlc diff
 
 # Run sqlc lint-style checks
 sqlc vet
-
-# Verify queries against the configured engine and schema
-sqlc verify
 ```
 
 Generated code lives in `internal/db/` and should not be edited by hand.
@@ -342,9 +339,9 @@ For integration tests in CI, CircleCI reuses the existing backend docker-compose
 
 ### Example Launch Configurations
 
-| Configuration | Description |
-|---------------|-------------|
-| **Go DB** | Parse a local file and write results to PostgreSQL |
+| Configuration | Description                                                                  |
+| ------------- | ---------------------------------------------------------------------------- |
+| **Go DB**     | Parse a local file and write results to PostgreSQL                           |
 | **Go DryRun** | Parse a local file with `--dry-run` (CSV output to local files, no database) |
 
 ```jsonc

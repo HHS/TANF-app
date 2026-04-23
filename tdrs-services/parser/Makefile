@@ -45,10 +45,6 @@ sqlc-diff:
 sqlc-vet:
 	sqlc vet
 
-# Verify queries remain valid for the configured engine and schema
-sqlc-verify:
-	sqlc verify
-
 # Load parser config and compile validator expressions to catch YAML/expr syntax issues
 validate-config:
 	go test -count=1 ./internal/validation -run TestProductionValidators_LoadAndCompile
