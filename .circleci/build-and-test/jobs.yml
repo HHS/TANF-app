@@ -151,6 +151,16 @@
             . "$BASH_ENV"
             task parser:sqlc-diff
       - run:
+          name: sqlc vet
+          command: |
+            . "$BASH_ENV"
+            task parser:sqlc-vet
+      - run:
+          name: sqlc verify
+          command: |
+            . "$BASH_ENV"
+            task parser:sqlc-verify
+      - run:
           name: Validator compilation check
           command: |
             . "$BASH_ENV"

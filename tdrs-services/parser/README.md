@@ -250,6 +250,12 @@ make lint
 # Verify sqlc-generated code is in sync with schema.sql and query.sql
 make sqlc-diff
 
+# Run sqlc static analysis checks
+make sqlc-vet
+
+# Verify parser SQL against the configured engine and schema
+make sqlc-verify
+
 # Load config and compile validator expressions from YAML
 make validate-config
 
@@ -297,6 +303,12 @@ sqlc generate
 
 # Check if generated code is up to date (useful for CI)
 sqlc diff
+
+# Run sqlc lint-style checks
+sqlc vet
+
+# Verify queries against the configured engine and schema
+sqlc verify
 ```
 
 Generated code lives in `internal/db/` and should not be edited by hand.
@@ -311,6 +323,8 @@ The CircleCI parser job runs these checks from `tdrs-services/parser/`:
 task parser:compile-check
 task parser:lint
 task parser:sqlc-diff
+task parser:sqlc-vet
+task parser:sqlc-verify
 task parser:validate-config
 task parser:test-all-coverage
 ```

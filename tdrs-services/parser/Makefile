@@ -1,5 +1,5 @@
 .PHONY: test test-unit test-integration test-verbose test-short test-coverage \
-       compile-check lint sqlc-diff validate-config ci-checks \
+       compile-check lint sqlc-diff sqlc-vet sqlc-verify validate-config ci-checks \
        build build-all build-linux build-darwin build-windows clean
 
 GOTESTSUM := gotestsum
@@ -41,12 +41,20 @@ lint:
 sqlc-diff:
 	sqlc diff
 
+# Run sqlc static analysis against schema and queries
+sqlc-vet:
+	sqlc vet
+
+# Verify queries remain valid for the configured engine and schema
+sqlc-verify:
+	sqlc verify
+
 # Load parser config and compile validator expressions to catch YAML/expr syntax issues
 validate-config:
 	go test -count=1 ./internal/validation -run TestProductionValidators_LoadAndCompile
 
 # Aggregate CI checks that don't require the full test suite
-ci-checks: compile-check lint sqlc-diff validate-config
+ci-checks: compile-check lint sqlc-diff sqlc-vet sqlc-verify validate-config
 
 # Run tests with verbose per-test output
 test-verbose:
