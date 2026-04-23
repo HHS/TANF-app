@@ -11,7 +11,6 @@ func serializeSspM1(record *parser.ParsedRecord, datafileID int32) [][]any {
 		record.Get("RecordType"),
 		record.Get("RPT_MONTH_YEAR"),
 		record.Get("CASE_NUMBER"),
-		record.Get("FIPS_CODE"),
 		record.Get("COUNTY_FIPS_CODE"),
 		record.Get("STRATUM"),
 		record.Get("ZIP_CODE"),
