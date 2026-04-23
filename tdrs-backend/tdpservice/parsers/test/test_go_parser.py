@@ -47,10 +47,6 @@ from tdpservice.search_indexes.models.tribal import (
 
 logger = logging.getLogger(__name__)
 
-settings.GENERATE_TRAILER_ERRORS = True
-# TODO: the name of this test doesn't make perfect sense anymore since it will always have errors now.
-# TODO: parametrize and merge with test_zero_filled_fips_code_file
-
 GO_PARSE_TASK_NAME = "tdpservice.scheduling.parser_task.go_parse"
 GO_PARSE_TIMEOUT_SECONDS = 10
 

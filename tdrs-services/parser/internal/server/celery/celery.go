@@ -92,7 +92,7 @@ func (s *Server) Run(parentCtx context.Context) error {
 
 	celeryClient, err := gocelery.NewCeleryClient(
 		gocelery.NewRedisBroker(redisPool),
-		&gocelery.RedisCeleryBackend{Pool: redisPool},
+		newRedisCeleryBackend(redisPool),
 		numWorkers,
 	)
 	if err != nil {
