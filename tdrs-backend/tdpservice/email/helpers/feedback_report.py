@@ -9,7 +9,7 @@ from tdpservice.reports.models import ReportFile
 
 def send_feedback_report_available_email(report_file: ReportFile, recipients):
     """
-    Send an email to Data Analysts when a feedback report is available.
+    Send an email when a feedback report is available.
 
     Parameters
     ----------
@@ -37,9 +37,10 @@ def send_feedback_report_available_email(report_file: ReportFile, recipients):
         }
 
     template_path = FeedbackReportEmail.REPORT_AVAILABLE.value
-    subject = f"Feedback Report Available: {report_file.stt.name} - FY {report_file.year}"
+    report_type_label = "FRA" if getattr(report_file, "report_type", None) == "FRA" else "TANF/SSP"
+    subject = f"{report_type_label} Feedback Report Available: {report_file.stt.name} - FY {report_file.year}"
     text_message = (
-        f"A new feedback report is available for {report_file.stt.name} "
+        f"A new {report_type_label} feedback report is available for {report_file.stt.name} "
         f"for Fiscal Year {report_file.year} (reflects data submitted through {date_extracted_str})."
     )
 
@@ -48,12 +49,14 @@ def send_feedback_report_available_email(report_file: ReportFile, recipients):
         "fiscal_year": report_file.year,
         "date_extracted_on": date_extracted_str,
         "report_date": report_file.created_at.strftime("%m/%d/%Y"),
+        "report_type": getattr(report_file, "report_type", "TANF_SSP"),
+        "report_type_label": report_type_label,
         "url": settings.FRONTEND_BASE_URL,
         "subject": subject,
     }
 
     log(
-        f"Feedback report available; emailing Data Analysts {list(recipients)}",
+        f"Feedback report available; emailing recipients {list(recipients)}",
         logger_context=logger_context,
     )
 
