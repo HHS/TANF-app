@@ -104,7 +104,6 @@
           name: Install Go parser CI dependencies
           command: |
             sudo apt-get update
-            sudo apt-get install -y postgresql-client
             source /opt/circleci/.nvm/nvm.sh || true
             echo 'export PATH="$HOME/go/bin:$PATH"' >> "$BASH_ENV"
             . "$BASH_ENV"
