@@ -102,7 +102,7 @@ services:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
       - LOGIN_GOV_JWT_KEY=${JWT_KEY}
-    entrypoint: ["/bin/bash", "/opt/keycloak/configure-idps.sh"]
+    entrypoint: [ "/bin/bash", "/opt/keycloak/configure-idps.sh" ]
     depends_on:
       - keycloak
 
@@ -150,7 +150,7 @@ services:
     image: curlimages/curl:8.5.0
     volumes:
       - ./plg/grafana/init-grafana-orgs.sh:/init-grafana-orgs.sh:ro
-    entrypoint: ["/bin/sh", "/init-grafana-orgs.sh"]
+    entrypoint: [ "/bin/sh", "/init-grafana-orgs.sh" ]
     depends_on:
       - grafana
 
@@ -161,7 +161,10 @@ services:
       - 9093:9093
     volumes:
       - ./plg/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
-    command: --config.file=/etc/alertmanager/alertmanager.yml --storage.path=/alertmanager --log.level=debug --web.external-url=http://localhost:3000/alerts --web.route-prefix=/alerts --cluster.listen-address=""
+    command: --config.file=/etc/alertmanager/alertmanager.yml
+      --storage.path=/alertmanager --log.level=debug
+      --web.external-url=http://localhost:3000/alerts --web.route-prefix=/alerts
+      --cluster.listen-address=""
 
   mimir:
     image: grafana/mimir:2.15.1
@@ -205,12 +208,13 @@ services:
       - ./plg/alloy:/etc/alloy
       - ~/tdp-logs/nginx:/var/log/nginx
       - logs:/logs
-    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/alloy.local.config
+    command: run --server.http.listen-addr=0.0.0.0:12345
+      --storage.path=/var/lib/alloy/data /etc/alloy/alloy.local.config
 
   tempo:
     restart: always
     image: grafana/tempo:latest
-    command: ["-config.file=/etc/tempo.yaml"]
+    command: [ "-config.file=/etc/tempo.yaml" ]
     volumes:
       - ./plg/tempo/tempo.local.yml:/etc/tempo.yaml
       - tempo-data:/var/tempo
@@ -313,14 +317,18 @@ services:
       args:
         REGISTRY_OWNER: ${REGISTRY_OWNER:-hhs}
     command: >
-      bash -c "./wait_for_services.sh &&
+      bash -c "rm -f /tmp/web-ready && ./wait_for_services.sh &&
       ./manage.py makemigrations &&
-      ./manage.py migrate &&
-      ./manage.py populate_stts &&
-      ./manage.py populate_history --auto &&
-      python ./plg/grafana_views/generate_views.py --all &&
-      ./manage.py runscript apply_grafana_views &&
-      ./gunicorn_start.sh"
+      ./manage.py migrate && ./manage.py populate_stts && ./manage.py
+      populate_history --auto && python ./plg/grafana_views/generate_views.py
+      --all && ./manage.py runscript apply_grafana_views && touch
+      /tmp/web-ready && exec ./gunicorn_start.sh"
+    healthcheck:
+      test: [ "CMD-SHELL", "test -f /tmp/web-ready" ]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 10s
     ports:
       - "8989:8080"
     tty: true
@@ -343,7 +351,7 @@ services:
     build:
       context: ../tdrs-services/parser
       dockerfile: Dockerfile
-    command: ["--server.mode=celery", "--storage.source=s3"]
+    command: [ "--server.mode=celery", "--storage.source=s3" ]
     environment:
       - REDIS_URL=redis://redis-server:6379/0
       - DATABASE_URL=postgres://tdpuser:something_secure@postgres:5432/tdrs_test?sslmode=disable
@@ -352,9 +360,14 @@ services:
       - S3_KEY_PREFIX=dev
       - AWS_DEFAULT_REGION=us-gov-west-1
     depends_on:
-      - redis-server
-      - postgres
-      - localstack
+      redis-server:
+        condition: service_started
+      postgres:
+        condition: service_started
+      localstack:
+        condition: service_started
+      web:
+        condition: service_healthy
 
   celery:
     restart: always
