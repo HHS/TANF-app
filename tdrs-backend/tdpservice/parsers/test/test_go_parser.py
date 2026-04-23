@@ -49,10 +49,19 @@ logger = logging.getLogger(__name__)
 
 GO_PARSE_TASK_NAME = "tdpservice.scheduling.parser_task.go_parse"
 GO_PARSE_TIMEOUT_SECONDS = 60
+_GO_PARSER_DATAFILE_IDS = None
+
+
+def register_go_parser_datafile_for_cleanup(datafile):
+    """Register a DataFile for committed cleanup after a Go parser test."""
+    if _GO_PARSER_DATAFILE_IDS is not None and datafile is not None and datafile.pk:
+        _GO_PARSER_DATAFILE_IDS.add(datafile.pk)
 
 
 def parse_datafile(dfs, datafile, timeout_seconds=GO_PARSE_TIMEOUT_SECONDS):
     """Submit a datafile to the Go parser worker and wait for completion."""
+    register_go_parser_datafile_for_cleanup(datafile)
+
     dfs.datafile = datafile
     dfs.status = DataFileSummary.Status.PENDING
     dfs.save()
@@ -82,6 +91,7 @@ def parse_datafile(dfs, datafile, timeout_seconds=GO_PARSE_TIMEOUT_SECONDS):
     return dfs
 
 
+@pytest.mark.usefixtures("go_parser_datafile_cleanup")
 class TestGoParse:
     """Tests for parse and validation flows."""
 
@@ -205,7 +215,7 @@ class TestGoParse:
     #         ),
     #     ],
     # )
-    # def test_parse_section_mismatch_variants(
+    # def test_go_parse_section_mismatch_variants(
     #     self,
     #     small_correct_file,
     #     dfs,
@@ -290,7 +300,7 @@ class TestGoParse:
     #         ),
     #     ],
     # )
-    # def test_parse_precheck_header_errors(self, request, fixture_name, updates, expected, dfs):
+    # def test_go_parse_precheck_header_errors(self, request, fixture_name, updates, expected, dfs):
     #     """Test parsing failures triggered by header/pre-check validation."""
     #     datafile = request.getfixturevalue(fixture_name)
     #     for field, value in updates.items():
@@ -459,7 +469,7 @@ class TestGoParse:
     #     assert trailer_error_4.object_id is None
 
     @pytest.mark.django_db(transaction=True)
-    def test_parse_empty_file(self, empty_file, dfs):
+    def test_go_parse_empty_file(self, empty_file, dfs):
         """Test parsing of empty_file."""
         dfs.datafile = empty_file
         dfs.save()
@@ -500,46 +510,55 @@ class TestGoParse:
 
         assert err.row_number == 1
         assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
+        # Go parser has a better error message which is why this is different
         assert err.error_message == "Your file does not start with a HEADER."
         assert err.content_type is None
         assert err.object_id is None
 
-    # @pytest.mark.django_db(transaction=True)
-    # def test_parse_small_ssp_section1_datafile(self, small_ssp_section1_datafile, dfs):
-    #     """Test parsing small_ssp_section1_datafile."""
-    #     small_ssp_section1_datafile.year = 2024
-    #     small_ssp_section1_datafile.quarter = "Q1"
+    @pytest.mark.django_db(transaction=True)
+    def test_go_parse_small_ssp_section1_datafile(
+        self, small_ssp_section1_datafile, dfs
+    ):
+        """Test parsing small_ssp_section1_datafile."""
+        expected_m1_record_count = 5
+        expected_m2_record_count = 6
+        expected_m3_record_count = 8
 
-    #     expected_m1_record_count = 5
-    #     expected_m2_record_count = 6
-    #     expected_m3_record_count = 8
+        dfs.datafile = small_ssp_section1_datafile
+        dfs.save()
+        parse_datafile(dfs, small_ssp_section1_datafile)
 
-    #     dfs.datafile = small_ssp_section1_datafile
-    #     dfs.save()
-    #     parse_datafile(dfs, small_ssp_section1_datafile)
+        parser_errors = ParserError.objects.filter(
+            file=small_ssp_section1_datafile
+        ).order_by("error_type")
+        for e in parser_errors:
+            print(e.error_type, e.error_message)
+        dfs.status = dfs.get_status()
 
-    #     parser_errors = ParserError.objects.filter(file=small_ssp_section1_datafile)
-    #     dfs.status = dfs.get_status()
-    #     assert dfs.status == DataFileSummary.Status.PARTIALLY_ACCEPTED
-    #     dfs.case_aggregates = aggregates.case_aggregates_by_month(dfs.datafile, dfs.status)
+        # Go parser doesnt generate Trailer errors which is why the status is different
+        assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+        dfs.case_aggregates = aggregates.case_aggregates_by_month(
+            dfs.datafile, dfs.status
+        )
 
-    #     assert dfs.case_aggregates["rejected"] == 1
-    #     for month in dfs.case_aggregates["months"]:
-    #         if month["month"] == "Oct":
-    #             assert month["accepted_without_errors"] == 0
-    #             assert month["accepted_with_errors"] == 5
-    #         else:
-    #             assert month["accepted_without_errors"] == 0
-    #             assert month["accepted_with_errors"] == 0
+        assert dfs.case_aggregates["rejected"] == 0
+        for month in dfs.case_aggregates["months"]:
+            if month["month"] == "Oct":
+                assert month["accepted_without_errors"] == 0
+                assert month["accepted_with_errors"] == 5
+            else:
+                assert month["accepted_without_errors"] == 0
+                assert month["accepted_with_errors"] == 0
 
-    #     parser_errors = ParserError.objects.filter(file=small_ssp_section1_datafile)
-    #     assert parser_errors.count() == 9
-    #     assert SSP_M1.objects.count() == expected_m1_record_count
-    #     assert SSP_M2.objects.count() == expected_m2_record_count
-    #     assert SSP_M3.objects.count() == expected_m3_record_count
+        parser_errors = ParserError.objects.filter(file=small_ssp_section1_datafile)
+        # No trailer errors so we only have 8 errors expected
+        assert parser_errors.count() == 8
+        assert SSP_M1.objects.count() == expected_m1_record_count
+        assert SSP_M2.objects.count() == expected_m2_record_count
+        assert SSP_M3.objects.count() == expected_m3_record_count
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_ssp_section1_datafile(self, ssp_section1_datafile, dfs):
+    # def test_go_parse_ssp_section1_datafile(self, ssp_section1_datafile, dfs):
     #     """Test parsing ssp_section1_datafile."""
     #     ssp_section1_datafile.year = 2019
     #     ssp_section1_datafile.quarter = "Q1"
@@ -597,7 +616,7 @@ class TestGoParse:
     #     assert SSP_M3.objects.count() == expected_m3_record_count
 
     # @pytest.mark.django_db(transaction=True)
-    # def test_parse_tanf_section1_datafile(self, small_tanf_section1_datafile, dfs):
+    # def test_go_parse_tanf_section1_datafile(self, small_tanf_section1_datafile, dfs):
     #     """Test parsing of small_tanf_section1_datafile and validate T2 model data."""
     #     small_tanf_section1_datafile.year = 2021
     #     small_tanf_section1_datafile.quarter = "Q1"
@@ -634,7 +653,7 @@ class TestGoParse:
     #     assert t2_2.OTHER_UNEARNED_INCOME == "0000"
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_tanf_section1_datafile_obj_counts(self, small_tanf_section1_datafile, dfs):
+    # def test_go_parse_tanf_section1_datafile_obj_counts(self, small_tanf_section1_datafile, dfs):
     #     """Test parsing of small_tanf_section1_datafile in general."""
     #     small_tanf_section1_datafile.year = 2021
     #     small_tanf_section1_datafile.quarter = "Q1"
@@ -649,7 +668,7 @@ class TestGoParse:
     #     assert TANF_T3.objects.count() == 6
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_tanf_section1_datafile_t3s(self, small_tanf_section1_datafile, dfs):
+    # def test_go_parse_tanf_section1_datafile_t3s(self, small_tanf_section1_datafile, dfs):
     #     """Test parsing of small_tanf_section1_datafile and validate T3 model data."""
     #     small_tanf_section1_datafile.year = 2021
     #     small_tanf_section1_datafile.quarter = "Q1"
@@ -677,7 +696,7 @@ class TestGoParse:
     #     assert t3_5.EDUCATION_LEVEL == "98"
 
     # @pytest.mark.django_db(transaction=True)
-    # def test_parse_bad_tfs1_missing_required(self, bad_tanf_s1__row_missing_required_field, dfs):
+    # def test_go_parse_bad_tfs1_missing_required(self, bad_tanf_s1__row_missing_required_field, dfs):
     #     """Test parsing a bad TANF Section 1 submission where a row is missing required data."""
     #     bad_tanf_s1__row_missing_required_field.year = 2021
     #     bad_tanf_s1__row_missing_required_field.quarter = "Q1"
@@ -718,7 +737,7 @@ class TestGoParse:
     #     assert row_5_error.object_id is None
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_bad_ssp_s1_missing_required(self, bad_ssp_s1__row_missing_required_field, dfs):
+    # def test_go_parse_bad_ssp_s1_missing_required(self, bad_ssp_s1__row_missing_required_field, dfs):
     #     """Test parsing a bad TANF Section 1 submission where a row is missing required data."""
     #     bad_ssp_s1__row_missing_required_field.year = 2019
     #     bad_ssp_s1__row_missing_required_field.quarter = "Q1"
@@ -797,7 +816,7 @@ class TestGoParse:
     #             assert month["accepted_with_errors"] == 0
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_small_tanf_section2_file(self, small_tanf_section2_file, dfs):
+    # def test_go_parse_small_tanf_section2_file(self, small_tanf_section2_file, dfs):
     #     """Test parsing a small TANF Section 2 submission."""
     #     small_tanf_section2_file.year = 2021
     #     small_tanf_section2_file.quarter = "Q1"
@@ -824,7 +843,7 @@ class TestGoParse:
     #     assert t5.AMOUNT_UNEARNED_INCOME == "0000"
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_tanf_section2_file(self, tanf_section2_file, dfs):
+    # def test_go_parse_tanf_section2_file(self, tanf_section2_file, dfs):
     #     """Test parsing TANF Section 2 submission."""
     #     tanf_section2_file.year = 2022
     #     tanf_section2_file.quarter = "Q1"
@@ -848,7 +867,7 @@ class TestGoParse:
     #     assert err.object_id is not None
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_tanf_section3_file(self, tanf_section3_file, dfs):
+    # def test_go_parse_tanf_section3_file(self, tanf_section3_file, dfs):
     #     """Test parsing TANF Section 3 submission."""
     #     tanf_section3_file.year = 2022
     #     tanf_section3_file.quarter = "Q1"
@@ -893,7 +912,7 @@ class TestGoParse:
     #     assert third.NUM_CLOSED_CASES == 5453
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_tanf_section1_blanks_file(self, tanf_section1_file_with_blanks, dfs):
+    # def test_go_parse_tanf_section1_blanks_file(self, tanf_section1_file_with_blanks, dfs):
     #     """Test section 1 fields that are allowed to have blanks."""
     #     tanf_section1_file_with_blanks.year = 2021
     #     tanf_section1_file_with_blanks.quarter = "Q1"
@@ -920,7 +939,7 @@ class TestGoParse:
     #     assert t3.CITIZENSHIP_STATUS is None
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_tanf_section4_file(self, tanf_section4_file, dfs):
+    # def test_go_parse_tanf_section4_file(self, tanf_section4_file, dfs):
     #     """Test parsing TANF Section 4 submission."""
     #     tanf_section4_file.year = 2022
     #     tanf_section4_file.quarter = "Q1"
@@ -961,7 +980,7 @@ class TestGoParse:
     #     assert sixth.FAMILIES_MONTH == 499
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_bad_tanf_section4_file(self, bad_tanf_section4_file, dfs):
+    # def test_go_parse_bad_tanf_section4_file(self, bad_tanf_section4_file, dfs):
     #     """Test parsing TANF Section 4 submission when no records are created."""
     #     bad_tanf_section4_file.year = 2021
     #     bad_tanf_section4_file.quarter = "Q1"
@@ -999,7 +1018,7 @@ class TestGoParse:
     #     error.error_type == ParserErrorCategoryChoices.PRE_CHECK
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_ssp_section4_file(self, ssp_section4_file, dfs):
+    # def test_go_parse_ssp_section4_file(self, ssp_section4_file, dfs):
     #     """Test parsing SSP Section 4 submission."""
     #     ssp_section4_file.year = 2022
     #     ssp_section4_file.quarter = "Q1"
@@ -1028,7 +1047,7 @@ class TestGoParse:
     #     assert first.FAMILIES_MONTH == 748
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_ssp_section2_rec_oadsi_file(self, ssp_section2_rec_oadsi_file, dfs):
+    # def test_go_parse_ssp_section2_rec_oadsi_file(self, ssp_section2_rec_oadsi_file, dfs):
     #     """Test parsing SSP Section 2 REC_OADSI."""
     #     ssp_section2_rec_oadsi_file.year = 2019
     #     ssp_section2_rec_oadsi_file.quarter = "Q1"
@@ -1041,7 +1060,7 @@ class TestGoParse:
     #     assert parser_errors.count() == 0
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_ssp_section2_file(self, ssp_section2_file, dfs):
+    # def test_go_parse_ssp_section2_file(self, ssp_section2_file, dfs):
     #     """Test parsing SSP Section 2 submission."""
     #     ssp_section2_file.year = 2019
     #     ssp_section2_file.quarter = "Q1"
@@ -1077,7 +1096,7 @@ class TestGoParse:
     #     assert m5.AMOUNT_UNEARNED_INCOME == "0000"
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_ssp_section3_file(self, ssp_section3_file, dfs):
+    # def test_go_parse_ssp_section3_file(self, ssp_section3_file, dfs):
     #     """Test parsing TANF Section 3 submission."""
     #     ssp_section3_file.year = 2022
     #     ssp_section3_file.quarter = "Q1"
@@ -1160,7 +1179,7 @@ class TestGoParse:
     #     )
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_tribal_section_1_file(self, tribal_section_1_file, dfs):
+    # def test_go_parse_tribal_section_1_file(self, tribal_section_1_file, dfs):
     #     """Test parsing Tribal TANF Section 1 submission."""
     #     tribal_section_1_file.year = 2022
     #     tribal_section_1_file.quarter = "Q1"
@@ -1199,7 +1218,7 @@ class TestGoParse:
     #     assert t3.EDUCATION_LEVEL == "98"
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_tribal_section_1_inconsistency_file(
+    # def test_go_parse_tribal_section_1_inconsistency_file(
     #     self,
     #     tribal_section_1_inconsistency_file, dfs
     # ):
@@ -1218,7 +1237,7 @@ class TestGoParse:
     #     )
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_tribal_section_2_file(self, tribal_section_2_file, dfs):
+    # def test_go_parse_tribal_section_2_file(self, tribal_section_2_file, dfs):
     #     """Test parsing Tribal TANF Section 2 submission."""
     #     tribal_section_2_file.year = 2020
     #     tribal_section_2_file.quarter = "Q1"
@@ -1253,7 +1272,7 @@ class TestGoParse:
     #     assert t5.COUNTABLE_MONTH_FED_TIME == "  8"
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_tribal_section_3_file(self, tribal_section_3_file, dfs):
+    # def test_go_parse_tribal_section_3_file(self, tribal_section_3_file, dfs):
     #     """Test parsing Tribal TANF Section 3 submission."""
     #     tribal_section_3_file.year = 2022
     #     tribal_section_3_file.quarter = "Q1"
@@ -1285,7 +1304,7 @@ class TestGoParse:
     #     assert t6.NUM_CLOSED_CASES == 3
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_tribal_section_4_file(self, tribal_section_4_file, dfs):
+    # def test_go_parse_tribal_section_4_file(self, tribal_section_4_file, dfs):
     #     """Test parsing Tribal TANF Section 4 submission."""
     #     tribal_section_4_file.year = 2022
     #     tribal_section_4_file.quarter = "Q1"
@@ -1390,7 +1409,7 @@ class TestGoParse:
     #     )
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_t2_invalid_dob(self, t2_invalid_dob_file, dfs):
+    # def test_go_parse_t2_invalid_dob(self, t2_invalid_dob_file, dfs):
     #     """Test parsing a TANF T2 record with an invalid DOB."""
     #     dfs.datafile = t2_invalid_dob_file
     #     t2_invalid_dob_file.year = 2021
@@ -1419,7 +1438,7 @@ class TestGoParse:
     #     )
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_tanf_section4_file_with_errors(self, tanf_section_4_file_with_errors, dfs):
+    # def test_go_parse_tanf_section4_file_with_errors(self, tanf_section_4_file_with_errors, dfs):
     #     """Test parsing TANF Section 4 submission."""
     #     tanf_section_4_file_with_errors.year = 2022
     #     tanf_section_4_file_with_errors.quarter = "Q1"
@@ -1460,7 +1479,7 @@ class TestGoParse:
     #     assert sixth.FAMILIES_MONTH == 446
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_no_records_file(self, no_records_file, dfs):
+    # def test_go_parse_no_records_file(self, no_records_file, dfs):
     #     """Test parsing TANF Section 4 submission."""
     #     dfs.datafile = no_records_file
     #     parse_datafile(dfs, no_records_file)
@@ -1479,7 +1498,7 @@ class TestGoParse:
     #     assert error.object_id is None
 
     # @pytest.mark.django_db(transaction=True)
-    # def test_parse_aggregates_rejected_datafile(self, aggregates_rejected_datafile, dfs):
+    # def test_go_parse_aggregates_rejected_datafile(self, aggregates_rejected_datafile, dfs):
     #     """Test record rejection counting when record has more than one preparsing error."""
     #     aggregates_rejected_datafile.year = 2021
     #     aggregates_rejected_datafile.quarter = "Q1"
@@ -1529,7 +1548,7 @@ class TestGoParse:
     #     assert TANF_T2.objects.count() == 0
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_tanf_section_1_file_with_bad_update_indicator(
+    # def test_go_parse_tanf_section_1_file_with_bad_update_indicator(
     #     self,
     #     tanf_section_1_file_with_bad_update_indicator, dfs
     # ):
@@ -1555,7 +1574,7 @@ class TestGoParse:
     #     )
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_tribal_section_4_bad_quarter(self, tribal_section_4_bad_quarter, dfs):
+    # def test_go_parse_tribal_section_4_bad_quarter(self, tribal_section_4_bad_quarter, dfs):
     #     """Test handling invalid quarter value that raises a ValueError exception."""
     #     tribal_section_4_bad_quarter.year = 2021
     #     tribal_section_4_bad_quarter.quarter = "Q1"
@@ -1576,7 +1595,7 @@ class TestGoParse:
     #     Tribal_TANF_T7.objects.count() == 0
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_t3_cat2_invalid_citizenship(self, t3_cat2_invalid_citizenship_file, dfs):
+    # def test_go_parse_t3_cat2_invalid_citizenship(self, t3_cat2_invalid_citizenship_file, dfs):
     #     """Test parsing a TANF T3 record with an invalid CITIZENSHIP_STATUS."""
     #     dfs.datafile = t3_cat2_invalid_citizenship_file
     #     t3_cat2_invalid_citizenship_file.year = 2021
@@ -1599,7 +1618,7 @@ class TestGoParse:
     #     assert parser_errors.count() == 0
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_m2_cat2_invalid_37_38_39_file(self, m2_cat2_invalid_37_38_39_file, dfs):
+    # def test_go_parse_m2_cat2_invalid_37_38_39_file(self, m2_cat2_invalid_37_38_39_file, dfs):
     #     """Test parsing an SSP M2 file with an invalid EDUCATION_LEVEL, CITIZENSHIP_STATUS, COOPERATION_CHILD_SUPPORT."""
     #     dfs.datafile = m2_cat2_invalid_37_38_39_file
     #     m2_cat2_invalid_37_38_39_file.year = 2024
@@ -1622,7 +1641,7 @@ class TestGoParse:
     #     assert parser_errors.count() == 0
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_m3_cat2_invalid_68_69_file(self, m3_cat2_invalid_68_69_file, dfs):
+    # def test_go_parse_m3_cat2_invalid_68_69_file(self, m3_cat2_invalid_68_69_file, dfs):
     #     """Test parsing an SSP M3 file with an invalid EDUCATION_LEVEL and CITIZENSHIP_STATUS."""
     #     dfs.datafile = m3_cat2_invalid_68_69_file
     #     m3_cat2_invalid_68_69_file.year = 2024
@@ -1652,7 +1671,7 @@ class TestGoParse:
     #         assert e.error_message in error_msgs
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_m5_cat2_invalid_23_24_file(self, m5_cat2_invalid_23_24_file, dfs):
+    # def test_go_parse_m5_cat2_invalid_23_24_file(self, m5_cat2_invalid_23_24_file, dfs):
     #     """Test parsing an SSP M5 file with an invalid EDUCATION_LEVEL and CITIZENSHIP_STATUS."""
     #     dfs.datafile = m5_cat2_invalid_23_24_file
     #     m5_cat2_invalid_23_24_file.year = 2019
@@ -1676,7 +1695,7 @@ class TestGoParse:
     # @pytest.mark.django_db(transaction=True)()
     # def test_zero_filled_fips_code_file(self, test_file_zero_filled_fips_code, dfs):
     #     """Test parsing a file with zero filled FIPS code."""
-    #     # TODO: this test can be merged as parametrized test with  "test_parse_small_correct_file"
+    #     # TODO: this test can be merged as parametrized test with  "test_go_parse_small_correct_file"
     #     dfs.datafile = test_file_zero_filled_fips_code
     #     test_file_zero_filled_fips_code.year = 2024
     #     test_file_zero_filled_fips_code.quarter = "Q2"
@@ -1699,7 +1718,7 @@ class TestGoParse:
     #     ],
     # )
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_fra_bad_header(self, request, file, dfs):
+    # def test_go_parse_fra_bad_header(self, request, file, dfs):
     #     """Test parsing FRA files with bad header data."""
     #     datafile = request.getfixturevalue(file)
     #     datafile.year = 2024
@@ -1727,7 +1746,7 @@ class TestGoParse:
     #     ],
     # )
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_fra_empty_first_row(self, request, file, dfs):
+    # def test_go_parse_fra_empty_first_row(self, request, file, dfs):
     #     """Test parsing FRA files with an empty first row/no header data."""
     #     datafile = request.getfixturevalue(file)
     #     datafile.year = 2024
@@ -1748,7 +1767,7 @@ class TestGoParse:
     #     assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_fra_decoder_unknown(self, fra_decoder_unknown, dfs):
+    # def test_go_parse_fra_decoder_unknown(self, fra_decoder_unknown, dfs):
     #     """Test parsing a FRA file with bad encoding."""
     #     datafile = fra_decoder_unknown
     #     datafile.year = 2025
@@ -1773,7 +1792,7 @@ class TestGoParse:
     #     assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
     # @pytest.mark.django_db(transaction=True)()
-    # def test_parse_section2_no_records(self, section2_no_records, dfs):
+    # def test_go_parse_section2_no_records(self, section2_no_records, dfs):
     #     """Test parsing valid section 2 file with no records."""
     #     datafile = section2_no_records
     #     dfs.datafile = datafile
@@ -1786,7 +1805,7 @@ class TestGoParse:
     #     assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
 
     # @pytest.mark.django_db(transaction=True)
-    # def test_parse_tanf_s1_federally_funded_recipients(
+    # def test_go_parse_tanf_s1_federally_funded_recipients(
     #     self,
     #     tanf_s1_federally_funded_recipients, dfs
     # ):
@@ -1806,7 +1825,7 @@ class TestGoParse:
     #     )
 
     # @pytest.mark.django_db(transaction=True)
-    # def test_parse_case_aggregates_edge_case(self, case_aggregates_edge_case, dfs):
+    # def test_go_parse_case_aggregates_edge_case(self, case_aggregates_edge_case, dfs):
     #     """Test parsing of cases_across_months_with_error.txt."""
     #     case_aggregates_edge_case.year = 2026
     #     case_aggregates_edge_case.quarter = "Q1"

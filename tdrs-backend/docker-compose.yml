@@ -317,12 +317,11 @@ services:
       args:
         REGISTRY_OWNER: ${REGISTRY_OWNER:-hhs}
     command: >
-      bash -c "rm -f /tmp/web-ready && ./wait_for_services.sh &&
-      ./manage.py makemigrations &&
-      ./manage.py migrate && ./manage.py populate_stts && ./manage.py
-      populate_history --auto && python ./plg/grafana_views/generate_views.py
-      --all && ./manage.py runscript apply_grafana_views && touch
-      /tmp/web-ready && exec ./gunicorn_start.sh"
+      bash -c "rm -f /tmp/web-ready && ./wait_for_services.sh && ./manage.py
+      makemigrations && ./manage.py migrate && ./manage.py populate_stts &&
+      ./manage.py populate_history --auto && python
+      ./plg/grafana_views/generate_views.py --all && ./manage.py runscript
+      apply_grafana_views && touch /tmp/web-ready && exec ./gunicorn_start.sh"
     healthcheck:
       test: [ "CMD-SHELL", "test -f /tmp/web-ready" ]
       interval: 5s
