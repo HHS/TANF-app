@@ -129,15 +129,6 @@
                pip install wait-for-it &&
                wait-for-it --service http://web:8080 --timeout 180 -- echo \"Django is ready\""
       - run:
-          name: Wait for PostgreSQL
-          command: |
-            for i in $(seq 1 30); do
-              pg_isready -h localhost -p 5432 -U tdpuser && exit 0
-              sleep 2
-            done
-            echo "PostgreSQL did not become ready in time"
-            exit 1
-      - run:
           name: Compile check
           command: |
             . "$BASH_ENV"
