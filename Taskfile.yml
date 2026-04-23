@@ -403,6 +403,12 @@ tasks:
     cmds:
       - make test-all-coverage
 
+  parser:coverage-report:
+    desc: Generate readable Go parser coverage summary and HTML artifacts
+    dir: tdrs-services/parser
+    cmds:
+      - make coverage-report
+
   parser:ci-checks:
     desc: Run the non-test CI checks for the Go parser
     dir: tdrs-services/parser
