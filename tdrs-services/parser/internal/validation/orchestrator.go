@@ -73,12 +73,12 @@ func (o *ValidationOrchestrator) ValidateGroup(group *parser.ParsedGroup, filesp
 func (o *ValidationOrchestrator) CreateNoRecordsCreatedError() *ValidationResult {
 	return &ValidationResult{
 		Valid:       false,
-		ErrorType:   ErrorTypeCaseConsistency,
+		ErrorType:   ErrorTypePreCheck,
 		ValidatorID: "no_records_created",
 		Validator: &CompiledValidator{
 			ID:         "no_records_created",
 			Scope:      ScopeGroup,
-			ErrorType:  ErrorTypeCaseConsistency,
+			ErrorType:  ErrorTypePreCheck,
 			ResultMode: "single",
 			Message:    noRecordsCreatedMessage,
 		},
