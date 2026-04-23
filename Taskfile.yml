@@ -379,6 +379,18 @@ tasks:
     cmds:
       - make sqlc-diff
 
+  parser:sqlc-vet:
+    desc: Run sqlc static analysis for the parser schema and queries
+    dir: tdrs-services/parser
+    cmds:
+      - make sqlc-vet
+
+  parser:sqlc-verify:
+    desc: Verify parser SQL queries against the configured engine and schema
+    dir: tdrs-services/parser
+    cmds:
+      - make sqlc-verify
+
   parser:validate-config:
     desc: Load parser config and compile validator expressions
     dir: tdrs-services/parser
