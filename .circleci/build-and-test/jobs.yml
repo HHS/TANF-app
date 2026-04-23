@@ -166,8 +166,21 @@
           command: |
             . "$BASH_ENV"
             task parser:test-all-coverage
+      - run:
+          name: Generate readable Go parser coverage report
+          command: |
+            . "$BASH_ENV"
+            task parser:coverage-report
+            echo ""
+            echo "Go parser coverage summary"
+            echo "--------------------------"
+            cat tdrs-services/parser/coverage-summary.txt
       - store_artifacts:
           path: tdrs-services/parser/coverage.out
+      - store_artifacts:
+          path: tdrs-services/parser/coverage-summary.txt
+      - store_artifacts:
+          path: tdrs-services/parser/coverage.html
 
   secrets-check:
     executor: docker-executor
