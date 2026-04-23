@@ -504,7 +504,7 @@ class TestGoParse:
 
         parser_errors = ParserError.objects.filter(file=empty_file).order_by("id")
 
-        assert parser_errors.count() == 2
+        assert parser_errors.filter(file=empty_file).count() == 2
 
         err = parser_errors.first()
 
@@ -552,10 +552,19 @@ class TestGoParse:
 
         parser_errors = ParserError.objects.filter(file=small_ssp_section1_datafile)
         # No trailer errors so we only have 8 errors expected
-        assert parser_errors.count() == 8
-        assert SSP_M1.objects.count() == expected_m1_record_count
-        assert SSP_M2.objects.count() == expected_m2_record_count
-        assert SSP_M3.objects.count() == expected_m3_record_count
+        assert parser_errors.filter(file=small_ssp_section1_datafile).count() == 8
+        assert (
+            SSP_M1.objects.filter(datafile=small_ssp_section1_datafile).count()
+            == expected_m1_record_count
+        )
+        assert (
+            SSP_M2.objects.filter(datafile=small_ssp_section1_datafile).count()
+            == expected_m2_record_count
+        )
+        assert (
+            SSP_M3.objects.filter(datafile=small_ssp_section1_datafile).count()
+            == expected_m3_record_count
+        )
 
     # @pytest.mark.django_db(transaction=True)()
     # def test_go_parse_ssp_section1_datafile(self, ssp_section1_datafile, dfs):
