@@ -241,6 +241,21 @@ make test-integration
 # Run all tests (unit + integration) with coverage
 make test-all-coverage
 
+# Compile all packages and tests without executing them
+make compile-check
+
+# Run Go static analysis
+make lint
+
+# Verify sqlc-generated code is in sync with schema.sql and query.sql
+make sqlc-diff
+
+# Load config and compile validator expressions from YAML
+make validate-config
+
+# Run the non-test CI checks together
+make ci-checks
+
 # Watch mode — re-runs tests on file changes
 make test-watch
 
@@ -285,6 +300,22 @@ sqlc diff
 ```
 
 Generated code lives in `internal/db/` and should not be edited by hand.
+
+---
+
+## CircleCI Checks
+
+The CircleCI parser job runs these checks from `tdrs-services/parser/`:
+
+```sh
+task parser:compile-check
+task parser:lint
+task parser:sqlc-diff
+task parser:validate-config
+task parser:test-all-coverage
+```
+
+For integration tests in CI, CircleCI reuses the existing backend docker-compose stack, including PostgreSQL and the Django migration flow, before running the Go parser integration suite with `DATABASE_URL` pointed at that migrated test database.
 
 ---
 
