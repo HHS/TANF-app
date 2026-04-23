@@ -68,6 +68,12 @@ def set_error_report(dfs, error_report):
 
 
 @shared_task
+def go_parse(data_file_id):
+    """Stub task to register Go parser."""
+    pass
+
+
+@shared_task
 def parse(data_file_id, reparse_id=None):
     """Send data file for processing."""
     # passing the data file FileField across redis was rendering non-serializable failures, doing the below lookup

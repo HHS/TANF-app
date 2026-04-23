@@ -193,6 +193,9 @@ class Common(Configuration):
             "PASSWORD": os.getenv("DB_PASSWORD"),
             "HOST": os.getenv("DB_HOST"),
             "PORT": os.getenv("DB_PORT"),
+            "TEST": {
+                "MIRROR": "default",
+            },
         }
     }
     # Allow DB connections to persist for 10 min

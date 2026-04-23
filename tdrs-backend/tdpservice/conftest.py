@@ -33,6 +33,12 @@ from tdpservice.users.test.factories import (
 _faker = faker.Faker()
 
 
+@pytest.fixture(scope="session")
+def django_db_setup():
+    """Bypass database creation/migrations entirely."""
+    pass
+
+
 @pytest.fixture(scope="function")
 def api_client():
     """Return an API client for testing."""
