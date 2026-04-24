@@ -77,6 +77,13 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 	// Start timing for performance measurement
 	startTime := time.Now()
 
+	valDfCtx := &validation.DataFileContext{
+		FiscalYear:    dfCtx.FiscalYear,
+		FiscalQuarter: dfCtx.FiscalQuarter,
+		SectionName:   dfCtx.SectionName,
+		Program:       dfCtx.Program,
+	}
+
 	// Step 2: Create router/initialize object pools
 	// TODO: It feels wrong that we have to initialize the object pools on the schemas in NewRouter.
 	router := writer.NewRouter(p.sink, dfCtx.DatafileID, spec, p.registry, writer.RouterConfig{
@@ -111,12 +118,6 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 			parseCtx.Year, parseCtx.Quarter, parseCtx.IsEncrypted)
 		log.Printf("Header fields: %v", parseCtx.Header.Fields)
 
-		valDfCtx := &validation.DataFileContext{
-			FiscalYear:    dfCtx.FiscalYear,
-			FiscalQuarter: dfCtx.FiscalQuarter,
-			SectionName:   dfCtx.SectionName,
-			Program:       dfCtx.Program,
-		}
 		headerResult := validationOrchestrator.ValidateHeader(parseCtx.Header, valDfCtx)
 		if headerResult.HasBlockingErrors() {
 			return p.handleHeaderValidationFail(headerResult, ctx, dfCtx, parseCtx, valDfCtx, router, validationOrchestrator, startTime)
@@ -138,7 +139,7 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 
 	// Step 6: Create pipeline worker pool (workers parse, validate, and route)
 	filespecKey := fmt.Sprintf("%s:%d", dfCtx.Program, dfCtx.Section)
-	workers := NewWorkerPool(parsingOrchestrator, validationOrchestrator, filespecKey, router, dfCtx.DatafileID, WorkerPoolConfig{
+	workers := NewWorkerPool(parsingOrchestrator, validationOrchestrator, valDfCtx, filespecKey, router, dfCtx.DatafileID, WorkerPoolConfig{
 		NumWorkers:     p.config.NumWorkers,
 		WorkBufferSize: p.config.WorkBufferSize,
 	})

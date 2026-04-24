@@ -208,6 +208,23 @@ record_validators:
     error_type: RECORD_PRE_CHECK
     message: "{{.RecordType}}: case number is required and cannot be blank"
 
+  - id: rpt_month_year_is_valid
+    expr: |
+      let rpt_month_year = GetString('RPT_MONTH_YEAR');
+      let year_int = int(rpt_month_year[0:4]);
+      let month_int = int(trimPrefix(rpt_month_year[4:], "0"));
+      year_int > 1900 && month_int > 0 && month_int < 13
+    error_type: RECORD_PRE_CHECK
+    fields: [RPT_MONTH_YEAR]
+
+  - id: rpt_month_year_matches_header_year_quarter
+    expr: >
+      year(GetString('RPT_MONTH_YEAR')) == fiscalToCalendarYear(DataFileContext.FiscalYear, DataFileContext.FiscalQuarter)
+      and string(quarter(GetString('RPT_MONTH_YEAR'))) == fiscalToCalendarQuarter(DataFileContext.FiscalYear, DataFileContext.FiscalQuarter)
+    error_type: RECORD_PRE_CHECK
+    fields: [RPT_MONTH_YEAR]
+    message: "{{.RecordType}}: Reporting month year {{.Values.RPT_MONTH_YEAR}} does not match file reporting year:{{.DataFileContext.FiscalYear}}, quarter:{{.DataFileContext.FiscalQuarter}}."
+
   # --- VALUE_CONSISTENCY validators (allow record serialization) ---
 
   # Amount requires positive field validator

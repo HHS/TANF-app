@@ -31,7 +31,7 @@ func NewValidationOrchestrator(registry *ValidatorRegistry, shortCircuit bool) *
 // ValidateGroup validates a single group.
 // Execution order: group → record (precheck) → field → record (consistency)
 // Always run group and record precheck; skip field and record consistency if blocked.
-func (o *ValidationOrchestrator) ValidateGroup(group *parser.ParsedGroup, filespecKey string) *GroupValidationResult {
+func (o *ValidationOrchestrator) ValidateGroup(group *parser.ParsedGroup, filespecKey string, dfCtx *DataFileContext) *GroupValidationResult {
 	result := &GroupValidationResult{
 		Group: group,
 	}
@@ -44,10 +44,12 @@ func (o *ValidationOrchestrator) ValidateGroup(group *parser.ParsedGroup, filesp
 
 	// Phase 1: Group validation (always runs)
 	groupEnv := NewGroupEnv(group)
+	groupEnv.DataFileContext = dfCtx
 	for _, validator := range o.registry.GetGroupValidators(filespecKey) {
 		groupEnv.Params = validator.Params // Set params for this validator
 
 		for _, vr := range ExecuteGroup(validator, groupEnv) {
+			vr.DataFileContext = dfCtx
 			vr.ErrorType = validator.ErrorType
 			if validator.ResultMode == "per_record" {
 				result.AppendResultToRecordErrors(vr)
@@ -62,7 +64,7 @@ func (o *ValidationOrchestrator) ValidateGroup(group *parser.ParsedGroup, filesp
 
 	// Phase 2: Validate each record
 	for i, rec := range group.Records {
-		o.validateRecord(result.RecordResults[i], rec, groupBlocked)
+		o.validateRecord(result.RecordResults[i], rec, groupBlocked, dfCtx)
 	}
 
 	return result
@@ -103,6 +105,7 @@ func (o *ValidationOrchestrator) ValidateHeader(headerRec *parser.ParsedRecord, 
 		}
 		recordEnv.Params = validator.Params
 		if vr := Execute(validator, recordEnv); !vr.Valid {
+			vr.DataFileContext = dfCtx
 			vr.ErrorType = validator.ErrorType
 			result.RecordErrors = append(result.RecordErrors, vr)
 			recordBlocked = true
@@ -141,6 +144,7 @@ func (o *ValidationOrchestrator) ValidateHeader(headerRec *parser.ParsedRecord, 
 		for _, cv := range validators {
 			fieldEnv.Params = cv.Params
 			if vr := Execute(cv, fieldEnv); !vr.Valid {
+				vr.DataFileContext = dfCtx
 				vr.ErrorType = cv.ErrorType
 				vr.FieldName = fieldName
 				result.FieldErrors = append(result.FieldErrors, vr)
@@ -155,6 +159,7 @@ func (o *ValidationOrchestrator) ValidateHeader(headerRec *parser.ParsedRecord, 
 		}
 		recordEnv.Params = cv.Params
 		if vr := Execute(cv, recordEnv); !vr.Valid {
+			vr.DataFileContext = dfCtx
 			vr.ErrorType = cv.ErrorType
 			result.RecordErrors = append(result.RecordErrors, vr)
 		}
@@ -165,9 +170,10 @@ func (o *ValidationOrchestrator) ValidateHeader(headerRec *parser.ParsedRecord, 
 
 // validateRecord validates a single record, updating the provided result.
 // Called internally by ValidateGroup.
-func (o *ValidationOrchestrator) validateRecord(result *RecordValidationResult, rec *parser.ParsedRecord, groupBlocked bool) {
+func (o *ValidationOrchestrator) validateRecord(result *RecordValidationResult, rec *parser.ParsedRecord, groupBlocked bool, dfCtx *DataFileContext) {
 	recType := rec.GetRecordType()
 	recordEnv := NewRecordEnv(rec)
+	recordEnv.DataFileContext = dfCtx
 
 	// Phase 1: Run RECORD_PRE_CHECK validators (always runs, can block)
 	for _, cv := range o.registry.GetRecordValidators(recType) {
@@ -176,6 +182,7 @@ func (o *ValidationOrchestrator) validateRecord(result *RecordValidationResult, 
 		}
 		recordEnv.Params = cv.Params
 		if vr := Execute(cv, recordEnv); !vr.Valid {
+			vr.DataFileContext = dfCtx
 			vr.ErrorType = cv.ErrorType
 			result.RecordErrors = append(result.RecordErrors, vr)
 		}
@@ -191,7 +198,7 @@ func (o *ValidationOrchestrator) validateRecord(result *RecordValidationResult, 
 	}
 
 	// Phase 2: Field validation
-	fieldEnv := &FieldEnv{} // Reuse env for efficiency
+	fieldEnv := &FieldEnv{DataFileContext: dfCtx} // Reuse env for efficiency
 	for fieldName, validators := range o.registry.GetFieldValidatorsForRecord(recType) {
 		value := rec.Get(fieldName)
 		required := rec.IsFieldRequired(fieldName)
@@ -220,6 +227,7 @@ func (o *ValidationOrchestrator) validateRecord(result *RecordValidationResult, 
 		for _, cv := range validators {
 			fieldEnv.Params = cv.Params
 			if vr := Execute(cv, fieldEnv); !vr.Valid {
+				vr.DataFileContext = dfCtx
 				vr.ErrorType = cv.ErrorType
 				vr.FieldName = fieldName
 				result.FieldErrors = append(result.FieldErrors, vr)
@@ -234,6 +242,7 @@ func (o *ValidationOrchestrator) validateRecord(result *RecordValidationResult, 
 		}
 		recordEnv.Params = cv.Params
 		if vr := Execute(cv, recordEnv); !vr.Valid {
+			vr.DataFileContext = dfCtx
 			vr.ErrorType = cv.ErrorType
 			result.RecordErrors = append(result.RecordErrors, vr)
 		}

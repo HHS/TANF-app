@@ -100,10 +100,19 @@ func renderErrorMessage(vr *validation.ValidationResult, record *parser.ParsedRe
 	if vr.Validator.Params != nil {
 		ctx["Params"] = vr.Validator.Params
 	}
+	if vr.DataFileContext != nil {
+		ctx["DataFileContext"] = vr.DataFileContext
+	}
 
 	// Add all validator-involved fields
 	if len(vr.Validator.Fields) > 0 {
 		ctx["Fields"] = vr.Validator.Fields
+
+		values := make(map[string]any, len(vr.Validator.Fields))
+		for _, fieldName := range vr.Validator.Fields {
+			values[fieldName] = record.Get(fieldName)
+		}
+		ctx["Values"] = values
 	}
 
 	return vr.Message(ctx)
