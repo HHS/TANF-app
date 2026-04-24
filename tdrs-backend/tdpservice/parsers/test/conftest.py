@@ -120,7 +120,7 @@ def t3_cat2_invalid_citizenship_file():
 @pytest.fixture
 def big_file(stt_user, stt):
     """Fixture for ADS.E2J.FTP1.TS06."""
-    return util.create_test_datafile("ADS.E2J.FTP1.TS06", stt_user, stt)
+    return util.create_test_datafile("ADS.E2J.FTP1.TS06", stt_user, stt, year=2022)
 
 
 @pytest.fixture
@@ -196,6 +196,8 @@ def ssp_section1_datafile(stt_user, stt):
         stt,
         "Active Case Data",
         DataFile.ProgramType.SSP,
+        2019,
+        "Q1",
     )
 
 

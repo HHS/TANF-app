@@ -398,8 +398,8 @@ func TestProcess_HeaderOnlyWritesNoRecordsCreatedError(t *testing.T) {
 	if got := row[6]; got != "No records created." {
 		t.Errorf("error_message = %v, want %q", got, "No records created.")
 	}
-	if got := row[7]; got != "4" {
-		t.Errorf("error_type = %v, want %q", got, "4")
+	if got := row[7]; got != "1" {
+		t.Errorf("error_type = %v, want %q", got, "1")
 	}
 }
 

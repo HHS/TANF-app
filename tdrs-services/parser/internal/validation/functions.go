@@ -43,6 +43,12 @@ func RegisterFunctions() []expr.Option {
 		// Group validators (take group explicitly)
 		expr.Function("getRecordsOfType", wrap2(getRecordsOfType),
 			new(func(*parser.ParsedGroup, string) []*parser.ParsedRecord)),
+		expr.Function("hasAnyRecordType", wrap2(hasAnyRecordType),
+			new(func(map[string]int, []any) bool)),
+		expr.Function("anyRecordOfTypesHasInt", wrap4(anyRecordOfTypesHasInt),
+			new(func(*parser.ParsedGroup, []any, string, int) bool)),
+		expr.Function("hasAnyRecordOfTypeWithInt", wrap4(hasAnyRecordOfTypeWithInt),
+			new(func(*parser.ParsedGroup, string, string, int) bool)),
 
 		// Duplicate detection (group scope, return []*ParsedRecord for per_record mode)
 		expr.Function("getExactDuplicates", wrap2(getExactDuplicates),
@@ -99,6 +105,22 @@ func wrap3[A, B, C, R any](fn func(A, B, C) R) func(...any) (any, error) {
 			return nil, fmt.Errorf("argument type mismatch: got (%T, %T, %T)", params[0], params[1], params[2])
 		}
 		return fn(a, b, c), nil
+	}
+}
+
+func wrap4[A, B, C, D, R any](fn func(A, B, C, D) R) func(...any) (any, error) {
+	return func(params ...any) (any, error) {
+		if len(params) != 4 {
+			return nil, fmt.Errorf("expected 4 arguments, got %d", len(params))
+		}
+		a, ok1 := params[0].(A)
+		b, ok2 := params[1].(B)
+		c, ok3 := params[2].(C)
+		d, ok4 := params[3].(D)
+		if !ok1 || !ok2 || !ok3 || !ok4 {
+			return nil, fmt.Errorf("argument type mismatch: got (%T, %T, %T, %T)", params[0], params[1], params[2], params[3])
+		}
+		return fn(a, b, c, d), nil
 	}
 }
 
@@ -290,6 +312,38 @@ func getRecordsOfType(group *parser.ParsedGroup, recordType string) []*parser.Pa
 	return result
 }
 
+// hasAnyRecordType returns true when any requested record type is present in the group.
+func hasAnyRecordType(recordCounts map[string]int, recordTypes []any) bool {
+	for _, recordType := range toStringSlice(recordTypes) {
+		if recordCounts[recordType] > 0 {
+			return true
+		}
+	}
+	return false
+}
+
+// anyRecordOfTypesHasInt returns true when any record of the given types has
+// the requested integer field value.
+func anyRecordOfTypesHasInt(group *parser.ParsedGroup, recordTypes []any, fieldName string, expectedValue int) bool {
+	for _, recordType := range toStringSlice(recordTypes) {
+		if hasAnyRecordOfTypeWithInt(group, recordType, fieldName, expectedValue) {
+			return true
+		}
+	}
+	return false
+}
+
+// hasAnyRecordOfTypeWithInt returns true when any record of the given type has
+// the requested integer field value.
+func hasAnyRecordOfTypeWithInt(group *parser.ParsedGroup, recordType string, fieldName string, expectedValue int) bool {
+	for _, rec := range getRecordsOfType(group, recordType) {
+		if rec.GetInt(fieldName) == expectedValue {
+			return true
+		}
+	}
+	return false
+}
+
 // getExactDuplicates returns records that are exact duplicates of earlier records
 // of the same type within the group. Uses EqualFields for pairwise comparison.
 // The first occurrence is kept; subsequent matches are returned as duplicates.
@@ -298,7 +352,7 @@ func getExactDuplicates(group *parser.ParsedGroup, recordType string) []*parser.
 	var duplicates []*parser.ParsedRecord
 	for i := 1; i < len(records); i++ {
 		for j := 0; j < i; j++ {
-			if records[i].EqualFields(records[j]) {
+			if records[i].EqualFields(records[j]) && records[i].LineNumber != records[j].LineNumber {
 				duplicates = append(duplicates, records[i])
 				break
 			}
@@ -318,7 +372,7 @@ func getPartialDuplicates(group *parser.ParsedGroup, recordType string, fields [
 	for _, rec := range records {
 		key := buildCompositeKey(rec, fieldNames)
 		if first, exists := seen[key]; exists {
-			if !rec.EqualFields(first) {
+			if !rec.EqualFields(first) && rec.LineNumber != first.LineNumber {
 				duplicates = append(duplicates, rec)
 			}
 		} else {
@@ -349,7 +403,7 @@ func getPartialDuplicatesExcluding(group *parser.ParsedGroup, recordType string,
 		}
 		key := buildCompositeKey(rec, fieldNames)
 		if first, exists := seen[key]; exists {
-			if !rec.EqualFields(first) {
+			if !rec.EqualFields(first) && rec.LineNumber != first.LineNumber {
 				duplicates = append(duplicates, rec)
 			}
 		} else {
