@@ -302,3 +302,24 @@ func SerializeHeaderError(message string, errorType string, datafileID int32) []
 		nil,                       // values_json
 	}
 }
+
+// SerializeParserError creates a database error row for parser-level line errors.
+func SerializeParserError(rowNumber int, message string, errorType string, datafileID int32) []any {
+	return []any{
+		int32(rowNumber),          // row_number
+		nil,                       // column_number
+		nil,                       // item_number
+		nil,                       // field_name
+		nil,                       // case_number
+		nil,                       // rpt_month_year
+		message,                   // error_message
+		mapErrorType(errorType),   // error_type
+		time.Now(),                // created_at
+		nil,                       // fields_json
+		nil,                       // content_type_id
+		datafileID,                // file_id
+		pgtype.UUID{Valid: false}, // object_id
+		false,                     // deprecated
+		nil,                       // values_json
+	}
+}

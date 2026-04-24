@@ -175,16 +175,16 @@ func (o *ValidationOrchestrator) validateRecord(result *RecordValidationResult, 
 	recordEnv := NewRecordEnv(rec)
 	recordEnv.DataFileContext = dfCtx
 
-	// Phase 1: Run RECORD_PRE_CHECK validators (always runs, can block)
+	// Phase 1: Run RECORD_PRE_CHECK and PRE_CHECK validators (always runs, can block)
 	for _, cv := range o.registry.GetRecordValidators(recType) {
-		if cv.ErrorType != ErrorTypeRecordPreCheck {
-			continue // Skip non-precheck validators in this phase
-		}
-		recordEnv.Params = cv.Params
-		if vr := Execute(cv, recordEnv); !vr.Valid {
-			vr.DataFileContext = dfCtx
-			vr.ErrorType = cv.ErrorType
-			result.RecordErrors = append(result.RecordErrors, vr)
+		// Skip non-precheck validators in this phase
+		if cv.ErrorType == ErrorTypeRecordPreCheck || cv.ErrorType == ErrorTypePreCheck {
+			recordEnv.Params = cv.Params
+			if vr := Execute(cv, recordEnv); !vr.Valid {
+				vr.DataFileContext = dfCtx
+				vr.ErrorType = cv.ErrorType
+				result.RecordErrors = append(result.RecordErrors, vr)
+			}
 		}
 	}
 
@@ -237,7 +237,7 @@ func (o *ValidationOrchestrator) validateRecord(result *RecordValidationResult, 
 
 	// Phase 3: Non-precheck record validators (consistency checks)
 	for _, cv := range o.registry.GetRecordValidators(recType) {
-		if cv.ErrorType == ErrorTypeRecordPreCheck {
+		if cv.ErrorType == ErrorTypeRecordPreCheck || cv.ErrorType == ErrorTypePreCheck {
 			continue // Already ran in phase 1
 		}
 		recordEnv.Params = cv.Params

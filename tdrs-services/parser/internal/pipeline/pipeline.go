@@ -148,7 +148,7 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 	// Step 7: Process rows through the accumulator
 	// TODO: I feel like accumulateBatches can live as a receiver on the accumulator instead a standalone function.
 	acc := parser.NewAccumulator(spec, detector)
-	err = accumulateBatches(dec, acc, workers)
+	err = accumulateBatches(ctx, dec, acc, workers, router, dfCtx.DatafileID)
 
 	// Step 8: Wait for everything to complete
 	workers.CloseInputs()
@@ -374,9 +374,12 @@ func (p *Pipeline) handleHeaderParseInvalid(err error, ctx context.Context, dfCt
 
 // accumulateBatches processes rows in file order.
 func accumulateBatches(
+	ctx context.Context,
 	dec decoder.Decoder,
 	acc *parser.Accumulator,
 	workers *WorkerPool,
+	router *writer.Router,
+	datafileID int32,
 ) error {
 	for row, err := range dec.Rows() {
 		if err != nil {
@@ -385,6 +388,17 @@ func accumulateBatches(
 
 		batch, sch, isAccumulated, err := acc.Add(row)
 		if err != nil {
+			if errors.Is(err, decoder.ErrUnknownRecordType) {
+				parserErr := writer.SerializeParserError(
+					row.LineNum(),
+					"Unknown record type was found.",
+					validation.ErrorTypeRecordPreCheck,
+					datafileID,
+				)
+				if routeErr := router.RouteErrorRow(ctx, parserErr); routeErr != nil {
+					return routeErr
+				}
+			}
 			log.Printf("Line %d: %v", row.LineNum(), err)
 			continue
 		}

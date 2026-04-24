@@ -18,6 +18,7 @@ record_validators:
   - id: case_number_not_empty
   - id: rpt_month_year_is_valid
   - id: rpt_month_year_matches_header_year_quarter
+
   # Cross-field validators (VALUE_CONSISTENCY)
   # Race fields when FAMILY_AFFILIATION is 1-2
   - id: ifthenalso_range_to_range
