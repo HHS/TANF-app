@@ -1838,6 +1838,42 @@ func TestExecuteFunction(t *testing.T) {
 			t.Error("expected error to be set")
 		}
 	})
+
+	t.Run("record validator can sum fields from params", func(t *testing.T) {
+		sumSchema := testutil.NewTestSchema("T6", "TOTAL", "PART_A", "PART_B")
+		vdef := &configValidation.ValidatorDef{
+			ID:   "sum_equals",
+			Expr: "GetInt(Params.total_field) == SumFields(Params.component_fields)",
+			Params: map[string]any{
+				"total_field":      "TOTAL",
+				"component_fields": []any{"PART_A", "PART_B"},
+			},
+		}
+		cv, err := registry.resolveValidatorByScope(ScopeRecord, vdef, "")
+		if err != nil {
+			t.Fatalf("unexpected compile error: %v", err)
+		}
+
+		validRec := testutil.NewTestRecord(sumSchema, 10, map[string]any{
+			"TOTAL":  7,
+			"PART_A": 3,
+			"PART_B": "4",
+		})
+		validEnv := NewRecordEnvWithParams(validRec, cv.Params)
+		if result := Execute(cv, validEnv); !result.Valid {
+			t.Fatalf("expected valid sum_equals result, got error: %v", result.Error)
+		}
+
+		invalidRec := testutil.NewTestRecord(sumSchema, 11, map[string]any{
+			"TOTAL":  8,
+			"PART_A": 3,
+			"PART_B": "4",
+		})
+		invalidEnv := NewRecordEnvWithParams(invalidRec, cv.Params)
+		if result := Execute(cv, invalidEnv); result.Valid {
+			t.Fatal("expected invalid sum_equals result")
+		}
+	})
 }
 
 func TestDeriveFieldsFromParams(t *testing.T) {

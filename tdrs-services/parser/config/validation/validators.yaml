@@ -375,7 +375,7 @@ record_validators:
   # Validates that a total field equals the sum of component fields
   # Params: total_field (string), component_fields (array of strings)
   - id: sum_equals
-    expr: "GetInt(Params.total_field) == sumFields(Params.component_fields)"
+    expr: "GetInt(Params.total_field) == SumFields(Params.component_fields)"
     message: "{{.Params.total_field}} must equal the sum of {{.Params.component_fields}}"
 
   # =============================================================================
