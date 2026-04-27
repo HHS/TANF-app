@@ -178,7 +178,10 @@ segments:
           - id: length
             params:
               n: 8
-          - id: valid_date
+          - id: valid_year
+          - id: valid_month
+          - id: valid_day
+          - id: is_numeric
 
       - name: SSN
         friendly_name: Social Security Number
@@ -405,7 +408,10 @@ segments:
           - id: length
             params:
               n: 8
-          - id: valid_date
+          - id: valid_year
+          - id: valid_month
+          - id: valid_day
+          - id: is_numeric
 
       - name: SSN
         friendly_name: Social Security Number

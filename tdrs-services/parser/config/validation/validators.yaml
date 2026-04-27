@@ -69,12 +69,16 @@ field_validators:
 
   # Date validators
   - id: valid_year
-    expr: "year(Value) >= 1900 and year(Value) <= 2100"
-    message: "{{.RecordType}} Item {{.Item}}: year must be 1900-2100"
+    expr: "year(Value) >= 1900"
+    message: "{{.RecordType}} Item {{.Item}}: year must be larger than 1900"
 
   - id: year_after_1998
     expr: "year(Value) > 1998"
     message: "{{.RecordType}} Item {{.Item}}: year must be after 1998"
+
+  - id: valid_day
+    expr: "day(Value) >= 1 and day(Value) <= 31"
+    message: "{{.RecordType}} Item {{.Item}}: day must be 1-31"
 
   - id: valid_month
     expr: "month(Value) >= 1 and month(Value) <= 12"

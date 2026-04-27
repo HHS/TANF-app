@@ -23,6 +23,7 @@ func RegisterFunctions() []expr.Option {
 		// Date functions
 		expr.Function("year", wrap1(extractYear), new(func(any) int)),
 		expr.Function("month", wrap1(extractMonth), new(func(any) int)),
+		expr.Function("day", wrap1(extractDay), new(func(any) int)),
 		expr.Function("quarter", wrap1(extractQuarter), new(func(any) int)),
 		expr.Function("isValidDate", wrap1(isValidDate), new(func(any) bool)),
 		expr.Function("calculateAge", wrap2(calculateAge), new(func(string, string) int)),
@@ -199,6 +200,16 @@ func extractMonth(v any) int {
 	}
 	month, _ := strconv.Atoi(s[4:6])
 	return month
+}
+
+// extractDay extracts the day from a date string (YYYYMMDD format).
+func extractDay(v any) int {
+	s := toString(v)
+	if len(s) < 8 {
+		return 0
+	}
+	day, _ := strconv.Atoi(s[6:])
+	return day
 }
 
 // extractQuarter returns the quarter (1-4) from a date string.
