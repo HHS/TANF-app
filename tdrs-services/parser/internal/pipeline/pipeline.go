@@ -309,6 +309,9 @@ func (p *Pipeline) writeNoRecordsCreatedError(
 	if !p.config.IncludeRecords || !p.config.IncludeErrors {
 		return 0, nil
 	}
+	if headerRecord != nil && headerRecord.Get("type") == "C" {
+		return 0, nil
+	}
 
 	noRecordsCreated := validationOrchestrator.CreateNoRecordsCreatedError()
 	var row []any

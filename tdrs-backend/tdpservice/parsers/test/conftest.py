@@ -99,6 +99,26 @@ def t2_invalid_dob_file():
 
 
 @pytest.fixture
+def t2_go_invalid_dob_file():
+    """Fixture for T2 file with an invalid DOB."""
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter="Q1",
+        file__name="t2_go_invalid_dob_file.txt",
+        file__section="Active Case Data",
+        file__data=(
+            b"HEADER20204A25   TAN1ED\n"
+            b"T1202010111111111122300340336111021312000030000000000000873001000000000000000000000000000000000"
+            b"0222222000000002229012                                       \n"
+            b"T22020101111111111212Q897$9 3WTTTTTY@W222122222222101221211001472201140000000000000000000000000"
+            b"0000000000000000000000000000000000000000000000000000000000291\n"
+            b"TRAILER0000001         "
+        ),
+    )
+    return parsing_file
+
+
+@pytest.fixture
 def t3_cat2_invalid_citizenship_file():
     """Fixture for T3 file with an invalid CITIZENSHIP_STATUS."""
     parsing_file = ParsingFileFactory(
@@ -127,7 +147,7 @@ def big_file(stt_user, stt):
 def case_aggregates_edge_case(stt_user, stt):
     """Fixture for cases_across_months_with_error.txt which ensures the case aggregates algorithm doesn't double count errors across cases."""
     return util.create_test_datafile(
-        "cases_across_months_with_error.txt", stt_user, stt
+        "cases_across_months_with_error.txt", stt_user, stt, year=2026
     )
 
 
@@ -407,13 +427,16 @@ def tanf_section_4_file_with_errors(stt_user, stt):
         stt,
         "Stratum Data",
         DataFile.ProgramType.TRIBAL,
+        year=2022,
     )
 
 
 @pytest.fixture
 def aggregates_rejected_datafile(stt_user, stt):
     """Fixture for aggregates_rejected."""
-    return util.create_test_datafile("aggregates_rejected.txt", stt_user, stt)
+    return util.create_test_datafile(
+        "aggregates_rejected.txt", stt_user, stt, year=2021
+    )
 
 
 @pytest.fixture
@@ -672,6 +695,27 @@ def m3_cat2_invalid_68_69_file():
 
 
 @pytest.fixture
+def m3_go_cat2_invalid_68_69_file():
+    """Fixture for M3 file with an invalid EDUCATION_LEVEL and CITIZENSHIP_STATUS."""
+    parsing_file = ParsingFileFactory(
+        year=2024,
+        quarter="Q1",
+        file__name="m3_go_cat2_invalid_68_69_file.txt",
+        section="Active Case Data",
+        program_type=DataFile.ProgramType.SSP,
+        file__data=(
+            b"HEADER20234A24   SSP1ED\n"
+            b"M12023101111111112721401400351021331100273000000000000000105400000000000000000000000000000000"
+            b"00222222000000002229                                     \n"
+            b"M320231011111111127120110615WTTTP99B#222122222043011000000004201001013333333330000000110000009999"
+            b"8888\n"
+            b"TRAILER0000002         "
+        ),
+    )
+    return parsing_file
+
+
+@pytest.fixture
 def m5_cat2_invalid_23_24_file():
     """Fixture for M5 file with an invalid EDUCATION_LEVEL and CITIZENSHIP_STATUS."""
     parsing_file = ParsingFileFactory(
@@ -690,26 +734,39 @@ def m5_cat2_invalid_23_24_file():
 
 
 @pytest.fixture
+def m5_go_cat2_invalid_23_24_file():
+    """Fixture for M5 file with an invalid EDUCATION_LEVEL and CITIZENSHIP_STATUS."""
+    parsing_file = ParsingFileFactory(
+        year=2024,
+        quarter="Q1",
+        file__name="m5_go_cat2_invalid_23_24_file.txt",
+        section="Closed Case Data",
+        program_type=DataFile.ProgramType.SSP,
+        file__data=(
+            b"HEADER20184C24   SSP1ED\n"
+            b"M42018101111111116120000406911161112                              \n"
+            b"M520181011111111161519791106WTTTY0ZB922212222222210112000112970000\n"
+            b"TRAILER0000001         "
+        ),
+    )
+    return parsing_file
+
+
+@pytest.fixture
 def test_file_zero_filled_fips_code():
     """Fixture for T1 file with an invalid CITIZENSHIP_STATUS."""
     parsing_file = ParsingFileFactory(
-        year=2021,
-        quarter="Q1",
-        file__name="t3_invalid_citizenship_file.txt",
+        year=2024,
+        quarter="Q2",
+        file__name="test_file_zero_filled_fips_code.txt",
         file__section="Active Case Data",
         program_type=DataFile.ProgramType.TANF,
         file__data=(
             b"HEADER20241A01000TAN2ED\n"
-            b"T1202401    2132333   0140951112 43312   03   0   0   2 554145"
-            + b"   0 0  0   0  0   0  0   0  0   0222222   0   02229 22    \n"
-            + b"T2202401    21323333219550117WT@TB9BT92122222222223 1329911 34"
-            + b"  32 699 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
-            + b" 0 0 0 0   0   01623   0   0   0\n"
-            + b"T2202401    21323333219561102WTT@WBP992122221222222 2329911 28"
-            + b"  32 699 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
-            + b" 0 0 0 0   0   01432   0   0   0\n"
-            + b"T3202401    2132333120070906WT@@#ZY@W212222122 63981   0   012"
-            + b"0050201WTTYT#TT0212222122 63981   0   0                      \n"
+            b"T120240111111111112   034033611102131200003000000000000087300100000000000000000000000000000000"
+            b"00222222000000002229012                                       \n"
+            b"T2202401111111111121219740114WTTTTTY@W22212222222210122121100147220114000000000000000000000000"
+            b"00000000000000000000000000000000000000000000000000000000000291\n"
             + b"TRAILER      4         "
         ),
     )

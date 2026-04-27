@@ -10,6 +10,10 @@ var noRecordsCreatedMessage = template.Must(
 	template.New("no_records_created").Parse("No records created."),
 )
 
+var fieldRequiredMessage = template.Must(
+	template.New("field_required").Parse("{{.RecordType}} Item {{.Item}} ({{.FriendlyName}}): field is required but a value was not provided."),
+)
+
 // ValidationOrchestrator coordinates validation across all scopes.
 // Execution order: group → record (precheck) → field → record (consistency)
 // Always run group and record precheck; skip field and record consistency if blocked.
@@ -130,6 +134,13 @@ func (o *ValidationOrchestrator) ValidateHeader(headerRec *parser.ParsedRecord, 
 					ValidatorID: "field_required",
 					ErrorType:   ErrorTypeFieldValue,
 					FieldName:   fieldName,
+					Validator: &CompiledValidator{
+						ID:         "field_required",
+						Scope:      ScopeField,
+						ErrorType:  ErrorTypeFieldValue,
+						ResultMode: "single",
+						Message:    fieldRequiredMessage,
+					},
 				})
 			}
 			continue
@@ -212,6 +223,13 @@ func (o *ValidationOrchestrator) validateRecord(result *RecordValidationResult, 
 					ValidatorID: "field_required",
 					ErrorType:   ErrorTypeFieldValue,
 					FieldName:   fieldName,
+					Validator: &CompiledValidator{
+						ID:         "field_required",
+						Scope:      ScopeField,
+						ErrorType:  ErrorTypeFieldValue,
+						ResultMode: "single",
+						Message:    fieldRequiredMessage,
+					},
 				})
 			}
 			// Skip validators for nil fields (both required and optional)
