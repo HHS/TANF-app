@@ -83,9 +83,10 @@ func renderErrorMessage(vr *validation.ValidationResult, record *parser.ParsedRe
 	}
 
 	// Build template context from record
-	ctx := make(map[string]any, 8) // Pre-size for typical usage
+	ctx := make(map[string]any, 10) // Pre-size for typical usage
 	ctx["RecordType"] = record.Schema.RecordType
 	ctx["LineNumber"] = record.LineNumber
+	ctx["RecordLength"] = record.GetDecodedSize()
 
 	// Add field-specific context if this is a field error
 	if vr.FieldName != "" {
