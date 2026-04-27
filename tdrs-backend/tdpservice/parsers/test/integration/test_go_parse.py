@@ -1,4 +1,4 @@
-"""Test the implementation of the parse_file method with realistic datafiles."""
+"""Integration tests for the live Go parser worker."""
 
 import logging
 import time
@@ -91,6 +91,7 @@ def parse_datafile(dfs, datafile, timeout_seconds=GO_PARSE_TIMEOUT_SECONDS):
     return dfs
 
 
+@pytest.mark.go_parser_integration
 @pytest.mark.usefixtures("go_parser_datafile_cleanup")
 class TestGoParse:
     """Tests for parse and validation flows."""
