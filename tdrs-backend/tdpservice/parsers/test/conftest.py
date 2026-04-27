@@ -236,6 +236,7 @@ def bad_ssp_s1__row_missing_required_field(stt_user, stt):
         stt,
         "Active Case Data",
         DataFile.ProgramType.SSP,
+        2019,
     )
 
 
@@ -251,7 +252,7 @@ def small_tanf_section2_file(stt_user, stt):
 def tanf_section2_file(stt_user, stt):
     """Fixture for ADS.E2J.FTP2.TS06."""
     return util.create_test_datafile(
-        "ADS.E2J.FTP2.TS06", stt_user, stt, "Closed Case Data"
+        "ADS.E2J.FTP2.TS06", stt_user, stt, "Closed Case Data", year=2022
     )
 
 
@@ -259,7 +260,7 @@ def tanf_section2_file(stt_user, stt):
 def tanf_section3_file(stt_user, stt):
     """Fixture for ADS.E2J.FTP3.TS06."""
     return util.create_test_datafile(
-        "ADS.E2J.FTP3.TS06", stt_user, stt, "Aggregate Data"
+        "ADS.E2J.FTP3.TS06", stt_user, stt, "Aggregate Data", year=2022
     )
 
 
@@ -272,7 +273,9 @@ def tanf_section1_file_with_blanks(stt_user, stt):
 @pytest.fixture
 def tanf_section4_file(stt_user, stt):
     """Fixture for ADS.E2J.FTP4.TS06."""
-    return util.create_test_datafile("ADS.E2J.FTP4.TS06", stt_user, stt, "Stratum Data")
+    return util.create_test_datafile(
+        "ADS.E2J.FTP4.TS06", stt_user, stt, "Stratum Data", year=2022
+    )
 
 
 @pytest.fixture
@@ -287,7 +290,12 @@ def bad_tanf_section4_file(stt_user, stt):
 def ssp_section4_file(stt_user, stt):
     """Fixture for ADS.E2J.NDM4.MS24."""
     return util.create_test_datafile(
-        "ADS.E2J.NDM4.MS24", stt_user, stt, "Stratum Data", DataFile.ProgramType.SSP
+        "ADS.E2J.NDM4.MS24",
+        stt_user,
+        stt,
+        "Stratum Data",
+        DataFile.ProgramType.SSP,
+        year=2022,
     )
 
 
@@ -300,6 +308,7 @@ def ssp_section2_rec_oadsi_file(stt_user, stt):
         stt,
         "Closed Case Data",
         DataFile.ProgramType.SSP,
+        year=2019,
     )
 
 
@@ -307,7 +316,12 @@ def ssp_section2_rec_oadsi_file(stt_user, stt):
 def ssp_section2_file(stt_user, stt):
     """Fixture for ADS.E2J.NDM2.MS24."""
     return util.create_test_datafile(
-        "ADS.E2J.NDM2.MS24", stt_user, stt, "Closed Case Data", DataFile.ProgramType.SSP
+        "ADS.E2J.NDM2.MS24",
+        stt_user,
+        stt,
+        "Closed Case Data",
+        DataFile.ProgramType.SSP,
+        year=2019,
     )
 
 
@@ -315,7 +329,12 @@ def ssp_section2_file(stt_user, stt):
 def ssp_section3_file(stt_user, stt):
     """Fixture for ADS.E2J.FTP3.TS06."""
     return util.create_test_datafile(
-        "ADS.E2J.NDM3.MS24", stt_user, stt, "Aggregate Data", DataFile.ProgramType.SSP
+        "ADS.E2J.NDM3.MS24",
+        stt_user,
+        stt,
+        "Aggregate Data",
+        DataFile.ProgramType.SSP,
+        year=2022,
     )
 
 
