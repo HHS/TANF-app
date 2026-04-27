@@ -231,7 +231,7 @@ func serializeSspM6(record *parser.ParsedRecord, datafileID int32) [][]any {
 		record.Get("RecordType"),
 		record.Get("CALENDAR_QUARTER"),
 		record.Get("RPT_MONTH_YEAR"),
-		record.Get("SSP_MOE_FAMILIES"),
+		record.Get("SSPMOE_FAMILIES"),
 		record.Get("NUM_2_PARENTS"),
 		record.Get("NUM_1_PARENTS"),
 		record.Get("NUM_NO_PARENTS"),
