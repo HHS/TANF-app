@@ -221,7 +221,6 @@ tasks:
             /^SELECT pg_catalog\.set_config\(/ { next } \
             { print } \
           ' > ./tdrs-services/parser/schema.sql
-    # add error message to update config/schemas and internal/storage
 
 
   clean:
