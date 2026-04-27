@@ -428,7 +428,15 @@ tasks:
     desc: Verify sqlc generated code matches the parser schema and queries
     dir: tdrs-services/parser
     cmds:
-      - make sqlc-diff
+      - |
+        if ! make sqlc-diff; then
+          echo ""
+          echo "sqlc generated code is out of sync."
+          echo "If model changes were made, update the definitions in:"
+          echo "  - tdrs-services/parser/config/schemas"
+          echo "  - tdrs-services/parser/internal/storage/writer"
+          exit 1
+        fi
 
   parser:sqlc-vet:
     desc: Run sqlc static analysis for the parser schema and queries
