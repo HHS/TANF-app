@@ -72,7 +72,6 @@ record_type_detection:
 # For TANF Section 1:
 #   - key_fields is set to group by RPT_MONTH_YEAR + CASE_NUMBER
 accumulator:
-
   # Fields to extract the grouping key from raw row data.
   # These byte positions are used BEFORE full parsing to quickly
   # determine which case a record belongs to.
@@ -100,18 +99,18 @@ accumulator:
 
 validation_orchestrator:
   categories:
-  - id: 1
-    name: Record pre-check
-    default_error_type: RECORD_PRE_CHECK
-  - id: 2
-    name: Field validation
-    default_error_type: FIELD_VALUE
-  - id: 3
-    name: Cross-field
-    default_error_type: VALUE_CONSISTENCY
-  - id: 4
-    name: Group validation
-    default_error_type: CASE_CONSISTENCY
+    - id: 1
+      name: Record pre-check
+      default_error_type: RECORD_PRE_CHECK
+    - id: 2
+      name: Field validation
+      default_error_type: FIELD_VALUE
+    - id: 3
+      name: Cross-field
+      default_error_type: VALUE_CONSISTENCY
+    - id: 4
+      name: Group validation
+      default_error_type: CASE_CONSISTENCY
 
 # =============================================================================
 # GROUP VALIDATORS (Group/Case Level)
@@ -128,6 +127,13 @@ validation_orchestrator:
 # 3. Every T3 must have a corresponding T1 in the same case
 
 group_validators:
+  # Total records per case must be less than the max
+  # Per Lauren and Yun, 1 family (case) is expected to have a maximum of 6 adults and a maximum of 10 children plus
+  # one T1 record. Thus, if a case has more than 17 records, it has an error and will not be serialized.
+  - id: max_records_per_case
+    params:
+      max: 17
+
   # T1 must have at least one T2 or T3 record
   - id: t1_has_t2_or_t3
 
@@ -162,10 +168,26 @@ group_validators:
   - id: partial_duplicates_excluding
     params:
       record_type: T2
-      fields: [RecordType, RPT_MONTH_YEAR, CASE_NUMBER, FAMILY_AFFILIATION, DATE_OF_BIRTH, SSN]
+      fields:
+        [
+          RecordType,
+          RPT_MONTH_YEAR,
+          CASE_NUMBER,
+          FAMILY_AFFILIATION,
+          DATE_OF_BIRTH,
+          SSN,
+        ]
       exclude_field: FAMILY_AFFILIATION
       exclude_values: [3, 5]
   - id: partial_duplicates
     params:
       record_type: T3
-      fields: [RecordType, RPT_MONTH_YEAR, CASE_NUMBER, FAMILY_AFFILIATION, DATE_OF_BIRTH, SSN]
+      fields:
+        [
+          RecordType,
+          RPT_MONTH_YEAR,
+          CASE_NUMBER,
+          FAMILY_AFFILIATION,
+          DATE_OF_BIRTH,
+          SSN,
+        ]

@@ -15,6 +15,11 @@ from rest_framework.routers import DefaultRouter
 
 from .core.views import FeatureFlagViewset, write_logs
 from .users.api.authorization_check import AuthorizationCheck, PlgAuthorizationCheck
+from .users.api.canary_views import (
+    CanaryLoginAMSView,
+    CanaryLoginDotGovView,
+    CanaryLogoutView,
+)
 from .users.api.login import (
     CypressLoginDotGovAuthenticationOverride,
     TokenAuthorizationAMS,
@@ -23,6 +28,11 @@ from .users.api.login import (
 from .users.api.login_redirect_oidc import LoginRedirectAMS, LoginRedirectLoginDotGov
 from .users.api.logout import LogoutUser
 from .users.api.logout_redirect_oidc import LogoutRedirectOIDC
+from .users.views import (
+    KeycloakLoginAMSView,
+    KeycloakLoginDotGovView,
+    KeycloakLogoutView,
+)
 
 router = DefaultRouter()
 
@@ -62,11 +72,30 @@ if settings.DEBUG:
         )
     )
 
+# /v2/ auth routes: Keycloak-brokered OIDC via mozilla-django-oidc
+v2_urlpatterns = [
+    path("login/dotgov", KeycloakLoginDotGovView.as_view(), name="v2-login-dotgov"),
+    path("login/ams", KeycloakLoginAMSView.as_view(), name="v2-login-ams"),
+    path("oidc/", include("mozilla_django_oidc.urls")),
+    path("auth_check", AuthorizationCheck.as_view(), name="v2-authorization-check"),
+    path("logout/oidc", KeycloakLogoutView.as_view(), name="v2-oidc-logout"),
+]
+
+# Versionless canonical auth routes (canary routing between legacy and Keycloak)
+canary_auth_urlpatterns = [
+    path("login/dotgov", CanaryLoginDotGovView.as_view(), name="canary-login-dotgov"),
+    path("login/ams", CanaryLoginAMSView.as_view(), name="canary-login-ams"),
+    path("oidc/", include("mozilla_django_oidc.urls")),
+    path("auth_check", AuthorizationCheck.as_view(), name="canary-auth-check"),
+    path("logout/oidc", CanaryLogoutView.as_view(), name="canary-oidc-logout"),
+]
 
 # Add 'prefix' to all urlpatterns to make it easier to version/group endpoints
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 urlpatterns = [
     path("v1/", include(urlpatterns)),
+    path("v2/", include(v2_urlpatterns)),
+    path("", include(canary_auth_urlpatterns)),
     path("admin/", admin.site.urls, name="admin"),
     path("prometheus/", include("django_prometheus.urls")),
     path(

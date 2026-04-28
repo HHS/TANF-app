@@ -73,6 +73,7 @@ func (o *ValidationOrchestrator) ValidateHeader(headerRec *parser.ParsedRecord, 
 	recordEnv.DataFileContext = dfCtx
 
 	// Phase 1: Run PRE_CHECK and RECORD_PRE_CHECK validators
+	recordBlocked := false
 	for _, validator := range o.registry.GetRecordValidators(recType) {
 		if validator.ErrorType != ErrorTypeRecordPreCheck && validator.ErrorType != ErrorTypePreCheck {
 			continue
@@ -81,11 +82,9 @@ func (o *ValidationOrchestrator) ValidateHeader(headerRec *parser.ParsedRecord, 
 		if vr := Execute(validator, recordEnv); !vr.Valid {
 			vr.ErrorType = validator.ErrorType
 			result.RecordErrors = append(result.RecordErrors, vr)
+			recordBlocked = true
 		}
 	}
-
-	// Check if blocked by record-level errors
-	recordBlocked := result.HasBlockingErrors()
 
 	if o.shortCircuit && recordBlocked {
 		result.Skipped = true
