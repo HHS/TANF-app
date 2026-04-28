@@ -10,13 +10,15 @@ import pytest
 from celery import current_app as celery_app
 from celery.exceptions import TimeoutError as CeleryTimeoutError
 
-from tdpservice.parsers import aggregates, util
+from tdpservice.parsers import aggregates
 from tdpservice.parsers.models import (
     DataFileSummary,
     ParserError,
     ParserErrorCategoryChoices,
 )
-from tdpservice.search_indexes.models.fra import TANF_Exiter1
+
+# TODO: uncomment when fra tests implemented
+# from tdpservice.search_indexes.models.fra import TANF_Exiter1
 from tdpservice.search_indexes.models.ssp import (
     SSP_M1,
     SSP_M2,
@@ -35,15 +37,17 @@ from tdpservice.search_indexes.models.tanf import (
     TANF_T6,
     TANF_T7,
 )
-from tdpservice.search_indexes.models.tribal import (
-    Tribal_TANF_T1,
-    Tribal_TANF_T2,
-    Tribal_TANF_T3,
-    Tribal_TANF_T4,
-    Tribal_TANF_T5,
-    Tribal_TANF_T6,
-    Tribal_TANF_T7,
-)
+
+# TODO: uncomment when tribal tests implemented
+# from tdpservice.search_indexes.models.tribal import (
+#     Tribal_TANF_T1,
+#     Tribal_TANF_T2,
+#     Tribal_TANF_T3,
+#     Tribal_TANF_T4,
+#     Tribal_TANF_T5,
+#     Tribal_TANF_T6,
+#     Tribal_TANF_T7,
+# )
 
 logger = logging.getLogger(__name__)
 
