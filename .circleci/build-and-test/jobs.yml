@@ -10,11 +10,11 @@
           command: |
             cd tdrs-backend
             docker-compose run --rm web bash -c "flake8 ."
-    #   - run:
-    #       name: Run Unit Tests And Create Code Coverage Report
-    #       command: |
-    #         cd tdrs-backend;
-    #         docker-compose run --rm web bash -c "./wait_for_services.sh && pytest --cov-report=xml"
+      - run:
+          name: Run Unit Tests And Create Code Coverage Report
+          command: |
+            cd tdrs-backend;
+            docker-compose run --rm web bash -c "./wait_for_services.sh && pytest --cov-report=xml"
       - run:
           name: Run Go parser integration tests
           command: |
