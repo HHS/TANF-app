@@ -25,6 +25,7 @@ class KeycloakClientRateThrottle(SimpleRateThrottle):
     scope = "keycloak_client"
 
     def get_cache_key(self, request, view):
+        """Return a per-client cache key, or None to skip throttling for non-bearer requests."""
         client_id = getattr(request, "_keycloak_client_id", None)
         if not client_id:
             return None

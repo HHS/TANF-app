@@ -148,6 +148,7 @@ class KeycloakOIDCBackend(OIDCAuthenticationBackend):
     """
 
     def filter_users_by_claims(self, claims: dict) -> list:
+        """Delegate to the module-level helper shared with bearer-token auth."""
         return filter_users_by_claims(claims)
 
     def create_user(self, claims: dict) -> Optional[User]:
@@ -170,6 +171,7 @@ class KeycloakOIDCBackend(OIDCAuthenticationBackend):
         return user
 
     def verify_claims(self, claims: dict) -> bool:
+        """Delegate to the module-level helper shared with bearer-token auth."""
         return verify_claims(claims)
 
     def get_userinfo(self, access_token: str, id_token: str, payload: dict) -> dict:

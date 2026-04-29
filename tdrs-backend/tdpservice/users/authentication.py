@@ -46,6 +46,7 @@ class KeycloakBearerTokenAuthentication(BaseAuthentication):
     www_authenticate_realm = "api"
 
     def authenticate(self, request):
+        """Validate a bearer token and resolve the Django user, or return None."""
         token = _bearer_token_from_request(request)
         if not token:
             return None
@@ -98,6 +99,7 @@ class KeycloakBearerTokenAuthentication(BaseAuthentication):
         return user, token
 
     def authenticate_header(self, request):
+        """Return the WWW-Authenticate header value for 401 responses."""
         return f'Bearer realm="{self.www_authenticate_realm}"'
 
 
