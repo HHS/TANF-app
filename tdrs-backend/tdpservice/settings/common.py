@@ -401,6 +401,7 @@ class Common(Configuration):
         "DEFAULT_RENDERER_CLASSES": DEFAULT_RENDERER_CLASSES,
         "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
         "DEFAULT_AUTHENTICATION_CLASSES": (
+            "tdpservice.users.authentication.KeycloakBearerTokenAuthentication",
             "tdpservice.users.authentication.CustomAuthentication",
             "rest_framework.authentication.SessionAuthentication",
             "tdpservice.security.utils.ExpTokenAuthentication",
@@ -408,6 +409,12 @@ class Common(Configuration):
         "DEFAULT_FILTER_BACKENDS": [
             "django_filters.rest_framework.DjangoFilterBackend",
         ],
+        "DEFAULT_THROTTLE_CLASSES": (
+            "tdpservice.users.throttling.KeycloakClientRateThrottle",
+        ),
+        "DEFAULT_THROTTLE_RATES": {
+            "keycloak_client": os.getenv("KEYCLOAK_CLIENT_RATE", "300/min"),
+        },
         "TEST_REQUEST_DEFAULT_FORMAT": "json",
         "TEST_REQUEST_RENDERER_CLASSES": TEST_REQUEST_RENDERER_CLASSES,
     }
@@ -717,6 +724,10 @@ class Common(Configuration):
         "feature-flags": {
             "BACKEND": "django.core.cache.backends.redis.RedisCache",
             "LOCATION": f"{REDIS_URI}/2",
+        },
+        "throttle": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": f"{REDIS_URI}/3",
         },
     }
 
