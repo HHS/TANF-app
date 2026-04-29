@@ -18,6 +18,7 @@ from rest_framework.response import Response
 from tdpservice.core.utils import log
 from tdpservice.security.models import SecurityEventToken, SecurityEventType
 from tdpservice.users.models import AccountApprovalStatusChoices
+from tdpservice.users.oidc import FEDERAL_STAFF_EMAIL_DOMAINS
 from tdpservice.users.serializers import UserSerializer
 
 from ..authentication import CustomAuthentication
@@ -352,9 +353,9 @@ class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
         return auth_options
 
     def verify_email(self, user):
-        """Handle user email exception to disallow ACF staff to utilize non-AMS authentication."""
+        """Reject federal staff email domains from authenticating through Login.gov."""
 
-        if "@acf.hhs.gov" in user.email:
+        if user.email.lower().endswith(FEDERAL_STAFF_EMAIL_DOMAINS):
             user_groups = list(user.groups.values_list("name", flat=True))
             raise ACFUserLoginDotGov(
                 "{} attempted Login.gov authentication with role(s): {}".format(
