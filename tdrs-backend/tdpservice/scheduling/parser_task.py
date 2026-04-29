@@ -67,6 +67,20 @@ def set_error_report(dfs, error_report):
     dfs.save()
 
 
+def should_send_reparse_notification(dfs, file_meta, reparse_id):
+    """Return whether a reparse completion email should be sent."""
+    if not reparse_id:
+        return True
+
+    if file_meta is None:
+        return True
+
+    return not (
+        file_meta.previous_summary_status == DataFileSummary.Status.ACCEPTED
+        and dfs.status == DataFileSummary.Status.ACCEPTED
+    )
+
+
 @shared_task(name="tdpservice.scheduling.parser_task.go_parse")
 def go_parse(data_file_id):
     """Register the Go parser task name without executing it in Python."""
@@ -113,18 +127,20 @@ def parse(data_file_id, reparse_id=None):
 
         logger.info(f"Parsing finished for file -> {repr(data_file)}.")
 
-        if reparse_id is None:
-            qs = User.objects.filter(
-                stt=data_file.stt,
-                account_approval_status=AccountApprovalStatusChoices.APPROVED,
-                groups__name="Data Analyst",
+        qs = User.objects.filter(
+            stt=data_file.stt,
+            account_approval_status=AccountApprovalStatusChoices.APPROVED,
+            groups__name="Data Analyst",
+        )
+
+        if data_file.program_type == DataFile.ProgramType.FRA:
+            qs = qs.filter(user_permissions__codename="has_fra_access")
+
+        recipients = qs.values_list("username", flat=True).distinct()
+        if should_send_reparse_notification(dfs, file_meta, reparse_id):
+            send_data_submitted_email(
+                dfs, recipients, is_reprocessed=(reparse_id is not None)
             )
-
-            if data_file.program_type == DataFile.ProgramType.FRA:
-                qs = qs.filter(user_permissions__codename="has_fra_access")
-
-            recipients = qs.values_list("username", flat=True).distinct()
-            send_data_submitted_email(dfs, recipients)
 
     except DecoderUnknownException:
         dfs.set_status(DataFileSummary.Status.REJECTED)
