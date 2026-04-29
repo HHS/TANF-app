@@ -69,7 +69,6 @@ record_type_detection:
 # For TANF Section 2:
 #   - key_fields is set to group by RPT_MONTH_YEAR + CASE_NUMBER
 accumulator:
-
   # Fields to extract the grouping key from raw row data.
   # These byte positions are used BEFORE full parsing to quickly
   # determine which case a record belongs to.
@@ -96,18 +95,18 @@ accumulator:
 
 validation_orchestrator:
   categories:
-  - id: 1
-    name: Record pre-check
-    default_error_type: RECORD_PRE_CHECK
-  - id: 2
-    name: Field validation
-    default_error_type: FIELD_VALUE
-  - id: 3
-    name: Cross-field
-    default_error_type: VALUE_CONSISTENCY
-  - id: 4
-    name: Group validation
-    default_error_type: CASE_CONSISTENCY
+    - id: 1
+      name: Record pre-check
+      default_error_type: RECORD_PRE_CHECK
+    - id: 2
+      name: Field validation
+      default_error_type: FIELD_VALUE
+    - id: 3
+      name: Cross-field
+      default_error_type: VALUE_CONSISTENCY
+    - id: 4
+      name: Group validation
+      default_error_type: CASE_CONSISTENCY
 
 # =============================================================================
 # GROUP VALIDATORS (Group/Case Level)
@@ -129,6 +128,13 @@ validation_orchestrator:
 # These are marked as deprecated and don't increment num_errors in Python.
 
 group_validators:
+  # Total records per case must be less than the max
+  # Per Lauren and Yun, 1 family (case) is expected to have a maximum of 6 adults and a maximum of 10 children plus
+  # one T1 record. Thus, if a case has more than 17 records, it has an error and will not be serialized.
+  - id: max_records_per_case
+    params:
+      max: 17
+
   # T4 records require at least one T5 record in the same case
   # Error is reported on T4 records when no T5 exists
   - id: t4_requires_t5
@@ -153,4 +159,12 @@ group_validators:
   - id: partial_duplicates
     params:
       record_type: T5
-      fields: [RecordType, RPT_MONTH_YEAR, CASE_NUMBER, FAMILY_AFFILIATION, DATE_OF_BIRTH, SSN]
+      fields:
+        [
+          RecordType,
+          RPT_MONTH_YEAR,
+          CASE_NUMBER,
+          FAMILY_AFFILIATION,
+          DATE_OF_BIRTH,
+          SSN,
+        ]

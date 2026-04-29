@@ -22,6 +22,7 @@ update_frontend()
 
     if [ "$CF_SPACE" = "tanf-prod" ]; then
         echo "REACT_APP_BACKEND_URL=https://tanfdata.acf.hhs.gov/v1" >> .env.production
+        echo "REACT_APP_AUTH_URL=https://tanfdata.acf.hhs.gov" >> .env.production
         echo "REACT_APP_FRONTEND_URL=https://tanfdata.acf.hhs.gov" >> .env.production
         echo "REACT_APP_BACKEND_HOST=https://tanfdata.acf.hhs.gov" >> .env.production
         echo "REACT_APP_LOGIN_GOV_URL=https://secure.login.gov/" >> .env.production
@@ -34,6 +35,7 @@ update_frontend()
         echo "BACK_END=" >> .env.production
     elif [ "$CF_SPACE" = "tanf-staging" ]; then
         echo "REACT_APP_BACKEND_URL=https://$CGHOSTNAME_FRONTEND.acf.hhs.gov/v1" >> .env.development
+        echo "REACT_APP_AUTH_URL=https://$CGHOSTNAME_FRONTEND.acf.hhs.gov" >> .env.development
         echo "REACT_APP_FRONTEND_URL=https://$CGHOSTNAME_FRONTEND.acf.hhs.gov" >> .env.development
         echo "REACT_APP_BACKEND_HOST=https://$CGHOSTNAME_FRONTEND.acf.hhs.gov" >> .env.development
         echo "REACT_APP_CF_SPACE=$CF_SPACE" >> .env.development
@@ -42,6 +44,7 @@ update_frontend()
         cf set-env "$CGHOSTNAME_FRONTEND" CONNECT_SRC '*.acf.hhs.gov'
     else
         echo "REACT_APP_BACKEND_URL=https://$CGHOSTNAME_FRONTEND.app.cloud.gov/v1" >> .env.development
+        echo "REACT_APP_AUTH_URL=https://$CGHOSTNAME_FRONTEND.app.cloud.gov" >> .env.development
         echo "REACT_APP_FRONTEND_URL=https://$CGHOSTNAME_FRONTEND.app.cloud.gov" >> .env.development
         echo "REACT_APP_BACKEND_HOST=https://$CGHOSTNAME_FRONTEND.app.cloud.gov" >> .env.development
         echo "REACT_APP_CF_SPACE=$CF_SPACE" >> .env.development

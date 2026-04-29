@@ -61,6 +61,11 @@ class CloudGov(Common):
         cloudgov_services["s3"], f"tdp-staticfiles-{services_basename}"
     )
 
+    keycloak_creds = get_cloudgov_service_creds_by_instance_name(
+        cloudgov_services.get("user-provided", []),
+        f"tdp-keycloak-{services_basename}",
+    )
+
     ############################################################################
 
     INSTALLED_APPS = (*Common.INSTALLED_APPS, "gunicorn")
@@ -165,6 +170,46 @@ class CloudGov(Common):
     OTEL_EXPORTER_OTLP_ENDPOINT = os.getenv(
         "OTEL_EXPORTER_OTLP_ENDPOINT", "http://tempo.apps.internal:4317"
     )
+
+    # Keycloak Sync
+    KEYCLOAK_SYNC_ENABLED = bool(os.getenv("KEYCLOAK_SYNC_ENABLED", ""))
+    KEYCLOAK_SERVER_URL = os.getenv(
+        "KEYCLOAK_SERVER_URL", "http://keycloak.apps.internal:8080"
+    )
+    KEYCLOAK_REALM = os.getenv("KEYCLOAK_REALM", "tdp")
+    KEYCLOAK_ADMIN_CLIENT_ID = keycloak_creds.get(
+        "admin_client_id", os.getenv("KEYCLOAK_ADMIN_CLIENT_ID", "tdp-django")
+    )
+    KEYCLOAK_ADMIN_CLIENT_SECRET = keycloak_creds.get(
+        "admin_client_secret", os.getenv("KEYCLOAK_ADMIN_CLIENT_SECRET", "")
+    )
+    KEYCLOAK_DJANGO_CLIENT_ID = keycloak_creds.get(
+        "django_client_id", os.getenv("KEYCLOAK_DJANGO_CLIENT_ID", "tdp-django")
+    )
+    KEYCLOAK_DJANGO_CLIENT_SECRET = keycloak_creds.get(
+        "django_client_secret", os.getenv("KEYCLOAK_DJANGO_CLIENT_SECRET", "")
+    )
+
+    # mozilla-django-oidc: derive OIDC settings from Keycloak URLs
+    OIDC_RP_CLIENT_ID = KEYCLOAK_DJANGO_CLIENT_ID
+    OIDC_RP_CLIENT_SECRET = KEYCLOAK_DJANGO_CLIENT_SECRET
+
+    # In Cloud.gov, the browser-facing URL is the public Keycloak route
+    KEYCLOAK_BROWSER_URL = os.getenv("KEYCLOAK_BROWSER_URL", KEYCLOAK_SERVER_URL)
+
+    _KC_REALM_URL = f"{KEYCLOAK_SERVER_URL}/realms/{KEYCLOAK_REALM}"
+    _KC_BROWSER_REALM_URL = f"{KEYCLOAK_BROWSER_URL}/realms/{KEYCLOAK_REALM}"
+
+    # Browser-facing endpoints (user's browser is redirected here)
+    OIDC_OP_AUTHORIZATION_ENDPOINT = (
+        f"{_KC_BROWSER_REALM_URL}/protocol/openid-connect/auth"
+    )
+    OIDC_OP_LOGOUT_ENDPOINT = f"{_KC_BROWSER_REALM_URL}/protocol/openid-connect/logout"
+
+    # Server-to-server endpoints (Django backend talks to Keycloak within Docker)
+    OIDC_OP_TOKEN_ENDPOINT = f"{_KC_REALM_URL}/protocol/openid-connect/token"
+    OIDC_OP_USER_ENDPOINT = f"{_KC_REALM_URL}/protocol/openid-connect/userinfo"
+    OIDC_OP_JWKS_ENDPOINT = f"{_KC_REALM_URL}/protocol/openid-connect/certs"
 
 
 class Development(CloudGov):
