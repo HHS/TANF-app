@@ -19,7 +19,7 @@ from tdpservice.core.utils import log
 from tdpservice.security.models import SecurityEventToken, SecurityEventType
 from tdpservice.users.models import AccountApprovalStatusChoices
 from tdpservice.users.oidc import FEDERAL_STAFF_EMAIL_DOMAINS
-from tdpservice.users.serializers import UserSerializer
+from tdpservice.users.serializers import UserProfileSerializer
 
 from ..authentication import CustomAuthentication
 from .login_redirect_oidc import LoginRedirectAMS
@@ -449,6 +449,14 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
 class CypressLoginDotGovAuthenticationOverride(TokenAuthorizationOIDC):
     """Override Login.gov authentication for Cypress users."""
 
+    @staticmethod
+    def get_cypress_idp(username: str) -> str:
+        """Infer the IdP Cypress should emulate from the test user's email domain."""
+        normalized_username = username.lower()
+        if normalized_username.endswith(FEDERAL_STAFF_EMAIL_DOMAINS):
+            return "ams"
+        return "login-gov"
+
     def get(self, request):
         """Create a session for the specified user, if they exist."""
         username = request.query_params.get("username", None)
@@ -465,6 +473,7 @@ class CypressLoginDotGovAuthenticationOverride(TokenAuthorizationOIDC):
         except User.DoesNotExist:
             return Response({"error": "User does not exist"}, status=400)
 
+        request.session["auth_idp"] = self.get_cypress_idp(username)
         login(
             request,
             u,
@@ -474,7 +483,7 @@ class CypressLoginDotGovAuthenticationOverride(TokenAuthorizationOIDC):
 
         response_data = {
             "authenticated": True,
-            "user": UserSerializer(u, context={"request", request}).data,
+            "user": UserProfileSerializer(u, context={"request": request}).data,
         }
 
         if u.is_superuser:
