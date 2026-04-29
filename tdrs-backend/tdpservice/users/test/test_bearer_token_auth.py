@@ -283,6 +283,23 @@ class TestAuditAndThrottleHook:
         assert str(getattr(record, "user_id", None)) == str(user.id)
 
 
+class TestAuthenticateHeader:
+    """``authenticate_header`` controls 401-vs-403 for denied requests."""
+
+    def test_returns_none_for_non_bearer_request(self, auth):
+        """No Bearer header → None so DRF preserves the historical 403."""
+        request = RequestFactory().get("/v1/users/me/")
+        assert auth.authenticate_header(request) is None
+
+    def test_returns_bearer_challenge_when_token_present(
+        self, auth, request_with_token
+    ):
+        """Invalid bearer token → Bearer realm challenge so DRF returns 401."""
+        header = auth.authenticate_header(request_with_token())
+        assert header is not None
+        assert header.startswith("Bearer realm=")
+
+
 class TestKeycloakClientRateThrottle:
     """Throttle keys off ``_keycloak_client_id``; non-bearer paths skip."""
 

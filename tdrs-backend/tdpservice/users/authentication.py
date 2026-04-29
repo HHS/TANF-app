@@ -99,7 +99,16 @@ class KeycloakBearerTokenAuthentication(BaseAuthentication):
         return user, token
 
     def authenticate_header(self, request):
-        """Return the WWW-Authenticate header value for 401 responses."""
+        """Return WWW-Authenticate only when the client attempted bearer auth.
+
+        DRF promotes a denied request from 403 to 401 whenever the first
+        authenticator's ``authenticate_header`` returns a value. Returning None
+        for requests without a Bearer header preserves the historical 403 for
+        session/anonymous callers — only requests that actually presented a
+        (rejected) bearer token get the 401 + Bearer challenge.
+        """
+        if _bearer_token_from_request(request) is None:
+            return None
         return f'Bearer realm="{self.www_authenticate_realm}"'
 
 
