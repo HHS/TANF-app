@@ -413,7 +413,6 @@
       "displayName": "Login.gov",
       "providerId": "oidc",
       "enabled": true,
-      "hideOnLogin": true,
       "trustEmail": true,
       "storeToken": false,
       "addReadTokenRoleOnCreate": false,
