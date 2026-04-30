@@ -18,6 +18,8 @@ REQUIRED_ENV_VARS=(
     "KC_TDP_DJANGO_CLIENT_SECRET" # tdp-django client secret (realm config)
     "LOGIN_GOV_JWT_KEY"           # Login.gov RSA private key (PEM or base64)
     "CF_DOCKER_PASSWORD"          # Docker registry password/token (used by cf push)
+    "AMS_CLIENT_ID"                # AMS OIDC client ID
+    "AMS_CLIENT_SECRET"            # AMS OIDC client secret
 )
 OPTIONAL_ENV_VARS=(
     "KC_TDP_GRAFANA_CLIENT_SECRET" # tdp-grafana client secret (realm config)
