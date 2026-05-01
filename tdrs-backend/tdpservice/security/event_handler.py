@@ -166,7 +166,6 @@ class SecurityEventHandler:
         try:
             subject = event_data.get("subject", {})
             user = cls._get_user(subject)
-            print(f"\n\nEvent Data: {event_data}\n\n")
 
             # Convert Unix timestamp to datetime if present
             iat_timestamp = decoded_jwt.get("iat")
