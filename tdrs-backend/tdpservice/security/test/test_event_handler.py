@@ -49,17 +49,25 @@ def email_changed_event_data(stt_data_analyst):
     """Mock event data for email changed: includes old and new emails."""
     old_email = stt_data_analyst.email
     new_email = "new_email@example.com"
-    return {"subject": {"email": old_email, "subject_type": new_email}}
+    return {
+        "subject": {"email": old_email, "subject_type": "email"},
+        "new-value": new_email,
+    }
+
+
+@pytest.fixture
+def email_changed_event_data_without_new_value(stt_data_analyst):
+    """Mock Login.gov event data for email changed without a new email."""
+    return {"subject": {"email": stt_data_analyst.email, "subject_type": "email"}}
 
 
 @pytest.fixture
 def email_recycled_event_data(stt_data_analyst):
     """Mock event data for email recycled: includes the recycled email."""
-    # Only the old email is relevant for handler logging; use a placeholder for subject_type
     return {
         "subject": {
             "email": stt_data_analyst.email,
-            "subject_type": "unused@example.com",
+            "subject_type": "email",
         }
     }
 
@@ -262,7 +270,7 @@ class TestSecurityEventHandler:
 
         stt_data_analyst.refresh_from_db()
 
-        new_email = email_changed_event_data["subject"]["subject_type"]
+        new_email = email_changed_event_data["new-value"]
         assert stt_data_analyst.email == new_email
         assert stt_data_analyst.username == new_email
 
@@ -277,6 +285,31 @@ class TestSecurityEventHandler:
         assert token.issued_at == datetime.fromtimestamp(
             decoded_jwt["iat"], tz=timezone.utc
         )
+
+    @pytest.mark.django_db
+    def test_email_changed_without_new_value_does_not_update_user(
+        self, stt_data_analyst, email_changed_event_data_without_new_value, decoded_jwt
+    ):
+        """Test Login.gov identifier-changed payload does not set email to subject_type."""
+        prev_email = stt_data_analyst.email
+        prev_username = stt_data_analyst.username
+
+        event_type = SecurityEventType.EMAIL_CHANGED
+        SecurityEventHandler.handle_event(
+            event_type, email_changed_event_data_without_new_value, decoded_jwt
+        )
+
+        stt_data_analyst.refresh_from_db()
+
+        assert stt_data_analyst.email == prev_email
+        assert stt_data_analyst.username == prev_username
+
+        assert SecurityEventToken.objects.count() == 1
+        token = SecurityEventToken.objects.first()
+        assert token.user == stt_data_analyst
+        assert token.processed is True
+        assert token.event_type == event_type
+        assert token.event_data == email_changed_event_data_without_new_value
 
     @pytest.mark.django_db
     def test_email_recycled(

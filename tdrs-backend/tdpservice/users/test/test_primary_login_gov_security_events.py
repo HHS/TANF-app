@@ -94,7 +94,7 @@ def test_user_changed_login_gov_email(
     user,
     client,
 ):
-    """Test EMAIL_CHANGED SET updates user email and username."""
+    """Test EMAIL_CHANGED SET updates user email and username when new-value is present."""
     old_email = user.email
     new_email = "new_email@example.com"
 
@@ -110,7 +110,8 @@ def test_user_changed_login_gov_email(
     decoded_jwt = {
         "events": {
             SecurityEventType.EMAIL_CHANGED: {
-                "subject": {"email": old_email, "subject_type": new_email}
+                "subject": {"email": old_email, "subject_type": "email"},
+                "new-value": new_email,
             }
         },
         "iss": "https://login.gov",
@@ -137,11 +138,70 @@ def test_user_changed_login_gov_email(
     assert token.user == user
     assert token.event_type == SecurityEventType.EMAIL_CHANGED
     assert token.event_data == {
-        "subject": {"email": old_email, "subject_type": new_email}
+        "subject": {"email": old_email, "subject_type": "email"},
+        "new-value": new_email,
     }
     assert token.jwt_id == "test_jti_email_change_e2e"
     assert token.issuer == "https://login.gov"
     assert token.issued_at == datetime.fromtimestamp(iat, tz=dt_timezone.utc)
+    assert token.processed is True
+
+
+@pytest.mark.django_db(transaction=True)
+@patch("tdpservice.security.views.requests.get")
+@patch("tdpservice.security.views.jwt.get_unverified_header")
+@patch("tdpservice.security.views.jwt.decode")
+@patch("tdpservice.security.views.jwt.algorithms.RSAAlgorithm.from_jwk")
+def test_user_changed_login_gov_email_without_new_value_does_not_update_user(
+    mock_from_jwk,
+    mock_decode,
+    mock_get_unverified_header,
+    mock_requests_get,
+    user,
+    client,
+):
+    """Test Login.gov identifier-changed SET does not set email to subject_type."""
+    old_email = user.email
+    old_username = user.username
+
+    mock_requests_get.side_effect = [
+        MagicMock(json=lambda: {"jwks_uri": "https://login.gov/jwks"}),
+        MagicMock(json=lambda: {"keys": [{"kid": "test_kid"}]}),
+    ]
+    mock_get_unverified_header.return_value = {"kid": "test_kid"}
+    mock_from_jwk.return_value = MagicMock()
+
+    iat = int(timezone.now().timestamp())
+    decoded_jwt = {
+        "events": {
+            SecurityEventType.EMAIL_CHANGED: {
+                "subject": {"email": old_email, "subject_type": "email"}
+            }
+        },
+        "iss": "https://login.gov",
+        "iat": iat,
+        "jti": "test_jti_email_change_no_new_value_e2e",
+    }
+    mock_decode.return_value = decoded_jwt
+
+    url = reverse("event-token")
+    jwt_token = "header.payload.signature"
+    response = client.post(url, data=jwt_token, content_type="application/secevent+jwt")
+
+    assert response.status_code == 200
+
+    user.refresh_from_db()
+    assert user.email == old_email
+    assert user.username == old_username
+
+    assert SecurityEventToken.objects.count() == 1
+    token = SecurityEventToken.objects.first()
+    assert token.user == user
+    assert token.event_type == SecurityEventType.EMAIL_CHANGED
+    assert token.event_data == {
+        "subject": {"email": old_email, "subject_type": "email"}
+    }
+    assert token.jwt_id == "test_jti_email_change_no_new_value_e2e"
     assert token.processed is True
 
 

@@ -4,6 +4,8 @@ import logging
 from datetime import datetime
 from datetime import timezone as dt_timezone
 
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.utils import timezone
 
 from tdpservice.security.models import SecurityEventToken, SecurityEventType
@@ -59,15 +61,34 @@ class SecurityEventHandler:
         """Get the old and new emails from the event data."""
         event_data = security_event.event_data
         subject = event_data.get("subject")
-        new_email = subject.get("subject_type")
         old_email = subject.get("email")
+        new_email = event_data.get("new-value")
         return new_email, old_email
+
+    def _is_valid_email(email):
+        """Return whether the value is formatted as an email address."""
+        try:
+            validate_email(email)
+        except ValidationError:
+            return False
+        return True
 
     def _handle_email_changed(security_event):
         """Handle email-changed event."""
         new_email, old_email = SecurityEventHandler._get_emails(security_event)
-
         user = security_event.user
+
+        if not new_email:
+            logger.info(
+                f"User {user.username} identifier changed for email {old_email}; no new email provided"
+            )
+            return
+
+        if not SecurityEventHandler._is_valid_email(new_email):
+            raise ValueError(
+                f"Invalid new email value in identifier-changed event: {new_email}"
+            )
+
         user.email = new_email
         user.username = new_email
         user.save()
@@ -124,17 +145,17 @@ class SecurityEventHandler:
                     "No user found with login_gov_uuid: {}".format(subject.get("sub"))
                 )
         elif "email" in subject:
-            # Check both emails in the subject to see if we have the user
+            if subject.get("subject_type") != "email":
+                raise ValueError(
+                    "Email subject security event must have subject_type 'email'."
+                )
+
             user_qset = User.objects.filter(username=subject.get("email"))
             if user_qset.exists() and user_qset.count() == 1:
                 return user_qset.first()
 
-            user_qset = User.objects.filter(username=subject.get("subject_type"))
-            if user_qset.exists() and user_qset.count() == 1:
-                return user_qset.first()
-
             raise ValueError(
-                "No user found with the provided 'email' or 'subject_type' in subject of security event."
+                "No user found with the provided 'email' in subject of security event."
             )
 
         raise ValueError("No user info found in subject of security event.")
