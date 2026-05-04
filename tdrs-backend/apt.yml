@@ -5,4 +5,3 @@ repos:
   - deb http://apt.postgresql.org/pub/repos/apt/ jammy-pgdg main
 packages:
   - postgresql-client-15
-  - libjemalloc-dev
