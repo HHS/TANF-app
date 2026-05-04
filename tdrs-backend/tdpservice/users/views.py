@@ -72,7 +72,6 @@ class UserViewSet(
         """Return the queryset based on user's group status."""
         queryset = None
         is_admin = self.request.user.groups.filter(name="OFA System Admin").exists()
-        # fake commit
         if is_admin:
             queryset = self.queryset
         else:
