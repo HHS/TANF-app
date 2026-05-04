@@ -1,4 +1,5 @@
 .PHONY: test test-unit test-integration test-verbose test-short test-coverage \
+       coverage-report compile-check lint sqlc-diff sqlc-vet sqlc-verify validate-config ci-checks \
        build build-all build-linux build-darwin build-windows clean
 
 GOTESTSUM := gotestsum
@@ -24,9 +25,37 @@ test-all-coverage:
 	$(GOTESTSUM) $(GOTEST_FLAGS) -- -count=1 -coverprofile=coverage.out -tags integration $(PACKAGES)
 	go tool cover -func=coverage.out
 
+# Generate readable coverage artifacts from an existing coverage profile
+coverage-report:
+	go tool cover -func=coverage.out | tee coverage-summary.txt
+	go tool cover -html=coverage.out -o coverage.html
+
 # Run all tests with coverage including integration
 test-all:
 	$(GOTESTSUM) $(GOTEST_FLAGS) -- -count=1 -tags integration $(PACKAGES)
+
+# Compile all packages and tests, including integration-tagged packages, without running tests
+compile-check:
+	go test -run='^$$' -tags integration $(PACKAGES)
+
+# Run Go static analysis checks
+lint:
+	go vet $(PACKAGES)
+
+# Check that generated sqlc code matches the checked-in schema and queries
+sqlc-diff:
+	sqlc diff
+
+# Run sqlc static analysis against schema and queries
+sqlc-vet:
+	sqlc vet
+
+# Load parser config and compile validator expressions to catch YAML/expr syntax issues
+validate-config:
+	go test -count=1 ./internal/validation -run TestProductionValidators_LoadAndCompile
+
+# Aggregate CI checks that don't require the full test suite
+ci-checks: compile-check lint sqlc-diff sqlc-vet sqlc-verify validate-config
 
 # Run tests with verbose per-test output
 test-verbose:
@@ -77,4 +106,4 @@ build-windows:
 
 # Remove build artifacts
 clean:
-	rm -rf $(BUILD_DIR) coverage.out test-results.xml
+	rm -rf $(BUILD_DIR) coverage.out coverage-summary.txt coverage.html test-results.xml
