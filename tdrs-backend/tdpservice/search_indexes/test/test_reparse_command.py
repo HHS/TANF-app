@@ -2,9 +2,11 @@
 
 import datetime
 
-import pytest
 from django.db.utils import DatabaseError
 
+import pytest
+
+from tdpservice.data_files.models import ReparseFileMeta
 from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 from tdpservice.search_indexes.reparse import clean_reparse, handle_datafiles
@@ -51,7 +53,7 @@ def test_handle_datafiles_database_error(monkeypatch, stt, log_context):
     def raise_db_error(*args, **kwargs):
         raise DatabaseError("boom")
 
-    monkeypatch.setattr(datafile, "save", raise_db_error)
+    monkeypatch.setattr(ReparseFileMeta.objects, "create", raise_db_error)
     monkeypatch.setattr("tdpservice.search_indexes.reparse.log", lambda *a, **k: None)
 
     with pytest.raises(DatabaseError):
@@ -83,10 +85,11 @@ def test_clean_reparse_single_file_updates_meta(monkeypatch, stt):
 
     calls = {}
 
-    def fake_handle(files, meta, context):
+    def fake_handle(files, meta, context, previous_summary_statuses=None):
         calls["files"] = list(files)
         calls["meta"] = meta
         calls["context"] = context
+        calls["previous_summary_statuses"] = previous_summary_statuses
 
     monkeypatch.setattr(
         "tdpservice.search_indexes.reparse.handle_datafiles", fake_handle
@@ -99,7 +102,9 @@ def test_clean_reparse_single_file_updates_meta(monkeypatch, stt):
         "tdpservice.search_indexes.reparse.calculate_timeout",
         lambda count, total: datetime.timedelta(minutes=5),
     )
-    monkeypatch.setattr("tdpservice.search_indexes.reparse.backup", lambda *a, **k: None)
+    monkeypatch.setattr(
+        "tdpservice.search_indexes.reparse.backup", lambda *a, **k: None
+    )
     monkeypatch.setattr(
         "tdpservice.search_indexes.reparse.count_total_num_records",
         lambda *a, **k: 123,
