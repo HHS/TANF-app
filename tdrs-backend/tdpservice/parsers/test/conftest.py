@@ -324,6 +324,7 @@ def tribal_section_1_inconsistency_file(stt_user, stt):
         stt,
         "Active Case Data",
         DataFile.ProgramType.TRIBAL,
+        year=2020,
     )
 
 
