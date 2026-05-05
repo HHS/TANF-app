@@ -173,9 +173,29 @@ tasks:
       - docker compose -f docker-compose.yml exec postgres sh -c "psql -U tdpuser -d tdrs_test"
 
   dump-parser-schema:
-    desc: Dump selected parser table CREATE TABLE statements to schema-tmp.sql
+    desc: Dump selected parser table CREATE TABLE statements to parser schema.sql, using GO_PARSER_SHADOW_MODE to select shadow or production tables
+    vars:
+      TABLE_PREFIX: '{{.TABLE_PREFIX | default ""}}'
     cmds:
       - |
+        shadow_mode="${GO_PARSER_SHADOW_MODE:-}"
+        if [ -z "$shadow_mode" ] && [ -f tdrs-backend/.env ]; then
+          shadow_mode="$(awk -F= '/^GO_PARSER_SHADOW_MODE=/ { print $2; exit }' tdrs-backend/.env)"
+        fi
+        shadow_mode="${shadow_mode:-true}"
+
+        table_prefix="{{.TABLE_PREFIX}}"
+        if [ -z "$table_prefix" ]; then
+          case "$(printf '%s' "$shadow_mode" | tr '[:upper:]' '[:lower:]')" in
+            1|t|true|y|yes|on)
+              table_prefix="shadow_"
+              ;;
+            *)
+              table_prefix=""
+              ;;
+          esac
+        fi
+
         docker compose -f tdrs-backend/docker-compose.yml exec -T postgres pg_dump \
           -U tdpuser \
           -d tdrs_test \
@@ -214,14 +234,12 @@ tasks:
           --table=public.search_indexes_programaudit_t3 \
           --table=public.search_indexes_tanf_exiter1 \
           | awk ' \
-            /^ALTER TABLE .* ALTER COLUMN .* ADD GENERATED / { skip = 1; next } \
-            skip && /^\);$/ { skip = 0; next } \
-            skip { next } \
             /^SET / { next } \
             /^SELECT pg_catalog\.set_config\(/ { next } \
             { print } \
-          ' > ./tdrs-services/parser/schema.sql
-
+          ' \
+          | TABLE_PREFIX="$table_prefix" perl -pe 'BEGIN { $prefix = $ENV{"TABLE_PREFIX"} || "" } if ($prefix ne "") { s/(data_files_datafile|parser_error|parsers_datafilesummary|search_indexes_(?:reparsemeta|ssp_m[1-7]|tanf_t[1-7]|tribal_tanf_t[1-7]|programaudit_t[1-3]|tanf_exiter1))/${prefix}$1/g }' \
+          > ./tdrs-services/parser/schema.sql
 
   clean:
     desc: Remove ALL containers, images, and volumes (DANGEROUS)

@@ -9,10 +9,10 @@
 
 
 --
--- Name: data_files_datafile; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_data_files_datafile; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.data_files_datafile (
+CREATE TABLE public.shadow_data_files_datafile (
     id integer NOT NULL,
     original_filename character varying(256) NOT NULL,
     slug character varying(256) NOT NULL,
@@ -33,10 +33,10 @@ CREATE TABLE public.data_files_datafile (
 
 
 --
--- Name: search_indexes_ssp_m1; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_ssp_m1; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_ssp_m1 (
+CREATE TABLE public.shadow_search_indexes_ssp_m1 (
     "RecordType" character varying(156),
     "RPT_MONTH_YEAR" integer,
     "CASE_NUMBER" character varying(11),
@@ -106,10 +106,10 @@ CREATE TABLE public.stts_stt (
 
 
 --
--- Name: search_indexes_ssp_m2; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_ssp_m2; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_ssp_m2 (
+CREATE TABLE public.shadow_search_indexes_ssp_m2 (
     "RecordType" character varying(156),
     "RPT_MONTH_YEAR" integer,
     "CASE_NUMBER" character varying(11),
@@ -184,10 +184,10 @@ CREATE TABLE public.search_indexes_ssp_m2 (
 
 
 --
--- Name: search_indexes_ssp_m3; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_ssp_m3; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_ssp_m3 (
+CREATE TABLE public.shadow_search_indexes_ssp_m3 (
     "RecordType" character varying(156),
     "RPT_MONTH_YEAR" integer,
     "CASE_NUMBER" character varying(11),
@@ -217,10 +217,10 @@ CREATE TABLE public.search_indexes_ssp_m3 (
 
 
 --
--- Name: search_indexes_ssp_m4; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_ssp_m4; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_ssp_m4 (
+CREATE TABLE public.shadow_search_indexes_ssp_m4 (
     id uuid NOT NULL,
     "RecordType" character varying(156),
     "RPT_MONTH_YEAR" integer,
@@ -240,10 +240,10 @@ CREATE TABLE public.search_indexes_ssp_m4 (
 
 
 --
--- Name: search_indexes_ssp_m5; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_ssp_m5; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_ssp_m5 (
+CREATE TABLE public.shadow_search_indexes_ssp_m5 (
     id uuid NOT NULL,
     "RecordType" character varying(156),
     "RPT_MONTH_YEAR" integer,
@@ -278,10 +278,10 @@ CREATE TABLE public.search_indexes_ssp_m5 (
 
 
 --
--- Name: search_indexes_ssp_m6; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_ssp_m6; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_ssp_m6 (
+CREATE TABLE public.shadow_search_indexes_ssp_m6 (
     id uuid NOT NULL,
     "RecordType" character varying(156),
     "CALENDAR_QUARTER" integer,
@@ -302,10 +302,10 @@ CREATE TABLE public.search_indexes_ssp_m6 (
 
 
 --
--- Name: search_indexes_ssp_m7; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_ssp_m7; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_ssp_m7 (
+CREATE TABLE public.shadow_search_indexes_ssp_m7 (
     id uuid NOT NULL,
     "RecordType" character varying(156),
     "CALENDAR_QUARTER" integer,
@@ -319,10 +319,10 @@ CREATE TABLE public.search_indexes_ssp_m7 (
 
 
 --
--- Name: search_indexes_tanf_t1; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_tanf_t1; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_tanf_t1 (
+CREATE TABLE public.shadow_search_indexes_tanf_t1 (
     "RecordType" character varying(156),
     "RPT_MONTH_YEAR" integer,
     "CASE_NUMBER" character varying(11),
@@ -376,10 +376,10 @@ CREATE TABLE public.search_indexes_tanf_t1 (
 
 
 --
--- Name: search_indexes_tanf_t2; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_tanf_t2; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_tanf_t2 (
+CREATE TABLE public.shadow_search_indexes_tanf_t2 (
     "AID_AGED_BLIND" integer,
     "CASE_NUMBER" character varying(11),
     "CITIZENSHIP_STATUS" integer,
@@ -456,10 +456,10 @@ CREATE TABLE public.search_indexes_tanf_t2 (
 
 
 --
--- Name: search_indexes_tanf_t3; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_tanf_t3; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_tanf_t3 (
+CREATE TABLE public.shadow_search_indexes_tanf_t3 (
     "CASE_NUMBER" character varying(11),
     "CITIZENSHIP_STATUS" integer,
     "DATE_OF_BIRTH" character varying(8),
@@ -488,10 +488,10 @@ CREATE TABLE public.search_indexes_tanf_t3 (
 
 
 --
--- Name: search_indexes_tanf_t4; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_tanf_t4; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_tanf_t4 (
+CREATE TABLE public.shadow_search_indexes_tanf_t4 (
     id uuid NOT NULL,
     datafile_id integer,
     "CASE_NUMBER" character varying(11),
@@ -511,10 +511,10 @@ CREATE TABLE public.search_indexes_tanf_t4 (
 
 
 --
--- Name: search_indexes_tanf_t5; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_tanf_t5; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_tanf_t5 (
+CREATE TABLE public.shadow_search_indexes_tanf_t5 (
     id uuid NOT NULL,
     datafile_id integer,
     "AMOUNT_EARNED_INCOME" character varying(4),
@@ -551,10 +551,10 @@ CREATE TABLE public.search_indexes_tanf_t5 (
 
 
 --
--- Name: search_indexes_tanf_t6; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_tanf_t6; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_tanf_t6 (
+CREATE TABLE public.shadow_search_indexes_tanf_t6 (
     id uuid NOT NULL,
     datafile_id integer,
     "ASSISTANCE" integer,
@@ -580,10 +580,10 @@ CREATE TABLE public.search_indexes_tanf_t6 (
 
 
 --
--- Name: search_indexes_tanf_t7; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_tanf_t7; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_tanf_t7 (
+CREATE TABLE public.shadow_search_indexes_tanf_t7 (
     id uuid NOT NULL,
     datafile_id integer,
     "CALENDAR_QUARTER" integer,
@@ -597,10 +597,10 @@ CREATE TABLE public.search_indexes_tanf_t7 (
 
 
 --
--- Name: search_indexes_tribal_tanf_t1; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_tribal_tanf_t1; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_tribal_tanf_t1 (
+CREATE TABLE public.shadow_search_indexes_tribal_tanf_t1 (
     id uuid NOT NULL,
     "RecordType" character varying(156),
     "RPT_MONTH_YEAR" integer,
@@ -653,10 +653,10 @@ CREATE TABLE public.search_indexes_tribal_tanf_t1 (
 
 
 --
--- Name: search_indexes_tribal_tanf_t2; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_tribal_tanf_t2; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_tribal_tanf_t2 (
+CREATE TABLE public.shadow_search_indexes_tribal_tanf_t2 (
     id uuid NOT NULL,
     "RecordType" character varying(156),
     "RPT_MONTH_YEAR" integer,
@@ -716,10 +716,10 @@ CREATE TABLE public.search_indexes_tribal_tanf_t2 (
 
 
 --
--- Name: search_indexes_tribal_tanf_t3; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_tribal_tanf_t3; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_tribal_tanf_t3 (
+CREATE TABLE public.shadow_search_indexes_tribal_tanf_t3 (
     id uuid NOT NULL,
     "RecordType" character varying(156),
     "RPT_MONTH_YEAR" integer,
@@ -748,10 +748,10 @@ CREATE TABLE public.search_indexes_tribal_tanf_t3 (
 
 
 --
--- Name: search_indexes_tribal_tanf_t4; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_tribal_tanf_t4; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_tribal_tanf_t4 (
+CREATE TABLE public.shadow_search_indexes_tribal_tanf_t4 (
     id uuid NOT NULL,
     "RecordType" character varying(71),
     "RPT_MONTH_YEAR" integer,
@@ -771,10 +771,10 @@ CREATE TABLE public.search_indexes_tribal_tanf_t4 (
 
 
 --
--- Name: search_indexes_tribal_tanf_t5; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_tribal_tanf_t5; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_tribal_tanf_t5 (
+CREATE TABLE public.shadow_search_indexes_tribal_tanf_t5 (
     id uuid NOT NULL,
     "RecordType" character varying(71),
     "RPT_MONTH_YEAR" integer,
@@ -811,10 +811,10 @@ CREATE TABLE public.search_indexes_tribal_tanf_t5 (
 
 
 --
--- Name: search_indexes_tribal_tanf_t6; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_tribal_tanf_t6; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_tribal_tanf_t6 (
+CREATE TABLE public.shadow_search_indexes_tribal_tanf_t6 (
     id uuid NOT NULL,
     "RecordType" character varying(156),
     "CALENDAR_QUARTER" integer,
@@ -840,10 +840,10 @@ CREATE TABLE public.search_indexes_tribal_tanf_t6 (
 
 
 --
--- Name: search_indexes_tribal_tanf_t7; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_tribal_tanf_t7; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_tribal_tanf_t7 (
+CREATE TABLE public.shadow_search_indexes_tribal_tanf_t7 (
     id uuid NOT NULL,
     "RecordType" character varying(156),
     "CALENDAR_QUARTER" integer,
@@ -857,10 +857,10 @@ CREATE TABLE public.search_indexes_tribal_tanf_t7 (
 
 
 --
--- Name: parser_error; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_parser_error; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.parser_error (
+CREATE TABLE public.shadow_parser_error (
     id integer NOT NULL,
     row_number integer,
     column_number character varying(8),
@@ -881,16 +881,24 @@ CREATE TABLE public.parser_error (
 
 
 --
--- Name: parser_error_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: shadow_parser_error_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
+ALTER TABLE public.shadow_parser_error ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.shadow_parser_error_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
 
 
 --
--- Name: parsers_datafilesummary; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_parsers_datafilesummary; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.parsers_datafilesummary (
+CREATE TABLE public.shadow_parsers_datafilesummary (
     id bigint NOT NULL,
     status character varying(50) NOT NULL,
     case_aggregates jsonb,
@@ -902,22 +910,38 @@ CREATE TABLE public.parsers_datafilesummary (
 
 
 --
--- Name: parsers_datafilesummary_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: shadow_parsers_datafilesummary_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
+ALTER TABLE public.shadow_parsers_datafilesummary ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.shadow_parsers_datafilesummary_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
 
 
 --
 -- Name: reports_reportfile_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
+ALTER TABLE public.shadow_data_files_datafile ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.reports_reportfile_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
 
 
 --
--- Name: search_indexes_programaudit_t1; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_programaudit_t1; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_programaudit_t1 (
+CREATE TABLE public.shadow_search_indexes_programaudit_t1 (
     line_number integer,
     id uuid NOT NULL,
     "RecordType" character varying(156),
@@ -930,10 +954,10 @@ CREATE TABLE public.search_indexes_programaudit_t1 (
 
 
 --
--- Name: search_indexes_programaudit_t2; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_programaudit_t2; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_programaudit_t2 (
+CREATE TABLE public.shadow_search_indexes_programaudit_t2 (
     line_number integer,
     id uuid NOT NULL,
     "RecordType" character varying(156),
@@ -948,10 +972,10 @@ CREATE TABLE public.search_indexes_programaudit_t2 (
 
 
 --
--- Name: search_indexes_programaudit_t3; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_programaudit_t3; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_programaudit_t3 (
+CREATE TABLE public.shadow_search_indexes_programaudit_t3 (
     line_number integer,
     id uuid NOT NULL,
     "RecordType" character varying(156),
@@ -966,10 +990,10 @@ CREATE TABLE public.search_indexes_programaudit_t3 (
 
 
 --
--- Name: search_indexes_reparsemeta; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_reparsemeta; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_reparsemeta (
+CREATE TABLE public.shadow_search_indexes_reparsemeta (
     id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
     timeout_at timestamp with time zone,
@@ -982,24 +1006,32 @@ CREATE TABLE public.search_indexes_reparsemeta (
     "all" boolean NOT NULL,
     new_indices boolean NOT NULL,
     delete_old_indices boolean NOT NULL,
-    CONSTRAINT search_indexes_reparsemeta_fiscal_year_check CHECK ((fiscal_year >= 0)),
-    CONSTRAINT search_indexes_reparsemeta_num_records_deleted_check CHECK ((num_records_deleted >= 0)),
-    CONSTRAINT search_indexes_reparsemeta_total_num_records_initial_check CHECK ((total_num_records_initial >= 0)),
-    CONSTRAINT search_indexes_reparsemeta_total_num_records_post_check CHECK ((total_num_records_post >= 0))
+    CONSTRAINT shadow_search_indexes_reparsemeta_fiscal_year_check CHECK ((fiscal_year >= 0)),
+    CONSTRAINT shadow_search_indexes_reparsemeta_num_records_deleted_check CHECK ((num_records_deleted >= 0)),
+    CONSTRAINT shadow_search_indexes_reparsemeta_total_num_records_initial_check CHECK ((total_num_records_initial >= 0)),
+    CONSTRAINT shadow_search_indexes_reparsemeta_total_num_records_post_check CHECK ((total_num_records_post >= 0))
 );
 
 
 --
--- Name: search_indexes_reparsemeta_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_reparsemeta_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
+ALTER TABLE public.shadow_search_indexes_reparsemeta ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.shadow_search_indexes_reparsemeta_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
 
 
 --
--- Name: search_indexes_tanf_exiter1; Type: TABLE; Schema: public; Owner: -
+-- Name: shadow_search_indexes_tanf_exiter1; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_tanf_exiter1 (
+CREATE TABLE public.shadow_search_indexes_tanf_exiter1 (
     id uuid NOT NULL,
     "RecordType" character varying(25),
     "EXIT_DATE" integer,
@@ -1013,6 +1045,14 @@ CREATE TABLE public.search_indexes_tanf_exiter1 (
 -- Name: stts_stt_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
+ALTER TABLE public.stts_stt ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.stts_stt_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
 
 
 --

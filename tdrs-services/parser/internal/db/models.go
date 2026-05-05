@@ -27,7 +27,7 @@ type DataFilesDatafile struct {
 	State            string
 }
 
-type ParserError struct {
+type ShadowParserError struct {
 	ID            int32
 	RowNumber     pgtype.Int4
 	ColumnNumber  pgtype.Text
@@ -46,7 +46,7 @@ type ParserError struct {
 	ValuesJson    []byte
 }
 
-type ParsersDatafilesummary struct {
+type ShadowParsersDatafilesummary struct {
 	ID                          int64
 	Status                      string
 	CaseAggregates              []byte
@@ -56,7 +56,7 @@ type ParsersDatafilesummary struct {
 	ErrorReport                 pgtype.Text
 }
 
-type SearchIndexesProgramauditT1 struct {
+type ShadowSearchIndexesProgramauditT1 struct {
 	LineNumber    pgtype.Int4
 	ID            pgtype.UUID
 	RecordType    pgtype.Text
@@ -67,7 +67,7 @@ type SearchIndexesProgramauditT1 struct {
 	DatafileID    pgtype.Int4
 }
 
-type SearchIndexesProgramauditT2 struct {
+type ShadowSearchIndexesProgramauditT2 struct {
 	LineNumber        pgtype.Int4
 	ID                pgtype.UUID
 	RecordType        pgtype.Text
@@ -80,7 +80,7 @@ type SearchIndexesProgramauditT2 struct {
 	DatafileID        pgtype.Int4
 }
 
-type SearchIndexesProgramauditT3 struct {
+type ShadowSearchIndexesProgramauditT3 struct {
 	LineNumber        pgtype.Int4
 	ID                pgtype.UUID
 	RecordType        pgtype.Text
@@ -93,7 +93,7 @@ type SearchIndexesProgramauditT3 struct {
 	DatafileID        pgtype.Int4
 }
 
-type SearchIndexesReparsemetum struct {
+type ShadowSearchIndexesReparsemetum struct {
 	ID                     int64
 	CreatedAt              pgtype.Timestamptz
 	TimeoutAt              pgtype.Timestamptz
@@ -108,7 +108,7 @@ type SearchIndexesReparsemetum struct {
 	DeleteOldIndices       bool
 }
 
-type SearchIndexesSspM1 struct {
+type ShadowSearchIndexesSspM1 struct {
 	RecordType               pgtype.Text
 	RPTMONTHYEAR             pgtype.Int4
 	CASENUMBER               pgtype.Text
@@ -157,7 +157,7 @@ type SearchIndexesSspM1 struct {
 	LineNumber               pgtype.Int4
 }
 
-type SearchIndexesSspM2 struct {
+type ShadowSearchIndexesSspM2 struct {
 	RecordType              pgtype.Text
 	RPTMONTHYEAR            pgtype.Int4
 	CASENUMBER              pgtype.Text
@@ -230,7 +230,7 @@ type SearchIndexesSspM2 struct {
 	LineNumber              pgtype.Int4
 }
 
-type SearchIndexesSspM3 struct {
+type ShadowSearchIndexesSspM3 struct {
 	RecordType            pgtype.Text
 	RPTMONTHYEAR          pgtype.Int4
 	CASENUMBER            pgtype.Text
@@ -258,7 +258,7 @@ type SearchIndexesSspM3 struct {
 	LineNumber            pgtype.Int4
 }
 
-type SearchIndexesSspM4 struct {
+type ShadowSearchIndexesSspM4 struct {
 	ID             pgtype.UUID
 	RecordType     pgtype.Text
 	RPTMONTHYEAR   pgtype.Int4
@@ -276,7 +276,7 @@ type SearchIndexesSspM4 struct {
 	LineNumber     pgtype.Int4
 }
 
-type SearchIndexesSspM5 struct {
+type ShadowSearchIndexesSspM5 struct {
 	ID                    pgtype.UUID
 	RecordType            pgtype.Text
 	RPTMONTHYEAR          pgtype.Int4
@@ -309,7 +309,7 @@ type SearchIndexesSspM5 struct {
 	LineNumber            pgtype.Int4
 }
 
-type SearchIndexesSspM6 struct {
+type ShadowSearchIndexesSspM6 struct {
 	ID              pgtype.UUID
 	RecordType      pgtype.Text
 	CALENDARQUARTER pgtype.Int4
@@ -328,7 +328,7 @@ type SearchIndexesSspM6 struct {
 	LineNumber      pgtype.Int4
 }
 
-type SearchIndexesSspM7 struct {
+type ShadowSearchIndexesSspM7 struct {
 	ID              pgtype.UUID
 	RecordType      pgtype.Text
 	CALENDARQUARTER pgtype.Int4
@@ -340,7 +340,7 @@ type SearchIndexesSspM7 struct {
 	LineNumber      pgtype.Int4
 }
 
-type SearchIndexesTanfExiter1 struct {
+type ShadowSearchIndexesTanfExiter1 struct {
 	ID         pgtype.UUID
 	RecordType pgtype.Text
 	EXITDATE   pgtype.Int4
@@ -349,7 +349,7 @@ type SearchIndexesTanfExiter1 struct {
 	LineNumber pgtype.Int4
 }
 
-type SearchIndexesTanfT1 struct {
+type ShadowSearchIndexesTanfT1 struct {
 	RecordType               pgtype.Text
 	RPTMONTHYEAR             pgtype.Int4
 	CASENUMBER               pgtype.Text
@@ -401,7 +401,7 @@ type SearchIndexesTanfT1 struct {
 	LineNumber               pgtype.Int4
 }
 
-type SearchIndexesTanfT2 struct {
+type ShadowSearchIndexesTanfT2 struct {
 	AIDAGEDBLIND            pgtype.Int4
 	CASENUMBER              pgtype.Text
 	CITIZENSHIPSTATUS       pgtype.Int4
@@ -476,7 +476,7 @@ type SearchIndexesTanfT2 struct {
 	LineNumber              pgtype.Int4
 }
 
-type SearchIndexesTanfT3 struct {
+type ShadowSearchIndexesTanfT3 struct {
 	CASENUMBER            pgtype.Text
 	CITIZENSHIPSTATUS     pgtype.Int4
 	DATEOFBIRTH           pgtype.Text
@@ -503,7 +503,7 @@ type SearchIndexesTanfT3 struct {
 	LineNumber            pgtype.Int4
 }
 
-type SearchIndexesTanfT4 struct {
+type ShadowSearchIndexesTanfT4 struct {
 	ID             pgtype.UUID
 	DatafileID     pgtype.Int4
 	CASENUMBER     pgtype.Text
@@ -521,7 +521,7 @@ type SearchIndexesTanfT4 struct {
 	LineNumber     pgtype.Int4
 }
 
-type SearchIndexesTanfT5 struct {
+type ShadowSearchIndexesTanfT5 struct {
 	ID                        pgtype.UUID
 	DatafileID                pgtype.Int4
 	AMOUNTEARNEDINCOME        pgtype.Text
@@ -556,7 +556,7 @@ type SearchIndexesTanfT5 struct {
 	LineNumber                pgtype.Int4
 }
 
-type SearchIndexesTanfT6 struct {
+type ShadowSearchIndexesTanfT6 struct {
 	ID                  pgtype.UUID
 	DatafileID          pgtype.Int4
 	ASSISTANCE          pgtype.Int4
@@ -580,7 +580,7 @@ type SearchIndexesTanfT6 struct {
 	LineNumber          pgtype.Int4
 }
 
-type SearchIndexesTanfT7 struct {
+type ShadowSearchIndexesTanfT7 struct {
 	ID              pgtype.UUID
 	DatafileID      pgtype.Int4
 	CALENDARQUARTER pgtype.Int4
@@ -592,7 +592,7 @@ type SearchIndexesTanfT7 struct {
 	LineNumber      pgtype.Int4
 }
 
-type SearchIndexesTribalTanfT1 struct {
+type ShadowSearchIndexesTribalTanfT1 struct {
 	ID                       pgtype.UUID
 	RecordType               pgtype.Text
 	RPTMONTHYEAR             pgtype.Int4
@@ -643,7 +643,7 @@ type SearchIndexesTribalTanfT1 struct {
 	LineNumber               pgtype.Int4
 }
 
-type SearchIndexesTribalTanfT2 struct {
+type ShadowSearchIndexesTribalTanfT2 struct {
 	ID                      pgtype.UUID
 	RecordType              pgtype.Text
 	RPTMONTHYEAR            pgtype.Int4
@@ -701,7 +701,7 @@ type SearchIndexesTribalTanfT2 struct {
 	LineNumber              pgtype.Int4
 }
 
-type SearchIndexesTribalTanfT3 struct {
+type ShadowSearchIndexesTribalTanfT3 struct {
 	ID                    pgtype.UUID
 	RecordType            pgtype.Text
 	RPTMONTHYEAR          pgtype.Int4
@@ -728,7 +728,7 @@ type SearchIndexesTribalTanfT3 struct {
 	LineNumber            pgtype.Int4
 }
 
-type SearchIndexesTribalTanfT4 struct {
+type ShadowSearchIndexesTribalTanfT4 struct {
 	ID             pgtype.UUID
 	RecordType     pgtype.Text
 	RPTMONTHYEAR   pgtype.Int4
@@ -746,7 +746,7 @@ type SearchIndexesTribalTanfT4 struct {
 	LineNumber     pgtype.Int4
 }
 
-type SearchIndexesTribalTanfT5 struct {
+type ShadowSearchIndexesTribalTanfT5 struct {
 	ID                        pgtype.UUID
 	RecordType                pgtype.Text
 	RPTMONTHYEAR              pgtype.Int4
@@ -781,7 +781,7 @@ type SearchIndexesTribalTanfT5 struct {
 	LineNumber                pgtype.Int4
 }
 
-type SearchIndexesTribalTanfT6 struct {
+type ShadowSearchIndexesTribalTanfT6 struct {
 	ID                  pgtype.UUID
 	RecordType          pgtype.Text
 	CALENDARQUARTER     pgtype.Int4
@@ -805,7 +805,7 @@ type SearchIndexesTribalTanfT6 struct {
 	LineNumber          pgtype.Int4
 }
 
-type SearchIndexesTribalTanfT7 struct {
+type ShadowSearchIndexesTribalTanfT7 struct {
 	ID              pgtype.UUID
 	RecordType      pgtype.Text
 	CALENDARQUARTER pgtype.Int4
