@@ -70,26 +70,26 @@ The parser uses a layered configuration system. Override precedence (lowest to h
 
 The primary config file is `config/parser.yaml`. Key sections:
 
-| Section | Controls |
-|---------|----------|
-| `server` | How the parser receives work (`local`, `celery`, `grpc`, `http`) |
-| `pipeline` | Worker pool sizes and buffer depths |
-| `writer` | Output mode (`database` or `file`), flush thresholds |
-| `validation` | Short-circuit behavior, validator file paths |
-| `database` | PostgreSQL connection pool settings |
-| `storage` | File acquisition (`local` or `s3`) |
+| Section      | Controls                                                         |
+| ------------ | ---------------------------------------------------------------- |
+| `server`     | How the parser receives work (`local`, `celery`, `grpc`, `http`) |
+| `pipeline`   | Worker pool sizes and buffer depths                              |
+| `writer`     | Output mode (`database` or `file`), flush thresholds             |
+| `validation` | Short-circuit behavior, validator file paths                     |
+| `database`   | PostgreSQL connection pool settings                              |
+| `storage`    | File acquisition (`local` or `s3`)                               |
 
 ### Environment Variables
 
 The config file supports `${VAR}` interpolation. Common variables:
 
-| Variable | Used In | Purpose |
-|----------|---------|---------|
-| `DATABASE_URL` | `database.url` | PostgreSQL connection string |
-| `REDIS_URL` | `server.celery.redis_url` | Redis broker for Celery mode |
-| `S3_BUCKET` | `storage.s3.bucket` | S3 bucket for file storage |
-| `S3_ENDPOINT` | `storage.s3.endpoint` | Custom S3 endpoint (LocalStack) |
-| `AWS_DEFAULT_REGION` | `storage.s3.region` | AWS region |
+| Variable             | Used In                   | Purpose                         |
+| -------------------- | ------------------------- | ------------------------------- |
+| `DATABASE_URL`       | `database.url`            | PostgreSQL connection string    |
+| `REDIS_URL`          | `server.celery.redis_url` | Redis broker for Celery mode    |
+| `S3_BUCKET`          | `storage.s3.bucket`       | S3 bucket for file storage      |
+| `S3_ENDPOINT`        | `storage.s3.endpoint`     | Custom S3 endpoint (LocalStack) |
+| `AWS_DEFAULT_REGION` | `storage.s3.region`       | AWS region                      |
 
 ---
 
@@ -241,6 +241,27 @@ make test-integration
 # Run all tests (unit + integration) with coverage
 make test-all-coverage
 
+# Compile all packages and tests without executing them
+make compile-check
+
+# Run Go static analysis
+make lint
+
+# Verify sqlc-generated code is in sync with schema.sql and query.sql
+make sqlc-diff
+
+# Run sqlc static analysis checks
+make sqlc-vet
+
+# Verify parser SQL against the configured engine and schema
+make sqlc-verify
+
+# Load config and compile validator expressions from YAML
+make validate-config
+
+# Run the non-test CI checks together
+make ci-checks
+
 # Watch mode — re-runs tests on file changes
 make test-watch
 
@@ -282,9 +303,30 @@ sqlc generate
 
 # Check if generated code is up to date (useful for CI)
 sqlc diff
+
+# Run sqlc lint-style checks
+sqlc vet
 ```
 
 Generated code lives in `internal/db/` and should not be edited by hand.
+
+---
+
+## CircleCI Checks
+
+The CircleCI parser job runs these checks from `tdrs-services/parser/`:
+
+```sh
+task parser:compile-check
+task parser:lint
+task parser:sqlc-diff
+task parser:sqlc-vet
+task parser:sqlc-verify
+task parser:validate-config
+task parser:test-all-coverage
+```
+
+For integration tests in CI, CircleCI reuses the existing backend docker-compose stack, including PostgreSQL and the Django migration flow, before running the Go parser integration suite with `DATABASE_URL` pointed at that migrated test database.
 
 ---
 
@@ -297,9 +339,9 @@ Generated code lives in `internal/db/` and should not be edited by hand.
 
 ### Example Launch Configurations
 
-| Configuration | Description |
-|---------------|-------------|
-| **Go DB** | Parse a local file and write results to PostgreSQL |
+| Configuration | Description                                                                  |
+| ------------- | ---------------------------------------------------------------------------- |
+| **Go DB**     | Parse a local file and write results to PostgreSQL                           |
 | **Go DryRun** | Parse a local file with `--dry-run` (CSV output to local files, no database) |
 
 ```jsonc

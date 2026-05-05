@@ -49,6 +49,20 @@ def traces_sampler(sampling_context: SamplingContext) -> float:
     return 0.5
 
 
+def before_send(event, hint):
+    """Drop known noisy Tempo infrastructure logs before sending events to Sentry."""
+    logentry = event.get("logentry", {})
+    message = logentry.get("message", "")
+    params = logentry.get("params") or []
+
+    log_text = " ".join([message, *(str(param) for param in params)])
+
+    if "tempo.apps.internal" in log_text:
+        return None
+
+    return event
+
+
 def init_sentry(sentry_dsn, environment: str = "ERROR") -> None:
     """Initialize Sentry for error tracking."""
     sentry_sdk.init(
@@ -70,6 +84,7 @@ def init_sentry(sentry_dsn, environment: str = "ERROR") -> None:
             LoggingIntegration(level=logging.ERROR, event_level=logging.ERROR),
         ],
         traces_sampler=traces_sampler,
+        before_send=before_send,
         enable_logs=True,
     )
 
