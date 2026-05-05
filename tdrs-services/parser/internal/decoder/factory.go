@@ -43,7 +43,7 @@ func createColumnarDecoder(file *os.File, spec *filespec.FileSpec) (Decoder, err
 		// Let the XLSX decoder handle opening the file in the format it needs
 		defer file.Close()
 		return NewXLSXDecoder(file.Name(), spec.RecordTypeDetection.Schema)
-	case "text/plain; charset=utf-8", "text/csv; charset=utf-8":
+	case "text/plain; charset=utf-8", "text/csv; charset=utf-8", "application/octet-stream":
 		return NewCSVDecoder(file, spec.RecordTypeDetection.Schema), nil
 	default:
 		return nil, fmt.Errorf("%s has an unknown or unexpected content type: %s", file.Name(), contentType)
