@@ -322,7 +322,6 @@ services:
       ./manage.py runscript apply_grafana_views &&
       ./gunicorn_start.sh"
     ports:
-      - "5555:5555"
       - "8989:8080"
     tty: true
     depends_on:
@@ -339,6 +338,23 @@ services:
       - "6379:6379"
     volumes:
       - .:/tdpapp
+
+  go-parser:
+    build:
+      context: ../tdrs-services/parser
+      dockerfile: Dockerfile
+    command: ["--server.mode=celery", "--storage.source=s3"]
+    environment:
+      - REDIS_URL=redis://redis-server:6379/0
+      - DATABASE_URL=postgres://tdpuser:something_secure@postgres:5432/tdrs_test?sslmode=disable
+      - S3_BUCKET=tdp-datafiles-localstack
+      - S3_ENDPOINT=http://localstack:4566
+      - S3_KEY_PREFIX=dev
+      - AWS_DEFAULT_REGION=us-gov-west-1
+    depends_on:
+      - redis-server
+      - postgres
+      - localstack
 
   celery:
     restart: always
@@ -385,6 +401,8 @@ services:
     volumes:
       - .:/tdpapp
       - logs:/tmp
+    ports:
+      - "5555:8080"
     image: tdp
     build:
       context: .

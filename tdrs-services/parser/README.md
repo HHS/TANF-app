@@ -361,6 +361,27 @@ For integration tests in CI, CircleCI reuses the existing backend docker-compose
               "--server.local.quarter", "2"]
 },
 {
+    "name": "Go Celery",
+    "type": "go",
+    "request": "launch",
+    "mode": "auto",
+    "program": "${workspaceFolder}/tdrs-services/parser/cmd/parser",
+    "cwd": "${workspaceFolder}/tdrs-services/parser",
+    "env": {
+        "AWS_ACCESS_KEY_ID": "test",
+        "AWS_SECRET_ACCESS_KEY": "test"
+    },
+    "args": ["--database.url", "postgres://tdpuser:something_secure@localhost:5432/tdrs_test?sslmode=disable",
+              "--server.mode=celery",
+              "--server.celery.redis-url=redis://localhost:6379/0",
+              "--storage.source=s3",
+              "--storage.s3.key-prefix=dev",
+              "--storage.s3.bucket=tdp-datafiles-localstack",
+              "--storage.s3.endpoint=http://localhost:4566",
+              "--storage.s3.region=us-gov-west-1",
+              "--writer.mode=database"]
+},
+{
     "name": "Go DryRun",
     "type": "go",
     "request": "launch",
