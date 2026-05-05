@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"go-parser/internal/config"
+	"go-parser/internal/config/filespec"
 	"go-parser/internal/decoder"
 	"go-parser/internal/parser"
 	"go-parser/internal/sentinel"
@@ -101,20 +103,30 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 	var headerStats ErrorStats
 	var result *ParsingResult
 
-	// Step 3: Read and parse header (for positional files)
-	headerRow, err := dec.ReadFirst()
+	// Step 3: Read first row. Positional files use it as HEADER; FRA uses it
+	// for a first-data-row sanity check and then processes it normally.
+	firstRow, err := dec.ReadFirst()
 	if err != nil {
-		err = fmt.Errorf("failed to read header: %w", err)
+		err = fmt.Errorf("failed to read first row: %w", err)
 		if rollbackErr := p.abortAndRollback(ctx, cancelRun, dfCtx, router); rollbackErr != nil {
 			return nil, errors.Join(err, rollbackErr)
 		}
 		return nil, err
 	}
 
-	headerSchema := p.registry.GetSchema(parser.HeaderSchemaPath)
-	parseCtx, err := parser.ParseHeader(headerRow, headerSchema)
-	if err != nil {
-		return p.handleHeaderParseInvalid(err, ctx, dfCtx, router, validationOrchestrator, startTime)
+	// TODO: We could probably abstract this branch into an interface. Helpful if we get more file types with different
+	// header semantics.
+	var parseCtx *parser.ParseContext
+	if spec.Format == filespec.FormatColumnar {
+		if dfCtx.Program == "FRA" && !isValidFRAFirstRow(firstRow) {
+			return p.handleFRAFirstRowInvalid(ctx, dfCtx, router, startTime), nil
+		}
+	} else {
+		headerSchema := p.registry.GetSchema(parser.HeaderSchemaPath)
+		parseCtx, err = parser.ParseHeader(firstRow, headerSchema)
+		if err != nil {
+			return p.handleHeaderParseInvalid(err, ctx, dfCtx, router, validationOrchestrator, startTime)
+		}
 	}
 
 	// Step 3b: Validate header (skip for FRA/columnar files where parseCtx is nil)
@@ -270,6 +282,21 @@ func addErrorStats(dst *ErrorStats, src ErrorStats) {
 	dst.CaseConsistency += src.CaseConsistency
 }
 
+func isValidFRAFirstRow(row decoder.Row) bool {
+	cr, ok := row.(*decoder.ColumnarRow)
+	if !ok || cr.ColumnCount() != 2 {
+		return false
+	}
+
+	for i := 0; i < cr.ColumnCount(); i++ {
+		if strings.TrimSpace(fmt.Sprintf("%v", cr.Column(i))) == "" {
+			return false
+		}
+	}
+
+	return true
+}
+
 // renderHeaderErrorMessage renders a validation result's message template
 // with context from the header record. This is similar to writer.renderErrorMessage
 // but adds DataFileContext and Values for header cross-validation messages.
@@ -405,6 +432,29 @@ func (p *Pipeline) handleMultipleHeaders(ctx context.Context, cancelRun context.
 		ErrorCount:   1,
 		Duration:     time.Since(startTime),
 	}, nil
+}
+
+func (p *Pipeline) handleFRAFirstRowInvalid(ctx context.Context, dfCtx DataFileContext, router *writer.Router, startTime time.Time) *ParsingResult {
+	log.Printf("FRA first-row validation failed: File does not begin with FRA data.")
+	parserErr := writer.SerializeParserError(
+		1,
+		"File does not begin with FRA data.",
+		validation.ErrorTypePreCheck,
+		dfCtx.DatafileID,
+	)
+	if routeErr := router.RouteErrorRow(ctx, parserErr); routeErr != nil {
+		log.Printf("failed to write FRA first-row error: %v", routeErr)
+	}
+	if stopErr := router.Stop(); stopErr != nil {
+		log.Printf("failed to stop router: %v", stopErr)
+	}
+
+	return &ParsingResult{
+		RecordCounts: map[string]int64{"parser_error": 1},
+		ErrorCount:   1,
+		ErrorStats:   &ErrorStats{RecordPreCheck: 1},
+		Duration:     time.Since(startTime),
+	}
 }
 
 func (p *Pipeline) handleHeaderValidationResult(

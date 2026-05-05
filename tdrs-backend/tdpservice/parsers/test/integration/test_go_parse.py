@@ -16,9 +16,7 @@ from tdpservice.parsers.models import (
     ParserError,
     ParserErrorCategoryChoices,
 )
-
-# TODO: uncomment when fra tests implemented
-# from tdpservice.search_indexes.models.fra import TANF_Exiter1
+from tdpservice.search_indexes.models.fra import TANF_Exiter1
 from tdpservice.search_indexes.models.ssp import (
     SSP_M1,
     SSP_M2,
@@ -329,8 +327,6 @@ class TestGoParse:
             assert dfs.get_status() == expected["status"]
 
         parser_errors = ParserError.objects.filter(file=datafile).order_by("id")
-        for e in parser_errors:
-            print(e.row_number, e.error_message)
         assert parser_errors.count() == expected["count"]
 
         err = parser_errors.first()
@@ -1828,63 +1824,62 @@ class TestGoParse:
             in [i.error_message for i in parser_errors]
         )
 
-    # TODO: Section logic for go parser FRA not working correctly
-    # @pytest.mark.parametrize(
-    #     "file",
-    #     [
-    #         ("fra_bad_header_csv"),
-    #         ("fra_bad_header_xlsx"),
-    #     ],
-    # )
-    # @pytest.mark.django_db(transaction=True)()
-    # def test_go_parse_fra_bad_header(self, request, file, dfs):
-    #     """Test parsing FRA files with bad header data."""
-    #     datafile = request.getfixturevalue(file)
-    #     datafile.year = 2024
-    #     datafile.quarter = "Q1"
-    #     datafile.save()
+    @pytest.mark.parametrize(
+        "file",
+        [
+            ("fra_bad_header_csv"),
+            ("fra_bad_header_xlsx"),
+        ],
+    )
+    @pytest.mark.django_db(transaction=True)()
+    def test_go_parse_fra_bad_header(self, request, file, dfs):
+        """Test parsing FRA files with bad header data."""
+        datafile = request.getfixturevalue(file)
+        datafile.year = 2024
+        datafile.quarter = "Q1"
+        datafile.save()
 
-    #     dfs.datafile = datafile
-    #     dfs.save()
+        dfs.datafile = datafile
+        dfs.save()
 
-    #     parse_datafile(dfs, datafile)
+        parse_datafile(dfs, datafile)
 
-    #     assert TANF_Exiter1.objects.all().count() == 0
+        assert TANF_Exiter1.objects.all().count() == 0
 
-    #     errors = ParserError.objects.filter(file=datafile).order_by("id")
-    #     assert len(errors) == 1
-    #     for e in errors:
-    #         assert e.error_message == "File does not begin with FRA data."
-    #         assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    #     assert dfs.get_status() == DataFileSummary.Status.REJECTED
+        errors = ParserError.objects.filter(file=datafile).order_by("id")
+        assert len(errors) == 1
+        for e in errors:
+            assert e.error_message == "File does not begin with FRA data."
+            assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
+        assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
-    # @pytest.mark.parametrize(
-    #     "file",
-    #     [
-    #         ("fra_empty_first_row_csv"),
-    #         ("fra_empty_first_row_xlsx"),
-    #     ],
-    # )
-    # @pytest.mark.django_db(transaction=True)()
-    # def test_go_parse_fra_empty_first_row(self, request, file, dfs):
-    #     """Test parsing FRA files with an empty first row/no header data."""
-    #     datafile = request.getfixturevalue(file)
-    #     datafile.year = 2024
-    #     datafile.quarter = "Q1"
+    @pytest.mark.parametrize(
+        "file",
+        [
+            ("fra_empty_first_row_csv"),
+            ("fra_empty_first_row_xlsx"),
+        ],
+    )
+    @pytest.mark.django_db(transaction=True)()
+    def test_go_parse_fra_empty_first_row(self, request, file, dfs):
+        """Test parsing FRA files with an empty first row/no header data."""
+        datafile = request.getfixturevalue(file)
+        datafile.year = 2024
+        datafile.quarter = "Q1"
 
-    #     dfs.datafile = datafile
-    #     dfs.save()
+        dfs.datafile = datafile
+        dfs.save()
 
-    #     parse_datafile(dfs, datafile)
+        parse_datafile(dfs, datafile)
 
-    #     assert TANF_Exiter1.objects.all().count() == 0
+        assert TANF_Exiter1.objects.all().count() == 0
 
-    #     errors = ParserError.objects.filter(file=datafile).order_by("id")
-    #     assert len(errors) == 1
-    #     for e in errors:
-    #         assert e.error_message == "File does not begin with FRA data."
-    #         assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    #     assert dfs.get_status() == DataFileSummary.Status.REJECTED
+        errors = ParserError.objects.filter(file=datafile).order_by("id")
+        assert len(errors) == 1
+        for e in errors:
+            assert e.error_message == "File does not begin with FRA data."
+            assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
+        assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
     # @pytest.mark.django_db(transaction=True)()
     # def test_go_parse_fra_decoder_unknown(self, fra_decoder_unknown, dfs):
