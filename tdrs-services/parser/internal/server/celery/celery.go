@@ -29,6 +29,18 @@ const defaultQueueName = "go-parser"
 
 const statusUpdateTimeout = 5 * time.Second
 
+const (
+	dataFileStateParseStarted     = "parse_started"
+	dataFileStateParseFailed      = "parse_failed"
+	dataFileStateParsedWithErrors = "parsed_with_errors"
+	dataFileStateParseCompleted   = "parse_completed"
+
+	summaryStatusAccepted           = "Accepted"
+	summaryStatusAcceptedWithErrors = "Accepted with Errors"
+	summaryStatusPartiallyAccepted  = "Partially Accepted"
+	summaryStatusRejected           = "Rejected"
+)
+
 // Server owns the full lifecycle for celery worker mode.
 // It maintains long-lived connections (DB pool, S3 client) and processes
 // tasks as they arrive from the celery broker.
@@ -119,8 +131,11 @@ func (s *Server) Run(parentCtx context.Context) error {
 			if r := recover(); r != nil {
 				log.Printf("PANIC in task for data_file_id=%d: %v", id, r)
 				result = fmt.Sprintf("panic: %v", r)
-				if err := s.updateDataFileSummaryStatus(taskCtx, id, "Rejected"); err != nil {
+				if err := s.updateDataFileSummaryStatus(taskCtx, id, summaryStatusRejected); err != nil {
 					log.Printf("Failed to update DataFileSummary status for data_file_id=%d during worker panic: %v", id, err)
+				}
+				if err := s.updateDataFileState(taskCtx, id, dataFileStateParseFailed); err != nil {
+					log.Printf("Failed to update shadow DataFile state for data_file_id=%d during worker panic: %v", id, err)
 				}
 			}
 		}()
@@ -158,7 +173,16 @@ func (s *Server) updateDataFileSummaryStatus(parentCtx context.Context, dataFile
 	statusCtx, cancel := context.WithTimeout(context.WithoutCancel(parentCtx), statusUpdateTimeout)
 	defer cancel()
 
-	return db.UpdateDataFileSummaryStatus(statusCtx, s.dbPool, dataFileID, status)
+	summaryTable := config.DataFileSummaryTableName(s.Config.Database.EffectiveTablePrefix())
+	return db.UpdateDataFileSummaryStatus(statusCtx, s.dbPool, summaryTable, dataFileID, status)
+}
+
+func (s *Server) updateDataFileState(parentCtx context.Context, dataFileID int32, state string) error {
+	statusCtx, cancel := context.WithTimeout(context.WithoutCancel(parentCtx), statusUpdateTimeout)
+	defer cancel()
+
+	dataFileTable := config.DataFileTableName(s.Config.Database.EffectiveTablePrefix())
+	return db.UpdateDataFileState(statusCtx, s.dbPool, dataFileTable, dataFileID, state)
 }
 
 // processTask handles a single parse task end-to-end:
@@ -168,6 +192,19 @@ func (s *Server) processTask(taskCtx context.Context, dataFileID int32) error {
 	df, err := db.GetDataFile(taskCtx, s.dbPool, dataFileID)
 	if err != nil {
 		return fmt.Errorf("failed to get datafile: %w", err)
+	}
+
+	dataFileTable := config.DataFileTableName(s.Config.Database.EffectiveTablePrefix())
+	if err := db.EnsureShadowDataFile(taskCtx, s.dbPool, dataFileTable, df); err != nil {
+		return fmt.Errorf("failed to prepare shadow datafile: %w", err)
+	}
+
+	summaryTable := config.DataFileSummaryTableName(s.Config.Database.EffectiveTablePrefix())
+	if err := db.EnsureDataFileSummary(taskCtx, s.dbPool, summaryTable, dataFileID); err != nil {
+		return fmt.Errorf("failed to prepare shadow datafile summary: %w", err)
+	}
+	if err := db.UpdateDataFileState(taskCtx, s.dbPool, dataFileTable, dataFileID, dataFileStateParseStarted); err != nil {
+		return fmt.Errorf("failed to mark shadow datafile parse started: %w", err)
 	}
 
 	// 2. Build the pipeline's DataFileContext from the DB record.
@@ -209,10 +246,23 @@ func (s *Server) processTask(taskCtx context.Context, dataFileID int32) error {
 	result, err := s.RunPipeline(taskCtx, source, sink, dfCtx)
 	if err != nil {
 		// Update status to indicate failure before returning.
-		if updateErr := s.updateDataFileSummaryStatus(taskCtx, dataFileID, "Rejected"); updateErr != nil {
+		if updateErr := s.updateDataFileSummaryStatus(taskCtx, dataFileID, summaryStatusRejected); updateErr != nil {
 			log.Printf("Failed to update DataFileSummary status for data_file_id=%d: %v", dataFileID, updateErr)
 		}
+		if updateErr := s.updateDataFileState(taskCtx, dataFileID, dataFileStateParseFailed); updateErr != nil {
+			log.Printf("Failed to update shadow DataFile state for data_file_id=%d: %v", dataFileID, updateErr)
+		}
 		return fmt.Errorf("pipeline processing failed: %w", err)
+	}
+
+	status := summaryStatusForResult(result)
+	dataFileState := dataFileStateForSummaryStatus(status)
+	totalCreated, totalInFile := recordTotalsForResult(result)
+	if err := db.UpdateDataFileSummaryResult(taskCtx, s.dbPool, summaryTable, dataFileID, status, totalInFile, totalCreated); err != nil {
+		return fmt.Errorf("failed to update shadow datafile summary result: %w", err)
+	}
+	if err := db.UpdateDataFileState(taskCtx, s.dbPool, dataFileTable, dataFileID, dataFileState); err != nil {
+		return fmt.Errorf("failed to update shadow datafile state: %w", err)
 	}
 
 	// 6. Log results.
@@ -222,6 +272,47 @@ func (s *Server) processTask(taskCtx context.Context, dataFileID int32) error {
 	}
 
 	return nil
+}
+
+func summaryStatusForResult(result *pipeline.ParsingResult) string {
+	if result == nil {
+		return summaryStatusRejected
+	}
+	if result.ErrorCount == 0 {
+		return summaryStatusAccepted
+	}
+	if result.ErrorStats == nil {
+		return summaryStatusRejected
+	}
+	if result.ErrorStats.RecordPreCheck > 0 || result.ErrorStats.CaseConsistency > 0 {
+		return summaryStatusPartiallyAccepted
+	}
+	return summaryStatusAcceptedWithErrors
+}
+
+func dataFileStateForSummaryStatus(status string) string {
+	switch status {
+	case summaryStatusAccepted:
+		return dataFileStateParseCompleted
+	case summaryStatusRejected:
+		return dataFileStateParseFailed
+	default:
+		return dataFileStateParsedWithErrors
+	}
+}
+
+func recordTotalsForResult(result *pipeline.ParsingResult) (created int64, total int64) {
+	if result == nil {
+		return 0, 0
+	}
+	for table, count := range result.RecordCounts {
+		if table == "parser_error" {
+			continue
+		}
+		created += count
+	}
+	total = created + result.ErrorCount
+	return created, total
 }
 
 // sectionNumber maps a DataFile section name to the section number
