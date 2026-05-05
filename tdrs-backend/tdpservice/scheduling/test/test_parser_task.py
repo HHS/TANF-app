@@ -91,6 +91,65 @@ def setup_parse_mocks(monkeypatch, dfs=None):
     return handlers
 
 
+def test_queue_go_parse_sends_shadow_task(monkeypatch):
+    """Queue Go parser task with the expected Celery task name and payload."""
+    calls = []
+
+    def fake_send_task(name, args=None, queue=None, ignore_result=False):
+        calls.append(
+            {
+                "name": name,
+                "args": args,
+                "queue": queue,
+                "ignore_result": ignore_result,
+            }
+        )
+
+    monkeypatch.setattr(
+        parser_task,
+        "current_app",
+        SimpleNamespace(send_task=fake_send_task),
+    )
+
+    parser_task.queue_go_parse(42)
+
+    assert calls == [
+        {
+            "name": parser_task.GO_PARSER_TASK_NAME,
+            "args": [42],
+            "queue": parser_task.GO_PARSER_QUEUE,
+            "ignore_result": True,
+        }
+    ]
+
+
+def test_queue_parse_queues_python_and_go(monkeypatch):
+    """Queue production Python parse and companion Go shadow parse."""
+    calls = []
+
+    monkeypatch.setattr(
+        parser_task,
+        "parse",
+        SimpleNamespace(
+            delay=lambda data_file_id, reparse_id=None: calls.append(
+                ("python", data_file_id, reparse_id)
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        parser_task,
+        "queue_go_parse",
+        lambda data_file_id: calls.append(("go", data_file_id)),
+    )
+
+    parser_task.queue_parse(42, reparse_id=7)
+
+    assert calls == [
+        ("python", 42, 7),
+        ("go", 42),
+    ]
+
+
 @pytest.mark.django_db
 def test_update_dfs_uses_fra_aggregates(monkeypatch, stt):
     """Use FRA aggregates for FRA program types."""

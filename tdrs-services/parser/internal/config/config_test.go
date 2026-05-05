@@ -17,6 +17,7 @@ func TestDefaultConfig_NonZeroValues(t *testing.T) {
 		{"SchemaFiles", len(cfg.SchemaFiles) > 0},
 		{"FilespecFiles", len(cfg.FilespecFiles) > 0},
 		{"Server.Mode", cfg.Server.Mode != ""},
+		{"Server.Celery.QueueName", cfg.Server.Celery.QueueName != ""},
 		{"Pipeline.NumWorkers", cfg.Pipeline.NumWorkers > 0},
 		{"Pipeline.WorkBufferSize", cfg.Pipeline.WorkBufferSize > 0},
 		{"Pipeline.PoolPrewarmSize", cfg.Pipeline.PoolPrewarmSize > 0},
@@ -70,5 +71,41 @@ func TestDefaultConfig_PreservesExistingDefaults(t *testing.T) {
 	}
 	if cfg.Database.HealthCheckPeriod != 30*time.Second {
 		t.Errorf("HealthCheckPeriod = %v, want 30s", cfg.Database.HealthCheckPeriod)
+	}
+	if cfg.Database.TablePrefix != DefaultTablePrefix {
+		t.Errorf("TablePrefix = %q, want %q", cfg.Database.TablePrefix, DefaultTablePrefix)
+	}
+	if got := cfg.Database.EffectiveTablePrefix(); got != DefaultTablePrefix {
+		t.Errorf("EffectiveTablePrefix = %q, want %q", got, DefaultTablePrefix)
+	}
+	if cfg.Server.Celery.QueueName != "go-parser" {
+		t.Errorf("QueueName = %q, want go-parser", cfg.Server.Celery.QueueName)
+	}
+}
+
+func TestDatabaseConfig_EffectiveTablePrefix(t *testing.T) {
+	tests := []struct {
+		name string
+		cfg  DatabaseConfig
+		want string
+	}{
+		{
+			name: "shadow mode uses configured prefix",
+			cfg:  DatabaseConfig{ShadowMode: true, TablePrefix: "shadow_"},
+			want: "shadow_",
+		},
+		{
+			name: "production mode disables prefix",
+			cfg:  DatabaseConfig{ShadowMode: false, TablePrefix: "shadow_"},
+			want: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.cfg.EffectiveTablePrefix(); got != tt.want {
+				t.Errorf("EffectiveTablePrefix() = %q, want %q", got, tt.want)
+			}
+		})
 	}
 }

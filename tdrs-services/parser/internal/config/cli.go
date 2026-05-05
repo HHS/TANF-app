@@ -29,6 +29,7 @@ type CLI struct {
 	// Server
 	ServerMode              string `kong:"name='server.mode',help='Server mode (celery, grpc, http, local)'"`
 	ServerCeleryRedisURL    string `kong:"name='server.celery.redis-url',help='Redis URL for Celery broker'"`
+	ServerCeleryQueueName   string `kong:"name='server.celery.queue-name',env='GO_PARSER_QUEUE',help='Redis queue consumed by the Go parser Celery worker'"`
 	ServerCeleryNumWorkers  int    `kong:"name='server.celery.num-workers',help='Number of concurrent celery task workers'"`
 	ServerGRPCListenAddress string `kong:"name='server.grpc.listen-address',help='gRPC listen address'"`
 	ServerHTTPListenAddress string `kong:"name='server.http.listen-address',help='HTTP listen address'"`
@@ -121,6 +122,9 @@ func (c *CLI) ApplyTo(cfg *Config, ctx *kong.Context) {
 	}
 	if set["server.celery.redis-url"] {
 		cfg.Server.Celery.RedisURL = c.ServerCeleryRedisURL
+	}
+	if set["server.celery.queue-name"] {
+		cfg.Server.Celery.QueueName = c.ServerCeleryQueueName
 	}
 	if set["server.celery.num-workers"] {
 		cfg.Server.Celery.NumWorkers = c.ServerCeleryNumWorkers

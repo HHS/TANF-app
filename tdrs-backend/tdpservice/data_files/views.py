@@ -4,6 +4,7 @@ import logging
 from distutils.util import strtobool
 from wsgiref.util import FileWrapper
 
+from django.conf import settings
 from django.db.models import Prefetch
 from django.http import FileResponse, Http404, HttpResponse
 
@@ -18,10 +19,14 @@ from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
-from tdpservice.data_files.enums import SubmissionState
 from tdpservice.core.utils import get_feature_flag
+from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.error_reports import ErrorReportFactory
-from tdpservice.data_files.models import DataFile, ReparseFileMeta
+from tdpservice.data_files.models import (
+    DataFile,
+    ReparseFileMeta,
+    create_or_update_shadow_data_file,
+)
 from tdpservice.data_files.s3_client import S3Client
 from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.submission_lifecycle import transition_datafile
@@ -147,6 +152,8 @@ class DataFileViewSet(ModelViewSet):
                 SubmissionState.VIRUS_SCAN_COMPLETED,
                 note="file passed AV validation",
             )
+            if settings.GO_PARSER_SHADOW_MODE:
+                create_or_update_shadow_data_file(data_file)
 
             logger.info(
                 f"Preparing parse task: User META -> user: {request.user}, stt: {data_file.stt}. "
@@ -155,7 +162,7 @@ class DataFileViewSet(ModelViewSet):
                 + f"quarter {data_file.quarter}, year {data_file.year}."
             )
 
-            parser_task.parse.delay(data_file_id)
+            parser_task.queue_parse(data_file_id)
             logger.info("Submitted parse task to queue for datafile %s.", data_file_id)
 
         logger.debug(f"{self.__class__.__name__}: return val: {response}")

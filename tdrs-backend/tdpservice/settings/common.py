@@ -621,6 +621,8 @@ class Common(Configuration):
     CELERYD_SEND_EVENTS = True
     CELERY_ENABLE_UTC = True
     CELERY_TASK_PROTOCOL = 1
+    GO_PARSER_QUEUE = os.getenv("GO_PARSER_QUEUE", "go-parser")
+    GO_PARSER_SHADOW_MODE = bool(strtobool(os.getenv("GO_PARSER_SHADOW_MODE", "true")))
 
     CELERY_BEAT_SCHEDULE = {
         "Database Backup": {

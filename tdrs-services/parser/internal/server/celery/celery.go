@@ -25,6 +25,7 @@ import (
 // taskName is the fully-qualified Celery task name that Django dispatches.
 // We use a different task name to not collide with the python parser while developing.
 const taskName = "tdpservice.scheduling.parser_task.go_parse"
+const defaultQueueName = "go-parser"
 
 const statusUpdateTimeout = 5 * time.Second
 
@@ -89,9 +90,16 @@ func (s *Server) Run(parentCtx context.Context) error {
 	if numWorkers < 1 {
 		numWorkers = 1
 	}
+	queueName := s.Config.Server.Celery.QueueName
+	if queueName == "" {
+		queueName = defaultQueueName
+	}
+
+	broker := gocelery.NewRedisBroker(redisPool)
+	broker.QueueName = queueName
 
 	celeryClient, err := gocelery.NewCeleryClient(
-		gocelery.NewRedisBroker(redisPool),
+		broker,
 		&gocelery.RedisCeleryBackend{Pool: redisPool},
 		numWorkers,
 	)
@@ -132,7 +140,7 @@ func (s *Server) Run(parentCtx context.Context) error {
 	workerCtx, stop := signal.NotifyContext(parentCtx, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	log.Printf("Starting celery worker (%d goroutines), listening for '%s' tasks on %s", numWorkers, taskName, s.Config.Server.Celery.RedisURL)
+	log.Printf("Starting celery worker (%d goroutines), listening for '%s' tasks on queue %q at %s", numWorkers, taskName, queueName, s.Config.Server.Celery.RedisURL)
 	celeryClient.StartWorkerWithContext(workerCtx)
 
 	// Block until the context is cancelled (signal received).
