@@ -172,21 +172,23 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 
 	// Step 8: Wait for everything to complete
 	if err != nil {
-		cancelRun()
-	}
-	workers.CloseInputs()
-	workers.Wait()
-
-	if err != nil {
 		var multipleHeaders *sentinel.MultipleHeadersError
 		if errors.As(err, &multipleHeaders) {
+			workers.CloseInputs()
+			workers.Wait()
 			return p.handleMultipleHeaders(ctx, cancelRun, dfCtx, router, multipleHeaders.RowNumber(), startTime)
 		}
+
+		cancelRun()
+		workers.CloseInputs()
+		workers.Wait()
 		if rollbackErr := p.abortAndRollback(ctx, cancelRun, dfCtx, router); rollbackErr != nil {
 			return nil, errors.Join(err, rollbackErr)
 		}
 		return nil, err
 	}
+	workers.CloseInputs()
+	workers.Wait()
 
 	if err := workers.Err(); err != nil {
 		if rollbackErr := p.abortAndRollback(ctx, cancelRun, dfCtx, router); rollbackErr != nil {
@@ -350,12 +352,13 @@ func (p *Pipeline) writeNoRecordsCreatedError(
 
 func (p *Pipeline) abortAndRollback(ctx context.Context, cancelRun context.CancelFunc, dfCtx DataFileContext, router *writer.Router) error {
 	cancelRun()
+	cleanupCtx := context.WithoutCancel(ctx)
 
 	var errs []error
 	if abortErr := router.Abort(); abortErr != nil {
 		errs = append(errs, fmt.Errorf("abort writers: %w", abortErr))
 	}
-	if rollbackErr := p.rollbackDatafile(ctx, dfCtx, router); rollbackErr != nil {
+	if rollbackErr := p.rollbackDatafile(cleanupCtx, dfCtx, router); rollbackErr != nil {
 		errs = append(errs, rollbackErr)
 	}
 	return errors.Join(errs...)
@@ -373,9 +376,18 @@ func (p *Pipeline) rollbackDatafile(ctx context.Context, dfCtx DataFileContext, 
 func (p *Pipeline) handleMultipleHeaders(ctx context.Context, cancelRun context.CancelFunc, dfCtx DataFileContext, router *writer.Router, rowNumber int, startTime time.Time) (*ParsingResult, error) {
 	// Multiple headers detected: stop writers, rollback all records/errors
 	// already written, then write a single PRE_CHECK error directly via sink.
-	if rollbackErr := p.abortAndRollback(ctx, cancelRun, dfCtx, router); rollbackErr != nil {
-		log.Printf("failed to rollback datafile records: %v", rollbackErr)
-		return nil, rollbackErr
+	cleanupCtx := context.WithoutCancel(ctx)
+	var errs []error
+	if abortErr := router.Abort(); abortErr != nil {
+		errs = append(errs, fmt.Errorf("abort writers: %w", abortErr))
+	}
+	cancelRun()
+	if rollbackErr := p.rollbackDatafile(cleanupCtx, dfCtx, router); rollbackErr != nil {
+		errs = append(errs, rollbackErr)
+	}
+	if err := errors.Join(errs...); err != nil {
+		log.Printf("failed to rollback datafile records: %v", err)
+		return nil, err
 	}
 
 	log.Printf("Header validation failed: Multiple headers found.")
@@ -385,7 +397,7 @@ func (p *Pipeline) handleMultipleHeaders(ctx context.Context, cancelRun context.
 		validation.ErrorTypePreCheck,
 		dfCtx.DatafileID,
 	)
-	if _, flushErr := p.sink.Flush(ctx, "parser_error", writer.ParserErrorColumns(), [][]any{headerErr}); flushErr != nil {
+	if _, flushErr := p.sink.Flush(cleanupCtx, "parser_error", writer.ParserErrorColumns(), [][]any{headerErr}); flushErr != nil {
 		log.Printf("failed to write multiple headers error: %v", flushErr)
 	}
 	return &ParsingResult{
