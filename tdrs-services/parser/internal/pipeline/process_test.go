@@ -94,8 +94,10 @@ func (s *capturingSink) Flush(_ context.Context, tableName string, _ []string, r
 	return int64(len(rows)), nil
 }
 
-func (s *capturingSink) RollbackDatafile(_ context.Context, _ int32, _ []string) error { return nil }
-func (s *capturingSink) Close() error                                                  { return nil }
+func (s *capturingSink) RollbackDatafile(_ context.Context, _ int32, _ []string, _ string) error {
+	return nil
+}
+func (s *capturingSink) Close() error { return nil }
 
 func (s *capturingSink) rowCount(tableName string) int {
 	return len(s.tables[tableName])
@@ -104,7 +106,7 @@ func (s *capturingSink) rowCount(tableName string) int {
 func (s *capturingSink) totalRecords() int {
 	total := 0
 	for name, rows := range s.tables {
-		if name != "parser_error" {
+		if name != "parser_error" && name != "shadow_parser_error" {
 			total += len(rows)
 		}
 	}
@@ -112,7 +114,7 @@ func (s *capturingSink) totalRecords() int {
 }
 
 func (s *capturingSink) errorCount() int {
-	return len(s.tables["parser_error"])
+	return len(s.tables["shadow_parser_error"]) + len(s.tables["parser_error"])
 }
 
 // --- Helper to create a test data file in a temp dir ---

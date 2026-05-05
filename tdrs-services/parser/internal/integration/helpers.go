@@ -58,10 +58,15 @@ func ParseFile(t *testing.T, ctx context.Context, pool *pgxpool.Pool, reg *confi
 	t.Logf("Processed in %s, errors: %d", result.Duration, result.ErrorCount)
 }
 
+func shadowTable(tableName string) string {
+	return config.ApplyTablePrefix(tableName, config.DefaultTablePrefix)
+}
+
 // AssertTableCount verifies the record count in a table for a given datafile.
 func AssertTableCount(t *testing.T, ctx context.Context, pool *pgxpool.Pool, tableName string, datafileID int32, expected int) {
 	t.Helper()
 
+	tableName = shadowTable(tableName)
 	query := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE datafile_id = $1", tableName)
 	var count int
 	err := pool.QueryRow(ctx, query, datafileID).Scan(&count)
@@ -79,6 +84,7 @@ func AssertTableCount(t *testing.T, ctx context.Context, pool *pgxpool.Pool, tab
 func QueryRecord(t *testing.T, ctx context.Context, pool *pgxpool.Pool, tableName string, datafileID int32, offset int) map[string]any {
 	t.Helper()
 
+	tableName = shadowTable(tableName)
 	query := fmt.Sprintf(`
 		SELECT * FROM %s
 		WHERE datafile_id = $1
@@ -183,13 +189,17 @@ func CleanupDatafile(t *testing.T, ctx context.Context, pool *pgxpool.Pool, data
 	}
 
 	// Delete parser errors first (uses file_id FK)
-	_, _ = pool.Exec(ctx, "DELETE FROM parser_error WHERE file_id = $1", datafileID)
+	errorTable := config.ParserErrorTableName(config.DefaultTablePrefix)
+	_, _ = pool.Exec(ctx, fmt.Sprintf("DELETE FROM %s WHERE file_id = $1", errorTable), datafileID)
 
 	// Delete from all record tables (uses datafile_id FK)
 	for _, table := range tables {
+		table = shadowTable(table)
 		query := fmt.Sprintf("DELETE FROM %s WHERE datafile_id = $1", table)
 		_, _ = pool.Exec(ctx, query, datafileID)
 	}
+
+	_, _ = pool.Exec(ctx, "DELETE FROM shadow_data_files_datafile WHERE id = $1", datafileID)
 
 	// Delete the datafile itself
 	_, err := pool.Exec(ctx, "DELETE FROM data_files_datafile WHERE id = $1", datafileID)

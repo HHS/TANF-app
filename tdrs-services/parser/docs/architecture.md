@@ -351,7 +351,7 @@ The Python parser writes a single batch of records through the Django ORM. Each 
         │                                     │  return total count
 ```
 
-Each record type gets its own `TableWriter` goroutine. An additional writer handles `parser_error` rows with a higher flush threshold (errors are typically more numerous than records).
+Each record type gets its own `TableWriter` goroutine. An additional writer handles parser error rows with a higher flush threshold (errors are typically more numerous than records). When `database.shadow_mode` is true, database writes use the configured `database.table_prefix` (`shadow_` by default) for Go parser-owned output tables. When `database.shadow_mode` is false, the effective prefix is empty and the Go parser writes to production tables.
 
 The write layer uses a `Sink` interface, enabling two backends:
 - **DatabaseSink** -- Production path. Uses `pgx.CopyFrom` to write to PostgreSQL.

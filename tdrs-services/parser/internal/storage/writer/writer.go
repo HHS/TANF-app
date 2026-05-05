@@ -79,7 +79,9 @@ func (tw *TableWriter) run(ctx context.Context) {
 		case row, ok := <-tw.rowChan:
 			if !ok {
 				// Channel closed - flush remaining and exit
-				tw.flush(ctx)
+				if err := tw.flush(ctx); err != nil {
+					tw.setError(err)
+				}
 				return
 			}
 
@@ -94,7 +96,9 @@ func (tw *TableWriter) run(ctx context.Context) {
 			}
 
 		case <-ctx.Done():
-			tw.flush(context.Background()) // Best-effort flush
+			if err := tw.flush(context.Background()); err != nil { // Best-effort flush
+				tw.setError(err)
+			}
 			tw.drain()
 			return
 		}

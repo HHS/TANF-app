@@ -25,6 +25,8 @@ func TestDefaultConfig_NonZeroValues(t *testing.T) {
 		{"Validation.ShortCircuit", cfg.Validation.ShortCircuit},
 		{"Validation.ValidatorFiles", len(cfg.Validation.ValidatorFiles) > 0},
 		{"Database.MaxConns", cfg.Database.MaxConns > 0},
+		{"Database.ShadowMode", cfg.Database.ShadowMode},
+		{"Database.TablePrefix", cfg.Database.TablePrefix != ""},
 		{"Database.MinConns", cfg.Database.MinConns > 0},
 		{"Database.MaxConnLifetime", cfg.Database.MaxConnLifetime > 0},
 		{"Database.MaxConnIdleTime", cfg.Database.MaxConnIdleTime > 0},

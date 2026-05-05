@@ -9,6 +9,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"go-parser/internal/config"
@@ -53,6 +54,11 @@ func TestMain(m *testing.M) {
 	}
 	log.Println("Connected to database")
 
+	if err := ensureShadowTables(ctx, testPool); err != nil {
+		log.Fatalf("Failed to ensure shadow tables: %v", err)
+	}
+	log.Println("Ensured shadow parser tables")
+
 	// Load configuration using test defaults pointing at the config directory
 	cfg := config.TestConfig()
 	cfg.Global.ConfigDir = "../../config"
@@ -72,6 +78,59 @@ func TestMain(m *testing.M) {
 	code := m.Run()
 
 	os.Exit(code)
+}
+
+func ensureShadowTables(ctx context.Context, pool *pgxpool.Pool) error {
+	for _, canonical := range parserOwnedTables() {
+		shadow := config.ApplyTablePrefix(canonical, config.DefaultTablePrefix)
+		query := fmt.Sprintf(
+			"CREATE TABLE IF NOT EXISTS %s (LIKE %s INCLUDING ALL)",
+			pgxIdentifier(shadow),
+			pgxIdentifier(canonical),
+		)
+		if _, err := pool.Exec(ctx, query); err != nil {
+			return fmt.Errorf("creating %s from %s: %w", shadow, canonical, err)
+		}
+	}
+	return nil
+}
+
+func parserOwnedTables() []string {
+	return []string{
+		"data_files_datafile",
+		"parser_error",
+		"parsers_datafilesummary",
+		"search_indexes_reparsemeta",
+		"search_indexes_ssp_m1",
+		"search_indexes_ssp_m2",
+		"search_indexes_ssp_m3",
+		"search_indexes_ssp_m4",
+		"search_indexes_ssp_m5",
+		"search_indexes_ssp_m6",
+		"search_indexes_ssp_m7",
+		"search_indexes_tanf_t1",
+		"search_indexes_tanf_t2",
+		"search_indexes_tanf_t3",
+		"search_indexes_tanf_t4",
+		"search_indexes_tanf_t5",
+		"search_indexes_tanf_t6",
+		"search_indexes_tanf_t7",
+		"search_indexes_tribal_tanf_t1",
+		"search_indexes_tribal_tanf_t2",
+		"search_indexes_tribal_tanf_t3",
+		"search_indexes_tribal_tanf_t4",
+		"search_indexes_tribal_tanf_t5",
+		"search_indexes_tribal_tanf_t6",
+		"search_indexes_tribal_tanf_t7",
+		"search_indexes_programaudit_t1",
+		"search_indexes_programaudit_t2",
+		"search_indexes_programaudit_t3",
+		"search_indexes_tanf_exiter1",
+	}
+}
+
+func pgxIdentifier(name string) string {
+	return pgx.Identifier{name}.Sanitize()
 }
 
 // sectionName maps a section number to the DataFile section name.

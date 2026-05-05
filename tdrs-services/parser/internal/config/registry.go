@@ -29,6 +29,9 @@ type Registry struct {
 
 	// configDir is the root configuration directory
 	configDir string
+
+	// tablePrefix is applied only to Go parser-owned output tables.
+	tablePrefix string
 }
 
 // NewRegistry resolves schema and filespec glob patterns from the Config,
@@ -48,10 +51,11 @@ func NewRegistry(cfg *Config) (*Registry, error) {
 	}
 
 	r := &Registry{
-		fileSpecs: make(map[string]*filespec.FileSpec),
-		schemas:   make(map[string]*schema.CompiledSchema),
-		metadata:  make(map[string]*DbSchemaMetadata),
-		configDir: configDir,
+		fileSpecs:   make(map[string]*filespec.FileSpec),
+		schemas:     make(map[string]*schema.CompiledSchema),
+		metadata:    make(map[string]*DbSchemaMetadata),
+		configDir:   configDir,
+		tablePrefix: cfg.Database.EffectiveTablePrefix(),
 	}
 
 	for _, path := range schemaFiles {
@@ -204,6 +208,11 @@ func (r *Registry) ConfigDir() string {
 	return r.configDir
 }
 
+// TablePrefix returns the configured Go parser output table prefix.
+func (r *Registry) TablePrefix() string {
+	return r.tablePrefix
+}
+
 // Stats returns statistics about loaded configuration.
 func (r *Registry) Stats() (numFileSpecs, numSchemas int) {
 	return len(r.fileSpecs), len(r.schemas)
@@ -213,9 +222,10 @@ func (r *Registry) Stats() (numFileSpecs, numSchemas int) {
 // Only schemas are populated; fileSpecs are empty.
 func NewTestRegistry(schemas map[string]*schema.CompiledSchema) *Registry {
 	return &Registry{
-		fileSpecs: make(map[string]*filespec.FileSpec),
-		schemas:   schemas,
-		metadata:  make(map[string]*DbSchemaMetadata),
+		fileSpecs:   make(map[string]*filespec.FileSpec),
+		schemas:     schemas,
+		metadata:    make(map[string]*DbSchemaMetadata),
+		tablePrefix: DefaultTablePrefix,
 	}
 }
 

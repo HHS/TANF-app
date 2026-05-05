@@ -86,6 +86,7 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 		IncludeSchemas:      p.config.IncludeSchemas,
 		IncludeRecords:      p.config.IncludeRecords,
 		IncludeErrors:       p.config.IncludeErrors,
+		TablePrefix:         p.config.TablePrefix,
 	})
 	router.Start(ctx)
 
@@ -243,7 +244,7 @@ func (p *Pipeline) handleMultipleHeaders(ctx context.Context, dfCtx DataFileCont
 	if stopErr := router.Stop(); stopErr != nil {
 		log.Printf("failed to stop router: %v", stopErr)
 	}
-	if rollbackErr := p.sink.RollbackDatafile(ctx, dfCtx.DatafileID, router.TableNames()); rollbackErr != nil {
+	if rollbackErr := p.sink.RollbackDatafile(ctx, dfCtx.DatafileID, router.TableNames(), router.ErrorTableName()); rollbackErr != nil {
 		log.Printf("failed to rollback datafile records: %v", rollbackErr)
 	}
 
@@ -253,7 +254,7 @@ func (p *Pipeline) handleMultipleHeaders(ctx context.Context, dfCtx DataFileCont
 		validation.ErrorTypePreCheck,
 		dfCtx.DatafileID,
 	)
-	if _, flushErr := p.sink.Flush(ctx, "parser_error", writer.ParserErrorColumns(), [][]any{headerErr}); flushErr != nil {
+	if _, flushErr := p.sink.Flush(ctx, router.ErrorTableName(), writer.ParserErrorColumns(), [][]any{headerErr}); flushErr != nil {
 		log.Printf("failed to write multiple headers error: %v", flushErr)
 	}
 	return &ParsingResult{

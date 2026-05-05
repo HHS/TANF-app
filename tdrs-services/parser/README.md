@@ -86,6 +86,8 @@ The config file supports `${VAR}` interpolation. Common variables:
 | Variable             | Used In                   | Purpose                         |
 | -------------------- | ------------------------- | ------------------------------- |
 | `DATABASE_URL`       | `database.url`            | PostgreSQL connection string    |
+| `GO_PARSER_SHADOW_MODE` | `database.shadow_mode` | `true` writes to shadow tables; `false` writes to production tables |
+| `DATABASE_TABLE_PREFIX` | `database.table_prefix` | Prefix for Go parser-owned output tables (default `shadow_`) |
 | `REDIS_URL`          | `server.celery.redis_url` | Redis broker for Celery mode    |
 | `S3_BUCKET`          | `storage.s3.bucket`       | S3 bucket for file storage      |
 | `S3_ENDPOINT`        | `storage.s3.endpoint`     | Custom S3 endpoint (LocalStack) |
@@ -295,7 +297,7 @@ make test-integration
 
 ## SQLC (Database Code Generation)
 
-The Go parser uses [SQLC](https://sqlc.dev) to generate type-safe Go code from SQL. The schema in `schema.sql` mirrors the Django model definitions.
+The Go parser uses [SQLC](https://sqlc.dev) to generate type-safe Go code from SQL. The schema in `schema.sql` mirrors the Django model definitions, with Go-owned output tables prefixed as `shadow_*` so Python/Django parser output remains isolated.
 
 ```sh
 # Regenerate Go code from schema.sql and query.sql
@@ -326,7 +328,7 @@ task parser:validate-config
 task parser:test-all-coverage
 ```
 
-For integration tests in CI, CircleCI reuses the existing backend docker-compose stack, including PostgreSQL and the Django migration flow, before running the Go parser integration suite with `DATABASE_URL` pointed at that migrated test database.
+For integration tests in CI, CircleCI reuses the existing backend docker-compose stack, including PostgreSQL and the Django migration flow, before running the Go parser integration suite with `DATABASE_URL` pointed at that migrated test database. By default, Go parser records, parser errors, datafile metadata, and summaries are written to `shadow_*` tables in that same database. Set `GO_PARSER_SHADOW_MODE=false` to target production tables instead.
 
 ---
 
