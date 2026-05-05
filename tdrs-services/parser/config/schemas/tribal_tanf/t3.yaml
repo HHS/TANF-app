@@ -98,7 +98,7 @@ record_validators:
       condition_min: 1
       condition_max: 1
       target_field: CITIZENSHIP_STATUS
-      values: [1, 2, 3]
+      values: [1, 2]
   # CITIZENSHIP_STATUS when FAMILY_AFFILIATION is 2
   - id: ifthenalso_range_to_values
     params:
@@ -106,7 +106,7 @@ record_validators:
       condition_min: 2
       condition_max: 2
       target_field: CITIZENSHIP_STATUS
-      values: [1, 2, 3, 9]
+      values: [1, 2, 9]
 
 # Fields shared across all segments (included in every output row)
 shared:
@@ -321,7 +321,7 @@ segments:
         field_validators:
           - id: in_values
             params:
-              values: [1, 2, 3, 9]
+              values: [1, 2, 9]
 
       - name: UNEARNED_SSI
         friendly_name: Amount of Unearned Income SSI
@@ -532,7 +532,7 @@ segments:
         field_validators:
           - id: in_values
             params:
-              values: [1, 2, 3, 9]
+              values: [1, 2, 9]
 
       - name: UNEARNED_SSI
         friendly_name: Amount of Unearned Income SSI

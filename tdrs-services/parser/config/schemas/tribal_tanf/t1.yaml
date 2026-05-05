@@ -54,6 +54,11 @@ record_validators:
   - id: amount_requires_value_in
     params:
       amount_field: SANC_REDUCTION_AMT
+      required_field: FAMILY_SANC_ADULT
+      values: [1, 2]
+  - id: amount_requires_value_in
+    params:
+      amount_field: SANC_REDUCTION_AMT
       required_field: SANC_TEEN_PARENT
       values: [1, 2]
   - id: amount_requires_value_in
@@ -200,7 +205,10 @@ segments:
         type: integer
         required: true
         field_validators:
-          - id: positive_value
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILY_TYPE
         friendly_name: Type of Family for Work Participation
@@ -222,9 +230,10 @@ segments:
         type: integer
         required: true
         field_validators:
-          - id: in_values
+          - id: in_range_int
             params:
-              values: [1, 2]
+              min: 1
+              max: 3
 
       - name: RECEIVES_MED_ASSISTANCE
         friendly_name: Receives Medical Assistance
@@ -258,7 +267,10 @@ segments:
         type: integer
         required: true
         field_validators:
-          - id: not_negative
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: RECEIVES_SUB_CC
         friendly_name: Receives Subsidized Child Care
@@ -280,7 +292,10 @@ segments:
         type: integer
         required: true
         field_validators:
-          - id: not_negative
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: CHILD_SUPPORT_AMT
         friendly_name: Amount of Child Support
@@ -290,7 +305,10 @@ segments:
         type: integer
         required: true
         field_validators:
-          - id: not_negative
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: FAMILY_CASH_RESOURCES
         friendly_name: Amount of the Family's Cash Resources
@@ -300,7 +318,10 @@ segments:
         type: integer
         required: true
         field_validators:
-          - id: not_negative
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: CASH_AMOUNT
         friendly_name: Cash
@@ -310,7 +331,10 @@ segments:
         type: integer
         required: true
         field_validators:
-          - id: not_negative
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: NBR_MONTHS
         friendly_name: Number of Months
@@ -320,7 +344,10 @@ segments:
         type: integer
         required: true
         field_validators:
-          - id: not_negative
+          - id: in_range_int
+            params:
+              min: 0
+              max: 999
 
       - name: CC_AMOUNT
         friendly_name: TANF Child Care
@@ -330,7 +357,10 @@ segments:
         type: integer
         required: true
         field_validators:
-          - id: not_negative
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: CHILDREN_COVERED
         friendly_name: TANF Child Care Number of Children Covered
@@ -340,7 +370,10 @@ segments:
         type: integer
         required: true
         field_validators:
-          - id: not_negative
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
 
       - name: CC_NBR_MONTHS
         friendly_name: TANF Child Care Number of Months
@@ -350,7 +383,10 @@ segments:
         type: integer
         required: true
         field_validators:
-          - id: not_negative
+          - id: in_range_int
+            params:
+              min: 0
+              max: 999
 
       - name: TRANSP_AMOUNT
         friendly_name: Transportation
@@ -360,7 +396,10 @@ segments:
         type: integer
         required: true
         field_validators:
-          - id: not_negative
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: TRANSP_NBR_MONTHS
         friendly_name: Transportation Number of Months
@@ -370,7 +409,10 @@ segments:
         type: integer
         required: true
         field_validators:
-          - id: not_negative
+          - id: in_range_int
+            params:
+              min: 0
+              max: 999
 
       - name: TRANSITION_SERVICES_AMOUNT
         friendly_name: Transitional Services
@@ -380,7 +422,10 @@ segments:
         type: integer
         required: false
         field_validators:
-          - id: not_negative
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: TRANSITION_NBR_MONTHS
         friendly_name: Transitional Services Number of Months
@@ -390,7 +435,10 @@ segments:
         type: integer
         required: false
         field_validators:
-          - id: not_negative
+          - id: in_range_int
+            params:
+              min: 0
+              max: 999
 
       - name: OTHER_AMOUNT
         friendly_name: Other
@@ -400,7 +448,10 @@ segments:
         type: integer
         required: false
         field_validators:
-          - id: not_negative
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: OTHER_NBR_MONTHS
         friendly_name: Other Number of Months
@@ -410,7 +461,10 @@ segments:
         type: integer
         required: false
         field_validators:
-          - id: not_negative
+          - id: in_range_int
+            params:
+              min: 0
+              max: 999
 
       - name: SANC_REDUCTION_AMT
         friendly_name: Total Dollar Amount of Reductions due to Sanctions
@@ -420,7 +474,10 @@ segments:
         type: integer
         required: true
         field_validators:
-          - id: not_negative
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: WORK_REQ_SANCTION
         friendly_name: Work Requirements Sanction
@@ -502,7 +559,10 @@ segments:
         type: integer
         required: true
         field_validators:
-          - id: not_negative
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: OTHER_TOTAL_REDUCTIONS
         friendly_name: Total Dollar Amount of Reductions due to Other Reasons
@@ -512,7 +572,10 @@ segments:
         type: integer
         required: true
         field_validators:
-          - id: not_negative
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: FAMILY_CAP
         friendly_name: Family Cap
@@ -558,11 +621,10 @@ segments:
         type: string
         required: false
         field_validators:
-          - id: in_values
+          - id: in_range_int
             params:
-              values: ['9', '0', ' ']
-          - id: is_alphanumeric_or_space
-            expr: "isAlphaNumeric(string(Value)) or Value == ' '"
+              min: 0
+              max: 9
 
       - name: FAMILY_EXEMPT_TIME_LIMITS
         friendly_name: Exempt from Tribal Time-Limit Provisions
@@ -572,9 +634,10 @@ segments:
         type: integer
         required: true
         field_validators:
-          - id: in_values
+          - id: in_range_int
             params:
-              values: [1, 2, 3, 4, 6, 7, 8, 9]
+              min: 0
+              max: 9
 
       - name: FAMILY_NEW_CHILD
         friendly_name: A New Child-Only Family

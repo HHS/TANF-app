@@ -16,6 +16,10 @@ record_validators:
   - id: record_length_min
     params:
       min: 379
+  - id: rpt_month_year_matches_header_year_quarter
+  - id: calendar_quarter_is_valid
+    error_type: RECORD_PRE_CHECK
+
   # Sum validators
   - id: sum_equals
     params:
@@ -47,6 +51,9 @@ shared:
     end: 7
     type: integer
     required: true
+    field_validators:
+      - id: year_after_2019
+      - id: calendar_quarter_is_valid
 
 # Each segment produces one output row (combined with shared fields)
 # T6 has 3 segments: Month A, Month B, Month C
@@ -126,7 +133,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99999999
 
       - name: NUM_2_PARENTS
@@ -333,7 +340,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99999999
 
       - name: NUM_2_PARENTS
@@ -540,7 +547,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99999999
 
       - name: NUM_2_PARENTS

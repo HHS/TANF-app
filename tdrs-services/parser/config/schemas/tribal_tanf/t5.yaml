@@ -123,6 +123,8 @@ shared:
     end: 8
     type: integer
     required: true
+    field_validators:
+      - id: year_after_1998
 
   - name: CASE_NUMBER
     friendly_name: Case Number--TANF
@@ -143,9 +145,10 @@ segments:
         type: integer
         required: true
         field_validators:
-          - id: in_values
+          - id: in_range_int
             params:
-              values: [1, 2, 3, 5]
+              min: 1
+              max: 5
 
       - name: DATE_OF_BIRTH
         friendly_name: Date of Birth
@@ -269,9 +272,10 @@ segments:
         type: integer
         required: false
         field_validators:
-          - id: in_values
+          - id: in_range_int
             params:
-              values: [1, 2]
+              min: 0
+              max: 2
 
       - name: REC_AID_TOTALLY_DISABLED
         friendly_name: Received Aid Totally Disabled
@@ -307,9 +311,10 @@ segments:
         type: integer
         required: false
         field_validators:
-          - id: in_values
+          - id: in_range_int
             params:
-              values: [1, 2]
+              min: 0
+              max: 2
 
       - name: MARITAL_STATUS
         friendly_name: Marital Status
@@ -361,7 +366,7 @@ segments:
           - id: in_range_int
             params:
               min: 0
-              max: 9
+              max: 2
 
       - name: EDUCATION_LEVEL
         friendly_name: Educational Level
@@ -383,7 +388,7 @@ segments:
         field_validators:
           - id: in_values
             params:
-              values: [1, 2, 3, 9]
+              values: [1, 2, 9]
 
       - name: COUNTABLE_MONTH_FED_TIME
         friendly_name: Number of Months Countable Toward Tribal Time Limit

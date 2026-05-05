@@ -15,6 +15,9 @@ record_validators:
   - id: record_length_min
     params:
       min: 247
+  - id: rpt_month_year_matches_header_year_quarter
+  - id: calendar_quarter_is_valid
+    error_type: RECORD_PRE_CHECK
 
 # Fields shared across all segments (included in every output row)
 shared:
@@ -33,6 +36,9 @@ shared:
     end: 7
     type: integer
     required: true
+    field_validators:
+      - id: year_after_2019
+      - id: calendar_quarter_is_valid
 
 # Each segment produces one output row (combined with shared fields)
 # T7 has 30 segments: 10 strata x 3 months (A, B, C)
@@ -72,7 +78,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -85,7 +91,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 1, Month B
   - fields:
@@ -122,7 +128,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -135,7 +141,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 1, Month C
   - fields:
@@ -172,7 +178,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -185,7 +191,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 2, Month A
   - fields:
@@ -222,7 +228,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -235,7 +241,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 2, Month B
   - fields:
@@ -272,7 +278,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -285,7 +291,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 2, Month C
   - fields:
@@ -322,7 +328,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -335,7 +341,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 3, Month A
   - fields:
@@ -372,7 +378,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -385,7 +391,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 3, Month B
   - fields:
@@ -422,7 +428,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -435,7 +441,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 3, Month C
   - fields:
@@ -472,7 +478,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -485,7 +491,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 4, Month A
   - fields:
@@ -522,7 +528,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -535,7 +541,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 4, Month B
   - fields:
@@ -572,7 +578,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -585,7 +591,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 4, Month C
   - fields:
@@ -622,7 +628,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -635,7 +641,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 5, Month A
   - fields:
@@ -672,7 +678,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -685,7 +691,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 5, Month B
   - fields:
@@ -722,7 +728,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -735,7 +741,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 5, Month C
   - fields:
@@ -772,7 +778,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -785,7 +791,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 6, Month A
   - fields:
@@ -822,7 +828,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -835,7 +841,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 6, Month B
   - fields:
@@ -872,7 +878,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -885,7 +891,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 6, Month C
   - fields:
@@ -922,7 +928,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -935,7 +941,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 7, Month A
   - fields:
@@ -972,7 +978,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -985,7 +991,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 7, Month B
   - fields:
@@ -1022,7 +1028,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -1035,7 +1041,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 7, Month C
   - fields:
@@ -1072,7 +1078,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -1085,7 +1091,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 8, Month A
   - fields:
@@ -1122,7 +1128,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -1135,7 +1141,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 8, Month B
   - fields:
@@ -1172,7 +1178,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -1185,7 +1191,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 8, Month C
   - fields:
@@ -1222,7 +1228,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -1235,7 +1241,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 9, Month A
   - fields:
@@ -1272,7 +1278,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -1285,7 +1291,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 9, Month B
   - fields:
@@ -1322,7 +1328,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -1335,7 +1341,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 9, Month C
   - fields:
@@ -1372,7 +1378,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -1385,7 +1391,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 10, Month A
   - fields:
@@ -1422,7 +1428,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -1435,7 +1441,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 10, Month B
   - fields:
@@ -1472,7 +1478,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -1485,7 +1491,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999
   # Stratum 10, Month C
   - fields:
@@ -1522,7 +1528,7 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 99
 
       - name: FAMILIES_MONTH
@@ -1535,5 +1541,5 @@ segments:
         field_validators:
           - id: in_range_int
             params:
-              min: 1
+              min: 0
               max: 9999999

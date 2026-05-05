@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"slices"
 	"strconv"
+	"strings"
 
 	"go-parser/internal/config/schema"
 	"go-parser/internal/decoder"
@@ -172,11 +173,12 @@ func (pr *ParsedRecord) GetInt(fieldName string) int {
 	case int:
 		return val
 	case string:
-		if val == "" {
+		trimmed := strings.TrimSpace(val)
+		if trimmed == "" {
 			return 0
 		}
 		// Parse string as int, return 0 on failure
-		i, err := strconv.Atoi(val)
+		i, err := strconv.Atoi(trimmed)
 		if err != nil {
 			return 0
 		}

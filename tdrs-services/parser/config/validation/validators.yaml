@@ -105,7 +105,7 @@ field_validators:
 
   # Education level validator - 0-16 or 98-99
   - id: education_level
-    expr: "(int(Value) >= 0 and int(Value) <= 16) or (int(Value) >= 98 and int(Value) <= 99)"
+    expr: "(int(trim(string(Value))) >= 0 and int(trim(string(Value))) <= 16) or (int(trim(string(Value))) >= 98 and int(trim(string(Value))) <= 99)"
     message: "{{.RecordType}} Item {{.Item}}: must be 0-16 or 98-99, got {{.Value}}"
 
   # Work eligible indicator validator - 0-9 or 11, 12
@@ -128,6 +128,11 @@ field_validators:
     expr: "quarter(Value) >= 1 and quarter(Value) <= 4"
     message: "{{.RecordType}} Item {{.Item}}: quarter must be 1-4"
 
+  # Calendar quarter validator - checks YYYYQ quarter digit is 1-4
+  - id: calendar_quarter_is_valid
+    expr: "len(string(Value)) == 5 and int(string(Value)[4:5]) >= 1 and int(string(Value)[4:5]) <= 4"
+    message: "{{.RecordType}} Item {{.Item}}: quarter must be 1-4"
+
   # Closure reason validator - 01-19 or 99
   - id: closure_reason
     expr: "(int(Value) >= 1 and int(Value) <= 19) or int(Value) == 99"
@@ -136,7 +141,7 @@ field_validators:
   # Education level validator (no zero) - 1-16 or 98-99
   # Used by M2, M3 where 0 is not a valid education level
   - id: education_level_no_zero
-    expr: "(int(Value) >= 1 and int(Value) <= 16) or (int(Value) >= 98 and int(Value) <= 99)"
+    expr: "(int(trim(string(Value))) >= 1 and int(trim(string(Value))) <= 16) or (int(trim(string(Value))) >= 98 and int(trim(string(Value))) <= 99)"
     message: "{{.RecordType}} Item {{.Item}}: must be 1-16 or 98-99, got {{.Value}}"
 
   # FRA SSN validator - matches the Python FRA validator set.
@@ -147,7 +152,7 @@ field_validators:
 
   # Tribal closure reason validator - 01-18 or 99.
   - id: tribal_closure_reason
-    expr: "(int(Value) >= 1 and int(Value) <= 18) or int(Value) == 99"
+    expr: "(int(trim(string(Value))) >= 1 and int(trim(string(Value))) <= 18) or int(trim(string(Value))) == 99"
     message: "{{.RecordType}} Item {{.Item}}: must be 01-18 or 99, got {{.Value}}"
 
   # =============================================================================
@@ -231,6 +236,18 @@ record_validators:
       year_int > 1900 && month_int > 0 && month_int < 13
     error_type: RECORD_PRE_CHECK
     fields: [RPT_MONTH_YEAR]
+
+  - id: calendar_quarter_is_valid
+    expr: |
+      let calendar_quarter = GetString('CALENDAR_QUARTER');
+      len(calendar_quarter) == 5
+        and isNumeric(calendar_quarter)
+        and int(calendar_quarter[0:4]) >= 2020
+        and int(calendar_quarter[4:5]) > 0
+        and int(calendar_quarter[4:5]) < 5
+    error_type: RECORD_PRE_CHECK
+    fields: [CALENDAR_QUARTER]
+    message: "{{.RecordType}}: {{.Values.CALENDAR_QUARTER}} is invalid. Calendar Quarter must be a numeric representing the Calendar Year and Quarter formatted as YYYYQ"
 
   - id: rpt_month_year_matches_header_year_quarter
     expr: >

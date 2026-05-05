@@ -35,6 +35,8 @@ shared:
     end: 8
     type: integer
     required: true
+    field_validators:
+      - id: year_after_1998
 
   - name: CASE_NUMBER
     friendly_name: Case Number--TANF
@@ -82,7 +84,10 @@ segments:
         type: string
         required: true
         field_validators:
-          - id: is_numeric
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99999
 
       - name: DISPOSITION
         friendly_name: Disposition
@@ -114,9 +119,10 @@ segments:
         type: integer
         required: true
         field_validators:
-          - id: in_values
+          - id: in_range_int
             params:
-              values: [1, 2]
+              min: 1
+              max: 3
 
       - name: REC_MED_ASSIST
         friendly_name: Received Medical Assistance
