@@ -1,6 +1,7 @@
 package validation
 
 import (
+	"strings"
 	"text/template"
 
 	"go-parser/internal/parser"
@@ -128,27 +129,24 @@ func (o *ValidationOrchestrator) ValidateHeader(headerRec *parser.ParsedRecord, 
 		value := headerRec.Get(fieldName)
 		required := headerRec.IsFieldRequired(fieldName)
 
-		if value == nil {
-			if required {
-				result.FieldErrors = append(result.FieldErrors, &ValidationResult{
-					Valid:       false,
-					ValidatorID: "field_required",
-					ErrorType:   ErrorTypeFieldValue,
-					FieldName:   fieldName,
-					Validator: &CompiledValidator{
-						ID:         "field_required",
-						Scope:      ScopeField,
-						ErrorType:  ErrorTypeFieldValue,
-						ResultMode: "single",
-						Message:    fieldRequiredMessage,
-					},
-				})
-			}
+		if !required {
 			continue
 		}
 
-		// Preserve Python parser parity: field validators only run for required fields.
-		if !required {
+		if fieldValueIsEmpty(value) {
+			result.FieldErrors = append(result.FieldErrors, &ValidationResult{
+				Valid:       false,
+				ValidatorID: "field_required",
+				ErrorType:   ErrorTypeFieldValue,
+				FieldName:   fieldName,
+				Validator: &CompiledValidator{
+					ID:         "field_required",
+					Scope:      ScopeField,
+					ErrorType:  ErrorTypeFieldValue,
+					ResultMode: "single",
+					Message:    fieldRequiredMessage,
+				},
+			})
 			continue
 		}
 
@@ -215,30 +213,24 @@ func (o *ValidationOrchestrator) validateRecord(result *RecordValidationResult, 
 		value := rec.Get(fieldName)
 		required := rec.IsFieldRequired(fieldName)
 
-		// Handle nil values
-		if value == nil {
-			if required {
-				// Required field is nil - generate error
-				result.FieldErrors = append(result.FieldErrors, &ValidationResult{
-					Valid:       false,
-					ValidatorID: "field_required",
-					ErrorType:   ErrorTypeFieldValue,
-					FieldName:   fieldName,
-					Validator: &CompiledValidator{
-						ID:         "field_required",
-						Scope:      ScopeField,
-						ErrorType:  ErrorTypeFieldValue,
-						ResultMode: "single",
-						Message:    fieldRequiredMessage,
-					},
-				})
-			}
-			// Skip validators for nil fields (both required and optional)
+		if !required {
 			continue
 		}
 
-		// Preserve Python parser parity: field validators only run for required fields.
-		if !required {
+		if fieldValueIsEmpty(value) {
+			result.FieldErrors = append(result.FieldErrors, &ValidationResult{
+				Valid:       false,
+				ValidatorID: "field_required",
+				ErrorType:   ErrorTypeFieldValue,
+				FieldName:   fieldName,
+				Validator: &CompiledValidator{
+					ID:         "field_required",
+					Scope:      ScopeField,
+					ErrorType:  ErrorTypeFieldValue,
+					ResultMode: "single",
+					Message:    fieldRequiredMessage,
+				},
+			})
 			continue
 		}
 
@@ -273,4 +265,14 @@ func validationSchemaKey(rec *parser.ParsedRecord) string {
 		return rec.Schema.Path
 	}
 	return rec.GetRecordType()
+}
+
+func fieldValueIsEmpty(value any) bool {
+	if value == nil {
+		return true
+	}
+	if s, ok := value.(string); ok {
+		return strings.TrimSpace(s) == ""
+	}
+	return false
 }

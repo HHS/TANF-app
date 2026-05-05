@@ -155,6 +155,28 @@ func TestOrchestratorOptionalFieldWithValueSkipsValidators(t *testing.T) {
 	}
 }
 
+func TestOrchestratorBlankOptionalFieldSkipsValidators(t *testing.T) {
+	registry := newValidatorRegistry()
+	registry.exprOpts = RegisterFunctions()
+
+	fieldExpr, _ := registry.getOrCompileExpr(ScopeField, "isNotEmpty(Value)", "single")
+	registry.field["T1"] = map[string][]*CompiledValidator{
+		"AMOUNT": {{ID: "not_empty", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
+	}
+
+	orchestrator := NewValidationOrchestrator(registry, true)
+
+	optionalSchema := testutil.NewTestSchema("T1", "AMOUNT")
+	rec := testutil.NewTestRecord(optionalSchema, 1, map[string]any{"AMOUNT": "   "})
+	group := testutil.NewTestGroup(rec)
+
+	result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
+
+	if len(result.RecordResults[0].FieldErrors) != 0 {
+		t.Errorf("expected 0 field errors for blank optional field, got %d", len(result.RecordResults[0].FieldErrors))
+	}
+}
+
 // TestOrchestratorShortCircuitSkipsFieldValidation tests that with shortCircuit=true,
 // field validators are skipped when a precheck validator fails.
 func TestOrchestratorShortCircuitSkipsFieldValidation(t *testing.T) {

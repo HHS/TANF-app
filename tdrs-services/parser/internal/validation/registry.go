@@ -1,6 +1,7 @@
 package validation
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"text/template"
@@ -143,7 +144,6 @@ func applyDefaultErrorType(vdef *validation.ValidatorDef, scope string) {
 func (r *ValidatorRegistry) loadSchemaValidators(path string, cs *schema.CompiledSchema) error {
 	schemaKey := path
 
-	// Initialize field map for this schema
 	if r.field[schemaKey] == nil {
 		r.field[schemaKey] = make(map[string][]*CompiledValidator)
 	}
@@ -164,7 +164,10 @@ func (r *ValidatorRegistry) loadSchemaValidators(path string, cs *schema.Compile
 			if err != nil {
 				return fmt.Errorf("schema %s field %s validator %s: %w", path, field.Name, vdef.ID, err)
 			}
-			r.field[schemaKey][field.Name] = append(r.field[schemaKey][field.Name], cv)
+			r.field[schemaKey][field.Name] = appendUniqueValidator(
+				r.field[schemaKey][field.Name],
+				cv,
+			)
 		}
 	}
 
@@ -176,7 +179,10 @@ func (r *ValidatorRegistry) loadSchemaValidators(path string, cs *schema.Compile
 				if err != nil {
 					return fmt.Errorf("schema %s field %s validator %s: %w", path, field.Name, vdef.ID, err)
 				}
-				r.field[schemaKey][field.Name] = append(r.field[schemaKey][field.Name], cv)
+				r.field[schemaKey][field.Name] = appendUniqueValidator(
+					r.field[schemaKey][field.Name],
+					cv,
+				)
 			}
 		}
 	}
@@ -465,4 +471,66 @@ func (r *ValidatorRegistry) Stats() RegistryStats {
 func (r *ValidatorRegistry) ClearCompileTimeData() {
 	r.expressions = nil
 	r.predefined = nil
+}
+
+func appendUniqueValidator(validators []*CompiledValidator, candidate *CompiledValidator) []*CompiledValidator {
+	// Ensure that segment fields don't duplicate the same validator. This also queues us up for unique validators
+	// per segment if we ever need to do so.
+	candidateKey := validatorSemanticKey(candidate)
+	for _, existing := range validators {
+		if validatorSemanticKey(existing) == candidateKey {
+			return validators
+		}
+	}
+	return append(validators, candidate)
+}
+
+func validatorSemanticKey(cv *CompiledValidator) string {
+	if cv == nil {
+		return ""
+	}
+	fields := append([]string(nil), cv.Fields...)
+
+	key := struct {
+		ID          string         `json:"id"`
+		Scope       string         `json:"scope"`
+		ErrorType   string         `json:"error_type"`
+		ResultMode  string         `json:"result_mode"`
+		Expr        string         `json:"expr"`
+		Message     string         `json:"message"`
+		Fields      []string       `json:"fields"`
+		Params      map[string]any `json:"params"`
+		Description string         `json:"description"`
+	}{
+		ID:          cv.ID,
+		Scope:       cv.Scope,
+		ErrorType:   cv.ErrorType,
+		ResultMode:  cv.ResultMode,
+		Expr:        compiledExprString(cv.Expr),
+		Message:     templateString(cv.Message),
+		Fields:      fields,
+		Params:      cv.Params,
+		Description: cv.Description,
+	}
+
+	encoded, err := json.Marshal(key)
+	if err != nil {
+		return fmt.Sprintf("%s|%s|%s|%s|%s|%s|%v|%v|%s",
+			key.ID, key.Scope, key.ErrorType, key.ResultMode, key.Expr, key.Message, key.Fields, key.Params, key.Description)
+	}
+	return string(encoded)
+}
+
+func compiledExprString(expr *CompiledExpr) string {
+	if expr == nil {
+		return ""
+	}
+	return expr.Expr
+}
+
+func templateString(tmpl *template.Template) string {
+	if tmpl == nil || tmpl.Tree == nil || tmpl.Tree.Root == nil {
+		return ""
+	}
+	return tmpl.Tree.Root.String()
 }

@@ -1808,6 +1808,95 @@ func TestRegistryGetters(t *testing.T) {
 	})
 }
 
+func TestRegistryFieldValidatorDedupe(t *testing.T) {
+	registry := newValidatorRegistry()
+	registry.exprOpts = RegisterFunctions()
+
+	cs := (&schema.SchemaDef{
+		RecordType: "T9",
+		Program:    "TAN",
+		Shared: []schema.FieldDef{
+			{
+				Name: "SHARED_CODE",
+				Type: "integer",
+				Field: []configValidation.ValidatorDef{
+					{
+						ID:      "shared_only",
+						Expr:    "Value > 0",
+						Message: "shared failed",
+					},
+				},
+			},
+		},
+		Segments: []schema.SegmentDef{
+			{
+				Fields: []schema.FieldDef{
+					{
+						Name: "CODE",
+						Type: "integer",
+						Field: []configValidation.ValidatorDef{
+							{
+								ID:      "range",
+								Expr:    "Value >= Params.min and Value <= Params.max",
+								Params:  map[string]any{"min": 0, "max": 10},
+								Message: "range failed",
+							},
+							{
+								ID:      "range",
+								Expr:    "Value >= Params.min and Value <= Params.max",
+								Params:  map[string]any{"min": 0, "max": 10},
+								Message: "range failed",
+							},
+							{
+								ID:      "range",
+								Expr:    "Value >= Params.min and Value <= Params.max",
+								Params:  map[string]any{"min": 11, "max": 20},
+								Message: "range failed",
+							},
+						},
+					},
+				},
+			},
+			{
+				Fields: []schema.FieldDef{
+					{
+						Name: "CODE",
+						Type: "integer",
+						Field: []configValidation.ValidatorDef{
+							{
+								ID:      "range",
+								Expr:    "Value >= Params.min and Value <= Params.max",
+								Params:  map[string]any{"min": 0, "max": 10},
+								Message: "range failed",
+							},
+						},
+					},
+				},
+			},
+		},
+	}).Compile()
+
+	if err := registry.loadSchemaValidators("test/t9", cs); err != nil {
+		t.Fatalf("loadSchemaValidators failed: %v", err)
+	}
+
+	codeValidators := registry.GetFieldValidators("test/t9", "CODE")
+	if len(codeValidators) != 2 {
+		t.Fatalf("CODE validators = %d, want %d", len(codeValidators), 2)
+	}
+	if codeValidators[0].ID != "range" || codeValidators[1].ID != "range" {
+		t.Fatalf("CODE validator IDs = %s, %s; want range, range", codeValidators[0].ID, codeValidators[1].ID)
+	}
+	if codeValidators[0].Params["min"] == codeValidators[1].Params["min"] {
+		t.Fatal("same validator ID with different params should remain distinct")
+	}
+
+	sharedValidators := registry.GetFieldValidators("test/t9", "SHARED_CODE")
+	if len(sharedValidators) != 1 || sharedValidators[0].ID != "shared_only" {
+		t.Fatalf("SHARED_CODE validators = %v, want one shared_only validator", sharedValidators)
+	}
+}
+
 func TestRegistryStats(t *testing.T) {
 	registry := newValidatorRegistry()
 	registry.exprOpts = RegisterFunctions()

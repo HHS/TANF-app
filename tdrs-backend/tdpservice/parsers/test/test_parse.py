@@ -1485,6 +1485,9 @@ class TestParse:
         assert TANF_T7.objects.all().count() == 18
 
         parser_errors = ParserError.objects.filter(file=tanf_section_4_file_with_errors)
+        for e in parser_errors:
+            print(e.row_number, e.error_type, e.error_message)
+        assert False
 
         assert parser_errors.count() == 7
 
