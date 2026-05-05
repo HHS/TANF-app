@@ -335,18 +335,12 @@ func (p *Pipeline) writeNoRecordsCreatedError(
 	}
 
 	noRecordsCreated := validationOrchestrator.CreateNoRecordsCreatedError()
-	var row []any
-	if headerRecord == nil {
-		row = writer.SerializeHeaderError(noRecordsCreated.Message(nil), noRecordsCreated.ErrorType, datafileID)
-	} else {
-		row = writer.SerializeError(
-			noRecordsCreated,
-			headerRecord,
-			nil,
-			datafileID,
-			nil,
-		)
-	}
+	row := writer.SerializeParserError(
+		noRecordsCreated.LineNumber,
+		noRecordsCreated.Message(nil),
+		noRecordsCreated.ErrorType,
+		datafileID,
+	)
 	if err := writeRow(row); err != nil {
 		return 0, err
 	}
@@ -422,7 +416,7 @@ func (p *Pipeline) handleHeaderValidationResult(
 	for _, vr := range allErrors {
 		msg := renderHeaderErrorMessage(vr, parseCtx.Header, valDfCtx)
 		log.Printf("  [%s] %s", vr.ErrorType, msg)
-		row := writer.SerializeHeaderError(msg, vr.ErrorType, dfCtx.DatafileID)
+		row := writer.SerializeParserError(parseCtx.Header.LineNumber, msg, vr.ErrorType, dfCtx.DatafileID)
 		if routeErr := router.RouteErrorRow(ctx, row); routeErr != nil {
 			log.Printf("failed to write header error: %v", routeErr)
 		}
@@ -454,7 +448,8 @@ func (p *Pipeline) handleHeaderValidationResult(
 func (p *Pipeline) handleHeaderParseInvalid(err error, ctx context.Context, dfCtx DataFileContext, router *writer.Router, validationOrchestrator *validation.ValidationOrchestrator, startTime time.Time) (*ParsingResult, error) {
 	// First line is not a HEADER record or other error — generate a PRE_CHECK error and stop
 	log.Printf("Header validation failed: %s.", err.Error())
-	headerErr := writer.SerializeHeaderError(
+	headerErr := writer.SerializeParserError(
+		1,
 		err.Error(),
 		validation.ErrorTypePreCheck,
 		dfCtx.DatafileID,

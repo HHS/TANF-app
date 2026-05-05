@@ -11,6 +11,11 @@ section: 4
 document: "Tribal TANF Stratum Data"
 format: positional
 
+record_validators:
+  - id: record_length_min
+    params:
+      min: 247
+
 # Fields shared across all segments (included in every output row)
 shared:
   - name: RecordType
@@ -52,6 +57,10 @@ segments:
         end: 8
         type: string
         required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -60,6 +69,11 @@ segments:
         end: 10
         type: string
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -68,7 +82,11 @@ segments:
         end: 17
         type: integer
         required: true
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 1, Month B
   - fields:
       - name: RPT_MONTH_YEAR
@@ -89,6 +107,10 @@ segments:
         end: 8
         type: string
         required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -97,6 +119,11 @@ segments:
         end: 10
         type: string
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -105,7 +132,11 @@ segments:
         end: 24
         type: integer
         required: true
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 1, Month C
   - fields:
       - name: RPT_MONTH_YEAR
@@ -126,6 +157,10 @@ segments:
         end: 8
         type: string
         required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -134,6 +169,11 @@ segments:
         end: 10
         type: string
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -142,7 +182,11 @@ segments:
         end: 31
         type: integer
         required: true
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 2, Month A
   - fields:
       - name: RPT_MONTH_YEAR
@@ -163,6 +207,10 @@ segments:
         end: 32
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -171,6 +219,11 @@ segments:
         end: 34
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -179,7 +232,11 @@ segments:
         end: 41
         type: integer
         required: false
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 2, Month B
   - fields:
       - name: RPT_MONTH_YEAR
@@ -200,6 +257,10 @@ segments:
         end: 32
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -208,6 +269,11 @@ segments:
         end: 34
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -216,7 +282,11 @@ segments:
         end: 48
         type: integer
         required: false
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 2, Month C
   - fields:
       - name: RPT_MONTH_YEAR
@@ -237,6 +307,10 @@ segments:
         end: 32
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -245,6 +319,11 @@ segments:
         end: 34
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -253,7 +332,11 @@ segments:
         end: 55
         type: integer
         required: false
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 3, Month A
   - fields:
       - name: RPT_MONTH_YEAR
@@ -274,6 +357,10 @@ segments:
         end: 56
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -282,6 +369,11 @@ segments:
         end: 58
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -290,7 +382,11 @@ segments:
         end: 65
         type: integer
         required: false
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 3, Month B
   - fields:
       - name: RPT_MONTH_YEAR
@@ -311,6 +407,10 @@ segments:
         end: 56
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -319,6 +419,11 @@ segments:
         end: 58
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -327,7 +432,11 @@ segments:
         end: 72
         type: integer
         required: false
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 3, Month C
   - fields:
       - name: RPT_MONTH_YEAR
@@ -348,6 +457,10 @@ segments:
         end: 56
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -356,6 +469,11 @@ segments:
         end: 58
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -364,7 +482,11 @@ segments:
         end: 79
         type: integer
         required: false
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 4, Month A
   - fields:
       - name: RPT_MONTH_YEAR
@@ -385,6 +507,10 @@ segments:
         end: 80
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -393,6 +519,11 @@ segments:
         end: 82
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -401,7 +532,11 @@ segments:
         end: 89
         type: integer
         required: false
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 4, Month B
   - fields:
       - name: RPT_MONTH_YEAR
@@ -422,6 +557,10 @@ segments:
         end: 80
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -430,6 +569,11 @@ segments:
         end: 82
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -438,7 +582,11 @@ segments:
         end: 96
         type: integer
         required: false
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 4, Month C
   - fields:
       - name: RPT_MONTH_YEAR
@@ -459,6 +607,10 @@ segments:
         end: 80
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -467,6 +619,11 @@ segments:
         end: 82
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -475,7 +632,11 @@ segments:
         end: 103
         type: integer
         required: false
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 5, Month A
   - fields:
       - name: RPT_MONTH_YEAR
@@ -496,6 +657,10 @@ segments:
         end: 104
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -504,6 +669,11 @@ segments:
         end: 106
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -512,7 +682,11 @@ segments:
         end: 113
         type: integer
         required: false
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 5, Month B
   - fields:
       - name: RPT_MONTH_YEAR
@@ -533,6 +707,10 @@ segments:
         end: 104
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -541,6 +719,11 @@ segments:
         end: 106
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -549,7 +732,11 @@ segments:
         end: 120
         type: integer
         required: false
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 5, Month C
   - fields:
       - name: RPT_MONTH_YEAR
@@ -570,6 +757,10 @@ segments:
         end: 104
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -578,6 +769,11 @@ segments:
         end: 106
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -586,7 +782,11 @@ segments:
         end: 127
         type: integer
         required: false
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 6, Month A
   - fields:
       - name: RPT_MONTH_YEAR
@@ -607,6 +807,10 @@ segments:
         end: 128
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -615,6 +819,11 @@ segments:
         end: 130
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -623,7 +832,11 @@ segments:
         end: 137
         type: integer
         required: false
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 6, Month B
   - fields:
       - name: RPT_MONTH_YEAR
@@ -644,6 +857,10 @@ segments:
         end: 128
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -652,6 +869,11 @@ segments:
         end: 130
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -660,7 +882,11 @@ segments:
         end: 144
         type: integer
         required: false
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 6, Month C
   - fields:
       - name: RPT_MONTH_YEAR
@@ -681,6 +907,10 @@ segments:
         end: 128
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -689,6 +919,11 @@ segments:
         end: 130
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -697,7 +932,11 @@ segments:
         end: 151
         type: integer
         required: false
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 7, Month A
   - fields:
       - name: RPT_MONTH_YEAR
@@ -718,6 +957,10 @@ segments:
         end: 152
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -726,6 +969,11 @@ segments:
         end: 154
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -734,7 +982,11 @@ segments:
         end: 161
         type: integer
         required: false
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 7, Month B
   - fields:
       - name: RPT_MONTH_YEAR
@@ -755,6 +1007,10 @@ segments:
         end: 152
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -763,6 +1019,11 @@ segments:
         end: 154
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -771,7 +1032,11 @@ segments:
         end: 168
         type: integer
         required: false
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 7, Month C
   - fields:
       - name: RPT_MONTH_YEAR
@@ -792,6 +1057,10 @@ segments:
         end: 152
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -800,6 +1069,11 @@ segments:
         end: 154
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -808,7 +1082,11 @@ segments:
         end: 175
         type: integer
         required: false
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 8, Month A
   - fields:
       - name: RPT_MONTH_YEAR
@@ -829,6 +1107,10 @@ segments:
         end: 176
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -837,6 +1119,11 @@ segments:
         end: 178
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -845,7 +1132,11 @@ segments:
         end: 185
         type: integer
         required: false
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 8, Month B
   - fields:
       - name: RPT_MONTH_YEAR
@@ -866,6 +1157,10 @@ segments:
         end: 176
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -874,6 +1169,11 @@ segments:
         end: 178
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -882,7 +1182,11 @@ segments:
         end: 192
         type: integer
         required: false
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 8, Month C
   - fields:
       - name: RPT_MONTH_YEAR
@@ -903,6 +1207,10 @@ segments:
         end: 176
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -911,6 +1219,11 @@ segments:
         end: 178
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -919,7 +1232,11 @@ segments:
         end: 199
         type: integer
         required: false
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 9, Month A
   - fields:
       - name: RPT_MONTH_YEAR
@@ -940,6 +1257,10 @@ segments:
         end: 200
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -948,6 +1269,11 @@ segments:
         end: 202
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -956,7 +1282,11 @@ segments:
         end: 209
         type: integer
         required: false
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 9, Month B
   - fields:
       - name: RPT_MONTH_YEAR
@@ -977,6 +1307,10 @@ segments:
         end: 200
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -985,6 +1319,11 @@ segments:
         end: 202
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -993,7 +1332,11 @@ segments:
         end: 216
         type: integer
         required: false
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 9, Month C
   - fields:
       - name: RPT_MONTH_YEAR
@@ -1014,6 +1357,10 @@ segments:
         end: 200
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -1022,6 +1369,11 @@ segments:
         end: 202
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -1030,7 +1382,11 @@ segments:
         end: 223
         type: integer
         required: false
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 10, Month A
   - fields:
       - name: RPT_MONTH_YEAR
@@ -1051,6 +1407,10 @@ segments:
         end: 224
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -1059,6 +1419,11 @@ segments:
         end: 226
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -1067,7 +1432,11 @@ segments:
         end: 233
         type: integer
         required: false
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 10, Month B
   - fields:
       - name: RPT_MONTH_YEAR
@@ -1088,6 +1457,10 @@ segments:
         end: 224
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -1096,6 +1469,11 @@ segments:
         end: 226
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -1104,7 +1482,11 @@ segments:
         end: 240
         type: integer
         required: false
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999
   # Stratum 10, Month C
   - fields:
       - name: RPT_MONTH_YEAR
@@ -1125,6 +1507,10 @@ segments:
         end: 224
         type: string
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: ["1", "2"]
 
       - name: STRATUM
         friendly_name: Stratum
@@ -1133,6 +1519,11 @@ segments:
         end: 226
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILIES_MONTH
         friendly_name: Number of Families
@@ -1141,3 +1532,8 @@ segments:
         end: 247
         type: integer
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 9999999

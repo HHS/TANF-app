@@ -81,6 +81,7 @@ func (o *ValidationOrchestrator) CreateNoRecordsCreatedError() *ValidationResult
 		Valid:       false,
 		ErrorType:   ErrorTypePreCheck,
 		ValidatorID: "no_records_created",
+		LineNumber:  0,
 		Validator: &CompiledValidator{
 			ID:         "no_records_created",
 			Scope:      ScopeGroup,
@@ -97,13 +98,13 @@ func (o *ValidationOrchestrator) CreateNoRecordsCreatedError() *ValidationResult
 // to expressions for cross-validation against submission metadata.
 func (o *ValidationOrchestrator) ValidateHeader(headerRec *parser.ParsedRecord, dfCtx *DataFileContext) *RecordValidationResult {
 	result := &RecordValidationResult{Record: headerRec}
-	recType := headerRec.GetRecordType()
+	schemaKey := validationSchemaKey(headerRec)
 	recordEnv := NewRecordEnv(headerRec)
 	recordEnv.DataFileContext = dfCtx
 
 	// Phase 1: Run PRE_CHECK and RECORD_PRE_CHECK validators
 	recordBlocked := false
-	for _, validator := range o.registry.GetRecordValidators(recType) {
+	for _, validator := range o.registry.GetRecordValidators(schemaKey) {
 		if validator.ErrorType != ErrorTypeRecordPreCheck && validator.ErrorType != ErrorTypePreCheck {
 			continue
 		}
@@ -123,7 +124,7 @@ func (o *ValidationOrchestrator) ValidateHeader(headerRec *parser.ParsedRecord, 
 
 	// Phase 2: Field validation
 	fieldEnv := &FieldEnv{DataFileContext: dfCtx}
-	for fieldName, validators := range o.registry.GetFieldValidatorsForRecord(recType) {
+	for fieldName, validators := range o.registry.GetFieldValidatorsForRecord(schemaKey) {
 		value := headerRec.Get(fieldName)
 		required := headerRec.IsFieldRequired(fieldName)
 
@@ -164,7 +165,7 @@ func (o *ValidationOrchestrator) ValidateHeader(headerRec *parser.ParsedRecord, 
 	}
 
 	// Phase 3: Non-precheck record validators (consistency checks)
-	for _, cv := range o.registry.GetRecordValidators(recType) {
+	for _, cv := range o.registry.GetRecordValidators(schemaKey) {
 		if cv.ErrorType == ErrorTypeRecordPreCheck || cv.ErrorType == ErrorTypePreCheck {
 			continue
 		}
@@ -182,12 +183,12 @@ func (o *ValidationOrchestrator) ValidateHeader(headerRec *parser.ParsedRecord, 
 // validateRecord validates a single record, updating the provided result.
 // Called internally by ValidateGroup.
 func (o *ValidationOrchestrator) validateRecord(result *RecordValidationResult, rec *parser.ParsedRecord, groupBlocked bool, dfCtx *DataFileContext) {
-	recType := rec.GetRecordType()
+	schemaKey := validationSchemaKey(rec)
 	recordEnv := NewRecordEnv(rec)
 	recordEnv.DataFileContext = dfCtx
 
 	// Phase 1: Run RECORD_PRE_CHECK and PRE_CHECK validators (always runs, can block)
-	for _, cv := range o.registry.GetRecordValidators(recType) {
+	for _, cv := range o.registry.GetRecordValidators(schemaKey) {
 		// Skip non-precheck validators in this phase
 		if cv.ErrorType == ErrorTypeRecordPreCheck || cv.ErrorType == ErrorTypePreCheck {
 			recordEnv.Params = cv.Params
@@ -210,7 +211,7 @@ func (o *ValidationOrchestrator) validateRecord(result *RecordValidationResult, 
 
 	// Phase 2: Field validation
 	fieldEnv := &FieldEnv{DataFileContext: dfCtx} // Reuse env for efficiency
-	for fieldName, validators := range o.registry.GetFieldValidatorsForRecord(recType) {
+	for fieldName, validators := range o.registry.GetFieldValidatorsForRecord(schemaKey) {
 		value := rec.Get(fieldName)
 		required := rec.IsFieldRequired(fieldName)
 
@@ -254,7 +255,7 @@ func (o *ValidationOrchestrator) validateRecord(result *RecordValidationResult, 
 	}
 
 	// Phase 3: Non-precheck record validators (consistency checks)
-	for _, cv := range o.registry.GetRecordValidators(recType) {
+	for _, cv := range o.registry.GetRecordValidators(schemaKey) {
 		if cv.ErrorType == ErrorTypeRecordPreCheck || cv.ErrorType == ErrorTypePreCheck {
 			continue // Already ran in phase 1
 		}
@@ -265,4 +266,11 @@ func (o *ValidationOrchestrator) validateRecord(result *RecordValidationResult, 
 			result.RecordErrors = append(result.RecordErrors, vr)
 		}
 	}
+}
+
+func validationSchemaKey(rec *parser.ParsedRecord) string {
+	if rec.Schema != nil && rec.Schema.Path != "" {
+		return rec.Schema.Path
+	}
+	return rec.GetRecordType()
 }

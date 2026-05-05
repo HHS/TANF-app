@@ -457,6 +457,83 @@ func TestConfig_FileSpecDetectionMethods(t *testing.T) {
 	}
 }
 
+func TestConfig_FRAAndTribalFileSpecValidationOrchestrators(t *testing.T) {
+	reg := loadRegistry(t)
+
+	tests := []struct {
+		program       string
+		section       int
+		errorTypeByID map[int]string
+	}{
+		{
+			program: "FRA",
+			section: 1,
+			errorTypeByID: map[int]string{
+				1: "CASE_CONSISTENCY",
+				2: "CASE_CONSISTENCY",
+				3: "CASE_CONSISTENCY",
+				4: "CASE_CONSISTENCY",
+			},
+		},
+		{
+			program: "TRIBAL",
+			section: 1,
+			errorTypeByID: map[int]string{
+				1: "RECORD_PRE_CHECK",
+				2: "FIELD_VALUE",
+				3: "VALUE_CONSISTENCY",
+				4: "CASE_CONSISTENCY",
+			},
+		},
+		{
+			program: "TRIBAL",
+			section: 2,
+			errorTypeByID: map[int]string{
+				1: "RECORD_PRE_CHECK",
+				2: "FIELD_VALUE",
+				3: "VALUE_CONSISTENCY",
+				4: "CASE_CONSISTENCY",
+			},
+		},
+		{
+			program: "TRIBAL",
+			section: 3,
+			errorTypeByID: map[int]string{
+				1: "RECORD_PRE_CHECK",
+				2: "FIELD_VALUE",
+				3: "VALUE_CONSISTENCY",
+				4: "CASE_CONSISTENCY",
+			},
+		},
+		{
+			program: "TRIBAL",
+			section: 4,
+			errorTypeByID: map[int]string{
+				1: "RECORD_PRE_CHECK",
+				2: "FIELD_VALUE",
+				3: "VALUE_CONSISTENCY",
+				4: "CASE_CONSISTENCY",
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		spec := reg.GetFileSpec(tc.program, tc.section)
+		if spec == nil {
+			t.Fatalf("missing filespec %s:%d", tc.program, tc.section)
+		}
+		if len(spec.ValidationOrchestrator.Categories) != len(tc.errorTypeByID) {
+			t.Fatalf("%s:%d categories = %d, want %d", tc.program, tc.section, len(spec.ValidationOrchestrator.Categories), len(tc.errorTypeByID))
+		}
+		for _, category := range spec.ValidationOrchestrator.Categories {
+			want := tc.errorTypeByID[category.ID]
+			if category.DefaultErrorType != want {
+				t.Errorf("%s:%d category %d default_error_type = %s, want %s", tc.program, tc.section, category.ID, category.DefaultErrorType, want)
+			}
+		}
+	}
+}
+
 func TestConfig_FileSpecFormats(t *testing.T) {
 	reg := loadRegistry(t)
 

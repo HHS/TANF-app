@@ -60,3 +60,18 @@ accumulator:
 
   # No grouping needed for FRA records
   grouped_schemas: []
+
+validation_orchestrator:
+  categories:
+  - id: 1
+    name: Record pre-check
+    default_error_type: CASE_CONSISTENCY
+  - id: 2
+    name: Field validation
+    default_error_type: CASE_CONSISTENCY
+  - id: 3
+    name: Cross-field
+    default_error_type: CASE_CONSISTENCY
+  - id: 4
+    name: Group validation
+    default_error_type: CASE_CONSISTENCY

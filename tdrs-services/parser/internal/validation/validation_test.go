@@ -654,6 +654,112 @@ func TestRealConfig_GroupValidatorBindingsAcrossPrograms(t *testing.T) {
 	}
 }
 
+func TestRealConfig_ProgramSpecificSchemaValidatorBindings(t *testing.T) {
+	cfg := configpkg.TestConfig()
+	cfg.Global.ConfigDir = realConfigDir(t)
+
+	reg, err := configpkg.NewRegistry(cfg)
+	if err != nil {
+		t.Fatalf("loading config registry: %v", err)
+	}
+
+	validators, err := NewRegistry(cfg, reg)
+	if err != nil {
+		t.Fatalf("loading validator registry: %v", err)
+	}
+
+	requireRecordValidator := func(schemaKey string, id string) {
+		t.Helper()
+		for _, validator := range validators.GetRecordValidators(schemaKey) {
+			if validator.ID == id {
+				return
+			}
+		}
+		t.Fatalf("expected %s to have record validator %s", schemaKey, id)
+	}
+
+	requireNoRecordValidator := func(schemaKey string, id string) {
+		t.Helper()
+		for _, validator := range validators.GetRecordValidators(schemaKey) {
+			if validator.ID == id {
+				t.Fatalf("expected %s not to have record validator %s", schemaKey, id)
+			}
+		}
+	}
+
+	requireFieldValidator := func(schemaKey string, fieldName string, id string) *CompiledValidator {
+		t.Helper()
+		for _, validator := range validators.GetFieldValidators(schemaKey, fieldName) {
+			if validator.ID == id {
+				return validator
+			}
+		}
+		t.Fatalf("expected %s.%s to have field validator %s", schemaKey, fieldName, id)
+		return nil
+	}
+
+	requireRecordValidator("tanf/t2", "t2_family_affil_1_2_work_part_status")
+	requireNoRecordValidator("tribal_tanf/t2", "t2_family_affil_1_2_work_part_status")
+	requireRecordValidator("tribal_tanf/t2", "tribal_t2_family_affil_1_2_work_part_status")
+
+	requireFieldValidator("tanf/t4", "CLOSURE_REASON", "closure_reason")
+	requireFieldValidator("tribal_tanf/t4", "CLOSURE_REASON", "tribal_closure_reason")
+
+	requireRecordValidator("fra/te1", "exit_date_matches_fiscal_period")
+	if got := requireFieldValidator("fra/te1", "SSN", "fra_ssn").ErrorType; got != ErrorTypeCaseConsistency {
+		t.Fatalf("expected fra_ssn error type %s, got %s", ErrorTypeCaseConsistency, got)
+	}
+}
+
+func TestRealConfig_FRAValidationErrorsAreCaseConsistency(t *testing.T) {
+	cfg := configpkg.TestConfig()
+	cfg.Global.ConfigDir = realConfigDir(t)
+
+	reg, err := configpkg.NewRegistry(cfg)
+	if err != nil {
+		t.Fatalf("loading config registry: %v", err)
+	}
+
+	validators, err := NewRegistry(cfg, reg)
+	if err != nil {
+		t.Fatalf("loading validator registry: %v", err)
+	}
+
+	fraSchema := reg.GetSchema("fra/te1")
+	rec := testutil.NewTestRecord(fraSchema, 1, map[string]any{
+		"RecordType": "TE1",
+		"EXIT_DATE":  "202310",
+		"SSN":        "000000000",
+	})
+	for i := range fraSchema.Segments[0].Fields {
+		field := &fraSchema.Segments[0].Fields[i]
+		idx := fraSchema.FieldIndex[field.Name]
+		rec.Fields[idx].Def = field
+	}
+
+	orchestrator := NewValidationOrchestrator(validators, true)
+	result := orchestrator.ValidateGroup(
+		testutil.NewTestGroup(rec),
+		"FRA:1",
+		&DataFileContext{FiscalYear: 2024, FiscalQuarter: "Q1", Program: "FRA"},
+	)
+
+	if len(result.RecordResults) != 1 {
+		t.Fatalf("expected one record result, got %d", len(result.RecordResults))
+	}
+
+	fieldErrors := result.RecordResults[0].FieldErrors
+	if len(fieldErrors) != 1 {
+		t.Fatalf("expected one FRA field error, got %d", len(fieldErrors))
+	}
+	if got := fieldErrors[0].ErrorType; got != ErrorTypeCaseConsistency {
+		t.Fatalf("expected FRA field error type %s, got %s", ErrorTypeCaseConsistency, got)
+	}
+	if result.ShouldSerialize() {
+		t.Fatal("expected FRA CASE_CONSISTENCY field error to block serialization")
+	}
+}
+
 func validatorParamsEqual(actual map[string]any, expected map[string]any) bool {
 	if len(actual) != len(expected) {
 		return false

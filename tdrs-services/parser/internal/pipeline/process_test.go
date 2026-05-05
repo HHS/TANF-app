@@ -270,6 +270,9 @@ func TestProcess_TANF_S1_MissingHeader(t *testing.T) {
 	if got := sink.tables["parser_error"][1][6]; got != "No records created." {
 		t.Errorf("second error_message = %v, want %q", got, "No records created.")
 	}
+	if got := sink.tables["parser_error"][1][0]; got != int32(0) {
+		t.Errorf("second row_number = %v, want %d", got, 0)
+	}
 }
 
 func TestProcess_TANF_MultipleHeaders_RollbacksAndWritesOffendingRow(t *testing.T) {
@@ -566,6 +569,9 @@ func TestProcess_HeaderOnlyWritesNoRecordsCreatedError(t *testing.T) {
 	}
 
 	row := sink.tables["parser_error"][0]
+	if got := row[0]; got != int32(0) {
+		t.Errorf("row_number = %v, want %d", got, 0)
+	}
 	if got := row[6]; got != "No records created." {
 		t.Errorf("error_message = %v, want %q", got, "No records created.")
 	}
