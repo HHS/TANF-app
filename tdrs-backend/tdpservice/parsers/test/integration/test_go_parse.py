@@ -1,6 +1,7 @@
 """Integration tests for the live Go parser worker."""
 
 import logging
+import os
 import time
 
 from django.conf import settings
@@ -1881,30 +1882,116 @@ class TestGoParse:
             assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
         assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
-    # @pytest.mark.django_db(transaction=True)()
-    # def test_go_parse_fra_decoder_unknown(self, fra_decoder_unknown, dfs):
-    #     """Test parsing a FRA file with bad encoding."""
-    #     datafile = fra_decoder_unknown
-    #     datafile.year = 2025
-    #     datafile.quarter = "Q3"
+    @pytest.mark.parametrize(
+        "file",
+        [
+            ("fra_work_outcome_exiter_csv_file"),
+            ("fra_work_outcome_exiter_xlsx_file"),
+        ],
+    )
+    @pytest.mark.django_db(transaction=True)
+    def test_go_parse_fra_work_outcome_exiters(self, request, file, dfs):
+        """Test parsing FRA Work Outcome Exiters files."""
+        datafile = request.getfixturevalue(file)
+        datafile.year = 2024
+        datafile.quarter = "Q2"
+        datafile.save()
 
-    #     dfs.datafile = datafile
-    #     dfs.save()
+        dfs.datafile = datafile
+        dfs.save()
 
-    #     try:
-    #         parse_datafile(dfs, datafile)
-    #     except util.DecoderUnknownException:
-    #         pass
+        parse_datafile(dfs, datafile)
+        errors = ParserError.objects.filter(file=datafile).order_by("id")
 
-    #     errors = ParserError.objects.filter(file=datafile).order_by("id")
-    #     assert errors.count() == 1
-    #     assert errors.first().error_type == ParserErrorCategoryChoices.PRE_CHECK
-    #     assert errors.first().error_message == (
-    #         "Could not determine encoding of FRA file. If the file is an XLSX file, "
-    #         "ensure it can be opened in Excel. If the file is a CSV, ensure it can be "
-    #         "opened in a text editor and is UTF-8 encoded."
-    #     )
-    #     assert dfs.get_status() == DataFileSummary.Status.REJECTED
+        assert TANF_Exiter1.objects.all().count() == 5
+
+        errors = ParserError.objects.filter(file=datafile).order_by("id")
+        assert errors.count() == 8
+        for e in errors:
+            assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+        # TODO: need to update go parser to handle updating the DFS' record counts
+        # assert dfs.total_number_of_records_in_file == 11
+        # assert dfs.total_number_of_records_created == 5
+        assert dfs.get_status() == DataFileSummary.Status.PARTIALLY_ACCEPTED
+
+    @pytest.mark.parametrize(
+        "file",
+        [
+            ("fra_ofa_test_csv"),
+            ("fra_ofa_test_xlsx"),
+        ],
+    )
+    @pytest.mark.django_db(transaction=True)
+    def test_go_parse_fra_ofa_test_cases(self, request, file, dfs):
+        """Test parsing OFA FRA files."""
+        datafile = request.getfixturevalue(file)
+        datafile.year = 2025
+        datafile.quarter = "Q3"
+        datafile.save()
+
+        dfs.datafile = datafile
+        dfs.save()
+
+        parse_datafile(dfs, datafile)
+
+        errors = ParserError.objects.filter(file=datafile).order_by("row_number")
+        for e in errors:
+            print(e.row_number, e.error_message)
+        for e in errors:
+            assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+
+        # We get one extra duplicate that the Python parser doesn't detect! The Python parser hasn't been catching that
+        # line 13 is a duplicate of line 3
+        assert errors.count() == 24
+        assert TANF_Exiter1.objects.all().count() == 8
+        # assert dfs.total_number_of_records_in_file == 28
+        # assert dfs.total_number_of_records_created == 10
+        assert dfs.get_status() == DataFileSummary.Status.PARTIALLY_ACCEPTED
+
+    @pytest.mark.django_db(transaction=True)
+    # TODO: Failing
+    def test_go_parse_fra_formula_fields(self, fra_formula_fields_test_xlsx, dfs):
+        """Test parsing a correct FRA file with formula fields."""
+        datafile = fra_formula_fields_test_xlsx
+        datafile.year = 2025
+        datafile.quarter = "Q3"
+        datafile.save()
+
+        dfs.datafile = datafile
+        dfs.save()
+
+        parse_datafile(dfs, datafile)
+
+        errors = ParserError.objects.filter(file=datafile).order_by("id")
+        assert errors.count() == 0
+        assert TANF_Exiter1.objects.all().count() == 8
+        # See above TODO
+        # assert dfs.total_number_of_records_in_file == 8
+        # assert dfs.total_number_of_records_created == 8
+        assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
+
+    @pytest.mark.django_db(transaction=True)()
+    def test_go_parse_fra_decoder_unknown(self, fra_decoder_unknown, dfs):
+        """Test parsing a FRA file with bad encoding."""
+        datafile = fra_decoder_unknown
+        datafile.year = 2025
+        datafile.quarter = "Q3"
+        datafile.save()
+
+        dfs.datafile = datafile
+        dfs.save()
+
+        parse_datafile(dfs, datafile)
+
+        errors = ParserError.objects.filter(file=datafile).order_by("id")
+        assert errors.count() == 1
+        assert errors.first().error_type == ParserErrorCategoryChoices.PRE_CHECK
+        assert errors.first().error_message == (
+            "Could not determine encoding of FRA file. If the file is an XLSX file, "
+            "ensure it can be opened in Excel. If the file is a CSV, ensure it can be "
+            "opened in a text editor and is UTF-8 encoded."
+        )
+        assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
     @pytest.mark.django_db(transaction=True)()
     def test_go_parse_section2_no_records(self, section2_no_records, dfs):
@@ -1980,3 +2067,49 @@ class TestGoParse:
         assert TANF_T1.objects.filter(datafile=case_aggregates_edge_case).count() == 3
         assert TANF_T2.objects.filter(datafile=case_aggregates_edge_case).count() == 3
         assert TANF_T3.objects.filter(datafile=case_aggregates_edge_case).count() == 6
+
+    @pytest.mark.django_db(transaction=True)
+    def test_go_parse_super_big_s1_file(self, super_big_s1_file, dfs):
+        """Test parsing super_big_s1_file and validate all records are created."""
+        super_big_s1_file.year = 2023
+        super_big_s1_file.quarter = "Q2"
+        super_big_s1_file.save()
+
+        dfs.datafile = super_big_s1_file
+        dfs.save()
+
+        parse_datafile(dfs, super_big_s1_file)
+        expected_t1_record_count = 96497
+        expected_t2_record_count = 112622
+        expected_t3_record_count = 172552
+
+        assert TANF_T1.objects.count() == expected_t1_record_count
+        assert TANF_T2.objects.count() == expected_t2_record_count
+        assert TANF_T3.objects.count() == expected_t3_record_count
+
+    @pytest.mark.django_db(transaction=True)
+    def test_go_parse_big_s1_file_with_rollback(self, big_s1_rollback_file, dfs):
+        """Test parsing big_s1_rollback_file with rollback on error."""
+        big_s1_rollback_file.year = 2023
+        big_s1_rollback_file.quarter = "Q2"
+        big_s1_rollback_file.save()
+
+        dfs.datafile = big_s1_rollback_file
+        dfs.save()
+
+        parse_datafile(dfs, big_s1_rollback_file)
+
+        parser_errors = ParserError.objects.filter(file=big_s1_rollback_file)
+        assert parser_errors.count() == 1
+
+        err = parser_errors.first()
+
+        assert err.row_number == 13609
+        assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
+        assert err.error_message == "Multiple headers found."
+        assert err.content_type is None
+        assert err.object_id is None
+
+        assert TANF_T1.objects.count() == 0
+        assert TANF_T2.objects.count() == 0
+        assert TANF_T3.objects.count() == 0

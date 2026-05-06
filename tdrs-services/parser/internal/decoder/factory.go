@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"go-parser/internal/config/filespec"
+	"go-parser/internal/sentinel"
 )
 
 // CreateDecoder creates the appropriate decoder based on file format and content type.
@@ -19,7 +20,7 @@ func CreateDecoder(file *os.File, spec *filespec.FileSpec) (Decoder, error) {
 	case filespec.FormatColumnar:
 		return createColumnarDecoder(file, spec)
 	default:
-		return nil, fmt.Errorf("unknown format: %s", spec.Format)
+		return nil, fmt.Errorf("%w: unknown format %q", sentinel.ErrDecoderUnknown, spec.Format)
 	}
 }
 
@@ -46,6 +47,6 @@ func createColumnarDecoder(file *os.File, spec *filespec.FileSpec) (Decoder, err
 	case "text/plain; charset=utf-8", "text/csv; charset=utf-8", "application/octet-stream":
 		return NewCSVDecoder(file, spec.RecordTypeDetection.Schema), nil
 	default:
-		return nil, fmt.Errorf("%s has an unknown or unexpected content type: %s", file.Name(), contentType)
+		return nil, fmt.Errorf("%w: %s has an unknown or unexpected content type: %s", sentinel.ErrDecoderUnknown, file.Name(), contentType)
 	}
 }

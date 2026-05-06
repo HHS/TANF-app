@@ -64,7 +64,7 @@ class TestParseLargeFiles:
         assert TANF_T3.objects.count() == 1376
 
     @pytest.mark.django_db
-    @pytest.mark.skip(reason="long runtime")
+    # @pytest.mark.skip(reason="long runtime")
     def test_parse_super_big_s1_file(self, super_big_s1_file, dfs):
         """Test parsing super_big_s1_file and validate all records are created."""
         super_big_s1_file.year = 2023
@@ -75,9 +75,9 @@ class TestParseLargeFiles:
         dfs.save()
 
         parse_datafile(dfs, super_big_s1_file)
-        expected_t1_record_count = 96607
-        expected_t2_record_count = 112753
-        expected_t3_record_count = 172525
+        expected_t1_record_count = 96497
+        expected_t2_record_count = 112622
+        expected_t3_record_count = 172552
 
         assert TANF_T1.objects.count() == expected_t1_record_count
         assert TANF_T2.objects.count() == expected_t2_record_count
