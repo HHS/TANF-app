@@ -49,6 +49,20 @@ def traces_sampler(sampling_context: SamplingContext) -> float:
     return 0.5
 
 
+def before_send(event, hint):
+    """Drop known noisy Tempo infrastructure logs before sending events to Sentry."""
+    logentry = event.get("logentry", {})
+    message = logentry.get("message", "")
+    params = logentry.get("params") or []
+
+    log_text = " ".join([message, *(str(param) for param in params)])
+
+    if "tempo.apps.internal" in log_text:
+        return None
+
+    return event
+
+
 def init_sentry(sentry_dsn, environment: str = "ERROR") -> None:
     """Initialize Sentry for error tracking."""
     sentry_sdk.init(
@@ -70,6 +84,7 @@ def init_sentry(sentry_dsn, environment: str = "ERROR") -> None:
             LoggingIntegration(level=logging.ERROR, event_level=logging.ERROR),
         ],
         traces_sampler=traces_sampler,
+        before_send=before_send,
         enable_logs=True,
     )
 
@@ -599,6 +614,7 @@ class Common(Configuration):
 
     CELERY_BROKER_URL = REDIS_URI + "/0"
     CELERY_RESULT_BACKEND = REDIS_URI + "/0"
+    CELERY_GO_PARSER_QUEUE = os.getenv("CELERY_GO_PARSER_QUEUE", "go-parser")
     CELERY_ACCEPT_CONTENT = ["application/json"]
     CELERY_TASK_SERIALIZER = "json"
     CELERY_RESULT_SERIALIZER = "json"
@@ -606,6 +622,9 @@ class Common(Configuration):
     CELERYD_SEND_EVENTS = True
     CELERY_ENABLE_UTC = True
     CELERY_TASK_PROTOCOL = 1
+    CELERY_TASK_ROUTES = {
+        "tdpservice.scheduling.parser_task.go_parse": {"queue": CELERY_GO_PARSER_QUEUE}
+    }
 
     CELERY_BEAT_SCHEDULE = {
         "Database Backup": {

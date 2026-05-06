@@ -25,6 +25,8 @@ server:
   mode: local              # celery | grpc | http | local
   celery:
     redis_url: "${REDIS_URL}"
+    queue: "go-parser"
+    num_workers: 1
   grpc:
     listen_address: ":50051"
   http:
@@ -76,3 +78,4 @@ storage:
     bucket: "${S3_BUCKET}"
     endpoint: "${S3_ENDPOINT}"
     region: "${AWS_DEFAULT_REGION}"
+    key_prefix: "${S3_KEY_PREFIX}"

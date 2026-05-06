@@ -3,8 +3,9 @@
 import io
 from types import SimpleNamespace
 
-import pytest
 from django.db.utils import DatabaseError
+
+import pytest
 
 from tdpservice.data_files.models import DataFile, ReparseFileMeta
 from tdpservice.data_files.test.factories import DataFileFactory
@@ -155,9 +156,7 @@ def test_update_dfs_uses_total_errors(monkeypatch, stt):
         "case_aggregates_by_month",
         lambda *a: pytest.fail("case_aggregates_by_month should not be used"),
     )
-    monkeypatch.setattr(
-        parser_task, "total_errors_by_month", lambda *a: {"total": 3}
-    )
+    monkeypatch.setattr(parser_task, "total_errors_by_month", lambda *a: {"total": 3})
 
     parser_task.update_dfs(dfs, datafile)
 
@@ -205,7 +204,7 @@ def test_parse_success_sends_email(monkeypatch, data_analyst):
 
     captured = {}
 
-    def fake_send(dfs, recipients):
+    def fake_send(dfs, recipients, is_reprocessed=False):
         captured["recipients"] = list(recipients)
 
     monkeypatch.setattr(parser_task, "send_data_submitted_email", fake_send)
@@ -218,9 +217,9 @@ def test_parse_success_sends_email(monkeypatch, data_analyst):
 
 
 @pytest.mark.django_db
-def test_parse_success_reparse_updates_file_meta(monkeypatch, stt):
+def test_parse_success_reparse_updates_file_meta(monkeypatch, data_analyst):
     """Update reparse metadata on success."""
-    datafile = DataFileFactory(stt=stt, version=5)
+    datafile = DataFileFactory(stt=data_analyst.stt, version=5)
     ensure_stt_filenames(datafile.stt)
     dfs = DataFileSummary.objects.create(
         datafile=datafile, status=DataFileSummary.Status.PENDING
@@ -229,7 +228,7 @@ def test_parse_success_reparse_updates_file_meta(monkeypatch, stt):
     file_meta = ReparseFileMeta.objects.create(
         data_file=datafile, reparse_meta=meta_model
     )
-    setup_parse_mocks(monkeypatch, dfs=dfs)
+    handlers = setup_parse_mocks(monkeypatch, dfs=dfs)
     dummy_parser = DummyParser()
 
     monkeypatch.setattr(
@@ -244,6 +243,13 @@ def test_parse_success_reparse_updates_file_meta(monkeypatch, stt):
         parser_task.ReparseMeta, "set_total_num_records_post", lambda *a, **k: None
     )
 
+    captured = {}
+
+    def fake_send(dfs, recipients, is_reprocessed=False):
+        captured["recipients"] = list(recipients)
+
+    monkeypatch.setattr(parser_task, "send_data_submitted_email", fake_send)
+
     parser_task.parse(datafile.id, reparse_id=meta_model.pk)
 
     file_meta.refresh_from_db()
@@ -251,6 +257,112 @@ def test_parse_success_reparse_updates_file_meta(monkeypatch, stt):
     assert file_meta.success is True
     assert file_meta.cat_4_errors_generated == 2
     assert file_meta.finished_at is not None
+
+    assert dummy_parser.called is True
+    assert data_analyst.username in captured["recipients"]
+    assert handlers[2].called is True
+
+
+@pytest.mark.django_db
+def test_parse_success_reparse_suppresses_email_for_accepted_to_accepted(
+    monkeypatch, data_analyst
+):
+    """Do not send a reparse email when Accepted remains Accepted."""
+    datafile = DataFileFactory(stt=data_analyst.stt, version=6)
+    ensure_stt_filenames(datafile.stt)
+    dfs = DataFileSummary.objects.create(
+        datafile=datafile, status=DataFileSummary.Status.PENDING
+    )
+    meta_model = ReparseMeta.objects.create(db_backup_location="s3://backup")
+    ReparseFileMeta.objects.create(
+        data_file=datafile,
+        reparse_meta=meta_model,
+        previous_summary_status=DataFileSummary.Status.ACCEPTED,
+    )
+    handlers = setup_parse_mocks(monkeypatch, dfs=dfs)
+    dummy_parser = DummyParser()
+
+    monkeypatch.setattr(
+        parser_task.ParserFactory, "get_instance", lambda **kwargs: dummy_parser
+    )
+    monkeypatch.setattr(
+        parser_task,
+        "update_dfs",
+        lambda dfs, data_file: setattr(dfs, "status", DataFileSummary.Status.ACCEPTED),
+    )
+    monkeypatch.setattr(
+        parser_task.ParserError.objects,
+        "filter",
+        lambda *a, **k: SimpleNamespace(count=lambda: 0),
+    )
+    monkeypatch.setattr(
+        parser_task.ReparseMeta, "set_total_num_records_post", lambda *a, **k: None
+    )
+
+    called = {"sent": False}
+
+    def fake_send(dfs, recipients, is_reprocessed=False):
+        called["sent"] = True
+
+    monkeypatch.setattr(parser_task, "send_data_submitted_email", fake_send)
+
+    parser_task.parse(datafile.id, reparse_id=meta_model.pk)
+
+    assert dummy_parser.called is True
+    assert called["sent"] is False
+    assert handlers[2].called is True
+
+
+@pytest.mark.django_db
+def test_parse_success_reparse_still_sends_email_for_unchanged_nonaccepted_status(
+    monkeypatch, data_analyst
+):
+    """Still send a reparse email when a non-Accepted status remains unchanged."""
+    datafile = DataFileFactory(stt=data_analyst.stt, version=7)
+    ensure_stt_filenames(datafile.stt)
+    dfs = DataFileSummary.objects.create(
+        datafile=datafile, status=DataFileSummary.Status.PENDING
+    )
+    meta_model = ReparseMeta.objects.create(db_backup_location="s3://backup")
+    ReparseFileMeta.objects.create(
+        data_file=datafile,
+        reparse_meta=meta_model,
+        previous_summary_status=DataFileSummary.Status.ACCEPTED_WITH_ERRORS,
+    )
+    handlers = setup_parse_mocks(monkeypatch, dfs=dfs)
+    dummy_parser = DummyParser()
+
+    monkeypatch.setattr(
+        parser_task.ParserFactory, "get_instance", lambda **kwargs: dummy_parser
+    )
+    monkeypatch.setattr(
+        parser_task,
+        "update_dfs",
+        lambda dfs, data_file: setattr(
+            dfs, "status", DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+        ),
+    )
+    monkeypatch.setattr(
+        parser_task.ParserError.objects,
+        "filter",
+        lambda *a, **k: SimpleNamespace(count=lambda: 1),
+    )
+    monkeypatch.setattr(
+        parser_task.ReparseMeta, "set_total_num_records_post", lambda *a, **k: None
+    )
+
+    called = {"sent": False}
+
+    def fake_send(dfs, recipients, is_reprocessed=False):
+        called["sent"] = True
+
+    monkeypatch.setattr(parser_task, "send_data_submitted_email", fake_send)
+
+    parser_task.parse(datafile.id, reparse_id=meta_model.pk)
+
+    assert dummy_parser.called is True
+    assert called["sent"] is True
+    assert handlers[2].called is True
 
 
 @pytest.mark.django_db
