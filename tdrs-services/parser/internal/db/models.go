@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type DataFilesDatafile struct {
+type ShadowDataFilesDatafile struct {
 	ID               int32
 	OriginalFilename string
 	Slug             string
