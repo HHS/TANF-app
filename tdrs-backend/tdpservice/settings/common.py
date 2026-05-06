@@ -614,6 +614,7 @@ class Common(Configuration):
 
     CELERY_BROKER_URL = REDIS_URI + "/0"
     CELERY_RESULT_BACKEND = REDIS_URI + "/0"
+    CELERY_GO_PARSER_QUEUE = os.getenv("CELERY_GO_PARSER_QUEUE", "go-parser")
     CELERY_ACCEPT_CONTENT = ["application/json"]
     CELERY_TASK_SERIALIZER = "json"
     CELERY_RESULT_SERIALIZER = "json"
@@ -621,6 +622,9 @@ class Common(Configuration):
     CELERYD_SEND_EVENTS = True
     CELERY_ENABLE_UTC = True
     CELERY_TASK_PROTOCOL = 1
+    CELERY_TASK_ROUTES = {
+        "tdpservice.scheduling.parser_task.go_parse": {"queue": CELERY_GO_PARSER_QUEUE}
+    }
     GO_PARSER_QUEUE = os.getenv("GO_PARSER_QUEUE", "go-parser")
     GO_PARSER_SHADOW_MODE = bool(strtobool(os.getenv("GO_PARSER_SHADOW_MODE", "true")))
 

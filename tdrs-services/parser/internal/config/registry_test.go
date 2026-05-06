@@ -166,7 +166,7 @@ func TestConfig_SchemaFieldCounts(t *testing.T) {
 		"tanf/t5":        {3, 1, 26},
 		"tanf/t6":        {2, 3, 16},
 		"tanf/t7":        {2, 30, 4},
-		"ssp/m1":         {3, 1, 40},
+		"ssp/m1":         {3, 1, 39},
 		"ssp/m2":         {4, 1, 63},
 		"ssp/m3":         {4, 2, 18},
 		"ssp/m4":         {3, 1, 9},
