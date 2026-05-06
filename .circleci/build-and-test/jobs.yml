@@ -150,7 +150,7 @@
             . "$BASH_ENV"
             task parser:validate-config
       - run:
-          name: Run unit and integration tests with coverage
+          name: Run Go parser tests with coverage
           command: |
             . "$BASH_ENV"
             task parser:test-all-coverage

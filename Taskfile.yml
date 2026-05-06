@@ -422,7 +422,7 @@ tasks:
       - task: frontend-down
 
   parser:compile-check:
-    desc: Compile all Go parser packages and tests, including integration-tagged packages
+    desc: Compile all Go parser packages and tests
     dir: tdrs-services/parser
     cmds:
       - make compile-check
@@ -466,7 +466,7 @@ tasks:
       - make validate-config
 
   parser:test-all-coverage:
-    desc: Run all Go parser unit and integration tests with coverage
+    desc: Run all Go parser tests with coverage
     dir: tdrs-services/parser
     cmds:
       - make test-all-coverage
