@@ -364,6 +364,7 @@ services:
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
       - AWS_DEFAULT_REGION=us-gov-west-1
+      - AWS_EC2_METADATA_DISABLED=true
     depends_on:
       redis-server:
         condition: service_started
