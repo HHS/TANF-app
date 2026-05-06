@@ -92,6 +92,84 @@
       - store_artifacts:
           path: tdrs-frontend/cypress/videos/
 
+  test-go-parser:
+    executor: machine-executor
+    working_directory: ~/tdp-apps
+    environment:
+      DATABASE_URL: postgres://tdpuser:something_secure@localhost:5432/tdrs_test?sslmode=disable
+    steps:
+      - checkout
+      - docker-set-registry-owner
+      - docker-compose-check
+      - docker-compose-up-backend
+      - restore_cache:
+          keys:
+            - go-parser-v1-{{ checksum "tdrs-services/parser/go.sum" }}
+            - go-parser-v1-
+      - run:
+          name: Install Go parser CI dependencies
+          command: ./scripts/install-go-parser-ci-dependencies.sh
+      - save_cache:
+          key: go-parser-v1-{{ checksum "tdrs-services/parser/go.sum" }}
+          paths:
+            - /home/circleci/go/pkg/mod
+            - /home/circleci/.cache/go-build
+            - /home/circleci/go/bin
+      - run:
+          name: Wait for Django service to become available
+          command: |
+            cd tdrs-backend
+            docker-compose run --rm zaproxy bash -c \
+              "PATH=$PATH:/home/zap/.local/bin &&
+               pip install wait-for-it &&
+               wait-for-it --service http://web:8080 --timeout 180 -- echo \"Django is ready\""
+      - run:
+          name: Compile check
+          command: |
+            . "$BASH_ENV"
+            task parser:compile-check
+      - run:
+          name: Lint
+          command: |
+            . "$BASH_ENV"
+            task parser:lint
+      - run:
+          name: sqlc diff
+          command: |
+            . "$BASH_ENV"
+            task dump-parser-schema
+            task parser:sqlc-diff
+      - run:
+          name: sqlc vet
+          command: |
+            . "$BASH_ENV"
+            task parser:sqlc-vet
+      - run:
+          name: Validator compilation check
+          command: |
+            . "$BASH_ENV"
+            task parser:validate-config
+      - run:
+          name: Run Go parser tests with coverage
+          command: |
+            . "$BASH_ENV"
+            task parser:test-all-coverage
+      - run:
+          name: Generate readable Go parser coverage report
+          command: |
+            . "$BASH_ENV"
+            task parser:coverage-report
+            echo ""
+            echo "Go parser coverage summary"
+            echo "--------------------------"
+            cat tdrs-services/parser/coverage-summary.txt
+      - store_artifacts:
+          path: tdrs-services/parser/coverage.out
+      - store_artifacts:
+          path: tdrs-services/parser/coverage-summary.txt
+      - store_artifacts:
+          path: tdrs-services/parser/coverage.html
+
   secrets-check:
     executor: docker-executor
     steps:
