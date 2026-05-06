@@ -1161,11 +1161,16 @@ class TestGoParse:
             == expected_m5_count
         )
 
-        m4 = m4_objs.first()
+        # Because the go parser inserts into tables in parallel we cant rely on ID ordering
+        m4 = m4_objs.filter(DISPOSITION=1, REC_SUB_CC=3).first()
         assert m4.DISPOSITION == 1
         assert m4.REC_SUB_CC == 3
 
-        m5 = m5_objs.first()
+        m5 = m5_objs.filter(
+            FAMILY_AFFILIATION=1,
+            AMOUNT_EARNED_INCOME="0000",
+            AMOUNT_UNEARNED_INCOME="0000",
+        ).first()
         assert m5.FAMILY_AFFILIATION == 1
         assert m5.AMOUNT_EARNED_INCOME == "0000"
         assert m5.AMOUNT_UNEARNED_INCOME == "0000"
@@ -2002,7 +2007,7 @@ class TestGoParse:
 
         parse_datafile(dfs, datafile)
 
-        errors = ParserError.objects.filter(file=datafile).order_by("id")
+        errors = ParserError.objects.filter(file=datafile)
         assert errors.count() == 0
         assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
 
