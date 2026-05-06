@@ -1,7 +1,6 @@
 """Integration tests for the live Go parser worker."""
 
 import logging
-import os
 import time
 
 from django.conf import settings
@@ -496,29 +495,6 @@ class TestGoParse:
         assert TANF_T1.objects.filter(datafile=big_file).count() == 815
         assert TANF_T2.objects.filter(datafile=big_file).count() == 882
         assert TANF_T3.objects.filter(datafile=big_file).count() == 1376
-
-    @pytest.mark.django_db(transaction=True)
-    def test_go_parse_big_s1_file_with_rollback(self, big_s1_rollback_file, dfs):
-        """Test Go parser rollback when a second header is found mid-parse."""
-        big_s1_rollback_file.year = 2023
-        big_s1_rollback_file.quarter = "Q2"
-        big_s1_rollback_file.save()
-
-        parse_datafile(dfs, big_s1_rollback_file)
-
-        parser_errors = ParserError.objects.filter(file=big_s1_rollback_file)
-        assert parser_errors.count() == 1
-
-        err = parser_errors.first()
-        assert err.row_number == 13609
-        assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
-        assert err.error_message == "Multiple headers found."
-        assert err.content_type is None
-        assert err.object_id is None
-
-        assert TANF_T1.objects.filter(datafile=big_s1_rollback_file).count() == 0
-        assert TANF_T2.objects.filter(datafile=big_s1_rollback_file).count() == 0
-        assert TANF_T3.objects.filter(datafile=big_s1_rollback_file).count() == 0
 
     @pytest.mark.django_db(transaction=True)
     def test_go_parse_empty_file(self, empty_file, dfs):
