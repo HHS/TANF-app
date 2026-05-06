@@ -137,11 +137,19 @@ group_validators:
 
   # T4 records require at least one T5 record in the same case
   # Error is reported on T4 records when no T5 exists
-  - id: t4_requires_t5
+  - id: requires_corresponding_record
+    params:
+      record_type: T4
+      required_record_type: T5
+    message: "Every T4 record should have at least one corresponding T5 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
 
   # T5 records require at least one T4 record in the same case
   # Error is reported on T5 records when no T4 exists
-  - id: t5_requires_t4
+  - id: requires_corresponding_record
+    params:
+      record_type: T5
+      required_record_type: T4
+    message: "Every T5 record should have at least one corresponding T4 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
 
   # --- Exact duplicate detection ---
   - id: exact_duplicates

@@ -90,9 +90,16 @@ func (s *Server) Run(parentCtx context.Context) error {
 		numWorkers = 1
 	}
 
+	queueName := s.Config.Server.Celery.Queue
+	if queueName == "" {
+		queueName = "go-parser"
+	}
+	broker := gocelery.NewRedisBroker(redisPool)
+	broker.QueueName = queueName
+
 	celeryClient, err := gocelery.NewCeleryClient(
-		gocelery.NewRedisBroker(redisPool),
-		&gocelery.RedisCeleryBackend{Pool: redisPool},
+		broker,
+		newRedisCeleryBackend(redisPool),
 		numWorkers,
 	)
 	if err != nil {
@@ -132,7 +139,13 @@ func (s *Server) Run(parentCtx context.Context) error {
 	workerCtx, stop := signal.NotifyContext(parentCtx, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	log.Printf("Starting celery worker (%d goroutines), listening for '%s' tasks on %s", numWorkers, taskName, s.Config.Server.Celery.RedisURL)
+	log.Printf(
+		"Starting celery worker (%d goroutines), listening for '%s' tasks on queue %q via %s",
+		numWorkers,
+		taskName,
+		queueName,
+		s.Config.Server.Celery.RedisURL,
+	)
 	celeryClient.StartWorkerWithContext(workerCtx)
 
 	// Block until the context is cancelled (signal received).

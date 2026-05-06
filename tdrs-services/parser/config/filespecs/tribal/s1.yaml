@@ -89,3 +89,101 @@ accumulator:
     - tribal_tanf/t1
     - tribal_tanf/t2
     - tribal_tanf/t3
+
+validation_orchestrator:
+  categories:
+  - id: 1
+    name: Record pre-check
+    default_error_type: RECORD_PRE_CHECK
+  - id: 2
+    name: Field validation
+    default_error_type: FIELD_VALUE
+  - id: 3
+    name: Cross-field
+    default_error_type: VALUE_CONSISTENCY
+  - id: 4
+    name: Group validation
+    default_error_type: CASE_CONSISTENCY
+
+# =============================================================================
+# GROUP VALIDATORS (Group/Case Level)
+# =============================================================================
+#
+# These validators run at the case/group level and validate relationships
+# between records within the same case (RPT_MONTH_YEAR + CASE_NUMBER).
+#
+# Python equivalent: case_consistency_validator.py -> __validate_s1_records_are_related
+#
+# Validation rules for Section 1:
+# 1. Every T1 must have at least one T2 or T3 with FAMILY_AFFILIATION == 1
+# 2. Every T2 must have a corresponding T1 in the same case
+# 3. Every T3 must have a corresponding T1 in the same case
+
+group_validators:
+  # T1 must have at least one T2 or T3 record
+  - id: requires_related_record
+    params:
+      record_type: T1
+      related_record_types: [T2, T3]
+    message: "Every T1 record should have at least one corresponding T2 or T3 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
+
+  # T1 must have at least one T2 or T3 with FAMILY_AFFILIATION == 1
+  - id: requires_related_record_with_int_value
+    params:
+      record_type: T1
+      related_record_types: [T2, T3]
+      field_name: FAMILY_AFFILIATION
+      expected_value: 1
+    message: "Every T1 record should have at least one corresponding T2 or T3 record with FAMILY_AFFILIATION == 1"
+
+  # T2 records require at least one T1 record in the same case
+  - id: requires_corresponding_record
+    params:
+      record_type: T2
+      required_record_type: T1
+    message: "Every T2 record should have at least one corresponding T1 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
+
+  # T3 records require at least one T1 record in the same case
+  - id: requires_corresponding_record
+    params:
+      record_type: T3
+      required_record_type: T1
+    message: "Every T3 record should have at least one corresponding T1 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
+
+  # Federally funded recipients
+  - id: federally_funded_ssn
+    params:
+      recipient_record_type: T2
+      funding_record_type: T1
+      family_affiliation_field: FAMILY_AFFILIATION
+      family_affiliation_value: 1
+      funding_field: FUNDING_STREAM
+      funding_value: 1
+      ssn_field: SSN
+
+  # --- Exact duplicate detection ---
+  - id: exact_duplicates
+    params:
+      record_type: T1
+  - id: exact_duplicates
+    params:
+      record_type: T2
+  - id: exact_duplicates
+    params:
+      record_type: T3
+
+  # --- Partial duplicate detection ---
+  - id: partial_duplicates
+    params:
+      record_type: T1
+      fields: [RecordType, RPT_MONTH_YEAR, CASE_NUMBER]
+  - id: partial_duplicates_excluding
+    params:
+      record_type: T2
+      fields: [RecordType, RPT_MONTH_YEAR, CASE_NUMBER, FAMILY_AFFILIATION, DATE_OF_BIRTH, SSN]
+      exclude_field: FAMILY_AFFILIATION
+      exclude_values: [3, 5]
+  - id: partial_duplicates
+    params:
+      record_type: T3
+      fields: [RecordType, RPT_MONTH_YEAR, CASE_NUMBER, FAMILY_AFFILIATION, DATE_OF_BIRTH, SSN]

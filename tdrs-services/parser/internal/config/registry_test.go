@@ -165,7 +165,7 @@ func TestConfig_SchemaFieldCounts(t *testing.T) {
 		"tanf/t5":        {3, 1, 26},
 		"tanf/t6":        {2, 3, 16},
 		"tanf/t7":        {2, 30, 4},
-		"ssp/m1":         {3, 1, 40},
+		"ssp/m1":         {3, 1, 39},
 		"ssp/m2":         {4, 1, 63},
 		"ssp/m3":         {4, 2, 18},
 		"ssp/m4":         {3, 1, 9},
@@ -381,10 +381,10 @@ func TestConfig_FileSpecSchemaReferences(t *testing.T) {
 	reg := loadRegistry(t)
 
 	expectedSchemas := map[string][]string{
-		"TAN:1":   {"common/header", "common/trailer", "tanf/t1", "tanf/t2", "tanf/t3"},
-		"TAN:2":   {"common/header", "common/trailer", "tanf/t4", "tanf/t5"},
-		"TAN:3":   {"common/header", "common/trailer", "tanf/t6"},
-		"TAN:4":   {"common/header", "common/trailer", "tanf/t7"},
+		"TAN:1":    {"common/header", "common/trailer", "tanf/t1", "tanf/t2", "tanf/t3"},
+		"TAN:2":    {"common/header", "common/trailer", "tanf/t4", "tanf/t5"},
+		"TAN:3":    {"common/header", "common/trailer", "tanf/t6"},
+		"TAN:4":    {"common/header", "common/trailer", "tanf/t7"},
 		"SSP:1":    {"common/header", "common/trailer", "ssp/m1", "ssp/m2", "ssp/m3"},
 		"SSP:2":    {"common/header", "common/trailer", "ssp/m4", "ssp/m5"},
 		"SSP:3":    {"common/header", "common/trailer", "ssp/m6"},
@@ -504,8 +504,8 @@ func TestConfig_FileSpecGroupedSchemas(t *testing.T) {
 	// Only section 1 and 2 filespecs should have grouped schemas
 	// These must exclude header/trailer and include only the record schemas
 	expectedGrouped := map[string][]string{
-		"TAN:1":   {"tanf/t1", "tanf/t2", "tanf/t3"},
-		"TAN:2":   {"tanf/t4", "tanf/t5"},
+		"TAN:1":    {"tanf/t1", "tanf/t2", "tanf/t3"},
+		"TAN:2":    {"tanf/t4", "tanf/t5"},
 		"SSP:1":    {"ssp/m1", "ssp/m2", "ssp/m3"},
 		"SSP:2":    {"ssp/m4", "ssp/m5"},
 		"TRIBAL:1": {"tribal_tanf/t1", "tribal_tanf/t2", "tribal_tanf/t3"},
