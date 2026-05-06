@@ -46,5 +46,4 @@ def test_LoginRedirectAMS_get(secrets_token_hex_mock, requests_get_mock):
     requests_get_mock.return_value.status_code = 503
     login_redirect_ams = LoginRedirectAMS()
     response = login_redirect_ams.get("request")
-    print("meaningless")
     assert response.status_code == 503
