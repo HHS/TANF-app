@@ -265,35 +265,6 @@ func TestGetRecordsOfType(t *testing.T) {
 	}
 }
 
-func TestHasAnyRecordType(t *testing.T) {
-	recordCounts := map[string]int{
-		"T1": 1,
-		"T2": 2,
-	}
-
-	if !hasAnyRecordType(recordCounts, []any{"T3", "T2"}) {
-		t.Error("expected true when one requested record type is present")
-	}
-	if hasAnyRecordType(recordCounts, []any{"T3", "T4"}) {
-		t.Error("expected false when none of the requested record types are present")
-	}
-}
-
-func TestAnyRecordOfTypesHasInt(t *testing.T) {
-	group := testutil.NewTestGroup(
-		testutil.NewTestRecord(t1Schema, 1, nil),
-		testutil.NewTestRecord(t2Schema, 2, map[string]any{"FAMILY_AFFILIATION": 2}),
-		testutil.NewTestRecord(t3Schema, 3, map[string]any{"FAMILY_AFFILIATION": 1}),
-	)
-
-	if !anyRecordOfTypesHasInt(group, []any{"T2", "T3"}, "FAMILY_AFFILIATION", 1) {
-		t.Error("expected true when a related record has the requested value")
-	}
-	if anyRecordOfTypesHasInt(group, []any{"T2", "T3"}, "FAMILY_AFFILIATION", 9) {
-		t.Error("expected false when no related record has the requested value")
-	}
-}
-
 func TestHasAnyRecordOfTypeWithInt(t *testing.T) {
 	group := testutil.NewTestGroup(
 		testutil.NewTestRecord(t2Schema, 1, map[string]any{"FAMILY_AFFILIATION": 1}),
@@ -616,26 +587,26 @@ func TestRealConfig_GroupValidatorBindingsAcrossPrograms(t *testing.T) {
 		},
 		{
 			filespecKey: "TAN:2",
-			validatorID: "requires_corresponding_record",
+			validatorID: "requires_related_record",
 			params: map[string]any{
 				"record_type":          "T4",
-				"required_record_type": "T5",
+				"related_record_types": []any{"T5"},
 			},
 		},
 		{
 			filespecKey: "SSP:2",
-			validatorID: "requires_corresponding_record",
+			validatorID: "requires_related_record",
 			params: map[string]any{
 				"record_type":          "M4",
-				"required_record_type": "M5",
+				"related_record_types": []any{"M5"},
 			},
 		},
 		{
 			filespecKey: "TRIBAL:2",
-			validatorID: "requires_corresponding_record",
+			validatorID: "requires_related_record",
 			params: map[string]any{
 				"record_type":          "T4",
-				"required_record_type": "T5",
+				"related_record_types": []any{"T5"},
 			},
 		},
 	}
@@ -798,11 +769,10 @@ func validatorParamsEqual(actual map[string]any, expected map[string]any) bool {
 func TestGroupValidatorParameterizedExpression(t *testing.T) {
 	opts := RegisterFunctions()
 
-	exprStr := `RecordCounts[Params.record_type] == 0 or anyRecordOfTypesHasInt(Group, Params.related_record_types, Params.field_name, Params.expected_value)`
+	exprStr := `filter(Group.Records, { .GetRecordType() == Params.record_type and not any(Group.Records, { .GetRecordType() in Params.related_record_types and .GetInt(Params.field_name) == Params.expected_value }) })`
 
 	compileOpts := append([]expr.Option{
 		expr.Env(&GroupEnv{}),
-		expr.AsBool(),
 		expr.AllowUndefinedVariables(),
 	}, opts...)
 
@@ -827,8 +797,8 @@ func TestGroupValidatorParameterizedExpression(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to run: %v", err)
 		}
-		if result != true {
-			t.Errorf("expected true when no T1, got %v", result)
+		if records := toRecordSlice(result); len(records) != 0 {
+			t.Errorf("expected no records when no T1, got %d", len(records))
 		}
 	})
 
@@ -849,8 +819,8 @@ func TestGroupValidatorParameterizedExpression(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to run: %v", err)
 		}
-		if result != true {
-			t.Errorf("expected true when T2 has FA=1, got %v", result)
+		if records := toRecordSlice(result); len(records) != 0 {
+			t.Errorf("expected no records when T2 has FA=1, got %d", len(records))
 		}
 	})
 
@@ -871,8 +841,8 @@ func TestGroupValidatorParameterizedExpression(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to run: %v", err)
 		}
-		if result != true {
-			t.Errorf("expected true when T3 has FA=1, got %v", result)
+		if records := toRecordSlice(result); len(records) != 0 {
+			t.Errorf("expected no records when T3 has FA=1, got %d", len(records))
 		}
 	})
 
@@ -893,8 +863,8 @@ func TestGroupValidatorParameterizedExpression(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to run: %v", err)
 		}
-		if result != false {
-			t.Errorf("expected false when no T2/T3 has FA=1, got %v", result)
+		if records := toRecordSlice(result); len(records) != 1 {
+			t.Errorf("expected 1 record when no T2/T3 has FA=1, got %d", len(records))
 		}
 	})
 
@@ -914,8 +884,8 @@ func TestGroupValidatorParameterizedExpression(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to run: %v", err)
 		}
-		if result != false {
-			t.Errorf("expected false when T1 has no T2/T3, got %v", result)
+		if records := toRecordSlice(result); len(records) != 1 {
+			t.Errorf("expected 1 record when T1 has no T2/T3, got %d", len(records))
 		}
 	})
 
@@ -938,8 +908,8 @@ func TestGroupValidatorParameterizedExpression(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to run: %v", err)
 		}
-		if result != true {
-			t.Errorf("expected true when at least one T2 has FA=1, got %v", result)
+		if records := toRecordSlice(result); len(records) != 0 {
+			t.Errorf("expected no records when at least one T2 has FA=1, got %d", len(records))
 		}
 	})
 }

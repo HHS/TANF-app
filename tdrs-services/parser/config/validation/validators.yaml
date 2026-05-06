@@ -558,17 +558,21 @@ group_validators:
   # Record type must have at least one related record in the same case.
   # Params: record_type (string), related_record_types (array of strings)
   - id: requires_related_record
-    expr: "RecordCounts[Params.record_type] == 0 or hasAnyRecordType(RecordCounts, Params.related_record_types)"
+    expr: |
+      filter(Group.Records, {
+          .GetRecordType() == Params.record_type and not any(Params.related_record_types, { RecordCounts[#] > 0 })
+        })
     message: "When {{.Params.record_type}} is present, at least one related record type must also be present"
+    result_mode: per_record
 
   # Record type must have at least one related record with a specific int field value.
   # Params: record_type (string), related_record_types (array of strings), field_name (string), expected_value (int)
   - id: requires_related_record_with_int_value
-    expr: "RecordCounts[Params.record_type] == 0 or anyRecordOfTypesHasInt(Group, Params.related_record_types, Params.field_name, Params.expected_value)"
+    expr: |
+      filter(Group.Records, {
+          .GetRecordType() == Params.record_type and not any(Group.Records, {
+              .GetRecordType() in Params.related_record_types and .GetInt(Params.field_name) == Params.expected_value
+            })
+        })
     message: "When {{.Params.record_type}} is present, at least one related record must have {{.Params.field_name}} == {{.Params.expected_value}}"
-
-  # Record type requires a corresponding record type in the same case.
-  # Params: record_type (string), required_record_type (string)
-  - id: requires_corresponding_record
-    expr: "RecordCounts[Params.record_type] == 0 or RecordCounts[Params.required_record_type] >= 1"
-    message: "When {{.Params.record_type}} is present, {{.Params.required_record_type}} must also be present"
+    result_mode: per_record

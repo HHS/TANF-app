@@ -796,7 +796,7 @@ def tanf_s4_exact_dup_file():
         section="Stratum Data",
         file__name="s4_exact_duplicate.txt",
         file__section="Stratum Data",
-        program_type=DataFile.ProgramType.SSP,
+        program_type=DataFile.ProgramType.TANF,
         file__data=(
             b"HEADER20214S06   TAN1 D\n"
             b"T720214101006853700680540068454103000312400037850003180104000347400036460003583106"

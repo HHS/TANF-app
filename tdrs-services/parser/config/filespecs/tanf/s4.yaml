@@ -57,15 +57,21 @@ record_type_detection:
 #
 # TANF Section 4 files contain stratum data (not case-level data).
 # T7 records are file-level summaries without case numbers,
-# so no key-based grouping is needed.
-#
-# Each record is processed independently.
+# but still require grouping for dulicate checks.
 accumulator:
 
-  # No key_fields for stratum data - records don't belong to cases
-  # key_fields: (none)
+  key_fields:
+    fields:
+      - name: record_type
+        start: 0
+        end: 2
 
   batch_size: 1
 
-  # All record types are processed individually (no grouping needed)
-  grouped_schemas: []
+  grouped_schemas:
+    - tanf/t7
+
+group_validators:
+  - id: exact_duplicates
+    params:
+      record_type: T7

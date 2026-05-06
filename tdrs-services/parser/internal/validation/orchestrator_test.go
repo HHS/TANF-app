@@ -558,6 +558,195 @@ func TestOrchestratorPerRecordGroupValidation(t *testing.T) {
 	})
 }
 
+func TestOrchestratorRequiresRelatedRecordReportsEachMissingRecord(t *testing.T) {
+	registry := newValidatorRegistry()
+	registry.exprOpts = RegisterFunctions()
+
+	relatedExpr, err := registry.getOrCompileExpr(
+		ScopeGroup,
+		"filter(Group.Records, { .GetRecordType() == Params.record_type and not any(Params.related_record_types, { RecordCounts[#] > 0 }) })",
+		"per_record",
+	)
+	if err != nil {
+		t.Fatalf("compiling related record expression: %v", err)
+	}
+	registry.group["TEST:1"] = []*CompiledValidator{
+		{
+			ID:         "requires_related_record",
+			Scope:      ScopeGroup,
+			ErrorType:  ErrorTypeCaseConsistency,
+			ResultMode: "per_record",
+			Expr:       relatedExpr,
+			Params: map[string]any{
+				"record_type":          "T1",
+				"related_record_types": []any{"T2", "T3"},
+			},
+		},
+	}
+
+	orchestrator := NewValidationOrchestrator(registry, true)
+	group := testutil.NewTestGroup(
+		testutil.NewTestRecord(t1Schema, 2, map[string]any{"CASE_NUMBER": "1", "AMOUNT": 10}),
+		testutil.NewTestRecord(t1Schema, 3, map[string]any{"CASE_NUMBER": "1", "AMOUNT": 10}),
+	)
+
+	result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
+
+	if len(result.GroupErrors) != 0 {
+		t.Fatalf("expected no group-level errors, got %d", len(result.GroupErrors))
+	}
+	for i, recResult := range result.RecordResults {
+		if len(recResult.RecordErrors) != 1 {
+			t.Fatalf("expected 1 record error for record %d, got %d", i, len(recResult.RecordErrors))
+		}
+		err := recResult.RecordErrors[0]
+		if err.ValidatorID != "requires_related_record" {
+			t.Errorf("expected requires_related_record, got %s", err.ValidatorID)
+		}
+		if err.LineNumber != group.Records[i].GetLineNumber() {
+			t.Errorf("expected LineNumber=%d, got %d", group.Records[i].GetLineNumber(), err.LineNumber)
+		}
+	}
+}
+
+func TestOrchestratorRequiresRelatedRecordPassesWhenAnyRelatedTypeExists(t *testing.T) {
+	registry := newValidatorRegistry()
+	registry.exprOpts = RegisterFunctions()
+
+	relatedExpr, err := registry.getOrCompileExpr(
+		ScopeGroup,
+		"filter(Group.Records, { .GetRecordType() == Params.record_type and not any(Params.related_record_types, { RecordCounts[#] > 0 }) })",
+		"per_record",
+	)
+	if err != nil {
+		t.Fatalf("compiling related record expression: %v", err)
+	}
+	registry.group["TEST:1"] = []*CompiledValidator{
+		{
+			ID:         "requires_related_record",
+			Scope:      ScopeGroup,
+			ErrorType:  ErrorTypeCaseConsistency,
+			ResultMode: "per_record",
+			Expr:       relatedExpr,
+			Params: map[string]any{
+				"record_type":          "T1",
+				"related_record_types": []any{"T2", "T3"},
+			},
+		},
+	}
+
+	orchestrator := NewValidationOrchestrator(registry, true)
+	group := testutil.NewTestGroup(
+		testutil.NewTestRecord(t1Schema, 2, map[string]any{"CASE_NUMBER": "1", "AMOUNT": 10}),
+		testutil.NewTestRecord(t3Schema, 3, map[string]any{"FAMILY_AFFILIATION": 1}),
+	)
+
+	result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
+
+	if result.HasErrors() {
+		t.Fatalf("expected no errors when any related record type exists")
+	}
+}
+
+func TestOrchestratorRequiresRelatedRecordWithIntValueReportsEachMissingRecord(t *testing.T) {
+	registry := newValidatorRegistry()
+	registry.exprOpts = RegisterFunctions()
+
+	relatedExpr, err := registry.getOrCompileExpr(
+		ScopeGroup,
+		"filter(Group.Records, { .GetRecordType() == Params.record_type and not any(Group.Records, { .GetRecordType() in Params.related_record_types and .GetInt(Params.field_name) == Params.expected_value }) })",
+		"per_record",
+	)
+	if err != nil {
+		t.Fatalf("compiling related record with int expression: %v", err)
+	}
+	registry.group["TEST:1"] = []*CompiledValidator{
+		{
+			ID:         "requires_related_record_with_int_value",
+			Scope:      ScopeGroup,
+			ErrorType:  ErrorTypeCaseConsistency,
+			ResultMode: "per_record",
+			Expr:       relatedExpr,
+			Params: map[string]any{
+				"record_type":          "T1",
+				"related_record_types": []any{"T2", "T3"},
+				"field_name":           "FAMILY_AFFILIATION",
+				"expected_value":       1,
+			},
+		},
+	}
+
+	orchestrator := NewValidationOrchestrator(registry, true)
+	group := testutil.NewTestGroup(
+		testutil.NewTestRecord(t1Schema, 2, map[string]any{"CASE_NUMBER": "1", "AMOUNT": 10}),
+		testutil.NewTestRecord(t1Schema, 3, map[string]any{"CASE_NUMBER": "1", "AMOUNT": 10}),
+		testutil.NewTestRecord(t2Schema, 4, map[string]any{"SSN": "111111111", "FAMILY_AFFILIATION": 2}),
+	)
+
+	result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
+
+	if len(result.GroupErrors) != 0 {
+		t.Fatalf("expected no group-level errors, got %d", len(result.GroupErrors))
+	}
+	for i := 0; i < 2; i++ {
+		recResult := result.RecordResults[i]
+		if len(recResult.RecordErrors) != 1 {
+			t.Fatalf("expected 1 record error for record %d, got %d", i, len(recResult.RecordErrors))
+		}
+		err := recResult.RecordErrors[0]
+		if err.ValidatorID != "requires_related_record_with_int_value" {
+			t.Errorf("expected requires_related_record_with_int_value, got %s", err.ValidatorID)
+		}
+		if err.LineNumber != group.Records[i].GetLineNumber() {
+			t.Errorf("expected LineNumber=%d, got %d", group.Records[i].GetLineNumber(), err.LineNumber)
+		}
+	}
+	if len(result.RecordResults[2].RecordErrors) != 0 {
+		t.Fatalf("expected no errors on related record, got %d", len(result.RecordResults[2].RecordErrors))
+	}
+}
+
+func TestOrchestratorRequiresRelatedRecordWithIntValuePassesWhenAnyRelatedTypeHasExpectedValue(t *testing.T) {
+	registry := newValidatorRegistry()
+	registry.exprOpts = RegisterFunctions()
+
+	relatedExpr, err := registry.getOrCompileExpr(
+		ScopeGroup,
+		"filter(Group.Records, { .GetRecordType() == Params.record_type and not any(Group.Records, { .GetRecordType() in Params.related_record_types and .GetInt(Params.field_name) == Params.expected_value }) })",
+		"per_record",
+	)
+	if err != nil {
+		t.Fatalf("compiling related record with int expression: %v", err)
+	}
+	registry.group["TEST:1"] = []*CompiledValidator{
+		{
+			ID:         "requires_related_record_with_int_value",
+			Scope:      ScopeGroup,
+			ErrorType:  ErrorTypeCaseConsistency,
+			ResultMode: "per_record",
+			Expr:       relatedExpr,
+			Params: map[string]any{
+				"record_type":          "T1",
+				"related_record_types": []any{"T2", "T3"},
+				"field_name":           "FAMILY_AFFILIATION",
+				"expected_value":       1,
+			},
+		},
+	}
+
+	orchestrator := NewValidationOrchestrator(registry, true)
+	group := testutil.NewTestGroup(
+		testutil.NewTestRecord(t1Schema, 2, map[string]any{"CASE_NUMBER": "1", "AMOUNT": 10}),
+		testutil.NewTestRecord(t3Schema, 3, map[string]any{"FAMILY_AFFILIATION": 1}),
+	)
+
+	result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
+
+	if result.HasErrors() {
+		t.Fatalf("expected no errors when any related record type has the expected value")
+	}
+}
+
 // TestOrchestratorMultipleFieldValidators tests that multiple validators on the same field all run.
 func TestOrchestratorMultipleFieldValidators(t *testing.T) {
 	registry := newValidatorRegistry()

@@ -1941,8 +1941,6 @@ class TestGoParse:
 
         errors = ParserError.objects.filter(file=datafile).order_by("row_number")
         for e in errors:
-            print(e.row_number, e.error_message)
-        for e in errors:
             assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
 
         # We get one extra duplicate that the Python parser doesn't detect! The Python parser hasn't been catching that
@@ -2118,3 +2116,180 @@ class TestGoParse:
         assert TANF_T1.objects.count() == 0
         assert TANF_T2.objects.count() == 0
         assert TANF_T3.objects.count() == 0
+
+    @pytest.mark.parametrize(
+        "file, batch_size, model, record_type, num_errors",
+        [
+            ("tanf_s1_exact_dup_file", 10000, TANF_T1, "T1", 5),
+            ("tanf_s1_exact_dup_file", 1, TANF_T1, "T1", 5),
+            ("tanf_s2_exact_dup_file", 10000, TANF_T4, "T4", 3),
+            ("tanf_s2_exact_dup_file", 1, TANF_T4, "T4", 3),
+            ("tanf_s3_exact_dup_file", 10000, TANF_T6, "T6", 3),
+            ("tanf_s3_exact_dup_file", 1, TANF_T6, "T6", 3),
+            ("tanf_s4_exact_dup_file", 10000, TANF_T7, "T7", 18),
+            ("tanf_s4_exact_dup_file", 1, TANF_T7, "T7", 18),
+            ("ssp_s1_exact_dup_file", 10000, SSP_M1, "M1", 5),
+            ("ssp_s1_exact_dup_file", 1, SSP_M1, "M1", 5),
+            ("ssp_s2_exact_dup_file", 10000, SSP_M4, "M4", 3),
+            ("ssp_s2_exact_dup_file", 1, SSP_M4, "M4", 3),
+            ("ssp_s3_exact_dup_file", 10000, SSP_M6, "M6", 3),
+            ("ssp_s3_exact_dup_file", 1, SSP_M6, "M6", 3),
+            ("ssp_s4_exact_dup_file", 10000, SSP_M7, "M7", 12),
+            ("ssp_s4_exact_dup_file", 1, SSP_M7, "M7", 12),
+        ],
+    )
+    @pytest.mark.django_db(transaction=True)
+    def test_go_parse_duplicate(
+        self, file, batch_size, model, record_type, num_errors, dfs, request
+    ):
+        """Test cases for datafiles that have exact duplicate records."""
+        datafile = request.getfixturevalue(file)
+        dfs.datafile = datafile
+
+        parse_datafile(dfs, datafile)
+
+        parser_errors = ParserError.objects.filter(
+            file=datafile, error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY
+        ).order_by("error_message")
+
+        for e in parser_errors:
+            assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+        assert parser_errors.count() == num_errors
+
+        dup_error = parser_errors.first()
+
+        assert (
+            dup_error.error_message
+            == f"Duplicate record detected with record type {record_type} at line 3."
+        )
+
+        model.objects.count() == 0
+
+    @pytest.mark.parametrize(
+        "file, batch_size, model, record_type, num_errors, err_msg",
+        [
+            (
+                "tanf_s1_partial_dup_file",
+                10000,
+                TANF_T1,
+                "T1",
+                5,
+                "Partial duplicate record detected with record type T1 at line 3.",
+            ),
+            (
+                "tanf_s1_partial_dup_file",
+                1,
+                TANF_T1,
+                "T1",
+                5,
+                "Partial duplicate record detected with record type T1 at line 3.",
+            ),
+            (
+                "tanf_s2_partial_dup_file",
+                10000,
+                TANF_T5,
+                "T5",
+                3,
+                "Partial duplicate record detected with record type T5 at line 3.",
+            ),
+            (
+                "tanf_s2_partial_dup_file",
+                1,
+                TANF_T5,
+                "T5",
+                3,
+                "Partial duplicate record detected with record type T5 at line 3.",
+            ),
+            (
+                "ssp_s1_partial_dup_file",
+                10000,
+                SSP_M1,
+                "M1",
+                5,
+                "Partial duplicate record detected with record type M1 at line 3.",
+            ),
+            (
+                "ssp_s1_partial_dup_file",
+                1,
+                SSP_M1,
+                "M1",
+                5,
+                "Partial duplicate record detected with record type M1 at line 3.",
+            ),
+            (
+                "ssp_s2_partial_dup_file",
+                10000,
+                SSP_M5,
+                "M5",
+                3,
+                "Partial duplicate record detected with record type M5 at line 3.",
+            ),
+            (
+                "ssp_s2_partial_dup_file",
+                1,
+                SSP_M5,
+                "M5",
+                3,
+                "Partial duplicate record detected with record type M5 at line 3.",
+            ),
+        ],
+    )
+    @pytest.mark.django_db(transaction=True)
+    def test_go_parse_partial_duplicate(
+        self, file, batch_size, model, record_type, num_errors, err_msg, dfs, request
+    ):
+        """Test cases for datafiles that have partial duplicate records."""
+        datafile = request.getfixturevalue(file)
+        expected_error_msg = err_msg
+
+        dfs.datafile = datafile
+
+        parse_datafile(dfs, datafile)
+
+        parser_errors = ParserError.objects.filter(
+            file=datafile, error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY
+        ).order_by("-error_message")
+        for e in parser_errors:
+            assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+        assert parser_errors.count() == num_errors
+
+        dup_error = parser_errors.first()
+        assert (
+            expected_error_msg.format(record_type=record_type)
+            in dup_error.error_message
+        )
+
+        model.objects.count() == 0
+
+    @pytest.mark.django_db(transaction=True)
+    def test_go_parse_cat_4_edge_case_file(self, cat4_edge_case_file, dfs):
+        """Test parsing file with a cat4 error edge case submission."""
+        cat4_edge_case_file.year = 2024
+        cat4_edge_case_file.quarter = "Q1"
+        cat4_edge_case_file.save()
+
+        dfs.datafile = cat4_edge_case_file
+        dfs.save()
+
+        parse_datafile(dfs, cat4_edge_case_file)
+
+        parser_errors = (
+            ParserError.objects.filter(file=cat4_edge_case_file)
+            .filter(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
+            .order_by("row_number")
+        )
+
+        assert TANF_T1.objects.all().count() == 2
+        assert TANF_T2.objects.all().count() == 2
+        assert TANF_T3.objects.all().count() == 4
+
+        # TODO
+        # assert dfs.total_number_of_records_in_file == 17
+        # assert dfs.total_number_of_records_created == 8
+
+        err = parser_errors.first()
+        assert err.error_message == (
+            "Every T1 record should have at least one corresponding T2 or T3 record "
+            "with the same RPT_MONTH_YEAR and CASE_NUMBER"
+        )
+        assert dfs.get_status() == DataFileSummary.Status.PARTIALLY_ACCEPTED
