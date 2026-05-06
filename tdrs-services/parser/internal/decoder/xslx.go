@@ -85,8 +85,8 @@ func (d *XLSXDecoder) ReadFirst() (Row, error) {
 }
 
 // Sort reads all rows, sorts them by key, and makes subsequent Rows() calls return sorted output.
-func (d *XLSXDecoder) Sort(detector *RecordTypeDetector, keyExtractor KeyExtractor, groupedSchemas []string) error {
-	return d.Sortable.DoSort(d.rowsWithBufferedFirst(), detector, keyExtractor, groupedSchemas)
+func (d *XLSXDecoder) Sort(detector *RecordTypeDetector, keyFields []filespec.KeyFieldDef, groupedSchemas []string) error {
+	return d.Sortable.DoSort(d.rowsWithBufferedFirst(), detector, keyFields, groupedSchemas)
 }
 
 func (d *XLSXDecoder) Rows() iter.Seq2[Row, error] {

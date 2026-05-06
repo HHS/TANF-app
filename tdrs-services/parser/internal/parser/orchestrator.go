@@ -39,10 +39,8 @@ func (o *ParsingOrchestrator) ParseBatch(batch *DecodedBatch) *ParsedBatch {
 // processGroup parses all records in a single group.
 func (o *ParsingOrchestrator) processGroup(decodedGroup *DecodedGroup) *ParsedGroup {
 	result := &ParsedGroup{
-		Key:          decodedGroup.Key,
-		RptMonthYear: decodedGroup.RptMonthYear,
-		CaseNumber:   decodedGroup.CaseNumber,
-		Records:      make([]*ParsedRecord, 0, len(decodedGroup.DecodedRecords)),
+		Key:     decodedGroup.Key,
+		Records: make([]*ParsedRecord, 0, len(decodedGroup.DecodedRecords)),
 	}
 
 	for _, line := range decodedGroup.DecodedRecords {

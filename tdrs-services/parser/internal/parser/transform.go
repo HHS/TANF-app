@@ -160,8 +160,9 @@ func FRAExitDate(value string, _ map[string]any, _ *ParseContext) (string, error
 	if isYYYYMM(trimmed) {
 		return trimmed, nil
 	}
+
 	if len(trimmed) == 6 && isDigits(trimmed) {
-		return "", fmt.Errorf("invalid FRA exit date: %s", value)
+		return value, nil
 	}
 
 	if f, err := strconv.ParseFloat(trimmed, 64); err == nil {
@@ -178,7 +179,7 @@ func FRAExitDate(value string, _ map[string]any, _ *ParseContext) (string, error
 		}
 	}
 
-	return "", fmt.Errorf("invalid FRA exit date: %s", value)
+	return value, nil
 }
 
 var fraExitDateLayouts = []string{

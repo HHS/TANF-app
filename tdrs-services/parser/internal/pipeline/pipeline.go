@@ -157,7 +157,7 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 
 	// Step 4b: Sort the file if presort is enabled
 	if spec.Accumulator.Presort && spec.Accumulator.HasKeyFields() {
-		if err := dec.Sort(detector, decoder.NewKeyExtractor(spec), spec.Accumulator.GroupedSchemas); err != nil {
+		if err := dec.Sort(detector, spec.Accumulator.KeyFields.OrderedFields(), spec.Accumulator.GroupedSchemas); err != nil {
 			err = fmt.Errorf("presort failed: %w", err)
 			if rollbackErr := p.abortAndRollback(ctx, cancelRun, dfCtx, router); rollbackErr != nil {
 				return nil, errors.Join(err, rollbackErr)

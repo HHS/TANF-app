@@ -74,12 +74,13 @@ accumulator:
   # These byte positions are used BEFORE full parsing to quickly
   # determine which case a record belongs to.
   key_fields:
-    rpt_month_year:
-      start: 2
-      end: 8
-    case_number:
-      start: 8
-      end: 19
+    fields:
+      - name: rpt_month_year
+        start: 2
+        end: 8
+      - name: case_number
+        start: 8
+        end: 19
 
   batch_size: 1
 

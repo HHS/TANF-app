@@ -38,10 +38,8 @@ func newRecord(s *schema.CompiledSchema, lineNum int, values map[string]any) *Pa
 // newGroup creates a ParsedGroup with default key fields for testing.
 func newGroup(records ...*ParsedRecord) *ParsedGroup {
 	return &ParsedGroup{
-		Key:          "202401|12345",
-		RptMonthYear: "202401",
-		CaseNumber:   "12345",
-		Records:      records,
+		Key:     "202401|12345",
+		Records: records,
 	}
 }
 
@@ -550,24 +548,12 @@ func TestParsedGroup_Getters(t *testing.T) {
 	if got := g.GetKey(); got != "202401|12345" {
 		t.Errorf("GetKey() = %s, want 202401|12345", got)
 	}
-	if got := g.GetRptMonthYear(); got != "202401" {
-		t.Errorf("GetRptMonthYear() = %s, want 202401", got)
-	}
-	if got := g.GetCaseNumber(); got != "12345" {
-		t.Errorf("GetCaseNumber() = %s, want 12345", got)
-	}
 }
 
 func TestParsedGroup_EmptyKey(t *testing.T) {
-	g := &ParsedGroup{Key: "", RptMonthYear: "", CaseNumber: ""}
+	g := &ParsedGroup{Key: ""}
 	if got := g.GetKey(); got != "" {
 		t.Errorf("GetKey() = %q, want empty", got)
-	}
-	if got := g.GetRptMonthYear(); got != "" {
-		t.Errorf("GetRptMonthYear() = %q, want empty", got)
-	}
-	if got := g.GetCaseNumber(); got != "" {
-		t.Errorf("GetCaseNumber() = %q, want empty", got)
 	}
 }
 

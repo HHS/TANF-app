@@ -19,7 +19,7 @@ type mockDecoder struct {
 func (d *mockDecoder) Format() filespec.Format         { return filespec.FormatPositional }
 func (d *mockDecoder) ReadFirst() (decoder.Row, error) { return d.header, nil }
 func (d *mockDecoder) Close() error                    { return nil }
-func (d *mockDecoder) Sort(_ *decoder.RecordTypeDetector, _ decoder.KeyExtractor, _ []string) error {
+func (d *mockDecoder) Sort(_ *decoder.RecordTypeDetector, _ []filespec.KeyFieldDef, _ []string) error {
 	return nil
 }
 
@@ -58,8 +58,10 @@ func buildTANFS1Spec() *filespec.FileSpec {
 		},
 		Accumulator: filespec.AccumulatorConfig{
 			KeyFields: &filespec.KeyFieldsConfig{
-				RptMonthYear: filespec.PositionDef{Start: 2, End: 8},
-				CaseNumber:   filespec.PositionDef{Start: 8, End: 19},
+				Fields: []filespec.KeyFieldDef{
+					{Name: "rpt_month_year", PositionDef: filespec.PositionDef{Start: 2, End: 8}},
+					{Name: "case_number", PositionDef: filespec.PositionDef{Start: 8, End: 19}},
+				},
 			},
 			BatchSize:      &batchSize,
 			GroupedSchemas: []string{"tanf/t1", "tanf/t2", "tanf/t3"},
@@ -106,6 +108,13 @@ func makeRow(lineNum int, data string) *decoder.PositionalRow {
 		rt = data[:2]
 	}
 	return decoder.NewPositionalRow(lineNum, rt, len(data), data)
+}
+
+func testSorterPositionalKeyFields() []filespec.KeyFieldDef {
+	return []filespec.KeyFieldDef{
+		{Name: "rpt_month_year", PositionDef: filespec.PositionDef{Start: 2, End: 8}},
+		{Name: "case_number", PositionDef: filespec.PositionDef{Start: 8, End: 19}},
+	}
 }
 
 func TestSorter_SortsByKey(t *testing.T) {
@@ -355,14 +364,9 @@ func TestSorter_UnrecognizedRecordType(t *testing.T) {
 	}
 }
 
-func TestPositionalKeyExtractor_ExtractKey(t *testing.T) {
-	extractor := &decoder.PositionalKeyExtractor{
-		RptMonthYear: filespec.PositionDef{Start: 2, End: 8},
-		CaseNumber:   filespec.PositionDef{Start: 8, End: 19},
-	}
-
+func TestRowKeyExtraction_ExtractKey(t *testing.T) {
 	row := makeRow(1, "T1202401CASE001    rest-of-data")
-	key, err := extractor.ExtractKey(row)
+	key, err := row.ExtractKey(testSorterPositionalKeyFields())
 	if err != nil {
 		t.Fatalf("ExtractKey failed: %v", err)
 	}
@@ -371,14 +375,9 @@ func TestPositionalKeyExtractor_ExtractKey(t *testing.T) {
 	}
 }
 
-func TestPositionalKeyExtractor_TooShort(t *testing.T) {
-	extractor := &decoder.PositionalKeyExtractor{
-		RptMonthYear: filespec.PositionDef{Start: 2, End: 8},
-		CaseNumber:   filespec.PositionDef{Start: 8, End: 19},
-	}
-
+func TestRowKeyExtraction_TooShort(t *testing.T) {
 	row := makeRow(1, "T1short")
-	_, err := extractor.ExtractKey(row)
+	_, err := row.ExtractKey(testSorterPositionalKeyFields())
 	if err == nil {
 		t.Fatal("expected error for short row")
 	}

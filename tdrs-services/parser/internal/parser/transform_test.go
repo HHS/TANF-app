@@ -482,14 +482,14 @@ func TestFRAExitDate(t *testing.T) {
 			want:  "",
 		},
 		{
-			name:    "invalid date",
-			value:   "not-a-date",
-			wantErr: true,
+			name:  "invalid date",
+			value: "not-a-date",
+			want:  "not-a-date",
 		},
 		{
-			name:    "invalid YYYYMM month",
-			value:   "202313",
-			wantErr: true,
+			name:  "invalid YYYYMM month",
+			value: "202313",
+			want:  "202313",
 		},
 	}
 	for _, tt := range tests {

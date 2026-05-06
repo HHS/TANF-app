@@ -554,12 +554,12 @@ func TestConfig_FileSpecFormats(t *testing.T) {
 func TestConfig_FileSpecAccumulatorKeyFields(t *testing.T) {
 	reg := loadRegistry(t)
 
-	// Sections 1 and 2 have key_fields for case grouping; sections 3, 4, and FRA do not
+	// Sections 1 and 2 have key_fields for grouping; FRA groups by EXIT_DATE + SSN.
 	expectKeyFields := map[string]bool{
 		"TAN:1": true, "TAN:2": true, "TAN:3": false, "TAN:4": false,
 		"SSP:1": true, "SSP:2": true, "SSP:3": false, "SSP:4": false,
 		"TRIBAL:1": true, "TRIBAL:2": true, "TRIBAL:3": false, "TRIBAL:4": false,
-		"FRA:1": false,
+		"FRA:1": true,
 	}
 
 	for key, wantKF := range expectKeyFields {
@@ -587,6 +587,7 @@ func TestConfig_FileSpecGroupedSchemas(t *testing.T) {
 		"SSP:2":    {"ssp/m4", "ssp/m5"},
 		"TRIBAL:1": {"tribal_tanf/t1", "tribal_tanf/t2", "tribal_tanf/t3"},
 		"TRIBAL:2": {"tribal_tanf/t4", "tribal_tanf/t5"},
+		"FRA:1":    {"fra/te1"},
 	}
 
 	for key, want := range expectedGrouped {
@@ -611,8 +612,8 @@ func TestConfig_FileSpecGroupedSchemas(t *testing.T) {
 		}
 	}
 
-	// Sections 3, 4, FRA should have no grouped schemas
-	noGrouped := []string{"TAN:3", "TAN:4", "SSP:3", "SSP:4", "TRIBAL:3", "TRIBAL:4", "FRA:1"}
+	// Sections 3 and 4 should have no grouped schemas.
+	noGrouped := []string{"TAN:3", "TAN:4", "SSP:3", "SSP:4", "TRIBAL:3", "TRIBAL:4"}
 	for _, key := range noGrouped {
 		spec := reg.FileSpecs()[key]
 		if spec == nil {
