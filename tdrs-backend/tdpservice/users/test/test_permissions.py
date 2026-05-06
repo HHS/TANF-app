@@ -2,6 +2,145 @@
 
 import pytest
 
+DEFAULT_NON_DELETE_ACTIONS = ["add", "change", "view"]
+
+
+def permissions_for_models(model_permissions):
+    """Build permission strings from app/model/action mappings."""
+    return {
+        f"{app_label}.{action}_{model_name}"
+        for app_label, model_actions in model_permissions.items()
+        for action, model_names in model_actions.items()
+        for model_name in model_names
+    }
+
+
+def default_permissions_for_models(app_models):
+    """Build add/change/view permission strings from app/model mappings."""
+    return permissions_for_models(
+        {
+            app_label: {action: model_names for action in DEFAULT_NON_DELETE_ACTIONS}
+            for app_label, model_names in app_models.items()
+        }
+    )
+
+
+OFA_SYSTEM_ADMIN_TABLE_PERMISSIONS = (
+    default_permissions_for_models(
+        {
+            "admin": ["logentry"],
+            "admin_interface": ["theme"],
+            "auth": ["group", "permission"],
+            "authtoken": ["token", "tokenproxy"],
+            "contenttypes": ["contenttype"],
+            "core": [
+                "featureflag",
+                "globalpermission",
+                "historicalfeatureflag",
+                "historicalgroup",
+                "historicalgroup_permissions",
+            ],
+            "data_files": ["datafile", "legacyfiletransfer", "reparsefilemeta"],
+            "django_celery_beat": [
+                "clockedschedule",
+                "crontabschedule",
+                "intervalschedule",
+                "periodictask",
+                "periodictasks",
+                "solarschedule",
+            ],
+            "parsers": ["datafilesummary", "parsererror"],
+            "reports": ["reportfile", "reportsource"],
+            "search_indexes": [
+                "programaudit_t1",
+                "programaudit_t2",
+                "programaudit_t3",
+                "reparsemeta",
+                "ssp_m1",
+                "ssp_m2",
+                "ssp_m3",
+                "ssp_m4",
+                "ssp_m5",
+                "ssp_m6",
+                "ssp_m7",
+                "tanf_exiter1",
+                "tanf_t1",
+                "tanf_t2",
+                "tanf_t3",
+                "tanf_t4",
+                "tanf_t5",
+                "tanf_t6",
+                "tanf_t7",
+                "tribal_tanf_t1",
+                "tribal_tanf_t2",
+                "tribal_tanf_t3",
+                "tribal_tanf_t4",
+                "tribal_tanf_t5",
+                "tribal_tanf_t6",
+                "tribal_tanf_t7",
+            ],
+            "sessions": ["session"],
+            "stts": ["region", "stt"],
+        }
+    )
+    | permissions_for_models(
+        {
+            "security": {
+                "add": ["securityeventtoken"],
+                "change": ["securityeventtoken"],
+                "view": ["clamavfilescan", "owaspzapscan", "securityeventtoken"],
+            },
+            "users": {
+                "change": ["user"],
+                "view": ["user"],
+            },
+        }
+    )
+    | {
+        "users.has_fra_access",
+    }
+)
+
+
+SHADOW_TABLE_PERMISSIONS = default_permissions_for_models(
+    {
+        "data_files": [
+            "shadowdatafile",
+        ],
+        "parsers": [
+            "shadowdatafilesummary",
+            "shadowparsererror",
+        ],
+        "search_indexes": [
+            "shadowprogramaudit_t1",
+            "shadowprogramaudit_t2",
+            "shadowprogramaudit_t3",
+            "shadowssp_m1",
+            "shadowssp_m2",
+            "shadowssp_m3",
+            "shadowssp_m4",
+            "shadowssp_m5",
+            "shadowssp_m6",
+            "shadowssp_m7",
+            "shadowtanf_exiter1",
+            "shadowtanf_t1",
+            "shadowtanf_t2",
+            "shadowtanf_t3",
+            "shadowtanf_t4",
+            "shadowtanf_t5",
+            "shadowtanf_t6",
+            "shadowtanf_t7",
+            "shadowtribal_tanf_t1",
+            "shadowtribal_tanf_t2",
+            "shadowtribal_tanf_t3",
+            "shadowtribal_tanf_t4",
+            "shadowtribal_tanf_t5",
+            "shadowtribal_tanf_t6",
+            "shadowtribal_tanf_t7",
+        ],
+    }
+)
+
 
 @pytest.mark.django_db
 def test_ofa_admin_permissions(ofa_admin):
@@ -28,180 +167,8 @@ def test_ofa_admin_permissions(ofa_admin):
 @pytest.mark.django_db
 def test_ofa_system_admin_permissions(ofa_system_admin):
     """Test that an OFA System Admin user inherits the correct permissions."""
-    expected_permissions = {
-        "auth.view_permission",
-        "search_indexes.view_tribal_tanf_t2",
-        "django_celery_beat.change_periodictasks",
-        "django_celery_beat.change_solarschedule",
-        "admin_interface.view_theme",
-        "data_files.change_reparsefilemeta",
-        "django_celery_beat.add_clockedschedule",
-        "core.view_historicalfeatureflag",
-        "auth.change_group",
-        "core.change_historicalgroup",
-        "search_indexes.change_tanf_t5",
-        "admin.view_logentry",
-        "data_files.change_legacyfiletransfer",
-        "django_celery_beat.change_periodictask",
-        "search_indexes.view_tribal_tanf_t4",
-        "search_indexes.add_ssp_m5",
-        "search_indexes.change_tanf_exiter1",
-        "search_indexes.change_programaudit_t3",
-        "stts.change_stt",
-        "search_indexes.view_tanf_t6",
-        "search_indexes.add_tribal_tanf_t5",
-        "stts.change_region",
-        "admin_interface.change_theme",
-        "authtoken.view_tokenproxy",
-        "core.view_historicalgroup_permissions",
-        "django_celery_beat.change_intervalschedule",
-        "django_celery_beat.view_periodictasks",
-        "search_indexes.change_tribal_tanf_t5",
-        "search_indexes.change_tanf_t6",
-        "search_indexes.add_programaudit_t3",
-        "search_indexes.add_tribal_tanf_t1",
-        "parsers.change_parsererror",
-        "core.add_historicalgroup",
-        "search_indexes.change_ssp_m7",
-        "sessions.change_session",
-        "search_indexes.view_ssp_m5",
-        "authtoken.add_token",
-        "search_indexes.change_ssp_m6",
-        "search_indexes.view_tanf_exiter1",
-        "search_indexes.change_programaudit_t2",
-        "search_indexes.add_tanf_t6",
-        "search_indexes.change_tribal_tanf_t3",
-        "core.view_featureflag",
-        "search_indexes.add_ssp_m4",
-        "search_indexes.view_programaudit_t3",
-        "core.change_historicalfeatureflag",
-        "core.add_featureflag",
-        "search_indexes.add_tanf_t5",
-        "security.view_owaspzapscan",
-        "users.view_user",
-        "search_indexes.add_ssp_m2",
-        "search_indexes.add_tanf_t4",
-        "users.has_fra_access",
-        "parsers.add_datafilesummary",
-        "search_indexes.view_tanf_t2",
-        "search_indexes.change_programaudit_t1",
-        "auth.add_permission",
-        "reports.add_reportsource",
-        "data_files.change_datafile",
-        "search_indexes.view_tanf_t4",
-        "search_indexes.change_tanf_t1",
-        "search_indexes.view_tribal_tanf_t3",
-        "search_indexes.change_tanf_t7",
-        "django_celery_beat.view_clockedschedule",
-        "search_indexes.add_tribal_tanf_t7",
-        "sessions.add_session",
-        "search_indexes.view_ssp_m3",
-        "stts.view_region",
-        "search_indexes.view_tanf_t1",
-        "security.view_securityeventtoken",
-        "search_indexes.change_ssp_m1",
-        "core.view_historicalgroup",
-        "search_indexes.add_tanf_t1",
-        "authtoken.add_tokenproxy",
-        "search_indexes.view_ssp_m6",
-        "reports.view_reportfile",
-        "django_celery_beat.add_crontabschedule",
-        "search_indexes.change_tribal_tanf_t4",
-        "search_indexes.change_ssp_m2",
-        "search_indexes.view_reparsemeta",
-        "reports.change_reportfile",
-        "parsers.change_datafilesummary",
-        "search_indexes.change_tribal_tanf_t7",
-        "search_indexes.add_tribal_tanf_t4",
-        "search_indexes.add_ssp_m3",
-        "data_files.view_legacyfiletransfer",
-        "core.change_globalpermission",
-        "search_indexes.add_ssp_m7",
-        "search_indexes.change_tanf_t2",
-        "search_indexes.add_tanf_t2",
-        "search_indexes.change_tanf_t4",
-        "admin_interface.add_theme",
-        "stts.view_stt",
-        "parsers.view_parsererror",
-        "search_indexes.change_tribal_tanf_t1",
-        "django_celery_beat.change_clockedschedule",
-        "sessions.view_session",
-        "core.change_featureflag",
-        "search_indexes.view_ssp_m1",
-        "search_indexes.change_reparsemeta",
-        "core.add_globalpermission",
-        "search_indexes.view_tanf_t7",
-        "django_celery_beat.change_crontabschedule",
-        "django_celery_beat.view_periodictask",
-        "search_indexes.view_tanf_t5",
-        "search_indexes.view_ssp_m7",
-        "search_indexes.change_ssp_m4",
-        "search_indexes.add_tribal_tanf_t6",
-        "search_indexes.change_ssp_m3",
-        "search_indexes.add_ssp_m6",
-        "search_indexes.add_tribal_tanf_t2",
-        "search_indexes.view_ssp_m4",
-        "django_celery_beat.add_intervalschedule",
-        "search_indexes.add_tanf_exiter1",
-        "data_files.add_reparsefilemeta",
-        "core.view_globalpermission",
-        "django_celery_beat.add_periodictasks",
-        "search_indexes.add_programaudit_t2",
-        "contenttypes.change_contenttype",
-        "search_indexes.view_tribal_tanf_t5",
-        "stts.add_stt",
-        "search_indexes.view_tanf_t3",
-        "admin.add_logentry",
-        "search_indexes.view_ssp_m2",
-        "stts.add_region",
-        "search_indexes.view_programaudit_t1",
-        "admin.change_logentry",
-        "search_indexes.view_tribal_tanf_t7",
-        "reports.add_reportfile",
-        "data_files.add_datafile",
-        "search_indexes.add_tanf_t7",
-        "search_indexes.add_programaudit_t1",
-        "core.change_historicalgroup_permissions",
-        "auth.view_group",
-        "django_celery_beat.add_periodictask",
-        "django_celery_beat.view_intervalschedule",
-        "search_indexes.add_ssp_m1",
-        "search_indexes.view_tribal_tanf_t6",
-        "users.change_user",
-        "search_indexes.add_tribal_tanf_t3",
-        "reports.change_reportsource",
-        "reports.view_reportsource",
-        "search_indexes.view_programaudit_t2",
-        "search_indexes.add_reparsemeta",
-        "security.change_securityeventtoken",
-        "search_indexes.change_tribal_tanf_t6",
-        "data_files.add_legacyfiletransfer",
-        "django_celery_beat.add_solarschedule",
-        "search_indexes.change_tanf_t3",
-        "authtoken.view_token",
-        "core.add_historicalgroup_permissions",
-        "search_indexes.view_tribal_tanf_t1",
-        "security.view_clamavfilescan",
-        "django_celery_beat.view_solarschedule",
-        "auth.change_permission",
-        "core.add_historicalfeatureflag",
-        "auth.add_group",
-        "data_files.view_datafile",
-        "search_indexes.add_tanf_t3",
-        "django_celery_beat.view_crontabschedule",
-        "contenttypes.view_contenttype",
-        "parsers.view_datafilesummary",
-        "search_indexes.change_ssp_m5",
-        "data_files.view_reparsefilemeta",
-        "search_indexes.change_tribal_tanf_t2",
-        "parsers.add_parsererror",
-        "security.add_securityeventtoken",
-        "contenttypes.add_contenttype",
-        "authtoken.change_tokenproxy",
-        "authtoken.change_token",
-    }
+    expected_permissions = OFA_SYSTEM_ADMIN_TABLE_PERMISSIONS | SHADOW_TABLE_PERMISSIONS
     group_permissions = ofa_system_admin.get_group_permissions()
-    print(group_permissions)
     assert group_permissions == expected_permissions
 
 
