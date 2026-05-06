@@ -91,7 +91,7 @@ func TestCLI_OverrideDatabaseShadowModeFromEnv(t *testing.T) {
 }
 
 func TestCLI_OverrideServerCeleryQueueName(t *testing.T) {
-	cli, ctx, err := ParseCLI([]string{"--server.celery.queue-name=parser-shadow"})
+	cli, ctx, err := ParseCLI([]string{"--server.celery.queue=parser-shadow"})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
