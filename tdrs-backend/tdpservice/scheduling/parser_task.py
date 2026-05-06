@@ -9,6 +9,7 @@ from django.utils import timezone
 
 from celery import current_app, shared_task
 
+from tdpservice.core.utils import log
 from tdpservice.data_files.error_reports import ErrorReportFactory
 from tdpservice.data_files.models import DataFile, ReparseFileMeta
 from tdpservice.email.helpers.data_file import send_data_submitted_email
@@ -49,9 +50,16 @@ def queue_go_parse(data_file_id):
             ignore_result=True,
         )
     except Exception:
-        logger.exception(
-            "Failed to submit Go parser shadow task for datafile %s.",
-            data_file_id,
+        data_file = DataFile.objects.get(id=data_file_id)
+        log(
+            f"Failed to submit Go parser shadow task for datafile {data_file_id}.",
+            logger_context={
+                "user_id": data_file.user_id,
+                "content_type": DataFile,
+                "object_id": data_file.pk,
+                "object_repr": repr(data_file),
+            },
+            level="exception",
         )
 
 

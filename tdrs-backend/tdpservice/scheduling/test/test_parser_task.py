@@ -3,6 +3,7 @@
 import io
 from types import SimpleNamespace
 
+from django.contrib.admin.models import LogEntry
 from django.db.utils import DatabaseError
 
 import pytest
@@ -121,6 +122,30 @@ def test_queue_go_parse_sends_shadow_task(monkeypatch):
             "ignore_result": True,
         }
     ]
+
+
+@pytest.mark.django_db
+def test_queue_go_parse_logs_submit_failure_to_admin(monkeypatch, stt):
+    """Write Go parser queue submission failures to Django admin logs."""
+    datafile = DataFileFactory(stt=stt, version=1)
+
+    def fake_send_task(*args, **kwargs):
+        raise RuntimeError("redis down")
+
+    monkeypatch.setattr(
+        parser_task,
+        "current_app",
+        SimpleNamespace(send_task=fake_send_task),
+    )
+
+    parser_task.queue_go_parse(datafile.id)
+
+    entry = LogEntry.objects.latest("pk")
+    assert str(entry.user_id) == datafile.user_id
+    assert entry.object_id == str(datafile.pk)
+    assert entry.change_message == (
+        f"Failed to submit Go parser shadow task for datafile {datafile.id}."
+    )
 
 
 def test_queue_parse_queues_python_and_go(monkeypatch):
