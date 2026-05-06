@@ -8,16 +8,17 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// GetDataFile retrieves a DataFile record by its primary key.
-func GetDataFile(ctx context.Context, pool *pgxpool.Pool, id int32) (*DataFilesDatafile, error) {
-	query := `
+// GetDataFile retrieves a DataFile-compatible record by its primary key.
+func GetDataFile(ctx context.Context, pool *pgxpool.Pool, tableName string, id int32) (*ShadowDataFilesDatafile, error) {
+	table := pgx.Identifier{tableName}.Sanitize()
+	query := fmt.Sprintf(`
 		SELECT id, original_filename, slug, extension, quarter, year, section, version,
 		       stt_id, user_id, created_at, file, s3_versioning_id, program_type, is_program_audit, state
-		FROM data_files_datafile
+		FROM %s
 		WHERE id = $1
-	`
+	`, table)
 
-	var df DataFilesDatafile
+	var df ShadowDataFilesDatafile
 	err := pool.QueryRow(ctx, query, id).Scan(
 		&df.ID, &df.OriginalFilename, &df.Slug, &df.Extension,
 		&df.Quarter, &df.Year, &df.Section, &df.Version,
@@ -25,14 +26,14 @@ func GetDataFile(ctx context.Context, pool *pgxpool.Pool, id int32) (*DataFilesD
 		&df.S3VersioningID, &df.ProgramType, &df.IsProgramAudit, &df.State,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("query data_files_datafile id=%d: %w", id, err)
+		return nil, fmt.Errorf("query %s id=%d: %w", tableName, id, err)
 	}
 
 	return &df, nil
 }
 
 // EnsureShadowDataFile copies production DataFile metadata into the Go parser shadow table.
-func EnsureShadowDataFile(ctx context.Context, pool *pgxpool.Pool, tableName string, df *DataFilesDatafile) error {
+func EnsureShadowDataFile(ctx context.Context, pool *pgxpool.Pool, tableName string, df *ShadowDataFilesDatafile) error {
 	table := pgx.Identifier{tableName}.Sanitize()
 	query := fmt.Sprintf(`
 		INSERT INTO %s (

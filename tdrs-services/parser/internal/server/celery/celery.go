@@ -194,13 +194,14 @@ func (s *Server) updateDataFileState(parentCtx context.Context, dataFileID int32
 // processTask handles a single parse task end-to-end:
 // DB lookup → S3 download → decode → pipeline → status update.
 func (s *Server) processTask(taskCtx context.Context, dataFileID int32) error {
+	dataFileTable := config.DataFileTableName(s.Config.Database.EffectiveTablePrefix())
+
 	// 1. Look up datafile metadata from the database.
-	df, err := db.GetDataFile(taskCtx, s.dbPool, dataFileID)
+	df, err := db.GetDataFile(taskCtx, s.dbPool, dataFileTable, dataFileID)
 	if err != nil {
 		return fmt.Errorf("failed to get datafile: %w", err)
 	}
 
-	dataFileTable := config.DataFileTableName(s.Config.Database.EffectiveTablePrefix())
 	if err := db.EnsureShadowDataFile(taskCtx, s.dbPool, dataFileTable, df); err != nil {
 		return fmt.Errorf("failed to prepare shadow datafile: %w", err)
 	}
