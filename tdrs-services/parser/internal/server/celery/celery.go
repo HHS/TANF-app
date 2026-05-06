@@ -102,7 +102,7 @@ func (s *Server) Run(parentCtx context.Context) error {
 	if numWorkers < 1 {
 		numWorkers = 1
 	}
-	queueName := s.Config.Server.Celery.QueueName
+	queueName := s.Config.Server.Celery.Queue
 	if queueName == "" {
 		queueName = defaultQueueName
 	}

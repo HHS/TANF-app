@@ -99,8 +99,8 @@ func TestCLI_OverrideServerCeleryQueueName(t *testing.T) {
 	cfg := DefaultConfig()
 	cli.ApplyTo(cfg, ctx)
 
-	if cfg.Server.Celery.QueueName != "parser-shadow" {
-		t.Errorf("Server.Celery.QueueName = %q, want parser-shadow", cfg.Server.Celery.QueueName)
+	if cfg.Server.Celery.Queue != "parser-shadow" {
+		t.Errorf("Server.Celery.Queue = %q, want parser-shadow", cfg.Server.Celery.Queue)
 	}
 }
 
