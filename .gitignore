@@ -130,3 +130,6 @@ tdrs-backend/django.log
 
 # Go parser dry run
 output/
+
+# Generated test files
+tdrs-backend/infected_test.txt

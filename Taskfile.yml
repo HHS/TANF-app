@@ -421,6 +421,23 @@ tasks:
       - task: backend-down
       - task: frontend-down
 
+  create-infected-test-file:
+    desc: Create a test file with a valid TANF header that ClamAV will flag as infected
+    dir: tdrs-backend
+    preconditions:
+      - sh: docker compose ps clamav-rest --status running -q 2>/dev/null
+        msg: "clamav-rest container is not running. Start it first with: task backend-up"
+    cmds:
+      - |
+        printf 'HEADER20204A06   TAN1ED\nTDP-INFECTED-TEST-MARKER\nTRAILER0000001         \n' > infected_test.txt
+      - >-
+        docker compose exec -T clamav-rest sh -c
+        'echo "TDP.Test.Infected:0:*:5444502d494e4645435445442d544553542d4d41524b4552" > /var/lib/clamav/tdp-test.ndb
+        && pkill -USR2 clamd
+        && sleep 5
+        && tail -1 /var/log/clamav/clamd.log'
+      - echo "Created tdrs-backend/infected_test.txt and loaded ClamAV test signature. Upload this file through the frontend to test AV rejection."
+
   parser:compile-check:
     desc: Compile all Go parser packages and tests
     dir: tdrs-services/parser
