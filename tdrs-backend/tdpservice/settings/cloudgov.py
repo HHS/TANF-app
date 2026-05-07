@@ -199,6 +199,7 @@ class CloudGov(Common):
 
     _KC_REALM_URL = f"{KEYCLOAK_SERVER_URL}/realms/{KEYCLOAK_REALM}"
     _KC_BROWSER_REALM_URL = f"{KEYCLOAK_BROWSER_URL}/realms/{KEYCLOAK_REALM}"
+    KEYCLOAK_ISSUER = os.getenv("KEYCLOAK_ISSUER", _KC_BROWSER_REALM_URL)
 
     # Browser-facing endpoints (user's browser is redirected here)
     OIDC_OP_AUTHORIZATION_ENDPOINT = (

@@ -558,6 +558,10 @@ class Common(Configuration):
     KEYCLOAK_DJANGO_CLIENT_SECRET = os.getenv(
         "KEYCLOAK_DJANGO_CLIENT_SECRET", "tdp-django-local-secret"
     )
+    KEYCLOAK_BEARER_CLIENT_ID = os.getenv("KEYCLOAK_BEARER_CLIENT_ID", "tdp-cli")
+    KEYCLOAK_API_AUDIENCE = os.getenv(
+        "KEYCLOAK_API_AUDIENCE", KEYCLOAK_DJANGO_CLIENT_ID
+    )
 
     ####################################
     # mozilla-django-oidc Settings     #
@@ -577,6 +581,7 @@ class Common(Configuration):
 
     _KC_REALM_URL = f"{KEYCLOAK_SERVER_URL}/realms/{KEYCLOAK_REALM}"
     _KC_BROWSER_REALM_URL = f"{KEYCLOAK_BROWSER_URL}/realms/{KEYCLOAK_REALM}"
+    KEYCLOAK_ISSUER = os.getenv("KEYCLOAK_ISSUER", _KC_BROWSER_REALM_URL)
 
     # Browser-facing endpoints (user's browser is redirected here)
     OIDC_OP_AUTHORIZATION_ENDPOINT = (

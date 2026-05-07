@@ -73,6 +73,7 @@ def keycloak_jwks(settings, requests_mock, bearer_signing_key):
 
     settings.OIDC_OP_JWKS_ENDPOINT = KEYCLOAK_TEST_JWKS_ENDPOINT
     settings.OIDC_RP_SIGN_ALGO = "RS256"
+    settings.KEYCLOAK_ISSUER = KEYCLOAK_TEST_ISSUER
     requests_mock.get(KEYCLOAK_TEST_JWKS_ENDPOINT, json={"keys": [jwk]})
 
     return {"keys": [jwk]}
