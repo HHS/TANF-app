@@ -68,7 +68,8 @@ def queue_go_parse(data_file_id):
 def queue_parse(data_file_id, reparse_id=None):
     """Queue production Python parse and companion Go shadow parse tasks."""
     parse.delay(data_file_id, reparse_id=reparse_id)
-    queue_go_parse(data_file_id)
+    if settings.GO_PARSER_SHADOW_MODE:
+        queue_go_parse(data_file_id)
 
 
 def set_reparse_file_meta_model_state(reparse_id, file_meta, is_success):

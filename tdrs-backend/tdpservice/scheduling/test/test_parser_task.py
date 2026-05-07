@@ -3,9 +3,11 @@
 import io
 from types import SimpleNamespace
 
-import pytest
 from django.contrib.admin.models import LogEntry
 from django.db.utils import DatabaseError
+from django.test import override_settings
+
+import pytest
 
 from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.models import DataFile, ReparseFileMeta
@@ -172,6 +174,33 @@ def test_queue_parse_queues_python_and_go(monkeypatch):
     assert calls == [
         ("python", 42, 7),
         ("go", 42),
+    ]
+
+
+@override_settings(GO_PARSER_SHADOW_MODE=False)
+def test_queue_parse_skips_go_when_shadow_mode_off(monkeypatch):
+    """Queue only the production Python parser when Go shadow mode is disabled."""
+    calls = []
+
+    monkeypatch.setattr(
+        parser_task,
+        "parse",
+        SimpleNamespace(
+            delay=lambda data_file_id, reparse_id=None: calls.append(
+                ("python", data_file_id, reparse_id)
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        parser_task,
+        "queue_go_parse",
+        lambda data_file_id: calls.append(("go", data_file_id)),
+    )
+
+    parser_task.queue_parse(42, reparse_id=7)
+
+    assert calls == [
+        ("python", 42, 7),
     ]
 
 
@@ -671,9 +700,7 @@ def test_reparse_transitions_to_parse_started(monkeypatch, stt):
         datafile=datafile, status=DataFileSummary.Status.PENDING
     )
     meta_model = ReparseMeta.objects.create(db_backup_location="s3://backup")
-    ReparseFileMeta.objects.create(
-        data_file=datafile, reparse_meta=meta_model
-    )
+    ReparseFileMeta.objects.create(data_file=datafile, reparse_meta=meta_model)
     setup_parse_mocks(monkeypatch, dfs=dfs)
     monkeypatch.setattr(
         parser_task.ParserFactory, "get_instance", lambda **kwargs: DummyParser()
