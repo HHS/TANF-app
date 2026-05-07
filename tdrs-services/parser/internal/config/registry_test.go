@@ -167,7 +167,7 @@ func TestConfig_SchemaFieldCounts(t *testing.T) {
 		"tanf/t7":        {2, 30, 4},
 		"ssp/m1":         {3, 1, 39},
 		"ssp/m2":         {4, 1, 63},
-		"ssp/m3":         {4, 2, 18},
+		"ssp/m3":         {3, 2, 18},
 		"ssp/m4":         {3, 1, 9},
 		"ssp/m5":         {3, 1, 24},
 		"ssp/m6":         {2, 3, 11},
@@ -554,11 +554,12 @@ func TestConfig_FileSpecFormats(t *testing.T) {
 func TestConfig_FileSpecAccumulatorKeyFields(t *testing.T) {
 	reg := loadRegistry(t)
 
-	// Sections 1 and 2 have key_fields for grouping; FRA groups by EXIT_DATE + SSN.
+	// Sections 1 and 2 group case records; sections 3 and 4 group aggregate
+	// records by record type for duplicate checks. FRA groups by EXIT_DATE + SSN.
 	expectKeyFields := map[string]bool{
-		"TAN:1": true, "TAN:2": true, "TAN:3": false, "TAN:4": false,
-		"SSP:1": true, "SSP:2": true, "SSP:3": false, "SSP:4": false,
-		"TRIBAL:1": true, "TRIBAL:2": true, "TRIBAL:3": false, "TRIBAL:4": false,
+		"TAN:1": true, "TAN:2": true, "TAN:3": true, "TAN:4": true,
+		"SSP:1": true, "SSP:2": true, "SSP:3": true, "SSP:4": true,
+		"TRIBAL:1": true, "TRIBAL:2": true, "TRIBAL:3": true, "TRIBAL:4": true,
 		"FRA:1": true,
 	}
 
@@ -578,15 +579,20 @@ func TestConfig_FileSpecAccumulatorKeyFields(t *testing.T) {
 func TestConfig_FileSpecGroupedSchemas(t *testing.T) {
 	reg := loadRegistry(t)
 
-	// Only section 1 and 2 filespecs should have grouped schemas
-	// These must exclude header/trailer and include only the record schemas
+	// Grouped schemas must exclude header/trailer and include only the record schemas.
 	expectedGrouped := map[string][]string{
 		"TAN:1":    {"tanf/t1", "tanf/t2", "tanf/t3"},
 		"TAN:2":    {"tanf/t4", "tanf/t5"},
+		"TAN:3":    {"tanf/t6"},
+		"TAN:4":    {"tanf/t7"},
 		"SSP:1":    {"ssp/m1", "ssp/m2", "ssp/m3"},
 		"SSP:2":    {"ssp/m4", "ssp/m5"},
+		"SSP:3":    {"ssp/m6"},
+		"SSP:4":    {"ssp/m7"},
 		"TRIBAL:1": {"tribal_tanf/t1", "tribal_tanf/t2", "tribal_tanf/t3"},
 		"TRIBAL:2": {"tribal_tanf/t4", "tribal_tanf/t5"},
+		"TRIBAL:3": {"tribal_tanf/t6"},
+		"TRIBAL:4": {"tribal_tanf/t7"},
 		"FRA:1":    {"fra/te1"},
 	}
 
@@ -612,17 +618,6 @@ func TestConfig_FileSpecGroupedSchemas(t *testing.T) {
 		}
 	}
 
-	// Sections 3 and 4 should have no grouped schemas.
-	noGrouped := []string{"TAN:3", "TAN:4", "SSP:3", "SSP:4", "TRIBAL:3", "TRIBAL:4"}
-	for _, key := range noGrouped {
-		spec := reg.FileSpecs()[key]
-		if spec == nil {
-			continue
-		}
-		if len(spec.Accumulator.GroupedSchemas) != 0 {
-			t.Errorf("filespec %s: expected no grouped schemas, got %v", key, spec.Accumulator.GroupedSchemas)
-		}
-	}
 }
 
 // ---------------------------------------------------------------------------

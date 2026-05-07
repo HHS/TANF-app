@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
 	"testing"
 
 	"go-parser/internal/config"
@@ -93,6 +94,7 @@ func testFRAContext() DataFileContext {
 
 // capturingSink captures all flushed data for assertions.
 type capturingSink struct {
+	mu             sync.Mutex
 	tables         map[string][][]any // tableName -> rows
 	rollbackCalls  int
 	rollbackErr    error
@@ -107,11 +109,15 @@ func newCapturingSink() *capturingSink {
 func (s *capturingSink) Flush(_ context.Context, tableName string, _ []string, rows [][]any) (int64, error) {
 	copied := make([][]any, len(rows))
 	copy(copied, rows)
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.tables[tableName] = append(s.tables[tableName], copied...)
 	return int64(len(rows)), nil
 }
 
 func (s *capturingSink) RollbackDatafile(_ context.Context, datafileID int32, tables []string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.rollbackCalls++
 	s.rollbackID = datafileID
 	s.rollbackTables = slices.Clone(tables)
@@ -127,10 +133,14 @@ func (s *capturingSink) RollbackDatafile(_ context.Context, datafileID int32, ta
 func (s *capturingSink) Close() error { return nil }
 
 func (s *capturingSink) rowCount(tableName string) int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	return len(s.tables[tableName])
 }
 
 func (s *capturingSink) totalRecords() int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	total := 0
 	for name, rows := range s.tables {
 		if name != "parser_error" {
@@ -141,6 +151,8 @@ func (s *capturingSink) totalRecords() int {
 }
 
 func (s *capturingSink) errorCount() int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	return len(s.tables["parser_error"])
 }
 
