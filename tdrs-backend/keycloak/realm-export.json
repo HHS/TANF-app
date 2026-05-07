@@ -237,6 +237,28 @@
           }
         }
       ]
+    },
+    {
+      "name": "tdp-api-audience",
+      "description": "Adds the Django API audience to access tokens for external API clients.",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "false",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "name": "tdp-django audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "tdp-django",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ]
     }
   ],
   "clients": [
@@ -345,7 +367,8 @@
         "openid",
         "email",
         "profile",
-        "tdp-user-attributes"
+        "tdp-user-attributes",
+        "tdp-api-audience"
       ],
       "optionalClientScopes": []
     }

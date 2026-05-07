@@ -206,7 +206,7 @@ Sync only works if the Keycloak user already exists (i.e., user has logged in vi
 
 External tools (Postman, CLI, CI/CD, auditors) authenticate against the Django API using Keycloak-issued JWT bearer tokens. Tokens are obtained via standard OAuth2 grants against the **public** `tdp-cli` Keycloak client (no client secret to distribute).
 
-Django validates incoming bearer tokens with `KeycloakBearerTokenAuthentication` (registered in DRF's `DEFAULT_AUTHENTICATION_CLASSES`), which verifies the JWT signature against `OIDC_OP_JWKS_ENDPOINT` and resolves the user via the same claim-based logic used by browser logins. Authorization (permissions, STT scoping, approval status) is identical to a browser session.
+Django validates incoming bearer tokens with `KeycloakBearerTokenAuthentication` (registered in DRF's `DEFAULT_AUTHENTICATION_CLASSES`), which verifies the JWT signature against `OIDC_OP_JWKS_ENDPOINT`, requires the `tdp-cli` client (`azp`) and Django API audience (`aud`), and resolves the user via the same claim-based logic used by browser logins. Authorization (permissions, STT scoping, approval status) is identical to a browser session.
 
 ### Postman (Authorization Code + PKCE)
 
@@ -275,7 +275,7 @@ Every bearer-token-authenticated request emits a structured log line:
 INFO Bearer token auth client=tdp-cli user=<email> path=/v1/users/
 ```
 
-The `client_id` is the token's `azp` claim (which Keycloak client minted the token). In Cloud.gov these flow into Loki and are queryable in Grafana.
+The `client_id` is the token's `azp` claim (which Keycloak client minted the token). The `tdp-api-audience` default client scope adds the Django API audience (`tdp-django`) to `tdp-cli` access tokens so Django can reject tokens intended for other clients. In Cloud.gov these flow into Loki and are queryable in Grafana.
 
 ### Rate limiting
 
