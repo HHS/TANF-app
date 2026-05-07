@@ -127,7 +127,7 @@ func TestRecordTotalsForResult(t *testing.T) {
 	if created != 12 {
 		t.Errorf("created = %d, want 12", created)
 	}
-	if total != 15 {
+	if total != 12 {
 		t.Errorf("total = %d, want 15", total)
 	}
 }

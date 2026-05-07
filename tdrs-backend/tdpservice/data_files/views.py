@@ -221,7 +221,7 @@ class DataFileViewSet(ModelViewSet):
             + f"quarter {data_file.quarter}, year {data_file.year}."
         )
 
-        parser_task.queue_parse(data_file_id)
+        parser_task.queue_parse(data_file.id)
         logger.info("Submitted parse task to queue for datafile %s.", data_file.id)
 
         headers = self.get_success_headers(serializer.data)
