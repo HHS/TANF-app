@@ -5,7 +5,6 @@ import logging
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
-from django.core.exceptions import SuspiciousOperation
 from django.test import RequestFactory
 
 from cryptography.hazmat.primitives import serialization
@@ -140,20 +139,16 @@ class TestBearerHeaderParsing:
 class TestTokenVerification:
     """Cover JWT signature / claim-verification failure modes."""
 
-    @patch(
-        "tdpservice.users.authentication.OIDCAuthenticationBackend.verify_token"
-    )
+    @patch("tdpservice.users.authentication._verify_keycloak_bearer_token")
     def test_invalid_signature_raises_authentication_failed(
         self, mock_verify, auth, request_with_token
     ):
         """A signature-verification error is surfaced as 401, not 500."""
-        mock_verify.side_effect = SuspiciousOperation("bad signature")
+        mock_verify.side_effect = jwt.InvalidTokenError("bad signature")
         with pytest.raises(AuthenticationFailed):
             auth.authenticate(request_with_token())
 
-    @patch(
-        "tdpservice.users.authentication.OIDCAuthenticationBackend.verify_token"
-    )
+    @patch("tdpservice.users.authentication._verify_keycloak_bearer_token")
     def test_missing_email_in_claims_rejects(
         self, mock_verify, auth, request_with_token
     ):
@@ -162,9 +157,7 @@ class TestTokenVerification:
         with pytest.raises(AuthenticationFailed):
             auth.authenticate(request_with_token())
 
-    @patch(
-        "tdpservice.users.authentication.OIDCAuthenticationBackend.verify_token"
-    )
+    @patch("tdpservice.users.authentication._verify_keycloak_bearer_token")
     def test_acf_user_via_login_gov_rejected(
         self, mock_verify, auth, request_with_token
     ):
@@ -180,9 +173,7 @@ class TestTokenVerification:
         with pytest.raises(AuthenticationFailed):
             auth.authenticate(request_with_token())
 
-    @patch(
-        "tdpservice.users.authentication.OIDCAuthenticationBackend.verify_token"
-    )
+    @patch("tdpservice.users.authentication._verify_keycloak_bearer_token")
     def test_deactivated_user_rejected(
         self, mock_verify, auth, request_with_token
     ):
@@ -196,9 +187,7 @@ class TestTokenVerification:
         with pytest.raises(AuthenticationFailed):
             auth.authenticate(request_with_token())
 
-    @patch(
-        "tdpservice.users.authentication.OIDCAuthenticationBackend.verify_token"
-    )
+    @patch("tdpservice.users.authentication._verify_keycloak_bearer_token")
     def test_inactive_user_rejected(
         self, mock_verify, auth, request_with_token
     ):
@@ -335,9 +324,7 @@ class TestBearerTokenIntentVerification:
 class TestUserResolution:
     """Happy paths and user-resolution edge cases."""
 
-    @patch(
-        "tdpservice.users.authentication.OIDCAuthenticationBackend.verify_token"
-    )
+    @patch("tdpservice.users.authentication._verify_keycloak_bearer_token")
     def test_existing_user_resolved_by_login_gov_uuid(
         self, mock_verify, auth, request_with_token
     ):
@@ -355,9 +342,7 @@ class TestUserResolution:
         assert str(resolved_user.id) == str(user.id)
         assert token == "dummy-jwt"
 
-    @patch(
-        "tdpservice.users.authentication.OIDCAuthenticationBackend.verify_token"
-    )
+    @patch("tdpservice.users.authentication._verify_keycloak_bearer_token")
     def test_existing_user_resolved_by_hhs_id(
         self, mock_verify, auth, request_with_token
     ):
@@ -376,9 +361,7 @@ class TestUserResolution:
         resolved_user, _ = result
         assert str(resolved_user.id) == str(user.id)
 
-    @patch(
-        "tdpservice.users.authentication.OIDCAuthenticationBackend.verify_token"
-    )
+    @patch("tdpservice.users.authentication._verify_keycloak_bearer_token")
     def test_new_user_is_created_from_claims(
         self, mock_verify, auth, request_with_token
     ):
@@ -397,9 +380,7 @@ class TestUserResolution:
         assert user.username == "brandnew@example.com"
         assert str(user.login_gov_uuid) == "550e8400-e29b-41d4-a716-446655440000"
 
-    @patch(
-        "tdpservice.users.authentication.OIDCAuthenticationBackend.verify_token"
-    )
+    @patch("tdpservice.users.authentication._verify_keycloak_bearer_token")
     def test_multiple_user_match_raises_authentication_failed(
         self, mock_verify, auth, request_with_token
     ):
@@ -424,9 +405,7 @@ class TestUserResolution:
 class TestAuditAndThrottleHook:
     """Audit logging + the request attribute used by KeycloakClientRateThrottle."""
 
-    @patch(
-        "tdpservice.users.authentication.OIDCAuthenticationBackend.verify_token"
-    )
+    @patch("tdpservice.users.authentication._verify_keycloak_bearer_token")
     def test_authenticate_stashes_client_id_on_request(
         self, mock_verify, auth, request_with_token
     ):
@@ -443,9 +422,7 @@ class TestAuditAndThrottleHook:
         auth.authenticate(request)
         assert request._keycloak_client_id == "tdp-cli"
 
-    @patch(
-        "tdpservice.users.authentication.OIDCAuthenticationBackend.verify_token"
-    )
+    @patch("tdpservice.users.authentication._verify_keycloak_bearer_token")
     def test_audit_log_contains_client_id(
         self, mock_verify, auth, request_with_token, caplog
     ):
