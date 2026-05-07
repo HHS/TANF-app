@@ -32,7 +32,7 @@ class STTFactory(factory.django.DjangoModelFactory):
         model = "stts.STT"
 
     id = factory.LazyFunction(lambda: random.randint(1, int(1e9)))
-    name = factory.Sequence(lambda n: "teststt%d" % n)
+    name = factory.Faker("user_name")
     postal_code = "TT"
     type = "STATE"
     filenames = json.loads(

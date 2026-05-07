@@ -11,10 +11,15 @@ document: "SSP Active Case Data"
 format: positional
 
 record_validators:
+  # Record validators with RECORD_PRE_CHECK error type (block record serialization)
   - id: record_length_min
     params:
       min: 113
   - id: case_number_not_empty
+  - id: rpt_month_year_is_valid
+  - id: rpt_month_year_matches_header_year_quarter
+
+  # Record validators with VALUE_CONSISTENCY error type (cross-field validation)
   # Amount requires positive validators
   - id: amount_requires_positive
     params:
@@ -111,14 +116,6 @@ shared:
 # Each segment produces one output row (combined with shared fields)
 segments:
   - fields:
-      - name: FIPS_CODE
-        friendly_name: State FIPS Code
-        item: "1"
-        start: 19
-        end: 21
-        type: string
-        required: true
-
       - name: COUNTY_FIPS_CODE
         friendly_name: County FIPS Code
         item: "2"
