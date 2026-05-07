@@ -73,6 +73,7 @@
           command: |
             cd tdrs-backend
             docker-compose exec web python manage.py delete_cypress_users -usernames new-cypress@teamraft.com cypress-admin@teamraft.com
+            docker-compose exec web python manage.py reset_cypress_profile_editing_users --allow-non-debug
       - run:
           name: Setup cypress test data
           command: |

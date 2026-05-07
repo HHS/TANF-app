@@ -345,6 +345,7 @@ tasks:
     cmds:
       - export CYPRESS_TOKEN=local-cypress-token
       - docker compose -f docker-compose.yml exec web python manage.py delete_cypress_users -usernames new-cypress@teamraft.com cypress-admin@teamraft.com cypress-data-analyst-dana@teamraft.com cypress-fra-data-analyst-derek@teamraft.com cypress-data-analyst-donna@teamraft.com cypress-fra-data-analyst-david@teamraft.com cypress-fra-ofa-regional-staff-rachel@acf.hhs.gov cypress-fra-ofa-regional-staff-robert@acf.hhs.gov cypress-fra-ofa-regional-staff-rita@acf.hhs.gov cypress-fra-ofa-regional-staff-ryan@acf.hhs.gov
+      - docker compose -f docker-compose.yml exec web python manage.py reset_cypress_profile_editing_users --allow-non-debug
       - docker compose -f docker-compose.yml exec web python manage.py loaddata cypress/users cypress/data_files cypress/regions cypress/profile_editing_regions cypress/profile_editing_users cypress/feature_flags
 
   frontend-e2e-local:

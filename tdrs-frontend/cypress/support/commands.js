@@ -26,6 +26,20 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
+const validateSessionFor = (username) => {
+  cy.request({
+    method: 'GET',
+    url: `${Cypress.env('apiUrl')}/auth_check`,
+    failOnStatusCode: false,
+  }).then((response) => {
+    expect(response.body?.authenticated, 'authenticated session').to.equal(true)
+    expect(
+      response.body?.user?.email || response.body?.user?.username,
+      'authenticated username'
+    ).to.equal(username)
+  })
+}
+
 Cypress.Commands.add('login', (username) =>
   cy.session(
     username,
@@ -49,7 +63,7 @@ Cypress.Commands.add('login', (username) =>
           })
       })
     },
-    { cacheAcrossSpecs: true }
+    { cacheAcrossSpecs: true, validate: () => validateSessionFor(username) }
   )
 )
 
@@ -73,7 +87,7 @@ Cypress.Commands.add('adminLogin', (username) =>
         )
       })
     },
-    { cacheAcrossSpecs: true }
+    { cacheAcrossSpecs: true, validate: () => validateSessionFor(username) }
   )
 )
 
