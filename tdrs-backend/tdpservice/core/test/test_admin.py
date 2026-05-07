@@ -81,7 +81,6 @@ class TestAdminTemplates(TestCase):
             requested_value="NewAdmin",
             status=UserChangeRequestStatus.PENDING,
         )
-        print(f"Change Request ID: {change_request.id}")
         # Approve the change request
         response = client.post(
             f"/admin/users/userchangerequest/{change_request.id}/approve/"

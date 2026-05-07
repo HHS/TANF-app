@@ -206,8 +206,7 @@ class TestParse:
         dfs.status = dfs.get_status()
         assert dfs.status == DataFileSummary.Status.REJECTED
         parser_errors = ParserError.objects.filter(file=small_correct_file)
-        for e in parser_errors:
-            print(e.row_number, e.error_message)
+
         # Extra error for No records created error and other cat4 errors
         assert parser_errors.count() == num_errors
 
@@ -1499,9 +1498,6 @@ class TestParse:
         assert TANF_T7.objects.all().count() == 18
 
         parser_errors = ParserError.objects.filter(file=tanf_section_4_file_with_errors)
-        for e in parser_errors:
-            print(e.row_number, e.error_type, e.error_message)
-        assert False
 
         assert parser_errors.count() == 7
 
@@ -1545,8 +1541,6 @@ class TestParse:
         """Test record rejection counting when record has more than one preparsing error."""
         aggregates_rejected_datafile.year = 2021
         aggregates_rejected_datafile.quarter = "Q1"
-
-        print(aggregates_rejected_datafile)
 
         dfs.datafile = aggregates_rejected_datafile
 
@@ -1890,7 +1884,6 @@ class TestParse:
         dfs.case_aggregates = aggregates.case_aggregates_by_month(
             dfs.datafile, dfs.status
         )
-        print(dfs.case_aggregates)
         assert dfs.case_aggregates == {
             "months": [
                 {
