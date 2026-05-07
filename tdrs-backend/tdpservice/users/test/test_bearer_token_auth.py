@@ -1,11 +1,16 @@
 """Tests for KeycloakBearerTokenAuthentication and KeycloakClientRateThrottle."""
 
+import json
 import logging
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 from django.core.exceptions import SuspiciousOperation
 from django.test import RequestFactory
 
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+import jwt
 import pytest
 
 from rest_framework.exceptions import AuthenticationFailed
@@ -16,6 +21,12 @@ from tdpservice.users.test.factories import UserFactory
 from tdpservice.users.throttling import KeycloakClientRateThrottle
 
 logger = logging.getLogger(__name__)
+
+KEYCLOAK_TEST_ISSUER = "http://keycloak:8080/realms/tdp"
+KEYCLOAK_TEST_JWKS_ENDPOINT = (
+    f"{KEYCLOAK_TEST_ISSUER}/protocol/openid-connect/certs"
+)
+KEYCLOAK_TEST_KEY_ID = "bearer-token-test-key"
 
 
 @pytest.fixture
@@ -44,6 +55,61 @@ def _claims(**overrides):
     }
     base.update(overrides)
     return base
+
+
+@pytest.fixture
+def bearer_signing_key():
+    """Return an RSA private key used to sign test Keycloak tokens."""
+    return rsa.generate_private_key(public_exponent=65537, key_size=2048)
+
+
+@pytest.fixture
+def keycloak_jwks(settings, requests_mock, bearer_signing_key):
+    """Mock Keycloak's JWKS endpoint for real signature verification."""
+    jwk = json.loads(
+        jwt.algorithms.RSAAlgorithm.to_jwk(bearer_signing_key.public_key())
+    )
+    jwk.update({"kid": KEYCLOAK_TEST_KEY_ID, "alg": "RS256", "use": "sig"})
+
+    settings.OIDC_OP_JWKS_ENDPOINT = KEYCLOAK_TEST_JWKS_ENDPOINT
+    settings.OIDC_RP_SIGN_ALGO = "RS256"
+    requests_mock.get(KEYCLOAK_TEST_JWKS_ENDPOINT, json={"keys": [jwk]})
+
+    return {"keys": [jwk]}
+
+
+@pytest.fixture
+def signed_bearer_token(bearer_signing_key, keycloak_jwks):
+    """Return a factory that builds signed Keycloak-like access tokens."""
+
+    def _build(omit_claims=(), **claim_overrides):
+        now = datetime.now(timezone.utc)
+        claims = _claims(
+            aud="tdp-django",
+            azp="tdp-cli",
+            iss=KEYCLOAK_TEST_ISSUER,
+            exp=now + timedelta(minutes=5),
+            iat=now,
+            typ="Bearer",
+            login_gov_uuid="550e8400-e29b-41d4-a716-446655440000",
+        )
+        claims.update(claim_overrides)
+        for claim in omit_claims:
+            claims.pop(claim, None)
+
+        private_key_pem = bearer_signing_key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.NoEncryption(),
+        )
+        return jwt.encode(
+            claims,
+            private_key_pem,
+            algorithm="RS256",
+            headers={"kid": KEYCLOAK_TEST_KEY_ID},
+        )
+
+    return _build
 
 
 class TestBearerHeaderParsing:
@@ -142,6 +208,126 @@ class TestTokenVerification:
         )
         with pytest.raises(AuthenticationFailed):
             auth.authenticate(request_with_token())
+
+
+@pytest.mark.django_db
+class TestBearerTokenIntentVerification:
+    """Use signed JWTs to prove bearer tokens are meant for this API flow."""
+
+    def test_signed_tdp_cli_token_is_accepted(
+        self, auth, request_with_token, signed_bearer_token
+    ):
+        """A signed token for tdp-cli and the Django API authenticates."""
+        user = UserFactory(
+            account_approval_status=AccountApprovalStatusChoices.APPROVED,
+        )
+        token = signed_bearer_token(
+            email=user.email,
+            login_gov_uuid=str(user.login_gov_uuid),
+        )
+
+        result = auth.authenticate(request_with_token(token))
+
+        assert result is not None
+        resolved_user, returned_token = result
+        assert str(resolved_user.id) == str(user.id)
+        assert returned_token == token
+
+    def test_signed_token_with_wrong_azp_is_rejected(
+        self, auth, request_with_token, signed_bearer_token
+    ):
+        """A token signed by Keycloak but issued to Grafana is not enough."""
+        user = UserFactory(
+            account_approval_status=AccountApprovalStatusChoices.APPROVED,
+        )
+        token = signed_bearer_token(
+            email=user.email,
+            login_gov_uuid=str(user.login_gov_uuid),
+            azp="tdp-grafana",
+        )
+
+        with pytest.raises(AuthenticationFailed):
+            auth.authenticate(request_with_token(token))
+
+    def test_signed_token_missing_azp_is_rejected(
+        self, auth, request_with_token, signed_bearer_token
+    ):
+        """A bearer token must say which Keycloak client received it."""
+        user = UserFactory(
+            account_approval_status=AccountApprovalStatusChoices.APPROVED,
+        )
+        token = signed_bearer_token(
+            email=user.email,
+            login_gov_uuid=str(user.login_gov_uuid),
+            omit_claims=("azp",),
+        )
+
+        with pytest.raises(AuthenticationFailed):
+            auth.authenticate(request_with_token(token))
+
+    def test_signed_token_with_wrong_audience_is_rejected(
+        self, auth, request_with_token, signed_bearer_token
+    ):
+        """A token must be intended for the Django API audience."""
+        user = UserFactory(
+            account_approval_status=AccountApprovalStatusChoices.APPROVED,
+        )
+        token = signed_bearer_token(
+            email=user.email,
+            login_gov_uuid=str(user.login_gov_uuid),
+            aud="tdp-grafana",
+        )
+
+        with pytest.raises(AuthenticationFailed):
+            auth.authenticate(request_with_token(token))
+
+    def test_signed_token_missing_audience_is_rejected(
+        self, auth, request_with_token, signed_bearer_token
+    ):
+        """A token without an audience does not prove API intent."""
+        user = UserFactory(
+            account_approval_status=AccountApprovalStatusChoices.APPROVED,
+        )
+        token = signed_bearer_token(
+            email=user.email,
+            login_gov_uuid=str(user.login_gov_uuid),
+            omit_claims=("aud",),
+        )
+
+        with pytest.raises(AuthenticationFailed):
+            auth.authenticate(request_with_token(token))
+
+    def test_signed_token_with_wrong_issuer_is_rejected(
+        self, auth, request_with_token, signed_bearer_token
+    ):
+        """A token must come from the expected Keycloak realm issuer."""
+        user = UserFactory(
+            account_approval_status=AccountApprovalStatusChoices.APPROVED,
+        )
+        token = signed_bearer_token(
+            email=user.email,
+            login_gov_uuid=str(user.login_gov_uuid),
+            iss="http://keycloak:8080/realms/other",
+        )
+
+        with pytest.raises(AuthenticationFailed):
+            auth.authenticate(request_with_token(token))
+
+    def test_expired_signed_token_is_rejected(
+        self, auth, request_with_token, signed_bearer_token
+    ):
+        """A previously valid token cannot be used after expiration."""
+        user = UserFactory(
+            account_approval_status=AccountApprovalStatusChoices.APPROVED,
+        )
+        token = signed_bearer_token(
+            email=user.email,
+            login_gov_uuid=str(user.login_gov_uuid),
+            exp=datetime.now(timezone.utc) - timedelta(minutes=5),
+        )
+
+        with pytest.raises(AuthenticationFailed):
+            auth.authenticate(request_with_token(token))
 
 
 @pytest.mark.django_db
