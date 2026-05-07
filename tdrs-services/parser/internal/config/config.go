@@ -13,14 +13,14 @@ type PipelineWorkerConfig struct {
 
 // WriterConfig holds table writer flush thresholds and output mode.
 type WriterConfig struct {
-	Mode                string   `yaml:"mode"`                  // "database" (default), "file"
-	Format              string   `yaml:"format"`                // "json" or "csv" (only used when mode is "file")
-	OutputDir           string   `yaml:"output_dir"`            // output directory (only used when mode is "file")
+	Mode                string   `yaml:"mode"`       // "database" (default), "file"
+	Format              string   `yaml:"format"`     // "json" or "csv" (only used when mode is "file")
+	OutputDir           string   `yaml:"output_dir"` // output directory (only used when mode is "file")
 	FlushThreshold      int      `yaml:"flush_threshold"`
 	ErrorFlushThreshold int      `yaml:"error_flush_threshold"`
-	IncludeSchemas      []string `yaml:"include_schemas"`       // filter which record types get written (empty = all)
-	IncludeRecords      bool     `yaml:"include_records"`       // whether to write records (default true)
-	IncludeErrors       bool     `yaml:"include_errors"`        // whether to write errors (default true)
+	IncludeSchemas      []string `yaml:"include_schemas"` // filter which record types get written (empty = all)
+	IncludeRecords      bool     `yaml:"include_records"` // whether to write records (default true)
+	IncludeErrors       bool     `yaml:"include_errors"`  // whether to write errors (default true)
 }
 
 // ValidationConfig controls validation behavior.
@@ -41,9 +41,10 @@ type DatabaseConfig struct {
 
 // S3Config holds S3-specific storage settings.
 type S3Config struct {
-	Bucket   string `yaml:"bucket"`
-	Endpoint string `yaml:"endpoint"` // Custom endpoint (empty = real AWS, set for LocalStack)
-	Region   string `yaml:"region"`
+	Bucket    string `yaml:"bucket"`
+	Endpoint  string `yaml:"endpoint"` // Custom endpoint (empty = real AWS, set for LocalStack)
+	Region    string `yaml:"region"`
+	KeyPrefix string `yaml:"key_prefix"` // Prefix prepended to paths for environment separation
 }
 
 // Config is the top-level configuration structure matching config/parser.yaml.
@@ -79,7 +80,9 @@ type ServerConfig struct {
 
 // CeleryConfig holds Celery worker settings.
 type CeleryConfig struct {
-	RedisURL string `yaml:"redis_url"`
+	RedisURL   string `yaml:"redis_url"`
+	Queue      string `yaml:"queue"`
+	NumWorkers int    `yaml:"num_workers"` // Number of concurrent celery task workers (default 1)
 }
 
 // GRPCConfig holds gRPC server settings.
@@ -122,6 +125,9 @@ func DefaultConfig() *Config {
 		FilespecFiles: []string{"filespecs/**/*.yaml"},
 		Server: ServerConfig{
 			Mode: "local",
+			Celery: CeleryConfig{
+				Queue: "go-parser",
+			},
 			GRPC: GRPCConfig{
 				ListenAddress: ":50051",
 			},
