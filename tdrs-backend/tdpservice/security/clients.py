@@ -45,7 +45,9 @@ class ClamAVClient:
         session.mount(self.endpoint_url, HTTPAdapter(max_retries=retries))
         return session
 
-    def scan_file(self, file: File, file_name: str, uploaded_by: User) -> bool:
+    def scan_file(
+        self, file: File, file_name: str, uploaded_by: User, data_file=None
+    ) -> bool:
         """Scan a file for virus infections.
 
         :param file:
@@ -54,6 +56,8 @@ class ClamAVClient:
             The string name of the file.
         :param uploaded_by:
             The User that uploaded the given file.
+        :param data_file:
+            Optional DataFile associated with this scan.
         :returns is_file_clean:
             A boolean indicating whether or not the file passed the ClamAV scan
         :raises ClamAVClient.ServiceUnavailable:
@@ -86,7 +90,7 @@ class ClamAVClient:
         # Log and create audit records with the results of this scan
         logger.debug(msg)
         ClamAVFileScan.objects.record_scan(
-            file, file_name, msg, scan_result, uploaded_by
+            file, file_name, msg, scan_result, uploaded_by, data_file=data_file
         )
 
         return True if scan_result == ClamAVFileScan.Result.CLEAN else False
