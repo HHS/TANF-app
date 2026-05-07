@@ -1,13 +1,14 @@
 """Define custom authentication class."""
 
+import json
 import logging
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.exceptions import SuspiciousOperation
 from django.utils.translation import gettext_lazy as _
 
-from mozilla_django_oidc.auth import OIDCAuthenticationBackend
-
+import jwt
+import requests
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 
@@ -27,6 +28,71 @@ def _bearer_token_from_request(request):
     if not header.lower().startswith("bearer "):
         return None
     return header[7:].strip() or None
+
+
+def _expected_keycloak_issuer():
+    """Return the Keycloak issuer expected for bearer access tokens."""
+    return getattr(
+        settings,
+        "KEYCLOAK_ISSUER",
+        f"{settings.KEYCLOAK_SERVER_URL}/realms/{settings.KEYCLOAK_REALM}",
+    )
+
+
+def _expected_keycloak_audience():
+    """Return the API audience expected in bearer access tokens."""
+    return getattr(
+        settings,
+        "KEYCLOAK_API_AUDIENCE",
+        settings.KEYCLOAK_DJANGO_CLIENT_ID,
+    )
+
+
+def _expected_keycloak_bearer_client_id():
+    """Return the Keycloak client allowed to use bearer auth."""
+    return getattr(settings, "KEYCLOAK_BEARER_CLIENT_ID", "tdp-cli")
+
+
+def _matching_jwks_key(token):
+    """Return the JWKS key matching the token's key id."""
+    header = jwt.get_unverified_header(token)
+    key_id = header.get("kid")
+    if not key_id:
+        raise jwt.InvalidTokenError("Token missing kid header.")
+
+    response = requests.get(
+        settings.OIDC_OP_JWKS_ENDPOINT,
+        verify=getattr(settings, "OIDC_VERIFY_SSL", True),
+        timeout=getattr(settings, "OIDC_TIMEOUT", None),
+        proxies=getattr(settings, "OIDC_PROXY", None),
+    )
+    response.raise_for_status()
+
+    for key in response.json().get("keys", []):
+        if key.get("kid") == key_id:
+            return jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(key))
+
+    raise jwt.InvalidTokenError("No matching JWKS key found.")
+
+
+def _verify_keycloak_bearer_token(token):
+    """Verify bearer JWT signature and prove the token is meant for this API."""
+    payload = jwt.decode(
+        token,
+        _matching_jwks_key(token),
+        algorithms=[settings.OIDC_RP_SIGN_ALGO],
+        audience=_expected_keycloak_audience(),
+        issuer=_expected_keycloak_issuer(),
+        options={"require": ["aud", "exp", "iss"]},
+    )
+
+    expected_client_id = _expected_keycloak_bearer_client_id()
+    if payload.get("azp") != expected_client_id:
+        raise jwt.InvalidTokenError(
+            f"Token azp must be {expected_client_id}."
+        )
+
+    return payload
 
 
 class KeycloakBearerTokenAuthentication(BaseAuthentication):
@@ -51,13 +117,9 @@ class KeycloakBearerTokenAuthentication(BaseAuthentication):
         if not token:
             return None
 
-        # OIDCAuthenticationBackend.verify_token retrieves JWKS, verifies the
-        # RS256 signature and the ``exp`` claim. Access tokens have no nonce,
-        # so the nonce branch is a no-op (None == None).
-        backend = OIDCAuthenticationBackend()
         try:
-            payload = backend.verify_token(token)
-        except (SuspiciousOperation, Exception) as exc:
+            payload = _verify_keycloak_bearer_token(token)
+        except (jwt.InvalidTokenError, requests.RequestException) as exc:
             logger.info("Bearer token verification failed: %s", exc)
             raise AuthenticationFailed(_("Invalid bearer token."))
 
