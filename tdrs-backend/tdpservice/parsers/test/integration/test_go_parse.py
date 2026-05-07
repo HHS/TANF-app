@@ -247,7 +247,9 @@ class TestGoParse:
 
         dfs.status = dfs.get_status()
         assert dfs.status == DataFileSummary.Status.REJECTED
-        parser_errors = ParserError.objects.filter(file=small_correct_file)
+        parser_errors = ParserError.objects.filter(file=small_correct_file).order_by(
+            "-row_number"
+        )
         assert parser_errors.count() == num_errors
 
         if expected_aggregates is not None:
@@ -256,7 +258,7 @@ class TestGoParse:
             )
             assert dfs.case_aggregates == expected_aggregates
 
-        err = parser_errors.order_by("-error_type").first()
+        err = parser_errors.first()
         assert (
             err.error_type == ParserErrorCategoryChoices.PRE_CHECK
             or ParserErrorCategoryChoices.RECORD_PRE_CHECK
