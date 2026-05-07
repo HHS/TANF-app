@@ -16,6 +16,8 @@ record_validators:
     params:
       min: 117
   - id: case_number_not_empty
+  - id: rpt_month_year_is_valid
+  - id: rpt_month_year_matches_header_year_quarter
 
   # Record validators with VALUE_CONSISTENCY error type (cross-field validation)
   # Amount requires positive validators
