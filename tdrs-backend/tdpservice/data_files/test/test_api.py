@@ -314,6 +314,7 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
         self, api_client, data_file_data, user, mocker
     ):
         """Test ability to create data file metadata registry."""
+
         def clean_scan(_file, _file_name, _uploaded_by, data_file=None):
             assert data_file.state == SubmissionState.VIRUS_SCAN_STARTED
             assert not data_file.file

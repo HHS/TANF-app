@@ -213,6 +213,8 @@ class DataFileViewSet(ModelViewSet):
 
         data_file.file = uploaded_file
         data_file.save()
+        if settings.GO_PARSER_SHADOW_MODE:
+            create_or_update_shadow_data_file(data_file)
 
         logger.info(
             f"Preparing parse task: User META -> user: {request.user}, stt: {data_file.stt}. "
