@@ -262,16 +262,6 @@ func (s *Server) processTask(taskCtx context.Context, dataFileID int32) error {
 		return fmt.Errorf("pipeline processing failed: %w", err)
 	}
 
-	status := summaryStatusForResult(result)
-	dataFileState := dataFileStateForSummaryStatus(status)
-	totalCreated, totalInFile := recordTotalsForResult(result)
-	if err := db.UpdateDataFileSummaryResult(taskCtx, s.dbPool, summaryTable, dataFileID, status, totalInFile, totalCreated); err != nil {
-		return fmt.Errorf("failed to update shadow datafile summary result: %w", err)
-	}
-	if err := db.UpdateDataFileState(taskCtx, s.dbPool, dataFileTable, dataFileID, dataFileState); err != nil {
-		return fmt.Errorf("failed to update shadow datafile state: %w", err)
-	}
-
 	// 6. Log results.
 	log.Printf("data_file_id=%d processed in %s", dataFileID, result.Duration)
 	for table, count := range result.RecordCounts {
@@ -318,7 +308,7 @@ func recordTotalsForResult(result *pipeline.ParsingResult) (created int64, total
 		}
 		created += count
 	}
-	total = created + result.ErrorCount
+	total = created
 	return created, total
 }
 
