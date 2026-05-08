@@ -8,7 +8,7 @@ from django.core.management.base import CommandError
 from django.test import override_settings
 
 from tdpservice.users.management.commands.reset_cypress_profile_editing_users import (
-    PROFILE_EDITING_USERNAMES,
+    get_profile_editing_usernames,
 )
 from tdpservice.users.models import ChangeRequestAuditLog, UserChangeRequest
 from tdpservice.users.test.factories import UserFactory
@@ -19,7 +19,7 @@ from tdpservice.users.test.factories import UserFactory
 def test_reset_cypress_profile_editing_users_removes_profile_users_and_requests():
     """The reset deletes only profile-editing Cypress personas."""
     User = get_user_model()
-    profile_user = UserFactory(username=PROFILE_EDITING_USERNAMES[0])
+    profile_user = UserFactory(username=get_profile_editing_usernames()[0])
     untouched_user = UserFactory(username="cypress-other-user@teamraft.com")
     change_request = UserChangeRequest.objects.create(
         user=profile_user,
@@ -47,11 +47,20 @@ def test_reset_cypress_profile_editing_users_removes_profile_users_and_requests(
 def test_reset_cypress_profile_editing_users_requires_opt_in_outside_debug():
     """The command requires an explicit opt-in when DEBUG is false."""
     User = get_user_model()
-    UserFactory(username=PROFILE_EDITING_USERNAMES[0])
+    username = get_profile_editing_usernames()[0]
+    UserFactory(username=username)
 
     with pytest.raises(CommandError):
         call_command("reset_cypress_profile_editing_users")
 
     call_command("reset_cypress_profile_editing_users", "--allow-non-debug")
 
-    assert not User.objects.filter(username=PROFILE_EDITING_USERNAMES[0]).exists()
+    assert not User.objects.filter(username=username).exists()
+
+
+def test_get_profile_editing_usernames_reads_usernames_from_fixture():
+    """The command derives its reset scope from profile-editing fixtures."""
+    usernames = get_profile_editing_usernames()
+
+    assert "cypress-data-analyst-dana@teamraft.com" in usernames
+    assert "cypress-fra-ofa-regional-staff-ryan@acf.hhs.gov" in usernames
