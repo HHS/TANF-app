@@ -6,8 +6,24 @@ model_provider         = "openai"
 model_reasoning_effort = "high"
 
 # Sandbox: allow writing within the workspace but not outside it.
-sandbox_mode    = "workspace-write"
-approval_policy = "on-request"
+sandbox_mode         = "workspace-write"
+approval_policy      = "on-request"
+default_permissions  = "tdp-workspace"
+
+# ---------------------------------------------------------------------------
+# Filesystem permissions
+# ---------------------------------------------------------------------------
+[permissions.tdp-workspace.filesystem]
+glob_scan_max_depth = 12
+
+[permissions.tdp-workspace.filesystem.":project_roots"]
+"." = "write"
+"**/.env" = "none"
+"**/.env.*" = "none"
+"**/*.tfvars" = "none"
+"**/*.pem" = "none"
+"**/*.rsa" = "none"
+"**/*.key" = "none"
 
 # ---------------------------------------------------------------------------
 # Shell environment
@@ -35,4 +51,5 @@ exclude = [
 # History
 # ---------------------------------------------------------------------------
 [history]
-persistence = "none"
+persistence = "save-all"
+max_bytes = 104857600 # 100 MiB

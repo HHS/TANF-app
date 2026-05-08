@@ -8,15 +8,37 @@
 # "Use environment variables for configuration"
 # ---------------------------------------------------------------------------
 
-# Root and backend .env files — forbidden
+# Root and backend .env files — forbidden for common direct readers
 prefix_rule(
-    pattern = ["cat", ".env"],
+    pattern = [["cat", "head", "tail"], [".env", ".env.local", "tdrs-backend/.env"]],
     decision = "forbidden",
     justification = "Do not read .env files — they may contain secrets",
     match = [
         "cat .env",
-        "cat .env.local",
-        "cat tdrs-backend/.env",
+        "head .env.local",
+        "tail tdrs-backend/.env",
+    ],
+)
+
+prefix_rule(
+    pattern = ["rg", ".", [".env", ".env.local", "tdrs-backend/.env"]],
+    decision = "forbidden",
+    justification = "Do not search .env files — they may contain secrets",
+    match = [
+        "rg . .env",
+        "rg . .env.local",
+        "rg . tdrs-backend/.env",
+    ],
+)
+
+prefix_rule(
+    pattern = ["grep", ".", [".env", ".env.local", "tdrs-backend/.env"]],
+    decision = "forbidden",
+    justification = "Do not search .env files — they may contain secrets",
+    match = [
+        "grep . .env",
+        "grep . .env.local",
+        "grep . tdrs-backend/.env",
     ],
 )
 
@@ -299,19 +321,19 @@ prefix_rule(
 )
 
 # ---------------------------------------------------------------------------
-# Allowed dev tools
+# Development tools requiring review
 # ---------------------------------------------------------------------------
 
 prefix_rule(
     pattern = ["npm"],
-    decision = "allow",
-    justification = "npm commands are safe for frontend development",
+    decision = "prompt",
+    justification = "npm can run arbitrary scripts or mutate workspace files — confirm first",
 )
 
 prefix_rule(
     pattern = ["python"],
-    decision = "allow",
-    justification = "Python commands are safe for backend development",
+    decision = "prompt",
+    justification = "Python can read sensitive files or mutate workspace files — confirm first",
 )
 
 prefix_rule(
@@ -327,7 +349,7 @@ prefix_rule(
 )
 
 # ---------------------------------------------------------------------------
-# Read-only exploration — allow
+# Read-only exploration
 # ---------------------------------------------------------------------------
 
 prefix_rule(
@@ -344,14 +366,14 @@ prefix_rule(
 
 prefix_rule(
     pattern = ["grep"],
-    decision = "allow",
-    justification = "Searching file contents is safe",
+    decision = "prompt",
+    justification = "grep can expose sensitive file contents — confirm first",
 )
 
 prefix_rule(
     pattern = ["rg"],
-    decision = "allow",
-    justification = "Ripgrep searches are safe",
+    decision = "prompt",
+    justification = "rg can expose sensitive file contents — confirm first",
 )
 
 prefix_rule(
@@ -362,12 +384,12 @@ prefix_rule(
 
 prefix_rule(
     pattern = ["head"],
-    decision = "allow",
-    justification = "Reading file headers is safe",
+    decision = "prompt",
+    justification = "head can expose sensitive file contents — confirm first",
 )
 
 prefix_rule(
     pattern = ["tail"],
-    decision = "allow",
-    justification = "Reading file tails is safe",
+    decision = "prompt",
+    justification = "tail can expose sensitive file contents — confirm first",
 )
